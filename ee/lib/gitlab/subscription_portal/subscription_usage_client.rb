@@ -26,12 +26,10 @@ module Gitlab
       GET_MONTHLY_WAIVER_QUERY = <<~GQL
         query subscriptionUsageMonthlyWaiver(
           $namespaceId: ID,
-          $licenseKey: String,
-          $startDate: ISO8601Date,
-          $endDate: ISO8601Date
+          $licenseKey: String
         ) {
           subscription(namespaceId: $namespaceId, licenseKey: $licenseKey) {
-            gitlabCreditsUsage(startDate: $startDate, endDate: $endDate) {
+            gitlabCreditsUsage {
               monthlyWaiver {
                 creditsUsed
                 totalCredits
@@ -44,12 +42,10 @@ module Gitlab
       GET_MONTHLY_COMMITMENT_QUERY = <<~GQL
         query subscriptionUsageMonthlyCommitment(
           $namespaceId: ID,
-          $licenseKey: String,
-          $startDate: ISO8601Date,
-          $endDate: ISO8601Date
+          $licenseKey: String
         ) {
           subscription(namespaceId: $namespaceId, licenseKey: $licenseKey) {
-            gitlabCreditsUsage(startDate: $startDate, endDate: $endDate) {
+            gitlabCreditsUsage {
               monthlyCommitment {
                 totalCredits
                 creditsUsed
@@ -66,12 +62,10 @@ module Gitlab
       GET_OVERAGE_QUERY = <<~GQL
         query subscriptionUsageOverage(
           $namespaceId: ID,
-          $licenseKey: String,
-          $startDate: ISO8601Date,
-          $endDate: ISO8601Date
+          $licenseKey: String
         ) {
           subscription(namespaceId: $namespaceId, licenseKey: $licenseKey) {
-            gitlabCreditsUsage(startDate: $startDate, endDate: $endDate) {
+            gitlabCreditsUsage {
               overage {
                 isAllowed
                 creditsUsed
@@ -123,12 +117,10 @@ module Gitlab
         query subscriptionUsageForUserIds(
           $userIds: [Int!]!,
           $namespaceId: ID,
-          $licenseKey: String,
-          $startDate: ISO8601Date,
-          $endDate: ISO8601Date
+          $licenseKey: String
         ) {
           subscription(namespaceId: $namespaceId, licenseKey: $licenseKey) {
-            gitlabCreditsUsage(startDate: $startDate, endDate:$endDate) {
+            gitlabCreditsUsage {
               usersUsage {
                 users(userIds: $userIds) {
                   userId
@@ -147,12 +139,10 @@ module Gitlab
       GET_USERS_USAGE_STATS_QUERY = <<~GQL
         query subscriptionUsageUsersStats(
           $namespaceId: ID,
-          $licenseKey: String,
-          $startDate: ISO8601Date,
-          $endDate: ISO8601Date
+          $licenseKey: String
         ) {
           subscription(namespaceId: $namespaceId, licenseKey: $licenseKey) {
-            gitlabCreditsUsage(startDate: $startDate, endDate:$endDate) {
+            gitlabCreditsUsage {
               usersUsage {
                 totalUsersUsingCredits
                 totalUsersUsingMonthlyCommitment
@@ -171,27 +161,15 @@ module Gitlab
       # Initialize the client with the provided parameters that will be used later
       # to make API calls to the subscription portal
       #
-      # @param start_date [Date] The start date for the usage data. Defaults to the beginning of the current month.
-      # @param end_date [Date] The end date for the usage data. Defaults to the end of the current month.
       # @param namespace_id [Integer] The ID of the namespace, used when in GitLab.com
       # @param license_key [String] The license key to use for authentication in Self-Managed instances
-      def initialize(
-        start_date: Date.current.beginning_of_month,
-        end_date: Date.current.end_of_month,
-        namespace_id: nil,
-        license_key: nil
-      )
-        @start_date = start_date
-        @end_date = end_date
+      def initialize(namespace_id: nil, license_key: nil)
         @namespace_id = namespace_id
         @license_key = license_key
       end
 
       def get_metadata
-        response = execute_graphql_query(
-          query: GET_METADATA_QUERY,
-          variables: default_variables
-        )
+        response = execute_graphql_query(query: GET_METADATA_QUERY)
 
         if unsuccessful_response?(response)
           error(GET_METADATA_QUERY, response)
@@ -205,10 +183,7 @@ module Gitlab
       strong_memoize_attr :get_metadata
 
       def get_monthly_waiver
-        response = execute_graphql_query(
-          query: GET_MONTHLY_WAIVER_QUERY,
-          variables: default_variables.merge(startDate: start_date, endDate: end_date)
-        )
+        response = execute_graphql_query(query: GET_MONTHLY_WAIVER_QUERY)
 
         if unsuccessful_response?(response)
           error(GET_MONTHLY_WAIVER_QUERY, response)
@@ -221,10 +196,7 @@ module Gitlab
       end
 
       def get_monthly_commitment
-        response = execute_graphql_query(
-          query: GET_MONTHLY_COMMITMENT_QUERY,
-          variables: default_variables.merge(startDate: start_date, endDate: end_date)
-        )
+        response = execute_graphql_query(query: GET_MONTHLY_COMMITMENT_QUERY)
 
         if unsuccessful_response?(response)
           error(GET_MONTHLY_COMMITMENT_QUERY, response)
@@ -238,10 +210,7 @@ module Gitlab
       strong_memoize_attr :get_monthly_commitment
 
       def get_overage
-        response = execute_graphql_query(
-          query: GET_OVERAGE_QUERY,
-          variables: default_variables.merge(startDate: start_date, endDate: end_date)
-        )
+        response = execute_graphql_query(query: GET_OVERAGE_QUERY)
 
         if unsuccessful_response?(response)
           error(GET_OVERAGE_QUERY, response)
@@ -258,11 +227,11 @@ module Gitlab
         strong_memoize_with(:get_events_for_user_id, user_id, args) do
           response = execute_graphql_query(
             query: GET_USER_EVENTS_QUERY,
-            variables: default_variables.merge(
+            extra_variables: {
               userIds: [user_id],
               before: args[:before],
               after: args[:after]
-            )
+            }
           )
 
           if unsuccessful_response?(response)
@@ -280,10 +249,7 @@ module Gitlab
 
       def get_usage_for_user_ids(user_ids)
         strong_memoize_with(:get_usage_for_user_ids, user_ids) do
-          response = execute_graphql_query(
-            query: GET_USERS_USAGE_QUERY,
-            variables: default_variables.merge(startDate: start_date, endDate: end_date, userIds: user_ids)
-          )
+          response = execute_graphql_query(query: GET_USERS_USAGE_QUERY, extra_variables: { userIds: user_ids })
 
           if unsuccessful_response?(response)
             error(GET_USERS_USAGE_QUERY, response)
@@ -297,10 +263,7 @@ module Gitlab
       end
 
       def get_users_usage_stats
-        response = execute_graphql_query(
-          query: GET_USERS_USAGE_STATS_QUERY,
-          variables: default_variables.merge(startDate: start_date, endDate: end_date)
-        )
+        response = execute_graphql_query(query: GET_USERS_USAGE_STATS_QUERY)
 
         if unsuccessful_response?(response)
           error(GET_USERS_USAGE_STATS_QUERY, response)
@@ -313,17 +276,22 @@ module Gitlab
       end
       strong_memoize_attr :get_users_usage_stats
 
-      attr_reader :start_date, :end_date, :namespace_id, :license_key
+      attr_reader :namespace_id, :license_key
 
       private
 
-      def execute_graphql_query(params)
-        headers = params.dig(:variables, :licenseKey) ? json_headers : admin_headers
+      def execute_graphql_query(query:, extra_variables: {})
+        variables = {
+          namespaceId: namespace_id,
+          licenseKey: license_key
+        }.compact.merge(extra_variables)
+
+        headers = variables[:licenseKey] ? json_headers : admin_headers
 
         http_response = ::Gitlab::HTTP.post(
           ::Gitlab::Routing.url_helpers.subscription_portal_graphql_url,
           headers: headers,
-          body: params.to_json
+          body: { query: query, variables: variables }.to_json
         )
 
         if http_response.response.is_a?(Net::HTTPSuccess)
@@ -331,13 +299,6 @@ module Gitlab
         else
           { data: { errors: http_response.response.message } }
         end
-      end
-
-      def default_variables
-        {
-          namespaceId: namespace_id,
-          licenseKey: license_key
-        }.compact
       end
 
       def unsuccessful_response?(response)

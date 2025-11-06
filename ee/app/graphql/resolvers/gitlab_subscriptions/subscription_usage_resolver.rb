@@ -9,14 +9,6 @@ module Resolvers
         required: false,
         description: "Path of the top-level namespace. Leave it blank if querying the instance subscription."
 
-      argument :start_date, GraphQL::Types::ISO8601Date,
-        required: false,
-        description: "Filter usage starting on or after the date."
-
-      argument :end_date, GraphQL::Types::ISO8601Date,
-        required: false,
-        description: "Filter usage ending on or before the date."
-
       def resolve(**args)
         subscription_target = args[:namespace_path] ? :namespace : :instance
         namespace = find_namespace(args[:namespace_path])
@@ -26,8 +18,6 @@ module Resolvers
         license_key = License.current&.data if subscription_target == :instance
 
         subscription_usage_client = ::Gitlab::SubscriptionPortal::SubscriptionUsageClient.new(**{
-          start_date: args[:start_date],
-          end_date: args[:end_date],
           license_key: license_key,
           namespace_id: namespace&.id
         }.compact)

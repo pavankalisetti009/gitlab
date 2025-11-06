@@ -4,8 +4,6 @@ require 'spec_helper'
 
 RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_category: :consumables_cost_management do
   let(:graphql_url) { ::Gitlab::Routing.url_helpers.subscription_portal_graphql_url }
-  let(:start_date) { Date.current.beginning_of_month }
-  let(:end_date) { Date.current.end_of_month }
   let(:params) do
     { query: query, variables: variables }
   end
@@ -207,11 +205,11 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
     end
 
     include_context 'for self-managed request' do
-      let(:variables) { { licenseKey: license_key, startDate: start_date, endDate: end_date } }
+      let(:variables) { { licenseKey: license_key } }
     end
 
     include_context 'for gitlab.com request' do
-      let(:variables) { { namespaceId: namespace_id, startDate: start_date, endDate: end_date } }
+      let(:variables) { { namespaceId: namespace_id } }
     end
   end
 
@@ -247,11 +245,11 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
     end
 
     include_context 'for self-managed request' do
-      let(:variables) { { licenseKey: license_key, startDate: start_date, endDate: end_date } }
+      let(:variables) { { licenseKey: license_key } }
     end
 
     include_context 'for gitlab.com request' do
-      let(:variables) { { namespaceId: namespace_id, startDate: start_date, endDate: end_date } }
+      let(:variables) { { namespaceId: namespace_id } }
     end
   end
 
@@ -287,11 +285,11 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
     end
 
     include_context 'for self-managed request' do
-      let(:variables) { { licenseKey: license_key, startDate: start_date, endDate: end_date } }
+      let(:variables) { { licenseKey: license_key } }
     end
 
     include_context 'for gitlab.com request' do
-      let(:variables) { { namespaceId: namespace_id, startDate: start_date, endDate: end_date } }
+      let(:variables) { { namespaceId: namespace_id } }
     end
   end
 
@@ -418,11 +416,11 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
     end
 
     include_context 'for self-managed request' do
-      let(:variables) { { licenseKey: license_key, startDate: start_date, endDate: end_date, userIds: user_ids } }
+      let(:variables) { { licenseKey: license_key, userIds: user_ids } }
     end
 
     include_context 'for gitlab.com request' do
-      let(:variables) { { namespaceId: namespace_id, startDate: start_date, endDate: end_date, userIds: user_ids } }
+      let(:variables) { { namespaceId: namespace_id, userIds: user_ids } }
     end
   end
 
@@ -456,11 +454,11 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
     end
 
     include_context 'for self-managed request' do
-      let(:variables) { { licenseKey: license_key, startDate: start_date, endDate: end_date } }
+      let(:variables) { { licenseKey: license_key } }
     end
 
     include_context 'for gitlab.com request' do
-      let(:variables) { { namespaceId: namespace_id, startDate: start_date, endDate: end_date } }
+      let(:variables) { { namespaceId: namespace_id } }
     end
   end
 end
