@@ -20,6 +20,7 @@ module Security
     validate  :dismissal_types_are_valid
     validates :licenses, json_schema: { filename: 'policy_dismissal_licenses', size_limit: 64.kilobytes },
       allow_blank: true
+    validates :license_occurrence_uuids, length: { maximum: 1000 }
 
     scope :for_projects, ->(project_ids) { where(project_id: project_ids) }
     scope :for_security_findings_uuids, ->(security_findings_uuids) do

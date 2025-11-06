@@ -15,6 +15,7 @@ RSpec.describe Security::PolicyDismissal, feature_category: :security_policy_man
 
     it { is_expected.to allow_value(nil).for(:security_findings_uuids) }
     it { is_expected.to validate_length_of(:comment).is_at_most(255).allow_nil }
+    it { is_expected.to validate_length_of(:license_occurrence_uuids).is_at_most(1000) }
 
     it { is_expected.to(validate_uniqueness_of(:merge_request_id).scoped_to(%i[security_policy_id])) }
 
