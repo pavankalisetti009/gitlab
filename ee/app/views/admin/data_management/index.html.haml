@@ -2,4 +2,4 @@
 - page_title _('Data management')
 
 #js-admin-data-management{ data: { model_types: model_types.to_json,
-  model_class_data: model_data(@model_class).to_json } }
+  initial_model_name: ::Gitlab::Geo::ModelMapper.convert_to_name(@model_class)} }

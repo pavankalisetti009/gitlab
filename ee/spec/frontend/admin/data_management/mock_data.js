@@ -27,13 +27,3 @@ export const MOCK_MODEL_TYPES = [
     checksumEnabled: true,
   },
 ];
-
-export const MOCK_MODEL_CLASS = {
-  title: 'Snippet Repository',
-  titlePlural: 'Snippet Repositories',
-  name: 'snippet_repository',
-  namePlural: 'snippet_repositories',
-  modelClass: 'SnippetRepository',
-  restEndpoint: '/api/v4/admin/data_management/snippet_repository',
-  checksumEnabled: true,
-};

@@ -1,5 +1,4 @@
 <script>
-import { debounce } from 'lodash';
 import { computed } from 'vue';
 import GeoListTopBar from 'ee/geo_shared/list/components/geo_list_top_bar.vue';
 import GeoList from 'ee/geo_shared/list/components/geo_list.vue';
@@ -12,12 +11,11 @@ import {
   TOKEN_TYPES,
 } from 'ee/admin/data_management/constants';
 import { isValidFilter, processFilters } from 'ee/admin/data_management/filters';
-import { queryToObject, setUrlParams, updateHistory, visitUrl } from '~/lib/utils/url_utility';
+import { queryToObject, setUrlParams, updateHistory } from '~/lib/utils/url_utility';
 import { createAlert } from '~/alert';
 import { getModels, putBulkModelAction } from 'ee/api/data_management_api';
 import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
 import DataManagementItem from 'ee/admin/data_management/components/data_management_item.vue';
-import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 import showToast from '~/vue_shared/plugins/global_toast';
 
 export default {
@@ -33,8 +31,12 @@ export default {
     };
   },
   props: {
-    modelClass: {
-      type: Object,
+    initialModelName: {
+      type: String,
+      required: true,
+    },
+    modelTypes: {
+      type: Array,
       required: true,
     },
   },
@@ -43,9 +45,16 @@ export default {
       isLoading: true,
       modelItems: [],
       filters: [],
+      activeModelName: this.initialModelName,
     };
   },
   computed: {
+    activeModel() {
+      return this.modelTypes.find(({ name }) => name === this.activeModelName);
+    },
+    modelTitle() {
+      return this.activeModel.titlePlural.toLowerCase();
+    },
     hasItems() {
       return Boolean(this.modelItems.length);
     },
@@ -55,7 +64,7 @@ export default {
     emptyState() {
       return {
         title: sprintf(s__('Geo|No %{itemTitle} exist'), {
-          itemTitle: this.modelClass.titlePlural.toLowerCase(),
+          itemTitle: this.modelTitle,
         }),
         description: s__(
           'Geo|If you believe this is an error, see the %{linkStart}Geo troubleshooting%{linkEnd} documentation.',
@@ -64,21 +73,21 @@ export default {
         hasFilters: this.hasFilters,
       };
     },
-    modelTitle() {
-      return this.modelClass.titlePlural.toLowerCase();
+    queryParams() {
+      return convertObjectPropsToCamelCase(
+        queryToObject(window.location.search || '', { gatherArrays: true }),
+      );
     },
   },
   created() {
+    this.initializeModel();
     this.initializeFilters();
     this.fetchModelList();
   },
   methods: {
     initializeFilters() {
       const filters = [];
-      const { checksum_state: checksumState, identifiers } = queryToObject(
-        window.location.search || '',
-        { gatherArrays: true },
-      );
+      const { checksumState, identifiers } = this.queryParams;
 
       if (identifiers) {
         filters.push(identifiers.join(' '));
@@ -90,12 +99,15 @@ export default {
 
       this.filters = filters;
     },
-    fetchModelList: debounce(async function fetchModelList() {
+    initializeModel() {
+      this.activeModelName = this.queryParams.modelName || this.initialModelName;
+    },
+    async fetchModelList() {
       this.isLoading = true;
 
       try {
         const { query } = processFilters(this.filters);
-        const { data } = await getModels(this.modelClass.name, query);
+        const { data } = await getModels(this.activeModelName, query);
 
         this.modelItems = convertObjectPropsToCamelCase(data, { deep: true });
       } catch (error) {
@@ -103,10 +115,10 @@ export default {
       } finally {
         this.isLoading = false;
       }
-    }, DEFAULT_DEBOUNCE_AND_THROTTLE_MS),
+    },
     async handleBulkAction({ action, successMessage, errorMessage }) {
       try {
-        await putBulkModelAction(this.modelClass.name, action);
+        await putBulkModelAction(this.activeModel.name, action);
 
         showToast(sprintf(successMessage, { type: this.modelTitle }));
         this.fetchModelList();
@@ -128,15 +140,16 @@ export default {
         error,
       });
     },
-    handleListboxChange(model) {
-      this.updateUrl({ model, redirect: true });
+    handleListboxChange(name) {
+      this.activeModelName = name;
+      this.updateUrl();
     },
     handleSearch(filters) {
       this.filters = filters;
-      this.updateUrl({ model: this.modelClass.name, redirect: false });
+      this.updateUrl();
     },
-    updateUrl({ model, redirect }) {
-      const filters = [{ type: TOKEN_TYPES.MODEL, value: model }, ...this.filters];
+    updateUrl() {
+      const filters = [{ type: TOKEN_TYPES.MODEL, value: this.activeModelName }, ...this.filters];
       const { query, url } = processFilters(filters);
 
       const urlWithParams = setUrlParams(query, {
@@ -145,12 +158,8 @@ export default {
         railsArraySyntax: true,
       });
 
-      if (redirect) {
-        visitUrl(urlWithParams);
-      } else {
-        updateHistory({ url: urlWithParams });
-        this.fetchModelList();
-      }
+      updateHistory({ url: urlWithParams });
+      this.fetchModelList();
     },
   },
   DEFAULT_SORT,
@@ -167,7 +176,7 @@ export default {
         s__('Geo|Review stored data and data health within your instance.')
       "
       :filtered-search-option-label="__('Search by ID')"
-      :active-listbox-item="modelClass.name"
+      :active-listbox-item="activeModelName"
       :active-sort="$options.DEFAULT_SORT"
       :bulk-actions="$options.BULK_ACTIONS"
       :show-actions="hasItems"
@@ -179,7 +188,7 @@ export default {
       <data-management-item
         v-for="item in modelItems"
         :key="item.recordIdentifier"
-        :model-name="modelClass.name"
+        :model-name="activeModelName"
         :initial-item="item"
       />
     </geo-list>
