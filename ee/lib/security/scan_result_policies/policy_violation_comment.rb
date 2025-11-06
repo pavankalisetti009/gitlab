@@ -19,7 +19,7 @@ module Security
       MORE_VIOLATIONS_DETECTED = 'More violations have been detected in addition to the list above.'
       VIOLATIONS_BLOCKING_TITLE = ':warning: **Violations blocking this merge request**'
       VIOLATIONS_DETECTED_TITLE = ':warning: **Violations detected in this merge request**'
-      VIOLATIONS_BYPASSABLE_TITLE = ':construction: **Bypassable violations from warn mode policies**'
+      VIOLATIONS_BYPASSABLE_TITLE = ':construction: **Violations from warn mode policies that users can bypass**'
 
       attr_reader :reports, :optional_approval_reports, :existing_comment, :merge_request
 
@@ -218,7 +218,7 @@ module Security
         return if violations.empty?
 
         <<~MARKDOWN
-        #### Bypassable `any_merge_request` violations
+        #### `any_merge_request` violations that users can bypass
         #{any_merge_request_overview(violations, bypassable: true)}
         #{any_merge_request_commits(violations)}
         MARKDOWN
@@ -287,7 +287,7 @@ module Security
         return if violations.empty?
 
         <<~MARKDOWN
-        #### Newly detected bypassable `scan_finding` violations
+        #### Newly detected `scan_finding` violations that users can bypass
         #{scan_finding_violations(violations)}
         MARKDOWN
       end
@@ -298,13 +298,14 @@ module Security
         return if violations.empty?
 
         <<~MARKDOWN
-        #### Previously existing bypassable `scan_finding` violations
+        #### Previously found `scan_finding` violations that users can bypass
         #{scan_finding_violations(violations)}
         MARKDOWN
       end
 
       def newly_introduced_violations
-        scan_finding_violations(details.new_scan_finding_violations, 'This merge request introduces these violations')
+        scan_finding_violations(
+          details.new_scan_finding_violations, 'This merge request introduces the following violations')
       end
       strong_memoize_attr :newly_introduced_violations
 
@@ -374,7 +375,7 @@ module Security
         end
 
         description = case bypassable
-                      when true then "The following policies require approval or need to be bypassed"
+                      when true then "The following policies require either approval or bypass"
                       else "The following policies require approval"
                       end
 
@@ -432,12 +433,12 @@ module Security
         return if overrides.empty?
 
         <<~MARKDOWN
-        :lock: **Warn-mode policies set more restrictive approval settings**
+        :lock: **Warn mode policies set more restrictive approval settings**
 
-        Some security policies set `approval_settings` that are more restrictive than this
-        project's merge request effective approval settings, taking into account the `approval_settings`
-        of enforced policies. When the following warn-mode policies get strictly enforced,
-        their approval settings will take precedence:
+        Some security policies have `approval_settings` that are more restrictive than this
+        project's merge request approval settings, taking into account the `approval_settings`
+        of enforced policies. When the following warn mode policies are strictly enforced,
+        their approval settings take precedence:
 
         #{overrides.map { |override| warn_mode_approval_settings_overrides(override) }.join("\n")}
         MARKDOWN
@@ -484,7 +485,7 @@ module Security
 
         warn_mode_policy_names = details.warn_mode_policies.map(&:name).sort
 
-        "\n**Note:** The following policies are in warn-mode and can be bypassed to make approvals optional: \n" \
+        "\n**Note:** The following policies are in warn mode and can be bypassed to make approvals optional: \n" \
           "#{array_to_list(warn_mode_policy_names)}"
       end
 
