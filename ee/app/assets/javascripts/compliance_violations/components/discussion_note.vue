@@ -8,7 +8,8 @@ import {
   GlDisclosureDropdownGroup,
   GlTooltipDirective,
 } from '@gitlab/ui';
-import { getIdFromGraphQLId } from '~/graphql_shared/utils';
+import { convertToGraphQLId, getIdFromGraphQLId } from '~/graphql_shared/utils';
+import { TYPENAME_USER } from '~/graphql_shared/constants';
 import { getLocationHash } from '~/lib/utils/url_utility';
 import { __, s__ } from '~/locale';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
@@ -17,14 +18,20 @@ import SafeHtml from '~/vue_shared/directives/safe_html';
 import NoteHeader from '~/notes/components/note_header.vue';
 import TimelineEntryItem from '~/vue_shared/components/notes/timeline_entry_item.vue';
 import EditedAt from '~/issues/show/components/edited.vue';
+import EmojiPicker from '~/emoji/components/picker.vue';
+import AwardsList from '~/vue_shared/components/awards_list.vue';
 import destroyComplianceViolationNoteMutation from '../graphql/mutations/destroy_compliance_violation_note.mutation.graphql';
+import toggleComplianceViolationNoteAwardEmojiMutation from '../graphql/mutations/toggle_compliance_violation_note_award_emoji.mutation.graphql';
+import complianceViolationQuery from '../graphql/compliance_violation.query.graphql';
 import EditCommentForm from './edit_comment_form.vue';
 
 export default {
   name: 'DiscussionNote',
   components: {
+    AwardsList,
     EditCommentForm,
     EditedAt,
+    EmojiPicker,
     GlAvatar,
     GlAvatarLink,
     GlButton,
@@ -87,6 +94,13 @@ export default {
         target: this.isTargetNote,
       };
     },
+    awards() {
+      return this.note.awardEmoji?.nodes || [];
+    },
+    currentUserId() {
+      const numericUserId = window.gon?.current_user_id;
+      return numericUserId ? convertToGraphQLId(TYPENAME_USER, numericUserId) : null;
+    },
   },
   methods: {
     copyNoteLink() {
@@ -135,6 +149,88 @@ export default {
     handleEditError(errorMessage) {
       this.$emit('error', errorMessage);
     },
+    async setAwardEmoji(awardName) {
+      try {
+        const { data } = await this.$apollo.mutate({
+          mutation: toggleComplianceViolationNoteAwardEmojiMutation,
+          variables: {
+            awardableId: this.note.id,
+            name: awardName,
+          },
+          update: (cache, mutationResult) =>
+            this.updateAwardEmojiCache(cache, mutationResult, awardName),
+        });
+
+        if (data?.awardEmojiToggle?.errors?.length > 0) {
+          toast(s__('ComplianceViolation|Failed to toggle emoji reaction.'));
+        }
+      } catch (error) {
+        toast(s__('ComplianceViolation|Failed to toggle emoji reaction.'));
+      }
+    },
+    updateAwardEmojiCache(cache, { data }, awardName) {
+      if (data?.awardEmojiToggle?.errors?.length > 0) {
+        return;
+      }
+
+      const variables = { id: this.violationId };
+      const sourceData = cache.readQuery({
+        query: complianceViolationQuery,
+        variables,
+      });
+
+      if (!sourceData?.projectComplianceViolation) {
+        return;
+      }
+
+      const { toggledOn, awardEmoji } = data.awardEmojiToggle;
+      const existingNotes = sourceData.projectComplianceViolation.notes?.nodes || [];
+
+      const updatedNotes = existingNotes.map((note) => {
+        if (note.id !== this.note.id) {
+          return note;
+        }
+
+        const currentAwardEmojis = note.awardEmoji?.nodes || [];
+        let updatedAwardEmojis;
+
+        if (toggledOn && awardEmoji) {
+          const exists = currentAwardEmojis.some(
+            (emoji) => emoji.name === awardEmoji.name && emoji.user.id === awardEmoji.user.id,
+          );
+          updatedAwardEmojis = exists ? currentAwardEmojis : [...currentAwardEmojis, awardEmoji];
+        } else {
+          updatedAwardEmojis = currentAwardEmojis.filter(
+            (emoji) => !(emoji.name === awardName && emoji.user.id === this.currentUserId),
+          );
+        }
+
+        return {
+          ...note,
+          awardEmoji: {
+            ...note.awardEmoji,
+            nodes: updatedAwardEmojis,
+          },
+        };
+      });
+
+      const updatedData = {
+        ...sourceData,
+        projectComplianceViolation: {
+          ...sourceData.projectComplianceViolation,
+          notes: {
+            ...sourceData.projectComplianceViolation.notes,
+            nodes: updatedNotes,
+          },
+        },
+      };
+
+      cache.writeQuery({
+        query: complianceViolationQuery,
+        variables,
+        data: updatedData,
+      });
+    },
   },
   i18n: {
     moreActionsText: __('More actions'),
@@ -175,6 +271,12 @@ export default {
             :note-url="noteUrl"
           />
           <div v-if="!isEditing" class="note-actions gl-ml-auto gl-flex gl-gap-2">
+            <emoji-picker
+              v-if="glFeatures.complianceViolationCommentsUi"
+              toggle-class="add-reaction-button btn-default-tertiary"
+              data-testid="note-emoji-button"
+              @click="setAwardEmoji"
+            />
             <gl-button
               v-if="glFeatures.complianceViolationCommentsUi"
               v-gl-tooltip
@@ -243,6 +345,15 @@ export default {
             :updated-by-name="note.lastEditedBy.name"
             :updated-by-path="note.lastEditedBy.webPath"
             class="gl-mt-5"
+          />
+          <awards-list
+            v-if="awards.length && !isEditing"
+            :awards="awards"
+            can-award-emoji
+            :current-user-id="currentUserId"
+            class="gl-mt-3"
+            data-testid="note-awards-list"
+            @award="setAwardEmoji($event)"
           />
         </div>
       </div>

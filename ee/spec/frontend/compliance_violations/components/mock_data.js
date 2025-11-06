@@ -85,6 +85,9 @@ export const mockComplianceViolation = {
           webPath: '/testuser',
           __typename: 'UserCore',
         },
+        awardEmoji: {
+          nodes: [],
+        },
         discussion: {
           id: 'gid://gitlab/Discussion/1',
           __typename: 'Discussion',
@@ -117,6 +120,9 @@ export const mockComplianceViolation = {
           webUrl: 'https://example.com/testuser2',
           webPath: '/testuser2',
           __typename: 'UserCore',
+        },
+        awardEmoji: {
+          nodes: [],
         },
         discussion: {
           id: 'gid://gitlab/Discussion/2',
@@ -207,6 +213,9 @@ export const mockDataWithOnlyNonSystemNotes = {
               webPath: '/testuser3',
               __typename: 'UserCore',
             },
+            awardEmoji: {
+              nodes: [],
+            },
             discussion: {
               id: 'gid://gitlab/Discussion/3',
               __typename: 'Discussion',
@@ -232,6 +241,9 @@ export const mockDataWithOnlyNonSystemNotes = {
               webPath: '/testuser4',
               __typename: 'UserCore',
             },
+            awardEmoji: {
+              nodes: [],
+            },
             discussion: {
               id: 'gid://gitlab/Discussion/4',
               __typename: 'Discussion',
@@ -244,6 +256,102 @@ export const mockDataWithOnlyNonSystemNotes = {
         ],
         __typename: 'NoteConnection',
       },
+    },
+  },
+};
+
+export const mockNote = {
+  id: 'gid://gitlab/Note/123',
+  author: {
+    id: 'gid://gitlab/User/456',
+    name: 'John Doe',
+    username: 'johndoe',
+    avatarUrl: 'https://example.com/avatar.jpg',
+    webUrl: 'https://example.com/johndoe',
+  },
+  body: 'This is a discussion note',
+  bodyHtml: '<p>This is a discussion note</p>',
+  createdAt: '2023-01-01T00:00:00Z',
+  lastEditedAt: null,
+  lastEditedBy: null,
+  awardEmoji: {
+    nodes: [],
+  },
+};
+
+export const mockNoteWithAwards = {
+  ...mockNote,
+  awardEmoji: {
+    nodes: [
+      {
+        name: 'thumbsup',
+        user: {
+          id: 'gid://gitlab/User/456',
+          name: 'John Doe',
+        },
+      },
+      {
+        name: 'heart',
+        user: {
+          id: 'gid://gitlab/User/789',
+          name: 'Jane Smith',
+        },
+      },
+    ],
+  },
+};
+
+export const mockNoteWithEdit = {
+  ...mockNote,
+  lastEditedAt: '2023-01-02T00:00:00Z',
+  lastEditedBy: {
+    name: 'Jane Editor',
+    webPath: '/jane-editor',
+  },
+};
+
+export const mockDeleteNoteSuccess = {
+  data: {
+    destroyNote: {
+      errors: [],
+      note: {
+        id: mockNote.id,
+      },
+    },
+  },
+};
+
+export const mockDeleteNoteError = {
+  data: {
+    destroyNote: {
+      errors: ['Something went wrong'],
+      note: null,
+    },
+  },
+};
+
+export const mockToggleAwardEmojiSuccess = {
+  data: {
+    awardEmojiToggle: {
+      errors: [],
+      toggledOn: true,
+      awardEmoji: {
+        name: 'thumbsup',
+        user: {
+          id: 'gid://gitlab/User/456',
+          name: 'John Doe',
+        },
+      },
+    },
+  },
+};
+
+export const mockToggleAwardEmojiError = {
+  data: {
+    awardEmojiToggle: {
+      errors: ['Failed to toggle emoji'],
+      toggledOn: false,
+      awardEmoji: null,
     },
   },
 };
