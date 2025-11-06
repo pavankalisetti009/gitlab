@@ -197,30 +197,6 @@ RSpec.describe ConcurrencyLimit::ResumeWorker, feature_category: :scalability do
           expect(worker.logging_extras).to eq({ "extra.concurrency_limit_resume_worker.resumed_jobs" => 10 })
         end
 
-        context 'when concurrency_limit_current_limit_from_redis FF is disabled' do
-          before do
-            stub_feature_flags(concurrency_limit_current_limit_from_redis: false)
-          end
-
-          it 'resumes processing' do
-            stub_application_setting(elasticsearch_max_code_indexing_concurrency: 35)
-            expect(Gitlab::SidekiqMiddleware::ConcurrencyLimit::ConcurrencyLimitService)
-              .to receive(:resume_processing!)
-                    .with(worker_with_concurrency_limit.name)
-
-            perform
-          end
-
-          it 'resumes processing if there are other jobs' do
-            stub_application_setting(elasticsearch_max_code_indexing_concurrency: 60)
-            expect(Gitlab::SidekiqMiddleware::ConcurrencyLimit::ConcurrencyLimitService)
-              .to receive(:resume_processing!)
-                    .with(worker_with_concurrency_limit.name)
-
-            perform
-          end
-        end
-
         context 'when current_limit is present in Redis' do
           before do
             Gitlab::SidekiqMiddleware::ConcurrencyLimit::ConcurrencyLimitService
