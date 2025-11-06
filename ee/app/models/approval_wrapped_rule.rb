@@ -162,6 +162,26 @@ class ApprovalWrappedRule
     approval_rule.scan_result_policy_read&.fail_open? || false
   end
 
+  def originates_from_project?
+    return unless Feature.enabled?(:v2_approval_rules, @approval_rule&.project)
+    return unless @approval_rule.respond_to?(:originates_from_project?)
+
+    @approval_rule.originates_from_project?
+  end
+
+  def originates_from_merge_request?
+    return unless Feature.enabled?(:v2_approval_rules, @approval_rule&.project)
+    return unless @approval_rule.respond_to?(:originates_from_merge_request?)
+
+    @approval_rule.originates_from_merge_request?
+  end
+
+  def user_defined?
+    return unless Feature.enabled?(:v2_approval_rules, @approval_rule&.project)
+
+    @approval_rule.user_defined?
+  end
+
   private
 
   def approval_rule_dismissed?
