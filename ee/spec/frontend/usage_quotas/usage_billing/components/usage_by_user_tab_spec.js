@@ -90,6 +90,7 @@ describe('UsageByUserTab', () => {
           ${0}  | ${'ajohnson'} | ${'Alice Johnson'} | ${'500 / 500'}      | ${100}                     | ${'640'}
           ${1}  | ${'bsmith'}   | ${'Bob Smith'}     | ${'500 / 500'}      | ${100}                     | ${'500'}
           ${2}  | ${'cdavis'}   | ${'Carol Davis'}   | ${'50 / 500'}       | ${10}                      | ${'50'}
+          ${3}  | ${'dwilson'}  | ${'David Wilson'}  | ${'2k / 2k'}        | ${100}                     | ${'2.1k'}
         `(
           '$index: rendering $displayName ($username)',
           ({

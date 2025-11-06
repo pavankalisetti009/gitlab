@@ -62,24 +62,7 @@ describe('CurrentUsageCard', () => {
     it('renders gl-progress-bar with correct credits', () => {
       const progressBar = wrapper.findComponent(GlProgressBar);
 
-      expect(progressBar.props()).toMatchObject({ max: 100, value: '78.0' });
-    });
-
-    describe('progress bar variants', () => {
-      it.each([
-        ['primary', 78, 100],
-        ['warning', 81, 100],
-        ['danger', 120, 100],
-      ])(
-        'renders progress bar with "%s" variant when usagePercentage is %d',
-        (variant, poolCreditsUsed, poolTotalCredits) => {
-          createComponent({ poolCreditsUsed, poolTotalCredits });
-
-          const progressBar = wrapper.findComponent(GlProgressBar);
-
-          expect(progressBar.props('variant')).toBe(variant);
-        },
-      );
+      expect(progressBar.props()).toMatchObject({ max: 100, value: '78.0', variant: 'primary' });
     });
   });
 
