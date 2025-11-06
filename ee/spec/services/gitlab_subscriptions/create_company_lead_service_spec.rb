@@ -14,7 +14,7 @@ RSpec.describe GitlabSubscriptions::CreateCompanyLeadService, feature_category: 
     )
   end
 
-  describe '#execute' do
+  describe '#execute', :saas do
     using RSpec::Parameterized::TableSyntax
 
     let(:trial_registration) { true }

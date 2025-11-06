@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe Onboarding::CreateIterableTriggerService, feature_category: :onboarding do
   let(:params) { { work_email: 'work@email.com', opt_in: true } }
 
-  describe '#execute' do
+  describe '#execute', :saas do
     context 'when sending iterable call' do
       before do
         allow(Gitlab::SubscriptionPortal::Client).to receive(:generate_iterable)
