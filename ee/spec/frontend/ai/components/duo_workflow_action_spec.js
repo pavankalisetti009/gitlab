@@ -7,11 +7,13 @@ import waitForPromises from 'helpers/wait_for_promises';
 import getDuoWorkflowStatusCheck from 'ee/ai/graphql/get_duo_workflow_status_check.query.graphql';
 import axios from '~/lib/utils/axios_utils';
 import { createAlert } from '~/alert';
+import toast from '~/vue_shared/plugins/global_toast';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import DuoWorkflowAction from 'ee/ai/components/duo_workflow_action.vue';
 import { mockCreateFlowResponse } from '../mocks';
 
 jest.mock('~/alert');
+jest.mock('~/vue_shared/plugins/global_toast');
 
 Vue.use(VueApollo);
 
@@ -486,17 +488,30 @@ describe('DuoWorkflowAction component', () => {
           await waitForPromises();
         });
 
-        it('shows success alert with the session ID', () => {
-          expect(createAlert).toHaveBeenCalledWith(
-            expect.objectContaining({
-              variant: 'success',
-              message:
-                'Flow started successfully. To view progress, see %{linkStart}Session 1056241%{linkEnd}.',
-              messageLinks: {
-                link: '/group/project/-/automate/agent-sessions/1056241',
-              },
-            }),
+        it('shows success toast with the session ID and action link', () => {
+          expect(toast).toHaveBeenCalledWith('Issue to merge request #1056241 created', {
+            action: {
+              text: 'View',
+              href: '/group/project/-/automate/agent-sessions/1056241',
+            },
+            autoHideDelay: 4000,
+          });
+        });
+      });
+
+      describe('when there is no projectPath prop', () => {
+        it('shows generic success toast without action link', () => {
+          createComponent({ props: { projectPath: '' } });
+          // Manually call toast since button is not displayed
+          wrapper.vm.showSuccessToast(
+            mockCreateFlowResponse.id,
+            mockCreateFlowResponse.workflow_definition,
           );
+
+          expect(toast).toHaveBeenCalledWith('Flow started successfully.', {
+            action: undefined,
+            autoHideDelay: 4000,
+          });
         });
       });
     });

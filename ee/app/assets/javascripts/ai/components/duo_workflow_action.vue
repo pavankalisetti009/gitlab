@@ -4,10 +4,13 @@ import getDuoWorkflowStatusCheck from 'ee/ai/graphql/get_duo_workflow_status_che
 import { sprintf, s__, __ } from '~/locale';
 import axios from '~/lib/utils/axios_utils';
 import { createAlert } from '~/alert';
+import toast from '~/vue_shared/plugins/global_toast';
+import { formatAgentFlowName } from 'ee/ai/duo_agents_platform/utils';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { buildApiUrl } from '~/api/api_utils';
 
 const FLOW_WEB_ENVIRONMENT = 'web';
+const TOAST_HIDE_DELAY = 4000;
 
 export default {
   name: 'DuoWorkflowAction',
@@ -123,23 +126,19 @@ export default {
     },
   },
   methods: {
-    successAlert(id) {
-      return this.projectPath && id
-        ? {
-            message: sprintf(
-              s__(
-                `DuoAgentPlatform|Flow started successfully. To view progress, see %{linkStart}Session %{id}%{linkEnd}.`,
-              ),
-              { id },
-            ),
-            variant: 'success',
-            messageLinks: this.formatMessageLinks(id),
-          }
-        : {
-            message: s__('DuoAgentPlatform|Flow started successfully.'),
-            variant: 'success',
-            messageLinks: {},
-          };
+    showSuccessToast(id, workflowDefinition) {
+      let message;
+      let action;
+
+      if (this.projectPath && id) {
+        message = sprintf(s__('DuoAgentPlatform|%{formattedName} created'), {
+          formattedName: formatAgentFlowName(workflowDefinition, id),
+        });
+        action = { text: __('View'), href: this.formatMessageLinks(id).link };
+      } else {
+        message = s__('DuoAgentPlatform|Flow started successfully.');
+      }
+      toast(message, { action, autoHideDelay: TOAST_HIDE_DELAY });
     },
     formatMessageLinks(id) {
       return {
@@ -181,7 +180,7 @@ export default {
 
           this.$emit('agent-flow-started', data);
 
-          createAlert(this.successAlert(data.id));
+          this.showSuccessToast(data.id, data.workflow_definition);
         })
         .catch((error) => {
           createAlert({
