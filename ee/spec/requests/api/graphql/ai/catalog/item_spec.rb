@@ -8,7 +8,11 @@ RSpec.describe 'getting an AI catalog item', :with_current_organization, feature
 
   let_it_be(:reporter_user) { create(:user) }
   let_it_be(:developer_user) { create(:user) }
-  let_it_be(:project) { create(:project, reporters: reporter_user, developers: developer_user) }
+
+  let_it_be(:project) do
+    create(:project, reporters: reporter_user, developers: developer_user, organization: current_organization)
+  end
+
   let_it_be_with_reload(:catalog_item) { create(:ai_catalog_item, project: project, public: true) }
 
   let(:latest_version) { catalog_item.latest_version }
@@ -219,13 +223,13 @@ RSpec.describe 'getting an AI catalog item', :with_current_organization, feature
     let_it_be(:item_consumer_for_other_project) do
       create(:ai_catalog_item_consumer,
         item: catalog_item,
-        project: create(:project, organization: catalog_item.organization)
+        project: create(:project, organization: current_organization)
       )
     end
 
-    let_it_be(:item_consumer_for_other_item) do
-      create(:ai_catalog_item_consumer, project: project)
-    end
+    let_it_be(:other_item) { create(:ai_catalog_item, organization: current_organization) }
+
+    let_it_be(:item_consumer_for_other_item) { create(:ai_catalog_item_consumer, project: project, item: other_item) }
 
     let(:data) { graphql_data_at(:ai_catalog_item, :configuration_for_project) }
 
@@ -274,9 +278,7 @@ RSpec.describe 'getting an AI catalog item', :with_current_organization, feature
   end
 
   context 'when item belongs to another organization' do
-    before do
-      catalog_item.update!(organization: create(:organization), project: nil)
-    end
+    let_it_be(:catalog_item) { create(:ai_catalog_item, public: true, organization: create(:organization)) }
 
     it_behaves_like 'an unsuccessful query'
   end

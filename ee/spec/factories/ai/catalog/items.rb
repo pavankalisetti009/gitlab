@@ -43,6 +43,7 @@ FactoryBot.define do
       item.latest_version ||= item.versions.first
 
       item.organization ||=
+        item.project&.organization ||
         # The ordering of Organizations by created_at does not match ordering by the id column.
         # This is because Organization::DEFAULT_ORGANIZATION_ID is 1, but in the specs the default
         # organization may get created after another organization.
