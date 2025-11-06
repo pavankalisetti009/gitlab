@@ -220,6 +220,41 @@ describe('EE approvals project settings module actions', () => {
         );
       });
     });
+
+    describe('when any_approver placeholder exists', () => {
+      it('replaces the placeholder rule without increasing total count', () => {
+        const placeholderRule = {
+          id: null,
+          name: 'All Members',
+          ruleType: 'any_approver',
+          approvalsRequired: 0,
+        };
+        const newAnyApproverRule = {
+          id: 20,
+          name: 'All Members',
+          rule_type: 'any_approver',
+          approvals_required: 1,
+        };
+
+        state.approvals.rules = [placeholderRule];
+
+        return testAction(
+          actions.updateRules,
+          newAnyApproverRule,
+          state,
+          [],
+          [
+            {
+              type: 'setRules',
+              payload: {
+                rules: [mapApprovalRuleResponse(newAnyApproverRule)],
+                totalRules: 20,
+              },
+            },
+          ],
+        );
+      });
+    });
   });
 
   describe('fetchRules', () => {
