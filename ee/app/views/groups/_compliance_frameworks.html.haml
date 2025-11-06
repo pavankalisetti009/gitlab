@@ -1,4 +1,4 @@
-- return unless show_compliance_frameworks?(@group)
+- return unless can?(current_user, :admin_compliance_framework, @group)
 
 = render Users::GroupDismissibleAlertComponent.new(title: _('Compliance framework settings have moved.'),
     alert_options: { class: 'gl-my-5', data: { defer_links: 'true' }},
