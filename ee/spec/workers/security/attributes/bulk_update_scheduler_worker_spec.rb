@@ -89,6 +89,17 @@ RSpec.describe Security::Attributes::BulkUpdateSchedulerWorker, feature_category
         end
       end
 
+      context 'with REPLACE mode' do
+        let(:mode) { 'replace' }
+
+        it 'passes correct mode to batch workers' do
+          expect(Security::Attributes::BulkUpdateWorker).to receive(:perform_in)
+            .with(0, [project1.id, project2.id], attribute_ids, mode, user_id)
+
+          worker.perform(group_ids, project_ids, attribute_ids, mode, user_id)
+        end
+      end
+
       context 'when no accessible projects found' do
         let_it_be(:inaccessible_project) { create(:project) }
         let(:group_ids) { [] }

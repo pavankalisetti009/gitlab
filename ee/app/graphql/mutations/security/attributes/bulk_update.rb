@@ -28,7 +28,7 @@ module Mutations
 
         argument :mode, Types::Security::Attributes::BulkUpdateModeEnum,
           required: true,
-          description: 'Update mode: add or remove attributes.'
+          description: 'Update mode: add, remove, or replace attributes.'
 
         field :errors, [GraphQL::Types::String],
           null: false,

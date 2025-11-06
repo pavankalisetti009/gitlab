@@ -28,7 +28,6 @@ RSpec.describe Mutations::Security::Attributes::BulkUpdate,
   let(:items) { [project1.to_global_id.to_s, project2.to_global_id.to_s] }
   let(:prepared_items) { GitlabSchema.parse_gids(items, expected_type: [Group, Project]) }
   let(:attributes) { [attribute1.to_global_id.to_s, attribute2.to_global_id.to_s] }
-  let(:mode) { 'ADD' }
 
   let(:mutation) do
     described_class.new(object: nil, context: query_context, field: nil)
@@ -40,8 +39,8 @@ RSpec.describe Mutations::Security::Attributes::BulkUpdate,
         stub_feature_flags(security_categories_and_attributes: true)
       end
 
-      it 'raises access denied error from authorization' do
-        expect { mutation.resolve(items: prepared_items, attributes: attributes, mode: mode) }
+      it 'raises access denied error' do
+        expect { mutation.resolve(items: prepared_items, attributes: attributes, mode: 'ADD') }
           .to raise_error(Gitlab::Graphql::Errors::ResourceNotAvailable)
       end
     end
@@ -57,7 +56,7 @@ RSpec.describe Mutations::Security::Attributes::BulkUpdate,
           allow(service).to receive(:execute).and_raise(Gitlab::Access::AccessDeniedError)
         end
 
-        expect { mutation.resolve(items: prepared_items, attributes: attributes, mode: mode) }
+        expect { mutation.resolve(items: prepared_items, attributes: attributes, mode: 'ADD') }
           .to raise_error(Gitlab::Graphql::Errors::ResourceNotAvailable)
       end
     end
@@ -75,13 +74,13 @@ RSpec.describe Mutations::Security::Attributes::BulkUpdate,
               group_ids: [],
               project_ids: [project1.id, project2.id],
               attribute_ids: [attribute1.id, attribute2.id],
-              mode: mode,
+              mode: 'ADD',
               current_user: current_user
             )
             .and_return(instance_double(Security::Attributes::BulkUpdateService,
               execute: ServiceResponse.success))
 
-          result = mutation.resolve(items: prepared_items, attributes: attributes, mode: mode)
+          result = mutation.resolve(items: prepared_items, attributes: attributes, mode: 'ADD')
 
           expect(result[:errors]).to be_empty
         end
@@ -91,7 +90,7 @@ RSpec.describe Mutations::Security::Attributes::BulkUpdate,
             allow(service).to receive(:execute).and_return(ServiceResponse.success)
           end
 
-          result = mutation.resolve(items: prepared_items, attributes: attributes, mode: mode)
+          result = mutation.resolve(items: prepared_items, attributes: attributes, mode: 'ADD')
 
           expect(result[:errors]).to be_empty
         end
@@ -103,7 +102,7 @@ RSpec.describe Mutations::Security::Attributes::BulkUpdate,
               .and_return(ServiceResponse.error(message: error_message))
           end
 
-          result = mutation.resolve(items: prepared_items, attributes: attributes, mode: mode)
+          result = mutation.resolve(items: prepared_items, attributes: attributes, mode: 'ADD')
 
           expect(result[:errors]).to include(error_message)
         end
@@ -136,13 +135,13 @@ RSpec.describe Mutations::Security::Attributes::BulkUpdate,
               group_ids: [namespace.id],
               project_ids: [],
               attribute_ids: [attribute1.id, attribute2.id],
-              mode: mode,
+              mode: 'ADD',
               current_user: current_user
             )
             .and_return(instance_double(Security::Attributes::BulkUpdateService,
               execute: ServiceResponse.success))
 
-          result = mutation.resolve(items: prepared_items, attributes: attributes, mode: mode)
+          result = mutation.resolve(items: prepared_items, attributes: attributes, mode: 'ADD')
 
           expect(result[:errors]).to be_empty
         end
@@ -158,29 +157,46 @@ RSpec.describe Mutations::Security::Attributes::BulkUpdate,
               group_ids: [namespace.id],
               project_ids: [project1.id],
               attribute_ids: [attribute1.id, attribute2.id],
-              mode: mode,
+              mode: 'ADD',
               current_user: current_user
             )
             .and_return(instance_double(Security::Attributes::BulkUpdateService,
               execute: ServiceResponse.success))
 
-          result = mutation.resolve(items: prepared_items, attributes: attributes, mode: mode)
+          result = mutation.resolve(items: prepared_items, attributes: attributes, mode: 'ADD')
 
           expect(result[:errors]).to be_empty
+        end
+      end
+
+      context 'with REPLACE mode' do
+        it 'passes correct mode to service' do
+          expect(Security::Attributes::BulkUpdateService).to receive(:new)
+            .with(
+              group_ids: [],
+              project_ids: [project1.id, project2.id],
+              attribute_ids: [attribute1.id, attribute2.id],
+              mode: 'REPLACE',
+              current_user: current_user
+            )
+            .and_return(instance_double(Security::Attributes::BulkUpdateService,
+              execute: ServiceResponse.success))
+
+          mutation.resolve(items: prepared_items, attributes: attributes, mode: 'REPLACE')
         end
       end
 
       context 'when validating arguments' do
         context 'when items is empty' do
           it 'raises validation error' do
-            expect { mutation.resolve(items: [], attributes: attributes, mode: mode) }
+            expect { mutation.resolve(items: [], attributes: attributes, mode: 'ADD') }
               .to raise_error(Gitlab::Graphql::Errors::ArgumentError, 'Items cannot be empty')
           end
         end
 
         context 'when attributes is empty' do
           it 'raises validation error' do
-            expect { mutation.resolve(items: prepared_items, attributes: [], mode: mode) }
+            expect { mutation.resolve(items: prepared_items, attributes: [], mode: 'ADD') }
               .to raise_error(Gitlab::Graphql::Errors::ArgumentError, 'Attributes cannot be empty')
           end
         end
@@ -200,7 +216,7 @@ RSpec.describe Mutations::Security::Attributes::BulkUpdate,
           let(:too_many_attributes) { Array.new(described_class::MAX_ATTRIBUTES + 1) { attribute1.to_global_id.to_s } }
 
           it 'raises validation error' do
-            expect { mutation.resolve(items: prepared_items, attributes: too_many_attributes, mode: mode) }
+            expect { mutation.resolve(items: prepared_items, attributes: too_many_attributes, mode: 'ADD') }
               .to raise_error(Gitlab::Graphql::Errors::ArgumentError, 'Too many attributes (maximum: 20)')
           end
         end
