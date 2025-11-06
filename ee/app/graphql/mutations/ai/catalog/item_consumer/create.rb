@@ -41,13 +41,15 @@ module Mutations
             group = group_id ? authorized_find!(id: group_id) : nil
             project_id = target[:project_id]
             project = project_id ? authorized_find!(id: project_id) : nil
+            parent_item_consumer_id = args[:parent_item_consumer_id]
+            parent_item_consumer = parent_item_consumer_id ? authorized_find!(id: parent_item_consumer_id) : nil
 
             raise_resource_not_available_error! unless allowed?(item)
 
             result = ::Ai::Catalog::ItemConsumers::CreateService.new(
               container: group || project,
               current_user: current_user,
-              params: service_args(item, args)
+              params: service_args(item, parent_item_consumer, args)
             ).execute
 
             { item_consumer: result.payload&.dig(:item_consumer), errors: result.errors }
@@ -59,9 +61,10 @@ module Mutations
             Ability.allowed?(current_user, :read_ai_catalog_item, item)
           end
 
-          def service_args(item, args)
+          def service_args(item, parent_item_consumer, args)
             args[:item] = item
-            args.except(:parent_item_consumer_id, :trigger_types)
+            args[:parent_item_consumer] = parent_item_consumer
+            args
           end
         end
       end

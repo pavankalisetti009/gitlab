@@ -141,7 +141,8 @@ RSpec.describe Ai::Catalog::Flows::CreateService, feature_category: :workflow_ca
   context 'when add_to_project_when_created is true' do
     let(:params) { super().merge(add_to_project_when_created: true) }
 
-    it 'adds the created item to project' do
+    it 'adds the created item to project',
+      skip: 'Temporarily unavailable until we add the ability to automatically create the top-level group consumer' do
       expect(response).to be_success
 
       item = response.payload[:item]

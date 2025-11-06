@@ -22,13 +22,14 @@ module Ai
     validates :event_types, presence: true
 
     validates :description, length: { maximum: 255 }, presence: true
-    validates :config_path, length: { maximum: 255 }, presence: true, unless: :ai_catalog_item_consumer_id?
+    validates :config_path, length: { maximum: 255 }, presence: true, unless: -> { ai_catalog_item_consumer.present? }
+
     validates :ai_catalog_item_consumer, presence: true, unless: :config_path?
 
     validate :event_types_are_valid
     validate :user_is_service_account, if: :user
     validate :exactly_one_config_source
-    validate :catalog_item_valid, if: :ai_catalog_item_consumer_id?
+    validate :catalog_item_valid, if: -> { ai_catalog_item_consumer.present? }
 
     scope :with_ids, ->(ids) { where(id: ids) }
 
@@ -50,7 +51,7 @@ module Ai
     end
 
     def exactly_one_config_source
-      return if [config_path.presence, ai_catalog_item_consumer_id].compact.one?
+      return if [config_path.presence, ai_catalog_item_consumer].compact.one?
 
       errors.add(:base, 'must have only one config_path or ai_catalog_item_consumer')
     end

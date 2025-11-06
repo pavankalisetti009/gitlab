@@ -13,6 +13,10 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Create, feature_category: :
   let_it_be(:item_project) { create(:project, developers: user) }
   let_it_be(:item) { create(:ai_catalog_flow, public: true, project: item_project) }
 
+  let_it_be(:consumer_group_item_consumer) do
+    create(:ai_catalog_item_consumer, group: consumer_group, item: item)
+  end
+
   let(:current_user) { user }
   let(:mutation) { graphql_mutation(:ai_catalog_item_consumer_create, params) }
   let(:target) { { project_id: consumer_project.to_global_id } }
@@ -20,7 +24,8 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Create, feature_category: :
     {
       target: target,
       item_id: item.to_global_id,
-      pinned_version_prefix: '1.1'
+      pinned_version_prefix: '1.1',
+      parent_item_consumer_id: consumer_group_item_consumer.to_global_id
     }
   end
 
@@ -77,6 +82,8 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Create, feature_category: :
   context 'when the item is an agent' do
     let(:item) { create(:ai_catalog_agent, public: true, project: item_project) }
 
+    let(:params) { super().except(:parent_item_consumer_id) }
+
     it 'creates a catalog item consumer with expected data' do
       execute
 
@@ -107,10 +114,12 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Create, feature_category: :
   end
 
   context 'with a group_id' do
+    let_it_be(:group) { create(:group, owners: user) }
+
     let(:params) do
       {
         item_id: item.to_global_id,
-        target: { group_id: consumer_group.to_global_id },
+        target: { group_id: group.to_global_id },
         pinned_version_prefix: '1.0'
       }
     end
@@ -120,7 +129,7 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Create, feature_category: :
 
       expect(graphql_data_at(:ai_catalog_item_consumer_create, :item_consumer)).to match a_hash_including(
         'item' => a_hash_including('id' => item.to_global_id.to_s),
-        'group' => a_hash_including('id' => consumer_group.to_global_id.to_s),
+        'group' => a_hash_including('id' => group.to_global_id.to_s),
         'pinnedVersionPrefix' => '1.0'
       )
     end

@@ -10,6 +10,10 @@ RSpec.describe Ai::Catalog::ItemConsumer, feature_category: :workflow_catalog do
     it { is_expected.to belong_to(:group).optional }
     it { is_expected.to belong_to(:project).optional }
     it { is_expected.to belong_to(:service_account).optional }
+
+    it { is_expected.to have_one(:flow_trigger).optional }
+
+    it { is_expected.to accept_nested_attributes_for(:flow_trigger) }
   end
 
   describe 'validations' do
