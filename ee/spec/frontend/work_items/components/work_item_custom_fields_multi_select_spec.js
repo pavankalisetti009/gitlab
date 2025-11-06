@@ -89,6 +89,7 @@ describe('WorkItemCustomFieldsMultiSelect', () => {
     queryHandler = querySuccessHandler,
     mutationHandler = mutationSuccessHandler,
     issuesListPath = '/flightjs/Flight/-/issues',
+    epicsListPath = '/groups/flightjs/-/epics',
   } = {}) => {
     wrapper = shallowMount(WorkItemCustomFieldsMultiSelect, {
       apolloProvider: createMockApollo([
@@ -97,6 +98,7 @@ describe('WorkItemCustomFieldsMultiSelect', () => {
       ]),
       provide: {
         issuesListPath,
+        epicsListPath,
       },
       propsData: {
         canUpdate,
@@ -194,7 +196,7 @@ describe('WorkItemCustomFieldsMultiSelect', () => {
       expect(findSelectValues().at(1).attributes('title')).toBe('Option 2');
     });
 
-    it('generates correct search path for project/issues list for each option link when on the project path', () => {
+    it('generates correct search path for project/issues list for each option link when it is an issue', () => {
       createComponent();
 
       expect(findSelectValues().at(0).attributes('href')).toBe(
@@ -205,19 +207,8 @@ describe('WorkItemCustomFieldsMultiSelect', () => {
       );
     });
 
-    it('generates correct search path for group/issues list for each option link when it is an issue on the group path', () => {
-      createComponent({ issuesListPath: '/groups/flightjs/-/issues' });
-
-      expect(findSelectValues().at(0).attributes('href')).toBe(
-        '/groups/flightjs/-/issues/?custom-field[1]=1',
-      );
-      expect(findSelectValues().at(1).attributes('href')).toBe(
-        '/groups/flightjs/-/issues/?custom-field[1]=2',
-      );
-    });
-
     it('generates correct search path for group/epics list for each option link when it is an epic', () => {
-      createComponent({ issuesListPath: '/groups/flightjs/-/epics' });
+      createComponent({ workItemType: 'Epic' });
 
       expect(findSelectValues().at(0).attributes('href')).toBe(
         '/groups/flightjs/-/epics/?custom-field[1]=1',
