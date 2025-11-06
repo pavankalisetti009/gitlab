@@ -18,4 +18,13 @@ fragment ComplianceViolationNote on Note {
   discussion {
     id
   }
+  awardEmoji {
+    nodes {
+      name
+      user {
+        id
+        name
+      }
+    }
+  }
 }

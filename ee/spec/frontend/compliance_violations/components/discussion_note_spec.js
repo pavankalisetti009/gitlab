@@ -14,6 +14,16 @@ import EditedAt from '~/issues/show/components/edited.vue';
 import DiscussionNote from 'ee/compliance_violations/components/discussion_note.vue';
 import EditCommentForm from 'ee/compliance_violations/components/edit_comment_form.vue';
 import destroyComplianceViolationNoteMutation from 'ee/compliance_violations/graphql/mutations/destroy_compliance_violation_note.mutation.graphql';
+import toggleComplianceViolationNoteAwardEmojiMutation from 'ee/compliance_violations/graphql/mutations/toggle_compliance_violation_note_award_emoji.mutation.graphql';
+import {
+  mockNote,
+  mockNoteWithAwards,
+  mockNoteWithEdit,
+  mockDeleteNoteSuccess,
+  mockDeleteNoteError,
+  mockToggleAwardEmojiSuccess,
+  mockToggleAwardEmojiError,
+} from './mock_data';
 
 Vue.use(VueApollo);
 
@@ -25,51 +35,6 @@ jest.mock('~/vue_shared/plugins/global_toast');
 
 describe('DiscussionNote', () => {
   let wrapper;
-
-  const mockNote = {
-    id: 'gid://gitlab/Note/123',
-    author: {
-      id: 'gid://gitlab/User/456',
-      name: 'John Doe',
-      username: 'johndoe',
-      avatarUrl: 'https://example.com/avatar.jpg',
-      webUrl: 'https://example.com/johndoe',
-    },
-    body: 'This is a discussion note',
-    bodyHtml: '<p>This is a discussion note</p>',
-    createdAt: '2023-01-01T00:00:00Z',
-    lastEditedAt: null,
-    lastEditedBy: null,
-  };
-
-  const mockNoteWithEdit = {
-    ...mockNote,
-    lastEditedAt: '2023-01-02T00:00:00Z',
-    lastEditedBy: {
-      name: 'Jane Editor',
-      webPath: '/jane-editor',
-    },
-  };
-
-  const mockDeleteNoteSuccess = {
-    data: {
-      destroyNote: {
-        errors: [],
-        note: {
-          id: mockNote.id,
-        },
-      },
-    },
-  };
-
-  const mockDeleteNoteError = {
-    data: {
-      destroyNote: {
-        errors: ['Something went wrong'],
-        note: null,
-      },
-    },
-  };
 
   const createDropdownStub = () => {
     const mockClose = jest.fn();
@@ -91,11 +56,13 @@ describe('DiscussionNote', () => {
   const createComponent = ({
     props = {},
     deleteNoteMutationHandler = jest.fn().mockResolvedValue(mockDeleteNoteSuccess),
+    toggleAwardEmojiMutationHandler = jest.fn().mockResolvedValue(mockToggleAwardEmojiSuccess),
     stubs = {},
     provide = {},
   } = {}) => {
     const apolloProvider = createMockApollo([
       [destroyComplianceViolationNoteMutation, deleteNoteMutationHandler],
+      [toggleComplianceViolationNoteAwardEmojiMutation, toggleAwardEmojiMutationHandler],
     ]);
 
     wrapper = shallowMountExtended(DiscussionNote, {
@@ -126,6 +93,8 @@ describe('DiscussionNote', () => {
   const findEditButton = () => wrapper.findByTestId('edit-note-button');
   const findEditedAt = () => wrapper.findComponent(EditedAt);
   const findEditCommentForm = () => wrapper.findComponent(EditCommentForm);
+  const findEmojiPicker = () => wrapper.findByTestId('note-emoji-button');
+  const findAwardsList = () => wrapper.findByTestId('note-awards-list');
 
   beforeEach(() => {
     getLocationHash.mockReturnValue('');
@@ -457,6 +426,150 @@ describe('DiscussionNote', () => {
     });
   });
 
+  describe('emoji functionality', () => {
+    beforeEach(() => {
+      window.gon = { current_user_id: 456 };
+    });
+
+    afterEach(() => {
+      delete window.gon;
+    });
+
+    describe('emoji picker', () => {
+      it('does not render emoji picker when in edit mode', async () => {
+        createComponent();
+
+        expect(findEmojiPicker().exists()).toBe(true);
+
+        await findEditButton().vm.$emit('click');
+        await nextTick();
+
+        expect(findEmojiPicker().exists()).toBe(false);
+      });
+
+      it('calls setAwardEmoji when emoji is selected', async () => {
+        const toggleAwardEmojiMutationHandler = jest
+          .fn()
+          .mockResolvedValue(mockToggleAwardEmojiSuccess);
+        createComponent({ toggleAwardEmojiMutationHandler });
+
+        const emojiPicker = findEmojiPicker();
+        await emojiPicker.vm.$emit('click', 'thumbsup');
+        await waitForPromises();
+
+        expect(toggleAwardEmojiMutationHandler).toHaveBeenCalledWith({
+          awardableId: mockNote.id,
+          name: 'thumbsup',
+        });
+      });
+    });
+
+    describe('awards list', () => {
+      it('does not render awards list when note has no awards', () => {
+        createComponent();
+
+        const awardsList = findAwardsList();
+        expect(awardsList.exists()).toBe(false);
+      });
+
+      it('renders awards list when note has awards', () => {
+        createComponent({
+          props: {
+            note: mockNoteWithAwards,
+          },
+        });
+
+        const awardsList = findAwardsList();
+        expect(awardsList.exists()).toBe(true);
+      });
+
+      it('does not render awards list when in edit mode', async () => {
+        createComponent({
+          props: {
+            note: mockNoteWithAwards,
+          },
+        });
+
+        expect(findAwardsList().exists()).toBe(true);
+
+        await findEditButton().vm.$emit('click');
+        await nextTick();
+
+        expect(findAwardsList().exists()).toBe(false);
+      });
+
+      it('calls setAwardEmoji when award is clicked', async () => {
+        const toggleAwardEmojiMutationHandler = jest
+          .fn()
+          .mockResolvedValue(mockToggleAwardEmojiSuccess);
+        createComponent({
+          props: {
+            note: mockNoteWithAwards,
+          },
+          toggleAwardEmojiMutationHandler,
+        });
+
+        const awardsList = findAwardsList();
+        await awardsList.vm.$emit('award', 'heart');
+        await waitForPromises();
+
+        expect(toggleAwardEmojiMutationHandler).toHaveBeenCalledWith({
+          awardableId: mockNote.id,
+          name: 'heart',
+        });
+      });
+    });
+
+    describe('setAwardEmoji method', () => {
+      it('handles successful emoji toggle', async () => {
+        const toggleAwardEmojiMutationHandler = jest
+          .fn()
+          .mockResolvedValue(mockToggleAwardEmojiSuccess);
+        createComponent({ toggleAwardEmojiMutationHandler });
+
+        const emojiPicker = findEmojiPicker();
+        await emojiPicker.vm.$emit('click', 'thumbsup');
+        await waitForPromises();
+
+        expect(toggleAwardEmojiMutationHandler).toHaveBeenCalledWith({
+          awardableId: mockNote.id,
+          name: 'thumbsup',
+        });
+        expect(toast).not.toHaveBeenCalled();
+      });
+
+      it('handles emoji toggle errors from mutation', async () => {
+        const toggleAwardEmojiMutationHandler = jest
+          .fn()
+          .mockResolvedValue(mockToggleAwardEmojiError);
+        createComponent({ toggleAwardEmojiMutationHandler });
+
+        const emojiPicker = findEmojiPicker();
+        await emojiPicker.vm.$emit('click', 'thumbsup');
+        await waitForPromises();
+
+        expect(toggleAwardEmojiMutationHandler).toHaveBeenCalledWith({
+          awardableId: mockNote.id,
+          name: 'thumbsup',
+        });
+        expect(toast).toHaveBeenCalledWith('Failed to toggle emoji reaction.');
+      });
+
+      it('handles network errors', async () => {
+        const toggleAwardEmojiMutationHandler = jest
+          .fn()
+          .mockRejectedValue(new Error('Network error'));
+        createComponent({ toggleAwardEmojiMutationHandler });
+
+        const emojiPicker = findEmojiPicker();
+        await emojiPicker.vm.$emit('click', 'thumbsup');
+        await waitForPromises();
+
+        expect(toast).toHaveBeenCalledWith('Failed to toggle emoji reaction.');
+      });
+    });
+  });
+
   describe('feature flag: complianceViolationCommentsUi', () => {
     describe('when feature flag is enabled', () => {
       beforeEach(() => {
@@ -476,6 +589,12 @@ describe('DiscussionNote', () => {
         expect(editButton.attributes('title')).toBe('Edit comment');
         expect(editButton.attributes('aria-label')).toBe('Edit comment');
       });
+
+      it('renders emoji picker', () => {
+        const emojiPicker = findEmojiPicker();
+
+        expect(emojiPicker.exists()).toBe(true);
+      });
     });
 
     describe('when feature flag is disabled', () => {
@@ -493,6 +612,12 @@ describe('DiscussionNote', () => {
         const editButton = findEditButton();
 
         expect(editButton.exists()).toBe(false);
+      });
+
+      it('does not render emoji picker', () => {
+        const emojiPicker = findEmojiPicker();
+
+        expect(emojiPicker.exists()).toBe(false);
       });
 
       it('still renders other note actions', () => {

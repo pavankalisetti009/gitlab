@@ -45,6 +45,13 @@ exports[`DiscussionNote rendering renders with correct timeline structure 1`] = 
         <div
           class="gl-flex gl-gap-2 gl-ml-auto note-actions"
         >
+          <emoji-picker-stub
+            customemojipath=""
+            data-testid="note-emoji-button"
+            dropdownclass=""
+            right="true"
+            toggleclass="add-reaction-button btn-default-tertiary"
+          />
           <gl-button-stub
             aria-label="Edit comment"
             buttontextclasses=""

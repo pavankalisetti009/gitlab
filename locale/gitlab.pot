@@ -18086,6 +18086,9 @@ msgstr ""
 msgid "ComplianceViolation|Dismissed"
 msgstr ""
 
+msgid "ComplianceViolation|Failed to toggle emoji reaction."
+msgstr ""
+
 msgid "ComplianceViolation|Fix suggestion generated for this failed control"
 msgstr ""
 
