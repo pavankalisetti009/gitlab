@@ -120,9 +120,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
     graphql_query_for(
       :subscription_usage,
       {
-        namespace_path: namespace_path,
-        start_date: Date.current.beginning_of_month,
-        end_date: Date.current.end_of_month
+        namespace_path: namespace_path
       },
       query_fields
     )

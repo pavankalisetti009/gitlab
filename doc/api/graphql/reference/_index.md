@@ -1852,9 +1852,7 @@ Returns [`GitlabSubscriptionUsage`](#gitlabsubscriptionusage).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="querysubscriptionusageenddate"></a>`endDate` | [`ISO8601Date`](#iso8601date) | Filter usage ending on or before the date. |
 | <a id="querysubscriptionusagenamespacepath"></a>`namespacePath` | [`ID`](#id) | Path of the top-level namespace. Leave it blank if querying the instance subscription. |
-| <a id="querysubscriptionusagestartdate"></a>`startDate` | [`ISO8601Date`](#iso8601date) | Filter usage starting on or after the date. |
 
 ### `Query.syntheticNote`
 
