@@ -431,16 +431,6 @@ RSpec.describe Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService, feature_c
           end
         end
 
-        context 'when ai_model_switching is disabled' do
-          before do
-            stub_feature_flags(ai_model_switching: false)
-            stub_feature_flags(duo_agent_platform_model_selection: false)
-            stub_feature_flags(self_hosted_agent_platform: false)
-          end
-
-          it_behaves_like 'returns empty headers'
-        end
-
         context 'without root_namespace provided' do
           let(:root_namespace) { nil }
 
@@ -451,9 +441,6 @@ RSpec.describe Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService, feature_c
       context 'when duo_agent_platform_model_selection feature flag is disabled' do
         before do
           stub_feature_flags(duo_agent_platform_model_selection: false)
-          stub_feature_flags(ai_model_switching: false)
-          stub_feature_flags(instance_level_model_selection: false)
-          stub_feature_flags(self_hosted_agent_platform: false)
         end
 
         it_behaves_like 'returns empty headers'

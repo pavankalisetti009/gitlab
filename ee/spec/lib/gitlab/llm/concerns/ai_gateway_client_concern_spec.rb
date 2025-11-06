@@ -153,7 +153,7 @@ RSpec.describe Gitlab::Llm::Concerns::AiGatewayClientConcern, feature_category: 
       end
     end
 
-    context 'with namespace feature setting' do
+    context 'when instance is SAAS and namespace feature setting', :saas do
       let!(:ai_feature_setting) do
         create(:ai_feature_setting, feature: 'duo_chat', provider: :self_hosted)
       end
@@ -236,6 +236,12 @@ RSpec.describe Gitlab::Llm::Concerns::AiGatewayClientConcern, feature_category: 
   end
 
   describe '#namespace_feature_setting' do
+    let(:is_saas) { true }
+
+    before do
+      allow(::Gitlab::Saas).to receive(:feature_available?).with(:gitlab_com_subscriptions).and_return(is_saas)
+    end
+
     subject(:instance) { dummy_class.new(user, tracking_context, group) }
 
     context 'when namespace feature setting exists' do
@@ -288,10 +294,8 @@ RSpec.describe Gitlab::Llm::Concerns::AiGatewayClientConcern, feature_category: 
       end
     end
 
-    context 'when feature flag is disabled' do
-      before do
-        stub_feature_flags(ai_model_switching: false)
-      end
+    context 'when the instance is not saas' do
+      let(:is_saas) { false }
 
       let!(:namespace_feature_setting) do
         build(:ai_namespace_feature_setting,
@@ -312,7 +316,7 @@ RSpec.describe Gitlab::Llm::Concerns::AiGatewayClientConcern, feature_category: 
       create(:ai_feature_setting, feature: 'duo_chat', provider: :self_hosted)
     end
 
-    context 'when namespace feature setting exists' do
+    context 'when instance is SAAS and a namespace feature setting exists', :saas do
       let!(:namespace_feature_setting) do
         create(:ai_namespace_feature_setting,
           namespace: group,
@@ -378,7 +382,7 @@ RSpec.describe Gitlab::Llm::Concerns::AiGatewayClientConcern, feature_category: 
       end
     end
 
-    context 'with namespace feature setting' do
+    context 'when instance is SAAS with namespace feature setting', :saas do
       let!(:namespace_feature_setting) do
         create(:ai_namespace_feature_setting,
           namespace: group,
@@ -518,7 +522,7 @@ RSpec.describe Gitlab::Llm::Concerns::AiGatewayClientConcern, feature_category: 
     end
   end
 
-  describe 'strong memoization' do
+  describe 'when instance is SAAS with strong memoization', :saas do
     subject(:instance) { dummy_class.new(user, tracking_context, group) }
 
     let!(:namespace_feature_setting) do

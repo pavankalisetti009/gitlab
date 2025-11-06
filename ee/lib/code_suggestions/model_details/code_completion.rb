@@ -59,12 +59,7 @@ module CodeSuggestions
             current_user.duo_available_namespace_ids
           )
 
-        namespace_feature_settings_with_model_selected_for_completion.any? do |namespace_feature_setting|
-          Feature.enabled?(
-            :ai_model_switching,
-            Group.actor_from_id(namespace_feature_setting.namespace_id)
-          )
-        end
+        namespace_feature_settings_with_model_selected_for_completion.exists?
       end
 
       private

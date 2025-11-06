@@ -363,7 +363,7 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
       end
     end
 
-    context 'when root_namespace is passed' do
+    context 'when instance is SAAS and a root_namespace is passed', :saas do
       let_it_be(:root_namespace) { create(:group) }
       let(:tracking_context) { { action: 'chat', request_id: 'uuid' } }
       let(:user_prompt) { "Some prompt" }
@@ -446,7 +446,7 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
         it_behaves_like 'sends a request with identifier and feature_setting'
       end
 
-      context 'when using agent prompt with model switching' do
+      context 'when using agent prompt with namespace model switching', :saas do
         let(:unit_primitive) { :explain_code }
         let(:model_ref) { 'claude-3-7-sonnet-20250219' }
         let(:prompt) do
@@ -459,7 +459,6 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
         end
 
         before do
-          stub_feature_flags(ai_model_switching: true)
           create(:ai_namespace_feature_setting, namespace: root_namespace,
             feature: :"duo_chat_#{unit_primitive}", offered_model_ref: model_ref)
         end
@@ -478,36 +477,6 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
                   identifier: model_ref
                 },
                 prompt_version: a_kind_of(String)
-              )
-            )
-          ).and_return(response)
-
-          gateway = described_class.new(user, root_namespace: root_namespace, tracking_context: tracking_context)
-          expect(gateway.request(prompt, unit_primitive: unit_primitive)).to eq(response)
-        end
-      end
-
-      context 'when model switching is disabled' do
-        let(:unit_primitive) { nil }
-        let(:prompt) { { prompt: user_prompt, options: {} } }
-
-        before do
-          stub_feature_flags(ai_model_switching: false)
-        end
-
-        it 'uses default classic model' do
-          url = "#{::Gitlab::AiGateway.url}#{described_class::ENDPOINT}"
-
-          expect(ai_client).to receive(:stream).with(
-            hash_including(
-              url: url,
-              body: hash_including(
-                prompt_components: array_including(
-                  hash_including(payload: hash_including(
-                    provider: :anthropic,
-                    model: described_class::CLAUDE_3_5_SONNET
-                  ))
-                )
               )
             )
           ).and_return(response)

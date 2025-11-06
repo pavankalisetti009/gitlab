@@ -40,17 +40,15 @@ RSpec.describe CodeSuggestions::ModelDetails::Base, feature_category: :code_sugg
     context 'when the root_namespace is nil and there is no self-hosted feature setting' do
       it_behaves_like 'feature_setting cannot be inferred for method', :feature_setting, nil
 
-      context 'when the ai_model_switching feature flag is enabled' do
-        context 'when the user has a default duo namespace' do
-          include_context 'with a default duo namespace assigned' do
-            it 'raises an DuoNamespaceUnassigned exception' do
-              feature_setting = model_details.feature_setting
+      context 'when the user has a default duo namespace', :saas do
+        include_context 'with a default duo namespace assigned' do
+          it 'raises an DuoNamespaceUnassigned exception' do
+            feature_setting = model_details.feature_setting
 
-              expect(feature_setting.new_record?).to be_truthy
-              expect(feature_setting.namespace).to eq(default_namespace)
-              expect(feature_setting.feature).to eq(feature_setting_name)
-              expect(feature_setting.offered_model_ref).to be_nil
-            end
+            expect(feature_setting.new_record?).to be_truthy
+            expect(feature_setting.namespace).to eq(default_namespace)
+            expect(feature_setting.feature).to eq(feature_setting_name)
+            expect(feature_setting.offered_model_ref).to be_nil
           end
         end
       end
@@ -78,7 +76,7 @@ RSpec.describe CodeSuggestions::ModelDetails::Base, feature_category: :code_sugg
       end
     end
 
-    context 'when the feature is governed via model selection namespace feature setting' do
+    context 'when the feature is governed via model selection namespace feature setting', :saas do
       let(:root_namespace) { create(:group) }
 
       let!(:namespace_feature_setting) do
@@ -107,7 +105,7 @@ RSpec.describe CodeSuggestions::ModelDetails::Base, feature_category: :code_sugg
       end
     end
 
-    context 'when the feature is governed via model selection namespace feature setting' do
+    context 'when the feature is governed via model selection namespace feature setting', :saas do
       let!(:root_namespace) { create(:group) }
       let!(:namespace_feature_setting) do
         create(:ai_namespace_feature_setting,
@@ -183,7 +181,7 @@ RSpec.describe CodeSuggestions::ModelDetails::Base, feature_category: :code_sugg
       end
     end
 
-    context 'for model selection namespace feature setting' do
+    context 'for model selection namespace feature setting', :saas do
       let(:root_namespace) { create(:group) }
 
       before do
@@ -284,7 +282,7 @@ RSpec.describe CodeSuggestions::ModelDetails::Base, feature_category: :code_sugg
       end
     end
 
-    context 'for namespace feature setting' do
+    context 'for namespace feature setting', :saas do
       let(:root_namespace) { create(:group) }
 
       before do
@@ -314,7 +312,7 @@ RSpec.describe CodeSuggestions::ModelDetails::Base, feature_category: :code_sugg
       end
     end
 
-    context 'when the feature is governed via model selection namespace feature setting' do
+    context 'when the feature is governed via model selection namespace feature setting', :saas do
       let(:root_namespace) { create(:group) }
 
       before do

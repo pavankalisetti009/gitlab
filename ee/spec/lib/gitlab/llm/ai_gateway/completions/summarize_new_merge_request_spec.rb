@@ -13,13 +13,13 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::SummarizeNewMergeRequest, fe
   let(:example_answer) { "AI generated merge request summary" }
   let(:example_response) { instance_double(HTTParty::Response, body: example_answer.to_json, success?: true) }
 
+  let(:model_metadata) do
+    { feature_setting: "summarize_new_merge_request", identifier: nil, provider: "gitlab" }
+  end
+
   subject(:summarize_new_merge_request) { described_class.new(prompt_message, prompt_class, options).execute }
 
   describe '#execute' do
-    before do
-      stub_feature_flags(ai_model_switching: false)
-    end
-
     shared_examples 'makes AI request and publishes response' do
       it 'makes AI request and publishes response' do
         extracted_diff = Gitlab::Llm::Utils::MergeRequestTool.extract_diff(
@@ -127,7 +127,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::SummarizeNewMergeRequest, fe
     end
   end
 
-  describe 'namespace feature setting integration' do
+  describe 'SAAS only namespace feature setting integration', :saas do
     let_it_be(:group) { create(:group) }
     let_it_be(:project) { create(:project, :repository, namespace: group) }
 

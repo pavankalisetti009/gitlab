@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ::Ai::ModelSelection::UpdateService, feature_category: :"self-hosted_models" do
+RSpec.describe ::Ai::ModelSelection::UpdateService, :saas, feature_category: :"self-hosted_models" do
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group) }
   let(:offered_model_ref) { 'openai_chatgpt_4o' }
@@ -56,19 +56,6 @@ RSpec.describe ::Ai::ModelSelection::UpdateService, feature_category: :"self-hos
   subject(:service) { described_class.new(feature_setting, user, params) }
 
   describe '#execute' do
-    context 'when the feature flag is disabled' do
-      before do
-        stub_feature_flags(ai_model_switching: false)
-      end
-
-      it 'returns an error message' do
-        response = service.execute
-        expect(response).to be_error
-        expect(response.message)
-          .to eq('Contact your admin to enable the feature flag for AI Model Switching')
-      end
-    end
-
     context 'when fetch model definitions is successful' do
       before do
         stub_request(:get, fetch_service_endpoint_url)

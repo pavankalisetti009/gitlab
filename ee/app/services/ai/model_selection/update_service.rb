@@ -9,19 +9,18 @@ module Ai
         @feature_setting = feature_setting
         @user = user
         @params = params
-        @selection_scope = feature_setting.model_selection_scope
+        @namespace = feature_setting.namespace
+        # This class is misnamed. It only works for SAAS, namespace model selection
+        # TODO: Rename class Ai::ModelSelection::Namespace::UpdateService https://gitlab.com/gitlab-org/gitlab/-/merge_requests/210463#note_2852763821
       end
 
       def execute
-        unless Feature.enabled?(:ai_model_switching, selection_scope)
-          return ServiceResponse.error(payload: nil,
-            message: 'Contact your admin to enable the feature flag for AI Model Switching')
-        end
+        return unless ::Gitlab::Saas.feature_available?(:gitlab_duo_saas_only)
 
         update_params = { offered_model_ref: params[:offered_model_ref] }
 
         fetch_model_definition = Ai::ModelSelection::FetchModelDefinitionsService
-                                   .new(user, model_selection_scope: selection_scope)
+                                   .new(user, model_selection_scope: namespace)
                                    .execute
 
         return ServiceResponse.error(message: fetch_model_definition.message) if fetch_model_definition.error?
@@ -41,19 +40,19 @@ module Ai
 
       private
 
-      attr_accessor :feature_setting, :user, :selection_scope, :params
+      attr_accessor :feature_setting, :user, :namespace, :params
 
       def record_audit_event
         model = params[:offered_model_ref]
         feature = feature_setting.feature
-        scope_type = selection_scope.class.name
-        scope_id = selection_scope.id
+        scope_type = namespace.class.name
+        scope_id = namespace.id
 
         audit_context = {
           name: 'model_selection_feature_changed',
           author: user,
-          scope: selection_scope,
-          target: selection_scope,
+          scope: namespace,
+          target: namespace,
           message: "The LLM #{model} has been selected for the feature #{feature} of #{scope_type} with ID #{scope_id}",
           additional_details: {
             model_ref: model,
@@ -65,7 +64,7 @@ module Ai
       end
 
       def track_update_event
-        selection_scope_gid = selection_scope.to_global_id.to_s
+        selection_scope_gid = namespace.to_global_id.to_s
 
         track_internal_event(
           'update_model_selection_feature',
