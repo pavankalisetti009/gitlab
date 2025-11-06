@@ -5,16 +5,26 @@ require 'spec_helper'
 RSpec.describe Gitlab::Usage::Metrics::Instrumentations::CountGroupsDuoAvailabilityMetric, feature_category: :service_ping do
   it 'raises an error with invalid duo_settings_value' do
     expect do
-      described_class.new(options: { duo_settings_value: 'invalid' })
+      described_class.new(options: { duo_settings_value: 'invalid' }, time_frame: 'none')
     end.to raise_error(ArgumentError, /Unknown parameters: duo_settings_value:invalid/)
   end
 
   context "when metric type is default_on" do
     context 'when there are no default_on groups' do
-      it_behaves_like 'a correct instrumented metric value',
-        { options: { duo_settings_value: 'default_on' } } do
-          let(:expected_value) { 0 }
+      it_behaves_like 'a correct instrumented metric value and query',
+        options: { duo_settings_value: 'default_on' }, time_frame: 'none' do
+        let(:expected_value) { 0 }
+        let(:expected_query) do
+          <<~SQL.squish
+          SELECT COUNT("namespaces"."id")
+          FROM "namespaces"
+          INNER JOIN "namespace_settings" ON "namespace_settings"."namespace_id" = "namespaces"."id"
+          WHERE "namespaces"."type" = 'Group'
+          AND "namespace_settings"."duo_features_enabled" = TRUE
+          AND "namespace_settings"."lock_duo_features_enabled" = FALSE
+          SQL
         end
+      end
     end
 
     context 'when there are default_on group' do
@@ -23,7 +33,7 @@ RSpec.describe Gitlab::Usage::Metrics::Instrumentations::CountGroupsDuoAvailabil
       end
 
       it_behaves_like 'a correct instrumented metric value',
-        { options: { duo_settings_value: 'default_on' } } do
+        options: { duo_settings_value: 'default_on' }, time_frame: 'none' do
           let(:expected_value) { 1 }
         end
     end
@@ -32,7 +42,7 @@ RSpec.describe Gitlab::Usage::Metrics::Instrumentations::CountGroupsDuoAvailabil
   context "when metric type is default_off" do
     context 'when there are no default_off groups' do
       it_behaves_like 'a correct instrumented metric value',
-        { options: { duo_settings_value: 'default_off' } } do
+        options: { duo_settings_value: 'default_off' }, time_frame: 'none' do
           let(:expected_value) { 0 }
         end
     end
@@ -43,7 +53,7 @@ RSpec.describe Gitlab::Usage::Metrics::Instrumentations::CountGroupsDuoAvailabil
       end
 
       it_behaves_like 'a correct instrumented metric value',
-        { options: { duo_settings_value: 'default_off' } } do
+        options: { duo_settings_value: 'default_off' }, time_frame: 'none' do
           let(:expected_value) { 1 }
         end
     end
@@ -52,7 +62,7 @@ RSpec.describe Gitlab::Usage::Metrics::Instrumentations::CountGroupsDuoAvailabil
   context "when metric type is never_on" do
     context 'when there are no never_on groups' do
       it_behaves_like 'a correct instrumented metric value',
-        { options: { duo_settings_value: 'never_on' } } do
+        options: { duo_settings_value: 'never_on' }, time_frame: 'none' do
           let(:expected_value) { 0 }
         end
     end
@@ -63,7 +73,7 @@ RSpec.describe Gitlab::Usage::Metrics::Instrumentations::CountGroupsDuoAvailabil
       end
 
       it_behaves_like 'a correct instrumented metric value',
-        { options: { duo_settings_value: 'never_on' } } do
+        options: { duo_settings_value: 'never_on' }, time_frame: 'none' do
           let(:expected_value) { 1 }
         end
     end
@@ -83,17 +93,17 @@ RSpec.describe Gitlab::Usage::Metrics::Instrumentations::CountGroupsDuoAvailabil
     end
 
     it_behaves_like 'a correct instrumented metric value',
-      { options: { duo_settings_value: 'default_on' } } do
+      options: { duo_settings_value: 'default_on' }, time_frame: 'none' do
         let(:expected_value) { 1 }
       end
 
     it_behaves_like 'a correct instrumented metric value',
-      { options: { duo_settings_value: 'default_off' } } do
+      options: { duo_settings_value: 'default_off' }, time_frame: 'none' do
         let(:expected_value) { 2 }
       end
 
     it_behaves_like 'a correct instrumented metric value',
-      { options: { duo_settings_value: 'never_on' } } do
+      options: { duo_settings_value: 'never_on' }, time_frame: 'none' do
         let(:expected_value) { 4 }
       end
   end
