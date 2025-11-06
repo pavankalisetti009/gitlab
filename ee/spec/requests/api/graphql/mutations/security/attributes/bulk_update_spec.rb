@@ -59,7 +59,7 @@ RSpec.describe 'BulkUpdateSecurityAttributes', feature_category: :security_asset
       context 'with valid arguments' do
         it 'schedules bulk update scheduler worker' do
           expect(Security::Attributes::BulkUpdateSchedulerWorker).to receive(:perform_async)
-            .with([], [project1.id, project2.id], [attribute1.id, attribute2.id], 'add', current_user.id)
+            .with([], [project1.id, project2.id], [attribute1.id, attribute2.id], 'ADD', current_user.id)
 
           post_graphql_mutation(mutation, current_user: current_user)
 
@@ -83,7 +83,20 @@ RSpec.describe 'BulkUpdateSecurityAttributes', feature_category: :security_asset
 
         it 'schedules scheduler worker with correct mode' do
           expect(Security::Attributes::BulkUpdateSchedulerWorker).to receive(:perform_async)
-            .with([], [project1.id, project2.id], [attribute1.id, attribute2.id], 'remove', current_user.id)
+            .with([], [project1.id, project2.id], [attribute1.id, attribute2.id], 'REMOVE', current_user.id)
+
+          post_graphql_mutation(mutation, current_user: current_user)
+
+          expect(response).to have_gitlab_http_status(:success)
+        end
+      end
+
+      context 'with REPLACE mode' do
+        let(:mode) { 'REPLACE' }
+
+        it 'schedules scheduler worker with correct mode' do
+          expect(Security::Attributes::BulkUpdateSchedulerWorker).to receive(:perform_async)
+            .with([], [project1.id, project2.id], [attribute1.id, attribute2.id], 'REPLACE', current_user.id)
 
           post_graphql_mutation(mutation, current_user: current_user)
 
@@ -96,7 +109,7 @@ RSpec.describe 'BulkUpdateSecurityAttributes', feature_category: :security_asset
 
         it 'schedules scheduler worker with group GIDs' do
           expect(Security::Attributes::BulkUpdateSchedulerWorker).to receive(:perform_async)
-            .with([namespace.id], [], [attribute1.id, attribute2.id], 'add', current_user.id)
+            .with([namespace.id], [], [attribute1.id, attribute2.id], 'ADD', current_user.id)
 
           post_graphql_mutation(mutation, current_user: current_user)
 
@@ -109,7 +122,7 @@ RSpec.describe 'BulkUpdateSecurityAttributes', feature_category: :security_asset
 
         it 'schedules scheduler worker with all GIDs' do
           expect(Security::Attributes::BulkUpdateSchedulerWorker).to receive(:perform_async)
-            .with([namespace.id], [project1.id], [attribute1.id, attribute2.id], 'add', current_user.id)
+            .with([namespace.id], [project1.id], [attribute1.id, attribute2.id], 'ADD', current_user.id)
 
           post_graphql_mutation(mutation, current_user: current_user)
 
@@ -239,7 +252,7 @@ RSpec.describe 'BulkUpdateSecurityAttributes', feature_category: :security_asset
 
         it 'schedules scheduler worker with all provided GIDs' do
           expect(Security::Attributes::BulkUpdateSchedulerWorker).to receive(:perform_async)
-            .with([], [project1.id, other_project.id], [attribute1.id, attribute2.id], 'add', current_user.id)
+            .with([], [project1.id, other_project.id], [attribute1.id, attribute2.id], 'ADD', current_user.id)
 
           post_graphql_mutation(mutation, current_user: current_user)
 
@@ -254,7 +267,7 @@ RSpec.describe 'BulkUpdateSecurityAttributes', feature_category: :security_asset
 
         it 'schedules scheduler worker and lets it handle the filtering' do
           expect(Security::Attributes::BulkUpdateSchedulerWorker).to receive(:perform_async)
-            .with([], [inaccessible_project.id], [attribute1.id, attribute2.id], 'add', current_user.id)
+            .with([], [inaccessible_project.id], [attribute1.id, attribute2.id], 'ADD', current_user.id)
 
           post_graphql_mutation(mutation, current_user: current_user)
 
@@ -269,7 +282,7 @@ RSpec.describe 'BulkUpdateSecurityAttributes', feature_category: :security_asset
 
         it 'schedules scheduler worker to handle batching' do
           expect(Security::Attributes::BulkUpdateSchedulerWorker).to receive(:perform_async)
-            .with([], projects.map(&:id), [attribute1.id, attribute2.id], 'add', current_user.id)
+            .with([], projects.map(&:id), [attribute1.id, attribute2.id], 'ADD', current_user.id)
 
           post_graphql_mutation(mutation, current_user: current_user)
 

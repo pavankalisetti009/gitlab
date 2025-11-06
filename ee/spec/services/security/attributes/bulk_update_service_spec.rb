@@ -96,5 +96,18 @@ RSpec.describe Security::Attributes::BulkUpdateService, feature_category: :secur
         expect(result).to be_success
       end
     end
+
+    context 'with REPLACE mode' do
+      let(:mode) { :replace }
+
+      it 'passes correct mode to scheduler worker' do
+        expect(Security::Attributes::BulkUpdateSchedulerWorker).to receive(:perform_async)
+          .with(group_ids, project_ids, attribute_ids, 'replace', user.id)
+
+        result = service.execute
+
+        expect(result).to be_success
+      end
+    end
   end
 end

@@ -20,7 +20,7 @@ RSpec.describe Security::Attributes::BulkUpdateWorker, feature_category: :securi
 
   let(:project_ids) { [project1.id, project2.id] }
   let(:attribute_ids) { [attribute1.id, attribute2.id] }
-  let(:mode) { 'add' }
+  let(:mode) { 'ADD' }
   let(:user_id) { user.id }
 
   subject(:worker) { described_class.new }
@@ -69,7 +69,7 @@ RSpec.describe Security::Attributes::BulkUpdateWorker, feature_category: :securi
       end
 
       context 'with REMOVE mode' do
-        let(:mode) { 'remove' }
+        let(:mode) { 'REMOVE' }
 
         it 'calls UpdateProjectAttributesService with correct parameters for REMOVE mode' do
           expect(Security::Attributes::UpdateProjectAttributesService).to receive(:new)
@@ -93,6 +93,52 @@ RSpec.describe Security::Attributes::BulkUpdateWorker, feature_category: :securi
                 attributes: {
                   add_attribute_ids: [],
                   remove_attribute_ids: attribute_ids
+                }
+              }
+            )
+            .and_call_original
+
+          worker.perform(project_ids, attribute_ids, mode, user_id)
+        end
+      end
+
+      context 'with REPLACE mode' do
+        let(:mode) { 'REPLACE' }
+
+        before do
+          # Add some existing attributes to the projects using proper associations
+          create(:project_to_security_attribute,
+            project: project1,
+            security_attribute: attribute1,
+            traversal_ids: project1.namespace.traversal_ids)
+          create(:project_to_security_attribute,
+            project: project2,
+            security_attribute: attribute2,
+            traversal_ids: project2.namespace.traversal_ids)
+        end
+
+        it 'calls UpdateProjectAttributesService with correct parameters for REPLACE mode' do
+          expect(Security::Attributes::UpdateProjectAttributesService).to receive(:new)
+            .with(
+              project: project1,
+              current_user: user,
+              params: {
+                attributes: {
+                  add_attribute_ids: attribute_ids,
+                  remove_attribute_ids: [attribute1.id]
+                }
+              }
+            )
+            .and_call_original
+
+          expect(Security::Attributes::UpdateProjectAttributesService).to receive(:new)
+            .with(
+              project: project2,
+              current_user: user,
+              params: {
+                attributes: {
+                  add_attribute_ids: attribute_ids,
+                  remove_attribute_ids: [attribute2.id]
                 }
               }
             )
@@ -184,20 +230,6 @@ RSpec.describe Security::Attributes::BulkUpdateWorker, feature_category: :securi
         expect(Security::Attributes::UpdateProjectAttributesService).not_to receive(:new)
 
         worker.perform(project_ids, attribute_ids, mode, user_id)
-      end
-    end
-
-    context 'with invalid mode' do
-      let(:mode) { 'invalid' }
-
-      it 'tracks the exception and continues processing' do
-        expect(Gitlab::ErrorTracking).to receive(:track_exception)
-          .with(
-            an_instance_of(ArgumentError),
-            hash_including(mode: mode)
-          ).at_least(:once)
-
-        expect { worker.perform(project_ids, attribute_ids, mode, user_id) }.not_to raise_error
       end
     end
   end

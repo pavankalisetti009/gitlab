@@ -15,13 +15,20 @@ module Security
     validate :same_root_ancestor
 
     scope :by_attribute_id, ->(attribute_id) { where(security_attribute_id: attribute_id) }
-    scope :pluck_id, ->(limit = MAX_PLUCK) { limit(limit).pluck(:id) }
     scope :by_project_id, ->(project_id) { where(project_id: project_id) }
     scope :id_after, ->(id) { where(arel_table[:id].gt(id)) }
     scope :order_by_project_and_id, ->(direction = :asc) { order(project_id: direction, id: direction) }
     scope :excluding_root_namespace, ->(root_namespace_id) {
       where(sanitize_sql_array(["traversal_ids[1] != ?", root_namespace_id]))
     }
+
+    def self.pluck_id(limit = MAX_PLUCK)
+      limit(limit).pluck(:id)
+    end
+
+    def self.pluck_security_attribute_id(limit = MAX_PLUCK)
+      limit(limit).pluck(:security_attribute_id)
+    end
 
     private
 

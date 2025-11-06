@@ -7,6 +7,8 @@ RSpec.describe Security::ProjectToSecurityAttribute, feature_category: :security
   let_it_be(:other_root_group) { create(:group) }
   let_it_be(:category) { create(:security_category, namespace: root_group, name: 'Test Category') }
   let_it_be(:attribute) { create(:security_attribute, security_category: category, namespace: root_group) }
+  let_it_be(:other_category) { create(:security_category, namespace: root_group, name: 'Other Category') }
+  let_it_be(:other_attribute) { create(:security_attribute, security_category: other_category, namespace: root_group) }
   let_it_be(:project) { create(:project, namespace: root_group) }
 
   describe 'associations' do
@@ -51,10 +53,48 @@ RSpec.describe Security::ProjectToSecurityAttribute, feature_category: :security
     end
   end
 
+  describe 'class methods' do
+    describe '.pluck_id' do
+      let!(:association1) { create(:project_to_security_attribute, project: project, security_attribute: attribute) }
+      let!(:association2) do
+        create(:project_to_security_attribute, project: project, security_attribute: other_attribute)
+      end
+
+      it 'returns an array of ids' do
+        result = described_class.where(project_id: project.id).pluck_id
+
+        expect(result).to match_array([association1.id, association2.id])
+      end
+
+      it 'respects the limit parameter' do
+        result = described_class.where(project_id: project.id).pluck_id(1)
+
+        expect(result.size).to eq(1)
+      end
+    end
+
+    describe '.pluck_security_attribute_id' do
+      let!(:association1) { create(:project_to_security_attribute, project: project, security_attribute: attribute) }
+      let!(:association2) do
+        create(:project_to_security_attribute, project: project, security_attribute: other_attribute)
+      end
+
+      it 'returns an array of security_attribute_ids' do
+        result = described_class.where(project_id: project.id).pluck_security_attribute_id
+
+        expect(result).to match_array([attribute.id, other_attribute.id])
+      end
+
+      it 'respects the limit parameter' do
+        result = described_class.where(project_id: project.id).pluck_security_attribute_id(1)
+
+        expect(result.size).to eq(1)
+      end
+    end
+  end
+
   describe 'scopes' do
     describe '.by_attribute_id' do
-      let(:other_category) { create(:security_category, namespace: root_group, name: 'Other Category') }
-      let(:other_attribute) { create(:security_attribute, security_category: other_category, namespace: root_group) }
       let!(:association) { create(:project_to_security_attribute, project: project, security_attribute: attribute) }
       let!(:excluded) { create(:project_to_security_attribute, project: project, security_attribute: other_attribute) }
 

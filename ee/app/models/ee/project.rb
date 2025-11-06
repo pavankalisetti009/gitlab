@@ -271,6 +271,7 @@ module EE
       elastic_index_dependant_association :milestones, on_change: :archived
 
       scope :with_namespaces, -> { includes(:namespace) }
+      scope :with_project_to_security_attributes, -> { includes(:project_to_security_attributes) }
       scope :by_ids, ->(ids) { where(id: ids) }
       scope :mirror, -> { where(mirror: true) }
 
