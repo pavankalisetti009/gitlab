@@ -563,6 +563,122 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
     end
   end
 
+  describe '#any_group_with_mcp_server_enabled?', :saas, :use_clean_rails_redis_caching do
+    using RSpec::Parameterized::TableSyntax
+
+    let_it_be(:user) { create(:user) }
+    let_it_be_with_reload(:premium_group) { create(:group_with_plan, plan: :premium_plan) }
+    let_it_be_with_reload(:ultimate_group) { create(:group_with_plan, plan: :ultimate_plan) }
+    let_it_be_with_reload(:bronze_group) { create(:group_with_plan, plan: :bronze_plan) }
+    let_it_be_with_reload(:free_group) { create(:group_with_plan, plan: :free_plan) }
+    let_it_be_with_reload(:group_without_plan) { create(:group) }
+    let_it_be_with_reload(:trial_group) do
+      create(
+        :group_with_plan,
+        plan: :ultimate_plan,
+        trial: true,
+        trial_starts_on: Date.current,
+        trial_ends_on: 1.day.from_now
+      )
+    end
+
+    let_it_be_with_reload(:ultimate_sub_group) { create(:group, parent: ultimate_group) }
+    let_it_be_with_reload(:bronze_sub_group) { create(:group, parent: bronze_group) }
+
+    subject(:group_with_mcp_server_enabled) { user.any_group_with_mcp_server_enabled? }
+
+    where(:group, :result) do
+      ref(:bronze_group)       | false
+      ref(:free_group)         | false
+      ref(:group_without_plan) | false
+      ref(:premium_group)      | true
+      ref(:ultimate_group)     | true
+      ref(:trial_group)        | true
+    end
+
+    with_them do
+      context 'when member of the root group' do
+        before do
+          group.add_guest(user)
+        end
+
+        context 'when ai features are enabled' do
+          include_context 'with ai features enabled for group'
+
+          it { is_expected.to eq(result) }
+
+          it 'caches the result with MCP server cache key' do
+            group_with_mcp_server_enabled
+
+            expect(Rails.cache.fetch(['users', user.id, 'group_with_mcp_server_enabled'])).to eq(result)
+          end
+
+          it 'uses correct cache period' do
+            expect(described_class::GROUP_WITH_MCP_SERVER_ENABLED_CACHE_PERIOD).to eq(1.hour)
+          end
+
+          it 'uses correct cache key' do
+            expect(described_class::GROUP_WITH_MCP_SERVER_ENABLED_CACHE_KEY).to eq('group_with_mcp_server_enabled')
+          end
+        end
+
+        context 'when ai features are not enabled' do
+          it { is_expected.to be(false) }
+        end
+      end
+    end
+
+    context 'when member of a sub-group only' do
+      include_context 'with ai features enabled for group'
+
+      context 'with eligible group' do
+        let(:group) { ultimate_group }
+
+        before_all do
+          ultimate_sub_group.add_guest(user)
+        end
+
+        it { is_expected.to be(true) }
+      end
+
+      context 'with not eligible group' do
+        let(:group) { bronze_group }
+
+        before_all do
+          bronze_sub_group.add_guest(user)
+        end
+
+        it { is_expected.to be(false) }
+      end
+    end
+
+    context 'when member of a project only' do
+      include_context 'with ai features enabled for group'
+
+      context 'with eligible group' do
+        let(:group) { ultimate_group }
+        let_it_be(:project) { create(:project, group: ultimate_group) }
+
+        before_all do
+          project.add_guest(user)
+        end
+
+        it { is_expected.to be(true) }
+      end
+
+      context 'with not eligible group' do
+        let(:group) { bronze_group }
+        let_it_be(:project) { create(:project, group: bronze_group) }
+
+        before_all do
+          project.add_guest(user)
+        end
+
+        it { is_expected.to be(false) }
+      end
+    end
+  end
+
   shared_examples 'returns IDs of namespaces with duo add-on' do
     let_it_be(:gitlab_duo_add_on) { create(:gitlab_subscription_add_on, add_on_type) }
 
