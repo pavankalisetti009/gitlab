@@ -19,8 +19,9 @@ module Ci
       return unless build = Ci::Build.find_by_id(build_id)
       return unless build.project
       return if build.project.pending_delete?
+      return unless pipeline = build.pipeline
 
-      process_build(build)
+      process_build(build, pipeline)
     end
 
     private
@@ -31,16 +32,16 @@ module Ci
     # easily.
     #
     # @param [Ci::Build] build The build to process.
-    def process_build(build)
+    def process_build(build, pipeline)
       # We execute these in sync to reduce IO.
       build.update_coverage
       Ci::BuildReportResultService.new.execute(build)
 
       build.execute_hooks
-      ChatNotificationWorker.perform_async(build.id) if build.pipeline&.chat?
+      ChatNotificationWorker.perform_async(build.id) if pipeline.chat?
       build.track_deployment_usage
       build.track_verify_environment_usage
-      build.remove_token! if build.pipeline
+      build.remove_token!
 
       if build.failed? && !build.auto_retry_expected?
         ::Ci::MergeRequests::AddTodoWhenBuildFailsWorker.perform_async(build.id)

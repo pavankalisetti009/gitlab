@@ -3,7 +3,7 @@
 module EE
   module Ci
     module BuildFinishedWorker
-      def process_build(build)
+      def process_build(build, pipeline)
         # Always run `super` first since it contains sync operations.
         # Failing to run sync operations would cause the worker to retry
         # and enqueueing duplicate jobs.
