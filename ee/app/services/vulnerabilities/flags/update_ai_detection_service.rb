@@ -6,6 +6,7 @@ module Vulnerabilities
       include Gitlab::Allowable
 
       AI_SAST_FP_DETECTION_ORIGIN = 'ai_sast_fp_detection'
+      DESCRIPTION_MAX_LENGTH = 100_000
 
       def initialize(user, vulnerability, params)
         @user = user
@@ -50,7 +51,7 @@ module Vulnerabilities
 
       def update_flag
         flag.assign_attributes(
-          description: params[:description] || flag.description,
+          description: truncate_description(params[:description]) || flag.description,
           confidence_score: normalize_confidence_score(params[:confidence_score]),
           project_id: project.id
         )
@@ -65,6 +66,12 @@ module Vulnerabilities
       def normalize_confidence_score(score)
         # Convert 0-100 range to 0.0-1.0 range, default to 0.0 on nil
         score.to_f / 100.0
+      end
+
+      def truncate_description(description)
+        return description if description.blank?
+
+        description.to_s.truncate(DESCRIPTION_MAX_LENGTH, omission: '')
       end
     end
   end

@@ -198,5 +198,51 @@ RSpec.describe Vulnerabilities::Flags::UpdateAiDetectionService, feature_categor
         expect(flag.confidence_score).to be(0.0)
       end
     end
+
+    context 'when description exceeds maximum length' do
+      let(:very_long_description) { 'a' * 1500000 }
+      let(:params) do
+        {
+          confidence_score: 85,
+          description: very_long_description
+        }
+      end
+
+      before_all do
+        project.add_developer(user)
+      end
+
+      it 'truncates description to 100000 characters' do
+        result = service.execute
+
+        expect(result).to be_success
+        flag = result.payload[:flag]
+        expect(flag.description.length).to eq(100000)
+        expect(flag.description).to eq('a' * 100000)
+      end
+    end
+
+    context 'when description is less than maximum length' do
+      let(:max_length_description) { 'b' * 10000 }
+      let(:params) do
+        {
+          confidence_score: 85,
+          description: max_length_description
+        }
+      end
+
+      before_all do
+        project.add_developer(user)
+      end
+
+      it 'preserves the full description' do
+        result = service.execute
+
+        expect(result).to be_success
+        flag = result.payload[:flag]
+        expect(flag.description.length).to eq(10000)
+        expect(flag.description).to eq(max_length_description)
+      end
+    end
   end
 end
