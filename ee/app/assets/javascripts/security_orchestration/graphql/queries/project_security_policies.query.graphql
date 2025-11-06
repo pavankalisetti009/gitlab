@@ -14,6 +14,7 @@ query projectSecurityPolicies(
   namespace: project(fullPath: $fullPath) {
     id
     securityPolicies(
+      includeUnscoped: false
       type: $type
       relationship: $relationship
       last: $last
