@@ -69,7 +69,11 @@ describe('GroupRiskScorePanel', () => {
   const createMockData = ({ overrides = {} } = {}) =>
     merge({}, defaultMockRiskScoreData, overrides);
 
-  const createComponent = ({ props = {}, mockRiskScoreHandler = null } = {}) => {
+  const createComponent = ({
+    props = {},
+    groupVulnerabilityRiskScoresByProject = true,
+    mockRiskScoreHandler = null,
+  } = {}) => {
     riskScoreHandler = mockRiskScoreHandler || jest.fn().mockResolvedValue(createMockData());
 
     const apolloProvider = createMockApollo([[groupTotalRiskScore, riskScoreHandler]]);
@@ -82,6 +86,9 @@ describe('GroupRiskScorePanel', () => {
       },
       provide: {
         groupFullPath: mockGroupFullPath,
+        glFeatures: {
+          groupVulnerabilityRiskScoresByProject,
+        },
       },
     });
   };
@@ -349,6 +356,24 @@ describe('GroupRiskScorePanel', () => {
       it('shows the correct error message', () => {
         expect(wrapper.find('p').text()).toBe('Something went wrong. Please try again.');
       });
+    });
+  });
+
+  describe('when groupVulnerabilityRiskScoresByProject feature flag is disabled', () => {
+    it('does not show group by buttons', async () => {
+      createComponent({ groupVulnerabilityRiskScoresByProject: false });
+      await waitForPromises();
+
+      expect(findRiskScoreGroupBy().exists()).toBe(false);
+    });
+
+    it('does not initialize with project grouping if URL parameter is set', async () => {
+      setWindowLocation('?riskScore.groupBy=project');
+      createComponent({ groupVulnerabilityRiskScoresByProject: false });
+      await waitForPromises();
+
+      expect(findTotalRiskScore().exists()).toBe(true);
+      expect(findRiskScoreByProject().exists()).toBe(false);
     });
   });
 });
