@@ -51,15 +51,47 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::TimeoutWorker, feature_category: :c
 
         worker.perform(merge_request.id)
       end
+
+      it 'does not post an error comment' do
+        expect(Notes::CreateService).not_to receive(:new)
+
+        worker.perform(merge_request.id)
+      end
     end
 
     context 'when reviewer is not in reviewed state' do
-      let!(:progress_note) { create(:note, noteable: merge_request, project: project, author: duo_code_review_bot) }
+      let!(:progress_note) do
+        create(
+          :note,
+          noteable: merge_request,
+          project: project,
+          author: duo_code_review_bot,
+          system: true
+        )
+      end
 
       before do
         merge_request.merge_request_reviewers.create!(reviewer: duo_code_review_bot, state: 'review_started')
         allow(merge_request).to receive(:duo_code_review_progress_note).and_return(progress_note)
         allow(MergeRequest).to receive(:find_by_id).with(merge_request.id).and_return(merge_request)
+      end
+
+      it 'posts an error comment to the merge request' do
+        worker.perform(merge_request.id)
+
+        merge_request.reload
+        error_note = merge_request.notes.non_diff_notes.find_by(system: false)
+        expect(error_note).to be_present
+        expect(error_note.note).to include('encountered some problems')
+        expect(error_note.author).to eq(duo_code_review_bot)
+      end
+
+      it 'creates a todo for the error' do
+        expect_any_instance_of(TodoService) do |service|
+          expect(service).to receive(:new_review).with(merge_request, duo_code_review_bot)
+        end
+
+        worker.perform(merge_request.id)
       end
 
       it 'updates review state to reviewed' do
@@ -84,6 +116,27 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::TimeoutWorker, feature_category: :c
         worker.perform(merge_request.id)
       end
 
+      it 'executes operations in the correct order' do
+        call_order = []
+
+        allow(Notes::CreateService).to receive(:new) do
+          call_order << :post_error_comment
+          instance_double(Notes::CreateService, execute: true)
+        end
+
+        allow(update_service).to receive(:execute) do
+          call_order << :update_state
+        end
+
+        allow(progress_note).to receive(:destroy) do
+          call_order << :delete_progress_note
+        end
+
+        worker.perform(merge_request.id)
+
+        expect(call_order).to eq([:post_error_comment, :update_state, :delete_progress_note])
+      end
+
       context 'when there is no progress note' do
         before do
           allow(merge_request).to receive(:duo_code_review_progress_note).and_return(nil)
@@ -91,6 +144,12 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::TimeoutWorker, feature_category: :c
 
         it 'does not raise an error' do
           expect { worker.perform(merge_request.id) }.not_to raise_error
+        end
+
+        it 'does not post an error comment' do
+          expect(Notes::CreateService).not_to receive(:new)
+
+          worker.perform(merge_request.id)
         end
 
         it 'still updates review state and logs' do
@@ -115,6 +174,10 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::TimeoutWorker, feature_category: :c
         )
 
         worker.perform(merge_request.id)
+      end
+
+      it 'does not raise the error' do
+        expect { worker.perform(merge_request.id) }.not_to raise_error
       end
     end
   end
