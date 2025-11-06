@@ -85,7 +85,7 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_agent_platfo
 
   describe '#initialize' do
     context 'when composite identity can be used' do
-      let_it_be(:oauth_app) { create(:oauth_application, name: 'Duo Workflow', scopes: %w[api read_user]) }
+      let_it_be(:oauth_app) { create(:oauth_application, name: 'Duo Workflow', scopes: %w[ai_workflows mcp user:*]) }
 
       before do
         service_account.update!(composite_identity_enforced: true)
@@ -448,7 +448,7 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_agent_platfo
     end
 
     context 'when duo_workflow_oauth_application is set in Ai::Setting' do
-      let_it_be(:oauth_app) { create(:oauth_application, name: 'Duo Workflow', scopes: %w[api read_user]) }
+      let_it_be(:oauth_app) { create(:oauth_application, name: 'Duo Workflow', scopes: %w[ai_workflows mcp user:*]) }
 
       before do
         ::Ai::Setting.instance.update!(
@@ -544,7 +544,7 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_agent_platfo
           expect(oauth_access_token.application).to eq(oauth_app)
           duration = Ai::DuoWorkflows::CreateCompositeOauthAccessTokenService::TOKEN_EXPIRES_IN
           expect(oauth_access_token.expires_in).to eq(duration)
-          expect(oauth_access_token.scopes).to contain_exactly('api', "user:#{current_user.id}")
+          expect(oauth_access_token.scopes).to contain_exactly('ai_workflows', 'mcp', "user:#{current_user.id}")
           expect(oauth_access_token.organization).to eq(project.organization)
         end
       end

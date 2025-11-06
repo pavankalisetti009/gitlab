@@ -184,7 +184,6 @@ module Ai
         composite_oauth_token_result = ::Ai::DuoWorkflows::CreateCompositeOauthAccessTokenService.new(
           current_user: current_user,
           organization: project.organization,
-          scopes: ['api'],
           service_account: flow_trigger_user
         ).execute
 
