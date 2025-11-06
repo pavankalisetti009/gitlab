@@ -17,6 +17,8 @@ module API
                 namespace "agentw" do
                   desc "server_config" do
                     detail "Returns configuration for Workspaces HTTP Server."
+                    tags ["oauth_applications"]
+                    success code: 200, message: "Server config retrieved successfully"
                   end
                   get "/server_config", feature_category: :workspaces, urgency: :low do
                     response = ::RemoteDevelopment::CommonService.execute(
@@ -26,6 +28,7 @@ module API
 
                     # NOTE: There's currently no way an error can be returned other than an unexpected raised
                     #       exception, so we assume success.
+                    status 200
 
                     response.payload
                   end
