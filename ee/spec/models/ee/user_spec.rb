@@ -4160,6 +4160,54 @@ RSpec.describe User, feature_category: :system_access do
     end
   end
 
+  describe '#designated_account_manager' do
+    let_it_be(:user) { create(:user) }
+
+    subject { user.designated_account_manager }
+
+    context 'when user has no designated beneficiaries' do
+      it { is_expected.to be_nil }
+    end
+
+    context 'when user has only successor' do
+      before do
+        create(:designated_beneficiary, :successor, user: user)
+      end
+
+      it { is_expected.to be_nil }
+    end
+
+    context 'when user has manager' do
+      let!(:manager) { create(:designated_beneficiary, :manager, user: user) }
+
+      it { is_expected.to eq(manager) }
+    end
+  end
+
+  describe '#designated_account_successor' do
+    let_it_be(:user) { create(:user) }
+
+    subject { user.designated_account_successor }
+
+    context 'when user has no designated beneficiaries' do
+      it { is_expected.to be_nil }
+    end
+
+    context 'when user has only manager' do
+      before do
+        create(:designated_beneficiary, :manager, user: user)
+      end
+
+      it { is_expected.to be_nil }
+    end
+
+    context 'when user has successor' do
+      let!(:successor) { create(:designated_beneficiary, :successor, user: user) }
+
+      it { is_expected.to eq(successor) }
+    end
+  end
+
   describe '#allow_user_to_create_group_and_project?', :sidekiq_inline do
     subject(:user) { create(:user) }
 

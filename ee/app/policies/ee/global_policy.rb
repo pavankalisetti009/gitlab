@@ -308,6 +308,13 @@ module EE
       end
 
       rule { ~data_management_available }.prevent :read_admin_data_management
+
+      desc "User can designate account beneficiaries: manager and successor"
+      condition(:designated_account_beneficiaries_available, scope: :user) do
+        ::Gitlab::Saas.feature_available?(:designated_account_beneficiaries) && !@user.enterprise_user?
+      end
+
+      rule { designated_account_beneficiaries_available }.enable :create_designated_account_beneficiaries
     end
 
     # Check whether a user is allowed to use Duo Chat powered by self-hosted models

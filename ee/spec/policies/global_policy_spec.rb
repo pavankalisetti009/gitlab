@@ -1051,4 +1051,25 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
       it { is_expected.to check_policy }
     end
   end
+
+  describe 'designating account beneficiaries' do
+    where(:saas_feature_available, :is_enterprise_user, :check_policy) do
+      true   | false  | be_allowed(:create_designated_account_beneficiaries)
+      true   | true   | be_disallowed(:create_designated_account_beneficiaries)
+      false  | false  | be_disallowed(:create_designated_account_beneficiaries)
+      false  | true   | be_disallowed(:create_designated_account_beneficiaries)
+    end
+
+    with_them do
+      let(:enterprise_group) { create(:group) }
+      let(:enterprise_user) { create(:user, enterprise_group: enterprise_group) }
+      let(:current_user) { is_enterprise_user ? enterprise_user : user }
+
+      before do
+        stub_saas_features(designated_account_beneficiaries: saas_feature_available)
+      end
+
+      it { is_expected.to check_policy }
+    end
+  end
 end
