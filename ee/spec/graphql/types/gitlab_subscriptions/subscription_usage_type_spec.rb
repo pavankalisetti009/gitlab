@@ -12,7 +12,7 @@ RSpec.describe GitlabSchema.types['GitlabSubscriptionUsage'], feature_category: 
       :start_date,
       :end_date,
       :purchase_credits_path,
-      :one_time_credits,
+      :monthly_waiver,
       :monthly_commitment,
       :overage,
       :users_usage

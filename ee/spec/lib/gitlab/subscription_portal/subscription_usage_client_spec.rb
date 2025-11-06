@@ -176,14 +176,13 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
     end
   end
 
-  describe '#get_one_time_credits' do
-    let(:request) { client.get_one_time_credits }
-    let(:query) { described_class::GET_ONE_TIME_CREDITS_QUERY }
-    let(:one_time_credits) do
+  describe '#get_monthly_waiver' do
+    let(:request) { client.get_monthly_waiver }
+    let(:query) { described_class::GET_MONTHLY_WAIVER_QUERY }
+    let(:monthly_waiver) do
       {
         creditsUsed: 12.25,
-        totalCredits: 1000.91,
-        totalCreditsRemaining: 988.66
+        totalCredits: 1000.91
       }
     end
 
@@ -193,7 +192,7 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
         data: {
           subscription: {
             gitlabCreditsUsage: {
-              oneTimeCredits: one_time_credits
+              monthlyWaiver: monthly_waiver
             }
           }
         }
@@ -203,7 +202,7 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
     let(:expected_response) do
       {
         success: true,
-        oneTimeCredits: one_time_credits
+        monthlyWaiver: monthly_waiver
       }
     end
 
@@ -384,7 +383,7 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
           totalCredits: 100.12,
           creditsUsed: 500.23,
           monthlyCommitmentCreditsUsed: 400.45,
-          oneTimeCreditsUsed: 25.56,
+          monthlyWaiverCreditsUsed: 25.56,
           overageCreditsUsed: 50.67
         },
         {
@@ -392,7 +391,7 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
           totalCredits: 100.12,
           creditsUsed: 50.23,
           monthlyCommitmentCreditsUsed: 0,
-          oneTimeCreditsUsed: 12.34,
+          monthlyWaiverCreditsUsed: 12.34,
           overageCreditsUsed: 0
         }
       ]

@@ -15,7 +15,7 @@ export default {
       type: Number,
       required: true,
     },
-    otcCreditsUsed: {
+    monthlyWaiverCreditsUsed: {
       type: Number,
       required: false,
       default: 0,
@@ -60,11 +60,13 @@ export default {
     </p>
 
     <div
-      v-if="otcCreditsUsed"
+      v-if="monthlyWaiverCreditsUsed"
       class="gl-border-t gl-flex gl-flex-row gl-justify-between gl-pt-3 gl-text-subtle"
     >
-      <span>{{ s__('UsageBilling|One-Time Waiver credits used this period') }}</span>
-      <span data-testid="otc-credits-used">{{ numberToMetricPrefix(otcCreditsUsed) }}</span>
+      <span>{{ s__('UsageBilling|Monthly Waiver credits used this period') }}</span>
+      <span data-testid="monthly-waiver-credits-used">
+        {{ numberToMetricPrefix(monthlyWaiverCreditsUsed) }}
+      </span>
     </div>
   </gl-card>
 </template>

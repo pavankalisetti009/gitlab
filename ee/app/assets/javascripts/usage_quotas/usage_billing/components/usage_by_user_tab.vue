@@ -13,7 +13,7 @@ import { fillUsageValues } from '../utils';
  * @property { number } totalCredits
  * @property { number } creditsUsed
  * @property { number } poolCreditsUsed
- * @property { number } oneTimeCreditsUsed
+ * @property { number } monthlyWaiverCreditsUsed
  * @property { number } overageCreditsUsed
  */
 
@@ -82,7 +82,7 @@ export default {
       return (
         usage.creditsUsed +
         usage.monthlyCommitmentCreditsUsed +
-        usage.oneTimeCreditsUsed +
+        usage.monthlyWaiverCreditsUsed +
         usage.overageCreditsUsed
       );
     },

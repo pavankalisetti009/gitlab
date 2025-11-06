@@ -40,7 +40,7 @@ module Types
           :total_credits,
           :credits_used,
           :monthly_commitment_credits_used,
-          :one_time_credits_used,
+          :monthly_waiver_credits_used,
           :overage_credits_used,
           :declarative_policy_subject
         )
@@ -80,7 +80,7 @@ module Types
                 total_credits: usage[:totalCredits],
                 credits_used: usage[:creditsUsed],
                 monthly_commitment_credits_used: usage[:monthlyCommitmentCreditsUsed],
-                one_time_credits_used: usage[:oneTimeCreditsUsed],
+                monthly_waiver_credits_used: usage[:monthlyWaiverCreditsUsed],
                 overage_credits_used: usage[:overageCreditsUsed],
                 declarative_policy_subject: object
               )

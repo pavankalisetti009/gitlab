@@ -4,20 +4,25 @@ import { numberToMetricPrefix } from '~/lib/utils/number_utils';
 import { PROMO_URL } from 'jh_else_ce/lib/utils/url_utility';
 
 export default {
-  name: 'OneTimeCreditsCard',
+  name: 'MonthlyWaiverCard',
   components: {
     GlCard,
     GlSprintf,
     GlLink,
   },
   props: {
-    otcRemainingCredits: {
+    monthlyWaiverCreditsUsed: {
       type: Number,
       required: true,
     },
-    otcCreditsUsed: {
+    monthlyWaiverTotalCredits: {
       type: Number,
       required: true,
+    },
+  },
+  computed: {
+    creditsRemaining() {
+      return this.monthlyWaiverTotalCredits - this.monthlyWaiverCreditsUsed;
     },
   },
   methods: {
@@ -29,13 +34,13 @@ export default {
 <template>
   <gl-card class="gl-flex-1 gl-bg-transparent" body-class="gl-p-5">
     <h2 class="gl-heading-scale-400 gl-mb-2">
-      {{ s__('UsageBilling|GitLab Credits - One-Time Waiver') }}
+      {{ s__('UsageBilling|GitLab Credits - Monthly Waiver') }}
     </h2>
     <div class="gl-mb-4 gl-text-sm gl-text-subtle">
       {{ s__('UsageBilling|Used this billing period') }}
     </div>
-    <div class="gl-heading-scale-600 gl-mb-3" data-testid="otc-credits-used">
-      {{ numberToMetricPrefix(otcCreditsUsed) }}
+    <div class="gl-heading-scale-600 gl-mb-3" data-testid="monthly-waiver-credits-used">
+      {{ numberToMetricPrefix(monthlyWaiverCreditsUsed) }}
     </div>
     <div class="gl-border-t gl-mb-3 gl-pt-3 gl-text-sm gl-text-subtle">
       <gl-sprintf
@@ -51,10 +56,10 @@ export default {
       </gl-sprintf>
     </div>
     <div class="gl-border-t gl-flex gl-flex-row gl-justify-between gl-pt-3 gl-text-subtle">
-      <span>{{ s__('UsageBilling|One-Time Waiver credits remaining') }}</span>
-      <span data-testid="otc-remaining-credits">{{
-        numberToMetricPrefix(otcRemainingCredits)
-      }}</span>
+      <span>{{ s__('UsageBilling|Monthly Waiver credits remaining') }}</span>
+      <span data-testid="monthly-waiver-remaining-credits">
+        {{ numberToMetricPrefix(creditsRemaining) }}
+      </span>
     </div>
   </gl-card>
 </template>

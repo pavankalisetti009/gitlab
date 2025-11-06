@@ -19,7 +19,7 @@ export const mockDataWithPool = {
                 creditsUsed: 1000,
                 totalCredits: 1000,
                 monthlyCommitmentCreditsUsed: 500,
-                oneTimeCreditsUsed: 212,
+                monthlyWaiverCreditsUsed: 212,
                 overageCreditsUsed: 100,
               },
 
@@ -207,7 +207,7 @@ export const mockEmptyData = {
                 creditsUsed: 0,
                 totalCredits: 0,
                 monthlyCommitmentCreditsUsed: 0,
-                oneTimeCreditsUsed: 0,
+                monthlyWaiverCreditsUsed: 0,
                 overageCreditsUsed: 0,
               },
 

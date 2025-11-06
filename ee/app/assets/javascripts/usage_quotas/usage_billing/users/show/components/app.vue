@@ -77,7 +77,7 @@ export default {
       return (
         this.usage.creditsUsed +
         this.usage.monthlyCommitmentCreditsUsed +
-        this.usage.oneTimeCreditsUsed +
+        this.usage.monthlyWaiverCreditsUsed +
         this.usage.overageCreditsUsed
       );
     },

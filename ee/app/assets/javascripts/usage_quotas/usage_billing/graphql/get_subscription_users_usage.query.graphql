@@ -20,7 +20,7 @@ query getSubscriptionUsersUsage(
             totalCredits
             monthlyCommitmentCreditsUsed
             overageCreditsUsed
-            oneTimeCreditsUsed
+            monthlyWaiverCreditsUsed
           }
         }
         pageInfo {

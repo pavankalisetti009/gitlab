@@ -8,7 +8,7 @@ describe('CurrentOverageUsageCard', () => {
 
   const defaultProps = {
     overageCreditsUsed: 1,
-    otcCreditsUsed: 42,
+    monthlyWaiverCreditsUsed: 42,
   };
 
   const createComponent = (props) => {
@@ -23,7 +23,7 @@ describe('CurrentOverageUsageCard', () => {
     });
   };
 
-  const findOtcCreditsUsed = () => wrapper.findByTestId('otc-credits-used');
+  const findMonthlyWaiverCreditsUsed = () => wrapper.findByTestId('monthly-waiver-credits-used');
 
   describe('rendering elements', () => {
     beforeEach(() => {
@@ -38,25 +38,25 @@ describe('CurrentOverageUsageCard', () => {
       expect(wrapper.findByTestId('overage-credits-used').text()).toBe('1');
     });
 
-    it('renders one-time waiver usage value', () => {
-      const otcCreditsUsed = findOtcCreditsUsed();
+    it('renders monthly waiver usage value', () => {
+      const monthlyWaiverCreditsUsed = findMonthlyWaiverCreditsUsed();
 
-      expect(otcCreditsUsed.exists()).toBe(true);
-      expect(otcCreditsUsed.text()).toBe('42');
+      expect(monthlyWaiverCreditsUsed.exists()).toBe(true);
+      expect(monthlyWaiverCreditsUsed.text()).toBe('42');
     });
   });
 
-  describe('without OTC', () => {
+  describe('without monthly waiver', () => {
     beforeEach(() => {
       createComponent({
-        otcCreditsUsed: null,
+        monthlyWaiverCreditsUsed: null,
       });
     });
 
-    it('renders one-time waiver usage value', () => {
-      const otcCreditsUsed = findOtcCreditsUsed();
+    it('renders monthly waiver usage value', () => {
+      const monthlyWaiverCreditsUsed = findMonthlyWaiverCreditsUsed();
 
-      expect(otcCreditsUsed.exists()).toBe(false);
+      expect(monthlyWaiverCreditsUsed.exists()).toBe(false);
     });
   });
 });

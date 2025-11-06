@@ -61,10 +61,9 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
       :last_event_transaction_at,
       :start_date,
       :end_date,
-      query_graphql_field(:one_time_credits, {}, [
-        :credits_used,
+      query_graphql_field(:monthly_waiver, {}, [
         :total_credits,
-        :total_credits_remaining
+        :credits_used
       ]),
       :purchase_credits_path,
       query_graphql_field(:monthly_commitment, {}, [
@@ -94,7 +93,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
               :total_credits,
               :credits_used,
               :monthly_commitment_credits_used,
-              :one_time_credits_used,
+              :monthly_waiver_credits_used,
               :overage_credits_used
             ]),
             query_nodes(
@@ -201,7 +200,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
         totalCredits: (user.id * 1.25).round(2),
         creditsUsed: (user.id * 10.45).round(2),
         monthlyCommitmentCreditsUsed: (user.id * 5.25).round(2),
-        oneTimeCreditsUsed: (user.id * 1.35).round(2),
+        monthlyWaiverCreditsUsed: (user.id * 1.35).round(2),
         overageCreditsUsed: (user.id * 2.55).round(2)
       }
     end
@@ -217,12 +216,11 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
       }
     }
 
-    one_time_credits = {
+    monthly_waiver = {
       success: true,
-      oneTimeCredits: {
-        creditsUsed: 15.32,
+      monthlyWaiver: {
         totalCredits: 1000.5,
-        totalCreditsRemaining: 984.68
+        creditsUsed: 15.32
       }
     }
 
@@ -247,7 +245,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
     allow_next_instance_of(Gitlab::SubscriptionPortal::SubscriptionUsageClient) do |client|
       allow(client).to receive_messages(
         get_metadata: metadata,
-        get_one_time_credits: one_time_credits,
+        get_monthly_waiver: monthly_waiver,
         get_monthly_commitment: monthly_commitment,
         get_overage: overage,
         get_events_for_user_id: { success: true, userEvents: events_for_user_id },
@@ -272,10 +270,9 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
           expect(graphql_data_at(:subscription_usage, :endDate)).to eq("2025-10-31")
           expect(graphql_data_at(:subscription_usage, :purchaseCreditsPath)).to eq("/mock/path")
 
-          expect(graphql_data_at(:subscription_usage, :oneTimeCredits)).to eq({
-            creditsUsed: 15.32,
+          expect(graphql_data_at(:subscription_usage, :monthlyWaiver)).to eq({
             totalCredits: 1000.5,
-            totalCreditsRemaining: 984.68
+            creditsUsed: 15.32
           }.with_indifferent_access)
 
           expect(graphql_data_at(:subscription_usage, :monthlyCommitment)).to eq({
@@ -308,7 +305,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
                   totalCredits: (u.id * 1.25).round(2),
                   creditsUsed: (u.id * 10.45).round(2),
                   monthlyCommitmentCreditsUsed: (u.id * 5.25).round(2),
-                  oneTimeCreditsUsed: (u.id * 1.35).round(2),
+                  monthlyWaiverCreditsUsed: (u.id * 1.35).round(2),
                   overageCreditsUsed: (u.id * 2.55).round(2)
                 },
                 events: nil
@@ -331,7 +328,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
                   totalCredits: (maintainer.id * 1.25).round(2),
                   creditsUsed: (maintainer.id * 10.45).round(2),
                   monthlyCommitmentCreditsUsed: (maintainer.id * 5.25).round(2),
-                  oneTimeCreditsUsed: (maintainer.id * 1.35).round(2),
+                  monthlyWaiverCreditsUsed: (maintainer.id * 1.35).round(2),
                   overageCreditsUsed: (maintainer.id * 2.55).round(2)
                 },
                 events: user_events
@@ -391,10 +388,9 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
             expect(graphql_data_at(:subscription_usage, :endDate)).to eq("2025-10-31")
             expect(graphql_data_at(:subscription_usage, :purchaseCreditsPath)).to eq("/mock/path")
 
-            expect(graphql_data_at(:subscription_usage, :oneTimeCredits)).to eq({
-              creditsUsed: 15.32,
+            expect(graphql_data_at(:subscription_usage, :monthlyWaiver)).to eq({
               totalCredits: 1000.5,
-              totalCreditsRemaining: 984.68
+              creditsUsed: 15.32
             }.with_indifferent_access)
 
             expect(graphql_data_at(:subscription_usage, :monthlyCommitment)).to eq({
@@ -427,7 +423,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
                     totalCredits: (u.id * 1.25).round(2),
                     creditsUsed: (u.id * 10.45).round(2),
                     monthlyCommitmentCreditsUsed: (u.id * 5.25).round(2),
-                    oneTimeCreditsUsed: (u.id * 1.35).round(2),
+                    monthlyWaiverCreditsUsed: (u.id * 1.35).round(2),
                     overageCreditsUsed: (u.id * 2.55).round(2)
                   },
                   events: nil
@@ -450,7 +446,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
                     totalCredits: (maintainer.id * 1.25).round(2),
                     creditsUsed: (maintainer.id * 10.45).round(2),
                     monthlyCommitmentCreditsUsed: (maintainer.id * 5.25).round(2),
-                    oneTimeCreditsUsed: (maintainer.id * 1.35).round(2),
+                    monthlyWaiverCreditsUsed: (maintainer.id * 1.35).round(2),
                     overageCreditsUsed: (maintainer.id * 2.55).round(2)
                   },
                   events: user_events

@@ -24,13 +24,15 @@ module Types
         null: true,
         description: 'URL to purchase GitLab Credits.'
 
-      field :one_time_credits, SubscriptionUsage::OneTimeCreditsType,
+      # rubocop: disable GraphQL/ExtractType -- no value for now
+      field :monthly_waiver, SubscriptionUsage::MonthlyWaiverType,
         null: true,
-        description: 'One time credits usage for the subscription.'
+        description: 'Monthly waiver usage for the subscription.'
 
       field :monthly_commitment, SubscriptionUsage::MonthlyCommitmentType,
         null: true,
-        description: 'Consumption usage for the subscription monthly commitment.'
+        description: 'Monthly commitment usage for the subscription.'
+      # rubocop:enable GraphQL/ExtractType
 
       field :overage, SubscriptionUsage::OverageType,
         null: true,
