@@ -5,7 +5,7 @@ module Analytics
     class DuoUsageService
       include CommonUsageService
 
-      # TODO - Replace with namespace_traversal_path filter
+      # TODO: - Replace with namespace_traversal_path filter
       # after https://gitlab.com/gitlab-org/gitlab/-/issues/531491.
       # Can be removed with use_ai_events_namespace_path_filter feature flag.
       QUERY = <<~SQL
@@ -40,21 +40,13 @@ module Analytics
         SELECT %{fields}
       SQL
 
-      DUO_USED_COUNT_QUERY = <<~SQL.freeze
+      DUO_USED_COUNT_QUERY = <<~SQL
         SELECT COUNT(user_id) FROM (
           SELECT DISTINCT user_id
-          FROM duo_chat_events_daily
+          FROM ai_usage_events
           WHERE user_id IN (SELECT author_id FROM contributors)
-          AND date >= {from:Date}
-          AND date <= {to:Date}
-          AND event = #{Ai::UsageEvent.events[:request_duo_chat_response]}
-          UNION DISTINCT
-          SELECT DISTINCT user_id
-          FROM code_suggestion_events_daily
-          WHERE user_id IN (SELECT author_id FROM contributors)
-          AND date >= {from:Date}
-          AND date <= {to:Date}
-          AND event IN (1,2,3,5)
+          AND timestamp >= {from:Date}
+          AND timestamp <= {to:Date}
         )
       SQL
       private_constant :DUO_USED_COUNT_QUERY
