@@ -9,12 +9,17 @@ RSpec.describe Ai::ServiceAccountMemberAddService, feature_category: :duo_agent_
 
   describe '#execute' do
     context 'when the service account is not a member of the project' do
-      it 'adds the service account as a developer' do
+      it 'adds the service account as a developer and syncs ProjectAuthorization immediately' do
         expect { service.execute }.to change { project.members.count }.by(1)
 
         member = project.members.last
         expect(member.user_id).to eq(service_account.id)
         expect(member.access_level).to eq(Gitlab::Access::DEVELOPER)
+        expect(
+          ProjectAuthorization.where(
+            user_id: service_account.id, project_id: project.id,
+            access_level: Gitlab::Access::DEVELOPER)
+        ).to exist
       end
 
       it 'returns a success response' do
@@ -75,7 +80,7 @@ RSpec.describe Ai::ServiceAccountMemberAddService, feature_category: :duo_agent_
 
   context 'when adding developer returns false' do
     before do
-      allow(project).to receive(:add_developer).and_return(false)
+      allow(project).to receive(:add_member).and_return(false)
     end
 
     it 'does not add a new membership' do
@@ -92,7 +97,7 @@ RSpec.describe Ai::ServiceAccountMemberAddService, feature_category: :duo_agent_
 
   context 'when adding developer returns nil' do
     before do
-      allow(project).to receive(:add_developer).and_return(nil)
+      allow(project).to receive(:add_member).and_return(nil)
     end
 
     it 'does not add a new membership' do

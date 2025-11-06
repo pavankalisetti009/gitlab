@@ -13,7 +13,11 @@ module Ai
 
       return ServiceResponse.error(message: "Service account user not found") unless service_account_user
 
-      result = project.add_developer(service_account_user)
+      # We must sync project_authorizations immediately to the service_account_user here because the next
+      # steps in StartWorkflowService are immediately going to trigger permission checks and Gitaly callbacks on
+      # behalf of the service account which check they have permissions to create a branch in this project.
+      result = project.add_member(service_account_user, :developer, immediately_sync_authorizations: true)
+
       if result && result.persisted?
         ServiceResponse.success(payload: result)
       else
