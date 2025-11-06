@@ -24,9 +24,8 @@ module QA
       end
 
       context 'as a maintainer' do
-        it 'can be generated using Duo', :external_ai_provider,
-          quarantine: { issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/578687', type: :bug },
-          only: { pipeline: %i[staging staging-canary canary production] },
+        it 'can be generated using Duo', :external_ai_provider, only:
+          { pipeline: %i[staging staging-canary canary production] },
           testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/495408' do
           Page::MergeRequest::Show.perform do |merge_request|
             merge_request.edit_commit_message
