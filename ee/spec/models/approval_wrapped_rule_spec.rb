@@ -770,4 +770,74 @@ RSpec.describe ApprovalWrappedRule, feature_category: :code_review_workflow do
       it { is_expected.to eq(false) }
     end
   end
+
+  describe "v2 approval rule method delegations" do
+    context 'when v2_approval_rules ff is enabled' do
+      before do
+        stub_feature_flags(v2_approval_rules: true)
+      end
+
+      let(:v2_approval_rule) { create(:merge_requests_approval_rule, :from_merge_request, project_id: merge_request.project.id, merge_request: merge_request) }
+      let(:approval_wrapped_rule) { described_class.new(merge_request, v2_approval_rule) }
+
+      describe "originates_from_project?" do
+        subject { approval_wrapped_rule.originates_from_project? }
+
+        it { is_expected.to eq(false) }
+      end
+
+      describe "originates_from_merge_request?" do
+        subject { approval_wrapped_rule.originates_from_merge_request? }
+
+        it { is_expected.to eq(true) }
+      end
+
+      describe "user_defined?" do
+        subject { approval_wrapped_rule.user_defined? }
+
+        it { is_expected.to eq(true) }
+      end
+
+      context 'when wrapping a v1 approval rule' do
+        let(:v1_rule) { create(:approval_project_rule, project: merge_request.project) }
+        let(:approval_wrapped_rule) { described_class.new(merge_request, v1_rule) }
+
+        describe "originates_from_project?" do
+          subject { approval_wrapped_rule.originates_from_project? }
+
+          it { is_expected.to be_nil }
+        end
+
+        describe "originates_from_merge_request?" do
+          subject { approval_wrapped_rule.originates_from_merge_request? }
+
+          it { is_expected.to be_nil }
+        end
+      end
+    end
+
+    context 'when v2_approval_rules ff is disabled' do
+      before do
+        stub_feature_flags(v2_approval_rules: false)
+      end
+
+      describe "originates_from_project?" do
+        subject { approval_wrapped_rule.originates_from_project? }
+
+        it { is_expected.to be_nil }
+      end
+
+      describe "originates_from_merge_request?" do
+        subject { approval_wrapped_rule.originates_from_merge_request? }
+
+        it { is_expected.to be_nil }
+      end
+
+      describe "user_defined?" do
+        subject { approval_wrapped_rule.user_defined? }
+
+        it { is_expected.to be_nil }
+      end
+    end
+  end
 end
