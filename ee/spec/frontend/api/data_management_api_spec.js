@@ -3,7 +3,6 @@ import models from 'test_fixtures/api/admin/data_management/snippet_repository.j
 import axios from '~/lib/utils/axios_utils';
 import { HTTP_STATUS_OK } from '~/lib/utils/http_status';
 import { putModelAction, getModels, putBulkModelAction } from 'ee/api/data_management_api';
-import { MOCK_MODEL_CLASS } from 'ee_jest/admin/data_management/mock_data';
 
 const mockApiVersion = 'v4';
 const mockUrlRoot = '/gitlab';
@@ -69,10 +68,10 @@ describe('DataManagementApp', () => {
 
       const expectedUrl = `${mockUrlRoot}/api/${mockApiVersion}/admin/data_management/${model}/${action}`;
 
-      mock.onPut(expectedUrl).reply(HTTP_STATUS_OK, { data: MOCK_MODEL_CLASS });
+      mock.onPut(expectedUrl).reply(HTTP_STATUS_OK, { data: 'model' });
 
       await expect(putBulkModelAction(model, action)).resolves.toMatchObject({
-        data: { data: MOCK_MODEL_CLASS },
+        data: { data: 'model' },
       });
     });
   });

@@ -28,7 +28,7 @@ export default {
 
 <template>
   <div>
-    <gl-loading-icon v-if="isLoading" size="xl" />
+    <gl-loading-icon v-if="isLoading" class="gl-mt-5" size="xl" />
     <template v-else>
       <template v-if="hasItems">
         <slot></slot>

@@ -3,7 +3,7 @@ import models from 'test_fixtures/api/admin/data_management/snippet_repository.j
 import AdminDataManagementApp from 'ee/admin/data_management/components/app.vue';
 import GeoListTopBar from 'ee/geo_shared/list/components/geo_list_top_bar.vue';
 import GeoList from 'ee/geo_shared/list/components/geo_list.vue';
-import { MOCK_MODEL_CLASS } from 'ee_jest/admin/data_management/mock_data';
+import { MOCK_MODEL_TYPES } from 'ee_jest/admin/data_management/mock_data';
 import showToast from '~/vue_shared/plugins/global_toast';
 import {
   TOKEN_TYPES,
@@ -11,7 +11,7 @@ import {
   BULK_ACTIONS,
   GEO_TROUBLESHOOTING_LINK,
 } from 'ee/admin/data_management/constants';
-import { updateHistory, visitUrl } from '~/lib/utils/url_utility';
+import { updateHistory } from '~/lib/utils/url_utility';
 import { TEST_HOST } from 'spec/test_constants';
 import { getModels, putBulkModelAction } from 'ee/api/data_management_api';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -32,10 +32,14 @@ jest.mock('~/vue_shared/plugins/global_toast');
 describe('AdminDataManagementApp', () => {
   let wrapper;
 
+  const [defaultModel, otherModel] = MOCK_MODEL_TYPES;
+  const defaultModelTitle = defaultModel.titlePlural.toLowerCase();
+
   const createComponent = () => {
     wrapper = shallowMount(AdminDataManagementApp, {
       propsData: {
-        modelClass: MOCK_MODEL_CLASS,
+        modelTypes: MOCK_MODEL_TYPES,
+        initialModelName: defaultModel.name,
       },
     });
   };
@@ -57,7 +61,7 @@ describe('AdminDataManagementApp', () => {
       pageHeadingTitle: 'Data management',
       pageHeadingDescription: 'Review stored data and data health within your instance.',
       filteredSearchOptionLabel: 'Search by ID',
-      activeListboxItem: MOCK_MODEL_CLASS.name,
+      activeListboxItem: defaultModel.name,
       activeSort: DEFAULT_SORT,
       bulkActions: BULK_ACTIONS,
       showActions: false,
@@ -71,7 +75,7 @@ describe('AdminDataManagementApp', () => {
       isLoading: true,
       hasItems: false,
       emptyState: {
-        title: `No ${MOCK_MODEL_CLASS.titlePlural.toLowerCase()} exist`,
+        title: `No ${defaultModelTitle} exist`,
         description:
           'If you believe this is an error, see the %{linkStart}Geo troubleshooting%{linkEnd} documentation.',
         helpLink: GEO_TROUBLESHOOTING_LINK,
@@ -84,7 +88,7 @@ describe('AdminDataManagementApp', () => {
     it('calls getModels with correct parameters', () => {
       createComponent();
 
-      expect(getModels).toHaveBeenCalledWith(MOCK_MODEL_CLASS.name, {});
+      expect(getModels).toHaveBeenCalledWith(defaultModel.name, {});
     });
 
     describe('while loading model is querying', () => {
@@ -108,7 +112,7 @@ describe('AdminDataManagementApp', () => {
         expect(findGeoList().props('hasItems')).toBe(true);
         expect(findDataManagementItem().props()).toMatchObject({
           initialItem: item,
-          modelName: MOCK_MODEL_CLASS.name,
+          modelName: defaultModel.name,
         });
       });
 
@@ -160,7 +164,7 @@ describe('AdminDataManagementApp', () => {
       });
 
       it('creates alert', () => {
-        const message = `There was an error fetching ${MOCK_MODEL_CLASS.titlePlural.toLowerCase()}. Please refresh the page and try again.`;
+        const message = `There was an error fetching ${defaultModelTitle}. Please refresh the page and try again.`;
         expect(createAlert).toHaveBeenCalledWith({ message, captureError: true, error });
       });
 
@@ -177,6 +181,7 @@ describe('AdminDataManagementApp', () => {
   describe('when URL has params', () => {
     beforeEach(() => {
       const params = new URLSearchParams([
+        [TOKEN_TYPES.MODEL, otherModel.name],
         [`${TOKEN_TYPES.IDENTIFIERS}[]`, '123'],
         [`${TOKEN_TYPES.IDENTIFIERS}[]`, '456'],
         [TOKEN_TYPES.CHECKSUM_STATE, 'failed'],
@@ -188,7 +193,7 @@ describe('AdminDataManagementApp', () => {
     });
 
     it('calls getModels with correct parameters', () => {
-      expect(getModels).toHaveBeenCalledWith(MOCK_MODEL_CLASS.name, {
+      expect(getModels).toHaveBeenCalledWith(otherModel.name, {
         [TOKEN_TYPES.IDENTIFIERS]: ['123', '456'],
         [TOKEN_TYPES.CHECKSUM_STATE]: 'failed',
       });
@@ -209,12 +214,22 @@ describe('AdminDataManagementApp', () => {
   });
 
   describe('when GeoListTopBar emits `listboxChange` event', () => {
-    it('redirects to page with correct params', () => {
+    beforeEach(() => {
       createComponent();
 
-      findGeoListTopBar().vm.$emit('listboxChange', 'foo');
+      findGeoListTopBar().vm.$emit('listboxChange', otherModel.name);
+    });
 
-      expect(visitUrl).toHaveBeenCalledWith(`${TEST_HOST}/?model_name=foo`);
+    it('calls updateHistory with correct params', () => {
+      const params = new URLSearchParams({ [TOKEN_TYPES.MODEL]: otherModel.name });
+
+      expect(updateHistory).toHaveBeenCalledWith({
+        url: `${TEST_HOST}/?${params.toString()}`,
+      });
+    });
+
+    it('calls getModels with correct params', () => {
+      expect(getModels).toHaveBeenCalledWith(otherModel.name, {});
     });
   });
 
@@ -230,7 +245,7 @@ describe('AdminDataManagementApp', () => {
 
     it('calls updateHistory with correct params', () => {
       const params = new URLSearchParams([
-        [TOKEN_TYPES.MODEL, MOCK_MODEL_CLASS.name],
+        [TOKEN_TYPES.MODEL, defaultModel.name],
         [`${TOKEN_TYPES.IDENTIFIERS}[]`, '123'],
         [`${TOKEN_TYPES.IDENTIFIERS}[]`, '456'],
         [TOKEN_TYPES.CHECKSUM_STATE, 'failed'],
@@ -242,7 +257,7 @@ describe('AdminDataManagementApp', () => {
     });
 
     it('calls getModels with correct params', () => {
-      expect(getModels).toHaveBeenCalledWith(MOCK_MODEL_CLASS.name, {
+      expect(getModels).toHaveBeenCalledWith(defaultModel.name, {
         [TOKEN_TYPES.IDENTIFIERS]: ['123', '456'],
         [TOKEN_TYPES.CHECKSUM_STATE]: 'failed',
       });
@@ -269,19 +284,19 @@ describe('AdminDataManagementApp', () => {
     it('calls putBulkModelAction', () => {
       fireBulkAction(action);
 
-      expect(putBulkModelAction).toHaveBeenCalledWith(MOCK_MODEL_CLASS.name, action.action);
+      expect(putBulkModelAction).toHaveBeenCalledWith(defaultModel.name, action.action);
     });
 
     describe('when action succeeds', () => {
       beforeEach(async () => {
-        putBulkModelAction.mockResolvedValue({ data: MOCK_MODEL_CLASS });
+        putBulkModelAction.mockResolvedValue({ data: defaultModel });
         fireBulkAction(action);
         await waitForPromises();
       });
 
       it('shows toast', () => {
         expect(showToast).toHaveBeenCalledWith(
-          `Scheduled all ${MOCK_MODEL_CLASS.titlePlural.toLowerCase()} for checksum recalculation.`,
+          `Scheduled all ${defaultModelTitle} for checksum recalculation.`,
         );
       });
 
@@ -309,7 +324,7 @@ describe('AdminDataManagementApp', () => {
 
       it('creates alert', () => {
         expect(createAlert).toHaveBeenCalledWith({
-          message: `There was an error scheduling all ${MOCK_MODEL_CLASS.titlePlural.toLowerCase()} for checksum recalculation.`,
+          message: `There was an error scheduling all ${defaultModelTitle} for checksum recalculation.`,
           captureError: true,
           error,
         });

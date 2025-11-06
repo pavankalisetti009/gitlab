@@ -2,7 +2,7 @@ import { GlFilteredSearch } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import GeoListFilteredSearch from 'ee/geo_shared/list/components/geo_list_filtered_search.vue';
-import { MOCK_FILTERED_SEARCH_TOKENS, MOCK_FILTER_A } from '../mock_data';
+import { MOCK_FILTERED_SEARCH_TOKENS, MOCK_FILTER_A, MOCK_FILTER_B } from '../mock_data';
 
 describe('GeoListFilteredSearch', () => {
   let wrapper;
@@ -57,11 +57,22 @@ describe('GeoListFilteredSearch', () => {
       createComponent();
     });
 
-    it('on submit event emits search to the parent with the passed arguments', async () => {
-      findGlFilteredSearch().vm.$emit('submit', [MOCK_FILTER_A]);
-      await nextTick();
+    describe('when filters changed', () => {
+      it('on submit event emits search to the parent with the passed arguments', async () => {
+        findGlFilteredSearch().vm.$emit('submit', [MOCK_FILTER_B]);
+        await nextTick();
 
-      expect(wrapper.emitted('search')).toStrictEqual([[[MOCK_FILTER_A]]]);
+        expect(wrapper.emitted('search')).toStrictEqual([[[MOCK_FILTER_B]]]);
+      });
+    });
+
+    describe('when filters have not changed', () => {
+      it('on submit event does not emit search to the parent', async () => {
+        findGlFilteredSearch().vm.$emit('submit', [MOCK_FILTER_A]);
+        await nextTick();
+
+        expect(wrapper.emitted('search')).toBeUndefined();
+      });
     });
   });
 });

@@ -9,22 +9,21 @@ export const initAdminDataManagementApp = () => {
 
   if (!el) return null;
 
-  const modelTypes = convertObjectPropsToCamelCase(JSON.parse(el.dataset.modelTypes), {
-    deep: true,
-  });
+  const { initialModelName, modelTypes } = el.dataset;
 
-  const modelClass = convertObjectPropsToCamelCase(JSON.parse(el.dataset.modelClassData));
+  const parsedModelTypes = convertObjectPropsToCamelCase(JSON.parse(modelTypes), { deep: true });
 
   return new Vue({
     el,
     provide: {
-      listboxItems: formatListboxItems(modelTypes),
+      listboxItems: formatListboxItems(parsedModelTypes),
       filteredSearchTokens: FILTERED_SEARCH_TOKEN_OPTIONS,
     },
     render(createElement) {
       return createElement(AdminDataManagementApp, {
         props: {
-          modelClass,
+          initialModelName,
+          modelTypes: parsedModelTypes,
         },
       });
     },

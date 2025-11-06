@@ -1,5 +1,6 @@
 <script>
 import { GlFilteredSearch } from '@gitlab/ui';
+import { isEqual } from 'lodash';
 import { __ } from '~/locale';
 
 export default {
@@ -29,6 +30,8 @@ export default {
   },
   methods: {
     handleSubmit(val) {
+      if (isEqual(this.activeFilters, val)) return;
+
       this.$emit('search', val);
     },
   },
