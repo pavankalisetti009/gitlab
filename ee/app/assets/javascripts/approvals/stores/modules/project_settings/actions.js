@@ -71,13 +71,27 @@ export const setRules = ({ commit }, { rules, totalRules }) => {
 
 export const updateRules = ({ rootState, dispatch }, updatedRule) => {
   const { rules, rulesPagination } = rootState.approvals;
-  const isRuleExist = rules.some(({ id }) => id === updatedRule.id);
   const normalizedRule = mapApprovalRuleResponse(updatedRule);
+  const hasRule = rules.some(({ id }) => id === updatedRule.id);
 
-  const newRules = isRuleExist
-    ? rules.map((r) => (r.id === updatedRule.id ? normalizedRule : r))
-    : [...rules, mapApprovalRuleResponse(updatedRule)];
-  const totalRules = isRuleExist ? rulesPagination.total : rulesPagination.total + 1;
+  const isAnyApproverPlaceholder =
+    updatedRule.rule_type === 'any_approver' &&
+    rules.some((r) => r.id === null && r.ruleType === 'any_approver');
+
+  const isUpdatingExistingRule = hasRule || isAnyApproverPlaceholder;
+
+  let newRules;
+  if (hasRule) {
+    newRules = rules.map((r) => (r.id === updatedRule.id ? normalizedRule : r));
+  } else if (isAnyApproverPlaceholder) {
+    newRules = rules.map((r) =>
+      r.id === null && r.ruleType === 'any_approver' ? normalizedRule : r,
+    );
+  } else {
+    newRules = [...rules, normalizedRule];
+  }
+
+  const totalRules = isUpdatingExistingRule ? rulesPagination.total : rulesPagination.total + 1;
 
   dispatch('setRules', { rules: newRules, totalRules });
 };
