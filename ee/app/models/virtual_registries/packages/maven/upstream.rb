@@ -9,6 +9,7 @@ module VirtualRegistries
 
         TEST_PATH = 'com/company/app/maven-metadata.xml'
         MAVEN_CENTRAL_URL = 'https://repo1.maven.org/maven2'
+        TRAILING_SLASHES_REGEX = %r{/+$}
 
         SAME_URL_AND_CREDENTIALS_ERROR = 'already has a remote upstream with the same url and credentials'
         SAME_LOCAL_PROJECT_OR_GROUP_ERROR = 'already has a local upstream with the same target project or group'
@@ -57,6 +58,7 @@ module VirtualRegistries
           validate :ensure_local_project_or_local_group
         end
 
+        before_validation :normalize_url, if: -> { url? && remote? }
         before_validation :set_cache_validity_hours_for_maven_central, if: :url?, on: :create
         after_validation :reset_credentials, if: -> { persisted? && url_changed? }
 
@@ -176,6 +178,10 @@ module VirtualRegistries
         end
 
         private
+
+        def normalize_url
+          self.url = url.sub(TRAILING_SLASHES_REGEX, '')
+        end
 
         def reset_credentials
           return if username_changed? && password_changed?
