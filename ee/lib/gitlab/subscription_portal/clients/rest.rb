@@ -10,20 +10,28 @@ module Gitlab
           SubscriptionPortalRESTException = Class.new(RuntimeError)
 
           def generate_trial(params)
+            return request_disabled_error unless requests_enabled?
+
             trial_user_params = params[:trial_user] ? params : { trial_user: params }
             http_post("trials", admin_headers, trial_user_params)
           end
 
           def generate_addon_trial(params)
+            return request_disabled_error unless requests_enabled?
+
             trial_user_params = params[:trial_user] ? params : { trial_user: params }
             http_post("trials/create_addon", admin_headers, trial_user_params)
           end
 
           def generate_lead(params)
+            return request_disabled_error unless requests_enabled?
+
             http_post("trials/create_hand_raise_lead", admin_headers, params)
           end
 
           def generate_iterable(params)
+            return request_disabled_error unless requests_enabled?
+
             http_post("trials/create_iterable", admin_headers, params)
           end
 
@@ -46,17 +54,32 @@ module Gitlab
           end
 
           def namespace_eligible_trials(params)
+            return request_disabled_error unless requests_enabled?
+
             http_get('api/v1/gitlab/namespaces/trials/eligibility', admin_headers, params)
           end
 
           def namespace_trial_types
+            return request_disabled_error unless requests_enabled?
+
             http_get('api/v1/gitlab/namespaces/trials/trial_types', admin_headers)
           end
 
           private
 
+          def requests_enabled?
+            ::Gitlab::Saas.feature_available?(:cdot_requests)
+          end
+
           def error_message
             _('Our team has been notified. Please try again.')
+          end
+
+          def request_disabled_error
+            {
+              success: false,
+              data: { errors: 'Subscription portal requests disabled for non-SaaS.' }
+            }.with_indifferent_access
           end
 
           def track_exception(message)

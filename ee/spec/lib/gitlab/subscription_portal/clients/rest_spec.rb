@@ -125,172 +125,250 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Rest, feature_category: :sub
     end
   end
 
-  describe '#generate_trial' do
-    subject do
-      client.generate_trial({})
-    end
+  shared_examples 'when request is disabled' do
+    let(:message) { 'Subscription portal requests disabled for non-SaaS.' }
 
-    let(:route_path) { 'trials' }
+    it 'returns disabled error message' do
+      allow(Gitlab::HTTP).to receive(http_method)
 
-    it_behaves_like 'when response is successful'
-    it_behaves_like 'when response code is 422'
-    it_behaves_like 'when response code is 500'
-    it_behaves_like 'when http call raises an exception'
-    it_behaves_like 'a request that sends the GITLAB_QA_USER_AGENT value in the "User-Agent" header'
-
-    it "nests in the trial_user param if needed" do
-      expect(client).to receive(:http_post).with('trials', anything, { trial_user: { foo: 'bar' } })
-
-      client.generate_trial(foo: 'bar')
+      expect(Gitlab::HTTP).not_to receive(http_method)
+      expect(subject[:success]).to eq(false)
+      expect(subject[:data][:errors]).to eq(message)
     end
   end
 
-  describe '#generate_addon_trial' do
-    subject do
-      client.generate_addon_trial({})
+  describe 'request methods - non saas environment' do
+    describe '#generate_trial' do
+      subject do
+        client.generate_trial({})
+      end
+
+      let(:route_path) { 'trials' }
+
+      it_behaves_like 'when request is disabled'
     end
 
-    let(:route_path) { 'trials/create_addon' }
+    describe '#generate_addon_trial' do
+      subject do
+        client.generate_addon_trial({})
+      end
 
-    it_behaves_like 'when response is successful'
-    it_behaves_like 'when response code is 422'
-    it_behaves_like 'when response code is 500'
-    it_behaves_like 'when http call raises an exception'
-    it_behaves_like 'a request that sends the GITLAB_QA_USER_AGENT value in the "User-Agent" header'
+      let(:route_path) { 'trials/create_addon' }
 
-    it "nests in the trial_user param if needed" do
-      expect(client).to receive(:http_post).with('trials/create_addon', anything, { trial_user: { foo: 'bar' } })
+      it_behaves_like 'when request is disabled'
+    end
 
-      client.generate_addon_trial(foo: 'bar')
+    describe '#generate_lead' do
+      subject do
+        client.generate_lead({})
+      end
+
+      let(:route_path) { 'trials/create_hand_raise_lead' }
+
+      it_behaves_like 'when request is disabled'
+    end
+
+    describe '#generate_iterable' do
+      subject do
+        client.generate_iterable({})
+      end
+
+      let(:route_path) { 'trials/create_iterable' }
+
+      it_behaves_like 'when request is disabled'
+    end
+
+    describe '#namespace_eligible_trials' do
+      subject do
+        client.namespace_eligible_trials(namespace_ids: ['1'])
+      end
+
+      let(:http_method) { :get }
+      let(:route_path) { 'api/v1/gitlab/namespaces/trials/eligibility' }
+
+      it_behaves_like 'when request is disabled'
+    end
+
+    describe '#namespace_trial_types' do
+      subject do
+        client.namespace_trial_types
+      end
+
+      let(:http_method) { :get }
+      let(:route_path) { 'api/v1/gitlab/namespaces/trials/trial_types' }
+
+      it_behaves_like 'when request is disabled'
     end
   end
 
-  describe '#generate_lead' do
-    subject do
-      client.generate_lead({})
+  describe 'request methods', :saas do
+    describe '#generate_trial' do
+      subject do
+        client.generate_trial({})
+      end
+
+      let(:route_path) { 'trials' }
+
+      it_behaves_like 'when response is successful'
+      it_behaves_like 'when response code is 422'
+      it_behaves_like 'when response code is 500'
+      it_behaves_like 'when http call raises an exception'
+      it_behaves_like 'a request that sends the GITLAB_QA_USER_AGENT value in the "User-Agent" header'
+
+      it "nests in the trial_user param if needed" do
+        expect(client).to receive(:http_post).with('trials', anything, { trial_user: { foo: 'bar' } })
+
+        client.generate_trial(foo: 'bar')
+      end
     end
 
-    let(:route_path) { 'trials/create_hand_raise_lead' }
+    describe '#generate_addon_trial' do
+      subject do
+        client.generate_addon_trial({})
+      end
 
-    it_behaves_like 'when response is successful'
-    it_behaves_like 'when response code is 422'
-    it_behaves_like 'when response code is 500'
-    it_behaves_like 'when http call raises an exception'
-    it_behaves_like 'a request that sends the GITLAB_QA_USER_AGENT value in the "User-Agent" header'
-  end
+      let(:route_path) { 'trials/create_addon' }
 
-  describe '#generate_iterable' do
-    subject do
-      client.generate_iterable({})
+      it_behaves_like 'when response is successful'
+      it_behaves_like 'when response code is 422'
+      it_behaves_like 'when response code is 500'
+      it_behaves_like 'when http call raises an exception'
+      it_behaves_like 'a request that sends the GITLAB_QA_USER_AGENT value in the "User-Agent" header'
+
+      it "nests in the trial_user param if needed" do
+        expect(client).to receive(:http_post).with('trials/create_addon', anything, { trial_user: { foo: 'bar' } })
+
+        client.generate_addon_trial(foo: 'bar')
+      end
     end
 
-    let(:route_path) { 'trials/create_iterable' }
+    describe '#generate_lead' do
+      subject do
+        client.generate_lead({})
+      end
 
-    it_behaves_like 'when response is successful'
-    it_behaves_like 'when response code is 422'
-    it_behaves_like 'when response code is 500'
-    it_behaves_like 'when http call raises an exception'
-    it_behaves_like 'a request that sends the GITLAB_QA_USER_AGENT value in the "User-Agent" header'
-  end
+      let(:route_path) { 'trials/create_hand_raise_lead' }
 
-  describe '#opt_in_lead' do
-    subject do
-      client.opt_in_lead({})
+      it_behaves_like 'when response is successful'
+      it_behaves_like 'when response code is 422'
+      it_behaves_like 'when response code is 500'
+      it_behaves_like 'when http call raises an exception'
+      it_behaves_like 'a request that sends the GITLAB_QA_USER_AGENT value in the "User-Agent" header'
     end
 
-    let(:route_path) { 'api/marketo_leads/opt_in' }
+    describe '#generate_iterable' do
+      subject do
+        client.generate_iterable({})
+      end
 
-    it_behaves_like 'when response is successful'
-    it_behaves_like 'when response code is 422'
-    it_behaves_like 'when response code is 500'
-    it_behaves_like 'when http call raises an exception'
-  end
+      let(:route_path) { 'trials/create_iterable' }
 
-  describe '#payment_form_params' do
-    subject do
-      client.payment_form_params('cc', 123)
+      it_behaves_like 'when response is successful'
+      it_behaves_like 'when response code is 422'
+      it_behaves_like 'when response code is 500'
+      it_behaves_like 'when http call raises an exception'
+      it_behaves_like 'a request that sends the GITLAB_QA_USER_AGENT value in the "User-Agent" header'
     end
 
-    let(:http_method) { :get }
-    let(:route_path) { 'payment_forms/cc' }
+    describe '#opt_in_lead' do
+      subject do
+        client.opt_in_lead({})
+      end
 
-    it_behaves_like 'when response is successful'
-    it_behaves_like 'when response code is 422'
-    it_behaves_like 'when response code is 500'
-    it_behaves_like 'when http call raises an exception'
-    it_behaves_like 'a request that sends the GITLAB_QA_USER_AGENT value in the "User-Agent" header'
-  end
+      let(:route_path) { 'api/marketo_leads/opt_in' }
 
-  describe '#validate_payment_method' do
-    subject do
-      client.validate_payment_method('test_payment_method_id', {})
+      it_behaves_like 'when response is successful'
+      it_behaves_like 'when response code is 422'
+      it_behaves_like 'when response code is 500'
+      it_behaves_like 'when http call raises an exception'
     end
 
-    let(:http_method) { :post }
-    let(:route_path) { 'api/payment_methods/test_payment_method_id/validate' }
+    describe '#payment_form_params' do
+      subject do
+        client.payment_form_params('cc', 123)
+      end
 
-    it_behaves_like 'when response is successful'
-    it_behaves_like 'when response code is 422'
-    it_behaves_like 'when response code is 500'
-    it_behaves_like 'when http call raises an exception'
-    it_behaves_like 'a request that sends the GITLAB_QA_USER_AGENT value in the "User-Agent" header'
-  end
+      let(:http_method) { :get }
+      let(:route_path) { 'payment_forms/cc' }
 
-  describe '#create_seat_link' do
-    subject do
-      seat_link_data = Gitlab::SeatLinkData.new(
-        timestamp: Time.current,
-        key: 'license_key',
-        max_users: 5,
-        billable_users_count: 4)
-
-      client.create_seat_link(seat_link_data)
+      it_behaves_like 'when response is successful'
+      it_behaves_like 'when response code is 422'
+      it_behaves_like 'when response code is 500'
+      it_behaves_like 'when http call raises an exception'
+      it_behaves_like 'a request that sends the GITLAB_QA_USER_AGENT value in the "User-Agent" header'
     end
 
-    let(:http_method) { :post }
-    let(:route_path) { 'api/v1/seat_links' }
-    let(:headers) do
-      {
-        'Accept' => 'application/json',
-        'Content-Type' => 'application/json',
-        'User-Agent' => "GitLab/#{Gitlab::VERSION}"
-      }
+    describe '#validate_payment_method' do
+      subject do
+        client.validate_payment_method('test_payment_method_id', {})
+      end
+
+      let(:http_method) { :post }
+      let(:route_path) { 'api/payment_methods/test_payment_method_id/validate' }
+
+      it_behaves_like 'when response is successful'
+      it_behaves_like 'when response code is 422'
+      it_behaves_like 'when response code is 500'
+      it_behaves_like 'when http call raises an exception'
+      it_behaves_like 'a request that sends the GITLAB_QA_USER_AGENT value in the "User-Agent" header'
     end
 
-    it_behaves_like 'when response is successful'
-    it_behaves_like 'when response code is 422'
-    it_behaves_like 'when response code is 500'
-    it_behaves_like 'when http call raises an exception'
-    it_behaves_like 'a request that sends the GITLAB_QA_USER_AGENT value in the "User-Agent" header'
-  end
+    describe '#create_seat_link' do
+      subject do
+        seat_link_data = Gitlab::SeatLinkData.new(
+          timestamp: Time.current,
+          key: 'license_key',
+          max_users: 5,
+          billable_users_count: 4)
 
-  describe '#namespace_eligible_trials' do
-    subject do
-      client.namespace_eligible_trials(namespace_ids: ['1'])
+        client.create_seat_link(seat_link_data)
+      end
+
+      let(:http_method) { :post }
+      let(:route_path) { 'api/v1/seat_links' }
+      let(:headers) do
+        {
+          'Accept' => 'application/json',
+          'Content-Type' => 'application/json',
+          'User-Agent' => "GitLab/#{Gitlab::VERSION}"
+        }
+      end
+
+      it_behaves_like 'when response is successful'
+      it_behaves_like 'when response code is 422'
+      it_behaves_like 'when response code is 500'
+      it_behaves_like 'when http call raises an exception'
+      it_behaves_like 'a request that sends the GITLAB_QA_USER_AGENT value in the "User-Agent" header'
     end
 
-    let(:http_method) { :get }
-    let(:route_path) { 'api/v1/gitlab/namespaces/trials/eligibility' }
+    describe '#namespace_eligible_trials' do
+      subject do
+        client.namespace_eligible_trials(namespace_ids: ['1'])
+      end
 
-    it_behaves_like 'when response is successful'
-    it_behaves_like 'when response code is 422'
-    it_behaves_like 'when response code is 500'
-    it_behaves_like 'when http call raises an exception'
-    it_behaves_like 'a request that sends the GITLAB_QA_USER_AGENT value in the "User-Agent" header'
-  end
+      let(:http_method) { :get }
+      let(:route_path) { 'api/v1/gitlab/namespaces/trials/eligibility' }
 
-  describe '#namespace_trial_types' do
-    subject do
-      client.namespace_trial_types
+      it_behaves_like 'when response is successful'
+      it_behaves_like 'when response code is 422'
+      it_behaves_like 'when response code is 500'
+      it_behaves_like 'when http call raises an exception'
+      it_behaves_like 'a request that sends the GITLAB_QA_USER_AGENT value in the "User-Agent" header'
     end
 
-    let(:http_method) { :get }
-    let(:route_path) { 'api/v1/gitlab/namespaces/trials/trial_types' }
+    describe '#namespace_trial_types' do
+      subject do
+        client.namespace_trial_types
+      end
 
-    it_behaves_like 'when response is successful'
-    it_behaves_like 'when response code is 422'
-    it_behaves_like 'when response code is 500'
-    it_behaves_like 'when http call raises an exception'
-    it_behaves_like 'a request that sends the GITLAB_QA_USER_AGENT value in the "User-Agent" header'
+      let(:http_method) { :get }
+      let(:route_path) { 'api/v1/gitlab/namespaces/trials/trial_types' }
+
+      it_behaves_like 'when response is successful'
+      it_behaves_like 'when response code is 422'
+      it_behaves_like 'when response code is 500'
+      it_behaves_like 'when http call raises an exception'
+      it_behaves_like 'a request that sends the GITLAB_QA_USER_AGENT value in the "User-Agent" header'
+    end
   end
 end
