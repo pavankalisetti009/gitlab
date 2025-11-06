@@ -63,9 +63,10 @@ RSpec.describe Projects::PushRulesController, feature_category: :source_code_man
       end
 
       context 'when global setting is enabled' do
-        context 'with read_organization_push_rules feature flag disabled' do
+        context 'with read_organization_push_rules and update_organization_push_rules feature flag disabled' do
           before do
             stub_feature_flags(read_organization_push_rules: false)
+            stub_feature_flags(update_organization_push_rules: false)
             stub_licensed_features(rule_attr => true)
             create(:push_rule_sample, rule_attr => true)
           end

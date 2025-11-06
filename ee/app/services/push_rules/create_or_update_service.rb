@@ -31,7 +31,11 @@ module PushRules
       if group_container? && Feature.enabled?(:read_and_write_group_push_rules, group)
         group_push_rule
       elsif organization_container?
-        PushRuleFinder.new.execute || PushRule.new(organization_id: container.id, is_sample: true)
+        if Feature.enabled?(:update_organization_push_rules, Feature.current_request)
+          PushRuleFinder.new(container).execute || OrganizationPushRule.new(organization_id: container.id)
+        else
+          PushRuleFinder.new.execute || PushRule.new(organization_id: container.id, is_sample: true)
+        end
       else
         container.push_rule || container.build_push_rule
       end
@@ -71,7 +75,7 @@ module PushRules
       return group_push_rule if group_container? && Feature.enabled?(:read_and_write_group_push_rules, group)
       return push_rule unless organization_container?
 
-      # load organization push rule and return it when feature flag is on
+      # load organization push rule and return it when read_organization_push_rules feature flag is on
       # because the trigger currently syncs writes from push_rules to organization_push_rules
       PushRuleFinder.new(container).execute
     end

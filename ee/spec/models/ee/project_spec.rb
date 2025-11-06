@@ -1372,9 +1372,10 @@ RSpec.describe Project, feature_category: :groups_and_projects do
 
         it { is_expected.to eq(push_rule_sample) }
 
-        context "when read_organization_push_rules FF is disabled" do
+        context "when read_organization_push_rules and update_organization_push_rules FF is disabled" do
           before do
             stub_feature_flags(read_organization_push_rules: false)
+            stub_feature_flags(update_organization_push_rules: false)
           end
 
           let!(:push_rule_sample) { create(:push_rule_sample) }

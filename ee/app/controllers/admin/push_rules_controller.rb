@@ -37,14 +37,22 @@ class Admin::PushRulesController < Admin::ApplicationController
   def push_rule_params
     # filtering occurs in the PushRules::CreateOrUpdateService
     # where this method is passed into
-    params.require(:push_rule).to_unsafe_h
+    if Feature.enabled?(:update_organization_push_rules, Feature.current_request)
+      params.require(:organization_push_rule).to_unsafe_h
+    else
+      params.require(:push_rule).to_unsafe_h
+    end
   end
 
   # rubocop: disable CodeReuse/ActiveRecord
   def set_push_rule
-    @push_rule ||= PushRule.find_or_initialize_by(is_sample: true) do |push_rule|
-      push_rule.assign_attributes(organization: Current.organization)
-    end
+    @push_rule ||= if Feature.enabled?(:update_organization_push_rules, Feature.current_request)
+                     OrganizationPushRule.find_or_initialize_by(organization_id: Current.organization.id)
+                   else
+                     PushRule.find_or_initialize_by(is_sample: true) do |push_rule|
+                       push_rule.assign_attributes(organization: Current.organization)
+                     end
+                   end
   end
   # rubocop: enable CodeReuse/ActiveRecord
 
@@ -53,6 +61,7 @@ class Admin::PushRulesController < Admin::ApplicationController
   end
 
   def link_push_rule_to_application_settings
+    return if Feature.enabled?(:update_organization_push_rules, Feature.current_request)
     return if @application_setting.push_rule_id
 
     @application_setting.update(push_rule_id: @push_rule.id)

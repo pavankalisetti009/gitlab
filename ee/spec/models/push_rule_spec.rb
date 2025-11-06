@@ -127,9 +127,10 @@ RSpec.describe PushRule, :saas, feature_category: :source_code_management do
   end
 
   describe '#commit_validation?' do
-    context 'with read_organization_push_rules feature flag disabled' do
+    context 'with read_organization_push_rules and update_organization_push_rules feature flag disabled' do
       before do
         stub_feature_flags(read_organization_push_rules: false)
+        stub_feature_flags(update_organization_push_rules: false)
       end
 
       include_examples 'commit validated push rule', :push_rule_sample

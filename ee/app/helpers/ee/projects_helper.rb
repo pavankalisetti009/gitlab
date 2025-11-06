@@ -143,7 +143,7 @@ module EE
     end
 
     def can_change_push_rule?(push_rule, rule, context)
-      return true if push_rule.global?
+      return true if push_rule.is_a?(OrganizationPushRule) || push_rule.global?
 
       can?(current_user, :"change_#{rule}", context)
     end

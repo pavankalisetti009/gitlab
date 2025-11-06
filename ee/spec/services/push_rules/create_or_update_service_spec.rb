@@ -32,11 +32,25 @@ RSpec.describe PushRules::CreateOrUpdateService, feature_category: :source_code_
     let_it_be(:container) { create(:organization) }
 
     context 'with existing global push rule' do
-      let_it_be(:push_rule) { create(:push_rule_sample, organization: container) }
+      let_it_be(:push_rule) { create(:organization_push_rule, organization_id: container.id) }
 
-      it 'updates existing push rule' do
-        expect { service.execute }
-          .to not_change { PushRule.count }
+      context "when update_organization_push_rules FF is disabled" do
+        before do
+          stub_feature_flags(update_organization_push_rules: false)
+        end
+
+        let_it_be(:push_rule) { create(:push_rule_sample) }
+
+        it 'updates existing global push rule' do
+          expect { subject.execute }
+            .to not_change { PushRule.count }
+            .and change { push_rule.reload.max_file_size }.to(28)
+        end
+      end
+
+      it 'updates existing organization push rule' do
+        expect { subject.execute }
+          .to not_change { OrganizationPushRule.count }
           .and change { push_rule.reload.max_file_size }.to(28)
       end
 
@@ -67,10 +81,26 @@ RSpec.describe PushRules::CreateOrUpdateService, feature_category: :source_code_
           stub_feature_flags(read_organization_push_rules: false)
         end
 
-        it 'creates a new push rule', :aggregate_failures do
-          expect { service.execute }.to change { PushRule.count }.by(1)
+        context "when update_organization_push_rules FF is disabled" do
+          before do
+            stub_feature_flags(update_organization_push_rules: false)
+          end
+
+          it 'creates a new push rule', :aggregate_failures do
+            expect { subject.execute }.to change { PushRule.count }.by(1)
+
+            expect(PushRuleFinder.new(container).execute.max_file_size).to eq(28)
+          end
+        end
+
+        it 'creates a new organization push rule', :aggregate_failures do
+          expect { subject.execute }.to change { OrganizationPushRule.count }.by(1)
 
           expect(PushRuleFinder.new(container).execute.max_file_size).to eq(28)
+        end
+
+        it 'does not create a new push rule', :aggregate_failures do
+          expect { subject.execute }.not_to change { PushRule.count }
         end
 
         it 'responds with a successful service response', :aggregate_failures do

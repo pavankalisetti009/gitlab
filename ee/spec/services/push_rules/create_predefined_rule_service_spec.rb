@@ -9,11 +9,12 @@ RSpec.describe PushRules::CreatePredefinedRuleService, feature_category: :source
   subject(:service) { described_class.new(container: project, current_user: user, params: {}) }
 
   describe "#execute" do
-    context 'with read_organization_push_rules feature flag disabled' do
+    context 'with read_organization_push_rules and update_organization_push_rules feature flag disabled' do
       let_it_be(:global_push_rule) { create(:push_rule_sample, project: project) }
 
       before do
         stub_feature_flags(read_organization_push_rules: false)
+        stub_feature_flags(update_organization_push_rules: false)
       end
 
       describe "guard clauses" do
