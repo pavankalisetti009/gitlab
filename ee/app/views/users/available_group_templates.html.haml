@@ -37,7 +37,7 @@
 
     = paginate @groups_with_project_templates, params: { controller: 'users', action: 'available_group_templates', username: current_user.username }, theme: 'gitlab', remote: true
   - else
-    = render Pajamas::AlertComponent.new(variant: :warning, dismissible: false, show_icon: false) do |c|
+    = render Pajamas::AlertComponent.new(variant: :warning, dismissible: false) do |c|
       - c.with_body do
         = _("Custom project templates have not been set up for groups that you are a member of. They are enabled from a group’s settings page. Contact your group’s Owner or Maintainer to setup custom project templates.")
       - c.with_actions do
