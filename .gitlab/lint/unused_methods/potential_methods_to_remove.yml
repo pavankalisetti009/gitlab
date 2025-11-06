@@ -403,8 +403,6 @@ saved_change_to_parent?:
   file: app/models/namespace.rb
 saved_change_to_path_or_parent?:
   file: app/models/namespace.rb
-normal_select:
-  file: app/models/namespaces/traversal/linear_scopes.rb
 user_admin?:
   file: app/models/personal_access_token.rb
 import_scheduled?:
