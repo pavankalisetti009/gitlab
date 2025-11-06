@@ -23,8 +23,8 @@ module Gitlab
         }
       GQL
 
-      GET_ONE_TIME_CREDITS_QUERY = <<~GQL
-        query subscriptionUsageOneTimeCredits(
+      GET_MONTHLY_WAIVER_QUERY = <<~GQL
+        query subscriptionUsageMonthlyWaiver(
           $namespaceId: ID,
           $licenseKey: String,
           $startDate: ISO8601Date,
@@ -32,10 +32,9 @@ module Gitlab
         ) {
           subscription(namespaceId: $namespaceId, licenseKey: $licenseKey) {
             gitlabCreditsUsage(startDate: $startDate, endDate: $endDate) {
-              oneTimeCredits {
+              monthlyWaiver {
                 creditsUsed
                 totalCredits
-                totalCreditsRemaining
               }
             }
           }
@@ -136,7 +135,7 @@ module Gitlab
                   totalCredits
                   creditsUsed
                   monthlyCommitmentCreditsUsed
-                  oneTimeCreditsUsed
+                  monthlyWaiverCreditsUsed
                   overageCreditsUsed
                 }
               }
@@ -205,18 +204,18 @@ module Gitlab
       end
       strong_memoize_attr :get_metadata
 
-      def get_one_time_credits
+      def get_monthly_waiver
         response = execute_graphql_query(
-          query: GET_ONE_TIME_CREDITS_QUERY,
+          query: GET_MONTHLY_WAIVER_QUERY,
           variables: default_variables.merge(startDate: start_date, endDate: end_date)
         )
 
         if unsuccessful_response?(response)
-          error(GET_ONE_TIME_CREDITS_QUERY, response)
+          error(GET_MONTHLY_WAIVER_QUERY, response)
         else
           {
             success: true,
-            oneTimeCredits: response.dig(:data, :subscription, :gitlabCreditsUsage, :oneTimeCredits)
+            monthlyWaiver: response.dig(:data, :subscription, :gitlabCreditsUsage, :monthlyWaiver)
           }
         end
       end

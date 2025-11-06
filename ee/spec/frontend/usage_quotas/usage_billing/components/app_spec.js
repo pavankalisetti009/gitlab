@@ -3,7 +3,7 @@ import { GlAlert } from '@gitlab/ui';
 import VueApollo from 'vue-apollo';
 import CurrentUsageCard from 'ee/usage_quotas/usage_billing/components/current_usage_card.vue';
 import CurrentOverageUsageCard from 'ee/usage_quotas/usage_billing/components/current_overage_usage_card.vue';
-import OneTimeCreditsCard from 'ee/usage_quotas/usage_billing/components/one_time_credits_card.vue';
+import MonthlyWaiverCard from 'ee/usage_quotas/usage_billing/components/monthly_waiver_card.vue';
 import PurchaseCommitmentCard from 'ee/usage_quotas/usage_billing/components/purchase_commitment_card.vue';
 import getSubscriptionUsageQuery from 'ee/usage_quotas/usage_billing/graphql/get_subscription_usage.query.graphql';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -17,12 +17,12 @@ import PageHeading from '~/vue_shared/components/page_heading.vue';
 import UserDate from '~/vue_shared/components/user_date.vue';
 import HumanTimeframe from '~/vue_shared/components/datetime/human_timeframe.vue';
 import {
-  usageDataNoCommitmentNoOtcNoOverage,
+  usageDataNoCommitmentNoMonthlyWaiverNoOverage,
   usageDataNoCommitmentWithOverage,
   usageDataWithCommitment,
   usageDataWithoutLastEventTransactionAt,
-  usageDataCommitmentWithOtc,
-  usageDataCommitmentWithOtcWithOverage,
+  usageDataCommitmentWithMonthlyWaiver,
+  usageDataCommitmentWithMonthlyWaiverWithOverage,
 } from '../mock_data';
 
 jest.mock('~/lib/logger');
@@ -143,25 +143,25 @@ describe('UsageBillingApp', () => {
 
   describe('summary cards visibility', () => {
     describe.each`
-      scenario                                           | currentUsageCard | oneTimeCreditsCard | currentOverageUsageCard | monthlyCommitment                        | oneTimeCredits                                    | overage
-      ${'monthly commitment'}                            | ${true}          | ${false}           | ${false}                | ${{ creditsUsed: 10, totalCredits: 24 }} | ${null}                                           | ${{ isAllowed: false, creditsUsed: 0 }}
-      ${'monthly commitment with OTC'}                   | ${true}          | ${true}            | ${false}                | ${{ creditsUsed: 10, totalCredits: 24 }} | ${{ creditsUsed: 100, totalCreditsRemaining: 0 }} | ${{ isAllowed: false, creditsUsed: 0 }}
-      ${'monthly commitment with OTC and empty overage'} | ${true}          | ${true}            | ${false}                | ${{ creditsUsed: 10, totalCredits: 24 }} | ${{ creditsUsed: 100, totalCreditsRemaining: 0 }} | ${{ isAllowed: true, creditsUsed: 0 }}
-      ${'monthly commitment with OTC and overage'}       | ${true}          | ${false}           | ${true}                 | ${{ creditsUsed: 10, totalCredits: 24 }} | ${{ creditsUsed: 100, totalCreditsRemaining: 0 }} | ${{ isAllowed: true, creditsUsed: 100 }}
-      ${'monthly commitment with overage'}               | ${true}          | ${false}           | ${true}                 | ${{ creditsUsed: 10, totalCredits: 24 }} | ${null}                                           | ${{ isAllowed: true, creditsUsed: 100 }}
-      ${'no commitment no OTC no overage'}               | ${false}         | ${false}           | ${false}                | ${null}                                  | ${null}                                           | ${{ isAllowed: false, creditsUsed: 0 }}
-      ${'OTC'}                                           | ${false}         | ${true}            | ${false}                | ${null}                                  | ${{ creditsUsed: 100, totalCreditsRemaining: 0 }} | ${{ isAllowed: false, creditsUsed: 0 }}
-      ${'OTC with empty overage'}                        | ${false}         | ${true}            | ${false}                | ${null}                                  | ${{ creditsUsed: 100, totalCreditsRemaining: 0 }} | ${{ isAllowed: true, creditsUsed: 0 }}
-      ${'OTC with overage'}                              | ${false}         | ${false}           | ${true}                 | ${null}                                  | ${null}                                           | ${{ isAllowed: true, creditsUsed: 100 }}
-      ${'overage'}                                       | ${false}         | ${false}           | ${true}                 | ${null}                                  | ${null}                                           | ${{ isAllowed: true, creditsUsed: 100 }}
+      scenario                                                      | currentUsageCard | monthlyWaiverCard | currentOverageUsageCard | monthlyCommitment                        | monthlyWaiver                              | overage
+      ${'monthly commitment'}                                       | ${true}          | ${false}          | ${false}                | ${{ creditsUsed: 10, totalCredits: 24 }} | ${null}                                    | ${{ isAllowed: false, creditsUsed: 0 }}
+      ${'monthly commitment with monthly waiver'}                   | ${true}          | ${true}           | ${false}                | ${{ creditsUsed: 10, totalCredits: 24 }} | ${{ creditsUsed: 50, totalCredits: 100 }}  | ${{ isAllowed: false, creditsUsed: 0 }}
+      ${'monthly commitment with monthly waiver and empty overage'} | ${true}          | ${true}           | ${false}                | ${{ creditsUsed: 10, totalCredits: 24 }} | ${{ creditsUsed: 50, totalCredits: 100 }}  | ${{ isAllowed: true, creditsUsed: 0 }}
+      ${'monthly commitment with monthly waiver and overage'}       | ${true}          | ${false}          | ${true}                 | ${{ creditsUsed: 10, totalCredits: 24 }} | ${{ creditsUsed: 100, totalCredits: 100 }} | ${{ isAllowed: true, creditsUsed: 100 }}
+      ${'monthly commitment with overage'}                          | ${true}          | ${false}          | ${true}                 | ${{ creditsUsed: 10, totalCredits: 24 }} | ${null}                                    | ${{ isAllowed: true, creditsUsed: 100 }}
+      ${'no commitment no monthly waiver no overage'}               | ${false}         | ${false}          | ${false}                | ${null}                                  | ${null}                                    | ${{ isAllowed: false, creditsUsed: 0 }}
+      ${'monthly waiver'}                                           | ${false}         | ${true}           | ${false}                | ${null}                                  | ${{ creditsUsed: 50, totalCredits: 100 }}  | ${{ isAllowed: false, creditsUsed: 0 }}
+      ${'monthly waiver with empty overage'}                        | ${false}         | ${true}           | ${false}                | ${null}                                  | ${{ creditsUsed: 100, totalCredits: 100 }} | ${{ isAllowed: true, creditsUsed: 0 }}
+      ${'monthly waiver with overage'}                              | ${false}         | ${false}          | ${true}                 | ${null}                                  | ${{ creditsUsed: 100, totalCredits: 100 }} | ${{ isAllowed: true, creditsUsed: 100 }}
+      ${'overage'}                                                  | ${false}         | ${false}          | ${true}                 | ${null}                                  | ${null}                                    | ${{ isAllowed: true, creditsUsed: 100 }}
     `(
       'scenario: $scenario',
       ({
         monthlyCommitment,
-        oneTimeCredits,
+        monthlyWaiver,
         overage,
         currentUsageCard,
-        oneTimeCreditsCard,
+        monthlyWaiverCard,
         currentOverageUsageCard,
       }) => {
         beforeEach(async () => {
@@ -169,9 +169,9 @@ describe('UsageBillingApp', () => {
             mockQueryHandler: jest.fn().mockResolvedValue({
               data: {
                 subscriptionUsage: {
-                  ...usageDataNoCommitmentNoOtcNoOverage.data.subscriptionUsage,
+                  ...usageDataNoCommitmentNoMonthlyWaiverNoOverage.data.subscriptionUsage,
                   monthlyCommitment,
-                  oneTimeCredits,
+                  monthlyWaiver,
                   overage,
                 },
               },
@@ -184,8 +184,8 @@ describe('UsageBillingApp', () => {
           expect(wrapper.findComponent(CurrentUsageCard).exists()).toBe(currentUsageCard);
         });
 
-        it(`will switch OneTimeCreditsCard visibility: ${oneTimeCredits}`, () => {
-          expect(wrapper.findComponent(OneTimeCreditsCard).exists()).toBe(oneTimeCreditsCard);
+        it(`will switch MonthlyWaiverCard visibility: ${monthlyWaiverCard}`, () => {
+          expect(wrapper.findComponent(MonthlyWaiverCard).exists()).toBe(monthlyWaiverCard);
         });
 
         it(`will switch CurrentOverageUsageCard visibility: ${currentOverageUsageCard}`, () => {
@@ -211,40 +211,42 @@ describe('UsageBillingApp', () => {
       });
     });
 
-    it('does not render one-time-credits-card', () => {
-      expect(wrapper.findComponent(OneTimeCreditsCard).exists()).toBe(false);
+    it('does not render monthly-waiver-card', () => {
+      expect(wrapper.findComponent(MonthlyWaiverCard).exists()).toBe(false);
     });
   });
 
-  describe('monthly commitment with one-time credits', () => {
+  describe('monthly commitment with monthly waiver credits', () => {
     beforeEach(async () => {
-      const mockQueryHandler = jest.fn().mockResolvedValue(usageDataCommitmentWithOtc);
+      const mockQueryHandler = jest.fn().mockResolvedValue(usageDataCommitmentWithMonthlyWaiver);
 
       createComponent({ mockQueryHandler });
       await waitForPromises();
     });
 
-    it('renders one-time-credits-card', () => {
-      expect(wrapper.findComponent(OneTimeCreditsCard).props()).toMatchObject({
-        otcRemainingCredits: 250,
-        otcCreditsUsed: 750,
+    it('renders monthly-waiver-card', () => {
+      expect(wrapper.findComponent(MonthlyWaiverCard).props()).toMatchObject({
+        monthlyWaiverTotalCredits: 1000,
+        monthlyWaiverCreditsUsed: 750,
       });
     });
   });
 
-  describe('monthly commitment with one-time credits with overage', () => {
+  describe('monthly commitment with monthly waiver with overage', () => {
     beforeEach(async () => {
-      const mockQueryHandler = jest.fn().mockResolvedValue(usageDataCommitmentWithOtcWithOverage);
+      const mockQueryHandler = jest
+        .fn()
+        .mockResolvedValue(usageDataCommitmentWithMonthlyWaiverWithOverage);
 
       createComponent({ mockQueryHandler });
       await waitForPromises();
     });
 
-    it('renders one-time-credits-card', () => {
+    it('renders current-overage-usage-card', () => {
       expect(wrapper.findComponent(CurrentOverageUsageCard).exists()).toBe(true);
       expect(wrapper.findComponent(CurrentOverageUsageCard).props()).toMatchObject({
         overageCreditsUsed: 100,
-        otcCreditsUsed: 1000,
+        monthlyWaiverCreditsUsed: 1000,
       });
     });
   });
@@ -269,7 +271,7 @@ describe('UsageBillingApp', () => {
       expect(currentOverageUsageCard.exists()).toBe(true);
       expect(currentOverageUsageCard.props()).toMatchObject({
         overageCreditsUsed: 50,
-        otcCreditsUsed: 0,
+        monthlyWaiverCreditsUsed: 0,
       });
     });
 
@@ -280,10 +282,12 @@ describe('UsageBillingApp', () => {
     });
   });
 
-  describe('no monthly commitment no one-time credits no overage', () => {
+  describe('no monthly commitment no monthly waiver no overage', () => {
     beforeEach(async () => {
       createComponent({
-        mockQueryHandler: jest.fn().mockResolvedValue(usageDataNoCommitmentNoOtcNoOverage),
+        mockQueryHandler: jest
+          .fn()
+          .mockResolvedValue(usageDataNoCommitmentNoMonthlyWaiverNoOverage),
       });
       await waitForPromises();
     });

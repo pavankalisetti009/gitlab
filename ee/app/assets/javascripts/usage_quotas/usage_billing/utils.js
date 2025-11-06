@@ -3,7 +3,7 @@ export const fillUsageValues = (usage) => {
     creditsUsed,
     totalCredits,
     monthlyCommitmentCreditsUsed,
-    oneTimeCreditsUsed,
+    monthlyWaiverCreditsUsed,
     overageCreditsUsed,
   } = usage ?? {};
 
@@ -11,7 +11,7 @@ export const fillUsageValues = (usage) => {
     creditsUsed: creditsUsed ?? 0,
     totalCredits: totalCredits ?? 0,
     monthlyCommitmentCreditsUsed: monthlyCommitmentCreditsUsed ?? 0,
-    oneTimeCreditsUsed: oneTimeCreditsUsed ?? 0,
+    monthlyWaiverCreditsUsed: monthlyWaiverCreditsUsed ?? 0,
     overageCreditsUsed: overageCreditsUsed ?? 0,
   };
 };

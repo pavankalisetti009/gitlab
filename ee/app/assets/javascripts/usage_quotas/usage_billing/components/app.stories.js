@@ -3,12 +3,12 @@ import {
   mockUsersUsageDataWithPool,
   mockUsersUsageDataWithoutPool,
   mockUsersUsageDataWithNullUsage,
-  usageDataCommitmentWithOtcWithOverage,
+  usageDataCommitmentWithMonthlyWaiverWithOverage,
   usageDataWithCommitment,
-  usageDataNoCommitmentNoOtcNoOverage,
+  usageDataNoCommitmentNoMonthlyWaiverNoOverage,
   usageDataNoCommitmentWithOverage,
   usageDataWithCommitmentWithOverage,
-  usageDataCommitmentWithOtc,
+  usageDataCommitmentWithMonthlyWaiver,
 } from 'ee_jest/usage_quotas/usage_billing/mock_data';
 import { createMockClient } from 'helpers/mock_apollo_helper';
 import getSubscriptionUsersUsageQuery from '../graphql/get_subscription_users_usage.query.graphql';
@@ -70,9 +70,10 @@ export const Default = {
   render: createTemplate(),
 };
 
-export const CommitmentWithOtcCredits = {
+export const CommitmentWithMonthlyWaiverCredits = {
   render: (...args) => {
-    const getSubscriptionUsageQueryHandler = () => Promise.resolve(usageDataCommitmentWithOtc);
+    const getSubscriptionUsageQueryHandler = () =>
+      Promise.resolve(usageDataCommitmentWithMonthlyWaiver);
 
     return createTemplate({
       getSubscriptionUsageQueryHandler,
@@ -80,10 +81,10 @@ export const CommitmentWithOtcCredits = {
   },
 };
 
-export const CommitmentWithOtcWithOverage = {
+export const CommitmentWithMonthlyWaiverWithOverage = {
   render: (...args) => {
     const getSubscriptionUsageQueryHandler = () =>
-      Promise.resolve(usageDataCommitmentWithOtcWithOverage);
+      Promise.resolve(usageDataCommitmentWithMonthlyWaiverWithOverage);
 
     return createTemplate({
       getSubscriptionUsageQueryHandler,
@@ -117,13 +118,13 @@ export const NoCommitmentWithOverage = {
   },
 };
 
-export const NoCommitmentNoOtcNoOverage = {
+export const NoCommitmentNoMonthlyWaiverNoOverage = {
   render: (...args) => {
     const getSubscriptionUsersUsageQueryHandler = () =>
       Promise.resolve(mockUsersUsageDataWithoutPool);
 
     const getSubscriptionUsageQueryHandler = () =>
-      Promise.resolve(usageDataNoCommitmentNoOtcNoOverage);
+      Promise.resolve(usageDataNoCommitmentNoMonthlyWaiverNoOverage);
 
     return createTemplate({
       getSubscriptionUsersUsageQueryHandler,

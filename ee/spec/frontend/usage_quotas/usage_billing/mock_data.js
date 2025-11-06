@@ -23,7 +23,7 @@ export const mockUsersUsageDataWithoutPool = {
                 creditsUsed: 450,
                 totalCredits: 500,
                 monthlyCommitmentCreditsUsed: 0,
-                oneTimeCreditsUsed: 0,
+                monthlyWaiverCreditsUsed: 0,
                 overageCreditsUsed: 0,
               },
             },
@@ -36,7 +36,7 @@ export const mockUsersUsageDataWithoutPool = {
                 creditsUsed: 500,
                 totalCredits: 500,
                 monthlyCommitmentCreditsUsed: 0,
-                oneTimeCreditsUsed: 0,
+                monthlyWaiverCreditsUsed: 0,
                 overageCreditsUsed: 67,
               },
             },
@@ -49,7 +49,7 @@ export const mockUsersUsageDataWithoutPool = {
                 creditsUsed: 500,
                 totalCredits: 500,
                 monthlyCommitmentCreditsUsed: 0,
-                oneTimeCreditsUsed: 0,
+                monthlyWaiverCreditsUsed: 0,
                 overageCreditsUsed: 89,
               },
             },
@@ -62,7 +62,7 @@ export const mockUsersUsageDataWithoutPool = {
                 creditsUsed: 320,
                 totalCredits: 500,
                 monthlyCommitmentCreditsUsed: 0,
-                oneTimeCreditsUsed: 0,
+                monthlyWaiverCreditsUsed: 0,
                 overageCreditsUsed: 42,
               },
             },
@@ -75,7 +75,7 @@ export const mockUsersUsageDataWithoutPool = {
                 creditsUsed: 100,
                 totalCredits: 500,
                 monthlyCommitmentCreditsUsed: 0,
-                oneTimeCreditsUsed: 0,
+                monthlyWaiverCreditsUsed: 0,
                 overageCreditsUsed: 0,
               },
             },
@@ -117,7 +117,7 @@ export const mockUsersUsageDataWithPool = {
                 creditsUsed: 500,
                 totalCredits: 500,
                 monthlyCommitmentCreditsUsed: 20,
-                oneTimeCreditsUsed: 70,
+                monthlyWaiverCreditsUsed: 70,
                 overageCreditsUsed: 50,
               },
             },
@@ -130,7 +130,7 @@ export const mockUsersUsageDataWithPool = {
                 creditsUsed: 500,
                 totalCredits: 500,
                 monthlyCommitmentCreditsUsed: 0,
-                oneTimeCreditsUsed: 0,
+                monthlyWaiverCreditsUsed: 0,
                 overageCreditsUsed: 0,
               },
             },
@@ -143,7 +143,7 @@ export const mockUsersUsageDataWithPool = {
                 creditsUsed: 50,
                 totalCredits: 500,
                 monthlyCommitmentCreditsUsed: 0,
-                oneTimeCreditsUsed: 0,
+                monthlyWaiverCreditsUsed: 0,
                 overageCreditsUsed: 0,
               },
             },
@@ -156,7 +156,7 @@ export const mockUsersUsageDataWithPool = {
                 creditsUsed: 320,
                 totalCredits: 500,
                 monthlyCommitmentCreditsUsed: 0,
-                oneTimeCreditsUsed: 0,
+                monthlyWaiverCreditsUsed: 0,
                 overageCreditsUsed: 42,
               },
             },
@@ -169,7 +169,7 @@ export const mockUsersUsageDataWithPool = {
                 creditsUsed: 500,
                 totalCredits: 500,
                 monthlyCommitmentCreditsUsed: 75,
-                oneTimeCreditsUsed: 0,
+                monthlyWaiverCreditsUsed: 0,
                 overageCreditsUsed: 15,
               },
             },
@@ -182,7 +182,7 @@ export const mockUsersUsageDataWithPool = {
                 creditsUsed: 480,
                 totalCredits: 500,
                 monthlyCommitmentCreditsUsed: 0,
-                oneTimeCreditsUsed: 0,
+                monthlyWaiverCreditsUsed: 0,
                 overageCreditsUsed: 56,
               },
             },
@@ -195,7 +195,7 @@ export const mockUsersUsageDataWithPool = {
                 creditsUsed: 500,
                 totalCredits: 500,
                 monthlyCommitmentCreditsUsed: 150,
-                oneTimeCreditsUsed: 0,
+                monthlyWaiverCreditsUsed: 0,
                 overageCreditsUsed: 91,
               },
             },
@@ -208,7 +208,7 @@ export const mockUsersUsageDataWithPool = {
                 creditsUsed: 500,
                 totalCredits: 500,
                 monthlyCommitmentCreditsUsed: 300,
-                oneTimeCreditsUsed: 0,
+                monthlyWaiverCreditsUsed: 0,
                 overageCreditsUsed: 34,
               },
             },
@@ -247,7 +247,7 @@ export const mockUsersUsageDataWithOverage = {
                 creditsUsed: 450,
                 totalCredits: 500,
                 monthlyCommitmentCreditsUsed: 0,
-                oneTimeCreditsUsed: 0,
+                monthlyWaiverCreditsUsed: 0,
                 overageCreditsUsed: 23,
               },
             },
@@ -260,7 +260,7 @@ export const mockUsersUsageDataWithOverage = {
                 creditsUsed: 500,
                 totalCredits: 500,
                 monthlyCommitmentCreditsUsed: 125,
-                oneTimeCreditsUsed: 0,
+                monthlyWaiverCreditsUsed: 0,
                 overageCreditsUsed: 67,
               },
             },
@@ -273,7 +273,7 @@ export const mockUsersUsageDataWithOverage = {
                 creditsUsed: 500,
                 totalCredits: 500,
                 monthlyCommitmentCreditsUsed: 200,
-                oneTimeCreditsUsed: 0,
+                monthlyWaiverCreditsUsed: 0,
                 overageCreditsUsed: 89,
               },
             },
@@ -286,7 +286,7 @@ export const mockUsersUsageDataWithOverage = {
                 creditsUsed: 320,
                 totalCredits: 500,
                 monthlyCommitmentCreditsUsed: 0,
-                oneTimeCreditsUsed: 0,
+                monthlyWaiverCreditsUsed: 0,
                 overageCreditsUsed: 42,
               },
             },
@@ -299,7 +299,7 @@ export const mockUsersUsageDataWithOverage = {
                 creditsUsed: 500,
                 totalCredits: 500,
                 monthlyCommitmentCreditsUsed: 75,
-                oneTimeCreditsUsed: 0,
+                monthlyWaiverCreditsUsed: 0,
                 overageCreditsUsed: 15,
               },
             },
@@ -312,7 +312,7 @@ export const mockUsersUsageDataWithOverage = {
                 creditsUsed: 480,
                 totalCredits: 500,
                 monthlyCommitmentCreditsUsed: 0,
-                oneTimeCreditsUsed: 0,
+                monthlyWaiverCreditsUsed: 0,
                 overageCreditsUsed: 56,
               },
             },
@@ -325,7 +325,7 @@ export const mockUsersUsageDataWithOverage = {
                 creditsUsed: 500,
                 totalCredits: 500,
                 monthlyCommitmentCreditsUsed: 150,
-                oneTimeCreditsUsed: 0,
+                monthlyWaiverCreditsUsed: 0,
                 overageCreditsUsed: 91,
               },
             },
@@ -338,7 +338,7 @@ export const mockUsersUsageDataWithOverage = {
                 creditsUsed: 500,
                 totalCredits: 500,
                 monthlyCommitmentCreditsUsed: 300,
-                oneTimeCreditsUsed: 0,
+                monthlyWaiverCreditsUsed: 0,
                 overageCreditsUsed: 34,
               },
             },
@@ -380,7 +380,7 @@ export const mockUsersUsageDataWithZeroAllocation = {
                 creditsUsed: 0,
                 totalCredits: 0,
                 monthlyCommitmentCreditsUsed: 0,
-                oneTimeCreditsUsed: 12,
+                monthlyWaiverCreditsUsed: 12,
                 overageCreditsUsed: 15,
               },
             },
@@ -393,7 +393,7 @@ export const mockUsersUsageDataWithZeroAllocation = {
                 creditsUsed: 0,
                 totalCredits: 0,
                 monthlyCommitmentCreditsUsed: 0,
-                oneTimeCreditsUsed: 0,
+                monthlyWaiverCreditsUsed: 0,
                 overageCreditsUsed: 0,
               },
             },
@@ -406,7 +406,7 @@ export const mockUsersUsageDataWithZeroAllocation = {
                 creditsUsed: 0,
                 totalCredits: 0,
                 monthlyCommitmentCreditsUsed: 0,
-                oneTimeCreditsUsed: 5,
+                monthlyWaiverCreditsUsed: 5,
                 overageCreditsUsed: 89,
               },
             },
@@ -419,7 +419,7 @@ export const mockUsersUsageDataWithZeroAllocation = {
                 creditsUsed: 0,
                 totalCredits: 0,
                 monthlyCommitmentCreditsUsed: 0,
-                oneTimeCreditsUsed: 0,
+                monthlyWaiverCreditsUsed: 0,
                 overageCreditsUsed: 42,
               },
             },
@@ -432,7 +432,7 @@ export const mockUsersUsageDataWithZeroAllocation = {
                 creditsUsed: 0,
                 totalCredits: 0,
                 monthlyCommitmentCreditsUsed: 0,
-                oneTimeCreditsUsed: 0,
+                monthlyWaiverCreditsUsed: 0,
                 overageCreditsUsed: 0,
               },
             },
@@ -465,6 +465,7 @@ export const mockUsersUsageDataWithNullUsage = {
                 creditsUsed: null,
                 totalCredits: 24,
                 monthlyCommitmentCreditsUsed: null,
+                monthlyWaiverCreditsUsed: null,
                 overageCreditsUsed: null,
                 __typename: 'GitlabSubscriptionUsageUserUsage',
               },
@@ -480,6 +481,7 @@ export const mockUsersUsageDataWithNullUsage = {
                 creditsUsed: null,
                 totalCredits: 24,
                 monthlyCommitmentCreditsUsed: null,
+                monthlyWaiverCreditsUsed: null,
                 overageCreditsUsed: null,
                 __typename: 'GitlabSubscriptionUsageUserUsage',
               },
@@ -495,6 +497,7 @@ export const mockUsersUsageDataWithNullUsage = {
                 creditsUsed: null,
                 totalCredits: null,
                 monthlyCommitmentCreditsUsed: null,
+                monthlyWaiverCreditsUsed: null,
                 overageCreditsUsed: null,
                 __typename: 'GitlabSubscriptionUsageUserUsage',
               },
@@ -510,6 +513,7 @@ export const mockUsersUsageDataWithNullUsage = {
                 creditsUsed: null,
                 totalCredits: 24,
                 monthlyCommitmentCreditsUsed: null,
+                monthlyWaiverCreditsUsed: null,
                 overageCreditsUsed: null,
                 __typename: 'GitlabSubscriptionUsageUserUsage',
               },
@@ -525,6 +529,7 @@ export const mockUsersUsageDataWithNullUsage = {
                 creditsUsed: null,
                 totalCredits: 24,
                 monthlyCommitmentCreditsUsed: null,
+                monthlyWaiverCreditsUsed: null,
                 overageCreditsUsed: null,
                 __typename: 'GitlabSubscriptionUsageUserUsage',
               },
@@ -540,6 +545,7 @@ export const mockUsersUsageDataWithNullUsage = {
                 creditsUsed: null,
                 totalCredits: 24,
                 monthlyCommitmentCreditsUsed: null,
+                monthlyWaiverCreditsUsed: null,
                 overageCreditsUsed: null,
                 __typename: 'GitlabSubscriptionUsageUserUsage',
               },
@@ -555,6 +561,7 @@ export const mockUsersUsageDataWithNullUsage = {
                 creditsUsed: null,
                 totalCredits: 24,
                 monthlyCommitmentCreditsUsed: null,
+                monthlyWaiverCreditsUsed: null,
                 overageCreditsUsed: null,
                 __typename: 'GitlabSubscriptionUsageUserUsage',
               },
@@ -570,6 +577,7 @@ export const mockUsersUsageDataWithNullUsage = {
                 creditsUsed: 0,
                 totalCredits: 24,
                 monthlyCommitmentCreditsUsed: 0,
+                monthlyWaiverCreditsUsed: null,
                 overageCreditsUsed: 0,
                 __typename: 'GitlabSubscriptionUsageUserUsage',
               },
@@ -585,6 +593,7 @@ export const mockUsersUsageDataWithNullUsage = {
                 creditsUsed: null,
                 totalCredits: 24,
                 monthlyCommitmentCreditsUsed: null,
+                monthlyWaiverCreditsUsed: null,
                 overageCreditsUsed: null,
                 __typename: 'GitlabSubscriptionUsageUserUsage',
               },
@@ -600,6 +609,7 @@ export const mockUsersUsageDataWithNullUsage = {
                 creditsUsed: null,
                 totalCredits: 24,
                 monthlyCommitmentCreditsUsed: null,
+                monthlyWaiverCreditsUsed: null,
                 overageCreditsUsed: null,
                 __typename: 'GitlabSubscriptionUsageUserUsage',
               },
@@ -638,8 +648,8 @@ export const usageDataWithCommitment = {
         creditsUsed: 0,
       },
 
-      oneTimeCredits: {
-        totalCreditsRemaining: 0,
+      monthlyWaiver: {
+        totalCredits: 0,
         creditsUsed: 0,
       },
     },
@@ -657,7 +667,7 @@ export const usageDataWithoutLastEventTransactionAt = {
   },
 };
 
-export const usageDataWithCommitmentWithOtc = {
+export const usageDataWithCommitmentWithMonthlyWaiver = {
   data: {
     subscriptionUsage: {
       lastEventTransactionAt: '2025-10-14T07:41:59Z',
@@ -669,8 +679,8 @@ export const usageDataWithCommitmentWithOtc = {
         creditsUsed: 300,
         totalCredits: 300,
       },
-      oneTimeCredits: {
-        totalCreditsRemaining: 0,
+      monthlyWaiver: {
+        totalCredits: 1000,
         creditsUsed: 200,
       },
       overage: {
@@ -697,15 +707,15 @@ export const usageDataWithCommitmentWithOverage = {
         creditsUsed: 50,
       },
 
-      oneTimeCredits: {
-        totalCreditsRemaining: 0,
+      monthlyWaiver: {
+        totalCredits: 0,
         creditsUsed: 0,
       },
     },
   },
 };
 
-export const usageDataNoCommitmentNoOtcNoOverage = {
+export const usageDataNoCommitmentNoMonthlyWaiverNoOverage = {
   data: {
     subscriptionUsage: {
       lastEventTransactionAt: '2024-01-15T10:30:00Z',
@@ -718,8 +728,8 @@ export const usageDataNoCommitmentNoOtcNoOverage = {
         creditsUsed: 0,
       },
 
-      oneTimeCredits: {
-        totalCreditsRemaining: 0,
+      monthlyWaiver: {
+        totalCredits: 0,
         creditsUsed: 0,
       },
     },
@@ -739,15 +749,15 @@ export const usageDataNoCommitmentWithOverage = {
         creditsUsed: 50,
       },
 
-      oneTimeCredits: {
-        totalCreditsRemaining: 0,
+      monthlyWaiver: {
+        totalCredits: 0,
         creditsUsed: 0,
       },
     },
   },
 };
 
-export const usageDataCommitmentWithOtc = {
+export const usageDataCommitmentWithMonthlyWaiver = {
   data: {
     subscriptionUsage: {
       lastEventTransactionAt: '2025-10-14T07:41:59Z',
@@ -765,15 +775,15 @@ export const usageDataCommitmentWithOtc = {
         creditsUsed: 0,
       },
 
-      oneTimeCredits: {
-        totalCreditsRemaining: 250,
+      monthlyWaiver: {
+        totalCredits: 1000,
         creditsUsed: 750,
       },
     },
   },
 };
 
-export const usageDataCommitmentWithOtcWithOverage = {
+export const usageDataCommitmentWithMonthlyWaiverWithOverage = {
   data: {
     subscriptionUsage: {
       lastEventTransactionAt: '2025-10-14T07:41:59Z',
@@ -791,8 +801,8 @@ export const usageDataCommitmentWithOtcWithOverage = {
         creditsUsed: 100,
       },
 
-      oneTimeCredits: {
-        totalCreditsRemaining: 0,
+      monthlyWaiver: {
+        totalCredits: 1000,
         creditsUsed: 1000,
       },
     },

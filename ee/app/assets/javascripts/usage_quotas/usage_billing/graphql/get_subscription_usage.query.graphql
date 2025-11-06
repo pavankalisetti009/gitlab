@@ -10,9 +10,9 @@ query getSubscriptionUsage($namespacePath: ID) {
       totalCredits
       creditsUsed
     }
-    oneTimeCredits {
+    monthlyWaiver {
+      totalCredits
       creditsUsed
-      totalCreditsRemaining
     }
     overage {
       isAllowed

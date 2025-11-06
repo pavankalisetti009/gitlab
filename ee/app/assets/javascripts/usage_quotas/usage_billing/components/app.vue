@@ -11,7 +11,7 @@ import PurchaseCommitmentCard from './purchase_commitment_card.vue';
 import UsageByUserTab from './usage_by_user_tab.vue';
 import CurrentUsageCard from './current_usage_card.vue';
 import CurrentOverageUsageCard from './current_overage_usage_card.vue';
-import OneTimeCreditsCard from './one_time_credits_card.vue';
+import MonthlyWaiverCard from './monthly_waiver_card.vue';
 
 export default {
   name: 'UsageBillingApp',
@@ -22,7 +22,7 @@ export default {
     UsageByUserTab,
     CurrentUsageCard,
     CurrentOverageUsageCard,
-    OneTimeCreditsCard,
+    MonthlyWaiverCard,
     UserDate,
     HumanTimeframe,
   },
@@ -72,14 +72,14 @@ export default {
     isLoading() {
       return this.$apollo.queries.subscriptionUsage.loading;
     },
-    otcCreditsUsed() {
-      return this.subscriptionUsage?.oneTimeCredits?.creditsUsed;
+    monthlyWaiverTotalCredits() {
+      return this.subscriptionUsage?.monthlyWaiver?.totalCredits ?? 0;
     },
-    otcRemainingCredits() {
-      return this.subscriptionUsage?.oneTimeCredits?.totalCreditsRemaining;
+    monthlyWaiverCreditsUsed() {
+      return this.subscriptionUsage?.monthlyWaiver?.creditsUsed ?? 0;
     },
-    otcIsAvailable() {
-      return Boolean(this.otcCreditsUsed || this.otcRemainingCredits);
+    isMonthlyWaiverAvailable() {
+      return Boolean(this.monthlyWaiverTotalCredits);
     },
     monthEndDate() {
       return this.subscriptionUsage?.endDate;
@@ -154,16 +154,16 @@ export default {
           :month-end-date="monthEndDate"
         />
 
-        <one-time-credits-card
-          v-if="otcIsAvailable && !overageCreditsUsed"
-          :otc-credits-used="otcCreditsUsed"
-          :otc-remaining-credits="otcRemainingCredits"
+        <monthly-waiver-card
+          v-if="isMonthlyWaiverAvailable && !overageCreditsUsed"
+          :monthly-waiver-total-credits="monthlyWaiverTotalCredits"
+          :monthly-waiver-credits-used="monthlyWaiverCreditsUsed"
         />
 
         <current-overage-usage-card
           v-else-if="overageIsAllowed || overageCreditsUsed"
           :overage-credits-used="overageCreditsUsed"
-          :otc-credits-used="otcCreditsUsed"
+          :monthly-waiver-credits-used="monthlyWaiverCreditsUsed"
           :month-end-date="monthEndDate"
         />
 

@@ -257,11 +257,11 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
     end
   end
 
-  describe '#one_time_credits' do
-    subject(:one_time_credits) { subscription_usage.one_time_credits }
+  describe '#monthly_waiver' do
+    subject(:monthly_waiver) { subscription_usage.monthly_waiver }
 
     before do
-      allow(subscription_usage_client).to receive(:get_one_time_credits).and_return(client_response)
+      allow(subscription_usage_client).to receive(:get_monthly_waiver).and_return(client_response)
     end
 
     context 'when subscription_target is :namespace' do
@@ -277,20 +277,18 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
         let(:client_response) do
           {
             success: true,
-            oneTimeCredits: {
-              creditsUsed: 25.32,
-              totalCredits: 1000,
-              totalCreditsRemaining: 974.68
+            monthlyWaiver: {
+              totalCredits: 1000.55,
+              creditsUsed: 25.32
             }
           }
         end
 
-        it 'returns a OneTimeCredits struct with correct data' do
-          expect(one_time_credits).to be_a(GitlabSubscriptions::SubscriptionUsage::OneTimeCredits)
-          expect(one_time_credits).to have_attributes(
+        it 'returns a MonthlyWaiver struct with correct data' do
+          expect(monthly_waiver).to be_a(GitlabSubscriptions::SubscriptionUsage::MonthlyWaiver)
+          expect(monthly_waiver).to have_attributes(
+            total_credits: 1000.55,
             credits_used: 25.32,
-            total_credits: 1000,
-            total_credits_remaining: 974.68,
             declarative_policy_subject: subscription_usage
           )
         end
@@ -300,24 +298,23 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
         let(:client_response) { { success: false } }
 
         it 'returns nil' do
-          expect(one_time_credits).to be_nil
+          expect(monthly_waiver).to be_nil
         end
       end
 
-      context 'when the client response is missing oneTimeCredits data' do
+      context 'when the client response is missing monthlyWaiver data' do
         let(:client_response) do
           {
             success: true,
-            oneTimeCredits: nil
+            monthlyWaiver: nil
           }
         end
 
-        it 'returns a OneTimeCredits struct with no values' do
-          expect(one_time_credits).to be_a(GitlabSubscriptions::SubscriptionUsage::OneTimeCredits)
-          expect(one_time_credits).to have_attributes(
-            credits_used: nil,
+        it 'returns a MonthlyWaiver struct with no values' do
+          expect(monthly_waiver).to be_a(GitlabSubscriptions::SubscriptionUsage::MonthlyWaiver)
+          expect(monthly_waiver).to have_attributes(
             total_credits: nil,
-            total_credits_remaining: nil,
+            credits_used: nil,
             declarative_policy_subject: subscription_usage
           )
         end
@@ -336,10 +333,9 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
       let(:client_response) do
         {
           success: true,
-          oneTimeCredits: {
-            creditsUsed: 123.99,
-            totalCredits: 2000,
-            totalCreditsRemaining: 1876.01
+          monthlyWaiver: {
+            totalCredits: 2000.12,
+            creditsUsed: 123.99
           }
         }
       end
@@ -348,12 +344,11 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
         allow(License).to receive(:current).and_return(license)
       end
 
-      it 'returns a OneTimeCredits struct with correct data' do
-        expect(one_time_credits).to be_a(GitlabSubscriptions::SubscriptionUsage::OneTimeCredits)
-        expect(one_time_credits).to have_attributes(
+      it 'returns a MonthlyWaiver struct with correct data' do
+        expect(monthly_waiver).to be_a(GitlabSubscriptions::SubscriptionUsage::MonthlyWaiver)
+        expect(monthly_waiver).to have_attributes(
+          total_credits: 2000.12,
           credits_used: 123.99,
-          total_credits: 2000,
-          total_credits_remaining: 1876.01,
           declarative_policy_subject: subscription_usage
         )
       end

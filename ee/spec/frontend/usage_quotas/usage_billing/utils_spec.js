@@ -7,7 +7,7 @@ describe('fillUsageValues', () => {
         creditsUsed: 100,
         totalCredits: 500,
         monthlyCommitmentCreditsUsed: 200,
-        oneTimeCreditsUsed: 150,
+        monthlyWaiverCreditsUsed: 150,
         overageCreditsUsed: 75,
       };
 
@@ -17,7 +17,7 @@ describe('fillUsageValues', () => {
         creditsUsed: 100,
         totalCredits: 500,
         monthlyCommitmentCreditsUsed: 200,
-        oneTimeCreditsUsed: 150,
+        monthlyWaiverCreditsUsed: 150,
         overageCreditsUsed: 75,
       });
     });
@@ -31,7 +31,7 @@ describe('fillUsageValues', () => {
         creditsUsed: 0,
         totalCredits: 0,
         monthlyCommitmentCreditsUsed: 0,
-        oneTimeCreditsUsed: 0,
+        monthlyWaiverCreditsUsed: 0,
         overageCreditsUsed: 0,
       });
     });
@@ -43,7 +43,7 @@ describe('fillUsageValues', () => {
         creditsUsed: 0,
         totalCredits: 0,
         monthlyCommitmentCreditsUsed: 0,
-        oneTimeCreditsUsed: 0,
+        monthlyWaiverCreditsUsed: 0,
         overageCreditsUsed: 0,
       });
     });
@@ -55,7 +55,7 @@ describe('fillUsageValues', () => {
         creditsUsed: 0,
         totalCredits: 0,
         monthlyCommitmentCreditsUsed: 0,
-        oneTimeCreditsUsed: 0,
+        monthlyWaiverCreditsUsed: 0,
         overageCreditsUsed: 0,
       });
     });
@@ -65,7 +65,7 @@ describe('fillUsageValues', () => {
         creditsUsed: null,
         totalCredits: undefined,
         monthlyCommitmentCreditsUsed: 200,
-        oneTimeCreditsUsed: null,
+        monthlyWaiverCreditsUsed: null,
         overageCreditsUsed: undefined,
       };
 
@@ -75,7 +75,7 @@ describe('fillUsageValues', () => {
         creditsUsed: 0,
         totalCredits: 0,
         monthlyCommitmentCreditsUsed: 200,
-        oneTimeCreditsUsed: 0,
+        monthlyWaiverCreditsUsed: 0,
         overageCreditsUsed: 0,
       });
     });
@@ -85,7 +85,7 @@ describe('fillUsageValues', () => {
         creditsUsed: 100,
         totalCredits: 500,
         // monthlyCommitmentCreditsUsed is missing
-        // oneTimeCreditsUsed is missing
+        // monthlyWaiverCreditsUsed is missing
         overageCreditsUsed: 75,
       };
 
@@ -95,7 +95,7 @@ describe('fillUsageValues', () => {
         creditsUsed: 100,
         totalCredits: 500,
         monthlyCommitmentCreditsUsed: 0,
-        oneTimeCreditsUsed: 0,
+        monthlyWaiverCreditsUsed: 0,
         overageCreditsUsed: 75,
       });
     });
@@ -105,7 +105,7 @@ describe('fillUsageValues', () => {
         creditsUsed: false,
         totalCredits: '',
         monthlyCommitmentCreditsUsed: NaN,
-        oneTimeCreditsUsed: 0,
+        monthlyWaiverCreditsUsed: 0,
         overageCreditsUsed: null,
       };
 
@@ -115,7 +115,7 @@ describe('fillUsageValues', () => {
         creditsUsed: false,
         totalCredits: '',
         monthlyCommitmentCreditsUsed: NaN,
-        oneTimeCreditsUsed: 0,
+        monthlyWaiverCreditsUsed: 0,
         overageCreditsUsed: 0,
       });
     });

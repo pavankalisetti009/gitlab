@@ -4,7 +4,7 @@ module GitlabSubscriptions
   class SubscriptionUsage
     include ::Gitlab::Utils::StrongMemoize
 
-    OneTimeCredits = Struct.new(:credits_used, :total_credits, :total_credits_remaining, :declarative_policy_subject)
+    MonthlyWaiver = Struct.new(:total_credits, :credits_used, :declarative_policy_subject)
     MonthlyCommitment = Struct.new(:total_credits, :credits_used, :daily_usage, :declarative_policy_subject)
     Overage = Struct.new(:is_allowed, :credits_used, :daily_usage, :declarative_policy_subject)
     DailyUsage = Struct.new(:date, :credits_used, :declarative_policy_subject)
@@ -37,19 +37,18 @@ module GitlabSubscriptions
       usage_metadata[:purchaseCreditsPath]
     end
 
-    def one_time_credits
-      one_time_credits_response = subscription_usage_client.get_one_time_credits
+    def monthly_waiver
+      monthly_waiver_response = subscription_usage_client.get_monthly_waiver
 
-      return unless one_time_credits_response[:success]
+      return unless monthly_waiver_response[:success]
 
-      OneTimeCredits.new(
-        credits_used: one_time_credits_response.dig(:oneTimeCredits, :creditsUsed),
-        total_credits: one_time_credits_response.dig(:oneTimeCredits, :totalCredits),
-        total_credits_remaining: one_time_credits_response.dig(:oneTimeCredits, :totalCreditsRemaining),
+      MonthlyWaiver.new(
+        total_credits: monthly_waiver_response.dig(:monthlyWaiver, :totalCredits),
+        credits_used: monthly_waiver_response.dig(:monthlyWaiver, :creditsUsed),
         declarative_policy_subject: self
       )
     end
-    strong_memoize_attr :one_time_credits
+    strong_memoize_attr :monthly_waiver
 
     def monthly_commitment
       monthly_commitment_response = subscription_usage_client.get_monthly_commitment
