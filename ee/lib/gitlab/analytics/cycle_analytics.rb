@@ -31,10 +31,8 @@ module Gitlab
 
         def subject_for_access_check(subject)
           case subject
-          when Namespaces::ProjectNamespace
-            subject.project
-          when Group
-            subject
+          when Namespaces::ProjectNamespace, Group
+            subject.owner_entity
           else
             raise ArgumentError, "Unsupported subject given"
           end

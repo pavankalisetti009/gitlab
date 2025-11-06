@@ -68,7 +68,7 @@ module GitlabSubscriptions
       end
 
       def process_member_approval(member_approval)
-        source = get_source_from_member_namespace(member_approval.member_namespace)
+        source = member_approval.member_namespace.owner_entity
         params = member_approval_params(member_approval, source)
 
         ::Members::CreateService.new(current_user, params).execute
@@ -95,15 +95,6 @@ module GitlabSubscriptions
           invite_source: self.class.name,
           skip_authorization: skip_authorization
         )
-      end
-
-      def get_source_from_member_namespace(member_namespace)
-        case member_namespace
-        when ::Namespaces::ProjectNamespace
-          member_namespace.project
-        when ::Group
-          member_namespace
-        end
       end
 
       def deny_member_approvals

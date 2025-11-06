@@ -63,10 +63,8 @@ module Gitlab
 
           def projects_from_context
             case context.container
-            when Project
-              [context.container]
-            when Namespaces::ProjectNamespace
-              [context.container.project]
+            when Project, Namespaces::ProjectNamespace
+              [context.container.owner_entity]
             when Group
               context.container.all_projects
             end
