@@ -82,11 +82,7 @@ module QA
       end
 
       it 'requires approval when a pipeline report has findings matching the approval policy',
-        testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/365005',
-        quarantine: {
-          issue: 'https://gitlab.com/gitlab-org/quality/e2e-test-issues/-/issues/1685',
-          type: :stale
-        } do
+        testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/365005' do
         # Make sure approval policy commit was successful before running examples
         expect(scan_result_policy_commit.api_response).to have_key(:branch)
         expect(scan_result_policy_commit.api_response[:branch]).not_to be_nil
