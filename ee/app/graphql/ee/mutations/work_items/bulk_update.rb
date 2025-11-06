@@ -47,14 +47,9 @@ module EE
         def find_parent_by_full_path(full_path, model = ::Namespace)
           namespace = super
 
-          case namespace
-          when ::Namespaces::UserNamespace
-            nil
-          when ::Namespaces::ProjectNamespace
-            namespace.project
-          else
-            namespace
-          end
+          return namespace.owner_entity unless namespace.is_a?(::Namespaces::UserNamespace)
+
+          nil
         end
       end
     end
