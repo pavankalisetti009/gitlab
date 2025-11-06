@@ -61,6 +61,7 @@ module Ai
       def validate_item_privacy_allowed
         return if item.public? || item.project.nil?
         return if project && item.project == project
+        return if group && item.project.root_group == group
 
         errors.add(:item, s_('AICatalog|is private to another project'))
       end
