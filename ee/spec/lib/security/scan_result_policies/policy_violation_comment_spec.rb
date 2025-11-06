@@ -227,7 +227,7 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationComment, feature_cat
 
           it { is_expected.to exclude(described_class::VIOLATIONS_BLOCKING_TITLE) }
           it { is_expected.to include(described_class::VIOLATIONS_BYPASSABLE_TITLE) }
-          it { is_expected.to include('Newly detected bypassable `scan_finding` violations') }
+          it { is_expected.to include('Newly detected `scan_finding` violations that users can bypass') }
         end
 
         context 'with both enforced and bypassable violations' do
@@ -258,7 +258,7 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationComment, feature_cat
           it { is_expected.to include(described_class::VIOLATIONS_BLOCKING_TITLE) }
           it { is_expected.to include(described_class::VIOLATIONS_BYPASSABLE_TITLE) }
           it { is_expected.to include('Newly detected enforced `scan_finding` violations') }
-          it { is_expected.to include('Previously existing bypassable `scan_finding` violations') }
+          it { is_expected.to include('Previously found `scan_finding` violations that users can bypass') }
         end
 
         context 'with feature disabled' do
@@ -274,9 +274,9 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationComment, feature_cat
           end
 
           it { is_expected.to exclude('Newly detected enforced `scan_finding` violations') }
-          it { is_expected.to exclude('Newly detected bypassable `scan_finding` violations') }
+          it { is_expected.to exclude('Newly detected `scan_finding` violations that users can bypass') }
           it { is_expected.to exclude(described_class::VIOLATIONS_BYPASSABLE_TITLE) }
-          it { is_expected.to include('This merge request introduces these violations') }
+          it { is_expected.to include('This merge request introduces the following violations') }
         end
 
         # rubocop:disable RSpec/MultipleMemoizedHelpers -- required for test setup
@@ -317,13 +317,13 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationComment, feature_cat
                   },
                   policy_read: any_mr_policy,
                   policy_rule: any_mr_normal_policy_rule,
-                  name: 'MR Policy')
+                  name: 'Merge request policy')
               end
 
               it { is_expected.to include(described_class::VIOLATIONS_BLOCKING_TITLE) }
               it { is_expected.to include('Enforced `any_merge_request` violations') }
               it { is_expected.to include('The following policies require approval:') }
-              it { is_expected.to include('* MR Policy: any unsigned commits') }
+              it { is_expected.to include('* Merge request policy: any unsigned commits') }
               it { is_expected.to include('Unsigned commits:') }
 
               it 'includes commit SHA' do
@@ -362,13 +362,13 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationComment, feature_cat
                   },
                   policy_read: any_mr_policy,
                   policy_rule: any_mr_warn_mode_policy_rule,
-                  name: 'Warn MR Policy')
+                  name: 'Warn Merge request policy')
               end
 
               it { is_expected.to include(described_class::VIOLATIONS_BYPASSABLE_TITLE) }
-              it { is_expected.to include('Bypassable `any_merge_request` violations') }
-              it { is_expected.to include('The following policies require approval or need to be bypassed:') }
-              it { is_expected.to include('* Warn MR Policy: any unsigned commits') }
+              it { is_expected.to include('`any_merge_request` violations that users can bypass') }
+              it { is_expected.to include('The following policies require either approval or bypass:') }
+              it { is_expected.to include('* Warn Merge request policy: any unsigned commits') }
               it { is_expected.to include('Unsigned commits:') }
 
               it 'includes commit SHA' do
@@ -387,8 +387,8 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationComment, feature_cat
                   name: 'Warn Any Commit Policy')
               end
 
-              it { is_expected.to include('Bypassable `any_merge_request` violations') }
-              it { is_expected.to include('The following policies require approval or need to be bypassed:') }
+              it { is_expected.to include('`any_merge_request` violations that users can bypass') }
+              it { is_expected.to include('The following policies require either approval or bypass:') }
               it { is_expected.to include('* Warn Any Commit Policy: any commits') }
               it { is_expected.not_to include('Unsigned commits:') }
             end
@@ -402,7 +402,7 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationComment, feature_cat
                 },
                 policy_read: any_mr_policy,
                 policy_rule: any_mr_normal_policy_rule,
-                name: 'Enforced MR Policy')
+                name: 'Enforced merge request policy')
 
               build_violation_details(:any_merge_request,
                 {
@@ -411,15 +411,15 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationComment, feature_cat
                 policy_read: create(:scan_result_policy_read, project: project,
                   security_orchestration_policy_configuration: security_orchestration_policy_configuration),
                 policy_rule: any_mr_warn_mode_policy_rule,
-                name: 'Bypassable MR Policy')
+                name: 'Bypassable Merge request policy')
             end
 
             it { is_expected.to include(described_class::VIOLATIONS_BLOCKING_TITLE) }
             it { is_expected.to include(described_class::VIOLATIONS_BYPASSABLE_TITLE) }
             it { is_expected.to include('Enforced `any_merge_request` violations') }
-            it { is_expected.to include('Bypassable `any_merge_request` violations') }
-            it { is_expected.to include('* Enforced MR Policy: any unsigned commits') }
-            it { is_expected.to include('* Bypassable MR Policy: any commits') }
+            it { is_expected.to include('`any_merge_request` violations that users can bypass') }
+            it { is_expected.to include('* Enforced merge request policy: any unsigned commits') }
+            it { is_expected.to include('* Bypassable Merge request policy: any commits') }
           end
 
           context 'with mixed scan_finding and any_merge_request violations' do
@@ -437,14 +437,14 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationComment, feature_cat
                 },
                 policy_read: any_mr_policy,
                 policy_rule: any_mr_warn_mode_policy_rule,
-                name: 'MR Warn Policy')
+                name: 'Merge request warn mode policy')
             end
 
             it { is_expected.to include(described_class::VIOLATIONS_BLOCKING_TITLE) }
             it { is_expected.to include(described_class::VIOLATIONS_BYPASSABLE_TITLE) }
             it { is_expected.to include('Newly detected enforced `scan_finding` violations') }
-            it { is_expected.to include('Bypassable `any_merge_request` violations') }
-            it { is_expected.to include('* MR Warn Policy: any unsigned commits') }
+            it { is_expected.to include('`any_merge_request` violations that users can bypass') }
+            it { is_expected.to include('* Merge request warn mode policy: any unsigned commits') }
             it { is_expected.to include('Unsigned commits:') }
           end
         end
@@ -585,7 +585,7 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationComment, feature_cat
 
             it 'includes warn-mode summary in the comment body' do
               expect(body).to include(
-                '**Note:** The following policies are in warn-mode and can be bypassed to make approvals optional:'
+                '**Note:** The following policies are in warn mode and can be bypassed to make approvals optional:'
               )
               expect(body).to include('- Warn Policy')
             end
@@ -717,7 +717,7 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationComment, feature_cat
 
             it 'includes overrides segment' do
               expect(body).to include(
-                ':lock: **Warn-mode policies set more restrictive approval settings**'
+                ':lock: **Warn mode policies set more restrictive approval settings**'
               )
             end
 
