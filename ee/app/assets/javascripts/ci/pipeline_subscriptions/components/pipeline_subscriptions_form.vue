@@ -20,7 +20,7 @@ export default {
     addSuccess: s__('PipelineSubscriptions|Subscription successfully created.'),
   },
   docsLink: helpPagePath('ci/pipelines/_index', {
-    anchor: 'trigger-a-pipeline-when-an-upstream-project-is-rebuilt-deprecated',
+    anchor: 'trigger-a-pipeline-when-an-upstream-project-is-rebuilt',
   }),
   components: {
     GlButton,

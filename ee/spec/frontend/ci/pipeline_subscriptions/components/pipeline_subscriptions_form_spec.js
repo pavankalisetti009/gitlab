@@ -112,7 +112,7 @@ describe('Pipeline subscriptions form', () => {
     createComponent(defaultHandlers, mountExtended);
 
     expect(findHelpLink().attributes('href')).toBe(
-      '/help/ci/pipelines/_index#trigger-a-pipeline-when-an-upstream-project-is-rebuilt-deprecated',
+      '/help/ci/pipelines/_index#trigger-a-pipeline-when-an-upstream-project-is-rebuilt',
     );
   });
 });
