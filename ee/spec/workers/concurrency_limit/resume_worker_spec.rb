@@ -255,15 +255,34 @@ RSpec.describe ConcurrencyLimit::ResumeWorker, feature_category: :scalability do
           before do
             allow(Gitlab::SidekiqMiddleware::ConcurrencyLimit::ConcurrencyLimitService).to receive(:current_limit)
                                                                                              .and_return(0)
+            allow(Gitlab::SidekiqConfig::WorkerRouter.global).to receive(:route).with(worker_with_concurrency_limit)
+                                                                                .and_return('another_queue')
+          end
+
+          after do
+            Gitlab::SidekiqSharding::Validator.allow_unrouted_sidekiq_calls { Sidekiq::ScheduledSet.new.clear }
           end
 
           it 'resumes processing' do
             expect(Gitlab::SidekiqMiddleware::ConcurrencyLimit::ConcurrencyLimitService)
               .to receive(:resume_processing!)
                 .with(worker_with_concurrency_limit.name)
-            expect(described_class).to receive(:perform_in)
+            expect(Sidekiq::Client).to receive(:enqueue_to_in).with('another_queue', described_class::RESCHEDULE_DELAY,
+              described_class, worker_with_concurrency_limit.name)
 
             perform
+          end
+
+          it 'schedules the job to another queue' do
+            Sidekiq::Testing.disable! { perform }
+
+            Gitlab::SidekiqSharding::Validator.allow_unrouted_sidekiq_calls do
+              expect(Sidekiq::ScheduledSet.new.size).to eq(1)
+              job = Sidekiq::ScheduledSet.new.first
+              expect(job.queue).to eq('another_queue')
+              expect(job.klass).to eq('ConcurrencyLimit::ResumeWorker')
+              expect(job.args).to eq(['Search::Elastic::CommitIndexerWorker'])
+            end
           end
         end
       end
