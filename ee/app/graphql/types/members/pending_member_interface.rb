@@ -22,7 +22,7 @@ module Types
       field :email,
         type: GraphQL::Types::String,
         null: true,
-        description: "Public email of the pending member."
+        description: "Email address of the pending member."
 
       field :web_url,
         type: GraphQL::Types::String,
