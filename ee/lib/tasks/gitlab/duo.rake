@@ -36,5 +36,11 @@ namespace :gitlab do
     task :verify_self_hosted_setup, [:username] => :gitlab_environment do |_, args|
       Gitlab::Duo::Administration::VerifySelfHostedSetup.new(args[:username]).execute
     end
+
+    desc 'GitLab | Duo | Seed issues for DAP evaluations'
+    task :dap_evals_seeder, [:output] => :environment do |_, args|
+      output_file = args[:output] || 'dap_evaluation_issues.yml'
+      Gitlab::Duo::Developments::DapEvalsSeeder.seed_issues(output_file: output_file)
+    end
   end
 end
