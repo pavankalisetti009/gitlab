@@ -57,6 +57,7 @@ query getComplianceFrameworkWithPolicies(
           }
         }
         projects {
+          count
           nodes {
             id
             name

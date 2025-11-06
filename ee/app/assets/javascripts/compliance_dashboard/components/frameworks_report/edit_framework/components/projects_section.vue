@@ -46,7 +46,7 @@ export default {
       projectIdsToRemove: new Set(),
       initialProjectIds: new Set(),
       errorMessage: null,
-      originalProjectsLength: this.complianceFramework.projects?.nodes?.length || 0,
+      originalProjectsLength: this.complianceFramework.projects?.count || 0,
       pageInfo: {},
       perPage: 20,
       filters: [],

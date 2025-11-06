@@ -186,6 +186,25 @@ describe('Projects section', () => {
       expect(description).toBeDefined();
     });
 
+    it('displays the correct total count of associated projects from projects.count in the count badge', () => {
+      const frameworkWithManyProjects = createFramework({
+        id: 1,
+        projects: 3,
+        projectsTotalCount: 155,
+      });
+
+      const wrapperWithManyProjects = mountExtended(ProjectsSection, {
+        apolloProvider,
+        propsData: {
+          complianceFramework: frameworkWithManyProjects,
+          groupPath: 'gitlab-org',
+        },
+      });
+
+      const countBadge = wrapperWithManyProjects.findByTestId('count-badge');
+      expect(countBadge.text()).toBe('155');
+    });
+
     it('correctly calculates projects', () => {
       const { items } = findTable().vm.$attrs;
       expect(items).toHaveLength(5);
