@@ -279,28 +279,6 @@ RSpec.shared_examples 'model selection feature setting' do |scope_class_name:|
   end
 end
 
-RSpec.shared_examples '#validate_model_selection_enabled is called' do
-  context 'when model selection is enabled' do
-    it 'does not add any errors' do
-      ai_feature_setting.valid?
-
-      expect(ai_feature_setting.errors[:base]).to be_empty
-    end
-  end
-
-  context 'when model selection is disabled' do
-    before do
-      allow(ai_feature_setting).to receive(:model_selection_enabled?).and_return(false)
-    end
-
-    it 'adds an error to the record' do
-      ai_feature_setting.valid?
-
-      expect(ai_feature_setting.errors[:base]).to include("Model selection is not enabled.")
-    end
-  end
-end
-
 RSpec.shared_examples '#validate_model_ref_with_definition is called' do
   let(:model_ref) { "claude-3-7-sonnet-20250219" }
   let(:model_definitions) { valid_model_definitions }

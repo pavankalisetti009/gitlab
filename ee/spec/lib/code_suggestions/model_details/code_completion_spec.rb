@@ -255,7 +255,7 @@ RSpec.describe CodeSuggestions::ModelDetails::CodeCompletion, feature_category: 
     end
   end
 
-  describe '#any_user_groups_with_model_selected_for_completion?' do
+  describe '#any_user_groups_with_model_selected_for_completion?', :saas do
     let!(:user1) { create(:user) }
     let!(:user2) { create(:user) }
 
@@ -267,8 +267,6 @@ RSpec.describe CodeSuggestions::ModelDetails::CodeCompletion, feature_category: 
       add_user_to_group(user2, group2_addon)
 
       create(:ai_namespace_feature_setting, feature: :code_completions, namespace: group2)
-
-      stub_feature_flags(ai_model_switching: false)
     end
 
     context 'when user has no Duo access' do
@@ -278,26 +276,16 @@ RSpec.describe CodeSuggestions::ModelDetails::CodeCompletion, feature_category: 
     end
 
     context 'when user has Duo access' do
-      let(:model_details) { described_class.new(current_user: user1) }
-
       context 'when no groups have model selection' do
+        let(:model_details) { described_class.new(current_user: user1) }
+
         it { is_expected.to be(false) }
       end
 
       context 'when user is part of a group that has set up a model selection record' do
         let(:model_details) { described_class.new(current_user: user2) }
 
-        context 'when no groups have model selection feature flag enabled' do
-          it { is_expected.to be(false) }
-        end
-
-        context 'when one group has model selection feature flag enabled' do
-          before do
-            stub_feature_flags(ai_model_switching: group2)
-          end
-
-          it { is_expected.to be(true) }
-        end
+        it { is_expected.to be(true) }
       end
     end
   end

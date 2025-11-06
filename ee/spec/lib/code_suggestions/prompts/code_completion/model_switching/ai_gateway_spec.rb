@@ -65,7 +65,7 @@ RSpec.describe CodeSuggestions::Prompts::CodeCompletion::ModelSwitching::AiGatew
       end
     end
 
-    context 'when user_group_with_claude_code_completion is present' do
+    context 'when user_group_with_claude_code_completion is present in a SAAS instance', :saas do
       let(:expected_prompt) do
         [
           { content: be_a(String), role: :system },

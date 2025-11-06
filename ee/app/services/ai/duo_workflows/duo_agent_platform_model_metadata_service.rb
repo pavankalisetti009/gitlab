@@ -70,9 +70,8 @@ module Ai
         return {} unless root_namespace
 
         return {} unless Feature.enabled?(:duo_agent_platform_model_selection, root_namespace)
-        # Priority 1: Namespace-level model selection
-        return {} unless Feature.enabled?(:ai_model_switching, root_namespace)
 
+        # Priority 1: Namespace-level model selection
         namespace_setting = ::Ai::ModelSelection::NamespaceFeatureSetting
                              .find_or_initialize_by_feature(root_namespace, FEATURE_NAME)
 

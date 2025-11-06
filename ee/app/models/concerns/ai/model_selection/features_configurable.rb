@@ -74,7 +74,6 @@ module Ai
         enum :feature, FEATURES, validate: true
 
         validates :feature, presence: true
-        validate :validate_model_selection_enabled
         validate :validate_model_ref_with_definition
 
         delegate :title, :main_feature, to: :metadata, allow_nil: true
@@ -150,13 +149,6 @@ module Ai
 
         private
 
-        def validate_model_selection_enabled
-          return if model_selection_enabled?
-
-          errors.add(:base,
-            "Model selection is not enabled.")
-        end
-
         def validate_model_ref_with_definition
           return if offered_model_ref.blank?
 
@@ -170,10 +162,6 @@ module Ai
           end
 
           add_model_not_compatible_error if feature_data['selectable_models'].exclude?(offered_model_ref)
-        end
-
-        def model_selection_enabled?
-          ::Feature.enabled?(:ai_model_switching, model_selection_scope)
         end
 
         def set_model_name

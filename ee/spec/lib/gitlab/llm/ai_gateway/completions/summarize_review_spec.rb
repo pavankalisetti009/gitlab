@@ -168,7 +168,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::SummarizeReview, feature_cat
         end
       end
 
-      context 'when namespace model switching is enabled' do
+      context 'when namespace model switching is enabled', :saas do
         let(:draft_notes_content) { "Comment: #{draft_note_by_current_user.note}\n" }
         let(:prompt_version) { "2.1.0" }
         let_it_be(:group) { create(:group) }
@@ -181,10 +181,6 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::SummarizeReview, feature_cat
             author: user,
             note: 'This is a draft note'
           )
-        end
-
-        before do
-          stub_feature_flags(ai_model_switching: true)
         end
 
         context 'when the model is pinned to a specific model' do

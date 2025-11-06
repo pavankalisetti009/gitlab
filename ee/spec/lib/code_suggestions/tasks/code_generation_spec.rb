@@ -395,7 +395,7 @@ RSpec.describe CodeSuggestions::Tasks::CodeGeneration, feature_category: :code_s
     end
   end
 
-  context 'on using namespace level model switching' do
+  context 'on using namespace level model selection', :saas do
     let_it_be(:root_namespace) { create(:group) }
     let_it_be(:project) { create(:project, namespace: root_namespace) }
     let_it_be(:feature_setting) do
@@ -429,11 +429,6 @@ RSpec.describe CodeSuggestions::Tasks::CodeGeneration, feature_category: :code_s
         generation_type: 'empty_function',
         project: project
       }
-    end
-
-    before do
-      stub_feature_flags(ai_model_switching: true)
-      stub_saas_features(gitlab_com_subscriptions: true)
     end
 
     it_behaves_like 'code suggestion task' do

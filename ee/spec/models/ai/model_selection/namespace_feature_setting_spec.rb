@@ -4,14 +4,14 @@ require 'spec_helper'
 
 RSpec.describe Ai::ModelSelection::NamespaceFeatureSetting, feature_category: :"self-hosted_models" do
   let(:group) { create(:group) }
-  let(:ff_enabled) { true }
+  let(:is_saas) { true }
+
+  before do
+    allow(::Gitlab::Saas).to receive(:feature_available?).with(:gitlab_com_subscriptions).and_return(is_saas)
+  end
 
   subject(:ai_feature_setting) do
     build(:ai_namespace_feature_setting, namespace: group)
-  end
-
-  before do
-    stub_feature_flags(ai_model_switching: ff_enabled)
   end
 
   describe 'associations' do
@@ -70,6 +70,35 @@ RSpec.describe Ai::ModelSelection::NamespaceFeatureSetting, feature_category: :"
       end
     end
 
+    context 'when namespace is not root' do
+      let(:child_group) { create(:group, parent: group) }
+
+      it 'returns nil' do
+        result = described_class.find_or_initialize_by_feature(child_group, existing_feature)
+        expect(result).to be_nil
+      end
+    end
+
+    context 'when the instance is not SAAS' do
+      let(:is_saas) { false }
+
+      it 'returns nil' do
+        result = described_class.find_or_initialize_by_feature(group, existing_feature)
+        expect(result).to be_nil
+      end
+    end
+
+    context 'when the instance is not SAA' do
+      before do
+        allow(group).to receive(:duo_features_enabled).and_return(false)
+      end
+
+      it 'returns nil' do
+        result = described_class.find_or_initialize_by_feature(group, existing_feature)
+        expect(result).to be_nil
+      end
+    end
+
     it 'returns existing setting when one exists for the feature' do
       ai_feature_setting.save!
       result = described_class.find_or_initialize_by_feature(group, existing_feature)
@@ -97,17 +126,6 @@ RSpec.describe Ai::ModelSelection::NamespaceFeatureSetting, feature_category: :"
       expect(result).to be_new_record
       expect(result.namespace).to eq(group)
       expect(result.feature).to eq(new_feature.to_s)
-    end
-
-    context 'when the feature is not enabled' do
-      let(:ff_enabled) { false }
-
-      subject(:ai_feature_setting) { build(:ai_namespace_feature_setting) }
-
-      it 'returns nil' do
-        result = described_class.find_or_initialize_by_feature(group, existing_feature)
-        expect(result).to be_nil
-      end
     end
   end
 
@@ -257,7 +275,6 @@ RSpec.describe Ai::ModelSelection::NamespaceFeatureSetting, feature_category: :"
       let(:namespace) { create(:group) }
 
       before do
-        stub_feature_flags(ai_model_switching: true)
         namespace.namespace_settings.update!(experiment_features_enabled: true)
       end
 
@@ -366,12 +383,12 @@ RSpec.describe Ai::ModelSelection::NamespaceFeatureSetting, feature_category: :"
   end
 
   describe 'validations' do
+    let(:parent_group) { create(:group) }
+    let(:group) { create(:group, parent: parent_group) }
+
     include_context 'with model selection definitions'
 
     describe '#validate_root_namespace' do
-      let(:parent_group) { create(:group) }
-      let(:group) { create(:group, parent: parent_group) }
-
       subject(:ai_feature_setting) do
         build(:ai_namespace_feature_setting,
           namespace: group,
@@ -386,14 +403,14 @@ RSpec.describe Ai::ModelSelection::NamespaceFeatureSetting, feature_category: :"
       end
     end
 
-    it_behaves_like '#validate_model_selection_enabled is called'
-
     describe '#validate_model_ref_with_definition' do
       subject(:ai_feature_setting) do
         build(:ai_namespace_feature_setting,
           feature: valid_feature,
           offered_model_ref: model_ref,
-          model_definitions: model_definitions)
+          model_definitions: model_definitions,
+          namespace: parent_group
+        )
       end
 
       it_behaves_like '#validate_model_ref_with_definition is called'
@@ -404,7 +421,9 @@ RSpec.describe Ai::ModelSelection::NamespaceFeatureSetting, feature_category: :"
         build(:ai_namespace_feature_setting,
           feature: valid_feature,
           offered_model_ref: model_ref,
-          model_definitions: model_definitions)
+          model_definitions: model_definitions,
+          namespace: parent_group
+        )
       end
 
       it_behaves_like '#set_model_name is called'

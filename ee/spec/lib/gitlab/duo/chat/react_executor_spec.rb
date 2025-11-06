@@ -607,7 +607,7 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
       end
     end
 
-    context 'for model selection at the namespace level' do
+    context 'for model selection at the namespace level', :saas do
       let(:ai_request) { instance_double(::Gitlab::Llm::Chain::Requests::AiGateway, root_namespace: root_namespace) }
       let(:context) do
         Gitlab::Llm::Chain::GitlabContext.new(
@@ -667,23 +667,6 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
 
       context 'when there is no root_namespace given' do
         let(:ai_request) { nil }
-
-        context 'when the feature flag is off' do
-          let(:model_metadata) { nil }
-
-          before do
-            stub_feature_flags(ai_model_switching: false)
-          end
-
-          it 'sends a request without identifier and feature_setting' do
-            expect_next_instance_of(Gitlab::Duo::Chat::StepExecutor) do |react_agent|
-              expect(react_agent).to receive(:step).with(hash_including(step_params))
-                                                   .and_yield(action_event).and_return([action_event])
-            end
-
-            agent.execute
-          end
-        end
 
         context 'with a self-hosted models present' do
           let(:model_metadata) { nil }

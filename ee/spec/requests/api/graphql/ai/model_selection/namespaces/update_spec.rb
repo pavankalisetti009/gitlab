@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Updating a Namespace Model Selection Feature setting', feature_category: :"self-hosted_models" do
+RSpec.describe 'Updating a Namespace Model Selection Feature setting', :saas, feature_category: :"self-hosted_models" do
   include GraphqlHelpers
 
   let_it_be(:group_owner) { create(:user) }

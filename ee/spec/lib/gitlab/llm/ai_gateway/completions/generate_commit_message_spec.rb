@@ -101,7 +101,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::GenerateCommitMessage, featu
     end
   end
 
-  describe 'namespace feature setting integration' do
+  describe 'SAAS only namespace feature setting integration', :saas do
     shared_examples 'calls the AIGW client' do
       let(:expected_diff) do
         merge_request.raw_diffs.to_a.map(&:diff).join("\n").truncate_words(described_class::WORDS_LIMIT)

@@ -18,8 +18,10 @@ module Ai
       scope :non_default, -> { where.not(offered_model_ref: [nil, ""]) }
 
       def self.find_or_initialize_by_feature(namespace, feature)
-        return unless namespace.present? && ::Feature.enabled?(:ai_model_switching, namespace)
+        return unless ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+        return unless namespace.present?
         return unless namespace.root?
+        return unless namespace.duo_features_enabled
 
         feature_name = get_feature_name(feature)
         find_or_initialize_by(namespace_id: namespace.id, feature: feature_name)

@@ -2,7 +2,8 @@
 
 require 'spec_helper'
 
-RSpec.describe 'List of configurable namespace Model Selection feature settings.', feature_category: :"self-hosted_models" do
+RSpec.describe 'List of configurable namespace Model Selection feature settings.',
+  :saas, feature_category: :"self-hosted_models" do
   include GraphqlHelpers
 
   let_it_be(:group_owner) { create(:user) }

@@ -219,7 +219,7 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
     end
   end
 
-  describe 'model switching' do
+  describe 'model switching', :saas do
     let_it_be(:group) { create(:group) }
     let_it_be(:project) { create(:project, group: group) }
 
@@ -392,26 +392,6 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
 
       # Even though a namespace feature setting is present,
       # but if the model is set to GitLab Default,
-      # code completions will fallback to using the saas primary model,
-      # as decided by the `saas_prompt` method
-      it_behaves_like 'uses the saas primary model for code completions'
-    end
-
-    context 'when ai_model_switching is disabled' do
-      let_it_be(:namespace_feature_setting) do
-        create(:ai_namespace_feature_setting,
-          feature: :code_completions,
-          offered_model_ref: 'claude_sonnet_3_5',
-          namespace: group
-        )
-      end
-
-      before do
-        stub_feature_flags(ai_model_switching: false)
-      end
-
-      # Even though a namespace feature setting is present,
-      # but the ai_model_switching FF is disabled,
       # code completions will fallback to using the saas primary model,
       # as decided by the `saas_prompt` method
       it_behaves_like 'uses the saas primary model for code completions'
