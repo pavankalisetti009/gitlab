@@ -66,4 +66,30 @@ RSpec.describe 'gitlab:duo tasks', :gitlab_duo, :silence_stdout, feature_categor
       end
     end
   end
+
+  describe 'duo:dap_evals_seeder' do
+    let(:task_name) { 'gitlab:duo:dap_evals_seeder' }
+    let(:output_file) { 'custom_output.yml' }
+
+    subject(:task) { Rake::Task[task_name] }
+
+    before do
+      allow(Gitlab::Duo::Developments::DapEvalsSeeder).to receive(:seed_issues)
+      task.reenable
+    end
+
+    it 'calls DapEvalsSeeder.seed_issues with default output file when no argument provided' do
+      expect(Gitlab::Duo::Developments::DapEvalsSeeder).to receive(:seed_issues)
+        .with(output_file: 'dap_evaluation_issues.yml')
+
+      task.invoke
+    end
+
+    it 'calls DapEvalsSeeder.seed_issues with custom output file when argument provided' do
+      expect(Gitlab::Duo::Developments::DapEvalsSeeder).to receive(:seed_issues)
+        .with(output_file: output_file)
+
+      task.invoke(output_file)
+    end
+  end
 end
