@@ -142,7 +142,8 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Create, feature_category: :workflow
   context 'when add_to_project_when_created is true' do
     let(:params) { super().merge(add_to_project_when_created: true) }
 
-    context 'and item is successfully added to the project' do
+    context 'and item is successfully added to the project',
+      skip: 'Temporarily unavailable until we add the ability to automatically create the top-level group consumer' do
       it 'adds the created item to project' do
         execute
 

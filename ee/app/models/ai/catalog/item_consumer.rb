@@ -31,10 +31,15 @@ module Ai
       belongs_to :parent_item_consumer, class_name: 'Ai::Catalog::ItemConsumer'
       belongs_to :service_account, class_name: 'User'
 
+      has_one :flow_trigger, class_name: 'Ai::FlowTrigger', inverse_of: :ai_catalog_item_consumer
+
       validates :service_account, absence: true, unless: -> { item&.flow? || item&.third_party_flow? }
       validates :parent_item_consumer, absence: true, unless: -> { item&.flow? || item&.third_party_flow? }
 
       scope :by_enabled, ->(enabled) { where(enabled: enabled) }
+
+      accepts_nested_attributes_for :flow_trigger
+
       scope :not_for_projects, ->(project) { where.not(project: project) }
       scope :for_projects, ->(project) { where(project: project) }
       scope :for_item, ->(item_id) { where(ai_catalog_item_id: item_id) }
