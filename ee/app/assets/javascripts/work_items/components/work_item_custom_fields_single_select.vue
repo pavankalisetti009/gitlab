@@ -9,6 +9,7 @@ import {
   CUSTOM_FIELDS_TYPE_SINGLE_SELECT,
   I18N_WORK_ITEM_ERROR_UPDATING,
   NAME_TO_TEXT_LOWERCASE_MAP,
+  WORK_ITEM_TYPE_NAME_EPIC,
 } from '~/work_items/constants';
 import updateWorkItemCustomFieldsMutation from 'ee/work_items/graphql/update_work_item_custom_fields.mutation.graphql';
 import WorkItemSidebarDropdownWidget from '~/work_items/components/shared/work_item_sidebar_dropdown_widget.vue';
@@ -22,7 +23,7 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
-  inject: ['issuesListPath'],
+  inject: ['issuesListPath', 'epicsListPath'],
   props: {
     workItemId: {
       type: String,
@@ -103,6 +104,9 @@ export default {
     },
     isLoadingOptionsList() {
       return this.$apollo.queries.selectOptions.loading;
+    },
+    isEpic() {
+      return this.workItemType === WORK_ITEM_TYPE_NAME_EPIC;
     },
   },
   watch: {
@@ -218,7 +222,7 @@ export default {
       const customFieldOptionId = getIdFromGraphQLId(optionId);
 
       const query = `?custom-field[${customFieldId}]=${customFieldOptionId}`;
-      return `${this.issuesListPath}/${query}`;
+      return `${this.isEpic ? this.epicsListPath : this.issuesListPath}/${query}`;
     },
   },
 };
