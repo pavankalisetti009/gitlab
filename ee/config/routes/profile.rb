@@ -4,5 +4,6 @@ resource :profile, only: [] do
   scope module: :profiles do
     resources :usage_quotas, only: [:index]
     resources :billings, only: [:index]
+    resources :designated_beneficiaries, only: [:create, :update, :destroy], path: 'designated-beneficiaries'
   end
 end

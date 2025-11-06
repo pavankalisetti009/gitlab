@@ -761,6 +761,16 @@ module EE
       super
     end
 
+    # For now, we only support max one account manager, but we may change that
+    def designated_account_manager
+      designated_beneficiaries.manager.last
+    end
+
+    # For now, we only support max one account successor, but we may change that
+    def designated_account_successor
+      designated_beneficiaries.successor.last
+    end
+
     def owned_free_or_trial_groups_with_limit(limit)
       owned_groups.free_or_trial.limit(limit)
     end

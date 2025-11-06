@@ -48,6 +48,7 @@ module Gitlab
         auto_enable_secret_push_protection_public_projects
         allow_personal_snippets
         cdot_requests
+        designated_account_beneficiaries
       ].freeze
 
     CONFIG_FILE_ROOT = 'ee/config/saas_features'
