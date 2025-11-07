@@ -35,6 +35,7 @@ export default {
   queryVariables: {
     minAccessLevel: ACCESS_LEVEL_MAINTAINER_STRING,
     sort: 'similarity',
+    searchNamespaces: true,
   },
   methods: {
     itemTextFn(item) {
