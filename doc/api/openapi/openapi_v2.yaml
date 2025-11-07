@@ -44903,6 +44903,11 @@ paths:
       - application/json
       parameters:
       - in: query
+        name: domain
+        description: The domain of the GitLab Pages site to filter on.
+        type: string
+        required: false
+      - in: query
         name: page
         description: Current page number
         type: integer
