@@ -444,6 +444,15 @@ RSpec.describe VirtualRegistries::Packages::Maven::Upstream, type: :model, featu
       it { is_expected.to eq([upstream]) }
     end
 
+    describe '.for_url' do
+      let_it_be(:upstream) { create(:virtual_registries_packages_maven_upstream, url: 'https://gitlab.com/maven/test') }
+      let_it_be(:other_upstream) { create(:virtual_registries_packages_maven_upstream) }
+
+      subject { described_class.for_url('https://gitlab.com/maven/test') }
+
+      it { is_expected.to eq([upstream]) }
+    end
+
     describe '.search_by_name' do
       let(:query) { 'abc' }
       let_it_be(:name) { 'pkg-name-abc' }
@@ -709,6 +718,38 @@ RSpec.describe VirtualRegistries::Packages::Maven::Upstream, type: :model, featu
       end
 
       it { is_expected.to eq(expected_project) }
+    end
+  end
+
+  describe '#destroy_and_sync_positions' do
+    let_it_be(:registry1) { create(:virtual_registries_packages_maven_registry) }
+    let_it_be(:registry1_upstream) { create(:virtual_registries_packages_maven_registry_upstream, registry: registry1) }
+
+    let_it_be(:other_registry1_upstream) do
+      create(:virtual_registries_packages_maven_registry_upstream, registry: registry1)
+    end
+
+    let_it_be(:registry2) { create(:virtual_registries_packages_maven_registry) }
+    let_it_be(:registry2_upstream) do
+      create(
+        :virtual_registries_packages_maven_registry_upstream,
+        registry: registry2,
+        upstream: registry1_upstream.upstream
+      )
+    end
+
+    let_it_be(:other_registry2_upstream) do
+      create(:virtual_registries_packages_maven_registry_upstream, registry: registry2)
+    end
+
+    subject(:destroy_and_sync) { registry1_upstream.upstream.destroy_and_sync_positions }
+
+    it 'destroys the upstream and sync the registries positions' do
+      expect { destroy_and_sync }.to change { ::VirtualRegistries::Packages::Maven::Upstream.count }.by(-1)
+        .and change { registry1.reload.registry_upstreams.count }.from(2).to(1)
+        .and change { registry2.reload.registry_upstreams.count }.from(2).to(1)
+        .and change { other_registry1_upstream.reload.position }.from(2).to(1)
+        .and change { other_registry2_upstream.reload.position }.from(2).to(1)
     end
   end
 end

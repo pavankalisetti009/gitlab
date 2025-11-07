@@ -259,13 +259,7 @@ module API
                 delete do
                   authorize! :destroy_virtual_registry, upstream
 
-                  destroy_conditionally!(upstream) do
-                    upstream.transaction do
-                      ::VirtualRegistries::Packages::Maven::RegistryUpstream
-                        .sync_higher_positions(upstream.registry_upstreams)
-                      upstream.destroy
-                    end
-                  end
+                  destroy_conditionally!(upstream) { upstream.destroy_and_sync_positions }
                 end
 
                 desc 'Purge cache for a maven virtual registry upstream' do
