@@ -785,6 +785,18 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
         project = build(:project, last_activity_at: 7.months.ago)
         expect(described_class.map_field(project, 'review_and_archive_stale_repos')).to be false
       end
+
+      it 'returns true when an ancestor project is archived, but the project itself is not' do
+        project = build(:project, last_activity_at: 5.months.ago)
+        allow(project).to receive(:self_or_ancestors_archived?).and_return(true)
+        expect(described_class.map_field(project, 'review_and_archive_stale_repos')).to be true
+      end
+
+      it 'returns true when neither the project nor its ancestors are archived and the project is not stale' do
+        project = build(:project, last_activity_at: 5.months.ago)
+        allow(project).to receive(:self_or_ancestors_archived?).and_return(false)
+        expect(described_class.map_field(project, 'review_and_archive_stale_repos')).to be true
+      end
     end
 
     describe '#review_and_remove_inactive_users?' do
@@ -1259,10 +1271,20 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
 
       describe 'project_archived' do
         it 'returns the value of project.archived?' do
-          allow(project).to receive(:archived?).and_return(true)
+          allow(project).to receive(:self_or_ancestors_archived?).and_return(true)
           expect(described_class.map_field(project, 'project_archived')).to be true
 
-          allow(project).to receive(:archived?).and_return(false)
+          allow(project).to receive(:self_or_ancestors_archived?).and_return(false)
+          expect(described_class.map_field(project, 'project_archived')).to be false
+        end
+
+        it 'returns true when an ancestor project is archived, but the project itself is not' do
+          allow(project).to receive_messages(archived?: false, self_or_ancestors_archived?: true)
+          expect(described_class.map_field(project, 'project_archived')).to be true
+        end
+
+        it 'returns false when neither the project nor its ancestors are archived' do
+          allow(project).to receive_messages(archived?: false, self_or_ancestors_archived?: false)
           expect(described_class.map_field(project, 'project_archived')).to be false
         end
       end

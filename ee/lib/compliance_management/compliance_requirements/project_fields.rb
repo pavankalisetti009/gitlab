@@ -215,7 +215,7 @@ module ComplianceManagement
         def review_and_archive_stale_repos?(project, _context = {})
           stale_threshold = 6.months.ago
 
-          return true if project.archived?
+          return true if project.self_or_ancestors_archived?
 
           project.last_activity_at > stale_threshold
         end
@@ -329,7 +329,7 @@ module ComplianceManagement
         end
 
         def project_archived?(project, _context = {})
-          project.archived?
+          project.self_or_ancestors_archived?
         end
 
         def default_branch_users_can_merge?(project, _context = {})
