@@ -53,12 +53,34 @@ RSpec.describe GitlabSchema.types['AiMessage'], feature_category: :duo_chat do
 
       expect(resolved_field).to eq('banzai_content')
     end
+
+    context 'when message contains an error' do
+      before do
+        message.error_details = { details: 'An unexpected error has occurred' }
+      end
+
+      after do
+        message.error_details = nil
+      end
+
+      it 'does not render content_html' do
+        resolved_field = resolve_field(:content_html, message, current_user: current_user)
+
+        expect(resolved_field).to be_nil
+      end
+    end
   end
 
   describe '#errors' do
-    it 'returns errors' do
+    before do
       message.error_details = ['foo']
+    end
 
+    after do
+      message.error_details = nil
+    end
+
+    it 'returns errors' do
       resolved_field = resolve_field(:errors, message, current_user: current_user)
 
       expect(resolved_field).to eq(['foo'])
@@ -109,20 +131,34 @@ RSpec.describe GitlabSchema.types['AiMessage'], feature_category: :duo_chat do
       let(:message) { build(:ai_message, content: content) }
       let(:content) { "Hello, **World**!" }
 
-      before do
-        allow(Banzai).to receive(:render_and_post_process).with(content, {
-          current_user: current_user,
-          only_path: false,
-          pipeline: :full,
-          allow_comments: false,
-          skip_project_check: true
-        }).and_return('banzai_content')
+      context 'when content is html renderable' do
+        before do
+          allow(Banzai).to receive(:render_and_post_process).with(content, {
+            current_user: current_user,
+            only_path: false,
+            pipeline: :full,
+            allow_comments: false,
+            skip_project_check: true
+          }).and_return('banzai_content')
+        end
+
+        it 'renders html through Banzai' do
+          resolved_field = resolve_field(:content_html, message.to_h, current_user: current_user)
+
+          expect(resolved_field).to eq('banzai_content')
+        end
       end
 
-      it 'renders html through Banzai' do
-        resolved_field = resolve_field(:content_html, message.to_h, current_user: current_user)
+      context 'when message contains an error' do
+        it 'does not render content_html' do
+          resolved_field = resolve_field(
+            :content_html,
+            message.to_h.merge(errors: 'An unexpected error has occurred'),
+            current_user: current_user
+          )
 
-        expect(resolved_field).to eq('banzai_content')
+          expect(resolved_field).to be_nil
+        end
       end
     end
 
