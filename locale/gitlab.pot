@@ -75061,7 +75061,7 @@ msgid_plural "WorkItem|%{workItemType} blocks %{itemCount} items"
 msgstr[0] ""
 msgstr[1] ""
 
-msgid "WorkItem|%{workItemType} created"
+msgid "WorkItem|%{workItemType} created."
 msgstr ""
 
 msgid "WorkItem|%{workItemType} deleted"

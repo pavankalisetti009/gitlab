@@ -169,7 +169,7 @@ export default {
       });
     },
     workItemCreatedText() {
-      return sprintf(s__('WorkItem|%{workItemType} created'), {
+      return sprintf(s__('WorkItem|%{workItemType} created.'), {
         workItemType: NAME_TO_TEXT_MAP[this.selectedWorkItemTypeName],
       });
     },
