@@ -5,9 +5,28 @@ require 'spec_helper'
 RSpec.describe GitlabSchema.types['MavenRegistryUpstream'], feature_category: :virtual_registry do
   include GraphqlHelpers
 
+  let_it_be(:user) { create(:user) }
+  let_it_be(:fields) { %i[id position registry] }
+  let_it_be(:registry) { create(:virtual_registries_packages_maven_registry) }
+  let_it_be(:registry_upstream) { create(:virtual_registries_packages_maven_registry_upstream, registry:) }
+
+  let(:batch_loader) { instance_double(Gitlab::Graphql::Loaders::BatchModelLoader) }
+
   subject { described_class }
 
-  let_it_be(:fields) { %i[id position] }
-
   it { is_expected.to have_graphql_fields(fields) }
+
+  describe '#registry' do
+    subject(:resolved_registry) { resolve_field(:registry, registry_upstream, current_user: user) }
+
+    it 'fetches the registry' do
+      expect(Gitlab::Graphql::Loaders::BatchModelLoader)
+        .to receive(:new)
+        .with(::VirtualRegistries::Packages::Maven::Registry, registry.id)
+        .and_return(batch_loader)
+      expect(batch_loader).to receive(:find)
+
+      resolved_registry
+    end
+  end
 end

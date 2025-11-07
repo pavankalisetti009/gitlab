@@ -8,8 +8,7 @@ RSpec.describe GitlabSchema.types['MavenUpstream'], feature_category: :virtual_r
   subject { described_class }
 
   let_it_be(:fields) do
-    %i[id name description url cacheValidityHours metadataCacheValidityHours username registry_upstreams
-      registries registriesCount]
+    %i[id name description url cacheValidityHours metadataCacheValidityHours username registriesCount]
   end
 
   it 'uses CountableConnectionType' do

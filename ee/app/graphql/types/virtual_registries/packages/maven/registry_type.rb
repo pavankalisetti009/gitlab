@@ -23,16 +23,6 @@ module Types
 
           field :updated_at, ::Types::TimeType, null: true,
             description: 'Timestamp of when the virtual registry was updated.'
-
-          field :upstreams,
-            [::Types::VirtualRegistries::Packages::Maven::UpstreamType],
-            null: true,
-            description: 'List of upstream registries for the Maven virtual registry.',
-            experiment: { milestone: '18.1' }
-
-          def upstreams
-            ::VirtualRegistries::Packages::Maven::Upstream.eager_load_registry_upstream(registry: registry)
-          end
         end
       end
     end

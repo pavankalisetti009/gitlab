@@ -45,7 +45,7 @@ module Mutations
             description: 'Password of the upstream registry.'
 
           field :upstream,
-            ::Types::VirtualRegistries::Packages::Maven::UpstreamType,
+            ::Types::VirtualRegistries::Packages::Maven::UpstreamDetailsType,
             null: true,
             description: 'Maven upstream after the mutation.'
 

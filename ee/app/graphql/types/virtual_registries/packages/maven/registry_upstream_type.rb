@@ -16,6 +16,17 @@ module Types
           field :position, GraphQL::Types::Int, null: false,
             description: 'Position of the upstream registry in an ordered list.',
             experiment: { milestone: '18.2' }
+
+          field :registry, ::Types::VirtualRegistries::Packages::Maven::RegistryType, null: false,
+            description: 'Maven registry associated with the registry upstream.',
+            experiment: { milestone: '18.6' }
+
+          def registry
+            Gitlab::Graphql::Loaders::BatchModelLoader.new(
+              ::VirtualRegistries::Packages::Maven::Registry,
+              object.registry_id
+            ).find
+          end
         end
         # rubocop: enable Graphql/AuthorizeTypes
       end

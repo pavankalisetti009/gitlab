@@ -44,19 +44,6 @@ module Types
             experiment: { milestone: '18.6' },
             description: 'Number of registries using the upstream.'
 
-          field :registries,
-            ::Types::VirtualRegistries::Packages::Maven::RegistryType.connection_type,
-            null: false,
-            description: 'Represents the virtual registries which use the upstream.',
-            experiment: { milestone: '18.4' }
-
-          field :registry_upstreams,
-            [::Types::VirtualRegistries::Packages::Maven::RegistryUpstreamType],
-            null: false,
-            description: 'Represents the upstream registry for the upstream ' \
-              'which contains the position data.',
-            experiment: { milestone: '18.2' }
-
           def registries_count
             BatchLoader::GraphQL.for(object.id)
               .batch(key: 'vregs-maven-upstreams-registries-count') do |upstream_ids, loader|

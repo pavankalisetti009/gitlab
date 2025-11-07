@@ -7,7 +7,7 @@ RSpec.describe 'Querying a maven virtual registry', feature_category: :virtual_r
 
   let_it_be(:current_user) { create(:user) }
   let_it_be(:group) { create(:group, :private) }
-  let_it_be(:registry) { create(:virtual_registries_packages_maven_registry, group: group) }
+  let_it_be(:registry) { create(:virtual_registries_packages_maven_registry, :with_upstreams, group: group) }
 
   let(:global_id) { registry.to_gid }
   let(:query) do
@@ -16,6 +16,22 @@ RSpec.describe 'Querying a maven virtual registry', feature_category: :virtual_r
         mavenVirtualRegistry(id: "#{global_id}") {
           id
           name
+          upstreams {
+            id
+            registries {
+              nodes {
+                id
+                name
+              }
+            }
+            registryUpstreams {
+              id
+              position
+              registry {
+                name
+              }
+            }
+          }
         }
       }
     GRAPHQL
@@ -58,6 +74,38 @@ RSpec.describe 'Querying a maven virtual registry', feature_category: :virtual_r
       context 'when registry exists' do
         it 'returns registry for the mavenVirtualRegistry field' do
           expect(maven_registry_response['name']).to eq('name')
+        end
+
+        it 'returns registry upstreams for an upstream' do
+          upstreams = maven_registry_response['upstreams']
+          registry_upstreams = upstreams[0]['registryUpstreams']
+
+          expect(registry_upstreams.length).to be 1
+          expect(registry_upstreams[0]['position']).to be 1
+        end
+      end
+
+      context 'when multiple upstreams exist' do
+        let_it_be(:first_user) { create(:user) }
+        let_it_be(:second_user) { create(:user) }
+
+        before_all do
+          group.add_guest(first_user)
+          group.add_guest(second_user)
+        end
+
+        it 'avoids N+1 queries' do
+          control_count = ActiveRecord::QueryRecorder.new do
+            post_graphql(query, current_user: first_user)
+          end
+
+          registry1 = create(:virtual_registries_packages_maven_registry, group: group, name: 'test registry1')
+          create(:virtual_registries_packages_maven_upstream, registries: [registry, registry1], name: 'test upstream1')
+
+          expect do
+            post_graphql(query, current_user: second_user)
+          end.not_to exceed_query_limit(control_count)
+          expect_graphql_errors_to_be_empty
         end
       end
 

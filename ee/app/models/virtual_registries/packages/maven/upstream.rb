@@ -65,7 +65,9 @@ module VirtualRegistries
         prevent_from_serialization(:password) if respond_to?(:prevent_from_serialization)
 
         scope :eager_load_registry_upstream, ->(registry:) {
-          eager_load(:registry_upstreams)
+          # eager-loading registries should not be needed once `registries` field is removed
+          # from ee/app/graphql/types/virtual_registries/packages/maven/upstream_details_type.rb
+          eager_load(:registry_upstreams, :registries)
             .where(registry_upstreams: { registry: })
             .order('registry_upstreams.position ASC')
         }

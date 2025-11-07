@@ -99,12 +99,6 @@ RSpec.describe 'Querying maven upstream registries for top-level group', feature
                     id
                     name
                     registriesCount
-                    registries {
-                      nodes {
-                        id
-                        name
-                      }
-                    }
                   }
                 }
               }

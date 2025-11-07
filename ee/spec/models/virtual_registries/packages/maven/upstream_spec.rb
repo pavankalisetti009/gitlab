@@ -414,6 +414,12 @@ RSpec.describe VirtualRegistries::Packages::Maven::Upstream, type: :model, featu
 
         expect(recorder.count).to eq(1)
       end
+
+      it 'eager loads the registries association' do
+        recorder = ActiveRecord::QueryRecorder.new { upstreams.each(&:registries) }
+
+        expect(recorder.count).to eq(1)
+      end
     end
 
     describe '.for_id_and_group' do
