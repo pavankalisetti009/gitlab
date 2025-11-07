@@ -207,15 +207,18 @@ RSpec.describe 'profiles/accounts/show', feature_category: :user_profile do
       end
 
       it 'handles orphaned schedules without errors' do
-        # Create a schedule with a project_id that references a non-existent project
-        orphaned_schedule = create(:ci_pipeline_schedule, owner: user) # rubocop:disable RSpec/FactoryBot/AvoidCreate -- explained above
+        orphaned_description = 'orphaned'
+        orphaned_schedule = create(:ci_pipeline_schedule, owner: user, description: orphaned_description) # rubocop:disable RSpec/FactoryBot/AvoidCreate -- explained above
         non_existent_project_id = Project.maximum(:id).to_i + 1
         orphaned_schedule.update_column(:project_id, non_existent_project_id)
 
         expect { render }.not_to raise_error
 
-        # Verify the orphaned schedule is not displayed
-        expect(rendered).to have_css("#{test_id_selector} ul li", count: 3)
+        expect(rendered).to have_css("#{test_id_selector} ul li", count: 6)
+        within(test_id_selector) do
+          expect(rendered).not_to have_content(orphaned_description)
+          expect(rendered).to have_content(active_schedules[0].description)
+        end
       end
     end
   end
