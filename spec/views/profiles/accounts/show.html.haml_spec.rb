@@ -205,6 +205,17 @@ RSpec.describe 'profiles/accounts/show', feature_category: :user_profile do
 
         expect { render }.not_to exceed_query_limit(control)
       end
+
+      it 'handles orphaned schedules without errors' do
+        # Create an orphaned schedule (schedule with nil project_id)
+        orphaned_schedule = create(:ci_pipeline_schedule, owner: user) # rubocop:disable RSpec/FactoryBot/AvoidCreate -- explained above
+        orphaned_schedule.update_column(:project_id, nil)
+
+        expect { render }.not_to raise_error
+
+        # Verify the orphaned schedule is not displayed
+        expect(rendered).to have_css("#{test_id_selector} ul li", count: 3)
+      end
     end
   end
 end
