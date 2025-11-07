@@ -34,17 +34,17 @@ module Ai
         OauthAccessToken.create!(
           application_id: ai_settings.duo_workflow_oauth_application_id,
           expires_in: TOKEN_EXPIRES_IN,
-          resource_owner_id: ai_settings.duo_workflow_service_account_user_id,
+          resource_owner_id: @service_account.id,
           organization: @organization,
           scopes: @scopes
         )
       end
 
       def ensure_onboarding_complete!
-        if ai_settings.duo_workflow_service_account_user.nil? || ai_settings.duo_workflow_oauth_application.nil?
+        if @service_account.nil? || ai_settings.duo_workflow_oauth_application.nil?
           raise IncompleteOnboardingError,
             'Duo Agent Platform onboarding is incomplete. Please complete onboarding to proceed further.'
-        elsif !ai_settings.duo_workflow_service_account_user.composite_identity_enforced?
+        elsif !@service_account.composite_identity_enforced?
           raise CompositeIdentityEnforcedError,
             'The Duo Agent Platform service account must have composite identity enabled.'
         end
