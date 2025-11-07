@@ -75283,6 +75283,9 @@ msgstr ""
 msgid "WorkItem|All current statuses must be mapped to a new value."
 msgstr ""
 
+msgid "WorkItem|An error occurred updating the RSS link. Please refresh the page to try again."
+msgstr ""
+
 msgid "WorkItem|An error occurred while exporting issues."
 msgstr ""
 

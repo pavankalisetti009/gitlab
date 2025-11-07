@@ -1489,6 +1489,7 @@ export default {
               :work-item-count="currentTabCount"
               :query-variables="csvExportQueryVariables"
               :full-path="rootPageFullPath"
+              :url-params="urlParams"
             />
           </div>
         </template>
@@ -1535,6 +1536,7 @@ export default {
                 :work-item-count="currentTabCount"
                 :query-variables="csvExportQueryVariables"
                 :full-path="rootPageFullPath"
+                :url-params="urlParams"
               />
             </div>
           </work-item-list-heading>
