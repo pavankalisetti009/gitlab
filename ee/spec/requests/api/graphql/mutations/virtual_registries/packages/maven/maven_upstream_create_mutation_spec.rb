@@ -50,7 +50,10 @@ RSpec.describe 'Create an upstream registry', feature_category: :virtual_registr
       a_hash_including(
         "name" => 'Maven Central',
         "cacheValidityHours" => 24,
-        "url" => 'https://repo.maven.apache.org/maven2'
+        "url" => 'https://repo.maven.apache.org/maven2',
+        "registryUpstreams" => [a_hash_including(
+          "position" => 1
+        )]
       )
     )
   end

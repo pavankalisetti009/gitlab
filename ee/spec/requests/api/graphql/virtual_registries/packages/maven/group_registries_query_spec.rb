@@ -19,14 +19,6 @@ RSpec.describe 'Querying maven virtual registries for top-level group', :aggrega
             nodes {
               id
               name
-              upstreams {
-                id
-                name
-                registryUpstreams {
-                  id
-                  position
-                }
-              }
             }
           }
         }
@@ -72,15 +64,6 @@ RSpec.describe 'Querying maven virtual registries for top-level group', :aggrega
         maven_registries = maven_registries_response['nodes']
 
         expect(maven_registries[0]['name']).to eq(registry.name)
-      end
-
-      it 'returns registry upstreams for an upstream' do
-        maven_registries = maven_registries_response['nodes']
-        upstreams = maven_registries[0]['upstreams']
-        registry_upstreams = upstreams[0]['registryUpstreams']
-
-        expect(registry_upstreams.length).to be 1
-        expect(registry_upstreams[0]['position']).to be 1
       end
     end
   end

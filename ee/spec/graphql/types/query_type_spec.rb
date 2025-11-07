@@ -130,7 +130,7 @@ RSpec.describe GitlabSchema.types['Query'], feature_category: :shared do
 
     it 'finds a maven virtual registry by its gid' do
       is_expected.to have_graphql_arguments(:id)
-      is_expected.to have_graphql_type(::Types::VirtualRegistries::Packages::Maven::RegistryType)
+      is_expected.to have_graphql_type(::Types::VirtualRegistries::Packages::Maven::RegistryDetailsType)
     end
   end
 
@@ -139,7 +139,7 @@ RSpec.describe GitlabSchema.types['Query'], feature_category: :shared do
 
     it 'finds a maven upstream registry by its gid' do
       is_expected.to have_graphql_arguments(:id)
-      is_expected.to have_graphql_type(::Types::VirtualRegistries::Packages::Maven::UpstreamType)
+      is_expected.to have_graphql_type(::Types::VirtualRegistries::Packages::Maven::UpstreamDetailsType)
     end
   end
 end

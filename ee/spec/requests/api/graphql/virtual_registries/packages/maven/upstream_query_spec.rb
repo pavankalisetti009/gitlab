@@ -18,6 +18,13 @@ RSpec.describe 'Querying a maven upstream registry', feature_category: :virtual_
           id
           name
           registriesCount
+          registryUpstreams {
+            id
+            position
+            registry {
+              name
+            }
+          }
           registries {
             nodes {
               id
