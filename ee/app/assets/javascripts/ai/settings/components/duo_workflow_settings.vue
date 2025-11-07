@@ -14,6 +14,7 @@ import { s__, sprintf } from '~/locale';
 import axios from '~/lib/utils/axios_utils';
 import { createAlert } from '~/alert';
 import { visitUrlWithAlerts } from '~/lib/utils/url_utility';
+import { helpPagePath } from '~/helpers/help_page_helper';
 
 export default {
   name: 'DuoWorkflowSettings',
@@ -60,6 +61,9 @@ export default {
     shouldDisplayPageHeader() {
       return this.displayPageHeading && (this.title || this.subtitle);
     },
+    serviceAccountHelpPath() {
+      return helpPagePath('user/duo_agent_platform/security');
+    },
   },
   methods: {
     enableWorkflow() {
@@ -76,14 +80,14 @@ export default {
               message: username
                 ? sprintf(
                     s__(
-                      'AiPowered|GitLab Duo Agent Platform is now on for the instance and the service account (%{accountId}) was created. To use Agent Platform in your groups, you must turn on AI features for specific groups.',
+                      'AiPowered|Composite identity for GitLab Duo Agent Platform is now on for the instance and the service account (%{accountId}) was created. To use Agent Platform in your groups, you must turn on AI features for specific groups.',
                     ),
                     {
                       accountId: `@${username}`,
                     },
                   )
                 : s__(
-                    'AiPowered|GitLab Duo Agent Platform is now on for the instance. To use Agent Platform in your groups, you must turn on AI features for specific groups.',
+                    'AiPowered|Composite identity for GitLab Duo Agent Platform is now on for the instance. To use Agent Platform in your groups, you must turn on AI features for specific groups.',
                   ),
               variant: 'success',
             },
@@ -93,7 +97,7 @@ export default {
           createAlert({
             message:
               error.response?.data?.message ||
-              s__('AiPowered|Failed to enable GitLab Duo Agent Platform.'),
+              s__('AiPowered|Failed to enable composite identity for GitLab Duo Agent Platform.'),
             captureError: true,
             error,
           });
@@ -113,7 +117,7 @@ export default {
               {
                 id: 'duo-workflow-successfully-disabled',
                 message: s__(
-                  'AiPowered|GitLab Duo Agent Platform has successfully been turned off.',
+                  'AiPowered|Composite identity for GitLab Duo Agent Platform has successfully been turned off.',
                 ),
                 variant: 'success',
               },
@@ -124,7 +128,7 @@ export default {
           createAlert({
             message:
               error.response?.data?.message ||
-              s__('AiPowered|Failed to disable GitLab Duo Agent Platform.'),
+              s__('AiPowered|Failed to disable composite identity for GitLab Duo Agent Platform.'),
             captureError: true,
             error,
           });
@@ -159,7 +163,7 @@ export default {
     </page-heading>
 
     <crud-component
-      :title="s__('AiPowered|GitLab Duo Agent Platform')"
+      :title="s__('AiPowered|GitLab Duo Agent Platform composite identity')"
       :class="{ 'gl-mt-5': shouldDisplayPageHeader }"
       :description="s__('AiPowered|GitLab Duo Agent Platform is an AI-native coding agent.')"
     >
@@ -203,7 +207,7 @@ export default {
             @click="showDisableConfirmation"
           >
             <gl-loading-icon v-if="isLoading" inline size="sm" class="gl-mr-2" />
-            {{ s__('AiPowered|Turn off GitLab Duo Agent Platform') }}
+            {{ s__('AiPowered|Turn off composite identity for GitLab Duo Agent Platform') }}
           </gl-button>
         </div>
 
@@ -216,17 +220,21 @@ export default {
             @click="enableWorkflow"
           >
             <gl-loading-icon v-if="isLoading" inline size="sm" class="gl-mr-2" />
-            {{ s__('AiPowered|Turn on GitLab Duo Agent Platform') }}
+            {{ s__('AiPowered|Turn on composite identity for GitLab Duo Agent Platform') }}
           </gl-button>
 
           <p class="gl-mb-0 gl-mt-3 gl-text-sm">
             {{
               s__(
-                'AiPowered|When you turn on GitLab Duo Agent Platform, a service account is created.',
+                'AiPowered|When you turn on composite identity for GitLab Duo Agent Platform, a service account is created.',
               )
             }}
-            <gl-link href="#" class="gl-ml-1" data-testid="service-account-link">
-              {{ s__('AiPowered|What is the Duo Agent Platform service account?') }}
+            <gl-link
+              :href="serviceAccountHelpPath"
+              class="gl-ml-1"
+              data-testid="service-account-link"
+            >
+              {{ s__('AiPowered|What is the Duo Agent Platform composite identity?') }}
             </gl-link>
           </p>
         </div>
@@ -235,7 +243,11 @@ export default {
 
     <gl-modal
       :visible="showConfirmModal"
-      :title="s__('AiPowered|Are you sure you want to turn off GitLab Duo Agent Platform?')"
+      :title="
+        s__(
+          'AiPowered|Are you sure you want to turn off composite identity for GitLab Duo Agent Platform?',
+        )
+      "
       modal-id="disable-workflow-modal"
       size="sm"
       @primary="disableWorkflow"
@@ -245,7 +257,7 @@ export default {
       <p>
         {{
           s__(
-            'AiPowered|When you turn off GitLab Duo Agent Platform, users can no longer use it to solve coding tasks. Are you sure?',
+            "AiPowered|When you turn off composite identity for the Agent Platform, actions will be attributed to the user's account instead of the GitLab Duo service account. Are you sure you want to proceed?",
           )
         }}
       </p>
@@ -259,7 +271,7 @@ export default {
           data-testid="confirm-disable-button"
           @click="disableWorkflow"
         >
-          {{ s__('AiPowered|Turn off GitLab Duo Agent Platform') }}
+          {{ s__('AiPowered|Turn off composite identity') }}
         </gl-button>
       </template>
     </gl-modal>

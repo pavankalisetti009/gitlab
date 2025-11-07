@@ -60,7 +60,7 @@ RSpec.describe Ai::DuoWorkflows::WorkflowContextGenerationService, :aggregate_fa
 
     before do
       allow(Ai::DuoWorkflows::CreateCompositeOauthAccessTokenService).to receive(:new)
-        .and_return(composite_oauth_service)
+                                                                           .and_return(composite_oauth_service)
     end
 
     context 'when token creation succeeds' do
@@ -206,6 +206,10 @@ RSpec.describe Ai::DuoWorkflows::WorkflowContextGenerationService, :aggregate_fa
   end
 
   describe '#generate_oauth_token_with_composite_identity_support' do
+    before do
+      allow(Ai::DuoWorkflow).to receive(:available?).and_return(true)
+    end
+
     context 'when composite identity feature is enabled' do
       it 'calls generate_composite_oauth_token' do
         expect(service).to receive(:generate_composite_oauth_token)
@@ -225,9 +229,25 @@ RSpec.describe Ai::DuoWorkflows::WorkflowContextGenerationService, :aggregate_fa
         service.generate_oauth_token_with_composite_identity_support
       end
     end
+
+    context 'when Ai::DuoWorkflow is not available' do
+      before do
+        allow(Ai::DuoWorkflow).to receive(:available?).and_return(false)
+      end
+
+      it 'calls generate_oauth_token' do
+        expect(service).to receive(:generate_oauth_token)
+
+        service.generate_oauth_token_with_composite_identity_support
+      end
+    end
   end
 
   describe '#use_service_account?' do
+    before do
+      allow(Ai::DuoWorkflow).to receive(:available?).and_return(true)
+    end
+
     context 'when composite identity feature is enabled' do
       it 'returns true' do
         expect(service.use_service_account?).to be(true)
@@ -237,6 +257,16 @@ RSpec.describe Ai::DuoWorkflows::WorkflowContextGenerationService, :aggregate_fa
     context 'when composite identity feature is disabled' do
       before do
         stub_feature_flags(duo_workflow_use_composite_identity: false)
+      end
+
+      it 'returns false' do
+        expect(service.use_service_account?).to be(false)
+      end
+    end
+
+    context 'when Ai::DuoWorkflow is not available' do
+      before do
+        allow(Ai::DuoWorkflow).to receive(:available?).and_return(false)
       end
 
       it 'returns false' do
