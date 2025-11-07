@@ -1,6 +1,8 @@
 <script>
 import {
   GlButton,
+  GlDisclosureDropdown,
+  GlDisclosureDropdownItem,
   GlLink,
   GlSkeletonLoader,
   GlTable,
@@ -12,16 +14,20 @@ import { deleteMavenUpstreamCache } from 'ee/api/virtual_registries_api';
 import UpstreamClearCacheModal from 'ee/packages_and_registries/virtual_registries/components/maven/shared/upstream_clear_cache_modal.vue';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
 import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
+import DeleteUpstreamWithModal from '../shared/delete_upstream_with_modal.vue';
 
 export default {
   name: 'MavenUpstreamsTable',
   components: {
     GlButton,
+    GlDisclosureDropdown,
+    GlDisclosureDropdownItem,
     GlLink,
     GlSkeletonLoader,
     GlTable,
     GlTruncate,
     UpstreamClearCacheModal,
+    DeleteUpstreamWithModal,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -41,29 +47,70 @@ export default {
   },
   data() {
     return {
-      upstreamToBeCleared: null,
+      selectedUpstream: null,
       upstreamClearCacheModalIsShown: false,
+      upstreamDeleteModalIsShown: false,
     };
   },
   computed: {
     canEdit() {
       return this.glAbilities.updateVirtualRegistry;
     },
-    upstreamNameForClearCache() {
-      return this.upstreamToBeCleared?.name ?? '';
+    fields() {
+      return [
+        {
+          key: 'name',
+          label: s__('VirtualRegistry|Upstream'),
+          tdClass: '@sm/panel:gl-max-w-0',
+        },
+        {
+          key: 'actions',
+          label: s__('VirtualRegistry|Actions'),
+          hide: !this.canEdit,
+          thAlignRight: true,
+          thClass: 'gl-w-26',
+          tdClass: 'gl-text-right',
+        },
+      ];
+    },
+    selectedUpstreamId() {
+      return this.selectedUpstream?.id ?? null;
+    },
+    selectedUpstreamName() {
+      return this.selectedUpstream?.name ?? '';
     },
   },
   methods: {
     showClearUpstreamCacheModal(upstream) {
-      this.upstreamToBeCleared = upstream;
+      this.selectedUpstream = upstream;
       this.upstreamClearCacheModalIsShown = true;
     },
     hideUpstreamClearCacheModal() {
       this.upstreamClearCacheModalIsShown = false;
-      this.upstreamToBeCleared = null;
+      this.selectedUpstream = null;
+    },
+    showUpstreamDeleteModal(upstream) {
+      this.selectedUpstream = upstream;
+      this.upstreamDeleteModalIsShown = true;
+    },
+    hideUpstreamDeleteModal() {
+      this.upstreamDeleteModalIsShown = false;
+      this.selectedUpstream = null;
+    },
+    parseError(error) {
+      captureException({ component: this.$options.name, error });
+      return error.response?.data?.error || error.message;
+    },
+    handleSuccess() {
+      this.$emit('upstreamDeleted');
+      this.hideUpstreamDeleteModal();
+    },
+    handleError(error) {
+      this.$emit('upstreamDeleteFailed', this.parseError(error));
+      this.hideUpstreamDeleteModal();
     },
     async clearUpstreamCache() {
-      const { id } = this.upstreamToBeCleared;
+      const { id } = this.selectedUpstream;
       this.hideUpstreamClearCacheModal();
       try {
         await deleteMavenUpstreamCache({ id });
@@ -103,26 +150,12 @@ export default {
       );
     },
   },
-  fields: [
-    {
-      key: 'name',
-      label: s__('VirtualRegistry|Upstream'),
-      tdClass: '@sm/panel:gl-max-w-0',
-    },
-    {
-      key: 'actions',
-      label: s__('VirtualRegistry|Actions'),
-      thAlignRight: true,
-      thClass: 'gl-w-26',
-      tdClass: 'gl-text-right',
-    },
-  ],
 };
 </script>
 
 <template>
   <div>
-    <gl-table stacked="sm" :fields="$options.fields" :items="upstreams" :busy="busy">
+    <gl-table stacked="sm" :fields="fields" :items="upstreams" :busy="busy">
       <template #table-busy>
         <gl-skeleton-loader :lines="2" :width="500" />
       </template>
@@ -180,11 +213,33 @@ export default {
           data-testid="edit-upstream-button"
           :href="getEditUpstreamURL(item.id)"
         />
+        <gl-disclosure-dropdown
+          icon="ellipsis_v"
+          :toggle-text="__('More actions')"
+          :text-sr-only="true"
+          category="tertiary"
+          no-caret
+          placement="bottom-end"
+        >
+          <gl-disclosure-dropdown-item variant="danger" @action="showUpstreamDeleteModal(item)">
+            <template #list-item>
+              {{ s__('VirtualRegistry|Delete upstream') }}
+            </template>
+          </gl-disclosure-dropdown-item>
+        </gl-disclosure-dropdown>
       </template>
     </gl-table>
+    <delete-upstream-with-modal
+      v-model="upstreamDeleteModalIsShown"
+      :upstream-id="selectedUpstreamId"
+      :upstream-name="selectedUpstreamName"
+      @success="handleSuccess"
+      @error="handleError"
+      @canceled="hideUpstreamDeleteModal"
+    />
     <upstream-clear-cache-modal
       v-model="upstreamClearCacheModalIsShown"
-      :upstream-name="upstreamNameForClearCache"
+      :upstream-name="selectedUpstreamName"
       @primary="clearUpstreamCache"
       @canceled="hideUpstreamClearCacheModal"
     />

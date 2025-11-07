@@ -38,6 +38,7 @@ export default {
       page: INITIAL_PAGE,
       mavenUpstreams: [],
       mavenUpstreamsTotalCount: 0,
+      upstreamDeleteSuccessMessage: '',
     };
   },
   computed: {
@@ -67,7 +68,7 @@ export default {
   methods: {
     async fetchMavenUpstreamRegistriesList(searchTerm = '', page = this.page) {
       this.searchTerm = searchTerm;
-      this.alertMessage = '';
+      this.setAlertMessage();
       try {
         this.isLoading = true;
         const response = await getMavenUpstreamRegistriesList({
@@ -83,9 +84,10 @@ export default {
         this.mavenUpstreams = response.data;
         this.$emit('updateCount', this.mavenUpstreamsTotalCount);
       } catch (error) {
-        this.alertMessage =
+        const alertMessage =
           error.message ||
           s__('VirtualRegistry|Failed to fetch list of maven upstream registries.');
+        this.setAlertMessage(alertMessage);
         captureException({ error, component: this.$options.name });
       } finally {
         this.isLoading = false;
@@ -100,53 +102,72 @@ export default {
       this.page = INITIAL_PAGE;
       this.fetchMavenUpstreamRegistriesList(searchTerm);
     },
+    handleUpstreamDelete() {
+      this.upstreamDeleteSuccessMessage = s__('VirtualRegistry|Maven upstream has been deleted.');
+      this.page = INITIAL_PAGE;
+      this.fetchMavenUpstreamRegistriesList(this.searchTerm);
+    },
+    setAlertMessage(message = '') {
+      this.alertMessage = message;
+    },
   },
   emptyStateIllustrationUrl,
 };
 </script>
 
 <template>
-  <div v-if="showUpstreamsTable">
-    <div
-      class="gl-flex gl-flex-col gl-gap-3 gl-border-y-0 gl-bg-subtle gl-p-5 @md/panel:gl-flex-row"
-    >
-      <gl-filtered-search
-        class="gl-min-w-0 gl-grow"
-        :placeholder="__('Filter results')"
-        :search-text-option-label="__('Search for this text')"
-        terms-as-tokens
-        @submit="searchUpstreams"
+  <div>
+    <gl-alert v-if="upstreamDeleteSuccessMessage" @dismiss="upstreamDeleteSuccessMessage = ''">
+      {{ upstreamDeleteSuccessMessage }}
+    </gl-alert>
+    <div v-if="showUpstreamsTable">
+      <div
+        class="gl-flex gl-flex-col gl-gap-3 gl-border-y-0 gl-bg-subtle gl-p-5 @md/panel:gl-flex-row"
+      >
+        <gl-filtered-search
+          class="gl-min-w-0 gl-grow"
+          :placeholder="__('Filter results')"
+          :search-text-option-label="__('Search for this text')"
+          terms-as-tokens
+          @submit="searchUpstreams"
+        />
+      </div>
+      <gl-alert v-if="alertMessage" variant="danger" @dismiss="setAlertMessage">
+        {{ alertMessage }}
+      </gl-alert>
+      <upstreams-table
+        v-if="hasUpstreams"
+        :upstreams="upstreams"
+        :busy="isLoading"
+        @upstreamDeleted="handleUpstreamDelete"
+        @upstreamDeleteFailed="setAlertMessage"
+      />
+      <empty-result v-else />
+      <gl-pagination
+        v-if="showPagination"
+        :value="page"
+        :per-page="$options.perPage"
+        :total-items="mavenUpstreamsTotalCount"
+        align="center"
+        class="gl-mt-5"
+        @input="handlePageChange"
       />
     </div>
-    <gl-alert v-if="alertMessage" variant="danger" :dismissible="false">
-      {{ alertMessage }}
-    </gl-alert>
-    <upstreams-table v-if="hasUpstreams" :upstreams="upstreams" :busy="isLoading" />
-    <empty-result v-else />
-    <gl-pagination
-      v-if="showPagination"
-      :value="page"
-      :per-page="$options.perPage"
-      :total-items="mavenUpstreamsTotalCount"
-      align="center"
-      class="gl-mt-5"
-      @input="handlePageChange"
-    />
-  </div>
-  <div v-else>
-    <gl-alert v-if="alertMessage" variant="danger" :dismissible="false">
-      {{ alertMessage }}
-    </gl-alert>
-    <gl-skeleton-loader v-else-if="isLoading" :lines="2" :width="500" />
-    <gl-empty-state
-      v-else
-      :svg-path="$options.emptyStateIllustrationUrl"
-      :title="s__('VirtualRegistry|Connect Maven virtual registry to an upstream')"
-      :description="
-        s__(
-          'VirtualRegistry|Configure an upstream registry to manage Maven artifacts and cache entries.',
-        )
-      "
-    />
+    <div v-else>
+      <gl-alert v-if="alertMessage" variant="danger" :dismissible="false">
+        {{ alertMessage }}
+      </gl-alert>
+      <gl-skeleton-loader v-else-if="isLoading" :lines="2" :width="500" />
+      <gl-empty-state
+        v-else
+        :svg-path="$options.emptyStateIllustrationUrl"
+        :title="s__('VirtualRegistry|Connect Maven virtual registry to an upstream')"
+        :description="
+          s__(
+            'VirtualRegistry|Configure an upstream registry to manage Maven artifacts and cache entries.',
+          )
+        "
+      />
+    </div>
   </div>
 </template>
