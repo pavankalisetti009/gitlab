@@ -58,6 +58,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
   let(:user_arguments) { {} }
   let(:query_fields) do
     [
+      :is_outdated_client,
       :last_event_transaction_at,
       :start_date,
       :end_date,
@@ -148,6 +149,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
       subscriptionUsage: {
         startDate: "2025-10-01",
         endDate: "2025-10-31",
+        isOutdatedClient: false,
         lastEventTransactionAt: "2025-10-01T16:19:59Z",
         purchaseCreditsPath: '/mock/path'
       }
@@ -263,6 +265,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
         end
 
         it 'returns subscription usage for instance' do
+          expect(graphql_data_at(:subscription_usage, :isOutdatedClient)).to be false
           expect(graphql_data_at(:subscription_usage, :lastEventTransactionAt)).to eq("2025-10-01T16:19:59Z")
           expect(graphql_data_at(:subscription_usage, :startDate)).to eq("2025-10-01")
           expect(graphql_data_at(:subscription_usage, :endDate)).to eq("2025-10-31")
@@ -381,6 +384,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
           end
 
           it 'returns subscription usage for the group' do
+            expect(graphql_data_at(:subscription_usage, :isOutdatedClient)).to be false
             expect(graphql_data_at(:subscription_usage, :lastEventTransactionAt)).to eq("2025-10-01T16:19:59Z")
             expect(graphql_data_at(:subscription_usage, :startDate)).to eq("2025-10-01")
             expect(graphql_data_at(:subscription_usage, :endDate)).to eq("2025-10-31")

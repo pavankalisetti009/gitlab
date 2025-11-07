@@ -9,6 +9,7 @@ import {
   usageDataNoCommitmentWithOverage,
   usageDataWithCommitmentWithOverage,
   usageDataCommitmentWithMonthlyWaiver,
+  usageDataWithOutdatedClient,
 } from 'ee_jest/usage_quotas/usage_billing/mock_data';
 import { createMockClient } from 'helpers/mock_apollo_helper';
 import getSubscriptionUsersUsageQuery from '../graphql/get_subscription_users_usage.query.graphql';
@@ -143,6 +144,16 @@ export const NullValuesTolerance = {
     return createTemplate({
       getSubscriptionUsageQueryHandler,
       getSubscriptionUsersUsageQueryHandler,
+    })(...args);
+  },
+};
+
+export const OutdatedClientWarning = {
+  render: (...args) => {
+    const getSubscriptionUsageQueryHandler = () => Promise.resolve(usageDataWithOutdatedClient);
+
+    return createTemplate({
+      getSubscriptionUsageQueryHandler,
     })(...args);
   },
 };

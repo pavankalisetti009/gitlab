@@ -1,5 +1,5 @@
 import Vue from 'vue';
-import { GlAlert } from '@gitlab/ui';
+import { GlAlert, GlSprintf } from '@gitlab/ui';
 import VueApollo from 'vue-apollo';
 import CurrentUsageCard from 'ee/usage_quotas/usage_billing/components/current_usage_card.vue';
 import CurrentOverageUsageCard from 'ee/usage_quotas/usage_billing/components/current_overage_usage_card.vue';
@@ -23,6 +23,8 @@ import {
   usageDataWithoutLastEventTransactionAt,
   usageDataCommitmentWithMonthlyWaiver,
   usageDataCommitmentWithMonthlyWaiverWithOverage,
+  usageDataWithOutdatedClient,
+  usageDataWithoutPurchaseCreditsPath,
 } from '../mock_data';
 
 jest.mock('~/lib/logger');
@@ -39,6 +41,9 @@ describe('UsageBillingApp', () => {
   } = {}) => {
     wrapper = shallowMountExtended(UsageBillingApp, {
       apolloProvider: createMockApollo([[getSubscriptionUsageQuery, mockQueryHandler]]),
+      stubs: {
+        GlSprintf,
+      },
     });
   };
 
@@ -46,6 +51,7 @@ describe('UsageBillingApp', () => {
   const findSkeletonLoaders = () => wrapper.findByTestId('skeleton-loaders');
   const findUsageByUserTab = () => wrapper.findComponent(UsageByUserTab);
   const findPageHeading = () => wrapper.findComponent(PageHeading);
+  const findOutdatedClientAlert = () => wrapper.findByTestId('outdated-client-alert');
 
   describe('loading state', () => {
     beforeEach(() => {
@@ -92,6 +98,24 @@ describe('UsageBillingApp', () => {
         expect(pageHeading.findComponent(UserDate).exists()).toBe(true);
         expect(pageHeading.findComponent(UserDate).props('date')).toBe('2025-10-14T07:41:59Z');
       });
+
+      describe('outdated client alert', () => {
+        it('does not render alert if isOutdatedClient is false', () => {
+          expect(findOutdatedClientAlert().exists()).toBe(false);
+        });
+
+        it('renders outdated client with correct message when isOutdatedClient is true', async () => {
+          createComponent({
+            mockQueryHandler: jest.fn().mockResolvedValue(usageDataWithOutdatedClient),
+          });
+
+          await waitForPromises();
+
+          expect(findOutdatedClientAlert().text()).toBe(
+            'This dashboard may not display all current subscription data. For complete visibility, please upgrade to the latest version of GitLab or visit the Customer Portal.',
+          );
+        });
+      });
     });
 
     it('renders purchase-commitment-card', () => {
@@ -121,14 +145,6 @@ describe('UsageBillingApp', () => {
 
     describe('without purchaseCreditsPath', () => {
       beforeEach(async () => {
-        const usageDataWithoutPurchaseCreditsPath = {
-          data: {
-            subscriptionUsage: {
-              purchaseCreditsPath: null,
-            },
-          },
-        };
-
         createComponent({
           mockQueryHandler: jest.fn().mockResolvedValue(usageDataWithoutPurchaseCreditsPath),
         });

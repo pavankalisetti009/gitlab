@@ -8,6 +8,11 @@ module Types
 
       authorize :read_subscription_usage
 
+      field :is_outdated_client, GraphQL::Types::Boolean,
+        null: true,
+        method: :outdated_client?,
+        description: 'Indicates if the GitLab instance has an outdated API contract with the Customer Portal.'
+
       field :last_event_transaction_at, GraphQL::Types::ISO8601DateTime,
         null: true,
         description: 'Date and time when the last usage event resulted in a wallet transaction.'

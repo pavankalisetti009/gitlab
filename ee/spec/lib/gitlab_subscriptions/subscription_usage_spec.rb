@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consumables_cost_management do
+  using RSpec::Parameterized::TableSyntax
+
   let_it_be(:users) { create_list(:user, 3) }
   let_it_be(:group) { create(:group, developers: users.first(2)) }
   let(:subscription_usage_client) { instance_double(Gitlab::SubscriptionPortal::SubscriptionUsageClient) }
@@ -189,6 +191,33 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
 
       it 'returns the end date' do
         expect(purchase_credits_path).to be("/mock/path")
+      end
+    end
+  end
+
+  describe '#outdated_client?' do
+    where(:outdated_client) { [true, false] }
+
+    with_them do
+      before do
+        allow(subscription_usage_client).to receive(:get_metadata).and_return(client_response)
+      end
+
+      context "when subscription portal returns #{params[:outdated_client]} for isOutdatedClient" do
+        let(:subscription_usage) do
+          described_class.new(
+            subscription_target: :instance,
+            subscription_usage_client: subscription_usage_client
+          )
+        end
+
+        let(:client_response) do
+          { success: true, subscriptionUsage: { isOutdatedClient: outdated_client } }
+        end
+
+        it "returns #{params[:outdated_client]} for outdated_client?" do
+          expect(subscription_usage.outdated_client?).to be outdated_client
+        end
       end
     end
   end

@@ -10,12 +10,14 @@ module Gitlab
       GET_METADATA_QUERY = <<~GQL
         query subscriptionUsageMetadata(
           $namespaceId: ID,
-          $licenseKey: String
+          $licenseKey: String,
+          $gitlabVersion: String!,
         ) {
           subscription(namespaceId: $namespaceId, licenseKey: $licenseKey) {
             gitlabCreditsUsage {
               startDate
               endDate
+              isOutdatedClient(gitlabVersion: $gitlabVersion)
               lastEventTransactionAt
               purchaseCreditsPath
             }
@@ -169,7 +171,10 @@ module Gitlab
       end
 
       def get_metadata
-        response = execute_graphql_query(query: GET_METADATA_QUERY)
+        response = execute_graphql_query(
+          query: GET_METADATA_QUERY,
+          extra_variables: { gitlabVersion: Gitlab::VERSION }
+        )
 
         if unsuccessful_response?(response)
           error(GET_METADATA_QUERY, response)

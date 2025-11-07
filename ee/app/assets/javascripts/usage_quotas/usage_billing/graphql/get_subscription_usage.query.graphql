@@ -1,5 +1,6 @@
 query getSubscriptionUsage($namespacePath: ID) {
   subscriptionUsage(namespacePath: $namespacePath) {
+    isOutdatedClient
     lastEventTransactionAt
 
     startDate
