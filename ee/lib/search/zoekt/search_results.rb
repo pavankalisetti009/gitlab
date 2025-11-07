@@ -253,7 +253,7 @@ module Search
         return [[], total_count] if total_count == 0 || response.blank?
 
         project_ids = response.pluck(:project_id).uniq # rubocop:disable CodeReuse/ActiveRecord -- Array#pluck
-        projects = Project.with_route.id_in(project_ids)
+        projects = Project.id_in(project_ids).include_project_feature.inc_routes
         projects = projects.public_send(preload_method) if preload_method # rubocop:disable GitlabSecurity/PublicSend -- Method calls are forwarded
         projects = projects.index_by(&:id)
 
