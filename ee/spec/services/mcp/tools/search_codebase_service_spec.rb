@@ -351,13 +351,12 @@ RSpec.describe Mcp::Tools::SearchCodebaseService, feature_category: :mcp_server 
         expect(result[:content].first[:text]).to eq("Validation error: directory_path is invalid")
       end
 
-      it 'returns Tool execution failed validation error when project_id is not an string' do
+      it 'returns Tool execution failed when project_id is not an string' do
         arguments = { arguments: { semantic_query: 'foo', project_id: 1 } }
         result = service.execute(request: nil, params: arguments)
 
         expect(result[:isError]).to be true
-        expect(result[:content].first[:text]).to eq("Tool execution failed: Validation error: " \
-          "project_id must be a string")
+        expect(result[:content].first[:text]).to eq("Tool execution failed: project_id must be a string")
       end
 
       it 'returns validation error when limit is too big' do
@@ -368,7 +367,7 @@ RSpec.describe Mcp::Tools::SearchCodebaseService, feature_category: :mcp_server 
         expect(result[:content].first[:text]).to eq("Validation error: limit is invalid")
       end
 
-      it 'returns validation error when project id not found' do
+      it 'returns Tool execution failed error when project id not found' do
         arguments = { arguments: { semantic_query: 'foo', project_id: '-1' } }
         result = service.execute(request: nil, params: arguments)
 
@@ -384,7 +383,7 @@ RSpec.describe Mcp::Tools::SearchCodebaseService, feature_category: :mcp_server 
         expect(result[:content].first[:text]).to eq("Validation error: knn is invalid")
       end
 
-      it 'returns validation error when project path not found' do
+      it 'returns Tool execution failed error when project path not found' do
         arguments = { arguments: { semantic_query: 'foo', project_id: '/not/a/valid/path' } }
         result = service.execute(request: nil, params: arguments)
 
