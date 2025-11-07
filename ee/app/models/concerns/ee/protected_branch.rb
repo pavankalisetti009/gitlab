@@ -101,7 +101,7 @@ module EE
       return unless wildcard? && squash_option.present?
       return if squash_option.changed?
 
-      errors.add(:squash_option, 'can only be configured for exact match branch rules')
+      errors.add(:squash_option, _('cannot be used with wildcard branch rules. Use an exact branch name.'))
     end
   end
 end

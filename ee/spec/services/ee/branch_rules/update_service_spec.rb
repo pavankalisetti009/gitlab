@@ -103,7 +103,7 @@ RSpec.describe BranchRules::UpdateService, feature_category: :source_code_manage
             response = execute
             expect(response).to be_error
             expect(response[:message]).to match_array([
-              'Squash option can only be configured for exact match branch rules'
+              'Squash option cannot be used with wildcard branch rules. Use an exact branch name.'
             ])
           end
         end

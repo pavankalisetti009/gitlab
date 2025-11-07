@@ -65,7 +65,9 @@ RSpec.describe 'Updating a squash option', feature_category: :source_code_manage
       it 'responds with the validation errors' do
         mutation_request
 
-        expect(mutation_response['errors']).to eq(['Squash option protected branch cannot be a wildcard'])
+        expect(mutation_response['errors']).to eq([
+          'Squash option protected branch cannot be used with wildcard branch rules. Use an exact branch name.'
+        ])
       end
     end
 
