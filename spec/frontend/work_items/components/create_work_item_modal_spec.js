@@ -133,7 +133,7 @@ describe('CreateWorkItemModal', () => {
     });
 
     expect(showToast).toHaveBeenCalledWith(
-      'Epic created',
+      'Epic created.',
       expect.objectContaining({
         action: {
           text: 'View details',
@@ -286,7 +286,7 @@ describe('CreateWorkItemModal', () => {
 
       expect(wrapper.find('h2').text()).toBe('New key result');
       expect(findTrigger().text()).toBe('New key result');
-      expect(showToast).toHaveBeenCalledWith('Key result created', expect.any(Object));
+      expect(showToast).toHaveBeenCalledWith('Key result created.', expect.any(Object));
     });
   });
 
