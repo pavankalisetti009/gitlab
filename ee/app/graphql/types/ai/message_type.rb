@@ -107,6 +107,7 @@ module Types
 
       def content_html
         return if object['chunk_id']
+        return if errors.present?
 
         banzai_options = {
           current_user: current_user,

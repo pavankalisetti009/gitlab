@@ -6490,6 +6490,9 @@ msgstr ""
 msgid "AiAnalytics|the ClickHouse data store is not available"
 msgstr ""
 
+msgid "AiCommitMessage|An unexpected error has occurred. Please try again."
+msgstr ""
+
 msgid "AiFlowTriggers|✅ Agent has started. You can view the progress %{link_start}here%{link_end}."
 msgstr ""
 

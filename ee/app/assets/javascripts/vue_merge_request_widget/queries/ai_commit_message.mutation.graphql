@@ -1,5 +1,0 @@
-mutation generateCommitMessage($resourceId: AiModelID!) {
-  aiAction(input: { generateCommitMessage: { resourceId: $resourceId } }) {
-    errors
-  }
-}
