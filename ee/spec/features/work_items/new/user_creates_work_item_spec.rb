@@ -37,7 +37,7 @@ RSpec.describe 'User creates work items', :js, feature_category: :team_planning 
       stub_licensed_features(epics: true, epic_colors: true, issuable_health_status: true, subepics: true)
       visit group_work_items_path(group)
       wait_for_all_requests
-      click_link 'New item'
+      first(:link, 'New item').click
     end
 
     it_behaves_like 'creates work item with widgets from a modal', 'epic', %w[

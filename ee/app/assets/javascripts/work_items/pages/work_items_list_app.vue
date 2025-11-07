@@ -210,7 +210,7 @@ export default {
       this.workItemUpdateCount += 1;
     },
     hasStatus(issuable) {
-      return findStatusWidget(issuable);
+      return Boolean(findStatusWidget(issuable)?.status);
     },
     issuableStatusItem(issuable) {
       return findStatusWidget(issuable)?.status || {};
