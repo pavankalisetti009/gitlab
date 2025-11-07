@@ -45,6 +45,7 @@ module EE
         mount ::API::MemberRoles
         mount ::API::ProviderIdentity
         mount ::API::GroupHooks
+        mount ::API::Mcp::Base
         mount ::API::MergeRequestApprovalSettings
         mount ::API::MergeRequestDependencies
         mount ::API::Scim::GroupScim
