@@ -193,6 +193,7 @@ module Gitlab
           return if ::CloudConnector.self_managed_cloud_connected?
 
           Gitlab::AiGateway.push_feature_flag(:expanded_ai_logging, user)
+          Gitlab::AiGateway.push_feature_flag(:usage_quota_left_check, user)
         end
       end
     end
