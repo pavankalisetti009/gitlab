@@ -313,10 +313,18 @@ RSpec.describe Iteration, feature_category: :team_planning do
     end
 
     describe 'title' do
-      subject { build(:iteration, iterations_cadence: iteration_cadence, title: '<img src=x onerror=prompt(1)>') }
+      subject { build(:iteration, iterations_cadence: iteration_cadence, title: input_title) }
 
-      it 'sanitizes user intput', :aggregate_failures do
-        expect(subject.title).to be_blank
+      context 'when input contains HTML entities and HTML tags' do
+        let(:input_title) { '&lt;hello&gt;<img src=x onerror=prompt(1)>' }
+
+        it 'leaves the input title unchanged' do
+          # This field is not ever to be treated as HTML; it is text, never unescaped or sanitised,
+          # and is always escaped when inserted into HTML directly.
+          # If an XSS occurs in future which would lead you to wanting to "fix" this spec, please
+          # instead fix it at the point of display, not by corrupting user input!
+          expect(subject.title).to eq(input_title)
+        end
       end
     end
   end

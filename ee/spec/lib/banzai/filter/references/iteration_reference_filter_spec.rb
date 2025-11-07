@@ -333,14 +333,13 @@ RSpec.describe Banzai::Filter::References::IterationReferenceFilter, feature_cat
   end
 
   it_behaves_like 'a reference which does not unescape its content in data-original' do
-    let(:context)         { { project: nil, group: group } }
-    let(:iteration_title) { "x&lt;script&gt;alert('xss');&lt;/script&gt;" }
-    let(:resource)        { create(:iteration, title: iteration_title, group: group) }
-    let(:reference)       { %(#{resource.class.reference_prefix}"#{iteration_title}") }
+    let(:context)                 { { project: nil, group: group } }
+    let(:iteration_title)         { "x<script>alert('xss');</script>" }
+    let(:iteration_title_escaped) { "x&lt;script&gt;alert('xss');&lt;/script&gt;" }
+    let(:resource)                { create(:iteration, title: iteration_title, group: group) }
+    let(:reference)               { %(#{resource.class.reference_prefix}"#{iteration_title_escaped}") }
 
-    # This is probably bad.
-    let(:expected_resource_title) { "x<script>alert('xss');</script>" }
-
+    let(:expected_resource_title)   { iteration_title }
     let(:expected_href)             { urls.iteration_url(resource) }
     let(:expected_replacement_text) { resource.display_text }
   end

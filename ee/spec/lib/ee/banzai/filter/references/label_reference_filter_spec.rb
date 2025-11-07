@@ -27,7 +27,17 @@ RSpec.describe Banzai::Filter::References::LabelReferenceFilter do
       end
 
       it "doesn't unescape HTML in the label's title" do
-        expect(doc.at_css('.gl-label-scoped a').attr('title')).to include('xss  &lt;svg id="svgId"&gt;')
+        # Note that this is *flawed*: "&gt;" from the input *text* is becoming "&gt;" in the output *HTML*.
+        # No XSS is possible but we are still corrupting the user's input, albeit less badly than before.
+        # FIXME.
+        expect(doc.at_css('.gl-label-scoped a').attr('title')).to include('&amp;lt;svg id="svgId"&gt;')
+
+        # The below is what *should* be the case, but LabelsHelper.label_tooltip_title is (incorrectly) sanitising
+        # instead of safely escaping the output, and LabelsHelper.render_label_text is using html_escape_once (!!),
+        # which is always bad!
+        #
+        # expect(doc.at_css('.gl-label-scoped a').attr('title')).to include('xss &lt;script&gt;alert')
+        # expect(doc.at_css('.gl-label-scoped a').attr('title')).to include('&amp;&lt;a&gt;lt;svg id=&amp;quot;svgId&amp;quot;&amp;gt;')
       end
     end
 
