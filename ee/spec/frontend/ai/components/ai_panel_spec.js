@@ -629,4 +629,23 @@ describe('AiPanel', () => {
       });
     });
   });
+
+  describe('when chat is disabled', () => {
+    describe('with chatDisabledReason prop set', () => {
+      it('passes chatDisabledReason to navigation rail', () => {
+        createComponent({ propsData: { chatDisabledReason: 'project' } });
+
+        expect(findNavigationRail().props('chatDisabledReason')).toBe('project');
+      });
+
+      it('prevents opening chat tab on mount', async () => {
+        Cookies.set(aiPanelStateCookie, 'chat');
+        createComponent({ propsData: { chatDisabledReason: 'project' } });
+        await nextTick();
+
+        expect(findContentContainer().exists()).toBe(false);
+        expect(duoChatGlobalState.activeTab).toBeUndefined();
+      });
+    });
+  });
 });

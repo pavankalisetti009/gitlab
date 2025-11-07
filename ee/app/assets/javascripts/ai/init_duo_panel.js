@@ -28,6 +28,7 @@ export function initDuoPanel() {
     agenticAvailable,
     agenticUnavailableMessage,
     chatTitle,
+    chatDisabledReason,
   } = el.dataset;
 
   const router = createRouter('/', 'user');
@@ -82,6 +83,7 @@ export function initDuoPanel() {
           resourceId: latestActiveWorkItemId ?? resourceId,
           metadata,
           userModelSelectionEnabled: parseBoolean(userModelSelectionEnabled),
+          chatDisabledReason,
         },
       });
     },

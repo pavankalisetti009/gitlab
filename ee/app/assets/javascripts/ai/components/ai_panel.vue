@@ -55,6 +55,11 @@ export default {
       required: false,
       default: false,
     },
+    chatDisabledReason: {
+      type: String,
+      required: false,
+      default: '',
+    },
   },
   data() {
     // Initialize global state from cookie if not already set
@@ -71,6 +76,9 @@ export default {
     activeTab() {
       return this.duoChatGlobalState.activeTab;
     },
+    isChatDisabled() {
+      return Boolean(this.chatDisabledReason);
+    },
     isAgenticMode() {
       return this.duoChatGlobalState.chatMode === CHAT_MODES.AGENTIC;
     },
@@ -85,6 +93,10 @@ export default {
         : this.chatConfiguration.classicTitle;
     },
     currentTabComponent() {
+      if (this.isChatDisabled) {
+        return null;
+      }
+
       switch (this.activeTab) {
         case 'chat':
           return {
@@ -135,6 +147,10 @@ export default {
   mounted() {
     window.addEventListener('resize', this.handleWindowResize);
     window.addEventListener('focus', this.handleWindowFocus);
+
+    if (this.chatDisabledReason && this.activeTab) {
+      this.setActiveTab(undefined);
+    }
   },
   beforeDestroy() {
     window.removeEventListener('resize', this.handleWindowResize);
@@ -224,6 +240,7 @@ export default {
       :is-expanded="Boolean(currentTabComponent)"
       :active-tab="activeTab"
       :show-suggestions-tab="false"
+      :chat-disabled-reason="chatDisabledReason"
       @handleTabToggle="handleTabToggle"
     />
   </div>
