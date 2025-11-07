@@ -208,9 +208,13 @@ RSpec.describe 'profiles/accounts/show', feature_category: :user_profile do
 
       it 'handles orphaned schedules without errors' do
         orphaned_description = 'orphaned'
-        orphaned_schedule = create(:ci_pipeline_schedule, owner: user, description: orphaned_description) # rubocop:disable RSpec/FactoryBot/AvoidCreate -- explained above
         non_existent_project_id = Project.maximum(:id).to_i + 1
-        orphaned_schedule.update_column(:project_id, non_existent_project_id)
+        build_stubbed(
+          :ci_pipeline_schedule,
+          owner: user,
+          description: orphaned_description,
+          project_id: non_existent_project_id
+        )
 
         expect { render }.not_to raise_error
 
