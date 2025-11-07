@@ -5,8 +5,6 @@ module API
     module Handlers
       # See: https://modelcontextprotocol.io/specification/2025-06-18/schema#calltoolrequest
       class CallTool
-        include Gitlab::InternalEventsTracking
-
         def initialize(manager)
           @manager = manager
         end
@@ -46,38 +44,17 @@ module API
           raise error
         end
 
+        # Stub methods for CE - will be overridden in EE
         def track_start_event(tool_name, session_id, current_user)
-          track_internal_event(
-            'start_mcp_tool_call',
-            user: current_user,
-            namespace: current_user&.namespace,
-            additional_properties: {
-              session_id: session_id,
-              tool_name: tool_name
-            }
-          )
+          # No-op in CE
         end
 
         def track_finish_event(tool_name, session_id, current_user, success:, error: nil)
-          additional_properties = {
-            session_id: session_id,
-            tool_name: tool_name,
-            has_tool_call_success: success.to_s
-          }
-
-          if error
-            additional_properties[:failure_reason] = error.class.name
-            additional_properties[:error_status] = error.message&.truncate(255)
-          end
-
-          track_internal_event(
-            'finish_mcp_tool_call',
-            user: current_user,
-            namespace: current_user&.namespace,
-            additional_properties: additional_properties
-          )
+          # No-op in CE
         end
       end
     end
   end
 end
+
+API::Mcp::Handlers::CallTool.prepend_mod
