@@ -4,10 +4,12 @@ import { isEmpty } from 'lodash';
 import { s__ } from '~/locale';
 import {
   EXCEPT_PROJECTS,
+  EXCEPT_PERSONAL_PROJECTS,
   EXCLUDING,
   INCLUDING,
   WITHOUT_EXCEPTIONS,
   EXCEPTION_TYPE_LISTBOX_ITEMS,
+  EXCEPTION_WITH_PERSONAL_TYPE_LISTBOX_ITEMS,
   EXCEPTION_TYPE_TEXTS,
 } from 'ee/security_orchestration/components/policy_editor/scope/constants';
 import GroupProjectsDropdown from 'ee/security_orchestration/components/shared/group_projects_dropdown.vue';
@@ -16,7 +18,6 @@ import { convertToGraphQLId, getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_PROJECT } from '~/graphql_shared/constants';
 
 export default {
-  EXCEPTION_TYPE_LISTBOX_ITEMS,
   i18n: {
     groupProjectErrorDescription: s__('SecurityOrchestration|Failed to load group projects'),
   },
@@ -55,6 +56,11 @@ export default {
     },
   },
   computed: {
+    exceptionTypeListboxItems() {
+      return this.designatedAsCsp
+        ? EXCEPTION_WITH_PERSONAL_TYPE_LISTBOX_ITEMS
+        : EXCEPTION_TYPE_LISTBOX_ITEMS;
+    },
     payloadKey() {
       return this.showExceptions ? EXCLUDING : INCLUDING;
     },
@@ -64,13 +70,14 @@ export default {
     projectIds() {
       /**
        * Protection from manual yaml input as objects
+       * Filter out items without id (e.g. { type: 'personal' })
        * return Array of objects with mapped to GraphQl format ids
        */
       const projects = Array.isArray(this.projects?.[this.payloadKey])
         ? this.projects?.[this.payloadKey]
         : [];
 
-      const projectIds = projects?.map(({ id }) => id) || [];
+      const projectIds = projects?.filter(({ id }) => Boolean(id)).map(({ id }) => id);
 
       if (this.designatedAsCsp) {
         return projectIds;
@@ -89,7 +96,10 @@ export default {
       return this.projectIds.length === 0;
     },
     isFieldValid() {
-      return !this.projectsEmpty || !this.isDirty;
+      // If we're excluding personal projects, that's a valid non-empty state
+      return (
+        !this.projectsEmpty || this.exceptionType === EXCEPT_PERSONAL_PROJECTS || !this.isDirty
+      );
     },
   },
   methods: {
@@ -97,8 +107,15 @@ export default {
       this.$emit('error', this.$options.i18n.groupProjectErrorDescription);
     },
     selectExceptionType(type) {
-      if (type === WITHOUT_EXCEPTIONS) {
-        this.$emit('changed', { projects: { [this.payloadKey]: [] } });
+      const payloadMap = {
+        [WITHOUT_EXCEPTIONS]: { projects: { [this.payloadKey]: [] } },
+        [EXCEPT_PROJECTS]: { projects: { excluding: [] } },
+        [EXCEPT_PERSONAL_PROJECTS]: { projects: { excluding: [{ type: 'personal' }] } },
+      };
+
+      const payload = payloadMap[type];
+      if (payload) {
+        this.$emit('changed', payload);
       }
 
       this.$emit('select-exception-type', type);
@@ -118,7 +135,7 @@ export default {
       v-if="showExceptions"
       data-testid="exception-type"
       :disabled="disabled"
-      :items="$options.EXCEPTION_TYPE_LISTBOX_ITEMS"
+      :items="exceptionTypeListboxItems"
       :toggle-text="selectedExceptionTypeText"
       :selected="exceptionType"
       @select="selectExceptionType"

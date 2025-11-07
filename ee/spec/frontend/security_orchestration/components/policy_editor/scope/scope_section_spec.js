@@ -1,4 +1,4 @@
-import Vue, { nextTick } from 'vue';
+import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import { GlAlert, GlSprintf, GlIcon } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
@@ -19,6 +19,7 @@ import {
   PROJECTS_WITH_FRAMEWORK,
   SPECIFIC_PROJECTS,
   EXCEPT_PROJECTS,
+  EXCEPT_PERSONAL_PROJECTS,
   WITHOUT_EXCEPTIONS,
   PROJECT_SCOPE_TYPE_LISTBOX_ITEMS,
   ALL_PROJECTS_IN_LINKED_GROUPS,
@@ -701,6 +702,11 @@ describe('PolicyScope', () => {
           ],
         ]);
       });
+
+      it('does not default to EXCEPT_PERSONAL_PROJECTS', () => {
+        expect(findScopeProjectSelector().props('exceptionType')).toBe(WITHOUT_EXCEPTIONS);
+        expect(wrapper.emitted('changed')).toBeUndefined();
+      });
     });
 
     describe('selected groups', () => {
@@ -783,19 +789,19 @@ describe('PolicyScope', () => {
     });
   });
 
-  describe('global compliance security policies group', () => {
+  describe('global compliance security policies (CSP) group', () => {
     describe('scope type selection', () => {
       beforeEach(() => {
         createComponent({ provide: { designatedAsCsp: true } });
       });
 
-      it('renders CSP scope dropdown items', () => {
+      it('renders scope dropdown items', () => {
         expect(findProjectScopeTypeDropdown().props('items')).toEqual(
           CSP_SCOPE_TYPE_WITHOUT_GROUP_LISTBOX_ITEMS,
         );
       });
 
-      it('displays CSP scope text as toggle text', () => {
+      it('displays scope text as toggle text', () => {
         expect(findProjectScopeTypeDropdown().props('toggleText')).toBe(
           'all projects in this instance',
         );
@@ -807,6 +813,71 @@ describe('PolicyScope', () => {
 
       it('displays exception dropdown by default', () => {
         expect(findScopeProjectSelector().exists()).toBe(true);
+      });
+
+      it('defaults to EXCEPT_PERSONAL_PROJECTS', () => {
+        expect(findScopeProjectSelector().props('exceptionType')).toBe(EXCEPT_PERSONAL_PROJECTS);
+        expect(wrapper.emitted('changed')).toEqual([
+          [{ projects: { excluding: [{ type: 'personal' }] } }],
+        ]);
+      });
+    });
+
+    describe('existing policies', () => {
+      it('does not override existing policy scope', () => {
+        createComponent({
+          provide: { designatedAsCsp: true, existingPolicy: null },
+          propsData: {
+            policyScope: {
+              projects: { excluding: [{ id: 1 }] },
+            },
+          },
+        });
+
+        expect(findScopeProjectSelector().props('exceptionType')).toBe(EXCEPT_PROJECTS);
+        expect(wrapper.emitted('changed')).toBeUndefined();
+      });
+
+      it('does not set default for existing policies', () => {
+        createComponent({
+          provide: { designatedAsCsp: true, existingPolicy: { name: 'Existing' } },
+        });
+
+        expect(findScopeProjectSelector().props('exceptionType')).toBe(WITHOUT_EXCEPTIONS);
+        expect(wrapper.emitted('changed')).toBeUndefined();
+      });
+
+      it('detects and displays personal project exclusion', () => {
+        createComponent({
+          provide: { designatedAsCsp: true },
+          propsData: {
+            policyScope: {
+              projects: {
+                excluding: [{ type: 'personal' }],
+              },
+            },
+          },
+        });
+
+        expect(findScopeProjectSelector().props('exceptionType')).toBe(EXCEPT_PERSONAL_PROJECTS);
+        expect(findScopeProjectSelector().props('projects')).toEqual({
+          excluding: [{ type: 'personal' }],
+        });
+      });
+
+      it('handles mixed exclusions with personal projects and specific projects', () => {
+        createComponent({
+          provide: { designatedAsCsp: true },
+          propsData: {
+            policyScope: {
+              projects: {
+                excluding: [{ type: 'personal' }, { id: 1 }, { id: 2 }],
+              },
+            },
+          },
+        });
+
+        expect(findScopeProjectSelector().props('exceptionType')).toBe(EXCEPT_PERSONAL_PROJECTS);
       });
     });
 
@@ -820,10 +891,10 @@ describe('PolicyScope', () => {
     });
 
     describe('scope selection behavior', () => {
-      it('renders exception dropdown when CSP instance scope is selected', () => {
+      it('renders exception dropdown when instance scope is selected', async () => {
         createComponent({ provide: { designatedAsCsp: true } });
 
-        findProjectScopeTypeDropdown().vm.$emit('select', ALL_PROJECTS_IN_GROUP);
+        await findProjectScopeTypeDropdown().vm.$emit('select', ALL_PROJECTS_IN_GROUP);
 
         expect(findScopeProjectSelector().exists()).toBe(true);
       });
@@ -831,8 +902,7 @@ describe('PolicyScope', () => {
       it('updates toggle text when scope changes in CSP context', async () => {
         createComponent({ provide: { designatedAsCsp: true } });
 
-        findProjectScopeTypeDropdown().vm.$emit('select', SPECIFIC_PROJECTS);
-        await nextTick();
+        await findProjectScopeTypeDropdown().vm.$emit('select', SPECIFIC_PROJECTS);
 
         expect(findProjectScopeTypeDropdown().props('toggleText')).toBe('specific projects');
       });
