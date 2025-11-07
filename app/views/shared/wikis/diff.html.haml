@@ -4,7 +4,6 @@
 
 = render 'shared/wikis/layout' do
   .wiki-page-header
-    = wiki_sidebar_toggle_button
     = render ::Layouts::PageHeadingComponent.new('') do |c|
       - c.with_heading do
         .gl-flex.gl-gap-3

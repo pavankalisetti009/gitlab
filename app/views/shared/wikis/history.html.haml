@@ -3,8 +3,12 @@
 
 = render 'shared/wikis/layout' do
   .wiki-page-header
-    = wiki_sidebar_toggle_button
-    = render ::Layouts::PageHeadingComponent.new(_('History')) do |c|
+    = render ::Layouts::PageHeadingComponent.new('') do |c|
+      - c.with_heading do
+        .gl-flex.gl-gap-3
+          = wiki_sidebar_toggle_button
+          %h1.gl-heading-1.gl-m-0{ data: { testid: 'page-heading' } }
+            = _('History')
       - c.with_actions do
         #js-vue-wiki-more-actions{ data: {
           clone_ssh_url: ssh_clone_url_to_repo(@wiki),
