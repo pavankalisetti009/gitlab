@@ -44,6 +44,7 @@ export default async (el, dashboardType) => {
     newVulnerabilityPath,
     groupSecurityVulnerabilitiesPath,
     projectSecurityVulnerabilitiesPath,
+    securityPoliciesPath,
   } = el.dataset;
 
   const hasProjects = parseBoolean(el.dataset.hasProjects);
@@ -62,6 +63,7 @@ export default async (el, dashboardType) => {
     newVulnerabilityPath,
     dashboardType,
     securityVulnerabilitiesPath: null,
+    securityPoliciesPath,
   };
 
   let props;

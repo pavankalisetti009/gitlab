@@ -19,6 +19,7 @@ module Groups::SecurityFeaturesHelper
       projects_endpoint: expose_url(api_v4_groups_projects_path(id: group.id)),
       group_full_path: group.full_path,
       group_security_vulnerabilities_path: group_security_vulnerabilities_path(group),
+      security_policies_path: security_policies_path(group),
       no_vulnerabilities_svg_path: image_path('illustrations/empty-state/empty-search-md.svg'),
       empty_state_svg_path: image_path('illustrations/empty-state/empty-dashboard-md.svg'),
       security_dashboard_empty_svg_path: image_path('illustrations/empty-state/empty-secure-md.svg'),
