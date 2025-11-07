@@ -1,21 +1,7 @@
 - page_title _('Billing')
 - add_page_specific_style 'page_bundles/billings'
 - @force_desktop_expanded_sidebar = true
-- experiment(:user_billing_pricing_information, actor: current_user).track(:assignment, namespace: current_user.namespace)
 
-%div{
-  data: {
-    track_action: 'render',
-    track_property: current_user.free_or_trial_owned_group_ids,
-    track_experiment: 'user_billing_pricing_information'
-  }
-}
-- experiment(:user_billing_pricing_information, actor: current_user) do |e|
-  - e.control do
-    - namespace = current_user.namespace
-    - current_plan = subscription_plan_info(@plans_data, namespace.actual_plan_name)
-    - data_attributes = subscription_plan_data_attributes(namespace, current_plan)
-    = render 'control_variant', namespace: namespace, current_plan: current_plan, data_attributes: data_attributes
-  - e.candidate do
-    - data_attributes = user_billing_data_attributes(@plans_data)
-    = render 'candidate_variant', data_attributes: data_attributes
+- data_attributes = user_billing_data_attributes(@plans_data)
+#js-pricing-information{ "data-view-model": data_attributes.to_json }
+

@@ -142,17 +142,13 @@ describe('PricingInformationApp', () => {
       const manageButton = findManageBillingButton();
       const upgradeButton = findUpgradeToPremiumButton();
 
-      expect(manageButton.attributes('data-track-action')).toBe('click_button_manage_billing');
-      expect(manageButton.attributes('data-track-property')).toBe('1');
-      expect(manageButton.attributes('data-track-experiment')).toBe(
-        'user_billing_pricing_information',
-      );
+      expect(manageButton.attributes('data-event-tracking')).toBe('click_button_manage_billing');
+      expect(manageButton.attributes('data-event-property')).toBe('1');
 
-      expect(upgradeButton.attributes('data-track-action')).toBe('click_button_upgrade_to_premium');
-      expect(upgradeButton.attributes('data-track-property')).toBe('1');
-      expect(upgradeButton.attributes('data-track-experiment')).toBe(
-        'user_billing_pricing_information',
+      expect(upgradeButton.attributes('data-event-tracking')).toBe(
+        'click_button_upgrade_to_premium',
       );
+      expect(upgradeButton.attributes('data-event-property')).toBe('1');
     });
   });
 
@@ -180,18 +176,18 @@ describe('PricingInformationApp', () => {
     it('updates button tracking properties when group is selected', async () => {
       await selectGroup(1);
 
-      expect(findManageBillingButton().attributes('data-track-property')).toBe('1');
-      expect(findUpgradeToPremiumButton().attributes('data-track-property')).toBe('1');
+      expect(findManageBillingButton().attributes('data-event-property')).toBe('1');
+      expect(findUpgradeToPremiumButton().attributes('data-event-property')).toBe('1');
 
       await selectGroup(2);
 
-      expect(findManageBillingButton().attributes('data-track-property')).toBe('2');
-      expect(findUpgradeToPremiumButton().attributes('data-track-property')).toBe('2');
+      expect(findManageBillingButton().attributes('data-event-property')).toBe('2');
+      expect(findUpgradeToPremiumButton().attributes('data-event-property')).toBe('2');
     });
 
     it('renders group IDs in tracking attributes', () => {
       const groupSelect = findGroupSelect();
-      expect(groupSelect.attributes('data-track-property')).toBe('[1,2]');
+      expect(groupSelect.attributes('data-event-property')).toBe('[1,2]');
     });
   });
 
@@ -203,11 +199,8 @@ describe('PricingInformationApp', () => {
     it('group select has correct tracking attributes', () => {
       const groupSelect = findGroupSelect();
 
-      expect(groupSelect.attributes('data-track-action')).toBe('click_dropdown_group_selection');
-      expect(groupSelect.attributes('data-track-property')).toBe('[1,2]');
-      expect(groupSelect.attributes('data-track-experiment')).toBe(
-        'user_billing_pricing_information',
-      );
+      expect(groupSelect.attributes('data-event-tracking')).toBe('click_dropdown_group_selection');
+      expect(groupSelect.attributes('data-event-property')).toBe('[1,2]');
     });
   });
 });

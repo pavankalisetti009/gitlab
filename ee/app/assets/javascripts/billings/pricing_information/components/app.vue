@@ -1,5 +1,6 @@
 <script>
-import { GlButton, GlLink, GlFormSelect, GlSprintf } from '@gitlab/ui';
+import { GlButton, GlEmptyState, GlLink, GlFormSelect, GlSprintf } from '@gitlab/ui';
+import { InternalEvents } from '~/tracking';
 import { s__ } from '~/locale';
 import FreePlanSection from './free_plan_section.vue';
 import PremiumPlanSection from './premium_plan_section.vue';
@@ -10,6 +11,7 @@ export default {
 
   components: {
     GlButton,
+    GlEmptyState,
     GlLink,
     GlFormSelect,
     FreePlanSection,
@@ -17,7 +19,7 @@ export default {
     TrialPlanSection,
     GlSprintf,
   },
-
+  mixins: [InternalEvents.mixin()],
   props: {
     groups: {
       type: Array,
@@ -64,7 +66,7 @@ export default {
 </script>
 <template>
   <div class="gl-mx-auto gl-mt-8 gl-max-w-xl">
-    <div class="gl-mb-5 gl-pt-8 gl-text-center">
+    <div class="gl-mb-5 gl-pt-8">
       <h2 class="gl-heading-2 gl-mb-3 gl-text-default">{{ s__('Billings|Billing') }}</h2>
       <p class="gl-text-default">
         <gl-sprintf
@@ -77,9 +79,8 @@ export default {
           <template #link="{ content }">
             <gl-link
               :href="dashboardGroupsHref"
-              data-track-action="click_link_navigate_to_group"
-              data-track-experiment="user_billing_pricing_information"
-              :data-track-property="groupIds"
+              data-event-tracking="click_link_navigate_to_group"
+              :data-event-property="groupIds"
               >{{ content }}</gl-link
             >
           </template>
@@ -98,9 +99,8 @@ export default {
         class="gl-max-w-full"
         data-testid="group-select"
         autocomplete="off"
-        data-track-action="click_dropdown_group_selection"
-        data-track-experiment="user_billing_pricing_information"
-        :data-track-property="groupIds"
+        data-event-tracking="click_dropdown_group_selection"
+        :data-event-property="groupIds"
       />
     </div>
     <div v-if="selectedGroupId" data-testid="plan-sections-container">
@@ -119,9 +119,8 @@ export default {
           variant="confirm"
           category="secondary"
           data-testid="manage-billing-button"
-          data-track-action="click_button_manage_billing"
-          data-track-experiment="user_billing_pricing_information"
-          :data-track-property="selectedGroupId"
+          data-event-tracking="click_button_manage_billing"
+          :data-event-property="selectedGroupId"
           :href="selectedGroup.group_billings_href"
         >
           {{ s__('Billings|Manage billing') }}
@@ -130,14 +129,23 @@ export default {
         <gl-button
           variant="confirm"
           data-testid="upgrade-to-premium-button"
-          data-track-action="click_button_upgrade_to_premium"
-          data-track-experiment="user_billing_pricing_information"
-          :data-track-property="selectedGroupId"
+          data-event-tracking="click_button_upgrade_to_premium"
+          :data-event-property="selectedGroupId"
           :href="selectedGroup.upgrade_to_premium_href"
         >
           {{ s__('Billings|Upgrade to Premium') }}
         </gl-button>
       </div>
     </div>
+    <gl-empty-state
+      v-if="!selectedGroupId"
+      :compact="false"
+      class="gl-border gl-p-6 @md/panel:gl-rounded-lg"
+      data-testid="empty-state"
+    >
+      <template #description>
+        {{ s__('Billings|To view subscription details and manage billing, select a group.') }}
+      </template>
+    </gl-empty-state>
   </div>
 </template>
