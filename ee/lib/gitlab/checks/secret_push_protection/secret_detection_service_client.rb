@@ -66,9 +66,11 @@ module Gitlab
           request_type = extra_headers[:'x-request-type'] || 'standard'
           secret_detection_logger.info("Sending request to SDS with type: #{request_type}")
 
-          _ = sds_client.run_scan(request: request, auth_token: sds_auth_token, extra_headers: extra_headers)
+          sds_client.run_scan(request: request, auth_token: sds_auth_token, extra_headers: extra_headers)
         rescue StandardError => e
           ::Gitlab::ErrorTracking.track_exception(e)
+          # Return an empty response on error
+          nil
         end
 
         private

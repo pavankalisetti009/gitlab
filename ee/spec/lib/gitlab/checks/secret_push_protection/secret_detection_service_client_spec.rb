@@ -18,10 +18,6 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::SecretDetectionServiceClien
     )
   end
 
-  before do
-    allow(::Gitlab::ErrorTracking).to receive(:track_exception)
-  end
-
   describe '#use_secret_detection_service?' do
     before do
       stub_feature_flags(use_secret_detection_service: sds_ff_enabled)
@@ -165,6 +161,11 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::SecretDetectionServiceClien
       allow(grpc_client).to receive(:run_scan).and_raise(StandardError)
       expect(::Gitlab::ErrorTracking).to receive(:track_exception).with(kind_of(StandardError))
       expect { client.send_request_to_sds([payload]) }.not_to raise_error
+    end
+
+    it 'returns nil on error' do
+      allow(grpc_client).to receive(:run_scan).and_raise(StandardError)
+      expect(client.send_request_to_sds([payload])).to be_nil
     end
   end
 

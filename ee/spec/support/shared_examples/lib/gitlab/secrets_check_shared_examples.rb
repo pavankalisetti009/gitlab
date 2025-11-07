@@ -38,7 +38,6 @@ RSpec.shared_examples 'skips sending requests to the SDS' do
 
   it 'does not create the SDS client' do
     expect(::Gitlab::SecretDetection::GRPC::Client).not_to receive(:new)
-
     msg = format(::Gitlab::Checks::SecretPushProtection::SecretDetectionServiceClient::LOG_MESSAGES[:sds_disabled],
       {
         sds_ff_enabled: sds_ff_enabled,
@@ -89,6 +88,14 @@ RSpec.shared_examples 'sends requests to the SDS' do
         )
       end
 
+      let(:payload1) do
+        ::Gitlab::SecretDetection::GRPC::ScanRequest::Payload.new(
+          id: 'ed426f4235de33f1e5b539100c53e0002e143e3f',
+          data: 'VAR=new',
+          offset: 1
+        )
+      end
+
       let(:exclusion) do
         ::Gitlab::SecretDetection::GRPC::Exclusion.new(
           exclusion_type: ::Gitlab::SecretDetection::GRPC::ExclusionType::EXCLUSION_TYPE_PATH,
@@ -98,8 +105,7 @@ RSpec.shared_examples 'sends requests to the SDS' do
 
       let(:expected_request) do
         ::Gitlab::SecretDetection::GRPC::ScanRequest.new(
-          payloads: [payload],
-          extra_headers: { "x-correlation-id": correlation_id },
+          payloads: [payload, payload1],
           exclusions: [exclusion],
           tags: []
         )
@@ -111,7 +117,13 @@ RSpec.shared_examples 'sends requests to the SDS' do
 
       it 'includes them in the request' do
         expect_next_instance_of(::Gitlab::SecretDetection::GRPC::Client) do |instance|
-          expect(instance).to receive(:run_scan).with(request: match(expected_request), auth_token: nil)
+          expect(instance).to receive(:run_scan).with(request: match(expected_request), auth_token: nil,
+            extra_headers: { "x-correlation-id": correlation_id }).and_return(
+              ::Gitlab::SecretDetection::GRPC::ScanResponse.new(
+                status: ::Gitlab::SecretDetection::GRPC::ScanResponse::Status::STATUS_NOT_FOUND,
+                applied_exclusions: [exclusion]
+              )
+            )
         end
 
         expect { subject.validate! }.not_to raise_error
