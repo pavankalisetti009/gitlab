@@ -56,6 +56,55 @@ RSpec.describe ::Ai::DuoWorkflows::CreateCompositeOauthAccessTokenService, featu
           expect(response.message).to eq('Can not generate token to execute workflow in CI')
         end
       end
+
+      context 'when a custom service account is provided' do
+        let_it_be_with_reload(:custom_service_account) do
+          create(:user, :service_account, composite_identity_enforced: true)
+        end
+
+        subject(:response) do
+          described_class.new(
+            current_user: user,
+            organization: organization,
+            service_account: custom_service_account
+          ).execute
+        end
+
+        it 'uses the custom service account for the token' do
+          expect { response }.to change { OauthAccessToken.count }.by(1)
+          expect(response).to be_success
+
+          oauth_token = OauthAccessToken.last
+          expect(oauth_token.resource_owner_id).to eq(custom_service_account.id)
+        end
+
+        context 'when custom service account does not have composite identity enabled' do
+          before do
+            custom_service_account.update!(composite_identity_enforced: false)
+          end
+
+          it 'raises CompositeIdentityEnforcedError' do
+            expect { response }.to raise_error(
+              ::Ai::DuoWorkflows::CreateCompositeOauthAccessTokenService::CompositeIdentityEnforcedError,
+              "The Duo Agent Platform service account must have composite identity enabled."
+            )
+          end
+        end
+
+        context 'when global AI settings service account is not configured' do
+          before do
+            ::Ai::Setting.instance.update!(duo_workflow_service_account_user_id: nil)
+          end
+
+          it 'still works with the custom service account' do
+            expect { response }.to change { OauthAccessToken.count }.by(1)
+            expect(response).to be_success
+
+            oauth_token = OauthAccessToken.last
+            expect(oauth_token.resource_owner_id).to eq(custom_service_account.id)
+          end
+        end
+      end
     end
 
     context 'when the duo workflow onboarding is not complete' do
