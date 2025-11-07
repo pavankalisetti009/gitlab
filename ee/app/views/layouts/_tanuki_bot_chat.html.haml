@@ -1,7 +1,7 @@
 - return unless ::Gitlab::Llm::TanukiBot.enabled_for?(user: current_user, container: nil)
 - resource_id = Gitlab::Llm::TanukiBot.resource_id
 - project_id = Gitlab::Llm::TanukiBot.project_id
-- root_namespace_id = Gitlab::Llm::TanukiBot.root_namespace_id
+- root_namespace_id = Gitlab::Llm::TanukiBot.root_namespace_id(user: current_user)
 - chat_title = ::Ai::AmazonQ.enabled? ? s_('GitLab Duo Chat with Amazon Q') : s_('GitLab Duo Chat')
 - group = @group
 - group ||= current_user.user_preference.get_default_duo_namespace unless @project
