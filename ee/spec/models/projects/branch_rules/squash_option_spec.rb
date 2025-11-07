@@ -33,7 +33,7 @@ RSpec.describe Projects::BranchRules::SquashOption, feature_category: :source_co
       context 'when protected_branch is wildcard' do
         let(:protected_branch) { build(:protected_branch, name: '*', project: project) }
 
-        it { is_expected.to contain_exactly('cannot be a wildcard') }
+        it { is_expected.to contain_exactly('cannot be used with wildcard branch rules. Use an exact branch name.') }
       end
 
       context 'when protected_branch belongs to a different project' do

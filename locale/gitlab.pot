@@ -78528,6 +78528,9 @@ msgstr ""
 msgid "cannot be used for user namespace"
 msgstr ""
 
+msgid "cannot be used with wildcard branch rules. Use an exact branch name."
+msgstr ""
+
 msgid "cannot belong to both an organization and a project"
 msgstr ""
 
@@ -80048,6 +80051,9 @@ msgid "must belong to either a project or an organization"
 msgstr ""
 
 msgid "must belong to either an organization or a project"
+msgstr ""
+
+msgid "must belong to project"
 msgstr ""
 
 msgid "must belong to same project of its requirement object."

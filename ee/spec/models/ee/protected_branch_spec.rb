@@ -153,7 +153,7 @@ RSpec.describe ProtectedBranch, feature_category: :source_code_management do
         it 'is invalid' do
           expect(protected_branch).to be_invalid
           expect(protected_branch.errors.full_messages).to match_array([
-            'Squash option protected branch cannot be a wildcard'
+            'Squash option protected branch cannot be used with wildcard branch rules. Use an exact branch name.'
           ])
         end
       end
@@ -170,7 +170,7 @@ RSpec.describe ProtectedBranch, feature_category: :source_code_management do
         it 'is invalid' do
           expect(protected_branch).to be_invalid
           expect(protected_branch.errors.full_messages).to match_array([
-            'Squash option can only be configured for exact match branch rules'
+            'Squash option cannot be used with wildcard branch rules. Use an exact branch name.'
           ])
         end
       end
