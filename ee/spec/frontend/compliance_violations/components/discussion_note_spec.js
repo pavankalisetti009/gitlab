@@ -58,7 +58,6 @@ describe('DiscussionNote', () => {
     deleteNoteMutationHandler = jest.fn().mockResolvedValue(mockDeleteNoteSuccess),
     toggleAwardEmojiMutationHandler = jest.fn().mockResolvedValue(mockToggleAwardEmojiSuccess),
     stubs = {},
-    provide = {},
   } = {}) => {
     const apolloProvider = createMockApollo([
       [destroyComplianceViolationNoteMutation, deleteNoteMutationHandler],
@@ -73,12 +72,6 @@ describe('DiscussionNote', () => {
       },
       apolloProvider,
       stubs,
-      provide: {
-        glFeatures: {
-          complianceViolationCommentsUi: true,
-        },
-        ...provide,
-      },
     });
   };
 
@@ -566,64 +559,6 @@ describe('DiscussionNote', () => {
         await waitForPromises();
 
         expect(toast).toHaveBeenCalledWith('Failed to toggle emoji reaction.');
-      });
-    });
-  });
-
-  describe('feature flag: complianceViolationCommentsUi', () => {
-    describe('when feature flag is enabled', () => {
-      beforeEach(() => {
-        createComponent({
-          provide: {
-            glFeatures: {
-              complianceViolationCommentsUi: true,
-            },
-          },
-        });
-      });
-
-      it('renders edit button', () => {
-        const editButton = findEditButton();
-
-        expect(editButton.exists()).toBe(true);
-        expect(editButton.attributes('title')).toBe('Edit comment');
-        expect(editButton.attributes('aria-label')).toBe('Edit comment');
-      });
-
-      it('renders emoji picker', () => {
-        const emojiPicker = findEmojiPicker();
-
-        expect(emojiPicker.exists()).toBe(true);
-      });
-    });
-
-    describe('when feature flag is disabled', () => {
-      beforeEach(() => {
-        createComponent({
-          provide: {
-            glFeatures: {
-              complianceViolationCommentsUi: false,
-            },
-          },
-        });
-      });
-
-      it('does not render edit button', () => {
-        const editButton = findEditButton();
-
-        expect(editButton.exists()).toBe(false);
-      });
-
-      it('does not render emoji picker', () => {
-        const emojiPicker = findEmojiPicker();
-
-        expect(emojiPicker.exists()).toBe(false);
-      });
-
-      it('still renders other note actions', () => {
-        expect(findActionsDropdown().exists()).toBe(true);
-        expect(findCopyLinkAction().exists()).toBe(true);
-        expect(findDeleteNoteAction().exists()).toBe(true);
       });
     });
   });
