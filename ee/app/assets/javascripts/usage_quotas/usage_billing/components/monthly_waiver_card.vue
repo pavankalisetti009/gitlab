@@ -37,7 +37,7 @@ export default {
       {{ s__('UsageBilling|GitLab Credits - Monthly Waiver') }}
     </h2>
     <div class="gl-mb-4 gl-text-sm gl-text-subtle">
-      {{ s__('UsageBilling|Used in this billing period') }}
+      {{ s__('UsageBilling|Used this month') }}
     </div>
     <div class="gl-heading-scale-600 gl-mb-3" data-testid="monthly-waiver-credits-used">
       {{ formatNumber(monthlyWaiverCreditsUsed) }}

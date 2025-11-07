@@ -56,8 +56,8 @@ export default {
       <gl-sprintf
         :message="
           n__(
-            'UsageBilling|Used this billing period, resets in %{days} day',
-            'UsageBilling|Used this billing period, resets in %{days} days',
+            'UsageBilling|Used this month, resets in %{days} day',
+            'UsageBilling|Used this month, resets in %{days} days',
             daysOfMonthRemaining,
           )
         "

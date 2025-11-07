@@ -45,12 +45,10 @@ describe('CurrentUsageCard', () => {
       expect(wrapper.findByTestId('pool-total-credits').text()).toMatchInterpolatedText('/ 10k');
     });
 
-    it('renders the subtitle with billing period info', () => {
+    it('renders the subtitle with month info', () => {
       const subtitle = wrapper.findByTestId('monthly-commitment-subtitle');
 
-      expect(subtitle.text()).toMatchInterpolatedText(
-        'Used this billing period, resets in 21 days',
-      );
+      expect(subtitle.text()).toMatchInterpolatedText('Used this month, resets in 21 days');
     });
   });
 
