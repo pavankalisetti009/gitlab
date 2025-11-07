@@ -10807,6 +10807,9 @@ msgstr ""
 msgid "Billings|Team Project Management"
 msgstr ""
 
+msgid "Billings|To view subscription details and manage billing, select a group."
+msgstr ""
+
 msgid "Billings|Unlimited licensed users"
 msgstr ""
 

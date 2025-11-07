@@ -159,7 +159,7 @@ module BillingPlansHelper
     link_end = '</a>'.html_safe
     move_link_url = help_page_path 'user/project/working_with_projects.md', anchor: "transfer-a-project"
     data_property = current_user.free_or_trial_owned_group_ids
-    move_link_start = '<a href="%{url}" target="_blank" rel="noopener noreferrer" data-track-action="click_link_move_any_projects" data-track-experiment="user_billing_pricing_information" data-track-property="%{data_property}">'.html_safe % { url: move_link_url, data_property: data_property }
+    move_link_start = '<a href="%{url}" target="_blank" rel="noopener noreferrer" data-event-tracking="click_link_move_any_projects" data-event-property="%{data_property}">'.html_safe % { url: move_link_url, data_property: data_property }
 
     if current_user.owned_or_maintainers_groups.any?
       ERB::Util.html_escape_once(

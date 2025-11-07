@@ -540,7 +540,7 @@ RSpec.describe BillingPlansHelper, :saas, feature_category: :subscription_manage
       it 'instructs to move the project to a group' do
         create(:group).add_owner current_user
 
-        expect(helper.add_namespace_plan_to_group_instructions).to eq 'Then <a href="/help/user/project/working_with_projects.md#transfer-a-project" target="_blank" rel="noopener noreferrer" data-track-action="click_link_move_any_projects" data-track-experiment="user_billing_pricing_information" data-track-property="[]">move any projects</a> you wish to use with your subscription to that group.'
+        expect(helper.add_namespace_plan_to_group_instructions).to eq 'Then <a href="/help/user/project/working_with_projects.md#transfer-a-project" target="_blank" rel="noopener noreferrer" data-event-tracking="click_link_move_any_projects" data-event-property="[]">move any projects</a> you wish to use with your subscription to that group.'
       end
     end
 

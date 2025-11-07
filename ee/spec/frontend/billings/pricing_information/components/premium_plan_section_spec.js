@@ -41,9 +41,8 @@ describe('PremiumPlanSection', () => {
 
     expect(link.exists()).toBe(true);
     expect(link.props('href')).toBe('/groups/test-group/-/billings');
-    expect(link.attributes('data-track-action')).toBe('click_link_compare_plans');
-    expect(link.attributes('data-track-experiment')).toBe('user_billing_pricing_information');
-    expect(link.attributes('data-track-property')).toBe('123');
+    expect(link.attributes('data-event-tracking')).toBe('click_link_compare_plans');
+    expect(link.attributes('data-event-property')).toBe('123');
   });
 
   it('renders check icons for all features', () => {

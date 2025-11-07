@@ -1,5 +1,6 @@
 <script>
 import { GlIcon, GlLink } from '@gitlab/ui';
+import { InternalEvents } from '~/tracking';
 
 export default {
   name: 'PremiumPlanSection',
@@ -8,7 +9,7 @@ export default {
     GlIcon,
     GlLink,
   },
-
+  mixins: [InternalEvents.mixin()],
   props: {
     groupId: {
       type: Number,
@@ -72,9 +73,8 @@ export default {
 
     <gl-link
       :href="groupBillingHref"
-      data-track-action="click_link_compare_plans"
-      data-track-experiment="user_billing_pricing_information"
-      :data-track-property="groupId"
+      data-event-tracking="click_link_compare_plans"
+      :data-event-property="groupId"
     >
       {{ s__('Billings|See all features and compare plans') }}
     </gl-link>

@@ -7,7 +7,8 @@
     = s_("BillingPlans|@%{user_name} you are currently using the %{plan_name}.").html_safe % { user_name: current_user.username, plan_name: current_plan.name }
 
   - if namespace.free_personal?
-    - groups_link = link_to s_("BillingPlans|group"), dashboard_groups_path, { data: { track_action: 'click_link_navigate_to_group', track_property: current_user.free_or_trial_owned_group_ids, track_experiment: 'user_billing_pricing_information' }}
+    - groups_link = link_to s_("BillingPlans|group"), dashboard_groups_path, { data: { event_tracking: 'click_link_navigate_to_group',
+    event_property: current_user.free_or_trial_owned_group_ids }}
     %p= html_escape_once(s_("BillingPlans|Looking to purchase or manage a subscription for your group? Navigate to your %{groups_link} and go to %{strong_open}Settings &gt; Billing.%{strong_close}")).html_safe % { groups_link: groups_link.html_safe,
         strong_open: '<strong>'.html_safe,
         strong_close: '</strong>'.html_safe }

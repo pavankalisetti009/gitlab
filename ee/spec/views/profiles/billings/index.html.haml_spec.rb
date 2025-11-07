@@ -10,7 +10,6 @@ RSpec.describe 'profiles/billings/index.html.haml', :saas, feature_category: :su
   let(:user) { build_stubbed(:user, namespace: namespace) }
   let(:free_group) { build_stubbed(:group) }
   let(:trial_group) { build_stubbed(:group) }
-
   let(:premium_plan) { Hashie::Mash.new(code: ::Plan::PREMIUM, id: 1, name: 'Premium') }
   let(:ultimate_plan) { Hashie::Mash.new(code: ::Plan::ULTIMATE, id: 2, name: 'Ultimate') }
   let(:plans_data) { [premium_plan, ultimate_plan] }
@@ -18,70 +17,47 @@ RSpec.describe 'profiles/billings/index.html.haml', :saas, feature_category: :su
   before do
     stub_signing_key
     stub_application_setting(check_namespace_plan: true)
-    stub_saas_features(experimentation: true)
-
     assign(:plans_data, plans_data)
 
     allow(user).to receive_messages(
       free_or_trial_owned_group_ids: [1, 2]
     )
+    allow(user).to receive_message_chain(:owned_groups, :free_or_trial,
+      :include_gitlab_subscription).and_return([free_group, trial_group])
 
-    allow(user).to receive_message_chain(:owned_groups, :free_or_trial, :empty?).and_return(false)
-
-    allow(namespace).to receive_messages(
-      actual_plan_name: 'free',
-      paid?: false
+    allow(free_group).to receive_messages(
+      id: 1,
+      name: 'Free Group',
+      trial_active?: false
+    )
+    allow(trial_group).to receive_messages(
+      id: 2,
+      name: 'Trial Group',
+      trial_active?: true
     )
 
-    allow(view).to receive_messages(
-      current_user: user,
-      subscription_plan_info: premium_plan,
-      subscription_plan_data_attributes: {
-        namespace_id: namespace.id,
-        namespace_name: namespace.name,
-        plan_name: premium_plan.code
-      },
-      user_billing_data_attributes: {
-        groups: [
-          { id: 1, name: 'Free Group', trial_active: false },
-          { id: 2, name: 'Trial Group', trial_active: true }
-        ]
-      }
-    )
+    allow(view).to receive_messages(current_user: user, group_billings_path: '/groups/1/-/billings',
+      plan_purchase_url: '/purchase', dashboard_groups_path: '/dashboard/groups')
   end
 
-  context 'with user_billing_pricing_information experiment', :experiment do
-    context 'with tracking' do
-      let(:experiment) { instance_double(ApplicationExperiment) }
+  it 'renders the pricing information component' do
+    render
 
-      before do
-        allow(view)
-          .to receive(:experiment)
-          .with(:user_billing_pricing_information, actor: user)
-          .and_return(experiment)
-      end
+    expect(rendered).to have_css('#js-pricing-information')
+  end
 
-      it 'creates assignment event' do
-        expect(experiment).to receive(:track).with(:assignment, namespace: namespace)
+  it 'passes data attributes as JSON to the component' do
+    render
 
-        render
-      end
-    end
+    page = Capybara.string(rendered)
+    element = page.find('#js-pricing-information')
 
-    it 'renders control variant' do
-      stub_experiments(user_billing_pricing_information: :control)
+    expect(element['data-view-model']).to be_present
 
-      render
-
-      expect(rendered).to have_css('#js-billing-plans')
-    end
-
-    it 'renders candidate variant' do
-      stub_experiments(user_billing_pricing_information: :candidate)
-
-      render
-
-      expect(rendered).to have_css('#js-pricing-information')
-    end
+    data = ::Gitlab::Json.parse(element['data-view-model'])
+    expect(data).to be_a(Hash)
+    expect(data).to have_key('groups')
+    expect(data['groups']).to be_an(Array)
+    expect(data).to have_key('dashboardGroupsHref')
   end
 end
