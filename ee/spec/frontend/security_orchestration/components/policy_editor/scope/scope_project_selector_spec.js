@@ -3,7 +3,10 @@ import ScopeProjectSelector from 'ee/security_orchestration/components/policy_ed
 import GroupProjectsDropdown from 'ee/security_orchestration/components/shared/group_projects_dropdown.vue';
 import { generateMockProjects } from 'ee_jest/security_orchestration/mocks/mock_data';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
-import { EXCEPT_PROJECTS } from 'ee/security_orchestration/components/policy_editor/scope/constants';
+import {
+  EXCEPT_PROJECTS,
+  EXCEPT_PERSONAL_PROJECTS,
+} from 'ee/security_orchestration/components/policy_editor/scope/constants';
 import { WITHOUT_EXCEPTIONS } from 'ee/security_orchestration/components/policy_editor/scan_result/lib';
 import InstanceProjectsDropdown from 'ee/security_orchestration/components/shared/instance_projects_dropdown.vue';
 
@@ -71,6 +74,17 @@ describe('ScopeProjectSelector', () => {
         expect(findGroupProjectsDropdown().exists()).toBe(true);
         expect(findInstanceProjectsDropdown().exists()).toBe(false);
       });
+
+      it('renders the correct exception options', () => {
+        createComponent({ provide: { designatedAsCsp: false } });
+
+        const items = findExceptionTypeSelector().props('items');
+        const itemValues = items.map((item) => item.value);
+
+        expect(itemValues).toContain(WITHOUT_EXCEPTIONS);
+        expect(itemValues).toContain(EXCEPT_PROJECTS);
+        expect(itemValues).not.toContain(EXCEPT_PERSONAL_PROJECTS);
+      });
     });
 
     describe('csp group', () => {
@@ -97,6 +111,32 @@ describe('ScopeProjectSelector', () => {
         expect(findExceptionTypeSelector().exists()).toBe(false);
         expect(findGroupProjectsDropdown().exists()).toBe(false);
         expect(findInstanceProjectsDropdown().exists()).toBe(true);
+      });
+
+      it('does not show projects dropdown when EXCEPT_PERSONAL_PROJECTS is selected', () => {
+        createComponent({
+          propsData: {
+            projects: {
+              excluding: [{ type: 'personal' }],
+            },
+            exceptionType: EXCEPT_PERSONAL_PROJECTS,
+          },
+          provide: { designatedAsCsp: true },
+        });
+
+        expect(findInstanceProjectsDropdown().exists()).toBe(false);
+        expect(findGroupProjectsDropdown().exists()).toBe(false);
+      });
+
+      it('renders the correct exception options', () => {
+        createComponent({ provide: { designatedAsCsp: true } });
+
+        const items = findExceptionTypeSelector().props('items');
+        const itemValues = items.map((item) => item.value);
+
+        expect(itemValues).toContain(WITHOUT_EXCEPTIONS);
+        expect(itemValues).toContain(EXCEPT_PROJECTS);
+        expect(itemValues).toContain(EXCEPT_PERSONAL_PROJECTS);
       });
     });
   });
@@ -237,6 +277,19 @@ describe('ScopeProjectSelector', () => {
         expect(findInstanceProjectsDropdown().props('selected')).toEqual([1, 2]);
       });
     });
+
+    it('filters out personal project type from project IDs', () => {
+      createComponent({
+        propsData: {
+          projects: { excluding: [{ type: 'personal' }, ...mappedProjects] },
+          exceptionType: EXCEPT_PROJECTS,
+        },
+        provide: { designatedAsCsp: true },
+      });
+
+      expect(findInstanceProjectsDropdown().exists()).toBe(true);
+      expect(findInstanceProjectsDropdown().props('selected')).toEqual([1, 2]);
+    });
   });
 
   describe('select exceptions', () => {
@@ -251,26 +304,32 @@ describe('ScopeProjectSelector', () => {
 
   describe('reset selected projects', () => {
     it('should select exception type WITHOUT_EXCEPTIONS and reset exceptions', () => {
-      createComponent({
-        propsData: {
-          projects: {
-            excluding: mappedProjects,
-          },
-        },
-      });
+      createComponent({ propsData: { projects: { excluding: mappedProjects } } });
 
       findExceptionTypeSelector().vm.$emit('select', WITHOUT_EXCEPTIONS);
 
       expect(wrapper.emitted('select-exception-type')).toEqual([[WITHOUT_EXCEPTIONS]]);
+      expect(wrapper.emitted('changed')).toEqual([[{ projects: { excluding: [] } }]]);
+    });
+
+    it('should select exception type EXCEPT_PERSONAL_PROJECTS and set personal project exclusion', () => {
+      createComponent({ provide: { designatedAsCsp: true } });
+
+      findExceptionTypeSelector().vm.$emit('select', EXCEPT_PERSONAL_PROJECTS);
+
+      expect(wrapper.emitted('select-exception-type')).toEqual([[EXCEPT_PERSONAL_PROJECTS]]);
       expect(wrapper.emitted('changed')).toEqual([
-        [
-          {
-            projects: {
-              excluding: [],
-            },
-          },
-        ],
+        [{ projects: { excluding: [{ type: 'personal' }] } }],
       ]);
+    });
+
+    it('should select exception type EXCEPT_PROJECTS and reset exceptions', () => {
+      createComponent({ provide: { designatedAsCsp: true } });
+
+      findExceptionTypeSelector().vm.$emit('select', EXCEPT_PROJECTS);
+
+      expect(wrapper.emitted('select-exception-type')).toEqual([[EXCEPT_PROJECTS]]);
+      expect(wrapper.emitted('changed')).toEqual([[{ projects: { excluding: [] } }]]);
     });
   });
 });

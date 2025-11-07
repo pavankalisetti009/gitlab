@@ -32,6 +32,7 @@ import {
   WITHOUT_EXCEPTIONS,
   SPECIFIC_PROJECTS,
   EXCEPT_PROJECTS,
+  EXCEPT_PERSONAL_PROJECTS,
   ALL_PROJECTS_IN_GROUP,
   INCLUDING,
   EXCLUDING,
@@ -102,15 +103,9 @@ export default {
       update(data) {
         const linkedProjects = data?.project?.securityPolicyProjectLinkedProjects?.nodes || [];
         const linkedGroups = data?.project?.securityPolicyProjectLinkedGroups?.nodes || [];
-
         const items = [...linkedProjects, ...linkedGroups];
 
-        if (
-          isEmpty(this.policyScope) &&
-          items.length > 1 &&
-          !this.isGroupLevel &&
-          !this.hasExistingPolicy
-        ) {
+        if (this.shouldSetDefaultScope(items)) {
           this.setDefaultScope();
         }
 
@@ -140,35 +135,11 @@ export default {
     },
   },
   data() {
-    let selectedProjectScopeType = ALL_PROJECTS_IN_GROUP;
-    let selectedExceptionType = WITHOUT_EXCEPTIONS;
-    let projectsPayloadKey = EXCLUDING;
-
-    const { projects = [] } = this.policyScope || {};
-    const { groups = [] } = this.policyScope || {};
-
-    if (projects?.excluding && projects.excluding.length > 0) {
-      selectedExceptionType = EXCEPT_PROJECTS;
-    }
-
-    if (this.policyScope?.compliance_frameworks) {
-      selectedProjectScopeType = PROJECTS_WITH_FRAMEWORK;
-    }
-
-    if (groups.including) {
-      selectedProjectScopeType = ALL_PROJECTS_IN_LINKED_GROUPS;
-    }
-
-    if (projects?.including && !groups.including?.length) {
-      selectedProjectScopeType = SPECIFIC_PROJECTS;
-      projectsPayloadKey = INCLUDING;
-    }
-
     return {
       useDefaultScope: isEmpty(this.policyScope),
-      selectedProjectScopeType,
-      selectedExceptionType,
-      projectsPayloadKey,
+      selectedProjectScopeType: this.getInitialProjectScopeType(),
+      selectedExceptionType: this.getInitialExceptionType(),
+      projectsPayloadKey: this.getInitialPayloadKey(),
       showAlert: false,
       errorDescription: '',
       linkedSppItems: [],
@@ -182,6 +153,20 @@ export default {
     },
     hasGroups() {
       return Boolean(this.policyScope.groups?.including);
+    },
+    hasScopedFrameworks() {
+      return Boolean(this.policyScope?.compliance_frameworks?.length);
+    },
+    hasScopedGroups() {
+      const groups = this.policyScope?.groups;
+      return Boolean(groups?.including?.length) || Boolean(groups?.excluding?.length);
+    },
+    hasScopedProjects() {
+      const projects = this.policyScope?.projects;
+      return Boolean(projects?.including?.length) || Boolean(projects?.excluding?.length);
+    },
+    isPolicyScopeEmpty() {
+      return !this.hasScopedProjects && !this.hasScopedGroups && !this.hasScopedFrameworks;
     },
     showScopeGroupSelector() {
       return this.hasGroups || this.selectedProjectScopeType === ALL_PROJECTS_IN_LINKED_GROUPS;
@@ -197,6 +182,9 @@ export default {
     },
     isAllProjects() {
       return this.selectedProjectScopeType === ALL_PROJECTS_IN_GROUP;
+    },
+    isNewCSPPolicy() {
+      return this.designatedAsCsp && !this.existingPolicy;
     },
     hasMultipleProjectsLinked() {
       return this.linkedSppItems.length > 1;
@@ -220,14 +208,19 @@ export default {
     },
     projectIds() {
       /**
-       * Protection from manual yam input as objects
+       * Protection from manual yaml input as objects
+       * Filter out items without id (e.g., { type: 'personal' })
        * @type {*|*[]}
        */
       const projects = Array.isArray(this.policyScope?.projects?.[this.projectsPayloadKey])
         ? this.policyScope?.projects?.[this.projectsPayloadKey]
         : [];
 
-      return projects?.map(({ id }) => convertToGraphQLId(TYPENAME_PROJECT, id)) || [];
+      return (
+        projects
+          ?.filter(({ id }) => Boolean(id))
+          ?.map(({ id }) => convertToGraphQLId(TYPENAME_PROJECT, id)) || []
+      );
     },
     groupIds() {
       return this.policyScope?.groups?.including || [];
@@ -283,6 +276,10 @@ export default {
       return this.selectedExceptionType === WITHOUT_EXCEPTIONS;
     },
     projectsEmpty() {
+      // If we're excluding personal projects, that's a valid non-empty state
+      if (this.selectedExceptionType === EXCEPT_PERSONAL_PROJECTS) {
+        return false;
+      }
       return this.projectIds.length === 0;
     },
     groupsEmpty() {
@@ -309,7 +306,72 @@ export default {
       return CSP_SCOPE_TYPE_WITHOUT_GROUP_LISTBOX_ITEMS;
     },
   },
+  mounted() {
+    // For new policies in CSP namespace, automatically set the default scope
+    if (this.isPolicyScopeEmpty && this.isNewCSPPolicy) {
+      this.setDefaultScope();
+    }
+  },
   methods: {
+    getInitialProjectScopeType() {
+      const { projects = {}, groups = {} } = this.policyScope || {};
+
+      if (this.policyScope?.compliance_frameworks) {
+        return PROJECTS_WITH_FRAMEWORK;
+      }
+
+      if (groups.including) {
+        return ALL_PROJECTS_IN_LINKED_GROUPS;
+      }
+
+      if (projects.including && !groups.including?.length) {
+        return SPECIFIC_PROJECTS;
+      }
+
+      return ALL_PROJECTS_IN_GROUP;
+    },
+    getInitialExceptionType() {
+      const { projects = {} } = this.policyScope || {};
+
+      const hasPersonalExclusion = projects.excluding?.some(({ type }) => type === 'personal');
+
+      if (hasPersonalExclusion) {
+        return EXCEPT_PERSONAL_PROJECTS;
+      }
+
+      if (projects.excluding?.length > 0) {
+        return EXCEPT_PROJECTS;
+      }
+
+      // Default for new CSP policies
+      // Cannot use computed property this.isNewCSPPolicy here because it is called
+      // before computed properties are defined
+      if (this.designatedAsCsp && !this.existingPolicy) {
+        return EXCEPT_PERSONAL_PROJECTS;
+      }
+
+      return WITHOUT_EXCEPTIONS;
+    },
+
+    getInitialPayloadKey() {
+      const { projects = {}, groups = {} } = this.policyScope || {};
+
+      if (projects.including && !groups.including?.length) {
+        return INCLUDING;
+      }
+
+      return EXCLUDING;
+    },
+
+    shouldSetDefaultScope(items) {
+      // Don't set default scope if these conditions aren't met
+      if (this.isGroupLevel || this.hasExistingPolicy || items.length <= 1) {
+        return false;
+      }
+
+      // Only set default scope if policy scope is completely empty
+      return isEmpty(this.policyScope) && this.isPolicyScopeEmpty;
+    },
     resetPolicyScope() {
       const internalPayload =
         this.payloadKey === COMPLIANCE_FRAMEWORKS_KEY ? [] : { [this.projectsPayloadKey]: [] };
@@ -349,11 +411,16 @@ export default {
       this.errorDescription = errorDescription;
     },
     setDefaultScope() {
-      this.triggerChanged({ projects: { excluding: [] } });
+      // For CSP namespaces, default to excluding personal projects
+      const payload = this.isNewCSPPolicy ? [{ type: 'personal' }] : [];
+      this.triggerChanged({ projects: { excluding: payload } });
     },
     setDefaultSelectorValues() {
       this.selectedProjectScopeType = ALL_PROJECTS_IN_GROUP;
-      this.selectedExceptionType = WITHOUT_EXCEPTIONS;
+      // For CSP namespaces, default to excluding personal projects
+      this.selectedExceptionType = this.isNewCSPPolicy
+        ? EXCEPT_PERSONAL_PROJECTS
+        : WITHOUT_EXCEPTIONS;
       this.projectsPayloadKey = EXCLUDING;
     },
     updateScopeSelection(value) {

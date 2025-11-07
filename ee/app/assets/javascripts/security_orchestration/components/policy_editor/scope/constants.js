@@ -34,6 +34,7 @@ export const CSP_SCOPE_TYPE_LISTBOX_ITEMS = mapToListboxItems(CSP_SCOPE_TYPE_TEX
 
 export const WITHOUT_EXCEPTIONS = 'without_exceptions';
 export const EXCEPT_PROJECTS = 'except_projects';
+export const EXCEPT_PERSONAL_PROJECTS = 'except_personal_projects';
 export const EXCEPT_GROUPS = 'except_groups';
 export const INCLUDING = 'including';
 export const EXCLUDING = 'excluding';
@@ -46,10 +47,18 @@ export const EXCEPTION_TYPE_TEXTS = {
   [EXCEPT_PROJECTS]: s__('SecurityOrchestration|except projects'),
 };
 
+const EXCEPTION_WITH_PERSONAL_TYPE_TEXTS = {
+  ...EXCEPTION_TYPE_TEXTS,
+  [EXCEPT_PERSONAL_PROJECTS]: s__('SecurityOrchestration|except personal projects'),
+};
+
 export const GROUP_EXCEPTION_TYPE_TEXTS = {
   [WITHOUT_EXCEPTIONS]: s__('SecurityOrchestration|without exceptions'),
   [EXCEPT_GROUPS]: s__('SecurityOrchestration|except groups'),
 };
 
 export const EXCEPTION_TYPE_LISTBOX_ITEMS = mapToListboxItems(EXCEPTION_TYPE_TEXTS);
+export const EXCEPTION_WITH_PERSONAL_TYPE_LISTBOX_ITEMS = mapToListboxItems(
+  EXCEPTION_WITH_PERSONAL_TYPE_TEXTS,
+);
 export const GROUP_EXCEPTION_TYPE_LISTBOX_ITEMS = mapToListboxItems(GROUP_EXCEPTION_TYPE_TEXTS);

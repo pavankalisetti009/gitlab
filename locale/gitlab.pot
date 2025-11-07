@@ -61138,6 +61138,9 @@ msgstr ""
 msgid "SecurityOrchestration|except groups"
 msgstr ""
 
+msgid "SecurityOrchestration|except personal projects"
+msgstr ""
+
 msgid "SecurityOrchestration|except projects"
 msgstr ""
 
