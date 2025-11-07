@@ -56,6 +56,12 @@ RSpec.describe EE::Gitlab::GonHelper do
       end
 
       it_behaves_like 'pushes frontend feature flag', :advanced_context_resolver
+
+      it 'includes url to CustomersDot' do
+        expect(gon).to receive(:subscriptions_url=).with(::Gitlab::Routing.url_helpers.subscription_portal_url)
+
+        helper.add_gon_variables
+      end
     end
 
     context 'when GitLab.com' do

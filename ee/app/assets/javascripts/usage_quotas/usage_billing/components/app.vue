@@ -1,5 +1,5 @@
 <script>
-import { GlAlert } from '@gitlab/ui';
+import { GlAlert, GlSprintf, GlLink } from '@gitlab/ui';
 import { logError } from '~/lib/logger';
 import { captureException } from '~/sentry/sentry_browser_wrapper';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
@@ -17,6 +17,8 @@ export default {
   name: 'UsageBillingApp',
   components: {
     GlAlert,
+    GlSprintf,
+    GlLink,
     PageHeading,
     PurchaseCommitmentCard,
     UsageByUserTab,
@@ -54,6 +56,9 @@ export default {
     };
   },
   computed: {
+    subscriptionsUrl() {
+      return gon.subscriptions_url;
+    },
     poolIsAvailable() {
       return Boolean(this.poolTotalCredits);
     },
@@ -116,6 +121,25 @@ export default {
 
     <gl-alert v-if="isError" variant="danger" class="gl-my-3">
       {{ s__('UsageBilling|An error occurred while fetching data') }}
+    </gl-alert>
+
+    <gl-alert
+      v-if="subscriptionUsage.isOutdatedClient"
+      data-testid="outdated-client-alert"
+      variant="warning"
+      class="gl-my-3"
+    >
+      <gl-sprintf
+        :message="
+          s__(
+            'UsageBilling|This dashboard may not display all current subscription data. For complete visibility, please upgrade to the latest version of GitLab or visit the %{linkStart}Customer Portal%{linkEnd}.',
+          )
+        "
+      >
+        <template #link="{ content }">
+          <gl-link :href="subscriptionsUrl" target="_blank">{{ content }}</gl-link>
+        </template>
+      </gl-sprintf>
     </gl-alert>
 
     <div v-if="isLoading" data-testid="skeleton-loaders">

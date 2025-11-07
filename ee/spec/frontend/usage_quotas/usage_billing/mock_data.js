@@ -1,6 +1,7 @@
 export const mockUsersUsageDataWithoutPool = {
   data: {
     subscriptionUsage: {
+      isOutdatedClient: false,
       lastEventTransactionAt: '2024-01-15T10:30:00Z',
       purchaseCreditsPath: '/purchase-credits-path',
       usersUsage: {
@@ -96,6 +97,7 @@ export const mockUsersUsageDataWithoutPool = {
 export const mockUsersUsageDataWithPool = {
   data: {
     subscriptionUsage: {
+      isOutdatedClient: false,
       lastEventTransactionAt: '2025-10-14T07:41:59Z',
       purchaseCreditsPath: '/purchase-credits-path',
       usersUsage: {
@@ -228,6 +230,7 @@ export const mockUsersUsageDataWithPool = {
 export const mockUsersUsageDataWithOverage = {
   data: {
     subscriptionUsage: {
+      isOutdatedClient: false,
       lastEventTransactionAt: '2025-10-14T07:41:59Z',
       purchaseCreditsPath: '/purchase-credits-path',
       usersUsage: {
@@ -358,6 +361,7 @@ export const mockUsersUsageDataWithOverage = {
 export const mockUsersUsageDataWithZeroAllocation = {
   data: {
     subscriptionUsage: {
+      isOutdatedClient: false,
       lastEventTransactionAt: '2025-10-14T07:41:59Z',
       purchaseCreditsPath: '/purchase-credits-path',
       startDate: '2025-10-01',
@@ -635,6 +639,7 @@ export const mockUsersUsageDataWithNullUsage = {
 export const usageDataWithCommitment = {
   data: {
     subscriptionUsage: {
+      isOutdatedClient: false,
       lastEventTransactionAt: '2025-10-14T07:41:59Z',
       startDate: '2025-10-01',
       endDate: '2025-10-31',
@@ -659,10 +664,15 @@ export const usageDataWithCommitment = {
 export const usageDataWithoutLastEventTransactionAt = {
   data: {
     subscriptionUsage: {
-      monthlyCommitment: {
-        creditsUsed: 50,
-        totalCredits: 300,
-      },
+      isOutdatedClient: false,
+      lastEventTransactionAt: null,
+      startDate: '2025-10-01',
+      endDate: '2025-10-31',
+      purchaseCreditsPath: '/purchase-credits-path',
+
+      monthlyCommitment: null,
+      monthlyWaiver: null,
+      overage: null,
     },
   },
 };
@@ -670,6 +680,7 @@ export const usageDataWithoutLastEventTransactionAt = {
 export const usageDataWithCommitmentWithMonthlyWaiver = {
   data: {
     subscriptionUsage: {
+      isOutdatedClient: false,
       lastEventTransactionAt: '2025-10-14T07:41:59Z',
       startDate: '2025-10-01',
       endDate: '2025-10-31',
@@ -697,6 +708,7 @@ export const usageDataWithCommitmentWithOverage = {
       purchaseCreditsPath: '/purchase-credits-path',
       startDate: '2025-10-01',
       endDate: '2025-10-31',
+      isOutdatedClient: false,
       lastEventTransactionAt: '2025-10-14T07:41:59Z',
       monthlyCommitment: {
         creditsUsed: 300,
@@ -718,6 +730,7 @@ export const usageDataWithCommitmentWithOverage = {
 export const usageDataNoCommitmentNoMonthlyWaiverNoOverage = {
   data: {
     subscriptionUsage: {
+      isOutdatedClient: false,
       lastEventTransactionAt: '2024-01-15T10:30:00Z',
       startDate: '2025-10-01',
       endDate: '2025-10-31',
@@ -739,6 +752,7 @@ export const usageDataNoCommitmentNoMonthlyWaiverNoOverage = {
 export const usageDataNoCommitmentWithOverage = {
   data: {
     subscriptionUsage: {
+      isOutdatedClient: false,
       lastEventTransactionAt: '2024-01-15T10:30:00Z',
       startDate: '2025-10-01',
       endDate: '2025-10-31',
@@ -760,6 +774,7 @@ export const usageDataNoCommitmentWithOverage = {
 export const usageDataCommitmentWithMonthlyWaiver = {
   data: {
     subscriptionUsage: {
+      isOutdatedClient: false,
       lastEventTransactionAt: '2025-10-14T07:41:59Z',
       startDate: '2025-10-01',
       endDate: '2025-10-31',
@@ -786,6 +801,7 @@ export const usageDataCommitmentWithMonthlyWaiver = {
 export const usageDataCommitmentWithMonthlyWaiverWithOverage = {
   data: {
     subscriptionUsage: {
+      isOutdatedClient: false,
       lastEventTransactionAt: '2025-10-14T07:41:59Z',
       startDate: '2025-10-01',
       endDate: '2025-10-31',
@@ -805,6 +821,36 @@ export const usageDataCommitmentWithMonthlyWaiverWithOverage = {
         totalCredits: 1000,
         creditsUsed: 1000,
       },
+    },
+  },
+};
+
+export const usageDataWithOutdatedClient = {
+  data: {
+    subscriptionUsage: {
+      isOutdatedClient: true,
+      lastEventTransactionAt: '2025-10-14T07:41:59Z',
+      startDate: '2025-10-01',
+      endDate: '2025-10-31',
+      purchaseCreditsPath: '/purchase-credits-path',
+      monthlyCommitment: null,
+      monthlyWaiver: null,
+      overage: null,
+    },
+  },
+};
+
+export const usageDataWithoutPurchaseCreditsPath = {
+  data: {
+    subscriptionUsage: {
+      isOutdatedClient: false,
+      lastEventTransactionAt: '2025-10-14T07:41:59Z',
+      startDate: '2025-10-01',
+      endDate: '2025-10-31',
+      purchaseCreditsPath: null,
+      monthlyCommitment: null,
+      monthlyWaiver: null,
+      overage: null,
     },
   },
 };

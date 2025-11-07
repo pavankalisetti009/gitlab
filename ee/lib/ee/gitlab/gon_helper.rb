@@ -23,9 +23,11 @@ module EE
 
         push_frontend_feature_flags
 
+        # Used by Self-Managed customers
+        gon.subscriptions_url = ::Gitlab::Routing.url_helpers.subscription_portal_url
+
         return unless ::Gitlab.com?
 
-        gon.subscriptions_url                = ::Gitlab::Routing.url_helpers.subscription_portal_url
         gon.subscriptions_legacy_sign_in_url = ::Gitlab::Routing.url_helpers.subscription_portal_legacy_sign_in_url
         gon.billing_accounts_url             = ::Gitlab::Routing.url_helpers.subscription_portal_billing_accounts_url
         gon.payment_form_url                 = ::Gitlab::Routing.url_helpers.subscription_portal_payment_form_url

@@ -8,6 +8,7 @@ RSpec.describe GitlabSchema.types['GitlabSubscriptionUsage'], feature_category: 
 
   it 'has expected fields' do
     expect(described_class).to have_graphql_fields([
+      :is_outdated_client,
       :last_event_transaction_at,
       :start_date,
       :end_date,

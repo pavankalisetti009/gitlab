@@ -145,6 +145,7 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
             gitlabCreditsUsage: {
               startDate: "2025-10-01",
               endDate: "2025-10-31",
+              isOutdatedClient: false,
               lastEventTransactionAt: "2025-10-01T16:19:59Z",
               purchaseCreditsPath: '/mock/path'
             }
@@ -159,6 +160,7 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
         subscriptionUsage: {
           startDate: "2025-10-01",
           endDate: "2025-10-31",
+          isOutdatedClient: false,
           lastEventTransactionAt: "2025-10-01T16:19:59Z",
           purchaseCreditsPath: '/mock/path'
         }
@@ -166,11 +168,11 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
     end
 
     include_context 'for self-managed request' do
-      let(:variables) { { licenseKey: license_key } }
+      let(:variables) { { licenseKey: license_key, gitlabVersion: Gitlab::VERSION } }
     end
 
     include_context 'for gitlab.com request' do
-      let(:variables) { { namespaceId: namespace_id } }
+      let(:variables) { { namespaceId: namespace_id, gitlabVersion: Gitlab::VERSION } }
     end
   end
 

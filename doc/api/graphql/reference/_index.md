@@ -31129,6 +31129,7 @@ Describes the usage of consumables under the subscription.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="gitlabsubscriptionusageenddate"></a>`endDate` | [`ISO8601Date`](#iso8601date) | End date of the period covered by the usage data. |
+| <a id="gitlabsubscriptionusageisoutdatedclient"></a>`isOutdatedClient` | [`Boolean`](#boolean) | Indicates if the GitLab instance has an outdated API contract with the Customer Portal. |
 | <a id="gitlabsubscriptionusagelasteventtransactionat"></a>`lastEventTransactionAt` | [`ISO8601DateTime`](#iso8601datetime) | Date and time when the last usage event resulted in a wallet transaction. |
 | <a id="gitlabsubscriptionusagemonthlycommitment"></a>`monthlyCommitment` | [`GitlabSubscriptionMonthlyCommitment`](#gitlabsubscriptionmonthlycommitment) | Monthly commitment usage for the subscription. |
 | <a id="gitlabsubscriptionusagemonthlywaiver"></a>`monthlyWaiver` | [`GitlabSubscriptionMonthlyWaiver`](#gitlabsubscriptionmonthlywaiver) | Monthly waiver usage for the subscription. |
