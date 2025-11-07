@@ -40,6 +40,7 @@ const REPORT_TYPE_TOKEN_DEFINITION = {
 };
 
 export default {
+  name: 'GroupSecurityDashboardNew',
   components: {
     GlDashboardLayout,
     FilteredSearch,

@@ -14,6 +14,7 @@ class Groups::Security::DashboardController < Groups::ApplicationController
   before_action only: :show do
     push_frontend_feature_flag(:group_security_dashboard_new, group)
     push_frontend_feature_flag(:new_security_dashboard_total_risk_score, group)
+    push_frontend_feature_flag(:group_vulnerability_risk_scores_by_project, group)
     push_frontend_ability(ability: :access_advanced_vulnerability_management, resource: group, user: current_user)
   end
 
