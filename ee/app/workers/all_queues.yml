@@ -4397,6 +4397,16 @@
   :tags:
   - :cronjob_child
   :queue_namespace:
+- :name: virtual_registries_destroy_local_upstreams
+  :worker_name: VirtualRegistries::DestroyLocalUpstreamsWorker
+  :feature_category: :virtual_registry
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: vulnerabilities_archival_archive
   :worker_name: Vulnerabilities::Archival::ArchiveWorker
   :feature_category: :vulnerability_management

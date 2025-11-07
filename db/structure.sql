@@ -43410,6 +43410,8 @@ CREATE INDEX index_virtual_reg_pkgs_maven_upstreams_on_group_id ON virtual_regis
 
 CREATE UNIQUE INDEX index_virtual_registries_cleanup_policies_on_group_id ON virtual_registries_cleanup_policies USING btree (group_id);
 
+CREATE INDEX index_virtual_registries_packages_maven_upstreams_on_url ON virtual_registries_packages_maven_upstreams USING btree (url);
+
 CREATE UNIQUE INDEX index_virtual_registries_settings_on_group_id ON virtual_registries_settings USING btree (group_id);
 
 CREATE UNIQUE INDEX index_vuln_findings_on_uuid_including_vuln_id_1 ON vulnerability_occurrences USING btree (uuid) INCLUDE (vulnerability_id);

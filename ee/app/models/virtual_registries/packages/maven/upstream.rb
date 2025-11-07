@@ -71,6 +71,7 @@ module VirtualRegistries
         }
 
         scope :for_group, ->(group) { where(group:) }
+        scope :for_url, ->(url) { where(url:) }
         scope :for_id_and_group, ->(id:, group:) { where(id:, group:) }
         scope :search_by_name, ->(query) { fuzzy_search(query, [:name], use_minimum_char_limit: false) }
 
@@ -175,6 +176,13 @@ module VirtualRegistries
 
         def remote?
           !local?
+        end
+
+        def destroy_and_sync_positions
+          transaction do
+            ::VirtualRegistries::Packages::Maven::RegistryUpstream.sync_higher_positions(registry_upstreams)
+            destroy
+          end
         end
 
         private
