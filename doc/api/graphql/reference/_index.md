@@ -44828,7 +44828,7 @@ Representing a to-do entry.
 | <a id="todoproject"></a>`project` | [`Project`](#project) | Project the to-do item is associated with. |
 | <a id="todosnoozeduntil"></a>`snoozedUntil` | [`Time`](#time) | Time until when the todo is snoozed. |
 | <a id="todostate"></a>`state` | [`TodoStateEnum!`](#todostateenum) | State of the to-do item. |
-| <a id="todotarget"></a>`target` {{< icon name="warning-solid" >}} | [`Todoable!`](#todoable) | **Deprecated** in GitLab 17.4. Use `target_entity` field. |
+| <a id="todotarget"></a>`target` {{< icon name="warning-solid" >}} | [`Todoable!`](#todoable) | **Deprecated** in GitLab 17.4. Under certain circumstances, the `target` field on a to-do item can be `null`. The GraphQL schema currently declares `target` field as non-nullable. Use the new `target_entity` field instead. |
 | <a id="todotargetentity"></a>`targetEntity` | [`Todoable`](#todoable) | Target of the to-do item. |
 | <a id="todotargettype"></a>`targetType` | [`TodoTargetEnum!`](#todotargetenum) | Target type of the to-do item. |
 | <a id="todotargeturl"></a>`targetUrl` | [`String`](#string) | URL of the to-do item target. |
