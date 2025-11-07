@@ -81,7 +81,7 @@ export default {
     <div class="gl-font-sm gl-flex gl-flex-col gl-gap-3">
       <div class="gl-flex gl-flex-row gl-justify-between">
         <span data-testid="percentage-utilized" class="gl-text-subtle">
-          <gl-sprintf :message="s__('UsageBilling|%{percentage}%{percentSymbol} utilized')">
+          <gl-sprintf :message="s__('UsageBilling|%{percentage}%{percentSymbol} of credits used')">
             <template #percentage>{{ usagePercentage }}</template>
             <template #percentSymbol>%</template>
           </gl-sprintf>

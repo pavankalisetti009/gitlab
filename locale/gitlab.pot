@@ -70835,7 +70835,7 @@ msgstr ""
 msgid "UsageBillingUserDetails|total credits used"
 msgstr ""
 
-msgid "UsageBilling|%{percentage}%{percentSymbol} utilized"
+msgid "UsageBilling|%{percentage}%{percentSymbol} of credits used"
 msgstr ""
 
 msgid "UsageBilling|%{poolCreditsRemaining} credit remaining"
@@ -70855,7 +70855,7 @@ msgstr ""
 msgid "UsageBilling|Credit amount"
 msgstr ""
 
-msgid "UsageBilling|Credits used after any included user credits and monthly commitment pool have been exhausted. Learn about %{linkStart}GitLab Credit pricing%{linkEnd}."
+msgid "UsageBilling|Credits used after all included user credits and monthly commitment pool have been exhausted. Learn about %{linkStart}GitLab Credit pricing%{linkEnd}."
 msgstr ""
 
 msgid "UsageBilling|Date/Time"
@@ -70879,13 +70879,7 @@ msgstr ""
 msgid "UsageBilling|Increase monthly credit commitment"
 msgstr ""
 
-msgid "UsageBilling|Increase your commitment to unlock deeper discounts. Pool GitLab Credits across your namespace for flexibility and predictable monthly costs. %{linkStart}GitLab Credit pricing%{linkEnd}."
-msgstr ""
-
 msgid "UsageBilling|Last event transaction at:"
-msgstr ""
-
-msgid "UsageBilling|Last updated:"
 msgstr ""
 
 msgid "UsageBilling|Learn more about %{helpLinkStart}GitLab Credit pricing%{helpLinkEnd}."
@@ -70921,7 +70915,13 @@ msgstr ""
 msgid "UsageBilling|Total credits used"
 msgstr ""
 
+msgid "UsageBilling|Unlock more discounts for your GitLab usage. Pool GitLab Credits across your namespace for flexibility and predictable monthly costs. %{linkStart}GitLab Credit pricing%{linkEnd}."
+msgstr ""
+
 msgid "UsageBilling|Usage Billing"
+msgstr ""
+
+msgid "UsageBilling|Used in this billing period"
 msgstr ""
 
 msgid "UsageBilling|Used this billing period"

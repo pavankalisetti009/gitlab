@@ -37,7 +37,7 @@ export default {
       {{ s__('UsageBilling|GitLab Credits - Monthly Waiver') }}
     </h2>
     <div class="gl-mb-4 gl-text-sm gl-text-subtle">
-      {{ s__('UsageBilling|Used this billing period') }}
+      {{ s__('UsageBilling|Used in this billing period') }}
     </div>
     <div class="gl-heading-scale-600 gl-mb-3" data-testid="monthly-waiver-credits-used">
       {{ numberToMetricPrefix(monthlyWaiverCreditsUsed) }}
@@ -46,7 +46,7 @@ export default {
       <gl-sprintf
         :message="
           s__(
-            'UsageBilling|Credits used after any included user credits and monthly commitment pool have been exhausted. Learn about %{linkStart}GitLab Credit pricing%{linkEnd}.',
+            'UsageBilling|Credits used after all included user credits and monthly commitment pool have been exhausted. Learn about %{linkStart}GitLab Credit pricing%{linkEnd}.',
           )
         "
       >

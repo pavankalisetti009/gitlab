@@ -29,7 +29,7 @@ describe('PurchaseCommitmentCard', () => {
 
     it('renders card body', () => {
       expect(wrapper.find('p').text()).toMatchInterpolatedText(
-        'Increase your commitment to unlock deeper discounts. Pool GitLab Credits across your namespace for flexibility and predictable monthly costs. GitLab Credit pricing.',
+        'Unlock more discounts for your GitLab usage. Pool GitLab Credits across your namespace for flexibility and predictable monthly costs. GitLab Credit pricing.',
       );
     });
 
