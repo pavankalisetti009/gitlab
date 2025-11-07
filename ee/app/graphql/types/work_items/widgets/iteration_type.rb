@@ -12,9 +12,13 @@ module Types
 
         implements ::Types::WorkItems::WidgetInterface
 
+        def self.authorization_scopes
+          super + [:ai_workflows]
+        end
+
         field :iteration,
           ::Types::IterationType,
-          null: true,
+          null: true, scopes: [:api, :read_api, :ai_workflows],
           description: 'Iteration of the work item.'
       end
       # rubocop:enable Graphql/AuthorizeTypes

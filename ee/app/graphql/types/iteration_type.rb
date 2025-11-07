@@ -11,7 +11,13 @@ module Types
 
     implements ::Types::TimeboxReportInterface
 
-    field :id, GraphQL::Types::ID, null: false, description: 'ID of the iteration.'
+    def self.authorization_scopes
+      super + [:ai_workflows]
+    end
+
+    field :id, GraphQL::Types::ID, null: false,
+      scopes: [:api, :read_api, :ai_workflows],
+      description: 'ID of the iteration.'
 
     field :iid, GraphQL::Types::String, null: false, description: 'Internal ID of the iteration.'
 
@@ -21,6 +27,7 @@ module Types
 
     field :title, GraphQL::Types::String,
       null: true,
+      scopes: [:api, :read_api, :ai_workflows],
       description: 'Title of the iteration.'
 
     field :description, GraphQL::Types::String,
@@ -44,10 +51,14 @@ module Types
       description: 'Web URL of the iteration, scoped to the query parent. Only valid for Project parents. Returns null in other contexts.'
 
     field :due_date, Types::TimeType,
-      null: true, description: 'Timestamp of the iteration due date.'
+      null: true,
+      scopes: [:api, :read_api, :ai_workflows],
+      description: 'Timestamp of the iteration due date.'
 
     field :start_date, Types::TimeType,
-      null: true, description: 'Timestamp of the iteration start date.'
+      null: true,
+      scopes: [:api, :read_api, :ai_workflows],
+      description: 'Timestamp of the iteration start date.'
 
     field :created_at, Types::TimeType,
       null: false, description: 'Timestamp of iteration creation.'
