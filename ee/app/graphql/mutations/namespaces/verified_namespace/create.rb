@@ -26,9 +26,9 @@ module Mutations
           description: 'Verification level for a root namespace.'
 
         def resolve(namespace_path:, verification_level:)
-          if self_managed_or_dedicated? && verification_level != 'verified_creator_self_managed'
+          if self_managed_or_dedicated? && !verification_level.in?(%w[verified_creator_self_managed unverified])
             { errors: ["Cannot use #{verification_level} on a non-Gitlab.com instance." \
-              "Use `VERIFIED_CREATOR_SELF_MANAGED`."] }
+              "Use `VERIFIED_CREATOR_SELF_MANAGED` or `UNVERIFIED`."] }
           elsif allowed_verification?(verification_level)
             namespace = authorized_find!(namespace_path: namespace_path)
             result = ::Namespaces::VerifyNamespaceService.new(namespace, verification_level).execute
@@ -47,7 +47,7 @@ module Mutations
         end
 
         def allowed_verification?(verification_level)
-          (self_managed_or_dedicated? && verification_level == 'verified_creator_self_managed') ||
+          (self_managed_or_dedicated? && verification_level.in?(%w[verified_creator_self_managed unverified])) ||
             gitlab_com_subscription?
         end
 

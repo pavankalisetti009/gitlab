@@ -120,7 +120,7 @@ RSpec.describe 'VerifiedNamespaceCreate', feature_category: :pipeline_compositio
           post_graphql_mutation(mutation, current_user: build(:user))
 
           expect(mutation_response['errors']).to eq(['Cannot use gitlab_maintained on a non-Gitlab.com instance.' \
-            'Use `VERIFIED_CREATOR_SELF_MANAGED`.'])
+            'Use `VERIFIED_CREATOR_SELF_MANAGED` or `UNVERIFIED`.'])
         end
       end
 
@@ -153,6 +153,39 @@ RSpec.describe 'VerifiedNamespaceCreate', feature_category: :pipeline_compositio
             expect(Namespaces::VerifiedNamespace.all.count).to eq(1)
             expect(Namespaces::VerifiedNamespace.first.verification_level).to eq('verified_creator_self_managed')
             expect(group_project_resource.reload.verification_level).to eq('verified_creator_self_managed')
+          end
+        end
+      end
+
+      context 'when verification level is unverified' do
+        let(:verification_level) { 'UNVERIFIED' }
+
+        context 'when unauthorized' do
+          let_it_be(:current_user) { build(:user) }
+
+          it_behaves_like 'a mutation that returns a top-level access error'
+        end
+
+        context 'when the verified namespace does not exist' do
+          it 'allows setting a namespace to unverified' do
+            post_graphql_mutation(mutation, current_user: current_user)
+
+            expect(group_project_resource.reload.verification_level).to eq('unverified')
+            expect(Namespaces::VerifiedNamespace.all.count).to eq(1)
+          end
+        end
+
+        context 'when removing verification from a verified namespace' do
+          it 'updates the namespace to unverified' do
+            ::Namespaces::VerifyNamespaceService.new(root_namespace, 'verified_creator_self_managed').execute
+            expect(Namespaces::VerifiedNamespace.all.count).to eq(1)
+            expect(group_project_resource.reload.verification_level).to eq('verified_creator_self_managed')
+
+            post_graphql_mutation(mutation, current_user: current_user)
+
+            expect(Namespaces::VerifiedNamespace.all.count).to eq(1)
+            expect(Namespaces::VerifiedNamespace.first.verification_level).to eq('unverified')
+            expect(group_project_resource.reload.verification_level).to eq('unverified')
           end
         end
       end
