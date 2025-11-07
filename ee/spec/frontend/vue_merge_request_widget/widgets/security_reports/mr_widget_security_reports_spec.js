@@ -28,6 +28,7 @@ import {
 import {
   mockFindingReportsComparerSuccessResponse,
   mockFindingReportsComparerParsingResponse,
+  mockFindingReportsComparerSuccessResponseWithFixed,
 } from '../../mock_data';
 
 Vue.use(VueApollo);
@@ -903,6 +904,32 @@ describe('MR Widget Security Reports', () => {
         scanMode: 'FULL',
       });
     });
+
+    it.each`
+      type       | mockResponse                                          | expectedAdded | expectedFixed
+      ${'added'} | ${mockFindingReportsComparerSuccessResponse}          | ${1}          | ${0}
+      ${'fixed'} | ${mockFindingReportsComparerSuccessResponseWithFixed} | ${0}          | ${1}
+    `(
+      'transforms "$type" GraphQL findings to expected format',
+      async ({ type, mockResponse, expectedAdded, expectedFixed }) => {
+        await createGraphQLComponent(mockResponse);
+        const result = await getFirstScanResult();
+
+        const originalFinding =
+          mockResponse.data.project.mergeRequest.findingReportsComparer.report[type][0];
+
+        expect(result.data[type][0]).toEqual({
+          uuid: originalFinding.uuid,
+          name: originalFinding.title,
+          severity: originalFinding.severity.toLowerCase(),
+          state: originalFinding.state.toLowerCase(),
+          found_by_pipeline: { iid: Number(originalFinding.foundByPipelineIid) },
+        });
+
+        expect(result.data.numberOfNewFindings).toBe(expectedAdded);
+        expect(result.data.numberOfFixedFindings).toBe(expectedFixed);
+      },
+    );
 
     describe('polling behavior', () => {
       const expectProcessingResult = (result) => {
