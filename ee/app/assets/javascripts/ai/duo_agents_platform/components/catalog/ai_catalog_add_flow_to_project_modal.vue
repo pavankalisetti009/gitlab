@@ -1,8 +1,9 @@
 <script>
 import { uniqueId } from 'lodash';
 import { GlForm, GlFormCheckbox, GlFormCheckboxGroup, GlFormGroup, GlModal } from '@gitlab/ui';
-import { __, s__ } from '~/locale';
+import { __ } from '~/locale';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
+import { FLOW_TRIGGER_TYPES } from 'ee/ai/duo_agents_platform/constants';
 import AiCatalogGroupFlowDropdown from './ai_catalog_group_flow_dropdown.vue';
 
 export default {
@@ -16,11 +17,6 @@ export default {
     ErrorsAlert,
     AiCatalogGroupFlowDropdown,
   },
-  inject: {
-    flowTriggersEventTypeOptions: {
-      default: [],
-    },
-  },
   props: {
     modalId: {
       type: String,
@@ -32,7 +28,7 @@ export default {
       errors: [],
       isDirty: false,
       selectedFlowConsumer: {},
-      triggerTypes: this.flowTriggersEventTypeOptions.map((option) => String(option.value)),
+      triggerTypes: FLOW_TRIGGER_TYPES.map((type) => type.value),
     };
   },
   computed: {
@@ -54,40 +50,11 @@ export default {
         },
       };
     },
-    triggerTypeOptions() {
-      return [
-        {
-          text: __('Mention'),
-          help: s__(
-            'AICatalog|Trigger this flow when the service account user is mentioned in an issue or merge request.',
-          ),
-          value: this.findTriggerTypeValue('Mention'), // eslint-disable-line @gitlab/require-i18n-strings
-        },
-        {
-          text: __('Assign'),
-          help: s__(
-            'AICatalog|Trigger this flow when the service account user is assigned to issue or merge request.',
-          ),
-          value: this.findTriggerTypeValue('Assign'), // eslint-disable-line @gitlab/require-i18n-strings
-        },
-        {
-          text: __('Assign reviewer'),
-          help: s__(
-            'AICatalog|Trigger this flow when the service account user is assigned as a reviewer to a merge request.',
-          ),
-          value: this.findTriggerTypeValue('Assign reviewer'), // eslint-disable-line @gitlab/require-i18n-strings
-        },
-      ];
-    },
     isFlowValid() {
       return !this.isDirty || this.selectedFlowConsumer.id !== undefined;
     },
   },
   methods: {
-    findTriggerTypeValue(text) {
-      const triggerType = this.flowTriggersEventTypeOptions.find((option) => option.text === text);
-      return triggerType?.value !== undefined ? String(triggerType.value) : '';
-    },
     handleSubmit() {
       this.isDirty = true;
       if (!this.isFlowValid) {
@@ -111,6 +78,7 @@ export default {
       this.errors = [error];
     },
   },
+  FLOW_TRIGGER_TYPES,
 };
 </script>
 
@@ -154,7 +122,7 @@ export default {
       >
         <gl-form-checkbox-group id="flow-triggers" v-model="triggerTypes">
           <gl-form-checkbox
-            v-for="triggerType in triggerTypeOptions"
+            v-for="triggerType in $options.FLOW_TRIGGER_TYPES"
             :key="triggerType.value"
             :value="triggerType.value"
           >
