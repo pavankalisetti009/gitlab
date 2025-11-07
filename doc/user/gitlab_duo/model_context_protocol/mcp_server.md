@@ -432,17 +432,20 @@ Show me all jobs in pipeline 12345 for project gitlab-org/gitlab
 {{< /history >}}
 
 Searches for a term across the entire GitLab instance with the search API.
-This tool is available only for global search.
+This tool is available only for global, group and project search. Available scopes
+differ depending on the [search types available](../../search/_index.md).
 
-| Parameter      | Type    | Required | Description |
-|----------------|---------|----------|-------------|
+| Parameter      | Type    | Required | Description                                                            |
+|----------------|---------|----------|------------------------------------------------------------------------|
 | `scope`        | string  | Yes      | Search scope (for example, `issues`, `merge_requests`, or `projects`). |
-| `search`       | string  | Yes      | Search term. |
-| `state`        | string  | No       | State of search results. |
-| `confidential` | boolean | No       | Filters results by confidentiality. Default is `false`. |
-| `per_page`     | integer | No       | Number of results per page. |
-| `page`         | integer | No       | Current page number. |
-| `fields`       | string  | No       | Comma-separated list of fields you want to search. |
+| `search`       | string  | Yes      | Search term.                                                           |
+| `group_id`     | string  | No       | Group to search in.                                                    |
+| `project_id`   | string  | No       | Project to search in.                                                  |
+| `state`        | string  | No       | State of search results.                                               |
+| `confidential` | boolean | No       | Filters results by confidentiality. Default is `false`.                |
+| `per_page`     | integer | No       | Number of results per page.                                            |
+| `page`         | integer | No       | Current page number.                                                   |
+| `fields`       | string  | No       | Comma-separated list of fields you want to search.                     |
 
 Example:
 

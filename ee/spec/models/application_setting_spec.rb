@@ -111,6 +111,7 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
         global_search_issues_enabled: true,
         global_search_limited_indexing_enabled: false,
         global_search_merge_requests_enabled: true,
+        global_search_notes_enabled: true,
         global_search_snippet_titles_enabled: true,
         global_search_users_enabled: true,
         global_search_wiki_enabled: true,

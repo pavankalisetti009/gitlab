@@ -24,6 +24,10 @@
       "type": "boolean",
       "description": "Enable global search for merge requests"
     },
+    "global_search_notes_enabled": {
+      "type": "boolean",
+      "description": "Enable global search for notes"
+    },
     "global_search_snippet_titles_enabled": {
       "type": "boolean",
       "description": "Enable global search for snippets"

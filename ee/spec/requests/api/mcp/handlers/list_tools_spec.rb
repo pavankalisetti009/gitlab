@@ -33,6 +33,7 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
       expect(json_response.keys).to include('result')
     end
 
+    # rubocop:disable Layout/LineLength -- disabling to make updating the test easier by not having to fix line length
     it 'returns tools' do
       post_list_tools
 
@@ -252,45 +253,65 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
             "additionalProperties" => false
           }
         },
-        {
-          "name" => "gitlab_search",
-          "description" => "Search on GitLab",
+        { "name" => "gitlab_search",
+          "description" => "" \
+            "Search across GitLab with automatic selection of the best available search method.\n\n" \
+            "**Capabilities:** basic (keywords, file filters)\n\n**Syntax Examples:**\n" \
+            "- Basic: \"bug fix\", \"filename:*.rb\", \"extension:js\"",
           "inputSchema" => {
             "type" => "object",
             "properties" => {
               "scope" => {
                 "type" => "string",
-                "description" => "The scope of the search"
+                "description" =>
+                  "Specify the type of content to search for. Available content types vary by search context:\n\n- GitLab instance: projects, milestones, issues, merge_requests, snippet_titles, users\n- Group: projects, milestones, issues, merge_requests, snippet_titles, users\n- Project: projects, milestones, issues, merge_requests, snippet_titles, users, projects, milestones, issues, merge_requests, snippet_titles, users, blobs, wiki_blobs, commits, notes\n\nExamples:\n- Use \"issues\" to search for issues\n- Use \"merge_requests\" to search for merge requests\n- Use \"blobs\" to search code files\n- Use \"notes\" to search comments across different content\n- Use \"commits\" to search commit messages"
               },
               "search" => {
                 "type" => "string",
-                "description" => "The expression it should be searched for"
+                "description" => "The term to search for"
+              },
+              "group_id" => {
+                "type" => "string",
+                "description" => "Provide to search within a group. The ID or URL-encoded path of the group"
+              },
+              "project_id" => {
+                "type" => "string",
+                "description" => "Provide to search within a project. The ID or URL-encoded path of the project"
               },
               "state" => {
                 "type" => "string",
-                "description" => "Filter results by state"
+                "description" => "Filter results by state. Available states:\n- Issues: opened, closed\n- Merge requests: opened, closed, merged, locked)\n\nOnly applies to issues and merge_requests scopes."
               },
               "confidential" => {
                 "type" => "boolean",
-                "description" => "Filter results by confidentiality"
+                "description" => "Filter results by confidentiality. Available for issues scope; other scopes are ignored."
               },
-              "page" => {
-                "type" => "integer",
-                "description" => "Current page number"
+              "fields" => {
+                "type" => "array", "items" => { "type" => "string" },
+                "description" => "Specify which fields to search within. Currently supported:\n- Allowed values: title only\n- Applicable scopes: issues, merge_requests"
+              },
+              "order_by" => {
+                "type" => "string",
+                "description" => "Specify how to order search results.\n- Allowed values: created_at only\n- Default behavior:\n  * Basic search: sorted by created_at descending\n  * Advanced search: sorted by relevance"
+              },
+              "sort" => {
+                "type" => "string",
+                "description" => "Specify the sort direction for results. Works with order_by parameter\n- Allowed values: asc, desc\n- Default: desc"
               },
               "per_page" => {
                 "type" => "integer",
-                "description" => "Number of items per page"
+                "description" => "Number of items to list per page. (default: 20)",
+                "minimum" => 1
               },
-              "fields" => {
-                "type" => "string",
-                "description" => "Array of fields you wish to search"
+              "page" => {
+                "type" => "integer",
+                "description" => "Page number to retrieve. (default: 1)",
+                "minimum" => 1
               }
             },
             "required" => %w[scope search],
             "additionalProperties" => false
-          }
-        },
+          } },
         {
           "name" => "get_mcp_server_version",
           "description" => "Get the current version of MCP server.",
@@ -302,6 +323,7 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
         }
       )
     end
+    # rubocop:enable Layout/LineLength
 
     context 'when semantic code search is available' do
       before do

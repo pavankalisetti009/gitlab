@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-# rubocop:disable Search/NamespacedClass -- this tool will use Mcp as the namespace
 module Mcp
   module Tools
     class SearchCodebaseService < CustomService
@@ -138,4 +137,3 @@ module Mcp
     end
   end
 end
-# rubocop:enable Search/NamespacedClass
