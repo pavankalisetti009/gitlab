@@ -101,7 +101,7 @@ RSpec.describe Ai::Catalog::ItemConsumer, feature_category: :workflow_catalog do
       end
 
       context 'when item consumer belongs to group' do
-        subject(:item_consumer) { build(:ai_catalog_item_consumer, group: top_level_group, item: item) }
+        subject(:item_consumer) { build(:ai_catalog_item_consumer, group:, item:) }
 
         context 'when item is public' do
           let(:item) { create(:ai_catalog_flow, public: true, project: project) }
@@ -113,6 +113,12 @@ RSpec.describe Ai::Catalog::ItemConsumer, feature_category: :workflow_catalog do
           let(:item) { create(:ai_catalog_flow, public: false, project: project) }
 
           it { is_expected.not_to be_valid }
+
+          context 'when group is the top-level group of the item project' do
+            subject(:item_consumer) { build(:ai_catalog_item_consumer, group: top_level_group, item: item) }
+
+            it { is_expected.to be_valid }
+          end
         end
       end
     end
