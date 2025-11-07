@@ -37,8 +37,6 @@ trim!:
   file: ee/app/models/cloud_connector/keys.rb
 truncated_pem:
   file: ee/app/models/cloud_connector/keys.rb
-delete_compliance_requirements_controls:
-  file: ee/app/models/compliance_management/compliance_framework/compliance_requirement.rb
 notification_sent!:
   file: ee/app/models/compliance_management/pipl_user.rb
 blocked_issuables_for_collection:

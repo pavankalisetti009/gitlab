@@ -7,6 +7,7 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
   let_it_be_with_refind(:namespace) { create(:group) }
   let_it_be_with_refind(:framework) { create(:compliance_framework, namespace: namespace) }
   let_it_be_with_refind(:requirement) { create(:compliance_requirement, framework: framework) }
+  let_it_be(:control) { create(:compliance_requirements_control, compliance_requirement: requirement) }
   let_it_be(:owner) { create(:user, owner_of: namespace) }
   let_it_be(:non_owner) { create(:user) }
 
@@ -59,9 +60,18 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
       subject(:service) { described_class.new(requirement: requirement, current_user: owner) }
 
       it 'destroys the compliance requirement' do
+        requirement_id = requirement.id
+        expect(
+          ComplianceManagement::ComplianceFramework::ComplianceRequirementsControl
+          .where(compliance_requirement_id: requirement_id).count
+        ).to eq(1)
         expect { service.execute }.to change {
-          ComplianceManagement::ComplianceFramework::ComplianceRequirement.exists?(id: requirement.id)
+          ComplianceManagement::ComplianceFramework::ComplianceRequirement.exists?(id: requirement_id)
         }.from(true).to(false)
+        expect(
+          ComplianceManagement::ComplianceFramework::ComplianceRequirementsControl
+          .where(compliance_requirement_id: requirement_id).count
+        ).to eq(0)
       end
 
       it 'is successful' do
