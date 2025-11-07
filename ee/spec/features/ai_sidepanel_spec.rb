@@ -35,6 +35,7 @@ RSpec.describe 'AI Sidepanel', :js, feature_category: :duo_agent_platform do
 
     allow(::Ai::AmazonQ).to receive(:enabled?).and_return(false)
     allow(::Gitlab::Llm::TanukiBot).to receive_messages(show_breadcrumbs_entry_point?: true, enabled_for?: true)
+    allow(::Gitlab::Llm::TanukiBot).to receive(:chat_disabled_reason).and_return(nil)
   end
 
   describe 'sidepanel visibility' do
@@ -155,14 +156,34 @@ RSpec.describe 'AI Sidepanel', :js, feature_category: :duo_agent_platform do
       set_cookie('duo_agentic_mode_on', 'true')
 
       visit project_path(project)
-
-      within(ai_sidepanel_selector) do
-        find_by_testid(sessions_toggle_selector).click
-      end
     end
 
     it 'shows empty state when no sessions exist' do
+      within(ai_sidepanel_selector) do
+        find_by_testid(sessions_toggle_selector).click
+      end
+
       expect(page).to have_content('No agent sessions yet', wait: 10)
+    end
+
+    context 'when duo features are disabled' do
+      before do
+        project.project_setting.update!(duo_features_enabled: false)
+        allow(::Gitlab::Llm::TanukiBot).to receive(:chat_disabled_reason).and_return(:project)
+        visit project_path(project)
+      end
+
+      it 'prevents access to sessions tab' do
+        within(ai_sidepanel_selector) do
+          sessions_button = find_by_testid(sessions_toggle_selector)
+
+          expect(sessions_button['aria-disabled']).to eq('true')
+
+          sessions_button.click
+
+          expect(page).not_to have_content('No agent sessions yet')
+        end
+      end
     end
   end
 end

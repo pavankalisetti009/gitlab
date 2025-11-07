@@ -5,7 +5,7 @@ import { keysFor, DUO_CHAT } from '~/behaviors/shortcuts/keybindings';
 import { shouldDisableShortcuts } from '~/behaviors/shortcuts/shortcuts_toggle';
 import { duoChatGlobalState } from '~/super_sidebar/constants';
 import { CHAT_MODES } from 'ee/ai/tanuki_bot/constants';
-import { __ } from '~/locale';
+import { __, sprintf } from '~/locale';
 import { sanitize } from '~/lib/dompurify';
 
 export default {
@@ -40,6 +40,11 @@ export default {
       required: false,
       default: true,
     },
+    chatDisabledReason: {
+      type: String,
+      required: false,
+      default: '',
+    },
   },
   data() {
     return {
@@ -54,9 +59,21 @@ export default {
       return this.isAgenticMode;
     },
     duoShortcutKey() {
-      return shouldDisableShortcuts() ? null : keysFor(DUO_CHAT);
+      return shouldDisableShortcuts() || this.isChatDisabled ? null : keysFor(DUO_CHAT);
+    },
+    isChatDisabled() {
+      return Boolean(this.chatDisabledReason);
+    },
+    chatDisabledTooltip() {
+      if (!this.isChatDisabled) return '';
+
+      return sprintf(__('An administrator has turned off GitLab Duo for this %{reason}.'), {
+        reason: this.chatDisabledReason,
+      });
     },
     formattedDuoShortcutTooltip() {
+      if (this.isChatDisabled) return this.chatDisabledTooltip;
+
       const description = this.isAgenticMode
         ? this.$options.i18n.currentChatLabel
         : this.$options.i18n.duoChatLabel;
@@ -68,7 +85,9 @@ export default {
   },
   methods: {
     toggleTab(tab) {
-      this.$emit('handleTabToggle', tab);
+      if (!this.isChatDisabled) {
+        this.$emit('handleTabToggle', tab);
+      }
     },
     hideTooltips() {
       this.$root.$emit(BV_HIDE_TOOLTIP);
@@ -91,13 +110,17 @@ export default {
       }"
       icon="comment"
       class="js-tanuki-bot-chat-toggle !gl-rounded-lg"
-      :class="['ai-nav-icon', { 'ai-nav-icon-active': activeTab === 'chat' }]"
+      :class="[
+        'ai-nav-icon',
+        { 'ai-nav-icon-active': activeTab === 'chat', 'gl-opacity-5': isChatDisabled },
+      ]"
       category="tertiary"
       :aria-selected="activeTab === 'chat'"
       :aria-expanded="isExpanded"
       :aria-keyshortcuts="duoShortcutKey"
       :aria-label="$options.i18n.duoChatLabel"
       role="tab"
+      :aria-disabled="isChatDisabled"
       data-testid="ai-chat-toggle"
       @mouseout="hideTooltips"
       @click="toggleTab('chat')"
@@ -106,13 +129,17 @@ export default {
       v-gl-tooltip.left
       icon="plus"
       class="!gl-rounded-lg"
-      :class="['ai-nav-icon', { 'ai-nav-icon-active': activeTab === 'new' }]"
+      :class="[
+        'ai-nav-icon',
+        { 'ai-nav-icon-active': activeTab === 'new', 'gl-opacity-5': isChatDisabled },
+      ]"
       category="tertiary"
       :aria-selected="activeTab === 'new'"
       :aria-expanded="isExpanded"
       :aria-label="$options.i18n.newLabel"
-      :title="$options.i18n.newLabel"
+      :title="isChatDisabled ? chatDisabledTooltip : $options.i18n.newLabel"
       role="tab"
+      :aria-disabled="isChatDisabled"
       data-testid="ai-new-toggle"
       @mouseout="hideTooltips"
       @click="toggleTab('new')"
@@ -121,13 +148,17 @@ export default {
       v-gl-tooltip.left
       icon="history"
       class="!gl-rounded-lg"
-      :class="['ai-nav-icon', { 'ai-nav-icon-active': activeTab === 'history' }]"
+      :class="[
+        'ai-nav-icon',
+        { 'ai-nav-icon-active': activeTab === 'history', 'gl-opacity-5': isChatDisabled },
+      ]"
       category="tertiary"
       :aria-selected="activeTab === 'history'"
       :aria-expanded="isExpanded"
       :aria-label="$options.i18n.historyLabel"
-      :title="$options.i18n.historyLabel"
+      :title="isChatDisabled ? chatDisabledTooltip : $options.i18n.historyLabel"
       role="tab"
+      :aria-disabled="isChatDisabled"
       data-testid="ai-history-toggle"
       @mouseout="hideTooltips"
       @click="toggleTab('history')"
@@ -141,13 +172,17 @@ export default {
         v-gl-tooltip.left
         icon="session-ai"
         class="!gl-rounded-lg"
-        :class="['ai-nav-icon', { 'ai-nav-icon-active': activeTab === 'sessions' }]"
+        :class="[
+          'ai-nav-icon',
+          { 'ai-nav-icon-active': activeTab === 'sessions', 'gl-opacity-5': isChatDisabled },
+        ]"
         category="tertiary"
         :aria-selected="activeTab === 'sessions'"
         :aria-expanded="isExpanded"
         :aria-label="$options.i18n.sessionsLabel"
-        :title="$options.i18n.sessionsLabel"
+        :title="isChatDisabled ? chatDisabledTooltip : $options.i18n.sessionsLabel"
         role="tab"
+        :aria-disabled="isChatDisabled"
         data-testid="ai-sessions-toggle"
         @mouseout="hideTooltips"
         @click="toggleTab('sessions')"
@@ -158,13 +193,17 @@ export default {
       v-gl-tooltip.left
       icon="suggestion-ai"
       class="!gl-rounded-lg max-lg:gl-ml-auto lg:gl-mt-auto"
-      :class="['ai-nav-icon', { 'ai-nav-icon-active': activeTab === 'suggestions' }]"
+      :class="[
+        'ai-nav-icon',
+        { 'ai-nav-icon-active': activeTab === 'suggestions', 'gl-opacity-5': isChatDisabled },
+      ]"
       category="tertiary"
       :aria-selected="activeTab === 'suggestions'"
       :aria-expanded="isExpanded"
       :aria-label="$options.i18n.suggestionsLabel"
-      :title="$options.i18n.suggestionsLabel"
+      :title="isChatDisabled ? chatDisabledTooltip : $options.i18n.suggestionsLabel"
       role="tab"
+      :aria-disabled="isChatDisabled"
       data-testid="ai-suggestions-toggle"
       @mouseout="hideTooltips"
       @click="toggleTab('suggestions')"

@@ -1,6 +1,6 @@
 import { GlButton } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import { createMockDirective } from 'helpers/vue_mock_directive';
+import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
 import { shouldDisableShortcuts } from '~/behaviors/shortcuts/shortcuts_toggle';
 import { keysFor, DUO_CHAT } from '~/behaviors/shortcuts/keybindings';
 import NavigationRail from 'ee/ai/components/navigation_rail.vue';
@@ -17,9 +17,10 @@ describe('NavigationRail', () => {
     activeTab = 'chat',
     isExpanded = true,
     showSuggestionsTab = true,
+    chatDisabledReason = '',
   } = {}) => {
     wrapper = shallowMountExtended(NavigationRail, {
-      propsData: { activeTab, isExpanded, showSuggestionsTab },
+      propsData: { activeTab, isExpanded, showSuggestionsTab, chatDisabledReason },
       directives: {
         GlTooltip: createMockDirective('gl-tooltip'),
       },
@@ -30,6 +31,8 @@ describe('NavigationRail', () => {
   };
 
   const findChatToggle = () => wrapper.findByTestId('ai-chat-toggle');
+  const findNewToggle = () => wrapper.findByTestId('ai-new-toggle');
+  const findHistoryToggle = () => wrapper.findByTestId('ai-history-toggle');
   const findSuggestionsToggle = () => wrapper.findByTestId('ai-suggestions-toggle');
   const findSessionsToggle = () => wrapper.findByTestId('ai-sessions-toggle');
   const findDivider = () => wrapper.find('[name="divider"]');
@@ -91,6 +94,59 @@ describe('NavigationRail', () => {
 
       expect(findSessionsToggle().exists()).toBe(false);
       expect(findDivider().exists()).toBe(false);
+    });
+  });
+
+  describe('when chat is disabled', () => {
+    beforeEach(() => {
+      createComponent({ chatDisabledReason: 'project' });
+    });
+
+    describe('all buttons', () => {
+      it.each`
+        buttonName       | finder
+        ${'chat'}        | ${findChatToggle}
+        ${'new'}         | ${findNewToggle}
+        ${'history'}     | ${findHistoryToggle}
+        ${'sessions'}    | ${findSessionsToggle}
+        ${'suggestions'} | ${findSuggestionsToggle}
+      `('sets aria-disabled on $buttonName button', ({ finder }) => {
+        expect(finder().attributes('aria-disabled')).toBe('true');
+        expect(finder().classes()).toContain('gl-opacity-5');
+      });
+
+      it('prevents tab toggle when clicking disabled buttons', async () => {
+        await findChatToggle().trigger('click');
+
+        expect(wrapper.emitted('handleTabToggle')).toBeUndefined();
+      });
+
+      it('disables keyboard shortcut', () => {
+        expect(findChatToggle().attributes('aria-keyshortcuts')).toBeUndefined();
+      });
+    });
+
+    describe('buttons with title attribute', () => {
+      it.each`
+        buttonName       | finder
+        ${'new'}         | ${findNewToggle}
+        ${'history'}     | ${findHistoryToggle}
+        ${'sessions'}    | ${findSessionsToggle}
+        ${'suggestions'} | ${findSuggestionsToggle}
+      `('shows disabled tooltip on $buttonName button', ({ finder }) => {
+        expect(finder().attributes('title')).toBe(
+          'An administrator has turned off GitLab Duo for this project.',
+        );
+      });
+    });
+
+    describe('button with HTML tooltip', () => {
+      it('shows disabled tooltip', () => {
+        const tooltip = getBinding(findChatToggle().element, 'gl-tooltip');
+        expect(tooltip.value.title).toBe(
+          'An administrator has turned off GitLab Duo for this project.',
+        );
+      });
     });
   });
 });
