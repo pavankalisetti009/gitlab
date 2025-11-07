@@ -781,5 +781,61 @@ RSpec.describe MergeRequests::ResetApprovalsService, feature_category: :code_rev
         end
       end
     end
+
+    describe 'duration logging' do
+      before do
+        create(:approval, merge_request: merge_request, user: approver)
+        create(:approval, merge_request: merge_request, user: owner)
+
+        # Mock logger to avoid noise
+        allow(Gitlab::AppJsonLogger).to receive(:info)
+      end
+
+      it 'logs operation durations' do
+        expect(Gitlab::AppJsonLogger).to receive(:info).with(
+          hash_including(
+            'event' => 'merge_requests_reset_approvals_service',
+            'reset_approvals_for_merge_requests_duration_s' => be_a(Float),
+            'find_merge_requests_duration_s' => be_a(Float),
+            'process_merge_requests_duration_s' => be_a(Float),
+            'current_patch_id_sha_total_duration_s' => be_a(Float),
+            'delete_all_approvals_total_duration_s' => be_a(Float),
+            'reset_approvals_service_total_duration_s' => be_a(Float),
+            'reset_approvals_total_duration_s' => be_a(Float)
+          )
+        ).and_call_original
+
+        service.execute('refs/heads/master', newrev)
+      end
+
+      it 'calculates total duration correctly' do
+        # Mock monotonic time to return predictable values
+        time_sequence = (0..20).map { |i| i * 0.1 }
+        allow(Gitlab::Metrics::System).to receive(:monotonic_time).and_return(*time_sequence)
+
+        expect(Gitlab::AppJsonLogger).to receive(:info) do |log_data|
+          expect(log_data['reset_approvals_service_total_duration_s']).to be > 0
+          expect(log_data['reset_approvals_service_total_duration_s']).to eq(
+            log_data.except('event', 'reset_approvals_service_total_duration_s').values.sum
+          )
+        end.and_call_original
+
+        service.execute('refs/heads/master', newrev)
+      end
+
+      context 'when log_merge_request_reset_approvals_duration feature flag is disabled' do
+        before do
+          stub_feature_flags(log_merge_request_reset_approvals_duration: false)
+        end
+
+        it 'does not measure durations' do
+          expect(Gitlab::AppJsonLogger)
+            .not_to receive(:info)
+            .with(hash_including('event' => 'merge_requests_reset_approvals_service'))
+
+          service.execute('refs/heads/master', newrev)
+        end
+      end
+    end
   end
 end

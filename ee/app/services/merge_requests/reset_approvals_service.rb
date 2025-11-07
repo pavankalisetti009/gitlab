@@ -2,8 +2,16 @@
 
 module MergeRequests
   class ResetApprovalsService < ::MergeRequests::BaseService
+    include Gitlab::Utils::StrongMemoize
+
     def execute(ref, newrev, skip_reset_checks: false)
-      reset_approvals_for_merge_requests(ref, newrev, skip_reset_checks)
+      measure_duration(:reset_approvals_for_merge_requests) do
+        reset_approvals_for_merge_requests(ref, newrev, skip_reset_checks)
+      end
+
+      return unless log_reset_approvals_duration_enabled?
+
+      log_hash_metadata_on_done(duration_statistics)
     end
 
     private
@@ -11,23 +19,34 @@ module MergeRequests
     # Note: Closed merge requests also need approvals reset.
     def reset_approvals_for_merge_requests(ref, newrev, skip_reset_checks = false)
       branch_name = ::Gitlab::Git.ref_name(ref)
-      merge_requests = merge_requests_for(branch_name, mr_states: [:opened, :closed])
 
-      merge_requests.each do |merge_request|
-        mr_patch_id_sha = merge_request.current_patch_id_sha
+      merge_requests = measure_duration(:find_merge_requests) do
+        merge_requests_for(branch_name, mr_states: [:opened, :closed])
+      end
 
-        if skip_reset_checks
-          # Delete approvals immediately, with no additional checks or side-effects
-          #
-          delete_approvals(merge_request, patch_id_sha: mr_patch_id_sha, cause: :new_push)
-        else
-          reset_approvals(merge_request, newrev, patch_id_sha: mr_patch_id_sha)
+      measure_duration(:process_merge_requests) do
+        merge_requests.each do |merge_request|
+          mr_patch_id_sha = measure_duration_accumulate(:current_patch_id_sha_total) do
+            merge_request.current_patch_id_sha
+          end
+
+          if skip_reset_checks
+            # Delete approvals immediately, with no additional checks or side-effects
+            #
+            measure_duration_accumulate(:delete_approvals_total) do
+              delete_approvals(merge_request, patch_id_sha: mr_patch_id_sha, cause: :new_push)
+            end
+          else
+            measure_duration_accumulate(:reset_approvals_total) do
+              reset_approvals(merge_request, newrev, patch_id_sha: mr_patch_id_sha)
+            end
+          end
+
+          # Note: When we remove the 10 second delay in
+          # ee/app/services/ee/merge_requests/refresh_service.rb :51
+          # We should be able to remove this
+          AutoMergeProcessWorker.perform_async(merge_request.id) if merge_request.auto_merge_enabled?
         end
-
-        # Note: When we remove the 10 second delay in
-        # ee/app/services/ee/merge_requests/refresh_service.rb :51
-        # We should be able to remove this
-        AutoMergeProcessWorker.perform_async(merge_request.id) if merge_request.auto_merge_enabled?
       end
     end
 
@@ -35,23 +54,33 @@ module MergeRequests
       return unless reset_approvals?(merge_request, newrev)
 
       if delete_approvals?(merge_request)
-        delete_approvals(merge_request, patch_id_sha: patch_id_sha, cause: cause)
+        measure_duration_accumulate(:delete_all_approvals_total) do
+          delete_approvals(merge_request, patch_id_sha: patch_id_sha, cause: cause)
+        end
       elsif merge_request.target_project.project_setting.selective_code_owner_removals
-        delete_code_owner_approvals(merge_request, patch_id_sha: patch_id_sha, cause: cause)
+        measure_duration_accumulate(:delete_code_owner_approvals_total) do
+          delete_code_owner_approvals(merge_request, patch_id_sha: patch_id_sha, cause: cause)
+        end
       end
     end
 
     def delete_code_owner_approvals(merge_request, patch_id_sha: nil, cause: nil)
       return if merge_request.approvals.empty?
 
-      code_owner_rules = approved_code_owner_rules(merge_request)
+      code_owner_rules = measure_duration_accumulate(:find_approved_code_owner_rules_total) do
+        approved_code_owner_rules(merge_request)
+      end
       return if code_owner_rules.empty?
 
       # Only do expensive approver ID extraction if we have code owner rules to check
-      approver_ids = code_owner_approver_ids_to_delete(merge_request, code_owner_rules, patch_id_sha)
+      approver_ids = measure_duration_accumulate(:extract_code_owner_approver_ids_total) do
+        code_owner_approver_ids_to_delete(merge_request, code_owner_rules, patch_id_sha)
+      end
       return if approver_ids.empty?
 
-      perform_code_owner_approval_deletion(merge_request, approver_ids, cause)
+      measure_duration_accumulate(:perform_code_owner_approval_deletion_total) do
+        perform_code_owner_approval_deletion(merge_request, approver_ids, cause)
+      end
     end
 
     def approved_code_owner_rules(merge_request)
@@ -113,6 +142,50 @@ module MergeRequests
         # Send 'unapproval' for individual approval removal that doesn't change overall approval state
         execute_hooks(merge_request, 'unapproval', system: true, system_action: 'code_owner_approvals_reset_on_push')
       end
+    end
+
+    def measure_duration(operation_name)
+      return yield unless log_reset_approvals_duration_enabled?
+
+      start_time = current_monotonic_time
+      result = yield
+      duration = (current_monotonic_time - start_time).round(Gitlab::InstrumentationHelper::DURATION_PRECISION)
+      duration_statistics["#{operation_name}_duration_s"] = duration
+      result
+    end
+
+    def measure_duration_accumulate(operation_name)
+      return yield unless log_reset_approvals_duration_enabled?
+
+      start_time = current_monotonic_time
+      result = yield
+      duration = (current_monotonic_time - start_time).round(Gitlab::InstrumentationHelper::DURATION_PRECISION)
+      duration_statistics["#{operation_name}_duration_s"] ||= 0
+      duration_statistics["#{operation_name}_duration_s"] += duration
+      result
+    end
+
+    def duration_statistics
+      @duration_statistics ||= {}
+    end
+
+    def log_reset_approvals_duration_enabled?
+      Feature.enabled?(:log_merge_request_reset_approvals_duration, current_user)
+    end
+    strong_memoize_attr :log_reset_approvals_duration_enabled?
+
+    def log_hash_metadata_on_done(hash)
+      total_duration = hash.values.sum
+      hash_with_total = hash.merge('reset_approvals_service_total_duration_s' => total_duration)
+
+      Gitlab::AppJsonLogger.info(
+        'event' => 'merge_requests_reset_approvals_service',
+        **hash_with_total
+      )
+    end
+
+    def current_monotonic_time
+      Gitlab::Metrics::System.monotonic_time
     end
   end
 end
