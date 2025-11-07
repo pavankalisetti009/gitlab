@@ -72,7 +72,7 @@ describe('CurrentUsageCard', () => {
     });
 
     it('renders correct utilized credits percentage', () => {
-      expect(wrapper.findByTestId('percentage-utilized').text()).toBe('78.0% utilized');
+      expect(wrapper.findByTestId('percentage-utilized').text()).toBe('78.0% of credits used');
     });
 
     it('renders correct credits remaining', () => {
@@ -86,7 +86,7 @@ describe('CurrentUsageCard', () => {
     });
 
     it('renders correct utilized credits percentage', () => {
-      expect(wrapper.findByTestId('percentage-utilized').text()).toBe('0% utilized');
+      expect(wrapper.findByTestId('percentage-utilized').text()).toBe('0% of credits used');
     });
 
     it('passes 0 as gl-progress-bar value', () => {
