@@ -76,55 +76,45 @@ module Gitlab
 
           audit_logger.track_spp_scan_executed('regular')
 
-          thread = nil
-
           logger.log_timed(LOG_MESSAGES[:secrets_check]) do
             payloads = payload_processor.standardize_payloads
             break unless payloads
 
-            thread = Thread.new do
-              # This is to help identify the thread in case of a crash
-              Thread.current.name = "secrets_check"
+            extra_headers = {
+              'x-correlation-id': correlation_id
+            }
 
-              # All the code run in the thread handles exceptions so we can leave these off
-              Thread.current.abort_on_exception = false
-              Thread.current.report_on_exception = false
+            response = sds_client.send_request_to_sds(payloads,
+              exclusions: exclusions_manager.active_exclusions,
+              extra_headers: extra_headers)
 
-              extra_headers = {
-                'x-correlation-id': correlation_id
-              }
-              sds_client.send_request_to_sds(payloads,
-                exclusions: exclusions_manager.active_exclusions,
-                extra_headers: extra_headers)
-            end
-
-            # Pass payloads to gem for scanning.
-            response = ::Gitlab::SecretDetection::Core::Scanner
-              .new(rules: ruleset, logger: secret_detection_logger)
-              .secrets_scan(
-                payloads,
-                timeout: logger.time_left,
-                exclusions: exclusions_manager.active_exclusions
+            unless response
+              secret_detection_logger.warn(
+                build_structured_payload(
+                  message: "SDS returned a nil response. Falling back to SDS Gem",
+                  class: self.class.name
+                )
               )
+
+              response = ::Gitlab::SecretDetection::Core::Scanner
+                .new(rules: ruleset, logger: secret_detection_logger)
+                .secrets_scan(
+                  payloads,
+                  timeout: logger.time_left,
+                  exclusions: exclusions_manager.active_exclusions
+                )
+            end
 
             # Log audit events for exlusions that were applied.
             audit_logger.log_applied_exclusions_audit_events(response.applied_exclusions)
 
-            response = response_handler.format_response(response)
-
-            # Wait for the thread to complete up until we time out, returns `nil` on timeout
-            thread&.join(logger.time_left)
-
-            response
+            response_handler.format_response(response)
           # TODO: Perhaps have a separate message for each and better logging?
           rescue ::Gitlab::SecretDetection::Core::Ruleset::RulesetParseError,
             ::Gitlab::SecretDetection::Core::Ruleset::RulesetCompilationError => e
 
             message = format(ERROR_MESSAGES[:scan_initialization_error], { error_msg: e.message })
             secret_detection_logger.error(build_structured_payload(message:))
-          ensure
-            # clean up the thread
-            thread&.exit
           end
         end
 

@@ -227,16 +227,63 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::SecretsCheck, feature_categ
               end
 
               context 'when instance is GitLab.com' do
-                it_behaves_like 'skips sending requests to the SDS'
+                it_behaves_like 'sends requests to the SDS' do
+                  before do
+                    stub_feature_flags(use_secret_detection_service: true)
+                  end
+                end
 
-                context 'when `use_secret_detection_service` feature flag is enabled' do
-                  # this is the happy path (as FFs are enabled by default)
-                  it_behaves_like 'sends requests to the SDS' do
-                    let(:sds_ff_enabled) { true }
+                context 'when SDS returns a valid response' do
+                  before do
+                    stub_feature_flags(use_secret_detection_service: true)
+                  end
 
-                    before do
-                      stub_feature_flags(use_secret_detection_service: true)
+                  let(:sds_response) do
+                    ::Gitlab::SecretDetection::GRPC::ScanResponse.new(
+                      status: ::Gitlab::SecretDetection::GRPC::ScanResponse::Status::STATUS_NOT_FOUND,
+                      applied_exclusions: []
+                    )
+                  end
+
+                  it 'uses the SDS response and does not fall back to gem' do
+                    expect_next_instance_of(::Gitlab::SecretDetection::GRPC::Client) do |instance|
+                      expect(instance).to receive(:run_scan)
+                        .and_return(sds_response)
                     end
+
+                    # Should NOT call the gem scanner
+                    expect(::Gitlab::SecretDetection::Core::Scanner).not_to receive(:new)
+
+                    # Should pass the SDS response to the response handler
+                    expect_next_instance_of(Gitlab::Checks::SecretPushProtection::ResponseHandler) do |handler|
+                      expect(handler).to receive(:format_response).with(sds_response)
+                    end
+
+                    secrets_check.validate!
+                  end
+                end
+
+                context 'when SDS fails and returns nil' do
+                  before do
+                    stub_feature_flags(use_secret_detection_service: true)
+                  end
+
+                  it 'logs error and falls back to gem' do
+                    expect_next_instance_of(::Gitlab::SecretDetection::GRPC::Client) do |instance|
+                      expect(instance).to(
+                        receive(:run_scan).and_raise(::GRPC::Unauthenticated,
+                          "Expected error")
+                      )
+                    end
+
+                    expect { secrets_check.validate! }.not_to raise_error
+
+                    expect(logged_messages[:warn]).to include(
+                      hash_including(
+                        "message" => 'SDS returned a nil response. Falling back to SDS Gem',
+                        "class" => "Gitlab::Checks::SecretPushProtection::SecretsCheck"
+                      )
+                    )
                   end
                 end
               end
