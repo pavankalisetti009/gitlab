@@ -25,6 +25,7 @@ module EE
       jsonb_accessor :search,
         global_search_code_enabled: [:boolean, { default: true }],
         global_search_commits_enabled: [:boolean, { default: true }],
+        global_search_notes_enabled: [:boolean, { default: true }],
         global_search_epics_enabled: [:boolean, { default: true }],
         global_search_wiki_enabled: [:boolean, { default: true }],
         global_search_limited_indexing_enabled: [:boolean, { default: false }],
