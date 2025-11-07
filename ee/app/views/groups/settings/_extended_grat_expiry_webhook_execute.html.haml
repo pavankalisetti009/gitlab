@@ -7,5 +7,4 @@
     - c.with_label do
       = s_('GroupSettings|Add additional webhook triggers for group access token expiration')
     - c.with_help_text do
-      = s_("GroupSettings|If enabled, group access tokens expiry webhooks execute 60, 30, and 7 days before the token expires. If disabled, these webhooks only execute 7 days before the token expires.")
-      = link_to s_('GroupSettings|Add additional webhook triggers for group access token expiration'), help_page_path('user/group/manage.md', anchor: 'add-additional-webhook-triggers-for-group-access-token-expiration'), class: 'gl-font-sm', target: :_blank
+      = s_("GroupSettings|By default, webhooks for group access token expiration trigger 7 days before a token expires. Enable this setting to also trigger these webhooks 60 and 30 days before a token expires.")
