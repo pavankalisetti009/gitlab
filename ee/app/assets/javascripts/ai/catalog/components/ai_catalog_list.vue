@@ -3,18 +3,18 @@ import { GlKeysetPagination, GlSprintf } from '@gitlab/ui';
 import EMPTY_SVG_URL from '@gitlab/svgs/dist/illustrations/empty-state/empty-ai-catalog-md.svg?url';
 import { __ } from '~/locale';
 import ConfirmActionModal from '~/vue_shared/components/confirm_action_modal.vue';
-import ResourceListsLoadingStateList from '~/vue_shared/components/resource_lists/loading_state_list.vue';
 import ResourceListsEmptyState from '~/vue_shared/components/resource_lists/empty_state.vue';
 import AiCatalogListItem from './ai_catalog_list_item.vue';
+import AiCatalogListSkeleton from './ai_catalog_list_skeleton.vue';
 
 export default {
   name: 'AiCatalogList',
   components: {
     AiCatalogListItem,
+    AiCatalogListSkeleton,
     ConfirmActionModal,
     GlKeysetPagination,
     GlSprintf,
-    ResourceListsLoadingStateList,
     ResourceListsEmptyState,
   },
   props: {
@@ -64,6 +64,9 @@ export default {
     };
   },
   computed: {
+    hasActionItems() {
+      return Boolean(this.itemTypeConfig.deleteActionItem || this.itemTypeConfig.actionItems);
+    },
     deleteActionText() {
       return this.itemTypeConfig.deleteActionItem?.text || __('Delete');
     },
@@ -81,7 +84,7 @@ export default {
 
 <template>
   <div>
-    <resource-lists-loading-state-list v-if="isLoading" />
+    <ai-catalog-list-skeleton v-if="isLoading" :show-right-element="hasActionItems" />
 
     <template v-else-if="items.length > 0">
       <ul class="gl-list-none gl-p-0">

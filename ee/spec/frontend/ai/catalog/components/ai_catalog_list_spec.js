@@ -2,8 +2,8 @@ import { GlKeysetPagination, GlSprintf } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
 import AiCatalogListItem from 'ee/ai/catalog/components/ai_catalog_list_item.vue';
+import AiCatalogListSkeleton from 'ee/ai/catalog/components/ai_catalog_list_skeleton.vue';
 import ResourceListsEmptyState from '~/vue_shared/components/resource_lists/empty_state.vue';
-import ResourceListsLoadingStateList from '~/vue_shared/components/resource_lists/loading_state_list.vue';
 import ConfirmActionModal from '~/vue_shared/components/confirm_action_modal.vue';
 import { mockAgents, mockPageInfo, mockItemTypeConfig } from '../mock_data';
 
@@ -35,7 +35,7 @@ describe('AiCatalogList', () => {
     });
   };
 
-  const findLoadingStateList = () => wrapper.findComponent(ResourceListsLoadingStateList);
+  const findLoadingStateList = () => wrapper.findComponent(AiCatalogListSkeleton);
   const findEmptyState = () => wrapper.findComponent(ResourceListsEmptyState);
   const findListItems = () => wrapper.findAllComponents(AiCatalogListItem);
   const findConfirmModal = () => wrapper.findComponent(ConfirmActionModal);
@@ -75,12 +75,29 @@ describe('AiCatalogList', () => {
     describe('when loading data', () => {
       beforeEach(() => {
         createComponent({
-          props: { isLoading: true },
+          props: {
+            isLoading: true,
+          },
         });
       });
 
       it('renders loading state component', () => {
-        expect(findLoadingStateList().exists()).toBe(true);
+        const loadingStateList = findLoadingStateList();
+
+        expect(loadingStateList.exists()).toBe(true);
+        expect(loadingStateList.props('showRightElement')).toBe(false);
+      });
+
+      it('renders loading state with right-hand component placeholder', () => {
+        createComponent({
+          props: {
+            isLoading: true,
+            itemTypeConfig: { ...mockItemTypeConfig, deleteActionItem: () => [] },
+          },
+        });
+        const loadingStateList = findLoadingStateList();
+
+        expect(loadingStateList.props('showRightElement')).toBe(true);
       });
 
       it('does not render list items', () => {
