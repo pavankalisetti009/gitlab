@@ -51,7 +51,8 @@ RSpec.describe 'Maven virtual registries and upstreams', :aggregate_failures, fe
     end
 
     context 'with existing virtual registry', :js do
-      let_it_be(:registry) { create(:virtual_registries_packages_maven_registry, group: group) }
+      let_it_be(:registry) { create(:virtual_registries_packages_maven_registry, :with_upstreams, group: group) }
+      let_it_be(:upstream) { registry.upstreams.first }
 
       context 'when user is a group member' do
         before_all do
@@ -60,7 +61,7 @@ RSpec.describe 'Maven virtual registries and upstreams', :aggregate_failures, fe
 
         it_behaves_like 'page is accessible'
 
-        it 'renders maven virtual registry page without actions to create/edit' do
+        it 'renders maven virtual registries tab without actions to create/edit' do
           visit url
 
           expect(page).to have_selector('h1', text: 'Maven virtual registries')
@@ -71,6 +72,15 @@ RSpec.describe 'Maven virtual registries and upstreams', :aggregate_failures, fe
             edit_group_virtual_registries_maven_registry_path(group, registry))
           expect(page).to have_link(registry.name, href:
             group_virtual_registries_maven_registry_path(group, registry))
+        end
+
+        it 'renders upstreams tab without actions to create/edit' do
+          visit_upstreams_tab
+
+          expect(page).not_to have_link('Edit', href:
+            edit_group_virtual_registries_maven_upstream_path(group, upstream))
+          expect(page).to have_link(upstream.name, href:
+            group_virtual_registries_maven_upstream_path(group, upstream))
         end
       end
 
@@ -92,7 +102,39 @@ RSpec.describe 'Maven virtual registries and upstreams', :aggregate_failures, fe
           expect(page).to have_link(registry.name, href:
             group_virtual_registries_maven_registry_path(group, registry))
         end
+
+        it 'renders upstreams tab with actions to create/edit' do
+          visit_upstreams_tab
+
+          expect(page).to have_link('Edit', href:
+            edit_group_virtual_registries_maven_upstream_path(group, upstream))
+          expect(page).to have_link(upstream.name, href:
+            group_virtual_registries_maven_upstream_path(group, upstream))
+        end
+
+        it 'allows deletion' do
+          visit_upstreams_tab
+
+          click_button 'More actions'
+          click_button 'Delete upstream'
+
+          within_modal do
+            click_button 'Delete upstream'
+          end
+
+          expect(page).to have_current_path(group_virtual_registries_maven_registries_and_upstreams_path(group,
+            { tab: 'upstreams' }))
+          expect(page).to have_content('Maven upstream has been deleted.')
+        end
       end
     end
+  end
+
+  private
+
+  def visit_upstreams_tab
+    visit url
+    wait_for_requests
+    click_link 'Upstreams'
   end
 end

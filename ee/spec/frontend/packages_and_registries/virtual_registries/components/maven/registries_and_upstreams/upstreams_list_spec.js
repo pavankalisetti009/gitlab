@@ -115,6 +115,61 @@ describe('MavenUpstreamsList', () => {
     it('does not show loader', () => {
       expect(findSkeletonLoader().exists()).toBe(false);
     });
+
+    describe('upstreams table events', () => {
+      describe('when `upstreamDeleted` event is emitted', () => {
+        it('shows info alert and refetches upstreams', async () => {
+          expect(getMavenUpstreamRegistriesList).toHaveBeenCalledTimes(1);
+          await findUpstreamsTable().vm.$emit('upstreamDeleted');
+
+          expect(findAlert().props()).toMatchObject({
+            variant: 'info',
+            dismissible: true,
+          });
+          expect(findAlert().text()).toBe('Maven upstream has been deleted.');
+
+          expect(getMavenUpstreamRegistriesList).toHaveBeenCalledTimes(2);
+          expect(getMavenUpstreamRegistriesList).toHaveBeenLastCalledWith({
+            id: 'gitlab-org/gitlab',
+            params: {
+              upstream_name: '',
+              page: 1,
+              per_page: 20,
+            },
+          });
+        });
+
+        it('info alert can be dismissed', async () => {
+          await findUpstreamsTable().vm.$emit('upstreamDeleted');
+
+          await findAlert().vm.$emit('dismiss');
+
+          expect(findAlert().exists()).toBe(false);
+        });
+      });
+
+      describe('when `upstreamDeleteFailed` event is emitted', () => {
+        it('shows error alert and does not refetch upstreams', async () => {
+          expect(getMavenUpstreamRegistriesList).toHaveBeenCalledTimes(1);
+          await findUpstreamsTable().vm.$emit('upstreamDeleteFailed', 'error message');
+
+          expect(findAlert().props()).toMatchObject({
+            variant: 'danger',
+            dismissible: true,
+          });
+          expect(findAlert().text()).toBe('error message');
+          expect(getMavenUpstreamRegistriesList).toHaveBeenCalledTimes(1);
+        });
+
+        it('error alert can be dismissed', async () => {
+          await findUpstreamsTable().vm.$emit('upstreamDeleteFailed', 'error message');
+
+          await findAlert().vm.$emit('dismiss');
+
+          expect(findAlert().exists()).toBe(false);
+        });
+      });
+    });
   });
 
   describe('empty state', () => {

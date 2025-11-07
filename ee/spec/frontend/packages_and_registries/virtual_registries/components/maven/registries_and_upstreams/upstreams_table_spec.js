@@ -1,8 +1,15 @@
-import { GlSkeletonLoader, GlTable, GlTruncate } from '@gitlab/ui';
+import {
+  GlDisclosureDropdown,
+  GlDisclosureDropdownItem,
+  GlSkeletonLoader,
+  GlTable,
+  GlTruncate,
+} from '@gitlab/ui';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import MavenUpstreamsTable from 'ee/packages_and_registries/virtual_registries/components/maven/registries_and_upstreams/upstreams_table.vue';
 import UpstreamClearCacheModal from 'ee/packages_and_registries/virtual_registries/components/maven/shared/upstream_clear_cache_modal.vue';
+import DeleteUpstreamWithModal from 'ee/packages_and_registries/virtual_registries/components/maven/shared/delete_upstream_with_modal.vue';
 import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
 import { deleteMavenUpstreamCache } from 'ee/api/virtual_registries_api';
 import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
@@ -36,8 +43,10 @@ describe('MavenUpstreamsTable', () => {
   const findUpstreamLinks = () => wrapper.findAllByTestId('upstream-name');
   const findEditButtons = () => wrapper.findAllByTestId('edit-upstream-button');
   const findClearCacheButtons = () => wrapper.findAllByTestId('clear-cache-button');
+  const findMoreActionDropdowns = () => wrapper.findAllComponents(GlDisclosureDropdown);
   const findTruncateComponents = () => wrapper.findAllComponents(GlTruncate);
   const findUpstreamClearCacheModal = () => wrapper.findComponent(UpstreamClearCacheModal);
+  const findUpstreamDeleteModal = () => wrapper.findComponent(DeleteUpstreamWithModal);
   const findCacheValidityHoursElement = () => wrapper.findByTestId('cache-validity-hours');
   const findMetadataCacheValidityHoursElement = () =>
     wrapper.findByTestId('metadata-cache-validity-hours');
@@ -53,6 +62,9 @@ describe('MavenUpstreamsTable', () => {
       provide: {
         ...defaultProvide,
         ...provide,
+      },
+      stubs: {
+        DeleteUpstreamWithModal: true,
       },
       mocks: {
         $toast: {
@@ -77,6 +89,7 @@ describe('MavenUpstreamsTable', () => {
         {
           key: 'actions',
           label: 'Actions',
+          hide: false,
           thAlignRight: true,
           thClass: 'gl-w-26',
           tdClass: 'gl-text-right',
@@ -141,22 +154,55 @@ describe('MavenUpstreamsTable', () => {
       expect(editButtons.at(0).attributes('aria-label')).toBe('Edit upstream Maven Central');
     });
 
-    it('does not render action buttons when user lacks permissions', () => {
-      createComponent({
-        provide: {
-          glAbilities: {
-            updateVirtualRegistry: false,
-          },
-        },
+    it('renders More actions dropdown', () => {
+      const moreActionDropdowns = findMoreActionDropdowns();
+
+      expect(moreActionDropdowns).toHaveLength(2);
+      expect(moreActionDropdowns.at(0).props()).toMatchObject({
+        textSrOnly: true,
+        category: 'tertiary',
+        icon: 'ellipsis_v',
+        toggleText: 'More actions',
       });
 
-      expect(findClearCacheButtons()).toHaveLength(0);
-      expect(findEditButtons()).toHaveLength(0);
+      const dropdownItem = moreActionDropdowns.at(0).findComponent(GlDisclosureDropdownItem);
+      expect(dropdownItem.text()).toBe('Delete upstream');
+    });
+
+    describe('when user lacks permissions', () => {
+      beforeEach(() => {
+        createComponent({
+          provide: {
+            glAbilities: {
+              updateVirtualRegistry: false,
+            },
+          },
+        });
+      });
+
+      it('does not render action buttons', () => {
+        expect(findClearCacheButtons()).toHaveLength(0);
+        expect(findEditButtons()).toHaveLength(0);
+        expect(findMoreActionDropdowns()).toHaveLength(0);
+      });
+
+      it('hides the table action column', () => {
+        const actionsColumn = findTable().props('fields')[1];
+        expect(actionsColumn.hide).toEqual(true);
+      });
     });
 
     it('does not render upstream clear cache modal', () => {
       expect(findUpstreamClearCacheModal().props()).toStrictEqual({
         visible: false,
+        upstreamName: '',
+      });
+    });
+
+    it('does not render upstream delete modal', () => {
+      expect(findUpstreamDeleteModal().props()).toStrictEqual({
+        visible: false,
+        upstreamId: null,
         upstreamName: '',
       });
     });
@@ -260,6 +306,58 @@ describe('MavenUpstreamsTable', () => {
           error: mockError,
           component: 'MavenUpstreamsTable',
         });
+      });
+    });
+  });
+
+  describe('delete upstream action', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+    const findDropdownItem = () =>
+      findMoreActionDropdowns().at(0).findComponent(GlDisclosureDropdownItem);
+
+    it('shows modal when `Delete upstream` dropdown item is clicked', async () => {
+      await findDropdownItem().vm.$emit('action');
+
+      expect(findUpstreamDeleteModal().props()).toStrictEqual({
+        visible: true,
+        upstreamName: 'Maven Central',
+        upstreamId: 1,
+      });
+    });
+
+    it('hides modal when canceled', async () => {
+      await findDropdownItem().vm.$emit('action');
+      await findUpstreamDeleteModal().vm.$emit('canceled');
+
+      expect(findUpstreamDeleteModal().props()).toStrictEqual({
+        visible: false,
+        upstreamName: '',
+        upstreamId: null,
+      });
+    });
+
+    describe('when modal emits success', () => {
+      it('emits `upstreamDeleted` event and hides the modal', async () => {
+        await findDropdownItem().vm.$emit('action');
+        await findUpstreamDeleteModal().vm.$emit('success');
+
+        expect(wrapper.emitted('upstreamDeleted')).toHaveLength(1);
+        expect(findUpstreamDeleteModal().props('visible')).toBe(false);
+      });
+    });
+
+    describe('when modal emits error', () => {
+      it('emits `upstreamDeleteFailed` event with parsed error message and hides the modal', async () => {
+        const mockError = new Error('API Error');
+
+        await findDropdownItem().vm.$emit('action');
+        await findUpstreamDeleteModal().vm.$emit('error', mockError);
+
+        expect(wrapper.emitted('upstreamDeleteFailed')).toHaveLength(1);
+        expect(wrapper.emitted('upstreamDeleteFailed')[0][0]).toBe('API Error');
+        expect(findUpstreamDeleteModal().props('visible')).toBe(false);
       });
     });
   });

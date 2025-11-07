@@ -99,6 +99,20 @@ describe('DeleteUpstreamWithModal', () => {
       expect(mavenUpstreamRegistriesHandler).not.toHaveBeenCalled();
     });
 
+    describe.each(['upstreamId', 'upstreamName'])('when %s is not set', (prop) => {
+      beforeEach(() => {
+        createComponent({ props: { [prop]: null } });
+      });
+
+      it('does not render modal', () => {
+        expect(findModal().exists()).toBe(false);
+      });
+
+      it('does not call the GraphQL query to fetch registry names', () => {
+        expect(mavenUpstreamRegistriesHandler).not.toHaveBeenCalled();
+      });
+    });
+
     describe('when visible', () => {
       beforeEach(() => {
         createComponent({ props: { visible: true } });

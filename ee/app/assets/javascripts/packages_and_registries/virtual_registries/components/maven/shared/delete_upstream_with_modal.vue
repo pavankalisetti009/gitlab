@@ -20,11 +20,13 @@ export default {
   props: {
     upstreamId: {
       type: Number,
-      required: true,
+      required: false,
+      default: null,
     },
     upstreamName: {
       type: String,
-      required: true,
+      required: false,
+      default: '',
     },
     visible: {
       type: Boolean,
@@ -77,6 +79,9 @@ export default {
     registriesCount() {
       return this.registries.length;
     },
+    upstreamPresent() {
+      return this.upstreamId && this.upstreamName;
+    },
     message() {
       return sprintf(
         n__(
@@ -122,6 +127,7 @@ export default {
 </script>
 <template>
   <gl-modal
+    v-if="upstreamPresent"
     :visible="visible"
     modal-id="delete-upstream-modal"
     size="md"
