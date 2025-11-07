@@ -2068,6 +2068,31 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
     end
   end
 
+  describe '#push_rule' do
+    let(:push_rule_record) { create(:organization_push_rule) }
+
+    before do
+      setting.update!(push_rule_id: push_rule_record.id)
+    end
+
+    it 'returns nil' do
+      expect(setting.push_rule).to be_nil
+    end
+
+    context 'when update_organization_push_rules feature flag is disabled' do
+      let(:push_rule_record) { create(:push_rule) }
+
+      before do
+        stub_feature_flags(update_organization_push_rules: false)
+      end
+
+      it 'returns the original PushRule association' do
+        expect(setting.push_rule).to eq(push_rule_record)
+        expect(setting.push_rule).to be_a(PushRule)
+      end
+    end
+  end
+
   describe 'ClickHouseForAnalyticsEnabledEvent publishing' do
     it 'publishes the event when use_clickhouse_for_analytics is changed to enabled', :freeze_time do
       setting.update!(use_clickhouse_for_analytics: false)
