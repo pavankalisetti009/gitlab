@@ -49,6 +49,32 @@ RSpec.describe Ai::FoundationalChatAgent, feature_category: :workflow_catalog do
     end
   end
 
+  describe '#workflow_definition' do
+    it 'is the same as reference_with_version' do
+      agent = described_class.new(reference: 'security_analyst_agent', version: 'v1')
+
+      expect(agent.workflow_definition).to eq('security_analyst_agent/v1')
+    end
+  end
+
+  describe '.foundational_workflow_definition?' do
+    it 'returns true for chat' do
+      expect(described_class.foundational_workflow_definition?('chat')).to be(true)
+    end
+
+    context 'if matching agent exists' do
+      it 'returns true' do
+        expect(described_class.foundational_workflow_definition?('duo_planner/experimental')).to be(true)
+      end
+    end
+
+    context 'if matching agent does not exist' do
+      it 'returns false' do
+        expect(described_class.foundational_workflow_definition?('some_agent')).to be(false)
+      end
+    end
+  end
+
   describe '#to_global_id' do
     context 'when version is present' do
       it 'returns reference with version' do

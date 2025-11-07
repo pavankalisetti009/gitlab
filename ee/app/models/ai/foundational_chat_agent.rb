@@ -19,6 +19,10 @@ module Ai
       "#{reference}/#{version}"
     end
 
+    def workflow_definition
+      reference_with_version
+    end
+
     def to_global_id
       reference_with_version.sub('/', '-')
     end
@@ -26,6 +30,10 @@ module Ai
     class << self
       def count
         all.size
+      end
+
+      def foundational_workflow_definition?(definition)
+        all.any? { |agent| agent.workflow_definition == definition }
       end
     end
   end
