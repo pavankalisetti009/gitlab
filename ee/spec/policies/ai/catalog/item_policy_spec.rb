@@ -35,11 +35,31 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
     private_project.update!(duo_features_enabled: duo_features_enabled)
   end
 
+  shared_examples 'report_ai_catalog_item permission' do |allowed:|
+    context 'when abuse_notification_email is present' do
+      before do
+        stub_application_setting(abuse_notification_email: 'abuse@example.com')
+      end
+
+      it { expect(policy.allowed?(:report_ai_catalog_item)).to eq(allowed) }
+    end
+
+    context 'when abuse_notification_email is not present' do
+      before do
+        stub_application_setting(abuse_notification_email: nil)
+      end
+
+      it { is_expected.to be_disallowed(:report_ai_catalog_item) }
+    end
+  end
+
   shared_examples 'no permissions' do
     it { is_expected.to be_disallowed(:admin_ai_catalog_item) }
     it { is_expected.to be_disallowed(:delete_ai_catalog_item) }
     it { is_expected.to be_disallowed(:force_hard_delete_ai_catalog_item) }
     it { is_expected.to be_disallowed(:read_ai_catalog_item) }
+
+    it_behaves_like 'report_ai_catalog_item permission', allowed: false
 
     include_examples 'all permissions when admin'
   end
@@ -143,12 +163,14 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
       let(:item) { private_item }
 
       it_behaves_like 'read-write permissions'
+      it_behaves_like 'report_ai_catalog_item permission', allowed: true
     end
 
     context 'with public item' do
       let(:item) { public_item }
 
       it_behaves_like 'read-write permissions'
+      it_behaves_like 'report_ai_catalog_item permission', allowed: true
     end
   end
 
@@ -157,6 +179,7 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
     let(:item) { flow_item }
 
     it_behaves_like 'read-write permissions'
+    it_behaves_like 'report_ai_catalog_item permission', allowed: true
 
     context 'with ai_catalog_flows is disabled' do
       before do
@@ -172,6 +195,7 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
     let(:item) { public_item }
 
     it_behaves_like 'read-write permissions'
+    it_behaves_like 'report_ai_catalog_item permission', allowed: true
 
     context 'with ai_catalog_flows is disabled' do
       before do
@@ -179,6 +203,7 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
       end
 
       it_behaves_like 'read-write permissions'
+      it_behaves_like 'report_ai_catalog_item permission', allowed: true
     end
   end
 
@@ -187,6 +212,7 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
     let(:item) { third_party_flow_item }
 
     it_behaves_like 'read-write permissions'
+    it_behaves_like 'report_ai_catalog_item permission', allowed: true
 
     context 'with ai_catalog_third_party_flow is disabled' do
       before do
@@ -202,6 +228,7 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
     let(:item) { public_item }
 
     it_behaves_like 'read-write permissions'
+    it_behaves_like 'report_ai_catalog_item permission', allowed: true
 
     context 'with ai_catalog_third_party_flows is disabled' do
       before do
@@ -209,6 +236,7 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
       end
 
       it_behaves_like 'read-write permissions'
+      it_behaves_like 'report_ai_catalog_item permission', allowed: true
     end
   end
 
@@ -219,12 +247,14 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
       let(:item) { private_item }
 
       it_behaves_like 'read-only permissions'
+      it_behaves_like 'report_ai_catalog_item permission', allowed: true
     end
 
     context 'with public item' do
       let(:item) { public_item }
 
       it_behaves_like 'read-only permissions'
+      it_behaves_like 'report_ai_catalog_item permission', allowed: true
     end
   end
 
@@ -241,6 +271,7 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
       let(:item) { public_item }
 
       it_behaves_like 'read-only permissions'
+      it_behaves_like 'report_ai_catalog_item permission', allowed: true
     end
   end
 
@@ -257,6 +288,7 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
       let(:item) { public_item }
 
       it_behaves_like 'read-only permissions'
+      it_behaves_like 'report_ai_catalog_item permission', allowed: true
     end
   end
 
@@ -273,6 +305,7 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
       let(:item) { public_item }
 
       it_behaves_like 'read-only permissions'
+      it_behaves_like 'report_ai_catalog_item permission', allowed: false
     end
   end
 end

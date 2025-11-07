@@ -43,8 +43,13 @@ module Ai
         @subject.third_party_flow?
       end
 
+      condition(:abuse_notification_email_present, scope: :global) do
+        ::Gitlab::CurrentSettings.current_application_settings.abuse_notification_email.present?
+      end
+
       rule { public_item | developer_access }.policy do
         enable :read_ai_catalog_item
+        enable :report_ai_catalog_item
       end
 
       rule { maintainer_access }.policy do
@@ -56,10 +61,15 @@ module Ai
         enable :force_hard_delete_ai_catalog_item
       end
 
+      rule { anonymous | ~abuse_notification_email_present }.policy do
+        prevent :report_ai_catalog_item
+      end
+
       rule { ~ai_catalog_enabled & ~admin }.policy do
         prevent :read_ai_catalog_item
         prevent :admin_ai_catalog_item
         prevent :delete_ai_catalog_item
+        prevent :report_ai_catalog_item
       end
 
       rule { deleted_item & ~admin }.policy do
@@ -69,6 +79,7 @@ module Ai
 
       rule { ~public_item & ~project_ai_catalog_available & ~admin }.policy do
         prevent :read_ai_catalog_item
+        prevent :report_ai_catalog_item
       end
 
       rule { ~project_ai_catalog_available & ~admin }.policy do
@@ -80,12 +91,14 @@ module Ai
         prevent :read_ai_catalog_item
         prevent :admin_ai_catalog_item
         prevent :delete_ai_catalog_item
+        prevent :report_ai_catalog_item
       end
 
       rule { third_party_flow & ~third_party_flows_enabled & ~admin }.policy do
         prevent :read_ai_catalog_item
         prevent :admin_ai_catalog_item
         prevent :delete_ai_catalog_item
+        prevent :report_ai_catalog_item
       end
     end
   end
