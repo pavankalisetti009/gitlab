@@ -7,11 +7,14 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
   include Ai::Catalog::TestHelpers
 
   let_it_be(:user) { create(:user) }
-  let_it_be(:consumer_group) { create(:group, maintainers: user) }
+
+  let_it_be(:maintainer_user) { create(:user) }
+
+  let_it_be(:consumer_group) { create(:group, owners: user, maintainers: maintainer_user) }
   let_it_be(:consumer_project) { create(:project, group: consumer_group) }
 
   let_it_be(:item_project) { create(:project, developers: user) }
-  let_it_be(:item) { create(:ai_catalog_flow, public: true, project: item_project) }
+  let_it_be(:item) { create(:ai_catalog_flow, public: true, project: item_project, name: 'item_name') }
 
   let_it_be(:service_account) { create(:user, :service_account) }
 
@@ -117,9 +120,18 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
   end
 
   context 'when the consumer is a group' do
-    let_it_be(:group) { create(:group, maintainers: user) }
+    let_it_be(:group) { create(:group, owners: user, maintainers: maintainer_user, name: "Group name") }
     let(:parent_item_consumer) { nil }
     let(:container) { group }
+
+    let(:license) { create(:license, plan: License::PREMIUM_PLAN) }
+
+    before do
+      stub_licensed_features(service_accounts: true)
+      stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: true)
+      allow(License).to receive(:current).and_return(license)
+      allow(license).to receive(:seats).and_return(User.service_account.count + 2)
+    end
 
     it 'creates a catalog item consumer with expected data' do
       execute
@@ -152,6 +164,93 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
       end
 
       it_behaves_like 'a failure', 'Item already configured'
+    end
+
+    it 'creates a service account and attaches it to the item consumer' do
+      expect(::Namespaces::ServiceAccounts::CreateService).to receive(:new).and_call_original
+
+      expect { execute }.to change { User.count }.by(1)
+      service_account = User.last
+      expect(service_account).to be_service_account
+      expect(service_account).to have_attributes(
+        username: "ai-item_name-group-name", provisioned_by_group_id: group.id
+      )
+      expect(Ai::Catalog::ItemConsumer.last).to have_attributes(service_account:)
+    end
+
+    context 'when group is not a top-level group' do
+      let_it_be(:child_group) { create(:group, parent: consumer_group, owners: user, maintainers: maintainer_user) }
+
+      let(:container) { child_group }
+
+      it 'does not create a service account' do
+        expect(::Namespaces::ServiceAccounts::CreateService).not_to receive(:new)
+
+        expect { execute }.not_to change { User.count }
+      end
+    end
+
+    context 'when instance setting disallows top-level group owners to create service accounts' do
+      before do
+        stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: false)
+      end
+
+      it 'does not create a service account but still creates the item consumer' do
+        expect { execute }
+          .to not_change { User.service_account.count }
+          .and change { Ai::Catalog::ItemConsumer.count }.by(1)
+
+        expect(execute).to be_success
+        expect(Ai::Catalog::ItemConsumer.last.service_account).to be_nil
+      end
+    end
+
+    context 'when the user is not an owner of the group' do
+      subject(:execute) do
+        described_class.new(container: container, current_user: maintainer_user, params: params).execute
+      end
+
+      it 'does not attempt to create a service account but creates an item consumer' do
+        expect(::Namespaces::ServiceAccounts::CreateService).not_to receive(:new).and_call_original
+
+        expect { execute }.to not_change { User.count }
+          .and change { Ai::Catalog::ItemConsumer.count }.by(1)
+      end
+    end
+
+    context 'when the service account username already exists' do
+      let_it_be(:existing_service_account_with_same_name) do
+        create(:user, :with_namespace, :service_account, username: "ai-item_name-group-name")
+      end
+
+      it 'logs the error' do
+        expect(Gitlab::AppLogger).to receive(:error).with(
+          "Failed to create service account with name 'ai-item_name-group-name': Username has already been taken"
+        )
+
+        execute
+      end
+
+      it_behaves_like 'a failure', 'Username has already been taken'
+    end
+
+    context 'when creating the service account fails' do
+      before do
+        allow(::Namespaces::ServiceAccounts::CreateService).to receive_message_chain(:new, :execute)
+          .and_return(ServiceResponse.error(message: 'service account error'))
+      end
+
+      it_behaves_like 'a failure', 'service account error'
+    end
+
+    context 'when creating the item consumer fails' do
+      it 'does not create a service account' do
+        allow_next_instance_of(Ai::Catalog::ItemConsumer) do |item_consumer|
+          allow(item_consumer).to receive(:save).and_return(false)
+        end
+
+        expect { execute }.not_to change { User.count }
+      end
     end
   end
 
