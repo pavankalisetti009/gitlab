@@ -182,6 +182,7 @@ module EE
       has_many :compromised_password_detections, class_name: 'Users::CompromisedPasswordDetection', inverse_of: :user
 
       has_many :arkose_sessions, class_name: 'Users::ArkoseSession', inverse_of: :user
+      has_many :designated_beneficiaries, class_name: 'Users::DesignatedBeneficiary', dependent: :destroy # rubocop:disable Cop/ActiveRecordDependent -- fk cascade delete is also implemented
 
       scope :auditors, -> { where('auditor IS true') }
       scope :managed_by, ->(group) { where(managing_group: group) }
