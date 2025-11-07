@@ -20930,7 +20930,8 @@ CREATE TABLE notes (
     namespace_id bigint,
     imported_from smallint DEFAULT 0 NOT NULL,
     organization_id bigint,
-    CONSTRAINT check_1244cbd7d0 CHECK ((noteable_type IS NOT NULL))
+    CONSTRAINT check_1244cbd7d0 CHECK ((noteable_type IS NOT NULL)),
+    CONSTRAINT check_82f260979e CHECK ((num_nonnulls(namespace_id, organization_id, project_id) >= 1))
 );
 
 CREATE SEQUENCE notes_id_seq
@@ -33634,9 +33635,6 @@ ALTER TABLE note_metadata
 
 ALTER TABLE ONLY group_type_ci_runners
     ADD CONSTRAINT check_81b90172a6 UNIQUE (id);
-
-ALTER TABLE notes
-    ADD CONSTRAINT check_82f260979e CHECK ((num_nonnulls(namespace_id, organization_id, project_id) >= 1)) NOT VALID;
 
 ALTER TABLE merge_request_context_commit_diff_files
     ADD CONSTRAINT check_90390c308c CHECK ((project_id IS NOT NULL)) NOT VALID;
