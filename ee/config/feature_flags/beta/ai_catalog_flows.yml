@@ -3,6 +3,6 @@ name: ai_catalog_flows
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/204312
 rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/569060
 milestone: '18.4'
-type: wip
+type: beta
 group: group::workflow catalog
 default_enabled: false
