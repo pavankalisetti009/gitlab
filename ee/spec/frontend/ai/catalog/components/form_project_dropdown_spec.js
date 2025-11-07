@@ -46,6 +46,7 @@ describe('FormProjectDropdown', () => {
       queryVariables: {
         minAccessLevel: ACCESS_LEVEL_MAINTAINER_STRING,
         sort: 'similarity',
+        searchNamespaces: true,
       },
       dataKey: 'projects',
       placeholderText: 'Select a project',
