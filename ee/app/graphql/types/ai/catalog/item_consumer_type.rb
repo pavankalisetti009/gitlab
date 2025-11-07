@@ -31,6 +31,9 @@ module Types
         field :project, ::Types::ProjectType,
           null: true,
           description: 'Project in which the catalog item is configured.'
+        field :service_account, ::Types::UserType,
+          null: true,
+          description: 'Service account associated with the item consumer.'
 
         def item
           ::Gitlab::Graphql::Loaders::BatchModelLoader.new(::Ai::Catalog::Item, object.ai_catalog_item_id).find

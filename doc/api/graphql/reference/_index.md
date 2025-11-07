@@ -23863,6 +23863,7 @@ An AI catalog item configuration.
 | <a id="aicatalogitemconsumerorganization"></a>`organization` | [`Organization`](#organization) | Organization in which the catalog item is configured. |
 | <a id="aicatalogitemconsumerpinnedversionprefix"></a>`pinnedVersionPrefix` | [`String`](#string) | Major version, minor version, or patch item is pinned to. |
 | <a id="aicatalogitemconsumerproject"></a>`project` | [`Project`](#project) | Project in which the catalog item is configured. |
+| <a id="aicatalogitemconsumerserviceaccount"></a>`serviceAccount` | [`UserCore`](#usercore) | Service account associated with the item consumer. |
 
 ### `AiCatalogItemPermissions`
 

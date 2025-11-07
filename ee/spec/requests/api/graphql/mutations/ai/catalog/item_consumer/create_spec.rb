@@ -7,7 +7,7 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Create, feature_category: :
   include GraphqlHelpers
 
   let_it_be(:user) { create(:user) }
-  let_it_be(:consumer_group) { create(:group, maintainers: user) }
+  let_it_be(:consumer_group) { create(:group, owners: user) }
   let_it_be(:consumer_project) { create(:project, group: consumer_group) }
 
   let_it_be(:item_project) { create(:project, developers: user) }
@@ -132,6 +132,26 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Create, feature_category: :
         'group' => a_hash_including('id' => group.to_global_id.to_s),
         'pinnedVersionPrefix' => '1.0'
       )
+    end
+
+    context 'when group is a top-level group' do
+      let(:license) { create(:license, plan: License::PREMIUM_PLAN) }
+
+      before do
+        stub_licensed_features(service_accounts: true)
+        stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: true)
+        allow(License).to receive(:current).and_return(license)
+        allow(license).to receive(:seats).and_return(User.service_account.count + 2)
+      end
+
+      it 'creates a service account and attaches it to the item consumer' do
+        expect { execute }.to change { User.count }.by(1)
+        service_account = User.last
+        expect(service_account).to be_service_account
+        expect(graphql_data_at(:ai_catalog_item_consumer_create, :item_consumer)).to match a_hash_including(
+          'serviceAccount' => a_hash_including('id' => service_account.to_global_id.to_s)
+        )
+      end
     end
   end
 end
