@@ -37,7 +37,7 @@ RSpec.describe API::Mcp, 'Initialize request', feature_category: :mcp_server do
 
     it 'returns capabilities' do
       expect(json_response['result']['capabilities']).to include(
-        'tools' => { 'listChanged' => false }
+        'tools' => { 'listChanged' => true }
       )
     end
 
