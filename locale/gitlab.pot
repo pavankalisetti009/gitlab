@@ -61505,6 +61505,9 @@ msgstr ""
 msgid "SecurityReports|GitLab Duo (AI)"
 msgstr ""
 
+msgid "SecurityReports|Go to Policies"
+msgstr ""
+
 msgid "SecurityReports|Group your vulnerabilities by one of the provided categories. Leave feedback or suggestions in %{feedbackIssueStart}this issue%{feedbackIssueEnd}."
 msgstr ""
 
@@ -61637,6 +61640,9 @@ msgstr ""
 msgid "SecurityReports|Operational vulnerabilities"
 msgstr ""
 
+msgid "SecurityReports|Panels that categorize vulnerabilities as open include those with Needs triage or Confirmed status. To interact with a link in a chart popover, click to pin the popover first. To unstick it, click outside the popover. %{learnMoreStart}Learn more%{learnMoreEnd}"
+msgstr ""
+
 msgid "SecurityReports|Parsing errors and warnings in pipeline"
 msgstr ""
 
@@ -61668,6 +61674,9 @@ msgid "SecurityReports|Reachability"
 msgstr ""
 
 msgid "SecurityReports|Reachable:"
+msgstr ""
+
+msgid "SecurityReports|Recommendation: Auto-resolve when no longer detected"
 msgstr ""
 
 msgid "SecurityReports|Remove project from dashboard"
@@ -61798,9 +61807,6 @@ msgstr ""
 msgid "SecurityReports|There was an error while generating the report."
 msgstr ""
 
-msgid "SecurityReports|This dashboard provides an overview of your security vulnerabilities."
-msgstr ""
-
 msgid "SecurityReports|This project has reached the maximum number of vulnerabilities it can contain and some of the vulnerabilities couldn't be ingested."
 msgstr ""
 
@@ -61814,6 +61820,9 @@ msgid "SecurityReports|This selection is required."
 msgstr ""
 
 msgid "SecurityReports|Time period"
+msgstr ""
+
+msgid "SecurityReports|To ensure that open vulnerabilities only include vulnerabilities that are still detected, we recommend enabling the policy to auto-resolve vulnerabilities when no longer detected."
 msgstr ""
 
 msgid "SecurityReports|To widen your search, change or remove filters above"

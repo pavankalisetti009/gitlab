@@ -15,6 +15,7 @@ import ProjectToken from 'ee/security_dashboard/components/shared/filtered_searc
 import ReportTypeToken from 'ee/security_dashboard/components/shared/filtered_search/tokens/report_type_token.vue';
 import VulnerabilitiesOverTimePanel from 'ee/security_dashboard/components/shared/vulnerabilities_over_time_panel.vue';
 import GroupRiskScorePanel from 'ee/security_dashboard/components/shared/group_risk_score_panel.vue';
+import SecurityDashboardDescription from 'ee/security_dashboard/components/shared/security_dashboard_description.vue';
 
 jest.mock('~/alert');
 
@@ -41,6 +42,7 @@ describe('Group Security Dashboard (new version) - Component', () => {
   };
 
   const findDashboardLayout = () => wrapper.findComponent(GlDashboardLayout);
+  const findDashboardDescription = () => wrapper.findComponent(SecurityDashboardDescription);
   const findFilteredSearch = () => wrapper.findComponent(FilteredSearch);
   const getDashboardConfig = () => findDashboardLayout().props('config');
   const findPanelWithId = (panelId) => getDashboardConfig().panels.find(({ id }) => id === panelId);
@@ -60,9 +62,10 @@ describe('Group Security Dashboard (new version) - Component', () => {
       const dashboardConfig = getDashboardConfig();
 
       expect(dashboardConfig.title).toBe('Security dashboard');
-      expect(dashboardConfig.description).toBe(
-        'This dashboard provides an overview of your security vulnerabilities.',
-      );
+    });
+
+    it('renders the description', () => {
+      expect(findDashboardDescription().props('scope')).toBe('group');
     });
 
     it('renders the risk score panel with the correct configuration', () => {

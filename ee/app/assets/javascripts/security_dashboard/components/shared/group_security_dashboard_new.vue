@@ -3,11 +3,6 @@ import { GlDashboardLayout } from '@gitlab/ui';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { s__ } from '~/locale';
 import { markRaw } from '~/lib/utils/vue3compat/mark_raw';
-import FilteredSearch from 'ee/security_dashboard/components/shared/security_dashboard_filtered_search/filtered_search.vue';
-import ProjectToken from 'ee/security_dashboard/components/shared/filtered_search/tokens/project_token.vue';
-import ReportTypeToken from 'ee/security_dashboard/components/shared/filtered_search/tokens/report_type_token.vue';
-import VulnerabilitiesOverTimePanel from 'ee/security_dashboard/components/shared/vulnerabilities_over_time_panel.vue';
-import GroupRiskScorePanel from 'ee/security_dashboard/components/shared/group_risk_score_panel.vue';
 import { OPERATORS_OR } from '~/vue_shared/components/filtered_search_bar/constants';
 import { generateVulnerabilitiesForSeverityPanels } from 'ee/security_dashboard/utils/chart_generators';
 import {
@@ -15,6 +10,12 @@ import {
   REPORT_TYPES_CONTAINER_SCANNING_FOR_REGISTRY,
   REPORT_TYPES_WITH_CLUSTER_IMAGE,
 } from 'ee/security_dashboard/constants';
+import FilteredSearch from './security_dashboard_filtered_search/filtered_search.vue';
+import ProjectToken from './filtered_search/tokens/project_token.vue';
+import ReportTypeToken from './filtered_search/tokens/report_type_token.vue';
+import VulnerabilitiesOverTimePanel from './vulnerabilities_over_time_panel.vue';
+import GroupRiskScorePanel from './group_risk_score_panel.vue';
+import SecurityDashboardDescription from './security_dashboard_description.vue';
 
 const PROJECT_TOKEN_DEFINITION = {
   type: 'projectId',
@@ -42,6 +43,7 @@ const REPORT_TYPE_TOKEN_DEFINITION = {
 export default {
   components: {
     GlDashboardLayout,
+    SecurityDashboardDescription,
     FilteredSearch,
   },
   mixins: [glFeatureFlagMixin()],
@@ -54,10 +56,6 @@ export default {
     dashboard() {
       return {
         title: s__('SecurityReports|Security dashboard'),
-        description: s__(
-          // Note: This is just a placeholder text and will be replaced with the final copy, once it is ready
-          'SecurityReports|This dashboard provides an overview of your security vulnerabilities.',
-        ),
         panels: [
           ...generateVulnerabilitiesForSeverityPanels({
             scope: 'group',
@@ -110,6 +108,9 @@ export default {
 
 <template>
   <gl-dashboard-layout :config="dashboard" data-testid="group-security-dashboard-new">
+    <template #description>
+      <security-dashboard-description scope="group" />
+    </template>
     <template #filters>
       <filtered-search :tokens="$options.filteredSearchTokens" @filters-changed="updateFilters" />
     </template>

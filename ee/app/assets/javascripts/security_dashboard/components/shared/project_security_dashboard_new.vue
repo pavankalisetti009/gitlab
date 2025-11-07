@@ -3,9 +3,6 @@ import { GlDashboardLayout } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { markRaw } from '~/lib/utils/vue3compat/mark_raw';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
-import FilteredSearch from 'ee/security_dashboard/components/shared/security_dashboard_filtered_search/filtered_search.vue';
-import ReportTypeToken from 'ee/security_dashboard/components/shared/filtered_search/tokens/report_type_token.vue';
-import VulnerabilitiesOverTimePanel from 'ee/security_dashboard/components/shared/vulnerabilities_over_time_panel.vue';
 import { generateVulnerabilitiesForSeverityPanels } from 'ee/security_dashboard/utils/chart_generators';
 import { OPERATORS_OR } from '~/vue_shared/components/filtered_search_bar/constants';
 import {
@@ -13,6 +10,10 @@ import {
   REPORT_TYPES_CONTAINER_SCANNING_FOR_REGISTRY,
   REPORT_TYPES_WITH_CLUSTER_IMAGE,
 } from 'ee/security_dashboard/constants';
+import FilteredSearch from './security_dashboard_filtered_search/filtered_search.vue';
+import ReportTypeToken from './filtered_search/tokens/report_type_token.vue';
+import VulnerabilitiesOverTimePanel from './vulnerabilities_over_time_panel.vue';
+import SecurityDashboardDescription from './security_dashboard_description.vue';
 
 const REPORT_TYPE_TOKEN_DEFINITION = {
   type: 'reportType',
@@ -31,6 +32,7 @@ const REPORT_TYPE_TOKEN_DEFINITION = {
 export default {
   components: {
     GlDashboardLayout,
+    SecurityDashboardDescription,
     FilteredSearch,
   },
   mixins: [glFeatureFlagMixin()],
@@ -43,10 +45,6 @@ export default {
     dashboard() {
       return {
         title: s__('SecurityReports|Security dashboard'),
-        description: s__(
-          // Note: This is just a placeholder text and will be replaced with the final copy, once it is ready
-          'SecurityReports|This dashboard provides an overview of your security vulnerabilities.',
-        ),
         panels: [
           ...generateVulnerabilitiesForSeverityPanels({
             scope: 'project',
@@ -81,6 +79,9 @@ export default {
 
 <template>
   <gl-dashboard-layout :config="dashboard" data-testid="project-security-dashboard-new">
+    <template #description>
+      <security-dashboard-description scope="project" />
+    </template>
     <template #filters>
       <filtered-search :tokens="$options.filteredSearchTokens" @filters-changed="updateFilters" />
     </template>

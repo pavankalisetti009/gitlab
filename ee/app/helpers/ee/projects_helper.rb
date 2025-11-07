@@ -222,6 +222,7 @@ module EE
         has_jira_vulnerabilities_integration_enabled: project.configured_to_create_issues_from_vulnerabilities?.to_s,
         empty_state_svg_path: image_path('illustrations/empty-state/empty-secure-md.svg'),
         project_security_vulnerabilities_path: project_security_vulnerability_report_index_path(project),
+        security_policies_path: security_policies_path(project),
         security_dashboard_empty_svg_path: image_path('illustrations/empty-state/empty-secure-md.svg'),
         no_vulnerabilities_svg_path: image_path('illustrations/empty-state/empty-search-md.svg'),
         project: { id: project.id, name: project.name },

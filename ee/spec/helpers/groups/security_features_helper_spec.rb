@@ -88,6 +88,7 @@ RSpec.describe Groups::SecurityFeaturesHelper, feature_category: :user_managemen
         projects_endpoint: "http://localhost/api/v4/groups/#{group.id}/projects",
         group_full_path: group.full_path,
         group_security_vulnerabilities_path: helper.group_security_vulnerabilities_path(group),
+        security_policies_path: helper.security_policies_path(group),
         no_vulnerabilities_svg_path: helper.image_path('illustrations/empty-state/empty-search-md.svg'),
         empty_state_svg_path: helper.image_path('illustrations/empty-state/empty-dashboard-md.svg'),
         security_dashboard_empty_svg_path: helper.image_path('illustrations/empty-state/empty-secure-md.svg'),

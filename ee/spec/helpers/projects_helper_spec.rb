@@ -345,6 +345,7 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
           empty_state_svg_path: start_with('/assets/illustrations/empty-state/empty-secure-md'),
           operational_configuration_path: new_project_security_policy_path(project),
           project_security_vulnerabilities_path: helper.project_security_vulnerability_report_index_path(project),
+          security_policies_path: helper.security_policies_path(project),
           security_dashboard_empty_svg_path: start_with('/assets/illustrations/empty-state/empty-secure-md'),
           project: { id: project.id, name: project.name },
           project_full_path: project.full_path,
@@ -380,6 +381,7 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
           operational_configuration_path: new_project_security_policy_path(project),
           security_dashboard_empty_svg_path: start_with('/assets/illustrations/empty-state/empty-secure-md'),
           project_security_vulnerabilities_path: helper.project_security_vulnerability_report_index_path(project),
+          security_policies_path: helper.security_policies_path(project),
           new_project_pipeline_path: "/#{project.full_path}/-/pipelines/new",
           scanners: [{
             id: scanner.id,
