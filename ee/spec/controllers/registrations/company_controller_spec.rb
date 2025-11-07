@@ -74,9 +74,18 @@ RSpec.describe Registrations::CompanyController, feature_category: :onboarding d
           user.update!(onboarding_status: {})
         end
 
-        it 'skips the company step and redirects user to group creation' do
-          path = new_users_sign_up_group_path
+        it 'logs the skip attempt and redirects user to group creation' do
+          expect(Gitlab::AppLogger).to receive(:warn).with(
+            hash_including(
+              message: 'Company step skip triggered after backfill - unexpected state',
+              username: user.username,
+              user_id: user.id,
+              onboarding_in_progress: true,
+              registration_type: nil
+            )
+          )
 
+          path = new_users_sign_up_group_path
           get_new
 
           expect(response).to have_gitlab_http_status(:redirect)
