@@ -34,6 +34,15 @@ export const mockProjectWithNamespace = mockProjectFactory({
   nameWithNamespace: 'Group / Project 1',
 });
 
+export const mockProjectWithGroup = mockProjectFactory({
+  nameWithNamespace: 'Group / Project 1',
+  rootGroup: {
+    id: 'gid://gitlab/Group/1',
+    fullName: 'Group 1',
+    __typename: TYPENAME_GROUP,
+  },
+});
+
 export const mockPageInfo = {
   hasNextPage: true,
   hasPreviousPage: false,
@@ -322,7 +331,7 @@ const mockFlowFactory = (overrides = {}) => ({
 });
 
 export const mockFlow = mockFlowFactory({
-  project: mockProjectWithNamespace,
+  project: mockProjectWithGroup,
   latestVersion: mockFlowVersion,
 });
 

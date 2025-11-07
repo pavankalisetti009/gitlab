@@ -312,7 +312,7 @@ export default {
     >
       <template v-if="isFlowsAvailable" #nav-actions>
         <gl-button v-if="showAddFlow" v-gl-modal="$options.addFlowModalId" variant="confirm">
-          {{ s__('AICatalog|Enable flow in project') }}
+          {{ s__('AICatalog|Enable flow from group') }}
         </gl-button>
       </template>
     </ai-catalog-list-header>

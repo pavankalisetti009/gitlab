@@ -8,6 +8,10 @@ query aiCatalogFlow($id: AiCatalogItemID!, $showSoftDeleted: Boolean) {
     project {
       id
       nameWithNamespace
+      rootGroup @gl_introduced(version: "18.6.0") {
+        id
+        fullName
+      }
     }
     latestVersion {
       ...BaseAiCatalogFlowVersion
