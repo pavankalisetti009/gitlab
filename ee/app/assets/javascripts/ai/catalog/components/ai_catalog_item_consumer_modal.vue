@@ -44,11 +44,11 @@ export default {
   data() {
     return {
       isOpen: this.open,
-      targetId: this.item.public ? null : this.item.project?.id || null,
-      targetType:
-        this.item.public && this.showAddToGroup
-          ? AI_CATALOG_CONSUMER_TYPE_GROUP
-          : AI_CATALOG_CONSUMER_TYPE_PROJECT,
+      targetType: this.showAddToGroup
+        ? AI_CATALOG_CONSUMER_TYPE_GROUP
+        : AI_CATALOG_CONSUMER_TYPE_PROJECT,
+      groupId: !this.item.public && this.showAddToGroup ? this.item.project?.rootGroup?.id : null,
+      projectId: !this.item.public ? this.item.project?.id : null,
       isDirty: false,
       error: null,
     };
@@ -69,6 +69,9 @@ export default {
         targetType: this.targetTypeLabel,
       });
     },
+    groupName() {
+      return this.item.project?.rootGroup?.fullName;
+    },
     groupLabelDescription() {
       return sprintf(s__('AICatalog|Allows %{itemType} to be enabled in projects.'), {
         itemType: this.itemTypeLabel,
@@ -82,11 +85,18 @@ export default {
     isPrivateItem() {
       return !this.item.public;
     },
-    canAddToGroup() {
-      return this.item.public && this.showAddToGroup;
+    isGroupValid() {
+      return !this.isDirty || Boolean(this.groupId);
     },
-    isTargetValid() {
-      return !this.isDirty || this.targetId !== null;
+    isProjectValid() {
+      return !this.isDirty || Boolean(this.projectId);
+    },
+    isFormValid() {
+      if (this.isTargetTypeGroup) {
+        return this.isGroupValid;
+      }
+
+      return this.isProjectValid;
     },
     isTargetTypeGroup() {
       return this.targetType === AI_CATALOG_CONSUMER_TYPE_GROUP;
@@ -98,13 +108,14 @@ export default {
     },
     handleSubmit() {
       this.isDirty = true;
-      if (!this.isTargetValid) {
+      if (!this.isFormValid) {
         return;
       }
       this.isOpen = false;
+      this.isDirty = false;
       const target = this.isTargetTypeGroup
-        ? { groupId: this.targetId }
-        : { projectId: this.targetId };
+        ? { groupId: this.groupId }
+        : { projectId: this.projectId };
       this.$emit('submit', target);
     },
   },
@@ -164,7 +175,7 @@ export default {
       <gl-sprintf
         :message="
           s__(
-            'AICatalog|This %{itemType} is private and can only be enabled in the project it was created in. Duplicate the agent to use the same configuration in other projects.',
+            'AICatalog|This %{itemType} is private and can only be enabled in the project it was created in or its top-level group. Duplicate the agent to use the same configuration in other projects.',
           )
         "
       >
@@ -182,50 +193,58 @@ export default {
     </dl>
 
     <gl-form :id="formId" @submit.prevent="handleSubmit">
-      <gl-form-group v-if="canAddToGroup" :label="s__('AICatalog|Enable in')">
+      <gl-form-group v-if="showAddToGroup" :label="s__('AICatalog|Enable in')">
         <gl-form-radio-group v-model="targetType" :options="$options.targetTypes" />
       </gl-form-group>
-      <div v-if="isTargetTypeGroup">
+      <div v-if="isPrivateItem">
+        <dl v-if="isTargetTypeGroup">
+          <dt class="gl-mb-2 gl-font-bold">
+            {{ __('Group') }}
+          </dt>
+          <dd data-testid="group-name">
+            {{ groupName }}
+          </dd>
+        </dl>
+        <dl v-else>
+          <dt class="gl-mb-2 gl-font-bold">
+            {{ __('Project') }}
+          </dt>
+          <dd data-testid="project-name">
+            {{ item.project.nameWithNamespace }}
+          </dd>
+        </dl>
+      </div>
+      <div v-else>
         <gl-form-group
+          v-if="isTargetTypeGroup"
           :label="__('Group')"
           :label-description="groupLabelDescription"
           label-for="group-id"
-          :state="isTargetValid"
+          :state="isGroupValid"
           :invalid-feedback="s__('AICatalog|Group is required.')"
         >
           <form-group-dropdown
             id="group-id"
-            v-model="targetId"
-            :is-valid="isTargetValid"
+            v-model="groupId"
+            :is-valid="isGroupValid"
             @error="onError"
           />
         </gl-form-group>
-      </div>
-      <div v-else>
         <gl-form-group
-          v-if="item.public"
+          v-else
           :label="__('Project')"
           :label-description="projectLabelDescription"
           label-for="project-id"
-          :state="isTargetValid"
+          :state="isProjectValid"
           :invalid-feedback="s__('AICatalog|Project is required.')"
         >
           <form-project-dropdown
             id="project-id"
-            v-model="targetId"
-            :is-valid="isTargetValid"
+            v-model="projectId"
+            :is-valid="isProjectValid"
             @error="onError"
           />
         </gl-form-group>
-
-        <dl v-else>
-          <dt class="gl-mb-2 gl-font-bold">
-            {{ s__('AICatalog|Project') }}
-          </dt>
-          <dd>
-            {{ item.project.nameWithNamespace }}
-          </dd>
-        </dl>
       </div>
     </gl-form>
   </gl-modal>
