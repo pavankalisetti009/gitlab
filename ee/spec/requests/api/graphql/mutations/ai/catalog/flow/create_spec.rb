@@ -169,4 +169,44 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Create, feature_category: :workflow
       end
     end
   end
+
+  context 'with locally defined prompts' do
+    let(:definition) do
+      <<~YAML
+        version: v1
+        environment: ambient
+        components:
+          - name: main_agent
+            type: AgentComponent
+            prompt_id: test_prompt
+        prompts:
+          - prompt_id: test_prompt
+            name: Test Prompt
+            model:
+              params:
+                model_class_provider: anthropic
+                model: claude-sonnet-4-20250514
+                max_tokens: 32768
+            unit_primitives: []
+            prompt_template:
+              system: You are a helpful assistant
+              user: "{{goal}}"
+        routers: []
+        flow:
+          entry_point: main_agent
+      YAML
+    end
+
+    it 'creates a flow with locally defined prompt' do
+      execute
+
+      item = Ai::Catalog::Item.flow.last
+      expect(item.latest_version).to have_attributes(
+        schema_version: ::Ai::Catalog::ItemVersion::FLOW_SCHEMA_VERSION,
+        version: '1.0.0',
+        release_date: nil,
+        definition: YAML.safe_load(definition).merge('yaml_definition' => definition)
+      )
+    end
+  end
 end
