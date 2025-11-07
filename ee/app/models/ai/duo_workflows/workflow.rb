@@ -111,6 +111,10 @@ module Ai
       }.freeze
 
       ENVIRONMENTS_FROM_PIPELINE = %w[web ambient].freeze
+      ENVIRONMENTS_DEPRECATIONS = {
+        'ide' => 'chat',
+        'web' => 'ambient'
+      }.freeze
 
       class AgentPrivileges
         READ_WRITE_FILES  = 1
