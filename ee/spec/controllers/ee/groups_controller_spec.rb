@@ -684,6 +684,12 @@ RSpec.describe GroupsController, :with_current_organization, feature_category: :
         end
 
         it_behaves_like 'epic parameter redirect', :issues_group_path
+
+        it 'handles malformed not parameter by not redirecting' do
+          get :issues, params: { id: group.to_param, not: 'invalid' }
+
+          expect(response).to have_gitlab_http_status(:ok)
+        end
       end
 
       context 'when work_item_planning_view feature flag is enabled' do
