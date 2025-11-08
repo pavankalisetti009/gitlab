@@ -7,6 +7,10 @@ RSpec.describe Projects::IssuesController, feature_category: :team_planning do
   let_it_be(:project, reload: true) { create(:project_empty_repo, :public, namespace: namespace) }
   let_it_be(:user, reload: true) { create(:user) }
 
+  before do
+    stub_feature_flags(work_item_view_for_issues: true)
+  end
+
   describe 'licensed features' do
     let(:project) { create(:project, group: namespace) }
     let(:user) { create(:user) }
@@ -189,46 +193,29 @@ RSpec.describe Projects::IssuesController, feature_category: :team_planning do
         context 'when a vulnerability_id is provided' do
           let(:finding) { create(:vulnerabilities_finding, :with_pipeline) }
           let(:vulnerability) { create(:vulnerability, project: project, findings: [finding]) }
-          let(:vulnerability_field) { "<input type=\"hidden\" name=\"vulnerability_id\" id=\"vulnerability_id\" value=\"#{vulnerability.id}\" autocomplete=\"off\" />" }
 
           subject { get :new, params: { namespace_id: project.namespace, project_id: project, vulnerability_id: vulnerability.id } }
 
-          it 'sets the vulnerability_id' do
+          it 'adds vulnerability details to body' do
             subject
 
-            expect(response.body).to include(vulnerability_field)
-          end
-
-          it 'sets the confidential flag to true by default' do
-            subject
-
-            expect(assigns(:issue).confidential).to eq(true)
+            expect(response.body).to include(vulnerability.title).and include(vulnerability.description)
           end
         end
 
         context 'default templates' do
-          let(:selected_field) { 'data-default="Default"' }
+          let(:template) { 'Hello I am content' }
           let(:files) { { '.gitlab/issue_templates/Default.md' => '' } }
 
           subject { get :new, params: { namespace_id: project.namespace, project_id: project } }
 
           context 'when a template has been set via project settings' do
-            let(:project) { create(:project, :custom_repo, namespace: namespace, issues_template: 'Content', files: files) }
+            let(:project) { create(:project, :custom_repo, namespace: namespace, issues_template: template, files: files) }
 
-            it 'does not select a default template' do
+            it 'includes template' do
               subject
 
-              expect(response.body).not_to include(selected_field)
-            end
-          end
-
-          context 'when a template has not been set via project settings' do
-            let(:project) { create(:project, :custom_repo, namespace: namespace, files: files) }
-
-            it 'selects a default template' do
-              subject
-
-              expect(response.body).to include(selected_field)
+              expect(response.body).to include(template)
             end
           end
         end
@@ -336,12 +323,12 @@ RSpec.describe Projects::IssuesController, feature_category: :team_planning do
         context 'when a vulnerability_id is provided' do
           let(:finding) { create(:vulnerabilities_finding, :with_pipeline) }
           let(:vulnerability) { create(:vulnerability, project: project, findings: [finding]) }
-          let(:vulnerability_field) { "<input type=\"hidden\" name=\"vulnerability_id\" id=\"vulnerability_id\" value=\"#{vulnerability.id}\" />" }
 
-          it 'does not build issue from a vulnerability' do
+          it 'does not add vulnerability details to body' do
             get :new, params: { namespace_id: project.namespace, project_id: project, vulnerability_id: vulnerability.id }
 
-            expect(response.body).not_to include(vulnerability_field)
+            expect(response.body).not_to include(vulnerability.title)
+            expect(response.body).not_to include(vulnerability.description)
             expect(issue.description).to be_nil
           end
         end
