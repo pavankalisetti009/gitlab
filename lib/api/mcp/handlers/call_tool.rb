@@ -3,7 +3,6 @@
 module API
   module Mcp
     module Handlers
-      # See: https://modelcontextprotocol.io/specification/2025-06-18/schema#calltoolrequest
       class CallTool
         def initialize(manager)
           @manager = manager

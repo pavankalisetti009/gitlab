@@ -9,7 +9,7 @@ module API
           {
             protocolVersion: '2025-06-18',
             capabilities: {
-              tools: { listChanged: true }
+              tools: { listChanged: false }
             },
             serverInfo: {
               name: 'Official GitLab MCP Server',

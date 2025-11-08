@@ -31,7 +31,7 @@ RSpec.describe API::Mcp::Base, feature_category: :mcp_server do
           "result" => {
             "capabilities" => {
               "tools" => {
-                "listChanged" => true
+                "listChanged" => false
               }
             },
             "protocolVersion" => "2025-06-18",

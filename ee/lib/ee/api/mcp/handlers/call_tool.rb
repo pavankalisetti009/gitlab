@@ -8,7 +8,7 @@ module EE
           extend ActiveSupport::Concern
 
           prepended do
-            include Gitlab::InternalEventsTracking
+            include ::Gitlab::InternalEventsTracking
           end
 
           private

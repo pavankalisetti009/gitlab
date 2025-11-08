@@ -2,24 +2,7 @@
 
 require "spec_helper"
 
-RSpec.shared_examples 'tracks MCP tool call events' do |tool_name:, success:, category: "API::Mcp::Handlers::CallTool",
-   **error_attrs|
-  it 'tracks start and finish MCP tool call events' do
-    start_properties = { tool_name: tool_name, session_id: anything }
-
-    finish_properties = { tool_name: tool_name, has_tool_call_success: success, session_id: anything }
-    finish_properties = finish_properties.merge(error_attrs) if error_attrs.any?
-
-    expect do
-      subject
-    end.to trigger_internal_events('start_mcp_tool_call')
-      .with(user: user, namespace: user.namespace, category: category, additional_properties: start_properties)
-      .and trigger_internal_events('finish_mcp_tool_call')
-      .with(user: user, namespace: user.namespace, category: category, additional_properties: finish_properties)
-  end
-end
-
-# -- JSON-RPC has single path for method invocation
+# rubocop:disable RSpec/SpecFilePathFormat -- JSON-RPC has single path for method invocation
 RSpec.describe API::Mcp, 'Call tool request', feature_category: :mcp_server do
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group, maintainers: [user]) }
@@ -61,8 +44,6 @@ RSpec.describe API::Mcp, 'Call tool request', feature_category: :mcp_server do
         expect(json_response['result']['structuredContent']['title']).to eq(issue.title)
         expect(json_response['result']['isError']).to be_falsey
       end
-
-      include_examples 'tracks MCP tool call events', tool_name: 'get_issue', success: "true"
 
       context 'with insufficient scopes' do
         let(:insufficient_access_token) { create(:oauth_access_token, user: user, scopes: [:api]) }
@@ -138,9 +119,6 @@ RSpec.describe API::Mcp, 'Call tool request', feature_category: :mcp_server do
         expect(json_response['error']['code']).to eq(-32602)
         expect(json_response['error']['data']['params']).to include("Tool 'unknown_tool' not found")
       end
-
-      include_examples 'tracks MCP tool call events', tool_name: 'unknown_tool', success: "false",
-        failure_reason: 'Mcp::Tools::Manager::ToolNotFoundError', error_status: "Tool 'unknown_tool' not found."
     end
   end
 
@@ -257,3 +235,4 @@ RSpec.describe API::Mcp, 'Call tool request', feature_category: :mcp_server do
     end
   end
 end
+# rubocop:enable RSpec/SpecFilePathFormat

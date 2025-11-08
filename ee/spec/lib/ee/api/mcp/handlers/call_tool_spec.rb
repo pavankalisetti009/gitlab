@@ -9,6 +9,13 @@ RSpec.describe API::Mcp::Handlers::CallTool, feature_category: :mcp_server do
 
   subject(:handler) { described_class.new(manager) }
 
+  # before_all do
+  #   unless API::Mcp::Handlers::CallTool <= EE::API::Mcp::Handlers::CallTool
+  #     require Rails.root.join('ee/lib/ee/api/mcp/handlers/call_tool')
+  #     API::Mcp::Handlers::CallTool.prepend(EE::API::Mcp::Handlers::CallTool)
+  #   end
+  # end
+
   describe '#invoke' do
     let(:tool_name) { 'test_tool' }
     let(:params) { { name: tool_name, arguments: { param: 'value' } } }
