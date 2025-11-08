@@ -24,7 +24,7 @@ export default {
     noBranchesAddText: s__(
       'SecurityOrchestration|%{boldStart}Add branches%{boldEnd} first before selection.',
     ),
-    toggleText: s__('SecurityOrchestration|Choose exception branches'),
+    toggleText: s__('SecurityOrchestration|choose exception branches'),
   },
   components: {
     BranchSelectorModal,

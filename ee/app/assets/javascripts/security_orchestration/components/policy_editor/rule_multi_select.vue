@@ -28,6 +28,11 @@ export default {
       required: false,
       default: () => true,
     },
+    lowercase: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   data() {
     return {
@@ -47,11 +52,15 @@ export default {
       return this.includeSelectAll ? this.$options.i18n.selectAllLabel : '';
     },
     text() {
-      return renderMultiSelectText({
+      const text = renderMultiSelectText({
         selected: this.selected,
         items: this.items,
         itemTypeName: this.itemTypeName,
       });
+
+      if (this.lowercase) return text.toLowerCase();
+
+      return text;
     },
     itemsKeys() {
       return Object.keys(this.items);

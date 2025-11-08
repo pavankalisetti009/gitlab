@@ -62,7 +62,7 @@ export default {
   i18n: {
     licenseStatuses: s__('ScanResultPolicy|license status'),
     licenseScanResultRuleCopy: s__(
-      'ScanResultPolicy|When %{scanType} in an open merge request targeting %{branches} %{branchExceptions} and the licenses match all of the following criteria:',
+      'ScanResultPolicy|When %{scanType} runs in an open merge request that targets %{branches} %{branchExceptions} and finds licenses match all of the following criteria:',
     ),
     validationErrorMessage: s__(
       'ScanResultPolicy|You can specify either a license state (allowlist or denylist) or a license type, not both.',
