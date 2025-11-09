@@ -64,10 +64,6 @@ module EE
       ::Gitlab::UrlBuilder.build(vulnerability)
     end
 
-    def project_vulnerability_path(project, vulnerability, *args)
-      project_security_vulnerability_path(project, vulnerability, *args)
-    end
-
     def self.url_helper(route_name)
       define_method("#{route_name}_url") do |*args|
         path = public_send(:"#{route_name}_path", *args) # rubocop:disable GitlabSecurity/PublicSend
