@@ -102,6 +102,21 @@ RSpec.describe ::Ai::DuoWorkflows::CreateWorkflowService, feature_category: :duo
       end
     end
 
+    context 'when workflow definition is foundational agent and workflow for namespace' do
+      let(:params) { { workflow_definition: 'duo_planner/experimental' } }
+      let(:container) { group }
+
+      before do
+        allow(Ability).to receive(:allowed?).with(user, :access_duo_agentic_chat, container).and_return(true)
+      end
+
+      it 'creates a new workflow' do
+        expect { execute }.to change { Ai::DuoWorkflows::Workflow.count }.by(1)
+        expect(execute[:workflow]).to be_a(Ai::DuoWorkflows::Workflow)
+        expect(execute[:workflow].user).to eq(user)
+      end
+    end
+
     context 'when container is nil' do
       let(:container) { nil }
 
