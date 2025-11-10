@@ -60,7 +60,7 @@ RSpec.describe CreateCode, feature_category: :code_suggestions do
           allow(Namespace::RootStorageStatistics).to receive(:sum).with(:repository_size).and_return(1.terabyte)
         end
 
-        it 'returns 12 partitions' do
+        it 'returns 11 partitions' do
           expect(number_of_partitions).to eq(11)
         end
       end
