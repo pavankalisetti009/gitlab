@@ -22,13 +22,6 @@ describe('AiCatalogAddFlowToProjectModal', () => {
       propsData: {
         modalId: 'add-flow-to-project-modal',
       },
-      provide: {
-        flowTriggersEventTypeOptions: [
-          { text: 'Mention', value: 'mention' },
-          { text: 'Assign', value: 'assign' },
-          { text: 'Assign reviewer', value: 'assign_reviewer' },
-        ],
-      },
       stubs: {
         GlModal: GlModalStub,
       },

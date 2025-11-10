@@ -22,7 +22,6 @@ class Groups::EpicsController < Groups::ApplicationController
     push_frontend_feature_flag(:notifications_todos_buttons, current_user)
 
     push_force_frontend_feature_flag(:glql_load_on_click, !!@group&.glql_load_on_click_feature_flag_enabled?)
-    push_force_frontend_feature_flag(:work_items_alpha, !!group.work_items_alpha_feature_flag_enabled?)
   end
 
   before_action only: :show do

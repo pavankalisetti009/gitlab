@@ -32,6 +32,8 @@ module API
             not_found!
           end
 
+          not_found! unless ::VirtualRegistries::Setting.find_for_group(group).enabled
+
           authenticate!
           authorize! :admin_virtual_registry, group.virtual_registry_policy_subject
         end

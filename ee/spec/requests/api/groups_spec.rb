@@ -1370,6 +1370,102 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
             end
           end
         end
+
+        context 'cursor compatibility across FF toggles', :freeze_time do
+          let!(:old_table_event_1) { create(:group_audit_event, created_at: 4.days.ago, entity_id: group.id, author_id: user.id) }
+          let!(:old_table_event_2) { create(:group_audit_event, created_at: 3.days.ago, entity_id: group.id, author_id: user.id) }
+          let!(:old_table_event_3) { create(:group_audit_event, created_at: 2.days.ago, entity_id: group.id, author_id: user.id) }
+          let!(:old_table_event_4) { create(:group_audit_event, created_at: 1.day.ago, entity_id: group.id, author_id: user.id) }
+
+          let!(:new_table_event_1) { create(:audit_events_group_audit_event, id: old_table_event_1.id, created_at: 4.days.ago, group_id: group.id, author_id: user.id) }
+          let!(:new_table_event_2) { create(:audit_events_group_audit_event, id: old_table_event_2.id, created_at: 3.days.ago, group_id: group.id, author_id: user.id) }
+          let!(:new_table_event_3) { create(:audit_events_group_audit_event, id: old_table_event_3.id, created_at: 2.days.ago, group_id: group.id, author_id: user.id) }
+          let!(:new_table_event_4) { create(:audit_events_group_audit_event, id: old_table_event_4.id, created_at: 1.day.ago, group_id: group.id, author_id: user.id) }
+
+          before do
+            stub_licensed_features(audit_events: true)
+            group.add_owner(user)
+          end
+
+          def extract_cursor_from_response
+            link_header = response.headers['Link']
+            return unless link_header
+
+            match = link_header.match(/cursor=([^&>]+)/)
+            return unless match
+
+            CGI.unescape(match[1])
+          end
+
+          def encode_cursor(data)
+            Base64.urlsafe_encode64(Gitlab::Json.dump(data))
+          end
+
+          def decode_cursor(cursor)
+            Gitlab::Json.parse(Base64.urlsafe_decode64(cursor)).with_indifferent_access
+          end
+
+          context 'when starting without cursor (FF: OFF -> ON -> OFF)' do
+            it 'handles all FF transitions correctly' do
+              stub_feature_flags(read_audit_events_from_new_tables: false)
+              get api(path, user), params: { pagination: 'keyset', per_page: 1 }
+
+              expect(response).to have_gitlab_http_status(:ok)
+              expect(json_response.first['id']).to eq(old_table_event_4.id)
+              cursor_1 = extract_cursor_from_response
+              expect(decode_cursor(cursor_1).keys).to contain_exactly('id', '_kd')
+
+              stub_feature_flags(read_audit_events_from_new_tables: true)
+              get api(path, user), params: { pagination: 'keyset', cursor: cursor_1, per_page: 1 }
+
+              expect(response).to have_gitlab_http_status(:ok)
+              expect(json_response.first['id']).to eq(new_table_event_3.id)
+              cursor_2 = extract_cursor_from_response
+              expect(cursor_2).to be_present
+              expect(decode_cursor(cursor_2).keys).to contain_exactly('id', 'created_at', '_kd')
+
+              stub_feature_flags(read_audit_events_from_new_tables: false)
+              get api(path, user), params: { pagination: 'keyset', cursor: cursor_2, per_page: 1 }
+
+              expect(response).to have_gitlab_http_status(:ok)
+              expect(json_response.first['id']).to eq(old_table_event_2.id)
+              cursor_3 = extract_cursor_from_response
+              expect(cursor_3).to be_present
+              expect(decode_cursor(cursor_3).keys).to contain_exactly('id', '_kd')
+            end
+          end
+
+          context 'when starting with existing cursor (FF: OFF -> ON -> OFF)' do
+            it 'handles all FF transitions with cursor in the middle of pagination' do
+              existing_cursor = encode_cursor({ 'id' => old_table_event_4.id.to_s, '_kd' => 'n' })
+
+              stub_feature_flags(read_audit_events_from_new_tables: false)
+              get api(path, user), params: { pagination: 'keyset', cursor: existing_cursor, per_page: 1 }
+
+              expect(response).to have_gitlab_http_status(:ok)
+              expect(json_response.first['id']).to eq(old_table_event_3.id)
+              cursor_1 = extract_cursor_from_response
+              expect(decode_cursor(cursor_1).keys).to contain_exactly('id', '_kd')
+
+              stub_feature_flags(read_audit_events_from_new_tables: true)
+              get api(path, user), params: { pagination: 'keyset', cursor: cursor_1, per_page: 1 }
+
+              expect(response).to have_gitlab_http_status(:ok)
+              expect(json_response.first['id']).to eq(new_table_event_2.id)
+              cursor_2 = extract_cursor_from_response
+              expect(cursor_2).to be_present
+              expect(decode_cursor(cursor_2).keys).to contain_exactly('id', 'created_at', '_kd')
+
+              stub_feature_flags(read_audit_events_from_new_tables: false)
+              get api(path, user), params: { pagination: 'keyset', cursor: cursor_2, per_page: 1 }
+
+              expect(response).to have_gitlab_http_status(:ok)
+              expect(json_response.first['id']).to eq(old_table_event_1.id)
+              cursor_3 = extract_cursor_from_response
+              expect(cursor_3).to be_nil
+            end
+          end
+        end
       end
     end
   end

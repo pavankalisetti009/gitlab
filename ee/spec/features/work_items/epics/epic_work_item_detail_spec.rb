@@ -25,7 +25,7 @@ RSpec.describe 'Epic work item detail', :js, feature_category: :team_planning do
     let(:linked_item) { child_item }
 
     before do
-      stub_feature_flags(notifications_todos_buttons: false)
+      stub_feature_flags(notifications_todos_buttons: false, work_item_view_for_issues: true)
       stub_licensed_features(epic_colors: true, epics: true, issuable_health_status: true, linked_items_epics: true,
         related_epics: true, subepics: true)
       page.current_window.resize_to(1200, 2400)

@@ -47,11 +47,18 @@ module EE
               audit_event_finder_params[:optimize_offset] = true
 
               if ::Feature.enabled?(:read_audit_events_from_new_tables, user_project)
+                if params[:pagination] == 'keyset'
+                  params[:cursor] =
+                    enrich_audit_event_cursor(params[:cursor], user_project)
+                end
+
                 audit_events = ::AuditEvents::ProjectAuditEventFinder.new(
                   project: user_project,
                   params: audit_event_finder_params
                 ).execute
               else
+                params[:cursor] = strip_created_at_from_cursor(params[:cursor]) if params[:pagination] == 'keyset'
+
                 level = ::Gitlab::Audit::Levels::Project.new(project: user_project)
                 audit_events = AuditEventFinder.new(
                   level: level,
@@ -88,6 +95,8 @@ module EE
         end
 
         helpers do
+          include ::API::Helpers::AuditEventsCursorHelper
+
           extend ::Gitlab::Utils::Override
 
           override :verify_update_project_attrs!

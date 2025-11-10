@@ -7,6 +7,8 @@ module EE
 
       prepended do
         helpers do
+          include ::API::Helpers::AuditEventsCursorHelper
+
           extend ::Gitlab::Utils::Override
 
           override :find_groups
@@ -166,11 +168,18 @@ module EE
               audit_event_finder_params[:optimize_offset] = true
 
               if ::Feature.enabled?(:read_audit_events_from_new_tables, user_group)
+                if params[:pagination] == 'keyset'
+                  params[:cursor] =
+                    enrich_audit_event_cursor(params[:cursor], user_group)
+                end
+
                 audit_events = ::AuditEvents::GroupAuditEventFinder.new(
                   group: user_group,
                   params: audit_event_finder_params
                 ).execute
               else
+                params[:cursor] = strip_created_at_from_cursor(params[:cursor]) if params[:pagination] == 'keyset'
+
                 level = ::Gitlab::Audit::Levels::Group.new(group: user_group)
                 audit_events = AuditEventFinder.new(
                   level: level,

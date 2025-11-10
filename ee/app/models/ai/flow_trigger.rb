@@ -4,6 +4,8 @@ module Ai
   class FlowTrigger < ApplicationRecord
     self.table_name = :ai_flow_triggers
 
+    # Values match FLOW_TRIGGER_TYPES in ee/app/assets/javascripts/ai/duo_agents_platform/constants.js:
+    # https://gitlab.com/gitlab-org/gitlab/-/blob/9271ef8def87566d81f1e7047d8495c99b18ede7/ee/app/assets/javascripts/ai/duo_agents_platform/constants.js#L50
     EVENT_TYPES = {
       mention: 0,
       assign: 1,

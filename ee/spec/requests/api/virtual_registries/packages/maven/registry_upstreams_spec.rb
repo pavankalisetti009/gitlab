@@ -31,11 +31,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::RegistryUpstreams, :aggr
 
     it { is_expected.to have_request_urgency(:low) }
 
-    it_behaves_like 'disabled maven_virtual_registry feature flag'
-    it_behaves_like 'virtual registry disabled dependency proxy'
-    it_behaves_like 'virtual registry not authenticated user'
-    it_behaves_like 'maven virtual registry feature not licensed'
-    it_behaves_like 'virtual registries setting enabled is false'
+    it_behaves_like 'virtual registry not available', :maven
 
     where(:user_role, :status) do
       :owner      | :created
@@ -109,12 +105,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::RegistryUpstreams, :aggr
 
       it { is_expected.to have_request_urgency(:low) }
 
-      it_behaves_like 'disabled maven_virtual_registry feature flag'
-      it_behaves_like 'virtual registry disabled dependency proxy'
-      it_behaves_like 'virtual registry not authenticated user'
-      it_behaves_like 'maven virtual registry feature not licensed'
-      it_behaves_like 'virtual registries setting enabled is false'
-
+      it_behaves_like 'virtual registry not available', :maven
       where(:user_role, :status) do
         :owner      | :ok
         :maintainer | :ok
@@ -171,11 +162,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::RegistryUpstreams, :aggr
 
     it { is_expected.to have_request_urgency(:low) }
 
-    it_behaves_like 'disabled maven_virtual_registry feature flag'
-    it_behaves_like 'virtual registry disabled dependency proxy'
-    it_behaves_like 'virtual registry not authenticated user'
-    it_behaves_like 'maven virtual registry feature not licensed'
-    it_behaves_like 'virtual registries setting enabled is false'
+    it_behaves_like 'virtual registry not available', :maven
 
     where(:user_role, :status) do
       :owner      | :no_content

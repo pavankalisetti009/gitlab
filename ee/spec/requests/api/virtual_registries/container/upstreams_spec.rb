@@ -23,10 +23,7 @@ RSpec.describe API::VirtualRegistries::Container::Upstreams, :aggregate_failures
 
     it { is_expected.to have_request_urgency(:low) }
 
-    it_behaves_like 'disabled container_virtual_registries feature flag'
-    it_behaves_like 'virtual registry disabled dependency proxy'
-    it_behaves_like 'virtual registry not authenticated user'
-    it_behaves_like 'container virtual registry feature not licensed'
+    it_behaves_like 'virtual registry not available', :container
 
     context 'with valid group_id' do
       it_behaves_like 'successful response'
@@ -123,10 +120,7 @@ RSpec.describe API::VirtualRegistries::Container::Upstreams, :aggregate_failures
 
     it { is_expected.to have_request_urgency(:low) }
 
-    it_behaves_like 'disabled container_virtual_registries feature flag'
-    it_behaves_like 'virtual registry disabled dependency proxy'
-    it_behaves_like 'virtual registry not authenticated user'
-    it_behaves_like 'container virtual registry feature not licensed'
+    it_behaves_like 'virtual registry not available', :container
 
     context 'with valid registry' do
       it_behaves_like 'successful response'
@@ -194,10 +188,7 @@ RSpec.describe API::VirtualRegistries::Container::Upstreams, :aggregate_failures
 
     it { is_expected.to have_request_urgency(:low) }
 
-    it_behaves_like 'disabled container_virtual_registries feature flag'
-    it_behaves_like 'virtual registry disabled dependency proxy'
-    it_behaves_like 'virtual registry not authenticated user'
-    it_behaves_like 'container virtual registry feature not licensed'
+    it_behaves_like 'virtual registry not available', :container
 
     context 'with valid params' do
       where(:user_role, :status) do
@@ -333,10 +324,7 @@ RSpec.describe API::VirtualRegistries::Container::Upstreams, :aggregate_failures
 
     it { is_expected.to have_request_urgency(:low) }
 
-    it_behaves_like 'disabled container_virtual_registries feature flag'
-    it_behaves_like 'virtual registry disabled dependency proxy'
-    it_behaves_like 'virtual registry not authenticated user'
-    it_behaves_like 'container virtual registry feature not licensed'
+    it_behaves_like 'virtual registry not available', :container
 
     context 'with valid params' do
       it_behaves_like 'successful response'
@@ -373,10 +361,7 @@ RSpec.describe API::VirtualRegistries::Container::Upstreams, :aggregate_failures
 
       it { is_expected.to have_request_urgency(:low) }
 
-      it_behaves_like 'disabled container_virtual_registries feature flag'
-      it_behaves_like 'virtual registry disabled dependency proxy'
-      it_behaves_like 'virtual registry not authenticated user'
-      it_behaves_like 'container virtual registry feature not licensed'
+      it_behaves_like 'virtual registry not available', :container
 
       where(:user_role, :status) do
         :owner      | :ok
@@ -464,10 +449,7 @@ RSpec.describe API::VirtualRegistries::Container::Upstreams, :aggregate_failures
 
     it { is_expected.to have_request_urgency(:low) }
 
-    it_behaves_like 'disabled container_virtual_registries feature flag'
-    it_behaves_like 'virtual registry disabled dependency proxy'
-    it_behaves_like 'virtual registry not authenticated user'
-    it_behaves_like 'container virtual registry feature not licensed'
+    it_behaves_like 'virtual registry not available', :container
 
     context 'for different user roles' do
       where(:user_role, :status) do
