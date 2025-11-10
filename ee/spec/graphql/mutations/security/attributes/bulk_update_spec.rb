@@ -35,10 +35,6 @@ RSpec.describe Mutations::Security::Attributes::BulkUpdate,
 
   describe '#resolve' do
     context 'when user does not have permission' do
-      before do
-        stub_feature_flags(security_categories_and_attributes: true)
-      end
-
       it 'raises access denied error' do
         expect { mutation.resolve(items: prepared_items, attributes: attributes, mode: 'ADD') }
           .to raise_error(Gitlab::Graphql::Errors::ResourceNotAvailable)
@@ -48,7 +44,6 @@ RSpec.describe Mutations::Security::Attributes::BulkUpdate,
     context 'when access is denied during service execution' do
       before_all do
         namespace.add_maintainer(current_user)
-        stub_feature_flags(security_categories_and_attributes: true)
       end
 
       it 'handles Gitlab::Access::AccessDeniedError and raises resource not available' do
@@ -64,7 +59,6 @@ RSpec.describe Mutations::Security::Attributes::BulkUpdate,
     context 'when user has permission' do
       before_all do
         namespace.add_maintainer(current_user)
-        stub_feature_flags(security_categories_and_attributes: true)
       end
 
       context 'with valid arguments' do
