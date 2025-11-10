@@ -13,6 +13,8 @@ module Gitlab
         end
 
         def self.container(container:, user:)
+          return Response.new(allowed: false, message: not_found_message) unless container && user
+
           if user.can?(:access_duo_features, container)
             Response.new(allowed: true)
           else
