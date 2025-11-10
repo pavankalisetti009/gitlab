@@ -6,6 +6,34 @@ RSpec.describe GroupsController, :aggregate_failures, type: :request, feature_ca
   let(:user) { create(:user) }
   let(:group) { create(:group) }
 
+  describe 'GET #edit' do
+    context 'step-up authentication enforcement' do
+      let_it_be(:group, reload: true) { create(:group) }
+
+      subject(:make_request) { get edit_group_path(group) }
+
+      before do
+        sign_in(user)
+      end
+
+      context 'when user is owner' do
+        let_it_be_with_reload(:user) { create(:user, owner_of: group) }
+
+        let(:expected_success_status) { :ok }
+
+        it_behaves_like 'does not enforce step-up authentication'
+      end
+
+      context 'when user is maintainer' do
+        let_it_be_with_reload(:user) { create(:user, maintainer_of: group) }
+
+        let(:expected_success_status) { :not_found }
+
+        it_behaves_like 'does not enforce step-up authentication'
+      end
+    end
+  end
+
   describe 'PUT update' do
     before do
       group.add_owner(user)
