@@ -22,6 +22,15 @@ RSpec.describe API::VirtualRegistries::Cleanup::Policies, :aggregate_failures, f
     it_behaves_like 'returning response status', :not_found
   end
 
+  shared_examples 'container and packages virtual registry not available' do
+    it_behaves_like 'disabled virtual_registry feature flag', :maven, status: :not_found
+    it_behaves_like 'virtual registry disabled dependency proxy'
+    it_behaves_like 'virtual registry not authenticated user'
+    it_behaves_like 'container and packages virtual registry features not licensed'
+    it_behaves_like 'virtual registries setting enabled is false'
+    it_behaves_like 'with a non owner user'
+  end
+
   shared_examples 'with a non owner user' do
     let(:user) { create(:user) }
 
@@ -64,12 +73,8 @@ RSpec.describe API::VirtualRegistries::Cleanup::Policies, :aggregate_failures, f
       )
     end
 
-    it_behaves_like 'disabled maven_virtual_registry feature flag', status: :not_found
-    it_behaves_like 'virtual registry disabled dependency proxy'
-    it_behaves_like 'virtual registry not authenticated user'
-    it_behaves_like 'container and packages virtual registry features not licensed'
+    it_behaves_like 'container and packages virtual registry not available'
     it_behaves_like 'an authenticated virtual registry REST API'
-    it_behaves_like 'with a non owner user'
     it_behaves_like 'with invalid group_id'
 
     context 'with subgroup' do
@@ -95,12 +100,8 @@ RSpec.describe API::VirtualRegistries::Cleanup::Policies, :aggregate_failures, f
       )
     end
 
-    it_behaves_like 'disabled maven_virtual_registry feature flag', status: :not_found
-    it_behaves_like 'virtual registry disabled dependency proxy'
-    it_behaves_like 'virtual registry not authenticated user'
-    it_behaves_like 'container and packages virtual registry features not licensed'
+    it_behaves_like 'container and packages virtual registry not available'
     it_behaves_like 'an authenticated virtual registry REST API', with_successful_status: :created
-    it_behaves_like 'with a non owner user'
     it_behaves_like 'with invalid group_id'
 
     context 'with invalid params' do
@@ -149,12 +150,8 @@ RSpec.describe API::VirtualRegistries::Cleanup::Policies, :aggregate_failures, f
       expect(response).to have_gitlab_http_status(:ok)
     end
 
-    it_behaves_like 'disabled maven_virtual_registry feature flag', status: :not_found
-    it_behaves_like 'virtual registry disabled dependency proxy'
-    it_behaves_like 'virtual registry not authenticated user'
-    it_behaves_like 'container and packages virtual registry features not licensed'
+    it_behaves_like 'container and packages virtual registry not available'
     it_behaves_like 'an authenticated virtual registry REST API'
-    it_behaves_like 'with a non owner user'
     it_behaves_like 'with invalid group_id'
 
     context 'with invalid params' do
@@ -187,11 +184,7 @@ RSpec.describe API::VirtualRegistries::Cleanup::Policies, :aggregate_failures, f
       expect { policy.reload }.to raise_error(ActiveRecord::RecordNotFound)
     end
 
-    it_behaves_like 'disabled maven_virtual_registry feature flag', status: :not_found
-    it_behaves_like 'virtual registry disabled dependency proxy'
-    it_behaves_like 'virtual registry not authenticated user'
-    it_behaves_like 'container and packages virtual registry features not licensed'
+    it_behaves_like 'container and packages virtual registry not available'
     it_behaves_like 'an authenticated virtual registry REST API', with_successful_status: :no_content
-    it_behaves_like 'with a non owner user'
   end
 end

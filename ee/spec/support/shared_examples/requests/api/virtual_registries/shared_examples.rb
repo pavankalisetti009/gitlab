@@ -1,8 +1,9 @@
 # frozen_string_literal: true
 
-RSpec.shared_examples 'disabled maven_virtual_registry feature flag' do |status: :unauthorized|
+RSpec.shared_examples 'disabled virtual_registry feature flag' do |registry_type, status: :unauthorized|
   before do
-    stub_feature_flags(maven_virtual_registry: false)
+    feature_flag = registry_type == :container ? :container_virtual_registries : :"#{registry_type}_virtual_registry"
+    stub_feature_flags(feature_flag => false)
   end
 
   it_behaves_like 'returning response status', status
@@ -68,18 +69,18 @@ RSpec.shared_examples 'an authenticated virtual registry REST API' do |with_succ
   end
 end
 
-RSpec.shared_examples 'disabled container_virtual_registries feature flag' do
-  before do
-    stub_feature_flags(container_virtual_registries: false)
-  end
-
-  it_behaves_like 'returning response status', :unauthorized
-end
-
 RSpec.shared_examples 'container virtual registry feature not licensed' do
   before do
     stub_licensed_features(container_virtual_registry: false)
   end
 
   it_behaves_like 'returning response status', :not_found
+end
+
+RSpec.shared_examples 'virtual registry not available' do |registry_type|
+  it_behaves_like 'virtual registry disabled dependency proxy'
+  it_behaves_like 'virtual registry not authenticated user'
+  it_behaves_like 'virtual registries setting enabled is false'
+  it_behaves_like "#{registry_type} virtual registry feature not licensed"
+  it_behaves_like 'disabled virtual_registry feature flag', registry_type
 end
