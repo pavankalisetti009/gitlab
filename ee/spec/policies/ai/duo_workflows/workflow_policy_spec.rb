@@ -231,5 +231,21 @@ RSpec.describe Ai::DuoWorkflows::WorkflowPolicy, feature_category: :agent_founda
 
       it { is_expected.to be_disallowed(:delete_duo_workflow) }
     end
+
+    context 'when current user is a service account' do
+      let(:current_user) { create(:user, :service_account) }
+
+      context 'when service account does not have composite identity enforced' do
+        it { is_expected.to be_disallowed(:delete_duo_workflow) }
+      end
+
+      context 'when service account has composite identity enforced' do
+        before do
+          current_user.composite_identity_enforced!
+        end
+
+        it { is_expected.to be_allowed(:delete_duo_workflow) }
+      end
+    end
   end
 end
