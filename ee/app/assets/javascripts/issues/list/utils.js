@@ -209,7 +209,9 @@ export const convertToApiParams = (filterTokens, options = {}) => {
     });
   }
 
-  if (options.hasStatusFeature && statusToken?.value?.data) {
+  // we should be converting the status param from string to `WorkItemWidgetStatusFilterInput`
+  // irrespective if we have the data attribute
+  if (statusToken?.value?.data) {
     params.set('status', { name: statusToken?.value?.data });
   }
 
