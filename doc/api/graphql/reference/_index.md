@@ -46688,6 +46688,8 @@ Represents a count of vulnerabilities for a specific severity level.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="vulnerabilityseveritycountcount"></a>`count` | [`Int!`](#int) | Number of vulnerabilities. |
+| <a id="vulnerabilityseveritycountmeanage"></a>`meanAge` | [`Float`](#float) | Average age in days of vulnerabilities since detection. |
+| <a id="vulnerabilityseveritycountmedianage"></a>`medianAge` | [`Float`](#float) | Median age in days of vulnerabilities since detection. |
 | <a id="vulnerabilityseveritycountseverity"></a>`severity` | [`VulnerabilitySeverity!`](#vulnerabilityseverity) | Severity level. |
 
 ### `VulnerabilityStateTransitionType`

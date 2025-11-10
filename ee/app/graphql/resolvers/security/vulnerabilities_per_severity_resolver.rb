@@ -46,6 +46,22 @@ module Resolvers
         raise Gitlab::Graphql::Errors::ArgumentError, "maximum date range is #{MAX_DATE_RANGE_DAYS} days"
       end
 
+      def calculate_mean_age(aggregations)
+        avg_ms = aggregations.dig('avg_detected_at', 'value')
+        return unless avg_ms
+
+        avg_detected_at = Time.at(avg_ms / 1000)
+        (Time.current - avg_detected_at) / 1.day
+      end
+
+      def calculate_median_age(aggregations)
+        median_ms = aggregations.dig('median_detected_at', 'values', '50.0')
+        return unless median_ms
+
+        median_detected_at = Time.at(median_ms / 1000)
+        (Time.current - median_detected_at) / 1.day
+      end
+
       def build_base_params(start_date, end_date)
         project_ids = context[:project_id]
         report_type = context[:report_type]
@@ -71,11 +87,14 @@ module Resolvers
 
       def fetch_results(params)
         finder = ::Security::VulnerabilityElasticCountBySeverityFinder.new(vulnerable, params)
-        counts = finder.execute
+        results = finder.execute
 
         ::Enums::Vulnerability.severity_levels.each_key.index_with do |severity|
+          severity_data = results[severity.to_s] || {}
           {
-            count: counts[severity.to_s] || 0
+            count: severity_data['count'] || 0,
+            mean_age: calculate_mean_age(severity_data),
+            median_age: calculate_median_age(severity_data)
           }
         end
       end
