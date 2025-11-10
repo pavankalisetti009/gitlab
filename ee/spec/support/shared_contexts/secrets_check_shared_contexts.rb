@@ -187,9 +187,6 @@ RSpec.shared_context 'secrets check context' do
       allow(secret_detection_logger).to receive(level) { |msg| logged_messages[level] << msg }
     end
 
-    # The SDS is not the primary use case currently so we don't need to call it by default
-    stub_feature_flags(use_secret_detection_service: false)
-
     # This fixes a regression when testing locally because scanning in subprocess using the
     # parallel gem calls `Kernel.at_exit` hook in gitaly_setup.rb when a subprocess is killed
     # which in turns kills gitaly/praefect processes midway through the test suite, resulting in
