@@ -58,7 +58,8 @@ module Ai
         :duo_chat_issue_reader,
         :duo_chat_merge_request_reader,
         :duo_chat_commit_reader,
-        :duo_chat_gitlab_documentation
+        :duo_chat_gitlab_documentation,
+        :duo_chat_work_item_reader
       ].freeze
       # Duo chat tools need to be mapped to the base 'duo_chat' feature
       # to ensure proper model selection when these tools are used.
