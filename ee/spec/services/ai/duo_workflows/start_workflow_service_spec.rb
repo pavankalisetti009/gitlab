@@ -577,6 +577,25 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :duo_
     end
   end
 
+  context 'for GITLAB_PROJECT_PATH' do
+    before do
+      allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
+      allow(maintainer).to receive(:allowed_to_use?).and_return(true)
+      project.project_setting.update!(duo_features_enabled: true, duo_remote_flows_enabled: true)
+    end
+
+    it 'sets it to project full path' do
+      expect(Ci::Workloads::RunWorkloadService)
+        .to receive(:new).and_wrap_original do |method, **kwargs|
+        variables = kwargs[:workload_definition].variables
+        expect(variables[:GITLAB_PROJECT_PATH]).to eq(project.full_path)
+        method.call(**kwargs)
+      end
+
+      expect(execute).to be_success
+    end
+  end
+
   shared_examples 'sets AGENT_PLATFORM_MODEL_METADATA' do
     it 'sets the correct model metadata' do
       expect(Ci::Workloads::RunWorkloadService)
@@ -743,7 +762,7 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :duo_
         %(echo $DUO_WORKFLOW_FLOW_CONFIG_SCHEMA_VERSION),
         %(echo $DUO_WORKFLOW_ADDITIONAL_CONTEXT_CONTENT),
         %(echo Starting Workflow #{workflow.id}),
-        %(npx -y @gitlab/duo-cli@^8.31.0 run --existing-session-id #{workflow.id})
+        %(npx -y @gitlab/duo-cli@8.36.1 run --existing-session-id #{workflow.id} --connection-type grpc)
       ]
     end
 
@@ -828,7 +847,7 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :duo_
           %(echo $DUO_WORKFLOW_FLOW_CONFIG_SCHEMA_VERSION),
           %(echo $DUO_WORKFLOW_ADDITIONAL_CONTEXT_CONTENT),
           %(echo Starting Workflow #{workflow.id}),
-          %(npx -y @gitlab/duo-cli@^8.31.0 run --existing-session-id #{workflow.id})
+          %(npx -y @gitlab/duo-cli@8.36.1 run --existing-session-id #{workflow.id} --connection-type grpc)
         ]
       end
 
