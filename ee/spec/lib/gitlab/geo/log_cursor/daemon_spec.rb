@@ -21,7 +21,7 @@ RSpec.describe Gitlab::Geo::LogCursor::Daemon, :clean_gitlab_redis_shared_state,
     stub_current_geo_node(secondary)
 
     allow(daemon).to receive(:trap_signals)
-    allow(daemon).to receive(:arbitrary_sleep).and_return(0.1)
+    allow(daemon).to receive(:sleep_break).and_return(0.1)
   end
 
   # Warning: Ensure an exit condition for the main run! loop, or RSpec will not
