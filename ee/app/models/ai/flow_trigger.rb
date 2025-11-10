@@ -16,6 +16,7 @@ module Ai
 
     scope :triggered_on, ->(event_type) { where("event_types @> ('{?}')", EVENT_TYPES[event_type]) }
     scope :by_users, ->(users) { where(user: users) }
+    scope :by_item_consumer_ids, ->(item_ids) { where(ai_catalog_item_consumer_id: item_ids) }
 
     validates :project, presence: true
     validates :user, presence: true
