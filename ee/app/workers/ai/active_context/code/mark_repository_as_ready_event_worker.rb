@@ -51,6 +51,8 @@ module Ai
           end
 
           mark_repositories_as_ready(ready_repository_ids) if ready_repository_ids.any?
+
+          log_hash_metadata_on_done(count_repositories_marked_as_ready: ready_repository_ids.count)
         end
 
         def search_by_ids(ids)

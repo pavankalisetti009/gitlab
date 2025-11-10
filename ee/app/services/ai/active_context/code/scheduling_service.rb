@@ -18,7 +18,7 @@ module Ai
             execute: -> { RepositoryIndexService.enqueue_pending_jobs }
           },
           mark_repository_as_ready: {
-            period: 1.hour,
+            period: 10.minutes,
             if: -> { ::Ai::ActiveContext::Code::Repository.embedding_indexing_in_progress.exists? },
             dispatch: { event: MarkRepositoryAsReadyEvent }
           },
