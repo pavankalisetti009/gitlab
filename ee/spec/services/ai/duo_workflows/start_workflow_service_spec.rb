@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :duo_agent_platform do
+RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature_category: :duo_agent_platform do
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, :repository, group: group) }
   let_it_be(:developer) { create(:user, developer_of: project) }
@@ -357,36 +357,13 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :duo_
   end
 
   context 'when use_service_account param is set' do
+    include_context 'with Duo enabled'
+
     let_it_be(:service_account) { create(:user, :service_account, composite_identity_enforced: true) }
 
     before do
       params[:use_service_account] = true
-      settings_double = instance_double(::Ai::Setting,
-        duo_workflow_service_account_user: service_account,
-        duo_agent_platform_service_url: 'http://agent-platform-url:50052',
-        ai_gateway_url: nil
-      )
-      allow(::Ai::Setting).to receive(:instance).and_return(settings_double)
-      allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
-      # rubocop:disable RSpec/AnyInstanceOf -- not the next instance
-      allow_any_instance_of(User).to receive(:allowed_to_use?).and_return(true)
-      # rubocop:enable RSpec/AnyInstanceOf
-      project.project_setting.update!(duo_features_enabled: true, duo_remote_flows_enabled: true)
-
-      mock_workload = instance_double(Ci::Workloads::Workload, id: 123)
-
-      allow_next_instance_of(Ci::Workloads::WorkloadBranchService,
-        hash_including(current_user: service_account)
-      ) do |service|
-        allow(service).to receive(:execute).and_return(
-          ServiceResponse.success(payload: { branch_name: 'workloads/123' })
-        )
-      end
-      allow_next_instance_of(Ci::Workloads::RunWorkloadService,
-        hash_including(current_user: service_account)
-      ) do |service|
-        allow(service).to receive(:execute).and_return(ServiceResponse.success(payload: mock_workload))
-      end
+      Ai::Setting.instance.update!(duo_workflow_service_account_user: service_account)
     end
 
     it 'creates developer authorization for service account' do
@@ -394,7 +371,13 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :duo_
       expect(project.member(service_account).access_level).to eq(Gitlab::Access::DEVELOPER)
     end
 
-    it 'calls workload service with the service account' do
+    it 'creates the workload as the service account' do
+      expect(Ci::Workloads::RunWorkloadService)
+        .to receive(:new).and_wrap_original do |method, **kwargs|
+        expect(kwargs[:current_user]).to eq(service_account)
+        method.call(**kwargs)
+      end
+
       expect(execute).to be_success
     end
   end
@@ -1280,6 +1263,25 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :duo_
       end
 
       expect(execute).to be_success
+    end
+  end
+
+  context 'when workflows_workload join table fails to create' do
+    include_context 'with Duo enabled'
+
+    it 'returns an error' do
+      invalid_instance = ::Ai::DuoWorkflows::WorkflowsWorkload.new
+      invalid_instance.valid?
+      # Nasty hack since there is no easy way to stub workflow.workflows_workloads.create
+      expect_next_instance_of(::Ai::DuoWorkflows::WorkflowsWorkload) do |instance|
+        allow(instance).to receive_messages(
+          persisted?: false,
+          errors: invalid_instance.errors
+        )
+      end
+      result = execute
+      expect(result).to be_error
+      expect(result.reason).to eq(:workflow_workload_failure)
     end
   end
 end
