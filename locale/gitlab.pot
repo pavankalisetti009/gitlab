@@ -52962,6 +52962,9 @@ msgstr ""
 msgid "Project|already in use"
 msgstr ""
 
+msgid "PrometheusService|Monitor application health with Prometheus metrics and dashboards"
+msgstr ""
+
 msgid "Promote"
 msgstr ""
 
