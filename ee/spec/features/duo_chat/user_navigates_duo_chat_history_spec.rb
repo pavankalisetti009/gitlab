@@ -38,6 +38,7 @@ RSpec.describe 'Duo Chat > User navigates Duo Chat history', :js, :saas, :with_c
     user.update!(project_studio_enabled: true)
 
     visit project_path(project)
+    dismiss_welcome_banner_if_present(page)
 
     # rubocop:disable RSpec/AvoidConditionalStatements -- temporary Project Studio rollout
     if Users::ProjectStudio.enabled_for_user?(user)
