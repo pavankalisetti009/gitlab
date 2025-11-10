@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 class Groups::LdapsController < Groups::ApplicationController
-  before_action :group
   before_action :authorize_admin_group!
   before_action :check_enabled_extras!
 

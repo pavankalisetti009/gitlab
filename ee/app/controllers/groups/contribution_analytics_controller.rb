@@ -3,7 +3,6 @@
 class Groups::ContributionAnalyticsController < Groups::ApplicationController
   include ProductAnalyticsTracking
 
-  before_action :group
   before_action :authorize_read_contribution_analytics!
   before_action :redirect_to_new_dashboard, only: :show, if: -> {
     Feature.enabled?(:contributions_analytics_dashboard, group)

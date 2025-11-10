@@ -53,14 +53,22 @@ module Gitlab
         Group.find_by_full_path(namespace_path)
       end
 
+      def self.default_duo_namespace(user:)
+        return unless user
+
+        user.user_preference.get_default_duo_namespace
+      end
+
       def self.user_model_selection_enabled?(user:)
-        return false unless namespace
-        return false if ::Feature.disabled?(:duo_agent_platform_model_selection, namespace)
-        return false if ::Feature.disabled?(:ai_model_switching, namespace)
+        namespace_to_use = namespace || default_duo_namespace(user: user)
+
+        return false unless namespace_to_use
+        return false if ::Feature.disabled?(:duo_agent_platform_model_selection, namespace_to_use)
+        return false if ::Feature.disabled?(:ai_model_switching, namespace_to_use)
         return false if ::Feature.disabled?(:ai_user_model_switching, user)
 
         result = ::Ai::FeatureSettingSelectionService
-                            .new(user, :duo_agent_platform, namespace)
+                            .new(user, :duo_agent_platform, namespace_to_use)
                             .execute
 
         result.success? && result.payload.present? && result.payload.user_model_selection_available?
@@ -75,11 +83,13 @@ module Gitlab
         Project.find_by_full_path(project_path).try(:to_global_id) if project_path
       end
 
-      def self.root_namespace_id
-        return unless namespace
-        return unless ::Feature.enabled?(:ai_model_switching, namespace)
+      def self.root_namespace_id(user:)
+        namespace_to_use = namespace || default_duo_namespace(user: user)
 
-        namespace.to_global_id
+        return unless namespace_to_use
+        return unless ::Feature.enabled?(:ai_model_switching, namespace_to_use)
+
+        namespace_to_use.to_global_id
       end
     end
   end

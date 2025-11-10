@@ -39,7 +39,7 @@ Prerequisites for **both primary and secondary sites**:
 {{< alert type="note" >}}
 
 **Do not** set up any custom authentication for the **secondary** site. This is handled by the **primary** site.
-Any change that requires access to the **Admin area** needs to be done in the
+Any change that requires access to the **Admin** area needs to be done in the
 **primary** site because the **secondary** site is a read-only replica.
 
 {{< /alert >}}
