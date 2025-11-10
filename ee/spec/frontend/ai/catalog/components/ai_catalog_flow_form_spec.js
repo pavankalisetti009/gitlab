@@ -4,7 +4,7 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import AiCatalogFlowForm from 'ee/ai/catalog/components/ai_catalog_flow_form.vue';
 import FormFlowType from 'ee/ai/catalog/components/form_flow_type.vue';
 import FormProjectDropdown from 'ee/ai/catalog/components/form_project_dropdown.vue';
-import VisibilityLevelRadioGroup from 'ee/ai/catalog/components//visibility_level_radio_group.vue';
+import VisibilityLevelRadioGroup from 'ee/ai/catalog/components/visibility_level_radio_group.vue';
 import FormGroup from 'ee/ai/catalog/components/form_group.vue';
 import { VISIBILITY_LEVEL_PRIVATE, VISIBILITY_LEVEL_PUBLIC } from 'ee/ai/catalog/constants';
 
