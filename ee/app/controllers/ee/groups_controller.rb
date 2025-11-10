@@ -17,6 +17,13 @@ module EE
       skip_before_action :authorize_admin_group!, only: [:edit]
       before_action :authorize_view_edit_page!, only: [:edit]
 
+      # We have to redefine the before_action :enforce_step_up_auth_for_namespace
+      # because otherwise it would run before :authorize_view_edit_page!
+      # due to the order of before_actions in the inheritance chain.
+      # In general, step-up auth should be enforced after authorization checks.
+      before_action :enforce_step_up_auth_for_namespace, except: [:index, :new, :create]
+      skip_before_action :enforce_step_up_auth_for_namespace, if: :skip_step_up_auth_for_owner_on_edit_and_update?
+
       before_action do
         push_frontend_feature_flag(:saas_user_caps_auto_approve_pending_users_on_cap_increase, @group)
       end

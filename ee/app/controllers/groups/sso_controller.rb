@@ -6,6 +6,12 @@ class Groups::SsoController < Groups::ApplicationController
 
   skip_before_action :group
 
+  # TODO: Assess how step-up auth should be enforced in the SSO context, then implement
+  # See: https://gitlab.com/gitlab-org/gitlab/-/issues/578868
+  # This controller uses `unauthenticated_group` instead of `@group` to support SSO flows
+  # for unauthenticated users. Parent's enforcement expects @group, causing RecordNotFound.
+  skip_before_action :enforce_step_up_auth_for_namespace
+
   before_action :init_preferred_language
   before_action :authenticate_user!, only: [:unlink]
   before_action :require_group_saml_instance!
