@@ -83,7 +83,7 @@ RSpec.shared_context 'for maven virtual registry api setup' do
 
   before do
     stub_licensed_features(packages_virtual_registry: true)
-    allow(VirtualRegistries::Setting).to receive(:cached_for_group).with(any_args).and_return(build_stubbed(
+    allow(VirtualRegistries::Setting).to receive(:find_for_group).with(any_args).and_return(build_stubbed(
       :virtual_registries_setting, group: group))
   end
 end

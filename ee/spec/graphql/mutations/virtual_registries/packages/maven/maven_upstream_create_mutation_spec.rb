@@ -46,7 +46,7 @@ RSpec.describe Mutations::VirtualRegistries::Packages::Maven::MavenUpstreamCreat
     before do
       stub_config(dependency_proxy: { enabled: true })
       stub_licensed_features(packages_virtual_registry: true)
-      allow(VirtualRegistries::Setting).to receive(:cached_for_group).with(group).and_return(build_stubbed(
+      allow(VirtualRegistries::Setting).to receive(:find_for_group).with(group).and_return(build_stubbed(
         :virtual_registries_setting, group: group))
     end
 
@@ -73,7 +73,7 @@ RSpec.describe Mutations::VirtualRegistries::Packages::Maven::MavenUpstreamCreat
 
       context 'when the virtual registries setting enabled is false' do
         before do
-          allow(VirtualRegistries::Setting).to receive(:cached_for_group).with(group).and_return(build_stubbed(
+          allow(VirtualRegistries::Setting).to receive(:find_for_group).with(group).and_return(build_stubbed(
             :virtual_registries_setting, :disabled, group: group))
         end
 
