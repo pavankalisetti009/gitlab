@@ -86,7 +86,7 @@ To create an application for your GitLab instance:
 1. Select **Applications**.
 1. Select **New application**.
 
-When creating application in the **Admin area** , mark it as **trusted**.
+When creating application in the **Admin** area, mark it as **trusted**.
 The user authorization step is automatically skipped for this application.
 
 ## View all authorized applications

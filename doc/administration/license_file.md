@@ -63,7 +63,7 @@ If you have a license, you can also import it when you install GitLab.
 {{< alert type="warning" >}}
 
 These methods only add a license at the time of installation. To renew or upgrade
-a license, add the license in the **Admin area** in the web user interface.
+a license, add the license in the **Admin** area in the web user interface.
 
 {{< /alert >}}
 
