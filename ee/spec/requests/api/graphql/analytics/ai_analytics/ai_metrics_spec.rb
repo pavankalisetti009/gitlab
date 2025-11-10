@@ -34,6 +34,17 @@ RSpec.describe 'aiMetrics', :freeze_time, feature_category: :value_stream_manage
           shownLinesOfCode
           acceptedLinesOfCode
         }
+        codeReview {
+          encounterDuoCodeReviewErrorDuringReviewEventCount
+          findNoIssuesDuoCodeReviewAfterReviewEventCount
+          findNothingToReviewDuoCodeReviewOnMrEventCount
+          postCommentDuoCodeReviewOnDiffEventCount
+          reactThumbsUpOnDuoCodeReviewCommentEventCount
+          reactThumbsDownOnDuoCodeReviewCommentEventCount
+          requestReviewDuoCodeReviewOnMrByAuthorEventCount
+          requestReviewDuoCodeReviewOnMrByNonAuthorEventCount
+          excludedFilesFromDuoCodeReviewEventCount
+        }
       FIELDS
     end
 
@@ -69,6 +80,20 @@ RSpec.describe 'aiMetrics', :freeze_time, feature_category: :value_stream_manage
       }
     end
 
+    let(:usage_event_count_service_payload) do
+      {
+        encounter_duo_code_review_error_during_review_event_count: 10,
+        find_no_issues_duo_code_review_after_review_event_count: 20,
+        find_nothing_to_review_duo_code_review_on_mr_event_count: 30,
+        post_comment_duo_code_review_on_diff_event_count: 40,
+        react_thumbs_up_on_duo_code_review_comment_event_count: 50,
+        react_thumbs_down_on_duo_code_review_comment_event_count: 60,
+        request_review_duo_code_review_on_mr_by_author_event_count: 70,
+        request_review_duo_code_review_on_mr_by_non_author_event_count: 80,
+        excluded_files_from_duo_code_review_event_count: 90
+      }
+    end
+
     before do
       allow_next_instance_of(::Analytics::AiAnalytics::AiMetricsService,
         current_user, hash_including(expected_filters)) do |instance|
@@ -80,6 +105,12 @@ RSpec.describe 'aiMetrics', :freeze_time, feature_category: :value_stream_manage
         current_user, hash_including(code_suggestions_expected_filters)) do |instance|
         allow(instance).to receive(:execute)
           .and_return(ServiceResponse.success(payload: code_suggestion_usage_service_payload))
+      end
+
+      allow_next_instance_of(::Analytics::AiAnalytics::UsageEventCountService,
+        current_user, hash_including(expected_filters)) do |instance|
+        allow(instance).to receive(:execute)
+          .and_return(ServiceResponse.success(payload: usage_event_count_service_payload))
       end
 
       allow(Ability).to receive(:allowed?).and_call_original
@@ -107,6 +138,17 @@ RSpec.describe 'aiMetrics', :freeze_time, feature_category: :value_stream_manage
           'languages' => %w[csharp go],
           'acceptedLinesOfCode' => 100,
           'shownLinesOfCode' => 200
+        },
+        'codeReview' => {
+          'encounterDuoCodeReviewErrorDuringReviewEventCount' => 10,
+          'findNoIssuesDuoCodeReviewAfterReviewEventCount' => 20,
+          'findNothingToReviewDuoCodeReviewOnMrEventCount' => 30,
+          'postCommentDuoCodeReviewOnDiffEventCount' => 40,
+          'reactThumbsUpOnDuoCodeReviewCommentEventCount' => 50,
+          'reactThumbsDownOnDuoCodeReviewCommentEventCount' => 60,
+          'requestReviewDuoCodeReviewOnMrByAuthorEventCount' => 70,
+          'requestReviewDuoCodeReviewOnMrByNonAuthorEventCount' => 80,
+          'excludedFilesFromDuoCodeReviewEventCount' => 90
         }
       }
 
@@ -136,6 +178,12 @@ RSpec.describe 'aiMetrics', :freeze_time, feature_category: :value_stream_manage
         {}
       end
 
+      let(:usage_event_count_service_payload) do
+        {
+          post_comment_duo_code_review_on_diff_event_count: 99
+        }
+      end
+
       it 'returns all metrics filled by default' do
         expected_results = {
           'codeSuggestionsContributorsCount' => 3,
@@ -153,8 +201,20 @@ RSpec.describe 'aiMetrics', :freeze_time, feature_category: :value_stream_manage
             'languages' => nil,
             'acceptedLinesOfCode' => nil,
             'shownLinesOfCode' => nil
+          },
+          'codeReview' => {
+            'encounterDuoCodeReviewErrorDuringReviewEventCount' => nil,
+            'findNoIssuesDuoCodeReviewAfterReviewEventCount' => nil,
+            'findNothingToReviewDuoCodeReviewOnMrEventCount' => nil,
+            'postCommentDuoCodeReviewOnDiffEventCount' => 99,
+            'reactThumbsUpOnDuoCodeReviewCommentEventCount' => nil,
+            'reactThumbsDownOnDuoCodeReviewCommentEventCount' => nil,
+            'requestReviewDuoCodeReviewOnMrByAuthorEventCount' => nil,
+            'requestReviewDuoCodeReviewOnMrByNonAuthorEventCount' => nil,
+            'excludedFilesFromDuoCodeReviewEventCount' => nil
           }
         }
+
         expect(ai_metrics).to eq(expected_results)
       end
     end
