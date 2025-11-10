@@ -39770,7 +39770,7 @@ Returns [`AiAgent`](#aiagent).
 **Status**: Experiment.
 {{< /details >}}
 
-AI Catalog item of the project. This field can only be resolved for one project in any single request.
+AI Catalog item of the project.
 
 Returns [`AiCatalogItem`](#aicatalogitem).
 
@@ -39779,6 +39779,7 @@ Returns [`AiCatalogItem`](#aicatalogitem).
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="projectaicatalogitemid"></a>`id` | [`AiCatalogItemID!`](#aicatalogitemid) | Global ID of the catalog item to find. |
+| <a id="projectaicatalogitemshowsoftdeleted"></a>`showSoftDeleted` | [`Boolean`](#boolean) | Whether to show the item if it has been soft-deleted. Defaults to `false`. |
 
 ##### `Project.aiCatalogItems`
 

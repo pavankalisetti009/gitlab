@@ -1058,15 +1058,4 @@ RSpec.describe GitlabSchema.types['Project'], feature_category: :shared do
     it { is_expected.to have_graphql_resolver(Resolvers::Ai::DuoWorkflows::WorkflowEventsResolver) }
     it { is_expected.to have_graphql_arguments(:workflow_id) }
   end
-
-  describe 'ai_catalog_item' do
-    subject(:field) { described_class.fields['aiCatalogItem'] }
-
-    it 'limits field call count' do
-      extension = field.extensions.find { |e| e.is_a?(::Gitlab::Graphql::Limit::FieldCallCount) }
-
-      expect(extension).to be_present
-      expect(extension.options).to eq(limit: 1)
-    end
-  end
 end
