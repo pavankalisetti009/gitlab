@@ -20,6 +20,12 @@ RSpec.describe 'getting consumed AI catalog items', feature_category: :workflow_
     catalog_flows.map { |item| create(:ai_catalog_item_consumer, project: project, item: item) }
   end
 
+  let_it_be(:flow_triggers) do
+    configured_flows.map do |ai_catalog_item_consumer|
+      create(:ai_flow_trigger, ai_catalog_item_consumer: ai_catalog_item_consumer, project: project, config_path: nil)
+    end
+  end
+
   let_it_be(:configured_third_party_flows) do
     catalog_third_party_flows.map { |item| create(:ai_catalog_item_consumer, project: project, item: item) }
   end

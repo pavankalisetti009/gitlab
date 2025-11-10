@@ -229,6 +229,37 @@ RSpec.describe Ai::FlowTrigger, feature_category: :duo_agent_platform do
         )
       end
     end
+
+    describe '.by_item_consumer_ids' do
+      let_it_be(:item_consumer1) { create(:ai_catalog_item_consumer, :for_flow, project:) }
+      let_it_be(:item_consumer2) { create(:ai_catalog_item_consumer, :for_flow, project:) }
+      let_it_be(:item_consumer3) { create(:ai_catalog_item_consumer, :for_flow, project:) }
+
+      let_it_be(:trigger1) do
+        create(:ai_flow_trigger, project: project, ai_catalog_item_consumer: item_consumer1, config_path: nil)
+      end
+
+      let_it_be(:trigger2) do
+        create(:ai_flow_trigger, project: project, ai_catalog_item_consumer: item_consumer2, config_path: nil)
+      end
+
+      let_it_be(:trigger3) do
+        create(:ai_flow_trigger, project: project, ai_catalog_item_consumer: item_consumer3, config_path: nil)
+      end
+
+      let_it_be(:trigger_not_for_consumer) do
+        create(:ai_flow_trigger, project: project, ai_catalog_item_consumer: nil, config_path: 'bla')
+      end
+
+      it 'returns triggers filtered by item_consumer_ids' do
+        expect(described_class.by_item_consumer_ids([item_consumer1.id, item_consumer2.id]))
+          .to contain_exactly(trigger1, trigger2)
+
+        expect(described_class.by_item_consumer_ids([item_consumer1.id])).to contain_exactly(trigger1)
+        expect(described_class.by_item_consumer_ids([])).to be_empty
+        expect(described_class.by_item_consumer_ids(nil)).to contain_exactly(trigger_not_for_consumer)
+      end
+    end
   end
 
   describe '.triggered_on' do

@@ -12,8 +12,10 @@ RSpec.describe Types::Ai::Catalog::ItemConsumerType, feature_category: :workflow
       group
       id
       enabled
+      flow_trigger
       item
       organization
+      parent_item_consumer
       pinned_version_prefix
       service_account
       project
