@@ -37,10 +37,7 @@ RSpec.describe API::VirtualRegistries::Container::Cache::Entries, :aggregate_fai
 
     it { is_expected.to have_request_urgency(:low) }
 
-    it_behaves_like 'disabled container_virtual_registries feature flag'
-    it_behaves_like 'virtual registry disabled dependency proxy'
-    it_behaves_like 'virtual registry not authenticated user'
-    it_behaves_like 'container virtual registry feature not licensed'
+    it_behaves_like 'virtual registry not available', :container
 
     context 'with invalid upstream' do
       where(:upstream_id, :status) do
@@ -117,10 +114,7 @@ RSpec.describe API::VirtualRegistries::Container::Cache::Entries, :aggregate_fai
 
     it { is_expected.to have_request_urgency(:low) }
 
-    it_behaves_like 'disabled container_virtual_registries feature flag'
-    it_behaves_like 'virtual registry disabled dependency proxy'
-    it_behaves_like 'virtual registry not authenticated user'
-    it_behaves_like 'container virtual registry feature not licensed'
+    it_behaves_like 'virtual registry not available', :container
 
     context 'for different user roles' do
       where(:user_role, :status) do
