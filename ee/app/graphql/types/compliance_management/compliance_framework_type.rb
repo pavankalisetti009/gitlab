@@ -8,6 +8,8 @@ module Types
       graphql_name 'ComplianceFramework'
       description 'Represents a ComplianceFramework associated with a Project'
 
+      connection_type_class Types::CountableConnectionType
+
       field :id, GraphQL::Types::ID,
         null: false,
         description: 'Compliance framework ID.'
