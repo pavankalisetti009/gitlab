@@ -348,20 +348,8 @@ RSpec.describe Gitlab::Llm::TanukiBot, feature_category: :duo_chat do
         end
       end
 
-      context 'when ai_model_switching feature flag is enabled' do
-        it 'returns the global ID of the root namespace when found' do
-          expect(result).to eq(group.to_global_id)
-        end
-      end
-
-      context 'when ai_model_switching feature flag is disabled' do
-        before do
-          stub_feature_flags(ai_model_switching: false)
-        end
-
-        it 'returns nil even when namespace exists' do
-          expect(result).to be_nil
-        end
+      it 'returns the global ID of the root namespace when found' do
+        expect(result).to eq(group.to_global_id)
       end
     end
 
@@ -385,16 +373,6 @@ RSpec.describe Gitlab::Llm::TanukiBot, feature_category: :duo_chat do
 
         it 'returns the global ID of the default namespace' do
           expect(described_class.root_namespace_id(user: user)).to eq(default_group.to_global_id)
-        end
-
-        context 'when ai_model_switching feature flag is disabled' do
-          before do
-            stub_feature_flags(ai_model_switching: false)
-          end
-
-          it 'returns nil' do
-            expect(described_class.root_namespace_id(user: user)).to be_nil
-          end
         end
       end
 
@@ -438,14 +416,6 @@ RSpec.describe Gitlab::Llm::TanukiBot, feature_category: :duo_chat do
           it { is_expected.to be_falsey }
         end
 
-        context 'when ai_model_switching feature flag is disabled' do
-          before do
-            stub_feature_flags(ai_model_switching: false)
-          end
-
-          it { is_expected.to be_falsey }
-        end
-
         context 'when ai_user_model_switching feature flag is disabled' do
           before do
             stub_feature_flags(ai_user_model_switching: false)
@@ -459,46 +429,40 @@ RSpec.describe Gitlab::Llm::TanukiBot, feature_category: :duo_chat do
             stub_feature_flags(duo_agent_platform_model_selection: true)
           end
 
-          context 'when ai_model_switching feature flag is enabled' do
+          context 'when ai_user_model_switching feature flag is enabled' do
             before do
-              stub_feature_flags(ai_model_switching: true)
+              stub_feature_flags(ai_user_model_switching: true)
+
+              allow_next_instance_of(Ai::FeatureSettingSelectionService) do |service|
+                allow(service).to receive(:execute).and_return(service_response)
+              end
             end
 
-            context 'when ai_user_model_switching feature flag is enabled' do
-              before do
-                stub_feature_flags(ai_user_model_switching: true)
+            context 'when the feature setting returns ai_feature_setting payload' do
+              let(:payload) { build(:ai_feature_setting, feature: :duo_agent_platform) }
+              let(:service_response) { ServiceResponse.success(payload: payload) }
 
-                allow_next_instance_of(Ai::FeatureSettingSelectionService) do |service|
-                  allow(service).to receive(:execute).and_return(service_response)
-                end
-              end
+              it { is_expected.to be_falsey }
+            end
 
-              context 'when the feature setting returns ai_feature_setting payload' do
-                let(:payload) { build(:ai_feature_setting, feature: :duo_agent_platform) }
-                let(:service_response) { ServiceResponse.success(payload: payload) }
+            context 'when the feature setting returns instance_model_selection_feature_setting payload' do
+              let(:payload) { build(:instance_model_selection_feature_setting, feature: :duo_agent_platform) }
+              let(:service_response) { ServiceResponse.success(payload: payload) }
 
-                it { is_expected.to be_falsey }
-              end
+              it { is_expected.to be_truthy }
+            end
 
-              context 'when the feature setting returns instance_model_selection_feature_setting payload' do
-                let(:payload) { build(:instance_model_selection_feature_setting, feature: :duo_agent_platform) }
-                let(:service_response) { ServiceResponse.success(payload: payload) }
+            context 'when the feature setting returns ai_namespace_feature_setting payload' do
+              let(:payload) { build(:ai_namespace_feature_setting, namespace: group, feature: :duo_agent_platform) }
+              let(:service_response) { ServiceResponse.success(payload: payload) }
 
-                it { is_expected.to be_truthy }
-              end
+              it { is_expected.to be_truthy }
+            end
 
-              context 'when the feature setting returns ai_namespace_feature_setting payload' do
-                let(:payload) { build(:ai_namespace_feature_setting, namespace: group, feature: :duo_agent_platform) }
-                let(:service_response) { ServiceResponse.success(payload: payload) }
+            context 'when the feature setting service returns an error' do
+              let(:service_response) { ServiceResponse.error(message: "error!") }
 
-                it { is_expected.to be_truthy }
-              end
-
-              context 'when the feature setting service returns an error' do
-                let(:service_response) { ServiceResponse.error(message: "error!") }
-
-                it { is_expected.to be_falsey }
-              end
+              it { is_expected.to be_falsey }
             end
           end
         end
@@ -518,16 +482,6 @@ RSpec.describe Gitlab::Llm::TanukiBot, feature_category: :duo_chat do
         context 'when duo_agent_platform_model_selection feature flag is disabled' do
           before do
             stub_feature_flags(duo_agent_platform_model_selection: false)
-          end
-
-          it 'returns false' do
-            expect(described_class.user_model_selection_enabled?(user: user)).to be(false)
-          end
-        end
-
-        context 'when ai_model_switching feature flag is disabled' do
-          before do
-            stub_feature_flags(ai_model_switching: false)
           end
 
           it 'returns false' do
