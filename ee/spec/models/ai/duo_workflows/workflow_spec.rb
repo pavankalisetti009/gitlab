@@ -354,6 +354,12 @@ RSpec.describe Ai::DuoWorkflows::Workflow, feature_category: :duo_agent_platform
       it { is_expected.to be_truthy }
     end
 
+    context 'when workflow_definition is another foundational chat agent' do
+      let(:workflow) { build(:duo_workflows_workflow, workflow_definition: 'duo_planner/experimental') }
+
+      it { is_expected.to be_truthy }
+    end
+
     context 'when workflow_definition is different from chat' do
       let(:workflow) { build(:duo_workflows_workflow, workflow_definition: 'awesome workflow') }
 

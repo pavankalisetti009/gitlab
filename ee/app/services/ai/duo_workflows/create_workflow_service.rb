@@ -58,7 +58,7 @@ module Ai
       end
 
       def check_access
-        if workflow_definition == 'chat' || workflow_definition == :chat
+        if chat?
           check_agentic_chat_access
         else
           check_duo_workflow_access
@@ -79,6 +79,10 @@ module Ai
 
       def workflow_definition
         @params['workflow_definition'] || @params[:workflow_definition]
+      end
+
+      def chat?
+        FoundationalChatAgent.foundational_workflow_definition?(workflow_definition)
       end
 
       def container_attributes

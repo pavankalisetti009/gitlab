@@ -178,7 +178,7 @@ module Ai
       end
 
       def chat?
-        workflow_definition == 'chat'
+        ::Ai::FoundationalChatAgent.foundational_workflow_definition?(workflow_definition)
       end
 
       def from_pipeline?
