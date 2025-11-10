@@ -147,31 +147,44 @@ RSpec.describe AuditEvents::GroupAuditEventFinder, feature_category: :audit_even
     end
 
     context 'when using keyset pagination' do
-      let(:params) { { pagination: 'keyset', sort: 'created_desc' } }
+      let(:params) { { pagination: 'keyset' } }
 
-      it 'orders by id only, not created_at' do
+      it 'orders by created_at and id for partition pruning' do
         result = finder.execute
 
-        expect(result.to_sql).not_to include('created_at')
+        expect(result.to_sql).to include('created_at')
         expect(result.to_sql).to include('ORDER BY')
+        expect(result.to_sql).to include('"group_audit_events"."created_at" DESC')
         expect(result.to_sql).to include('"group_audit_events"."id" DESC')
       end
 
-      it 'does not raise error when generating keyset cursor' do
+      it 'returns results in correct order' do
+        result = finder.execute
+
+        expect(result.to_a).to eq([group_audit_event_2, group_audit_event_1])
+      end
+
+      it 'does not raise error when generating keyset cursor with paginator' do
         result = finder.execute.limit(1)
 
         expect do
-          Gitlab::Pagination::Keyset::Paginator.new(scope: result).cursor_for_next_page
+          paginator = Gitlab::Pagination::Keyset::Paginator.new(scope: result)
+          cursor_data = paginator.cursor_for_next_page
+
+          if cursor_data
+            decoded = Gitlab::Pagination::Keyset::Paginator::Base64CursorConverter.parse(cursor_data)
+            expect(decoded.keys).to include('created_at', 'id')
+          end
         end.not_to raise_error
       end
 
       context 'with created_asc sort' do
         let(:params) { { pagination: 'keyset', sort: 'created_asc' } }
 
-        it 'orders by id asc only' do
+        it 'orders by created_at asc and id asc' do
           result = finder.execute
 
-          expect(result.to_sql).not_to include('created_at')
+          expect(result.to_sql).to include('"group_audit_events"."created_at" ASC')
           expect(result.to_sql).to include('"group_audit_events"."id" ASC')
         end
       end
@@ -241,12 +254,12 @@ RSpec.describe AuditEvents::GroupAuditEventFinder, feature_category: :audit_even
       it 'uses optimization' do
         expect(Gitlab::Pagination::Offset::PaginationWithIndexOnlyScan)
           .to receive(:new)
-          .with(hash_including(
-            page: 101,
-            per_page: 10,
-            scope: kind_of(ActiveRecord::Relation)
-          ))
-          .and_call_original
+                .with(hash_including(
+                  page: 101,
+                  per_page: 10,
+                  scope: kind_of(ActiveRecord::Relation)
+                ))
+                .and_call_original
 
         finder.execute
       end
@@ -261,8 +274,8 @@ RSpec.describe AuditEvents::GroupAuditEventFinder, feature_category: :audit_even
         it 'uses optimization and returns correct results' do
           expect(Gitlab::Pagination::Offset::PaginationWithIndexOnlyScan)
             .to receive(:new)
-            .with(hash_including(page: 101, per_page: 10))
-            .and_call_original
+                  .with(hash_including(page: 101, per_page: 10))
+                  .and_call_original
 
           results = finder.execute
 
@@ -276,8 +289,8 @@ RSpec.describe AuditEvents::GroupAuditEventFinder, feature_category: :audit_even
         it 'uses optimization and returns correct results' do
           expect(Gitlab::Pagination::Offset::PaginationWithIndexOnlyScan)
             .to receive(:new)
-            .with(hash_including(page: 101, per_page: 10))
-            .and_call_original
+                  .with(hash_including(page: 101, per_page: 10))
+                  .and_call_original
 
           results = finder.execute
 
