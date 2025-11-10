@@ -1,5 +1,5 @@
 <script>
-import { GlAlert, GlButton, GlLoadingIcon } from '@gitlab/ui';
+import { GlAlert, GlButton } from '@gitlab/ui';
 import { uniqBy } from 'lodash';
 import { s__ } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
@@ -18,7 +18,6 @@ export default {
     HelpPageLink,
     CreateLifecycleModal,
     LifecycleDetail,
-    GlLoadingIcon,
     SettingsBlock,
   },
   props: {
@@ -34,7 +33,7 @@ export default {
       errorDetail: '',
       selectedLifecycleId: null,
       showCreateLifecycleModal: false,
-      initialLifecyclesLoaded: false,
+      statusesUpdated: false,
     };
   },
   apollo: {
@@ -49,7 +48,7 @@ export default {
         return data.namespace?.lifecycles?.nodes || [];
       },
       result() {
-        this.initialLifecyclesLoaded = true;
+        this.statusesUpdated = false;
       },
       error(error) {
         this.errorText = s__('WorkItem|Failed to load lifecycles.');
@@ -62,8 +61,8 @@ export default {
     selectedLifecycle() {
       return this.lifecycles.find((lifecycle) => lifecycle.id === this.selectedLifecycleId);
     },
-    loadingInitialLifecycles() {
-      return !this.initialLifecyclesLoaded && this.$apollo.queries.lifecycles.loading;
+    loadingLifecycles() {
+      return !this.statusesUpdated && this.$apollo.queries.lifecycles.loading;
     },
     allNamespaceStatuses() {
       const allStatuses = this.lifecycles.flatMap((lifecycle) => lifecycle.statuses);
@@ -83,6 +82,10 @@ export default {
     },
     handleLifecycleUpdate() {
       this.$apollo.queries.lifecycles.refetch();
+    },
+    handleLifecycleStatusesUpdated() {
+      this.statusesUpdated = true;
+      this.handleLifecycleUpdate();
     },
     closeCreateLifecycleModal() {
       this.showCreateLifecycleModal = false;
@@ -127,7 +130,28 @@ export default {
       </p>
     </template>
     <template #default>
-      <gl-loading-icon v-if="loadingInitialLifecycles" size="lg" class="gl-mt-5" />
+      <div
+        v-if="loadingLifecycles"
+        data-testid="lifecycle-loading-skeleton"
+        class="gl-flex gl-flex-col gl-gap-4"
+      >
+        <div
+          v-for="i in 4"
+          :key="i"
+          class="gl-border gl-rounded-lg gl-bg-white gl-px-4 gl-py-4 gl-pt-4"
+        >
+          <div
+            class="gl-animate-skeleton-loader gl-my-3 gl-h-4 gl-max-w-[20%] gl-rounded-base"
+          ></div>
+          <div class="gl-mt-3 gl-flex gl-h-4 gl-gap-3">
+            <div
+              v-for="j in 5"
+              :key="j"
+              class="gl-animate-skeleton-loader gl-mb-7 gl-h-4 gl-w-[75px] gl-rounded-lg"
+            ></div>
+          </div>
+        </div>
+      </div>
 
       <gl-alert
         v-if="errorText"
@@ -187,7 +211,7 @@ export default {
         :full-path="fullPath"
         :statuses="allNamespaceStatuses"
         @close="closeModal"
-        @lifecycle-updated="handleLifecycleUpdate"
+        @lifecycle-updated="handleLifecycleStatusesUpdated"
       />
 
       <create-lifecycle-modal
