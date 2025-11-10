@@ -13,7 +13,6 @@ describe('EE Group Settings App', () => {
     adminVirtualRegistryAbility = true,
     mavenVirtualRegistryFeature = true,
     packagesVirtualRegistryLicense = true,
-    uiForVirtualRegistriesFeature = true,
   } = {}) => {
     handleSuccessMock = jest.fn();
     handleErrorMock = jest.fn();
@@ -25,7 +24,6 @@ describe('EE Group Settings App', () => {
         },
         glFeatures: {
           mavenVirtualRegistry: mavenVirtualRegistryFeature,
-          uiForVirtualRegistries: uiForVirtualRegistriesFeature,
         },
         glLicensedFeatures: {
           packagesVirtualRegistry: packagesVirtualRegistryLicense,
@@ -83,11 +81,10 @@ describe('EE Group Settings App', () => {
   });
 
   describe.each`
-    description                                 | options
-    ${'ability adminVirtualRegistriesSetting'}  | ${{ adminVirtualRegistryAbility: false }}
-    ${'maven virtual registry feature flag'}    | ${{ mavenVirtualRegistryFeature: false }}
-    ${'packages virtual registry license'}      | ${{ packagesVirtualRegistryLicense: false }}
-    ${'ui for virtual registries feature flag'} | ${{ uiForVirtualRegistriesFeature: false }}
+    description                                | options
+    ${'ability adminVirtualRegistriesSetting'} | ${{ adminVirtualRegistryAbility: false }}
+    ${'maven virtual registry feature flag'}   | ${{ mavenVirtualRegistryFeature: false }}
+    ${'packages virtual registry license'}     | ${{ packagesVirtualRegistryLicense: false }}
   `('when $description is false', ({ options }) => {
     beforeEach(() => {
       mountComponent(options);

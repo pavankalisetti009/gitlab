@@ -31,14 +31,6 @@ RSpec.shared_examples 'disallowed access to virtual registry' do
     it_behaves_like 'returning response status', :not_found
   end
 
-  context 'when feature flag ui_for_virtual_registries is disabled' do
-    before do
-      stub_feature_flags(ui_for_virtual_registries: false)
-    end
-
-    it_behaves_like 'returning response status', :not_found
-  end
-
   context 'when virtual registries setting enabled is false' do
     before do
       allow(VirtualRegistries::Setting).to receive(:cached_for_group).with(group).and_return(build_stubbed(
