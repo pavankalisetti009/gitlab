@@ -32,7 +32,8 @@ module EpicParamActions
   end
 
   def has_epic_filter?
-    safe_params[:epic_id] || safe_params[:epic_wildcard_id] || safe_params.dig(:not, :epic_id)
+    safe_params[:epic_id] || safe_params[:epic_wildcard_id] ||
+      (safe_params[:not].respond_to?(:key?) && safe_params.dig(:not, :epic_id))
   end
 
   def work_item_id_from_epic_id(epic_id)
