@@ -524,10 +524,9 @@ RSpec.describe Notes::QuickActionsService, feature_category: :team_planning do
 
         it 'filters out Duo bot and shows access error message' do
           _, update_params, message = service.execute(note)
-
-          expect(message).to include("Your account doesn't have GitLab Duo access")
+          expect(message).to include("You don't have access to GitLab Duo Code Review")
           expect(update_params[:reviewer_ids]).to be_nil
-          expect(merge_request.duo_code_review_attempted).to be true
+          expect(merge_request.duo_code_review_attempted).to eq(:manual)
         end
 
         context 'when also requesting a review from a regular user' do
@@ -535,11 +534,10 @@ RSpec.describe Notes::QuickActionsService, feature_category: :team_planning do
 
           it 'still requests a review from regular reviewers along with Duo error message' do
             _, update_params, message = service.execute(note)
-
-            expect(message).to include("Your account doesn't have GitLab Duo access")
+            expect(message).to include("You don't have access to GitLab Duo Code Review")
             expect(message).to include("Requested a review from @#{user.username}")
             expect(update_params[:reviewer_ids]).to contain_exactly(user.id)
-            expect(merge_request.duo_code_review_attempted).to be true
+            expect(merge_request.duo_code_review_attempted).to eq(:manual)
           end
         end
       end

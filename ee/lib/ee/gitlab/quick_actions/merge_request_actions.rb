@@ -36,7 +36,7 @@ module EE
             next users if quick_action_target.ai_review_merge_request_allowed?(current_user)
 
             # Set flag to use in execution_message and flash message in controller
-            quick_action_target.duo_code_review_attempted = true
+            quick_action_target.duo_code_review_attempted = :manual
 
             users - [duo_bot]
           end
@@ -46,8 +46,7 @@ module EE
         def process_reviewer_users_message
           return unless quick_action_target.duo_code_review_attempted
 
-          s_("DuoCodeReview|Your account doesn't have GitLab Duo access. " \
-            "Please contact your system administrator for access.")
+          ::Ai::CodeReview.manual_error_message
         end
       end
     end

@@ -19,7 +19,7 @@ module EE
           duo_bot = ::Users::Internal.duo_code_review_bot
           merge_request.reviewers << duo_bot unless merge_request.reviewer_ids.include?(duo_bot.id)
         else
-          merge_request.duo_code_review_attempted = true
+          merge_request.duo_code_review_attempted = :automatic
         end
       end
 
