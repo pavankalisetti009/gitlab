@@ -411,19 +411,20 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
           end
 
           it 'handles parameters appropriately' do
+            allow(::Geo::BulkPrimaryVerificationService).to receive(:new).and_call_original
             list = create_list(:external_merge_request_diff, 3, :verification_failed)
-
-            expected_ids = [list.first.verification_state_object.id, list.last.verification_state_object.id]
-            expected_params = { checksum_state: "verification_failed", identifiers: expected_ids }
-            expect(::Geo::BulkPrimaryVerificationService).to receive(:new)
-                                                               .with("MergeRequestDiff", expected_params)
-                                                               .and_call_original
 
             put api("#{api_path}?identifiers[]=#{list.first.id}&identifiers[]=#{list.last.id}&checksum_state=failed",
               admin,
               admin_mode: true)
 
             expect(response).to have_gitlab_http_status(:ok)
+            expect(::Geo::BulkPrimaryVerificationService).to have_received(:new) do |*args|
+              expect(args.first).to eq('MergeRequestDiff')
+              expect(args.second[:checksum_state]).to eq("verification_failed")
+              expect(args.second[:identifiers]).to contain_exactly(list.first.verification_state_object.id,
+                list.last.verification_state_object.id)
+            end
           end
 
           context 'when service returns an error' do
