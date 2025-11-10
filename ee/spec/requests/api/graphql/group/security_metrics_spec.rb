@@ -100,12 +100,12 @@ RSpec.describe 'Security metrics through GroupQuery', :freeze_time, feature_cate
         allow_next_instance_of(::Security::VulnerabilityElasticCountBySeverityFinder) do |finder|
           allow(finder).to receive(:execute).and_return(
             {
-              'critical' => 1,
-              'high' => 1,
-              'medium' => 1,
-              'low' => 0,
-              'info' => 0,
-              'unknown' => 0
+              'critical' => { 'count' => 1, 'avg_detected_at' => {}, 'median_detected_at' => {} },
+              'high' => { 'count' => 1, 'avg_detected_at' => {}, 'median_detected_at' => {} },
+              'medium' => { 'count' => 1, 'avg_detected_at' => {}, 'median_detected_at' => {} },
+              'low' => { 'count' => 0, 'avg_detected_at' => {}, 'median_detected_at' => {} },
+              'info' => { 'count' => 0, 'avg_detected_at' => {}, 'median_detected_at' => {} },
+              'unknown' => { 'count' => 0, 'avg_detected_at' => {}, 'median_detected_at' => {} }
             }
           )
         end

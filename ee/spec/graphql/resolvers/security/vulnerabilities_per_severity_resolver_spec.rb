@@ -39,6 +39,7 @@ RSpec.describe Resolvers::Security::VulnerabilitiesPerSeverityResolver, :elastic
           report_type: config[:report_type],
           project: project,
           created_at: date,
+          detected_at: date,
           severity: config[:severity]
         )
       end
@@ -48,9 +49,9 @@ RSpec.describe Resolvers::Security::VulnerabilitiesPerSeverityResolver, :elastic
   let_it_be(:additional_project_vulnerabilities) do
     [
       create(:vulnerability, :with_read, severity: :critical, report_type: :sast, project: project_2,
-        created_at: '2019-10-15'),
+        created_at: '2019-10-15', detected_at: '2019-10-15'),
       create(:vulnerability, :with_read, severity: :low, report_type: :dast, project: project_2,
-        created_at: '2019-10-15')
+        created_at: '2019-10-15', detected_at: '2019-10-15')
     ]
   end
 
@@ -62,6 +63,8 @@ RSpec.describe Resolvers::Security::VulnerabilitiesPerSeverityResolver, :elastic
       stub_licensed_features(security_dashboard: true)
       stub_feature_flags(group_security_dashboard_new: true)
       stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
+      # Ensure the migration is marked as completed so age stats are included
+      set_elasticsearch_migration_to(:add_detected_at_field_to_vulnerability)
     end
 
     shared_examples 'returns resource not available' do
@@ -83,10 +86,11 @@ RSpec.describe Resolvers::Security::VulnerabilitiesPerSeverityResolver, :elastic
     shared_examples 'counts only open vulnerabilities' do
       let_it_be(:additional_project_vulnerabilities) do
         additional_project_vulnerabilities << create(:vulnerability, :with_read, project: project, state: :resolved,
-          report_type: :sast, severity: :critical, created_at: '2019-10-17')
+          report_type: :sast, severity: :critical, created_at: '2019-10-17', detected_at: '2019-10-17')
 
         additional_project_vulnerabilities << create(:vulnerability, :with_read, project: project, state: :resolved,
-          report_type: :dast, severity: :critical, created_at: '2019-10-17', resolved_on_default_branch: true)
+          report_type: :dast, severity: :critical, created_at: '2019-10-17', detected_at: '2019-10-17',
+          resolved_on_default_branch: true)
       end
 
       it 'does not include the closed and resolved on default branch vulnerability' do
@@ -116,6 +120,13 @@ RSpec.describe Resolvers::Security::VulnerabilitiesPerSeverityResolver, :elastic
           expect(resolved_metrics['low'][:count]).to eq(4)
           expect(resolved_metrics['medium'][:count]).to eq(3)
           expect(resolved_metrics['high'][:count]).to eq(6)
+        end
+
+        it 'includes mean and median age for each severity', :aggregate_failures do
+          expect(resolved_metrics['critical'][:mean_age]).to be_a(Float).and be > 0
+          expect(resolved_metrics['critical'][:median_age]).to be_a(Float).and be > 0
+          expect(resolved_metrics['low'][:mean_age]).to be_a(Float).and be > 0
+          expect(resolved_metrics['low'][:median_age]).to be_a(Float).and be > 0
         end
 
         it_behaves_like 'counts only open vulnerabilities'
