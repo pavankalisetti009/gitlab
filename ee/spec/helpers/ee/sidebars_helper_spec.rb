@@ -202,7 +202,7 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
       end
 
       describe 'tier badge attributes', :saas do
-        let(:namespace) { build(:gitlab_subscription, :free, namespace: build_stubbed(:group)).namespace }
+        let(:namespace) { build(:gitlab_subscription, :free, namespace: build_stubbed(:group, :private)).namespace }
         let(:project) { build(:project, namespace: namespace) }
 
         before do

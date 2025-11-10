@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe GitlabSubscriptions::TierBadgePresenter, :saas, feature_category: :subscription_management do
   describe '#attributes' do
-    let(:namespace) { build(:gitlab_subscription, :free, namespace: build_stubbed(:group)).namespace }
+    let(:namespace) { build(:gitlab_subscription, :free, namespace: build_stubbed(:group, :private)).namespace }
     let(:user) { build_stubbed(:user) }
 
     subject(:attributes) { described_class.new(user, namespace: namespace).attributes }
@@ -27,6 +27,25 @@ RSpec.describe GitlabSubscriptions::TierBadgePresenter, :saas, feature_category:
         context 'when gitlab_com_subscriptions feature is not available' do
           before do
             stub_saas_features(gitlab_com_subscriptions: false)
+          end
+
+          it 'returns empty hash' do
+            expect(attributes).to eq({})
+          end
+        end
+
+        context 'when namespace is public' do
+          let(:namespace) { build(:gitlab_subscription, :free, namespace: build_stubbed(:group, :public)).namespace }
+
+          it 'returns empty hash' do
+            expect(attributes).to eq({})
+          end
+        end
+
+        context 'when namespace is a user namespace' do
+          let(:namespace) do
+            build(:gitlab_subscription, :free,
+              namespace: build_stubbed(:user_namespace, visibility_level: Gitlab::VisibilityLevel::PRIVATE)).namespace
           end
 
           it 'returns empty hash' do
