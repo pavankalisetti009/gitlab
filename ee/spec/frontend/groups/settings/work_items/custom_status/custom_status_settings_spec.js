@@ -1,6 +1,6 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlAlert, GlButton, GlLoadingIcon } from '@gitlab/ui';
+import { GlAlert, GlButton } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -126,7 +126,7 @@ describe('CustomStatusSettings', () => {
   const findCreateLifecycleButton = () => wrapper.findByTestId('create-lifecycle');
   const findLifecyclesDetails = () => wrapper.findAllComponents(LifecycleDetail);
   const findCreateLifecycleModal = () => wrapper.findComponent(CreateLifecycleModal);
-  const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
+  const findLoadingSkeleton = () => wrapper.findByTestId('lifecycle-loading-skeleton');
   const findStatusModal = () => wrapper.findComponent(StatusModal);
   const findSettingsBlock = () => wrapper.findComponent(SettingsBlock);
 
@@ -248,32 +248,31 @@ describe('CustomStatusSettings', () => {
     });
   });
 
-  describe('initial loading state', () => {
+  describe('initial loading skeleton', () => {
     it('shows loading icon while loading initial lifecycles', () => {
       createComponent();
 
-      expect(findLoadingIcon().exists()).toBe(true);
-      expect(findLoadingIcon().props('size')).toBe('lg');
+      expect(findLoadingSkeleton().exists()).toBe(true);
     });
 
     it('hides loading icon after initial lifecycles are loaded', async () => {
       createComponent();
       await waitForPromises();
 
-      expect(findLoadingIcon().exists()).toBe(false);
+      expect(findLoadingSkeleton().exists()).toBe(false);
     });
 
-    it('hides loading icon on subsequent refetches', async () => {
+    it('does not hide loading skeleton on deletion', async () => {
       createComponent();
       await waitForPromises();
 
-      expect(findLoadingIcon().exists()).toBe(false);
+      expect(findLoadingSkeleton().exists()).toBe(false);
 
       // Trigger a refetch by emitting the deleted event from LifecycleDetail
       const firstLifecycleDetail = findLifecyclesDetails().at(0);
       await firstLifecycleDetail.vm.$emit('deleted');
 
-      expect(findLoadingIcon().exists()).toBe(false);
+      expect(findLoadingSkeleton().exists()).toBe(true);
     });
   });
 
