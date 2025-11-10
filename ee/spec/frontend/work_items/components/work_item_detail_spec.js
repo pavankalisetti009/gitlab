@@ -56,7 +56,6 @@ describe('EE WorkItemDetail component', () => {
       },
       provide: {
         glFeatures: {
-          workItemsAlpha: true,
           ...glFeatures,
         },
         duoRemoteFlowsAvailability: true,
