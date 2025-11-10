@@ -287,6 +287,12 @@ module EE
 
           store.subscribe ::Search::Zoekt::SaasRolloutEventWorker,
             to: ::Search::Zoekt::SaasRolloutEvent
+
+          store.subscribe ::Search::Zoekt::TooManyReplicasEventWorker,
+            to: ::Search::Zoekt::TooManyReplicasEvent,
+            if: ->(_event) do
+              ::Feature.enabled?(:zoekt_too_many_replicas_event, ::Feature.current_request)
+            end
         end
 
         def subscribe_to_elastic_events(store)

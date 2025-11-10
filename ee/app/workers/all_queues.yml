@@ -3536,6 +3536,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: search_zoekt_too_many_replicas_event
+  :worker_name: Search::Zoekt::TooManyReplicasEventWorker
+  :feature_category: :global_search
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: search_zoekt_update_index_used_storage_bytes_event
   :worker_name: Search::Zoekt::UpdateIndexUsedStorageBytesEventWorker
   :feature_category: :global_search
