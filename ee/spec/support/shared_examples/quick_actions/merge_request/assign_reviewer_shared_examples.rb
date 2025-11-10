@@ -37,9 +37,9 @@ RSpec.shared_examples 'assigns one or more reviewers to the merge request' do |e
       it 'filters out Duo bot and shows access error message' do
         _, update_params, message = service.execute(note)
 
-        expect(message).to include("Your account doesn't have GitLab Duo access")
+        expect(message).to include("You don't have access to GitLab Duo Code Review")
         expect(update_params[:reviewer_ids]).to be_nil
-        expect(target.duo_code_review_attempted).to be true
+        expect(target.duo_code_review_attempted).to eq(:manual)
       end
 
       context 'when also assigning a regular user' do
@@ -48,10 +48,10 @@ RSpec.shared_examples 'assigns one or more reviewers to the merge request' do |e
         it 'still assigns regular reviewers along with Duo error message' do
           _, update_params, message = service.execute(note)
 
-          expect(message).to include("Your account doesn't have GitLab Duo access")
+          expect(message).to include("You don't have access to GitLab Duo Code Review")
           expect(message).to include("Assigned @#{user.username}")
           expect(update_params[:reviewer_ids]).to contain_exactly(user.id)
-          expect(target.duo_code_review_attempted).to be true
+          expect(target.duo_code_review_attempted).to eq(:manual)
         end
       end
     end

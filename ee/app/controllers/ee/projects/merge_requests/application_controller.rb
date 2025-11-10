@@ -5,6 +5,7 @@ module EE
     module MergeRequests
       module ApplicationController
         extend ActiveSupport::Concern
+        include ::Ai::CodeReview
 
         private
 
@@ -75,8 +76,14 @@ module EE
         def display_duo_seat_warning
           return unless merge_request.duo_code_review_attempted
 
-          flash[:alert] = s_("DuoCodeReview|Your account doesn't have GitLab Duo access. " \
-            "Please contact your system administrator for access.")
+          message = case merge_request.duo_code_review_attempted
+                    when :automatic
+                      automatic_error_message
+                    when :manual
+                      manual_error_message
+                    end
+
+          flash[:alert] = message
         end
       end
     end

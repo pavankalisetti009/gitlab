@@ -34,7 +34,7 @@ RSpec.describe ::MergeRequests::RequestReviewService, feature_category: :code_re
 
         response = service.execute(merge_request, user)
         expect(response[:status]).to eq :error
-        expect(response[:message]).to include "Your account doesn't have GitLab Duo access."
+        expect(response[:message]).to include "You don't have access to GitLab Duo Code Review."
       end
     end
 
