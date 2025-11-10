@@ -18,7 +18,7 @@ module EE
         user_id: user.to_global_id,
         project_id: (project.to_global_id if project&.persisted?),
         namespace_id: (group.to_global_id if group&.persisted?),
-        root_namespace_id: ::Gitlab::Llm::TanukiBot.root_namespace_id,
+        root_namespace_id: ::Gitlab::Llm::TanukiBot.root_namespace_id(user: user),
         resource_id: ::Gitlab::Llm::TanukiBot.resource_id,
         metadata: ::Gitlab::DuoWorkflow::Client.metadata(user).to_json,
         user_model_selection_enabled: user_model_selection_enabled.to_s,
