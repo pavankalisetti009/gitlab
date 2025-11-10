@@ -126,6 +126,7 @@ describe('PolicyScope', () => {
   it('should change scope and reset it', async () => {
     await findProjectScopeTypeDropdown().vm.$emit('select', PROJECTS_WITH_FRAMEWORK);
 
+    expect(findComplianceFrameworkDropdown().props('withItemsCount')).toBe(true);
     expect(findComplianceFrameworkDropdown().exists()).toBe(true);
 
     expect(wrapper.emitted('changed')).toEqual([

@@ -1,13 +1,14 @@
 <script>
-import { debounce, uniqBy } from 'lodash';
+import { debounce, uniqBy, get } from 'lodash';
 import { GlButton, GlCollapsibleListbox, GlLabel, GlFormGroup, GlPopover } from '@gitlab/ui';
 import produce from 'immer';
-import { s__, __ } from '~/locale';
+import { s__, __, n__ } from '~/locale';
 import { convertToGraphQLId, getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { TYPE_COMPLIANCE_FRAMEWORK } from '~/graphql_shared/constants';
 import { renderMultiSelectText } from 'ee/security_orchestration/components/policy_editor/utils';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 import ComplianceFrameworkFormModal from 'ee/groups/settings/compliance_frameworks/components/form_modal.vue';
+import ProjectsCountMessage from 'ee/security_orchestration/components/shared/projects_count_message.vue';
 import { searchInItemsProperties } from '~/lib/utils/search_utils';
 import getComplianceFrameworksForDropdownQuery from './graphql/get_compliance_frameworks_for_dropdown.query.graphql';
 
@@ -33,6 +34,7 @@ export default {
     GlFormGroup,
     GlLabel,
     GlPopover,
+    ProjectsCountMessage,
   },
   apollo: {
     complianceFrameworks: {
@@ -42,6 +44,7 @@ export default {
           search: this.searchTerm,
           fullPath: this.fullPath,
           ids: null,
+          withCount: this.withItemsCount,
         };
       },
       update(data) {
@@ -55,6 +58,10 @@ export default {
 
         if (this.selectedButNotLoadedComplianceIds.length > 0) {
           this.fetchComplianceFrameworksByIds();
+        }
+
+        if (!this.allItemsCountSaved) {
+          this.allItemsCount = get(data, 'namespace.complianceFrameworks.count', 0);
         }
       },
       error() {
@@ -102,6 +109,11 @@ export default {
       required: false,
       default: true,
     },
+    withItemsCount: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   data() {
     return {
@@ -109,11 +121,21 @@ export default {
       searchTerm: '',
       pageInfo: {},
       namespaceId: null,
+      allItemsCount: 0,
     };
   },
   computed: {
+    allItemsCountSaved() {
+      return this.allItemsCount > 0;
+    },
+    allItemsLoaded() {
+      return this.complianceFrameworks.length === this.allItemsCount;
+    },
     hasNextPage() {
       return this.pageInfo.hasNextPage;
+    },
+    itemsText() {
+      return n__('framework', 'frameworks', this.allItemsCount);
     },
     formattedSelectedFrameworkIds() {
       if (this.useShortIdFormat) {
@@ -177,6 +199,9 @@ export default {
     },
     listBoxVariant() {
       return this.showError ? 'danger' : 'default';
+    },
+    showFooter() {
+      return this.withItemsCount && !this.loading;
     },
   },
   created() {
@@ -324,6 +349,15 @@ export default {
           </div>
         </template>
         <template #footer>
+          <div v-if="showFooter" class="gl-border-t gl-px-4 gl-py-2">
+            <projects-count-message
+              :count="filteredListBoxItems.length"
+              :info-text="itemsText"
+              :total-count="allItemsCount"
+              :show-info-icon="!allItemsLoaded"
+            />
+          </div>
+
           <div class="gl-border-t">
             <gl-button
               category="tertiary"
