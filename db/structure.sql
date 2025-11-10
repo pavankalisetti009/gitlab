@@ -48704,7 +48704,7 @@ ALTER TABLE ONLY bulk_import_exports
     ADD CONSTRAINT fk_39c726d3b5 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY ai_catalog_item_consumers
-    ADD CONSTRAINT fk_39cdf1cefd FOREIGN KEY (parent_item_consumer_id) REFERENCES ai_catalog_item_consumers(id) ON DELETE SET NULL;
+    ADD CONSTRAINT fk_39cdf1cefd FOREIGN KEY (parent_item_consumer_id) REFERENCES ai_catalog_item_consumers(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY ml_model_versions
     ADD CONSTRAINT fk_39f8aa0b8a FOREIGN KEY (package_id) REFERENCES packages_packages(id) ON DELETE SET NULL;
