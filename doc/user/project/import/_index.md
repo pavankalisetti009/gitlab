@@ -68,7 +68,7 @@ with a malicious `.gitlab-ci.yml` file could allow an attacker to exfiltrate gro
 
 GitLab Self-Managed administrators can reduce their attack surface by disabling import sources they don't need:
 
-1. On the left sidebar, at the bottom, select **Admin**. If you've [turned on the new navigation](../../interface_redesign.md#turn-new-navigation-on-or-off), in the upper-right corner, select your avatar and then select **Admin**.
+1. On the left sidebar, at the bottom, select **Admin**. If you've [turned on the new navigation](../../interface_redesign.md#turn-new-navigation-on-or-off), in the upper-right corner, select **Admin**.
 1. Select **Settings** > **General**.
 1. Expand **Import and export settings**.
 1. Scroll to **Import sources**.
@@ -278,7 +278,7 @@ Prerequisites:
 Placeholder users are created on the destination instance while a group or project is imported.
 To filter for placeholder users created during imports for an entire instance:
 
-1. On the left sidebar, at the bottom, select **Admin**. If you've [turned on the new navigation](../../interface_redesign.md#turn-new-navigation-on-or-off), in the upper-right corner, select your avatar and then select **Admin**.
+1. On the left sidebar, at the bottom, select **Admin**. If you've [turned on the new navigation](../../interface_redesign.md#turn-new-navigation-on-or-off), in the upper-right corner, select **Admin**.
 1. Select **Overview** > **Users**.
 1. In the search box, filter users by **type**.
 
