@@ -112,6 +112,10 @@ module Search
           period: 2.hours,
           if: -> { ::Gitlab::Saas.feature_available?(:exact_code_search) },
           dispatch: { event: SaasRolloutEvent }
+        },
+        too_many_replicas_check: {
+          if: -> { EnabledNamespace.has_any_with_too_many_replicas? },
+          dispatch: { event: TooManyReplicasEvent }
         }
       }.freeze
 

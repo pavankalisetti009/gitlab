@@ -740,6 +740,32 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
     end
   end
 
+  describe '#too_many_replicas_check' do
+    let(:task) { :too_many_replicas_check }
+
+    context 'when there are no enabled namespaces with too many replicas' do
+      before do
+        allow(Search::Zoekt::EnabledNamespace).to receive(:has_any_with_too_many_replicas?)
+          .and_return(false)
+      end
+
+      it 'does not publish TooManyReplicasEvent' do
+        expect { execute_task }.not_to publish_event(Search::Zoekt::TooManyReplicasEvent)
+      end
+    end
+
+    context 'when there are enabled namespaces with too many replicas' do
+      before do
+        allow(Search::Zoekt::EnabledNamespace).to receive(:has_any_with_too_many_replicas?)
+          .and_return(true)
+      end
+
+      it 'publishes TooManyReplicasEvent' do
+        expect { execute_task }.to publish_event(Search::Zoekt::TooManyReplicasEvent).with({})
+      end
+    end
+  end
+
   describe '#node_with_negative_unclaimed_storage_bytes_check' do
     let(:task) { :node_with_negative_unclaimed_storage_bytes_check }
     let_it_be(:negative_node) { create(:zoekt_node, :enough_free_space) }
