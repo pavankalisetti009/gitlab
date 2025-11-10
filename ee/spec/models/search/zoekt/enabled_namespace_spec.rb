@@ -128,6 +128,177 @@ RSpec.describe ::Search::Zoekt::EnabledNamespace, feature_category: :global_sear
       end
     end
 
+    describe '.with_too_many_replicas' do
+      let_it_be(:namespace1) { create(:group) }
+      let_it_be(:namespace2) { create(:group) }
+      let_it_be(:namespace3) { create(:group) }
+
+      let_it_be(:enabled_namespace_with_override) do
+        create(:zoekt_enabled_namespace, namespace: namespace1, number_of_replicas_override: 2)
+      end
+
+      let_it_be(:enabled_namespace_with_default) do
+        create(:zoekt_enabled_namespace, namespace: namespace2)
+      end
+
+      let_it_be(:enabled_namespace_with_exact_replicas) do
+        create(:zoekt_enabled_namespace, namespace: namespace3)
+      end
+
+      let(:namespace_ids) do
+        [
+          enabled_namespace_with_override.id,
+          enabled_namespace_with_default.id,
+          enabled_namespace_with_exact_replicas.id
+        ]
+      end
+
+      subject(:collection) { described_class.id_in(namespace_ids).with_too_many_replicas }
+
+      before do
+        stub_const('Search::Zoekt::Settings', Class.new)
+        allow(Search::Zoekt::Settings).to receive(:default_number_of_replicas).and_return(2)
+
+        # enabled_namespace_with_override has 3 replicas but needs only 2
+        create_list(:zoekt_replica, 3, zoekt_enabled_namespace: enabled_namespace_with_override)
+
+        # enabled_namespace_with_default has 3 replicas but needs only 2 (default)
+        create_list(:zoekt_replica, 3, zoekt_enabled_namespace: enabled_namespace_with_default)
+
+        # enabled_namespace_with_exact_replicas has 2 replicas and needs 2 (default)
+        create_list(:zoekt_replica, 2, zoekt_enabled_namespace: enabled_namespace_with_exact_replicas)
+      end
+
+      it 'returns enabled namespaces with more replicas than required' do
+        expect(collection).to contain_exactly(enabled_namespace_with_override, enabled_namespace_with_default)
+      end
+
+      it 'does not return namespaces with exact number of replicas' do
+        expect(collection).not_to include(enabled_namespace_with_exact_replicas)
+      end
+
+      context 'when namespace has no replicas' do
+        let_it_be(:namespace4) { create(:group) }
+        let_it_be(:enabled_namespace_with_no_replicas) { create(:zoekt_enabled_namespace, namespace: namespace4) }
+
+        it 'does not include namespaces with zero replicas' do
+          scoped_collection = described_class.id_in(enabled_namespace_with_no_replicas.id).with_too_many_replicas
+          expect(scoped_collection).to be_empty
+        end
+      end
+    end
+
+    describe '.has_any_with_too_many_replicas?' do
+      let_it_be(:namespace1) { create(:group) }
+      let_it_be(:namespace2) { create(:group) }
+
+      let_it_be(:enabled_namespace_with_override) do
+        create(:zoekt_enabled_namespace, namespace: namespace1, number_of_replicas_override: 2)
+      end
+
+      let_it_be(:enabled_namespace_with_exact_replicas) do
+        create(:zoekt_enabled_namespace, namespace: namespace2)
+      end
+
+      before do
+        stub_const('Search::Zoekt::Settings', Class.new)
+        allow(Search::Zoekt::Settings).to receive(:default_number_of_replicas).and_return(2)
+      end
+
+      context 'when there are namespaces with too many replicas' do
+        before do
+          # enabled_namespace_with_override has 3 replicas but needs only 2
+          create_list(:zoekt_replica, 3, zoekt_enabled_namespace: enabled_namespace_with_override)
+
+          # enabled_namespace_with_exact_replicas has 2 replicas and needs 2 (default)
+          create_list(:zoekt_replica, 2, zoekt_enabled_namespace: enabled_namespace_with_exact_replicas)
+        end
+
+        it 'returns true' do
+          expect(described_class.has_any_with_too_many_replicas?).to be true
+        end
+      end
+
+      context 'when there are no namespaces with too many replicas' do
+        before do
+          # Both have exact number of replicas
+          create_list(:zoekt_replica, 2, zoekt_enabled_namespace: enabled_namespace_with_override)
+          create_list(:zoekt_replica, 2, zoekt_enabled_namespace: enabled_namespace_with_exact_replicas)
+        end
+
+        it 'returns false' do
+          expect(described_class.has_any_with_too_many_replicas?).to be false
+        end
+      end
+
+      context 'when there are no namespaces at all' do
+        it 'returns false' do
+          described_class.delete_all
+          expect(described_class.has_any_with_too_many_replicas?).to be false
+        end
+      end
+    end
+
+    describe '.each_with_too_many_replicas' do
+      let_it_be(:namespace1) { create(:group) }
+      let_it_be(:namespace2) { create(:group) }
+      let_it_be(:namespace3) { create(:group) }
+
+      let_it_be(:enabled_namespace_with_override) do
+        create(:zoekt_enabled_namespace, namespace: namespace1, number_of_replicas_override: 2)
+      end
+
+      let_it_be(:enabled_namespace_with_default) do
+        create(:zoekt_enabled_namespace, namespace: namespace2)
+      end
+
+      let_it_be(:enabled_namespace_with_exact_replicas) do
+        create(:zoekt_enabled_namespace, namespace: namespace3)
+      end
+
+      before do
+        stub_const('Search::Zoekt::Settings', Class.new)
+        allow(Search::Zoekt::Settings).to receive(:default_number_of_replicas).and_return(2)
+
+        # enabled_namespace_with_override has 3 replicas but needs only 2
+        create_list(:zoekt_replica, 3, zoekt_enabled_namespace: enabled_namespace_with_override)
+
+        # enabled_namespace_with_default has 3 replicas but needs only 2 (default)
+        create_list(:zoekt_replica, 3, zoekt_enabled_namespace: enabled_namespace_with_default)
+
+        # enabled_namespace_with_exact_replicas has 2 replicas and needs 2 (default)
+        create_list(:zoekt_replica, 2, zoekt_enabled_namespace: enabled_namespace_with_exact_replicas)
+      end
+
+      it 'yields enabled namespaces with more replicas than required' do
+        yielded = []
+        described_class.each_with_too_many_replicas { |ns| yielded << ns }
+
+        expect(yielded).to contain_exactly(enabled_namespace_with_override, enabled_namespace_with_default)
+      end
+
+      it 'does not yield namespaces with exact number of replicas' do
+        yielded = []
+        described_class.each_with_too_many_replicas { |ns| yielded << ns }
+
+        expect(yielded).not_to include(enabled_namespace_with_exact_replicas)
+      end
+
+      it 'processes records in batches' do
+        expect(described_class).to receive(:each_batch).with(of: 5000).and_call_original
+
+        described_class.each_with_too_many_replicas(batch_size: 5000) { |_ns| true }
+      end
+
+      context 'when custom batch size is provided' do
+        it 'uses the provided batch size' do
+          expect(described_class).to receive(:each_batch).with(of: 100).and_call_original
+
+          described_class.each_with_too_many_replicas(batch_size: 100) { |_ns| true }
+        end
+      end
+    end
+
     describe '.destroy_namespaces_with_expired_subscriptions!', :saas do
       subject(:destroy_namespaces) { described_class.destroy_namespaces_with_expired_subscriptions! }
 

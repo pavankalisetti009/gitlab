@@ -318,14 +318,17 @@ module EE
         field :ai_catalog_item,
           ::Types::Ai::Catalog::ItemInterface,
           null: true,
-          description: 'AI Catalog item of the project. ' \
-            'This field can only be resolved for one project in any single request.',
+          description: 'AI Catalog item of the project.',
           experiment: { milestone: '18.5' } do
-            extension(::Gitlab::Graphql::Limit::FieldCallCount, limit: 1)
             argument :id,
               ::Types::GlobalIDType[::Ai::Catalog::Item],
               required: true,
               description: 'Global ID of the catalog item to find.'
+            argument :show_soft_deleted,
+              GraphQL::Types::Boolean,
+              required: false,
+              default_value: false,
+              description: 'Whether to show the item if it has been soft-deleted. Defaults to `false`.'
           end
 
         field :ai_catalog_items,
@@ -792,11 +795,13 @@ module EE
         end
       end
 
-      def ai_catalog_item(id:)
-        ::Ai::Catalog::ItemsFinder.new(
-          current_user,
-          params: { project: project, id: id.model_id }
-        ).execute.first
+      def ai_catalog_item(id:, show_soft_deleted:)
+        ::Gitlab::Graphql::Lazy.with_value(find_object(id: id)) do |item|
+          next unless item && item.project_id == project.id
+          next if item.deleted? && show_soft_deleted == false
+
+          item
+        end
       end
 
       override :container_protection_tag_rules

@@ -50,7 +50,14 @@ module Ai
 
         if response.success?
           workload = response.payload
-          @workflow.workflows_workloads.create(project_id: project.id, workload_id: workload.id)
+          workflow_workload = @workflow.workflows_workloads.create(project_id: project.id, workload_id: workload.id)
+          unless workflow_workload.persisted?
+            return ServiceResponse.error(
+              message: workflow_workload.errors.full_messages.join(', '),
+              reason: :workflow_workload_failure
+            )
+          end
+
           ServiceResponse.success(payload: { workload_id: workload.id })
         else
           ServiceResponse.error(message: response.message, reason: :workload_failure)

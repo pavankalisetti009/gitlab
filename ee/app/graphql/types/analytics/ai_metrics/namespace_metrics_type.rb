@@ -12,6 +12,10 @@ module Types
         field :code_contributors_count, GraphQL::Types::Int,
           description: 'Number of code contributors.',
           null: true
+        field :code_review,
+          resolver: Resolvers::Analytics::AiMetrics::CodeReviewMetricsResolver,
+          null: true,
+          description: 'Code review metrics.'
         field :code_suggestions,
           resolver: Resolvers::Analytics::AiMetrics::CodeSuggestionMetricsResolver,
           null: true,
