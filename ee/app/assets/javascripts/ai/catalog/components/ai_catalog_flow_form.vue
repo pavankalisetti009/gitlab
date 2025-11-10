@@ -72,7 +72,6 @@ export default {
       default() {
         return {
           projectId: null,
-          type: AI_CATALOG_TYPE_FLOW,
           name: '',
           description: '',
           definition: '',
@@ -83,11 +82,24 @@ export default {
     },
   },
   data() {
-    const isFlowType = this.initialValues.type === AI_CATALOG_TYPE_FLOW;
+    // Determine the type based on initialValues or feature flags.
+    // In case there is no initial value and both feature flags are disabled
+    // we are in an invalid state which should not happen at all. Errors expected.
+    let type;
+    if (this.initialValues.type) {
+      type = this.initialValues.type;
+    } else if (this.glFeatures.aiCatalogFlows) {
+      type = AI_CATALOG_TYPE_FLOW;
+    } else if (this.glFeatures.aiCatalogThirdPartyFlows) {
+      type = AI_CATALOG_TYPE_THIRD_PARTY_FLOW;
+    }
+
+    const isFlowType = type === AI_CATALOG_TYPE_FLOW;
     const { definition, ...initialValuesWithoutDefinition } = this.initialValues;
     return {
       formValues: {
         ...initialValuesWithoutDefinition,
+        type,
         definitionFlow: isFlowType ? definition || '' : '',
         definitionThirdPartyFlow: !isFlowType ? definition || '' : '',
         projectId:
@@ -148,10 +160,6 @@ export default {
         return;
       }
 
-      const itemType = this.isThirdPartyFlow
-        ? AI_CATALOG_TYPE_THIRD_PARTY_FLOW
-        : AI_CATALOG_TYPE_FLOW;
-
       const definition = this.isThirdPartyFlow
         ? this.formValues.definitionThirdPartyFlow
         : this.formValues.definitionFlow;
@@ -161,11 +169,12 @@ export default {
         name: this.formValues.name.trim(),
         description: this.formValues.description.trim(),
         public: this.formValues.visibilityLevel === VISIBILITY_LEVEL_PUBLIC,
+        itemType: this.formValues.type,
         release: this.initialValues.release,
         definition: definition.trim(),
       };
 
-      this.$emit('submit', transformedValues, itemType);
+      this.$emit('submit', transformedValues);
     },
     onError(error) {
       this.formErrors.push(error);

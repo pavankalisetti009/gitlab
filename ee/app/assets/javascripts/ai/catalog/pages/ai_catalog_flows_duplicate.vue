@@ -42,7 +42,7 @@ export default {
     },
   },
   methods: {
-    async handleSubmit(input, itemType) {
+    async handleSubmit({ itemType, ...input }) {
       this.isSubmitting = true;
       this.resetErrorMessages();
       const config = FLOW_TYPE_APOLLO_CONFIG[itemType].create;

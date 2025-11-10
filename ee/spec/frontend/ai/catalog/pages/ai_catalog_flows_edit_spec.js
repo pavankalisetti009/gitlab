@@ -75,31 +75,34 @@ describe('AiCatalogFlowsEdit', () => {
   });
 
   describe('Form Submit', () => {
-    const { name, description } = mockFlow;
+    const { name, description, latestVersion } = mockFlow;
     const formValues = {
       name,
       description,
       public: true,
-      steps: [],
+      definition: latestVersion.definition,
+      itemType: 'FLOW',
     };
 
-    const submitForm = () => findForm().vm.$emit('submit', formValues, 'FLOW');
+    const submitForm = () => findForm().vm.$emit('submit', formValues);
 
     it('sends an update request', async () => {
-      await findForm().vm.$emit('submit', formValues, 'FLOW');
+      await findForm().vm.$emit('submit', formValues);
       await waitForPromises();
+
+      const { itemType, ...input } = formValues;
 
       expect(mockUpdateAiCatalogThirdPartyFlowHandler).not.toHaveBeenCalled();
       expect(mockUpdateAiCatalogFlowHandler).toHaveBeenCalledTimes(1);
       expect(mockUpdateAiCatalogFlowHandler).toHaveBeenCalledWith({
-        input: { ...formValues, id: mockFlow.id },
+        input: { ...input, id: mockFlow.id },
       });
     });
 
     it('sets a loading state on the form while submitting', async () => {
       expect(findForm().props('isLoading')).toBe(false);
 
-      await findForm().vm.$emit('submit', {}, 'FLOW');
+      await findForm().vm.$emit('submit', {});
       expect(findForm().props('isLoading')).toBe(true);
     });
 
@@ -116,18 +119,20 @@ describe('AiCatalogFlowsEdit', () => {
         description,
         public: true,
         definition: 'image:node@22',
+        itemType: 'THIRD_PARTY_FLOW',
       };
 
-      const submitThirdPartyForm = () =>
-        findForm().vm.$emit('submit', thirdPartyFlowFormValues, 'THIRD_PARTY_FLOW');
+      const submitThirdPartyForm = () => findForm().vm.$emit('submit', thirdPartyFlowFormValues);
 
       it('sends a create request for third-party flow', () => {
         submitThirdPartyForm();
 
+        const { itemType, ...input } = thirdPartyFlowFormValues;
+
         expect(mockUpdateAiCatalogFlowHandler).not.toHaveBeenCalled();
         expect(mockUpdateAiCatalogThirdPartyFlowHandler).toHaveBeenCalledTimes(1);
         expect(mockUpdateAiCatalogThirdPartyFlowHandler).toHaveBeenCalledWith({
-          input: { ...thirdPartyFlowFormValues, id: mockThirdPartyFlow.id },
+          input: { ...input, id: mockThirdPartyFlow.id },
         });
       });
     });
