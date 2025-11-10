@@ -1,6 +1,4 @@
 <script>
-import { LINE_CHANGE_SYMBOLS } from 'ee/analytics/merge_request_analytics/constants';
-
 export default {
   name: 'DiffLineChanges',
   props: {
@@ -17,10 +15,10 @@ export default {
   },
   computed: {
     formattedAdditions() {
-      return `${LINE_CHANGE_SYMBOLS.ADDITIONS}${this.additions}`;
+      return `+${this.additions}`;
     },
     formattedDeletions() {
-      return `${LINE_CHANGE_SYMBOLS.DELETIONS}${this.deletions}`;
+      return `-${this.deletions}`;
     },
   },
 };

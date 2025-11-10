@@ -112,10 +112,13 @@ export default {
           @select="selectSeverity"
         >
           <template #toggle>
-            <gl-button :class="{ '!gl-border-red-500': !severityValid }">
+            <gl-button
+              :category="severityValid ? 'primary' : 'secondary'"
+              :variant="severityValid ? 'default' : 'danger'"
+            >
               <span class="gl-inline-flex">
                 <severity-badge v-if="severity" :severity="severity" />
-                <span v-else class="text-muted">
+                <span v-else>
                   {{ s__('VulnerabilityManagement|Select a severity') }}
                 </span>
                 <gl-icon class="gl-ml-3" name="chevron-down" />
@@ -134,7 +137,7 @@ export default {
       >
         <gl-form-textarea
           v-model="comment"
-          :class="{ '!gl-border !gl-border-red-500': !commentValid }"
+          :class="{ 'is-invalid': !commentValid }"
           :placeholder="
             s__('VulnerabilityManagement|Add reason for the severity change (required)')
           "
