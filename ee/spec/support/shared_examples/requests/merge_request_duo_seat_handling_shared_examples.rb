@@ -23,7 +23,7 @@ RSpec.shared_examples 'handle quickactions without Duo access' do
 
           follow_redirect!
 
-          expect(flash[:alert]).to include("Your account doesn't have GitLab Duo access")
+          expect(flash[:alert]).to include("You don't have access to GitLab Duo Code Review")
           expect(merge_request.reload.reviewers).not_to include(duo_bot)
         end
       end
@@ -38,7 +38,7 @@ RSpec.shared_examples 'handle quickactions without Duo access' do
 
           follow_redirect!
 
-          expect(flash[:alert]).to include("Your account doesn't have GitLab Duo access")
+          expect(flash[:alert]).to include("You don't have access to GitLab Duo Code Review")
 
           expect(merge_request.reload.reviewers).to include(user)
           expect(merge_request.reload.reviewers).not_to include(duo_bot)
@@ -77,7 +77,7 @@ RSpec.shared_examples 'handle quickactions without Duo access' do
 
           follow_redirect!
 
-          expect(flash[:alert]).to include("Your account doesn't have GitLab Duo access")
+          expect(flash[:alert]).to include("You don't have access to GitLab Duo Code Review")
           expect(merge_request.reload.reviewers).not_to include(duo_bot)
         end
       end
@@ -92,7 +92,7 @@ RSpec.shared_examples 'handle quickactions without Duo access' do
 
           follow_redirect!
 
-          expect(flash[:alert]).to include("Your account doesn't have GitLab Duo access")
+          expect(flash[:alert]).to include("You don't have access to GitLab Duo Code Review")
           expect(merge_request.reload.reviewers).to include(user)
           expect(merge_request.reload.reviewers).not_to include(duo_bot)
         end

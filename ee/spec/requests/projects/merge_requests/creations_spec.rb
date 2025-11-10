@@ -58,7 +58,7 @@ RSpec.describe 'merge requests creations', feature_category: :code_review_workfl
 
             follow_redirect!
 
-            expect(flash[:alert]).to include("Your account doesn't have GitLab Duo access")
+            expect(flash[:alert]).to include("GitLab Duo Code Review was not automatically added")
             expect(merge_request.reload.reviewers).not_to include(duo_bot)
           end
         end
