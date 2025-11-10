@@ -47,20 +47,6 @@ RSpec.describe 'User with admin_push_rules custom role', feature_category: :sour
           attributes: hash_including(push_rule.stringify_keys)
         })
       end
-
-      context 'with read_and_write_group_push_rules disabled' do
-        before do
-          stub_feature_flags(read_and_write_group_push_rules: false)
-        end
-
-        it 'updates repository settings' do
-          group_push_rule_update
-
-          expect(group.reload.push_rule).to have_attributes({
-            attributes: hash_including(push_rule.stringify_keys)
-          })
-        end
-      end
     end
   end
 end

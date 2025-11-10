@@ -191,55 +191,6 @@ RSpec.describe API::GroupPushRule, 'GroupPushRule', :aggregate_failures, :api, f
         expect(response).to have_gitlab_http_status(:not_found)
       end
     end
-
-    context 'with read_and_write_group_push_rules disabled' do
-      before do
-        stub_feature_flags(read_and_write_group_push_rules: false)
-        create(:push_rule, group: group, **attributes)
-      end
-
-      context 'when the current user is a maintainer' do
-        let(:user) { maintainer }
-
-        it_behaves_like 'requires a license'
-
-        it 'returns group push rule' do
-          get_push_rule
-
-          expect(json_response).to eq({
-            "author_email_regex" => attributes[:author_email_regex],
-            "branch_name_regex" => nil,
-            "commit_committer_check" => true,
-            "commit_committer_name_check" => true,
-            "commit_message_negative_regex" => attributes[:commit_message_negative_regex],
-            "commit_message_regex" => attributes[:commit_message_regex],
-            "created_at" => group.push_rule.created_at.iso8601(3),
-            "deny_delete_tag" => false,
-            "file_name_regex" => nil,
-            "id" => group.push_rule.id,
-            "max_file_size" => 100,
-            "member_check" => false,
-            "reject_non_dco_commits" => true,
-            "prevent_secrets" => true,
-            "reject_unsigned_commits" => true
-          })
-        end
-
-        context 'when group name contains a dot' do
-          before do
-            group.update!(path: 'group.path')
-          end
-
-          it 'returns push rule', :aggregate_failures do
-            get api("/groups/#{CGI.escape(group.reload.full_path)}/push_rule", user)
-
-            expect(response).to have_gitlab_http_status(:ok)
-            expect(json_response).to be_an Hash
-            expect(json_response['id']).to eq(group.push_rule.id)
-          end
-        end
-      end
-    end
   end
 
   shared_examples 'creates a group push rule' do
@@ -259,7 +210,7 @@ RSpec.describe API::GroupPushRule, 'GroupPushRule', :aggregate_failures, :api, f
       end
 
       it do
-        expect { create_push_rule }.to change { push_rule_class.count }.by(1)
+        expect { create_push_rule }.to change { GroupPushRule.count }.by(1)
       end
 
       it 'creates the push rule' do
@@ -282,7 +233,7 @@ RSpec.describe API::GroupPushRule, 'GroupPushRule', :aggregate_failures, :api, f
 
       context 'when a push rule already exists' do
         before do
-          create(push_rule_factory, group: group)
+          create(:group_push_rule, group: group)
         end
 
         it 'returns an error response' do
@@ -491,57 +442,17 @@ RSpec.describe API::GroupPushRule, 'GroupPushRule', :aggregate_failures, :api, f
 
       let(:push_rule) { group.group_push_rule }
     end
-
-    context 'with read_and_write_group_push_rules disabled' do
-      before do
-        stub_feature_flags(read_and_write_group_push_rules: false)
-        create(:push_rule, group: group, **attributes)
-      end
-
-      it_behaves_like 'retrieves a group push rule' do
-        let(:push_rule) { group.push_rule }
-      end
-    end
   end
 
   describe 'POST /groups/:id/push_rule' do
     it_behaves_like 'creates a group push rule' do
       let(:push_rule) { group.group_push_rule }
-      let(:push_rule_class) { GroupPushRule }
-      let(:push_rule_factory) { :group_push_rule }
-    end
-
-    context 'when read_and_write_group_push_rules is disabled' do
-      before do
-        stub_feature_flags(read_and_write_group_push_rules: false)
-      end
-
-      it_behaves_like 'creates a group push rule' do
-        let(:push_rule) { group.push_rule }
-        let(:push_rule_class) { PushRule }
-        let(:push_rule_factory) { :push_rule }
-      end
     end
   end
 
   describe 'PUT /groups/:id/push_rule' do
     it_behaves_like 'updates a group push rule' do
-      let(:push_rule) { group.group_push_rule }
-
-      before do
-        create(:group_push_rule, group: group, **attributes)
-      end
-    end
-
-    context 'when read_and_write_group_push_rules is disabled' do
-      before do
-        stub_feature_flags(read_and_write_group_push_rules: false)
-        create(:push_rule, group: group, **attributes)
-      end
-
-      it_behaves_like 'updates a group push rule' do
-        let(:push_rule) { group.push_rule }
-      end
+      let!(:push_rule) { create(:group_push_rule, group: group, **attributes) }
     end
   end
 
@@ -551,17 +462,6 @@ RSpec.describe API::GroupPushRule, 'GroupPushRule', :aggregate_failures, :api, f
 
       before do
         create(:group_push_rule, group: group, **attributes)
-      end
-    end
-
-    context 'with read_and_write_group_push_rules disabled' do
-      before do
-        stub_feature_flags(read_and_write_group_push_rules: false)
-        create(:push_rule, group: group, **attributes)
-      end
-
-      it_behaves_like 'deletes a group push rule' do
-        let(:push_rule) { group.push_rule }
       end
     end
   end
