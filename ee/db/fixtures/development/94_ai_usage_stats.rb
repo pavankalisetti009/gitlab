@@ -18,6 +18,7 @@ class Gitlab::Seeder::AiUsageStats # rubocop:disable Style/ClassAndModuleChildre
   CS_EVENT_COUNT_SAMPLE = 5
   CHAT_EVENT_COUNT_SAMPLE = 2
   TROUBLESHOOT_EVENT_COUNT_SAMPLE = 2
+  CODE_REVIEW_EVENT_COUNT_SAMPLE = 10
   TIME_PERIOD_DAYS = 90
 
   attr_reader :project
@@ -49,6 +50,7 @@ class Gitlab::Seeder::AiUsageStats # rubocop:disable Style/ClassAndModuleChildre
     create_code_suggestions_data
     create_chat_data
     create_troubleshoot_job_data
+    create_code_review_data
   end
 
   private
@@ -135,6 +137,23 @@ class Gitlab::Seeder::AiUsageStats # rubocop:disable Style/ClassAndModuleChildre
             merge_request_id: job.pipeline&.merge_request_id
           },
           timestamp: rand(TIME_PERIOD_DAYS).days.ago)
+      end
+    end
+  end
+
+  def create_code_review_data
+    code_review_events = Gitlab::Tracking::AiTracking.registered_events(:code_review).keys
+
+    project.users.count.times do
+      user = project.users.sample
+
+      CODE_REVIEW_EVENT_COUNT_SAMPLE.times do
+        save_event(
+          user: user,
+          event: code_review_events.sample,
+          timestamp: rand(TIME_PERIOD_DAYS).days.ago,
+          namespace: project.project_namespace
+        )
       end
     end
   end
