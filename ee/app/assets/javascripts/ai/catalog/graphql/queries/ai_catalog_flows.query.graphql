@@ -2,7 +2,6 @@
 #import "~/graphql_shared/fragments/page_info.fragment.graphql"
 
 query aiCatalogFlows(
-  $itemType: AiCatalogItemType
   $itemTypes: [AiCatalogItemType!]
   $before: String
   $after: String
@@ -11,7 +10,6 @@ query aiCatalogFlows(
   $search: String
 ) {
   aiCatalogItems(
-    itemType: $itemType
     itemTypes: $itemTypes
     before: $before
     after: $after

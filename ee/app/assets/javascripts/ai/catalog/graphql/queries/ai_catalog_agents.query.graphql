@@ -4,7 +4,7 @@
 
 query aiCatalogAgents($before: String, $after: String, $first: Int, $last: Int, $search: String) {
   aiCatalogItems(
-    itemType: AGENT
+    itemTypes: [AGENT]
     before: $before
     after: $after
     first: $first
