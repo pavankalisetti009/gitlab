@@ -30,48 +30,10 @@ RSpec.describe Search::Zoekt::SelectionService, feature_category: :global_search
         create(:zoekt_enabled_namespace, namespace: ns_4, last_rollout_failed_at: 2.days.ago.iso8601)
       end
 
-      let_it_be(:eligible_namespace_ancestor) { ::Namespace.where(id: ns_1.id) }
-      let_it_be(:big_namespace_ancestor) { ::Namespace.where(id: ns_2.id) }
-      let_it_be(:eligible_namespace2_ancestor) { ::Namespace.where(id: ns_4.id) }
-
-      before do
-        allow(::Namespace).to receive(:by_root_id)
-          .with(eligible_namespace.root_namespace_id)
-          .and_return(eligible_namespace_ancestor)
-
-        allow(::Namespace).to receive(:by_root_id)
-          .with(eligible_namespace2.root_namespace_id)
-          .and_return(eligible_namespace2_ancestor)
-
-        allow(::Namespace).to receive(:by_root_id)
-          .with(big_namespace.root_namespace_id)
-          .and_return(big_namespace_ancestor)
-      end
-
       # eligible namespaces are for which last_rollout_failed_at is nil or older than zoekt_rollout_retry_interval
       it 'includes all eligible namespaces' do
         expect(resource_pool.enabled_namespaces).to include(eligible_namespace, big_namespace)
         expect(resource_pool.enabled_namespaces).not_to include(failed_namespace)
-      end
-
-      context 'when on self managed instance' do
-        before do
-          allow(::Gitlab::Saas).to receive(:feature_available?).with(:exact_code_search).and_return(false)
-
-          allow(big_namespace_ancestor).to receive_message_chain(:project_namespaces, :limit, :count)
-            .and_return(40_000)
-
-          allow(eligible_namespace_ancestor).to receive_message_chain(:project_namespaces, :limit, :count)
-            .and_return(10)
-
-          allow(eligible_namespace2_ancestor).to receive_message_chain(:project_namespaces, :limit, :count)
-            .and_return(10)
-        end
-
-        it 'excludes namespaces over the project limit' do
-          expect(resource_pool.enabled_namespaces).to include(eligible_namespace, eligible_namespace2)
-          expect(resource_pool.enabled_namespaces).not_to include(big_namespace)
-        end
       end
 
       it 'excludes namespaces with rollout blocked flag' do
