@@ -7,6 +7,7 @@ module API
     class SecretsManager < ::API::Base
       feature_category :secrets_management
       MAX_REQUEST_PAYLOAD_SIZE = 1.megabyte
+      GITLAB_CONFIG_PATH = '/etc/gitlab/'
 
       before do
         validate_request!
@@ -35,9 +36,11 @@ module API
         def openbao_authentication_token_secret
           # Prevent symlink-based path traversal attacks.
           file_path = openbao_authentication_token_secret_file_path
-          root_path = Rails.root.realpath.to_s + File::SEPARATOR
           real_path = Pathname.new(file_path).realpath.to_s
-          raise "Invalid authentication token file path" unless real_path.start_with?(root_path)
+          raise "Invalid authentication token file path" unless allowed_root_paths.any? do |allowed_root_path|
+            real_path.start_with?(allowed_root_path)
+          end
+
           raise "Authentication token path is not a file" unless File.file?(real_path)
 
           token_secret = File.read(real_path).chomp
@@ -56,6 +59,12 @@ module API
 
         def authentication_token_from_header
           headers['Gitlab-Openbao-Auth-Token']
+        end
+
+        def allowed_root_paths
+          allowed_root_paths = [Rails.root.realpath.to_s + File::SEPARATOR]
+          allowed_root_paths << GITLAB_CONFIG_PATH unless Rails.env.development? || Rails.env.test?
+          allowed_root_paths
         end
       end
 

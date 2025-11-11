@@ -1168,8 +1168,12 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
     it 'removes records through partitioned LFK' do
       pipeline.destroy!
 
-      expect { LooseForeignKeys::ProcessDeletedRecordsService.new(connection: job.connection).execute }
-        .to change { Security::Scan.count }.by(-1)
+      expect do
+        LooseForeignKeys::ProcessDeletedRecordsService.new(
+          connection: job.connection,
+          worker_class: LooseForeignKeys::CiPipelinesBuildsCleanupCronWorker
+        ).execute
+      end.to change { Security::Scan.count }.by(-1)
     end
   end
 

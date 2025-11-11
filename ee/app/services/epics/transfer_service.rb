@@ -78,7 +78,7 @@ module Epics
     def destroy_epic_issue_link(issue, epic)
       link = EpicIssue.find_by_issue_id(issue.id)
 
-      EpicIssues::DestroyService.new(link, current_user).execute
+      WorkItems::LegacyEpics::EpicIssues::DestroyService.new(link, current_user).execute
     end
   end
 end

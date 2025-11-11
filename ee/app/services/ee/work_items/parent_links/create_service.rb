@@ -142,20 +142,15 @@ module EE
           success_result = { status: :success }
           child_issue = ::Issue.find_by_id(work_item.id)
           return success_result unless child_issue
+          return success_result unless sync_epic_link?
 
-          if sync_epic_link?
-            epic_issue = EpicIssue.find_or_initialize_from_parent_link(parent_link)
-            epic_issue.move_to_start
+          epic_issue = EpicIssue.find_or_initialize_from_parent_link(parent_link)
+          epic_issue.move_to_start
 
-            if epic_issue.save(touch: false)
-              { status: :success }
-            else
-              { status: :error, message: epic_issue.errors.map(&:message).to_sentence }
-            end
-          elsif child_issue.has_epic?
-            ::EpicIssues::DestroyService.new(child_issue.epic_issue, current_user, synced_epic: true).execute
+          if epic_issue.save(touch: false)
+            { status: :success }
           else
-            success_result
+            { status: :error, message: epic_issue.errors.map(&:message).to_sentence }
           end
         end
 

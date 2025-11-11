@@ -20,7 +20,8 @@ RSpec.describe SecretsManagement::AuditLog, :gitlab_secrets_manager, feature_cat
       },
       "request" => {
         "operation" => "read",
-        "path" => "user_#{user.id}/project_#{project.id}/secrets/kv/data/explicit/my_test_secret",
+        "path" => "secrets/kv/data/explicit/my_test_secret",
+        "namespace" => { "id" => "M0zDLE", "path" => "user_#{user.id}/project_#{project.id}/" },
         "remote_address" => "172.16.123.1"
       },
       "response" => {
@@ -43,7 +44,8 @@ RSpec.describe SecretsManagement::AuditLog, :gitlab_secrets_manager, feature_cat
       },
       "request" => {
         "operation" => "create",
-        "path" => "user_#{user.id}/project_#{project.id}/secrets/kv/data/explicit/new_secret",
+        "path" => "secrets/kv/data/explicit/new_secret",
+        "namespace" => { "id" => "M0zDLE", "path" => "user_#{user.id}/project_#{project.id}" },
         "remote_address" => "172.16.123.1"
       },
       "response" => {
@@ -66,7 +68,8 @@ RSpec.describe SecretsManagement::AuditLog, :gitlab_secrets_manager, feature_cat
       },
       "request" => {
         "operation" => "delete",
-        "path" => "user_#{user.id}/project_#{project.id}/secrets/kv/metadata/explicit/deleted_secret",
+        "path" => "secrets/kv/metadata/explicit/deleted_secret",
+        "namespace" => { "id" => "M0zDLE", "path" => "user_#{user.id}/project_#{project.id}" },
         "remote_address" => "172.16.123.1"
       },
       "response" => {
@@ -88,7 +91,8 @@ RSpec.describe SecretsManagement::AuditLog, :gitlab_secrets_manager, feature_cat
       },
       "request" => {
         "operation" => "update",
-        "path" => "user_#{user.id}/project_#{project.id}/secrets/kv/data/explicit/my_test_secret",
+        "path" => "secrets/kv/data/explicit/my_test_secret",
+        "namespace" => { "id" => "M0zDLE", "path" => "user_#{user.id}/project_#{project.id}" },
         "remote_address" => "172.16.123.1"
       },
       "response" => {
@@ -110,7 +114,8 @@ RSpec.describe SecretsManagement::AuditLog, :gitlab_secrets_manager, feature_cat
       },
       "request" => {
         "operation" => "update",
-        "path" => "user_#{user.id}/project_#{project.id}/secrets/kv/data/explicit/my_test_secret",
+        "path" => "secrets/kv/data/explicit/my_test_secret",
+        "namespace" => { "id" => "M0zDLE", "path" => "user_#{user.id}/project_#{project.id}" },
         "remote_address" => "172.16.123.1"
       },
       "response" => {

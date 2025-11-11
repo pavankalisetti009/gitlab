@@ -85,7 +85,9 @@ RSpec.configure do |config|
     end
   end
 
-  config.before(:example, :gitlab_secrets_manager) do
+  config.before(:example, :gitlab_secrets_manager) do |example|
+    next if example.metadata[:skip_openbao_setup]
+
     private_key_path = Rails.root.join('ee/spec/fixtures/secrets_manager/test_private_key.pem')
     private_key = File.read(private_key_path)
 
@@ -97,7 +99,9 @@ RSpec.configure do |config|
     SecretsManagement::OpenbaoTestSetup.configure_jwt_auth(public_key.to_s)
   end
 
-  config.after(:example, :gitlab_secrets_manager) do
+  config.after(:example, :gitlab_secrets_manager) do |example|
+    next if example.metadata[:skip_openbao_setup]
+
     # For now we'll just clean up kv secrets engines because that's
     # all we're handling in the secrets manager for now. We can add more
     # things to clean up here later on as we add more features.

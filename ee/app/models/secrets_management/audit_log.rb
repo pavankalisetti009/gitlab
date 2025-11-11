@@ -134,11 +134,10 @@ module SecretsManagement
     end
 
     def get_project
-      return unless request_path
-
+      return unless namespace_path
       return unless project_secret_event?
 
-      match = request_path.match(/project_(\d{1,10})/)
+      match = namespace_path.match(/project_(\d{1,10})/)
       return unless match
 
       project_id = match[1]
@@ -165,6 +164,10 @@ module SecretsManagement
 
     def request_path
       parsed_json.dig('request', 'path')
+    end
+
+    def namespace_path
+      parsed_json.dig('request', 'namespace', 'path')
     end
 
     def operation
@@ -200,11 +203,17 @@ module SecretsManagement
     end
 
     def path_matches_project_secret?
-      request_path&.match?(%r{\A.*/project_\d+/secrets/kv/data/explicit/\w+\z})
+      return false unless namespace_path && request_path
+
+      namespace_path.match?(/project_(\d{1,10})/) &&
+        request_path.match?(%r{\A/?secrets/kv/data/explicit/\w+\z})
     end
 
     def path_matches_project_secret_metadata?
-      request_path&.match?(%r{\A.*/project_\d+/secrets/kv/metadata/explicit/\w+\z})
+      return false unless namespace_path && request_path
+
+      namespace_path.match?(/project_(\d{1,10})/) &&
+        request_path.match?(%r{\A/?secrets/kv/metadata/explicit/\w+\z})
     end
 
     def request_log?

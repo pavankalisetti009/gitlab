@@ -28,9 +28,7 @@ RSpec.describe WorkItems::ParentLinks::DestroyService, feature_category: :team_p
     shared_examples 'destroys parent link' do |notes_created: 2|
       it 'only destroys parent link' do
         allow(::Epics::EpicLinks::DestroyService).to receive(:new).and_call_original
-        allow(::EpicIssues::DestroyService).to receive(:new).and_call_original
         expect(::Epics::EpicLinks::DestroyService).not_to receive(:new)
-        expect(::EpicIssues::DestroyService).not_to receive(:new)
 
         expect { destroy_link }.to change { WorkItems::ParentLink.count }.by(-1)
                                .and change { Note.count }.by(notes_created)
