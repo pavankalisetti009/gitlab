@@ -33591,18 +33591,25 @@ Limited group data accessible to users without full group read access (e.g. non-
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="groupnamespacelinksautocompleteawardemojispath"></a>`autocompleteAwardEmojisPath` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 18.6. **Status**: Experiment. Path for autocomplete award emojis. |
 | <a id="groupnamespacelinkscalendarpath"></a>`calendarPath` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 18.4. **Status**: Experiment. Calendar path for work items. |
 | <a id="groupnamespacelinkscontributionguidepath"></a>`contributionGuidePath` | [`String`](#string) | Namespace contribution guide path. |
 | <a id="groupnamespacelinksemailshelppagepath"></a>`emailsHelpPagePath` | [`String`](#string) | Help page path for emails. |
 | <a id="groupnamespacelinksepicslist"></a>`epicsList` | [`String`](#string) | Namespace epics_list. |
+| <a id="groupnamespacelinksepicslistpath"></a>`epicsListPath` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 18.6. **Status**: Experiment. Path to the epics list for the namespace. |
 | <a id="groupnamespacelinksgroupissues"></a>`groupIssues` | [`String`](#string) | Namespace group_issues. |
+| <a id="groupnamespacelinksgrouppath"></a>`groupPath` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 18.6. **Status**: Experiment. Full path of the group. |
 | <a id="groupnamespacelinksissueslist"></a>`issuesList` | [`String`](#string) | Namespace issues_list. |
+| <a id="groupnamespacelinksissueslistpath"></a>`issuesListPath` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 18.6. **Status**: Experiment. Path to the issues list for the namespace. |
 | <a id="groupnamespacelinksissuessettings"></a>`issuesSettings` | [`String`](#string) | Namespace issues settings path. |
 | <a id="groupnamespacelinkslabelsfetch"></a>`labelsFetch` | [`String`](#string) | Namespace labels_fetch. |
 | <a id="groupnamespacelinkslabelsmanage"></a>`labelsManage` | [`String`](#string) | Namespace labels_manage. |
 | <a id="groupnamespacelinksmarkdownhelppath"></a>`markdownHelpPath` | [`String`](#string) | Help page path for Markdown. |
+| <a id="groupnamespacelinksnamespacefullpath"></a>`namespaceFullPath` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 18.6. **Status**: Experiment. Full path of the namespace (project.namespace.full_path or group full_path). |
 | <a id="groupnamespacelinksnewcommenttemplate"></a>`newCommentTemplate` | [`[CommentTemplatePath!]`](#commenttemplatepath) | Namespace new_comment_template_paths. |
+| <a id="groupnamespacelinksnewissuepath"></a>`newIssuePath` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 18.6. **Status**: Experiment. Path to create a new issue. |
 | <a id="groupnamespacelinksnewproject"></a>`newProject` | [`String`](#string) | Namespace new_project. |
+| <a id="groupnamespacelinksnewtrialpath"></a>`newTrialPath` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 18.6. **Status**: Experiment. New trial path for the namespace. |
 | <a id="groupnamespacelinksquickactionshelppath"></a>`quickActionsHelpPath` | [`String`](#string) | Help page path for quick actions. |
 | <a id="groupnamespacelinksregister"></a>`register` | [`String`](#string) | Namespace register_path. |
 | <a id="groupnamespacelinksreportabuse"></a>`reportAbuse` | [`String`](#string) | Namespace report_abuse. |
@@ -37984,12 +37991,14 @@ Represents a namespace-cluster-agent mapping.
 | ---- | ---- | ----------- |
 | <a id="namespacepermissionsadminissue"></a>`adminIssue` | [`Boolean!`](#boolean) | If `true`, the user can perform `admin_issue` on this resource. |
 | <a id="namespacepermissionsadminlabel"></a>`adminLabel` | [`Boolean!`](#boolean) | If `true`, the user can perform `admin_label` on this resource. |
+| <a id="namespacepermissionsadminproject"></a>`adminProject` | [`Boolean!`](#boolean) | If `true`, the user can perform `admin_project` on this resource. |
 | <a id="namespacepermissionsbulkadminepic"></a>`bulkAdminEpic` | [`Boolean!`](#boolean) | If `true`, the user can perform `bulk_admin_epic` on this resource. |
 | <a id="namespacepermissionscreateepic"></a>`createEpic` | [`Boolean!`](#boolean) | If `true`, the user can perform `create_epic` on this resource. |
 | <a id="namespacepermissionscreateprojects"></a>`createProjects` | [`Boolean!`](#boolean) | If `true`, the user can perform `create_projects` on this resource. |
 | <a id="namespacepermissionscreateworkitem"></a>`createWorkItem` | [`Boolean!`](#boolean) | If `true`, the user can perform `create_work_item` on this resource. |
 | <a id="namespacepermissionsgeneratedescription"></a>`generateDescription` | [`Boolean!`](#boolean) | If `true`, the user can perform `generate_description` on this resource. |
 | <a id="namespacepermissionsimportissues"></a>`importIssues` | [`Boolean!`](#boolean) | If `true`, the user can perform `import_issues` on this resource. |
+| <a id="namespacepermissionsimportworkitems"></a>`importWorkItems` | [`Boolean!`](#boolean) | If `true`, the user can perform `import_work_items` on this resource. |
 | <a id="namespacepermissionsreadcrmcontact"></a>`readCrmContact` | [`Boolean!`](#boolean) | If `true`, the user can perform `read_crm_contact` on this resource. |
 | <a id="namespacepermissionsreadcrmorganization"></a>`readCrmOrganization` | [`Boolean!`](#boolean) | If `true`, the user can perform `read_crm_organization` on this resource. |
 | <a id="namespacepermissionsreadnamespace"></a>`readNamespace` | [`Boolean!`](#boolean) | If `true`, the user can perform `read_namespace` on this resource. |
@@ -42450,18 +42459,26 @@ Returns [`UserMergeRequestInteraction`](#usermergerequestinteraction).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="projectnamespacelinksautocompleteawardemojispath"></a>`autocompleteAwardEmojisPath` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 18.6. **Status**: Experiment. Path for autocomplete award emojis. |
 | <a id="projectnamespacelinkscalendarpath"></a>`calendarPath` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 18.4. **Status**: Experiment. Calendar path for work items. |
 | <a id="projectnamespacelinkscontributionguidepath"></a>`contributionGuidePath` | [`String`](#string) | Namespace contribution guide path. |
 | <a id="projectnamespacelinksemailshelppagepath"></a>`emailsHelpPagePath` | [`String`](#string) | Help page path for emails. |
 | <a id="projectnamespacelinksepicslist"></a>`epicsList` | [`String`](#string) | Namespace epics_list. |
+| <a id="projectnamespacelinksepicslistpath"></a>`epicsListPath` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 18.6. **Status**: Experiment. Path to the epics list for the namespace. |
+| <a id="projectnamespacelinksexportcsvpath"></a>`exportCsvPath` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 18.6. **Status**: Experiment. CSV export endpoint for work items. |
 | <a id="projectnamespacelinksgroupissues"></a>`groupIssues` | [`String`](#string) | Namespace group_issues. |
+| <a id="projectnamespacelinksgrouppath"></a>`groupPath` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 18.6. **Status**: Experiment. Full path of the group. |
 | <a id="projectnamespacelinksissueslist"></a>`issuesList` | [`String`](#string) | Namespace issues_list. |
+| <a id="projectnamespacelinksissueslistpath"></a>`issuesListPath` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 18.6. **Status**: Experiment. Path to the issues list for the namespace. |
 | <a id="projectnamespacelinksissuessettings"></a>`issuesSettings` | [`String`](#string) | Namespace issues settings path. |
 | <a id="projectnamespacelinkslabelsfetch"></a>`labelsFetch` | [`String`](#string) | Namespace labels_fetch. |
 | <a id="projectnamespacelinkslabelsmanage"></a>`labelsManage` | [`String`](#string) | Namespace labels_manage. |
 | <a id="projectnamespacelinksmarkdownhelppath"></a>`markdownHelpPath` | [`String`](#string) | Help page path for Markdown. |
+| <a id="projectnamespacelinksnamespacefullpath"></a>`namespaceFullPath` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 18.6. **Status**: Experiment. Full path of the namespace (project.namespace.full_path or group full_path). |
 | <a id="projectnamespacelinksnewcommenttemplate"></a>`newCommentTemplate` | [`[CommentTemplatePath!]`](#commenttemplatepath) | Namespace new_comment_template_paths. |
+| <a id="projectnamespacelinksnewissuepath"></a>`newIssuePath` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 18.6. **Status**: Experiment. Path to create a new issue. |
 | <a id="projectnamespacelinksnewproject"></a>`newProject` | [`String`](#string) | Namespace new_project. |
+| <a id="projectnamespacelinksnewtrialpath"></a>`newTrialPath` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 18.6. **Status**: Experiment. New trial path for the namespace. |
 | <a id="projectnamespacelinksnewworkitememailaddress"></a>`newWorkItemEmailAddress` | [`String`](#string) | Email address that can be used to create a new work item in this project. Returns null if incoming email is not configured. More details on how to configure incoming email is in this [documentation](https://docs.gitlab.com/administration/incoming_email/#set-it-up). |
 | <a id="projectnamespacelinksprojectimportjirapath"></a>`projectImportJiraPath` | [`String`](#string) | JIRA import path. |
 | <a id="projectnamespacelinksquickactionshelppath"></a>`quickActionsHelpPath` | [`String`](#string) | Help page path for quick actions. |
@@ -45548,18 +45565,25 @@ fields relate to interactions between the two entities.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="usernamespacelinksautocompleteawardemojispath"></a>`autocompleteAwardEmojisPath` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 18.6. **Status**: Experiment. Path for autocomplete award emojis. |
 | <a id="usernamespacelinkscalendarpath"></a>`calendarPath` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 18.4. **Status**: Experiment. Calendar path for work items. |
 | <a id="usernamespacelinkscontributionguidepath"></a>`contributionGuidePath` | [`String`](#string) | Namespace contribution guide path. |
 | <a id="usernamespacelinksemailshelppagepath"></a>`emailsHelpPagePath` | [`String`](#string) | Help page path for emails. |
 | <a id="usernamespacelinksepicslist"></a>`epicsList` | [`String`](#string) | Namespace epics_list. |
+| <a id="usernamespacelinksepicslistpath"></a>`epicsListPath` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 18.6. **Status**: Experiment. Path to the epics list for the namespace. |
 | <a id="usernamespacelinksgroupissues"></a>`groupIssues` | [`String`](#string) | Namespace group_issues. |
+| <a id="usernamespacelinksgrouppath"></a>`groupPath` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 18.6. **Status**: Experiment. Full path of the group. |
 | <a id="usernamespacelinksissueslist"></a>`issuesList` | [`String`](#string) | Namespace issues_list. |
+| <a id="usernamespacelinksissueslistpath"></a>`issuesListPath` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 18.6. **Status**: Experiment. Path to the issues list for the namespace. |
 | <a id="usernamespacelinksissuessettings"></a>`issuesSettings` | [`String`](#string) | Namespace issues settings path. |
 | <a id="usernamespacelinkslabelsfetch"></a>`labelsFetch` | [`String`](#string) | Namespace labels_fetch. |
 | <a id="usernamespacelinkslabelsmanage"></a>`labelsManage` | [`String`](#string) | Namespace labels_manage. |
 | <a id="usernamespacelinksmarkdownhelppath"></a>`markdownHelpPath` | [`String`](#string) | Help page path for Markdown. |
+| <a id="usernamespacelinksnamespacefullpath"></a>`namespaceFullPath` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 18.6. **Status**: Experiment. Full path of the namespace (project.namespace.full_path or group full_path). |
 | <a id="usernamespacelinksnewcommenttemplate"></a>`newCommentTemplate` | [`[CommentTemplatePath!]`](#commenttemplatepath) | Namespace new_comment_template_paths. |
+| <a id="usernamespacelinksnewissuepath"></a>`newIssuePath` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 18.6. **Status**: Experiment. Path to create a new issue. |
 | <a id="usernamespacelinksnewproject"></a>`newProject` | [`String`](#string) | Namespace new_project. |
+| <a id="usernamespacelinksnewtrialpath"></a>`newTrialPath` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 18.6. **Status**: Experiment. New trial path for the namespace. |
 | <a id="usernamespacelinksquickactionshelppath"></a>`quickActionsHelpPath` | [`String`](#string) | Help page path for quick actions. |
 | <a id="usernamespacelinksregister"></a>`register` | [`String`](#string) | Namespace register_path. |
 | <a id="usernamespacelinksreportabuse"></a>`reportAbuse` | [`String`](#string) | Namespace report_abuse. |
@@ -54642,18 +54666,25 @@ Implementations:
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="namespaceslinkpathsautocompleteawardemojispath"></a>`autocompleteAwardEmojisPath` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 18.6. **Status**: Experiment. Path for autocomplete award emojis. |
 | <a id="namespaceslinkpathscalendarpath"></a>`calendarPath` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 18.4. **Status**: Experiment. Calendar path for work items. |
 | <a id="namespaceslinkpathscontributionguidepath"></a>`contributionGuidePath` | [`String`](#string) | Namespace contribution guide path. |
 | <a id="namespaceslinkpathsemailshelppagepath"></a>`emailsHelpPagePath` | [`String`](#string) | Help page path for emails. |
 | <a id="namespaceslinkpathsepicslist"></a>`epicsList` | [`String`](#string) | Namespace epics_list. |
+| <a id="namespaceslinkpathsepicslistpath"></a>`epicsListPath` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 18.6. **Status**: Experiment. Path to the epics list for the namespace. |
 | <a id="namespaceslinkpathsgroupissues"></a>`groupIssues` | [`String`](#string) | Namespace group_issues. |
+| <a id="namespaceslinkpathsgrouppath"></a>`groupPath` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 18.6. **Status**: Experiment. Full path of the group. |
 | <a id="namespaceslinkpathsissueslist"></a>`issuesList` | [`String`](#string) | Namespace issues_list. |
+| <a id="namespaceslinkpathsissueslistpath"></a>`issuesListPath` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 18.6. **Status**: Experiment. Path to the issues list for the namespace. |
 | <a id="namespaceslinkpathsissuessettings"></a>`issuesSettings` | [`String`](#string) | Namespace issues settings path. |
 | <a id="namespaceslinkpathslabelsfetch"></a>`labelsFetch` | [`String`](#string) | Namespace labels_fetch. |
 | <a id="namespaceslinkpathslabelsmanage"></a>`labelsManage` | [`String`](#string) | Namespace labels_manage. |
 | <a id="namespaceslinkpathsmarkdownhelppath"></a>`markdownHelpPath` | [`String`](#string) | Help page path for Markdown. |
+| <a id="namespaceslinkpathsnamespacefullpath"></a>`namespaceFullPath` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 18.6. **Status**: Experiment. Full path of the namespace (project.namespace.full_path or group full_path). |
 | <a id="namespaceslinkpathsnewcommenttemplate"></a>`newCommentTemplate` | [`[CommentTemplatePath!]`](#commenttemplatepath) | Namespace new_comment_template_paths. |
+| <a id="namespaceslinkpathsnewissuepath"></a>`newIssuePath` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 18.6. **Status**: Experiment. Path to create a new issue. |
 | <a id="namespaceslinkpathsnewproject"></a>`newProject` | [`String`](#string) | Namespace new_project. |
+| <a id="namespaceslinkpathsnewtrialpath"></a>`newTrialPath` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 18.6. **Status**: Experiment. New trial path for the namespace. |
 | <a id="namespaceslinkpathsquickactionshelppath"></a>`quickActionsHelpPath` | [`String`](#string) | Help page path for quick actions. |
 | <a id="namespaceslinkpathsregister"></a>`register` | [`String`](#string) | Namespace register_path. |
 | <a id="namespaceslinkpathsreportabuse"></a>`reportAbuse` | [`String`](#string) | Namespace report_abuse. |

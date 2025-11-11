@@ -18,6 +18,7 @@ RSpec.describe Types::Namespaces::LinkPaths::GroupNamespaceLinksType, feature_ca
         "/groups/#{namespace.full_path}/-/labels.json?include_ancestor_groups=true&only_group_labels=true"
       end
       :issues_settings | lazy { "/groups/#{namespace.root_ancestor.full_path}/-/settings/issues" }
+      :epics_list_path | lazy { "/groups/#{namespace.full_path}/-/epics" }
     end
 
     with_them do
@@ -25,12 +26,29 @@ RSpec.describe Types::Namespaces::LinkPaths::GroupNamespaceLinksType, feature_ca
         expect(resolve_field(field, namespace, current_user: user)).to eq(value)
       end
     end
+
+    it_behaves_like "new trial path behavior" do
+      let(:expected_namespace_id) { namespace.id }
+    end
   end
 
   context 'when fetching public group' do
     let_it_be(:namespace) { create(:group, :nested, :public) }
 
     it_behaves_like "group namespace link paths values"
+
+    describe '#new_trial_path' do
+      context 'when on GitLab.com' do
+        before do
+          allow(::Gitlab::Saas).to receive(:feature_available?).with(:gitlab_com_subscriptions).and_return(true)
+        end
+
+        it 'returns the new trial path with namespace_id' do
+          expect(resolve_field(:new_trial_path, namespace, current_user: user))
+            .to eq("/-/trials/new?namespace_id=#{namespace.id}")
+        end
+      end
+    end
   end
 
   context "when fetching private group" do
