@@ -29,7 +29,9 @@ module EE
         end
 
         def sync_to_work_item!
-          service_response = child.group_epic_work_item? ? handle_epic_link : handle_issue_link
+          return unless child.group_epic_work_item?
+
+          service_response = handle_epic_link
           return if service_response[:status] == :success
 
           ::Gitlab::EpicWorkItemSync::Logger.error(
@@ -69,13 +71,6 @@ module EE
           return { status: :success } unless child.synced_epic&.parent.present?
 
           ::Epics::EpicLinks::DestroyService.new(child.synced_epic, current_user, synced_epic: true).execute
-        end
-
-        def handle_issue_link
-          epic_issue_link = EpicIssue.find_by_issue_id(child.id)
-          return { status: :success } unless epic_issue_link
-
-          ::EpicIssues::DestroyService.new(epic_issue_link, current_user, synced_epic: true).execute
         end
       end
     end
