@@ -41768,6 +41768,8 @@ CREATE INDEX index_p_ci_finished_build_ch_sync_events_finished_at ON ONLY p_ci_f
 
 CREATE INDEX index_p_ci_finished_build_ch_sync_events_on_project_id ON ONLY p_ci_finished_build_ch_sync_events USING btree (project_id);
 
+CREATE INDEX index_p_ci_finished_pipeline_ch_sync_events_on_pipeline_id ON ONLY p_ci_finished_pipeline_ch_sync_events USING btree (pipeline_id) WHERE (processed = false);
+
 CREATE UNIQUE INDEX index_p_ci_job_annotations_on_partition_id_job_id_name ON ONLY p_ci_job_annotations USING btree (partition_id, job_id, name);
 
 CREATE INDEX index_p_ci_job_annotations_on_project_id ON ONLY p_ci_job_annotations USING btree (project_id);
