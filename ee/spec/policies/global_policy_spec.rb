@@ -839,7 +839,7 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
       before do
         stub_licensed_features(self_hosted_models: true)
         allow(::GitlabSubscriptions::AddOnPurchase)
-          .to receive_message_chain(:for_duo_enterprise, :active, :exists?).and_return(true)
+          .to receive_message_chain(:for_duo_core_pro_or_enterprise, :active, :exists?).and_return(true)
       end
     end
 
@@ -855,24 +855,27 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
       end
 
       context 'when admin', :enable_admin_mode do
-        where(:is_licensed, :is_active_add_on, :is_saas, :with_saas_flag_enabled, :dedicated_instance,
-          :amazon_q_enabled, :can_manage_self_hosted_settings) do
-          true  | true  | false | false | false | false | be_allowed(:manage_self_hosted_models_settings)
-          true  | true  | false | false | false | true | be_disallowed(:manage_self_hosted_models_settings)
-          true  | false | false | false | false | false | be_disallowed(:manage_self_hosted_models_settings)
-          true  | true  | true  | false | false | false | be_disallowed(:manage_self_hosted_models_settings)
-          true  | true  | true  | true  | false | false | be_allowed(:manage_self_hosted_models_settings)
-          true  | true  | false | false | true  | false | be_disallowed(:manage_self_hosted_models_settings)
-          false | true  | false | false | false | false | be_disallowed(:manage_self_hosted_models_settings)
+        where(:is_licensed, :is_active_add_on, :is_duo_enterprise, :is_saas, :with_saas_flag_enabled,
+          :dedicated_instance, :amazon_q_enabled, :can_manage_self_hosted_settings) do
+          true  | true  | true  | false | false | false | false | be_allowed(:manage_self_hosted_models_settings)
+          true  | true  | false | false | false | false | true  | be_disallowed(:manage_self_hosted_models_settings)
+          true  | false | true  | false | false | false | false | be_disallowed(:manage_self_hosted_models_settings)
+          true  | true  | true  | true  | false | false | false | be_disallowed(:manage_self_hosted_models_settings)
+          true  | true  | true  | true  | true  | false | false | be_allowed(:manage_self_hosted_models_settings)
+          true  | true  | true  | false | false | true  | false | be_disallowed(:manage_self_hosted_models_settings)
+          false | true  | true  | false | false | false | false | be_disallowed(:manage_self_hosted_models_settings)
         end
 
         with_them do
           before do
             stub_licensed_features(self_hosted_models: is_licensed)
             allow(::GitlabSubscriptions::AddOnPurchase)
-        .to receive_message_chain(:for_self_managed, :for_duo_enterprise, :active,
+        .to receive_message_chain(:for_self_managed, :for_duo_core_pro_or_enterprise, :active,
           :exists?).and_return(is_active_add_on)
             allow(::Ai::AmazonQ).to receive(:connected?).and_return(amazon_q_enabled)
+            allow(::GitlabSubscriptions::AddOnPurchase)
+          .to receive_message_chain(:for_self_managed, :for_duo_enterprise, :active,
+            :exists?).and_return(is_duo_enterprise)
 
             stub_saas_features(gitlab_com_subscriptions: is_saas)
             stub_feature_flags(allow_self_hosted_features_for_com: with_saas_flag_enabled)
@@ -916,7 +919,7 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
             allow(License).to receive(:current).and_return(license_double)
             allow(::Ai::AmazonQ).to receive(:connected?).and_return(amazon_q_enabled)
             allow(::GitlabSubscriptions::AddOnPurchase)
-        .to receive_message_chain(:for_self_managed, :for_duo_enterprise, :active,
+        .to receive_message_chain(:for_self_managed, :for_duo_core_pro_or_enterprise, :active,
           :exists?).and_return(is_active_add_on)
           end
 

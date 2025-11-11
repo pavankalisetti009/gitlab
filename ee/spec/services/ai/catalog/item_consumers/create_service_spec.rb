@@ -10,6 +10,8 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
 
   let_it_be(:maintainer_user) { create(:user) }
 
+  let_it_be(:group) { create(:group, owners: user, maintainers: maintainer_user, name: "Group name") }
+
   let_it_be(:consumer_group) { create(:group, owners: user, maintainers: maintainer_user) }
   let_it_be(:consumer_project) { create(:project, group: consumer_group) }
 
@@ -59,6 +61,20 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
 
     it 'does not track internal event' do
       expect { execute }.not_to trigger_internal_events('create_ai_catalog_item_consumer')
+    end
+  end
+
+  shared_context 'when container is a group' do
+    let(:parent_item_consumer) { nil }
+    let(:container) { group }
+
+    let(:license) { create(:license, plan: License::PREMIUM_PLAN) }
+
+    before do
+      stub_licensed_features(service_accounts: true)
+      stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: true)
+      allow(License).to receive(:current).and_return(license)
+      allow(license).to receive(:seats).and_return(User.service_account.count + 2)
     end
   end
 
@@ -119,20 +135,7 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
     it_behaves_like 'a failure', 'Item already configured'
   end
 
-  context 'when the consumer is a group' do
-    let_it_be(:group) { create(:group, owners: user, maintainers: maintainer_user, name: "Group name") }
-    let(:parent_item_consumer) { nil }
-    let(:container) { group }
-
-    let(:license) { create(:license, plan: License::PREMIUM_PLAN) }
-
-    before do
-      stub_licensed_features(service_accounts: true)
-      stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: true)
-      allow(License).to receive(:current).and_return(license)
-      allow(license).to receive(:seats).and_return(User.service_account.count + 2)
-    end
-
+  it_behaves_like 'when container is a group' do
     it 'creates a catalog item consumer with expected data' do
       execute
 
@@ -183,11 +186,7 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
 
       let(:container) { child_group }
 
-      it 'does not create a service account' do
-        expect(::Namespaces::ServiceAccounts::CreateService).not_to receive(:new)
-
-        expect { execute }.not_to change { User.count }
-      end
+      it_behaves_like 'a failure', 'Item can only be enabled in projects or top-level groups'
     end
 
     context 'when instance setting disallows top-level group owners to create service accounts' do
@@ -195,14 +194,7 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
         stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: false)
       end
 
-      it 'does not create a service account but still creates the item consumer' do
-        expect { execute }
-          .to not_change { User.service_account.count }
-          .and change { Ai::Catalog::ItemConsumer.count }.by(1)
-
-        expect(execute).to be_success
-        expect(Ai::Catalog::ItemConsumer.last.service_account).to be_nil
-      end
+      it_behaves_like 'a failure', 'Item does not exist, or you have insufficient permissions'
     end
 
     context 'when the user is not an owner of the group' do
@@ -210,12 +202,7 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
         described_class.new(container: container, current_user: maintainer_user, params: params).execute
       end
 
-      it 'does not attempt to create a service account but creates an item consumer' do
-        expect(::Namespaces::ServiceAccounts::CreateService).not_to receive(:new).and_call_original
-
-        expect { execute }.to not_change { User.count }
-          .and change { Ai::Catalog::ItemConsumer.count }.by(1)
-      end
+      it_behaves_like 'a failure', 'Item does not exist, or you have insufficient permissions'
     end
 
     context 'when the service account username already exists' do
@@ -251,6 +238,14 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
 
         expect { execute }.not_to change { User.count }
       end
+    end
+
+    context 'when the user cannot create a service account' do
+      before do
+        allow(Ability).to receive(:allowed?).with(user, :create_service_account, group).and_return(false)
+      end
+
+      it_behaves_like 'a failure', 'Item does not exist, or you have insufficient permissions'
     end
   end
 
@@ -307,10 +302,7 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
       )
     end
 
-    context 'when container is a group' do
-      let(:container) { consumer_group }
-      let(:parent_item_consumer) { nil }
-
+    it_behaves_like 'when container is a group' do
       it_behaves_like 'a failure', "Flow triggers can only be set for projects"
     end
 

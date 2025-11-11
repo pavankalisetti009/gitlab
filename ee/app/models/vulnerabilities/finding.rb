@@ -101,6 +101,8 @@ module Vulnerabilities
 
     has_one :finding_risk_score, class_name: 'Vulnerabilities::FindingRiskScore', inverse_of: :finding
 
+    has_one :flip_guard, class_name: 'Vulnerabilities::FlipGuard', inverse_of: :finding, foreign_key: 'vulnerability_finding_id'
+
     # rubocop: disable Rails/InverseOf -- these relations are not present on Ci::Pipeline
     belongs_to :initial_finding_pipeline, class_name: '::Ci::Pipeline', foreign_key: 'initial_pipeline_id'
     belongs_to :latest_finding_pipeline, class_name: '::Ci::Pipeline', foreign_key: 'latest_pipeline_id'

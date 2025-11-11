@@ -23,7 +23,7 @@ module Mutations
 
           argument :target, Types::Ai::Catalog::ItemConsumerTargetInputType,
             required: true,
-            description: 'Target in which the catalog item is configured.'
+            description: 'Target project or top-level group in which the catalog item is configured.'
 
           argument :trigger_types, [GraphQL::Types::String],
             required: false,
