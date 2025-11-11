@@ -52,7 +52,8 @@ module Namespaces
       def ultimate?
         return super unless saas?
 
-        namespace.gitlab_subscription.hosted_plan&.name == ::Plan::ULTIMATE
+        plan_name = namespace.actual_plan_name
+        [::Plan::GOLD, ::Plan::ULTIMATE].include?(plan_name)
       end
 
       override :seats_available?

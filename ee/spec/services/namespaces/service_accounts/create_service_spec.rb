@@ -12,6 +12,20 @@ RSpec.describe Namespaces::ServiceAccounts::CreateService, feature_category: :us
     end
   end
 
+  shared_examples 'invalid namespace scenarios' do
+    context 'when the group is invalid' do
+      let(:namespace_id) { non_existing_record_id }
+
+      it_behaves_like 'service account creation failure'
+    end
+
+    context 'when the group is subgroup' do
+      let(:namespace_id) { subgroup.id }
+
+      it_behaves_like 'service account creation failure'
+    end
+  end
+
   let_it_be(:organization) { create(:organization) }
   let_it_be(:group) { create(:group) }
   let_it_be(:subgroup) { create(:group, :private, parent: group) }
@@ -51,17 +65,7 @@ RSpec.describe Namespaces::ServiceAccounts::CreateService, feature_category: :us
           expect(result.payload[:user].provisioned_by_group_id).to eq(group.id)
         end
 
-        context 'when the group is invalid' do
-          let(:namespace_id) { non_existing_record_id }
-
-          it_behaves_like 'service account creation failure'
-        end
-
-        context 'when the group is subgroup' do
-          let(:namespace_id) { subgroup.id }
-
-          it_behaves_like 'service account creation failure'
-        end
+        it_behaves_like 'invalid namespace scenarios'
       end
 
       context 'when subscription is of premium tier' do
@@ -93,17 +97,7 @@ RSpec.describe Namespaces::ServiceAccounts::CreateService, feature_category: :us
             expect(result.payload[:user].provisioned_by_group_id).to eq(group.id)
           end
 
-          context 'when the group is invalid' do
-            let(:namespace_id) { non_existing_record_id }
-
-            it_behaves_like 'service account creation failure'
-          end
-
-          context 'when the group is subgroup' do
-            let(:namespace_id) { subgroup.id }
-
-            it_behaves_like 'service account creation failure'
-          end
+          it_behaves_like 'invalid namespace scenarios'
         end
       end
     end
@@ -172,6 +166,56 @@ RSpec.describe Namespaces::ServiceAccounts::CreateService, feature_category: :us
             end
           end
         end
+      end
+    end
+  end
+
+  context 'when SaaS', :saas do
+    before do
+      stub_licensed_features(service_accounts: true)
+      stub_saas_features(gitlab_com_subscriptions: true)
+    end
+
+    context 'when current user is an admin', :enable_admin_mode do
+      let_it_be(:current_user) { create(:admin) }
+
+      context 'when subscription is of gold tier' do
+        let_it_be(:group_with_gold) { create(:group) }
+        let(:namespace_id) { group_with_gold.id }
+
+        before do
+          # Reflecting real production data: Gold subscriptions have 0 seats
+          create(:gitlab_subscription, :gold, namespace: group_with_gold, seats: 0)
+        end
+
+        it_behaves_like 'service account creation success' do
+          let(:username_prefix) { "service_account_group_#{group_with_gold.id}" }
+        end
+
+        it 'sets provisioned by group' do
+          expect(result.payload[:user].provisioned_by_group_id).to eq(group_with_gold.id)
+        end
+
+        it_behaves_like 'invalid namespace scenarios'
+      end
+
+      context 'when subscription is of ultimate tier' do
+        let_it_be(:group_with_ultimate) { create(:group) }
+        let(:namespace_id) { group_with_ultimate.id }
+
+        before do
+          create(:gitlab_subscription, :ultimate, namespace: group_with_ultimate, seats: 10)
+        end
+
+        it_behaves_like 'service account creation success' do
+          let(:username_prefix) { "service_account_group_#{group_with_ultimate.id}" }
+        end
+
+        it 'sets provisioned by group' do
+          expect(result.payload[:user].provisioned_by_group_id).to eq(group_with_ultimate.id)
+        end
+
+        it_behaves_like 'invalid namespace scenarios'
       end
     end
   end
