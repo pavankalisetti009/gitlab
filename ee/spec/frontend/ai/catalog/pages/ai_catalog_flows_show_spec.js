@@ -8,8 +8,8 @@ import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import AiCatalogFlowsShow from 'ee/ai/catalog/pages/ai_catalog_flows_show.vue';
-import AiCatalogFlowDetails from 'ee/ai/catalog/components/ai_catalog_flow_details.vue';
 import AiCatalogItemActions from 'ee/ai/catalog/components/ai_catalog_item_actions.vue';
+import AiCatalogItemView from 'ee/ai/catalog/components/ai_catalog_item_view.vue';
 import { TRACK_EVENT_TYPE_FLOW, TRACK_EVENT_VIEW_AI_CATALOG_ITEM } from 'ee/ai/catalog/constants';
 import deleteAiCatalogFlowMutation from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_flow.mutation.graphql';
 import deleteAiCatalogThirdPartyFlowMutation from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_third_party_flow.mutation.graphql';
@@ -70,7 +70,7 @@ describe('AiCatalogFlowsShow', () => {
   const findErrorsAlert = () => wrapper.findComponent(ErrorsAlert);
   const findPageHeading = () => wrapper.findComponent(PageHeading);
   const findItemActions = () => wrapper.findComponent(AiCatalogItemActions);
-  const findFlowDetails = () => wrapper.findComponent(AiCatalogFlowDetails);
+  const findItemView = () => wrapper.findComponent(AiCatalogItemView);
 
   beforeEach(() => {
     createComponent();
@@ -84,8 +84,8 @@ describe('AiCatalogFlowsShow', () => {
     expect(findItemActions().props('item')).toBe(mockFlow);
   });
 
-  it('renders flow details', () => {
-    expect(findFlowDetails().props('item')).toBe(mockFlow);
+  it('renders item view', () => {
+    expect(findItemView().props('item')).toBe(mockFlow);
   });
 
   describe('tracking events', () => {
