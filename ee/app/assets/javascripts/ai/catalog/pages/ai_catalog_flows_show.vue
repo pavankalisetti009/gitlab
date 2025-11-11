@@ -14,9 +14,8 @@ import {
 } from 'ee/ai/catalog/constants';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import { prerequisitesError } from '../utils';
-import AiCatalogItemMetadata from '../components/ai_catalog_item_metadata.vue';
-import AiCatalogFlowDetails from '../components/ai_catalog_flow_details.vue';
 import AiCatalogItemActions from '../components/ai_catalog_item_actions.vue';
+import AiCatalogItemView from '../components/ai_catalog_item_view.vue';
 import createAiCatalogItemConsumer from '../graphql/mutations/create_ai_catalog_item_consumer.mutation.graphql';
 import {
   AI_CATALOG_FLOWS_DUPLICATE_ROUTE,
@@ -29,9 +28,8 @@ export default {
   components: {
     ErrorsAlert,
     PageHeading,
-    AiCatalogItemMetadata,
-    AiCatalogFlowDetails,
     AiCatalogItemActions,
+    AiCatalogItemView,
   },
   mixins: [glFeatureFlagsMixin(), InternalEvents.mixin()],
   inject: {
@@ -177,9 +175,6 @@ export default {
         />
       </template>
     </page-heading>
-    <div class="gl-flex gl-flex-col gl-gap-5 @md:gl-flex-row">
-      <ai-catalog-flow-details :item="aiCatalogFlow" class="gl-grow" />
-      <ai-catalog-item-metadata :item="aiCatalogFlow" class="gl-shrink-0" />
-    </div>
+    <ai-catalog-item-view :item="aiCatalogFlow" />
   </div>
 </template>

@@ -2,8 +2,8 @@ import { shallowMount } from '@vue/test-utils';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import AiCatalogAgentsShow from 'ee/ai/catalog/pages/ai_catalog_agents_show.vue';
-import AiCatalogAgentDetails from 'ee/ai/catalog/components/ai_catalog_agent_details.vue';
 import AiCatalogItemActions from 'ee/ai/catalog/components/ai_catalog_item_actions.vue';
+import AiCatalogItemView from 'ee/ai/catalog/components/ai_catalog_item_view.vue';
 import { TRACK_EVENT_TYPE_AGENT, TRACK_EVENT_VIEW_AI_CATALOG_ITEM } from 'ee/ai/catalog/constants';
 import { mockAgent } from '../mock_data';
 
@@ -38,7 +38,7 @@ describe('AiCatalogAgentsShow', () => {
 
   const findPageHeading = () => wrapper.findComponent(PageHeading);
   const findItemActions = () => wrapper.findComponent(AiCatalogItemActions);
-  const findAgentDetails = () => wrapper.findComponent(AiCatalogAgentDetails);
+  const findItemView = () => wrapper.findComponent(AiCatalogItemView);
 
   beforeEach(() => {
     createComponent();
@@ -52,8 +52,8 @@ describe('AiCatalogAgentsShow', () => {
     expect(findItemActions().props('item')).toBe(mockAgent);
   });
 
-  it('renders agent details', () => {
-    expect(findAgentDetails().props('item')).toBe(mockAgent);
+  it('renders item view', () => {
+    expect(findItemView().props('item')).toBe(mockAgent);
   });
 
   describe('tracking events', () => {
