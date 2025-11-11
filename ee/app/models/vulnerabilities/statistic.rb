@@ -5,6 +5,8 @@ module Vulnerabilities
     include EachBatch
     include ::Namespaces::Traversal::Traversable
 
+    ignore_columns %i[age_mean age_sum_of_squares risk_score], remove_with: '18.8', remove_after: '2025-12-20'
+
     SEVERITY_LEVELS = Enums::Vulnerability.severity_levels.freeze
 
     SEVERITY_LEVELS_ORDER = [

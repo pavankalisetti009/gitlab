@@ -261,7 +261,12 @@ RSpec.describe Vulnerabilities::Statistic, feature_category: :vulnerability_mana
 
     it 'returns a relation built from the SQL of the given relation' do
       ordered_scope = described_class.ordered_by_severity
-      from_stats = described_class.from_statistics(ordered_scope)
+      # The select('*') was added to solve issue encountered when setting ignore_columns
+      # by adding adding select('*') we force rails to select all returned columns instead
+      # all columns - the ignored columns which caused the query to fail because the query
+      # wasn't returning all the columns
+      # This should be removed in https://gitlab.com/gitlab-org/gitlab/-/issues/578863
+      from_stats = described_class.from_statistics(ordered_scope).select('*')
 
       result = from_stats.first
 
