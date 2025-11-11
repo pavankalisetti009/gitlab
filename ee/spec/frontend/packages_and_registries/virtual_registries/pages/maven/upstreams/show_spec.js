@@ -5,13 +5,13 @@ import {
   getMavenUpstreamCacheEntries,
   deleteMavenUpstreamCacheEntry,
 } from 'ee/api/virtual_registries_api';
-import UpstreamDetailsApp from 'ee/packages_and_registries/virtual_registries/maven/upstream_details_app.vue';
-import UpstreamDetailsHeader from 'ee/packages_and_registries/virtual_registries/components/upstream_details_header.vue';
-import CacheEntriesTable from 'ee/packages_and_registries/virtual_registries/components/cache_entries_table.vue';
+import UpstreamDetailsApp from 'ee/packages_and_registries/virtual_registries/pages/maven/upstreams/show.vue';
+import UpstreamDetailsHeader from 'ee/packages_and_registries/virtual_registries/components/maven/upstreams/show/header.vue';
+import CacheEntriesTable from 'ee/packages_and_registries/virtual_registries/components/maven/upstreams/show/cache_entries_table.vue';
 import { createAlert } from '~/alert';
 import * as urlUtils from '~/lib/utils/url_utility';
 import { TEST_HOST } from 'spec/test_constants';
-import { mockCacheEntries, mockUpstreamPagination, mockUpstream } from '../mock_data';
+import { mockCacheEntries, mockUpstreamPagination, mockUpstream } from '../../../mock_data';
 
 jest.mock('~/alert');
 jest.mock('ee/api/virtual_registries_api', () => ({

@@ -4,11 +4,11 @@ import { GlAlert, GlBadge } from '@gitlab/ui';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
-import MavenRegistryDetailsApp from 'ee/packages_and_registries/virtual_registries/components/maven_registry_details_app.vue';
+import MavenRegistryDetailsUpstreamsList from 'ee/packages_and_registries/virtual_registries/components/maven/registries/show/upstreams_list.vue';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
-import AddUpstream from 'ee/packages_and_registries/virtual_registries/components/add_upstream.vue';
-import LinkUpstreamForm from 'ee/packages_and_registries/virtual_registries/components/link_upstream_form.vue';
-import RegistryUpstreamItem from 'ee/packages_and_registries/virtual_registries/components/registry_upstream_item.vue';
+import AddUpstream from 'ee/packages_and_registries/virtual_registries/components/maven/registries/show/add_upstream.vue';
+import LinkUpstreamForm from 'ee/packages_and_registries/virtual_registries/components/maven/registries/show/link_upstream_form.vue';
+import RegistryUpstreamItem from 'ee/packages_and_registries/virtual_registries/components/maven/registries/show/registry_upstream_item.vue';
 import RegistryUpstreamForm from 'ee/packages_and_registries/virtual_registries/components/maven/shared/registry_upstream_form.vue';
 import UpstreamClearCacheModal from 'ee/packages_and_registries/virtual_registries/components/maven/shared/upstream_clear_cache_modal.vue';
 import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
@@ -21,7 +21,11 @@ import {
   removeMavenUpstreamRegistryAssociation,
   updateMavenRegistryUpstreamPosition,
 } from 'ee/api/virtual_registries_api';
-import { mavenVirtualRegistry, upstreamsResponse, multipleUpstreamsResponse } from '../mock_data';
+import {
+  mavenVirtualRegistry,
+  upstreamsResponse,
+  multipleUpstreamsResponse,
+} from '../../../../mock_data';
 
 jest.mock('ee/api/virtual_registries_api');
 jest.mock('ee/packages_and_registries/virtual_registries/sentry_utils');
@@ -53,6 +57,13 @@ describe('MavenRegistryDetailsApp', () => {
     password: '',
     cacheValidityHours: 24,
     metadataCacheValidityHours: 24,
+  };
+
+  const expectedCapture = (error) => {
+    return {
+      component: 'MavenRegistryDetailsUpstreamsList',
+      error,
+    };
   };
 
   const createUpstreamSuccessHandler = jest.fn().mockResolvedValue({
@@ -95,7 +106,7 @@ describe('MavenRegistryDetailsApp', () => {
   const findMaxUpstreamsMessage = () => wrapper.findByTestId('max-upstreams');
 
   const createComponent = ({ props = {}, glAbilities = {}, handlers = [], stubs = {} } = {}) => {
-    wrapper = shallowMountExtended(MavenRegistryDetailsApp, {
+    wrapper = shallowMountExtended(MavenRegistryDetailsUpstreamsList, {
       apolloProvider: createMockApollo(handlers),
       propsData: {
         ...defaultProps,
@@ -356,10 +367,7 @@ describe('MavenRegistryDetailsApp', () => {
         );
         expect(findCreateUpstreamForm().props('loading')).toBe(false);
         expect(showToastSpy).not.toHaveBeenCalled();
-        expect(captureException).toHaveBeenCalledWith({
-          component: 'MavenRegistryDetailsApp',
-          error: mockGraphQLError,
-        });
+        expect(captureException).toHaveBeenCalledWith(expectedCapture(mockGraphQLError));
       });
     });
   });
@@ -411,10 +419,7 @@ describe('MavenRegistryDetailsApp', () => {
           'Something went wrong while adding the upstream to virtual registry. Try again.',
         );
         expect(showToastSpy).not.toHaveBeenCalled();
-        expect(captureException).toHaveBeenCalledWith({
-          component: 'MavenRegistryDetailsApp',
-          error: mockError,
-        });
+        expect(captureException).toHaveBeenCalledWith(expectedCapture(mockError));
       });
     });
   });
@@ -482,10 +487,7 @@ describe('MavenRegistryDetailsApp', () => {
 
         expect(findUpdateActionErrorAlert().text()).toBe('position does not have a valid value');
         expect(showToastSpy).not.toHaveBeenCalled();
-        expect(captureException).toHaveBeenCalledWith({
-          component: 'MavenRegistryDetailsApp',
-          error: mockError,
-        });
+        expect(captureException).toHaveBeenCalledWith(expectedCapture(mockError));
       });
 
       it('shows alert with default message & reports error to Sentry', async () => {
@@ -503,10 +505,7 @@ describe('MavenRegistryDetailsApp', () => {
           'Failed to update position of the upstream. Try again.',
         );
         expect(showToastSpy).not.toHaveBeenCalled();
-        expect(captureException).toHaveBeenCalledWith({
-          component: 'MavenRegistryDetailsApp',
-          error: mockError,
-        });
+        expect(captureException).toHaveBeenCalledWith(expectedCapture(mockError));
       });
     });
   });
@@ -555,10 +554,7 @@ describe('MavenRegistryDetailsApp', () => {
 
         expect(findUpdateActionErrorAlert().text()).toBe('Failed to remove upstream. Try again.');
         expect(showToastSpy).not.toHaveBeenCalled();
-        expect(captureException).toHaveBeenCalledWith({
-          component: 'MavenRegistryDetailsApp',
-          error: mockError,
-        });
+        expect(captureException).toHaveBeenCalledWith(expectedCapture(mockError));
       });
     });
   });
@@ -628,10 +624,7 @@ describe('MavenRegistryDetailsApp', () => {
           'Failed to clear registry cache. Try again.',
         );
         expect(showToastSpy).not.toHaveBeenCalled();
-        expect(captureException).toHaveBeenCalledWith({
-          component: 'MavenRegistryDetailsApp',
-          error: mockError,
-        });
+        expect(captureException).toHaveBeenCalledWith(expectedCapture(mockError));
       });
     });
   });
@@ -705,10 +698,7 @@ describe('MavenRegistryDetailsApp', () => {
           'Failed to clear upstream cache. Try again.',
         );
         expect(showToastSpy).not.toHaveBeenCalled();
-        expect(captureException).toHaveBeenCalledWith({
-          component: 'MavenRegistryDetailsApp',
-          error: mockError,
-        });
+        expect(captureException).toHaveBeenCalledWith(expectedCapture(mockError));
       });
     });
   });

@@ -1,11 +1,11 @@
 import { GlForm, GlSkeletonLoader } from '@gitlab/ui';
 import { cloneDeep } from 'lodash';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import LinkUpstreamForm from 'ee/packages_and_registries/virtual_registries/components/link_upstream_form.vue';
+import LinkUpstreamForm from 'ee/packages_and_registries/virtual_registries/components/maven/registries/show/link_upstream_form.vue';
 import TestMavenUpstreamButton from 'ee/packages_and_registries/virtual_registries/components/maven/shared/test_maven_upstream_button.vue';
-import UpstreamSelector from 'ee/packages_and_registries/virtual_registries/components/upstream_selector.vue';
+import UpstreamSelector from 'ee/packages_and_registries/virtual_registries/components/maven/registries/show/upstream_selector.vue';
 import { getMavenUpstream } from 'ee/api/virtual_registries_api';
-import { mockUpstream, upstreamsResponse } from '../mock_data';
+import { mockUpstream, upstreamsResponse } from '../../../../mock_data';
 
 jest.mock('ee/api/virtual_registries_api');
 
