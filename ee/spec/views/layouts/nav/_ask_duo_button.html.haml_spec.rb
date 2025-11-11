@@ -7,15 +7,21 @@ RSpec.describe 'layouts/nav/_ask_duo_button', feature_category: :duo_chat do
   let(:group) { build_stubbed(:group) }
   let(:project) { build_stubbed(:project, namespace: group) }
   let(:top_bar_button_enabled) { true }
+  let(:duo_scope_hash) { { project: project } }
 
   before do
     allow(view).to(
       receive_messages(
+        controller_name: 'projects',
         current_user: user, project_studio_enabled?: false, top_bar_duo_button_enabled?: top_bar_button_enabled
       )
     )
     assign(:group, group)
     assign(:project, project)
+    allow(::Gitlab::Llm::TanukiBot).to receive_messages(
+      chat_disabled_reason: nil,
+      duo_scope_hash: duo_scope_hash
+    )
   end
 
   context 'when top bar button is not enabled' do
@@ -45,6 +51,21 @@ RSpec.describe 'layouts/nav/_ask_duo_button', feature_category: :duo_chat do
         end
 
         it 'renders the Duo Chat and Duo Agentic Chat button with correct aria-label' do
+          render
+
+          expect(rendered).to have_selector('.js-tanuki-bot-chat-toggle[aria-label="GitLab Duo Chat"]')
+        end
+      end
+
+      context 'when duo_scope_hash returns a different group than @group' do
+        let(:default_group) { build_stubbed(:group) }
+        let(:duo_scope_hash) { { project: project, namespace: default_group } }
+
+        it 'uses the group from duo_scope_hash for chat_disabled_reason check' do
+          expect(::Gitlab::Llm::TanukiBot).to receive(:chat_disabled_reason).with(
+            user: user, container: default_group
+          ).and_return(nil)
+
           render
 
           expect(rendered).to have_selector('.js-tanuki-bot-chat-toggle[aria-label="GitLab Duo Chat"]')

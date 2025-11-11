@@ -2,4 +2,7 @@
 - duo_enabled_for_project_or_group = ::Gitlab::Llm::TanukiBot.show_breadcrumbs_entry_point?(user: current_user)
 
 - if !amazon_q_enabled && duo_enabled_for_project_or_group
-  #duo-chat-panel.duo-chat-panel{ data: duo_chat_panel_data(current_user, @project, @group) }
+  - duo_scope_hash = ::Gitlab::Llm::TanukiBot.duo_scope_hash(current_user, @project, @group, controller_name)
+  - project = duo_scope_hash[:project]
+  - group = duo_scope_hash[:namespace]
+  #duo-chat-panel.duo-chat-panel{ data: duo_chat_panel_data(current_user, project, group) }

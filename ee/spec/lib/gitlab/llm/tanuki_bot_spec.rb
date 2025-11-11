@@ -415,4 +415,35 @@ RSpec.describe Gitlab::Llm::TanukiBot, feature_category: :duo_chat do
       end
     end
   end
+
+  describe '.duo_scope_hash' do
+    using RSpec::Parameterized::TableSyntax
+
+    let_it_be(:project) { create(:project) }
+    let_it_be(:group) { create(:group) }
+    let_it_be(:default_namespace) { create(:group) }
+    let(:non_persisted_project) { build(:project) }
+    let(:non_persisted_group) { build(:group) }
+
+    before do
+      allow(user.user_preference).to receive(:get_default_duo_namespace).and_return(default_namespace)
+    end
+
+    where(:controller_name, :project_param, :group_param, :expected_result) do
+      'search' | ref(:project)                | ref(:group)                | { namespace: ref(:default_namespace) }
+      'search' | nil                          | ref(:group)                | { namespace: ref(:default_namespace) }
+      'note'   | ref(:project)                | ref(:group)                | { project: ref(:project) }
+      'note'   | ref(:non_persisted_project)  | ref(:group)                | { namespace: ref(:group) }
+      'note'   | nil                          | ref(:group)                | { namespace: ref(:group) }
+      'note'   | ref(:non_persisted_project)  | ref(:non_persisted_group)  | { namespace: ref(:default_namespace) }
+      'note'   | nil                          | nil                        | { namespace: ref(:default_namespace) }
+    end
+
+    with_them do
+      it 'returns the expected scope hash' do
+        expect(described_class.duo_scope_hash(user, project_param, group_param, controller_name))
+          .to eq(expected_result)
+      end
+    end
+  end
 end

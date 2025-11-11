@@ -3,7 +3,10 @@
 .gl-flex-none.gl-flex.gl-items-center.gl-justify-center.gl-gap-3
 - label = s_('DuoChat|GitLab Duo Chat')
 - duo_with_amazon_q_label = s_('DuoChat|GitLab Duo with Amazon Q')
-- chat_disabled_reason = ::Gitlab::Llm::TanukiBot.chat_disabled_reason(user: current_user, container: @group || @project).to_s
+- duo_scope_hash = ::Gitlab::Llm::TanukiBot.duo_scope_hash(current_user, @project, @group, controller_name)
+- project = duo_scope_hash[:project]
+- group = duo_scope_hash[:namespace]
+- chat_disabled_reason = ::Gitlab::Llm::TanukiBot.chat_disabled_reason(user: current_user, container: group || project).to_s
 - amazon_q_enabled = ::Ai::AmazonQ.enabled?
 
 - if chat_disabled_reason.present?
