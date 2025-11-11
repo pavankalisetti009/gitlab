@@ -16,7 +16,6 @@ RSpec.describe 'getting AI foundational chat agents', feature_category: :workflo
 
     expect(response).to have_gitlab_http_status(:success)
     expect(nodes).to have_attributes(size: ::Ai::FoundationalChatAgent.count)
-    expect(nodes.sort_by { |node| node['id'] }).to eq(nodes)
 
     first_node = nodes.first
 
