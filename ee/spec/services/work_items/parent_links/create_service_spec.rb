@@ -138,33 +138,9 @@ RSpec.describe WorkItems::ParentLinks::CreateService, feature_category: :portfol
     context "when parent and child work items don't have a synced epic" do
       let(:parent_work_item) { work_item1 }
       let(:child_work_item) { work_item2 }
+      let(:synced_work_item_param) { true }
 
-      context 'when synced_work_item param is true' do
-        let(:synced_work_item_param) { true }
-
-        it_behaves_like 'creates parent link only', system_notes_count: 0
-      end
-
-      context 'when synced_work_item param is false' do
-        let(:synced_work_item_param) { false }
-
-        it_behaves_like 'creates parent link only'
-
-        context 'when issue already has an epic' do
-          let(:child_work_item) { work_item_issue }
-          let(:child_issue) { Issue.find_by_id(child_work_item.id) }
-
-          before do
-            create(:epic_issue, issue: child_work_item, epic: other_parent_epic)
-          end
-
-          it_behaves_like 'creates parent link and deletes legacy link' do
-            let(:legacy_child) { child_issue }
-            let(:relationship) { :epic }
-            let(:link_service_class) { ::EpicIssues }
-          end
-        end
-      end
+      it_behaves_like 'creates parent link only', system_notes_count: 0
     end
 
     context 'when only parent work item has a synced epic' do

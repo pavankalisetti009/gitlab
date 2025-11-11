@@ -568,9 +568,9 @@ RSpec.describe Issues::UpdateService, feature_category: :team_planning do
             expect { subject }.to change { issue.reload.epic }.from(epic).to(nil)
           end
 
-          it 'calls EpicIssues::DestroyService' do
+          it 'calls WorkItems::LegacyEpics::EpicIssues::DestroyService' do
             link_sevice = double
-            expect(EpicIssues::DestroyService).to receive(:new).with(EpicIssue.last, user).and_return(link_sevice)
+            expect(::WorkItems::LegacyEpics::EpicIssues::DestroyService).to receive(:new).with(EpicIssue.last, user).and_return(link_sevice)
             expect(link_sevice).to receive(:execute).and_return({ status: :success })
 
             subject
@@ -592,7 +592,7 @@ RSpec.describe Issues::UpdateService, feature_category: :team_planning do
           context 'but EpicIssues::DestroyService returns failure', :aggregate_failures do
             it 'does not send usage data for removed epic action' do
               link_sevice = double
-              expect(EpicIssues::DestroyService).to receive(:new).with(EpicIssue.last, user).and_return(link_sevice)
+              expect(::WorkItems::LegacyEpics::EpicIssues::DestroyService).to receive(:new).with(EpicIssue.last, user).and_return(link_sevice)
               expect(link_sevice).to receive(:execute).and_return({ status: :failure })
               expect(Gitlab::UsageDataCounters::IssueActivityUniqueCounter).not_to receive(:track_issue_removed_from_epic_action)
 
@@ -818,7 +818,7 @@ RSpec.describe Issues::UpdateService, feature_category: :team_planning do
 
       it 'calls EpicIssues::DestroyService' do
         link_sevice = double
-        expect(EpicIssues::DestroyService).to receive(:new).with(epic_issue, user).and_return(link_sevice)
+        expect(::WorkItems::LegacyEpics::EpicIssues::DestroyService).to receive(:new).with(epic_issue, user).and_return(link_sevice)
         expect(link_sevice).to receive(:execute).and_return({ status: :success })
 
         subject

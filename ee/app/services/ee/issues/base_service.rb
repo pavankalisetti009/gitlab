@@ -48,7 +48,7 @@ module EE
         link = EpicIssue.find_by_issue_id(issue.id)
         return success unless link
 
-        EpicIssues::DestroyService.new(link, current_user).execute.tap do |result|
+        ::WorkItems::LegacyEpics::EpicIssues::DestroyService.new(link, current_user).execute.tap do |result|
           next unless result[:status] == :success
 
           ::Gitlab::UsageDataCounters::IssueActivityUniqueCounter.track_issue_removed_from_epic_action(author: current_user,

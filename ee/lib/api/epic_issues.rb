@@ -150,7 +150,7 @@ module API
       end
       delete ':id/(-/)epics/:epic_iid/issues/:epic_issue_id' do
         authorize_can_assign_to_epic!(link.issue)
-        result = ::EpicIssues::DestroyService.new(link, current_user).execute
+        result = ::WorkItems::LegacyEpics::EpicIssues::DestroyService.new(link, current_user).execute
 
         if result[:status] == :success
           present link, with: EE::API::Entities::EpicIssueLink
