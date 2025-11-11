@@ -2,6 +2,7 @@
 import { GlIcon, GlLink, GlSprintf } from '@gitlab/ui';
 import { sprintf, s__ } from '~/locale';
 import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
+import SafeHtml from '~/vue_shared/directives/safe_html';
 
 export default {
   components: {
@@ -10,13 +11,15 @@ export default {
     GlSprintf,
     TimeAgoTooltip,
   },
+  directives: {
+    SafeHtml,
+  },
   props: {
     bypass: {
       type: Object,
       required: true,
     },
   },
-
   computed: {
     bypassReasons() {
       return Array.isArray(this.bypass.dismissalTypes) ? this.bypass.dismissalTypes.join(', ') : '';
@@ -71,7 +74,7 @@ export default {
         <ul class="gl-ml-5">
           <li>{{ s__('SecurityOrchestration|Security policy violated') }}</li>
           <li v-if="bypassReasons">{{ bypassReasonsText }}</li>
-          <li v-if="comment">{{ commentText }}</li>
+          <li v-if="comment" v-safe-html="commentText"></li>
           <li v-if="showUserAndMR">
             <gl-sprintf :message="bypassMRText">
               <template #user>
