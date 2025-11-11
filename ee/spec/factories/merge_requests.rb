@@ -2,12 +2,6 @@
 
 FactoryBot.modify do
   factory :merge_request do
-    trait :with_approver do
-      after :create do |merge_request|
-        create :approver, target: merge_request
-      end
-    end
-
     trait :blocked do
       after :create do |merge_request, _|
         create(:merge_request_block, blocked_merge_request: merge_request)
@@ -91,8 +85,6 @@ FactoryBot.modify do
 end
 
 FactoryBot.define do
-  factory :merge_request_with_approver, parent: :merge_request, traits: [:with_approver]
-
   factory :ee_merge_request, parent: :merge_request do
     trait :with_license_scanning_reports do
       after(:build) do |merge_request|

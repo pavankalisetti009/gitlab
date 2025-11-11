@@ -18,9 +18,6 @@ module EE
       include UsageStatistics
       include IterationEventable
 
-      has_many :approvers, as: :target, dependent: :delete_all # rubocop:disable Cop/ActiveRecordDependent -- legacy usage
-      has_many :approver_users, through: :approvers, source: :user
-      has_many :approver_groups, as: :target, dependent: :delete_all # rubocop:disable Cop/ActiveRecordDependent -- legacy usage
       has_many :status_check_responses, class_name: 'MergeRequests::StatusCheckResponse', inverse_of: :merge_request
       has_many :approval_rules, class_name: 'ApprovalMergeRequestRule', inverse_of: :merge_request do
         def applicable_to_branch(branch)

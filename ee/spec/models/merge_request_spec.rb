@@ -19,9 +19,6 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
     subject { build_stubbed(:merge_request) }
 
     it { is_expected.to have_many(:approvals).dependent(:delete_all) }
-    it { is_expected.to have_many(:approvers).dependent(:delete_all) }
-    it { is_expected.to have_many(:approver_users).through(:approvers) }
-    it { is_expected.to have_many(:approver_groups).dependent(:delete_all) }
     it { is_expected.to have_many(:approved_by_users) }
     it { is_expected.to have_one(:merge_train_car) }
     it { is_expected.to have_many(:approval_rules) }
@@ -814,10 +811,10 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
 
     context 'with approval rule' do
       before do
-        approver = create(:approver, target: project)
-        second_approver = create(:approver, target: project)
+        approver = create(:user)
+        second_approver = create(:user)
 
-        create(:approval_merge_request_rule, merge_request: merge_request, users: [approver.user, second_approver.user])
+        create(:approval_merge_request_rule, merge_request: merge_request, users: [approver, second_approver])
       end
 
       it 'returns only the author as a participant' do
@@ -1892,20 +1889,6 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
     end
   end
 
-  describe '#approver_group_ids=' do
-    it 'create approver_groups' do
-      group = create :group
-      group1 = create :group
-
-      merge_request = create :merge_request
-
-      merge_request.approver_group_ids = "#{group.id}, #{group1.id}"
-      merge_request.save!
-
-      expect(merge_request.approver_groups.map(&:group)).to match_array([group, group1])
-    end
-  end
-
   describe '#predefined_variables' do
     context 'when merge request has approver feature' do
       before do
@@ -2078,9 +2061,9 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
     subject { merge_request.mergeable_state?(**params) }
 
     let(:params) { {} }
-    let(:project_with_approver) { create(:project, :repository) }
+    let(:project1) { create(:project, :repository) }
     let(:merge_request) do
-      create(:merge_request, source_project: project_with_approver, target_project: project_with_approver)
+      create(:merge_request, source_project: project1, target_project: project1)
     end
 
     let_it_be(:user) { create(:user) }

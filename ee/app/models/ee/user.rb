@@ -84,7 +84,6 @@ module EE
       has_many :epic_board_recent_visits, class_name: 'Boards::EpicBoardRecentVisit', inverse_of: :user
 
       has_many :approvals,                dependent: :destroy # rubocop:disable Cop/ActiveRecordDependent -- legacy usage
-      has_many :approvers,                dependent: :destroy # rubocop:disable Cop/ActiveRecordDependent -- legacy usage
 
       has_many :minimal_access_group_members, -> { where(access_level: [::Gitlab::Access::MINIMAL_ACCESS]) }, class_name: 'GroupMember'
       has_many :minimal_access_groups, through: :minimal_access_group_members, source: :group
