@@ -28037,6 +28037,9 @@ msgstr ""
 msgid "Failed to assign you issues related to the merge request."
 msgstr ""
 
+msgid "Failed to authenticate passkey. Log in with your username and passwordto add a passkey for your account. Learn more about setting up passkeys."
+msgstr ""
+
 msgid "Failed to cancel auto stop because failed to update the environment."
 msgstr ""
 
@@ -47667,10 +47670,19 @@ msgstr ""
 msgid "Passed on"
 msgstr ""
 
+msgid "Passkey added successfully! Next time you sign in, select the sign-in with passkey option."
+msgstr ""
+
 msgid "Passkey deleted"
 msgstr ""
 
+msgid "Passkey has been deleted!"
+msgstr ""
+
 msgid "Passkey registered"
+msgstr ""
+
+msgid "Passkey successfully authenticated."
 msgstr ""
 
 msgid "Password"
@@ -56667,7 +56679,7 @@ msgstr ""
 msgid "Runners|Registration token"
 msgstr ""
 
-msgid "Runners|Registration token copied!"
+msgid "Runners|Registration token copied to clipboard."
 msgstr ""
 
 msgid "Runners|Remove Node Pool"
@@ -77810,6 +77822,9 @@ msgid "Your GitLab version"
 msgstr ""
 
 msgid "Your Groups"
+msgstr ""
+
+msgid "Your Passkey did not send a valid JSON response."
 msgstr ""
 
 msgid "Your Personal Access Token was revoked"
