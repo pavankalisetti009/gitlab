@@ -123,4 +123,28 @@ RSpec.describe LabelsHelper do
       }
     end
   end
+
+  describe '#label_tooltip_title_html' do
+    let(:description) { '<img src="example.png">This is an image</img>' }
+    let(:label_with_html_content) { create(:label, title: title, description: description) }
+    let(:tooltip) { label_tooltip_title_html(label_with_html_content) }
+
+    context 'when label is unscoped' do
+      let(:title) { 'test' }
+
+      it 'escapes HTML for display' do
+        expect(tooltip).to eq('&lt;img src=&quot;example.png&quot;&gt;This is an image&lt;/img&gt;')
+      end
+    end
+
+    context 'when label is scoped' do
+      let(:title) { 'scope::test' }
+
+      it 'includes scoped label tag and escapes HTML for display' do
+        expect(tooltip).to eq(
+          "<span class='gl-font-bold'>Scoped label</span><br>" \
+            '&lt;img src=&quot;example.png&quot;&gt;This is an image&lt;/img&gt;')
+      end
+    end
+  end
 end

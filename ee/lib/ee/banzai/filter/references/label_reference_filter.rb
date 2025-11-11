@@ -9,10 +9,17 @@ module EE
 
           override :data_attributes_for
           def data_attributes_for(original, parent, object, link_content: false, link_reference: false)
-            return super unless object.scoped_label?
-
-            # Enabling HTML tooltips for scoped labels here.
+            # Causes the title (returned by `object_link_title` below) to be interpreted
+            # as HTML.
             super.merge!(html: true)
+          end
+
+          # Returns a String containing HTML.
+          override :object_link_title
+          def object_link_title(object, _matches)
+            presenter = object.present(issuable_subject: project || group)
+
+            ::LabelsHelper.label_tooltip_title_html(presenter)
           end
         end
       end
