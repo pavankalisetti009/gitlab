@@ -74,7 +74,8 @@ describe('AiCatalogItemConsumerModal', () => {
         expect(findPrivateAlert().exists()).toBe(true);
       });
 
-      it('does not render project dropdown', () => {
+      it('renders project name instead of dropdown', () => {
+        expect(findProjectName().text()).toBe(mockProjectWithGroup.nameWithNamespace);
         expect(findProjectDropdown().exists()).toBe(false);
       });
     });
@@ -173,39 +174,17 @@ describe('AiCatalogItemConsumerModal', () => {
       expect(findModal().props('title')).toBe('Enable flow in a group');
     });
 
-    it('renders group/project radio group', () => {
-      expect(findFormRadioGroup().props('options')).toEqual([
-        { value: 'group', text: 'Group' },
-        { value: 'project', text: 'Project' },
-      ]);
-    });
-
     describe('when item is public', () => {
       it('renders group label description', () => {
-        const groupFormGroup = findFormGroups().at(1); // Second form group (after radio group)
+        const groupFormGroup = findFormGroups().at(0);
         expect(groupFormGroup.props('labelDescription')).toBe(
           'Allows flow to be enabled in projects.',
         );
       });
 
-      it('renders group dropdown by default', () => {
+      it('renders group dropdown', () => {
         expect(findGroupDropdown().exists()).toBe(true);
         expect(findProjectDropdown().exists()).toBe(false);
-      });
-
-      describe('when switching target type to project', () => {
-        beforeEach(async () => {
-          await findFormRadioGroup().vm.$emit('input', 'project');
-        });
-
-        it('renders project dropdown instead of group dropdown', () => {
-          expect(findProjectDropdown().exists()).toBe(true);
-          expect(findGroupDropdown().exists()).toBe(false);
-        });
-
-        it('updates modal title for project', () => {
-          expect(findModal().props('title')).toBe('Enable flow in a project');
-        });
       });
 
       it('renders alert when there was a problem fetching groups', async () => {
@@ -233,7 +212,7 @@ describe('AiCatalogItemConsumerModal', () => {
             await nextTick();
 
             expect(wrapper.emitted('submit')).toBeUndefined();
-            const groupFormGroup = findFormGroups().at(1);
+            const groupFormGroup = findFormGroups().at(0);
             expect(groupFormGroup.props('state')).toBe(false);
           });
         });
@@ -250,24 +229,13 @@ describe('AiCatalogItemConsumerModal', () => {
         });
       });
 
-      it('renders group name instead of dropdown by default', () => {
+      it('renders group name instead of dropdown', () => {
         expect(findGroupName().text()).toBe(mockProjectWithGroup.rootGroup.fullName);
         expect(findGroupDropdown().exists()).toBe(false);
       });
 
       it('renders private alert', () => {
         expect(findPrivateAlert().exists()).toBe(true);
-      });
-
-      describe('when switching to project target type', () => {
-        beforeEach(async () => {
-          await findFormRadioGroup().vm.$emit('input', 'project');
-        });
-
-        it('renders project name instead of dropdown', () => {
-          expect(findProjectName().text()).toBe(mockProjectWithGroup.nameWithNamespace);
-          expect(findProjectDropdown().exists()).toBe(false);
-        });
       });
     });
   });

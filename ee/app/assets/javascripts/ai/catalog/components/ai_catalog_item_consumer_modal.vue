@@ -1,6 +1,6 @@
 <script>
 import { uniqueId } from 'lodash';
-import { GlAlert, GlForm, GlFormGroup, GlFormRadioGroup, GlModal, GlSprintf } from '@gitlab/ui';
+import { GlAlert, GlForm, GlFormGroup, GlModal, GlSprintf } from '@gitlab/ui';
 import { __, s__, sprintf } from '~/locale';
 import {
   AI_CATALOG_ITEM_LABELS,
@@ -11,8 +11,6 @@ import {
 import FormGroupDropdown from './form_group_dropdown.vue';
 import FormProjectDropdown from './form_project_dropdown.vue';
 
-const formId = uniqueId('ai-catalog-item-consumer-form-');
-
 export default {
   name: 'AiCatalogItemConsumerModal',
   components: {
@@ -21,7 +19,6 @@ export default {
     GlAlert,
     GlForm,
     GlFormGroup,
-    GlFormRadioGroup,
     GlModal,
     GlSprintf,
   },
@@ -44,9 +41,6 @@ export default {
   data() {
     return {
       isOpen: this.open,
-      targetType: this.showAddToGroup
-        ? AI_CATALOG_CONSUMER_TYPE_GROUP
-        : AI_CATALOG_CONSUMER_TYPE_PROJECT,
       groupId: !this.item.public && this.showAddToGroup ? this.item.project?.rootGroup?.id : null,
       projectId: !this.item.public ? this.item.project?.id : null,
       isDirty: false,
@@ -55,10 +49,30 @@ export default {
   },
   computed: {
     formId() {
-      return formId;
+      return uniqueId('ai-catalog-item-consumer-form-');
+    },
+    modal() {
+      return {
+        actionPrimary: {
+          text: __('Enable'),
+          attributes: {
+            variant: 'confirm',
+            type: 'submit',
+            form: this.formId,
+          },
+        },
+        actionSecondary: {
+          text: __('Cancel'),
+        },
+      };
     },
     itemTypeLabel() {
       return AI_CATALOG_ITEM_LABELS[this.item.itemType];
+    },
+    targetType() {
+      return this.showAddToGroup
+        ? AI_CATALOG_CONSUMER_TYPE_GROUP
+        : AI_CATALOG_CONSUMER_TYPE_PROJECT;
     },
     targetTypeLabel() {
       return AI_CATALOG_CONSUMER_LABELS[this.targetType];
@@ -119,29 +133,6 @@ export default {
       this.$emit('submit', target);
     },
   },
-  targetTypes: [
-    {
-      value: AI_CATALOG_CONSUMER_TYPE_GROUP,
-      text: __('Group'),
-    },
-    {
-      value: AI_CATALOG_CONSUMER_TYPE_PROJECT,
-      text: __('Project'),
-    },
-  ],
-  modal: {
-    actionPrimary: {
-      text: __('Enable'),
-      attributes: {
-        variant: 'confirm',
-        type: 'submit',
-        form: formId,
-      },
-    },
-    actionSecondary: {
-      text: __('Cancel'),
-    },
-  },
 };
 </script>
 
@@ -150,8 +141,8 @@ export default {
     v-model="isOpen"
     modal-id="add-item-consumer-modal"
     :title="title"
-    :action-primary="$options.modal.actionPrimary"
-    :action-secondary="$options.modal.actionSecondary"
+    :action-primary="modal.actionPrimary"
+    :action-secondary="modal.actionSecondary"
     @primary.prevent
     @hidden="$emit('hide')"
   >
@@ -193,9 +184,6 @@ export default {
     </dl>
 
     <gl-form :id="formId" @submit.prevent="handleSubmit">
-      <gl-form-group v-if="showAddToGroup" :label="s__('AICatalog|Enable in')">
-        <gl-form-radio-group v-model="targetType" :options="$options.targetTypes" />
-      </gl-form-group>
       <div v-if="isPrivateItem">
         <dl v-if="isTargetTypeGroup">
           <dt class="gl-mb-2 gl-font-bold">
