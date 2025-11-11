@@ -53991,6 +53991,9 @@ msgstr ""
 msgid "RapidDiffs|Failed to load changes, please try again."
 msgstr ""
 
+msgid "RapidDiffs|Failed to load discussions. Try to reload the page."
+msgstr ""
+
 msgid "RapidDiffs|File browser"
 msgstr ""
 
