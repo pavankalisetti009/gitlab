@@ -405,6 +405,47 @@ RSpec.describe Security::Attributes::UpdateProjectAttributesService, feature_cat
       end
     end
 
+    context 'when same attribute appears in both add and remove lists' do
+      let(:add_attribute_ids) { [attribute1.id, other_attribute.id] }
+      let(:remove_attribute_ids) { [attribute1.id] }
+
+      before do
+        create(:project_to_security_attribute, project: project, security_attribute: attribute1)
+      end
+
+      it 'keeps existing attributes and adds new ones' do
+        expect { execute }.to change { project.security_attributes.count }.by(1)
+        expect(project.security_attributes).to include(attribute1, other_attribute)
+      end
+
+      it 'returns success with correct counts' do
+        expect(execute).to be_success
+        expect(execute.payload[:added_count]).to eq(1)
+        expect(execute.payload[:removed_count]).to eq(0)
+      end
+    end
+
+    context 'when multiple attributes appear in both add and remove lists' do
+      let(:add_attribute_ids) { [attribute1.id, other_attribute.id, multiple_selection_attribute1.id] }
+      let(:remove_attribute_ids) { [attribute1.id, other_attribute.id] }
+
+      before do
+        create(:project_to_security_attribute, project: project, security_attribute: attribute1)
+        create(:project_to_security_attribute, project: project, security_attribute: other_attribute)
+      end
+
+      it 'keeps existing attributes and adds new ones' do
+        expect { execute }.to change { project.security_attributes.count }.by(1)
+        expect(project.security_attributes).to include(attribute1, other_attribute, multiple_selection_attribute1)
+      end
+
+      it 'returns success with correct counts' do
+        expect(execute).to be_success
+        expect(execute.payload[:added_count]).to eq(1)
+        expect(execute.payload[:removed_count]).to eq(0)
+      end
+    end
+
     context 'when validation fails' do
       let(:add_attribute_ids) { [attribute1.id] }
       let(:remove_attribute_ids) { [] }

@@ -3,10 +3,10 @@
 require 'spec_helper'
 
 RSpec.describe Gitlab::BackgroundMigration::BackfillZoektReplicas,
-  schema: 20240629011500,
   feature_category: :global_search do
   subject(:migration) { described_class.new(**migration_args) }
 
+  let(:organizations) { table(:organizations) }
   let(:namespaces) { table(:namespaces) }
   let(:zoekt_enabled_namespaces) { table(:zoekt_enabled_namespaces) }
   let(:zoekt_nodes) { table(:zoekt_nodes) }
@@ -26,9 +26,11 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillZoektReplicas,
     }
   end
 
+  let(:organization) { organizations.create!(name: 'organization', path: 'organization') }
+
   it 'correctly backfills the zoekt_replica_id for zoekt_indices' do
-    np_1 = namespaces.create!(name: 'my test group1', path: 'my-test-group1')
-    np_2 = namespaces.create!(name: 'my test group2', path: 'my-test-group2')
+    np_1 = namespaces.create!(name: 'my test group1', path: 'my-test-group1', organization_id: organization.id)
+    np_2 = namespaces.create!(name: 'my test group2', path: 'my-test-group2', organization_id: organization.id)
     zkt_np_1 = zoekt_enabled_namespaces.create!(root_namespace_id: np_1.id)
     zkt_np_2 = zoekt_enabled_namespaces.create!(root_namespace_id: np_2.id)
 
@@ -51,7 +53,7 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillZoektReplicas,
   end
 
   it 'ignores zoekt indices with missing enabled namespace' do
-    np_1 = namespaces.create!(name: 'my test group1', path: 'my-test-group1')
+    np_1 = namespaces.create!(name: 'my test group1', path: 'my-test-group1', organization_id: organization.id)
     zkt_np_1 = zoekt_enabled_namespaces.create!(root_namespace_id: np_1.id)
     zkt_np_1_idx_1 = create_zoekt_index_for_enabled_namespace(zkt_np_1, node: zkt_node_1)
     zkt_np_1_idx_1.update!(zoekt_enabled_namespace_id: nil)
