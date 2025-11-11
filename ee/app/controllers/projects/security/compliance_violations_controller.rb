@@ -7,10 +7,6 @@ module Projects
 
       before_action :authorize_view_violations!
 
-      before_action do
-        push_frontend_feature_flag(:compliance_violation_comments_ui, @project, type: :wip)
-      end
-
       def show
         @gfm_form = true
         @noteable_type = 'Issue'

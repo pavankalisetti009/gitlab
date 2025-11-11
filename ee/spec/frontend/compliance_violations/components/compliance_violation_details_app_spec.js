@@ -44,7 +44,6 @@ describe('ComplianceViolationDetailsApp', () => {
     props = {},
     mockQueryHandler = jest.fn().mockResolvedValue(mockComplianceViolationData),
     mockMutationHandler = jest.fn().mockResolvedValue(mockUpdateResponseData),
-    provide = {},
   } = {}) => {
     queryHandler = mockQueryHandler;
     mutationHandler = mockMutationHandler;
@@ -60,12 +59,6 @@ describe('ComplianceViolationDetailsApp', () => {
         violationId,
         complianceCenterPath,
         ...props,
-      },
-      provide: {
-        glFeatures: {
-          complianceViolationCommentsUi: false,
-        },
-        ...provide,
       },
     });
   };
@@ -384,55 +377,29 @@ describe('ComplianceViolationDetailsApp', () => {
   });
 
   describe('comment form', () => {
-    describe('when complianceViolationCommentsUi feature flag is disabled', () => {
-      beforeEach(async () => {
-        createComponent({
-          provide: {
-            glFeatures: {
-              complianceViolationCommentsUi: false,
-            },
-          },
-        });
-        await waitForPromises();
-        await nextTick();
-      });
-
-      it('does not render the comment form', () => {
-        expect(findCommentForm().exists()).toBe(false);
-      });
+    beforeEach(async () => {
+      createComponent();
+      await waitForPromises();
+      await nextTick();
     });
 
-    describe('when complianceViolationCommentsUi feature flag is enabled', () => {
-      beforeEach(async () => {
-        createComponent({
-          provide: {
-            glFeatures: {
-              complianceViolationCommentsUi: true,
-            },
-          },
-        });
-        await waitForPromises();
-        await nextTick();
-      });
+    it('renders the comment form with correct props', () => {
+      const commentForm = findCommentForm();
+      expect(commentForm.exists()).toBe(true);
+    });
 
-      it('renders the comment form with correct props', () => {
-        const commentForm = findCommentForm();
-        expect(commentForm.exists()).toBe(true);
-      });
+    it('shows error toast when comment form emits error event', async () => {
+      const mockToast = { show: jest.fn() };
+      wrapper.vm.$toast = mockToast;
 
-      it('shows error toast when comment form emits error event', async () => {
-        const mockToast = { show: jest.fn() };
-        wrapper.vm.$toast = mockToast;
+      const errorMessage = 'Failed to submit comment';
+      const commentForm = findCommentForm();
 
-        const errorMessage = 'Failed to submit comment';
-        const commentForm = findCommentForm();
+      commentForm.vm.$emit('error', errorMessage);
+      await nextTick();
 
-        commentForm.vm.$emit('error', errorMessage);
-        await nextTick();
-
-        expect(mockToast.show).toHaveBeenCalledWith(errorMessage, {
-          variant: 'danger',
-        });
+      expect(mockToast.show).toHaveBeenCalledWith(errorMessage, {
+        variant: 'danger',
       });
     });
   });
