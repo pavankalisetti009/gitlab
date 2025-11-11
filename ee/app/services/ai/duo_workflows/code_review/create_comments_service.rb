@@ -9,20 +9,6 @@ module Ai
 
         ValidationError = Class.new(StandardError)
 
-        MERGE_REQUEST_NOT_FOUND_ERROR_MESSAGE = <<~MESSAGE.squish
-          DuoCodeReview|Can't access the merge request. When SAML single sign-on is enabled on a group or its
-          parent, Duo Code Reviews can't be requested from the API. Request a review from the GitLab UI instead.
-        MESSAGE
-
-        PROGRESS_NOTE_NOT_FOUND_ERROR_MESSAGE = <<~MESSAGE.squish
-          DuoCodeReview|Can't create the progress note. This can happen if the Duo Code Review bot does not
-          have permission to create notes on the merge request.
-        MESSAGE
-
-        GENERIC_ERROR_MESSAGE = <<~MESSAGE.squish
-          DuoCodeReview|I have encountered some problems while I was reviewing. Please try again later.
-        MESSAGE
-
         def initialize(user:, merge_request:, review_output:)
           @user = user
           @merge_request = merge_request
@@ -33,10 +19,10 @@ module Ai
           # Resource can be empty when permission check fails in Llm::Internal::CompletionService.
           # This would most likely happen when the parent group has SAML SSO enabled and the Duo Code Review is
           # triggered via an API call. It's a known limitation of SAML SSO currently.
-          raise ValidationError, MERGE_REQUEST_NOT_FOUND_ERROR_MESSAGE unless merge_request
+          raise ValidationError, ::Ai::CodeReviewMessages.merge_request_not_found_error unless merge_request
 
           # Progress note creation may fail, so we halt execution and report the error.
-          raise ValidationError, PROGRESS_NOTE_NOT_FOUND_ERROR_MESSAGE unless progress_note
+          raise ValidationError, ::Ai::CodeReviewMessages.progress_note_not_found_error unless progress_note
 
           processed_comments = ProcessCommentsService.new(
             user: user,
@@ -46,7 +32,7 @@ module Ai
           ).execute
 
           metrics = processed_comments.payload[:metrics]
-          message = processed_comments.message.presence || s_(GENERIC_ERROR_MESSAGE)
+          message = processed_comments.message.presence || ::Ai::CodeReviewMessages.generic_error
 
           log_metrics(metrics) if metrics
 
@@ -68,12 +54,11 @@ module Ai
           ServiceResponse.success
         rescue ValidationError => error
           track_review_merge_request_exception(error)
-          error(s_(error.message))
+          error(error.message)
         rescue StandardError => error
           track_review_merge_request_exception(error)
           track_review_merge_request_event('encounter_duo_code_review_error_during_review')
-
-          message = s_(GENERIC_ERROR_MESSAGE)
+          message = ::Ai::CodeReviewMessages.generic_error
           update_progress_note(message, with_todo: true)
           error(message)
         ensure
@@ -140,7 +125,7 @@ module Ai
 
           DraftNote.bulk_insert_and_keep_commits!(draft_notes, batch_size: 20)
 
-          update_progress_note(summary.presence || s_(GENERIC_ERROR_MESSAGE))
+          update_progress_note(summary.presence || ::Ai::CodeReviewMessages.generic_error)
 
           track_review_merge_request_event(
             'post_comment_duo_code_review_on_diff',

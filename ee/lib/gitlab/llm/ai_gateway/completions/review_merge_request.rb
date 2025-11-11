@@ -22,26 +22,6 @@ module Gitlab
             created_draft_notes
           ].freeze
 
-          class << self
-            def resource_not_found_msg
-              s_("DuoCodeReview|Can't access the merge request. When SAML single sign-on is enabled " \
-                "on a group or its parent, Duo Code Reviews can't be requested from the API. Request a " \
-                "review from the GitLab UI instead.")
-            end
-
-            def nothing_to_review_msg
-              s_("DuoCodeReview|:wave: There's nothing for me to review.")
-            end
-
-            def no_comment_msg
-              s_("DuoCodeReview|I finished my review and found nothing to comment on. Nice work! :tada:")
-            end
-
-            def error_msg
-              s_("DuoCodeReview|I have encountered some problems while I was reviewing. Please try again later.")
-            end
-          end
-
           def execute
             # Progress note may not exist for existing jobs so we create one if we can
             @progress_note = find_progress_note || create_progress_note
@@ -66,14 +46,13 @@ module Gitlab
             # Resource can be empty when permission check fails in Llm::Internal::CompletionService.
             # This would most likely happen when the parent group has SAML SSO enabled and the Duo Code Review is
             #   triggered via an API call. It's a known limitation of SAML SSO currently.
-            return update_progress_note(self.class.resource_not_found_msg) unless resource.present?
+            return update_progress_note(::Ai::CodeReviewMessages.merge_request_not_found_error) unless resource.present?
 
             update_review_state('review_started')
 
             if ai_reviewable_diff_files.blank?
               log_duo_code_review_internal_event('find_nothing_to_review_duo_code_review_on_mr')
-
-              update_progress_note(exclusion_message_for_excluded_files + self.class.nothing_to_review_msg)
+              update_progress_note(exclusion_message_for_excluded_files + ::Ai::CodeReviewMessages.nothing_to_review)
             else
               perform_review
             end
@@ -82,9 +61,7 @@ module Gitlab
             Gitlab::ErrorTracking.track_exception(error, unit_primitive: UNIT_PRIMITIVE)
 
             log_duo_code_review_internal_event('encounter_duo_code_review_error_during_review')
-
-            update_progress_note(self.class.error_msg, with_todo: true) if progress_note.present?
-
+            update_progress_note(::Ai::CodeReviewMessages.generic_error, with_todo: true) if progress_note.present?
           ensure
             update_review_state('reviewed') if merge_request.present?
 
@@ -102,7 +79,7 @@ module Gitlab
 
             # If workflow fails to start, post error comment and reset review state
             unless result.success?
-              update_progress_note(self.class.error_msg, with_todo: true) if progress_note.present?
+              update_progress_note(::Ai::CodeReviewMessages.generic_error, with_todo: true) if progress_note.present?
               update_review_state('reviewed') if merge_request.present?
               @progress_note&.destroy
               return result
@@ -114,7 +91,7 @@ module Gitlab
             result
           rescue StandardError => error
             Gitlab::ErrorTracking.track_exception(error, unit_primitive: UNIT_PRIMITIVE)
-            update_progress_note(self.class.error_msg, with_todo: true) if progress_note.present?
+            update_progress_note(::Ai::CodeReviewMessages.generic_error, with_todo: true) if progress_note.present?
             update_review_state('reviewed') if merge_request.present?
             @progress_note&.destroy
             ServiceResponse.error(message: error.message)
@@ -161,9 +138,7 @@ module Gitlab
 
             if ai_reviewable_diff_files.blank?
               log_duo_code_review_internal_event('find_nothing_to_review_duo_code_review_on_mr')
-
-              update_progress_note(self.class.nothing_to_review_msg)
-
+              update_progress_note(::Ai::CodeReviewMessages.nothing_to_review)
               return
             end
 
@@ -207,7 +182,7 @@ module Gitlab
                 )
               end
 
-              update_progress_note(self.class.error_msg, with_todo: true)
+              update_progress_note(::Ai::CodeReviewMessages.generic_error, with_todo: true)
               log_duo_code_review_internal_event('encounter_duo_code_review_error_during_review')
               return false
             end
@@ -549,8 +524,7 @@ module Gitlab
 
             if ai_message.blank? || ai_message.errors.any? || ai_message.content.blank?
               log_duo_code_review_internal_event('encounter_duo_code_review_error_during_review')
-
-              self.class.error_msg
+              ::Ai::CodeReviewMessages.generic_error
             else
               exclusion_message_for_excluded_files + ai_message.content
             end
@@ -563,7 +537,7 @@ module Gitlab
           # rubocop: enable CodeReuse/ActiveRecord
 
           def review_summary
-            exclusion_message_for_excluded_files + self.class.no_comment_msg
+            exclusion_message_for_excluded_files + ::Ai::CodeReviewMessages.nothing_to_comment
           end
 
           def publish_draft_notes

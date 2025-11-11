@@ -10,12 +10,6 @@ module Ai
         DRAFT_NOTES_COUNT_LIMIT = 50
         LINE_MATCH_THRESHOLD = 3
         CUSTOM_INSTRUCTIONS_REGEXP = /^According to custom instructions in .+?:/
-        NOTHING_TO_REVIEW_MESSAGE = <<~MESSAGE.squish
-          DuoCodeReview|:wave: There's nothing for me to review.
-        MESSAGE
-        NOTHING_TO_COMMENT_MESSAGE = <<~MESSAGE.squish
-          DuoCodeReview|I finished my review and found nothing to comment on. Nice work! :tada:
-        MESSAGE
 
         class Metrics
           attr_accessor :comments_with_valid_path,
@@ -46,7 +40,7 @@ module Ai
         def execute
           if ai_reviewable_diff_files.empty?
             track_review_merge_request_event('find_nothing_to_review_duo_code_review_on_mr')
-            return error(exclusion_message_for_excluded_files + s_(NOTHING_TO_REVIEW_MESSAGE))
+            return error(exclusion_message_for_excluded_files + ::Ai::CodeReviewMessages.nothing_to_review)
           end
 
           if review_output.nil?
@@ -59,7 +53,7 @@ module Ai
           message =
             if draft_notes.empty?
               track_review_merge_request_event('find_no_issues_duo_code_review_after_review')
-              exclusion_message_for_excluded_files + s_(NOTHING_TO_COMMENT_MESSAGE)
+              exclusion_message_for_excluded_files + ::Ai::CodeReviewMessages.nothing_to_comment
             else
               build_summary(draft_notes)
             end
