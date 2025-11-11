@@ -4,7 +4,7 @@ description:
 feature_issue_url:
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/204780
 rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/569789
-milestone: '18.4'
+milestone: "18.4"
 group: group::global search
-type: gitlab_com_derisk
-default_enabled: false
+type: development
+default_enabled: true
