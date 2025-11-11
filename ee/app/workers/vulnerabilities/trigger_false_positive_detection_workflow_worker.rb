@@ -4,6 +4,8 @@ module Vulnerabilities
   class TriggerFalsePositiveDetectionWorkflowWorker
     include ApplicationWorker
 
+    StartWorkflowServiceError = Class.new(StandardError)
+
     feature_category :vulnerability_management
     data_consistency :delayed
     urgency :throttled
@@ -19,7 +21,7 @@ module Vulnerabilities
       result = trigger_workflow(vulnerability)
       handle_error(result, vulnerability) if result.error?
     rescue StandardError => error
-      log_exception(error, vulnerability_id)
+      log_and_raise_exception(error, vulnerability_id)
     end
 
     private
@@ -46,10 +48,12 @@ module Vulnerabilities
         error: result.message,
         reason: result.reason
       )
+
+      raise StartWorkflowServiceError, "Failed to call SAST workflow service for vulnerability #{result.message}"
     end
 
-    def log_exception(error, vulnerability_id)
-      Gitlab::ErrorTracking.log_exception(
+    def log_and_raise_exception(error, vulnerability_id)
+      Gitlab::ErrorTracking.log_and_raise_exception(
         error,
         vulnerability_id: vulnerability_id
       )

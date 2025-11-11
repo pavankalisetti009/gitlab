@@ -174,6 +174,17 @@ FactoryBot.define do
       end
     end
 
+    trait :skip_false_positive_detection do
+      after(:create) do |finding|
+        create(
+          :vulnerability, :detected, :skip_false_positive_detection,
+          project: finding.project,
+          vulnerability_finding: finding,
+          findings: [finding]
+        )
+      end
+    end
+
     trait :confirmed do
       after(:create) do |finding|
         create(:vulnerability, :confirmed, project: finding.project, findings: [finding], severity: finding.severity)

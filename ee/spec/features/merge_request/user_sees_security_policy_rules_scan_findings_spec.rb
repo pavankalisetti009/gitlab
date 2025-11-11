@@ -175,6 +175,7 @@ RSpec.describe 'Merge request > User sees security policy with scan finding rule
       let(:vuln_states) { %w[detected] }
 
       before do
+        allow(::Vulnerabilities::TriggerFalsePositiveDetectionWorkflowWorker).to receive(:perform_async)
         create(:vulnerabilities_finding, :detected, project: project)
         create_policy_setup
       end

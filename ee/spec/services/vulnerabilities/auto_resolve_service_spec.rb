@@ -47,6 +47,10 @@ RSpec.describe Vulnerabilities::AutoResolveService, feature_category: :vulnerabi
   end
 
   describe '#execute' do
+    before do
+      allow(::Vulnerabilities::TriggerFalsePositiveDetectionWorkflowWorker).to receive(:perform_async)
+    end
+
     it_behaves_like 'sync vulnerabilities changes to ES' do
       let(:expected_vulnerabilities) { vulnerability }
 

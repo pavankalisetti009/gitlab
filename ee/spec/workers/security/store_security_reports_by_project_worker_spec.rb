@@ -264,7 +264,7 @@ RSpec.describe Security::StoreSecurityReportsByProjectWorker, feature_category: 
 
       it 'resolves vulnerabilities' do
         allow(artifact_semgrep1.security_report).to receive(:scan).and_return(scan_object)
-        allow(::Vulnerabilities::TriggerFalsePositiveDetectionWorkflowWorker).to receive(:perform_in)
+        allow(::Vulnerabilities::TriggerFalsePositiveDetectionWorkflowWorker).to receive(:perform_async)
 
         expect do
           Security::StoreGroupedScansService.execute([artifact_semgrep1], pipeline, 'sast')

@@ -16,6 +16,7 @@ RSpec.describe Ci::SyncReportsToApprovalRulesService, '#execute', feature_catego
   subject(:sync_rules) { described_class.new(pipeline).execute }
 
   before do
+    allow(::Vulnerabilities::TriggerFalsePositiveDetectionWorkflowWorker).to receive(:perform_async)
     allow(Ci::Pipeline).to receive(:find).with(pipeline.id) { pipeline }
 
     stub_licensed_features(dependency_scanning: true, dast: true, license_scanning: true)

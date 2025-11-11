@@ -281,4 +281,10 @@ FactoryBot.define do
       )
     end
   end
+
+  trait :skip_false_positive_detection do
+    after(:build) do |_vulnerability|
+      allow(::Vulnerabilities::TriggerFalsePositiveDetectionWorkflowWorker).to receive(:perform_async)
+    end
+  end
 end

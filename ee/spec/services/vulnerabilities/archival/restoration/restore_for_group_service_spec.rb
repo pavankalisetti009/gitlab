@@ -7,7 +7,7 @@ RSpec.describe Vulnerabilities::Archival::Restoration::RestoreForGroupService, f
     let_it_be_with_refind(:group) { create(:group) }
     let_it_be_with_refind(:project) { create(:project, group: group) }
 
-    let!(:finding) { create(:vulnerabilities_finding, :detected, project: project) }
+    let!(:finding) { create(:vulnerabilities_finding, :skip_false_positive_detection, project: project) }
     let!(:vulnerability) { finding.vulnerability }
     let!(:evidence) { create_with_project(:vulnerabilties_finding_evidence, finding: finding) }
     let!(:flag) { create_with_project(:vulnerabilities_flag, finding: finding) }
