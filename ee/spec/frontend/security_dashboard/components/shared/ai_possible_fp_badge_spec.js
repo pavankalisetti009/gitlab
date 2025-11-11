@@ -6,9 +6,9 @@ import {
   AI_FP_DISMISSAL_COMMENT,
 } from 'ee/vulnerabilities/constants';
 import AiPossibleFpBadge, {
-  EXPECTED_STATUS,
   VULNERABILITY_UNTRIAGED_STATUS,
 } from 'ee/security_dashboard/components/shared/ai_possible_fp_badge.vue';
+import NonGfmMarkdown from '~/vue_shared/components/markdown/non_gfm_markdown.vue';
 
 describe('AiPossibleFpBadge', () => {
   let wrapper;
@@ -19,7 +19,6 @@ describe('AiPossibleFpBadge', () => {
     title: 'Test Vulnerability',
     state: VULNERABILITY_UNTRIAGED_STATUS,
     latestFlag: {
-      status: EXPECTED_STATUS,
       confidenceScore: 0.5,
       description: 'This is likely a false positive because...',
     },
@@ -39,6 +38,7 @@ describe('AiPossibleFpBadge', () => {
       },
       stubs: {
         GlPopover,
+        NonGfmMarkdown,
       },
       mocks: {
         $apollo: {
@@ -59,7 +59,6 @@ describe('AiPossibleFpBadge', () => {
       wrapper = createComponent({
         vulnerability: {
           latestFlag: {
-            status: EXPECTED_STATUS,
             confidenceScore: 0.5,
           },
         },
@@ -87,7 +86,6 @@ describe('AiPossibleFpBadge', () => {
       wrapper = createComponent({
         vulnerability: {
           latestFlag: {
-            status: EXPECTED_STATUS,
             confidenceScore: CONFIDENCE_SCORES.LIKELY_FALSE_POSITIVE + 0.1,
           },
         },
@@ -113,7 +111,6 @@ describe('AiPossibleFpBadge', () => {
       wrapper = createComponent({
         vulnerability: {
           latestFlag: {
-            status: EXPECTED_STATUS,
             confidenceScore: CONFIDENCE_SCORES.MINIMAL - 0.1,
           },
         },
@@ -132,7 +129,9 @@ describe('AiPossibleFpBadge', () => {
 
     it('renders the description section', () => {
       expect(wrapper.text()).toContain('Why it is likely a false positive');
-      expect(wrapper.text()).toContain('This is likely a false positive because...');
+      expect(wrapper.findComponent(NonGfmMarkdown).props('markdown')).toBe(
+        'This is likely a false positive because...',
+      );
     });
   });
 
@@ -141,7 +140,6 @@ describe('AiPossibleFpBadge', () => {
       wrapper = createComponent({
         vulnerability: {
           latestFlag: {
-            status: EXPECTED_STATUS,
             confidenceScore: 0.5,
             description: null,
           },
@@ -151,6 +149,7 @@ describe('AiPossibleFpBadge', () => {
 
     it('does not render the description section', () => {
       expect(wrapper.text()).not.toContain('Why it is likely a false positive');
+      expect(wrapper.findComponent(NonGfmMarkdown).exists()).toBe(false);
     });
   });
 

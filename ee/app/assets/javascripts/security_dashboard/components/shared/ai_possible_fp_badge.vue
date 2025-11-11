@@ -5,6 +5,7 @@ import {
   CONFIDENCE_SCORES,
   AI_FP_DISMISSAL_COMMENT,
 } from 'ee/vulnerabilities/constants';
+import NonGfmMarkdown from '~/vue_shared/components/markdown/non_gfm_markdown.vue';
 import { s__ } from '~/locale';
 import { createAlert } from '~/alert';
 
@@ -18,6 +19,7 @@ export default {
     GlPopover,
     GlProgressBar,
     GlTruncateText,
+    NonGfmMarkdown,
   },
   inject: {
     vulnerabilitiesQuery: {
@@ -115,9 +117,9 @@ export default {
       </div>
       <div v-if="flag.description" class="gl-mt-3">
         <h4 class="gl-text-base gl-font-bold">{{ $options.i18n.why }}</h4>
-        <gl-truncate-text :lines="5" class="gl-whitespace-pre-wrap">{{
-          flag.description
-        }}</gl-truncate-text>
+        <gl-truncate-text :lines="5" class="gl-whitespace-pre-wrap">
+          <non-gfm-markdown :markdown="flag.description" />
+        </gl-truncate-text>
       </div>
       <gl-button v-if="canDismissVulnerability" class="gl-mt-5" variant="link" @click="removeFlag">
         {{ $options.i18n.removeFlag }}
