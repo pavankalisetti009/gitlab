@@ -7,6 +7,7 @@ module Ai
         include InternalEventsTracking
 
         def execute
+          return error_not_project_or_top_level_group unless for_project_or_top_level_group?
           return error_no_permissions unless allowed?
           return error_parent_item_consumer_not_passed if project_flow_without_parent_item_consumer?
           return error_flow_triggers_must_be_for_project if flow_triggers_not_for_project?
@@ -59,13 +60,9 @@ module Ai
         end
 
         def create_service_account
-          # In case we don't need to create the service account (because this is not group level, or because the user
-          # does not have the right permissions), we should return no_op, and continue creating the item consumer.
-          # In a future MR we will prevent creating a group level item consumer without a service account, in which case
-          # if there is a permission error an error will be returned.
-          no_op = ServiceResponse.new(status: :no_op)
-          return no_op if group.nil?
-          return no_op unless Ability.allowed?(current_user, :create_service_account, group)
+          # In case we don't need to create the service account (because this is not group level), we should return
+          # no_op, and continue creating the item consumer.
+          return ServiceResponse.new(status: :no_op) if group.nil?
 
           service_account_params = {
             namespace_id: group.id,
@@ -106,6 +103,10 @@ module Ai
           "ai-#{item.name}-#{group.name}".parameterize
         end
 
+        def for_project_or_top_level_group?
+          project || group&.root?
+        end
+
         def item
           params[:item]
         end
@@ -115,6 +116,8 @@ module Ai
         end
 
         def allowed?
+          return false if group_container? && !Ability.allowed?(current_user, :create_service_account, group)
+
           Ability.allowed?(current_user, :admin_ai_catalog_item_consumer, container) &&
             Ability.allowed?(current_user, :read_ai_catalog_item, item)
         end
@@ -137,6 +140,10 @@ module Ai
 
         def error_parent_item_consumer_not_passed
           error("Project item must have a parent item consumer")
+        end
+
+        def error_not_project_or_top_level_group
+          error('Item can only be enabled in projects or top-level groups')
         end
       end
     end
