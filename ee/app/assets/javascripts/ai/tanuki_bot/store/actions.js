@@ -33,7 +33,3 @@ export const setMessages = ({ dispatch, commit }, messages = []) => {
     });
   }
 };
-
-export const setLoading = ({ commit }, flag = true) => {
-  commit(types.SET_LOADING, flag);
-};

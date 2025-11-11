@@ -166,30 +166,6 @@ describe('GitLab Duo Chat Store Mutations', () => {
       });
     });
 
-    it.each`
-      initState                                                                        | newMessageData                                               | expectedLoadingState
-      ${[]}                                                                            | ${MOCK_USER_MESSAGE}                                         | ${true}
-      ${[MOCK_USER_MESSAGE]}                                                           | ${{ ...MOCK_USER_MESSAGE, content: 'foo' }}                  | ${true}
-      ${[{ ...MOCK_USER_MESSAGE, requestId }]}                                         | ${{ ...MOCK_USER_MESSAGE, requestId }}                       | ${true}
-      ${[{ ...MOCK_USER_MESSAGE, requestId }, MOCK_TANUKI_MESSAGE, MOCK_USER_MESSAGE]} | ${{ ...MOCK_TANUKI_MESSAGE, requestId }}                     | ${true}
-      ${[MOCK_USER_MESSAGE, MOCK_TANUKI_MESSAGE, { ...MOCK_USER_MESSAGE, requestId }]} | ${{ ...MOCK_TANUKI_MESSAGE, requestId }}                     | ${false}
-      ${[{ ...MOCK_USER_MESSAGE, requestId }]}                                         | ${{ ...MOCK_TANUKI_MESSAGE, requestId }}                     | ${false}
-      ${[MOCK_USER_MESSAGE]}                                                           | ${MOCK_TANUKI_MESSAGE}                                       | ${false}
-      ${[]}                                                                            | ${MOCK_FAILING_USER_MESSAGE}                                 | ${false}
-      ${[{ MOCK_FAILING_USER_MESSAGE, requestId: 'faux-id' }]}                         | ${MOCK_FAILING_USER_MESSAGE}                                 | ${false}
-      ${[MOCK_USER_MESSAGE]}                                                           | ${MOCK_FAILING_USER_MESSAGE}                                 | ${false}
-      ${[{ ...MOCK_USER_MESSAGE, requestId }]}                                         | ${MOCK_TOOL_MESSAGE}                                         | ${true}
-      ${[MOCK_TOOL_MESSAGE]}                                                           | ${{ ...MOCK_TOOL_MESSAGE, content: 'Updated tool content' }} | ${true}
-    `(
-      'correctly manages the loading state when initial state is "$initState" and new message is "$newMessageData"',
-      ({ initState, newMessageData, expectedLoadingState }) => {
-        state.loading = true;
-        state.messages = initState;
-        mutations[types.ADD_MESSAGE](state, newMessageData);
-        expect(state.loading).toBe(expectedLoadingState);
-      },
-    );
-
     describe('tool messages', () => {
       it('adds a new tool message to the state', () => {
         mutations[types.ADD_MESSAGE](state, MOCK_TOOL_MESSAGE);
@@ -239,14 +215,6 @@ describe('GitLab Duo Chat Store Mutations', () => {
     });
   });
 
-  describe('SET_LOADING', () => {
-    it('sets loading to passed boolean', () => {
-      mutations[types.SET_LOADING](state, true);
-
-      expect(state.loading).toBe(true);
-    });
-  });
-
   describe('ADD_TOOL_MESSAGE', () => {
     const toolMessage = {
       ...MOCK_USER_MESSAGE,
@@ -254,19 +222,14 @@ describe('GitLab Duo Chat Store Mutations', () => {
       type: CHAT_MESSAGE_TYPES.tool,
     };
     it.each`
-      desc              | message              | isLoading | expectedState
-      ${'sets'}         | ${toolMessage}       | ${true}   | ${toolMessage}
-      ${'does not set'} | ${MOCK_USER_MESSAGE} | ${true}   | ${''}
-      ${'does not set'} | ${toolMessage}       | ${false}  | ${''}
-    `(
-      '$desc the `toolMessage` when message is $message and loading is $isLoading',
-      ({ message, isLoading, expectedState }) => {
-        state.loading = isLoading;
-        mutations[types.ADD_TOOL_MESSAGE](state, message);
+      desc              | message              | expectedState
+      ${'sets'}         | ${toolMessage}       | ${toolMessage}
+      ${'does not set'} | ${MOCK_USER_MESSAGE} | ${''}
+    `('$desc the `toolMessage` when message is $message', ({ message, expectedState }) => {
+      mutations[types.ADD_TOOL_MESSAGE](state, message);
 
-        expect(state.toolMessage).toStrictEqual(expectedState);
-      },
-    );
+      expect(state.toolMessage).toStrictEqual(expectedState);
+    });
   });
 
   describe('CLEAN_MESSAGES', () => {
