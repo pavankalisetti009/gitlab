@@ -54,6 +54,10 @@ module Resolvers
 
           return unless result&.success? && result.payload
 
+          # GitLab Duo CLI (glab_ask_git_command) does not currently work with GitLab vendored models so they need
+          # to be filtered out until there's a fix https://gitlab.com/gitlab-org/gitlab/-/issues/578924
+          result.payload["unit_primitives"].reject! { |item| item["feature_setting"] == "glab_ask_git_command" }
+
           ::Gitlab::Ai::ModelSelection::ModelDefinitionResponseParser.new(result.payload)
         end
       end

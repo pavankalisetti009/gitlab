@@ -77,7 +77,8 @@ RSpec.describe 'List of configurable AI feature with metadata.', feature_categor
   let(:test_ai_feature_enum) do
     {
       code_generations: 0,
-      code_completions: 1
+      code_completions: 1,
+      glab_ask_git_command: 2
     }
   end
 
@@ -272,6 +273,42 @@ RSpec.describe 'List of configurable AI feature with metadata.', feature_categor
     it 'handles ServiceResponse gracefully without crashing' do
       expect { post_graphql(query, current_user: current_user) }.not_to raise_error
       expect(graphql_errors).to be_nil
+    end
+  end
+
+  context 'when FetchModelDefinitionsService returns selectable GitLab models for glab_ask_git_command' do
+    let(:model_definitions) do
+      {
+        'models' => [
+          { 'name' => 'GPT-4', 'identifier' => 'gpt-4' }
+        ],
+        'unit_primitives' => [
+          { 'feature_setting' => 'code_generations', 'selectable_models' => %w[gpt-4] },
+          { 'feature_setting' => 'code_completions', 'selectable_models' => %w[gpt-4] },
+          { 'feature_setting' => 'glab_ask_git_command', 'selectable_models' => %w[gpt-4] }
+        ]
+      }
+    end
+
+    before do
+      model_definitions_service = instance_double(::Ai::ModelSelection::FetchModelDefinitionsService)
+      allow(::Ai::ModelSelection::FetchModelDefinitionsService).to receive(:new).and_return(model_definitions_service)
+      allow(model_definitions_service).to receive(:execute).and_return(
+        ServiceResponse.success(payload: model_definitions)
+      )
+    end
+
+    it 'does not include the selectable models in the response' do
+      post_graphql(query, current_user: current_user)
+
+      result = ai_feature_settings_data.index_by { |node| node['feature'] }
+      expected_valid_gitlab_model = { 'name' => 'GPT-4', 'ref' => 'gpt-4' }
+
+      expect(result.dig('glab_ask_git_command', 'validGitlabModels', 'nodes')).to be_empty
+
+      %w[code_generations code_completions].each do |feature|
+        expect(result.dig(feature, 'validGitlabModels', 'nodes')).to contain_exactly(expected_valid_gitlab_model)
+      end
     end
   end
 
