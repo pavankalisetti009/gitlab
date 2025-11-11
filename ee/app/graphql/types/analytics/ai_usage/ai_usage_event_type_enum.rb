@@ -42,6 +42,8 @@ module Types
         declare_event('request_review_duo_code_review_on_mr_by_non_author',
           "Non-author requested Duo Code Review on MR.")
         declare_event('excluded_files_from_duo_code_review', "Files were excluded from Duo Code Review.")
+        declare_event('start_mcp_tool_call', "MCP tool call was started.")
+        declare_event('finish_mcp_tool_call', "MCP tool call was finished.")
       end
     end
   end
