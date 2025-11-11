@@ -1282,7 +1282,8 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
           "x-gitlab-feature-enablement-type" => 'duo_pro',
           'x-gitlab-enabled-feature-flags' => '',
           "x-gitlab-enabled-instance-verbose-ai-logs" => 'false',
-          "X-Gitlab-Model-Prompt-Cache-Enabled" => "true"
+          "X-Gitlab-Model-Prompt-Cache-Enabled" => "true",
+          'X-Gitlab-Is-Team-Member' => 'false'
         }
       end
 
