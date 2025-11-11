@@ -35,6 +35,16 @@ describe('FormFlowDefinition', () => {
     expect(findClearButton().exists()).toBe(true);
   });
 
+  describe('when readOnly is true', () => {
+    beforeEach(() => {
+      createComponent({ props: { readOnly: true } });
+    });
+
+    it('does not render clear button', () => {
+      expect(findClearButton().exists()).toBe(false);
+    });
+  });
+
   it('renders source editor with correct props', () => {
     expect(findSourceEditor().props('value')).toBe(defaultProps.value);
     expect(findSourceEditor().props('fileName')).toBe('*.yaml');
