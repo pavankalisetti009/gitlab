@@ -183,7 +183,11 @@ RSpec.describe 'BulkUpdateSecurityAttributes', feature_category: :security_asset
         end
 
         context 'when too many items provided' do
-          let(:items) { Array.new(101) { project1.to_global_id.to_s } }
+          let(:items) do
+            Array.new(Mutations::Security::Attributes::BulkUpdate::MAX_ITEMS + 1) do
+              project1.to_global_id.to_s
+            end
+          end
 
           it 'returns validation error from prepare step' do
             post_graphql_mutation(mutation, current_user: current_user)
@@ -195,7 +199,11 @@ RSpec.describe 'BulkUpdateSecurityAttributes', feature_category: :security_asset
         end
 
         context 'when too many attributes provided' do
-          let(:attributes) { Array.new(21) { attribute1.to_global_id.to_s } }
+          let(:attributes) do
+            Array.new(Mutations::Security::Attributes::BulkUpdate::MAX_ATTRIBUTES + 1) do
+              attribute1.to_global_id.to_s
+            end
+          end
 
           it 'returns validation error' do
             post_graphql_mutation(mutation, current_user: current_user)
