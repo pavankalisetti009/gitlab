@@ -2,12 +2,11 @@
 
 require 'spec_helper'
 
-RSpec.describe Resolvers::Security::RiskScoreResolver, feature_category: :vulnerability_management do
+RSpec.describe Resolvers::Security::RiskScoreResolver, :elastic_delete_by_query, :sidekiq_inline, feature_category: :vulnerability_management do
   include GraphqlHelpers
 
   subject(:resolved_risk_score) do
     context = { current_user: user }
-    context[:report_type] = report_type_filter if defined?(report_type_filter)
     context[:project_id] = project_id_filter if defined?(project_id_filter)
     resolve(described_class, obj: operate_on, args: {}, ctx: context)
   end
@@ -15,54 +14,445 @@ RSpec.describe Resolvers::Security::RiskScoreResolver, feature_category: :vulner
   let_it_be(:group) { create(:group) }
   let_it_be(:project1) { create(:project, group: group) }
   let_it_be(:project2) { create(:project, group: group) }
+  let_it_be(:project3) { create(:project, group: group) }
   let_it_be(:user) { create(:user) }
 
-  describe '#resolve' do
-    let(:operate_on) { group }
+  let_it_be(:vulnerabilities) do
+    [
+      create(:vulnerability, :with_finding, severity: :low, report_type: :sast, project: project1),
+      create(:vulnerability, :with_finding, severity: :medium, report_type: :dast, project: project1),
+      create(:vulnerability, :with_finding, severity: :high, report_type: :dependency_scanning, project: project1),
+      create(:vulnerability, :with_finding, severity: :critical, report_type: :sast, project: project2)
+    ]
+  end
 
-    before_all do
-      group.add_developer(user)
+  describe '#resolve' do
+    before do
+      stub_licensed_features(security_dashboard: true)
+      stub_feature_flags(new_security_dashboard_total_risk_score: true)
+      stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
     end
 
-    context 'when feature flag is disabled' do
-      before do
-        stub_licensed_features(security_dashboard: true)
-        stub_feature_flags(new_security_dashboard_total_risk_score: false)
+    shared_examples 'returns risk score data' do
+      context 'when the current user has access' do
+        before_all do
+          group.add_developer(user)
+        end
+
+        before do
+          Elastic::ProcessBookkeepingService.track!(*vulnerabilities)
+          ensure_elasticsearch_index!
+        end
+
+        it 'returns risk score data with correct structure' do
+          result = resolved_risk_score
+
+          expect(result).to include(
+            score: be_a(Numeric),
+            rating: be_in(%w[low medium high critical unknown]),
+            project_count: be_a(Numeric)
+          )
+        end
+
+        it 'returns valid rating based on score' do
+          result = resolved_risk_score
+          score = result[:score]
+          rating = result[:rating]
+
+          expected_rating = case score
+                            when 0..25.9 then 'low'
+                            when 26..50.9 then 'medium'
+                            when 51..75.9 then 'high'
+                            when 76..100 then 'critical'
+                            else 'unknown'
+                            end
+
+          expect(rating).to eq(expected_rating)
+        end
+
+        context 'when by_project data is present' do
+          it 'includes project-level risk scores' do
+            result = resolved_risk_score
+
+            if result[:by_project].present?
+              expect(result[:by_project]).to be_an(Array)
+
+              expect(result[:by_project]).to all(
+                include(
+                  project: be_a(Project),
+                  score: be_a(Numeric),
+                  rating: be_in(%w[low medium high critical unknown])
+                )
+              )
+            end
+          end
+
+          it 'includes only accessible projects' do
+            result = resolved_risk_score
+
+            if result[:by_project].present?
+              project_ids = result[:by_project].map { |p| p[:project].id }
+              accessible_project_ids = operate_on.projects.pluck(:id)
+
+              expect(project_ids).to all(be_in(accessible_project_ids))
+            end
+          end
+        end
+
+        context 'when Elasticsearch returns risk_score_by_project with actual project data' do
+          before do
+            allow_next_instance_of(::Security::VulnerabilityElasticRiskScoresFinder) do |finder|
+              allow(finder).to receive(:execute).and_return({
+                total_risk_score: 65.5,
+                total_project_count: 3,
+                risk_score_by_project: {
+                  project1.id => 50.5,
+                  project2.id => 75.2,
+                  project3.id => 30.8
+                }
+              })
+            end
+          end
+
+          it 'returns by_project data with correct project objects and scores' do
+            result = resolved_risk_score
+
+            expect(result).to include(
+              score: 65.5,
+              rating: 'high',
+              project_count: 3
+            )
+
+            if result[:by_project].present?
+              expect(result[:by_project]).to be_an(Array)
+              expect(result[:by_project].length).to eq(3)
+
+              # Verify each project data contains the correct structure
+              result[:by_project].each do |project_data|
+                expect(project_data).to include(
+                  project: be_a(Project),
+                  score: be_a(Numeric),
+                  rating: be_a(String)
+                )
+
+                # Verify the project is one of our test projects
+                expect([project1.id, project2.id, project3.id]).to include(project_data[:project].id)
+              end
+            end
+          end
+
+          it 'maps project IDs to actual project objects correctly' do
+            result = resolved_risk_score
+
+            if result[:by_project].present?
+              expect(result[:by_project]).to be_present
+
+              # Extract project IDs from the result
+              returned_project_ids = result[:by_project].map { |p| p[:project].id }
+
+              # Verify all expected projects are included
+              expect(returned_project_ids).to match_array([project1.id, project2.id, project3.id])
+
+              # Verify each project has the correct score from Elasticsearch
+              project1_data = result[:by_project].find { |p| p[:project].id == project1.id }
+              expect(project1_data[:score]).to eq(50.5)
+              expect(project1_data[:rating]).to eq('medium')
+
+              project2_data = result[:by_project].find { |p| p[:project].id == project2.id }
+              expect(project2_data[:score]).to eq(75.2)
+              expect(project2_data[:rating]).to eq('high')
+
+              project3_data = result[:by_project].find { |p| p[:project].id == project3.id }
+              expect(project3_data[:score]).to eq(30.8)
+              expect(project3_data[:rating]).to eq('medium')
+            end
+          end
+
+          it 'correctly calculates ratings for each project score' do
+            result = resolved_risk_score
+
+            if result[:by_project].present?
+              expect(result[:by_project]).to be_present
+
+              result[:by_project].each do |project_data|
+                score = project_data[:score]
+                rating = project_data[:rating]
+
+                expected_rating = case score
+                                  when 0..25.9 then 'low'
+                                  when 26..50.9 then 'medium'
+                                  when 51..75.9 then 'high'
+                                  when 76..100 then 'critical'
+                                  else 'unknown'
+                                  end
+
+                expect(rating).to eq(expected_rating)
+              end
+            end
+          end
+        end
+
+        context 'with project_id filter' do
+          let(:project_id_filter) { [project1.id] }
+
+          it 'filters by specific projects' do
+            result = resolved_risk_score
+
+            expect(result).to include(
+              score: be_a(Numeric),
+              rating: be_in(%w[low medium high critical unknown])
+            )
+          end
+
+          it 'only includes filtered projects in by_project data' do
+            result = resolved_risk_score
+
+            if result[:by_project].present?
+              project_ids = result[:by_project].map { |p| p[:project].id }
+              expect(project_ids).to all(be_in(project_id_filter))
+            end
+          end
+        end
+
+        context 'with multiple project_id filters' do
+          let(:project_id_filter) { [project1.id, project2.id] }
+
+          it 'includes all filtered projects' do
+            result = resolved_risk_score
+
+            expect(result).to include(
+              score: be_a(Numeric),
+              rating: be_in(%w[low medium high critical unknown])
+            )
+
+            if result[:by_project].present?
+              project_ids = result[:by_project].map { |p| p[:project].id }
+              expect(project_ids).to match_array(project_id_filter & operate_on.projects.pluck(:id))
+            end
+          end
+        end
+
+        context 'when Elasticsearch returns empty data' do
+          before do
+            allow_next_instance_of(::Security::VulnerabilityElasticRiskScoresFinder) do |finder|
+              allow(finder).to receive(:execute).and_return({})
+            end
+          end
+
+          it 'returns nil' do
+            result = resolved_risk_score
+            expect(result).to be_nil
+          end
+        end
+
+        context 'when Elasticsearch returns data without by_project' do
+          before do
+            allow_next_instance_of(::Security::VulnerabilityElasticRiskScoresFinder) do |finder|
+              allow(finder).to receive(:execute).and_return({
+                total_risk_score: 50,
+                total_project_count: 2,
+                risk_score_by_project: nil
+              })
+            end
+          end
+
+          it 'returns score without by_project data' do
+            result = resolved_risk_score
+
+            expect(result).to include(
+              score: 50,
+              rating: 'medium',
+              project_count: 2
+            )
+            expect(result[:by_project]).to be_nil
+          end
+        end
+
+        context 'when Elasticsearch returns empty by_project hash' do
+          before do
+            allow_next_instance_of(::Security::VulnerabilityElasticRiskScoresFinder) do |finder|
+              allow(finder).to receive(:execute).and_return({
+                total_risk_score: 50,
+                total_project_count: 0,
+                risk_score_by_project: {}
+              })
+            end
+          end
+
+          it 'returns score without by_project data' do
+            result = resolved_risk_score
+
+            expect(result).to include(
+              score: 50,
+              rating: 'medium',
+              project_count: 0
+            )
+            expect(result[:by_project]).to be_nil
+          end
+        end
+
+        context 'when Elasticsearch fails' do
+          before do
+            allow_next_instance_of(::Security::VulnerabilityElasticRiskScoresFinder) do |finder|
+              allow(finder).to receive(:execute).and_raise(StandardError, 'ES connection failed')
+            end
+          end
+
+          it 'returns nil and tracks the error' do
+            expect(Gitlab::ErrorTracking).to receive(:track_exception).with(instance_of(StandardError))
+
+            result = resolved_risk_score
+
+            expect(result).to be_nil
+          end
+        end
+
+        context 'when risk score is nil' do
+          before do
+            allow_next_instance_of(::Security::VulnerabilityElasticRiskScoresFinder) do |finder|
+              allow(finder).to receive(:execute).and_return({
+                total_risk_score: nil,
+                total_project_count: 0,
+                risk_score_by_project: nil
+              })
+            end
+          end
+
+          it 'returns unknown rating for nil score' do
+            result = resolved_risk_score
+
+            expect(result).to include(
+              score: nil,
+              rating: 'unknown',
+              project_count: 0
+            )
+          end
+        end
       end
 
+      context 'when calcultating rating for specific score' do
+        before_all do
+          group.add_developer(user)
+        end
+
+        shared_examples 'returns correct rating' do |score, expected_rating|
+          before do
+            allow_next_instance_of(::Security::VulnerabilityElasticRiskScoresFinder) do |finder|
+              allow(finder).to receive(:execute).and_return({
+                total_risk_score: score,
+                total_project_count: 1,
+                risk_score_by_project: nil
+              })
+            end
+          end
+
+          it "returns '#{expected_rating}' rating for score #{score}" do
+            result = resolved_risk_score
+            expect(result[:rating]).to eq(expected_rating)
+          end
+        end
+
+        context 'when low risk scores' do
+          it_behaves_like 'returns correct rating', 0, 'low'
+          it_behaves_like 'returns correct rating', 10, 'low'
+          it_behaves_like 'returns correct rating', 25.9, 'low'
+        end
+
+        context 'when medium risk scores' do
+          it_behaves_like 'returns correct rating', 26, 'medium'
+          it_behaves_like 'returns correct rating', 40, 'medium'
+          it_behaves_like 'returns correct rating', 50.9, 'medium'
+        end
+
+        context 'when high risk scores' do
+          it_behaves_like 'returns correct rating', 51, 'high'
+          it_behaves_like 'returns correct rating', 65, 'high'
+          it_behaves_like 'returns correct rating', 75.9, 'high'
+        end
+
+        context 'when critical risk scores' do
+          it_behaves_like 'returns correct rating', 76, 'critical'
+          it_behaves_like 'returns correct rating', 90, 'critical'
+          it_behaves_like 'returns correct rating', 100, 'critical'
+        end
+
+        context 'when risk scores is not known' do
+          it_behaves_like 'returns correct rating', -1, 'unknown'
+          it_behaves_like 'returns correct rating', 101, 'unknown'
+          it_behaves_like 'returns correct rating', nil, 'unknown'
+        end
+      end
+    end
+
+    shared_examples 'returns resource not available' do
+      it 'returns a resource not available error' do
+        expect(resolved_risk_score).to be_a(Gitlab::Graphql::Errors::ResourceNotAvailable)
+      end
+    end
+
+    shared_examples 'returns nil' do
       it 'returns nil' do
         expect(resolved_risk_score).to be_nil
       end
     end
 
-    context 'when feature flag is enabled' do
-      before do
-        stub_licensed_features(security_dashboard: true)
-        stub_feature_flags(new_security_dashboard_total_risk_score: true)
+    context 'when operated on a group' do
+      let(:operate_on) { group }
+
+      it_behaves_like 'returns risk score data'
+
+      context 'when the current user does not have access' do
+        it_behaves_like 'returns resource not available'
       end
 
-      it 'returns dummy risk score data' do
-        result = resolved_risk_score
-
-        expect(result).to include(
-          score: be_an(Integer),
-          rating: be_in(%w[low medium high critical unknown]),
-          factors: include(
-            vulnerabilities_average_score: include(factor: be_a(Float))
-          ),
-          project_count: be_an(Integer),
-          by_project: be_an(Array)
-        )
-      end
-
-      context 'with project_id filter' do
-        let(:project_id_filter) { [project1.id] }
-
-        it 'filters by specific projects' do
-          result = resolved_risk_score
-
-          expect(result[:by_project].map { |p| p[:project][:id] }).to contain_exactly(project1.id)
+      context 'when new_security_dashboard_total_risk_score feature flag is disabled' do
+        before_all do
+          group.add_developer(user)
         end
+
+        before do
+          stub_feature_flags(new_security_dashboard_total_risk_score: false)
+        end
+
+        it_behaves_like 'returns nil'
+      end
+
+      context 'when security_dashboard feature flag is disabled' do
+        before do
+          stub_licensed_features(security_dashboard: false)
+        end
+
+        it_behaves_like 'returns resource not available'
+      end
+    end
+
+    context 'when operated on a project' do
+      let(:operate_on) { project1 }
+
+      it_behaves_like 'returns risk score data'
+
+      context 'when the current user does not have access' do
+        it_behaves_like 'returns resource not available'
+      end
+
+      context 'when new_security_dashboard_total_risk_score feature flag is disabled' do
+        before_all do
+          group.add_developer(user)
+        end
+
+        before do
+          stub_feature_flags(new_security_dashboard_total_risk_score: false)
+        end
+
+        it_behaves_like 'returns nil'
+      end
+
+      context 'when security_dashboard feature flag is disabled' do
+        before do
+          stub_licensed_features(security_dashboard: false)
+        end
+
+        it_behaves_like 'returns resource not available'
       end
     end
   end

@@ -47,11 +47,6 @@ RSpec.describe 'Security metrics through GroupQuery', :freeze_time, feature_cate
       riskScore {
         score
         rating
-        factors {
-          vulnerabilitiesAverageScore {
-            factor
-          }
-        }
         byProject {
           nodes {
             rating
@@ -131,7 +126,7 @@ RSpec.describe 'Security metrics through GroupQuery', :freeze_time, feature_cate
         end
 
         allow_next_instance_of(::Resolvers::Security::RiskScoreResolver) do |resolver|
-          allow(resolver).to receive(:dummy_risk_score_data).and_return(
+          allow(resolver).to receive(:resolve).and_return(
             {
               score: 7.5,
               rating: 'high',
