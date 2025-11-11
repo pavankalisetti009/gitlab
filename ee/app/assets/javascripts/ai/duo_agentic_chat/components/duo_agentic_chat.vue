@@ -120,7 +120,7 @@ export default {
       query: getUserWorkflows,
       variables() {
         return {
-          type: 'chat',
+          type: 'foundational_chat_agents',
           first: 99999,
         };
       },
