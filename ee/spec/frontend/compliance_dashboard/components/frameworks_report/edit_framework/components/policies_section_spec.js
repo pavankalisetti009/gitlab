@@ -321,7 +321,7 @@ describe('PoliciesSection component', () => {
     });
 
     it('correctly calculates policies', () => {
-      const { items: policies } = findPoliciesTable().vm.$attrs;
+      const policies = findPoliciesTable().props('items');
       expect(policies).toHaveLength(4);
       expect(policies.find((p) => p.name === 'test')).toBeDefined();
       expect(policies.find((p) => p.name === 'testE2')).toBeDefined();
@@ -341,7 +341,7 @@ describe('PoliciesSection component', () => {
     });
 
     it('renders buttons to view policy details', async () => {
-      const { items: policies } = findPoliciesTable().vm.$attrs;
+      const policies = findPoliciesTable().props('items');
       const policyButtons = findPoliciesTable().findAllComponents(GlButton);
       expect(policyButtons).toHaveLength(policies.length);
       await policyButtons.at(0).trigger('click');
