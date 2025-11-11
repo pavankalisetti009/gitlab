@@ -104,21 +104,6 @@ RSpec.describe API::MergeRequestApprovals, :aggregate_failures, feature_category
       expect(json_response['approved']).to be false
     end
 
-    context 'when private group approver' do
-      before do
-        private_group = create(:group, :private)
-        private_group.add_developer(create(:user))
-        merge_request.approver_groups.create!(group: private_group)
-      end
-
-      it 'hides private group' do
-        get api(path, user)
-
-        expect(response).to have_gitlab_http_status(:ok)
-        expect(json_response['approver_groups'].size).to eq(0)
-      end
-    end
-
     context 'when approvers are set to zero' do
       before do
         create(:approval_project_rule, project: project, approvals_required: 0)
@@ -338,14 +323,12 @@ RSpec.describe API::MergeRequestApprovals, :aggregate_failures, feature_category
     context 'as a project admin' do
       it_behaves_like 'user allowed to override approvals_before_merge' do
         let(:current_user) { user }
-        let(:expected_approver_group_size) { 0 }
       end
     end
 
     context 'as a global admin' do
       it_behaves_like 'user allowed to override approvals_before_merge' do
         let(:current_user) { admin }
-        let(:expected_approver_group_size) { 1 }
       end
     end
 
@@ -459,10 +442,7 @@ RSpec.describe API::MergeRequestApprovals, :aggregate_failures, feature_category
         end
       end
 
-      it 'only shows group approvers visible to the user' do
-        private_group = create(:group, :private)
-        merge_request.approver_groups.create!(group: private_group)
-
+      it 'always shows empty approver_groups' do
         approve
 
         expect(response).to have_gitlab_http_status(:created)
@@ -501,10 +481,7 @@ RSpec.describe API::MergeRequestApprovals, :aggregate_failures, feature_category
         expect(json_response['approved']).to be false
       end
 
-      it 'only shows group approvers visible to the user' do
-        private_group = create(:group, :private)
-        merge_request.approver_groups.create!(group: private_group)
-
+      it 'always shows empty approver_groups' do
         post api("/projects/#{project.id}/merge_requests/#{merge_request.iid}/unapprove", unapprover)
 
         expect(response).to have_gitlab_http_status(:created)

@@ -12,7 +12,6 @@ RSpec.describe MergeRequestsFinder, feature_category: :code_review_workflow do
       )
     end
 
-    let(:approver) { create(:approver, target: merged_merge_request, user: user) }
     let(:approver_rule) { create(:approval_merge_request_rule, merge_request: merged_merge_request) }
 
     it 'ignores filtering by weight' do

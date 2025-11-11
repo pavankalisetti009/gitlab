@@ -95,9 +95,6 @@ module EE
       has_one :secrets_manager, class_name: '::SecretsManagement::ProjectSecretsManager', inverse_of: :project
       has_many :secret_rotation_infos, class_name: '::SecretsManagement::SecretRotationInfo', inverse_of: :project
 
-      has_many :approvers, as: :target, dependent: :destroy # rubocop:disable Cop/ActiveRecordDependent -- legacy usage
-      has_many :approver_users, through: :approvers, source: :user
-      has_many :approver_groups, as: :target, dependent: :destroy # rubocop:disable Cop/ActiveRecordDependent -- legacy usage
       has_many :approval_rules, class_name: 'ApprovalProjectRule', extend: FilterByBranch
       # NOTE: This was added to avoid N+1 queries when we load list of MergeRequests
       has_many :regular_or_any_approver_approval_rules, -> { regular_or_any_approver.order(rule_type: :desc, id: :asc) }, class_name: 'ApprovalProjectRule', extend: FilterByBranch
@@ -1082,18 +1079,6 @@ module EE
                                                                   .value && feature_available?(:merge_request_approvers)
     end
     alias_method :reset_approvals_on_push?, :reset_approvals_on_push
-
-    def approver_ids=(value)
-      ::Gitlab::Utils.ensure_array_from_string(value).each do |user_id|
-        approvers.find_or_create_by(user_id: user_id, target_id: id)
-      end
-    end
-
-    def approver_group_ids=(value)
-      ::Gitlab::Utils.ensure_array_from_string(value).each do |group_id|
-        approver_groups.find_or_initialize_by(group_id: group_id, target_id: id)
-      end
-    end
 
     def merge_requests_require_code_owner_approval?
       code_owner_approval_required_available? &&

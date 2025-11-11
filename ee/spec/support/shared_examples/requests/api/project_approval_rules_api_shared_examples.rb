@@ -563,7 +563,7 @@ RSpec.shared_examples 'an API endpoint for updating project approval rule' do
 
   shared_examples_for 'a user without access' do
     it 'returns 403' do
-      project.approvers.create!(user: approver)
+      create(:approval_project_rule, project: project, users: [approver])
 
       expect do
         put api(url, current_user), params: { users: [], groups: [] }.to_json, headers: { CONTENT_TYPE: 'application/json' }
@@ -579,20 +579,17 @@ RSpec.shared_examples 'an API endpoint for updating project approval rule' do
 
   it_behaves_like 'a restricted project approval rule API endpoint' do
     let(:current_user) { user }
-    let(:visible_approver_groups_count) { 0 }
   end
 
   context 'as a project admin' do
     it_behaves_like 'a user with access' do
       let(:current_user) { user }
-      let(:visible_approver_groups_count) { 0 }
     end
   end
 
   context 'as a global admin' do
     it_behaves_like 'a user with access' do
       let(:current_user) { admin }
-      let(:visible_approver_groups_count) { 1 }
     end
   end
 

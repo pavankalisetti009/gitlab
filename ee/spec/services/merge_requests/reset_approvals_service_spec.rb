@@ -50,9 +50,7 @@ RSpec.describe MergeRequests::ResetApprovalsService, feature_category: :code_rev
       allow(NotificationService).to receive(:new) { notification_service }
       project.add_developer(approver)
       project.add_developer(owner)
-      perform_enqueued_jobs do
-        merge_request.update!(approver_ids: [approver.id, owner.id, current_user.id])
-      end
+      perform_enqueued_jobs
     end
 
     shared_examples_for 'MergeRequests::ApprovalsResetEvent published' do
@@ -366,9 +364,7 @@ RSpec.describe MergeRequests::ResetApprovalsService, feature_category: :code_rev
       end
 
       before do
-        perform_enqueued_jobs do
-          merge_request.update!(approver_ids: [approver.id, owner.id, current_user.id])
-        end
+        perform_enqueued_jobs
         create(:any_approver_rule, merge_request: merge_request, users: [approver, owner, security])
 
         merge_request.approval_rules.regular.each do |rule|
