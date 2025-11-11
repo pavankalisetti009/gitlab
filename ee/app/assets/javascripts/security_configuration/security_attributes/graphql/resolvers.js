@@ -238,7 +238,7 @@ export default {
         {
           __typename: 'LocalTrackedRef',
           id: 'gid://gitlab/TrackedRef/1',
-          name: 'Main',
+          name: 'master',
           refType: 'BRANCH',
           isDefault: true,
           isProtected: true,
@@ -255,8 +255,8 @@ export default {
         {
           __typename: 'LocalTrackedRef',
           id: 'gid://gitlab/TrackedRef/2',
-          name: 'v18.1.4-33',
-          refType: 'TAG',
+          name: 'main-update-small',
+          refType: 'BRANCH',
           isDefault: false,
           isProtected: true,
           commit: {
