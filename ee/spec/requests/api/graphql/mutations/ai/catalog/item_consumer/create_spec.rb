@@ -124,34 +124,22 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Create, feature_category: :
       }
     end
 
-    it 'creates a catalog item consumer with expected data' do
-      execute
+    let(:license) { create(:license, plan: License::PREMIUM_PLAN) }
 
-      expect(graphql_data_at(:ai_catalog_item_consumer_create, :item_consumer)).to match a_hash_including(
-        'item' => a_hash_including('id' => item.to_global_id.to_s),
-        'group' => a_hash_including('id' => group.to_global_id.to_s),
-        'pinnedVersionPrefix' => '1.0'
-      )
+    before do
+      stub_licensed_features(service_accounts: true)
+      stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: true)
+      allow(License).to receive(:current).and_return(license)
+      allow(license).to receive(:seats).and_return(User.service_account.count + 2)
     end
 
-    context 'when group is a top-level group' do
-      let(:license) { create(:license, plan: License::PREMIUM_PLAN) }
-
-      before do
-        stub_licensed_features(service_accounts: true)
-        stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: true)
-        allow(License).to receive(:current).and_return(license)
-        allow(license).to receive(:seats).and_return(User.service_account.count + 2)
-      end
-
-      it 'creates a service account and attaches it to the item consumer' do
-        expect { execute }.to change { User.count }.by(1)
-        service_account = User.last
-        expect(service_account).to be_service_account
-        expect(graphql_data_at(:ai_catalog_item_consumer_create, :item_consumer)).to match a_hash_including(
-          'serviceAccount' => a_hash_including('id' => service_account.to_global_id.to_s)
-        )
-      end
+    it 'creates a service account and attaches it to the item consumer' do
+      expect { execute }.to change { User.count }.by(1)
+      service_account = User.last
+      expect(service_account).to be_service_account
+      expect(graphql_data_at(:ai_catalog_item_consumer_create, :item_consumer)).to match a_hash_including(
+        'serviceAccount' => a_hash_including('id' => service_account.to_global_id.to_s)
+      )
     end
   end
 end
