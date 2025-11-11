@@ -1,8 +1,9 @@
 <script>
-import { GlButton } from '@gitlab/ui';
+import { GlButton, GlSprintf, GlIcon, GlTooltipDirective } from '@gitlab/ui';
 import { debounce } from 'lodash';
+import { fetchPolicies } from '~/lib/graphql';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import { s__ } from '~/locale';
+import { s__, n__, sprintf } from '~/locale';
 import { createAlert } from '~/alert';
 import {
   getLocationHash,
@@ -13,7 +14,7 @@ import {
 import LocalStorageSync from '~/vue_shared/components/local_storage_sync.vue';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_GROUP } from '~/graphql_shared/constants';
-import { SIDEBAR_VISIBLE_STORAGE_KEY } from '../constants';
+import { SIDEBAR_VISIBLE_STORAGE_KEY, MAX_SELECTED_COUNT } from '../constants';
 import SubgroupsAndProjectsQuery from '../graphql/subgroups_and_projects.query.graphql';
 import { getData, getPageInfo } from '../graphql/helper';
 import SubgroupSidebar from './sidebar/subgroup_sidebar.vue';
@@ -29,9 +30,14 @@ export default {
     LocalStorageSync,
     RecursiveBreadcrumbs: () => import('./recursive_breadcrumbs.vue'),
     GlButton,
+    GlSprintf,
+    GlIcon,
     EmptyState,
     SecurityInventoryTable,
     InventoryDashboardFilteredSearchBar,
+  },
+  directives: {
+    GlTooltip: GlTooltipDirective,
   },
   inject: ['groupFullPath', 'groupId', 'newProjectPath', 'canReadAttributes'],
   i18n: {
@@ -62,11 +68,14 @@ export default {
       },
       isLoadingMore: false,
       projectsInitialized: false,
+      selectedCount: 0,
     };
   },
   apollo: {
     subgroupItems: {
       query: SubgroupsAndProjectsQuery,
+      fetchPolicy: fetchPolicies.NETWORK_ONLY,
+      nextFetchPolicy: fetchPolicies.CACHE_ONLY,
       variables() {
         const {
           search = '',
@@ -148,6 +157,16 @@ export default {
     showEmptyState() {
       return !this.isLoading && !this.hasChildren;
     },
+    selectedCountMessage() {
+      return sprintf(
+        n__(
+          '%{strongStart}%{selectedCount}%{strongEnd} item selected',
+          '%{strongStart}%{selectedCount}%{strongEnd} items selected',
+          this.selectedCount,
+        ),
+        { selectedCount: this.selectedCount },
+      );
+    },
   },
   created() {
     this.debouncedFilter = debounce(this.performFilter, 50);
@@ -180,6 +199,7 @@ export default {
       }
       if (this.activeFullPath !== hash) {
         this.activeFullPath = hash;
+        this.$refs.inventoryTable?.clearSelection();
         this.resetData();
       }
     },
@@ -297,6 +317,7 @@ export default {
     filterSubgroupsAndProjects(filters) {
       this.filters = filters;
       this.debouncedFilter(filters);
+      this.$refs.inventoryTable?.clearSelection();
     },
     performFilter(filters) {
       const currentHash = getLocationHash();
@@ -309,8 +330,17 @@ export default {
         url: urlWithHashPreserved,
       });
     },
+    bulkEdit() {
+      this.$nextTick(() => {
+        this.$refs.inventoryTable.bulkEdit();
+      });
+    },
+    handleSelectedCount(count) {
+      this.selectedCount = count;
+    },
   },
   SIDEBAR_VISIBLE_STORAGE_KEY,
+  MAX_SELECTED_COUNT,
 };
 </script>
 
@@ -341,14 +371,45 @@ export default {
     <div class="gl-flex">
       <subgroup-sidebar v-if="sidebarVisible" :active-full-path="activeFullPath" />
       <div class="gl-w-auto gl-grow" :class="{ 'gl-pl-5': sidebarVisible }">
-        <recursive-breadcrumbs :group-full-path="groupFullPath" :current-path="activeFullPath" />
+        <div
+          v-if="selectedCount"
+          class="gl-gl-my-4 gl-border-b gl-sticky gl-top-9 gl-z-2 gl-flex gl-flex-row gl-items-center gl-justify-between gl-bg-default gl-p-3"
+        >
+          <span>
+            <gl-sprintf :message="selectedCountMessage">
+              <template #strong="{ content }">
+                <strong>{{ content }}</strong>
+              </template>
+            </gl-sprintf>
+            <gl-icon
+              v-if="selectedCount >= $options.MAX_SELECTED_COUNT"
+              v-gl-tooltip="
+                sprintf(__('You can edit up to %{maximumCount} items at once'), {
+                  maximumCount: $options.MAX_SELECTED_COUNT,
+                })
+              "
+              name="warning"
+              variant="warning"
+            />
+          </span>
+          <gl-button @click="bulkEdit">{{
+            s__('SecurityAttributes|Edit security attributes')
+          }}</gl-button>
+        </div>
+        <recursive-breadcrumbs
+          v-else
+          :group-full-path="groupFullPath"
+          :current-path="activeFullPath"
+        />
         <empty-state v-if="showEmptyState" />
         <security-inventory-table
           v-else
+          ref="inventoryTable"
           :items="displayItems"
           :is-loading="isLoading"
           :has-search="hasSearch"
-          @saved="$apollo.queries.subgroupItems.refetch()"
+          @refetch="$apollo.queries.subgroupItems.refetch()"
+          @selectedCount="handleSelectedCount"
         />
         <div v-if="showLoadMoreButton" class="gl-mt-5 gl-flex gl-justify-center">
           <gl-button data-testid="load-more-button" :loading="isLoadingMore" @click="loadMore">
