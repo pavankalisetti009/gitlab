@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe Ai::Catalog::ExecuteWorkflowService, :aggregate_failures, feature_category: :workflow_catalog do
   include Ai::Catalog::TestHelpers
 
-  let_it_be(:organization) { create(:organization) }
+  let_it_be(:organization) { create(:common_organization) }
   let_it_be(:user) { create(:user) }
   let_it_be(:project) { create(:project, :repository, organization: organization, developers: user) }
   let_it_be(:item) { create(:ai_catalog_item, project:) }

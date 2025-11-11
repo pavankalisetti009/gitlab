@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Members::InviteUsersFinder, feature_category: :groups_and_projects do
   let_it_be(:current_user) { create(:user) }
+  let_it_be(:organization) { current_user.organization }
   let_it_be(:root_group) { create(:group) }
   let_it_be(:subgroup) { create(:group, parent: root_group) }
   let_it_be(:project) { create(:project, namespace: root_group, creator: current_user) }
@@ -25,7 +26,7 @@ RSpec.describe Members::InviteUsersFinder, feature_category: :groups_and_project
   end
 
   subject(:finder) do
-    described_class.new(current_user, resource)
+    described_class.new(current_user, resource, organization_id: organization.id)
   end
 
   describe '#execute' do

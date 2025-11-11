@@ -6,7 +6,7 @@ RSpec.describe Ai::Catalog::Agents::BuildFlowConfigService, :aggregate_failures,
   include Ai::Catalog::TestHelpers
 
   let_it_be(:guest) { create(:user) }
-  let_it_be(:organization) { create(:organization) }
+  let_it_be(:organization) { create(:common_organization) }
   let_it_be(:project) { create(:project, :repository, organization: organization, guests: guest) }
   let_it_be(:agent) { create(:ai_catalog_agent, organization: organization, project: project) }
   let_it_be(:agent_version) { agent.versions.last }

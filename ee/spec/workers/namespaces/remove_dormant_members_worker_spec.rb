@@ -50,9 +50,13 @@ RSpec.describe Namespaces::RemoveDormantMembersWorker, :saas, feature_category: 
           end
 
           context 'when the dormant member is an owner of the group' do
-            it 'does not remove the owner' do
-              group.add_owner(dormant_assignment.user)
+            before do
+              user = dormant_assignment.user
+              create(:organization_user, user: user, organization: group.organization)
+              group.add_owner(user)
+            end
 
+            it 'does not remove the owner' do
               expect { perform_work }.not_to change { Members::DeletionSchedule.count }
             end
           end

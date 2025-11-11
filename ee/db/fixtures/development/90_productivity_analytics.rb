@@ -113,7 +113,8 @@ class Gitlab::Seeder::ProductivityAnalytics
         name: "Productivity Project #{suffix}",
         path: "p-analytics-project-#{suffix}",
         creator: admin,
-        group: group
+        group: group,
+        organization: group.organization
       )
 
       project.create_repository
@@ -145,8 +146,10 @@ class Gitlab::Seeder::ProductivityAnalytics
           confirmed_at: DateTime.now,
           password: ::User.random_password
         ) do |user|
-          user.assign_personal_namespace(Organizations::Organization.default_organization)
+          user.assign_personal_namespace(admin.organization)
         end
+
+      Organizations::OrganizationUser.create_organization_record_for(user.id, user.organization_id)
 
       project.group&.add_maintainer(user)
       project.add_maintainer(user)

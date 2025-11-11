@@ -19,10 +19,10 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
     end
 
     let_it_be(:root_namespace) { create(:group) }
-    let_it_be(:project) { create(:project) }
+    let_it_be(:organization) { create(:common_organization) }
+    let_it_be(:user) { create(:user, organization: organization) }
+    let_it_be(:project) { create(:project, developers: [user]) }
     let_it_be(:issue) { create(:issue, project: project) }
-    let_it_be(:organization) { create(:organization) }
-    let_it_be(:user) { create(:user, organizations: [organization]).tap { |u| project.add_developer(u) } }
 
     let(:resource) { issue }
     let(:user_input) { 'question?' }

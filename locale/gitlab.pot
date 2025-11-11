@@ -36705,6 +36705,18 @@ msgstr ""
 msgid "InviteReminderEmail|This is a friendly reminder that %{inviter} invited you to join the %{strong_start}%{project_or_group_name}%{strong_end} %{project_or_group} as a %{role}."
 msgstr ""
 
+msgid "InviteUserToOrganization|already belongs to another organization"
+msgstr ""
+
+msgid "InviteUserToOrganization|not authorized to create member"
+msgstr ""
+
+msgid "InviteUserToOrganization|not authorized to update member"
+msgstr ""
+
+msgid "InviteUserToOrganization|the member access level can't be higher than the current user's one"
+msgstr ""
+
 msgid "Invited"
 msgstr ""
 
@@ -81345,12 +81357,6 @@ msgstr ""
 msgid "none"
 msgstr ""
 
-msgid "not authorized to create member"
-msgstr ""
-
-msgid "not authorized to update member"
-msgstr ""
-
 msgid "not enough arguments"
 msgstr ""
 
@@ -81814,9 +81820,6 @@ msgid "the following incidents or issues"
 msgstr ""
 
 msgid "the following issues"
-msgstr ""
-
-msgid "the member access level can't be higher than the current user's one"
 msgstr ""
 
 msgid "the wiki"

@@ -6,7 +6,7 @@ RSpec.describe Ai::Catalog::Agents::ExecuteService, :aggregate_failures, feature
   include Ai::Catalog::TestHelpers
 
   let_it_be(:maintainer) { create(:user) }
-  let_it_be(:organization) { create(:organization) }
+  let_it_be(:organization) { create(:common_organization) }
   let_it_be(:project) { create(:project, :repository, organization: organization, maintainers: maintainer) }
   let_it_be(:agent) { create(:ai_catalog_agent, organization: organization, project: project) }
   let_it_be(:agent_version) { agent.versions.last }

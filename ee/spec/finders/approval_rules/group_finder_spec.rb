@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe ApprovalRules::GroupFinder, feature_category: :source_code_management do
   let_it_be_with_reload(:rule) { create(:approval_project_rule) }
   let_it_be(:user) { create(:user) }
-  let_it_be(:organization) { create(:organization) }
+  let_it_be(:organization) { create(:common_organization) }
   let_it_be(:public_group) { create(:group, name: 'public_group', organization: organization) }
   let_it_be(:private_inaccessible_group) do
     create(:group, :private, name: 'private_inaccessible_group', organization: organization)
@@ -50,7 +50,7 @@ RSpec.describe ApprovalRules::GroupFinder, feature_category: :source_code_manage
     end
 
     context 'when user is a member of the project' do
-      let(:project_user) { create :user }
+      let(:project_user) { create(:user, organization: organization) }
 
       before do
         rule.project.add_developer(project_user)

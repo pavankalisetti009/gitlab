@@ -123,8 +123,9 @@ RSpec.describe GitlabSubscriptions::Members::SeatAssignments::SyncService, featu
 
           create(:gitlab_subscription_seat_assignment, user: user_2, namespace: root_namespace)
 
-          user_3 = create(:user)
+          user_3 = create(:user, organization: root_namespace.organization)
           subgroup = create(:group, parent: root_namespace)
+
           subgroup.add_maintainer(user_3)
 
           user_4 = create(:user)
