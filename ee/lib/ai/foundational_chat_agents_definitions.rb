@@ -39,6 +39,16 @@ module Ai
           that can autonomously analyze, triage, and remediate security vulnerabilities, reducing manual security tasks
           while ensuring critical exploitable vulnerabilities are immediately surfaced and addressed.
         DESCRIPTION
+      },
+      {
+        id: 4,
+        reference: 'analytics_agent',
+        version: 'v1',
+        name: 'Analytics Agent',
+        description: <<~DESCRIPTION
+          AI querying assistant that helps product teams explore, summarize, and share their analytical
+          data in GitLab using GLQL queries
+        DESCRIPTION
       }
     ].freeze
   end
