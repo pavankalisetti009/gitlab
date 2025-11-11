@@ -262,7 +262,6 @@ describe('Duo Agentic Chat', () => {
   const actionSpies = {
     addDuoChatMessage: jest.fn(),
     setMessages: jest.fn(),
-    setLoading: jest.fn(),
   };
 
   const mockRefetch = jest.fn().mockResolvedValue({});
@@ -301,7 +300,6 @@ describe('Duo Agentic Chat', () => {
     const store = new Vuex.Store({
       actions: actionSpies,
       state: {
-        loading: false,
         messages: [],
         ...initialState,
       },
@@ -467,7 +465,7 @@ describe('Duo Agentic Chat', () => {
           await nextTick();
 
           expect(actionSpies.setMessages).toHaveBeenCalledWith(expect.anything(), []);
-          expect(actionSpies.setLoading).toHaveBeenCalledWith(expect.anything(), false);
+          expect(findDuoChat().props('isLoading')).toBe(false);
         },
       );
 
@@ -597,11 +595,11 @@ describe('Duo Agentic Chat', () => {
         });
       });
 
-      it('sets loading to true when sending a prompt', async () => {
+      it('sets waiting on prompt to true when sending a prompt', async () => {
         findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
         await nextTick();
 
-        expect(actionSpies.setLoading).toHaveBeenCalledWith(expect.anything(), true);
+        expect(findDuoChat().props('isLoading')).toBe(true);
       });
 
       it('does not create a new workflow if one already exists', async () => {
@@ -702,7 +700,7 @@ describe('Duo Agentic Chat', () => {
         expect(findDuoChat().props('isToolApprovalProcessing')).toBe(false);
       });
 
-      it('sets loading to false when workflow status is INPUT_REQUIRED', async () => {
+      it('sets waiting on prompt to false when workflow status is INPUT_REQUIRED', async () => {
         const mockCheckpointData = {
           requestID: 'request-id-4',
           newCheckpoint: {
@@ -726,7 +724,7 @@ describe('Duo Agentic Chat', () => {
           },
         });
 
-        expect(actionSpies.setLoading).toHaveBeenCalledWith(expect.anything(), false);
+        expect(findDuoChat().props('isLoading')).toBe(false);
       });
 
       it('handles errors from WebSocket', () => {
@@ -750,7 +748,7 @@ describe('Duo Agentic Chat', () => {
         await nextTick();
 
         expect(closeSocket).toHaveBeenCalledWith(mockSocketManager);
-        expect(actionSpies.setLoading).toHaveBeenCalledWith(expect.anything(), false);
+        expect(findDuoChat().props('isLoading')).toBe(false);
         expect(wrapper.vm.workflowId).toBe(MOCK_WORKFLOW_ID);
         expect(wrapper.vm.socketManager).toBe(null);
       });
@@ -766,7 +764,7 @@ describe('Duo Agentic Chat', () => {
 
         expect(wrapper.vm.workflowId).toBe(null);
         expect(actionSpies.setMessages).toHaveBeenCalledWith(expect.anything(), []);
-        expect(actionSpies.setLoading).toHaveBeenCalledWith(expect.anything(), false);
+        expect(findDuoChat().props('isLoading')).toBe(false);
         expect(closeSocket).toHaveBeenCalledWith(mockSocketManager);
       });
     });
@@ -1223,10 +1221,9 @@ describe('Duo Agentic Chat', () => {
 
           // Assert that onNewChat() side effects occurred
           expect(actionSpies.setMessages).toHaveBeenCalledWith(expect.anything(), []);
-          expect(actionSpies.setLoading).toHaveBeenCalledWith(expect.anything(), false);
 
           // Assert that onSendChatPrompt() side effects occurred
-          expect(actionSpies.setLoading).toHaveBeenCalledWith(expect.anything(), true);
+          expect(findDuoChat().props('isLoading')).toBe(true);
           expect(ApolloUtils.createWorkflow).toHaveBeenCalledWith(expect.anything(), {
             projectId: MOCK_PROJECT_ID,
             namespaceId: null,
@@ -1273,7 +1270,7 @@ describe('Duo Agentic Chat', () => {
 
       expect(closeSocket).toHaveBeenCalledWith(mockSocketManager);
       expect(actionSpies.setMessages).toHaveBeenCalledWith(expect.anything(), []);
-      expect(actionSpies.setLoading).toHaveBeenCalledWith(expect.anything(), false);
+      // Note: Cannot check isLoading/isWaitingOnPrompt after destroy as component is destroyed
     });
 
     it('sets isProcessingToolApproval to false on socket close when not waiting for approval', async () => {
@@ -1293,7 +1290,7 @@ describe('Duo Agentic Chat', () => {
       socketCall.onClose();
 
       expect(findDuoChat().props('isToolApprovalProcessing')).toBe(false);
-      expect(actionSpies.setLoading).toHaveBeenCalledWith(expect.anything(), false);
+      expect(findDuoChat().props('isLoading')).toBe(false);
     });
 
     it('does not set isProcessingToolApproval to false on socket close when waiting for approval', async () => {
@@ -1310,10 +1307,13 @@ describe('Duo Agentic Chat', () => {
       expect(createWebSocket).toHaveBeenCalled();
 
       const socketCall = getLastSocketCall();
+      // Set waiting on prompt to true first to verify it stays true
+      wrapper.vm.isWaitingOnPrompt = true;
       socketCall.onClose();
+      await nextTick();
 
-      expect(findDuoChat().props('isToolApprovalProcessing')).toBe(false);
-      expect(actionSpies.setLoading).not.toHaveBeenCalledWith(expect.anything(), false);
+      expect(findDuoChat().props('isToolApprovalProcessing')).toBe(true);
+      expect(findDuoChat().props('isLoading')).toBe(true);
     });
   });
 
@@ -1410,7 +1410,6 @@ describe('Duo Agentic Chat', () => {
             errors: [`Error: ${errorText}`],
           }),
         );
-        expect(actionSpies.setLoading).toHaveBeenCalledWith(expect.anything(), false);
       });
 
       it('handles missing workflowGoal gracefully when fetching workflow events', async () => {

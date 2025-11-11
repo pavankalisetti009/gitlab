@@ -83,7 +83,6 @@ describeSkipVue3(skipReason, () => {
   const actionSpies = {
     addDuoChatMessage: jest.fn(),
     setMessages: jest.fn(),
-    setLoading: jest.fn(),
   };
 
   const chatMutationHandlerMock = jest.fn().mockResolvedValue(MOCK_TANUKI_BOT_MUTATATION_RES);
@@ -391,15 +390,16 @@ describeSkipVue3(skipReason, () => {
           expect(duoChat.props('activeThreadId')).toBe('');
           expect(actionSpies.setMessages).toHaveBeenCalledWith(expect.anything(), []);
           expect(duoChat.props('multiThreadedView')).toBe('chat');
-          expect(actionSpies.setLoading).toHaveBeenCalledWith(expect.anything(), false);
           expect(duoChat.props('canceledRequestIds')).toEqual([]);
           expect(chatMutationHandlerMock).not.toHaveBeenCalled();
         },
       );
 
-      it('does set loading to `true` unless a new chat is requested', () => {
+      it('does set loading to `true` unless a new chat is requested', async () => {
+        createComponent();
         findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
-        expect(actionSpies.setLoading).toHaveBeenCalled();
+        await nextTick();
+        expect(findDuoChat().props('isLoading')).toBe(true);
       });
 
       it('starts the performance measurement when sending a prompt', () => {
@@ -999,7 +999,6 @@ describeSkipVue3(skipReason, () => {
           expect(duoChat.props('activeThreadId')).toBe('');
           expect(actionSpies.setMessages).toHaveBeenCalledWith(expect.anything(), []);
           expect(duoChat.props('multiThreadedView')).toBe('chat');
-          expect(actionSpies.setLoading).toHaveBeenCalledWith(expect.anything(), false);
           expect(duoChat.props('canceledRequestIds')).toEqual([]);
         });
 

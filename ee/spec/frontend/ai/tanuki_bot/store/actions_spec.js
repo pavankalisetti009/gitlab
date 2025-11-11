@@ -136,15 +136,4 @@ describe('TanukiBot Store Actions', () => {
       });
     });
   });
-
-  describe('setLoading', () => {
-    it.each([true, false])('should commit the correct mutation for "%s" flag', (flag) => {
-      return testAction({
-        action: actions.setLoading,
-        payload: flag,
-        state,
-        expectedMutations: [{ type: types.SET_LOADING, payload: flag }],
-      });
-    });
-  });
 });

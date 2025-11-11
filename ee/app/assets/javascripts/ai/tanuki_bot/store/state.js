@@ -1,5 +1,4 @@
 const createState = () => ({
-  loading: false,
   messages: [],
   toolMessage: '',
 });
