@@ -1,15 +1,15 @@
 <script>
-import MavenRegistryDetails from 'ee/packages_and_registries/virtual_registries/components/maven_registry_details_app.vue';
-import MavenRegistryDetailsHeader from 'ee/packages_and_registries/virtual_registries/components/maven_registry_details_header.vue';
-import getMavenVirtualRegistryUpstreams from '../graphql/queries/get_maven_virtual_registry_upstreams.query.graphql';
-import { convertToMavenRegistryGraphQLId } from '../utils';
-import { captureException } from '../sentry_utils';
+import MavenRegistryDetailsHeader from 'ee/packages_and_registries/virtual_registries/components/maven/registries/show/header.vue';
+import UpstreamsList from 'ee/packages_and_registries/virtual_registries/components/maven/registries/show/upstreams_list.vue';
+import getMavenVirtualRegistryUpstreams from '../../../graphql/queries/get_maven_virtual_registry_upstreams.query.graphql';
+import { convertToMavenRegistryGraphQLId } from '../../../utils';
+import { captureException } from '../../../sentry_utils';
 
 export default {
-  name: 'RegistryDetailsRoot',
+  name: 'MavenRegistryDetailsApp',
   components: {
-    MavenRegistryDetails,
     MavenRegistryDetailsHeader,
+    UpstreamsList,
   },
   inject: {
     registry: {
@@ -60,7 +60,7 @@ export default {
 <template>
   <div>
     <maven-registry-details-header />
-    <maven-registry-details
+    <upstreams-list
       :loading="isFirstTimeLoading"
       :registry-id="registry.id"
       :upstreams="upstreams"

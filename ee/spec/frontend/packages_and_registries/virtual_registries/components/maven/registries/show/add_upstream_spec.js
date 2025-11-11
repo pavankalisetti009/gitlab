@@ -5,7 +5,7 @@ import {
   GlSkeletonLoader,
 } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import AddUpstream from 'ee/packages_and_registries/virtual_registries/components/add_upstream.vue';
+import AddUpstream from 'ee/packages_and_registries/virtual_registries/components/maven/registries/show/add_upstream.vue';
 
 describe('AddUpstream', () => {
   let wrapper;

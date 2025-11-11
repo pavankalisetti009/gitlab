@@ -33,6 +33,7 @@ module Security
         scope = base_scope
         scope = filter_by_vulnerability_counts(scope)
         scope = filter_by_analyzers_statuses(scope)
+        scope = filter_by_security_attributes(scope)
         scope = scope.order_by_traversal_and_project
         filter_by_search(scope)
       end
@@ -55,6 +56,25 @@ module Security
         end
 
         scope
+      end
+
+      def filter_by_security_attributes(scope)
+        return scope unless params[:attribute_filters].present?
+
+        is_one_of_filters = []
+        is_not_one_of_filters = []
+
+        params[:attribute_filters].each do |filter|
+          next if filter[:attributes].blank?
+
+          if filter[:operator] == 'is_one_of'
+            is_one_of_filters << filter[:attributes]
+          elsif filter[:operator] == 'is_not_one_of'
+            is_not_one_of_filters << filter[:attributes]
+          end
+        end
+
+        scope.by_security_attributes(is_one_of_filters, is_not_one_of_filters)
       end
 
       def filter_by_search(scope)

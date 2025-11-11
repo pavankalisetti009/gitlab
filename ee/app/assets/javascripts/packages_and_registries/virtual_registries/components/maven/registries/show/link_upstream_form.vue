@@ -2,8 +2,8 @@
 import { GlAlert, GlButton, GlCard, GlForm, GlFormGroup, GlSkeletonLoader } from '@gitlab/ui';
 import { sprintf, n__ } from '~/locale';
 import { getMavenUpstream } from 'ee/api/virtual_registries_api';
-import { captureException } from '../sentry_utils';
-import TestMavenUpstreamButton from './maven/shared/test_maven_upstream_button.vue';
+import { captureException } from '../../../../sentry_utils';
+import TestMavenUpstreamButton from '../../shared/test_maven_upstream_button.vue';
 import UpstreamSelector from './upstream_selector.vue';
 
 export default {

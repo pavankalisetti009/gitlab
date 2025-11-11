@@ -2,8 +2,8 @@ import { GlCollapsibleListbox } from '@gitlab/ui';
 import waitForPromises from 'helpers/wait_for_promises';
 import { getMavenUpstreamRegistriesList } from 'ee/api/virtual_registries_api';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import UpstreamSelector from 'ee/packages_and_registries/virtual_registries/components/upstream_selector.vue';
-import { upstreamsResponse, multipleUpstreamsResponse } from '../mock_data';
+import UpstreamSelector from 'ee/packages_and_registries/virtual_registries/components/maven/registries/show/upstream_selector.vue';
+import { upstreamsResponse, multipleUpstreamsResponse } from '../../../../mock_data';
 
 jest.mock('ee/api/virtual_registries_api', () => ({
   getMavenUpstreamRegistriesList: jest.fn(),

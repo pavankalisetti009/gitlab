@@ -7,7 +7,7 @@ describe('SecurityPolicyBypass', () => {
   let wrapper;
 
   const defaultBypass = {
-    comment: 'This is an acceptable risk for our use case',
+    comment: "This is an acceptable risk for our use case, don't think otherwise",
     createdAt: '2023-10-01T10:00:00Z',
     dismissalTypes: ['Scanner false positive', 'Other'],
     mergeRequestPath: '/merge_requests/16',
@@ -59,7 +59,7 @@ describe('SecurityPolicyBypass', () => {
       expect(listItems.at(0).text()).toBe('Security policy violated');
       expect(listItems.at(1).text()).toBe('Reason category: Scanner false positive, Other');
       expect(listItems.at(2).text()).toBe(
-        'Reason detail: This is an acceptable risk for our use case',
+        "Reason detail: This is an acceptable risk for our use case, don't think otherwise",
       );
       expect(listItems.at(3).text()).toBe('Bypassed by Administrator in merge request !16');
     });

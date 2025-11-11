@@ -55,9 +55,10 @@ RSpec.describe Security::InventoryFilter, feature_category: :security_asset_inve
   end
 
   describe 'scopes' do
-    let_it_be(:project1) { create(:project, name: 'security-project') }
-    let_it_be(:project2) { create(:project, name: 'another-project') }
-    let_it_be(:project3) { create(:project, name: 'test-project') }
+    let_it_be(:group) { create(:group) }
+    let_it_be(:project1) { create(:project, name: 'security-project', namespace: group) }
+    let_it_be(:project2) { create(:project, name: 'another-project', namespace: group) }
+    let_it_be(:project3) { create(:project, name: 'test-project', namespace: group) }
 
     let_it_be(:inventory_filter_1) do
       create(:security_inventory_filters,
@@ -249,6 +250,170 @@ RSpec.describe Security::InventoryFilter, feature_category: :security_asset_inve
 
         it 'returns no filters' do
           is_expected.to be_empty
+        end
+      end
+    end
+
+    describe 'security attribute scopes' do
+      let_it_be(:security_category1) { create(:security_category, namespace: group, name: 'Environment') }
+      let_it_be(:security_category2) { create(:security_category, namespace: group, name: 'Business Impact') }
+      let_it_be(:attribute1) do
+        create(:security_attribute, security_category: security_category1, namespace: group, name: 'Production')
+      end
+
+      let_it_be(:attribute2) do
+        create(:security_attribute, security_category: security_category1, namespace: group, name: 'Staging')
+      end
+
+      let_it_be(:attribute3) do
+        create(:security_attribute, security_category: security_category2, namespace: group, name: 'Critical')
+      end
+
+      let_it_be(:project1_attribute1) do
+        create(:project_to_security_attribute,
+          project: project1,
+          security_attribute: attribute1,
+          traversal_ids: project1.namespace.traversal_ids
+        )
+      end
+
+      let_it_be(:project1_attribute3) do
+        create(:project_to_security_attribute,
+          project: project1,
+          security_attribute: attribute3,
+          traversal_ids: project1.namespace.traversal_ids
+        )
+      end
+
+      let_it_be(:project2_attribute2) do
+        create(:project_to_security_attribute,
+          project: project2,
+          security_attribute: attribute2,
+          traversal_ids: project2.namespace.traversal_ids
+        )
+      end
+
+      describe '.by_security_attributes' do
+        subject { described_class.by_security_attributes(is_one_of_filters, is_not_one_of_filters) }
+
+        let(:is_not_one_of_filters) { [] }
+
+        context 'with empty filters' do
+          let(:is_one_of_filters) { [] }
+
+          it 'returns all filters' do
+            is_expected.to be_empty
+          end
+        end
+
+        context 'with IS_ONE_OF filters' do
+          context 'with single filter containing single attribute' do
+            let(:is_one_of_filters) { [[attribute1.id]] }
+
+            it 'returns filters for projects with the specified attribute' do
+              is_expected.to contain_exactly(inventory_filter_1)
+            end
+          end
+
+          context 'with single filter containing multiple attributes' do
+            let(:is_one_of_filters) { [[attribute1.id, attribute2.id]] } # OR logic
+
+            it 'returns filters for projects with any of the specified attributes' do
+              is_expected.to contain_exactly(inventory_filter_1, inventory_filter_2)
+            end
+          end
+
+          context 'with multiple filters' do
+            let(:is_one_of_filters) { [[attribute1.id], [attribute3.id]] } # AND logic
+
+            it 'returns filters for projects with all specified attributes' do
+              is_expected.to contain_exactly(inventory_filter_1)
+            end
+          end
+
+          context 'with multiple filters where no project matches all' do
+            let(:is_one_of_filters) { [[attribute1.id], [attribute2.id]] }
+
+            it 'returns no filters' do
+              is_expected.to be_empty
+            end
+          end
+
+          context 'with non-existent attribute ID' do
+            let(:is_one_of_filters) { [[non_existing_record_id]] }
+
+            it 'returns no filters' do
+              is_expected.to be_empty
+            end
+          end
+        end
+
+        context 'with IS_NOT_ONE_OF filters' do
+          let(:is_one_of_filters) { [] }
+
+          context 'with single filter containing single attribute' do
+            let(:is_not_one_of_filters) { [[attribute1.id]] }
+
+            it 'returns filters for projects without the specified attribute' do
+              is_expected.to contain_exactly(inventory_filter_2, inventory_filter_3)
+            end
+          end
+
+          context 'with single filter containing multiple attributes' do
+            let(:is_not_one_of_filters) { [[attribute1.id, attribute2.id]] }
+
+            it 'returns filters for projects without any of the specified attributes' do
+              is_expected.to contain_exactly(inventory_filter_3)
+            end
+          end
+
+          context 'with multiple filters' do
+            let(:is_not_one_of_filters) { [[attribute1.id], [attribute3.id]] }
+
+            it 'returns filters for projects without any of the specified attributes' do
+              is_expected.to contain_exactly(inventory_filter_2, inventory_filter_3)
+            end
+          end
+
+          context 'with non-existent attribute ID' do
+            let(:is_not_one_of_filters) { [[non_existing_record_id]] }
+
+            it 'returns all filters' do
+              is_expected.to contain_exactly(inventory_filter_1, inventory_filter_2, inventory_filter_3)
+            end
+          end
+        end
+
+        context 'with combined IS_ONE_OF and IS_NOT_ONE_OF filters' do
+          context 'with attribute inclusion and exclusion' do
+            let(:is_one_of_filters) { [[attribute1.id]] }
+            let(:is_not_one_of_filters) { [[attribute3.id]] }
+
+            it 'returns filters for projects with included attributes but without excluded ones' do
+              is_expected.to be_empty
+            end
+          end
+
+          context 'with multiple inclusions and exclusions' do
+            let(:is_one_of_filters) { [[attribute1.id, attribute2.id]] }
+            let(:is_not_one_of_filters) { [[attribute3.id]] }
+
+            it 'returns filters matching inclusion criteria without excluded attributes' do
+              # project1 has attribute1 but also has attribute3 (excluded)
+              # project2 has attribute2 and doesn't have attribute3
+              is_expected.to contain_exactly(inventory_filter_2)
+            end
+          end
+
+          context 'with complex AND logic in IS_ONE_OF and exclusions' do
+            let(:is_one_of_filters) { [[attribute1.id], [attribute3.id]] }
+            let(:is_not_one_of_filters) { [[attribute2.id]] }
+
+            it 'returns filters for projects with any included attributes and without excluded ones' do
+              # project1 has both attribute1 AND attribute3, and doesn't have attribute2
+              is_expected.to contain_exactly(inventory_filter_1)
+            end
+          end
         end
       end
     end

@@ -176,6 +176,115 @@ RSpec.describe Resolvers::Security::NamespaceSecurityProjectsResolver, feature_c
         end
       end
 
+      context 'with security attribute filters' do
+        let_it_be(:security_category) { create(:security_category, namespace: group, name: 'Environment') }
+        let_it_be(:attribute1) do
+          create(:security_attribute, security_category: security_category, namespace: group, name: 'Production')
+        end
+
+        let_it_be(:attribute2) do
+          create(:security_attribute, security_category: security_category, namespace: group, name: 'Staging')
+        end
+
+        let_it_be(:project1_attribute1) do
+          create(:project_to_security_attribute, project: project1, security_attribute: attribute1,
+            traversal_ids: project1.namespace.traversal_ids)
+        end
+
+        let_it_be(:project2_attribute2) do
+          create(:project_to_security_attribute, project: project2, security_attribute: attribute2,
+            traversal_ids: project2.namespace.traversal_ids)
+        end
+
+        context 'with is_one_of filter' do
+          let(:params) do
+            {
+              attribute_filters: [
+                {
+                  operator: 'is_one_of',
+                  attributes: [attribute1.id]
+                }
+              ]
+            }
+          end
+
+          it 'returns projects with the specified attribute' do
+            expect(resolved.nodes).to contain_exactly(project1)
+          end
+        end
+
+        context 'with is_not_one_of filter' do
+          let(:params) do
+            {
+              attribute_filters: [
+                {
+                  operator: 'is_not_one_of',
+                  attributes: [attribute1.id]
+                }
+              ]
+            }
+          end
+
+          it 'returns projects without the specified attribute' do
+            expect(resolved.nodes).to contain_exactly(project2, project3)
+          end
+        end
+
+        context 'with empty attributes array' do
+          let(:params) do
+            {
+              attribute_filters: [
+                {
+                  operator: 'is_one_of',
+                  attributes: []
+                }
+              ]
+            }
+          end
+
+          it 'returns no results' do
+            expect(resolved.nodes).to be_empty
+          end
+        end
+
+        context 'with attributes from different namespace' do
+          let(:params) do
+            {
+              attribute_filters: [
+                {
+                  operator: 'is_one_of',
+                  attributes: [non_existing_record_id]
+                }
+              ]
+            }
+          end
+
+          it 'returns no results (attributes not in scope)' do
+            expect(resolved.nodes).to be_empty
+          end
+        end
+
+        context 'with combined filters including security attributes' do
+          let(:params) do
+            {
+              vulnerability_count_filters: [
+                { severity: 'critical', operator: 'greater_than_or_equal_to', count: 3 }
+              ],
+              attribute_filters: [
+                {
+                  operator: 'is_one_of',
+                  attributes: [attribute1.id]
+                }
+              ]
+            }
+          end
+
+          it 'applies all filters together' do
+            expect(resolved.nodes).to contain_exactly(project1)
+          end
+        end
+      end
+
       context 'with first parameter for pagination' do
         let(:params) { { first: 2 } }
 

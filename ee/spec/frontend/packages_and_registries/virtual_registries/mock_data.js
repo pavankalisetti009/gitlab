@@ -61,7 +61,6 @@ export const mavenVirtualRegistry = {
       metadataCacheValidityHours: 48,
       name: 'Maven upstream',
       description: 'Maven Central',
-      username: null,
       url: 'https://repo.maven.apache.org/maven2',
       registryUpstreams: [
         {
@@ -79,7 +78,6 @@ export const mavenVirtualRegistry = {
       metadataCacheValidityHours: 48,
       name: 'Maven upstream 4',
       description: null,
-      username: null,
       url: 'https://repo.maven.apache.org/maven2',
       registryUpstreams: [
         {
@@ -96,7 +94,6 @@ export const mavenVirtualRegistry = {
       metadataCacheValidityHours: 48,
       name: 'Maven upstream 4',
       description: null,
-      username: null,
       url: 'https://repo.maven.apache.org/maven2',
       registryUpstreams: [
         {
@@ -113,7 +110,6 @@ export const mavenVirtualRegistry = {
       metadataCacheValidityHours: 48,
       name: 'Maven upstream 4',
       description: null,
-      username: null,
       url: 'https://repo.maven.apache.org/maven2',
       registryUpstreams: [
         {

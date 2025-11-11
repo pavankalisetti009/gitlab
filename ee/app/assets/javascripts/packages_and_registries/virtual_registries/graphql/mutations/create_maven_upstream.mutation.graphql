@@ -25,7 +25,6 @@ mutation mavenUpstreamCreate(
       name
       url
       description
-      username
       cacheValidityHours
       metadataCacheValidityHours
     }

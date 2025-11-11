@@ -4,12 +4,12 @@ import getMavenVirtualRegistryUpstreamsQuery from 'ee/packages_and_registries/vi
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
-import MavenRegistriesDetailsApp from 'ee/packages_and_registries/virtual_registries/maven/registry_details_app.vue';
-import MavenRegistryDetails from 'ee/packages_and_registries/virtual_registries/components/maven_registry_details_app.vue';
-import MavenRegistryDetailsHeader from 'ee/packages_and_registries/virtual_registries/components/maven_registry_details_header.vue';
-import RegistryUpstreamItem from 'ee/packages_and_registries/virtual_registries/components/registry_upstream_item.vue';
+import MavenRegistriesDetailsApp from 'ee/packages_and_registries/virtual_registries/pages/maven/registries/show.vue';
+import MavenRegistryDetailsHeader from 'ee/packages_and_registries/virtual_registries/components/maven/registries/show/header.vue';
+import MavenRegistryDetailsUpstreamsList from 'ee/packages_and_registries/virtual_registries/components/maven/registries/show/upstreams_list.vue';
+import RegistryUpstreamItem from 'ee/packages_and_registries/virtual_registries/components/maven/registries/show/registry_upstream_item.vue';
 import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
-import { mavenVirtualRegistry } from '../mock_data';
+import { mavenVirtualRegistry } from '../../../mock_data';
 
 jest.mock('ee/packages_and_registries/virtual_registries/sentry_utils');
 
@@ -40,7 +40,7 @@ describe('MavenRegistryDetailsApp', () => {
 
   const mockError = new Error('GraphQL error');
 
-  const findMavenRegistryDetails = () => wrapper.findComponent(MavenRegistryDetails);
+  const findUpstreamsList = () => wrapper.findComponent(MavenRegistryDetailsUpstreamsList);
   const findMavenRegistryDetailsHeader = () => wrapper.findComponent(MavenRegistryDetailsHeader);
   const findUpstreamRegistryItems = () => wrapper.findAllComponents(RegistryUpstreamItem);
 
@@ -60,7 +60,7 @@ describe('MavenRegistryDetailsApp', () => {
     it('sets loading prop on initial load', () => {
       createComponent();
 
-      expect(findMavenRegistryDetails().props('loading')).toBe(true);
+      expect(findUpstreamsList().props('loading')).toBe(true);
     });
 
     it('does not set loading prop on subsequent loads', async () => {
@@ -70,9 +70,9 @@ describe('MavenRegistryDetailsApp', () => {
 
       await waitForPromises();
 
-      await findMavenRegistryDetails().vm.$emit('upstreamCreated');
+      await findUpstreamsList().vm.$emit('upstreamCreated');
 
-      expect(findMavenRegistryDetails().props('loading')).toBe(false);
+      expect(findUpstreamsList().props('loading')).toBe(false);
     });
   });
 
@@ -94,7 +94,7 @@ describe('MavenRegistryDetailsApp', () => {
 
       await waitForPromises();
 
-      expect(findMavenRegistryDetails().props('loading')).toBe(false);
+      expect(findUpstreamsList().props('loading')).toBe(false);
       expect(findUpstreamRegistryItems()).toHaveLength(upstreamsLength);
     });
   });
@@ -106,7 +106,7 @@ describe('MavenRegistryDetailsApp', () => {
       });
 
       await waitForPromises();
-      await findMavenRegistryDetails().vm.$emit('upstreamCreated');
+      await findUpstreamsList().vm.$emit('upstreamCreated');
 
       expect(mavenRegistryUpstreamsHandler).toHaveBeenCalledTimes(2);
     });
@@ -121,7 +121,7 @@ describe('MavenRegistryDetailsApp', () => {
       await waitForPromises();
 
       expect(captureException).toHaveBeenCalledWith({
-        component: 'RegistryDetailsRoot',
+        component: 'MavenRegistryDetailsApp',
         error: mockError,
       });
     });
@@ -134,7 +134,7 @@ describe('MavenRegistryDetailsApp', () => {
       });
 
       await waitForPromises();
-      await findMavenRegistryDetails().vm.$emit('upstreamReordered');
+      await findUpstreamsList().vm.$emit('upstreamReordered');
 
       expect(mavenRegistryUpstreamsHandler).toHaveBeenCalledTimes(2);
     });
@@ -147,7 +147,7 @@ describe('MavenRegistryDetailsApp', () => {
       });
 
       await waitForPromises();
-      await findMavenRegistryDetails().vm.$emit('upstreamRemoved');
+      await findUpstreamsList().vm.$emit('upstreamRemoved');
 
       expect(mavenRegistryUpstreamsHandler).toHaveBeenCalledTimes(2);
     });
@@ -160,7 +160,7 @@ describe('MavenRegistryDetailsApp', () => {
       });
 
       await waitForPromises();
-      await findMavenRegistryDetails().vm.$emit('upstreamLinked');
+      await findUpstreamsList().vm.$emit('upstreamLinked');
 
       expect(mavenRegistryUpstreamsHandler).toHaveBeenCalledTimes(2);
     });

@@ -2,7 +2,7 @@ import { GlButton, GlDisclosureDropdown, GlDisclosureDropdownItem } from '@gitla
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import TitleArea from '~/vue_shared/components/registry/title_area.vue';
 import MetadataItem from '~/vue_shared/components/registry/metadata_item.vue';
-import MavenRegistryDetailsHeader from 'ee/packages_and_registries/virtual_registries/components/maven_registry_details_header.vue';
+import MavenRegistryDetailsHeader from 'ee/packages_and_registries/virtual_registries/components/maven/registries/show/header.vue';
 
 describe('MavenRegistryDetailsHeader', () => {
   let wrapper;
