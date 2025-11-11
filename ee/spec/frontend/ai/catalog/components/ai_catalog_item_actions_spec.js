@@ -38,8 +38,7 @@ describe('AiCatalogItemActions', () => {
 
   const findEditButton = () => wrapper.findByTestId('edit-button');
   const findAddToProjectButton = () => wrapper.findByTestId('add-to-project-button');
-  const findAddToProjectOrGroupButton = () =>
-    wrapper.findByTestId('add-to-project-or-group-button');
+  const findAddToGroupButton = () => wrapper.findByTestId('add-to-group-button');
   const findMoreActions = () => wrapper.findByTestId('more-actions-dropdown');
   const findDuplicateButton = () => wrapper.findByTestId('duplicate-button');
   const findDeleteButton = () => wrapper.findByTestId('delete-button');
@@ -97,8 +96,8 @@ describe('AiCatalogItemActions', () => {
         }
       });
 
-      it(`${addGroupBtn ? 'renders' : 'does not render'} "Enable in project or group" button`, () => {
-        expect(findAddToProjectOrGroupButton().exists()).toBe(addGroupBtn);
+      it(`${addGroupBtn ? 'renders' : 'does not render'} "Enable in group" button`, () => {
+        expect(findAddToGroupButton().exists()).toBe(addGroupBtn);
       });
 
       it(`${addBtn ? 'renders' : 'does not render'} "Enable in project" button`, () => {

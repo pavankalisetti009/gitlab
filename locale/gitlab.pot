@@ -2675,13 +2675,10 @@ msgstr ""
 msgid "AICatalog|Enable flow in project"
 msgstr ""
 
-msgid "AICatalog|Enable in"
+msgid "AICatalog|Enable in group"
 msgstr ""
 
 msgid "AICatalog|Enable in project"
-msgstr ""
-
-msgid "AICatalog|Enable in project or group"
 msgstr ""
 
 msgid "AICatalog|Explore AI Catalog agents"
@@ -53995,6 +53992,9 @@ msgid "RapidDiffs|Failed to expand lines, please try again."
 msgstr ""
 
 msgid "RapidDiffs|Failed to load changes, please try again."
+msgstr ""
+
+msgid "RapidDiffs|Failed to load discussions. Try to reload the page."
 msgstr ""
 
 msgid "RapidDiffs|File browser"

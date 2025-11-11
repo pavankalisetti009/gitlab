@@ -3,14 +3,15 @@
 - project_id = Gitlab::Llm::TanukiBot.project_id
 - root_namespace_id = Gitlab::Llm::TanukiBot.root_namespace_id(user: current_user)
 - chat_title = ::Ai::AmazonQ.enabled? ? s_('GitLab Duo Chat with Amazon Q') : s_('GitLab Duo Chat')
-- group = @group
-- group ||= current_user.user_preference.get_default_duo_namespace unless @project
-- is_agentic_available = Gitlab::Llm::TanukiBot.agentic_mode_available?(user: current_user, project: @project, group: group)
+- duo_scope_hash = Gitlab::Llm::TanukiBot.duo_scope_hash(current_user, @project, @group, controller_name)
+- project = duo_scope_hash[:project]
+- group = duo_scope_hash[:namespace]
+- is_agentic_available = Gitlab::Llm::TanukiBot.agentic_mode_available?(user: current_user, project: project, group: group)
 - user_model_selection_enabled = Gitlab::Llm::TanukiBot.user_model_selection_enabled?(user: current_user)
 
 - if is_agentic_available
   #js-duo-agentic-chat-app{ data: {
-    project_id: @project&.to_global_id,
+    project_id: project&.to_global_id,
     namespace_id: group&.to_global_id,
     root_namespace_id: root_namespace_id,
     resource_id: resource_id,
