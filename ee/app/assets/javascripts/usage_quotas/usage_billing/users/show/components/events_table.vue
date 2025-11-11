@@ -3,7 +3,7 @@ import { GlLink, GlTableLite } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import UserDate from '~/vue_shared/components/user_date.vue';
 import { SHORT_DATE_FORMAT_WITH_TIME } from '~/vue_shared/constants';
-import { numberToMetricPrefix } from '~/lib/utils/number_utils';
+import { formatNumber } from '../../../utils';
 
 export default {
   name: 'EventsTable',
@@ -29,7 +29,7 @@ export default {
     },
   },
   methods: {
-    numberToMetricPrefix,
+    formatNumber,
   },
   SHORT_DATE_FORMAT_WITH_TIME,
 };
@@ -48,7 +48,7 @@ export default {
       </template>
 
       <template #cell(creditsUsed)="{ item }">
-        {{ numberToMetricPrefix(item.creditsUsed || 0) }}
+        {{ formatNumber(item.creditsUsed || 0) }}
       </template>
     </gl-table-lite>
   </div>

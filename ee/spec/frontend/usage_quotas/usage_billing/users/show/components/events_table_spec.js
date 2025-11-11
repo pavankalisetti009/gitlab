@@ -24,7 +24,7 @@ describe('EventsTable', () => {
         name: 'gitlab-org/gitlabhq',
         webUrl: 'https://gitlab.com/gitlab-org/gitlabhq',
       },
-      creditsUsed: 75,
+      creditsUsed: 75.3333,
     },
     {
       timestamp: '2023-12-01T08:45:00Z',
@@ -103,8 +103,15 @@ describe('EventsTable', () => {
         });
       });
 
-      it('renders credits amount', () => {
-        expect(firstRowCells.at(3).text()).toBe('1.5k');
+      describe('credits used cell', () => {
+        it('renders credits amount', () => {
+          expect(firstRowCells.at(3).text()).toBe('1.5k');
+        });
+
+        it('formats fractional number', () => {
+          const secondRowCells = findTableRows().at(1).findAll('td');
+          expect(secondRowCells.at(3).text()).toBe('75.3');
+        });
       });
     });
   });

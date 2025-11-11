@@ -5,10 +5,9 @@ import { logError } from '~/lib/logger';
 import { captureException } from '~/sentry/sentry_browser_wrapper';
 import { SHORT_DATE_FORMAT_WITH_TIME } from '~/vue_shared/constants';
 import HumanTimeframe from '~/vue_shared/components/datetime/human_timeframe.vue';
-import { numberToMetricPrefix } from '~/lib/utils/number_utils';
 import { PAGE_SIZE } from '../../../constants';
 import getUserSubscriptionUsageQuery from '../graphql/get_user_subscription_usage.query.graphql';
-import { fillUsageValues } from '../../../utils';
+import { fillUsageValues, formatNumber } from '../../../utils';
 import EventsTable from './events_table.vue';
 
 export default {
@@ -89,7 +88,7 @@ export default {
     },
   },
   methods: {
-    numberToMetricPrefix,
+    formatNumber,
     onNextPage(item) {
       this.pagination = {
         first: PAGE_SIZE,
@@ -161,9 +160,9 @@ export default {
             class="gl-heading-scale-600 gl-mb-3 gl-font-bold"
             data-testid="included-credits-card-value"
           >
-            {{ numberToMetricPrefix(usage.creditsUsed) }}
+            {{ formatNumber(usage.creditsUsed) }}
             <span class="gl-heading-scale-600 gl-font-bold gl-text-subtle">
-              / {{ numberToMetricPrefix(usage.totalCredits) }}
+              / {{ formatNumber(usage.totalCredits) }}
             </span>
           </div>
           <div class="gl-font-bold">
@@ -185,7 +184,7 @@ export default {
           body-class="gl-p-5"
         >
           <div class="gl-heading-scale-600 gl-mb-3 gl-font-bold">
-            {{ numberToMetricPrefix(totalCreditsUsed) }}
+            {{ formatNumber(totalCreditsUsed) }}
           </div>
           <div class="gl-font-bold">
             <p class="gl-my-0">{{ s__('UsageBillingUserDetails|total credits used') }}</p>

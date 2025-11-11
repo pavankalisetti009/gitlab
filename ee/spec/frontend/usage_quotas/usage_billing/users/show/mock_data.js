@@ -45,7 +45,7 @@ export const mockDataWithPool = {
                       name: 'group-app',
                       webUrl: 'http://localhost:3000/group-app',
                     },
-                    creditsUsed: 62000,
+                    creditsUsed: 6.24,
                   },
                   {
                     timestamp: '2025-01-21T16:40:22Z',
@@ -78,7 +78,7 @@ export const mockDataWithPool = {
                       name: 'frontend-app',
                       webUrl: 'http://localhost:3000/frontend-app',
                     },
-                    creditsUsed: 82,
+                    creditsUsed: 82.33333,
                   },
                   {
                     timestamp: '2025-01-21T16:37:33Z',
