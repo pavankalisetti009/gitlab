@@ -49,9 +49,6 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     it { is_expected.to have_many(:dast_sites) }
     it { is_expected.to have_many(:audit_events).dependent(false) }
     it { is_expected.to have_many(:protected_environments) }
-    it { is_expected.to have_many(:approvers).dependent(:destroy) }
-    it { is_expected.to have_many(:approver_users).through(:approvers) }
-    it { is_expected.to have_many(:approver_groups).dependent(:destroy) }
     it { is_expected.to have_many(:upstream_project_subscriptions) }
     it { is_expected.to have_many(:upstream_projects) }
     it { is_expected.to have_many(:downstream_project_subscriptions) }
@@ -3785,22 +3782,6 @@ RSpec.describe Project, feature_category: :groups_and_projects do
 
         expect(projects).to contain_exactly(project1, project2)
       end
-    end
-  end
-
-  describe '#approver_group_ids=' do
-    let(:project) { create(:project) }
-
-    it 'create approver_groups' do
-      group = create :group
-      group1 = create :group
-
-      project = create :project
-
-      project.approver_group_ids = "#{group.id}, #{group1.id}"
-      project.save!
-
-      expect(project.approver_groups.map(&:group)).to match_array([group, group1])
     end
   end
 

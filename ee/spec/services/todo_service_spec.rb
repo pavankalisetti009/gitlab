@@ -205,9 +205,6 @@ RSpec.describe TodoService, feature_category: :notifications do
       project.add_developer(approver_3)
       project.add_developer(code_owner)
 
-      create(:approver, user: approver_1, target: project)
-      create(:approver, user: approver_2, target: project)
-
       allow(merge_request).to receive(:code_owners).and_return([code_owner])
 
       service.new_merge_request(merge_request, author)

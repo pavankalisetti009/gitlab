@@ -419,10 +419,7 @@ RSpec.describe MergeRequests::Refresh::ApprovalService, feature_category: :code_
 
         project.add_developer(approver)
 
-        perform_enqueued_jobs do
-          merge_request.update!(approver_ids: [approver].map(&:id).join(','))
-          forked_merge_request.update!(approver_ids: [approver].map(&:id).join(','))
-        end
+        perform_enqueued_jobs
       end
 
       def approval_todos(merge_request)

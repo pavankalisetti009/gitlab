@@ -188,58 +188,6 @@ RSpec.describe MergeRequests::UpdateService, :mailer, feature_category: :code_re
       end
     end
 
-    context 'when the approvers change' do
-      let(:existing_approver) { create(:user) }
-      let(:removed_approver) { create(:user) }
-      let(:new_approver) { create(:user) }
-
-      before do
-        project.add_developer(existing_approver)
-        project.add_developer(removed_approver)
-        project.add_developer(new_approver)
-
-        perform_enqueued_jobs do
-          update_merge_request(approver_ids: [existing_approver, removed_approver].map(&:id).join(','))
-        end
-
-        ActionMailer::Base.deliveries.clear
-      end
-
-      context 'when an approver is added and an approver is removed' do
-        before do
-          perform_enqueued_jobs do
-            update_merge_request(approver_ids: [new_approver, existing_approver].map(&:id).join(','))
-          end
-        end
-
-        it 'does not send emails to the new approvers' do
-          should_not_email(new_approver)
-        end
-
-        it 'does not send emails to the existing approvers' do
-          should_not_email(existing_approver)
-        end
-
-        it 'does not send emails to the removed approvers' do
-          should_not_email(removed_approver)
-        end
-      end
-
-      context 'when the approvers are set to the same values' do
-        it 'does not create any todos' do
-          expect do
-            update_merge_request(approver_ids: [existing_approver, removed_approver].map(&:id).join(','))
-          end.not_to change { Todo.count }
-        end
-
-        it 'does not send any emails' do
-          expect do
-            update_merge_request(approver_ids: [existing_approver, removed_approver].map(&:id).join(','))
-          end.not_to change { ActionMailer::Base.deliveries.count }
-        end
-      end
-    end
-
     context 'updating target_branch' do
       let(:existing_approver) { create(:user) }
       let(:new_approver) { create(:user) }
@@ -248,9 +196,7 @@ RSpec.describe MergeRequests::UpdateService, :mailer, feature_category: :code_re
         project.add_developer(existing_approver)
         project.add_developer(new_approver)
 
-        perform_enqueued_jobs do
-          update_merge_request(approver_ids: "#{existing_approver.id},#{new_approver.id}")
-        end
+        perform_enqueued_jobs
 
         merge_request.approvals.create!(user_id: existing_approver.id, patch_id_sha: merge_request.current_patch_id_sha)
       end

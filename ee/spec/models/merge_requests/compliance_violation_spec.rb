@@ -23,7 +23,6 @@ RSpec.describe MergeRequests::ComplianceViolation, type: :model, feature_categor
     context "when a violation exists with the same reason and user for a merge request" do
       before do
         allow(merge_request).to receive(:committers).and_return([user])
-        merge_request.approver_users << user
       end
 
       it "does not create a duplicate merge request violation", :aggregate_failures do

@@ -52,20 +52,6 @@ module EE
       super
     end
 
-    def approver_ids=(value)
-      ::Gitlab::Utils.ensure_array_from_string(value).each do |user_id|
-        next if author && user_id == author.id
-
-        approvers.find_or_initialize_by(user_id: user_id, target_id: id)
-      end
-    end
-
-    def approver_group_ids=(value)
-      ::Gitlab::Utils.ensure_array_from_string(value).each do |group_id|
-        approver_groups.find_or_initialize_by(group_id: group_id, target_id: id)
-      end
-    end
-
     override :approved?
     def approved?
       return super unless approval_feature_available?
