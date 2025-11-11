@@ -109,7 +109,7 @@ module EE
 
       condition(:instance_model_configuration_allowed, scope: :global) do
         ::License.feature_available?(:self_hosted_models) &&
-          ::GitlabSubscriptions::AddOnPurchase.for_self_managed.for_duo_enterprise.active.exists?
+          ::GitlabSubscriptions::AddOnPurchase.for_self_managed.for_duo_core_pro_or_enterprise.active.exists?
       end
 
       condition(:self_hosted_models_allowed, scope: :global) do
@@ -120,7 +120,7 @@ module EE
 
         next false if ::Ai::AmazonQ.connected?
 
-        true
+        ::GitlabSubscriptions::AddOnPurchase.for_self_managed.for_duo_enterprise.active.exists?
       end
 
       condition(:instance_model_selection_available) do
