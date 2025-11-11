@@ -1,8 +1,8 @@
 import showToast from '~/vue_shared/plugins/global_toast';
-import MavenRegistryDetailsApp from './maven_registry_details_app.vue';
+import UpstreamsList from './upstreams_list.vue';
 
 export default {
-  component: MavenRegistryDetailsApp,
+  component: UpstreamsList,
   title: 'ee/virtual_registries/maven_registry_details',
   argTypes: {
     reorderUpstream: {
@@ -56,7 +56,7 @@ export default {
 };
 
 const Template = (_, { argTypes }) => ({
-  components: { MavenRegistryDetailsApp },
+  components: { UpstreamsList },
   props: Object.keys(argTypes),
   provide: {
     glAbilities: {
@@ -68,17 +68,12 @@ const Template = (_, { argTypes }) => ({
     showUpstreamPathTemplate: 'path/:id',
   },
   template:
-    '<maven-registry-details-app v-bind="$props" @upstreamCreated="upstreamCreated" @testUpstream="testUpstream" @upstreamReordered="upstreamReordered" @editUpstream="editUpstream" @deleteUpstream="deleteUpstream" />',
+    '<upstreams-list v-bind="$props" @upstreamCreated="upstreamCreated" @testUpstream="testUpstream" @upstreamReordered="upstreamReordered" @editUpstream="editUpstream" @deleteUpstream="deleteUpstream" />',
 });
 
 export const Default = Template.bind({});
 Default.args = {
-  registry: {
-    id: 1,
-    name: 'Registry title',
-    description: 'Registry description',
-    storageSize: '0 B',
-  },
+  registryId: 1,
   upstreams: [
     {
       id: 1,
@@ -125,7 +120,7 @@ Default.parameters = {
   docs: {
     description: {
       story:
-        'Note that the `MavenRegistryDetailsApp` component delegates CRUD actions like creating, testing, reordering, and deleting upstreams and clearing cache to its parent via emits.',
+        'Note that the `UpstreamsList` component delegates CRUD actions like creating, testing, reordering, and deleting upstreams and clearing cache to its parent via emits.',
     },
   },
 };

@@ -1,6 +1,6 @@
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import RegistryUpstreamItem from 'ee/packages_and_registries/virtual_registries/components/registry_upstream_item.vue';
-import { mavenVirtualRegistry } from '../mock_data';
+import RegistryUpstreamItem from 'ee/packages_and_registries/virtual_registries/components/maven/registries/show/registry_upstream_item.vue';
+import { mavenVirtualRegistry } from '../../../../mock_data';
 
 const defaultProps = {
   index: 1,

@@ -4,7 +4,7 @@ import { debounce } from 'lodash';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 import { getMavenUpstreamRegistriesList } from 'ee/api/virtual_registries_api';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
-import { captureException } from '../sentry_utils';
+import { captureException } from '../../../../sentry_utils';
 
 const PAGE_SIZE = 20;
 

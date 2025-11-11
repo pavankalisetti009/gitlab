@@ -7,7 +7,6 @@ query getVirtualRegistryUpstreams($id: VirtualRegistriesPackagesMavenRegistryID!
       metadataCacheValidityHours
       name
       description
-      username
       url
       registryUpstreams {
         id

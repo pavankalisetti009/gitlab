@@ -6,8 +6,8 @@ import {
 } from 'ee/api/virtual_registries_api';
 import { createAlert } from '~/alert';
 import { setUrlParams, updateHistory, queryToObject } from '~/lib/utils/url_utility';
-import UpstreamDetailsHeader from 'ee/packages_and_registries/virtual_registries/components/upstream_details_header.vue';
-import CacheEntriesTable from 'ee/packages_and_registries/virtual_registries/components/cache_entries_table.vue';
+import UpstreamDetailsHeader from 'ee/packages_and_registries/virtual_registries/components/maven/upstreams/show/header.vue';
+import CacheEntriesTable from 'ee/packages_and_registries/virtual_registries/components/maven/upstreams/show/cache_entries_table.vue';
 import { s__ } from '~/locale';
 
 const PAGE_SIZE = 20;

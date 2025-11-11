@@ -12,14 +12,14 @@ import {
   updateMavenRegistryUpstreamPosition,
   removeMavenUpstreamRegistryAssociation,
 } from 'ee/api/virtual_registries_api';
-import createUpstreamRegistryMutation from '../graphql/mutations/create_maven_upstream.mutation.graphql';
-import { convertToMavenRegistryGraphQLId } from '../utils';
-import { captureException } from '../sentry_utils';
+import createUpstreamRegistryMutation from '../../../../graphql/mutations/create_maven_upstream.mutation.graphql';
+import { convertToMavenRegistryGraphQLId } from '../../../../utils';
+import { captureException } from '../../../../sentry_utils';
+import RegistryUpstreamForm from '../../shared/registry_upstream_form.vue';
+import UpstreamClearCacheModal from '../../shared/upstream_clear_cache_modal.vue';
 import AddUpstream from './add_upstream.vue';
 import LinkUpstreamForm from './link_upstream_form.vue';
 import RegistryUpstreamItem from './registry_upstream_item.vue';
-import RegistryUpstreamForm from './maven/shared/registry_upstream_form.vue';
-import UpstreamClearCacheModal from './maven/shared/upstream_clear_cache_modal.vue';
 
 const FORM_TYPES = {
   CREATE: 'create',
@@ -29,7 +29,7 @@ const FORM_TYPES = {
 const MAX_UPSTREAMS_PER_REGISTRY = 20;
 
 export default {
-  name: 'MavenRegistryDetailsApp',
+  name: 'MavenRegistryDetailsUpstreamsList',
   components: {
     GlAlert,
     GlBadge,
