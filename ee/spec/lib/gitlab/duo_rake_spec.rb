@@ -92,4 +92,22 @@ RSpec.describe 'gitlab:duo tasks', :gitlab_duo, :silence_stdout, feature_categor
       task.invoke(output_file)
     end
   end
+
+  describe 'duo:onboard_dap' do
+    let(:task_name) { 'gitlab:duo:onboard_dap' }
+
+    subject(:task) { Rake::Task[task_name] }
+
+    before do
+      Rake::Task.define_task(:gitlab_environment)
+      allow(Gitlab::Duo::Developments::DapOnboarding).to receive(:execute)
+      task.reenable
+    end
+
+    it 'calls DapOnboarding.execute' do
+      expect(Gitlab::Duo::Developments::DapOnboarding).to receive(:execute)
+
+      task.invoke
+    end
+  end
 end

@@ -97,7 +97,7 @@ describe('AiCatalogAgentsDuplicate', () => {
 
       expect(createAiCatalogAgentMock).toHaveBeenCalledTimes(1);
       expect(createAiCatalogAgentMock).toHaveBeenCalledWith({
-        input: { ...formValues, addToProjectWhenCreated: true },
+        input: formValues,
       });
     });
 

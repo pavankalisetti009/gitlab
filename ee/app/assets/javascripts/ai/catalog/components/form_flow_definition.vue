@@ -76,6 +76,7 @@ export default {
           size="small"
         />
         <gl-button
+          v-if="!readOnly"
           v-gl-tooltip
           variant="default"
           category="secondary"
