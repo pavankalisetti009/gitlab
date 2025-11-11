@@ -216,28 +216,21 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::SecretsCheck, feature_categ
                 stub_application_setting(secret_detection_service_url: 'https://example.com')
               end
 
-              context 'when instance is Dedicated (temporarily not using SDS)' do
+              context 'when instance is Dedicated (not using SDS)' do
                 before do
                   stub_application_setting(gitlab_dedicated_instance: true)
                 end
 
                 it_behaves_like 'skips sending requests to the SDS' do
                   let(:is_dedicated) { true }
+                  let(:sds_ff_enabled) { true }
                 end
               end
 
               context 'when instance is GitLab.com' do
-                it_behaves_like 'sends requests to the SDS' do
-                  before do
-                    stub_feature_flags(use_secret_detection_service: true)
-                  end
-                end
+                it_behaves_like 'sends requests to the SDS'
 
                 context 'when SDS returns a valid response' do
-                  before do
-                    stub_feature_flags(use_secret_detection_service: true)
-                  end
-
                   let(:sds_response) do
                     ::Gitlab::SecretDetection::GRPC::ScanResponse.new(
                       status: ::Gitlab::SecretDetection::GRPC::ScanResponse::Status::STATUS_NOT_FOUND,
@@ -264,10 +257,6 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::SecretsCheck, feature_categ
                 end
 
                 context 'when SDS fails and returns nil' do
-                  before do
-                    stub_feature_flags(use_secret_detection_service: true)
-                  end
-
                   it 'logs error and falls back to gem' do
                     expect_next_instance_of(::Gitlab::SecretDetection::GRPC::Client) do |instance|
                       expect(instance).to(
@@ -292,6 +281,7 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::SecretsCheck, feature_categ
             context 'when SDS should not be called (Self-Managed)' do
               it_behaves_like 'skips sending requests to the SDS' do
                 let(:saas_feature_enabled) { false }
+                let(:sds_ff_enabled) { true }
               end
             end
 
