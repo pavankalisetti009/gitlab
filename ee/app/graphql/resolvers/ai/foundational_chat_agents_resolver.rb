@@ -21,6 +21,8 @@ module Resolvers
         filtered_agents << 'duo_planner' if Feature.disabled?(:foundational_duo_planner, current_user)
         filtered_agents << 'security_analyst_agent' if Feature.disabled?(:foundational_security_agent, current_user)
 
+        filtered_agents << 'analytics_agent' if Feature.disabled?(:foundational_analytics_agent, current_user)
+
         ::Ai::FoundationalChatAgent.all
           .select { |agent| filtered_agents.exclude?(agent.reference) }
           .sort_by(&:id)

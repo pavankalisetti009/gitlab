@@ -1,0 +1,9 @@
+---
+name: foundational_analytics_agent
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/578342
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/210291
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/580109
+milestone: '18.6'
+group: group::platform insights
+type: wip
+default_enabled: false
