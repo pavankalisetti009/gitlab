@@ -119,7 +119,6 @@ module Ai
             user: @current_user
           ),
           DUO_WORKFLOW_SERVICE_TOKEN: @params[:workflow_service_token],
-
           DUO_WORKFLOW_SERVICE_REALM: ::CloudConnector.gitlab_realm,
           DUO_WORKFLOW_GLOBAL_USER_ID: Gitlab::GlobalAnonymousId.user_id(@current_user),
           DUO_WORKFLOW_INSTANCE_ID: Gitlab::GlobalAnonymousId.instance_id,
@@ -134,6 +133,7 @@ module Ai
           DUO_WORKFLOW_PROJECT_ID: project.id,
           DUO_WORKFLOW_NAMESPACE_ID: project.root_namespace.id,
           GITLAB_BASE_URL: Gitlab.config.gitlab.url,
+          GITLAB_PROJECT_PATH: project.full_path,
           AGENT_PLATFORM_GITLAB_VERSION: Gitlab.version_info.to_s,
           AGENT_PLATFORM_MODEL_METADATA: agent_platform_model_metadata_json
         )
@@ -160,7 +160,7 @@ module Ai
       def set_up_executor_commands
         if Feature.enabled?(:ai_dap_use_headless_node_executor, @current_user)
           [
-            %(npx -y @gitlab/duo-cli@^8.31.0 run --existing-session-id #{@workflow.id})
+            %(npx -y @gitlab/duo-cli@8.36.1 run --existing-session-id #{@workflow.id} --connection-type grpc)
           ]
         else
           [
