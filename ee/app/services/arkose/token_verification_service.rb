@@ -24,10 +24,12 @@ module Arkose
 
       if response.invalid_token?
         logger.log_invalid_token
+        AntiAbuse::IdentityVerification::ArkoseFailOpen.track_token_verification_result(success: false)
         return error
       end
 
       RecordUserDataService.new(response: response, user: user).execute if user
+      AntiAbuse::IdentityVerification::ArkoseFailOpen.track_token_verification_result(success: true)
 
       if response.allowlisted? || response.challenge_solved?
         logger.log_successful_token_verification
@@ -36,11 +38,10 @@ module Arkose
 
       logger.log_unsolved_challenge
       error
-
     rescue StandardError => error
       Gitlab::ErrorTracking.track_exception(error)
-
       logger.log_failed_token_verification
+      AntiAbuse::IdentityVerification::ArkoseFailOpen.track_token_verification_result(success: false)
 
       # Allow user to proceed when we can't verify the token for some
       # unexpected reason (e.g. ArkoseLabs is down)
