@@ -1,7 +1,7 @@
 <script>
 import { GlCard, GlLink, GlSprintf } from '@gitlab/ui';
 import { PROMO_URL } from '~/constants';
-import { numberToMetricPrefix } from '~/lib/utils/number_utils';
+import { formatNumber } from '../utils';
 
 export default {
   name: 'CurrentOverageUsageCard',
@@ -22,7 +22,7 @@ export default {
     },
   },
   methods: {
-    numberToMetricPrefix,
+    formatNumber,
   },
   pricingLink: `${PROMO_URL}/pricing`,
 };
@@ -38,7 +38,7 @@ export default {
 
     <div class="gl-mb-3">
       <span class="gl-heading-scale-600 gl-font-bold" data-testid="overage-credits-used">
-        {{ numberToMetricPrefix(overageCreditsUsed) }}
+        {{ formatNumber(overageCreditsUsed) }}
       </span>
     </div>
 
@@ -65,7 +65,7 @@ export default {
     >
       <span>{{ s__('UsageBilling|Monthly Waiver credits used this period') }}</span>
       <span data-testid="monthly-waiver-credits-used">
-        {{ numberToMetricPrefix(monthlyWaiverCreditsUsed) }}
+        {{ formatNumber(monthlyWaiverCreditsUsed) }}
       </span>
     </div>
   </gl-card>

@@ -3,11 +3,10 @@ import { GlAlert, GlKeysetPagination, GlTable, GlProgressBar } from '@gitlab/ui'
 import UserAvatarLink from '~/vue_shared/components/user_avatar/user_avatar_link.vue';
 import { s__, __ } from '~/locale';
 import { logError } from '~/lib/logger';
-import { numberToMetricPrefix } from '~/lib/utils/number_utils';
 import { captureException } from '~/sentry/sentry_browser_wrapper';
 import getSubscriptionUsersUsageQuery from '../graphql/get_subscription_users_usage.query.graphql';
 import { PAGE_SIZE } from '../constants';
-import { fillUsageValues } from '../utils';
+import { fillUsageValues, formatNumber } from '../utils';
 
 /**
  * @typedef {object} Usage
@@ -78,7 +77,7 @@ export default {
     },
   },
   methods: {
-    numberToMetricPrefix,
+    formatNumber,
     /** @param { Usage } usage */
     getTotalCreditsUsed(usage) {
       return (
@@ -89,8 +88,8 @@ export default {
       );
     },
     formatIncludedCredits(includedCreditsUsed, includedTotalCredits) {
-      const used = numberToMetricPrefix(includedCreditsUsed);
-      const total = numberToMetricPrefix(includedTotalCredits);
+      const used = formatNumber(includedCreditsUsed);
+      const total = formatNumber(includedTotalCredits);
       return `${used} / ${total}`;
     },
     getUserUsagePath(username) {
@@ -202,7 +201,7 @@ export default {
 
       <template #cell(totalCreditsUsed)="{ item: user }">
         <div class="gl-font-weight-semibold gl-flex gl-min-h-7 gl-items-center gl-text-gray-900">
-          {{ numberToMetricPrefix(getTotalCreditsUsed(user.usage)) }}
+          {{ formatNumber(getTotalCreditsUsed(user.usage)) }}
         </div>
       </template>
 

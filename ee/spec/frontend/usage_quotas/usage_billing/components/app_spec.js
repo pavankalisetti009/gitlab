@@ -221,7 +221,7 @@ describe('UsageBillingApp', () => {
 
     it('renders current-usage-card', () => {
       expect(wrapper.findComponent(CurrentUsageCard).props()).toMatchObject({
-        poolCreditsUsed: 50,
+        poolCreditsUsed: 50.333,
         poolTotalCredits: 300,
         monthEndDate: '2025-10-31',
       });

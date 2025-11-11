@@ -1,8 +1,8 @@
 <script>
 import { GlCard, GlProgressBar, GlSprintf } from '@gitlab/ui';
-import { numberToMetricPrefix } from '~/lib/utils/number_utils';
 import { getDayDifference } from '~/lib/utils/datetime/date_calculation_utility';
 import { newDate } from '~/lib/utils/datetime_utility';
+import { formatNumber } from '../utils';
 
 export default {
   name: 'CurrentUsageCard',
@@ -42,7 +42,7 @@ export default {
     },
   },
   methods: {
-    numberToMetricPrefix,
+    formatNumber,
   },
   totalCreditsSeparator: '/ ',
 };
@@ -67,14 +67,14 @@ export default {
     </div>
     <div class="gl-mb-3 gl-flex">
       <span class="gl-heading-scale-600 gl-mr-3 gl-font-bold" data-testid="total-credits-used">
-        {{ numberToMetricPrefix(poolCreditsUsed) }}
+        {{ formatNumber(poolCreditsUsed) }}
       </span>
       <span
         class="gl-heading-scale-600 gl-font-bold gl-text-subtle"
         data-testid="pool-total-credits"
       >
         {{ $options.totalCreditsSeparator }}
-        {{ numberToMetricPrefix(poolTotalCredits) }}
+        {{ formatNumber(poolTotalCredits) }}
       </span>
     </div>
     <gl-progress-bar :value="usagePercentage" variant="primary" class="gl-mb-3 gl-mt-1 gl-h-3" />
@@ -97,9 +97,7 @@ export default {
               )
             "
           >
-            <template #poolCreditsRemaining>{{
-              numberToMetricPrefix(poolCreditsRemaining)
-            }}</template>
+            <template #poolCreditsRemaining>{{ formatNumber(poolCreditsRemaining) }}</template>
           </gl-sprintf>
         </span>
       </div>

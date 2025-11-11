@@ -1,7 +1,7 @@
 <script>
 import { GlCard, GlSprintf, GlLink } from '@gitlab/ui';
-import { numberToMetricPrefix } from '~/lib/utils/number_utils';
 import { PROMO_URL } from 'jh_else_ce/lib/utils/url_utility';
+import { formatNumber } from '../utils';
 
 export default {
   name: 'MonthlyWaiverCard',
@@ -26,7 +26,7 @@ export default {
     },
   },
   methods: {
-    numberToMetricPrefix,
+    formatNumber,
   },
   pricingLink: `${PROMO_URL}/pricing`,
 };
@@ -40,7 +40,7 @@ export default {
       {{ s__('UsageBilling|Used in this billing period') }}
     </div>
     <div class="gl-heading-scale-600 gl-mb-3" data-testid="monthly-waiver-credits-used">
-      {{ numberToMetricPrefix(monthlyWaiverCreditsUsed) }}
+      {{ formatNumber(monthlyWaiverCreditsUsed) }}
     </div>
     <div class="gl-border-t gl-mb-3 gl-pt-3 gl-text-sm gl-text-subtle">
       <gl-sprintf
@@ -58,7 +58,7 @@ export default {
     <div class="gl-border-t gl-flex gl-flex-row gl-justify-between gl-pt-3 gl-text-subtle">
       <span>{{ s__('UsageBilling|Monthly Waiver credits remaining') }}</span>
       <span data-testid="monthly-waiver-remaining-credits">
-        {{ numberToMetricPrefix(creditsRemaining) }}
+        {{ formatNumber(creditsRemaining) }}
       </span>
     </div>
   </gl-card>
