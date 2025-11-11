@@ -19,11 +19,6 @@ const filterProcessors = [
     transform: (filter) => filter.split(' '),
   },
   {
-    key: TOKEN_TYPES.MODEL,
-    condition: (filter) => filter.type === TOKEN_TYPES.MODEL,
-    transform: (filter) => filter.value,
-  },
-  {
     key: TOKEN_TYPES.CHECKSUM_STATE,
     condition: (filter) => filter.type === TOKEN_TYPES.CHECKSUM_STATE,
     transform: (filter) => filter.value.data,
@@ -31,16 +26,11 @@ const filterProcessors = [
 ];
 
 export const processFilters = (filters) => {
-  // URL Structure: /admin/data_management?${FILTERS}
-  const url = new URL(window.location.href);
-
-  const query = filters.reduce((acc, filter) => {
+  return filters.reduce((acc, filter) => {
     const matchingProcessor = filterProcessors.find(({ condition }) => condition(filter));
     if (!matchingProcessor) return acc;
 
     const { key, transform } = matchingProcessor;
     return { ...acc, [key]: transform(filter) };
   }, {});
-
-  return { query, url };
 };

@@ -112,5 +112,13 @@ module EE
 
       "0" + file_size
     end
+
+    def admin_data_management_app_data(model_class)
+      {
+        model_types: model_types.to_json,
+        initial_model_name: ::Gitlab::Geo::ModelMapper.convert_to_name(model_class),
+        base_path: admin_data_management_path
+      }
+    end
   end
 end

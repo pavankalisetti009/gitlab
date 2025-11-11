@@ -34,12 +34,14 @@ describe('AdminDataManagementApp', () => {
 
   const [defaultModel, otherModel] = MOCK_MODEL_TYPES;
   const defaultModelTitle = defaultModel.titlePlural.toLowerCase();
+  const defaultBasePath = 'admin/data_management';
 
   const createComponent = () => {
     wrapper = shallowMount(AdminDataManagementApp, {
       propsData: {
         modelTypes: MOCK_MODEL_TYPES,
         initialModelName: defaultModel.name,
+        basePath: defaultBasePath,
       },
     });
   };
@@ -220,11 +222,9 @@ describe('AdminDataManagementApp', () => {
       findGeoListTopBar().vm.$emit('listboxChange', otherModel.name);
     });
 
-    it('calls updateHistory with correct params', () => {
-      const params = new URLSearchParams({ [TOKEN_TYPES.MODEL]: otherModel.name });
-
+    it('calls updateHistory with correct url', () => {
       expect(updateHistory).toHaveBeenCalledWith({
-        url: `${TEST_HOST}/?${params.toString()}`,
+        url: `${TEST_HOST}/${defaultBasePath}/${otherModel.name}`,
       });
     });
 
@@ -245,14 +245,13 @@ describe('AdminDataManagementApp', () => {
 
     it('calls updateHistory with correct params', () => {
       const params = new URLSearchParams([
-        [TOKEN_TYPES.MODEL, defaultModel.name],
         [`${TOKEN_TYPES.IDENTIFIERS}[]`, '123'],
         [`${TOKEN_TYPES.IDENTIFIERS}[]`, '456'],
         [TOKEN_TYPES.CHECKSUM_STATE, 'failed'],
       ]);
 
       expect(updateHistory).toHaveBeenCalledWith({
-        url: `${TEST_HOST}/?${params.toString()}`,
+        url: `${TEST_HOST}/${defaultBasePath}/${defaultModel.name}?${params.toString()}`,
       });
     });
 
