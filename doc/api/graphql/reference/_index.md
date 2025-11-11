@@ -33375,6 +33375,7 @@ four standard [pagination arguments](#pagination-arguments):
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="groupworkitemtypesname"></a>`name` | [`IssueType`](#issuetype) | Filter work item types by the given name. |
+| <a id="groupworkitemtypesonlyavailable"></a>`onlyAvailable` {{< icon name="warning-solid" >}} | [`Boolean`](#boolean) | **Introduced** in GitLab 18.6. **Status**: Experiment. When true, returns only the available work item types for the current user. |
 
 ##### `Group.workItems`
 
@@ -38025,6 +38026,7 @@ four standard [pagination arguments](#pagination-arguments):
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="namespaceworkitemtypesname"></a>`name` | [`IssueType`](#issuetype) | Filter work item types by the given name. |
+| <a id="namespaceworkitemtypesonlyavailable"></a>`onlyAvailable` {{< icon name="warning-solid" >}} | [`Boolean`](#boolean) | **Introduced** in GitLab 18.6. **Status**: Experiment. When true, returns only the available work item types for the current user. |
 
 ##### `Namespace.workItems`
 
@@ -42403,6 +42405,7 @@ four standard [pagination arguments](#pagination-arguments):
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="projectworkitemtypesname"></a>`name` | [`IssueType`](#issuetype) | Filter work item types by the given name. |
+| <a id="projectworkitemtypesonlyavailable"></a>`onlyAvailable` {{< icon name="warning-solid" >}} | [`Boolean`](#boolean) | **Introduced** in GitLab 18.6. **Status**: Experiment. When true, returns only the available work item types for the current user. |
 
 ##### `Project.workItems`
 
