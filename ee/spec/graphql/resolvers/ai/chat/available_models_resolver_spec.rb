@@ -206,13 +206,10 @@ RSpec.describe Resolvers::Ai::Chat::AvailableModelsResolver, :saas, feature_cate
           end
         end
 
-        it "returns nil for pinned model when service fails" do
+        it "returns empty result" do
           expect(resolver).to eq({
-            default_model: { name: "Claude Sonnet 4.0 - Anthropic", ref: "claude_sonnet_4_20250514" },
-            selectable_models: [
-              { name: "Claude Sonnet 4.0 - Anthropic", ref: "claude_sonnet_4_20250514" },
-              { name: "Claude Sonnet 3.7 - Anthropic", ref: "claude_sonnet_3_7_20250219" }
-            ],
+            default_model: nil,
+            selectable_models: [],
             pinned_model: nil
           })
         end
