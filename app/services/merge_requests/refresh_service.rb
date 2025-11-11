@@ -373,59 +373,6 @@ module MergeRequests
         )
       end
     end
-
-    def measure_duration(operation_name)
-      return yield unless log_refresh_service_duration_enabled?
-
-      start_time = current_monotonic_time
-      result = yield
-      duration = (current_monotonic_time - start_time).round(Gitlab::InstrumentationHelper::DURATION_PRECISION)
-      duration_statistics[:"#{operation_name}_duration_s"] = duration
-      result
-    end
-
-    def measure_duration_aggregated(operation_name)
-      return yield unless log_refresh_service_duration_enabled?
-
-      start_time = current_monotonic_time
-      result = yield
-      duration = (current_monotonic_time - start_time).round(Gitlab::InstrumentationHelper::DURATION_PRECISION)
-
-      key = :"#{operation_name}_duration_s"
-      duration_statistics[key] ||= 0
-      duration_statistics[key] += duration
-
-      result
-    end
-
-    def duration_statistics
-      @duration_statisic ||= {}
-    end
-
-    def log_refresh_service_duration_enabled?
-      strong_memoize(:log_refresh_service_duration_enabled) do
-        Feature.enabled?(:log_refresh_service_duration, @current_user)
-      end
-    end
-
-    def log_hash_metadata_on_done(hash)
-      total_duration = hash.values.sum
-      hash_with_total = hash.merge(refresh_service_total_duration_s: total_duration)
-
-      # Delegate to worker if available, otherwise log directly
-      if defined?(super)
-        super(hash_with_total)
-      else
-        Gitlab::AppJsonLogger.info(
-          event: 'merge_requests_refresh_service',
-          **hash_with_total
-        )
-      end
-    end
-
-    def current_monotonic_time
-      Gitlab::Metrics::System.monotonic_time
-    end
   end
 end
 
