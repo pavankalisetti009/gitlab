@@ -144,13 +144,11 @@ RSpec.describe ProductAnalyticsHelpers, feature_category: :product_analytics do
   describe '#product_analytics_dashboards' do
     it 'returns nothing if product analytics disabled' do
       stub_licensed_features(product_analytics: false)
-      stub_feature_flags(dora_metrics_dashboard: false)
       expect(project.product_analytics_dashboards(user)).to be_empty
     end
 
     it 'returns nothing if feature flag is disabled' do
       stub_licensed_features(product_analytics: false)
-      stub_feature_flags(dora_metrics_dashboard: false)
       stub_feature_flags(product_analytics_features: false)
       stub_feature_flags(duo_usage_dashboard: false)
       expect(project.product_analytics_dashboards(user)).to be_empty

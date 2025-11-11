@@ -14,10 +14,7 @@ RSpec.describe 'Group CI/CD Analytics', :js, feature_category: :value_stream_man
   let_it_be(:releases) { create_list(:release, 5, project: project_3) }
   let_it_be(:unrelated_release) { create(:release, project: unrelated_project) }
 
-  vsa_metrics_selector = '[data-testid="vsa-metrics"]'
-
   before do
-    stub_feature_flags(dora_metrics_dashboard: false)
     stub_licensed_features(group_ci_cd_analytics: true, dora4_analytics: true, cycle_analytics_for_groups: true)
     group.add_reporter(user)
     sign_in(user)
@@ -30,72 +27,6 @@ RSpec.describe 'Group CI/CD Analytics', :js, feature_category: :value_stream_man
       expect(page).to have_content 'Releases All time'
 
       expect(page).to have_content '15 Releases 67% Projects with releases'
-    end
-  end
-
-  shared_examples 'a DORA chart' do |selector, title|
-    it "render the #{title} charts", :aggregate_failures do
-      click_link(title)
-
-      within selector do
-        expect(page).to have_content title
-
-        expect(page).to have_content 'Last week Last month Last 90 days'
-
-        expect(page).to have_content 'Date range:'
-      end
-    end
-  end
-
-  describe 'DORA charts' do
-    it_behaves_like 'a DORA chart', '[data-testid="deployment-frequency-charts"]', 'Deployment frequency'
-
-    it_behaves_like 'a DORA chart', '[data-testid="lead-time-charts"]', 'Lead time'
-
-    it_behaves_like 'a DORA chart', '[data-testid="time-to-restore-service-charts"]', 'Time to restore service'
-
-    it_behaves_like 'a DORA chart', '[data-testid="change-failure-rate-charts"]', 'Change failure rate'
-  end
-
-  describe 'VSA Metrics' do
-    it 'does not render lead time metrics' do
-      click_link 'Lead time'
-
-      expect(page).not_to have_selector vsa_metrics_selector
-    end
-
-    it 'renders time to restore service metrics' do
-      click_link 'Time to restore service'
-
-      expect(page).to have_selector vsa_metrics_selector
-
-      within vsa_metrics_selector do
-        expect(page).to have_content 'Time to restore service'
-      end
-    end
-
-    it 'renders change failure rate metrics' do
-      click_link 'Change failure rate'
-
-      expect(page).to have_selector vsa_metrics_selector
-
-      within vsa_metrics_selector do
-        expect(page).to have_content 'Change failure rate'
-      end
-    end
-
-    it 'renders deployment frequency metrics' do
-      click_link 'Deployment frequency'
-
-      expect(page).to have_selector vsa_metrics_selector
-
-      within vsa_metrics_selector do
-        expect(page).to have_selector '#deploys'
-        expect(page).to have_content 'Deploys'
-
-        expect(page).to have_selector '#deployment_frequency'
-        expect(page).to have_content 'Deployment frequency'
-      end
     end
   end
 end

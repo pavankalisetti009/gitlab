@@ -49,8 +49,7 @@ module ProductAnalyticsHelpers
   end
 
   def dora_metrics_dashboard_enabled?(user)
-    Feature.enabled?(:dora_metrics_dashboard, root_ancestor) &&
-      Ability.allowed?(user, :read_dora4_analytics, self)
+    Ability.allowed?(user, :read_dora4_analytics, self)
   end
 
   def contributions_dashboard_available?
@@ -58,7 +57,8 @@ module ProductAnalyticsHelpers
   end
 
   def merge_request_analytics_enabled?(user)
-    is_a?(Project) && Ability.allowed?(user, :read_project_merge_request_analytics, self)
+    is_a?(Project) &&
+      Ability.allowed?(user, :read_project_merge_request_analytics, self)
   end
 
   def duo_usage_dashboard_enabled?(user)
