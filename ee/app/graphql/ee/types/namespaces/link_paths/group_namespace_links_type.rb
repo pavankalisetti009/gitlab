@@ -5,6 +5,8 @@ module EE
     module Namespaces
       module LinkPaths
         module GroupNamespaceLinksType
+          extend ActiveSupport::Concern
+
           def epics_list
             url_helpers.group_epics_path(group)
           end
