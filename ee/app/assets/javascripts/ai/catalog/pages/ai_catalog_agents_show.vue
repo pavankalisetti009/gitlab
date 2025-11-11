@@ -7,9 +7,8 @@ import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { TRACK_EVENT_TYPE_AGENT, TRACK_EVENT_VIEW_AI_CATALOG_ITEM } from 'ee/ai/catalog/constants';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import { prerequisitesError } from '../utils';
-import AiCatalogItemMetadata from '../components/ai_catalog_item_metadata.vue';
-import AiCatalogAgentDetails from '../components/ai_catalog_agent_details.vue';
 import AiCatalogItemActions from '../components/ai_catalog_item_actions.vue';
+import AiCatalogItemView from '../components/ai_catalog_item_view.vue';
 import createAiCatalogItemConsumer from '../graphql/mutations/create_ai_catalog_item_consumer.mutation.graphql';
 import deleteAiCatalogAgentMutation from '../graphql/mutations/delete_ai_catalog_agent.mutation.graphql';
 import {
@@ -23,9 +22,8 @@ export default {
   components: {
     ErrorsAlert,
     PageHeading,
-    AiCatalogItemMetadata,
-    AiCatalogAgentDetails,
     AiCatalogItemActions,
+    AiCatalogItemView,
   },
   mixins: [glFeatureFlagsMixin(), InternalEvents.mixin()],
   inject: {
@@ -157,9 +155,6 @@ export default {
         />
       </template>
     </page-heading>
-    <div class="gl-flex gl-flex-col gl-gap-5 @md:gl-flex-row">
-      <ai-catalog-agent-details :item="aiCatalogAgent" class="gl-grow" />
-      <ai-catalog-item-metadata :item="aiCatalogAgent" class="gl-shrink-0" />
-    </div>
+    <ai-catalog-item-view :item="aiCatalogAgent" />
   </div>
 </template>
