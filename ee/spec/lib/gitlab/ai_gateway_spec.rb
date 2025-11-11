@@ -358,6 +358,8 @@ RSpec.describe Gitlab::AiGateway, feature_category: :system_access do
     let(:unit_primitive_name) { :test_feature_up }
     let(:enabled_feature_flags) { %w[feature_a feature_b] }
     let(:ai_headers) { { 'x-gitlab-feature-enabled-by-namespace-ids' => '' } }
+    let(:standard_context) { instance_double(::Gitlab::Tracking::StandardContext) }
+    let(:is_team_member) { false }
 
     subject(:public_headers) do
       described_class.public_headers(user: user, ai_feature_name: ai_feature, unit_primitive_name: unit_primitive_name)
@@ -378,6 +380,9 @@ RSpec.describe Gitlab::AiGateway, feature_category: :system_access do
       allow(::CloudConnector).to receive(:ai_headers)
         .with(user, namespace_ids: namespace_ids)
         .and_return(ai_headers)
+
+      allow(::Gitlab::Tracking::StandardContext).to receive(:new).and_return(standard_context)
+      allow(standard_context).to receive(:gitlab_team_member?).with(user&.id).and_return(is_team_member)
     end
 
     it 'returns headers with enabled feature flags and AI headers' do
@@ -385,7 +390,8 @@ RSpec.describe Gitlab::AiGateway, feature_category: :system_access do
         'x-gitlab-feature-enablement-type' => enablement_type,
         'x-gitlab-feature-enabled-by-namespace-ids' => '',
         'x-gitlab-enabled-feature-flags' => 'feature_a,feature_b',
-        'x-gitlab-enabled-instance-verbose-ai-logs' => 'false'
+        'x-gitlab-enabled-instance-verbose-ai-logs' => 'false',
+        'X-Gitlab-Is-Team-Member' => 'false'
       }
 
       expect(public_headers).to eq(expected_headers)
@@ -399,7 +405,8 @@ RSpec.describe Gitlab::AiGateway, feature_category: :system_access do
           'x-gitlab-feature-enablement-type' => enablement_type,
           'x-gitlab-feature-enabled-by-namespace-ids' => '',
           'x-gitlab-enabled-feature-flags' => '',
-          'x-gitlab-enabled-instance-verbose-ai-logs' => 'false'
+          'x-gitlab-enabled-instance-verbose-ai-logs' => 'false',
+          'X-Gitlab-Is-Team-Member' => 'false'
         }
 
         expect(public_headers).to eq(expected_headers)
@@ -414,7 +421,24 @@ RSpec.describe Gitlab::AiGateway, feature_category: :system_access do
           'x-gitlab-feature-enablement-type' => enablement_type,
           'x-gitlab-feature-enabled-by-namespace-ids' => '',
           'x-gitlab-enabled-feature-flags' => 'feature_a,feature_b',
-          'x-gitlab-enabled-instance-verbose-ai-logs' => 'false'
+          'x-gitlab-enabled-instance-verbose-ai-logs' => 'false',
+          'X-Gitlab-Is-Team-Member' => 'false'
+        }
+
+        expect(public_headers).to eq(expected_headers)
+      end
+    end
+
+    context 'when user is a GitLab team member' do
+      let(:is_team_member) { true }
+
+      it 'returns headers with team member set to true' do
+        expected_headers = {
+          'x-gitlab-feature-enablement-type' => enablement_type,
+          'x-gitlab-feature-enabled-by-namespace-ids' => '',
+          'x-gitlab-enabled-feature-flags' => 'feature_a,feature_b',
+          'x-gitlab-enabled-instance-verbose-ai-logs' => 'false',
+          'X-Gitlab-Is-Team-Member' => 'true'
         }
 
         expect(public_headers).to eq(expected_headers)

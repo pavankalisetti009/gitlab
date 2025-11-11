@@ -98,8 +98,6 @@ module Gitlab
         'X-Gitlab-Authentication-Type' => 'oidc',
         'Authorization' => "Bearer #{cloud_connector_token(unit_primitive_name, user)}",
         'Content-Type' => 'application/json',
-        'X-Gitlab-Is-Team-Member' =>
-          (::Gitlab::Tracking::StandardContext.new.gitlab_team_member?(user&.id) || false).to_s,
         'X-Request-ID' => Labkit::Correlation::CorrelationId.current_or_new_id,
         # Forward the request time to the model gateway to calculate latency
         'X-Gitlab-Rails-Send-Start' => Time.now.to_f.to_s
@@ -138,7 +136,9 @@ module Gitlab
       {
         'x-gitlab-feature-enablement-type' => enablement_type,
         'x-gitlab-enabled-feature-flags' => enabled_feature_flags.uniq.join(','),
-        'x-gitlab-enabled-instance-verbose-ai-logs' => enabled_instance_verbose_ai_logs
+        'x-gitlab-enabled-instance-verbose-ai-logs' => enabled_instance_verbose_ai_logs,
+        'X-Gitlab-Is-Team-Member' =>
+          (::Gitlab::Tracking::StandardContext.new.gitlab_team_member?(user&.id) || false).to_s
       }.merge(::CloudConnector.ai_headers(user, namespace_ids: namespace_ids))
     end
 
