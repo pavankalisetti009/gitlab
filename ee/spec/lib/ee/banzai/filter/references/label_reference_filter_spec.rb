@@ -6,9 +6,9 @@ RSpec.describe Banzai::Filter::References::LabelReferenceFilter do
   include FilterSpecHelper
 
   let(:project) { create(:project, :public, name: 'sample-project') }
-  let(:label) { create(:label, name: 'label', project: project) }
-  let(:scoped_description) { 'xss <script>alert("scriptAlert");</script> &<a>lt;svg id=&quot;svgId&quot;&gt;&lt;/svg&gt;' }
-  let(:scoped_label) { create(:label, name: 'key::value', project: project, description: scoped_description) }
+  let(:description) { 'xss <script>alert("scriptAlert");</script> &<a>lt;svg id=&quot;svgId&quot;&gt;&lt;/svg&gt;' }
+  let(:label) { create(:label, name: 'label', project: project, description: description) }
+  let(:scoped_label) { create(:label, name: 'key::value', project: project, description: description) }
 
   context 'with scoped labels enabled' do
     before do
@@ -27,17 +27,10 @@ RSpec.describe Banzai::Filter::References::LabelReferenceFilter do
       end
 
       it "doesn't unescape HTML in the label's title" do
-        # Note that this is *flawed*: "&gt;" from the input *text* is becoming "&gt;" in the output *HTML*.
-        # No XSS is possible but we are still corrupting the user's input, albeit less badly than before.
-        # FIXME.
-        expect(doc.at_css('.gl-label-scoped a').attr('title')).to include('&amp;lt;svg id="svgId"&gt;')
-
-        # The below is what *should* be the case, but LabelsHelper.label_tooltip_title is (incorrectly) sanitising
-        # instead of safely escaping the output, and LabelsHelper.render_label_text is using html_escape_once (!!),
-        # which is always bad!
-        #
-        # expect(doc.at_css('.gl-label-scoped a').attr('title')).to include('xss &lt;script&gt;alert')
-        # expect(doc.at_css('.gl-label-scoped a').attr('title')).to include('&amp;&lt;a&gt;lt;svg id=&amp;quot;svgId&amp;quot;&amp;gt;')
+        # The `title` attribute's DOM value is interpreted as HTML in EE, so we expect it contains the
+        # description escaped.
+        expect(doc.at_css('.gl-label-scoped a').attr('title')).to include('xss &lt;script&gt;alert')
+        expect(doc.at_css('.gl-label-scoped a').attr('title')).to include('&amp;&lt;a&gt;lt;svg id=&amp;quot;svgId&amp;quot;&amp;gt;')
       end
     end
 
@@ -48,8 +41,13 @@ RSpec.describe Banzai::Filter::References::LabelReferenceFilter do
         expect(doc.css('.gl-label .gl-label-text').map(&:text)).to eq([label.name])
       end
 
-      it 'renders non-HTML tooltips' do
-        expect(doc.at_css('.gl-label a').attr('data-html')).to be_nil
+      it 'renders HTML tooltips' do
+        expect(doc.at_css('.gl-label a').attr('data-html')).to eq('true')
+      end
+
+      it "doesn't unescape HTML in the label's title" do
+        expect(doc.at_css('.gl-label a').attr('title')).to include('xss &lt;script&gt;alert')
+        expect(doc.at_css('.gl-label a').attr('title')).to include('&amp;&lt;a&gt;lt;svg id=&amp;quot;svgId&amp;quot;&amp;gt;')
       end
     end
   end
