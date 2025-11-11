@@ -202,10 +202,11 @@ export default {
       multithreadedView: DUO_CHAT_VIEWS.CHAT,
       aiConversationThreads: [],
       contextPresets: [],
+      isWaitingOnPrompt: false,
     };
   },
   computed: {
-    ...mapState(['loading', 'messages']),
+    ...mapState(['messages']),
     shouldSkipQueries() {
       // In embedded mode, always load; in drawer mode, only load when shown
       return this.isEmbedded ? false : !this.duoChatGlobalState.isShown;
@@ -297,10 +298,10 @@ export default {
     // Clear messages when component is destroyed to prevent state leaking
     // between mode switches (classic <-> agentic)
     this.setMessages([]);
-    this.setLoading(false);
+    this.isWaitingOnPrompt = false;
   },
   methods: {
-    ...mapActions(['addDuoChatMessage', 'setMessages', 'setLoading']),
+    ...mapActions(['addDuoChatMessage', 'setMessages']),
     switchMode(mode) {
       if (mode === 'active') {
         this.loadActiveThread();
@@ -365,14 +366,14 @@ export default {
       this.activeThread = undefined;
       this.setMessages([]);
       this.multithreadedView = DUO_CHAT_VIEWS.CHAT;
-      this.setLoading(false);
+      this.isWaitingOnPrompt = false;
       this.completedRequestId = null;
       this.cancelledRequestIds = [];
     },
     onChatCancel() {
       // pushing last requestId of messages to canceled Request Id's
       this.cancelledRequestIds.push(this.messages[this.messages.length - 1].requestId);
-      this.setLoading(false);
+      this.isWaitingOnPrompt = false;
     },
     onMessageReceived(aiCompletionResponse) {
       this.addDuoChatMessage(aiCompletionResponse);
@@ -414,8 +415,8 @@ export default {
       this.completedRequestId = null;
       this.isResponseTracked = false;
 
-      if (!this.loading) {
-        this.setLoading(true);
+      if (!this.isWaitingOnPrompt) {
+        this.isWaitingOnPrompt = true;
       }
 
       const mutationName = this.rootNamespaceId ? chatWithNamespaceMutation : chatMutation;
@@ -463,7 +464,7 @@ export default {
             content: question,
           });
           this.onError(err);
-          this.setLoading(false);
+          this.isWaitingOnPrompt = false;
         });
     },
     onChatClose() {
@@ -575,7 +576,7 @@ export default {
         :dimensions="dimensions"
         :messages="messages"
         :error="error"
-        :is-loading="loading"
+        :is-loading="isWaitingOnPrompt"
         :should-render-resizable="!isEmbedded"
         :show-studio-header="isEmbedded"
         :show-header="!isEmbedded"

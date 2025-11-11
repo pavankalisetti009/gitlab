@@ -264,10 +264,11 @@ export default {
       userId: this.activeTabData?.props?.userId,
       // I believe this is a default chat agent name
       duoChatTitle: s__('DuoAgenticChat|Duo Agent'),
+      isWaitingOnPrompt: false,
     };
   },
   computed: {
-    ...mapState(['loading', 'messages']),
+    ...mapState(['messages']),
     dimensions() {
       if (!this.isEmbedded) {
         return {};
@@ -293,7 +294,6 @@ export default {
           availableModels: this.availableModels,
           pinnedModel: this.pinnedModel,
           selectedModel: this.selectedModel,
-          isLoading: this.$apollo.queries.availableModels?.loading,
         });
       },
       set(val) {
@@ -435,10 +435,10 @@ export default {
     // Clear messages when component is destroyed to prevent state leaking
     // between mode switches (classic <-> agentic)
     this.setMessages([]);
-    this.setLoading(false);
+    this.isWaitingOnPrompt = false;
   },
   methods: {
-    ...mapActions(['addDuoChatMessage', 'setMessages', 'setLoading']),
+    ...mapActions(['addDuoChatMessage', 'setMessages']),
     async loadDuoNextIfNeeded() {
       if (this.glFeatures.duoUiNext) {
         try {
@@ -470,7 +470,7 @@ export default {
     },
 
     cleanupState(resetWorkflowId = true) {
-      this.setLoading(false);
+      this.isWaitingOnPrompt = false;
       this.cleanupSocket();
       if (resetWorkflowId) {
         this.workflowId = null;
@@ -526,11 +526,11 @@ export default {
           this.onError(new Error('Unable to connect to workflow service. Please try again.'));
         },
         onClose: () => {
-          // Only set loading to false if we're not waiting for tool approval
+          // Only set waiting on prompt to false if we're not waiting for tool approval
           // and we don't have a pending workflow that will create a new connection
           if (this.workflowStatus !== DUO_WORKFLOW_STATUS_TOOL_CALL_APPROVAL_REQUIRED) {
             this.isProcessingToolApproval = false;
-            this.setLoading(false);
+            this.isWaitingOnPrompt = false;
           }
         },
       });
@@ -554,7 +554,7 @@ export default {
         }
 
         if (this.workflowStatus === DUO_WORKFLOW_STATUS_INPUT_REQUIRED) {
-          this.setLoading(false);
+          this.isWaitingOnPrompt = false;
         }
       } catch (err) {
         this.onError(err);
@@ -567,8 +567,8 @@ export default {
         return;
       }
 
-      if (!this.loading) {
-        this.setLoading(true);
+      if (!this.isWaitingOnPrompt) {
+        this.isWaitingOnPrompt = true;
       }
 
       if (!this.workflowId) {
@@ -588,7 +588,7 @@ export default {
           }
         } catch (err) {
           this.onError(err);
-          this.setLoading(false);
+          this.isWaitingOnPrompt = false;
           return;
         }
       }
@@ -662,7 +662,6 @@ export default {
     },
     async loadActiveThread() {
       try {
-        this.setLoading(true);
         const data = await ApolloUtils.fetchWorkflowEvents(this.$apollo, this.activeThread);
 
         const parsedWorkflowData = WorkflowUtils.parseWorkflowData(data);
@@ -683,8 +682,6 @@ export default {
         this.$emit('change-title', parsedWorkflowData?.workflowGoal);
       } catch (err) {
         this.onError(err);
-      } finally {
-        this.setLoading(false);
       }
     },
     onBackToList() {
@@ -777,7 +774,7 @@ export default {
       ref="chat"
       :title="dynamicTitle"
       :messages="messages.length > 0 ? messages : chatMessageHistory"
-      :is-loading="loading"
+      :is-loading="isWaitingOnPrompt"
       :predefined-prompts="predefinedPrompts"
       :thread-list="agenticWorkflows"
       :multi-threaded-view="multithreadedView"
