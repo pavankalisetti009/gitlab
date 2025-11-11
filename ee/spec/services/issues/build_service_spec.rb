@@ -70,7 +70,7 @@ RSpec.describe Issues::BuildService, feature_category: :team_planning do
     end
 
     context 'as developer' do
-      WorkItems::Type.allowed_types_for_issues do |issue_type|
+      ::WorkItems::TypesFilter.allowed_types_for_issues do |issue_type|
         it "sets the issue type to #{issue_type}" do
           issue = build_issue(issue_type: issue_type)
 

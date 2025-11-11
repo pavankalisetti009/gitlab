@@ -11,11 +11,16 @@ RSpec.describe Types::Namespaces::LinkPaths::ProjectNamespaceLinksType, feature_
   subject(:type) { described_class.resolve_type(namespace, {}) }
 
   it_behaves_like "expose all link paths fields for the namespace" do
-    let(:type_specific_fields) { %i[newWorkItemEmailAddress releasesPath projectImportJiraPath rssPath calendarPath] }
+    let(:type_specific_fields) do
+      %i[newWorkItemEmailAddress releasesPath projectImportJiraPath rssPath calendarPath exportCsvPath]
+    end
   end
 
   shared_examples "project namespace link paths values" do
     it_behaves_like "common namespace link paths values"
+    it_behaves_like "new trial path behavior" do
+      let(:expected_namespace_id) { group.id }
+    end
 
     where(:field, :value) do
       :epics_list | lazy { "/groups/#{group.full_path}/-/epics" }

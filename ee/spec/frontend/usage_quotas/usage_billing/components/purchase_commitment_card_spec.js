@@ -9,7 +9,8 @@ describe('PurchaseCommitmentCard', () => {
   const createComponent = (propsData = {}) => {
     wrapper = shallowMountExtended(PurchaseCommitmentCard, {
       propsData: {
-        purchaseCreditsPath: 'url-to-purchase-monthly-commitment',
+        purchaseCreditsPath: '/purchase-monthly-commitment',
+        hasCommitment: false,
         ...propsData,
       },
       stubs: {
@@ -18,7 +19,41 @@ describe('PurchaseCommitmentCard', () => {
     });
   };
 
-  describe('rendering elements', () => {
+  beforeEach(() => {
+    window.gon = {
+      subscriptions_url: 'https://customers.gitlab.com/',
+    };
+  });
+
+  describe('purchase credits link', () => {
+    describe('when purchaseCreditsPath is a relative URL', () => {
+      beforeEach(() => {
+        createComponent();
+      });
+
+      it('will be prepended with the subscription portal url', () => {
+        const button = wrapper.findComponent(GlButton);
+        expect(button.props('href')).toBe(
+          'https://customers.gitlab.com/purchase-monthly-commitment',
+        );
+      });
+    });
+
+    describe('when purchaseCreditsPath is an absolute URL', () => {
+      beforeEach(() => {
+        createComponent({
+          purchaseCreditsPath: 'https://example.com/purchase-monthly-commitment',
+        });
+      });
+
+      it('will be used as is', () => {
+        const button = wrapper.findComponent(GlButton);
+        expect(button.props('href')).toBe('https://example.com/purchase-monthly-commitment');
+      });
+    });
+  });
+
+  describe('with monthly commmittment', () => {
     beforeEach(() => {
       createComponent({ hasCommitment: true });
     });
@@ -36,12 +71,12 @@ describe('PurchaseCommitmentCard', () => {
     it('renders call to action button', () => {
       const button = wrapper.findComponent(GlButton);
 
-      expect(button.props('href')).toBe('url-to-purchase-monthly-commitment');
+      expect(button.props('href')).toBe('https://customers.gitlab.com/purchase-monthly-commitment');
       expect(button.text()).toBe('Increase monthly commitment');
     });
   });
 
-  describe('no commitment state', () => {
+  describe('without monthly commitment', () => {
     beforeEach(() => {
       createComponent({ hasCommitment: false });
     });
@@ -59,7 +94,7 @@ describe('PurchaseCommitmentCard', () => {
     it('renders call to action button', () => {
       const button = wrapper.findComponent(GlButton);
 
-      expect(button.props('href')).toBe('url-to-purchase-monthly-commitment');
+      expect(button.props('href')).toBe('https://customers.gitlab.com/purchase-monthly-commitment');
       expect(button.text()).toBe('Purchase monthly commitment');
     });
   });

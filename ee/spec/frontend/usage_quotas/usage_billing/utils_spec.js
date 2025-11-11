@@ -1,4 +1,4 @@
-import { fillUsageValues } from 'ee/usage_quotas/usage_billing/utils';
+import { fillUsageValues, formatNumber } from 'ee/usage_quotas/usage_billing/utils';
 
 describe('fillUsageValues', () => {
   describe('with complete usage data', () => {
@@ -118,6 +118,28 @@ describe('fillUsageValues', () => {
         monthlyWaiverCreditsUsed: 0,
         overageCreditsUsed: 0,
       });
+    });
+  });
+});
+
+describe('formatNumber', () => {
+  describe.each`
+    number       | expected
+    ${0}         | ${'0'}
+    ${0.5}       | ${'0.5'}
+    ${0.9001}    | ${'0.9'}
+    ${0.9999}    | ${'1.0'}
+    ${42}        | ${'42'}
+    ${999.2}     | ${'999.2'}
+    ${1000}      | ${'1k'}
+    ${1500}      | ${'1.5k'}
+    ${NaN}       | ${'NaN'}
+    ${null}      | ${'null'}
+    ${undefined} | ${'undefined'}
+  `('$number', ({ number, expected }) => {
+    it(`formats the number correctly`, () => {
+      const result = formatNumber(number);
+      expect(result).toEqual(expected);
     });
   });
 });

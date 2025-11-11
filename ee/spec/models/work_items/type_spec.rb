@@ -97,31 +97,6 @@ RSpec.describe WorkItems::Type, feature_category: :team_planning do
     end
   end
 
-  describe '.allowed_group_level_types' do
-    let_it_be(:root_group) { create(:group) }
-    let_it_be(:group) { create(:group, parent: root_group) }
-
-    subject { described_class.allowed_group_level_types(group) }
-
-    context 'when epic license is available' do
-      before do
-        stub_licensed_features(epics: true)
-      end
-
-      it 'returns supported types at group level' do
-        is_expected.to contain_exactly('epic')
-      end
-    end
-
-    context 'when epic license is not available' do
-      before do
-        stub_licensed_features(epics: false)
-      end
-
-      it { is_expected.to be_empty }
-    end
-  end
-
   describe '#supported_conversion_types' do
     let_it_be(:root_group) { create(:group) }
     let_it_be(:resource_parent) { create(:project, group: root_group) }

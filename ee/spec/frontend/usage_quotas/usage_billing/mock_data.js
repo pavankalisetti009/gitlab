@@ -118,9 +118,9 @@ export const mockUsersUsageDataWithPool = {
               usage: {
                 creditsUsed: 500,
                 totalCredits: 500,
-                monthlyCommitmentCreditsUsed: 20,
+                monthlyCommitmentCreditsUsed: 70,
                 monthlyWaiverCreditsUsed: 70,
-                overageCreditsUsed: 50,
+                overageCreditsUsed: 50.333,
               },
             },
             {
@@ -159,7 +159,7 @@ export const mockUsersUsageDataWithPool = {
                 totalCredits: 2000,
                 monthlyCommitmentCreditsUsed: 100,
                 monthlyWaiverCreditsUsed: 0,
-                overageCreditsUsed: 42,
+                overageCreditsUsed: 42.111,
               },
             },
             {
@@ -170,7 +170,7 @@ export const mockUsersUsageDataWithPool = {
               usage: {
                 creditsUsed: 500,
                 totalCredits: 500,
-                monthlyCommitmentCreditsUsed: 75,
+                monthlyCommitmentCreditsUsed: 75.888,
                 monthlyWaiverCreditsUsed: 0,
                 overageCreditsUsed: 15,
               },
@@ -645,7 +645,7 @@ export const usageDataWithCommitment = {
       endDate: '2025-10-31',
       purchaseCreditsPath: '/purchase-credits-path',
       monthlyCommitment: {
-        creditsUsed: 50,
+        creditsUsed: 50.333,
         totalCredits: 300,
       },
       overage: {
@@ -692,7 +692,7 @@ export const usageDataWithCommitmentWithMonthlyWaiver = {
       },
       monthlyWaiver: {
         totalCredits: 1000,
-        creditsUsed: 200,
+        creditsUsed: 200.125,
       },
       overage: {
         isAllowed: false,

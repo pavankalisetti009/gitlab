@@ -211,7 +211,6 @@ export default {
       </ul>
     </section>
     <create-comment-form
-      v-if="glFeatures.complianceViolationCommentsUi"
       :violation-id="graphqlViolationId"
       :numeric-violation-id="violationId"
       @error="handleCommentError"

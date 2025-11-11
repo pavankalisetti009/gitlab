@@ -273,13 +273,11 @@ export default {
           />
           <div v-if="!isEditing" class="note-actions gl-ml-auto gl-flex gl-gap-2">
             <emoji-picker
-              v-if="glFeatures.complianceViolationCommentsUi"
               toggle-class="add-reaction-button btn-default-tertiary"
               data-testid="note-emoji-button"
               @click="setAwardEmoji"
             />
             <gl-button
-              v-if="glFeatures.complianceViolationCommentsUi"
               v-gl-tooltip
               icon="pencil"
               category="tertiary"

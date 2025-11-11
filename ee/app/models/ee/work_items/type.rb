@@ -30,19 +30,6 @@ module EE
         epic: { parent: { epic: :subepics }, child: { epic: :subepics, issue: :epics } }
       }.freeze
 
-      class_methods do
-        extend ::Gitlab::Utils::Override
-
-        override :allowed_group_level_types
-        def allowed_group_level_types(resource_parent)
-          allowed_types = super
-
-          allowed_types << 'epic' if resource_parent.licensed_feature_available?(:epics)
-
-          allowed_types
-        end
-      end
-
       override :widgets
       def widgets(resource_parent)
         strong_memoize_with(:widgets, resource_parent) do

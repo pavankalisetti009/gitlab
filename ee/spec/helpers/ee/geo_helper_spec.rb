@@ -137,4 +137,18 @@ RSpec.describe EE::GeoHelper, feature_category: :geo_replication do
       expect(model_types).to include(*expected_model_types)
     end
   end
+
+  describe '#admin_data_management_app_data' do
+    let(:model) { Project }
+
+    it 'returns expected json' do
+      expect(helper.admin_data_management_app_data(model)).to eq(
+        {
+          model_types: helper.model_types.to_json,
+          initial_model_name: 'project',
+          base_path: '/admin/data_management'
+        }
+      )
+    end
+  end
 end

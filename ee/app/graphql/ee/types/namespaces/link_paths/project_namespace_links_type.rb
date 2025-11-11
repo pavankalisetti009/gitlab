@@ -5,6 +5,9 @@ module EE
     module Namespaces
       module LinkPaths
         module ProjectNamespaceLinksType
+          extend ActiveSupport::Concern
+          extend ::Gitlab::Utils::Override
+
           def epics_list
             return unless group
 

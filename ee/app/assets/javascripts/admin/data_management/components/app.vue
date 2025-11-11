@@ -31,6 +31,10 @@ export default {
     };
   },
   props: {
+    basePath: {
+      type: String,
+      required: true,
+    },
     initialModelName: {
       type: String,
       required: true,
@@ -106,7 +110,7 @@ export default {
       this.isLoading = true;
 
       try {
-        const { query } = processFilters(this.filters);
+        const query = processFilters(this.filters);
         const { data } = await getModels(this.activeModelName, query);
 
         this.modelItems = convertObjectPropsToCamelCase(data, { deep: true });
@@ -149,8 +153,8 @@ export default {
       this.updateUrl();
     },
     updateUrl() {
-      const filters = [{ type: TOKEN_TYPES.MODEL, value: this.activeModelName }, ...this.filters];
-      const { query, url } = processFilters(filters);
+      const url = new URL(`${this.basePath}/${this.activeModelName}`, window.location.origin);
+      const query = processFilters(this.filters);
 
       const urlWithParams = setUrlParams(query, {
         url: url.href,

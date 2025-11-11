@@ -4158,26 +4158,6 @@ RSpec.describe Group, feature_category: :groups_and_projects do
     end
   end
 
-  describe '#supports_group_work_items?' do
-    subject(:supports_group_work_items?) { group.supports_group_work_items? }
-
-    context 'when epics are licensed' do
-      before do
-        stub_licensed_features(epics: true)
-      end
-
-      it { is_expected.to eq(true) }
-    end
-
-    context 'when epics are not licensed' do
-      before do
-        stub_licensed_features(epics: false)
-      end
-
-      it { is_expected.to eq(false) }
-    end
-  end
-
   describe '#can_manage_extensions_marketplace_for_enterprise_users?' do
     let_it_be(:root_group) { create(:group) }
     let_it_be(:child_group) { create(:group, parent: root_group) }

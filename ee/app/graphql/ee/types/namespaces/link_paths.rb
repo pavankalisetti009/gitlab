@@ -5,6 +5,7 @@ module EE
     module Namespaces
       module LinkPaths
         extend ActiveSupport::Concern
+        extend ::Gitlab::Utils::Override
 
         prepended do
           field :epics_list,
@@ -30,10 +31,32 @@ module EE
             null: true,
             description: 'Namespace issues settings path.'
 
+          field :epics_list_path,
+            GraphQL::Types::String,
+            null: true,
+            description: 'Path to the epics list for the namespace.',
+            fallback_value: nil,
+            experiment: { milestone: '18.6' }
+
           def issues_settings
             return unless object&.root_ancestor
 
             url_helpers.group_settings_issues_path(object&.root_ancestor)
+          end
+
+          def epics_list_path
+            return unless object.is_a?(Group)
+
+            url_helpers.group_epics_path(object)
+          end
+        end
+
+        override :new_trial_path
+        def new_trial_path
+          if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+            url_helpers.new_trial_path(namespace_id: group&.id)
+          else
+            super
           end
         end
       end
