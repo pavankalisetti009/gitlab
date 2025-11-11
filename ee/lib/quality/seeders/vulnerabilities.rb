@@ -134,7 +134,10 @@ module Quality
 
       def create_feedback(finding, type, vulnerability: nil)
         issue = create_issue("Dismiss #{finding.name}") if type == 'issue'
-        create_vulnerability_issue_link(vulnerability, issue) if vulnerability && issue
+        if vulnerability && issue
+          create_vulnerability_issue_link(vulnerability, issue)
+          vulnerability.vulnerability_read.update(has_issues: true)
+        end
 
         FactoryBot.create(
           :vulnerability_feedback,
