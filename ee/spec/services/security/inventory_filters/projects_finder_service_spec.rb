@@ -77,6 +77,45 @@ RSpec.describe Security::InventoryFilters::ProjectsFinderService, feature_catego
     )
   end
 
+  # Security attributes setup
+  let_it_be(:security_category1) { create(:security_category, namespace: group, name: 'Environment') }
+  let_it_be(:security_category2) { create(:security_category, namespace: group, name: 'Business Impact') }
+  let_it_be(:attribute1) do
+    create(:security_attribute, security_category: security_category1, namespace: group, name: 'Production')
+  end
+
+  let_it_be(:attribute2) do
+    create(:security_attribute, security_category: security_category1, namespace: group, name: 'Staging')
+  end
+
+  let_it_be(:attribute3) do
+    create(:security_attribute, security_category: security_category2, namespace: group, name: 'Critical')
+  end
+
+  let_it_be(:project1_attribute1) do
+    create(:project_to_security_attribute,
+      project: project1,
+      security_attribute: attribute1,
+      traversal_ids: project1.namespace.traversal_ids
+    )
+  end
+
+  let_it_be(:project1_attribute3) do
+    create(:project_to_security_attribute,
+      project: project1,
+      security_attribute: attribute3,
+      traversal_ids: project1.namespace.traversal_ids
+    )
+  end
+
+  let_it_be(:project2_attribute2) do
+    create(:project_to_security_attribute,
+      project: project2,
+      security_attribute: attribute2,
+      traversal_ids: project2.namespace.traversal_ids
+    )
+  end
+
   let(:service) { described_class.new(namespace: namespace, params: params) }
   let(:namespace) { group }
   let(:params) { {} }
@@ -207,6 +246,126 @@ RSpec.describe Security::InventoryFilters::ProjectsFinderService, feature_catego
       it 'applies all filters together' do
         result = execute
         expect(result[:ids]).to contain_exactly(project3.id)
+      end
+    end
+
+    context 'with security attribute filters' do
+      context 'when filtering by is_one_of' do
+        let(:params) do
+          {
+            attribute_filters: [
+              {
+                operator: 'is_one_of',
+                attributes: [attribute1.id]
+              }
+            ]
+          }
+        end
+
+        it 'returns projects with the specified attribute' do
+          result = execute
+          expect(result[:ids]).to contain_exactly(project1.id)
+        end
+      end
+
+      context 'when filtering by multiple attributes' do
+        let(:params) do
+          {
+            attribute_filters: [
+              {
+                operator: 'is_one_of',
+                attributes: [attribute1.id, attribute2.id]
+              }
+            ]
+          }
+        end
+
+        it 'returns projects with any of the specified attributes' do
+          result = execute
+          expect(result[:ids]).to contain_exactly(project1.id, project2.id)
+        end
+      end
+
+      context 'when filtering by is_not_one_of' do
+        let(:params) do
+          {
+            attribute_filters: [
+              {
+                operator: 'is_not_one_of',
+                attributes: [attribute1.id]
+              }
+            ]
+          }
+        end
+
+        it 'returns projects without the specified attribute' do
+          result = execute
+          expect(result[:ids]).to contain_exactly(project2.id, project3.id)
+        end
+      end
+
+      context 'when combining multiple attribute filters' do
+        let(:params) do
+          {
+            attribute_filters: [
+              {
+                operator: 'is_one_of',
+                attributes: [attribute1.id]
+              },
+              {
+                operator: 'is_one_of',
+                attributes: [attribute3.id]
+              }
+            ]
+          }
+        end
+
+        it 'applies all filters with AND logic' do
+          result = execute
+          expect(result[:ids]).to contain_exactly(project1.id)
+        end
+      end
+
+      context 'when attribute filter has non-existent IDs' do
+        let(:params) do
+          {
+            attribute_filters: [
+              {
+                operator: 'is_one_of',
+                attributes: [non_existing_record_id]
+              }
+            ]
+          }
+        end
+
+        it 'returns no results' do
+          result = execute
+          expect(result[:ids]).to be_empty
+        end
+      end
+    end
+
+    context 'with combined vulnerability, analyzer, and attribute filters' do
+      let(:params) do
+        {
+          vulnerability_count_filters: [
+            { severity: 'critical', operator: 'greater_than_or_equal_to', count: 3 }
+          ],
+          security_analyzer_filters: [
+            { analyzer_type: 'sast', status: 'success' }
+          ],
+          attribute_filters: [
+            {
+              operator: 'is_one_of',
+              attributes: [attribute1.id]
+            }
+          ]
+        }
+      end
+
+      it 'applies all filters together' do
+        result = execute
+        expect(result[:ids]).to contain_exactly(project1.id)
       end
     end
 

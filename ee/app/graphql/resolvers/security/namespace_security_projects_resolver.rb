@@ -5,6 +5,8 @@ module Resolvers
     class NamespaceSecurityProjectsResolver < BaseResolver
       include Gitlab::Graphql::Authorize::AuthorizeResource
 
+      MAX_ATTRIBUTE_FILTERS = 20
+
       argument :namespace_id, Types::GlobalIDType[::Namespace],
         required: true,
         description: 'Global ID of the namespace.'
@@ -20,6 +22,11 @@ module Resolvers
       argument :security_analyzer_filters, [Types::Security::AnalyzerFilterInputType],
         required: false,
         description: 'Filter projects by analyzer type and status.'
+
+      argument :attribute_filters, [Types::Security::AttributeFilterInputType],
+        required: false,
+        validates: { length: { maximum: MAX_ATTRIBUTE_FILTERS } },
+        description: "Filter projects by security attributes. Up to #{MAX_ATTRIBUTE_FILTERS} items."
 
       argument :include_subgroups, GraphQL::Types::Boolean,
         required: false,
