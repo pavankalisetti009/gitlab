@@ -31,47 +31,58 @@ module Resolvers
           result = ::Ai::ModelSelection::FetchModelDefinitionsService
                      .new(current_user, model_selection_scope: namespace)
                      .execute
-          return { default_model: nil, selectable_models: [], pinned_model: nil } unless result&.success?
 
-          feature_settings = result["unit_primitives"].find do |setting|
-            setting["feature_setting"] == "duo_agent_platform"
+          return empty_result unless result&.success?
+
+          model_definitions = result.payload
+
+          feature_setting = feature_setting_result(namespace)
+          # Without a feature setting record, we can't really perform any calculations,
+          # so let's return an empty result if it's not present
+          return empty_result unless feature_setting.present?
+
+          decorated = ::Gitlab::Graphql::Representation::ModelSelection::FeatureSetting
+                        .decorate([feature_setting].compact, model_definitions: model_definitions)
+
+          decorator_result = decorated.find do |object|
+            object.feature_setting&.feature&.to_sym == feature_setting.feature.to_sym
           end
 
-          return { default_model: nil, selectable_models: [], pinned_model: nil } unless feature_settings
+          # If we don't find a decorator for the feature setting, we can't really perform any calculations,
+          # so let's return an empty result
+          return empty_result unless decorator_result.present?
 
-          models = result["models"]
-          identifiers = feature_settings["selectable_models"]
-          duo_agent_platform_models = models
-            .select { |model| identifiers.include?(model["identifier"]) }
-            .map { |model| { name: model["name"], ref: model["identifier"] } }
-
-          default_model = duo_agent_platform_models.find do |model|
-            model[:ref] == feature_settings["default_model"]
-          end
+          selectable_models = decorator_result.selectable_models
 
           {
-            default_model: default_model,
-            selectable_models: duo_agent_platform_models,
-            pinned_model: pinned_model_data(namespace, duo_agent_platform_models)
+            default_model: decorator_result.default_model,
+            selectable_models: selectable_models,
+            pinned_model: pinned_model_data(feature_setting, selectable_models)
           }
         end
 
         private
 
-        def pinned_model_data(namespace, duo_agent_platform_models)
-          feature_setting_result = ::Ai::FeatureSettingSelectionService
-                                     .new(current_user, :duo_agent_platform, namespace)
-                                     .execute
+        def empty_result
+          { default_model: nil, selectable_models: [], pinned_model: nil }
+        end
 
-          return unless feature_setting_result.success?
+        def feature_setting_result(namespace)
+          result = ::Ai::FeatureSettingSelectionService
+            .new(current_user, :duo_agent_platform, namespace)
+            .execute
 
-          payload = feature_setting_result.payload
+          return unless result.success? && result.payload.present?
 
-          return unless payload.present?
-          return unless payload.user_model_selection_available?
-          return unless payload.pinned_model?
+          result.payload
+        end
 
-          pinned_model_identifier = payload.offered_model_ref
+        def pinned_model_data(feature_setting, duo_agent_platform_models)
+          return unless feature_setting.present?
+          return unless feature_setting.user_model_selection_available?
+          return unless feature_setting.pinned_model?
+
+          pinned_model_identifier = feature_setting.offered_model_ref
           return if pinned_model_identifier.blank?
 
           duo_agent_platform_models.find { |model| model[:ref] == pinned_model_identifier }
