@@ -61,14 +61,32 @@ module Security
       strong_memoize_attr :root_namespace
 
       def add_attribute_ids
-        params.dig(:attributes, :add_attribute_ids)&.map(&:to_i) || []
+        raw_add_attribute_ids - common_attribute_ids
       end
       strong_memoize_attr :add_attribute_ids
 
       def remove_attribute_ids
-        params.dig(:attributes, :remove_attribute_ids)&.map(&:to_i) || []
+        raw_remove_attribute_ids - common_attribute_ids
       end
       strong_memoize_attr :remove_attribute_ids
+
+      # Attributes that appear in both add and remove lists should be excluded from both operations.
+      # This prevents attempting to remove and re-add the same attribute, which would be redundant
+      # and could cause issues in REPLACE mode where existing attributes might be incorrectly removed.
+      def common_attribute_ids
+        raw_add_attribute_ids & raw_remove_attribute_ids
+      end
+      strong_memoize_attr :common_attribute_ids
+
+      def raw_add_attribute_ids
+        params.dig(:attributes, :add_attribute_ids)&.map(&:to_i) || []
+      end
+      strong_memoize_attr :raw_add_attribute_ids
+
+      def raw_remove_attribute_ids
+        params.dig(:attributes, :remove_attribute_ids)&.map(&:to_i) || []
+      end
+      strong_memoize_attr :raw_remove_attribute_ids
 
       def associations_to_create
         (add_attribute_ids - existing_attributes.pluck_id).filter_map do |attribute_id|
