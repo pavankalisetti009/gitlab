@@ -6,7 +6,7 @@ module Types
       graphql_name 'RiskScore'
       description 'Total risk score information'
 
-      field :score, GraphQL::Types::Int,
+      field :score, GraphQL::Types::Float,
         null: false,
         experiment: { milestone: '18.4' },
         description: 'Overall risk score.'
