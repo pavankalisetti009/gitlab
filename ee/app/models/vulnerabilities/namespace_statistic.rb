@@ -5,6 +5,8 @@ module Vulnerabilities
     include ::Namespaces::Traversal::Traversable
     include EachBatch
 
+    ignore_columns %i[age_average age_standard_deviation risk_score], remove_with: '18.8', remove_after: '2025-12-20'
+
     self.table_name = 'vulnerability_namespace_statistics'
 
     belongs_to :group, foreign_key: :namespace_id, inverse_of: :vulnerability_namespace_statistic, optional: false
