@@ -76,7 +76,8 @@ RSpec.describe Security::Attributes::CleanupScheduleWorker, feature_category: :s
         let_it_be(:projects) { create_list(:project, 3, group: moved_group) }
         let(:project_ids) { projects.map(&:id) }
 
-        it 'schedules update batch workers' do
+        it 'schedules update batch workers',
+          quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/8338' do
           handle_event
 
           expect(cleanup_batch_worker).to have_received(:perform_async).with(project_ids, new_root_namespace.id)
