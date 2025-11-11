@@ -3,6 +3,8 @@
 module Gitlab
   module Llm
     class TanukiBot
+      SCOPELESS_CONTROLLERS = %w[search].freeze
+
       def self.enabled_for?(user:, container: nil)
         return false unless chat_enabled?(user)
 
@@ -88,6 +90,18 @@ module Gitlab
         return unless namespace_to_use
 
         namespace_to_use.to_global_id
+      end
+
+      def self.duo_scope_hash(user, project, group, controller_name)
+        if SCOPELESS_CONTROLLERS.include?(controller_name)
+          { namespace: user.user_preference.get_default_duo_namespace }
+        elsif project && project.persisted?
+          { project: project }
+        elsif group && group.persisted?
+          { namespace: group }
+        else # rubocop:disable Lint/DuplicateBranch -- readability
+          { namespace: user.user_preference.get_default_duo_namespace }
+        end
       end
     end
   end
