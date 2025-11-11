@@ -8,7 +8,7 @@ module EE
       singleton_class.prepend self
     end
 
-    def render_colored_label(label, suffix: '')
+    def render_colored_label(label, in_reference: nil)
       return super unless label.scoped_label?
 
       render_label_text(
@@ -18,7 +18,7 @@ module EE
       ) + render_label_text(
         label.scoped_label_value,
         css_class: "gl-label-text-scoped",
-        suffix: suffix
+        in_reference: in_reference
       )
     end
 
@@ -31,11 +31,12 @@ module EE
       %(<span class="#{wrapper_classes.join(' ')}" style="--label-inset-border: inset 0 0 0 #{border_width} #{ERB::Util.html_escape(label.color)}; color: #{ERB::Util.html_escape(label.color)}">#{label_html}</span>).html_safe
     end
 
-    def label_tooltip_title(label, tooltip_shows_title: false)
-      tooltip = super
-      tooltip = %(<span class='gl-font-bold'>Scoped label</span><br>#{tooltip}) if label.scoped_label?
+    # Returns a String containing HTML.
+    def label_tooltip_title_html(label)
+      tooltip_html = CGI.escapeHTML(label_tooltip_title(label).to_s)
+      tooltip_html = %(<span class='gl-font-bold'>Scoped label</span><br>#{tooltip_html}) if label.scoped_label?
 
-      tooltip
+      tooltip_html
     end
 
     def label_dropdown_data(edit_context, opts = {})
