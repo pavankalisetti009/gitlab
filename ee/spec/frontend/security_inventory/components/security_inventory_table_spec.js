@@ -1,5 +1,5 @@
 import { shallowMount, mount } from '@vue/test-utils';
-import { GlTableLite, GlSkeletonLoader } from '@gitlab/ui';
+import { GlTableLite, GlSkeletonLoader, GlFormCheckbox } from '@gitlab/ui';
 import { stubComponent } from 'helpers/stub_component';
 import SecurityInventoryTable from 'ee/security_inventory/components/security_inventory_table.vue';
 import NameCell from 'ee/security_inventory/components/name_cell.vue';
@@ -7,6 +7,7 @@ import VulnerabilityCell from 'ee/security_inventory/components/vulnerability_ce
 import ToolCoverageCell from 'ee/security_inventory/components/tool_coverage_cell.vue';
 import ActionCell from 'ee/security_inventory/components/action_cell.vue';
 import AttributesCell from 'ee/security_inventory/components/attributes_cell.vue';
+import CheckboxCell from 'ee/security_inventory/components/checkbox_cell.vue';
 import { subgroupsAndProjects } from '../mock_data';
 
 const mockProject = subgroupsAndProjects.data.namespaceSecurityProjects.edges[0].node;
@@ -35,6 +36,15 @@ describe('SecurityInventoryTable', () => {
           glFeatures: { securityContextLabels: true },
           ...provide,
         },
+        mocks: {
+          $apollo: {
+            queries: {
+              group: {
+                loading: false,
+              },
+            },
+          },
+        },
       });
 
       return wrapper;
@@ -47,6 +57,8 @@ describe('SecurityInventoryTable', () => {
   const findTable = () => wrapper.findComponent(GlTableLite);
   const findTableRows = () => findTable().findAll('tbody tr');
   const findNthTableRow = (n) => findTableRows().at(n);
+  const findSelectAllCheckbox = () => wrapper.findComponent(GlFormCheckbox);
+  const findItemCheckbox = () => wrapper.findComponent(CheckboxCell);
 
   beforeEach(() => {
     createComponent();
@@ -102,6 +114,44 @@ describe('SecurityInventoryTable', () => {
       expect(firstRow.findComponent(ToolCoverageCell).exists()).toBe(true);
       expect(firstRow.findComponent(AttributesCell).exists()).toBe(true);
       expect(firstRow.findComponent(ActionCell).exists()).toBe(true);
+      expect(firstRow.findComponent(CheckboxCell).exists()).toBe(false);
+    });
+  });
+
+  describe('bulk selection', () => {
+    describe('with feature flags and permission', () => {
+      beforeEach(() => {
+        createFullComponent({
+          props: { items },
+          stubs: { GlTableLite: false },
+          provide: {
+            glFeatures: { securityContextLabels: true, bulkEditSecurityAttributes: true },
+            canReadAttributes: true,
+            canManageAttributes: true,
+            groupFullPath: 'path/to/group',
+          },
+        });
+      });
+
+      it('select all checkbox selects and deselects all visible items', () => {
+        findSelectAllCheckbox().vm.$emit('change', true);
+
+        expect(wrapper.emitted('selectedCount')[0]).toStrictEqual([2]);
+
+        findSelectAllCheckbox().vm.$emit('change', false);
+
+        expect(wrapper.emitted('selectedCount')[1]).toStrictEqual([0]);
+      });
+
+      it('checkbox cell selects and deselects a single item', () => {
+        findItemCheckbox().vm.$emit('selectItem', items[0], true);
+
+        expect(wrapper.emitted('selectedCount')[0]).toStrictEqual([1]);
+
+        findItemCheckbox().vm.$emit('selectItem', items[0], false);
+
+        expect(wrapper.emitted('selectedCount')[1]).toStrictEqual([0]);
+      });
     });
   });
 

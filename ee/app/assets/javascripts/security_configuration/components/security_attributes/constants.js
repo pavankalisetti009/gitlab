@@ -16,3 +16,7 @@ export const defaultCategory = {
 };
 
 export const RECENTLY_SAVED_TIMEOUT = 5000; // milliseconds
+
+export const BULK_EDIT_ADD = 'ADD';
+export const BULK_EDIT_REMOVE = 'REMOVE';
+export const BULK_EDIT_REPLACE = 'REPLACE';

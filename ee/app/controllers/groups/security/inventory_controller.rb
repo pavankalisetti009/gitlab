@@ -10,6 +10,7 @@ module Groups
       before_action do
         push_frontend_feature_flag(:security_context_labels, @group.root_ancestor)
         push_frontend_feature_flag(:security_inventory_filtering, @group.root_ancestor)
+        push_frontend_feature_flag(:bulk_edit_security_attributes, @group.root_ancestor)
       end
 
       feature_category :security_asset_inventories

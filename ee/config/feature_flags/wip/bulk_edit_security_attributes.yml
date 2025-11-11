@@ -1,0 +1,10 @@
+---
+name: bulk_edit_security_attributes
+description:
+feature_issue_url: https://gitlab.com/groups/gitlab-org/-/epics/19706
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/209859
+rollout_issue_url:
+milestone: '18.6'
+group: group::security platform management
+type: wip
+default_enabled: false

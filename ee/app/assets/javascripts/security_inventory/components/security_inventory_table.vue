@@ -1,13 +1,16 @@
 <script>
-import { GlTableLite, GlSkeletonLoader } from '@gitlab/ui';
+import { GlTableLite, GlSkeletonLoader, GlFormCheckbox, GlTooltipDirective } from '@gitlab/ui';
 import { __, s__ } from '~/locale';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import ProjectAttributesUpdateDrawer from 'ee_component/security_configuration/security_attributes/components/project_attributes_update_drawer.vue';
+import BulkAttributesUpdateDrawer from 'ee_component/security_configuration/security_attributes/components/bulk_attributes_update_drawer.vue';
+import { MAX_SELECTED_COUNT } from '../constants';
 import NameCell from './name_cell.vue';
 import VulnerabilityCell from './vulnerability_cell.vue';
 import ToolCoverageCell from './tool_coverage_cell.vue';
 import ActionCell from './action_cell.vue';
 import AttributesCell from './attributes_cell.vue';
+import CheckboxCell from './checkbox_cell.vue';
 
 const SKELETON_ROW_COUNT = 3;
 
@@ -15,15 +18,21 @@ export default {
   components: {
     GlTableLite,
     GlSkeletonLoader,
+    GlFormCheckbox,
     NameCell,
     VulnerabilityCell,
     ToolCoverageCell,
     ActionCell,
     AttributesCell,
+    CheckboxCell,
     ProjectAttributesUpdateDrawer,
+    BulkAttributesUpdateDrawer,
+  },
+  directives: {
+    GlTooltip: GlTooltipDirective,
   },
   mixins: [glFeatureFlagMixin()],
-  inject: ['canReadAttributes'],
+  inject: ['canReadAttributes', 'canManageAttributes'],
   props: {
     items: {
       type: Array,
@@ -43,6 +52,7 @@ export default {
   data() {
     return {
       selectedProject: null,
+      selectedItems: [],
     };
   },
   computed: {
@@ -50,6 +60,22 @@ export default {
       return this.isLoading && this.items.length === 0
         ? Array(SKELETON_ROW_COUNT).fill({})
         : this.items;
+    },
+    shouldShowBulkEdit() {
+      return (
+        this.glFeatures.securityContextLabels &&
+        this.glFeatures.bulkEditSecurityAttributes &&
+        this.canManageAttributes
+      );
+    },
+    isAnyItemSelected() {
+      return this.items.some((item) => this.isSelected(item));
+    },
+    areAllItemsSelected() {
+      return this.items.every((item) => this.isSelected(item));
+    },
+    isSelectedLimitReached() {
+      return this.selectedItems.length >= MAX_SELECTED_COUNT;
     },
     fields() {
       const fields = [
@@ -65,20 +91,58 @@ export default {
           label: s__('SecurityAttributes|Security attributes'),
           thClass: 'gl-w-1/6',
         });
+        if (this.shouldShowBulkEdit) {
+          fields.splice(0, 0, {
+            key: 'checkbox',
+            label: '',
+            thClass: 'gl-w-0',
+            tdClass: '!gl-align-middle',
+          });
+        }
       }
       return fields;
     },
   },
   methods: {
+    isSelected(item) {
+      return this.selectedItems.includes(item.id);
+    },
+    selectItem(item, checked) {
+      if (checked) {
+        this.selectedItems.push(item.id);
+      } else {
+        this.selectedItems = this.selectedItems.filter(
+          (selectedItemId) => selectedItemId !== item.id,
+        );
+      }
+      this.$emit('selectedCount', this.selectedItems.length);
+    },
+    selectAll(selected) {
+      if (selected) {
+        this.selectedItems = [...this.items.map((item) => item.id)].slice(0, MAX_SELECTED_COUNT);
+      } else {
+        this.selectedItems = [];
+      }
+      this.$emit('selectedCount', this.selectedItems.length);
+    },
+    // eslint-disable-next-line vue/no-unused-properties
+    clearSelection() {
+      this.selectAll(false);
+    },
+    // eslint-disable-next-line vue/no-unused-properties
+    bulkEdit() {
+      this.$nextTick(() => {
+        this.$refs.bulkAttributesDrawer.openDrawer();
+      });
+    },
     openAttributesDrawer(item) {
       this.selectedProject = item;
       this.$nextTick(() => {
         this.$refs.attributesDrawer.openDrawer();
       });
     },
-
     refreshDashboard() {
-      this.$emit('saved');
+      this.$emit('refetch');
     },
   },
 };
@@ -87,6 +151,28 @@ export default {
 <template>
   <div>
     <gl-table-lite :items="displayItems" :fields="fields" hover table-class="gl-table-fixed">
+      <template v-if="shouldShowBulkEdit" #head(checkbox)>
+        <gl-form-checkbox
+          v-gl-tooltip.right
+          :title="__('Select all items')"
+          :checked="isAnyItemSelected"
+          :indeterminate="isAnyItemSelected && !areAllItemsSelected"
+          :disabled="isLoading"
+          class="gl-min-h-4"
+          @change="selectAll"
+        />
+      </template>
+
+      <template v-if="shouldShowBulkEdit" #cell(checkbox)="{ item }">
+        <checkbox-cell
+          v-if="!isLoading"
+          :item="item"
+          :is-selected="isSelected(item)"
+          :is-selected-limit-reached="isSelectedLimitReached"
+          @selectItem="selectItem"
+        />
+      </template>
+
       <template #cell(name)="{ item }">
         <gl-skeleton-loader v-if="isLoading" :width="200" :height="20" preserve-aspect-ratio="none">
           <rect x="0" y="5" width="15" height="15" rx="3" />
@@ -136,13 +222,19 @@ export default {
         <action-cell v-else :item="item" @openAttributesDrawer="openAttributesDrawer" />
       </template>
     </gl-table-lite>
+
     <project-attributes-update-drawer
       v-if="selectedProject"
-      :key="selectedProject.id"
       ref="attributesDrawer"
       :project-id="selectedProject.id"
       :selected-attributes="selectedProject.securityAttributes.nodes"
       @saved="refreshDashboard"
+    />
+    <bulk-attributes-update-drawer
+      v-if="selectedItems.length"
+      ref="bulkAttributesDrawer"
+      :item-ids="selectedItems"
+      @refetch="refreshDashboard"
     />
   </div>
 </template>

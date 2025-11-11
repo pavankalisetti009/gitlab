@@ -1,12 +1,13 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlTableLite, GlButton } from '@gitlab/ui';
+import { GlTableLite, GlButton, GlIcon } from '@gitlab/ui';
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
 import { createAlert } from '~/alert';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { stubComponent } from 'helpers/stub_component';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
+import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
 import {
   getLocationHash,
   queryToObject,
@@ -27,6 +28,7 @@ import ToolCoverageCell from 'ee/security_inventory/components/tool_coverage_cel
 import ActionCell from 'ee/security_inventory/components/action_cell.vue';
 import SecurityInventoryTable from 'ee/security_inventory/components/security_inventory_table.vue';
 import InventoryDashboardFilteredSearchBar from 'ee/security_inventory/components/inventory_dashboard_filtered_search_bar.vue';
+import { MAX_SELECTED_COUNT } from 'ee/security_inventory/constants';
 import { subgroupsAndProjects, mockAnalyzerFilter, mockVulnerabilityFilter } from '../mock_data';
 import { createGroupResponse, createPaginatedHandler } from '../mock_pagination_helpers';
 
@@ -86,8 +88,14 @@ describe('InventoryDashboard', () => {
             props: ['currentPath', 'groupFullPath'],
           }),
         },
+        directives: {
+          GlTooltip: createMockDirective('gl-tooltip'),
+        },
       });
       await waitForPromises();
+      if (wrapper.vm.$refs.inventoryTable) {
+        wrapper.vm.$refs.inventoryTable.clearSelection = jest.fn();
+      }
     };
 
   const createComponent = createComponentFactory();
@@ -102,6 +110,7 @@ describe('InventoryDashboard', () => {
   const findInventoryTable = () => wrapper.findComponent(SecurityInventoryTable);
   const loadMoreButton = () => wrapper.findByTestId('load-more-button');
   const findFilteredSearchBar = () => wrapper.findComponent(InventoryDashboardFilteredSearchBar);
+  const findIcon = () => wrapper.findComponent(GlIcon);
 
   /* eslint-disable no-underscore-dangle */
   const getIndexByType = (children, type) => {
@@ -455,7 +464,7 @@ describe('InventoryDashboard', () => {
       expect(findFilteredSearchBar().props('namespace')).toBe('group/project');
     });
 
-    it('updates query variables when filter changes', async () => {
+    it('updates query variables and clears the selection when filter changes', async () => {
       const filters = {
         search: 'test query',
         securityAnalyzerFilters: [mockAnalyzerFilter],
@@ -473,6 +482,7 @@ describe('InventoryDashboard', () => {
           vulnerabilityCountFilters: [mockVulnerabilityFilter],
         }),
       );
+      expect(wrapper.vm.$refs.inventoryTable.clearSelection).toHaveBeenCalled();
     });
 
     it('preserves hash when updating URL with search parameters', async () => {
@@ -508,6 +518,29 @@ describe('InventoryDashboard', () => {
           hasSearch: true,
           search: 'test',
         }),
+      );
+    });
+  });
+
+  describe('bulk selection summary', () => {
+    it('shows the selected items count', async () => {
+      wrapper.findComponent(SecurityInventoryTable).vm.$emit('selectedCount', 10);
+
+      await nextTick();
+
+      expect(wrapper.html()).toContain('%{strongStart}10%{strongEnd} items selected');
+      expect(findIcon().exists()).toBe(false);
+    });
+
+    it('shows a warning when the selection limit is reached', async () => {
+      wrapper.findComponent(SecurityInventoryTable).vm.$emit('selectedCount', MAX_SELECTED_COUNT);
+
+      await nextTick();
+
+      expect(wrapper.html()).toContain('%{strongStart}100%{strongEnd} items selected');
+      expect(findIcon().props('name')).toBe('warning');
+      expect(getBinding(findIcon().element, 'gl-tooltip').value).toBe(
+        `You can edit up to ${MAX_SELECTED_COUNT} items at once`,
       );
     });
   });
