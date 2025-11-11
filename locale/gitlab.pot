@@ -2540,6 +2540,9 @@ msgstr ""
 msgid "AICatalog|Are you sure you want to remove flow %{name}?"
 msgstr ""
 
+msgid "AICatalog|Are you sure you want to remove flow %{name}? The flow will also be removed from any projects in this group."
+msgstr ""
+
 msgid "AICatalog|Available tools"
 msgstr ""
 

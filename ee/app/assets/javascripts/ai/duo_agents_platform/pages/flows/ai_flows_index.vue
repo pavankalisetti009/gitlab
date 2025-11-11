@@ -189,6 +189,15 @@ export default {
         namespaceType: this.namespaceTypeLabel,
       });
     },
+    deleteConfirmMessage() {
+      if (this.isProjectNamespace) {
+        return s__('AICatalog|Are you sure you want to remove flow %{name}?');
+      }
+
+      return s__(
+        'AICatalog|Are you sure you want to remove flow %{name}? The flow will also be removed from any projects in this group.',
+      );
+    },
     emptyStateTitle() {
       return sprintf(s__('AICatalog|Use flows in your %{namespaceType}.'), {
         namespaceType: this.namespaceTypeLabel,
@@ -322,7 +331,7 @@ export default {
       :items="items"
       :item-type-config="itemTypeConfig"
       :delete-confirm-title="deleteConfirmTitle"
-      :delete-confirm-message="s__('AICatalog|Are you sure you want to remove flow %{name}?')"
+      :delete-confirm-message="deleteConfirmMessage"
       :delete-fn="deleteFlow"
       :page-info="pageInfo"
       @next-page="handleNextPage"
