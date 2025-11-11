@@ -78,9 +78,10 @@ export default {
     showAddToProject() {
       return this.canUse && this.isGlobal;
     },
-    showAddToProjectOrGroup() {
+    showAddToGroup() {
       return (
-        this.showAddToProject &&
+        this.canUse &&
+        this.isGlobal &&
         this.isFlowsAvailable &&
         [AI_CATALOG_TYPE_FLOW, AI_CATALOG_TYPE_THIRD_PARTY_FLOW].includes(this.item.itemType)
       );
@@ -110,13 +111,13 @@ export default {
       {{ __('Edit') }}
     </gl-button>
     <gl-button
-      v-if="showAddToProjectOrGroup"
+      v-if="showAddToGroup"
       v-gl-modal="'add-item-consumer-modal'"
       variant="confirm"
       category="primary"
-      data-testid="add-to-project-or-group-button"
+      data-testid="add-to-group-button"
     >
-      {{ s__('AICatalog|Enable in project or group') }}
+      {{ s__('AICatalog|Enable in group') }}
     </gl-button>
     <gl-button
       v-else-if="showAddToProject"
@@ -180,7 +181,7 @@ export default {
     <ai-catalog-item-consumer-modal
       v-if="canUse"
       :item="item"
-      :show-add-to-group="showAddToProjectOrGroup"
+      :show-add-to-group="showAddToGroup"
       @submit="$emit('add-to-target', $event)"
     />
   </div>
