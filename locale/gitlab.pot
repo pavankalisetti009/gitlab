@@ -56681,7 +56681,7 @@ msgstr ""
 msgid "Runners|Registration token"
 msgstr ""
 
-msgid "Runners|Registration token copied!"
+msgid "Runners|Registration token copied to clipboard."
 msgstr ""
 
 msgid "Runners|Remove Node Pool"
