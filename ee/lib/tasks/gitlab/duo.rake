@@ -42,5 +42,10 @@ namespace :gitlab do
       output_file = args[:output] || 'dap_evaluation_issues.yml'
       Gitlab::Duo::Developments::DapEvalsSeeder.seed_issues(output_file: output_file)
     end
+
+    desc 'GitLab | Duo | Onboard Duo Agent Platform'
+    task onboard_dap: :gitlab_environment do
+      Gitlab::Duo::Developments::DapOnboarding.execute
+    end
   end
 end
