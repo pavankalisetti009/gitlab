@@ -77,7 +77,7 @@ describe('UsageBillingApp', () => {
       it('renders the page title with its description', () => {
         const pageHeading = findPageHeading();
 
-        expect(pageHeading.text()).toContain('Usage Billing');
+        expect(pageHeading.text()).toContain('GitLab Credits dashboard');
       });
 
       it('renders the page billing period subtitle', () => {

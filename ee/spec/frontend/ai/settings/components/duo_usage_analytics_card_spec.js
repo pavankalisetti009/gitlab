@@ -25,7 +25,7 @@ describe('DuoUsageAnalyticsCard', () => {
 
   it('renders info card and correct copy', () => {
     expect(findCard().exists()).toBe(true);
-    expect(findInfoCardHeader().text()).toContain('GitLab Credit usage analytics');
+    expect(findInfoCardHeader().text()).toContain('GitLab Credits dashboard');
   });
 
   it('renders a CTA button', () => {
