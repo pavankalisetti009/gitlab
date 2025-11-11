@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Ai::SelfHostedModel, feature_category: :"self-hosted_models" do
+  using RSpec::Parameterized::TableSyntax
+
   describe 'validation' do
     subject(:self_hosted_model) { build(:ai_self_hosted_model) }
 
@@ -72,6 +74,27 @@ RSpec.describe Ai::SelfHostedModel, feature_category: :"self-hosted_models" do
     describe '#ga?' do
       it 'returns true if the model is in GA' do
         expect(self_hosted_model.ga?).to be(true)
+      end
+    end
+
+    describe '#unsupported_family_for_duo_agent_platform_code_review?' do
+      subject { build(:ai_self_hosted_model, model: model).unsupported_family_for_duo_agent_platform_code_review? }
+
+      where(:model, :expected) do
+        :gpt           | false
+        :general       | false
+        :claude_3      | false
+        :mistral       | true
+        :llama3        | true
+        :codegemma     | true
+        :codestral     | true
+        :codellama     | true
+        :deepseekcoder | true
+        :mixtral       | true
+      end
+
+      with_them do
+        it { is_expected.to eq(expected) }
       end
     end
   end
