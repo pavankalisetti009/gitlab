@@ -54,6 +54,36 @@ module Security
       where(arel_table[analyzer_type].eq(Enums::Security.analyzer_statuses[status.to_sym]))
     end
 
+    scope :by_security_attributes, ->(is_one_of_filters, is_not_one_of_filters) do
+      return none if is_one_of_filters.empty? && is_not_one_of_filters.empty?
+
+      scope = all
+
+      is_one_of_filters.each do |attribute_ids|
+        sanitized_ids = attribute_ids.map(&:to_i)
+        scope = scope.where(
+          "EXISTS (
+            SELECT 1 FROM project_to_security_attributes
+            WHERE project_id = security_inventory_filters.project_id
+            AND security_attribute_id = ANY(ARRAY[?])
+          )", sanitized_ids
+        )
+      end
+
+      is_not_one_of_filters.each do |attribute_ids|
+        sanitized_ids = attribute_ids.map(&:to_i)
+        scope = scope.where(
+          "NOT EXISTS (
+            SELECT 1 FROM project_to_security_attributes
+            WHERE project_id = security_inventory_filters.project_id
+            AND security_attribute_id = ANY(ARRAY[?])
+          )", sanitized_ids
+        )
+      end
+
+      scope
+    end
+
     def self.search(query)
       fuzzy_search(query, [:project_name], use_minimum_char_limit: true)
     end
