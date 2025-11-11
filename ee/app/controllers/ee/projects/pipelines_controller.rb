@@ -16,10 +16,6 @@ module EE
           push_frontend_feature_flag(:validity_checks_security_finding_status, project)
         end
 
-        before_action only: [:charts] do
-          push_frontend_feature_flag(:dora_metrics_dashboard, project.group)
-        end
-
         before_action only: [:show, :security] do
           if ::Feature.enabled?(:pipeline_security_ai_vr, project)
             push_frontend_ability(

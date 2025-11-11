@@ -75,20 +75,6 @@ RSpec.describe 'Analytics Dashboards', :js, feature_category: :value_stream_mana
         end
 
         it_behaves_like 'has value streams dashboard link'
-
-        context 'with dora_metrics_dashboard disabled' do
-          before do
-            stub_feature_flags(dora_metrics_dashboard: false)
-
-            visit_group_analytics_dashboards_list(group)
-          end
-
-          it 'does not render DORA metrics dashboard link' do
-            dashboard_items_arr = page.all(dashboard_list_item_title).map(&:text)
-
-            expect(dashboard_items_arr).not_to include('DORA metrics analytics')
-          end
-        end
       end
 
       context 'for Value Streams Dashboard' do

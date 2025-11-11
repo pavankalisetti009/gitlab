@@ -1,26 +1,18 @@
 <script>
 import { GlTabs, GlTab, GlLink } from '@gitlab/ui';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
-import DeploymentFrequencyCharts from 'ee/analytics/dora/components/deployment_frequency_charts.vue';
-import LeadTimeCharts from 'ee/analytics/dora/components/lead_time_charts.vue';
-import TimeToRestoreServiceCharts from 'ee/analytics/dora/components/time_to_restore_service_charts.vue';
-import ChangeFailureRateCharts from 'ee/analytics/dora/components/change_failure_rate_charts.vue';
 import MigrationAlert from 'ee/analytics/dora/components/migration_alert.vue';
 import { mergeUrlParams, updateHistory, getParameterValues } from '~/lib/utils/url_utility';
 import API from '~/api';
 import ReleaseStatsCard from './release_stats_card.vue';
 
 export default {
-  name: 'CiCdAnalyticsApp',
+  name: 'GroupCiCdAnalyticsApp',
   components: {
     ReleaseStatsCard,
     GlTabs,
     GlTab,
     GlLink,
-    DeploymentFrequencyCharts,
-    LeadTimeCharts,
-    TimeToRestoreServiceCharts,
-    ChangeFailureRateCharts,
     MigrationAlert,
   },
   releaseStatisticsTabEvent: 'g_analytics_ci_cd_release_statistics',
@@ -33,10 +25,6 @@ export default {
     groupPath: {
       type: String,
       default: '',
-    },
-    shouldRenderDoraCharts: {
-      type: Boolean,
-      default: false,
     },
     pipelineGroupUsageQuotaPath: {
       type: String,
@@ -53,23 +41,8 @@ export default {
     };
   },
   computed: {
-    showDoraMetricsTabs() {
-      return this.shouldRenderDoraCharts && !this.glFeatures.doraMetricsDashboard;
-    },
-    showDoraMetricsMigrationAlert() {
-      return this.shouldRenderDoraCharts && this.glFeatures.doraMetricsDashboard;
-    },
     tabs() {
       const tabsToShow = ['release-statistics'];
-
-      if (this.showDoraMetricsTabs) {
-        tabsToShow.push(
-          'deployment-frequency',
-          'lead-time',
-          'time-to-restore-service',
-          'change-failure-rate',
-        );
-      }
 
       tabsToShow.push('shared-runner-usage');
 
@@ -104,7 +77,7 @@ export default {
 </script>
 <template>
   <div>
-    <migration-alert v-if="showDoraMetricsMigrationAlert" :namespace-path="groupPath" />
+    <migration-alert :namespace-path="groupPath" />
 
     <gl-tabs v-if="tabs.length > 1" :value="selectedTabIndex" @input="onTabChange">
       <gl-tab
@@ -114,36 +87,6 @@ export default {
       >
         <release-stats-card :class="releaseStatsCardClasses" />
       </gl-tab>
-      <template v-if="showDoraMetricsTabs">
-        <gl-tab
-          :title="s__('CICDAnalytics|Deployment frequency')"
-          data-testid="deployment-frequency-tab"
-          @click="trackTabClick($options.deploymentFrequencyTabEvent)"
-        >
-          <deployment-frequency-charts />
-        </gl-tab>
-        <gl-tab
-          :title="s__('CICDAnalytics|Lead time')"
-          data-testid="lead-time-tab"
-          @click="trackTabClick($options.leadTimeTabEvent)"
-        >
-          <lead-time-charts />
-        </gl-tab>
-        <gl-tab
-          :title="s__('CICDAnalytics|Time to restore service')"
-          data-testid="time-to-restore-service-tab"
-          @click="trackTabClick($options.timeToRestoreServiceTabEvent)"
-        >
-          <time-to-restore-service-charts />
-        </gl-tab>
-        <gl-tab
-          :title="s__('CICDAnalytics|Change failure rate')"
-          data-testid="change-failure-rate-tab"
-          @click="trackTabClick($options.changeFailureRateTabEvent)"
-        >
-          <change-failure-rate-charts />
-        </gl-tab>
-      </template>
       <template v-if="canViewGroupUsageQuotaBoolean" #tabs-end>
         <gl-link :href="pipelineGroupUsageQuotaPath" class="gl-ml-auto gl-self-center">{{
           __('View group pipeline usage quota')

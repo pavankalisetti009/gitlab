@@ -3,15 +3,10 @@ import { GlTabs, GlTab } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
 
 import setWindowLocation from 'helpers/set_window_location_helper';
-import { updateHistory } from '~/lib/utils/url_utility';
 import App from '~/projects/pipelines/charts/components/app.vue';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 
 import PipelinesDashboard from '~/projects/pipelines/charts/components/pipelines_dashboard.vue';
-import DeploymentFrequencyCharts from 'ee_component/analytics/dora/components/deployment_frequency_charts.vue';
-import LeadTimeCharts from 'ee_component/analytics/dora/components/lead_time_charts.vue';
-import TimeToRestoreServiceCharts from 'ee_component/analytics/dora/components/time_to_restore_service_charts.vue';
-import ChangeFailureRateCharts from 'ee_component/analytics/dora/components/change_failure_rate_charts.vue';
 import MigrationAlert from 'ee_component/analytics/dora/components/migration_alert.vue';
 import ProjectQualitySummaryApp from 'ee_component/project_quality_summary/app.vue';
 
@@ -66,130 +61,26 @@ describe('ProjectsPipelinesChartsApp', () => {
   const findPipelinesDashboard = () => wrapper.findComponent(PipelinesDashboard);
 
   const findDoraMetricsMigrationAlert = () => wrapper.findComponent(MigrationAlert);
-  const findDeploymentFrequencyCharts = () => wrapper.findComponent(DeploymentFrequencyCharts);
-  const findLeadTimeCharts = () => wrapper.findComponent(LeadTimeCharts);
-  const findTimeToRestoreServiceCharts = () => wrapper.findComponent(TimeToRestoreServiceCharts);
-  const findChangeFailureRateCharts = () => wrapper.findComponent(ChangeFailureRateCharts);
   const findProjectQualitySummaryApp = () => wrapper.findComponent(ProjectQualitySummaryApp);
 
-  describe('when dora charts are available', () => {
-    describe('when doraMetricsDashboard is disabled', () => {
-      beforeEach(() => {
-        createWrapper({
-          provide: {
-            shouldRenderDoraCharts: true,
-            glFeatures: {
-              doraMetricsDashboard: false,
-            },
-          },
-        });
-      });
+  afterEach(() => {
+    trackEventSpy.mockClear();
+  });
 
-      it('shows 5 tabs', () => {
-        expect(findAllGlTabs()).toHaveLength(5);
-      });
+  describe('default', () => {
+    beforeEach(() => {
+      createWrapper();
+    });
 
-      it('does not show migration alert', () => {
-        expect(findDoraMetricsMigrationAlert().exists()).toBe(false);
-      });
-
-      describe('Pipelines tab', () => {
-        it(`renders the tab at index 0`, () => {
-          expect(findGlTabAt(0).attributes('title')).toBe('Pipelines');
-        });
-
-        it(`renders the chart`, () => {
-          expect(findPipelinesDashboard().exists()).toBe(true);
-        });
-
-        describe('when clicked', () => {
-          beforeEach(() => {
-            findGlTabAt(0).vm.$emit('click');
-          });
-
-          it('records event', () => {
-            expect(trackEventSpy).toHaveBeenCalledWith(
-              'p_analytics_ci_cd_pipelines',
-              {},
-              undefined,
-            );
-          });
-        });
-      });
-
-      describe.each`
-        title                        | finderFn                          | index | event
-        ${'Deployment frequency'}    | ${findDeploymentFrequencyCharts}  | ${1}  | ${'p_analytics_ci_cd_deployment_frequency'}
-        ${'Lead time'}               | ${findLeadTimeCharts}             | ${2}  | ${'p_analytics_ci_cd_lead_time'}
-        ${'Time to restore service'} | ${findTimeToRestoreServiceCharts} | ${3}  | ${'visit_ci_cd_time_to_restore_service_tab'}
-        ${'Change failure rate'}     | ${findChangeFailureRateCharts}    | ${4}  | ${'visit_ci_cd_failure_rate_tab'}
-      `('"$title" tab', ({ title, finderFn, index, event }) => {
-        it(`renders tab with a title ${title} at index ${index}`, () => {
-          expect(findGlTabAt(index).attributes('title')).toBe(title);
-        });
-
-        it(`renders the ${title} chart`, () => {
-          expect(finderFn().exists()).toBe(true);
-        });
-
-        describe('when selected', () => {
-          beforeEach(async () => {
-            findGlTabs().vm.$emit('input', index);
-            await nextTick();
-          });
-
-          it('updates history', () => {
-            expect(updateHistory).toHaveBeenCalledTimes(1);
-            expect(updateHistory).toHaveBeenCalledWith(
-              expect.objectContaining({
-                url: `/?chart=${title.toLowerCase().replace(/\s/g, '-')}`,
-              }),
-            );
-            expect(findGlTabs().attributes('value')).toBe(index.toString());
-          });
-
-          it('when selected again, does not update history twice', async () => {
-            findGlTabs().vm.$emit('input', index);
-            await nextTick();
-
-            expect(updateHistory).toHaveBeenCalledTimes(1);
-          });
-        });
-
-        describe('when clicked', () => {
-          beforeEach(() => {
-            findGlTabAt(index).vm.$emit('click');
-          });
-
-          it('records event', () => {
-            expect(trackEventSpy).toHaveBeenCalledWith(event, {}, undefined);
-          });
-        });
+    it('shows migration alert', () => {
+      expect(findDoraMetricsMigrationAlert().props()).toMatchObject({
+        namespacePath: projectPath,
+        isProject: true,
       });
     });
 
-    describe('when doraMetricsDashboard is enabled', () => {
-      beforeEach(() => {
-        createWrapper({
-          provide: {
-            shouldRenderDoraCharts: true,
-            glFeatures: {
-              doraMetricsDashboard: true,
-            },
-          },
-        });
-      });
-
-      it('does not show tabs', () => {
-        expect(findGlTabs().exists()).toBe(false);
-      });
-
-      it('shows migration alert', () => {
-        expect(findDoraMetricsMigrationAlert().props()).toMatchObject({
-          namespacePath: projectPath,
-          isProject: true,
-        });
-      });
+    it(`renders the chart`, () => {
+      expect(findPipelinesDashboard().exists()).toBe(true);
     });
   });
 
@@ -206,6 +97,18 @@ describe('ProjectsPipelinesChartsApp', () => {
       expect(findAllGlTabs()).toHaveLength(2);
     });
 
+    it('records event when the pipelines tab is clicked', () => {
+      findGlTabAt(0).vm.$emit('click');
+
+      expect(trackEventSpy).toHaveBeenCalledWith('p_analytics_ci_cd_pipelines', {}, undefined);
+    });
+
+    it('does not record an event when the project quality tab is clicked', () => {
+      findGlTabAt(1).vm.$emit('click');
+
+      expect(trackEventSpy).not.toHaveBeenCalled();
+    });
+
     it(`renders tab with a title "Project quality" at index 1`, () => {
       expect(findGlTabAt(1).attributes('title')).toBe('Project quality');
     });
@@ -217,21 +120,16 @@ describe('ProjectsPipelinesChartsApp', () => {
 
   describe('query params', () => {
     describe.each`
-      param                        | tab
-      ${''}                        | ${'0'}
-      ${'fake'}                    | ${'0'}
-      ${'pipelines'}               | ${'0'}
-      ${'deployment-frequency'}    | ${'1'}
-      ${'lead-time'}               | ${'2'}
-      ${'time-to-restore-service'} | ${'3'}
-      ${'change-failure-rate'}     | ${'4'}
-      ${'project-quality'}         | ${'5'}
+      param                | tab
+      ${''}                | ${'0'}
+      ${'fake'}            | ${'0'}
+      ${'pipelines'}       | ${'0'}
+      ${'project-quality'} | ${'1'}
     `('$chart', ({ param, tab }) => {
       it('shows tab #$tab for URL parameter "$chart"', () => {
         setWindowLocation(`/?chart=${param}`);
         createWrapper({
           provide: {
-            shouldRenderDoraCharts: true,
             shouldRenderQualitySummary: true,
           },
         });
@@ -251,7 +149,6 @@ describe('ProjectsPipelinesChartsApp', () => {
 
         createWrapper({
           provide: {
-            shouldRenderDoraCharts: true,
             shouldRenderQualitySummary: true,
           },
         });

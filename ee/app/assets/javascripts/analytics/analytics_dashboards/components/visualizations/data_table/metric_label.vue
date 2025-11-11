@@ -52,7 +52,7 @@ export default {
       return Object.values(DORA_METRICS).includes(this.identifier);
     },
     tooltip() {
-      if (this.glFeatures.doraMetricsDashboard && this.isDoraMetric) {
+      if (this.isDoraMetric) {
         return {
           ...VALUE_STREAM_METRIC_METADATA[this.identifier],
           groupLink: '-/analytics/dashboards/dora_metrics',
