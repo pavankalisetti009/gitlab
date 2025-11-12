@@ -292,7 +292,11 @@ module QA
         # Since we need to check the feature flag to determine this we require
         # cannot run this spec on canary/production
         context 'on SaaS when direct connection', :external_ai_provider,
-          only: { pipeline: %w[staging-canary staging] } do
+          only: { pipeline: %w[staging-canary staging] },
+          quarantine: {
+            issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/13652',
+            type: :investigating
+          } do
           include_examples 'direct code completion', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/480822'
           include_examples 'direct code generation', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/487950'
         end
