@@ -61,7 +61,7 @@ export default {
             form: this.formId,
           },
         },
-        actionSecondary: {
+        actionCancel: {
           text: __('Cancel'),
         },
       };
@@ -142,7 +142,7 @@ export default {
     modal-id="add-item-consumer-modal"
     :title="title"
     :action-primary="modal.actionPrimary"
-    :action-secondary="modal.actionSecondary"
+    :action-cancel="modal.actionCancel"
     @primary.prevent
     @hidden="$emit('hide')"
   >
