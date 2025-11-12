@@ -90,6 +90,12 @@ RSpec.describe Arkose::TokenVerificationService, feature_category: :instance_res
         it 'returns an error message' do
           expect(subject.message).to eq 'Captcha was not solved'
         end
+
+        it 'tracks failure via fail-open' do
+          expect(AntiAbuse::IdentityVerification::ArkoseFailOpen).to receive(:track_token_verification_result)
+            .with(success: false).once
+          subject
+        end
       end
 
       shared_examples 'returns success response with the correct payload' do
@@ -138,6 +144,12 @@ RSpec.describe Arkose::TokenVerificationService, feature_category: :instance_res
               subject
             end
 
+            it 'tracks successful token verification result' do
+              expect(AntiAbuse::IdentityVerification::ArkoseFailOpen).to receive(:track_token_verification_result)
+                .with(success: true).once
+              subject
+            end
+
             context 'when the user is nil' do
               let(:user) { nil }
 
@@ -158,6 +170,12 @@ RSpec.describe Arkose::TokenVerificationService, feature_category: :instance_res
               end
 
               it_behaves_like 'returns success response with the correct payload'
+
+              it 'tracks successful token verification result' do
+                expect(AntiAbuse::IdentityVerification::ArkoseFailOpen).to receive(:track_token_verification_result)
+                  .with(success: true).once
+                subject
+              end
             end
 
             context 'when the risk score is high' do
@@ -205,6 +223,12 @@ RSpec.describe Arkose::TokenVerificationService, feature_category: :instance_res
                 expect(logger).to receive(:log_unsolved_challenge)
               end
 
+              subject
+            end
+
+            it 'tracks successful token verification result' do
+              expect(AntiAbuse::IdentityVerification::ArkoseFailOpen).to receive(:track_token_verification_result)
+                .with(success: true).once
               subject
             end
           end
