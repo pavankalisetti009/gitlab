@@ -74,6 +74,10 @@ module Security
       end.compact_blank
     end
 
+    def licenses
+      violation_data&.dig("violations", "license_scanning") || {}
+    end
+
     def dismissed?
       return false if security_policy.nil?
 

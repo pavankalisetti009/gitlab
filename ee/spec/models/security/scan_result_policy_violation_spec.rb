@@ -402,6 +402,40 @@ RSpec.describe Security::ScanResultPolicyViolation, feature_category: :security_
     end
   end
 
+  describe '#licenses' do
+    let(:violation) { build(:scan_result_policy_violation, violation_data: violation_data) }
+
+    subject(:licenses) { violation.licenses }
+
+    context 'when violation_data is nil' do
+      let(:violation_data) { nil }
+
+      it { is_expected.to be_empty }
+    end
+
+    context 'when violation_data is empty' do
+      let(:violation_data) { {} }
+
+      it { is_expected.to be_empty }
+    end
+
+    context 'when violation_data does not contain license_scanning information' do
+      let(:violation_data) do
+        { violations: { scan_finding: { uuids: { previously_existing: %w[uuid-1 uuid-2], newly_detected: [] } } } }
+      end
+
+      it { is_expected.to be_empty }
+    end
+
+    context 'when violation_data contains license_scanning information' do
+      let(:violation_data) do
+        { violations: { license_scanning: { 'MIT License' => ['rack'], 'Ruby License' => ['json'] } } }
+      end
+
+      it { is_expected.to match({ 'MIT License' => ['rack'], 'Ruby License' => ['json'] }) }
+    end
+  end
+
   describe '#dismissed?' do
     let_it_be(:project) { create(:project) }
     let_it_be(:merge_request) { create(:merge_request, source_project: project) }
