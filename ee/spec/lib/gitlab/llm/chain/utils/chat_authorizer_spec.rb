@@ -306,6 +306,214 @@ RSpec.describe Gitlab::Llm::Chain::Utils::ChatAuthorizer, feature_category: :duo
           end
         end
       end
+
+      context 'when in merge request review context with confidential resources' do
+        let(:confidential_issue) { create(:issue, :confidential, project: project) }
+        let(:public_issue) { create(:issue, project: project) }
+        let(:merge_request) { create(:merge_request, project: project) }
+
+        before do
+          project.update!(duo_features_enabled: true)
+        end
+
+        context 'when context is duo code review' do
+          let(:duo_code_review_context) do
+            context = Gitlab::Llm::Chain::GitlabContext.new(
+              current_user: user,
+              container: project,
+              resource: confidential_issue,
+              ai_request: nil
+            )
+            context.instance_variable_set(:@is_duo_code_review, true)
+            context
+          end
+
+          it 'denies access to confidential resources' do
+            response = authorizer.resource(
+              resource: confidential_issue,
+              user: user,
+              context: duo_code_review_context
+            )
+
+            expect(response.allowed?).to be(false)
+            expect(response.message).to include("don't exist, you don't have access")
+          end
+
+          it 'allows access to public resources' do
+            response = authorizer.resource(
+              resource: public_issue,
+              user: user,
+              context: duo_code_review_context
+            )
+
+            expect(response.allowed?).to be(true)
+          end
+        end
+
+        context 'when context is not duo code review' do
+          let(:normal_context) do
+            Gitlab::Llm::Chain::GitlabContext.new(
+              current_user: user,
+              container: project,
+              resource: confidential_issue,
+              ai_request: nil
+            )
+          end
+
+          it 'allows access to confidential resources for authorized users' do
+            response = authorizer.resource(
+              resource: confidential_issue,
+              user: user,
+              context: normal_context
+            )
+
+            expect(response.allowed?).to be(true)
+          end
+        end
+
+        context 'when context is nil' do
+          it 'falls back to parent class behavior' do
+            response = authorizer.resource(
+              resource: confidential_issue,
+              user: user,
+              context: nil
+            )
+
+            expect(response.allowed?).to be(true)
+          end
+        end
+
+        context 'when resource does not respond to confidential?' do
+          let(:non_confidential_resource) { create(:user) }
+          let(:duo_code_review_context) do
+            context = Gitlab::Llm::Chain::GitlabContext.new(
+              current_user: user,
+              container: project,
+              resource: non_confidential_resource,
+              ai_request: nil
+            )
+            context.instance_variable_set(:@is_duo_code_review, true)
+            context
+          end
+
+          it 'allows access to resources without confidential? method' do
+            response = authorizer.resource(
+              resource: non_confidential_resource,
+              user: user,
+              context: duo_code_review_context
+            )
+
+            expect(response.allowed?).to be(false) # User resource authorization
+          end
+        end
+
+        context 'when resource is nil' do
+          let(:duo_code_review_context) do
+            context = Gitlab::Llm::Chain::GitlabContext.new(
+              current_user: user,
+              container: project,
+              resource: nil,
+              ai_request: nil
+            )
+            context.instance_variable_set(:@is_duo_code_review, true)
+            context
+          end
+
+          it 'returns not found for nil resource' do
+            response = authorizer.resource(
+              resource: nil,
+              user: user,
+              context: duo_code_review_context
+            )
+
+            expect(response.allowed?).to be(false)
+          end
+        end
+      end
+
+      # Test edge cases for private methods
+      describe 'private method behavior' do
+        context 'when testing merge_request_review_context?' do
+          it 'returns false for nil context' do
+            expect(
+              authorizer.send(:merge_request_review_context?, nil)
+            ).to be(false)
+          end
+
+          it 'returns false when @is_duo_code_review is not set' do
+            context = Gitlab::Llm::Chain::GitlabContext.new(
+              current_user: user,
+              container: project,
+              resource: resource,
+              ai_request: nil
+            )
+
+            expect(
+              authorizer.send(:merge_request_review_context?, context)
+            ).to be(false)
+          end
+
+          it 'returns false when @is_duo_code_review is false' do
+            context = Gitlab::Llm::Chain::GitlabContext.new(
+              current_user: user,
+              container: project,
+              resource: resource,
+              ai_request: nil
+            )
+            context.instance_variable_set(:@is_duo_code_review, false)
+
+            expect(
+              authorizer.send(:merge_request_review_context?, context)
+            ).to be(false)
+          end
+
+          it 'returns true when @is_duo_code_review is true' do
+            context = Gitlab::Llm::Chain::GitlabContext.new(
+              current_user: user,
+              container: project,
+              resource: resource,
+              ai_request: nil
+            )
+            context.instance_variable_set(:@is_duo_code_review, true)
+
+            expect(
+              authorizer.send(:merge_request_review_context?, context)
+            ).to be(true)
+          end
+        end
+
+        context 'when testing confidential_resource?' do
+          it 'returns false for nil resource' do
+            expect(
+              authorizer.send(:confidential_resource?, nil)
+            ).to be(false)
+          end
+
+          it 'returns false for resource without confidential? method' do
+            resource_without_confidential = create(:user)
+
+            expect(
+              authorizer.send(:confidential_resource?, resource_without_confidential)
+            ).to be(false)
+          end
+
+          it 'returns false for non-confidential resource' do
+            public_issue = create(:issue, project: project)
+
+            expect(
+              authorizer.send(:confidential_resource?, public_issue)
+            ).to be(false)
+          end
+
+          it 'returns true for confidential resource' do
+            confidential_issue = create(:issue, :confidential, project: project)
+
+            expect(
+              authorizer.send(:confidential_resource?, confidential_issue)
+            ).to be(true)
+          end
+        end
+      end
     end
 
     describe '.user' do

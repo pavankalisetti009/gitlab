@@ -26,7 +26,8 @@ module Gitlab
               # if resource not found then return an error as the answer.
               authorizer = Utils::ChatAuthorizer.resource(
                 resource: resource,
-                user: context.current_user)
+                user: context.current_user,
+                context: context)
 
               unless authorizer.allowed?
                 log_error(message: "Error finding #{resource_name}",
