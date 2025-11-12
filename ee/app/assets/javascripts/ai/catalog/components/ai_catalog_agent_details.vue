@@ -1,4 +1,5 @@
 <script>
+import { GlTruncateText } from '@gitlab/ui';
 import { AGENT_VISIBILITY_LEVEL_DESCRIPTIONS } from '../constants';
 import AiCatalogItemField from './ai_catalog_item_field.vue';
 import AiCatalogItemVisibilityField from './ai_catalog_item_visibility_field.vue';
@@ -9,6 +10,10 @@ export default {
     AiCatalogItemField,
     AiCatalogItemVisibilityField,
     FormSection,
+    GlTruncateText,
+  },
+  truncateTextToggleButtonProps: {
+    class: 'gl-font-regular',
   },
   props: {
     item: {
@@ -58,7 +63,13 @@ export default {
       <form-section :title="s__('AICatalog|Prompts')">
         <ai-catalog-item-field v-if="systemPrompt" :title="s__('AICatalog|System prompt')">
           <div class="gl-border gl-mb-3 gl-mt-2 gl-rounded-default gl-bg-default gl-p-3">
-            <pre class="gl-m-0 gl-whitespace-pre-wrap">{{ systemPrompt }}</pre>
+            <pre class="gl-m-0 gl-whitespace-pre-wrap"><gl-truncate-text
+              :lines="20"
+              :show-more-text="__('Show more')"
+              :show-less-text="__('Show less')"
+              :toggle-button-props="$options.truncateTextToggleButtonProps"
+              class="gl-flex gl-flex-col gl-items-start gl-gap-3"
+            >{{ systemPrompt }}</gl-truncate-text></pre>
           </div>
         </ai-catalog-item-field>
       </form-section>
