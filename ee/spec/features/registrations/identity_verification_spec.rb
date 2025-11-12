@@ -517,6 +517,8 @@ RSpec.describe 'Identity Verification', :with_trial_types, :js, :with_current_or
   end
 
   def user_signs_out
+    dismiss_welcome_banner_if_present(page)
+
     find_by_testid('user-dropdown').click
     click_link 'Sign out'
 

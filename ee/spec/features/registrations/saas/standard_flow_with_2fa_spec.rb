@@ -28,6 +28,8 @@ RSpec.describe 'SaaS registration from an invite', :with_current_organization, :
 
       expect_to_be_on_2fa_verification(with_invite_notification: true)
 
+      dismiss_welcome_banner_if_present(page)
+
       otp_authenticator_registration_and_copy_codes(user.current_otp, password)
 
       expect_to_be_on_profile_account_page
@@ -49,6 +51,8 @@ RSpec.describe 'SaaS registration from an invite', :with_current_organization, :
         click_on 'Continue'
 
         expect_to_be_on_2fa_verification(with_invite_notification: true)
+
+        dismiss_welcome_banner_if_present(page)
 
         otp_authenticator_registration_and_copy_codes(user.current_otp, password)
 
@@ -79,6 +83,8 @@ RSpec.describe 'SaaS registration from an invite', :with_current_organization, :
       page.refresh
 
       expect_to_be_on_2fa_verification
+
+      dismiss_welcome_banner_if_present(page)
 
       otp_authenticator_registration_and_copy_codes(user.current_otp, password)
 
