@@ -150,6 +150,8 @@ module Gitlab
             # SaaS customers always use DAP
             return true unless feature_setting&.self_hosted?
 
+            return false if feature_setting&.self_hosted_model&.unsupported_family_for_duo_agent_platform_code_review?
+
             # Self-hosted customers need DWS configured to use DAP
             ::Gitlab::DuoWorkflow::Client.self_hosted_url.present?
           end

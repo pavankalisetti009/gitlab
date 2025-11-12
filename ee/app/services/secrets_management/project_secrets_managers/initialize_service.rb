@@ -2,7 +2,7 @@
 
 module SecretsManagement
   module ProjectSecretsManagers
-    class InitializeService < BaseService
+    class InitializeService < ProjectBaseService
       def execute
         if project.secrets_manager.nil?
           secrets_manager = ProjectSecretsManager.create!(project: project)

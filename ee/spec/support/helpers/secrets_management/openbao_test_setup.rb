@@ -82,6 +82,7 @@ module SecretsManagement
               "correlation_id": "correlation_id",
               "user_id": "user_id",
               "project_id": "project_id",
+              "group_id": "group_id",
               "namespace_id": "namespace_id"
             },
             "bound_subject": "gitlab_secrets_manager",

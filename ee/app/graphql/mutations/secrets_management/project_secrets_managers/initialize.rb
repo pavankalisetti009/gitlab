@@ -52,10 +52,7 @@ module Mutations
             'enable_ci_secrets_manager_for_project',
             project: project,
             user: current_user,
-            namespace: project.namespace,
-            additional_properties: {
-              label: 'graphql'
-            }
+            namespace: project.namespace
           )
         end
 

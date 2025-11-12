@@ -46,6 +46,7 @@ module EE
           expose :duo_features_enabled, if: ->(_instance, _opts) { ::License.ai_features_available? }
           expose :lock_duo_features_enabled, if: ->(_instance, _opts) { ::License.ai_features_available? }
           expose :enabled_expanded_logging, if: ->(_instance, _opts) { ::License.ai_features_available? }
+          expose :foundational_agents_default_enabled, if: ->(_instance, _opts) { ::License.ai_features_available? }
           expose :disabled_direct_code_suggestions, if: ->(_instance, _opts) { ::GitlabSubscriptions::AddOnPurchase.exists_for_unit_primitive?(:complete_code, :instance) }
           expose :allow_top_level_group_owners_to_create_service_accounts, if: ->(_instance, _opts) { ::License.feature_available?(:service_accounts) }
           expose :auto_duo_code_review_enabled,

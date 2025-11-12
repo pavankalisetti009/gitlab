@@ -14,6 +14,8 @@ RSpec.describe Ai::DuoWorkflows::Workflow, feature_category: :duo_agent_platform
     it { is_expected.to have_many(:checkpoint_writes).class_name('Ai::DuoWorkflows::CheckpointWrite') }
     it { is_expected.to belong_to(:project).optional }
     it { is_expected.to belong_to(:namespace).optional }
+    it { is_expected.to belong_to(:issue).optional }
+    it { is_expected.to belong_to(:merge_request).optional }
     it { is_expected.to belong_to(:ai_catalog_item_version).optional }
     it { is_expected.to belong_to(:ai_catalog_item_version).class_name('Ai::Catalog::ItemVersion') }
 

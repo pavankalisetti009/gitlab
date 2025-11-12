@@ -2,13 +2,8 @@
 
 module SecretsManagement
   module ProjectSecrets
-    class CreateService < BaseService
-      include Gitlab::Utils::StrongMemoize
-      include SecretsManagerClientHelpers
+    class CreateService < ProjectBaseService
       include CiPolicies::SecretRefresherHelper
-      include Helpers::UserClientHelper
-      include Helpers::ExclusiveLeaseHelper
-      include ErrorResponseHelper
 
       # MAX_SECRET_SIZE sets the maximum size of a secret value; see note
       # below before removing.

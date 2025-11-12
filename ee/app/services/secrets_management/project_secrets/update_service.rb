@@ -2,13 +2,8 @@
 
 module SecretsManagement
   module ProjectSecrets
-    class UpdateService < BaseService
-      include Gitlab::Utils::StrongMemoize
-      include SecretsManagerClientHelpers
+    class UpdateService < ProjectBaseService
       include CiPolicies::SecretRefresherHelper
-      include Helpers::UserClientHelper
-      include Helpers::ExclusiveLeaseHelper
-      include ErrorResponseHelper
 
       def execute(
         name:,

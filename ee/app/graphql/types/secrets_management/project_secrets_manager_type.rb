@@ -13,11 +13,6 @@ module Types
         null: false,
         description: 'Project the secrets manager belong to.'
 
-      field :ci_secrets_mount_path,
-        type: GraphQL::Types::String,
-        null: false,
-        description: 'Mount path of the secrets engine for the project.'
-
       field :status,
         Types::SecretsManagement::ProjectSecretsManagerStatusEnum,
         description: 'Status of the project secrets manager.'

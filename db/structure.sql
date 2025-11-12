@@ -10584,6 +10584,7 @@ CREATE TABLE ai_settings (
     duo_core_features_enabled boolean,
     duo_agent_platform_service_url text,
     duo_agent_platform_request_count integer DEFAULT 0 NOT NULL,
+    foundational_agents_default_enabled boolean DEFAULT true,
     CONSTRAINT check_3cf9826589 CHECK ((char_length(ai_gateway_url) <= 2048)),
     CONSTRAINT check_900d7a89b3 CHECK ((char_length(duo_agent_platform_service_url) <= 2048)),
     CONSTRAINT check_a02bd8868c CHECK ((char_length(amazon_q_role_arn) <= 2048)),
@@ -16651,10 +16652,13 @@ CREATE TABLE duo_workflows_workflows (
     environment smallint,
     namespace_id bigint,
     ai_catalog_item_version_id bigint,
+    issue_id bigint,
+    merge_request_id bigint,
     CONSTRAINT check_30ca07a4ef CHECK ((char_length(goal) <= 16384)),
     CONSTRAINT check_3a9162f1ae CHECK ((char_length(image) <= 2048)),
     CONSTRAINT check_73884a5839 CHECK ((num_nonnulls(namespace_id, project_id) = 1)),
-    CONSTRAINT check_ec723e2a1a CHECK ((char_length(workflow_definition) <= 255))
+    CONSTRAINT check_ec723e2a1a CHECK ((char_length(workflow_definition) <= 255)),
+    CONSTRAINT check_workflows_single_noteable CHECK ((num_nonnulls(issue_id, merge_request_id) <= 1))
 );
 
 CREATE SEQUENCE duo_workflows_workflows_id_seq
@@ -17818,6 +17822,23 @@ CREATE SEQUENCE group_scim_identities_id_seq
     CACHE 1;
 
 ALTER SEQUENCE group_scim_identities_id_seq OWNED BY group_scim_identities.id;
+
+CREATE TABLE group_secrets_managers (
+    id bigint NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    group_id bigint NOT NULL,
+    status smallint DEFAULT 0 NOT NULL
+);
+
+CREATE SEQUENCE group_secrets_managers_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE group_secrets_managers_id_seq OWNED BY group_secrets_managers.id;
 
 CREATE TABLE group_security_exclusions (
     id bigint NOT NULL,
@@ -20499,7 +20520,8 @@ CREATE TABLE namespace_aggregation_schedules (
 
 CREATE TABLE namespace_ai_settings (
     namespace_id bigint NOT NULL,
-    duo_workflow_mcp_enabled boolean DEFAULT false NOT NULL
+    duo_workflow_mcp_enabled boolean DEFAULT false NOT NULL,
+    foundational_agents_default_enabled boolean DEFAULT true
 );
 
 CREATE TABLE namespace_bans (
@@ -31312,6 +31334,8 @@ ALTER TABLE ONLY group_scim_auth_access_tokens ALTER COLUMN id SET DEFAULT nextv
 
 ALTER TABLE ONLY group_scim_identities ALTER COLUMN id SET DEFAULT nextval('group_scim_identities_id_seq'::regclass);
 
+ALTER TABLE ONLY group_secrets_managers ALTER COLUMN id SET DEFAULT nextval('group_secrets_managers_id_seq'::regclass);
+
 ALTER TABLE ONLY group_security_exclusions ALTER COLUMN id SET DEFAULT nextval('group_security_exclusions_id_seq'::regclass);
 
 ALTER TABLE ONLY group_ssh_certificates ALTER COLUMN id SET DEFAULT nextval('group_ssh_certificates_id_seq'::regclass);
@@ -34282,6 +34306,9 @@ ALTER TABLE ONLY group_scim_auth_access_tokens
 
 ALTER TABLE ONLY group_scim_identities
     ADD CONSTRAINT group_scim_identities_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY group_secrets_managers
+    ADD CONSTRAINT group_secrets_managers_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY group_security_exclusions
     ADD CONSTRAINT group_security_exclusions_pkey PRIMARY KEY (id);
@@ -40229,6 +40256,10 @@ CREATE INDEX index_duo_workflows_events_on_workflow_id ON duo_workflows_events U
 
 CREATE INDEX index_duo_workflows_workflows_on_ai_catalog_item_version_id ON duo_workflows_workflows USING btree (ai_catalog_item_version_id);
 
+CREATE INDEX index_duo_workflows_workflows_on_issue_id ON duo_workflows_workflows USING btree (issue_id);
+
+CREATE INDEX index_duo_workflows_workflows_on_merge_request_id ON duo_workflows_workflows USING btree (merge_request_id);
+
 CREATE INDEX index_duo_workflows_workflows_on_namespace_id ON duo_workflows_workflows USING btree (namespace_id);
 
 CREATE INDEX index_duo_workflows_workflows_on_project_id ON duo_workflows_workflows USING btree (project_id);
@@ -40554,6 +40585,8 @@ CREATE UNIQUE INDEX index_group_scim_identities_on_lower_extern_uid_group_id ON 
 CREATE UNIQUE INDEX index_group_scim_identities_on_temp_source_id ON group_scim_identities USING btree (temp_source_id);
 
 CREATE UNIQUE INDEX index_group_scim_identities_on_user_id_and_group_id ON group_scim_identities USING btree (user_id, group_id);
+
+CREATE INDEX index_group_secrets_managers_on_group_id ON group_secrets_managers USING btree (group_id);
 
 CREATE INDEX index_group_security_exclusions_on_group_id ON group_security_exclusions USING btree (group_id);
 
@@ -50223,6 +50256,9 @@ ALTER TABLE ONLY packages_helm_file_metadata
 ALTER TABLE ONLY bulk_import_failures
     ADD CONSTRAINT fk_dad28985ee FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY duo_workflows_workflows
+    ADD CONSTRAINT fk_daffbfef9a FOREIGN KEY (issue_id) REFERENCES issues(id) ON DELETE CASCADE;
+
 ALTER TABLE ONLY project_topics
     ADD CONSTRAINT fk_db13576296 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
@@ -50393,6 +50429,9 @@ ALTER TABLE ONLY merge_requests_compliance_violations
 
 ALTER TABLE ONLY issue_emails
     ADD CONSTRAINT fk_ed0f4c4b51 FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY duo_workflows_workflows
+    ADD CONSTRAINT fk_ed58162ace FOREIGN KEY (merge_request_id) REFERENCES merge_requests(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY cluster_agent_migrations
     ADD CONSTRAINT fk_ed8ffda028 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
@@ -50777,6 +50816,9 @@ ALTER TABLE ONLY gpg_signatures
 
 ALTER TABLE ONLY virtual_registries_container_registry_upstreams
     ADD CONSTRAINT fk_rails_11d127aa33 FOREIGN KEY (registry_id) REFERENCES virtual_registries_container_registries(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY group_secrets_managers
+    ADD CONSTRAINT fk_rails_12159a4355 FOREIGN KEY (group_id) REFERENCES namespaces(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY pm_affected_packages
     ADD CONSTRAINT fk_rails_1279c1b9a1 FOREIGN KEY (pm_advisory_id) REFERENCES pm_advisories(id) ON DELETE CASCADE;

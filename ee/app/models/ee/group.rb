@@ -105,6 +105,8 @@ module EE
       has_many :ai_feature_settings, class_name: 'Ai::ModelSelection::NamespaceFeatureSetting', foreign_key: :namespace_id, inverse_of: :namespace
       has_many :configured_ai_catalog_items, class_name: '::Ai::Catalog::ItemConsumer', inverse_of: :group
 
+      has_one :secrets_manager, class_name: '::SecretsManagement::GroupSecretsManager', inverse_of: :group
+
       delegate :repository_read_only,
         :default_compliance_framework,
         :default_compliance_framework_id,

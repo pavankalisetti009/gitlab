@@ -2,10 +2,7 @@
 
 module SecretsManagement
   module Permissions
-    class UpdateService < BaseService
-      include SecretsManagerClientHelpers
-      include Helpers::ExclusiveLeaseHelper
-
+    class UpdateService < ProjectBaseService
       INTERNAL_PERMISSIONS = %w[list scan].freeze
 
       def execute(principal_id:, principal_type:, permissions:, expired_at:)
@@ -40,7 +37,7 @@ module SecretsManagement
         secret_permission.permissions = secret_permission.permissions + INTERNAL_PERMISSIONS
 
         # Get or create policy
-        policy_name = secrets_manager.generate_policy_name(
+        policy_name = secrets_manager.policy_name_for_principal(
           principal_type: secret_permission.principal_type,
           principal_id: secret_permission.principal_id)
 

@@ -68,5 +68,9 @@ module Ai
     def ga?
       release_state == RELEASE_STATE_GA
     end
+
+    def unsupported_family_for_duo_agent_platform_code_review?
+      %w[gpt general claude_3].exclude?(model)
+    end
   end
 end

@@ -224,8 +224,25 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
             .and_return(feature_setting)
         end
 
-        context 'when DWS URL is configured' do
+        context 'when using unsupported model family' do
+          let!(:self_hosted_model) { create(:ai_self_hosted_model, model: :llama3) }
+
           before do
+            allow(feature_setting).to receive(:self_hosted_model).and_return(self_hosted_model)
+          end
+
+          it 'falls back to legacy flow' do
+            expect(completion).to receive(:execute_legacy_flow).and_call_original
+            expect(completion).not_to receive(:execute_duo_agent_platform_flow)
+            completion.execute
+          end
+        end
+
+        context 'when DWS URL is configured' do
+          let!(:self_hosted_model) { create(:ai_self_hosted_model, model: :mistral) }
+
+          before do
+            allow(feature_setting).to receive(:self_hosted_model).and_return(self_hosted_model)
             allow(::Gitlab::DuoWorkflow::Client).to receive(:self_hosted_url).and_return('https://dws.example.com')
             allow(::Ai::DuoWorkflows::CreateAndStartWorkflowService).to receive(:new).and_return(
               instance_double(::Ai::DuoWorkflows::CreateAndStartWorkflowService, execute: ServiceResponse.success)
@@ -240,7 +257,10 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
         end
 
         context 'when DWS URL is not configured' do
+          let!(:self_hosted_model) { create(:ai_self_hosted_model, model: :mistral) }
+
           before do
+            allow(feature_setting).to receive(:self_hosted_model).and_return(self_hosted_model)
             allow(::Gitlab::DuoWorkflow::Client).to receive(:self_hosted_url).and_return(nil)
           end
 

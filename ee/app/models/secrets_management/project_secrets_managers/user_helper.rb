@@ -5,62 +5,58 @@ module SecretsManagement
     module UserHelper
       extend ActiveSupport::Concern
 
-      # currently we are gonna set the max_group as 25, but will increase if nescessary
-      MAX_GROUPS = 25
-
-      def user_auth_mount
-        'user_jwt'
-      end
-
-      def legacy_user_auth_mount
-        [
-          namespace_path,
-          'user_jwt'
-        ].compact.join('/')
-      end
-
-      def user_auth_role
-        'all_users'
-      end
-
-      def legacy_user_auth_role
-        "project_#{project.id}"
-      end
-
-      def user_auth_type
-        'jwt'
-      end
-
-      def user_auth_policies
-        [
-          # User policy
-          user_policy_template,
-          # MemberRole policy
-          member_role_policy_template,
-          # Group policy
-          *group_policy_template,
-          # Role policy
-          role_policy_template
-        ]
-      end
-
-      def user_policy_template
-        "{{ if ne \"\" .user_id }}project_{{ .project_id }}/users/direct/user_{{ .user_id }}{{ end }}"
-      end
-
-      def member_role_policy_template
-        "{{ if and (ne nil (index . \"member_role_id\")) (ne \"\" .member_role_id) }}project_{{ .project_id }}" \
-          "/users/direct/member_role_{{ .member_role_id }}{{ end }}"
-      end
-
-      def group_policy_template
-        (0...MAX_GROUPS).map do |i|
-          "{{ if gt (len .groups) #{i} }}project_{{ .project_id }}/users/direct/group_{{ index .groups #{i} }}{{ end }}"
-        end
-      end
-
-      def role_policy_template
-        "{{ if ne \"\" .role_id }}project_{{ .project_id }}/users/roles/{{ .role_id }}{{ end }}"
+      # User auth CEL program - validates user has access to project
+      def user_auth_cel_program(project_id)
+        # rubocop:disable Layout/LineLength -- CEL expression readability
+        {
+          variables: [
+            { name: "base", expression: %("users") },
+            { name: "uid", expression: %q(('user_id' in claims) ? string(claims['user_id']) : "") },
+            { name: "mrid",
+              expression: %q(('member_role_id' in claims && claims['member_role_id'] != null) ? string(claims['member_role_id']) : "") },
+            { name: "rid", expression: %q(('role_id' in claims) ? string(claims['role_id']) : "") },
+            { name: "expected_pid", expression: %("#{project_id}") },
+            { name: "pid", expression: %q(('project_id' in claims) ? string(claims['project_id']) : "") },
+            { name: "grps", expression: %q(('groups' in claims) ? claims['groups'] : []) },
+            { name: "who", expression: %q(uid != "" ? "gitlab-user:" + uid : "gitlab-user:anonymous") },
+            { name: "aud", expression: %q(('aud' in claims) ? claims['aud'] : "") },
+            { name: "expected_aud", expression: %("#{aud}") },
+            { name: "sub", expression: %q(('sub' in claims) ? claims['sub'] : "") },
+            { name: "secrets_manager_scope",
+              expression: %q(('secrets_manager_scope' in claims) ? string(claims['secrets_manager_scope']) : "") },
+            { name: "correlation_id",
+              expression: %q(('correlation_id' in claims) ? string(claims['correlation_id']) : "") },
+            { name: "namespace_id",
+              expression: %q(('namespace_id' in claims) ? string(claims['namespace_id']) : "") }
+          ],
+          expression: <<~'CEL'.strip
+            sub == "" ? "missing subject" :
+            !sub.startsWith("user:") ? "invalid subject for user authentication" :
+            secrets_manager_scope == "" ? "missing secrets_manager_scope" :
+            secrets_manager_scope != "user" ? "invalid secrets_manager_scope" :
+            pid == "" ? "missing project_id" :
+            pid != expected_pid ? "token project_id does not match role base" :
+            aud == "" ? "missing audience" :
+            aud != expected_aud ? "audience validation failed" :
+            uid == "" ? "missing user_id" :
+            pb.Auth{
+              display_name: who,
+              alias: logical.Alias { name: who },
+              policies:
+                (uid  != "" ? [base + "/direct/user_"        + uid]  : []) +
+                (mrid != "" ? [base + "/direct/member_role_" + mrid] : []) +
+                grps.map(g, base + "/direct/group_" + string(g)) +
+                (rid  != "" ? [base + "/roles/"              + rid]  : []),
+              metadata: {
+                "correlation_id": correlation_id,
+                "project_id": pid,
+                "namespace_id": namespace_id,
+                "user_id": uid
+              }
+            }
+          CEL
+        }
+        # rubocop:enable Layout/LineLength
       end
     end
   end

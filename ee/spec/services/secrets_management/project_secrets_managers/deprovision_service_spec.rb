@@ -79,7 +79,7 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::DeprovisionService, :g
       # Owner role policy (created by provision service)
       expect_policy_to_exist(
         secrets_manager.full_project_namespace_path,
-        secrets_manager.generate_policy_name(
+        secrets_manager.policy_name_for_principal(
           principal_type: 'Role',
           principal_id: Gitlab::Access.sym_options_with_owner[:owner]
         ))
@@ -87,7 +87,7 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::DeprovisionService, :g
       # Member role policy (created by update_secret_permission)
       expect_policy_to_exist(
         secrets_manager.full_project_namespace_path,
-        secrets_manager.generate_policy_name(
+        secrets_manager.policy_name_for_principal(
           principal_type: 'MemberRole',
           principal_id: member_role.id
         ))
@@ -171,51 +171,12 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::DeprovisionService, :g
         # Other project's policies should still exist
         expect_policy_to_exist(
           another_secrets_manager.full_project_namespace_path,
-          another_secrets_manager.generate_policy_name(
+          another_secrets_manager.policy_name_for_principal(
             principal_type: 'Role',
             principal_id: Gitlab::Access.sym_options_with_owner[:owner]
           ))
         expect(another_secrets_manager.reload).to be_present
       end
-    end
-  end
-
-  context 'when cleaning up a legacy project' do
-    let!(:another_project) { create(:project, namespace: project.namespace) }
-    let(:another_service) { described_class.new(another_project.secrets_manager, user) }
-
-    before do
-      # Create a secrets manager database object manually.
-      another_project.secrets_manager = SecretsManagement::ProjectSecretsManager.create!(project: another_project)
-      another_project.secrets_manager.status = SecretsManagement::ProjectSecretsManager::STATUSES[:active]
-      another_project.secrets_manager.save!
-
-      # Create legacy auth mounts
-      secrets_manager_client.enable_auth_engine(another_project.secrets_manager.legacy_ci_auth_mount, "jwt")
-      secrets_manager_client.enable_auth_engine(another_project.secrets_manager.legacy_user_auth_mount, "jwt")
-
-      # Create legacy secrets mounts
-      secrets_manager_client.enable_secrets_engine(another_project.secrets_manager.legacy_ci_secrets_mount_path,
-        "kv-v2")
-
-      # Create a legacy policy
-      secrets_manager_client.set_policy(SecretsManagement::AclPolicy.new("project_#{project.id}/pipelines/global"))
-    end
-
-    subject(:another_result) { another_service.execute }
-
-    it 'removes legacy mounts' do
-      expect(another_result).to be_success
-
-      # Auth engines should be deleted
-      expect_jwt_auth_engine_not_to_be_mounted("", another_project.secrets_manager.legacy_ci_auth_mount)
-      expect_jwt_auth_engine_not_to_be_mounted("", another_project.secrets_manager.legacy_user_auth_mount)
-
-      # Secrets engine should be deleted
-      expect_kv_secret_engine_not_to_be_mounted("", another_project.secrets_manager.legacy_ci_secrets_mount_path)
-
-      # Expect there to be no policies
-      expect_legacy_project_to_have_no_policies(another_project)
     end
   end
 end

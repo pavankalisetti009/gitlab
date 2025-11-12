@@ -114,7 +114,7 @@ RSpec.describe API::Ci::Runner, feature_category: :runner_core do
                         "gitlab_secrets_manager" => {
                           "engine" => {
                             "name" => "kv-v2",
-                            "path" => project_secrets_manager.legacy_ci_secrets_mount_path
+                            "path" => project_secrets_manager.ci_secrets_mount_full_path
                           },
                           "path" => "explicit/my_test_secret",
                           "field" => 'value',

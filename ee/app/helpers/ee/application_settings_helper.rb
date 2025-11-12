@@ -86,6 +86,7 @@ module EE
         :duo_remote_flows_enabled,
         :duo_remote_flows_availability,
         :enabled_expanded_logging,
+        :foundational_agents_default_enabled,
         # Add all Zoekt settings automatically
         *::Search::Zoekt::Settings.all_settings.keys,
         :duo_workflow_oauth_application_id,

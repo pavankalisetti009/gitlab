@@ -105,10 +105,6 @@ RSpec.configure do |config|
     # For now we'll just clean up kv secrets engines because that's
     # all we're handling in the secrets manager for now. We can add more
     # things to clean up here later on as we add more features.
-    clean_all_kv_secrets_engines
-    clean_all_pipeline_jwt_engines
-    clean_all_user_jwt_engines
-    clean_all_policies
-    clean_all_namespaces
+    reset_openbao
   end
 end

@@ -3,297 +3,152 @@
 require 'spec_helper'
 
 RSpec.describe SecretsManagement::ProjectSecretsManager, feature_category: :secrets_management do
-  subject(:secrets_manager) { build(:project_secrets_manager) }
+  let_it_be_with_reload(:project) { create(:project) }
+
+  subject(:secrets_manager) { create(:project_secrets_manager, project: project) }
 
   it { is_expected.to belong_to(:project) }
 
   it { is_expected.to validate_presence_of(:project) }
 
-  describe 'state machine' do
-    let_it_be(:project) { create(:project) }
+  it_behaves_like 'a secrets manager'
 
-    subject(:secrets_manager) { create(:project_secrets_manager, project: project) }
-
-    context 'when newly created' do
-      it 'defaults to provisioning' do
-        expect(secrets_manager).to be_provisioning
-      end
+  describe '#ci_policy_name' do
+    it 'returns combined policy when both environment and branch are specified' do
+      expect(secrets_manager.ci_policy_name('production', 'main'))
+        .to eq(secrets_manager.ci_policy_name_combined('production', 'main'))
     end
 
-    context 'when activating' do
-      it 'allows transitions from any non-active status to active' do
-        [:provisioning, :deprovisioning].each do |status|
-          secrets_manager.update!(status: SecretsManagement::ProjectSecretsManager::STATUSES[status])
-          secrets_manager.activate!
-          expect(secrets_manager.reload).to be_active
-        end
-      end
-
-      it 'cannot transition from active to active' do
-        secrets_manager.activate!
-        expect(secrets_manager).to be_active
-
-        expect { secrets_manager.activate! }
-          .to raise_error(StateMachines::InvalidTransition)
-      end
+    it 'returns environment policy when only environment is specified' do
+      expect(secrets_manager.ci_policy_name('production', '*'))
+        .to eq(secrets_manager.ci_policy_name_env('production'))
     end
 
-    context 'when initiating deprovisioning' do
-      it 'transitions from active to deprovisioning' do
-        secrets_manager.activate!
-        expect(secrets_manager).to be_active
+    it 'returns branch policy when only branch is specified' do
+      expect(secrets_manager.ci_policy_name('*', 'main'))
+        .to eq(secrets_manager.ci_policy_name_branch('main'))
+    end
 
-        secrets_manager.initiate_deprovision!
-        expect(secrets_manager.reload).to be_deprovisioning
-      end
-
-      it 'cannot transition from non-active states' do
-        [:provisioning, :deprovisioning].each do |status|
-          secrets_manager.update!(status: SecretsManagement::ProjectSecretsManager::STATUSES[status])
-          expect { secrets_manager.initiate_deprovision! }
-            .to raise_error(StateMachines::InvalidTransition)
-        end
-      end
+    it 'returns global policy when both are wildcards' do
+      expect(secrets_manager.ci_policy_name('*', '*'))
+        .to eq(secrets_manager.ci_policy_name_global)
     end
   end
 
-  describe '#ci_policies' do
-    let_it_be(:project) { create(:project) }
-    let(:secrets_manager) { build(:project_secrets_manager, project: project) }
-
-    describe '#ci_policy_name_global' do
-      it 'returns the correct global policy name' do
-        expect(secrets_manager.ci_policy_name_global).to eq("pipelines/global")
-      end
-    end
-
-    describe '#ci_policy_name_env' do
-      it 'returns the correct environment policy name with hex-encoded environment' do
-        environment = 'production'
-        hex_env = environment.unpack1('H*')
-
-        expect(secrets_manager.ci_policy_name_env(environment)).to eq("pipelines/env/#{hex_env}")
-      end
-
-      it 'handles special characters in environment names' do
-        environment = 'staging/us-east-1'
-        hex_env = environment.unpack1('H*')
-
-        expect(secrets_manager.ci_policy_name_env(environment)).to eq("pipelines/env/#{hex_env}")
-      end
-    end
-
-    describe '#ci_policy_name_branch' do
-      it 'returns the correct branch policy name with hex-encoded branch' do
-        branch = 'main'
-        hex_branch = branch.unpack1('H*')
-        policy_name = "pipelines/branch/#{hex_branch}"
-
-        expect(secrets_manager.ci_policy_name_branch(branch)).to eq(policy_name)
-      end
-
-      it 'handles special characters in branch names' do
-        branch = 'feature/add-new-widget'
-        hex_branch = branch.unpack1('H*')
-        policy_name = "pipelines/branch/#{hex_branch}"
-
-        expect(secrets_manager.ci_policy_name_branch(branch)).to eq(policy_name)
-      end
-    end
-
-    describe '#ci_policy_name_combined' do
-      it 'returns the correct combined policy name with hex-encoded environment and branch' do
-        environment = 'production'
-        branch = 'main'
-        hex_env = environment.unpack1('H*')
-        hex_branch = branch.unpack1('H*')
-
-        expected = "pipelines/combined/env/#{hex_env}/branch/#{hex_branch}"
-        expect(secrets_manager.ci_policy_name_combined(environment, branch)).to eq(expected)
-      end
-
-      it 'handles special characters in environment and branch names' do
-        environment = 'staging/us-east-1'
-        branch = 'feature/add-new-widget'
-        hex_env = environment.unpack1('H*')
-        hex_branch = branch.unpack1('H*')
-
-        expected = "pipelines/combined/env/#{hex_env}/branch/#{hex_branch}"
-        expect(secrets_manager.ci_policy_name_combined(environment, branch)).to eq(expected)
-      end
-    end
-
-    describe '#ci_auth_literal_policies' do
-      it 'returns an array with all policy types' do
-        policies = secrets_manager.ci_auth_literal_policies
-
-        expect(policies.size).to eq(4)
-        expect(policies[0]).to eq("pipelines/global") # Global policy
-        expect(policies[1]).to eq(secrets_manager.ci_policy_template_literal_environment)
-        expect(policies[2]).to eq(secrets_manager.ci_policy_template_literal_branch)
-        expect(policies[3]).to eq(secrets_manager.ci_policy_template_literal_combined)
-      end
-    end
-
-    describe '#ci_auth_glob_policies' do
-      context 'with environment glob and literal branch' do
-        let(:environment) { 'prod-*' }
-        let(:branch) { 'main' }
-
-        it 'returns environment glob and combined environment glob with branch policies' do
-          policies = secrets_manager.ci_auth_glob_policies(environment, branch)
-
-          expect(policies.size).to eq(2)
-          expect(policies[0]).to eq(secrets_manager.ci_policy_template_glob_environment(environment))
-          expect(policies[1]).to eq(secrets_manager.ci_policy_template_combined_glob_environment_branch(environment,
-            branch))
-        end
-      end
-
-      context 'with literal environment and branch glob' do
-        let(:environment) { 'production' }
-        let(:branch) { 'feature-*' }
-
-        it 'returns branch glob and combined environment with branch glob policies' do
-          policies = secrets_manager.ci_auth_glob_policies(environment, branch)
-
-          expect(policies.size).to eq(2)
-          expect(policies[0]).to eq(secrets_manager.ci_policy_template_glob_branch(branch))
-          expect(policies[1]).to eq(secrets_manager.ci_policy_template_combined_environment_glob_branch(environment,
-            branch))
-        end
-      end
-
-      context 'with both environment and branch globs' do
-        let(:environment) { 'prod-*' }
-        let(:branch) { 'feature-*' }
-
-        it 'returns environment glob, branch glob, and combined glob policies' do
-          policies = secrets_manager.ci_auth_glob_policies(environment, branch)
-
-          expect(policies.size).to eq(3)
-          expect(policies[0]).to eq(secrets_manager.ci_policy_template_glob_environment(environment))
-          expect(policies[1]).to eq(secrets_manager.ci_policy_template_glob_branch(branch))
-          expect(policies[2]).to eq(secrets_manager.ci_policy_template_combined_glob_environment_glob_branch(
-            environment, branch))
-        end
-      end
-
-      context 'with no globs' do
-        let(:environment) { 'production' }
-        let(:branch) { 'main' }
-
-        it 'returns an empty array' do
-          policies = secrets_manager.ci_auth_glob_policies(environment, branch)
-
-          expect(policies).to be_empty
-        end
-      end
-    end
-
-    describe '#ci_policy_template_glob_environment' do
-      it 'returns a template that checks for matching environment with hex encoding' do
-        env_glob = 'prod-*'
-        env_glob_hex = env_glob.unpack1('H*')
-
-        template = secrets_manager.ci_policy_template_glob_environment(env_glob)
-
-        expect(template).to include("(eq \"#{env_glob_hex}\" (.environment | hex))")
-        expect(template).to include(secrets_manager.ci_policy_name_env(env_glob))
-      end
-    end
-
-    describe '#ci_policy_template_glob_branch' do
-      it 'returns a template that checks for matching branch with hex encoding' do
-        branch_glob = 'feature-*'
-        branch_glob_hex = branch_glob.unpack1('H*')
-
-        template = secrets_manager.ci_policy_template_glob_branch(branch_glob)
-
-        expect(template).to include("(eq \"#{branch_glob_hex}\" (.ref | hex))")
-        expect(template).to include(secrets_manager.ci_policy_name_branch(branch_glob))
-      end
-    end
-
-    describe '#ci_policy_template_combined_glob_environment_branch' do
-      it 'returns a template that checks for matching environment glob with literal branch' do
-        env_glob = 'prod-*'
-        branch_literal = 'main'
-        env_glob_hex = env_glob.unpack1('H*')
-
-        template = secrets_manager.ci_policy_template_combined_glob_environment_branch(env_glob, branch_literal)
-
-        expect(template).to include("(eq \"#{env_glob_hex}\" (.environment | hex))")
-        expect(template).to include(secrets_manager.ci_policy_name_combined(env_glob, branch_literal))
-      end
-    end
-
-    describe '#ci_policy_template_combined_environment_glob_branch' do
-      it 'returns a template that checks for matching branch glob with literal environment' do
-        env_literal = 'production'
-        branch_glob = 'feature-*'
-        branch_glob_hex = branch_glob.unpack1('H*')
-
-        template = secrets_manager.ci_policy_template_combined_environment_glob_branch(env_literal, branch_glob)
-
-        expect(template).to include("(eq \"#{branch_glob_hex}\" (.ref | hex))")
-        expect(template).to include(secrets_manager.ci_policy_name_combined(env_literal, branch_glob))
-      end
-    end
-
-    describe '#ci_policy_template_combined_glob_environment_glob_branch' do
-      it 'returns a template that checks for matching environment and branch globs' do
-        env_glob = 'prod-*'
-        branch_glob = 'feature-*'
-        env_glob_hex = env_glob.unpack1('H*')
-        branch_glob_hex = branch_glob.unpack1('H*')
-
-        template = secrets_manager.ci_policy_template_combined_glob_environment_glob_branch(env_glob, branch_glob)
-
-        expect(template).to include("(eq \"#{env_glob_hex}\" (.environment | hex))")
-        expect(template).to include("(eq \"#{branch_glob_hex}\" (.ref | hex))")
-        expect(template).to include(secrets_manager.ci_policy_name_combined(env_glob, branch_glob))
-      end
+  describe '#ci_policy_name_global' do
+    it 'returns the correct global policy name' do
+      expect(secrets_manager.ci_policy_name_global).to eq("pipelines/global")
     end
   end
 
-  describe '#ci_secrets_mount_path' do
-    let(:secrets_manager) { build(:project_secrets_manager, project: project) }
+  describe '#ci_policy_name_env' do
+    it 'returns the correct environment policy name with hex-encoded environment' do
+      environment = 'production'
+      hex_env = environment.unpack1('H*')
 
-    subject(:path) { secrets_manager.ci_secrets_mount_path }
+      expect(secrets_manager.ci_policy_name_env(environment)).to eq("pipelines/env/#{hex_env}")
+    end
 
-    context 'when the project belongs to a user namespace' do
-      let_it_be(:project) { create(:project) }
+    it 'handles special characters in environment names' do
+      environment = 'staging/us-east-1'
+      hex_env = environment.unpack1('H*')
 
-      it 'includes the namespace type and ID in the path' do
-        expect(path).to eq("secrets/kv")
+      expect(secrets_manager.ci_policy_name_env(environment)).to eq("pipelines/env/#{hex_env}")
+    end
+  end
+
+  describe '#ci_policy_name_branch' do
+    it 'returns the correct branch policy name with hex-encoded branch' do
+      branch = 'main'
+      hex_branch = branch.unpack1('H*')
+
+      expect(secrets_manager.ci_policy_name_branch(branch)).to eq("pipelines/branch/#{hex_branch}")
+    end
+
+    it 'handles special characters in branch names' do
+      branch = 'feature/add-new-widget'
+      hex_branch = branch.unpack1('H*')
+
+      expect(secrets_manager.ci_policy_name_branch(branch)).to eq("pipelines/branch/#{hex_branch}")
+    end
+  end
+
+  describe '#ci_policy_name_combined' do
+    it 'returns the correct combined policy name' do
+      environment = 'production'
+      branch = 'main'
+      hex_env = environment.unpack1('H*')
+      hex_branch = branch.unpack1('H*')
+
+      expected = "pipelines/combined/env/#{hex_env}/branch/#{hex_branch}"
+      expect(secrets_manager.ci_policy_name_combined(environment, branch)).to eq(expected)
+    end
+  end
+
+  describe '#ci_auth_literal_policies' do
+    it 'returns an array with all policy types' do
+      policies = secrets_manager.ci_auth_literal_policies
+
+      expect(policies.size).to eq(4)
+      expect(policies[0]).to eq("pipelines/global")
+      expect(policies[1]).to include("pipelines/env/")
+      expect(policies[2]).to include("pipelines/branch/")
+      expect(policies[3]).to include("pipelines/combined/")
+    end
+  end
+
+  describe '#ci_auth_glob_policies' do
+    context 'with environment glob and literal branch' do
+      it 'returns environment glob and combined policies' do
+        policies = secrets_manager.ci_auth_glob_policies('prod-*', 'main')
+
+        expect(policies.size).to eq(2)
+        expect(policies[0]).to include("pipelines/env/")
+        expect(policies[1]).to include("pipelines/combined/")
       end
     end
 
-    context 'when the project belongs to a group namespace' do
-      let_it_be(:project) { create(:project, :in_group) }
+    context 'with literal environment and branch glob' do
+      it 'returns branch glob and combined policies' do
+        policies = secrets_manager.ci_auth_glob_policies('production', 'feature-*')
 
-      it 'includes the namespace type and ID in the path' do
-        expect(path).to eq("secrets/kv")
+        expect(policies.size).to eq(2)
+        expect(policies[0]).to include("pipelines/branch/")
+        expect(policies[1]).to include("pipelines/combined/")
+      end
+    end
+
+    context 'with both globs' do
+      it 'returns all three glob policies' do
+        policies = secrets_manager.ci_auth_glob_policies('prod-*', 'feature-*')
+
+        expect(policies.size).to eq(3)
+      end
+    end
+
+    context 'with no globs' do
+      it 'returns an empty array' do
+        policies = secrets_manager.ci_auth_glob_policies('production', 'main')
+
+        expect(policies).to be_empty
       end
     end
   end
 
   describe '#full_project_namespace_path' do
-    let(:secrets_manager) { build(:project_secrets_manager, project: project) }
-
-    subject(:path) { secrets_manager.full_project_namespace_path }
+    let(:path) { secrets_manager.full_project_namespace_path }
 
     context 'when the project belongs to a user namespace' do
-      let_it_be(:project) { create(:project) }
-
       it 'includes namespace information' do
         expect(path).to eq("user_#{project.namespace.id}/project_#{project.id}")
       end
     end
 
     context 'when the project belongs to a group namespace' do
-      let_it_be(:project) { create(:project, :in_group) }
+      before do
+        project.group = create(:group)
+        project.save!
+      end
 
       it 'includes namespace information' do
         expect(path).to eq("group_#{project.namespace.id}/project_#{project.id}")
@@ -302,20 +157,19 @@ RSpec.describe SecretsManagement::ProjectSecretsManager, feature_category: :secr
   end
 
   describe '#namespace_path' do
-    let(:secrets_manager) { build(:project_secrets_manager, project: project) }
-
-    subject(:path) { secrets_manager.namespace_path }
+    let(:path) { secrets_manager.namespace_path }
 
     context 'when the project belongs to a user namespace' do
-      let_it_be(:project) { create(:project) }
-
       it 'includes namespace information' do
         expect(path).to eq("user_#{project.namespace.id}")
       end
     end
 
     context 'when the project belongs to a group namespace' do
-      let_it_be(:project) { create(:project, :in_group) }
+      before do
+        project.group = create(:group)
+        project.save!
+      end
 
       it 'includes namespace information' do
         expect(path).to eq("group_#{project.namespace.id}")
@@ -324,332 +178,40 @@ RSpec.describe SecretsManagement::ProjectSecretsManager, feature_category: :secr
   end
 
   describe '#project_path' do
-    let(:secrets_manager) { build(:project_secrets_manager, project: project) }
+    let(:path) { secrets_manager.project_path }
 
-    subject(:path) { secrets_manager.project_path }
-
-    context 'when the project belongs to a user namespace' do
-      let_it_be(:project) { create(:project) }
-
-      it 'includes just project information' do
-        expect(path).to eq("project_#{project.id}")
-      end
-    end
-
-    context 'when the project belongs to a group namespace' do
-      let_it_be(:project) { create(:project, :in_group) }
-
-      it 'includes just project information' do
-        expect(path).to eq("project_#{project.id}")
-      end
+    it 'includes just project information' do
+      expect(path).to eq("project_#{project.id}")
     end
   end
 
-  describe '#ci_data_path' do
-    let(:secrets_manager) { build(:project_secrets_manager, project: project) }
-
-    subject(:path) { secrets_manager.ci_data_path("DB_PASS") }
-
-    context 'when the project belongs to a user namespace' do
-      let_it_be(:project) { create(:project) }
-
-      it 'does not include any namespace information' do
-        expect(path).to eq("explicit/DB_PASS")
-      end
-    end
-
-    context 'when the project belongs to a group namespace' do
-      let_it_be(:project) { create(:project, :in_group) }
-
-      it 'does not include any namespace information' do
-        expect(path).to eq("explicit/DB_PASS")
-      end
-    end
-  end
-
-  describe '#ci_full_path' do
-    let(:secrets_manager) { build(:project_secrets_manager, project: project) }
-
-    subject(:path) { secrets_manager.ci_full_path("DB_PASS") }
-
-    context 'when the project belongs to a user namespace' do
-      let_it_be(:project) { create(:project) }
-
-      it 'does not include any namespace information' do
-        expect(path).to eq("secrets/kv/data/explicit/DB_PASS")
-      end
-    end
-
-    context 'when the project belongs to a group namespace' do
-      let_it_be(:project) { create(:project, :in_group) }
-
-      it 'does not include any namespace information' do
-        expect(path).to eq("secrets/kv/data/explicit/DB_PASS")
-      end
-    end
-  end
-
-  describe "#ci_metadata_full_path" do
-    let(:secrets_manager) { build(:project_secrets_manager, project: project) }
-
-    subject(:path) { secrets_manager.ci_metadata_full_path("DB_PASS") }
-
-    context 'when the project belongs to a user namespace' do
-      let_it_be(:project) { create(:project) }
-
-      it "returns the correct metadata path" do
-        expect(path).to eq("secrets/kv/metadata/explicit/DB_PASS")
-      end
-    end
-
-    context 'when the project belongs to a group namespace' do
-      let_it_be(:project) { create(:project, :in_group) }
-
-      it "returns the correct metadata path" do
-        expect(path).to eq("secrets/kv/metadata/explicit/DB_PASS")
-      end
-    end
-  end
-
-  describe '#ci_jwt' do
-    let_it_be(:project) { create(:project) }
-    let_it_be(:secrets_manager) { build(:project_secrets_manager, project: project) }
-    let_it_be(:ci_build) { create(:ci_build, project: project) }
-    let_it_be(:openbao_server_url) { described_class.server_url }
-
-    subject(:ci_jwt) { secrets_manager.ci_jwt(ci_build) }
+  describe '#ci_secrets_mount_full_path' do
+    let(:path) { secrets_manager.ci_secrets_mount_full_path }
 
     before do
-      allow(Gitlab::Ci::JwtV2).to receive(:for_build).with(ci_build, aud: openbao_server_url)
-      .and_return("generated_jwt_id_token_for_secrets_manager")
+      allow(secrets_manager).to receive_messages(
+        full_project_namespace_path: 'some/namespace/project_1',
+        ci_secrets_mount_path: 'secrets/kv'
+      )
     end
 
-    it 'generates a JWT for the build' do
-      expect(ci_jwt).to eq("generated_jwt_id_token_for_secrets_manager")
-    end
-
-    it_behaves_like 'internal event tracking' do
-      let(:event) { 'generate_id_token_for_secrets_manager_authentication' }
-      let(:category) { described_class.name }
-      let(:namespace) { project.namespace }
-      let(:user) { ci_build.user }
+    it 'is returns full path including root namespace' do
+      expect(path).to eq('some/namespace/project_1/secrets/kv')
     end
   end
 
-  describe 'policy name generation' do
-    let_it_be(:project) { create(:project) }
-
-    subject(:test_subject) do
-      described_class.new.send(:generate_policy_name, principal_type: principal_type,
-        principal_id: principal_id)
-    end
-
-    context 'for User principal type' do
-      let(:principal_type) { 'User' }
-      let(:principal_id) { 123 }
-
-      it 'generates the correct policy name' do
-        expect(test_subject).to eq("users/direct/user_123")
-      end
-    end
-
-    context 'for Role principal type' do
-      let(:principal_type) { 'Role' }
-      let(:principal_id) { 3 }
-
-      it 'generates the correct policy name with role ID' do
-        expect(test_subject).to eq("users/roles/3")
-      end
-    end
-
-    context 'for MemberRole principal type' do
-      let(:principal_type) { 'MemberRole' }
-      let(:principal_id) { 3 }
-
-      it 'generates the correct policy name with member role ID' do
-        expect(test_subject).to eq("users/direct/member_role_3")
-      end
-    end
-
-    context 'for Group principal type' do
-      let(:principal_type) { 'Group' }
-      let(:principal_id) { 3 }
-
-      it 'generates the correct policy name with group ID' do
-        expect(test_subject).to eq("users/direct/group_3")
-      end
-    end
-  end
-
-  describe '.internal_server_url' do
-    context 'when internal_url is configured' do
-      before do
-        allow(Gitlab.config).to receive(:has_key?).with('openbao').and_return(true)
-        allow(Gitlab.config).to receive(:openbao).and_return(
-          double(has_key?: true, internal_url: 'http://openbao-internal:8200')
-        )
-      end
-
-      it 'returns the internal_url' do
-        expect(described_class.internal_server_url).to eq('http://openbao-internal:8200')
-      end
-    end
-
-    context 'when openbao is configured but internal_url is not' do
-      before do
-        allow(Gitlab.config).to receive(:has_key?).with('openbao').and_return(true)
-        allow(Gitlab.config).to receive(:openbao).and_return(
-          double(has_key?: false, internal_url: nil)
-        )
-        allow(described_class).to receive(:server_url).and_return('http://localhost:8200')
-      end
-
-      it 'falls back to server_url' do
-        expect(described_class.internal_server_url).to eq('http://localhost:8200')
-      end
-    end
-
-    context 'when openbao is not configured' do
-      before do
-        allow(Gitlab.config).to receive(:has_key?).with('openbao').and_return(false)
-        allow(described_class).to receive(:server_url).and_return('http://localhost:8200')
-      end
-
-      it 'falls back to server_url' do
-        expect(described_class.internal_server_url).to eq('http://localhost:8200')
-      end
-    end
-  end
-
-  describe '.server_url' do
-    before do
-      # because server_url has a different value in test env
-      # and we need to test the actual logic for non-test env
-      allow(Rails).to receive(:env).and_return(ActiveSupport::StringInquirer.new('production'))
-    end
-
-    context 'when openbao is configured with url' do
-      before do
-        allow(Gitlab.config).to receive(:has_key?).with('openbao').and_return(true)
-        allow(Gitlab.config).to receive(:openbao).and_return(
-          double(has_key?: true, url: 'http://openbao-external:8200')
-        )
-      end
-
-      it 'returns the configured url' do
-        expect(described_class.server_url).to eq('http://openbao-external:8200')
-      end
-    end
-
-    context 'when openbao is not configured' do
-      before do
-        allow(Gitlab.config).to receive(:has_key?).with('openbao').and_return(false)
-      end
-
-      it 'returns the default url' do
-        expect(described_class.server_url).to eq('http://localhost:8200')
-      end
-    end
-
-    context 'when openbao is configured but url is nil' do
-      before do
-        allow(Gitlab.config).to receive(:has_key?).with('openbao').and_return(true)
-        allow(Gitlab.config).to receive(:openbao).and_return(
-          double(has_key?: false, url: nil) # has_key? returns false when url key doesn't exist
-        )
-      end
-
-      it 'returns the default url' do
-        expect(described_class.server_url).to eq('http://localhost:8200')
-      end
-    end
-  end
-
-  describe '#user_auth_cel_program' do
-    let_it_be(:project) { create(:project) }
-    let(:secrets_manager) { build(:project_secrets_manager, project: project) }
-    let(:server_url) { 'http://example.internal:8200' }
+  describe '#ci_auth_path' do
+    let(:path) { secrets_manager.ci_auth_path }
 
     before do
-      allow(described_class).to receive(:server_url).and_return(server_url)
+      allow(secrets_manager).to receive_messages(
+        full_project_namespace_path: 'some/namespace/project_1',
+        ci_auth_mount: 'ci_auth'
+      )
     end
 
-    def var_map(program)
-      program[:variables].index_by { |v| v[:name] }
-    end
-
-    context 'with integer project_id' do
-      subject(:program) { secrets_manager.user_auth_cel_program(project.id) }
-
-      it 'returns a hash with :variables and :expression' do
-        expect(program).to include(:variables, :expression)
-        expect(program[:variables]).to be_an(Array)
-        expect(program[:expression]).to be_a(String)
-      end
-
-      it 'sets base and expected_pid for the given project' do
-        vars = var_map(program)
-        expect(vars['base'][:expression]).to eq(%("users"))
-        expect(vars['expected_pid'][:expression]).to eq(%("#{project.id}"))
-      end
-
-      it 'binds expected_aud to ProjectSecretsManager.server_url' do
-        vars = var_map(program)
-        expect(vars['expected_aud'][:expression]).to eq(%("#{server_url}"))
-      end
-
-      it 'defines uid, pid, grps, who, sub with expected expressions' do
-        vars = var_map(program)
-        expect(vars['uid'][:expression]).to include("('user_id' in claims)")
-        expect(vars['pid'][:expression]).to include("('project_id' in claims)")
-        expect(vars['grps'][:expression]).to include("('groups' in claims)")
-        expect(vars['who'][:expression]).to include(%q(gitlab-user:))
-        expect(vars['sub'][:expression]).to include("('sub' in claims)")
-      end
-
-      it 'defines mrid conditionally and converts to string only when present' do
-        vars = var_map(program)
-        expr = vars['mrid'][:expression]
-        expect(expr).to include("member_role_id")
-        expect(expr).to include("!= null")
-        expect(expr).to include("string(claims['member_role_id'])")
-      end
-
-      it 'guards on project_id, audience, subject and user_id' do
-        expr = program[:expression]
-        expect(expr).to include('missing project_id')
-        expect(expr).to include('token project_id does not match role base')
-        expect(expr).to include('missing audience')
-        expect(expr).to include('audience validation failed')
-        expect(expr).to include('missing subject')
-        expect(expr).to include('invalid subject for user authentication')
-        expect(expr).to include('missing user_id')
-      end
-
-      it 'emits policies for user, member_role, groups, and role' do
-        expr = program[:expression]
-        expect(expr).to include('/direct/user_')
-        expect(expr).to include('/direct/member_role_')
-        expect(expr).to include('grps.map')
-        expect(expr).to include('/direct/group_')
-        expect(expr).to include('/roles/')
-      end
-
-      it 'sets display_name and alias to "who"' do
-        expr = program[:expression]
-        expect(expr).to include('display_name: who')
-        expect(expr).to include('alias: logical.Alias { name: who }')
-      end
-    end
-
-    context 'with string project_id' do
-      subject(:program) { secrets_manager.user_auth_cel_program(project.id.to_s) }
-
-      it 'embeds the project id consistently in base and expected_pid' do
-        vars = var_map(program)
-        expect(vars['base'][:expression]).to eq(%("users"))
-        expect(vars['expected_pid'][:expression]).to eq(%("#{project.id}"))
-      end
+    it 'is returns full path including root namespace' do
+      expect(path).to eq('some/namespace/project_1/auth/ci_auth/login')
     end
   end
 end
