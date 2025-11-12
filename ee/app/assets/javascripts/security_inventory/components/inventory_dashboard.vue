@@ -81,6 +81,7 @@ export default {
           search = '',
           securityAnalyzerFilters = [],
           vulnerabilityCountFilters = [],
+          attributeFilters = [],
         } = this.filters;
 
         return {
@@ -94,6 +95,7 @@ export default {
           projectsAfter: null,
           securityAnalyzerFilters,
           vulnerabilityCountFilters,
+          attributeFilters,
           canReadAttributes: this.canReadAttributes,
         };
       },
@@ -145,7 +147,8 @@ export default {
       return Boolean(
         this.filters.search?.length ||
           this.filters.securityAnalyzerFilters?.length ||
-          this.filters.vulnerabilityCountFilters?.length,
+          this.filters.vulnerabilityCountFilters?.length ||
+          this.filters.attributeFilters?.length,
       );
     },
     hasChildren() {
@@ -254,6 +257,7 @@ export default {
         search = '',
         securityAnalyzerFilters = [],
         vulnerabilityCountFilters = [],
+        attributeFilters = [],
       } = this.filters;
 
       return this.$apollo.query({
@@ -269,6 +273,7 @@ export default {
           projectsAfter,
           securityAnalyzerFilters,
           vulnerabilityCountFilters,
+          attributeFilters,
           canReadAttributes: this.canReadAttributes,
         },
       });

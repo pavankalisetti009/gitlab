@@ -29,7 +29,12 @@ import ActionCell from 'ee/security_inventory/components/action_cell.vue';
 import SecurityInventoryTable from 'ee/security_inventory/components/security_inventory_table.vue';
 import InventoryDashboardFilteredSearchBar from 'ee/security_inventory/components/inventory_dashboard_filtered_search_bar.vue';
 import { MAX_SELECTED_COUNT } from 'ee/security_inventory/constants';
-import { subgroupsAndProjects, mockAnalyzerFilter, mockVulnerabilityFilter } from '../mock_data';
+import {
+  subgroupsAndProjects,
+  mockAnalyzerFilter,
+  mockVulnerabilityFilter,
+  mockAttributeFilter,
+} from '../mock_data';
 import { createGroupResponse, createPaginatedHandler } from '../mock_pagination_helpers';
 
 Vue.use(VueApollo);
@@ -406,6 +411,7 @@ describe('InventoryDashboard', () => {
         hasSearch: false,
         securityAnalyzerFilters: [],
         vulnerabilityCountFilters: [],
+        attributeFilters: [],
         canReadAttributes: false,
       });
     });
@@ -440,6 +446,7 @@ describe('InventoryDashboard', () => {
         hasSearch: false,
         securityAnalyzerFilters: [],
         vulnerabilityCountFilters: [],
+        attributeFilters: [],
         canReadAttributes: false,
       });
     });
@@ -469,6 +476,7 @@ describe('InventoryDashboard', () => {
         search: 'test query',
         securityAnalyzerFilters: [mockAnalyzerFilter],
         vulnerabilityCountFilters: [mockVulnerabilityFilter],
+        attributeFilters: [mockAttributeFilter],
       };
       await createFullComponent();
 
@@ -480,6 +488,7 @@ describe('InventoryDashboard', () => {
           search: 'test query',
           securityAnalyzerFilters: [mockAnalyzerFilter],
           vulnerabilityCountFilters: [mockVulnerabilityFilter],
+          attributeFilters: [mockAttributeFilter],
         }),
       );
       expect(wrapper.vm.$refs.inventoryTable.clearSelection).toHaveBeenCalled();

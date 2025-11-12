@@ -9,6 +9,7 @@ query SubgroupsAndProjects(
   $namespaceId: NamespaceID!
   $vulnerabilityCountFilters: [VulnerabilityCountFilterInput!]
   $securityAnalyzerFilters: [AnalyzerFilterInput!]
+  $attributeFilters: [AttributeFilterInput!]
   $canReadAttributes: Boolean!
 ) {
   group(fullPath: $fullPath) {
@@ -109,6 +110,7 @@ query SubgroupsAndProjects(
     namespaceId: $namespaceId
     vulnerabilityCountFilters: $vulnerabilityCountFilters
     securityAnalyzerFilters: $securityAnalyzerFilters
+    attributeFilters: $attributeFilters
     first: $projectsFirst
     after: $projectsAfter
     search: $search
