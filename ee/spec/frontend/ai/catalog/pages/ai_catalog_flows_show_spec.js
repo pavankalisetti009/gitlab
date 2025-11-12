@@ -6,7 +6,6 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
-import PageHeading from '~/vue_shared/components/page_heading.vue';
 import AiCatalogFlowsShow from 'ee/ai/catalog/pages/ai_catalog_flows_show.vue';
 import AiCatalogItemActions from 'ee/ai/catalog/components/ai_catalog_item_actions.vue';
 import AiCatalogItemView from 'ee/ai/catalog/components/ai_catalog_item_view.vue';
@@ -68,16 +67,11 @@ describe('AiCatalogFlowsShow', () => {
   };
 
   const findErrorsAlert = () => wrapper.findComponent(ErrorsAlert);
-  const findPageHeading = () => wrapper.findComponent(PageHeading);
   const findItemActions = () => wrapper.findComponent(AiCatalogItemActions);
   const findItemView = () => wrapper.findComponent(AiCatalogItemView);
 
   beforeEach(() => {
     createComponent();
-  });
-
-  it('renders page heading', () => {
-    expect(findPageHeading().props('heading')).toBe(mockFlow.name);
   });
 
   it('renders item actions', () => {

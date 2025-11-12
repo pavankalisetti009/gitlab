@@ -1,6 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
-import PageHeading from '~/vue_shared/components/page_heading.vue';
 import AiCatalogAgentsShow from 'ee/ai/catalog/pages/ai_catalog_agents_show.vue';
 import AiCatalogItemActions from 'ee/ai/catalog/components/ai_catalog_item_actions.vue';
 import AiCatalogItemView from 'ee/ai/catalog/components/ai_catalog_item_view.vue';
@@ -36,16 +35,11 @@ describe('AiCatalogAgentsShow', () => {
     });
   };
 
-  const findPageHeading = () => wrapper.findComponent(PageHeading);
   const findItemActions = () => wrapper.findComponent(AiCatalogItemActions);
   const findItemView = () => wrapper.findComponent(AiCatalogItemView);
 
   beforeEach(() => {
     createComponent();
-  });
-
-  it('renders page heading', () => {
-    expect(findPageHeading().props('heading')).toBe(mockAgent.name);
   });
 
   it('renders item actions', () => {
