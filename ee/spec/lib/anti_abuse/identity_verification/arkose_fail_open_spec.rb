@@ -10,6 +10,7 @@ RSpec.describe AntiAbuse::IdentityVerification::ArkoseFailOpen,
   let(:bucket_hours)   { described_class::BUCKET_DURATION_HOURS }
   let(:success_prefix) { described_class::COUNTER_SUCCESS_KEY_PREFIX }
   let(:failure_prefix) { described_class::COUNTER_FAILURE_KEY_PREFIX }
+  let(:stream_key)     { described_class::VERIFICATION_RATE_STREAM_KEY }
 
   # Freeze at bucket boundary for determinism
   let(:t0) { Time.zone.parse('2025-11-05 00:00:00') }
@@ -29,6 +30,24 @@ RSpec.describe AntiAbuse::IdentityVerification::ArkoseFailOpen,
 
   def redis_ttl(key)
     Gitlab::Redis::SharedState.with { |r| r.ttl(key) }
+  end
+
+  def redis_xlen(key)
+    Gitlab::Redis::SharedState.with { |r| r.call('xlen', key) || 0 }
+  end
+
+  def redis_xrange(key)
+    Gitlab::Redis::SharedState.with { |r| r.call('xrange', key, '-', '+') || [] }
+  end
+
+  def seed_prev_bucket(success:, failure:, at_time:)
+    prev_bucket = bucket_id(at_time)
+    s_key = "#{success_prefix}#{prev_bucket}"
+    f_key = "#{failure_prefix}#{prev_bucket}"
+    Gitlab::Redis::SharedState.with do |r|
+      r.incrby(s_key, success)
+      r.incrby(f_key, failure)
+    end
   end
   # -----------------------------
 
@@ -166,6 +185,47 @@ RSpec.describe AntiAbuse::IdentityVerification::ArkoseFailOpen,
           .with(instance_of(Redis::BaseError))
 
         expect { fail_open.track_token_verification_result(success: true) }.not_to raise_error
+      end
+
+      describe 'previous-bucket vrate baseline stream' do
+        before do
+          stub_const("#{described_class}::MIN_ATTEMPTS_FOR_EVALUATION", 5)
+        end
+
+        it 'records the vrate of the previous window when number of attempts >= MIN_ATTEMPTS_FOR_EVALUATION' do
+          prev_bucket_time = t0 + described_class::BUCKET_DURATION_SECONDS.seconds - 5.minutes
+          new_bucket_time = t0 + described_class::BUCKET_DURATION_SECONDS.seconds + 1.minute
+
+          travel_to(prev_bucket_time) do
+            seed_prev_bucket(success: 9, failure: 1, at_time: t0) # 90% vrate
+          end
+
+          travel_to(new_bucket_time) do
+            expect { fail_open.track_token_verification_result(success: true) }
+              .to change { redis_xlen(stream_key) }.by(1)
+
+            entry = redis_xrange(stream_key).last
+            _id, fields = entry
+
+            expect(fields).to include('bucket')
+            expect(fields).to include('vrate')
+            expect(fields).to include('90.0')
+          end
+        end
+
+        it 'does not append to the vrate stream when previous-bucket attempts are insufficient' do
+          # previous bucket has 3 total attempts (< MIN_ATTEMPTS_FOR_EVALUATION)
+          travel_to(t0) do
+            seed_prev_bucket(success: 2, failure: 1, at_time: t0)
+          end
+
+          new_bucket_time = t0 + bucket_hours.hours + 1.minute
+          travel_to(new_bucket_time) do
+            expect do
+              fail_open.track_token_verification_result(success: true)
+            end.not_to change { redis_xlen(stream_key) }
+          end
+        end
       end
     end
   end
