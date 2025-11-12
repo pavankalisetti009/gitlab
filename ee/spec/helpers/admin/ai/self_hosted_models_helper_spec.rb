@@ -53,58 +53,6 @@ RSpec.describe Admin::Ai::SelfHostedModelsHelper, feature_category: :"self-hoste
     end
   end
 
-  describe "#show_self_hosted_vendored_model_option?" do
-    it "returns false when the instance-level model selection flag is enabled" do
-      stub_feature_flags(instance_level_model_selection: true)
-
-      expect(helper.show_self_hosted_vendored_model_option?).to be(false)
-    end
-
-    it "returns false when the vendored model option feature flag is disabled" do
-      stub_feature_flags(instance_level_model_selection: false)
-      stub_feature_flags(ai_self_hosted_vendored_features: false)
-
-      expect(helper.show_self_hosted_vendored_model_option?).to be(false)
-    end
-
-    context "with the feature flag enabled" do
-      subject { helper.show_self_hosted_vendored_model_option? }
-
-      before do
-        stub_feature_flags(instance_level_model_selection: false)
-        stub_feature_flags(ai_self_hosted_vendored_features: true)
-      end
-
-      context "when the license is an online cloud license" do
-        let(:license) { build(:license, cloud: true) }
-
-        before do
-          allow(License).to receive(:current).and_return(license)
-        end
-
-        it { is_expected.to be(true) }
-      end
-
-      context "when the license is not an online cloud license" do
-        let(:license) { build(:license, cloud: false) }
-
-        before do
-          allow(License).to receive(:current).and_return(license)
-        end
-
-        it { is_expected.to be(false) }
-      end
-
-      context "when there is no license" do
-        before do
-          allow(License).to receive(:current).and_return(nil)
-        end
-
-        it { is_expected.to be(false) }
-      end
-    end
-  end
-
   describe '#can_manage_instance_model_selection?' do
     it 'returns false if ability is not allowed' do
       allow(Ability).to receive(:allowed?).with(user, :manage_instance_model_selection).and_return(false)

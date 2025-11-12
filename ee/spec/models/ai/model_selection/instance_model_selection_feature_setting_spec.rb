@@ -3,14 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Ai::ModelSelection::InstanceModelSelectionFeatureSetting, feature_category: :ai_abstraction_layer do
-  let(:ff_enabled) { true }
-
   subject(:instance_feature_setting) do
     build(:instance_model_selection_feature_setting)
-  end
-
-  before do
-    stub_feature_flags(ai_model_switching: ff_enabled)
   end
 
   describe 'validations' do
@@ -49,61 +43,30 @@ RSpec.describe Ai::ModelSelection::InstanceModelSelectionFeatureSetting, feature
   describe '.find_or_initialize_by_feature' do
     let(:existing_feature) { instance_feature_setting.feature.to_sym }
 
-    context 'when instance_level_model_selection feature flag is enabled' do
-      before do
-        stub_feature_flags(instance_level_model_selection: true)
+    context 'when setting exists' do
+      it 'returns the existing setting' do
+        instance_feature_setting.save!
+        result = described_class.find_or_initialize_by_feature(existing_feature)
+        expect(result).to eq(instance_feature_setting)
+        expect(result).to be_persisted
       end
+    end
 
-      context 'when setting exists' do
-        it 'returns the existing setting' do
-          instance_feature_setting.save!
-          result = described_class.find_or_initialize_by_feature(existing_feature)
-          expect(result).to eq(instance_feature_setting)
-          expect(result).to be_persisted
-        end
+    context 'when setting does not exist' do
+      it 'returns a new initialized setting' do
+        result = described_class.find_or_initialize_by_feature(:duo_chat)
+        expect(result).to be_a(described_class)
+        expect(result).not_to be_persisted
+        expect(result.feature).to eq('duo_chat')
       end
+    end
 
-      context 'when setting does not exist' do
-        it 'returns a new initialized setting' do
-          result = described_class.find_or_initialize_by_feature(:duo_chat)
-          expect(result).to be_a(described_class)
-          expect(result).not_to be_persisted
+    context 'for duo chat tools' do
+      it 'returns the duo chat feature setting for all duo chat tools' do
+        described_class::DUO_CHAT_TOOLS.each do |feature_sym|
+          result = described_class.find_or_initialize_by_feature(feature_sym)
           expect(result.feature).to eq('duo_chat')
         end
-      end
-
-      context 'for duo chat tools' do
-        it 'returns the duo chat feature setting for all duo chat tools' do
-          described_class::DUO_CHAT_TOOLS.each do |feature_sym|
-            result = described_class.find_or_initialize_by_feature(feature_sym)
-            expect(result.feature).to eq('duo_chat')
-          end
-        end
-      end
-    end
-
-    context 'when instance_level_model_selection feature flag is disabled' do
-      before do
-        stub_feature_flags(instance_level_model_selection: false)
-      end
-
-      it 'returns nil' do
-        result = described_class.find_or_initialize_by_feature(existing_feature)
-        expect(result).to be_nil
-      end
-    end
-
-    context 'when ai_model_switching feature flag is disabled' do
-      let(:ff_enabled) { false }
-
-      before do
-        stub_feature_flags(instance_level_model_selection: true)
-      end
-
-      it 'returns a valid record because instance model selection no longer depends on ai_model_switching' do
-        result = described_class.find_or_initialize_by_feature(existing_feature)
-        expect(result).to be_a(described_class)
-        expect(result).to be_valid
       end
     end
   end
@@ -232,40 +195,6 @@ RSpec.describe Ai::ModelSelection::InstanceModelSelectionFeatureSetting, feature
 
         it 'returns correct model metadata params for default setting' do
           expect(feature_setting.model_metadata_params).to eq(expected_params_for_metadata)
-        end
-      end
-    end
-
-    describe 'when model_selection_enabled?' do
-      context 'when instance_level_model_selection feature flag is enabled' do
-        before do
-          stub_feature_flags(instance_level_model_selection: true)
-        end
-
-        it 'returns true' do
-          expect(instance_feature_setting.send(:model_selection_enabled?)).to be true
-        end
-      end
-
-      context 'when instance_level_model_selection feature flag is disabled' do
-        before do
-          stub_feature_flags(instance_level_model_selection: false)
-        end
-
-        it 'returns false' do
-          expect(instance_feature_setting.send(:model_selection_enabled?)).to be false
-        end
-      end
-
-      context 'when ai_model_switching feature flag is disabled' do
-        let(:ff_enabled) { false }
-
-        before do
-          stub_feature_flags(instance_level_model_selection: true)
-        end
-
-        it 'returns true because instance model selection does not depend on ai_model_switching' do
-          expect(instance_feature_setting.send(:model_selection_enabled?)).to be true
         end
       end
     end
