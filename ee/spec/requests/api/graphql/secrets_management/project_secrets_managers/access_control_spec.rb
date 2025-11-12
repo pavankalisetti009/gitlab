@@ -52,7 +52,6 @@ RSpec.describe 'project secrets manager', feature_category: :secrets_management 
       expect(graphql_data_at(:project_secrets_manager))
         .to match(a_graphql_entity_for(
           project: a_graphql_entity_for(project),
-          ci_secrets_mount_path: project_secrets_manager.ci_secrets_mount_path,
           status: 'PROVISIONING'
         ))
     end

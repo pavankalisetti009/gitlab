@@ -1136,6 +1136,14 @@ module EE
         prevent :destroy_saved_replies
         prevent :destroy_wiki
       end
+
+      rule { can?(:owner_access) }.policy do
+        enable :configure_group_secrets_manager
+      end
+
+      rule { can?(:maintainer_access) }.policy do
+        enable :read_group_secrets_manager
+      end
     end
 
     override :lookup_access_level!

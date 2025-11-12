@@ -50,7 +50,6 @@ RSpec.describe 'Initialize secrets manager on a project', :gitlab_secrets_manage
         let(:namespace) { project.namespace }
         let(:user) { current_user }
         let(:category) { 'Mutations::SecretsManagement::ProjectSecretsManagers::Initialize' }
-        let(:additional_properties) { { label: 'graphql' } }
       end
     end
 

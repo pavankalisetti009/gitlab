@@ -3566,6 +3566,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: secrets_management_provision_group_secrets_manager
+  :worker_name: SecretsManagement::ProvisionGroupSecretsManagerWorker
+  :feature_category: :secrets_management
+  :has_external_dependencies: false
+  :urgency: :high
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: secrets_management_provision_project_secrets_manager
   :worker_name: SecretsManagement::ProvisionProjectSecretsManagerWorker
   :feature_category: :secrets_management

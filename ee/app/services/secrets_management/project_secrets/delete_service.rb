@@ -2,12 +2,8 @@
 
 module SecretsManagement
   module ProjectSecrets
-    class DeleteService < BaseService
-      include SecretsManagerClientHelpers
+    class DeleteService < ProjectBaseService
       include CiPolicies::SecretRefresherHelper
-      include Helpers::UserClientHelper
-      include Helpers::ExclusiveLeaseHelper
-      include ErrorResponseHelper
 
       def execute(name)
         with_exclusive_lease_for(project) do

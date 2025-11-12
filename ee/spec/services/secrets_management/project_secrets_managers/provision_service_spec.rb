@@ -308,6 +308,7 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::ProvisionService, :git
             project_id: (project.id + 1).to_s,
             user_id: user.id.to_s,
             sub: "user:#{user.username}",
+            secrets_manager_scope: 'user',
             groups: [101, 102, 103]
           }
         )

@@ -2,10 +2,7 @@
 
 module SecretsManagement
   module ProjectSecretsManagers
-    class DeprovisionService < BaseService
-      include SecretsManagerClientHelpers
-      include Helpers::ExclusiveLeaseHelper
-
+    class DeprovisionService < ProjectBaseService
       def initialize(secrets_manager, current_user)
         super(secrets_manager.project, current_user)
 
@@ -74,30 +71,10 @@ module SecretsManagement
           raise e unless e.message.include? 'containing child namespaces'
         end
 
-        # Also perform legacy mount cleanup for now.
-        legacy_cleanup
-
         # Finally destroy our database record.
         delete_secrets_manager
 
         ServiceResponse.success(payload: { project_secrets_manager: secrets_manager })
-      end
-
-      def delete_policies
-        # Delete all policies that belong to this project
-        # Using list_project_policies without type to get ALL policies
-        global_secrets_manager_client.list_project_policies(project_id: project.id).each do |policy_data|
-          global_secrets_manager_client.delete_policy(policy_data["key"])
-        end
-      end
-
-      def delete_auth_engine
-        global_secrets_manager_client.disable_auth_engine(secrets_manager.legacy_ci_auth_mount)
-        global_secrets_manager_client.disable_auth_engine(secrets_manager.legacy_user_auth_mount)
-      end
-
-      def delete_secrets_engine
-        global_secrets_manager_client.disable_secrets_engine(secrets_manager.legacy_ci_secrets_mount_path)
       end
 
       def delete_secrets_manager
