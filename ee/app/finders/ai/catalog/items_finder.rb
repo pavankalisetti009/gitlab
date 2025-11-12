@@ -6,7 +6,8 @@ module Ai
       def initialize(current_user, params: {})
         @current_user = current_user
         @params = params
-        @params[:organization] = current_user.organization if current_user
+
+        validate_organization!
       end
 
       def execute
@@ -56,6 +57,12 @@ module Ai
         return items if params[:search].blank?
 
         items.search(params[:search])
+      end
+
+      def validate_organization!
+        return if params[:organization].is_a?(::Organizations::Organization)
+
+        raise ArgumentError, _('Organization parameter must be specified')
       end
     end
   end

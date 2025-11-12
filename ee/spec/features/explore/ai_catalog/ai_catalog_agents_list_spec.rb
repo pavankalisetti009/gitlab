@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'AI Catalog', :js, feature_category: :workflow_catalog do
+RSpec.describe 'AI Catalog', :js, :with_current_organization, feature_category: :workflow_catalog do
   include Ai::Catalog::TestHelpers
 
   let_it_be(:user) { create(:user) }

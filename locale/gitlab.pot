@@ -46325,6 +46325,9 @@ msgstr ""
 msgid "Organization ID cannot be nil"
 msgstr ""
 
+msgid "Organization parameter must be specified"
+msgstr ""
+
 msgid "Organizations"
 msgstr ""
 
