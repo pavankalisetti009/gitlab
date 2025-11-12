@@ -3259,6 +3259,9 @@ msgstr ""
 msgid "APIFuzzing|folder/openapi.json"
 msgstr ""
 
+msgid "ATTENTION: %{name} flagged"
+msgstr ""
+
 msgid "AWS"
 msgstr ""
 
@@ -13237,6 +13240,9 @@ msgid "CascadingSettings|cannot be changed because it is locked by an ancestor"
 msgstr ""
 
 msgid "CascadingSettings|cannot be nil when locking the attribute"
+msgstr ""
+
+msgid "Catalog item:"
 msgstr ""
 
 msgid "Category"
@@ -30669,6 +30675,9 @@ msgstr ""
 msgid "GitLab single sign-on URL"
 msgstr ""
 
+msgid "GitLab user %{username} flagged the AI Catalog item %{item_name} for review."
+msgstr ""
+
 msgid "GitLab username"
 msgstr ""
 
@@ -33439,6 +33448,9 @@ msgstr ""
 msgid "Hello %{name},"
 msgstr ""
 
+msgid "Hello Admin,"
+msgstr ""
+
 msgid "Hello, %{name}!"
 msgstr ""
 
@@ -33530,6 +33542,9 @@ msgid "Hide Live Preview"
 msgstr ""
 
 msgid "Hide all comments"
+msgstr ""
+
+msgid "Hide an item from the AI Catalog. The item is not deleted and can still be used:"
 msgstr ""
 
 msgid "Hide archived projects"
@@ -34261,6 +34276,9 @@ msgid "If enabled, all branches will be mirrored."
 msgstr ""
 
 msgid "If enabled, only protected branches will be mirrored."
+msgstr ""
+
+msgid "If everything looks okay, you can ignore this message."
 msgstr ""
 
 msgid "If selected, successful pipelines do not trigger a notification event."
@@ -54154,6 +54172,9 @@ msgstr ""
 msgid "Ready to merge!"
 msgstr ""
 
+msgid "Reason:"
+msgstr ""
+
 msgid "Reauthenticating with SAML provider."
 msgstr ""
 
@@ -54203,6 +54224,9 @@ msgid "Recently used"
 msgstr ""
 
 msgid "Recently viewed"
+msgstr ""
+
+msgid "Recommended. Permanently delete an item:"
 msgstr ""
 
 msgid "Reconfigure"
@@ -55033,6 +55057,9 @@ msgid "ReportAbuse|Why are you reporting this user?"
 msgstr ""
 
 msgid "Reported %{timeAgo} by %{reportedBy}"
+msgstr ""
+
+msgid "Reported by: %{username} at %{time}"
 msgstr ""
 
 msgid "Reporter"
@@ -67904,6 +67931,9 @@ msgstr ""
 msgid "This is a security log of authentication events involving your account."
 msgstr ""
 
+msgid "This is an automated message. Please don't reply to this message."
+msgstr ""
+
 msgid "This is an experimental feature developed by GitLab Incubation Engineering."
 msgstr ""
 
@@ -77245,6 +77275,9 @@ msgid "You can still use and manage existing tokens. %{link_start}Learn more.%{l
 msgstr ""
 
 msgid "You can unsubscribe from further updates to this ticket. To receive updates in the future, you will have to be added again as a participant."
+msgstr ""
+
+msgid "You can use our GraphQL API to remove an item:"
 msgstr ""
 
 msgid "You can view it in your %{pat_link_start}personal access tokens%{pat_link_end} settings."
