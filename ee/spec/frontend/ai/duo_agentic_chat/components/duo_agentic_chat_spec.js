@@ -414,7 +414,7 @@ describe('Duo Agentic Chat', () => {
 
       it('calls the user workflows GraphQL query when component loads', () => {
         expect(userWorkflowsQueryHandlerMock).toHaveBeenCalledWith({
-          type: 'chat',
+          type: 'foundational_chat_agents',
           first: 99999,
         });
       });

@@ -33,7 +33,11 @@ module QA
 
       context "when asking 'hi'" do
         context 'on GitLab.com', :external_ai_provider,
-          only: { pipeline: %i[staging staging-canary canary production] } do
+          only: { pipeline: %i[staging staging-canary canary production] },
+          quarantine: {
+            issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/14196',
+            type: :investigating
+          } do
           include_examples 'Duo Chat', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/441192'
         end
 

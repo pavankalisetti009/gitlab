@@ -55,6 +55,7 @@ export default {
       experimentFeaturesEnabled,
       duoCoreFeaturesEnabled,
       promptCacheEnabled,
+      foundationalAgentsEnabled,
     }) {
       try {
         const input = {
@@ -64,6 +65,7 @@ export default {
           duo_remote_flows_availability: duoRemoteFlowsAvailability,
           ai_settings_attributes: {
             duo_workflow_mcp_enabled: this.duoWorkflowMcp,
+            foundational_agents_default_enabled: foundationalAgentsEnabled,
           },
         };
 

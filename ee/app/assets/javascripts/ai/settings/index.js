@@ -48,6 +48,8 @@ export const initAiSettings = (id, component, options = {}) => {
     duoWorkflowMcpEnabled,
     duoWorkflowAvailable,
     isSaas,
+    foundationalAgentsDefaultEnabled,
+    showFoundationalAgentsAvailability,
   } = el.dataset;
 
   let duoAvailabilityCascadingSettingsParsed;
@@ -91,6 +93,8 @@ export const initAiSettings = (id, component, options = {}) => {
       duoWorkflowMcpEnabled: parseBoolean(duoWorkflowMcpEnabled),
       duoWorkflowAvailable: parseBoolean(duoWorkflowAvailable),
       betaSelfHostedModelsEnabled: parseBoolean(betaSelfHostedModelsEnabled),
+      foundationalAgentsDefaultEnabled: parseBoolean(foundationalAgentsDefaultEnabled),
+      showFoundationalAgentsAvailability: parseBoolean(showFoundationalAgentsAvailability),
       toggleBetaModelsPath,
       enabledExpandedLogging: parseBoolean(enabledExpandedLogging),
       earlyAccessPath,

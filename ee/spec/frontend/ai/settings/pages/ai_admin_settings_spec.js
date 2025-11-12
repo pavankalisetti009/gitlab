@@ -110,6 +110,7 @@ describe('AiAdminSettings', () => {
         experimentFeaturesEnabled: false,
         duoCoreFeaturesEnabled: false,
         promptCacheEnabled: true,
+        foundationalAgentsEnabled: true,
       });
       expect(updateApplicationSettings).toHaveBeenCalledTimes(1);
       expect(updateApplicationSettings).toHaveBeenCalledWith({
@@ -120,6 +121,7 @@ describe('AiAdminSettings', () => {
         enabled_expanded_logging: false,
         duo_chat_expiration_days: 30,
         duo_chat_expiration_column: 'last_updated_at',
+        foundational_agents_default_enabled: true,
       });
     });
 

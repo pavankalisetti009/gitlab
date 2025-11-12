@@ -7,6 +7,7 @@ import DuoExperimentBetaFeatures from './duo_experiment_beta_features_form.vue';
 import DuoCoreFeaturesForm from './duo_core_features_form.vue';
 import DuoPromptCache from './duo_prompt_cache_form.vue';
 import DuoFlowSettings from './duo_flow_settings.vue';
+import DuoFoundationalAgentsSettings from './duo_foundational_agents_settings.vue';
 
 export default {
   name: 'AiCommonSettingsForm',
@@ -19,6 +20,7 @@ export default {
     DuoCoreFeaturesForm,
     DuoPromptCache,
     DuoFlowSettings,
+    DuoFoundationalAgentsSettings,
   },
   i18n: {
     defaultOffWarning: s__(
@@ -26,7 +28,7 @@ export default {
     ),
     confirmButtonText: __('Save changes'),
   },
-  inject: ['onGeneralSettingsPage'],
+  inject: ['onGeneralSettingsPage', 'showFoundationalAgentsAvailability'],
   props: {
     duoAvailability: {
       type: String,
@@ -49,6 +51,10 @@ export default {
       type: Boolean,
       required: true,
     },
+    foundationalAgentsEnabled: {
+      type: Boolean,
+      required: true,
+    },
     hasParentFormChanged: {
       type: Boolean,
       required: false,
@@ -62,6 +68,7 @@ export default {
       experimentsEnabled: this.experimentFeaturesEnabled,
       duoCoreEnabled: this.duoCoreFeaturesEnabled,
       cacheEnabled: this.promptCacheEnabled,
+      foundationalAgentsEnabledInput: this.foundationalAgentsEnabled,
     };
   },
   computed: {
@@ -80,6 +87,9 @@ export default {
     hasFlowFormChanged() {
       return this.flowEnabled !== this.duoRemoteFlowsAvailability;
     },
+    hasFoundationalAgentsEnabledChanged() {
+      return this.foundationalAgentsEnabled !== this.foundationalAgentsEnabledInput;
+    },
     hasFormChanged() {
       return (
         this.hasAvailabilityChanged ||
@@ -87,7 +97,8 @@ export default {
         this.hasDuoCoreCheckboxChanged ||
         this.hasCacheCheckboxChanged ||
         this.hasParentFormChanged ||
-        this.hasFlowFormChanged
+        this.hasFlowFormChanged ||
+        this.hasFoundationalAgentsEnabledChanged
       );
     },
     showWarning() {
@@ -133,6 +144,10 @@ export default {
       this.flowEnabled = value;
       this.$emit('duo-flow-checkbox-changed', value);
     },
+    onFoundationalAgentsEnabledChanged(value) {
+      this.foundationalAgentsEnabledInput = value;
+      this.$emit('duo-foundational-agents-changed', value);
+    },
   },
 };
 </script>
@@ -165,6 +180,12 @@ export default {
       :prompt-cache-enabled="cacheEnabled"
       :disabled-checkbox="disableConfigCheckboxes"
       @change="onCacheCheckboxChanged"
+    />
+
+    <duo-foundational-agents-settings
+      v-if="showFoundationalAgentsAvailability"
+      :enabled="foundationalAgentsEnabledInput"
+      @change="onFoundationalAgentsEnabledChanged"
     />
 
     <slot name="ai-common-settings-bottom"></slot>

@@ -43,6 +43,14 @@ RSpec.describe Resolvers::Ai::FoundationalChatAgentsResolver, feature_category: 
             expect(resolved).to match_array(::Ai::FoundationalChatAgent.only_duo_chat_agent)
           end
         end
+
+        context 'when duo_foundational_agents_availability is off' do
+          it 'is returns only duo chat' do
+            stub_feature_flags(duo_foundational_agents_availability: false)
+
+            expect(resolved).to match_array(::Ai::FoundationalChatAgent.only_duo_chat_agent)
+          end
+        end
       end
 
       context 'when is self-managed' do
@@ -60,6 +68,14 @@ RSpec.describe Resolvers::Ai::FoundationalChatAgentsResolver, feature_category: 
           let(:foundational_agents_default_enabled) { false }
 
           it 'is returns only duo chat' do
+            expect(resolved).to match_array(::Ai::FoundationalChatAgent.only_duo_chat_agent)
+          end
+        end
+
+        context 'when duo_foundational_agents_availability is off' do
+          it 'is returns only duo chat' do
+            stub_feature_flags(duo_foundational_agents_availability: false)
+
             expect(resolved).to match_array(::Ai::FoundationalChatAgent.only_duo_chat_agent)
           end
         end
