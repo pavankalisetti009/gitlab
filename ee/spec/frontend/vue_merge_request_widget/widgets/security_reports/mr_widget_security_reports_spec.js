@@ -163,6 +163,19 @@ describe('MR Widget Security Reports', () => {
       propsData: {
         mr: mrProps,
       },
+      mockApolloProvider: createMockApollo([
+        [
+          enabledScansQuery,
+          jest.fn().mockResolvedValue(
+            enabledScansQueryResult({
+              full: {
+                sast: true,
+                dast: true,
+              },
+            }),
+          ),
+        ],
+      ]),
       ...options,
     });
 
@@ -213,10 +226,9 @@ describe('MR Widget Security Reports', () => {
     });
   });
 
-  describe('with vulnerabilityPartialScans feature flag turned on', () => {
+  describe('partial scans', () => {
     it('should display a loading state until enabled scans are fetched', async () => {
       createComponent({
-        provide: { glFeatures: { vulnerabilityPartialScans: true } },
         mountFn: mountExtended,
         mockApolloProvider: defaultMockApollo,
       });
@@ -236,7 +248,6 @@ describe('MR Widget Security Reports', () => {
       'should fetch full scans=$fullScans, partial scans=$partialScans',
       async ({ fullScans, partialScans, expectedNumberOfRESTcalls, expectedScanModes }) => {
         createComponent({
-          provide: { glFeatures: { vulnerabilityPartialScans: true } },
           mountFn: mountExtended,
           mockApolloProvider: createMockApollo([
             [
@@ -272,7 +283,6 @@ describe('MR Widget Security Reports', () => {
       mockAxios = new MockAdapter(axios);
 
       createComponent({
-        provide: { glFeatures: { vulnerabilityPartialScans: true } },
         mountFn: mountExtended,
         apolloProvider: createMockApollo([
           [
@@ -317,7 +327,6 @@ describe('MR Widget Security Reports', () => {
 
     it('when the query fails', async () => {
       createComponent({
-        provide: { glFeatures: { vulnerabilityPartialScans: true } },
         mountFn: mountExtended,
         apolloProvider: createMockApollo([
           [
@@ -338,7 +347,6 @@ describe('MR Widget Security Reports', () => {
 
     it('when the pipeline is null, it should not render anything', async () => {
       createComponent({
-        provide: { glFeatures: { vulnerabilityPartialScans: true } },
         mountFn: mountExtended,
         apolloProvider: createMockApollo([
           [
@@ -363,7 +371,7 @@ describe('MR Widget Security Reports', () => {
 
   describe('with empty MR data', () => {
     beforeEach(() => {
-      createComponent();
+      createComponent({ mockApolloProvider: defaultMockApollo });
     });
 
     it('should mount the widget component', () => {
@@ -446,6 +454,19 @@ describe('MR Widget Security Reports', () => {
 
       createComponent({
         mountFn: mountExtended,
+        mockApolloProvider: createMockApollo([
+          [
+            enabledScansQuery,
+            jest.fn().mockResolvedValue(
+              enabledScansQueryResult({
+                full: {
+                  sast: true,
+                  dast: true,
+                },
+              }),
+            ),
+          ],
+        ]),
       });
 
       await waitForPromises();
@@ -472,7 +493,7 @@ describe('MR Widget Security Reports', () => {
     });
 
     it('should display the view all pipeline findings button', async () => {
-      await createComponent();
+      await createComponent({ mockApolloProvider: defaultMockApollo });
 
       expect(findWidget().props('actionButtons')).toEqual([
         {

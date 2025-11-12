@@ -137,18 +137,6 @@ RSpec.describe Security::StoreScanService, feature_category: :vulnerability_mana
 
         it_behaves_like 'stores partial scan record'
 
-        context 'when vulnerability_partial_scans feature flag is disabled' do
-          before do
-            stub_feature_flags(vulnerability_partial_scans: false)
-          end
-
-          it 'does not create partial scan record' do
-            store_scan
-
-            expect(security_scan.partial_scan).to be_nil
-          end
-        end
-
         context 'when there is an existing security scan' do
           let_it_be(:existing_scan) do
             create(:security_scan, build: artifact.job, scan_type: artifact.security_report.type)
