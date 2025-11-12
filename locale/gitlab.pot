@@ -8110,9 +8110,6 @@ msgstr ""
 msgid "An error occurred while decoding the file."
 msgstr ""
 
-msgid "An error occurred while deleting an issuable."
-msgstr ""
-
 msgid "An error occurred while deleting the approvers group"
 msgstr ""
 
@@ -20362,9 +20359,6 @@ msgstr ""
 msgid "Create new"
 msgstr ""
 
-msgid "Create new %{name} by email"
-msgstr ""
-
 msgid "Create new domain"
 msgstr ""
 
@@ -26250,9 +26244,6 @@ msgstr ""
 msgid "Email"
 msgstr ""
 
-msgid "Email %{name} to this project"
-msgstr ""
-
 msgid "Email %{number}"
 msgstr ""
 
@@ -26776,12 +26767,6 @@ msgid "Enter recovery code"
 msgstr ""
 
 msgid "Enter text"
-msgstr ""
-
-msgid "Enter the %{name} description"
-msgstr ""
-
-msgid "Enter the %{name} title"
 msgstr ""
 
 msgid "Enter the code from your two-factor authenticator app. If you've lost your device, you can enter one of your recovery codes."
@@ -36716,9 +36701,6 @@ msgid "Issue or merge request ID is required"
 msgstr ""
 
 msgid "Issue published on status page."
-msgstr ""
-
-msgid "Issue type"
 msgstr ""
 
 msgid "Issue types"
@@ -62914,9 +62896,6 @@ msgstr ""
 msgid "Send a single email notification to Owners and Maintainers for new alerts."
 msgstr ""
 
-msgid "Send email"
-msgstr ""
-
 msgid "Send email in multipart format (HTML and plain text). Uncheck to send email messages in plain text only."
 msgstr ""
 
@@ -67718,9 +67697,6 @@ msgstr ""
 msgid "The subdomain setting."
 msgstr ""
 
-msgid "The subject will be used as the title of the new %{name}, and the message will be the description. %{quickActionsLinkStart}Quick actions%{quickActionsLinkEnd} and styling with %{markdownLinkStart}Markdown%{markdownLinkEnd} are supported."
-msgstr ""
-
 msgid "The tag name can't be changed for an existing release."
 msgstr ""
 
@@ -68120,9 +68096,6 @@ msgstr ""
 msgid "There was an error updating your show drafts preference."
 msgstr ""
 
-msgid "There was an error when reseting email token."
-msgstr ""
-
 msgid "There was an error when subscribing to this label."
 msgstr ""
 
@@ -68484,9 +68457,6 @@ msgid "This is a delayed job to run in %{remainingTime}"
 msgstr ""
 
 msgid "This is a list of devices that have logged into your account. Revoke any sessions that you do not recognize."
-msgstr ""
-
-msgid "This is a private email address %{helpIcon} generated just for you. Anyone who has it can create issues or merge requests as if they were you. If that happens, %{resetLinkStart}reset this token%{resetLinkEnd}."
 msgstr ""
 
 msgid "This is a security log of authentication events involving your account."
@@ -77791,9 +77761,6 @@ msgid "You can check your tokens or create a new one in your personal access tok
 msgstr ""
 
 msgid "You can create a new %{link}."
-msgstr ""
-
-msgid "You can create a new %{name} inside this project by sending an email to the following email address:"
 msgstr ""
 
 msgid "You can create a new SSH key by visiting %{link}"
