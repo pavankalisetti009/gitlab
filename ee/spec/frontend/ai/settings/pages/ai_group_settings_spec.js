@@ -130,6 +130,7 @@ describe('AiGroupSettings', () => {
         experimentFeaturesEnabled: true,
         duoCoreFeaturesEnabled: true,
         promptCacheEnabled: true,
+        foundationalAgentsEnabled: true,
       });
       expect(updateGroupSettings).toHaveBeenCalledTimes(1);
       expect(updateGroupSettings).toHaveBeenCalledWith('100', {
@@ -139,6 +140,7 @@ describe('AiGroupSettings', () => {
         model_prompt_cache_enabled: true,
         ai_settings_attributes: {
           duo_workflow_mcp_enabled: false,
+          foundational_agents_default_enabled: true,
         },
       });
     });

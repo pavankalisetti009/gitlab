@@ -16,8 +16,7 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
         enabled_expanded_logging: true,
         gitlab_dedicated_instance?: false,
         instance_level_ai_beta_features_enabled: true,
-        model_prompt_cache_enabled?: true,
-        foundational_agents_default_enabled: true
+        model_prompt_cache_enabled?: true
       }
     end
 
@@ -56,6 +55,7 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
       allow(GitlabSubscriptions::DuoEnterprise).to receive_messages(
         active_add_on_purchase_for_self_managed?: active_add_on_purchase_for_self_managed?
       )
+      stub_feature_flags(duo_foundational_agents_availability: false)
     end
 
     specify do
@@ -73,15 +73,24 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
         duo_chat_expiration_column: 'last_updated_at',
         duo_chat_expiration_days: '30',
         duo_core_features_enabled: 'true',
-        foundational_agents_default_enabled: 'true',
         duo_pro_visible: 'true',
         enabled_expanded_logging: 'true',
         experiment_features_enabled: 'true',
         on_general_settings_page: 'false',
         prompt_cache_enabled: 'true',
         redirect_path: '/admin/gitlab_duo',
-        toggle_beta_models_path: '/admin/ai/duo_self_hosted/toggle_beta_models'
+        toggle_beta_models_path: '/admin/ai/duo_self_hosted/toggle_beta_models',
+        foundational_agents_default_enabled: 'true',
+        show_foundational_agents_availability: 'false'
       )
+    end
+
+    context 'with duo_foundational_agents_availability flag enabled' do
+      before do
+        stub_feature_flags(duo_foundational_agents_availability: true)
+      end
+
+      it { expect(settings).to include(show_foundational_agents_availability: 'true') }
     end
 
     context 'with another ai_gateway_url' do

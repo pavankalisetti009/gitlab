@@ -102,6 +102,7 @@ RSpec.describe EE::Groups::SettingsHelper, feature_category: :groups_and_project
           duo_workflow_available: "true",
           duo_workflow_mcp_enabled: "true",
           foundational_agents_default_enabled: "true",
+          show_foundational_agents_availability: "true",
           is_saas: 'true'
         }
       )
@@ -120,6 +121,38 @@ RSpec.describe EE::Groups::SettingsHelper, feature_category: :groups_and_project
             duo_workflow_mcp_enabled: "false"
           }
         )
+      end
+    end
+
+    describe 'show_foundational_agents_availability' do
+      context 'with duo_foundational_agents_availability feature flag is disabled' do
+        before do
+          stub_feature_flags(duo_foundational_agents_availability: false)
+        end
+
+        it 'is false' do
+          is_expected.to include({ show_foundational_agents_availability: "false" })
+        end
+      end
+
+      context 'when group is not root' do
+        before do
+          allow(group).to receive(:root?).and_return(false)
+        end
+
+        it 'is false' do
+          is_expected.to include({ show_foundational_agents_availability: "false" })
+        end
+      end
+
+      context 'when group is not saas' do
+        before do
+          stub_saas_features(gitlab_com_subscriptions: false)
+        end
+
+        it 'is false' do
+          is_expected.to include({ show_foundational_agents_availability: "false" })
+        end
       end
     end
 

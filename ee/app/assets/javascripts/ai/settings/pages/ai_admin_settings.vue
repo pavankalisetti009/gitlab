@@ -103,6 +103,7 @@ export default {
       duoCoreFeaturesEnabled,
       promptCacheEnabled,
       duoRemoteFlowsAvailability,
+      foundationalAgentsEnabled,
     }) {
       try {
         this.isLoading = true;
@@ -121,6 +122,7 @@ export default {
           enabled_expanded_logging: this.expandedLogging,
           duo_chat_expiration_days: this.chatExpirationDays,
           duo_chat_expiration_column: this.chatExpirationColumn,
+          foundational_agents_default_enabled: foundationalAgentsEnabled,
         });
 
         if (this.hasAiModelsFormChanged) {

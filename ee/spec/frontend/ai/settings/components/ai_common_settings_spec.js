@@ -8,7 +8,6 @@ import { AVAILABILITY_OPTIONS } from 'ee/ai/settings/constants';
 
 describe('AiCommonSettings', () => {
   let wrapper;
-
   const createComponent = ({ props = {}, provide = {} } = {}) => {
     wrapper = shallowMountExtended(AiCommonSettings, {
       propsData: {
@@ -21,6 +20,7 @@ describe('AiCommonSettings', () => {
         duoCoreFeaturesEnabled: false,
         promptCacheEnabled: true,
         initialDuoRemoteFlowsAvailability: false,
+        foundationalAgentsDefaultEnabled: true,
         onGeneralSettingsPage: false,
         ...provide,
       },
@@ -70,6 +70,7 @@ describe('AiCommonSettings', () => {
     await findForm().vm.$emit('experiment-checkbox-changed', true);
     await findForm().vm.$emit('duo-core-checkbox-changed', true);
     await findForm().vm.$emit('duo-flow-checkbox-changed', true);
+    await findForm().vm.$emit('duo-foundational-agents-changed', true);
     findForm().vm.$emit('submit', {
       preventDefault: jest.fn(),
     });
@@ -80,6 +81,7 @@ describe('AiCommonSettings', () => {
       duoCoreFeaturesEnabled: true,
       promptCacheEnabled: true,
       duoRemoteFlowsAvailability: true,
+      foundationalAgentsEnabled: true,
     });
   });
 
@@ -132,6 +134,20 @@ describe('AiCommonSettings', () => {
     it('renders ai-common-settings slots', () => {
       expect(findTopSettingsSlot().exists()).toBe(true);
       expect(findBottomSettingsSlot().exists()).toBe(true);
+    });
+  });
+
+  describe('foundational agents', () => {
+    it('passes foundational-agents-enabled value to the form', () => {
+      expect(findForm().props('foundationalAgentsEnabled')).toEqual(true);
+    });
+
+    it('includes foundational agents in submit event', async () => {
+      await findForm().vm.$emit('duo-foundational-agents-changed', false);
+      findForm().vm.$emit('submit', { preventDefault: jest.fn() });
+
+      const [[{ foundationalAgentsEnabled }]] = wrapper.emitted('submit');
+      expect(foundationalAgentsEnabled).toEqual(false);
     });
   });
 });

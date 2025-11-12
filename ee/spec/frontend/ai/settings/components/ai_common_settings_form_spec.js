@@ -1,3 +1,4 @@
+import { nextTick } from 'vue';
 import { GlForm, GlButton } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import AiCommonSettingsForm from 'ee/ai/settings/components/ai_common_settings_form.vue';
@@ -6,6 +7,7 @@ import DuoExperimentBetaFeaturesForm from 'ee/ai/settings/components/duo_experim
 import DuoCoreFeaturesForm from 'ee/ai/settings/components/duo_core_features_form.vue';
 import DuoPromptCacheForm from 'ee/ai/settings/components/duo_prompt_cache_form.vue';
 import DuoFlowSettings from 'ee/ai/settings/components/duo_flow_settings.vue';
+import DuoFoundationalAgentsSettings from 'ee/ai/settings/components/duo_foundational_agents_settings.vue';
 import { AVAILABILITY_OPTIONS } from 'ee/ai/settings/constants';
 
 describe('AiCommonSettingsForm', () => {
@@ -20,10 +22,12 @@ describe('AiCommonSettingsForm', () => {
         experimentFeaturesEnabled: true,
         promptCacheEnabled: false,
         hasParentFormChanged: false,
+        foundationalAgentsEnabled: false,
         ...props,
       },
       provide: {
         onGeneralSettingsPage: false,
+        showFoundationalAgentsAvailability: false,
         ...provide,
       },
     });
@@ -35,6 +39,8 @@ describe('AiCommonSettingsForm', () => {
   const findDuoCoreFeaturesForm = () => wrapper.findComponent(DuoCoreFeaturesForm);
   const findDuoPromptCache = () => wrapper.findComponent(DuoPromptCacheForm);
   const findDuoFlowSettings = () => wrapper.findComponent(DuoFlowSettings);
+  const findDuoFoundationalAgentsSettings = () =>
+    wrapper.findComponent(DuoFoundationalAgentsSettings);
   const findDuoSettingsWarningAlert = () => wrapper.findByTestId('duo-settings-show-warning-alert');
   const findSaveButton = () => wrapper.findComponent(GlButton);
 
@@ -181,6 +187,52 @@ describe('AiCommonSettingsForm', () => {
     it('does not render the Duo Core features form', () => {
       createComponent({ provide: { onGeneralSettingsPage: true } });
       expect(findDuoCoreFeaturesForm().exists()).toBe(false);
+    });
+  });
+
+  describe('foundational agents settings', () => {
+    it('does not render the setting when showFoundationalAgentsAvailability is false', () => {
+      expect(findDuoFoundationalAgentsSettings().exists()).toBe(false);
+    });
+
+    describe('when showFoundationalAgentsAvailability is true', () => {
+      beforeEach(() => {
+        createComponent({
+          props: { foundationalAgentsEnabled: false },
+          provide: { showFoundationalAgentsAvailability: true },
+        });
+      });
+
+      it('renders setting when showFoundationalAgentsAvailability is true', () => {
+        expect(findDuoFoundationalAgentsSettings().exists()).toBe(true);
+        expect(findDuoFoundationalAgentsSettings().props('enabled')).toEqual(false);
+      });
+
+      it('emits duo-foundational-agents-changed event when DuoFoundationalAgentsSettings emits change', async () => {
+        findDuoFoundationalAgentsSettings().vm.$emit('change', true);
+        await nextTick();
+
+        expect(wrapper.emitted('duo-foundational-agents-changed')).toHaveLength(1);
+        expect(wrapper.emitted('duo-foundational-agents-changed')[0]).toEqual([true]);
+      });
+
+      it('enables save button when foundational agent enabled value changes', async () => {
+        expect(findSaveButton().props('disabled')).toBe(true);
+
+        findDuoFoundationalAgentsSettings().vm.$emit('change', true);
+        await nextTick();
+
+        expect(findSaveButton().props('disabled')).toBe(false);
+      });
+
+      it('keeps save button disabled when foundational agents enabled value is unchanged', async () => {
+        expect(findSaveButton().props('disabled')).toBe(true);
+
+        findDuoFoundationalAgentsSettings().vm.$emit('change', false);
+        await nextTick();
+
+        expect(findSaveButton().props('disabled')).toBe(true);
+      });
     });
   });
 });
