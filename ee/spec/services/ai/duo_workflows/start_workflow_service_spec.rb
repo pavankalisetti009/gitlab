@@ -31,7 +31,9 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
       shadowed_project = project
       expect(Ci::Workloads::RunWorkloadService).to receive(:new).and_wrap_original do |method, **kwargs|
         project = kwargs[:project]
+        workload_definition = kwargs[:workload_definition]
         expect(project).to eq(shadowed_project)
+        expect(workload_definition.tags).to eq([::Ai::DuoWorkflows::Workflow::WORKLOAD_TAG])
         method.call(**kwargs)
       end
 
@@ -44,6 +46,22 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
       workload = Ci::Workloads::Workload.find_by_id([workload_id])
       expect(workload.branch_name).to start_with('workloads/')
       expect(workload.branch_name).to start_with('workloads/')
+    end
+
+    context 'when duo_agent_platform_ci_job_tags is disabled' do
+      before do
+        stub_feature_flags(duo_agent_platform_ci_job_tags: false)
+      end
+
+      it 'does not include tags' do
+        expect(Ci::Workloads::RunWorkloadService).to receive(:new).and_wrap_original do |method, **kwargs|
+          workload_definition = kwargs[:workload_definition]
+          expect(workload_definition.tags).to be_nil
+          method.call(**kwargs)
+        end
+
+        expect(execute).to be_success
+      end
     end
   end
 

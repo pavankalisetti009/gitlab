@@ -8,6 +8,8 @@ module Ai
       include EachBatch
       include Sortable
 
+      WORKLOAD_TAG = 'gitlab--duo'
+
       self.table_name = :duo_workflows_workflows
 
       belongs_to :user
