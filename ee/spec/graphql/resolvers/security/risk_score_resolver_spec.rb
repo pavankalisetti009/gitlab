@@ -103,12 +103,12 @@ RSpec.describe Resolvers::Security::RiskScoreResolver, :elastic_delete_by_query,
           before do
             allow_next_instance_of(::Security::VulnerabilityElasticRiskScoresFinder) do |finder|
               allow(finder).to receive(:execute).and_return({
-                total_risk_score: 65.5,
+                total_risk_score: 0.655,
                 total_project_count: 3,
                 risk_score_by_project: {
-                  project1.id => 50.5,
-                  project2.id => 75.2,
-                  project3.id => 30.8
+                  project1.id => 0.505,
+                  project2.id => 0.752,
+                  project3.id => 0.308
                 }
               })
             end
@@ -249,7 +249,7 @@ RSpec.describe Resolvers::Security::RiskScoreResolver, :elastic_delete_by_query,
           before do
             allow_next_instance_of(::Security::VulnerabilityElasticRiskScoresFinder) do |finder|
               allow(finder).to receive(:execute).and_return({
-                total_risk_score: 50,
+                total_risk_score: 0.5,
                 total_project_count: 2,
                 risk_score_by_project: nil
               })
@@ -272,7 +272,7 @@ RSpec.describe Resolvers::Security::RiskScoreResolver, :elastic_delete_by_query,
           before do
             allow_next_instance_of(::Security::VulnerabilityElasticRiskScoresFinder) do |finder|
               allow(finder).to receive(:execute).and_return({
-                total_risk_score: 50,
+                total_risk_score: 0.5,
                 total_project_count: 0,
                 risk_score_by_project: {}
               })
@@ -354,31 +354,31 @@ RSpec.describe Resolvers::Security::RiskScoreResolver, :elastic_delete_by_query,
 
         context 'when low risk scores' do
           it_behaves_like 'returns correct rating', 0, 'low'
-          it_behaves_like 'returns correct rating', 10, 'low'
-          it_behaves_like 'returns correct rating', 25.9, 'low'
+          it_behaves_like 'returns correct rating', 0.1, 'low'
+          it_behaves_like 'returns correct rating', 0.259, 'low'
         end
 
         context 'when medium risk scores' do
-          it_behaves_like 'returns correct rating', 26, 'medium'
-          it_behaves_like 'returns correct rating', 40, 'medium'
-          it_behaves_like 'returns correct rating', 50.9, 'medium'
+          it_behaves_like 'returns correct rating', 0.26, 'medium'
+          it_behaves_like 'returns correct rating', 0.4, 'medium'
+          it_behaves_like 'returns correct rating', 0.509, 'medium'
         end
 
         context 'when high risk scores' do
-          it_behaves_like 'returns correct rating', 51, 'high'
-          it_behaves_like 'returns correct rating', 65, 'high'
-          it_behaves_like 'returns correct rating', 75.9, 'high'
+          it_behaves_like 'returns correct rating', 0.51, 'high'
+          it_behaves_like 'returns correct rating', 0.65, 'high'
+          it_behaves_like 'returns correct rating', 0.759, 'high'
         end
 
         context 'when critical risk scores' do
-          it_behaves_like 'returns correct rating', 76, 'critical'
-          it_behaves_like 'returns correct rating', 90, 'critical'
-          it_behaves_like 'returns correct rating', 100, 'critical'
+          it_behaves_like 'returns correct rating', 0.76, 'critical'
+          it_behaves_like 'returns correct rating', 0.9, 'critical'
+          it_behaves_like 'returns correct rating', 1.0, 'critical'
         end
 
         context 'when risk scores is not known' do
-          it_behaves_like 'returns correct rating', -1, 'unknown'
-          it_behaves_like 'returns correct rating', 101, 'unknown'
+          it_behaves_like 'returns correct rating', -0.01, 'unknown'
+          it_behaves_like 'returns correct rating', 1.01, 'unknown'
           it_behaves_like 'returns correct rating', nil, 'unknown'
         end
       end
