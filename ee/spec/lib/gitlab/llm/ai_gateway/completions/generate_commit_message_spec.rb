@@ -16,6 +16,8 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::GenerateCommitMessage, featu
     build(:ai_message, :generate_commit_message, user: user, resource: merge_request, request_id: uuid)
   end
 
+  let(:model_metadata) { { provider: 'gitlab', feature_setting: 'generate_commit_message', identifier: nil } }
+
   let(:tracking_context) { { action: :generate_commit_message, request_id: uuid } }
 
   subject(:generate_commit_message) { described_class.new(prompt_message, template_class, ai_options).execute }
@@ -32,7 +34,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::GenerateCommitMessage, featu
           base_url: Gitlab::AiGateway.url,
           prompt_name: :generate_commit_message,
           inputs: { diff: expected_diff },
-          model_metadata: nil,
+          model_metadata: model_metadata,
           prompt_version: expected_prompt_version
         ).and_return(ai_response)
 
@@ -51,6 +53,22 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::GenerateCommitMessage, featu
     end
 
     it_behaves_like 'successful completion request'
+
+    context 'on self-managed instance' do
+      context 'when instance level model selection feature setting exists' do
+        let!(:instance_model_selection_feature_setting) do
+          create(:instance_model_selection_feature_setting,
+            feature: 'generate_commit_message',
+            offered_model_ref: 'claude-3-7-sonnet-20250219')
+        end
+
+        it_behaves_like 'successful completion request' do
+          let(:model_metadata) do
+            { provider: 'gitlab', feature_setting: 'generate_commit_message', identifier: 'claude-3-7-sonnet-20250219' }
+          end
+        end
+      end
+    end
 
     context 'when merge request has empty raw diffs' do
       let(:expected_diff) { '' }

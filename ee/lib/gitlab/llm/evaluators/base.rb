@@ -26,7 +26,7 @@ module Gitlab
         end
 
         # @return [Hash<Symbol, String>] The model metadata to pass on to AI Gateway.
-        def model_metadata
+        def model_metadata(user)
           raise NotImplementedError
         end
 

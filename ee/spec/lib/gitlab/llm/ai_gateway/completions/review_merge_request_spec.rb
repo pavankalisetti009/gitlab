@@ -9,7 +9,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
   let(:options) { { progress_note_id: progress_note.id } }
   let(:create_note_allowed?) { true }
   let(:prompt_version) { '1.3.0' }
-  let(:received_model_metadata) { nil }
+  let(:received_model_metadata) { { provider: 'gitlab', feature_setting: 'review_merge_request', identifier: nil } }
 
   let_it_be(:duo_code_review_bot) { create(:user, :duo_code_review_bot) }
   let_it_be(:project) do
@@ -216,7 +216,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
       end
 
       context 'with self-hosted configuration' do
-        let(:feature_setting) { instance_double(::Ai::FeatureSetting, self_hosted?: true) }
+        let(:feature_setting) { instance_double(::Ai::FeatureSetting, self_hosted?: true, vendored?: false) }
 
         before do
           allow(::Ai::FeatureSetting).to receive(:find_by_feature)
@@ -1669,11 +1669,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
       end
     end
 
-    context 'with model switching enabled' do
-      before do
-        stub_feature_flags(ai_model_switching: true)
-      end
-
+    context 'with model switching enabled', :saas do
       it_behaves_like 'review merge request with prompt version'
 
       context 'when the model is pinned to a specific model' do

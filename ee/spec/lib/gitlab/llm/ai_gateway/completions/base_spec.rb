@@ -211,7 +211,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::Base, feature_category: :ai_
             prompt_name: ai_action,
             inputs: inputs,
             model_metadata: {
-              identifier: '',
+              identifier: nil,
               provider: 'gitlab',
               feature_setting: 'duo_chat_fix_code'
             },

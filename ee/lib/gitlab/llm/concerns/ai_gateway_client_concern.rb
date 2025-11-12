@@ -30,11 +30,11 @@ module Gitlab
           )
 
           response = client.complete_prompt(
-            base_url: base_url_from_feature_setting,
+            base_url: base_url_from_feature_setting(user),
             prompt_name: prompt_name,
             inputs: inputs,
-            prompt_version: prompt_version_or_default,
-            model_metadata: model_metadata
+            prompt_version: prompt_version_or_default(user),
+            model_metadata: model_metadata(user)
           )
 
           return unless response && response.body.present? && response.success?
@@ -44,45 +44,48 @@ module Gitlab
           body.is_a?(String) ? body : body["content"]
         end
 
-        def prompt_version_or_default
+        def prompt_version_or_default(user)
+          feature_setting = selected_feature_setting(user)
           is_self_hosted = feature_setting&.self_hosted? || false
 
           return prompt_version if prompt_version && (!is_self_hosted && !::Ai::AmazonQ.connected?)
 
-          model_family = model_metadata&.dig(:name)
+          metadata = model_metadata(user)
+          model_family = metadata&.dig(:name)
           ::Gitlab::Llm::PromptVersions.version_for_prompt(
             prompt_name,
             model_family
           )
         end
 
-        def base_url_from_feature_setting
-          selected_feature_setting&.base_url || ::Gitlab::AiGateway.url
+        def base_url_from_feature_setting(user)
+          selected_feature_setting(user)&.base_url || ::Gitlab::AiGateway.url
         end
 
-        def selected_feature_setting
-          namespace_feature_setting || feature_setting
-        end
-        strong_memoize_attr(:selected_feature_setting)
+        def selected_feature_setting(user)
+          return unless user
 
-        def namespace_feature_setting
-          return unless root_namespace
+          feature_name = feature_name_for_unit_primitive
+          return unless feature_name
 
-          ::Ai::ModelSelection::NamespaceFeatureSetting.find_or_initialize_by_feature(
-            root_namespace, unit_primitive_name
-          )
-        end
-        strong_memoize_attr(:namespace_feature_setting)
+          strong_memoize_with(:selected_feature_setting, user, feature_name) do
+            service_result = ::Ai::FeatureSettingSelectionService.new(
+              user,
+              feature_name,
+              root_namespace
+            ).execute
 
-        def feature_setting
-          ::Ai::FeatureSetting.feature_for_unit_primitive(unit_primitive_name)
+            service_result.success? ? service_result.payload : nil
+          end
         end
-        strong_memoize_attr(:feature_setting)
 
-        def model_metadata
-          ::Gitlab::Llm::AiGateway::ModelMetadata.new(feature_setting: selected_feature_setting).to_params
+        def feature_name_for_unit_primitive
+          ::Ai::FeatureSetting.unit_primitive_to_feature_name_map[unit_primitive_name.to_s]
         end
-        strong_memoize_attr(:model_metadata)
+
+        def model_metadata(user)
+          ::Gitlab::Llm::AiGateway::ModelMetadata.new(feature_setting: selected_feature_setting(user)).to_params
+        end
 
         # Must be overridden by subclasses to specify the UP name.
         def unit_primitive_name

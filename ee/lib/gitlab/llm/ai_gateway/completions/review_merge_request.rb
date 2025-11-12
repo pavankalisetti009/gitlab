@@ -147,6 +147,8 @@ module Gitlab
           def should_use_duo_agent_platform?
             return false unless Feature.enabled?(:duo_code_review_on_agent_platform, user)
 
+            feature_setting = selected_feature_setting(user)
+
             # SaaS customers always use DAP
             return true unless feature_setting&.self_hosted?
 
