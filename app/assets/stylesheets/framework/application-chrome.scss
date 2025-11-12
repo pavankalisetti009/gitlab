@@ -499,7 +499,7 @@
 
     // Legacy merge request sticky header (Firefox)
     .issue-sticky-header.merge-request-sticky-header .issue-sticky-header-text {
-      @apply gl-px-6 @xl/panel:gl-px-4;
+      @apply gl-px-3;
     }
 
     // Issue boards height
