@@ -48,7 +48,7 @@ module EE
               if child_error.present?
                 child_error
               else
-                Epics::EpicLinks::DestroyService.new(child_epic, current_user).execute
+                ::WorkItems::LegacyEpics::EpicLinks::DestroyService.new(child_epic, current_user).execute
 
                 success_remove_message(quick_action_target, child_epic, :child)
               end
@@ -93,7 +93,7 @@ module EE
               if parent_error.present?
                 parent_error
               else
-                Epics::EpicLinks::DestroyService.new(quick_action_target, current_user).execute
+                ::WorkItems::LegacyEpics::EpicLinks::DestroyService.new(quick_action_target, current_user).execute
 
                 success_remove_message(quick_action_target, parent_epic, :parent)
               end

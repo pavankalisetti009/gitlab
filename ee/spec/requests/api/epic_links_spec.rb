@@ -338,7 +338,7 @@ RSpec.describe API::EpicLinks, feature_category: :portfolio_management do
 
     context 'when epics feature is enabled' do
       before do
-        stub_licensed_features(epics: true)
+        stub_licensed_features(epics: true, subepics: true)
       end
 
       context 'and group is public and user is not a member' do
