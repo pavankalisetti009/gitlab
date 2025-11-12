@@ -1,0 +1,9 @@
+---
+name: security_policy_warn_mode_license_scanning
+feature_issue_url: https://gitlab.com/groups/gitlab-org/-/epics/15552
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/210792
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/579664
+milestone: '18.7'
+group: group::security policies
+type: beta
+default_enabled: false

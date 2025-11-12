@@ -1810,60 +1810,6 @@
       }
     }
   },
-  "allOf": [
-    {
-      "if": {
-        "properties": {
-          "approval_policy": {
-            "type": "array"
-          }
-        }
-      },
-      "then": {
-        "properties": {
-          "approval_policy": {
-            "type": "array",
-            "items": {
-              "if": {
-                "allOf": [
-                  {
-                    "properties": {
-                      "enforcement_type": {
-                        "const": "warn"
-                      }
-                    }
-                  },
-                  {
-                    "required": [
-                      "enforcement_type"
-                    ]
-                  }
-                ]
-              },
-              "then": {
-                "properties": {
-                  "rules": {
-                    "type": "array",
-                    "items": {
-                      "properties": {
-                        "type": {
-                          "enum": [
-                            "scan_finding",
-                            "any_merge_request"
-                          ],
-                          "description": "When enforcement_type is 'warn', only 'scan_finding' and 'any_merge_request' rule types are allowed. 'license_finding' is not supported with warn enforcement."
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  ],
   "additionalProperties": false,
   "$defs": {
     "policy_scope": {

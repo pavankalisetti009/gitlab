@@ -46,6 +46,7 @@ RSpec.describe Security::PolicyDismissal, feature_category: :security_policy_man
         it { is_expected.to allow_value({ 'MIT License' => ['rack'] }).for(:licenses) }
         it { is_expected.to allow_value({ 'MIT License' => %w[rack bundler] }).for(:licenses) }
         it { is_expected.not_to allow_value({ '' => ['rack'] }).for(:licenses) }
+        it { is_expected.not_to allow_value([{ 'MIT License' => ['rack'] }]).for(:licenses) }
       end
 
       context 'with multiple licenses' do

@@ -44,8 +44,9 @@ module Security
       def build_dismissal_attributes(violations_by_policy)
         violations_by_policy.each_with_object([]) do |(policy_id, violations), attrs|
           finding_uuids = collect_finding_uuids(violations)
+          licenses = collect_licenses(violations)
 
-          attrs << dismissal_attributes_for(policy_id, finding_uuids)
+          attrs << dismissal_attributes_for(policy_id, finding_uuids, licenses)
         end
       end
 
@@ -53,9 +54,22 @@ module Security
         violations.flat_map(&:finding_uuids).uniq
       end
 
-      def dismissal_attributes_for(policy_id, finding_uuids)
+      def collect_licenses(violations)
+        return {} unless Feature.enabled?(:security_policy_warn_mode_license_scanning, merge_request.project)
+
+        license_violations(violations).reduce({}) do |result, licenses|
+          result.merge(licenses) { |_license_name, existing, new| existing | new }
+        end
+      end
+
+      def license_violations(violations)
+        violations.map(&:licenses).compact_blank
+      end
+
+      def dismissal_attributes_for(policy_id, finding_uuids, licenses)
         {
           security_findings_uuids: finding_uuids,
+          licenses: licenses,
           security_policy_id: policy_id,
           merge_request_id: merge_request.id,
           project_id: merge_request.project_id,
