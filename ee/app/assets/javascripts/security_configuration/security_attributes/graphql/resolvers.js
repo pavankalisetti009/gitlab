@@ -191,7 +191,43 @@ export const mockSecurityAttributes = mockSecurityAttributeCategories.flatMap(
 );
 
 // Store for tracked refs (simulating cache)
-let trackedRefsStore = null;
+// Initialize with default mock data
+let trackedRefsStore = [
+  {
+    __typename: 'LocalTrackedRef',
+    id: 'gid://gitlab/TrackedRef/1',
+    name: 'master',
+    refType: 'BRANCH',
+    isDefault: true,
+    isProtected: true,
+    commit: {
+      __typename: 'LocalTrackedCommit',
+      sha: 'df210850abc123',
+      shortId: 'df21085',
+      title: 'Apply 1 suggestion(s) to 1 file(s)',
+      authoredDate: '2025-10-20T09:59:00Z',
+      webPath: '/project/-/commit/df21085',
+    },
+    vulnerabilitiesCount: 258,
+  },
+  {
+    __typename: 'LocalTrackedRef',
+    id: 'gid://gitlab/TrackedRef/2',
+    name: 'main-update-small',
+    refType: 'BRANCH',
+    isDefault: false,
+    isProtected: true,
+    commit: {
+      __typename: 'LocalTrackedCommit',
+      sha: '693bb5e6abc456',
+      shortId: '693bb5e6',
+      title: 'Update VERSION files',
+      authoredDate: '2025-10-15T14:30:00Z',
+      webPath: '/project/-/commit/693bb5e6',
+    },
+    vulnerabilitiesCount: 5,
+  },
+];
 
 /* eslint-disable @gitlab/require-i18n-strings */
 export default {
@@ -233,119 +269,16 @@ export default {
     securityTrackedRefs(_, { first, after }) {
       const PAGE_SIZE = first || 3;
 
-      // Mock data with 12 items to test pagination
-      const allTrackedRefs = [
-        {
-          __typename: 'LocalTrackedRef',
-          id: 'gid://gitlab/TrackedRef/1',
-          name: 'master',
-          refType: 'BRANCH',
-          isDefault: true,
-          isProtected: true,
-          commit: {
-            __typename: 'LocalTrackedCommit',
-            sha: 'df210850abc123',
-            shortId: 'df21085',
-            title: 'Apply 1 suggestion(s) to 1 file(s)',
-            authoredDate: '2025-10-20T09:59:00Z',
-            webPath: '/project/-/commit/df21085',
-          },
-          vulnerabilitiesCount: 258,
-        },
-        {
-          __typename: 'LocalTrackedRef',
-          id: 'gid://gitlab/TrackedRef/2',
-          name: 'main-update-small',
-          refType: 'BRANCH',
-          isDefault: false,
-          isProtected: true,
-          commit: {
-            __typename: 'LocalTrackedCommit',
-            sha: '693bb5e6abc456',
-            shortId: '693bb5e6',
-            title: 'Update VERSION files',
-            authoredDate: '2025-10-15T14:30:00Z',
-            webPath: '/project/-/commit/693bb5e6',
-          },
-          vulnerabilitiesCount: 5,
-        },
-        {
-          __typename: 'LocalTrackedRef',
-          id: 'gid://gitlab/TrackedRef/3',
-          name: '18-2-stable-ee',
-          refType: 'BRANCH',
-          isDefault: false,
-          isProtected: true,
-          commit: {
-            __typename: 'LocalTrackedCommit',
-            sha: '7450f5f6def789',
-            shortId: '7450f5f6',
-            title: 'Version 18.2.0-ee',
-            authoredDate: '2025-10-14T08:15:00Z',
-            webPath: '/project/-/commit/7450f5f6',
-          },
-          vulnerabilitiesCount: 45,
-        },
-        {
-          __typename: 'LocalTrackedRef',
-          id: 'gid://gitlab/TrackedRef/4',
-          name: 'v18-2-stable-ee',
-          refType: 'TAG',
-          isDefault: false,
-          isProtected: true,
-          commit: {
-            __typename: 'LocalTrackedCommit',
-            sha: '7450f5f6def789',
-            shortId: '7450f5f6',
-            title: 'Update VERSION 17.11-ee',
-            authoredDate: '2024-10-12T16:45:00Z',
-            webPath: '/project/-/commit/7450f5f6',
-          },
-          vulnerabilitiesCount: 11,
-        },
-        {
-          __typename: 'LocalTrackedRef',
-          id: 'gid://gitlab/TrackedRef/5',
-          name: 'develop',
-          refType: 'BRANCH',
-          isDefault: false,
-          isProtected: true,
-          commit: {
-            __typename: 'LocalTrackedCommit',
-            sha: 'abc1234567def',
-            shortId: 'abc1234',
-            title: 'Merge feature branch',
-            authoredDate: '2025-10-18T11:30:00Z',
-            webPath: '/project/-/commit/abc1234',
-          },
-          vulnerabilitiesCount: 32,
-        },
-        {
-          __typename: 'LocalTrackedRef',
-          id: 'gid://gitlab/TrackedRef/6',
-          name: 'release/v18.3',
-          refType: 'BRANCH',
-          isDefault: false,
-          isProtected: true,
-          commit: {
-            __typename: 'LocalTrackedCommit',
-            sha: 'fed9876543cba',
-            shortId: 'fed9876',
-            title: 'Prepare release v18.3',
-            authoredDate: '2025-10-17T14:00:00Z',
-            webPath: '/project/-/commit/fed9876',
-          },
-          vulnerabilitiesCount: 18,
-        },
-      ];
-
       return new Promise((resolve, reject) => {
-        // Add delay to simulate network request and see loading state
+        // Simulate an error if the URL contains 'error'
+        if (document.location.search.includes('error')) {
+          reject(new Error('Failed to load tracked refs.'));
+        }
+
         setTimeout(() => {
-          // Simulate an error if the URL contains 'error'
-          if (document.location.search.includes('error')) {
-            reject(new Error('Failed to load tracked refs.'));
-          }
+          // Use the tracked refs store
+          const allTrackedRefs = trackedRefsStore || [];
+          const totalCount = allTrackedRefs.length;
 
           // Hardcoded pagination for two pages so we can mock the pagination and simulate it in the UI until the BE is ready
           let nodes;
@@ -356,13 +289,13 @@ export default {
 
           if (after === 'page1') {
             nodes = allTrackedRefs.slice(PAGE_SIZE, PAGE_SIZE * 2);
-            hasNextPage = false;
+            hasNextPage = totalCount > PAGE_SIZE * 2;
             hasPreviousPage = true;
             startCursor = 'page1';
             endCursor = 'page1';
           } else {
             nodes = allTrackedRefs.slice(0, PAGE_SIZE);
-            hasNextPage = true;
+            hasNextPage = totalCount > PAGE_SIZE;
             hasPreviousPage = false;
             startCursor = null;
             endCursor = 'page1';
@@ -380,7 +313,7 @@ export default {
             __typename: 'LocalTrackedRefConnection',
             nodes,
             pageInfo,
-            count: allTrackedRefs.length,
+            count: totalCount,
           });
         }, 1000);
       });
@@ -405,6 +338,47 @@ export default {
         __typename: 'SecurityTrackedRefsUntrackPayload',
         errors: [],
         untrackedRefIds: refIds,
+      };
+    },
+    securityTrackedRefsTrack(_, { input }) {
+      const { refs } = input;
+
+      if (document.location.search.includes('trackError')) {
+        return {
+          __typename: 'SecurityTrackedRefsTrackPayload',
+          errors: ['Failed to track refs.'],
+          trackedRefs: [],
+        };
+      }
+
+      // Transform input refs to full LocalTrackedRef format
+      const trackedRefs = refs.map((ref) => ({
+        __typename: 'LocalTrackedRef',
+        id: `gid://gitlab/TrackedRef/${ref.refType.toLowerCase()}-${ref.name}`,
+        name: ref.name,
+        refType: ref.refType,
+        isDefault: false,
+        isProtected: ref.isProtected || false,
+        commit: ref.commit
+          ? {
+              __typename: 'LocalTrackedCommit',
+              ...ref.commit,
+            }
+          : null,
+        vulnerabilitiesCount: 0,
+      }));
+
+      // Add to store if it exists
+      if (trackedRefsStore) {
+        trackedRefsStore = [...trackedRefsStore, ...trackedRefs];
+      } else {
+        trackedRefsStore = trackedRefs;
+      }
+
+      return {
+        __typename: 'SecurityTrackedRefsTrackPayload',
+        errors: [],
+        trackedRefs,
       };
     },
   },

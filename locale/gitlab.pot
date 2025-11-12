@@ -62274,6 +62274,9 @@ msgstr ""
 msgid "SecurityTrackedRefs|Could not search refs. Please try again later."
 msgstr ""
 
+msgid "SecurityTrackedRefs|Could not track refs. Please refresh the page, or try again later."
+msgstr ""
+
 msgid "SecurityTrackedRefs|Currently tracked refs"
 msgstr ""
 
@@ -62281,6 +62284,12 @@ msgid "SecurityTrackedRefs|If you do not archive associated vulnerabilities, the
 msgid_plural "SecurityTrackedRefs|If you do not archive associated vulnerabilities, the data for %{count} vulnerabilities will be permanently deleted."
 msgstr[0] ""
 msgstr[1] ""
+
+msgid "SecurityTrackedRefs|Loading tracked refs. Please wait."
+msgstr ""
+
+msgid "SecurityTrackedRefs|Maximum number of tracked refs reached. Remove a ref to track a new one."
+msgstr ""
 
 msgid "SecurityTrackedRefs|Most recently updated"
 msgstr ""
@@ -62316,6 +62325,9 @@ msgid "SecurityTrackedRefs|Track new ref(s)"
 msgstr ""
 
 msgid "SecurityTrackedRefs|Track ref(s)"
+msgstr ""
+
+msgid "SecurityTrackedRefs|Tracking refs in progress. Please wait."
 msgstr ""
 
 msgid "SecurityTrackedRefs|You can remove tracked refs in the Configuration page."
