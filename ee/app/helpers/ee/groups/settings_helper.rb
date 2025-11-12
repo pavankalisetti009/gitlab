@@ -69,6 +69,7 @@ module EE
           duo_workflow_available: (@group.root? && current_user.can?(:admin_duo_workflow, @group)).to_s,
           duo_workflow_mcp_enabled: @group.duo_workflow_mcp_enabled.to_s,
           duo_remote_flows_availability: @group.namespace_settings.duo_remote_flows_availability.to_s,
+          foundational_agents_default_enabled: @group.foundational_agents_default_enabled.to_s,
           is_saas: saas?.to_s
         }
       end

@@ -10584,6 +10584,7 @@ CREATE TABLE ai_settings (
     duo_core_features_enabled boolean,
     duo_agent_platform_service_url text,
     duo_agent_platform_request_count integer DEFAULT 0 NOT NULL,
+    foundational_agents_default_enabled boolean DEFAULT true,
     CONSTRAINT check_3cf9826589 CHECK ((char_length(ai_gateway_url) <= 2048)),
     CONSTRAINT check_900d7a89b3 CHECK ((char_length(duo_agent_platform_service_url) <= 2048)),
     CONSTRAINT check_a02bd8868c CHECK ((char_length(amazon_q_role_arn) <= 2048)),
@@ -20516,7 +20517,8 @@ CREATE TABLE namespace_aggregation_schedules (
 
 CREATE TABLE namespace_ai_settings (
     namespace_id bigint NOT NULL,
-    duo_workflow_mcp_enabled boolean DEFAULT false NOT NULL
+    duo_workflow_mcp_enabled boolean DEFAULT false NOT NULL,
+    foundational_agents_default_enabled boolean DEFAULT true
 );
 
 CREATE TABLE namespace_bans (

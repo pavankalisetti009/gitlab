@@ -766,6 +766,16 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
       end
     end
 
+    context 'foundational_agents_default_enabled' do
+      it 'updates foundational_agents_default_enabled field of namespace AI settings' do
+        expect do
+          put api("/groups/#{group.id}", user), params: { ai_settings_attributes: { foundational_agents_default_enabled: true } }
+        end.to change { group.reload.foundational_agents_default_enabled }.from(nil).to(true)
+
+        expect(response).to have_gitlab_http_status(:ok)
+      end
+    end
+
     context 'web_based_commit_signing_enabled' do
       using RSpec::Parameterized::TableSyntax
       context 'when authenticated as group owner' do

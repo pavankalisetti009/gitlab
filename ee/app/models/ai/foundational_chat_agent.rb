@@ -28,6 +28,10 @@ module Ai
     end
 
     class << self
+      def only_duo_chat_agent
+        [all[0]]
+      end
+
       def count
         all.size
       end

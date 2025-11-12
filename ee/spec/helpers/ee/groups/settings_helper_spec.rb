@@ -101,6 +101,7 @@ RSpec.describe EE::Groups::SettingsHelper, feature_category: :groups_and_project
           update_id: group.id,
           duo_workflow_available: "true",
           duo_workflow_mcp_enabled: "true",
+          foundational_agents_default_enabled: "true",
           is_saas: 'true'
         }
       )
