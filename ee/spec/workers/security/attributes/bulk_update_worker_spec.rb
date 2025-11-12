@@ -146,6 +146,51 @@ RSpec.describe Security::Attributes::BulkUpdateWorker, feature_category: :securi
 
           worker.perform(project_ids, attribute_ids, mode, user_id)
         end
+
+        context 'when project has soft deleted attributes' do
+          let(:deleted_attribute) do
+            create(:security_attribute, security_category: category, name: 'Deleted',
+              namespace: root_namespace, deleted_at: Time.current)
+          end
+
+          before do
+            # Add a soft-deleted attribute association to project1
+            create(:project_to_security_attribute,
+              project: project1,
+              security_attribute: deleted_attribute,
+              traversal_ids: project1.namespace.traversal_ids)
+          end
+
+          it 'excludes soft deleted attributes from removal list' do
+            expect(Security::Attributes::UpdateProjectAttributesService).to receive(:new)
+              .with(
+                project: project1,
+                current_user: user,
+                params: {
+                  attributes: {
+                    add_attribute_ids: attribute_ids,
+                    remove_attribute_ids: [attribute1.id]
+                  }
+                }
+              )
+              .and_call_original
+
+            expect(Security::Attributes::UpdateProjectAttributesService).to receive(:new)
+              .with(
+                project: project2,
+                current_user: user,
+                params: {
+                  attributes: {
+                    add_attribute_ids: attribute_ids,
+                    remove_attribute_ids: [attribute2.id]
+                  }
+                }
+              )
+              .and_call_original
+
+            worker.perform(project_ids, attribute_ids, mode, user_id)
+          end
+        end
       end
 
       context 'when feature flag is disabled for a project' do

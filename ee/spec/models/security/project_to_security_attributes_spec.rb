@@ -72,25 +72,6 @@ RSpec.describe Security::ProjectToSecurityAttribute, feature_category: :security
         expect(result.size).to eq(1)
       end
     end
-
-    describe '.pluck_security_attribute_id' do
-      let!(:association1) { create(:project_to_security_attribute, project: project, security_attribute: attribute) }
-      let!(:association2) do
-        create(:project_to_security_attribute, project: project, security_attribute: other_attribute)
-      end
-
-      it 'returns an array of security_attribute_ids' do
-        result = described_class.where(project_id: project.id).pluck_security_attribute_id
-
-        expect(result).to match_array([attribute.id, other_attribute.id])
-      end
-
-      it 'respects the limit parameter' do
-        result = described_class.where(project_id: project.id).pluck_security_attribute_id(1)
-
-        expect(result.size).to eq(1)
-      end
-    end
   end
 
   describe 'scopes' do
