@@ -1,0 +1,53 @@
+%p= _("Hello Admin,")
+
+%p
+  = html_escape(_("GitLab user %{username} flagged the AI Catalog item %{item_name} for review.")) % { username: link_to(@reporter.username, user_url(@reporter)), item_name: @ai_catalog_item.name }
+
+%ul
+  %li
+    = _("Catalog item:")
+    = @ai_catalog_item.name
+  %li
+    = html_escape(_("Reported by: %{username} at %{time}")) % { username: link_to(@reporter.username, user_url(@reporter)), time: @reported_at.strftime('%Y-%m-%d %H:%M:%S %Z') }
+  %li
+    = _("Reason:")
+    %ul
+      - if @reason.present?
+        %li= @reason
+      - if @message.present?
+        %li= @message
+
+%p= _("If everything looks okay, you can ignore this message.")
+
+%p= _("You can use our GraphQL API to remove an item:")
+
+%ul
+  %li
+    = _("Recommended. Permanently delete an item:")
+    %pre{ style: "font-family: Monaco,'Lucida Console','Courier New',Courier,monospace; background-color: #fafafa; border-radius: 4px; overflow: hidden; white-space: pre-wrap; word-break: break-all; font-size: 13px; line-height: 1.4; padding: 16px 8px; color: #333333; margin: 8px 0;" }
+      %code
+        :preserve
+          mutation ai_catalog_item_delete {
+            #{mutation_name}(input: {
+              id: "#{@ai_catalog_item.to_global_id}",
+              forceHardDelete: true
+            }) {
+              errors
+              success
+            }
+          }
+  %li
+    = _("Hide an item from the AI Catalog. The item is not deleted and can still be used:")
+    %pre{ style: "font-family: Monaco,'Lucida Console','Courier New',Courier,monospace; background-color: #fafafa; border-radius: 4px; overflow: hidden; white-space: pre-wrap; word-break: break-all; font-size: 13px; line-height: 1.4; padding: 16px 8px; color: #333333; margin: 8px 0;" }
+      %code
+        :preserve
+          mutation ai_catalog_item_delete {
+            #{mutation_name}(input: {
+              id: "#{@ai_catalog_item.to_global_id}"
+            }) {
+              errors
+              success
+            }
+          }
+
+%p= _("This is an automated message. Please don't reply to this message.")
