@@ -1,9 +1,0 @@
----
-name: ui_for_virtual_registries
-feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/493842
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/185201
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/525934
-milestone: '18.5'
-group: group::package registry
-type: beta
-default_enabled: true
