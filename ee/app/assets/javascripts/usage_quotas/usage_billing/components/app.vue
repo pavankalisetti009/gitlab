@@ -97,7 +97,9 @@ export default {
   <section>
     <page-heading>
       <template #heading>
-        <span data-testid="usage-billing-title">{{ s__('UsageBilling|Usage Billing') }}</span>
+        <span data-testid="usage-billing-title">{{
+          s__('UsageBilling|GitLab Credits dashboard')
+        }}</span>
       </template>
       <template #description>
         <div

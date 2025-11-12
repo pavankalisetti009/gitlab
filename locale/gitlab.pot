@@ -6748,7 +6748,7 @@ msgstr ""
 msgid "AiPowered|Get started with GitLab Duo"
 msgstr ""
 
-msgid "AiPowered|GitLab Credit usage analytics"
+msgid "AiPowered|GitLab Credits dashboard"
 msgstr ""
 
 msgid "AiPowered|GitLab Duo Agent Platform composite identity"
@@ -70959,6 +70959,9 @@ msgstr ""
 msgid "UsageBilling|GitLab Credits - On Demand"
 msgstr ""
 
+msgid "UsageBilling|GitLab Credits dashboard"
+msgstr ""
+
 msgid "UsageBilling|Included credits"
 msgstr ""
 
@@ -71005,9 +71008,6 @@ msgid "UsageBilling|Total credits used"
 msgstr ""
 
 msgid "UsageBilling|Unlock more discounts for your GitLab usage. Pool GitLab Credits across your namespace for flexibility and predictable monthly costs. %{linkStart}GitLab Credit pricing%{linkEnd}."
-msgstr ""
-
-msgid "UsageBilling|Usage Billing"
 msgstr ""
 
 msgid "UsageBilling|Used in this billing period"

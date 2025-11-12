@@ -22,7 +22,7 @@ export default {
   >
     <template #header>
       <h2 class="gl-heading-3 gl-mb-3 gl-font-bold">
-        {{ s__('AiPowered|GitLab Credit usage analytics') }}
+        {{ s__('AiPowered|GitLab Credits dashboard') }}
       </h2>
     </template>
     <template #default>
