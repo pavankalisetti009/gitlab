@@ -253,6 +253,40 @@ RSpec.describe 'BulkUpdateSecurityAttributes', feature_category: :security_asset
         end
       end
 
+      context 'when attribute is soft deleted' do
+        let(:deleted_attribute) do
+          create(:security_attribute, security_category: category, name: 'Deleted',
+            namespace: root_namespace, deleted_at: Time.current)
+        end
+
+        let(:attributes) { [deleted_attribute.to_global_id.to_s] }
+
+        it 'returns a resource not available error' do
+          post_graphql_mutation(mutation, current_user: current_user)
+
+          expect(response).to have_gitlab_http_status(:success)
+          expect(graphql_errors).to be_present
+          expect(graphql_errors.first['message']).to include("does not exist")
+        end
+      end
+
+      context 'when some attributes are soft deleted' do
+        let(:deleted_attribute) do
+          create(:security_attribute, security_category: category, name: 'Deleted',
+            namespace: root_namespace, deleted_at: Time.current)
+        end
+
+        let(:attributes) { [attribute1.to_global_id.to_s, deleted_attribute.to_global_id.to_s] }
+
+        it 'returns a resource not available error for the first deleted attribute' do
+          post_graphql_mutation(mutation, current_user: current_user)
+
+          expect(response).to have_gitlab_http_status(:success)
+          expect(graphql_errors).to be_present
+          expect(graphql_errors.first['message']).to include("does not exist")
+        end
+      end
+
       context 'when user lacks permission for some items' do
         let_it_be(:other_namespace) { create(:group) }
         let_it_be(:other_project) { create(:project, namespace: other_namespace) }

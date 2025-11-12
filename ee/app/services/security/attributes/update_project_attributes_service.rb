@@ -145,12 +145,12 @@ module Security
       end
 
       def all_attributes_by_id
-        (Security::Attribute.id_in(add_attribute_ids).include_category + existing_attributes).index_by(&:id)
+        (Security::Attribute.not_deleted.id_in(add_attribute_ids).include_category + existing_attributes).index_by(&:id)
       end
       strong_memoize_attr :all_attributes_by_id
 
       def existing_attributes
-        project.security_attributes.include_category
+        project.security_attributes.not_deleted.include_category
       end
       strong_memoize_attr :existing_attributes
 

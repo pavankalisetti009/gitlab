@@ -431,22 +431,22 @@ RSpec.describe Project, feature_category: :groups_and_projects do
       end
     end
 
-    describe '.with_project_to_security_attributes' do
+    describe '.with_security_attributes' do
       let_it_be(:project) { create(:project) }
 
       it 'preloads the security attributes associations' do
-        projects = described_class.with_project_to_security_attributes.to_a
+        projects = described_class.with_security_attributes.to_a
         project = projects.first
 
-        expect(project.association(:project_to_security_attributes)).to be_loaded
+        expect(project.association(:security_attributes)).to be_loaded
       end
 
       it 'avoids N+1 queries' do
-        control = ActiveRecord::QueryRecorder.new { described_class.with_project_to_security_attributes.map(&:project_to_security_attributes) }
+        control = ActiveRecord::QueryRecorder.new { described_class.with_security_attributes.map(&:security_attributes) }
 
         create(:project)
 
-        expect { described_class.with_project_to_security_attributes.map(&:project_to_security_attributes) }.not_to exceed_query_limit(control)
+        expect { described_class.with_security_attributes.map(&:security_attributes) }.not_to exceed_query_limit(control)
       end
     end
 

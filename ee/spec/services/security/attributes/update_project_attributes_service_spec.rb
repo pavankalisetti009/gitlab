@@ -272,6 +272,50 @@ RSpec.describe Security::Attributes::UpdateProjectAttributesService, feature_cat
       it_behaves_like 'does not change project security attributes count'
     end
 
+    context 'when attribute is soft deleted' do
+      let(:deleted_attribute) do
+        create(:security_attribute, namespace: root_namespace, name: 'Deleted Attribute',
+          security_category: other_category, deleted_at: Time.current)
+      end
+
+      let(:add_attribute_ids) { [deleted_attribute.id] }
+      let(:remove_attribute_ids) { [] }
+
+      it 'returns error indicating attribute not found' do
+        expect_error_with_payload_errors("Security attribute not found: #{deleted_attribute.id}")
+      end
+
+      it_behaves_like 'does not change project security attributes count'
+    end
+
+    context 'when project has soft deleted attribute associations' do
+      let(:deleted_attribute) do
+        create(:security_attribute, namespace: root_namespace, name: 'Deleted Attribute',
+          security_category: other_category, deleted_at: Time.current)
+      end
+
+      let(:add_attribute_ids) { [attribute1.id] }
+      let(:remove_attribute_ids) { [] }
+
+      before do
+        # Create association with soft-deleted attribute
+        create(:project_to_security_attribute, project: project, security_attribute: deleted_attribute)
+      end
+
+      it 'does not count soft deleted attributes towards project limit' do
+        stub_const("#{described_class}::MAX_PROJECT_ATTRIBUTES", 1)
+
+        expect(execute).to be_success
+        expect(execute.payload[:added_count]).to eq(1)
+      end
+
+      it 'does not include soft deleted attributes in existing attributes' do
+        execute
+        expect(project.security_attributes.not_deleted).to include(attribute1)
+        expect(project.security_attributes.not_deleted).not_to include(deleted_attribute)
+      end
+    end
+
     context 'when multiple attributes are missing' do
       let(:add_attribute_ids) { [non_existing_record_id, non_existing_record_id + 1] }
       let(:remove_attribute_ids) { [] }

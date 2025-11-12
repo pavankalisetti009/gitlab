@@ -69,7 +69,11 @@ module Mutations
 
         def validate_and_extract_attribute_ids(attribute_gids)
           attribute_gids.map do |gid|
-            authorized_find!(id: GitlabSchema.parse_gid(gid, expected_type: ::Security::Attribute)).id
+            attribute = authorized_find!(id: GitlabSchema.parse_gid(gid, expected_type: ::Security::Attribute))
+
+            raise_resource_not_available_error! if attribute.deleted?
+
+            attribute.id
           end
         end
       end
