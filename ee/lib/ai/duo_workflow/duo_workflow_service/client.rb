@@ -64,7 +64,9 @@ module Ai
             "x-gitlab-authentication-type" => "oidc",
             'x-gitlab-instance-id' => ::Gitlab::GlobalAnonymousId.instance_id,
             'x-gitlab-realm' => ::CloudConnector.gitlab_realm,
-            'x-gitlab-global-user-id' => ::Gitlab::GlobalAnonymousId.user_id(current_user)
+            'x-gitlab-global-user-id' => ::Gitlab::GlobalAnonymousId.user_id(current_user),
+            'x-gitlab-client-type' => 'gitlab-rails',
+            'x-gitlab-version' => ::Gitlab.version_info.to_s
           }
         end
 
