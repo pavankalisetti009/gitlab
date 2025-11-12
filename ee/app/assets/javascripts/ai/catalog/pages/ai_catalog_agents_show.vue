@@ -139,9 +139,11 @@ export default {
 <template>
   <div>
     <errors-alert class="gl-mt-5" :title="errorTitle" :errors="errors" @dismiss="dismissErrors" />
-    <page-heading :heading="agentName">
-      <template #description>
-        {{ aiCatalogAgent.description }}
+    <page-heading>
+      <template #heading>
+        <span class="gl-line-clamp-1 gl-wrap-anywhere">
+          {{ agentName }}
+        </span>
       </template>
       <template #actions>
         <ai-catalog-item-actions

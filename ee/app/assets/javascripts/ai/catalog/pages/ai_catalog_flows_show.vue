@@ -158,9 +158,11 @@ export default {
 <template>
   <div>
     <errors-alert class="gl-mt-5" :title="errorTitle" :errors="errors" @dismiss="dismissErrors" />
-    <page-heading :heading="flowName">
-      <template #description>
-        {{ aiCatalogFlow.description }}
+    <page-heading>
+      <template #heading>
+        <span class="gl-line-clamp-1 gl-wrap-anywhere">
+          {{ flowName }}
+        </span>
       </template>
       <template #actions>
         <ai-catalog-item-actions
