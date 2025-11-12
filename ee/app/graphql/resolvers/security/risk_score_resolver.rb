@@ -43,9 +43,11 @@ module Resolvers
       def transform_risk_score_data(risk_score_data)
         return if risk_score_data.nil? || risk_score_data.empty?
 
+        normalized_score = normalize_score(risk_score_data[:total_risk_score])
+
         result = {
-          score: risk_score_data[:total_risk_score],
-          rating: rating(risk_score_data[:total_risk_score]),
+          score: normalized_score,
+          rating: rating(normalized_score),
           project_count: risk_score_data[:total_project_count] || 0
         }
 
@@ -63,12 +65,20 @@ module Resolvers
         projects = vulnerable.projects.id_in(project_ids)
 
         projects.map do |project|
+          normalized_score = normalize_score(risk_score_by_project_data[project.id])
+
           {
             project: project,
-            score: risk_score_by_project_data[project.id],
-            rating: rating(risk_score_by_project_data[project.id])
+            score: normalized_score,
+            rating: rating(normalized_score)
           }
         end
+      end
+
+      def normalize_score(score)
+        return if score.nil?
+
+        (score * 100).round(1)
       end
 
       def rating(score)

@@ -20,6 +20,39 @@ RSpec.describe Ai::DuoWorkflows::WorkflowsFinder, feature_category: :duo_agent_p
     end
   end
 
+  describe '#resolve_type' do
+    let_it_be(:workflows) do
+      %w[chat some_cool_agent another_cool_agent].map do |workflow_definition|
+        create(:duo_workflows_workflow, :created, project: project, user: user, created_at: 2.days.ago,
+          workflow_definition: workflow_definition)
+      end
+    end
+
+    let(:type) { 'chat' }
+
+    let(:options) { { current_user: user, source: user, type: type } }
+
+    before do
+      allow(::Ai::FoundationalChatAgent).to receive(:workflow_definitions).and_return(%w[chat some_cool_agent])
+    end
+
+    subject(:results) { described_class.new(options).results }
+
+    context 'when is foundational_chat_agents' do
+      let(:type) { 'foundational_chat_agents' }
+
+      it 'fetches workflows for foundational chat agents' do
+        expect(results).to match_array([workflows[0], workflows[1]])
+      end
+    end
+
+    context 'when is chat' do
+      it 'fetches only workflows for duo agent chat' do
+        expect(results).to match_array([workflows[0]])
+      end
+    end
+  end
+
   describe '#resolve_sort' do
     subject(:results) { described_class.new(options).results }
 
