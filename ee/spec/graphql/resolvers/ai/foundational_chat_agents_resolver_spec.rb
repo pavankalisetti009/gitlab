@@ -17,6 +17,55 @@ RSpec.describe Resolvers::Ai::FoundationalChatAgentsResolver, feature_category: 
       expect(resolved[0].name).to eq('GitLab Duo Agent')
     end
 
+    describe 'access to foundational chat agents' do
+      let(:foundational_agents_default_enabled) { true }
+
+      context 'when is saas' do
+        let(:default_namespace) { create(:group) }
+
+        before do
+          allow(current_user.user_preference).to receive(:get_default_duo_namespace).and_return(default_namespace)
+          allow(default_namespace).to receive(:foundational_agents_default_enabled)
+                                        .and_return(foundational_agents_default_enabled)
+          stub_saas_features(gitlab_com_subscriptions: true)
+        end
+
+        context 'when user default namespace has access to foundational chat agents' do
+          it 'returns all agents' do
+            expect(resolved.size).to eq(::Ai::FoundationalChatAgent.all.size)
+          end
+        end
+
+        context 'when user default namespace does not have access to foundational chat agents' do
+          let(:foundational_agents_default_enabled) { false }
+
+          it 'returns only duo chat' do
+            expect(resolved).to match_array(::Ai::FoundationalChatAgent.only_duo_chat_agent)
+          end
+        end
+      end
+
+      context 'when is self-managed' do
+        before do
+          ::Ai::Setting.instance.update!(foundational_agents_default_enabled: foundational_agents_default_enabled)
+        end
+
+        context 'when application settings have foundational chat agents set to enabled by default' do
+          it 'is returns all agents' do
+            expect(resolved.size).to eq(::Ai::FoundationalChatAgent.all.size)
+          end
+        end
+
+        context 'when application settings have foundational chat agents set to disabled by default' do
+          let(:foundational_agents_default_enabled) { false }
+
+          it 'is returns only duo chat' do
+            expect(resolved).to match_array(::Ai::FoundationalChatAgent.only_duo_chat_agent)
+          end
+        end
+      end
+    end
+
     context 'when foundational_duo_planner feature flag is disabled' do
       before do
         stub_feature_flags(foundational_duo_planner: false)

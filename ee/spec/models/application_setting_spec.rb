@@ -707,6 +707,16 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       end
     end
 
+    describe '#foundational_agents_default_enabled' do
+      it "updates ::Ai::Settings.instance.foundational_agents_default_enabled" do
+        ::Ai::Setting.instance.update!(foundational_agents_default_enabled: false)
+
+        expect { setting.foundational_agents_default_enabled = true }
+          .to change { ::Ai::Setting.instance.foundational_agents_default_enabled }
+                .from(false).to(true)
+      end
+    end
+
     context 'when validating geo_node_allowed_ips', feature_category: :geo_replication do
       where(:allowed_ips, :is_valid) do
         "192.1.1.1"                   | true

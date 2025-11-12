@@ -16,7 +16,8 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
         enabled_expanded_logging: true,
         gitlab_dedicated_instance?: false,
         instance_level_ai_beta_features_enabled: true,
-        model_prompt_cache_enabled?: true
+        model_prompt_cache_enabled?: true,
+        foundational_agents_default_enabled: true
       }
     end
 
@@ -72,6 +73,7 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
         duo_chat_expiration_column: 'last_updated_at',
         duo_chat_expiration_days: '30',
         duo_core_features_enabled: 'true',
+        foundational_agents_default_enabled: 'true',
         duo_pro_visible: 'true',
         enabled_expanded_logging: 'true',
         experiment_features_enabled: 'true',

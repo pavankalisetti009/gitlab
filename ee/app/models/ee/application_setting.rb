@@ -732,6 +732,14 @@ module EE
       ::Ai::Setting.instance.update!(enabled_instance_verbose_ai_logs: value)
     end
 
+    def foundational_agents_default_enabled
+      ::Ai::Setting.instance.foundational_agents_default_enabled
+    end
+
+    def foundational_agents_default_enabled=(value)
+      ::Ai::Setting.instance.update!(foundational_agents_default_enabled: value)
+    end
+
     def seat_control_user_cap?
       return false unless License.feature_available?(:seat_control) # rubocop:disable Gitlab/LicenseAvailableUsage -- Does not have cyclical dependency as it's not used for Registration features
 
