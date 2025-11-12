@@ -2,7 +2,6 @@
 
 module Vulnerabilities
   class Read < ::SecApplicationRecord
-    extend EnforceVulnerabilityReadDbTriggerFf
     extend ::Gitlab::Utils::Override
     include ::Namespaces::Traversal::Traversable
     include VulnerabilityScopes
