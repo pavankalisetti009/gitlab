@@ -33,7 +33,7 @@ module Vulnerabilities
       vulnerability_ids_to_be_updated = vulnerabilities.map(&:id)
       projects = vulnerabilities.with_projects.map(&:project).uniq
 
-      SecApplicationRecord.feature_flagged_transaction_for(projects) do
+      SecApplicationRecord.transaction do
         vulnerability_ids = vulnerabilities.map(&:id)
 
         vulnerabilities.update_all(db_attributes[:vulnerabilities])

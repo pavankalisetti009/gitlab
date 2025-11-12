@@ -949,11 +949,9 @@ RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_manage
       subject { finding.identifier_names }
 
       before do
-        SecApplicationRecord.feature_flagged_transaction_for(finding.project) do
-          finding.identifiers << create(:vulnerabilities_identifier, external_type: 'cwe', name: cwe_1)
-          finding.identifiers << create(:vulnerabilities_identifier, external_type: 'cwe', name: cwe_2)
-          finding.identifiers << create(:vulnerabilities_identifier, external_type: 'cwe', name: cwe_3)
-        end
+        finding.identifiers << create(:vulnerabilities_identifier, external_type: 'cwe', name: cwe_1)
+        finding.identifiers << create(:vulnerabilities_identifier, external_type: 'cwe', name: cwe_2)
+        finding.identifiers << create(:vulnerabilities_identifier, external_type: 'cwe', name: cwe_3)
       end
 
       it { is_expected.to eql(finding.identifiers.pluck(:name)) }

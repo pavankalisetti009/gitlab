@@ -74,7 +74,7 @@ module Vulnerabilities
     def resolve_vulnerabilities
       return if vulnerabilities_to_resolve.empty?
 
-      Vulnerability.feature_flagged_transaction_for(project) do
+      Vulnerability.transaction do
         Vulnerabilities::StateTransition.insert_all!(state_transition_attrs)
 
         # The caller (Security::Ingestion::MarkAsResolvedService) operates on ALL Vulnerability::Read rows

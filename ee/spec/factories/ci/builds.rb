@@ -51,9 +51,7 @@ FactoryBot.define do
 
         after(:create) do |build|
           if Security::Scan.scan_types.include?(report_type)
-            SecApplicationRecord.feature_flagged_transaction_for(build.project) do
-              build.security_scans << build(:security_scan, scan_type: report_type, build: build)
-            end
+            build.security_scans << build(:security_scan, scan_type: report_type, build: build)
           end
         end
       end

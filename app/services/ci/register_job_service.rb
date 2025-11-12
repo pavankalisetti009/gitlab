@@ -376,8 +376,8 @@ module Ci
       # In the meantime, the build/runner manager association will live in Redis.
       success = false
       @logger.instrument(:assign_runner_waiting) do
-        # Add pending job to Redis
-        build.set_waiting_for_runner_ack(runner_manager.id)
+        # Add pending job to Redis, bailing out if it is already assigned to a runner manager
+        break unless build.set_waiting_for_runner_ack(runner_manager.id)
 
         # Save job and remove pending job from db queue
         Ci::Build.transaction do
@@ -392,8 +392,10 @@ module Ci
 
         success = true
       rescue ActiveRecord::ActiveRecordError
-        # If we didn't manage to remove pending job, let's roll back the Redis change
+        # If we didn't manage to save the pending job, let's roll back the Redis change
         build.cancel_wait_for_runner_ack
+
+        raise
       rescue Redis::BaseError
         break
       end
