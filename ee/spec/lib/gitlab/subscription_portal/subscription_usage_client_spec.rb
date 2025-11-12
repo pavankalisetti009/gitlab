@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_category: :consumables_cost_management do
   let(:graphql_url) { ::Gitlab::Routing.url_helpers.subscription_portal_graphql_url }
   let(:params) do
-    { query: query, variables: variables }
+    { query: query, variables: { instanceId: Gitlab::GlobalAnonymousId.instance_id }.merge(variables) }
   end
 
   let(:headers) do

@@ -9,12 +9,13 @@ module Gitlab
 
       GET_METADATA_QUERY = <<~GQL
         query subscriptionUsageMetadata(
+          $instanceId: String,
           $namespaceId: ID,
           $licenseKey: String,
           $gitlabVersion: String!,
         ) {
           subscription(namespaceId: $namespaceId, licenseKey: $licenseKey) {
-            gitlabCreditsUsage {
+            gitlabCreditsUsage(instanceId: $instanceId) {
               startDate
               endDate
               isOutdatedClient(gitlabVersion: $gitlabVersion)
@@ -27,11 +28,12 @@ module Gitlab
 
       GET_MONTHLY_WAIVER_QUERY = <<~GQL
         query subscriptionUsageMonthlyWaiver(
+          $instanceId: String
           $namespaceId: ID,
           $licenseKey: String
         ) {
           subscription(namespaceId: $namespaceId, licenseKey: $licenseKey) {
-            gitlabCreditsUsage {
+            gitlabCreditsUsage(instanceId: $instanceId) {
               monthlyWaiver {
                 creditsUsed
                 totalCredits
@@ -43,11 +45,12 @@ module Gitlab
 
       GET_MONTHLY_COMMITMENT_QUERY = <<~GQL
         query subscriptionUsageMonthlyCommitment(
+          $instanceId: String,
           $namespaceId: ID,
           $licenseKey: String
         ) {
           subscription(namespaceId: $namespaceId, licenseKey: $licenseKey) {
-            gitlabCreditsUsage {
+            gitlabCreditsUsage(instanceId: $instanceId) {
               monthlyCommitment {
                 totalCredits
                 creditsUsed
@@ -63,11 +66,12 @@ module Gitlab
 
       GET_OVERAGE_QUERY = <<~GQL
         query subscriptionUsageOverage(
+          $instanceId: String,
           $namespaceId: ID,
           $licenseKey: String
         ) {
           subscription(namespaceId: $namespaceId, licenseKey: $licenseKey) {
-            gitlabCreditsUsage {
+            gitlabCreditsUsage(instanceId: $instanceId) {
               overage {
                 isAllowed
                 creditsUsed
@@ -83,6 +87,7 @@ module Gitlab
 
       GET_USER_EVENTS_QUERY = <<~GQL
         query subscriptionUsageUserEvents(
+          $instanceId: String,
           $namespaceId: ID,
           $licenseKey: String,
           $userIds: [Int!]!,
@@ -92,7 +97,7 @@ module Gitlab
           $before: String
         ) {
           subscription(namespaceId: $namespaceId, licenseKey: $licenseKey) {
-            gitlabCreditsUsage {
+            gitlabCreditsUsage(instanceId: $instanceId) {
               usersUsage {
                 users(userIds: $userIds) {
                   events(first: $first, last: $last, before: $before, after: $after) {
@@ -119,12 +124,13 @@ module Gitlab
 
       GET_USERS_USAGE_QUERY = <<~GQL
         query subscriptionUsageForUserIds(
-          $userIds: [Int!]!,
+          $instanceId: String,
           $namespaceId: ID,
-          $licenseKey: String
+          $licenseKey: String,
+          $userIds: [Int!]!
         ) {
           subscription(namespaceId: $namespaceId, licenseKey: $licenseKey) {
-            gitlabCreditsUsage {
+            gitlabCreditsUsage(instanceId: $instanceId) {
               usersUsage {
                 users(userIds: $userIds) {
                   userId
@@ -142,11 +148,12 @@ module Gitlab
 
       GET_USERS_USAGE_STATS_QUERY = <<~GQL
         query subscriptionUsageUsersStats(
+          $instanceId: String,
           $namespaceId: ID,
           $licenseKey: String
         ) {
           subscription(namespaceId: $namespaceId, licenseKey: $licenseKey) {
-            gitlabCreditsUsage {
+            gitlabCreditsUsage(instanceId: $instanceId) {
               usersUsage {
                 totalUsersUsingCredits
                 totalUsersUsingMonthlyCommitment
@@ -285,12 +292,13 @@ module Gitlab
       end
       strong_memoize_attr :get_users_usage_stats
 
-      attr_reader :namespace_id, :license_key
-
       private
+
+      attr_reader :namespace_id, :license_key
 
       def execute_graphql_query(query:, extra_variables: {})
         variables = {
+          instanceId: Gitlab::GlobalAnonymousId.instance_id,
           namespaceId: namespace_id,
           licenseKey: license_key
         }.compact.merge(extra_variables)
