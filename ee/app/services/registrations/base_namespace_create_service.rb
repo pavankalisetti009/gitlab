@@ -21,12 +21,12 @@ module Registrations
 
       experiment(:lightweight_trial_registration_redesign, actor: user).track(:assignment, namespace: group)
 
-      experiment(:premium_trial_positioning, actor: user) do |e| # rubocop:disable Cop/ExperimentsTestCoverage -- test incl in standard_namespace_create_service_spec.rb
+      experiment(:premium_trial_positioning, actor: user) do |e|
         e.exclude! if onboarding_user_status.exclude_from_first_orders_experiments?
         e.track(:assignment, namespace: group)
       end
 
-      experiment(:premium_message_during_trial, namespace: group) do |e| # rubocop:disable Cop/ExperimentsTestCoverage -- covered in ee/spec/services/registrations/standard_namespace_create_service_spec.rb
+      experiment(:premium_message_during_trial, namespace: group) do |e|
         e.exclude! if onboarding_user_status.exclude_from_first_orders_experiments?
       end
 
@@ -34,7 +34,7 @@ module Registrations
 
       apply_trial
 
-      experiment(:default_pinned_nav_items, actor: user) do |e| # rubocop:disable Cop/ExperimentsTestCoverage -- test incl in standard_namespace_create_service_spec.rb
+      experiment(:default_pinned_nav_items, actor: user) do |e|
         e.candidate do
           updated_status = user.onboarding_status.dup
           updated_status[:experiments] = Array(updated_status[:experiments]) | ['default_pinned_nav_items']
