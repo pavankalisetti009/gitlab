@@ -16,10 +16,4 @@ class ScimIdentity < ApplicationRecord
   scope :for_user, ->(user) { where(user: user) }
   scope :with_extern_uid, ->(extern_uid) { iwhere(extern_uid: extern_uid) }
   scope :with_user_ids, ->(user_ids) { where(user_id: user_ids) }
-
-  after_commit :sync_records, on: %i[create update]
-
-  def sync_records
-    Authn::SyncScimIdentityRecordWorker.perform_async({ 'scim_identity_id' => id })
-  end
 end

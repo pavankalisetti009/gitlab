@@ -2,6 +2,9 @@
 
 class GroupScimAuthAccessToken < ApplicationRecord # rubocop:disable Gitlab/NamespacedClass,Gitlab/BoundedContexts -- Split from existing file
   include TokenAuthenticatable
+  include IgnorableColumns
+
+  ignore_column :temp_source_id, remove_with: '18.8', remove_after: '2025-12-22'
 
   TOKEN_PREFIX = 'glsoat-'
 
@@ -10,8 +13,6 @@ class GroupScimAuthAccessToken < ApplicationRecord # rubocop:disable Gitlab/Name
   add_authentication_token_field :token, encrypted: :required, format_with_prefix: :prefix_for_token
 
   before_save :ensure_token
-
-  after_commit :sync_records, on: %i[create update]
 
   def self.token_matches_for_group?(token, group)
     # Necessary to call `Authn::TokenField::Encrypted.find_token_authenticatable`
@@ -26,9 +27,5 @@ class GroupScimAuthAccessToken < ApplicationRecord # rubocop:disable Gitlab/Name
 
   def prefix_for_token
     TOKEN_PREFIX
-  end
-
-  def sync_records
-    Authn::SyncGroupScimTokenRecordWorker.perform_async({ 'group_scim_token_id' => id })
   end
 end

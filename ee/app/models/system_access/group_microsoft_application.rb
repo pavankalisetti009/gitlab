@@ -3,6 +3,9 @@
 module SystemAccess # rubocop:disable Gitlab/BoundedContexts -- Spliting existing table
   class GroupMicrosoftApplication < ApplicationRecord
     include Gitlab::EncryptedAttribute
+    include IgnorableColumns
+
+    ignore_column :temp_source_id, remove_with: '18.8', remove_after: '2025-12-22'
 
     belongs_to :group
     has_one :graph_access_token,
