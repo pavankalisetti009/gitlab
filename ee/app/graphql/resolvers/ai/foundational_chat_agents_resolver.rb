@@ -38,7 +38,7 @@ module Resolvers
           namespace = current_user.user_preference.get_default_duo_namespace
 
           return ::Feature.enabled?(:duo_foundational_agents_availability, namespace) &&
-              namespace.foundational_agents_default_enabled
+              namespace&.foundational_agents_default_enabled
         end
 
         ::Feature.enabled?(:duo_foundational_agents_availability, :instance) &&
