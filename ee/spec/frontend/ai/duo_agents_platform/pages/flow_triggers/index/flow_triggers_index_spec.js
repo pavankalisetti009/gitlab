@@ -63,7 +63,7 @@ describe('FlowTriggersIndex', () => {
   describe('Rendering', () => {
     it('loads the page heading and experiment badge', () => {
       expect(findPageHeading().exists()).toBe(true);
-      expect(findPageHeading().text()).toContain('Flow triggers');
+      expect(findPageHeading().text()).toContain('Triggers');
 
       expect(findExperimentBadge().exists()).toBe(true);
       expect(findExperimentBadge().props('type')).toBe('beta');

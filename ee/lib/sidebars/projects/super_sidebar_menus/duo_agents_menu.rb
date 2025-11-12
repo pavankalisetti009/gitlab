@@ -11,8 +11,8 @@ module Sidebars
             (show_agents_runs_menu_items? || show_flow_triggers_menu_items? || show_flows_menu_item?)
 
           add_item(ai_catalog_agents_menu_item) if show_agents_menu_item?
-          add_item(duo_flow_triggers_menu_item) if show_flow_triggers_menu_items?
           add_item(ai_catalog_flows_menu_item) if show_flows_menu_item?
+          add_item(duo_flow_triggers_menu_item) if show_flow_triggers_menu_items?
           add_item(duo_agents_runs_menu_item) if show_agents_runs_menu_items?
 
           true
@@ -64,7 +64,7 @@ module Sidebars
 
         def duo_flow_triggers_menu_item
           ::Sidebars::MenuItem.new(
-            title: s_('DuoAgentsPlatform|Flow triggers'),
+            title: s_('DuoAgentsPlatform|Triggers'),
             link: project_automate_flow_triggers_path(context.project),
             active_routes: nil,
             item_id: :ai_flow_triggers
