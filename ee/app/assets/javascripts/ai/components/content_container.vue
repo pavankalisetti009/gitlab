@@ -112,7 +112,7 @@ export default {
   <aside
     id="ai-panel-portal"
     :aria-label="activeTab.title"
-    class="ai-panel !gl-left-auto gl-flex gl-h-full gl-w-[var(--ai-panel-width)] gl-grow gl-flex-col gl-overflow-hidden gl-rounded-[1rem] gl-bg-default [contain:strict]"
+    class="ai-panel !gl-left-auto gl-flex gl-h-full gl-w-[var(--ai-panel-width)] gl-grow gl-flex-col gl-rounded-[1rem] gl-bg-default [contain:strict]"
     :class="{ 'ai-panel-maximized': isMaximized }"
   >
     <div
