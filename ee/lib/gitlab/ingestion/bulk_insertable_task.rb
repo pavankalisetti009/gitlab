@@ -81,22 +81,10 @@ module Gitlab
       def return_data
         strong_memoize(:return_data) do
           if insert_objects.present?
-            pass_vuln_reads_db_ff do
-              unique_by.present? ? bulk_upsert : bulk_insert
-            end
+            unique_by.present? ? bulk_upsert : bulk_insert
           else
             []
           end
-        end
-      end
-
-      def pass_vuln_reads_db_ff
-        if klass.respond_to?(:feature_flagged_transaction_for)
-          klass.feature_flagged_transaction_for(pipeline&.project) do
-            yield
-          end
-        else
-          yield
         end
       end
 

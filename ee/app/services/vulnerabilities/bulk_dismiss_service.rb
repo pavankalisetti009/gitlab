@@ -19,7 +19,7 @@ module Vulnerabilities
       db_attributes = db_attributes_for(vulnerability_attrs)
       projects = selected_vulnerabilities.with_projects.map(&:project).uniq
 
-      SecApplicationRecord.feature_flagged_transaction_for(projects) do
+      SecApplicationRecord.transaction do
         update_support_tables(selected_vulnerabilities, db_attributes, projects)
         selected_vulnerabilities.update_all(db_attributes[:vulnerabilities])
       end

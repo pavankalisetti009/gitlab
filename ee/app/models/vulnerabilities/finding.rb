@@ -2,7 +2,6 @@
 
 module Vulnerabilities
   class Finding < ::SecApplicationRecord
-    extend EnforceVulnerabilityReadDbTriggerFf
     include ShaAttribute
     include ::Gitlab::Utils::StrongMemoize
     include Presentable
