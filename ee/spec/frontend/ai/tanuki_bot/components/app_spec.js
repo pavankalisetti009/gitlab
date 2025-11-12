@@ -21,6 +21,7 @@ describe('DuoAgenticClassicApp', () => {
     findAllSiderailButtons().wrappers.filter((w) => w.attributes('icon') === 'plus');
   const findSiderailHistoryButton = () =>
     findAllSiderailButtons().wrappers.filter((w) => w.attributes('icon') === 'history');
+  const findRouter = () => wrapper.findComponent(RouterViewStub);
 
   const mockRouter = {
     push: jest.fn(),
@@ -129,14 +130,24 @@ describe('DuoAgenticClassicApp', () => {
 
   describe('dimensions management', () => {
     beforeEach(async () => {
+      window.innerWidth = 1200;
+      window.innerHeight = 800;
       wrapper = await createWrapper();
     });
 
+    afterEach(() => {
+      // Reset to default
+      window.innerWidth = 1024;
+      window.innerHeight = 768;
+    });
+
     it('initializes dimensions correctly on mount', () => {
-      expect(wrapper.vm.width).toBe(550);
-      expect(wrapper.vm.height).toBe(window.innerHeight);
-      expect(wrapper.vm.maxWidth).toBe(window.innerWidth - WIDTH_OFFSET);
-      expect(wrapper.vm.maxHeight).toBe(window.innerHeight);
+      const duoLayout = findDuoLayout();
+
+      expect(duoLayout.props('dimensions').width).toBe(550);
+      expect(duoLayout.props('dimensions').height).toBe(window.innerHeight);
+      expect(duoLayout.props('dimensions').maxWidth).toBe(window.innerWidth - WIDTH_OFFSET);
+      expect(duoLayout.props('dimensions').maxHeight).toBe(window.innerHeight);
     });
 
     it('updates dimensions when chat-resize event is emitted', async () => {
@@ -148,19 +159,22 @@ describe('DuoAgenticClassicApp', () => {
 
       await nextTick();
 
-      expect(wrapper.vm.width).toBe(newWidth);
-      expect(wrapper.vm.height).toBe(newHeight);
+      const duoLayout = findDuoLayout();
+      expect(duoLayout.props('dimensions').width).toBe(newWidth);
+      expect(duoLayout.props('dimensions').height).toBe(newHeight);
     });
 
     it('ensures dimensions do not exceed maxWidth or maxHeight', async () => {
       const newWidth = window.innerWidth + 100;
       const newHeight = window.innerHeight + 100;
 
-      wrapper.vm.onChatResize({ width: newWidth, height: newHeight });
+      findRouter().vm.$emit('chat-resize', { width: newWidth, height: newHeight });
+
       await nextTick();
 
-      expect(wrapper.vm.width).toBe(window.innerWidth - WIDTH_OFFSET);
-      expect(wrapper.vm.height).toBe(window.innerHeight);
+      const duoLayout = findDuoLayout();
+      expect(duoLayout.props('dimensions').width).toBe(window.innerWidth - WIDTH_OFFSET);
+      expect(duoLayout.props('dimensions').height).toBe(window.innerHeight);
     });
 
     it('updates dimensions when window is resized', async () => {
@@ -168,14 +182,12 @@ describe('DuoAgenticClassicApp', () => {
       const originalInnerHeight = window.innerHeight;
 
       try {
-        window.innerWidth = 1200;
-        window.innerHeight = 800;
-
         window.dispatchEvent(new Event('resize'));
         await nextTick();
 
-        expect(wrapper.vm.maxWidth).toBe(1200 - WIDTH_OFFSET);
-        expect(wrapper.vm.maxHeight).toBe(800);
+        const duoLayout = findDuoLayout();
+        expect(duoLayout.props('dimensions').maxWidth).toBe(1200 - WIDTH_OFFSET);
+        expect(duoLayout.props('dimensions').maxHeight).toBe(800);
       } finally {
         window.innerWidth = originalInnerWidth;
         window.innerHeight = originalInnerHeight;
