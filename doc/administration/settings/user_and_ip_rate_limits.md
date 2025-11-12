@@ -125,26 +125,30 @@ To modify the maximum number of requests:
 ## Response headers
 
 Response headers include rate limit information for all requests.
-These headers allow clients to proactively monitor their usage and adjust request patterns to avoid throttling.
+Use these headers to proactively monitor usage and adjust request patterns to avoid throttling.
 
 ### Multiple rate limiting systems
 
 Rate limits are enforced through two independent systems:
 
-1. **Rack::Attack middleware rate limits**: Applied at the HTTP layer. Examples include authenticated API requests per user, or unauthenticated web requests per IP. These limits are reflected in response headers.
-1. **Application rate limits**: Applied at the application level. Examples include issue creation per user, or project export per user. These limits are **not** reflected in response headers.
+- `Rack::Attack` middleware rate limits: Applied at the HTTP layer. Examples include authenticated API requests per user, or unauthenticated web requests per IP. These limits are reflected in response headers.
+- Application rate limits: Applied at the application level. Examples include issue creation per user, or project export per user. These limits are not included in response headers.
 
 A single request can count toward both types of rate limits simultaneously.
-Response headers only show the most restrictive Rack::Attack rate limit status.
+Response headers only show the most restrictive `Rack::Attack` rate limit status.
 
-**Important**: Application rate limits are not included in response headers.
+{{< alert type="note" >}}
+
+Application rate limits are not included in response headers.
+
+{{< /alert >}}
 
 #### Example
 
 A request to create an issue through the API counts toward:
 
-- The authenticated API request rate limit (Rack::Attack) - reflected in response headers.
-- The issue creation rate limit (application-level) - **not** reflected in response headers.
+- The authenticated API request rate limit (`Rack::Attack`). Included in response headers.
+- The issue creation rate limit (application-level). Not included in response headers.
 
 Exceeding the issue creation limit results in a `429` response, even when previous response headers indicated enough remaining authenticated API requests.
 
