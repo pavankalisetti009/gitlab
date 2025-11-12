@@ -35,6 +35,10 @@ module Ai
       def foundational_workflow_definition?(definition)
         all.any? { |agent| agent.workflow_definition == definition }
       end
+
+      def workflow_definitions
+        all.map(&:workflow_definition)
+      end
     end
   end
 end
