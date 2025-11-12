@@ -41,7 +41,7 @@ export default {
     },
   },
   apollo: {
-    vulnerabilitySeverityCount: {
+    vulnerabilitySeverity: {
       query() {
         return this.config.query;
       },
@@ -52,9 +52,7 @@ export default {
         };
       },
       update(data) {
-        return (
-          data.namespace?.securityMetrics?.vulnerabilitiesPerSeverity?.[this.severity]?.count || 0
-        );
+        return data.namespace?.securityMetrics?.vulnerabilitiesPerSeverity?.[this.severity] || {};
       },
       error() {
         this.hasFetchError = true;
@@ -64,7 +62,7 @@ export default {
   data() {
     return {
       hasFetchError: false,
-      vulnerabilitySeverityCount: 0,
+      vulnerabilitySeverity: {},
     };
   },
   computed: {
@@ -80,7 +78,7 @@ export default {
       }, {});
     },
     loading() {
-      return this.$apollo.queries.vulnerabilitySeverityCount.loading;
+      return this.$apollo.queries.vulnerabilitySeverity.loading;
     },
   },
 };
@@ -89,7 +87,8 @@ export default {
 <template>
   <vulnerabilities-for-severity-panel
     :severity="severity"
-    :count="vulnerabilitySeverityCount"
+    :count="vulnerabilitySeverity.count"
+    :median-age="vulnerabilitySeverity.medianAge"
     :filters="filters"
     :loading="loading"
     :error="hasFetchError"
