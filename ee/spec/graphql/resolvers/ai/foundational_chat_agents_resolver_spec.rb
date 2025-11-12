@@ -25,19 +25,32 @@ RSpec.describe Resolvers::Ai::FoundationalChatAgentsResolver, feature_category: 
 
         before do
           allow(current_user.user_preference).to receive(:get_default_duo_namespace).and_return(default_namespace)
-          allow(default_namespace).to receive(:foundational_agents_default_enabled)
-                                        .and_return(foundational_agents_default_enabled)
           stub_saas_features(gitlab_com_subscriptions: true)
         end
 
-        context 'when user default namespace has access to foundational chat agents' do
-          it 'returns all agents' do
-            expect(resolved.size).to eq(::Ai::FoundationalChatAgent.all.size)
+        context 'when user has default namespace' do
+          before do
+            allow(default_namespace).to receive(:foundational_agents_default_enabled)
+                                          .and_return(foundational_agents_default_enabled)
+          end
+
+          context 'with access to foundational chat agents' do
+            it 'returns all agents' do
+              expect(resolved.size).to eq(::Ai::FoundationalChatAgent.all.size)
+            end
+          end
+
+          context 'without access to foundational chat agents' do
+            let(:foundational_agents_default_enabled) { false }
+
+            it 'returns all agents' do
+              expect(resolved).to match_array(::Ai::FoundationalChatAgent.only_duo_chat_agent)
+            end
           end
         end
 
-        context 'when user default namespace does not have access to foundational chat agents' do
-          let(:foundational_agents_default_enabled) { false }
+        context 'when user default namespace does not exist' do
+          let(:default_namespace) { nil }
 
           it 'returns only duo chat' do
             expect(resolved).to match_array(::Ai::FoundationalChatAgent.only_duo_chat_agent)
