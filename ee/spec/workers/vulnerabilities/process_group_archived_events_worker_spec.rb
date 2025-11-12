@@ -23,8 +23,8 @@ RSpec.describe Vulnerabilities::ProcessGroupArchivedEventsWorker, feature_catego
     context_projects = []
     expect(Vulnerabilities::UpdateArchivedAttributeOfVulnerabilityReadsWorker)
       .to receive(:bulk_perform_async_with_contexts) do |projects, arguments_proc:, context_proc:|
-        project_ids += [projects.map(&arguments_proc)]
-        context_projects += [projects.map(&context_proc)]
+        project_ids += [projects.sort.map(&arguments_proc)]
+        context_projects += [projects.sort.map(&context_proc)]
       end
 
     use_event
@@ -38,8 +38,8 @@ RSpec.describe Vulnerabilities::ProcessGroupArchivedEventsWorker, feature_catego
     context_projects = []
     expect(Vulnerabilities::UpdateArchivedAttributeOfVulnerabilityStatisticsWorker)
       .to receive(:bulk_perform_async_with_contexts) do |projects, arguments_proc:, context_proc:|
-        project_ids += [projects.map(&arguments_proc)]
-        context_projects += [projects.map(&context_proc)]
+        project_ids += [projects.sort.map(&arguments_proc)]
+        context_projects += [projects.sort.map(&context_proc)]
       end
 
     use_event
