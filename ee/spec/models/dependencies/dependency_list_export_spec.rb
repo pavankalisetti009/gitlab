@@ -87,7 +87,11 @@ RSpec.describe Dependencies::DependencyListExport, feature_category: :dependency
   end
 
   describe '#status' do
-    subject(:dependency_list_export) { create(:dependency_list_export, project: project) }
+    subject(:dependency_list_export) do
+      SecApplicationRecord.feature_flagged_transaction_for(project) do
+        create(:dependency_list_export, project: project)
+      end
+    end
 
     around do |example|
       freeze_time { example.run }

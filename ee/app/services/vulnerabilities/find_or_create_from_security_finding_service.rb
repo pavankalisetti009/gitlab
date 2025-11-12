@@ -50,7 +50,7 @@ module Vulnerabilities
     end
 
     def update_state_for(vulnerability)
-      Vulnerability.transaction do
+      Vulnerability.feature_flagged_transaction_for(project) do
         state_transition_params = {
           vulnerability: vulnerability,
           from_state: vulnerability.state,
@@ -89,7 +89,7 @@ module Vulnerabilities
       state_transition = vulnerability.state_transitions.by_to_states(:dismissed).last
       return unless state_transition && (params[:comment] || params[:dismissal_reason])
 
-      Vulnerability.transaction do
+      Vulnerability.feature_flagged_transaction_for(project) do
         state_transition.update!(params.slice(:comment, :dismissal_reason).compact)
 
         if @present_on_default_branch && params[:dismissal_reason]

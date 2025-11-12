@@ -33,7 +33,7 @@ module Vulnerabilities
         )
       end
 
-      response = Vulnerability.transaction do
+      response = Vulnerability.feature_flagged_transaction_for(project) do
         finding.save!
         vulnerability.vulnerability_finding = finding
         vulnerability.save!
