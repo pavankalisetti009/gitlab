@@ -34,8 +34,7 @@ module EE
           end
 
           def virtual_registry_available?
-            ::VirtualRegistries::Packages::Maven.virtual_registry_available?(context.group, current_user) &&
-              ::Feature.enabled?(:ui_for_virtual_registries, context.group)
+            ::VirtualRegistries::Packages::Maven.virtual_registry_available?(context.group, current_user)
           end
         end
       end

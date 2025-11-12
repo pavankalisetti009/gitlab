@@ -214,6 +214,40 @@ RSpec.describe Mutations::Security::Attributes::BulkUpdate,
               .to raise_error(Gitlab::Graphql::Errors::ArgumentError, 'Too many attributes (maximum: 20)')
           end
         end
+
+        context 'when attribute is soft deleted' do
+          let(:deleted_attribute) do
+            create(:security_attribute, security_category: category, name: 'Deleted',
+              namespace: root_namespace, deleted_at: Time.current)
+          end
+
+          let(:attributes) { [deleted_attribute.to_global_id.to_s] }
+
+          it 'returns a resource not available error' do
+            expect { mutation.resolve(items: prepared_items, attributes: attributes, mode: 'ADD') }
+              .to raise_error(Gitlab::Graphql::Errors::ResourceNotAvailable,
+                "The resource that you are attempting to access does not exist \
+                or you don't have permission to perform this action".squish
+              )
+          end
+        end
+
+        context 'when some attributes are soft deleted' do
+          let(:deleted_attribute) do
+            create(:security_attribute, security_category: category, name: 'Deleted',
+              namespace: root_namespace, deleted_at: Time.current)
+          end
+
+          let(:attributes) { [attribute1.to_global_id.to_s, deleted_attribute.to_global_id.to_s] }
+
+          it 'returns a resource not available error for the first deleted attribute' do
+            expect { mutation.resolve(items: prepared_items, attributes: attributes, mode: 'ADD') }
+              .to raise_error(Gitlab::Graphql::Errors::ResourceNotAvailable,
+                "The resource that you are attempting to access does not exist \
+                or you don't have permission to perform this action".squish
+              )
+          end
+        end
       end
     end
   end

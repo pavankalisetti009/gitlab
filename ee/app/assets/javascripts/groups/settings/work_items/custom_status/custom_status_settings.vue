@@ -130,6 +130,20 @@ export default {
       </p>
     </template>
     <template #default>
+      <gl-alert
+        v-if="errorText"
+        variant="danger"
+        :dismissible="true"
+        class="gl-mb-5"
+        data-testid="alert"
+        @dismiss="dismissAlert"
+      >
+        {{ errorText }}
+        <details>
+          {{ errorDetail }}
+        </details>
+      </gl-alert>
+
       <div
         v-if="loadingLifecycles"
         data-testid="lifecycle-loading-skeleton"
@@ -153,55 +167,43 @@ export default {
         </div>
       </div>
 
-      <gl-alert
-        v-if="errorText"
-        variant="danger"
-        :dismissible="true"
-        class="gl-mb-5"
-        data-testid="alert"
-        @dismiss="dismissAlert"
-      >
-        {{ errorText }}
-        <details>
-          {{ errorDetail }}
-        </details>
-      </gl-alert>
-
-      <section
-        data-testid="more-lifecycle-information"
-        class="gl-mb-4 gl-flex gl-flex-wrap gl-items-center gl-justify-between"
-      >
-        <div>
-          <h3 class="gl-mb-2 gl-mt-0 gl-text-base">{{ s__('WorkItem|Lifecycles') }}</h3>
-          <p class="gl-mb-0 gl-text-subtle">
-            {{
-              s__(
-                'WorkItem|Lifecycles contain statuses that are used together as an item is worked on. Each item type uses a single lifecycle.',
-              )
-            }}
-          </p>
-        </div>
-        <gl-button data-testid="create-lifecycle" @click="showCreateLifecycleModal = true">{{
-          s__('WorkItem|Create lifecycle')
-        }}</gl-button>
-      </section>
-
-      <div class="gl-flex gl-flex-col gl-gap-4">
-        <lifecycle-detail
-          v-for="lifecycle in lifecycles"
-          :key="lifecycle.id"
-          :lifecycle="lifecycle"
-          :full-path="fullPath"
-          show-usage-section
-          show-not-in-use-section
-          @deleted="handleLifecycleUpdate"
+      <div v-else>
+        <section
+          data-testid="more-lifecycle-information"
+          class="gl-mb-4 gl-flex gl-flex-wrap gl-items-center gl-justify-between"
         >
-          <template #detail-footer>
-            <gl-button data-testid="edit-statuses" @click="openStatusModal(lifecycle.id)">{{
-              s__('WorkItem|Edit statuses')
-            }}</gl-button>
-          </template>
-        </lifecycle-detail>
+          <div>
+            <h3 class="gl-mb-2 gl-mt-0 gl-text-base">{{ s__('WorkItem|Lifecycles') }}</h3>
+            <p class="gl-mb-0 gl-text-subtle">
+              {{
+                s__(
+                  'WorkItem|Lifecycles contain statuses that are used together as an item is worked on. Each item type uses a single lifecycle.',
+                )
+              }}
+            </p>
+          </div>
+          <gl-button data-testid="create-lifecycle" @click="showCreateLifecycleModal = true">{{
+            s__('WorkItem|Create lifecycle')
+          }}</gl-button>
+        </section>
+
+        <div class="gl-flex gl-flex-col gl-gap-4">
+          <lifecycle-detail
+            v-for="lifecycle in lifecycles"
+            :key="lifecycle.id"
+            :lifecycle="lifecycle"
+            :full-path="fullPath"
+            show-usage-section
+            show-not-in-use-section
+            @deleted="handleLifecycleUpdate"
+          >
+            <template #detail-footer>
+              <gl-button data-testid="edit-statuses" @click="openStatusModal(lifecycle.id)">{{
+                s__('WorkItem|Edit statuses')
+              }}</gl-button>
+            </template>
+          </lifecycle-detail>
+        </div>
       </div>
 
       <status-modal

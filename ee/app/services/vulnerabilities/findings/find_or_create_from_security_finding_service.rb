@@ -33,7 +33,7 @@ module Vulnerabilities
 
         vulnerability_finding = build_vulnerability_finding(security_finding)
 
-        Vulnerabilities::Finding.transaction do
+        Vulnerabilities::Finding.feature_flagged_transaction_for(@project) do
           save_identifiers(vulnerability_finding.identifiers)
 
           raise ActiveRecord::Rollback unless vulnerability_finding.save

@@ -18,7 +18,7 @@ module Vulnerabilities
     def execute
       raise Gitlab::Access::AccessDeniedError unless can?(author, :admin_vulnerability, project)
 
-      Vulnerability.transaction do
+      Vulnerability.feature_flagged_transaction_for(project) do
         vulnerability.update!(vulnerability_params)
         attributes = {}
         attributes[:resolved_on_default_branch] = resolved_on_default_branch if @resolved_on_default_branch

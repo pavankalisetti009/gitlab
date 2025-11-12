@@ -26,10 +26,6 @@ module Security
       limit(limit).pluck(:id)
     end
 
-    def self.pluck_security_attribute_id(limit = MAX_PLUCK)
-      limit(limit).pluck(:security_attribute_id)
-    end
-
     private
 
     def same_root_ancestor

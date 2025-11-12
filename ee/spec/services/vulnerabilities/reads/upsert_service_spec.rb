@@ -29,6 +29,7 @@ RSpec.describe Vulnerabilities::Reads::UpsertService, feature_category: :vulnera
   describe '#execute' do
     before do
       Vulnerabilities::Read.where(vulnerability: vulnerability).delete_all
+      stub_feature_flags(turn_off_vulnerability_read_create_db_trigger_function: project)
     end
 
     let(:execute_service) { described_class.new(vulnerabilities, attributes, projects: project).execute }
@@ -45,8 +46,8 @@ RSpec.describe Vulnerabilities::Reads::UpsertService, feature_category: :vulnera
 
           it 'sets correct attributes from vulnerability' do
             execute_service
-            created_read = Vulnerabilities::Read.find_by(vulnerability: vulnerability)
 
+            created_read = Vulnerabilities::Read.find_by(vulnerability: vulnerability)
             expect(created_read).to have_attributes(
               vulnerability_id: vulnerability.id,
               project_id: vulnerability.project_id,
@@ -55,10 +56,13 @@ RSpec.describe Vulnerabilities::Reads::UpsertService, feature_category: :vulnera
               severity: vulnerability.severity,
               state: vulnerability.state,
               resolved_on_default_branch: vulnerability.resolved_on_default_branch,
-              uuid: finding.uuid_v5,
+              uuid: finding.uuid,
               location_image: 'alpine:3.4',
               identifier_names: finding.identifiers.pluck(:name),
-              has_remediations: vulnerability.has_remediations?
+              has_remediations: vulnerability.has_remediations?,
+              traversal_ids: project.namespace.traversal_ids,
+              archived: project.archived?,
+              auto_resolved: vulnerability.auto_resolved?
             )
           end
 
@@ -66,8 +70,8 @@ RSpec.describe Vulnerabilities::Reads::UpsertService, feature_category: :vulnera
             finding.update!(location: { 'kubernetes_resource' => { 'agent_id' => '123' } })
 
             execute_service
-            created_read = Vulnerabilities::Read.find_by(vulnerability: vulnerability)
 
+            created_read = Vulnerabilities::Read.find_by(vulnerability: vulnerability)
             expect(created_read.cluster_agent_id).to eq('123')
           end
         end
@@ -80,7 +84,7 @@ RSpec.describe Vulnerabilities::Reads::UpsertService, feature_category: :vulnera
               scanner: scanner,
               severity: :low,
               state: :dismissed,
-              uuid: finding.uuid_v5,
+              uuid: finding.uuid,
               report_type: vulnerability.report_type,
               resolved_on_default_branch: false)
           end
@@ -172,8 +176,8 @@ RSpec.describe Vulnerabilities::Reads::UpsertService, feature_category: :vulnera
       context 'when creating new record' do
         it 'applies custom attributes during creation' do
           execute_service
-          created_read = Vulnerabilities::Read.find_by(vulnerability: vulnerability)
 
+          created_read = Vulnerabilities::Read.find_by(vulnerability: vulnerability)
           expect(created_read).to have_attributes(
             dismissal_reason: 'used_in_tests',
             has_issues: true
@@ -189,7 +193,7 @@ RSpec.describe Vulnerabilities::Reads::UpsertService, feature_category: :vulnera
             scanner: scanner,
             severity: :low,
             state: :dismissed,
-            uuid: finding.uuid_v5,
+            uuid: finding.uuid,
             report_type: vulnerability.report_type,
             resolved_on_default_branch: false)
         end
@@ -210,123 +214,9 @@ RSpec.describe Vulnerabilities::Reads::UpsertService, feature_category: :vulnera
       end
     end
 
-    context 'with attribute update conditions' do
-      let(:vulnerabilities) { vulnerability }
-      let(:attributes) { { severity: :critical, state: :resolved, resolved_on_default_branch: true } }
-
-      let!(:existing_read) do
-        create(:vulnerability_read,
-          vulnerability: vulnerability,
-          project: project,
-          scanner: scanner,
-          severity: :low,
-          state: :dismissed,
-          uuid: finding.uuid_v5,
-          report_type: vulnerability.report_type,
-          resolved_on_default_branch: false)
-      end
-
-      it 'updates multiple attributes' do
-        execute_service
-
-        expect(existing_read.reload).to have_attributes(
-          severity: 'critical',
-          state: 'resolved',
-          resolved_on_default_branch: true
-        )
-      end
-
-      context 'with explicit nil attributes' do
-        let(:attributes) { { dismissal_reason: nil } }
-
-        it 'updates explicit nil attributes' do
-          existing_read.update!(dismissal_reason: 'used_in_tests')
-
-          execute_service
-
-          expect(existing_read.reload.dismissal_reason).to be_nil
-        end
-      end
-
-      context 'with other supported attributes' do
-        let(:attributes) do
-          {
-            has_issues: true,
-            has_merge_request: true,
-            traversal_ids: [1, 2, 3],
-            has_remediations: true,
-            archived: true,
-            auto_resolved: true,
-            identifier_names: ['CVE-2023-1234']
-          }
-        end
-
-        it 'updates other supported attributes' do
-          expect(existing_read.reload).to have_attributes(
-            has_issues: false,
-            has_merge_request: false,
-            traversal_ids: project.namespace.traversal_ids,
-            has_remediations: false,
-            archived: false,
-            auto_resolved: false,
-            identifier_names: []
-          )
-
-          execute_service
-
-          expect(existing_read.reload).to have_attributes(
-            has_issues: true,
-            has_merge_request: true,
-            traversal_ids: [1, 2, 3],
-            has_remediations: true,
-            archived: true,
-            auto_resolved: true,
-            identifier_names: ['CVE-2023-1234']
-          )
-        end
-      end
-    end
-
-    context 'with bulk operations' do
-      let(:vulnerabilities) do
-        create_list(:vulnerability, 3, project: project, author: user, present_on_default_branch: true)
-      end
-
-      let(:attributes) { { dismissal_reason: 'used_in_tests', has_issues: true } }
-
-      before do
-        vulnerabilities.each { |v| create(:vulnerabilities_finding, vulnerability: v, scanner: scanner) }
-        Vulnerabilities::Read.where(vulnerability: vulnerabilities).delete_all
-      end
-
-      it 'applies attributes to all vulnerabilities' do
-        execute_service
-
-        Vulnerabilities::Read.where(vulnerability: vulnerabilities).find_each do |read|
-          expect(read).to have_attributes(
-            dismissal_reason: 'used_in_tests',
-            has_issues: true
-          )
-        end
-      end
-
-      it 'processes all vulnerabilities efficiently' do
-        expect { execute_service }.to change { Vulnerabilities::Read.count }.by(3)
-      end
-    end
-
     context 'with edge cases' do
       context 'when given empty vulnerability array' do
         let(:vulnerabilities) { [] }
-        let(:attributes) { {} }
-
-        it 'does nothing without error' do
-          expect { described_class.new(vulnerabilities, attributes).execute }.not_to raise_error
-        end
-      end
-
-      context 'when given nil vulnerability' do
-        let(:vulnerabilities) { nil }
         let(:attributes) { {} }
 
         it 'does nothing without error' do
@@ -342,8 +232,8 @@ RSpec.describe Vulnerabilities::Reads::UpsertService, feature_category: :vulnera
           finding.update!(location: nil)
 
           execute_service
-          created_read = Vulnerabilities::Read.find_by(vulnerability: vulnerability)
 
+          created_read = Vulnerabilities::Read.find_by(vulnerability: vulnerability)
           expect(created_read.location_image).to be_nil
         end
       end
@@ -356,8 +246,8 @@ RSpec.describe Vulnerabilities::Reads::UpsertService, feature_category: :vulnera
           finding.update!(location: { 'file' => 'test.rb' })
 
           execute_service
-          created_read = Vulnerabilities::Read.find_by(vulnerability: vulnerability)
 
+          created_read = Vulnerabilities::Read.find_by(vulnerability: vulnerability)
           expect(created_read.location_image).to be_nil
         end
       end
@@ -370,8 +260,8 @@ RSpec.describe Vulnerabilities::Reads::UpsertService, feature_category: :vulnera
           finding.identifiers.delete_all
 
           execute_service
-          created_read = Vulnerabilities::Read.find_by(vulnerability: vulnerability)
 
+          created_read = Vulnerabilities::Read.find_by(vulnerability: vulnerability)
           expect(created_read.identifier_names).to be_empty
         end
       end
@@ -386,7 +276,6 @@ RSpec.describe Vulnerabilities::Reads::UpsertService, feature_category: :vulnera
       end
 
       it 'does not perform any operations' do
-        expect(Vulnerabilities::Read).not_to receive(:upsert_all)
         expect { execute_service }.not_to change { Vulnerabilities::Read.count }
       end
     end

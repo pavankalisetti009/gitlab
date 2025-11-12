@@ -14,7 +14,7 @@ module Security
         return unless user
 
         projects = Project.by_ids(project_ids).with_namespaces
-        projects = projects.inc_routes.with_project_to_security_attributes if mode == 'REPLACE'
+        projects = projects.inc_routes.with_security_attributes if mode == 'REPLACE'
 
         projects.each do |project|
           process_project(project, attribute_ids, mode, user)
@@ -61,8 +61,8 @@ module Security
         return attribute_ids if mode == 'REMOVE'
         return [] if mode == 'ADD'
 
-        # For the 'REPLACE' mode, we select all existing attribute ids
-        project.project_to_security_attributes.pluck_security_attribute_id
+        # For the 'REPLACE' mode, we select all existing attribute ids (excluding soft-deleted ones)
+        project.security_attributes.not_deleted.pluck_id
       end
     end
   end

@@ -75952,9 +75952,6 @@ msgstr ""
 msgid "WorkItem|New item"
 msgstr ""
 
-msgid "WorkItem|New related %{workItemType}"
-msgstr ""
-
 msgid "WorkItem|New related item"
 msgstr ""
 

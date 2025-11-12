@@ -27,7 +27,6 @@ RSpec.describe Groups::Settings::PackagesAndRegistriesController, feature_catego
       it_behaves_like 'returning response status', :ok
 
       it_behaves_like 'pushed feature flag', :maven_virtual_registry
-      it_behaves_like 'pushed feature flag', :ui_for_virtual_registries
       it_behaves_like 'pushed feature flag', :ui_for_virtual_registry_cleanup_policy
 
       context 'with adminVirtualRegistry' do

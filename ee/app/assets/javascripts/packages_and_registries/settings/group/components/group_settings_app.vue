@@ -14,7 +14,7 @@ export default {
   mixins: [glAbilitiesMixin(), glFeatureFlagMixin(), glLicensedFeaturesMixin()],
   computed: {
     hasVirtualRegistryFeatureFlags() {
-      return this.glFeatures.mavenVirtualRegistry && this.glFeatures.uiForVirtualRegistries;
+      return this.glFeatures.mavenVirtualRegistry;
     },
     hasVirtualRegistryAccess() {
       return (
