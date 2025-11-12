@@ -103,14 +103,6 @@ export default {
       this.initialWipLimitValue = this.currentWipLimit;
       this.wipCategoryUpdated = false;
       this.limitValueUpdated = false;
-
-      this.$nextTick(() => {
-        const dropdownButton = this.$refs.wipCategoryDropdown?.$el.querySelector('button');
-        if (dropdownButton) {
-          dropdownButton.click();
-          dropdownButton.focus();
-        }
-      });
     },
     handleWipLimitChange(event) {
       const wipLimit = event && event.target ? event.target.value : event;
@@ -295,7 +287,7 @@ export default {
     <gl-form
       v-if="edit"
       ref="wipForm"
-      class="gl-flex gl-items-center gl-justify-between gl-gap-5"
+      class="gl-flex gl-items-center gl-justify-between gl-gap-3"
       @focusout="offFocus"
       @mousedown="handleMouseDown"
       @focusin="handleFocusIn"
