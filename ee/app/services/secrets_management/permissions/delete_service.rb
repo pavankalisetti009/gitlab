@@ -2,8 +2,7 @@
 
 module SecretsManagement
   module Permissions
-    class DeleteService < BaseService
-      include SecretsManagerClientHelpers
+    class DeleteService < ProjectBaseService
       include ErrorResponseHelper
       include Helpers::ExclusiveLeaseHelper
 
@@ -21,7 +20,7 @@ module SecretsManagement
 
         return invalid_principal_response unless valid_principal?(principal)
 
-        secret_permission = secrets_manager.generate_policy_name(
+        secret_permission = secrets_manager.policy_name_for_principal(
           principal_type: principal[:type],
           principal_id: principal[:id])
 

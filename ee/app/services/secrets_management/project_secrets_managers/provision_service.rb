@@ -2,10 +2,7 @@
 
 module SecretsManagement
   module ProjectSecretsManagers
-    class ProvisionService < BaseService
-      include SecretsManagerClientHelpers
-      include Helpers::ExclusiveLeaseHelper
-
+    class ProvisionService < ProjectBaseService
       SECRETS_ENGINE_TYPE = 'kv-v2'
       OWNER_PRINCIPAL_ID = Gitlab::Access.sym_options_with_owner[:owner]
       OWNER_PRINCIPAL_TYPE = "Role"
@@ -25,8 +22,9 @@ module SecretsManagement
 
       private
 
+      attr_reader :secrets_manager
+
       def execute_provision
-        update_gitlab_rails_jwt_role
         enable_namespaces
         enable_secret_store
         enable_auth
@@ -37,7 +35,7 @@ module SecretsManagement
       end
 
       def enable_namespaces
-        # This namespaces may already exist if there's another project in
+        # This namespace may already exist if there's another project in
         # this namespace.
         global_secrets_manager_client.enable_namespace(secrets_manager.namespace_path)
 
@@ -122,7 +120,7 @@ module SecretsManagement
       end
 
       def create_owner_policy
-        policy_name = secrets_manager.generate_policy_name(
+        policy_name = secrets_manager.policy_name_for_principal(
           principal_type: OWNER_PRINCIPAL_TYPE,
           principal_id: OWNER_PRINCIPAL_ID
         )
@@ -130,9 +128,6 @@ module SecretsManagement
         policy = SecretsManagement::AclPolicy.new(policy_name)
         update_policy_paths(policy, OWNER_PERMISSIONS)
         project_secrets_manager_client.set_policy(policy)
-      rescue SecretsManagement::SecretsManagerClient::ApiError => e
-        Gitlab::AppLogger.error("Failed to create owner policy for project #{secrets_manager.project.id}: #{e.message}")
-        raise e
       end
 
       def update_policy_paths(policy, permissions)
@@ -140,34 +135,12 @@ module SecretsManagement
         metadata_path = secrets_manager.ci_metadata_full_path('*')
         detailed_metadata_path = secrets_manager.detailed_metadata_path('*')
 
-        # Add new capabilities
+        # Add capabilities for managing secrets
         permissions.each do |permission|
           policy.add_capability(data_path, permission) if permission != 'read'
           policy.add_capability(metadata_path, permission)
         end
         policy.add_capability(detailed_metadata_path, 'list')
-      end
-
-      def update_gitlab_rails_jwt_role
-        # A new test environment is created everytime we run rspec which has the server url
-        # as bound_audience based on openbao_test_setup file.
-        # I have added specs to make sure the bound_audiences include the expected server_url in provision_service_spec.
-        return if Rails.env.test?
-
-        begin
-          global_secrets_manager_client.read_jwt_role('gitlab_rails_jwt', 'app')
-        rescue SecretsManagement::SecretsManagerClient::ConnectionError
-          # This is a temporary code to update the JWT bound_audiences in Staging and Production.
-          jwt = SecretsManagement::SecretsManagerJwt.new(
-            current_user: current_user,
-            project: project,
-            old_aud: 'openbao'
-          ).encoded
-
-          client = SecretsManagement::SecretsManagerClient.new(jwt: jwt)
-
-          client.update_gitlab_rails_jwt_role(openbao_url: SecretsManagement::ProjectSecretsManager.server_url)
-        end
       end
 
       def activate_secrets_manager
@@ -179,8 +152,6 @@ module SecretsManagement
       def bound_audiences
         [SecretsManagement::ProjectSecretsManager.server_url]
       end
-
-      attr_reader :secrets_manager
     end
   end
 end

@@ -2,10 +2,7 @@
 
 module SecretsManagement
   module ProjectSecrets
-    class ListService < BaseService
-      include Helpers::UserClientHelper
-      include ErrorResponseHelper
-
+    class ListService < ProjectBaseService
       def execute(include_rotation_info: true)
         return inactive_response unless project.secrets_manager&.active?
 

@@ -7570,6 +7570,25 @@ Input type: `GroupSavedReplyUpdateInput`
 | <a id="mutationgroupsavedreplyupdateerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
 | <a id="mutationgroupsavedreplyupdatesavedreply"></a>`savedReply` | [`GroupSavedReply`](#groupsavedreply) | Saved reply after mutation. |
 
+### `Mutation.groupSecretsManagerInitialize`
+
+Input type: `GroupSecretsManagerInitializeInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationgroupsecretsmanagerinitializeclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationgroupsecretsmanagerinitializegrouppath"></a>`groupPath` | [`ID!`](#id) | Group of the secrets manager. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationgroupsecretsmanagerinitializeclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationgroupsecretsmanagerinitializeerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
+| <a id="mutationgroupsecretsmanagerinitializegroupsecretsmanager"></a>`groupSecretsManager` | [`GroupSecretsManager`](#groupsecretsmanager) | Group secrets manager. |
+
 ### `Mutation.groupUpdate`
 
 Input type: `GroupUpdateInput`
@@ -33685,6 +33704,17 @@ Contains release-related statistics about a group.
 | <a id="groupsavedreplyid"></a>`id` | [`GroupsSavedReplyID!`](#groupssavedreplyid) | Global ID of the group-level saved reply. |
 | <a id="groupsavedreplyname"></a>`name` | [`String!`](#string) | Name of the saved reply. |
 
+### `GroupSecretsManager`
+
+Representation of a group secrets manager.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="groupsecretsmanagergroup"></a>`group` | [`Group!`](#group) | Group the secrets manager belongs to. |
+| <a id="groupsecretsmanagerstatus"></a>`status` | [`GroupSecretsManagerStatus`](#groupsecretsmanagerstatus) | Status of the group secrets manager. |
+
 ### `GroupSecurityPolicySource`
 
 Represents the source of a security policy belonging to a group.
@@ -42647,7 +42677,6 @@ Representation of a project secrets manager.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="projectsecretsmanagercisecretsmountpath"></a>`ciSecretsMountPath` | [`String!`](#string) | Mount path of the secrets engine for the project. |
 | <a id="projectsecretsmanagerproject"></a>`project` | [`Project!`](#project) | Project the secrets manager belong to. |
 | <a id="projectsecretsmanagerstatus"></a>`status` | [`ProjectSecretsManagerStatus`](#projectsecretsmanagerstatus) | Status of the project secrets manager. |
 
@@ -49761,6 +49790,16 @@ Values for sorting releases belonging to a group.
 | <a id="groupreleasesortreleased_at_asc"></a>`RELEASED_AT_ASC` | Released at by ascending order. |
 | <a id="groupreleasesortreleased_at_desc"></a>`RELEASED_AT_DESC` | Released at by descending order. |
 
+### `GroupSecretsManagerStatus`
+
+Values for the group secrets manager status.
+
+| Value | Description |
+| ----- | ----------- |
+| <a id="groupsecretsmanagerstatusactive"></a>`ACTIVE` | Secrets manager has been provisioned and enabled. |
+| <a id="groupsecretsmanagerstatusdeprovisioning"></a>`DEPROVISIONING` | Secrets manager is being deprovisioned. |
+| <a id="groupsecretsmanagerstatusprovisioning"></a>`PROVISIONING` | Secrets manager is being provisioned. |
+
 ### `GroupSort`
 
 Values for sorting groups.
@@ -51053,7 +51092,7 @@ Values for the project secrets manager status.
 | Value | Description |
 | ----- | ----------- |
 | <a id="projectsecretsmanagerstatusactive"></a>`ACTIVE` | Secrets manager has been provisioned and enabled. |
-| <a id="projectsecretsmanagerstatusdeprovisioning"></a>`DEPROVISIONING` | Secrets manager has is being deprovisioned. |
+| <a id="projectsecretsmanagerstatusdeprovisioning"></a>`DEPROVISIONING` | Secrets manager is being deprovisioned. |
 | <a id="projectsecretsmanagerstatusprovisioning"></a>`PROVISIONING` | Secrets manager is being provisioned. |
 
 ### `ProjectSort`

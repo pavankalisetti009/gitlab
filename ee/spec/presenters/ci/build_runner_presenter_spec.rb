@@ -524,7 +524,7 @@ RSpec.describe Ci::BuildRunnerPresenter, feature_category: :secrets_management d
           expect(gitlab_secrets_manager_payload.fetch('path')).to eq(project_secrets_manager.ci_data_path('password'))
           expect(gitlab_secrets_manager_payload.fetch('field')).to eq('value')
           expect(gitlab_secrets_manager_payload.fetch('engine')['name']).to eq('kv-v2')
-          expect(gitlab_secrets_manager_payload.fetch('engine')['path']).to eq(project_secrets_manager.legacy_ci_secrets_mount_path)
+          expect(gitlab_secrets_manager_payload.fetch('engine')['path']).to eq(project_secrets_manager.ci_secrets_mount_full_path)
         end
       end
     end

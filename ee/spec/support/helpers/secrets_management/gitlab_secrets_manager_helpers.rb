@@ -2,6 +2,14 @@
 
 module SecretsManagement
   module GitlabSecretsManagerHelpers
+    def reset_openbao
+      clean_all_kv_secrets_engines
+      clean_all_pipeline_jwt_engines
+      clean_all_user_jwt_engines
+      clean_all_policies
+      clean_all_namespaces
+    end
+
     def clean_all_kv_secrets_engines
       client = secrets_manager_client
       client.each_secrets_engine do |path, info|
@@ -256,6 +264,10 @@ module SecretsManagement
       lease_key = "project_secret_operation:project_#{project.id}"
       uuid = Gitlab::ExclusiveLease.get_uuid(lease_key)
       Gitlab::ExclusiveLease.cancel(lease_key, uuid)
+    end
+
+    def provision_group_secrets_manager(secrets_manager, user)
+      GroupSecretsManagers::ProvisionService.new(secrets_manager, user).execute
     end
   end
 end

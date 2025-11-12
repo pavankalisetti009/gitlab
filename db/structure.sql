@@ -17818,6 +17818,23 @@ CREATE SEQUENCE group_scim_identities_id_seq
 
 ALTER SEQUENCE group_scim_identities_id_seq OWNED BY group_scim_identities.id;
 
+CREATE TABLE group_secrets_managers (
+    id bigint NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    group_id bigint NOT NULL,
+    status smallint DEFAULT 0 NOT NULL
+);
+
+CREATE SEQUENCE group_secrets_managers_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE group_secrets_managers_id_seq OWNED BY group_secrets_managers.id;
+
 CREATE TABLE group_security_exclusions (
     id bigint NOT NULL,
     group_id bigint NOT NULL,
@@ -31322,6 +31339,8 @@ ALTER TABLE ONLY group_scim_auth_access_tokens ALTER COLUMN id SET DEFAULT nextv
 
 ALTER TABLE ONLY group_scim_identities ALTER COLUMN id SET DEFAULT nextval('group_scim_identities_id_seq'::regclass);
 
+ALTER TABLE ONLY group_secrets_managers ALTER COLUMN id SET DEFAULT nextval('group_secrets_managers_id_seq'::regclass);
+
 ALTER TABLE ONLY group_security_exclusions ALTER COLUMN id SET DEFAULT nextval('group_security_exclusions_id_seq'::regclass);
 
 ALTER TABLE ONLY group_ssh_certificates ALTER COLUMN id SET DEFAULT nextval('group_ssh_certificates_id_seq'::regclass);
@@ -34294,6 +34313,9 @@ ALTER TABLE ONLY group_scim_auth_access_tokens
 
 ALTER TABLE ONLY group_scim_identities
     ADD CONSTRAINT group_scim_identities_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY group_secrets_managers
+    ADD CONSTRAINT group_secrets_managers_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY group_security_exclusions
     ADD CONSTRAINT group_security_exclusions_pkey PRIMARY KEY (id);
@@ -40570,6 +40592,8 @@ CREATE UNIQUE INDEX index_group_scim_identities_on_lower_extern_uid_group_id ON 
 CREATE UNIQUE INDEX index_group_scim_identities_on_temp_source_id ON group_scim_identities USING btree (temp_source_id);
 
 CREATE UNIQUE INDEX index_group_scim_identities_on_user_id_and_group_id ON group_scim_identities USING btree (user_id, group_id);
+
+CREATE INDEX index_group_secrets_managers_on_group_id ON group_secrets_managers USING btree (group_id);
 
 CREATE INDEX index_group_security_exclusions_on_group_id ON group_security_exclusions USING btree (group_id);
 
@@ -50796,6 +50820,9 @@ ALTER TABLE ONLY gpg_signatures
 
 ALTER TABLE ONLY virtual_registries_container_registry_upstreams
     ADD CONSTRAINT fk_rails_11d127aa33 FOREIGN KEY (registry_id) REFERENCES virtual_registries_container_registries(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY group_secrets_managers
+    ADD CONSTRAINT fk_rails_12159a4355 FOREIGN KEY (group_id) REFERENCES namespaces(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY pm_affected_packages
     ADD CONSTRAINT fk_rails_1279c1b9a1 FOREIGN KEY (pm_advisory_id) REFERENCES pm_advisories(id) ON DELETE CASCADE;

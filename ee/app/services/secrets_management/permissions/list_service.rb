@@ -2,8 +2,7 @@
 
 module SecretsManagement
   module Permissions
-    class ListService < BaseService
-      include SecretsManagerClientHelpers
+    class ListService < ProjectBaseService
       include ErrorResponseHelper
 
       def execute

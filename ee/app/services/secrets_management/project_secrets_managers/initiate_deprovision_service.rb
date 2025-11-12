@@ -2,7 +2,7 @@
 
 module SecretsManagement
   module ProjectSecretsManagers
-    class InitiateDeprovisionService < BaseService
+    class InitiateDeprovisionService < ProjectBaseService
       def execute
         secrets_manager = project.secrets_manager
 
