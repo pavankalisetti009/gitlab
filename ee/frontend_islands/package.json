@@ -6,6 +6,7 @@
     "packages/configs/*"
   ],
   "scripts": {
+    "lint:types": "for app in apps/*/; do (cd \"$app\" && yarn run lint:types) || exit 1; done",
     "build": "yarn workspaces run build",
     "build:prod": "yarn workspaces run build:prod"
   }

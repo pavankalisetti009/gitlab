@@ -51,7 +51,6 @@ import { defineLibraryConfig } from '@frontend-islands/vite-config';
 export default defineConfig(
   await defineLibraryConfig({
     entry: './src/main.ts',
-    fileName: 'duo_next',
     name: 'DuoNext',
     tailwind: true,
     alias: {
@@ -63,7 +62,7 @@ export default defineConfig(
 
 This creates a library build with:
 - Entry point: `./src/main.ts`
-- Output: `dist/duo_next.js` (IIFE format)
+- Output: `dist/main.js` (IIFE format)
 - Global variable: `DuoNext`
 - Tailwind CSS integrated
 - Path alias `@` → `./src`
@@ -79,7 +78,7 @@ export default defineConfig(await defineLibraryConfig());
 
 Uses all defaults:
 - Entry: `./src/main.ts`
-- Output: `dist/index.js`
+- Output: `dist/main.js`
 - No Tailwind
 - No aliases
 
@@ -105,20 +104,6 @@ await defineLibraryConfig({
 })
 ```
 
-##### `fileName`
-- **Type:** `string`
-- **Default:** `'index'`
-- **Description:** Output file name (without extension)
-- **Note:** Output will be `dist/${fileName}.js`
-
-Example:
-```typescript
-await defineLibraryConfig({
-  fileName: 'my-component',
-})
-// → Outputs to dist/my-component.js
-```
-
 ##### `name`
 - **Type:** `string`
 - **Default:** `undefined`
@@ -128,7 +113,6 @@ await defineLibraryConfig({
 Example:
 ```typescript
 await defineLibraryConfig({
-  fileName: 'duo_next',
   name: 'DuoNext',
 })
 // → Global window.DuoNext available
@@ -447,7 +431,6 @@ import { defineLibraryConfig } from '@frontend-islands/vite-config';
 export default defineConfig(
   await defineLibraryConfig({
     entry: './src/main.ts',
-    fileName: 'duo_next',
     name: 'DuoNext',
     tailwind: true,
     alias: {
@@ -466,7 +449,6 @@ import { defineLibraryConfig } from '@frontend-islands/vite-config';
 export default defineConfig(
   await defineLibraryConfig({
     entry: './src/components/SpecialComponent.ts',
-    fileName: 'special-component',
     name: 'SpecialComponent',
   })
 );

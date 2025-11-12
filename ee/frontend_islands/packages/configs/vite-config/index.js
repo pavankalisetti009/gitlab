@@ -3,7 +3,6 @@ import vue from '@vitejs/plugin-vue';
 /**
  * @typedef {Object} LibraryConfigOptions
  * @property {string} [entry='./src/main.ts'] - Library entry point file
- * @property {string} [fileName='index'] - Output file name (without extension)
  * @property {string} [name] - IIFE global variable name (e.g., 'DuoNext')
  * @property {boolean} [tailwind=false] - Enable Tailwind CSS integration
  * @property {Record<string, string>} [alias] - Path aliases (e.g., { '@': './src' })
@@ -35,7 +34,7 @@ async function loadTailwindPlugin() {
  * - Format: IIFE (for browser <script> tags)
  * - Custom elements: Enabled (Vue web components)
  * - Custom element prefix: 'fe-island-'
- * - Output directory: 'dist'
+ * - Output file: 'dist/main.js'
  * - Build target: ES2020 (modern browsers)
  * - Inline dynamic imports: true (required for IIFE)
  *
@@ -50,7 +49,6 @@ async function loadTailwindPlugin() {
  * export default defineConfig(
  *   await defineLibraryConfig({
  *     entry: './src/main.ts',
- *     fileName: 'duo_next',
  *     name: 'DuoNext',
  *     tailwind: true,
  *     alias: { '@': './src' },
@@ -60,7 +58,6 @@ async function loadTailwindPlugin() {
 export async function defineLibraryConfig(options = {}) {
   const {
     entry = './src/main.ts',
-    fileName = 'index',
     name,
     tailwind = false,
     alias,
@@ -109,7 +106,7 @@ export async function defineLibraryConfig(options = {}) {
         entry,
         formats: ['iife'],
         name,
-        fileName: () => `${fileName}.js`,
+        fileName: () => 'main.js',
       },
       rollupOptions: {
         output: {

@@ -65,7 +65,7 @@ const mockSocketManager = {
   getState: jest.fn().mockReturnValue('OPEN'),
 };
 
-jest.mock('fe_islands/duo_next/dist/duo_next', () => ({}), {
+jest.mock('fe_islands/duo_next/dist/main', () => ({}), {
   virtual: true,
 });
 

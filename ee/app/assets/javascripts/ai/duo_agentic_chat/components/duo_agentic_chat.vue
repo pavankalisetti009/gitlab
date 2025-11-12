@@ -442,7 +442,7 @@ export default {
     async loadDuoNextIfNeeded() {
       if (this.glFeatures.duoUiNext) {
         try {
-          await import('fe_islands/duo_next/dist/duo_next');
+          await import('fe_islands/duo_next/dist/main');
         } catch (err) {
           logError('Failed to load frontend islands duo_next module', err);
         }
