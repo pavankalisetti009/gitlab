@@ -30,6 +30,7 @@ export default {
     'onGeneralSettingsPage',
     'promptCacheEnabled',
     'initialDuoRemoteFlowsAvailability',
+    'foundationalAgentsDefaultEnabled',
   ],
   props: {
     hasParentFormChanged: {
@@ -45,6 +46,7 @@ export default {
       duoCoreEnabled: this.duoCoreFeaturesEnabled,
       cacheEnabled: this.promptCacheEnabled,
       duoRemoteFlowsAvailability: this.initialDuoRemoteFlowsAvailability,
+      foundationalAgentsEnabled: this.foundationalAgentsDefaultEnabled,
     };
   },
   methods: {
@@ -55,6 +57,7 @@ export default {
         duoCoreFeaturesEnabled: this.duoCoreEnabled,
         promptCacheEnabled: this.cacheEnabled,
         duoRemoteFlowsAvailability: this.duoRemoteFlowsAvailability,
+        foundationalAgentsEnabled: this.foundationalAgentsEnabled,
       });
     },
     onRadioChanged(value) {
@@ -71,6 +74,9 @@ export default {
     },
     onDuoFlowChanged(value) {
       this.duoRemoteFlowsAvailability = value;
+    },
+    onFoundationalAgentsEnabledChanged(value) {
+      this.foundationalAgentsEnabled = value;
     },
   },
   aiFeaturesHelpPath: helpPagePath('user/gitlab_duo/_index'),
@@ -102,12 +108,14 @@ export default {
             :duo-core-features-enabled="duoCoreFeaturesEnabled"
             :prompt-cache-enabled="promptCacheEnabled"
             :has-parent-form-changed="hasParentFormChanged"
+            :foundational-agents-enabled="foundationalAgentsDefaultEnabled"
             @submit="submitForm"
             @radio-changed="onRadioChanged"
             @experiment-checkbox-changed="experimentCheckboxChanged"
             @duo-core-checkbox-changed="duoCoreCheckboxChanged"
             @cache-checkbox-changed="onCacheCheckboxChanged"
             @duo-flow-checkbox-changed="onDuoFlowChanged"
+            @duo-foundational-agents-changed="onFoundationalAgentsEnabledChanged"
           >
             <template #ai-common-settings-top>
               <slot name="ai-common-settings-top"></slot>
@@ -138,12 +146,14 @@ export default {
         :duo-core-features-enabled="duoCoreFeaturesEnabled"
         :prompt-cache-enabled="promptCacheEnabled"
         :has-parent-form-changed="hasParentFormChanged"
+        :foundational-agents-enabled="foundationalAgentsDefaultEnabled"
         @submit="submitForm"
         @radio-changed="onRadioChanged"
         @experiment-checkbox-changed="experimentCheckboxChanged"
         @duo-core-checkbox-changed="duoCoreCheckboxChanged"
         @cache-checkbox-changed="onCacheCheckboxChanged"
         @duo-flow-checkbox-changed="onDuoFlowChanged"
+        @duo-foundational-agents-changed="onFoundationalAgentsEnabledChanged"
       >
         <template #ai-common-settings-top>
           <slot name="ai-common-settings-top"></slot>

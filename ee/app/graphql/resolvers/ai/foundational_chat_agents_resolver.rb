@@ -35,10 +35,14 @@ module Resolvers
 
       def can_use_foundational_chat_agents?
         if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
-          return current_user.user_preference.get_default_duo_namespace.foundational_agents_default_enabled
+          namespace = current_user.user_preference.get_default_duo_namespace
+
+          return ::Feature.enabled?(:duo_foundational_agents_availability, namespace) &&
+              namespace.foundational_agents_default_enabled
         end
 
-        ::Ai::Setting.instance&.foundational_agents_default_enabled
+        ::Feature.enabled?(:duo_foundational_agents_availability, :instance) &&
+          ::Ai::Setting.instance&.foundational_agents_default_enabled
       end
     end
   end
