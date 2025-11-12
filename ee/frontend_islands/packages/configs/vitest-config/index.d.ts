@@ -1,4 +1,4 @@
-import type { ViteUserConfig } from 'vitest/config';
+import type { UserConfig as ViteUserConfig } from 'vitest/config';
 
 /**
  * Configuration options for Vitest in Frontend Islands projects

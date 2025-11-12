@@ -11,12 +11,6 @@ export interface LibraryConfigOptions {
   entry?: string;
 
   /**
-   * Output file name (without extension)
-   * @default 'index'
-   */
-  fileName?: string;
-
-  /**
    * IIFE global variable name (e.g., 'DuoNext', 'MyComponent')
    */
   name?: string;
