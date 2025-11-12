@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
-import { GlBadge } from '@gitlab/ui';
+import { GlBadge, GlTruncateText } from '@gitlab/ui';
 import AiCatalogAgentDetails from 'ee/ai/catalog/components/ai_catalog_agent_details.vue';
 import AiCatalogItemField from 'ee/ai/catalog/components/ai_catalog_item_field.vue';
 import AiCatalogItemVisibilityField from 'ee/ai/catalog/components/ai_catalog_item_visibility_field.vue';
@@ -37,6 +37,7 @@ describe('AiCatalogAgentDetails', () => {
   const findAllFieldsForSection = (index) =>
     findSection(index).findAllComponents(AiCatalogItemField);
   const findVisibilityBadge = () => wrapper.findComponent(GlBadge);
+  const findSystemPromptTruncateText = () => wrapper.findComponent(GlTruncateText);
 
   beforeEach(() => {
     createComponent();
@@ -109,6 +110,15 @@ describe('AiCatalogAgentDetails', () => {
     expect(promptsDetails.at(0).props()).toMatchObject({
       title: 'System prompt',
     });
+
+    const truncateText = findSystemPromptTruncateText();
+    expect(truncateText.props()).toMatchObject({
+      lines: 20,
+      showMoreText: 'Show more',
+      showLessText: 'Show less',
+      toggleButtonProps: { class: 'gl-font-regular' },
+    });
+
     expect(promptsDetails.at(0).find('pre').text()).toBe(mockAgent.latestVersion.systemPrompt);
   });
 
