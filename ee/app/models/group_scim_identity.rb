@@ -4,6 +4,9 @@ class GroupScimIdentity < ApplicationRecord # rubocop:disable Gitlab/NamespacedC
   include Sortable
   include CaseSensitivity
   include ScimPaginatable
+  include IgnorableColumns
+
+  ignore_column :temp_source_id, remove_with: '18.8', remove_after: '2025-12-22'
 
   belongs_to :group
   belongs_to :user
@@ -14,10 +17,4 @@ class GroupScimIdentity < ApplicationRecord # rubocop:disable Gitlab/NamespacedC
 
   scope :for_user, ->(user) { where(user: user) }
   scope :with_extern_uid, ->(extern_uid) { iwhere(extern_uid: extern_uid) }
-
-  after_commit :sync_records, on: %i[create update]
-
-  def sync_records
-    Authn::SyncGroupScimIdentityRecordWorker.perform_async({ 'group_scim_identity_id' => id })
-  end
 end

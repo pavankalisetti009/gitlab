@@ -11,8 +11,6 @@ class ScimOauthAccessToken < ApplicationRecord
 
   before_save :ensure_token
 
-  after_commit :sync_records, on: %i[create update]
-
   def self.token_matches_for_group?(token, group)
     # Necessary to call `Authn::TokenField::Encrypted.find_token_authenticatable`
     token = find_by_token(token)
@@ -38,9 +36,5 @@ class ScimOauthAccessToken < ApplicationRecord
 
   def prefix_for_token
     TOKEN_PREFIX
-  end
-
-  def sync_records
-    Authn::SyncScimTokenRecordWorker.perform_async({ 'group_scim_token_id' => id })
   end
 end
