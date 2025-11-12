@@ -159,7 +159,7 @@ RSpec.describe Vulnerabilities::BulkDismissService, feature_category: :vulnerabi
             described_class.new(user, vulnerability_ids, comment, dismissal_reason).execute
           end
 
-          new_vulnerability = create(:vulnerability, :with_findings)
+          new_vulnerability = create(:vulnerability, :with_findings, :with_read)
           vulnerability_ids << new_vulnerability.id
 
           expect do

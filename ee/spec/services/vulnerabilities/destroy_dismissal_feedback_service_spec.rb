@@ -15,8 +15,10 @@ RSpec.describe Vulnerabilities::DestroyDismissalFeedbackService, feature_categor
     create(:vulnerability_feedback, project: project, category: finding_2.report_type, finding_uuid: finding_2.uuid)
     create(:vulnerability_feedback)
 
-    vulnerability.findings << finding_1
-    vulnerability.findings << finding_2
+    SecApplicationRecord.feature_flagged_transaction_for(project) do
+      vulnerability.findings << finding_1
+      vulnerability.findings << finding_2
+    end
   end
 
   describe '#execute' do

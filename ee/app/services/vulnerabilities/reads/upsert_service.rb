@@ -19,7 +19,6 @@ module Vulnerabilities
 
       def initialize(vulnerabilities, attributes = {}, projects: [])
         @attributes = attributes
-        @batch_size = BATCH_SIZE
         @vulnerabilities = ensure_vulnerability_relation(vulnerabilities)
         # Project is only needed for feature flag purposes
         @projects = Array(projects)
@@ -36,21 +35,23 @@ module Vulnerabilities
         end
         @vulnerabilities = @vulnerabilities.with_project(@projects)
 
-        @vulnerabilities.each_batch(of: @batch_size) do |vulnerability_batch|
-          vulns_missing_reads = vulnerability_batch.left_joins(:vulnerability_read)
-                                                   .merge(Vulnerabilities::Read.by_vulnerabilities(nil))
-                                                   .pluck_primary_key
-          new_read_ids = create_missing_reads(vulns_missing_reads)
+        @vulnerabilities.each_batch(of: BATCH_SIZE) do |vulnerability_batch|
+          SecApplicationRecord.feature_flagged_transaction_for(@project) do
+            vulns_missing_reads = vulnerability_batch.left_joins(:vulnerability_read)
+                                                     .merge(Vulnerabilities::Read.by_vulnerabilities(nil))
+                                                     .pluck_primary_key
+            new_read_vulnerability_ids = create_missing_reads(vulns_missing_reads)
 
-          next unless attributes.any?
+            next unless attributes.any?
 
-          vulnerability_read_batch = Vulnerabilities::Read.by_vulnerabilities(vulnerability_batch)
-                                                          .excluding_vulnerabilities(new_read_ids)
+            vulnerability_read_batch = Vulnerabilities::Read.by_vulnerabilities(vulnerability_batch)
+                                                            .excluding_vulnerabilities(new_read_vulnerability_ids)
 
-          vulnerability_read_batch.update_all(attributes)
+            vulnerability_read_batch.update_all(attributes)
 
-          SecApplicationRecord.current_transaction.after_commit do
-            Vulnerabilities::BulkEsOperationService.new(vulnerability_batch).execute(&:itself)
+            SecApplicationRecord.current_transaction.after_commit do
+              Vulnerabilities::BulkEsOperationService.new(vulnerability_batch).execute(&:itself)
+            end
           end
         end
 

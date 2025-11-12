@@ -22,6 +22,12 @@ RSpec.describe Vulnerabilities::ArchiveExport, feature_category: :vulnerability_
   end
 
   describe 'state machine' do
+    around do |ex|
+      SecApplicationRecord.feature_flagged_transaction_for(export.project) do
+        ex.run
+      end
+    end
+
     describe '#start' do
       let(:export) { create(:vulnerability_archive_export) }
 

@@ -15,7 +15,7 @@ RSpec.describe Vulnerabilities::DismissService, feature_category: :vulnerability
   let!(:pipeline) { create(:ee_ci_pipeline, :with_dast_report, :success, project: project) }
   let!(:build) { create(:ee_ci_build, :sast, pipeline: pipeline) }
   let(:state) { :detected }
-  let(:vulnerability) { create(:vulnerability, state, :with_finding, project: project) }
+  let(:vulnerability) { create(:vulnerability, state, :with_finding, :with_read, project: project) }
   let(:state_transition) { create(:vulnerability_state_transition, vulnerability: vulnerability) }
   let(:dismiss_findings) { true }
   let(:comment) { nil }
