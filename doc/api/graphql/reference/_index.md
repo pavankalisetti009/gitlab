@@ -886,7 +886,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="queryduoworkflowworkflowssearch"></a>`search` | [`String`](#string) | Flow title or goal to search for. |
 | <a id="queryduoworkflowworkflowssort"></a>`sort` | [`DuoWorkflowsWorkflowSort`](#duoworkflowsworkflowsort) | Sort flows by the criteria. |
 | <a id="queryduoworkflowworkflowsstatusgroup"></a>`statusGroup` | [`DuoWorkflowStatusGroup`](#duoworkflowstatusgroup) | Status group to filter flow sessions by. |
-| <a id="queryduoworkflowworkflowstype"></a>`type` | [`String`](#string) | Type of flow to filter by (for example, software_development). |
+| <a id="queryduoworkflowworkflowstype"></a>`type` | [`String`](#string) | Type of flow to filter by (for example, software_development or foundational_chat_agents). |
 | <a id="queryduoworkflowworkflowsworkflowid"></a>`workflowId` | [`AiDuoWorkflowsWorkflowID`](#aiduoworkflowsworkflowid) | Flow ID to filter by. |
 
 ### `Query.echo`
@@ -40831,7 +40831,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="projectduoworkflowworkflowssearch"></a>`search` | [`String`](#string) | Flow title or goal to search for. |
 | <a id="projectduoworkflowworkflowssort"></a>`sort` | [`DuoWorkflowsWorkflowSort`](#duoworkflowsworkflowsort) | Sort flows by the criteria. |
 | <a id="projectduoworkflowworkflowsstatusgroup"></a>`statusGroup` | [`DuoWorkflowStatusGroup`](#duoworkflowstatusgroup) | Status group to filter flow sessions by. |
-| <a id="projectduoworkflowworkflowstype"></a>`type` | [`String`](#string) | Type of flow to filter by (for example, software_development). |
+| <a id="projectduoworkflowworkflowstype"></a>`type` | [`String`](#string) | Type of flow to filter by (for example, software_development or foundational_chat_agents). |
 | <a id="projectduoworkflowworkflowsworkflowid"></a>`workflowId` | [`AiDuoWorkflowsWorkflowID`](#aiduoworkflowsworkflowid) | Flow ID to filter by. |
 
 ##### `Project.environment`

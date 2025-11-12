@@ -96,7 +96,13 @@ module Ai
       end
 
       def resolve_type(type)
-        query.with_workflow_definition(type)
+        definitions = if type == 'foundational_chat_agents'
+                        ::Ai::FoundationalChatAgent.workflow_definitions
+                      else
+                        type
+                      end
+
+        query.with_workflow_definition(definitions)
       end
 
       def resolve_exclude_types(exclude_types)

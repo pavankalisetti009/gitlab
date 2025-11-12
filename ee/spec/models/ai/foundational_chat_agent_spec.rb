@@ -23,6 +23,13 @@ RSpec.describe Ai::FoundationalChatAgent, feature_category: :workflow_catalog do
     end
   end
 
+  describe '#workflow_definitions' do
+    it 'is expected to return all workflow definitions' do
+      expect(described_class.workflow_definitions.size).to be(described_class.count)
+      expect(described_class.workflow_definitions[0]).to eq('chat')
+    end
+  end
+
   describe '#reference_with_version' do
     context 'when version is present' do
       it 'returns reference with version' do

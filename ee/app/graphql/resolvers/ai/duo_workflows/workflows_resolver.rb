@@ -14,7 +14,7 @@ module Resolvers
 
         argument :type, GraphQL::Types::String,
           required: false,
-          description: 'Type of flow to filter by (for example, software_development).'
+          description: 'Type of flow to filter by (for example, software_development or foundational_chat_agents).'
 
         argument :exclude_types, [GraphQL::Types::String],
           required: false,
