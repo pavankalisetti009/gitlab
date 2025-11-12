@@ -361,7 +361,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
       end
 
       it 'creates a note with nothing to review message' do
-        expect(completion).to receive(:update_progress_note).with(described_class.nothing_to_review_msg)
+        expect(completion).to receive(:update_progress_note).with(Ai::CodeReviewMessages.nothing_to_review)
 
         completion.execute
       end
@@ -488,7 +488,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
           completion.execute
 
           expect(merge_request.notes.diff_notes.count).to eq 0
-          expect(merge_request.notes.non_diff_notes.last.note).to eq(described_class.no_comment_msg)
+          expect(merge_request.notes.non_diff_notes.last.note).to eq(Ai::CodeReviewMessages.nothing_to_comment)
         end
       end
 
@@ -508,7 +508,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
           completion.execute
 
           expected_message = <<~RESPONSE.chomp
-          #{described_class.no_comment_msg}
+          #{Ai::CodeReviewMessages.nothing_to_comment}
           RESPONSE
           expect(merge_request.notes.non_diff_notes.last.note).to eq(expected_message)
         end
@@ -535,7 +535,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
             .to not_change { merge_request.notes.diff_notes.count }
             .and not_change { merge_request.notes.non_diff_notes.count }
 
-          expect(merge_request.notes.non_diff_notes.last.note).to eq(described_class.no_comment_msg)
+          expect(merge_request.notes.non_diff_notes.last.note).to eq(Ai::CodeReviewMessages.nothing_to_comment)
         end
       end
 
@@ -550,7 +550,9 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
           end.to not_change { merge_request.notes.diff_notes.count }
             .and not_change { merge_request.notes.non_diff_notes.count }
 
-          expect(merge_request.notes.non_diff_notes.last.note).to eq(described_class.resource_not_found_msg)
+          expect(merge_request.notes.non_diff_notes.last.note).to eq(
+            Ai::CodeReviewMessages.merge_request_not_found_error
+          )
         end
       end
 
@@ -883,7 +885,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
           completion.execute
 
           expect(merge_request.notes.count).to eq 1
-          expect(merge_request.notes.last.note).to eq(described_class.error_msg)
+          expect(merge_request.notes.last.note).to eq(Ai::CodeReviewMessages.generic_error)
         end
 
         it 'creates a new todo' do
@@ -902,7 +904,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
           completion.execute
 
           expect(merge_request.notes.count).to eq 1
-          expect(merge_request.notes.last.note).to eq(described_class.error_msg)
+          expect(merge_request.notes.last.note).to eq(Ai::CodeReviewMessages.generic_error)
         end
 
         it 'creates a new todo' do
@@ -923,7 +925,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
           it 'creates a note with an error message' do
             completion.execute
 
-            expect(merge_request.notes.non_diff_notes.last.note).to eq(described_class.error_msg)
+            expect(merge_request.notes.non_diff_notes.last.note).to eq(Ai::CodeReviewMessages.generic_error)
           end
         end
 
@@ -943,7 +945,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
 
             expect(merge_request.notes.count).to eq 5
             expect(merge_request.notes.diff_notes.count).to eq 4
-            expect(merge_request.notes.non_diff_notes.last.note).to eq(described_class.error_msg)
+            expect(merge_request.notes.non_diff_notes.last.note).to eq(Ai::CodeReviewMessages.generic_error)
           end
         end
 
@@ -955,7 +957,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
 
             expect(merge_request.notes.count).to eq 5
             expect(merge_request.notes.diff_notes.count).to eq 4
-            expect(merge_request.notes.non_diff_notes.last.note).to eq(described_class.error_msg)
+            expect(merge_request.notes.non_diff_notes.last.note).to eq(Ai::CodeReviewMessages.generic_error)
           end
         end
 
@@ -969,7 +971,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
 
             expect(merge_request.notes.count).to eq 5
             expect(merge_request.notes.diff_notes.count).to eq 4
-            expect(merge_request.notes.non_diff_notes.last.note).to eq(described_class.error_msg)
+            expect(merge_request.notes.non_diff_notes.last.note).to eq(Ai::CodeReviewMessages.generic_error)
           end
         end
       end
@@ -1102,7 +1104,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
         completion.execute
 
         expect(merge_request.notes.count).to eq 1
-        expect(merge_request.notes.last.note).to eq(described_class.error_msg)
+        expect(merge_request.notes.last.note).to eq(Ai::CodeReviewMessages.generic_error)
       end
 
       it 'creates a new todo' do
@@ -1745,7 +1747,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
               * secret_key.txt
               [Learn more](#{help_page_link})
 
-              #{described_class.nothing_to_review_msg}
+              #{Ai::CodeReviewMessages.nothing_to_review}
             MESSAGE
 
             expect(completion).to receive(:update_progress_note).with(expected_message)
@@ -1787,7 +1789,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
                 [Learn more](#{help_page_link})
               MESSAGE
 
-              expected_full_message = "#{expected_exclusion_message}\n\n#{described_class.no_comment_msg}"
+              expected_full_message = "#{expected_exclusion_message}\n\n#{Ai::CodeReviewMessages.nothing_to_comment}"
 
               expect(completion).to receive(:update_progress_note).with(expected_full_message, with_todo: true)
 
@@ -1863,7 +1865,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
           end
 
           it 'does not include exclusion message' do
-            expect(completion).to receive(:update_progress_note).with(described_class.nothing_to_review_msg)
+            expect(completion).to receive(:update_progress_note).with(Ai::CodeReviewMessages.nothing_to_review)
 
             completion.execute
           end
@@ -1893,7 +1895,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
           end
 
           it 'does not include exclusion message when service fails' do
-            expect(completion).to receive(:update_progress_note).with(described_class.nothing_to_review_msg)
+            expect(completion).to receive(:update_progress_note).with(Ai::CodeReviewMessages.nothing_to_review)
 
             completion.execute
           end
@@ -1916,7 +1918,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
           end
 
           it 'does not include exclusion message' do
-            expect(completion).to receive(:update_progress_note).with(described_class.nothing_to_review_msg)
+            expect(completion).to receive(:update_progress_note).with(Ai::CodeReviewMessages.nothing_to_review)
 
             completion.execute
           end
@@ -1942,7 +1944,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
         end
 
         it 'does not include exclusion message even with potential excluded files' do
-          expect(completion).to receive(:update_progress_note).with(described_class.nothing_to_review_msg)
+          expect(completion).to receive(:update_progress_note).with(Ai::CodeReviewMessages.nothing_to_review)
 
           completion.execute
         end
@@ -2007,7 +2009,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
           merge_request.reload
           error_note = merge_request.notes.non_diff_notes.find_by(system: false)
           expect(error_note).to be_present
-          expect(error_note.note).to eq(described_class.error_msg)
+          expect(error_note.note).to eq(Ai::CodeReviewMessages.generic_error)
           expect(error_note.author).to eq(duo_code_review_bot)
         end
 

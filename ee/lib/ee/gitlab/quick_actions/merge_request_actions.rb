@@ -46,7 +46,7 @@ module EE
         def process_reviewer_users_message
           return unless quick_action_target.duo_code_review_attempted
 
-          ::Ai::CodeReview.manual_error_message
+          ::Ai::CodeReviewMessages.manual_error
         end
       end
     end
