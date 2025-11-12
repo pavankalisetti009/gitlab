@@ -1,9 +1,16 @@
 <script>
+import { s__ } from '~/locale';
 import FilteredSearch from '~/vue_shared/components/filtered_search_bar/filtered_search_bar_root.vue';
 import { FILTERED_SEARCH_TERM } from '~/vue_shared/components/filtered_search_bar/constants';
 import { queryToObject } from '~/lib/utils/url_utility';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { CRITICAL, HIGH, MEDIUM, LOW, INFO, UNKNOWN } from 'ee/vulnerabilities/constants';
+import getSecurityCategoriesAndAttributes from 'ee/security_configuration/graphql/group_security_categories_and_attributes.query.graphql';
+import { ATTRIBUTE_TOKEN_PREFIX } from 'ee/security_configuration/security_attributes/components/shared/attribute_constants';
+import {
+  getAttributeHeaderToken,
+  getAttributeCategoryTokens,
+} from 'ee/security_configuration/security_attributes/components/shared/attribute_utils';
 import {
   DEPENDENCY_SCANNING_KEY,
   SAST_KEY,
@@ -40,12 +47,35 @@ export default {
     return {
       initialSortBy: 'updated_at_desc',
       filterParams: {},
+      securityCategories: [],
     };
+  },
+  apollo: {
+    securityCategories: {
+      query: getSecurityCategoriesAndAttributes,
+      variables() {
+        return {
+          fullPath: this.namespace,
+        };
+      },
+      update: (data) => data?.group?.securityCategories,
+    },
   },
   computed: {
     searchTokens() {
+      const tokens = [];
       if (this.glFeatures.securityInventoryFiltering) {
-        return [...vulnerabilityCountTokens, ...toolCoverageTokens];
+        if (this.glFeatures.securityAttributeInventoryFilters) {
+          tokens.push(
+            getAttributeHeaderToken(
+              this.securityCategories,
+              s__('SecurityAttributes|Security attributes'),
+            ),
+            ...getAttributeCategoryTokens(this.securityCategories),
+          );
+        }
+        tokens.push(...vulnerabilityCountTokens, ...toolCoverageTokens);
+        return tokens;
       }
       return [];
     },
@@ -62,6 +92,7 @@ export default {
       const filterParams = {
         vulnerabilityCountFilters: [],
         securityAnalyzerFilters: [],
+        attributeFilters: [],
       };
       const plainText = [];
 
@@ -92,6 +123,11 @@ export default {
             severity: filter.type.toUpperCase(),
             operator: SEVERITY_FILTER_OPERATOR_TO_CONST[filter.value.operator],
             count: parseInt(filter.value.data, 10) || 0,
+          });
+        } else if (filter.type.startsWith(ATTRIBUTE_TOKEN_PREFIX)) {
+          filterParams.attributeFilters.push({
+            operator: filter.value.operator === '!=' ? 'IS_NOT_ONE_OF' : 'IS_ONE_OF',
+            attributes: filter.value.data,
           });
         }
       });

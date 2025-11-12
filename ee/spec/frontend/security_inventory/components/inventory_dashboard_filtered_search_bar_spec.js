@@ -31,6 +31,12 @@ describe('InventoryDashboardFilteredSearchBar', () => {
 
   const findFilteredSearch = () => wrapper.findComponent(FilteredSearch);
 
+  const emptyFilters = {
+    securityAnalyzerFilters: [],
+    vulnerabilityCountFilters: [],
+    attributeFilters: [],
+  };
+
   beforeEach(() => {
     createComponent();
   });
@@ -93,8 +99,7 @@ describe('InventoryDashboardFilteredSearchBar', () => {
       filters[0].search = searchTerm;
       expect(wrapper.emitted('filterSubgroupsAndProjects')[0][0]).toEqual({
         search: searchTerm,
-        securityAnalyzerFilters: [],
-        vulnerabilityCountFilters: [],
+        ...emptyFilters,
       });
     });
 
@@ -109,8 +114,7 @@ describe('InventoryDashboardFilteredSearchBar', () => {
 
       expect(wrapper.emitted('filterSubgroupsAndProjects')[0][0]).toEqual({
         search: 'test project',
-        securityAnalyzerFilters: [],
-        vulnerabilityCountFilters: [],
+        ...emptyFilters,
       });
     });
 
@@ -118,8 +122,7 @@ describe('InventoryDashboardFilteredSearchBar', () => {
       findFilteredSearch().vm.$emit('onFilter', []);
       await nextTick();
       expect(wrapper.emitted('filterSubgroupsAndProjects')[0][0]).toEqual({
-        securityAnalyzerFilters: [],
-        vulnerabilityCountFilters: [],
+        ...emptyFilters,
       });
     });
 
@@ -136,6 +139,7 @@ describe('InventoryDashboardFilteredSearchBar', () => {
       expect(wrapper.emitted('filterSubgroupsAndProjects')[0][0]).toEqual({
         securityAnalyzerFilters: [],
         vulnerabilityCountFilters: [mockVulnerabilityFilter],
+        attributeFilters: [],
       });
     });
 
@@ -152,6 +156,34 @@ describe('InventoryDashboardFilteredSearchBar', () => {
       expect(wrapper.emitted('filterSubgroupsAndProjects')[0][0]).toEqual({
         securityAnalyzerFilters: [mockAnalyzerFilter],
         vulnerabilityCountFilters: [],
+        attributeFilters: [],
+      });
+    });
+
+    it('emits filterSubgroupsAndProjects with attribute filter', async () => {
+      const filters = [
+        {
+          type: 'attribute-token-location',
+          value: {
+            operator: '||',
+            data: ['gid://gitlab/Security::Attribute/6', 'gid://gitlab/Security::Attribute/7'],
+          },
+        },
+      ];
+      findFilteredSearch().vm.$emit('onFilter', filters);
+      await nextTick();
+      expect(wrapper.emitted('filterSubgroupsAndProjects')[0][0]).toEqual({
+        securityAnalyzerFilters: [],
+        vulnerabilityCountFilters: [],
+        attributeFilters: [
+          {
+            operator: 'IS_ONE_OF',
+            attributes: [
+              'gid://gitlab/Security::Attribute/6',
+              'gid://gitlab/Security::Attribute/7',
+            ],
+          },
+        ],
       });
     });
 
@@ -171,8 +203,7 @@ describe('InventoryDashboardFilteredSearchBar', () => {
 
       expect(wrapper.emitted('filterSubgroupsAndProjects')[0][0]).toEqual({
         search: 'test search',
-        securityAnalyzerFilters: [],
-        vulnerabilityCountFilters: [],
+        ...emptyFilters,
       });
     });
 
@@ -192,8 +223,7 @@ describe('InventoryDashboardFilteredSearchBar', () => {
 
       expect(wrapper.emitted('filterSubgroupsAndProjects')[0][0]).toEqual({
         search: 'test search',
-        securityAnalyzerFilters: [],
-        vulnerabilityCountFilters: [],
+        ...emptyFilters,
       });
     });
   });

@@ -347,3 +347,7 @@ export const mockVulnerabilityFilter = {
   operator: 'EQUAL_TO',
   count: 0,
 };
+export const mockAttributeFilter = {
+  operator: 'IS_NOT_ONE_OF',
+  attributes: ['gid://gitlab/Security::Attribute/3', 'gid://gitlab/Security::Attribute/4'],
+};
