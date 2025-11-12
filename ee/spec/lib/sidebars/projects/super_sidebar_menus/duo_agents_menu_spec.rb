@@ -138,7 +138,7 @@ RSpec.describe Sidebars::Projects::SuperSidebarMenus::DuoAgentsMenu, feature_cat
       let(:flow_triggers_menu_item) { menu.renderable_items.find { |item| item.item_id == :ai_flow_triggers } }
 
       it 'has correct title' do
-        expect(flow_triggers_menu_item.title).to eq('Flow triggers')
+        expect(flow_triggers_menu_item.title).to eq('Triggers')
       end
 
       it 'has correct link' do

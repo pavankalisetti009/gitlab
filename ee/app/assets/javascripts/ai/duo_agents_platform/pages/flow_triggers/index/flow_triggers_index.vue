@@ -90,7 +90,7 @@ export default {
     <page-heading>
       <template #heading>
         <div class="gl-flex">
-          <span>{{ s__('DuoAgentsPlatform|Flow triggers') }}</span>
+          <span>{{ s__('DuoAgentsPlatform|Triggers') }}</span>
           <gl-experiment-badge type="beta" class="gl-self-center" />
         </div>
       </template>

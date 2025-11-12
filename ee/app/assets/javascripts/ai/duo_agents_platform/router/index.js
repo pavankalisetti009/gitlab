@@ -74,7 +74,7 @@ export const createRouter = (base, namespace) => {
         component: NestedRouteApp,
         path: '/flow-triggers',
         meta: {
-          text: s__('DuoAgentsPlatform|Flow triggers'),
+          text: s__('DuoAgentsPlatform|Triggers'),
         },
         children: [
           {
