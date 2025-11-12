@@ -18,9 +18,6 @@ describe('EE - Pipelines Table', () => {
     fullPath: '/my-project/',
     useFailedJobsWidget: false,
     mergeRequestPath: null,
-    glFeatures: {
-      aiDuoAgentFixPipelineButton: true,
-    },
   };
 
   const { pipelines } = fixture;
@@ -347,6 +344,16 @@ describe('EE - Pipelines Table', () => {
       it('does not render DuoWorkflowAction component', () => {
         expect(findDuoWorkflowAction().exists()).toBe(false);
       });
+
+      it('should render tables widths with default actions column', () => {
+        expect(wrapper.findAll('col').wrappers.map((e) => e.classes())).toEqual([
+          ['gl-w-3/20'],
+          ['gl-w-5/20'],
+          ['gl-w-3/20'],
+          ['gl-w-5/20'],
+          ['gl-w-4/20'],
+        ]);
+      });
     });
 
     describe('when merge_request property is null but has ref', () => {
@@ -377,24 +384,6 @@ describe('EE - Pipelines Table', () => {
           props: { pipelines: [successfulPipelineWithMR] },
           provide: {
             mergeRequestPath: 'https://gitlab.com/project/-/merge_requests/456',
-          },
-        });
-      });
-
-      it('does not render DuoWorkflowAction component', () => {
-        expect(findDuoWorkflowAction().exists()).toBe(false);
-      });
-    });
-
-    describe('when aiDuoAgentFixPipelineButton feature flag is disabled', () => {
-      beforeEach(() => {
-        createComponent({
-          props: { pipelines: [failedPipelineWithMR] },
-          provide: {
-            mergeRequestPath: 'https://gitlab.com/project/-/merge_requests/123',
-            glFeatures: {
-              aiDuoAgentFixPipelineButton: false,
-            },
           },
         });
       });
