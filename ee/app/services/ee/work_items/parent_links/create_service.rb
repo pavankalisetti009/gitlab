@@ -132,7 +132,8 @@ module EE
               { status: :error, message: legacy_child_epic.errors.map(&:message).to_sentence }
             end
           elsif legacy_child_epic.parent.present?
-            ::Epics::EpicLinks::DestroyService.new(legacy_child_epic, current_user, synced_epic: true).execute
+            legacy_child_epic.update!(parent: nil, work_item_parent_link: nil)
+            { status: :success }
           else
             success_result
           end

@@ -134,7 +134,7 @@ module API
       delete ':id/(-/)epics/:epic_iid/epics/:child_epic_id' do
         authorize!(:read_epic_relation, epic)
 
-        result = ::Epics::EpicLinks::DestroyService.new(child_epic, current_user).execute
+        result = ::WorkItems::LegacyEpics::EpicLinks::DestroyService.new(child_epic, current_user).execute
 
         if result[:status] == :success
           present child_epic, with: EE::API::Entities::Epic
