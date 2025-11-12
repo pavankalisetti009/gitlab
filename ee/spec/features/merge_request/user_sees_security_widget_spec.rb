@@ -30,13 +30,15 @@ RSpec.describe "Merge request > User sees security widget",
     let(:vuln_text) { "New Medium Test finding" }
 
     before do
+      # Create security scan to enable SAST scanning
       create(
         :security_scan,
         :latest_successful,
         :with_findings,
         project: project,
         pipeline: merge_request.head_pipeline,
-        scan_type: 'sast'
+        scan_type: 'sast',
+        status: :succeeded
       )
     end
 
@@ -65,6 +67,24 @@ RSpec.describe "Merge request > User sees security widget",
         :with_sast_report,
         project: project,
         sha: feature_branch_start_sha
+      )
+    end
+
+    before do
+      # Create security scan to enable SAST scanning for the main pipeline
+      create(
+        :security_scan,
+        status: :succeeded,
+        pipeline: ci_pipeline,
+        scan_type: 'sast'
+      )
+
+      # Create security scan for the MR pipeline as well
+      create(
+        :security_scan,
+        status: :succeeded,
+        pipeline: merge_request.head_pipeline,
+        scan_type: 'sast'
       )
     end
 
@@ -102,6 +122,24 @@ RSpec.describe "Merge request > User sees security widget",
         )
       end
 
+      before do
+        # Create security scan for the child pipeline
+        create(
+          :security_scan,
+          status: :succeeded,
+          pipeline: child_pipeline,
+          scan_type: 'sast'
+        )
+
+        # Create security scan for the MR pipeline
+        create(
+          :security_scan,
+          status: :succeeded,
+          pipeline: merge_request.head_pipeline,
+          scan_type: 'sast'
+        )
+      end
+
       it "does not show them as new vulnerabilities" do
         visit(merge_request_path)
 
@@ -119,6 +157,16 @@ RSpec.describe "Merge request > User sees security widget",
       Gitlab::Json.parse(fixture_file('vulnerabilities/dismissal_descriptions.json', dir: 'ee')).to_json
     end
 
+    before do
+      # Create security scan to enable SAST scanning
+      create(
+        :security_scan,
+        status: :succeeded,
+        pipeline: merge_request.head_pipeline,
+        scan_type: 'sast'
+      )
+    end
+
     it 'loads dismissal descriptions' do
       visit(merge_request_path)
       expect(page.evaluate_script('window.gl.mrWidgetData.dismissal_descriptions')).to match(
@@ -128,6 +176,14 @@ RSpec.describe "Merge request > User sees security widget",
   end
 
   it 'sets commit_path_template' do
+    # Create security scan to enable SAST scanning
+    create(
+      :security_scan,
+      status: :succeeded,
+      pipeline: merge_request.head_pipeline,
+      scan_type: 'sast'
+    )
+
     visit(merge_request_path)
     expect(page.evaluate_script('window.gl.mrWidgetData.commit_path_template')).to eq(
       "/#{project.path_with_namespace}/-/commit/$COMMIT_SHA"

@@ -1,7 +1,7 @@
 <script>
-import { GlDashboardPanel, GlLink, GlSprintf } from '@gitlab/ui';
+import { GlDashboardPanel, GlLink, GlSprintf, GlTruncate } from '@gitlab/ui';
 import { GlSingleStat } from '@gitlab/ui/src/charts';
-import { s__, sprintf } from '~/locale';
+import { n__, s__, sprintf } from '~/locale';
 import { SEVERITY_CLASS_NAME_MAP } from 'ee/vue_shared/security_reports/components/constants';
 import { SEVERITY_LEVELS_KEYS, SEVERITY_LEVELS } from 'ee/security_dashboard/constants';
 import { constructVulnerabilitiesReportWithFiltersPath } from 'ee/security_dashboard/utils/chart_utils';
@@ -13,6 +13,7 @@ export default {
     GlSingleStat,
     GlLink,
     GlSprintf,
+    GlTruncate,
   },
   inject: ['securityVulnerabilitiesPath'],
   props: {
@@ -23,7 +24,13 @@ export default {
     },
     count: {
       type: Number,
-      required: true,
+      required: false,
+      default: null,
+    },
+    medianAge: {
+      type: Number,
+      required: false,
+      default: null,
     },
     filters: {
       type: Object,
@@ -57,14 +64,12 @@ export default {
 
       return `gl-mr-3 ${SEVERITY_CLASS_NAME_MAP[this.severity]}`;
     },
-
     borderColorClass() {
       if (this.error) {
         return 'gl-border-t-red-500';
       }
       return '';
     },
-
     link() {
       return constructVulnerabilitiesReportWithFiltersPath({
         securityVulnerabilitiesPath: this.securityVulnerabilitiesPath,
@@ -73,12 +78,24 @@ export default {
         additionalFilters: this.filters,
       });
     },
+    hasMedianAge() {
+      return this.medianAge !== null;
+    },
     infoPopover() {
+      const message = this.hasMedianAge
+        ? s__(
+            'SecurityReports|Total number of %{boldStart}open%{boldEnd} %{severity} vulnerabilities and their median amount of time open. Select the number to see the open vulnerabilities in the vulnerability report.',
+          )
+        : s__(
+            'SecurityReports|Total number of %{boldStart}open%{boldEnd} %{severity} vulnerabilities. Select the number to see the open vulnerabilities in the vulnerability report.',
+          );
+      return sprintf(message, { severity: this.title?.toLowerCase() });
+    },
+    medianAgeBadge() {
+      const days = Math.round(this.medianAge);
       return sprintf(
-        s__(
-          'SecurityReports|Total count of %{boldStart}open%{boldEnd} %{severity} vulnerabilities. Click View to see these vulnerabilities in the vulnerability report.',
-        ),
-        { severity: this.title },
+        n__('SecurityReports|Median: %{days} day', 'SecurityReports|Median: %{days} days', days),
+        { days },
       );
     },
   },
@@ -95,9 +112,16 @@ export default {
     :border-color-class="borderColorClass"
   >
     <template #body>
-      <div v-if="!error" class="-gl-mt-3">
-        <gl-single-stat title="" :value="count" />
-        <gl-link :href="link" target="_blank" class="gl-ml-2">{{ __('View') }}</gl-link>
+      <div v-if="!error" class="-gl-mt-3 gl-flex-col">
+        <gl-link :href="link" variant="meta" target="_blank" class="!gl-outline-none">
+          <gl-single-stat title="" :value="count" />
+        </gl-link>
+        <gl-truncate
+          v-if="hasMedianAge"
+          :text="medianAgeBadge"
+          with-tooltip
+          class="gl-text-subtle"
+        />
       </div>
       <p v-else>{{ __('Something went wrong. Please try again.') }}</p>
     </template>

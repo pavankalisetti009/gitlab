@@ -310,18 +310,6 @@ RSpec.describe Security::FindingsFinder, feature_category: :vulnerability_manage
             it 'returns only full scan results' do
               is_expected.to match_array(expected_uuids)
             end
-
-            context 'when feature is disabled' do
-              before do
-                stub_feature_flags(vulnerability_partial_scans: false)
-              end
-
-              let(:result_uuids) { Security::Finding.pluck(:uuid) }
-
-              it 'returns both full and partial scan results' do
-                is_expected.to match_array(expected_uuids)
-              end
-            end
           end
 
           context 'when scan_mode is partial' do
@@ -330,18 +318,6 @@ RSpec.describe Security::FindingsFinder, feature_category: :vulnerability_manage
 
             it 'returns only partial scan results' do
               is_expected.to match_array(expected_uuids)
-            end
-
-            context 'when feature is disabled' do
-              before do
-                stub_feature_flags(vulnerability_partial_scans: false)
-              end
-
-              let(:result_uuids) { Security::Finding.pluck(:uuid) }
-
-              it 'returns both full and partial scan results' do
-                is_expected.to match_array(expected_uuids)
-              end
             end
           end
         end

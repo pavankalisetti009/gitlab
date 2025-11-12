@@ -17,12 +17,12 @@ describe('VulnerabilitiesForSeverityWrapper', () => {
 
   const securityMetrics = {
     vulnerabilitiesPerSeverity: {
-      critical: { count: 3, __typename: 'VulnerabilitySeverityCount' },
-      high: { count: 5, __typename: 'VulnerabilitySeverityCount' },
-      medium: { count: 8, __typename: 'VulnerabilitySeverityCount' },
-      low: { count: 10, __typename: 'VulnerabilitySeverityCount' },
-      unknown: { count: 5, __typename: 'VulnerabilitySeverityCount' },
-      info: { count: 3, __typename: 'VulnerabilitySeverityCount' },
+      critical: { count: 3, medianAge: 10.5, __typename: 'VulnerabilitySeverityCount' },
+      high: { count: 5, medianAge: 11.5, __typename: 'VulnerabilitySeverityCount' },
+      medium: { count: 8, medianAge: 12.5, __typename: 'VulnerabilitySeverityCount' },
+      low: { count: 10, medianAge: 80.1, __typename: 'VulnerabilitySeverityCount' },
+      unknown: { count: 5, medianAge: 56.1, __typename: 'VulnerabilitySeverityCount' },
+      info: { count: 3, medianAge: 3.1, __typename: 'VulnerabilitySeverityCount' },
       __typename: 'VulnerabilitiesPerSeverity',
     },
     __typename: 'SecurityMetrics',
@@ -120,13 +120,14 @@ describe('VulnerabilitiesForSeverityWrapper', () => {
       expect(findVulnerabilitiesForSeverityPanel().props('filters')).toBe(config.filters);
     });
 
-    it('passes the count based on the data', async () => {
+    it('passes the count and medianAge based on the data', async () => {
       const { config } = createComponent();
       const { medium } =
         config.createMockData().data.namespace.securityMetrics.vulnerabilitiesPerSeverity;
       await waitForPromises();
 
       expect(findVulnerabilitiesForSeverityPanel().props('count')).toBe(medium.count);
+      expect(findVulnerabilitiesForSeverityPanel().props('medianAge')).toBe(medium.medianAge);
     });
 
     it('passes loading state to panels base', async () => {

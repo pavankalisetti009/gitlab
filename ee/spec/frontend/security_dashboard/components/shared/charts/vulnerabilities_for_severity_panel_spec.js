@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
-import { GlDashboardPanel, GlLink, GlSprintf } from '@gitlab/ui';
+import { GlTruncate, GlDashboardPanel, GlLink, GlSprintf } from '@gitlab/ui';
 import { GlSingleStat } from '@gitlab/ui/src/charts';
 import VulnerabilitiesForSeverityPanel from 'ee/security_dashboard/components/shared/charts/vulnerabilities_for_severity_panel.vue';
 import { SEVERITY_CLASS_NAME_MAP } from 'ee/vue_shared/security_reports/components/constants';
@@ -10,12 +10,14 @@ describe('VulnerabilitiesForSeverityPanel', () => {
 
   const findDashboardPanel = () => wrapper.findComponent(GlDashboardPanel);
   const findSingleStat = () => wrapper.findComponent(GlSingleStat);
-  const findViewLink = () => wrapper.findComponent(GlLink);
+  const findLink = () => wrapper.findComponent(GlLink);
+  const findMedianLabel = () => wrapper.findComponent(GlTruncate);
   const findErrorMessage = () => wrapper.find('p');
 
   const defaultProps = {
     severity: 'critical',
     count: 42,
+    medianAge: 105.5,
     filters: {
       reportType: ['SAST'],
     },
@@ -65,14 +67,14 @@ describe('VulnerabilitiesForSeverityPanel', () => {
         });
 
         it('constructs the correct link to the vulnerability report', () => {
-          expect(findViewLink().props('href')).toBe(
+          expect(findLink().props('href')).toBe(
             `${securityVulnerabilitiesPath}?state=CONFIRMED%2CDETECTED&severity=${severity.toUpperCase()}&reportType=SAST`,
           );
         });
 
         it('shows the correct info popover', () => {
           expect(findDashboardPanel().text()).toContain(
-            `Total count of open ${expectedTitle} vulnerabilities. Click View to see these vulnerabilities in the vulnerability report.`,
+            `Total number of open ${expectedTitle.toLowerCase()} vulnerabilities and their median amount of time open. Select the number to see the open vulnerabilities in the vulnerability report.`,
           );
         });
       },
@@ -89,12 +91,18 @@ describe('VulnerabilitiesForSeverityPanel', () => {
         expect(findSingleStat().props('value')).toBe(defaultProps.count);
       });
 
-      it('renders "View" link', () => {
-        expect(findViewLink().text()).toBe('View');
-      });
-
       it('does not render error message', () => {
         expect(findErrorMessage().exists()).toBe(false);
+      });
+
+      it('shows a badge with the median age - plural', () => {
+        const roundAge = Math.round(defaultProps.medianAge);
+        expect(findMedianLabel().props('text')).toBe(`Median: ${roundAge} days`);
+      });
+
+      it('shows a badge with the median age - singular', () => {
+        createComponent({ props: { medianAge: 1.2 } });
+        expect(findMedianLabel().props('text')).toBe(`Median: 1 day`);
       });
     });
 
@@ -117,6 +125,10 @@ describe('VulnerabilitiesForSeverityPanel', () => {
         expect(findSingleStat().exists()).toBe(false);
       });
 
+      it('does not render badge', () => {
+        expect(findMedianLabel().exists()).toBe(false);
+      });
+
       it('renders error message', () => {
         expect(findErrorMessage().text()).toBe('Something went wrong. Please try again.');
       });
@@ -136,7 +148,7 @@ describe('VulnerabilitiesForSeverityPanel', () => {
 
     describe('zero count state', () => {
       beforeEach(() => {
-        createComponent({ props: { count: 0 } });
+        createComponent({ props: { count: 0, medianAge: null } });
       });
 
       it('displays 0 in GlSingleStat', () => {
@@ -146,6 +158,16 @@ describe('VulnerabilitiesForSeverityPanel', () => {
       it('does not show any special empty state', () => {
         expect(findSingleStat().exists()).toBe(true);
         expect(findErrorMessage().exists()).toBe(false);
+      });
+
+      it('does not show median age badge', () => {
+        expect(findMedianLabel().exists()).toBe(false);
+      });
+
+      it('does not mention median age in popover', () => {
+        expect(findDashboardPanel().text()).toContain(
+          `Total number of open critical vulnerabilities. Select the number to see the open vulnerabilities in the vulnerability report.`,
+        );
       });
     });
   });

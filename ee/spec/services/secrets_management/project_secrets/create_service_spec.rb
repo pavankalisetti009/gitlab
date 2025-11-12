@@ -532,7 +532,8 @@ RSpec.describe SecretsManagement::ProjectSecrets::CreateService, :gitlab_secrets
       let(:expired_at) { nil }
 
       subject(:result) do
-        service.execute(name: name, description: description, value: value, branch: branch, environment: environment)
+        service.execute(name: name, description: description, value: value, branch: branch,
+          environment: environment)
       end
 
       def provision_and_update_secret_permission

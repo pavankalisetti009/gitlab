@@ -11,7 +11,6 @@ module EE
 
         before_action only: [:show] do
           push_frontend_feature_flag(:merge_trains_skip_train, @project)
-          push_frontend_feature_flag(:vulnerability_partial_scans, @project)
           push_frontend_feature_flag(:security_policy_approval_warn_mode, @project)
           push_frontend_feature_flag(:allow_merge_train_retry_merge, @project)
           push_frontend_ability(ability: :resolve_vulnerability_with_ai, resource: @project, user: current_user)

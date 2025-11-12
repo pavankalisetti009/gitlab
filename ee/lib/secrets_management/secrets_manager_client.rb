@@ -3,6 +3,7 @@
 module SecretsManagement
   class SecretsManagerClient
     include Gitlab::Utils::StrongMemoize
+    include SecretsManagement::Concerns::OpenbaoWarningHandling
 
     SERVER_VERSION_FILE = 'GITLAB_OPENBAO_VERSION'
     KV_VALUE_FIELD = 'value'
@@ -358,6 +359,8 @@ module SecretsManagement
 
       handle_authentication_error!(body, response)
       handle_api_error!(body)
+
+      handle_openbao_warnings!(body, endpoint: path, namespace: namespace, method: method)
 
       if response.status == 404
         raise ApiError, 'not found' unless optional
