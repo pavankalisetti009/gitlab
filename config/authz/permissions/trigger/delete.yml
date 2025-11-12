@@ -1,0 +1,4 @@
+---
+name: delete_trigger
+description: Grants the ability to delete pipeline trigger tokens
+feature_category: pipeline_composition

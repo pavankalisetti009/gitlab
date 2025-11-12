@@ -1,0 +1,4 @@
+---
+name: create_trigger
+description: Grants the ability to create pipeline trigger tokens
+feature_category: pipeline_composition

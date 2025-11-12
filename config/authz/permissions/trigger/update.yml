@@ -1,0 +1,4 @@
+---
+name: update_trigger
+description: Grants the ability to update pipeline trigger tokens
+feature_category: pipeline_composition
