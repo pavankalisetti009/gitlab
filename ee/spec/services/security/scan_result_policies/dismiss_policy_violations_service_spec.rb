@@ -161,6 +161,90 @@ RSpec.describe Security::ScanResultPolicies::DismissPolicyViolationsService, fea
       end
     end
 
+    context 'when there are license scanning violations for the policy' do
+      let_it_be(:violation_1) do
+        create(:scan_result_policy_violation,
+          :license_scanning,
+          merge_request: merge_request,
+          security_policy: policy,
+          project: project,
+          approval_policy_rule: approval_policy_rule)
+      end
+
+      it 'returns a success response' do
+        response = service.execute
+
+        expect(response).to be_success
+      end
+
+      it_behaves_like 'triggers GraphQL subscription mergeRequestApprovalStateUpdated' do
+        let(:action) { service.execute }
+      end
+
+      it_behaves_like 'triggers GraphQL subscription mergeRequestMergeStatusUpdated' do
+        let(:action) { service.execute }
+      end
+
+      it 'creates a policy dismissal with the correct attributes' do
+        expect { service.execute }.to change { Security::PolicyDismissal.count }.by(1)
+
+        dismissal = Security::PolicyDismissal.last
+
+        expect(dismissal).to have_attributes(
+          security_policy_id: policy.id,
+          merge_request_id: merge_request.id,
+          project_id: project.id,
+          user_id: current_user.id,
+          dismissal_types: [Security::PolicyDismissal::DISMISSAL_TYPES[:other]],
+          comment: 'Test dismissal',
+          licenses: { 'MIT' => %w[A B] },
+          security_findings_uuids: []
+        )
+      end
+
+      context 'when the feature flag `security_policy_warn_mode_license_scanning` is disabled' do
+        before do
+          stub_feature_flags(security_policy_warn_mode_license_scanning: false)
+        end
+
+        it 'creates a policy dismissal without the licenses data' do
+          expect { service.execute }.to change { Security::PolicyDismissal.count }.by(1)
+
+          dismissal = Security::PolicyDismissal.last
+
+          expect(dismissal.licenses).to be_empty
+        end
+      end
+
+      context 'with multiple license scanning violations for the policy' do
+        let_it_be(:violation_2) do
+          create(:scan_result_policy_violation,
+            violation_data: { 'violations' => { 'license_scanning' => { 'MIT' => %w[A C], 'Ruby' => ['json'] } } },
+            merge_request: merge_request,
+            security_policy: policy,
+            project: project,
+            approval_policy_rule: approval_policy_rule)
+        end
+
+        it 'creates a policy dismissal with the correct attributes' do
+          expect { service.execute }.to change { Security::PolicyDismissal.count }.by(1)
+
+          dismissal = Security::PolicyDismissal.last
+
+          expect(dismissal).to have_attributes(
+            security_policy_id: policy.id,
+            merge_request_id: merge_request.id,
+            project_id: project.id,
+            user_id: current_user.id,
+            dismissal_types: [Security::PolicyDismissal::DISMISSAL_TYPES[:other]],
+            comment: 'Test dismissal',
+            licenses: { 'MIT' => %w[A B C], 'Ruby' => ['json'] },
+            security_findings_uuids: []
+          )
+        end
+      end
+    end
+
     context 'with multiple policies' do
       let_it_be(:policy_2) { create(:security_policy, :enforcement_type_warn) }
       let_it_be(:approval_policy_rule_2) { create(:approval_policy_rule, security_policy: policy_2) }

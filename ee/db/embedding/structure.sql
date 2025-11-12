@@ -1,4 +1,3 @@
-CREATE EXTENSION IF NOT EXISTS vector;
 
 CREATE TABLE ar_internal_metadata (
     key character varying NOT NULL,

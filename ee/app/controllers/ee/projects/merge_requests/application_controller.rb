@@ -5,7 +5,6 @@ module EE
     module MergeRequests
       module ApplicationController
         extend ActiveSupport::Concern
-        include ::Ai::CodeReview
 
         private
 
@@ -78,9 +77,9 @@ module EE
 
           message = case merge_request.duo_code_review_attempted
                     when :automatic
-                      automatic_error_message
+                      ::Ai::CodeReviewMessages.automatic_error
                     when :manual
-                      manual_error_message
+                      ::Ai::CodeReviewMessages.manual_error
                     end
 
           flash[:alert] = message

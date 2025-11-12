@@ -9,7 +9,7 @@ module Ai
       end
 
       def execute
-        if ::Feature.enabled?(:instance_level_model_selection, :instance) && params[:provider] == "vendored"
+        if params[:provider] == "vendored"
           # Since feature_setting (Duo self-hosted) takes precedence when resolving which feature setting to use, we
           # must set ai_self_hosted_model_id to nil so that it is properly defined as vendored and should be handled
           # at the instance level model selection

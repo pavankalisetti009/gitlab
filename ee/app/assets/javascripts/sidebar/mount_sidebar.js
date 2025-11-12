@@ -12,17 +12,10 @@ import CveIdRequest from './components/cve_id_request/cve_id_request.vue';
 import IterationDropdown from './components/iteration/iteration_dropdown.vue';
 import SidebarIterationWidget from './components/iteration/sidebar_iteration_widget.vue';
 import SidebarDropdownWidget from './components/sidebar_dropdown_widget.vue';
-import HealthStatusDropdown from './components/health_status/health_status_dropdown.vue';
 import SidebarHealthStatusWidget from './components/health_status/sidebar_health_status_widget.vue';
 import SidebarWeightWidget from './components/weight/sidebar_weight_widget.vue';
 import SidebarEscalationPolicy from './components/incidents/sidebar_escalation_policy.vue';
-import SidebarStatusDropdown from './components/status/sidebar_status_dropdown.vue';
-import {
-  healthStatusForRestApi,
-  IssuableAttributeType,
-  noEpic,
-  placeholderEpic,
-} from './constants';
+import { IssuableAttributeType, noEpic, placeholderEpic } from './constants';
 
 Vue.use(VueApollo);
 
@@ -80,44 +73,6 @@ const mountSidebarHealthStatusWidget = () => {
       }),
   });
 };
-
-export function mountHealthStatusDropdown() {
-  const el = document.querySelector('.js-health-status-dropdown-root');
-  const healthStatusFormInput = document.getElementById('issue_health_status_value');
-
-  if (!el || !healthStatusFormInput) {
-    return null;
-  }
-
-  return new Vue({
-    el,
-    name: 'HealthStatusDropdownRoot',
-    data() {
-      return {
-        healthStatus: undefined,
-      };
-    },
-    methods: {
-      handleChange(healthStatus) {
-        this.healthStatus = healthStatus;
-        healthStatusFormInput.setAttribute(
-          'value',
-          healthStatusForRestApi[healthStatus || 'NO_STATUS'],
-        );
-      },
-    },
-    render(createElement) {
-      return createElement(HealthStatusDropdown, {
-        props: {
-          healthStatus: this.healthStatus,
-        },
-        on: {
-          change: this.handleChange.bind(this),
-        },
-      });
-    },
-  });
-}
 
 function mountSidebarCveIdRequest() {
   const el = document.querySelector('.js-sidebar-cve-id-request-root');
@@ -322,31 +277,6 @@ function mountSidebarEscalationPolicy() {
   });
 }
 
-export function mountSidebarCustomStatusWidget() {
-  const el = document.querySelector('.js-custom-status-widget');
-
-  if (!el) {
-    return null;
-  }
-
-  const { fullPath } = el.dataset;
-
-  return new Vue({
-    el,
-    name: 'SidebarStatusWidget',
-    apolloProvider,
-    provide: {
-      fullPath: el.dataset.fullPath,
-    },
-    render: (createElement) =>
-      createElement(SidebarStatusDropdown, {
-        props: {
-          fullPath,
-        },
-      }),
-  });
-}
-
 export const { getSidebarOptions } = CEMountSidebar;
 
 export function mountSidebar(mediator) {
@@ -356,6 +286,5 @@ export function mountSidebar(mediator) {
   mountSidebarEpicWidget();
   mountSidebarIterationWidget();
   mountSidebarEscalationPolicy();
-  mountSidebarCustomStatusWidget();
   mountSidebarCveIdRequest();
 }

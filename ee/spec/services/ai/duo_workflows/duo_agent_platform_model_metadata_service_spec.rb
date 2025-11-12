@@ -42,7 +42,6 @@ RSpec.describe Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService, feature_c
       context 'when self_hosted_agent_platform feature flag is enabled' do
         before do
           stub_feature_flags(self_hosted_agent_platform: true)
-          stub_feature_flags(instance_level_model_selection: false)
           stub_feature_flags(duo_agent_platform_model_selection: false)
         end
 
@@ -84,11 +83,17 @@ RSpec.describe Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService, feature_c
     context 'for cloud-connected self-managed instances' do
       let(:root_namespace) { nil }
 
-      context 'when instance_level_model_selection feature flag is enabled' do
-        before do
-          stub_feature_flags(instance_level_model_selection: true)
-          stub_feature_flags(duo_agent_platform_model_selection: false)
-          stub_feature_flags(self_hosted_agent_platform: false)
+      before do
+        stub_feature_flags(duo_agent_platform_model_selection: false)
+        stub_feature_flags(self_hosted_agent_platform: false)
+      end
+
+      context 'with instance model selection setting (priority 1)' do
+        let!(:instance_setting) do
+          create(:instance_model_selection_feature_setting,
+            feature: :duo_agent_platform,
+            offered_model_ref: 'claude-3-7-sonnet-20250219'
+          )
         end
 
         context 'with a model pinned for instance-level model selection' do
@@ -251,17 +256,24 @@ RSpec.describe Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService, feature_c
         end
       end
 
-      context 'when instance_level_model_selection feature flag is disabled' do
-        before do
-          stub_feature_flags(instance_level_model_selection: false)
-          stub_feature_flags(duo_agent_platform_model_selection: false)
-          stub_feature_flags(self_hosted_agent_platform: false)
+      context 'when instance setting has no model ref' do
+        let!(:instance_setting) do
+          create(:instance_model_selection_feature_setting,
+            feature: :duo_agent_platform,
+            offered_model_ref: nil
+          )
         end
 
-        it 'returns empty headers' do
+        it 'returns model metadata headers for cloud-connected wit gitlab default model' do
           result = service.execute
 
-          expect(result).to eq({})
+          expect(result).to eq(
+            'x-gitlab-agent-platform-model-metadata' => {
+              'provider' => 'gitlab',
+              'feature_setting' => 'duo_agent_platform',
+              'identifier' => nil
+            }.to_json
+          )
         end
       end
     end
@@ -273,7 +285,6 @@ RSpec.describe Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService, feature_c
         before do
           stub_feature_flags(duo_agent_platform_model_selection: group)
           stub_feature_flags(ai_model_switching: group)
-          stub_feature_flags(instance_level_model_selection: false)
           stub_feature_flags(self_hosted_agent_platform: false)
         end
 
@@ -441,6 +452,8 @@ RSpec.describe Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService, feature_c
       context 'when duo_agent_platform_model_selection feature flag is disabled' do
         before do
           stub_feature_flags(duo_agent_platform_model_selection: false)
+          stub_feature_flags(ai_model_switching: false)
+          stub_feature_flags(self_hosted_agent_platform: false)
         end
 
         it_behaves_like 'returns empty headers'

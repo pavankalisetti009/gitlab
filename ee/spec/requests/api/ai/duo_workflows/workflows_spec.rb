@@ -1271,7 +1271,6 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
         before do
           stub_feature_flags(self_hosted_agent_platform: true)
-          stub_feature_flags(instance_level_model_selection: false)
           stub_feature_flags(duo_agent_platform_model_selection: false)
           stub_feature_flags(ai_model_switching: false)
         end
@@ -1308,28 +1307,6 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
         it_behaves_like 'ServiceURI has the right value', true
 
-        context 'when ModelMetadata returns nil' do
-          subject(:get_response) do
-            duo_agent_platform_setting.destroy!
-            get api(path, user), headers: workhorse_headers
-          end
-
-          it 'does not include model metadata headers' do
-            get_response
-
-            expect(response).to have_gitlab_http_status(:ok)
-
-            headers = json_response['DuoWorkflow']['Headers']
-            expect(headers).to include(
-              'x-gitlab-oauth-token' => 'oauth_token',
-              'x-gitlab-unidirectional-streaming' => 'enabled'
-            )
-            expect(headers).not_to have_key('x-gitlab-agent-platform-model-metadata')
-          end
-
-          it_behaves_like 'ServiceURI has the right value', false
-        end
-
         context 'when feature setting is disabled' do
           subject(:get_response) do
             duo_agent_platform_setting.update!(provider: :disabled)
@@ -1365,7 +1342,6 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
         before do
           stub_feature_flags(self_hosted_agent_platform: false)
-          stub_feature_flags(instance_level_model_selection: false)
           stub_feature_flags(duo_agent_platform_model_selection: false)
           stub_feature_flags(ai_model_switching: false)
         end
@@ -1412,88 +1388,40 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
       end
 
       context 'for model selection at instance level' do
+        let_it_be(:instance_setting) do
+          create(:instance_model_selection_feature_setting,
+            feature: :duo_agent_platform,
+            offered_model_ref: 'claude-3-7-sonnet-20250219')
+        end
+
         before do
-          stub_feature_flags(instance_level_model_selection: true)
           stub_feature_flags(duo_agent_platform_model_selection: false)
           stub_feature_flags(ai_model_switching: false)
           stub_feature_flags(self_hosted_agent_platform: false)
         end
 
-        context 'when model selection at instance level does not exist' do
-          it 'includes model metadata headers with default model' do
-            get_response
+        it 'includes model metadata headers in the response' do
+          get_response
 
-            expect(response).to have_gitlab_http_status(:ok)
+          expect(response).to have_gitlab_http_status(:ok)
 
-            headers = json_response['DuoWorkflow']['Headers']
-            expect(headers).to include(
-              'x-gitlab-oauth-token' => 'oauth_token',
-              'x-gitlab-unidirectional-streaming' => 'enabled'
-            )
+          headers = json_response['DuoWorkflow']['Headers']
 
-            metadata = ::Gitlab::Json.parse(headers['x-gitlab-agent-platform-model-metadata'])
-            expect(metadata).to include(
-              'provider' => 'gitlab',
-              'feature_setting' => 'duo_agent_platform',
-              'identifier' => nil
-            )
-          end
-
-          it_behaves_like 'ServiceURI has the right value', false
+          metadata = ::Gitlab::Json.parse(headers['x-gitlab-agent-platform-model-metadata'])
+          expect(metadata).to include(
+            'provider' => 'gitlab',
+            'feature_setting' => 'duo_agent_platform',
+            'identifier' => 'claude-3-7-sonnet-20250219'
+          )
         end
 
-        context 'when model selection at instance level exists' do
-          let_it_be(:instance_setting) do
-            create(:instance_model_selection_feature_setting,
-              feature: :duo_agent_platform,
-              offered_model_ref: 'claude-3-7-sonnet-20250219')
-          end
-
-          it 'includes model metadata headers in the response' do
-            get_response
-
-            expect(response).to have_gitlab_http_status(:ok)
-
-            headers = json_response['DuoWorkflow']['Headers']
-
-            metadata = ::Gitlab::Json.parse(headers['x-gitlab-agent-platform-model-metadata'])
-            expect(metadata).to include(
-              'provider' => 'gitlab',
-              'feature_setting' => 'duo_agent_platform',
-              'identifier' => 'claude-3-7-sonnet-20250219'
-            )
-          end
-
-          it_behaves_like 'ServiceURI has the right value', false
-        end
-
-        context 'when the feature flag is disabled' do
-          before do
-            stub_feature_flags(instance_level_model_selection: false)
-          end
-
-          it 'does not include model metadata headers' do
-            get_response
-
-            expect(response).to have_gitlab_http_status(:ok)
-
-            headers = json_response['DuoWorkflow']['Headers']
-            expect(headers).to include(
-              'x-gitlab-oauth-token' => 'oauth_token',
-              'x-gitlab-unidirectional-streaming' => 'enabled'
-            )
-            expect(headers).not_to have_key('x-gitlab-agent-platform-model-metadata')
-          end
-
-          it_behaves_like 'ServiceURI has the right value', false
-        end
+        it_behaves_like 'ServiceURI has the right value', false
       end
 
       context 'for model selection at namespace level', :saas do
         include_context 'with model selections fetch definition service side-effect context'
 
         before do
-          stub_feature_flags(instance_level_model_selection: false)
           stub_feature_flags(duo_agent_platform_model_selection: true)
           stub_feature_flags(ai_model_switching: true)
           stub_feature_flags(self_hosted_agent_platform: false)

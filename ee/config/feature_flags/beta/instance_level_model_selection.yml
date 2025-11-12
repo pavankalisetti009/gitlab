@@ -1,9 +1,0 @@
----
-name: instance_level_model_selection
-feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/565710
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/000
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/565710
-milestone: '18.4'
-group: group::custom models
-type: beta
-default_enabled: true

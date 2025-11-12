@@ -173,16 +173,6 @@ RSpec.describe 'List of configurable AI feature with metadata.', feature_categor
 
       expect(result).to match_array(expected_response)
     end
-
-    context 'when :instance_level_model_selection feature flag is off' do
-      before do
-        stub_feature_flags(instance_level_model_selection: false)
-      end
-
-      it 'does not make request for model definitions' do
-        expect(::Ai::ModelSelection::FetchModelDefinitionsService).not_to receive(:new)
-      end
-    end
   end
 
   context 'when an Self-hosted model ID query parameters are given' do
@@ -266,7 +256,6 @@ RSpec.describe 'List of configurable AI feature with metadata.', feature_categor
         ServiceResponse.success(payload: nil)
       )
 
-      stub_feature_flags(instance_level_model_selection: true)
       stub_application_setting(duo_features_enabled: false)
     end
 

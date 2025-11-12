@@ -12,11 +12,6 @@ module Ai
       scope :non_default, -> { where.not(offered_model_ref: [nil, ""]) }
 
       def self.find_or_initialize_by_feature(feature)
-        # rubocop:disable Gitlab/FeatureFlagWithoutActor -- Instance-level feature flag for global model selection settings
-        return unless ::Feature.enabled?(:instance_level_model_selection)
-
-        # rubocop:enable Gitlab/FeatureFlagWithoutActor
-
         feature_name = get_feature_name(feature)
         find_or_initialize_by(feature: feature_name)
       end
@@ -31,12 +26,6 @@ module Ai
 
       def vendored?
         true
-      end
-
-      private
-
-      def model_selection_enabled?
-        ::Feature.enabled?(:instance_level_model_selection, model_selection_scope)
       end
     end
   end

@@ -14,10 +14,6 @@ module Ai
         data_consistency :always
         defer_on_database_health_signal :gitlab_main
 
-        GENERIC_ERROR_MESSAGE = <<~MESSAGE.squish
-          DuoCodeReview|I have encountered some problems while I was reviewing. Please try again later.
-        MESSAGE
-
         def perform(merge_request_id)
           merge_request = MergeRequest.find_by_id(merge_request_id)
           return unless merge_request
@@ -74,7 +70,7 @@ module Ai
             merge_request.project,
             review_bot,
             noteable: merge_request,
-            note: s_(GENERIC_ERROR_MESSAGE)
+            note: ::Ai::CodeReviewMessages.generic_error
           ).execute
 
           TodoService.new.new_review(merge_request, review_bot)
