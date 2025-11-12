@@ -38,10 +38,7 @@ module Admin
       end
 
       def show_self_hosted_vendored_model_option?
-        return false if ::Feature.enabled?(:instance_level_model_selection, :instance)
-        return false unless ::Feature.enabled?(:ai_self_hosted_vendored_features, current_user)
-
-        !!::License.current&.online_cloud_license?
+        false
       end
 
       def can_manage_instance_model_selection?

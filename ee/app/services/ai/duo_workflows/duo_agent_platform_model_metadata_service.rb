@@ -25,16 +25,23 @@ module Ai
         !::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
       end
 
+      def duo_agent_platform
+        ::Ai::FeatureSetting.find_by_feature(FEATURE_NAME)
+      end
+
       def duo_agent_platform_in_self_hosted_duo?
-        ::Ai::FeatureSetting.duo_agent_platform.self_hosted.exists?
+        # There is a `disabled` option for Duo Self-Hosted.
+        # We need to consider this case otherwise it resolves to
+        # cloud-connected models.
+        return true if duo_agent_platform&.disabled?
+
+        duo_agent_platform&.self_hosted?
       end
 
       def resolve_self_managed_model_metadata
-        if duo_agent_platform_in_self_hosted_duo?
-          resolve_self_hosted_duo_model_metadata
-        else
-          resolve_cloud_connected_model_metadata
-        end
+        return resolve_self_hosted_duo_model_metadata if duo_agent_platform_in_self_hosted_duo?
+
+        resolve_cloud_connected_model_metadata
       end
 
       # Self-Hosted Duo Priority:
@@ -43,7 +50,9 @@ module Ai
       def resolve_self_hosted_duo_model_metadata
         return {} unless Feature.enabled?(:self_hosted_agent_platform, :instance)
 
-        feature_setting = ::Ai::FeatureSetting.find_by_feature(FEATURE_NAME)
+        return {} if duo_agent_platform&.disabled?
+
+        feature_setting = duo_agent_platform
 
         model_metadata_from_setting(feature_setting)
       end
@@ -52,8 +61,6 @@ module Ai
       # 1. Instance-level model selection (admin sets instance defaults)
       # 2. User model selection (users can override instance defaults)
       def resolve_cloud_connected_model_metadata
-        return {} unless Feature.enabled?(:instance_level_model_selection, :instance)
-
         # Priority 1: Instance-level model selection
         instance_setting = ::Ai::ModelSelection::InstanceModelSelectionFeatureSetting
                             .find_or_initialize_by_feature(FEATURE_NAME)

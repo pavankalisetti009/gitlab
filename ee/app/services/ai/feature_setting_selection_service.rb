@@ -27,24 +27,20 @@ module Ai
         # First check if a self-hosted model is defined for the feature
         feature_setting = self_hosted_feature_setting
 
-        if ::Feature.enabled?(:instance_level_model_selection, :instance)
-          return ServiceResponse.success(payload: feature_setting) if feature_setting && !feature_setting.vendored?
+        return ServiceResponse.success(payload: feature_setting) if feature_setting && !feature_setting.vendored?
 
-          instance_setting = instance_level_setting
+        instance_setting = instance_level_setting
 
-          # When a Self-hosted AI Gateway has been configured (for the instance), then we don't default to vendored
-          # vendored becomes the default only on pure cloud-connected SM/dedicated instances. The same for offline
-          # cloud license, since there's no connection to vendored models
-          if ::License.current&.offline_cloud_license? ||
-              (instance_setting.set_to_gitlab_default? && Gitlab::AiGateway.has_self_hosted_ai_gateway?)
-            return ServiceResponse.success(payload: nil)
-          end
-
-          # Instance level is fetched either when we don't have a feature_setting, or when it is set to vendored
-          ServiceResponse.success(payload: instance_setting)
-        else
-          ServiceResponse.success(payload: feature_setting)
+        # When a Self-hosted AI Gateway has been configured (for the instance), then we don't default to vendored
+        # vendored becomes the default only on pure cloud-connected SM/dedicated instances. The same for offline
+        # cloud license, since there's no connection to vendored models
+        if ::License.current&.offline_cloud_license? ||
+            (instance_setting.set_to_gitlab_default? && Gitlab::AiGateway.has_self_hosted_ai_gateway?)
+          return ServiceResponse.success(payload: nil)
         end
+
+        # Instance level is fetched either when we don't have a feature_setting, or when it is set to vendored
+        ServiceResponse.success(payload: instance_setting)
       end
     end
 

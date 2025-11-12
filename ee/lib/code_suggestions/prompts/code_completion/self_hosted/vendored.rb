@@ -8,16 +8,10 @@ module CodeSuggestions
           include ::Ai::ModelSelection::Concerns::GitlabDefaultModelParams
 
           def request_params
-            if Feature.enabled?(:instance_level_model_selection, :instance)
-              return {
-                model_provider: "gitlab",
-                model_name: feature_setting&.offered_model_ref || ''
-              }
-            end
-
-            params_as_if_gitlab_default_model(
-              ::CodeSuggestions::ModelDetails::CodeCompletion::FEATURE_SETTING_NAME
-            )
+            {
+              model_provider: "gitlab",
+              model_name: feature_setting&.offered_model_ref || ''
+            }
           end
         end
       end

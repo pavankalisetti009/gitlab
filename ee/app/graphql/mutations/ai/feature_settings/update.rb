@@ -70,8 +70,6 @@ module Mutations
         end
 
         def gitlab_model_definitions
-          return unless Feature.enabled?(:instance_level_model_selection, :instance)
-
           response = ::Ai::ModelSelection::FetchModelDefinitionsService
                       .new(current_user, model_selection_scope: nil)
                       .execute

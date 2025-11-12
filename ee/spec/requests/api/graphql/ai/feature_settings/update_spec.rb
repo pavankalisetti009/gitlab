@@ -172,16 +172,6 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
                 'ref' => 'claude-sonnet' }
             )
           end
-
-          context 'when :instance_level_model_selection feature flag is off' do
-            before do
-              stub_feature_flags(instance_level_model_selection: false)
-            end
-
-            it 'does not make request for model definitions' do
-              expect(::Ai::ModelSelection::FetchModelDefinitionsService).not_to receive(:new)
-            end
-          end
         end
 
         context 'when the feature setting does not exist' do
