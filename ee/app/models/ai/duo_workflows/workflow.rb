@@ -14,6 +14,8 @@ module Ai
       belongs_to :project, optional: true
       belongs_to :namespace, optional: true
       belongs_to :ai_catalog_item_version, optional: true, class_name: 'Ai::Catalog::ItemVersion'
+      belongs_to :issue, optional: true
+      belongs_to :merge_request, optional: true
 
       has_many :checkpoints, class_name: 'Ai::DuoWorkflows::Checkpoint'
       has_many :checkpoint_writes, class_name: 'Ai::DuoWorkflows::CheckpointWrite'

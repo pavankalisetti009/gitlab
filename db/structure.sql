@@ -16651,10 +16651,13 @@ CREATE TABLE duo_workflows_workflows (
     environment smallint,
     namespace_id bigint,
     ai_catalog_item_version_id bigint,
+    issue_id bigint,
+    merge_request_id bigint,
     CONSTRAINT check_30ca07a4ef CHECK ((char_length(goal) <= 16384)),
     CONSTRAINT check_3a9162f1ae CHECK ((char_length(image) <= 2048)),
     CONSTRAINT check_73884a5839 CHECK ((num_nonnulls(namespace_id, project_id) = 1)),
-    CONSTRAINT check_ec723e2a1a CHECK ((char_length(workflow_definition) <= 255))
+    CONSTRAINT check_ec723e2a1a CHECK ((char_length(workflow_definition) <= 255)),
+    CONSTRAINT check_workflows_single_noteable CHECK ((num_nonnulls(issue_id, merge_request_id) <= 1))
 );
 
 CREATE SEQUENCE duo_workflows_workflows_id_seq
@@ -40236,6 +40239,10 @@ CREATE INDEX index_duo_workflows_events_on_workflow_id ON duo_workflows_events U
 
 CREATE INDEX index_duo_workflows_workflows_on_ai_catalog_item_version_id ON duo_workflows_workflows USING btree (ai_catalog_item_version_id);
 
+CREATE INDEX index_duo_workflows_workflows_on_issue_id ON duo_workflows_workflows USING btree (issue_id);
+
+CREATE INDEX index_duo_workflows_workflows_on_merge_request_id ON duo_workflows_workflows USING btree (merge_request_id);
+
 CREATE INDEX index_duo_workflows_workflows_on_namespace_id ON duo_workflows_workflows USING btree (namespace_id);
 
 CREATE INDEX index_duo_workflows_workflows_on_project_id ON duo_workflows_workflows USING btree (project_id);
@@ -50236,6 +50243,9 @@ ALTER TABLE ONLY packages_helm_file_metadata
 ALTER TABLE ONLY bulk_import_failures
     ADD CONSTRAINT fk_dad28985ee FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY duo_workflows_workflows
+    ADD CONSTRAINT fk_daffbfef9a FOREIGN KEY (issue_id) REFERENCES issues(id) ON DELETE CASCADE;
+
 ALTER TABLE ONLY project_topics
     ADD CONSTRAINT fk_db13576296 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
@@ -50406,6 +50416,9 @@ ALTER TABLE ONLY merge_requests_compliance_violations
 
 ALTER TABLE ONLY issue_emails
     ADD CONSTRAINT fk_ed0f4c4b51 FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY duo_workflows_workflows
+    ADD CONSTRAINT fk_ed58162ace FOREIGN KEY (merge_request_id) REFERENCES merge_requests(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY cluster_agent_migrations
     ADD CONSTRAINT fk_ed8ffda028 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
