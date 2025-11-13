@@ -36,7 +36,11 @@ class Groups::EpicsController < Groups::ApplicationController
   def show
     respond_to do |format|
       format.html do
-        render_as_work_item
+        if group&.work_items_consolidated_list_enabled?(current_user)
+          redirect_to group_work_item_path(group, epic.work_item, params: request.query_parameters)
+        else
+          render_as_work_item
+        end
       end
       format.json do
         render json: serializer.represent(epic)

@@ -186,21 +186,49 @@ RSpec.describe Groups::EpicsController, feature_category: :portfolio_management 
             group.add_developer(user)
           end
 
-          it 'renders work item template' do
-            show_epic
+          context 'when work_item_planning_view is enabled' do
+            before do
+              stub_feature_flags(work_item_planning_view: true)
+            end
 
-            expect(response.media_type).to eq 'text/html'
-            expect(response).to render_template 'groups/epics/work_items_index'
+            it 'redirects to work item page' do
+              show_epic
+
+              expect(response).to redirect_to(group_work_item_path(group, epic.work_item))
+            end
+
+            it 'logs the view with Gitlab::Search::RecentEpics' do
+              recent_epics_double = instance_double(::Gitlab::Search::RecentEpics, log_view: nil)
+              expect(::Gitlab::Search::RecentEpics).to receive(:new).with(user: user).and_return(recent_epics_double)
+
+              show_epic
+
+              expect(response).to redirect_to(group_work_item_path(group, epic.work_item))
+              expect(recent_epics_double).to have_received(:log_view).with(epic)
+            end
           end
 
-          it 'logs the view with Gitlab::Search::RecentEpics' do
-            recent_epics_double = instance_double(::Gitlab::Search::RecentEpics, log_view: nil)
-            expect(::Gitlab::Search::RecentEpics).to receive(:new).with(user: user).and_return(recent_epics_double)
+          context 'when work_item_planning_view is disabled' do
+            before do
+              stub_feature_flags(work_item_planning_view: false)
+            end
 
-            show_epic
+            it 'renders work item template' do
+              show_epic
 
-            expect(response).to be_successful
-            expect(recent_epics_double).to have_received(:log_view).with(epic)
+              expect(response.media_type).to eq 'text/html'
+              expect(response).to render_template 'groups/epics/work_items_index'
+            end
+
+            it 'logs the view with Gitlab::Search::RecentEpics' do
+              recent_epics_double = instance_double(::Gitlab::Search::RecentEpics, log_view: nil)
+              expect(::Gitlab::Search::RecentEpics).to receive(:new).with(user: user).and_return(recent_epics_double)
+
+              show_epic
+
+              expect(response).to be_successful
+              expect(recent_epics_double).to have_received(:log_view).with(epic)
+            end
           end
         end
 

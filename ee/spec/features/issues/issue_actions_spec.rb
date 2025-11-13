@@ -41,13 +41,30 @@ RSpec.describe 'Issue actions', :js, feature_category: :team_planning do
         allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(125)
       end
 
-      it 'clicking "Promote to epic" creates and redirects user to epic' do
-        click_button 'More actions', match: :first
-        click_button 'Change type'
-        select 'Epic (Promote to group)', from: 'Type'
-        click_button 'Change type'
+      context 'when work_item_planning_view is enabled' do
+        it 'clicking "Promote to epic" creates and redirects user to epic' do
+          click_button 'More actions', match: :first
+          click_button 'Change type'
+          select 'Epic (Promote to group)', from: 'Type'
+          click_button 'Change type'
 
-        expect(page).to have_current_path(group_epic_path(group, 1))
+          expect(page).to have_current_path(group_work_item_path(group, 1))
+        end
+      end
+
+      context 'when work_item_planning_view is disabled' do
+        before do
+          stub_feature_flags(work_item_planning_view: false)
+        end
+
+        it 'clicking "Promote to epic" creates and redirects user to epic' do
+          click_button 'More actions', match: :first
+          click_button 'Change type'
+          select 'Epic (Promote to group)', from: 'Type'
+          click_button 'Change type'
+
+          expect(page).to have_current_path(group_epic_path(group, 1))
+        end
       end
     end
   end
