@@ -42,7 +42,7 @@ module Security
       end
 
       def target_pipeline_for_merge_request(merge_request, report_type, approval_rule)
-        target_pipelines = merge_request.approval_policy_comparison_pipelines
+        target_pipelines = merge_request.target_branch_comparison_pipelines
 
         comparison_pipeline = if report_type == :scan_finding
                                 merge_request.latest_scan_finding_comparison_pipeline

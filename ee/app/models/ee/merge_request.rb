@@ -10,6 +10,7 @@ module EE
     include FromUnion
 
     MAX_CHECKED_PIPELINES_FOR_SECURITY_REPORT_COMPARISON = 10
+    MAX_CHECKED_ADDITIONAL_SHAS_FOR_SECURITY_REPORT_COMPARISON = 10
 
     prepended do
       include Auditable
@@ -609,26 +610,70 @@ module EE
     end
 
     def latest_comparison_pipeline_with_sbom_reports
-      approval_policy_comparison_pipelines.find do |pipeline|
+      target_branch_comparison_pipelines.find do |pipeline|
         pipeline.self_and_project_descendants.any?(&:has_sbom_reports?)
       end
     end
 
     def latest_scan_finding_comparison_pipeline
-      approval_policy_comparison_pipelines.find do |pipeline|
+      target_branch_comparison_pipelines.find do |pipeline|
         pipeline.self_and_project_descendants.any?(&:has_security_reports?)
       end
     end
 
-    def approval_policy_comparison_pipelines
-      target_shas = [diff_head_pipeline&.target_sha, diff_base_sha, diff_start_sha]
-      target_shas.compact.lazy.flat_map do |sha|
-        target_branch_pipelines_for(sha: sha)
-          .order(id: :desc)
-          .limit(MAX_CHECKED_PIPELINES_FOR_SECURITY_REPORT_COMPARISON)
+    def target_branch_comparison_pipelines
+      target_shas = [diff_head_pipeline&.target_sha, diff_base_sha, diff_start_sha].compact
+      if ::Feature.disabled?(:expand_security_scan_comparison_commits, project)
+        return target_shas.lazy.flat_map do |sha|
+          target_branch_pipelines_for(sha: sha)
+            .order(id: :desc)
+            .limit(MAX_CHECKED_PIPELINES_FOR_SECURITY_REPORT_COMPARISON)
+        end
+      end
+
+      target_shas |= additional_target_branch_commit_shas_for_comparison
+      return [] if target_shas.empty?
+
+      pipelines_by_sha = recent_target_branch_pipelines_for_shas(target_shas).group_by(&:sha)
+      target_shas.flat_map do |sha|
+        pipelines_by_sha[sha] || []
       end
     end
-    strong_memoize_attr :approval_policy_comparison_pipelines
+    strong_memoize_attr :target_branch_comparison_pipelines
+
+    def additional_target_branch_commit_shas_for_comparison
+      target_project.repository.commits(
+        target_branch,
+        limit: MAX_CHECKED_ADDITIONAL_SHAS_FOR_SECURITY_REPORT_COMPARISON
+      ).map(&:id).uniq
+    end
+    strong_memoize_attr :additional_target_branch_commit_shas_for_comparison
+
+    def recent_target_branch_pipelines_for_shas(shas)
+      # Retrieves the most recent pipelines for each target commit SHA, limited to
+      # MAX_CHECKED_PIPELINES_FOR_SECURITY_REPORT_COMPARISON pipelines per SHA for performance.
+      # Uses a LATERAL join to avoid ranking every row, making smaller sorts per SHA.
+      sha_values = shas.map { |sha| "(#{::Ci::Pipeline.connection.quote(sha)})" }.join(', ')
+      sources = ::Enums::Ci::Pipeline.ci_sources.values.compact.join(',')
+
+      lateral_query = <<~SQL
+        SELECT ranked_pipelines.*
+        FROM (VALUES #{sha_values}) AS commits(sha)
+        JOIN LATERAL (
+          SELECT p_ci_pipelines.*
+          FROM p_ci_pipelines
+          WHERE p_ci_pipelines.sha = commits.sha
+            AND p_ci_pipelines.project_id = #{project.id}
+            AND (p_ci_pipelines.source IN (#{sources}) OR p_ci_pipelines.source IS NULL)
+            AND p_ci_pipelines.ref = #{::Ci::Pipeline.connection.quote(target_branch)}
+          ORDER BY p_ci_pipelines.id DESC
+          LIMIT #{MAX_CHECKED_PIPELINES_FOR_SECURITY_REPORT_COMPARISON}
+        ) ranked_pipelines ON TRUE
+        ORDER BY ranked_pipelines.sha, ranked_pipelines.id DESC
+      SQL
+
+      ::Ci::Pipeline.find_by_sql(lateral_query)
+    end
 
     def diff_head_pipeline?(pipeline)
       pipeline.source_sha == diff_head_sha || pipeline.sha == diff_head_sha
