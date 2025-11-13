@@ -12,8 +12,8 @@ RSpec.describe SecretsManagement::ProjectSecret, feature_category: :secrets_mana
       name: 'TEST_SECRET',
       branch: 'main',
       environment: 'production',
-      create_started_at: Time.now.iso8601,
-      create_completed_at: Time.now.iso8601
+      create_started_at: Time.now.iso8601.to_s,
+      create_completed_at: Time.now.iso8601.to_s
     )
   end
 
@@ -157,10 +157,10 @@ RSpec.describe SecretsManagement::ProjectSecret, feature_category: :secrets_mana
       let(:update_completed_at) { nil }
 
       before do
-        project_secret.update_started_at   = update_started_at
-        project_secret.update_completed_at = update_completed_at
-        project_secret.create_started_at   = create_started_at
-        project_secret.create_completed_at = create_completed_at
+        project_secret.update_started_at   = update_started_at.to_s
+        project_secret.update_completed_at = update_completed_at.to_s
+        project_secret.create_started_at   = create_started_at.to_s
+        project_secret.create_completed_at = create_completed_at.to_s
       end
 
       context 'when both timestamps are nil' do
@@ -209,10 +209,10 @@ RSpec.describe SecretsManagement::ProjectSecret, feature_category: :secrets_mana
       let(:create_completed_at) { 5.minutes.ago }
 
       before do
-        project_secret.create_started_at   = create_started_at
-        project_secret.create_completed_at = create_completed_at
-        project_secret.update_started_at   = update_started_at
-        project_secret.update_completed_at = update_completed_at
+        project_secret.create_started_at   = create_started_at.to_s
+        project_secret.create_completed_at = create_completed_at.to_s
+        project_secret.update_started_at   = update_started_at.to_s
+        project_secret.update_completed_at = update_completed_at.to_s
       end
 
       context 'when update started recently and is in progress' do
