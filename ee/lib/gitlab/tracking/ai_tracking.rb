@@ -39,7 +39,7 @@ module Gitlab
         end
       end
 
-      register_feature(:agentic_chat) do
+      register_feature(:agent_platform) do
         events(
           agent_platform_session_created: 8,
           agent_platform_session_started: 9,
