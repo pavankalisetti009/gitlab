@@ -199,6 +199,18 @@ RSpec.describe VirtualRegistries::Container::Upstream, feature_category: :virtua
 
   it_behaves_like 'virtual registry upstream common behavior'
 
+  describe '#local?' do
+    subject { upstream.local? }
+
+    it { is_expected.to be false }
+  end
+
+  describe '#remote?' do
+    subject { upstream.remote? }
+
+    it { is_expected.to be true }
+  end
+
   describe '#url_for' do
     subject { upstream.url_for(path) }
 

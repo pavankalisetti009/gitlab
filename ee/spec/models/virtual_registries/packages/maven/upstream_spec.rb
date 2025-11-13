@@ -687,7 +687,24 @@ RSpec.describe VirtualRegistries::Packages::Maven::Upstream, type: :model, featu
     end
   end
 
-  describe '#local_project' do
+  describe '#local_project?' do
+    where(:url, :expected_result) do
+      nil                             | false
+      ref(:other_project_global_id)   | true
+      ref(:other_group_global_id)     | false
+      'https://gitlab.com/maven/test' | false
+    end
+
+    with_them do
+      subject(:local_project_check) do
+        build(:virtual_registries_packages_maven_upstream, :without_credentials, url:).local_project?
+      end
+
+      it { is_expected.to eq(expected_result) }
+    end
+  end
+
+  describe '#local_project_id' do
     where(:url, :expected_project) do
       nil                             | nil
       ref(:other_project_global_id)   | ref(:other_project)
@@ -696,16 +713,33 @@ RSpec.describe VirtualRegistries::Packages::Maven::Upstream, type: :model, featu
     end
 
     with_them do
-      subject(:local_project_upstream) do
-        build(:virtual_registries_packages_maven_upstream, :without_credentials, url:).local_project
+      subject(:local_project_id) do
+        build(:virtual_registries_packages_maven_upstream, :without_credentials, url:).local_project_id
       end
 
-      it { is_expected.to eq(expected_project) }
+      it { is_expected.to eq(expected_project&.id) }
     end
   end
 
-  describe '#local_group' do
-    where(:url, :expected_project) do
+  describe '#local_group?' do
+    where(:url, :expected_result) do
+      nil                             | false
+      ref(:other_project_global_id)   | false
+      ref(:other_group_global_id)     | true
+      'https://gitlab.com/maven/test' | false
+    end
+
+    with_them do
+      subject(:local_group_check) do
+        build(:virtual_registries_packages_maven_upstream, :without_credentials, url:).local_group?
+      end
+
+      it { is_expected.to eq(expected_result) }
+    end
+  end
+
+  describe '#local_group_id' do
+    where(:url, :expected_group) do
       nil                             | nil
       ref(:other_project_global_id)   | nil
       ref(:other_group_global_id)     | ref(:other_group)
@@ -713,11 +747,11 @@ RSpec.describe VirtualRegistries::Packages::Maven::Upstream, type: :model, featu
     end
 
     with_them do
-      subject(:local_project_upstream) do
-        build(:virtual_registries_packages_maven_upstream, :without_credentials, url:).local_group
+      subject(:local_group_id) do
+        build(:virtual_registries_packages_maven_upstream, :without_credentials, url:).local_group_id
       end
 
-      it { is_expected.to eq(expected_project) }
+      it { is_expected.to eq(expected_group&.id) }
     end
   end
 

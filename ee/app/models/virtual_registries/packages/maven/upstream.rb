@@ -148,28 +148,34 @@ module VirtualRegistries
           { success: false, result: "Error: #{e.message}" }
         end
 
-        def local_project
-          return unless local?
-          return unless global_id_url&.model_class == Project
+        def local_project?
+          return false unless local?
 
-          GlobalID::Locator.locate(url)
+          local_global_id&.model_class == Project
         end
-        strong_memoize_attr :local_project
 
-        def local_group
-          return unless local?
-          return unless global_id_url&.model_class == Group
+        def local_project_id
+          return unless local_project?
 
-          GlobalID::Locator.locate(url)
+          local_global_id&.model_id&.to_i
         end
-        strong_memoize_attr :local_group
+
+        def local_group?
+          return false unless local?
+
+          local_global_id&.model_class == Group
+        end
+
+        def local_group_id
+          return unless local_group?
+
+          local_global_id&.model_id&.to_i
+        end
 
         def url=(value)
           super
 
-          clear_memoization(:global_id_url)
-          clear_memoization(:local_project)
-          clear_memoization(:local_group)
+          clear_memoization(:local_global_id)
         end
 
         def local?
@@ -219,21 +225,21 @@ module VirtualRegistries
         end
 
         def ensure_local_project_or_local_group
-          return errors.add(:url, 'is invalid') unless global_id_url
+          return errors.add(:url, 'is invalid') unless local_global_id
 
-          unless global_id_url.model_class.in?(ALLOWED_GLOBAL_ID_CLASSES)
+          unless local_global_id.model_class.in?(ALLOWED_GLOBAL_ID_CLASSES)
             return errors.add(:url, 'should point to a Project or Group')
           end
 
-          return if global_id_url.model_class.exists?(global_id_url.model_id)
+          return if local_global_id.model_class.exists?(local_global_id.model_id)
 
-          errors.add(:url, "should point to an existing #{global_id_url.model_class.name}")
+          errors.add(:url, "should point to an existing #{local_global_id.model_class.name}")
         end
 
-        def global_id_url
+        def local_global_id
           GlobalID.parse(url)
         end
-        strong_memoize_attr :global_id_url
+        strong_memoize_attr :local_global_id
       end
     end
   end
