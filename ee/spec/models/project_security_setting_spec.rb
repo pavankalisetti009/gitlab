@@ -115,6 +115,56 @@ RSpec.describe ProjectSecuritySetting, feature_category: :software_composition_a
     end
   end
 
+  describe 'validity_checks_enabled tracking' do
+    let!(:setting) { create(:project_security_setting, validity_checks_enabled: false) }
+
+    context 'when validity_checks_enabled changes from false to true' do
+      it 'does not track internal event disabled_validity_checks' do
+        expect(setting).not_to receive(:track_internal_event).with(
+          'disabled_validity_checks',
+          project: setting.project
+        )
+
+        setting.update!(validity_checks_enabled: true)
+      end
+    end
+
+    context 'when validity_checks_enabled changes from true to false' do
+      let!(:setting) { create(:project_security_setting, validity_checks_enabled: true) }
+
+      it 'tracks internal event disabled_validity_checks' do
+        expect(setting).to receive(:track_internal_event).with(
+          'disabled_validity_checks',
+          project: setting.project
+        )
+
+        setting.update!(validity_checks_enabled: false)
+      end
+    end
+
+    context 'when validity_checks_enabled does not change' do
+      it 'does not track internal event disabled_validity_checks when value stays the same' do
+        expect(setting).not_to receive(:track_internal_event).with(
+          'disabled_validity_checks',
+          project: setting.project
+        )
+
+        setting.update!(validity_checks_enabled: false) # Same value
+      end
+    end
+
+    context 'when updating other fields' do
+      it 'does not track internal event disabled_validity_checks when other fields change' do
+        expect(setting).not_to receive(:track_internal_event).with(
+          'disabled_validity_checks',
+          project: setting.project
+        )
+
+        setting.update!(secret_push_protection_enabled: true)
+      end
+    end
+  end
+
   describe '#set_validity_checks' do
     where(:value_before, :enabled, :value_after) do
       true  | false | false

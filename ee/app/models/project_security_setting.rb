@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class ProjectSecuritySetting < ApplicationRecord
+  include Gitlab::InternalEventsTracking
+
   self.primary_key = :project_id
 
   belongs_to :project, inverse_of: :security_setting
@@ -16,6 +18,9 @@ class ProjectSecuritySetting < ApplicationRecord
 
   after_commit -> { schedule_analyzer_status_update_worker_for_type('secret_detection') },
     if: -> { saved_change_to_secret_push_protection_enabled? || saved_change_to_project_id? }
+
+  after_commit :track_validity_checks_change,
+    if: -> { validity_checks_disabled? }
 
   def set_continuous_vulnerability_scans!(enabled:)
     enabled if update!(continuous_vulnerability_scans_enabled: enabled)
@@ -37,5 +42,18 @@ class ProjectSecuritySetting < ApplicationRecord
 
   def schedule_analyzer_status_update_worker_for_type(type)
     Security::AnalyzersStatus::SettingChangedUpdateWorker.perform_async([project_id], type)
+  end
+
+  def validity_checks_disabled?
+    saved_change_to_validity_checks_enabled? &&
+      validity_checks_enabled_before_last_save == true && # The old status of Validity Checks enabled
+      validity_checks_enabled == false # The new status of Validity Checks enabled
+  end
+
+  def track_validity_checks_change
+    track_internal_event(
+      'disabled_validity_checks',
+      project: project
+    )
   end
 end
