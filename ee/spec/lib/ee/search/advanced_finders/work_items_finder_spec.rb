@@ -1898,4 +1898,162 @@ RSpec.describe Search::AdvancedFinders::WorkItemsFinder, :elastic_delete_by_quer
       end
     end
   end
+
+  describe '#es_search_options' do
+    let(:resource_parent) { group }
+    let(:finder) { described_class.new(current_user, context, resource_parent, params) }
+
+    subject(:es_search_options) { finder.es_search_options }
+
+    it 'includes index_name' do
+      expect(es_search_options[:index_name]).to eq(Search::Elastic::References::WorkItem.index)
+    end
+
+    context 'when search_glql_use_routing feature flag is enabled' do
+      before do
+        stub_feature_flags(search_glql_use_routing: true)
+      end
+
+      it 'includes root_ancestor_ids' do
+        expect(es_search_options[:root_ancestor_ids]).to eq([group.root_ancestor.id])
+      end
+
+      context 'when resource_parent is a Project' do
+        let(:resource_parent) { project }
+
+        it 'includes root_ancestor_ids from project namespace' do
+          expect(es_search_options[:root_ancestor_ids]).to eq([project.root_ancestor.id])
+        end
+      end
+
+      context 'when resource_parent is a Group' do
+        let(:resource_parent) { group }
+
+        it 'includes root_ancestor_ids from group' do
+          expect(es_search_options[:root_ancestor_ids]).to eq([group.root_ancestor.id])
+        end
+      end
+
+      context 'with nested group structure' do
+        let_it_be(:parent_group) { create(:group) }
+        let_it_be(:child_group) { create(:group, parent: parent_group) }
+        let_it_be(:grandchild_group) { create(:group, parent: child_group) }
+        let(:resource_parent) { grandchild_group }
+
+        it 'includes root_ancestor_ids from the top-level group' do
+          expect(es_search_options[:root_ancestor_ids]).to eq([parent_group.id])
+        end
+      end
+    end
+
+    context 'when search_glql_use_routing feature flag is disabled' do
+      before do
+        stub_feature_flags(search_glql_use_routing: false)
+      end
+
+      it 'does not include root_ancestor_ids' do
+        expect(es_search_options[:root_ancestor_ids]).to be_nil
+      end
+
+      it 'only includes index_name' do
+        expect(es_search_options).to eq({ index_name: Search::Elastic::References::WorkItem.index })
+      end
+    end
+  end
+
+  describe '#root_ancestor_ids' do
+    let(:resource_parent) { group }
+    let(:finder) { described_class.new(current_user, context, resource_parent, params) }
+
+    subject(:root_ancestor_ids) { finder.root_ancestor_ids }
+
+    it 'returns an array with root ancestor id' do
+      expect(root_ancestor_ids).to eq([group.root_ancestor.id])
+    end
+
+    context 'when resource_parent is a Project' do
+      let(:resource_parent) { project }
+
+      it 'returns root ancestor id from project namespace' do
+        expect(root_ancestor_ids).to eq([project.root_ancestor.id])
+      end
+    end
+
+    context 'when resource_parent is a Group' do
+      let(:resource_parent) { group }
+
+      it 'returns root ancestor id from group' do
+        expect(root_ancestor_ids).to eq([group.root_ancestor.id])
+      end
+    end
+  end
+
+  describe 'Elasticsearch routing parameter' do
+    let(:resource_parent) { group }
+    let(:finder) { described_class.new(current_user, context, resource_parent, params) }
+
+    before_all do
+      group.add_reporter(current_user)
+    end
+
+    context 'when search_glql_use_routing feature flag is enabled' do
+      before do
+        stub_feature_flags(search_glql_use_routing: true)
+      end
+
+      context 'when executing a query for a group' do
+        it 'includes routing parameter in the Elasticsearch request' do
+          finder.execute.to_a
+
+          assert_routing_field("group_#{group.root_ancestor.id}")
+        end
+      end
+
+      context 'when executing a query for a project' do
+        let(:resource_parent) { project }
+
+        before_all do
+          project.add_reporter(current_user)
+        end
+
+        it 'includes routing parameter in the Elasticsearch request' do
+          finder.execute.to_a
+
+          assert_routing_field("group_#{project.root_ancestor.id}")
+        end
+      end
+
+      context 'with nested group structure' do
+        let_it_be(:parent_group) { create(:group) }
+        let_it_be(:child_group) { create(:group, parent: parent_group) }
+        let(:resource_parent) { child_group }
+
+        before_all do
+          child_group.add_reporter(current_user)
+        end
+
+        it 'routes to the root ancestor group' do
+          finder.execute.to_a
+
+          assert_routing_field("group_#{parent_group.id}")
+        end
+      end
+    end
+
+    context 'when search_glql_use_routing feature flag is disabled' do
+      before do
+        stub_feature_flags(search_glql_use_routing: false)
+      end
+
+      it 'does not include routing parameter in the Elasticsearch request' do
+        finder.execute.to_a
+
+        es_host = Gitlab::CurrentSettings.elasticsearch_url.first
+        search_uri = %r{#{es_host}/[\w-]+/_search}
+
+        expect(a_request(:post,
+          search_uri).with(query: hash_including({ 'routing' => anything }))).not_to have_been_made
+      end
+    end
+  end
 end

@@ -103,9 +103,19 @@ module EE
         end
 
         def es_search_options
-          {
-            index_name: INDEX_NAME
-          }
+          options = { index_name: INDEX_NAME }
+
+          if ::Feature.enabled?(:search_glql_use_routing, current_user)
+            # This key is used by ES to find the correct shard
+            # See Elastic::Latest::Routing for how it's used
+            options[:root_ancestor_ids] = root_ancestor_ids
+          end
+
+          options
+        end
+
+        def root_ancestor_ids
+          [resource_parent.root_ancestor.id]
         end
 
         override :use_elasticsearch_finder?
@@ -151,7 +161,7 @@ module EE
             current_user: current_user,
             # NOTE: when set to true is does a global search
             public_and_internal_projects: false,
-            root_ancestor_ids: [resource_parent.root_ancestor.id],
+            root_ancestor_ids: root_ancestor_ids,
             include_archived: params[:include_archived]
           }.merge(
             project_params,
