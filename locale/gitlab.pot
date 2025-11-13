@@ -79341,6 +79341,11 @@ msgstr ""
 msgid "fork"
 msgstr ""
 
+msgid "framework"
+msgid_plural "frameworks"
+msgstr[0] ""
+msgstr[1] ""
+
 msgid "from"
 msgstr ""
 

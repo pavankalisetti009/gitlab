@@ -8,6 +8,7 @@ query getComplianceFrameworksForDropdown(
   $first: Int
   $last: Int
   $ids: [ComplianceManagementFrameworkID!] = null
+  $withCount: Boolean = false
 ) {
   namespace(fullPath: $fullPath) {
     id
@@ -20,6 +21,7 @@ query getComplianceFrameworksForDropdown(
       first: $first
       last: $last
     ) {
+      count @include(if: $withCount)
       nodes {
         id
         name

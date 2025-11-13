@@ -488,6 +488,7 @@ export default {
             <template #frameworkSelector>
               <div class="gl-inline-flex gl-flex-wrap gl-items-center gl-gap-3">
                 <compliance-framework-dropdown
+                  with-items-count
                   :disabled="disableScopeSelector"
                   :selected-framework-ids="complianceFrameworksIds"
                   :full-path="rootNamespacePath"

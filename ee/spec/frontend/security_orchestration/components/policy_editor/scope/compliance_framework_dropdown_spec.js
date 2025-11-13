@@ -15,6 +15,7 @@ import { TYPE_COMPLIANCE_FRAMEWORK } from '~/graphql_shared/constants';
 import ComplianceFrameworkDropdown from 'ee/security_orchestration/components/policy_editor/scope/compliance_framework_dropdown.vue';
 import getComplianceFrameworksForDropdownQuery from 'ee/security_orchestration/components/policy_editor/scope/graphql/get_compliance_frameworks_for_dropdown.query.graphql';
 import ComplianceFrameworkFormModal from 'ee/groups/settings/compliance_frameworks/components/form_modal.vue';
+import ProjectsCountMessage from 'ee/security_orchestration/components/shared/projects_count_message.vue';
 import createComplianceFrameworkMutation from 'ee/groups/settings/compliance_frameworks/graphql/queries/create_compliance_framework.mutation.graphql';
 import {
   validCreateResponse,
@@ -83,6 +84,7 @@ describe('ComplianceFrameworkDropdown', () => {
             id: 1,
             name: 'name',
             complianceFrameworks: {
+              count: nodes.length,
               pageInfo: { ...mockPageInfo(), hasNextPage },
               nodes,
             },
@@ -141,6 +143,7 @@ describe('ComplianceFrameworkDropdown', () => {
   const selectAll = () => findDropdown().vm.$emit('select-all');
   const resetAll = () => findDropdown().vm.$emit('reset');
   const findAllPopovers = () => wrapper.findAllComponents(GlPopover);
+  const findProjectsCountMessage = () => wrapper.findComponent(ProjectsCountMessage);
 
   describe('without selected frameworks', () => {
     beforeEach(() => {
@@ -175,6 +178,10 @@ describe('ComplianceFrameworkDropdown', () => {
 
     it('renders default text when loading', () => {
       expect(findDropdown().props('toggleText')).toBe('Select compliance frameworks');
+    });
+
+    it('does not render footer with count by default', () => {
+      expect(findProjectsCountMessage().exists()).toBe(false);
     });
 
     it('should search frameworks despite case', async () => {
@@ -398,6 +405,7 @@ describe('ComplianceFrameworkDropdown', () => {
         fullPath: 'gitlab-org',
         ids: null,
         search: '',
+        withCount: false,
       });
     });
   });
@@ -426,6 +434,7 @@ describe('ComplianceFrameworkDropdown', () => {
         search: '4',
         fullPath: 'gitlab-org',
         ids: null,
+        withCount: false,
       });
 
       await waitForPromises();
@@ -446,7 +455,25 @@ describe('ComplianceFrameworkDropdown', () => {
       expect(requestHandlers.complianceFrameworks).toHaveBeenNthCalledWith(2, {
         fullPath: 'gitlab-org',
         ids: [moreNodes[3].id],
+        withCount: false,
       });
+    });
+  });
+
+  describe('footer with count', () => {
+    it('renders footer with items count', async () => {
+      createComponent({
+        propsData: {
+          withItemsCount: true,
+        },
+      });
+      await waitForPromises();
+
+      expect(findProjectsCountMessage().exists()).toBe(true);
+      expect(findProjectsCountMessage().props('count')).toBe(defaultNodes.length);
+      expect(findProjectsCountMessage().props('totalCount')).toBe(defaultNodes.length);
+      expect(findProjectsCountMessage().props('infoText')).toBe('frameworks');
+      expect(findProjectsCountMessage().props('showInfoIcon')).toBe(false);
     });
   });
 });
