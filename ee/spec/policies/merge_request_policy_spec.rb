@@ -538,4 +538,24 @@ RSpec.describe MergeRequestPolicy, :aggregate_failures, feature_category: :code_
       it { is_expected.to expected_result }
     end
   end
+
+  describe 'with nil user and a public project' do
+    let(:group) { create(:group) }
+    let(:project) { create(:project, :public) }
+    let(:protected_branch) { create(:protected_branch, project: project, name: 'master') }
+    let(:merge_request) { build(:merge_request, project: project, target_branch: 'master') }
+
+    subject { policy_for(nil) }
+
+    before do
+      rule = create(:approval_project_rule, project: project, approvals_required: 1)
+      rule.protected_branches << protected_branch
+      rule.groups << group
+      rule.save!
+    end
+
+    it 'disallows approve_merge_request' do
+      expect(subject).to be_disallowed(:approve_merge_request)
+    end
+  end
 end
