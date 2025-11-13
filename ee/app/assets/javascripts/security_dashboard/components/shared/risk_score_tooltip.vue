@@ -9,7 +9,7 @@ export default {
   },
   i18n: {
     riskScoreFormulaDescription: s__(
-      'SecurityReports|(Sum of open vulnerability scores%{supStart}*%{supEnd} + Age penalty%{supStart}†%{supEnd}) * Diminishing factor%{supStart}‡%{supEnd}',
+      'SecurityReports|(Sum of open vulnerability scores%{supStart}*%{supEnd} + Age penalty%{supStart}†%{supEnd}) * Diminishing factor%{supStart}‡%{supEnd} * Diversity factor%{supStart}§%{supEnd}',
     ),
     explanations: [
       {
@@ -29,6 +29,10 @@ export default {
         message: s__(
           'SecurityReports|%{supStart}‡%{supEnd}Diminishing factor = 1.0 / √(vulnerability count)',
         ),
+      },
+      {
+        id: 'diversity-factor',
+        message: s__('SecurityReports|%{supStart}§%{supEnd}Diversity factor = 0.4'),
       },
     ],
   },

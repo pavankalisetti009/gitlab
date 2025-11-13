@@ -20,7 +20,7 @@ describe('RiskScoreTooltip', () => {
 
   it('renders the risk score formula description', () => {
     expect(findFormulaDescription().text()).toMatchInterpolatedText(
-      '(Sum of open vulnerability scores%{supStart}*%{supEnd} + Age penalty%{supStart}†%{supEnd}) * Diminishing factor%{supStart}‡%{supEnd}',
+      '(Sum of open vulnerability scores%{supStart}*%{supEnd} + Age penalty%{supStart}†%{supEnd}) * Diminishing factor%{supStart}‡%{supEnd} * Diversity factor%{supStart}§%{supEnd}',
     );
   });
 
@@ -39,6 +39,12 @@ describe('RiskScoreTooltip', () => {
   it('renders the diminishing factor explanation', () => {
     expect(findExplanationItems().at(2).text()).toMatchInterpolatedText(
       '%{supStart}‡%{supEnd}Diminishing factor = 1.0 / √(vulnerability count)',
+    );
+  });
+
+  it('renders the diversity factor explanation', () => {
+    expect(findExplanationItems().at(3).text()).toMatchInterpolatedText(
+      '%{supStart}§%{supEnd}Diversity factor = 0.4',
     );
   });
 });
