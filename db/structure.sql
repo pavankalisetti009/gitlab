@@ -25122,7 +25122,8 @@ CREATE TABLE redirect_routes (
     path character varying NOT NULL,
     created_at timestamp without time zone NOT NULL,
     updated_at timestamp without time zone NOT NULL,
-    namespace_id bigint
+    namespace_id bigint,
+    CONSTRAINT check_e82ff70482 CHECK ((namespace_id IS NOT NULL))
 );
 
 CREATE SEQUENCE redirect_routes_id_seq
@@ -33723,9 +33724,6 @@ ALTER TABLE sprints
 
 ALTER TABLE suggestions
     ADD CONSTRAINT check_e69372e45f CHECK ((namespace_id IS NOT NULL)) NOT VALID;
-
-ALTER TABLE redirect_routes
-    ADD CONSTRAINT check_e82ff70482 CHECK ((namespace_id IS NOT NULL)) NOT VALID;
 
 ALTER TABLE note_diff_files
     ADD CONSTRAINT check_ebb23d73d7 CHECK ((namespace_id IS NOT NULL)) NOT VALID;
