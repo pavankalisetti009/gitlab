@@ -6,7 +6,7 @@ RSpec.describe Gitlab::GithubImport::Stage::ImportCollaboratorsWorker, feature_c
   let(:client) { instance_double(Gitlab::GithubImport::Client) }
   let_it_be(:group) { create(:group, membership_lock: true) }
   let_it_be(:project) do
-    create(:project, :github_import, :user_mapping_to_personal_namespace_owner_enabled, group: group).tap do |project|
+    create(:project, :github_import, group: group).tap do |project|
       project.build_or_assign_import_data(data: { optional_stages: { collaborators_import: true } }).save!
     end
   end
