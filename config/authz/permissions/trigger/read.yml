@@ -2,3 +2,6 @@
 name: read_trigger
 description: Grants the ability to read pipeline trigger tokens
 feature_category: pipeline_composition
+available_for_tokens: true
+boundaries:
+  - project
