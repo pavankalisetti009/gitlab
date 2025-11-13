@@ -42,11 +42,21 @@ module Vulnerabilities
       Vulnerability.id_in(ids)
     end
 
-    def update_support_tables(vulnerabilities, db_attributes, project)
+    def update_support_tables(vulnerabilities, db_attributes, projects)
       Vulnerabilities::StateTransition.insert_all!(db_attributes[:state_transitions])
 
-      Vulnerabilities::Reads::UpsertService.new(vulnerabilities, { dismissal_reason: dismissal_reason },
-        projects: project).execute
+      if projects.all? { |p| Feature.enabled?(:turn_off_vulnerability_read_create_db_trigger_function, p) }
+        Vulnerabilities::Reads::UpsertService.new(vulnerabilities, { dismissal_reason: dismissal_reason },
+          projects: projects).execute
+      else
+        # When the trigger is active, it handles state updates but not dismissal_reason
+        # The `insert_or_update_vulnerability_reads` database trigger does not
+        # update the dismissal_reason and we are moving away from using
+        # database triggers to keep tables up to date.
+        Vulnerabilities::Read
+          .by_vulnerabilities(vulnerabilities)
+          .update_all(dismissal_reason: dismissal_reason, auto_resolved: false)
+      end
     end
 
     def vulnerabilities_attributes(vulnerabilities)
