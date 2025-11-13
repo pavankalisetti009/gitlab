@@ -198,11 +198,20 @@ module EE
         @subject.feature_available?(:group_level_compliance_violations_report)
       end
 
+      condition(:trial_and_identity_verified) do
+        next true unless ::Feature.enabled?(:allow_service_account_creation_on_trial, @subject)
+
+        if @subject.root_ancestor.trial_active?
+          @user.identity_verified?
+        else
+          true
+        end
+      end
+
       condition(:service_accounts_available) do
-        if ::Feature.enabled?(:allow_service_account_creation_on_trial, @subject) &&
-            @subject.root_ancestor.trial_active? &&
-            @user&.identity_verified?
-          @subject.feature_available?(:service_accounts)
+        if @subject.root_ancestor.trial_active?
+          ::Feature.enabled?(:allow_service_account_creation_on_trial, @subject) &&
+            @subject.feature_available?(:service_accounts)
         else
           @subject.feature_available_non_trial?(:service_accounts)
         end
@@ -417,6 +426,11 @@ module EE
       rule { owner }.policy do
         enable :admin_protected_environments
         enable :admin_licensed_seat
+        enable :create_service_account
+        enable :delete_service_account
+        enable :read_service_account
+        enable :admin_service_account_member
+        enable :admin_service_accounts
       end
 
       rule { can?(:owner_access) }.policy do
@@ -597,18 +611,35 @@ module EE
         prevent :override_group_member
       end
 
-      rule { (admin | owner) & service_accounts_available }.policy do
-        enable :admin_service_accounts
-        enable :admin_service_account_member
-      end
-
       rule { memberships_locked_to_saml & saml_group_sync_available & saml_group_links_exists & ~admin }.policy do
         prevent :admin_group_member
       end
 
-      rule { service_accounts_available & ~has_parent & (admin | (allow_top_level_group_owners_to_create_service_accounts & owner)) }.policy do
-        enable :create_service_account
-        enable :delete_service_account
+      rule { ~admin & (owner & ~allow_top_level_group_owners_to_create_service_accounts) }.policy do
+        prevent :create_service_account
+        prevent :delete_service_account
+        prevent :read_service_account
+      end
+
+      rule { has_parent }.policy do
+        prevent :read_service_account
+        prevent :create_service_account
+        prevent :delete_service_account
+      end
+
+      rule { ~service_accounts_available }.policy do
+        prevent :read_service_account
+        prevent :admin_service_accounts
+        prevent :admin_service_account_member
+        prevent :create_service_account
+        prevent :delete_service_account
+      end
+
+      rule { ~admin & ~trial_and_identity_verified }.policy do
+        prevent :admin_service_accounts
+        prevent :admin_service_account_member
+        prevent :create_service_account
+        prevent :delete_service_account
       end
 
       rule { developer }.policy do

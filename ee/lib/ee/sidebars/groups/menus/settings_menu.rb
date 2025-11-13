@@ -75,8 +75,7 @@ module EE
 
           def service_accounts_available?
             context.group.root? &&
-              can?(context.current_user, :create_service_account, context.group) &&
-              can?(context.current_user, :delete_service_account, context.group)
+              can?(context.current_user, :read_service_account, context.group)
           end
 
           def custom_roles_enabled?

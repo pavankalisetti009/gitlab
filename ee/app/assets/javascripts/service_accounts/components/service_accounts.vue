@@ -38,6 +38,7 @@ export default {
   },
   mixins: [glFeatureFlagsMixin()],
   inject: [
+    'serviceAccountsEnabled',
     'serviceAccountsPath',
     'serviceAccountsEditPath',
     'serviceAccountsDeletePath',
@@ -56,9 +57,11 @@ export default {
     ]),
   },
   created() {
-    this.fetchServiceAccounts(this.serviceAccountsPath, {
-      page: this.page,
-    });
+    if (this.serviceAccountsEnabled) {
+      this.fetchServiceAccounts(this.serviceAccountsPath, {
+        page: this.page,
+      });
+    }
   },
   methods: {
     ...mapActions(useServiceAccounts, [
@@ -191,7 +194,7 @@ export default {
       </template>
 
       <template #actions>
-        <gl-button variant="confirm" @click="addServiceAccount">
+        <gl-button v-if="serviceAccountsEnabled" variant="confirm" @click="addServiceAccount">
           {{ s__('ServiceAccounts|Add service account') }}
         </gl-button>
       </template>

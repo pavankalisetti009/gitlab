@@ -50,6 +50,7 @@ describe('Service accounts', () => {
         $router,
       },
       provide: {
+        serviceAccountsEnabled: true,
         serviceAccountsPath,
         serviceAccountsEditPath,
         serviceAccountsDeletePath,
@@ -78,21 +79,34 @@ describe('Service accounts', () => {
     ];
   });
 
-  beforeEach(() => {
-    createComponent();
+  describe('when service accounts are enabled', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
+    it('fetches service accounts when it is rendered', () => {
+      expect(store.fetchServiceAccounts).toHaveBeenCalledWith(serviceAccountsPath, { page: 1 });
+    });
+
+    it('fetches service accounts when the page is changed', () => {
+      findPagination().vm.$emit('input', 2);
+
+      expect(store.fetchServiceAccounts).toHaveBeenCalledWith(serviceAccountsPath, { page: 2 });
+    });
   });
 
-  it('fetches service accounts when it is rendered', () => {
-    expect(store.fetchServiceAccounts).toHaveBeenCalledWith(serviceAccountsPath, { page: 1 });
-  });
-
-  it('fetches service accounts when the page is changed', () => {
-    findPagination().vm.$emit('input', 2);
-
-    expect(store.fetchServiceAccounts).toHaveBeenCalledWith(serviceAccountsPath, { page: 2 });
+  describe('when service accounts are disabled', () => {
+    it('does not fetch service accounts when it is rendered', () => {
+      createComponent({ serviceAccountsEnabled: false });
+      expect(store.fetchServiceAccounts).not.toHaveBeenCalled();
+    });
   });
 
   describe('table', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
     describe('busy state', () => {
       describe('when it is `true`', () => {
         beforeAll(() => {
@@ -299,25 +313,41 @@ describe('Service accounts', () => {
 
   describe('header', () => {
     it('shows the page heading', () => {
+      createComponent();
       const heading = findPageHeading();
+
       expect(heading.text()).toContain(
         'Service accounts are non-human accounts that allow interactions between software applications, systems, or services. Learn more',
       );
     });
 
-    it('triggers the add service account action', () => {
-      const addServiceAccountButton = findAddServiceAccountButton();
+    describe('when service accounts are enabled', () => {
+      it('triggers the add service account action', () => {
+        createComponent();
+        const addServiceAccountButton = findAddServiceAccountButton();
+        addServiceAccountButton.vm.$emit('click');
 
-      addServiceAccountButton.vm.$emit('click');
+        expect(addServiceAccountButton.emitted()).toHaveProperty('click');
+        expect(store.clearAlert).toHaveBeenCalled();
+        expect(store.setCreateEditType).toHaveBeenCalledWith('create');
+        expect(store.setServiceAccount).toHaveBeenCalledWith(null);
+      });
+    });
 
-      expect(addServiceAccountButton.emitted()).toHaveProperty('click');
-      expect(store.clearAlert).toHaveBeenCalled();
-      expect(store.setCreateEditType).toHaveBeenCalledWith('create');
-      expect(store.setServiceAccount).toHaveBeenCalledWith(null);
+    describe('when service accounts are disabled', () => {
+      it('does not show the add service account button', () => {
+        createComponent({ serviceAccountsEnabled: false });
+
+        expect(findAddServiceAccountButton().exists()).toBe(false);
+      });
     });
   });
 
   describe('modals', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
     describe('delete', () => {
       beforeEach(() => {
         store.deleteType = 'soft';
@@ -326,7 +356,6 @@ describe('Service accounts', () => {
           name: 'Service Account 1',
           username: 'test user',
         };
-        createComponent();
       });
 
       it('shows the modal when the deleteType is set', () => {
@@ -349,7 +378,6 @@ describe('Service accounts', () => {
     describe('create', () => {
       beforeEach(() => {
         store.createEditType = 'create';
-        createComponent();
       });
 
       it('shows the modal when the createEditType is set', () => {
@@ -372,7 +400,6 @@ describe('Service accounts', () => {
     describe('edit', () => {
       beforeEach(() => {
         store.createEditType = 'edit';
-        createComponent();
       });
 
       it('shows the modal when the createEditType is set', () => {
@@ -389,7 +416,6 @@ describe('Service accounts', () => {
 
       describe('when in the group area', () => {
         it('call editServiceAccount when modal is submitted', () => {
-          createComponent();
           findCreateEditServiceAccountModal().vm.$emit('submit', values);
 
           expect(store.editServiceAccount).toHaveBeenCalledWith(serviceAccountsPath, values);
