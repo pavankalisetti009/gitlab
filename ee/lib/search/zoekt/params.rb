@@ -5,8 +5,7 @@ module Search
     class Params
       UNLIMITED = 0
 
-      def initialize(current_user, **options)
-        @current_user = current_user
+      def initialize(options)
         @options = options
       end
 
@@ -32,7 +31,7 @@ module Search
 
       private
 
-      attr_reader :current_user, :options
+      attr_reader :options
 
       def search_limit
         options.fetch(:limit)

@@ -144,15 +144,16 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
     end
 
     context 'when project is archived' do
-      it 'sets include_archived and exclude_forks filters to false' do
+      it 'sends include_archived as true and exclude_forks filters as false' do
         project.update!(archived: true)
 
         expect(service.use_zoekt?).to be(true)
         expect(service.zoekt_searchable_scope).to eq(project)
+        expect(Search::Zoekt::SearchResults).to receive(:new)
+          .with(user, 'foobar', nil, hash_including(filters: { include_archived: true, exclude_forks: false }))
+          .and_call_original
         result = service.execute
         expect(result).to be_kind_of(::Search::Zoekt::SearchResults)
-        expect(result.filters[:include_archived]).to be(true)
-        expect(result.filters[:exclude_forks]).to be(false)
       end
     end
 

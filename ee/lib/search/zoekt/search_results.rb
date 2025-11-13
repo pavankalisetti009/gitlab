@@ -13,9 +13,6 @@ module Search
 
       attr_accessor :file_count
 
-      attr_reader :current_user, :query, :public_and_internal_projects, :order_by, :sort, :filters, :modes,
-        :source, :projects, :node_id, :multi_match, :options
-
       def initialize(current_user, query, projects = nil, **options)
         if options[:search_level].present?
           raise 'Specifying search level is not supported. Pass group_id or project_id instead.'
@@ -27,10 +24,8 @@ module Search
         @filters = options.fetch(:filters, {}.with_indifferent_access)
         @projects = filtered_projects(projects)
         @node_id = options[:node_id]
-        @order_by = options[:order_by]
-        @sort = options[:sort]
         @modes = options.fetch(:modes, {})
-        @multi_match = MultiMatch.new(options[:chunk_count]) if options.fetch(:multi_match_enabled, false)
+        @multi_match = MultiMatch.new(options[:chunk_count]) unless source == :api
         @options = options
       end
 
@@ -57,34 +52,23 @@ module Search
 
       def parse_zoekt_search_result(result, project)
         ref = project.default_branch_or_main
+        return multi_match.blobs_for_project(result, project, ref) if multi_match
 
-        if multi_match
-          multi_match.blobs_for_project(result, project, ref)
-        else
-          path = result[:path]
-          basename = File.join(File.dirname(path), File.basename(path, '.*'))
-          content = result[:content]
-          project_id = project.id
+        path = result[:path]
+        basename = File.join(File.dirname(path), File.basename(path, '.*'))
+        content = result[:content]
+        project_id = project.id
 
-          ::Gitlab::Search::FoundBlob.new(
-            path: path,
-            basename: basename,
-            ref: ref,
-            startline: [result[:line] - 1, 0].max,
-            highlight_line: result[:line],
-            data: content,
-            project: project,
-            project_id: project_id
-          )
-        end
-      end
-
-      def aggregations(*)
-        []
-      end
-
-      def highlight_map(*)
-        {}
+        ::Gitlab::Search::FoundBlob.new(
+          path: path,
+          basename: basename,
+          ref: ref,
+          startline: [result[:line] - 1, 0].max,
+          highlight_line: result[:line],
+          data: content,
+          project: project,
+          project_id: project_id
+        )
       end
 
       def failed?(*)
@@ -97,22 +81,8 @@ module Search
 
       private
 
-      attr_reader :error_message
-
-      def base_options
-        {
-          current_user: current_user,
-          public_and_internal_projects: public_and_internal_projects,
-          order_by: order_by,
-          sort: sort,
-          projects: projects,
-          node_id: node_id
-        }
-      end
-
-      def memoize_key(scope, page:, per_page:, count_only:)
-        count_only ? :"#{scope}_results_count" : :"#{scope}_#{page}_#{per_page}"
-      end
+      attr_reader :current_user, :query, :filters, :modes, :source, :projects, :node_id, :multi_match, :options,
+        :error_message
 
       def blobs_and_file_count(page: 1, per_page: DEFAULT_PER_PAGE, count_only: false, preload_method: nil)
         return Kaminari.paginate_array([]), 0 if empty_results_preflight_check?
@@ -122,6 +92,10 @@ module Search
             preload_method: preload_method
           )
         end
+      end
+
+      def memoize_key(scope, page:, per_page:, count_only:)
+        count_only ? :"#{scope}_results_count" : :"#{scope}_#{page}_#{per_page}"
       end
 
       def limited_counter_with_delimiter(count)
@@ -150,7 +124,7 @@ module Search
       # @param page_limit [Integer] maximum number of pages we parse
       # @return [Array<Hash, Integer>] the results and total count
       def zoekt_search(query, per_page:, page_limit:)
-        response = ::Gitlab::Search::Zoekt::Client.search_zoekt_proxy(
+        response = ::Gitlab::Search::Zoekt::Client.search(
           query,
           num: ZOEKT_COUNT_LIMIT,
           search_mode: search_mode,
@@ -231,7 +205,7 @@ module Search
           max_per_page: DEFAULT_PER_PAGE * 2,
           search_mode: search_mode,
           filters: filters,
-          multi_match: multi_match
+          chunk_size: multi_match&.max_chunks_size
         )
 
         search_results, total_count, file_count = zoekt_cache.fetch do |page_limit|

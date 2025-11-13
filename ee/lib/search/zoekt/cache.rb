@@ -24,7 +24,7 @@ module Search
         @current_page = options.fetch(:page)
         @max_per_page = options.fetch(:max_per_page)
         @search_mode = options.fetch(:search_mode)
-        @multi_match = options.fetch(:multi_match, false)
+        @chunk_size = options.fetch(:chunk_size)
         @filters = options.fetch(:filters)
       end
 
@@ -45,7 +45,7 @@ module Search
       private
 
       attr_reader :current_user, :query, :project_id, :group_id, :per_page, :current_page, :max_per_page, :search_mode,
-        :multi_match, :filters
+        :chunk_size, :filters
 
       def enabled?
         return false unless Gitlab::CurrentSettings.zoekt_cache_response?
@@ -71,8 +71,7 @@ module Search
 
       def search_fingerprint
         scope_key = "g#{group_id}-p#{project_id}"
-        multi_match_key = multi_match.present? ? multi_match.max_chunks_size : 'f'
-        data = "#{query}-#{scope_key}-#{search_mode}-#{multi_match_key}-#{Gitlab::Json.generate(filters.sort)}"
+        data = "#{query}-#{scope_key}-#{search_mode}-#{chunk_size}-#{Gitlab::Json.generate(filters.sort)}"
         OpenSSL::Digest.hexdigest('SHA256', data)
       end
 
