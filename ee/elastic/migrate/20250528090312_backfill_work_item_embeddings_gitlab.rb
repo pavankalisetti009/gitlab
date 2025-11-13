@@ -70,3 +70,5 @@ class BackfillWorkItemEmbeddingsGitlab < Elastic::Migration
     remaining_documents_count * SPACE_CALCULATION_MULTIPLIER
   end
 end
+
+BackfillWorkItemEmbeddingsGitlab.prepend ::Search::Elastic::MigrationObsolete
