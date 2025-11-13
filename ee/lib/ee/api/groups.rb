@@ -75,6 +75,14 @@ module EE
               end
             end
 
+            unless group.licensed_feature_available?(:group_level_merge_checks_setting)
+              params.delete(:only_allow_merge_if_pipeline_succeeds)
+              params.delete(:allow_merge_on_skipped_pipeline)
+              params.delete(:only_allow_merge_if_all_discussions_are_resolved)
+            end
+
+            validate_merge_request_settings!(group)
+
             super
           end
 
@@ -111,6 +119,24 @@ module EE
             not_found!('Group') unless group
             not_found! unless group.licensed_feature_available?(:ssh_certificates)
             forbidden!('Group') if group.has_parent?
+          end
+
+          def validate_merge_request_settings!(group)
+            return unless params.key?(:allow_merge_on_skipped_pipeline)
+            return unless params[:allow_merge_on_skipped_pipeline] == true
+
+            pipeline_succeeds = if params.key?(:only_allow_merge_if_pipeline_succeeds)
+                                  params[:only_allow_merge_if_pipeline_succeeds]
+                                else
+                                  group.namespace_settings&.only_allow_merge_if_pipeline_succeeds
+                                end
+
+            return if pipeline_succeeds
+
+            bad_request!(
+              'allow_merge_on_skipped_pipeline can only be enabled when ' \
+                'only_allow_merge_if_pipeline_succeeds is true'
+            )
           end
         end
 
