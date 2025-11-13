@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
-require_relative './shared_examples/internal_events_tracking'
+require_relative './shared_examples/events_tracking'
 
 RSpec.describe Ai::Catalog::ItemConsumers::DestroyService, feature_category: :workflow_catalog do
   include Ai::Catalog::TestHelpers
 
-  it_behaves_like 'ItemConsumers::InternalEventsTracking' do
+  it_behaves_like 'ItemConsumers::EventsTracking' do
     subject { described_class.new(build(:ai_catalog_item_consumer), build(:user)) }
   end
 
@@ -54,6 +54,24 @@ RSpec.describe Ai::Catalog::ItemConsumers::DestroyService, feature_category: :wo
           ).and increment_usage_metrics('counts.count_total_delete_ai_catalog_item_consumer')
         end
 
+        it 'creates an audit event on successful deletion', :aggregate_failures do
+          expect { response }.to change { AuditEvent.count }.by(1)
+
+          audit_event = AuditEvent.last
+
+          expect(audit_event).to have_attributes(
+            author: maintainer,
+            entity_type: 'Project',
+            entity_id: project.id,
+            target_details: "#{item_consumer.item.name} (ID: #{item_consumer.item.id})"
+          )
+          expect(audit_event.details).to include(
+            custom_message: 'Removed AI agent from project/group',
+            event_name: 'disable_ai_catalog_agent',
+            target_type: 'Ai::Catalog::Item'
+          )
+        end
+
         context 'when destroy fails' do
           before do
             allow(item_consumer).to receive(:destroy) do
@@ -70,6 +88,10 @@ RSpec.describe Ai::Catalog::ItemConsumers::DestroyService, feature_category: :wo
 
           it 'does not track internal event on failure' do
             expect { response }.not_to trigger_internal_events('delete_ai_catalog_item_consumer')
+          end
+
+          it 'does not create an audit event on failure' do
+            expect { response }.not_to change { AuditEvent.count }
           end
         end
       end

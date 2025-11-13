@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
-require_relative './shared_examples/internal_events_tracking'
+require_relative './shared_examples/events_tracking'
 
 RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :workflow_catalog do
   include Ai::Catalog::TestHelpers
@@ -37,7 +37,7 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
     enable_ai_catalog
   end
 
-  it_behaves_like 'ItemConsumers::InternalEventsTracking' do
+  it_behaves_like 'ItemConsumers::EventsTracking' do
     subject { described_class.new(container: container, current_user: user, params: params) }
   end
 
@@ -61,6 +61,10 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
 
     it 'does not track internal event' do
       expect { execute }.not_to trigger_internal_events('create_ai_catalog_item_consumer')
+    end
+
+    it 'does not create an audit event' do
+      expect { execute }.not_to change { AuditEvent.count }
     end
   end
 
@@ -286,6 +290,24 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
         item: item,
         enabled: true,
         locked: true
+      )
+    end
+
+    it 'creates an audit event with correct attributes', :aggregate_failures do
+      expect { execute }.to change { AuditEvent.count }.by(1)
+
+      audit_event = AuditEvent.last
+
+      expect(audit_event).to have_attributes(
+        author: user,
+        entity_type: 'Project',
+        entity_id: consumer_project.id,
+        target_details: "#{item.name} (ID: #{item.id})"
+      )
+      expect(audit_event.details).to include(
+        custom_message: 'Added AI agent to project/group',
+        event_name: 'enable_ai_catalog_agent',
+        target_type: 'Ai::Catalog::Item'
       )
     end
   end

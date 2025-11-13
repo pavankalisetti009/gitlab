@@ -17,6 +17,8 @@ module Ai
           item_validation = validate_item
           return item_validation if item_validation&.error?
 
+          @old_definition = item.latest_version.definition.dup
+
           prepare_item_to_update
           prepare_version_to_update
 
@@ -24,8 +26,9 @@ module Ai
 
           save_item
 
-          if item.saved_changes?
+          if item.saved_changes? || item.latest_version.saved_changes?
             track_ai_item_events('update_ai_catalog_item', { label: item.item_type })
+            track_update_audit_event
             return ServiceResponse.success(payload: payload)
           end
 
@@ -34,7 +37,7 @@ module Ai
 
         private
 
-        attr_reader :item
+        attr_reader :item, :old_definition
 
         def allowed?
           super && Ability.allowed?(current_user, :admin_ai_catalog_item, item)
@@ -112,6 +115,8 @@ module Ai
         def save_item
           raise NotImplementedError
         end
+
+        def track_update_audit_event; end
       end
     end
   end

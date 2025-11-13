@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
-require_relative './shared_examples/internal_events_tracking'
+require_relative './shared_examples/events_tracking'
 
 RSpec.describe Ai::Catalog::ItemConsumers::UpdateService, feature_category: :workflow_catalog do
   include Ai::Catalog::TestHelpers
 
-  it_behaves_like 'ItemConsumers::InternalEventsTracking' do
+  it_behaves_like 'ItemConsumers::EventsTracking' do
     subject { described_class.new(build(:ai_catalog_item_consumer), build(:user), {}) }
   end
 
