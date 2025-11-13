@@ -6,6 +6,7 @@ RSpec.describe 'admin/data_management/index.html.haml', :enable_admin_mode, feat
   before do
     allow(view).to receive(:breadcrumb_title)
     allow(view).to receive(:page_title)
+    allow(view).to receive(:admin_data_management_path).and_return('/admin/data_management')
     @model_class = Gitlab::Geo::ModelMapper.available_models.first
 
     render
@@ -17,6 +18,10 @@ RSpec.describe 'admin/data_management/index.html.haml', :enable_admin_mode, feat
 
   it 'sets breadcrumbs' do
     expect(view).to have_received(:breadcrumb_title).with(_('Data management'))
+  end
+
+  it 'sets breadcrumb link' do
+    expect(view.instance_variable_get(:@breadcrumb_link)).to eq('/admin/data_management')
   end
 
   it 'renders #js-admin-data-management' do
