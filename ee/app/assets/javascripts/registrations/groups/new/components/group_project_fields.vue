@@ -4,6 +4,7 @@ import { GlFormGroup, GlFormInput, GlTooltipDirective, GlFormCheckbox } from '@g
 import { GlBreakpointInstance } from '@gitlab/ui/src/utils'; // eslint-disable-line no-restricted-syntax
 import { debounce } from 'lodash';
 import { mapState, mapActions } from 'vuex'; // eslint-disable-line no-restricted-imports
+import GitlabExperiment from '~/experimentation/components/gitlab_experiment.vue';
 import { createAlert } from '~/alert';
 import { getGroupPathAvailability } from '~/rest_api';
 import { __, s__ } from '~/locale';
@@ -20,6 +21,7 @@ export default {
     GlFormInput,
     GlFormCheckbox,
     ProjectTemplateSelector,
+    GitlabExperiment,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -172,6 +174,14 @@ export default {
         :label="$options.i18n.groupNameLabel"
         :label-for="groupInputAttr('group_name')"
       >
+        <gitlab-experiment name="trial_registration_hierarchy_education">
+          <template #control> </template>
+          <template #candidate>
+            <p data-testid="group-description">
+              {{ s__('ProjectsNew|Groups organize your team members and projects.') }}
+            </p>
+          </template>
+        </gitlab-experiment>
         <gl-form-input
           v-if="groupPersisted && !importGroup"
           id="group_name"
@@ -217,52 +227,109 @@ export default {
       </gl-form-group>
     </div>
 
-    <div v-if="!importGroup" id="blank-project-name">
-      <gl-form-group
-        class="project-name"
-        :label="$options.i18n.projectNameLabel"
-        label-for="blank_project_name"
-      >
-        <gl-form-input
-          id="blank_project_name"
-          class="js-track-error"
-          required
-          name="project[name]"
-          data-testid="project-name"
-          data-track-label="blank_project"
-          data-track-action="activate_form_input"
-          data-track-property="project_name"
-          data-track-value=""
-          :title="$options.i18n.projectNameRequired"
-          :data-track-action-for-errors="trackActionForErrors"
-          :value="projectName"
-          @update="onProjectUpdate"
-        />
-      </gl-form-group>
-    </div>
+    <gitlab-experiment name="trial_registration_hierarchy_education">
+      <template #control>
+        <div v-if="!importGroup" id="blank-project-name">
+          <gl-form-group
+            class="project-name"
+            :label="$options.i18n.projectNameLabel"
+            label-for="blank_project_name"
+          >
+            <gl-form-input
+              id="blank_project_name"
+              class="js-track-error"
+              required
+              name="project[name]"
+              data-testid="project-name"
+              data-track-label="blank_project"
+              data-track-action="activate_form_input"
+              data-track-property="project_name"
+              data-track-value=""
+              :title="$options.i18n.projectNameRequired"
+              :data-track-action-for-errors="trackActionForErrors"
+              :value="projectName"
+              @update="onProjectUpdate"
+            />
+          </gl-form-group>
+        </div>
+      </template>
+      <template #candidate>
+        <div v-if="!importGroup" id="blank-project-name" class="gl-mt-6 gl-flex">
+          <div class="gl-relative gl-w-6">
+            <div
+              class="gl-absolute gl-left-2 gl-bg-gray-200"
+              style="width: 2px; margin-left: -1px; top: -1.25rem; height: 1.75rem"
+            ></div>
+            <div
+              class="gl-absolute gl-left-2 gl-w-4 gl-bg-gray-200"
+              style="height: 2px; top: 0.425rem; width: 0.9rem"
+            ></div>
+          </div>
+          <gl-form-group
+            class="project-name gl-flex-grow-1"
+            :label="$options.i18n.projectNameLabel"
+            label-for="blank_project_name"
+          >
+            <p data-testid="project-description">
+              {{ s__('ProjectsNew|Projects contain your repository and management tools.') }}
+            </p>
+            <gl-form-input
+              id="blank_project_name"
+              class="js-track-error"
+              required
+              name="project[name]"
+              data-testid="project-name"
+              data-track-label="blank_project"
+              data-track-action="activate_form_input"
+              data-track-property="project_name"
+              data-track-value=""
+              :title="$options.i18n.projectNameRequired"
+              :data-track-action-for-errors="trackActionForErrors"
+              :value="projectName"
+              @update="onProjectUpdate"
+            />
+          </gl-form-group>
+        </div>
+      </template>
+    </gitlab-experiment>
 
-    <div v-if="!importGroup">
-      <project-template-selector
-        :selected-template-name="selectedTemplateName"
-        @select="selectTemplate"
-      />
-    </div>
+    <gitlab-experiment name="trial_registration_hierarchy_education">
+      <template #control>
+        <div>
+          <div v-if="!importGroup">
+            <project-template-selector
+              :selected-template-name="selectedTemplateName"
+              @select="selectTemplate"
+            />
+          </div>
 
-    <p class="form-text gl-text-center">{{ $options.i18n.urlHeader }}</p>
+          <p class="form-text gl-text-center">{{ $options.i18n.urlHeader }}</p>
 
-    <p class="form-text monospace gl-break-words gl-text-center">
-      {{ rootUrl }}<span data-testid="url-group-path">{{ urlGroupPath }}</span
-      ><span>{{ $options.i18n.urlSlash }}</span
-      ><span data-testid="url-project-path">{{ projectPath }}</span>
-    </p>
+          <p class="form-text monospace gl-break-words gl-text-center">
+            {{ rootUrl }}<span data-testid="url-group-path">{{ urlGroupPath }}</span
+            ><span>{{ $options.i18n.urlSlash }}</span
+            ><span data-testid="url-project-path">{{ projectPath }}</span>
+          </p>
 
-    <p class="form-text !gl-mb-5 gl-text-center gl-text-subtle">
-      {{ $options.i18n.urlFooter }}
-    </p>
+          <p class="form-text !gl-mb-5 gl-text-center gl-text-subtle">
+            {{ $options.i18n.urlFooter }}
+          </p>
+        </div>
+      </template>
+
+      <template #candidate> </template>
+    </gitlab-experiment>
 
     <gl-form-group v-if="!importGroup && !selectedTemplateName">
       <gl-form-checkbox name="project[initialize_with_readme]" :checked="initializeWithReadme">
-        {{ $options.i18n.readmeLabel }}
+        <gitlab-experiment name="trial_registration_hierarchy_education">
+          <template #control>
+            {{ $options.i18n.readmeLabel }}
+          </template>
+          <template #candidate>
+            {{ s__('ProjectsNew|Add a Getting Started README') }}
+          </template>
+        </gitlab-experiment>
         <template #help>
           {{ $options.i18n.readmeDescription }}
         </template>

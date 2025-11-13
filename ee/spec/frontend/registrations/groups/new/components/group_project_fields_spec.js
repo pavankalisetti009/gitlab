@@ -7,11 +7,13 @@ import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
 import waitForPromises from 'helpers/wait_for_promises';
 import GroupProjectFields from 'ee/registrations/groups/new/components/group_project_fields.vue';
 import ProjectTemplateSelector from 'ee/registrations/groups/new/components/project_template_selector.vue';
+import GitlabExperiment from '~/experimentation/components/gitlab_experiment.vue';
 import createStore from 'ee/registrations/groups/new/store';
 import { DEFAULT_GROUP_PATH, DEFAULT_PROJECT_PATH } from 'ee/registrations/groups/new/constants';
 import { createAlert } from '~/alert';
 import axios from '~/lib/utils/axios_utils';
 import { HTTP_STATUS_INTERNAL_SERVER_ERROR, HTTP_STATUS_OK } from '~/lib/utils/http_status';
+import { stubExperiments } from 'helpers/experimentation_helper';
 
 jest.mock('~/alert');
 
@@ -43,6 +45,7 @@ describe('GroupProjectFields', () => {
       },
       stubs: {
         GlFormInput,
+        GitlabExperiment,
       },
     });
   };
@@ -343,6 +346,32 @@ describe('GroupProjectFields', () => {
       expect(findInputByTestId('group-name').props('value')).toBe('@_');
       expect(findInputByTestId('project-name').props('value')).toBe('project name');
       expect(wrapper.text()).toContain(buildUrl('_', 'project-name'));
+    });
+  });
+
+  describe('with trial_registration_hierarchy_education experiment enabled', () => {
+    it.each([
+      ['control', false],
+      ['candidate', true],
+    ])(
+      'displays the group and project descriptions based on experiment behavior',
+      (behavior, expected) => {
+        stubExperiments({ trial_registration_hierarchy_education: behavior });
+        createComponent();
+        const groupDescription = findInputByTestId('group-description');
+        const projectDescription = findInputByTestId('project-description');
+
+        expect(groupDescription.exists()).toBe(expected);
+        expect(projectDescription.exists()).toBe(expected);
+      },
+    );
+
+    it('does not display url with candidate behavior', async () => {
+      stubExperiments({ trial_registration_hierarchy_education: 'candidate' });
+      createComponent({ groupName: '@_', projectName: 'project name' });
+      await nextTick();
+
+      expect(wrapper.text()).not.toContain(buildUrl('_', 'project-name'));
     });
   });
 });
