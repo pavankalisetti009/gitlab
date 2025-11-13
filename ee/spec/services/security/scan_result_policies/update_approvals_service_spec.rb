@@ -324,6 +324,36 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
       end
     end
 
+    context 'when not all security scans are present in the target pipeline' do
+      let(:scanners) { %w[dependency_scanning container_scanning] }
+      let_it_be(:source_scan_container_scanning) do
+        create(:security_scan, :succeeded,
+          project: project,
+          pipeline: pipeline,
+          scan_type: 'container_scanning'
+        )
+      end
+
+      it_behaves_like 'persists error in violation details' do
+        let(:expected_error) do
+          {
+            'error' => Security::ScanResultPolicyViolation::ERRORS[:target_scan_missing],
+            'missing_scans' => ['container_scanning']
+          }
+        end
+      end
+
+      context 'when feature flag "approval_policies_enforce_target_scans" is disabled' do
+        before do
+          stub_feature_flags(approval_policies_enforce_target_scans: false)
+        end
+
+        it_behaves_like 'persists violation details' do
+          let(:expected_violations) { { 'newly_detected' => array_including(uuids) } }
+        end
+      end
+    end
+
     context 'when there are no violated approval rules' do
       let(:vulnerabilities_allowed) { 100 }
 
@@ -1109,18 +1139,12 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
       it { is_expected.to be(true) }
     end
 
-    context 'when more scanners are enforced' do
+    context 'when not all scanners enforced by the policy are present in the pipeline' do
       let(:scanners) { %w[dependency_scanning container_scanning] }
 
-      it { is_expected.to be(true) }
-
-      context 'when feature flag "approval_policies_enforce_target_scans" is disabled' do
-        before do
-          stub_feature_flags(approval_policies_enforce_target_scans: false)
-        end
-
-        it { is_expected.to be(false) }
-      end
+      # The stricter enforcement could impact existing policies, mainly with `scanners: []`.
+      # For now, we don't block. See more in https://gitlab.com/groups/gitlab-org/-/epics/14119.
+      it { is_expected.to be(false) }
     end
 
     context 'without any scans in the source or target pipeline' do
