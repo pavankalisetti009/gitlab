@@ -59,6 +59,28 @@ RSpec.describe SecretsManagement::ProjectSecrets::ReadService, :gitlab_secrets_m
             expect(project_secret.rotation_info).to eq(rotation_info)
           end
 
+          context 'when reading after an update' do
+            it 'successfully reads timestamps as stored strings without parsing into timestamp objects' do
+              update_result = SecretsManagement::ProjectSecrets::UpdateService
+                .new(project, user)
+                .execute(name: name, value: 'new-secret-value')
+
+              expect(update_result).to be_success
+
+              read_result = described_class.new(project, user).execute(name, include_rotation_info: true)
+              expect(read_result).to be_success
+
+              project_secret = read_result.payload[:project_secret]
+              expect(project_secret).to be_a(SecretsManagement::ProjectSecret)
+
+              # Timestamps should remain as raw strings from OpenBao (or nil), not parsed Time objects.
+              %i[create_started_at create_completed_at update_started_at update_completed_at].each do |attr|
+                value = project_secret.public_send(attr)
+                expect(value).to be_a(String)
+              end
+            end
+          end
+
           context 'and include_rotation_info is false' do
             let(:include_rotation_info) { false }
 
@@ -83,11 +105,13 @@ RSpec.describe SecretsManagement::ProjectSecrets::ReadService, :gitlab_secrets_m
 
             shared_examples 'writes metadata and expects status' do |expected|
               it "computes status as #{expected}" do
+                stringified_timestamps = timestamps.transform_values(&:to_s)
+
                 metadata = {
                   description: description,
                   environment: environment,
                   branch: branch
-                }.merge(timestamps)
+                }.merge(stringified_timestamps)
 
                 client.update_kv_secret_metadata(mount, path, metadata, metadata_cas: cas)
                 project_secret = service.execute(name, include_rotation_info: true).payload[:project_secret]

@@ -31,10 +31,10 @@ module SecretsManagement
           environment: custom_metadata["environment"],
           branch: custom_metadata["branch"],
           metadata_version: secret_metadata["current_metadata_version"],
-          create_started_at: parse_timestamp(secret_metadata["created_time"]),
-          create_completed_at: parse_timestamp(custom_metadata["create_completed_at"]),
-          update_started_at: parse_timestamp(custom_metadata["update_started_at"]),
-          update_completed_at: parse_timestamp(custom_metadata["update_completed_at"])
+          create_started_at: secret_metadata["created_time"],
+          create_completed_at: custom_metadata["create_completed_at"],
+          update_started_at: custom_metadata["update_started_at"],
+          update_completed_at: custom_metadata["update_completed_at"]
         )
 
         if include_rotation_info
@@ -46,12 +46,6 @@ module SecretsManagement
         end
 
         ServiceResponse.success(payload: { project_secret: project_secret })
-      end
-
-      def parse_timestamp(value)
-        return if value.blank?
-
-        Time.iso8601(value)
       end
 
       def not_found_response

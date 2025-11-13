@@ -258,7 +258,7 @@ RSpec.describe 'project secrets', :gitlab_secrets_manager, :freeze_time, feature
 
               if resp.success? && name == secret_1.name
                 ps = resp.payload[:project_secret]
-                ps.create_started_at   = 10.minutes.ago
+                ps.create_started_at   = 10.minutes.ago.to_s
                 ps.create_completed_at = nil
                 ServiceResponse.success(payload: { project_secret: ps })
               else

@@ -37,7 +37,7 @@ module SecretsManagement
     private
 
     def update_status
-      return unless update_started_at || update_completed_at
+      return unless update_started_at.present? || update_completed_at.present?
 
       return STATUSES[:completed] if update_completed_at.present?
 
@@ -47,14 +47,18 @@ module SecretsManagement
     end
 
     def create_status
-      if create_started_at && create_completed_at.nil?
+      if create_started_at.present? && create_completed_at.blank?
         return recent?(create_started_at) ? STATUSES[:create_in_progress] : STATUSES[:create_stale]
       end
 
       STATUSES[:completed]
     end
 
-    def recent?(time)
+    def recent?(time_str)
+      return false if time_str.blank?
+
+      time = Time.zone.parse(time_str)
+
       time && time > STALE_THRESHOLD.ago
     end
   end
