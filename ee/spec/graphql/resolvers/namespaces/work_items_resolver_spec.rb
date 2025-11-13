@@ -43,6 +43,8 @@ RSpec.describe Resolvers::Namespaces::WorkItemsResolver, feature_category: :port
     context 'when epics are enabled' do
       before do
         stub_licensed_features(epics: true)
+        group.clear_memoization(:supports_group_work_items?)
+        subgroup.clear_memoization(:supports_group_work_items?)
       end
 
       it 'does return work items' do
