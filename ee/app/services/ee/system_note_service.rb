@@ -178,6 +178,18 @@ module EE
       issuables_service(noteable, noteable.project, user).amazon_q_called(event)
     end
 
+    def agent_session_started(noteable, project, author, session_id, trigger_source = 'User', agent_name = 'Duo Developer')
+      agents_service(noteable, project, author).agent_session_started(session_id, trigger_source, agent_name)
+    end
+
+    def agent_session_completed(noteable, project, author, session_id, agent_name = 'Duo Developer')
+      agents_service(noteable, project, author).agent_session_completed(session_id, agent_name)
+    end
+
+    def agent_session_failed(noteable, project, author, session_id, reason = nil, agent_name = 'Duo Developer')
+      agents_service(noteable, project, author).agent_session_failed(session_id, reason, agent_name)
+    end
+
     private
 
     def issuables_service(noteable, project, author)
@@ -206,6 +218,10 @@ module EE
 
     def issuable_resource_links_service(noteable, project, author)
       ::SystemNotes::IssuableResourceLinksService.new(noteable: noteable, container: project, author: author)
+    end
+
+    def agents_service(noteable, project, author)
+      ::SystemNotes::AgentsService.new(noteable: noteable, container: project, author: author)
     end
   end
 end
