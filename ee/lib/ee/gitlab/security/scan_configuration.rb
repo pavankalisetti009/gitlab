@@ -8,6 +8,10 @@ module EE
 
         override :available?
         def available?
+          if type == :secret_push_protection
+            return super || project.licensed_feature_available?(type) || public_project_spp_available?
+          end
+
           super || project.licensed_feature_available?(type)
         end
 
@@ -27,6 +31,12 @@ module EE
         end
 
         private
+
+        def public_project_spp_available?
+          ::Gitlab::Saas.feature_available?(:auto_enable_secret_push_protection_public_projects) &&
+            ::Feature.enabled?(:auto_spp_public_com_projects, project) &&
+            project.public?
+        end
 
         def can_configure_scan_in_ui?
           project.licensed_feature_available?(:security_configuration_in_ui)

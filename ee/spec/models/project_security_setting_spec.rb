@@ -217,7 +217,6 @@ RSpec.describe ProjectSecuritySetting, feature_category: :software_composition_a
       context 'on GitLab.com' do
         before do
           stub_saas_features(auto_enable_secret_push_protection_public_projects: true)
-          stub_feature_flags(auto_spp_public_com_projects: true)
         end
 
         context 'when public project' do
@@ -231,6 +230,19 @@ RSpec.describe ProjectSecuritySetting, feature_category: :software_composition_a
           it 'does not enable SPP by default' do
             project = create(:project, :private)
             expect(project.security_setting.secret_push_protection_enabled).to be(false)
+          end
+        end
+
+        context 'when auto_spp_public_com_projects is disabled' do
+          before do
+            stub_feature_flags(auto_spp_public_com_projects: false)
+          end
+
+          context 'when public project' do
+            it 'does not enable SPP by default' do
+              project = create(:project, :public)
+              expect(project.security_setting.secret_push_protection_enabled).to be(false)
+            end
           end
         end
       end
