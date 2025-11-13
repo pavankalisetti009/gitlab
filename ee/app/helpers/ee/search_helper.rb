@@ -100,6 +100,8 @@ module EE
 
     override :search_scope
     def search_scope
+      return if ::Gitlab::CurrentSettings.custom_default_search_scope_set?
+
       if current_controller?(:epics)
         'epics'
       else

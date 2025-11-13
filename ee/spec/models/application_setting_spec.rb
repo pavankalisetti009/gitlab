@@ -51,7 +51,7 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
         allow_group_owners_to_manage_ldap: true,
         allowed_integrations: [],
         anonymous_searches_allowed: true,
-        default_search_scope: 'system default',
+        default_search_scope: described_class::SEARCH_SCOPE_SYSTEM_DEFAULT,
         arkose_labs_data_exchange_enabled: true,
         arkose_labs_enabled: true,
         auto_ban_user_on_excessive_projects_download: false,

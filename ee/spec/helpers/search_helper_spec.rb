@@ -756,4 +756,30 @@ RSpec.describe SearchHelper, feature_category: :global_search do
       end
     end
   end
+
+  describe '#search_scope' do
+    before do
+      allow(helper).to receive(:current_controller?).and_return(false)
+    end
+
+    context 'when custom default search scope is set' do
+      before do
+        stub_application_setting(default_search_scope: 'issues')
+      end
+
+      it 'returns nil' do
+        expect(helper.search_scope).to be_nil
+      end
+    end
+
+    context 'when on epics controller' do
+      before do
+        allow(helper).to receive(:current_controller?).with(:epics).and_return(true)
+      end
+
+      it 'returns epics scope' do
+        expect(helper.search_scope).to eq('epics')
+      end
+    end
+  end
 end
