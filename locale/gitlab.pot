@@ -58325,9 +58325,6 @@ msgstr ""
 msgid "Search branches and tags"
 msgstr ""
 
-msgid "Search branches and tags (min. 3 characters)"
-msgstr ""
-
 msgid "Search branches, tags, and commits"
 msgstr ""
 
@@ -62015,6 +62012,9 @@ msgid "SecurityTrackedRefs|Remove tracking"
 msgstr ""
 
 msgid "SecurityTrackedRefs|Remove tracking for %{refType}"
+msgstr ""
+
+msgid "SecurityTrackedRefs|Search branches and tags (enter at least 3 characters)"
 msgstr ""
 
 msgid "SecurityTrackedRefs|Search results for \"%{searchTerm}\""
