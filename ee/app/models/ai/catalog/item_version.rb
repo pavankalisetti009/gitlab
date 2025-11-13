@@ -50,10 +50,6 @@ module Ai
         release_date.present?
       end
 
-      def enforce_readonly_versions?
-        Feature.enabled?(:ai_catalog_enforce_readonly_versions, item.project)
-      end
-
       def draft?
         !released?
       end
@@ -105,7 +101,7 @@ module Ai
       end
 
       def validate_readonly
-        return unless release_date_was.present? && changed? && enforce_readonly_versions?
+        return unless release_date_was.present? && changed?
 
         errors.add(:base, s_('AICatalog|cannot be changed as it has been released'))
       end

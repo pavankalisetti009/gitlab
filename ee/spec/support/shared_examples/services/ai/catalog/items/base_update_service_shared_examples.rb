@@ -117,7 +117,7 @@ RSpec.shared_examples Ai::Catalog::Items::BaseUpdateService do
           expect(item.latest_released_version).to eq(item.latest_version)
           expect(item.latest_version).to have_attributes(
             schema_version: item_schema_version,
-            version: '2.0.0',
+            version: '1.2.0',
             release_date: Time.zone.now,
             definition: expected_updated_definition.stringify_keys
           )
@@ -142,48 +142,14 @@ RSpec.shared_examples Ai::Catalog::Items::BaseUpdateService do
           end
         end
 
-        context 'when the `ai_catalog_enforce_readonly_versions` flag is disabled' do
-          before do
-            stub_feature_flags(ai_catalog_enforce_readonly_versions: false)
-          end
-
-          it 'does not create a new version, and updates the existing version instead', :aggregate_failures do
-            expect { execute_service }.not_to change { item.reload.versions.count }
-            expect(item.latest_version).to eq(latest_version)
-            expect(item.latest_released_version).to eq(latest_version)
-            expect(item.latest_version).to have_attributes(
-              schema_version: item_schema_version,
-              version: '1.1.0',
-              release_date: 1.day.ago,
-              definition: expected_updated_definition.stringify_keys
-            )
-          end
-
-          context 'when the version is not being released' do
-            let(:params) { super().merge(release: false) }
-
-            it 'does not unrelease the version', :aggregate_failures do
-              expect { execute_service }.not_to change { item.reload.versions.count }
-              expect(item.latest_version).to be_released
-            end
-
-            it 'does not change latest_released_version' do
-              expect { execute_service }.not_to change { item.reload.latest_released_version }
-            end
-          end
-        end
-
-        context 'when the version is not being released' do
+        context 'when the `release` argument is not `true`', :freeze_time do
           let(:params) { super().merge(release: nil) }
 
-          it 'creates a new unreleased version', :aggregate_failures do
+          it 'still creates a new released version', :aggregate_failures do
             expect { execute_service }.to change { item.reload.versions.count }.by(1)
             expect(item.latest_version).not_to eq(latest_version)
-            expect(item.latest_version.release_date).to be_nil
-          end
-
-          it 'does not change latest_released_version' do
-            expect { execute_service }.not_to change { item.reload.latest_released_version }
+            expect(item.latest_version.release_date).to eq(Time.zone.now)
+            expect(item.latest_version).to eq(item.latest_released_version)
           end
         end
 
@@ -226,6 +192,10 @@ RSpec.shared_examples Ai::Catalog::Items::BaseUpdateService do
 
       context 'when only item properties are being updated' do
         let(:params) { { item: item, name: 'New name' } }
+
+        before do
+          latest_version.update!(release_date: Time.zone.now)
+        end
 
         it 'updates the item' do
           expect { execute_service }.to change { item.reload.name }.to('New name')

@@ -41,7 +41,6 @@ describe('AiCatalogFlowForm', () => {
     name: 'My AI Flow',
     description: 'A helpful AI assistant',
     public: true,
-    release: true,
     definition: 'version: "v1"',
   };
 
@@ -232,7 +231,6 @@ describe('AiCatalogFlowForm', () => {
       public: true,
       definition: 'version: "v1"',
       itemType: 'FLOW',
-      release: true,
     };
 
     it('emits form values when user clicks submit', async () => {
@@ -287,7 +285,6 @@ describe('AiCatalogFlowForm', () => {
         description: 'A helpful AI assistant',
         definition: 'image:node@22',
         public: true,
-        release: true,
         itemType: 'THIRD_PARTY_FLOW',
       };
 

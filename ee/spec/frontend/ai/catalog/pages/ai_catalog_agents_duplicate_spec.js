@@ -68,7 +68,6 @@ describe('AiCatalogAgentsDuplicate', () => {
         systemPrompt: mockAgent.latestVersion.systemPrompt,
         tools: mockAgent.latestVersion.tools.nodes.map((t) => t.id),
         public: false,
-        release: true,
       };
 
       expect(findForm().props('initialValues')).toEqual(expectedInitialValues);
@@ -83,7 +82,6 @@ describe('AiCatalogAgentsDuplicate', () => {
       projectId: project.id,
       systemPrompt: 'A new system prompt',
       public: true,
-      release: true,
     };
 
     const submitForm = () => findForm().vm.$emit('submit', formValues);

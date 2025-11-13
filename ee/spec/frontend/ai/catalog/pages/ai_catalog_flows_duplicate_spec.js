@@ -76,7 +76,6 @@ describe('AiCatalogFlowsDuplicate', () => {
         description: mockFlow.description,
         definition: mockFlow.latestVersion.definition,
         public: false,
-        release: true,
       };
 
       expect(findForm().props('initialValues')).toEqual(expectedInitialValues);
@@ -92,7 +91,6 @@ describe('AiCatalogFlowsDuplicate', () => {
       definition: mockFlow.definition,
       public: true,
       itemType: 'FLOW',
-      release: true,
     };
 
     const submitForm = () => findForm().vm.$emit('submit', formValues);

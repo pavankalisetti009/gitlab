@@ -189,7 +189,7 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Create, feature_category: :workflo
         'project' => a_graphql_entity_for(project),
         'public' => true,
         'latestVersion' => {
-          'released' => false,
+          'released' => true,
           'systemPrompt' => params[:system_prompt],
           'tools' => { 'nodes' => [] },
           'userPrompt' => ""

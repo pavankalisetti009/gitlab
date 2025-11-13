@@ -33,6 +33,7 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Create, feature_category: :workflow
       name: name,
       description: description,
       public: true,
+      release: true,
       steps: nil,
       definition: definition
     }
@@ -97,7 +98,7 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Create, feature_category: :workflow
     end
   end
 
-  it 'creates a catalog item and version with expected data' do
+  it 'creates a catalog item and version with expected data', :freeze_time do
     execute
 
     item = Ai::Catalog::Item.last
@@ -110,7 +111,7 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Create, feature_category: :workflow
     expect(item.latest_version).to have_attributes(
       schema_version: ::Ai::Catalog::ItemVersion::FLOW_SCHEMA_VERSION,
       version: '1.0.0',
-      release_date: nil,
+      release_date: Time.zone.now,
       definition: YAML.safe_load(definition).merge('yaml_definition' => definition)
     )
   end
@@ -122,21 +123,8 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Create, feature_category: :workflow
       'name' => name,
       'project' => a_hash_including('id' => project.to_global_id.to_s),
       'description' => description,
-      'latestVersion' => a_hash_including('released' => false)
+      'latestVersion' => a_hash_including('released' => true)
     )
-  end
-
-  context 'when release argument is true' do
-    let(:params) { super().merge(release: true) }
-
-    it 'releases the flow version' do
-      execute
-
-      expect(Ai::Catalog::ItemVersion.last.release_date).not_to be_nil
-      expect(graphql_data_at(:ai_catalog_flow_create, :item)).to match a_hash_including(
-        'latestVersion' => a_hash_including('released' => true)
-      )
-    end
   end
 
   context 'when add_to_project_when_created is true' do
@@ -204,7 +192,7 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Create, feature_category: :workflow
       expect(item.latest_version).to have_attributes(
         schema_version: ::Ai::Catalog::ItemVersion::FLOW_SCHEMA_VERSION,
         version: '1.0.0',
-        release_date: nil,
+        release_date: be_present,
         definition: YAML.safe_load(definition).merge('yaml_definition' => definition)
       )
     end

@@ -75,7 +75,6 @@ export default {
           name: '',
           description: '',
           definition: '',
-          release: true,
           public: false,
         };
       },
@@ -170,7 +169,6 @@ export default {
         description: this.formValues.description.trim(),
         public: this.formValues.visibilityLevel === VISIBILITY_LEVEL_PUBLIC,
         itemType: this.formValues.type,
-        release: this.initialValues.release,
         definition: definition.trim(),
       };
 

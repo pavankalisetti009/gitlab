@@ -84,7 +84,6 @@ describe('AiCatalogAgentsNew', () => {
       systemPrompt: 'A new system prompt',
       userPrompt: 'A new user prompt',
       public: false,
-      release: true,
     };
 
     const submitForm = () => findForm().vm.$emit('submit', formValues);

@@ -21,9 +21,9 @@ module Ai
               tools: Array(params[:tools]).map(&:id),
               system_prompt: params[:system_prompt],
               user_prompt: params[:user_prompt] || ""
-            }
+            },
+            release_date: Time.zone.now
           }
-          version_params[:release_date] = Time.zone.now if params[:release] == true
 
           item = Ai::Catalog::Item.new(item_params)
           item.build_new_version(version_params)
