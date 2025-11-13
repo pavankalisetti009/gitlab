@@ -52,6 +52,7 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Update, feature_category: :workflow
       id: flow.to_global_id,
       name: 'New name',
       public: true,
+      release: true,
       description: 'New description',
       steps: nil,
       definition: definition,
@@ -111,7 +112,7 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Update, feature_category: :workflow
   end
 
   context 'when update succeeds' do
-    it 'updates the flow and returns a success response' do
+    it 'updates the flow and returns a success response', :freeze_time do
       execute
 
       expect(flow.reload).to have_attributes(
@@ -122,21 +123,11 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Update, feature_category: :workflow
       expect(latest_version.reload).to have_attributes(
         schema_version: ::Ai::Catalog::ItemVersion::FLOW_SCHEMA_VERSION,
         version: '1.0.1',
-        release_date: nil,
+        release_date: Time.zone.now,
         definition: YAML.safe_load(definition).merge('yaml_definition' => definition)
       )
 
       expect(graphql_dig_at(mutation_response, :errors)).to be_empty
-    end
-
-    context 'when release argument is true' do
-      let(:params) { super().merge(release: true) }
-
-      it 'sets the flow version release date' do
-        execute
-
-        expect(latest_version.reload.release_date).not_to be_nil
-      end
     end
 
     context 'when passing only required arguments (test that mutation handles absence of optional args)' do
@@ -146,10 +137,6 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Update, feature_category: :workflow
         execute
 
         expect(graphql_dig_at(mutation_response, :errors)).to be_empty
-      end
-
-      it 'does not change the definition' do
-        expect { execute }.not_to change { latest_version.reload.attributes }
       end
     end
   end

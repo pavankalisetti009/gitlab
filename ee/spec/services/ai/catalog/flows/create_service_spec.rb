@@ -95,13 +95,13 @@ RSpec.describe Ai::Catalog::Flows::CreateService, feature_category: :workflow_ca
     context 'when the version is not being released' do
       let(:params) { super().merge(release: false) }
 
-      it 'creates a draft version' do
+      it 'still creates a released version' do
         expect { response }.to change { Ai::Catalog::ItemVersion.count }
 
         item = Ai::Catalog::Item.last
 
-        expect(item.latest_version).to be_draft
-        expect(item.latest_released_version).to be_nil
+        expect(item.latest_version).to be_released
+        expect(item.latest_released_version).to eq(item.latest_version)
       end
     end
 

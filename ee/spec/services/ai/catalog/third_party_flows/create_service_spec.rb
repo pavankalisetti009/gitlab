@@ -77,6 +77,7 @@ RSpec.describe Ai::Catalog::ThirdPartyFlows::CreateService, feature_category: :w
         release_date: Time.zone.now,
         definition: YAML.safe_load(definition).merge('yaml_definition' => definition)
       )
+      expect(item.latest_released_version).to eq(item.latest_version)
     end
 
     it 'trigger track_ai_item_events', :clean_gitlab_redis_shared_state do
@@ -93,12 +94,13 @@ RSpec.describe Ai::Catalog::ThirdPartyFlows::CreateService, feature_category: :w
     context 'when the version is not being released' do
       let(:params) { super().merge(release: false) }
 
-      it 'creates a draft version' do
+      it 'still creates a released version' do
         expect { response }.to change { Ai::Catalog::ItemVersion.count }
 
         item = Ai::Catalog::Item.last
 
-        expect(item.latest_version).to be_draft
+        expect(item.latest_version).to be_released
+        expect(item.latest_released_version).to eq(item.latest_version)
       end
     end
 

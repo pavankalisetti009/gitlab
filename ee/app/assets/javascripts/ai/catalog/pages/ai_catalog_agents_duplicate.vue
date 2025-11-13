@@ -37,7 +37,6 @@ export default {
         systemPrompt: this.aiCatalogAgent.latestVersion?.systemPrompt,
         tools: this.aiCatalogAgent.latestVersion?.tools?.nodes.map((t) => t.id) || [],
         public: false,
-        release: true,
       };
     },
   },

@@ -22,14 +22,14 @@ module Ai
           version_params = {
             schema_version: Ai::Catalog::ItemVersion::THIRD_PARTY_FLOW_SCHEMA_VERSION,
             version: DEFAULT_VERSION,
-            definition: definition
+            definition: definition,
+            release_date: Time.zone.now
           }
-          version_params[:release_date] = Time.zone.now if params[:release] == true
 
           item = Ai::Catalog::Item.new(item_params)
           item.build_new_version(version_params)
 
-          if item.save
+          if save_item(item)
             track_ai_item_events('create_ai_catalog_item', { label: item.item_type })
             return ServiceResponse.success(payload: { item: item })
           end
@@ -41,6 +41,16 @@ module Ai
 
         def allowed?
           super && Feature.enabled?(:ai_catalog_third_party_flows, current_user)
+        end
+
+        def save_item(item)
+          Ai::Catalog::Item.transaction do
+            item.save!
+            item.update!(latest_released_version: item.latest_version) if item.latest_version.released?
+            true
+          end
+        rescue ActiveRecord::RecordInvalid
+          false
         end
 
         def error_creating(item)

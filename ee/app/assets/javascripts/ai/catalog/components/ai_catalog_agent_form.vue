@@ -79,7 +79,6 @@ export default {
           description: '',
           systemPrompt: '',
           public: false,
-          release: true,
           tools: [],
         };
       },
@@ -151,7 +150,6 @@ export default {
         description: this.formValues.description.trim(),
         systemPrompt: this.formValues.systemPrompt.trim(),
         public: this.formValues.visibilityLevel === VISIBILITY_LEVEL_PUBLIC,
-        release: this.initialValues.release,
         tools: this.formValues.tools,
       };
       this.$emit('submit', transformedValues);

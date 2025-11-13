@@ -139,19 +139,6 @@ RSpec.describe Ai::Catalog::ItemVersion, feature_category: :workflow_catalog do
         expect(version).not_to be_valid
         expect(version.errors[:base]).to include('cannot be changed as it has been released')
       end
-
-      context 'when `ai_catalog_enforce_readonly_versions` feature is disabled' do
-        before do
-          stub_feature_flags(ai_catalog_enforce_readonly_versions: false)
-        end
-
-        it 'can be changed if version is released' do
-          version = create(:ai_catalog_item_version, :released)
-          version.release_date = Time.zone.now
-
-          expect(version).to be_valid
-        end
-      end
     end
   end
 

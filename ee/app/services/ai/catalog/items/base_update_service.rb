@@ -52,7 +52,7 @@ module Ai
           # the latest schema version, so ensure that it is set to the latest.
           version_to_update.schema_version = latest_schema_version if version_to_update.definition_changed?
           version_to_update.version = calculate_next_version if should_calculate_version?(version_to_update)
-          version_to_update.release_date ||= Time.zone.now if params[:release] == true
+          version_to_update.release_date ||= Time.zone.now
           version_to_update
         end
 
@@ -67,7 +67,7 @@ module Ai
         end
 
         def should_create_new_version?(version)
-          version.definition_changed? && version.released? && version.enforce_readonly_versions?
+          version.definition_changed? && version.released?
         end
 
         def build_new_version(version_params)
@@ -85,7 +85,7 @@ module Ai
 
           return BaseService::DEFAULT_VERSION unless latest_released_version
 
-          bump_level = params[:version_bump] || Ai::Catalog::ItemVersion::VERSION_BUMP_MAJOR
+          bump_level = params[:version_bump] || Ai::Catalog::ItemVersion::VERSION_BUMP_MINOR
           latest_released_version.version_bump(bump_level)
         end
 

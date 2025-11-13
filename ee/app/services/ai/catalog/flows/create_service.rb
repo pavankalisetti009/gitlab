@@ -23,9 +23,9 @@ module Ai
           version_params = {
             schema_version: ::Ai::Catalog::ItemVersion::FLOW_SCHEMA_VERSION,
             version: DEFAULT_VERSION,
-            definition: definition
+            definition: definition,
+            release_date: Time.zone.now
           }
-          version_params[:release_date] = Time.zone.now if params[:release] == true
 
           item = Ai::Catalog::Item.new(item_params)
           item.build_new_version(version_params)
