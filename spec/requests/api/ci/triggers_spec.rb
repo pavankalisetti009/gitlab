@@ -598,7 +598,6 @@ RSpec.describe API::Ci::Triggers, feature_category: :pipeline_composition do
   describe 'DELETE /projects/:id/triggers/:trigger_id' do
     it_behaves_like 'authorizing granular token permissions', :delete_trigger do
       let(:boundary_object) { project }
-      let(:user) { user }
       let(:request) do
         delete api("/projects/#{project.id}/triggers/#{trigger.id}", personal_access_token: pat)
       end
