@@ -13,6 +13,8 @@ import {
   VISIBILITY_LEVEL_PRIVATE,
   VISIBILITY_LEVEL_PUBLIC,
   FLOW_VISIBILITY_LEVEL_DESCRIPTIONS,
+  DEFAULT_FLOW_YML_STRING,
+  DEFAULT_THIRD_PARTY_FLOW_YML_STRING,
 } from 'ee/ai/catalog/constants';
 import { TYPENAME_PROJECT } from '~/graphql_shared/constants';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
@@ -29,6 +31,7 @@ import FormSection from './form_section.vue';
 import VisibilityLevelRadioGroup from './visibility_level_radio_group.vue';
 
 export default {
+  name: 'AiCatalogFlowForm',
   components: {
     ErrorsAlert,
     AiCatalogFormButtons,
@@ -93,21 +96,33 @@ export default {
       type = AI_CATALOG_TYPE_THIRD_PARTY_FLOW;
     }
 
-    const isFlowType = type === AI_CATALOG_TYPE_FLOW;
     const { definition, ...initialValuesWithoutDefinition } = this.initialValues;
+
+    const definitionFlow =
+      type === AI_CATALOG_TYPE_FLOW && definition ? definition : DEFAULT_FLOW_YML_STRING;
+
+    const definitionThirdPartyFlow =
+      type === AI_CATALOG_TYPE_THIRD_PARTY_FLOW && definition
+        ? definition
+        : DEFAULT_THIRD_PARTY_FLOW_YML_STRING;
+
+    const projectId =
+      !this.isGlobal && this.projectId
+        ? convertToGraphQLId(TYPENAME_PROJECT, this.projectId)
+        : this.initialValues.projectId;
+
+    const visibilityLevel = this.initialValues.public
+      ? VISIBILITY_LEVEL_PUBLIC
+      : VISIBILITY_LEVEL_PRIVATE;
+
     return {
       formValues: {
         ...initialValuesWithoutDefinition,
         type,
-        definitionFlow: isFlowType ? definition || '' : '',
-        definitionThirdPartyFlow: !isFlowType ? definition || '' : '',
-        projectId:
-          !this.isGlobal && this.projectId
-            ? convertToGraphQLId(TYPENAME_PROJECT, this.projectId)
-            : this.initialValues.projectId,
-        visibilityLevel: this.initialValues.public
-          ? VISIBILITY_LEVEL_PUBLIC
-          : VISIBILITY_LEVEL_PRIVATE,
+        definitionFlow,
+        definitionThirdPartyFlow,
+        projectId,
+        visibilityLevel,
       },
       formErrors: [],
     };
@@ -258,7 +273,7 @@ export default {
       },
       groupAttrs: {
         labelDescription: s__(
-          'AICatalog|This YAML configuration file determines the prompts, tools, and capabilities of your flow. Required properties: version, environment, components, routers, flow, prompts.',
+          'AICatalog|This YAML configuration file determines the prompts, tools, and capabilities of your flow. Required properties: version, environment, components, prompts, routers, flow.',
         ),
       },
     },

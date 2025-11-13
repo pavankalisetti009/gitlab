@@ -114,3 +114,82 @@ export const FLOW_TYPE_APOLLO_CONFIG = {
     },
   },
 };
+
+export const DEFAULT_FLOW_YML_STRING = `\
+# Schema version
+version: "v1"
+# Environment where the flow runs (ambient = GitLab's managed environment)
+environment: ambient
+
+# Components define the steps in your flow
+# Each component can be an Agent, DeterministicStep, or other component types
+components:
+  - name: "my_agent"
+    type: AgentComponent  # Options: AgentComponent, DeterministicStepComponent
+    prompt_id: "my_prompt"  # References a prompt defined below
+    inputs:
+      - "context:goal"  # Input from user or previous component
+    toolset: []  # Add tool names here: ["get_issue", "create_issue_note"]
+
+    # Optional: Add UI logging for debugging
+    # ui_log_events:
+    #   - "on_agent_final_answer"
+    #   - "on_tool_execution_success"
+
+# Define your prompts here
+# Each prompt configures an AI agent's behavior and model settings
+prompts:
+  - prompt_id: "my_prompt"  # Must match the prompt_id referenced above
+    name: "My Agent Prompt"
+    model:
+      params:
+        model_class_provider: anthropic  # Provider: anthropic, openai, etc.
+        model: claude-sonnet-4-20250514  # Model identifier
+        max_tokens: 8192  # Adjust based on expected response length
+
+    # System and user prompts define the agent's behavior
+    prompt_template:
+      system: |
+        You are GitLab Duo Chat, an agentic AI assistant.
+        Your role is to help users with their GitLab tasks.
+        Be concise, accurate, and actionable in your responses.
+
+        # Add specific instructions for your use case here
+
+      user: |
+        {{goal}}
+
+        # Available variables depend on your inputs:
+        # {{goal}} - The user's request
+        # {{context}} - Additional context from previous steps
+
+      placeholder: history  # Maintains conversation context
+
+    params:
+      timeout: 180  # Seconds before timeout
+
+# Routers define the flow between components
+# Use "end" as the final destination
+routers:
+  - from: "my_agent"
+    to: "end"
+
+  # Example: Multi-step flow
+  # - from: "fetch_data"
+  #   to: "process_data"
+  # - from: "process_data"
+  #   to: "my_agent"
+  # - from: "my_agent"
+  #   to: "end"
+
+# Define the entry point for your flow
+flow:
+  entry_point: "my_agent"
+`;
+
+export const DEFAULT_THIRD_PARTY_FLOW_YML_STRING = `\
+image: alpine:latest
+injectGatewayToken: true
+commands:
+  - echo "Hello, World!"
+`;

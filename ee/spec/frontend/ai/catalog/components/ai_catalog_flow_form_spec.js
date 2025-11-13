@@ -6,7 +6,12 @@ import FormFlowType from 'ee/ai/catalog/components/form_flow_type.vue';
 import FormProjectDropdown from 'ee/ai/catalog/components/form_project_dropdown.vue';
 import VisibilityLevelRadioGroup from 'ee/ai/catalog/components/visibility_level_radio_group.vue';
 import FormGroup from 'ee/ai/catalog/components/form_group.vue';
-import { VISIBILITY_LEVEL_PRIVATE, VISIBILITY_LEVEL_PUBLIC } from 'ee/ai/catalog/constants';
+import {
+  VISIBILITY_LEVEL_PRIVATE,
+  VISIBILITY_LEVEL_PUBLIC,
+  DEFAULT_FLOW_YML_STRING,
+  DEFAULT_THIRD_PARTY_FLOW_YML_STRING,
+} from 'ee/ai/catalog/constants';
 
 describe('AiCatalogFlowForm', () => {
   let wrapper;
@@ -94,7 +99,7 @@ describe('AiCatalogFlowForm', () => {
       expect(findDescriptionField().props('value')).toBe('');
       expect(findVisibilityLevelRadioGroup().props('initialValue')).toBe(false);
       expect(findVisibilityLevelRadioGroup().props('value')).toBe(VISIBILITY_LEVEL_PRIVATE);
-      expect(findDefinitionFlowField().props('value')).toBe('');
+      expect(findDefinitionFlowField().props('value')).toBe(DEFAULT_FLOW_YML_STRING);
       expect(findDefinitionThirdPartyFlowField().exists()).toBe(false);
     });
 
@@ -107,7 +112,7 @@ describe('AiCatalogFlowForm', () => {
       expect(findDescriptionField().props('value')).toBe('');
       expect(findVisibilityLevelRadioGroup().props('initialValue')).toBe(false);
       expect(findVisibilityLevelRadioGroup().props('value')).toBe(VISIBILITY_LEVEL_PRIVATE);
-      expect(findDefinitionFlowField().props('value')).toBe('');
+      expect(findDefinitionFlowField().props('value')).toBe(DEFAULT_FLOW_YML_STRING);
       expect(findDefinitionThirdPartyFlowField().exists()).toBe(false);
     });
 
@@ -158,6 +163,22 @@ describe('AiCatalogFlowForm', () => {
 
         expect(findDefinitionThirdPartyFlowField().props('value')).toBe('third-party-definition');
         expect(findDefinitionFlowField().exists()).toBe(false);
+      });
+
+      it('renders default value when there was no definition set', () => {
+        createWrapper({
+          props: {
+            initialValues: {
+              ...initialValues,
+              definition: '',
+              type: 'THIRD_PARTY_FLOW',
+            },
+          },
+        });
+
+        expect(findDefinitionThirdPartyFlowField().props('value')).toBe(
+          DEFAULT_THIRD_PARTY_FLOW_YML_STRING,
+        );
       });
     });
   });
