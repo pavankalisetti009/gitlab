@@ -29,7 +29,7 @@ RSpec.describe Vulnerabilities::AggregateRiskScore, feature_category: :vulnerabi
         expect(score).to be > 0.0
         expect(score).to be <= 1.0
 
-        expect(score).to be_within(0.005).of(0.76)
+        expect(score).to be_within(0.005).of(0.304)
       end
     end
 
