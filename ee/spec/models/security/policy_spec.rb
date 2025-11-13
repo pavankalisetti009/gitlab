@@ -531,6 +531,25 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
     end
   end
 
+  describe '#approval_policy' do
+    context 'when policy is an approval policy' do
+      let_it_be(:approval_policy) { create(:security_policy, :approval_policy, name: 'Test Approval Policy') }
+
+      it 'returns an ApprovalPolicy instance' do
+        expect(approval_policy.approval_policy).to be_a(Security::ScanResultPolicies::ApprovalPolicy)
+        expect(approval_policy.approval_policy.name).to eq('Test Approval Policy')
+      end
+    end
+
+    context 'when policy is not an approval policy' do
+      let_it_be(:scan_execution_policy) { create(:security_policy, :scan_execution_policy) }
+
+      it 'returns nil' do
+        expect(scan_execution_policy.approval_policy).to be_nil
+      end
+    end
+  end
+
   describe '#max_rule_index' do
     let_it_be(:policy) { create(:security_policy) }
     let_it_be(:rule1) { create(:approval_policy_rule, security_policy: policy, rule_index: 0) }

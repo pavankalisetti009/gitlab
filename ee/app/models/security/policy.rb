@@ -341,6 +341,13 @@ module Security
     end
     strong_memoize_attr :bypass_settings
 
+    def approval_policy
+      return unless type_approval_policy?
+
+      Security::ScanResultPolicies::ApprovalPolicy.new(self)
+    end
+    strong_memoize_attr :approval_policy
+
     def supports_policy_rules?
       Security::PolicyRule::SUPPORTED_POLICY_TYPES.include?(type.to_sym)
     end

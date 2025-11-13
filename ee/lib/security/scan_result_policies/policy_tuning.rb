@@ -11,6 +11,10 @@ module Security
         policy_tuning[:security_report_time_window]
       end
 
+      def unblock_rules_using_execution_policies
+        policy_tuning[:unblock_rules_using_execution_policies]
+      end
+
       private
 
       attr_reader :policy_tuning
