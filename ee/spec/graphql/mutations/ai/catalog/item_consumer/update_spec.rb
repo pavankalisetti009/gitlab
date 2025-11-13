@@ -16,7 +16,6 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Update, feature_category: :
   it 'has expected arguments' do
     is_expected.to have_graphql_arguments(
       :id,
-      :pinned_version_prefix,
       :service_account_id,
       :trigger_types,
       :client_mutation_id

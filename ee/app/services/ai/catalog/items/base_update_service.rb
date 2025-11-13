@@ -82,9 +82,9 @@ module Ai
         end
 
         def calculate_next_version
-          # TODO replace with item.latest_released_version once
-          # https://gitlab.com/gitlab-org/gitlab/-/issues/554673 is completed
-          latest_released_version = item.versions.where.not(release_date: nil).order(id: :desc).take # rubocop:disable CodeReuse/ActiveRecord -- Will be fixed after https://gitlab.com/gitlab-org/gitlab/-/issues/554673
+          # TODO replace with item.latest_released_version after the data migration from
+          # https://gitlab.com/gitlab-org/gitlab/-/issues/572145 has run.
+          latest_released_version = item.versions.where.not(release_date: nil).order(id: :desc).take # rubocop:disable CodeReuse/ActiveRecord -- Can be replaced after https://gitlab.com/gitlab-org/gitlab/-/issues/572145
 
           return BaseService::DEFAULT_VERSION unless latest_released_version
 

@@ -6,10 +6,12 @@ module Ai
       class UpdateService
         include EventsTracking
 
-        def initialize(item_consumer, current_user, params)
+        def initialize(item_consumer, current_user, _params)
           @current_user = current_user
           @item_consumer = item_consumer
-          @params = params.slice(:pinned_version_prefix)
+          # Currently this service is a no-op.
+          # TODO Use params#slice to select specific params as we support them.
+          @params = {}
         end
 
         def execute

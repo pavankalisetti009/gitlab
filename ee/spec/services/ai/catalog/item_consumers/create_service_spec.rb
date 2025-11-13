@@ -16,10 +16,19 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
   let_it_be(:consumer_project) { create(:project, group: consumer_group) }
 
   let_it_be(:item_project) { create(:project, developers: user) }
+
   let_it_be(:flow_item) { create(:ai_catalog_flow, public: true, project: item_project, name: 'item_name') }
+  let_it_be(:released_flow_version) { create(:ai_catalog_flow_version, :released, item: flow_item, version: '3.2.1') }
 
   let_it_be(:agent_item) { create(:ai_catalog_agent, public: true, project: item_project) }
+  let_it_be(:released_agent_version) do
+    create(:ai_catalog_agent_version, :released, item: agent_item, version: '3.2.1')
+  end
+
   let_it_be(:third_party_flow_item) { create(:ai_catalog_third_party_flow, public: true, project: item_project) }
+  let_it_be(:released_third_party_flow_version) do
+    create(:ai_catalog_third_party_flow_version, :released, item: third_party_flow_item, version: '3.2.1')
+  end
 
   let_it_be(:service_account) { create(:user, :service_account) }
 
@@ -27,8 +36,9 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
     create(:user_detail, user: service_account, provisioned_by_group: consumer_group)
   end
 
-  let_it_be(:parent_item_consumer) do
-    create(:ai_catalog_item_consumer, group: consumer_group, item: flow_item, service_account: service_account)
+  let_it_be_with_refind(:parent_item_consumer) do
+    create(:ai_catalog_item_consumer, pinned_version_prefix: '1.2.3', group: consumer_group, item: flow_item,
+      service_account: service_account)
   end
 
   let(:container) { consumer_project }
@@ -120,6 +130,7 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
       group: nil,
       parent_item_consumer: parent_item_consumer,
       item: item,
+      pinned_version_prefix: '1.2.3',
       enabled: true,
       locked: true
     )
@@ -199,6 +210,14 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
     ).and increment_usage_metrics('counts.count_total_create_ai_catalog_item_consumer')
   end
 
+  context 'when parent item consumer does not have a version pin' do
+    before_all do
+      parent_item_consumer.update!(pinned_version_prefix: nil)
+    end
+
+    it_behaves_like 'a failure', 'Parent item consumer has no pinned version prefix'
+  end
+
   context 'when parent item consumer is not passed' do
     let_it_be(:parent_item_consumer) { nil }
 
@@ -251,7 +270,8 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
         parent_item_consumer: nil,
         item: item,
         enabled: true,
-        locked: true
+        locked: true,
+        pinned_version_prefix: '3.2.1'
       )
     end
 
@@ -359,6 +379,26 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
 
       it_behaves_like 'a failure', 'Item does not exist, or you have insufficient permissions'
     end
+
+    context 'when item has no latest_released_version' do
+      let_it_be(:item) { create(:ai_catalog_flow, public: true, project: item_project) }
+
+      it_behaves_like 'a failure', 'Item has no latest released version to pin to'
+
+      context 'and the item does have a version that is released' do
+        before_all do
+          create(:ai_catalog_flow_version, :released, item: item, version: '6.6.6')
+          create(:ai_catalog_flow_version, :draft, item: item, version: '7.7.7')
+          item.update!(latest_released_version: nil)
+        end
+
+        it 'creates a catalog item consumer pinned to the latest released version' do
+          expect { execute }.to change { Ai::Catalog::ItemConsumer.count }
+
+          expect(Ai::Catalog::ItemConsumer.last.pinned_version_prefix).to eq('6.6.6')
+        end
+      end
+    end
   end
 
   context 'when user is not authorized to create a consumer item in the consumer project' do
@@ -386,7 +426,7 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
   end
 
   context 'when the item is an agent' do
-    let(:item) { create(:ai_catalog_agent, public: true, project: item_project) }
+    let(:item) { agent_item }
     let(:parent_item_consumer) { nil }
 
     it 'creates a catalog item consumer with expected data' do
@@ -396,12 +436,33 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
         project: consumer_project,
         group: nil,
         item: item,
+        pinned_version_prefix: '3.2.1',
         enabled: true,
         locked: true
       )
     end
 
     it_behaves_like 'creates an audit event', entity_type: 'Project'
+
+    context 'when item has no latest_released_version' do
+      let_it_be(:item) { create(:ai_catalog_agent, public: true, project: item_project) }
+
+      it_behaves_like 'a failure', 'Item has no latest released version to pin to'
+
+      context 'and the item does have a version that is released' do
+        before_all do
+          create(:ai_catalog_agent_version, :released, item: item, version: '6.6.6')
+          create(:ai_catalog_agent_version, :draft, item: item, version: '7.7.7')
+          item.update!(latest_released_version: nil)
+        end
+
+        it 'creates a catalog item consumer pinned to the latest released version' do
+          expect { execute }.to change { Ai::Catalog::ItemConsumer.count }
+
+          expect(Ai::Catalog::ItemConsumer.last.pinned_version_prefix).to eq('6.6.6')
+        end
+      end
+    end
   end
 
   context 'when the item is a flow' do
@@ -411,7 +472,7 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
   context 'when the item is a third_party_flow' do
     let_it_be(:third_party_flow_parent_item_consumer) do
       create(:ai_catalog_item_consumer, group: consumer_group, item: third_party_flow_item,
-        service_account: service_account)
+        service_account: service_account, pinned_version_prefix: '4.4.4')
     end
 
     let(:item) { third_party_flow_item }
@@ -437,7 +498,7 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
     end
 
     context 'when item is an agent' do
-      let_it_be(:item) { create(:ai_catalog_agent, public: true, project: item_project) }
+      let(:item) { agent_item }
 
       it_behaves_like(
         'a failure', ["Flow trigger ai_catalog_item_consumer is not a flow", "Parent item consumer must be blank"]
@@ -448,10 +509,10 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
   context 'when the item can be seen by user but is is private to another project' do
     let_it_be(:item) { create(:ai_catalog_flow, public: false, project: item_project) }
 
-    let_it_be(:private_item_parent_item_consumer) do
+    let_it_be(:parent_item_consumer) do
       # We get 'Item is private to another project' currently, but we will soon allow this
-      build(:ai_catalog_item_consumer, group: consumer_group, item: item, service_account: service_account)
-        .tap { |item| item.save!(validate: false) }
+      build(:ai_catalog_item_consumer, group: consumer_group, item: item, service_account: service_account,
+        pinned_version_prefix: '4.4.4').tap { |item| item.save!(validate: false) }
     end
 
     it_behaves_like 'a failure', 'Item is private to another project'
@@ -460,10 +521,10 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
   context 'when the item is private to the project' do
     let_it_be(:item) { create(:ai_catalog_flow, public: false, project: consumer_project) }
 
-    let_it_be(:private_item_parent_item_consumer) do
+    let_it_be(:parent_item_consumer) do
       # We get 'Item is private to another project' currently, but we will soon allow this
-      build(:ai_catalog_item_consumer, group: consumer_group, item: item, service_account: service_account)
-        .tap { |item| item.save!(validate: false) }
+      build(:ai_catalog_item_consumer, group: consumer_group, item: item, service_account: service_account,
+        pinned_version_prefix: '4.4.4').tap { |item| item.save!(validate: false) }
     end
 
     it 'creates a catalog item consumer with expected data' do
@@ -474,7 +535,8 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
         group: nil,
         item: item,
         enabled: true,
-        locked: true
+        locked: true,
+        pinned_version_prefix: '4.4.4'
       )
     end
   end
@@ -487,9 +549,13 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
 
   context 'when save fails' do
     context 'when the model is invalid' do
-      let(:params) { super().merge(pinned_version_prefix: '1' * 51) }
+      before do
+        consumer = build(:ai_catalog_item_consumer)
+        consumer.validate
+        allow(Ai::Catalog::ItemConsumer).to receive(:create).and_return(consumer)
+      end
 
-      it_behaves_like 'a failure', 'Pinned version prefix is too long (maximum is 50 characters)'
+      it_behaves_like 'a failure', 'The item consumer must belong to only one organization, group, or project'
     end
 
     context 'when something else goes wrong' do

@@ -20,7 +20,7 @@ RSpec.describe Ai::Catalog::ItemConsumers::UpdateService, feature_category: :wor
     let_it_be(:group) { create(:group, developers: developer, maintainers: maintainer) }
     let_it_be(:project) { create(:project, group: group) }
 
-    let(:params) { { pinned_version_prefix: '1.1' } }
+    let(:params) { {} }
 
     subject(:response) { described_class.new(item_consumer, user, params).execute }
 
@@ -45,8 +45,9 @@ RSpec.describe Ai::Catalog::ItemConsumers::UpdateService, feature_category: :wor
           expect(response).to be_success
         end
 
-        it 'updates the item consumer' do
-          expect { response }.to change { item_consumer.reload.pinned_version_prefix }.from(nil).to('1.1')
+        it 'does not update the item consumer' do
+          # While service does not support any arguments, we expect no change to the item consumer.
+          expect { response }.not_to change { item_consumer.reload.attributes }
         end
 
         it 'tracks internal event on successful update' do
@@ -62,11 +63,18 @@ RSpec.describe Ai::Catalog::ItemConsumers::UpdateService, feature_category: :wor
         end
 
         context 'when the item consumer cannot be updated' do
-          let(:params) { { pinned_version_prefix: 'a' * 51 } }
+          before do
+            allow_next_instance_of(::Ai::Catalog::ItemConsumers::UpdateService) do |service|
+              allow(service).to receive(:item_consumer).and_return(item_consumer)
+            end
+
+            allow(item_consumer).to receive(:update).and_return(false)
+            item_consumer.errors.add(:base, 'Update failed')
+          end
 
           it 'returns an error' do
             expect(response).to be_error
-            expect(response.message).to contain_exactly('Pinned version prefix is too long (maximum is 50 characters)')
+            expect(response.message).to include('Update failed')
           end
 
           it 'does not track internal event on failure' do
