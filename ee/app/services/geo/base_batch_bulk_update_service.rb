@@ -116,7 +116,11 @@ module Geo
     end
 
     def redis_key
-      "geo:#{model_class.table_name}:#{self.class.name.demodulize.underscore}_cursor"
+      "geo:#{model_class.table_name}:#{params_hash}:#{self.class.name.demodulize.underscore}_cursor"
+    end
+
+    def params_hash
+      @params_hash ||= Base64.urlsafe_encode64(Gitlab::Json.dump(serialized_worker_params))
     end
 
     def record_id(record)
