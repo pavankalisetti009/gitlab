@@ -17,6 +17,11 @@ module EE
           api_v4_security_projects_vulnerability_archive_exports_path(id: project.id)
         end
 
+        override :gitlab_com?
+        def gitlab_com?
+          ::Gitlab::Saas.feature_available?(:auto_enable_secret_push_protection_public_projects)
+        end
+
         override :container_scanning_for_registry_enabled
         def container_scanning_for_registry_enabled
           project_settings&.container_scanning_for_registry_enabled

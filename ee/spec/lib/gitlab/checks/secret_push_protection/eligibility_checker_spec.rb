@@ -73,7 +73,6 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::EligibilityChecker, feature
           before do
             project.update!(visibility_level: Gitlab::VisibilityLevel::PUBLIC)
             stub_saas_features(auto_enable_secret_push_protection_public_projects: true)
-            stub_feature_flags(auto_spp_public_com_projects: true)
           end
 
           it_behaves_like 'skips the push check'
@@ -105,12 +104,6 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::EligibilityChecker, feature
               end
 
               it_behaves_like 'skips the push check'
-            end
-
-            context 'when on .com' do
-              before do
-                stub_saas_features(auto_enable_secret_push_protection_public_projects: true)
-              end
 
               context 'when auto_spp_public_com_projects feature flag is disabled' do
                 before do
@@ -118,14 +111,6 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::EligibilityChecker, feature
                 end
 
                 it_behaves_like 'skips the push check'
-              end
-
-              context 'when auto_spp_public_com_projects feature flag is enabled' do
-                before do
-                  stub_feature_flags(auto_spp_public_com_projects: true)
-                end
-
-                it_behaves_like 'performs the push check'
               end
             end
           end

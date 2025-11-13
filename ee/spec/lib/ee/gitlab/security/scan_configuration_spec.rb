@@ -24,6 +24,58 @@ RSpec.describe ::Gitlab::Security::ScanConfiguration, feature_category: :dynamic
       end
     end
 
+    context 'with secret_push_protection scanner' do
+      let(:type) { :secret_push_protection }
+
+      context 'with Ultimate license' do
+        before do
+          stub_licensed_features(secret_push_protection: true)
+        end
+
+        it { is_expected.to be_truthy }
+      end
+
+      context 'without Ultimate license' do
+        before do
+          stub_licensed_features(secret_push_protection: false)
+        end
+
+        context 'when not on GitLab.com' do
+          before do
+            stub_saas_features(auto_enable_secret_push_protection_public_projects: false)
+          end
+
+          it { is_expected.to be_falsey }
+        end
+
+        context 'when on GitLab.com', :saas do
+          context 'when project is public' do
+            before do
+              project.update!(visibility_level: Gitlab::VisibilityLevel::PUBLIC)
+            end
+
+            it { is_expected.to be_truthy }
+
+            context 'when auto_spp_public_com_projects feature flag is disabled' do
+              before do
+                stub_feature_flags(auto_spp_public_com_projects: false)
+              end
+
+              it { is_expected.to be_falsey }
+            end
+          end
+
+          context 'when project is private' do
+            before do
+              project.update!(visibility_level: Gitlab::VisibilityLevel::PRIVATE)
+            end
+
+            it { is_expected.to be_falsey }
+          end
+        end
+      end
+    end
+
     context 'with licensed scanner that is available' do
       let(:type) { :api_fuzzing }
 

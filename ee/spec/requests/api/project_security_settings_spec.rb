@@ -5,11 +5,10 @@ require 'spec_helper'
 RSpec.describe API::ProjectSecuritySettings, :aggregate_failures, feature_category: :source_code_management do
   let_it_be(:user) { create(:user) }
   let_it_be(:security_setting) { create(:project_security_setting) }
-  let(:project) { security_setting.project }
+  let_it_be(:project) { security_setting.project }
+  let(:url) { "/projects/#{project.id}/security_settings" }
 
   describe 'GET /projects/:id/security_settings' do
-    let(:url) { "/projects/#{project.id}/security_settings" }
-
     context 'when user is not authenticated' do
       it 'returns 401 Unauthorized' do
         get api(url)
@@ -47,8 +46,6 @@ RSpec.describe API::ProjectSecuritySettings, :aggregate_failures, feature_catego
   end
 
   describe 'PUT /projects/:id/security_settings' do
-    let(:url) { "/projects/#{project.id}/security_settings" }
-
     context 'when user is not authenticated' do
       it 'returns 401 Unauthorized' do
         put api(url)
@@ -58,28 +55,87 @@ RSpec.describe API::ProjectSecuritySettings, :aggregate_failures, feature_catego
     end
 
     context 'when user is authenticated' do
-      before do
-        stub_licensed_features(secret_push_protection: true)
-      end
-
       context 'when the user is a Maintainer' do
-        before do
+        before_all do
           project.add_maintainer(user)
         end
 
-        it 'updates project security settings using the secret_push_protection_enabled param' do
-          put api(url, user), params: { secret_push_protection_enabled: true }
+        context 'with ultimate license' do
+          before do
+            stub_licensed_features(secret_push_protection: true)
+          end
 
-          expect(response).to have_gitlab_http_status(:ok)
-          expect(json_response['secret_push_protection_enabled']).to be(true)
+          it 'updates project security settings using the secret_push_protection_enabled param' do
+            put api(url, user), params: { secret_push_protection_enabled: true }
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(json_response['secret_push_protection_enabled']).to be(true)
+          end
+
+          it 'updates project security settings using the pre_receive_secret_detection_enabled param' do
+            put api(url, user), params: { pre_receive_secret_detection_enabled: true }
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(json_response['secret_push_protection_enabled']).to be(true)
+          end
         end
 
-        it 'updates project security settings using the pre_receive_secret_detection_enabled param' do
-          project.add_maintainer(user)
-          put api(url, user), params: { pre_receive_secret_detection_enabled: true }
+        context 'without ultimate license' do
+          before do
+            stub_licensed_features(secret_push_protection: false)
+          end
 
-          expect(response).to have_gitlab_http_status(:ok)
-          expect(json_response['secret_push_protection_enabled']).to be(true)
+          context 'on GitLab.com', :saas do
+            context 'when project is public' do
+              before do
+                stub_saas_features(auto_enable_secret_push_protection_public_projects: true)
+                project.update!(visibility_level: Gitlab::VisibilityLevel::PUBLIC)
+              end
+
+              it 'updates project security settings for public projects' do
+                put api(url, user), params: { secret_push_protection_enabled: true }
+
+                expect(response).to have_gitlab_http_status(:ok)
+                expect(json_response['secret_push_protection_enabled']).to be(true)
+              end
+            end
+
+            context 'when project is private' do
+              before do
+                project.update!(visibility_level: Gitlab::VisibilityLevel::PRIVATE)
+              end
+
+              it 'returns 403 Forbidden for private projects' do
+                put api(url, user), params: { secret_push_protection_enabled: true }
+
+                expect(response).to have_gitlab_http_status(:forbidden)
+              end
+            end
+
+            context 'when project is internal' do
+              before do
+                project.update!(visibility_level: Gitlab::VisibilityLevel::INTERNAL)
+              end
+
+              it 'returns 403 Forbidden for internal projects' do
+                put api(url, user), params: { secret_push_protection_enabled: true }
+
+                expect(response).to have_gitlab_http_status(:forbidden)
+              end
+            end
+          end
+
+          context 'when not on GitLab.com' do
+            before do
+              stub_saas_features(auto_enable_secret_push_protection_public_projects: false)
+            end
+
+            it 'returns 403 Forbidden' do
+              put api(url, user), params: { secret_push_protection_enabled: true }
+
+              expect(response).to have_gitlab_http_status(:forbidden)
+            end
+          end
         end
 
         context 'when project is archived' do
@@ -98,6 +154,10 @@ RSpec.describe API::ProjectSecuritySettings, :aggregate_failures, feature_catego
           let_it_be(:group) { create(:group, :archived) }
           let_it_be(:project) { create(:project, group: group) }
 
+          before_all do
+            project.add_maintainer(user)
+          end
+
           it 'returns 403 forbidden' do
             put api(url, user), params: { secret_push_protection_enabled: true }
 
@@ -106,25 +166,37 @@ RSpec.describe API::ProjectSecuritySettings, :aggregate_failures, feature_catego
         end
       end
 
-      it 'returns 401 Unauthorized for users with Developer role' do
-        project.add_developer(user)
-        put api(url, user), params: { secret_push_protection_enabled: true }
+      context 'when the user is a Developer' do
+        before_all do
+          project.add_developer(user)
+        end
 
-        expect(response).to have_gitlab_http_status(:unauthorized)
+        before do
+          stub_licensed_features(secret_push_protection: true)
+        end
+
+        it 'returns 401 Unauthorized for users with Developer role' do
+          put api(url, user), params: { secret_push_protection_enabled: true }
+
+          expect(response).to have_gitlab_http_status(:unauthorized)
+        end
       end
     end
   end
 
   describe 'license and visibility checks' do
-    let(:url) { "/projects/#{project.id}/security_settings" }
-
     context 'with Ultimate license' do
-      before do
-        stub_licensed_features(secret_push_protection: true)
+      before_all do
         project.add_developer(user)
       end
 
+      before do
+        stub_licensed_features(secret_push_protection: true)
+      end
+
       it 'allows access for public project' do
+        project.update!(visibility_level: Gitlab::VisibilityLevel::PUBLIC)
+
         get api(url, user)
         expect(response).to have_gitlab_http_status(:ok)
       end
@@ -138,16 +210,18 @@ RSpec.describe API::ProjectSecuritySettings, :aggregate_failures, feature_catego
     end
 
     context 'without Ultimate license' do
-      before do
-        stub_licensed_features(secret_push_protection: false)
+      before_all do
         project.add_developer(user)
       end
 
-      context 'for public .com project' do
+      before do
+        stub_saas_features(auto_enable_secret_push_protection_public_projects: true)
+        stub_licensed_features(secret_push_protection: false)
+      end
+
+      context 'for public .com project', :saas do
         before do
           project.update!(visibility_level: Gitlab::VisibilityLevel::PUBLIC)
-          stub_saas_features(auto_enable_secret_push_protection_public_projects: true)
-          stub_feature_flags(auto_spp_public_com_projects: true)
         end
 
         it 'allows access' do
@@ -159,8 +233,6 @@ RSpec.describe API::ProjectSecuritySettings, :aggregate_failures, feature_catego
       context 'for private project' do
         before do
           project.update!(visibility_level: Gitlab::VisibilityLevel::PRIVATE)
-          stub_saas_features(auto_enable_secret_push_protection_public_projects: true)
-          stub_feature_flags(auto_spp_public_com_projects: true)
         end
 
         it 'returns 403 Forbidden' do
@@ -171,11 +243,23 @@ RSpec.describe API::ProjectSecuritySettings, :aggregate_failures, feature_catego
 
       context 'when feature flag is disabled' do
         before do
-          stub_saas_features(auto_enable_secret_push_protection_public_projects: true)
+          project.update!(visibility_level: Gitlab::VisibilityLevel::PUBLIC)
           stub_feature_flags(auto_spp_public_com_projects: false)
         end
 
-        it 'returns 403 Forbidden' do
+        it 'returns 403 Forbidden even for public projects' do
+          get api(url, user)
+          expect(response).to have_gitlab_http_status(:forbidden)
+        end
+      end
+
+      context 'when saas feature is disabled' do
+        before do
+          stub_saas_features(auto_enable_secret_push_protection_public_projects: false)
+          project.update!(visibility_level: Gitlab::VisibilityLevel::PUBLIC)
+        end
+
+        it 'returns 403 Forbidden even for public projects' do
           get api(url, user)
           expect(response).to have_gitlab_http_status(:forbidden)
         end
