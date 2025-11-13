@@ -239,4 +239,22 @@ RSpec.describe PostReceiveService, :geo, feature_category: :team_planning do
       end
     end
   end
+
+  describe 'secret push protection warning' do
+    context 'when there is a warning' do
+      it 'returns secret push protection warning message on the response' do
+        spp_warning = ::Gitlab::Checks::SecretPushProtection::PostPushWarning.new(project.repository, user, 'http')
+        spp_warning.add_message
+
+        basic_message = { 'type' => 'basic', 'message' => spp_warning.message }
+        expect(subject).to include(basic_message)
+      end
+    end
+
+    context 'when there is no warning' do
+      it 'does not returns secret push protection warning message on the response' do
+        expect(subject).to be_empty
+      end
+    end
+  end
 end

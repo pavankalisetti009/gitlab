@@ -210,6 +210,28 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::SecretsCheck, feature_categ
               it_behaves_like 'skips the push check'
             end
 
+            context 'when StandardError is raised during scanning' do
+              before do
+                allow_next_instance_of(Gitlab::Checks::SecretPushProtection::PayloadProcessor) do |instance|
+                  allow(instance).to receive(:standardize_payloads).and_raise(StandardError,
+                    'Unexpected error during payload processing')
+                end
+              end
+
+              it 'adds a warning message to be displayed to the user' do
+                warning_instance = instance_double(Gitlab::Checks::SecretPushProtection::PostPushWarning)
+
+                expect(Gitlab::Checks::SecretPushProtection::PostPushWarning)
+                  .to receive(:new)
+                  .with(project.repository, user, changes_access.protocol)
+                  .and_return(warning_instance)
+
+                expect(warning_instance).to receive(:add_message)
+
+                expect { secrets_check.validate! }.not_to raise_error
+              end
+            end
+
             context 'when SDS should be called (on SaaS)' do
               before do
                 stub_saas_features(secret_detection_service: true)
