@@ -32,7 +32,7 @@ module Security
       end
 
       def scan_missing?(approval_rule)
-        target_scans_missing_in_source(approval_rule).any? || missing_target_scans(approval_rule).any?
+        target_scans_missing_in_source(approval_rule).any? || target_scans_missing(approval_rule).any?
       end
 
       private
@@ -93,7 +93,7 @@ module Security
           return true
         end
 
-        target_scans_diff = missing_target_scans(approval_rule)
+        target_scans_diff = target_scans_missing(approval_rule)
         if target_scans_diff.any?
           handle_scanner_mismatch_error(
             approval_rule, :target_scan_missing, 'Enforced scanner missing on target branch', target_scans_diff
@@ -166,17 +166,25 @@ module Security
         # No target pipeline, report specified scanners that are not on the source branch as missing
         return (scanners - pipeline_security_scan_types) unless target_pipeline(approval_rule)
 
-        # Target pipeline has scans, but some may be missing on the source branch
+        # Ensure that all target pipeline scans are also present in the source pipeline
         scan_types_diff = target_pipeline_security_scan_types(approval_rule) - pipeline_security_scan_types
         # Return the diff for specified scanners
         scan_types_diff & scanners
       end
 
-      def missing_target_scans(approval_rule)
+      def target_scans_missing(approval_rule)
         return [] if ::Feature.disabled?(:approval_policies_enforce_target_scans, project)
 
         scanners = approval_rule.scanners_with_default_fallback
-        scanners - target_pipeline_security_scan_types(approval_rule)
+        return scanners unless target_pipeline(approval_rule)
+
+        target_scans = target_pipeline_security_scan_types(approval_rule)
+        return scanners if target_scans.none?
+
+        # Ensure that all source pipeline scans are also present in the target pipeline
+        scan_types_diff = pipeline_security_scan_types - target_scans
+        # Return the diff for specified scanners
+        scan_types_diff & scanners
       end
 
       def pipeline_security_scan_types
