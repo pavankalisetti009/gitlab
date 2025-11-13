@@ -8,6 +8,8 @@ RSpec.describe Geo::BulkPrimaryVerificationService, :geo, feature_category: :geo
   let(:model_name) { 'Upload' }
   let(:params) { {} }
   let(:service) { described_class.new(model_name, params) }
+  let(:params_hash) { Base64.urlsafe_encode64(Gitlab::Json.dump(params.deep_stringify_keys)) }
+  let(:redis_key) { "geo:upload_states:#{params_hash}:bulk_primary_verification_service_cursor" }
 
   before do
     stub_current_geo_node(create(:geo_node, :primary))
@@ -41,8 +43,6 @@ RSpec.describe Geo::BulkPrimaryVerificationService, :geo, feature_category: :geo
   end
 
   describe '#execute' do
-    let_it_be(:redis_key) { 'geo:upload_states:bulk_primary_verification_service_cursor' }
-
     before do
       create_list(:upload, 5, :verification_succeeded)
     end
@@ -208,8 +208,6 @@ RSpec.describe Geo::BulkPrimaryVerificationService, :geo, feature_category: :geo
 
     context 'when time limit is reached' do
       before do
-        # Create multiple records to ensure batching
-        create_list(:upload, 5, :verification_succeeded)
         stub_const('Geo::BaseBatchBulkUpdateService::BATCH_SIZE', 2)
 
         # Mock runtime limiter to simulate time limit reached
@@ -287,6 +285,76 @@ RSpec.describe Geo::BulkPrimaryVerificationService, :geo, feature_category: :geo
         expect(uploads[0].reload.verification_state).to eq(2)
         expect(uploads[1].reload.verification_state).to eq(0)
         expect(uploads[2].reload.verification_state).to eq(0)
+      end
+    end
+
+    context 'when jobs have different parameters' do
+      let_it_be(:params) { { checksum_state: 'verification_failed' } }
+      let_it_be(:params_2) { { checksum_state: 'verification_succeeded' } }
+      let(:service_2) { described_class.new(model_name, params_2) }
+      let_it_be(:redis_key_2) do
+        json_param = Base64.urlsafe_encode64(Gitlab::Json.dump(params_2.deep_stringify_keys))
+        "geo:upload_states:#{json_param}:bulk_primary_verification_service_cursor"
+      end
+
+      before do
+        create_list(:upload, 3, :verification_failed)
+      end
+
+      context 'when time limit is reached' do
+        before do
+          stub_const('Geo::BaseBatchBulkUpdateService::BATCH_SIZE', 2)
+
+          # Mock runtime limiter to hit time limit after first batch for both services
+          runtime_limiter = instance_double(Gitlab::Metrics::RuntimeLimiter)
+          allow(Gitlab::Metrics::RuntimeLimiter).to receive(:new).and_return(runtime_limiter)
+          allow(runtime_limiter).to receive(:over_time?).and_return(false, true)
+        end
+
+        it 'maintains separate cursors for different parameter sets' do
+          service.execute
+          service_2.execute
+
+          # Verify both cursors exist and are different
+          Gitlab::Redis::SharedState.with do |redis|
+            cursor_1 = redis.get(redis_key)
+            cursor_2 = redis.get(redis_key_2)
+
+            expect(cursor_1).not_to be_nil
+            expect(cursor_2).not_to be_nil
+            expect(cursor_1).not_to eq(cursor_2)
+          end
+        end
+      end
+
+      context 'when continuing from cursor' do
+        let(:failed_records) { Upload.verification_failed }
+        let(:success_records) { Upload.verification_succeeded }
+        let(:excluded_failed_state_record) { failed_records.first.upload_state }
+        let(:excluded_success_state_record) { success_records.first.upload_state }
+
+        before do
+          cursor_value_failed = excluded_failed_state_record.slice(*Geo::UploadState.primary_key).values
+          cursor_value_success = excluded_success_state_record.slice(*Geo::UploadState.primary_key).values
+
+          Gitlab::Redis::SharedState.with do |redis|
+            redis.set(redis_key, Gitlab::Json.dump(cursor_value_failed))
+            redis.set(redis_key_2, Gitlab::Json.dump(cursor_value_success))
+          end
+        end
+
+        it 'does not interfere with each other' do
+          service.execute
+          service_2.execute
+
+          expect(excluded_failed_state_record.verification_state).to eq(3)
+          expect(excluded_success_state_record.verification_state).to eq(2)
+
+          expect(failed_records.map(&:upload_state) - [excluded_failed_state_record])
+            .to all(have_attributes(verification_state: 0))
+          expect(success_records.map(&:upload_state) - [excluded_success_state_record])
+            .to all(have_attributes(verification_state: 0))
+        end
       end
     end
   end
