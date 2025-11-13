@@ -14,7 +14,8 @@ import { createAlert } from '~/alert';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
-import { ENTITY_GROUP, ENTITY_PROJECT, PAGE_SIZE } from 'ee/ci/secrets/constants';
+import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
+import { ENTITY_GROUP, ENTITY_PROJECT, PAGE_SIZE, PROJECT_EVENTS } from 'ee/ci/secrets/constants';
 import SecretsTable from 'ee/ci/secrets/components/secrets_table/secrets_table.vue';
 import SecretActionsCell from 'ee/ci/secrets/components/secrets_table/secret_actions_cell.vue';
 import SecretDeleteModal from 'ee/ci/secrets/components/secret_delete_modal.vue';
@@ -26,6 +27,7 @@ import { mockEmptySecrets, mockProjectSecretsData } from '../../mock_data';
 
 jest.mock('~/alert');
 Vue.use(VueApollo);
+const { bindInternalEventDocument } = useMockInternalEventsTracking();
 
 describe('SecretsTable component', () => {
   let wrapper;
@@ -70,6 +72,7 @@ describe('SecretsTable component', () => {
       propsData: {
         fullPath: `path/to/project`,
         context: ENTITY_PROJECT,
+        eventTracking: PROJECT_EVENTS,
         ...props,
       },
       apolloProvider,
@@ -448,6 +451,20 @@ describe('SecretsTable component', () => {
         captureError: true,
         error,
       });
+    });
+  });
+
+  describe('event tracking', () => {
+    it('tracks page visit', async () => {
+      const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+      await createComponent();
+
+      expect(trackEventSpy).toHaveBeenCalledTimes(1);
+      expect(trackEventSpy).toHaveBeenCalledWith(
+        'visit_project_secrets_manager',
+        { label: 'secrets_table_page' },
+        undefined,
+      );
     });
   });
 

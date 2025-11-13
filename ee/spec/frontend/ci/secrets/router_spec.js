@@ -15,6 +15,8 @@ import {
   SECRET_MANAGER_STATUS_ACTIVE,
   ENTITY_GROUP,
   ENTITY_PROJECT,
+  GROUP_EVENTS,
+  PROJECT_EVENTS,
 } from 'ee/ci/secrets/constants';
 import { secretManagerStatusResponse } from './mock_data';
 
@@ -37,11 +39,13 @@ describe('Secrets router', () => {
 
   const groupProps = {
     context: ENTITY_GROUP,
+    eventTracking: GROUP_EVENTS,
     fullPath: '/path/to/group',
   };
 
   const projectProps = {
     context: ENTITY_PROJECT,
+    eventTracking: PROJECT_EVENTS,
     fullPath: '/path/to/project',
   };
 
@@ -98,10 +102,10 @@ describe('Secrets router', () => {
   });
 
   describe.each`
-    entity       | props           | fullPath              | isGroup
+    context      | props           | fullPath              | isGroup
     ${'group'}   | ${groupProps}   | ${'/path/to/group'}   | ${true}
     ${'project'} | ${projectProps} | ${'/path/to/project'} | ${false}
-  `('$entity secrets form', ({ props, fullPath }) => {
+  `('$context secrets form', ({ props, fullPath }) => {
     it('provides the correct props when visiting the index', async () => {
       await createSecretsApp({ route: '/', props });
 

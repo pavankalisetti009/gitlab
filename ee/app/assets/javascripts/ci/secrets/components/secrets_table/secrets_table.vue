@@ -11,6 +11,7 @@ import {
   GlKeysetPagination,
 } from '@gitlab/ui';
 import EmptySecretsSvg from '@gitlab/svgs/dist/illustrations/chat-sm.svg?url';
+import { InternalEvents } from '~/tracking';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { __, s__ } from '~/locale';
 import { fetchPolicies } from '~/lib/graphql';
@@ -30,6 +31,7 @@ import {
   PAGE_SIZE,
   SCOPED_LABEL_COLOR,
   SECRET_ROTATION_STATUS,
+  PAGE_VISIT_SECRETS_TABLE,
 } from '../../constants';
 import SecretDeleteModal from '../secret_delete_modal.vue';
 import ActionsCell from './secret_actions_cell.vue';
@@ -56,11 +58,16 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
+  mixins: [InternalEvents.mixin()],
   props: {
     context: {
       type: String,
       required: true,
       validator: (value) => ACCEPTED_CONTEXTS.includes(value),
+    },
+    eventTracking: {
+      type: Object,
+      required: true,
     },
     fullPath: {
       type: String,
@@ -159,6 +166,9 @@ export default {
     showPagination() {
       return this.hasPreviousPage || this.hasNextPage;
     },
+  },
+  mounted() {
+    this.trackEvent(this.eventTracking.pageVisit, { label: PAGE_VISIT_SECRETS_TABLE });
   },
   methods: {
     deleteSecret(secretName) {

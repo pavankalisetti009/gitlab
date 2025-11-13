@@ -56,3 +56,17 @@ export const POLL_INTERVAL = 2000;
 export const FAILED_TO_LOAD_ERROR_MESSAGE = s__(
   'SecretsManager|Failed to load secret. Please try again later.',
 );
+
+// event tracking
+export const GROUP_EVENTS = {
+  pageVisit: 'visit_group_secrets_manager',
+};
+
+export const PROJECT_EVENTS = {
+  pageVisit: 'visit_project_secrets_manager',
+};
+
+export const PAGE_VISIT_EDIT = 'edit_form';
+export const PAGE_VISIT_NEW = 'create_form';
+export const PAGE_VISIT_SECRET_DETAILS = 'secret_details_page';
+export const PAGE_VISIT_SECRETS_TABLE = 'secrets_table_page';

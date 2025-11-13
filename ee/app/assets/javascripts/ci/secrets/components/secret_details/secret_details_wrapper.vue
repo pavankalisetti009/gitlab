@@ -4,9 +4,11 @@ import { __, s__, sprintf } from '~/locale';
 import { fetchPolicies } from '~/lib/graphql';
 import { localeDateFormat } from '~/lib/utils/datetime_utility';
 import { createAlert } from '~/alert';
+import { InternalEvents } from '~/tracking';
 import {
   EDIT_ROUTE_NAME,
   FAILED_TO_LOAD_ERROR_MESSAGE,
+  PAGE_VISIT_SECRET_DETAILS,
   SECRET_ROTATION_STATUS,
 } from '../../constants';
 import getSecretDetailsQuery from '../../graphql/queries/get_secret_details.query.graphql';
@@ -23,7 +25,12 @@ export default {
     SecretDeleteModal,
     SecretDetails,
   },
+  mixins: [InternalEvents.mixin()],
   props: {
+    eventTracking: {
+      type: Object,
+      required: true,
+    },
     fullPath: {
       type: String,
       required: false,
@@ -102,6 +109,9 @@ export default {
 
       return null;
     },
+  },
+  mounted() {
+    this.trackEvent(this.eventTracking.pageVisit, { label: PAGE_VISIT_SECRET_DETAILS });
   },
   methods: {
     goToEdit() {
