@@ -107,7 +107,7 @@ describe('Requirements section', () => {
     });
 
     it('passes correct items prop to a table', () => {
-      const { items } = findTable().vm.$attrs;
+      const items = findTable().props('items');
       expect(items).toHaveLength(mockRequirements.length);
     });
 
@@ -129,7 +129,7 @@ describe('Requirements section', () => {
       'passes the correct items prop to the table at index $idx',
       async ({ idx, expectedRequirement, expectedControls }) => {
         await createComponent();
-        const { items } = findTable().vm.$attrs;
+        const items = findTable().props('items');
         const item = items[idx];
         expect(item.name).toBe(expectedRequirement.name);
         expect(item.description).toBe(expectedRequirement.description);

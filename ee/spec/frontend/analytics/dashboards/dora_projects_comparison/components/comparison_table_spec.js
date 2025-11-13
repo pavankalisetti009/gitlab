@@ -37,7 +37,7 @@ describe('Comparison table', () => {
     });
 
     it('renders a row for each project', () => {
-      expect(findTable().vm.$attrs.items).toHaveLength(mockProjectsDoraMetrics.length);
+      expect(findTable().props('items')).toHaveLength(mockProjectsDoraMetrics.length);
     });
 
     describe.each(mockProjectsDoraMetrics)(

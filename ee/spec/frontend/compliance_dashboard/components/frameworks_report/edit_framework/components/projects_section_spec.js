@@ -206,7 +206,7 @@ describe('Projects section', () => {
     });
 
     it('correctly calculates projects', () => {
-      const { items } = findTable().vm.$attrs;
+      const items = findTable().props('items');
       expect(items).toHaveLength(5);
     });
 
