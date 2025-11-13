@@ -4,7 +4,7 @@ module Ai
   module Catalog
     module ItemConsumers
       class DestroyService
-        include InternalEventsTracking
+        include EventsTracking
 
         def initialize(item_consumer, current_user)
           @current_user = current_user
@@ -16,6 +16,7 @@ module Ai
 
           if item_consumer.destroy
             track_item_consumer_event(item_consumer, 'delete_ai_catalog_item_consumer', additional_properties: nil)
+            send_audit_events(item_consumer, 'disable_ai_catalog_agent')
             ServiceResponse.success(payload: { item_consumer: item_consumer })
           else
             error(item_consumer.errors.full_messages)

@@ -4,7 +4,7 @@ module Ai
   module Catalog
     module ItemConsumers
       class UpdateService
-        include InternalEventsTracking
+        include EventsTracking
 
         def initialize(item_consumer, current_user, params)
           @current_user = current_user

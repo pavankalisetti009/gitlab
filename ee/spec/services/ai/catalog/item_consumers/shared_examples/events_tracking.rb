@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.shared_examples_for 'ItemConsumers::InternalEventsTracking' do
+RSpec.shared_examples_for 'ItemConsumers::EventsTracking' do
   let(:event_name) { 'create_ai_catalog_item_consumer' }
   let(:project) { build(:project) }
   let(:group) { build(:group) }

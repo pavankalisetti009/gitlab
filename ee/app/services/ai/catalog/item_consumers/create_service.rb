@@ -4,7 +4,7 @@ module Ai
   module Catalog
     module ItemConsumers
       class CreateService < ::BaseContainerService
-        include InternalEventsTracking
+        include EventsTracking
 
         def execute
           return error_not_project_or_top_level_group unless for_project_or_top_level_group?
@@ -26,6 +26,7 @@ module Ai
 
           if item_consumer.persisted?
             track_item_consumer_event(item_consumer, 'create_ai_catalog_item_consumer')
+            send_audit_events(item_consumer, 'enable_ai_catalog_agent')
             ServiceResponse.success(payload: { item_consumer: item_consumer })
           else
             error_creating(item_consumer)

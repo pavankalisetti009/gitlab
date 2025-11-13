@@ -33,6 +33,32 @@ module Ai
           additional_properties: additional_properties
         )
       end
+
+      def send_audit_events(event_type, item, params = {})
+        messages = audit_event_messages(event_type, item, params)
+
+        messages.each do |message|
+          audit_context = {
+            name: event_type,
+            author: current_user,
+            scope: project,
+            target: item,
+            target_details: "#{item.name} (ID: #{item.id})",
+            message: message
+          }
+
+          ::Gitlab::Audit::Auditor.audit(audit_context)
+        end
+      end
+
+      def audit_event_messages(event_type, item, params)
+        service_class = "::Ai::Catalog::#{item.item_type.to_s.camelize.pluralize}::" \
+          "AuditEventMessageService".safe_constantize
+
+        return [] if service_class.nil?
+
+        service_class.new(event_type, item, params).messages
+      end
     end
   end
 end

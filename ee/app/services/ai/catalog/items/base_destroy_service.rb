@@ -15,7 +15,10 @@ module Ai
 
           result = force_hard_delete? ? perform_hard_delete : perform_soft_delete
 
-          track_deletion_event if result.success?
+          if result.success?
+            track_deletion_event
+            track_deletion_audit_event
+          end
 
           result
         end
@@ -89,6 +92,8 @@ module Ai
         def track_deletion_event
           track_ai_item_events('delete_ai_catalog_item', { label: item.item_type })
         end
+
+        def track_deletion_audit_event; end
       end
     end
   end
