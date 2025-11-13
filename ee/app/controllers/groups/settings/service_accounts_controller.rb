@@ -8,13 +8,18 @@ module Groups
       feature_category :user_management
 
       before_action :ensure_root_group!
-      before_action :authorize_admin_service_accounts!
+      before_action :authorize_admin_service_accounts!, except: [:index, :show]
+      before_action :authorize_read_service_accounts!, only: [:index, :show]
 
       before_action do
         push_frontend_feature_flag(:edit_service_account_email, group)
       end
 
       private
+
+      def authorize_read_service_accounts!
+        render_404 unless can?(current_user, :read_service_account, group)
+      end
 
       def authorize_admin_service_accounts!
         render_404 unless can?(current_user, :create_service_account, group) &&

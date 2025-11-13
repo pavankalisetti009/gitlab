@@ -125,6 +125,7 @@ module EE
         base_path: admin_application_settings_service_accounts_path,
         is_group: false.to_s,
         service_accounts: {
+          enabled: true.to_s,
           path: expose_url(api_v4_service_accounts_path),
           edit_path: expose_url(api_v4_service_accounts_path),
           docs_path: help_page_path('user/profile/service_accounts.md'),
@@ -145,11 +146,13 @@ module EE
 
     def groups_service_accounts_data(group, user = current_user)
       sources = scope_description(:personal_access_token)
+
       scopes = ::Gitlab::Auth.available_scopes_for(user)
       {
         base_path: group_settings_service_accounts_path(group),
         is_group: true.to_s,
         service_accounts: {
+          enabled: can?(user, :create_service_account, group).to_s,
           path: expose_url(api_v4_groups_service_accounts_path(id: group.id)),
           edit_path: expose_url(api_v4_groups_service_accounts_path(id: group.id)),
           docs_path: help_page_path('user/profile/service_accounts.md'),

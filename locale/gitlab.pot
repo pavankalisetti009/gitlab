@@ -34017,6 +34017,9 @@ msgstr ""
 msgid "IdentityVerification|Before you can create additional groups, we need to verify your account."
 msgstr ""
 
+msgid "IdentityVerification|Before you can create service accounts, we need to verify your account."
+msgstr ""
+
 msgid "IdentityVerification|Before you can run pipelines, we need to verify your account."
 msgstr ""
 

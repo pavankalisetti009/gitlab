@@ -331,6 +331,7 @@ RSpec.describe EE::AuthHelper do
         base_path: '/admin/application_settings/service_accounts',
         is_group: 'false',
         service_accounts: {
+          enabled: 'true',
           path: 'http://localhost/api/v4/service_accounts',
           edit_path: 'http://localhost/api/v4/service_accounts',
           delete_path: 'http://localhost/api/v4/users',
@@ -355,25 +356,43 @@ RSpec.describe EE::AuthHelper do
       build_stubbed(:group, path: 'my-group-path', id: 4, namespace_settings: settings)
     end
 
-    it 'returns data for the service accounts UI' do
-      expect(helper.groups_service_accounts_data(group, 'dummy_user')).to match(a_hash_including({
-        base_path: '/groups/my-group-path/-/settings/service_accounts',
-        is_group: 'true',
-        service_accounts: {
-          path: 'http://localhost/api/v4/groups/4/service_accounts',
-          edit_path: 'http://localhost/api/v4/groups/4/service_accounts',
-          delete_path: 'http://localhost/api/v4/groups/4/service_accounts',
-          docs_path: '/help/user/profile/service_accounts.md'
-        },
-        access_token: {
-          min_date: 1.day.from_now.iso8601,
-          available_scopes: '[]',
-          create: 'http://localhost/api/v4/groups/4/service_accounts/:id/personal_access_tokens',
-          revoke: 'http://localhost/api/v4/groups/4/service_accounts/:id/personal_access_tokens',
-          rotate: 'http://localhost/api/v4/groups/4/service_accounts/:id/personal_access_tokens',
-          show: 'http://localhost/api/v4/groups/4/service_accounts/:id/personal_access_tokens'
-        }
-      }))
+    context 'when user can create service accounts' do
+      before do
+        allow(helper).to receive(:can?).with('dummy_user', :create_service_account, group).and_return(true)
+      end
+
+      it 'returns data for the service accounts UI with enabled as true' do
+        expect(helper.groups_service_accounts_data(group, 'dummy_user')).to match(a_hash_including({
+          base_path: '/groups/my-group-path/-/settings/service_accounts',
+          is_group: 'true',
+          service_accounts: {
+            enabled: 'true',
+            path: 'http://localhost/api/v4/groups/4/service_accounts',
+            edit_path: 'http://localhost/api/v4/groups/4/service_accounts',
+            delete_path: 'http://localhost/api/v4/groups/4/service_accounts',
+            docs_path: '/help/user/profile/service_accounts.md'
+          },
+          access_token: {
+            min_date: 1.day.from_now.iso8601,
+            available_scopes: '[]',
+            create: 'http://localhost/api/v4/groups/4/service_accounts/:id/personal_access_tokens',
+            revoke: 'http://localhost/api/v4/groups/4/service_accounts/:id/personal_access_tokens',
+            rotate: 'http://localhost/api/v4/groups/4/service_accounts/:id/personal_access_tokens',
+            show: 'http://localhost/api/v4/groups/4/service_accounts/:id/personal_access_tokens'
+          }
+        }))
+      end
+    end
+
+    context 'when user cannot create service accounts' do
+      before do
+        allow(helper).to receive(:can?).with('dummy_user', :create_service_account, group).and_return(false)
+      end
+
+      it 'returns data for the service accounts UI with enabled as false' do
+        result = helper.groups_service_accounts_data(group, 'dummy_user')
+        expect(result[:service_accounts][:enabled]).to eq('false')
+      end
     end
   end
 end
