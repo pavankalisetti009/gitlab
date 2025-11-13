@@ -23,8 +23,16 @@ const defaultProps = {
   findingTokenStatus: {
     status: 'ACTIVE',
     updatedAt: '2023-01-01T00:00:00Z',
+    lastVerifiedAt: '2023-01-01T02:00:00Z',
   },
   vulnerabilityId: 123,
+};
+
+const missingLastVerifiedAt = {
+  findingTokenStatus: {
+    status: 'ACTIVE',
+    updatedAt: '2023-01-01T00:00:00Z',
+  },
 };
 
 const successResponse = {
@@ -35,7 +43,8 @@ const successResponse = {
         id: 'gid://gitlab/Vulnerability/123',
         status: 'INACTIVE',
         createdAt: '2023-01-01T00:00:00Z',
-        updatedAt: '2023-01-02T00:00:00Z',
+        updatedAt: '2023-01-01T00:00:00Z',
+        lastVerifiedAt: '2023-01-02T02:00:00Z',
       },
     },
   },
@@ -80,7 +89,7 @@ describe('ValidityCheck', () => {
     });
   };
 
-  const findLastCheckedTimestamp = () => wrapper.findByTestId('validity-last-checked');
+  const findlastVerifiedTimestamp = () => wrapper.findByTestId('validity-last-checked');
   const findTimeAgoTooltip = () => wrapper.findComponent(TimeAgoTooltip);
   const findRecheckButton = () => wrapper.findComponent(GlButton);
   const findTooltip = () => wrapper.findComponent(GlTooltip);
@@ -96,21 +105,33 @@ describe('ValidityCheck', () => {
     createWrapper(props, { apolloProvider });
   };
 
-  describe('when findingTokenStatus has updatedAt', () => {
+  describe('when findingTokenStatus has lastVerifiedAt', () => {
     beforeEach(() => {
       createWrapper();
     });
 
     it('displays the correct text', () => {
-      expect(findLastCheckedTimestamp().text()).toContain('Last checked:');
+      expect(findlastVerifiedTimestamp().text()).toContain('Last checked:');
     });
 
     it('does not display the "not available" text', () => {
-      expect(findLastCheckedTimestamp().text()).not.toContain('No data available');
+      expect(findlastVerifiedTimestamp().text()).not.toContain('No data available');
     });
 
-    it('renders TimeAgoTooltip with the updatedAt value', () => {
-      expect(findTimeAgoTooltip().props('time')).toBe(defaultProps.findingTokenStatus.updatedAt);
+    it('renders TimeAgoTooltip with the lastVerifiedAt value', () => {
+      expect(findTimeAgoTooltip().props('time')).toBe(
+        defaultProps.findingTokenStatus.lastVerifiedAt,
+      );
+    });
+  });
+
+  describe('when findingTokenStatus does not have lastVerifiedAt', () => {
+    beforeEach(() => {
+      createWrapper(missingLastVerifiedAt);
+    });
+
+    it('does display the "not available" text', () => {
+      expect(findlastVerifiedTimestamp().text()).toContain('No data available');
     });
   });
 
@@ -120,7 +141,7 @@ describe('ValidityCheck', () => {
     });
 
     it('displays the unavailable text', () => {
-      expect(findLastCheckedTimestamp().text()).toMatchInterpolatedText(
+      expect(findlastVerifiedTimestamp().text()).toMatchInterpolatedText(
         'Last checked: No data available',
       );
     });
@@ -190,7 +211,7 @@ describe('ValidityCheck', () => {
         await waitForPromises();
 
         expect(findTimeAgoTooltip().props('time')).toBe(
-          successResponse.data.refreshFindingTokenStatus.findingTokenStatus.updatedAt,
+          successResponse.data.refreshFindingTokenStatus.findingTokenStatus.lastVerifiedAt,
         );
       });
 
@@ -351,7 +372,7 @@ describe('ValidityCheck', () => {
 
     it('does not render validity refresh UI', () => {
       expect(findRecheckButton().exists()).toBe(false);
-      expect(findLastCheckedTimestamp().exists()).toBe(false);
+      expect(findlastVerifiedTimestamp().exists()).toBe(false);
     });
 
     it('renders the token validity badge', () => {

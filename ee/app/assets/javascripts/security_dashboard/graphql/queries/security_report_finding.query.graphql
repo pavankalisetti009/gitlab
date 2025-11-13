@@ -188,6 +188,7 @@ query getSecurityReportFinding($projectFullPath: ID!, $pipelineIid: ID!, $findin
           status
           createdAt
           updatedAt
+          lastVerifiedAt
         }
         userPermissions {
           adminVulnerability

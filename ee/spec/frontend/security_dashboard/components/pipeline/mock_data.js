@@ -605,6 +605,7 @@ export const pipelineSecurityReportFinding = {
     status: 'active',
     createdAt: '2025-01-01T00:00:00Z',
     updatedAt: '2025-01-02T00:00:00Z',
+    lastVerifiedAt: '2025-01-02T02:00:00Z',
   },
   userPermissions: {
     adminVulnerability: true,

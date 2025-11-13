@@ -20,6 +20,7 @@ RSpec.describe 'Query.vulnerability.findingTokenStatus', feature_category: :secr
             status
             createdAt
             updatedAt
+            lastVerifiedAt
           }
         }
       }
