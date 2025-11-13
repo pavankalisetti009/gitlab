@@ -15,6 +15,7 @@ import timeagoMixin from '~/vue_shared/mixins/timeago';
 import { formatListIssuesForLanes } from 'ee/boards/boards_util';
 import listsIssuesQuery from '~/boards/graphql/lists_issues.query.graphql';
 import { setError } from '~/boards/graphql/cache_updates';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { BoardType } from 'ee_else_ce/boards/constants';
 import updateBoardEpicUserPreferencesMutation from '../graphql/update_board_epic_user_preferences.mutation.graphql';
 import IssuesLaneList from './issues_lane_list.vue';
@@ -32,7 +33,7 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
-  mixins: [timeagoMixin],
+  mixins: [glFeatureFlagMixin(), timeagoMixin],
   inject: ['fullPath', 'boardType'],
   props: {
     epic: {
@@ -202,7 +203,10 @@ export default {
       }"
       data-testid="board-epic-lane"
     >
-      <div class="gl-flex gl-items-center gl-px-3 gl-py-3">
+      <div
+        class="gl-flex gl-items-center gl-px-3 gl-py-3"
+        :class="{ 'gl-mt-5': !glFeatures.projectStudioEnabled }"
+      >
         <div class="gl-sticky gl-left-4 gl-flex gl-items-center">
           <gl-button
             v-gl-tooltip.hover.right

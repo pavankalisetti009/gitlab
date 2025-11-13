@@ -591,8 +591,12 @@
     @apply gl-gap-3;
   }
 
-  .board.board {
+  .boards-list .board.board {
     padding: 0;
+  }
+
+  .board-swimlanes .board:first-of-type {
+    padding-left: 0;
   }
 
   // Sidebar adjustments
