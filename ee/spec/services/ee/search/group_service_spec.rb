@@ -423,7 +423,7 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
       context 'when elasticearch_search is disabled and zoekt is disabled' do
         before do
           stub_ee_application_setting(elasticsearch_search: false)
-          allow(::Search::Zoekt).to receive(:enabled_for_user?).and_return(false)
+          allow(::Search::Zoekt).to receive(:enabled?).and_return(false)
         end
 
         it { is_expected.not_to include('blobs') }
@@ -432,7 +432,7 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
       context 'when elasticsearch_search is enabled and zoekt is disabled' do
         before do
           stub_ee_application_setting(elasticsearch_search: true)
-          allow(::Search::Zoekt).to receive(:enabled_for_user?).and_return(false)
+          allow(::Search::Zoekt).to receive(:enabled?).and_return(false)
         end
 
         it { is_expected.to include('blobs') }
@@ -441,7 +441,7 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
       context 'when elasticsearch_search is disabled and zoekt is enabled' do
         before do
           stub_ee_application_setting(elasticsearch_search: false)
-          allow(::Search::Zoekt).to receive(:enabled_for_user?).and_return(true)
+          allow(::Search::Zoekt).to receive(:enabled?).and_return(true)
           allow(::Search::Zoekt).to receive(:search?).with(group).and_return(true)
           allow(service).to receive(:zoekt_node_available_for_search?).and_return(true)
         end

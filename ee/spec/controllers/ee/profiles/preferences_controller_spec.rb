@@ -10,17 +10,6 @@ RSpec.describe Profiles::PreferencesController, feature_category: :user_profile 
   end
 
   describe 'PATCH update' do
-    def go(params: {}, format: :json)
-      params.reverse_merge!(
-        color_scheme_id: '1',
-        color_mode_id: '1',
-        dashboard: 'stars',
-        theme_id: '1'
-      )
-
-      patch :update, params: { user: params }, format: format
-    end
-
     context 'when updating security dashboard feature' do
       subject { patch :update, params: { user: { group_view: group_view } }, format: :json }
 

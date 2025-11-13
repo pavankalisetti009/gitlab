@@ -7,7 +7,7 @@ module Search
     # TODO: rename to search_code_with_zoekt?
     # https://gitlab.com/gitlab-org/gitlab/-/issues/421619
     def use_zoekt?
-      return false unless ::Search::Zoekt.enabled_for_user?(current_user) && zoekt_searchable_scope?
+      return false unless ::Search::Zoekt.enabled? && zoekt_searchable_scope?
       return false if Feature.enabled?(:disable_zoekt_search_for_saas, root_ancestor)
 
       zoekt_node_available_for_search?

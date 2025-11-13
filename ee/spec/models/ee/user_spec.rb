@@ -2490,28 +2490,6 @@ RSpec.describe User, feature_category: :system_access do
     end
   end
 
-  context 'zoekt namespaces', feature_category: :global_search do
-    let_it_be(:indexed_parent_namespace) { create(:group) }
-    let_it_be(:unindexed_namespace) { create(:namespace) }
-    let_it_be(:node) { create(:zoekt_node, index_base_url: 'http://example.com:1234/', search_base_url: 'http://example.com:4567/') }
-    let_it_be(:zoekt_enabled_namespace) { create(:zoekt_enabled_namespace, namespace: indexed_parent_namespace) }
-    let_it_be(:zoekt_index) do
-      create(:zoekt_index, :ready, zoekt_enabled_namespace: zoekt_enabled_namespace, node: node)
-    end
-
-    let(:user) { create(:user, namespace: create(:user_namespace)) }
-
-    describe '#has_exact_code_search?' do
-      it 'returns true if zoekt search is enabled in application settings' do
-        stub_ee_application_setting(zoekt_search_enabled: true)
-        expect(user).to be_has_exact_code_search
-
-        stub_ee_application_setting(zoekt_search_enabled: false)
-        expect(user).not_to be_has_exact_code_search
-      end
-    end
-  end
-
   context 'paid namespaces', :saas do
     using RSpec::Parameterized::TableSyntax
 

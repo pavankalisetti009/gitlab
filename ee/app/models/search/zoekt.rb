@@ -43,13 +43,6 @@ module Search
         true
       end
 
-      def enabled_for_user?(user)
-        return false unless enabled?
-        return true unless user # anonymous users have access, the final check is the user's preference setting
-
-        user.enabled_zoekt?
-      end
-
       def feature_available?(feature_name, user = nil, project_id: nil, group_id: nil)
         feature_class = "Search::Zoekt::Features::#{feature_name.to_s.camelize}".safe_constantize
         raise MissingFeatureError, "Zoekt feature '#{feature_name}' does not exist" if feature_class.nil?

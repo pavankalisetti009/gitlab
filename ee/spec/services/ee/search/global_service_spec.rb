@@ -199,7 +199,7 @@ RSpec.describe Search::GlobalService, feature_category: :global_search do
       context 'when elasticearch_search is disabled and zoekt is disabled' do
         before do
           stub_ee_application_setting(elasticsearch_search: false)
-          allow(::Search::Zoekt).to receive(:enabled_for_user?).and_return(false)
+          allow(::Search::Zoekt).to receive(:enabled?).and_return(false)
         end
 
         it 'does not include blobs scope' do
@@ -210,7 +210,7 @@ RSpec.describe Search::GlobalService, feature_category: :global_search do
       context 'when elasticsearch_search is enabled and zoekt is disabled' do
         before do
           stub_ee_application_setting(elasticsearch_search: true)
-          allow(::Search::Zoekt).to receive(:enabled_for_user?).and_return(false)
+          allow(::Search::Zoekt).to receive(:enabled?).and_return(false)
         end
 
         it 'includes blobs scope' do
@@ -221,7 +221,7 @@ RSpec.describe Search::GlobalService, feature_category: :global_search do
       context 'when elasticsearch_search is disabled and zoekt is enabled' do
         before do
           stub_ee_application_setting(elasticsearch_search: false)
-          allow(::Search::Zoekt).to receive(:enabled_for_user?).and_return(true)
+          allow(::Search::Zoekt).to receive(:enabled?).and_return(true)
         end
 
         it 'includes blobs scope' do

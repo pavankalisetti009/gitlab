@@ -18,7 +18,6 @@ module EE::Profiles::PreferencesController
     end
 
     params_ee.push(:group_view) if License.feature_available?(:security_dashboard)
-    params_ee.push(:enabled_zoekt) if user.has_exact_code_search?
 
     params_ee
   end
