@@ -4075,7 +4075,8 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
     end
   end
 
-  describe '#approval_policy_comparison_pipelines' do
+  describe '#target_branch_comparison_pipelines' do
+    let(:max_shas) { MergeRequest::MAX_CHECKED_ADDITIONAL_SHAS_FOR_SECURITY_REPORT_COMPARISON }
     let_it_be(:project) { create(:project, :public, :repository) }
     let_it_be_with_refind(:merge_request) do
       create(:merge_request, source_project: project, target_project: project)
@@ -4101,19 +4102,188 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
         sha: merge_request.diff_start_sha)
     end
 
-    it 'returns pipelines matching shas' do
-      list = merge_request.approval_policy_comparison_pipelines.to_a
+    let_it_be(:additional_pipeline_1) do
+      create(:ci_pipeline, :success, project: project, ref: merge_request.target_branch, sha: 'additional_sha_1')
+    end
 
-      expect(list).to contain_exactly(base_new, base_old, start_new, start_old)
+    let_it_be(:additional_pipeline_2) do
+      create(:ci_pipeline, :success, project: project, ref: merge_request.target_branch, sha: 'additional_sha_2'
+      )
+    end
+
+    before do
+      additional_commits = [
+        instance_double(Commit, id: 'additional_sha_1'),
+        instance_double(Commit, id: 'additional_sha_2')
+      ]
+      allow(merge_request.target_project.repository).to receive(:commits)
+                                                          .with(
+                                                            merge_request.target_branch,
+                                                            limit: max_shas
+                                                          ).and_return(additional_commits)
+    end
+
+    subject { merge_request.target_branch_comparison_pipelines.to_a }
+
+    context 'when expand_security_scan_comparison_commits feature flag is disabled' do
+      before do
+        stub_feature_flags(expand_security_scan_comparison_commits: false)
+      end
+
+      it 'only includes pipelines for the expected list of target shas' do
+        expect(subject).to contain_exactly(base_new, base_old, start_new, start_old)
+      end
+    end
+
+    it 'includes pipelines from additional target branch commits' do
+      expect(subject).to include(base_new, base_old, start_new, start_old, additional_pipeline_1, additional_pipeline_2)
+    end
+
+    it 'uses the new query method for retrieving pipelines' do
+      expect(merge_request).to receive(:recent_target_branch_pipelines_for_shas).and_call_original
+
+      subject
     end
 
     it 'only includes pipelines for the target branch shas' do
       unrelated = create(:ci_pipeline, :success, project: project, ref: merge_request.target_branch,
         sha: project.commit.id)
 
-      list = merge_request.approval_policy_comparison_pipelines.to_a
+      expect(subject).not_to include(unrelated)
+    end
 
-      expect(list).not_to include(unrelated)
+    context 'when target_branch_comparison_pipelines is empty' do
+      before do
+        allow(merge_request.target_project.repository).to receive(:commits)
+                                                            .with(
+                                                              merge_request.target_branch,
+                                                              limit: max_shas
+                                                            ).and_return([])
+        allow(merge_request).to receive(:diff_head_pipeline).and_return(nil)
+        allow(merge_request).to receive(:diff_base_sha).and_return(nil)
+        allow(merge_request).to receive(:diff_start_sha).and_return(nil)
+      end
+
+      it 'returns an empty array' do
+        expect(subject).to be_empty
+      end
+    end
+  end
+
+  describe '#additional_target_branch_commit_shas_for_comparison' do
+    let_it_be(:project) { create(:project, :public, :repository) }
+    let_it_be_with_refind(:merge_request) do
+      create(:merge_request, source_project: project, target_project: project)
+    end
+
+    let(:max_shas) { MergeRequest::MAX_CHECKED_ADDITIONAL_SHAS_FOR_SECURITY_REPORT_COMPARISON }
+    let :commits do
+      Array.new(max_shas + 1) do |i|
+        instance_double(Commit, id: "sha_#{i}")
+      end
+    end
+
+    subject { merge_request.additional_target_branch_commit_shas_for_comparison }
+
+    before do
+      allow(merge_request.target_project.repository).to receive(:commits)
+                                                          .with(merge_request.target_branch,
+                                                            limit: max_shas)
+                                                          .and_return(commits.first(max_shas))
+    end
+
+    it 'respects the maximum limit' do
+      expect(subject.size).to be <= max_shas
+    end
+
+    it 'returns commit SHAs from the target branch' do
+      expect(subject).to be_an(Array)
+      expect(subject.size).to eq(max_shas)
+      expect(subject).to match_array(commits.uniq.map(&:id).first(max_shas))
+    end
+
+    it 'returns unique commit SHAs' do
+      allow(merge_request.target_project.repository).to receive(:commits)
+                                                          .with(merge_request.target_branch,
+                                                            limit: max_shas)
+                                                          .and_return([commits[0], commits[1], commits[1]])
+
+      expect(subject).to eq(subject.uniq)
+    end
+  end
+
+  describe '#recent_target_branch_pipelines_for_shas' do
+    let_it_be(:project) { create(:project, :public, :repository) }
+    let_it_be_with_refind(:merge_request) do
+      create(:merge_request, source_project: project, target_project: project)
+    end
+
+    let(:sha_1) { 'abc123' }
+    let(:sha_2) { 'def456' }
+
+    subject(:pipelines) { merge_request.recent_target_branch_pipelines_for_shas(shas) }
+
+    context 'with multiple SHAs' do
+      let(:shas) { [sha_1, sha_2] }
+
+      let!(:pipeline_1) do
+        create(:ci_pipeline, :success, project: project, ref: merge_request.target_branch, sha: sha_1)
+      end
+
+      let!(:pipeline_2) do
+        create(:ci_pipeline, :success, project: project, ref: merge_request.target_branch, sha: sha_2)
+      end
+
+      it 'returns pipelines for all given SHAs' do
+        expect(pipelines).to contain_exactly(pipeline_1, pipeline_2)
+      end
+    end
+
+    context 'when a SHA has multiple pipelines' do
+      let(:shas) { [sha_1] }
+
+      let!(:older_pipeline) do
+        create(:ci_pipeline, :success, project: project, ref: merge_request.target_branch, sha: sha_1)
+      end
+
+      let!(:newer_pipeline) do
+        create(:ci_pipeline, :success, project: project, ref: merge_request.target_branch, sha: sha_1)
+      end
+
+      it 'returns pipelines ordered by ID descending' do
+        expect(pipelines).to eq([newer_pipeline, older_pipeline])
+      end
+    end
+
+    context 'when filtering by branch and project' do
+      let(:shas) { [sha_1] }
+
+      let!(:correct_pipeline) do
+        create(:ci_pipeline, :success, project: project, ref: merge_request.target_branch, sha: sha_1)
+      end
+
+      let!(:wrong_branch_pipeline) do
+        create(:ci_pipeline, :success, project: project, ref: 'other-branch', sha: sha_1)
+      end
+
+      it 'only returns pipelines from the target branch' do
+        expect(pipelines).to contain_exactly(correct_pipeline)
+      end
+    end
+
+    context 'when limiting results per SHA' do
+      let(:shas) { [sha_1] }
+      let(:max_pipelines) { MergeRequest::MAX_CHECKED_PIPELINES_FOR_SECURITY_REPORT_COMPARISON }
+
+      before do
+        (max_pipelines + 2).times do
+          create(:ci_pipeline, :success, project: project, ref: merge_request.target_branch, sha: sha_1)
+        end
+      end
+
+      it 'limits pipelines per SHA to the maximum' do
+        expect(pipelines.count).to eq(max_pipelines)
+      end
     end
   end
 end

@@ -1,0 +1,10 @@
+---
+name: expand_security_scan_comparison_commits
+description: Expands the list of commits we check for valid security pipelines in the MR security widget
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/547898
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/207751
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/580542
+milestone: '18.5'
+group: group::security insights
+type: gitlab_com_derisk
+default_enabled: false
