@@ -45,7 +45,7 @@ export default {
             form: this.formId,
           },
         },
-        actionSecondary: {
+        actionCancel: {
           text: __('Cancel'),
         },
       };
@@ -86,9 +86,9 @@ export default {
   <gl-modal
     ref="modal"
     :modal-id="modalId"
-    :title="s__('AICatalog|Enable flow in project')"
+    :title="s__('AICatalog|Enable flow from group')"
     :action-primary="modal.actionPrimary"
-    :action-secondary="modal.actionSecondary"
+    :action-cancel="modal.actionCancel"
     @primary.prevent
     @hidden="onHidden"
   >
@@ -96,7 +96,7 @@ export default {
     <gl-form :id="formId" @submit.prevent="handleSubmit">
       <gl-form-group
         :label="s__('AICatalog|Flow')"
-        :label-description="s__('AICatalog|Only flows enabled in your group will be shown here.')"
+        :label-description="s__('AICatalog|Only flows enabled in your top-level group are shown.')"
         label-for="flow-dropdown"
         :state="isFlowValid"
         :invalid-feedback="s__('AICatalog|Flow is required.')"

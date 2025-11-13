@@ -117,7 +117,7 @@ describe('VisibilityLevelRadioGroup', () => {
         });
         expect(privatePopover.findAll('strong').at(0).text()).toBe('A private agent:');
         expect(privatePopover.text()).toContain(
-          'Is visible only to users with at least the Developer role in this project.',
+          'Is visible only to users with at least the Developer role for this project, and to users with the Owner role for the top-level group.',
         );
         expect(privatePopover.findAll('strong').at(1).text()).toBe('Private agents are best for:');
         expect(privatePopover.text()).toContain('Project-specific automation.');

@@ -7,6 +7,8 @@ import {
   AI_CATALOG_CONSUMER_TYPE_GROUP,
   AI_CATALOG_CONSUMER_TYPE_PROJECT,
   AI_CATALOG_CONSUMER_LABELS,
+  AI_CATALOG_GROUP_CONSUMER_LABEL_DESCRIPTION,
+  AI_CATALOG_PROJECT_CONSUMER_LABEL_DESCRIPTION,
 } from '../constants';
 import FormGroupDropdown from './form_group_dropdown.vue';
 import FormProjectDropdown from './form_project_dropdown.vue';
@@ -87,14 +89,10 @@ export default {
       return this.item.project?.rootGroup?.fullName;
     },
     groupLabelDescription() {
-      return sprintf(s__('AICatalog|Allows %{itemType} to be enabled in projects.'), {
-        itemType: this.itemTypeLabel,
-      });
+      return AI_CATALOG_GROUP_CONSUMER_LABEL_DESCRIPTION[this.item.itemType];
     },
     projectLabelDescription() {
-      return sprintf(s__('AICatalog|Project members will be able to use this %{itemType}.'), {
-        itemType: this.itemTypeLabel,
-      });
+      return AI_CATALOG_PROJECT_CONSUMER_LABEL_DESCRIPTION[this.item.itemType];
     },
     isPrivateItem() {
       return !this.item.public;

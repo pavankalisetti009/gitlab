@@ -32,6 +32,28 @@ export const AI_CATALOG_CONSUMER_LABELS = {
   [AI_CATALOG_CONSUMER_TYPE_GROUP]: __('group'),
   [AI_CATALOG_CONSUMER_TYPE_PROJECT]: __('project'),
 };
+export const AI_CATALOG_GROUP_CONSUMER_LABEL_DESCRIPTION = {
+  [AI_CATALOG_TYPE_AGENT]: s__(
+    'AICatalog|You must have the Owner role to add an agent to a group. Only top-level groups are shown.',
+  ),
+  [AI_CATALOG_TYPE_FLOW]: s__(
+    'AICatalog|You must have the Owner role to add a flow to a group. Only top-level groups are shown.',
+  ),
+  [AI_CATALOG_TYPE_THIRD_PARTY_FLOW]: s__(
+    'AICatalog|You must have the Owner role to add a flow to a group. Only top-level groups are shown.',
+  ),
+};
+export const AI_CATALOG_PROJECT_CONSUMER_LABEL_DESCRIPTION = {
+  [AI_CATALOG_TYPE_AGENT]: s__(
+    'AICatalog|Project members can use this agent. You must have at least the Maintainer role to add an agent to a project.',
+  ),
+  [AI_CATALOG_TYPE_FLOW]: s__(
+    'AICatalog|Project members can use this flow. You must have at least the Maintainer role to add a flow to a project.',
+  ),
+  [AI_CATALOG_TYPE_THIRD_PARTY_FLOW]: s__(
+    'AICatalog|Project members can use this flow. You must have at least the Maintainer role to add a flow to a project.',
+  ),
+};
 
 export const MINIMUM_QUERY_LENGTH = 3;
 export const PAGE_SIZE = 20;
@@ -46,13 +68,13 @@ export const VISIBILITY_LEVEL_PUBLIC = 20;
 export const AGENT_VISIBILITY_LEVEL_DESCRIPTIONS = {
   [VISIBILITY_LEVEL_PUBLIC_STRING]: s__('AICatalog|Anyone can view and use the agent.'),
   [VISIBILITY_LEVEL_PRIVATE_STRING]: s__(
-    "AICatalog|Only members of this project can view this agent. This agent can't be shared with other projects.",
+    "AICatalog|This agent can be viewed only by members of this project, or by users with the Owner role for the top-level group. This agent can't be shared with other projects.",
   ),
 };
 export const FLOW_VISIBILITY_LEVEL_DESCRIPTIONS = {
   [VISIBILITY_LEVEL_PUBLIC_STRING]: s__('AICatalog|Anyone can view and use the flow.'),
   [VISIBILITY_LEVEL_PRIVATE_STRING]: s__(
-    "AICatalog|Only members of this project can view this flow. This flow can't be shared with other projects.",
+    "AICatalog|This flow can be viewed only by members of this project, or by users with the Owner role for the top-level group. This flow can't be shared with other projects.",
   ),
 };
 
