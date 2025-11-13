@@ -16,7 +16,10 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
   let_it_be(:consumer_project) { create(:project, group: consumer_group) }
 
   let_it_be(:item_project) { create(:project, developers: user) }
-  let_it_be(:item) { create(:ai_catalog_flow, public: true, project: item_project, name: 'item_name') }
+  let_it_be(:flow_item) { create(:ai_catalog_flow, public: true, project: item_project, name: 'item_name') }
+
+  let_it_be(:agent_item) { create(:ai_catalog_agent, public: true, project: item_project) }
+  let_it_be(:third_party_flow_item) { create(:ai_catalog_third_party_flow, public: true, project: item_project) }
 
   let_it_be(:service_account) { create(:user, :service_account) }
 
@@ -25,11 +28,12 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
   end
 
   let_it_be(:parent_item_consumer) do
-    create(:ai_catalog_item_consumer, group: consumer_group, item: item, service_account: service_account)
+    create(:ai_catalog_item_consumer, group: consumer_group, item: flow_item, service_account: service_account)
   end
 
   let(:container) { consumer_project }
   let(:params) { { item:, parent_item_consumer: } }
+  let(:item) { flow_item }
 
   subject(:execute) { described_class.new(container: container, current_user: user, params: params).execute }
 
@@ -95,6 +99,68 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
     )
   end
 
+  it 'adds the service account as a member of the project' do
+    expect(Members::Projects::CreatorService).to receive(:add_member).and_call_original
+
+    expect { execute }.to change { consumer_project.members.count }.by(1)
+
+    member = consumer_project.members.last
+    expect(member.user).to eq(service_account)
+    expect(member.access_level).to eq(Member::DEVELOPER)
+  end
+
+  context 'when creating the member fails' do
+    before do
+      allow(Members::Projects::CreatorService).to receive(:add_member) do
+        build(:project_member).tap { |member| member.errors.add(:base, 'could not create project member') }
+      end
+    end
+
+    it_behaves_like 'a failure', 'could not create project member'
+  end
+
+  context 'when creating the member returns nil' do
+    before do
+      allow(Members::Projects::CreatorService).to receive(:add_member).and_return(nil)
+    end
+
+    it_behaves_like 'a failure', 'Failed to create item consumer'
+  end
+
+  context 'when service account is already a member' do
+    let_it_be(:existing_member) do
+      create(:project_member, project: consumer_project, user: service_account, access_level: Gitlab::Access::GUEST)
+    end
+
+    it 'updates the membership with the correct permission' do
+      expect { execute }.to change { Ai::Catalog::ItemConsumer.count }
+        .and not_change { consumer_project.members.count }
+
+      expect(existing_member.reload.access_level).to eq(Gitlab::Access::DEVELOPER)
+    end
+  end
+
+  context 'when item is an agent' do
+    let(:item) { agent_item }
+    let(:params) { { item: } }
+
+    it 'creates the agent item consumer' do
+      expect { execute }.to change { Ai::Catalog::ItemConsumer.count }
+    end
+
+    it 'does not add the service account to the project' do
+      expect(Members::Projects::CreatorService).not_to receive(:add_member)
+
+      expect { execute }.not_to change { consumer_project.members.count }
+    end
+
+    context 'when passing parent_item_consumer' do
+      let(:params) { { item:, parent_item_consumer: } }
+
+      it_behaves_like 'a failure', "Parent item consumer must be blank"
+    end
+  end
+
   it 'tracks internal event on successful creation' do
     expect { execute }.to trigger_internal_events('create_ai_catalog_item_consumer').with(
       user: user,
@@ -111,19 +177,19 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
     let_it_be(:parent_item_consumer) { nil }
 
     context 'when item is a flow' do
-      let_it_be(:item) { create(:ai_catalog_flow, public: true, project: item_project) }
+      let(:item) { flow_item }
 
       it_behaves_like 'a failure', "Project item must have a parent item consumer"
     end
 
     context 'when item is a third_party_flow' do
-      let_it_be(:item) { create(:ai_catalog_third_party_flow, public: true, project: item_project) }
+      let(:item) { third_party_flow_item }
 
       it_behaves_like 'a failure', "Project item must have a parent item consumer"
     end
 
     context 'when item is an agent' do
-      let_it_be(:item) { create(:ai_catalog_agent, public: true, project: item_project) }
+      let(:item) { agent_item }
 
       it 'creates the agent' do
         expect { execute }.to change { Ai::Catalog::ItemConsumer.count }
@@ -151,6 +217,10 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
         enabled: true,
         locked: true
       )
+    end
+
+    it 'does not add the service account as a member of the group' do
+      expect { execute }.not_to change { group.members.count }
     end
 
     it 'tracks internal event with group namespace' do

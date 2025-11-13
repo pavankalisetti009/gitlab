@@ -10,11 +10,16 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Create, feature_category: :
   let_it_be(:consumer_group) { create(:group, owners: user) }
   let_it_be(:consumer_project) { create(:project, group: consumer_group) }
 
+  let_it_be(:service_account) { create(:user, :service_account) }
+  let_it_be(:service_account_user_detail) do
+    create(:user_detail, user: service_account, provisioned_by_group: consumer_group)
+  end
+
   let_it_be(:item_project) { create(:project, developers: user) }
   let_it_be(:item) { create(:ai_catalog_flow, public: true, project: item_project) }
 
   let_it_be(:consumer_group_item_consumer) do
-    create(:ai_catalog_item_consumer, group: consumer_group, item: item)
+    create(:ai_catalog_item_consumer, group: consumer_group, item: item, service_account: service_account)
   end
 
   let(:current_user) { user }

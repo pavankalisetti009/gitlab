@@ -7,33 +7,40 @@ module Ai
         include EventsTracking
 
         def execute
-          return error_not_project_or_top_level_group unless for_project_or_top_level_group?
-          return error_no_permissions unless allowed?
-          return error_parent_item_consumer_not_passed if project_flow_without_parent_item_consumer?
-          return error_flow_triggers_must_be_for_project if flow_triggers_not_for_project?
+          return validation_error if validation_error
 
-          item_consumer = service_account_creation_result = nil
+          add_service_account_result = create_service_account_result = create_item_consumer_result = nil
+          project_member = item_consumer = service_account_response = nil
 
           ApplicationRecord.transaction do
-            service_account_creation_result = create_service_account
-            raise ActiveRecord::Rollback if service_account_creation_result.error?
+            create_service_account_result, service_account_response = create_service_account
+            raise ActiveRecord::Rollback if create_service_account_result == :failure
 
-            item_consumer = create_item_consumer(service_account_creation_result.payload[:user])
-            raise ActiveRecord::Rollback unless item_consumer.persisted?
+            create_item_consumer_result, item_consumer = create_item_consumer(service_account_response)
+            raise ActiveRecord::Rollback if create_item_consumer_result == :failure
+
+            add_service_account_result, project_member = add_service_account_to_project
+            raise ActiveRecord::Rollback if add_service_account_result == :failure
           end
 
-          return error_service_account(service_account_creation_result) if service_account_creation_result.error?
+          return error(service_account_response) if create_service_account_result == :failure
+          return error_creating(project_member) if add_service_account_result == :failure
+          return error_creating(item_consumer) if create_item_consumer_result == :failure
 
-          if item_consumer.persisted?
-            track_item_consumer_event(item_consumer, 'create_ai_catalog_item_consumer')
-            send_audit_events(item_consumer, 'enable_ai_catalog_agent')
-            ServiceResponse.success(payload: { item_consumer: item_consumer })
-          else
-            error_creating(item_consumer)
-          end
+          track_item_consumer_event(item_consumer, 'create_ai_catalog_item_consumer')
+          send_audit_events(item_consumer, 'enable_ai_catalog_agent')
+          ServiceResponse.success(payload: { item_consumer: item_consumer })
         end
 
         private
+
+        strong_memoize_attr def validation_error
+          return error_not_project_or_top_level_group unless for_project_or_top_level_group?
+          return error_no_permissions unless allowed?
+          return error_parent_item_consumer_not_passed if project_flow_without_parent_item_consumer?
+
+          error_flow_triggers_must_be_for_project if flow_triggers_not_for_project?
+        end
 
         def parent_item_consumer_service_account
           parent_item_consumer&.service_account
@@ -57,13 +64,16 @@ module Ai
           params.merge!(project: project, group: group, service_account: service_account, enabled: true)
           prepare_trigger_params
 
-          ::Ai::Catalog::ItemConsumer.create(params)
+          item_consumer = ::Ai::Catalog::ItemConsumer.create(params)
+          return [:success, item_consumer] if item_consumer.persisted?
+
+          [:failure, item_consumer]
         end
 
         def create_service_account
           # In case we don't need to create the service account (because this is not group level), we should return
           # no_op, and continue creating the item consumer.
-          return ServiceResponse.new(status: :no_op) if group.nil?
+          return [:no_op, nil] if group.nil?
 
           service_account_params = {
             namespace_id: group.id,
@@ -82,9 +92,22 @@ module Ai
 
           if response.error?
             log_error("Failed to create service account with name '#{service_account_username}': #{response.message}")
+            return [:failure, response.message]
           end
 
-          response
+          [:success, response.payload[:user]]
+        end
+
+        def add_service_account_to_project
+          return [:no_op, nil] unless project_container? && (item.flow? || item.third_party_flow?)
+
+          project_member = project.team.add_member(
+            parent_item_consumer_service_account, Member::DEVELOPER, current_user:
+          )
+
+          return [:failure, project_member] if project_member.nil? || !project_member.persisted?
+
+          [:success, project_member]
         end
 
         def prepare_trigger_params
@@ -112,8 +135,10 @@ module Ai
           params[:item]
         end
 
-        def error_creating(item_consumer)
-          error(item_consumer.errors.full_messages.presence || 'Failed to create item consumer')
+        def error_creating(record)
+          return error('Failed to create item consumer') if record.nil?
+
+          error(record.errors.full_messages.presence || 'Failed to create item consumer')
         end
 
         def allowed?
@@ -125,10 +150,6 @@ module Ai
 
         def error(message)
           ServiceResponse.error(message: Array(message))
-        end
-
-        def error_service_account(service_account_creation_result)
-          error(service_account_creation_result.message)
         end
 
         def error_no_permissions
