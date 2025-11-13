@@ -1,5 +1,5 @@
 <script>
-import { GlTruncateText } from '@gitlab/ui';
+import { GlTruncateText, GlLink } from '@gitlab/ui';
 import { AGENT_VISIBILITY_LEVEL_DESCRIPTIONS } from '../constants';
 import AiCatalogItemField from './ai_catalog_item_field.vue';
 import AiCatalogItemVisibilityField from './ai_catalog_item_visibility_field.vue';
@@ -10,6 +10,7 @@ export default {
     AiCatalogItemField,
     AiCatalogItemVisibilityField,
     FormSection,
+    GlLink,
     GlTruncateText,
   },
   truncateTextToggleButtonProps: {
@@ -54,11 +55,9 @@ export default {
           :public="item.public"
           :description-texts="$options.AGENT_VISIBILITY_LEVEL_DESCRIPTIONS"
         />
-        <ai-catalog-item-field
-          v-if="projectName"
-          :title="s__('AICatalog|Source project')"
-          :value="projectName"
-        />
+        <ai-catalog-item-field v-if="projectName" :title="s__('AICatalog|Source project')">
+          <gl-link :href="item.project.webUrl">{{ projectName }}</gl-link>
+        </ai-catalog-item-field>
       </form-section>
       <form-section :title="s__('AICatalog|Prompts')">
         <ai-catalog-item-field v-if="systemPrompt" :title="s__('AICatalog|System prompt')">

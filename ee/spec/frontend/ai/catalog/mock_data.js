@@ -34,8 +34,14 @@ export const mockProjectWithNamespace = mockProjectFactory({
   nameWithNamespace: 'Group / Project 1',
 });
 
+export const mockProjectWithNamespaceAndWebUrl = mockProjectFactory({
+  nameWithNamespace: 'Group / Project 1',
+  webUrl: 'https://gitlab.com/gitlab-org/test-project',
+});
+
 export const mockProjectWithGroup = mockProjectFactory({
   nameWithNamespace: 'Group / Project 1',
+  webUrl: 'https://gitlab.com/gitlab-org/test-project',
   rootGroup: {
     id: 'gid://gitlab/Group/1',
     fullName: 'Group 1',
@@ -175,7 +181,7 @@ export const mockAgentVersion = {
 export const mockBaseAgent = mockAgentFactory();
 
 export const mockAgent = mockAgentFactory({
-  project: mockProjectWithNamespace,
+  project: mockProjectWithNamespaceAndWebUrl,
   latestVersion: mockAgentVersion,
   versions: mockAgentVersions,
 });
