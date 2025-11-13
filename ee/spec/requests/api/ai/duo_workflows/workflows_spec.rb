@@ -993,7 +993,8 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
           'x-gitlab-instance-id' => anything,
           'x-gitlab-version' => Gitlab.version_info.to_s,
           'x-gitlab-unidirectional-streaming' => 'enabled',
-          'x-gitlab-enabled-mcp-server-tools' => enabled_mcp_tools.join(',')
+          'x-gitlab-enabled-mcp-server-tools' => enabled_mcp_tools.join(','),
+          'x-gitlab-model-prompt-cache-enabled' => 'false'
         )
 
         expect(json_response['DuoWorkflow']['Secure']).to eq(true)
@@ -1669,6 +1670,32 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
           get_response
 
           expect(response).to have_gitlab_http_status(:not_found)
+        end
+      end
+
+      context 'for x-gitlab-model-prompt-cache-enabled at instance-level' do
+        it 'returns false in x-gitlab-model-prompt-cache-enabled header' do
+          get api(path, user), headers: workhorse_headers
+
+          expect(json_response['DuoWorkflow']['Headers']['x-gitlab-model-prompt-cache-enabled']).to eq('false')
+        end
+      end
+
+      context 'for x-gitlab-model-prompt-cache-enabled at group-level' do
+        it 'returns true in x-gitlab-model-prompt-cache-enabled header' do
+          group.namespace_settings.update_column(:model_prompt_cache_enabled, true)
+
+          get api(path, user), headers: workhorse_headers, params: { namespace_id: group.id }
+
+          expect(json_response['DuoWorkflow']['Headers']['x-gitlab-model-prompt-cache-enabled']).to eq('true')
+        end
+
+        it 'returns false in x-gitlab-model-prompt-cache-enabled header' do
+          group.namespace_settings.update_column(:model_prompt_cache_enabled, false)
+
+          get api(path, user), headers: workhorse_headers, params: { namespace_id: group.id }
+
+          expect(json_response['DuoWorkflow']['Headers']['x-gitlab-model-prompt-cache-enabled']).to eq('false')
         end
       end
     end
