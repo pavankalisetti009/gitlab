@@ -160,7 +160,7 @@ module Ai
       def set_up_executor_commands
         if Feature.enabled?(:ai_dap_use_headless_node_executor, @current_user)
           [
-            %(npx -y @gitlab/duo-cli@8.36.1 run --existing-session-id #{@workflow.id} --connection-type grpc)
+            %(npx -y @gitlab/duo-cli@8.38.0 run --existing-session-id #{@workflow.id} --connection-type grpc)
           ]
         else
           [
