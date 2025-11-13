@@ -270,7 +270,6 @@ RSpec.describe API::Ci::Triggers, feature_category: :pipeline_composition do
   describe 'GET /projects/:id/triggers' do
     it_behaves_like 'authorizing granular token permissions', :read_trigger do
       let(:boundary_object) { project }
-      let(:user) { user }
       let(:request) do
         get api("/projects/#{project.id}/triggers", personal_access_token: pat)
       end
@@ -322,7 +321,6 @@ RSpec.describe API::Ci::Triggers, feature_category: :pipeline_composition do
   describe 'GET /projects/:id/triggers/:trigger_id' do
     it_behaves_like 'authorizing granular token permissions', :read_trigger do
       let(:boundary_object) { project }
-      let(:user) { user }
       let(:request) do
         get api("/projects/#{project.id}/triggers/#{trigger.id}", personal_access_token: pat)
       end
@@ -363,7 +361,6 @@ RSpec.describe API::Ci::Triggers, feature_category: :pipeline_composition do
   describe 'POST /projects/:id/triggers' do
     it_behaves_like 'authorizing granular token permissions', :create_trigger do
       let(:boundary_object) { project }
-      let(:user) { user }
       let(:request) do
         post api("/projects/#{project.id}/triggers", personal_access_token: pat),
           params: { description: 'trigger' }
@@ -500,7 +497,6 @@ RSpec.describe API::Ci::Triggers, feature_category: :pipeline_composition do
   describe 'PUT /projects/:id/triggers/:trigger_id' do
     it_behaves_like 'authorizing granular token permissions', :update_trigger do
       let(:boundary_object) { project }
-      let(:user) { user }
       let(:request) do
         put api("/projects/#{project.id}/triggers/#{trigger.id}", personal_access_token: pat),
           params: { description: 'new description' }
