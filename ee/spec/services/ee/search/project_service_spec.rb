@@ -361,6 +361,50 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
   describe '#scope' do
     subject(:service) { described_class.new(user, project, scope: scope) }
 
+    context 'when no scope is passed' do
+      let(:scope) { nil }
+
+      it 'returns the first allowed scope which the user has permission for' do
+        first_allowed_scope = service.allowed_scopes.first
+
+        expect(service.scope).to eq(first_allowed_scope)
+      end
+
+      context 'and there is a default scope set' do
+        before do
+          stub_application_setting(default_search_scope: 'issues')
+        end
+
+        it 'returns the default scope' do
+          expect(service.scope).to eq('issues')
+        end
+
+        context 'when user does not have permission for the scope' do
+          it 'chooses the first allowed scope which the user has permission for' do
+            allow(Ability).to receive(:allowed?).and_call_original
+            allow(Ability).to receive(:allowed?).with(user, :read_issue, project).and_return(false)
+
+            first_allowed_scope = service.allowed_scopes.first
+
+            expect(service.scope).to eq(first_allowed_scope)
+          end
+        end
+
+        context 'when default scope is not included in allowed_scopes' do
+          before do
+            # projects scope not allowed in project searches
+            stub_application_setting(default_search_scope: 'projects')
+          end
+
+          it 'chooses the first allowed scope' do
+            first_allowed_scope = service.allowed_scopes.first
+
+            expect(service.scope).to eq(first_allowed_scope)
+          end
+        end
+      end
+    end
+
     context 'when scope passed is included in allowed_scopes' do
       let(:scope) { 'issues' }
 
@@ -383,7 +427,9 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
       let(:scope) { 'epics' }
 
       it 'chooses the first allowed scope which the user has permission for' do
-        expect(service.scope).to eq('blobs')
+        first_allowed_scope = service.allowed_scopes.first
+
+        expect(service.scope).to eq(first_allowed_scope)
       end
     end
   end
