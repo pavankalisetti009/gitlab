@@ -83,6 +83,37 @@ RSpec.describe Vulnerabilities::BulkDismissService, feature_category: :vulnerabi
         expect(reads.pluck(:dismissal_reason)).to match_array([dismissal_reason])
       end
 
+      context 'when turn_off_vulnerability_read_create_db_trigger_function feature flag is disabled' do
+        before do
+          stub_feature_flags(turn_off_vulnerability_read_create_db_trigger_function: false)
+        end
+
+        it 'updates the dismissal_reason using update_all instead of UpsertService' do
+          expect(Vulnerabilities::Reads::UpsertService).not_to receive(:new)
+
+          service.execute
+
+          reads = Vulnerabilities::Read.by_vulnerabilities(vulnerability_ids)
+          expect(reads.pluck(:dismissal_reason)).to match_array([dismissal_reason])
+          expect(reads.pluck(:auto_resolved)).to match_array([false])
+        end
+      end
+
+      context 'when turn_off_vulnerability_read_create_db_trigger_function feature flag is enabled' do
+        before do
+          stub_feature_flags(turn_off_vulnerability_read_create_db_trigger_function: true)
+        end
+
+        it 'uses UpsertService to update the dismissal_reason' do
+          expect(Vulnerabilities::Reads::UpsertService).to receive(:new).and_call_original
+
+          service.execute
+
+          reads = Vulnerabilities::Read.by_vulnerabilities(vulnerability_ids)
+          expect(reads.pluck(:dismissal_reason)).to match_array([dismissal_reason])
+        end
+      end
+
       it 'updates the statistics', :sidekiq_inline do
         _active_vulnerability = create(:vulnerability, :with_finding, :high_severity, project: project)
         Vulnerabilities::Read.update_all(traversal_ids: project.namespace.traversal_ids)

@@ -44,8 +44,13 @@ module Vulnerabilities
         end
       end
 
-      Vulnerabilities::Reads::UpsertService.new(@vulnerability,
-        { state: :dismissed, dismissal_reason: @dismissal_reason }, projects: @project).execute
+      if Feature.enabled?(:turn_off_vulnerability_read_create_db_trigger_function, @project)
+        Vulnerabilities::Reads::UpsertService.new(@vulnerability,
+          { state: :dismissed, dismissal_reason: @dismissal_reason }, projects: @project).execute
+      else
+        # When the trigger is active, it handles state updates but not dismissal_reason
+        Vulnerabilities::Read.by_vulnerabilities(@vulnerability).update_all(dismissal_reason: @dismissal_reason)
+      end
 
       @vulnerability
     end

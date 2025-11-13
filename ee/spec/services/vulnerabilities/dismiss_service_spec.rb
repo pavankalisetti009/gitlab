@@ -135,6 +135,41 @@ RSpec.describe Vulnerabilities::DismissService, feature_category: :vulnerability
         end
       end
 
+      context 'when turn_off_vulnerability_read_create_db_trigger_function feature flag is disabled' do
+        let(:dismissal_reason) { 'false_positive' }
+
+        before do
+          stub_feature_flags(turn_off_vulnerability_read_create_db_trigger_function: false)
+        end
+
+        it 'updates the dismissal_reason using update_all instead of UpsertService' do
+          expect(Vulnerabilities::Reads::UpsertService).not_to receive(:new)
+          expect(Vulnerabilities::Read).to receive(:by_vulnerabilities).with(vulnerability).and_call_original
+
+          dismiss_vulnerability
+
+          vulnerability_read = Vulnerabilities::Read.find_by(vulnerability_id: vulnerability.id)
+          expect(vulnerability_read.dismissal_reason).to eq('false_positive')
+        end
+      end
+
+      context 'when turn_off_vulnerability_read_create_db_trigger_function feature flag is enabled' do
+        let(:dismissal_reason) { 'false_positive' }
+
+        it 'uses UpsertService to update the dismissal_reason' do
+          expect(Vulnerabilities::Reads::UpsertService).to receive(:new).with(
+            vulnerability,
+            { state: :dismissed, dismissal_reason: dismissal_reason },
+            projects: project
+          ).and_call_original
+
+          dismiss_vulnerability
+
+          vulnerability_read = Vulnerabilities::Read.find_by(vulnerability_id: vulnerability.id)
+          expect(vulnerability_read.dismissal_reason).to eq('false_positive')
+        end
+      end
+
       it 'creates note' do
         expect(SystemNoteService).to receive(:change_vulnerability_state).with(vulnerability, user)
 
