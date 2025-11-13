@@ -745,7 +745,7 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
         %(echo $DUO_WORKFLOW_FLOW_CONFIG_SCHEMA_VERSION),
         %(echo $DUO_WORKFLOW_ADDITIONAL_CONTEXT_CONTENT),
         %(echo Starting Workflow #{workflow.id}),
-        %(npx -y @gitlab/duo-cli@8.36.1 run --existing-session-id #{workflow.id} --connection-type grpc)
+        %(npx -y @gitlab/duo-cli@8.38.0 run --existing-session-id #{workflow.id} --connection-type grpc)
       ]
     end
 
@@ -830,7 +830,7 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
           %(echo $DUO_WORKFLOW_FLOW_CONFIG_SCHEMA_VERSION),
           %(echo $DUO_WORKFLOW_ADDITIONAL_CONTEXT_CONTENT),
           %(echo Starting Workflow #{workflow.id}),
-          %(npx -y @gitlab/duo-cli@8.36.1 run --existing-session-id #{workflow.id} --connection-type grpc)
+          %(npx -y @gitlab/duo-cli@8.38.0 run --existing-session-id #{workflow.id} --connection-type grpc)
         ]
       end
 
