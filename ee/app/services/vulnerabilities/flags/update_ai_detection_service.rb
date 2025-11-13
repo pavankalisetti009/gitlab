@@ -57,6 +57,8 @@ module Vulnerabilities
         )
 
         if flag.save
+          ::Vulnerabilities::EsHelper.sync_elasticsearch([vulnerability.id])
+
           ServiceResponse.success(payload: { flag: flag, is_new_flag: flag.saved_change_to_id? })
         else
           ServiceResponse.error(message: flag.errors.full_messages.join(', '))
