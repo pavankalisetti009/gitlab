@@ -55,12 +55,26 @@ RSpec.describe Groups::EpicsController, feature_category: :portfolio_management 
 
   describe 'GET #show' do
     context 'for work item epics' do
-      it 'renders work item page' do
-        get group_epic_path(group, epic)
+      context 'when work_item_planning_view is disabled' do
+        before do
+          stub_feature_flags(work_item_planning_view: false)
+        end
 
-        expect(response).to render_template('groups/epics/work_items_index')
-        expect(assigns(:work_item)).to eq(epic.work_item)
-        expect(response.body).to have_pushed_frontend_feature_flags(workItemEpics: true)
+        it 'renders work item page' do
+          get group_epic_path(group, epic)
+
+          expect(response).to render_template('groups/epics/work_items_index')
+          expect(assigns(:work_item)).to eq(epic.work_item)
+          expect(response.body).to have_pushed_frontend_feature_flags(workItemEpics: true)
+        end
+      end
+
+      context 'when work_item_planning_view is enabled' do
+        it 'redirects to work item page' do
+          get group_epic_path(group, epic)
+
+          expect(response).to redirect_to(group_work_item_path(group, epic.work_item))
+        end
       end
 
       it 'renders json when requesting json response' do
@@ -80,20 +94,26 @@ RSpec.describe Groups::EpicsController, feature_category: :portfolio_management 
       context 'when feature is available set' do
         let(:summarize_notes_enabled) { true }
 
-        it 'exposes the required feature flags' do
-          get group_epic_path(group, epic)
+        context 'when work_item_planning_view is disabled' do
+          before do
+            stub_feature_flags(work_item_planning_view: false)
+          end
 
-          expect(response.body).to have_pushed_frontend_feature_flags(summarizeComments: true)
-        end
-      end
+          it 'exposes the required feature flags' do
+            get group_epic_path(group, epic)
 
-      context 'when feature is not available' do
-        let(:summarize_notes_enabled) { false }
+            expect(response.body).to have_pushed_frontend_feature_flags(summarizeComments: true)
+          end
 
-        it 'does not expose the feature flags' do
-          get group_epic_path(group, epic)
+          context 'when feature is not available' do
+            let(:summarize_notes_enabled) { false }
 
-          expect(response.body).not_to have_pushed_frontend_feature_flags(summarizeComments: true)
+            it 'does not expose the feature flags' do
+              get group_epic_path(group, epic)
+
+              expect(response.body).not_to have_pushed_frontend_feature_flags(summarizeComments: true)
+            end
+          end
         end
       end
     end

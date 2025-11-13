@@ -61,5 +61,33 @@ RSpec.describe Groups::WorkItemsController, feature_category: :team_planning do
         )
       end
     end
+
+    context 'with an epic work item' do
+      let(:epic_work_item) { create(:work_item, :epic, :group_level, namespace: group) }
+
+      context 'when work_item_planning_view is disabled' do
+        before do
+          stub_feature_flags(work_item_planning_view: false)
+        end
+
+        it 'redirects epic work items to the group epics path' do
+          get :show, params: { group_id: group, iid: epic_work_item.iid }
+
+          expect(response).to redirect_to group_epic_path(group, epic_work_item.iid)
+        end
+      end
+
+      context 'when work_item_planning_view is enabled' do
+        before do
+          stub_feature_flags(work_item_planning_view: true)
+        end
+
+        it 'does not redirect to the group epics path' do
+          get :show, params: { group_id: group, iid: epic_work_item.iid }
+
+          expect(response).not_to redirect_to group_epic_path(group, epic_work_item.iid)
+        end
+      end
+    end
   end
 end

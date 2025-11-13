@@ -125,7 +125,7 @@ RSpec.describe 'Change type action', :js, feature_category: :portfolio_managemen
 
         wait_for_all_requests
 
-        expect(page).to have_current_path(group_epic_path(group, 1))
+        expect(page).to have_current_path(group_work_item_path(group, 1))
       end
     end
   end

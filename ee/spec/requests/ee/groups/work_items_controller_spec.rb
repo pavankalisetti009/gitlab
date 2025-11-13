@@ -27,10 +27,16 @@ RSpec.describe 'Group Level Work Items', feature_category: :team_planning do
       context 'when work item type is epic' do
         let_it_be(:work_item) { create(:work_item, :epic, namespace: group) }
 
-        it 'redirects to /epic/:iid' do
-          show
+        context 'when work_item_planning_view feature flag is disabled' do
+          before do
+            stub_feature_flags(work_item_planning_view: false)
+          end
 
-          expect(response).to redirect_to(group_epic_path(group, work_item.iid))
+          it 'redirects to /epic/:iid' do
+            show
+
+            expect(response).to redirect_to(group_epic_path(group, work_item.iid))
+          end
         end
       end
 
@@ -68,10 +74,16 @@ RSpec.describe 'Group Level Work Items', feature_category: :team_planning do
       context 'when work item type is epic' do
         let_it_be(:work_item) { create(:work_item, :epic, namespace: group) }
 
-        it 'redirects to /epic/:iid' do
-          show
+        context 'when work_item_planning_view feature flag is disabled' do
+          before do
+            stub_feature_flags(work_item_planning_view: false)
+          end
 
-          expect(response).to redirect_to(group_epic_path(group, work_item.iid))
+          it 'redirects to /work_item/:iid' do
+            show
+
+            expect(response).to redirect_to(group_epic_path(group, work_item.iid))
+          end
         end
       end
 

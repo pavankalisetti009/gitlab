@@ -14,8 +14,11 @@ module EE
       end
 
       def show
-        # We want to keep the experience for users to use the /epics/:iid URL even when they use /work_items/:iid
-        return redirect_to group_epic_path(group, issuable.iid) if epic_work_item?
+        # We want to keep the experience for users to use the /epics/:iid URL even when they use /work_items/:iid,
+        # unless the consolidated list is enabled
+        if epic_work_item? && !group&.work_items_consolidated_list_enabled?(current_user)
+          return redirect_to group_epic_path(group, issuable.iid)
+        end
 
         super
       end
