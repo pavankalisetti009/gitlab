@@ -11,6 +11,10 @@ module Security
 
     enum :scan_type, Enums::Security.scan_profile_types
 
+    has_many :scan_profile_projects, class_name: 'Security::ScanProfileProject',
+      foreign_key: :security_scan_profile_id, inverse_of: :scan_profile
+    has_many :projects, through: :scan_profile_projects
+
     validates :scan_type, presence: true
     validates :gitlab_recommended, inclusion: { in: [true, false] }
     validates :name, uniqueness: { scope: [:namespace_id, :scan_type] }, length: { maximum: 255 }, presence: true
