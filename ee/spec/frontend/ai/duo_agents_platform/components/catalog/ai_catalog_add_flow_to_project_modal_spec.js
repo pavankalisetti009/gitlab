@@ -35,7 +35,7 @@ describe('AiCatalogAddFlowToProjectModal', () => {
   describe('component rendering', () => {
     it('renders modal', () => {
       expect(findModal().props()).toMatchObject({
-        title: 'Enable flow in project',
+        title: 'Enable flow from group',
         actionPrimary: {
           text: 'Enable',
           attributes: {
@@ -43,7 +43,7 @@ describe('AiCatalogAddFlowToProjectModal', () => {
             type: 'submit',
           },
         },
-        actionSecondary: {
+        actionCancel: {
           text: 'Cancel',
         },
       });

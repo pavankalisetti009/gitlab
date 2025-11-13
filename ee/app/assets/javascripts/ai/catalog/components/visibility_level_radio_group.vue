@@ -110,7 +110,9 @@ export default {
     {
       title: s__('AICatalog|A private %{itemType}:'),
       items: [
-        s__('AICatalog|Is visible only to users with at least the Developer role in this project.'),
+        s__(
+          'AICatalog|Is visible only to users with at least the Developer role for this project, and to users with the Owner role for the top-level group.',
+        ),
         s__("AICatalog|Can't be enabled in other projects, or used in public flows."),
         s__("AICatalog|Can't be shared, even within your organization."),
         s__("AICatalog|Can't be made public if enabled in a project."),

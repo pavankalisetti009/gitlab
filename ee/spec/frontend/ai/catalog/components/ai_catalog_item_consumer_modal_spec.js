@@ -61,7 +61,7 @@ describe('AiCatalogItemConsumerModal', () => {
 
     it('renders the label description of the project field', () => {
       expect(findFormGroup().props('labelDescription')).toBe(
-        'Project members will be able to use this flow.',
+        'Project members can use this flow. You must have at least the Maintainer role to add a flow to a project.',
       );
     });
 
@@ -178,7 +178,7 @@ describe('AiCatalogItemConsumerModal', () => {
       it('renders group label description', () => {
         const groupFormGroup = findFormGroups().at(0);
         expect(groupFormGroup.props('labelDescription')).toBe(
-          'Allows flow to be enabled in projects.',
+          'You must have the Owner role to add a flow to a group. Only top-level groups are shown.',
         );
       });
 
