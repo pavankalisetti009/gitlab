@@ -24,12 +24,14 @@ export const initAiSettings = (id, component, options = {}) => {
     duoAvailabilityCascadingSettings,
     duoRemoteFlowsCascadingSettings,
     duoFoundationalFlowsCascadingSettings,
+    duoSastFpDetectionCascadingSettings,
     duoAvailability,
     areDuoSettingsLocked,
     experimentFeaturesEnabled,
     duoCoreFeaturesEnabled,
     duoRemoteFlowsAvailability,
     duoFoundationalFlowsAvailability,
+    duoSastFpDetectionAvailability,
     promptCacheEnabled,
     redirectPath,
     updateId,
@@ -57,6 +59,7 @@ export const initAiSettings = (id, component, options = {}) => {
   let duoAvailabilityCascadingSettingsParsed;
   let duoRemoteFlowsCascadingSettingsParsed;
   let duoFoundationalFlowsCascadingSettingsParsed;
+  let duoSastFpDetectionCascadingSettingsParsed;
 
   try {
     duoAvailabilityCascadingSettingsParsed = convertObjectPropsToCamelCase(
@@ -79,6 +82,13 @@ export const initAiSettings = (id, component, options = {}) => {
         deep: true,
       },
     );
+
+    duoSastFpDetectionCascadingSettingsParsed = convertObjectPropsToCamelCase(
+      JSON.parse(duoSastFpDetectionCascadingSettings),
+      {
+        deep: true,
+      },
+    );
   } catch {
     duoAvailabilityCascadingSettingsParsed = null;
   }
@@ -94,6 +104,7 @@ export const initAiSettings = (id, component, options = {}) => {
       duoAvailabilityCascadingSettings: duoAvailabilityCascadingSettingsParsed,
       duoRemoteFlowsCascadingSettings: duoRemoteFlowsCascadingSettingsParsed,
       duoFoundationalFlowsCascadingSettings: duoFoundationalFlowsCascadingSettingsParsed,
+      duoSastFpDetectionCascadingSettings: duoSastFpDetectionCascadingSettingsParsed,
       areDuoSettingsLocked: parseBoolean(areDuoSettingsLocked),
       duoAvailability,
       experimentFeaturesEnabled: parseBoolean(experimentFeaturesEnabled),
@@ -118,6 +129,7 @@ export const initAiSettings = (id, component, options = {}) => {
       duoChatExpirationColumn,
       initialDuoRemoteFlowsAvailability: parseBoolean(duoRemoteFlowsAvailability),
       initialDuoFoundationalFlowsAvailability: parseBoolean(duoFoundationalFlowsAvailability),
+      initialDuoSastFpDetectionAvailability: parseBoolean(duoSastFpDetectionAvailability),
       isSaaS: parseBoolean(isSaas),
       isGroupSettings: options?.isGroupSettings || false,
     },

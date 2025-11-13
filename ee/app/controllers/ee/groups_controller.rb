@@ -26,6 +26,7 @@ module EE
 
       before_action do
         push_frontend_feature_flag(:saas_user_caps_auto_approve_pending_users_on_cap_increase, @group)
+        push_frontend_feature_flag(:ai_experiment_sast_fp_detection, @group, type: :wip)
       end
 
       before_action only: :issues do

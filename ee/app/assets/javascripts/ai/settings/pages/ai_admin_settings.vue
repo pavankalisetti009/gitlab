@@ -103,6 +103,7 @@ export default {
       duoCoreFeaturesEnabled,
       promptCacheEnabled,
       duoRemoteFlowsAvailability,
+      duoSastFpDetectionAvailability,
       foundationalAgentsEnabled,
       duoFoundationalFlowsAvailability,
     }) {
@@ -120,6 +121,7 @@ export default {
           model_prompt_cache_enabled: promptCacheEnabled,
           duo_remote_flows_availability: duoRemoteFlowsAvailability,
           duo_foundational_flows_availability: duoFoundationalFlowsAvailability,
+          duo_sast_fp_detection_availability: duoSastFpDetectionAvailability,
           disabled_direct_code_suggestions: this.disabledConnection,
           enabled_expanded_logging: this.expandedLogging,
           duo_chat_expiration_days: this.chatExpirationDays,

@@ -1,12 +1,14 @@
 <script>
 import { GlForm, GlAlert, GlButton } from '@gitlab/ui';
 import { s__, __ } from '~/locale';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { AVAILABILITY_OPTIONS } from '../constants';
 import DuoAvailability from './duo_availability_form.vue';
 import DuoExperimentBetaFeatures from './duo_experiment_beta_features_form.vue';
 import DuoCoreFeaturesForm from './duo_core_features_form.vue';
 import DuoPromptCache from './duo_prompt_cache_form.vue';
 import DuoFlowSettings from './duo_flow_settings.vue';
+import DuoSastFpDetectionSettings from './duo_sast_fp_detection_settings.vue';
 import DuoFoundationalAgentsSettings from './duo_foundational_agents_settings.vue';
 
 export default {
@@ -20,8 +22,10 @@ export default {
     DuoCoreFeaturesForm,
     DuoPromptCache,
     DuoFlowSettings,
+    DuoSastFpDetectionSettings,
     DuoFoundationalAgentsSettings,
   },
+  mixins: [glFeatureFlagMixin()],
   i18n: {
     defaultOffWarning: s__(
       'AiPowered|When you save, GitLab Duo will be turned off for all groups, subgroups, and projects.',
@@ -39,6 +43,10 @@ export default {
       required: true,
     },
     duoFoundationalFlowsAvailability: {
+      type: Boolean,
+      required: true,
+    },
+    duoSastFpDetectionAvailability: {
       type: Boolean,
       required: true,
     },
@@ -69,6 +77,7 @@ export default {
     return {
       availability: this.duoAvailability,
       flowEnabled: this.duoRemoteFlowsAvailability,
+      sastFpDetectionEnabled: this.duoSastFpDetectionAvailability,
       experimentsEnabled: this.experimentFeaturesEnabled,
       duoCoreEnabled: this.duoCoreFeaturesEnabled,
       cacheEnabled: this.promptCacheEnabled,
@@ -95,6 +104,12 @@ export default {
     hasFoundationalFlowsFormChanged() {
       return this.foundationalFlowsEnabled !== this.duoFoundationalFlowsAvailability;
     },
+    hasSastFpDetectionFormChanged() {
+      return (
+        this.glFeatures.aiExperimentSastFpDetection &&
+        this.sastFpDetectionEnabled !== this.duoSastFpDetectionAvailability
+      );
+    },
     hasFoundationalAgentsEnabledChanged() {
       return this.foundationalAgentsEnabled !== this.foundationalAgentsEnabledInput;
     },
@@ -107,6 +122,7 @@ export default {
         this.hasParentFormChanged ||
         this.hasFlowFormChanged ||
         this.hasFoundationalFlowsFormChanged ||
+        this.hasSastFpDetectionFormChanged ||
         this.hasFoundationalAgentsEnabledChanged
       );
     },
@@ -157,6 +173,10 @@ export default {
       this.foundationalFlowsEnabled = value;
       this.$emit('duo-foundational-flows-checkbox-changed', value);
     },
+    onSastFpDetectionCheckboxChanged(value) {
+      this.sastFpDetectionEnabled = value;
+      this.$emit('duo-sast-fp-detection-changed', value);
+    },
     onFoundationalAgentsEnabledChanged(value) {
       this.foundationalAgentsEnabledInput = value;
       this.$emit('duo-foundational-agents-changed', value);
@@ -189,6 +209,13 @@ export default {
       :disabled-checkbox="disableConfigCheckboxes"
       @change="onFlowCheckboxChanged"
       @change-foundational-flows="onFoundationalFlowsCheckboxChanged"
+    />
+
+    <duo-sast-fp-detection-settings
+      v-if="glFeatures.aiExperimentSastFpDetection"
+      :duo-sast-fp-detection-availability="duoSastFpDetectionAvailability"
+      :disabled-checkbox="disableConfigCheckboxes"
+      @change="onSastFpDetectionCheckboxChanged"
     />
 
     <duo-prompt-cache
