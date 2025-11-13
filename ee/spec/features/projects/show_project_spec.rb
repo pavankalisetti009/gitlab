@@ -38,9 +38,9 @@ RSpec.describe 'Project show page', :with_trial_types, :feature, feature_categor
       create(:project, :repository, mirror: true, mirror_user: user, import_url: 'http://user:pass@test.com')
     end
 
-    context 'for maintainer' do
+    context 'for developer' do
       before do
-        project.add_maintainer(user)
+        project.add_developer(user)
         sign_in(user)
 
         visit project_path(project)

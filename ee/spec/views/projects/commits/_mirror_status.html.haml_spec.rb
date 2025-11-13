@@ -31,12 +31,20 @@ RSpec.describe 'projects/commits/_mirror_status.html.haml', feature_category: :s
     expect(rendered).not_to have_content('Successfully updated')
   end
 
-  it "renders mirror info even if the user can't push code" do
-    sign_in(reporter)
+  it "renders mirror info if the user can push code" do
+    sign_in(developer)
 
     render 'projects/commits/mirror_status'
 
     expect(rendered).to have_content('This project is mirrored from')
     expect(rendered).not_to eq('')
+  end
+
+  it "does not render mirror info if the user can't push code" do
+    sign_in(reporter)
+
+    render 'projects/commits/mirror_status'
+
+    expect(rendered).not_to have_content('This project is mirrored from')
   end
 end
