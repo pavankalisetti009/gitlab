@@ -859,6 +859,32 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
     end
   end
 
+  describe '.complexity_multiplier' do
+    let(:args) { {} }
+
+    subject(:multiplier) { described_class.complexity_multiplier(args) }
+
+    it 'returns the base multiplier by default' do
+      expect(multiplier).to eq(0.01)
+    end
+
+    context 'when reduce_complexity_multiplier is true' do
+      let(:args) { { reduce_complexity_multiplier: true } }
+
+      it 'returns a smaller multiplier' do
+        expect(multiplier).to eq(0.0025)
+      end
+    end
+
+    context 'when reduce_complexity_multiplier is false' do
+      let(:args) { { reduce_complexity_multiplier: false } }
+
+      it 'returns the base multiplier' do
+        expect(multiplier).to eq(0.01)
+      end
+    end
+  end
+
   describe 'event tracking' do
     subject(:service_action) { resolve(described_class, obj: vulnerable, ctx: { current_user: user }) }
 
