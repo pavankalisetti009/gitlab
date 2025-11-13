@@ -6,6 +6,7 @@ mutation refreshSecurityFindingTokenStatus($securityFindingUuid: String!) {
       status
       createdAt
       updatedAt
+      lastVerifiedAt
     }
   }
 }

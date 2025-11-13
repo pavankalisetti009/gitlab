@@ -57,6 +57,7 @@ query pipelineFindings(
             status
             createdAt
             updatedAt
+            lastVerifiedAt
           }
           solution
           location {

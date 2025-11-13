@@ -41,13 +41,13 @@ export default {
   data() {
     return {
       isLoading: false,
-      latestUpdatedAt: null,
+      latestVerifiedAt: null,
       latestStatus: null,
     };
   },
   computed: {
-    lastCheckedAt() {
-      return this.latestUpdatedAt || this.findingTokenStatus?.updatedAt;
+    lastVerifiedAt() {
+      return this.latestVerifiedAt || this.findingTokenStatus?.lastVerifiedAt;
     },
     tokenValidityStatus() {
       return this.latestStatus || this.findingTokenStatus?.status || 'unknown';
@@ -97,9 +97,9 @@ export default {
         if (errors?.length) {
           throw new Error(errors.join('. '));
         } else if (findingTokenStatus) {
-          const { updatedAt, status } = findingTokenStatus;
+          const { lastVerifiedAt, status } = findingTokenStatus;
 
-          this.latestUpdatedAt = updatedAt;
+          this.latestVerifiedAt = lastVerifiedAt;
           this.latestStatus = status;
         }
       } catch (error) {
@@ -137,7 +137,7 @@ export default {
       <span class="gl-mr-2" data-testid="validity-last-checked">
         {{ s__('VulnerabilityManagement|Last checked:') }}
         <span class="gl-inline-block gl-min-w-[5.2rem]">
-          <template v-if="lastCheckedAt"><time-ago-tooltip :time="lastCheckedAt" /></template>
+          <template v-if="lastVerifiedAt"><time-ago-tooltip :time="lastVerifiedAt" /></template>
           <template v-else> {{ s__('VulnerabilityManagement|No data available') }}</template>
         </span>
       </span>

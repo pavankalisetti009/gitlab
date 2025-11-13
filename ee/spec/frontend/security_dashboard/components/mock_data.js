@@ -542,6 +542,9 @@ export const generateVulnerabilities = () => [
     findingTokenStatus: {
       id: 'token-status-7',
       status: 'ACTIVE',
+      createdAt: '2024-01-15T10:30:00Z',
+      updatedAt: '2024-01-15T10:30:00Z',
+      lastVerifiedAt: '2024-01-15T10:30:00Z',
     },
     location: {
       file: 'config/secrets.yml',
