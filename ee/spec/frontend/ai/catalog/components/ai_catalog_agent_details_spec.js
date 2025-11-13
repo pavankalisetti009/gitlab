@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
-import { GlBadge, GlTruncateText } from '@gitlab/ui';
+import { GlBadge, GlLink, GlTruncateText } from '@gitlab/ui';
 import AiCatalogAgentDetails from 'ee/ai/catalog/components/ai_catalog_agent_details.vue';
 import AiCatalogItemField from 'ee/ai/catalog/components/ai_catalog_item_field.vue';
 import AiCatalogItemVisibilityField from 'ee/ai/catalog/components/ai_catalog_item_visibility_field.vue';
@@ -38,6 +38,7 @@ describe('AiCatalogAgentDetails', () => {
     findSection(index).findAllComponents(AiCatalogItemField);
   const findVisibilityBadge = () => wrapper.findComponent(GlBadge);
   const findSystemPromptTruncateText = () => wrapper.findComponent(GlTruncateText);
+  const findSourceProjectLink = () => wrapper.findComponent(GlLink);
 
   beforeEach(() => {
     createComponent();
@@ -97,11 +98,13 @@ describe('AiCatalogAgentDetails', () => {
       },
     );
 
-    it('renders Source project', () => {
-      expect(accessRightsDetails.at(1).props()).toMatchObject({
-        title: 'Source project',
-        value: mockAgent.project.nameWithNamespace,
-      });
+    it('renders Source project with link', () => {
+      const sourceProjectField = accessRightsDetails.at(1);
+      const link = findSourceProjectLink();
+
+      expect(sourceProjectField.props('title')).toBe('Source project');
+      expect(link.attributes('href')).toBe(mockAgent.project.webUrl);
+      expect(link.text()).toBe(mockAgent.project.nameWithNamespace);
     });
   });
 
