@@ -62,6 +62,176 @@ RSpec.describe API::Admin::Search::Zoekt, :zoekt_settings_enabled, feature_categ
     end
   end
 
+  describe 'PATCH /admin/zoekt/namespaces/:id' do
+    let_it_be(:enabled_namespace) { create(:zoekt_enabled_namespace, namespace: namespace) }
+    let(:namespace_identifier) { namespace.id }
+    let(:path) { "/admin/zoekt/namespaces/#{namespace_identifier}" }
+    let(:params) { { number_of_replicas_override: 5 } }
+
+    it_behaves_like 'an API that returns 401 for unauthenticated requests', :patch
+
+    context 'when zoekt_indexing_enabled is disabled' do
+      before do
+        stub_ee_application_setting(zoekt_indexing_enabled: false)
+      end
+
+      it 'returns bad request status' do
+        patch api(path, admin, admin_mode: true), params: params
+
+        expect(response).to have_gitlab_http_status(:bad_request)
+        expect(json_response['error']).to eq('application setting zoekt_indexing_enabled is not enabled')
+      end
+    end
+
+    context 'when not an admin' do
+      let_it_be(:user) { create(:user) }
+
+      it 'returns forbidden' do
+        patch api(path, user), params: params
+
+        expect(response).to have_gitlab_http_status(:forbidden)
+      end
+    end
+
+    context 'when using namespace ID' do
+      it 'updates the number_of_replicas_override' do
+        expect do
+          patch api(path, admin, admin_mode: true), params: params
+        end.to change { enabled_namespace.reload.number_of_replicas_override }.from(nil).to(5)
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(json_response['id']).to eq(enabled_namespace.id)
+        expect(json_response['namespace_id']).to eq(namespace.id)
+      end
+    end
+
+    context 'when using namespace path' do
+      let(:namespace_identifier) { namespace.full_path }
+
+      it 'updates the number_of_replicas_override' do
+        expect do
+          patch api(path, admin, admin_mode: true), params: params
+        end.to change { enabled_namespace.reload.number_of_replicas_override }.from(nil).to(5)
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(json_response['id']).to eq(enabled_namespace.id)
+      end
+    end
+
+    context 'when using a subgroup' do
+      let_it_be(:subgroup) { create(:group, parent: namespace) }
+      let(:namespace_identifier) { subgroup.id }
+
+      it 'updates the root namespace enabled_namespace' do
+        expect do
+          patch api(path, admin, admin_mode: true), params: params
+        end.to change { enabled_namespace.reload.number_of_replicas_override }.from(nil).to(5)
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(json_response['id']).to eq(enabled_namespace.id)
+        expect(json_response['namespace_id']).to eq(namespace.id)
+      end
+    end
+
+    context 'when setting to nil' do
+      before do
+        enabled_namespace.update!(number_of_replicas_override: 10)
+      end
+
+      it 'clears the number_of_replicas_override' do
+        expect do
+          patch api(path, admin, admin_mode: true),
+            params: { number_of_replicas_override: nil }
+        end.to change { enabled_namespace.reload.number_of_replicas_override }.from(10).to(nil)
+
+        expect(response).to have_gitlab_http_status(:ok)
+      end
+    end
+
+    context 'when no parameters are provided' do
+      let(:params) { {} }
+
+      it 'returns success without changes' do
+        enabled_namespace.update!(number_of_replicas_override: 10)
+
+        expect do
+          patch api(path, admin, admin_mode: true), params: params
+        end.not_to change { enabled_namespace.reload.number_of_replicas_override }
+
+        expect(response).to have_gitlab_http_status(:ok)
+      end
+    end
+
+    context 'with invalid number_of_replicas_override' do
+      let(:params) { { number_of_replicas_override: 0 } }
+
+      it 'returns a 400 error' do
+        patch api(path, admin, admin_mode: true), params: params
+
+        expect(response).to have_gitlab_http_status(:bad_request)
+        expect(json_response['error']).to include('number_of_replicas_override does not have a valid value')
+      end
+    end
+
+    context 'with negative number_of_replicas_override' do
+      let(:params) { { number_of_replicas_override: -5 } }
+
+      it 'returns a 400 error' do
+        patch api(path, admin, admin_mode: true), params: params
+
+        expect(response).to have_gitlab_http_status(:bad_request)
+        expect(json_response['error']).to include('number_of_replicas_override does not have a valid value')
+      end
+    end
+
+    context 'when update fails due to model validation errors' do
+      let(:params) { { number_of_replicas_override: 5 } }
+
+      it 'returns a 400 error with validation messages' do
+        allow_next_found_instance_of(Search::Zoekt::EnabledNamespace) do |instance|
+          allow(instance).to receive(:update).and_return(false)
+          allow(instance).to receive_message_chain(:errors, :full_messages).and_return(['Validation error message'])
+        end
+
+        patch api(path, admin, admin_mode: true), params: params
+
+        expect(response).to have_gitlab_http_status(:bad_request)
+        expect(json_response['error']).to eq('Validation error message')
+      end
+    end
+
+    context 'when namespace does not exist' do
+      let(:namespace_identifier) { non_existing_record_id }
+
+      it 'returns a 404 error' do
+        patch api(path, admin, admin_mode: true), params: params
+
+        expect(response).to have_gitlab_http_status(:not_found)
+      end
+    end
+
+    context 'when namespace path does not exist' do
+      let(:namespace_identifier) { 'non-existent/path' }
+
+      it 'returns a 404 error' do
+        patch api(path, admin, admin_mode: true), params: params
+
+        expect(response).to have_gitlab_http_status(:not_found)
+      end
+    end
+
+    context 'when enabled namespace does not exist' do
+      let_it_be(:namespace_without_zoekt) { create(:group) }
+      let(:namespace_identifier) { namespace_without_zoekt.id }
+
+      it 'returns a 404 error' do
+        patch api(path, admin, admin_mode: true), params: params
+
+        expect(response).to have_gitlab_http_status(:not_found)
+      end
+    end
+  end
+
   describe 'GET /admin/zoekt/shards' do
     let(:path) { '/admin/zoekt/shards' }
     let!(:another_node) do
