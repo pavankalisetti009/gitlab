@@ -23,6 +23,7 @@ RSpec.describe 'Project navbar', :js, feature_category: :navigation do
     stub_feature_flags(agent_registry: false)
     stub_feature_flags(remove_monitor_metrics: false)
     stub_feature_flags(hide_incident_management_features: false)
+    stub_feature_flags(visual_ci_editor: false)
     insert_package_nav
     insert_infrastructure_registry_nav(s_('Terraform|Terraform states'))
     insert_infrastructure_google_cloud_nav
@@ -284,6 +285,18 @@ RSpec.describe 'Project navbar', :js, feature_category: :navigation do
 
         insert_container_nav
         insert_google_artifact_registry_nav
+
+        visit project_path(project)
+      end
+
+      it_behaves_like 'verified navigation bar'
+    end
+
+    context 'when visual_ci_editor feature flag is turned on' do
+      before do
+        stub_feature_flags(visual_ci_editor: true)
+
+        insert_visual_ci_editor_nav
 
         visit project_path(project)
       end

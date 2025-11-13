@@ -12,6 +12,7 @@ module EE
             return false unless super
 
             add_item(test_cases_menu_item)
+            add_item(visual_ci_editor)
 
             true
           end
@@ -40,6 +41,21 @@ module EE
               container_html_options: { class: 'shortcuts-test-cases' },
               active_routes: { controller: :test_cases },
               item_id: :test_cases
+            )
+          end
+
+          def visual_ci_editor
+            unless ::Feature.enabled?(:visual_ci_editor, context.project)
+              return ::Sidebars::NilMenuItem.new(item_id: :visual_ci_editor)
+            end
+
+            ::Sidebars::MenuItem.new(
+              title: s_('Pipelines|Visual CI Editor'),
+              link: project_ci_visual_ci_editor_path(context.project),
+              super_sidebar_parent: ::Sidebars::Projects::SuperSidebarMenus::BuildMenu,
+              container_html_options: { class: 'shortcuts-visual-ci-editor' },
+              active_routes: { controller: :visual_ci_editor },
+              item_id: :visual_ci_editor
             )
           end
         end
