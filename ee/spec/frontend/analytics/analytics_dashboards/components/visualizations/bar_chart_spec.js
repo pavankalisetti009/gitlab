@@ -146,6 +146,7 @@ describe('BarChart Visualization', () => {
 
         expect(findChartTooltipSeriesLabel().text()).toBe('Pushes');
         expect(findChartTooltipValue().text()).toBe(expectedValue);
+        expect(findChartTooltipValue().classes()).toContain('gl-font-bold');
       },
     );
 
@@ -169,14 +170,17 @@ describe('BarChart Visualization', () => {
         expect(findChartTooltipSeriesLabel(0).text()).toBe('Pushes');
         expect(findChartTooltipSeriesLabel(0).props().color).toBe('blue');
         expect(findChartTooltipValue(0).text()).toBe('3,000');
+        expect(findChartTooltipValue(0).classes()).toContain('gl-font-bold');
 
         expect(findChartTooltipSeriesLabel(1).text()).toBe('Repositories');
         expect(findChartTooltipSeriesLabel(1).props().color).toBe('transparent');
         expect(findChartTooltipValue(1).text()).toBe('8');
+        expect(findChartTooltipValue(1).classes()).toContain('gl-font-normal');
 
         expect(findChartTooltipSeriesLabel(2).text()).toBe('Contributions');
         expect(findChartTooltipSeriesLabel(2).props().color).toBe('transparent');
         expect(findChartTooltipValue(2).text()).toBe('1,000');
+        expect(findChartTooltipValue(2).classes()).toContain('gl-font-normal');
       });
 
       it('does not display contextual data when contextual data config is missing', () => {

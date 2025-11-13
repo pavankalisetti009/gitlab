@@ -44,6 +44,7 @@ export default {
         seriesName,
         color,
         value: humanizeChartTooltipValue({ unit: valueUnit, value }),
+        textClasses: 'gl-font-bold',
       }));
     },
     getContextualTooltipData(seriesData) {
@@ -60,7 +61,13 @@ export default {
       return contextualDataConfig.reduce((acc, { key, label, unit }) => {
         if (key in data) {
           const value = humanizeChartTooltipValue({ unit, value: data[key] });
-          acc.push({ seriesId: key, seriesName: label, color: 'transparent', value });
+          acc.push({
+            seriesId: key,
+            seriesName: label,
+            color: 'transparent',
+            value,
+            textClasses: 'gl-font-normal',
+          });
         }
 
         return acc;
@@ -99,7 +106,7 @@ export default {
     >
     <template #tooltip-content="{ params }">
       <div
-        v-for="{ seriesId, seriesName, color, value } in tooltipContent(params)"
+        v-for="{ seriesId, seriesName, color, value, textClasses } in tooltipContent(params)"
         :key="seriesId"
         data-testid="chart-tooltip-item"
         class="gl-flex gl-min-w-28 gl-justify-between gl-leading-20"
@@ -107,7 +114,7 @@ export default {
         <gl-chart-series-label class="gl-mr-7 gl-text-sm" :color="color">{{
           seriesName
         }}</gl-chart-series-label>
-        <span class="gl-font-bold" data-testid="chart-tooltip-value">{{ value }}</span>
+        <span :class="textClasses" data-testid="chart-tooltip-value">{{ value }}</span>
       </div>
     </template>
   </gl-bar-chart>
