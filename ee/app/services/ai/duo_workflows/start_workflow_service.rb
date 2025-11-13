@@ -100,6 +100,7 @@ module Ai
       def git_clone_variables
         vars = {}
         vars[:GIT_DEPTH] = 1 if @params.fetch(:shallow_clone, true)
+        vars[:GIT_FETCH_EXTRA_FLAGS] = "--filter=blob:none"
         vars
       end
 
