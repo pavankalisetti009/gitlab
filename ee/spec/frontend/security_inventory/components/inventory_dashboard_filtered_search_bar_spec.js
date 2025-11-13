@@ -49,7 +49,11 @@ describe('InventoryDashboardFilteredSearchBar', () => {
     it('passes the correct props to filtered search', () => {
       expect(findFilteredSearch().props()).toMatchObject({
         initialFilterValue: [],
-        tokens: [...vulnerabilityCountTokens, ...toolCoverageTokens],
+        tokens: [
+          { title: 'Security attributes', type: 'gl-filtered-search-suggestion-group-attributes' },
+          ...vulnerabilityCountTokens,
+          ...toolCoverageTokens,
+        ],
         termsAsTokens: true,
       });
     });

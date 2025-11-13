@@ -65,15 +65,13 @@ export default {
     searchTokens() {
       const tokens = [];
       if (this.glFeatures.securityInventoryFiltering) {
-        if (this.glFeatures.securityAttributeInventoryFilters) {
-          tokens.push(
-            getAttributeHeaderToken(
-              this.securityCategories,
-              s__('SecurityAttributes|Security attributes'),
-            ),
-            ...getAttributeCategoryTokens(this.securityCategories),
-          );
-        }
+        tokens.push(
+          getAttributeHeaderToken(
+            this.securityCategories,
+            s__('SecurityAttributes|Security attributes'),
+          ),
+          ...getAttributeCategoryTokens(this.securityCategories),
+        );
         tokens.push(...vulnerabilityCountTokens, ...toolCoverageTokens);
         return tokens;
       }
