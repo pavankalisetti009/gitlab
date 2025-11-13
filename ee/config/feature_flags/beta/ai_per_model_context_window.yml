@@ -1,0 +1,10 @@
+---
+name: ai_per_model_context_window
+description: Enable configurable context window size per AI model, allowing models like Claude Sonnet 4.5 (1M tokens) and GPT-5 (400K tokens) to use their respective limits instead of a hardcoded default value
+feature_issue_url: https://gitlab.com/gitlab-org/modelops/applied-ml/code-suggestions/ai-assist/-/issues/1515
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/212417
+rollout_issue_url:
+milestone: '18.6'
+group: group::ai framework
+type: beta
+default_enabled: false
