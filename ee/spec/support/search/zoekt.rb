@@ -92,12 +92,45 @@ module Search
         all_files_count = project.repository.ls_files('HEAD').count
 
         indexing_succeeded = false
-        1000.times do
-          results = Gitlab::Search::Zoekt::Client.new.search('.*', num: 1, project_ids: [project.id],
-            node_id: node.id, search_mode: :regex)
 
-          if results.file_count == all_files_count
-            Search::Zoekt::Task.index_repo.where(project_identifier: project.id).update_all(state: :done)
+        params = {
+          headers: {
+            'Content-Type' => 'application/json',
+            ::Gitlab::Search::Zoekt::Client::JWT_HEADER => JwtAuth.authorization_header
+          },
+          body: {
+            version: 2,
+            forward_to: [
+              query: {
+                and: {
+                  children: [
+                    {
+                      query_string: {
+                        query: '.*'
+                      }
+                    },
+                    {
+                      meta: {
+                        key: 'project_id', value: "^#{project.id}$"
+                      }
+                    }
+                  ]
+                }
+              },
+              endpoint: node.search_base_url
+            ]
+          }.to_json,
+          allow_local_requests: true
+        }
+        search_url = ::Gitlab::Search::Zoekt::Client.new.send(
+          :join_url, node.search_base_url, ::Gitlab::Search::Zoekt::Client::PROXY_SEARCH_PATH
+        )
+        1000.times do
+          response = ::Gitlab::HTTP.post(search_url, params)
+          raise response.body unless response.success?
+
+          if response['Result'].try(:[], 'FileCount') == all_files_count
+            Task.index_repo.where(project_identifier: project.id).update_all(state: :done)
             project.zoekt_repositories.update_all(state: :ready)
             indexing_succeeded = true
             break

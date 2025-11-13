@@ -13,14 +13,14 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt_cache_disabled, :zoekt_set
   let(:limit_projects) { nil }
   let(:node_id) { ::Search::Zoekt::Node.last.id }
   let(:filters) { {} }
-  let(:multi_match_enabled) { false }
+  let(:source) { :api }
   let(:results) { described_class.new(user, query, nil, **params) }
 
   let(:params) do
     {
       node_id: node_id,
       filters: filters,
-      multi_match_enabled: multi_match_enabled,
+      source: source,
       modes: { regex: true }
     }
   end
@@ -56,9 +56,7 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt_cache_disabled, :zoekt_set
     end
 
     describe 'caching' do
-      context 'when multi_match is false' do
-        let(:multi_match_enabled) { false }
-
+      context 'when source is :api' do
         it 'instantiates zoekt cache with correct arguments' do
           expect(Search::Zoekt::Cache).to receive(:new).with(
             query,
@@ -69,7 +67,7 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt_cache_disabled, :zoekt_set
             project_id: nil,
             group_id: nil,
             search_mode: :regex,
-            multi_match: nil,
+            chunk_size: nil,
             filters: {}
           ).and_call_original
 
@@ -77,8 +75,8 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt_cache_disabled, :zoekt_set
         end
       end
 
-      context 'when multi_match is true' do
-        let(:multi_match_enabled) { true }
+      context 'when source is not :api' do
+        let(:source) { nil }
 
         it 'instantiates zoekt cache with correct arguments' do
           expect(Search::Zoekt::Cache).to receive(:new).with(
@@ -90,7 +88,7 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt_cache_disabled, :zoekt_set
             project_id: nil,
             group_id: nil,
             search_mode: :regex,
-            multi_match: an_instance_of(Search::Zoekt::MultiMatch),
+            chunk_size: 3,
             filters: {}
           ).and_call_original
 
@@ -132,7 +130,7 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt_cache_disabled, :zoekt_set
 
       with_them do
         it 'calls search on Gitlab::Search::Zoekt::Client with correct parameters' do
-          expect(Gitlab::Search::Zoekt::Client).to receive(:search_zoekt_proxy).with(
+          expect(Gitlab::Search::Zoekt::Client).to receive(:search).with(
             query,
             hash_including(
               num: described_class::ZOEKT_COUNT_LIMIT,
@@ -154,7 +152,7 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt_cache_disabled, :zoekt_set
             end
 
             it 'calls search on Gitlab::Search::Zoekt::Client with correct parameters' do
-              expect(Gitlab::Search::Zoekt::Client).to receive(:search_zoekt_proxy).with(
+              expect(Gitlab::Search::Zoekt::Client).to receive(:search).with(
                 query,
                 hash_including(
                   num: described_class::ZOEKT_COUNT_LIMIT,
@@ -170,7 +168,7 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt_cache_disabled, :zoekt_set
           end
 
           it 'calls search on Gitlab::Search::Zoekt::Client with correct parameters' do
-            expect(Gitlab::Search::Zoekt::Client).to receive(:search_zoekt_proxy).with(
+            expect(Gitlab::Search::Zoekt::Client).to receive(:search).with(
               query,
               hash_including(
                 num: described_class::ZOEKT_COUNT_LIMIT,
@@ -188,7 +186,7 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt_cache_disabled, :zoekt_set
 
       context 'when modes is not passed' do
         it 'calls search on Gitlab::Search::Zoekt::Client with correct parameters' do
-          expect(Gitlab::Search::Zoekt::Client).to receive(:search_zoekt_proxy).with(
+          expect(Gitlab::Search::Zoekt::Client).to receive(:search).with(
             query,
             hash_including(
               num: described_class::ZOEKT_COUNT_LIMIT,
@@ -258,14 +256,21 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt_cache_disabled, :zoekt_set
         zoekt_ensure_project_indexed!(project_1)
       end
 
-      [true, false].each do |multi_match|
-        context "when multi_match is #{multi_match}" do
+      [:api, nil].each do |source|
+        context "when source is #{source}" do
           it 'finds all examples' do
             examples.each do |search_term, file_content|
               file_name = Digest::SHA256.hexdigest(file_content)
 
-              search_results_instance = described_class.new(user, search_term, limit_projects, group_id: group_1.id,
-                node_id: node_id, modes: { regex: true }, multi_match_enabled: multi_match)
+              search_results_instance = described_class.new(
+                user,
+                search_term,
+                limit_projects,
+                group_id: group_1.id,
+                node_id: node_id,
+                modes: { regex: true },
+                source: source
+              )
 
               results = search_results_instance.objects('blobs').map(&:path)
               expect(results).to include(file_name)
@@ -275,8 +280,8 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt_cache_disabled, :zoekt_set
       end
     end
 
-    context 'when multi_match_enabled is passed as true' do
-      let(:multi_match_enabled) { true }
+    context 'when source is not :api' do
+      let(:source) { nil }
 
       it 'returns just one blob of kind Search::FoundMultiLineBlob' do
         expect(results.objects('blobs', per_page: 1)).to contain_exactly(a_kind_of(Search::FoundMultiLineBlob))
@@ -310,7 +315,7 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt_cache_disabled, :zoekt_set
 
       shared_examples 'a non-filtered search' do
         it 'calls search on Gitlab::Search::Zoekt::Client with all project ids' do
-          expect(Gitlab::Search::Zoekt::Client).to receive(:search_zoekt_proxy).with(
+          expect(Gitlab::Search::Zoekt::Client).to receive(:search).with(
             query,
             hash_including(
               num: described_class::ZOEKT_COUNT_LIMIT,
@@ -349,7 +354,7 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt_cache_disabled, :zoekt_set
 
       context 'when no filters are passed' do
         it 'calls search on Gitlab::Search::Zoekt::Client with non archived project ids' do
-          expect(Gitlab::Search::Zoekt::Client).to receive(:search_zoekt_proxy).with(
+          expect(Gitlab::Search::Zoekt::Client).to receive(:search).with(
             query,
             hash_including(
               num: described_class::ZOEKT_COUNT_LIMIT,
@@ -373,7 +378,7 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt_cache_disabled, :zoekt_set
           let(:filters) { { include_archived: false } }
 
           it 'calls search on Gitlab::Search::Zoekt::Client with correct filter' do
-            expect(Gitlab::Search::Zoekt::Client).to receive(:search_zoekt_proxy).with(
+            expect(Gitlab::Search::Zoekt::Client).to receive(:search).with(
               query,
               hash_including(
                 num: described_class::ZOEKT_COUNT_LIMIT,
@@ -410,7 +415,7 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt_cache_disabled, :zoekt_set
           let(:filters) { { exclude_forks: exclude_forks } }
 
           it 'calls search on Gitlab::Search::Zoekt::Client with the correct filter' do
-            expect(Gitlab::Search::Zoekt::Client).to receive(:search_zoekt_proxy).with(
+            expect(Gitlab::Search::Zoekt::Client).to receive(:search).with(
               query,
               hash_including(
                 num: described_class::ZOEKT_COUNT_LIMIT,
@@ -464,19 +469,19 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt_cache_disabled, :zoekt_set
   describe '#blobs_count' do
     using RSpec::Parameterized::TableSyntax
 
-    where(:query, :multi_match, :regex_mode, :expected_count) do
-      'use.*egex' | true  | false | 0
-      'use.*egex' | true  | true  | 4
-      'use.*egex' | false | false | 0
-      'use.*egex' | false | true  | 5
-      'asdfg'     | true  | false | 0
-      'asdfg'     | true  | true  | 0
-      'asdfg'     | false | false | 0
-      'asdfg'     | false | true  | 0
-      '# good'    | true  | false | 3
-      '# good'    | true  | true  | 9
-      '# good'    | false | false | 50
-      '# good'    | false | true  | 105
+    where(:query, :source, :regex_mode, :expected_count) do
+      'use.*egex' | nil   | false | 0
+      'use.*egex' | nil   | true  | 4
+      'use.*egex' | :api  | false | 0
+      'use.*egex' | :api  | true  | 5
+      'asdfg'     | nil   | false | 0
+      'asdfg'     | nil   | true  | 0
+      'asdfg'     | :api  | false | 0
+      'asdfg'     | :api  | true  | 0
+      '# good'    | nil   | false | 3
+      '# good'    | nil   | true  | 9
+      '# good'    | :api  | false | 50
+      '# good'    | :api  | true  | 105
     end
 
     with_them do
@@ -486,21 +491,18 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt_cache_disabled, :zoekt_set
           limit_projects,
           project_id: project_1.id,
           node_id: node_id,
-          multi_match_enabled: multi_match,
+          source: source,
           modes: { regex: regex_mode })
       end
 
-      subject(:blobs_count) do
-        results.objects('blobs')
-        results.blobs_count
-      end
+      subject(:blobs_count) { results.blobs_count }
 
       it { is_expected.to eq(expected_count) }
 
       context 'when error is raised by client' do
         it 'returns zero when error is raised by client' do
           client_error = ::Search::Zoekt::Errors::ClientConnectionError.new('test')
-          allow(::Gitlab::Search::Zoekt::Client).to receive(:search_zoekt_proxy).and_raise(client_error)
+          allow(::Gitlab::Search::Zoekt::Client).to receive(:search).and_raise(client_error)
 
           expect(blobs_count).to eq 0
           expect(results.error).to eq(client_error.message)
@@ -531,7 +533,7 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt_cache_disabled, :zoekt_set
     context 'when error raised by client' do
       before do
         client_error = ::Search::Zoekt::Errors::ClientConnectionError.new('test')
-        allow(::Gitlab::Search::Zoekt::Client).to receive(:search_zoekt_proxy).and_raise(client_error)
+        allow(::Gitlab::Search::Zoekt::Client).to receive(:search).and_raise(client_error)
       end
 
       it 'returns true' do
@@ -556,25 +558,13 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt_cache_disabled, :zoekt_set
     context 'when error raised by client' do
       before do
         client_error = ::Search::Zoekt::Errors::ClientConnectionError.new('test')
-        allow(::Gitlab::Search::Zoekt::Client).to receive(:search_zoekt_proxy).and_raise(client_error)
+        allow(::Gitlab::Search::Zoekt::Client).to receive(:search).and_raise(client_error)
       end
 
       it 'returns the error message' do
         results.objects(scope)
         expect(results.error(scope)).to eq('test')
       end
-    end
-  end
-
-  describe '#aggregations' do
-    it 'returns an empty array' do
-      expect(results.aggregations).to eq([])
-    end
-  end
-
-  describe '#highlight_map' do
-    it 'returns an empty hash' do
-      expect(results.highlight_map).to eq({})
     end
   end
 end

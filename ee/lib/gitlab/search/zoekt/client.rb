@@ -3,7 +3,7 @@
 module Gitlab
   module Search
     module Zoekt
-      class Client # rubocop:disable Search/NamespacedClass
+      class Client
         include ::Gitlab::Loggable
 
         CONTEXT_LINES_COUNT = 1
@@ -15,33 +15,10 @@ module Gitlab
             @instance ||= new
           end
 
-          delegate :search, :search_zoekt_proxy, to: :instance
+          delegate :search, to: :instance
         end
 
-        def search(query, num:, project_ids:, node_id:, search_mode:, source: nil)
-          start = Time.current
-
-          # Safety net because Zoekt will match all projects if you provide an empty array.
-          raise 'Not possible to search without at least one project specified' if project_ids.blank?
-          raise 'Global search is not supported' if project_ids == :any
-
-          payload = build_search_payload(
-            query, source: source, num: num, search_mode: search_mode, project_ids: project_ids
-          )
-
-          path = '/api/search'
-          target_node = node(node_id)
-          raise 'Node can not be found' unless target_node
-
-          response = post_request(join_url(target_node.search_base_url, path), payload)
-          log_error('Zoekt search failed', status: response.code, response: response.body) unless response.success?
-
-          Gitlab::Search::Zoekt::Response.new parse_response(response)
-        ensure
-          add_request_details(start_time: start, path: path, body: payload)
-        end
-
-        def search_zoekt_proxy(query, num:, search_mode:, current_user: nil, **options)
+        def search(query, num:, search_mode:, current_user: nil, **options)
           start = Time.current
           targets = options[:targets]
           project_id = options[:project_id]
@@ -52,7 +29,7 @@ module Gitlab
             return Gitlab::Search::Zoekt::Response.empty
           end
 
-          params = ::Search::Zoekt::Params.new(current_user, limit: num, **options)
+          params = ::Search::Zoekt::Params.new(options.merge(limit: num))
           req = ::Search::Zoekt::SearchRequest.new(
             current_user: current_user,
             query: format_query(query, source: options[:source], search_mode: search_mode),
@@ -163,18 +140,6 @@ module Gitlab
             username: username,
             password: password
           }.compact
-        end
-
-        def build_search_payload(query, num:, search_mode:, source:, project_ids: nil)
-          {
-            Q: format_query(query, source: source, search_mode: search_mode),
-            Opts: {
-              TotalMaxMatchCount: num,
-              NumContextLines: CONTEXT_LINES_COUNT
-            }
-          }.tap do |payload|
-            payload[:RepoIds] = project_ids if project_ids.present?
-          end
         end
 
         def node(node_id)

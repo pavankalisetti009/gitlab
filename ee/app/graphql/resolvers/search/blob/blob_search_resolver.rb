@@ -122,7 +122,6 @@ module Resolvers
             search: args[:search],
             page: args[:page],
             per_page: args[:per_page],
-            multi_match_enabled: true,
             chunk_count: args[:chunk_count],
             scope: scope,
             regex: args[:regex],

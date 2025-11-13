@@ -22,7 +22,7 @@ RSpec.describe Search::Zoekt::Cache, :clean_gitlab_redis_cache, feature_category
   end
 
   let(:default_options) do
-    { per_page: per_page, max_per_page: 40, search_mode: search_mode, filters: filters }
+    { per_page: per_page, chunk_size: 3, max_per_page: 40, search_mode: search_mode, filters: filters }
   end
 
   subject(:cache) do
@@ -94,7 +94,7 @@ RSpec.describe Search::Zoekt::Cache, :clean_gitlab_redis_cache, feature_category
 
     describe 'cache key' do
       let(:redis) { ::Gitlab::Redis::Cache.with { |r| r } }
-      let(:data) { "#{query}-g#{group_id}-p#{project_id}-#{search_mode}-f-#{Gitlab::Json.generate(filters.sort)}" }
+      let(:data) { "#{query}-g#{group_id}-p#{project_id}-#{search_mode}-3-#{Gitlab::Json.generate(filters.sort)}" }
       let(:fingerprint) { OpenSSL::Digest.hexdigest('SHA256', data) }
 
       context 'when current_user is nil' do

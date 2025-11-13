@@ -169,7 +169,7 @@ RSpec.describe 'Project elastic search', :js, :elastic, :disable_rate_limiter, f
         allow(service).to receive_messages(search_service: search_service, show_epics?: false, search_results: results)
       end
 
-      allow(::Gitlab::Search::Zoekt::Client.instance).to receive(:search_zoekt_proxy)
+      allow(::Gitlab::Search::Zoekt::Client.instance).to receive(:search)
           .and_return(Gitlab::Search::Zoekt::Response.new({ Error: 'failed to parse query' }))
       visit search_path(search: query, project_id: project.id)
     end
