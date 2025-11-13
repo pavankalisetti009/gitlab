@@ -1,4 +1,4 @@
-- if @project.mirror?
+- if @project.mirror? && can?(current_user, :push_code, @project)
   .gl-justify-between.gl-items-center.gl-px-5.gl-py-4.gl-bg-subtle.gl-border-default.gl-border-1.gl-border-solid.gl-rounded-base{ class: '@md/panel:gl-flex' }
     %div
       - import_url = @project.safe_import_url
