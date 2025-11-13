@@ -370,68 +370,8 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
     end
   end
 
-  describe '#repositories_checked_count' do
-    before do
-      stub_application_setting(repository_checks_enabled: true)
-    end
-
-    context 'when current is a Geo primary' do
-      before do
-        stub_current_geo_node(primary)
-      end
-
-      it 'counts the number of repo checked projects' do
-        project_1.update!(last_repository_check_at: 2.minutes.ago)
-        project_2.update!(last_repository_check_at: 7.minutes.ago)
-
-        expect(status.repositories_checked_count).to be_nil
-      end
-    end
-
-    context 'when current is a Geo secondary' do
-      before do
-        stub_current_geo_node(secondary)
-      end
-
-      it 'returns nil' do
-        project_1.update!(last_repository_check_at: 2.minutes.ago)
-        project_2.update!(last_repository_check_at: 7.minutes.ago)
-
-        expect(status.repositories_checked_count).to be_nil
-      end
-    end
-  end
-
-  describe '#repositories_checked_failed_count' do
-    before do
-      stub_application_setting(repository_checks_enabled: true)
-    end
-
-    context 'when current is a Geo primary' do
-      before do
-        stub_current_geo_node(primary)
-      end
-
-      it 'counts the number of repo check failed projects' do
-        project_1.update!(last_repository_check_at: 2.minutes.ago, last_repository_check_failed: true)
-        project_2.update!(last_repository_check_at: 7.minutes.ago, last_repository_check_failed: false)
-
-        expect(status.repositories_checked_failed_count).to be_nil
-      end
-    end
-
-    context 'when current is a Geo secondary' do
-      before do
-        stub_current_geo_node(secondary)
-      end
-
-      it 'returns nil' do
-        project_1.update!(last_repository_check_at: 2.minutes.ago, last_repository_check_failed: true)
-        project_2.update!(last_repository_check_at: 7.minutes.ago, last_repository_check_failed: false)
-
-        expect(status.repositories_checked_failed_count).to be_nil
-      end
-    end
+  context 'for project repository replication v1' do
+    it_behaves_like 'GeoNodeStatus for project repository replication'
   end
 
   context 'for secondary usage data' do
