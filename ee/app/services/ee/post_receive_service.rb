@@ -13,6 +13,9 @@ module EE
       response.add_basic_message(geo_redirect_to_primary_message) if display_geo_redirect_to_primary_message?
       response.add_basic_message(geo_secondary_lag_message) if geo_display_secondary_lag_message?
 
+      spp_warning_message = ::Gitlab::Checks::SecretPushProtection::PostPushWarning.fetch_message(user, repository)
+      response.add_basic_message(spp_warning_message)
+
       response.add_alert_message(storage_size_limit_alert)
 
       response

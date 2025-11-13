@@ -115,6 +115,12 @@ module Gitlab
 
             message = format(ERROR_MESSAGES[:scan_initialization_error], { error_msg: e.message })
             secret_detection_logger.error(build_structured_payload(message:))
+          rescue ::Gitlab::GitAccess::ForbiddenError => e
+            raise e
+          rescue StandardError
+            Gitlab::Checks::SecretPushProtection::PostPushWarning
+              .new(project.repository, changes_access.user_access.user, changes_access.protocol)
+              .add_message
           end
         end
 
