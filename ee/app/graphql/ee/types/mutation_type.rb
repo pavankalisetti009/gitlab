@@ -21,6 +21,7 @@ module EE
         mount_mutation ::Mutations::Ai::Catalog::ItemConsumer::Create, experiment: { milestone: '18.3' }
         mount_mutation ::Mutations::Ai::Catalog::ItemConsumer::Delete, experiment: { milestone: '18.3' }
         mount_mutation ::Mutations::Ai::Catalog::ItemConsumer::Update, experiment: { milestone: '18.3' }
+        mount_mutation ::Mutations::Ai::Catalog::ItemReport, experiment: { milestone: '18.7' }
         mount_mutation ::Mutations::Ai::Catalog::ThirdPartyFlow::Create, experiment: { milestone: '18.5' }
         mount_mutation ::Mutations::Ai::Catalog::ThirdPartyFlow::Update, experiment: { milestone: '18.5' }
         mount_mutation ::Mutations::Ai::Catalog::ThirdPartyFlow::Delete, experiment: { milestone: '18.5' }
