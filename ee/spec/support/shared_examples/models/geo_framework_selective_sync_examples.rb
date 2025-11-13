@@ -49,6 +49,8 @@ RSpec.shared_examples 'Geo Framework selective sync behavior' do
     end
 
     it "returns replicables that belong to the #{sync_type}" do
+      skip_if_requires_primary_key_range
+
       replicables = find_replicables_to_sync
 
       expect(replicables).to match_array(expected_replicables_to_sync)
@@ -107,6 +109,8 @@ RSpec.shared_examples 'Geo Framework selective sync behavior' do
 
     context 'with selective sync disabled' do
       it 'returns all replicables' do
+        skip_if_requires_primary_key_range
+
         replicables = find_replicables_to_sync
 
         expect(replicables).to match_array(expected_replicables_to_sync(include_all: true))
@@ -184,6 +188,25 @@ RSpec.shared_examples 'Geo Framework selective sync behavior' do
     end
   end
 
+  describe '.pluck_verifiable_ids_in_range' do
+    include_examples 'selective sync scopes', :pluck_verifiable_ids_in_range
+
+    context 'with org_mover_extend_selective_sync_to_primary_checksumming feature flag' do
+      context 'when disabled' do
+        before do
+          stub_feature_flags(org_mover_extend_selective_sync_to_primary_checksumming: false)
+        end
+
+        it 'excludes verifiable IDs outside the primary key ID range' do
+          verifiable_ids = described_class.pluck_verifiable_ids_in_range((start_id + 1)..end_id)
+
+          expect(verifiable_ids).not_to include(first_replicable_and_in_selective_sync.id)
+          expect(verifiable_ids).to include(last_replicable_and_not_in_selective_sync.id)
+        end
+      end
+    end
+  end
+
   private
 
   def skip_unless_object_storable
@@ -196,6 +219,12 @@ RSpec.shared_examples 'Geo Framework selective sync behavior' do
     return unless blob_replicator?
 
     skip "Skipping because the #{described_class} does not store data in shards"
+  end
+
+  def skip_if_requires_primary_key_range
+    return unless method_name == :pluck_verifiable_ids_in_range
+
+    skip "Skipping because the #{method_name} requires the primary_key_in range"
   end
 
   def blob_replicator?
@@ -220,7 +249,12 @@ RSpec.shared_examples 'Geo Framework selective sync behavior' do
     replicables << second_replicable_and_in_selective_sync
     replicables << third_replicable_on_object_storage_and_in_selective_sync if should_include_object_storage_replicable?
     replicables << last_replicable_and_not_in_selective_sync if include_all
-    replicables
+
+    should_return_ids? ? replicables.map(&:id) : replicables
+  end
+
+  def should_return_ids?
+    method_name == :pluck_verifiable_ids_in_range
   end
 
   def should_include_object_storage_replicable?

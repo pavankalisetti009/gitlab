@@ -32,6 +32,7 @@ module EE
         if ::Gitlab::Geo.org_mover_extend_selective_sync_to_primary_checksumming?
           replicables.merge(selective_sync_scope(node, primary_key_in: primary_key_in, replicables: replicables))
         else
+          replicables = replicables.primary_key_in(primary_key_in) if primary_key_in
           replicables
         end
       end
