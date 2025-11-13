@@ -7,12 +7,10 @@
 
 :where(.application-chrome) {
   // Scroll bars styles
-  * {
-    scrollbar-color: var(--gl-color-neutral-400) transparent;
+  scrollbar-color: var(--gl-color-neutral-400) transparent;
 
-    @media (forced-colors: active) {
-      scrollbar-color: var(--gl-color-neutral-950) transparent;
-    }
+  @media (forced-colors: active) {
+    scrollbar-color: var(--gl-color-neutral-950) transparent;
   }
 
   // Variable overrides
