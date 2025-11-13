@@ -101,7 +101,6 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
     let_it_be(:zoekt_nodes_list) { create_list(:zoekt_node, 2) }
     let(:zoekt_nodes) { Search::Zoekt::Node.id_in(zoekt_nodes_list) }
     let(:search_code_with_zoekt) { true }
-    let(:user_preference_enabled_zoekt) { true }
     let(:scope) { 'blobs' }
     let(:advanced_search) { nil }
     let(:anonymous_user) { false }
@@ -109,7 +108,6 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
 
     before do
       allow(project).to receive(:search_code_with_zoekt?).and_return(search_code_with_zoekt)
-      allow(user).to receive(:enabled_zoekt?).and_return(user_preference_enabled_zoekt)
       zoekt_ensure_namespace_indexed!(project.root_namespace)
 
       allow(service).to receive(:zoekt_nodes).and_return zoekt_nodes
@@ -181,15 +179,6 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
 
       it 'does not search with Zoekt' do
         expect(service.search_type).to eq('basic')
-        expect(service.execute).not_to be_kind_of(::Search::Zoekt::SearchResults)
-      end
-    end
-
-    context 'when user set enabled_zoekt preference to false' do
-      let(:user_preference_enabled_zoekt) { false }
-
-      it 'does not search with Zoekt' do
-        expect(service).not_to be_use_zoekt
         expect(service.execute).not_to be_kind_of(::Search::Zoekt::SearchResults)
       end
     end

@@ -498,10 +498,6 @@ module EE
         .any?
     end
 
-    def has_exact_code_search?
-      ::Gitlab::CurrentSettings.zoekt_search_enabled?
-    end
-
     # Returns true if the user is a Reporter or higher on any namespace
     # currently on a paid plan
     def belongs_to_paid_namespace?(plans: ::Plan::PAID_HOSTED_PLANS, exclude_trials: false)

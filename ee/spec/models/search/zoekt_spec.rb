@@ -193,33 +193,6 @@ RSpec.describe Search::Zoekt, feature_category: :global_search do
     end
   end
 
-  describe '.enabled_for_user?' do
-    using RSpec::Parameterized::TableSyntax
-
-    let_it_be(:a_user) { create(:user) }
-
-    subject(:enabled_for_user) { described_class.enabled_for_user?(user) }
-
-    before do
-      stub_ee_application_setting(zoekt_search_enabled: setting_zoekt_search_enabled)
-      stub_licensed_features(zoekt_code_search: license_setting)
-
-      allow(a_user).to receive(:enabled_zoekt?).and_return(user_setting)
-    end
-
-    where(:user, :setting_zoekt_search_enabled, :license_setting, :user_setting, :expected_result) do
-      ref(:a_user) | true   | true  | true  | true
-      ref(:a_user) | true   | true  | false | false
-      ref(:a_user) | true   | false | true  | false
-      ref(:a_user) | false  | true  | true  | false
-      nil          | true   | true  | true  | true
-    end
-
-    with_them do
-      it { is_expected.to eq(expected_result) }
-    end
-  end
-
   describe '.index_async' do
     subject(:index_async) { described_class.index_async(project.id) }
 

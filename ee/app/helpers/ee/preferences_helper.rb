@@ -63,10 +63,6 @@ module EE
       ::Feature.enabled?(:enable_hamilton_in_user_preferences, user)
     end
 
-    def show_exact_code_search_settings?(user)
-      ::Gitlab::CurrentSettings.zoekt_search_enabled? && user.has_exact_code_search?
-    end
-
     private
 
     def group_view_security_dashboard_enabled?
