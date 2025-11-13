@@ -12,6 +12,11 @@ module EE
 
           project_security_discover_path(@project)
         end
+
+        override :group_configuration_path
+        def group_configuration_path
+          group_security_configuration_path(@project.root_ancestor)
+        end
       end
     end
   end
