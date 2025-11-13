@@ -9,11 +9,14 @@ import {
   ENVIRONMENT_QUERY_LIMIT,
   mapEnvironmentNames,
 } from '~/ci/common/private/ci_environments_dropdown';
+import { InternalEvents } from '~/tracking';
 import {
   ACCEPTED_CONTEXTS,
   ENTITY_GROUP,
   ENTITY_PROJECT,
   FAILED_TO_LOAD_ERROR_MESSAGE,
+  PAGE_VISIT_EDIT,
+  PAGE_VISIT_NEW,
 } from '../../constants';
 import getSecretDetailsQuery from '../../graphql/queries/get_secret_details.query.graphql';
 import SecretForm from './secret_form.vue';
@@ -34,11 +37,16 @@ export default {
     GlLoadingIcon,
     SecretForm,
   },
+  mixins: [InternalEvents.mixin()],
   props: {
     context: {
       type: String,
       required: true,
       validator: (value) => ACCEPTED_CONTEXTS.includes(value),
+    },
+    eventTracking: {
+      type: Object,
+      required: true,
     },
     fullPath: {
       type: String,
@@ -128,6 +136,10 @@ export default {
 
       return this.$options.i18n.titleNew;
     },
+  },
+  mounted() {
+    const label = this.isEditing ? PAGE_VISIT_EDIT : PAGE_VISIT_NEW;
+    this.trackEvent(this.eventTracking.pageVisit, { label });
   },
   methods: {
     searchEnvironment(searchTerm) {

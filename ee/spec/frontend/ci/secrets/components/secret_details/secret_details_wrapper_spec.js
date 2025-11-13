@@ -11,7 +11,8 @@ import { createAlert } from '~/alert';
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import { EDIT_ROUTE_NAME, SECRET_ROTATION_STATUS } from 'ee/ci/secrets/constants';
+import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
+import { EDIT_ROUTE_NAME, PROJECT_EVENTS, SECRET_ROTATION_STATUS } from 'ee/ci/secrets/constants';
 import getSecretDetailsQuery from 'ee/ci/secrets/graphql/queries/get_secret_details.query.graphql';
 import SecretDeleteModal from 'ee/ci/secrets/components/secret_delete_modal.vue';
 import SecretDetailsWrapper from 'ee/ci/secrets/components/secret_details/secret_details_wrapper.vue';
@@ -19,6 +20,7 @@ import { mockProjectSecretQueryResponse } from '../../mock_data';
 
 jest.mock('~/alert');
 Vue.use(VueApollo);
+const { bindInternalEventDocument } = useMockInternalEventsTracking();
 
 describe('SecretDetailsWrapper component', () => {
   let wrapper;
@@ -32,6 +34,7 @@ describe('SecretDetailsWrapper component', () => {
   const defaultProps = {
     fullPath: '/path/to/project',
     secretName: 'SECRET_KEY',
+    eventTracking: PROJECT_EVENTS,
   };
 
   const createComponent = async ({
@@ -246,6 +249,20 @@ describe('SecretDetailsWrapper component', () => {
       it('does not render rotation alert', () => {
         expect(findRotationAlert().exists()).toBe(false);
       });
+    });
+  });
+
+  describe('event tracking', () => {
+    it('tracks page visit', async () => {
+      await createComponent();
+      const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+      expect(trackEventSpy).toHaveBeenCalledTimes(1);
+      expect(trackEventSpy).toHaveBeenCalledWith(
+        'visit_project_secrets_manager',
+        { label: 'secret_details_page' },
+        undefined,
+      );
     });
   });
 });

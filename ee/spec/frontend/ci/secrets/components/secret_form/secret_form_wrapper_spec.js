@@ -10,7 +10,8 @@ import CiEnvironmentsDropdown, {
   getGroupEnvironments,
   getProjectEnvironments,
 } from '~/ci/common/private/ci_environments_dropdown';
-import { ENTITY_GROUP, ENTITY_PROJECT } from 'ee/ci/secrets/constants';
+import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
+import { ENTITY_GROUP, ENTITY_PROJECT, PROJECT_EVENTS } from 'ee/ci/secrets/constants';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import getSecretDetailsQuery from 'ee/ci/secrets/graphql/queries/get_secret_details.query.graphql';
 import SecretFormWrapper from 'ee/ci/secrets/components/secret_form/secret_form_wrapper.vue';
@@ -24,6 +25,7 @@ import {
 
 jest.mock('~/alert');
 Vue.use(VueApollo);
+const { bindInternalEventDocument } = useMockInternalEventsTracking();
 
 describe('SecretFormWrapper component', () => {
   let wrapper;
@@ -35,6 +37,7 @@ describe('SecretFormWrapper component', () => {
 
   const defaultProps = {
     context: ENTITY_GROUP,
+    eventTracking: PROJECT_EVENTS,
     fullPath: 'full/path/to/entity',
     isEditing: false,
   };
@@ -215,6 +218,32 @@ describe('SecretFormWrapper component', () => {
       expect(mockGroupEnvQuery).toHaveBeenCalledTimes(2);
       expect(mockGroupEnvQuery).toHaveBeenCalledWith(
         expect.objectContaining({ search: 'staging' }),
+      );
+    });
+  });
+
+  describe('event tracking', () => {
+    it('tracks page visit to create form', async () => {
+      await createComponent();
+      const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+      expect(trackEventSpy).toHaveBeenCalledTimes(1);
+      expect(trackEventSpy).toHaveBeenCalledWith(
+        'visit_project_secrets_manager',
+        { label: 'create_form' },
+        undefined,
+      );
+    });
+
+    it('tracks page visit to edit form', async () => {
+      await createComponent({ props: { isEditing: true } });
+      const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+      expect(trackEventSpy).toHaveBeenCalledTimes(1);
+      expect(trackEventSpy).toHaveBeenCalledWith(
+        'visit_project_secrets_manager',
+        { label: 'edit_form' },
+        undefined,
       );
     });
   });
