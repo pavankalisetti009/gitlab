@@ -13,7 +13,7 @@ RSpec.describe 'Querying a maven virtual registry', feature_category: :virtual_r
   let(:query) do
     <<~GRAPHQL
       {
-        mavenVirtualRegistry(id: "#{global_id}") {
+        virtualRegistriesPackagesMavenRegistry(id: "#{global_id}") {
           id
           name
           upstreams {
@@ -39,13 +39,13 @@ RSpec.describe 'Querying a maven virtual registry', feature_category: :virtual_r
 
   let(:maven_registry_response) do
     post_graphql(query, current_user: current_user)
-    graphql_data['mavenVirtualRegistry']
+    graphql_data['virtualRegistriesPackagesMavenRegistry']
   end
 
   let(:virtual_registry_available) { false }
 
-  shared_examples 'returns null for mavenVirtualRegistry' do
-    it 'returns null for the mavenVirtualRegistry field' do
+  shared_examples 'returns null for virtualRegistriesPackagesMavenRegistry' do
+    it 'returns null for the virtualRegistriesPackagesMavenRegistry field' do
       expect(maven_registry_response).to be_nil
     end
   end
@@ -56,7 +56,7 @@ RSpec.describe 'Querying a maven virtual registry', feature_category: :virtual_r
   end
 
   context 'when user does not have access' do
-    it_behaves_like 'returns null for mavenVirtualRegistry'
+    it_behaves_like 'returns null for virtualRegistriesPackagesMavenRegistry'
   end
 
   context 'when user has access' do
@@ -65,14 +65,14 @@ RSpec.describe 'Querying a maven virtual registry', feature_category: :virtual_r
     end
 
     context 'when virtual registry is unavailable' do
-      it_behaves_like 'returns null for mavenVirtualRegistry'
+      it_behaves_like 'returns null for virtualRegistriesPackagesMavenRegistry'
     end
 
     context 'when virtual registry is available' do
       let(:virtual_registry_available) { true }
 
       context 'when registry exists' do
-        it 'returns registry for the mavenVirtualRegistry field' do
+        it 'returns registry for the virtualRegistriesPackagesMavenRegistry field' do
           expect(maven_registry_response['name']).to eq('name')
         end
 
@@ -112,7 +112,7 @@ RSpec.describe 'Querying a maven virtual registry', feature_category: :virtual_r
       context 'when registry does not exist' do
         let(:global_id) { "gid://gitlab/VirtualRegistries::Packages::Maven::Registry/#{non_existing_record_id}" }
 
-        it_behaves_like 'returns null for mavenVirtualRegistry'
+        it_behaves_like 'returns null for virtualRegistriesPackagesMavenRegistry'
       end
     end
   end

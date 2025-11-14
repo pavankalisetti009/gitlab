@@ -15,7 +15,7 @@ RSpec.describe 'Querying maven virtual registries for top-level group', :aggrega
     <<~GRAPHQL
       {
         group(fullPath: "#{full_path}") {
-          mavenVirtualRegistries {
+          virtualRegistriesPackagesMavenRegistries {
             nodes {
               id
               name
@@ -28,13 +28,13 @@ RSpec.describe 'Querying maven virtual registries for top-level group', :aggrega
 
   let(:maven_registries_response) do
     post_graphql(query, current_user: current_user)
-    graphql_data['group']['mavenVirtualRegistries']
+    graphql_data['group']['virtualRegistriesPackagesMavenRegistries']
   end
 
   let(:virtual_registry_available) { false }
 
-  shared_examples 'returns null for mavenVirtualRegistries' do
-    it 'returns null for the mavenVirtualRegistries field' do
+  shared_examples 'returns null for virtualRegistriesPackagesMavenRegistries' do
+    it 'returns null for the virtualRegistriesPackagesMavenRegistries field' do
       expect(maven_registries_response).to be_nil
     end
   end
@@ -45,7 +45,7 @@ RSpec.describe 'Querying maven virtual registries for top-level group', :aggrega
   end
 
   context 'when user does not have access' do
-    it_behaves_like 'returns null for mavenVirtualRegistries'
+    it_behaves_like 'returns null for virtualRegistriesPackagesMavenRegistries'
   end
 
   context 'when user has access' do
@@ -54,13 +54,13 @@ RSpec.describe 'Querying maven virtual registries for top-level group', :aggrega
     end
 
     context 'when virtual registry is unavailable' do
-      it_behaves_like 'returns null for mavenVirtualRegistries'
+      it_behaves_like 'returns null for virtualRegistriesPackagesMavenRegistries'
     end
 
     context 'when virtual registry is available' do
       let(:virtual_registry_available) { true }
 
-      it 'returns name for the mavenVirtualRegistries field' do
+      it 'returns name for the virtualRegistriesPackagesMavenRegistries field' do
         maven_registries = maven_registries_response['nodes']
 
         expect(maven_registries[0]['name']).to eq(registry.name)
