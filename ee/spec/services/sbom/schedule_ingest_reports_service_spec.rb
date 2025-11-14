@@ -5,6 +5,20 @@ require 'spec_helper'
 RSpec.describe Sbom::ScheduleIngestReportsService, feature_category: :dependency_management do
   subject(:execute) { described_class.new(pipeline).execute }
 
+  describe '.execute' do
+    let_it_be(:pipeline) { build_stubbed(:ee_ci_pipeline) }
+
+    subject(:execute) { described_class.execute(pipeline) }
+
+    it 'initializes new instance and executes' do
+      expect_next_instance_of(described_class, pipeline) do |instance|
+        expect(instance).to receive(:execute)
+      end
+
+      execute
+    end
+  end
+
   describe '#execute' do
     let_it_be(:project) { create(:project) }
     let(:default_branch) { true }
