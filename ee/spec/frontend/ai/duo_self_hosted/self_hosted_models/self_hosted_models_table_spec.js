@@ -36,11 +36,16 @@ describe('SelfHostedModelsTable', () => {
 
   const createComponent = ({
     apolloHandlers = [[getSelfHostedModelsQuery, getSelfHostedModelsSuccessHandler]],
+    provide = {},
   } = {}) => {
     const mockApollo = createMockApollo([...apolloHandlers]);
 
     wrapper = mountExtended(SelfHostedModelsTable, {
       apolloProvider: mockApollo,
+      provide: {
+        canManageSelfHostedModels: true,
+        ...provide,
+      },
     });
   };
 
@@ -169,60 +174,135 @@ describe('SelfHostedModelsTable', () => {
         },
       });
 
-      beforeEach(async () => {
-        createComponent({
-          apolloHandlers: [[getSelfHostedModelsQuery, getSelfHostedModelsEmptyHandler]],
+      describe('when user can manage self-hosted models', () => {
+        beforeEach(async () => {
+          createComponent({
+            apolloHandlers: [[getSelfHostedModelsQuery, getSelfHostedModelsEmptyHandler]],
+            provide: {
+              canManageSelfHostedModels: true,
+            },
+          });
+
+          await waitForPromises();
         });
 
-        await waitForPromises();
+        it('renders empty state text with link', () => {
+          expect(findTable().text()).toMatch(
+            'You do not currently have any self-hosted models. Add a self-hosted model to get started.',
+          );
+        });
+
+        it('renders a link to create a new self-hosted model', () => {
+          expect(findEmptyStateLink().exists()).toBe(true);
+          expect(findEmptyStateLink().props('to')).toBe('/models/new');
+        });
       });
 
-      it('renders empty state text', () => {
-        expect(findTable().text()).toMatch(
-          'You do not currently have any self-hosted models. Add a self-hosted model to get started.',
-        );
-      });
+      describe('when user cannot manage self-hosted models', () => {
+        beforeEach(async () => {
+          createComponent({
+            apolloHandlers: [[getSelfHostedModelsQuery, getSelfHostedModelsEmptyHandler]],
+            provide: {
+              canManageSelfHostedModels: false,
+            },
+          });
 
-      it('renders a link to create a new self-hosted model', () => {
-        expect(findEmptyStateLink().props('to')).toBe('/models/new');
+          await waitForPromises();
+        });
+
+        it('renders empty state text with Enterprise requirement message', () => {
+          expect(findTable().text()).toMatch(
+            'You do not currently have any self-hosted models. A GitLab Duo Enterprise add-on is required to manage self-hosted models.',
+          );
+        });
+
+        it('does not render a link to create a new self-hosted model', () => {
+          expect(findEmptyStateLink().exists()).toBe(false);
+        });
       });
     });
 
     describe('Editing a model', () => {
-      beforeEach(async () => {
-        createComponent();
+      describe('when user can manage self-hosted models', () => {
+        beforeEach(async () => {
+          createComponent({
+            provide: {
+              canManageSelfHostedModels: true,
+            },
+          });
 
-        await waitForPromises();
-      });
+          await waitForPromises();
+        });
 
-      it('renders an edit button for each model', () => {
-        expect(findEditButtons()).toHaveLength(3);
+        it('renders an edit button for each model', () => {
+          expect(findEditButtons()).toHaveLength(3);
 
-        findEditButtons().wrappers.forEach((button) => {
-          expect(button.text()).toEqual('Edit');
+          findEditButtons().wrappers.forEach((button) => {
+            expect(button.text()).toEqual('Edit');
+          });
+        });
+
+        it('routes to the Edit page when edit button is clicked', () => {
+          const modelIdAtIdx0 = getIdFromGraphQLId(mockSelfHostedModelsList[0].id);
+
+          expect(findEditButtons().at(0).props('item')).toEqual({
+            text: 'Edit',
+            to: `models/${modelIdAtIdx0}/edit`,
+          });
         });
       });
 
-      it('routes to the Edit page when edit button is clicked', () => {
-        const modelIdAtIdx0 = getIdFromGraphQLId(mockSelfHostedModelsList[0].id);
+      describe('when user cannot manage self-hosted models', () => {
+        beforeEach(async () => {
+          createComponent({
+            provide: {
+              canManageSelfHostedModels: false,
+            },
+          });
 
-        expect(findEditButtons().at(0).props('item')).toEqual({
-          text: 'Edit',
-          to: `models/${modelIdAtIdx0}/edit`,
+          await waitForPromises();
+        });
+
+        it('does not render edit buttons', () => {
+          expect(findEditButtons()).toHaveLength(0);
+        });
+
+        it('does not render action dropdowns', () => {
+          expect(findDisclosureDropdowns()).toHaveLength(0);
         });
       });
     });
 
     describe('Deleting a model', () => {
-      it('renders a delete button for each model', async () => {
-        createComponent();
+      describe('when user can manage self-hosted models', () => {
+        it('renders a delete button for each model', async () => {
+          createComponent({
+            provide: {
+              canManageSelfHostedModels: true,
+            },
+          });
 
-        await waitForPromises();
+          await waitForPromises();
 
-        expect(findDeleteDisclosureItems()).toHaveLength(3);
+          expect(findDeleteDisclosureItems()).toHaveLength(3);
 
-        findDeleteDisclosureItems().wrappers.forEach((button) => {
-          expect(button.text()).toEqual('Delete');
+          findDeleteDisclosureItems().wrappers.forEach((button) => {
+            expect(button.text()).toEqual('Delete');
+          });
+        });
+      });
+
+      describe('when user cannot manage self-hosted models', () => {
+        it('does not render delete buttons', async () => {
+          createComponent({
+            provide: {
+              canManageSelfHostedModels: false,
+            },
+          });
+
+          await waitForPromises();
+
+          expect(findDeleteDisclosureItems()).toHaveLength(0);
         });
       });
     });

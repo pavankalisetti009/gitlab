@@ -34,6 +34,7 @@ export default {
     GlTruncate,
     DeleteSelfHostedModelDisclosureItem,
   },
+  inject: ['canManageSelfHostedModels'],
   data() {
     return {
       searchTerm: '',
@@ -43,6 +44,9 @@ export default {
   i18n: {
     emptyStateText: s__(
       'AdminSelfHostedModels|You do not currently have any self-hosted models. %{linkStart}Add a self-hosted model%{linkEnd} to get started.',
+    ),
+    emptyStateTextWithoutLink: s__(
+      'AdminSelfHostedModels|You do not currently have any self-hosted models. A GitLab Duo Enterprise add-on is required to manage self-hosted models.',
     ),
     errorMessage: s__(
       'AdminSelfHostedModels|An error occurred while loading self-hosted models. Please try again.',
@@ -169,11 +173,12 @@ export default {
     >
       <template #empty>
         <p class="gl-m-0 gl-py-4">
-          <gl-sprintf :message="$options.i18n.emptyStateText">
+          <gl-sprintf v-if="canManageSelfHostedModels" :message="$options.i18n.emptyStateText">
             <template #link="{ content }">
               <gl-link to="/models/new">{{ content }}</gl-link>
             </template>
           </gl-sprintf>
+          <span v-else>{{ $options.i18n.emptyStateTextWithoutLink }}</span>
         </p>
       </template>
       <template #cell(name)="{ item }">
@@ -219,7 +224,7 @@ export default {
       </template>
       <template #cell(actions)="{ item }">
         <gl-disclosure-dropdown
-          v-if="!isLoading"
+          v-if="!isLoading && canManageSelfHostedModels"
           class="gl-py-2"
           category="tertiary"
           size="small"
