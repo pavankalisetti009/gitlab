@@ -16,7 +16,7 @@ module Ai
 
           if item_consumer.destroy
             track_item_consumer_event(item_consumer, 'delete_ai_catalog_item_consumer', additional_properties: nil)
-            send_audit_events(item_consumer, 'disable_ai_catalog_agent')
+            send_audit_events(item_consumer, audit_event_name)
             ServiceResponse.success(payload: { item_consumer: item_consumer })
           else
             error(item_consumer.errors.full_messages)
@@ -26,6 +26,10 @@ module Ai
         private
 
         attr_reader :current_user, :item_consumer
+
+        def audit_event_name
+          "disable_ai_catalog_#{item_consumer.item.item_type}"
+        end
 
         def allowed?
           Ability.allowed?(current_user, :admin_ai_catalog_item_consumer, item_consumer)

@@ -33,6 +33,7 @@ module Ai
           return error_creating(item) unless save_item(item)
 
           track_ai_item_events('create_ai_catalog_item', { label: item.item_type })
+          send_audit_events('create_ai_catalog_flow', item)
 
           if params[:add_to_project_when_created]
             service_response = ::Ai::Catalog::ItemConsumers::CreateService.new(

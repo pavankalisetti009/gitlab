@@ -31,6 +31,11 @@ module Ai
         def latest_schema_version
           Ai::Catalog::ItemVersion::FLOW_SCHEMA_VERSION
         end
+
+        override :track_update_audit_event
+        def track_update_audit_event
+          send_audit_events('update_ai_catalog_flow', item, { old_definition: old_definition })
+        end
       end
     end
   end

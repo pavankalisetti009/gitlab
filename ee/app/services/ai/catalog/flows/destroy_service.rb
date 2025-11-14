@@ -13,6 +13,10 @@ module Ai
         def error_no_item
           error('Flow not found')
         end
+
+        def track_deletion_audit_event
+          send_audit_events('delete_ai_catalog_flow', item)
+        end
       end
     end
   end

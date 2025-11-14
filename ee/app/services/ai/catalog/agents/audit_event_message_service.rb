@@ -9,6 +9,7 @@ module Ai
         def initialize(event_type, agent, params = {})
           @event_type = event_type
           @agent = agent
+          @params = params
           @old_definition = params[:old_definition]
         end
 
@@ -31,14 +32,20 @@ module Ai
 
         private
 
-        attr_reader :event_type, :agent, :old_definition
+        attr_reader :event_type, :agent, :old_definition, :params
 
         def create_messages
           messages = []
 
           visibility = agent.public? ? 'public' : 'private'
-          tools_list = format_tools_list(agent.latest_version.definition['tools'])
-          messages << "Created a new #{visibility} AI agent with tools: #{tools_list}"
+          tools = agent.latest_version.definition['tools'] || []
+
+          if tools.present?
+            tools_list = format_tools_list(tools)
+            messages << "Created a new #{visibility} AI agent with tools: #{tools_list}"
+          else
+            messages << "Created a new #{visibility} AI agent with no tools"
+          end
 
           messages << version_message(agent.latest_version)
 
@@ -65,11 +72,13 @@ module Ai
         end
 
         def enable_messages
-          ['Added AI agent to project/group']
+          scope = params[:scope] || 'project/group'
+          ["Enabled AI agent for #{scope}"]
         end
 
         def disable_messages
-          ['Removed AI agent from project/group']
+          scope = params[:scope] || 'project/group'
+          ["Disabled AI agent for #{scope}"]
         end
 
         def build_change_descriptions
