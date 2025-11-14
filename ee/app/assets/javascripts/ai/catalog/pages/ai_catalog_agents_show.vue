@@ -11,6 +11,7 @@ import AiCatalogItemActions from '../components/ai_catalog_item_actions.vue';
 import AiCatalogItemView from '../components/ai_catalog_item_view.vue';
 import createAiCatalogItemConsumer from '../graphql/mutations/create_ai_catalog_item_consumer.mutation.graphql';
 import deleteAiCatalogAgentMutation from '../graphql/mutations/delete_ai_catalog_agent.mutation.graphql';
+import deleteAiCatalogItemConsumer from '../graphql/mutations/delete_ai_catalog_item_consumer.mutation.graphql';
 import {
   AI_CATALOG_AGENTS_ROUTE,
   AI_CATALOG_AGENTS_DUPLICATE_ROUTE,
@@ -124,6 +125,35 @@ export default {
         Sentry.captureException(error);
       }
     },
+    async disableAgent() {
+      const { id } = this.aiCatalogAgent.configurationForProject;
+
+      try {
+        const { data } = await this.$apollo.mutate({
+          mutation: deleteAiCatalogItemConsumer,
+          variables: {
+            id,
+          },
+        });
+
+        if (!data.aiCatalogItemConsumerDelete.success) {
+          this.errors = [
+            sprintf(s__('AICatalog|Failed to disable agent. %{error}'), {
+              error: data.aiCatalogItemConsumerDelete.errors?.[0],
+            }),
+          ];
+          return;
+        }
+
+        this.$toast.show(s__('AICatalog|Agent disabled in this project.'));
+        this.$router.push({
+          name: AI_CATALOG_AGENTS_ROUTE,
+        });
+      } catch (error) {
+        this.errors = [sprintf(s__('AICatalog|Failed to disable agent. %{error}'), { error })];
+        Sentry.captureException(error);
+      }
+    },
     dismissErrors() {
       this.errors = [];
       this.errorTitle = null;
@@ -150,6 +180,7 @@ export default {
           v-if="showActions"
           :item="aiCatalogAgent"
           :item-routes="$options.itemRoutes"
+          :disable-fn="disableAgent"
           :delete-fn="deleteAgent"
           :delete-confirm-title="s__('AICatalog|Delete agent')"
           :delete-confirm-message="s__('AICatalog|Are you sure you want to delete agent %{name}?')"

@@ -12,6 +12,7 @@ import {
   mockAiCatalogAgentResponse,
   mockAiCatalogAgentNullResponse,
   mockAgent,
+  mockConfigurationForProject,
 } from '../mock_data';
 
 jest.mock('~/sentry/sentry_browser_wrapper');
@@ -57,7 +58,9 @@ describe('AiCatalogAgent', () => {
   const findRouterView = () => wrapper.findComponent(RouterViewStub);
 
   beforeEach(() => {
-    createComponent();
+    createComponent({
+      provide: { projectId: 1 },
+    });
   });
 
   it('renders loading icon while fetching data', async () => {
@@ -95,18 +98,25 @@ describe('AiCatalogAgent', () => {
 
     it('renders the router view', () => {
       expect(findRouterView().exists()).toBe(true);
-      expect(findRouterView().props('aiCatalogAgent')).toEqual(mockAgent);
+      expect(findRouterView().props('aiCatalogAgent')).toEqual({
+        ...mockAgent,
+        configurationForProject: mockConfigurationForProject,
+      });
     });
   });
 
   describe('when displaying soft-deleted agents', () => {
     it('should show agent details in the Projects area', async () => {
-      createComponent();
+      createComponent({
+        provide: { projectId: 1 },
+      });
       await waitForPromises();
 
       expect(mockAgentQueryHandler).toHaveBeenCalledWith({
         id: 'gid://gitlab/Ai::Catalog::Item/1',
         showSoftDeleted: true,
+        hasProject: true,
+        projectId: 'gid://gitlab/Project/1',
       });
     });
 
@@ -119,6 +129,8 @@ describe('AiCatalogAgent', () => {
       expect(mockAgentQueryHandler).toHaveBeenCalledWith({
         id: 'gid://gitlab/Ai::Catalog::Item/1',
         showSoftDeleted: false,
+        hasProject: false,
+        projectId: 'gid://gitlab/Project/0',
       });
     });
   });

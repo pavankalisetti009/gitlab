@@ -1,7 +1,12 @@
 #import "../fragments/ai_catalog_item.fragment.graphql"
 #import "../fragments/ai_catalog_agent_version.fragment.graphql"
 
-query aiCatalogAgent($id: AiCatalogItemID!, $showSoftDeleted: Boolean) {
+query aiCatalogAgent(
+  $id: AiCatalogItemID!
+  $showSoftDeleted: Boolean
+  $projectId: ProjectID!
+  $hasProject: Boolean = false
+) {
   aiCatalogItem(id: $id, showSoftDeleted: $showSoftDeleted) {
     ...BaseAiCatalogItem
     project {
@@ -16,6 +21,10 @@ query aiCatalogAgent($id: AiCatalogItemID!, $showSoftDeleted: Boolean) {
       nodes {
         ...BaseAiCatalogAgentVersion
       }
+    }
+    configurationForProject(projectId: $projectId) @include(if: $hasProject) {
+      id
+      enabled
     }
   }
 }

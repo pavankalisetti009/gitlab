@@ -2493,6 +2493,9 @@ msgstr ""
 msgid "AICatalog|Agent deleted."
 msgstr ""
 
+msgid "AICatalog|Agent disabled in this project."
+msgstr ""
+
 msgid "AICatalog|Agent does not exist"
 msgstr ""
 
@@ -2524,6 +2527,9 @@ msgid "AICatalog|Are you sure you want to delete agent %{name}?"
 msgstr ""
 
 msgid "AICatalog|Are you sure you want to delete flow %{name}?"
+msgstr ""
+
+msgid "AICatalog|Are you sure you want to disable agent %{name}? The agent and any associated flows and triggers will no longer work in this project."
 msgstr ""
 
 msgid "AICatalog|Are you sure you want to remove agent %{name}?"
@@ -2637,6 +2643,9 @@ msgstr ""
 msgid "AICatalog|Description is required."
 msgstr ""
 
+msgid "AICatalog|Disable agent"
+msgstr ""
+
 msgid "AICatalog|Display name"
 msgstr ""
 
@@ -2683,6 +2692,9 @@ msgid "AICatalog|Failed to delete agent. %{error}"
 msgstr ""
 
 msgid "AICatalog|Failed to delete flow. %{error}"
+msgstr ""
+
+msgid "AICatalog|Failed to disable agent. %{error}"
 msgstr ""
 
 msgid "AICatalog|Failed to load group flows"

@@ -31,6 +31,9 @@ export default {
     isGlobal: {
       default: false,
     },
+    projectId: {
+      default: null,
+    },
   },
   props: {
     item: {
@@ -45,6 +48,11 @@ export default {
       type: Boolean,
       required: false,
       default: false,
+    },
+    disableFn: {
+      type: Function,
+      required: false,
+      default: () => {},
     },
     deleteFn: {
       type: Function,
@@ -66,6 +74,7 @@ export default {
   data() {
     return {
       showDeleteModal: false,
+      showDisableModal: false,
     };
   },
   computed: {
@@ -74,6 +83,12 @@ export default {
     },
     canUse() {
       return isLoggedIn();
+    },
+    isEnabled() {
+      return !this.isGlobal && this.item.configurationForProject?.enabled;
+    },
+    showDisable() {
+      return this.canAdmin && this.isEnabled;
     },
     showAddToProject() {
       return this.canUse && this.isGlobal;
@@ -94,6 +109,11 @@ export default {
           params: { id: this.$route.params.id },
         },
       };
+    },
+    disableConfirmMessage() {
+      return s__(
+        'AICatalog|Are you sure you want to disable agent %{name}? The agent and any associated flows and triggers will no longer work in this project.',
+      );
     },
   },
 };
@@ -143,9 +163,21 @@ export default {
         data-testid="duplicate-button"
       >
         <template #list-item>
-          <span>
-            <gl-icon name="duplicate" class="gl-mr-2" variant="current" aria-hidden="true" />
+          <span class="gl-flex gl-gap-2">
+            <gl-icon name="duplicate" variant="current" aria-hidden="true" />
             {{ s__('AICatalog|Duplicate') }}
+          </span>
+        </template>
+      </gl-disclosure-dropdown-item>
+      <gl-disclosure-dropdown-item
+        v-if="showDisable"
+        data-testid="disable-button"
+        @action="showDisableModal = true"
+      >
+        <template #list-item>
+          <span class="gl-flex gl-gap-2">
+            <gl-icon name="cancel" variant="current" aria-hidden="true" />
+            {{ __('Disable') }}
           </span>
         </template>
       </gl-disclosure-dropdown-item>
@@ -156,8 +188,8 @@ export default {
         @action="showDeleteModal = true"
       >
         <template #list-item>
-          <span>
-            <gl-icon name="remove" class="gl-mr-2" variant="current" aria-hidden="true" />
+          <span class="gl-flex gl-gap-2">
+            <gl-icon name="remove" variant="current" aria-hidden="true" />
             {{ __('Delete') }}
           </span>
         </template>
@@ -173,6 +205,21 @@ export default {
       @close="showDeleteModal = false"
     >
       <gl-sprintf :message="deleteConfirmMessage">
+        <template #name>
+          <strong>{{ item.name }}</strong>
+        </template>
+      </gl-sprintf>
+    </confirm-action-modal>
+    <confirm-action-modal
+      v-if="showDisableModal"
+      modal-id="disable-item-modal"
+      variant="danger"
+      :title="s__('AICatalog|Disable agent')"
+      :action-fn="disableFn"
+      :action-text="__('Disable')"
+      @close="showDisableModal = false"
+    >
+      <gl-sprintf :message="disableConfirmMessage">
         <template #name>
           <strong>{{ item.name }}</strong>
         </template>
