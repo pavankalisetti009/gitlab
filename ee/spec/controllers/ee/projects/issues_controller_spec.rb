@@ -48,7 +48,7 @@ RSpec.describe Projects::IssuesController, feature_category: :team_planning do
 
           def expected_params(params)
             # For the consolidated list, we also apply the type filter on redirect
-            redirect_path == :project_work_items_path ? params.merge(type: ['issue']) : params
+            redirect_path == :project_work_items_path ? params.except("type", "type[]") : params
           end
 
           it 'rewrites the epic_id param' do
