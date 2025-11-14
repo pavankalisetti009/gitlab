@@ -16,6 +16,7 @@ RSpec.describe Types::Ai::Catalog::ItemConsumerType, feature_category: :workflow
       item
       organization
       parent_item_consumer
+      pinned_item_version
       pinned_version_prefix
       service_account
       project
@@ -26,4 +27,15 @@ RSpec.describe Types::Ai::Catalog::ItemConsumerType, feature_category: :workflow
   end
 
   it { expect(described_class).to require_graphql_authorizations(:read_ai_catalog_item_consumer) }
+
+  describe 'pinned_item_version field' do
+    subject(:field) { described_class.fields['pinnedItemVersion'] }
+
+    it 'limits field call count' do
+      extension = field.extensions.find { |e| e.is_a?(::Gitlab::Graphql::Limit::FieldCallCount) }
+
+      expect(extension).to be_present
+      expect(extension.options).to eq(limit: 20)
+    end
+  end
 end

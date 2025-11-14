@@ -38,9 +38,10 @@ RSpec.describe 'getting consumed AI catalog items', feature_category: :workflow_
   let(:project_gid) { project.to_global_id }
   let(:nodes) { graphql_data_at(:ai_catalog_configured_items, :nodes) }
   let(:args) { { projectId: project_gid } }
-
+  let(:excluded_fields) { [] }
+  let(:fields) { all_graphql_fields_for('AiCatalogItemConsumer', max_depth: 3, excluded: excluded_fields) }
   let(:query) do
-    "{ #{query_nodes('aiCatalogConfiguredItems', of: 'AiCatalogItemConsumer', max_depth: 3, args: args)} }"
+    "{ #{query_nodes('aiCatalogConfiguredItems', fields, args: args)} }"
   end
 
   before do
@@ -70,15 +71,21 @@ RSpec.describe 'getting consumed AI catalog items', feature_category: :workflow_
     end
   end
 
-  it 'avoids N+1 queries' do
-    # Warm up the cache
-    post_graphql(query, current_user: current_user)
+  describe 'N+1 optimization' do
+    # We know pinnedItemVersion generates N+1 queries, so exclude it.
+    # https://gitlab.com/gitlab-org/gitlab/-/merge_requests/212515#note_2885414833
+    let(:excluded_fields) { ['pinnedItemVersion'] }
 
-    control = ActiveRecord::QueryRecorder.new { post_graphql(query, current_user: current_user) }
+    it 'avoids N+1 queries' do
+      # Warm up the cache
+      post_graphql(query, current_user: current_user)
 
-    create(:ai_catalog_item_consumer, project: project)
+      control = ActiveRecord::QueryRecorder.new { post_graphql(query, current_user: current_user) }
 
-    expect { post_graphql(query, current_user: current_user) }.not_to exceed_query_limit(control)
+      create(:ai_catalog_item_consumer, project: project)
+
+      expect { post_graphql(query, current_user: current_user) }.not_to exceed_query_limit(control)
+    end
   end
 
   context 'with project reporter' do
