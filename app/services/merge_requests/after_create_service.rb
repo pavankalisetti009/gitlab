@@ -17,14 +17,10 @@ module MergeRequests
         prepare_merge_request(merge_request)
       end
 
-      measure_duration(:mark_merge_request_as_prepared) do
-        mark_merge_request_as_prepared(merge_request)
-      end
+      mark_merge_request_as_prepared(merge_request)
 
       logger.info(**log_payload(merge_request, 'Executing hooks'))
-      measure_duration(:execute_hooks) do
-        execute_hooks(merge_request)
-      end
+      execute_hooks(merge_request)
       logger.info(**log_payload(merge_request, 'Executed hooks'))
 
       return unless log_after_create_duration_enabled?
