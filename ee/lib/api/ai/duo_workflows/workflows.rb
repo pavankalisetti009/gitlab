@@ -310,6 +310,8 @@ module API
               grpc_headers['x-gitlab-namespace-id'] ||= params[:namespace_id].presence ||
                 grpc_headers['X-Gitlab-Namespace-Id'].presence ||
                 grpc_headers['x-gitlab-root-namespace-id']
+              # client type from browser is sent as a query param in websocket request
+              grpc_headers['x-gitlab-client-type'] ||= params[:client_type].presence
 
               HEADERS_TO_FORWARD_AS_GRPC_METADATA.each do |header|
                 header_value = headers[header]

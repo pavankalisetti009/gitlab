@@ -1046,8 +1046,8 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
         end
       end
 
-      context 'when X-Gitlab-Client-Type header is provided' do
-        it 'includes x-gitlab-client-type header' do
+      context 'for X-Gitlab-Client-Type header' do
+        it 'sends x-gitlab-client-type gRPC header when http request have X-Gitlab-Client-Type header' do
           get api(path, user), headers: workhorse_headers.merge('X-Gitlab-Client-Type': "node-websocket"),
             params: { project_id: project.id }
 
@@ -1057,7 +1057,17 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
           )
         end
 
-        it 'does not include x-gitlab-client-type header when header is not provided' do
+        it 'sends x-gitlab-client-type gRPC header when http request have client_type param' do
+          get api(path, user), headers: workhorse_headers,
+            params: { project_id: project.id, client_type: 'browser' }
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['DuoWorkflow']['Headers']).to include(
+            'x-gitlab-client-type' => "browser"
+          )
+        end
+
+        it 'does not include x-gitlab-client-type header when neither header nor param is provided' do
           get api(path, user), headers: workhorse_headers, params: { project_id: project.id }
 
           expect(response).to have_gitlab_http_status(:ok)
