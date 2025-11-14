@@ -523,6 +523,7 @@ describe('DuoWorkflowAction component', () => {
           message: 'Error occurred when starting the flow.',
           captureError: true,
           error: expect.any(Error),
+          renderMessageHTML: true,
         });
       });
 
@@ -548,6 +549,7 @@ describe('DuoWorkflowAction component', () => {
           message: 'Error occurred when starting the flow.',
           captureError: true,
           error: expect.any(Error),
+          renderMessageHTML: true,
         });
       });
 
@@ -557,6 +559,37 @@ describe('DuoWorkflowAction component', () => {
 
       it('removes loading state after error', () => {
         expect(findButton().props('loading')).toBe(false);
+      });
+
+      describe('when request fails with a specific error message', () => {
+        const apiErrorMessage =
+          'Duo Agent Platform onboarding is incomplete, composite identity must be enabled.\n' +
+          // eslint-disable-next-line no-restricted-syntax
+          '<a href="https://docs.gitlab.com/user/duo_agent_platform/#prerequisites">Learn more</a>';
+
+        beforeEach(async () => {
+          mock.onPost(duoWorkflowInvokePath).reply(403, { message: apiErrorMessage });
+          await createComponent();
+          findButton().vm.$emit('click');
+          await waitForPromises();
+        });
+
+        it('shows error alert with the API error message', () => {
+          expect(createAlert).toHaveBeenCalledWith({
+            message: apiErrorMessage,
+            captureError: true,
+            error: expect.any(Error),
+            renderMessageHTML: true,
+          });
+        });
+
+        it('does not emit agent-flow-started event', () => {
+          expect(wrapper.emitted('agent-flow-started')).toBeUndefined();
+        });
+
+        it('removes loading state after error', () => {
+          expect(findButton().props('loading')).toBe(false);
+        });
       });
     });
   });

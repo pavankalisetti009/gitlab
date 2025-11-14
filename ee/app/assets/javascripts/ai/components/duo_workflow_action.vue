@@ -184,10 +184,15 @@ export default {
           createAlert(this.successAlert(data.id));
         })
         .catch((error) => {
+          const errorMessage =
+            error.response?.data?.message ||
+            s__('DuoAgentPlatform|Error occurred when starting the flow.');
+
           createAlert({
-            message: s__('DuoAgentPlatform|Error occurred when starting the flow.'),
+            message: errorMessage,
             captureError: true,
             error,
+            renderMessageHTML: true,
           });
         })
         .finally(() => {

@@ -28,6 +28,8 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
     allow_any_instance_of(User).to receive(:allowed_to_use?).and_return(true) # rubocop:disable RSpec/AnyInstanceOf -- not the next instance
 
+    allow(::Ai::DuoWorkflow).to receive(:available?).and_return(true)
+
     allow_next_instance_of(::Ai::DuoWorkflows::CreateCompositeOauthAccessTokenService) do |service|
       allow(service).to receive(:execute).and_return(
         ServiceResponse.success(
@@ -711,6 +713,22 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
           post api(path, user), params: params
 
           expect(response).to have_gitlab_http_status(:created)
+        end
+      end
+
+      context 'when composite identity onboarding is incomplete' do
+        before do
+          allow(::Ai::DuoWorkflow).to receive(:available?).and_return(false)
+        end
+
+        it 'returns forbidden error with link to documentation' do
+          post api(path, user), params: params
+
+          expect(response).to have_gitlab_http_status(:forbidden)
+          expect(json_response['message']).to eq(
+            'Duo Agent Platform onboarding is incomplete, composite identity must be enabled. ' \
+              '<a href="https://docs.gitlab.com/user/duo_agent_platform/#prerequisites">Learn more</a>'
+          )
         end
       end
     end
