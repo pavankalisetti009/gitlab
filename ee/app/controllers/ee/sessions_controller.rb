@@ -67,7 +67,7 @@ module EE
                ::User.find_by_login(login)
              end
 
-      ::Authn::UnauthenticatedSecurityEventAuditor.new(login.presence || user || 'unknown').execute
+      ::Authn::UnauthenticatedSecurityEventAuditor.new(user || login.presence || 'unknown').execute
 
       super
     end
