@@ -72,6 +72,32 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
     end
   end
 
+  shared_examples 'creates an audit event' do |entity_type:|
+    it 'creates an audit event with correct attributes', :aggregate_failures do
+      event_name = "enable_ai_catalog_#{item.item_type}"
+      entity_id = entity_type == 'Project' ? consumer_project.id : group.id
+      entity_name = entity_type == 'Project' ? 'project' : 'group'
+
+      type_display_name = item.item_type == 'third_party_flow' ? 'external agent' : item.item_type
+
+      expect { execute }.to change { AuditEvent.count }.by_at_least(1)
+
+      audit_event = AuditEvent.all.find { |event| event.details[:event_name] == event_name }
+
+      expect(audit_event).to have_attributes(
+        author: user,
+        entity_type: entity_type,
+        entity_id: entity_id,
+        target_details: "#{item.name} (ID: #{item.id})"
+      )
+      expect(audit_event.details).to include(
+        event_name: event_name,
+        target_type: 'Ai::Catalog::Item',
+        custom_message: "Enabled AI #{type_display_name} for #{entity_name}"
+      )
+    end
+  end
+
   shared_context 'when container is a group' do
     let(:parent_item_consumer) { nil }
     let(:container) { group }
@@ -245,25 +271,7 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
       )
     end
 
-    it 'creates an audit event with correct attributes', :aggregate_failures do
-      event_name = "enable_ai_catalog_#{item.item_type}"
-
-      expect { execute }.to change { AuditEvent.count }.by_at_least(1)
-
-      audit_event = AuditEvent.where(entity_type: 'Group', entity_id: group.id)
-                              .find { |event| event.details[:event_name] == event_name }
-
-      expect(audit_event).to be_present
-      expect(audit_event).to have_attributes(
-        author: user,
-        target_details: "#{item.name} (ID: #{item.id})"
-      )
-      expect(audit_event.details).to include(
-        custom_message: "Enabled AI #{item.item_type} for group",
-        event_name: event_name,
-        target_type: 'Ai::Catalog::Item'
-      )
-    end
+    it_behaves_like 'creates an audit event', entity_type: 'Group'
 
     context 'when the item is already configured in the group' do
       before do
@@ -393,43 +401,23 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
       )
     end
 
-    it 'creates an audit event with correct attributes', :aggregate_failures do
-      expect { execute }.to change { AuditEvent.count }.by(1)
-
-      audit_event = AuditEvent.last
-
-      expect(audit_event).to have_attributes(
-        author: user,
-        entity_type: 'Project',
-        entity_id: consumer_project.id,
-        target_details: "#{item.name} (ID: #{item.id})"
-      )
-      expect(audit_event.details).to include(
-        custom_message: 'Enabled AI agent for project',
-        event_name: 'enable_ai_catalog_agent',
-        target_type: 'Ai::Catalog::Item'
-      )
-    end
+    it_behaves_like 'creates an audit event', entity_type: 'Project'
   end
 
   context 'when the item is a flow' do
-    it 'creates an audit event with correct attributes', :aggregate_failures do
-      expect { execute }.to change { AuditEvent.count }.by(1)
+    it_behaves_like 'creates an audit event', entity_type: 'Project'
+  end
 
-      audit_event = AuditEvent.last
-
-      expect(audit_event).to have_attributes(
-        author: user,
-        entity_type: 'Project',
-        entity_id: consumer_project.id,
-        target_details: "#{item.name} (ID: #{item.id})"
-      )
-      expect(audit_event.details).to include(
-        custom_message: 'Enabled AI flow for project',
-        event_name: 'enable_ai_catalog_flow',
-        target_type: 'Ai::Catalog::Item'
-      )
+  context 'when the item is a third_party_flow' do
+    let_it_be(:third_party_flow_parent_item_consumer) do
+      create(:ai_catalog_item_consumer, group: consumer_group, item: third_party_flow_item,
+        service_account: service_account)
     end
+
+    let(:item) { third_party_flow_item }
+    let(:parent_item_consumer) { third_party_flow_parent_item_consumer }
+
+    it_behaves_like 'creates an audit event', entity_type: 'Project'
   end
 
   context 'when passing trigger_types' do

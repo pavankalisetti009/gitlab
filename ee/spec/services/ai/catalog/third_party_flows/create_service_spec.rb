@@ -53,6 +53,10 @@ RSpec.describe Ai::Catalog::ThirdPartyFlows::CreateService, feature_category: :w
         expect { response }
           .not_to trigger_internal_events('create_ai_catalog_item')
       end
+
+      it 'does not create an audit event on failure' do
+        expect { response }.not_to change { AuditEvent.count }
+      end
     end
 
     it 'returns a success response with item in payload' do
@@ -89,6 +93,35 @@ RSpec.describe Ai::Catalog::ThirdPartyFlows::CreateService, feature_category: :w
          'redis_hll_counters.count_distinct_user_id_from_create_ai_catalog_item_monthly',
          'counts.count_total_create_ai_catalog_item'
        )
+    end
+
+    it 'creates an audit event', :aggregate_failures do
+      expect { response }.to change { AuditEvent.count }.by(2)
+
+      audit_events = AuditEvent.last(2)
+      item = Ai::Catalog::Item.last
+
+      expect(audit_events[0]).to have_attributes(
+        author: user,
+        entity_type: 'Project',
+        entity_id: project.id,
+        target_details: "#{item.name} (ID: #{item.id})"
+      )
+      expect(audit_events[0].details).to include(
+        custom_message: 'Created a new public AI external agent',
+        event_name: 'create_ai_catalog_third_party_flow',
+        target_type: 'Ai::Catalog::Item'
+      )
+
+      expect(audit_events[1]).to have_attributes(
+        author: user,
+        entity_type: 'Project',
+        entity_id: project.id,
+        target_details: "#{item.name} (ID: #{item.id})"
+      )
+      expect(audit_events[1].details).to include(
+        custom_message: 'Released version 1.0.0 of AI external agent'
+      )
     end
 
     context 'when the version is not being released' do

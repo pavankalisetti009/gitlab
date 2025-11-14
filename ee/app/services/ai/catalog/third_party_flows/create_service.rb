@@ -29,12 +29,12 @@ module Ai
           item = Ai::Catalog::Item.new(item_params)
           item.build_new_version(version_params)
 
-          if save_item(item)
-            track_ai_item_events('create_ai_catalog_item', { label: item.item_type })
-            return ServiceResponse.success(payload: { item: item })
-          end
+          return error_creating(item) unless save_item(item)
 
-          error_creating(item)
+          track_ai_item_events('create_ai_catalog_item', { label: item.item_type })
+          send_audit_events('create_ai_catalog_third_party_flow', item)
+
+          ServiceResponse.success(payload: { item: item })
         end
 
         private
