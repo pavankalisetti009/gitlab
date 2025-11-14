@@ -70987,9 +70987,6 @@ msgstr ""
 msgid "UsageBilling|An error occurred while fetching data"
 msgstr ""
 
-msgid "UsageBilling|Billing period:"
-msgstr ""
-
 msgid "UsageBilling|Credit amount"
 msgstr ""
 
@@ -71059,14 +71056,14 @@ msgstr ""
 msgid "UsageBilling|Unlock more discounts for your GitLab usage. Pool GitLab Credits across your namespace for flexibility and predictable monthly costs. %{linkStart}GitLab Credit pricing%{linkEnd}."
 msgstr ""
 
-msgid "UsageBilling|Used in this billing period"
+msgid "UsageBilling|Usage period:"
 msgstr ""
 
-msgid "UsageBilling|Used this billing period"
+msgid "UsageBilling|Used this month"
 msgstr ""
 
-msgid "UsageBilling|Used this billing period, resets in %{days} day"
-msgid_plural "UsageBilling|Used this billing period, resets in %{days} days"
+msgid "UsageBilling|Used this month, resets in %{days} day"
+msgid_plural "UsageBilling|Used this month, resets in %{days} days"
 msgstr[0] ""
 msgstr[1] ""
 

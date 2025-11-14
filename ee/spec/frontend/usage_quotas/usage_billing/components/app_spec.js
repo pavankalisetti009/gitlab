@@ -80,10 +80,10 @@ describe('UsageBillingApp', () => {
         expect(pageHeading.text()).toContain('GitLab Credits dashboard');
       });
 
-      it('renders the page billing period subtitle', () => {
+      it('renders the page month subtitle', () => {
         const pageHeading = findPageHeading();
 
-        expect(pageHeading.text()).toContain('Billing period:');
+        expect(pageHeading.text()).toContain('Usage period:');
         expect(pageHeading.findComponent(HumanTimeframe).exists()).toBe(true);
         expect(pageHeading.findComponent(HumanTimeframe).props()).toEqual({
           from: '2025-10-01',

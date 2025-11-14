@@ -107,7 +107,7 @@ export default {
           class="gl-text-default"
         >
           <span class="gl-font-bold">
-            {{ s__('UsageBilling|Billing period:') }}
+            {{ s__('UsageBilling|Usage period:') }}
           </span>
           <human-timeframe :from="subscriptionUsage.startDate" :till="subscriptionUsage.endDate" />
         </div>

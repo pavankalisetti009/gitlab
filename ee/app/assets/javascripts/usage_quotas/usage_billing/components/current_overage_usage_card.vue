@@ -33,7 +33,7 @@ export default {
       {{ s__('UsageBilling|GitLab Credits - On Demand') }}
     </h2>
     <div class="gl-mb-4 gl-text-sm gl-text-subtle">
-      {{ s__('UsageBilling|Used this billing period') }}
+      {{ s__('UsageBilling|Used this month') }}
     </div>
 
     <div class="gl-mb-3">
