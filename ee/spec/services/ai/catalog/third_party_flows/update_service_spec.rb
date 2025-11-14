@@ -76,4 +76,63 @@ RSpec.describe Ai::Catalog::ThirdPartyFlows::UpdateService, feature_category: :w
       it_behaves_like 'validates yaml definition syntax', 'ThirdPartyFlow'
     end
   end
+
+  describe 'audit events' do
+    let(:execute_service) do
+      service.execute
+    end
+
+    before_all do
+      project.add_maintainer(user)
+    end
+
+    it 'creates audit events for the changes', :aggregate_failures do
+      expect { execute_service }.to change { AuditEvent.count }.by(3)
+
+      audit_events = AuditEvent.last(3)
+
+      expect(audit_events[0]).to have_attributes(
+        author: user,
+        entity_type: 'Project',
+        entity_id: project.id,
+        target_details: "#{item.name} (ID: #{item.id})"
+      )
+      expect(audit_events[0].details).to include(
+        custom_message: "Updated AI external agent: Changed image, Changed commands, Changed variables, " \
+          "Disabled AI Gateway token injection",
+        event_name: "update_ai_catalog_third_party_flow",
+        target_type: "Ai::Catalog::Item"
+      )
+
+      expect(audit_events[1]).to have_attributes(
+        author: user,
+        entity_type: 'Project',
+        entity_id: project.id,
+        target_details: "#{item.name} (ID: #{item.id})"
+      )
+      expect(audit_events[1].details).to include(
+        custom_message: 'Made AI external agent public'
+      )
+
+      expect(audit_events[2]).to have_attributes(
+        author: user,
+        entity_type: 'Project',
+        entity_id: project.id
+      )
+      expect(audit_events[2].details).to include(
+        custom_message: 'Released version 1.1.0 of AI external agent'
+      )
+    end
+
+    context 'when update fails' do
+      before do
+        allow(item).to receive(:save).and_return(false)
+        item.errors.add(:base, 'Item cannot be updated')
+      end
+
+      it 'does not create an audit event' do
+        expect { execute_service }.not_to change { AuditEvent.count }
+      end
+    end
+  end
 end

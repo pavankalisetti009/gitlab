@@ -124,6 +124,27 @@ RSpec.shared_examples Ai::Catalog::Items::BaseDestroyService do
       context 'when item exists' do
         it_behaves_like 'a successful request'
 
+        it 'creates an audit event on successful destroy', :aggregate_failures do
+          item_type_label = item.item_type == 'third_party_flow' ? 'external agent' : item.item_type
+          event_name = "delete_ai_catalog_#{item.item_type}"
+
+          expect { execute_service }.to change { AuditEvent.count }.by(1)
+
+          audit_event = AuditEvent.last
+
+          expect(audit_event).to have_attributes(
+            author: user,
+            entity_type: 'Project',
+            entity_id: project.id,
+            target_details: "#{item.name} (ID: #{item.id})"
+          )
+          expect(audit_event.details).to include(
+            custom_message: "Deleted AI #{item_type_label}",
+            event_name: event_name,
+            target_type: 'Ai::Catalog::Item'
+          )
+        end
+
         context 'when item is being used by both the project and another project' do
           let_it_be(:other_project) { create(:project) }
 
@@ -201,6 +222,10 @@ RSpec.shared_examples Ai::Catalog::Items::BaseDestroyService do
 
           expect(result).to be_error
           expect(result.errors).to contain_exactly('Item cannot be destroyed')
+        end
+
+        it 'does not create an audit event' do
+          expect { execute_service }.not_to change { AuditEvent.count }
         end
       end
     end

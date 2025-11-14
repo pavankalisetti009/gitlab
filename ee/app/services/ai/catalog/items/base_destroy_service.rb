@@ -93,7 +93,9 @@ module Ai
           track_ai_item_events('delete_ai_catalog_item', { label: item.item_type })
         end
 
-        def track_deletion_audit_event; end
+        def track_deletion_audit_event
+          send_audit_events("delete_ai_catalog_#{item.item_type}", item)
+        end
       end
     end
   end
