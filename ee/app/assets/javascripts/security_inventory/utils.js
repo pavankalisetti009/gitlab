@@ -64,7 +64,7 @@ export const securityScannerOfProjectValidator = (value) => {
       'analyzerType' in item &&
       typeof item.analyzerType === 'string' &&
       (!('status' in item) || typeof item.status === 'string') &&
-      (!('buildId' in item) || typeof item.buildId === 'string') &&
+      (!('buildId' in item) || item.buildId === null || typeof item.buildId === 'string') &&
       (!('lastCall' in item) || typeof item.lastCall === 'string') &&
       (!('updatedAt' in item) || typeof item.updatedAt === 'string'),
   );
