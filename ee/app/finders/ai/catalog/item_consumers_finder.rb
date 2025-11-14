@@ -53,7 +53,7 @@ module Ai
       end
 
       def include_inherited?
-        params.fetch(:include_inherited, true)
+        params.fetch(:include_inherited, false)
       end
       strong_memoize_attr :include_inherited?
 

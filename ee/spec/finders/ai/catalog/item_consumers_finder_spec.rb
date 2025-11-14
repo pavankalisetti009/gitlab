@@ -15,9 +15,6 @@ RSpec.describe Ai::Catalog::ItemConsumersFinder, feature_category: :workflow_cat
   let_it_be(:group) { create(:group, parent: parent_group) }
   let_it_be(:group_consumers) { create_list(:ai_catalog_item_consumer, 2, group: group) }
 
-  let(:include_inherited) { false }
-  let(:params) { { include_inherited: include_inherited } }
-
   subject(:results) { described_class.new(user, params: params).execute }
 
   before do
@@ -25,7 +22,7 @@ RSpec.describe Ai::Catalog::ItemConsumersFinder, feature_category: :workflow_cat
   end
 
   context 'when project_id is provided' do
-    let(:params) { super().merge(project_id: project.id) }
+    let(:params) { { project_id: project.id } }
 
     it { is_expected.to match_array(project_consumers) }
 
@@ -68,7 +65,7 @@ RSpec.describe Ai::Catalog::ItemConsumersFinder, feature_category: :workflow_cat
     end
 
     context 'when include_inherited is true' do
-      let(:include_inherited) { true }
+      let(:params) { super().merge(include_inherited: true) }
 
       it { is_expected.to match_array(project_consumers + parent_group_consumers) }
 
@@ -96,7 +93,7 @@ RSpec.describe Ai::Catalog::ItemConsumersFinder, feature_category: :workflow_cat
   end
 
   context 'when group_id is provided' do
-    let(:params) { super().merge(group_id: group.id) }
+    let(:params) { { group_id: group.id } }
 
     it { is_expected.to match_array(group_consumers) }
 
@@ -107,7 +104,7 @@ RSpec.describe Ai::Catalog::ItemConsumersFinder, feature_category: :workflow_cat
     end
 
     context 'when include_inherited is true' do
-      let(:include_inherited) { true }
+      let(:params) { super().merge(include_inherited: true) }
 
       it { is_expected.to match_array(group_consumers + parent_group_consumers) }
 
@@ -129,7 +126,7 @@ RSpec.describe Ai::Catalog::ItemConsumersFinder, feature_category: :workflow_cat
   end
 
   context 'when both project_id and group_id are provided' do
-    let(:params) { super().merge(project_id: project.id, group_id: group.id) }
+    let(:params) { { project_id: project.id, group_id: group.id } }
 
     it 'uses project_id and ignores group_id' do
       expect(results).to match_array(project_consumers)

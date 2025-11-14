@@ -17,7 +17,7 @@ module Resolvers
         argument :include_inherited,
           GraphQL::Types::Boolean,
           required: false,
-          default_value: true,
+          default_value: false,
           description: 'Include configured AI Catalog items inherited from parent groups.'
 
         argument :item_id,
