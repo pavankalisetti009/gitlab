@@ -107,5 +107,28 @@ RSpec.describe 'Group Level Work Items', feature_category: :team_planning do
         end
       end
     end
+
+    describe 'GET /groups/:group/-/work_items.atom' do
+      let_it_be(:project) { create(:project, group: group) }
+      let_it_be(:project_work_item) { create(:work_item, project: project) }
+      let_it_be(:group_work_item) { create(:work_item, :group_level, namespace: group) }
+
+      let(:current_user) { create(:user, developer_of: group) }
+      let(:rss_path) do
+        url_for(controller: 'groups/work_items', action: :rss, group_id: group.full_path, format: :atom)
+      end
+
+      before do
+        sign_in(current_user)
+      end
+
+      it 'includes both group-level and project-level work items' do
+        get rss_path
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(response).to render_template('groups/work_items/rss')
+        expect(assigns(:work_items)).to include(group_work_item, project_work_item)
+      end
+    end
   end
 end
