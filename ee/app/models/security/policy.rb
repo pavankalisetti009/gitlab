@@ -92,6 +92,8 @@ module Security
 
     scope :with_warn_mode, -> { where("content->>'enforcement_type' = ?", ENFORCEMENT_TYPE_WARN) }
 
+    scope :including_security_policy_management_project, -> { includes(:security_policy_management_project) }
+
     delegate :namespace?, :namespace, :project?, :project, to: :security_orchestration_policy_configuration
 
     def self.checksum(policy_hash)
