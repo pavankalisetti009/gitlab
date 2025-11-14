@@ -15,5 +15,9 @@ scope module: :gitlab_subscriptions do
     post :validate_payment_method
   end
   resources :hand_raise_leads, only: :create, path: 'gitlab_subscriptions/hand_raise_leads',
-    as: 'gitlab_subscriptions_hand_raise_leads'
+    as: 'gitlab_subscriptions_hand_raise_leads' do
+    collection do
+      post :track_cart_abandonment
+    end
+  end
 end

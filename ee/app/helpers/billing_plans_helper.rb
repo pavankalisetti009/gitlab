@@ -69,7 +69,11 @@ module BillingPlansHelper
       manageSeatsPath: group_usage_quotas_path(namespace, anchor: 'seats-quota-tab'),
       startTrialPath: new_trial_path(namespace_id: namespace.id),
       upgradeToPremiumUrl: plan_purchase_url(namespace, premium_plan),
-      upgradeToUltimateUrl: plan_purchase_url(namespace, ultimate_plan)
+      upgradeToUltimateUrl: plan_purchase_url(namespace, ultimate_plan),
+      upgradeToPremiumTrackingUrl:
+        track_cart_abandonment_gitlab_subscriptions_hand_raise_leads_path(namespace_id: namespace.id, plan: ::Plan::PREMIUM),
+      upgradeToUltimateTrackingUrl:
+        track_cart_abandonment_gitlab_subscriptions_hand_raise_leads_path(namespace_id: namespace.id, plan: ::Plan::ULTIMATE)
     }
   end
 
