@@ -224,7 +224,8 @@ RSpec.describe Ai::AmazonQ::CreateService, feature_category: :ai_agents do
             redirect_uri: Gitlab::Routing.url_helpers.root_url,
             scopes: [:api, :read_repository, :write_repository, :"user:*"],
             trusted: false,
-            confidential: false
+            confidential: false,
+            organization_id: organization.id
           }
         ).and_return(doorkeeper_application)
 

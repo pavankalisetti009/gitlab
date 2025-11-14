@@ -88,7 +88,8 @@ module Ai
           redirect_uri: oauth_callback_url,
           scopes: ::Gitlab::Auth::AI_WORKFLOW_SCOPES + [::Gitlab::Auth::MCP_SCOPE, ::Gitlab::Auth::DYNAMIC_USER],
           trusted: true,
-          confidential: true
+          confidential: true,
+          organization: @organization
         )
       end
 

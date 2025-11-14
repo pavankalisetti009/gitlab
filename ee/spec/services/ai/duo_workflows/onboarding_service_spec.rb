@@ -56,7 +56,8 @@ RSpec.describe Ai::DuoWorkflows::OnboardingService, type: :service, feature_cate
             redirect_uri: Gitlab::Routing.url_helpers.root_url,
             scopes: [:ai_workflows, :mcp, :"user:*"],
             trusted: true,
-            confidential: true
+            confidential: true,
+            organization: organization
           }
         ).and_return(doorkeeper_application)
 
