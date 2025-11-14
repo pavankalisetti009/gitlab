@@ -120,5 +120,13 @@ module EE
         base_path: admin_data_management_path
       }
     end
+
+    def admin_data_management_item_app_data(model)
+      {
+        model_class: model.class.name,
+        model_id: model.id.to_s,
+        model_name: ::Gitlab::Geo::ModelMapper.convert_to_name(model.class)
+      }
+    end
   end
 end

@@ -151,4 +151,18 @@ RSpec.describe EE::GeoHelper, feature_category: :geo_replication do
       )
     end
   end
+
+  describe '#admin_data_management_item_app_data' do
+    let(:model) { build_stubbed(:project) }
+
+    it 'returns expected data' do
+      expect(helper.admin_data_management_item_app_data(model)).to eq(
+        {
+          model_class: 'Project',
+          model_id: model.id.to_s,
+          model_name: 'project'
+        }
+      )
+    end
+  end
 end

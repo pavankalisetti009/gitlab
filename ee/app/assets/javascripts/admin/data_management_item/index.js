@@ -6,10 +6,18 @@ export const initAdminDataManagementItem = () => {
 
   if (!el) return null;
 
+  const { modelClass, modelId, modelName } = el.dataset;
+
   return new Vue({
     el,
     render(createElement) {
-      return createElement(AdminDataManagementItemApp);
+      return createElement(AdminDataManagementItemApp, {
+        props: {
+          modelClass,
+          modelId,
+          modelName,
+        },
+      });
     },
   });
 };
