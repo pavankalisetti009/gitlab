@@ -4,7 +4,7 @@ module MergeRequests
   module ApprovalRulesAttributeMapping
     extend ActiveSupport::Concern
 
-    def add_v2_approval_rules_attributes
+    def map_approval_rules_attributes_to_v2
       return unless params[:approval_rules_attributes]
 
       params[:v2_approval_rules_attributes] = params[:approval_rules_attributes].map do |rule|
@@ -26,6 +26,13 @@ module MergeRequests
           approver_group_ids: []
         )
       end
+    end
+
+    def map_and_replace_approval_rules_attributes_to_v2
+      v2_approval_rules_attributes = map_approval_rules_attributes_to_v2
+
+      params.delete(:approval_rules_attributes)
+      v2_approval_rules_attributes
     end
 
     def update_v1_approval_rule_ids(merge_request)

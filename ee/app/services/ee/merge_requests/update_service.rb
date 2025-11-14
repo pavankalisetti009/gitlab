@@ -20,7 +20,7 @@ module EE
       override :general_fallback
       def general_fallback(merge_request)
         if ::Feature.enabled?(:v2_approval_rules, merge_request.project)
-          add_v2_approval_rules_attributes
+          map_approval_rules_attributes_to_v2
           update_v1_approval_rule_ids(merge_request)
         end
 

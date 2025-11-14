@@ -323,9 +323,11 @@ RSpec.shared_examples 'service with approval rules' do
           stub_feature_flags(v2_approval_rules: true)
         end
 
-        it 'creates v2 approval rules' do
-          expect(execute.v2_approval_rules.count).to eq(1)
-          expect(execute.v2_approval_rules.first).to have_attributes(approvals_required: 5, name: 'Test')
+        it 'creates only v2 approval rules, not v1' do
+          result = execute
+          expect(result.v2_approval_rules.count).to eq(1)
+          expect(result.v2_approval_rules.first).to have_attributes(approvals_required: 5, name: 'Test')
+          expect(result.approval_rules.count).to eq(0)
         end
       end
 
@@ -334,8 +336,10 @@ RSpec.shared_examples 'service with approval rules' do
           stub_feature_flags(v2_approval_rules: false)
         end
 
-        it 'does not create v2 approval rules' do
-          expect(execute.v2_approval_rules).to be_empty
+        it 'creates only v1 approval rules, not v2' do
+          result = execute
+          expect(result.approval_rules.count).to eq(1)
+          expect(result.v2_approval_rules).to be_empty
         end
       end
     end

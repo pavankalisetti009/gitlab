@@ -8,7 +8,8 @@ module EE
 
       override :set_default_attributes!
       def set_default_attributes!
-        add_v2_approval_rules_attributes if dual_write_v2_approval_rules?
+        return map_and_replace_approval_rules_attributes_to_v2 if create_v2_approval_rules?
+
         return if params[:approval_rules_attributes].present?
 
         # Pick only regular or any_approver to match frontend behavior:
@@ -58,7 +59,14 @@ module EE
         ::Gitlab::Audit::Auditor.audit(audit_context)
       end
 
-      def dual_write_v2_approval_rules?
+      override :filter_approval_params
+      def filter_approval_params(merge_request, current_user, params)
+        return super unless create_v2_approval_rules?
+
+        ::MergeRequests::V2ApprovalRules::ParamsFilteringService.new(merge_request, current_user, params).execute
+      end
+
+      def create_v2_approval_rules?
         ::Feature.enabled?(:v2_approval_rules, project)
       end
     end

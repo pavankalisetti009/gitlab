@@ -23,21 +23,12 @@ module ApprovalRules
     def execute
       params.delete(:approval_rules_attributes) unless current_user.can?(:update_approvers, target)
 
-      params.delete(:v2_approval_rules_attributes) unless current_user.can?(:update_approvers,
-        target) && Feature.enabled?(:v2_approval_rules, project)
-
       filter_scan_result_policy_approval_rules if updating?
       params.delete(:reset_approval_rules_to_defaults) unless updating?
 
       return params unless params.key?(:approval_rules_attributes)
 
       source_rule_ids = []
-
-      if Feature.enabled?(:v2_approval_rules, project)
-        params[:v2_approval_rules_attributes]&.each do |v2_rule_attributes|
-          handle_rule(v2_rule_attributes)
-        end
-      end
 
       params[:approval_rules_attributes].each do |rule_attributes|
         source_rule_ids << rule_attributes[:approval_project_rule_id].presence
