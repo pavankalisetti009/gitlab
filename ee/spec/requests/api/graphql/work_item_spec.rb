@@ -1407,8 +1407,13 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
             )
           end
 
-          it 'avoids N+1 queries', :use_sql_query_cache,
-            quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/9634' do
+          it 'avoids N+1 queries', :use_sql_query_cache do
+            # Prevent non-deterministic user tracking queries that are throttled by ExclusiveLease
+            # See: https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/9634
+            allow_next_instance_of(User) do |user|
+              allow(user).to receive(:update_tracked_fields!)
+            end
+
             post_graphql(query, current_user: current_user) # warmup
             control_count = ActiveRecord::QueryRecorder.new(skip_cached: false) do
               post_graphql(query, current_user: current_user)
