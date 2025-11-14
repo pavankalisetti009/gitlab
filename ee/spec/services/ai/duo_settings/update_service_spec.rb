@@ -6,7 +6,7 @@ RSpec.describe Ai::DuoSettings::UpdateService, feature_category: :"self-hosted_m
   let_it_be(:user) { create(:user) }
   let_it_be(:duo_settings) { create(:ai_settings) }
 
-  let(:params) { { ai_gateway_url: "http://new-ai-gateway-url", duo_core_features_enabled: true } }
+  let(:params) { { ai_gateway_url: "http://new-ai-gateway-url", duo_core_features_enabled: true, ai_gateway_timeout_seconds: 100 } }
 
   subject(:service_result) { described_class.new(params).execute }
 
@@ -15,6 +15,7 @@ RSpec.describe Ai::DuoSettings::UpdateService, feature_category: :"self-hosted_m
       it 'returns a success response' do
         expect { service_result }.to change { duo_settings.reload.ai_gateway_url }.to("http://new-ai-gateway-url")
           .and change { duo_settings.reload.duo_core_features_enabled }.to(true)
+          .and change { duo_settings.reload.ai_gateway_timeout_seconds }.to(100)
 
         expect(service_result).to be_success
         expect(service_result.payload).to eq(duo_settings)

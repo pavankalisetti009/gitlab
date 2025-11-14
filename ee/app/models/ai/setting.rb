@@ -13,6 +13,11 @@ module Ai
     validates :amazon_q_role_arn, length: { maximum: 2048 }, allow_nil: true
 
     validate :validate_ai_gateway_url
+    validates :ai_gateway_timeout_seconds,
+      numericality: {
+        greater_than_or_equal_to: 60,
+        less_than_or_equal_to: 600
+      }
 
     validates :duo_core_features_enabled,
       inclusion: { in: [true, false] },

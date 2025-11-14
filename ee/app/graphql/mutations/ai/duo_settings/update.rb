@@ -11,6 +11,10 @@ module Mutations
           required: false,
           description: 'URL for local AI gateway server.'
 
+        argument :ai_gateway_timeout_seconds, GraphQL::Types::Int,
+          required: false,
+          description: "Timeout for AI gateway request."
+
         argument :duo_agent_platform_service_url, String,
           required: false,
           description: 'URL for the local Duo Agent Platform service.'
@@ -46,13 +50,10 @@ module Mutations
         private
 
         def check_feature_available!(args)
-          raise_resource_not_available_error!(:ai_gateway_url) if args.key?(:ai_gateway_url) &&
-            !allowed_to_update?(:manage_self_hosted_models_settings)
-
-          if args.key?(:duo_agent_platform_service_url) &&
-              !allowed_to_update?(:manage_self_hosted_models_settings)
-
-            raise_resource_not_available_error!(:duo_agent_platform_service_url)
+          [:ai_gateway_url, :duo_agent_platform_service_url, :ai_gateway_timeout_seconds].each do |setting|
+            if args.key?(setting) && !allowed_to_update?(:manage_self_hosted_models_settings)
+              raise_resource_not_available_error!(setting)
+            end
           end
 
           raise_resource_not_available_error!(:duo_core_features_enabled) if args.key?(:duo_core_features_enabled) &&
