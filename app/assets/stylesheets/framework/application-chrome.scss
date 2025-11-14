@@ -877,7 +877,7 @@
  * Animations
  */
 
-.application-chrome {
+:where(.application-chrome) {
   .nav-flyout-menu {
     @include gl-prefers-reduced-motion-transition;
     transition: opacity .2s .1s $gl-easing-out-cubic;
