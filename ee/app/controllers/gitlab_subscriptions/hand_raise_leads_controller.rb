@@ -19,6 +19,11 @@ module GitlabSubscriptions
       end
     end
 
+    def track_cart_abandonment
+      # TODO: https://gitlab.com/gitlab-org/gitlab/-/work_items/579819
+      head :no_content
+    end
+
     private
 
     def authenticate_user!

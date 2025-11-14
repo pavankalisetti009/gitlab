@@ -89,4 +89,70 @@ RSpec.describe GitlabSubscriptions::HandRaiseLeadsController, feature_category: 
       it { is_expected.to have_gitlab_http_status(:not_found) }
     end
   end
+
+  describe 'POST /-/gitlab_subscriptions/hand_raise_leads/track_cart_abandonment' do
+    let_it_be(:user) { create(:user, :with_namespace) }
+    let_it_be(:namespace) { create(:group) }
+
+    let(:params) { { namespace_id: namespace.id.to_s, plan: 'premium' } }
+
+    subject(:post_track_cart_abandonment) do
+      post track_cart_abandonment_gitlab_subscriptions_hand_raise_leads_path, params: params
+    end
+
+    before_all do
+      namespace.add_owner(user)
+    end
+
+    before do
+      stub_saas_features(gitlab_com_subscriptions: true)
+    end
+
+    context 'when user is authenticated' do
+      before do
+        sign_in(user)
+      end
+
+      it 'returns 204 no content' do
+        post_track_cart_abandonment
+
+        expect(response).to have_gitlab_http_status(:no_content)
+      end
+    end
+
+    context 'when user is not authenticated' do
+      it 'returns 404' do
+        post_track_cart_abandonment
+
+        expect(response).to have_gitlab_http_status(:not_found)
+      end
+    end
+
+    context 'when namespace is not found' do
+      before do
+        sign_in(user)
+      end
+
+      let(:params) { { namespace_id: non_existing_record_id, plan: 'premium' } }
+
+      it 'returns 404' do
+        post_track_cart_abandonment
+
+        expect(response).to have_gitlab_http_status(:not_found)
+      end
+    end
+
+    context 'when gitlab_com_subscriptions is not available' do
+      before do
+        sign_in(user)
+        stub_saas_features(gitlab_com_subscriptions: false)
+      end
+
+      it 'returns 404' do
+        post_track_cart_abandonment
+
+        expect(response).to have_gitlab_http_status(:not_found)
+      end
+    end
+  end
 end

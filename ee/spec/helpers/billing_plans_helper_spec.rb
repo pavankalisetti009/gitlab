@@ -188,7 +188,11 @@ RSpec.describe BillingPlansHelper, :saas, feature_category: :subscription_manage
         trialEndsOn: nil,
         trialExpired: false,
         upgradeToPremiumUrl: plan_purchase_url(namespace, plans_data[0]),
-        upgradeToUltimateUrl: plan_purchase_url(namespace, plans_data[1])
+        upgradeToUltimateUrl: plan_purchase_url(namespace, plans_data[1]),
+        upgradeToPremiumTrackingUrl:
+          track_cart_abandonment_gitlab_subscriptions_hand_raise_leads_path(namespace_id: namespace.id, plan: ::Plan::PREMIUM),
+        upgradeToUltimateTrackingUrl:
+          track_cart_abandonment_gitlab_subscriptions_hand_raise_leads_path(namespace_id: namespace.id, plan: ::Plan::ULTIMATE)
       })
     end
 
