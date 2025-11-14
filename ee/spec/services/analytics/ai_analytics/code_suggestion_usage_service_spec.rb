@@ -9,7 +9,8 @@ RSpec.describe Analytics::AiAnalytics::CodeSuggestionUsageService, feature_categ
       namespace: container,
       from: from,
       to: to,
-      languages: languages
+      languages: languages,
+      ide_names: ide_names
     ).execute
   end
 
@@ -22,6 +23,7 @@ RSpec.describe Analytics::AiAnalytics::CodeSuggestionUsageService, feature_categ
   let_it_be(:user3) { create(:user, developer_of: group) }
   let_it_be(:not_member) { create(:user) }
   let(:languages) { [] }
+  let(:ide_names) { [] }
 
   let(:current_user) { user1 }
   let(:from) { Time.current }
@@ -69,6 +71,7 @@ RSpec.describe Analytics::AiAnalytics::CodeSuggestionUsageService, feature_categ
             accepted_count: 0,
             accepted_lines_of_code: 0,
             contributors_count: 0,
+            ide_names: [],
             languages: [],
             shown_count: 0,
             shown_lines_of_code: 0
@@ -106,16 +109,16 @@ RSpec.describe Analytics::AiAnalytics::CodeSuggestionUsageService, feature_categ
           clickhouse_fixture(:ai_usage_events, [
             # shown
             { user_id: user1.id, namespace_path: group.traversal_path, event: 2,
-              extras: { language: 'ruby', suggestion_size: 10 }, timestamp: to - 3.days },
+              extras: { language: 'ruby', ide_name: 'ide_1', suggestion_size: 10 }, timestamp: to - 3.days },
             # accepted
             { user_id: user1.id, namespace_path: project_namespace.traversal_path, event: 3,
-              extras: { language: 'ruby', suggestion_size: 20 }, timestamp: to - 3.days + 1.second },
+              extras: { language: 'ruby', ide_name: 'ide_2', suggestion_size: 20 }, timestamp: to - 3.days + 1.second },
             # shown
             { user_id: user1.id, namespace_path: project_namespace.traversal_path, event: 2,
-              extras: { language: 'ruby', suggestion_size: 30 }, timestamp: to - 4.days },
+              extras: { language: 'ruby', ide_name: 'ide_3', suggestion_size: 30 }, timestamp: to - 4.days },
             # shown
             { user_id: user2.id, namespace_path: subgroup.traversal_path, event: 2,
-              extras: { language: 'js', suggestion_size: 40 }, timestamp: to - 2.days },
+              extras: { language: 'js', ide_name: 'ide_3', suggestion_size: 40 }, timestamp: to - 2.days },
             # shown
             { user_id: user2.id, namespace_path: project_namespace.traversal_path, event: 2,
               extras: { language: 'rust', suggestion_size: 50 }, timestamp: to - 2.days },
@@ -160,6 +163,14 @@ RSpec.describe Analytics::AiAnalytics::CodeSuggestionUsageService, feature_categ
             expect(service_response.payload).to match(expected_language_filtered_results)
           end
         end
+
+        context 'when using IDE names filter' do
+          let(:ide_names) { %w[ide_2 ide_3] }
+
+          it 'returns metrics filtered by IDEs used' do
+            expect(service_response.payload).to match(expected_ide_filtered_results)
+          end
+        end
       end
     end
   end
@@ -175,6 +186,7 @@ RSpec.describe Analytics::AiAnalytics::CodeSuggestionUsageService, feature_categ
         contributors_count: 2,
         shown_count: 4,
         accepted_count: 1,
+        ide_names: ["", "ide_3", "ide_2", "ide_1"],
         languages: %w[js rust ruby],
         shown_lines_of_code: 130,
         accepted_lines_of_code: 20
@@ -192,9 +204,28 @@ RSpec.describe Analytics::AiAnalytics::CodeSuggestionUsageService, feature_categ
         contributors_count: 1,
         shown_count: 2,
         accepted_count: 0,
+        ide_names: ["", "ide_3"],
         languages: %w[js rust],
         shown_lines_of_code: 90,
         accepted_lines_of_code: 0
+      }
+    end
+
+    let(:expected_ide_filtered_results) do
+      {
+        # Legacy fields do not support languages filter
+        code_contributors_count: 3,
+        code_suggestions_contributors_count: 2,
+        code_suggestions_accepted_count: 1,
+        code_suggestions_shown_count: 4,
+        # Fields filtered by ide name
+        contributors_count: 2,
+        shown_count: 2,
+        accepted_count: 1,
+        ide_names: %w[ide_3 ide_2],
+        languages: %w[js ruby],
+        shown_lines_of_code: 70,
+        accepted_lines_of_code: 20
       }
     end
 
@@ -238,6 +269,7 @@ RSpec.describe Analytics::AiAnalytics::CodeSuggestionUsageService, feature_categ
           # New fields
           shown_count: 5,
           accepted_count: 2,
+          ide_names: ["", "ide_3", "ide_2", "ide_1"],
           languages: ["c", "js", "c++", "rust", "ruby"],
           shown_lines_of_code: 190,
           accepted_lines_of_code: 90
@@ -255,9 +287,28 @@ RSpec.describe Analytics::AiAnalytics::CodeSuggestionUsageService, feature_categ
           contributors_count: 1,
           shown_count: 2,
           accepted_count: 0,
+          ide_names: ["", "ide_3"],
           languages: %w[js rust],
           shown_lines_of_code: 90,
           accepted_lines_of_code: 0
+        }
+      end
+
+      let(:expected_ide_filtered_results) do
+        {
+          # Legacy fields do not support languages filter
+          code_contributors_count: 3,
+          code_suggestions_contributors_count: 3,
+          code_suggestions_accepted_count: 2,
+          code_suggestions_shown_count: 5,
+          # Fields filtered by ide names
+          contributors_count: 2,
+          shown_count: 2,
+          accepted_count: 1,
+          ide_names: %w[ide_3 ide_2],
+          languages: %w[js ruby],
+          shown_lines_of_code: 70,
+          accepted_lines_of_code: 20
         }
       end
 
@@ -280,6 +331,7 @@ RSpec.describe Analytics::AiAnalytics::CodeSuggestionUsageService, feature_categ
           contributors_count: 2,
           shown_count: 2,
           accepted_count: 1,
+          ide_names: ["", "ide_3", "ide_2"],
           languages: %w[rust ruby],
           shown_lines_of_code: 80,
           accepted_lines_of_code: 20
@@ -297,9 +349,28 @@ RSpec.describe Analytics::AiAnalytics::CodeSuggestionUsageService, feature_categ
           contributors_count: 1,
           shown_count: 1,
           accepted_count: 0,
+          ide_names: [""],
           languages: %w[rust],
           shown_lines_of_code: 50,
           accepted_lines_of_code: 0
+        }
+      end
+
+      let(:expected_ide_filtered_results) do
+        {
+          # Legacy fields do not support languages filter
+          code_contributors_count: 3,
+          code_suggestions_contributors_count: 2,
+          code_suggestions_accepted_count: 1,
+          code_suggestions_shown_count: 2,
+          # Fields filtered by ide names
+          contributors_count: 1,
+          shown_count: 1,
+          accepted_count: 1,
+          ide_names: %w[ide_3 ide_2],
+          languages: %w[ruby],
+          shown_lines_of_code: 30,
+          accepted_lines_of_code: 20
         }
       end
 

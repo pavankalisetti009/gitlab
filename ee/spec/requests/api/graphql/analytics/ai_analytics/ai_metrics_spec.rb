@@ -26,10 +26,11 @@ RSpec.describe 'aiMetrics', :freeze_time, feature_category: :value_stream_manage
         duoAssignedUsersCount
         duoUsedCount
         rootCauseAnalysisUsersCount
-        codeSuggestions(languages: ["ruby"]) {
+        codeSuggestions(languages: ["ruby"], ideNames: ["ide1"]) {
           shownCount
           acceptedCount
           contributorsCount
+          ideNames
           languages
           shownLinesOfCode
           acceptedLinesOfCode
@@ -52,7 +53,7 @@ RSpec.describe 'aiMetrics', :freeze_time, feature_category: :value_stream_manage
     let(:to) { '2024-05-31'.to_date }
     let(:filter_params) { { startDate: from, endDate: to } }
     let(:expected_filters) { { from: from, to: to } }
-    let(:code_suggestions_expected_filters) { expected_filters.merge(languages: ['ruby']) }
+    let(:code_suggestions_expected_filters) { expected_filters.merge(languages: ['ruby'], ide_names: ['ide1']) }
 
     let(:ai_metrics_service_payload) do
       {
@@ -75,6 +76,7 @@ RSpec.describe 'aiMetrics', :freeze_time, feature_category: :value_stream_manage
         shown_count: 20,
         accepted_count: 30,
         languages: %w[csharp go],
+        ide_names: %w[ide1 ide2],
         accepted_lines_of_code: 100,
         shown_lines_of_code: 200
       }
@@ -135,6 +137,7 @@ RSpec.describe 'aiMetrics', :freeze_time, feature_category: :value_stream_manage
           'contributorsCount' => 3,
           'shownCount' => 20,
           'acceptedCount' => 30,
+          'ideNames' => %w[ide1 ide2],
           'languages' => %w[csharp go],
           'acceptedLinesOfCode' => 100,
           'shownLinesOfCode' => 200
@@ -198,6 +201,7 @@ RSpec.describe 'aiMetrics', :freeze_time, feature_category: :value_stream_manage
             'contributorsCount' => nil,
             'shownCount' => nil,
             'acceptedCount' => nil,
+            'ideNames' => nil,
             'languages' => nil,
             'acceptedLinesOfCode' => nil,
             'shownLinesOfCode' => nil
