@@ -16,7 +16,8 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
         enabled_expanded_logging: true,
         gitlab_dedicated_instance?: false,
         instance_level_ai_beta_features_enabled: true,
-        model_prompt_cache_enabled?: true
+        model_prompt_cache_enabled?: true,
+        foundational_agents_default_enabled: true
       }
     end
 
@@ -91,6 +92,12 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
       end
 
       it { expect(settings).to include(show_foundational_agents_availability: 'true') }
+    end
+
+    context 'with foundational_agents_default_enabled false' do
+      let(:application_setting_attributes) { super().merge(foundational_agents_default_enabled: false) }
+
+      it { expect(settings).to include(foundational_agents_default_enabled: 'false') }
     end
 
     context 'with another ai_gateway_url' do

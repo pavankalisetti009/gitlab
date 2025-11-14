@@ -13,6 +13,7 @@ module Admin
       :gitlab_dedicated_instance?,
       :instance_level_ai_beta_features_enabled,
       :model_prompt_cache_enabled?,
+      :foundational_agents_default_enabled,
       to: :application_settings
 
     delegate :ai_gateway_url,
@@ -42,7 +43,7 @@ module Admin
         prompt_cache_enabled: model_prompt_cache_enabled?,
         redirect_path: url_helpers.admin_gitlab_duo_path,
         toggle_beta_models_path: url_helpers.admin_ai_duo_self_hosted_toggle_beta_models_path,
-        foundational_agents_default_enabled: "true",
+        foundational_agents_default_enabled: foundational_agents_default_enabled,
         show_foundational_agents_availability: show_foundational_agents_availability?
       }.transform_values(&:to_s)
     end
