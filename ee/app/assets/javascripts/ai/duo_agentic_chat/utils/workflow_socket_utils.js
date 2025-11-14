@@ -46,6 +46,8 @@ export function buildWebsocketUrl({
     params.append(DUO_WORKFLOW_WEBSOCKET_PARAM_USER_SELECTED_MODEL, currentModel.value);
   }
 
+  params.append('client_type', 'browser');
+
   return params.toString()
     ? `${DUO_WORKFLOW_WEBSOCKET_BASE_URL}?${params}`
     : DUO_WORKFLOW_WEBSOCKET_BASE_URL;

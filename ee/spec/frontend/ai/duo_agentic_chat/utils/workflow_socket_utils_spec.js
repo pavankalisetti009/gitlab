@@ -20,7 +20,7 @@ describe('workflow_socket_utils', () => {
       it('builds basic URL', () => {
         const url = buildWebsocketUrl({});
 
-        expect(url).toBe('/api/v4/ai/duo_workflows/ws');
+        expect(url).toBe('/api/v4/ai/duo_workflows/ws?client_type=browser');
       });
     });
 
@@ -30,7 +30,7 @@ describe('workflow_socket_utils', () => {
           rootNamespaceId: 'gid://gitlab/Group/123',
         });
 
-        expect(url).toBe('/api/v4/ai/duo_workflows/ws?root_namespace_id=123');
+        expect(url).toBe('/api/v4/ai/duo_workflows/ws?root_namespace_id=123&client_type=browser');
       });
     });
 
@@ -40,7 +40,7 @@ describe('workflow_socket_utils', () => {
           namespaceId: 'gid://gitlab/Group/456',
         });
 
-        expect(url).toBe('/api/v4/ai/duo_workflows/ws?namespace_id=456');
+        expect(url).toBe('/api/v4/ai/duo_workflows/ws?namespace_id=456&client_type=browser');
       });
     });
 
@@ -50,7 +50,7 @@ describe('workflow_socket_utils', () => {
           projectId: 'gid://gitlab/Project/789',
         });
 
-        expect(url).toBe('/api/v4/ai/duo_workflows/ws?project_id=789');
+        expect(url).toBe('/api/v4/ai/duo_workflows/ws?project_id=789&client_type=browser');
       });
     });
 
