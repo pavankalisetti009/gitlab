@@ -2,7 +2,5 @@
 # Do not add new specs to this file.
 spec/frontend/__helpers__/vue_test_utils_helper_spec.js
 spec/frontend/ci/ci_variable_list/components/ci_variable_shared_spec.js
-spec/frontend/design_management/pages/design/index_spec.js
-spec/frontend/design_management/pages/index_spec.js
 spec/frontend/lib/utils/confirm_via_gl_modal/confirm_action_spec.js
 spec/frontend/performance_bar/index_spec.js
