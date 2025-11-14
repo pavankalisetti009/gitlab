@@ -18,7 +18,18 @@ RSpec.describe Ai::Catalog::ItemConsumers::DestroyService, feature_category: :wo
     let_it_be(:developer) { create(:user) }
     let_it_be(:maintainer) { create(:user) }
     let_it_be(:group) { create(:group, developers: developer, maintainers: maintainer) }
-    let_it_be(:project) { create(:project, group: group) }
+
+    let_it_be(:service_account) { create(:user, :service_account) }
+    let_it_be(:service_account_user_details) do
+      create(:user_detail, user: service_account, provisioned_by_group: group)
+    end
+
+    let_it_be(:project) { create(:project, developers: service_account, group: group) }
+    let_it_be(:item) { create(:ai_catalog_flow) }
+
+    let_it_be(:third_party_flow_item) { create(:ai_catalog_third_party_flow, project: project) }
+
+    let_it_be(:parent_item_consumer) { create(:ai_catalog_item_consumer, group:, item:, service_account:) }
 
     subject(:response) { described_class.new(item_consumer, current_user).execute }
 
@@ -34,7 +45,7 @@ RSpec.describe Ai::Catalog::ItemConsumers::DestroyService, feature_category: :wo
                               item_consumer.item.item_type
                             end
 
-        expect { response }.to change { AuditEvent.count }.by(1)
+        expect { response }.to change { AuditEvent.count }
 
         audit_event = AuditEvent.last
 
@@ -53,7 +64,9 @@ RSpec.describe Ai::Catalog::ItemConsumers::DestroyService, feature_category: :wo
     end
 
     context 'with a project level item consumer' do
-      let_it_be_with_refind(:item_consumer) { create(:ai_catalog_item_consumer, project: project) }
+      let_it_be_with_refind(:item_consumer) do
+        create(:ai_catalog_item_consumer, item:, project:, parent_item_consumer:)
+      end
 
       context 'when user does not have permission' do
         let(:current_user) { developer }
@@ -76,6 +89,39 @@ RSpec.describe Ai::Catalog::ItemConsumers::DestroyService, feature_category: :wo
           expect(response).to be_success
         end
 
+        it 'removes the service account from the project' do
+          expect { response }.to change { project.team.members.count }.by(-1)
+          expect(project.team.users.pluck(:id)).not_to include(service_account.id)
+        end
+
+        context 'when removing the service account member fails' do
+          before do
+            allow_next_instance_of(Members::DestroyService) do |instance|
+              allow(instance).to receive(:execute) do |member|
+                member.errors.add(:base, 'Deletion failed')
+              end
+            end
+          end
+
+          it 'does not delete the item consumer' do
+            expect { response }.not_to change { Ai::Catalog::ItemConsumer.count }
+            expect(response).to be_error
+            expect(response.message).to contain_exactly('Service account membership: Deletion failed')
+          end
+        end
+
+        context 'when there is no service account membership in the project' do
+          let_it_be(:project) { create(:project, group: group) }
+          let_it_be_with_refind(:item_consumer) do
+            create(:ai_catalog_item_consumer, parent_item_consumer:, project:, item:)
+          end
+
+          it 'does not fail' do
+            expect { response }.to change { Ai::Catalog::ItemConsumer.count }.by(-1)
+            expect(response).to be_success
+          end
+        end
+
         it 'tracks internal event on successful deletion' do
           expect { response }.to trigger_internal_events('delete_ai_catalog_item_consumer').with(
             user: maintainer,
@@ -86,15 +132,16 @@ RSpec.describe Ai::Catalog::ItemConsumers::DestroyService, feature_category: :wo
 
         it_behaves_like 'creates an audit event on deletion', entity_type: 'Project'
 
-        context 'when item is a flow' do
-          let_it_be(:flow_item) { create(:ai_catalog_flow, project: project) }
-          let_it_be_with_refind(:item_consumer) { create(:ai_catalog_item_consumer, project: project, item: flow_item) }
+        context 'when item is an agent' do
+          let_it_be(:agent_item) { create(:ai_catalog_agent, project: project) }
+          let_it_be_with_refind(:item_consumer) do
+            create(:ai_catalog_item_consumer, project: project, item: agent_item)
+          end
 
           it_behaves_like 'creates an audit event on deletion', entity_type: 'Project'
         end
 
         context 'when item is a third_party_flow' do
-          let_it_be(:third_party_flow_item) { create(:ai_catalog_third_party_flow, project: project) }
           let_it_be_with_refind(:item_consumer) do
             create(:ai_catalog_item_consumer, project: project, item: third_party_flow_item)
           end
