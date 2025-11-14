@@ -402,7 +402,7 @@ you can select a specific agent for Chat to use.
 
 Prerequisites:
 
-- You must [enable an agent in your project](../duo_agent_platform/agents/_index.md#enable-an-agent)
+- You must [enable an agent in your project](../duo_agent_platform/agents/custom.md#enable-an-agent)
   from the AI Catalog.
 - For VS Code, [install and configure the GitLab Workflow extension for VS Code](../../editor_extensions/visual_studio_code/setup.md) version 6.49.12 or later.
 - For a JetBrains IDE, [install and configure the GitLab plugin for JetBrains](../../editor_extensions/jetbrains_ide/setup.md) version 3.22.0 or later.
