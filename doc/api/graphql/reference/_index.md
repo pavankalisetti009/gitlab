@@ -1980,6 +1980,40 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="queryusersusertypes"></a>`userTypes` {{< icon name="warning-solid" >}} | [`[UserType!]`](#usertype) | **Introduced** in GitLab 18.3. **Status**: Experiment. Filter by user type. |
 | <a id="queryusersusernames"></a>`usernames` | [`[String!]`](#string) | List of usernames. |
 
+### `Query.virtualRegistriesPackagesMavenRegistry`
+
+{{< details >}}
+**Introduced** in GitLab 18.6.
+**Status**: Experiment.
+{{< /details >}}
+
+Find a Maven virtual registry. Returns null if the `maven_virtual_registry` feature flag is disabled.
+
+Returns [`MavenRegistryDetails`](#mavenregistrydetails).
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="queryvirtualregistriespackagesmavenregistryid"></a>`id` | [`VirtualRegistriesPackagesMavenRegistryID!`](#virtualregistriespackagesmavenregistryid) | Global ID of the Maven virtual registry. |
+
+### `Query.virtualRegistriesPackagesMavenUpstream`
+
+{{< details >}}
+**Introduced** in GitLab 18.6.
+**Status**: Experiment.
+{{< /details >}}
+
+Find a Maven upstream registry. Returns null if the `maven_virtual_registry` feature flag is disabled.
+
+Returns [`MavenUpstreamDetails`](#mavenupstreamdetails).
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="queryvirtualregistriespackagesmavenupstreamid"></a>`id` | [`VirtualRegistriesPackagesMavenUpstreamID!`](#virtualregistriespackagesmavenupstreamid) | Global ID of the Maven upstream registry. |
+
 ### `Query.vulnerabilities`
 
 Vulnerabilities reported on projects on the current user's instance security dashboard.
@@ -31591,6 +31625,7 @@ GPG signature for a signed commit.
 | <a id="groupupdatedat"></a>`updatedAt` | [`Time`](#time) | Timestamp of when the group was last updated. |
 | <a id="groupuserpermissions"></a>`userPermissions` | [`GroupPermissions!`](#grouppermissions) | Permissions for the current user on the resource. |
 | <a id="groupvaluestreamanalytics"></a>`valueStreamAnalytics` | [`ValueStreamAnalytics`](#valuestreamanalytics) | Information about Value Stream Analytics within the group. |
+| <a id="groupvirtualregistriespackagesmavenregistries"></a>`virtualRegistriesPackagesMavenRegistries` {{< icon name="warning-solid" >}} | [`MavenRegistryConnection`](#mavenregistryconnection) | **Introduced** in GitLab 18.6. **Status**: Experiment. Maven virtual registries registered to the group. Returns null if the `maven_virtual_registry` feature flag is disabled. |
 | <a id="groupvirtualregistriessetting"></a>`virtualRegistriesSetting` {{< icon name="warning-solid" >}} | [`VirtualRegistriesSetting`](#virtualregistriessetting) | **Introduced** in GitLab 18.5. **Status**: Experiment. Virtual registries settings for the group. Returns null if the `maven_virtual_registry` feature flag is disabled. |
 | <a id="groupvisibility"></a>`visibility` | [`String`](#string) | Visibility of the namespace. |
 | <a id="groupvulnerabilitynamespacestatistic"></a>`vulnerabilityNamespaceStatistic` | [`VulnerabilityNamespaceStatisticType`](#vulnerabilitynamespacestatistictype) | Counts for each vulnerability severity in the group and its subgroups. |
