@@ -116,7 +116,8 @@ module Ai
           redirect_uri: oauth_callback_url,
           scopes: ::Gitlab::Auth::Q_SCOPES + [::Gitlab::Auth::DYNAMIC_USER],
           trusted: false,
-          confidential: false
+          confidential: false,
+          organization_id: params[:organization_id]
         )
         @application.save
       end

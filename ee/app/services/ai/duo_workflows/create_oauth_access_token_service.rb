@@ -62,7 +62,8 @@ module Ai
             redirect_uri: oauth_callback_url,
             scopes: scopes,
             trusted: true,
-            confidential: false
+            confidential: false,
+            organization: @organization
           )
           application.save!
           application_settings.update!(duo_workflow: { duo_workflow_oauth_application_id: application.id })
