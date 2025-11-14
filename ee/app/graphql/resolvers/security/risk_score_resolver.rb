@@ -62,7 +62,7 @@ module Resolvers
 
         project_ids = risk_score_by_project_data.keys
 
-        projects = vulnerable.projects.id_in(project_ids)
+        projects = vulnerable.all_projects.id_in(project_ids)
 
         projects.map do |project|
           normalized_score = normalize_score(risk_score_by_project_data[project.id])
