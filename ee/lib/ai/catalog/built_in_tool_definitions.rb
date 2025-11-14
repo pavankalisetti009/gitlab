@@ -801,6 +801,24 @@ module Ai
             "- Given group_id 'namespace/group' and title \"Implement feature X\", the tool call would be:        " \
             "create_work_item(group_id='namespace/group', title=\"Implement feature X\", type_name=\"issu" \
             "e\")"
+        },
+        {
+          id: 76,
+          name: "get_wiki_page",
+          title: "Get Wiki Page",
+          description: "Get a single wiki page from a GitLab project or group, including all its comments.    " \
+            "You must provide the slug of the wiki page together with either project_id or group_id.    " \
+            "Both project_id and group_id must be provided as full path strings (e.g., 'namespace/project' " \
+            "or 'namespace/group').    " \
+            "The slug is a unique string identifier for the wiki page (nested pages use forward slashes, " \
+            "e.g., 'dir/page_name').    " \
+            "For example:    " \
+            "- Given project_id \"namespace/project\" and slug \"home\", the tool call would be:        " \
+            "get_wiki_page(project_id=\"namespace/project\", slug=\"home\")    " \
+            "- Given group_id \"namespace/group\" and slug \"documentation\", the tool call would be:        " \
+            "get_wiki_page(group_id=\"namespace/group\", slug=\"documentation\")    " \
+            "- For nested wiki pages, include the path segments in the slug:        " \
+            "get_wiki_page(project_id=\"namespace/project\", slug=\"dir/page_name\")"
         }
       ].freeze
     end
