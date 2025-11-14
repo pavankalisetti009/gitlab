@@ -6,10 +6,21 @@ const DATA_MANAGEMENT_ACTION_PATH =
   '/api/:version/admin/data_management/:model/:recordIdentifier/:action';
 const DATA_MANAGEMENT_BULK_ACTION_PATH = '/api/:version/admin/data_management/:model/:action';
 
+const DATA_MANAGEMENT_DETAILS_PATH =
+  '/api/:version/admin/data_management/:model/:record_identifier';
+
 export const getModels = (model, params = {}) => {
   const url = buildApiUrl(DATA_MANAGEMENT_PATH).replace(':model', model);
 
   return axios.get(url, { params });
+};
+
+export const getModel = (model, recordIdentifier) => {
+  const url = buildApiUrl(DATA_MANAGEMENT_DETAILS_PATH)
+    .replace(':model', model)
+    .replace(':record_identifier', recordIdentifier);
+
+  return axios.get(url);
 };
 
 export const putModelAction = (model, recordIdentifier, action) => {

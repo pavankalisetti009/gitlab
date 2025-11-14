@@ -35,7 +35,7 @@ RSpec.describe 'Admin > Data Management', :enable_admin_mode, feature_category: 
     it 'renders page', :js do
       visit show_path
 
-      expect(page).to have_content(_('Data management'))
+      expect(page).to have_content("#{model.class.name}/#{model.id}")
     end
 
     describe 'when `geo_primary_verification_view` flag is disabled' do
