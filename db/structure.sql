@@ -1808,6 +1808,22 @@ RETURN NEW;
 END
 $$;
 
+CREATE FUNCTION trigger_1996c9e5bea0() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."organization_id" IS NULL THEN
+  SELECT "organization_id"
+  INTO NEW."organization_id"
+  FROM "abuse_reports"
+  WHERE "abuse_reports"."id" = NEW."abuse_report_id";
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
 CREATE FUNCTION trigger_1c0f1ca199a3() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -9793,7 +9809,8 @@ CREATE TABLE abuse_report_events (
     reason smallint,
     comment text,
     organization_id bigint,
-    CONSTRAINT check_bb4cd85618 CHECK ((char_length(comment) <= 1024))
+    CONSTRAINT check_bb4cd85618 CHECK ((char_length(comment) <= 1024)),
+    CONSTRAINT check_ed2aa0210e CHECK ((organization_id IS NOT NULL))
 );
 
 CREATE SEQUENCE abuse_report_events_id_seq
@@ -47601,6 +47618,8 @@ CREATE TRIGGER trigger_158ac875f254 BEFORE INSERT OR UPDATE ON approval_group_ru
 CREATE TRIGGER trigger_174b23fa3dfb BEFORE INSERT OR UPDATE ON approval_project_rules_users FOR EACH ROW EXECUTE FUNCTION trigger_174b23fa3dfb();
 
 CREATE TRIGGER trigger_18bc439a6741 BEFORE INSERT OR UPDATE ON packages_conan_metadata FOR EACH ROW EXECUTE FUNCTION trigger_18bc439a6741();
+
+CREATE TRIGGER trigger_1996c9e5bea0 BEFORE INSERT OR UPDATE ON abuse_report_events FOR EACH ROW EXECUTE FUNCTION trigger_1996c9e5bea0();
 
 CREATE TRIGGER trigger_1c0f1ca199a3 BEFORE INSERT OR UPDATE ON ci_resources FOR EACH ROW EXECUTE FUNCTION trigger_1c0f1ca199a3();
 
