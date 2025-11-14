@@ -21,7 +21,6 @@ RSpec.describe "Merge request > User sees security widget",
 
     stub_feature_flags(mr_security_widget_graphql: false)
     stub_feature_flags(mr_reports_tab: false)
-    stub_feature_flags(vulnerability_partial_scans: false)
 
     project.add_developer(user)
     sign_in(user)
