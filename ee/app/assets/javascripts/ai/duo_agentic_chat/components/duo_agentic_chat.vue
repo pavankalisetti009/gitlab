@@ -828,7 +828,9 @@ export default {
       <template #agentic-switch>
         <gl-toggle v-model="duoAgenticModePreference" label-position="left" class="gl-h-5">
           <template #label>
-            <span class="gl-font-normal gl-text-subtle">{{ s__('DuoChat|Agentic mode') }}</span>
+            <span class="gl-font-normal gl-text-subtle">{{
+              s__('DuoChat|Agentic mode (Beta)')
+            }}</span>
           </template>
         </gl-toggle>
       </template>

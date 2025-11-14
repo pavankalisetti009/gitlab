@@ -25189,7 +25189,7 @@ msgstr ""
 msgid "DuoChat|AI features are now available"
 msgstr ""
 
-msgid "DuoChat|Agentic mode"
+msgid "DuoChat|Agentic mode (Beta)"
 msgstr ""
 
 msgid "DuoChat|An administrator has turned off GitLab Duo for this %{reason}"
