@@ -63,6 +63,14 @@ module API
           def start_workflow_params(workflow_id, container:)
             workflow_context_service = workflow_context_generation_service(container: container)
 
+            unless ::Ai::DuoWorkflow.available?
+              render_api_error!(
+                'Duo Agent Platform onboarding is incomplete, composite identity must be enabled. ' \
+                  '<a href="https://docs.gitlab.com/user/duo_agent_platform/#prerequisites">Learn more</a>',
+                :forbidden
+              )
+            end
+
             oauth_token_result = workflow_context_service.generate_oauth_token_with_composite_identity_support
             if oauth_token_result.error?
               render_api_error!(oauth_token_result[:message], oauth_token_result[:http_status] || :forbidden)
@@ -346,7 +354,7 @@ module API
               end
               post do
                 ::Gitlab::QueryLimiting.disable!(
-                  'https://gitlab.com/gitlab-org/gitlab/-/issues/566195', new_threshold: 107
+                  'https://gitlab.com/gitlab-org/gitlab/-/issues/566195', new_threshold: 112
                 )
 
                 container = if params[:project_id]
