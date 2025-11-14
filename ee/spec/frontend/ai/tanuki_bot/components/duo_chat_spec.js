@@ -116,13 +116,22 @@ describeSkipVue3(skipReason, () => {
   const findCallout = () => wrapper.findComponent(DuoChatCallout);
   const findSubscriptions = () => wrapper.findComponent(TanukiBotSubscriptions);
 
+  let mockRouter;
+  let routePath;
+
   const createComponent = ({
     initialState = {},
     propsData = { userId: MOCK_USER_ID, resourceId: MOCK_RESOURCE_ID },
     data = {},
     glFeatures = {},
     stubs = {},
+    routePath: customRoutePath = '/chat',
   } = {}) => {
+    routePath = customRoutePath;
+    mockRouter = {
+      push: jest.fn(),
+    };
+
     const store = new Vuex.Store({
       actions: actionSpies,
       state: {
@@ -156,6 +165,10 @@ describeSkipVue3(skipReason, () => {
       },
       provide: {
         glFeatures,
+      },
+      mocks: {
+        $route: { path: routePath },
+        $router: mockRouter,
       },
     });
   };
@@ -1173,9 +1186,17 @@ describeSkipVue3(skipReason, () => {
 
     it('updates DuoChat title when chatTitle prop changes', async () => {
       const localWrapper = shallowMountExtended(TanukiBotChatApp, {
-        propsData: { chatTitle: 'Initial Title' },
+        propsData: {
+          chatTitle: 'Initial Title',
+          userId: MOCK_USER_ID,
+          resourceId: MOCK_RESOURCE_ID,
+        },
         store: new Vuex.Store({ actions: actionSpies }),
         apolloProvider: createMockApollo([]),
+        mocks: {
+          $route: { path: '/chat' },
+          $router: { push: jest.fn() },
+        },
       });
       duoChatGlobalState.isShown = true;
       await nextTick();
@@ -1201,7 +1222,7 @@ describeSkipVue3(skipReason, () => {
         expect(wrapper.vm.multithreadedView).toBe('chat');
       });
 
-      it('does not create a new chat when Duo Chat is opened', async () => {
+      it('creates a new chat when Duo Chat is opened and there is no active thread', async () => {
         duoChatGlobalState.isShown = false;
         createComponent();
 
@@ -1210,23 +1231,7 @@ describeSkipVue3(skipReason, () => {
         duoChatGlobalState.isShown = true;
         await nextTick();
 
-        expect(onNewChatSpy).not.toHaveBeenCalled();
-      });
-
-      it('does not create a new thread when Duo Chat is opened with a command from button', async () => {
-        duoChatGlobalState.isShown = false;
-        duoChatGlobalState.commands = [{ question: 'Button command' }];
-
-        createComponent();
-
-        const onNewChatSpy = jest.spyOn(wrapper.vm, 'onNewChat');
-
-        duoChatGlobalState.isShown = true;
-        await nextTick();
-
-        expect(onNewChatSpy).not.toHaveBeenCalled();
-
-        onNewChatSpy.mockRestore();
+        expect(onNewChatSpy).toHaveBeenCalled();
       });
     });
 

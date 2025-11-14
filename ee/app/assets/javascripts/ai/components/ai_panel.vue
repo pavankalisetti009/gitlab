@@ -183,9 +183,11 @@ export default {
       }
 
       this.setActiveTab(selected);
-      if (selected && this.currentTabComponent.initialRoute && !previous) {
+      if (selected && this.currentTabComponent.initialRoute) {
         // Navigate to the initial route if the tab has one (e.g., sessions)
-        this.$router.push(this.currentTabComponent.initialRoute);
+        if (this.$route?.path !== this.currentTabComponent.initialRoute) {
+          this.$router.push(this.currentTabComponent.initialRoute);
+        }
       }
 
       if (['chat', 'new'].includes(tab)) {
