@@ -632,7 +632,7 @@ RSpec.describe GroupsController, :with_current_organization, feature_category: :
           get :issues, params: { id: group.to_param, epic_wildcard_id: 'ANY' }
 
           expected_params = { parent_wildcard_id: 'ANY' }
-          expected_params['type[]'] = 'issue' if redirect_path == :group_work_items_path
+          expected_params['not[type][]'] = 'epic' if redirect_path == :group_work_items_path
 
           expect(response).to redirect_to send(redirect_path, group, params: expected_params)
         end
@@ -641,7 +641,7 @@ RSpec.describe GroupsController, :with_current_organization, feature_category: :
           get :issues, params: { id: group.to_param, epic_id: epic.id }
 
           expected_params = { parent_id: epic.work_item.id }
-          expected_params['type[]'] = 'issue' if redirect_path == :group_work_items_path
+          expected_params['not[type][]'] = 'epic' if redirect_path == :group_work_items_path
 
           expect(response).to redirect_to send(redirect_path, group, params: expected_params)
         end
@@ -650,7 +650,7 @@ RSpec.describe GroupsController, :with_current_organization, feature_category: :
           get :issues, params: { id: group.to_param, epic_id: 'NONE' }
 
           expected_params = { parent_id: 'NONE' }
-          expected_params['type[]'] = 'issue' if redirect_path == :group_work_items_path
+          expected_params['not[type][]'] = 'epic' if redirect_path == :group_work_items_path
 
           expect(response).to redirect_to send(redirect_path, group, params: expected_params)
         end
@@ -659,7 +659,7 @@ RSpec.describe GroupsController, :with_current_organization, feature_category: :
           get :issues, params: { id: group.to_param, not: { epic_id: epic.id } }
 
           expected_params = { not: { parent_id: epic.work_item.id } }
-          expected_params['type[]'] = 'issue' if redirect_path == :group_work_items_path
+          expected_params['not[type][]'] = 'epic' if redirect_path == :group_work_items_path
 
           expect(response).to redirect_to send(redirect_path, group, params: expected_params)
         end
@@ -672,7 +672,7 @@ RSpec.describe GroupsController, :with_current_organization, feature_category: :
             search: 'bug',
             sort: 'created_desc'
           }
-          expected_params['type[]'] = 'issue' if redirect_path == :group_work_items_path
+          expected_params['not[type][]'] = 'epic' if redirect_path == :group_work_items_path
 
           expect(response).to redirect_to send(redirect_path, group, params: expected_params)
         end
