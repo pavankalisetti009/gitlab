@@ -183,6 +183,12 @@ RSpec.describe Ai::Setting, feature_category: :ai_abstraction_layer do
       end
     end
 
+    it 'validates ai_gateway_timeout_seconds is between 60 and 600' do
+      expect(described_class.instance).to validate_numericality_of(:ai_gateway_timeout_seconds)
+        .is_greater_than_or_equal_to(60)
+        .is_less_than_or_equal_to(600)
+    end
+
     it { is_expected.to validate_length_of(:amazon_q_role_arn).is_at_most(2048).allow_nil }
   end
 

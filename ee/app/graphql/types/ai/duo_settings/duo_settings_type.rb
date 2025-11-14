@@ -7,11 +7,18 @@ module Types
         graphql_name 'DuoSettings'
         description 'GitLab Duo settings'
 
+        # rubocop: disable GraphQL/ExtractType -- no value for now
         field :ai_gateway_url, String,
           null: true,
           description: 'URL for local AI gateway server.',
           authorize: :read_self_hosted_models_settings,
           experiment: { milestone: '17.9' }
+
+        field :ai_gateway_timeout_seconds, GraphQL::Types::Int,
+          null: true,
+          description: 'Timeout in seconds for requests to the AI gateway server.',
+          authorize: :read_self_hosted_models_settings
+        # rubocop: enable GraphQL/ExtractType
 
         field :duo_agent_platform_service_url, String,
           null: true,

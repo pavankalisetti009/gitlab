@@ -18,7 +18,8 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
     {
       ai_gateway_url: "http://new-ai-gateway-url",
       duo_core_features_enabled: true,
-      duo_agent_platform_service_url: "new-duo-agent-platform-url:50052"
+      duo_agent_platform_service_url: "new-duo-agent-platform-url:50052",
+      ai_gateway_timeout_seconds: 100
     }
   end
 
@@ -37,8 +38,9 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
     end
 
     context 'when the user does not have write access' do
+      let(:current_user) { create(:user) }
+
       context 'when attempting to update ai_gateway_url' do
-        let(:current_user) { create(:user) }
         let(:mutation_params) { { ai_gateway_url: "http://new-ai-gateway-url" } }
 
         it_behaves_like 'performs the right authorization'
@@ -54,7 +56,6 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
       end
 
       context 'when attempting to update duo_agent_platform_service_url' do
-        let(:current_user) { create(:user) }
         let(:mutation_params) { { duo_agent_platform_service_url: "new-duo-agent-platform-url:50052" } }
 
         it_behaves_like 'performs the right authorization'
@@ -65,6 +66,21 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
           expect(graphql_errors).to be_present
           expect(graphql_errors.pluck('message')).to match_array(
             "You don't have permission to update the setting duo_agent_platform_service_url."
+          )
+        end
+      end
+
+      context 'when attempting to update ai_gateway_timeout_seconds' do
+        let(:mutation_params) { { ai_gateway_timeout_seconds: 100 } }
+
+        it_behaves_like 'performs the right authorization'
+
+        it 'returns an error about the missing permission' do
+          request
+
+          expect(graphql_errors).to be_present
+          expect(graphql_errors.pluck('message')).to match_array(
+            "You don't have permission to update the setting ai_gateway_timeout_seconds."
           )
         end
       end
@@ -146,13 +162,15 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
 
           expect(result['duoSettings']).to include(
             "aiGatewayUrl" => "http://new-ai-gateway-url",
-            "duoCoreFeaturesEnabled" => true
+            "duoCoreFeaturesEnabled" => true,
+            "aiGatewayTimeoutSeconds" => 100
           )
           expect(result['errors']).to eq([])
 
           expect { duo_settings.reload }.to change { duo_settings.ai_gateway_url }.to("http://new-ai-gateway-url")
             .and change { duo_settings.duo_core_features_enabled }.to(true)
             .and change { duo_settings.duo_agent_platform_service_url }.to("new-duo-agent-platform-url:50052")
+            .and change { duo_settings.ai_gateway_timeout_seconds }.to(100)
         end
 
         context 'when ai_gateway_url arg is a blank string' do

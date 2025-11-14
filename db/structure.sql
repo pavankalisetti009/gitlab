@@ -10625,6 +10625,7 @@ CREATE TABLE ai_settings (
     duo_agent_platform_service_url text,
     duo_agent_platform_request_count integer DEFAULT 0 NOT NULL,
     foundational_agents_default_enabled boolean DEFAULT true,
+    ai_gateway_timeout_seconds integer DEFAULT 60,
     CONSTRAINT check_3cf9826589 CHECK ((char_length(ai_gateway_url) <= 2048)),
     CONSTRAINT check_900d7a89b3 CHECK ((char_length(duo_agent_platform_service_url) <= 2048)),
     CONSTRAINT check_a02bd8868c CHECK ((char_length(amazon_q_role_arn) <= 2048)),
