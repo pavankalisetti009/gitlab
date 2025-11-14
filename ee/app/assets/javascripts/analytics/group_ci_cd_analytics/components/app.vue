@@ -16,10 +16,6 @@ export default {
     MigrationAlert,
   },
   releaseStatisticsTabEvent: 'g_analytics_ci_cd_release_statistics',
-  deploymentFrequencyTabEvent: 'g_analytics_ci_cd_deployment_frequency',
-  leadTimeTabEvent: 'g_analytics_ci_cd_lead_time',
-  timeToRestoreServiceTabEvent: 'g_analytics_ci_cd_time_to_restore_service',
-  changeFailureRateTabEvent: 'g_analytics_ci_cd_change_failure_rate',
   mixins: [glFeatureFlagsMixin()],
   inject: {
     groupPath: {
