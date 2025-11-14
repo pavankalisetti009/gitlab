@@ -8,8 +8,12 @@ RSpec.describe 'getting a single AI catalog item consumer', feature_category: :w
 
   let_it_be(:developer) { create(:user) }
   let_it_be(:project) { create(:project, :public, developers: developer) }
-  let_it_be(:catalog_item) { create(:ai_catalog_agent, project:) }
-  let_it_be(:item_consumer) { create(:ai_catalog_item_consumer, project: project, item: catalog_item) }
+  let_it_be(:item) { create(:ai_catalog_agent, project:) }
+  let_it_be(:item_version_v1_5_0) { create(:ai_catalog_agent_version, :released, version: '1.5.0', item: item) }
+  let_it_be(:item_version_v1_6_0) { create(:ai_catalog_agent_version, :released, version: '1.6.0', item: item) }
+  let_it_be(:item_consumer) do
+    create(:ai_catalog_item_consumer, project: project, item: item, pinned_version_prefix: '1.5.0')
+  end
 
   let(:current_user) { developer }
   let(:item_consumer_gid) { item_consumer.to_global_id }
@@ -27,6 +31,9 @@ RSpec.describe 'getting a single AI catalog item consumer', feature_category: :w
           item {
             id
             name
+          }
+          pinnedItemVersion {
+            id
           }
           pinnedVersionPrefix
         }
@@ -51,11 +58,28 @@ RSpec.describe 'getting a single AI catalog item consumer', feature_category: :w
         'name' => project.name
       },
       'item' => {
-        'id' => catalog_item.to_global_id.to_s,
-        'name' => catalog_item.name
+        'id' => item.to_global_id.to_s,
+        'name' => item.name
       },
+      'pinnedItemVersion' => a_graphql_entity_for(item_version_v1_5_0),
       'pinnedVersionPrefix' => item_consumer.pinned_version_prefix
     )
+  end
+
+  context 'when pinnedItemVersion cannot resolve to a version' do
+    before do
+      item_consumer.update!(pinned_version_prefix: '2.0.1')
+    end
+
+    it 'returns null' do
+      post_graphql(query, current_user:, variables:)
+
+      expect(response).to have_gitlab_http_status(:success)
+      expect(item_consumer_data).to include(
+        'id' => item_consumer.to_global_id.to_s,
+        'pinnedItemVersion' => nil
+      )
+    end
   end
 
   context 'with invalid ID' do

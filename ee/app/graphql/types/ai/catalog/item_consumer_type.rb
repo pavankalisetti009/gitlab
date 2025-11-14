@@ -31,7 +31,13 @@ module Types
         field :parent_item_consumer, ::Types::Ai::Catalog::ItemConsumerType,
           null: true,
           description: 'Parent item consumer associated with the configured catalog item.'
-        field :pinned_version_prefix, GraphQL::Types::String,
+        field :pinned_item_version, ::Types::Ai::Catalog::VersionInterface,
+          null: true,
+          description: 'Resolved item version according to the `pinnedVersionPrefix`.' \
+            'This field can only be resolved for 20 AiCatalogItemConsumers in any single request.' do
+          extension(::Gitlab::Graphql::Limit::FieldCallCount, limit: 20)
+        end
+        field :pinned_version_prefix, GraphQL::Types::String, # rubocop:disable GraphQL/ExtractType -- Not sensible to create a "pinned" type
           null: true,
           description: 'Major version, minor version, or patch item is pinned to.'
         field :project, ::Types::ProjectType,
@@ -48,6 +54,10 @@ module Types
         def parent_item_consumer
           ::Gitlab::Graphql::Loaders::BatchModelLoader.new(::Ai::Catalog::ItemConsumer, object.parent_item_consumer_id)
             .find
+        end
+
+        def pinned_item_version
+          object.item&.resolve_version(object.pinned_version_prefix)
         end
 
         def service_account
