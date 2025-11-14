@@ -10,6 +10,7 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
   let_it_be(:reporter) { create(:user, reporter_of: project) }
 
   let(:image) { 'example.com/example-image:latest' }
+  let(:duo_cli_version) { described_class::DUO_CLI_VERSION }
   let(:workflow) { create(:duo_workflows_workflow, user: maintainer, image: image, **container_params) }
   let(:container_params) { { project: project } }
   let(:duo_agent_platform_feature_setting) { nil }
@@ -745,7 +746,7 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
         %(echo $DUO_WORKFLOW_FLOW_CONFIG_SCHEMA_VERSION),
         %(echo $DUO_WORKFLOW_ADDITIONAL_CONTEXT_CONTENT),
         %(echo Starting Workflow #{workflow.id}),
-        %(npx -y @gitlab/duo-cli@8.38.0 run --existing-session-id #{workflow.id} --connection-type grpc)
+        %(npx -y @gitlab/duo-cli@#{duo_cli_version} run --existing-session-id #{workflow.id} --connection-type grpc)
       ]
     end
 
@@ -830,7 +831,7 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
           %(echo $DUO_WORKFLOW_FLOW_CONFIG_SCHEMA_VERSION),
           %(echo $DUO_WORKFLOW_ADDITIONAL_CONTEXT_CONTENT),
           %(echo Starting Workflow #{workflow.id}),
-          %(npx -y @gitlab/duo-cli@8.38.0 run --existing-session-id #{workflow.id} --connection-type grpc)
+          %(npx -y @gitlab/duo-cli@#{duo_cli_version} run --existing-session-id #{workflow.id} --connection-type grpc)
         ]
       end
 
