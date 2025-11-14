@@ -16,6 +16,7 @@ describe('DuoSelfHostedApp', () => {
       },
       provide: {
         canManageInstanceModelSelection: false,
+        canManageSelfHostedModels: true,
         isDedicatedInstance: false,
         ...provide,
       },
@@ -39,12 +40,30 @@ describe('DuoSelfHostedApp', () => {
     expect(title.text()).toBe('Model configuration');
   });
 
-  it('has a description', () => {
-    createComponent();
+  describe('description', () => {
+    it('shows default description when user can manage self-hosted models', () => {
+      createComponent({
+        provide: {
+          canManageSelfHostedModels: true,
+        },
+      });
 
-    expect(wrapper.text()).toMatch(
-      'Manage GitLab Duo by configuring and assigning self-hosted models to AI-native features.',
-    );
+      expect(wrapper.text()).toMatch(
+        'Manage GitLab Duo by configuring and assigning self-hosted models to AI-native features.',
+      );
+    });
+
+    it('shows Enterprise requirement message when user cannot manage self-hosted models', () => {
+      createComponent({
+        provide: {
+          canManageSelfHostedModels: false,
+        },
+      });
+
+      expect(wrapper.text()).toMatch(
+        'View self-hosted models and configure AI-native features. A GitLab Duo Enterprise add-on is required to manage self-hosted models.',
+      );
+    });
   });
 
   describe('with instance-level model selection', () => {
@@ -63,11 +82,28 @@ describe('DuoSelfHostedApp', () => {
     });
   });
 
-  it('has a button to add a new self-hosted model', () => {
-    createComponent();
+  describe('Add self-hosted model button', () => {
+    it('renders when user can manage self-hosted models', () => {
+      createComponent({
+        provide: {
+          canManageSelfHostedModels: true,
+        },
+      });
 
-    expect(findAddModelButton().text()).toBe('Add self-hosted model');
-    expect(findAddModelButton().props('to')).toEqual({ name: SELF_HOSTED_ROUTE_NAMES.NEW });
+      expect(findAddModelButton().exists()).toBe(true);
+      expect(findAddModelButton().text()).toBe('Add self-hosted model');
+      expect(findAddModelButton().props('to')).toEqual({ name: SELF_HOSTED_ROUTE_NAMES.NEW });
+    });
+
+    it('does not render when user cannot manage self-hosted models', () => {
+      createComponent({
+        provide: {
+          canManageSelfHostedModels: false,
+        },
+      });
+
+      expect(findAddModelButton().exists()).toBe(false);
+    });
   });
 
   it.each`

@@ -45,6 +45,10 @@ module Admin
         ::Ability.allowed?(current_user, :manage_instance_model_selection)
       end
 
+      def can_manage_self_hosted_models?
+        ::Ability.allowed?(current_user, :manage_self_hosted_models_settings)
+      end
+
       def beta_models_enabled?
         ::Ai::TestingTermsAcceptance.has_accepted?
       end

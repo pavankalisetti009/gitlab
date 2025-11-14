@@ -65,6 +65,18 @@ RSpec.describe Admin::Ai::SelfHostedModelsHelper, feature_category: :"self-hoste
     end
   end
 
+  describe '#can_manage_self_hosted_models?' do
+    it 'returns false if ability is not allowed' do
+      allow(Ability).to receive(:allowed?).with(user, :manage_self_hosted_models_settings).and_return(false)
+      expect(helper.can_manage_self_hosted_models?).to be(false)
+    end
+
+    it 'returns true if ability is allowed' do
+      allow(Ability).to receive(:allowed?).with(user, :manage_self_hosted_models_settings).and_return(true)
+      expect(helper.can_manage_self_hosted_models?).to be(true)
+    end
+  end
+
   describe '#beta_models_enabled?' do
     it 'returns true if testing terms have been accepted' do
       expect(helper.beta_models_enabled?).to be(true)

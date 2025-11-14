@@ -16,7 +16,7 @@ export default {
     FeatureSettings,
     PageHeading,
   },
-  inject: ['canManageInstanceModelSelection', 'isDedicatedInstance'],
+  inject: ['canManageInstanceModelSelection', 'canManageSelfHostedModels', 'isDedicatedInstance'],
   i18n: {
     title: s__('AdminSelfHostedModels|Model configuration'),
   },
@@ -53,6 +53,12 @@ export default {
       if (this.isDedicatedInstance) {
         return s__(
           'AdminSelfHostedModels|Configure and assign GitLab managed models to AI-native features.',
+        );
+      }
+
+      if (!this.canManageSelfHostedModels) {
+        return s__(
+          'AdminSelfHostedModels|View self-hosted models and configure AI-native features. A GitLab Duo Enterprise add-on is required to manage self-hosted models.',
         );
       }
 
@@ -108,7 +114,7 @@ export default {
       <template #description>{{ description }}</template>
       <template #actions>
         <gl-button
-          v-if="!isDedicatedInstance"
+          v-if="canManageSelfHostedModels"
           variant="confirm"
           :to="{ name: $options.SELF_HOSTED_ROUTE_NAMES.NEW }"
         >

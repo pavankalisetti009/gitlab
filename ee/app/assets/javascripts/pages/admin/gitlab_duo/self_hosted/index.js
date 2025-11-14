@@ -23,6 +23,7 @@ function mountSelfHostedDuoRootApp() {
     duoConfigurationSettingsPath,
     showVendoredModelOption,
     canManageInstanceModelSelection,
+    canManageSelfHostedModels,
     isDedicatedInstance,
   } = JSON.parse(el.dataset.viewModel);
 
@@ -40,6 +41,7 @@ function mountSelfHostedDuoRootApp() {
       showVendoredModelOption,
       duoConfigurationSettingsPath,
       canManageInstanceModelSelection,
+      canManageSelfHostedModels,
       isDedicatedInstance,
     },
     render(createElement) {
