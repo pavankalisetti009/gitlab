@@ -37,6 +37,7 @@ describe('AiCatalogItemActions', () => {
   };
 
   const findEditButton = () => wrapper.findByTestId('edit-button');
+  const findDisableButton = () => wrapper.findByTestId('disable-button');
   const findAddToProjectButton = () => wrapper.findByTestId('add-to-project-button');
   const findAddToGroupButton = () => wrapper.findByTestId('add-to-group-button');
   const findMoreActions = () => wrapper.findByTestId('more-actions-dropdown');
@@ -44,19 +45,21 @@ describe('AiCatalogItemActions', () => {
   const findDeleteButton = () => wrapper.findByTestId('delete-button');
 
   describe.each`
-    scenario                                     | canAdmin | canUse   | editBtn  | addBtn   | addGroupBtn | moreActions | duplicateBtn | deleteBtn | itemType                 | isGlobal
-    ${'not logged in'}                           | ${false} | ${false} | ${false} | ${false} | ${false}    | ${false}    | ${false}     | ${false}  | ${AI_CATALOG_TYPE_AGENT} | ${true}
-    ${'not logged in, project level'}            | ${false} | ${false} | ${false} | ${false} | ${false}    | ${false}    | ${false}     | ${false}  | ${AI_CATALOG_TYPE_AGENT} | ${false}
-    ${'logged in, not admin of item'}            | ${false} | ${true}  | ${false} | ${true}  | ${false}    | ${true}     | ${true}      | ${false}  | ${AI_CATALOG_TYPE_AGENT} | ${true}
-    ${'logged in, admin of item'}                | ${true}  | ${true}  | ${true}  | ${true}  | ${false}    | ${true}     | ${true}      | ${true}   | ${AI_CATALOG_TYPE_AGENT} | ${true}
-    ${'logged in, admin of item, project level'} | ${true}  | ${true}  | ${true}  | ${false} | ${false}    | ${true}     | ${true}      | ${true}   | ${AI_CATALOG_TYPE_AGENT} | ${false}
-    ${'logged in, admin of flow item'}           | ${true}  | ${true}  | ${true}  | ${false} | ${true}     | ${true}     | ${true}      | ${true}   | ${AI_CATALOG_TYPE_FLOW}  | ${true}
+    scenario                                              | canAdmin | canUse   | editBtn  | disableBtn | addBtn   | addGroupBtn | moreActions | duplicateBtn | deleteBtn | itemType                 | isGlobal | isEnabled
+    ${'not logged in'}                                    | ${false} | ${false} | ${false} | ${false}   | ${false} | ${false}    | ${false}    | ${false}     | ${false}  | ${AI_CATALOG_TYPE_AGENT} | ${true}  | ${false}
+    ${'not logged in, project level'}                     | ${false} | ${false} | ${false} | ${false}   | ${false} | ${false}    | ${false}    | ${false}     | ${false}  | ${AI_CATALOG_TYPE_AGENT} | ${false} | ${false}
+    ${'logged in, not admin of item'}                     | ${false} | ${true}  | ${false} | ${false}   | ${true}  | ${false}    | ${true}     | ${true}      | ${false}  | ${AI_CATALOG_TYPE_AGENT} | ${true}  | ${false}
+    ${'logged in, admin of item'}                         | ${true}  | ${true}  | ${true}  | ${false}   | ${true}  | ${false}    | ${true}     | ${true}      | ${true}   | ${AI_CATALOG_TYPE_AGENT} | ${true}  | ${false}
+    ${'logged in, admin of item, project level'}          | ${true}  | ${true}  | ${true}  | ${false}   | ${false} | ${false}    | ${true}     | ${true}      | ${true}   | ${AI_CATALOG_TYPE_AGENT} | ${false} | ${false}
+    ${'logged in, admin of item, project level, enabled'} | ${true}  | ${true}  | ${true}  | ${true}    | ${false} | ${false}    | ${true}     | ${true}      | ${true}   | ${AI_CATALOG_TYPE_AGENT} | ${false} | ${true}
+    ${'logged in, admin of flow item'}                    | ${true}  | ${true}  | ${true}  | ${false}   | ${false} | ${true}     | ${true}     | ${true}      | ${true}   | ${AI_CATALOG_TYPE_FLOW}  | ${true}  | ${false}
   `(
     'when $scenario',
     ({
       canAdmin,
       canUse,
       editBtn,
+      disableBtn,
       addBtn,
       addGroupBtn,
       moreActions,
@@ -64,6 +67,7 @@ describe('AiCatalogItemActions', () => {
       deleteBtn,
       itemType,
       isGlobal,
+      isEnabled,
     }) => {
       beforeEach(() => {
         createComponent({
@@ -73,6 +77,10 @@ describe('AiCatalogItemActions', () => {
               itemType,
               userPermissions: {
                 adminAiCatalogItem: canAdmin,
+              },
+              configurationForProject: {
+                id: 'gid://gitlab/Ai::Catalog::ItemConsumer/1',
+                enabled: isEnabled,
               },
             },
             itemRoutes: {
@@ -94,6 +102,10 @@ describe('AiCatalogItemActions', () => {
             params: { id: routeParams.id },
           });
         }
+      });
+
+      it(`${disableBtn ? 'renders' : 'does not render'} "Disable" button`, () => {
+        expect(findDisableButton().exists()).toBe(disableBtn);
       });
 
       it(`${addGroupBtn ? 'renders' : 'does not render'} "Enable in group" button`, () => {

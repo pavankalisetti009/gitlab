@@ -230,9 +230,18 @@ export const mockCatalogEmptyItemsResponse = {
   },
 };
 
+export const mockConfigurationForProject = {
+  id: 'gid://gitlab/Ai::Catalog::ItemConsumer/1',
+  enabled: true,
+  __typename: TYPENAME_AI_CATALOG_ITEM_CONSUMER,
+};
+
 export const mockAiCatalogAgentResponse = {
   data: {
-    aiCatalogItem: mockAgent,
+    aiCatalogItem: {
+      ...mockAgent,
+      configurationForProject: mockConfigurationForProject,
+    },
   },
 };
 
