@@ -59,7 +59,6 @@ module Ai
           namespaces_with_valid_subscriptions(eligible_namespace_ids).find_each do |subscription|
             namespace = subscription.namespace
 
-            next if Feature.disabled?(:active_context_saas_initial_indexing_namespace, namespace)
             next unless namespace_has_duo_features_enabled?(namespace)
 
             records << { namespace_id: namespace.id, connection_id: active_connection.id, state: 'ready' }
