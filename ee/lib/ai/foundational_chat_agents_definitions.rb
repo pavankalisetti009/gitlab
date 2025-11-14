@@ -34,10 +34,10 @@ module Ai
         version: 'experimental',
         name: 'Security Analyst Agent',
         description: <<~DESCRIPTION
-          The GitLab Security Analyst Agent is an AI-powered security expert designed to automate vulnerability
-          management and security workflows within GitLab's Duo Agent Platform. It acts as a specialized AI team member
-          that can autonomously analyze, triage, and remediate security vulnerabilities, reducing manual security tasks
-          while ensuring critical exploitable vulnerabilities are immediately surfaced and addressed.
+          Automate vulnerability management and security workflows. The Security Analyst Agent acts as an
+          AI team member that can autonomously analyze,
+          triage, and remediate security vulnerabilities, reducing manual security tasks while ensuring
+          critical exploitable vulnerabilities are immediately surfaced and addressed.
         DESCRIPTION
       },
       {
