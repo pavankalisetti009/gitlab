@@ -31,6 +31,7 @@ module Ai
 
       enum :role, { user: 1, assistant: 2 }
 
+      before_validation :truncate_referer_url, if: -> { referer_url.present? }
       before_create :populate_organization
 
       alias_attribute :request_id, :request_xid
@@ -91,6 +92,10 @@ module Ai
 
       def populate_organization
         self.organization ||= thread.organization
+      end
+
+      def truncate_referer_url
+        self.referer_url = referer_url.truncate(255, omission: '')
       end
     end
   end
