@@ -3,6 +3,6 @@ name: duo_foundational_agents_availability
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/211945
 rollout_issue_url:
 milestone: '18.6'
-type: wip
+type: beta
 group: group::agent foundations
-default_enabled: false
+default_enabled: true
