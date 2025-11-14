@@ -1,18 +1,15 @@
 import { GlBadge, GlPopover, GlProgressBar, GlButton } from '@gitlab/ui';
+import { stubComponent } from 'helpers/stub_component';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import {
-  VULNERABILITY_STATE_OBJECTS,
-  CONFIDENCE_SCORES,
-  AI_FP_DISMISSAL_COMMENT,
-} from 'ee/vulnerabilities/constants';
+import { CONFIDENCE_SCORES } from 'ee/vulnerabilities/constants';
 import AiPossibleFpBadge, {
   VULNERABILITY_UNTRIAGED_STATUS,
 } from 'ee/security_dashboard/components/shared/ai_possible_fp_badge.vue';
 import NonGfmMarkdown from '~/vue_shared/components/markdown/non_gfm_markdown.vue';
+import DismissFalsePositiveModal from 'ee/security_dashboard/components/shared/dismiss_false_positive_modal.vue';
 
 describe('AiPossibleFpBadge', () => {
   let wrapper;
-  let apolloMutateSpy;
 
   const defaultVulnerability = {
     id: 'gid://gitlab/Vulnerabilities::Finding/123',
@@ -24,10 +21,15 @@ describe('AiPossibleFpBadge', () => {
     },
   };
 
-  const createComponent = (props = {}, options = {}) => {
-    apolloMutateSpy = jest.fn().mockResolvedValue({});
+  const modalShowStub = jest.fn();
+  const modalStub = { show: modalShowStub };
+  const showToastStub = jest.fn();
+  const DismissFalsePositiveModalStub = stubComponent(DismissFalsePositiveModal, {
+    methods: modalStub,
+  });
 
-    return shallowMountExtended(AiPossibleFpBadge, {
+  const createComponent = (props = {}, options = {}) => {
+    wrapper = shallowMountExtended(AiPossibleFpBadge, {
       propsData: {
         vulnerability: {
           ...defaultVulnerability,
@@ -39,20 +41,23 @@ describe('AiPossibleFpBadge', () => {
       stubs: {
         GlPopover,
         NonGfmMarkdown,
+        DismissFalsePositiveModal: DismissFalsePositiveModalStub,
       },
       mocks: {
-        $apollo: {
-          mutate: apolloMutateSpy,
+        $toast: {
+          show: showToastStub,
         },
       },
       ...options,
     });
+    return wrapper;
   };
 
   const findBadge = () => wrapper.findComponent(GlBadge);
   const findBadgeText = () => wrapper.findByTestId('ai-fix-in-progress-b');
   const findProgressBar = () => wrapper.findComponent(GlProgressBar);
-  const findRemoveFlagButton = () => wrapper.findComponent(GlButton);
+  const findRemoveFlagButton = () => wrapper.findComponent(GlPopover).findComponent(GlButton);
+  const findModal = () => wrapper.findComponent(DismissFalsePositiveModal);
 
   describe('when confidence score is between minimal and likely threshold', () => {
     beforeEach(() => {
@@ -153,7 +158,7 @@ describe('AiPossibleFpBadge', () => {
     });
   });
 
-  describe('Apollo mutations', () => {
+  describe('Apollo mutations and modal', () => {
     beforeEach(() => {
       wrapper = createComponent({
         canAdminVulnerability: true,
@@ -165,18 +170,33 @@ describe('AiPossibleFpBadge', () => {
       expect(findRemoveFlagButton().text()).toBe('Remove False Positive Flag');
     });
 
-    it('calls Apollo mutation with correct parameters when removing flag', async () => {
-      await findRemoveFlagButton().vm.$emit('click');
+    it('renders the confirmation modal', () => {
+      expect(findModal().exists()).toBe(true);
+      expect(findModal().props('vulnerability')).toEqual(defaultVulnerability);
+      expect(findModal().props('modalId')).toBe('dismiss-fp-confirm-modal');
+    });
 
-      expect(apolloMutateSpy).toHaveBeenCalledWith({
-        mutation: VULNERABILITY_STATE_OBJECTS.dismissed.mutation,
-        variables: {
-          id: defaultVulnerability.id,
-          dismissalReason: 'FALSE_POSITIVE',
-          comment: AI_FP_DISMISSAL_COMMENT,
+    it('shows modal when remove flag button is clicked', async () => {
+      await findRemoveFlagButton().vm.$emit('click');
+      expect(modalShowStub).toHaveBeenCalled();
+    });
+
+    it('handles modal success event and shows toast', async () => {
+      const showToastSpy = jest.fn();
+      wrapper = createComponent(
+        { canAdminVulnerability: true },
+        {
+          mocks: {
+            $toast: {
+              show: showToastSpy,
+            },
+          },
         },
-        refetchQueries: [null],
-      });
+      );
+
+      await findModal().vm.$emit('success');
+
+      expect(showToastSpy).toHaveBeenCalledWith('False positive flag dismissed successfully.');
     });
   });
 

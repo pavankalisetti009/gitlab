@@ -14324,6 +14324,32 @@ Input type: `VulnerabilityDismissInput`
 | <a id="mutationvulnerabilitydismisserrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
 | <a id="mutationvulnerabilitydismissvulnerability"></a>`vulnerability` | [`Vulnerability`](#vulnerability) | Vulnerability after state change. |
 
+### `Mutation.vulnerabilityDismissFalsePositiveFlag`
+
+{{< details >}}
+**Introduced** in GitLab 18.6.
+**Status**: Experiment.
+{{< /details >}}
+
+Dismiss a vulnerability false positive flag.
+
+Input type: `VulnerabilityDismissFalsePositiveFlagInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationvulnerabilitydismissfalsepositiveflagclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationvulnerabilitydismissfalsepositiveflagid"></a>`id` | [`VulnerabilityID!`](#vulnerabilityid) | ID of the vulnerability to dismiss false positive flag for. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationvulnerabilitydismissfalsepositiveflagclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationvulnerabilitydismissfalsepositiveflagerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
+| <a id="mutationvulnerabilitydismissfalsepositiveflagvulnerability"></a>`vulnerability` | [`Vulnerability`](#vulnerability) | Vulnerability after dismissing false positive flag. |
+
 ### `Mutation.vulnerabilityExternalIssueLinkCreate`
 
 Input type: `VulnerabilityExternalIssueLinkCreateInput`

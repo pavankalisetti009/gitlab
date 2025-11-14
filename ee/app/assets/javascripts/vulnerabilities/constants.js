@@ -147,7 +147,3 @@ export const CONFIDENCE_SCORES = {
   MINIMAL: 0.3,
   LIKELY_FALSE_POSITIVE: 0.7,
 };
-
-export const AI_FP_DISMISSAL_COMMENT = s__(
-  'Vulnerability|Dismissed as false positive detected by Duo AI',
-);
