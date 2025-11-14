@@ -5,8 +5,10 @@ import {
   restoreLastRoute,
   setupNavigationGuards,
   getStorageKey,
+  trackTabRoutes,
 } from 'ee/ai/duo_agents_platform/utils/navigation_state';
 import { getStorageValue, saveStorageValue, removeStorageValue } from '~/lib/utils/local_storage';
+import { duoChatGlobalState } from '~/super_sidebar/constants';
 
 jest.mock('~/lib/utils/local_storage');
 
@@ -25,6 +27,8 @@ describe('Navigation State Utils', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    duoChatGlobalState.activeTab = null;
+    duoChatGlobalState.lastRoutePerTab = {};
   });
 
   describe('getStorageKey', () => {
@@ -248,6 +252,54 @@ describe('Navigation State Utils', () => {
 
         expect(saveStorageValue).toHaveBeenCalledWith(expectedKey, mockRouteState);
       });
+    });
+  });
+
+  describe('trackTabRoutes', () => {
+    it('stores route path for active tab', () => {
+      duoChatGlobalState.activeTab = 'sessions';
+
+      trackTabRoutes({ path: '/agent-sessions/123' });
+
+      expect(duoChatGlobalState.lastRoutePerTab.sessions).toBe('/agent-sessions/123');
+    });
+
+    it('updates route when navigating within same tab', () => {
+      duoChatGlobalState.activeTab = 'sessions';
+
+      trackTabRoutes({ path: '/agent-sessions/123' });
+      trackTabRoutes({ path: '/agent-sessions/456' });
+
+      expect(duoChatGlobalState.lastRoutePerTab.sessions).toBe('/agent-sessions/456');
+    });
+
+    it('tracks routes independently for different tabs', () => {
+      duoChatGlobalState.activeTab = 'sessions';
+      trackTabRoutes({ path: '/agent-sessions/123' });
+
+      duoChatGlobalState.activeTab = 'chat';
+      trackTabRoutes({ path: '/chat-route' });
+
+      expect(duoChatGlobalState.lastRoutePerTab).toEqual({
+        sessions: '/agent-sessions/123',
+        chat: '/chat-route',
+      });
+    });
+
+    it('does not store route when no active tab', () => {
+      duoChatGlobalState.activeTab = null;
+
+      trackTabRoutes({ path: '/agent-sessions/123' });
+
+      expect(duoChatGlobalState.lastRoutePerTab).toEqual({});
+    });
+
+    it('does not store route when path is missing', () => {
+      duoChatGlobalState.activeTab = 'sessions';
+
+      trackTabRoutes({ path: null });
+
+      expect(duoChatGlobalState.lastRoutePerTab).toEqual({});
     });
   });
 });

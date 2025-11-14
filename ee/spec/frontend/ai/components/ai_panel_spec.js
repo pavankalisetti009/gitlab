@@ -1,6 +1,6 @@
 import { GlBreakpointInstance } from '@gitlab/ui/src/utils';
 import { nextTick } from 'vue';
-import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
 import { stubComponent } from 'helpers/stub_component';
 import AIPanel from 'ee/ai/components/ai_panel.vue';
 import AiContentContainer from 'ee/ai/components/content_container.vue';
@@ -27,12 +27,13 @@ describe('AiPanel', () => {
     routeParams = {},
     propsData = {},
     provide = {},
+    mountFn = shallowMountExtended,
   } = {}) => {
     mockRouter = {
       push: jest.fn().mockResolvedValue(),
     };
 
-    wrapper = shallowMountExtended(AIPanel, {
+    wrapper = mountFn(AIPanel, {
       propsData: {
         userId: 'gid://gitlab/User/1',
         projectId: 'gid://gitlab/Project/123',
@@ -87,6 +88,7 @@ describe('AiPanel', () => {
     // Reset global state before each test
     duoChatGlobalState.chatMode = CHAT_MODES.AGENTIC;
     duoChatGlobalState.activeTab = null;
+    duoChatGlobalState.lastRoutePerTab = {};
   });
 
   it('renders initial collapsed state', () => {
@@ -137,14 +139,14 @@ describe('AiPanel', () => {
       expect(Cookies.get(aiPanelStateCookie)).toBe(undefined);
     });
 
-    it('toggles a panel', async () => {
+    it('keeps panel open when same tab is toggled twice', async () => {
       createComponent();
       findNavigationRail().vm.$emit('handleTabToggle', 'chat');
       await nextTick();
       findNavigationRail().vm.$emit('handleTabToggle', 'chat');
       await nextTick();
-      expect(findContentContainer().exists()).toBe(false);
-      expect(Cookies.get(aiPanelStateCookie)).toBe(undefined);
+      expect(findContentContainer().exists()).toBe(true);
+      expect(Cookies.get(aiPanelStateCookie)).toBe('chat');
     });
   });
 
@@ -278,12 +280,12 @@ describe('AiPanel', () => {
     });
 
     describe('when current tab has no initialRoute', () => {
-      it('does not navigate', async () => {
+      it('navigates to root path', async () => {
         createComponent();
         findNavigationRail().vm.$emit('handleTabToggle', 'chat');
         await nextTick();
         findContentContainer().vm.$emit('go-back');
-        expect(mockRouter.push).not.toHaveBeenCalled();
+        expect(mockRouter.push).toHaveBeenCalledWith('/');
       });
     });
   });
@@ -305,6 +307,7 @@ describe('AiPanel', () => {
 
       expect(findNavigationRail().props('isExpanded')).toBe(false);
       expect(findContentContainer().exists()).toBe(false);
+      expect(duoChatGlobalState.activeTab).toBeUndefined();
     });
 
     it('does not change panel state when resizing from non-desktop to desktop', async () => {
@@ -362,25 +365,51 @@ describe('AiPanel', () => {
   });
 
   describe('router navigation for tabs with initialRoute', () => {
-    it('navigates to initialRoute when sessions tab is activated', async () => {
+    it('navigates to initialRoute when activating sessions tab for the first time', async () => {
       createComponent();
+
       findNavigationRail().vm.$emit('handleTabToggle', 'sessions');
       await nextTick();
 
       expect(mockRouter.push).toHaveBeenCalledWith('/agent-sessions/');
     });
 
-    it('does not call router.push when chat tab is activated (no initialRoute)', async () => {
+    it('does not navigate when activating chat tabs without initialRoute', async () => {
       createComponent();
+
       findNavigationRail().vm.$emit('handleTabToggle', 'chat');
       await nextTick();
-      mockRouter.push.mockClear();
 
-      expect(mockRouter.push).not.toHaveBeenCalled();
+      expect(mockRouter.push).toHaveBeenCalledWith('/');
     });
 
-    it('navigates to initialRoute when switching between tabs', async () => {
-      createComponent();
+    it('restores the previous route when switching back to a tab', async () => {
+      duoChatGlobalState.lastRoutePerTab = { sessions: '/agent-sessions/123' };
+      createComponent({
+        mountFn: mountExtended,
+        routePath: '/agent-sessions/123',
+        routeName: AGENTS_PLATFORM_SHOW_ROUTE,
+        routeParams: { id: '123' },
+      });
+
+      findNavigationRail().vm.$emit('handleTabToggle', 'sessions');
+      await nextTick();
+      expect(findContentContainer().props('activeTab').title).toBe('Agent session #123');
+
+      findNavigationRail().vm.$emit('handleTabToggle', 'chat');
+      await nextTick();
+
+      findNavigationRail().vm.$emit('handleTabToggle', 'sessions');
+      await nextTick();
+      expect(mockRouter.push).toHaveBeenCalledWith('/agent-sessions/123');
+    });
+
+    it('navigates to stored route when returning to a tab with initialRoute', async () => {
+      duoChatGlobalState.lastRoutePerTab = { sessions: '/agent-sessions/123' };
+      createComponent({ routePath: '/agent-sessions/123' });
+
+      findNavigationRail().vm.$emit('handleTabToggle', 'sessions');
+      await nextTick();
       findNavigationRail().vm.$emit('handleTabToggle', 'chat');
       await nextTick();
 
@@ -389,8 +418,69 @@ describe('AiPanel', () => {
       findNavigationRail().vm.$emit('handleTabToggle', 'sessions');
       await nextTick();
 
-      // Router should navigate to sessions initialRoute when switching from chat to sessions
-      expect(mockRouter.push).toHaveBeenCalledWith('/agent-sessions/');
+      expect(mockRouter.push).toHaveBeenCalledWith('/agent-sessions/123');
+    });
+
+    it('restores the initialRoute when panel opens from cookie', async () => {
+      Cookies.set(aiPanelStateCookie, 'sessions');
+      createComponent({
+        mountFn: mountExtended,
+        routePath: '/agent-sessions/456',
+        routeName: AGENTS_PLATFORM_SHOW_ROUTE,
+        routeParams: { id: '456' },
+      });
+      await nextTick();
+
+      expect(findContentContainer().exists()).toBe(true);
+      expect(findContentContainer().props('activeTab').title).toBe('Agent session #456');
+      expect(findContentContainer().props('activeTab').component).toBe(AgentSessionsRoot);
+    });
+
+    it('navigates to updated route when switching back after route change within a tab', async () => {
+      createComponent({
+        mountFn: mountExtended,
+        routePath: '/agent-sessions/',
+        routeName: 'some_route',
+      });
+      findNavigationRail().vm.$emit('handleTabToggle', 'sessions');
+      await nextTick();
+      expect(findContentContainer().props('activeTab').title).toBe('Sessions');
+
+      // Simulate route guard tracking the navigation to a specific session
+      duoChatGlobalState.lastRoutePerTab.sessions = '/agent-sessions/789';
+
+      findNavigationRail().vm.$emit('handleTabToggle', 'chat');
+      await nextTick();
+      mockRouter.push.mockClear();
+
+      findNavigationRail().vm.$emit('handleTabToggle', 'sessions');
+      await nextTick();
+
+      expect(mockRouter.push).toHaveBeenCalledWith('/agent-sessions/789');
+    });
+
+    it('preserves routes for multiple tabs independently', async () => {
+      // Simulate route guard having tracked routes for multiple tabs
+      duoChatGlobalState.lastRoutePerTab = {
+        sessions: '/agent-sessions/123',
+        chat: '/',
+      };
+
+      createComponent({ routePath: '/agent-sessions/111' });
+
+      findNavigationRail().vm.$emit('handleTabToggle', 'sessions');
+      await nextTick();
+
+      findNavigationRail().vm.$emit('handleTabToggle', 'chat');
+      await nextTick();
+
+      mockRouter.push.mockClear();
+      findNavigationRail().vm.$emit('handleTabToggle', 'sessions');
+      await nextTick();
+
+      expect(mockRouter.push).toHaveBeenCalledWith('/agent-sessions/123');
+      expect(duoChatGlobalState.lastRoutePerTab.sessions).toBe('/agent-sessions/123');
+      expect(duoChatGlobalState.lastRoutePerTab.chat).toBe('/');
     });
   });
 
@@ -414,9 +504,10 @@ describe('AiPanel', () => {
         },
       });
       expect(Cookies.get(aiPanelStateCookie)).toBe('chat');
+      expect(duoChatGlobalState.activeTab).toBe('chat');
     });
 
-    it('does not trigger router navigation', async () => {
+    it('updates active tab without triggering navigation', async () => {
       createComponent();
       findNavigationRail().vm.$emit('handleTabToggle', 'history');
       await nextTick();
@@ -426,6 +517,8 @@ describe('AiPanel', () => {
       await nextTick();
 
       expect(mockRouter.push).not.toHaveBeenCalled();
+      expect(duoChatGlobalState.activeTab).toBe('sessions');
+      expect(Cookies.get(aiPanelStateCookie)).toBe('sessions');
     });
   });
 
@@ -447,7 +540,7 @@ describe('AiPanel', () => {
       });
     });
 
-    it('does not collapse the panel if + tab is toggled twice', async () => {
+    it('keeps the panel open if + tab is toggled twice', async () => {
       createComponent();
 
       findNavigationRail().vm.$emit('handleTabToggle', 'new');
@@ -455,6 +548,7 @@ describe('AiPanel', () => {
       findNavigationRail().vm.$emit('handleTabToggle', 'new');
       await nextTick();
 
+      expect(findContentContainer().exists()).toBe(true);
       expect(findContentContainer().props('activeTab')).toEqual({
         title: 'New Chat',
         component: DuoAgenticChat,

@@ -88,6 +88,16 @@ export default {
       return `${componentName}-${this.duoChatGlobalState.chatMode}`;
     },
   },
+  watch: {
+    'activeTab.title': {
+      handler(newTitle) {
+        // Reset currentTitle when the prop title changes
+        if (!this.currentTitle || this.currentTitle !== newTitle) {
+          this.currentTitle = null;
+        }
+      },
+    },
+  },
   methods: {
     handleGoBack() {
       this.$emit('go-back');
