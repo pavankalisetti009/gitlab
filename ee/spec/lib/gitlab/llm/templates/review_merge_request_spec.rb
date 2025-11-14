@@ -177,26 +177,6 @@ RSpec.describe Gitlab::Llm::Templates::ReviewMergeRequest, feature_category: :co
     end
 
     context 'with custom instructions' do
-      let(:custom_instructions) do
-        [
-          {
-            name: 'Ruby Style Guide',
-            instructions: 'Follow Ruby style conventions and best practices',
-            glob_pattern: '*.rb'
-          },
-          {
-            name: 'Markdown Standards',
-            instructions: 'Check for proper markdown formatting and structure',
-            glob_pattern: '*.md'
-          },
-          {
-            name: 'Security Review',
-            instructions: 'Focus on security vulnerabilities and data validation',
-            glob_pattern: '*.rb'
-          }
-        ]
-      end
-
       subject(:prompt_inputs) do
         described_class.new(
           mr_title: mr_title,
@@ -208,69 +188,124 @@ RSpec.describe Gitlab::Llm::Templates::ReviewMergeRequest, feature_category: :co
         ).to_prompt_inputs
       end
 
-      it 'formats custom instructions section correctly' do
-        expect(prompt_inputs[:custom_instructions_section]).to eq <<~SECTION
-          <custom_instructions>
-          Apply these additional review instructions to matching files:
-
-          For files matching "*.rb" (Ruby Style Guide):
-          Follow Ruby style conventions and best practices
-
-          For files matching "*.md" (Markdown Standards):
-          Check for proper markdown formatting and structure
-
-          For files matching "*.rb" (Security Review):
-          Focus on security vulnerabilities and data validation
-
-          IMPORTANT: Only apply each custom instruction to files that match its specified pattern. If a file doesn't match any custom instruction pattern, only apply the standard review criteria.
-
-          When commenting based on custom instructions, format as:
-          "According to custom instructions in '[instruction_name]': [your comment here]"
-
-          Example: "According to custom instructions in 'Security Best Practices': This API endpoint should validate input parameters to prevent SQL injection."
-
-          This formatting is only required for custom instruction comments. Regular review comments based on standard review criteria should NOT include this prefix.
-          </custom_instructions>
-        SECTION
-      end
-
-      context 'when multiple patterns exist for same instruction group' do
+      context 'with include patterns only' do
         let(:custom_instructions) do
           [
             {
-              name: 'General Code Review',
-              instructions: 'Review for code quality and best practices',
-              glob_pattern: '*.rb'
+              name: 'Ruby Style Guide',
+              instructions: 'Follow Ruby style conventions and best practices',
+              include_patterns: ['*.rb'],
+              exclude_patterns: []
             },
             {
-              name: 'General Code Review',
-              instructions: 'Check for performance optimizations and memory leaks',
-              glob_pattern: '**/*.rb'
+              name: 'Markdown Standards',
+              instructions: 'Check for proper markdown formatting and structure',
+              include_patterns: ['*.md'],
+              exclude_patterns: []
             }
           ]
         end
 
-        it 'treats each instruction individually even with same name' do
-          expect(prompt_inputs[:custom_instructions_section]).to eq <<~SECTION
-            <custom_instructions>
-            Apply these additional review instructions to matching files:
+        it 'formats custom instructions section correctly' do
+          expect(prompt_inputs[:custom_instructions_section]).to include(
+            'For files matching "*.rb" (excluding: none) - Ruby Style Guide:'
+          )
+          expect(prompt_inputs[:custom_instructions_section]).to include(
+            'For files matching "*.md" (excluding: none) - Markdown Standards:'
+          )
+          expect(prompt_inputs[:custom_instructions_section]).to include(
+            'Follow Ruby style conventions and best practices'
+          )
+          expect(prompt_inputs[:custom_instructions_section]).to include(
+            'Check for proper markdown formatting and structure'
+          )
+        end
+      end
 
-            For files matching "*.rb" (General Code Review):
-            Review for code quality and best practices
+      context 'with include and exclude patterns' do
+        let(:custom_instructions) do
+          [
+            {
+              name: 'TypeScript Files',
+              instructions: 'Review TypeScript code for type safety',
+              include_patterns: ['**/*.ts'],
+              exclude_patterns: ['**/*.test.ts', '**/*.spec.ts']
+            }
+          ]
+        end
 
-            For files matching "**/*.rb" (General Code Review):
-            Check for performance optimizations and memory leaks
+        it 'shows both include and exclude patterns' do
+          expect(prompt_inputs[:custom_instructions_section]).to include(
+            'For files matching "**/*.ts" (excluding: **/*.test.ts, **/*.spec.ts) - TypeScript Files:'
+          )
+          expect(prompt_inputs[:custom_instructions_section]).to include(
+            'Review TypeScript code for type safety'
+          )
+        end
+      end
 
-            IMPORTANT: Only apply each custom instruction to files that match its specified pattern. If a file doesn't match any custom instruction pattern, only apply the standard review criteria.
+      context 'with empty include patterns (matches all files)' do
+        let(:custom_instructions) do
+          [
+            {
+              name: 'All Files Review',
+              instructions: 'Apply to all files except tests',
+              include_patterns: [],
+              exclude_patterns: ['**/*.test.*', '**/*.spec.*']
+            }
+          ]
+        end
 
-            When commenting based on custom instructions, format as:
-            "According to custom instructions in '[instruction_name]': [your comment here]"
+        it 'shows "all files" for include and specific excludes' do
+          expect(prompt_inputs[:custom_instructions_section]).to include(
+            'For files matching "all files" (excluding: **/*.test.*, **/*.spec.*) - All Files Review:'
+          )
+        end
+      end
 
-            Example: "According to custom instructions in 'Security Best Practices': This API endpoint should validate input parameters to prevent SQL injection."
+      context 'with empty exclude patterns' do
+        let(:custom_instructions) do
+          [
+            {
+              name: 'Security Review',
+              instructions: 'Focus on security vulnerabilities',
+              include_patterns: ['*.rb'],
+              exclude_patterns: []
+            }
+          ]
+        end
 
-            This formatting is only required for custom instruction comments. Regular review comments based on standard review criteria should NOT include this prefix.
-            </custom_instructions>
-          SECTION
+        it 'shows specific includes and "none" for excludes' do
+          expect(prompt_inputs[:custom_instructions_section]).to include(
+            'For files matching "*.rb" (excluding: none) - Security Review:'
+          )
+        end
+      end
+
+      context 'with multiple instructions' do
+        let(:custom_instructions) do
+          [
+            {
+              name: 'Ruby Files',
+              instructions: 'Ruby style conventions',
+              include_patterns: ['*.rb', 'lib/**/*.rb'],
+              exclude_patterns: ['spec/**/*.rb']
+            },
+            {
+              name: 'Configuration Files',
+              instructions: 'Configuration best practices',
+              include_patterns: ['*.yml', '*.yaml'],
+              exclude_patterns: []
+            }
+          ]
+        end
+
+        it 'formats all instructions with proper separators' do
+          section = prompt_inputs[:custom_instructions_section]
+          expect(section).to include('For files matching "*.rb, lib/**/*.rb" (excluding: spec/**/*.rb) - Ruby Files:')
+          expect(section).to include('For files matching "*.yml, *.yaml" (excluding: none) - Configuration Files:')
+          expect(section).to include('Ruby style conventions')
+          expect(section).to include('Configuration best practices')
         end
       end
 
@@ -279,6 +314,30 @@ RSpec.describe Gitlab::Llm::Templates::ReviewMergeRequest, feature_category: :co
 
         it 'returns empty string for custom instructions section' do
           expect(prompt_inputs[:custom_instructions_section]).to eq("")
+        end
+      end
+
+      context 'when include the full custom instructions template' do
+        let(:custom_instructions) do
+          [
+            {
+              name: 'Test',
+              instructions: 'Test instructions',
+              include_patterns: ['*.rb'],
+              exclude_patterns: []
+            }
+          ]
+        end
+
+        it 'includes all required template sections' do
+          expect(prompt_inputs[:custom_instructions_section]).to include(
+            'IMPORTANT: Only apply each custom instruction to files that match its specified pattern.'
+          )
+          expect(prompt_inputs[:custom_instructions_section]).to include(
+            "According to custom instructions in '[instruction_name]': [your comment here]"
+          )
+          expect(prompt_inputs[:custom_instructions_section]).to include('<custom_instructions>')
+          expect(prompt_inputs[:custom_instructions_section]).to include('</custom_instructions>')
         end
       end
     end

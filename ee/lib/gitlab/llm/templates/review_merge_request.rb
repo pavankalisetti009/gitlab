@@ -49,11 +49,25 @@ module Gitlab
         def format_custom_instructions_section
           return "" if custom_instructions.empty?
 
+          instruction_items = custom_instructions.map do |instruction|
+            # Convert include patterns array to comma-separated string, or "all files" if empty
+            # Empty include patterns means apply to all files (matches_pattern? treats empty as "match all")
+            include_patterns = instruction[:include_patterns].join(", ").presence || "all files"
+
+            # Convert exclude patterns array to comma-separated string, or "none" if empty
+            exclude_patterns = instruction[:exclude_patterns].join(", ").presence || "none"
+
+            "For files matching \"#{include_patterns}\" " \
+              "(excluding: #{exclude_patterns}) - #{instruction[:name]}:\n" \
+              "#{instruction[:instructions].strip}\n"
+          end
+
+          instructions_text = instruction_items.join("\n")
           <<~SECTION
             <custom_instructions>
             Apply these additional review instructions to matching files:
 
-            #{format_custom_instructions_list}
+            #{instructions_text}
 
             IMPORTANT: Only apply each custom instruction to files that match its specified pattern. If a file doesn't match any custom instruction pattern, only apply the standard review criteria.
 
@@ -65,13 +79,6 @@ module Gitlab
             This formatting is only required for custom instruction comments. Regular review comments based on standard review criteria should NOT include this prefix.
             </custom_instructions>
           SECTION
-        end
-
-        def format_custom_instructions_list
-          custom_instructions.map do |instruction|
-            "For files matching \"#{instruction[:glob_pattern]}\" (#{instruction[:name]}):\n" \
-              "#{instruction[:instructions].strip}"
-          end.join("\n\n")
         end
 
         def all_diffs_formatted
