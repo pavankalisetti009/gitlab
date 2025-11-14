@@ -51,6 +51,8 @@ module Ai
         end
 
         def project_flow_without_parent_item_consumer?
+          return false unless ai_catalog_flows_enabled?
+
           (item.flow? || item.third_party_flow?) && project.present? && parent_item_consumer.nil?
         end
 
@@ -99,6 +101,8 @@ module Ai
         end
 
         def add_service_account_to_project
+          return [:no_op, nil] unless ai_catalog_flows_enabled?
+
           return [:no_op, nil] unless project_container? && (item.flow? || item.third_party_flow?)
 
           project_member = project.team.add_member(
@@ -146,6 +150,10 @@ module Ai
 
           Ability.allowed?(current_user, :admin_ai_catalog_item_consumer, container) &&
             Ability.allowed?(current_user, :read_ai_catalog_item, item)
+        end
+
+        def ai_catalog_flows_enabled?
+          Feature.enabled?(:ai_catalog_flows, container)
         end
 
         def error(message)
