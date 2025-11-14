@@ -48,12 +48,16 @@ module EE
         # Only users who have permission to merge can update this value
         params.delete(:override_requested_changes) unless merge_request.can_be_merged_by?(current_user)
 
-        self.params = ApprovalRules::ParamsFilteringService.new(merge_request, current_user, params).execute
+        self.params = filter_approval_params(merge_request, current_user, params)
 
         self.blocking_merge_requests_params =
           ::MergeRequests::UpdateBlocksService.extract_params!(params)
 
         super
+      end
+
+      def filter_approval_params(merge_request, current_user, params)
+        ApprovalRules::ParamsFilteringService.new(merge_request, current_user, params).execute
       end
 
       def set_requested_changes(merge_request, new_reviewers)
