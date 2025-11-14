@@ -114,18 +114,6 @@ RSpec.describe API::PagesDomains, feature_category: :pages do
       end
     end
 
-    it_behaves_like 'authorizing granular token permissions', :read_pages_domain do
-      let(:maintainer) { create(:user) }
-      let(:user) { maintainer }
-      let(:boundary_object) { project }
-
-      before do
-        project.add_maintainer(maintainer)
-      end
-
-      let(:request) { get api(route, personal_access_token: pat) }
-    end
-
     context 'when pages is disabled' do
       before do
         allow(Gitlab.config.pages).to receive(:enabled).and_return(false)
@@ -143,6 +131,10 @@ RSpec.describe API::PagesDomains, feature_category: :pages do
       end
 
       it_behaves_like 'get pages domains'
+      it_behaves_like 'authorizing granular token permissions', :read_pages_domain do
+        let(:boundary_object) { project }
+        let(:request) { get api(route, personal_access_token: pat) }
+      end
     end
 
     context 'when user is a developer' do
@@ -183,18 +175,6 @@ RSpec.describe API::PagesDomains, feature_category: :pages do
   end
 
   describe 'GET /projects/:project_id/pages/domains/:domain' do
-    it_behaves_like 'authorizing granular token permissions', :read_pages_domain do
-      let(:maintainer) { create(:user) }
-      let(:user) { maintainer }
-      let(:boundary_object) { project }
-
-      before do
-        project.add_maintainer(maintainer)
-      end
-
-      let(:request) { get api(route_domain, personal_access_token: pat) }
-    end
-
     shared_examples_for 'get pages domain' do
       it 'returns pages domain', :aggregate_failures do
         get api(route_domain, user)
@@ -265,6 +245,10 @@ RSpec.describe API::PagesDomains, feature_category: :pages do
       end
 
       it_behaves_like 'get pages domain'
+      it_behaves_like 'authorizing granular token permissions', :read_pages_domain do
+        let(:boundary_object) { project }
+        let(:request) { get api(route_domain, personal_access_token: pat) }
+      end
     end
 
     context 'when user is a developer' do
@@ -307,18 +291,6 @@ RSpec.describe API::PagesDomains, feature_category: :pages do
   describe 'POST /projects/:project_id/pages/domains' do
     let(:params) { pages_domain_params.slice(:domain) }
     let(:params_secure) { pages_domain_secure_params.slice(:domain, :certificate, :key) }
-
-    it_behaves_like 'authorizing granular token permissions', :create_pages_domain do
-      let(:maintainer) { create(:user) }
-      let(:user) { maintainer }
-      let(:boundary_object) { project }
-
-      before do
-        project.add_maintainer(maintainer)
-      end
-
-      let(:request) { post api(route, personal_access_token: pat), params: params }
-    end
 
     shared_examples_for 'post pages domains' do
       it 'creates a new pages domain', :aggregate_failures do
@@ -395,6 +367,10 @@ RSpec.describe API::PagesDomains, feature_category: :pages do
       end
 
       it_behaves_like 'post pages domains'
+      it_behaves_like 'authorizing granular token permissions', :create_pages_domain do
+        let(:boundary_object) { project }
+        let(:request) { post api(route, personal_access_token: pat), params: params }
+      end
     end
 
     context 'when user is a developer' do
@@ -437,18 +413,6 @@ RSpec.describe API::PagesDomains, feature_category: :pages do
   describe 'PUT /projects/:project_id/pages/domains/:domain' do
     let(:params_secure) { pages_domain_secure_params.slice(:certificate, :key) }
     let(:params_secure_nokey) { pages_domain_secure_params.slice(:certificate) }
-
-    it_behaves_like 'authorizing granular token permissions', :update_pages_domain do
-      let(:maintainer) { create(:user) }
-      let(:user) { maintainer }
-      let(:boundary_object) { project }
-
-      before do
-        project.add_maintainer(maintainer)
-      end
-
-      let(:request) { put api(route_domain, personal_access_token: pat), params: params_secure }
-    end
 
     shared_examples_for 'put pages domain' do
       it 'updates pages domain removing certificate', :aggregate_failures do
@@ -584,6 +548,10 @@ RSpec.describe API::PagesDomains, feature_category: :pages do
       end
 
       it_behaves_like 'put pages domain'
+      it_behaves_like 'authorizing granular token permissions', :update_pages_domain do
+        let(:boundary_object) { project }
+        let(:request) { put api(route_domain, personal_access_token: pat), params: params_secure }
+      end
     end
 
     context 'when user is a developer' do
@@ -626,18 +594,6 @@ RSpec.describe API::PagesDomains, feature_category: :pages do
   describe 'PUT /projects/:project_id/pages/domains/:domain/verify' do
     let(:verify_domain_path) { "/projects/#{project.id}/pages/domains/#{pages_domain.domain}/verify" }
 
-    it_behaves_like 'authorizing granular token permissions', :verify_pages_domain do
-      let(:maintainer) { create(:user) }
-      let(:user) { maintainer }
-      let(:boundary_object) { project }
-
-      before do
-        project.add_maintainer(maintainer)
-      end
-
-      let(:request) { put api(verify_domain_path, personal_access_token: pat) }
-    end
-
     context 'when user is not authorized' do
       it 'returns 401' do
         put api(verify_domain_path)
@@ -678,6 +634,11 @@ RSpec.describe API::PagesDomains, feature_category: :pages do
           end
         end
 
+        it_behaves_like 'authorizing granular token permissions', :verify_pages_domain do
+          let(:boundary_object) { project }
+          let(:request) { put api(verify_domain_path, personal_access_token: pat) }
+        end
+
         it 'returns the verified domain' do
           put api(verify_domain_path, user)
 
@@ -708,18 +669,6 @@ RSpec.describe API::PagesDomains, feature_category: :pages do
   end
 
   describe 'DELETE /projects/:project_id/pages/domains/:domain' do
-    it_behaves_like 'authorizing granular token permissions', :delete_pages_domain do
-      let(:maintainer) { create(:user) }
-      let(:user) { maintainer }
-      let(:boundary_object) { project }
-
-      before do
-        project.add_maintainer(maintainer)
-      end
-
-      let(:request) { delete api(route_domain, personal_access_token: pat) }
-    end
-
     shared_examples_for 'delete pages domain' do
       it 'deletes a pages domain' do
         expect { delete api(route_domain, user) }
@@ -753,6 +702,10 @@ RSpec.describe API::PagesDomains, feature_category: :pages do
       end
 
       it_behaves_like 'delete pages domain'
+      it_behaves_like 'authorizing granular token permissions', :delete_pages_domain do
+        let(:boundary_object) { project }
+        let(:request) { delete api(route_domain, personal_access_token: pat) }
+      end
     end
 
     context 'when user is a developer' do
