@@ -2,7 +2,7 @@
 
 - add_to_breadcrumbs _('Data management'), admin_data_management_path
 - add_to_breadcrumbs model_name.titleize, "#{admin_data_management_path}/#{model_name}"
-- breadcrumb_title @model.id
+- breadcrumb_title @model.id.to_s
 - page_title "#{model_name.titleize}/#{@model.id}"
 
 #js-admin-data-management-item

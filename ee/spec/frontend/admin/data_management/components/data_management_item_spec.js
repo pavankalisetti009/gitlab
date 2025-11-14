@@ -9,6 +9,7 @@ import { putModelAction } from 'ee/api/data_management_api';
 import showToast from '~/vue_shared/plugins/global_toast';
 import waitForPromises from 'helpers/wait_for_promises';
 import { VERIFICATION_STATUS_LABELS, VERIFICATION_STATUS_STATES } from 'ee/geo_shared/constants';
+import { joinPaths } from '~/lib/utils/url_utility';
 
 jest.mock('~/alert');
 jest.mock('ee/api/data_management_api');
@@ -19,7 +20,9 @@ describe('DataManagementItem', () => {
 
   const [rawModel] = models;
   const model = convertObjectPropsToCamelCase(rawModel, { deep: true });
+  const modelName = model.modelClass;
   const modelDisplayName = `${model.modelClass}/${model.recordIdentifier}`;
+  const basePath = 'admin/data_management';
 
   const checksumAction = {
     id: 'geo-checksum-item',
@@ -32,8 +35,11 @@ describe('DataManagementItem', () => {
 
   const createComponent = (props = {}) => {
     wrapper = shallowMount(DataManagementItem, {
+      provide: {
+        basePath,
+      },
       propsData: {
-        modelName: model.modelClass,
+        modelName,
         initialItem: model,
         ...props,
       },
@@ -48,6 +54,7 @@ describe('DataManagementItem', () => {
 
     expect(findGeoListItem().props()).toMatchObject({
       name: modelDisplayName,
+      detailsPath: joinPaths(basePath, modelName, model.recordIdentifier.toString()),
       timeAgoArray: [
         {
           label: 'Created',
