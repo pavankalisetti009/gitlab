@@ -8,6 +8,10 @@ module Resolvers
 
         type ::Types::Analytics::AiMetrics::CodeSuggestionMetricsType, null: true
 
+        argument :ide_names, [::GraphQL::Types::String],
+          required: false,
+          description: 'Filter code suggestion metrics by one or more IDE names.'
+
         argument :languages, [::GraphQL::Types::String],
           required: false,
           description: 'Filter code suggestion metrics by one or more languages.'
@@ -19,6 +23,7 @@ module Resolvers
             from: context[:ai_metrics_params][:start_date],
             to: context[:ai_metrics_params][:end_date],
             fields: selected_fields,
+            ide_names: args[:ide_names],
             languages: args[:languages]
           ).execute
 

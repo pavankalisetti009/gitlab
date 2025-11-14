@@ -14,6 +14,9 @@ module Types
         field :contributors_count, GraphQL::Types::Int,
           description: 'Number of code contributors who used GitLab Duo Code Suggestions features.',
           null: true
+        field :ide_names, [::GraphQL::Types::String],
+          description: 'List of IDE names with at least one suggestion shown or accepted.',
+          null: true
         field :languages, [::GraphQL::Types::String],
           description: 'List of languages with at least one suggestion shown or accepted.',
           null: true
