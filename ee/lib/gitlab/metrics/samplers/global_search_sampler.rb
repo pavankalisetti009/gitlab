@@ -8,6 +8,7 @@ module Gitlab
 
         def sample
           ::Elastic::MetricsUpdateService.new.execute
+          ::Ai::ActiveContext::MetricsUpdateService.new.execute
         end
       end
     end
