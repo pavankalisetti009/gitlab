@@ -13,7 +13,6 @@ RSpec.describe 'GFM autocomplete EE', :js, feature_category: :team_planning do
   let_it_be(:issue) { create(:issue, project: project, assignees: [user]) }
 
   before do
-    stub_feature_flags(work_item_view_for_issues: true)
     project.add_maintainer(user)
 
     sign_in(user)

@@ -16,10 +16,6 @@ RSpec.describe 'Promotions', :js do
   let!(:issue) { create(:issue, project: project, author: user) }
   let(:otherproject) { create(:project, :repository, namespace: otherdeveloper.namespace) }
 
-  before do
-    stub_feature_flags(work_item_view_for_issues: true)
-  end
-
   describe 'for merge request improve', :js, feature_category: :code_review_workflow do
     before do
       allow(License).to receive(:current).and_return(nil)

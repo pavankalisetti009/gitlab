@@ -15,7 +15,6 @@ RSpec.describe 'Epic boards sidebar', :js, feature_category: :portfolio_manageme
   let(:card) { find('[data-testid="board-list"]:nth-child(1)').first("[data-testid='board-card']") }
 
   before do
-    stub_feature_flags(work_item_view_for_issues: true)
     stub_licensed_features(epics: true)
     group.add_maintainer(user)
     sign_in(user)

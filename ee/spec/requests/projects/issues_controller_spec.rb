@@ -11,6 +11,7 @@ RSpec.describe Projects::IssuesController, feature_category: :team_planning do
   let_it_be(:blocked_by_issue) { create(:issue, project: project) }
 
   before do
+    stub_feature_flags(work_item_view_for_issues: false)
     login_as(user)
   end
 

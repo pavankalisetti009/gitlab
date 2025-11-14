@@ -19,7 +19,6 @@ RSpec.describe 'Incidents > User uses EE quick actions', :js, feature_category: 
     end
 
     before do
-      stub_feature_flags(work_item_view_for_issues: true)
       project.add_developer(user)
       sign_in(user)
       visit project_issue_path(project, incident)

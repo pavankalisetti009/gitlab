@@ -15,7 +15,6 @@ RSpec.describe 'Referencing Epics', :js, feature_category: :portfolio_management
   let(:full_reference) { epic.to_reference(full: true) }
 
   before do
-    stub_feature_flags(work_item_view_for_issues: true)
     stub_licensed_features(epics: true)
   end
 

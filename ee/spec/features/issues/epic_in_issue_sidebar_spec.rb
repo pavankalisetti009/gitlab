@@ -27,7 +27,6 @@ RSpec.describe 'Epic in issue sidebar', :js, feature_category: :team_planning do
 
   before do
     create(:callout, user: user, feature_name: :duo_chat_callout)
-    stub_feature_flags(work_item_view_for_issues: true)
   end
 
   shared_examples 'epic in issue sidebar' do

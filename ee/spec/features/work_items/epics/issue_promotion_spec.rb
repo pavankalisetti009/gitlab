@@ -14,7 +14,6 @@ RSpec.describe 'Issue promotion', :js, feature_category: :portfolio_management d
   let(:user) { create(:user) }
 
   before do
-    stub_feature_flags(work_item_view_for_issues: true)
     sign_in(user)
   end
 

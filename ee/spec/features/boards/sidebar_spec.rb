@@ -31,7 +31,6 @@ RSpec.describe 'Issue Boards', :js, feature_category: :portfolio_management do
   let(:card2) { find('[data-testid="board-list"]:nth-child(2)').find('.board-card:nth-child(1)') }
 
   before do
-    stub_feature_flags(work_item_view_for_issues: true)
     stub_licensed_features(multiple_issue_assignees: true)
 
     project.add_maintainer(user)
