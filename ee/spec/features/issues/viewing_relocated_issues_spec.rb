@@ -10,10 +10,6 @@ RSpec.describe 'issues canonical link', feature_category: :team_planning do
   let(:original_issue) { create(:issue, project: project) }
   let(:canonical_url) { epic_url(epic) }
 
-  before do
-    stub_feature_flags(work_item_view_for_issues: true)
-  end
-
   context 'when the issue was promoted' do
     it 'shows the canonical URL' do
       original_issue.promoted_to_epic = epic

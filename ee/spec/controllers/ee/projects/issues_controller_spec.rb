@@ -7,10 +7,6 @@ RSpec.describe Projects::IssuesController, feature_category: :team_planning do
   let_it_be(:project, reload: true) { create(:project_empty_repo, :public, namespace: namespace) }
   let_it_be(:user, reload: true) { create(:user) }
 
-  before do
-    stub_feature_flags(work_item_view_for_issues: true)
-  end
-
   describe 'licensed features' do
     let(:project) { create(:project, group: namespace) }
     let(:user) { create(:user) }

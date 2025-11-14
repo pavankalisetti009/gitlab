@@ -19,7 +19,6 @@ RSpec.describe "User creates issue", :js, :saas, feature_category: :team_plannin
   let(:issue_title) { '500 error on profile' }
 
   before do
-    stub_feature_flags(work_item_view_for_issues: true)
     stub_licensed_features(issue_weights: true, epics: true)
   end
 

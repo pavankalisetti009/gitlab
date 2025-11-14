@@ -80,7 +80,6 @@ RSpec.describe 'Work Items List Drawer', :js, feature_category: :team_planning d
 
       context 'when accessing work item from project work item list' do
         before do
-          stub_feature_flags(work_item_view_for_issues: true)
           stub_licensed_features(epics: true, issuable_health_status: true, iterations: true)
 
           sign_in(user)
@@ -100,7 +99,6 @@ RSpec.describe 'Work Items List Drawer', :js, feature_category: :team_planning d
       context 'when accessing work item from group work item list' do
         before do
           stub_licensed_features(epics: true, issuable_health_status: true, iterations: true)
-          stub_feature_flags(work_item_view_for_issues: true)
 
           sign_in(user)
 
@@ -159,7 +157,6 @@ RSpec.describe 'Work Items List Drawer', :js, feature_category: :team_planning d
 
       context 'when accessing work item from project work item list' do
         before do
-          stub_feature_flags(work_item_view_for_issues: true)
           stub_licensed_features(epics: true, issuable_health_status: true, iterations: true)
 
           sign_in(user)
@@ -180,7 +177,6 @@ RSpec.describe 'Work Items List Drawer', :js, feature_category: :team_planning d
       context 'when accessing work item from group work item list' do
         before do
           stub_licensed_features(epics: true, issuable_health_status: true, iterations: true)
-          stub_feature_flags(work_item_view_for_issues: true)
 
           sign_in(user)
 

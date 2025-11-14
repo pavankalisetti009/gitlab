@@ -16,7 +16,6 @@ RSpec.describe 'Related issues', :js, feature_category: :team_planning do
 
   context 'when user has permission to manage related issues' do
     before do
-      stub_feature_flags(work_item_view_for_issues: true)
       project.add_maintainer(user)
       project_b.add_maintainer(user)
       sign_in(user)

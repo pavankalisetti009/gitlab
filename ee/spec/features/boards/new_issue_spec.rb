@@ -4,7 +4,6 @@ require 'spec_helper'
 
 RSpec.describe 'Issue Boards new issue', :js, feature_category: :portfolio_management do
   before do
-    stub_feature_flags(work_item_view_for_issues: true)
     stub_licensed_features(board_milestone_lists: true)
   end
 

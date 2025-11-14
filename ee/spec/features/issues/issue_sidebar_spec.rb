@@ -20,7 +20,6 @@ RSpec.describe 'Issue Sidebar', :js, feature_category: :team_planning do
   let_it_be(:issue_no_group) { create(:labeled_issue, project: project_without_group, labels: [label]) }
 
   before do
-    stub_feature_flags(work_item_view_for_issues: true)
     sign_in(user)
   end
 

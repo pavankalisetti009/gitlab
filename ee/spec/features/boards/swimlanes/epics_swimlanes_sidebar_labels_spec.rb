@@ -8,7 +8,6 @@ RSpec.describe 'Issue boards sidebar labels using epic swimlanes', :js, feature_
   include_context 'labels from nested groups and projects'
 
   before do
-    stub_feature_flags(work_item_view_for_issues: true)
     stub_licensed_features(epics: true, swimlanes: true)
   end
 

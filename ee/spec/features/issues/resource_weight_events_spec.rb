@@ -13,7 +13,6 @@ RSpec.describe 'issue resource weight events', :js, feature_category: :team_plan
     let!(:event2) { create(:resource_weight_event, issue: issue, weight: 5) }
 
     before do
-      stub_feature_flags(work_item_view_for_issues: true)
       visit project_issue_path(project, issue)
     end
 

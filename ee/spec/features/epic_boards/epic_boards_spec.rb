@@ -27,10 +27,6 @@ RSpec.describe 'epic boards', :sidekiq_inline, :js, feature_category: :portfolio
   let(:edit_board) { find_by_testid('boards-config-button') }
   let(:view_scope) { find_by_testid('boards-config-button') }
 
-  before do
-    stub_feature_flags(work_item_view_for_issues: true)
-  end
-
   context 'display epics in board' do
     before do
       stub_licensed_features(epics: true)
