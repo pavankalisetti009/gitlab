@@ -16,13 +16,13 @@ export const initAdminDataManagementApp = () => {
   return new Vue({
     el,
     provide: {
+      basePath,
       listboxItems: formatListboxItems(parsedModelTypes),
       filteredSearchTokens: FILTERED_SEARCH_TOKEN_OPTIONS,
     },
     render(createElement) {
       return createElement(AdminDataManagementApp, {
         props: {
-          basePath,
           initialModelName,
           modelTypes: parsedModelTypes,
         },

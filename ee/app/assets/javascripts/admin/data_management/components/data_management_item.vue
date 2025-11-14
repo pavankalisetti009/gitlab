@@ -9,6 +9,7 @@ import { putModelAction } from 'ee/api/data_management_api';
 import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
 import showToast from '~/vue_shared/plugins/global_toast';
 import { VERIFICATION_STATUS_LABELS, VERIFICATION_STATUS_STATES } from 'ee/geo_shared/constants';
+import { joinPaths } from '~/lib/utils/url_utility';
 
 export default {
   i18n: {
@@ -20,6 +21,7 @@ export default {
   components: {
     GeoListItem,
   },
+  inject: ['basePath'],
   props: {
     modelName: {
       type: String,
@@ -84,6 +86,9 @@ export default {
     name() {
       return `${this.item.modelClass}/${this.item.recordIdentifier}`;
     },
+    detailsPath() {
+      return joinPaths(this.basePath, this.modelName, this.item.recordIdentifier.toString());
+    },
     size() {
       const { fileSize } = this.item;
       const hasFileSize = fileSize != null;
@@ -119,6 +124,7 @@ export default {
 <template>
   <geo-list-item
     :name="name"
+    :details-path="detailsPath"
     :time-ago-array="timeAgoArray"
     :status-array="statusArray"
     :actions-array="actionsArray"

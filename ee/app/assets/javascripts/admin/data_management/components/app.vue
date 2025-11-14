@@ -25,16 +25,13 @@ export default {
     GeoList,
     DataManagementItem,
   },
+  inject: ['basePath'],
   provide() {
     return {
       itemTitle: computed(() => this.modelTitle),
     };
   },
   props: {
-    basePath: {
-      type: String,
-      required: true,
-    },
     initialModelName: {
       type: String,
       required: true,

@@ -38,10 +38,12 @@ describe('AdminDataManagementApp', () => {
 
   const createComponent = () => {
     wrapper = shallowMount(AdminDataManagementApp, {
+      provide: {
+        basePath: defaultBasePath,
+      },
       propsData: {
         modelTypes: MOCK_MODEL_TYPES,
         initialModelName: defaultModel.name,
-        basePath: defaultBasePath,
       },
     });
   };
