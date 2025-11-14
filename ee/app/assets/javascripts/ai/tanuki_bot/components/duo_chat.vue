@@ -255,11 +255,22 @@ export default {
         eventLabel: generateEventLabelFromText(question),
       }));
     },
+    shouldLoadThread() {
+      return !this.messages?.length;
+    },
   },
   watch: {
     'duoChatGlobalState.isShown': {
       handler(newVal) {
-        if (!newVal) {
+        if (newVal === true) {
+          if (this.activeThread) {
+            if (this.shouldLoadThread) {
+              this.loadActiveThread();
+            }
+          } else {
+            this.onNewChat();
+          }
+        } else {
           // we reset chat when it gets closed, to avoid flickering the previously opened thread
           // information when it's opened again
           this.onNewChat();
@@ -303,14 +314,21 @@ export default {
   methods: {
     ...mapActions(['addDuoChatMessage', 'setMessages']),
     switchMode(mode) {
-      if (mode === 'active') {
-        this.loadActiveThread();
+      if (mode === 'chat') {
+        if (this.activeThread) {
+          if (this.shouldLoadThread) {
+            this.loadActiveThread();
+          }
+        } else {
+          this.onNewChat();
+        }
       }
       if (mode === 'new') {
         this.onNewChat();
       }
       if (mode === 'history') {
         this.onBackToList();
+        this.$emit('change-title', '');
       }
     },
     setDimensions() {
@@ -360,6 +378,14 @@ export default {
       } catch (err) {
         this.onError(err);
       }
+      this.$emit('switch-to-active-tab', DUO_CHAT_VIEWS.CHAT);
+
+      if (this.$route?.path !== '/chat') {
+        this.$router.push(`/chat`);
+      }
+    },
+    async loadActiveThread() {
+      this.onThreadSelected({ id: this.activeThread });
     },
     onNewChat() {
       clearDuoChatCommands();
@@ -369,6 +395,12 @@ export default {
       this.isWaitingOnPrompt = false;
       this.completedRequestId = null;
       this.cancelledRequestIds = [];
+
+      this.$emit('switch-to-active-tab', DUO_CHAT_VIEWS.CHAT);
+
+      if (this.$route?.path !== '/chat') {
+        this.$router.push(`/chat`);
+      }
     },
     onChatCancel() {
       // pushing last requestId of messages to canceled Request Id's
@@ -517,7 +549,6 @@ export default {
     },
     onBackToList() {
       this.multithreadedView = DUO_CHAT_VIEWS.LIST;
-      this.activeThread = undefined;
       this.setMessages([]);
       this.$apollo.queries.aiConversationThreads.refetch();
     },

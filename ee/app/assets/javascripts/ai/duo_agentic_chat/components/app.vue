@@ -151,7 +151,7 @@ export default {
       <template #mainview>
         <router-view
           v-bind="baseProps"
-          class="gl-grow gl-overflow-auto"
+          class="gl-overflow-auto"
           :class="siderail.classes"
           @chat-resize="onChatResize"
         />

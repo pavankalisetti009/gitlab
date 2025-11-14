@@ -118,7 +118,10 @@ export default {
       this.updateDimensions();
     },
     onClick(route) {
-      this.$router.push(`/${route}`);
+      const targetPath = `/${route}`;
+      if (this.$route?.path !== targetPath) {
+        this.$router.push(targetPath);
+      }
       this.$root.$emit('bv::hide::tooltip');
     },
   },

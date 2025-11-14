@@ -379,7 +379,7 @@ describe('AiPanel', () => {
       expect(mockRouter.push).not.toHaveBeenCalled();
     });
 
-    it('does not navigate when switching between tabs (only navigates when opening from closed state)', async () => {
+    it('navigates to initialRoute when switching between tabs', async () => {
       createComponent();
       findNavigationRail().vm.$emit('handleTabToggle', 'chat');
       await nextTick();
@@ -389,8 +389,8 @@ describe('AiPanel', () => {
       findNavigationRail().vm.$emit('handleTabToggle', 'sessions');
       await nextTick();
 
-      // Router should not be called when switching between tabs
-      expect(mockRouter.push).not.toHaveBeenCalled();
+      // Router should navigate to sessions initialRoute when switching from chat to sessions
+      expect(mockRouter.push).toHaveBeenCalledWith('/agent-sessions/');
     });
   });
 

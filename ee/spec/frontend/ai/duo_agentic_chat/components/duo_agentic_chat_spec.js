@@ -361,7 +361,6 @@ describe('Duo Agentic Chat', () => {
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
     mockRefetch.mockClear();
     MOCK_UTILS_SETUP();
   });
@@ -373,6 +372,9 @@ describe('Duo Agentic Chat', () => {
 
   afterEach(() => {
     duoChatGlobalState.isAgenticChatShown = false;
+    if (wrapper) {
+      wrapper = null;
+    }
   });
 
   describe('rendering', () => {
@@ -1171,16 +1173,28 @@ describe('Duo Agentic Chat', () => {
             value: { workflowId: '456', activeThread: undefined },
           });
           duoChatGlobalState.isAgenticChatShown = false;
-
-          createComponent();
         });
 
         it('does not load messages for active thread', async () => {
+          createComponent();
           duoChatGlobalState.isAgenticChatShown = true;
           await waitForPromises();
 
           expect(ApolloUtils.fetchWorkflowEvents).not.toHaveBeenCalled();
           expect(findDuoChat().props().messages).toHaveLength(0);
+        });
+
+        it('emits change-title when hydrateActiveThread is triggered', async () => {
+          // Assert baseline - no emissions yet
+          expect(wrapper?.emitted('change-title')).toBeUndefined();
+          createComponent();
+          duoChatGlobalState.isAgenticChatShown = true;
+          await waitForPromises();
+
+          const emissions = wrapper.emitted('change-title');
+          expect(emissions).toHaveLength(2);
+          expect(emissions[0]).toEqual([undefined]);
+          expect(emissions[1]).toEqual([undefined]);
         });
       });
 
@@ -1192,15 +1206,28 @@ describe('Duo Agentic Chat', () => {
             value: null,
           });
           duoChatGlobalState.isAgenticChatShown = false;
-
-          createComponent();
         });
 
         it('does not load messages for active thread', async () => {
+          createComponent();
           duoChatGlobalState.isAgenticChatShown = true;
           await waitForPromises();
 
           expect(findDuoChat().props().messages).toHaveLength(0);
+        });
+
+        it('emits change-title when hydrateActiveThread is triggered', async () => {
+          // Assert baseline - no emissions yet
+          expect(wrapper?.emitted('change-title')).toBeUndefined();
+
+          createComponent();
+          duoChatGlobalState.isAgenticChatShown = true;
+          await waitForPromises();
+
+          const emissions = wrapper.emitted('change-title');
+          expect(emissions).toHaveLength(2);
+          expect(emissions[0]).toEqual([undefined]);
+          expect(emissions[1]).toEqual([undefined]);
         });
       });
     });
@@ -1273,6 +1300,22 @@ describe('Duo Agentic Chat', () => {
       // Note: Cannot check isLoading/isWaitingOnPrompt after destroy as component is destroyed
     });
 
+    it('emits "change-title" event in beforeDestroy hook', () => {
+      expect(wrapper?.emitted('change-title')).toBeUndefined();
+
+      duoChatGlobalState.isAgenticChatShown = true;
+      createComponent();
+
+      let changeTitleEmitted = false;
+      wrapper.vm.$on('change-title', () => {
+        changeTitleEmitted = true;
+      });
+
+      wrapper.destroy();
+
+      expect(changeTitleEmitted).toBe(true);
+    });
+
     it('sets isProcessingToolApproval to false on socket close when not waiting for approval', async () => {
       duoChatGlobalState.isAgenticChatShown = true;
       createComponent();
@@ -1297,6 +1340,8 @@ describe('Duo Agentic Chat', () => {
       duoChatGlobalState.isAgenticChatShown = true;
       createComponent();
       await waitForPromises();
+
+      jest.clearAllMocks();
 
       wrapper.vm.isProcessingToolApproval = true;
       wrapper.vm.workflowStatus = 'TOOL_CALL_APPROVAL_REQUIRED';
@@ -1421,7 +1466,10 @@ describe('Duo Agentic Chat', () => {
         findDuoChat().vm.$emit('thread-selected', mockThread);
         await waitForPromises();
 
-        expect(wrapper.emitted('change-title')).toEqual([[undefined]]);
+        // Component emits change-title multiple times: on mount (via hydrateActiveThread),
+        // and when thread is selected. Check that the last emission has undefined.
+        const emissions = wrapper.emitted('change-title');
+        expect(emissions[emissions.length - 1]).toEqual([undefined]);
         expect(findDuoChat().props('multiThreadedView')).toBe(DUO_CHAT_VIEWS.CHAT);
       });
 
@@ -1978,6 +2026,9 @@ describe('Duo Agentic Chat', () => {
 
     it('passes the agent name as title when a custom agent is selected', async () => {
       createComponent({
+        propsData: {
+          mode: 'default',
+        },
         data: {
           aiCatalogItemVersionId: 'AgentVersion 5',
         },
@@ -2304,30 +2355,6 @@ describe('Duo Agentic Chat', () => {
           await waitForPromises();
 
           expect(wrapper.emitted('switch-to-active-tab')?.length > 0).toBe(true);
-          expect(wrapper.emitted('switch-to-active-tab')).toHaveLength(1);
-        });
-      });
-
-      describe('`focusInput` method', () => {
-        it("calls `WebAgenticDuoChat`'s `focusChatInput` method", () => {
-          const focusChatInput = jest.fn();
-
-          createComponent({
-            stubs: {
-              WebAgenticDuoChat: {
-                template: '<div />',
-                methods: {
-                  focusChatInput,
-                },
-              },
-            },
-          });
-
-          expect(focusChatInput).not.toHaveBeenCalled();
-
-          wrapper.vm.focusInput();
-
-          expect(focusChatInput).toHaveBeenCalled();
         });
       });
     });

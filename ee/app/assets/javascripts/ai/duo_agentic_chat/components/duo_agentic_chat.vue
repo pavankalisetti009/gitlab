@@ -377,12 +377,22 @@ export default {
     window() {
       return window;
     },
+    hasActiveThread() {
+      return this.workflowId && this.activeThread;
+    },
+    shouldLoadThread() {
+      return this.hasActiveThread && !this.messages?.length;
+    },
   },
   watch: {
     'duoChatGlobalState.isAgenticChatShown': {
       handler(newVal) {
         if (newVal) {
-          this.hydrateActiveThread();
+          if (this.shouldLoadThread) {
+            this.hydrateActiveThread();
+          } else {
+            this.onNewChat();
+          }
         }
       },
     },
@@ -436,6 +446,7 @@ export default {
     // between mode switches (classic <-> agentic)
     this.setMessages([]);
     this.isWaitingOnPrompt = false;
+    this.$emit('change-title');
   },
   methods: {
     ...mapActions(['addDuoChatMessage', 'setMessages']),
@@ -450,11 +461,14 @@ export default {
     },
     switchMode(mode) {
       if (mode === 'active') {
-        this.hydrateActiveThread();
+        if (this.shouldLoadThread) {
+          this.hydrateActiveThread();
+        } else {
+          this.onNewChat();
+        }
       }
       if (mode === 'new') {
         this.onNewChat();
-        this.$emit('change-title', '');
       }
       if (mode === 'history') {
         this.onBackToList();
@@ -629,7 +643,6 @@ export default {
 
       this.activeThread = activeThread;
       this.workflowId = workflowId;
-      this.multithreadedView = DUO_CHAT_VIEWS.CHAT;
       this.chatMessageHistory = [];
       this.setMessages([]);
       this.cleanupState(false);
@@ -639,7 +652,6 @@ export default {
       // Check if the thread's agent still exists after hydration
       this.validateAgentExists();
 
-      // Notify parent to switch to active chat tab when embedded
       if (this.isEmbedded) {
         this.$emit('switch-to-active-tab', DUO_CHAT_VIEWS.CHAT);
       }
@@ -649,15 +661,12 @@ export default {
       }
     },
     async hydrateActiveThread() {
-      if (this.workflowId && this.activeThread && !this.messages?.length) {
-        await this.loadActiveThread();
+      this.multithreadedView = DUO_CHAT_VIEWS.CHAT;
+      await this.loadActiveThread();
+      this.validateAgentExists();
 
-        // Check if the thread's agent still exists after loading (for page load scenarios)
-        this.validateAgentExists();
-
-        if (this.workflowStatus === DUO_WORKFLOW_STATUS_RUNNING) {
-          this.startWorkflow('');
-        }
+      if (this.workflowStatus === DUO_WORKFLOW_STATUS_RUNNING) {
+        this.startWorkflow('');
       }
     },
     async loadActiveThread() {
@@ -686,8 +695,8 @@ export default {
     },
     onBackToList() {
       this.multithreadedView = DUO_CHAT_VIEWS.LIST;
-      this.activeThread = undefined;
       this.chatMessageHistory = [];
+      this.setMessages([]);
       try {
         if (this.$apollo?.queries?.agenticWorkflows) {
           this.$apollo.queries.agenticWorkflows.refetch();
@@ -719,6 +728,14 @@ export default {
       const agentState = prepareAgentSelection(agent, reuseAgent);
       if (agentState) {
         Object.assign(this, agentState);
+      }
+
+      if (this.isEmbedded) {
+        this.$emit('switch-to-active-tab', DUO_CHAT_VIEWS.CHAT);
+      }
+
+      if (this.$route?.path !== '/chat') {
+        this.$router.push('/chat');
       }
     },
     onModelSelect(selectedModelValue) {

@@ -4,6 +4,13 @@ import DuoChat from './components/duo_chat.vue';
 
 export default [
   {
+    path: '/chat',
+    component: DuoChat,
+    props: {
+      mode: 'chat',
+    },
+  },
+  {
     path: '/new',
     component: DuoChat,
     props: {
