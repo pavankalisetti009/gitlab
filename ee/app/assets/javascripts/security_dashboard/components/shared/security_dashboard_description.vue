@@ -77,7 +77,7 @@ export default {
 </script>
 
 <template>
-  <div>
+  <div class="gl-w-full">
     <gl-sprintf
       :message="
         s__(
