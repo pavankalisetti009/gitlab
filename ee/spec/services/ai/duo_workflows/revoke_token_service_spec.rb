@@ -53,5 +53,75 @@ RSpec.describe ::Ai::DuoWorkflows::RevokeTokenService, feature_category: :duo_ag
       expect(result[:status]).to eq(:success)
       expect(token.reload.revoked?).to be(true)
     end
+
+    context 'with composite identity' do
+      let_it_be(:service_account) { create(:service_account, composite_identity_enforced: true) }
+      let_it_be(:regular_user) { create(:user) }
+      let_it_be(:another_user) { create(:user) }
+
+      it 'returns success when token belongs to service account but has user scope matching current user' do
+        token = create(:oauth_access_token,
+          resource_owner: service_account,
+          scopes: ['ai_workflows', "user:#{regular_user.id}"]
+        )
+
+        result = described_class.new(token: token.plaintext_token, current_user: regular_user).execute
+
+        expect(result[:status]).to eq(:success)
+        expect(token.reload.revoked?).to be(true)
+      end
+
+      it 'returns error when token has user scope but does not match current user' do
+        token = create(:oauth_access_token,
+          resource_owner: service_account,
+          scopes: ['ai_workflows', "user:#{another_user.id}"]
+        )
+
+        result = described_class.new(token: token.plaintext_token, current_user: regular_user).execute
+
+        expect(result[:status]).to eq(:error)
+        expect(result[:reason]).to eq(:invalid_token_ownership)
+        expect(token.reload.revoked?).to be(false)
+      end
+
+      it 'returns error when token belongs to service account but has no user scope' do
+        token = create(:oauth_access_token,
+          resource_owner: service_account,
+          scopes: ['ai_workflows']
+        )
+
+        result = described_class.new(token: token.plaintext_token, current_user: regular_user).execute
+
+        expect(result[:status]).to eq(:error)
+        expect(result[:reason]).to eq(:invalid_token_ownership)
+        expect(token.reload.revoked?).to be(false)
+      end
+
+      it 'returns error when user scope has invalid format' do
+        token = create(:oauth_access_token,
+          resource_owner: service_account,
+          scopes: ['ai_workflows', 'user:invalid']
+        )
+
+        result = described_class.new(token: token.plaintext_token, current_user: regular_user).execute
+
+        expect(result[:status]).to eq(:error)
+        expect(result[:reason]).to eq(:invalid_token_ownership)
+        expect(token.reload.revoked?).to be(false)
+      end
+
+      it 'returns error when service account does not have composite identity enforced' do
+        service_account_without_ci = create(:service_account, composite_identity_enforced: false)
+        token = create(:oauth_access_token,
+          resource_owner: service_account_without_ci,
+          scopes: ['ai_workflows', "user:#{regular_user.id}"]
+        )
+
+        result = described_class.new(token: token.plaintext_token, current_user: regular_user).execute
+
+        expect(result[:status]).to eq(:error)
+        expect(result[:reason]).to eq(:invalid_token_ownership)
+      end
+    end
   end
 end
