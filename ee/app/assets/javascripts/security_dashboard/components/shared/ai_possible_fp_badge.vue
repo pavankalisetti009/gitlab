@@ -1,13 +1,10 @@
 <script>
 import { GlBadge, GlIcon, GlPopover, GlProgressBar, GlButton, GlTruncateText } from '@gitlab/ui';
-import {
-  VULNERABILITY_STATE_OBJECTS,
-  CONFIDENCE_SCORES,
-  AI_FP_DISMISSAL_COMMENT,
-} from 'ee/vulnerabilities/constants';
+import { BV_HIDE_POPOVER } from '~/lib/utils/constants';
+import { VULNERABILITY_STATE_OBJECTS, CONFIDENCE_SCORES } from 'ee/vulnerabilities/constants';
 import NonGfmMarkdown from '~/vue_shared/components/markdown/non_gfm_markdown.vue';
 import { s__ } from '~/locale';
-import { createAlert } from '~/alert';
+import DismissFalsePositiveModal from './dismiss_false_positive_modal.vue';
 
 export const VULNERABILITY_UNTRIAGED_STATUS = VULNERABILITY_STATE_OBJECTS.detected.searchParamValue;
 
@@ -16,6 +13,7 @@ export default {
     GlBadge,
     GlButton,
     GlIcon,
+    DismissFalsePositiveModal,
     GlPopover,
     GlProgressBar,
     GlTruncateText,
@@ -65,24 +63,12 @@ export default {
     },
   },
   methods: {
-    removeFlag() {
-      this.$apollo
-        .mutate({
-          mutation: VULNERABILITY_STATE_OBJECTS.dismissed.mutation,
-          variables: {
-            id: this.vulnerability.id,
-            dismissalReason: 'FALSE_POSITIVE',
-            comment: AI_FP_DISMISSAL_COMMENT,
-          },
-          refetchQueries: [this.vulnerabilitiesQuery],
-        })
-        .catch((error) => {
-          createAlert({
-            message: s__('Vulnerability|Something went wrong while dismissing the vulnerability.'),
-            captureError: true,
-            error,
-          });
-        });
+    showConfirmModal() {
+      this.$root.$emit(BV_HIDE_POPOVER);
+      this.$refs.confirmModal.show();
+    },
+    showFalsePositiveToast() {
+      this.$toast.show(this.$options.i18n.dismissSuccess);
     },
   },
   i18n: {
@@ -91,6 +77,7 @@ export default {
     aiConfidenceScore: s__('Vulnerability|AI Confidence Score'),
     why: s__('Vulnerability|Why it is likely a false positive'),
     removeFlag: s__('Vulnerability|Remove False Positive Flag'),
+    dismissSuccess: s__('Vulnerability|False positive flag dismissed successfully.'),
   },
 };
 </script>
@@ -121,9 +108,20 @@ export default {
           <non-gfm-markdown :markdown="flag.description" />
         </gl-truncate-text>
       </div>
-      <gl-button v-if="canDismissVulnerability" class="gl-mt-5" variant="link" @click="removeFlag">
+      <gl-button
+        v-if="canDismissVulnerability"
+        class="gl-mt-5"
+        variant="link"
+        @click="showConfirmModal"
+      >
         {{ $options.i18n.removeFlag }}
       </gl-button>
     </gl-popover>
+    <dismiss-false-positive-modal
+      ref="confirmModal"
+      :vulnerability="vulnerability"
+      modal-id="dismiss-fp-confirm-modal"
+      @success="showFalsePositiveToast"
+    />
   </gl-badge>
 </template>

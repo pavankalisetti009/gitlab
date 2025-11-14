@@ -131,6 +131,7 @@ module EE
         mount_mutation ::Mutations::Vulnerabilities::BulkSeverityOverride, scopes: [:api, :ai_workflows]
         mount_mutation ::Mutations::Vulnerabilities::CreateIssue, experiment: { milestone: '17.9' }
         mount_mutation ::Mutations::Vulnerabilities::RefreshVulnerabilityFindingTokenStatus
+        mount_mutation ::Mutations::Vulnerabilities::DismissFalsePositiveFlag, experiment: { milestone: '18.6' }
         mount_mutation ::Mutations::Boards::UpdateEpicUserPreferences,
           deprecated: { reason: 'Replaced by WorkItem type', milestone: '17.5' }
         mount_mutation ::Mutations::Boards::EpicBoards::Create,
