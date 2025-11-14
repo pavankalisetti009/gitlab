@@ -401,6 +401,52 @@ RSpec.describe Resolvers::Security::RiskScoreResolver, :elastic_delete_by_query,
 
       it_behaves_like 'returns risk score data'
 
+      context 'when ES total count exceeds returned buckets due to subgroup projects' do
+        let_it_be(:subgroup) { create(:group, parent: group) }
+        let_it_be(:subgroup_project1) { create(:project, group: subgroup) }
+        let_it_be(:subgroup_project2) { create(:project, group: subgroup) }
+
+        before_all do
+          group.add_developer(user)
+        end
+
+        before do
+          es_buckets = {
+            project1.id => 0.5,
+            project2.id => 0.6,
+            project3.id => 0.4,
+            subgroup_project1.id => 0.7,
+            subgroup_project2.id => 0.3
+          }
+
+          allow_next_instance_of(::Security::VulnerabilityElasticRiskScoresFinder) do |finder|
+            allow(finder).to receive(:execute).and_return({
+              total_risk_score: 0.55,
+              total_project_count: 109,
+              risk_score_by_project: es_buckets
+            })
+          end
+        end
+
+        it 'includes subgroup projects in by_project' do
+          result = resolved_risk_score
+
+          expect(result[:by_project].length).to eq(5)
+
+          expect(result[:project_count]).to eq(109)
+
+          project_ids = result[:by_project].map { |p| p[:project].id }
+
+          expect(project_ids).to match_array([
+            project1.id,
+            project2.id,
+            project3.id,
+            subgroup_project1.id,
+            subgroup_project2.id
+          ])
+        end
+      end
+
       context 'when the current user does not have access' do
         it_behaves_like 'returns resource not available'
       end
