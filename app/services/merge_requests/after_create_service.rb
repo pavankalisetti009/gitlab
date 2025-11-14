@@ -36,11 +36,18 @@ module MergeRequests
 
     def prepare_for_mergeability(merge_request)
       logger.info(**log_payload(merge_request, 'Creating pipeline'))
-      create_pipeline_for(merge_request, current_user)
+      measure_duration(:create_pipeline) do
+        create_pipeline_for(merge_request, current_user)
+      end
       logger.info(**log_payload(merge_request, 'Pipeline created'))
 
-      merge_request.update_head_pipeline
-      check_mergeability(merge_request)
+      measure_duration(:update_head_pipeline) do
+        merge_request.update_head_pipeline
+      end
+
+      measure_duration(:check_mergeability) do
+        check_mergeability(merge_request)
+      end
     end
 
     def prepare_merge_request(merge_request)
