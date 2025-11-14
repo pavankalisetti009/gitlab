@@ -1,4 +1,5 @@
 import { getStorageValue, saveStorageValue, removeStorageValue } from '~/lib/utils/local_storage';
+import { duoChatGlobalState } from '~/super_sidebar/constants';
 import { AGENTS_PLATFORM_INDEX_ROUTE } from '../router/constants';
 
 const BASE_STORAGE_KEY = 'duo_agents_platform_last_route';
@@ -40,4 +41,18 @@ export const setupNavigationGuards = ({ router, context = null, storageKey = nul
   router.afterEach((to) => {
     saveRouteState(to, key);
   });
+};
+
+export const trackTabRoutes = ({ path }) => {
+  const { activeTab, lastRoutePerTab } = duoChatGlobalState;
+
+  if (!activeTab || !path) {
+    return;
+  }
+
+  if (!lastRoutePerTab) {
+    duoChatGlobalState.lastRoutePerTab = {};
+  }
+
+  duoChatGlobalState.lastRoutePerTab[activeTab] = path;
 };

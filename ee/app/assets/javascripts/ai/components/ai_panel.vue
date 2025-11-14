@@ -158,9 +158,7 @@ export default {
   },
   methods: {
     handleGoBack() {
-      if (this.currentTabComponent.initialRoute) {
-        this.$router.push(this.currentTabComponent.initialRoute);
-      }
+      this.$router.push(this.currentTabComponent.initialRoute || '/');
     },
     setActiveTab(value) {
       // Update global state (will trigger Vue reactivity)
@@ -173,22 +171,13 @@ export default {
       }
     },
     async handleTabToggle(tab) {
-      const previous = this.activeTab;
-      let selected;
+      this.setActiveTab(tab);
 
-      if (tab === 'new') {
-        selected = tab;
-      } else {
-        selected = tab === previous ? undefined : tab;
-      }
-
-      this.setActiveTab(selected);
-      if (selected && this.currentTabComponent.initialRoute) {
-        // Navigate to the initial route if the tab has one (e.g., sessions)
-        if (this.$route?.path !== this.currentTabComponent.initialRoute) {
-          this.$router.push(this.currentTabComponent.initialRoute);
-        }
-      }
+      const targetRoute =
+        this.duoChatGlobalState.lastRoutePerTab[tab] ||
+        this.currentTabComponent.initialRoute ||
+        '/';
+      this.$router.push(targetRoute);
 
       if (['chat', 'new'].includes(tab)) {
         await this.$nextTick();

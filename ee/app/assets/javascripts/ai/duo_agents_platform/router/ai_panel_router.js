@@ -9,6 +9,7 @@ import {
   restoreLastRoute,
   saveRouteState,
   setupNavigationGuards,
+  trackTabRoutes,
 } from '../utils/navigation_state';
 import { AGENTS_PLATFORM_INDEX_ROUTE, AGENTS_PLATFORM_SHOW_ROUTE } from './constants';
 import { getNamespaceIndexComponent } from './utils';
@@ -53,14 +54,20 @@ export const createRouter = (base, namespace) => {
   // Set up navigation guards for session state persistence (enabled for side panels)
   setupNavigationGuards({
     router,
-    enableStatePersistence: true,
+    context: SAVED_ROUTE_CONTEXT,
+  });
+
+  // Track routes for AI panel tab navigation
+  router.beforeEach((to, _from, next) => {
+    trackTabRoutes(to);
+    next();
   });
 
   // Use nextTick to ensure router is properly initialized before navigation
   // This is needed for abstract routers because it needs a base route
   Vue.nextTick(() => {
     // Try to restore the last visited session from side panel context, otherwise go to index
-    restoreLastRoute(router, { ontext: SAVED_ROUTE_CONTEXT });
+    restoreLastRoute(router, { context: SAVED_ROUTE_CONTEXT });
   });
 
   return router;
