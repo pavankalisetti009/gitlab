@@ -28,7 +28,7 @@ module Ai
           return error_creating(item_consumer) if create_item_consumer_result == :failure
 
           track_item_consumer_event(item_consumer, 'create_ai_catalog_item_consumer')
-          send_audit_events(item_consumer, 'enable_ai_catalog_agent')
+          send_audit_events(item_consumer, audit_event_name)
           ServiceResponse.success(payload: { item_consumer: item_consumer })
         end
 
@@ -40,6 +40,10 @@ module Ai
           return error_parent_item_consumer_not_passed if project_flow_without_parent_item_consumer?
 
           error_flow_triggers_must_be_for_project if flow_triggers_not_for_project?
+        end
+
+        def audit_event_name
+          "enable_ai_catalog_#{item.item_type}"
         end
 
         def parent_item_consumer_service_account

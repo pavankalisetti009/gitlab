@@ -235,6 +235,26 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
       )
     end
 
+    it 'creates an audit event with correct attributes', :aggregate_failures do
+      event_name = "enable_ai_catalog_#{item.item_type}"
+
+      expect { execute }.to change { AuditEvent.count }.by_at_least(1)
+
+      audit_event = AuditEvent.where(entity_type: 'Group', entity_id: group.id)
+                              .find { |event| event.details[:event_name] == event_name }
+
+      expect(audit_event).to be_present
+      expect(audit_event).to have_attributes(
+        author: user,
+        target_details: "#{item.name} (ID: #{item.id})"
+      )
+      expect(audit_event.details).to include(
+        custom_message: "Enabled AI #{item.item_type} for group",
+        event_name: event_name,
+        target_type: 'Ai::Catalog::Item'
+      )
+    end
+
     context 'when the item is already configured in the group' do
       before do
         create(:ai_catalog_item_consumer, group:, item:)
@@ -375,8 +395,28 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
         target_details: "#{item.name} (ID: #{item.id})"
       )
       expect(audit_event.details).to include(
-        custom_message: 'Added AI agent to project/group',
+        custom_message: 'Enabled AI agent for project',
         event_name: 'enable_ai_catalog_agent',
+        target_type: 'Ai::Catalog::Item'
+      )
+    end
+  end
+
+  context 'when the item is a flow' do
+    it 'creates an audit event with correct attributes', :aggregate_failures do
+      expect { execute }.to change { AuditEvent.count }.by(1)
+
+      audit_event = AuditEvent.last
+
+      expect(audit_event).to have_attributes(
+        author: user,
+        entity_type: 'Project',
+        entity_id: consumer_project.id,
+        target_details: "#{item.name} (ID: #{item.id})"
+      )
+      expect(audit_event.details).to include(
+        custom_message: 'Enabled AI flow for project',
+        event_name: 'enable_ai_catalog_flow',
         target_type: 'Ai::Catalog::Item'
       )
     end

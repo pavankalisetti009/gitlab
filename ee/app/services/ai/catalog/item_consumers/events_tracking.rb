@@ -22,7 +22,7 @@ module Ai
         end
 
         def send_audit_events(item_consumer, event_type)
-          messages = audit_event_messages(event_type, item_consumer.item)
+          messages = audit_event_messages(event_type, item_consumer)
           scope = item_consumer.project || item_consumer.group
 
           messages.each do |message|
@@ -41,13 +41,20 @@ module Ai
 
         private
 
-        def audit_event_messages(event_type, item)
+        def audit_event_messages(event_type, item_consumer)
+          item = item_consumer.item
           service_class = "::Ai::Catalog::#{item.item_type.to_s.camelize.pluralize}::" \
             "AuditEventMessageService".safe_constantize
 
           return [] if service_class.nil?
 
-          service_class.new(event_type, item).messages
+          scope_type = if item_consumer.project_id.present?
+                         'project'
+                       elsif item_consumer.group_id.present?
+                         'group'
+                       end
+
+          service_class.new(event_type, item, { scope: scope_type }.compact).messages
         end
       end
     end

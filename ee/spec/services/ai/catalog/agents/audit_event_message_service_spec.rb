@@ -66,9 +66,9 @@ RSpec.describe Ai::Catalog::Agents::AuditEventMessageService, feature_category: 
           version.update!(definition: { 'tools' => [], 'system_prompt' => 'Test prompt' })
         end
 
-        it 'returns create messages with empty tools list' do
+        it 'returns create messages with no tools message' do
           expect(messages).to contain_exactly(
-            "Created a new public AI agent with tools: []",
+            "Created a new public AI agent with no tools",
             "Created new draft version #{version.version} of AI agent"
           )
         end
@@ -228,16 +228,56 @@ RSpec.describe Ai::Catalog::Agents::AuditEventMessageService, feature_category: 
     context 'when event_type is enable_ai_catalog_agent' do
       let(:event_type) { 'enable_ai_catalog_agent' }
 
-      it 'returns enable message' do
-        expect(messages).to eq(['Added AI agent to project/group'])
+      it 'returns enable message with default scope' do
+        expect(messages).to eq(['Enabled AI agent for project/group'])
+      end
+
+      context 'when scope is project' do
+        let(:params) { { scope: 'project' } }
+
+        it 'returns enable message with project scope' do
+          expect(messages).to eq(['Enabled AI agent for project'])
+        end
+      end
+
+      context 'when scope is group' do
+        let(:params) { { scope: 'group' } }
+
+        it 'returns enable message with group scope' do
+          expect(messages).to eq(['Enabled AI agent for group'])
+        end
       end
     end
 
     context 'when event_type is disable_ai_catalog_agent' do
       let(:event_type) { 'disable_ai_catalog_agent' }
 
-      it 'returns disable message' do
-        expect(messages).to eq(['Removed AI agent from project/group'])
+      it 'returns disable message with default scope' do
+        expect(messages).to eq(['Disabled AI agent for project/group'])
+      end
+
+      context 'when scope is project' do
+        let(:params) { { scope: 'project' } }
+
+        it 'returns disable message with project scope' do
+          expect(messages).to eq(['Disabled AI agent for project'])
+        end
+      end
+
+      context 'when scope is group' do
+        let(:params) { { scope: 'group' } }
+
+        it 'returns disable message with group scope' do
+          expect(messages).to eq(['Disabled AI agent for group'])
+        end
+      end
+    end
+
+    context 'when event_type is unknown' do
+      let(:event_type) { 'unknown_event' }
+
+      it 'returns empty array' do
+        expect(messages).to eq([])
       end
     end
   end

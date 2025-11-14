@@ -66,10 +66,33 @@ RSpec.describe Ai::Catalog::ItemConsumers::DestroyService, feature_category: :wo
             target_details: "#{item_consumer.item.name} (ID: #{item_consumer.item.id})"
           )
           expect(audit_event.details).to include(
-            custom_message: 'Removed AI agent from project/group',
+            custom_message: 'Disabled AI agent for project',
             event_name: 'disable_ai_catalog_agent',
             target_type: 'Ai::Catalog::Item'
           )
+        end
+
+        context 'when item is a flow' do
+          let_it_be(:flow_item) { create(:ai_catalog_flow, project: project) }
+          let_it_be_with_refind(:item_consumer) { create(:ai_catalog_item_consumer, project: project, item: flow_item) }
+
+          it 'creates an audit event with flow event name', :aggregate_failures do
+            expect { response }.to change { AuditEvent.count }.by(1)
+
+            audit_event = AuditEvent.last
+
+            expect(audit_event).to have_attributes(
+              author: maintainer,
+              entity_type: 'Project',
+              entity_id: project.id,
+              target_details: "#{item_consumer.item.name} (ID: #{item_consumer.item.id})"
+            )
+            expect(audit_event.details).to include(
+              custom_message: 'Disabled AI flow for project',
+              event_name: 'disable_ai_catalog_flow',
+              target_type: 'Ai::Catalog::Item'
+            )
+          end
         end
 
         context 'when destroy fails' do
@@ -111,6 +134,10 @@ RSpec.describe Ai::Catalog::ItemConsumers::DestroyService, feature_category: :wo
         it 'does not track internal event' do
           expect { response }.not_to trigger_internal_events('delete_ai_catalog_item_consumer')
         end
+
+        it 'does not create an audit event on failure' do
+          expect { response }.not_to change { AuditEvent.count }
+        end
       end
 
       context 'when user has permission' do
@@ -126,6 +153,26 @@ RSpec.describe Ai::Catalog::ItemConsumers::DestroyService, feature_category: :wo
             user: maintainer,
             project: nil,
             namespace: group
+          )
+        end
+
+        it 'creates an audit event with flow event name', :aggregate_failures do
+          expect { response }.to change { AuditEvent.count }.by(1)
+
+          audit_event = AuditEvent.last
+
+          item_type = item_consumer.item.item_type
+
+          expect(audit_event).to have_attributes(
+            author: maintainer,
+            entity_type: 'Group',
+            entity_id: group.id,
+            target_details: "#{item_consumer.item.name} (ID: #{item_consumer.item.id})"
+          )
+          expect(audit_event.details).to include(
+            custom_message: "Disabled AI #{item_type} for group",
+            event_name: "disable_ai_catalog_#{item_type}",
+            target_type: 'Ai::Catalog::Item'
           )
         end
       end

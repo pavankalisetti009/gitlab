@@ -22,6 +22,9 @@ RSpec.describe Ai::Catalog::Flows::UpdateService, feature_category: :workflow_ca
         - name: updated_agent
           type: AgentComponent
           prompt_id: updated_prompt
+          toolset:
+            - gitlab_blob_search
+            - grep
       routers: []
       flow:
         entry_point: updated_agent
@@ -78,6 +81,66 @@ RSpec.describe Ai::Catalog::Flows::UpdateService, feature_category: :workflow_ca
       end
 
       it_behaves_like 'yaml definition update service behavior'
+    end
+  end
+
+  describe 'audit events' do
+    let(:execute_service) do
+      service.execute
+    end
+
+    before_all do
+      project.add_maintainer(user)
+    end
+
+    it 'creates audit events for the changes', :aggregate_failures do
+      expect { execute_service }.to change { AuditEvent.count }.by(3)
+
+      audit_events = AuditEvent.last(3)
+
+      expect(audit_events[0]).to have_attributes(
+        author: user,
+        entity_type: 'Project',
+        entity_id: project.id,
+        target_details: "#{item.name} (ID: #{item.id})"
+      )
+      expect(audit_events[0].details).to include(
+        custom_message: "Updated AI flow: Added tools: [gitlab_blob_search, grep], " \
+          "Entry point changed from 'main_agent' to 'updated_agent', " \
+          "Added components: [updated_agent], Removed components: [main_agent]",
+        event_name: "update_ai_catalog_flow",
+        target_type: "Ai::Catalog::Item"
+      )
+
+      expect(audit_events[1]).to have_attributes(
+        author: user,
+        entity_type: 'Project',
+        entity_id: project.id,
+        target_details: "#{item.name} (ID: #{item.id})"
+      )
+      expect(audit_events[1].details).to include(
+        custom_message: 'Made AI flow public'
+      )
+
+      expect(audit_events[2]).to have_attributes(
+        author: user,
+        entity_type: 'Project',
+        entity_id: project.id
+      )
+      expect(audit_events[2].details).to include(
+        custom_message: 'Released version 1.1.0 of AI flow'
+      )
+    end
+
+    context 'when update fails' do
+      before do
+        allow(item).to receive(:save).and_return(false)
+        item.errors.add(:base, 'Item cannot be updated')
+      end
+
+      it 'does not create an audit event' do
+        expect { execute_service }.not_to change { AuditEvent.count }
+      end
     end
   end
 end
