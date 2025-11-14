@@ -186,12 +186,22 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
       let(:item) { third_party_flow_item }
 
       it_behaves_like 'a failure', "Project item must have a parent item consumer"
+
+      context 'when flags are disabled' do
+        before do
+          stub_feature_flags(ai_catalog_flows: false)
+        end
+
+        it 'creates the item consumer' do
+          expect { execute }.to change { Ai::Catalog::ItemConsumer.count }
+        end
+      end
     end
 
     context 'when item is an agent' do
       let(:item) { agent_item }
 
-      it 'creates the agent' do
+      it 'creates the item consumer' do
         expect { execute }.to change { Ai::Catalog::ItemConsumer.count }
       end
     end
