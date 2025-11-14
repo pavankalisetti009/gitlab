@@ -201,15 +201,30 @@ RSpec.describe Ai::Conversation::Message, feature_category: :duo_chat do
   end
 
   describe 'callbacks' do
+    describe 'before_validation :truncate_referer_url' do
+      let(:organization) { create(:organization) }
+      let(:user) { create(:user, organizations: [organization]) }
+      let(:thread) { create(:ai_conversation_thread, user: user, organization: organization) }
+      let(:long_url) { "https://gitlab.com/#{'a' * 300}" }
+
+      it 'truncates referer_url to 255 characters' do
+        message = described_class.new(thread: thread, content: 'message', role: 'user', referer_url: long_url)
+        message.valid?
+        expect(message.referer_url.length).to eq(255)
+        expect(message.referer_url).to eq(long_url.truncate(255, omission: ''))
+        expect(message).to be_valid
+      end
+    end
+
     describe 'before_create :populate_organization_id' do
       let(:organization) { create(:organization) }
-      let(:user) { create(:user, organization: organization) }
+      let(:user) { create(:user, organizations: [organization]) }
       let(:thread) { create(:ai_conversation_thread, user: user, organization: organization) }
 
       it 'sets organization_id from thread' do
         message = described_class.create!(thread: thread, content: 'message', role: 'user')
 
-        expect(message.organization_id).to eq(user.organization.id)
+        expect(message.organization_id).to eq(user.organizations.first.id)
       end
     end
   end
