@@ -33161,6 +33161,9 @@ msgstr ""
 msgid "Groups|Checking group URL availability…"
 msgstr ""
 
+msgid "Groups|Copy group ID: %{id}"
+msgstr ""
+
 msgid "Groups|Create and add README"
 msgstr ""
 
@@ -33174,6 +33177,9 @@ msgid "Groups|Enter a path for your group."
 msgstr ""
 
 msgid "Groups|Group ID"
+msgstr ""
+
+msgid "Groups|Group ID copied to clipboard."
 msgstr ""
 
 msgid "Groups|Group README"
@@ -52990,10 +52996,16 @@ msgstr ""
 msgid "Projects|An error occurred unarchiving the project. Please refresh the page to try again."
 msgstr ""
 
+msgid "Projects|Copy project ID: %{id}"
+msgstr ""
+
 msgid "Projects|Delete %{nameWithNamespace}"
 msgstr ""
 
 msgid "Projects|No projects found."
+msgstr ""
+
+msgid "Projects|Project ID copied to clipboard."
 msgstr ""
 
 msgid "Projects|Projects that are archived or pending deletion will appear here."
