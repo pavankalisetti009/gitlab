@@ -103,15 +103,12 @@ module EE
         end
 
         def es_search_options
-          options = { index_name: INDEX_NAME }
-
-          if ::Feature.enabled?(:search_glql_use_routing, current_user)
-            # This key is used by ES to find the correct shard
-            # See Elastic::Latest::Routing for how it's used
-            options[:root_ancestor_ids] = root_ancestor_ids
-          end
-
-          options
+          # This key is used by ES to find the correct shard
+          # See Elastic::Latest::Routing for how it's used
+          {
+            index_name: INDEX_NAME,
+            root_ancestor_ids: root_ancestor_ids
+          }
         end
 
         def root_ancestor_ids
