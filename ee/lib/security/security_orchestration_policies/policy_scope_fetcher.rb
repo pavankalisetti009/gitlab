@@ -27,6 +27,7 @@ module Security
 
         {
           compliance_frameworks: compliance_frameworks,
+          excluding_personal_projects: excluding_personal_projects?,
           including_projects: including_projects,
           excluding_projects: excluding_projects,
           including_groups: including_groups,
@@ -84,6 +85,15 @@ module Security
         return container if container.is_a?(Namespace)
 
         container.namespace
+      end
+
+      def excluding_personal_projects?
+        return false if policy_scope.blank?
+
+        excluding_projects = policy_scope.dig(:projects, :excluding)
+        return false if excluding_projects.blank?
+
+        excluding_projects.any? { |project| project[:type] == 'personal' }
       end
     end
   end
