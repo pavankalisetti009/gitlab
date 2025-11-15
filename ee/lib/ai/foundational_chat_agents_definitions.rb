@@ -16,16 +16,16 @@ module Ai
         id: 2,
         reference: 'duo_planner',
         version: 'experimental',
-        name: 'Duo Planner',
+        name: 'Planner Agent',
         description: <<~DESCRIPTION
-          GitLab Duo Planner is a Beta AI planning assistant that helps product teams explore, summarize,
+          GitLab Planner Agent is a Beta AI planning assistant that helps product teams explore, summarize,
           and reason about work in GitLab. It can analyze your work items to surface patterns, summarize context,
           and support planning conversations.
           This early version is read-only and focused on learning from how users engage with it.
           Your feedback will help shape future capabilities
           like creating or editing work items, prioritization assistance, and roadmap generation.
           Link to docs on how to engage
-          with Duo Planner: https://docs.gitlab.com/user/duo_agent_platform/agents/foundational_agents/planner/
+          with the Planner Agent: https://docs.gitlab.com/user/duo_agent_platform/agents/foundational_agents/planner/
         DESCRIPTION
       },
       {
