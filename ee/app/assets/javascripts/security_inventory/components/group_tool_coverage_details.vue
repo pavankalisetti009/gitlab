@@ -28,7 +28,7 @@ export default {
   },
   computed: {
     formattedDateUpdated() {
-      return `${__('Date updated')} ${this.timeFormatted(this.securityScanner.updatedAt)}`;
+      return `${__('Data updated')} ${this.timeFormatted(this.securityScanner.updatedAt)}`;
     },
   },
   methods: {
