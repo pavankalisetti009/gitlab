@@ -70,6 +70,7 @@ RSpec.describe Resolvers::SecurityOrchestration::SecurityPolicyResolver, feature
         },
         policy_scope: {
           compliance_frameworks: [],
+          excluding_personal_projects: false,
           excluding_groups: [],
           excluding_projects: [],
           including_groups: [],
@@ -129,6 +130,7 @@ RSpec.describe Resolvers::SecurityOrchestration::SecurityPolicyResolver, feature
         },
         policy_scope: {
           compliance_frameworks: [],
+          excluding_personal_projects: false,
           excluding_groups: [],
           excluding_projects: [],
           including_groups: [],
@@ -190,6 +192,7 @@ RSpec.describe Resolvers::SecurityOrchestration::SecurityPolicyResolver, feature
         },
         policy_scope: {
           compliance_frameworks: [],
+          excluding_personal_projects: false,
           excluding_groups: [],
           excluding_projects: [],
           including_groups: [],
@@ -251,6 +254,7 @@ RSpec.describe Resolvers::SecurityOrchestration::SecurityPolicyResolver, feature
         },
         policy_scope: {
           compliance_frameworks: [],
+          excluding_personal_projects: false,
           excluding_groups: [],
           excluding_projects: [],
           including_groups: [],
@@ -308,6 +312,7 @@ RSpec.describe Resolvers::SecurityOrchestration::SecurityPolicyResolver, feature
         },
         policy_scope: {
           compliance_frameworks: [],
+          excluding_personal_projects: false,
           excluding_groups: [],
           excluding_projects: [],
           including_groups: [],

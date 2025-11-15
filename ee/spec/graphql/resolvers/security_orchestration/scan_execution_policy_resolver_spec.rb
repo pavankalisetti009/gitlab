@@ -41,6 +41,7 @@ RSpec.describe Resolvers::SecurityOrchestration::ScanExecutionPolicyResolver, fe
         enabled: true,
         policy_scope: {
           compliance_frameworks: [],
+          excluding_personal_projects: false,
           including_projects: [],
           excluding_projects: [],
           including_groups: [],
@@ -151,6 +152,7 @@ RSpec.describe Resolvers::SecurityOrchestration::ScanExecutionPolicyResolver, fe
                   enabled: true,
                   policy_scope: {
                     compliance_frameworks: [],
+                    excluding_personal_projects: false,
                     including_projects: [],
                     excluding_projects: [],
                     including_groups: [],
@@ -220,6 +222,7 @@ RSpec.describe Resolvers::SecurityOrchestration::ScanExecutionPolicyResolver, fe
               enabled: true,
               policy_scope: {
                 compliance_frameworks: [],
+                excluding_personal_projects: false,
                 including_projects: [],
                 excluding_projects: [],
                 including_groups: [],

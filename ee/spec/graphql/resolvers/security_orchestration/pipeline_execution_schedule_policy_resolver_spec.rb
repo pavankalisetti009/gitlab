@@ -26,6 +26,7 @@ RSpec.describe Resolvers::SecurityOrchestration::PipelineExecutionSchedulePolicy
         enabled: true,
         policy_scope: {
           compliance_frameworks: [],
+          excluding_personal_projects: false,
           including_projects: [],
           excluding_projects: [],
           including_groups: [],
