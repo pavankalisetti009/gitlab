@@ -21,7 +21,7 @@ describe('SecurityInventoryTable', () => {
     return ({
       props = {},
       stubs = {},
-      provide = { canManageAttributes: true, canReadAttributes: true },
+      provide = { canManageAttributes: false, canReadAttributes: true },
     } = {}) => {
       wrapper = mountFn(SecurityInventoryTable, {
         propsData: {
@@ -119,13 +119,13 @@ describe('SecurityInventoryTable', () => {
   });
 
   describe('bulk selection', () => {
-    describe('with feature flags and permission', () => {
+    describe('with feature flag and permission', () => {
       beforeEach(() => {
         createFullComponent({
           props: { items },
           stubs: { GlTableLite: false },
           provide: {
-            glFeatures: { securityContextLabels: true, bulkEditSecurityAttributes: true },
+            glFeatures: { securityContextLabels: true },
             canReadAttributes: true,
             canManageAttributes: true,
             groupFullPath: 'path/to/group',

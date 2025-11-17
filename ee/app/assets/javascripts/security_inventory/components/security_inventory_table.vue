@@ -62,11 +62,7 @@ export default {
         : this.items;
     },
     shouldShowBulkEdit() {
-      return (
-        this.glFeatures.securityContextLabels &&
-        this.glFeatures.bulkEditSecurityAttributes &&
-        this.canManageAttributes
-      );
+      return this.glFeatures.securityContextLabels && this.canManageAttributes;
     },
     isAnyItemSelected() {
       return this.items.some((item) => this.isSelected(item));
