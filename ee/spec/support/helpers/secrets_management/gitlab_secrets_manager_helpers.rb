@@ -254,12 +254,6 @@ module SecretsManagement
       project_policies
     end
 
-    def expect_legacy_project_to_have_no_policies(project)
-      project_policies = secrets_manager_client.list_project_policies(project_id: project.id)
-      expect(project_policies).to be_empty,
-        "Expected project #{project.id} to have no legacy policies, but found: #{project_policies.join(', ')}"
-    end
-
     def cancel_exclusive_project_secret_operation_lease(project)
       lease_key = "project_secret_operation:project_#{project.id}"
       uuid = Gitlab::ExclusiveLease.get_uuid(lease_key)
@@ -268,6 +262,53 @@ module SecretsManagement
 
     def provision_group_secrets_manager(secrets_manager, user)
       GroupSecretsManagers::ProvisionService.new(secrets_manager, user).execute
+    end
+
+    def expect_group_to_have_no_policies(group_namespace)
+      if group_namespace.empty?
+        group_policies = find_group_policies(group_namespace)
+        expect(group_policies).to be_empty,
+          "Expected group to have no policies, but found: #{group_policies.join(', ')}"
+      else
+        expect do
+          group_policies = find_group_policies(group_namespace)
+        end.to raise_error(SecretsManagement::SecretsManagerClient::ApiError)
+      end
+    end
+
+    def find_group_policies(group_namespace)
+      group_policies = []
+
+      client = secrets_manager_client.with_namespace(group_namespace)
+      client.each_acl_policy do |policy_name|
+        group_policies << policy_name unless policy_name == "default"
+      end
+
+      group_policies
+    end
+
+    def expect_namespace_to_exist(namespace_path)
+      expect { read_namespace(namespace_path) }
+        .not_to raise_error
+    end
+
+    def expect_namespace_not_to_exist(namespace_path)
+      expect { read_namespace(namespace_path) }
+        .to raise_error(SecretsManagerClient::ApiError)
+    end
+
+    def read_namespace(namespace_path)
+      namespaces = namespace_path.split('/')
+      path = namespaces.first
+      client = secrets_manager_client
+
+      if namespaces.count > 1
+        # When namespace_path is like group_1/group_2
+        client = client.with_namespace(namespaces.first)
+        path = namespaces.last
+      end
+
+      client.read_namespace(path)
     end
   end
 end

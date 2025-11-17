@@ -328,6 +328,12 @@ module EE
           description: 'List secret permissions.',
           resolver: ::Resolvers::SecretsManagement::Permissions::SecretPermissionsResolver
 
+        field :group_secrets_manager, ::Types::SecretsManagement::GroupSecretsManagerType,
+          null: true,
+          experiment: { milestone: '18.6' },
+          description: 'Find a group secrets manager.',
+          resolver: ::Resolvers::SecretsManagement::GroupSecretsManagerResolver
+
         field :ai_feature_settings,
           ::Types::Ai::FeatureSettings::FeatureSettingType.connection_type,
           null: true,
