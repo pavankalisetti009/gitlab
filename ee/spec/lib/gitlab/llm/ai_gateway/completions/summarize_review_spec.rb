@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Gitlab::Llm::AiGateway::Completions::SummarizeReview, feature_category: :code_suggestions do
   let_it_be(:user) { create(:user) }
-  let_it_be(:project) { create(:project, :repository) }
+  let_it_be(:project) { create(:project, :repository, group: create(:group)) }
   let_it_be(:merge_request) { create(:merge_request, source_project: project, target_project: project) }
   let_it_be(:draft_note_by_random_user) { create(:draft_note, merge_request: merge_request) }
 
@@ -50,7 +50,6 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::SummarizeReview, feature_cat
 
   describe '#execute' do
     before do
-      stub_feature_flags(ai_model_switching: false)
       stub_feature_flags(use_claude_code_completion: false)
     end
 
@@ -114,36 +113,68 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::SummarizeReview, feature_cat
         end
       end
 
-      context 'when draft notes passed as options' do
-        let(:draft_note) do
-          build(
-            :draft_note,
-            merge_request: merge_request,
-            author: user,
-            note: 'This is a draft note from options'
-          )
+      shared_examples_for 'summarize review context' do
+        context 'when draft notes passed as options' do
+          let(:draft_note) do
+            build(
+              :draft_note,
+              merge_request: merge_request,
+              author: user,
+              note: 'This is a draft note from options'
+            )
+          end
+
+          let(:draft_notes_content) { "Comment: #{draft_note.note}\n" }
+          let(:options) { { draft_notes: [draft_note] } }
+
+          it_behaves_like 'summarize review'
         end
 
-        let(:draft_notes_content) { "Comment: #{draft_note.note}\n" }
-        let(:options) { { draft_notes: [draft_note] } }
+        context 'when draft note content length fits INPUT_CONTENT_LIMIT' do
+          let(:draft_notes_content) { "Comment: #{draft_note_by_current_user.note}\n" }
 
-        it_behaves_like 'summarize review'
-      end
-
-      context 'when draft note content length fits INPUT_CONTENT_LIMIT' do
-        let(:draft_notes_content) { "Comment: #{draft_note_by_current_user.note}\n" }
-
-        it_behaves_like 'summarize review'
-      end
-
-      context 'when draft note content length is longer than INPUT_CONTENT_LIMIT' do
-        let(:draft_notes_content) { "" }
-
-        before do
-          stub_const("#{described_class}::INPUT_CONTENT_LIMIT", 2)
+          it_behaves_like 'summarize review'
         end
 
-        it_behaves_like 'summarize review'
+        context 'when draft note content length is longer than INPUT_CONTENT_LIMIT' do
+          let(:draft_notes_content) { "" }
+
+          before do
+            stub_const("#{described_class}::INPUT_CONTENT_LIMIT", 2)
+          end
+
+          it_behaves_like 'summarize review'
+        end
+      end
+
+      context 'on SaaS', :saas do
+        it_behaves_like 'summarize review context' do
+          let(:model_metadata) do
+            { provider: 'gitlab', feature_setting: 'summarize_review', identifier: nil }
+          end
+        end
+      end
+
+      context 'on a self-managed instance' do
+        it_behaves_like 'summarize review context' do
+          let(:model_metadata) do
+            { provider: 'gitlab', feature_setting: 'summarize_review', identifier: nil }
+          end
+        end
+
+        context 'when instance level model selection feature setting exists' do
+          let!(:instance_model_selection_feature_setting) do
+            create(:instance_model_selection_feature_setting,
+              feature: 'summarize_review',
+              offered_model_ref: 'claude-3-7-sonnet-20250219')
+          end
+
+          it_behaves_like 'summarize review context' do
+            let(:model_metadata) do
+              { provider: 'gitlab', feature_setting: 'summarize_review', identifier: 'claude-3-7-sonnet-20250219' }
+            end
+          end
+        end
       end
 
       context 'when use_claude_code_completion feature flag is enabled for the root namespace of the merge request' do

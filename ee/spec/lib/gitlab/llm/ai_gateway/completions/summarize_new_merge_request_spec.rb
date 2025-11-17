@@ -37,7 +37,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::SummarizeNewMergeRequest, fe
               base_url: Gitlab::AiGateway.url,
               prompt_name: :summarize_new_merge_request,
               inputs: { extracted_diff: extracted_diff },
-              model_metadata: nil,
+              model_metadata: model_metadata,
               prompt_version: "^2.0.0"
             )
             .and_return(example_response)
@@ -58,6 +58,21 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::SummarizeNewMergeRequest, fe
       end
 
       it_behaves_like 'makes AI request and publishes response'
+
+      context 'on self-managed instance' do
+        let!(:instance_model_selection_feature_setting) do
+          create(:instance_model_selection_feature_setting,
+            feature: 'summarize_new_merge_request',
+            offered_model_ref: 'claude-3-7-sonnet-20250219')
+        end
+
+        it_behaves_like 'makes AI request and publishes response' do
+          let(:model_metadata) do
+            { provider: 'gitlab', feature_setting: 'summarize_new_merge_request',
+              identifier: 'claude-3-7-sonnet-20250219' }
+          end
+        end
+      end
     end
 
     context 'when extracted diff is blank' do

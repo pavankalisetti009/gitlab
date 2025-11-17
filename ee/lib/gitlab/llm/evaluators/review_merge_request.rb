@@ -15,7 +15,7 @@ module Gitlab
         end
 
         override :model_metadata
-        def model_metadata
+        def model_metadata(_user)
           {
             provider: 'gitlab',
             feature_setting: 'review_merge_request'

@@ -34,30 +34,26 @@ RSpec.describe Gitlab::Llm::Concerns::AiGatewayClientConcern, feature_category: 
       end
 
       # Test helpers to access private methods
-      def test_namespace_feature_setting
-        namespace_feature_setting
+      def test_selected_feature_setting(user)
+        selected_feature_setting(user)
       end
 
-      def test_selected_feature_setting
-        selected_feature_setting
+      def test_base_url_from_feature_setting(user)
+        base_url_from_feature_setting(user)
       end
 
-      def test_base_url_from_feature_setting
-        base_url_from_feature_setting
-      end
-
-      def test_prompt_version_or_default
-        prompt_version_or_default
+      def test_prompt_version_or_default(user)
+        prompt_version_or_default(user)
       end
 
       private
 
       def unit_primitive_name
-        'duo_chat'
+        'review_merge_request'
       end
 
       def prompt_name
-        'duo_chat'
+        'review_merge_request'
       end
     end
   end
@@ -95,14 +91,18 @@ RSpec.describe Gitlab::Llm::Concerns::AiGatewayClientConcern, feature_category: 
       end
     end
 
-    context 'with default configuration (no namespace, no feature settings)' do
-      it 'executes the ai gateway request with default values' do
+    context 'with no namespace or self-hosted feature setting' do
+      it 'executes the ai gateway request with the default instance level feature setting' do
         expect(ai_gateway_client_double).to receive(:complete_prompt).with(
           base_url: ::Gitlab::AiGateway.url,
-          prompt_name: 'duo_chat',
+          prompt_name: 'review_merge_request',
           inputs: { input: 'test_input' },
           prompt_version: '^1.0.0',
-          model_metadata: nil
+          model_metadata: {
+            provider: 'gitlab',
+            feature_setting: 'review_merge_request',
+            identifier: nil
+          }
         )
 
         execute_request
@@ -113,7 +113,7 @@ RSpec.describe Gitlab::Llm::Concerns::AiGatewayClientConcern, feature_category: 
       let!(:self_hosted_model) { create(:ai_self_hosted_model) }
       let!(:ai_feature_setting) do
         create(:ai_feature_setting,
-          feature: 'duo_chat',
+          feature: 'review_merge_request',
           provider: :self_hosted,
           self_hosted_model: self_hosted_model)
       end
@@ -121,7 +121,7 @@ RSpec.describe Gitlab::Llm::Concerns::AiGatewayClientConcern, feature_category: 
       it 'uses self-hosted configuration' do
         expect(ai_gateway_client_double).to receive(:complete_prompt).with(
           base_url: ai_feature_setting.base_url,
-          prompt_name: 'duo_chat',
+          prompt_name: 'review_merge_request',
           inputs: { input: 'test_input' },
           prompt_version: '^1.0.0',
           model_metadata: hash_including(:name)
@@ -133,19 +133,19 @@ RSpec.describe Gitlab::Llm::Concerns::AiGatewayClientConcern, feature_category: 
 
     context 'with vendored feature setting' do
       let!(:ai_feature_setting) do
-        create(:ai_feature_setting, feature: 'duo_chat', provider: :vendored)
+        create(:ai_feature_setting, feature: 'review_merge_request', provider: :vendored)
       end
 
       it 'uses vendored configuration' do
         expect(ai_gateway_client_double).to receive(:complete_prompt).with(
           base_url: ::Gitlab::AiGateway.url,
-          prompt_name: 'duo_chat',
+          prompt_name: 'review_merge_request',
           inputs: { input: 'test_input' },
           prompt_version: '^1.0.0',
           model_metadata: {
             provider: 'gitlab',
-            identifier: '',
-            feature_setting: 'duo_chat'
+            identifier: nil,
+            feature_setting: 'review_merge_request'
           }
         )
 
@@ -155,14 +155,14 @@ RSpec.describe Gitlab::Llm::Concerns::AiGatewayClientConcern, feature_category: 
 
     context 'when instance is SAAS and namespace feature setting', :saas do
       let!(:ai_feature_setting) do
-        create(:ai_feature_setting, feature: 'duo_chat', provider: :self_hosted)
+        create(:ai_feature_setting, feature: 'review_merge_request', provider: :self_hosted)
       end
 
       let!(:namespace_feature_setting) do
         create(:ai_namespace_feature_setting,
           namespace: group,
-          feature: 'duo_chat',
-          offered_model_ref: 'claude-3-7-sonnet-20250219')
+          feature: 'review_merge_request',
+          offered_model_ref: 'claude_sonnet_3_7')
       end
 
       subject(:execute_request) { dummy_class.new(user, tracking_context, group).execute }
@@ -170,12 +170,12 @@ RSpec.describe Gitlab::Llm::Concerns::AiGatewayClientConcern, feature_category: 
       it 'prioritizes namespace feature setting over standard feature setting' do
         expect(ai_gateway_client_double).to receive(:complete_prompt).with(
           base_url: ::Gitlab::AiGateway.url,
-          prompt_name: 'duo_chat',
+          prompt_name: 'review_merge_request',
           inputs: { input: 'test_input' },
           prompt_version: '^1.0.0',
           model_metadata: hash_including(
-            feature_setting: 'duo_chat',
-            identifier: 'claude-3-7-sonnet-20250219',
+            feature_setting: 'review_merge_request',
+            identifier: 'claude_sonnet_3_7',
             provider: 'gitlab'
           )
         )
@@ -194,7 +194,7 @@ RSpec.describe Gitlab::Llm::Concerns::AiGatewayClientConcern, feature_category: 
       end
 
       let!(:ai_feature_setting) do
-        create(:ai_feature_setting, feature: 'duo_chat', provider: :vendored)
+        create(:ai_feature_setting, feature: 'review_merge_request', provider: :vendored)
       end
 
       subject(:execute_request) { dummy_class_with_version.new(user, tracking_context).execute }
@@ -202,13 +202,13 @@ RSpec.describe Gitlab::Llm::Concerns::AiGatewayClientConcern, feature_category: 
       it 'uses the overridden prompt version' do
         expect(ai_gateway_client_double).to receive(:complete_prompt).with(
           base_url: ::Gitlab::AiGateway.url,
-          prompt_name: 'duo_chat',
+          prompt_name: 'review_merge_request',
           inputs: { input: 'test_input' },
           prompt_version: '2.1.0',
           model_metadata: {
             provider: 'gitlab',
-            identifier: '',
-            feature_setting: 'duo_chat'
+            identifier: nil,
+            feature_setting: 'review_merge_request'
           }
         )
 
@@ -217,13 +217,13 @@ RSpec.describe Gitlab::Llm::Concerns::AiGatewayClientConcern, feature_category: 
 
       context 'when feature setting is self-hosted' do
         let!(:ai_feature_setting) do
-          create(:ai_feature_setting, feature: 'duo_chat', provider: :self_hosted)
+          create(:ai_feature_setting, feature: 'review_merge_request', provider: :self_hosted)
         end
 
         it 'uses default prompt version for self-hosted (ignores override)' do
           expect(ai_gateway_client_double).to receive(:complete_prompt).with(
             base_url: ai_feature_setting.base_url,
-            prompt_name: 'duo_chat',
+            prompt_name: 'review_merge_request',
             inputs: { input: 'test_input' },
             prompt_version: '^1.0.0',
             model_metadata: hash_including(:name)
@@ -235,37 +235,31 @@ RSpec.describe Gitlab::Llm::Concerns::AiGatewayClientConcern, feature_category: 
     end
   end
 
-  describe '#namespace_feature_setting' do
-    let(:is_saas) { true }
-
-    before do
-      allow(::Gitlab::Saas).to receive(:feature_available?).with(:gitlab_com_subscriptions).and_return(is_saas)
-    end
-
+  describe '#namespace_feature_setting', :saas do
     subject(:instance) { dummy_class.new(user, tracking_context, group) }
 
     context 'when namespace feature setting exists' do
       let!(:namespace_feature_setting) do
         create(:ai_namespace_feature_setting,
           namespace: group,
-          feature: 'duo_chat',
-          offered_model_ref: 'claude-3-7-sonnet-20250219')
+          feature: 'review_merge_request',
+          offered_model_ref: 'claude_sonnet_3_7')
       end
 
       it 'returns the namespace feature setting' do
-        result = instance.test_namespace_feature_setting
+        result = instance.test_selected_feature_setting(user)
         expect(result).to eq(namespace_feature_setting)
-        expect(result.feature).to eq('duo_chat')
-        expect(result.offered_model_ref).to eq('claude-3-7-sonnet-20250219')
+        expect(result.feature).to eq('review_merge_request')
+        expect(result.offered_model_ref).to eq('claude_sonnet_3_7')
       end
     end
 
     context 'when no namespace feature setting exists' do
-      it 'initializes a NamespaceFeatureSetting with duo_chat feature' do
-        result = instance.test_namespace_feature_setting
+      it 'initializes a NamespaceFeatureSetting with review_merge_request feature' do
+        result = instance.test_selected_feature_setting(user)
 
         expect(result).to be_a(Ai::ModelSelection::NamespaceFeatureSetting)
-        expect(result.feature).to eq("duo_chat")
+        expect(result.feature).to eq("review_merge_request")
       end
     end
 
@@ -273,7 +267,7 @@ RSpec.describe Gitlab::Llm::Concerns::AiGatewayClientConcern, feature_category: 
       subject(:instance) { dummy_class.new(user, tracking_context, nil) }
 
       it 'returns nil' do
-        result = instance.test_namespace_feature_setting
+        result = instance.test_selected_feature_setting(user)
         expect(result).to be_nil
       end
     end
@@ -284,28 +278,12 @@ RSpec.describe Gitlab::Llm::Concerns::AiGatewayClientConcern, feature_category: 
       let!(:namespace_feature_setting) do
         create(:ai_namespace_feature_setting,
           namespace: group,
-          feature: 'duo_chat',
-          offered_model_ref: 'claude-3-7-sonnet-20250219')
+          feature: 'review_merge_request',
+          offered_model_ref: 'claude_sonnet_3_7')
       end
 
       it 'returns nil' do
-        result = instance.test_namespace_feature_setting
-        expect(result).to be_nil
-      end
-    end
-
-    context 'when the instance is not saas' do
-      let(:is_saas) { false }
-
-      let!(:namespace_feature_setting) do
-        build(:ai_namespace_feature_setting,
-          namespace: group,
-          feature: 'duo_chat',
-          offered_model_ref: 'claude-3-7-sonnet-20250219')
-      end
-
-      it 'returns nil' do
-        result = instance.test_namespace_feature_setting
+        result = instance.test_selected_feature_setting(user)
         expect(result).to be_nil
       end
     end
@@ -313,21 +291,30 @@ RSpec.describe Gitlab::Llm::Concerns::AiGatewayClientConcern, feature_category: 
 
   describe '#selected_feature_setting' do
     let!(:ai_feature_setting) do
-      create(:ai_feature_setting, feature: 'duo_chat', provider: :self_hosted)
+      create(:ai_feature_setting, feature: 'review_merge_request', provider: :self_hosted)
+    end
+
+    context 'when user is nil' do
+      subject(:instance) { dummy_class.new(user, tracking_context, nil) }
+
+      it 'returns nil' do
+        result = instance.test_selected_feature_setting(nil)
+        expect(result).to be_nil
+      end
     end
 
     context 'when instance is SAAS and a namespace feature setting exists', :saas do
       let!(:namespace_feature_setting) do
         create(:ai_namespace_feature_setting,
           namespace: group,
-          feature: 'duo_chat',
-          offered_model_ref: 'claude-3-7-sonnet-20250219')
+          feature: 'review_merge_request',
+          offered_model_ref: 'claude_sonnet_3_7')
       end
 
       subject(:instance) { dummy_class.new(user, tracking_context, group) }
 
       it 'returns namespace feature setting (priority)' do
-        result = instance.test_selected_feature_setting
+        result = instance.test_selected_feature_setting(user)
         expect(result).to eq(namespace_feature_setting)
         expect(result).to be_a(::Ai::ModelSelection::NamespaceFeatureSetting)
       end
@@ -337,7 +324,7 @@ RSpec.describe Gitlab::Llm::Concerns::AiGatewayClientConcern, feature_category: 
       subject(:instance) { dummy_class.new(user, tracking_context, nil) }
 
       it 'returns standard feature setting' do
-        result = instance.test_selected_feature_setting
+        result = instance.test_selected_feature_setting(user)
         expect(result).to eq(ai_feature_setting)
         expect(result).to be_a(::Ai::FeatureSetting)
       end
@@ -350,8 +337,38 @@ RSpec.describe Gitlab::Llm::Concerns::AiGatewayClientConcern, feature_category: 
         ai_feature_setting.destroy!
       end
 
-      it 'returns nil' do
-        result = instance.test_selected_feature_setting
+      it 'returns the default instance level feature setting' do
+        result = instance.test_selected_feature_setting(user)
+        expect(result).to be_a(::Ai::ModelSelection::InstanceModelSelectionFeatureSetting)
+        expect(result.feature).to eq('review_merge_request')
+        expect(result.offered_model_ref).to be_nil
+      end
+
+      context 'when instance level model selection feature setting exists' do
+        let!(:instance_model_selection_feature_setting) do
+          create(:instance_model_selection_feature_setting,
+            feature: 'review_merge_request',
+            offered_model_ref: 'claude-3-7-sonnet-20250219')
+        end
+
+        it 'returns the instance level model selection feature setting' do
+          result = instance.test_selected_feature_setting(user)
+          expect(result).to eq(instance_model_selection_feature_setting)
+        end
+      end
+    end
+
+    context 'when service returns an error', :saas do
+      subject(:instance) { dummy_class.new(user, tracking_context, nil) }
+
+      before do
+        allow(::Ai::AmazonQ).to receive(:connected?).and_return(false)
+        allow(user.user_preference).to receive(:get_default_duo_namespace).and_return(nil)
+        allow(Ability).to receive(:allowed?).with(user, :assign_default_duo_group, user).and_return(true)
+      end
+
+      it 'returns nil when service result is not successful' do
+        result = instance.test_selected_feature_setting(user)
         expect(result).to be_nil
       end
     end
@@ -362,22 +379,22 @@ RSpec.describe Gitlab::Llm::Concerns::AiGatewayClientConcern, feature_category: 
 
     context 'with self-hosted feature setting' do
       let!(:ai_feature_setting) do
-        create(:ai_feature_setting, feature: 'duo_chat', provider: :self_hosted)
+        create(:ai_feature_setting, feature: 'review_merge_request', provider: :self_hosted)
       end
 
       it 'returns the base_url from feature setting' do
-        result = instance.test_base_url_from_feature_setting
+        result = instance.test_base_url_from_feature_setting(user)
         expect(result).to eq(ai_feature_setting.base_url)
       end
     end
 
     context 'with vendored feature setting' do
       let!(:ai_feature_setting) do
-        create(:ai_feature_setting, feature: 'duo_chat', provider: :vendored)
+        create(:ai_feature_setting, feature: 'review_merge_request', provider: :vendored)
       end
 
       it 'returns default GitLab AiGateway URL' do
-        result = instance.test_base_url_from_feature_setting
+        result = instance.test_base_url_from_feature_setting(user)
         expect(result).to eq(::Gitlab::AiGateway.url)
       end
     end
@@ -386,21 +403,21 @@ RSpec.describe Gitlab::Llm::Concerns::AiGatewayClientConcern, feature_category: 
       let!(:namespace_feature_setting) do
         create(:ai_namespace_feature_setting,
           namespace: group,
-          feature: 'duo_chat',
-          offered_model_ref: 'claude-3-7-sonnet-20250219')
+          feature: 'review_merge_request',
+          offered_model_ref: 'claude_sonnet_3_7')
       end
 
       subject(:instance) { dummy_class.new(user, tracking_context, group) }
 
       it 'returns default GitLab AiGateway URL (namespace settings have no base_url)' do
-        result = instance.test_base_url_from_feature_setting
+        result = instance.test_base_url_from_feature_setting(user)
         expect(result).to eq(::Gitlab::AiGateway.url)
       end
     end
 
     context 'when no feature setting exists' do
       it 'returns default GitLab AiGateway URL' do
-        result = instance.test_base_url_from_feature_setting
+        result = instance.test_base_url_from_feature_setting(user)
         expect(result).to eq(::Gitlab::AiGateway.url)
       end
     end
@@ -419,13 +436,13 @@ RSpec.describe Gitlab::Llm::Concerns::AiGatewayClientConcern, feature_category: 
       end
 
       let!(:ai_feature_setting) do
-        create(:ai_feature_setting, feature: 'duo_chat', provider: :vendored)
+        create(:ai_feature_setting, feature: 'review_merge_request', provider: :vendored)
       end
 
       subject(:instance) { dummy_class_with_version.new(user, tracking_context, nil) }
 
       it 'returns the custom prompt version' do
-        result = instance.test_prompt_version_or_default
+        result = instance.test_prompt_version_or_default(user)
         expect(result).to eq('2.1.0')
       end
     end
@@ -440,24 +457,24 @@ RSpec.describe Gitlab::Llm::Concerns::AiGatewayClientConcern, feature_category: 
       end
 
       let!(:ai_feature_setting) do
-        create(:ai_feature_setting, feature: 'duo_chat', provider: :self_hosted)
+        create(:ai_feature_setting, feature: 'review_merge_request', provider: :self_hosted)
       end
 
       subject(:instance) { dummy_class_with_version.new(user, tracking_context, nil) }
 
       it 'returns the default version (ignores custom for self-hosted)' do
-        result = instance.test_prompt_version_or_default
+        result = instance.test_prompt_version_or_default(user)
         expect(result).to eq('^1.0.0')
       end
     end
 
     context 'with no custom prompt version' do
       let!(:ai_feature_setting) do
-        create(:ai_feature_setting, feature: 'duo_chat', provider: :vendored)
+        create(:ai_feature_setting, feature: 'review_merge_request', provider: :vendored)
       end
 
       it 'returns the default version' do
-        result = instance.test_prompt_version_or_default
+        result = instance.test_prompt_version_or_default(user)
         expect(result).to eq('^1.0.0')
       end
     end
@@ -528,18 +545,8 @@ RSpec.describe Gitlab::Llm::Concerns::AiGatewayClientConcern, feature_category: 
     let!(:namespace_feature_setting) do
       create(:ai_namespace_feature_setting,
         namespace: group,
-        feature: 'duo_chat',
-        offered_model_ref: 'claude-3-7-sonnet-20250219')
-    end
-
-    it 'memoizes namespace_feature_setting' do
-      expect(::Ai::ModelSelection::NamespaceFeatureSetting)
-        .to receive(:find_or_initialize_by_feature).once.and_call_original
-
-      # Call multiple times
-      instance.test_namespace_feature_setting
-      instance.test_namespace_feature_setting
-      instance.test_selected_feature_setting
+        feature: 'review_merge_request',
+        offered_model_ref: 'claude_sonnet_3_7')
     end
 
     it 'memoizes selected_feature_setting' do
@@ -548,8 +555,8 @@ RSpec.describe Gitlab::Llm::Concerns::AiGatewayClientConcern, feature_category: 
         .to receive(:find_or_initialize_by_feature).once.and_call_original
 
       # Call multiple times
-      instance.test_selected_feature_setting
-      instance.test_selected_feature_setting
+      instance.test_selected_feature_setting(user)
+      instance.test_selected_feature_setting(user)
     end
   end
 end

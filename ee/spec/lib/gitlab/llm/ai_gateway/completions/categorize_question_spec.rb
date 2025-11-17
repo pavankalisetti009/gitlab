@@ -34,6 +34,8 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::CategorizeQuestion, feature_
     }.to_json
   end
 
+  let(:model_metadata) { { provider: 'gitlab', feature_setting: 'duo_chat', identifier: nil } }
+
   before do
     allow_next_instance_of(::Gitlab::Llm::ChatStorage, user, nil, chat_message.thread) do |storage|
       allow(storage).to receive(:messages_up_to).with(chat_message.id).and_return(messages)
@@ -50,7 +52,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::CategorizeQuestion, feature_
       base_url: Gitlab::AiGateway.url,
       prompt_name: :categorize_question,
       inputs: inputs,
-      model_metadata: nil,
+      model_metadata: model_metadata,
       prompt_version: "^1.0.0"
     ).and_return(ai_response)
 
