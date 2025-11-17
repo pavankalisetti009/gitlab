@@ -50,7 +50,8 @@ RSpec.describe 'ClusterAgents', :js, feature_category: :environment_management d
         visit project_cluster_agent_path(project, agent.name)
       end
 
-      it 'displays agent information', :aggregate_failures do
+      it 'displays agent information', :aggregate_failures,
+        quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/8416' do
         expect(page).to have_content(agent.name)
       end
 
