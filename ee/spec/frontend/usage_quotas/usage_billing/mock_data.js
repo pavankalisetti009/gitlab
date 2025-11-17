@@ -651,16 +651,24 @@ export const usageDataWithCommitment = {
       purchaseCreditsPath: '/purchase-credits-path',
       monthlyCommitment: {
         creditsUsed: 50.333,
-        totalCredits: 300,
+        totalCredits: 100,
+        dailyUsage: [
+          { creditsUsed: 5, date: '2025-10-06' },
+          { creditsUsed: 12, date: '2025-10-07' },
+          { creditsUsed: 18, date: '2025-10-10' },
+          { creditsUsed: 15.333, date: '2025-10-11' },
+        ],
       },
       overage: {
         isAllowed: true,
         creditsUsed: 0,
+        dailyUsage: [],
       },
 
       monthlyWaiver: {
         totalCredits: 0,
         creditsUsed: 0,
+        dailyUsage: [],
       },
     },
   },
@@ -694,16 +702,29 @@ export const usageDataWithCommitmentWithMonthlyWaiver = {
       purchaseCreditsPath: '/purchase-credits-path',
 
       monthlyCommitment: {
-        creditsUsed: 300,
-        totalCredits: 300,
+        creditsUsed: 50,
+        totalCredits: 50,
+        dailyUsage: [
+          { creditsUsed: 5, date: '2025-10-06' },
+          { creditsUsed: 12, date: '2025-10-07' },
+          { creditsUsed: 18, date: '2025-10-10' },
+          { creditsUsed: 15, date: '2025-10-11' },
+        ],
       },
       monthlyWaiver: {
-        totalCredits: 1000,
-        creditsUsed: 200.125,
+        creditsUsed: 50.125,
+        totalCredits: 100,
+        dailyUsage: [
+          { creditsUsed: 8.5, date: '2025-10-12' },
+          { creditsUsed: 12.25, date: '2025-10-13' },
+          { creditsUsed: 15.375, date: '2025-10-14' },
+          { creditsUsed: 14, date: '2025-10-15' },
+        ],
       },
       overage: {
         isAllowed: false,
         creditsUsed: 0,
+        dailyUsage: [],
       },
     },
   },
@@ -719,17 +740,30 @@ export const usageDataWithCommitmentWithOverage = {
       isOutdatedClient: false,
       lastEventTransactionAt: '2025-10-14T07:41:59Z',
       monthlyCommitment: {
-        creditsUsed: 300,
-        totalCredits: 300,
+        creditsUsed: 50,
+        totalCredits: 50,
+        dailyUsage: [
+          { creditsUsed: 5, date: '2025-10-06' },
+          { creditsUsed: 12, date: '2025-10-07' },
+          { creditsUsed: 18, date: '2025-10-10' },
+          { creditsUsed: 15, date: '2025-10-11' },
+        ],
       },
       overage: {
         isAllowed: true,
         creditsUsed: 50,
+        dailyUsage: [
+          { creditsUsed: 8.5, date: '2025-10-15' },
+          { creditsUsed: 12.25, date: '2025-10-16' },
+          { creditsUsed: 15.75, date: '2025-10-17' },
+          { creditsUsed: 13.5, date: '2025-10-18' },
+        ],
       },
 
       monthlyWaiver: {
         totalCredits: 0,
         creditsUsed: 0,
+        dailyUsage: [],
       },
     },
   },
@@ -748,11 +782,13 @@ export const usageDataNoCommitmentNoMonthlyWaiverNoOverage = {
       overage: {
         isAllowed: false,
         creditsUsed: 0,
+        dailyUsage: [],
       },
 
       monthlyWaiver: {
         totalCredits: 0,
         creditsUsed: 0,
+        dailyUsage: [],
       },
     },
   },
@@ -771,11 +807,19 @@ export const usageDataNoCommitmentWithOverage = {
       overage: {
         isAllowed: true,
         creditsUsed: 50,
+        dailyUsage: [
+          { creditsUsed: 10.5, date: '2025-10-01' },
+          { creditsUsed: 8.75, date: '2025-10-02' },
+          { creditsUsed: 12.25, date: '2025-10-03' },
+          { creditsUsed: 9.5, date: '2025-10-04' },
+          { creditsUsed: 9, date: '2025-10-05' },
+        ],
       },
 
       monthlyWaiver: {
         totalCredits: 0,
         creditsUsed: 0,
+        dailyUsage: [],
       },
     },
   },
@@ -793,17 +837,32 @@ export const usageDataCommitmentWithMonthlyWaiver = {
 
       monthlyCommitment: {
         creditsUsed: 50,
-        totalCredits: 300,
+        totalCredits: 50,
+        dailyUsage: [
+          { creditsUsed: 8, date: '2025-10-01' },
+          { creditsUsed: 12, date: '2025-10-02' },
+          { creditsUsed: 10, date: '2025-10-03' },
+          { creditsUsed: 15, date: '2025-10-04' },
+          { creditsUsed: 5, date: '2025-10-05' },
+        ],
       },
 
       overage: {
         isAllowed: true,
         creditsUsed: 0,
+        dailyUsage: [],
       },
 
       monthlyWaiver: {
-        totalCredits: 1000,
-        creditsUsed: 750,
+        totalCredits: 100,
+        creditsUsed: 75,
+        dailyUsage: [
+          { creditsUsed: 12.5, date: '2025-10-06' },
+          { creditsUsed: 15.25, date: '2025-10-07' },
+          { creditsUsed: 18.75, date: '2025-10-08' },
+          { creditsUsed: 14.5, date: '2025-10-09' },
+          { creditsUsed: 14, date: '2025-10-10' },
+        ],
       },
     },
   },
@@ -820,18 +879,38 @@ export const usageDataCommitmentWithMonthlyWaiverWithOverage = {
       purchaseCreditsPath: '/purchase-credits-path',
 
       monthlyCommitment: {
-        creditsUsed: 50,
-        totalCredits: 300,
+        creditsUsed: 100,
+        totalCredits: 100,
+        dailyUsage: [
+          { creditsUsed: 18, date: '2025-10-01' },
+          { creditsUsed: 22, date: '2025-10-02' },
+          { creditsUsed: 20, date: '2025-10-03' },
+          { creditsUsed: 25, date: '2025-10-04' },
+          { creditsUsed: 15, date: '2025-10-05' },
+        ],
       },
 
       overage: {
         isAllowed: true,
-        creditsUsed: 100,
+        creditsUsed: 24,
+        dailyUsage: [
+          { creditsUsed: 4.5, date: '2025-10-11' },
+          { creditsUsed: 6.25, date: '2025-10-12' },
+          { creditsUsed: 7.75, date: '2025-10-13' },
+          { creditsUsed: 5.5, date: '2025-10-14' },
+        ],
       },
 
       monthlyWaiver: {
-        totalCredits: 1000,
-        creditsUsed: 1000,
+        totalCredits: 100,
+        creditsUsed: 100,
+        dailyUsage: [
+          { creditsUsed: 16.5, date: '2025-10-06' },
+          { creditsUsed: 22.25, date: '2025-10-07' },
+          { creditsUsed: 28.125, date: '2025-10-08' },
+          { creditsUsed: 21.125, date: '2025-10-09' },
+          { creditsUsed: 12, date: '2025-10-10' },
+        ],
       },
     },
   },
