@@ -33242,6 +33242,9 @@ msgstr ""
 msgid "Groups|An error occurred updating this group. Please try again."
 msgstr ""
 
+msgid "Groups|Are you sure you want to withdraw your access request for the %{fullName} group?"
+msgstr ""
+
 msgid "Groups|Avatar will be removed. Are you sure?"
 msgstr ""
 
@@ -53121,6 +53124,9 @@ msgstr ""
 msgid "Projects|An error occurred unarchiving the project. Please refresh the page to try again."
 msgstr ""
 
+msgid "Projects|Are you sure you want to withdraw your access request for the %{nameWithNamespace} project?"
+msgstr ""
+
 msgid "Projects|Copy project ID: %{id}"
 msgstr ""
 
@@ -55568,6 +55574,9 @@ msgid "Request a new one"
 msgstr ""
 
 msgid "Request a review"
+msgstr ""
+
+msgid "Request access"
 msgstr ""
 
 msgid "Request changes"
@@ -75384,6 +75393,9 @@ msgid "With requirements, you can set criteria to check your products against"
 msgstr ""
 
 msgid "Withdraw Access Request"
+msgstr ""
+
+msgid "Withdraw access request"
 msgstr ""
 
 msgid "Work Item type with id %{id} was not found"
