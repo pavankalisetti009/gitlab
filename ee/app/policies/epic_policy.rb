@@ -43,16 +43,8 @@ class EpicPolicy < BasePolicy
 
   condition(:locked, scope: :subject, score: 0) { @subject.work_item.discussion_locked? }
 
-  condition(:can_resolve_discussion) do
-    can?(:resolve_note, @subject.work_item)
-  end
-
   condition(:user_allowed_to_measure_comment_temperature) do
     can?(:measure_comment_temperature, @subject.work_item)
-  end
-
-  rule { can_resolve_discussion }.policy do
-    enable :resolve_note
   end
 
   rule { can?(:read_epic) }.policy do

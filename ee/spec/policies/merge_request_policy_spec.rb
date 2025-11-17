@@ -310,8 +310,7 @@ RSpec.describe MergeRequestPolicy, :aggregate_failures, feature_category: :code_
           :approve_merge_request,
           :update_merge_request,
           :reopen_merge_request,
-          :create_note,
-          :resolve_note
+          :create_note
         )
       end
     end
