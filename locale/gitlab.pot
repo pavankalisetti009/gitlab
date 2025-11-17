@@ -74033,9 +74033,6 @@ msgstr ""
 msgid "Vulnerability|Dismiss False Positive Flag"
 msgstr ""
 
-msgid "Vulnerability|Dismiss as False Positive"
-msgstr ""
-
 msgid "Vulnerability|Dismiss false positive flag for this vulnerability?"
 msgstr ""
 

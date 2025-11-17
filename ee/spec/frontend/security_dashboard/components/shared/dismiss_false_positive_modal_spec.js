@@ -55,7 +55,7 @@ describe('DismissFalsePositiveModal', () => {
       expect(findModal().props('modalId')).toBe('dismiss-fp-confirm-modal');
       expect(findModal().props('title')).toBe('Dismiss False Positive Flag');
       expect(findModal().props('actionPrimary')).toEqual({
-        text: 'Dismiss as False Positive',
+        text: 'Dismiss False Positive Flag',
         attributes: {
           variant: 'danger',
         },
