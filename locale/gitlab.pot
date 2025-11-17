@@ -55255,9 +55255,6 @@ msgstr ""
 msgid "Reports|Test summary results are being parsed"
 msgstr ""
 
-msgid "Reports|Tool"
-msgstr ""
-
 msgid "Reports|View partial report"
 msgstr ""
 
