@@ -87,24 +87,24 @@ module EE
       end
 
       def get_default_duo_namespace
+        namespace = duo_default_namespace
+
+        return namespace if namespace
+
+        # fallback to deprecated assignment-based approach
         return default_duo_add_on_assignment.namespace if default_duo_add_on_assignment.present?
 
-        assignments = distinct_eligible_duo_add_on_assignments.limit(2).to_a
+        # fallback if only one candidate exists
+        namespaces = duo_default_namespace_candidates.limit(2).to_a
 
-        return if assignments.size != 1
-
-        assignments.first.add_on_purchase.namespace
+        namespaces.first if namespaces.size == 1
       end
+      alias_method :duo_default_namespace_with_fallback, :get_default_duo_namespace
 
       override :duo_default_namespace
       def duo_default_namespace
         namespace = super
-
-        if namespace
-          duo_default_namespace_candidates.where(id: namespace.id).exists? ? namespace : nil
-        else # Fallback to deprecated add-on assignment approach
-          get_default_duo_namespace
-        end
+        namespace if namespace && duo_default_namespace_candidates.where(id: namespace.id).exists?
       end
 
       def duo_default_namespace_id=(namespace_id)

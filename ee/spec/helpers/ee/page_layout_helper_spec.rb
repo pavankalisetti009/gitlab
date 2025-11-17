@@ -228,31 +228,31 @@ RSpec.describe EE::PageLayoutHelper, feature_category: :shared do
         context 'when container is nil' do
           let(:allowed) { true }
 
+          def expect_unavailable_message(result)
+            expect(result).to include('Duo Agentic Chat is not available at the moment in this page.')
+            expect(result).to include('Default GitLab Duo namespace')
+            expect(result).to include(
+              '/-/profile/preferences#user_duo_default_namespace_id'
+            )
+          end
+
           context 'with duo_pro enablement' do
             let(:enablement_type) { 'duo_pro' }
 
             it 'links to preference page' do
               result = helper.agentic_unavailable_message(user, nil, false)
 
-              expect(result).to include('Duo Agentic Chat is not available at the moment in this page.')
-              expect(result).to include('Default GitLab Duo namespace')
-              expect(result).to include(
-                '/-/profile/preferences#user_user_preference_attributes_default_duo_add_on_assignment_id'
-              )
+              expect_unavailable_message(result)
             end
           end
 
           context 'with duo_core enablement' do
             let(:enablement_type) { 'duo_core' }
-            let(:message) do
-              'Duo Agentic Chat is not available in this page, ' \
-                'please visit a project page to have access to chat.'
-            end
 
             it 'returns project page message' do
               result = helper.agentic_unavailable_message(user, nil, false)
 
-              expect(result).to eq(message)
+              expect_unavailable_message(result)
             end
           end
 

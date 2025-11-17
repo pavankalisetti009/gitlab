@@ -2,6 +2,8 @@
 
 module EE
   module PageLayoutHelper
+    VALID_DUO_ADD_ONS = %w[duo_enterprise duo_pro duo_core].freeze
+
     def duo_chat_panel_data(user, project, group)
       group ||= user.user_preference.get_default_duo_namespace unless project
 
@@ -37,20 +39,15 @@ module EE
       response = user.allowed_to_use(:duo_chat)
 
       if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
-        if response.allowed? && container.nil?
-          case response.enablement_type
-          when "duo_enterprise", "duo_pro"
-            preferences_url = '/-/profile/preferences#user_user_preference_attributes_default_duo_add_on_assignment_id'
-            preferences_link = link_to('', preferences_url)
-            return safe_format(
-              s_('DuoChat|Duo Agentic Chat is not available at the moment in this page. To work with Duo Agentic Chat in pages outside the scope of a project please select a %{strong_start}Default GitLab Duo namespace%{strong_end} in your %{preferences_link_start}User Profile Preferences%{preferences_link_end}.'),
-              tag_pair(content_tag(:strong, ''), :strong_start, :strong_end).merge(
-                tag_pair(preferences_link, :preferences_link_start, :preferences_link_end)
-              )
+        if response.allowed? && container.nil? && VALID_DUO_ADD_ONS.include?(response.enablement_type)
+          preferences_url = '/-/profile/preferences#user_duo_default_namespace_id'
+          preferences_link = link_to('', preferences_url)
+          return safe_format(
+            s_('DuoChat|Duo Agentic Chat is not available at the moment in this page. To work with Duo Agentic Chat in pages outside the scope of a project please select a %{strong_start}Default GitLab Duo namespace%{strong_end} in your %{preferences_link_start}User Profile Preferences%{preferences_link_end}.'),
+            tag_pair(content_tag(:strong, ''), :strong_start, :strong_end).merge(
+              tag_pair(preferences_link, :preferences_link_start, :preferences_link_end)
             )
-          when "duo_core"
-            return s_("DuoChat|Duo Agentic Chat is not available in this page, please visit a project page to have access to chat.")
-          end
+          )
         end
 
         s_("DuoChat|You don't currently have access to Duo Chat, please contact your GitLab administrator.")

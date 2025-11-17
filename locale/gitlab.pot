@@ -25199,9 +25199,6 @@ msgstr ""
 msgid "DuoChat|Duo Agentic Chat is not available at the moment in this page. To work with Duo Agentic Chat in pages outside the scope of a project please select a %{strong_start}Default GitLab Duo namespace%{strong_end} in your %{preferences_link_start}User Profile Preferences%{preferences_link_end}."
 msgstr ""
 
-msgid "DuoChat|Duo Agentic Chat is not available in this page, please visit a project page to have access to chat."
-msgstr ""
-
 msgid "DuoChat|For example, %{linkStart}what is a fork%{linkEnd}?"
 msgstr ""
 
@@ -50907,6 +50904,9 @@ msgstr ""
 msgid "Profiles|No designated account successor assigned."
 msgstr ""
 
+msgid "Profiles|No eligible namespaces available"
+msgstr ""
+
 msgid "Profiles|No file chosen."
 msgstr ""
 
@@ -51133,6 +51133,9 @@ msgid "Profiles|You can upload your avatar here or change it at %{gravatar_link}
 msgstr ""
 
 msgid "Profiles|You do not own any active scheduled pipelines."
+msgstr ""
+
+msgid "Profiles|You don't have access to any namespaces eligible for GitLab Duo."
 msgstr ""
 
 msgid "Profiles|You don't have access to delete this user."

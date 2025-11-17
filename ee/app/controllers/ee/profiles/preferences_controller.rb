@@ -17,6 +17,7 @@ module EE::Profiles::PreferencesController
       ] })
     end
 
+    params_ee.push(:duo_default_namespace_id)
     params_ee.push(:group_view) if License.feature_available?(:security_dashboard)
     params_ee.push(:enabled_zoekt) if user.has_exact_code_search?
 

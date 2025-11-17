@@ -31,10 +31,10 @@ RSpec.describe 'profiles/preferences/show' do
     end
   end
 
-  context 'Default Duo namespace assignments' do
-    context 'when user does not have any Duo namespace assignments' do
+  context 'Default Duo namespace assignments', feature_category: :duo_agent_platform do
+    context 'when user is not allowed to assign default Duo namespace' do
       before do
-        allow(view).to receive(:user_duo_namespace_assignment_options).and_return([])
+        allow(view).to receive(:can?).with(user, :assign_default_duo_group, user).and_return(false)
       end
 
       it 'does not have a default Duo group input' do
@@ -44,10 +44,19 @@ RSpec.describe 'profiles/preferences/show' do
       end
     end
 
-    context 'when user has 1 or more Duo namespace assignments' do
+    context 'when user is allowed to assign default Duo namespace' do
+      let_it_be(:namespaces) do
+        list = create_list(:namespace, 2) # rubocop:disable RSpec/FactoryBot/AvoidCreate -- DB query required
+        Namespace.where(id: list)
+      end
+
+      let!(:user_preference) do
+        user.user_preference.tap { |p| allow(user).to receive(:user_preference).and_return(p) }
+      end
+
       before do
-        user_duo_namespace_assignments = [['Namespace 1', 1], ['Namespace 2', 2]]
-        allow(view).to receive(:user_duo_namespace_assignment_options).and_return(user_duo_namespace_assignments)
+        allow(view).to receive(:can?).with(user, :assign_default_duo_group, user).and_return(true)
+        allow(user_preference).to receive(:duo_default_namespace_candidates).and_return(namespaces)
       end
 
       context 'with no namespace selected' do
@@ -55,22 +64,20 @@ RSpec.describe 'profiles/preferences/show' do
           render
 
           expect(rendered).to have_select _('Default GitLab Duo namespace'),
-            options: ['Select a default Duo namespace...', 'Namespace 1', 'Namespace 2']
+            options: ['Select a default Duo namespace...'].concat(namespaces.map(&:name))
         end
       end
 
       context 'with default already selected' do
         before do
-          allow_next_instance_of(UserPreference) do |preference|
-            allow(preference).to receive(:default_duo_add_on_assignment_id).and_return(1)
-          end
+          allow(user_preference).to receive(:duo_default_namespace_id).and_return(1)
         end
 
         it 'renders select input with namespace options' do
           render
 
           expect(rendered).to have_select _('Default GitLab Duo namespace'),
-            options: ['Namespace 1', 'Namespace 2']
+            options: ['Select a default Duo namespace...'].concat(namespaces.map(&:name))
         end
       end
     end
