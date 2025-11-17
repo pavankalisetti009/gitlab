@@ -511,7 +511,7 @@ Blocked recursive webhook calls are logged in `auth.log` with the message `"Recu
 
 The number of [placeholder users](../user/project/import/_index.md#placeholder-users) created during an import can be limited per top-level namespace.
 
-The default limit for [GitLab Self-Managed](../subscriptions/self_managed/_index.md) is `0` (unlimited).
+The default limit for [GitLab Self-Managed](../subscriptions/manage_subscription.md) is `0` (unlimited).
 
 To change this limit for a GitLab Self-Managed instance, run the following in the [GitLab Rails console](operations/rails_console.md#starting-a-rails-console-session):
 
@@ -923,9 +923,9 @@ Plan.default.actual_limits.update!(pages_file_entries: 100)
 
 ### Number of custom domains per GitLab Pages website
 
-The total number of custom domains per GitLab Pages website is limited to `150` for [GitLab.com](../subscriptions/gitlab_com/_index.md).
+The total number of custom domains per GitLab Pages website is limited to `150` for [GitLab.com](../subscriptions/manage_users_and_seats.md#gitlabcom-billing-and-usage).
 
-The default limit for [GitLab Self-Managed](../subscriptions/self_managed/_index.md) is `0` (unlimited).
+The default limit for [GitLab Self-Managed](../subscriptions/manage_subscription.md) is `0` (unlimited).
 To set a limit on your instance, use the
 [**Admin** area](pages/_index.md#set-maximum-number-of-gitlab-pages-custom-domains-for-a-project).
 

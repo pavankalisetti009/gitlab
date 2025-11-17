@@ -31,7 +31,7 @@ Prerequisites:
   must have a Premium or Ultimate subscription that is [synchronized with GitLab](https://about.gitlab.com/pricing/licensing-faq/cloud-licensing/). To make sure GitLab Duo Chat works immediately, administrators can
   [manually synchronize your subscription](#manually-synchronize-your-subscription).
   - If you are using GitLab Duo Self-Hosted, you must have an Ultimate subscription with the GitLab Duo Enterprise add-on.
-- You must have [enabled network connectivity](../gitlab_duo/setup.md).
+- You must have [enabled network connectivity](../../administration/gitlab_duo/setup.md).
 - [Silent Mode](../../administration/silent_mode/_index.md) must not be turned on.
 - All of the users in your instance must have the latest version of their IDE extension.
 
