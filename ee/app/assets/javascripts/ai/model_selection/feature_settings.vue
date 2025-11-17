@@ -28,7 +28,7 @@ export default {
   duoChatHelpPage: helpPagePath('user/gitlab_duo_chat/_index'),
   mergeRequestsHelpPage: helpPagePath('user/project/merge_requests/duo_in_merge_requests'),
   issuesHelpPage: helpPagePath('user/discussions/_index', {
-    anchor: 'summarize-issue-discussions-with-duo-chat',
+    anchor: 'summarize-issue-discussions-with-gitlab-duo-chat',
   }),
   duoAgentPlatformHelpPage: helpPagePath('user/duo_agent_platform/_index'),
   otherGitLabDuoHelpPage: helpPagePath('user/get_started/getting_started_gitlab_duo', {

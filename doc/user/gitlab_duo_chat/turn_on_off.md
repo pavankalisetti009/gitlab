@@ -14,7 +14,7 @@ In GitLab 16.11 and later, GitLab Duo Chat is:
 - Generally available.
 - Available to any user with an assigned GitLab Duo seat.
 
-If you [turn GitLab Duo on or off](../gitlab_duo/turn_on_off.md), you turn on or turn off Duo Chat as well.
+If you [turn GitLab Duo on or off](../gitlab_duo/turn_on_off.md), you turn on or turn off GitLab Duo Chat as well.
 
 ## For GitLab Self-Managed
 
