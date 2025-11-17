@@ -30,6 +30,7 @@ import FlowTriggersNew from '../pages/flow_triggers/flow_triggers_new.vue';
 import FlowTriggersEdit from '../pages/flow_triggers/flow_triggers_edit.vue';
 import AiAgentsIndex from '../pages/agents/ai_agents_index.vue';
 import AiFlowsIndex from '../pages/flows/ai_flows_index.vue';
+import { AGENT_PLATFORM_PROJECT_PAGE } from '../constants';
 import {
   AGENTS_PLATFORM_INDEX_ROUTE,
   AGENTS_PLATFORM_SHOW_ROUTE,
@@ -42,6 +43,8 @@ import { getNamespaceIndexComponent } from './utils';
 Vue.use(VueRouter);
 
 export const createRouter = (base, namespace) => {
+  const isProjectNamespace = namespace === AGENT_PLATFORM_PROJECT_PAGE;
+
   return new VueRouter({
     base,
     mode: 'history',
@@ -116,7 +119,7 @@ export const createRouter = (base, namespace) => {
             path: '',
             component: AiAgentsIndex,
           },
-          ...(gon.features?.aiCatalogItemProjectCuration
+          ...(isProjectNamespace
             ? [
                 {
                   name: AI_CATALOG_AGENTS_NEW_ROUTE,
@@ -191,7 +194,7 @@ export const createRouter = (base, namespace) => {
                   path: '',
                   component: AiFlowsIndex,
                 },
-                ...(gon.features?.aiCatalogItemProjectCuration
+                ...(isProjectNamespace
                   ? [
                       {
                         name: AI_CATALOG_FLOWS_NEW_ROUTE,

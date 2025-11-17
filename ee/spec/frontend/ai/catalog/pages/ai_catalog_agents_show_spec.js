@@ -52,9 +52,7 @@ describe('AiCatalogAgentsShow', () => {
       },
       provide: {
         isGlobal: false,
-        glFeatures: {
-          aiCatalogItemProjectCuration: true,
-        },
+        projectId: '1',
       },
       mocks: {
         $route: {
