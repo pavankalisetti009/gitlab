@@ -13,7 +13,7 @@ RSpec.describe 'Google Analytics 4 content security policy', feature_category: :
   let(:connect_and_img_src) do
     [
       '*.googletagmanager.com', # Google tag manager
-      '*.analytics.gitlab.com'  # Analytics server
+      'https://analytics.gitlab.com' # Analytics server
     ]
   end
 
