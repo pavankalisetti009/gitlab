@@ -19,7 +19,7 @@ export default {
     ModelSelectDropdown,
     GitlabManagedModelsDisclaimerModal,
   },
-  inject: ['showVendoredModelOption', 'isDedicatedInstance'],
+  inject: ['showVendoredModelOption', 'canManageSelfHostedModels'],
   props: {
     aiFeatureSetting: {
       type: Object,
@@ -256,7 +256,7 @@ export default {
       :is-loading="isSaving || batchUpdateIsSaving"
       @select="onSelect"
     >
-      <template v-if="!isDedicatedInstance" #footer>
+      <template v-if="canManageSelfHostedModels" #footer>
         <div class="gl-border-t-1 gl-border-t-dropdown !gl-p-2 gl-border-t-solid">
           <gl-button
             data-testid="add-self-hosted-model-button"

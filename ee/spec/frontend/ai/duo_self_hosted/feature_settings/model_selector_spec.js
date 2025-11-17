@@ -149,7 +149,7 @@ describe('ModelSelector', () => {
         apolloProvider: mockApollo,
         provide: {
           showVendoredModelOption: true,
-          isDedicatedInstance: false,
+          canManageSelfHostedModels: true,
           ...injectedProps,
         },
         propsData: {
@@ -194,24 +194,24 @@ describe('ModelSelector', () => {
     expect(findModelSelectDropdown().props('headerText')).toBe('Compatible models');
   });
 
-  describe('.listItems', () => {
-    it('renders a button to add a self-hosted model', () => {
-      createComponent();
+  describe('self-hosted models footer', () => {
+    describe('when user can manage self-hosted models', () => {
+      it('renders "Add self-hosted model" button', () => {
+        createComponent();
 
-      expect(findAddModelButton().text()).toBe('Add self-hosted model');
-      expect(findAddModelButton().props('to')).toEqual({ name: SELF_HOSTED_ROUTE_NAMES.NEW });
+        expect(findAddModelButton().text()).toBe('Add self-hosted model');
+        expect(findAddModelButton().props('to')).toEqual({ name: SELF_HOSTED_ROUTE_NAMES.NEW });
+      });
     });
 
-    describe('with Dedicated instance', () => {
-      beforeEach(() => {
+    describe('when user can not manage self-hosted models', () => {
+      it('does not render "Add self-hosted model" button', () => {
         createComponent({
           injectedProps: {
-            isDedicatedInstance: true,
+            canManageSelfHostedModels: false,
           },
         });
-      });
 
-      it('does not render model dropdown footer', () => {
         expect(findAddModelButton().exists()).toBe(false);
       });
     });
