@@ -31,7 +31,7 @@ export default {
     },
     {
       value: AI_CATALOG_TYPE_THIRD_PARTY_FLOW,
-      text: s__('AICatalog|Third-party flow'),
+      text: s__('AICatalog|External'),
     },
   ],
 };
