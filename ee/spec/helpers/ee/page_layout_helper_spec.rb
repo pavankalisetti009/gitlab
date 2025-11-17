@@ -114,13 +114,22 @@ RSpec.describe EE::PageLayoutHelper, feature_category: :shared do
       expect(result[:chat_title]).to eq(s_('GitLab Duo Chat with Amazon Q'))
     end
 
-    it 'calls TanukiBot methods with correct parameters' do
-      expect(Gitlab::Llm::TanukiBot).to receive(:user_model_selection_enabled?).with(user: user)
+    it 'calls TanukiBot methods with project taking priority' do
+      expect(Gitlab::Llm::TanukiBot).to receive(:user_model_selection_enabled?).with(user: user, scope: project)
       expect(Gitlab::Llm::TanukiBot).to receive(:agentic_mode_available?).with(
         user: user, project: project, group: group
       )
 
       helper.duo_chat_panel_data(user, project, group)
+    end
+
+    it 'calls TanukiBot methods with group when project is absent' do
+      expect(Gitlab::Llm::TanukiBot).to receive(:user_model_selection_enabled?).with(user: user, scope: group)
+      expect(Gitlab::Llm::TanukiBot).to receive(:agentic_mode_available?).with(
+        user: user, project: nil, group: group
+      )
+
+      helper.duo_chat_panel_data(user, nil, group)
     end
 
     it 'calls DuoWorkflow Client metadata with user' do
@@ -168,12 +177,6 @@ RSpec.describe EE::PageLayoutHelper, feature_category: :shared do
 
       before do
         allow(user.user_preference).to receive(:get_default_duo_namespace).and_return(default_namespace)
-      end
-
-      it 'uses default namespace if project is absent' do
-        result = helper.duo_chat_panel_data(user, nil, nil)
-
-        expect(result[:namespace_id]).to eq(default_namespace.to_global_id)
       end
 
       it 'does not use default namespace when project is present' do

@@ -339,75 +339,36 @@ RSpec.describe Gitlab::Llm::TanukiBot, feature_category: :duo_chat do
 
   describe '.root_namespace_id' do
     let_it_be(:group) { create(:group) }
-    let_it_be(:default_group) { create(:group) }
+    let_it_be(:subgroup) { create(:group, parent: group) }
+    let_it_be(:project) { create(:project, namespace: subgroup) }
 
-    context 'with current context including root_namespace' do
-      let(:result) do
-        ::Gitlab::ApplicationContext.with_raw_context(root_namespace: group.full_path) do
-          described_class.root_namespace_id(user: user)
-        end
-      end
-
-      it 'returns the global ID of the root namespace when found' do
-        expect(result).to eq(group.to_global_id)
+    context 'when scope is a group' do
+      it 'returns the global ID of the root ancestor' do
+        expect(described_class.root_namespace_id(subgroup)).to eq(group.to_global_id)
       end
     end
 
-    context 'when root_namespace is not found in context' do
-      let(:result) do
-        ::Gitlab::ApplicationContext.with_raw_context(root_namespace: 'non_existent_namespace') do
-          described_class.root_namespace_id(user: user)
-        end
+    context 'when scope is a project' do
+      it 'returns the global ID of the root ancestor' do
+        expect(described_class.root_namespace_id(project)).to eq(group.to_global_id)
       end
+    end
 
+    context 'when scope is nil' do
       it 'returns nil' do
-        expect(result).to be_nil
-      end
-    end
-
-    context 'when root_namespace is not present in the context' do
-      context 'when user has a default duo namespace' do
-        before do
-          allow(user.user_preference).to receive(:get_default_duo_namespace).and_return(default_group)
-        end
-
-        it 'returns the global ID of the default namespace' do
-          expect(described_class.root_namespace_id(user: user)).to eq(default_group.to_global_id)
-        end
-      end
-
-      context 'when user has no default duo namespace' do
-        before do
-          allow(user.user_preference).to receive(:get_default_duo_namespace).and_return(nil)
-        end
-
-        it 'returns nil' do
-          expect(described_class.root_namespace_id(user: user)).to be_nil
-        end
+        expect(described_class.root_namespace_id(nil)).to be_nil
       end
     end
   end
 
   describe '.user_model_selection_enabled?' do
     let_it_be(:group) { create(:group) }
-    let_it_be(:default_group) { create(:group) }
+    let_it_be(:subgroup) { create(:group, parent: group) }
 
-    context 'with current context including root_namespace' do
-      subject(:result) do
-        ::Gitlab::ApplicationContext.with_raw_context(root_namespace: root_namespace) do
-          described_class.user_model_selection_enabled?(user: user)
-        end
-      end
+    context 'when scope is present' do
+      subject(:result) { described_class.user_model_selection_enabled?(user: user, scope: subgroup) }
 
-      context 'when root namespace is not found' do
-        let(:root_namespace) { 'non_existent_namespace' }
-
-        it { is_expected.to be_falsey }
-      end
-
-      context 'when root_namespace is found' do
-        let(:root_namespace) { group.full_path }
-
+      context 'when root namespace is present' do
         context 'when duo_agent_platform_model_selection feature flag is disabled' do
           before do
             stub_feature_flags(duo_agent_platform_model_selection: false)
@@ -469,85 +430,10 @@ RSpec.describe Gitlab::Llm::TanukiBot, feature_category: :duo_chat do
       end
     end
 
-    context 'when root_namespace is not present in the context' do
-      context 'when user has a default duo namespace' do
-        before do
-          allow(user.user_preference).to receive(:get_default_duo_namespace).and_return(default_group)
+    context 'when scope is nil' do
+      subject(:result) { described_class.user_model_selection_enabled?(user: user, scope: nil) }
 
-          allow_next_instance_of(Ai::FeatureSettingSelectionService) do |service|
-            allow(service).to receive(:execute).and_return(service_response)
-          end
-        end
-
-        context 'when duo_agent_platform_model_selection feature flag is disabled' do
-          before do
-            stub_feature_flags(duo_agent_platform_model_selection: false)
-          end
-
-          it 'returns false' do
-            expect(described_class.user_model_selection_enabled?(user: user)).to be(false)
-          end
-        end
-
-        context 'when ai_user_model_switching feature flag is disabled' do
-          before do
-            stub_feature_flags(ai_user_model_switching: false)
-          end
-
-          it 'returns false' do
-            expect(described_class.user_model_selection_enabled?(user: user)).to be(false)
-          end
-        end
-
-        context 'when all feature flags are enabled' do
-          context 'when the feature setting returns instance_model_selection_feature_setting payload' do
-            let(:payload) { build(:instance_model_selection_feature_setting, feature: :duo_agent_platform) }
-            let(:service_response) { ServiceResponse.success(payload: payload) }
-
-            it 'returns true using default namespace' do
-              expect(described_class.user_model_selection_enabled?(user: user)).to be(true)
-            end
-          end
-
-          context 'when the feature setting returns ai_namespace_feature_setting payload' do
-            let(:payload) do
-              build(:ai_namespace_feature_setting, namespace: default_group, feature: :duo_agent_platform)
-            end
-
-            let(:service_response) { ServiceResponse.success(payload: payload) }
-
-            it 'returns true using default namespace' do
-              expect(described_class.user_model_selection_enabled?(user: user)).to be(true)
-            end
-          end
-
-          context 'when the feature setting service returns an error' do
-            let(:service_response) { ServiceResponse.error(message: "error!") }
-
-            it 'returns false' do
-              expect(described_class.user_model_selection_enabled?(user: user)).to be(false)
-            end
-          end
-
-          context 'when the feature setting service returns success with nil payload' do
-            let(:service_response) { ServiceResponse.success(payload: nil) }
-
-            it 'returns false' do
-              expect(described_class.user_model_selection_enabled?(user: user)).to be(false)
-            end
-          end
-        end
-      end
-
-      context 'when user has no default duo namespace' do
-        before do
-          allow(user.user_preference).to receive(:get_default_duo_namespace).and_return(nil)
-        end
-
-        it 'returns false' do
-          expect(described_class.user_model_selection_enabled?(user: user)).to be(false)
-        end
-      end
+      it { is_expected.to be_falsey }
     end
   end
 
