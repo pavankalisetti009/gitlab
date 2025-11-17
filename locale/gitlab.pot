@@ -21855,6 +21855,9 @@ msgstr ""
 msgid "DastProfiles|Set to a comma-separated list of request header names and values. The following headers are not supported: `content-length`, `cookie2`, `keep-alive`, `hosts`, `trailer`, `transfer-encoding`, and all headers with a `proxy-` prefix."
 msgstr ""
 
+msgid "DastProfiles|Set to change the user-agent string sent by the browser. The default user-agent is Google Chrome on Linux."
+msgstr ""
+
 msgid "DastProfiles|Set to log protocol messages between DAST and the Chromium browser."
 msgstr ""
 
