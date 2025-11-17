@@ -992,6 +992,23 @@ Returns [`Group`](#group).
 | ---- | ---- | ----------- |
 | <a id="querygroupfullpath"></a>`fullPath` | [`ID!`](#id) | Full path of the group. For example, `gitlab-org/gitlab-foss`. |
 
+### `Query.groupSecretsManager`
+
+{{< details >}}
+**Introduced** in GitLab 18.6.
+**Status**: Experiment.
+{{< /details >}}
+
+Find a group secrets manager.
+
+Returns [`GroupSecretsManager`](#groupsecretsmanager).
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="querygroupsecretsmanagergrouppath"></a>`groupPath` | [`ID!`](#id) | Group of the secrets manager. |
+
 ### `Query.groups`
 
 Find groups.
@@ -7631,6 +7648,25 @@ Input type: `GroupSavedReplyUpdateInput`
 | <a id="mutationgroupsavedreplyupdateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
 | <a id="mutationgroupsavedreplyupdateerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
 | <a id="mutationgroupsavedreplyupdatesavedreply"></a>`savedReply` | [`GroupSavedReply`](#groupsavedreply) | Saved reply after mutation. |
+
+### `Mutation.groupSecretsManagerDeprovision`
+
+Input type: `GroupSecretsManagerDeprovisionInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationgroupsecretsmanagerdeprovisionclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationgroupsecretsmanagerdeprovisiongrouppath"></a>`groupPath` | [`ID!`](#id) | Group of the secrets manager. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationgroupsecretsmanagerdeprovisionclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationgroupsecretsmanagerdeprovisionerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
+| <a id="mutationgroupsecretsmanagerdeprovisiongroupsecretsmanager"></a>`groupSecretsManager` | [`GroupSecretsManager`](#groupsecretsmanager) | Group secrets manager. |
 
 ### `Mutation.groupSecretsManagerInitialize`
 

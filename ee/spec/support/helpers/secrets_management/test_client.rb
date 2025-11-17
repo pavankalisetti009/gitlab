@@ -67,6 +67,10 @@ module SecretsManagement
       end
     end
 
+    def read_namespace(namespace_path)
+      make_request(:get, "sys/namespaces/#{namespace_path}")
+    end
+
     def read_kv_secret_value(mount_path, secret_path, version: nil)
       body = make_request(
         :get,
