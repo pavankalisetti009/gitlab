@@ -6,7 +6,7 @@ module Types
       # rubocop: disable Graphql/AuthorizeTypes -- authorized by parent type
       class CodeSuggestionMetricsType < ::Types::Analytics::AiMetricsBasic::CodeSuggestionMetricsType
         graphql_name 'codeSuggestionMetrics'
-        description "Requires ClickHouse. Premium and Ultimate with GitLab Duo Pro and Enterprise only."
+        description "Requires ClickHouse. Premium and Ultimate only."
 
         field :accepted_lines_of_code, GraphQL::Types::Int,
           description: 'Sum of lines of code from code suggestions accepted.',

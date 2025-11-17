@@ -10,7 +10,7 @@ RSpec.describe '(Group|Project).aiUsageData.codeSuggestionEvents', :click_house,
   let_it_be(:group_project) { create(:project, group: group) }
   let_it_be(:subgroup_project) { create(:project, group: group) }
   let_it_be(:other_group_project) { create(:project) }
-  let_it_be(:current_user) { create(:user, :with_self_managed_duo_enterprise_seat, :with_namespace) }
+  let_it_be(:current_user) { create(:user, :with_namespace) }
   let_it_be(:user_1) { create(:user, :with_namespace) }
   let_it_be(:user_2) { create(:user, :with_namespace) }
   let_it_be(:user_3) { create(:user, :with_namespace) }
