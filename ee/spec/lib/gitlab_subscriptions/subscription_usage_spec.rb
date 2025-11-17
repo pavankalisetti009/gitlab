@@ -195,6 +195,37 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
     end
   end
 
+  describe '#enabled?' do
+    where(:cdot_enabled_value, :return_value) do
+      true  | true
+      false | false
+      nil   | false
+    end
+
+    with_them do
+      before do
+        allow(subscription_usage_client).to receive(:get_metadata).and_return(client_response)
+      end
+
+      context "when subscription portal returns #{params[:cdot_enabled_value]} for enabled" do
+        let(:subscription_usage) do
+          described_class.new(
+            subscription_target: :instance,
+            subscription_usage_client: subscription_usage_client
+          )
+        end
+
+        let(:client_response) do
+          { success: true, subscriptionUsage: { enabled: cdot_enabled_value } }
+        end
+
+        it "returns #{params[:return_value]} for enabled?" do
+          expect(subscription_usage.enabled?).to be return_value
+        end
+      end
+    end
+  end
+
   describe '#outdated_client?' do
     where(:outdated_client) { [true, false] }
 

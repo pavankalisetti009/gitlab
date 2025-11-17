@@ -58,6 +58,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
   let(:user_arguments) { {} }
   let(:query_fields) do
     [
+      :enabled,
       :is_outdated_client,
       :last_event_transaction_at,
       :start_date,
@@ -127,6 +128,20 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
     )
   end
 
+  let(:metadata) do
+    {
+      success: true,
+      subscriptionUsage: {
+        startDate: "2025-10-01",
+        endDate: "2025-10-31",
+        enabled: true,
+        isOutdatedClient: false,
+        lastEventTransactionAt: "2025-10-01T16:19:59Z",
+        purchaseCreditsPath: '/mock/path'
+      }
+    }
+  end
+
   shared_examples 'empty response' do
     it 'returns nil for subscription usage' do
       post_graphql(query, current_user: current_user)
@@ -143,17 +158,6 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
 
   before do
     stub_feature_flags(usage_billing_dev: true)
-
-    metadata = {
-      success: true,
-      subscriptionUsage: {
-        startDate: "2025-10-01",
-        endDate: "2025-10-31",
-        isOutdatedClient: false,
-        lastEventTransactionAt: "2025-10-01T16:19:59Z",
-        purchaseCreditsPath: '/mock/path'
-      }
-    }
 
     events_for_user_id = {
       nodes: [
@@ -265,6 +269,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
         end
 
         it 'returns subscription usage for instance' do
+          expect(graphql_data_at(:subscription_usage, :enabled)).to be true
           expect(graphql_data_at(:subscription_usage, :isOutdatedClient)).to be false
           expect(graphql_data_at(:subscription_usage, :lastEventTransactionAt)).to eq("2025-10-01T16:19:59Z")
           expect(graphql_data_at(:subscription_usage, :startDate)).to eq("2025-10-01")
@@ -313,6 +318,22 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
               }.with_indifferent_access
             end
           )
+        end
+
+        context 'when the CustomersDot subscription_usage API is not enabled' do
+          let(:query_fields) { [:enabled] }
+          let(:metadata) do
+            {
+              success: true,
+              subscriptionUsage: {
+                enabled: false
+              }
+            }
+          end
+
+          it 'returns subscription usage for the group' do
+            expect(graphql_data_at(:subscription_usage, :enabled)).to be false
+          end
         end
 
         context 'when filtering users by username' do
@@ -384,6 +405,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
           end
 
           it 'returns subscription usage for the group' do
+            expect(graphql_data_at(:subscription_usage, :enabled)).to be true
             expect(graphql_data_at(:subscription_usage, :isOutdatedClient)).to be false
             expect(graphql_data_at(:subscription_usage, :lastEventTransactionAt)).to eq("2025-10-01T16:19:59Z")
             expect(graphql_data_at(:subscription_usage, :startDate)).to eq("2025-10-01")
@@ -432,6 +454,22 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
                 }.with_indifferent_access
               end
             )
+          end
+
+          context 'when the CustomersDot subscription_usage API is not enabled' do
+            let(:query_fields) { [:enabled] }
+            let(:metadata) do
+              {
+                success: true,
+                subscriptionUsage: {
+                  enabled: false
+                }
+              }
+            end
+
+            it 'returns subscription usage for the group' do
+              expect(graphql_data_at(:subscription_usage, :enabled)).to be false
+            end
           end
 
           context 'when filtering users by username' do

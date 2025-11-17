@@ -21,6 +21,10 @@ module GitlabSubscriptions
 
     attr_reader :namespace, :subscription_usage_client, :subscription_target
 
+    def enabled?
+      !!usage_metadata[:enabled]
+    end
+
     def outdated_client?
       usage_metadata[:isOutdatedClient]
     end

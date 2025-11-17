@@ -18,6 +18,7 @@ module Gitlab
             gitlabCreditsUsage(instanceId: $instanceId) {
               startDate
               endDate
+              enabled
               isOutdatedClient(gitlabVersion: $gitlabVersion)
               lastEventTransactionAt
               purchaseCreditsPath
