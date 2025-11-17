@@ -42,7 +42,6 @@ module EE
 
           push_frontend_ability(ability: :summarize_comments, resource: issue, user: current_user)
           push_frontend_ability(ability: :measure_comment_temperature, resource: issue, user: current_user)
-          push_frontend_feature_flag(:duo_developer_button, current_user)
         end
 
         before_action :redirect_if_test_case, only: [:show]
@@ -51,6 +50,7 @@ module EE
           push_force_frontend_feature_flag(:okrs_mvc, !!project&.okrs_mvc_feature_flag_enabled?)
           push_frontend_feature_flag(:duo_workflow_in_ci, current_user)
           push_licensed_feature(:okrs, project)
+          push_frontend_feature_flag(:duo_developer_button, current_user)
         end
 
         before_action do
