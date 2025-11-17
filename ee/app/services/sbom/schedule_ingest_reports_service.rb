@@ -4,6 +4,10 @@ module Sbom
   class ScheduleIngestReportsService
     include Gitlab::Utils::StrongMemoize
 
+    def self.execute(pipeline)
+      new(pipeline).execute
+    end
+
     def initialize(pipeline)
       @pipeline = pipeline
     end

@@ -15,36 +15,20 @@ module Security
     def execute
       return if already_purged?
 
+      results = store_security_scans + store_sbom_scans
+
       # StoreGroupedScansService returns true only when it creates a `security_scans` record.
-      # To avoid resource wastage we are skipping the reports ingestion when there are no new scans, but
-      # we sync the rules as it might cause inconsistent state if we skip.
-      results = security_report_artifacts.map do |file_type, artifacts|
-        StoreGroupedScansService.execute(artifacts, pipeline, file_type)
+      # To avoid resource wastage we are skipping the reports ingestion when there are no new scans.
+      #
+      # SBoM ingestion can be scheduled immediately if there are no results.
+      # Otherwise, it will be scheduled by StoreReportsWorker after vulnerabilities are ingested.
+      if results.any?(true)
+        schedule_store_reports_worker
+        schedule_scan_security_report_secrets_worker
+        schedule_update_token_status_worker
+      else
+        schedule_sbom_ingestion
       end
-
-      if sbom_report_artifacts.present?
-        results += sbom_report_artifacts.map do |file_type, artifacts|
-          StoreGroupedSbomScansService.execute(artifacts, pipeline, file_type)
-        end
-
-        remove_dangling_dependency_scans
-        # We need to set this to ready so that dependency_scanning reports do not keep polling
-        # in the event that no dependency scanning reports were processed in `StoreGroupedSbomScansService`.
-        ::Vulnerabilities::CompareSecurityReportsService.set_security_report_type_to_ready(
-          pipeline_id: pipeline.id,
-          report_type: 'dependency_scanning'
-        )
-      end
-
-      unless results.any?(true)
-        schedule_sbom_records if has_sbom_reports? && pipeline.default_branch?
-
-        return
-      end
-
-      schedule_store_reports_worker
-      schedule_scan_security_report_secrets_worker
-      schedule_update_token_status_worker
     end
 
     private
@@ -52,6 +36,25 @@ module Security
     attr_reader :pipeline
 
     delegate :project, to: :pipeline, private: true
+
+    def store_security_scans
+      security_report_artifacts.map do |file_type, artifacts|
+        StoreGroupedScansService.execute(artifacts, pipeline, file_type)
+      end
+    end
+
+    def store_sbom_scans
+      return [] if sbom_report_artifacts.blank?
+
+      results = sbom_report_artifacts.map do |file_type, artifacts|
+        StoreGroupedSbomScansService.execute(artifacts, pipeline, file_type)
+      end
+
+      remove_dangling_dependency_scans
+      set_dependency_scanning_reports_to_ready
+
+      results
+    end
 
     def already_purged?
       pipeline.security_scans.purged.any?
@@ -93,6 +96,15 @@ module Security
         .by_build_ids(build_ids)
         .created
         .delete_all
+    end
+
+    def set_dependency_scanning_reports_to_ready
+      # We need to set this to ready so that dependency_scanning reports do not keep polling
+      # in the event that no dependency scanning reports were processed in `StoreGroupedSbomScansService`.
+      ::Vulnerabilities::CompareSecurityReportsService.set_security_report_type_to_ready(
+        pipeline_id: pipeline.id,
+        report_type: 'dependency_scanning'
+      )
     end
 
     def security_report_file_types
@@ -141,12 +153,8 @@ module Security
       pipeline.security_scans.by_scan_types(:secret_detection).any?
     end
 
-    def has_sbom_reports?
-      pipeline.self_and_project_descendants.any?(&:has_sbom_reports?)
-    end
-
-    def schedule_sbom_records
-      ::Sbom::ScheduleIngestReportsService.new(pipeline).execute
+    def schedule_sbom_ingestion
+      ::Sbom::ScheduleIngestReportsService.execute(pipeline)
     end
   end
 end
