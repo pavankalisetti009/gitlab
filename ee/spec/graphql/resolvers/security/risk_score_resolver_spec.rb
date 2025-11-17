@@ -101,7 +101,7 @@ RSpec.describe Resolvers::Security::RiskScoreResolver, :elastic_delete_by_query,
 
         context 'when Elasticsearch returns risk_score_by_project with actual project data' do
           before do
-            allow_next_instance_of(::Security::VulnerabilityElasticRiskScoresFinder) do |finder|
+            allow_next_instance_of(::Search::AdvancedFinders::Security::Vulnerability::RiskScoresFinder) do |finder|
               allow(finder).to receive(:execute).and_return({
                 total_risk_score: 0.655,
                 total_project_count: 3,
@@ -234,7 +234,7 @@ RSpec.describe Resolvers::Security::RiskScoreResolver, :elastic_delete_by_query,
 
         context 'when Elasticsearch returns empty data' do
           before do
-            allow_next_instance_of(::Security::VulnerabilityElasticRiskScoresFinder) do |finder|
+            allow_next_instance_of(::Search::AdvancedFinders::Security::Vulnerability::RiskScoresFinder) do |finder|
               allow(finder).to receive(:execute).and_return({})
             end
           end
@@ -247,7 +247,7 @@ RSpec.describe Resolvers::Security::RiskScoreResolver, :elastic_delete_by_query,
 
         context 'when Elasticsearch returns data without by_project' do
           before do
-            allow_next_instance_of(::Security::VulnerabilityElasticRiskScoresFinder) do |finder|
+            allow_next_instance_of(::Search::AdvancedFinders::Security::Vulnerability::RiskScoresFinder) do |finder|
               allow(finder).to receive(:execute).and_return({
                 total_risk_score: 0.5,
                 total_project_count: 2,
@@ -270,7 +270,7 @@ RSpec.describe Resolvers::Security::RiskScoreResolver, :elastic_delete_by_query,
 
         context 'when Elasticsearch returns empty by_project hash' do
           before do
-            allow_next_instance_of(::Security::VulnerabilityElasticRiskScoresFinder) do |finder|
+            allow_next_instance_of(::Search::AdvancedFinders::Security::Vulnerability::RiskScoresFinder) do |finder|
               allow(finder).to receive(:execute).and_return({
                 total_risk_score: 0.5,
                 total_project_count: 0,
@@ -293,7 +293,7 @@ RSpec.describe Resolvers::Security::RiskScoreResolver, :elastic_delete_by_query,
 
         context 'when Elasticsearch fails' do
           before do
-            allow_next_instance_of(::Security::VulnerabilityElasticRiskScoresFinder) do |finder|
+            allow_next_instance_of(::Search::AdvancedFinders::Security::Vulnerability::RiskScoresFinder) do |finder|
               allow(finder).to receive(:execute).and_raise(StandardError, 'ES connection failed')
             end
           end
@@ -309,7 +309,7 @@ RSpec.describe Resolvers::Security::RiskScoreResolver, :elastic_delete_by_query,
 
         context 'when risk score is nil' do
           before do
-            allow_next_instance_of(::Security::VulnerabilityElasticRiskScoresFinder) do |finder|
+            allow_next_instance_of(::Search::AdvancedFinders::Security::Vulnerability::RiskScoresFinder) do |finder|
               allow(finder).to receive(:execute).and_return({
                 total_risk_score: nil,
                 total_project_count: 0,
@@ -337,7 +337,7 @@ RSpec.describe Resolvers::Security::RiskScoreResolver, :elastic_delete_by_query,
 
         shared_examples 'returns correct rating' do |score, expected_rating|
           before do
-            allow_next_instance_of(::Security::VulnerabilityElasticRiskScoresFinder) do |finder|
+            allow_next_instance_of(::Search::AdvancedFinders::Security::Vulnerability::RiskScoresFinder) do |finder|
               allow(finder).to receive(:execute).and_return({
                 total_risk_score: score,
                 total_project_count: 1,
@@ -419,7 +419,7 @@ RSpec.describe Resolvers::Security::RiskScoreResolver, :elastic_delete_by_query,
             subgroup_project2.id => 0.3
           }
 
-          allow_next_instance_of(::Security::VulnerabilityElasticRiskScoresFinder) do |finder|
+          allow_next_instance_of(::Search::AdvancedFinders::Security::Vulnerability::RiskScoresFinder) do |finder|
             allow(finder).to receive(:execute).and_return({
               total_risk_score: 0.55,
               total_project_count: 109,

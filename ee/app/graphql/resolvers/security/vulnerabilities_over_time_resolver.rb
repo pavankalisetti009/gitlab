@@ -62,7 +62,7 @@ module Resolvers
       end
 
       def fetch_grouped_results(params)
-        finder = ::Security::VulnerabilityElasticCountOverTimeFinder.new(vulnerable, params)
+        finder = ::Search::AdvancedFinders::Security::Vulnerability::CountOverTimeFinder.new(vulnerable, params)
         finder.execute
       end
 

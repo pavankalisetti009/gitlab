@@ -92,7 +92,8 @@ RSpec.describe 'Security metrics through GroupQuery', :freeze_time, feature_cate
       end
 
       before do
-        allow_next_instance_of(::Security::VulnerabilityElasticCountBySeverityFinder) do |finder|
+        allow_next_instance_of(
+          ::Search::AdvancedFinders::Security::Vulnerability::CountBySeverityFinder) do |finder|
           allow(finder).to receive(:execute).and_return(
             {
               'critical' => { 'count' => 1, 'avg_detected_at' => {}, 'median_detected_at' => {} },
@@ -105,7 +106,9 @@ RSpec.describe 'Security metrics through GroupQuery', :freeze_time, feature_cate
           )
         end
 
-        allow_next_instance_of(::Security::VulnerabilityElasticCountOverTimeFinder) do |finder|
+        allow_next_instance_of(
+          ::Search::AdvancedFinders::Security::Vulnerability::CountOverTimeFinder
+        ) do |finder|
           allow(finder).to receive(:execute).and_return([
             {
               date: 2.days.ago(Time.zone.now).to_date.iso8601,
