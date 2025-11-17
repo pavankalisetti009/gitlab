@@ -1,4 +1,5 @@
 import {
+  GlBadge,
   GlButton,
   GlDisclosureDropdownItem,
   GlEmptyState,
@@ -45,6 +46,7 @@ describe('SecretsTable component', () => {
   const findSecretsTable = () => wrapper.findComponent(GlTableLite);
   const findSecretsTableRows = () => findSecretsTable().find('tbody').findAll('tr');
   const findSecretDetailsLink = () => wrapper.findByTestId('secret-details-link');
+  const findSecretHealthStatus = (index) => wrapper.findAllComponents(GlBadge).at(index);
   const findSecretActionsCell = () => wrapper.findComponent(SecretActionsCell);
   const findSecretsAlertBanner = () => wrapper.findComponent(SecretsAlertBanner);
   const findPagination = () => wrapper.findComponent(GlKeysetPagination);
@@ -115,6 +117,7 @@ describe('SecretsTable component', () => {
         nodes: [
           {
             name: 'SECRET_1',
+            status: 'COMPLETED',
             rotationInfo: {
               rotationIntervalDays: 7,
               nextReminderAt: null,
@@ -380,6 +383,25 @@ describe('SecretsTable component', () => {
 
       expect(findRotationApproachingIcon().exists()).toBe(false);
       expect(findRotationOverdueIcon().exists()).toBe(false);
+    });
+  });
+
+  describe('health status', () => {
+    beforeEach(async () => {
+      await createComponent();
+    });
+
+    it.each`
+      index | text                 | variant      | tooltip
+      ${0}  | ${'Healthy'}         | ${'success'} | ${'Secret created or updated successfully.'}
+      ${1}  | ${'Needs attention'} | ${'danger'}  | ${'Secret creation failed. Delete the secret and try again.'}
+      ${2}  | ${'Needs attention'} | ${'danger'}  | ${'Secret update failed. Retry the update or delete the secret.'}
+      ${3}  | ${'Creating'}        | ${'neutral'} | ${'Secret is being created.'}
+      ${4}  | ${'Updating'}        | ${'neutral'} | ${'Secret is being updated.'}
+    `('renders $text status', ({ index, text, tooltip, variant }) => {
+      expect(findSecretHealthStatus(index).text()).toBe(text);
+      expect(findSecretHealthStatus(index).props('variant')).toBe(variant);
+      expect(findSecretHealthStatus(index).attributes('title')).toBe(tooltip);
     });
   });
 

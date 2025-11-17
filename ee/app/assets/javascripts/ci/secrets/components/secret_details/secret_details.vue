@@ -1,13 +1,18 @@
 <script>
-import { GlIcon, GlLabel, GlTooltipDirective } from '@gitlab/ui';
+import { GlBadge, GlIcon, GlLabel, GlTooltipDirective } from '@gitlab/ui';
 import { __, s__, sprintf } from '~/locale';
 import { convertEnvironmentScope } from '~/ci/common/private/ci_environments_dropdown';
 import { localeDateFormat } from '~/lib/utils/datetime_utility';
-import { SCOPED_LABEL_COLOR } from '../../constants';
+import {
+  SECRET_STATUS,
+  SECRET_STATUS_ICONS_OPTICALLY_ALIGNED,
+  SCOPED_LABEL_COLOR,
+} from '../../constants';
 
 export default {
   name: 'SecretDetails',
   components: {
+    GlBadge,
     GlIcon,
     GlLabel,
   },
@@ -42,6 +47,8 @@ export default {
       return __('None');
     },
   },
+  SECRET_STATUS,
+  SECRET_STATUS_ICONS_OPTICALLY_ALIGNED,
   SCOPED_LABEL_COLOR,
 };
 </script>
@@ -75,11 +82,27 @@ export default {
     <div class="gl-mb-4 gl-flex">
       <b class="gl-basis-1/4">{{ s__('SecretRotation|Rotation reminder') }}</b>
       <p
+        class="gl-m-0"
         :class="{ 'gl-text-subtle': !secret.rotationInfo }"
         data-testid="secret-details-rotation-reminder"
       >
         {{ rotationReminderText }}
       </p>
+    </div>
+    <div class="gl-mb-4 gl-flex">
+      <b class="gl-basis-1/4">{{ __('Status') }}</b>
+      <gl-badge
+        v-gl-tooltip.right
+        :title="$options.SECRET_STATUS[secret.status].description"
+        :icon="$options.SECRET_STATUS[secret.status].icon"
+        :variant="$options.SECRET_STATUS[secret.status].variant"
+        :icon-optically-aligned="
+          $options.SECRET_STATUS_ICONS_OPTICALLY_ALIGNED.includes(secret.status)
+        "
+        data-testid="secret-details-health-status"
+      >
+        {{ $options.SECRET_STATUS[secret.status].text }}
+      </gl-badge>
     </div>
   </div>
 </template>

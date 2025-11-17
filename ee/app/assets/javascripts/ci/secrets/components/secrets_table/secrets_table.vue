@@ -1,5 +1,6 @@
 <script>
 import {
+  GlBadge,
   GlButton,
   GlEmptyState,
   GlIcon,
@@ -17,7 +18,6 @@ import { __, s__ } from '~/locale';
 import { fetchPolicies } from '~/lib/graphql';
 import { createAlert } from '~/alert';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
-import TimeAgo from '~/vue_shared/components/time_ago_tooltip.vue';
 import UserDate from '~/vue_shared/components/user_date.vue';
 import { convertEnvironmentScope } from '~/ci/common/private/ci_environments_dropdown';
 import getProjectSecretsQuery from '../../graphql/queries/get_project_secrets.query.graphql';
@@ -29,9 +29,11 @@ import {
   ENTITY_PROJECT,
   NEW_ROUTE_NAME,
   PAGE_SIZE,
+  PAGE_VISIT_SECRETS_TABLE,
   SCOPED_LABEL_COLOR,
   SECRET_ROTATION_STATUS,
-  PAGE_VISIT_SECRETS_TABLE,
+  SECRET_STATUS,
+  SECRET_STATUS_ICONS_OPTICALLY_ALIGNED,
 } from '../../constants';
 import SecretDeleteModal from '../secret_delete_modal.vue';
 import ActionsCell from './secret_actions_cell.vue';
@@ -42,6 +44,7 @@ export default {
   components: {
     ActionsCell,
     CrudComponent,
+    GlBadge,
     GlButton,
     GlEmptyState,
     GlIcon,
@@ -52,7 +55,6 @@ export default {
     GlTableLite,
     SecretDeleteModal,
     SecretsAlertBanner,
-    TimeAgo,
     UserDate,
   },
   directives: {
@@ -208,16 +210,12 @@ export default {
       label: __('Name'),
     },
     {
-      key: 'lastAccessed',
-      label: __('Last used'),
-    },
-    {
-      key: 'expiration',
-      label: __('Expires'),
-    },
-    {
       key: 'createdAt',
       label: __('Created'),
+    },
+    {
+      key: 'status',
+      label: __('Status'),
     },
     {
       key: 'actions',
@@ -229,6 +227,8 @@ export default {
   LEARN_MORE_LINK: helpPagePath('ci/secrets/secrets_manager/_index'),
   NEW_ROUTE_NAME,
   SCOPED_LABEL_COLOR,
+  SECRET_STATUS,
+  SECRET_STATUS_ICONS_OPTICALLY_ALIGNED,
 };
 </script>
 <template>
@@ -310,13 +310,6 @@ export default {
             {{ branch }}
           </code>
         </template>
-        <template #cell(lastAccessed)="{ item: { lastAccessed } }">
-          <time-ago v-if="lastAccessed" :time="lastAccessed" data-testid="secret-last-accessed" />
-          <span v-else>{{ __('N/A') }}</span>
-        </template>
-        <template #cell(expiration)="{ item: { expiration } }">
-          <user-date :date="expiration" data-testid="secret-expiration" />
-        </template>
         <template #cell(createdAt)="{ item: { createdAt } }">
           <user-date :date="createdAt" data-testid="secret-created-at" />
         </template>
@@ -326,6 +319,21 @@ export default {
             :secret-name="name"
             @delete-secret="deleteSecret"
           />
+        </template>
+        <template #cell(status)="{ item: { status } }">
+          <gl-badge
+            v-gl-tooltip
+            :title="$options.SECRET_STATUS[status].description"
+            :icon="$options.SECRET_STATUS[status].icon"
+            :icon-size="$options.SECRET_STATUS[status].iconSize"
+            :variant="$options.SECRET_STATUS[status].variant"
+            :icon-optically-aligned="
+              $options.SECRET_STATUS_ICONS_OPTICALLY_ALIGNED.includes(status)
+            "
+            data-testid="secret-health-status"
+          >
+            {{ $options.SECRET_STATUS[status].text }}
+          </gl-badge>
         </template>
       </gl-table-lite>
 
