@@ -408,7 +408,7 @@ gem 'gitlab-schema-validation', path: 'gems/gitlab-schema-validation', feature_c
 gem 'gitlab-http', path: 'gems/gitlab-http', feature_category: :shared
 
 gem 'premailer-rails', '~> 1.12.0', feature_category: :notifications
-gem 'gitlab-labkit', '~> 0.42.2', feature_category: :shared
+gem 'gitlab-labkit', '~> 1.0.0', feature_category: :shared
 gem 'thrift', '~> 0.22.0', feature_category: :shared
 
 # I18n
