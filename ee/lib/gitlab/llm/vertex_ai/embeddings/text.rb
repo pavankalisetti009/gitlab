@@ -39,11 +39,11 @@ module Gitlab
           attr_reader :user, :text, :tracking_context, :unit_primitive, :model
 
           def handle_errors(result, response_modifier)
-            return if result.success? && response_modifier.response_body.present?
+            return if result&.success? && response_modifier.response_body.present?
 
             errors = response_modifier.errors
 
-            raise TokenLimitExceededError, errors if result.bad_request? && token_limit_exceeded?(errors)
+            raise TokenLimitExceededError, errors if result&.bad_request? && token_limit_exceeded?(errors)
 
             error = errors.any? ? errors : "Could not generate embedding: '#{result}'"
             raise StandardError, error

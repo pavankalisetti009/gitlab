@@ -158,5 +158,17 @@ RSpec.describe Gitlab::Llm::VertexAi::Embeddings::Text, feature_category: :ai_ab
         expect { execute }.to raise_error(StandardError)
       end
     end
+
+    context 'when the client returns nil' do
+      before do
+        allow_next_instance_of(Gitlab::Llm::VertexAi::Client) do |client|
+          allow(client).to receive(:text_embeddings).and_return(nil)
+        end
+      end
+
+      it 'raises an error' do
+        expect { execute }.to raise_error(StandardError, /Could not generate embedding/)
+      end
+    end
   end
 end

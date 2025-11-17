@@ -149,7 +149,7 @@ RSpec.describe Ai::ActiveContext::References::Code, feature_category: :code_sugg
       end
 
       it 'puts the refs in the correct groups' do
-        expect(::ActiveContext::Logger).to receive(:skippable_exception)
+        expect(::ActiveContext::Logger).to receive(:retryable_exception)
 
         results = described_class.preprocess_references(refs)
         successful_refs = results[:successful]
@@ -166,7 +166,7 @@ RSpec.describe Ai::ActiveContext::References::Code, feature_category: :code_sugg
           ]
         )
 
-        expect(failed_refs).to be_empty
+        expect(failed_refs).to eq([reference_2])
       end
     end
 
