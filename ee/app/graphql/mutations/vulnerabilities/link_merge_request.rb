@@ -18,11 +18,16 @@ module Mutations
       argument :merge_request_id, ::Types::GlobalIDType[::MergeRequest],
         required: true, description: 'ID of the merge request.'
 
+      argument :readiness_score, GraphQL::Types::Float,
+        required: false,
+        description: 'Confidence rating representing the estimated accuracy of the fix in the AI generated ' \
+          'merge request. Decimal value between 0 and 1, with 1 being the highest.'
+
       field :vulnerability, Types::VulnerabilityType,
         null: true, description: 'Updated vulnerability.',
         scopes: [:api, :ai_workflows]
 
-      def resolve(vulnerability_id:, merge_request_id:)
+      def resolve(vulnerability_id:, merge_request_id:, readiness_score: nil)
         vulnerability = authorized_find!(id: vulnerability_id)
         merge_request = Gitlab::Graphql::Lazy.force(GitlabSchema.find_by_gid(merge_request_id))
 
@@ -36,7 +41,8 @@ module Mutations
           current_user: current_user,
           params: {
             vulnerability: vulnerability,
-            merge_request: merge_request
+            merge_request: merge_request,
+            readiness_score: readiness_score
           }
         ).execute
 

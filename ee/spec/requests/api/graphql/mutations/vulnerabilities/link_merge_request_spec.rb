@@ -13,11 +13,14 @@ RSpec.describe 'Linking a merge request to a vulnerability', feature_category: :
   let(:vulnerability_gid) { GitlabSchema.id_from_object(vulnerability).to_s }
   let(:merge_request_gid) { GitlabSchema.id_from_object(merge_request).to_s }
 
+  let(:readiness_score) { 0.8 }
+
   let(:mutation) do
     graphql_mutation(
       :vulnerability_link_merge_request,
       vulnerability_id: vulnerability_gid,
-      merge_request_id: merge_request_gid
+      merge_request_id: merge_request_gid,
+      readiness_score: readiness_score
     )
   end
 
@@ -63,7 +66,7 @@ RSpec.describe 'Linking a merge request to a vulnerability', feature_category: :
     context 'when linking succeeds' do
       it 'links the merge request to the vulnerability' do
         expect { post_graphql_mutation(mutation, current_user: user) }
-          .to change { vulnerability.merge_request_links.count }.by(1)
+          .to change { vulnerability.merge_request_links.where(readiness_score: 0.8).count }.by(1)
 
         expect(graphql_errors).to be_blank
         expect(mutation_response).not_to be_nil
@@ -114,6 +117,20 @@ RSpec.describe 'Linking a merge request to a vulnerability', feature_category: :
         expect(mutation_response['errors']).to include(
           'The merge request does not exist or you do not have permission to view it.'
         )
+      end
+    end
+
+    context 'with readiness_score validation' do
+      context 'when readiness_score is invalid' do
+        let(:readiness_score) { 1.5 }
+
+        it 'returns validation errors' do
+          expect { post_graphql_mutation(mutation, current_user: user) }
+            .not_to change { Vulnerabilities::MergeRequestLink.count }
+
+          expect(mutation_response['vulnerability']).to be_nil
+          expect(mutation_response['errors']).to include('Readiness score is not included in the list')
+        end
       end
     end
 
