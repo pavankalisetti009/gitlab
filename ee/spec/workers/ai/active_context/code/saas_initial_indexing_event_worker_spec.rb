@@ -21,40 +21,37 @@ RSpec.describe Ai::ActiveContext::Code::SaasInitialIndexingEventWorker, feature_
 
     where(:scenario_name, :indexing_enabled, :duo_chat_available,
       :subscription_status, :add_on_status, :subscription_namespace_match,
-      :namespace_in_allowlist, :duo_features_enabled, :experiment_features_enabled, :has_parent, :expected_outcome) do
+      :duo_features_enabled, :experiment_features_enabled, :has_parent, :expected_outcome) do
       # Happy path - all conditions satisfied
-      'all conditions satisfied'     | true  | true  | :valid | :active | true  | true  | true  | true  | false | true
+      'all conditions satisfied'     | true  | true  | :valid | :active | true | true | true | false | true
 
       # Basic prerequisite checks
-      'indexing disabled'            | false | true  | :valid | :active | true  | true  | true  | true  | false | false
-      'duo chat not available'       | true  | false | :valid | :active | true  | true  | true  | true  | false | false
+      'indexing disabled'            | false | true  | :valid | :active | true | true  | true  | false | false
+      'duo chat not available'       | true  | false | :valid | :active | true | true  | true  | false | false
 
       # Subscription-related conditions
-      'subscription expired'         | true  | true  | :exp   | :active | true  | true  | true  | true  | false | false
-      'free subscription'            | true  | true  | :free  | :active | true  | true  | true  | true  | false | false
-      'no subscription'              | true  | true  | :none  | :active | true  | true  | true  | true  | false | false
-      'subscription on other ns'     | true  | true  | :valid | :active | false | true  | true  | true  | false | false
+      'subscription expired'         | true  | true  | :exp   | :active | true  | true  | true  | false | false
+      'free subscription'            | true  | true  | :free  | :active | true  | true  | true  | false | false
+      'no subscription'              | true  | true  | :none  | :active | true  | true  | true  | false | false
+      'subscription on other ns'     | true  | true  | :valid | :active | false | true  | true  | false | false
 
       # Add-on related conditions
-      'add-on trial'                 | true  | true  | :valid | :trial | true | true | true | true | false | false
-      'no add-on'                    | true  | true  | :valid | :none  | true | true | true | true | false | false
+      'add-on trial'                 | true  | true  | :valid | :trial | true | true | true | false | false
+      'no add-on'                    | true  | true  | :valid | :none  | true | true | true | false | false
 
       # Namespace-related conditions
-      'namespace not in allowlist'   | true  | true  | :valid | :active | true  | false | true  | true  | false | false
-      'duo features disabled'        | true  | true  | :valid | :active | true  | true  | false | true  | false | false
-      'experiment features disabled' | true  | true  | :valid | :active | true  | true  | true  | false | false | false
-      'namespace has parent'         | true  | true  | :valid | :active | true  | true  | true  | true  | true  | false
+      'duo features disabled'        | true  | true  | :valid | :active | true | false | true  | false | false
+      'experiment features disabled' | true  | true  | :valid | :active | true | true  | false | false | false
+      'namespace has parent'         | true  | true  | :valid | :active | true | true  | true  | true  | false
 
       # Record already exists
-      'record already exists'        | true  | true  | :valid | :active | true  | true  | true  | true  | false | false
+      'record already exists'        | true  | true  | :valid | :active | true | true | true | false | false
     end
 
     with_them do
       before do
         allow(::Ai::ActiveContext::Collections::Code).to receive(:indexing?).and_return(indexing_enabled)
         allow(::Gitlab::Saas).to receive(:feature_available?).with(:duo_chat_on_saas).and_return(duo_chat_available)
-
-        stub_feature_flags(active_context_saas_initial_indexing_namespace: false) unless namespace_in_allowlist
 
         subscription_namespace = subscription_namespace_match ? namespace : create(:group)
         case subscription_status
