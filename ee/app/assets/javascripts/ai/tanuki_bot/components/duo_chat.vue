@@ -118,7 +118,7 @@ export default {
         };
       },
       skip() {
-        return this.shouldSkipQueries;
+        return this.shouldSkipQueries || Boolean(this.activeThread);
       },
       fetchPolicy: fetchPolicies.NETWORK_ONLY,
       result({ data }) {
@@ -198,8 +198,6 @@ export default {
       // Explicitly initializing `left` as null to ensure Vue makes it reactive.
       // This allows computed properties and watchers dependent on `left` to work correctly.
       left: null,
-      activeThread: undefined,
-      multithreadedView: DUO_CHAT_VIEWS.CHAT,
       aiConversationThreads: [],
       contextPresets: [],
       isWaitingOnPrompt: false,
@@ -207,6 +205,23 @@ export default {
   },
   computed: {
     ...mapState(['messages']),
+    // Use global state for these properties so they persist across component recreations
+    activeThread: {
+      get() {
+        return this.duoChatGlobalState.activeThread;
+      },
+      set(value) {
+        this.duoChatGlobalState.activeThread = value;
+      },
+    },
+    multithreadedView: {
+      get() {
+        return this.duoChatGlobalState.multithreadedView;
+      },
+      set(value) {
+        this.duoChatGlobalState.multithreadedView = value;
+      },
+    },
     shouldSkipQueries() {
       // In embedded mode, always load; in drawer mode, only load when shown
       return this.isEmbedded ? false : !this.duoChatGlobalState.isShown;
@@ -255,24 +270,12 @@ export default {
         eventLabel: generateEventLabelFromText(question),
       }));
     },
-    shouldLoadThread() {
-      return !this.messages?.length;
-    },
   },
   watch: {
     'duoChatGlobalState.isShown': {
       handler(newVal) {
-        if (newVal === true) {
-          if (this.activeThread) {
-            if (this.shouldLoadThread) {
-              this.loadActiveThread();
-            }
-          } else {
-            this.onNewChat();
-          }
-        } else {
-          // we reset chat when it gets closed, to avoid flickering the previously opened thread
-          // information when it's opened again
+        if (newVal === true && !this.activeThread) {
+          // When chat is opened and there's no active thread, start a new chat
           this.onNewChat();
         }
       },
@@ -299,6 +302,16 @@ export default {
       this.setDimensions();
       window.addEventListener('resize', this.onWindowResize);
     }
+
+    // Handle initialization based on persisted state
+    if (this.activeThread) {
+      // Reload the active thread from previous session
+      this.loadActiveThread();
+    } else if (this.mode === 'default') {
+      // Start a new chat if no active thread
+      this.onNewChat();
+    }
+
     this.switchMode(this.mode);
   },
   beforeDestroy() {
@@ -306,9 +319,6 @@ export default {
     if (!this.isEmbedded) {
       window.removeEventListener('resize', this.onWindowResize);
     }
-    // Clear messages when component is destroyed to prevent state leaking
-    // between mode switches (classic <-> agentic)
-    this.setMessages([]);
     this.isWaitingOnPrompt = false;
   },
   methods: {
@@ -316,15 +326,16 @@ export default {
     switchMode(mode) {
       if (mode === 'chat') {
         if (this.activeThread) {
-          if (this.shouldLoadThread) {
-            this.loadActiveThread();
-          }
+          this.loadActiveThread();
         } else {
           this.onNewChat();
         }
       }
       if (mode === 'new') {
-        this.onNewChat();
+        // Only start a new chat if we don't have an active thread to preserve
+        if (!this.activeThread) {
+          this.onNewChat();
+        }
       }
       if (mode === 'history') {
         this.onBackToList();

@@ -13,6 +13,7 @@ import {
   GENIE_CHAT_RESET_MESSAGE,
   GENIE_CHAT_CLEAR_MESSAGE,
   GENIE_CHAT_NEW_MESSAGE,
+  DUO_CHAT_VIEWS,
 } from 'ee/ai/constants';
 import { TANUKI_BOT_TRACKING_EVENT_NAME, WIDTH_OFFSET } from 'ee/ai/tanuki_bot/constants';
 import chatMutation from 'ee/ai/graphql/chat.mutation.graphql';
@@ -184,6 +185,8 @@ describeSkipVue3(skipReason, () => {
     jest.clearAllMocks();
     duoChatGlobalState.commands = [];
     duoChatGlobalState.isShown = false;
+    duoChatGlobalState.activeThread = undefined;
+    duoChatGlobalState.multithreadedView = DUO_CHAT_VIEWS.CHAT;
   });
 
   it('generates unique `clientSubscriptionId` using v4', () => {
@@ -371,6 +374,7 @@ describeSkipVue3(skipReason, () => {
 
   describe('events handling', () => {
     beforeEach(() => {
+      duoChatGlobalState.activeThread = undefined;
       createComponent();
       duoChatGlobalState.isShown = true;
     });
@@ -855,6 +859,7 @@ describeSkipVue3(skipReason, () => {
   describe('multi-threaded chat functionality', () => {
     beforeEach(async () => {
       duoChatGlobalState.isShown = true;
+      duoChatGlobalState.activeThread = undefined;
       createComponent();
       await waitForPromises();
     });
@@ -1209,17 +1214,21 @@ describeSkipVue3(skipReason, () => {
 
   describe('Global state watchers', () => {
     describe('duoChatGlobalState.isShown', () => {
-      it('creates a new chat when Duo Chat is closed', async () => {
+      beforeEach(() => {
+        duoChatGlobalState.activeThread = undefined;
+      });
+
+      it('preserves selected conversation when overlay is reopened', async () => {
         duoChatGlobalState.isShown = true;
+        duoChatGlobalState.activeThread = 'thread-123';
+        duoChatGlobalState.multithreadedView = DUO_CHAT_VIEWS.CHAT;
+
         createComponent();
-
-        const onNewChatSpy = jest.spyOn(wrapper.vm, 'onNewChat');
-
-        duoChatGlobalState.isShown = false;
         await nextTick();
 
-        expect(onNewChatSpy).toHaveBeenCalled();
-        expect(wrapper.vm.multithreadedView).toBe('chat');
+        const duoChat = findDuoChat();
+        expect(duoChat.props('activeThreadId')).toBe('thread-123');
+        expect(duoChat.props('multiThreadedView')).toBe(DUO_CHAT_VIEWS.CHAT);
       });
 
       it('creates a new chat when Duo Chat is opened and there is no active thread', async () => {
