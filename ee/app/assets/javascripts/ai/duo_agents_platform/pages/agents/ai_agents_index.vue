@@ -1,6 +1,6 @@
 <script>
 import EMPTY_SVG_URL from '@gitlab/svgs/dist/illustrations/empty-state/empty-ai-catalog-md.svg?url';
-import { GlButton } from '@gitlab/ui';
+import { GlButton, GlTabs, GlTab } from '@gitlab/ui';
 import { __, s__, sprintf } from '~/locale';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { fetchPolicies } from '~/lib/graphql';
@@ -9,14 +9,9 @@ import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import ResourceListsEmptyState from '~/vue_shared/components/resource_lists/empty_state.vue';
 import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
 import AiCatalogListHeader from 'ee/ai/catalog/components/ai_catalog_list_header.vue';
-import aiCatalogConfiguredItemsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_configured_items.query.graphql';
 import aiCatalogProjectUserPermissionsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_project_user_permissions.query.graphql';
 import deleteAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_item_consumer.mutation.graphql';
-import {
-  AI_CATALOG_TYPE_AGENT,
-  AGENT_VISIBILITY_LEVEL_DESCRIPTIONS,
-  PAGE_SIZE,
-} from 'ee/ai/catalog/constants';
+import { AGENT_VISIBILITY_LEVEL_DESCRIPTIONS, PAGE_SIZE } from 'ee/ai/catalog/constants';
 import { TYPENAME_PROJECT } from '~/graphql_shared/constants';
 import {
   VISIBILITY_LEVEL_PRIVATE_STRING,
@@ -26,11 +21,14 @@ import {
   AI_CATALOG_AGENTS_ROUTE,
   AI_CATALOG_AGENTS_SHOW_ROUTE,
 } from 'ee/ai/catalog/router/constants';
+import projectAiCatalogAgentsQuery from '../../graphql/queries/get_project_agents.query.graphql';
 
 export default {
   name: 'AiAgentsIndex',
   components: {
     GlButton,
+    GlTabs,
+    GlTab,
     ResourceListsEmptyState,
     ErrorsAlert,
     AiCatalogList,
@@ -49,22 +47,22 @@ export default {
   },
   apollo: {
     aiAgents: {
-      query: aiCatalogConfiguredItemsQuery,
+      query: projectAiCatalogAgentsQuery,
       variables() {
         return {
-          itemTypes: [AI_CATALOG_TYPE_AGENT],
-          includeInherited: false,
+          projectPath: this.projectPath,
+          enabled: this.enabled,
           projectId: convertToGraphQLId(TYPENAME_PROJECT, this.projectId),
-          before: null,
-          after: null,
-          first: PAGE_SIZE,
-          last: null,
+          ...this.paginationVariables,
         };
       },
       fetchPolicy: fetchPolicies.CACHE_AND_NETWORK,
-      update: (data) => data.aiCatalogConfiguredItems.nodes,
+      update: (data) => data?.project?.aiCatalogItems?.nodes || [],
       result({ data }) {
-        this.pageInfo = data.aiCatalogConfiguredItems.pageInfo;
+        this.pageInfo = data?.project?.aiCatalogItems?.pageInfo || {};
+      },
+      error() {
+        this.errors = [s__('AICatalog|There was a problem fetching agents.')];
       },
     },
     userPermissions: {
@@ -84,6 +82,13 @@ export default {
       userPermissions: {},
       errors: [],
       pageInfo: {},
+      enabled: true,
+      paginationVariables: {
+        before: null,
+        after: null,
+        first: PAGE_SIZE,
+        last: null,
+      },
     };
   },
   computed: {
@@ -93,20 +98,12 @@ export default {
     exploreHref() {
       return `${this.exploreAiCatalogPath}${AI_CATALOG_AGENTS_ROUTE}`;
     },
-    items() {
-      return this.aiAgents.map((agent) => {
-        const { item, ...itemConsumerData } = agent;
-        return {
-          ...item,
-          itemConsumer: itemConsumerData,
-        };
-      });
-    },
     itemTypeConfig() {
       return {
-        deleteActionItem: {
-          showActionItem: () => this.userPermissions?.adminAiCatalogItemConsumer || false,
-          text: __('Remove'),
+        disableActionItem: {
+          showActionItem: () =>
+            (this.userPermissions?.adminAiCatalogItemConsumer && this.enabled) || false,
+          text: __('Disable'),
         },
         showRoute: AI_CATALOG_AGENTS_SHOW_ROUTE,
         visibilityTooltip: {
@@ -117,10 +114,15 @@ export default {
         },
       };
     },
+    disableConfirmMessage() {
+      return s__(
+        'AICatalog|Are you sure you want to disable agent %{name}? The agent and any associated flows, triggers, and service accounts will no longer work in this project.',
+      );
+    },
   },
   methods: {
-    async deleteAgent(item) {
-      const { id } = item.itemConsumer;
+    async disableAgent(item) {
+      const { id } = item.configurationForProject;
 
       try {
         const { data } = await this.$apollo.mutate({
@@ -128,43 +130,65 @@ export default {
           variables: {
             id,
           },
-          refetchQueries: [aiCatalogConfiguredItemsQuery],
+          refetchQueries: [projectAiCatalogAgentsQuery],
         });
 
         if (!data.aiCatalogItemConsumerDelete.success) {
           this.errors = [
-            sprintf(s__('AICatalog|Failed to remove agent. %{error}'), {
+            sprintf(s__('AICatalog|Failed to disable agent. %{error}'), {
               error: data.aiCatalogItemConsumerDelete.errors?.[0],
             }),
           ];
           return;
         }
 
-        this.$toast.show(s__('AICatalog|Agent removed from this project.'));
+        this.$toast.show(s__('AICatalog|Agent disabled in this project.'));
       } catch (error) {
-        this.errors = [sprintf(s__('AICatalog|Failed to remove agent. %{error}'), { error })];
+        this.errors = [sprintf(s__('AICatalog|Failed to disable agent. %{error}'), { error })];
         Sentry.captureException(error);
       }
     },
+    resetPagination() {
+      this.paginationVariables = {
+        before: null,
+        after: null,
+        first: PAGE_SIZE,
+        last: null,
+      };
+    },
     handleNextPage() {
-      this.$apollo.queries.aiAgents.refetch({
-        ...this.$apollo.queries.aiAgents.variables,
+      this.paginationVariables = {
         before: null,
         after: this.pageInfo.endCursor,
         first: PAGE_SIZE,
         last: null,
-      });
+      };
     },
     handlePrevPage() {
-      this.$apollo.queries.aiAgents.refetch({
-        ...this.$apollo.queries.aiAgents.variables,
+      this.paginationVariables = {
         after: null,
         before: this.pageInfo.startCursor,
         first: null,
         last: PAGE_SIZE,
-      });
+      };
+    },
+    onTabClick(tab) {
+      if (this.enabled !== tab.value) {
+        this.enabled = tab.value;
+        this.resetPagination();
+      }
     },
   },
+  tabs: [
+    {
+      text: __('Enabled'),
+      value: true,
+    },
+    {
+      text: s__('AICatalog|Managed'),
+      value: false,
+    },
+  ],
   EMPTY_SVG_URL,
 };
 </script>
@@ -177,13 +201,23 @@ export default {
     />
 
     <errors-alert class="gl-mt-5" :errors="errors" @dismiss="errors = []" />
+
+    <gl-tabs content-class="gl-py-0">
+      <gl-tab
+        v-for="tab in $options.tabs"
+        :key="tab.text"
+        :title="tab.text"
+        @click="onTabClick(tab)"
+      />
+    </gl-tabs>
+
     <ai-catalog-list
       :is-loading="isLoading"
-      :items="items"
+      :items="aiAgents"
       :item-type-config="itemTypeConfig"
-      :delete-confirm-title="s__('AICatalog|Remove agent from this project')"
-      :delete-confirm-message="s__('AICatalog|Are you sure you want to remove agent %{name}?')"
-      :delete-fn="deleteAgent"
+      :disable-confirm-title="s__('AICatalog|Disable agent in this project')"
+      :disable-confirm-message="disableConfirmMessage"
+      :disable-fn="disableAgent"
       :page-info="pageInfo"
       @next-page="handleNextPage"
       @prev-page="handlePrevPage"

@@ -125,7 +125,7 @@ describe('AiCatalogAgentsShow', () => {
         await waitForPromises();
 
         expect(findErrorsAlert().props('errors')).toEqual([
-          'Failed to disable agent. You do not have permission to delete this item.',
+          'Failed to disable agent. You do not have permission to disable this item.',
         ]);
       });
     });

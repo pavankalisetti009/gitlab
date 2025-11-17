@@ -171,9 +171,9 @@ export default {
     },
     itemTypeConfig() {
       return {
-        deleteActionItem: {
+        disableActionItem: {
           showActionItem: () => this.userPermissions?.adminAiCatalogItemConsumer || false,
-          text: __('Remove'),
+          text: __('Disable'),
         },
         showRoute: AI_CATALOG_FLOWS_SHOW_ROUTE,
         visibilityTooltip: {
@@ -184,18 +184,18 @@ export default {
         },
       };
     },
-    deleteConfirmTitle() {
-      return sprintf(s__('AICatalog|Remove flow from this %{namespaceType}'), {
+    disableConfirmTitle() {
+      return sprintf(s__('AICatalog|Disable flow from this %{namespaceType}'), {
         namespaceType: this.namespaceTypeLabel,
       });
     },
-    deleteConfirmMessage() {
+    disableConfirmMessage() {
       if (this.isProjectNamespace) {
-        return s__('AICatalog|Are you sure you want to remove flow %{name}?');
+        return s__('AICatalog|Are you sure you want to disable flow %{name}?');
       }
 
       return s__(
-        'AICatalog|Are you sure you want to remove flow %{name}? The flow will also be removed from any projects in this group.',
+        'AICatalog|Are you sure you want to disable flow %{name}? The flow will also be disabled from any projects in this group.',
       );
     },
     emptyStateTitle() {
@@ -253,7 +253,7 @@ export default {
         Sentry.captureException(error);
       }
     },
-    async deleteFlow(item) {
+    async disableFlow(item) {
       const { id } = item.itemConsumer;
 
       try {
@@ -267,7 +267,7 @@ export default {
 
         if (!data.aiCatalogItemConsumerDelete.success) {
           this.errors = [
-            sprintf(s__('AICatalog|Failed to remove flow. %{error}'), {
+            sprintf(s__('AICatalog|Failed to disable flow. %{error}'), {
               error: data.aiCatalogItemConsumerDelete.errors?.[0],
             }),
           ];
@@ -275,12 +275,12 @@ export default {
         }
 
         this.$toast.show(
-          sprintf(s__('AICatalog|Flow removed from this %{namespaceType}.'), {
+          sprintf(s__('AICatalog|Flow disabled in this %{namespaceType}.'), {
             namespaceType: this.namespaceTypeLabel,
           }),
         );
       } catch (error) {
-        this.errors = [sprintf(s__('AICatalog|Failed to remove flow. %{error}'), { error })];
+        this.errors = [sprintf(s__('AICatalog|Failed to disable flow. %{error}'), { error })];
         Sentry.captureException(error);
       }
     },
@@ -330,9 +330,9 @@ export default {
       :is-loading="isLoading"
       :items="items"
       :item-type-config="itemTypeConfig"
-      :delete-confirm-title="deleteConfirmTitle"
-      :delete-confirm-message="deleteConfirmMessage"
-      :delete-fn="deleteFlow"
+      :disable-confirm-title="disableConfirmTitle"
+      :disable-confirm-message="disableConfirmMessage"
+      :disable-fn="disableFlow"
       :page-info="pageInfo"
       @next-page="handleNextPage"
       @prev-page="handlePrevPage"
