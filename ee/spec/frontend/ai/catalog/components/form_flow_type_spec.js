@@ -33,7 +33,7 @@ describe('FormFlowType', () => {
     expect(findRadioGroup().attributes('disabled')).toBeUndefined();
     expect(findRadioGroup().props('options')).toEqual([
       { value: 'FLOW', text: 'Flow' },
-      { value: 'THIRD_PARTY_FLOW', text: 'Third-party flow' },
+      { value: 'THIRD_PARTY_FLOW', text: 'External' },
     ]);
   });
 
