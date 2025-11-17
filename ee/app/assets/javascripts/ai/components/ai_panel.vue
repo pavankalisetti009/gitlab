@@ -97,12 +97,14 @@ export default {
         return null;
       }
 
+      const chatMode = this.isAgenticMode ? 'active' : 'chat';
+
       switch (this.activeTab) {
         case 'chat':
           return {
             title: this.currentChatTitle,
             component: this.currentChatComponent,
-            props: { mode: 'active', ...this.chatConfiguration.defaultProps },
+            props: { mode: chatMode, ...this.chatConfiguration.defaultProps },
           };
         case 'new':
           return {
@@ -171,13 +173,19 @@ export default {
       }
     },
     async handleTabToggle(tab) {
+      if (this.activeTab === tab && this.activeTab !== 'new') {
+        this.setActiveTab(undefined);
+        return;
+      }
+
       this.setActiveTab(tab);
 
       const targetRoute =
         this.duoChatGlobalState.lastRoutePerTab[tab] ||
         this.currentTabComponent.initialRoute ||
         '/';
-      this.$router.push(targetRoute);
+
+      this.$router.push(targetRoute).catch(() => {});
 
       if (['chat', 'new'].includes(tab)) {
         await this.$nextTick();

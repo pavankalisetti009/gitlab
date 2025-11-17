@@ -139,14 +139,14 @@ describe('AiPanel', () => {
       expect(Cookies.get(aiPanelStateCookie)).toBe(undefined);
     });
 
-    it('keeps panel open when same tab is toggled twice', async () => {
+    it('closes the panel when same tab is toggled twice', async () => {
       createComponent();
       findNavigationRail().vm.$emit('handleTabToggle', 'chat');
       await nextTick();
       findNavigationRail().vm.$emit('handleTabToggle', 'chat');
       await nextTick();
-      expect(findContentContainer().exists()).toBe(true);
-      expect(Cookies.get(aiPanelStateCookie)).toBe('chat');
+      expect(findContentContainer().exists()).toBe(false);
+      expect(Cookies.get(aiPanelStateCookie)).toBe(undefined);
     });
   });
 
@@ -631,7 +631,7 @@ describe('AiPanel', () => {
           title: 'GitLab Duo Chat',
           component: DuoChat,
           props: {
-            mode: 'active',
+            mode: 'chat',
             isAgenticAvailable: true,
             isEmbedded: true,
             showStudioHeader: true,
