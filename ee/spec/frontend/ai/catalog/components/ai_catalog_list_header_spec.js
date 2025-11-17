@@ -37,14 +37,11 @@ describe('AiCatalogListHeader', () => {
     expect(wrapper.findComponent(AiCatalogNavActions).exists()).toBe(true);
   });
 
-  describe('when isGlobal is false and feature flag is enabled', () => {
+  describe('when isGlobal is false', () => {
     beforeEach(() => {
       createComponent({
         provide: {
           isGlobal: false,
-          glFeatures: {
-            aiCatalogItemProjectCuration: true,
-          },
         },
       });
     });

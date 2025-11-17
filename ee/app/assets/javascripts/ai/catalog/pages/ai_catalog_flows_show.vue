@@ -36,6 +36,9 @@ export default {
     isGlobal: {
       default: false,
     },
+    projectId: {
+      default: null,
+    },
   },
   props: {
     aiCatalogFlow: {
@@ -53,11 +56,14 @@ export default {
     isFlowsAvailable() {
       return this.glFeatures.aiCatalogFlows;
     },
+    isProjectNamespace() {
+      return Boolean(this.projectId);
+    },
     flowName() {
       return this.aiCatalogFlow.name;
     },
     showActions() {
-      return this.isGlobal || this.glFeatures.aiCatalogItemProjectCuration;
+      return this.isGlobal || this.isProjectNamespace;
     },
   },
   mounted() {

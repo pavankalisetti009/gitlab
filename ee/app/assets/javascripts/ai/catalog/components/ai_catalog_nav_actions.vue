@@ -19,7 +19,7 @@ export default {
     canAdmin: {
       type: Boolean,
       required: false,
-      default: true, // this will change when we remove the ability to create item from Explore level
+      default: false,
     },
     newButtonVariant: {
       type: String,

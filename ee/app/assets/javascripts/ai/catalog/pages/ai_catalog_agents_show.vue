@@ -2,7 +2,6 @@
 import { s__, sprintf } from '~/locale';
 import { InternalEvents } from '~/tracking';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { TRACK_EVENT_TYPE_AGENT, TRACK_EVENT_VIEW_AI_CATALOG_ITEM } from 'ee/ai/catalog/constants';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
@@ -25,10 +24,13 @@ export default {
     AiCatalogItemActions,
     AiCatalogItemView,
   },
-  mixins: [glFeatureFlagsMixin(), InternalEvents.mixin()],
+  mixins: [InternalEvents.mixin()],
   inject: {
     isGlobal: {
       default: false,
+    },
+    projectId: {
+      default: null,
     },
   },
   props: {
@@ -47,8 +49,11 @@ export default {
     agentName() {
       return this.aiCatalogAgent.name;
     },
+    isProjectNamespace() {
+      return Boolean(this.projectId);
+    },
     showActions() {
-      return this.isGlobal || this.glFeatures.aiCatalogItemProjectCuration;
+      return this.isGlobal || this.isProjectNamespace;
     },
   },
   mounted() {

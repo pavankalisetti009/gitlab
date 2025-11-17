@@ -15,6 +15,10 @@ jest.mock('~/lib/utils/common_utils');
 describe('AiCatalogNavTabs', () => {
   let wrapper;
 
+  const defaultProps = {
+    canAdmin: true,
+  };
+
   const createComponent = ({
     routeName = AI_CATALOG_AGENTS_ROUTE,
     isLoggedInValue = true,
@@ -23,7 +27,10 @@ describe('AiCatalogNavTabs', () => {
     isLoggedIn.mockReturnValue(isLoggedInValue);
 
     wrapper = shallowMountExtended(AiCatalogNavActions, {
-      propsData: props,
+      propsData: {
+        ...defaultProps,
+        ...props,
+      },
       mocks: {
         $route: {
           name: routeName,
@@ -39,12 +46,10 @@ describe('AiCatalogNavTabs', () => {
       createComponent();
     });
 
-    it('renders button', () => {
-      expect(findButton().exists()).toBe(true);
-    });
-
-    it('passes correct route to button', () => {
+    it('renders "New agent" button', () => {
       expect(findButton().props('to')).toEqual({ name: AI_CATALOG_AGENTS_NEW_ROUTE });
+      expect(findButton().props('variant')).toBe('confirm');
+      expect(findButton().text()).toBe('New agent');
     });
 
     describe('when user is not authenticated', () => {
@@ -70,20 +75,37 @@ describe('AiCatalogNavTabs', () => {
 
   describe('when on flows route', () => {
     beforeEach(() => {
-      createComponent({ routeName: AI_CATALOG_FLOWS_ROUTE });
+      createComponent({
+        routeName: AI_CATALOG_FLOWS_ROUTE,
+        props: { newButtonVariant: 'default' },
+      });
     });
 
-    it('renders button', () => {
-      expect(findButton().exists()).toBe(true);
-    });
-
-    it('passes correct route to button', () => {
+    it('renders "New flow" button', () => {
       expect(findButton().props('to')).toEqual({ name: AI_CATALOG_FLOWS_NEW_ROUTE });
+      expect(findButton().props('variant')).toBe('default');
+      expect(findButton().text()).toBe('New flow');
     });
 
     describe('when user is not authenticated', () => {
       beforeEach(() => {
-        createComponent({ routeName: AI_CATALOG_FLOWS_ROUTE, isLoggedInValue: false });
+        createComponent({
+          routeName: AI_CATALOG_FLOWS_ROUTE,
+          isLoggedInValue: false,
+        });
+      });
+
+      it('does not render button', () => {
+        expect(findButton().exists()).toBe(false);
+      });
+    });
+
+    describe('when user does not have permission to create an item', () => {
+      beforeEach(() => {
+        createComponent({
+          routeName: AI_CATALOG_FLOWS_ROUTE,
+          props: { canAdmin: false },
+        });
       });
 
       it('does not render button', () => {
