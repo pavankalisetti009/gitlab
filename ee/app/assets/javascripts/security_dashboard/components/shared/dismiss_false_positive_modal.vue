@@ -62,7 +62,7 @@ export default {
   },
   modal: {
     actionPrimary: {
-      text: s__('Vulnerability|Dismiss as False Positive'),
+      text: s__('Vulnerability|Dismiss False Positive Flag'),
       attributes: {
         variant: 'danger',
       },

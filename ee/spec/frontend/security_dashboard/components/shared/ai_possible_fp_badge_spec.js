@@ -16,7 +16,7 @@ describe('AiPossibleFpBadge', () => {
     title: 'Test Vulnerability',
     state: VULNERABILITY_UNTRIAGED_STATUS,
     latestFlag: {
-      confidenceScore: 0.5,
+      confidenceScore: 0.61,
       description: 'This is likely a false positive because...',
     },
   };
@@ -64,7 +64,7 @@ describe('AiPossibleFpBadge', () => {
       wrapper = createComponent({
         vulnerability: {
           latestFlag: {
-            confidenceScore: 0.5,
+            confidenceScore: 0.61,
           },
         },
       });
@@ -80,9 +80,9 @@ describe('AiPossibleFpBadge', () => {
 
     it('renders the confidence score correctly', () => {
       expect(wrapper.text()).toContain('AI Confidence Score');
-      expect(findProgressBar().props('value')).toBe(50);
+      expect(findProgressBar().props('value')).toBe(61);
       expect(findProgressBar().props('variant')).toBe('warning');
-      expect(wrapper.text()).toContain('50%');
+      expect(wrapper.text()).toContain('61%');
     });
   });
 
@@ -107,7 +107,7 @@ describe('AiPossibleFpBadge', () => {
 
     it('renders the progress bar with success variant', () => {
       expect(findProgressBar().props('variant')).toBe('success');
-      expect(findProgressBar().props('value')).toBe(80);
+      expect(findProgressBar().props('value')).toBe(90);
     });
   });
 
@@ -145,7 +145,7 @@ describe('AiPossibleFpBadge', () => {
       wrapper = createComponent({
         vulnerability: {
           latestFlag: {
-            confidenceScore: 0.5,
+            confidenceScore: 0.61,
             description: null,
           },
         },
