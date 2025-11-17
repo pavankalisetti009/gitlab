@@ -10,6 +10,7 @@ module Mutations
         graphql_name 'RefreshFindingTokenStatus'
 
         include Gitlab::Graphql::Authorize::AuthorizeResource
+        include Gitlab::InternalEventsTracking
 
         authorize :update_secret_detection_validity_checks_status
 
@@ -30,6 +31,11 @@ module Mutations
 
           finding = vuln.finding
           return raise_resource_not_available_error! unless finding
+
+          track_internal_event(
+            'call_api_refresh_token_status',
+            project: vuln.project
+          )
 
           ::Security::SecretDetection::UpdateTokenStatusService
             .new
