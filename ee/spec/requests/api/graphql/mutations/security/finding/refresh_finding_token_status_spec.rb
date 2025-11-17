@@ -10,6 +10,18 @@ RSpec.describe Mutations::Security::Finding::RefreshFindingTokenStatus, feature_
   let_it_be(:vulnerability) { create(:vulnerability, project: project) }
   let_it_be(:finding) { create(:vulnerabilities_finding, vulnerability: vulnerability) }
 
+  # Shared example for authorization failures
+  shared_examples 'authorization failure that does not track events' do
+    it 'raises an error' do
+      expect { execute }.to raise_error(Gitlab::Graphql::Errors::ResourceNotAvailable)
+    end
+
+    it 'does not trigger internal event' do
+      expect { expect { execute }.to raise_error(Gitlab::Graphql::Errors::ResourceNotAvailable) }
+        .not_to trigger_internal_events('call_api_refresh_token_status')
+    end
+  end
+
   describe '#resolve' do
     subject(:execute) { mutation.resolve(vulnerability_id: vulnerability.to_global_id) }
 
@@ -23,17 +35,13 @@ RSpec.describe Mutations::Security::Finding::RefreshFindingTokenStatus, feature_
     context 'when a user is not logged in' do
       let(:current_user) { nil }
 
-      it 'raises an error' do
-        expect { execute }.to raise_error(Gitlab::Graphql::Errors::ResourceNotAvailable)
-      end
+      include_examples 'authorization failure that does not track events'
     end
 
     context 'when the current user does not have access to the project' do
       let_it_be(:current_user) { create(:user) }
 
-      it 'raises an error' do
-        expect { execute }.to raise_error(Gitlab::Graphql::Errors::ResourceNotAvailable)
-      end
+      include_examples 'authorization failure that does not track events'
     end
 
     context 'when the current user has access to the project' do
@@ -48,9 +56,7 @@ RSpec.describe Mutations::Security::Finding::RefreshFindingTokenStatus, feature_
           stub_feature_flags(secret_detection_validity_checks_refresh_token: false)
         end
 
-        it 'raises ResourceNotAvailable' do
-          expect { execute }.to raise_error(Gitlab::Graphql::Errors::ResourceNotAvailable)
-        end
+        include_examples 'authorization failure that does not track events'
       end
 
       context 'when the vulnerability does not exist' do
@@ -58,11 +64,9 @@ RSpec.describe Mutations::Security::Finding::RefreshFindingTokenStatus, feature_
           Vulnerability.new(id: non_existing_record_id).to_global_id
         end
 
-        it 'raises ResourceNotAvailable' do
-          expect do
-            mutation.resolve(vulnerability_id: fake_gid)
-          end.to raise_error(Gitlab::Graphql::Errors::ResourceNotAvailable)
-        end
+        subject(:execute) { mutation.resolve(vulnerability_id: fake_gid) }
+
+        include_examples 'authorization failure that does not track events'
       end
 
       context 'when validity checks is not enabled for the project' do
@@ -70,20 +74,23 @@ RSpec.describe Mutations::Security::Finding::RefreshFindingTokenStatus, feature_
           project.security_setting.update!(validity_checks_enabled: false)
         end
 
-        it 'raises an error' do
-          expect { execute }.to raise_error(Gitlab::Graphql::Errors::ResourceNotAvailable)
-        end
+        include_examples 'authorization failure that does not track events'
       end
 
       context 'when the vulnerability has no finding' do
         let_it_be(:vulnerability_without_finding) { create(:vulnerability, project: project) }
-        let_it_be(:gid) { vulnerability_without_finding.to_global_id }
 
-        it 'raises an error' do
-          expect do
-            mutation.resolve(vulnerability_id: gid)
-          end.to raise_error(Gitlab::Graphql::Errors::ResourceNotAvailable)
+        subject(:execute) { mutation.resolve(vulnerability_id: vulnerability_without_finding.to_global_id) }
+
+        include_examples 'authorization failure that does not track events'
+      end
+
+      context 'when the feature flag is disabled' do
+        before do
+          stub_feature_flags(validity_checks: false)
         end
+
+        include_examples 'authorization failure that does not track events'
       end
 
       context 'when the vulnerability has a finding' do
@@ -114,6 +121,16 @@ RSpec.describe Mutations::Security::Finding::RefreshFindingTokenStatus, feature_
           expect(result[:errors]).to be_an(Array)
         end
 
+        it "triggers an internal event" do
+          expect { execute }.to trigger_internal_events('call_api_refresh_token_status').with(
+            project: project
+          ).and increment_usage_metrics(
+            'counts.count_total_call_api_refresh_token_status_monthly',
+            'counts.count_total_call_api_refresh_token_status_weekly',
+            'counts.count_total_call_api_refresh_token_status'
+          )
+        end
+
         context 'when no token status record was created' do
           let(:other_vulnerability) { create(:vulnerability, project: project) }
           let!(:other_finding) { create(:vulnerabilities_finding, vulnerability: other_vulnerability) }
@@ -130,16 +147,6 @@ RSpec.describe Mutations::Security::Finding::RefreshFindingTokenStatus, feature_
           end
         end
       end
-
-      context 'when the feature flag is disabled' do
-        before do
-          stub_feature_flags(validity_checks: false)
-        end
-
-        it 'raises an error' do
-          expect { execute }.to raise_error(Gitlab::Graphql::Errors::ResourceNotAvailable)
-        end
-      end
     end
 
     context 'when the current user does not have the required permission' do
@@ -149,9 +156,7 @@ RSpec.describe Mutations::Security::Finding::RefreshFindingTokenStatus, feature_
         project.add_guest(current_user)
       end
 
-      it 'raises an error' do
-        expect { execute }.to raise_error(Gitlab::Graphql::Errors::ResourceNotAvailable)
-      end
+      include_examples 'authorization failure that does not track events'
     end
   end
 
