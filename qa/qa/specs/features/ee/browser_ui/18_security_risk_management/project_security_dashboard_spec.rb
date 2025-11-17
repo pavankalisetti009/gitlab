@@ -81,17 +81,13 @@ module QA
           vulnerability_details.click_create_issue_button
         end
 
-        work_item_enabled = Page::Project::Issue::Show.perform(&:work_item_enabled?)
-        new_page_type = work_item_enabled ? Page::Project::WorkItem::New : Page::Project::Issue::New
-        show_page_type = work_item_enabled ? Page::Project::WorkItem::Show : Page::Project::Issue::Show
-
-        new_page_type.perform do |new_page|
+        Page::Project::WorkItem::New.perform do |new_page|
           new_page.fill_description(edited_vulnerability_issue_description)
           new_page.select_label(label)
-          work_item_enabled ? new_page.create_new_work_item : new_page.create_new_issue
+          new_page.create_new_work_item
         end
 
-        show_page_type.perform do |issue|
+        Page::Project::WorkItem::Show.perform do |issue|
           aggregate_failures "testing edited vulnerability issue" do
             expect(issue).to have_issue_title("Investigate vulnerability: #{vulnerability_name}")
             expect(issue).to have_text(edited_vulnerability_issue_description)
