@@ -145,6 +145,7 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
             gitlabCreditsUsage: {
               startDate: "2025-10-01",
               endDate: "2025-10-31",
+              enabled: true,
               isOutdatedClient: false,
               lastEventTransactionAt: "2025-10-01T16:19:59Z",
               purchaseCreditsPath: '/mock/path'
@@ -160,6 +161,7 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
         subscriptionUsage: {
           startDate: "2025-10-01",
           endDate: "2025-10-31",
+          enabled: true,
           isOutdatedClient: false,
           lastEventTransactionAt: "2025-10-01T16:19:59Z",
           purchaseCreditsPath: '/mock/path'

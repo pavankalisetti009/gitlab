@@ -8,6 +8,11 @@ module Types
 
       authorize :read_subscription_usage
 
+      field :enabled, GraphQL::Types::Boolean,
+        null: false,
+        method: :enabled?,
+        description: 'Indicates if the Customer Portal GitLab Credits API is enabled.'
+
       field :is_outdated_client, GraphQL::Types::Boolean,
         null: true,
         method: :outdated_client?,
