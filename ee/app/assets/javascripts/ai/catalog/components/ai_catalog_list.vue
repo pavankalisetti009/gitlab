@@ -37,17 +37,17 @@ export default {
         return item.showRoute && item.visibilityTooltip;
       },
     },
-    deleteConfirmTitle: {
+    disableConfirmTitle: {
       type: String,
       required: false,
       default: undefined,
     },
-    deleteConfirmMessage: {
+    disableConfirmMessage: {
       type: String,
       required: false,
       default: undefined,
     },
-    deleteFn: {
+    disableFn: {
       type: Function,
       required: false,
       default: undefined,
@@ -60,22 +60,22 @@ export default {
   },
   data() {
     return {
-      itemToDelete: null,
+      itemToDisable: null,
     };
   },
   computed: {
     hasActionItems() {
-      return Boolean(this.itemTypeConfig.deleteActionItem || this.itemTypeConfig.actionItems);
+      return Boolean(this.itemTypeConfig.disableActionItem || this.itemTypeConfig.actionItems);
     },
-    deleteActionText() {
-      return this.itemTypeConfig.deleteActionItem?.text || __('Delete');
+    disableActionText() {
+      return this.itemTypeConfig.disableActionItem?.text || __('Disable');
     },
   },
   methods: {
-    async deleteItem() {
-      await this.deleteFn?.(this.itemToDelete);
+    async disableItem() {
+      await this.disableFn?.(this.itemToDisable);
 
-      this.itemToDelete = null;
+      this.itemToDisable = null;
     },
   },
   EMPTY_SVG_URL,
@@ -93,7 +93,7 @@ export default {
           :key="item.id"
           :item="item"
           :item-type-config="itemTypeConfig"
-          @delete="itemToDelete = item"
+          @disable="itemToDisable = item"
         />
       </ul>
 
@@ -105,17 +105,17 @@ export default {
       />
 
       <confirm-action-modal
-        v-if="itemToDelete"
-        modal-id="delete-item-modal"
+        v-if="itemToDisable"
+        modal-id="disable-item-modal"
         variant="danger"
-        :title="deleteConfirmTitle"
-        :action-fn="deleteItem"
-        :action-text="deleteActionText"
-        @close="itemToDelete = null"
+        :title="disableConfirmTitle"
+        :action-fn="disableItem"
+        :action-text="disableActionText"
+        @close="itemToDisable = null"
       >
-        <gl-sprintf :message="deleteConfirmMessage">
+        <gl-sprintf :message="disableConfirmMessage">
           <template #name>
-            <strong>{{ itemToDelete.name }}</strong>
+            <strong>{{ itemToDisable.name }}</strong>
           </template>
         </gl-sprintf>
       </confirm-action-modal>

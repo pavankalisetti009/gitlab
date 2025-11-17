@@ -50,7 +50,7 @@ describe('AiCatalogListItem', () => {
         icon: 'pencil',
       },
     ],
-    deleteActionItem: {
+    disableActionItem: {
       showActionItem: () => true,
     },
     showRoute: '/items/:id',
@@ -102,23 +102,22 @@ describe('AiCatalogListItem', () => {
       expect(findDisclosureDropdown().exists()).toBe(true);
       expect(items).toHaveLength(2);
       expect(items.at(0).text()).toBe('Edit');
-      expect(items.at(1).text()).toBe('Delete');
-      expect(items.at(1).attributes('variant')).toBe('danger');
+      expect(items.at(1).text()).toBe('Disable');
     });
 
-    it('renders delete action text when passed', () => {
+    it('renders disable action text when passed', () => {
       createComponent({
         itemTypeConfig: {
           ...defaultItemTypeConfig,
-          deleteActionItem: {
-            ...defaultItemTypeConfig.deleteActionItem,
-            text: 'Remove',
+          disableActionItem: {
+            ...defaultItemTypeConfig.disableActionItem,
+            text: 'Disable',
           },
         },
       });
       const items = findDisclosureDropdownItems();
 
-      expect(items.at(1).text()).toBe('Remove');
+      expect(items.at(1).text()).toBe('Disable');
     });
 
     describe('when the action items are empty but the user has permission to admin the item', () => {
@@ -128,11 +127,11 @@ describe('AiCatalogListItem', () => {
         });
       });
 
-      it('does render the the disclosure dropdown with the delete action', () => {
+      it('does render the the disclosure dropdown with the disable action', () => {
         const items = findDisclosureDropdownItems();
 
         expect(items).toHaveLength(1);
-        expect(items.at(0).text()).toBe('Delete');
+        expect(items.at(0).text()).toBe('Disable');
       });
     });
 
@@ -142,7 +141,7 @@ describe('AiCatalogListItem', () => {
           itemTypeConfig: {
             ...defaultItemTypeConfig,
             actionItems: () => [],
-            deleteActionItem: {
+            disableActionItem: {
               showActionItem: () => false,
             },
           },
@@ -195,13 +194,13 @@ describe('AiCatalogListItem', () => {
     });
   });
 
-  describe('on delete action', () => {
-    it('emits delete event', () => {
-      const deleteAction = findDisclosureDropdownItems().at(1);
+  describe('on disable action', () => {
+    it('emits disable event', () => {
+      const disableAction = findDisclosureDropdownItems().at(1);
 
-      deleteAction.vm.$emit('action');
+      disableAction.vm.$emit('action');
 
-      expect(wrapper.emitted('delete')[0]).toEqual([]);
+      expect(wrapper.emitted('disable')[0]).toEqual([]);
     });
   });
 });

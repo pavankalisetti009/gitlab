@@ -1,4 +1,4 @@
-import Vue from 'vue';
+import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -9,21 +9,20 @@ import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
 import AiCatalogListHeader from 'ee/ai/catalog/components/ai_catalog_list_header.vue';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import ResourceListsEmptyState from '~/vue_shared/components/resource_lists/empty_state.vue';
-import aiCatalogConfiguredItemsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_configured_items.query.graphql';
 import aiCatalogAgentQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_agent.query.graphql';
 import aiCatalogProjectUserPermissionsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_project_user_permissions.query.graphql';
 import deleteAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_item_consumer.mutation.graphql';
+import projectAiCatalogAgentsQuery from 'ee/ai/duo_agents_platform/graphql/queries/get_project_agents.query.graphql';
 import {
   mockAiCatalogAgentResponse,
-  mockBaseAgent,
+  mockAgentsWithConfig,
   mockBaseItemConsumer,
-  mockConfiguredAgentsResponse,
-  mockConfiguredItemsEmptyResponse,
   mockAiCatalogItemConsumerDeleteResponse,
   mockAiCatalogItemConsumerDeleteErrorResponse,
   mockPageInfo,
   mockProjectUserPermissionsResponse,
 } from 'ee_jest/ai/catalog/mock_data';
+import { mockProjectAgentsResponse, mockProjectItemsEmptyResponse } from '../../mock_data';
 
 jest.mock('~/sentry/sentry_browser_wrapper');
 
@@ -40,9 +39,8 @@ describe('AiAgentsIndex', () => {
     show: jest.fn(),
   };
   const mockProjectId = 1;
-  const mockConfiguredAgentsQueryHandler = jest
-    .fn()
-    .mockResolvedValue(mockConfiguredAgentsResponse);
+  const mockProjectPath = '/mock-group/test-project';
+  const mockProjectAgentsQueryHandler = jest.fn().mockResolvedValue(mockProjectAgentsResponse);
   const mockAgentQueryHandler = jest.fn().mockResolvedValue(mockAiCatalogAgentResponse);
   const mockUserPermissionsQueryHandler = jest
     .fn()
@@ -53,7 +51,7 @@ describe('AiAgentsIndex', () => {
 
   const createComponent = ({ $route = { query: {} } } = {}) => {
     mockApollo = createMockApollo([
-      [aiCatalogConfiguredItemsQuery, mockConfiguredAgentsQueryHandler],
+      [projectAiCatalogAgentsQuery, mockProjectAgentsQueryHandler],
       [aiCatalogProjectUserPermissionsQuery, mockUserPermissionsQueryHandler],
       [aiCatalogAgentQuery, mockAgentQueryHandler],
       [deleteAiCatalogItemConsumer, deleteItemConsumerMutationHandler],
@@ -63,6 +61,7 @@ describe('AiAgentsIndex', () => {
       apolloProvider: mockApollo,
       provide: {
         projectId: mockProjectId,
+        projectPath: mockProjectPath,
         exploreAiCatalogPath: '/explore/ai-catalog',
       },
       mocks: {
@@ -87,23 +86,19 @@ describe('AiAgentsIndex', () => {
     });
 
     it('renders AiCatalogList component', async () => {
-      const expectedItem = {
-        ...mockBaseAgent,
-        itemConsumer: mockBaseItemConsumer,
-      };
       const catalogList = findAiCatalogList();
 
       expect(catalogList.props('isLoading')).toBe(true);
 
       await waitForPromises();
 
-      expect(catalogList.props('items')).toEqual([expectedItem]);
+      expect(catalogList.props('items')).toEqual(mockAgentsWithConfig);
       expect(catalogList.props('isLoading')).toBe(false);
     });
 
     describe('when there are no agents', () => {
       beforeEach(async () => {
-        mockConfiguredAgentsQueryHandler.mockResolvedValueOnce(mockConfiguredItemsEmptyResponse);
+        mockProjectAgentsQueryHandler.mockResolvedValueOnce(mockProjectItemsEmptyResponse);
 
         await waitForPromises();
       });
@@ -119,10 +114,10 @@ describe('AiAgentsIndex', () => {
 
   describe('Apollo queries', () => {
     it('fetches list data', () => {
-      expect(mockConfiguredAgentsQueryHandler).toHaveBeenCalledWith({
-        itemTypes: ['AGENT'],
+      expect(mockProjectAgentsQueryHandler).toHaveBeenCalledWith({
         projectId: `gid://gitlab/Project/${mockProjectId}`,
-        includeInherited: false,
+        projectPath: mockProjectPath,
+        enabled: true,
         after: null,
         before: null,
         first: 20,
@@ -130,15 +125,12 @@ describe('AiAgentsIndex', () => {
       });
     });
 
-    describe('deleting an agent', () => {
-      const item = {
-        ...mockBaseAgent,
-        itemConsumer: mockBaseItemConsumer,
-      };
-      const deleteAgent = () => findAiCatalogList().props('deleteFn')(item);
+    describe('disabling an agent', () => {
+      const item = mockAgentsWithConfig[0];
+      const disableAgent = () => findAiCatalogList().props('disableFn')(item);
 
-      it('calls delete mutation', () => {
-        deleteAgent();
+      it('calls delete consumer mutation', () => {
+        disableAgent();
 
         expect(deleteItemConsumerMutationHandler).toHaveBeenCalledWith({
           id: mockBaseItemConsumer.id,
@@ -147,12 +139,12 @@ describe('AiAgentsIndex', () => {
 
       describe('when request succeeds', () => {
         it('shows a toast message and refetches the list', async () => {
-          deleteAgent();
+          disableAgent();
 
           await waitForPromises();
 
-          expect(mockConfiguredAgentsQueryHandler).toHaveBeenCalledTimes(2);
-          expect(mockToast.show).toHaveBeenCalledWith('Agent removed from this project.');
+          expect(mockProjectAgentsQueryHandler).toHaveBeenCalledTimes(3);
+          expect(mockToast.show).toHaveBeenCalledWith('Agent disabled in this project.');
         });
       });
 
@@ -162,11 +154,11 @@ describe('AiAgentsIndex', () => {
             mockAiCatalogItemConsumerDeleteErrorResponse,
           );
 
-          deleteAgent();
+          disableAgent();
 
           await waitForPromises();
           expect(findErrorsAlert().props('errors')).toStrictEqual([
-            'Failed to remove agent. You do not have permission to delete this item.',
+            'Failed to disable agent. You do not have permission to disable this item.',
           ]);
         });
       });
@@ -175,11 +167,11 @@ describe('AiAgentsIndex', () => {
         it('shows alert with error and captures exception', async () => {
           deleteItemConsumerMutationHandler.mockRejectedValue(new Error('Request failed'));
 
-          deleteAgent();
+          disableAgent();
 
           await waitForPromises();
           expect(findErrorsAlert().props('errors')).toStrictEqual([
-            'Failed to remove agent. Error: Request failed',
+            'Failed to disable agent. Error: Request failed',
           ]);
           expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));
         });
@@ -197,12 +189,13 @@ describe('AiAgentsIndex', () => {
       expect(findAiCatalogList().props('pageInfo')).toMatchObject(mockPageInfo);
     });
 
-    it('refetches query with correct variables when paging backward', () => {
+    it('refetches query with correct variables when paging backward', async () => {
       findAiCatalogList().vm.$emit('prev-page');
-      expect(mockConfiguredAgentsQueryHandler).toHaveBeenCalledWith({
-        itemTypes: ['AGENT'],
+      await nextTick();
+      expect(mockProjectAgentsQueryHandler).toHaveBeenCalledWith({
         projectId: `gid://gitlab/Project/${mockProjectId}`,
-        includeInherited: false,
+        projectPath: mockProjectPath,
+        enabled: true,
         after: null,
         before: 'eyJpZCI6IjUxIn0',
         first: null,
@@ -210,12 +203,13 @@ describe('AiAgentsIndex', () => {
       });
     });
 
-    it('refetches query with correct variables when paging forward', () => {
+    it('refetches query with correct variables when paging forward', async () => {
       findAiCatalogList().vm.$emit('next-page');
-      expect(mockConfiguredAgentsQueryHandler).toHaveBeenCalledWith({
-        itemTypes: ['AGENT'],
+      await nextTick();
+      expect(mockProjectAgentsQueryHandler).toHaveBeenCalledWith({
         projectId: `gid://gitlab/Project/${mockProjectId}`,
-        includeInherited: false,
+        projectPath: mockProjectPath,
+        enabled: true,
         after: 'eyJpZCI6IjM1In0',
         before: null,
         first: 20,

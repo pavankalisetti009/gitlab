@@ -1,5 +1,5 @@
 const TYPENAME_AI_CATALOG_ITEM = 'AiCatalogItem';
-const TYPENAME_AI_CATALOG_ITEM_CONNECTION = 'AiCatalogItemConnection';
+export const TYPENAME_AI_CATALOG_ITEM_CONNECTION = 'AiCatalogItemConnection';
 const TYPENAME_AI_CATALOG_ITEM_CONSUMER = 'AiCatalogItemConsumer';
 const TYPENAME_AI_CATALOG_ITEM_CONSUMER_DELETE = 'AiCatalogItemConsumerDeletePayload';
 const TYPENAME_AI_CATALOG_ITEM_CONSUMER_CONNECTION = 'AiCatalogItemConsumerConnection';
@@ -15,7 +15,7 @@ const TYPENAME_AI_CATALOG_FLOW_DELETE = 'AiCatalogFlowDeletePayload';
 const TYPENAME_AI_CATALOG_THIRD_PARTY_FLOW_VERSION = 'AiCatalogThirdPartyFlowVersion';
 const TYPENAME_GROUP = 'Group';
 const TYPENAME_GROUP_PERMISSIONS = 'GroupPermissions';
-const TYPENAME_PROJECT = 'Project';
+export const TYPENAME_PROJECT = 'Project';
 const TYPENAME_PROJECT_PERMISSIONS = 'ProjectPermissions';
 const TYPENAME_PROJECTS_CONNECTION = 'ProjectsConnection';
 
@@ -207,6 +207,42 @@ export const mockAgents = [
     project: mockProjectWithNamespace,
     versions: mockAgentVersions,
     public: false,
+  }),
+];
+
+export const mockAgentsWithConfig = [
+  mockAgentFactory({
+    versions: mockAgentVersions,
+    configurationForProject: {
+      id: 'gid://gitlab/Ai::Catalog::ItemConsumer/1',
+      enabled: true,
+      __typename: TYPENAME_AI_CATALOG_ITEM_CONSUMER,
+    },
+  }),
+  mockAgentFactory({
+    id: 'gid://gitlab/Ai::Catalog::Item/2',
+    name: 'Test AI Agent 2',
+    description: 'Another AI assistant',
+    createdAt: '2024-02-10T14:20:00Z',
+    versions: mockAgentVersions,
+    configurationForProject: {
+      id: 'gid://gitlab/Ai::Catalog::ItemConsumer/2',
+      enabled: true,
+      __typename: TYPENAME_AI_CATALOG_ITEM_CONSUMER,
+    },
+  }),
+  mockAgentFactory({
+    id: 'gid://gitlab/Ai::Catalog::Item/3',
+    name: 'Test AI Agent 3',
+    description: 'Another AI assistant',
+    createdAt: '2024-02-10T14:20:00Z',
+    versions: mockAgentVersions,
+    public: false,
+    configurationForProject: {
+      id: 'gid://gitlab/Ai::Catalog::ItemConsumer/3',
+      enabled: true,
+      __typename: TYPENAME_AI_CATALOG_ITEM_CONSUMER,
+    },
   }),
 ];
 
@@ -581,7 +617,7 @@ export const mockAiCatalogItemConsumerDeleteResponse = {
 export const mockAiCatalogItemConsumerDeleteErrorResponse = {
   data: {
     aiCatalogItemConsumerDelete: {
-      errors: ['You do not have permission to delete this item.'],
+      errors: ['You do not have permission to disable this item.'],
       success: false,
       __typename: TYPENAME_AI_CATALOG_ITEM_CONSUMER_DELETE,
     },

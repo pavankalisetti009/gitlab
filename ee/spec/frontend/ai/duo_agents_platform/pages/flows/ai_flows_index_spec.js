@@ -220,19 +220,19 @@ describe('AiFlowsIndex', () => {
       });
     });
 
-    describe('deleting a flow', () => {
+    describe('disabling a flow', () => {
       const item = {
         ...mockBaseFlow,
         itemConsumer: mockBaseItemConsumer,
       };
-      const deleteFlow = () => findAiCatalogList().props('deleteFn')(item);
+      const disableFlow = () => findAiCatalogList().props('disableFn')(item);
 
       beforeEach(() => {
         createComponent();
       });
 
-      it('calls delete mutation', () => {
-        deleteFlow();
+      it('calls delete consumer mutation', () => {
+        disableFlow();
 
         expect(deleteItemConsumerMutationHandler).toHaveBeenCalledWith({
           id: mockBaseItemConsumer.id,
@@ -241,12 +241,12 @@ describe('AiFlowsIndex', () => {
 
       describe('when request succeeds', () => {
         it('shows a toast message and refetches the list', async () => {
-          deleteFlow();
+          disableFlow();
 
           await waitForPromises();
 
           expect(mockConfiguredFlowsQueryHandler).toHaveBeenCalledTimes(2);
-          expect(mockToast.show).toHaveBeenCalledWith('Flow removed from this project.');
+          expect(mockToast.show).toHaveBeenCalledWith('Flow disabled in this project.');
         });
       });
 
@@ -256,11 +256,11 @@ describe('AiFlowsIndex', () => {
             mockAiCatalogItemConsumerDeleteErrorResponse,
           );
 
-          deleteFlow();
+          disableFlow();
 
           await waitForPromises();
           expect(findErrorsAlert().props('errors')).toStrictEqual([
-            'Failed to remove flow. You do not have permission to delete this item.',
+            'Failed to disable flow. You do not have permission to disable this item.',
           ]);
         });
       });
@@ -269,11 +269,11 @@ describe('AiFlowsIndex', () => {
         it('shows alert with error and captures exception', async () => {
           deleteItemConsumerMutationHandler.mockRejectedValue(new Error('Request failed'));
 
-          deleteFlow();
+          disableFlow();
 
           await waitForPromises();
           expect(findErrorsAlert().props('errors')).toStrictEqual([
-            'Failed to remove flow. Error: Request failed',
+            'Failed to disable flow. Error: Request failed',
           ]);
           expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));
         });

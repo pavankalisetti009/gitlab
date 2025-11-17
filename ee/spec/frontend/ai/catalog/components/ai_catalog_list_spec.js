@@ -12,9 +12,9 @@ describe('AiCatalogList', () => {
 
   const mockItems = mockAgents;
 
-  const mockDeleteTitle = 'Delete item';
-  const mockDeleteMessage = 'Are you sure you want to delete item %{name}?';
-  const mockDeleteFn = jest.fn();
+  const mockDisableTitle = 'Disable item';
+  const mockDisableMessage = 'Are you sure you want to disable item %{name}?';
+  const mockDisableFn = jest.fn();
 
   const createComponent = ({ props = {}, slots = {} } = {}) => {
     wrapper = shallowMountExtended(AiCatalogList, {
@@ -23,9 +23,9 @@ describe('AiCatalogList', () => {
         itemTypeConfig: mockItemTypeConfig,
         isLoading: false,
         pageInfo: mockPageInfo,
-        deleteConfirmTitle: mockDeleteTitle,
-        deleteConfirmMessage: mockDeleteMessage,
-        deleteFn: mockDeleteFn,
+        disableConfirmTitle: mockDisableTitle,
+        disableConfirmMessage: mockDisableMessage,
+        disableFn: mockDisableFn,
         ...props,
       },
       slots,
@@ -92,7 +92,7 @@ describe('AiCatalogList', () => {
         createComponent({
           props: {
             isLoading: true,
-            itemTypeConfig: { ...mockItemTypeConfig, deleteActionItem: () => [] },
+            itemTypeConfig: { ...mockItemTypeConfig, disableActionItem: () => [] },
           },
         });
         const loadingStateList = findLoadingStateList();
@@ -161,28 +161,28 @@ describe('AiCatalogList', () => {
     });
   });
 
-  describe('deleting an item', () => {
+  describe('disabling an item', () => {
     beforeEach(() => {
       createComponent();
       const secondItem = findListItems().at(1);
 
-      secondItem.vm.$emit('delete');
+      secondItem.vm.$emit('disable');
     });
 
-    it('opens confirm modal on delete', () => {
+    it('opens confirm modal on disable', () => {
       expect(findConfirmModal().props()).toMatchObject({
-        title: mockDeleteTitle,
-        actionText: 'Delete',
+        title: mockDisableTitle,
+        actionText: 'Disable',
       });
       expect(findConfirmModal().text()).toBe(
-        `Are you sure you want to delete item ${mockItems[1].name}?`,
+        `Are you sure you want to disable item ${mockItems[1].name}?`,
       );
     });
 
-    it('calls delete function on confirm', () => {
+    it('calls disable function on confirm', () => {
       findConfirmModal().props('actionFn')();
 
-      expect(mockDeleteFn).toHaveBeenCalledWith(mockItems[1]);
+      expect(mockDisableFn).toHaveBeenCalledWith(mockItems[1]);
     });
 
     describe('with itemTypeConfig', () => {
@@ -191,18 +191,18 @@ describe('AiCatalogList', () => {
           props: {
             itemTypeConfig: {
               ...mockItemTypeConfig,
-              deleteActionItem: {
-                text: 'Remove',
+              disableActionItem: {
+                text: 'Disable',
               },
             },
           },
         });
         const secondItem = findListItems().at(1);
-        secondItem.vm.$emit('delete');
+        secondItem.vm.$emit('disable');
       });
 
       it('passes correct actionText to modal', () => {
-        expect(findConfirmModal().props('actionText')).toBe('Remove');
+        expect(findConfirmModal().props('actionText')).toBe('Disable');
       });
     });
   });

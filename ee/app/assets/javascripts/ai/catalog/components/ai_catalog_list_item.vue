@@ -40,14 +40,14 @@ export default {
     actionItems() {
       return this.itemTypeConfig.actionItems?.(this.item) || [];
     },
-    showDeleteAction() {
-      return this.itemTypeConfig.deleteActionItem?.showActionItem?.(this.item);
+    showDisableAction() {
+      return this.itemTypeConfig.disableActionItem?.showActionItem?.(this.item);
     },
     hasActionItems() {
       return this.actionItems.length > 0;
     },
     showActions() {
-      return this.showDeleteAction || this.hasActionItems;
+      return this.showDisableAction || this.hasActionItems;
     },
     formattedItemId() {
       return getIdFromGraphQLId(this.item.id);
@@ -58,8 +58,8 @@ export default {
         params: { id: this.formattedItemId },
       };
     },
-    deleteActionText() {
-      return this.itemTypeConfig.deleteActionItem.text || __('Delete');
+    disableActionItem() {
+      return this.itemTypeConfig.disableActionItem.text || __('Disable');
     },
     visibilityLevel() {
       return this.item.public ? VISIBILITY_LEVEL_PUBLIC_STRING : VISIBILITY_LEVEL_PRIVATE_STRING;
@@ -137,12 +137,12 @@ export default {
           </template>
         </gl-disclosure-dropdown-item>
       </gl-disclosure-dropdown-group>
-      <gl-disclosure-dropdown-group v-if="showDeleteAction" :bordered="hasActionItems">
-        <gl-disclosure-dropdown-item variant="danger" @action="$emit('delete')">
+      <gl-disclosure-dropdown-group v-if="showDisableAction" :bordered="hasActionItems">
+        <gl-disclosure-dropdown-item @action="$emit('disable')">
           <template #list-item>
             <span>
-              <gl-icon name="remove" class="gl-mr-2" variant="current" aria-hidden="true" />
-              {{ deleteActionText }}
+              <gl-icon name="cancel" class="gl-mr-2" variant="current" aria-hidden="true" />
+              {{ disableActionItem }}
             </span>
           </template>
         </gl-disclosure-dropdown-item>
