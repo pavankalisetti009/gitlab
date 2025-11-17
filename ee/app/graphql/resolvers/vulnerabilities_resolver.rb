@@ -118,25 +118,6 @@ module Resolvers
         '`advanced_vulnerability_management` feature flag enabled. ' \
         'Not supported on Instance Security Dashboard queries.'
 
-    argument :reduce_complexity_multiplier, GraphQL::Types::Boolean,
-      required: false,
-      default_value: false,
-      deprecated: {
-        # https://gitlab.com/gitlab-org/gitlab/-/issues/580576
-        reason: 'This field is a temporary bug mitigation and will be removed',
-        milestone: '18.6'
-      },
-      description: 'Reduce the GraphQL complexity multiplier. This field will be removed in a future release'\
-       'and should not be relied on.'
-
-    def self.complexity_multiplier(args)
-      if args[:reduce_complexity_multiplier]
-        super * 0.25
-      else
-        super
-      end
-    end
-
     def resolve_with_lookahead(**args)
       return Vulnerability.none unless vulnerable&.feature_available?(:security_dashboard)
 
