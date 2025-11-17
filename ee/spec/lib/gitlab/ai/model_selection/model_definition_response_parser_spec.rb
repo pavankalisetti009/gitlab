@@ -12,7 +12,13 @@ RSpec.describe ::Gitlab::Ai::ModelSelection::ModelDefinitionResponseParser, feat
   describe '#model_with_ref' do
     context 'when the ref exists' do
       it 'returns the model with the given ref' do
-        expect(parser.model_with_ref('claude-sonnet')).to eq({ 'name' => 'Claude Sonnet', 'ref' => 'claude-sonnet' })
+        expect(parser.model_with_ref('claude-sonnet')).to eq(
+          {
+            'name' => 'Claude Sonnet',
+            'ref' => 'claude-sonnet',
+            'model_provider' => 'Anthropic'
+          }
+        )
       end
     end
 
@@ -82,11 +88,20 @@ RSpec.describe ::Gitlab::Ai::ModelSelection::ModelDefinitionResponseParser, feat
 
   describe '#gitlab_models_by_ref' do
     it 'returns a hash of models indexed by their ref' do
-      expect(parser.gitlab_models_by_ref).to eq({
-        'claude-sonnet' => { 'name' => 'Claude Sonnet',
-                             'ref' => 'claude-sonnet' },
-        'gpt-4' => { 'name' => 'GPT-4', 'ref' => 'gpt-4' }
-      })
+      expect(parser.gitlab_models_by_ref).to eq(
+        {
+          'claude-sonnet' => {
+            'name' => 'Claude Sonnet',
+            'ref' => 'claude-sonnet',
+            'model_provider' => 'Anthropic'
+          },
+          'gpt-4' => {
+            'name' => 'GPT-4',
+            'ref' => 'gpt-4',
+            'model_provider' => 'OpenAI'
+          }
+        }
+      )
     end
 
     context 'if definitions is nil' do

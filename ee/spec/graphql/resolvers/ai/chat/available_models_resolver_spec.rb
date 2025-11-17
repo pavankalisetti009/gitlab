@@ -80,10 +80,12 @@ RSpec.describe Resolvers::Ai::Chat::AvailableModelsResolver, :saas, feature_cate
       let(:service_result) do
         ServiceResponse.success(payload: {
           "models" => [
-            { "name" => "Claude Sonnet 4.0 - Anthropic", "identifier" => "claude_sonnet_4_20250514" },
-            { "name" => "Claude Sonnet 4.0 - Vertex", "identifier" => "claude_sonnet_4_20250514_vertex" },
-            { "name" => "Claude Sonnet 3.7 - Anthropic", "identifier" => "claude_sonnet_3_7_20250219" },
-            { "name" => "Claude Sonnet 3.7 - Vertex", "identifier" => "claude_sonnet_3_7_20250219_vertex" }
+            { "name" => "Claude Sonnet 4.0", "identifier" => "claude_sonnet_4_20250514", "provider" => "Anthropic" },
+            { "name" => "Claude Sonnet 4.0", "identifier" => "claude_sonnet_4_20250514_vertex",
+              "provider" => "Anthropic" },
+            { "name" => "Claude Sonnet 3.7", "identifier" => "claude_sonnet_3_7_20250219", "provider" => "Anthropic" },
+            { "name" => "Claude Sonnet 3.7", "identifier" => "claude_sonnet_3_7_20250219_vertex",
+              "provider" => "Vertex" }
           ],
           "unit_primitives" => [
             {
@@ -98,10 +100,10 @@ RSpec.describe Resolvers::Ai::Chat::AvailableModelsResolver, :saas, feature_cate
 
       let(:expected_result) do
         {
-          default_model: { name: "Claude Sonnet 4.0 - Anthropic", ref: "claude_sonnet_4_20250514" },
+          default_model: { name: "Claude Sonnet 4.0", ref: "claude_sonnet_4_20250514", model_provider: "Anthropic" },
           selectable_models: [
-            { name: "Claude Sonnet 4.0 - Anthropic", ref: "claude_sonnet_4_20250514" },
-            { name: "Claude Sonnet 3.7 - Anthropic", ref: "claude_sonnet_3_7_20250219" }
+            { name: "Claude Sonnet 4.0", ref: "claude_sonnet_4_20250514", model_provider: "Anthropic" },
+            { name: "Claude Sonnet 3.7", ref: "claude_sonnet_3_7_20250219", model_provider: "Anthropic" }
           ],
           pinned_model: nil
         }
@@ -156,12 +158,12 @@ RSpec.describe Resolvers::Ai::Chat::AvailableModelsResolver, :saas, feature_cate
 
         it "returns the pinned model information" do
           expect(resolver).to eq({
-            default_model: { name: "Claude Sonnet 4.0 - Anthropic", ref: "claude_sonnet_4_20250514" },
+            default_model: { name: "Claude Sonnet 4.0", ref: "claude_sonnet_4_20250514", model_provider: "Anthropic" },
             selectable_models: [
-              { name: "Claude Sonnet 4.0 - Anthropic", ref: "claude_sonnet_4_20250514" },
-              { name: "Claude Sonnet 3.7 - Anthropic", ref: "claude_sonnet_3_7_20250219" }
+              { name: "Claude Sonnet 4.0", ref: "claude_sonnet_4_20250514", model_provider: "Anthropic" },
+              { name: "Claude Sonnet 3.7", ref: "claude_sonnet_3_7_20250219", model_provider: "Anthropic" }
             ],
-            pinned_model: { name: "Claude Sonnet 3.7 - Anthropic", ref: "claude_sonnet_3_7_20250219" }
+            pinned_model: { name: "Claude Sonnet 3.7", ref: "claude_sonnet_3_7_20250219", model_provider: "Anthropic" }
           })
         end
       end
@@ -169,10 +171,10 @@ RSpec.describe Resolvers::Ai::Chat::AvailableModelsResolver, :saas, feature_cate
       context "when no feature setting exists" do
         it "returns nil for pinned model when no feature setting exists" do
           expect(resolver).to eq({
-            default_model: { name: "Claude Sonnet 4.0 - Anthropic", ref: "claude_sonnet_4_20250514" },
+            default_model: { name: "Claude Sonnet 4.0", ref: "claude_sonnet_4_20250514", model_provider: "Anthropic" },
             selectable_models: [
-              { name: "Claude Sonnet 4.0 - Anthropic", ref: "claude_sonnet_4_20250514" },
-              { name: "Claude Sonnet 3.7 - Anthropic", ref: "claude_sonnet_3_7_20250219" }
+              { name: "Claude Sonnet 4.0", ref: "claude_sonnet_4_20250514", model_provider: "Anthropic" },
+              { name: "Claude Sonnet 3.7", ref: "claude_sonnet_3_7_20250219", model_provider: "Anthropic" }
             ],
             pinned_model: nil
           })
@@ -189,10 +191,10 @@ RSpec.describe Resolvers::Ai::Chat::AvailableModelsResolver, :saas, feature_cate
 
         it "returns nil for pinned model when not pinned" do
           expect(resolver).to eq({
-            default_model: { name: "Claude Sonnet 4.0 - Anthropic", ref: "claude_sonnet_4_20250514" },
+            default_model: { name: "Claude Sonnet 4.0", ref: "claude_sonnet_4_20250514", model_provider: "Anthropic" },
             selectable_models: [
-              { name: "Claude Sonnet 4.0 - Anthropic", ref: "claude_sonnet_4_20250514" },
-              { name: "Claude Sonnet 3.7 - Anthropic", ref: "claude_sonnet_3_7_20250219" }
+              { name: "Claude Sonnet 4.0", ref: "claude_sonnet_4_20250514", model_provider: "Anthropic" },
+              { name: "Claude Sonnet 3.7", ref: "claude_sonnet_3_7_20250219", model_provider: "Anthropic" }
             ],
             pinned_model: nil
           })
@@ -230,10 +232,10 @@ RSpec.describe Resolvers::Ai::Chat::AvailableModelsResolver, :saas, feature_cate
 
         it "returns nil for pinned model when user_model_selection_available? is false" do
           expect(resolver).to eq({
-            default_model: { name: "Claude Sonnet 4.0 - Anthropic", ref: "claude_sonnet_4_20250514" },
+            default_model: { name: "Claude Sonnet 4.0", ref: "claude_sonnet_4_20250514", model_provider: "Anthropic" },
             selectable_models: [
-              { name: "Claude Sonnet 4.0 - Anthropic", ref: "claude_sonnet_4_20250514" },
-              { name: "Claude Sonnet 3.7 - Anthropic", ref: "claude_sonnet_3_7_20250219" }
+              { name: "Claude Sonnet 4.0", ref: "claude_sonnet_4_20250514", model_provider: "Anthropic" },
+              { name: "Claude Sonnet 3.7", ref: "claude_sonnet_3_7_20250219", model_provider: "Anthropic" }
             ],
             pinned_model: nil
           })
@@ -256,12 +258,12 @@ RSpec.describe Resolvers::Ai::Chat::AvailableModelsResolver, :saas, feature_cate
 
         it "returns the pinned model when user_model_selection_available? is true" do
           expect(resolver).to eq({
-            default_model: { name: "Claude Sonnet 4.0 - Anthropic", ref: "claude_sonnet_4_20250514" },
+            default_model: { name: "Claude Sonnet 4.0", ref: "claude_sonnet_4_20250514", model_provider: "Anthropic" },
             selectable_models: [
-              { name: "Claude Sonnet 4.0 - Anthropic", ref: "claude_sonnet_4_20250514" },
-              { name: "Claude Sonnet 3.7 - Anthropic", ref: "claude_sonnet_3_7_20250219" }
+              { name: "Claude Sonnet 4.0", ref: "claude_sonnet_4_20250514", model_provider: "Anthropic" },
+              { name: "Claude Sonnet 3.7", ref: "claude_sonnet_3_7_20250219", model_provider: "Anthropic" }
             ],
-            pinned_model: { name: "Claude Sonnet 3.7 - Anthropic", ref: "claude_sonnet_3_7_20250219" }
+            pinned_model: { name: "Claude Sonnet 3.7", ref: "claude_sonnet_3_7_20250219", model_provider: "Anthropic" }
           })
         end
       end
@@ -270,7 +272,7 @@ RSpec.describe Resolvers::Ai::Chat::AvailableModelsResolver, :saas, feature_cate
         let(:service_result) do
           ServiceResponse.success(payload: {
             "models" => [
-              { "name" => "Claude Sonnet", "identifier" => "claude-sonnet" }
+              { "name" => "Claude Sonnet", "identifier" => "claude-sonnet", "provider" => "Anthropic" }
             ],
             "unit_primitives" => [
               {
