@@ -78,7 +78,8 @@ RSpec.describe Gitlab::Graphql::Representation::AiFeatureSetting, feature_catego
           duo_chat_setting = decorate.find { |s| s.feature == 'duo_chat' }
           expect(duo_chat_setting.default_gitlab_model).to eq({
             'name' => 'Claude Sonnet',
-            'ref' => 'claude-sonnet'
+            'ref' => 'claude-sonnet',
+            'model_provider' => 'Anthropic'
           })
           expect(duo_chat_setting.valid_gitlab_models).to be_present
         end
@@ -110,8 +111,8 @@ RSpec.describe Gitlab::Graphql::Representation::AiFeatureSetting, feature_catego
         it 'includes valid gitlab models' do
           duo_chat_setting = decorate.find { |s| s.feature == 'duo_chat' }
           expect(duo_chat_setting.valid_gitlab_models).to contain_exactly(
-            { 'name' => 'Claude Sonnet', 'ref' => 'claude-sonnet' },
-            { 'name' => 'GPT-4', 'ref' => 'gpt-4' }
+            { 'name' => 'Claude Sonnet', 'ref' => 'claude-sonnet', 'model_provider' => 'Anthropic' },
+            { 'name' => 'GPT-4', 'ref' => 'gpt-4', 'model_provider' => 'OpenAI' }
           )
         end
       end
@@ -128,13 +129,15 @@ RSpec.describe Gitlab::Graphql::Representation::AiFeatureSetting, feature_catego
         it 'includes default_gitlab_model' do
           expect(decorated_self_hosted_setting.default_gitlab_model).to eq({
             "ref" => 'gpt-4',
-            "name" => 'GPT-4'
+            "name" => 'GPT-4',
+            "model_provider" => 'OpenAI'
           })
         end
 
         it 'includes valid gitlab models' do
-          expect(decorated_self_hosted_setting.valid_gitlab_models).to match_array([{ "ref" => 'gpt-4',
-                                                                                      "name" => 'GPT-4' }])
+          expect(decorated_self_hosted_setting.valid_gitlab_models).to match_array(
+            [{ "ref" => 'gpt-4', "name" => 'GPT-4', "model_provider" => 'OpenAI' }]
+          )
         end
 
         it 'fetches the proper feature_setting' do
@@ -154,7 +157,8 @@ RSpec.describe Gitlab::Graphql::Representation::AiFeatureSetting, feature_catego
           duo_chat_setting = decorate.find { |s| s.feature == 'duo_chat' }
           expect(duo_chat_setting.gitlab_model).to eq({
             'name' => 'Claude Sonnet',
-            'ref' => 'claude-sonnet'
+            'ref' => 'claude-sonnet',
+            'model_provider' => 'Anthropic'
           })
         end
       end

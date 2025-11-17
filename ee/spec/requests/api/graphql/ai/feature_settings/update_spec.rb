@@ -168,8 +168,11 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
             feature_setting_response = result['aiFeatureSettings'][1]
 
             expect(feature_setting_response['defaultGitlabModel']).to eq(
-              { 'name' => 'Claude Sonnet',
-                'ref' => 'claude-sonnet' }
+              {
+                'name' => 'Claude Sonnet',
+                'ref' => 'claude-sonnet',
+                'modelProvider' => 'Anthropic'
+              }
             )
           end
         end

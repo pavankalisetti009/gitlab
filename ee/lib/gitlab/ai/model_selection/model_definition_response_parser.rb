@@ -36,7 +36,14 @@ module Gitlab
           return unless definitions && definitions['models']
 
           definitions['models'].to_h do |model|
-            [model['identifier'], { 'name' => model['name'], 'ref' => model['identifier'] }]
+            [
+              model['identifier'],
+              {
+                'name' => model['name'],
+                'ref' => model['identifier'],
+                'model_provider' => model['provider']
+              }
+            ]
           end
         end
         strong_memoize_attr :gitlab_models_by_ref

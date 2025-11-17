@@ -11,6 +11,10 @@ module Types
         field :ref, String, null: false, description: 'Identifier for the offered model.'
 
         field :name, String, null: false, description: 'Humanized name for the offered model, e.g "Chat GPT 4o".'
+
+        field :model_provider, String, null: true,
+          experiment: { milestone: '18.6' },
+          description: 'Provider for the model, e.g "OpenAI".'
       end
       # rubocop: enable Graphql/AuthorizeTypes
     end

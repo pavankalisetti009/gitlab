@@ -4,8 +4,8 @@ RSpec.shared_context 'with fetch_model_definitions_example' do
   let_it_be(:fetch_model_definitions_example) do
     {
       'models' => [
-        { 'name' => 'Claude Sonnet', 'identifier' => 'claude-sonnet' },
-        { 'name' => 'GPT-4', 'identifier' => 'gpt-4' }
+        { 'name' => 'Claude Sonnet', 'identifier' => 'claude-sonnet', 'provider' => 'Anthropic' },
+        { 'name' => 'GPT-4', 'identifier' => 'gpt-4', 'provider' => 'OpenAI' }
       ],
       'unit_primitives' => [
         {
