@@ -33,7 +33,7 @@ module Resolvers
       end
 
       def fetch_risk_score_data(params)
-        finder = ::Security::VulnerabilityElasticRiskScoresFinder.new(vulnerable, params)
+        finder = ::Search::AdvancedFinders::Security::Vulnerability::RiskScoresFinder.new(vulnerable, params)
         finder.execute
       rescue StandardError => e
         Gitlab::ErrorTracking.track_exception(e)

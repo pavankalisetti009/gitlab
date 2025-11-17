@@ -51,7 +51,7 @@ module Resolvers
       end
 
       def search_from_es(args)
-        ::Security::VulnerabilityElasticIdentifierNamesFinder.new(
+        ::Search::AdvancedFinders::Security::Vulnerability::IdentifierNamesFinder.new(
           object,
           { partial_identifier_name: args[:name] }).execute
       end

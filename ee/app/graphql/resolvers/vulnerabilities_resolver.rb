@@ -206,7 +206,7 @@ module Resolvers
     end
 
     def vulnerabilities_from_es(finder_params)
-      apply_lookahead(::Security::VulnerabilityElasticSearchFinder.new(vulnerable, finder_params).execute)
+      apply_lookahead(::Search::AdvancedFinders::Security::Vulnerability::SearchFinder.new(vulnerable, finder_params).execute)
     end
 
     def wrap_with_vulnerability(associations)

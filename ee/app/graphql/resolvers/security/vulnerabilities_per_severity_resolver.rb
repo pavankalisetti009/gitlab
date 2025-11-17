@@ -86,7 +86,7 @@ module Resolvers
       end
 
       def fetch_results(params)
-        finder = ::Security::VulnerabilityElasticCountBySeverityFinder.new(vulnerable, params)
+        finder = ::Search::AdvancedFinders::Security::Vulnerability::CountBySeverityFinder.new(vulnerable, params)
         results = finder.execute
 
         ::Enums::Vulnerability.severity_levels.each_key.index_with do |severity|
