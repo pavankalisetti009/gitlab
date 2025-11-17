@@ -5,9 +5,10 @@ module EE
     VALID_DUO_ADD_ONS = %w[duo_enterprise duo_pro duo_core].freeze
 
     def duo_chat_panel_data(user, project, group)
-      group ||= user.user_preference.get_default_duo_namespace unless project
-
-      user_model_selection_enabled = ::Gitlab::Llm::TanukiBot.user_model_selection_enabled?(user: user)
+      user_model_selection_enabled = ::Gitlab::Llm::TanukiBot.user_model_selection_enabled?(
+        user: user,
+        scope: project || group
+      )
       chat_title = ::Ai::AmazonQ.enabled? ? s_('GitLab Duo Chat with Amazon Q') : s_('GitLab Duo Chat')
       is_agentic_available = ::Gitlab::Llm::TanukiBot.agentic_mode_available?(
         user: user, project: project, group: group
@@ -20,7 +21,7 @@ module EE
         user_id: user.to_global_id,
         project_id: (project.to_global_id if project&.persisted?),
         namespace_id: (group.to_global_id if group&.persisted?),
-        root_namespace_id: ::Gitlab::Llm::TanukiBot.root_namespace_id(user: user),
+        root_namespace_id: ::Gitlab::Llm::TanukiBot.root_namespace_id(project || group),
         resource_id: ::Gitlab::Llm::TanukiBot.resource_id,
         metadata: ::Gitlab::DuoWorkflow::Client.metadata(user).to_json,
         user_model_selection_enabled: user_model_selection_enabled.to_s,

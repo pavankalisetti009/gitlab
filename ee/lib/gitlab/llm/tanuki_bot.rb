@@ -61,8 +61,8 @@ module Gitlab
         user.user_preference.get_default_duo_namespace
       end
 
-      def self.user_model_selection_enabled?(user:)
-        namespace_to_use = namespace || default_duo_namespace(user: user)
+      def self.user_model_selection_enabled?(user:, scope:)
+        namespace_to_use = scope&.root_ancestor
 
         return false unless namespace_to_use
         return false if ::Feature.disabled?(:duo_agent_platform_model_selection, namespace_to_use)
@@ -84,12 +84,10 @@ module Gitlab
         Project.find_by_full_path(project_path).try(:to_global_id) if project_path
       end
 
-      def self.root_namespace_id(user:)
-        namespace_to_use = namespace || default_duo_namespace(user: user)
+      def self.root_namespace_id(scope)
+        return unless scope
 
-        return unless namespace_to_use
-
-        namespace_to_use.to_global_id
+        scope.root_ancestor.to_global_id
       end
 
       def self.duo_scope_hash(user, project, group, controller_name)
