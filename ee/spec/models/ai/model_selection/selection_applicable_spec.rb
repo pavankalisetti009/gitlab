@@ -6,8 +6,8 @@ RSpec.describe ::Ai::ModelSelection::SelectionApplicable, feature_category: :"se
   context 'when the class is implemented correctly', :saas do
     let_it_be(:user) { create(:user) }
 
-    let_it_be(:first_group) { create(:group_with_plan, plan: :ultimate_plan) }
-    let_it_be(:second_group) { create(:group_with_plan, plan: :ultimate_plan) }
+    let_it_be(:first_group) { create(:group_with_plan, plan: :ultimate_plan, reporters: user) }
+    let_it_be(:second_group) { create(:group_with_plan, plan: :ultimate_plan, reporters: user) }
     let_it_be(:duo_pro_add_on) { create(:gitlab_subscription_add_on, :duo_pro) }
 
     let!(:different_namespace_add_on) do

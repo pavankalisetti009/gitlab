@@ -330,80 +330,96 @@ RSpec.describe UserPreference do
     end
   end
 
-  describe '#get_default_duo_namespace', :saas do
-    context 'when there are multiple eligible duo add-on assignments' do
-      include_context 'with multiple user add-on assignments'
+  describe '#duo_default_namespace_with_fallback', :saas do
+    let_it_be(:namespace) { create(:group, :private, name: 'group') }
+    let_it_be(:other_namespace) { create(:group, :private, name: 'other group') }
 
-      context 'when default_duo_add_on_assignment is present' do
-        let(:assignment) { user_assignments.second }
-        let(:assignment_namespace) { groups.second }
+    context 'when duo_default_namespace_id is set and namespace is in candidates' do
+      it 'returns the namespace when accessible' do
+        namespace.add_developer(user)
+        allow(user_preference).to receive(:duo_default_namespace_candidates)
+          .and_return(Namespace.where(id: namespace.id))
 
-        before do
-          user_preference.update!(default_duo_add_on_assignment: assignment)
-        end
+        user_preference.duo_default_namespace = namespace
 
-        it 'returns the namespace from the default assignment' do
-          expect(user_preference.get_default_duo_namespace).to eq(assignment_namespace)
-        end
-      end
-
-      context 'when default_duo_add_on_assignment is not present' do
-        it 'returns nil' do
-          expect(user_preference.get_default_duo_namespace).to be_nil
-        end
+        expect(user_preference.duo_default_namespace_with_fallback).to eq(namespace)
       end
     end
 
-    context 'when there is only single assigning namespace' do
-      let_it_be(:group) do
-        create(:group_with_plan, plan: :ultimate_plan)
+    context 'when duo_default_namespace_id is set but namespace is not in candidates' do
+      before do
+        user_preference.duo_default_namespace_id = namespace.id
+        allow(user_preference).to receive(:duo_default_namespace_candidates).and_return(Namespace.none)
       end
 
-      let_it_be(:add_on_purchase) do
-        create(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: group)
+      it 'falls back to default_duo_add_on_assignment namespace when assignment exists', :saas do
+        add_on_purchase = create(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: other_namespace)
+        assignment = create(:gitlab_subscription_user_add_on_assignment, add_on_purchase: add_on_purchase, user: user)
+        user_preference.default_duo_add_on_assignment = assignment
+
+        expect(user_preference.duo_default_namespace_with_fallback).to eq(other_namespace)
       end
 
-      let!(:user_assignment) do
-        create(:gitlab_subscription_user_add_on_assignment, add_on_purchase: add_on_purchase, user: user)
+      it 'falls back to single candidate when no assignment exists but one candidate available' do
+        allow(user_preference).to receive(:duo_default_namespace_candidates)
+          .and_return(Namespace.where(id: other_namespace.id))
+
+        expect(user_preference.duo_default_namespace_with_fallback).to eq(other_namespace)
       end
 
-      context 'when default_duo_add_on_assignment is not present' do
-        context 'with a single eligible duo add-on assignment' do
-          it 'returns the namespace from the single eligible assignment' do
-            expect(user_preference.get_default_duo_namespace).to eq(group)
-          end
-        end
+      it 'returns nil when multiple candidates exist and no assignment' do
+        third_namespace = create(:group)
+        allow(user_preference).to receive(:duo_default_namespace_candidates).and_return(Namespace.where(id: [
+          other_namespace.id, third_namespace.id
+        ]))
 
-        context 'with multiple add-on assignments from the same namespace' do
-          let_it_be(:second_add_on_purchase) do
-            create(:gitlab_subscription_add_on_purchase, :duo_pro, namespace: group)
-          end
-
-          let!(:second_user_assignment) do
-            create(:gitlab_subscription_user_add_on_assignment, add_on_purchase: second_add_on_purchase, user: user)
-          end
-
-          it 'returns the namespace from the single eligible assignment' do
-            expect(user_preference.get_default_duo_namespace).to eq(group)
-          end
-        end
+        expect(user_preference.duo_default_namespace_with_fallback).to be_nil
       end
 
-      context 'when default_duo_add_on_assignment is present' do
-        before do
-          user_preference.update!(default_duo_add_on_assignment: user_assignment)
-        end
-
-        it 'returns the namespace from the default assignment' do
-          expect(user_preference.get_default_duo_namespace).to eq(group)
-        end
+      it 'returns nil when no candidates exist and no assignment' do
+        expect(user_preference.duo_default_namespace_with_fallback).to be_nil
       end
     end
 
-    context 'when there are no eligible duo add-on assignments' do
-      it 'returns nil' do
-        expect(user_preference.get_default_duo_namespace).to be_nil
+    context 'when duo_default_namespace_id is nil' do
+      before do
+        user_preference.duo_default_namespace_id = nil
       end
+
+      it 'falls back to default_duo_add_on_assignment namespace when assignment exists', :saas do
+        add_on_purchase = create(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: namespace)
+        assignment = create(:gitlab_subscription_user_add_on_assignment, add_on_purchase: add_on_purchase, user: user)
+        user_preference.default_duo_add_on_assignment = assignment
+
+        expect(user_preference.duo_default_namespace_with_fallback).to eq(namespace)
+      end
+
+      it 'falls back to single candidate when no assignment exists but one candidate available' do
+        allow(user_preference).to receive(:duo_default_namespace_candidates)
+          .and_return(Namespace.where(id: namespace.id))
+
+        expect(user_preference.duo_default_namespace_with_fallback).to eq(namespace)
+      end
+
+      it 'returns nil when multiple candidates exist and no assignment' do
+        allow(user_preference).to receive(:duo_default_namespace_candidates)
+          .and_return(Namespace.where(id: [namespace.id, other_namespace.id]))
+
+        expect(user_preference.duo_default_namespace_with_fallback).to be_nil
+      end
+
+      it 'returns nil when no candidates exist and no assignment' do
+        allow(user_preference).to receive(:duo_default_namespace_candidates)
+          .and_return(Namespace.none)
+
+        expect(user_preference.duo_default_namespace_with_fallback).to be_nil
+      end
+    end
+
+    it 'returns nil when no fallback is present', :saas do
+      user_preference.duo_default_namespace_id = nil
+
+      expect(user_preference.duo_default_namespace_with_fallback).to be_nil
     end
   end
 

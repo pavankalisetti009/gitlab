@@ -48,6 +48,7 @@ module EE
       desc "User can assign a default Duo group setting"
       condition(:default_duo_group_assignment_available) { can_assign_default_duo_group? }
 
+      # TODO: move this to global policy. https://gitlab.com/gitlab-org/gitlab/-/issues/579962
       rule { default_duo_group_assignment_available }.enable :assign_default_duo_group
     end
 
@@ -69,7 +70,7 @@ module EE
 
       return false unless ::Feature.enabled?(:ai_user_default_duo_namespace, user)
 
-      return false unless user.user_preference.distinct_eligible_duo_add_on_assignments.exists?
+      return false unless user.user_preference.duo_default_namespace_candidates.exists?
 
       ::Gitlab::CurrentSettings.current_application_settings.duo_features_enabled
     end

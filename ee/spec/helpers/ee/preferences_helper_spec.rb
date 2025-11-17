@@ -94,52 +94,6 @@ RSpec.describe PreferencesHelper, feature_category: :shared do
     end
   end
 
-  describe '#user_duo_namespace_assignment_options' do
-    let_it_be(:groups) do
-      [
-        build(:group, name: 'Group 1'),
-        build(:group, name: 'Group 2')
-      ]
-    end
-
-    let_it_be(:add_on_purchases) do
-      groups.map do |group|
-        build(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: group)
-      end
-    end
-
-    let(:user_assignments) do
-      add_on_purchases.map do |add_on|
-        build(:gitlab_subscription_user_add_on_assignment, add_on_purchase: add_on, user: user)
-      end
-    end
-
-    subject { helper.user_duo_namespace_assignment_options }
-
-    context 'when user cannot assign default duo group' do
-      before do
-        allow(Ability).to receive(:allowed?).with(user, :assign_default_duo_group, user).and_return(false)
-      end
-
-      it { is_expected.to be_empty }
-    end
-
-    context 'when user can assign default duo group' do
-      before do
-        allow(Ability).to receive(:allowed?).with(user, :assign_default_duo_group, user).and_return(true)
-        allow(user.user_preference).to receive(:distinct_eligible_duo_add_on_assignments)
-           .and_return([user_assignments.first, user_assignments.second])
-      end
-
-      it 'returns an array of namespace name and user assignment id tuples' do
-        is_expected.to match_array([
-          ['Group 1', user_assignments.first.id],
-          ['Group 2', user_assignments.second.id]
-        ])
-      end
-    end
-  end
-
   describe '#group_overview_content_preference?' do
     subject { helper.group_overview_content_preference? }
 

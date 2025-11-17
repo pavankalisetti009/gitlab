@@ -351,6 +351,10 @@ RSpec.describe UserPolicy, feature_category: :user_management do
 
           stub_application_setting(duo_features_enabled: duo_features_enabled)
 
+          groups.each do |group|
+            group.add_reporter(current_user)
+          end
+
           allow(::Ai::AmazonQ).to receive(:connected?).and_return(amazon_q_enabled)
         end
 

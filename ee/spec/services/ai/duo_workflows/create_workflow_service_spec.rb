@@ -121,6 +121,8 @@ RSpec.describe ::Ai::DuoWorkflows::CreateWorkflowService, feature_category: :duo
       let(:container) { nil }
 
       it 'returns error' do
+        allow(user.user_preference).to receive(:get_default_duo_namespace).and_return(nil)
+
         expect(execute[:status]).to eq(:error)
         expect(execute[:http_status]).to eq(:bad_request)
         expect(execute[:message]).to include('container must be a Project or Namespace')
