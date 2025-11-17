@@ -80,6 +80,7 @@ export const mockProjectSecretsData = [
         __typename: 'SecretRotationInfo',
       },
       name: 'SECRET_1',
+      status: 'COMPLETED',
       project: {
         id: 'gid://gitlab/Project/19',
         __typename: 'Project',
@@ -101,6 +102,7 @@ export const mockProjectSecretsData = [
         __typename: 'SecretRotationInfo',
       },
       name: 'SECRET_2',
+      status: 'CREATE_STALE',
       project: {
         id: 'gid://gitlab/Project/19',
         __typename: 'Project',
@@ -118,6 +120,7 @@ export const mockProjectSecretsData = [
       metadataVersion: 1,
       rotationInfo: null,
       name: 'SECRET_3',
+      status: 'UPDATE_STALE',
       project: {
         id: 'gid://gitlab/Project/19',
         __typename: 'Project',
@@ -135,6 +138,7 @@ export const mockProjectSecretsData = [
       metadataVersion: 1,
       rotationInfo: null,
       name: 'SECRET_4',
+      status: 'CREATE_IN_PROGRESS',
       project: {
         id: 'gid://gitlab/Project/19',
         __typename: 'Project',
@@ -152,6 +156,7 @@ export const mockProjectSecretsData = [
       metadataVersion: 1,
       rotationInfo: null,
       name: 'SECRET_5',
+      status: 'UPDATE_IN_PROGRESS',
       project: {
         id: 'gid://gitlab/Project/19',
         __typename: 'Project',
@@ -173,6 +178,7 @@ export const mockSecret = ({ customSecret } = {}) => ({
   metadataVersion: 1,
   name: 'APP_PWD',
   rotationInfo: null,
+  status: 'COMPLETED',
   ...customSecret,
 });
 

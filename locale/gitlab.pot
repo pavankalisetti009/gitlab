@@ -33498,6 +33498,9 @@ msgstr ""
 msgid "HealthCheck|Unhealthy"
 msgstr ""
 
+msgid "Healthy"
+msgstr ""
+
 msgid "Hello %{name},"
 msgstr ""
 
@@ -58904,6 +58907,21 @@ msgid "SecretsManager|Secret %{secretName} has been deleted."
 msgstr ""
 
 msgid "SecretsManager|Secret %{secretName} was successfully updated."
+msgstr ""
+
+msgid "SecretsManager|Secret created or updated successfully."
+msgstr ""
+
+msgid "SecretsManager|Secret creation failed. Delete the secret and try again."
+msgstr ""
+
+msgid "SecretsManager|Secret is being created."
+msgstr ""
+
+msgid "SecretsManager|Secret is being updated."
+msgstr ""
+
+msgid "SecretsManager|Secret update failed. Retry the update or delete the secret."
 msgstr ""
 
 msgid "SecretsManager|Secrets"

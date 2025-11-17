@@ -23,26 +23,47 @@ export const SECRET_MANAGER_STATUS_ACTIVE = 'ACTIVE';
 export const SECRET_MANAGER_STATUS_INACTIVE = 'INACTIVE';
 export const SECRET_MANAGER_STATUS_PROVISIONING = 'PROVISIONING';
 
+export const SECRET_STATUS_ICONS_OPTICALLY_ALIGNED = [
+  'COMPLETED',
+  'CREATE_IN_PROGRESS',
+  'UPDATE_IN_PROGRESS',
+];
+
 export const SECRET_STATUS = {
-  disabled: {
-    icon: 'status-failed',
-    text: __('Disabled'),
-    variant: 'neutral',
-  },
-  enabled: {
-    icon: 'status-active',
-    text: __('Enabled'),
+  COMPLETED: {
+    icon: 'status-success',
+    iconSize: 'sm',
     variant: 'success',
+    text: __('Healthy'),
+    description: s__('SecretsManager|Secret created or updated successfully.'),
   },
-  expiring: {
-    icon: 'status-alert',
-    text: __('Expiring soon'),
-    variant: 'warning',
+  CREATE_IN_PROGRESS: {
+    icon: 'status-running',
+    iconSize: 'sm',
+    variant: 'neutral',
+    text: __('Creating'),
+    description: s__('SecretsManager|Secret is being created.'),
   },
-  expired: {
-    icon: 'status-cancelled',
-    text: __('Expired'),
+  CREATE_STALE: {
+    icon: 'warning-solid',
+    iconSize: 'sm',
     variant: 'danger',
+    text: __('Needs attention'),
+    description: s__('SecretsManager|Secret creation failed. Delete the secret and try again.'),
+  },
+  UPDATE_IN_PROGRESS: {
+    icon: 'status-running',
+    iconSize: 'sm',
+    variant: 'neutral',
+    text: __('Updating'),
+    description: s__('SecretsManager|Secret is being updated.'),
+  },
+  UPDATE_STALE: {
+    icon: 'warning-solid',
+    iconSize: 'sm',
+    variant: 'danger',
+    text: __('Needs attention'),
+    description: s__('SecretsManager|Secret update failed. Retry the update or delete the secret.'),
   },
 };
 
