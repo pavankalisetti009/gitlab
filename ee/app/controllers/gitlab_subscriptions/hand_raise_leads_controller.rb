@@ -20,8 +20,17 @@ module GitlabSubscriptions
     end
 
     def track_cart_abandonment
-      # TODO: https://gitlab.com/gitlab-org/gitlab/-/work_items/579819
-      head :no_content
+      result = GitlabSubscriptions::TrackCartAbandonmentService.new(
+        user: current_user,
+        namespace: namespace,
+        plan: cart_abandonment_params[:plan]
+      ).execute
+
+      if result.success?
+        head :ok
+      else
+        render json: { message: result.message }, status: :unprocessable_entity
+      end
     end
 
     private
@@ -50,6 +59,10 @@ module GitlabSubscriptions
         :first_name, :last_name, :company_name, :phone_number, :country,
         :state, :namespace_id, :comment, :glm_content, :product_interaction
       )
+    end
+
+    def cart_abandonment_params
+      params.permit(:plan)
     end
 
     def verify_subscriptions_available!

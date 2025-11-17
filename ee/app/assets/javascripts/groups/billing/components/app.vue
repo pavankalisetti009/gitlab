@@ -53,6 +53,14 @@ export default {
       type: String,
       required: true,
     },
+    upgradeToPremiumTrackingUrl: {
+      type: String,
+      required: true,
+    },
+    upgradeToUltimateTrackingUrl: {
+      type: String,
+      required: true,
+    },
     totalSeats: {
       type: Number,
       required: false,
@@ -123,12 +131,14 @@ export default {
           <premium-plan-billing-header
             :upgrade-to-premium-url="upgradeToPremiumUrl"
             :cta-label="attributes.premiumCtaLabel"
+            :tracking-url="upgradeToPremiumTrackingUrl"
           />
 
           <ultimate-plan-billing-header
             :trial-active="trialActive"
             :upgrade-to-ultimate-url="upgradeToUltimateUrl"
             :cta-label="attributes.ultimateCtaLabel"
+            :tracking-url="upgradeToUltimateTrackingUrl"
           />
         </div>
       </div>
@@ -160,6 +170,7 @@ export default {
           <premium-plan-billing-header
             :upgrade-to-premium-url="upgradeToPremiumUrl"
             :cta-label="attributes.premiumCtaLabel"
+            :tracking-url="upgradeToPremiumTrackingUrl"
           />
         </div>
 
@@ -174,6 +185,7 @@ export default {
             :trial-active="trialActive"
             :upgrade-to-ultimate-url="upgradeToUltimateUrl"
             :cta-label="attributes.ultimateCtaLabel"
+            :tracking-url="upgradeToUltimateTrackingUrl"
           />
         </div>
 
