@@ -133,14 +133,16 @@ describe('SelfHostedModelsTable', () => {
       });
     });
 
-    it('truncates name and endpoint', () => {
+    it('truncates name, endpoint, and model identifier', () => {
       const model = mockSelfHostedModelsList[0];
 
       const nameTruncator = findTruncators().at(0);
       const endpointTruncator = findTruncators().at(1);
+      const modelIdentifierTruncator = findTruncators().at(2);
 
       expect(nameTruncator.props('text')).toBe(model.name);
       expect(endpointTruncator.props('text')).toBe(model.endpoint);
+      expect(modelIdentifierTruncator.props('text')).toBe(model.identifier);
     });
 
     it('renders a disclosure dropdown for each self-hosted model entry', () => {

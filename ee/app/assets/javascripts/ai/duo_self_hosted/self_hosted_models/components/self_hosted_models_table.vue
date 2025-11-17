@@ -208,7 +208,9 @@ export default {
         <gl-skeleton-loader v-if="isLoading" :height="42" :width="300"
           ><rect y="4" :width="item.loaderWidth.identifier" height="36" rx="10" />
         </gl-skeleton-loader>
-        <span v-else>{{ item.identifier }}</span>
+        <span v-else>
+          <gl-truncate :text="item.identifier" position="end" with-tooltip />
+        </span>
       </template>
       <template #cell(has_api_key)="{ item }">
         <gl-skeleton-loader v-if="isLoading" :height="42" :width="200">
