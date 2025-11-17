@@ -15,6 +15,65 @@ RSpec.describe Vulnerabilities::MergeRequestLink, feature_category: :vulnerabili
 
     it { is_expected.to validate_presence_of(:vulnerability) }
     it { is_expected.to validate_presence_of(:merge_request) }
+
+    describe 'readiness_score validations' do
+      subject(:build_link) do
+        build(:vulnerabilities_merge_request_link, vulnerability: vulnerability, merge_request: merge_request)
+      end
+
+      context 'when readiness_score is nil' do
+        it 'is valid' do
+          build_link.readiness_score = nil
+
+          expect(build_link).to be_valid
+        end
+      end
+
+      context 'when readiness_score is within valid range' do
+        it 'is valid for 0.0' do
+          build_link.readiness_score = 0.0
+
+          expect(build_link).to be_valid
+        end
+
+        it 'is valid for 1.0' do
+          build_link.readiness_score = 1.0
+
+          expect(build_link).to be_valid
+        end
+
+        it 'is valid for 0.5' do
+          build_link.readiness_score = 0.5
+
+          expect(build_link).to be_valid
+        end
+      end
+
+      context 'when readiness_score is outside valid range' do
+        it 'is invalid for negative values' do
+          build_link.readiness_score = -0.1
+
+          expect(build_link).not_to be_valid
+          expect(build_link.errors[:readiness_score]).to include('is not included in the list')
+        end
+
+        it 'is invalid for values greater than 1.0' do
+          build_link.readiness_score = 1.1
+
+          expect(build_link).not_to be_valid
+          expect(build_link.errors[:readiness_score]).to include('is not included in the list')
+        end
+      end
+
+      context 'when readiness_score is not a number' do
+        it 'is invalid for string values' do
+          build_link.readiness_score = 'invalid'
+
+          expect(build_link).not_to be_valid
+          expect(build_link.errors[:readiness_score]).to include('is not a number')
+        end
+      end
+    end
   end
 
   describe 'class methods' do
