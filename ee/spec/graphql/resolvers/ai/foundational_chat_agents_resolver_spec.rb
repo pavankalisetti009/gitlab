@@ -119,30 +119,6 @@ RSpec.describe Resolvers::Ai::FoundationalChatAgentsResolver, feature_category: 
       end
     end
 
-    context 'when foundational_security_agent feature flag is disabled' do
-      before do
-        stub_feature_flags(foundational_security_agent: false)
-      end
-
-      it 'filters out security_analyst_agent' do
-        agent_references = resolved.map(&:reference)
-
-        expect(agent_references).not_to include('security_analyst_agent')
-      end
-    end
-
-    context 'when foundational_security_agent feature flag is enabled' do
-      before do
-        stub_feature_flags(foundational_security_agent: true)
-      end
-
-      it 'includes security_analyst_agent' do
-        agent_references = resolved.map(&:reference)
-
-        expect(agent_references).to include('security_analyst_agent')
-      end
-    end
-
     context 'when foundational_analytics_agent feature flag is disabled' do
       before do
         stub_feature_flags(foundational_analytics_agent: false)
