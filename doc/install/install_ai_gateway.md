@@ -531,7 +531,7 @@ For information on alternative ways to install the AI gateway, see
 
 ## Health check and debugging
 
-To debug issues with your self-hosted Duo installation, run the following command:
+To debug issues with your GitLab Duo Self-Hosted installation, run the following command:
 
 ```shell
 sudo gitlab-rake gitlab:duo:verify_self_hosted_setup
@@ -540,7 +540,7 @@ sudo gitlab-rake gitlab:duo:verify_self_hosted_setup
 Ensure that:
 
 - The AI gateway URL is correctly configured (through `Ai::Setting.instance.ai_gateway_url`).
-- Duo access has been explicitly enabled for the root user through `/admin/code_suggestions`.
+- GitLab Duo access has been explicitly enabled for the root user through `/admin/code_suggestions`.
 
 If access issues persist, check that authentication is correctly configured, and that the health check passes.
 
@@ -634,7 +634,7 @@ You can deploy a single AI gateway to support multiple GitLab instances, or depl
 
 The AI gateway is available in multiple regions globally to ensure optimal performance for users regardless of location, through:
 
-- Improved response times for Duo features.
+- Improved response times for GitLab Duo features.
 - Reduced latency for geographically distributed users.
 - Data sovereignty requirements compliance.
 
