@@ -149,6 +149,8 @@ export const mockBillingPageAttributes = {
   startTrialPath: '__start_trial_path__',
   upgradeToPremiumUrl: '__upgrade_to_premium_url__',
   upgradeToUltimateUrl: '__upgrade_to_ultimate_url__',
+  upgradeToPremiumTrackingUrl: '__upgrade_to_premium_tracking_url__',
+  upgradeToUltimateTrackingUrl: '__upgrade_to_ultimate_tracking_url__',
   totalSeats: 5,
   trialEndsOn: null,
 };

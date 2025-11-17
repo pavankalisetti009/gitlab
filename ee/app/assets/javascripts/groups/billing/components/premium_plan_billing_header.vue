@@ -1,5 +1,6 @@
 <script>
 import { GlBadge, GlButton } from '@gitlab/ui';
+import axios from '~/lib/utils/axios_utils';
 
 export default {
   name: 'PremiumPlanBillingHeader',
@@ -15,6 +16,15 @@ export default {
     ctaLabel: {
       type: String,
       required: true,
+    },
+    trackingUrl: {
+      type: String,
+      required: true,
+    },
+  },
+  methods: {
+    handleClick() {
+      axios.post(this.trackingUrl).catch(() => {});
     },
   },
 };
@@ -46,6 +56,7 @@ export default {
       data-track-property="premium"
       :href="upgradeToPremiumUrl"
       referrerpolicy="no-referrer-when-downgrade"
+      @click="handleClick"
       >{{ ctaLabel }}
     </gl-button>
   </div>

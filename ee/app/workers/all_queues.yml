@@ -2475,6 +2475,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: gitlab_subscriptions_cart_abandonment
+  :worker_name: GitlabSubscriptions::CartAbandonmentWorker
+  :feature_category: :subscription_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: gitlab_subscriptions_gitlab_com_duo_core_todo_notification
   :worker_name: GitlabSubscriptions::GitlabCom::DuoCoreTodoNotificationWorker
   :feature_category: :acquisition

@@ -1,0 +1,10 @@
+---
+name: track_cart_abandonment
+description: it controls sending cart abandonment event to CDot
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/580232
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/212374
+rollout_issue_url:
+milestone: '18.6'
+group: group::acquisition
+type: gitlab_com_derisk
+default_enabled: false

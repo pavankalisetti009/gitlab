@@ -35,7 +35,19 @@ describe('FreeTrialBillingApp', () => {
     expect(findPremiumPlanHeader().exists()).toBe(true);
     expect(findFreePlanBillingHeader().exists()).toBe(true);
     expect(findPremiumPlanBillingHeader().props('ctaLabel')).toBe('Upgrade to Premium');
+    expect(findPremiumPlanBillingHeader().props('upgradeToPremiumUrl')).toBe(
+      '__upgrade_to_premium_url__',
+    );
+    expect(findPremiumPlanBillingHeader().props('trackingUrl')).toBe(
+      '__upgrade_to_premium_tracking_url__',
+    );
     expect(findUltimatePlanBillingHeader().props('ctaLabel')).toBe('Upgrade to Ultimate');
+    expect(findUltimatePlanBillingHeader().props('upgradeToUltimateUrl')).toBe(
+      '__upgrade_to_ultimate_url__',
+    );
+    expect(findUltimatePlanBillingHeader().props('trackingUrl')).toBe(
+      '__upgrade_to_ultimate_tracking_url__',
+    );
     expect(findFreePlanBilling().exists()).toBe(true);
     expect(findPremiumPlanBilling().exists()).toBe(true);
     expect(findUltimatePlanBilling().exists()).toBe(true);

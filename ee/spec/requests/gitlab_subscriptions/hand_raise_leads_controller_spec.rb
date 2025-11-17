@@ -91,10 +91,11 @@ RSpec.describe GitlabSubscriptions::HandRaiseLeadsController, feature_category: 
   end
 
   describe 'POST /-/gitlab_subscriptions/hand_raise_leads/track_cart_abandonment' do
-    let_it_be(:user) { create(:user, :with_namespace) }
+    let_it_be(:user) { create(:user, :with_namespace, onboarding_status_email_opt_in: true) }
     let_it_be(:namespace) { create(:group) }
 
     let(:params) { { namespace_id: namespace.id.to_s, plan: 'premium' } }
+    let(:service_result) { ServiceResponse.success }
 
     subject(:post_track_cart_abandonment) do
       post track_cart_abandonment_gitlab_subscriptions_hand_raise_leads_path, params: params
@@ -106,6 +107,10 @@ RSpec.describe GitlabSubscriptions::HandRaiseLeadsController, feature_category: 
 
     before do
       stub_saas_features(gitlab_com_subscriptions: true)
+
+      allow_next_instance_of(GitlabSubscriptions::TrackCartAbandonmentService) do |service|
+        allow(service).to receive(:execute).and_return(service_result)
+      end
     end
 
     context 'when user is authenticated' do
@@ -113,10 +118,27 @@ RSpec.describe GitlabSubscriptions::HandRaiseLeadsController, feature_category: 
         sign_in(user)
       end
 
-      it 'returns 204 no content' do
-        post_track_cart_abandonment
+      context 'when service succeeds' do
+        it 'calls the service with correct parameters and returns 200 ok' do
+          expect_next_instance_of(GitlabSubscriptions::TrackCartAbandonmentService) do |service|
+            expect(service).to receive(:execute).and_return(ServiceResponse.success)
+          end
 
-        expect(response).to have_gitlab_http_status(:no_content)
+          post_track_cart_abandonment
+
+          expect(response).to have_gitlab_http_status(:ok)
+        end
+      end
+
+      context 'when service fails' do
+        let(:service_result) { ServiceResponse.error(message: 'Invalid plan') }
+
+        it 'returns 422 unprocessable entity with error message' do
+          post_track_cart_abandonment
+
+          expect(response).to have_gitlab_http_status(:unprocessable_entity)
+          expect(json_response['message']).to eq('Invalid plan')
+        end
       end
     end
 
