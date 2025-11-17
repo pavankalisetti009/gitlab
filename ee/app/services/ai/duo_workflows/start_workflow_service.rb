@@ -3,7 +3,8 @@
 module Ai
   module DuoWorkflows
     class StartWorkflowService
-      IMAGE = 'registry.gitlab.com/gitlab-org/duo-workflow/default-docker-image/workflow-generic-image:v0.0.4'
+      IMAGE = "registry.gitlab.com/gitlab-org/duo-workflow/default-docker-image/workflow-generic-image:v0.0.4"
+      DUO_CLI_VERSION = "8.41.0"
       DWS_STANDARD_CONTEXT_CATEGORY = "agent_platform_standard_context"
 
       def initialize(workflow:, params:)
@@ -130,7 +131,8 @@ module Ai
           GITLAB_TOKEN: @params[:workflow_oauth_token],
           DUO_WORKFLOW_GIT_HTTP_USER: "oauth",
           DUO_WORKFLOW_GIT_USER_EMAIL: git_user_email(@workload_user),
-          DUO_WORKFLOW_METADATA: @params[:workflow_metadata],
+          DUO_WORKFLOW_GIT_USER_NAME: "GitLab Duo",
+          DUO_WORKFLOW_METADATA: workflow_metadata,
           DUO_WORKFLOW_PROJECT_ID: project.id,
           DUO_WORKFLOW_NAMESPACE_ID: project.root_namespace.id,
           GITLAB_BASE_URL: Gitlab.config.gitlab.url,
@@ -159,18 +161,33 @@ module Ai
       end
 
       def set_up_executor_commands
-        if Feature.enabled?(:ai_dap_use_headless_node_executor, @current_user)
-          [
-            %(npx -y @gitlab/duo-cli@8.38.0 run --existing-session-id #{@workflow.id} --connection-type grpc)
-          ]
-        else
-          [
+        if Feature.disabled?(:ai_dap_use_headless_node_executor, @current_user)
+          return [
             %(wget #{Gitlab::DuoWorkflow::Executor.executor_binary_url} -O /tmp/duo-workflow-executor.tar.gz),
             %(tar xf /tmp/duo-workflow-executor.tar.gz --directory /tmp),
             %(chmod +x /tmp/duo-workflow-executor),
             %(/tmp/duo-workflow-executor)
           ]
         end
+
+        [
+          %(npx -y @gitlab/duo-cli@#{DUO_CLI_VERSION} run --existing-session-id #{@workflow.id} --connection-type grpc)
+        ]
+      end
+
+      def workflow_metadata
+        return @params[:workflow_metadata] if Feature.disabled?(:ai_dap_use_headless_node_executor, @current_user)
+
+        # TODO: This is temporary workaround to pass model selection via
+        # metadata into node executor to address
+        # https://gitlab.com/gitlab-org/editor-extensions/gitlab-lsp/-/issues/1767
+        # it will be cleaned up by
+        # https://gitlab.com/gitlab-org/editor-extensions/gitlab-lsp/-/issues/1630
+        ::Gitlab::Json.dump(
+          ::Gitlab::Json.parse(@params[:workflow_metadata]).merge(
+            'modelMetadata' => agent_platform_model_metadata_json
+          )
+        )
       end
 
       def duo_workflow_service_account
