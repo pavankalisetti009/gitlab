@@ -6,7 +6,8 @@ module GitlabSubscriptions
 
     def attributes
       return {} unless ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions) && namespace.present? &&
-        namespace.persisted? && namespace.free_plan? && Ability.allowed?(@subject, :edit_billing, namespace)
+        namespace.persisted? && namespace.free_plan? && Ability.allowed?(@subject, :edit_billing, namespace) &&
+        namespace.private? && !namespace.user_namespace?
 
       {
         tier_badge_href: group_billings_path(namespace, source: "sidebar-free-tier-highlight")
