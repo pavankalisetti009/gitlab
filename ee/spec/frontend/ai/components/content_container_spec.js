@@ -2,6 +2,7 @@ import { nextTick } from 'vue';
 import { GlButton } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { createMockDirective } from 'helpers/vue_mock_directive';
+import { setHTMLFixture } from 'helpers/fixtures';
 import AiContentContainer from 'ee/ai/components/content_container.vue';
 import { CHAT_MODES } from 'ee/ai/tanuki_bot/constants';
 import { duoChatGlobalState } from '~/super_sidebar/constants';
@@ -68,6 +69,7 @@ describe('AiContentContainer', () => {
   const findBackButton = () => wrapper.findByTestId('content-container-back-button');
 
   beforeEach(() => {
+    setHTMLFixture(`<div class="js-page-layout"></div>`);
     // Reset global state before each test
     duoChatGlobalState.chatMode = CHAT_MODES.AGENTIC;
     createComponent();
