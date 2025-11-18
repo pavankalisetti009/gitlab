@@ -9,6 +9,7 @@ module Vulnerabilities
 
     validates_presence_of :vulnerability_occurrence, :workflow
     validates :workflow_name, presence: true
+    validate :vulnerability_workflow_belongs_to_same_project
 
     before_validation :assign_project_id
 
@@ -23,6 +24,15 @@ module Vulnerabilities
 
     def assign_project_id
       self.project_id ||= vulnerability_occurrence&.project_id
+    end
+
+    def vulnerability_workflow_belongs_to_same_project
+      return unless vulnerability_occurrence
+      return unless workflow
+
+      return if vulnerability_occurrence.project_id == workflow.project_id
+
+      errors.add(:workflow, _("must belong to the same project as the vulnerability"))
     end
   end
 end
