@@ -14,6 +14,9 @@ module Types
         field :checks, [::Types::Ai::DuoWorkflows::EnablementCheckType],
           null: true,
           description: 'Enablement checks.'
+        field :foundational_flows_enabled, GraphQL::Types::Boolean,
+          null: true,
+          description: 'Indicates if Duo Agent Platform foundational flows are enabled for the project.'
         field :remote_flows_enabled, GraphQL::Types::Boolean,
           null: true,
           description: 'Indicates if Duo Agent Platform remote flows are enabled for the project.'

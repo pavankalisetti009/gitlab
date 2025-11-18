@@ -547,6 +547,8 @@ module EE
         :spp_repository_pipeline_access=,
         :duo_remote_flows_enabled,
         :duo_remote_flows_enabled=,
+        :duo_foundational_flows_enabled,
+        :duo_foundational_flows_enabled=,
         to: :project_setting
       with_options prefix: :delegated, to: :project_setting do
         delegate :require_reauthentication_to_approve=

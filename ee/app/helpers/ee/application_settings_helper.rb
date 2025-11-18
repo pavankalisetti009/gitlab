@@ -85,6 +85,8 @@ module EE
         :duo_availability,
         :duo_remote_flows_enabled,
         :duo_remote_flows_availability,
+        :duo_foundational_flows_enabled,
+        :duo_foundational_flows_availability,
         :enabled_expanded_logging,
         :foundational_agents_default_enabled,
         # Add all Zoekt settings automatically

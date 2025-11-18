@@ -90,6 +90,9 @@ RSpec.describe EE::Groups::SettingsHelper, feature_category: :groups_and_project
           duo_availability: group.namespace_settings.duo_availability.to_s,
           duo_remote_flows_cascading_settings: "{\"locked_by_application_setting\":false,\"locked_by_ancestor\":false}",
           duo_remote_flows_availability: group.namespace_settings.duo_remote_flows_availability.to_s,
+          duo_foundational_flows_cascading_settings:
+            "{\"locked_by_application_setting\":false,\"locked_by_ancestor\":false}",
+          duo_foundational_flows_availability: group.namespace_settings.duo_foundational_flows_availability.to_s,
           duo_core_features_enabled: group.namespace_settings.duo_core_features_enabled.to_s,
           are_duo_settings_locked: group.namespace_settings.duo_features_enabled_locked?.to_s,
           experiment_features_enabled: group.namespace_settings.experiment_features_enabled.to_s,

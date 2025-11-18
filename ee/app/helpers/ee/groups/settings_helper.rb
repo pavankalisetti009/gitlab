@@ -52,6 +52,7 @@ module EE
       def group_ai_settings_helper_data
         duo_availability_cascading_settings = cascading_namespace_settings_tooltip_data(:duo_features_enabled, @group, method(:edit_group_path))[:tooltip_data]
         duo_remote_flows_cascading_settings = cascading_namespace_settings_tooltip_data(:duo_remote_flows_enabled, @group, method(:edit_group_path))[:tooltip_data]
+        duo_foundational_flows_cascading_settings = cascading_namespace_settings_tooltip_data(:duo_foundational_flows_enabled, @group, method(:edit_group_path))[:tooltip_data]
 
         {
           duo_availability_cascading_settings: duo_availability_cascading_settings,
@@ -69,8 +70,10 @@ module EE
           duo_workflow_available: (@group.root? && current_user.can?(:admin_duo_workflow, @group)).to_s,
           duo_workflow_mcp_enabled: @group.duo_workflow_mcp_enabled.to_s,
           duo_remote_flows_availability: @group.namespace_settings.duo_remote_flows_availability.to_s,
-          is_saas: saas?.to_s,
           foundational_agents_default_enabled: @group.foundational_agents_default_enabled.to_s,
+          duo_foundational_flows_cascading_settings: duo_foundational_flows_cascading_settings,
+          duo_foundational_flows_availability: @group.namespace_settings.duo_foundational_flows_availability.to_s,
+          is_saas: saas?.to_s,
           show_foundational_agents_availability: show_foundational_agents_availability?.to_s
         }
       end

@@ -76,11 +76,20 @@ module EE
         attributes << :duo_remote_flows_enabled
       end
 
+      add_duo_workflow_attributes(attributes)
+
       unless project&.project_setting&.duo_features_enabled_locked?
         attributes << :duo_features_enabled
       end
 
       super + attributes
+    end
+
+    def add_duo_workflow_attributes(attributes)
+      return unless project&.licensed_feature_available?(:ai_workflows)
+
+      attributes << :duo_remote_flows_enabled
+      attributes << :duo_foundational_flows_enabled if project.duo_remote_flows_enabled
     end
 
     def project_params_ee

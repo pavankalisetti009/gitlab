@@ -68,6 +68,59 @@ RSpec.describe Ai::CascadeDuoSettingsService, feature_category: :ai_abstraction_
         expect(project.project_setting.duo_features_enabled).to be(false)
       end
     end
+
+    context 'when duo_foundational_flows_enabled is true' do
+      let(:setting_attributes) { { 'duo_foundational_flows_enabled' => true } }
+
+      subject(:service) { described_class.new(setting_attributes) }
+
+      it 'updates subgroups and projects for given group to true' do
+        # Initialize with duo_foundational_flows_enabled: false
+        [group2, subgroup2, group, subgroup].each do |g|
+          g.namespace_settings.update!(duo_foundational_flows_enabled: false)
+        end
+        [project2, project].each { |p| p.project_setting.update!(duo_foundational_flows_enabled: false) }
+
+        service.cascade_for_group(group2)
+        service.cascade_for_group(group)
+
+        [group2, subgroup2, group, subgroup].each(&:reload)
+        [project2, project].each(&:reload)
+
+        expect(group2.namespace_settings.duo_foundational_flows_enabled).to be(true)
+        expect(group.namespace_settings.duo_foundational_flows_enabled).to be(true)
+        expect(subgroup2.namespace_settings.duo_foundational_flows_enabled).to be(true)
+        expect(subgroup.namespace_settings.duo_foundational_flows_enabled).to be(true)
+        expect(project2.project_setting.duo_foundational_flows_enabled).to be(true)
+        expect(project.project_setting.duo_foundational_flows_enabled).to be(true)
+      end
+    end
+
+    context 'when duo_foundational_flows_enabled is false' do
+      let(:setting_attributes) { { 'duo_foundational_flows_enabled' => false } }
+
+      subject(:service) { described_class.new(setting_attributes) }
+
+      it 'updates subgroups and projects for given groups to false' do
+        # Initialize with duo_foundational_flows_enabled: true
+        [group2, subgroup2, group, subgroup].each do |g|
+          g.namespace_settings.update!(duo_foundational_flows_enabled: true)
+        end
+        [project2, project].each { |p| p.project_setting.update!(duo_foundational_flows_enabled: true) }
+
+        service.cascade_for_group(group)
+
+        [group2, subgroup2, group, subgroup].each(&:reload)
+        [project2, project].each(&:reload)
+
+        expect(group2.namespace_settings.duo_foundational_flows_enabled).to be(true)
+        expect(group.namespace_settings.duo_foundational_flows_enabled).to be(false)
+        expect(subgroup2.namespace_settings.duo_foundational_flows_enabled).to be(true)
+        expect(subgroup.namespace_settings.duo_foundational_flows_enabled).to be(false)
+        expect(project2.project_setting.duo_foundational_flows_enabled).to be(true)
+        expect(project.project_setting.duo_foundational_flows_enabled).to be(false)
+      end
+    end
   end
 
   describe '#cascade_for_instance' do
@@ -116,6 +169,58 @@ RSpec.describe Ai::CascadeDuoSettingsService, feature_category: :ai_abstraction_
         expect(subgroup.namespace_settings.duo_features_enabled).to be(false)
         expect(project2.project_setting.duo_features_enabled).to be(false)
         expect(project.project_setting.duo_features_enabled).to be(false)
+      end
+    end
+
+    context 'when duo_foundational_flows_enabled is true' do
+      let(:setting_attributes) { { 'duo_foundational_flows_enabled' => true } }
+
+      subject(:service) { described_class.new(setting_attributes) }
+
+      it 'updates all root groups, subgroups, and projects' do
+        # Initialize with duo_foundational_flows_enabled: false
+        [group2, subgroup2, group, subgroup].each do |g|
+          g.namespace_settings.update!(duo_foundational_flows_enabled: false)
+        end
+        [project2, project].each { |p| p.project_setting.update!(duo_foundational_flows_enabled: false) }
+
+        service.cascade_for_instance
+
+        [group2, subgroup2, group, subgroup].each(&:reload)
+        [project2, project].each(&:reload)
+
+        expect(group2.namespace_settings.duo_foundational_flows_enabled).to be(true)
+        expect(group.namespace_settings.duo_foundational_flows_enabled).to be(true)
+        expect(subgroup2.namespace_settings.duo_foundational_flows_enabled).to be(true)
+        expect(subgroup.namespace_settings.duo_foundational_flows_enabled).to be(true)
+        expect(project2.project_setting.duo_foundational_flows_enabled).to be(true)
+        expect(project.project_setting.duo_foundational_flows_enabled).to be(true)
+      end
+    end
+
+    context 'when duo_foundational_flows_enabled is false' do
+      let(:setting_attributes) { { 'duo_foundational_flows_enabled' => false } }
+
+      subject(:service) { described_class.new(setting_attributes) }
+
+      it 'updates all root groups, subgroups, and projects' do
+        # Initialize with duo_foundational_flows_enabled: true
+        [group2, subgroup2, group, subgroup].each do |g|
+          g.namespace_settings.update!(duo_foundational_flows_enabled: true)
+        end
+        [project2, project].each { |p| p.project_setting.update!(duo_foundational_flows_enabled: true) }
+
+        service.cascade_for_instance
+
+        [group2, subgroup2, group, subgroup].each(&:reload)
+        [project2, project].each(&:reload)
+
+        expect(group2.namespace_settings.duo_foundational_flows_enabled).to be(false)
+        expect(group.namespace_settings.duo_foundational_flows_enabled).to be(false)
+        expect(subgroup2.namespace_settings.duo_foundational_flows_enabled).to be(false)
+        expect(subgroup.namespace_settings.duo_foundational_flows_enabled).to be(false)
+        expect(project2.project_setting.duo_foundational_flows_enabled).to be(false)
+        expect(project.project_setting.duo_foundational_flows_enabled).to be(false)
       end
     end
   end

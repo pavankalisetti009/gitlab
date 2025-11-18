@@ -66,6 +66,7 @@ module EE
           expose :prevent_merge_without_jira_issue, if: ->(project, _) { project.feature_available?(:jira_issue_association_enforcement) }
           expose :auto_duo_code_review_enabled, if: ->(project, _) { project.namespace.has_active_add_on_purchase?(:duo_enterprise) }
           expose :duo_remote_flows_enabled, if: ->(_, _) { ::Ai::DuoWorkflow.enabled? }
+          expose :duo_foundational_flows_enabled, if: ->(_, _) { ::Ai::DuoWorkflow.enabled? }
           expose :web_based_commit_signing_enabled, if: ->(project, options) do
             ::Gitlab::Saas.feature_available?(:repositories_web_based_commit_signing) &&
               Ability.allowed?(options[:current_user], :admin_project, project)

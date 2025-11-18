@@ -57,6 +57,7 @@ module EE
         duoFeaturesLocked: project.project_setting.duo_features_enabled_locked?,
         duoContextExclusionSettings: project.project_setting.duo_context_exclusion_settings || {},
         initialDuoRemoteFlowsAvailability: project.duo_remote_flows_enabled,
+        initialDuoFoundationalFlowsAvailability: project.duo_foundational_flows_enabled,
         experimentFeaturesEnabled: experiment_features_enabled,
         paidDuoTier: paid_duo_tier_for_project(project)
       })

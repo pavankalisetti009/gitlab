@@ -37,7 +37,8 @@ module Ai
         {
           enabled: enabled,
           checks: checks,
-          remote_flows_enabled: @project.duo_remote_flows_enabled
+          remote_flows_enabled: @project.duo_remote_flows_enabled,
+          foundational_flows_enabled: @project.duo_foundational_flows_enabled
         }
       end
     end

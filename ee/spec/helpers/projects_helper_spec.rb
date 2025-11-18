@@ -701,6 +701,7 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
         licensedAiFeaturesAvailable: false,
         duoFeaturesLocked: false,
         initialDuoRemoteFlowsAvailability: true,
+        initialDuoFoundationalFlowsAvailability: false,
         experimentFeaturesEnabled: false }
     end
 

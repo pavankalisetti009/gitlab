@@ -86,6 +86,7 @@ module EE
         duo_configuration_path: group_settings_gitlab_duo_configuration_index_path(group),
         are_duo_core_features_enabled: settings.duo_core_features_enabled.to_s,
         duo_remote_flows_availability: @group.namespace_settings.duo_remote_flows_availability.to_s,
+        duo_foundational_flows_availability: @group.namespace_settings.duo_foundational_flows_availability.to_s,
         model_switching_enabled: can?(current_user, :admin_group_model_selection, group).to_s,
         model_switching_path: group_settings_gitlab_duo_model_selection_index_path(group),
         usage_dashboard_path: (group_settings_gitlab_duo_usage_path(group) if usage_billing_feature_available?(group))
