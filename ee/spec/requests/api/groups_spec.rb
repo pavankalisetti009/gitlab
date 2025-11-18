@@ -506,6 +506,169 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
       end
     end
 
+    context 'merge request settings' do
+      let(:merge_request_params) do
+        {
+          only_allow_merge_if_pipeline_succeeds: true,
+          allow_merge_on_skipped_pipeline: false,
+          only_allow_merge_if_all_discussions_are_resolved: true
+        }
+      end
+
+      context 'with group_level_merge_checks_setting license' do
+        before do
+          stub_licensed_features(group_level_merge_checks_setting: true)
+        end
+
+        context 'when authenticated as group owner' do
+          let(:params) { merge_request_params }
+
+          it 'updates merge request settings' do
+            subject
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(json_response['only_allow_merge_if_pipeline_succeeds']).to eq(true)
+            expect(json_response['allow_merge_on_skipped_pipeline']).to eq(false)
+            expect(json_response['only_allow_merge_if_all_discussions_are_resolved']).to eq(true)
+
+            group.reload
+            expect(group.namespace_settings.only_allow_merge_if_pipeline_succeeds).to eq(true)
+            expect(group.namespace_settings.allow_merge_on_skipped_pipeline).to eq(false)
+            expect(group.namespace_settings.only_allow_merge_if_all_discussions_are_resolved).to eq(true)
+          end
+
+          it 'returns merge request settings on GET' do
+            group.namespace_settings.update!(merge_request_params)
+
+            get api("/groups/#{group.id}", user)
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(json_response['only_allow_merge_if_pipeline_succeeds']).to eq(true)
+            expect(json_response['allow_merge_on_skipped_pipeline']).to eq(false)
+            expect(json_response['only_allow_merge_if_all_discussions_are_resolved']).to eq(true)
+          end
+        end
+
+        context 'when authenticated as maintainer' do
+          let(:maintainer) { create(:user) }
+          let(:params) { merge_request_params }
+
+          before do
+            group.add_maintainer(maintainer)
+          end
+
+          it 'does not allow updating merge request settings' do
+            put api("/groups/#{group.id}", maintainer), params: params
+
+            expect(response).to have_gitlab_http_status(:forbidden)
+          end
+        end
+      end
+
+      context 'without group_level_merge_checks_setting license' do
+        let(:params) { merge_request_params }
+
+        before do
+          stub_licensed_features(group_level_merge_checks_setting: false)
+        end
+
+        it 'does not expose merge request settings on GET' do
+          get api("/groups/#{group.id}", user)
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response).not_to have_key('only_allow_merge_if_pipeline_succeeds')
+          expect(json_response).not_to have_key('allow_merge_on_skipped_pipeline')
+          expect(json_response).not_to have_key('only_allow_merge_if_all_discussions_are_resolved')
+        end
+
+        it 'ignores merge request settings parameters on PUT' do
+          subject
+
+          expect(response).to have_gitlab_http_status(:ok)
+
+          group.reload
+          expect(group.namespace_settings.only_allow_merge_if_pipeline_succeeds).to eq(false)
+          expect(group.namespace_settings.allow_merge_on_skipped_pipeline).to eq(false)
+          expect(group.namespace_settings.only_allow_merge_if_all_discussions_are_resolved).to eq(false)
+        end
+      end
+
+      context 'when setting allow_merge_on_skipped_pipeline without only_allow_merge_if_pipeline_succeeds' do
+        let(:params) { { allow_merge_on_skipped_pipeline: true } }
+
+        before do
+          stub_licensed_features(group_level_merge_checks_setting: true)
+          group.namespace_settings.update!(only_allow_merge_if_pipeline_succeeds: false)
+        end
+
+        it 'returns 400 bad request with an error message' do
+          subject
+
+          expect(response).to have_gitlab_http_status(:bad_request)
+          expect(json_response['message']).to eq(
+            '400 Bad request - allow_merge_on_skipped_pipeline can only be enabled when ' \
+              'only_allow_merge_if_pipeline_succeeds is true'
+          )
+        end
+      end
+
+      context 'when setting only_allow_merge_if_pipeline_succeeds to false' do
+        let(:params) { { only_allow_merge_if_pipeline_succeeds: false, allow_merge_on_skipped_pipeline: true } }
+
+        before do
+          stub_licensed_features(group_level_merge_checks_setting: true)
+        end
+
+        it 'returns 400 bad request with an error message' do
+          subject
+
+          expect(response).to have_gitlab_http_status(:bad_request)
+          expect(json_response['message']).to eq(
+            '400 Bad request - allow_merge_on_skipped_pipeline can only be enabled when ' \
+              'only_allow_merge_if_pipeline_succeeds is true'
+          )
+        end
+      end
+
+      context 'when setting both fields to true together' do
+        let(:params) { { only_allow_merge_if_pipeline_succeeds: true, allow_merge_on_skipped_pipeline: true } }
+
+        before do
+          stub_licensed_features(group_level_merge_checks_setting: true)
+        end
+
+        it 'allows both settings to be true' do
+          subject
+
+          expect(response).to have_gitlab_http_status(:ok)
+
+          group.reload
+          expect(group.namespace_settings.only_allow_merge_if_pipeline_succeeds).to eq(true)
+          expect(group.namespace_settings.allow_merge_on_skipped_pipeline).to eq(true)
+        end
+      end
+
+      context 'when group has no namespace_settings' do
+        let(:params) { { allow_merge_on_skipped_pipeline: true } }
+
+        before do
+          stub_licensed_features(group_level_merge_checks_setting: true)
+          group.namespace_settings.destroy!
+          group.reload
+        end
+
+        it 'returns 400 bad request when namespace_settings is nil' do
+          subject
+
+          expect(response).to have_gitlab_http_status(:bad_request)
+          expect(json_response['message']).to eq(
+            '400 Bad request - allow_merge_on_skipped_pipeline can only be enabled when ' \
+              'only_allow_merge_if_pipeline_succeeds is true'
+          )
+        end
+      end
+    end
+
     describe 'unique_project_download* attributes', feature_category: :insider_threat do
       context 'when authenticated as group owner' do
         let(:allowed_username) { create(:user).username }

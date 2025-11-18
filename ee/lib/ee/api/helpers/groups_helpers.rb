@@ -73,6 +73,15 @@ module EE
             optional :web_based_commit_signing_enabled,
               type: ::Grape::API::Boolean,
               desc: 'Enable web based commit signing for this group'
+            optional :only_allow_merge_if_pipeline_succeeds,
+              type: ::Grape::API::Boolean,
+              desc: 'Only allow to merge if builds succeed'
+            optional :allow_merge_on_skipped_pipeline,
+              type: ::Grape::API::Boolean,
+              desc: 'Allow to merge if pipeline is skipped'
+            optional :only_allow_merge_if_all_discussions_are_resolved,
+              type: ::Grape::API::Boolean,
+              desc: 'Only allow to merge if all threads are resolved'
           end
 
           params :optional_projects_params_ee do

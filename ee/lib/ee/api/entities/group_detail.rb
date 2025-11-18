@@ -20,6 +20,21 @@ module EE
           expose :allowed_email_domains_list,
             if: ->(group, options) { group.licensed_feature_available?(:group_allowed_email_domains) }
 
+          expose :only_allow_merge_if_pipeline_succeeds,
+            if: ->(group, options) { group.licensed_feature_available?(:group_level_merge_checks_setting) } do |group|
+            group.namespace_settings&.only_allow_merge_if_pipeline_succeeds
+          end
+
+          expose :allow_merge_on_skipped_pipeline,
+            if: ->(group, options) { group.licensed_feature_available?(:group_level_merge_checks_setting) } do |group|
+            group.namespace_settings&.allow_merge_on_skipped_pipeline
+          end
+
+          expose :only_allow_merge_if_all_discussions_are_resolved,
+            if: ->(group, options) { group.licensed_feature_available?(:group_level_merge_checks_setting) } do |group|
+            group.namespace_settings&.only_allow_merge_if_all_discussions_are_resolved
+          end
+
           unique_project_download_limit_enabled = ->(group, options) do
             options[:current_user]&.can?(:admin_group, group) &&
               group.namespace_settings.present? &&

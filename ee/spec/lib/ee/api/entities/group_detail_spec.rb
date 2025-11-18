@@ -183,6 +183,67 @@ RSpec.describe API::Entities::GroupDetail do
     end
   end
 
+  describe 'merge request settings' do
+    let_it_be(:group) { create(:group) }
+    let_it_be(:user) { create(:user) }
+
+    subject { described_class.new(group, current_user: user).as_json }
+
+    before do
+      group.add_owner(user)
+    end
+
+    context 'with group_level_merge_checks_setting license' do
+      before do
+        stub_licensed_features(group_level_merge_checks_setting: true)
+        group.namespace_settings.update!(
+          only_allow_merge_if_pipeline_succeeds: true,
+          allow_merge_on_skipped_pipeline: false,
+          only_allow_merge_if_all_discussions_are_resolved: true
+        )
+      end
+
+      it 'exposes merge request settings' do
+        expect(subject[:only_allow_merge_if_pipeline_succeeds]).to eq(true)
+        expect(subject[:allow_merge_on_skipped_pipeline]).to eq(false)
+        expect(subject[:only_allow_merge_if_all_discussions_are_resolved]).to eq(true)
+      end
+    end
+
+    context 'without group_level_merge_checks_setting license' do
+      before do
+        stub_licensed_features(group_level_merge_checks_setting: false)
+        group.namespace_settings.update!(
+          only_allow_merge_if_pipeline_succeeds: true,
+          allow_merge_on_skipped_pipeline: false,
+          only_allow_merge_if_all_discussions_are_resolved: true
+        )
+      end
+
+      it 'does not expose merge request settings' do
+        expect(subject.keys).not_to include(
+          :only_allow_merge_if_pipeline_succeeds,
+          :allow_merge_on_skipped_pipeline,
+          :only_allow_merge_if_all_discussions_are_resolved
+        )
+      end
+    end
+
+    context 'when group has no associated settings record' do
+      before do
+        stub_licensed_features(group_level_merge_checks_setting: true)
+        group.namespace_settings.destroy!
+        group.reload
+      end
+
+      it 'does not expose merge request settings' do
+        expect(subject[:only_allow_merge_if_pipeline_succeeds]).to be_nil
+        expect(subject[:allow_merge_on_skipped_pipeline]).to be_nil
+        expect(subject[:only_allow_merge_if_all_discussions_are_resolved]).to be_nil
+      end
+    end
+  end
+
   def update_group_attrs(group, user, params)
     ::Groups::UpdateService.new(group, user, params).execute
   end
