@@ -9,7 +9,13 @@ RSpec.describe Resolvers::Security::VulnerabilitiesPerSeverityResolver, :elastic
     context = { current_user: current_user }
     context[:report_type] = report_type_filter if defined?(report_type_filter)
     context[:project_id] = project_id_filter if defined?(project_id_filter)
-    args = defined?(custom_args) ? custom_args : { start_date: Date.parse('2019-10-15'), end_date: Date.parse('2019-10-17') }
+    args = if defined?(custom_args)
+             custom_args
+           else
+             { start_date: Date.parse('2019-10-15'),
+               end_date: Date.parse('2019-10-17') }
+           end
+
     resolve(described_class, obj: operate_on, args: args, ctx: context)
   end
 
