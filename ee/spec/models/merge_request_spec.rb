@@ -2026,9 +2026,25 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
             allow(merge_request).to receive(:on_train?).and_return(false)
           end
 
-          it 'skips the CI check' do
-            expect(subject).to include(skip_ci_check: true)
-            expect(subject.except(:skip_ci_check).values).to all(be_falsy)
+          context 'when pipeline is not being created' do
+            before do
+              allow(merge_request).to receive(:pipeline_creating?).and_return(false)
+            end
+
+            it 'skips the CI check' do
+              expect(subject).to include(skip_ci_check: true)
+              expect(subject.except(:skip_ci_check).values).to all(be_falsy)
+            end
+          end
+
+          context 'when pipeline is being created' do
+            before do
+              allow(merge_request).to receive(:pipeline_creating?).and_return(true)
+            end
+
+            it 'does not skip the CI check' do
+              expect(subject.values).to all(be_falsy)
+            end
           end
         end
       end

@@ -314,7 +314,7 @@ module EE
     def skipped_auto_merge_checks(options = {})
       if options[:auto_merge_strategy] == ::AutoMergeService::STRATEGY_MERGE_TRAIN &&
           ::Feature.enabled?(:allow_merge_train_retry_merge, project)
-        skip_ci_check = !on_train? && diff_head_pipeline&.merge_train_pipeline?
+        skip_ci_check = !on_train? && diff_head_pipeline&.merge_train_pipeline? && !pipeline_creating?
         super.merge(skip_ci_check: skip_ci_check)
       else
         super
