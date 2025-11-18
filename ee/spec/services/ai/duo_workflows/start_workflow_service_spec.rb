@@ -1155,6 +1155,46 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
     end
   end
 
+  describe 'LOG_LEVEL variable' do
+    before do
+      allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
+      project.project_setting.update!(duo_features_enabled: true, duo_remote_flows_enabled: true)
+      allow(maintainer).to receive(:allowed_to_use?).and_return(true)
+    end
+
+    context 'when client has debug mode enabled' do
+      before do
+        allow(Gitlab::DuoWorkflow::Client).to receive_messages(debug_mode?: true)
+      end
+
+      it 'sets LOG_LEVEL to debug' do
+        allow(Ci::Workloads::RunWorkloadService).to receive(:new).and_call_original
+
+        expect(execute).to be_success
+
+        expect(Ci::Workloads::RunWorkloadService).to have_received(:new) do |workload_definition:, **_kwargs|
+          expect(workload_definition.variables[:LOG_LEVEL]).to eq('debug')
+        end
+      end
+    end
+
+    context 'when client has debug mode disabled' do
+      before do
+        allow(Gitlab::DuoWorkflow::Client).to receive_messages(debug_mode?: false)
+      end
+
+      it 'sets LOG_LEVEL to debug' do
+        allow(Ci::Workloads::RunWorkloadService).to receive(:new).and_call_original
+
+        expect(execute).to be_success
+
+        expect(Ci::Workloads::RunWorkloadService).to have_received(:new) do |workload_definition:, **_kwargs|
+          expect(workload_definition.variables[:LOG_LEVEL]).to eq('info')
+        end
+      end
+    end
+  end
+
   describe 'DUO_WORKFLOW_GIT_USER_EMAIL variable' do
     before do
       allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)

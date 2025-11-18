@@ -126,6 +126,7 @@ module Ai
           DUO_WORKFLOW_INSTANCE_ID: Gitlab::GlobalAnonymousId.instance_id,
           DUO_WORKFLOW_INSECURE: Gitlab::DuoWorkflow::Client.secure? ? 'false' : 'true',
           DUO_WORKFLOW_DEBUG: Gitlab::DuoWorkflow::Client.debug_mode? ? 'true' : 'false',
+          LOG_LEVEL: Gitlab::DuoWorkflow::Client.debug_mode? ? 'debug' : 'info',
           DUO_WORKFLOW_GIT_HTTP_BASE_URL: Gitlab.config.gitlab.url,
           DUO_WORKFLOW_GIT_HTTP_PASSWORD: @params[:workflow_oauth_token],
           GITLAB_TOKEN: @params[:workflow_oauth_token],
