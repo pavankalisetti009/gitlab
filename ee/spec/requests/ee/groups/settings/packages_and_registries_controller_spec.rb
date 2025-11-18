@@ -25,23 +25,37 @@ RSpec.describe Groups::Settings::PackagesAndRegistriesController, feature_catego
       end
 
       it_behaves_like 'returning response status', :ok
-
-      it_behaves_like 'pushed feature flag', :maven_virtual_registry
       it_behaves_like 'pushed feature flag', :ui_for_virtual_registry_cleanup_policy
 
-      context 'with adminVirtualRegistry' do
-        it 'pushes ability to frontend' do
+      context 'with shouldRenderVirtualRegistriesSetting' do
+        it 'includes the setting as true in the dataset' do
           request
 
-          expect(response.body).to have_pushed_frontend_ability(adminVirtualRegistry: true)
+          expect(response.body).to include('data-should-render-virtual-registries-setting="true"')
         end
-      end
 
-      context 'with licensed feature' do
-        it 'pushes packages_virtual_registry feature' do
-          request
+        context 'when maven_virtual_registry feature flag is disabled' do
+          before do
+            stub_feature_flags(maven_virtual_registry: false)
+          end
 
-          expect(response.body).to have_pushed_licensed_features(packagesVirtualRegistry: true)
+          it 'includes the setting as false in the dataset' do
+            request
+
+            expect(response.body).to include('data-should-render-virtual-registries-setting="false"')
+          end
+        end
+
+        context 'when licensed feature is not available' do
+          before do
+            stub_licensed_features(packages_virtual_registry: false)
+          end
+
+          it 'includes the setting as false in the dataset' do
+            request
+
+            expect(response.body).to include('data-should-render-virtual-registries-setting="false"')
+          end
         end
       end
     end

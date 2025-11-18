@@ -75,4 +75,23 @@ RSpec.describe EE::PackagesHelper, feature_category: :package_registry do
       end
     end
   end
+
+  describe '#packages_and_registries_group_settings_template_data' do
+    let_it_be(:group) { build_stubbed(:group) }
+
+    before do
+      allow(helper).to receive_messages(
+        current_user: user,
+        show_virtual_registries_setting?: true
+      )
+    end
+
+    it 'includes group and dependency proxy paths and should_render_virtual_registries_setting' do
+      expect(helper.packages_and_registries_group_settings_template_data(group)).to include(
+        group_path: group.full_path,
+        group_dependency_proxy_path: group_dependency_proxy_path(group),
+        should_render_virtual_registries_setting: 'true'
+      )
+    end
+  end
 end

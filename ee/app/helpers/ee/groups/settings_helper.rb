@@ -35,6 +35,12 @@ module EE
         !current_user.user_preference.early_access_program_participant? && @group.experiment_features_enabled
       end
 
+      def show_virtual_registries_setting?(group)
+        ::Feature.enabled?(:maven_virtual_registry, group) &&
+          group.licensed_feature_available?(:packages_virtual_registry) &&
+          can?(current_user, :admin_virtual_registry, group.virtual_registry_policy_subject)
+      end
+
       def group_ai_general_settings_helper_data
         {
           on_general_settings_page: 'true',
