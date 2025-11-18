@@ -8,7 +8,8 @@ module Vulnerabilities
 
     belongs_to :author, class_name: 'User'
     belongs_to :vulnerability
-    belongs_to :vulnerability_occurrence, optional: true, class_name: 'Vulnerabilities::Finding'
+    belongs_to :finding, foreign_key: :vulnerability_occurrence_id, class_name: 'Vulnerabilities::Finding',
+      optional: true, inverse_of: false
 
     declarative_enum LinkTypeEnum
     declarative_enum ExternalTypeEnum
