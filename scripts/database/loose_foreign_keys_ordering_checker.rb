@@ -31,38 +31,15 @@ class LooseForeignKeysOrderingChecker
   private
 
   def format_error_result(table_names, sorted_table_names)
-    misordered_tables = find_misordered_tables(table_names, sorted_table_names)
-
     message = "\e[31mError: Table names in #{LOOSE_FOREIGN_KEYS_PATH} are not in alphabetical order\n\n"
-    message += "The following tables are out of order:\n\n"
+    message += "The following order is expected:\e[0m\n\n"
 
-    misordered_tables.each do |table, expected_position|
-      message += "  • #{table}\n"
-      message += "    Expected position: #{expected_position}\n\n"
-    end
+    diff = Diffy::Diff.new(table_names.join("\n"), sorted_table_names.join("\n")).to_s(:color)
+    diff = diff.split("\n").reject { |l| l.include?('No newline at end of file') }.join("\n")
+    message += "#{diff}\n\n"
 
-    message += "Please reorder the tables alphabetically.\n\e[0m"
+    message += "\e[31mPlease reorder the tables alphabetically.\n\e[0m"
 
     Result.new(ERROR_CODE, message)
-  end
-
-  def find_misordered_tables(table_names, sorted_table_names)
-    misordered = {}
-
-    table_names.each_with_index do |table, index|
-      expected_index = sorted_table_names.index(table)
-      next if index == expected_index
-
-      misordered[table] = if expected_index == 0
-                            "First (before #{sorted_table_names[1]})"
-                          elsif expected_index == sorted_table_names.length - 1
-                            "Last (after #{sorted_table_names[expected_index - 1]})"
-                          else
-                            "Between #{sorted_table_names[expected_index - 1]} and " \
-                              "#{sorted_table_names[expected_index + 1]}"
-                          end
-    end
-
-    misordered
   end
 end
