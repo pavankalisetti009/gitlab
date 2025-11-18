@@ -67,6 +67,7 @@ export const MOCK_CONFIGURED_AGENTS_RESPONSE = {
           },
         },
       ],
+      __typename: 'AiCatalogItemConsumerConnection',
     },
   },
 };

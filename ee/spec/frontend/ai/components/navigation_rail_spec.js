@@ -4,6 +4,7 @@ import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
 import { shouldDisableShortcuts } from '~/behaviors/shortcuts/shortcuts_toggle';
 import { keysFor, DUO_CHAT } from '~/behaviors/shortcuts/keybindings';
 import NavigationRail from 'ee/ai/components/navigation_rail.vue';
+import NewChatButton from 'ee/ai/components/new_chat_button.vue';
 import { CHAT_MODES } from 'ee/ai/tanuki_bot/constants';
 import { duoChatGlobalState } from '~/super_sidebar/constants';
 
@@ -18,9 +19,18 @@ describe('NavigationRail', () => {
     isExpanded = true,
     showSuggestionsTab = true,
     chatDisabledReason = '',
+    projectId = 'gid://gitlab/Project/123',
+    namespaceId = 'gid://gitlab/Namespace/456',
   } = {}) => {
     wrapper = shallowMountExtended(NavigationRail, {
-      propsData: { activeTab, isExpanded, showSuggestionsTab, chatDisabledReason },
+      propsData: {
+        activeTab,
+        isExpanded,
+        showSuggestionsTab,
+        chatDisabledReason,
+        projectId,
+        namespaceId,
+      },
       directives: {
         GlTooltip: createMockDirective('gl-tooltip'),
       },
@@ -31,10 +41,10 @@ describe('NavigationRail', () => {
   };
 
   const findChatToggle = () => wrapper.findByTestId('ai-chat-toggle');
-  const findNewToggle = () => wrapper.findByTestId('ai-new-toggle');
   const findHistoryToggle = () => wrapper.findByTestId('ai-history-toggle');
   const findSuggestionsToggle = () => wrapper.findByTestId('ai-suggestions-toggle');
   const findSessionsToggle = () => wrapper.findByTestId('ai-sessions-toggle');
+  const findNewChatButton = () => wrapper.findComponent(NewChatButton);
   const findDivider = () => wrapper.find('[name="divider"]');
 
   beforeEach(() => {
@@ -106,7 +116,6 @@ describe('NavigationRail', () => {
       it.each`
         buttonName       | finder
         ${'chat'}        | ${findChatToggle}
-        ${'new'}         | ${findNewToggle}
         ${'history'}     | ${findHistoryToggle}
         ${'sessions'}    | ${findSessionsToggle}
         ${'suggestions'} | ${findSuggestionsToggle}
@@ -138,7 +147,6 @@ describe('NavigationRail', () => {
     describe('buttons with title attribute', () => {
       it.each`
         buttonName       | finder
-        ${'new'}         | ${findNewToggle}
         ${'history'}     | ${findHistoryToggle}
         ${'sessions'}    | ${findSessionsToggle}
         ${'suggestions'} | ${findSuggestionsToggle}
@@ -156,6 +164,22 @@ describe('NavigationRail', () => {
           'An administrator has turned off GitLab Duo for this project.',
         );
       });
+    });
+  });
+
+  describe('new chat button', () => {
+    it('emits starts new chat when a new agent is selected', () => {
+      const mockAgent = { id: 'agent1', name: 'Test Agent' };
+      findNewChatButton().vm.$emit('startNewChat', mockAgent);
+
+      expect(wrapper.emitted('startNewChat')).toEqual([[mockAgent]]);
+    });
+
+    it('shows error if new agent cannot be selected', () => {
+      const mockError = new Error('Test error');
+      findNewChatButton().vm.$emit('newChatError', mockError);
+
+      expect(wrapper.emitted('newChatError')).toEqual([[mockError]]);
     });
   });
 });

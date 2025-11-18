@@ -116,6 +116,16 @@ export default {
       required: false,
       default: 'active',
     },
+    selectedAgent: {
+      type: Object,
+      required: false,
+      default: () => ({}),
+    },
+    selectedAgentError: {
+      type: Object,
+      required: false,
+      default: () => ({}),
+    },
   },
   apollo: {
     agenticWorkflows: {
@@ -428,6 +438,12 @@ export default {
     },
     mode(newMode) {
       this.switchMode(newMode);
+    },
+    selectedAgent(newAgent) {
+      if (newAgent) this.onNewChat(newAgent);
+    },
+    selectedAgentError(newError) {
+      if (newError) this.onError(newError);
     },
   },
   mounted() {

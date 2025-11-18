@@ -145,3 +145,53 @@ export const MOCK_AGENT_FLOW_CONFIG_RESPONSE = {
     },
   },
 };
+
+export const MOCK_CONFIGURED_AGENTS_RESPONSE = {
+  data: {
+    aiCatalogConfiguredItems: {
+      nodes: [
+        {
+          id: 'Configured Item 5',
+          item: {
+            id: 'Agent 5',
+            name: 'My Custom Agent',
+            description: 'This is my custom agent',
+            versions: {
+              nodes: [
+                {
+                  id: 'AgentVersion 6',
+                  released: false,
+                },
+                {
+                  id: 'AgentVersion 5',
+                  released: true,
+                },
+              ],
+            },
+          },
+        },
+      ],
+    },
+  },
+};
+
+export const MOCK_FOUNDATIONAL_CHAT_AGENTS_RESPONSE = {
+  data: {
+    aiFoundationalChatAgents: {
+      nodes: [
+        {
+          id: 'gid://gitlab/Ai::FoundationalChatAgent/chat',
+          name: 'GitLab Duo Agent',
+          description: 'Duo is your general development assistant',
+          referenceWithVersion: 'chat',
+        },
+        {
+          id: 'gid://gitlab/Ai::FoundationalChatAgent/agent-v1',
+          name: 'Cool agent',
+          description: 'An agent that makes things cooler',
+          referenceWithVersion: 'agent/v1',
+        },
+      ],
+    },
+  },
+};

@@ -70,6 +70,8 @@ export default {
     return {
       isDesktop: GlBreakpointInstance.isDesktop(),
       duoChatGlobalState,
+      selectedAgent: null,
+      selectedAgentError: null,
     };
   },
   computed: {
@@ -187,7 +189,7 @@ export default {
 
       this.$router.push(targetRoute).catch(() => {});
 
-      if (['chat', 'new'].includes(tab)) {
+      if (tab === 'chat') {
         await this.$nextTick();
         this.$refs['content-container']?.getContentComponent()?.focusInput?.();
       }
@@ -213,6 +215,12 @@ export default {
       //   2. current tab initial load/reload to have no layout shift
       this.setActiveTab(this.activeTab);
     },
+    startNewChat(agent) {
+      this.selectedAgent = agent;
+    },
+    handleNewChatError(error) {
+      this.selectedAgentError = error;
+    },
   },
 };
 </script>
@@ -231,6 +239,8 @@ export default {
       :resource-id="resourceId"
       :metadata="metadata"
       :user-model-selection-enabled="userModelSelectionEnabled"
+      :selected-agent="selectedAgent"
+      :agent-select-error="selectedAgentError"
       @closePanel="closePanel"
       @go-back="handleGoBack"
       @switch-to-active-tab="setActiveTab"
@@ -240,7 +250,11 @@ export default {
       :active-tab="activeTab"
       :show-suggestions-tab="false"
       :chat-disabled-reason="chatDisabledReason"
+      :project-id="projectId"
+      :namespace-id="namespaceId"
       @handleTabToggle="handleTabToggle"
+      @startNewChat="startNewChat"
+      @newChatError="handleNewChatError"
     />
   </div>
 </template>

@@ -2,8 +2,14 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import duoWorkflowMutation from 'ee/ai/graphql/duo_workflow.mutation.graphql';
 import deleteAgenticWorkflowMutation from 'ee/ai/graphql/delete_agentic_workflow.mutation.graphql';
 import getWorkflowEventsQuery from 'ee/ai/graphql/get_workflow_events.query.graphql';
+import getConfiguredAgents from 'ee/ai/graphql/get_configured_agents.query.graphql';
 import getAgentFlowConfig from 'ee/ai/graphql/get_agent_flow_config.query.graphql';
-import { ApolloUtils } from 'ee/ai/duo_agentic_chat/utils/apollo_utils';
+import getFoundationalChatAgents from 'ee/ai/graphql/get_foundational_chat_agents.graphql';
+import {
+  ApolloUtils,
+  getCatalogAgentsQuery,
+  getFoundationalAgentsQuery,
+} from 'ee/ai/duo_agentic_chat/utils/apollo_utils';
 import {
   DUO_WORKFLOW_CHAT_DEFINITION,
   DUO_WORKFLOW_AGENT_PRIVILEGES,
@@ -21,6 +27,8 @@ import {
   MOCK_DELETE_WORKFLOW_RESPONSE,
   MOCK_FETCH_WORKFLOW_EVENTS_RESPONSE,
   MOCK_AGENT_FLOW_CONFIG_RESPONSE,
+  MOCK_CONFIGURED_AGENTS_RESPONSE,
+  MOCK_FOUNDATIONAL_CHAT_AGENTS_RESPONSE,
 } from './mock_data';
 
 jest.mock('~/graphql_shared/utils', () => ({
@@ -184,6 +192,63 @@ describe('ApolloUtils', () => {
       });
 
       expect(result).toBe(MOCK_AGENT_FLOW_CONFIG_RESPONSE.data.aiCatalogAgentFlowConfig);
+    });
+  });
+
+  describe('getCatalogAgentsQuery', () => {
+    it.each`
+      description      | queryVariables
+      ${'projectId'}   | ${{ projectId: MOCK_PROJECT_ID }}
+      ${'namespaceId'} | ${{ namespaceId: MOCK_NAMESPACE_ID }}
+    `('returns correct query config with $description', ({ queryVariables }) => {
+      const queryObject = getCatalogAgentsQuery(queryVariables);
+
+      expect(queryObject.query).toBe(getConfiguredAgents);
+      expect(queryObject.variables).toBe(queryVariables);
+    });
+
+    it('extracts correct agent items from the response', () => {
+      const queryObject = getCatalogAgentsQuery({ projectId: MOCK_PROJECT_ID });
+      const result = queryObject.update(MOCK_CONFIGURED_AGENTS_RESPONSE.data);
+
+      expect(result).toEqual([
+        MOCK_CONFIGURED_AGENTS_RESPONSE.data.aiCatalogConfiguredItems.nodes[0].item,
+      ]);
+    });
+  });
+
+  describe('getFoundationalAgentsQuery', () => {
+    const queryVariables = {
+      projectId: MOCK_PROJECT_ID,
+      namespaceId: MOCK_NAMESPACE_ID,
+    };
+
+    it('returns correct query config with projectId and namespaceId', () => {
+      const queryObject = getFoundationalAgentsQuery(queryVariables);
+
+      expect(queryObject.query).toBe(getFoundationalChatAgents);
+      expect(queryObject.variables).toBe(queryVariables);
+    });
+
+    it('correctly returns agents and adds foundational flag', () => {
+      const queryObject = getFoundationalAgentsQuery(queryVariables);
+      const result = queryObject.update(MOCK_FOUNDATIONAL_CHAT_AGENTS_RESPONSE.data);
+      expect(result).toEqual([
+        {
+          id: 'gid://gitlab/Ai::FoundationalChatAgent/chat',
+          name: 'GitLab Duo Agent',
+          description: 'Duo is your general development assistant',
+          referenceWithVersion: 'chat',
+          foundational: true,
+        },
+        {
+          id: 'gid://gitlab/Ai::FoundationalChatAgent/agent-v1',
+          name: 'Cool agent',
+          description: 'An agent that makes things cooler',
+          referenceWithVersion: 'agent/v1',
+          foundational: true,
+        },
+      ]);
     });
   });
 });
