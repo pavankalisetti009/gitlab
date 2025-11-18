@@ -100,7 +100,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     end
 
     context 'when user is support bot' do
-      let_it_be(:current_user) { Users::Internal.support_bot }
+      let_it_be(:current_user) { create(:support_bot) }
 
       before do
         allow(::ServiceDesk).to receive(:supported?).and_return(true)

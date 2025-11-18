@@ -8,7 +8,6 @@ RSpec.describe WorkItemPolicy, feature_category: :team_planning do
   let_it_be(:planner) { create(:user) }
   let_it_be(:reporter) { create(:user) }
   let_it_be(:owner) { create(:user) }
-  let_it_be(:support_bot) { Users::Internal.support_bot }
   let_it_be(:group) do
     create(:group, :public).tap do |g|
       g.add_guest(guest)
@@ -19,6 +18,7 @@ RSpec.describe WorkItemPolicy, feature_category: :team_planning do
   end
 
   let_it_be(:project) { create(:project, group: group) }
+  let_it_be(:support_bot) { create(:support_bot) }
 
   def permissions(user, work_item)
     described_class.new(user, work_item)

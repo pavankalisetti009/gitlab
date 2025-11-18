@@ -3,10 +3,6 @@
 require 'spec_helper'
 
 RSpec.describe 'Issue actions', :js, feature_category: :team_planning do
-  # Ensure support bot user is created so creation doesn't count towards query limit
-  # See https://gitlab.com/gitlab-org/gitlab/-/issues/509629
-  let_it_be(:support_bot) { Users::Internal.support_bot }
-
   let(:group) { create(:group) }
   let(:project) { create(:project, group: group) }
   let(:issue) { create(:issue, project: project) }
@@ -36,6 +32,7 @@ RSpec.describe 'Issue actions', :js, feature_category: :team_planning do
       before do
         group.add_owner(user)
         visit project_issue_path(project, issue)
+
         # TODO: restore threshold after epic-work item sync
         # issue: https://gitlab.com/gitlab-org/gitlab/-/issues/438295
         allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(125)

@@ -8,9 +8,6 @@ RSpec.describe "User creates issue", :js, :saas, feature_category: :team_plannin
 
   let_it_be_with_reload(:group) { create(:group_with_plan, plan: :ultimate_plan) }
 
-  # Ensure support bot user is created so creation doesn't count towards query limit
-  # See https://gitlab.com/gitlab-org/gitlab/-/issues/509629
-  let_it_be(:support_bot) { Users::Internal.support_bot }
   let_it_be(:user) { create(:user, developer_of: group) }
   let_it_be(:project) { create(:project_empty_repo, :public, namespace: group) }
   let_it_be(:epic) { create(:epic, group: group, title: 'Sample epic', author: user) }

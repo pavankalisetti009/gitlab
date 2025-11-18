@@ -391,7 +391,7 @@ RSpec.describe EpicPolicy, feature_category: :portfolio_management do
       end
 
       context 'user is support bot' do
-        let_it_be(:user) { Users::Internal.support_bot }
+        let_it_be(:user) { create(:support_bot) }
 
         before do
           allow(::ServiceDesk).to receive(:supported?).and_return(true)

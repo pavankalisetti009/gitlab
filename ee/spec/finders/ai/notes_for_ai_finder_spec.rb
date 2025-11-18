@@ -63,9 +63,7 @@ RSpec.describe Ai::NotesForAiFinder, feature_category: :duo_chat do
         end
 
         context 'when there are support_bot notes for the noteable' do
-          let_it_be(:bot_note) do
-            create(:note, author: Users::Internal.support_bot, noteable: issue, project: issue.project)
-          end
+          let_it_be(:bot_note) { create(:note, author: create(:support_bot), noteable: issue, project: issue.project) }
 
           it 'returns an array including the support bot note' do
             expect(finder).to contain_exactly(note, bot_note)
