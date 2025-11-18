@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSubscriptions::DuoEnterpriseAlert::UltimateComponent, :with_trial_types, :saas, :aggregate_failures, type: :component, feature_category: :acquisition do
+RSpec.describe GitlabSubscriptions::DuoEnterpriseAlert::UltimateComponent, :with_trial_types, :saas_gitlab_com_subscriptions, :aggregate_failures, feature_category: :acquisition do
   let(:namespace) { build(:group, id: non_existing_record_id) }
   let(:user) { build(:user) }
   let(:title) { 'Introducing GitLab Duo Enterprise' }

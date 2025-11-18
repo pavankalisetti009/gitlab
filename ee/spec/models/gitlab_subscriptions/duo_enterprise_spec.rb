@@ -67,7 +67,7 @@ RSpec.describe GitlabSubscriptions::DuoEnterprise, feature_category: :subscripti
     end
   end
 
-  describe '.namespace_eligible?', :saas do
+  describe '.namespace_eligible?', :saas_gitlab_com_subscriptions do
     subject { described_class.namespace_eligible?(namespace) }
 
     context 'when namespace has an eligible plan' do
@@ -93,7 +93,7 @@ RSpec.describe GitlabSubscriptions::DuoEnterprise, feature_category: :subscripti
     end
   end
 
-  describe '.namespace_plan_eligible?', :saas do
+  describe '.namespace_plan_eligible?', :saas_gitlab_com_subscriptions do
     subject { described_class.namespace_plan_eligible?(namespace) }
 
     context 'when namespace has an ultimate plan' do

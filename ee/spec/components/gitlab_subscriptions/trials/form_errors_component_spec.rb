@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSubscriptions::Trials::FormErrorsComponent, :saas, :aggregate_failures, type: :component, feature_category: :acquisition do
+RSpec.describe GitlabSubscriptions::Trials::FormErrorsComponent, :aggregate_failures, feature_category: :acquisition do
   let(:errors) { ['First error', 'Second error'] }
   let(:reason) { :generic_trial_error }
 

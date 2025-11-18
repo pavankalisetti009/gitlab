@@ -3,7 +3,7 @@
 FactoryBot.define do
   factory :gitlab_subscription do
     after(:build) do
-      raise 'not under .com' unless Gitlab.com?
+      raise 'not under .com or SaaS feature not stubbed' unless Gitlab.com? || StubSaasFeatures.features_stubbed
     end
 
     namespace
