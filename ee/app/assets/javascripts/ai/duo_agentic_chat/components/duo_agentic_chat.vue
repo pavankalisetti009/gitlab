@@ -3,6 +3,7 @@
 import { mapActions, mapState } from 'vuex';
 import { WebAgenticDuoChat } from '@gitlab/duo-ui';
 import { GlToggle, GlTooltipDirective } from '@gitlab/ui';
+import ChatLoadingState from 'ee/ai/components/chat_loading_state.vue';
 import getUserWorkflows from 'ee/ai/graphql/get_user_workflow.query.graphql';
 import getConfiguredAgents from 'ee/ai/graphql/get_configured_agents.query.graphql';
 import getFoundationalChatAgents from 'ee/ai/graphql/get_foundational_chat_agents.graphql';
@@ -59,6 +60,7 @@ export default {
     WebAgenticDuoChat,
     GlToggle,
     ModelSelectDropdown,
+    ChatLoadingState,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -264,6 +266,7 @@ export default {
       userId: this.activeTabData?.props?.userId,
       // I believe this is a default chat agent name
       duoChatTitle: s__('DuoAgenticChat|Duo Agent'),
+      isLoading: false,
       isWaitingOnPrompt: false,
     };
   },
@@ -445,6 +448,7 @@ export default {
     // Clear messages when component is destroyed to prevent state leaking
     // between mode switches (classic <-> agentic)
     this.setMessages([]);
+    this.isLoading = false;
     this.isWaitingOnPrompt = false;
     this.$emit('change-title');
   },
@@ -484,6 +488,7 @@ export default {
     },
 
     cleanupState(resetWorkflowId = true) {
+      this.isLoading = false;
       this.isWaitingOnPrompt = false;
       this.cleanupSocket();
       if (resetWorkflowId) {
@@ -671,6 +676,7 @@ export default {
     },
     async loadActiveThread() {
       try {
+        this.isLoading = true;
         const data = await ApolloUtils.fetchWorkflowEvents(this.$apollo, this.activeThread);
 
         const parsedWorkflowData = WorkflowUtils.parseWorkflowData(data);
@@ -691,6 +697,8 @@ export default {
         this.$emit('change-title', parsedWorkflowData?.workflowGoal);
       } catch (err) {
         this.onError(err);
+      } finally {
+        this.isLoading = false;
       }
     },
     onBackToList() {
@@ -785,6 +793,7 @@ export default {
         @change-model="({ detail: models }) => window.alert(models[0])"
       />
     </div>
+    <chat-loading-state v-else-if="isLoading" />
     <web-agentic-duo-chat
       v-else
       id="duo-chat"
