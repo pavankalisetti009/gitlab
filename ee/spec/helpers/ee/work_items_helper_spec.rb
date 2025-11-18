@@ -98,9 +98,6 @@ RSpec.describe EE::WorkItemsHelper, feature_category: :team_planning do
 
     before do
       stub_licensed_features(
-        blocked_issues: feature_available,
-        group_bulk_edit: feature_available,
-        custom_fields: feature_available,
         work_item_status: feature_available
       )
       allow(helper).to receive(:can?).and_call_original
@@ -118,11 +115,8 @@ RSpec.describe EE::WorkItemsHelper, feature_category: :team_planning do
         expect(work_item_views_only_data).to include(
           {
             duo_remote_flows_availability: "true",
-            has_blocked_issues_feature: "true",
-            has_group_bulk_edit_feature: "true",
             can_bulk_edit_epics: "true",
-            epics_list_path: group_epics_path(project),
-            has_custom_fields_feature: "true"
+            epics_list_path: group_epics_path(project)
           }
         )
       end
@@ -135,20 +129,6 @@ RSpec.describe EE::WorkItemsHelper, feature_category: :team_planning do
             default_branch: project.default_branch_or_main,
             is_issue_repositioning_disabled: 'false',
             max_attachment_size: number_to_human_size(Gitlab::CurrentSettings.max_attachment_size.megabytes)
-          }
-        )
-      end
-    end
-
-    context 'when features are not available' do
-      let(:feature_available) { false }
-
-      it 'returns false for EE features' do
-        expect(work_item_views_only_data).to include(
-          {
-            has_blocked_issues_feature: "false",
-            has_group_bulk_edit_feature: "false",
-            has_custom_fields_feature: "false"
           }
         )
       end
