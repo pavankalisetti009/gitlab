@@ -33,10 +33,7 @@ module QA
       ) do
         issue.visit!
 
-        work_item_enabled = Page::Project::Issue::Show.perform(&:work_item_enabled?)
-        page_type = work_item_enabled ? Page::Project::WorkItem::Show : Page::Project::Issue::Show
-
-        page_type.perform do |issue|
+        Page::Project::WorkItem::Show.perform do |issue|
           issue.assign_iteration(period, period_display, group_iteration)
 
           expect(issue).to have_iteration(period_display)

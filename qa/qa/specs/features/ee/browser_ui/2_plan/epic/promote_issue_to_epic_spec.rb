@@ -18,10 +18,7 @@ module QA
       it 'promotes issue to epic', testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347970' do
         issue.visit!
 
-        work_item_enabled = Page::Project::Issue::Show.perform(&:work_item_enabled?)
-        page_type = work_item_enabled ? Page::Project::WorkItem::Show : Page::Project::Issue::Show
-
-        page_type.perform do |show|
+        Page::Project::WorkItem::Show.perform do |show|
           # Due to the randomness of tests execution, sometimes a previous test
           # may have changed the filter, which makes the below action needed.
           # TODO: Make this test completely independent, not requiring the below step.
@@ -30,11 +27,7 @@ module QA
           # due to the tooltip '/promote Promote issue to an epic (may expose
           # confidential information)' from being shown, which may cause the click not
           # to work properly.
-          if work_item_enabled
-            show.comment('/promote_to epic')
-          else
-            show.comment('/promote ')
-          end
+          show.comment('/promote_to epic')
         end
 
         work_item_epics_enabled = work_item_epics_enabled_for_group?(project.group)

@@ -51,10 +51,7 @@ module QA
       it 'shows the first five assignees and a +n more link in the issue page', testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347977' do
         @issue.visit!
 
-        work_item_enabled = Page::Project::Issue::Show.perform(&:work_item_enabled?)
-        page_type = work_item_enabled ? Page::Project::WorkItem::Show : Page::Project::Issue::Show
-
-        page_type.perform do |show|
+        Page::Project::WorkItem::Show.perform do |show|
           expect(show).to have_avatar_image_count(5)
           expect(show.more_assignees_link).to be_visible
           expect(show.more_assignees_link).to have_content('+ 1 more')

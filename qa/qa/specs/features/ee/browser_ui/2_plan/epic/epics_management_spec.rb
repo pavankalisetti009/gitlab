@@ -134,20 +134,10 @@ module QA
           testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347981' do
           issue.visit!
 
-          work_item_enabled = Page::Project::Issue::Show.perform(&:work_item_enabled?)
-
-          if work_item_enabled
-            Page::Project::WorkItem::Show.perform do |show|
-              show.wait_for_child_items_to_load
-              show.comment("/set_parent #{issue.project.group.web_url}/-/epics/#{epic.iid}")
-              show.comment("/remove_parent")
-            end
-          else
-            Page::Project::Issue::Show.perform do |show|
-              show.wait_for_related_issues_to_load
-              show.comment("/epic #{issue.project.group.web_url}/-/epics/#{epic.iid}")
-              show.comment("/remove_epic")
-            end
+          Page::Project::WorkItem::Show.perform do |show|
+            show.wait_for_child_items_to_load
+            show.comment("/set_parent #{issue.project.group.web_url}/-/epics/#{epic.iid}")
+            show.comment("/remove_parent")
           end
 
           epic.visit!

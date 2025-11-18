@@ -16,10 +16,7 @@ module QA
 
         issue.visit!
 
-        work_item_enabled = Page::Project::Issue::Show.perform(&:work_item_enabled?)
-        show_page_type = work_item_enabled ? Page::Project::WorkItem::Show : Page::Project::Issue::Show
-
-        show_page_type.perform(&:click_close_issue_button)
+        Page::Project::WorkItem::Show.perform(&:click_close_issue_button)
 
         mr.visit!
         Page::MergeRequest::Show.perform(&:merge!)
