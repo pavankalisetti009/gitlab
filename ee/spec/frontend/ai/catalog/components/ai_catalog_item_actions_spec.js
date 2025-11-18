@@ -38,6 +38,7 @@ describe('AiCatalogItemActions', () => {
 
   const findEditButton = () => wrapper.findByTestId('edit-button');
   const findDisableButton = () => wrapper.findByTestId('disable-button');
+  const findEnableButton = () => wrapper.findByTestId('enable-button');
   const findAddToProjectButton = () => wrapper.findByTestId('add-to-project-button');
   const findAddToGroupButton = () => wrapper.findByTestId('add-to-group-button');
   const findMoreActions = () => wrapper.findByTestId('more-actions-dropdown');
@@ -45,28 +46,117 @@ describe('AiCatalogItemActions', () => {
   const findDeleteButton = () => wrapper.findByTestId('delete-button');
 
   describe.each`
-    scenario                                              | canAdmin | canUse   | editBtn  | disableBtn | addBtn   | addGroupBtn | moreActions | duplicateBtn | deleteBtn | itemType                 | isGlobal | isEnabled
-    ${'not logged in'}                                    | ${false} | ${false} | ${false} | ${false}   | ${false} | ${false}    | ${false}    | ${false}     | ${false}  | ${AI_CATALOG_TYPE_AGENT} | ${true}  | ${false}
-    ${'not logged in, project level'}                     | ${false} | ${false} | ${false} | ${false}   | ${false} | ${false}    | ${false}    | ${false}     | ${false}  | ${AI_CATALOG_TYPE_AGENT} | ${false} | ${false}
-    ${'logged in, not admin of item'}                     | ${false} | ${true}  | ${false} | ${false}   | ${true}  | ${false}    | ${true}     | ${true}      | ${false}  | ${AI_CATALOG_TYPE_AGENT} | ${true}  | ${false}
-    ${'logged in, admin of item'}                         | ${true}  | ${true}  | ${true}  | ${false}   | ${true}  | ${false}    | ${true}     | ${true}      | ${true}   | ${AI_CATALOG_TYPE_AGENT} | ${true}  | ${false}
-    ${'logged in, admin of item, project level'}          | ${true}  | ${true}  | ${true}  | ${false}   | ${false} | ${false}    | ${true}     | ${true}      | ${true}   | ${AI_CATALOG_TYPE_AGENT} | ${false} | ${false}
-    ${'logged in, admin of item, project level, enabled'} | ${true}  | ${true}  | ${true}  | ${true}    | ${false} | ${false}    | ${true}     | ${true}      | ${true}   | ${AI_CATALOG_TYPE_AGENT} | ${false} | ${true}
-    ${'logged in, admin of flow item'}                    | ${true}  | ${true}  | ${true}  | ${false}   | ${false} | ${true}     | ${true}     | ${true}      | ${true}   | ${AI_CATALOG_TYPE_FLOW}  | ${true}  | ${false}
+    scenario                           | canAdmin | canUse   | editBtn  | disableBtn | enableBtn | addBtn   | addGroupBtn | moreActions | duplicateBtn | deleteBtn | itemType
+    ${'not logged in'}                 | ${false} | ${false} | ${false} | ${false}   | ${false}  | ${false} | ${false}    | ${false}    | ${false}     | ${false}  | ${AI_CATALOG_TYPE_AGENT}
+    ${'logged in, not admin of item'}  | ${false} | ${true}  | ${false} | ${false}   | ${false}  | ${true}  | ${false}    | ${true}     | ${true}      | ${false}  | ${AI_CATALOG_TYPE_AGENT}
+    ${'logged in, admin of item'}      | ${true}  | ${true}  | ${true}  | ${false}   | ${false}  | ${true}  | ${false}    | ${true}     | ${true}      | ${true}   | ${AI_CATALOG_TYPE_AGENT}
+    ${'logged in, admin of flow item'} | ${true}  | ${true}  | ${true}  | ${false}   | ${false}  | ${false} | ${true}     | ${true}     | ${true}      | ${true}   | ${AI_CATALOG_TYPE_FLOW}
   `(
-    'when $scenario',
+    'at the Explore level, when $scenario',
     ({
       canAdmin,
       canUse,
       editBtn,
       disableBtn,
+      enableBtn,
       addBtn,
       addGroupBtn,
       moreActions,
       duplicateBtn,
       deleteBtn,
       itemType,
-      isGlobal,
+    }) => {
+      beforeEach(() => {
+        createComponent({
+          props: {
+            item: {
+              ...mockAgent,
+              itemType,
+              userPermissions: {
+                adminAiCatalogItem: canAdmin,
+              },
+              configurationForProject: {
+                id: 'gid://gitlab/Ai::Catalog::ItemConsumer/1',
+              },
+            },
+            itemRoutes: {
+              ...defaultProps.itemRoutes,
+            },
+          },
+          provide: {
+            isGlobal: true,
+          },
+        });
+        isLoggedIn.mockReturnValue(canUse);
+      });
+
+      it(`${editBtn ? 'renders' : 'does not render'} Edit button`, () => {
+        expect(findEditButton().exists()).toBe(editBtn);
+        if (editBtn) {
+          expect(findEditButton().props('to')).toMatchObject({
+            name: defaultProps.itemRoutes.edit,
+            params: { id: routeParams.id },
+          });
+        }
+      });
+
+      it(`${disableBtn ? 'renders' : 'does not render'} "Disable" button`, () => {
+        expect(findDisableButton().exists()).toBe(disableBtn);
+      });
+
+      it(`${enableBtn ? 'renders' : 'does not render'} "Enable" button`, () => {
+        expect(findEnableButton().exists()).toBe(enableBtn);
+      });
+
+      it(`${addGroupBtn ? 'renders' : 'does not render'} "Enable in group" button`, () => {
+        expect(findAddToGroupButton().exists()).toBe(addGroupBtn);
+      });
+
+      it(`${addBtn ? 'renders' : 'does not render'} "Enable in project" button`, () => {
+        expect(findAddToProjectButton().exists()).toBe(addBtn);
+      });
+
+      it(`${moreActions ? 'renders' : 'does not render'} more actions`, () => {
+        expect(findMoreActions().exists()).toBe(moreActions);
+      });
+
+      it(`${duplicateBtn ? 'renders' : 'does not render'} Duplicate button`, () => {
+        expect(findDuplicateButton().exists()).toBe(duplicateBtn);
+        if (duplicateBtn) {
+          expect(findDuplicateButton().props('item')).toMatchObject({
+            to: {
+              name: defaultProps.itemRoutes.duplicate,
+              params: { id: routeParams.id },
+            },
+          });
+        }
+      });
+
+      it(`${deleteBtn ? 'renders' : 'does not render'} Delete button`, () => {
+        expect(findDeleteButton().exists()).toBe(deleteBtn);
+      });
+    },
+  );
+
+  describe.each`
+    scenario                         | canAdmin | canUse   | editBtn  | disableBtn | enableBtn | addBtn   | addGroupBtn | moreActions | duplicateBtn | deleteBtn | itemType                 | isGlobal | isEnabled
+    ${'not logged in'}               | ${false} | ${false} | ${false} | ${false}   | ${false}  | ${false} | ${false}    | ${false}    | ${false}     | ${false}  | ${AI_CATALOG_TYPE_AGENT} | ${false} | ${false}
+    ${'logged in, admin of item'}    | ${true}  | ${true}  | ${true}  | ${false}   | ${true}   | ${false} | ${false}    | ${true}     | ${true}      | ${true}   | ${AI_CATALOG_TYPE_AGENT} | ${false} | ${false}
+    ${'logged in, admin of enabled'} | ${true}  | ${true}  | ${true}  | ${true}    | ${false}  | ${false} | ${false}    | ${true}     | ${true}      | ${true}   | ${AI_CATALOG_TYPE_AGENT} | ${false} | ${true}
+  `(
+    'at the Project level, when $scenario',
+    ({
+      canAdmin,
+      canUse,
+      editBtn,
+      disableBtn,
+      enableBtn,
+      addBtn,
+      addGroupBtn,
+      moreActions,
+      duplicateBtn,
+      deleteBtn,
+      itemType,
       isEnabled,
     }) => {
       beforeEach(() => {
@@ -88,7 +178,7 @@ describe('AiCatalogItemActions', () => {
             },
           },
           provide: {
-            isGlobal,
+            isGlobal: false,
           },
         });
         isLoggedIn.mockReturnValue(canUse);
@@ -106,6 +196,10 @@ describe('AiCatalogItemActions', () => {
 
       it(`${disableBtn ? 'renders' : 'does not render'} "Disable" button`, () => {
         expect(findDisableButton().exists()).toBe(disableBtn);
+      });
+
+      it(`${enableBtn ? 'renders' : 'does not render'} "Enable" button`, () => {
+        expect(findEnableButton().exists()).toBe(enableBtn);
       });
 
       it(`${addGroupBtn ? 'renders' : 'does not render'} "Enable in group" button`, () => {
