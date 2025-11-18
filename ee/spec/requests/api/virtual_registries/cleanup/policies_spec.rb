@@ -68,9 +68,7 @@ RSpec.describe API::VirtualRegistries::Cleanup::Policies, :aggregate_failures, f
       api_request
 
       expect(response).to have_gitlab_http_status(:ok)
-      expect(Gitlab::Json.parse(response.body)).to eq(
-        policy.as_json.except('id', 'notify_on_success', 'notify_on_failure')
-      )
+      expect(Gitlab::Json.parse(response.body)).to eq(policy.as_json.except('id'))
     end
 
     it_behaves_like 'container and packages virtual registry not available'
@@ -95,9 +93,7 @@ RSpec.describe API::VirtualRegistries::Cleanup::Policies, :aggregate_failures, f
       expect { api_request }.to change { VirtualRegistries::Cleanup::Policy.count }.by(1)
 
       expect(response).to have_gitlab_http_status(:created)
-      expect(Gitlab::Json.parse(response.body)).to eq(
-        VirtualRegistries::Cleanup::Policy.last.as_json.except('id', 'notify_on_success', 'notify_on_failure')
-      )
+      expect(Gitlab::Json.parse(response.body)).to eq(VirtualRegistries::Cleanup::Policy.last.as_json.except('id'))
     end
 
     it_behaves_like 'container and packages virtual registry not available'
@@ -105,14 +101,16 @@ RSpec.describe API::VirtualRegistries::Cleanup::Policies, :aggregate_failures, f
     it_behaves_like 'with invalid group_id'
 
     context 'with invalid params' do
-      where(:enabled, :keep_n_days_after_download, :cadence, :error_message) do
-        ''   | 30  | 7 | 'enabled is empty'
-        true | 370 | 7 | 'keep_n_days_after_download does not have a valid value'
-        true | 30  | 0 | 'cadence does not have a valid value'
+      where(:enabled, :keep_n_days_after_download, :cadence, :notify_on_success, :notify_on_failure, :error_message) do
+        ''   | 30  | 7 | true | true | 'enabled is empty'
+        true | 370 | 7 | true | true | 'keep_n_days_after_download does not have a valid value'
+        true | 30  | 0 | true | true | 'cadence does not have a valid value'
+        true | 30  | 7 | ''   | true | 'notify_on_success is empty'
+        true | 30  | 7 | true | ''   | 'notify_on_failure is empty'
       end
 
       with_them do
-        let(:params) { { enabled:, keep_n_days_after_download:, cadence: } }
+        let(:params) { { enabled:, keep_n_days_after_download:, cadence:, notify_on_success:, notify_on_failure: } }
 
         it_behaves_like 'returning response status with error', status: :bad_request,
           error: params[:error_message]
@@ -137,7 +135,7 @@ RSpec.describe API::VirtualRegistries::Cleanup::Policies, :aggregate_failures, f
 
   describe 'PATCH /api/v4/groups/:id/-/virtual_registries/cleanup/policy' do
     let_it_be(:policy) { create(:virtual_registries_cleanup_policy, group:) }
-    let(:params) { { enabled: true, keep_n_days_after_download: 60 } }
+    let(:params) { { enabled: true, keep_n_days_after_download: 60, notify_on_success: true, notify_on_failure: true } }
 
     subject(:api_request) { patch api(url), headers:, params: }
 
@@ -146,6 +144,8 @@ RSpec.describe API::VirtualRegistries::Cleanup::Policies, :aggregate_failures, f
     it 'returns a successful response' do
       expect { api_request }.to change { policy.reset.enabled }.to(params[:enabled])
         .and change { policy.keep_n_days_after_download }.to(params[:keep_n_days_after_download])
+        .and change { policy.notify_on_success }.to(params[:notify_on_success])
+        .and change { policy.notify_on_failure }.to(params[:notify_on_failure])
 
       expect(response).to have_gitlab_http_status(:ok)
     end
@@ -155,14 +155,16 @@ RSpec.describe API::VirtualRegistries::Cleanup::Policies, :aggregate_failures, f
     it_behaves_like 'with invalid group_id'
 
     context 'with invalid params' do
-      where(:enabled, :keep_n_days_after_download, :cadence, :error_message) do
-        ''   | 30  | 7 | 'enabled is empty'
-        true | 370 | 7 | 'keep_n_days_after_download does not have a valid value'
-        true | 30  | 0 | 'cadence does not have a valid value'
+      where(:enabled, :keep_n_days_after_download, :cadence, :notify_on_success, :notify_on_failure, :error_message) do
+        ''   | 30  | 7 | true | true | 'enabled is empty'
+        true | 370 | 7 | true | true | 'keep_n_days_after_download does not have a valid value'
+        true | 30  | 0 | true | true | 'cadence does not have a valid value'
+        true | 30  | 7 | ''   | true | 'notify_on_success is empty'
+        true | 30  | 7 | true | ''   | 'notify_on_failure is empty'
       end
 
       with_them do
-        let(:params) { { enabled:, keep_n_days_after_download:, cadence: } }
+        let(:params) { { enabled:, keep_n_days_after_download:, cadence:, notify_on_success:, notify_on_failure: } }
 
         it_behaves_like 'returning response status with error', status: :bad_request,
           error: params[:error_message]
