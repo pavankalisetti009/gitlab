@@ -5368,6 +5368,34 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
       it { is_expected.to be_disallowed(:read_ai_catalog_item_consumer) }
     end
+
+    context 'when non_group_member' do
+      let_it_be(:current_user) { non_group_member }
+
+      it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
+      it { is_expected.to be_disallowed(:read_ai_catalog_item_consumer) }
+
+      context 'when maintainer of a project in the group' do
+        let_it_be(:project) { create(:project, maintainers: current_user, group: group) }
+
+        it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
+        it { is_expected.to be_allowed(:read_ai_catalog_item_consumer) }
+      end
+
+      context 'when developer of a project in the group' do
+        let_it_be(:project) { create(:project, developers: current_user, group: group) }
+
+        it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
+        it { is_expected.to be_disallowed(:read_ai_catalog_item_consumer) }
+      end
+
+      context 'when maintainer of a project not in the group' do
+        let_it_be(:project) { create(:project, maintainers: current_user) }
+
+        it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
+        it { is_expected.to be_disallowed(:read_ai_catalog_item_consumer) }
+      end
+    end
   end
 
   it_behaves_like 'group archiving abilities' do
