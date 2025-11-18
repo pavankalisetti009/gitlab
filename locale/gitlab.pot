@@ -74057,9 +74057,6 @@ msgstr ""
 msgid "Vulnerability|Dismiss False Positive Flag"
 msgstr ""
 
-msgid "Vulnerability|Dismiss false positive flag for this vulnerability?"
-msgstr ""
-
 msgid "Vulnerability|Duo Generating Fix"
 msgstr ""
 
@@ -74157,6 +74154,9 @@ msgid "Vulnerability|Remove False Positive Flag"
 msgstr ""
 
 msgid "Vulnerability|Remove identifier row"
+msgstr ""
+
+msgid "Vulnerability|Removing this flag will not change the vulnerability's status. The vulnerability will remain in its current state but will no longer be marked as a false positive."
 msgstr ""
 
 msgid "Vulnerability|Reproduction Assets"

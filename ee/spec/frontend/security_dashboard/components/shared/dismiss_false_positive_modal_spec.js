@@ -69,7 +69,9 @@ describe('DismissFalsePositiveModal', () => {
     });
 
     it('renders the modal text', () => {
-      expect(findModal().text()).toContain('Dismiss false positive flag for this vulnerability?');
+      expect(findModal().text()).toContain(
+        "Removing this flag will not change the vulnerability's status. The vulnerability will remain in its current state but will no longer be marked as a false positive.",
+      );
     });
 
     it('uses custom modal ID when provided', () => {

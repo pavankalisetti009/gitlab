@@ -57,7 +57,9 @@ export default {
   },
   i18n: {
     title: s__('Vulnerability|Dismiss False Positive Flag'),
-    text: s__('Vulnerability|Dismiss false positive flag for this vulnerability?'),
+    text: s__(
+      "Vulnerability|Removing this flag will not change the vulnerability's status. The vulnerability will remain in its current state but will no longer be marked as a false positive.",
+    ),
     errorMessage: s__('Vulnerability|Something went wrong while dismissing the vulnerability.'),
   },
   modal: {
