@@ -1,4 +1,4 @@
-import { GlAlert, GlFormGroup, GlFormRadioGroup, GlLink, GlSprintf } from '@gitlab/ui';
+import { GlAlert, GlFormGroup, GlFormRadio, GlFormRadioGroup, GlLink, GlSprintf } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import EnforcementType from 'ee/security_orchestration/components/policy_editor/scan_result/enforcement/enforcement_type.vue';
@@ -24,6 +24,7 @@ describe('EnforcementType', () => {
 
   const findFormGroup = () => wrapper.findComponent(GlFormGroup);
   const findRadioGroup = () => wrapper.findComponent(GlFormRadioGroup);
+  const findAllFormRadios = () => wrapper.findAllComponents(GlFormRadio);
   const findAlert = () => wrapper.findComponent(GlAlert);
   const findLink = () => wrapper.findComponent(GlLink);
 
@@ -38,12 +39,13 @@ describe('EnforcementType', () => {
     });
 
     it('renders the radio group with correct options and checked value', () => {
+      const allFormRadios = findAllFormRadios();
       expect(findRadioGroup().exists()).toBe(true);
-      expect(findRadioGroup().props('options')).toEqual([
-        { disabled: false, text: 'Warn mode', value: 'warn' },
-        { disabled: false, text: 'Strictly enforced', value: 'enforce' },
-      ]);
       expect(findRadioGroup().attributes('checked')).toBe('enforce');
+      expect(allFormRadios).toHaveLength(2);
+      expect(allFormRadios.at(0).attributes('value')).toBe('warn');
+      expect(allFormRadios.at(1).attributes('value')).toBe('enforce');
+      expect(allFormRadios.at(1).attributes('disabled')).toBe(undefined);
     });
 
     it('does not render alert by default', () => {
@@ -69,10 +71,10 @@ describe('EnforcementType', () => {
     it('disables options', () => {
       factory({ disabledEnforcementOptions: ['warn'] });
 
-      expect(findRadioGroup().props('options')).toEqual([
-        { disabled: true, text: 'Warn mode', value: 'warn' },
-        { disabled: false, text: 'Strictly enforced', value: 'enforce' },
-      ]);
+      const allFormRadios = findAllFormRadios();
+      expect(allFormRadios.at(0).attributes('value')).toBe('warn');
+      expect(allFormRadios.at(0).attributes().disabled).toBe('true');
+      expect(allFormRadios.at(1).attributes('disabled')).toBe(undefined);
     });
   });
 
