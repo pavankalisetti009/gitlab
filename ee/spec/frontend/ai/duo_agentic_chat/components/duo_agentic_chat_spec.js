@@ -5,6 +5,7 @@ import Vuex from 'vuex';
 import VueApollo from 'vue-apollo';
 import { GlToggle } from '@gitlab/ui';
 import { parseDocument } from 'yaml';
+import ChatLoadingState from 'ee/ai/components/chat_loading_state.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { setAgenticMode } from 'ee/ai/utils';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -279,6 +280,7 @@ describe('Duo Agentic Chat', () => {
 
   const findDuoChat = () => wrapper.findComponent(WebAgenticDuoChat);
   const findDuoNext = () => wrapper.find('fe-island-duo-next');
+  const findChatLoadingState = () => wrapper.findComponent(ChatLoadingState);
 
   const getLastSocketCall = () => {
     const { calls } = createWebSocket.mock;
@@ -388,6 +390,12 @@ describe('Duo Agentic Chat', () => {
         expect(findDuoChat().exists()).toBe(true);
       });
 
+      it('renders the loading state during initialization', async () => {
+        await findDuoChat().vm.$emit('thread-selected', { id: MOCK_WORKFLOW_ID });
+
+        expect(findChatLoadingState().exists()).toBe(true);
+      });
+
       it('passes isToolApprovalProcessing prop to AgenticDuoChat component', () => {
         expect(findDuoChat().props('isToolApprovalProcessing')).toBe(false);
       });
@@ -410,7 +418,7 @@ describe('Duo Agentic Chat', () => {
 
       it('passes sessionId to AgenticDuoChat component', async () => {
         await findDuoChat().vm.$emit('thread-selected', { id: MOCK_WORKFLOW_ID });
-
+        await waitForPromises();
         expect(findDuoChat().props('sessionId')).toBe('456');
       });
 
@@ -467,6 +475,7 @@ describe('Duo Agentic Chat', () => {
           await nextTick();
 
           expect(actionSpies.setMessages).toHaveBeenCalledWith(expect.anything(), []);
+          expect(findChatLoadingState().exists()).toBe(false);
           expect(findDuoChat().props('isLoading')).toBe(false);
         },
       );
@@ -750,6 +759,8 @@ describe('Duo Agentic Chat', () => {
         await nextTick();
 
         expect(closeSocket).toHaveBeenCalledWith(mockSocketManager);
+
+        expect(findChatLoadingState().exists()).toBe(false);
         expect(findDuoChat().props('isLoading')).toBe(false);
         expect(wrapper.vm.workflowId).toBe(MOCK_WORKFLOW_ID);
         expect(wrapper.vm.socketManager).toBe(null);
@@ -766,6 +777,7 @@ describe('Duo Agentic Chat', () => {
 
         expect(wrapper.vm.workflowId).toBe(null);
         expect(actionSpies.setMessages).toHaveBeenCalledWith(expect.anything(), []);
+        expect(findChatLoadingState().exists()).toBe(false);
         expect(findDuoChat().props('isLoading')).toBe(false);
         expect(closeSocket).toHaveBeenCalledWith(mockSocketManager);
       });
@@ -1248,6 +1260,7 @@ describe('Duo Agentic Chat', () => {
 
           // Assert that onNewChat() side effects occurred
           expect(actionSpies.setMessages).toHaveBeenCalledWith(expect.anything(), []);
+          expect(findChatLoadingState().exists()).toBe(false);
 
           // Assert that onSendChatPrompt() side effects occurred
           expect(findDuoChat().props('isLoading')).toBe(true);
@@ -1354,6 +1367,7 @@ describe('Duo Agentic Chat', () => {
       const socketCall = getLastSocketCall();
       // Set waiting on prompt to true first to verify it stays true
       wrapper.vm.isWaitingOnPrompt = true;
+      await nextTick();
       socketCall.onClose();
       await nextTick();
 
@@ -1455,6 +1469,7 @@ describe('Duo Agentic Chat', () => {
             errors: [`Error: ${errorText}`],
           }),
         );
+        expect(findChatLoadingState().exists()).toBe(false);
       });
 
       it('handles missing workflowGoal gracefully when fetching workflow events', async () => {
