@@ -19,6 +19,23 @@ module EE
           autosave: false
 
         scope :project_id_in, ->(ids) { joins(:terraform_state).where('terraform_states.project_id': ids) }
+
+        # On primary, `verifiables` are records that can be checksummed and/or are replicable.
+        # On secondary, `verifiables` are records that have already been replicated
+        # and (ideally) have been checksummed on the primary
+        scope :verifiables, ->(primary_key_in = nil) do
+          node = ::GeoNode.current_node
+
+          replicables =
+            available_replicables
+              .merge(object_storage_scope(node))
+
+          if ::Gitlab::Geo.org_mover_extend_selective_sync_to_primary_checksumming?
+            replicables.merge(selective_sync_scope(node, primary_key_in: primary_key_in, replicables: replicables))
+          else
+            primary_key_in ? replicables.primary_key_in(primary_key_in) : replicables
+          end
+        end
       end
 
       class_methods do
@@ -37,11 +54,33 @@ module EE
           where(sanitize_sql_for_conditions({ file: "#{query}.tfstate" })).limit(1000)
         end
 
-        override :selective_sync_scope
-        def selective_sync_scope(node, **_params)
-          return all unless node.selective_sync?
+        override :pluck_verifiable_ids_in_range
+        def pluck_verifiable_ids_in_range(range)
+          verifiables(range).pluck_primary_key
+        end
 
-          project_id_in(::Project.selective_sync_scope(node))
+        # @param primary_key_in [Range, Replicable] arg to pass to primary_key_in scope
+        # @return [ActiveRecord::Relation<Replicable>] everything that should be synced to this
+        #         node, restricted by primary key
+        override :replicables_for_current_secondary
+        def replicables_for_current_secondary(primary_key_in)
+          node = ::Gitlab::Geo.current_node
+
+          replicables = available_replicables.merge(object_storage_scope(node))
+
+          replicables
+            .merge(selective_sync_scope(node, primary_key_in: primary_key_in, replicables: replicables))
+        end
+
+        override :selective_sync_scope
+        def selective_sync_scope(node, **params)
+          replicables = params.fetch(:replicables, all)
+          replicables = replicables.primary_key_in(params[:primary_key_in]) if params[:primary_key_in].presence
+
+          return replicables unless node.selective_sync?
+
+          replicables
+            .project_id_in(::Project.selective_sync_scope(node))
         end
       end
     end
