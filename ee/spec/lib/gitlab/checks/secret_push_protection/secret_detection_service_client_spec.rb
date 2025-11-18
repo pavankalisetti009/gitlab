@@ -148,6 +148,13 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::SecretDetectionServiceClien
       client.send_request_to_sds([payload], exclusions: { path: [exclusion] })
     end
 
+    it 'sets timeout_secs to REQUEST_TIMEOUT_SECONDS in the request' do
+      expect(grpc_client).to receive(:run_scan) do |args|
+        expect(args[:request].timeout_secs).to eq(::Gitlab::SecretDetection::GRPC::Client::REQUEST_TIMEOUT_SECONDS)
+      end
+      client.send_request_to_sds([payload])
+    end
+
     it 'logs the request and response' do
       allow(grpc_client).to receive(:run_scan)
 
