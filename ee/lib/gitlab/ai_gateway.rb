@@ -11,15 +11,15 @@ module Gitlab
     ACCESS_TOKEN_PATH = "/v1/code/user_access_token"
 
     def self.url
-      self_hosted_url || development_url || cloud_connector_url
+      self_hosted_url || cloud_connector_url
     end
 
     def self.cloud_connector_url
-      "#{::CloudConnector::Config.base_url}/ai"
+      development_url || "#{::CloudConnector::Config.base_url}/ai"
     end
 
     def self.cloud_connector_auth_url
-      "#{::CloudConnector::Config.base_url}/auth"
+      development_url || "#{::CloudConnector::Config.base_url}/auth"
     end
 
     def self.access_token_url(code_completions_feature_setting)
@@ -33,7 +33,7 @@ module Gitlab
     end
 
     def self.self_hosted_url
-      ::Ai::Setting.instance&.ai_gateway_url
+      ENV["DEVELOPMENT_SELF_HOSTED_AI_GATEWAY_URL"] || ::Ai::Setting.instance&.ai_gateway_url
     end
 
     def self.development_url
@@ -41,7 +41,7 @@ module Gitlab
     end
 
     def self.has_self_hosted_ai_gateway?
-      !::Ai::Setting.instance&.ai_gateway_url.blank?
+      !self_hosted_url.blank?
     end
 
     def self.enabled_instance_verbose_ai_logs
