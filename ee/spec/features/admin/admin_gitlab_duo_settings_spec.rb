@@ -32,6 +32,15 @@ RSpec.describe 'Admin GitLab Duo home page', feature_category: :ai_abstraction_l
         allow(::CloudConnector::StatusChecks::StatusService).to receive(:new).and_return(status_service)
         allow(status_service).to receive(:execute).and_return(ServiceResponse.success)
 
+        # Stub the model definitions service to avoid real HTTP requests
+        allow(::Ai::ModelSelection::FetchModelDefinitionsService)
+          .to receive(:new).and_return(
+            instance_double(
+              ::Ai::ModelSelection::FetchModelDefinitionsService,
+              execute: ServiceResponse.success(payload: { 'models' => [], 'unit_primitives' => [] })
+            )
+          )
+
         sign_in(admin)
         enable_admin_mode!(admin)
       end
