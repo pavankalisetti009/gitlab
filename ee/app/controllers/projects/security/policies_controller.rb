@@ -72,7 +72,8 @@ module Projects
             redirect_to project_path(policy_configuration.security_policy_management_project)
           when :policy_yaml
             policy_management_project = policy_configuration.security_policy_management_project
-            policy_path = File.join(policy_management_project.default_branch, ::Security::OrchestrationPolicyConfiguration::POLICY_PATH)
+            policy_path = File.join(policy_management_project.default_branch,
+              ::Security::OrchestrationPolicyConfiguration::POLICY_PATH)
 
             redirect_to project_blob_path(policy_management_project, policy_path), alert: result[:message]
           else
