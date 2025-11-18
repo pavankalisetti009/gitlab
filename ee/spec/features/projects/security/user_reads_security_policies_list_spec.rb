@@ -18,10 +18,6 @@ RSpec.describe "User reads security policies list", :js, feature_category: :secu
     Gitlab::Config::Loader::Yaml.new(fixture_file('security_orchestration.yml', dir: 'ee')).load!
   end
 
-  before do
-    stub_feature_flags(security_policies_combined_list: false)
-  end
-
   it_behaves_like 'policies list' do
     let(:path_to_policies_list) { project_security_policies_path(project) }
   end

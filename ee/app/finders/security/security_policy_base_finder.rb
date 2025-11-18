@@ -100,8 +100,6 @@ module Security
     end
 
     def all_policies_with_type(config)
-      return [] unless Feature.enabled?(:security_policies_combined_list, object)
-
       policies_with_type = config.all_policies_with_type
       return policies_with_type if params[:type].blank?
 
