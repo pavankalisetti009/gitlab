@@ -18,18 +18,6 @@ RSpec.describe Security::AllPoliciesFinder, feature_category: :security_policy_m
 
       it_behaves_like 'security policies finder' do
         let(:expected_extra_attrs) { { type: policy_type.to_s } }
-
-        context 'when feature flag "security_policies_combined_list" is disabled' do
-          before do
-            stub_licensed_features(security_orchestration_policies: true)
-            stub_feature_flags(security_policies_combined_list: false)
-            object.add_developer(actor)
-          end
-
-          it 'returns empty collection' do
-            is_expected.to be_empty
-          end
-        end
       end
     end
   end
@@ -51,7 +39,6 @@ RSpec.describe Security::AllPoliciesFinder, feature_category: :security_policy_m
 
     before do
       stub_licensed_features(security_orchestration_policies: true)
-      stub_feature_flags(security_policies_combined_list: true)
       object.add_developer(actor)
     end
 

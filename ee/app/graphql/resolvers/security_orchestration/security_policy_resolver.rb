@@ -25,18 +25,8 @@ module Resolvers
         default_value: nil
 
       def resolve(**args)
-        ensure_feature_available!
-
         policies = ::Security::AllPoliciesFinder.new(context[:current_user], object, args).execute
         construct_security_policies(policies)
-      end
-
-      private
-
-      def ensure_feature_available!
-        return if Feature.enabled?(:security_policies_combined_list, object)
-
-        raise_resource_not_available_error!("`security_policies_combined_list` feature flag is disabled.")
       end
     end
   end

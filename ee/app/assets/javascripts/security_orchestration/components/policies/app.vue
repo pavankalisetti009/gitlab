@@ -281,7 +281,7 @@ export default {
     },
     flattenedPolicies() {
       return (
-        this.securityPolicies?.map(({ policyAttributes = {}, ...policy }) => ({
+        this.securityPolicies?.filter(Boolean).map(({ policyAttributes = {}, ...policy }) => ({
           ...policy,
           ...policyAttributes,
         })) || []

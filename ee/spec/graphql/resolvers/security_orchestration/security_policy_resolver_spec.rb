@@ -22,19 +22,6 @@ RSpec.describe Resolvers::SecurityOrchestration::SecurityPolicyResolver, feature
     resolve(described_class, obj: project, args: args, ctx: { current_user: user })
   end
 
-  shared_examples_for 'resource protected by feature flag "security_policies_combined_list"' do
-    before do
-      stub_feature_flags(security_policies_combined_list: false)
-    end
-
-    it 'returns an error' do
-      expect_graphql_error_to_be_created(Gitlab::Graphql::Errors::ResourceNotAvailable,
-        "`security_policies_combined_list` feature flag is disabled.") do
-        resolve_security_policies
-      end
-    end
-  end
-
   shared_examples_for 'filterable by type' do |type|
     before do
       stub_licensed_features(security_orchestration_policies: true)
@@ -91,7 +78,6 @@ RSpec.describe Resolvers::SecurityOrchestration::SecurityPolicyResolver, feature
       }]
     end
 
-    it_behaves_like 'resource protected by feature flag "security_policies_combined_list"'
     it_behaves_like 'as an orchestration policy' do
       before do
         create(:security_policy, :scan_execution_policy,
@@ -156,7 +142,6 @@ RSpec.describe Resolvers::SecurityOrchestration::SecurityPolicyResolver, feature
       }]
     end
 
-    it_behaves_like 'resource protected by feature flag "security_policies_combined_list"'
     it_behaves_like 'as an orchestration policy' do
       before do
         create(:security_policy, :approval_policy,
@@ -215,7 +200,6 @@ RSpec.describe Resolvers::SecurityOrchestration::SecurityPolicyResolver, feature
       }]
     end
 
-    it_behaves_like 'resource protected by feature flag "security_policies_combined_list"'
     it_behaves_like 'as an orchestration policy' do
       before do
         create(:security_policy, :pipeline_execution_policy,
@@ -275,7 +259,6 @@ RSpec.describe Resolvers::SecurityOrchestration::SecurityPolicyResolver, feature
       }]
     end
 
-    it_behaves_like 'resource protected by feature flag "security_policies_combined_list"'
     it_behaves_like 'as an orchestration policy' do
       before do
         create(:security_policy, :pipeline_execution_schedule_policy,
@@ -332,7 +315,6 @@ RSpec.describe Resolvers::SecurityOrchestration::SecurityPolicyResolver, feature
       }]
     end
 
-    it_behaves_like 'resource protected by feature flag "security_policies_combined_list"'
     it_behaves_like 'as an orchestration policy' do
       before do
         create(:security_policy, :vulnerability_management_policy,
