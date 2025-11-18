@@ -17,10 +17,6 @@ module Mutations
             loads: ::Types::Ai::Catalog::ItemInterface,
             description: 'Item to configure.'
 
-          argument :pinned_version_prefix, GraphQL::Types::String,
-            required: false,
-            description: 'Major version, minor version, or patch to pin the item to.'
-
           argument :target, Types::Ai::Catalog::ItemConsumerTargetInputType,
             required: true,
             description: 'Target project or top-level group in which the catalog item is configured.'

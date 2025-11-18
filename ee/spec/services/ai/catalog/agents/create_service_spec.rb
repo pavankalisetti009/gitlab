@@ -179,7 +179,7 @@ RSpec.describe Ai::Catalog::Agents::CreateService, feature_category: :workflow_c
       item = response.payload[:item]
       item_consumer = ::Ai::Catalog::ItemConsumer.for_item(item.id).first
       expect(item_consumer.project).to eq(project)
-      expect(item_consumer.pinned_version_prefix).to be_nil
+      expect(item_consumer.pinned_version_prefix).to eq(Ai::Catalog::BaseService::DEFAULT_VERSION)
     end
 
     context 'and ItemConsumer fails to be created' do

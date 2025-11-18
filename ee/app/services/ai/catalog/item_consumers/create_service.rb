@@ -38,6 +38,7 @@ module Ai
           return error_not_project_or_top_level_group unless for_project_or_top_level_group?
           return error_no_permissions unless allowed?
           return error_parent_item_consumer_not_passed if project_flow_without_parent_item_consumer?
+          return error_no_pinned_version_prefix if pinned_version_prefix.nil?
 
           error_flow_triggers_must_be_for_project if flow_triggers_not_for_project?
         end
@@ -54,10 +55,14 @@ module Ai
           params[:parent_item_consumer]
         end
 
-        def project_flow_without_parent_item_consumer?
+        def requires_parent_item_consumer?
           return false unless ai_catalog_flows_enabled?
 
-          (item.flow? || item.third_party_flow?) && project.present? && parent_item_consumer.nil?
+          (item.flow? || item.third_party_flow?) && project.present?
+        end
+
+        def project_flow_without_parent_item_consumer?
+          requires_parent_item_consumer? && parent_item_consumer.nil?
         end
 
         def flow_triggers_not_for_project?
@@ -67,7 +72,13 @@ module Ai
         def create_item_consumer(service_account)
           # The enabled setting is not currently used, so always set new records as enabled.
           # https://gitlab.com/gitlab-org/gitlab/-/issues/553912#note_2706802395
-          params.merge!(project: project, group: group, service_account: service_account, enabled: true)
+          params.merge!(
+            project: project,
+            group: group,
+            service_account: service_account,
+            enabled: true,
+            pinned_version_prefix: pinned_version_prefix
+          )
           prepare_trigger_params
 
           item_consumer = ::Ai::Catalog::ItemConsumer.create(params)
@@ -143,6 +154,20 @@ module Ai
           params[:item]
         end
 
+        def pinned_version_prefix
+          return parent_item_consumer.pinned_version_prefix if requires_parent_item_consumer?
+
+          latest_released_version = item.latest_released_version
+
+          return latest_released_version.version if latest_released_version
+
+          # TODO: Remove the below when we can rely on all items having a `latest_released_version`
+          # after the data migration of https://gitlab.com/gitlab-org/gitlab/-/issues/572145
+          latest_released_version = item.versions.where.not(release_date: nil).order(id: :desc).take # rubocop:disable CodeReuse/ActiveRecord -- Can be removed after https://gitlab.com/gitlab-org/gitlab/-/issues/572145
+          latest_released_version&.version
+        end
+        strong_memoize_attr :pinned_version_prefix
+
         def error_creating(record)
           return error('Failed to create item consumer') if record.nil?
 
@@ -178,6 +203,14 @@ module Ai
 
         def error_not_project_or_top_level_group
           error('Item can only be enabled in projects or top-level groups')
+        end
+
+        def error_no_pinned_version_prefix
+          if requires_parent_item_consumer?
+            error('Parent item consumer has no pinned version prefix')
+          else
+            error('Item has no latest released version to pin to')
+          end
         end
       end
     end

@@ -26,8 +26,7 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Update, feature_category: :
   let(:mutation_response) { graphql_data_at(:ai_catalog_item_consumer_update) }
   let(:params) do
     {
-      id: item_consumer.to_global_id,
-      pinned_version_prefix: '1.0'
+      id: item_consumer.to_global_id
     }
   end
 
@@ -88,13 +87,17 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Update, feature_category: :
   end
 
   context 'when update succeeds' do
-    it 'updates the item consumer and returns a success response' do
+    it 'does not update the item consumer' do
+      # While all mutation arguments are no-ops, we expect no change to the item consumer.
+      expect { execute }.not_to change { item_consumer.reload.attributes }
+    end
+
+    it 'returns a success response' do
       execute
 
-      expect(item_consumer.reload.pinned_version_prefix).to eq('1.0')
       expect(graphql_dig_at(mutation_response, :errors)).to be_empty
       expect(graphql_dig_at(mutation_response, :item_consumer)).to match(
-        a_graphql_entity_for(item_consumer, :pinned_version_prefix)
+        a_graphql_entity_for(item_consumer)
       )
     end
   end

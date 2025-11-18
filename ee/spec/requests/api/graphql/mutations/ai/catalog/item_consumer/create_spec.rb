@@ -23,8 +23,13 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Create, feature_category: :
   let_it_be(:item_project) { create(:project, developers: user) }
   let_it_be(:item) { create(:ai_catalog_flow, public: true, project: item_project) }
 
+  let_it_be(:item_latest_released_version) do
+    create(:ai_catalog_flow_version, :released, item: item, version: '3.2.1')
+  end
+
   let_it_be(:consumer_group_item_consumer) do
-    create(:ai_catalog_item_consumer, group: consumer_group, item: item, service_account: service_account)
+    create(:ai_catalog_item_consumer, pinned_version_prefix: '1.2.3', group: consumer_group, item: item,
+      service_account: service_account)
   end
 
   let_it_be(:other_group) { create(:group) }
@@ -37,7 +42,6 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Create, feature_category: :
     {
       target: target,
       item_id: item.to_global_id,
-      pinned_version_prefix: '1.1',
       parent_item_consumer_id: consumer_group_item_consumer.to_global_id
     }
   end
@@ -56,14 +60,14 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Create, feature_category: :
     end
   end
 
-  shared_examples 'a successful request' do
+  shared_examples 'a successful request' do |pinned_version_prefix:|
     it 'creates a catalog item consumer with expected data' do
       execute
 
       expect(graphql_data_at(:ai_catalog_item_consumer_create, :item_consumer)).to match a_hash_including(
         'item' => a_hash_including('id' => item.to_global_id.to_s),
         'project' => a_hash_including('id' => consumer_project.to_global_id.to_s),
-        'pinnedVersionPrefix' => '1.1'
+        'pinnedVersionPrefix' => pinned_version_prefix
       )
     end
   end
@@ -82,13 +86,13 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Create, feature_category: :
   context 'when the user is a project maintainer and group developer' do
     let(:current_user) { project_maintainer }
 
-    it_behaves_like 'a successful request'
+    it_behaves_like 'a successful request', pinned_version_prefix: '1.2.3'
   end
 
   context 'when the user is a project maintainer and does not belong to the group' do
     let(:current_user) { project_maintainer_not_in_group }
 
-    it_behaves_like 'a successful request'
+    it_behaves_like 'a successful request', pinned_version_prefix: '1.2.3'
   end
 
   context 'when the parent_item_consumer ID does not exist' do
@@ -149,11 +153,15 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Create, feature_category: :
   end
 
   context 'when the item is an agent' do
-    let(:item) { create(:ai_catalog_agent, public: true, project: item_project) }
+    let_it_be(:item) { create(:ai_catalog_agent, public: true, project: item_project) }
+
+    let_it_be(:item_latest_released_version) do
+      create(:ai_catalog_agent_version, :released, item: item, version: '3.2.1')
+    end
 
     let(:params) { super().except(:parent_item_consumer_id) }
 
-    it_behaves_like 'a successful request'
+    it_behaves_like 'a successful request', pinned_version_prefix: '3.2.1'
   end
 
   context 'when global_ai_catalog feature flag is disabled' do
@@ -164,7 +172,7 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Create, feature_category: :
     it_behaves_like 'an authorization failure'
   end
 
-  it_behaves_like 'a successful request'
+  it_behaves_like 'a successful request', pinned_version_prefix: '1.2.3'
 
   context 'with a group_id' do
     let_it_be(:group) { create(:group, owners: user) }
@@ -172,8 +180,7 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Create, feature_category: :
     let(:params) do
       {
         item_id: item.to_global_id,
-        target: { group_id: group.to_global_id },
-        pinned_version_prefix: '1.0'
+        target: { group_id: group.to_global_id }
       }
     end
 
@@ -191,7 +198,8 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Create, feature_category: :
       service_account = User.last
       expect(service_account).to be_service_account
       expect(graphql_data_at(:ai_catalog_item_consumer_create, :item_consumer)).to match a_hash_including(
-        'serviceAccount' => a_hash_including('id' => service_account.to_global_id.to_s)
+        'serviceAccount' => a_hash_including('id' => service_account.to_global_id.to_s),
+        'pinnedVersionPrefix' => '3.2.1'
       )
     end
   end
