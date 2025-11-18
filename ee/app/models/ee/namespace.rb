@@ -154,6 +154,11 @@ module EE
           .where(namespace_settings: { duo_core_features_enabled: true })
       end
 
+      scope :namespace_settings_with_experiment_duo_features_enabled, -> do
+        namespace_settings_with_ai_features_enabled
+          .where(namespace_settings: { duo_features_enabled: true })
+      end
+
       scope :with_ai_supported_plan, ->(feature = :ai_features) do
         plan_names = GitlabSubscriptions::Features.saas_plans_with_feature(feature)
 
