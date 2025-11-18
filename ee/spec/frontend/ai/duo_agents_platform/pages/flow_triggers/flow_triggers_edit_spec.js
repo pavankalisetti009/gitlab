@@ -87,7 +87,7 @@ describe('FlowTriggersEdit', () => {
 
       it('renders empty state', () => {
         expect(findGlEmptyState().exists()).toBe(true);
-        expect(findGlEmptyState().props('title')).toBe('Flow trigger not found.');
+        expect(findGlEmptyState().props('title')).toBe('Trigger not found.');
       });
     });
 
@@ -159,7 +159,7 @@ describe('FlowTriggersEdit', () => {
 
       it('sets error messages', () => {
         expect(findForm().props('errorMessages')).toEqual([
-          'The flow trigger could not be updated. Try again.',
+          'The trigger could not be updated. Try again.',
         ]);
         expect(findForm().props('isLoading')).toBe(false);
       });
@@ -193,10 +193,10 @@ describe('FlowTriggersEdit', () => {
       });
 
       it('shows toast', () => {
-        expect(mockToast.show).toHaveBeenCalledWith('Flow trigger updated successfully.');
+        expect(mockToast.show).toHaveBeenCalledWith('Trigger updated successfully.');
       });
 
-      it('navigates to flow triggers page', async () => {
+      it('navigates to triggers page', async () => {
         await waitForPromises();
         expect(mockRouter.go).toHaveBeenCalledWith(-1);
       });

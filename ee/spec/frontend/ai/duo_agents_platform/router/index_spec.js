@@ -60,8 +60,8 @@ describe('Agents Platform Router', () => {
     });
   });
 
-  describe('flow triggers', () => {
-    it('redirect to flow triggers base route when ID to edit does not exist', async () => {
+  describe('triggers', () => {
+    it('redirect to triggers base route when ID to edit does not exist', async () => {
       router = createRouter(baseRoute, 'project');
       await router.push('/flow-triggers/invalid-id/edit');
 

@@ -194,7 +194,7 @@ module Ai
         end
 
         def error_flow_triggers_must_be_for_project
-          error("Flow triggers can only be set for projects")
+          error("Triggers can only be set for projects")
         end
 
         def error_parent_item_consumer_not_passed

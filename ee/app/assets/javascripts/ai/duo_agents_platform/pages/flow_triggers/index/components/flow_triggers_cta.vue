@@ -13,6 +13,6 @@ export default {
 
 <template>
   <gl-button variant="confirm" :to="{ name: $options.newPage }">
-    {{ s__('DuoAgentsPlatform|New flow trigger') }}
+    {{ s__('DuoAgentsPlatform|New trigger') }}
   </gl-button>
 </template>

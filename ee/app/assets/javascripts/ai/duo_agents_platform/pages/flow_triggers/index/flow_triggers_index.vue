@@ -43,7 +43,7 @@ export default {
       update: (data) => data.project.aiFlowTriggers.nodes,
       error(error) {
         createAlert({
-          message: error.message || s__('DuoAgentsPlatform|Failed to fetch flow triggers'),
+          message: error.message || s__('DuoAgentsPlatform|Failed to fetch triggers'),
           captureError: true,
         });
       },
@@ -68,10 +68,10 @@ export default {
           refetchQueries: [getProjectAiFlowTriggers],
         });
 
-        this.$toast.show(s__('DuoAgentsPlatform|Flow trigger deleted successfully.'));
+        this.$toast.show(s__('DuoAgentsPlatform|Trigger deleted successfully.'));
       } catch (error) {
         createAlert({
-          message: error.message || s__('DuoAgentsPlatform|Failed to delete flow trigger.'),
+          message: error.message || s__('DuoAgentsPlatform|Failed to delete trigger.'),
         });
       } finally {
         this.resetItemIdToBeDeleted();
@@ -108,10 +108,10 @@ export default {
     />
     <resource-lists-empty-state
       v-else-if="showEmptyState"
-      :title="s__('DuoAgentsPlatform|No flow triggers yet')"
+      :title="s__('DuoAgentsPlatform|No triggers yet')"
       :description="
         s__(
-          'DuoAgentsPlatform|Create flow triggers to automatically run pipelines when specified events occur in your project.',
+          'DuoAgentsPlatform|Create triggers to automatically run pipelines when specified events occur in your project.',
         )
       "
       :svg-path="$options.emptyStateIllustrationPath"
@@ -133,14 +133,14 @@ export default {
         v-if="idToBeDeleted"
         modal-id="delete-item-modal"
         variant="danger"
-        :title="s__('DuoAgentsPlatform|Delete flow trigger')"
+        :title="s__('DuoAgentsPlatform|Delete trigger')"
         :action-fn="deleteAiFlowTrigger"
         :action-text="__('Delete')"
         @close="resetItemIdToBeDeleted"
       >
         {{
           s__(
-            'DuoAgentsPlatform|Are you sure you want to delete this flow trigger? This action cannot be undone.',
+            'DuoAgentsPlatform|Are you sure you want to delete this trigger? This action cannot be undone.',
           )
         }}
       </confirm-action-modal>

@@ -91,7 +91,7 @@ describe('FlowTriggersNew', () => {
 
       it('sets error messages', () => {
         expect(findForm().props('errorMessages')).toEqual([
-          'The flow trigger could not be created. Try again.',
+          'The trigger could not be created. Try again.',
         ]);
         expect(findForm().props('isLoading')).toBe(false);
       });
@@ -125,10 +125,10 @@ describe('FlowTriggersNew', () => {
       });
 
       it('shows toast', () => {
-        expect(mockToast.show).toHaveBeenCalledWith('Flow trigger created successfully.');
+        expect(mockToast.show).toHaveBeenCalledWith('Trigger created successfully.');
       });
 
-      it('navigates to flow triggers page', async () => {
+      it('navigates to triggers page', async () => {
         await waitForPromises();
         expect(mockRouter.push).toHaveBeenCalledWith({
           name: FLOW_TRIGGERS_INDEX_ROUTE,

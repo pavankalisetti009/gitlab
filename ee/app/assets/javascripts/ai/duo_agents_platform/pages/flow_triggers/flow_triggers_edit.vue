@@ -94,12 +94,11 @@ export default {
           return;
         }
 
-        this.$toast.show(s__('DuoAgentsPlatform|Flow trigger updated successfully.'));
+        this.$toast.show(s__('DuoAgentsPlatform|Trigger updated successfully.'));
         this.$router.go(-1);
       } catch (error) {
         this.errorMessages = [
-          error.message ||
-            s__('DuoAgentsPlatform|The flow trigger could not be updated. Try again.'),
+          error.message || s__('DuoAgentsPlatform|The trigger could not be updated. Try again.'),
         ];
       } finally {
         this.isLoadingMutation = false;
@@ -115,15 +114,15 @@ export default {
 
 <template>
   <div>
-    <page-heading :heading="s__('DuoAgentsPlatform|Edit flow trigger')">
+    <page-heading :heading="s__('DuoAgentsPlatform|Edit trigger')">
       <template #description>
-        {{ s__('DuoAgentsPlatform|Edit flow trigger.') }}
+        {{ s__('DuoAgentsPlatform|Edit trigger.') }}
       </template>
     </page-heading>
     <gl-loading-icon v-if="isQueryLoading" size="lg" class="gl-my-5" />
     <gl-empty-state
       v-else-if="isNotFound"
-      :title="s__('DuoAgentsPlatform|Flow trigger not found.')"
+      :title="s__('DuoAgentsPlatform|Trigger not found.')"
       :svg-path="$options.emptySearchSvg"
     />
     <flow-trigger-form
