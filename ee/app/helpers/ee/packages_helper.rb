@@ -11,6 +11,13 @@ module EE
       )
     end
 
+    override :packages_and_registries_group_settings_template_data
+    def packages_and_registries_group_settings_template_data(group)
+      super.merge(
+        should_render_virtual_registries_setting: show_virtual_registries_setting?(group).to_s
+      )
+    end
+
     def google_artifact_registry_data(project)
       {
         endpoint: project_google_cloud_artifact_registry_index_path(project),

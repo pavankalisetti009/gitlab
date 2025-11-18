@@ -9,25 +9,13 @@ describe('EE Group Settings App', () => {
   let handleSuccessMock;
   let handleErrorMock;
 
-  const mountComponent = ({
-    adminVirtualRegistryAbility = true,
-    mavenVirtualRegistryFeature = true,
-    packagesVirtualRegistryLicense = true,
-  } = {}) => {
+  const mountComponent = ({ shouldRenderVirtualRegistriesSetting = true } = {}) => {
     handleSuccessMock = jest.fn();
     handleErrorMock = jest.fn();
 
     wrapper = shallowMount(GroupSettingsApp, {
       provide: {
-        glAbilities: {
-          adminVirtualRegistry: adminVirtualRegistryAbility,
-        },
-        glFeatures: {
-          mavenVirtualRegistry: mavenVirtualRegistryFeature,
-        },
-        glLicensedFeatures: {
-          packagesVirtualRegistry: packagesVirtualRegistryLicense,
-        },
+        shouldRenderVirtualRegistriesSetting,
       },
       stubs: {
         CeGroupSettingsApp: {
@@ -80,14 +68,9 @@ describe('EE Group Settings App', () => {
     });
   });
 
-  describe.each`
-    description                                | options
-    ${'ability adminVirtualRegistriesSetting'} | ${{ adminVirtualRegistryAbility: false }}
-    ${'maven virtual registry feature flag'}   | ${{ mavenVirtualRegistryFeature: false }}
-    ${'packages virtual registry license'}     | ${{ packagesVirtualRegistryLicense: false }}
-  `('when $description is false', ({ options }) => {
+  describe('when shouldRenderVirtualRegistriesSetting is false', () => {
     beforeEach(() => {
-      mountComponent(options);
+      mountComponent({ shouldRenderVirtualRegistriesSetting: false });
     });
 
     it('does not render the virtual registries setting section', () => {

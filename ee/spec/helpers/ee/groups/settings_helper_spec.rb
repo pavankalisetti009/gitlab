@@ -277,4 +277,32 @@ RSpec.describe EE::Groups::SettingsHelper, feature_category: :groups_and_project
       end
     end
   end
+
+  describe '#show_virtual_registries_setting?' do
+    using RSpec::Parameterized::TableSyntax
+
+    let(:policy_subject) { instance_double(::VirtualRegistries::Policies::Group) }
+
+    where(:maven_virtual_registry, :licensed_feature, :can_admin, :expected_result) do
+      true  | true  | true  | true
+      false | true  | true  | false
+      true  | false | true  | false
+      true  | true  | false | false
+      false | false | false | false
+    end
+
+    with_them do
+      before do
+        stub_feature_flags(maven_virtual_registry: maven_virtual_registry)
+        stub_licensed_features(packages_virtual_registry: licensed_feature)
+        allow(group).to receive(:virtual_registry_policy_subject).and_return(policy_subject)
+        allow(Ability).to receive(:allowed?).with(current_user, :admin_virtual_registry,
+          policy_subject).and_return(can_admin)
+      end
+
+      it 'returns the expected result' do
+        expect(helper.show_virtual_registries_setting?(group)).to eq(expected_result)
+      end
+    end
+  end
 end
