@@ -1,6 +1,8 @@
 export const mockDataWithPool = {
   data: {
     subscriptionUsage: {
+      enabled: true,
+
       lastEventTransactionAt: '2025-02-02T18:45:32Z',
 
       startDate: '2025-08-01',
@@ -258,6 +260,15 @@ export const mockNullData = {
         __typename: 'GitlabSubscriptionUsageUsersUsage',
       },
       __typename: 'GitlabSubscriptionUsage',
+    },
+  },
+};
+
+export const mockDisabledStateData = {
+  data: {
+    subscriptionUsage: {
+      ...mockDataWithPool.data.subscriptionUsage,
+      enabled: false,
     },
   },
 };

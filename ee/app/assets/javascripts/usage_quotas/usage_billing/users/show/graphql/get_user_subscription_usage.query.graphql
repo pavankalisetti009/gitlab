@@ -9,6 +9,8 @@ query getUserSubscriptionUsage(
   $before: String
 ) {
   subscriptionUsage(namespacePath: $namespacePath) {
+    enabled
+
     lastEventTransactionAt
 
     startDate

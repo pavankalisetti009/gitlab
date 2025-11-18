@@ -25,6 +25,7 @@ import {
   usageDataCommitmentWithMonthlyWaiverWithOverage,
   usageDataWithOutdatedClient,
   usageDataWithoutPurchaseCreditsPath,
+  usageDataWithDisabledState,
 } from '../mock_data';
 
 jest.mock('~/lib/logger');
@@ -52,6 +53,7 @@ describe('UsageBillingApp', () => {
   const findUsageByUserTab = () => wrapper.findComponent(UsageByUserTab);
   const findPageHeading = () => wrapper.findComponent(PageHeading);
   const findOutdatedClientAlert = () => wrapper.findByTestId('outdated-client-alert');
+  const findDisabledStateAlert = () => wrapper.findByTestId('usage-billing-disabled-alert');
 
   describe('loading state', () => {
     beforeEach(() => {
@@ -114,6 +116,38 @@ describe('UsageBillingApp', () => {
           expect(findOutdatedClientAlert().text()).toBe(
             'This dashboard may not display all current subscription data. For complete visibility, please upgrade to the latest version of GitLab or visit the Customer Portal.',
           );
+        });
+      });
+
+      describe('disabled state alert', () => {
+        describe('when Usage Billing is available', () => {
+          it('does not render alert if enabled is true', () => {
+            expect(findDisabledStateAlert().exists()).toBe(false);
+          });
+
+          it('displays all other elements', () => {
+            expect(wrapper.findByTestId('usage-billing-cards-row').exists()).toBe(true);
+            expect(wrapper.findComponent(UsageByUserTab).exists()).toBe(true);
+          });
+        });
+
+        describe('when Usage Billing is disabled', () => {
+          beforeEach(async () => {
+            createComponent({
+              mockQueryHandler: jest.fn().mockResolvedValue(usageDataWithDisabledState),
+            });
+
+            await waitForPromises();
+          });
+
+          it('renders disable state alert', () => {
+            expect(findDisabledStateAlert().exists()).toBe(true);
+          });
+
+          it('hides all other components', () => {
+            expect(wrapper.findByTestId('usage-billing-cards-row').exists()).toBe(false);
+            expect(wrapper.findComponent(UsageByUserTab).exists()).toBe(false);
+          });
         });
       });
     });

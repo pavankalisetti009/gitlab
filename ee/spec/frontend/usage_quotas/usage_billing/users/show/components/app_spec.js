@@ -9,7 +9,7 @@ import { logError } from '~/lib/logger';
 import { captureException } from '~/sentry/sentry_browser_wrapper';
 import getUserSubscriptionUsageQuery from 'ee/usage_quotas/usage_billing/users/show/graphql/get_user_subscription_usage.query.graphql';
 import createMockApollo from 'helpers/mock_apollo_helper';
-import { mockDataWithPool, mockDataWithoutPool } from '../mock_data';
+import { mockDataWithPool, mockDataWithoutPool, mockDisabledStateData } from '../mock_data';
 
 jest.mock('~/lib/logger');
 jest.mock('~/sentry/sentry_browser_wrapper');
@@ -45,6 +45,7 @@ describe('UsageBillingUserDashboardApp', () => {
   const findIncludedCreditsCard = () => wrapper.findByTestId('included-credits-card');
   const findTotalUsageCard = () => wrapper.findByTestId('total-usage-card');
   const findEventsTable = () => wrapper.findComponent(EventsTable);
+  const findDisabledStateAlert = () => wrapper.findByTestId('usage-billing-disabled-alert');
 
   beforeEach(() => {
     mockQueryHandler = jest.fn();
@@ -191,6 +192,44 @@ describe('UsageBillingUserDashboardApp', () => {
       mockQueryHandler.mockResolvedValue(mockDataWithoutPool);
       createComponent();
       await waitForPromises();
+    });
+  });
+
+  describe('disabled state alert', () => {
+    describe('when Usage Billing is available', () => {
+      beforeEach(async () => {
+        mockQueryHandler.mockResolvedValue(mockDataWithoutPool);
+        createComponent();
+        await waitForPromises();
+      });
+
+      it('does not render alert if enabled is true', () => {
+        expect(findDisabledStateAlert().exists()).toBe(false);
+      });
+
+      it('displays all other elements', () => {
+        expect(wrapper.findByTestId('usage-billing-user-header').exists()).toBe(true);
+        expect(wrapper.findByTestId('usage-billing-user-cards-row').exists()).toBe(true);
+        expect(wrapper.findByTestId('usage-billing-user-events-list').exists()).toBe(true);
+      });
+    });
+
+    describe('when Usage Billing is disabled', () => {
+      beforeEach(async () => {
+        mockQueryHandler.mockResolvedValue(mockDisabledStateData);
+        createComponent();
+        await waitForPromises();
+      });
+
+      it('renders disabled state alert', () => {
+        expect(findDisabledStateAlert().exists()).toBe(true);
+      });
+
+      it('hides all other components', () => {
+        expect(wrapper.findByTestId('usage-billing-user-header').exists()).toBe(false);
+        expect(wrapper.findByTestId('usage-billing-user-cards-row').exists()).toBe(false);
+        expect(wrapper.findByTestId('usage-billing-user-events-list').exists()).toBe(false);
+      });
     });
   });
 
