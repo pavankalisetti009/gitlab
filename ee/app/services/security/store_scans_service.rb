@@ -17,6 +17,9 @@ module Security
 
       results = store_security_scans + store_sbom_scans
 
+      remove_dangling_dependency_scans
+      set_dependency_scanning_reports_to_ready
+
       # StoreGroupedScansService returns true only when it creates a `security_scans` record.
       # To avoid resource wastage we are skipping the reports ingestion when there are no new scans.
       #
@@ -46,14 +49,9 @@ module Security
     def store_sbom_scans
       return [] if sbom_report_artifacts.blank?
 
-      results = sbom_report_artifacts.map do |file_type, artifacts|
+      sbom_report_artifacts.map do |file_type, artifacts|
         StoreGroupedSbomScansService.execute(artifacts, pipeline, file_type)
       end
-
-      remove_dangling_dependency_scans
-      set_dependency_scanning_reports_to_ready
-
-      results
     end
 
     def already_purged?

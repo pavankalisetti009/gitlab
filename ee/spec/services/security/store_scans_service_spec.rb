@@ -52,10 +52,8 @@ RSpec.describe Security::StoreScansService, feature_category: :vulnerability_man
 
     let_it_be(:sast_build) { create(:ee_ci_build, pipeline: pipeline) }
     let_it_be(:dast_build) { create(:ee_ci_build, pipeline: pipeline) }
-    let_it_be(:cyclonedx_build) { create(:ee_ci_build, :success, pipeline: pipeline) }
     let_it_be(:sast_artifact) { create(:ee_ci_job_artifact, :sast, job: sast_build) }
     let_it_be(:dast_artifact) { create(:ee_ci_job_artifact, :dast, job: dast_build) }
-    let_it_be(:cyclonedx_artifact) { create(:ee_ci_job_artifact, :cyclonedx, job: cyclonedx_build) }
 
     subject(:store_group_of_artifacts) { service_object.execute }
 
@@ -87,8 +85,6 @@ RSpec.describe Security::StoreScansService, feature_category: :vulnerability_man
 
       expect(Security::StoreGroupedScansService).to have_received(:execute).with([sast_artifact], pipeline, 'sast')
       expect(Security::StoreGroupedScansService).to have_received(:execute).with([dast_artifact], pipeline, 'dast')
-      expect(Security::StoreGroupedSbomScansService).to have_received(:execute)
-        .with([cyclonedx_artifact], pipeline, 'dependency_scanning')
     end
 
     it 'does not schedule sbom ingestion when there are scans stored' do
@@ -109,8 +105,40 @@ RSpec.describe Security::StoreScansService, feature_category: :vulnerability_man
           .with([sast_artifact], pipeline, 'sast')
         expect(Security::StoreGroupedScansService).not_to have_received(:execute)
           .with([dast_artifact], pipeline, 'dast')
-        expect(Security::StoreGroupedSbomScansService).not_to have_received(:execute)
+      end
+    end
+
+    context 'when there is a dependency scanning SBoM' do
+      let_it_be(:cyclonedx_build) { create(:ee_ci_build, :success, pipeline: pipeline) }
+      let_it_be(:cyclonedx_artifact) { create(:ee_ci_job_artifact, :cyclonedx, job: cyclonedx_build) }
+
+      it 'stores the sbom scans' do
+        store_group_of_artifacts
+
+        expect(Security::StoreGroupedSbomScansService).to have_received(:execute)
           .with([cyclonedx_artifact], pipeline, 'dependency_scanning')
+      end
+
+      it 'marks dependency_scanning sbom reports as ready' do
+        expect(::Vulnerabilities::CompareSecurityReportsService).to receive(:set_security_report_type_to_ready)
+          .with(
+            pipeline_id: pipeline.id,
+            report_type: 'dependency_scanning'
+          )
+
+        store_group_of_artifacts
+      end
+
+      context 'when there is a created dependency scan' do
+        let_it_be(:dependency_scan) do
+          create(:security_scan, build: cyclonedx_build, scan_type: :dependency_scanning, status: :created)
+        end
+
+        it 'deletes the scan' do
+          expect { store_group_of_artifacts }.to change {
+            Security::Scan.exists?(dependency_scan.id)
+          }.from(true).to(false)
+        end
       end
     end
 
@@ -125,8 +153,6 @@ RSpec.describe Security::StoreScansService, feature_category: :vulnerability_man
 
         expect(Security::StoreGroupedSbomScansService).not_to have_received(:execute)
           .with([cyclonedx_cs_artifact], pipeline, 'container_scanning')
-        expect(Security::StoreGroupedSbomScansService).to have_received(:execute)
-          .with([cyclonedx_artifact], pipeline, 'dependency_scanning')
       end
 
       it 'marks dependency_scanning sbom reports as ready' do
