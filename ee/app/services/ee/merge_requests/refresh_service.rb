@@ -23,6 +23,10 @@ module EE
           sync_preexisting_states_approval_rules
           sync_unenforceable_approval_rules
         end
+
+        if log_refresh_service_duration_enabled?
+          log_hash_metadata_on_done(duration_statistics)
+        end
       end
 
       override :execute_async_workers

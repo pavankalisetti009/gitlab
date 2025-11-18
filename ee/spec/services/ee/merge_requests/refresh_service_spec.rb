@@ -985,4 +985,107 @@ RSpec.describe MergeRequests::RefreshService, feature_category: :code_review_wor
       it_behaves_like 'maintained merge requests for auto merges'
     end
   end
+
+  describe 'timing logging' do
+    before do
+      allow(Gitlab::AppJsonLogger).to receive(:info)
+    end
+
+    it 'calls log_duration_statistics with duration metrics' do
+      expect(Gitlab::AppJsonLogger).to receive(:info).with(
+        hash_including(
+          outdate_suggestions_duration_s: be >= 0,
+          abort_auto_merges_duration_s: be >= 0,
+          mark_pending_todos_done_duration_s: be >= 0,
+          notify_about_push_duration_s: be >= 0,
+          mark_mr_as_draft_from_commits_duration_s: be >= 0,
+          track_mr_including_ci_config_duration_s: be >= 0,
+          event: 'merge_requests_refresh_service'
+        )
+      ).and_call_original
+
+      execute
+    end
+
+    it 'aggregates durations correctly without precision loss' do
+      # Create multiple merge requests to trigger aggregation
+      another_merge_request
+
+      logged_data = nil
+      allow(Gitlab::AppJsonLogger).to receive(:info) do |data|
+        logged_data = data if data[:event] == 'merge_requests_refresh_service'
+      end
+
+      execute
+
+      # Verify that aggregated durations are present and properly rounded
+      expect(logged_data).to be_present
+      expect(logged_data[:outdate_suggestions_duration_s]).to be_a(Float)
+      expect(logged_data[:abort_auto_merges_duration_s]).to be_a(Float)
+      expect(logged_data[:mark_pending_todos_done_duration_s]).to be_a(Float)
+      expect(logged_data[:notify_about_push_duration_s]).to be_a(Float)
+      expect(logged_data[:mark_mr_as_draft_from_commits_duration_s]).to be_a(Float)
+      expect(logged_data[:track_mr_including_ci_config_duration_s]).to be_a(Float)
+
+      # Verify precision (should be rounded to 6 decimal places)
+      aggregated_keys = [
+        :outdate_suggestions_duration_s,
+        :abort_auto_merges_duration_s,
+        :mark_pending_todos_done_duration_s,
+        :notify_about_push_duration_s,
+        :mark_mr_as_draft_from_commits_duration_s,
+        :track_mr_including_ci_config_duration_s
+      ]
+
+      aggregated_keys.each do |key|
+        duration = logged_data[key]
+        # Check that the value is rounded to the correct precision (6 decimal places)
+        expect(duration.to_s.split('.').last.length).to be <= 6
+      end
+
+      # Verify total duration is the sum of all durations
+      total = logged_data.except(:event, :refresh_service_total_duration_s).values.sum
+      expect(logged_data[:refresh_service_total_duration_s]).to be_within(0.000001).of(total)
+    end
+
+    it 'verifies total sum equals sum of individual durations after rounding' do
+      # Create multiple merge requests to trigger aggregation
+      another_merge_request
+
+      logged_data = nil
+      allow(Gitlab::AppJsonLogger).to receive(:info) do |data|
+        logged_data = data if data[:event] == 'merge_requests_refresh_service'
+      end
+
+      execute
+
+      expect(logged_data).to be_present
+
+      # Calculate sum of all individual durations (excluding event and total)
+      individual_durations_sum = logged_data.except(:event, :refresh_service_total_duration_s).values.sum
+
+      # The total should equal the sum of individual durations
+      # Both should be rounded to the same precision
+      expect(logged_data[:refresh_service_total_duration_s]).to eq(individual_durations_sum)
+    end
+
+    context 'when log_refresh_service_duration feature flag is disabled' do
+      before do
+        stub_feature_flags(log_refresh_service_duration: false)
+      end
+
+      it 'does not call app logger' do
+        expect(Gitlab::AppJsonLogger).not_to receive(:info)
+          .with(hash_including(event: 'merge_requests_refresh_service'))
+
+        execute
+      end
+
+      it 'keeps duration_statistics empty' do
+        execute
+
+        expect(service.send(:duration_statistics)).to be_empty
+      end
+    end
+  end
 end

@@ -819,6 +819,25 @@ RSpec.describe MergeRequests::ResetApprovalsService, feature_category: :code_rev
         service.execute('refs/heads/master', newrev)
       end
 
+      it 'rounds all durations to correct precision at the end' do
+        logged_data = nil
+        allow(Gitlab::AppJsonLogger).to receive(:info) do |data|
+          logged_data = data if data['event'] == 'merge_requests_reset_approvals_service'
+        end
+
+        service.execute('refs/heads/master', newrev)
+
+        expect(logged_data).to be_present
+
+        # Verify all durations are rounded to 6 decimal places (DURATION_PRECISION)
+        logged_data.except('event').each_value do |duration|
+          expect(duration).to be_a(Float)
+          # Check that the value is rounded to the correct precision (6 decimal places)
+          decimal_places = duration.to_s.split('.').last.length
+          expect(decimal_places).to be <= 6
+        end
+      end
+
       context 'when log_merge_request_reset_approvals_duration feature flag is disabled' do
         before do
           stub_feature_flags(log_merge_request_reset_approvals_duration: false)

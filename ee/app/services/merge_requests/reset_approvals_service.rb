@@ -176,7 +176,12 @@ module MergeRequests
 
     def log_hash_metadata_on_done(hash)
       total_duration = hash.values.sum
+
       hash_with_total = hash.merge('reset_approvals_service_total_duration_s' => total_duration)
+
+      hash_with_total.transform_values! do |duration|
+        duration.round(Gitlab::InstrumentationHelper::DURATION_PRECISION)
+      end
 
       Gitlab::AppJsonLogger.info(
         'event' => 'merge_requests_reset_approvals_service',
