@@ -3,8 +3,6 @@
 module QA
   RSpec.describe 'Plan', feature_category: :portfolio_management do
     describe 'promote issue to epic' do
-      include_context 'work item epics migration'
-
       let(:project) do
         create(:project, name: 'promote-issue-to-epic', description: 'Project to promote issue to epic')
       end
@@ -30,17 +28,11 @@ module QA
           show.comment('/promote_to epic')
         end
 
-        work_item_epics_enabled = work_item_epics_enabled_for_group?(project.group)
-        epic_type = if work_item_epics_enabled
-                      QA::EE::Page::Group::WorkItem::Epic::Index
-                    else
-                      QA::EE::Page::Group::Epic::Index
-                    end
-
         project.group.visit!
+
         Page::Group::Menu.perform(&:go_to_epics)
 
-        epic_type.perform do |index|
+        QA::EE::Page::Group::WorkItem::Epic::Index.perform do |index|
           expect(index).to have_epic_title(issue.title)
         end
       end

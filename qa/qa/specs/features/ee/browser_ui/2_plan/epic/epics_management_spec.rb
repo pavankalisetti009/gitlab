@@ -4,8 +4,6 @@ module QA
   # Add :smoke back once proven reliable
   RSpec.describe 'Plan', feature_category: :portfolio_management do
     describe 'Epics Management' do
-      include_context 'work item epics migration'
-
       let(:group) { create(:group, name: "group-to-test-epics-#{SecureRandom.hex(4)}") }
 
       before do
@@ -14,16 +12,10 @@ module QA
 
       it 'creates an epic', testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347980' do
         epic_title = 'Epic created via GUI'
-        if work_item_epics_enabled_for_group?(group)
-          EE::Resource::WorkItemEpic.fabricate_via_browser_ui! do |epic|
-            epic.group = group
-            epic.title = epic_title
-          end
-        else
-          EE::Resource::Epic.fabricate_via_browser_ui! do |epic|
-            epic.group = group
-            epic.title = epic_title
-          end
+
+        EE::Resource::WorkItemEpic.fabricate_via_browser_ui! do |epic|
+          epic.group = group
+          epic.title = epic_title
         end
 
         expect(page).to have_content(epic_title)
@@ -31,18 +23,11 @@ module QA
 
       it 'creates a confidential epic', testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347979' do
         epic_title = 'Confidential epic created via GUI'
-        if work_item_epics_enabled_for_group?(group)
-          EE::Resource::WorkItemEpic.fabricate_via_browser_ui! do |epic|
-            epic.group = group
-            epic.title = epic_title
-            epic.confidential = true
-          end
-        else
-          EE::Resource::Epic.fabricate_via_browser_ui! do |epic|
-            epic.group = group
-            epic.title = epic_title
-            epic.confidential = true
-          end
+
+        EE::Resource::WorkItemEpic.fabricate_via_browser_ui! do |epic|
+          epic.group = group
+          epic.title = epic_title
+          epic.confidential = true
         end
 
         expect(page).to have_content(epic_title)
@@ -51,7 +36,7 @@ module QA
 
       context 'when resources created via API' do
         let(:issue) { create_issue_resource }
-        let(:epic) { create_epic_resource(issue.project.group) }
+        let(:epic) { create(:work_item_epic, group: issue.project.group, title: 'Work Item Epic created via API') }
 
         context 'when visit epic first' do
           before do
@@ -60,72 +45,38 @@ module QA
 
           it 'adds/removes issue to/from epic',
             testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347983' do
-            if EE::Page::Group::WorkItem::Epic::Show.perform(&:work_item_epic?)
-              EE::Page::Group::WorkItem::Epic::Show.perform do |show|
-                show.add_child_issue_to_epic(issue)
+            EE::Page::Group::WorkItem::Epic::Show.perform do |show|
+              show.add_child_issue_to_epic(issue)
 
-                expect(show).to have_child_issue_item
+              expect(show).to have_child_issue_item
 
-                show.remove_child_issue_from_epic(issue)
+              show.remove_child_issue_from_epic(issue)
 
-                expect(show).to have_no_child_issue_item
-              end
-            else
-              EE::Page::Group::Epic::Show.perform do |show|
-                show.add_issue_to_epic(issue.web_url)
-
-                expect(show).to have_related_issue_item
-
-                show.remove_issue_from_epic
-
-                expect(show).to have_no_related_issue_item
-              end
+              expect(show).to have_no_child_issue_item
             end
           end
 
           it 'comments on epic', testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347982' do
             comment = 'My Epic Comment'
-            if EE::Page::Group::WorkItem::Epic::Show.perform(&:work_item_epic?)
-              EE::Page::Group::WorkItem::Epic::Show.perform do |show|
-                show.comment(comment)
+            EE::Page::Group::WorkItem::Epic::Show.perform do |show|
+              show.comment(comment)
 
-                expect(show).to have_comment(comment)
-              end
-            else
-              EE::Page::Group::Epic::Show.perform do |show|
-                show.comment(comment)
-
-                expect(show).to have_comment(comment)
-              end
+              expect(show).to have_comment(comment)
             end
           end
 
           it 'closes and reopens an epic',
             testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347984' do
-            if EE::Page::Group::WorkItem::Epic::Show.perform(&:work_item_epic?)
-              EE::Page::Group::WorkItem::Epic::Show.perform do |show|
-                show.close_epic
+            EE::Page::Group::WorkItem::Epic::Show.perform do |show|
+              show.close_epic
 
-                expect { show.has_system_note?('closed') }.to eventually_be_truthy.within(max_duration: 60),
-                  "Expected 'closed' system note but it did not appear."
+              expect { show.has_system_note?('closed') }.to eventually_be_truthy.within(max_duration: 60),
+                "Expected 'closed' system note but it did not appear."
 
-                show.reopen_epic
+              show.reopen_epic
 
-                expect { show.has_system_note?('opened') }.to eventually_be_truthy.within(max_duration: 60),
-                  "Expected 'opened' system note but it did not appear."
-              end
-            else
-              EE::Page::Group::Epic::Show.perform do |show|
-                show.close_epic
-
-                expect { show.has_system_note?('closed') }.to eventually_be_truthy.within(max_duration: 60),
-                  "Expected 'closed' system note but it did not appear."
-
-                show.reopen_epic
-
-                expect { show.has_system_note?('opened') }.to eventually_be_truthy.within(max_duration: 60),
-                  "Expected 'opened' system note but it did not appear."
-              end
+              expect { show.has_system_note?('opened') }.to eventually_be_truthy.within(max_duration: 60),
+                "Expected 'opened' system note but it did not appear."
             end
           end
         end
@@ -142,16 +93,9 @@ module QA
 
           epic.visit!
 
-          if EE::Page::Group::WorkItem::Epic::Show.perform(&:work_item_epic?)
-            EE::Page::Group::WorkItem::Epic::Show.perform do |show|
-              expect(show).to have_system_note(/(added)([\w\-# ]+)(issue)/)
-              expect(show).to have_system_note('removed')
-            end
-          else
-            EE::Page::Group::Epic::Show.perform do |show|
-              expect(show).to have_system_note('added')
-              expect(show).to have_system_note('removed')
-            end
+          EE::Page::Group::WorkItem::Epic::Show.perform do |show|
+            expect(show).to have_system_note(/(added)([\w\-# ]+)(issue)/)
+            expect(show).to have_system_note('removed')
           end
         end
 
@@ -159,17 +103,6 @@ module QA
           project = create(:project, :private, name: 'project-for-issues', description: 'project for adding issues')
 
           create(:issue, project: project)
-        end
-
-        def create_epic_resource(group)
-          begin
-            epic = create(:work_item_epic, group: group, title: 'Work Item Epic created via API')
-          rescue ArgumentError, NotImplementedError
-            epic = create(:epic, group: group, title: 'Epic created via API')
-          else
-            update_web_url(group, epic)
-          end
-          epic
         end
       end
     end

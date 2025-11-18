@@ -78,10 +78,6 @@ module QA
               def toggle_actions_dropdown
                 click_element('work-item-actions-dropdown')
               end
-
-              def work_item_epic?
-                has_element?('work-item-tree')
-              end
             end
           end
         end
