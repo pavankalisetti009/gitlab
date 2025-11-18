@@ -31,7 +31,13 @@ module Namespaces
         # for delete_service_account, the Users::DestroyService can
         # skip checks for delete_user
         options[:skip_authorization] = true
-        user.delete_async(deleted_by: current_user, params: options)
+
+        # Can't access current_user method from run_after_commit_or_now
+        current_user_var = current_user
+
+        user.run_after_commit_or_now do
+          delete_async(deleted_by: current_user_var, params: options)
+        end
       end
 
       def error_messages

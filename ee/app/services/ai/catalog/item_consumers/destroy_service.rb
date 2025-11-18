@@ -20,6 +20,9 @@ module Ai
             successfully_deleted, error_messages = remove_service_account_from_project
             raise ActiveRecord::Rollback unless successfully_deleted
 
+            successfully_deleted, error_messages = delete_service_account
+            raise ActiveRecord::Rollback unless successfully_deleted
+
             successfully_deleted, error_messages = delete_item_consumer
             raise ActiveRecord::Rollback unless successfully_deleted
           end
@@ -66,6 +69,18 @@ module Ai
           errors = member.errors.full_messages.map { |err| "Service account membership: #{err}" }
 
           [false, errors]
+        end
+
+        def delete_service_account
+          return [true, nil] unless item_consumer.service_account
+
+          response = ::Namespaces::ServiceAccounts::DeleteService
+            .new(current_user, item_consumer.service_account)
+            .execute
+
+          return [false, [response.message]] if response.error?
+
+          [true, nil]
         end
 
         def error_no_permissions

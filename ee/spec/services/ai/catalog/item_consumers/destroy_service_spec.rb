@@ -4,6 +4,7 @@ require 'spec_helper'
 require_relative './shared_examples/events_tracking'
 
 RSpec.describe Ai::Catalog::ItemConsumers::DestroyService, feature_category: :workflow_catalog do
+  using RSpec::Parameterized::TableSyntax
   include Ai::Catalog::TestHelpers
 
   it_behaves_like 'ItemConsumers::EventsTracking' do
@@ -17,7 +18,9 @@ RSpec.describe Ai::Catalog::ItemConsumers::DestroyService, feature_category: :wo
   describe '#execute' do
     let_it_be(:developer) { create(:user) }
     let_it_be(:maintainer) { create(:user) }
-    let_it_be(:group) { create(:group, developers: developer, maintainers: maintainer) }
+    let_it_be(:owner) { create(:user) }
+
+    let_it_be(:group) { create(:group, developers: developer, maintainers: maintainer, owners: owner) }
 
     let_it_be(:service_account) { create(:user, :service_account) }
     let_it_be(:service_account_user_details) do
@@ -50,7 +53,7 @@ RSpec.describe Ai::Catalog::ItemConsumers::DestroyService, feature_category: :wo
         audit_event = AuditEvent.last
 
         expect(audit_event).to have_attributes(
-          author: maintainer,
+          author: current_user,
           entity_type: entity_type,
           entity_id: entity_id,
           target_details: "#{item_consumer.item.name} (ID: #{item_consumer.item.id})"
@@ -175,14 +178,49 @@ RSpec.describe Ai::Catalog::ItemConsumers::DestroyService, feature_category: :wo
     end
 
     context 'with a group level item consumer' do
-      let_it_be_with_reload(:item_consumer) { create(:ai_catalog_item_consumer, group: group) }
+      let(:item_consumer) { parent_item_consumer }
+      let(:cannot_delete_consumer_message) { 'You have insufficient permissions to delete this item consumer' }
+      let(:cannot_delete_service_account_message) { 'User does not have permission to delete a service account.' }
+
+      context 'when user is owner with all permissions' do
+        let(:current_user) { owner }
+
+        before do
+          stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: true)
+          stub_licensed_features(service_accounts: true)
+        end
+
+        it 'deletes the item consumer' do
+          expect { response }.to change { Ai::Catalog::ItemConsumer.count }.by(-1)
+
+          expect(response).to be_success
+        end
+
+        it 'deletes the service account' do
+          expect(DeleteUserWorker)
+            .to receive(:perform_async)
+            .with(current_user.id, service_account.id, { skip_authorization: true })
+
+          response
+        end
+
+        it 'tracks internal event with group namespace' do
+          expect { response }.to trigger_internal_events('delete_ai_catalog_item_consumer').with(
+            user: owner,
+            project: nil,
+            namespace: group
+          )
+        end
+
+        it_behaves_like 'creates an audit event on deletion', entity_type: 'Group'
+      end
 
       context 'when user does not have permission' do
         let(:current_user) { developer }
 
         it 'returns an error' do
           expect(response).to be_error
-          expect(response.message).to contain_exactly('You have insufficient permissions to delete this item consumer')
+          expect(response.message).to contain_exactly(cannot_delete_consumer_message)
         end
 
         it 'does not track internal event' do
@@ -194,23 +232,39 @@ RSpec.describe Ai::Catalog::ItemConsumers::DestroyService, feature_category: :wo
         end
       end
 
-      context 'when user has permission' do
-        let(:current_user) { maintainer }
+      where(:user, :service_accounts_feature, :allow_create_service_accounts, :result, :message) do
+        ref(:developer)  | false | false | false  | ref(:cannot_delete_consumer_message)
+        ref(:maintainer) | false | false | false  | ref(:cannot_delete_service_account_message)
+        ref(:owner)      | false | false | false  | ref(:cannot_delete_service_account_message)
 
-        it 'deletes the item consumer' do
-          expect { response }.to change { Ai::Catalog::ItemConsumer.count }.by(-1)
-          expect(response).to be_success
-        end
+        ref(:developer)  | true | false | false   | ref(:cannot_delete_consumer_message)
+        ref(:maintainer) | true | false | false   | ref(:cannot_delete_service_account_message)
+        ref(:owner)      | true | false | false   | ref(:cannot_delete_service_account_message)
 
-        it 'tracks internal event with group namespace' do
-          expect { response }.to trigger_internal_events('delete_ai_catalog_item_consumer').with(
-            user: maintainer,
-            project: nil,
-            namespace: group
+        ref(:developer)  | false | true | false   | ref(:cannot_delete_consumer_message)
+        ref(:maintainer) | false | true | false   | ref(:cannot_delete_service_account_message)
+        ref(:owner)      | false | true | false   | ref(:cannot_delete_service_account_message)
+
+        ref(:developer)  | true | true  | false   | ref(:cannot_delete_consumer_message)
+        ref(:maintainer) | true | true  | false   | ref(:cannot_delete_service_account_message)
+        ref(:owner)      | true | true  | true    | nil
+      end
+
+      with_them do
+        let(:current_user) { user }
+
+        before do
+          stub_ee_application_setting(
+            allow_top_level_group_owners_to_create_service_accounts: allow_create_service_accounts
           )
+          stub_licensed_features(service_accounts: service_accounts_feature)
         end
 
-        it_behaves_like 'creates an audit event on deletion', entity_type: 'Group'
+        it 'returns appropriate result', :aggregate_failures do
+          expect(response.success?).to eq(result)
+
+          expect(response.message).to contain_exactly(message) if message
+        end
       end
     end
   end
