@@ -1,6 +1,6 @@
 import { __, sprintf } from '~/locale';
-import { nDaysBefore, getCurrentUtcDate, getDateInPast } from '~/lib/utils/datetime_utility';
-import { startOfTomorrow } from 'ee/analytics/dora/components/static_data/shared';
+import { nDaysBefore, getDateInPast } from '~/lib/utils/datetime_utility';
+import { startOfTomorrow, startOfToday } from 'ee/analytics/dora/components/static_data/shared';
 import {
   OPERATORS_IS,
   OPERATORS_IS_NOT,
@@ -13,7 +13,7 @@ import {
   TOKEN_TYPE_TARGET_BRANCH,
 } from '~/vue_shared/components/filtered_search_bar/constants';
 
-export const TODAY = getCurrentUtcDate();
+export const TODAY = startOfToday;
 export const SEVEN_DAYS_AGO = getDateInPast(TODAY, 7);
 
 export const DATE_RANGE_OPTION_TODAY = 'today';
@@ -50,31 +50,31 @@ export const DATE_RANGE_OPTIONS = {
   [DATE_RANGE_OPTION_LAST_365_DAYS]: {
     key: DATE_RANGE_OPTION_LAST_365_DAYS,
     text: sprintf(__('Last %{days} days'), { days: 365 }),
-    startDate: getDateInPast(TODAY, 365),
+    startDate: nDaysBefore(TODAY, 365, { utc: true }),
     endDate: TODAY,
   },
   [DATE_RANGE_OPTION_LAST_180_DAYS]: {
     key: DATE_RANGE_OPTION_LAST_180_DAYS,
     text: sprintf(__('Last %{days} days'), { days: 180 }),
-    startDate: getDateInPast(TODAY, 180),
+    startDate: nDaysBefore(TODAY, 180, { utc: true }),
     endDate: TODAY,
   },
   [DATE_RANGE_OPTION_LAST_90_DAYS]: {
     key: DATE_RANGE_OPTION_LAST_90_DAYS,
     text: sprintf(__('Last %{days} days'), { days: 90 }),
-    startDate: getDateInPast(TODAY, 90),
+    startDate: nDaysBefore(TODAY, 90, { utc: true }),
     endDate: TODAY,
   },
   [DATE_RANGE_OPTION_LAST_60_DAYS]: {
     key: DATE_RANGE_OPTION_LAST_60_DAYS,
     text: sprintf(__('Last %{days} days'), { days: 60 }),
-    startDate: getDateInPast(TODAY, 60),
+    startDate: nDaysBefore(TODAY, 60, { utc: true }),
     endDate: TODAY,
   },
   [DATE_RANGE_OPTION_LAST_30_DAYS]: {
     key: DATE_RANGE_OPTION_LAST_30_DAYS,
     text: sprintf(__('Last %{days} days'), { days: 30 }),
-    startDate: getDateInPast(TODAY, 30),
+    startDate: nDaysBefore(TODAY, 30, { utc: true }),
     endDate: TODAY,
   },
   [DATE_RANGE_OPTION_LAST_7_DAYS]: {
