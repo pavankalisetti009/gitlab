@@ -1,39 +1,19 @@
+#import "~/work_items/graphql/work_item_metadata.fragment.graphql"
+
 query workItemMetadataEE($fullPath: ID!) {
   namespace(fullPath: $fullPath) {
     id
     availableFeatures {
-      hasDesignManagementFeature @gl_introduced(version: "18.6.0")
-      hasIssueWeightsFeature
-      hasIterationsFeature
-      hasOkrsFeature
-      hasSubepicsFeature
-      hasIssuableHealthStatusFeature
-      hasEpicsFeature
-      hasScopedLabelsFeature
-      hasQualityManagementFeature
-      hasLinkedItemsEpicsFeature
-      hasIssueDateFilterFeature
+      ...WorkItemAvailableFeatures
       hasWorkItemStatusFeature
+      hasDesignManagementFeature @gl_introduced(version: "18.6.0")
     }
     linkPaths {
-      issuesList
-      contributionGuidePath
+      ...WorkItemLinkPaths
       epicsList
       groupIssues
       labelsFetch
-      labelsManage
-      newProject
-      register
-      reportAbuse
-      signIn
       issuesSettings
-      userExportEmail
-      emailsHelpPagePath
-      markdownHelpPath
-      quickActionsHelpPath
-      ... on ProjectNamespaceLinks {
-        newWorkItemEmailAddress
-      }
     }
     userPermissions {
       createWorkItem
