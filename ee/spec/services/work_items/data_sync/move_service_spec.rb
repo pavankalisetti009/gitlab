@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe WorkItems::DataSync::MoveService, feature_category: :team_planning do
-  let_it_be(:support_bot) { Users::Internal.support_bot }
+  let_it_be(:support_bot) { create(:support_bot) }
   let_it_be(:parent_group) { create(:group) }
   let_it_be(:group) { create(:group) }
   let_it_be(:target_group) { create(:group, parent: parent_group) }

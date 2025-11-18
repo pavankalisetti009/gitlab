@@ -9,7 +9,6 @@ RSpec.describe IssuePolicy, feature_category: :team_planning do
   let_it_be(:planner) { create(:user) }
   let_it_be(:reporter) { create(:user) }
   let_it_be(:owner) { create(:user) }
-  let_it_be(:support_bot) { Users::Internal.support_bot }
   let_it_be_with_refind(:project) { create(:project, :private) }
   let_it_be_with_refind(:issue) { create(:issue, project: project) }
 
@@ -29,6 +28,8 @@ RSpec.describe IssuePolicy, feature_category: :team_planning do
       g.add_owner(owner)
     end
   end
+
+  let_it_be(:support_bot) { create(:support_bot) }
 
   subject { described_class.new(user, issue) }
 

@@ -7,8 +7,7 @@ RSpec.describe 'Rolled up weight updates on work item changes', :aggregate_failu
   include WorkhorseHelpers
 
   # Ensure support bot user is created so it doesn't get created within a transaction
-  let_it_be(:support_bot) { Users::Internal.support_bot }
-
+  let_it_be(:support_bot) { create(:support_bot) }
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, group: group) }
   let_it_be(:user) { create(:user, developer_of: project) }
