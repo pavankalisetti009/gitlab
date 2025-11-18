@@ -52,6 +52,7 @@ export default {
         return {
           projectPath: this.projectPath,
           enabled: this.enabled,
+          allAvailable: this.enabled,
           projectId: convertToGraphQLId(TYPENAME_PROJECT, this.projectId),
           ...this.paginationVariables,
         };

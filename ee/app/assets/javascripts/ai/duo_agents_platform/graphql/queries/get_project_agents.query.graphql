@@ -5,6 +5,7 @@
 query projectAiCatalogAgents(
   $projectPath: ID!
   $enabled: Boolean = true
+  $allAvailable: Boolean = false
   $projectId: ProjectID!
   $before: String
   $after: String
@@ -17,6 +18,7 @@ query projectAiCatalogAgents(
     aiCatalogItems(
       itemTypes: [AGENT]
       enabled: $enabled
+      allAvailable: $allAvailable
       before: $before
       after: $after
       first: $first
