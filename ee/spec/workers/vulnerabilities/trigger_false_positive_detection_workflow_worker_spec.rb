@@ -5,15 +5,16 @@ require 'spec_helper'
 RSpec.describe Vulnerabilities::TriggerFalsePositiveDetectionWorkflowWorker, feature_category: :vulnerability_management do
   let_it_be(:project) { create(:project, :repository) }
   let_it_be(:user) { create(:user, developer_of: project) }
-  let_it_be(:vulnerability) { create(:vulnerability, project: project, author: user) }
+  let_it_be(:vulnerability) { create(:vulnerability, :with_finding, project: project, author: user) }
 
   let(:worker) { described_class.new }
   let(:vulnerability_id) { vulnerability.id }
   let(:workflow_definition) { ::Ai::DuoWorkflows::WorkflowDefinition['sast_fp_detection/v1'] }
 
   describe '#perform' do
+    let(:workflow) { create(:duo_workflows_workflow, user: user, project: project, environment: :web) }
     let(:workflow_service) { instance_double(::Ai::DuoWorkflows::CreateAndStartWorkflowService) }
-    let(:service_result) { ServiceResponse.success(payload: { workflow_id: 123, workload_id: 456 }) }
+    let(:service_result) { ServiceResponse.success(payload: { workflow_id: workflow.id, workload_id: 456 }) }
 
     before do
       allow(::Ai::DuoWorkflows::CreateAndStartWorkflowService).to receive(:new).and_return(workflow_service)
@@ -51,6 +52,45 @@ RSpec.describe Vulnerabilities::TriggerFalsePositiveDetectionWorkflowWorker, fea
           worker.perform(vulnerability_id)
         end
 
+        context 'when workflow service succeeds' do
+          it 'creates a triggered workflow record with correct attributes' do
+            expect { worker.perform(vulnerability_id) }
+              .to change { ::Vulnerabilities::TriggeredWorkflow.count }.by(1)
+
+            triggered_workflow = ::Vulnerabilities::TriggeredWorkflow.last
+            expect(triggered_workflow.vulnerability_occurrence).to eq(vulnerability.finding)
+            expect(triggered_workflow.workflow_id).to eq(workflow.id)
+            expect(triggered_workflow.workflow_name).to eq('sast_fp_detection')
+          end
+
+          it 'does not log any errors' do
+            expect(Gitlab::AppLogger).not_to receive(:error)
+
+            worker.perform(vulnerability_id)
+          end
+
+          context 'when creation of triggered workflow fails' do
+            let_it_be(:other_project) { create(:project, :repository) }
+            let(:other_workflow) do
+              create(:duo_workflows_workflow, user: user, project: other_project, environment: :web)
+            end
+
+            let(:service_result) do
+              ServiceResponse.success(payload: { workflow_id: other_workflow.id, workload_id: 456 })
+            end
+
+            it 'logs error message and sends to Sentry' do
+              expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
+                an_instance_of(ActiveRecord::RecordInvalid),
+                vulnerability_id: vulnerability.id,
+                workflow_id: other_workflow.id
+              )
+
+              worker.perform(vulnerability_id)
+            end
+          end
+        end
+
         context 'when workflow service fails' do
           let(:service_result) do
             ServiceResponse.error(message: 'Workflow creation failed', reason: :invalid_params)
@@ -67,6 +107,14 @@ RSpec.describe Vulnerabilities::TriggerFalsePositiveDetectionWorkflowWorker, fea
 
             expect { worker.perform(vulnerability_id) }
               .to raise_error(Vulnerabilities::TriggerFalsePositiveDetectionWorkflowWorker::StartWorkflowServiceError)
+          end
+
+          it 'does not create a triggered workflow record' do
+            expect do
+              expect { worker.perform(vulnerability.id) }.to raise_error(
+                Vulnerabilities::TriggerFalsePositiveDetectionWorkflowWorker::StartWorkflowServiceError
+              )
+            end.not_to change { ::Vulnerabilities::TriggeredWorkflow.count }
           end
         end
       end
