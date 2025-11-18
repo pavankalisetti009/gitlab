@@ -9,7 +9,7 @@ module EE
       DORMANT_REVIEW_PERIOD = 18.hours.ago
 
       cascading_attr :duo_features_enabled, :model_prompt_cache_enabled, :auto_duo_code_review_enabled,
-        :duo_remote_flows_enabled
+        :duo_remote_flows_enabled, :duo_foundational_flows_enabled
 
       scope :requiring_dormant_member_review, ->(limit) do
         # look for settings that have not been reviewed in more than
@@ -171,6 +171,19 @@ module EE
                                              end
       end
 
+      def duo_foundational_flows_availability
+        duo_foundational_flows_enabled
+      end
+
+      def duo_foundational_flows_availability=(value)
+        self.duo_foundational_flows_enabled = value
+        self.lock_duo_foundational_flows_enabled = if value
+                                                     false
+                                                   else
+                                                     true
+                                                   end
+      end
+
       def duo_availability
         if duo_features_enabled && !duo_features_enabled_locked?(include_self: true)
           :default_on
@@ -286,6 +299,8 @@ module EE
         allow_enterprise_bypass_placeholder_confirmation
         web_based_commit_signing_enabled
         lock_web_based_commit_signing_enabled
+        duo_foundational_flows_enabled
+        lock_duo_foundational_flows_enabled
       ].freeze
 
       override :allowed_namespace_settings_params

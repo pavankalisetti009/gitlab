@@ -367,6 +367,14 @@ RSpec.describe ApplicationSettings::UpdateService, feature_category: :shared do
       it_behaves_like 'when updating duo settings', :duo_remote_flows_enabled, false
     end
 
+    context 'when updating duo_foundational_flows_enabled' do
+      before do
+        setting.update!(duo_foundational_flows_enabled: false)
+      end
+
+      it_behaves_like 'when updating duo settings', :duo_foundational_flows_enabled, true
+    end
+
     context 'when updating auto_duo_code_review_enabled' do
       let(:params) { { auto_duo_code_review_enabled: true } }
       let(:service) { described_class.new(setting, user, params) }

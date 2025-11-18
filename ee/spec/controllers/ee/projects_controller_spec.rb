@@ -862,6 +862,63 @@ RSpec.describe ProjectsController, feature_category: :groups_and_projects do
         end
       end
     end
+
+    context 'when duo_foundational_flows_enabled param is specified' do
+      let(:params) { { project_setting_attributes: { duo_foundational_flows_enabled: true } } }
+
+      let(:request) do
+        put :update, params: { namespace_id: project.namespace, id: project, project: params }
+      end
+
+      context 'without licensed AI workflows feature' do
+        before do
+          stub_licensed_features(ai_workflows: false)
+        end
+
+        it 'does not update the setting' do
+          expect { request }.not_to change { project.reload.project_setting.duo_foundational_flows_enabled }
+        end
+      end
+
+      context 'with licensed AI workflows feature' do
+        before do
+          stub_licensed_features(ai_workflows: true)
+          project.project_setting.update!(duo_foundational_flows_enabled: false)
+        end
+
+        context 'when duo_remote_flows_enabled is false' do
+          before do
+            project.project_setting.update!(duo_remote_flows_enabled: false)
+          end
+
+          it 'does not update the setting' do
+            expect { request }.not_to change { project.reload.project_setting.duo_foundational_flows_enabled }
+          end
+        end
+
+        context 'when duo_remote_flows_enabled is true' do
+          before do
+            project.project_setting.update!(duo_remote_flows_enabled: true)
+          end
+
+          context 'without permissions' do
+            before do
+              allow(controller).to receive(:can?).with(user, :read_project, project).and_return(false)
+            end
+
+            it 'does not update the setting' do
+              expect { request }.not_to change { project.reload.project_setting.duo_foundational_flows_enabled }
+            end
+          end
+
+          it 'updates duo_foundational_flows_enabled' do
+            expect { request }
+              .to change { project.reload.project_setting.duo_foundational_flows_enabled }
+                    .from(false).to(true)
+          end
+        end
+      end
+    end
   end
 
   describe '#download_export', feature_category: :importers do

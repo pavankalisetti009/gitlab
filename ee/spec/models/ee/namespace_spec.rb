@@ -64,6 +64,10 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
   it { is_expected.to delegate_method(:foundational_agents_default_enabled).to(:ai_settings).allow_nil }
   it { is_expected.to delegate_method(:foundational_agents_default_enabled).to(:ai_settings).with_arguments(:args).allow_nil }
   it { is_expected.to accept_nested_attributes_for(:ai_settings).update_only(true) }
+  it { is_expected.to delegate_method(:duo_remote_flows_enabled).to(:namespace_settings) }
+  it { is_expected.to delegate_method(:lock_duo_remote_flows_enabled).to(:namespace_settings) }
+  it { is_expected.to delegate_method(:duo_foundational_flows_enabled).to(:namespace_settings) }
+  it { is_expected.to delegate_method(:lock_duo_foundational_flows_enabled).to(:namespace_settings) }
 
   shared_examples 'plan helper' do |namespace_plan|
     let(:namespace) { create(:namespace_with_plan, plan: "#{plan_name}_plan") }

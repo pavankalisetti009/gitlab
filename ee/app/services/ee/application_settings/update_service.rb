@@ -96,7 +96,8 @@ module EE
 
       def cascade_duo_features_settings
         previous_changes = application_setting.previous_changes
-        cascading_ai_settings = [:duo_features_enabled, :duo_remote_flows_enabled, :auto_duo_code_review_enabled]
+        cascading_ai_settings = [:duo_features_enabled, :duo_remote_flows_enabled, :auto_duo_code_review_enabled,
+          :duo_foundational_flows_enabled]
 
         # Collect all changed AI settings and their values
         changed_ai_settings = cascading_ai_settings.filter_map do |setting|

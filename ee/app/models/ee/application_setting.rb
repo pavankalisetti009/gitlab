@@ -371,7 +371,8 @@ module EE
         allow_nil: false,
         inclusion: { in: [true, false], message: N_('must be a boolean value') }
 
-      validates :auto_duo_code_review_enabled, :duo_remote_flows_enabled, inclusion: { in: [true, false] }
+      validates :auto_duo_code_review_enabled, :duo_remote_flows_enabled, :duo_foundational_flows_enabled,
+        inclusion: { in: [true, false] }
 
       after_commit :update_personal_access_tokens_lifetime, if: :saved_change_to_max_personal_access_token_lifetime?
       after_commit :trigger_clickhouse_for_analytics_enabled_event
@@ -718,6 +719,20 @@ module EE
                                            else
                                              true
                                            end
+    end
+
+    def duo_foundational_flows_availability
+      duo_foundational_flows_enabled
+    end
+
+    def duo_foundational_flows_availability=(value)
+      self.duo_foundational_flows_enabled = value
+
+      self.lock_duo_foundational_flows_enabled = if value
+                                                   false
+                                                 else
+                                                   true
+                                                 end
     end
 
     def duo_never_on?

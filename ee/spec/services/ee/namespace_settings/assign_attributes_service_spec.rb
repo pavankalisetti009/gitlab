@@ -230,4 +230,52 @@ RSpec.describe EE::NamespaceSettings::AssignAttributesService, feature_category:
       it_behaves_like 'ignores web-based commit signing parameters'
     end
   end
+
+  describe 'validating settings param for admin' do
+    using RSpec::Parameterized::TableSyntax
+
+    where(:setting_key, :setting_changes_from, :setting_changes_to) do
+      :duo_features_enabled | false | true
+      :lock_duo_features_enabled | false | true
+      :duo_remote_flows_enabled | true | false
+      :lock_duo_remote_flows_enabled | false | true
+      :duo_foundational_flows_enabled | false | true
+      :lock_duo_foundational_flows_enabled | false | true
+    end
+
+    with_them do
+      let(:params) do
+        { setting_key => setting_changes_to }
+      end
+
+      before do
+        group.namespace_settings.update_column(setting_key, setting_changes_from)
+      end
+
+      context 'when user is not a group admin' do
+        it 'does not change settings' do
+          group.add_developer(user)
+
+          expect { update_settings }.not_to change { group.namespace_settings.public_send(setting_key) }
+        end
+
+        it 'returns the group admin error' do
+          update_settings
+
+          expect(group.namespace_settings.errors.messages[setting_key])
+            .to include('can only be changed by a group admin.')
+        end
+      end
+
+      context 'when user is a group admin' do
+        it 'changes settings' do
+          group.add_owner(user)
+
+          expect { update_settings }
+            .to change { group.namespace_settings.public_send(setting_key) }
+                  .from(setting_changes_from).to(setting_changes_to)
+        end
+      end
+    end
+  end
 end

@@ -697,6 +697,27 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       end
     end
 
+    describe '#duo_foundational_flows_availability=' do
+      using RSpec::Parameterized::TableSyntax
+
+      where(:duo_foundational_flows_availability, :duo_foundational_flows_enabled_expectation,
+        :lock_duo_foundational_flows_enabled_expectation) do
+        true  | true  | false
+        false | false | true
+      end
+
+      with_them do
+        before do
+          setting.duo_foundational_flows_availability = duo_foundational_flows_availability
+        end
+
+        it 'returns the expected response' do
+          expect(setting.duo_foundational_flows_enabled).to be duo_foundational_flows_enabled_expectation
+          expect(setting.lock_duo_foundational_flows_enabled).to be lock_duo_foundational_flows_enabled_expectation
+        end
+      end
+    end
+
     describe '#enabled_expanded_logging' do
       it "updates ::Ai::Settings.instance.enabled_instance_verbose_ai_logs" do
         ::Ai::Setting.instance.update!(enabled_instance_verbose_ai_logs: false)

@@ -324,6 +324,8 @@ RSpec.describe Group, feature_category: :groups_and_projects do
     it { is_expected.to delegate_method(:duo_availability=).to(:namespace_settings).with_arguments(:args) }
     it { is_expected.to delegate_method(:duo_remote_flows_enabled).to(:namespace_settings) }
     it { is_expected.to delegate_method(:lock_duo_remote_flows_enabled).to(:namespace_settings).with_arguments(:args) }
+    it { is_expected.to delegate_method(:duo_foundational_flows_availability).to(:namespace_settings) }
+    it { is_expected.to delegate_method(:duo_foundational_flows_availability=).to(:namespace_settings).with_arguments(:args) }
     it { is_expected.to delegate_method(:experiment_settings_allowed?).to(:namespace_settings) }
     it { is_expected.to delegate_method(:user_cap_enabled?).to(:namespace_settings) }
     it { is_expected.to delegate_method(:require_dpop_for_manage_api_endpoints?).to(:namespace_settings) }

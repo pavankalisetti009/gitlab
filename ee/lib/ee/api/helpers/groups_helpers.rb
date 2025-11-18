@@ -16,6 +16,7 @@ module EE
             optional :wiki_access_level, type: String, values: %w[disabled private enabled], desc: 'Wiki access level. One of `disabled`, `private` or `enabled`'
             optional :duo_availability, type: String, values: %w[default_on default_off never_on], desc: 'Duo availability. One of `default_on`, `default_off` or `never_on`'
             optional :duo_remote_flows_availability, type: ::Grape::API::Boolean, desc: 'Enable GitLab Duo remote flows for this group'
+            optional :duo_foundational_flows_availability, type: ::Grape::API::Boolean, desc: 'Enable GitLab foundational Duo flows for this group'
             optional :amazon_q_auto_review_enabled, type: ::Grape::API::Boolean, desc: 'Enable Amazon Q auto review for merge request'
             optional :experiment_features_enabled, type: ::Grape::API::Boolean, desc: 'Enable experiment features for this group'
             optional :model_prompt_cache_enabled, type: ::Grape::API::Boolean, desc: 'Enable model prompt cache for this group'

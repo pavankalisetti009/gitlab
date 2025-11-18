@@ -601,6 +601,11 @@ RSpec.describe Groups::UpdateService, '#execute', feature_category: :groups_and_
         group.add_owner(user)
       end
 
+      before do
+        initial_value = !setting_val
+        group.namespace_settings.update!(setting_key => initial_value)
+      end
+
       it 'changes settings' do
         expect { update_group(group, user, params) }
           .to(change { group.namespace_settings.public_send(setting_key) }.to(setting_val))
@@ -626,6 +631,10 @@ RSpec.describe Groups::UpdateService, '#execute', feature_category: :groups_and_
 
   context 'when updating duo_remote_flows_enabled' do
     it_behaves_like 'when updating duo settings', :duo_remote_flows_enabled, false
+  end
+
+  context 'when updating duo_foundational_flows_enabled' do
+    it_behaves_like 'when updating duo settings', :duo_foundational_flows_enabled, false
   end
 
   context 'when updating lock_duo_features_enabled' do

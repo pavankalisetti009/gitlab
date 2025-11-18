@@ -302,7 +302,9 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
       namespace_settings.update!(
         duo_availability: 'default_on',
         experiment_features_enabled: true,
-        duo_core_features_enabled: true
+        duo_core_features_enabled: true,
+        duo_remote_flows_enabled: true,
+        duo_foundational_flows_enabled: true
       )
 
       expect(helper.duo_home_app_data(group)).to eq({
@@ -310,6 +312,7 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
         duo_availability: 'default_on',
         experiment_features_enabled: 'true',
         prompt_cache_enabled: 'true',
+        duo_foundational_flows_availability: 'true',
         duo_remote_flows_availability: 'true',
         duo_configuration_path: '/groups/test_group/-/settings/gitlab_duo/configuration',
         code_suggestions: 'data',
