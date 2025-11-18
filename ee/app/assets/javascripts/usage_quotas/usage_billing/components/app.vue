@@ -56,6 +56,9 @@ export default {
     };
   },
   computed: {
+    isUsageBillingDisabled() {
+      return this.subscriptionUsage?.enabled === false;
+    },
     subscriptionsUrl() {
       return gon.subscriptions_url;
     },
@@ -171,8 +174,22 @@ export default {
         <div class="gl-animate-skeleton-loader gl-h-5 !gl-max-w-full gl-rounded-base"></div>
       </div>
     </div>
+
+    <gl-alert
+      v-else-if="isUsageBillingDisabled"
+      data-testid="usage-billing-disabled-alert"
+      variant="warning"
+      class="gl-my-3"
+      :dismissible="false"
+    >
+      {{ s__('UsageBilling|Usage Billing is disabled') }}
+    </gl-alert>
+
     <template v-else>
-      <section class="gl-flex gl-flex-col gl-gap-5 @md/panel:gl-flex-row">
+      <section
+        class="gl-flex gl-flex-col gl-gap-5 @md/panel:gl-flex-row"
+        data-testid="usage-billing-cards-row"
+      >
         <current-usage-card
           v-if="poolIsAvailable"
           :pool-total-credits="poolTotalCredits"

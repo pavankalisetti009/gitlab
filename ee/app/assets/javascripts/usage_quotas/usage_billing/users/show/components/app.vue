@@ -66,6 +66,9 @@ export default {
     },
   },
   computed: {
+    isUsageBillingDisabled() {
+      return this.subscriptionUsage?.enabled === false;
+    },
     user() {
       return this.subscriptionUsage?.usersUsage?.users?.nodes?.[0];
     },
@@ -119,8 +122,18 @@ export default {
       <gl-loading-icon />
     </div>
 
+    <gl-alert
+      v-else-if="isUsageBillingDisabled"
+      data-testid="usage-billing-disabled-alert"
+      variant="warning"
+      class="gl-my-3"
+      :dismissible="false"
+    >
+      {{ s__('UsageBilling|Usage Billing is disabled') }}
+    </gl-alert>
+
     <template v-else>
-      <header class="gl-my-5 gl-flex gl-flex-col gl-gap-3">
+      <header class="gl-my-5 gl-flex gl-flex-col gl-gap-3" data-testid="usage-billing-user-header">
         <div
           class="gl-mb-2 gl-flex gl-flex-col gl-items-start gl-justify-between gl-gap-3 @md/panel:gl-flex-row"
         >
@@ -150,7 +163,10 @@ export default {
         </div>
       </header>
 
-      <div class="gl-my-5 gl-flex gl-flex-col gl-gap-5 @md/panel:gl-flex-row">
+      <div
+        class="gl-my-5 gl-flex gl-flex-col gl-gap-5 @md/panel:gl-flex-row"
+        data-testid="usage-billing-user-cards-row"
+      >
         <gl-card
           data-testid="included-credits-card"
           class="gl-flex-1 gl-bg-transparent"
@@ -198,7 +214,7 @@ export default {
         </gl-card>
       </div>
 
-      <section>
+      <section data-testid="usage-billing-user-events-list">
         <events-table :events="events" />
 
         <div v-if="pageInfo" class="gl-mt-5 gl-flex gl-justify-center">

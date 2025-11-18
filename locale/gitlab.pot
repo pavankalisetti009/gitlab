@@ -71149,6 +71149,9 @@ msgstr ""
 msgid "UsageBilling|Unlock more discounts for your GitLab usage. Pool GitLab Credits across your namespace for flexibility and predictable monthly costs. %{linkStart}GitLab Credit pricing%{linkEnd}."
 msgstr ""
 
+msgid "UsageBilling|Usage Billing is disabled"
+msgstr ""
+
 msgid "UsageBilling|Usage period:"
 msgstr ""
 
