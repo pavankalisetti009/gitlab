@@ -14,6 +14,8 @@ module Security
     has_many :scan_profile_projects, class_name: 'Security::ScanProfileProject',
       foreign_key: :security_scan_profile_id, inverse_of: :scan_profile
     has_many :projects, through: :scan_profile_projects
+    has_many :scan_profile_triggers, class_name: 'Security::ScanProfileTrigger',
+      foreign_key: :security_scan_profile_id, inverse_of: :scan_profile
 
     validates :scan_type, presence: true
     validates :gitlab_recommended, inclusion: { in: [true, false] }

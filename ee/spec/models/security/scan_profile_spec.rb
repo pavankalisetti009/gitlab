@@ -54,7 +54,7 @@ RSpec.describe Security::ScanProfile, feature_category: :security_asset_inventor
 
   context 'with loose foreign key on security_scan_profiles.namespace_id' do
     it_behaves_like 'cleanup by a loose foreign key' do
-      let_it_be(:parent) { create(:group) }
+      let_it_be(:parent) { root_level_group }
       let_it_be(:model) { create(:security_scan_profile, namespace: parent) }
     end
   end

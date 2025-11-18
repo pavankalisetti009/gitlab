@@ -20,7 +20,7 @@ RSpec.describe Security::ScanProfileProject, feature_category: :security_asset_i
 
   context 'with loose foreign key on security_scan_profiles_projects.project_id' do
     it_behaves_like 'cleanup by a loose foreign key' do
-      let_it_be(:parent) { create(:project) }
+      let_it_be(:parent) { project }
       let_it_be(:model) { create(:security_scan_profile_project, scan_profile: scan_profile, project: parent) }
     end
   end
