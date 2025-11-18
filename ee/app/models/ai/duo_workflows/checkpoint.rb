@@ -41,6 +41,14 @@ module Ai
         end
       end
 
+      def self.earliest
+        order(thread_ts: :asc).first
+      end
+
+      def self.latest
+        order(thread_ts: :desc).first
+      end
+
       def to_global_id(_options = {})
         GlobalID.new(::Gitlab::GlobalId.build(self, id: id.first))
       end

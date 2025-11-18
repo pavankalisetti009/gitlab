@@ -3,18 +3,19 @@
 require 'spec_helper'
 
 RSpec.describe Ai::DuoWorkflows::Checkpoint, feature_category: :duo_agent_platform do
-  def microsecond_precision_timestamp(time)
+  def ms_timestamp(time)
     time.change(nsec: (time.nsec / 1000) * 1000)
   end
 
+  let_it_be(:ts_first) { '619a978e-9f3a-7174-9d92-b51f500b8a5b' }
+  let_it_be(:ts_second) { '719a978e-9f3a-7174-9d92-b51f500b8a5b' }
+
   let_it_be(:checkpoint1) do
-    timestamp = microsecond_precision_timestamp(3.days.ago)
-    create(:duo_workflows_checkpoint, thread_ts: timestamp.to_s, created_at: timestamp)
+    create(:duo_workflows_checkpoint, thread_ts: ts_first, created_at: ms_timestamp(3.days.ago))
   end
 
   let_it_be(:checkpoint2) do
-    timestamp = microsecond_precision_timestamp(2.days.ago)
-    create(:duo_workflows_checkpoint, thread_ts: timestamp.to_s, created_at: timestamp)
+    create(:duo_workflows_checkpoint, thread_ts: ts_second, created_at: ms_timestamp(2.days.ago))
   end
 
   let_it_be(:write1) do
@@ -56,6 +57,42 @@ RSpec.describe Ai::DuoWorkflows::Checkpoint, feature_category: :duo_agent_platfo
 
       expect(result.to_a).to match_array([checkpoint2, checkpoint1])
       expect(result[0].association(:checkpoint_writes)).to be_loaded
+    end
+  end
+
+  describe '.earliest' do
+    let_it_be(:ts_earliest) { '019a978e-9f3a-7174-9d92-b51f500b8a5b' }
+    let_it_be(:checkpoint3) do
+      create(:duo_workflows_checkpoint, thread_ts: ts_earliest, created_at: ms_timestamp(2.hours.ago))
+    end
+
+    it 'returns the checkpoint with the earliest thread_ts' do
+      expect(described_class.earliest).to eq(checkpoint3)
+    end
+
+    context 'when there are no checkpoints' do
+      it 'returns nil' do
+        described_class.delete_all
+        expect(described_class.earliest).to be_nil
+      end
+    end
+  end
+
+  describe '.latest' do
+    let_it_be(:ts_latest) { '919a978e-9f3a-7174-9d92-b51f500b8a5b' }
+    let_it_be(:checkpoint3) do
+      create(:duo_workflows_checkpoint, thread_ts: ts_latest, created_at: ms_timestamp(7.days.ago))
+    end
+
+    it 'returns the checkpoint with the latest thread_ts' do
+      expect(described_class.latest).to eq(checkpoint3)
+    end
+
+    context 'when there are no checkpoints' do
+      it 'returns nil' do
+        described_class.delete_all
+        expect(described_class.latest).to be_nil
+      end
     end
   end
 
