@@ -517,6 +517,39 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
       end
     end
 
+    describe '.namespace_settings_with_experiment_duo_features_enabled' do
+      subject { described_class.namespace_settings_with_experiment_duo_features_enabled }
+
+      let_it_be_with_reload(:group) { create(:group) }
+
+      where(:experiment_features_enabled, :duo_features_enabled, :included_in_results) do
+        true  | true  | true
+        true  | false | false
+        false | true  | false
+        false | false | false
+        true  | nil   | false
+        false | nil   | false
+      end
+
+      with_them do
+        before do
+          allow(group.namespace_settings).to receive(:experiment_settings_allowed?).and_return(true)
+          group.namespace_settings.update!(
+            experiment_features_enabled: experiment_features_enabled,
+            duo_features_enabled: duo_features_enabled
+          )
+        end
+
+        it 'returns the correct namespaces' do
+          if included_in_results
+            is_expected.to contain_exactly(group)
+          else
+            is_expected.to be_empty
+          end
+        end
+      end
+    end
+
     describe '.with_ai_supported_plan', :saas do
       subject { described_class.with_ai_supported_plan }
 

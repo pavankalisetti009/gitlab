@@ -21,7 +21,8 @@ module EE
             def instance_allows_experiment_and_beta_features
               return true if ::Gitlab::Saas.feature_available?(:gitlab_duo_saas_only)
 
-              ::Gitlab::CurrentSettings.instance_level_ai_beta_features_enabled?
+              ::Gitlab::CurrentSettings.duo_features_enabled? &&
+                ::Gitlab::CurrentSettings.instance_level_ai_beta_features_enabled?
             end
 
             def gitlab_com_namespace_enables_experiment_and_beta_features

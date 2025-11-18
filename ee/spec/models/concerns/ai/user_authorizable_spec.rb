@@ -597,13 +597,17 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
     end
 
     with_them do
-      context 'when member of the root group' do
+      context 'when user is member of the group' do
         before do
           group.add_guest(user)
         end
 
         context 'when ai features are enabled' do
           include_context 'with ai features enabled for group'
+
+          before do
+            group.namespace_settings.update!(duo_features_enabled: true)
+          end
 
           it { is_expected.to eq(result) }
 
@@ -628,54 +632,23 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
       end
     end
 
-    context 'when member of a sub-group only' do
+    context 'when user is member of eligible group' do
       include_context 'with ai features enabled for group'
 
-      context 'with eligible group' do
+      context 'with ultimate group' do
         let(:group) { ultimate_group }
 
-        before_all do
-          ultimate_sub_group.add_guest(user)
+        before do
+          group.namespace_settings.update!(duo_features_enabled: true)
+          group.add_guest(user)
         end
 
         it { is_expected.to be(true) }
-      end
-
-      context 'with not eligible group' do
-        let(:group) { bronze_group }
-
-        before_all do
-          bronze_sub_group.add_guest(user)
-        end
-
-        it { is_expected.to be(false) }
       end
     end
 
-    context 'when member of a project only' do
-      include_context 'with ai features enabled for group'
-
-      context 'with eligible group' do
-        let(:group) { ultimate_group }
-        let_it_be(:project) { create(:project, group: ultimate_group) }
-
-        before_all do
-          project.add_guest(user)
-        end
-
-        it { is_expected.to be(true) }
-      end
-
-      context 'with not eligible group' do
-        let(:group) { bronze_group }
-        let_it_be(:project) { create(:project, group: bronze_group) }
-
-        before_all do
-          project.add_guest(user)
-        end
-
-        it { is_expected.to be(false) }
-      end
+    context 'when user is not member of any group' do
+      it { is_expected.to be(false) }
     end
   end
 

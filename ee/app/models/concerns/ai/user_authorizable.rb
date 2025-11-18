@@ -109,7 +109,10 @@ module Ai
           ['users', id, GROUP_WITH_MCP_SERVER_ENABLED_CACHE_KEY],
           expires_in: GROUP_WITH_MCP_SERVER_ENABLED_CACHE_PERIOD
         ) do
-          member_namespaces.namespace_settings_with_ai_features_enabled.with_ai_supported_plan(:mcp_server).any?
+          root_groups = Group.by_id(authorized_root_ancestor_ids)
+          root_groups.namespace_settings_with_experiment_duo_features_enabled
+            .with_ai_supported_plan(:mcp_server)
+            .any?
         end
       end
 
