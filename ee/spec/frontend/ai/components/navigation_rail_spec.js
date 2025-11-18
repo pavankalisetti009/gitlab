@@ -112,6 +112,15 @@ describe('NavigationRail', () => {
         ${'suggestions'} | ${findSuggestionsToggle}
       `('sets aria-disabled on $buttonName button', ({ finder }) => {
         expect(finder().attributes('aria-disabled')).toBe('true');
+      });
+
+      it.each`
+        buttonName       | finder
+        ${'chat'}        | ${findChatToggle}
+        ${'history'}     | ${findHistoryToggle}
+        ${'sessions'}    | ${findSessionsToggle}
+        ${'suggestions'} | ${findSuggestionsToggle}
+      `('applies opacity class on $buttonName button', ({ finder }) => {
         expect(finder().classes()).toContain('gl-opacity-5');
       });
 

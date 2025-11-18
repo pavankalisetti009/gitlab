@@ -104,11 +104,27 @@ export default {
     aria-orientation="vertical"
   >
     <gl-button
+      v-gl-tooltip.left
+      icon="pencil-square"
+      class="!gl-rounded-full"
+      category="primary"
+      variant="default"
+      :aria-selected="activeTab === 'new'"
+      :aria-expanded="isExpanded"
+      :aria-label="$options.i18n.newLabel"
+      :title="isChatDisabled ? chatDisabledTooltip : $options.i18n.newLabel"
+      role="tab"
+      :aria-disabled="isChatDisabled"
+      data-testid="ai-new-toggle"
+      @mouseout="hideTooltips"
+      @click="toggleTab('new')"
+    />
+    <gl-button
       v-gl-tooltip.left="{
         title: formattedDuoShortcutTooltip,
         html: true,
       }"
-      icon="comment"
+      icon="duo-chat"
       class="js-tanuki-bot-chat-toggle !gl-rounded-lg"
       :class="[
         'ai-nav-icon',
@@ -124,25 +140,6 @@ export default {
       data-testid="ai-chat-toggle"
       @mouseout="hideTooltips"
       @click="toggleTab('chat')"
-    />
-    <gl-button
-      v-gl-tooltip.left
-      icon="plus"
-      class="!gl-rounded-lg"
-      :class="[
-        'ai-nav-icon',
-        { 'ai-nav-icon-active': activeTab === 'new', 'gl-opacity-5': isChatDisabled },
-      ]"
-      category="tertiary"
-      :aria-selected="activeTab === 'new'"
-      :aria-expanded="isExpanded"
-      :aria-label="$options.i18n.newLabel"
-      :title="isChatDisabled ? chatDisabledTooltip : $options.i18n.newLabel"
-      role="tab"
-      :aria-disabled="isChatDisabled"
-      data-testid="ai-new-toggle"
-      @mouseout="hideTooltips"
-      @click="toggleTab('new')"
     />
     <gl-button
       v-gl-tooltip.left
