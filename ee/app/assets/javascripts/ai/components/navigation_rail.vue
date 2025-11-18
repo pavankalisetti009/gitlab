@@ -7,11 +7,13 @@ import { duoChatGlobalState } from '~/super_sidebar/constants';
 import { CHAT_MODES } from 'ee/ai/tanuki_bot/constants';
 import { __, sprintf } from '~/locale';
 import { sanitize } from '~/lib/dompurify';
+import NewChatButton from './new_chat_button.vue';
 
 export default {
   name: 'NavigationRail',
   components: {
     GlButton,
+    NewChatButton,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -19,7 +21,6 @@ export default {
   i18n: {
     duoChatLabel: __('Active GitLab Duo Chat'),
     currentChatLabel: __('Current GitLab Duo Chat'),
-    newLabel: __('New GitLab Duo Chat'),
     historyLabel: __('GitLab Duo Chat history'),
     suggestionsLabel: __('GitLab Duo suggestions'),
     sessionsLabel: __('GitLab Duo sessions'),
@@ -44,6 +45,16 @@ export default {
       type: String,
       required: false,
       default: '',
+    },
+    projectId: {
+      type: String,
+      required: false,
+      default: null,
+    },
+    namespaceId: {
+      type: String,
+      required: false,
+      default: null,
     },
   },
   data() {
@@ -92,6 +103,12 @@ export default {
     hideTooltips() {
       this.$root.$emit(BV_HIDE_TOOLTIP);
     },
+    handleStartNewChat(agent) {
+      this.$emit('startNewChat', agent);
+    },
+    handleNewChatError(error) {
+      this.$emit('newChatError', error);
+    },
   },
 };
 </script>
@@ -103,21 +120,17 @@ export default {
     role="tablist"
     aria-orientation="vertical"
   >
-    <gl-button
-      v-gl-tooltip.left
-      icon="pencil-square"
-      class="!gl-rounded-full"
-      category="primary"
-      variant="default"
-      :aria-selected="activeTab === 'new'"
-      :aria-expanded="isExpanded"
-      :aria-label="$options.i18n.newLabel"
-      :title="isChatDisabled ? chatDisabledTooltip : $options.i18n.newLabel"
-      role="tab"
-      :aria-disabled="isChatDisabled"
-      data-testid="ai-new-toggle"
-      @mouseout="hideTooltips"
-      @click="toggleTab('new')"
+    <new-chat-button
+      :project-id="projectId"
+      :namespace-id="namespaceId"
+      :active-tab="activeTab"
+      :is-expanded="isExpanded"
+      :is-chat-disabled="isChatDisabled"
+      :chat-disabled-tooltip="chatDisabledTooltip"
+      @startNewChat="handleStartNewChat"
+      @toggleTab="toggleTab"
+      @hideTooltips="hideTooltips"
+      @newChatError="handleNewChatError"
     />
     <gl-button
       v-gl-tooltip.left="{

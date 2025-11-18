@@ -2,6 +2,8 @@ import duoWorkflowMutation from 'ee/ai/graphql/duo_workflow.mutation.graphql';
 import deleteAgenticWorkflowMutation from 'ee/ai/graphql/delete_agentic_workflow.mutation.graphql';
 import getWorkflowEventsQuery from 'ee/ai/graphql/get_workflow_events.query.graphql';
 import getAgentFlowConfig from 'ee/ai/graphql/get_agent_flow_config.query.graphql';
+import getConfiguredAgents from 'ee/ai/graphql/get_configured_agents.query.graphql';
+import getFoundationalChatAgents from 'ee/ai/graphql/get_foundational_chat_agents.graphql';
 import {
   DUO_WORKFLOW_CHAT_DEFINITION,
   DUO_WORKFLOW_AGENT_PRIVILEGES,
@@ -81,3 +83,28 @@ export const ApolloUtils = {
     return data?.aiCatalogAgentFlowConfig;
   },
 };
+
+export function getCatalogAgentsQuery(queryVariables) {
+  return {
+    query: getConfiguredAgents,
+    variables: queryVariables,
+    update(data) {
+      return (data?.aiCatalogConfiguredItems.nodes || []).map((agent) => agent.item);
+    },
+  };
+}
+
+export function getFoundationalAgentsQuery(queryVariables) {
+  return {
+    query: getFoundationalChatAgents,
+    variables: queryVariables,
+    update(data) {
+      return (
+        data?.aiFoundationalChatAgents.nodes.map((agent) => ({
+          ...agent,
+          foundational: true,
+        })) || []
+      );
+    },
+  };
+}

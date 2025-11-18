@@ -4409,6 +4409,9 @@ msgstr ""
 msgid "Add new application"
 msgstr ""
 
+msgid "Add new chat"
+msgstr ""
+
 msgid "Add new comment template"
 msgstr ""
 
@@ -20453,6 +20456,9 @@ msgid "Created On"
 msgstr ""
 
 msgid "Created a branch and a merge request to resolve this issue."
+msgstr ""
+
+msgid "Created and maintained by GitLab"
 msgstr ""
 
 msgid "Created at"

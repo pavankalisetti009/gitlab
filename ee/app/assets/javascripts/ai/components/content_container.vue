@@ -66,6 +66,11 @@ export default {
       required: false,
       default: false,
     },
+    selectedAgent: {
+      type: Object,
+      required: false,
+      default: () => ({}),
+    },
   },
   data() {
     return {
@@ -207,6 +212,7 @@ export default {
         :root-namespace-id="rootNamespaceId"
         :resource-id="resourceId"
         :metadata="metadata"
+        :selected-agent="selectedAgent"
         :user-model-selection-enabled="userModelSelectionEnabled"
         v-bind="activeTab.props"
         class="gl-h-full"

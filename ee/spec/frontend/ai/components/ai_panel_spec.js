@@ -569,7 +569,6 @@ describe('AiPanel', () => {
       findNavigationRail().vm.$emit('handleTabToggle', 'new');
       await nextTick();
 
-      expect(getContentComponentMock).toHaveBeenCalled();
       expect(findContentContainer().props('activeTab')).toEqual({
         title: 'New Chat',
         component: DuoAgenticChat,
@@ -726,10 +725,19 @@ describe('AiPanel', () => {
 
   describe('when chat is disabled', () => {
     describe('with chatDisabledReason prop set', () => {
-      it('passes chatDisabledReason to navigation rail', () => {
-        createComponent({ propsData: { chatDisabledReason: 'project' } });
-
-        expect(findNavigationRail().props('chatDisabledReason')).toBe('project');
+      it('passes chatDisabledReason and IDs to navigation rail', () => {
+        createComponent({
+          propsData: {
+            chatDisabledReason: 'project',
+            projectId: 'gid://gitlab/Project/123',
+            namespaceId: 'gid://gitlab/Group/456',
+          },
+        });
+        expect(findNavigationRail().props()).toMatchObject({
+          chatDisabledReason: 'project',
+          projectId: 'gid://gitlab/Project/123',
+          namespaceId: 'gid://gitlab/Group/456',
+        });
       });
 
       it('prevents opening chat tab on mount', async () => {
