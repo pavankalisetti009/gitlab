@@ -593,28 +593,19 @@ RSpec.describe API::Settings, 'EE Settings', :aggregate_failures, feature_catego
     let!(:duo_enterprise_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
     let(:application_setting) { create(:application_setting) }
 
-    where(:feature_enabled, :duo_features_enabled, :has_add_on, :param, :value, :result) do
-      false | false | false | 'auto_duo_code_review_enabled' | false | nil
-      false | true  | true  | 'auto_duo_code_review_enabled' | false | nil
-      true  | false | false | 'auto_duo_code_review_enabled' | false | nil
-      true  | false | true  | 'auto_duo_code_review_enabled' | false | nil
-      true  | true  | false | 'auto_duo_code_review_enabled' | false | nil
-      true  | true  | true  | 'auto_duo_code_review_enabled' | false | false
-      true  | true  | true  | 'auto_duo_code_review_enabled' | true  | true
+    where(:duo_features_enabled, :has_add_on, :param, :value, :result) do
+      false | false | 'auto_duo_code_review_enabled' | false | nil
+      false | true  | 'auto_duo_code_review_enabled' | false | nil
+      true  | false | 'auto_duo_code_review_enabled' | false | nil
+      true  | true  | 'auto_duo_code_review_enabled' | false | false
+      true  | true  | 'auto_duo_code_review_enabled' | true  | true
     end
 
     with_them do
       let(:params) { { param => value } }
 
       before do
-        if feature_enabled
-          stub_feature_flags(cascading_auto_duo_code_review_settings: true)
-        else
-          stub_feature_flags(cascading_auto_duo_code_review_settings: false)
-        end
-
         application_setting.update!(duo_features_enabled: duo_features_enabled)
-
         create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: duo_enterprise_add_on) if has_add_on
       end
 

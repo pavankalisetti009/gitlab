@@ -488,27 +488,25 @@ RSpec.describe Admin::ApplicationSettingsController, feature_category: :shared d
     context 'when updating auto_duo_code_review_enabled setting' do
       let(:settings) { { auto_duo_code_review_enabled: true } }
 
-      context 'when feature flag is disabled' do
+      context 'when duo features are disabled' do
         before do
-          stub_feature_flags(cascading_auto_duo_code_review_settings: false)
+          ApplicationSetting.current.update!(duo_features_enabled: false)
         end
 
-        it 'does not update the setting' do
+        it 'does not update the setting when not available' do
           expect { put :update, params: { application_setting: settings } }
             .not_to change { ApplicationSetting.current.reload.auto_duo_code_review_enabled }
+
+          expect(ApplicationSetting.current.auto_duo_code_review_settings_available?).to be_falsey
         end
       end
 
-      context 'when feature flag is enabled' do
+      context 'when duo features are enabled' do
         before do
-          stub_feature_flags(cascading_auto_duo_code_review_settings: true)
+          ApplicationSetting.current.update!(duo_features_enabled: true)
         end
 
-        context 'when duo features are disabled' do
-          before do
-            ApplicationSetting.current.update!(duo_features_enabled: false)
-          end
-
+        context 'without duo enterprise add-on' do
           it 'does not update the setting when not available' do
             expect { put :update, params: { application_setting: settings } }
               .not_to change { ApplicationSetting.current.reload.auto_duo_code_review_enabled }
@@ -517,42 +515,27 @@ RSpec.describe Admin::ApplicationSettingsController, feature_category: :shared d
           end
         end
 
-        context 'when duo features are enabled' do
+        context 'with duo enterprise add-on' do
+          let!(:duo_enterprise_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
+
           before do
-            ApplicationSetting.current.update!(duo_features_enabled: true)
+            create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: duo_enterprise_add_on)
           end
 
-          context 'without duo enterprise add-on' do
-            it 'does not update the setting when not available' do
-              expect { put :update, params: { application_setting: settings } }
-                .not_to change { ApplicationSetting.current.reload.auto_duo_code_review_enabled }
+          it 'updates the setting and it is available' do
+            put :update, params: { application_setting: settings }
 
-              expect(ApplicationSetting.current.auto_duo_code_review_settings_available?).to be_falsey
-            end
+            expect(ApplicationSetting.current.auto_duo_code_review_enabled).to be_truthy
+            expect(ApplicationSetting.current.auto_duo_code_review_settings_available?).to be_truthy
           end
 
-          context 'with duo enterprise add-on' do
-            let!(:duo_enterprise_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
+          it 'can disable the setting' do
+            ApplicationSetting.current.update!(auto_duo_code_review_enabled: true)
 
-            before do
-              create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: duo_enterprise_add_on)
-            end
+            put :update, params: { application_setting: { auto_duo_code_review_enabled: false } }
 
-            it 'updates the setting and it is available' do
-              put :update, params: { application_setting: settings }
-
-              expect(ApplicationSetting.current.auto_duo_code_review_enabled).to be_truthy
-              expect(ApplicationSetting.current.auto_duo_code_review_settings_available?).to be_truthy
-            end
-
-            it 'can disable the setting' do
-              ApplicationSetting.current.update!(auto_duo_code_review_enabled: true)
-
-              put :update, params: { application_setting: { auto_duo_code_review_enabled: false } }
-
-              expect(ApplicationSetting.current.auto_duo_code_review_enabled).to be_falsey
-              expect(ApplicationSetting.current.auto_duo_code_review_settings_available?).to be_truthy
-            end
+            expect(ApplicationSetting.current.auto_duo_code_review_enabled).to be_falsey
+            expect(ApplicationSetting.current.auto_duo_code_review_settings_available?).to be_truthy
           end
         end
       end

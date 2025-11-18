@@ -284,8 +284,6 @@ module EE
     end
 
     def auto_duo_code_review_settings_available?
-      return false unless ::Feature.enabled?(:cascading_auto_duo_code_review_settings, self)
-
       namespace_settings&.duo_features_enabled? && has_active_add_on_purchase?(:duo_enterprise)
     end
 

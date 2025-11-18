@@ -2154,53 +2154,39 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
 
     subject { application_setting.auto_duo_code_review_settings_available? }
 
-    context 'when feature flag is disabled' do
+    context 'when duo_features_enabled is false' do
       before do
-        stub_feature_flags(cascading_auto_duo_code_review_settings: false)
+        application_setting.duo_features_enabled = false
       end
 
       it { is_expected.to be_falsey }
     end
 
-    context 'when feature flag is enabled' do
+    context 'when duo_features_enabled is true' do
+      let!(:duo_enterprise_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
+
       before do
-        stub_feature_flags(cascading_auto_duo_code_review_settings: true)
+        application_setting.duo_features_enabled = true
       end
 
-      context 'when duo_features_enabled is false' do
-        before do
-          application_setting.duo_features_enabled = false
-        end
-
+      context 'without duo_enterprise add-on' do
         it { is_expected.to be_falsey }
       end
 
-      context 'when duo_features_enabled is true' do
-        let!(:duo_enterprise_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
-
+      context 'with active duo_enterprise add-on' do
         before do
-          application_setting.duo_features_enabled = true
+          create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: duo_enterprise_add_on)
         end
 
-        context 'without duo_enterprise add-on' do
-          it { is_expected.to be_falsey }
+        it { is_expected.to be_truthy }
+      end
+
+      context 'with expired duo_enterprise add-on' do
+        before do
+          create(:gitlab_subscription_add_on_purchase, :expired, :self_managed, add_on: duo_enterprise_add_on)
         end
 
-        context 'with active duo_enterprise add-on' do
-          before do
-            create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: duo_enterprise_add_on)
-          end
-
-          it { is_expected.to be_truthy }
-        end
-
-        context 'with expired duo_enterprise add-on' do
-          before do
-            create(:gitlab_subscription_add_on_purchase, :expired, :self_managed, add_on: duo_enterprise_add_on)
-          end
-
-          it { is_expected.to be_falsey }
-        end
+        it { is_expected.to be_falsey }
       end
     end
   end
