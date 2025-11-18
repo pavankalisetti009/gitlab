@@ -1,6 +1,12 @@
 # frozen_string_literal: true
 
 module StubSaasFeatures
+  @features_stubbed = false
+
+  class << self
+    attr_accessor :features_stubbed
+  end
+
   # Stub SaaS feature with `feature_name: true/false`
   #
   # @param [Hash] features where key is feature name and value is boolean whether enabled or not.

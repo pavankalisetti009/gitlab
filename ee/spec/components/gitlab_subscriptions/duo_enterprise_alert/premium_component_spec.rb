@@ -2,8 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSubscriptions::DuoEnterpriseAlert::PremiumComponent, :saas, :aggregate_failures,
-  type: :component, feature_category: :acquisition do
+RSpec.describe GitlabSubscriptions::DuoEnterpriseAlert::PremiumComponent, :saas_gitlab_com_subscriptions, :aggregate_failures, feature_category: :acquisition do
   let(:namespace) { build(:group, id: non_existing_record_id) }
   let(:user) { build(:user) }
   let(:eligible) { true }

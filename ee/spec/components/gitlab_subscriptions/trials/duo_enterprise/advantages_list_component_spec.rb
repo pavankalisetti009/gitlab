@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSubscriptions::Trials::DuoEnterprise::AdvantagesListComponent, :saas, :aggregate_failures, feature_category: :acquisition do
+RSpec.describe GitlabSubscriptions::Trials::DuoEnterprise::AdvantagesListComponent, :aggregate_failures, feature_category: :acquisition do
   let(:page_scope) { page }
 
   subject(:component) { render_inline(described_class.new) && page_scope }

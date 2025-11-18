@@ -87,17 +87,13 @@ RSpec.describe GitlabSubscriptions::Trials::DuoEnterprise, feature_category: :su
     end
   end
 
-  describe '.show_duo_enterprise_discover?' do
+  describe '.show_duo_enterprise_discover?', :saas_subscriptions_trials do
     subject { described_class.show_duo_enterprise_discover?(namespace, user) }
 
     let_it_be(:user) { create(:user) }
     let_it_be(:namespace) { create(:group) }
     let_it_be(:add_on_purchase) do
       create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :trial, namespace: namespace)
-    end
-
-    before do
-      stub_saas_features(subscriptions_trials: true)
     end
 
     context 'when all conditions are met' do

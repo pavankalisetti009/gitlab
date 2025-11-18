@@ -5,16 +5,12 @@ require 'spec_helper'
 RSpec.describe GitlabSubscriptions::Trials::DuoPro, feature_category: :subscription_management do
   let_it_be(:namespace) { create(:group) }
 
-  describe '.show_duo_pro_discover?' do
+  describe '.show_duo_pro_discover?', :saas_subscriptions_trials do
     subject { described_class.show_duo_pro_discover?(namespace, user) }
 
     let_it_be(:user) { create(:user) }
     let_it_be(:add_on_purchase) do
       create(:gitlab_subscription_add_on_purchase, :duo_pro, :trial, namespace: namespace)
-    end
-
-    before do
-      stub_saas_features(subscriptions_trials: true)
     end
 
     context 'when all conditions are met' do
