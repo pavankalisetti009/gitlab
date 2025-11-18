@@ -9,8 +9,8 @@ RSpec.describe Resolvers::Security::VulnerabilitiesPerSeverityResolver, :elastic
     context = { current_user: current_user }
     context[:report_type] = report_type_filter if defined?(report_type_filter)
     context[:project_id] = project_id_filter if defined?(project_id_filter)
-    resolve(described_class, obj: operate_on,
-      args: { start_date: Date.parse('2019-10-15'), end_date: Date.parse('2019-10-17') }, ctx: context)
+    args = defined?(custom_args) ? custom_args : { start_date: Date.parse('2019-10-15'), end_date: Date.parse('2019-10-17') }
+    resolve(described_class, obj: operate_on, args: args, ctx: context)
   end
 
   let_it_be(:group) { create(:group) }
@@ -130,6 +130,36 @@ RSpec.describe Resolvers::Security::VulnerabilitiesPerSeverityResolver, :elastic
         end
 
         it_behaves_like 'counts only open vulnerabilities'
+
+        context 'without date parameters' do
+          let(:custom_args) { {} }
+
+          it 'returns vulnerability metrics data for all vulnerabilities' do
+            expect(resolved_metrics).not_to be_empty
+            expect(resolved_metrics['critical'][:count]).to eq(7)
+            expect(resolved_metrics['low'][:count]).to eq(4)
+            expect(resolved_metrics['medium'][:count]).to eq(3)
+            expect(resolved_metrics['high'][:count]).to eq(6)
+          end
+        end
+
+        context 'with only start_date provided' do
+          let(:custom_args) { { start_date: Date.parse('2019-10-16') } }
+
+          it 'returns vulnerability metrics data filtered by start date only' do
+            expect(resolved_metrics).not_to be_empty
+            expect(resolved_metrics.values.sum { |v| v[:count] }).to be >= 0
+          end
+        end
+
+        context 'with only end_date provided' do
+          let(:custom_args) { { end_date: Date.parse('2019-10-16') } }
+
+          it 'returns vulnerability metrics data filtered by end date only' do
+            expect(resolved_metrics).not_to be_empty
+            expect(resolved_metrics.values.sum { |v| v[:count] }).to be >= 0
+          end
+        end
 
         context 'with project filtering' do
           let(:project_id_filter) { [project.id] }

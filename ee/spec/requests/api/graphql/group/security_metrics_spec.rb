@@ -245,6 +245,36 @@ RSpec.describe 'Security metrics through GroupQuery', :freeze_time, feature_cate
             )
           end
         end
+
+        context 'without date range arguments' do
+          it 'returns all vulnerabilities without date filtering' do
+            no_date_query = graphql_query_for(
+              'group',
+              { 'fullPath' => group.full_path },
+              <<~GRAPHQL
+                securityMetrics {
+                  vulnerabilitiesPerSeverity {
+                    critical { count }
+                    high { count }
+                    medium { count }
+                    low { count }
+                  }
+                }
+              GRAPHQL
+            )
+
+            post_graphql(no_date_query, current_user: current_user)
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(graphql_errors).to be_nil
+            expect(vulnerabilities_per_severity_data).to include(
+              'critical' => { 'count' => 1 },
+              'high' => { 'count' => 1 },
+              'medium' => { 'count' => 1 },
+              'low' => { 'count' => 0 }
+            )
+          end
+        end
       end
 
       describe 'vulnerabilities over time' do
