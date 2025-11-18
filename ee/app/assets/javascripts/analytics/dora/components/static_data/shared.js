@@ -19,7 +19,7 @@ export const LAST_180_DAYS = 'LAST_180_DAYS';
 // Compute all relative dates based on the _beginning_ of today.
 // We use this date as the end date for the charts. This causes
 // the current date to be the last day included in the graph.
-const startOfToday = getStartOfDay(new Date(), { utc: true });
+export const startOfToday = getStartOfDay(new Date(), { utc: true });
 
 // We use this date as the "to" parameter for the API. This allows
 // us to get DORA 4 metrics about the current day.
