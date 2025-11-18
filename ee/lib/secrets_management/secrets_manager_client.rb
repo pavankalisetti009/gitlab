@@ -290,6 +290,14 @@ module SecretsManagement
       end
     end
 
+    def check_health
+      response = make_request(:get, "sys/health")
+      response.fetch('initialized',
+        false) && !response.fetch('sealed', true) && (response['standby'].nil? || response['standby'] == false)
+    rescue ConnectionError, ApiError
+      false
+    end
+
     private
 
     attr_reader :jwt, :role, :auth_namespace, :auth_mount, :use_cel_auth, :namespace

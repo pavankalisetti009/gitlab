@@ -1038,4 +1038,83 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
       end
     end
   end
+
+  describe '.check_health' do
+    context 'when OpenBao is healthy' do
+      before do
+        allow(client).to receive(:make_request).with(:get, "sys/health")
+          .and_return({ "initialized" => true, "sealed" => false })
+      end
+
+      it 'returns true' do
+        expect(client.check_health).to be true
+      end
+    end
+
+    context 'when OpenBao is not initialized' do
+      before do
+        allow(client).to receive(:make_request).with(:get, "sys/health")
+          .and_return({ "initialized" => false, "sealed" => false })
+      end
+
+      it 'returns false' do
+        expect(client.check_health).to be false
+      end
+    end
+
+    context 'when OpenBao is sealed' do
+      before do
+        allow(client).to receive(:make_request).with(:get, "sys/health")
+          .and_return({ "initialized" => true, "sealed" => true })
+      end
+
+      it 'returns false' do
+        expect(client.check_health).to be false
+      end
+    end
+
+    context 'when API request fails' do
+      before do
+        allow(client).to receive(:make_request).with(:get, "sys/health")
+          .and_raise(SecretsManagement::SecretsManagerClient::ConnectionError)
+      end
+
+      it 'returns false' do
+        expect(client.check_health).to be false
+      end
+    end
+
+    context 'when OpenBao is in standby mode' do
+      before do
+        allow(client).to receive(:make_request).with(:get, "sys/health")
+          .and_return({ "initialized" => true, "sealed" => false, "standby" => true })
+      end
+
+      it 'returns false' do
+        expect(client.check_health).to be false
+      end
+    end
+
+    context 'when health response is missing keys' do
+      before do
+        allow(client).to receive(:make_request).with(:get, "sys/health")
+          .and_return({ "initialized" => true }) # missing sealed + standby
+      end
+
+      it 'returns false' do
+        expect(client.check_health).to be false
+      end
+    end
+
+    context 'when API request raises ApiError' do
+      before do
+        allow(client).to receive(:make_request).with(:get, "sys/health")
+          .and_raise(SecretsManagement::SecretsManagerClient::ApiError)
+      end
+
+      it 'returns false' do
+        expect(client.check_health).to be false
+      end
+    end
+  end
 end

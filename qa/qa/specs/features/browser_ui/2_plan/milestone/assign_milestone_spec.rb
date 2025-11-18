@@ -3,7 +3,7 @@
 module QA
   RSpec.describe 'Plan', :smoke, feature_category: :team_planning do
     describe 'Milestones' do
-      include Support::Dates
+      include QA::Support::Dates
 
       let(:start_date) { current_date_yyyy_mm_dd }
       let(:due_date) { next_month_yyyy_mm_dd }
