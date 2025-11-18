@@ -163,3 +163,29 @@ export const mockBypassStatus = {
   id: 'gid://gitlab/Security::Policy/182',
   name: 'Prevent Critical Vulnerabilities',
 };
+
+export const mockFindingReportsComparerSuccessResponse = {
+  data: {
+    project: {
+      id: 'gid://gitlab/Project/1',
+      mergeRequest: {
+        id: 'gid://gitlab/MergeRequest/1',
+        findingReportsComparer: {
+          status: 'PARSED',
+          report: {
+            added: [
+              {
+                title: 'Improper neutralization of directives in dynamically evaluated code',
+                uuid: '561f85b8-0ca7-5ac4-9766-15b063f16e3b',
+                severity: 'HIGH',
+                state: 'DETECTED',
+                foundByPipelineIid: '4',
+              },
+            ],
+            fixed: [],
+          },
+        },
+      },
+    },
+  },
+};
