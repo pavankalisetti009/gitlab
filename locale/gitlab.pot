@@ -22190,6 +22190,9 @@ msgstr ""
 msgid "Data type"
 msgstr ""
 
+msgid "Data updated"
+msgstr ""
+
 msgid "DataExplorer|// TYPE YOUR QUERY HERE"
 msgstr ""
 

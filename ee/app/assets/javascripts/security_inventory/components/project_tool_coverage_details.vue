@@ -65,7 +65,7 @@ export default {
       return this.timeFormatted(lastCall);
     },
     getDateUpdated(updatedAt) {
-      return updatedAt ? `${__('Date updated')} ${this.timeFormatted(updatedAt)}` : '';
+      return updatedAt ? `${__('Data updated')} ${this.timeFormatted(updatedAt)}` : '';
     },
   },
   i18n: {
