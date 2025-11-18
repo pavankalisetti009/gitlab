@@ -14,6 +14,7 @@ describe('AiCatalogItemConsumerModal', () => {
   const defaultProps = {
     item: mockFlow,
     showAddToGroup: false,
+    isProjectNamespace: false,
   };
   const GlFormGroupStub = stubComponent(GlFormGroup, {
     props: ['state', 'labelDescription'],
@@ -123,6 +124,21 @@ describe('AiCatalogItemConsumerModal', () => {
 
       it('does not render private alert', () => {
         expect(findPrivateAlert().exists()).toBe(false);
+      });
+    });
+
+    describe('when the item is public and within project namespace', () => {
+      beforeEach(() => {
+        createWrapper({ props: { item: mockFlow, isProjectNamespace: true } });
+      });
+
+      it('does not render private alert', () => {
+        expect(findPrivateAlert().exists()).toBe(false);
+      });
+
+      it('renders project name instead of dropdown', () => {
+        expect(findProjectName().text()).toBe(mockProjectWithGroup.nameWithNamespace);
+        expect(findProjectDropdown().exists()).toBe(false);
       });
     });
   });

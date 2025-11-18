@@ -85,10 +85,13 @@ export default {
       return isLoggedIn();
     },
     isEnabled() {
-      return !this.isGlobal && this.item.configurationForProject?.enabled;
+      return this.item.configurationForProject?.enabled;
     },
     showDisable() {
-      return this.canAdmin && this.isEnabled;
+      return this.canAdmin && !this.isGlobal && this.isEnabled;
+    },
+    showEnable() {
+      return this.canAdmin && !this.isGlobal && !this.isEnabled;
     },
     showAddToProject() {
       return this.canUse && this.isGlobal;
@@ -147,6 +150,15 @@ export default {
       data-testid="add-to-project-button"
     >
       {{ s__('AICatalog|Enable in project') }}
+    </gl-button>
+    <gl-button
+      v-else-if="showEnable"
+      v-gl-modal="'add-item-consumer-modal'"
+      variant="confirm"
+      category="primary"
+      data-testid="enable-button"
+    >
+      {{ __('Enable') }}
     </gl-button>
     <gl-disclosure-dropdown
       v-if="canAdmin || canUse"
@@ -228,6 +240,7 @@ export default {
     <ai-catalog-item-consumer-modal
       v-if="canUse"
       :item="item"
+      :is-project-namespace="showEnable"
       :show-add-to-group="showAddToGroup"
       @submit="$emit('add-to-target', $event)"
     />

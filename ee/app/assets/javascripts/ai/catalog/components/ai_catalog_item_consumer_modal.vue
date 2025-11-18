@@ -39,12 +39,17 @@ export default {
       required: false,
       default: false,
     },
+    isProjectNamespace: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   data() {
     return {
       isOpen: this.open,
       groupId: !this.item.public && this.showAddToGroup ? this.item.project?.rootGroup?.id : null,
-      projectId: !this.item.public ? this.item.project?.id : null,
+      projectId: !this.item.public || this.isProjectNamespace ? this.item.project?.id : null,
       isDirty: false,
       error: null,
     };
@@ -182,7 +187,7 @@ export default {
     </dl>
 
     <gl-form :id="formId" @submit.prevent="handleSubmit">
-      <div v-if="isPrivateItem">
+      <div v-if="isPrivateItem || isProjectNamespace">
         <dl v-if="isTargetTypeGroup">
           <dt class="gl-mb-2 gl-font-bold">
             {{ __('Group') }}
