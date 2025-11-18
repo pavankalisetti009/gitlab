@@ -14,6 +14,7 @@ RSpec.describe ::Search::Elastic::Relation, :elastic_helpers, :sidekiq_inline, :
   let(:fourth_vulnerability) { Vulnerability.fourth }
 
   before do
+    allow(::Vulnerabilities::TriggerFalsePositiveDetectionWorkflowWorker).to receive(:perform_async)
     query_hash[:sort] = { created_at: { order: sort_order } }
 
     stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)

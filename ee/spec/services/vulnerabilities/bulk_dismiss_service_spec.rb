@@ -33,6 +33,10 @@ RSpec.describe Vulnerabilities::BulkDismissService, feature_category: :vulnerabi
     end
 
     context 'when the user is authorized' do
+      before do
+        allow(::Vulnerabilities::TriggerFalsePositiveDetectionWorkflowWorker).to receive(:perform_async)
+      end
+
       it_behaves_like 'sync vulnerabilities changes to ES' do
         let(:expected_vulnerabilities) { vulnerability }
 

@@ -7,6 +7,10 @@ RSpec.describe BackfillTokenStatusInVulnerabilities, feature_category: :vulnerab
   let(:version) { 20251001130713 }
 
   describe 'migration', :elastic_delete_by_query, :sidekiq_inline do
+    before do
+      allow(::Vulnerabilities::TriggerFalsePositiveDetectionWorkflowWorker).to receive(:perform_async)
+    end
+
     include_examples 'migration reindex based on schema_version' do
       let(:expected_throttle_delay) { 15.seconds }
       let(:expected_batch_size) { 10_000 }

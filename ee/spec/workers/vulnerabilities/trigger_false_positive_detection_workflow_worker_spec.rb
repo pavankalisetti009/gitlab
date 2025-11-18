@@ -56,7 +56,7 @@ RSpec.describe Vulnerabilities::TriggerFalsePositiveDetectionWorkflowWorker, fea
             ServiceResponse.error(message: 'Workflow creation failed', reason: :invalid_params)
           end
 
-          it 'logs error message with failure details' do
+          it 'logs error message and raise StartWorkflowServiceError' do
             expect(Gitlab::AppLogger).to receive(:error).with(
               message: 'Failed to call SAST workflow service for vulnerability',
               vulnerability_id: vulnerability.id,
@@ -65,7 +65,8 @@ RSpec.describe Vulnerabilities::TriggerFalsePositiveDetectionWorkflowWorker, fea
               reason: :invalid_params
             )
 
-            worker.perform(vulnerability_id)
+            expect { worker.perform(vulnerability_id) }
+              .to raise_error(Vulnerabilities::TriggerFalsePositiveDetectionWorkflowWorker::StartWorkflowServiceError)
           end
         end
       end
@@ -89,8 +90,8 @@ RSpec.describe Vulnerabilities::TriggerFalsePositiveDetectionWorkflowWorker, fea
         allow(workflow_service).to receive(:execute).and_raise(error)
       end
 
-      it 'logs the exception to error tracking' do
-        expect(Gitlab::ErrorTracking).to receive(:log_exception).with(
+      it 'logs and raises the exception' do
+        expect(Gitlab::ErrorTracking).to receive(:log_and_raise_exception).with(
           error,
           vulnerability_id: vulnerability_id
         )
