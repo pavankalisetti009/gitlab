@@ -12,15 +12,6 @@ RSpec.describe Admin::GitlabDuoController, :cloud_licenses, feature_category: :a
     before do
       allow(License).to receive(:current).and_return(license)
       allow(::Gitlab::Saas).to receive(:feature_available?).and_return(false)
-
-      # Stub the model definitions service to avoid real HTTP requests
-      allow(::Ai::ModelSelection::FetchModelDefinitionsService)
-        .to receive(:new).and_return(
-          instance_double(
-            ::Ai::ModelSelection::FetchModelDefinitionsService,
-            execute: ServiceResponse.success(payload: { 'models' => [], 'unit_primitives' => [] })
-          )
-        )
     end
 
     shared_examples 'renders the activation form' do
