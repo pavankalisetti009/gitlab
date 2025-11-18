@@ -54,15 +54,6 @@ module Gitlab
           definitions['unit_primitives'].index_by { |up| up['feature_setting'] }
         end
         strong_memoize_attr :model_definition_per_feature
-
-        def deprecated_models
-          return unless definitions && definitions['models']
-
-          definitions["models"].select do |model|
-            model["deprecation"].present?
-          end
-        end
-        strong_memoize_attr :deprecated_models
       end
     end
   end

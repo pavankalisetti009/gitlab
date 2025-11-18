@@ -99,11 +99,6 @@ RSpec.describe ::Gitlab::Ai::ModelSelection::ModelDefinitionResponseParser, feat
             'name' => 'GPT-4',
             'ref' => 'gpt-4',
             'model_provider' => 'OpenAI'
-          },
-          'claude-sonnet-3-7' => {
-            'name' => 'Claude Sonnet 3.7',
-            'ref' => 'claude-sonnet-3-7',
-            'model_provider' => 'Anthropic'
           }
         }
       )
@@ -140,12 +135,6 @@ RSpec.describe ::Gitlab::Ai::ModelSelection::ModelDefinitionResponseParser, feat
           'default_model' => 'gpt-4',
           'selectable_models' => %w[gpt-4],
           'beta_models' => []
-        },
-        'review_merge_request' => {
-          'feature_setting' => 'review_merge_request',
-          'default_model' => 'claude-sonnet',
-          'selectable_models' => %w[claude-sonnet claude-sonnet-3-7],
-          'beta_models' => []
         }
       })
     end
@@ -163,38 +152,6 @@ RSpec.describe ::Gitlab::Ai::ModelSelection::ModelDefinitionResponseParser, feat
 
       it 'is nil' do
         expect(parser.model_definition_per_feature).to be_nil
-      end
-    end
-  end
-
-  describe '#deprecated_models' do
-    it 'returns a list of deprecated models' do
-      expect(parser.deprecated_models).to eq([
-        {
-          'name' => 'Claude Sonnet 3.7',
-          'identifier' => 'claude-sonnet-3-7',
-          'provider' => 'Anthropic',
-          'deprecation' => {
-            'deprecation_date' => '2025-10-28',
-            'removal_version' => '18.8'
-          }
-        }
-      ])
-    end
-
-    context 'if definitions is nil' do
-      let(:model_definitions_response) { nil }
-
-      it 'is nil' do
-        expect(parser.deprecated_models).to be_nil
-      end
-    end
-
-    context 'if definitions is empty' do
-      let(:model_definitions_response) { {} }
-
-      it 'is nil' do
-        expect(parser.deprecated_models).to be_nil
       end
     end
   end
