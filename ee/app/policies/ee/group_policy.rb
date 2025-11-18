@@ -16,6 +16,10 @@ module EE
         @subject.root_ancestor.saml_group_links_exists?
       end
 
+      condition(:has_maintainer_projects) do
+        group_projects_for(user: @user, group: @subject, min_access_level: ::ProjectMember::MAINTAINER).any?
+      end
+
       condition(:epics_available, scope: :subject) { @subject.feature_available?(:epics) }
       condition(:iterations_available, scope: :subject) { @subject.feature_available?(:iterations) }
       condition(:subepics_available, scope: :subject) { @subject.feature_available?(:subepics) }
@@ -648,6 +652,10 @@ module EE
         enable :read_group_audit_events
         enable :read_vulnerability_statistics
         enable :read_security_inventory
+        enable :read_ai_catalog_item_consumer
+      end
+
+      rule { has_maintainer_projects }.policy do
         enable :read_ai_catalog_item_consumer
       end
 

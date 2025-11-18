@@ -42,7 +42,7 @@ module Mutations
             project_id = target[:project_id]
             project = project_id ? authorized_find!(id: project_id) : nil
             parent_item_consumer_id = args[:parent_item_consumer_id]
-            parent_item_consumer = parent_item_consumer_id ? authorized_find!(id: parent_item_consumer_id) : nil
+            parent_item_consumer = parent_item_consumer_id ? find_parent_item_consumer(parent_item_consumer_id) : nil
 
             raise_resource_not_available_error! unless allowed?(item)
 
@@ -59,6 +59,18 @@ module Mutations
 
           def allowed?(item)
             Ability.allowed?(current_user, :read_ai_catalog_item, item)
+          end
+
+          def find_parent_item_consumer(parent_item_consumer_id)
+            parent = GitlabSchema.object_from_id(
+              parent_item_consumer_id, expected_type: ::Ai::Catalog::ItemConsumer
+            ).sync
+
+            unless parent && Ability.allowed?(current_user, :read_ai_catalog_item_consumer, parent.group)
+              raise_resource_not_available_error!
+            end
+
+            parent
           end
 
           def service_args(item, parent_item_consumer, args)

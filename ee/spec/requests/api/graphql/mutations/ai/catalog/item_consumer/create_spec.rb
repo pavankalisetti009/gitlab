@@ -7,8 +7,13 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Create, feature_category: :
   include GraphqlHelpers
 
   let_it_be(:user) { create(:user) }
-  let_it_be(:consumer_group) { create(:group, owners: user) }
-  let_it_be(:consumer_project) { create(:project, group: consumer_group) }
+  let_it_be(:project_maintainer) { create(:user) }
+  let_it_be(:project_maintainer_not_in_group) { create(:user) }
+
+  let_it_be(:consumer_group) { create(:group, owners: user, developers: project_maintainer) }
+  let_it_be(:consumer_project) do
+    create(:project, group: consumer_group, maintainers: [project_maintainer, project_maintainer_not_in_group])
+  end
 
   let_it_be(:service_account) { create(:user, :service_account) }
   let_it_be(:service_account_user_detail) do
@@ -21,6 +26,9 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Create, feature_category: :
   let_it_be(:consumer_group_item_consumer) do
     create(:ai_catalog_item_consumer, group: consumer_group, item: item, service_account: service_account)
   end
+
+  let_it_be(:other_group) { create(:group) }
+  let_it_be(:other_group_item_consumer) { create(:ai_catalog_item_consumer, group: other_group, item: item) }
 
   let(:current_user) { user }
   let(:mutation) { graphql_mutation(:ai_catalog_item_consumer_create, params) }
@@ -48,6 +56,18 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Create, feature_category: :
     end
   end
 
+  shared_examples 'a successful request' do
+    it 'creates a catalog item consumer with expected data' do
+      execute
+
+      expect(graphql_data_at(:ai_catalog_item_consumer_create, :item_consumer)).to match a_hash_including(
+        'item' => a_hash_including('id' => item.to_global_id.to_s),
+        'project' => a_hash_including('id' => consumer_project.to_global_id.to_s),
+        'pinnedVersionPrefix' => '1.1'
+      )
+    end
+  end
+
   context 'when user is not authorized to create a consumer item in the consumer project' do
     let(:current_user) do
       create(:user).tap do |user|
@@ -57,6 +77,50 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Create, feature_category: :
     end
 
     it_behaves_like 'an authorization failure'
+  end
+
+  context 'when the user is a project maintainer and group developer' do
+    let(:current_user) { project_maintainer }
+
+    it_behaves_like 'a successful request'
+  end
+
+  context 'when the user is a project maintainer and does not belong to the group' do
+    let(:current_user) { project_maintainer_not_in_group }
+
+    it_behaves_like 'a successful request'
+  end
+
+  context 'when the parent_item_consumer ID does not exist' do
+    let(:params) { super().merge(parent_item_consumer_id: "gid://gitlab/Ai::Catalog::ItemConsumer/non-existent-id") }
+    let(:current_user) { project_maintainer_not_in_group }
+
+    it 'returns a not found error' do
+      execute
+
+      expect(graphql_errors.first['message']).to eq(
+        "The resource that you are attempting to access does not exist or " \
+          "you don't have permission to perform this action"
+      )
+    end
+  end
+
+  context 'when the parent_item_consumer ID belongs to a different group' do
+    let(:params) { super().merge(parent_item_consumer_id: other_group_item_consumer.to_global_id) }
+
+    context 'when the user does not have access to the group' do
+      it 'returns a not found error' do
+        execute
+
+        expect(graphql_errors.first['message']).to eq(
+          "The resource that you are attempting to access does not exist or " \
+            "you don't have permission to perform this action"
+        )
+      end
+    end
+
+    # TODO: Add this test after the issue below. There will still be an error, but it will be a different error message.
+    context 'when the user has access to the group', skip: 'Depends on https://gitlab.com/gitlab-org/gitlab/-/issues/580696'
   end
 
   context 'when user is not authorized to read the catalog item' do
@@ -89,15 +153,7 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Create, feature_category: :
 
     let(:params) { super().except(:parent_item_consumer_id) }
 
-    it 'creates a catalog item consumer with expected data' do
-      execute
-
-      expect(graphql_data_at(:ai_catalog_item_consumer_create, :item_consumer)).to match a_hash_including(
-        'item' => a_hash_including('id' => item.to_global_id.to_s),
-        'project' => a_hash_including('id' => consumer_project.to_global_id.to_s),
-        'pinnedVersionPrefix' => '1.1'
-      )
-    end
+    it_behaves_like 'a successful request'
   end
 
   context 'when global_ai_catalog feature flag is disabled' do
@@ -108,15 +164,7 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Create, feature_category: :
     it_behaves_like 'an authorization failure'
   end
 
-  it 'creates a catalog item consumer with expected data' do
-    execute
-
-    expect(graphql_data_at(:ai_catalog_item_consumer_create, :item_consumer)).to match a_hash_including(
-      'item' => a_hash_including('id' => item.to_global_id.to_s),
-      'project' => a_hash_including('id' => consumer_project.to_global_id.to_s),
-      'pinnedVersionPrefix' => '1.1'
-    )
-  end
+  it_behaves_like 'a successful request'
 
   context 'with a group_id' do
     let_it_be(:group) { create(:group, owners: user) }
