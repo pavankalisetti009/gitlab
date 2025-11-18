@@ -97,6 +97,17 @@ export default {
         }
       },
     },
+    isMaximized: {
+      handler(maximized) {
+        const layout = document.querySelector('.js-page-layout');
+        if (maximized) {
+          layout.classList.add('ai-panel-maximized');
+        } else {
+          layout.classList.remove('ai-panel-maximized');
+        }
+      },
+      immediate: true,
+    },
   },
   methods: {
     handleGoBack() {
@@ -123,7 +134,6 @@ export default {
     id="ai-panel-portal"
     :aria-label="activeTab.title"
     class="ai-panel !gl-left-auto gl-flex gl-h-full gl-w-[var(--ai-panel-width)] gl-grow gl-flex-col gl-rounded-[1rem] gl-bg-default [contain:strict]"
-    :class="{ 'ai-panel-maximized': isMaximized }"
   >
     <div
       class="ai-panel-header gl-flex gl-h-[3.0625rem] gl-items-center gl-justify-between"
