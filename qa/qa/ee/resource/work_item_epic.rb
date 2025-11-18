@@ -4,7 +4,7 @@ module QA
   module EE
     module Resource
       class WorkItemEpic < QA::Resource::Base
-        include Support::Dates
+        include QA::Support::Dates
 
         attribute :group do
           QA::Resource::Group.fabricate_via_api! do |group|

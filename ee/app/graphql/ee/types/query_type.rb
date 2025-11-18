@@ -468,6 +468,12 @@ module EE
           description: 'Usage data of consumables under the subscription.',
           resolver: ::Resolvers::GitlabSubscriptions::SubscriptionUsageResolver,
           experiment: { milestone: '18.5' }
+
+        field :openbao_health, GraphQL::Types::Boolean,
+          null: false,
+          description: 'Check if OpenBao instance is healthy and reachable.',
+          resolver: ::Resolvers::SecretsManagement::OpenbaoHealthResolver,
+          experiment: { milestone: '18.7' }
       end
 
       def vulnerability(id:)

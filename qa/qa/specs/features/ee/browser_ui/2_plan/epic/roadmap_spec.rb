@@ -4,7 +4,7 @@ module QA
   RSpec.describe 'Plan', feature_category: :portfolio_management do
     describe 'Epics roadmap' do
       include_context 'work item epics migration'
-      include Support::Dates
+      include QA::Support::Dates
 
       let(:group) { create(:group, name: "group-to-test-epic-roadmap-#{SecureRandom.hex(4)}") }
       let!(:epic) { create_epic_resource(group) }

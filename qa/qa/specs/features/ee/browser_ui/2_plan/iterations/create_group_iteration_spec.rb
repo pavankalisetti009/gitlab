@@ -3,7 +3,7 @@
 module QA
   RSpec.describe 'Plan', feature_category: :team_planning do
     describe 'Group Iterations' do
-      include Support::Dates
+      include QA::Support::Dates
       include ActiveSupport::Testing::TimeHelpers
 
       future_year = Time.now.year + 1

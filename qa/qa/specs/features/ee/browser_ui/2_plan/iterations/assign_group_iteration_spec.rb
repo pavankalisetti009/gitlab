@@ -3,7 +3,7 @@
 module QA
   RSpec.describe 'Plan', feature_category: :team_planning do
     describe 'Assign Iterations' do
-      include Support::Dates
+      include QA::Support::Dates
 
       let!(:start_date) { current_date_yyyy_mm_dd }
       let!(:due_date) { thirteen_days_from_now_yyyy_mm_dd }
