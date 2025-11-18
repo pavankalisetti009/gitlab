@@ -46,7 +46,7 @@ module Gitlab
 
         Gitlab::Git::Blob.new(
           id: blob_data[:oid],
-          mode: blob_data[:mode]&.to_s(8),
+          mode: blob_data[:mode]&.to_i&.to_s(8),
           name: blob_data[:path] && File.basename(blob_data[:path]),
           path: blob_data[:path],
           size: blob_data[:size],
