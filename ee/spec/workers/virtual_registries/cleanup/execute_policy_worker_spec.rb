@@ -142,6 +142,32 @@ RSpec.describe VirtualRegistries::Cleanup::ExecutePolicyWorker, feature_category
             perform_work
           end
         end
+
+        context 'when notify_on_success is true' do
+          before do
+            policy.update_column(:notify_on_success, true)
+            create(:user, owner_of: policy.group)
+          end
+
+          it 'sends success notification email' do
+            expect(Notify).to receive(:virtual_registry_cleanup_complete)
+              .with(policy, instance_of(User)).and_call_original
+
+            perform_work
+          end
+        end
+
+        context 'when notify_on_success is false' do
+          before do
+            policy.update_column(:notify_on_success, false)
+          end
+
+          it 'does not send notification email' do
+            expect(Notify).not_to receive(:virtual_registry_cleanup_complete)
+
+            perform_work
+          end
+        end
       end
 
       context 'when service execution fails' do
@@ -159,6 +185,32 @@ RSpec.describe VirtualRegistries::Cleanup::ExecutePolicyWorker, feature_category
           end
 
           perform_work
+        end
+
+        context 'when notify_on_failure is true' do
+          before do
+            policy.update_column(:notify_on_failure, true)
+            create(:user, owner_of: policy.group)
+          end
+
+          it 'sends failure notification email' do
+            expect(Notify).to receive(:virtual_registry_cleanup_failure)
+              .with(policy, instance_of(User)).and_call_original
+
+            perform_work
+          end
+        end
+
+        context 'when notify_on_failure is false' do
+          before do
+            policy.update_column(:notify_on_failure, false)
+          end
+
+          it 'does not send notification email' do
+            expect(Notify).not_to receive(:virtual_registry_cleanup_failure)
+
+            perform_work
+          end
         end
       end
     end
