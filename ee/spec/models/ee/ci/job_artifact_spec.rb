@@ -2,62 +2,195 @@
 
 require 'spec_helper'
 
-RSpec.describe Ci::JobArtifact, feature_category: :geo_replication do
+RSpec.describe Ci::JobArtifact, feature_category: :job_artifacts do
   using RSpec::Parameterized::TableSyntax
-  include EE::GeoHelpers
 
-  let_it_be(:job) { create(:ci_build) }
+  describe 'Geo replication', feature_category: :geo_replication do
+    include EE::GeoHelpers
 
-  include_examples 'a verifiable model for verification state' do
     before do
       stub_artifacts_object_storage
     end
 
-    let(:verifiable_model_record) do
-      build(:ci_job_artifact, job: job, partition_id: job.partition_id)
-    end
-
-    let(:unverifiable_model_record) do
-      build(:ci_job_artifact, :remote_store, job: job, partition_id: job.partition_id)
-    end
-  end
-
-  describe '#destroy' do
-    let_it_be(:primary) { create(:geo_node, :primary) }
-    let_it_be(:secondary) { create(:geo_node) }
-
-    before do
-      stub_current_geo_node(primary)
-    end
-
-    context 'when pipeline is destroyed' do
-      it 'creates a Geo delete event async' do
-        job_artifact = create(:ee_ci_job_artifact, :archive)
-
-        payload = {
-          model_record_id: job_artifact.id,
-          blob_path: job_artifact.file.relative_path,
-          uploader_class: 'JobArtifactUploader'
-        }
-
-        expect(::Geo::JobArtifactReplicator)
-          .to receive(:bulk_create_delete_events_async)
-          .with([payload])
-          .once
-
-        job_artifact.job.pipeline.destroy!
+    describe 'associations' do
+      it 'has one verification state table class' do
+        is_expected
+          .to have_one(:job_artifact_state)
+          .class_name('Geo::JobArtifactState')
+          .inverse_of(:job_artifact)
+          .autosave(false)
       end
     end
 
-    context 'JobArtifact destroy fails' do
-      it 'does not create a JobArtifactDeletedEvent' do
-        job_artifact = create(:ee_ci_job_artifact, :archive)
+    include_examples 'a verifiable model for verification state' do
+      let_it_be(:job) { create(:ci_build) }
 
-        allow(job_artifact).to receive(:destroy!)
-                           .and_raise(ActiveRecord::RecordNotDestroyed)
+      let(:verifiable_model_record) do
+        build(:ci_job_artifact, job: job, partition_id: job.partition_id)
+      end
 
-        expect { job_artifact.destroy! }.to raise_error(ActiveRecord::RecordNotDestroyed)
-                                        .and not_change { Ci::JobArtifact.count }
+      let(:unverifiable_model_record) do
+        build(:ci_job_artifact, :remote_store, job: job, partition_id: job.partition_id)
+      end
+    end
+
+    describe 'replication/verification' do
+      let_it_be(:group_1) { create(:group, organization: create(:organization)) }
+      let_it_be(:group_2) { create(:group, organization: create(:organization)) }
+      let_it_be(:nested_group_1) { create(:group, parent: group_1) }
+      let_it_be(:project_1) { create(:project, group: group_1) }
+      let_it_be(:project_2) { create(:project, group: nested_group_1) }
+      let_it_be(:project_3) { create(:project, group: group_2) }
+      let_it_be(:job_1) { create(:ci_build, project: project_1) }
+      let_it_be(:job_2) { create(:ci_build, project: project_2) }
+      let_it_be(:job_3) { create(:ci_build, project: project_3) }
+      let_it_be(:job_4) { create(:ci_build, project: project_1) }
+
+      # Job artifact for the root group
+      let_it_be(:first_replicable_and_in_selective_sync) do
+        create(:ci_job_artifact, job: job_1)
+      end
+
+      # Job artifact for a subgroup
+      let_it_be(:second_replicable_and_in_selective_sync) do
+        create(:ci_job_artifact, job: job_2)
+      end
+
+      # Job artifact for a subgroup and on object storage
+      let!(:third_replicable_on_object_storage_and_in_selective_sync) do
+        create(:ci_job_artifact, :remote_store, job: job_4)
+      end
+
+      # Job artifact for a group not in selective sync
+      let_it_be(:last_replicable_and_not_in_selective_sync) do
+        create(:ci_job_artifact, job: job_3)
+      end
+
+      include_examples 'Geo Framework selective sync behavior'
+
+      describe '#destroy' do
+        let_it_be_with_refind(:primary) { create(:geo_node, :primary) }
+
+        before do
+          stub_current_geo_node(primary)
+        end
+
+        context 'when pipeline is destroyed' do
+          it 'creates a Geo delete event async' do
+            job_artifact = create(:ee_ci_job_artifact, :archive)
+
+            payload = {
+              model_record_id: job_artifact.id,
+              blob_path: job_artifact.file.relative_path,
+              uploader_class: 'JobArtifactUploader'
+            }
+
+            expect(::Geo::JobArtifactReplicator)
+              .to receive(:bulk_create_delete_events_async)
+              .with([payload])
+              .once
+
+            job_artifact.job.pipeline.destroy!
+          end
+        end
+
+        context 'when job artifact destroy fails' do
+          it 'does not create a JobArtifactDeletedEvent' do
+            job_artifact = create(:ee_ci_job_artifact, :archive)
+
+            allow(job_artifact).to receive(:destroy!)
+                               .and_raise(ActiveRecord::RecordNotDestroyed)
+
+            expect { job_artifact.destroy! }.to raise_error(ActiveRecord::RecordNotDestroyed)
+                                            .and not_change { Ci::JobArtifact.count }
+          end
+        end
+      end
+
+      describe '.create_verification_details_for' do
+        let_it_be(:job_with_partition) { create(:ci_build, partition_id: 100) }
+        let_it_be(:artifact1) { create(:ci_job_artifact, :archive, job: job_with_partition, partition_id: 100) }
+        let_it_be(:artifact2) { create(:ci_job_artifact, :junit, job: job_with_partition, partition_id: 100) }
+
+        context 'when creating verification details for multiple artifacts' do
+          it 'creates verification state records without duplicates' do
+            primary_keys = [artifact1.id, artifact2.id]
+
+            expect { described_class.create_verification_details_for(primary_keys) }
+              .to change { Geo::JobArtifactState.count }.by(2)
+
+            # Verify the records were created with correct attributes
+            state1 = Geo::JobArtifactState.find_by(job_artifact_id: artifact1.id, partition_id: 100)
+            state2 = Geo::JobArtifactState.find_by(job_artifact_id: artifact2.id, partition_id: 100)
+
+            expect(state1).to be_present
+            expect(state2).to be_present
+            expect(state1.partition_id).to eq(100)
+            expect(state2.partition_id).to eq(100)
+          end
+
+          it 'handles duplicate creation attempts gracefully' do
+            primary_keys = [artifact1.id, artifact2.id]
+
+            # First call should create records
+            expect { described_class.create_verification_details_for(primary_keys) }
+              .to change { Geo::JobArtifactState.count }.by(2)
+
+            # Second call with same keys should not raise error or create duplicates
+            expect { described_class.create_verification_details_for(primary_keys) }
+              .not_to change { Geo::JobArtifactState.count }
+
+            # Verify no constraint violations occurred
+            expect(Geo::JobArtifactState.where(job_artifact_id: [artifact1.id, artifact2.id]).count).to eq(2)
+          end
+
+          it 'handles mixed scenarios with existing and new records' do
+            # Create verification state for first artifact only
+            described_class.create_verification_details_for([artifact1.id])
+            expect(Geo::JobArtifactState.count).to eq(1)
+
+            # Now try to create for both (one existing, one new)
+            primary_keys = [artifact1.id, artifact2.id]
+            expect { described_class.create_verification_details_for(primary_keys) }
+              .to change { Geo::JobArtifactState.count }.by(1)
+
+            expect(Geo::JobArtifactState.count).to eq(2)
+          end
+
+          it 'prevents database constraint violations when attempting to insert duplicates' do
+            primary_keys = [artifact1.id]
+
+            # Create initial record
+            described_class.create_verification_details_for(primary_keys)
+            expect(Geo::JobArtifactState.count).to eq(1)
+
+            # This test would fail without the unique_by parameter, as it would attempt
+            # to insert a duplicate record and raise a database constraint violation.
+            # With unique_by: [:job_artifact_id, :partition_id], the duplicate is ignored.
+            expect { described_class.create_verification_details_for(primary_keys) }
+              .not_to raise_error
+
+            expect(Geo::JobArtifactState.count).to eq(1)
+          end
+
+          context 'demonstrating the need for unique_by parameter' do
+            it 'shows that insert_all without unique_by fails when duplicates exist' do
+              # Create the initial record using the method
+              described_class.create_verification_details_for([artifact1.id])
+
+              # Try to insert the same record directly without unique_by
+              rows = [{ job_artifact_id: artifact1.id, partition_id: artifact1.partition_id }]
+
+              # This fails because Rails doesn't know how to handle the conflict
+              expect { Geo::JobArtifactState.insert_all(rows) }
+                .to raise_error(ArgumentError, /No unique index found/)
+
+              # But with unique_by (as used in the actual method), it works
+              expect { Geo::JobArtifactState.insert_all(rows, unique_by: %i[job_artifact_id partition_id]) }
+                .not_to raise_error
+            end
+          end
+        end
       end
     end
   end
@@ -305,81 +438,9 @@ RSpec.describe Ci::JobArtifact, feature_category: :geo_replication do
     end
   end
 
-  describe '.replicables_for_current_secondary' do
-    # Selective sync is configured relative to the job artifact's project.
-    #
-    # Permutations of sync_object_storage combined with object-stored-artifacts
-    # are tested in code, because the logic is simple, and to do it in the table
-    # would quadruple its size and have too much duplication.
-    where(:selective_sync_namespaces, :selective_sync_shards, :factory, :project_factory, :include_expectation) do
-      nil                  | nil    | [:ci_job_artifact]           | [:project]               | true
-      # selective sync by shard
-      nil                  | :model | [:ci_job_artifact]           | [:project]               | true
-      nil                  | :other | [:ci_job_artifact]           | [:project]               | false
-      # selective sync by namespace
-      :model_parent        | nil    | [:ci_job_artifact]           | [:project]               | true
-      :model_parent_parent | nil    | [:ci_job_artifact]           | [:project, :in_subgroup] | true
-      :other               | nil    | [:ci_job_artifact]           | [:project]               | false
-      :other               | nil    | [:ci_job_artifact]           | [:project, :in_subgroup] | false
-      # expired
-      nil                  | nil    | [:ci_job_artifact, :expired] | [:project]               | true
-    end
-
-    with_them do
-      subject(:job_artifact_included) { described_class.replicables_for_current_secondary(ci_job_artifact).exists? }
-
-      let(:project) { create(*project_factory) } # rubocop:disable Rails/SaveBang
-      let(:ci_build) { create(:ci_build, project: project) }
-      let(:node) do
-        create(
-          :geo_node_with_selective_sync_for,
-          model: project,
-          namespaces: selective_sync_namespaces,
-          shards: selective_sync_shards,
-          sync_object_storage: sync_object_storage
-        )
-      end
-
-      before do
-        stub_artifacts_object_storage
-        stub_current_geo_node(node)
-      end
-
-      context 'when sync object storage is enabled' do
-        let(:sync_object_storage) { true }
-
-        context 'when the job artifact is locally stored' do
-          let(:ci_job_artifact) { create(*factory, job: ci_build) }
-
-          it { is_expected.to eq(include_expectation) }
-        end
-
-        context 'when the job artifact is object stored' do
-          let(:ci_job_artifact) { create(*factory, :remote_store, job: ci_build) }
-
-          it { is_expected.to eq(include_expectation) }
-        end
-      end
-
-      context 'when sync object storage is disabled' do
-        let(:sync_object_storage) { false }
-
-        context 'when the job artifact is locally stored' do
-          let(:ci_job_artifact) { create(*factory, job: ci_build) }
-
-          it { is_expected.to eq(include_expectation) }
-        end
-
-        context 'when the job artifact is object stored' do
-          let(:ci_job_artifact) { create(*factory, :remote_store, job: ci_build) }
-
-          it { is_expected.to be_falsey }
-        end
-      end
-    end
-  end
-
   describe '#security_report' do
+    let_it_be(:job) { create(:ci_build) }
+
     let(:job_artifact) { create(:ee_ci_job_artifact, :sast, job: job) }
     let(:validate) { false }
     let(:security_report) { job_artifact.security_report(validate: validate) }
@@ -469,6 +530,8 @@ RSpec.describe Ci::JobArtifact, feature_category: :geo_replication do
   end
 
   describe '#clear_security_report' do
+    let_it_be(:job) { create(:ci_build) }
+
     let(:job_artifact) { create(:ee_ci_job_artifact, :sast, job: job) }
 
     subject(:clear_security_report) { job_artifact.clear_security_report }
@@ -485,92 +548,6 @@ RSpec.describe Ci::JobArtifact, feature_category: :geo_replication do
       # This entity class receives the call twice
       # because of the way MergeReportsService is implemented.
       expect(::Gitlab::Ci::Reports::Security::Report).to have_received(:new).twice
-    end
-  end
-
-  describe '.create_verification_details_for' do
-    let_it_be(:job_with_partition) { create(:ci_build, partition_id: 100) }
-    let_it_be(:artifact1) { create(:ci_job_artifact, :archive, job: job_with_partition, partition_id: 100) }
-    let_it_be(:artifact2) { create(:ci_job_artifact, :junit, job: job_with_partition, partition_id: 100) }
-
-    context 'when creating verification details for multiple artifacts' do
-      it 'creates verification state records without duplicates' do
-        primary_keys = [artifact1.id, artifact2.id]
-
-        expect { described_class.create_verification_details_for(primary_keys) }
-          .to change { Geo::JobArtifactState.count }.by(2)
-
-        # Verify the records were created with correct attributes
-        state1 = Geo::JobArtifactState.find_by(job_artifact_id: artifact1.id, partition_id: 100)
-        state2 = Geo::JobArtifactState.find_by(job_artifact_id: artifact2.id, partition_id: 100)
-
-        expect(state1).to be_present
-        expect(state2).to be_present
-        expect(state1.partition_id).to eq(100)
-        expect(state2.partition_id).to eq(100)
-      end
-
-      it 'handles duplicate creation attempts gracefully' do
-        primary_keys = [artifact1.id, artifact2.id]
-
-        # First call should create records
-        expect { described_class.create_verification_details_for(primary_keys) }
-          .to change { Geo::JobArtifactState.count }.by(2)
-
-        # Second call with same keys should not raise error or create duplicates
-        expect { described_class.create_verification_details_for(primary_keys) }
-          .not_to change { Geo::JobArtifactState.count }
-
-        # Verify no constraint violations occurred
-        expect(Geo::JobArtifactState.where(job_artifact_id: [artifact1.id, artifact2.id]).count).to eq(2)
-      end
-
-      it 'handles mixed scenarios with existing and new records' do
-        # Create verification state for first artifact only
-        described_class.create_verification_details_for([artifact1.id])
-        expect(Geo::JobArtifactState.count).to eq(1)
-
-        # Now try to create for both (one existing, one new)
-        primary_keys = [artifact1.id, artifact2.id]
-        expect { described_class.create_verification_details_for(primary_keys) }
-          .to change { Geo::JobArtifactState.count }.by(1)
-
-        expect(Geo::JobArtifactState.count).to eq(2)
-      end
-
-      it 'prevents database constraint violations when attempting to insert duplicates' do
-        primary_keys = [artifact1.id]
-
-        # Create initial record
-        described_class.create_verification_details_for(primary_keys)
-        expect(Geo::JobArtifactState.count).to eq(1)
-
-        # This test would fail without the unique_by parameter, as it would attempt
-        # to insert a duplicate record and raise a database constraint violation.
-        # With unique_by: [:job_artifact_id, :partition_id], the duplicate is ignored.
-        expect { described_class.create_verification_details_for(primary_keys) }
-          .not_to raise_error
-
-        expect(Geo::JobArtifactState.count).to eq(1)
-      end
-
-      context 'demonstrating the need for unique_by parameter' do
-        it 'shows that insert_all without unique_by fails when duplicates exist' do
-          # Create the initial record using the method
-          described_class.create_verification_details_for([artifact1.id])
-
-          # Try to insert the same record directly without unique_by
-          rows = [{ job_artifact_id: artifact1.id, partition_id: artifact1.partition_id }]
-
-          # This fails because Rails doesn't know how to handle the conflict
-          expect { Geo::JobArtifactState.insert_all(rows) }
-            .to raise_error(ArgumentError, /No unique index found/)
-
-          # But with unique_by (as used in the actual method), it works
-          expect { Geo::JobArtifactState.insert_all(rows, unique_by: %i[job_artifact_id partition_id]) }
-            .not_to raise_error
-        end
-      end
     end
   end
 end

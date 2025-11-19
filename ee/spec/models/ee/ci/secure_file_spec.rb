@@ -2,94 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ci::SecureFile, feature_category: :geo_replication do
-  include EE::GeoHelpers
-
-  include_examples 'a verifiable model for verification state' do
-    let(:project) { create(:project) }
-    let(:verifiable_model_record) { build(:ci_secure_file, project: project) }
-
-    let(:unverifiable_model_record) do
-      stub_ci_secure_file_object_storage
-      file = build(:ci_secure_file, :remote_store, project: project)
-      stub_ci_secure_file_object_storage(enabled: false)
-
-      file
-    end
-  end
-
-  describe '.replicables_for_current_secondary' do
-    using RSpec::Parameterized::TableSyntax
-
-    # Selective sync is configured relative to the secure file's project.
-    #
-    # Permutations of sync_object_storage combined with object-stored-artifacts
-    # are tested in code, because the logic is simple, and to do it in the table
-    # would quadruple its size and have too much duplication.
-    where(:selective_sync_namespaces, :selective_sync_shards, :factory, :project_factory, :include_expectation) do
-      nil                  | nil    | [:ci_secure_file]           | [:project]               | true
-      # selective sync by shard
-      nil                  | :model | [:ci_secure_file]           | [:project]               | true
-      nil                  | :other | [:ci_secure_file]           | [:project]               | false
-      # selective sync by namespace
-      :model_parent        | nil    | [:ci_secure_file]           | [:project]               | true
-      :model_parent_parent | nil    | [:ci_secure_file]           | [:project, :in_subgroup] | true
-      :other               | nil    | [:ci_secure_file]           | [:project]               | false
-      :other               | nil    | [:ci_secure_file]           | [:project, :in_subgroup] | false
-    end
-
-    with_them do
-      subject(:ci_secure_file_included) { described_class.replicables_for_current_secondary(ci_secure_file).exists? }
-
-      let(:project) { create(*project_factory) } # rubocop:disable Rails/SaveBang
-      let(:node) do
-        create(
-          :geo_node_with_selective_sync_for,
-          model: project,
-          namespaces: selective_sync_namespaces,
-          shards: selective_sync_shards,
-          sync_object_storage: sync_object_storage
-        )
-      end
-
-      before do
-        stub_current_geo_node(node)
-      end
-
-      context 'when sync object storage is enabled' do
-        let(:sync_object_storage) { true }
-
-        context 'when the ci secure file is locally stored' do
-          let(:ci_secure_file) { create(*factory, project: project) }
-
-          it { is_expected.to eq(include_expectation) }
-        end
-
-        context 'when the ci secure file is object stored' do
-          let(:ci_secure_file) { create(*factory, :remote_store, project: project) }
-
-          it { is_expected.to eq(include_expectation) }
-        end
-      end
-
-      context 'when sync object storage is disabled' do
-        let(:sync_object_storage) { false }
-
-        context 'when the ci secure file is locally stored' do
-          let(:ci_secure_file) { create(*factory, project: project) }
-
-          it { is_expected.to eq(include_expectation) }
-        end
-
-        context 'when the ci secure file is object stored' do
-          let(:ci_secure_file) { create(*factory, :remote_store, project: project) }
-
-          it { is_expected.to be_falsey }
-        end
-      end
-    end
-  end
-
+RSpec.describe Ci::SecureFile, feature_category: :mobile_devops do
   describe '.search' do
     let_it_be(:ci_secure_file1) { create(:ci_secure_file) }
     let_it_be(:ci_secure_file2) { create(:ci_secure_file) }
@@ -127,6 +40,62 @@ RSpec.describe Ci::SecureFile, feature_category: :geo_replication do
           end
         end
       end
+    end
+  end
+
+  describe 'Geo replication', feature_category: :geo_replication do
+    describe 'associations' do
+      it 'has one verification state table class' do
+        is_expected
+          .to have_one(:ci_secure_file_state)
+          .class_name('Geo::CiSecureFileState')
+          .inverse_of(:ci_secure_file)
+          .autosave(false)
+      end
+    end
+
+    include_examples 'a verifiable model for verification state' do
+      let(:project) { create(:project) }
+      let(:verifiable_model_record) { build(:ci_secure_file, project: project) }
+
+      let(:unverifiable_model_record) do
+        stub_ci_secure_file_object_storage
+        file = build(:ci_secure_file, :remote_store, project: project)
+        stub_ci_secure_file_object_storage(enabled: false)
+
+        file
+      end
+    end
+
+    describe 'replication/verification' do
+      let_it_be(:group_1) { create(:group, organization: create(:organization)) }
+      let_it_be(:group_2) { create(:group, organization: create(:organization)) }
+      let_it_be(:nested_group_1) { create(:group, parent: group_1) }
+      let_it_be(:project_1) { create(:project, group: group_1) }
+      let_it_be(:project_2) { create(:project, group: nested_group_1) }
+      let_it_be(:project_3) { create(:project, :broken_storage, group: group_2) }
+
+      # Secure file for the root group
+      let_it_be(:first_replicable_and_in_selective_sync) do
+        create(:ci_secure_file, project: project_1)
+      end
+
+      # Secure file for a subgroup
+      let_it_be(:second_replicable_and_in_selective_sync) do
+        create(:ci_secure_file, project: project_2)
+      end
+
+      # Secure file for a subgroup and on object storage
+      let!(:third_replicable_on_object_storage_and_in_selective_sync) do
+        create(:ci_secure_file, :remote_store, project: project_1)
+      end
+
+      # Secure file for a group not in selective sync
+      let_it_be(:last_replicable_and_not_in_selective_sync) do
+        create(:ci_secure_file, project: project_3)
+      end
+
+      include_examples 'Geo Framework selective sync behavior'
     end
   end
 end
