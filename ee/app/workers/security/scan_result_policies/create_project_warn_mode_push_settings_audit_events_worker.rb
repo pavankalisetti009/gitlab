@@ -3,7 +3,7 @@
 module Security
   module ScanResultPolicies
     # rubocop:disable Scalability/IdempotentWorker -- policy edits are indistinguishable
-    class CreateProjectWarnModeAuditEventsWorker
+    class CreateProjectWarnModePushSettingsAuditEventsWorker
       # rubocop:enable Scalability/IdempotentWorker
       include ApplicationWorker
 
@@ -21,7 +21,7 @@ module Security
 
         policy = Security::Policy.find_by_id(policy_id) || return
 
-        Security::ScanResultPolicies::CreateProjectWarnModeAuditEventService
+        Security::ScanResultPolicies::CreateProjectWarnModePushSettingsAuditEventService
           .new(project, policy)
           .execute
       end

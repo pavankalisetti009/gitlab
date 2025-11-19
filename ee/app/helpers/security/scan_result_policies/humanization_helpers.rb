@@ -13,6 +13,10 @@ module Security
           s_("ApprovalSettings|Require user re-authentication (password or SAML) to approve")
         when :remove_approvals_with_new_commit
           "#{s_('ApprovalSettings|When a commit is added:')} #{s_('ApprovalSettings|Remove all approvals')}"
+        when :block_branch_modification
+          s_("ScanResultPolicy|Prevent branch modification")
+        when :prevent_pushing_and_force_pushing
+          s_("ScanResultPolicy|Prevent pushing and force pushing")
         end
       end
     end
