@@ -3,6 +3,7 @@ import { GlEmptyState, GlLoadingIcon } from '@gitlab/ui';
 import emptySearchSvg from '@gitlab/svgs/dist/illustrations/empty-state/empty-search-md.svg';
 import { s__ } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import { TYPENAME_PROJECT } from '~/graphql_shared/constants';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_AI_CATALOG_ITEM } from 'ee/graphql_shared/constants';
@@ -19,6 +20,9 @@ export default {
     isGlobal: {
       default: false,
     },
+    projectId: {
+      default: null,
+    },
   },
   data() {
     return {
@@ -33,6 +37,9 @@ export default {
         return {
           id: convertToGraphQLId(TYPENAME_AI_CATALOG_ITEM, this.$route.params.id),
           showSoftDeleted: !this.isGlobal,
+          hasProject: Boolean(this.projectId),
+          // projectId is non-nullable in GraphQL query, so we need a fallback value.
+          projectId: convertToGraphQLId(TYPENAME_PROJECT, this.projectId || '0'),
         };
       },
       update(data) {

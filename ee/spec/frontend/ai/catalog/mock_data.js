@@ -13,6 +13,7 @@ const TYPENAME_AI_CATALOG_FLOW_CREATE = 'AiCatalogFlowCreatePayload';
 const TYPENAME_AI_CATALOG_FLOW_UPDATE = 'AiCatalogFlowUpdatePayload';
 const TYPENAME_AI_CATALOG_FLOW_DELETE = 'AiCatalogFlowDeletePayload';
 const TYPENAME_AI_CATALOG_THIRD_PARTY_FLOW_VERSION = 'AiCatalogThirdPartyFlowVersion';
+const TYPENAME_AI_FLOW_TRIGGER = 'AiFlowTriggerType';
 const TYPENAME_GROUP = 'Group';
 const TYPENAME_GROUP_PERMISSIONS = 'GroupPermissions';
 export const TYPENAME_PROJECT = 'Project';
@@ -408,6 +409,18 @@ export const mockFlows = [
   }),
 ];
 
+export const mockFlowTrigger = {
+  id: 'gid://gitlab/Ai::FlowTrigger/73',
+  eventTypes: [0],
+  __typename: TYPENAME_AI_FLOW_TRIGGER,
+};
+
+export const mockFlowConfigurationForProject = {
+  id: 'gid://gitlab/Ai::Catalog::ItemConsumer/12',
+  flowTrigger: mockFlowTrigger,
+  __typename: TYPENAME_AI_CATALOG_ITEM_CONSUMER,
+};
+
 export const mockCatalogFlowsResponse = {
   data: {
     aiCatalogItems: {
@@ -468,7 +481,10 @@ export const mockUpdateAiCatalogFlowErrorMutation = {
 
 export const mockAiCatalogFlowResponse = {
   data: {
-    aiCatalogItem: mockFlow,
+    aiCatalogItem: {
+      ...mockFlow,
+      configurationForProject: mockFlowConfigurationForProject,
+    },
   },
 };
 

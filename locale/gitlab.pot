@@ -2490,7 +2490,7 @@ msgstr ""
 msgid "AICatalog|AI Catalog"
 msgstr ""
 
-msgid "AICatalog|Add flow triggers"
+msgid "AICatalog|Add triggers"
 msgstr ""
 
 msgid "AICatalog|Agent configuration"
@@ -2839,6 +2839,9 @@ msgid "AICatalog|Select a project for your AI agent to be associated with."
 msgstr ""
 
 msgid "AICatalog|Select a project for your AI flow to be associated with."
+msgstr ""
+
+msgid "AICatalog|Select at least one trigger."
 msgstr ""
 
 msgid "AICatalog|Select the type of your flow."

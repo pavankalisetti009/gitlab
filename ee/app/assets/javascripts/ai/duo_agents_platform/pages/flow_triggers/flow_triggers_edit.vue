@@ -8,7 +8,6 @@ import { convertToGraphQLId } from '~/graphql_shared/utils';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import updateAiFlowTriggerMutation from '../../graphql/mutations/update_ai_flow_trigger.mutation.graphql';
 import getAiFlowTriggersQuery from '../../graphql/queries/get_ai_flow_triggers.query.graphql';
-import { FLOW_TRIGGERS_INDEX_ROUTE } from '../../router/constants';
 import FlowTriggerForm from './components/flow_trigger_form.vue';
 
 export default {
@@ -96,9 +95,7 @@ export default {
         }
 
         this.$toast.show(s__('DuoAgentsPlatform|Flow trigger updated successfully.'));
-        this.$router.push({
-          name: FLOW_TRIGGERS_INDEX_ROUTE,
-        });
+        this.$router.go(-1);
       } catch (error) {
         this.errorMessages = [
           error.message ||

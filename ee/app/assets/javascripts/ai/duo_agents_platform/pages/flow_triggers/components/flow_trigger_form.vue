@@ -19,7 +19,6 @@ import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import { createAvailableFlowItemTypes } from 'ee/ai/catalog/utils';
 import getCatalogConsumerItemsQuery from 'ee/ai/duo_agents_platform/graphql/queries/get_catalog_consumer_items.query.graphql';
 import projectServiceAccountsQuery from '../../../graphql/queries/get_project_service_accounts.query.graphql';
-import { FLOW_TRIGGERS_INDEX_ROUTE } from '../../../router/constants';
 import AiLegalDisclaimer from '../../../components/common/ai_legal_disclaimer.vue';
 
 const MODE_CREATE = 'create';
@@ -226,6 +225,9 @@ export default {
 
       this.$emit('submit', formValues);
     },
+    onCancel() {
+      this.$router.go(-1);
+    },
     usersProcessor(data) {
       return data.project?.projectMembers?.nodes?.map(({ user }) => user) || [];
     },
@@ -233,7 +235,6 @@ export default {
       this.errors = [];
     },
   },
-  indexRoute: FLOW_TRIGGERS_INDEX_ROUTE,
   projectServiceAccountsQuery,
   configModeOptions: [
     { value: CONFIG_MODE_CATALOG, text: s__('DuoAgentsPlatform|AI Catalog') },
@@ -378,11 +379,7 @@ export default {
         >
           {{ submitButtonText }}
         </gl-button>
-        <gl-button
-          :to="{ name: $options.indexRoute }"
-          :disabled="isLoading"
-          class="gl-w-full @sm/panel:gl-w-auto"
-        >
+        <gl-button :disabled="isLoading" class="gl-w-full @sm/panel:gl-w-auto" @click="onCancel">
           {{ __('Cancel') }}
         </gl-button>
       </div>
