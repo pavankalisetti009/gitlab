@@ -2,7 +2,7 @@
 
 <%= _("GitLab user %{username} flagged the AI Catalog item %{item_name} for review.") % { username: @reporter.username, item_name: @ai_catalog_item.name } %>
 
-- <%= _("Catalog item:") %> <%= @ai_catalog_item.name %>
+- <%= _("Catalog item: %{name} (ID: %{id})") % { name: @ai_catalog_item.name, id: @ai_catalog_item.id } %>
 - <%= _("Reported by: %{username} at %{time}") % { username: @reporter.username, time: @reported_at.strftime('%Y-%m-%d %H:%M:%S %Z') } %>
 - <%= _("Reason:") %>
 <% if @reason.present? %>
