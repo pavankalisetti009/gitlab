@@ -5,7 +5,9 @@ RSpec.shared_context 'with fetch_model_definitions_example' do
     {
       'models' => [
         { 'name' => 'Claude Sonnet', 'identifier' => 'claude-sonnet', 'provider' => 'Anthropic' },
-        { 'name' => 'GPT-4', 'identifier' => 'gpt-4', 'provider' => 'OpenAI' }
+        { 'name' => 'GPT-4', 'identifier' => 'gpt-4', 'provider' => 'OpenAI' },
+        { 'name' => 'Claude Sonnet 3.7', 'identifier' => 'claude-sonnet-3-7', 'provider' => 'Anthropic',
+          'deprecation' => { 'deprecation_date' => '2025-10-28', 'removal_version' => '18.8' } }
       ],
       'unit_primitives' => [
         {
@@ -18,6 +20,12 @@ RSpec.shared_context 'with fetch_model_definitions_example' do
           'feature_setting' => 'code_completions',
           'default_model' => 'gpt-4',
           'selectable_models' => %w[gpt-4],
+          'beta_models' => []
+        },
+        {
+          'feature_setting' => 'review_merge_request',
+          'default_model' => 'claude-sonnet',
+          'selectable_models' => %w[claude-sonnet claude-sonnet-3-7],
           'beta_models' => []
         }
       ]

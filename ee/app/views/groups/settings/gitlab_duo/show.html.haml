@@ -1,5 +1,9 @@
 - gitlab_duo_text = _('GitLab Duo')
 - page_title gitlab_duo_text
 - breadcrumb_title gitlab_duo_text
+- current_user_is_owner = @group && !@group.parent_id.present? && can?(current_user, :owner_access, @group)
+
+- if Gitlab::Saas.feature_available?(:gitlab_com_subscriptions) && current_user_is_owner
+  = render_if_exists 'shared/ai_model_deprecation_alert', group: @group
 
 #js-gitlab-duo-home{ data: duo_home_app_data(@group) }
