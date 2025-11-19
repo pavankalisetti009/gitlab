@@ -17,7 +17,7 @@ module GoogleAnalyticsCSP
 
       ga4_domains = [
         '*.googletagmanager.com', # Google tag manager
-        '*.analytics.gitlab.com'  # Analytics server
+        'https://analytics.gitlab.com' # Analytics server
       ]
 
       default_img_src = policy.directives['img-src'] || policy.directives['default-src']
