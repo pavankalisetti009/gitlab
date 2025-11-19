@@ -114,7 +114,7 @@ module QA
             # @param limit [Integer, String] integer >=1, empty string removes the limit
             def set_saas_user_cap_limit(limit)
               # Need to wait for the input field to appear after the toggle is enabled
-              Support::Retrier.retry_until(
+              QA::Support::Retrier.retry_until(
                 max_attempts: 10, retry_on_exception: true, reload_page: page, sleep_interval: 2
               ) do
                 expand_content('permissions-settings')

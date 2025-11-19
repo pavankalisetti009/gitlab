@@ -14,7 +14,7 @@ module QA
           end
 
           def click_sign_in
-            Support::Retrier.retry_until do
+            QA::Support::Retrier.retry_until do
               click_element 'saml-sso-signin-button'
               !has_element?('saml-sso-signin-button', wait: 0)
             end
