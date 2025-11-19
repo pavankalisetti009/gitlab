@@ -207,6 +207,18 @@ BEGIN
 END
 $$;
 
+CREATE FUNCTION cleanup_pipeline_iid_after_delete() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  IF OLD.iid IS NOT NULL THEN
+    DELETE FROM p_ci_pipeline_iids
+    WHERE project_id = OLD.project_id AND iid = OLD.iid;
+  END IF;
+  RETURN OLD;
+END;
+$$;
+
 CREATE FUNCTION custom_dashboard_search_vector_update() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -266,6 +278,54 @@ BEGIN
 
   RETURN NEW;
 END
+$$;
+
+CREATE FUNCTION ensure_pipeline_iid_uniqueness_before_insert() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  IF NEW.iid IS NOT NULL THEN
+    BEGIN
+      INSERT INTO p_ci_pipeline_iids (project_id, iid)
+      VALUES (NEW.project_id, NEW.iid);
+    EXCEPTION WHEN unique_violation THEN
+      RAISE EXCEPTION 'Pipeline with iid % already exists for project %',
+        NEW.iid, NEW.project_id
+        USING ERRCODE = 'unique_violation',
+              DETAIL = 'The iid must be unique within a project',
+              HINT = 'Use a different iid or let the system generate one';
+    END;
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+CREATE FUNCTION ensure_pipeline_iid_uniqueness_before_update_iid() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  IF NEW.iid IS DISTINCT FROM OLD.iid THEN
+    IF NEW.iid IS NOT NULL THEN
+      BEGIN
+        INSERT INTO p_ci_pipeline_iids (project_id, iid)
+        VALUES (NEW.project_id, NEW.iid);
+      EXCEPTION WHEN unique_violation THEN
+        RAISE EXCEPTION 'Pipeline with iid % already exists for project %',
+          NEW.iid, NEW.project_id
+          USING ERRCODE = 'unique_violation',
+                DETAIL = 'The iid must be unique within a project',
+                HINT = 'Use a different iid or let the system generate one';
+      END;
+    END IF;
+
+    IF OLD.iid IS NOT NULL THEN
+      DELETE FROM p_ci_pipeline_iids
+      WHERE project_id = OLD.project_id AND iid = OLD.iid;
+    END IF;
+  END IF;
+  RETURN NEW;
+END;
 $$;
 
 CREATE TABLE namespaces (
@@ -48932,6 +48992,8 @@ CREATE TRIGGER trigger_cf646a118cbb BEFORE INSERT OR UPDATE ON milestone_release
 
 CREATE TRIGGER trigger_cfbec3f07e2b BEFORE INSERT OR UPDATE ON deployment_merge_requests FOR EACH ROW EXECUTE FUNCTION trigger_cfbec3f07e2b();
 
+CREATE TRIGGER trigger_cleanup_pipeline_iid_after_delete AFTER DELETE ON p_ci_pipelines FOR EACH ROW EXECUTE FUNCTION cleanup_pipeline_iid_after_delete();
+
 CREATE TRIGGER trigger_d4487a75bd44 BEFORE INSERT OR UPDATE ON terraform_state_versions FOR EACH ROW EXECUTE FUNCTION trigger_d4487a75bd44();
 
 CREATE TRIGGER trigger_d5c895007948 BEFORE INSERT OR UPDATE ON protected_environment_approval_rules FOR EACH ROW EXECUTE FUNCTION trigger_d5c895007948();
@@ -48979,6 +49041,10 @@ CREATE TRIGGER trigger_efb9d354f05a BEFORE INSERT OR UPDATE ON incident_manageme
 CREATE TRIGGER trigger_eff80ead42ac BEFORE INSERT OR UPDATE ON ci_unit_test_failures FOR EACH ROW EXECUTE FUNCTION trigger_eff80ead42ac();
 
 CREATE TRIGGER trigger_ensure_note_diff_files_sharding_key BEFORE INSERT ON note_diff_files FOR EACH ROW EXECUTE FUNCTION ensure_note_diff_files_sharding_key();
+
+CREATE TRIGGER trigger_ensure_pipeline_iid_uniqueness_before_insert BEFORE INSERT ON p_ci_pipelines FOR EACH ROW EXECUTE FUNCTION ensure_pipeline_iid_uniqueness_before_insert();
+
+CREATE TRIGGER trigger_ensure_pipeline_iid_uniqueness_before_update_iid BEFORE UPDATE OF iid ON p_ci_pipelines FOR EACH ROW EXECUTE FUNCTION ensure_pipeline_iid_uniqueness_before_update_iid();
 
 CREATE TRIGGER trigger_f6c61cdddf31 BEFORE INSERT OR UPDATE ON ml_model_metadata FOR EACH ROW EXECUTE FUNCTION trigger_f6c61cdddf31();
 
