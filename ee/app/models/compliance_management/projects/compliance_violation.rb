@@ -53,6 +53,11 @@ module ComplianceManagement
       scope :in_optimization_finder_query, ->(_project_id_expression, id_expression) {
         where(arel_table[:id].eq(id_expression))
       }
+      scope :for_projects, ->(project_ids) { where(project_id: project_ids) }
+      scope :for_controls, ->(control_ids) { where(compliance_requirements_control_id: control_ids) }
+      scope :for_status, ->(status) { where(status: status) }
+      scope :created_on_or_before, ->(date) { where(created_at: ..date.end_of_day) }
+      scope :created_on_or_after, ->(date) { where(created_at: date.beginning_of_day..) }
 
       scope :including_controls, -> {
         includes(:compliance_control, compliance_control: { compliance_requirement: :framework })

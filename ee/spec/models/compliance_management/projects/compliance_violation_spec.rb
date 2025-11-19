@@ -411,6 +411,248 @@ RSpec.describe ComplianceManagement::Projects::ComplianceViolation, type: :model
     end
   end
 
+  describe 'scopes' do
+    describe '.for_projects' do
+      let_it_be(:namespace) { create(:group) }
+      let_it_be(:project1) { create(:project, namespace: namespace) }
+      let_it_be(:project2) { create(:project, namespace: namespace) }
+      let_it_be(:project3) { create(:project, namespace: namespace) }
+      let_it_be(:compliance_control) { create(:compliance_requirements_control, namespace: namespace) }
+      let_it_be(:audit_event1) { create(:audit_events_project_audit_event, project_id: project1.id) }
+      let_it_be(:audit_event2) { create(:audit_events_project_audit_event, project_id: project2.id) }
+      let_it_be(:audit_event3) { create(:audit_events_project_audit_event, project_id: project3.id) }
+
+      let_it_be(:violation1) do
+        create(:project_compliance_violation,
+          project: project1,
+          namespace: namespace,
+          compliance_control: compliance_control,
+          audit_event_id: audit_event1.id,
+          audit_event_table_name: :project_audit_events
+        )
+      end
+
+      let_it_be(:violation2) do
+        create(:project_compliance_violation,
+          project: project2,
+          namespace: namespace,
+          compliance_control: compliance_control,
+          audit_event_id: audit_event2.id,
+          audit_event_table_name: :project_audit_events
+        )
+      end
+
+      let_it_be(:violation3) do
+        create(:project_compliance_violation,
+          project: project3,
+          namespace: namespace,
+          compliance_control: compliance_control,
+          audit_event_id: audit_event3.id,
+          audit_event_table_name: :project_audit_events
+        )
+      end
+
+      it 'returns violations for a single project' do
+        expect(described_class.for_projects(project1.id)).to match_array([violation1])
+      end
+
+      it 'returns violations for multiple projects' do
+        expect(described_class.for_projects([project1.id, project2.id])).to match_array([violation1, violation2])
+      end
+
+      it 'returns empty when no matching projects' do
+        expect(described_class.for_projects(non_existing_record_id)).to be_empty
+      end
+    end
+
+    describe '.for_controls' do
+      let_it_be(:namespace) { create(:group) }
+      let_it_be(:project) { create(:project, namespace: namespace) }
+      let_it_be(:control1) { create(:compliance_requirements_control, namespace: namespace) }
+      let_it_be(:control2) { create(:compliance_requirements_control, namespace: namespace) }
+      let_it_be(:control3) { create(:compliance_requirements_control, namespace: namespace) }
+      let_it_be(:audit_event1) { create(:audit_events_project_audit_event, project_id: project.id) }
+      let_it_be(:audit_event2) { create(:audit_events_project_audit_event, project_id: project.id) }
+      let_it_be(:audit_event3) { create(:audit_events_project_audit_event, project_id: project.id) }
+
+      let_it_be(:violation1) do
+        create(:project_compliance_violation,
+          project: project,
+          namespace: namespace,
+          compliance_control: control1,
+          audit_event_id: audit_event1.id,
+          audit_event_table_name: :project_audit_events
+        )
+      end
+
+      let_it_be(:violation2) do
+        create(:project_compliance_violation,
+          project: project,
+          namespace: namespace,
+          compliance_control: control2,
+          audit_event_id: audit_event2.id,
+          audit_event_table_name: :project_audit_events
+        )
+      end
+
+      let_it_be(:violation3) do
+        create(:project_compliance_violation,
+          project: project,
+          namespace: namespace,
+          compliance_control: control3,
+          audit_event_id: audit_event3.id,
+          audit_event_table_name: :project_audit_events
+        )
+      end
+
+      it 'returns violations for a single control' do
+        expect(described_class.for_controls(control1.id)).to match_array([violation1])
+      end
+
+      it 'returns violations for multiple controls' do
+        expect(described_class.for_controls([control1.id, control2.id])).to match_array([violation1, violation2])
+      end
+
+      it 'returns empty when no matching controls' do
+        expect(described_class.for_controls(non_existing_record_id)).to be_empty
+      end
+    end
+
+    describe '.for_status' do
+      let_it_be(:namespace) { create(:group) }
+      let_it_be(:project) { create(:project, namespace: namespace) }
+      let_it_be(:compliance_control) { create(:compliance_requirements_control, namespace: namespace) }
+      let_it_be(:audit_event1) { create(:audit_events_project_audit_event, project_id: project.id) }
+
+      let_it_be(:detected_violation) do
+        create(:project_compliance_violation,
+          project: project,
+          namespace: namespace,
+          compliance_control: compliance_control,
+          audit_event_id: audit_event1.id,
+          audit_event_table_name: :project_audit_events,
+          status: :detected
+        )
+      end
+
+      it 'returns violations with detected status' do
+        expect(described_class.for_status(:detected)).to match_array([detected_violation])
+      end
+
+      it 'returns violations using integer status value' do
+        expect(described_class.for_status(0)).to match_array([detected_violation])
+      end
+    end
+
+    describe '.created_on_or_before' do
+      let_it_be(:namespace) { create(:group) }
+      let_it_be(:project) { create(:project, namespace: namespace) }
+      let_it_be(:compliance_control) { create(:compliance_requirements_control, namespace: namespace) }
+      let_it_be(:audit_event1) { create(:audit_events_project_audit_event, project_id: project.id) }
+      let_it_be(:audit_event2) { create(:audit_events_project_audit_event, project_id: project.id) }
+      let_it_be(:audit_event3) { create(:audit_events_project_audit_event, project_id: project.id) }
+
+      let_it_be(:old_violation) do
+        create(:project_compliance_violation,
+          project: project,
+          namespace: namespace,
+          compliance_control: compliance_control,
+          audit_event_id: audit_event1.id,
+          audit_event_table_name: :project_audit_events,
+          created_at: 5.days.ago
+        )
+      end
+
+      let_it_be(:mid_violation) do
+        create(:project_compliance_violation,
+          project: project,
+          namespace: namespace,
+          compliance_control: compliance_control,
+          audit_event_id: audit_event2.id,
+          audit_event_table_name: :project_audit_events,
+          created_at: 3.days.ago
+        )
+      end
+
+      let_it_be(:recent_violation) do
+        create(:project_compliance_violation,
+          project: project,
+          namespace: namespace,
+          compliance_control: compliance_control,
+          audit_event_id: audit_event3.id,
+          audit_event_table_name: :project_audit_events,
+          created_at: 1.day.ago
+        )
+      end
+
+      it 'returns violations created before the specified date' do
+        expect(described_class.created_on_or_before(2.days.ago)).to match_array([old_violation, mid_violation])
+      end
+
+      it 'includes violations created on the same day' do
+        expect(described_class.created_on_or_before(3.days.ago.to_date)).to include(mid_violation)
+      end
+
+      it 'returns empty when no violations created before the date' do
+        expect(described_class.created_on_or_before(10.days.ago)).to be_empty
+      end
+    end
+
+    describe '.created_on_or_after' do
+      let_it_be(:namespace) { create(:group) }
+      let_it_be(:project) { create(:project, namespace: namespace) }
+      let_it_be(:compliance_control) { create(:compliance_requirements_control, namespace: namespace) }
+      let_it_be(:audit_event1) { create(:audit_events_project_audit_event, project_id: project.id) }
+      let_it_be(:audit_event2) { create(:audit_events_project_audit_event, project_id: project.id) }
+      let_it_be(:audit_event3) { create(:audit_events_project_audit_event, project_id: project.id) }
+
+      let_it_be(:old_violation) do
+        create(:project_compliance_violation,
+          project: project,
+          namespace: namespace,
+          compliance_control: compliance_control,
+          audit_event_id: audit_event1.id,
+          audit_event_table_name: :project_audit_events,
+          created_at: 5.days.ago
+        )
+      end
+
+      let_it_be(:mid_violation) do
+        create(:project_compliance_violation,
+          project: project,
+          namespace: namespace,
+          compliance_control: compliance_control,
+          audit_event_id: audit_event2.id,
+          audit_event_table_name: :project_audit_events,
+          created_at: 3.days.ago
+        )
+      end
+
+      let_it_be(:recent_violation) do
+        create(:project_compliance_violation,
+          project: project,
+          namespace: namespace,
+          compliance_control: compliance_control,
+          audit_event_id: audit_event3.id,
+          audit_event_table_name: :project_audit_events,
+          created_at: 1.day.ago
+        )
+      end
+
+      it 'returns violations created after the specified date' do
+        expect(described_class.created_on_or_after(4.days.ago)).to match_array([mid_violation, recent_violation])
+      end
+
+      it 'includes violations created on the same day' do
+        expect(described_class.created_on_or_after(3.days.ago.to_date)).to include(mid_violation)
+      end
+
+      it 'returns empty when no violations created after the date' do
+        expect(described_class.created_on_or_after(Time.current)).to be_empty
+      end
+    end
+  end
+
   describe '#readable_by?' do
     let_it_be(:namespace) { create(:group) }
     let_it_be(:project) { create(:project, namespace: namespace) }
