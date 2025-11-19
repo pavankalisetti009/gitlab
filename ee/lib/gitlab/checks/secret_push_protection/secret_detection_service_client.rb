@@ -91,6 +91,7 @@ module Gitlab
         def build_sds_request(payloads, exclusions: {}, tags: [])
           ::Gitlab::SecretDetection::GRPC::ScanRequest.new(
             payloads: payloads,
+            timeout_secs: ::Gitlab::SecretDetection::GRPC::Client::REQUEST_TIMEOUT_SECONDS,
             exclusions: build_exclusions(exclusions: exclusions),
             tags: tags
           )

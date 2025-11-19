@@ -84,7 +84,8 @@ RSpec.shared_examples 'sends requests to the SDS' do
         ::Gitlab::SecretDetection::GRPC::ScanRequest::Payload.new(
           id: 'da66bef46dbf0ad7fdcbeec97c9eaa24c2846dda',
           data: 'BASE_URL=https://foo.bar',
-          offset: 1
+          offset: 1,
+          timeout_secs: ::Gitlab::SecretDetection::GRPC::Client::REQUEST_TIMEOUT_SECONDS
         )
       end
 
