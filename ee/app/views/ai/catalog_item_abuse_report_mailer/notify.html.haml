@@ -5,8 +5,7 @@
 
 %ul
   %li
-    = _("Catalog item:")
-    = @ai_catalog_item.name
+    = _("Catalog item: %{name} (ID: %{id})") % { name: @ai_catalog_item.name, id: @ai_catalog_item.id }
   %li
     = html_escape(_("Reported by: %{username} at %{time}")) % { username: link_to(@reporter.username, user_url(@reporter)), time: @reported_at.strftime('%Y-%m-%d %H:%M:%S %Z') }
   %li

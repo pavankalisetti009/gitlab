@@ -31,6 +31,7 @@ RSpec.describe Ai::CatalogItemAbuseReportMailer, feature_category: :workflow_cat
       it { is_expected.to have_body_text 'Hello Admin' }
       it { is_expected.to have_body_text reporter.username }
       it { is_expected.to have_body_text catalog_item.name }
+      it { is_expected.to have_body_text "(ID: #{catalog_item.id})" }
       it { is_expected.to have_body_text 'Inappropriate content' }
       it { is_expected.to have_body_text 'This item contains offensive material' }
       it { is_expected.to have_body_text 'aiCatalogAgentDelete' }
