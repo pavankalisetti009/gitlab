@@ -36,20 +36,18 @@ export default {
   },
   emits: ['success', 'error', 'canceled', 'change'],
   apollo: {
-    registries: {
+    registryUpstreams: {
       query: getMavenUpstreamRegistriesQuery,
       variables() {
         return {
           id: this.mavenUpstreamRegistryID,
-          // Maximum number of maven virtual registries per top-level group.
-          first: 20,
         };
       },
       skip() {
         return !this.visible || !this.upstreamId;
       },
       update(data) {
-        return data.mavenUpstreamRegistry?.registries?.nodes ?? [];
+        return data.virtualRegistriesPackagesMavenUpstream?.registryUpstreams ?? [];
       },
       error(error) {
         captureException({ error, component: this.$options.name });
@@ -58,12 +56,12 @@ export default {
   },
   data() {
     return {
-      registries: [],
+      registryUpstreams: [],
     };
   },
   computed: {
     loading() {
-      return this.$apollo.queries.registries.loading;
+      return this.$apollo.queries.registryUpstreams.loading;
     },
     mavenUpstreamRegistryID() {
       return convertToMavenUpstreamGraphQLId(this.upstreamId);
@@ -78,6 +76,9 @@ export default {
     },
     registriesCount() {
       return this.registries.length;
+    },
+    registries() {
+      return this.registryUpstreams.map((registryUpstream) => registryUpstream.registry);
     },
     upstreamPresent() {
       return this.upstreamId && this.upstreamName;

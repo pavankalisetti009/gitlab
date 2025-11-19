@@ -124,16 +124,18 @@ export const mavenVirtualRegistry = {
 
 export const mavenUpstreamRegistry = {
   id: 'gid://gitlab/VirtualRegistries::Packages::Maven::Upstream/11',
-  registries: {
-    nodes: [
-      {
+  registryUpstreams: [
+    {
+      __typename: 'MavenRegistryUpstream',
+      id: 'gid://gitlab/VirtualRegistries::Packages::Maven::RegistryUpstream/11',
+      position: 2,
+      registry: {
         id: 'gid://gitlab/VirtualRegistries::Packages::Maven::Registry/6',
         name: 'testing',
         __typename: 'MavenVirtualRegistry',
       },
-    ],
-    __typename: 'MavenVirtualRegistryConnection',
-  },
+    },
+  ],
   __typename: 'MavenUpstream',
 };
 
@@ -141,7 +143,7 @@ export const groupVirtualRegistries = {
   group: {
     id: 'gid://gitlab/Group/33',
     __typename: 'Group',
-    mavenVirtualRegistries: {
+    virtualRegistriesPackagesMavenRegistries: {
       __typename: 'MavenVirtualRegistryConnection',
       nodes: [
         {

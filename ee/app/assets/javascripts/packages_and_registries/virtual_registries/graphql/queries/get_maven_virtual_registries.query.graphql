@@ -9,7 +9,12 @@ query getMavenVirtualRegistries(
 ) {
   group(fullPath: $groupPath) {
     id
-    mavenVirtualRegistries(after: $after, before: $before, first: $first, last: $last) {
+    virtualRegistriesPackagesMavenRegistries(
+      after: $after
+      before: $before
+      first: $first
+      last: $last
+    ) {
       nodes {
         id
         name

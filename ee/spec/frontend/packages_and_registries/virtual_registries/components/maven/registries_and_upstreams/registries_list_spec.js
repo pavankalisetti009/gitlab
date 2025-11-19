@@ -36,7 +36,7 @@ describe('MavenRegistriesList', () => {
     data: {
       group: {
         ...groupVirtualRegistries.group,
-        mavenVirtualRegistries: { nodes: [], pageInfo: {} },
+        virtualRegistriesPackagesMavenRegistries: { nodes: [], pageInfo: {} },
       },
     },
   };
@@ -89,11 +89,11 @@ describe('MavenRegistriesList', () => {
         expect(findEmptyState().exists()).toBe(false);
 
         expect(findRegistriesTable().props('registries')).toEqual(
-          groupVirtualRegistries.group.mavenVirtualRegistries.nodes,
+          groupVirtualRegistries.group.virtualRegistriesPackagesMavenRegistries.nodes,
         );
 
         const { __typename, ...pageInfo } =
-          groupVirtualRegistries.group.mavenVirtualRegistries.pageInfo;
+          groupVirtualRegistries.group.virtualRegistriesPackagesMavenRegistries.pageInfo;
 
         expect(findPagination().props()).toMatchObject(pageInfo);
       });

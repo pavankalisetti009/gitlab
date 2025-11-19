@@ -60,7 +60,7 @@ export default {
       variables() {
         return this.queryVariables;
       },
-      update: (data) => data.group?.mavenVirtualRegistries ?? INITIAL_VALUE,
+      update: (data) => data.group?.virtualRegistriesPackagesMavenRegistries ?? INITIAL_VALUE,
       result() {
         this.$emit('updateCount', this.registries.length);
       },

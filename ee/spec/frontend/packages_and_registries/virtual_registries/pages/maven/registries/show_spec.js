@@ -17,7 +17,7 @@ Vue.use(VueApollo);
 
 const mockMavenRegistryUpstreams = {
   data: {
-    mavenVirtualRegistry: {
+    virtualRegistriesPackagesMavenRegistry: {
       ...mavenVirtualRegistry,
     },
   },
@@ -86,7 +86,8 @@ describe('MavenRegistryDetailsApp', () => {
 
   describe('upstreams list', () => {
     it('displays the upstream registries currently available', async () => {
-      const upstreamsLength = mockMavenRegistryUpstreams.data.mavenVirtualRegistry.upstreams.length;
+      const upstreamsLength =
+        mockMavenRegistryUpstreams.data.virtualRegistriesPackagesMavenRegistry.upstreams.length;
 
       createComponent({
         handlers: [[getMavenVirtualRegistryUpstreamsQuery, mavenRegistryUpstreamsHandler]],
