@@ -328,8 +328,7 @@ module EE
 
       def all_security_jobs_complete?
         security_builds = builds.select(&:security_job?)
-        blocking_manual_jobs = security_builds.select(&:manual?).reject(&:allow_failure?)
-        security_builds.reject(&:manual?).all?(&:complete?) && blocking_manual_jobs.empty?
+        security_builds.reject(&:manual?).all?(&:complete?)
       end
 
       def has_all_security_policies_reports?
