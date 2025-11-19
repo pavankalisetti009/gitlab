@@ -152,18 +152,33 @@ RSpec.describe Resolvers::Security::VulnerabilitiesPerSeverityResolver, :elastic
         context 'with only start_date provided' do
           let(:custom_args) { { start_date: Date.parse('2019-10-16') } }
 
-          it 'returns vulnerability metrics data filtered by start date only' do
-            expect(resolved_metrics).not_to be_empty
-            expect(resolved_metrics.values.sum { |v| v[:count] }).to be > 0
+          it 'raises ArgumentError' do
+            expect_graphql_error_to_be_created(Gitlab::Graphql::Errors::ArgumentError,
+              "both start_date and end_date must be either nil or both must be present") do
+              resolved_metrics
+            end
           end
         end
 
         context 'with only end_date provided' do
           let(:custom_args) { { end_date: Date.parse('2019-10-16') } }
 
-          it 'returns vulnerability metrics data filtered by end date only' do
-            expect(resolved_metrics).not_to be_empty
-            expect(resolved_metrics.values.sum { |v| v[:count] }).to be > 0
+          it 'raises ArgumentError' do
+            expect_graphql_error_to_be_created(Gitlab::Graphql::Errors::ArgumentError,
+              "both start_date and end_date must be either nil or both must be present") do
+              resolved_metrics
+            end
+          end
+        end
+
+        context 'when start_date is > end_date' do
+          let(:custom_args) { { start_date: Date.parse('2019-10-17'), end_date: Date.parse('2019-10-16') } }
+
+          it 'raises ArgumentError' do
+            expect_graphql_error_to_be_created(Gitlab::Graphql::Errors::ArgumentError,
+              "start date cannot be after end date") do
+              resolved_metrics
+            end
           end
         end
 

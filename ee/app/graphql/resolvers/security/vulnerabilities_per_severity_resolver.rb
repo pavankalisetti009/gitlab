@@ -22,7 +22,7 @@ module Resolvers
       def resolve(start_date: nil, end_date: nil)
         authorize!(object) unless resolve_vulnerabilities_for_instance_security_dashboard?
 
-        validate_date_range!(start_date, end_date) if start_date && end_date
+        validate_date_range!(start_date, end_date)
 
         return {} unless vulnerable
 
@@ -34,7 +34,12 @@ module Resolvers
       private
 
       def validate_date_range!(start_date, end_date)
-        raise Gitlab::Graphql::Errors::ArgumentError, "start date cannot be after end date" if start_date > end_date
+        if start_date.present? ^ end_date.present? # XOR - only one is present
+          raise Gitlab::Graphql::Errors::ArgumentError,
+            "both start_date and end_date must be either nil or both must be present"
+        elsif start_date.present? && end_date.present? && start_date > end_date
+          raise Gitlab::Graphql::Errors::ArgumentError, "start date cannot be after end date"
+        end
       end
 
       def calculate_mean_age(aggregations)
