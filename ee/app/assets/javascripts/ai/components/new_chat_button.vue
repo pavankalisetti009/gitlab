@@ -8,7 +8,7 @@ import {
 } from '../duo_agentic_chat/utils/apollo_utils';
 
 export default {
-  name: 'NavigationRail',
+  name: 'NewChatButton',
   components: {
     GlIcon,
     GlButton,
