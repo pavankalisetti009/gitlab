@@ -1710,29 +1710,30 @@ made by a given block of code:
 
 See the [`Gitaly Request Counts`](../gitaly.md#request-counts) section for more details.
 
-### Shared contexts
+### Shared contexts and Shared examples
 
-Shared contexts only used in one spec file can be declared inline.
-Any shared contexts used by more than one spec file:
+Shared contexts or shared examples only used in one spec file can be declared inline.
 
-- Should be placed under `spec/support/shared_contexts/`.
-- Can be placed in subfolder if they apply to a certain type of specs only
-  (such as features or requests) but shouldn't be if they apply to multiple type of specs.
+For shared examples used by more than one spec file, placement depends on their scope:
 
-Each file should include only one context and have a descriptive name, such as
-`spec/support/shared_contexts/controllers/githubish_import_controller_shared_context.rb`.
+**Shared examples within a single bounded context:**
 
-### Shared examples
+- Can be placed within the bounded context's directory structure (for example, `ee/spec/requests/api/graphql/remote_development/shared_examples.rb`)
+- Should follow the `*_contexts.rb` or `*_examples.rb` naming convention
+- This approach maintains cohesion within the bounded context and aligns with our [modular monolith architecture](../software_design.md#bounded-contexts)
 
-Shared examples only used in one spec file can be declared inline.
-Any shared examples used by more than one spec file:
+**Shared examples used across multiple bounded contexts:**
 
-- Should be placed under `spec/support/shared_examples/`.
-- Can be placed in subfolder if they apply to a certain type of specs only
-  (such as features or requests) but shouldn't be if they apply to multiple type of specs.
+- Should be placed under `spec/support/shared_contexts/` or `spec/support/shared_examples/`
+- Can be placed in a subfolder if they apply to a certain type of specs only (such as features or requests) but shouldn't be if they apply to multiple types of specs
+- Each file should include only one shared example group and have a descriptive name, such as `spec/support/shared_examples/controllers/githubish_import_controller_shared_example.rb`
 
-Each file should include only one context and have a descriptive name, such as
-`spec/support/shared_examples/controllers/githubish_import_controller_shared_example.rb`.
+**General guidelines:**
+
+- Prefer keeping shared examples within their bounded context when they are only used within that context
+- Only move shared examples to the global `spec/support/shared_*/` directory when they are actually shared across different bounded contexts
+- Files containing shared examples or shared contexts can use naming like `*_contexts.rb`, `*_examples.rb`, `*_shared_examples.rb`, or `*_shared_context_and_examples.rb` depending on what they contain, with singular or plural naming for one or multiple examples respectively
+- The goal is to maintain high cohesion within bounded contexts while keeping coupling between contexts loose
 
 ### Helpers
 
