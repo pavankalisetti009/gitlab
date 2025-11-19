@@ -83,6 +83,10 @@ export default {
         },
       ];
     },
+    errorsArray() {
+      const message = this.item.checksumInformation?.checksumFailure;
+      return message ? [{ label: s__('Geo|Verification failure'), message }] : [];
+    },
     name() {
       return `${this.item.modelClass}/${this.item.recordIdentifier}`;
     },
@@ -128,6 +132,7 @@ export default {
     :time-ago-array="timeAgoArray"
     :status-array="statusArray"
     :actions-array="actionsArray"
+    :errors-array="errorsArray"
     @actionClicked="handleSingleAction"
   >
     <template #extra-details>{{ size }}</template>
