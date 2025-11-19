@@ -416,5 +416,64 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncProjectService, feat
         end
       end
     end
+
+    describe 'scheduling warn mode push settings audit events worker' do
+      let(:enforcement_type) { 'warn' }
+      let(:policy_scope) { { projects: { including: [{ id: project.id }] } } }
+      let(:security_policy) do
+        create(:security_policy, type: :approval_policy, scope: policy_scope).tap do |policy|
+          policy.update!(content: policy.content.merge('enforcement_type' => enforcement_type))
+        end
+      end
+
+      shared_examples 'scheduling warn mode push settings audit events worker' do
+        specify do
+          expect(Security::ScanResultPolicies::CreateProjectWarnModePushSettingsAuditEventsWorker)
+            .to receive(:perform_async)
+            .with(project.id, security_policy.id)
+
+          service.execute
+        end
+      end
+
+      shared_examples 'not scheduling warn mode push settings audit events worker' do
+        specify do
+          expect(Security::ScanResultPolicies::CreateProjectWarnModePushSettingsAuditEventsWorker)
+            .not_to receive(:perform_async)
+
+          service.execute
+        end
+      end
+
+      context 'when policy is an approval policy in warn mode and applicable to the project' do
+        it_behaves_like 'scheduling warn mode push settings audit events worker'
+      end
+
+      context 'when policy is not in warn mode' do
+        let(:enforcement_type) { 'enforce' }
+
+        it_behaves_like 'not scheduling warn mode push settings audit events worker'
+      end
+
+      context 'when policy is not applicable to the project' do
+        let(:policy_scope) { { projects: { excluding: [{ id: project.id }] } } }
+
+        it_behaves_like 'not scheduling warn mode push settings audit events worker'
+      end
+
+      context 'when policy is not an approval policy' do
+        let(:security_policy) { create(:security_policy, :scan_execution_policy) }
+
+        it_behaves_like 'not scheduling warn mode push settings audit events worker'
+      end
+
+      context 'when the policy is disabled' do
+        before do
+          security_policy.update!(enabled: false)
+        end
+
+        it_behaves_like 'not scheduling warn mode push settings audit events worker'
+      end
+    end
   end
 end

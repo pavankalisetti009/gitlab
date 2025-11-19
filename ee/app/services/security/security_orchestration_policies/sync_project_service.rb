@@ -19,6 +19,7 @@ module Security
           link_policy
         end
 
+        schedule_warn_mode_audit_events_worker
         finish_project_policy_sync(project.id)
       end
 
@@ -68,6 +69,14 @@ module Security
 
       def policy_scope_changed_and_unscoped?
         policy_diff.scope_changed? && !scope_applicable?
+      end
+
+      def schedule_warn_mode_audit_events_worker
+        return unless security_policy.type_approval_policy? && security_policy.warn_mode?
+        return if policy_disabled_or_scope_inapplicable?
+
+        Security::ScanResultPolicies::CreateProjectWarnModePushSettingsAuditEventsWorker
+          .perform_async(project.id, security_policy.id)
       end
     end
   end
