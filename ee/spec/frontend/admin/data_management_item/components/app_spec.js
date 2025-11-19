@@ -3,6 +3,7 @@ import { GlLoadingIcon } from '@gitlab/ui';
 import models from 'test_fixtures/api/admin/data_management/snippet_repository.json';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import AdminDataManagementItemApp from 'ee/admin/data_management_item/components/app.vue';
+import ChecksumInfo from 'ee/admin/data_management_item/components/checksum_info.vue';
 import { getModel } from 'ee/api/data_management_api';
 import waitForPromises from 'helpers/wait_for_promises';
 import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
@@ -32,6 +33,7 @@ describe('AdminDataManagementItemApp', () => {
 
   const findPageHeading = () => wrapper.findComponent(PageHeading);
   const findGlLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
+  const findChecksumInfo = () => wrapper.findComponent(ChecksumInfo);
 
   it('renders page heading', () => {
     createComponent();
@@ -59,7 +61,7 @@ describe('AdminDataManagementItemApp', () => {
     });
 
     it('renders model details', () => {
-      expect(wrapper.text()).toContain(JSON.stringify(model, null, 2));
+      expect(findChecksumInfo().props('details')).toEqual(model.checksumInformation);
     });
 
     it('does not create alert', () => {
@@ -68,6 +70,18 @@ describe('AdminDataManagementItemApp', () => {
 
     it('hides loading icon', () => {
       expect(findGlLoadingIcon().exists()).toBe(false);
+    });
+
+    describe('when model has no checksumInformation', () => {
+      beforeEach(async () => {
+        getModel.mockResolvedValue({ data: { ...model, checksumInformation: null } });
+        createComponent();
+        await waitForPromises();
+      });
+
+      it('passes empty object to ChecksumInfo', () => {
+        expect(findChecksumInfo().props('details')).toEqual({});
+      });
     });
   });
 
@@ -87,6 +101,10 @@ describe('AdminDataManagementItemApp', () => {
 
     it('hides loading icon', () => {
       expect(findGlLoadingIcon().exists()).toBe(false);
+    });
+
+    it('does not render ChecksumInfo', () => {
+      expect(findChecksumInfo().exists()).toBe(false);
     });
   });
 });

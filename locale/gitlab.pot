@@ -29603,6 +29603,9 @@ msgstr ""
 msgid "Geo|%{label} should be between 1-999"
 msgstr ""
 
+msgid "Geo|%{noBoldStart}Next checksum retry:%{noBoldEnd} Retry #%{retryCount} scheduled %{timeAgo}"
+msgstr ""
+
 msgid "Geo|%{noBoldStart}Next sync retry:%{noBoldEnd} Retry #%{retryCount} scheduled %{timeAgo}"
 msgstr ""
 
@@ -29672,7 +29675,13 @@ msgstr ""
 msgid "Geo|Checksum all %{type}"
 msgstr ""
 
+msgid "Geo|Checksum information"
+msgstr ""
+
 msgid "Geo|Checksum status"
+msgstr ""
+
+msgid "Geo|Checksum: %{checksum}"
 msgstr ""
 
 msgid "Geo|Checksum: %{status}"
@@ -29856,6 +29865,9 @@ msgid "Geo|LFS Objects"
 msgstr ""
 
 msgid "Geo|Last checksum"
+msgstr ""
+
+msgid "Geo|Last checksum: %{timeAgo}"
 msgstr ""
 
 msgid "Geo|Last event ID"
