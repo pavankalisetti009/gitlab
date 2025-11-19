@@ -44411,8 +44411,8 @@ Returns [`VulnerabilitiesPerSeverity`](#vulnerabilitiesperseverity).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="securitymetricsvulnerabilitiesperseverityenddate"></a>`endDate` {{< icon name="warning-solid" >}} | [`ISO8601Date`](#iso8601date) | **Introduced** in GitLab 18.3. **Status**: Experiment. End date for the vulnerability metrics time range. Defaults to current date if not provided. |
-| <a id="securitymetricsvulnerabilitiesperseveritystartdate"></a>`startDate` {{< icon name="warning-solid" >}} | [`ISO8601Date`](#iso8601date) | **Introduced** in GitLab 18.3. **Status**: Experiment. Start date for the vulnerability metrics time range. Defaults to 365 days ago if not provided. |
+| <a id="securitymetricsvulnerabilitiesperseverityenddate"></a>`endDate` {{< icon name="warning-solid" >}} | [`ISO8601Date`](#iso8601date) | **Introduced** in GitLab 18.3. **Status**: Experiment. End date for the vulnerability metrics time range. Optional. |
+| <a id="securitymetricsvulnerabilitiesperseveritystartdate"></a>`startDate` {{< icon name="warning-solid" >}} | [`ISO8601Date`](#iso8601date) | **Introduced** in GitLab 18.3. **Status**: Experiment. Start date for the vulnerability metrics time range. Optional. |
 
 ### `SecurityPolicyType`
 

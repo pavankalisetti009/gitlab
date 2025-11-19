@@ -9,8 +9,14 @@ RSpec.describe Resolvers::Security::VulnerabilitiesPerSeverityResolver, :elastic
     context = { current_user: current_user }
     context[:report_type] = report_type_filter if defined?(report_type_filter)
     context[:project_id] = project_id_filter if defined?(project_id_filter)
-    resolve(described_class, obj: operate_on,
-      args: { start_date: Date.parse('2019-10-15'), end_date: Date.parse('2019-10-17') }, ctx: context)
+    args = if defined?(custom_args)
+             custom_args
+           else
+             { start_date: Date.parse('2019-10-15'),
+               end_date: Date.parse('2019-10-17') }
+           end
+
+    resolve(described_class, obj: operate_on, args: args, ctx: context)
   end
 
   let_it_be(:group) { create(:group) }
@@ -130,6 +136,51 @@ RSpec.describe Resolvers::Security::VulnerabilitiesPerSeverityResolver, :elastic
         end
 
         it_behaves_like 'counts only open vulnerabilities'
+
+        context 'without date parameters' do
+          let(:custom_args) { {} }
+
+          it 'returns vulnerability metrics data for all vulnerabilities' do
+            expect(resolved_metrics).not_to be_empty
+            expect(resolved_metrics['critical'][:count]).to eq(7)
+            expect(resolved_metrics['low'][:count]).to eq(4)
+            expect(resolved_metrics['medium'][:count]).to eq(3)
+            expect(resolved_metrics['high'][:count]).to eq(6)
+          end
+        end
+
+        context 'with only start_date provided' do
+          let(:custom_args) { { start_date: Date.parse('2019-10-16') } }
+
+          it 'raises ArgumentError' do
+            expect_graphql_error_to_be_created(Gitlab::Graphql::Errors::ArgumentError,
+              "both start_date and end_date must be either nil or both must be present") do
+              resolved_metrics
+            end
+          end
+        end
+
+        context 'with only end_date provided' do
+          let(:custom_args) { { end_date: Date.parse('2019-10-16') } }
+
+          it 'raises ArgumentError' do
+            expect_graphql_error_to_be_created(Gitlab::Graphql::Errors::ArgumentError,
+              "both start_date and end_date must be either nil or both must be present") do
+              resolved_metrics
+            end
+          end
+        end
+
+        context 'when start_date is > end_date' do
+          let(:custom_args) { { start_date: Date.parse('2019-10-17'), end_date: Date.parse('2019-10-16') } }
+
+          it 'raises ArgumentError' do
+            expect_graphql_error_to_be_created(Gitlab::Graphql::Errors::ArgumentError,
+              "start date cannot be after end date") do
+              resolved_metrics
+            end
+          end
+        end
 
         context 'with project filtering' do
           let(:project_id_filter) { [project.id] }

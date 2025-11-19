@@ -5,8 +5,6 @@ module Resolvers
     class VulnerabilitiesPerSeverityResolver < VulnerabilitiesBaseResolver
       include Gitlab::Graphql::Authorize::AuthorizeResource
 
-      MAX_DATE_RANGE_DAYS = 1.year.in_days.floor.freeze
-
       type Types::Security::VulnerabilitiesPerSeverityType, null: true
 
       authorize :read_security_resource
@@ -14,18 +12,15 @@ module Resolvers
       argument :start_date, GraphQL::Types::ISO8601Date,
         required: false,
         experiment: { milestone: '18.3' },
-        description: 'Start date for the vulnerability metrics time range. Defaults to 365 days ago if not provided.'
+        description: 'Start date for the vulnerability metrics time range. Optional.'
 
       argument :end_date, GraphQL::Types::ISO8601Date,
         required: false,
         experiment: { milestone: '18.3' },
-        description: 'End date for the vulnerability metrics time range. Defaults to current date if not provided.'
+        description: 'End date for the vulnerability metrics time range. Optional.'
 
       def resolve(start_date: nil, end_date: nil)
         authorize!(object) unless resolve_vulnerabilities_for_instance_security_dashboard?
-
-        start_date ||= 365.days.ago.to_date
-        end_date ||= Date.current
 
         validate_date_range!(start_date, end_date)
 
@@ -39,11 +34,12 @@ module Resolvers
       private
 
       def validate_date_range!(start_date, end_date)
-        raise Gitlab::Graphql::Errors::ArgumentError, "start date cannot be after end date" if start_date > end_date
-
-        return unless (end_date - start_date) > MAX_DATE_RANGE_DAYS
-
-        raise Gitlab::Graphql::Errors::ArgumentError, "maximum date range is #{MAX_DATE_RANGE_DAYS} days"
+        if start_date.present? ^ end_date.present? # XOR - only one is present
+          raise Gitlab::Graphql::Errors::ArgumentError,
+            "both start_date and end_date must be either nil or both must be present"
+        elsif start_date.present? && end_date.present? && start_date > end_date
+          raise Gitlab::Graphql::Errors::ArgumentError, "start date cannot be after end date"
+        end
       end
 
       def calculate_mean_age(aggregations)
@@ -71,7 +67,7 @@ module Resolvers
           created_before: end_date,
           project_id: project_ids,
           report_type: report_type
-        }.merge(default_filters).compact
+        }.merge(default_filters)
       end
 
       # To include only active and exclude no longer detected vulnerabilities.
