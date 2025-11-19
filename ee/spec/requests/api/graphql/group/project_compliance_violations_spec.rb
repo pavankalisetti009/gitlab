@@ -37,7 +37,8 @@ RSpec.describe 'getting the project compliance violations for a group', feature_
       audit_event_id: audit_event1.id,
       audit_event_table_name: :project_audit_events,
       compliance_control: control1,
-      status: 0
+      status: 0,
+      created_at: 3.days.ago
     )
   end
 
@@ -62,8 +63,9 @@ RSpec.describe 'getting the project compliance violations for a group', feature_
     create(:project_compliance_violation, namespace: root_group_project.namespace, project: root_group_project,
       audit_event_id: audit_event2.id,
       audit_event_table_name: :group_audit_events,
+      compliance_control: control1,
       status: 2,
-      created_at: 1.day.ago
+      created_at: 5.days.ago
     )
   end
 
@@ -210,6 +212,59 @@ RSpec.describe 'getting the project compliance violations for a group', feature_
       expect(compliance_violations).to eq(
         [violation4_output, violation2_output, violation1_output, violation3_output]
       )
+    end
+
+    context 'with filters' do
+      context 'with project id filter' do
+        it 'finds the filtered project compliance violations' do
+          post_graphql(query({ filters: { projectId: root_group_project.to_global_id.to_s } }),
+            current_user: user)
+
+          expect(compliance_violations).to eq(
+            [violation2_output, violation1_output, violation3_output]
+          )
+        end
+      end
+
+      context 'with control id filter' do
+        it 'finds the filtered project compliance violations' do
+          post_graphql(query({ filters: { controlId: control1.to_global_id.to_s } }), current_user: user)
+
+          expect(compliance_violations).to eq(
+            [violation1_output, violation3_output]
+          )
+        end
+      end
+
+      context 'with status filter' do
+        it 'finds the filtered project compliance violations' do
+          post_graphql(query({ filters: { status: [:DETECTED] } }), current_user: user)
+
+          expect(compliance_violations).to eq(
+            [violation1_output]
+          )
+        end
+      end
+
+      context 'with created_before filter' do
+        it 'finds violations created before the specified date' do
+          post_graphql(query({ filters: { createdBefore: 3.days.ago.to_date.to_s } }), current_user: user)
+
+          expect(compliance_violations).to match_array(
+            [violation1_output, violation3_output]
+          )
+        end
+      end
+
+      context 'with created_after filter' do
+        it 'finds violations created after the specified date' do
+          post_graphql(query({ filters: { createdAfter: 3.days.ago.to_date.to_s } }), current_user: user)
+
+          expect(compliance_violations).to match_array(
+            [violation4_output, violation2_output, violation1_output]
+          )
+        end
+      end
     end
   end
 end

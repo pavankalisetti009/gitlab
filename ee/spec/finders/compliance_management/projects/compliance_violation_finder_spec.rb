@@ -33,7 +33,8 @@ RSpec.describe ComplianceManagement::Projects::ComplianceViolationFinder, featur
       audit_event_id: audit_event1.id,
       audit_event_table_name: :project_audit_events,
       compliance_control: control1,
-      status: 0
+      status: 0,
+      created_at: 3.days.ago
     )
   end
 
@@ -52,7 +53,7 @@ RSpec.describe ComplianceManagement::Projects::ComplianceViolationFinder, featur
       audit_event_table_name: :group_audit_events,
       compliance_control: control1,
       status: 2,
-      created_at: 1.day.ago
+      created_at: 5.days.ago
     )
   end
 
@@ -61,7 +62,7 @@ RSpec.describe ComplianceManagement::Projects::ComplianceViolationFinder, featur
       audit_event_id: audit_event2.id,
       audit_event_table_name: :group_audit_events,
       compliance_control: control3,
-      status: 3
+      status: 0
     )
   end
 
@@ -74,7 +75,9 @@ RSpec.describe ComplianceManagement::Projects::ComplianceViolationFinder, featur
     )
   end
 
-  subject(:finder_response) { described_class.new(root_group, user).execute }
+  let(:params) { {} }
+
+  subject(:finder_response) { described_class.new(root_group, user, params).execute }
 
   describe '#execute' do
     before_all do
@@ -117,6 +120,155 @@ RSpec.describe ComplianceManagement::Projects::ComplianceViolationFinder, featur
 
           it 'returns list of compliance violations for projects under subgroup' do
             expect(finder_response.to_a).to eq([violation4])
+          end
+        end
+
+        context 'with filters' do
+          context 'with project_id filter' do
+            let(:params) { { project_id: root_group_project.id } }
+
+            it 'returns violations for the specified project' do
+              expect(finder_response.to_a).to match_array([violation2, violation1, violation3])
+            end
+
+            context 'when project has no violations' do
+              let_it_be(:empty_project) { create(:project, group: root_group) }
+              let(:params) { { project_id: empty_project.id } }
+
+              it 'returns empty array' do
+                expect(finder_response.to_a).to be_empty
+              end
+            end
+
+            context 'when non existing project_id' do
+              let(:params) { { project_id: non_existing_record_id } }
+
+              it 'returns empty array' do
+                expect(finder_response.to_a).to be_empty
+              end
+            end
+          end
+
+          context 'with control_id filter' do
+            let(:params) { { control_id: control1.id } }
+
+            it 'returns violations for the specified control' do
+              expect(finder_response.to_a).to match_array([violation1, violation3])
+            end
+
+            context 'when control has no violations' do
+              let_it_be(:empty_control) do
+                create(:compliance_requirements_control, :project_visibility_not_internal,
+                  compliance_requirement: requirement)
+              end
+
+              let(:params) { { control_id: empty_control.id } }
+
+              it 'returns empty array' do
+                expect(finder_response.to_a).to be_empty
+              end
+            end
+
+            context 'when non existing control_id' do
+              let(:params) { { control_id: non_existing_record_id } }
+
+              it 'returns empty array' do
+                expect(finder_response.to_a).to be_empty
+              end
+            end
+          end
+
+          context 'with status filter' do
+            let(:params) { { status: 'detected' } }
+
+            it 'returns violations with the specified status' do
+              expect(finder_response.to_a).to match_array([violation4, violation1])
+            end
+
+            context 'when status has no violations' do
+              let(:params) { { status: 'dismissed' } }
+
+              it 'returns empty array' do
+                expect(finder_response.to_a).to be_empty
+              end
+            end
+          end
+
+          context 'with created_before filter' do
+            let(:params) { { created_before: 3.days.ago.to_date } }
+
+            it 'returns violations created before the specified date (inclusive)' do
+              expect(finder_response.to_a).to match_array([violation1, violation3])
+            end
+
+            context 'when no violations match the date range' do
+              let(:params) { { created_before: 10.days.ago.to_date } }
+
+              it 'returns empty array' do
+                expect(finder_response.to_a).to be_empty
+              end
+            end
+          end
+
+          context 'with created_after filter' do
+            let(:params) { { created_after: 3.days.ago.to_date } }
+
+            it 'returns violations created after the specified date (inclusive)' do
+              expect(finder_response.to_a).to match_array([violation4, violation2, violation1])
+            end
+
+            context 'when no violations match the date range' do
+              let(:params) { { created_after: 2.days.from_now.to_date } }
+
+              it 'returns empty array' do
+                expect(finder_response.to_a).to be_empty
+              end
+            end
+          end
+
+          context 'with date range filter' do
+            let(:params) do
+              {
+                created_after: 4.days.ago.to_date,
+                created_before: 2.days.ago.to_date
+              }
+            end
+
+            it 'returns violations created within the specified date range' do
+              expect(finder_response.to_a).to eq([violation1])
+            end
+          end
+
+          context 'with all filters combined' do
+            let(:params) do
+              {
+                project_id: root_group_project.id,
+                control_id: control1.id,
+                status: 'detected',
+                created_after: 3.days.ago.to_date,
+                created_before: 1.day.ago.to_date
+              }
+            end
+
+            it 'returns violations matching all specified filters' do
+              expect(finder_response.to_a).to eq([violation1])
+            end
+          end
+
+          context 'when combined filters return no results' do
+            let(:params) do
+              {
+                project_id: root_group_project.id,
+                control_id: control1.id,
+                status: 'detected',
+                created_after: 10.days.ago.to_date,
+                created_before: 6.days.ago.to_date
+              }
+            end
+
+            it 'returns empty array' do
+              expect(finder_response.to_a).to be_empty
+            end
           end
         end
       end

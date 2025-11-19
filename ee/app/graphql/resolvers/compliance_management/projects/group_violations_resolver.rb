@@ -15,10 +15,16 @@ module Resolvers
         authorize :read_compliance_violations_report
         authorizes_object!
 
-        def resolve
+        argument :filters, ::Types::ComplianceManagement::Projects::ComplianceViolationFilterInputType,
+          required: false,
+          default_value: {},
+          description: 'Filters applied when retrieving compliance violations.'
+
+        def resolve(**args)
           violation_records = ::ComplianceManagement::Projects::ComplianceViolationFinder.new(
             group,
-            current_user
+            current_user,
+            args[:filters].to_h
           ).execute
 
           offset_pagination(violation_records)
