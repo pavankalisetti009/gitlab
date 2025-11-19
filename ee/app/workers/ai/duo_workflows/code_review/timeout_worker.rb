@@ -70,7 +70,7 @@ module Ai
             merge_request.project,
             review_bot,
             noteable: merge_request,
-            note: ::Ai::CodeReviewMessages.generic_error
+            note: ::Ai::CodeReviewMessages.timeout_error
           ).execute
 
           TodoService.new.new_review(merge_request, review_bot)

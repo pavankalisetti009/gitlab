@@ -32,7 +32,7 @@ module Ai
           ).execute
 
           metrics = processed_comments.payload[:metrics]
-          message = processed_comments.message.presence || ::Ai::CodeReviewMessages.generic_error
+          message = processed_comments.message
 
           log_metrics(metrics) if metrics
 
@@ -125,7 +125,7 @@ module Ai
 
           DraftNote.bulk_insert_and_keep_commits!(draft_notes, batch_size: 20)
 
-          update_progress_note(summary.presence || ::Ai::CodeReviewMessages.generic_error)
+          update_progress_note(summary)
 
           track_review_merge_request_event(
             'post_comment_duo_code_review_on_diff',

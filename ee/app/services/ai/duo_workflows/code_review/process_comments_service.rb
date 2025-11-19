@@ -45,7 +45,7 @@ module Ai
 
           if review_output.nil?
             track_review_merge_request_event('encounter_duo_code_review_error_during_review')
-            return error(nil, create_todo: true)
+            return error(::Ai::CodeReviewMessages.invalid_review_output, create_todo: true)
           end
 
           draft_notes = build_draft_notes
@@ -259,7 +259,7 @@ module Ai
 
           if ai_message.blank? || ai_message.errors.any? || ai_message.content.blank?
             track_review_merge_request_event('encounter_duo_code_review_error_during_review')
-            nil
+            ::Ai::CodeReviewMessages.could_not_generate_summary_error
           else
             exclusion_message_for_excluded_files + ai_message.content
           end

@@ -45,5 +45,30 @@ module Ai
     def nothing_to_comment
       s_("DuoCodeReview|I finished my review and found nothing to comment on. Nice work! :tada:")
     end
+
+    def invalid_review_output
+      s_(
+        "DuoCodeReview|:warning: Something went wrong while I was processing the review results. " \
+          "Please request a new review."
+      )
+    end
+
+    def could_not_start_workflow_error
+      s_(
+        "DuoCodeReview|:warning: Something went wrong while requesting a review from GitLab Duo. " \
+          "Please request a new review."
+      )
+    end
+
+    def timeout_error
+      s_(
+        "DuoCodeReview|:warning: Something went wrong and the review request was stopped. " \
+          "Please request a new review."
+      )
+    end
+
+    def could_not_generate_summary_error
+      s_("DuoCodeReview|:warning: Something went wrong while GitLab Duo was generating a code review summary.")
+    end
   end
 end

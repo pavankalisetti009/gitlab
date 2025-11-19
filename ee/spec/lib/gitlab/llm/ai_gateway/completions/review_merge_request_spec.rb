@@ -2005,7 +2005,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
           merge_request.reload
           error_note = merge_request.notes.non_diff_notes.find_by(system: false)
           expect(error_note).to be_present
-          expect(error_note.note).to eq(Ai::CodeReviewMessages.generic_error)
+          expect(error_note.note).to eq(Ai::CodeReviewMessages.could_not_start_workflow_error)
           expect(error_note.author).to eq(duo_code_review_bot)
         end
 

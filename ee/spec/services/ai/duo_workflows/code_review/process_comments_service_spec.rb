@@ -38,7 +38,7 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::ProcessCommentsService, feature_cat
       end
     end
 
-    context 'when review_output is nil' do
+    context 'when review_output is empty' do
       let(:review_output) { nil }
       let(:diff_file) { instance_double(Gitlab::Diff::File, file_path: 'test.rb') }
 
@@ -48,6 +48,7 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::ProcessCommentsService, feature_cat
 
       it 'returns an error with create_todo flag' do
         expect(execute).to be_error
+        expect(execute.message).to eq(::Ai::CodeReviewMessages.invalid_review_output)
         expect(execute.payload[:create_todo]).to be(true)
       end
 
@@ -518,11 +519,11 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::ProcessCommentsService, feature_cat
         allow(service).to receive(:summary_response_for).and_return(ai_message: ai_message)
       end
 
-      it 'returns nil and tracks error event' do
+      it 'returns error message and tracks error event' do
         expect(service).to receive(:track_review_merge_request_event)
           .with('encounter_duo_code_review_error_during_review')
         result = service.send(:build_summary, draft_notes)
-        expect(result).to be_nil
+        expect(result).to eq(::Ai::CodeReviewMessages.could_not_generate_summary_error)
       end
     end
   end
