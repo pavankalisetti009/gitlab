@@ -1,5 +1,6 @@
 // eslint-disable-next-line import/order
 const crypto = require('./helpers/patched_crypto');
+const { execSync } = require('child_process');
 
 const { VUE_VERSION: EXPLICIT_VUE_VERSION } = process.env;
 if (![undefined, '2', '3'].includes(EXPLICIT_VUE_VERSION)) {
@@ -229,6 +230,49 @@ const vueLoaderOptions = {
     EXPLICIT_VUE_VERSION,
   ].join('|'),
 };
+
+// Determine Sidekiq assets path
+function getSidekiqAssetsSourcePath() {
+  // Get path to sidekiq.rb from the gem
+  const sidekiqPath = execSync('bundle show sidekiq', {
+    encoding: 'utf8',
+    cwd: ROOT_PATH,
+  }).trim();
+
+  if (!sidekiqPath) {
+    throw new Error('`bundle show sidekiq` returned an empty path');
+  }
+
+  console.log(`Sidekiq gem path: ${sidekiqPath}`);
+
+  const assetsPath = path.join(sidekiqPath, 'web', 'assets');
+  console.log(`Sidekiq assets path: ${assetsPath}`);
+
+  if (!fs.existsSync(assetsPath)) {
+    throw new Error(`Sidekiq assets path does not exist: ${assetsPath}`);
+  }
+
+  return assetsPath;
+}
+
+function getSidekiqAssetsDestinationPath() {
+  const sidekiqVersion = execSync('bundle exec ruby -rsidekiq -e "puts Sidekiq::VERSION"', {
+    encoding: 'utf8',
+    cwd: ROOT_PATH,
+  }).trim();
+
+  if (!sidekiqVersion) {
+    throw new Error('unable to determine Sidekiq version');
+  }
+
+  console.log(`Sidekiq version: ${sidekiqVersion}`);
+  // When we upgrade Sidekiq, we want to make sure we don't load stale assets, so
+  // use the version number in the directory path.
+  const destPath = path.join(ROOT_PATH, `public/assets/sidekiq/${sidekiqVersion}`);
+  console.log(`Sidekiq assets destination path: ${destPath}`);
+
+  return destPath;
+}
 
 const shouldExcludeFromCompiling = (modulePath) => {
   // file with .vue.js extension
@@ -809,6 +853,17 @@ module.exports = {
     new CopyWebpackPlugin({
       patterns: copyFilesPatterns,
     }),
+
+    IS_PRODUCTION &&
+      new CopyWebpackPlugin({
+        patterns: [
+          {
+            from: getSidekiqAssetsSourcePath(),
+            to: getSidekiqAssetsDestinationPath(),
+            toType: 'dir',
+          },
+        ],
+      }),
 
     // compression can require a lot of compute time and is disabled in CI
     IS_PRODUCTION && !NO_COMPRESSION && new CompressionPlugin(),

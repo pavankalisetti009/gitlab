@@ -128,6 +128,20 @@ Sidekiq.configure_client do |config|
   config.client_middleware(&Gitlab::SidekiqMiddleware::Client.configurator)
 end
 
+if Rails.env.production?
+  # Configure Sidekiq to serve assets from webpack-compiled location.
+  # Add Rack::Static middleware to serve assets from
+  # public/assets/sidekiq at URLs like /stylesheets/*, /images/*,
+  # /javascripts/*. This is needed because in Cloud Native GitLab,
+  # Workhorse does not install the Sidekiq gem.
+  #
+  # This method should be available in Sidekiq 8.1.0:
+  # https://github.com/sidekiq/sidekiq/pull/6865
+  # This needs to be kept in sync with getSidekiqAssetsDestinationPath() set in
+  # config/webpack.config.js.
+  Sidekiq::Web.assets_path = Rails.public_path.join('assets', 'sidekiq', Sidekiq::VERSION).to_s
+end
+
 Gitlab::Application.configure do |config|
   config.middleware.use(Gitlab::Middleware::SidekiqShardAwarenessValidation)
 end
