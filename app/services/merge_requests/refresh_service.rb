@@ -391,16 +391,6 @@ module MergeRequests
       end
     end
 
-    def measure_duration(operation_name)
-      return yield unless log_refresh_service_duration_enabled?
-
-      start_time = current_monotonic_time
-      result = yield
-      duration = (current_monotonic_time - start_time).round(Gitlab::InstrumentationHelper::DURATION_PRECISION)
-      duration_statistics[:"#{operation_name}_duration_s"] = duration
-      result
-    end
-
     def measure_duration_aggregated(operation_name)
       return yield unless log_refresh_service_duration_enabled?
 

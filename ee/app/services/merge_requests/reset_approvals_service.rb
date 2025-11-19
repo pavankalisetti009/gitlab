@@ -149,7 +149,7 @@ module MergeRequests
 
       start_time = current_monotonic_time
       result = yield
-      duration = (current_monotonic_time - start_time).round(Gitlab::InstrumentationHelper::DURATION_PRECISION)
+      duration = (current_monotonic_time - start_time)
       duration_statistics["#{operation_name}_duration_s"] = duration
       result
     end
@@ -159,7 +159,7 @@ module MergeRequests
 
       start_time = current_monotonic_time
       result = yield
-      duration = (current_monotonic_time - start_time).round(Gitlab::InstrumentationHelper::DURATION_PRECISION)
+      duration = (current_monotonic_time - start_time)
       duration_statistics["#{operation_name}_duration_s"] ||= 0
       duration_statistics["#{operation_name}_duration_s"] += duration
       result
