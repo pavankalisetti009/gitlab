@@ -163,4 +163,39 @@ RSpec.describe Admin::TargetedMessagesController, :enable_admin_mode, :saas, fea
       end
     end
   end
+
+  describe 'DELETE #destroy' do
+    let_it_be(:namespace) { create(:namespace) }
+    let_it_be(:user) { create(:user) }
+
+    before do
+      targeted_message.save!
+    end
+
+    it 'deletes the targeted message' do
+      expect do
+        delete admin_targeted_message_path(targeted_message)
+      end.to change { Notifications::TargetedMessage.count }.by(-1)
+
+      expect(response).to redirect_to(admin_targeted_messages_path)
+      expect(flash[:notice]).to eq(s_('TargetedMessages|Targeted message was successfully deleted.'))
+    end
+
+    context 'when on failure' do
+      before do
+        allow_next_found_instance_of(Notifications::TargetedMessage) do |message|
+          allow(message).to receive(:destroy).and_return(false)
+        end
+      end
+
+      it 'redirects to index with alert message' do
+        expect do
+          delete admin_targeted_message_path(targeted_message)
+        end.not_to change { Notifications::TargetedMessage.count }
+
+        expect(response).to redirect_to(admin_targeted_messages_path)
+        expect(flash[:alert]).to eq(s_('TargetedMessages|Targeted message failed to delete. Please try again.'))
+      end
+    end
+  end
 end

@@ -5,7 +5,7 @@ module Admin
     feature_category :acquisition
 
     before_action :verify_targeted_messages_enabled!
-    before_action :find_targeted_message, only: [:edit, :update]
+    before_action :find_targeted_message, only: [:edit, :update, :destroy]
 
     def index
       @targeted_messages = Notifications::TargetedMessage.all
@@ -46,6 +46,16 @@ module Admin
       else
         @targeted_message = result.payload
         render :edit
+      end
+    end
+
+    def destroy
+      if @targeted_message.destroy
+        redirect_to admin_targeted_messages_path,
+          notice: s_('TargetedMessages|Targeted message was successfully deleted.')
+      else
+        redirect_to admin_targeted_messages_path,
+          alert: s_('TargetedMessages|Targeted message failed to delete. Please try again.')
       end
     end
 

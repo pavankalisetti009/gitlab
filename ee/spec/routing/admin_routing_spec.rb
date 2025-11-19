@@ -152,6 +152,11 @@ RSpec.describe 'EE-specific admin routing' do
       expect(patch("/admin/targeted_messages/#{targeted_message.id}")).to route_to('admin/targeted_messages#update',
         id: targeted_message.to_param)
     end
+
+    it 'routes delete /:id to #destroy' do
+      expect(delete("/admin/targeted_messages/#{targeted_message.id}")).to route_to('admin/targeted_messages#destroy',
+        id: targeted_message.to_param)
+    end
   end
 
   describe Admin::DataManagementController, 'routing' do

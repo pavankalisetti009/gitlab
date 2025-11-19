@@ -131,7 +131,7 @@ namespace :admin do
     end
   end
 
-  resources :targeted_messages, only: [:index, :new, :create, :edit, :update]
+  resources :targeted_messages, only: [:index, :new, :create, :edit, :update, :destroy]
 
   resource :data_management do
     get '/', to: 'data_management#index'
