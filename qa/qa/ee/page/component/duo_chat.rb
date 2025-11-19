@@ -30,7 +30,7 @@ module QA
           end
 
           def latest_response
-            Support::Retrier.retry_until(retry_on_exception: true, max_duration: 60) do
+            QA::Support::Retrier.retry_until(retry_on_exception: true, max_duration: 60) do
               find_all('.duo-chat-message p').last&.text.presence
             end
           end
@@ -72,7 +72,7 @@ module QA
           end
 
           def wait_for_response
-            Support::Waiter.wait_until { find_all('.duo-chat-message').present? }
+            QA::Support::Waiter.wait_until { find_all('.duo-chat-message').present? }
           end
         end
       end

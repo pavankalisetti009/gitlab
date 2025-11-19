@@ -56,12 +56,12 @@ module QA
 
             def enforce_sso
               check_element('enforced-sso-checkbox', true) unless enforce_sso_enabled?
-              Support::Waiter.wait_until(raise_on_failure: true) { enforce_sso_enabled? }
+              QA::Support::Waiter.wait_until(raise_on_failure: true) { enforce_sso_enabled? }
             end
 
             def disable_enforced_sso
               uncheck_element('enforced-sso-checkbox', true) if enforce_sso_enabled?
-              Support::Waiter.wait_until(raise_on_failure: true) { !enforce_sso_enabled? }
+              QA::Support::Waiter.wait_until(raise_on_failure: true) { !enforce_sso_enabled? }
             end
 
             def click_save_changes

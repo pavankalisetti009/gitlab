@@ -41,7 +41,7 @@ module QA
           end
 
           def click_get_started_button
-            Support::Retrier.retry_until do
+            QA::Support::Retrier.retry_until do
               click_element 'get-started-button'
 
               wait_until(message: 'Waiting for get started button not to be rendered') do

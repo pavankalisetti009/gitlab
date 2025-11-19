@@ -42,7 +42,7 @@ module QA
               new.save_workspace
             end
 
-            Support::Waiter.wait_until(max_duration: 5, raise_on_failure: false) do
+            QA::Support::Waiter.wait_until(max_duration: 5, raise_on_failure: false) do
               get_workspaces_list(tab: :active).length > existing_workspaces.length
             end
 
@@ -68,7 +68,7 @@ module QA
 
           def wait_for_workspaces_creation(workspace)
             within_element("#{workspace}-action".to_sym) do
-              Support::WaitForRequests.wait_for_requests
+              QA::Support::WaitForRequests.wait_for_requests
             end
           end
 
