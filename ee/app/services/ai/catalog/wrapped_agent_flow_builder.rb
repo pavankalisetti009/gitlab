@@ -69,7 +69,7 @@ module Ai
             {
               agent_id: agent.id,
               current_version_id: agent_version.id,
-              pinned_version_prefix: nil
+              pinned_version_prefix: agent_version.version
             }
           ]
         }

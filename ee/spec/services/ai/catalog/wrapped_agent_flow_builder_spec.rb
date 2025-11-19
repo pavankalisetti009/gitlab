@@ -99,10 +99,18 @@ RSpec.describe Ai::Catalog::WrappedAgentFlowBuilder, :aggregate_failures, featur
           {
             "agent_id" => agent.id,
             "current_version_id" => agent_version.id,
-            "pinned_version_prefix" => nil
+            "pinned_version_prefix" => agent_version.version
           }
         ]
       })
+    end
+
+    it 'sets pinned_version_prefix to the agent version string to ensure version pinning' do
+      flow = generated_flow
+      flow_version = flow.versions.first
+      definition = flow_version.definition
+      expect(definition["steps"].first["pinned_version_prefix"]).to eq(agent_version.version)
+      expect(definition["steps"].first["pinned_version_prefix"]).not_to be_nil
     end
   end
 end
