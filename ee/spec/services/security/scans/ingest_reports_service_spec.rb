@@ -47,6 +47,23 @@ RSpec.describe Security::Scans::IngestReportsService, :clean_gitlab_redis_shared
       end
     end
 
+    context 'when all non-manual security jobs are complete and manual blocking jobs exist' do
+      let_it_be(:pipeline) { create(:ci_pipeline, user: user) }
+      let_it_be(:completed_job) { create(:ci_build, :sast, pipeline: pipeline, status: 'success') }
+      let_it_be(:manual_job) { create(:ci_build, :dast, :manual, :actionable, pipeline: pipeline) }
+
+      before do
+        allow(pipeline).to receive_message_chain(:project,
+          :can_store_security_reports?).and_return(true)
+      end
+
+      it 'schedules store security scans job' do
+        ingest_security_scans
+
+        expect(::Security::StoreScansWorker).to have_received(:perform_async).with(pipeline.id)
+      end
+    end
+
     context 'when the security scans can be stored for the pipeline' do
       let_it_be(:pipeline) { create(:ci_pipeline, user: user) }
       let_it_be(:job) { create(:ci_build, :sast, pipeline: pipeline, status: 'success') }

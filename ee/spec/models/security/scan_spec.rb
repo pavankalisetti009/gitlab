@@ -322,6 +322,27 @@ RSpec.describe Security::Scan, feature_category: :vulnerability_management do
         it { is_expected.to eq(false) }
       end
     end
+
+    context 'when pipeline is blocked by manual jobs' do
+      let(:pipeline) { create(:ci_pipeline, :blocked, project: project) }
+
+      before do
+        create(:ee_ci_build, :sast, :success, pipeline: pipeline, project: project)
+        create(:ee_ci_build, :dast, :manual, :actionable, pipeline: pipeline, project: project)
+      end
+
+      it 'returns true when all non-manual security jobs are complete and no scans are processing' do
+        allow(described_class).to receive(:processing?).and_return(false)
+
+        expect(results_ready?).to eq(true)
+      end
+
+      it 'returns false when scans are still processing' do
+        allow(described_class).to receive(:processing?).and_return(true)
+
+        expect(results_ready?).to eq(false)
+      end
+    end
   end
 
   describe '.processing?' do

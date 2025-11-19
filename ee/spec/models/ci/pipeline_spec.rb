@@ -1326,6 +1326,48 @@ RSpec.describe Ci::Pipeline, feature_category: :continuous_integration do
     end
   end
 
+  describe '#all_security_jobs_complete?' do
+    let_it_be(:pipeline) { create(:ci_empty_pipeline, project: project) }
+
+    subject { pipeline.all_security_jobs_complete? }
+
+    context 'when all non-manual security jobs are complete and manual jobs exist' do
+      before do
+        create(:ee_ci_build, :sast, :success, pipeline: pipeline, project: project)
+        create(:ee_ci_build, :dast, :manual, pipeline: pipeline, project: project)
+      end
+
+      it { is_expected.to be_truthy }
+    end
+
+    context 'when non-manual security jobs are incomplete' do
+      before do
+        create(:ee_ci_build, :sast, :running, pipeline: pipeline, project: project)
+        create(:ee_ci_build, :dast, :manual, pipeline: pipeline, project: project)
+      end
+
+      it { is_expected.to be_falsey }
+    end
+
+    context 'when all non-manual security jobs are complete and no manual jobs exist' do
+      before do
+        create(:ee_ci_build, :sast, :success, pipeline: pipeline, project: project)
+        create(:ee_ci_build, :dast, :success, pipeline: pipeline, project: project)
+      end
+
+      it { is_expected.to be_truthy }
+    end
+
+    context 'when manual blocking jobs exist but non-manual jobs are complete' do
+      before do
+        create(:ee_ci_build, :sast, :success, pipeline: pipeline, project: project)
+        create(:ee_ci_build, :dast, :manual, :actionable, pipeline: pipeline, project: project)
+      end
+
+      it { is_expected.to be_truthy }
+    end
+  end
+
   describe ".self_and_descendant_security_scans" do
     it 'returns the security scan from the parent and each child pipeline' do
       parent_pipeline = create(:ee_ci_pipeline, :success, project: project)
