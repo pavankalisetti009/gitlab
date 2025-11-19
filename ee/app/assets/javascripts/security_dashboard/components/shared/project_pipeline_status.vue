@@ -55,9 +55,9 @@ export default {
 
 <template>
   <div class="gl-border-b gl-bg-subtle gl-p-5 @lg/panel:gl-flex">
-    <div class="gl-flex gl-items-center" data-testid="pipeline">
-      <span class="gl-mr-3 gl-font-bold">{{ $options.i18n.lastUpdated }}</span
-      ><span class="gl-flex gl-items-center gl-whitespace-nowrap">
+    <div class="gl-flex gl-flex-wrap gl-items-center gl-gap-y-2" data-testid="pipeline">
+      <span class="gl-mr-3 gl-shrink-0 gl-font-bold">{{ $options.i18n.lastUpdated }}</span>
+      <span class="gl-flex gl-items-center gl-whitespace-nowrap">
         <time-ago-tooltip class="gl-pr-3" :time="pipeline.createdAt" /><gl-link
           :href="pipeline.path"
           >#{{ pipeline.id }}</gl-link
@@ -87,8 +87,8 @@ export default {
         data-testid="sbom-pipeline"
       >
         <div>
-          <span class="gl-mr-3 gl-font-bold">{{ $options.i18n.sbomLastUpdated }}</span
-          ><span class="gl-whitespace-nowrap">
+          <span class="gl-mr-3 gl-font-bold">{{ $options.i18n.sbomLastUpdated }}</span>
+          <span class="gl-whitespace-nowrap">
             <time-ago-tooltip class="gl-pr-3" :time="sbomPipeline.createdAt" /><gl-link
               :href="sbomPipeline.path"
               >#{{ sbomPipeline.id }}</gl-link
