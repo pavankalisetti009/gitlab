@@ -115,5 +115,12 @@ module EE
         super
       end
     end
+
+    override :additional_work_items_params
+    def additional_work_items_params
+      return super unless group.allowed_work_item_type?(:epic)
+
+      { 'not[type][]' => 'epic' }
+    end
   end
 end

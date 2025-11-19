@@ -70,7 +70,7 @@ RSpec.describe Groups::EpicsController, feature_category: :portfolio_management 
           end
 
           it 'preserves query parameters except type when redirecting' do
-            get :index, params: { group_id: group, search: 'feature', sort: 'created_desc', type: 'old_type' }
+            get :index, params: { group_id: group, search: 'feature', sort: 'created_desc', 'type[]' => 'old_type' }
 
             expect(response).to redirect_to send(redirect_path, group,
               params: { search: 'feature', sort: 'created_desc', 'type[]' => 'epic' })
