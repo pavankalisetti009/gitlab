@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe 'Work items bulk editing', :js, feature_category: :team_planning do
   include WorkItemsHelpers
+  include WorkItemFeedbackHelpers
 
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group) }
@@ -44,6 +45,7 @@ RSpec.describe 'Work items bulk editing', :js, feature_category: :team_planning 
     context 'when bulk editing labels on group work items' do
       before do
         visit group_work_items_path(group)
+        close_work_item_feedback_popover_if_present
         click_bulk_edit
       end
 
@@ -72,6 +74,7 @@ RSpec.describe 'Work items bulk editing', :js, feature_category: :team_planning 
       before do
         stub_feature_flags(work_item_planning_view: false)
         visit group_epics_path(group)
+        close_work_item_feedback_popover_if_present
         click_bulk_edit
       end
 
@@ -97,6 +100,7 @@ RSpec.describe 'Work items bulk editing', :js, feature_category: :team_planning 
         allow(Gitlab::QueryLimiting).to receive(:threshold).and_return(132)
 
         visit issues_group_path(group)
+        close_work_item_feedback_popover_if_present
         click_bulk_edit
       end
 
@@ -147,6 +151,7 @@ RSpec.describe 'Work items bulk editing', :js, feature_category: :team_planning 
       before do
         allow(Gitlab::QueryLimiting).to receive(:threshold).and_return(132)
         visit project_issues_path(project)
+        close_work_item_feedback_popover_if_present
         # clear the type filter as we will also update task
         click_button 'Clear'
         click_bulk_edit
@@ -202,6 +207,8 @@ RSpec.describe 'Work items bulk editing', :js, feature_category: :team_planning 
       before do
         stub_feature_flags(work_item_planning_view: false)
         visit group_epics_path(group)
+        close_work_item_feedback_popover_if_present
+
         click_bulk_edit
       end
 

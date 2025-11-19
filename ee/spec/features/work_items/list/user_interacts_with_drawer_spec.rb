@@ -6,6 +6,7 @@ RSpec.describe 'Work Items List Drawer', :js, feature_category: :team_planning d
   include WorkItemsHelpers
   include ListboxHelper
   include Features::IterationHelpers
+  include WorkItemFeedbackHelpers
 
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group, :public) }
@@ -85,6 +86,7 @@ RSpec.describe 'Work Items List Drawer', :js, feature_category: :team_planning d
           sign_in(user)
 
           visit project_work_items_path(project)
+          close_work_item_feedback_popover_if_present
 
           first_card.click
 
@@ -103,6 +105,7 @@ RSpec.describe 'Work Items List Drawer', :js, feature_category: :team_planning d
           sign_in(user)
 
           visit group_work_items_path(group)
+          close_work_item_feedback_popover_if_present
 
           first_card.click
 
@@ -124,6 +127,7 @@ RSpec.describe 'Work Items List Drawer', :js, feature_category: :team_planning d
           sign_in(user)
 
           visit group_epics_path(group)
+          close_work_item_feedback_popover_if_present
 
           first_card.click
 
@@ -162,6 +166,7 @@ RSpec.describe 'Work Items List Drawer', :js, feature_category: :team_planning d
           sign_in(user)
 
           visit project_work_items_path(project)
+          close_work_item_feedback_popover_if_present
           dismiss_welcome_banner_if_present(page)
 
           first_card.click
@@ -181,6 +186,7 @@ RSpec.describe 'Work Items List Drawer', :js, feature_category: :team_planning d
           sign_in(user)
 
           visit group_work_items_path(group)
+          close_work_item_feedback_popover_if_present
           dismiss_welcome_banner_if_present(page)
 
           first_card.click
@@ -206,6 +212,7 @@ RSpec.describe 'Work Items List Drawer', :js, feature_category: :team_planning d
           sign_in(user)
 
           visit group_epics_path(group)
+          close_work_item_feedback_popover_if_present
           dismiss_welcome_banner_if_present(page)
 
           first_card.click

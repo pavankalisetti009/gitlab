@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe 'GFM autocomplete', :js, feature_category: :portfolio_management do
   include Features::AutocompleteHelpers
+  include WorkItemFeedbackHelpers
 
   let_it_be(:user) { create(:user, name: '💃speciąl someone💃', username: 'someone.special') }
   let_it_be(:group) { create(:group, maintainers: user) }
@@ -19,6 +20,7 @@ RSpec.describe 'GFM autocomplete', :js, feature_category: :portfolio_management 
 
     before do
       visit new_group_epic_path(group)
+      close_work_item_feedback_popover_if_present
       wait_for_requests
     end
 
@@ -32,6 +34,7 @@ RSpec.describe 'GFM autocomplete', :js, feature_category: :portfolio_management 
   context 'for an existing epic' do
     before do
       visit group_epic_path(group, epic)
+      close_work_item_feedback_popover_if_present
 
       wait_for_requests
     end
