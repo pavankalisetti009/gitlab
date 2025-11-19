@@ -76,7 +76,7 @@ RSpec.describe 'AI Sidepanel', :js, feature_category: :duo_agent_platform do
 
     context 'when Project Studio is not enabled for user' do
       before do
-        user.update!(project_studio_enabled: false)
+        user.update!(new_ui_enabled: false)
 
         project_studio_instance = instance_double(Users::ProjectStudio, enabled?: false, available?: false)
         allow(Users::ProjectStudio).to receive(:new).and_return(project_studio_instance)
