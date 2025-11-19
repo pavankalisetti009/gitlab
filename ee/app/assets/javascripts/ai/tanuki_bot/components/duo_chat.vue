@@ -423,6 +423,7 @@ export default {
       if (aiCompletionResponse.role.toLowerCase() === MESSAGE_TYPES.TANUKI) {
         this.completedRequestId = aiCompletionResponse.requestId;
         clearDuoChatCommands();
+        this.isWaitingOnPrompt = false;
       }
     },
     onMessageStreamReceived(aiCompletionResponse) {
