@@ -26586,6 +26586,7 @@ Information about an asynchronous pipeline creation request.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="cipipelinecreationrequesterror"></a>`error` | [`String`](#string) | Error message if pipeline creation failed. |
+| <a id="cipipelinecreationrequestpipeline"></a>`pipeline` | [`Pipeline`](#pipeline) | Pipeline object created by the request. |
 | <a id="cipipelinecreationrequestpipelineid"></a>`pipelineId` | [`CiPipelineID`](#cipipelineid) | ID of the created pipeline if creation was successful. |
 | <a id="cipipelinecreationrequeststatus"></a>`status` | [`CiPipelineCreationStatus!`](#cipipelinecreationstatus) | Current status of the pipeline creation. |
 
