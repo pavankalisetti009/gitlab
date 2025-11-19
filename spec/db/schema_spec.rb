@@ -150,7 +150,8 @@ RSpec.describe 'Database schema',
       namespace_descendants: %w[namespace_id],
       notes: %w[author_id commit_id noteable_id updated_by_id resolved_by_id discussion_id],
       notes_archived: %w[author_id commit_id noteable_id updated_by_id resolved_by_id discussion_id organization_id],
-      label_links_archived: %w[label_id target_id namespace_id],
+      label_links_archived: %w[label_id target_id namespace_id], # temp table
+      award_emoji_archived: %w[user_id awardable_id namespace_id organization_id], # temp table
       notification_settings: %w[source_id],
       oauth_access_grants: %w[resource_owner_id application_id],
       oauth_access_grant_archived_records: %w[resource_owner_id application_id],
