@@ -53,11 +53,14 @@ export default {
     isFlowValid() {
       return !this.isDirty || this.selectedFlowConsumer.id !== undefined;
     },
+    isTriggersValid() {
+      return !this.isDirty || this.triggerTypes.length > 0;
+    },
   },
   methods: {
     handleSubmit() {
       this.isDirty = true;
-      if (!this.isFlowValid) {
+      if (!this.isFlowValid || !this.isTriggersValid) {
         return;
       }
       this.$refs.modal.hide();
@@ -110,15 +113,15 @@ export default {
         />
       </gl-form-group>
       <gl-form-group
-        :label="s__('AICatalog|Add flow triggers')"
+        :label="s__('AICatalog|Add triggers')"
         :label-description="
           s__(
             'AICatalog|Choose what events in this project trigger the flow. You can change this later.',
           )
         "
         label-for="flow-triggers"
-        optional
-        :optional-text="__('(optional)')"
+        :state="isTriggersValid"
+        :invalid-feedback="s__('AICatalog|Select at least one trigger.')"
       >
         <gl-form-checkbox-group id="flow-triggers" v-model="triggerTypes">
           <gl-form-checkbox

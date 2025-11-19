@@ -56,6 +56,7 @@ export const FLOW_TRIGGER_TYPES = [
       'AICatalog|Trigger this flow when the service account user is mentioned in an issue or merge request.',
     ),
     value: 'mention',
+    valueInt: 0,
   },
   {
     text: __('Assign'),
@@ -63,6 +64,7 @@ export const FLOW_TRIGGER_TYPES = [
       'AICatalog|Trigger this flow when the service account user is assigned to issue or merge request.',
     ),
     value: 'assign',
+    valueInt: 1,
   },
   {
     text: __('Assign reviewer'),
@@ -70,6 +72,7 @@ export const FLOW_TRIGGER_TYPES = [
       'AICatalog|Trigger this flow when the service account user is assigned as a reviewer to a merge request.',
     ),
     value: 'assign_reviewer',
+    valueInt: 2,
   },
 ];
 

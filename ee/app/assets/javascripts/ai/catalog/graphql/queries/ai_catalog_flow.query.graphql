@@ -2,7 +2,12 @@
 #import "../fragments/ai_catalog_flow_version.fragment.graphql"
 #import "../fragments/ai_catalog_third_party_flow_version.fragment.graphql"
 
-query aiCatalogFlow($id: AiCatalogItemID!, $showSoftDeleted: Boolean) {
+query aiCatalogFlow(
+  $id: AiCatalogItemID!
+  $showSoftDeleted: Boolean
+  $projectId: ProjectID!
+  $hasProject: Boolean = false
+) {
   aiCatalogItem(id: $id, showSoftDeleted: $showSoftDeleted) {
     ...BaseAiCatalogItem
     project {
@@ -17,6 +22,13 @@ query aiCatalogFlow($id: AiCatalogItemID!, $showSoftDeleted: Boolean) {
     latestVersion {
       ...BaseAiCatalogFlowVersion
       ...BaseAiCatalogThirdPartyFlowVersion
+    }
+    configurationForProject(projectId: $projectId) @include(if: $hasProject) {
+      id
+      flowTrigger {
+        id
+        eventTypes
+      }
     }
   }
 }

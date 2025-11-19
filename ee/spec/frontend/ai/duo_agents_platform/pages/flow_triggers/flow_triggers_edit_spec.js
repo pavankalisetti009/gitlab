@@ -9,7 +9,6 @@ import FlowTriggersEdit from 'ee/ai/duo_agents_platform/pages/flow_triggers/flow
 import updateAiFlowTriggerMutation from 'ee/ai/duo_agents_platform/graphql/mutations/update_ai_flow_trigger.mutation.graphql';
 import getAiFlowTriggersQuery from 'ee/ai/duo_agents_platform/graphql/queries/get_ai_flow_triggers.query.graphql';
 import FlowTriggerForm from 'ee/ai/duo_agents_platform/pages/flow_triggers/components/flow_trigger_form.vue';
-import { FLOW_TRIGGERS_INDEX_ROUTE } from 'ee/ai/duo_agents_platform/router/constants';
 import {
   eventTypeOptions,
   mockAiFlowTriggersResponse,
@@ -37,7 +36,7 @@ describe('FlowTriggersEdit', () => {
     show: jest.fn(),
   };
   const mockRouter = {
-    push: jest.fn(),
+    go: jest.fn(),
   };
 
   const createWrapper = ({ queryHandler = mockAiFlowTriggersResponse } = {}) => {
@@ -199,9 +198,7 @@ describe('FlowTriggersEdit', () => {
 
       it('navigates to flow triggers page', async () => {
         await waitForPromises();
-        expect(mockRouter.push).toHaveBeenCalledWith({
-          name: FLOW_TRIGGERS_INDEX_ROUTE,
-        });
+        expect(mockRouter.go).toHaveBeenCalledWith(-1);
       });
     });
   });

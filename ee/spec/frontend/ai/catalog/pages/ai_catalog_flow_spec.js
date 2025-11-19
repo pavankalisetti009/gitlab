@@ -52,11 +52,8 @@ describe('AiCatalogFlow', () => {
   const findGlEmptyState = () => wrapper.findComponent(GlEmptyState);
   const findRouterView = () => wrapper.findComponent(RouterViewStub);
 
-  beforeEach(() => {
-    createComponent();
-  });
-
   it('renders loading icon while fetching data', async () => {
+    createComponent();
     expect(findGlLoadingIcon().exists()).toBe(true);
 
     await waitForPromises();
@@ -81,6 +78,7 @@ describe('AiCatalogFlow', () => {
 
   describe('when request succeeds', () => {
     beforeEach(async () => {
+      createComponent();
       await waitForPromises();
     });
 
@@ -95,25 +93,31 @@ describe('AiCatalogFlow', () => {
   });
 
   describe('when displaying soft-deleted flows', () => {
-    it('should show flow details in the Projects area', async () => {
-      createComponent();
-      await waitForPromises();
+    it('should show flow details in the Projects area', () => {
+      createComponent({
+        provide: {
+          projectId: '200',
+        },
+      });
 
       expect(mockFlowQueryHandler).toHaveBeenCalledWith({
         id: 'gid://gitlab/Ai::Catalog::Item/1',
         showSoftDeleted: true,
+        hasProject: true,
+        projectId: 'gid://gitlab/Project/200',
       });
     });
 
-    it('should not show flow details in the explore area', async () => {
+    it('should not show flow details in the explore area', () => {
       createComponent({
         provide: { isGlobal: true }, // "Projects" area is not global, "Explore" is
       });
-      await waitForPromises();
 
       expect(mockFlowQueryHandler).toHaveBeenCalledWith({
         id: 'gid://gitlab/Ai::Catalog::Item/1',
         showSoftDeleted: false,
+        hasProject: false,
+        projectId: 'gid://gitlab/Project/0',
       });
     });
   });
