@@ -40,6 +40,35 @@ RSpec.describe Projects::Settings::RepositoryController, feature_category: :sour
       end
     end
 
+    context 'mirrors pagination with pull and push mirrors' do
+      let!(:project) { create(:project_empty_repo, :mirror) }
+      let!(:remote_mirrors) { create_list(:remote_mirror, 3, project: project) }
+
+      let(:base_params) { { namespace_id: project.namespace, project_id: project } }
+
+      render_views
+
+      before do
+        allow(Kaminari.config).to receive(:default_per_page).and_return(2)
+      end
+
+      it 'displays pull mirror on first page only' do
+        get :show, params: base_params.merge(page: 1)
+
+        expect(response.body).to include('js-delete-pull-mirror')
+        expect(assigns(:remote_mirrors).count).to eq(2)
+        expect(assigns(:remote_mirrors)).to be_a(ActiveRecord::Relation)
+      end
+
+      it 'does not display pull mirror on subsequent pages' do
+        get :show, params: base_params.merge(page: 2)
+
+        expect(response.body).not_to include('js-delete-pull-mirror')
+        expect(assigns(:remote_mirrors).count).to eq(1)
+        expect(assigns(:remote_mirrors).current_page).to eq(2)
+      end
+    end
+
     describe 'group protected branches' do
       using RSpec::Parameterized::TableSyntax
 
