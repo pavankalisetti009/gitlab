@@ -25270,6 +25270,18 @@ msgstr ""
 msgid "DuoChat|project"
 msgstr ""
 
+msgid "DuoCodeReview|:warning: Something went wrong and the review request was stopped. Please request a new review."
+msgstr ""
+
+msgid "DuoCodeReview|:warning: Something went wrong while GitLab Duo was generating a code review summary."
+msgstr ""
+
+msgid "DuoCodeReview|:warning: Something went wrong while I was processing the review results. Please request a new review."
+msgstr ""
+
+msgid "DuoCodeReview|:warning: Something went wrong while requesting a review from GitLab Duo. Please request a new review."
+msgstr ""
+
 msgid "DuoCodeReview|:wave: There's nothing for me to review."
 msgstr ""
 

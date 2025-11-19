@@ -79,7 +79,10 @@ module Gitlab
 
             # If workflow fails to start, post error comment and reset review state
             unless result.success?
-              update_progress_note(::Ai::CodeReviewMessages.generic_error, with_todo: true) if progress_note.present?
+              if progress_note.present?
+                update_progress_note(::Ai::CodeReviewMessages.could_not_start_workflow_error, with_todo: true)
+              end
+
               update_review_state('reviewed') if merge_request.present?
               @progress_note&.destroy
               return result
@@ -91,7 +94,11 @@ module Gitlab
             result
           rescue StandardError => error
             Gitlab::ErrorTracking.track_exception(error, unit_primitive: UNIT_PRIMITIVE)
-            update_progress_note(::Ai::CodeReviewMessages.generic_error, with_todo: true) if progress_note.present?
+
+            if progress_note.present?
+              update_progress_note(::Ai::CodeReviewMessages.could_not_start_workflow_error, with_todo: true)
+            end
+
             update_review_state('reviewed') if merge_request.present?
             @progress_note&.destroy
             ServiceResponse.error(message: error.message)

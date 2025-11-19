@@ -82,7 +82,7 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::TimeoutWorker, feature_category: :c
         merge_request.reload
         error_note = merge_request.notes.non_diff_notes.find_by(system: false)
         expect(error_note).to be_present
-        expect(error_note.note).to include('encountered some problems')
+        expect(error_note.note).to eq(::Ai::CodeReviewMessages.timeout_error)
         expect(error_note.author).to eq(duo_code_review_bot)
       end
 
