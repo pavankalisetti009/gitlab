@@ -2,7 +2,6 @@
 
 fragment BaseAiCatalogItemConsumer on AiCatalogItemConsumer {
   id
-  pinnedVersionPrefix
   item {
     ...BaseAiCatalogItem
   }

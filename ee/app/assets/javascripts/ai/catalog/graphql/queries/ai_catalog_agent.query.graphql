@@ -1,4 +1,5 @@
 #import "../fragments/ai_catalog_item.fragment.graphql"
+#import "../fragments/ai_catalog_item_version.fragment.graphql"
 #import "../fragments/ai_catalog_agent_version.fragment.graphql"
 
 query aiCatalogAgent(
@@ -25,6 +26,21 @@ query aiCatalogAgent(
     configurationForProject(projectId: $projectId) @include(if: $hasProject) {
       id
       enabled
+      pinnedItemVersion {
+        id
+        updatedAt
+        ...BaseAiCatalogItemVersion
+        ... on AiCatalogAgentVersion {
+          systemPrompt
+          tools {
+            nodes {
+              id
+              name
+              title
+            }
+          }
+        }
+      }
     }
   }
 }

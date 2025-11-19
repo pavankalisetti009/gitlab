@@ -29,6 +29,10 @@ query aiCatalogFlow(
         id
         eventTypes
       }
+      pinnedItemVersion {
+        ...BaseAiCatalogFlowVersion
+        ...BaseAiCatalogThirdPartyFlowVersion
+      }
     }
   }
 }
