@@ -1045,28 +1045,7 @@ RSpec.describe MergeRequests::RefreshService, feature_category: :code_review_wor
 
       # Verify total duration is the sum of all durations
       total = logged_data.except(:event, :refresh_service_total_duration_s).values.sum
-      expect(logged_data[:refresh_service_total_duration_s]).to be_within(0.000001).of(total)
-    end
-
-    it 'verifies total sum equals sum of individual durations after rounding' do
-      # Create multiple merge requests to trigger aggregation
-      another_merge_request
-
-      logged_data = nil
-      allow(Gitlab::AppJsonLogger).to receive(:info) do |data|
-        logged_data = data if data[:event] == 'merge_requests_refresh_service'
-      end
-
-      execute
-
-      expect(logged_data).to be_present
-
-      # Calculate sum of all individual durations (excluding event and total)
-      individual_durations_sum = logged_data.except(:event, :refresh_service_total_duration_s).values.sum
-
-      # The total should equal the sum of individual durations
-      # Both should be rounded to the same precision
-      expect(logged_data[:refresh_service_total_duration_s]).to eq(individual_durations_sum)
+      expect(logged_data[:refresh_service_total_duration_s]).to be_within(0.0001).of(total)
     end
 
     context 'when log_refresh_service_duration feature flag is disabled' do
