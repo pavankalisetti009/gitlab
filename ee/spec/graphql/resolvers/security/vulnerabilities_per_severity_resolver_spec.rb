@@ -163,7 +163,7 @@ RSpec.describe Resolvers::Security::VulnerabilitiesPerSeverityResolver, :elastic
 
           it 'returns vulnerability metrics data filtered by end date only' do
             expect(resolved_metrics).not_to be_empty
-            expect(resolved_metrics.values.sum { |v| v[:count] }).to be >= 0
+            expect(resolved_metrics.values.sum { |v| v[:count] }).to be > 0
           end
         end
 
