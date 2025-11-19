@@ -15,10 +15,6 @@ module QA
                 element 'new-epic-button'
               end
 
-              view 'app/assets/javascripts/work_items/components/work_item_title.vue' do
-                element 'work-item-title-input'
-              end
-
               def click_new_epic
                 click_element('new-epic-button', EE::Page::Group::WorkItem::Epic::New)
               end
@@ -32,12 +28,6 @@ module QA
                 wait_until do
                   has_element?('issuable-title-link', text: title)
                 end
-              end
-
-              def work_item_epics_enabled?
-                all_elements('new-epic-button', minimum: 1).first.click
-                wait_for_requests
-                has_element?('work-item-title-input')
               end
             end
           end

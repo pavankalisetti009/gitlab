@@ -30,7 +30,7 @@ module QA
         #
         # @param [Array] epics
         # @param [String] title
-        # @return [EE::Resource::Epic]
+        # @return [EE::Resource::WorkItemEpic]
         def find_epic(epics, title)
           epics.find { |epic| epic.title == title }
         end

@@ -7,22 +7,6 @@ module QA
         include DoraMetrics
         include QA::Resource::Errors
 
-        # Get group epics
-        #
-        # @return [Array<QA::EE::Resource::Epic>]
-        def epics
-          parse_body(api_get_from(api_epics_path)).map do |epic|
-            Epic.init do |resource|
-              resource.group = self
-              resource.api_client = api_client
-              resource.id = epic[:id]
-              resource.iid = epic[:iid]
-              resource.title = epic[:title]
-              resource.description = epic[:description]
-            end
-          end
-        end
-
         # Get group work item epics
         #
         # @return [Array<QA::EE::Resource::WorkItemEpic>]
@@ -79,10 +63,6 @@ module QA
               resource.description = iteration[:description]
             end
           end
-        end
-
-        def api_epics_path
-          "#{api_get_path}/epics"
         end
 
         def api_iterations_path
