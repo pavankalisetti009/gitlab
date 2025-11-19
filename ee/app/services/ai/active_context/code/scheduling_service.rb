@@ -17,6 +17,11 @@ module Ai
             if: -> { ::Ai::ActiveContext::Code::Repository.pending.with_active_connection.exists? },
             execute: -> { RepositoryIndexService.enqueue_pending_jobs }
           },
+          delete_repository: {
+            period: 1.day,
+            if: -> { ::Ai::ActiveContext::Code::Repository.pending_deletion.with_active_connection.exists? },
+            execute: -> { RepositoryIndexService.enqueue_pending_deletion_jobs }
+          },
           mark_repository_as_ready: {
             period: 10.minutes,
             if: -> { ::Ai::ActiveContext::Code::Repository.embedding_indexing_in_progress.exists? },
