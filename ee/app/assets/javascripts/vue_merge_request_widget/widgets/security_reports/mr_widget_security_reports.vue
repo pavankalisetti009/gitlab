@@ -17,7 +17,7 @@ import SummaryText, { MAX_NEW_VULNERABILITIES } from './summary_text.vue';
 import SecurityTrainingPromoWidget from './security_training_promo_widget.vue';
 import ReportDetails from './mr_widget_security_report_details.vue';
 import { i18n, reportTypes } from './i18n';
-import { highlightsFromReport } from './utils';
+import { highlightsFromReport, transformToEnabledScans } from './utils';
 
 const POLL_INTERVAL = 3000;
 
@@ -29,38 +29,6 @@ const getFindingWithoutFeedback = (finding) => ({
   merge_request_feedback: undefined,
   issue_feedback: undefined,
 });
-
-const transformToEnabledScans = (scans) => {
-  const GRAPHQL_FIELD_TO_ENUM = {
-    sast: 'SAST',
-    dast: 'DAST',
-    secretDetection: 'SECRET_DETECTION',
-    apiFuzzing: 'API_FUZZING',
-    coverageFuzzing: 'COVERAGE_FUZZING',
-    dependencyScanning: 'DEPENDENCY_SCANNING',
-    containerScanning: 'CONTAINER_SCANNING',
-    clusterImageScanning: 'CLUSTER_IMAGE_SCANNING',
-  };
-
-  const getEnabledScanTypes = (scanData, scanMode) => {
-    if (!scanData) return [];
-
-    const result = Object.entries(scanData)
-      .filter(([scanType, isEnabled]) => isEnabled === true && GRAPHQL_FIELD_TO_ENUM[scanType])
-      .map(([scanType]) => ({
-        reportType: GRAPHQL_FIELD_TO_ENUM[scanType],
-        scanMode,
-      }));
-
-    return result;
-  };
-
-  return [
-    ...getEnabledScanTypes(scans.enabledSecurityScans, 'FULL'),
-    // Partial scans will be implemented in a follow-up
-    // https://gitlab.com/gitlab-org/gitlab/-/issues/574434
-  ];
-};
 
 export default {
   name: 'WidgetSecurityReports',
