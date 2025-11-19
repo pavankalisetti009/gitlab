@@ -9,6 +9,7 @@ RSpec.describe Security::Ingestion::FindingMapCollection, feature_category: :vul
     let_it_be(:security_finding_1) { create(:security_finding, overridden_uuid: '18a77231-f01d-40eb-80f0-de2ddb769a2c', uuid: '78a77231-f01d-40eb-80f0-de2ddb769a2c', scan: security_scan, deduplicated: true) }
     let_it_be(:security_finding_2) { create(:security_finding, uuid: '88a77231-f01d-40eb-80f0-de2ddb769a2c', scan: security_scan, deduplicated: true) }
     let_it_be(:security_finding_3) { create(:security_finding, overridden_uuid: '28a77231-f01d-40eb-80f0-de2ddb769a2c', uuid: '98a77231-f01d-40eb-80f0-de2ddb769a2c', scan: security_scan, deduplicated: true) }
+    let_it_be(:tracked_context) { build_stubbed(:security_project_tracked_context, :tracked) }
 
     let(:finding_map_collection) { described_class.new(pipeline, security_scan) }
     let(:finding_maps) { [] }
@@ -23,6 +24,8 @@ RSpec.describe Security::Ingestion::FindingMapCollection, feature_category: :vul
       ]
     end
 
+    let(:tracked_context_finder) { instance_double(Security::Ingestion::TrackedContextFinder) }
+
     before do
       create(:security_finding, scan: security_scan, deduplicated: false)
 
@@ -32,6 +35,8 @@ RSpec.describe Security::Ingestion::FindingMapCollection, feature_category: :vul
 
       allow(security_scan).to receive(:report_findings).and_return(report_findings)
       allow(finding_maps).to receive(:concat).and_call_original
+      allow(Security::Ingestion::TrackedContextFinder).to receive(:new).and_return(tracked_context_finder)
+      allow(tracked_context_finder).to receive(:find_or_create_from_pipeline).and_return(tracked_context)
     end
 
     context 'when the size argument given' do
@@ -42,6 +47,18 @@ RSpec.describe Security::Ingestion::FindingMapCollection, feature_category: :vul
 
         expect(finding_maps).to have_received(:concat).exactly(3).times
         expect(finding_pairs).to eq(expected_finding_pairs)
+      end
+
+      it 'associates each finding map with the tracked context' do
+        run_each_slice
+
+        expect(finding_maps).to all(have_attributes(tracked_context: tracked_context))
+      end
+
+      it 'uses the tracked context finder to get the tracked context' do
+        run_each_slice
+
+        expect(tracked_context_finder).to have_received(:find_or_create_from_pipeline).with(pipeline).exactly(3).times
       end
 
       context 'with a cyclonedx related security finding' do

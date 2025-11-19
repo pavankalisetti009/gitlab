@@ -63,12 +63,30 @@ module Security
     scope :default_refs, -> { where(is_default: true) }
     scope :for_ref, ->(ref_name) { where(context_name: ref_name, context_type: [:branch, :tag]) }
 
+    scope :for_pipeline, ->(pipeline) do
+      context_type = pipeline.tag? ? :tag : :branch
+
+      where(
+        context_name: pipeline.ref,
+        context_type: context_type,
+        project_id: pipeline.project_id
+      )
+    end
+
     STATES.each do |state_name, value|
       scope state_name, -> { where(state: value) }
     end
 
     # Maximum number of tracked refs per project (default branch + 15 additional refs)
     MAX_TRACKED_REFS_PER_PROJECT = 16
+
+    def self.find_by_pipeline(pipeline)
+      for_pipeline(pipeline).tracked.first
+    end
+
+    def self.tracked_pipeline?(pipeline)
+      for_pipeline(pipeline).tracked.exists?
+    end
 
     private
 

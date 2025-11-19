@@ -114,7 +114,7 @@ module Security
     end
 
     def schedule_store_reports_worker
-      return unless pipeline.default_branch?
+      return unless Security::Ingestion.ingest_pipeline?(pipeline)
 
       Gitlab::Redis::SharedState.with do |redis|
         redis.set(Security::StoreSecurityReportsByProjectWorker.cache_key(project_id: project.id), pipeline.id)

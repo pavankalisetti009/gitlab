@@ -29,7 +29,12 @@ module Security
         # if we have a matching one.
         report_uuid = security_finding.overridden_uuid || security_finding.uuid
 
-        FindingMap.new(pipeline, security_finding, report_findings_map[report_uuid])
+        FindingMap.new(
+          pipeline,
+          tracked_context(pipeline),
+          security_finding,
+          report_findings_map[report_uuid]
+        )
       end
 
       def report_findings_map
@@ -48,6 +53,14 @@ module Security
 
       def sbom_scanner
         @sbom_scanner ||= Vulnerabilities::Scanner.sbom_scanner(project_id: project.id)
+      end
+
+      def tracked_context_finder
+        @tracked_context_finder ||= TrackedContextFinder.new
+      end
+
+      def tracked_context(pipeline)
+        tracked_context_finder.find_or_create_from_pipeline(pipeline)
       end
     end
   end
