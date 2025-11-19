@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService, feature_category: :duo_agent_platform do
+RSpec.describe Ai::DuoWorkflows::AgenticChatModelMetadataService, feature_category: :duo_agent_platform do
   let_it_be(:group) { create(:group) }
   let_it_be(:user) { create(:user) }
   let_it_be(:user_selected_model_identifier) { nil }
@@ -77,6 +77,19 @@ RSpec.describe Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService, feature_c
 
           it_behaves_like 'returns empty headers'
         end
+      end
+
+      context 'when self_hosted_agent_platform feature flag is disabled' do
+        before do
+          stub_feature_flags(self_hosted_agent_platform: false)
+          stub_feature_flags(duo_agent_platform_model_selection: false)
+          create(:ai_feature_setting,
+            feature: :duo_agent_platform,
+            provider: :disabled,
+            self_hosted_model: nil)
+        end
+
+        it_behaves_like 'returns empty headers'
       end
     end
 
@@ -215,6 +228,16 @@ RSpec.describe Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService, feature_c
 
                 it_behaves_like 'uses the gitlab default model'
               end
+
+              context 'when FetchModelDefinitionsService returns nil' do
+                before do
+                  allow_next_instance_of(::Ai::ModelSelection::FetchModelDefinitionsService) do |fetch_service|
+                    allow(fetch_service).to receive(:execute).and_return(nil)
+                  end
+                end
+
+                it_behaves_like 'uses the gitlab default model'
+              end
             end
 
             context 'when an invalid user_selected_model_identifier is provided' do
@@ -275,6 +298,16 @@ RSpec.describe Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService, feature_c
             }.to_json
           )
         end
+      end
+
+      context 'when no instance setting exists' do
+        before do
+          allow(::Ai::ModelSelection::InstanceModelSelectionFeatureSetting)
+            .to receive(:find_or_initialize_by_feature)
+            .and_return(nil)
+        end
+
+        it_behaves_like 'returns empty headers'
       end
     end
 
@@ -402,6 +435,16 @@ RSpec.describe Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService, feature_c
 
                 it_behaves_like 'uses the gitlab default model'
               end
+
+              context 'when FetchModelDefinitionsService returns nil' do
+                before do
+                  allow_next_instance_of(::Ai::ModelSelection::FetchModelDefinitionsService) do |fetch_service|
+                    allow(fetch_service).to receive(:execute).and_return(nil)
+                  end
+                end
+
+                it_behaves_like 'uses the gitlab default model'
+              end
             end
 
             context 'when an invalid user_selected_model_identifier is provided' do
@@ -444,6 +487,16 @@ RSpec.describe Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService, feature_c
 
         context 'without root_namespace provided' do
           let(:root_namespace) { nil }
+
+          it_behaves_like 'returns empty headers'
+        end
+
+        context 'when no namespace setting exists' do
+          before do
+            allow(::Ai::ModelSelection::NamespaceFeatureSetting)
+              .to receive(:find_or_initialize_by_feature)
+              .and_return(nil)
+          end
 
           it_behaves_like 'returns empty headers'
         end

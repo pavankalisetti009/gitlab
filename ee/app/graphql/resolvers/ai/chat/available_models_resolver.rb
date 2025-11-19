@@ -69,7 +69,7 @@ module Resolvers
 
         def feature_setting_result(namespace)
           result = ::Ai::FeatureSettingSelectionService
-            .new(current_user, :duo_agent_platform, namespace)
+            .new(current_user, ::Ai::ModelSelection::FeaturesConfigurable.agentic_chat_feature_name, namespace)
             .execute
 
           return unless result.success? && result.payload.present?

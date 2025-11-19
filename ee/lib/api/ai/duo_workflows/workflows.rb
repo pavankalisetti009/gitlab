@@ -296,15 +296,18 @@ module API
               push_feature_flags
               root_namespace = find_root_namespace
 
-              model_metadata_headers = ::Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService.new(
+              model_metadata_headers = ::Ai::DuoWorkflows::AgenticChatModelMetadataService.new(
                 root_namespace: root_namespace,
                 current_user: current_user,
                 user_selected_model_identifier: find_user_selected_model_identifier
               ).execute
 
               feature_setting = ::Ai::FeatureSettingSelectionService
-                                  .new(current_user, :duo_agent_platform, root_namespace)
-                                  .execute.payload
+                                  .new(
+                                    current_user,
+                                    ::Ai::ModelSelection::FeaturesConfigurable.agentic_chat_feature_name,
+                                    root_namespace
+                                  ).execute.payload
 
               model_prompt_cache_enabled = root_namespace&.model_prompt_cache_enabled || false
 

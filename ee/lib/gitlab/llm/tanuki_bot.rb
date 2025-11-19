@@ -69,8 +69,11 @@ module Gitlab
         return false if ::Feature.disabled?(:ai_user_model_switching, user)
 
         result = ::Ai::FeatureSettingSelectionService
-                            .new(user, :duo_agent_platform, namespace_to_use)
-                            .execute
+                            .new(
+                              user,
+                              ::Ai::ModelSelection::FeaturesConfigurable.agentic_chat_feature_name,
+                              namespace_to_use
+                            ).execute
 
         result.success? && result.payload.present? && result.payload.user_model_selection_available?
       end
