@@ -8,7 +8,7 @@ import {
   GlAlert,
 } from '@gitlab/ui';
 import DataExplorer from 'ee/vue_shared/components/data_explorer/data_explorer.vue';
-import ModalCopyButton from '~/vue_shared/components/modal_copy_button.vue';
+import SimpleCopyButton from '~/vue_shared/components/simple_copy_button.vue';
 import GlqlResolver from '~/glql/components/common/resolver.vue';
 
 describe('Data Explorer', () => {
@@ -34,7 +34,7 @@ describe('Data Explorer', () => {
     });
 
     it('does not render the copy query button', () => {
-      expect(wrapper.findComponent(ModalCopyButton).exists()).toBe(false);
+      expect(wrapper.findComponent(SimpleCopyButton).exists()).toBe(false);
     });
 
     it('renders the GLQL docs link', () => {
@@ -69,7 +69,7 @@ describe('Data Explorer', () => {
       });
 
       it('renders the copy query button', () => {
-        expect(wrapper.findComponent(ModalCopyButton).props()).toMatchObject({
+        expect(wrapper.findComponent(SimpleCopyButton).props()).toMatchObject({
           title: 'Copy query',
           text: query,
         });
