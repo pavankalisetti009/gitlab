@@ -89,11 +89,15 @@ module Observability
     end
 
     def otel_http_endpoint
-      "http://#{o11y_service_name}.otel.gitlab-o11y.com:4318"
+      "http://#{otel_address}:4318"
     end
 
     def otel_grpc_endpoint
-      "http://#{o11y_service_name}.otel.gitlab-o11y.com:4317"
+      "http://#{otel_address}:4317"
+    end
+
+    def otel_address
+      "#{o11y_service_name}.otel.gitlab-o11y.com"
     end
   end
 end

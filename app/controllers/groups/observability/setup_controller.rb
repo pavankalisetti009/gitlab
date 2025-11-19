@@ -9,7 +9,12 @@ module Groups
       feature_category :observability
       urgency :low
 
-      def show; end
+      def show
+        @settings = group.observability_group_o11y_setting
+        return unless provisioning?
+
+        @configuration_settings ||= group.build_observability_group_o11y_setting(o11y_service_name: group.id)
+      end
 
       private
 
@@ -19,6 +24,10 @@ module Groups
         return if Ability.allowed?(current_user, :create_observability_access_request, group)
 
         render_403
+      end
+
+      def provisioning?
+        params.permit(:provisioning)[:provisioning] == 'true'
       end
     end
   end
