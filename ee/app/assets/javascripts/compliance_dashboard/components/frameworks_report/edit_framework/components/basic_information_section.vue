@@ -167,7 +167,7 @@ export default {
       );
     },
     showMaintenanceModeAlert() {
-      return !this.maintenanceModeDismissed;
+      return !this.maintenanceModeDismissed && this.pipelineConfigurationEnabled;
     },
     showPostMigrationAlert() {
       return !this.isCreatingNewPolicy && this.hasMigratedPipeline;
@@ -331,6 +331,59 @@ export default {
           :header-level="1"
           :visible="expandPipelineConfig"
         >
+          <gl-alert
+            v-if="showMaintenanceModeAlert"
+            variant="warning"
+            class="gl-my-3"
+            data-testid="maintenance-mode-alert"
+            :dismissible="true"
+            :title="$options.i18n.deprecationWarning.title"
+            @dismiss="handleOnDismissMaintenanceMode"
+          >
+            <template v-if="showPostMigrationAlert">
+              <p
+                v-for="(message, index) in $options.i18n.deprecationWarning.postMigrationMessages"
+                :key="index"
+              >
+                {{ message }}
+              </p>
+            </template>
+            <template v-else>
+              <p>
+                <gl-sprintf :message="$options.i18n.deprecationWarning.message">
+                  <template #link="{ content }">
+                    <gl-link :href="pipelineExecutionPolicyPath" target="_blank">
+                      {{ content }}
+                    </gl-link>
+                  </template>
+                </gl-sprintf>
+              </p>
+
+              <gl-sprintf :message="$options.i18n.deprecationWarning.details">
+                <template #link="{ content }">
+                  <gl-link :href="migratePipelineToPolicyPath" target="_blank">
+                    {{ content }}
+                  </gl-link>
+                </template>
+              </gl-sprintf>
+            </template>
+            <template v-if="!showPostMigrationAlert" #actions>
+              <gl-button
+                category="primary"
+                variant="confirm"
+                data-testid="migrate-action-button"
+                :href="dynamicMigratePipelineToPolicyPath"
+                target="_blank"
+              >
+                {{ deprecationWarningButtonText }}
+              </gl-button>
+
+              <gl-button class="gl-ml-5" @click="handleOnDismissMaintenanceMode">
+                {{ $options.i18n.deprecationWarning.dismiss }}
+              </gl-button>
+            </template>
+          </gl-alert>
+
           <gl-form-group
             v-if="pipelineConfigurationFullPathEnabled && pipelineConfigurationEnabled"
             label-for="pipeline-configuration-input"
@@ -345,65 +398,12 @@ export default {
                 </template>
 
                 <template #link="{ content }">
-                  <gl-link :href="compliancePipelineConfigurationHelpPath" target="_blank">{{
-                    content
-                  }}</gl-link>
+                  <gl-link :href="compliancePipelineConfigurationHelpPath" target="_blank">
+                    {{ content }}
+                  </gl-link>
                 </template>
               </gl-sprintf>
             </template>
-
-            <gl-alert
-              v-if="showMaintenanceModeAlert"
-              variant="warning"
-              class="gl-my-3"
-              data-testid="maintenance-mode-alert"
-              :dismissible="true"
-              :title="$options.i18n.deprecationWarning.title"
-              @dismiss="handleOnDismissMaintenanceMode"
-            >
-              <template v-if="showPostMigrationAlert">
-                <p
-                  v-for="(message, index) in $options.i18n.deprecationWarning.postMigrationMessages"
-                  :key="index"
-                >
-                  {{ message }}
-                </p>
-              </template>
-              <template v-else>
-                <p>
-                  <gl-sprintf :message="$options.i18n.deprecationWarning.message">
-                    <template #link="{ content }">
-                      <gl-link :href="pipelineExecutionPolicyPath" target="_blank">{{
-                        content
-                      }}</gl-link>
-                    </template>
-                  </gl-sprintf>
-                </p>
-
-                <gl-sprintf :message="$options.i18n.deprecationWarning.details">
-                  <template #link="{ content }">
-                    <gl-link :href="migratePipelineToPolicyPath" target="_blank">{{
-                      content
-                    }}</gl-link>
-                  </template>
-                </gl-sprintf>
-              </template>
-              <template v-if="!showPostMigrationAlert" #actions>
-                <gl-button
-                  category="primary"
-                  variant="confirm"
-                  data-testid="migrate-action-button"
-                  :href="dynamicMigratePipelineToPolicyPath"
-                  target="_blank"
-                >
-                  {{ deprecationWarningButtonText }}
-                </gl-button>
-
-                <gl-button class="gl-ml-5" @click="handleOnDismissMaintenanceMode">
-                  {{ $options.i18n.deprecationWarning.dismiss }}
-                </gl-button>
-              </template>
-            </gl-alert>
 
             <gl-form-input
               id="pipeline-configuration-input"
@@ -414,44 +414,60 @@ export default {
               data-testid="pipeline-configuration-input"
             />
           </gl-form-group>
+
+          <gl-form-group
+            v-else
+            id="disabled-pipeline-configuration-input-group"
+            label-for="disabled-pipeline-configuration-input"
+            data-testid="disabled-pipeline-configuration-input-group"
+          >
+            <template #description>
+              <gl-sprintf :message="$options.i18n.pipelineConfigurationInputDescription">
+                <template #code="{ content }">
+                  <code>{{ content }}</code>
+                </template>
+
+                <template #link="{ content }">
+                  <gl-link :href="compliancePipelineConfigurationHelpPath" target="_blank">
+                    {{ content }}
+                  </gl-link>
+                </template>
+              </gl-sprintf>
+            </template>
+
+            <div :id="$options.disabledPipelineConfigurationInputPopoverTarget" tabindex="0">
+              <gl-form-input
+                id="disabled-pipeline-configuration-input"
+                disabled
+                data-testid="disabled-pipeline-configuration-input"
+              />
+            </div>
+
+            <gl-popover
+              :title="$options.i18n.pipelineConfigurationInputDisabledPopoverTitle"
+              show-close-button
+              :target="$options.disabledPipelineConfigurationInputPopoverTarget"
+              data-testid="disabled-pipeline-configuration-input-popover"
+            >
+              <p class="gl-mb-0">
+                <gl-sprintf
+                  :message="$options.i18n.pipelineConfigurationInputDisabledPopoverContent"
+                >
+                  <template #link="{ content }">
+                    <gl-link
+                      :href="$options.i18n.pipelineConfigurationInputDisabledPopoverLink"
+                      target="_blank"
+                      class="gl-text-sm"
+                    >
+                      {{ content }}
+                    </gl-link>
+                  </template>
+                </gl-sprintf>
+              </p>
+            </gl-popover>
+          </gl-form-group>
         </gl-accordion-item>
       </gl-accordion>
-      <template v-if="!pipelineConfigurationEnabled">
-        <gl-form-group
-          id="disabled-pipeline-configuration-input-group"
-          :label="$options.i18n.pipelineConfigurationInputLabel"
-          label-for="disabled-pipeline-configuration-input"
-          data-testid="disabled-pipeline-configuration-input-group"
-        >
-          <div :id="$options.disabledPipelineConfigurationInputPopoverTarget" tabindex="0">
-            <gl-form-input
-              id="disabled-pipeline-configuration-input"
-              disabled
-              data-testid="disabled-pipeline-configuration-input"
-            />
-          </div>
-        </gl-form-group>
-        <gl-popover
-          :title="$options.i18n.pipelineConfigurationInputDisabledPopoverTitle"
-          show-close-button
-          :target="$options.disabledPipelineConfigurationInputPopoverTarget"
-          data-testid="disabled-pipeline-configuration-input-popover"
-        >
-          <p class="gl-mb-0">
-            <gl-sprintf :message="$options.i18n.pipelineConfigurationInputDisabledPopoverContent">
-              <template #link="{ content }">
-                <gl-link
-                  :href="$options.i18n.pipelineConfigurationInputDisabledPopoverLink"
-                  target="_blank"
-                  class="gl-text-sm"
-                >
-                  {{ content }}</gl-link
-                >
-              </template>
-            </gl-sprintf>
-          </p>
-        </gl-popover>
-      </template>
       <gl-form-checkbox
         v-model="formData.default"
         name="default"
