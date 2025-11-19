@@ -378,10 +378,24 @@ Model selection in the IDE is not supported.
 
 Prerequisites:
 
-- The Owner of the top-level group has not selected a model for the GitLab Duo Agent Platform.
-If a [model has been selected for the group](../gitlab_duo/model_selection.md), you cannot change the model for Chat.
+{{< tabs >}}
+
+{{< tab title=GitLab.com >}}
+
+- The Owner of the top-level group has not selected a model for the GitLab Duo Agent Platform. If a [model has been selected for the group](../gitlab_duo/model_selection.md), you cannot change the model for Chat.
 - You must be using Chat in the top-level group. You cannot change the model if you access Chat in the organization.
-- On GitLab Self-Managed, your instance must be connected to the GitLab AI gateway.
+
+{{< /tab >}}
+
+{{< tab title="Self-managed" >}}
+
+- The administrator has not selected a model for the instance. If a model has been selected for the instance,
+you cannot change the model for Chat.
+- Your instance must be connected to the GitLab AI gateway.
+
+{{< /tab >}}
+
+{{< /tabs >}}
 
 To select a model:
 
