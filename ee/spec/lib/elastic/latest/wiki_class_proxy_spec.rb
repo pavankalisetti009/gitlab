@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe Elastic::Latest::WikiClassProxy, feature_category: :global_search do
   let_it_be(:project) { create(:project, :wiki_repo, :public, :wiki_enabled) }
 
-  subject { described_class.new(Wiki, use_separate_indices: Wiki.use_separate_indices?) }
+  subject(:proxy) { described_class.new(Wiki, use_separate_indices: Wiki.use_separate_indices?) }
 
   describe 'assert query', :elastic do
     before do
@@ -23,7 +23,7 @@ RSpec.describe Elastic::Latest::WikiClassProxy, feature_category: :global_search
     end
 
     it 'returns the result from the separate index' do
-      subject.elastic_search_as_wiki_page('*', options: options)
+      proxy.elastic_search_as_wiki_page('*', options: options)
       assert_named_queries('wiki_blob:match:search_terms:separate_index')
     end
   end
@@ -36,13 +36,13 @@ RSpec.describe Elastic::Latest::WikiClassProxy, feature_category: :global_search
     context 'when routing is disabled' do
       context 'and option routing_disabled is set' do
         it 'returns empty hash' do
-          expect(subject.routing_options(default_ops.merge(routing_disabled: true))).to be_empty
+          expect(proxy.routing_options(default_ops.merge(routing_disabled: true))).to be_empty
         end
       end
 
       context 'and option public_and_internal_projects is set' do
         it 'returns empty hash' do
-          expect(subject.routing_options(default_ops.merge(public_and_internal_projects: true))).to be_empty
+          expect(proxy.routing_options(default_ops.merge(public_and_internal_projects: true))).to be_empty
         end
       end
     end
@@ -50,12 +50,111 @@ RSpec.describe Elastic::Latest::WikiClassProxy, feature_category: :global_search
     context 'when ids count are more than 128' do
       it 'returns empty hash' do
         max_count = Elastic::Latest::Routing::ES_ROUTING_MAX_COUNT
-        expect(subject.routing_options(default_ops.merge(root_ancestor_ids: 1.upto(max_count + 1).to_a))).to be_empty
+        expect(proxy.routing_options(default_ops.merge(root_ancestor_ids: 1.upto(max_count + 1).to_a))).to be_empty
       end
     end
 
     it 'returns routing hash' do
-      expect(subject.routing_options(default_ops)).to eq({ routing: n_routing })
+      expect(proxy.routing_options(default_ops)).to eq({ routing: n_routing })
+    end
+  end
+
+  describe '#elastic_search_as_wiki_page', :elasticsearch_settings_enabled, :elastic_delete_by_query, :sidekiq_inline do
+    let_it_be(:wiki_page) { create(:wiki_page, title: 'foo', content: 'bar', project: project) }
+    let_it_be(:wiki_page_nested) do
+      create(:wiki_page, title: 'nested/twice/start-page', content: 'bar', project: project)
+    end
+
+    let(:query) { 'bar' }
+    let(:options) do
+      {
+        current_user: nil,
+        project_ids: [],
+        public_and_internal_projects: true,
+        search_level: 'global',
+        root_ancestor_ids: nil
+      }
+    end
+
+    before do
+      project.wiki.index_wiki_blobs
+
+      ensure_elasticsearch_index!
+    end
+
+    it 'returns matching results' do
+      results = proxy.elastic_search_as_wiki_page(query, options: options)
+      paths = results.map(&:path)
+
+      expect(paths).to contain_exactly(wiki_page.path, wiki_page_nested.path)
+    end
+
+    describe 'filters support' do
+      context 'for path' do
+        let(:query) { 'bar extension:md path:nested/twice' }
+
+        it 'returns matching results' do
+          results = proxy.elastic_search_as_wiki_page(query, options: options)
+          paths = results.map(&:path)
+
+          expect(paths).to contain_exactly(wiki_page_nested.path)
+        end
+
+        context 'when exclusion is used' do
+          let(:query) { 'bar -path:nested/twice' }
+
+          it 'returns matching results' do
+            results = proxy.elastic_search_as_wiki_page(query, options: options)
+            paths = results.map(&:path)
+
+            expect(paths).to contain_exactly(wiki_page.path)
+          end
+        end
+
+        context 'when part of the path is used' do
+          let(:query) { 'bar extension:md path:nested' }
+
+          it 'returns the same results as when the full path is used' do
+            results = proxy.elastic_search_as_wiki_page(query, options: { search_level: 'global' })
+            paths = results.map(&:path)
+
+            expect(paths).to contain_exactly(wiki_page_nested.path)
+          end
+
+          context 'when the path query is in the middle of the file path' do
+            let(:query) { 'bar extension:md path:twice' }
+
+            it 'returns the same results as when the full path is used' do
+              results = proxy.elastic_search_as_wiki_page(query, options: { search_level: 'global' })
+              paths = results.map(&:path)
+
+              expect(paths).to contain_exactly(wiki_page_nested.path)
+            end
+          end
+        end
+      end
+
+      context 'for filename' do
+        let(:query) { 'bar filename:start-page.md' }
+
+        it 'returns matching results' do
+          results = proxy.elastic_search_as_wiki_page(query, options: options)
+          paths = results.map(&:path)
+
+          expect(paths).to contain_exactly(wiki_page_nested.path)
+        end
+
+        context 'when exclude filter is used' do
+          let(:query) { 'bar -filename:start-page.md' }
+
+          it 'removes matching filenames from results' do
+            results = proxy.elastic_search_as_wiki_page(query, options: options)
+            paths = results.map(&:path)
+
+            expect(paths).to contain_exactly(wiki_page.path)
+          end
+        end
+      end
     end
   end
 end

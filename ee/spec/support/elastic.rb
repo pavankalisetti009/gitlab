@@ -108,6 +108,11 @@ RSpec.configure do |config|
     meta[:clean_gitlab_redis_cache] = true if meta[:zoekt]
   end
 
+  config.before(:each, :elasticsearch_settings_enabled) do
+    stub_licensed_features(elastic_search: true)
+    stub_ee_application_setting(elasticsearch_indexing: true, elasticsearch_search: true)
+  end
+
   # If using the :elastic tag is causing issues, use :elastic_clean instead.
   # :elastic is significantly faster than :elastic_clean and should be used
   # wherever possible.
