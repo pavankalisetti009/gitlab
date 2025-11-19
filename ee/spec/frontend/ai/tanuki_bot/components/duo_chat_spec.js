@@ -733,6 +733,21 @@ describeSkipVue3(skipReason, () => {
       expect(actionSpies.addDuoChatMessage).toHaveBeenCalledWith(expect.anything(), mockMessage);
     });
 
+    it('sets false to loading state when assistant message is received', () => {
+      duoChatGlobalState.isShown = true;
+      createComponent();
+
+      wrapper.vm.isWaitingOnPrompt = true;
+
+      const mockMessage = {
+        content: 'test message content',
+        role: 'assistant',
+      };
+
+      findSubscriptions().vm.$emit('message', mockMessage);
+      expect(wrapper.vm.isWaitingOnPrompt).toBe(false);
+    });
+
     describe('Subscription Component', () => {
       beforeEach(() => {
         duoChatGlobalState.isShown = true;
