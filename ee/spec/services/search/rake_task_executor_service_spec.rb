@@ -479,6 +479,22 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
     let_it_be(:project_no_repository) { create(:project) }
     let_it_be(:project_empty_repository) { create(:project, :empty_repo) }
 
+    context 'when elasticsearch is not enabled for any of the projects' do
+      before do
+        stub_ee_application_setting(elasticsearch_limit_indexing: true)
+      end
+
+      it 'returns a warning message' do
+        expected = <<~STD_OUT.chomp
+          Advanced search is not enabled for any of the projects.
+        STD_OUT
+
+        expect(logger).to receive(:warn).with(expected)
+
+        task
+      end
+    end
+
     context 'when some projects missing from index' do
       before do
         create(:index_status, project: project)
@@ -486,7 +502,7 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
 
       it 'displays completion percentage' do
         expected = <<~STD_OUT.chomp
-          Indexing is 33.33% complete (1/3 projects)
+          Indexing is 33.33% complete (1/3 projects). Considers only code, commits, and wikis.
         STD_OUT
 
         expect(logger).to receive(:info).with(expected)
@@ -503,7 +519,7 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
           create(:elasticsearch_indexed_project, project: project_no_repository)
 
           expected = <<~STD_OUT.chomp
-            Indexing is 0.00% complete (0/1 projects)
+            Indexing is 0.00% complete (0/1 projects). Considers only code, commits, and wikis.
           STD_OUT
 
           expect(logger).to receive(:info).with(expected)
@@ -522,7 +538,7 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
 
       it 'displays that all projects are indexed' do
         expected = <<~STD_OUT.chomp
-          Indexing is 100.00% complete (3/3 projects)
+          Indexing is 100.00% complete (3/3 projects). Considers only code, commits, and wikis.
         STD_OUT
 
         expect(logger).to receive(:info).with(expected)
@@ -539,7 +555,7 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
           create(:elasticsearch_indexed_project, project: project_empty_repository)
 
           expected = <<~STD_OUT.chomp
-            Indexing is 100.00% complete (1/1 projects)
+            Indexing is 100.00% complete (1/1 projects). Considers only code, commits, and wikis.
           STD_OUT
 
           expect(logger).to receive(:info).with(expected)
@@ -547,6 +563,40 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
           task
         end
       end
+    end
+  end
+
+  describe '#index_groups_status' do
+    subject(:task) { service.execute(:index_groups_status) }
+
+    let_it_be(:group) { create(:group, :wiki_repo) }
+    let_it_be(:_) { create(:group, :wiki_repo) }
+
+    context 'when elasticsearch is not enabled for any of the groups' do
+      before do
+        stub_ee_application_setting(elasticsearch_limit_indexing: true)
+      end
+
+      it 'returns a warning message' do
+        expected = <<~STD_OUT.chomp
+          Advanced search is not enabled for any of the groups.
+        STD_OUT
+
+        expect(logger).to receive(:warn).with(expected)
+
+        task
+      end
+    end
+
+    it 'returns the percentage of groups indexed' do
+      create(:group_index_status, group: group)
+      expected = <<~STD_OUT.chomp
+        Indexing is 50.00% complete (1/2 groups). Considers only group wikis.
+      STD_OUT
+
+      expect(logger).to receive(:info).with(expected)
+
+      task
     end
   end
 
@@ -719,12 +769,12 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
         projects_not_indexed
       end
 
-      context 'when projects missing are more than MAX_PROJECTS_TO_DISPLAY' do
+      context 'when projects missing are more than MAX_RECORDS_TO_DISPLAY' do
         before do
-          stub_const("#{described_class}::MAX_PROJECTS_TO_DISPLAY", 1)
+          stub_const("#{described_class}::MAX_RECORDS_TO_DISPLAY", 1)
         end
 
-        it 'displays only MAX_PROJECTS_TO_DISPLAY non-indexed projects' do
+        it 'displays only MAX_RECORDS_TO_DISPLAY non-indexed projects' do
           expect(logger).to receive(:warn).with(/Project '.*' \(ID: [0-9].*\) isn't indexed/)
           expect(logger).to receive(:info).with("1 out of 3 non-indexed projects shown.")
 
@@ -760,9 +810,65 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
       end
 
       it 'displays that all projects are indexed' do
-        expect(logger).to receive(:info).with(/All projects are currently indexed/)
+        expect(logger).to receive(:info).with(/All project repository data is currently indexed/)
 
         projects_not_indexed
+      end
+    end
+  end
+
+  describe '#groups_not_indexed' do
+    let_it_be(:group) { create(:group, :wiki_repo) }
+    let_it_be(:group2) { create(:group, :wiki_repo) }
+
+    subject(:groups_not_indexed) { service.execute(:groups_not_indexed) }
+
+    context 'when groups missing from index' do
+      it 'displays non-indexed groups' do
+        expect(logger).to receive(:warn).with("Group '#{group.full_path}' (ID: #{group.id}) isn't indexed.")
+        expect(logger).to receive(:warn).with("Group '#{group2.full_path}' (ID: #{group2.id}) isn't indexed.")
+        expect(logger).to receive(:info).with('2 out of 2 non-indexed groups shown.')
+
+        groups_not_indexed
+      end
+
+      context 'when groups missing are more than MAX_RECORDS_TO_DISPLAY' do
+        before do
+          stub_const("#{described_class}::MAX_RECORDS_TO_DISPLAY", 1)
+        end
+
+        it 'displays only MAX_RECORDS_TO_DISPLAY non-indexed groups' do
+          expect(logger).to receive(:warn).with(/Group '.*' \(ID: [0-9].*\) isn't indexed/)
+          expect(logger).to receive(:info).with('1 out of 2 non-indexed groups shown.')
+
+          groups_not_indexed
+        end
+
+        context 'and SHOW_ALL env var is set to true' do
+          before do
+            stub_env('SHOW_ALL', true)
+          end
+
+          it 'displays all non-indexed groups' do
+            expect(logger).to receive(:warn).with("Group '#{group.full_path}' (ID: #{group.id}) isn't indexed.")
+            expect(logger).to receive(:warn).with("Group '#{group2.full_path}' (ID: #{group2.id}) isn't indexed.")
+            expect(logger).to receive(:info).with('2 out of 2 non-indexed groups shown.')
+
+            groups_not_indexed
+          end
+        end
+      end
+    end
+
+    context 'when all groups are indexed' do
+      before do
+        [group, group2].each { |g| create(:group_index_status, group: g) }
+      end
+
+      it 'displays that all groups are indexed' do
+        expect(logger).to receive(:info).with(/All group repository data is currently indexed/)
+
+        groups_not_indexed
       end
     end
   end

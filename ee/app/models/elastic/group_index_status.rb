@@ -12,5 +12,7 @@ module Elastic
     belongs_to :group, foreign_key: :namespace_id, inverse_of: :index_status
 
     validates :namespace_id, presence: true
+
+    scope :for_group, ->(namespace_ids) { where(namespace_id: namespace_ids) }
   end
 end

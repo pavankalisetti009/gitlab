@@ -41,6 +41,10 @@ RSpec.describe 'gitlab:elastic namespace rake tasks', :silence_stdout, feature_c
     include_examples 'rake task executor task', :index_projects_status
   end
 
+  describe 'gitlab:elastic:index_groups_status' do
+    include_examples 'rake task executor task', :index_groups_status
+  end
+
   describe 'gitlab:elastic:index_snippets' do
     include_examples 'rake task executor task', :index_snippets
   end
@@ -87,6 +91,10 @@ RSpec.describe 'gitlab:elastic namespace rake tasks', :silence_stdout, feature_c
 
   describe 'gitlab:elastic:projects_not_indexed' do
     include_examples 'rake task executor task', :projects_not_indexed
+  end
+
+  describe 'gitlab:elastic:groups_not_indexed' do
+    include_examples 'rake task executor task', :groups_not_indexed
   end
 
   describe 'gitlab:elastic:mark_reindex_failed' do

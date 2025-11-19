@@ -262,6 +262,19 @@ RSpec.describe Group, feature_category: :groups_and_projects do
         expect(groups).to eq([group_with_wiki])
       end
     end
+
+    describe '.not_indexed_in_elasticsearch' do
+      let_it_be(:indexed_group) { create(:group) }
+      let_it_be(:not_indexed_group) { create(:group) }
+
+      before do
+        create(:group_index_status, group: indexed_group)
+      end
+
+      it 'returns groups without an index status' do
+        expect(described_class.not_indexed_in_elasticsearch).to contain_exactly(not_indexed_group)
+      end
+    end
   end
 
   describe 'validations' do
