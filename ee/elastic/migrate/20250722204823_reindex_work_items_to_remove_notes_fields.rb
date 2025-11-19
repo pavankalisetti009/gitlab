@@ -7,3 +7,5 @@ class ReindexWorkItemsToRemoveNotesFields < Elastic::Migration
     %w[WorkItem]
   end
 end
+
+ReindexWorkItemsToRemoveNotesFields.prepend ::Search::Elastic::MigrationObsolete
