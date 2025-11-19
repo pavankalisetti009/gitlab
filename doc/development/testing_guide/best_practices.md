@@ -1716,11 +1716,11 @@ Shared contexts or shared examples only used in one spec file can be declared in
 
 For shared examples used by more than one spec file, placement depends on their scope:
 
-**Shared examples within a single bounded context:**
+**Shared examples in a single bounded context:**
 
-- Can be placed within the bounded context's directory structure (for example, `ee/spec/requests/api/graphql/remote_development/shared_examples.rb`)
+- Can be placed in the bounded context's directory structure (for example, `ee/spec/requests/api/graphql/remote_development/shared_examples.rb`)
 - Should follow the `*_contexts.rb` or `*_examples.rb` naming convention
-- This approach maintains cohesion within the bounded context and aligns with our [modular monolith architecture](../software_design.md#bounded-contexts)
+- This approach maintains cohesion in the bounded context and aligns with our [modular monolith architecture](../software_design.md#bounded-contexts)
 
 **Shared examples used across multiple bounded contexts:**
 
@@ -1730,10 +1730,10 @@ For shared examples used by more than one spec file, placement depends on their 
 
 **General guidelines:**
 
-- Prefer keeping shared examples within their bounded context when they are only used within that context
+- Prefer keeping shared examples in their bounded context when they are only used in that context
 - Only move shared examples to the global `spec/support/shared_*/` directory when they are actually shared across different bounded contexts
 - Files containing shared examples or shared contexts can use naming like `*_contexts.rb`, `*_examples.rb`, `*_shared_examples.rb`, or `*_shared_context_and_examples.rb` depending on what they contain, with singular or plural naming for one or multiple examples respectively
-- The goal is to maintain high cohesion within bounded contexts while keeping coupling between contexts loose
+- The goal is to maintain high cohesion in bounded contexts while keeping coupling between contexts loose
 
 ### Helpers
 
