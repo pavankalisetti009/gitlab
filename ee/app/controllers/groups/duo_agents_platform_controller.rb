@@ -5,6 +5,7 @@ module Groups
     feature_category :duo_agent_platform
     before_action :check_access
     before_action do
+      push_frontend_feature_flag(:ai_catalog_agents, current_user)
       push_frontend_feature_flag(:ai_catalog_flows, current_user)
       push_frontend_feature_flag(:ai_catalog_third_party_flows, current_user)
     end
@@ -22,11 +23,14 @@ module Groups
     end
 
     def specific_vueroute?
-      %w[flows].include?(duo_agents_platform_params[:vueroute])
+      %w[agents flows].include?(duo_agents_platform_params[:vueroute])
     end
 
     def authorized_for_route?
       case duo_agents_platform_params[:vueroute]
+      when 'agents'
+        Feature.enabled?(:global_ai_catalog, current_user) &&
+          Feature.enabled?(:ai_catalog_agents, current_user)
       when 'flows'
         Feature.enabled?(:global_ai_catalog, current_user) &&
           Feature.enabled?(:ai_catalog_flows, current_user)

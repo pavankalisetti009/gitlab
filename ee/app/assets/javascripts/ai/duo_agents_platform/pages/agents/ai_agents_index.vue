@@ -48,6 +48,9 @@ export default {
   apollo: {
     aiAgents: {
       query: projectAiCatalogAgentsQuery,
+      skip() {
+        return !this.projectPath;
+      },
       variables() {
         return {
           projectPath: this.projectPath,
@@ -67,6 +70,9 @@ export default {
     },
     userPermissions: {
       query: aiCatalogProjectUserPermissionsQuery,
+      skip() {
+        return !this.projectPath;
+      },
       variables() {
         return {
           fullPath: this.projectPath,
@@ -92,6 +98,9 @@ export default {
     };
   },
   computed: {
+    isProjectNamespace() {
+      return Boolean(this.projectId);
+    },
     isLoading() {
       return this.$apollo.queries.aiAgents.loading;
     },
@@ -202,7 +211,7 @@ export default {
 
     <errors-alert class="gl-mt-5" :errors="errors" @dismiss="errors = []" />
 
-    <gl-tabs content-class="gl-py-0">
+    <gl-tabs v-if="isProjectNamespace" content-class="gl-py-0">
       <gl-tab
         v-for="tab in $options.tabs"
         :key="tab.text"

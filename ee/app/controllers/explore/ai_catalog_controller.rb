@@ -5,6 +5,7 @@ module Explore
     feature_category :workflow_catalog
     before_action :check_feature_flag
     before_action do
+      push_frontend_feature_flag(:ai_catalog_agents, current_user)
       push_frontend_feature_flag(:ai_catalog_third_party_flows, current_user)
       push_frontend_feature_flag(:ai_catalog_flows, current_user)
     end

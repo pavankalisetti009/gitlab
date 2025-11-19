@@ -79,7 +79,7 @@ module Ai
         def create_service_account
           # In case we don't need to create the service account (because this is not group level), we should return
           # no_op, and continue creating the item consumer.
-          return [:no_op, nil] if group.nil?
+          return [:no_op, nil] if group.nil? || item.agent?
 
           service_account_params = {
             namespace_id: group.id,
