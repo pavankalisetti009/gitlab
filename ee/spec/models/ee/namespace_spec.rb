@@ -1344,92 +1344,77 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
 
     subject { namespace.auto_duo_code_review_settings_available? }
 
-    context 'when feature flag is disabled' do
+    context 'when duo_features_enabled is false' do
       before do
-        stub_feature_flags(cascading_auto_duo_code_review_settings: false)
+        allow(namespace.namespace_settings).to receive(:duo_features_enabled?).and_return(false)
       end
 
       it { is_expected.to be_falsey }
     end
 
-    context 'when feature flag is enabled' do
+    context 'when duo_features_enabled is true' do
       before do
-        stub_feature_flags(cascading_auto_duo_code_review_settings: namespace)
+        allow(namespace.namespace_settings).to receive(:duo_features_enabled?).and_return(true)
       end
 
-      context 'when duo_features_enabled is false' do
-        before do
-          allow(namespace.namespace_settings).to receive(:duo_features_enabled?).and_return(false)
-        end
-
+      context 'when namespace does not have duo_enterprise add-on' do
         it { is_expected.to be_falsey }
       end
 
-      context 'when duo_features_enabled is true' do
-        before do
-          allow(namespace.namespace_settings).to receive(:duo_features_enabled?).and_return(true)
-        end
-
-        context 'when namespace does not have duo_enterprise add-on' do
-          it { is_expected.to be_falsey }
-        end
-
-        context 'when namespace has duo_enterprise add-on' do
-          context 'on SaaS', :saas do
-            before do
-              stub_ee_application_setting(should_check_namespace_plan: true)
-            end
-
-            context 'when add-on is expired' do
-              before do
-                create(:gitlab_subscription_add_on_purchase, :expired, namespace: namespace, add_on: duo_enterprise_add_on)
-              end
-
-              it { is_expected.to be_falsey }
-            end
-
-            context 'when add-on is active' do
-              before do
-                create(:gitlab_subscription_add_on_purchase, namespace: namespace, add_on: duo_enterprise_add_on)
-              end
-
-              it { is_expected.to be_truthy }
-            end
-
-            context 'for a subgroup' do
-              let_it_be(:parent) { create(:group) }
-              let_it_be(:subgroup) { create(:group, parent: parent) }
-
-              subject { subgroup.auto_duo_code_review_settings_available? }
-
-              before do
-                stub_feature_flags(cascading_auto_duo_code_review_settings: subgroup)
-                allow(subgroup.namespace_settings).to receive(:duo_features_enabled?).and_return(true)
-                create(:gitlab_subscription_add_on_purchase, namespace: parent, add_on: duo_enterprise_add_on)
-              end
-
-              it 'inherits from parent namespace' do
-                expect(subject).to be_truthy
-              end
-            end
+      context 'when namespace has duo_enterprise add-on' do
+        context 'on SaaS', :saas do
+          before do
+            stub_ee_application_setting(should_check_namespace_plan: true)
           end
 
-          context 'on self-managed' do
-            context 'when instance has duo_enterprise add-on' do
-              before do
-                create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: duo_enterprise_add_on)
-              end
-
-              it { is_expected.to be_truthy }
+          context 'when add-on is expired' do
+            before do
+              create(:gitlab_subscription_add_on_purchase, :expired, namespace: namespace, add_on: duo_enterprise_add_on)
             end
 
-            context 'when instance has expired duo_enterprise add-on' do
-              before do
-                create(:gitlab_subscription_add_on_purchase, :expired, :self_managed, add_on: duo_enterprise_add_on)
-              end
+            it { is_expected.to be_falsey }
+          end
 
-              it { is_expected.to be_falsey }
+          context 'when add-on is active' do
+            before do
+              create(:gitlab_subscription_add_on_purchase, namespace: namespace, add_on: duo_enterprise_add_on)
             end
+
+            it { is_expected.to be_truthy }
+          end
+
+          context 'for a subgroup' do
+            let_it_be(:parent) { create(:group) }
+            let_it_be(:subgroup) { create(:group, parent: parent) }
+
+            subject { subgroup.auto_duo_code_review_settings_available? }
+
+            before do
+              allow(subgroup.namespace_settings).to receive(:duo_features_enabled?).and_return(true)
+              create(:gitlab_subscription_add_on_purchase, namespace: parent, add_on: duo_enterprise_add_on)
+            end
+
+            it 'inherits from parent namespace' do
+              expect(subject).to be_truthy
+            end
+          end
+        end
+
+        context 'on self-managed' do
+          context 'when instance has duo_enterprise add-on' do
+            before do
+              create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: duo_enterprise_add_on)
+            end
+
+            it { is_expected.to be_truthy }
+          end
+
+          context 'when instance has expired duo_enterprise add-on' do
+            before do
+              create(:gitlab_subscription_add_on_purchase, :expired, :self_managed, add_on: duo_enterprise_add_on)
+            end
+
+            it { is_expected.to be_falsey }
           end
         end
       end

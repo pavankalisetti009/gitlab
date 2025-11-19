@@ -451,8 +451,6 @@ module EE
     end
 
     def auto_duo_code_review_settings_available?
-      return false unless ::Feature.enabled?(:cascading_auto_duo_code_review_settings, :instance)
-
       duo_features_enabled &&
         ::GitlabSubscriptions::AddOnPurchase.for_active_add_ons(:duo_enterprise, resource: :instance).any?
     end
