@@ -10,6 +10,7 @@ module VirtualRegistries
 
       MAX_CAPACITY = 2
       POLICY_KLASS = ::VirtualRegistries::Cleanup::Policy
+      USER_COLUMNS = %i[id name notification_email email].freeze
 
       data_consistency :sticky
       feature_category :virtual_registry
@@ -34,6 +35,8 @@ module VirtualRegistries
 
         policy.last_run_at = Time.current
         policy.schedule_next_run!
+
+        notify_group_owners(policy)
       end
 
       def remaining_work_count
@@ -87,6 +90,21 @@ module VirtualRegistries
           status: :failed,
           failure_message: message.truncate(POLICY_KLASS::FAILURE_MESSAGE_MAX_LENGTH)
         }
+      end
+
+      def notify_group_owners(policy)
+        case policy.attributes.symbolize_keys
+        in { status: 'scheduled', notify_on_success: true }
+          policy.group.owners.select(*USER_COLUMNS).each do |owner|
+            ::Notify.virtual_registry_cleanup_complete(policy, owner).deliver_later
+          end
+        in { status: 'failed', notify_on_failure: true }
+          policy.group.owners.select(*USER_COLUMNS).each do |owner|
+            ::Notify.virtual_registry_cleanup_failure(policy, owner).deliver_later
+          end
+        else
+          nil
+        end
       end
     end
   end

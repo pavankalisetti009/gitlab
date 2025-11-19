@@ -91,6 +91,14 @@ module EE
         def secret_rotation_reminder_email
           ::Notify.secret_rotation_reminder_email(user.id, project.id, 'DUMMY_PASSWORD').message
         end
+
+        def virtual_registry_cleanup_complete
+          ::Notify.virtual_registry_cleanup_complete(policy, user).message
+        end
+
+        def virtual_registry_cleanup_failure
+          ::Notify.virtual_registry_cleanup_failure(policy, user).message
+        end
       end
 
       private
@@ -101,6 +109,10 @@ module EE
 
       def epic
         @epic ||= project.group.epics.first
+      end
+
+      def policy
+        @policy ||= ::VirtualRegistries::Cleanup::Policy.new(group:)
       end
 
       def associate_user_with_enterprise_group(user, group)

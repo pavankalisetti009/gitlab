@@ -24,6 +24,7 @@ module EE
       include ::Emails::CiRunnerUsageByProject
       include ::Emails::BlockSeatOverages
       include ::Emails::SecretsManagement
+      include ::Emails::VirtualRegistries
     end
 
     attr_reader :group
