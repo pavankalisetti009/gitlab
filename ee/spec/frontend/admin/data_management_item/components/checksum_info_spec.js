@@ -1,0 +1,166 @@
+import { GlCard, GlSprintf, GlBadge } from '@gitlab/ui';
+import models from 'test_fixtures/api/admin/data_management/snippet_repository.json';
+import ChecksumInfo from 'ee/admin/data_management_item/components/checksum_info.vue';
+import ClipboardButton from '~/vue_shared/components/clipboard_button.vue';
+import TimeAgo from '~/vue_shared/components/time_ago_tooltip.vue';
+import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+
+describe('ChecksumInfo', () => {
+  let wrapper;
+
+  const [rawModel] = models;
+  const model = convertObjectPropsToCamelCase(rawModel, { deep: true });
+
+  const defaultProps = { details: model.checksumInformation };
+
+  const createComponent = ({ props } = { props: {} }) => {
+    wrapper = shallowMountExtended(ChecksumInfo, {
+      propsData: { ...defaultProps, ...props },
+      stubs: { GlCard, GlSprintf },
+    });
+  };
+
+  const findHeading = () => wrapper.find('h5');
+  const findGlBadge = () => wrapper.findComponent(GlBadge);
+  const findChecksumStatus = () => wrapper.findByTestId('checksum-status');
+  const findChecksumFailure = () => wrapper.findByTestId('checksum-failure');
+  const findChecksumRetry = () => wrapper.findByTestId('checksum-retry');
+  const findChecksumLast = () => wrapper.findByTestId('checksum-last');
+  const findChecksum = () => wrapper.findByTestId('checksum');
+
+  it('renders card header', () => {
+    createComponent();
+
+    expect(findHeading().text()).toContain('Checksum information');
+  });
+
+  describe('when status is known', () => {
+    it('renders status badge with correct variant and title', () => {
+      createComponent({
+        props: { details: { ...model.checksumInformation, checksumState: 'succeeded' } },
+      });
+
+      expect(findChecksumStatus().text()).toContain('Status:');
+      expect(findGlBadge().text()).toBe('Succeeded');
+      expect(findGlBadge().props('variant')).toBe('success');
+    });
+  });
+
+  describe('when status is unknown', () => {
+    it('renders unknown status badge', () => {
+      createComponent({
+        props: { details: { ...model.checksumInformation, checksumState: null } },
+      });
+
+      expect(findChecksumStatus().text()).toContain('Status:');
+      expect(findGlBadge().text()).toBe('Unknown');
+      expect(findGlBadge().props('variant')).toBe('neutral');
+    });
+  });
+
+  describe('when status have not failed', () => {
+    beforeEach(() => {
+      createComponent({
+        props: { details: { ...model.checksumInformation, checksumFailure: null } },
+      });
+    });
+
+    it('does not render checksum failure', () => {
+      expect(findChecksumFailure().exists()).toBe(false);
+    });
+
+    it('does not render retry information', () => {
+      expect(findChecksumRetry().exists()).toBe(false);
+    });
+  });
+
+  describe('when status failed', () => {
+    beforeEach(() => {
+      createComponent({
+        props: {
+          details: {
+            ...model.checksumInformation,
+            checksumFailure: 'Connection timeout',
+            retryCount: 3,
+            retryAt: '2024-01-01T00:00:00Z',
+          },
+        },
+      });
+    });
+
+    it('renders checksum failure message', () => {
+      expect(findChecksumFailure().text()).toBe('Error: Connection timeout');
+    });
+
+    it('renders retry count', () => {
+      expect(findChecksumRetry().text()).toContain('Retry #3');
+    });
+
+    it('renders retry scheduled time', () => {
+      expect(findChecksumRetry().text()).toContain('Next checksum retry:');
+      expect(findChecksumRetry().findComponent(TimeAgo).props('time')).toBe('2024-01-01T00:00:00Z');
+    });
+  });
+
+  describe('when lastChecksum is defined', () => {
+    it('renders last checksum time', () => {
+      createComponent({
+        props: {
+          details: {
+            ...model.checksumInformation,
+            lastChecksum: '2024-01-01T00:00:00Z',
+          },
+        },
+      });
+
+      expect(findChecksumLast().text()).toContain('Last checksum:');
+      expect(findChecksumLast().findComponent(TimeAgo).props('time')).toBe('2024-01-01T00:00:00Z');
+    });
+  });
+
+  describe('when lastChecksum is not defined', () => {
+    it('does not render last checksum time', () => {
+      createComponent({
+        props: { details: { ...model.checksumInformation, lastChecksum: null } },
+      });
+
+      expect(findChecksumLast().exists()).toBe(false);
+    });
+  });
+
+  describe('when checksum is defined', () => {
+    beforeEach(() => {
+      createComponent({
+        props: { details: { ...model.checksumInformation, checksum: 'abc123def456' } },
+      });
+    });
+
+    it('renders checksum value', () => {
+      expect(findChecksum().text()).toBe('Checksum: abc123def456');
+    });
+
+    it('renders clipboard button', () => {
+      expect(findChecksum().findComponent(ClipboardButton).props()).toMatchObject({
+        title: 'Copy',
+        text: 'abc123def456',
+      });
+    });
+  });
+
+  describe('when checksum is not defined', () => {
+    beforeEach(() => {
+      createComponent({
+        props: { details: { ...model.checksumInformation, checksum: null } },
+      });
+    });
+
+    it('renders "Unknown" text', () => {
+      expect(findChecksum().text()).toBe('Checksum: Unknown');
+    });
+
+    it('does not render clipboard button', () => {
+      expect(findChecksum().findComponent(ClipboardButton).exists()).toBe(false);
+    });
+  });
+});

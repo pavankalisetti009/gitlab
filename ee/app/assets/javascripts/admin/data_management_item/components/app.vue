@@ -5,11 +5,13 @@ import { getModel } from 'ee/api/data_management_api';
 import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
 import { createAlert } from '~/alert';
 import { sprintf, s__ } from '~/locale';
+import ChecksumInfo from 'ee/admin/data_management_item/components/checksum_info.vue';
 
 export default {
   name: 'AdminDataManagementItemApp',
   components: {
     PageHeading,
+    ChecksumInfo,
     GlLoadingIcon,
   },
   props: {
@@ -35,6 +37,9 @@ export default {
   computed: {
     name() {
       return `${this.modelClass}/${this.modelId}`;
+    },
+    checksumInformation() {
+      return this.model?.checksumInformation ?? {};
     },
   },
   created() {
@@ -66,6 +71,8 @@ export default {
   <section>
     <page-heading :heading="name" />
     <gl-loading-icon v-if="isLoading" size="xl" class="gl-mt-4" />
-    <div v-else>{{ model }}</div>
+    <div v-else-if="model" class="gl-grid gl-gap-4 @md/panel:gl-grid-cols-2">
+      <checksum-info :details="checksumInformation" />
+    </div>
   </section>
 </template>
