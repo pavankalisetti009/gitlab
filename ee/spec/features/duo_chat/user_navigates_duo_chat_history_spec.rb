@@ -35,7 +35,7 @@ RSpec.describe 'Duo Chat > User navigates Duo Chat history', :js, :saas, :with_c
     sign_in(user)
 
     stub_feature_flags(paneled_view: true)
-    user.update!(project_studio_enabled: true)
+    user.update!(new_ui_enabled: true)
 
     visit project_path(project)
     dismiss_welcome_banner_if_present(page)
