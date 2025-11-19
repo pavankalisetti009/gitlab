@@ -409,7 +409,8 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
           duo_chat_write_tests: 4,
           duo_chat_refactor_code: 5,
           duo_chat_fix_code: 6,
-          review_merge_request: 15
+          review_merge_request: 15,
+          duo_agent_platform: 16
         }.freeze)
       end
 
@@ -426,8 +427,7 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
           resolve_vulnerability: 11,
           summarize_review: 12,
           glab_ask_git_command: 13,
-          duo_chat_summarize_comments: 14,
-          duo_agent_platform: 16
+          duo_chat_summarize_comments: 14
         }.freeze)
       end
 
