@@ -45,18 +45,46 @@ module Elastic
         search_level = options[:search_level]
         return match_none if search_level == 'group' && options[:group_ids].blank?
 
+        query = build_search_query(query)
+        query_hash = build_base_query_hash(query, options)
+        query_hash = apply_search_level_filters(query_hash, search_level, options)
+        apply_permission_filters(query_hash, options)
+      end
+
+      def build_search_query(query)
+        ::Gitlab::Search::Query.new(query) do
+          filter :filename, field: :file_name
+          filter :path, parser: ->(input) { "#{input.downcase}*" }
+          filter :extension,
+            field: 'file_name.reverse',
+            type: :prefix,
+            parser: ->(input) { "#{input.downcase.reverse}." }
+          filter :blob, field: :oid
+        end
+      end
+
+      def build_base_query_hash(query, options)
         bool_expr = { filter: [], must: [], must_not: [] }
         query_hash = { query: { bool: bool_expr } }
         bool_expr = apply_simple_query_string(
           name: context.name(:wiki_blob, :match, :search_terms, :separate_index),
-          query: query,
+          query: query.term,
           fields: %w[content file_name path],
           bool_expr: bool_expr,
           count_only: options[:count_only]
         )
+
+        query_filter_context = query.elasticsearch_filter_context(nil)
+        bool_expr[:filter] += query_filter_context[:filter] if query_filter_context[:filter].any?
+        bool_expr[:must_not] += query_filter_context[:must_not] if query_filter_context[:must_not].any?
+
         bool_expr[:must_not] << { term: { wiki_access_level: Featurable::DISABLED } }
         bool_expr[:filter] << { terms: { language: Wiki::MARKUPS.values.pluck(:name) } } # rubocop: disable CodeReuse/ActiveRecord -- It is not an ActiveRecord
 
+        query_hash
+      end
+
+      def apply_search_level_filters(query_hash, search_level, options)
         if search_level == 'project' && options[:repository_id].present?
           query_hash = add_filter(query_hash, :query, :bool, :filter) do
             { term: { rid: options[:repository_id] } }
@@ -67,12 +95,17 @@ module Elastic
         user = options[:current_user]
         query_hash = add_namespace_ancestry_filter(query_hash, options[:group_id], user) if search_level == 'group'
 
-        if options.key?(:current_user)
-          return query_hash if user&.can_read_all_resources?
+        query_hash
+      end
 
-          query_hash[:query][:bool][:should] = wiki_permission_filter(user, options)
-          query_hash[:query][:bool][:minimum_should_match] = 1 unless query_hash[:query][:bool][:should].empty?
-        end
+      def apply_permission_filters(query_hash, options)
+        return query_hash unless options.key?(:current_user)
+
+        user = options[:current_user]
+        return query_hash if user&.can_read_all_resources?
+
+        query_hash[:query][:bool][:should] = wiki_permission_filter(user, options)
+        query_hash[:query][:bool][:minimum_should_match] = 1
 
         query_hash
       end

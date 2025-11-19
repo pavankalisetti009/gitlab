@@ -6,20 +6,22 @@ module EE
       module ParsedQuery
         def elasticsearch_filter_context(object)
           {
-            filter: including_filters.map { |f| prepare_for_elasticsearch(object, f) },
-            must_not: excluding_filters.map { |f| prepare_for_elasticsearch(object, f) }
+            filter: including_filters.map { |f| build_elasticsearch_filter_clause(object, f) },
+            must_not: excluding_filters.map { |f| build_elasticsearch_filter_clause(object, f) }
           }
         end
 
         private
 
-        def prepare_for_elasticsearch(object, filter)
-          type = filter[:type] || :wildcard
-          field = filter[:field] || filter[:name]
+        def build_elasticsearch_filter_clause(object, filter)
+          type = filter.fetch(:type, :wildcard)
+          field = filter.fetch(:field, filter[:name])
+
+          field_name = object.present? ? "#{object}.#{field}" : field.to_s
 
           {
             type => {
-              "#{object}.#{field}" => filter[:value]
+              field_name => filter[:value]
             }
           }
         end
