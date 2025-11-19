@@ -43,6 +43,7 @@ const transformFinding = (finding) => ({
   name: finding.title,
   severity: finding.severity?.toLowerCase(),
   state: finding.state?.toLowerCase(),
+  ai_resolution_enabled: finding.aiResolutionEnabled,
   found_by_pipeline: {
     iid: finding.foundByPipelineIid ? Number(finding.foundByPipelineIid) : null,
   },
