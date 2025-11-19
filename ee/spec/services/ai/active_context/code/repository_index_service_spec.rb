@@ -17,4 +17,19 @@ RSpec.describe Ai::ActiveContext::Code::RepositoryIndexService, feature_category
       described_class.enqueue_pending_jobs
     end
   end
+
+  describe '.enqueue_pending_deletion_jobs' do
+    let_it_be(:deletion_repository) { create(:ai_active_context_code_repository, state: :pending_deletion) }
+
+    before do
+      allow(::Ai::ActiveContext::Code::Repository).to receive_message_chain(:pending_deletion, :with_active_connection)
+        .and_return(::Ai::ActiveContext::Code::Repository.where(state: :pending_deletion))
+    end
+
+    it 'enqueues RepositoryDeleteWorker jobs for eligible repositories' do
+      expect(Ai::ActiveContext::Code::RepositoryDeleteWorker).to receive(:perform_async).with(deletion_repository.id)
+
+      described_class.enqueue_pending_deletion_jobs
+    end
+  end
 end

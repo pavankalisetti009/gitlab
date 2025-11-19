@@ -64,17 +64,17 @@ RSpec.describe Ai::ActiveContext::Code::Indexer, feature_category: :global_searc
         let(:expected_options) do
           {
             project_id: project.id,
+            partition_name: collection.name,
+            partition_number: collection.partition_for(project.id),
+            timeout: described_class::TIMEOUT,
             from_sha: expected_from_sha,
             to_sha: expected_to_commit,
             force_reindex: expected_force_reindex,
-            partition_name: collection.name,
-            partition_number: collection.partition_for(project.id),
             gitaly_config: {
               storage: project.repository_storage,
               relative_path: project.repository.relative_path,
               project_path: project.full_path
-            }.merge(Gitlab::GitalyClient.connection_data(project.repository_storage)),
-            timeout: described_class::TIMEOUT
+            }.merge(Gitlab::GitalyClient.connection_data(project.repository_storage))
           }
         end
 

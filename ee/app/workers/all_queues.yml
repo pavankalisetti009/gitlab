@@ -1473,6 +1473,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: ai_active_context_code_repository_delete
+  :worker_name: Ai::ActiveContext::Code::RepositoryDeleteWorker
+  :feature_category: :global_search
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: ai_active_context_code_repository_index
   :worker_name: Ai::ActiveContext::Code::RepositoryIndexWorker
   :feature_category: :global_search

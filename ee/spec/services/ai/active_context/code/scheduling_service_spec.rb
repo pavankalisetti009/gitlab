@@ -293,6 +293,34 @@ RSpec.describe Ai::ActiveContext::Code::SchedulingService, feature_category: :gl
       end
     end
 
+    describe 'delete_repository' do
+      context 'when there are repositories pending deletion with active connections' do
+        before do
+          allow(::Ai::ActiveContext::Code::Repository)
+            .to receive_message_chain(:pending_deletion, :with_active_connection, :exists?).and_return(true)
+        end
+
+        it 'enqueues deletion jobs via RepositoryIndexService' do
+          expect(::Ai::ActiveContext::Code::RepositoryIndexService).to receive(:enqueue_pending_deletion_jobs)
+
+          described_class.new(:delete_repository).execute
+        end
+      end
+
+      context 'when there are no repositories pending deletion with active connections' do
+        before do
+          allow(::Ai::ActiveContext::Code::Repository)
+            .to receive_message_chain(:pending_deletion, :with_active_connection, :exists?).and_return(false)
+        end
+
+        it 'does not enqueue deletion jobs via RepositoryIndexService' do
+          expect(::Ai::ActiveContext::Code::RepositoryIndexService).not_to receive(:enqueue_pending_deletion_jobs)
+
+          described_class.new(:delete_repository).execute
+        end
+      end
+    end
+
     describe 'saas_initial_indexing' do
       before do
         allow(Gitlab::EventStore).to receive(:publish)
