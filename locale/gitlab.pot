@@ -24455,12 +24455,6 @@ msgstr ""
 msgid "Disable fetching cloud alerts if this GitLab instance is isolated from the public internet, or does not use observe.gitlab.com for Observability features."
 msgstr ""
 
-msgid "Disable for this project"
-msgstr ""
-
-msgid "Disable group runners"
-msgstr ""
-
 msgid "Disable inviting new members to group or project by group/project owners or project maintainers"
 msgstr ""
 
@@ -26284,12 +26278,6 @@ msgid "Enable email notification"
 msgstr ""
 
 msgid "Enable feature to choose access level"
-msgstr ""
-
-msgid "Enable for this project"
-msgstr ""
-
-msgid "Enable group runners"
 msgstr ""
 
 msgid "Enable header and footer in emails"
@@ -32298,9 +32286,6 @@ msgid "Group project URLs are prefixed with the group namespace"
 msgstr ""
 
 msgid "Group requires separate account"
-msgstr ""
-
-msgid "Group runners can be managed with the %{link}."
 msgstr ""
 
 msgid "Group variables (inherited)"
@@ -46686,9 +46671,6 @@ msgstr ""
 msgid "Other"
 msgstr ""
 
-msgid "Other available runners"
-msgstr ""
-
 msgid "Other information"
 msgstr ""
 
@@ -56071,9 +56053,6 @@ msgstr ""
 msgid "Runner"
 msgstr ""
 
-msgid "Runner API"
-msgstr ""
-
 msgid "Runner tokens"
 msgstr ""
 
@@ -56128,9 +56107,6 @@ msgid "Runners|%{linkStart}View available zones%{linkEnd}. Must have the format 
 msgstr ""
 
 msgid "Runners|%{linkStart}Where's my project ID?%{linkEnd} Can be 6 to 30 lowercase letters, digits, or hyphens. Must start with a letter and end with a letter or number. Example: %{example}."
-msgstr ""
-
-msgid "Runners|%{link_start}These runners%{link_end} are available to all groups and projects."
 msgstr ""
 
 msgid "Runners|%{percentage} spot."
@@ -56496,9 +56472,6 @@ msgstr ""
 msgid "Runners|Group area › Runners"
 msgstr ""
 
-msgid "Runners|Group runners"
-msgstr ""
-
 msgid "Runners|Group runners are turned off"
 msgstr ""
 
@@ -56542,9 +56515,6 @@ msgid "Runners|Install the %{gcloudLinkStart}Google Cloud CLI%{gcloudLinkEnd} an
 msgstr ""
 
 msgid "Runners|Instance"
-msgstr ""
-
-msgid "Runners|Instance runners"
 msgstr ""
 
 msgid "Runners|Instance runners are disabled in the group settings."
@@ -56803,9 +56773,6 @@ msgstr ""
 msgid "Runners|Platform"
 msgstr ""
 
-msgid "Runners|Please contact an admin to create runners."
-msgstr ""
-
 msgid "Runners|Project"
 msgstr ""
 
@@ -56813,9 +56780,6 @@ msgid "Runners|Project ID is required."
 msgstr ""
 
 msgid "Runners|Project ID must have the right format."
-msgstr ""
-
-msgid "Runners|Project runners"
 msgstr ""
 
 msgid "Runners|Project › CI/CD Settings › Runners"
@@ -57136,9 +57100,6 @@ msgid "Runners|There are no recent runner failures for your instance runners. Er
 msgstr ""
 
 msgid "Runners|There are no runners running jobs right now. Active runners will populate here as they pick up jobs."
-msgstr ""
-
-msgid "Runners|These runners are assigned to this project."
 msgstr ""
 
 msgid "Runners|These setup instructions use your specifications and follow the best practices for performance and security."
@@ -67791,9 +67752,6 @@ msgstr ""
 msgid "This Cron pattern is invalid"
 msgstr ""
 
-msgid "This GitLab instance does not provide any instance runners yet. Administrators can register instance runners in the admin area."
-msgstr ""
-
 msgid "This PDF is too large to display. Please download to view."
 msgstr ""
 
@@ -68346,9 +68304,6 @@ msgid "This project cannot be %{visibilityLevel} because the visibility of %{ope
 msgstr ""
 
 msgid "This project cannot be %{visibilityLevel} because the visibility of %{openShowLink}%{name}%{closeShowLink} is %{visibility}. To make this project %{visibilityLevel}, you must first %{openEditLink}change the visibility%{closeEditLink} of the parent group."
-msgstr ""
-
-msgid "This project does not belong to a group and cannot make use of group runners."
 msgstr ""
 
 msgid "This project does not have %{service_desk_link_start}Service Desk%{service_desk_link_end} enabled, so the user who created the issue will no longer receive email notifications about new activity."
@@ -79507,9 +79462,6 @@ msgstr[0] ""
 msgstr[1] ""
 
 msgid "finding is not found or is already attached to a vulnerability"
-msgstr ""
-
-msgid "for this project"
 msgstr ""
 
 msgid "fork"
