@@ -222,6 +222,8 @@ module EE
         joins(group_wiki_repository: :shard).where(shards: { name: storage })
       end
 
+      scope :not_indexed_in_elasticsearch, -> { left_joins(:index_status).where(index_status: { namespace_id: nil }) }
+
       state_machine :ldap_sync_status, namespace: :ldap_sync, initial: :ready do
         state :ready
         state :started

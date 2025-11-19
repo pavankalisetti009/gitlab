@@ -17,6 +17,7 @@ module Search
       index_and_search_validation
       index_work_items
       index_group_entities
+      index_groups_status
       index_group_wikis
       index_namespaces
       index_projects
@@ -29,6 +30,7 @@ module Search
       mark_reindex_failed
       pause_indexing
       projects_not_indexed
+      groups_not_indexed
       recreate_index
       reindex_cluster
       resume_indexing
@@ -58,7 +60,7 @@ module Search
     SHARDS_MIN = 5
     SHARDS_DIVISOR = 5_000_000
     REPOSITORY_MULTIPLIER = 0.5
-    MAX_PROJECTS_TO_DISPLAY = 500
+    MAX_RECORDS_TO_DISPLAY = 500
 
     def initialize(logger:)
       @logger = logger
@@ -287,6 +289,18 @@ module Search
       end
     end
 
+    def groups_not_indexed
+      not_indexed = []
+
+      ::Search::ElasticGroupsNotIndexedFinder.execute.each_batch do |batch|
+        batch.each { |group| not_indexed << group }
+      end
+
+      return logger.info(Rainbow('All group repository data is currently indexed').green) if not_indexed.empty?
+
+      display_unindexed('Group', not_indexed)
+    end
+
     def projects_not_indexed
       not_indexed = []
 
@@ -296,23 +310,17 @@ module Search
         end
       end
 
-      if not_indexed.empty?
-        logger.info(Rainbow('All projects are currently indexed').green)
-      else
-        display_unindexed(not_indexed)
-      end
+      return logger.info(Rainbow('All project repository data is currently indexed').green) if not_indexed.empty?
+
+      display_unindexed('Project', not_indexed)
     end
 
-    def display_unindexed(projects)
-      arr = if projects.count < MAX_PROJECTS_TO_DISPLAY || ENV['SHOW_ALL']
-              projects
-            else
-              projects[1..MAX_PROJECTS_TO_DISPLAY]
-            end
+    def display_unindexed(type, records)
+      arr = ENV['SHOW_ALL'] || (records.count < MAX_RECORDS_TO_DISPLAY) ? records : records[1..MAX_RECORDS_TO_DISPLAY]
 
-      arr.each { |p| logger.warn(Rainbow("Project '#{p.full_path}' (ID: #{p.id}) isn't indexed.").red) }
+      arr.each { |record| logger.warn(Rainbow("#{type} '#{record.full_path}' (ID: #{record.id}) isn't indexed.").red) }
 
-      logger.info("#{arr.count} out of #{projects.count} non-indexed projects shown.")
+      logger.info("#{arr.count} out of #{records.count} non-indexed #{type.downcase.pluralize} shown.")
     end
 
     def list_pending_migrations
@@ -348,11 +356,25 @@ module Search
     end
 
     def index_projects_status
-      projects = projects_maintaining_indexed_associations.size
-      indexed = IndexStatus.for_project(projects_maintaining_indexed_associations).size
-      percent = (indexed / projects.to_f) * 100.0
+      projects = ::Gitlab::CurrentSettings.elasticsearch_enabled_projects
+      total_count = projects.size
+      return logger.warn(Rainbow('Advanced search is not enabled for any of the projects.').yellow) if total_count == 0
 
-      logger.info(format('Indexing is %.2f%% complete (%d/%d projects)', percent, indexed, projects))
+      indexed_count = IndexStatus.for_project(projects).size
+      percent = (indexed_count / total_count.to_f) * 100.0
+      msg = 'Indexing is %.2f%% complete (%d/%d projects). Considers only code, commits, and wikis.'
+      logger.info(format(msg, percent, indexed_count, total_count))
+    end
+
+    def index_groups_status
+      groups = ::Gitlab::CurrentSettings.elasticsearch_enabled_groups
+      total_count = groups.size
+      return logger.warn(Rainbow('Advanced search is not enabled for any of the groups.').yellow) if total_count == 0
+
+      indexed_count = ::Elastic::GroupIndexStatus.for_group(groups).size
+      percent = (indexed_count / total_count.to_f) * 100.0
+      msg = 'Indexing is %.2f%% complete (%d/%d groups). Considers only group wikis.'
+      logger.info(format(msg, percent, indexed_count, total_count))
     end
 
     def index_users
@@ -628,12 +650,6 @@ module Search
           logger.info(migration_info)
         end
       end
-    end
-
-    def projects_maintaining_indexed_associations
-      return Project.all unless ::Gitlab::CurrentSettings.elasticsearch_limit_indexing?
-
-      ::Gitlab::CurrentSettings.elasticsearch_limited_projects
     end
 
     def projects_in_batches

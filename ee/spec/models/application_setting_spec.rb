@@ -1471,6 +1471,54 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
     end
   end
 
+  describe '#elasticsearch_enabled_groups', feature_category: :global_search do
+    let_it_be(:group) { create(:group) }
+    let_it_be(:group2) { create(:group) }
+    let_it_be(:sub_group) { create(:group, parent: group) }
+
+    context 'when limited indexing is disabled' do
+      it 'returns all groups' do
+        expect(setting.elasticsearch_enabled_groups).to contain_exactly(group, group2, sub_group)
+      end
+    end
+
+    context 'when limited indexing is enabled' do
+      before do
+        stub_ee_application_setting(elasticsearch_limit_indexing: true)
+        create(:elasticsearch_indexed_namespace, namespace: group)
+      end
+
+      it 'returns all group and subgroups of the elastic enabled group' do
+        expect(setting.elasticsearch_enabled_groups).to contain_exactly(group, sub_group)
+      end
+    end
+  end
+
+  describe '#elasticsearch_enabled_projects', feature_category: :global_search do
+    let_it_be(:group) { create(:group) }
+    let_it_be(:sub_group) { create(:group, parent: group) }
+    let_it_be(:project) { create(:project, group: group) }
+    let_it_be(:sub_project) { create(:project, group: sub_group) }
+    let_it_be(:project2) { create(:project) }
+
+    context 'when limited indexing is disabled' do
+      it 'returns all projects' do
+        expect(setting.elasticsearch_enabled_projects).to contain_exactly(project, sub_project, project2)
+      end
+    end
+
+    context 'when limited indexing is enabled' do
+      before do
+        stub_ee_application_setting(elasticsearch_limit_indexing: true)
+        create(:elasticsearch_indexed_namespace, namespace: group)
+      end
+
+      it 'returns all projects under the elastic enabled group' do
+        expect(setting.elasticsearch_enabled_projects).to contain_exactly(project, sub_project)
+      end
+    end
+  end
+
   describe '#elasticsearch_url', feature_category: :global_search do
     it 'presents a single URL as a one-element array' do
       setting.elasticsearch_url = 'http://example.com'

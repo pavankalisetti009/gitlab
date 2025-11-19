@@ -533,6 +533,18 @@ module EE
       namespaces.self_and_descendants
     end
 
+    def elasticsearch_enabled_groups
+      return ::Group.all unless elasticsearch_limit_indexing?
+
+      ::Group.id_in(elasticsearch_limited_namespaces.select(:id)).self_and_descendants
+    end
+
+    def elasticsearch_enabled_projects
+      return ::Project.all unless elasticsearch_limit_indexing?
+
+      elasticsearch_limited_projects
+    end
+
     def should_check_namespace_plan?
       check_namespace_plan? && (Rails.env.test? || ::Gitlab.org_or_com?)
     end

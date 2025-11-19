@@ -57,6 +57,11 @@ namespace :gitlab do
       Search::RakeTask::Elastic.task_executor_service.execute(:index_projects_status)
     end
 
+    desc 'GitLab | Elasticsearch | Overall indexing status of group repository data (group wikis)'
+    task index_groups_status: :environment do
+      Search::RakeTask::Elastic.task_executor_service.execute(:index_groups_status)
+    end
+
     desc 'GitLab | Elasticsearch | Index all snippets'
     task index_snippets: :environment do
       Search::RakeTask::Elastic.task_executor_service.execute(:index_snippets)
@@ -115,6 +120,11 @@ namespace :gitlab do
     desc 'GitLab | Elasticsearch | Display which projects are not indexed'
     task projects_not_indexed: :environment do
       Search::RakeTask::Elastic.task_executor_service.execute(:projects_not_indexed)
+    end
+
+    desc 'GitLab | Elasticsearch | Display which groups are missing repository data (group wikis) in the index'
+    task groups_not_indexed: :environment do
+      Search::RakeTask::Elastic.task_executor_service.execute(:groups_not_indexed)
     end
 
     desc 'GitLab | Elasticsearch | Mark last reindexing job as failed'
