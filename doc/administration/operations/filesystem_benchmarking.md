@@ -42,7 +42,10 @@ To install:
 Then run the following:
 
 ```shell
-fio --randrepeat=1 --ioengine=libaio --direct=1 --gtod_reduce=1 --name=test --bs=4k --iodepth=64 --readwrite=randrw --rwmixread=75 --size=4G --filename=/path/to/git-data/testfile
+file="/path/to/nfs-or-postgres-or-gitaly/fio-benchmark-$(date +%s)"
+fio --ioengine=libaio --direct=1 --gtod_reduce=1 --iodepth=64 --randrepeat=1 \
+    --readwrite=randrw --name="$file" --filename="$file" \
+    --size=4G --rwmixread=75 --bs=4k
 ```
 
 This creates a 4 GB file in the NFS, PostgreSQL or Gitaly path.
@@ -54,7 +57,7 @@ The output varies depending on what version of `fio` installed. The following
 is an example output from `fio` v2.2.10 on a networked solid-state drive (SSD):
 
 ```plaintext
-test: (g=0): rw=randrw, bs=4K-4K/4K-4K/4K-4K, ioengine=libaio, iodepth=64
+path/to/nfs-or-postgres-or-gitaly/fio-benchmark-1234567890: (g=0): rw=randrw, bs=4K-4K/4K-4K/4K-4K, ioengine=libaio, iodepth=64
     fio-2.2.10
     Starting 1 process
     test: Laying out IO file(s) (1 file(s) / 1024MB)
