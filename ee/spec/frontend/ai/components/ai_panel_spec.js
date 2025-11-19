@@ -2,6 +2,7 @@ import { GlBreakpointInstance } from '@gitlab/ui/src/utils';
 import { nextTick } from 'vue';
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
 import { stubComponent } from 'helpers/stub_component';
+import { setHTMLFixture } from 'helpers/fixtures';
 import AIPanel from 'ee/ai/components/ai_panel.vue';
 import AiContentContainer from 'ee/ai/components/content_container.vue';
 import NavigationRail from 'ee/ai/components/navigation_rail.vue';
@@ -82,8 +83,10 @@ describe('AiPanel', () => {
 
   const findContentContainer = () => wrapper.findComponent(AiContentContainer);
   const findNavigationRail = () => wrapper.findComponent(NavigationRail);
+  const findPageLayout = () => document.querySelector('.js-page-layout');
 
   beforeEach(() => {
+    setHTMLFixture(`<div class="js-page-layout"></div>`);
     Cookies.remove(aiPanelStateCookie);
     // Reset global state before each test
     duoChatGlobalState.chatMode = CHAT_MODES.AGENTIC;
@@ -147,6 +150,42 @@ describe('AiPanel', () => {
       await nextTick();
       expect(findContentContainer().exists()).toBe(false);
       expect(Cookies.get(aiPanelStateCookie)).toBe(undefined);
+    });
+
+    describe('expansion', () => {
+      const toggleMaximize = async () => {
+        findContentContainer().vm.$emit('toggleMaximize');
+        await nextTick();
+      };
+
+      it('maximizes', async () => {
+        createComponent();
+        findNavigationRail().vm.$emit('handleTabToggle', 'chat');
+        await nextTick();
+        await toggleMaximize();
+        expect(findContentContainer().props('isMaximized')).toBe(true);
+        expect(findPageLayout().classList.contains('ai-panel-maximized')).toBe(true);
+      });
+
+      it('shrinks', async () => {
+        createComponent();
+        findNavigationRail().vm.$emit('handleTabToggle', 'chat');
+        await nextTick();
+        await toggleMaximize();
+        await toggleMaximize();
+        expect(findContentContainer().props('isMaximized')).toBe(false);
+        expect(findPageLayout().classList.contains('ai-panel-maximized')).toBe(false);
+      });
+
+      it('shrinks on close', async () => {
+        createComponent();
+        findNavigationRail().vm.$emit('handleTabToggle', 'chat');
+        await nextTick();
+        await toggleMaximize();
+        findContentContainer().vm.$emit('closePanel');
+        await nextTick();
+        expect(findPageLayout().classList.contains('ai-panel-maximized')).toBe(false);
+      });
     });
   });
 

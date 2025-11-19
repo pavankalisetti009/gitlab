@@ -72,6 +72,7 @@ export default {
       duoChatGlobalState,
       selectedAgent: null,
       selectedAgentError: null,
+      isMaximized: false,
     };
   },
   computed: {
@@ -148,6 +149,14 @@ export default {
       );
     },
   },
+  watch: {
+    isMaximized: {
+      handler(maximized) {
+        document.querySelector('.js-page-layout').classList.toggle('ai-panel-maximized', maximized);
+      },
+      immediate: true,
+    },
+  },
   mounted() {
     window.addEventListener('resize', this.handleWindowResize);
     window.addEventListener('focus', this.handleWindowFocus);
@@ -196,6 +205,7 @@ export default {
     },
     closePanel() {
       this.setActiveTab(undefined);
+      this.isMaximized = false;
     },
     handleWindowResize() {
       const currentIsDesktop = GlBreakpointInstance.isDesktop();
@@ -241,9 +251,11 @@ export default {
       :user-model-selection-enabled="userModelSelectionEnabled"
       :selected-agent="selectedAgent"
       :agent-select-error="selectedAgentError"
+      :is-maximized="isMaximized"
       @closePanel="closePanel"
       @go-back="handleGoBack"
       @switch-to-active-tab="setActiveTab"
+      @toggleMaximize="isMaximized = !isMaximized"
     />
     <navigation-rail
       :is-expanded="Boolean(currentTabComponent)"

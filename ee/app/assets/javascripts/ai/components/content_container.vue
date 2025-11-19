@@ -71,10 +71,13 @@ export default {
       required: false,
       default: () => ({}),
     },
+    isMaximized: {
+      type: Boolean,
+      required: true,
+    },
   },
   data() {
     return {
-      isMaximized: false,
       currentTitle: null,
       duoChatGlobalState,
     };
@@ -102,24 +105,10 @@ export default {
         }
       },
     },
-    isMaximized: {
-      handler(maximized) {
-        const layout = document.querySelector('.js-page-layout');
-        if (maximized) {
-          layout.classList.add('ai-panel-maximized');
-        } else {
-          layout.classList.remove('ai-panel-maximized');
-        }
-      },
-      immediate: true,
-    },
   },
   methods: {
     handleGoBack() {
       this.$emit('go-back');
-    },
-    toggleIsMaximized() {
-      this.isMaximized = !this.isMaximized;
     },
     onSwitchToActiveTab(tab) {
       this.$emit('switch-to-active-tab', tab);
@@ -188,7 +177,7 @@ export default {
           :aria-label="maximizeButtonLabel"
           :title="maximizeButtonLabel"
           data-testid="content-container-maximize-button"
-          @click="toggleIsMaximized"
+          @click="$emit('toggleMaximize')"
         />
       </div>
     </div>

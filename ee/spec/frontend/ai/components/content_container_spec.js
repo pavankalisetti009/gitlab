@@ -2,7 +2,6 @@ import { nextTick } from 'vue';
 import { GlButton } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { createMockDirective } from 'helpers/vue_mock_directive';
-import { setHTMLFixture } from 'helpers/fixtures';
 import AiContentContainer from 'ee/ai/components/content_container.vue';
 import { CHAT_MODES } from 'ee/ai/tanuki_bot/constants';
 import { duoChatGlobalState } from '~/super_sidebar/constants';
@@ -42,6 +41,7 @@ describe('AiContentContainer', () => {
         resourceId: 'gid://gitlab/Resource/111',
         metadata: '{"key":"value"}',
         userModelSelectionEnabled: false,
+        isMaximized: false,
         ...propsData,
       },
       provide: {
@@ -69,36 +69,43 @@ describe('AiContentContainer', () => {
   const findBackButton = () => wrapper.findByTestId('content-container-back-button');
 
   beforeEach(() => {
-    setHTMLFixture(`<div class="js-page-layout"></div>`);
     // Reset global state before each test
     duoChatGlobalState.chatMode = CHAT_MODES.AGENTIC;
-    createComponent();
   });
 
   it('renders the tab title in the header', () => {
+    createComponent();
     expect(findPanelTitle().text()).toBe(activeTabMock.title);
   });
 
   it('renders maximize and collapse buttons', () => {
+    createComponent();
     expect(findMaximizeButton().exists()).toBe(true);
     expect(findCollapseButton().exists()).toBe(true);
     expect(findCollapseButton().attributes('aria-label')).toBe('Collapse panel');
   });
 
   it('collapses the panel when collapse button is clicked', async () => {
+    createComponent();
     findCollapseButton().trigger('click');
     await nextTick();
     expect(wrapper.emitted('closePanel')).toEqual([[false]]);
   });
 
   it('shows the maximize icon when minimized', () => {
+    createComponent();
     expect(findMaximizeButton().props('icon')).toBe('maximize');
   });
 
-  it('shows the minimized icon when maximized', async () => {
-    await findMaximizeButton().trigger('click');
-    await nextTick();
+  it('shows the minimized icon when maximized', () => {
+    createComponent({ propsData: { isMaximized: true } });
     expect(findMaximizeButton().props('icon')).toBe('minimize');
+  });
+
+  it('toggles maximized state', () => {
+    createComponent();
+    findMaximizeButton().trigger('click');
+    expect(wrapper.emitted('toggleMaximize')).toStrictEqual([[]]);
   });
 
   describe('when showBackButton is false', () => {
