@@ -49,6 +49,12 @@ describe('Basic information section', () => {
   const findMaintenanceAlert = () => wrapper.findComponentByTestId('maintenance-mode-alert');
   const findMigrationActionButton = () => wrapper.findComponentByTestId('migrate-action-button');
   const findPipelineInput = () => wrapper.findComponentByTestId('pipeline-configuration-input');
+  const findDisabledPipelineInput = () =>
+    wrapper.findComponentByTestId('disabled-pipeline-configuration-input');
+  const findDisabledPipelineInputGroup = () =>
+    wrapper.findComponentByTestId('disabled-pipeline-configuration-input-group');
+  const findDisabledPipelineInputPopover = () =>
+    wrapper.findComponentByTestId('disabled-pipeline-configuration-input-popover');
 
   beforeEach(() => {
     createComponent();
@@ -122,6 +128,54 @@ describe('Basic information section', () => {
 
       const accordionItem = wrapper.findComponent(GlAccordionItem);
       expect(accordionItem.props('visible')).toBe(true);
+    });
+
+    describe('when pipelineConfigurationEnabled is true', () => {
+      beforeEach(() => {
+        createComponent(
+          { value: { ...fakeFramework, pipelineConfigurationFullPath: 'some/path.yml' } },
+          { pipelineConfigurationEnabled: true },
+        );
+      });
+
+      it('shows the enabled pipeline configuration input', () => {
+        expect(findPipelineInput().exists()).toBe(true);
+        expect(findDisabledPipelineInput().exists()).toBe(false);
+      });
+
+      it('shows the maintenance mode alert', () => {
+        expect(findMaintenanceAlert().exists()).toBe(true);
+      });
+    });
+
+    describe('when pipelineConfigurationEnabled is false', () => {
+      beforeEach(() => {
+        createComponent(
+          { value: { ...fakeFramework, pipelineConfigurationFullPath: 'some/path.yml' } },
+          { pipelineConfigurationEnabled: false },
+        );
+      });
+
+      it('shows the disabled pipeline configuration input inside accordion', () => {
+        expect(findDisabledPipelineInput().exists()).toBe(true);
+        expect(findPipelineInput().exists()).toBe(false);
+      });
+
+      it('shows the disabled input group with description', () => {
+        const inputGroup = findDisabledPipelineInputGroup();
+        expect(inputGroup.exists()).toBe(true);
+        expect(inputGroup.text()).toContain('path/file.y[a]ml@group-name/project-name');
+      });
+
+      it('shows the popover explaining why input is disabled', () => {
+        const popover = findDisabledPipelineInputPopover();
+        expect(popover.exists()).toBe(true);
+        expect(popover.props('title')).toBe('Requires Ultimate subscription');
+      });
+
+      it('does not show the maintenance mode alert', () => {
+        expect(findMaintenanceAlert().exists()).toBe(false);
+      });
     });
   });
 
