@@ -5,6 +5,7 @@ require 'spec_helper'
 RSpec.describe 'User creates work items', :js, feature_category: :team_planning do
   include Spec::Support::Helpers::ModalHelpers
   include WorkItemsHelpers
+  include WorkItemFeedbackHelpers
 
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group, :public, developers: user) }
@@ -18,6 +19,7 @@ RSpec.describe 'User creates work items', :js, feature_category: :team_planning 
     before do
       stub_licensed_features(issuable_health_status: true, iterations: true)
       visit "#{project_path(project)}/-/work_items/new"
+      close_work_item_feedback_popover_if_present
     end
 
     it_behaves_like 'creates work item with widgets from new page', 'issue', %w[
@@ -36,6 +38,7 @@ RSpec.describe 'User creates work items', :js, feature_category: :team_planning 
     before do
       stub_licensed_features(epics: true, epic_colors: true, issuable_health_status: true, subepics: true)
       visit group_work_items_path(group)
+      close_work_item_feedback_popover_if_present
       wait_for_all_requests
       first(:link, 'New item').click
     end
@@ -87,6 +90,7 @@ RSpec.describe 'User creates work items', :js, feature_category: :team_planning 
       stub_licensed_features(epics: true, epic_colors: true, issuable_health_status: true, subepics: true)
       stub_feature_flags(work_item_planning_view: false)
       visit group_epics_path(group)
+      close_work_item_feedback_popover_if_present
 
       allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(120)
     end

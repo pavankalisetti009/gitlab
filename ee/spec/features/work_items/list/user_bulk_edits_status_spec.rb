@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe 'Bulk edit status', :js, feature_category: :team_planning do
   include WorkItemsHelpers
+  include WorkItemFeedbackHelpers
 
   let_it_be(:to_do_status_id) { WorkItems::Statuses::SystemDefined::Status.find_by_name('To do').id }
 
@@ -27,6 +28,7 @@ RSpec.describe 'Bulk edit status', :js, feature_category: :team_planning do
         sign_in(user)
         stub_licensed_features(group_bulk_edit: true, work_item_status: true)
         visit work_items_path
+        close_work_item_feedback_popover_if_present
       end
 
       it 'bulk edits status' do

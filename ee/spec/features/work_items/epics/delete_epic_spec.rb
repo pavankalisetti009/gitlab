@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe 'Delete Epic', :js, feature_category: :portfolio_management do
   include Spec::Support::Helpers::ModalHelpers
+  include WorkItemFeedbackHelpers
 
   let(:user) { create(:user) }
   let(:group) { create(:group, :public) }
@@ -18,6 +19,7 @@ RSpec.describe 'Delete Epic', :js, feature_category: :portfolio_management do
   context 'when user who is not a group member displays the epic' do
     before do
       visit group_epic_path(group, epic)
+      close_work_item_feedback_popover_if_present
     end
 
     it 'does not show the `Delete epic` button' do
@@ -31,6 +33,7 @@ RSpec.describe 'Delete Epic', :js, feature_category: :portfolio_management do
     before do
       group.add_owner(user)
       visit group_epic_path(group, epic)
+      close_work_item_feedback_popover_if_present
     end
 
     it 'deletes the issue and redirect to epic list' do

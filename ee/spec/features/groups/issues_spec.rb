@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe 'Group issues page', feature_category: :team_planning do
+  include WorkItemFeedbackHelpers
+
   let(:group) { create(:group) }
   let(:project) { create(:project, :public, group: group) }
 
@@ -14,6 +16,7 @@ RSpec.describe 'Group issues page', feature_category: :team_planning do
     before do
       sign_in(user_in_group)
       visit issues_group_path(group)
+      close_work_item_feedback_popover_if_present
     end
 
     it 'shows sidebar when clicked on "Bulk edit"' do
