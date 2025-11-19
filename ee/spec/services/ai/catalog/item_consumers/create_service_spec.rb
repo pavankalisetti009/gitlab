@@ -293,6 +293,19 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
 
     it_behaves_like 'creates an audit event', entity_type: 'Group'
 
+    context 'when item is an agent' do
+      let(:item) { agent_item }
+      let(:params) { { item: } }
+
+      it 'creates the agent item consumer' do
+        expect { execute }.to change { Ai::Catalog::ItemConsumer.count }
+      end
+
+      it 'does not create a service account' do
+        expect { execute }.not_to change { User.count }
+      end
+    end
+
     context 'when the item is already configured in the group' do
       before do
         create(:ai_catalog_item_consumer, group:, item:)

@@ -16,6 +16,7 @@ describe('AiCatalogItemActions', () => {
       edit: '/items/:id/edit',
       run: '/items/:id/run',
     },
+    isAgentsAvailable: true,
     isFlowsAvailable: true,
     deleteFn: jest.fn(),
   };
@@ -46,11 +47,11 @@ describe('AiCatalogItemActions', () => {
   const findDeleteButton = () => wrapper.findByTestId('delete-button');
 
   describe.each`
-    scenario                           | canAdmin | canUse   | editBtn  | disableBtn | enableBtn | addBtn   | addGroupBtn | moreActions | duplicateBtn | deleteBtn | itemType
-    ${'not logged in'}                 | ${false} | ${false} | ${false} | ${false}   | ${false}  | ${false} | ${false}    | ${false}    | ${false}     | ${false}  | ${AI_CATALOG_TYPE_AGENT}
-    ${'logged in, not admin of item'}  | ${false} | ${true}  | ${false} | ${false}   | ${false}  | ${true}  | ${false}    | ${true}     | ${true}      | ${false}  | ${AI_CATALOG_TYPE_AGENT}
-    ${'logged in, admin of item'}      | ${true}  | ${true}  | ${true}  | ${false}   | ${false}  | ${true}  | ${false}    | ${true}     | ${true}      | ${true}   | ${AI_CATALOG_TYPE_AGENT}
-    ${'logged in, admin of flow item'} | ${true}  | ${true}  | ${true}  | ${false}   | ${false}  | ${false} | ${true}     | ${true}     | ${true}      | ${true}   | ${AI_CATALOG_TYPE_FLOW}
+    scenario                           | canAdmin | canUse   | editBtn  | disableBtn | enableBtn | addBtn   | moreActions | duplicateBtn | deleteBtn | itemType
+    ${'not logged in'}                 | ${false} | ${false} | ${false} | ${false}   | ${false}  | ${false} | ${false}    | ${false}     | ${false}  | ${AI_CATALOG_TYPE_AGENT}
+    ${'logged in, not admin of item'}  | ${false} | ${true}  | ${false} | ${false}   | ${false}  | ${true}  | ${true}     | ${true}      | ${false}  | ${AI_CATALOG_TYPE_AGENT}
+    ${'logged in, admin of item'}      | ${true}  | ${true}  | ${true}  | ${false}   | ${false}  | ${true}  | ${true}     | ${true}      | ${true}   | ${AI_CATALOG_TYPE_AGENT}
+    ${'logged in, admin of flow item'} | ${true}  | ${true}  | ${true}  | ${false}   | ${false}  | ${true}  | ${true}     | ${true}      | ${true}   | ${AI_CATALOG_TYPE_FLOW}
   `(
     'at the Explore level, when $scenario',
     ({
@@ -60,7 +61,6 @@ describe('AiCatalogItemActions', () => {
       disableBtn,
       enableBtn,
       addBtn,
-      addGroupBtn,
       moreActions,
       duplicateBtn,
       deleteBtn,
@@ -108,12 +108,12 @@ describe('AiCatalogItemActions', () => {
         expect(findEnableButton().exists()).toBe(enableBtn);
       });
 
-      it(`${addGroupBtn ? 'renders' : 'does not render'} "Enable in group" button`, () => {
-        expect(findAddToGroupButton().exists()).toBe(addGroupBtn);
+      it(`${addBtn ? 'renders' : 'does not render'} "Enable in group" button`, () => {
+        expect(findAddToGroupButton().exists()).toBe(addBtn);
       });
 
-      it(`${addBtn ? 'renders' : 'does not render'} "Enable in project" button`, () => {
-        expect(findAddToProjectButton().exists()).toBe(addBtn);
+      it('does not render "Enable in project" button', () => {
+        expect(findAddToProjectButton().exists()).toBe(false);
       });
 
       it(`${moreActions ? 'renders' : 'does not render'} more actions`, () => {
@@ -139,10 +139,10 @@ describe('AiCatalogItemActions', () => {
   );
 
   describe.each`
-    scenario                         | canAdmin | canUse   | editBtn  | disableBtn | enableBtn | addBtn   | addGroupBtn | moreActions | duplicateBtn | deleteBtn | itemType                 | isGlobal | isEnabled
-    ${'not logged in'}               | ${false} | ${false} | ${false} | ${false}   | ${false}  | ${false} | ${false}    | ${false}    | ${false}     | ${false}  | ${AI_CATALOG_TYPE_AGENT} | ${false} | ${false}
-    ${'logged in, admin of item'}    | ${true}  | ${true}  | ${true}  | ${false}   | ${true}   | ${false} | ${false}    | ${true}     | ${true}      | ${true}   | ${AI_CATALOG_TYPE_AGENT} | ${false} | ${false}
-    ${'logged in, admin of enabled'} | ${true}  | ${true}  | ${true}  | ${true}    | ${false}  | ${false} | ${false}    | ${true}     | ${true}      | ${true}   | ${AI_CATALOG_TYPE_AGENT} | ${false} | ${true}
+    scenario                         | canAdmin | canUse   | editBtn  | disableBtn | enableBtn | moreActions | duplicateBtn | deleteBtn | itemType                 | isGlobal | isEnabled
+    ${'not logged in'}               | ${false} | ${false} | ${false} | ${false}   | ${false}  | ${false}    | ${false}     | ${false}  | ${AI_CATALOG_TYPE_AGENT} | ${false} | ${false}
+    ${'logged in, admin of item'}    | ${true}  | ${true}  | ${true}  | ${false}   | ${true}   | ${true}     | ${true}      | ${true}   | ${AI_CATALOG_TYPE_AGENT} | ${false} | ${false}
+    ${'logged in, admin of enabled'} | ${true}  | ${true}  | ${true}  | ${true}    | ${false}  | ${true}     | ${true}      | ${true}   | ${AI_CATALOG_TYPE_AGENT} | ${false} | ${true}
   `(
     'at the Project level, when $scenario',
     ({
@@ -151,8 +151,6 @@ describe('AiCatalogItemActions', () => {
       editBtn,
       disableBtn,
       enableBtn,
-      addBtn,
-      addGroupBtn,
       moreActions,
       duplicateBtn,
       deleteBtn,
@@ -202,12 +200,12 @@ describe('AiCatalogItemActions', () => {
         expect(findEnableButton().exists()).toBe(enableBtn);
       });
 
-      it(`${addGroupBtn ? 'renders' : 'does not render'} "Enable in group" button`, () => {
-        expect(findAddToGroupButton().exists()).toBe(addGroupBtn);
+      it('does not render "Enable in group" button', () => {
+        expect(findAddToGroupButton().exists()).toBe(false);
       });
 
-      it(`${addBtn ? 'renders' : 'does not render'} "Enable in project" button`, () => {
-        expect(findAddToProjectButton().exists()).toBe(addBtn);
+      it('does not render "Enable in project" button', () => {
+        expect(findAddToProjectButton().exists()).toBe(false);
       });
 
       it(`${moreActions ? 'renders' : 'does not render'} more actions`, () => {
@@ -231,4 +229,28 @@ describe('AiCatalogItemActions', () => {
       });
     },
   );
+
+  describe('when isAgentsAvailable and isFlowsAvailable are false', () => {
+    beforeEach(() => {
+      isLoggedIn.mockReturnValue(true);
+
+      createComponent({
+        provide: {
+          isGlobal: true,
+        },
+        props: {
+          isAgentsAvailable: false,
+          isFlowsAvailable: false,
+        },
+      });
+    });
+
+    it('renders "Enable in project" button', () => {
+      expect(findAddToProjectButton().exists()).toBe(true);
+    });
+
+    it('does not render "Enable in group" button', () => {
+      expect(findAddToGroupButton().exists()).toBe(false);
+    });
+  });
 });

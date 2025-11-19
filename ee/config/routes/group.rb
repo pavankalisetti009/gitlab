@@ -288,6 +288,7 @@ constraints(::Constraints::GroupUrlConstrainer.new) do
 
     scope :automate do
       get '/(*vueroute)' => 'duo_agents_platform#show', as: :automate, format: false
+      get 'agents', to: 'duo_agents_platform#show', as: :automate_agents, format: false
       get 'flows', to: 'duo_agents_platform#show', as: :automate_flows, format: false
     end
 

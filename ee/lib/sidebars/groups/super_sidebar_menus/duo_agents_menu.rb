@@ -7,9 +7,10 @@ module Sidebars # rubocop:disable Gitlab/BoundedContexts -- Existing module
         override :configure_menu_items
         def configure_menu_items
           return false unless Ability.allowed?(current_user, :duo_workflow, context.group)
-          return false unless show_flows_menu_item?
+          return false unless show_agents_menu_item? || show_flows_menu_item?
 
-          add_item(ai_catalog_flows_menu_item)
+          add_item(ai_catalog_agents_menu_item) if show_agents_menu_item?
+          add_item(ai_catalog_flows_menu_item) if show_flows_menu_item?
 
           true
         end
@@ -31,9 +32,23 @@ module Sidebars # rubocop:disable Gitlab/BoundedContexts -- Existing module
 
         private
 
+        def show_agents_menu_item?
+          Feature.enabled?(:global_ai_catalog, context.current_user) &&
+            Feature.enabled?(:ai_catalog_agents, context.current_user)
+        end
+
         def show_flows_menu_item?
           Feature.enabled?(:global_ai_catalog, context.current_user) &&
             Feature.enabled?(:ai_catalog_flows, context.current_user)
+        end
+
+        def ai_catalog_agents_menu_item
+          ::Sidebars::MenuItem.new(
+            title: s_('AICatalog|Agents'),
+            link: group_automate_agents_path(context.group),
+            active_routes: nil,
+            item_id: :ai_agents
+          )
         end
 
         def ai_catalog_flows_menu_item

@@ -35,6 +35,38 @@ RSpec.describe 'Groups::DuoAgentsPlatform', feature_category: :duo_agent_platfor
       end
     end
 
+    context 'when vueroute is agents' do
+      it 'returns successfully' do
+        get group_automate_agents_path(group)
+
+        expect(response).to have_gitlab_http_status(:ok)
+      end
+
+      context 'when ai_catalog_agents is disabled' do
+        before do
+          stub_feature_flags(global_ai_catalog: true, ai_catalog_agents: false)
+        end
+
+        it 'returns 404' do
+          get group_automate_agents_path(group)
+
+          expect(response).to have_gitlab_http_status(:not_found)
+        end
+      end
+
+      context 'when global_ai_catalog is disabled' do
+        before do
+          stub_feature_flags(global_ai_catalog: false, ai_catalog_agents: true)
+        end
+
+        it 'returns 404' do
+          get group_automate_agents_path(group)
+
+          expect(response).to have_gitlab_http_status(:not_found)
+        end
+      end
+    end
+
     context 'when vueroute is flows' do
       it 'returns successfully' do
         get group_automate_flows_path(group)

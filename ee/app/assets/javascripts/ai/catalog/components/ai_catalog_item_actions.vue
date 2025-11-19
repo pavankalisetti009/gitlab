@@ -10,7 +10,6 @@ import {
 import { s__ } from '~/locale';
 import { isLoggedIn } from '~/lib/utils/common_utils';
 import ConfirmActionModal from '~/vue_shared/components/confirm_action_modal.vue';
-import { AI_CATALOG_TYPE_FLOW, AI_CATALOG_TYPE_THIRD_PARTY_FLOW } from '../constants';
 import AiCatalogItemConsumerModal from './ai_catalog_item_consumer_modal.vue';
 
 export default {
@@ -43,6 +42,11 @@ export default {
     itemRoutes: {
       type: Object,
       required: true,
+    },
+    isAgentsAvailable: {
+      type: Boolean,
+      required: false,
+      default: false,
     },
     isFlowsAvailable: {
       type: Boolean,
@@ -97,12 +101,7 @@ export default {
       return this.canUse && this.isGlobal;
     },
     showAddToGroup() {
-      return (
-        this.canUse &&
-        this.isGlobal &&
-        this.isFlowsAvailable &&
-        [AI_CATALOG_TYPE_FLOW, AI_CATALOG_TYPE_THIRD_PARTY_FLOW].includes(this.item.itemType)
-      );
+      return this.canUse && this.isGlobal && (this.isFlowsAvailable || this.isAgentsAvailable);
     },
     duplicateItemProps() {
       return {
