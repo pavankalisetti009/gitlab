@@ -42,7 +42,7 @@ module EE
 
           ::Namespace.where(id: namespace_ids_subquery)
         else
-          ::Namespace.where(id: user.authorized_groups.top_level).or(::Namespace.where(id: user.namespace))
+          ::Namespace.where(id: user.authorized_groups.top_level)
         end
       end
 
