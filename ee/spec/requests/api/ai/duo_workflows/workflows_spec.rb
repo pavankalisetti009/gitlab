@@ -1017,6 +1017,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
         )
 
         expect(json_response['DuoWorkflow']['Secure']).to eq(true)
+        expect(json_response['DuoWorkflow']['LockConcurrentFlow']).to eq(true)
         expect(json_response['DuoWorkflow']['McpServers']).to eq({
           "gitlab" => {
             "Headers" => {
