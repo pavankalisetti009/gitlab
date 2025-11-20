@@ -3,7 +3,7 @@ import { GlPopover, GlButton } from '@gitlab/ui';
 import Tracking from '~/tracking';
 
 export default {
-  name: 'TierBadgePopover',
+  name: 'TierBadgeUpgradePopover',
   components: {
     GlPopover,
     GlButton,
@@ -18,7 +18,10 @@ export default {
   },
   methods: {
     trackPrimaryCta() {
-      this.track('click_start_trial_button');
+      this.track('click_upgrade_button');
+    },
+    trackPopoverClose() {
+      this.track('close');
     },
   },
 };
@@ -30,6 +33,7 @@ export default {
     :target="target"
     placement="bottom"
     show-close-button
+    @close-button-clicked="trackPopoverClose"
   >
     <div class="gl-mb-3">
       {{

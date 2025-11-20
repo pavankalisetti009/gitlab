@@ -1,6 +1,6 @@
 import { GlPopover } from '@gitlab/ui';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
-import TierBadgePopover from 'ee/vue_shared/components/tier_badge/tier_badge_upgrade_popover.vue';
+import TierBadgeUpgradePopover from 'ee/vue_shared/components/tier_badge/tier_badge_upgrade_popover.vue';
 import { mockTracking } from 'helpers/tracking_helper';
 
 describe('TierBadgeUpgradePopover', () => {
@@ -13,9 +13,10 @@ describe('TierBadgeUpgradePopover', () => {
   const primaryCTAText = 'Upgrade to unlock';
 
   const findPrimaryCTA = () => wrapper.findByTestId('tier-badge-popover-primary-cta');
+  const findPopover = () => wrapper.findComponent(GlPopover);
 
   const createComponent = ({ props, provide } = { props: {}, provide: {} }) => {
-    wrapper = mountExtended(TierBadgePopover, {
+    wrapper = mountExtended(TierBadgeUpgradePopover, {
       provide: {
         primaryCtaLink: primaryCTALink,
         ...provide,
@@ -51,7 +52,15 @@ describe('TierBadgeUpgradePopover', () => {
         it('tracks primary CTA', () => {
           const trackingSpy = mockTracking(undefined, undefined, jest.spyOn);
           findPrimaryCTA().trigger('click');
-          expect(trackingSpy).toHaveBeenCalledWith(undefined, 'click_start_trial_button', {
+          expect(trackingSpy).toHaveBeenCalledWith(undefined, 'click_upgrade_button', {
+            label: 'tier_badge_upgrade',
+          });
+        });
+
+        it('tracks popover close', () => {
+          const trackingSpy = mockTracking(undefined, undefined, jest.spyOn);
+          findPopover().vm.$emit('close-button-clicked');
+          expect(trackingSpy).toHaveBeenCalledWith(undefined, 'close', {
             label: 'tier_badge_upgrade',
           });
         });
