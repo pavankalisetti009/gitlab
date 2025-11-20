@@ -49409,6 +49409,9 @@ msgstr ""
 msgid "Pipeline|Pipeline cannot be run."
 msgstr ""
 
+msgid "Pipeline|Pipeline creation failed. Please try again."
+msgstr ""
+
 msgid "Pipeline|Pipelines"
 msgstr ""
 
