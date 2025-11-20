@@ -4,6 +4,7 @@ import models from 'test_fixtures/api/admin/data_management/snippet_repository.j
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import AdminDataManagementItemApp from 'ee/admin/data_management_item/components/app.vue';
 import ChecksumInfo from 'ee/admin/data_management_item/components/checksum_info.vue';
+import DataManagementItemModelInfo from 'ee/admin/data_management_item/components/data_management_item_model_info.vue';
 import { getModel } from 'ee/api/data_management_api';
 import waitForPromises from 'helpers/wait_for_promises';
 import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
@@ -34,6 +35,7 @@ describe('AdminDataManagementItemApp', () => {
   const findPageHeading = () => wrapper.findComponent(PageHeading);
   const findGlLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
   const findChecksumInfo = () => wrapper.findComponent(ChecksumInfo);
+  const findDataManagementItemModelInfo = () => wrapper.findComponent(DataManagementItemModelInfo);
 
   it('renders page heading', () => {
     createComponent();
@@ -62,6 +64,10 @@ describe('AdminDataManagementItemApp', () => {
 
     it('renders model details', () => {
       expect(findChecksumInfo().props('details')).toEqual(model.checksumInformation);
+    });
+
+    it('renders checksum info', () => {
+      expect(findDataManagementItemModelInfo().props('model')).toEqual(model);
     });
 
     it('does not create alert', () => {
@@ -103,7 +109,11 @@ describe('AdminDataManagementItemApp', () => {
       expect(findGlLoadingIcon().exists()).toBe(false);
     });
 
-    it('does not render ChecksumInfo', () => {
+    it('does not render model details', () => {
+      expect(findDataManagementItemModelInfo().exists()).toBe(false);
+    });
+
+    it('does not render checksum info', () => {
       expect(findChecksumInfo().exists()).toBe(false);
     });
   });

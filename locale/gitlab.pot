@@ -29927,6 +29927,12 @@ msgstr ""
 msgid "Geo|Model ID"
 msgstr ""
 
+msgid "Geo|Model ID: %{value}"
+msgstr ""
+
+msgid "Geo|Model information"
+msgstr ""
+
 msgid "Geo|Model record: %{modelRecordId}"
 msgstr ""
 
