@@ -1,7 +1,6 @@
 import { GlBreakpointInstance } from '@gitlab/ui/src/utils';
 import { nextTick } from 'vue';
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
-import { describeSkipVue3, SkipReason } from 'helpers/vue3_conditional';
 import { stubComponent } from 'helpers/stub_component';
 import { setHTMLFixture } from 'helpers/fixtures';
 import AIPanel from 'ee/ai/components/ai_panel.vue';
@@ -17,14 +16,7 @@ import { duoChatGlobalState } from '~/super_sidebar/constants';
 
 const aiPanelStateCookie = 'ai_panel_active_tab';
 
-const skipReason = new SkipReason({
-  name: 'AiPanel',
-  reason: 'OOM/CI job timeout',
-  issue:
-    'https://gitlab.com/gitlab-org/quality/engineering-productivity/master-broken-incidents/-/issues/19059',
-});
-
-describeSkipVue3(skipReason, () => {
+describe('AiPanel', () => {
   let wrapper;
   let mockRouter;
 
