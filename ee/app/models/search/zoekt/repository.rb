@@ -39,57 +39,44 @@ module Search
         failed: 255
       }
 
+      scope :ordered, -> { order(:id) }
       scope :uncompleted, -> { where.not(state: %i[ready failed]) }
-
       scope :for_project_id, ->(project_id) { where(project_identifier: project_id) }
-
       scope :for_replica_id, ->(replica_id) { joins(:zoekt_index).where(zoekt_index: { zoekt_replica_id: replica_id }) }
-
       scope :should_be_marked_as_orphaned, -> { where(project_id: nil).where.not(state: :orphaned) }
-
-      scope :should_be_deleted, -> do
-        where(state: [:orphaned, :pending_deletion])
-      end
-
       scope :should_be_indexed, -> { pending }
-      scope :should_be_reindexed, -> do
-        indexable.joins(zoekt_index: :node).where("#{table_name}.schema_version != #{Node.table_name}.schema_version")
-      end
-
-      scope :with_pending_or_processing_tasks, -> do
-        joins(:tasks).merge(Search::Zoekt::Task.pending_or_processing)
-      end
-
+      scope :should_be_reindexed, -> { indexable.schema_version_less_than(Node.maximum_zoekt_schema_version) }
+      scope :should_be_deleted, -> { where(state: [:orphaned, :pending_deletion]) }
+      scope :schema_version_less_than, ->(schema_version) { where(schema_version: ...schema_version) }
       scope :for_zoekt_indices, ->(indices) { where(zoekt_index: indices) }
-
       scope :indexable, -> { where(state: INDEXABLE_STATES) }
       scope :searchable, -> { where(state: SEARCHABLE_STATES) }
+      scope :without_pending_tasks_of_type, ->(task_type) do
+        pending_tasks = Task.where("#{Task.table_name}.zoekt_repository_id = #{Repository.table_name}.id")
+          .where(state: Task.states[:pending], task_type: task_type)
+        where.not(pending_tasks.select('1').arel.exists)
+      end
 
       def self.minimum_schema_version
         searchable.minimum(:schema_version)
       end
 
-      # rubocop:disable Database/AvoidUsingPluckWithoutLimit -- Limit is on the call. It is temporary debugging code.
-      # rubocop:disable Metrics/AbcSize -- Temporary debugging code.
+      # rubocop:disable Database/AvoidUsingPluckWithoutLimit -- Limit is on the call. It is a temporary debugging code.
       def self.create_bulk_tasks(task_type: :index_repo, perform_at: Time.zone.now)
         scope = self
-        unless task_type.to_sym == :delete_repo
-          # Only allow indexable repos for index_repo tasks
-          scope = scope.indexable
-        end
+
+        # Only allow indexable repos for non delete_repo tasks
+        scope = scope.indexable unless task_type.to_sym == :delete_repo
 
         log_data = { original_scope_id_state: scope.pluck(:id, :state) } if debug_log?(task_type)
-        # Reject the repo_ids which already have the pending tasks for the given task_type
-        scope = scope.where.not(
-          id: Search::Zoekt::Task.pending.where(
-            zoekt_repository_id: scope.select(:id), task_type: task_type
-          ).select(:zoekt_repository_id)
-        )
+
+        scope = scope.without_pending_tasks_of_type(task_type)
 
         log_data[:filtered_scope_id_state] = scope.pluck(:id, :state) if debug_log?(task_type)
 
         timestamp = Time.zone.now
-        tasks = scope.includes(:zoekt_index).map do |zoekt_repo|
+
+        tasks = scope.ordered.includes(:zoekt_index).map do |zoekt_repo|
           Search::Zoekt::Task.new(
             zoekt_repository_id: zoekt_repo.id,
             zoekt_node_id: zoekt_repo.zoekt_index.zoekt_node_id,
@@ -119,7 +106,6 @@ module Search
         logger.info(log_data.merge(class: self, message: 'debug duplicate delete tasks'))
       end
       # rubocop:enable Database/AvoidUsingPluckWithoutLimit
-      # rubocop:enable Metrics/AbcSize
 
       private
 

@@ -671,8 +671,7 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
       end
 
       it 'publishes a single RepoToReindexEvent for that node' do
-        expect { execute_task }
-          .to publish_event(Search::Zoekt::RepoToReindexEvent).with({ zoekt_node_id: node1.id })
+        expect { execute_task }.to publish_event(Search::Zoekt::RepoToReindexEvent).with({ zoekt_node_id: node1.id })
       end
     end
 
@@ -684,26 +683,24 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
       end
 
       it 'does not publish any RepoToReindexEvent' do
-        expect { execute_task }
-          .not_to publish_event(Search::Zoekt::RepoToReindexEvent)
+        expect { execute_task }.not_to publish_event(Search::Zoekt::RepoToReindexEvent)
       end
     end
 
     context 'when repositories exist but none need reindexing' do
       before do
-        allow(Search::Zoekt::Repository).to receive(:should_be_reindexed).and_return(Search::Zoekt::Repository.none)
+        allow(Search::Zoekt::Repository).to receive_message_chain(:schema_version_less_than, :exists?).and_return(false)
       end
 
       it 'does not publish any RepoToReindexEvent' do
-        expect { execute_task }
-          .not_to publish_event(Search::Zoekt::RepoToReindexEvent)
+        expect { execute_task }.not_to publish_event(Search::Zoekt::RepoToReindexEvent)
       end
     end
   end
 
   describe '#indices_to_evict_check' do
     let(:task) { :indices_to_evict_check }
-    let_it_be(:another_index) { create(:zoekt_index) }
+    let_it_be(:_another_index) { create(:zoekt_index) }
 
     context 'when pending_eviction indices do not exist' do
       it 'does not publishes an IndexToEvictEvent' do
@@ -745,8 +742,7 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
 
     context 'when there are no enabled namespaces with too many replicas' do
       before do
-        allow(Search::Zoekt::EnabledNamespace).to receive(:has_any_with_too_many_replicas?)
-          .and_return(false)
+        allow(Search::Zoekt::EnabledNamespace).to receive(:has_any_with_too_many_replicas?).and_return(false)
       end
 
       it 'does not publish TooManyReplicasEvent' do
@@ -756,8 +752,7 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
 
     context 'when there are enabled namespaces with too many replicas' do
       before do
-        allow(Search::Zoekt::EnabledNamespace).to receive(:has_any_with_too_many_replicas?)
-          .and_return(true)
+        allow(Search::Zoekt::EnabledNamespace).to receive(:has_any_with_too_many_replicas?).and_return(true)
       end
 
       it 'publishes TooManyReplicasEvent' do
@@ -777,9 +772,7 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
     let_it_be(:_positive_index) { create(:zoekt_index, node: positive_node) }
 
     it 'publishes a NodeWithNegativeUnclaimedStorageEvent for required nodes' do
-      expected = {
-        node_ids: [negative_node].map(&:id)
-      }
+      expected = { node_ids: [negative_node].map(&:id) }
       expect { execute_task }.to publish_event(Search::Zoekt::NodeWithNegativeUnclaimedStorageEvent).with(expected)
     end
   end

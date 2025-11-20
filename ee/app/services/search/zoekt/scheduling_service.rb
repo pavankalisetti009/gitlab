@@ -75,12 +75,9 @@ module Search
           dispatch: { event: RepoToIndexEvent }
         },
         repo_to_reindex_check: {
-          if: -> { ::Search::Zoekt::Repository.should_be_reindexed.exists? },
+          if: -> { Repository.should_be_reindexed.exists? },
           execute: -> {
-            # Identify nodes that have repositories with mismatched schema versions
-            node_ids = ::Search::Zoekt::Node.with_repositories_to_reindex
-                                            .limit(NODE_PROCESSING_LIMIT)
-                                            .pluck_primary_key
+            node_ids = Node.needs_reindex(NODE_PROCESSING_LIMIT).map(&:id)
 
             # Emit one event per node for parallel processing
             node_ids.each do |node_id|
@@ -90,10 +87,12 @@ module Search
             end
 
             if node_ids.any?
-              info(:emit_repo_to_reindex_events,
+              info(
+                :emit_repo_to_reindex_events,
                 message: 'Emitted per-node reindex events',
                 node_count: node_ids.count,
-                node_ids: node_ids)
+                node_ids: node_ids
+              )
             end
           }
         },
