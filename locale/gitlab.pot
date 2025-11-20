@@ -28988,6 +28988,9 @@ msgstr ""
 msgid "Fast timeout"
 msgstr ""
 
+msgid "Fast-forward merge is not possible. Please rebase or use a merge train."
+msgstr ""
+
 msgid "Favicon"
 msgstr ""
 
@@ -41853,9 +41856,6 @@ msgid "Merge request homepage"
 msgstr ""
 
 msgid "Merge request must be open."
-msgstr ""
-
-msgid "Merge request must be rebased, because a fast-forward merge is not possible."
 msgstr ""
 
 msgid "Merge request must not be draft."

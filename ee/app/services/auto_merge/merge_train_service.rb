@@ -100,7 +100,8 @@ module AutoMerge
         AutoMergeService::STRATEGY_ADD_TO_MERGE_TRAIN_WHEN_CHECKS_PASS
 
       super.merge(
-        skip_conflict_check: skip_conflict_check
+        skip_conflict_check: skip_conflict_check,
+        skip_rebase_check: true
       )
     end
 

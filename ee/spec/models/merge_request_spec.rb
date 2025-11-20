@@ -2798,24 +2798,46 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
         stub_foss_conditions_met
       end
 
-      context 'when the project is using ff trains' do
+      context 'when auto merge strategy is STRATEGY_MERGE_TRAIN' do
         before do
-          allow(MergeTrains::Train).to receive(:project_using_ff?).and_return(true)
+          merge_request.update!(auto_merge_enabled: true, merge_user: merge_request.author)
+          merge_request.merge_params['auto_merge_strategy'] = AutoMergeService::STRATEGY_MERGE_TRAIN
         end
 
-        it { is_expected.to eq false }
+        it 'returns false because merge train handles rebasing' do
+          is_expected.to eq false
+        end
+      end
+
+      context 'when auto merge strategy is STRATEGY_ADD_TO_MERGE_TRAIN_WHEN_CHECKS_PASS' do
+        before do
+          merge_request.update!(auto_merge_enabled: true, merge_user: merge_request.author)
+          merge_request.merge_params['auto_merge_strategy'] =
+            AutoMergeService::STRATEGY_ADD_TO_MERGE_TRAIN_WHEN_CHECKS_PASS
+        end
+
+        it 'returns false because merge train handles rebasing' do
+          is_expected.to eq false
+        end
+      end
+
+      context 'when auto merge is not enabled' do
+        it 'returns true when rebase is needed' do
+          is_expected.to eq true
+        end
 
         it_behaves_like 'ff car on train'
       end
 
-      context 'when project not using ff trains' do
+      context 'when auto merge strategy is not a merge train strategy' do
         before do
-          allow(MergeTrains::Train).to receive(:project_using_ff?).and_return(false)
+          merge_request.update!(auto_merge_enabled: true, merge_user: merge_request.author)
+          merge_request.merge_params['auto_merge_strategy'] = AutoMergeService::STRATEGY_MERGE_WHEN_CHECKS_PASS
         end
 
-        it { is_expected.to eq true }
-
-        it_behaves_like 'ff car on train'
+        it 'returns true when rebase is needed' do
+          is_expected.to eq true
+        end
       end
     end
 
