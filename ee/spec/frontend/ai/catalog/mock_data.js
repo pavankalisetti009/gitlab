@@ -19,6 +19,7 @@ const TYPENAME_GROUP_PERMISSIONS = 'GroupPermissions';
 export const TYPENAME_PROJECT = 'Project';
 const TYPENAME_PROJECT_PERMISSIONS = 'ProjectPermissions';
 const TYPENAME_PROJECTS_CONNECTION = 'ProjectsConnection';
+const TYPENAME_AI_CATALOG_ITEM_REPORT = 'AiCatalogItemReportPayload';
 
 export const mockBaseLatestVersion = {
   id: 'gid://gitlab/Ai::Catalog::ItemVersion/1',
@@ -30,6 +31,14 @@ const mockProjectFactory = (overrides = {}) => ({
   __typename: TYPENAME_PROJECT,
   ...overrides,
 });
+
+const mockUserPermissionsFactory = (overrides = {}) => ({
+  adminAiCatalogItem: true,
+  reportAiCatalogItem: true,
+  ...overrides,
+});
+
+const mockUserPermissions = mockUserPermissionsFactory();
 
 export const mockProjectWithNamespace = mockProjectFactory({
   nameWithNamespace: 'Group / Project 1',
@@ -160,9 +169,7 @@ const mockAgentFactory = (overrides = {}) => ({
   public: true,
   updatedAt: '2024-08-21T14:30:00Z',
   latestVersion: mockBaseLatestVersion,
-  userPermissions: {
-    adminAiCatalogItem: true,
-  },
+  userPermissions: mockUserPermissions,
   __typename: TYPENAME_AI_CATALOG_ITEM,
   ...overrides,
 });
@@ -375,9 +382,7 @@ const mockFlowFactory = (overrides = {}) => ({
   public: true,
   updatedAt: '2024-08-21T14:30:00Z',
   latestVersion: mockBaseLatestVersion,
-  userPermissions: {
-    adminAiCatalogItem: true,
-  },
+  userPermissions: mockUserPermissions,
   __typename: TYPENAME_AI_CATALOG_ITEM,
   ...overrides,
 });
@@ -658,11 +663,31 @@ export const mockProjectUserPermissionsResponse = {
     project: {
       id: 'gid://gitlab/Project/1000000',
       userPermissions: {
+        ...mockUserPermissions,
         adminAiCatalogItemConsumer: true,
-        adminAiCatalogItem: true,
         __typename: TYPENAME_PROJECT_PERMISSIONS,
       },
       __typename: TYPENAME_PROJECT,
+    },
+  },
+};
+
+export const mockReportAiCatalogItemSuccessMutation = {
+  data: {
+    aiCatalogItemReport: {
+      errors: [],
+      __typename: TYPENAME_AI_CATALOG_ITEM_REPORT,
+    },
+  },
+};
+
+export const mockReportAiCatalogItemErrorMutation = {
+  data: {
+    aiCatalogItemReport: {
+      errors: [
+        "The resource that you are attempting to access does not exist or you don't have permission to perform this action",
+      ],
+      __typename: TYPENAME_AI_CATALOG_ITEM_REPORT,
     },
   },
 };

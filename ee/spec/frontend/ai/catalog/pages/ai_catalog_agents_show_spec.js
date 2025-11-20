@@ -10,12 +10,15 @@ import AiCatalogAgentsShow from 'ee/ai/catalog/pages/ai_catalog_agents_show.vue'
 import AiCatalogItemActions from 'ee/ai/catalog/components/ai_catalog_item_actions.vue';
 import AiCatalogItemView from 'ee/ai/catalog/components/ai_catalog_item_view.vue';
 import { TRACK_EVENT_TYPE_AGENT, TRACK_EVENT_VIEW_AI_CATALOG_ITEM } from 'ee/ai/catalog/constants';
+import reportAiCatalogItem from 'ee/ai/catalog/graphql/mutations/report_ai_catalog_item.mutation.graphql';
 import deleteAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_item_consumer.mutation.graphql';
 import {
   mockAgent,
   mockConfigurationForProject,
   mockAiCatalogItemConsumerDeleteResponse,
   mockAiCatalogItemConsumerDeleteErrorResponse,
+  mockReportAiCatalogItemSuccessMutation,
+  mockReportAiCatalogItemErrorMutation,
 } from '../mock_data';
 
 jest.mock('~/sentry/sentry_browser_wrapper');
@@ -37,12 +40,16 @@ describe('AiCatalogAgentsShow', () => {
   const routeParams = { id: '1' };
   const { bindInternalEventDocument } = useMockInternalEventsTracking();
 
+  const reportAiCatalogItemMock = jest
+    .fn()
+    .mockResolvedValue(mockReportAiCatalogItemSuccessMutation);
   const deleteItemConsumerMutationHandler = jest
     .fn()
     .mockResolvedValue(mockAiCatalogItemConsumerDeleteResponse);
 
   const createComponent = () => {
     mockApollo = createMockApollo([
+      [reportAiCatalogItem, reportAiCatalogItemMock],
       [deleteAiCatalogItemConsumer, deleteItemConsumerMutationHandler],
     ]);
     wrapper = shallowMount(AiCatalogAgentsShow, {
@@ -93,6 +100,61 @@ describe('AiCatalogAgentsShow', () => {
         { label: TRACK_EVENT_TYPE_AGENT },
         undefined,
       );
+    });
+  });
+
+  describe('when reporting the agent', () => {
+    const input = {
+      reason: 'SPAM',
+      body: 'This is a test report',
+    };
+
+    const reportAgent = () => findItemActions().vm.$emit('report-item', input);
+
+    it('sends a report request', () => {
+      reportAgent();
+
+      expect(reportAiCatalogItemMock).toHaveBeenCalledTimes(1);
+      expect(reportAiCatalogItemMock).toHaveBeenCalledWith({
+        input: {
+          id: mockAgent.id,
+          ...input,
+        },
+      });
+    });
+
+    describe('when request succeeds', () => {
+      it('shows toast', async () => {
+        reportAgent();
+        await waitForPromises();
+
+        expect(mockToast.show).toHaveBeenCalledWith('Report submitted successfully.');
+      });
+    });
+
+    describe('when request succeeds but returns errors', () => {
+      it('shows error alert', async () => {
+        reportAiCatalogItemMock.mockResolvedValue(mockReportAiCatalogItemErrorMutation);
+        reportAgent();
+        await waitForPromises();
+
+        expect(findErrorsAlert().props('errors')).toEqual([
+          "The resource that you are attempting to access does not exist or you don't have permission to perform this action",
+        ]);
+      });
+    });
+
+    describe('when request fails', () => {
+      it('shows error alert and captures exception', async () => {
+        reportAiCatalogItemMock.mockRejectedValue(new Error('custom error'));
+        reportAgent();
+        await waitForPromises();
+
+        expect(findErrorsAlert().props('errors')).toEqual([
+          'Failed to report agent. Error: custom error',
+        ]);
+        expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));
+      });
     });
   });
 

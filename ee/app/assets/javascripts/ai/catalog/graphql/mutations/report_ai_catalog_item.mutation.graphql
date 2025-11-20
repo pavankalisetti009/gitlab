@@ -1,0 +1,5 @@
+mutation reportAiCatalogItem($input: AiCatalogItemReportInput!) {
+  aiCatalogItemReport(input: $input) {
+    errors
+  }
+}

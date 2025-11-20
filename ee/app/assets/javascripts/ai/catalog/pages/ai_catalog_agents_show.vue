@@ -10,6 +10,7 @@ import { prerequisitesError } from '../utils';
 import AiCatalogItemActions from '../components/ai_catalog_item_actions.vue';
 import AiCatalogItemView from '../components/ai_catalog_item_view.vue';
 import createAiCatalogItemConsumer from '../graphql/mutations/create_ai_catalog_item_consumer.mutation.graphql';
+import reportAiCatalogItem from '../graphql/mutations/report_ai_catalog_item.mutation.graphql';
 import deleteAiCatalogAgentMutation from '../graphql/mutations/delete_ai_catalog_agent.mutation.graphql';
 import deleteAiCatalogItemConsumer from '../graphql/mutations/delete_ai_catalog_item_consumer.mutation.graphql';
 import {
@@ -163,6 +164,30 @@ export default {
         Sentry.captureException(error);
       }
     },
+    async reportAgent({ reason, body }) {
+      try {
+        const { data } = await this.$apollo.mutate({
+          mutation: reportAiCatalogItem,
+          variables: {
+            input: {
+              id: this.aiCatalogAgent.id,
+              reason,
+              body,
+            },
+          },
+        });
+
+        if (data.aiCatalogItemReport.errors?.length > 0) {
+          this.errors = data.aiCatalogItemReport.errors;
+          return;
+        }
+
+        this.$toast.show(s__('AICatalog|Report submitted successfully.'));
+      } catch (error) {
+        this.errors = [sprintf(s__('AICatalog|Failed to report agent. %{error}'), { error })];
+        Sentry.captureException(error);
+      }
+    },
     dismissErrors() {
       this.errors = [];
       this.errorTitle = null;
@@ -195,6 +220,7 @@ export default {
           :delete-confirm-title="s__('AICatalog|Delete agent')"
           :delete-confirm-message="s__('AICatalog|Are you sure you want to delete agent %{name}?')"
           @add-to-target="addToProject"
+          @report-item="reportAgent"
         />
       </template>
     </page-heading>
