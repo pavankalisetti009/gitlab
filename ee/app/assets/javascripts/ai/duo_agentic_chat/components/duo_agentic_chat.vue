@@ -35,6 +35,7 @@ import { fetchPolicies } from '~/lib/graphql';
 import { logError } from '~/lib/logger';
 import { GITLAB_DEFAULT_MODEL } from 'ee/ai/model_selection/constants';
 import { s__ } from '~/locale';
+import { formatDefaultModelText } from 'ee/ai/shared/model_selection/utils';
 import { DUO_AGENTIC_MODE_COOKIE } from '../../tanuki_bot/constants';
 import { WorkflowUtils } from '../utils/workflow_utils';
 import { ApolloUtils } from '../utils/apollo_utils';
@@ -176,9 +177,12 @@ export default {
       update(data) {
         const { selectableModels = [], defaultModel, pinnedModel } = data.aiChatAvailableModels;
 
-        const models = selectableModels.map(({ ref, name }) => ({
-          text: name,
+        const defaultModelName = formatDefaultModelText(defaultModel);
+
+        const models = selectableModels.map(({ ref, name, modelProvider }) => ({
+          text: ref === defaultModel?.ref ? defaultModelName : name,
           value: ref === defaultModel?.ref ? GITLAB_DEFAULT_MODEL : ref,
+          provider: modelProvider,
         }));
 
         this.pinnedModel = pinnedModel?.ref
@@ -856,7 +860,6 @@ export default {
         >
           <model-select-dropdown
             class="-gl-my-3 -gl-ml-3"
-            with-default-model-tooltip
             button-class="!gl-border-0 gl-bg-transparent !gl-px-3 !gl-text-subtle"
             :disabled="isModelSelectionDisabled"
             :is-loading="$apollo.queries.availableModels.loading"

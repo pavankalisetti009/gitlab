@@ -1,6 +1,7 @@
 <script>
 import { s__, sprintf } from '~/locale';
 import { createAlert } from '~/alert';
+import { formatDefaultModelText } from 'ee/ai/shared/model_selection/utils';
 import GitlabDefaultModelModal from 'ee/ai/model_selection/gitlab_default_model_modal.vue';
 import ModelSelectDropdown from '../shared/feature_settings/model_select_dropdown.vue';
 import updateAiNamespaceFeatureSettingsMutation from './graphql/update_ai_namespace_feature_settings.mutation.graphql';
@@ -34,17 +35,18 @@ export default {
       return this.aiFeatureSetting.selectedModel?.ref || GITLAB_DEFAULT_MODEL;
     },
     defaultModelOption() {
-      const text = sprintf(s__('AdminAIPoweredFeatures|GitLab default model %{defaultModel}'), {
-        defaultModel: `(${this.aiFeatureSetting.defaultModel?.name})` || '',
-      });
+      const { defaultModel } = this.aiFeatureSetting;
+      const provider = defaultModel?.modelProvider || '';
+      const text = formatDefaultModelText(defaultModel);
 
-      return { value: GITLAB_DEFAULT_MODEL, text };
+      return { value: GITLAB_DEFAULT_MODEL, text, provider };
     },
     listItems() {
       const modelOptions = this.aiFeatureSetting.selectableModels
-        .map(({ ref, name }) => ({
+        .map(({ ref, name, modelProvider }) => ({
           value: ref,
           text: name,
+          provider: modelProvider,
         }))
         .sort((a, b) => a.text.localeCompare(b.text));
 

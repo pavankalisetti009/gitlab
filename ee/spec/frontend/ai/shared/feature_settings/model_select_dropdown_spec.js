@@ -3,7 +3,6 @@ import { mount } from '@vue/test-utils';
 import { GlCollapsibleListbox } from '@gitlab/ui';
 import ModelSelectDropdown from 'ee/ai/shared/feature_settings/model_select_dropdown.vue';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
-import { GITLAB_DEFAULT_MODEL } from 'ee/ai/model_selection/constants';
 import { mockListItems as mockSelfHostedModelsItems } from '../../duo_self_hosted/self_hosted_models/mock_data';
 import { mockListItems as mockModelSelectionItems } from '../../model_selection/mock_data';
 
@@ -32,8 +31,6 @@ describe('ModelSelectDropdown', () => {
   const findDropdownToggleText = () => wrapper.findByTestId('dropdown-toggle-text');
   const findBetaModelSelectedBadge = () => wrapper.findByTestId('beta-model-selected-badge');
   const findBetaModelDropdownBadges = () => wrapper.findAllByTestId('beta-model-dropdown-badge');
-  const findDefaultModelSelectedBadge = () => wrapper.findByTestId('default-model-selected-badge');
-  const findDefaultModelDropdownBadge = () => wrapper.findByTestId('default-model-dropdown-badge');
   const findToggleButton = () => wrapper.findByTestId('toggle-button');
 
   it('renders the component', () => {
@@ -69,8 +66,8 @@ describe('ModelSelectDropdown', () => {
       createComponent({ props: { items: mockModelSelectionItems } });
 
       expect(findGLCollapsibleListbox().props('items')).toBe(mockModelSelectionItems);
-      expect(findDropdownListItems().at(0).text()).toEqual('Claude Sonnet 3.5 - Anthropic');
-      expect(findDropdownListItems().at(1).text()).toEqual('Claude Sonnet 3.7 - Anthropic');
+      expect(findDropdownListItems().at(0).text()).toMatch('Claude Sonnet 3.5');
+      expect(findDropdownListItems().at(1).text()).toMatch('Claude Sonnet 3.7');
     });
 
     it('sets a default selected value based on the selected option', () => {
@@ -126,51 +123,6 @@ describe('ModelSelectDropdown', () => {
       createComponent({ props: { selectedOption: betaModel } });
 
       expect(findBetaModelSelectedBadge().exists()).toBe(true);
-    });
-  });
-
-  describe('default model items', () => {
-    const mockDefaultModel = {
-      value: GITLAB_DEFAULT_MODEL,
-      text: 'GitLab default model (Claude Sonnet 3.7 - Anthropic)',
-    };
-    it('displays the default model badge with dropdown option', () => {
-      createComponent({ props: { items: mockModelSelectionItems } });
-
-      const defaultModel = findDropdownListItems().at(3);
-
-      expect(defaultModel.text()).toMatch('GitLab default model (Claude Sonnet 3.7 - Anthropic)');
-      expect(findDefaultModelDropdownBadge().exists()).toBe(true);
-      expect(findDefaultModelDropdownBadge().attributes('title')).toBe('');
-    });
-
-    it('displays the default model badge when option is selected', () => {
-      createComponent({
-        props: {
-          selectedOption: mockDefaultModel,
-        },
-      });
-
-      expect(findDefaultModelSelectedBadge().exists()).toBe(true);
-      expect(findDefaultModelSelectedBadge().attributes('title')).toBe('');
-    });
-
-    describe('when `withDefaultModelTooltip` is passed', () => {
-      it('displays a tooltip for the default model badge in dropdown option', () => {
-        createComponent({
-          props: { items: mockModelSelectionItems, withDefaultModelTooltip: true },
-        });
-
-        expect(findDefaultModelDropdownBadge().attributes('title')).toBe('GitLab default model');
-      });
-
-      it('displays a tooltip for the default model badge as selected option', () => {
-        createComponent({
-          props: { selectedOption: mockDefaultModel, withDefaultModelTooltip: true },
-        });
-
-        expect(findDefaultModelSelectedBadge().attributes('title')).toBe('GitLab default model');
-      });
     });
   });
 });

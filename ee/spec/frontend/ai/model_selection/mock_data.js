@@ -1,8 +1,10 @@
+import { GITLAB_DEFAULT_MODEL } from 'ee/ai/model_selection/constants';
+
 export const mockListItems = [
-  { value: 'claude_3_5_sonnet_20240620', text: 'Claude Sonnet 3.5 - Anthropic' },
-  { value: 'claude_3_7_sonnet_20240620', text: 'Claude Sonnet 3.7 - Anthropic' },
-  { value: 'claude_3_haiku_20240307', text: 'Claude Haiku 3 - Anthropic' },
-  { value: '', text: 'GitLab default model (Claude Sonnet 3.7 - Anthropic)' },
+  { value: 'claude_3_5_sonnet_20240620', text: 'Claude Sonnet 3.5', modelProvider: 'Anthropic' },
+  { value: 'claude_3_7_sonnet_20240620', text: 'Claude Sonnet 3.7', modelProvider: 'Anthropic' },
+  { value: 'claude_3_haiku_20240307', text: 'Claude Haiku 3', modelProvider: 'Anthropic' },
+  { value: GITLAB_DEFAULT_MODEL, text: 'Claude Sonnet 3.7', modelProvider: 'Anthropic' },
 ];
 
 export const mockCodeSuggestionsFeatureSettings = [
@@ -12,23 +14,28 @@ export const mockCodeSuggestionsFeatureSettings = [
     mainFeature: 'Code Suggestions',
     selectedModel: {
       ref: 'claude_sonnet_3_7_20250219',
-      name: 'Claude Sonnet 3.7 - Anthropic',
+      name: 'Claude Sonnet 3.7',
+      modelProvider: 'Anthropic',
     },
     defaultModel: {
-      name: 'Claude Sonnet 3.7 - Anthropic',
+      name: 'Claude Sonnet 3.7',
+      modelProvider: 'Anthropic',
     },
     selectableModels: [
       {
         ref: 'claude_sonnet_3_7_20250219',
-        name: 'Claude Sonnet 3.7 - Anthropic',
+        name: 'Claude Sonnet 3.7',
+        modelProvider: 'Anthropic',
       },
       {
         ref: 'claude_3_5_sonnet_20240620',
-        name: 'Claude Sonnet 3.5 - Anthropic',
+        name: 'Claude Sonnet 3.5',
+        modelProvider: 'Anthropic',
       },
       {
         ref: 'claude_3_haiku_20240307"',
-        name: 'Claude Haiku 3 - Anthropic',
+        name: 'Claude Haiku 3',
+        modelProvider: 'Anthropic',
       },
     ],
   },
@@ -37,24 +44,29 @@ export const mockCodeSuggestionsFeatureSettings = [
     title: 'Code Generation',
     mainFeature: 'Code Suggestions',
     selectedModel: {
-      ref: '',
+      ref: GITLAB_DEFAULT_MODEL,
       name: 'GitLab default model',
+      modelProvider: 'Anthropic',
     },
     defaultModel: {
-      name: 'Claude Sonnet 3.7 - Anthropic',
+      name: 'Claude Sonnet 3.7',
+      modelProvider: 'Anthropic',
     },
     selectableModels: [
       {
         ref: 'claude_sonnet_3_7_20250219',
-        name: 'Claude Sonnet 3.7 - Anthropic',
+        name: 'Claude Sonnet 3.7',
+        modelProvider: 'Anthropic',
       },
       {
         ref: 'claude_3_5_sonnet_20240620',
-        name: 'Claude Sonnet 3.5 - Anthropic',
+        name: 'Claude Sonnet 3.5',
+        modelProvider: 'Anthropic',
       },
       {
         ref: 'claude_3_haiku_20240307"',
-        name: 'Claude Haiku 3 - Anthropic',
+        name: 'Claude Haiku 3',
+        modelProvider: 'Anthropic',
       },
     ],
   },
@@ -67,20 +79,24 @@ export const mockDuoChatFeatureSettings = [
     mainFeature: 'GitLab Duo Chat',
     selectedModel: null,
     defaultModel: {
-      name: 'Claude Sonnet 3.7 - Anthropic',
+      name: 'Claude Sonnet 3.7',
+      modelProvider: 'Anthropic',
     },
     selectableModels: [
       {
         ref: 'claude_sonnet_3_7_20250219',
-        name: 'Claude Sonnet 3.7 - Anthropic',
+        name: 'Claude Sonnet 3.7',
+        modelProvider: 'Anthropic',
       },
       {
         ref: 'claude_3_5_sonnet_20240620',
-        name: 'Claude Sonnet 3.5 - Anthropic',
+        name: 'Claude Sonnet 3.5',
+        modelProvider: 'Anthropic',
       },
       {
         ref: 'claude_3_haiku_20240307',
-        name: 'Claude Haiku 3 - Anthropic',
+        name: 'Claude Haiku 3',
+        modelProvider: 'Anthropic',
       },
     ],
   },
@@ -93,20 +109,24 @@ export const mockMergeRequestFeatureSettings = [
     mainFeature: 'GitLab Duo for merge requests',
     selectedModel: null,
     defaultModel: {
-      name: 'Claude Sonnet 3.7 - Anthropic',
+      name: 'Claude Sonnet 3.7',
+      modelProvider: 'Anthropic',
     },
     selectableModels: [
       {
         ref: 'claude_sonnet_3_7_20250219',
-        name: 'Claude Sonnet 3.7 - Anthropic',
+        name: 'Claude Sonnet 3.7',
+        modelProvider: 'Anthropic',
       },
       {
         ref: 'claude_3_5_sonnet_20240620',
-        name: 'Claude Sonnet 3.5 - Anthropic',
+        name: 'Claude Sonnet 3.5',
+        modelProvider: 'Anthropic',
       },
       {
         ref: 'claude_3_haiku_20240307',
-        name: 'Claude Haiku 3 - Anthropic',
+        name: 'Claude Haiku 3',
+        modelProvider: 'Anthropic',
       },
     ],
   },
@@ -116,20 +136,24 @@ export const mockMergeRequestFeatureSettings = [
     mainFeature: 'GitLab Duo for merge requests',
     selectedModel: null,
     defaultModel: {
-      name: 'Claude Sonnet 3.7 - Anthropic',
+      name: 'Claude Sonnet 3.7',
+      modelProvider: 'Anthropic',
     },
     selectableModels: [
       {
         ref: 'claude_sonnet_3_7_20250219',
-        name: 'Claude Sonnet 3.7 - Anthropic',
+        name: 'Claude Sonnet 3.7',
+        modelProvider: 'Anthropic',
       },
       {
         ref: 'claude_3_5_sonnet_20240620',
-        name: 'Claude Sonnet 3.5 - Anthropic',
+        name: 'Claude Sonnet 3.5',
+        modelProvider: 'Anthropic',
       },
       {
         ref: 'claude_3_haiku_20240307',
-        name: 'Claude Haiku 3 - Anthropic',
+        name: 'Claude Haiku 3',
+        modelProvider: 'Anthropic',
       },
     ],
   },
@@ -142,23 +166,28 @@ export const mockIssueFeatureSettings = [
     mainFeature: 'GitLab Duo for issues',
     selectedModel: {
       ref: 'claude_3_5_sonnet_20240620',
-      name: 'Claude Sonnet 3.5 - Anthropic',
+      name: 'Claude Sonnet 3.5',
+      modelProvider: 'Anthropic',
     },
     defaultModel: {
-      name: 'Claude Sonnet 3.7 - Anthropic',
+      name: 'Claude Sonnet 3.7',
+      modelProvider: 'Anthropic',
     },
     selectableModels: [
       {
         ref: 'claude_sonnet_3_7_20250219',
-        name: 'Claude Sonnet 3.7 - Anthropic',
+        name: 'Claude Sonnet 3.7',
+        modelProvider: 'Anthropic',
       },
       {
         ref: 'claude_3_5_sonnet_20240620',
-        name: 'Claude Sonnet 3.5 - Anthropic',
+        name: 'Claude Sonnet 3.5',
+        modelProvider: 'Anthropic',
       },
       {
         ref: 'claude_3_haiku_20240307',
-        name: 'Claude Haiku 3 - Anthropic',
+        name: 'Claude Haiku 3',
+        modelProvider: 'Anthropic',
       },
     ],
   },
@@ -171,23 +200,28 @@ export const mockDuoAgentPlatformSettings = [
     mainFeature: 'GitLab Duo Agent Platform',
     selectedModel: {
       ref: 'claude_3_5_sonnet_20240620',
-      name: 'Claude Sonnet 3.5 - Anthropic',
+      name: 'Claude Sonnet 3.5',
+      modelProvider: 'Anthropic',
     },
     defaultModel: {
-      name: 'Claude Sonnet 4.0 - Anthropic',
+      name: 'Claude Sonnet 4.0',
+      modelProvider: 'Anthropic',
     },
     selectableModels: [
       {
         ref: 'claude_3_5_sonnet_20240620',
-        name: 'Claude Sonnet 3.5 - Anthropic',
+        name: 'Claude Sonnet 3.5',
+        modelProvider: 'Anthropic',
       },
       {
         ref: 'claude_sonnet_3_7_20250219',
-        name: 'Claude Sonnet 3.7 - Anthropic',
+        name: 'Claude Sonnet 3.7',
+        modelProvider: 'Anthropic',
       },
       {
         ref: 'claude_sonnet_4_20250514',
-        name: 'Claude Sonnet 4.0 - Anthropic',
+        name: 'Claude Sonnet 4.0',
+        modelProvider: 'Anthropic',
       },
     ],
   },
@@ -200,23 +234,28 @@ export const mockOtherDuoFeaturesSettings = [
     mainFeature: 'Other GitLab Duo features',
     selectedModel: {
       ref: 'claude_3_5_sonnet_20240620',
-      name: 'Claude Sonnet 3.5 - Anthropic',
+      name: 'Claude Sonnet 3.5',
+      modelProvider: 'Anthropic',
     },
     defaultModel: {
-      name: 'Claude Sonnet 3.7 - Anthropic',
+      name: 'Claude Sonnet 3.7',
+      modelProvider: 'Anthropic',
     },
     selectableModels: [
       {
         ref: 'claude_sonnet_3_7_20250219',
-        name: 'Claude Sonnet 3.7 - Anthropic',
+        name: 'Claude Sonnet 3.7',
+        modelProvider: 'Anthropic',
       },
       {
         ref: 'claude_3_5_sonnet_20240620',
-        name: 'Claude Sonnet 3.5 - Anthropic',
+        name: 'Claude Sonnet 3.5',
+        modelProvider: 'Anthropic',
       },
       {
         ref: 'claude_3_haiku_20240307"',
-        name: 'Claude Haiku 3 - Anthropic',
+        name: 'Claude Haiku 3',
+        modelProvider: 'Anthropic',
       },
     ],
   },

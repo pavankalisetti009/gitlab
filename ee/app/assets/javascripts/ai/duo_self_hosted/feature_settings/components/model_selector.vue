@@ -4,6 +4,7 @@ import { s__, sprintf } from '~/locale';
 import { createAlert } from '~/alert';
 import ModelSelectDropdown from 'ee/ai/shared/feature_settings/model_select_dropdown.vue';
 import { getTypeFromGraphQLId } from '~/graphql_shared/utils';
+import { formatDefaultModelText } from 'ee/ai/shared/model_selection/utils';
 import { TYPENAME_AI_SELF_HOSTED_MODEL } from 'ee_else_ce/graphql_shared/constants';
 import { RELEASE_STATES, SELF_HOSTED_ROUTE_NAMES } from '../../constants';
 import updateAiFeatureSetting from '../graphql/mutations/update_ai_feature_setting.mutation.graphql';
@@ -135,19 +136,19 @@ export default {
       const validGitlabModels = this.aiFeatureSetting.validGitlabModels?.nodes || [];
       const { defaultGitlabModel } = this.aiFeatureSetting;
 
-      const models = validGitlabModels.map(({ name, ref }) => ({
+      const models = validGitlabModels.map(({ name, ref, modelProvider }) => ({
         value: ref,
         text: name,
+        provider: modelProvider,
       }));
 
       if (defaultGitlabModel) {
-        const text = sprintf(s__('AdminAIPoweredFeatures|GitLab default model (%{defaultModel})'), {
-          defaultModel: defaultGitlabModel.name,
-        });
+        const text = formatDefaultModelText(defaultGitlabModel);
 
         models.push({
           text,
           value: GITLAB_DEFAULT_MODEL,
+          provider: defaultGitlabModel.modelProvider,
         });
       }
 

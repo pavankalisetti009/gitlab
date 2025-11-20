@@ -2,17 +2,20 @@ export const MOCK_AI_CHAT_AVAILABLE_MODELS_RESPONSE = {
   data: {
     aiChatAvailableModels: {
       defaultModel: {
-        name: 'Claude Sonnet 4.0 - Anthropic',
+        name: 'Claude Sonnet 4.0',
         ref: 'claude_sonnet_4_20250514',
+        modelProvider: 'Anthropic',
       },
       selectableModels: [
         {
-          name: 'Claude Sonnet 4.0 - Anthropic',
+          name: 'Claude Sonnet 4.0',
           ref: 'claude_sonnet_4_20250514',
+          modelProvider: 'Anthropic',
         },
         {
-          name: 'Claude Sonnet 3.5 - Anthropic',
+          name: 'Claude Sonnet 3.5',
           ref: 'claude_3_5_sonnet_20240620',
+          modelProvider: 'Anthropic',
         },
       ],
       pinnedModel: null,
@@ -34,12 +37,13 @@ export const MOCK_AI_CHAT_AVAILABLE_MODELS_WITH_PINNED_MODEL_RESPONSE = {
 
 export const MOCK_GITLAB_DEFAULT_MODEL_ITEM = {
   value: '',
-  text: 'Claude Sonnet 4.0 - Anthropic',
+  text: 'Claude Sonnet 4.0 - Default',
+  modelProvider: 'Anthropic',
 };
 
 export const MOCK_MODEL_LIST_ITEMS = [
-  { text: 'Claude Sonnet 4.0 - Anthropic', value: '' },
-  { text: 'Claude Sonnet 3.5 - Anthropic', value: 'claude_3_5_sonnet_20240620' },
+  { text: 'Claude Sonnet 4.0 - Default', value: '', provider: 'Anthropic' },
+  { text: 'Claude Sonnet 3.5', value: 'claude_3_5_sonnet_20240620', provider: 'Anthropic' },
 ];
 
 export const MOCK_CONFIGURED_AGENTS_RESPONSE = {

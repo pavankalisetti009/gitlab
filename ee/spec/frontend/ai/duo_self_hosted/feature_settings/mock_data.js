@@ -38,18 +38,21 @@ export const mockSelfHostedModels = [
 
 export const mockGitlabManagedModels = [
   {
-    name: 'Claude Sonnet 4.0 - Anthropic',
+    name: 'Claude Sonnet 4.0',
     ref: 'claude_sonnet_4_20250514',
+    modelProvider: 'Anthropic',
   },
   {
-    name: 'Claude Sonnet 3.7 - Vertex',
+    name: 'Claude Sonnet 3.7',
     ref: 'claude_sonnet_3_7_20250219_vertex',
+    modelProvider: 'Anthropic',
   },
 ];
 
 export const mockDefaultGitlabModel = {
-  name: 'Claude Sonnet 4.0 - Anthropic',
+  name: 'Claude Sonnet 4.0',
   ref: 'claude_sonnet_4_20250514',
+  modelProvider: 'Anthropic',
 };
 
 export const mockCodeSuggestionsFeatureSettings = [
