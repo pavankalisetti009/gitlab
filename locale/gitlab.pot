@@ -48057,6 +48057,9 @@ msgstr ""
 msgid "PasskeyAuthentication|Back to sign-in"
 msgstr ""
 
+msgid "PasskeyAuthentication|Passkey"
+msgstr ""
+
 msgid "PasskeyAuthentication|Passkeys only works with HTTPS-enabled websites. Contact your administrator for more details."
 msgstr ""
 
