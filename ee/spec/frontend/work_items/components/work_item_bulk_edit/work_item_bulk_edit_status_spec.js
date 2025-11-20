@@ -85,6 +85,7 @@ describe('WorkItemBulkEditStatus', () => {
 
     expect(namespaceQueryHandler).toHaveBeenCalledWith({
       fullPath: 'gitlab-org/gitlab-test',
+      onlyAvailable: false,
     });
 
     const dropdownItems = findDropdownItems();

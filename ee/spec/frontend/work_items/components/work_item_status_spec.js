@@ -170,6 +170,7 @@ describe('WorkItemStatus component', () => {
 
       expect(workItemTypesHandler).toHaveBeenCalledWith({
         fullPath: 'test-project-path',
+        onlyAvailable: false,
       });
     });
 
