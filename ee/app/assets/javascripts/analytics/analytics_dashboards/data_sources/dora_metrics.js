@@ -1,4 +1,5 @@
 import { getDayDifference, newDate } from '~/lib/utils/datetime_utility';
+import { median } from '~/lib/utils/number_utils';
 import { __, sprintf } from '~/locale';
 import {
   BUCKETING_INTERVAL_ALL,
@@ -19,16 +20,58 @@ import {
   DATE_RANGE_OPTION_LAST_180_DAYS,
   DATE_RANGE_OPTION_KEYS,
   DATE_RANGE_OPTIONS,
+  startOfTomorrow,
 } from 'ee/analytics/analytics_dashboards/components/filters/constants';
 import { buildNullSeries } from 'ee/analytics/shared/utils';
 import { getStartDate } from 'ee/analytics/analytics_dashboards/components/filters/utils';
-import {
-  startOfTomorrow,
-  lineChartAdditionalSeriesOptions,
-} from 'ee/analytics/dora/components/static_data/shared';
-import { seriesToMedianSeries, seriesToAverageSeries } from 'ee/analytics/dora/components/util';
 import { DEFAULT_NULL_SERIES_OPTIONS, NULL_SERIES_ID } from 'ee/analytics/shared/constants';
 import { defaultClient } from '../graphql/client';
+
+const lineChartAdditionalSeriesOptions = {
+  areaStyle: {
+    opacity: 0,
+  },
+  showSymbol: false,
+};
+
+/**
+ * Converts a data series into a formatted average series
+ *
+ * @param {Array} chartSeriesData Correctly formatted chart series data
+ *
+ * @returns {Object} An object containing the series name and an array of original data keys with the average of the dataset as each value.
+ */
+export const seriesToAverageSeries = (chartSeriesData, seriesName) => {
+  if (!chartSeriesData || !chartSeriesData.length) return {};
+
+  const average =
+    Math.round(
+      (chartSeriesData.reduce((acc, day) => acc + day[1], 0) / chartSeriesData.length) * 10,
+    ) / 10;
+
+  return {
+    name: seriesName,
+    data: chartSeriesData.map((day) => [day[0], average]),
+  };
+};
+
+/**
+ * Converts a data series into a formatted median series
+ *
+ * @param {Array} chartSeriesData Correctly formatted chart series data
+ *
+ * @returns {Object} An object containing the series name and an array of original data keys with the median of the dataset as each value.
+ */
+export const seriesToMedianSeries = (chartSeriesData, seriesName) => {
+  if (!chartSeriesData) return {};
+
+  const medianValue = median(chartSeriesData.filter((day) => day[1] !== null).map((day) => day[1]));
+
+  return {
+    name: seriesName,
+    data: chartSeriesData.map((day) => [day[0], medianValue]),
+  };
+};
 
 const asValue = ({ metrics, targetMetric, units }) => {
   if (!metrics.length) return '-';

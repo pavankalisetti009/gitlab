@@ -2,6 +2,7 @@ import AiMetricsQuery from 'ee/analytics/dashboards/ai_impact/graphql/ai_metrics
 import {
   DATE_RANGE_OPTION_LAST_180_DAYS,
   START_DATES,
+  startOfTomorrow,
 } from 'ee/analytics/analytics_dashboards/components/filters/constants';
 import { formatDateAsMonth } from '~/lib/utils/datetime/date_format_utility';
 import dateFormat from '~/lib/dateformat';
@@ -10,7 +11,6 @@ import { cloneDate } from '~/lib/utils/datetime/date_calculation_utility';
 import { defaultClient } from 'ee/analytics/analytics_dashboards/graphql/client';
 import { extractQueryResponseFromNamespace } from '~/analytics/shared/utils';
 import { s__ } from '~/locale';
-import { startOfTomorrow } from 'ee/analytics/dora/components/static_data/shared';
 
 export const getMonthsInDateRange = (startDate, endDate) => {
   const dateRangeData = [];

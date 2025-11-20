@@ -10,7 +10,7 @@ import {
   LAST_WEEK,
   LAST_30_DAYS,
   LAST_180_DAYS,
-} from 'ee/analytics/dora/components/static_data/shared';
+} from 'ee/analytics/analytics_dashboards/components/filters/constants';
 import { AI_IMPACT_OVER_TIME_METRICS } from 'ee/analytics/dashboards/ai_impact/constants';
 
 describe('AI Impact Over Time Data Source', () => {

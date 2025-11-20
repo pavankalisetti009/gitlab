@@ -61,7 +61,9 @@ describe('ee/analytics/group_ci_cd_analytics/components/app.vue', () => {
       ${'fake'}               | ${'0'}
       ${''}                   | ${'0'}
     `('shows the correct tab for URL parameter "$tab"', ({ tab, index }) => {
-      setWindowLocation(`${TEST_HOST}/groups/gitlab-org/gitlab/-/analytics/ci_cd?tab=${tab}`);
+      setWindowLocation(
+        `${TEST_HOST}/groups/gitlab-org/gitlab/-/analytics/dashboards/dora_metrics`,
+      );
       getParameterValues.mockImplementation((name) => {
         expect(name).toBe('tab');
         return tab ? [tab] : [];

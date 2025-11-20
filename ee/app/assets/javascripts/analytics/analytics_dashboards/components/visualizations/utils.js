@@ -2,9 +2,9 @@ import { isNil } from 'lodash';
 import { isNumeric } from '~/lib/utils/number_utils';
 import { formatNumber, n__, __, sprintf } from '~/locale';
 import { formatDate, humanizeTimeInterval } from '~/lib/utils/datetime/date_format_utility';
-import { formatAsPercentage } from 'ee/analytics/dora/components/util';
 import { NULL_SERIES_ID } from 'ee/analytics/shared/constants';
 import { CHART_TOOLTIP_TITLE_FORMATTERS, UNITS } from '~/analytics/shared/constants';
+import { formatAsPercentageWithoutSymbol } from '~/analytics/shared/utils';
 import { convertToTitleCase, humanize } from '~/lib/utils/text_utility';
 import { localeDateFormat } from '~/lib/utils/datetime/locale_dateformat';
 
@@ -13,6 +13,18 @@ function isIsoDateString(dateString) {
   const isoDateRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}$/;
   return isoDateRegex.test(dateString);
 }
+
+/**
+ * Formats any valid number as percentage
+ *
+ * @param {number|string} decimalValue Decimal value between 0 and 1 to be converted to a percentage
+ * @param {number} precision The number of decimal places to round to
+ *
+ * @returns {string} Returns a formatted string multiplied by 100
+ */
+export const formatAsPercentage = (decimalValue = 0, precision = 1) => {
+  return `${formatAsPercentageWithoutSymbol(decimalValue, precision)}%`;
+};
 
 export function formatVisualizationValue(value) {
   if (isIsoDateString(value)) {

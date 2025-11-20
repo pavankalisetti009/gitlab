@@ -3,9 +3,11 @@ import {
   filterToMRThroughputQueryObject,
   formatThroughputChartData,
 } from 'ee/analytics/merge_request_analytics/utils';
-import { startOfTomorrow } from 'ee/analytics/dora/components/static_data/shared';
 import { getStartDate } from 'ee/analytics/analytics_dashboards/components/filters/utils';
-import { DATE_RANGE_OPTION_LAST_365_DAYS } from 'ee/analytics/analytics_dashboards/components/filters/constants';
+import {
+  DATE_RANGE_OPTION_LAST_365_DAYS,
+  startOfTomorrow,
+} from 'ee/analytics/analytics_dashboards/components/filters/constants';
 
 const responseHasAnyData = (rawData) => Object.values(rawData).some(({ count }) => count);
 
