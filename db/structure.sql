@@ -41606,11 +41606,11 @@ CREATE INDEX index_import_source_user_placeholder_references_on_namespace_id ON 
 
 CREATE INDEX index_import_source_users_on_namespace_id_and_status ON import_source_users USING btree (namespace_id, status);
 
+CREATE UNIQUE INDEX index_import_source_users_on_namespace_id_reassignment_token ON import_source_users USING btree (namespace_id, reassignment_token);
+
 CREATE INDEX index_import_source_users_on_placeholder_user_id ON import_source_users USING btree (placeholder_user_id);
 
 CREATE INDEX index_import_source_users_on_reassigned_by_user_id ON import_source_users USING btree (reassigned_by_user_id);
-
-CREATE UNIQUE INDEX index_import_source_users_on_reassignment_token ON import_source_users USING btree (reassignment_token);
 
 CREATE INDEX index_imported_projects_on_import_type_creator_id_created_at ON projects USING btree (import_type, creator_id, created_at) WHERE (import_type IS NOT NULL);
 
