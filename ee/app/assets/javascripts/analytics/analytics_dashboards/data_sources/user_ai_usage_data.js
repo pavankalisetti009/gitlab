@@ -1,7 +1,9 @@
 import UserAiUserMetricsQuery from 'ee/analytics/analytics_dashboards/graphql/queries/get_user_ai_user_metrics.query.graphql';
-import { startOfTomorrow } from 'ee/analytics/dora/components/static_data/shared';
 import { getStartDate } from 'ee/analytics/analytics_dashboards/components/filters/utils';
-import { DATE_RANGE_OPTION_LAST_30_DAYS } from 'ee/analytics/analytics_dashboards/components/filters/constants';
+import {
+  DATE_RANGE_OPTION_LAST_30_DAYS,
+  startOfTomorrow,
+} from 'ee/analytics/analytics_dashboards/components/filters/constants';
 import { extractQueryResponseFromNamespace } from '~/analytics/shared/utils';
 import { defaultClient } from '../graphql/client';
 

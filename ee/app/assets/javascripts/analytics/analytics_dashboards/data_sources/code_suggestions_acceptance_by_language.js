@@ -5,11 +5,11 @@ import {
   LAST_30_DAYS,
   DORA_METRIC_QUERY_RANGES,
   startOfTomorrow,
-} from 'ee/analytics/dora/components/static_data/shared';
+} from 'ee/analytics/analytics_dashboards/components/filters/constants';
 import { getLanguageDisplayName } from 'ee/analytics/analytics_dashboards/code_suggestions_languages';
-import { formatAsPercentage } from 'ee/analytics/dora/components/util';
 import { truncate } from '~/lib/utils/text_utility';
 import { defaultClient } from '../graphql/client';
+import { formatAsPercentage } from '../components/visualizations/utils';
 
 const extractAiMetricsResponse = (result) =>
   extractQueryResponseFromNamespace({

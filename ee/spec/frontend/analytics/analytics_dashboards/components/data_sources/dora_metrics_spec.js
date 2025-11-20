@@ -1,5 +1,8 @@
 import { mockDoraMetricsResponseData } from 'jest/analytics/shared/mock_data';
-import fetch from 'ee/analytics/analytics_dashboards/data_sources/dora_metrics';
+import fetch, {
+  seriesToMedianSeries,
+  seriesToAverageSeries,
+} from 'ee/analytics/analytics_dashboards/data_sources/dora_metrics';
 import { DORA_METRICS_CHARTS_ADDITIONAL_OPTS } from 'ee/analytics/analytics_dashboards/constants';
 import { defaultClient } from 'ee/analytics/analytics_dashboards/graphql/client';
 import {
@@ -217,6 +220,78 @@ describe('Dora Metrics Data Source', () => {
         it('returns an empty array', () => {
           expect(res).toEqual([]);
         });
+      });
+    });
+  });
+
+  describe('seriesToAverageSeries', () => {
+    const seriesName = 'Average';
+
+    it('returns an empty object if chart data is undefined', () => {
+      const data = seriesToAverageSeries(undefined, seriesName);
+
+      expect(data).toStrictEqual({});
+    });
+
+    it('returns an empty object if chart data is blank', () => {
+      const data = seriesToAverageSeries(null, seriesName);
+
+      expect(data).toStrictEqual({});
+    });
+
+    it('returns the correct average values', () => {
+      const data = seriesToAverageSeries(
+        [
+          ['Jul 01, 2015', 2],
+          ['Jul 02, 2015', 3],
+          ['Jul 03, 2015', 4],
+        ],
+        seriesName,
+      );
+
+      expect(data).toStrictEqual({
+        name: seriesName,
+        data: [
+          ['Jul 01, 2015', 3],
+          ['Jul 02, 2015', 3],
+          ['Jul 03, 2015', 3],
+        ],
+      });
+    });
+  });
+
+  describe('seriesToMedianSeries', () => {
+    const seriesName = 'Median';
+
+    it('returns an empty object if chart data is undefined', () => {
+      const data = seriesToMedianSeries(undefined, seriesName);
+
+      expect(data).toStrictEqual({});
+    });
+
+    it('returns an empty object if chart data is blank', () => {
+      const data = seriesToMedianSeries(null, seriesName);
+
+      expect(data).toStrictEqual({});
+    });
+
+    it('returns the correct median values', () => {
+      const data = seriesToMedianSeries(
+        [
+          ['Jul 01, 2015', 1],
+          ['Jul 02, 2015', 3],
+          ['Jul 03, 2015', 10],
+        ],
+        seriesName,
+      );
+
+      expect(data).toStrictEqual({
+        name: seriesName,
+        data: [
+          ['Jul 01, 2015', 3],
+          ['Jul 02, 2015', 3],
+          ['Jul 03, 2015', 3],
+        ],
       });
     });
   });

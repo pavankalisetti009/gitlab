@@ -1,6 +1,9 @@
 import codeSuggestionsAcceptanceRateByLanguage from 'ee/analytics/analytics_dashboards/data_sources/code_suggestions_acceptance_by_language';
 import { defaultClient } from 'ee/analytics/analytics_dashboards/graphql/client';
-import { LAST_180_DAYS, LAST_90_DAYS } from 'ee/analytics/dora/components/static_data/shared';
+import {
+  LAST_180_DAYS,
+  LAST_90_DAYS,
+} from 'ee/analytics/analytics_dashboards/components/filters/constants';
 
 const mockCodeSuggestionsResponse = (response = {}) => ({
   data: {

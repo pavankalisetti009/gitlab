@@ -2,7 +2,7 @@ import { humanizeTimeInterval } from '~/lib/utils/datetime_utility';
 import { s__ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { DORA_METRICS } from '~/analytics/shared/constants';
-import { formatAsPercentage } from 'ee/analytics/dora/components/util';
+import { formatAsPercentage } from './components/visualizations/utils';
 
 export const EVENTS_TABLE_NAME = 'TrackedEvents';
 export const SESSIONS_TABLE_NAME = 'Sessions';

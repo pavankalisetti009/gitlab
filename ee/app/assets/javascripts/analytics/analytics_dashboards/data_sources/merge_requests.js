@@ -1,8 +1,10 @@
 import getMergeRequests from 'ee/analytics/merge_request_analytics/graphql/queries/throughput_table.query.graphql';
 import { extractQueryResponseFromNamespace } from '~/analytics/shared/utils';
-import { startOfTomorrow } from 'ee/analytics/dora/components/static_data/shared';
 import { getStartDate } from 'ee/analytics/analytics_dashboards/components/filters/utils';
-import { DATE_RANGE_OPTION_LAST_365_DAYS } from 'ee/analytics/analytics_dashboards/components/filters/constants';
+import {
+  DATE_RANGE_OPTION_LAST_365_DAYS,
+  startOfTomorrow,
+} from 'ee/analytics/analytics_dashboards/components/filters/constants';
 import { filterToMRThroughputQueryObject } from 'ee/analytics/merge_request_analytics/utils';
 import { defaultClient } from '../graphql/client';
 

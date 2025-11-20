@@ -14,22 +14,6 @@ jest.mock('~/lib/utils/url_utility', () => ({
   ...jest.requireActual('~/lib/utils/url_utility'),
   updateHistory: jest.fn(),
 }));
-jest.mock('ee_component/analytics/dora/components/deployment_frequency_charts.vue', () => ({
-  name: 'DeploymentFrequencyChartsStub',
-  render: () => {},
-}));
-jest.mock('ee_component/analytics/dora/components/lead_time_charts.vue', () => ({
-  name: 'LeadTimeChartsStub',
-  render: () => {},
-}));
-jest.mock('ee_component/analytics/dora/components/time_to_restore_service_charts.vue', () => ({
-  name: 'TimeToRestoreServiceChartsStub',
-  render: () => {},
-}));
-jest.mock('ee_component/analytics/dora/components/change_failure_rate_charts.vue', () => ({
-  name: 'ChangeFailureRateChartsStub',
-  render: () => {},
-}));
 jest.mock('ee_component/project_quality_summary/app.vue', () => ({
   name: 'ProjectQualitySummaryAppStub',
   render: () => {},
