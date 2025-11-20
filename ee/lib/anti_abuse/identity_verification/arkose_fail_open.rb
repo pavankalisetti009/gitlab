@@ -15,6 +15,7 @@ module AntiAbuse
       VERIFICATION_RATE_HISTORY_DAYS = 30
       MAX_VERIFICATION_RATE_STREAM_ENTRIES = VERIFICATION_RATE_HISTORY_DAYS * (24 / BUCKET_DURATION_HOURS)
       MIN_ATTEMPTS_FOR_EVALUATION = 400
+      MIN_BASELINE_COUNT = 10
 
       COUNTER_SUCCESS_KEY_PREFIX = 'arkose:token_verification:success:'
       COUNTER_FAILURE_KEY_PREFIX = 'arkose:token_verification:failure:'
@@ -23,7 +24,7 @@ module AntiAbuse
       def track_token_verification_result(success:)
         return unless feature_enabled?
 
-        track_previous_window_verification_rate! if in_new_window?
+        evaluate_previous_window! if in_new_window?
 
         prefix = success ? COUNTER_SUCCESS_KEY_PREFIX : COUNTER_FAILURE_KEY_PREFIX
         increment_counter!(prefix)
@@ -32,6 +33,26 @@ module AntiAbuse
       end
 
       private
+
+      def evaluate_previous_window!
+        verification_rate = calculate_verification_rate
+
+        return unless verification_rate.present?
+
+        baseline_values = historical_verification_rates
+        decision = ArkoseAnomalyDetection::Decision.new(anomalous: false, reason: 'insufficient data')
+
+        if baseline_values.size >= MIN_BASELINE_COUNT
+          decision = ArkoseAnomalyDetection.decide(
+            current_value: verification_rate,
+            baseline_values: baseline_values
+          )
+        end
+
+        # IMPORTANT: do not append anomalous verification rate to baseline as this will 'poison' the baseline
+        trigger_fail_open(decision) if decision.anomalous
+        record_verification_rate(verification_rate) unless decision.anomalous
+      end
 
       def feature_enabled?
         Feature.enabled?(:track_arkose_token_verification_results, :instance)
@@ -46,26 +67,39 @@ module AntiAbuse
         end
       end
 
-      def track_previous_window_verification_rate!
+      def calculate_verification_rate(log: true)
         prev_id = previous_bucket_id
         success = counter_value(prefix: COUNTER_SUCCESS_KEY_PREFIX, bucket_id: prev_id)
         failure = counter_value(prefix: COUNTER_FAILURE_KEY_PREFIX, bucket_id: prev_id)
         total   = success + failure
         rate_percentage = token_verification_rate(success, total)
 
+        if log
+          Gitlab::AppLogger.info(
+            message: 'Arkose token verification rate',
+            bucket: prev_id,
+            success: success,
+            failure: failure,
+            total: total,
+            rate: rate_percentage
+          )
+        end
+
         # SCENARIO: Insufficient recorded verification results in the previous bucket.
         # - Could be no traffic, feature just enabled, Arkose disabled, or fail-open active.
         # ACTION: Do not record verification rate.
-        record_verification_rate(rate_percentage) if total >= MIN_ATTEMPTS_FOR_EVALUATION
+        return if total < MIN_ATTEMPTS_FOR_EVALUATION
 
-        Gitlab::AppLogger.info(
-          message: 'Arkose token verification rate',
-          bucket: prev_id,
-          success: success,
-          failure: failure,
-          total: total,
-          rate: rate_percentage
+        rate_percentage
+      end
+
+      def trigger_fail_open(decision)
+        Gitlab::AppLogger.warn(
+          message: 'Activated fail-open due to anomaly detected',
+          prev_bucket: previous_bucket_id,
+          reason: decision.reason
         )
+        # TODO: trigger fail-open mechanism here
       end
 
       def increment_counter!(prefix)
@@ -119,6 +153,11 @@ module AntiAbuse
             approximate: true
           )
         end
+      end
+
+      def historical_verification_rates
+        with_redis { |r| r.xrange(VERIFICATION_RATE_STREAM_KEY, '-') }
+          .filter_map { |_, fields| fields['vrate']&.to_f }
       end
 
       def with_redis

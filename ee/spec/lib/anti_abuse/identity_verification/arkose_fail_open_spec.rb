@@ -49,6 +49,14 @@ RSpec.describe AntiAbuse::IdentityVerification::ArkoseFailOpen,
       r.incrby(f_key, failure)
     end
   end
+
+  def seed_baseline(rates)
+    Gitlab::Redis::SharedState.with do |r|
+      rates.each do |v|
+        r.xadd(stream_key, { 'bucket' => 'seed', 'vrate' => v.to_s })
+      end
+    end
+  end
   # -----------------------------
 
   describe '#track_token_verification_result' do
@@ -187,43 +195,146 @@ RSpec.describe AntiAbuse::IdentityVerification::ArkoseFailOpen,
         expect { fail_open.track_token_verification_result(success: true) }.not_to raise_error
       end
 
-      describe 'previous-bucket vrate baseline stream' do
+      describe 'previous-bucket anomaly evaluation' do
         before do
           stub_const("#{described_class}::MIN_ATTEMPTS_FOR_EVALUATION", 5)
         end
 
-        it 'records the vrate of the previous window when number of attempts >= MIN_ATTEMPTS_FOR_EVALUATION' do
-          prev_bucket_time = t0 + described_class::BUCKET_DURATION_SECONDS.seconds - 5.minutes
-          new_bucket_time = t0 + described_class::BUCKET_DURATION_SECONDS.seconds + 1.minute
+        let(:prev_bucket_time) { t0 + described_class::BUCKET_DURATION_SECONDS.seconds - 5.minutes }
+        let(:new_bucket_time)  { t0 + described_class::BUCKET_DURATION_SECONDS.seconds + 1.minute }
 
-          travel_to(prev_bucket_time) do
-            seed_prev_bucket(success: 9, failure: 1, at_time: t0) # 90% vrate
+        describe 'verification rate of the previous window' do
+          context 'when previous-bucket attempts are sufficient' do
+            before do
+              # 5 total attempts (>= MIN_ATTEMPTS_FOR_EVALUATION)
+              travel_to(prev_bucket_time) { seed_prev_bucket(success: 3, failure: 2, at_time: t0) }
+            end
+
+            it 'is recorded' do
+              travel_to(new_bucket_time) do
+                expect { fail_open.track_token_verification_result(success: true) }
+                  .to change { redis_xlen(stream_key) }.by(1)
+              end
+            end
           end
 
-          travel_to(new_bucket_time) do
-            expect { fail_open.track_token_verification_result(success: true) }
-              .to change { redis_xlen(stream_key) }.by(1)
+          context 'when previous-bucket attempts are insufficient' do
+            before do
+              # 3 total attempts (< MIN_ATTEMPTS_FOR_EVALUATION)
+              travel_to(t0) { seed_prev_bucket(success: 2, failure: 1, at_time: t0) }
+            end
 
-            entry = redis_xrange(stream_key).last
-            _id, fields = entry
+            it 'is not recorded' do
+              new_bucket_time = t0 + bucket_hours.hours + 1.minute
 
-            expect(fields).to include('bucket')
-            expect(fields).to include('vrate')
-            expect(fields).to include('90.0')
+              travel_to(new_bucket_time) do
+                expect { fail_open.track_token_verification_result(success: true) }
+                  .not_to change { redis_xlen(stream_key) }
+              end
+            end
+          end
+
+          context 'when there is insufficient baseline data' do
+            before do
+              allow(fail_open).to receive(:historical_verification_rates).and_return([])
+              travel_to(prev_bucket_time) { seed_prev_bucket(success: 5, failure: 5, at_time: t0) }
+            end
+
+            it 'is recorded despite missing baseline' do
+              initial_len = redis_xlen(stream_key)
+
+              travel_to(new_bucket_time) do
+                expect { fail_open.track_token_verification_result(success: true) }
+                  .to change { redis_xlen(stream_key) }.from(initial_len).to(initial_len + 1)
+              end
+            end
+          end
+
+          context 'when anomaly decision is non-anomalous' do
+            before do
+              seed_baseline([90.0, 92.0, 88.0, 91.0, 89.0, 93.0, 87.0, 90.5, 89.5, 92.5])
+              travel_to(prev_bucket_time) { seed_prev_bucket(success: 9, failure: 1, at_time: t0) }
+            end
+
+            it 'is appended to the stream' do
+              travel_to(new_bucket_time) do
+                expect { fail_open.track_token_verification_result(success: true) }
+                  .to change { redis_xlen(stream_key) }.by(1)
+
+                entry = redis_xrange(stream_key).last
+                _id, fields = entry
+
+                expect(fields).to include('bucket')
+                expect(fields).to include('vrate')
+                expect(fields).to include('90.0')
+              end
+            end
+          end
+
+          context 'when anomaly decision is anomalous' do
+            before do
+              seed_baseline([95.0, 96.0, 94.0, 97.0, 95.0, 96.0, 95.0, 94.0, 96.0, 95.0])
+              travel_to(prev_bucket_time) { seed_prev_bucket(success: 1, failure: 500, at_time: t0) }
+            end
+
+            it 'is not appended to the stream' do
+              initial_len = redis_xlen(stream_key)
+
+              travel_to(new_bucket_time) do
+                expect { fail_open.track_token_verification_result(success: true) }
+                  .not_to change { redis_xlen(stream_key) }.from(initial_len)
+              end
+            end
           end
         end
 
-        it 'does not append to the vrate stream when previous-bucket attempts are insufficient' do
-          # previous bucket has 3 total attempts (< MIN_ATTEMPTS_FOR_EVALUATION)
-          travel_to(t0) do
-            seed_prev_bucket(success: 2, failure: 1, at_time: t0)
+        describe '#calculate_verification_rate' do
+          before do
+            travel_to(prev_bucket_time) do
+              seed_prev_bucket(success: 3, failure: 2, at_time: t0)
+            end
+
+            allow(Gitlab::AppLogger).to receive(:info)
           end
 
-          new_bucket_time = t0 + bucket_hours.hours + 1.minute
-          travel_to(new_bucket_time) do
-            expect do
-              fail_open.track_token_verification_result(success: true)
-            end.not_to change { redis_xlen(stream_key) }
+          it 'returns the verification rate and logs when log is true' do
+            travel_to(new_bucket_time) do
+              result = fail_open.send(:calculate_verification_rate, log: true)
+
+              expect(result).to eq(60.0) # 3 / 5 * 100
+              expect(Gitlab::AppLogger).to have_received(:info).with(
+                hash_including(
+                  message: 'Arkose token verification rate',
+                  bucket: bucket_id(t0),
+                  success: 3,
+                  failure: 2,
+                  total: 5,
+                  rate: 60.0
+                )
+              )
+            end
+          end
+
+          it 'returns the verification rate and does not log when log is false' do
+            travel_to(new_bucket_time) do
+              result = fail_open.send(:calculate_verification_rate, log: false)
+
+              expect(result).to eq(60.0)
+              expect(Gitlab::AppLogger).not_to have_received(:info)
+            end
+          end
+        end
+
+        describe '#historical_verification_rates' do
+          it 'returns floats for entries with vrate and skips entries without vrate' do
+            Gitlab::Redis::SharedState.with do |r|
+              r.xadd(stream_key, { 'bucket' => '202511050', 'vrate' => '90.0' })
+              r.xadd(stream_key, { 'bucket' => '202511051' })
+            end
+
+            result = fail_open.send(:historical_verification_rates)
+
+            expect(result).to eq([90.0])
           end
         end
       end
