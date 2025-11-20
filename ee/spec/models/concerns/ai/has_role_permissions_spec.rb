@@ -23,6 +23,11 @@ RSpec.describe Ai::HasRolePermissions, feature_category: :duo_agent_platform do
         expect(instance).to validate_inclusion_of(:minimum_access_level_execute)
           .in_array(Gitlab::Access.sym_options_with_admin.values).allow_nil
       end
+
+      it 'validates numericality greater than or equal to DEVELOPER' do
+        expect(instance).to validate_numericality_of(:minimum_access_level_execute)
+          .is_greater_than_or_equal_to(Gitlab::Access::DEVELOPER)
+      end
     end
 
     describe '#minimum_access_level_manage' do
