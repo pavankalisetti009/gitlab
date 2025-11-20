@@ -12,7 +12,7 @@ module Ai
 
     layout 'mailer'
 
-    helper_method :mutation_name
+    helper_method :mutation_name, :catalog_item_url
 
     def notify(user_id, args = {})
       @reason = args[:reason]
@@ -34,6 +34,10 @@ module Ai
 
     def mutation_name
       MUTATION_NAMES.fetch(@ai_catalog_item.item_type.to_sym)
+    end
+
+    def catalog_item_url
+      Gitlab::UrlBuilder.build(@ai_catalog_item)
     end
 
     private

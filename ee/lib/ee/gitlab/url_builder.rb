@@ -29,9 +29,29 @@ module EE
             end
           when ::ComplianceManagement::Projects::ComplianceViolation
             instance.project_security_compliance_violation_url(object.project, object, **options)
+          when ::Ai::Catalog::Item
+            ai_catalog_item_url(object, **options)
           else
             super
           end
+        end
+
+        def ai_catalog_item_url(item, **options)
+          return unless item.id
+
+          item_type_path = case item.item_type.to_sym
+                           when ::Ai::Catalog::Item::AGENT_TYPE
+                             'agents'
+                           when ::Ai::Catalog::Item::FLOW_TYPE, ::Ai::Catalog::Item::THIRD_PARTY_FLOW_TYPE
+                             'flows'
+                           end
+
+          base_path = instance.explore_ai_catalog_path
+          path = "#{base_path}/#{item_type_path}/#{item.id}"
+
+          return path if options[:only_path]
+
+          ::Gitlab::Utils.append_path(::Gitlab.config.gitlab.url, path)
         end
 
         override :note_url

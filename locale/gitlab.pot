@@ -13382,6 +13382,9 @@ msgstr ""
 msgid "CascadingSettings|cannot be nil when locking the attribute"
 msgstr ""
 
+msgid "Catalog item: %{itemLinkStart}%{name}%{itemLinkEnd} (ID: %{id})"
+msgstr ""
+
 msgid "Catalog item: %{name} (ID: %{id})"
 msgstr ""
 
@@ -30870,6 +30873,9 @@ msgid "GitLab project export"
 msgstr ""
 
 msgid "GitLab single sign-on URL"
+msgstr ""
+
+msgid "GitLab user %{strongStart}@%{username}%{strongEnd} flagged the AI Catalog item %{strongStart}%{item_name}%{strongEnd} for review."
 msgstr ""
 
 msgid "GitLab user %{username} flagged the AI Catalog item %{item_name} for review."
@@ -55346,6 +55352,9 @@ msgid "ReportAbuse|Why are you reporting this user?"
 msgstr ""
 
 msgid "Reported %{timeAgo} by %{reportedBy}"
+msgstr ""
+
+msgid "Reported by: %{linkStart}@%{username}%{linkEnd} at %{time}"
 msgstr ""
 
 msgid "Reported by: %{username} at %{time}"
