@@ -213,7 +213,6 @@ export default {
         <purchase-commitment-card
           v-if="subscriptionUsage.purchaseCreditsPath"
           :has-commitment="poolIsAvailable"
-          :purchase-credits-path="subscriptionUsage.purchaseCreditsPath"
         />
       </section>
       <usage-by-user-tab />
