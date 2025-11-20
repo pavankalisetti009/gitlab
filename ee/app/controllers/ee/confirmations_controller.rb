@@ -21,13 +21,13 @@ module EE
     end
 
     override :sign_in_path
-    def sign_in_path(user)
-      group = user.provisioned_by_group
+    def sign_in_path(user_or_email)
+      group = user_or_email.try(:provisioned_by_group)
 
       if group
         sso_group_saml_providers_path(group, token: group.saml_discovery_token)
       else
-        super(user)
+        super(user_or_email)
       end
     end
   end
