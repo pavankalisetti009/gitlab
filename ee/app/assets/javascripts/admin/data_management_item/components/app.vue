@@ -1,6 +1,7 @@
 <script>
 import { GlLoadingIcon } from '@gitlab/ui';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
+import DataManagementItemModelInfo from 'ee/admin/data_management_item/components/data_management_item_model_info.vue';
 import { getModel } from 'ee/api/data_management_api';
 import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
 import { createAlert } from '~/alert';
@@ -12,6 +13,7 @@ export default {
   components: {
     PageHeading,
     ChecksumInfo,
+    DataManagementItemModelInfo,
     GlLoadingIcon,
   },
   props: {
@@ -72,7 +74,8 @@ export default {
     <page-heading :heading="name" />
     <gl-loading-icon v-if="isLoading" size="xl" class="gl-mt-4" />
     <div v-else-if="model" class="gl-grid gl-gap-4 @md/panel:gl-grid-cols-2">
-      <checksum-info :details="checksumInformation" />
+      <checksum-info :details="checksumInformation" class="gl-order-2 @md/panel:gl-order-1" />
+      <data-management-item-model-info :model="model" class="gl-order-1 @md/panel:gl-order-2" />
     </div>
   </section>
 </template>
