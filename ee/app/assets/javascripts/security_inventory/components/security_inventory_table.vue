@@ -75,7 +75,7 @@ export default {
     },
     fields() {
       const fields = [
-        { key: 'name', label: __('Name'), thClass: 'gl-max-w-0' },
+        { key: 'name', label: __('Name'), thClass: 'gl-w-1/4' },
         { key: 'vulnerabilities', label: __('Vulnerabilities'), thClass: 'gl-w-1/5' },
         { key: 'toolCoverage', label: __('Tool Coverage'), thClass: 'gl-w-1/3' },
         // spliced element gets inserted here
