@@ -51,13 +51,18 @@ export default {
       required: false,
       default: true,
     },
+    excludingPersonalProjects: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   computed: {
     allProjects() {
-      return !this.including && this.projects.length === 0;
+      return !this.including && this.projects.length === 0 && !this.excludingPersonalProjects;
     },
     allProjectsExcept() {
-      return !this.including && this.projects.length > 0;
+      return !this.including && (this.projects.length > 0 || this.excludingPersonalProjects);
     },
     customButtonText() {
       return this.allProjects ? this.$options.i18n.allProjectsButtonText : null;
@@ -93,6 +98,11 @@ export default {
     projectNames() {
       return this.projects.map(({ name }) => name);
     },
+    toggleListItems() {
+      return this.excludingPersonalProjects
+        ? [s__('SecurityOrchestration|personal projects'), ...this.projectNames]
+        : this.projectNames;
+    },
   },
   methods: {
     renderHeader(message) {
@@ -114,14 +124,14 @@ export default {
     <p class="gl-mb-2" data-testid="toggle-list-header">{{ header }}</p>
 
     <toggle-list
-      v-if="projects.length"
+      v-if="toggleListItems.length"
       :bullet-style="bulletStyle"
       :custom-button-text="$options.i18n.showMoreProjectsLabel"
       :custom-close-button-text="$options.i18n.hideMoreProjectsLabel"
       :inline-list="inlineList"
       :default-button-text="customButtonText"
       :default-close-button-text="$options.i18n.hideProjectsButtonText"
-      :items="projectNames"
+      :items="toggleListItems"
       :items-to-show="projectsToShow"
     />
   </div>

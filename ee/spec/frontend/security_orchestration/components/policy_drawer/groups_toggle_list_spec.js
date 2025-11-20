@@ -48,11 +48,7 @@ describe('GroupsToggleList', () => {
 
   describe('single group', () => {
     it('renders correct header for single group', () => {
-      createComponent({
-        propsData: {
-          groups: [mockedGroups[0]],
-        },
-      });
+      createComponent({ propsData: { groups: [mockedGroups[0]] } });
 
       expect(findGroupListHeader().text()).toBe('All projects in 1 group:');
     });
@@ -60,15 +56,35 @@ describe('GroupsToggleList', () => {
 
   describe('exception projects', () => {
     it('renders list with exception projects', () => {
+      createComponent({ propsData: { projects: mockedProjects } });
+
+      expect(findAllGroupItems()).toHaveLength(2);
+      expect(findGroupListHeader().text()).toBe('All projects in 2 groups, with exclusions:');
+      expect(findAllProjectItems()).toHaveLength(2);
+    });
+
+    it('renders list with personal projects exclusion', () => {
+      createComponent({ propsData: { excludingPersonalProjects: true } });
+
+      expect(findAllGroupItems()).toHaveLength(2);
+      expect(findGroupListHeader().text()).toBe('All projects in 2 groups, with exclusions:');
+      expect(findProjectsList().exists()).toBe(true);
+      expect(wrapper.findByTestId('personal-projects-item').exists()).toBe(true);
+      expect(wrapper.findByTestId('personal-projects-item').text()).toBe('personal projects');
+    });
+
+    it('renders list with both personal projects and specific project exclusions', () => {
       createComponent({
         propsData: {
           projects: mockedProjects,
+          excludingPersonalProjects: true,
         },
       });
 
       expect(findAllGroupItems()).toHaveLength(2);
       expect(findGroupListHeader().text()).toBe('All projects in 2 groups, with exclusions:');
       expect(findAllProjectItems()).toHaveLength(2);
+      expect(wrapper.findByTestId('personal-projects-item').exists()).toBe(true);
     });
   });
 

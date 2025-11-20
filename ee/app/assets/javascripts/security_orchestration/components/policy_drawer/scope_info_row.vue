@@ -150,6 +150,7 @@ export default {
             is-link
             :groups="policyScopeGroups"
             :projects="policyExcludingProjects"
+            :excluding-personal-projects="policyScopeProjects.excludingPersonalProjects"
           />
         </template>
         <template v-else-if="policyHasProjects">
@@ -158,6 +159,7 @@ export default {
             :is-instance-level="isInstanceLevel"
             :including="policyScopeHasIncludingProjects"
             :projects="policyScopeProjects.projects"
+            :excluding-personal-projects="policyScopeProjects.excludingPersonalProjects"
           />
         </template>
         <div v-else data-testid="default-scope-text">

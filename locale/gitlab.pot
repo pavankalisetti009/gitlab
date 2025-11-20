@@ -61452,6 +61452,9 @@ msgstr ""
 msgid "SecurityOrchestration|on every"
 msgstr ""
 
+msgid "SecurityOrchestration|personal projects"
+msgstr ""
+
 msgid "SecurityOrchestration|pipeline sources"
 msgstr ""
 
