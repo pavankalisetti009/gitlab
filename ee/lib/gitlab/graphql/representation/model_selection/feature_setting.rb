@@ -66,7 +66,8 @@ module Gitlab
             {
               ref: model_data['identifier'],
               name: model_data['name'],
-              model_provider: model_data['provider']
+              model_provider: model_data['provider'],
+              model_description: model_data['description']
             }
           end
 

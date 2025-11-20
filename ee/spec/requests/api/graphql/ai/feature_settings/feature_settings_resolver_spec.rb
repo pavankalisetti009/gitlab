@@ -44,17 +44,20 @@ RSpec.describe 'List of configurable AI feature with metadata.', feature_categor
               ref
               name
               modelProvider
+              modelDescription
             }
             gitlabModel {
               ref
               name
               modelProvider
+              modelDescription
             }
             validGitlabModels {
               nodes {
                 ref
                 name
                 modelProvider
+                modelDescription
               }
             }
           }
@@ -210,17 +213,20 @@ RSpec.describe 'List of configurable AI feature with metadata.', feature_categor
                   ref
                   name
                   modelProvider
+                  modelDescription
                 }
                 gitlabModel {
                   ref
                   name
                   modelProvider
+                  modelDescription
                 }
                 validGitlabModels {
                   nodes {
                     ref
                     name
                     modelProvider
+                    modelDescription
                   }
                 }
               }
@@ -275,7 +281,12 @@ RSpec.describe 'List of configurable AI feature with metadata.', feature_categor
     let(:model_definitions) do
       {
         'models' => [
-          { 'name' => 'GPT-4', 'identifier' => 'gpt-4', "provider" => "OpenAI" }
+          {
+            'name' => 'GPT-4',
+            'identifier' => 'gpt-4',
+            "provider" => "OpenAI",
+            "description" => 'For high-volume coding, reasoning, and routine workflows.'
+          }
         ],
         'unit_primitives' => [
           { 'feature_setting' => 'code_generations', 'selectable_models' => %w[gpt-4] },
@@ -297,7 +308,12 @@ RSpec.describe 'List of configurable AI feature with metadata.', feature_categor
       post_graphql(query, current_user: current_user)
 
       result = ai_feature_settings_data.index_by { |node| node['feature'] }
-      expected_valid_gitlab_model = { 'name' => 'GPT-4', 'ref' => 'gpt-4', 'modelProvider' => "OpenAI" }
+      expected_valid_gitlab_model = {
+        'name' => 'GPT-4',
+        'ref' => 'gpt-4',
+        'modelProvider' => "OpenAI",
+        'modelDescription' => 'For high-volume coding, reasoning, and routine workflows.'
+      }
 
       expect(result.dig('glab_ask_git_command', 'validGitlabModels', 'nodes')).to be_empty
 
@@ -310,11 +326,21 @@ RSpec.describe 'List of configurable AI feature with metadata.', feature_categor
   def generate_feature_setting_data(feature_setting)
     gitlab_data = if feature_setting.feature.to_s == 'code_completions'
                     {
-                      'defaultGitlabModel' => { 'name' => 'GPT-4', 'ref' => 'gpt-4', 'modelProvider' => 'OpenAI' },
+                      'defaultGitlabModel' => {
+                        'name' => 'GPT-4',
+                        'ref' => 'gpt-4',
+                        'modelProvider' => 'OpenAI',
+                        'modelDescription' => 'For high-volume coding, reasoning, and routine workflows.'
+                      },
                       'gitlabModel' => nil,
                       'validGitlabModels' => {
                         'nodes' => [
-                          { 'name' => 'GPT-4', 'ref' => 'gpt-4', 'modelProvider' => 'OpenAI' }
+                          {
+                            'name' => 'GPT-4',
+                            'ref' => 'gpt-4',
+                            'modelProvider' => 'OpenAI',
+                            'modelDescription' => 'For high-volume coding, reasoning, and routine workflows.'
+                          }
                         ]
                       }
                     }

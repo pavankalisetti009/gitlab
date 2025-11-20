@@ -15,6 +15,10 @@ module Types
         field :model_provider, String, null: true,
           experiment: { milestone: '18.6' },
           description: 'Provider for the model, e.g "OpenAI".'
+
+        field :model_description, String, null: true, # rubocop:disable GraphQL/ExtractType -- this is an offered model attribute, no need for new type
+          experiment: { milestone: '18.7' },
+          description: 'Brief description of the model, e.g "Fast, cost-effective responses".'
       end
       # rubocop: enable Graphql/AuthorizeTypes
     end

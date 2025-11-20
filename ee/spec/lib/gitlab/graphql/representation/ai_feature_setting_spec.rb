@@ -79,7 +79,8 @@ RSpec.describe Gitlab::Graphql::Representation::AiFeatureSetting, feature_catego
           expect(duo_chat_setting.default_gitlab_model).to eq({
             'name' => 'Claude Sonnet',
             'ref' => 'claude-sonnet',
-            'model_provider' => 'Anthropic'
+            'model_provider' => 'Anthropic',
+            'model_description' => 'Fast, cost-effective responses.'
           })
           expect(duo_chat_setting.valid_gitlab_models).to be_present
         end
@@ -111,8 +112,18 @@ RSpec.describe Gitlab::Graphql::Representation::AiFeatureSetting, feature_catego
         it 'includes valid gitlab models' do
           duo_chat_setting = decorate.find { |s| s.feature == 'duo_chat' }
           expect(duo_chat_setting.valid_gitlab_models).to contain_exactly(
-            { 'name' => 'Claude Sonnet', 'ref' => 'claude-sonnet', 'model_provider' => 'Anthropic' },
-            { 'name' => 'GPT-4', 'ref' => 'gpt-4', 'model_provider' => 'OpenAI' }
+            {
+              'name' => 'Claude Sonnet',
+              'ref' => 'claude-sonnet',
+              'model_provider' => 'Anthropic',
+              'model_description' => 'Fast, cost-effective responses.'
+            },
+            {
+              'name' => 'GPT-4',
+              'ref' => 'gpt-4',
+              'model_provider' => 'OpenAI',
+              'model_description' => 'For high-volume coding, reasoning, and routine workflows.'
+            }
           )
         end
       end
@@ -130,14 +141,20 @@ RSpec.describe Gitlab::Graphql::Representation::AiFeatureSetting, feature_catego
           expect(decorated_self_hosted_setting.default_gitlab_model).to eq({
             "ref" => 'gpt-4',
             "name" => 'GPT-4',
-            "model_provider" => 'OpenAI'
+            "model_provider" => 'OpenAI',
+            'model_description' => 'For high-volume coding, reasoning, and routine workflows.'
           })
         end
 
         it 'includes valid gitlab models' do
-          expect(decorated_self_hosted_setting.valid_gitlab_models).to match_array(
-            [{ "ref" => 'gpt-4', "name" => 'GPT-4', "model_provider" => 'OpenAI' }]
-          )
+          expect(decorated_self_hosted_setting.valid_gitlab_models).to match_array([
+            {
+              "ref" => 'gpt-4',
+              "name" => 'GPT-4',
+              "model_provider" => 'OpenAI',
+              'model_description' => 'For high-volume coding, reasoning, and routine workflows.'
+            }
+          ])
         end
 
         it 'fetches the proper feature_setting' do
@@ -158,7 +175,8 @@ RSpec.describe Gitlab::Graphql::Representation::AiFeatureSetting, feature_catego
           expect(duo_chat_setting.gitlab_model).to eq({
             'name' => 'Claude Sonnet',
             'ref' => 'claude-sonnet',
-            'model_provider' => 'Anthropic'
+            'model_provider' => 'Anthropic',
+            'model_description' => 'Fast, cost-effective responses.'
           })
         end
       end
