@@ -79,7 +79,7 @@ export default {
       <gl-tooltip :target="() => $refs.upstreamStatus">
         <div class="gl-font-bold">{{ $options.relations.upstream }}</div>
         <div>{{ upstreamPipeline.details.status.tooltip }}</div>
-        <div class="gl-text-tertiary">{{ upstreamPipeline.project.full_name }}</div>
+        <div class="gl-text-subtle">{{ upstreamPipeline.project.full_name }}</div>
       </gl-tooltip>
 
       <gl-icon name="arrow-right" class="gl-mx-1 gl-align-middle" variant="subtle" />
@@ -115,7 +115,7 @@ export default {
         <gl-tooltip :target="() => $refs.downstreamStatus[index]">
           <div class="gl-font-bold">{{ $options.relations.downstream }}</div>
           <div>{{ pipeline.details.status.tooltip }}</div>
-          <div class="gl-text-tertiary">{{ pipeline.project.full_name }}</div>
+          <div class="gl-text-subtle">{{ pipeline.project.full_name }}</div>
         </gl-tooltip>
       </div>
       <div v-if="hasExtraDownstream" class="gl-inline">
