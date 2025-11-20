@@ -227,8 +227,7 @@ module EE
             to: ::Ai::ActiveContext::Code::MarkRepositoryAsReadyEvent
 
           store.subscribe ::Ai::ActiveContext::Code::MarkRepositoryAsPendingDeletionEventWorker,
-            to: ::Ai::ActiveContext::Code::MarkRepositoryAsPendingDeletionEvent,
-            if: ->(_) { ::Feature.enabled?(:active_context_code_event_mark_repository_pending_deletion, :instance) }
+            to: ::Ai::ActiveContext::Code::MarkRepositoryAsPendingDeletionEvent
 
           store.subscribe ::Ai::ActiveContext::Code::ProcessPendingEnabledNamespaceEventWorker,
             to: ::Ai::ActiveContext::Code::ProcessPendingEnabledNamespaceEvent
