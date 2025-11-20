@@ -99,21 +99,6 @@ RSpec.describe 'Admin Groups', feature_category: :groups_and_projects do
 
         expect(page).to have_content(unauthorized_group.name)
       end
-
-      context 'when admin_groups_vue is disabled' do
-        before do
-          stub_feature_flags(admin_groups_vue: false)
-        end
-
-        it 'does not render admin-only action buttons' do
-          visit admin_groups_path
-
-          expect(page).to have_content(group.name)
-
-          expect(page).not_to have_content("Edit")
-          expect(page).not_to have_content("Delete")
-        end
-      end
     end
 
     describe 'show', :aggregate_failures do
