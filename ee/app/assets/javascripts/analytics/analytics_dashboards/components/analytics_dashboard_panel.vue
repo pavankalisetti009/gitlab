@@ -33,6 +33,10 @@ export default {
       import('ee/analytics/analytics_dashboards/components/visualizations/line_chart.vue'),
     ColumnChart: () =>
       import('ee/analytics/analytics_dashboards/components/visualizations/column_chart.vue'),
+    StackedColumnChart: () =>
+      import(
+        'ee/analytics/analytics_dashboards/components/visualizations/stacked_column_chart.vue'
+      ),
     BarChart: () =>
       import('ee/analytics/analytics_dashboards/components/visualizations/bar_chart.vue'),
     DataTable: () =>

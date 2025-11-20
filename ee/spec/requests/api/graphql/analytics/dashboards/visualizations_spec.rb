@@ -130,7 +130,7 @@ RSpec.describe 'Query.project(id).dashboards.panels(id).visualization', feature_
             "\"ContributionsPushesChart\", \"ContributionsIssuesChart\", " \
             "\"ContributionsMergeRequestsChart\", \"NamespaceMetadata\", " \
             "\"MergeRequestsThroughputTable\", " \
-            "\"BarChart\"]")
+            "\"BarChart\", \"StackedColumnChart\"]")
       end
     end
   end
