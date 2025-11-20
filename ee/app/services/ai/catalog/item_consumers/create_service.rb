@@ -182,7 +182,7 @@ module Ai
         end
 
         def ai_catalog_flows_enabled?
-          Feature.enabled?(:ai_catalog_flows, container)
+          Feature.enabled?(:ai_catalog_flows, current_user)
         end
 
         def error(message)
