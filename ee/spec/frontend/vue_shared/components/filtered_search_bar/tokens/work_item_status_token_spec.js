@@ -77,6 +77,7 @@ describe('WorkItemStatusToken', () => {
 
     expect(namespaceQueryHandler).toHaveBeenCalledWith({
       fullPath: mockStatusToken.fullPath,
+      onlyAvailable: false,
     });
     expect(getAllStatusesQueryHandler).not.toHaveBeenCalled();
   });
