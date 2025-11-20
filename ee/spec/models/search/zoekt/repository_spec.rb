@@ -49,6 +49,16 @@ RSpec.describe Search::Zoekt::Repository, feature_category: :global_search do
   end
 
   describe 'scope' do
+    describe '.ordered' do
+      let_it_be(:repo_1) { create(:zoekt_repository) }
+      let_it_be(:repo_2) { create(:zoekt_repository) }
+      let_it_be(:repo_3) { create(:zoekt_repository) }
+
+      it 'returns repositories ordered by id' do
+        expect(described_class.ordered.to_a).to eq([repo_1, repo_2, repo_3])
+      end
+    end
+
     describe '.uncompleted' do
       let_it_be(:zoekt_repository) { create(:zoekt_repository, state: :pending) }
 
@@ -123,58 +133,77 @@ RSpec.describe Search::Zoekt::Repository, feature_category: :global_search do
     end
 
     describe '.should_be_reindexed' do
-      let_it_be(:node_v1) { create(:zoekt_node, schema_version: 1) }
-      let_it_be(:node_v2) { create(:zoekt_node, schema_version: 2) }
-      let_it_be(:index_v1) { create(:zoekt_index, node: node_v1) }
-      let_it_be(:index_v2) { create(:zoekt_index, node: node_v2) }
+      it 'returns indexable repositories with schema version less than maximum node schema version' do
+        allow(Search::Zoekt::Node).to receive(:maximum_zoekt_schema_version).and_return(1212)
+        expect(described_class).to receive_message_chain(:indexable, :schema_version_less_than).with(1212)
 
-      let_it_be(:ready_matching_schema) do
-        create(:zoekt_repository, state: :ready, schema_version: 1, zoekt_index: index_v1)
-      end
-
-      let_it_be(:ready_mismatched_schema) do
-        create(:zoekt_repository, state: :ready, schema_version: 1, zoekt_index: index_v2)
-      end
-
-      let_it_be(:pending_mismatched_schema) do
-        create(:zoekt_repository, state: :pending, schema_version: 1, zoekt_index: index_v2)
-      end
-
-      let_it_be(:initializing_mismatched_schema) do
-        create(:zoekt_repository, state: :initializing, schema_version: 1, zoekt_index: index_v2)
-      end
-
-      let_it_be(:orphaned_mismatched_schema) do
-        create(:zoekt_repository, state: :orphaned, schema_version: 1, zoekt_index: index_v2)
-      end
-
-      subject(:records) { described_class.should_be_reindexed }
-
-      it 'returns indexable repositories with schema version different from their node' do
-        expect(records).to include ready_mismatched_schema, pending_mismatched_schema, initializing_mismatched_schema
-        expect(records).not_to include ready_matching_schema, orphaned_mismatched_schema
+        described_class.should_be_reindexed
       end
     end
 
-    describe '.with_pending_or_processing_tasks' do
-      let_it_be(:repo_with_pending_task) { create(:zoekt_repository) }
-      let_it_be(:repo_with_processing_task) { create(:zoekt_repository) }
-      let_it_be(:repo_with_done_task) { create(:zoekt_repository) }
-      let_it_be(:repo_with_failed_task) { create(:zoekt_repository) }
+    describe '.without_pending_tasks_of_type' do
+      let_it_be(:repo_with_pending_index_repo_task) { create(:zoekt_repository) }
+      let_it_be(:repo_with_processing_index_repo_task) { create(:zoekt_repository) }
+      let_it_be(:repo_with_processing_delete_repo_task) { create(:zoekt_repository) }
+      let_it_be(:repo_with_pending_delete_repo_task) { create(:zoekt_repository) }
+      let_it_be(:repo_with_failed_index_repo_task) { create(:zoekt_repository) }
+      let_it_be(:repo_with_failed_delete_repo_task) { create(:zoekt_repository) }
+      let_it_be(:repo_with_done_index_repo_task) { create(:zoekt_repository) }
+      let_it_be(:repo_with_done_delete_repo_task) { create(:zoekt_repository) }
       let_it_be(:repo_without_tasks) { create(:zoekt_repository) }
 
       before_all do
-        create(:zoekt_task, :pending, zoekt_repository: repo_with_pending_task)
-        create(:zoekt_task, :processing, zoekt_repository: repo_with_processing_task)
-        create(:zoekt_task, :done, zoekt_repository: repo_with_done_task)
-        create(:zoekt_task, :failed, zoekt_repository: repo_with_failed_task)
+        create(:zoekt_task, :pending, :index_repo, zoekt_repository: repo_with_pending_index_repo_task)
+        create(:zoekt_task, :done, :index_repo, zoekt_repository: repo_with_pending_index_repo_task)
+
+        create(:zoekt_task, :processing, :index_repo, zoekt_repository: repo_with_processing_index_repo_task)
+        create(:zoekt_task, :failed, :delete_repo, zoekt_repository: repo_with_processing_index_repo_task)
+
+        create(:zoekt_task, :processing, :delete_repo, zoekt_repository: repo_with_processing_delete_repo_task)
+        create(:zoekt_task, :orphaned, :delete_repo, zoekt_repository: repo_with_processing_delete_repo_task)
+
+        create(:zoekt_task, :pending, :delete_repo, zoekt_repository: repo_with_pending_delete_repo_task)
+        create(:zoekt_task, :skipped, :delete_repo, zoekt_repository: repo_with_pending_delete_repo_task)
+
+        create(:zoekt_task, :failed, :index_repo, zoekt_repository: repo_with_failed_index_repo_task)
+        create(:zoekt_task, :failed, :delete_repo, zoekt_repository: repo_with_failed_index_repo_task)
+
+        create(:zoekt_task, :failed, :delete_repo, zoekt_repository: repo_with_failed_delete_repo_task)
+        create(:zoekt_task, :failed, :delete_repo, zoekt_repository: repo_with_failed_delete_repo_task)
+
+        create(:zoekt_task, :done, :index_repo, zoekt_repository: repo_with_done_index_repo_task)
+        create(:zoekt_task, :done, :delete_repo, zoekt_repository: repo_with_done_index_repo_task)
+
+        create(:zoekt_task, :done, :delete_repo, zoekt_repository: repo_with_done_delete_repo_task)
       end
 
-      subject(:records) { described_class.with_pending_or_processing_tasks }
+      subject(:records) { described_class.without_pending_tasks_of_type(:index_repo) }
 
-      it 'returns repositories that have pending or processing tasks' do
-        expect(records).to include repo_with_pending_task, repo_with_processing_task
-        expect(records).not_to include repo_with_done_task, repo_with_failed_task, repo_without_tasks
+      it 'returns repositories of without pending tasks of given type' do
+        expect(records).to include(
+          repo_with_processing_index_repo_task,
+          repo_with_processing_delete_repo_task,
+          repo_with_pending_delete_repo_task,
+          repo_with_failed_index_repo_task,
+          repo_with_failed_delete_repo_task,
+          repo_with_done_index_repo_task,
+          repo_with_done_delete_repo_task
+        )
+        expect(records).not_to include repo_with_pending_index_repo_task
+      end
+    end
+
+    describe '.schema_version_less_than' do
+      let_it_be(:zoekt_repo) { create(:zoekt_repository, schema_version: 1110) }
+      let_it_be(:zoekt_repo2) { create(:zoekt_repository, schema_version: 1111) }
+      let_it_be(:zoekt_repo3) { create(:zoekt_repository, schema_version: 1112) }
+      let_it_be(:zoekt_repo4) { create(:zoekt_repository, schema_version: 0) }
+
+      subject(:records) { described_class.schema_version_less_than(1111) }
+
+      it 'returns only repositories whose schema_version is less than given schema_version' do
+        expect(records).to include zoekt_repo, zoekt_repo4
+        expect(records).not_to include zoekt_repo2, zoekt_repo3
       end
     end
   end
@@ -187,9 +216,9 @@ RSpec.describe Search::Zoekt::Repository, feature_category: :global_search do
 
     before do
       create(:zoekt_task, :pending, zoekt_repository: zoekt_repo_with_pending_tasks)
-      create(:zoekt_task, :pending, task_type: :delete_repo, zoekt_repository: zoekt_repo_with_pending_tasks)
+      create(:zoekt_task, :pending, :delete_repo, zoekt_repository: zoekt_repo_with_pending_tasks)
       create(:zoekt_task, :processing, zoekt_repository: zoekt_repo_with_processing_tasks)
-      create(:zoekt_task, :processing, task_type: :delete_repo, zoekt_repository: zoekt_repo_with_processing_tasks)
+      create(:zoekt_task, :processing, :delete_repo, zoekt_repository: zoekt_repo_with_processing_tasks)
     end
 
     context 'when task_type is delete_repo' do

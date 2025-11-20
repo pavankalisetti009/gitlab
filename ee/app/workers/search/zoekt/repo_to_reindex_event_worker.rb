@@ -22,19 +22,10 @@ module Search
         node = Search::Zoekt::Node.for_search.find_by_id(node_id)
         return false if node.blank?
 
-        scope = node.zoekt_repositories.should_be_reindexed
-        reindexing_repository_ids = scope.with_pending_or_processing_tasks.pluck_primary_key
-        remaining_limit = LIMIT - reindexing_repository_ids.count
+        scope = node.zoekt_repositories.schema_version_less_than(node.schema_version)
+        return false if scope.indexable.empty?
 
-        return false if remaining_limit <= 0
-
-        # Skip repositories that already have pending or processing tasks
-        final_scope = scope.id_not_in(reindexing_repository_ids).limit(remaining_limit)
-
-        final_scope.create_bulk_tasks
-
-        repositories_reindexed_count = final_scope.count
-        log_extra_metadata_on_done(:repositories_reindexed_count, repositories_reindexed_count)
+        scope.limit(LIMIT).create_bulk_tasks
       end
     end
   end

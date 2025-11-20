@@ -106,11 +106,6 @@ module Search
       scope :available_for_knowledge_graph_namespace, ->(namespace) do
         with_service(:knowledge_graph).where.not(id: namespace.replicas.select(:zoekt_node_id))
       end
-      scope :with_repositories_to_reindex, -> do
-        joins(:zoekt_repositories)
-          .merge(Repository.should_be_reindexed)
-          .distinct
-      end
 
       def self.find_or_initialize_by_task_request(params)
         params = params.with_indifferent_access
@@ -144,6 +139,21 @@ module Search
         return false unless ::Search::Zoekt::Settings.lost_node_threshold.present?
 
         true
+      end
+
+      def self.maximum_zoekt_schema_version
+        online.maximum(:schema_version)
+      end
+
+      # @return [Array<Zoekt::Node>] nodes where at least one repository is indexable
+      # and has a schema_version less than the node's schema_version.
+      def self.needs_reindex(limit = nil)
+        nodes = []
+        online.each do |node|
+          nodes << node if node.zoekt_repositories.indexable.schema_version_less_than(node.schema_version).exists?
+          return nodes if limit.present? && nodes.count >= limit
+        end
+        nodes
       end
 
       def concurrency_limit
