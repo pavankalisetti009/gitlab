@@ -29,6 +29,7 @@ module AntiAbuse
         end
 
         def arkose_enabled?(user:, user_agent:)
+          return false if ::AntiAbuse::IdentityVerification::ArkoseFailOpen.active?
           return false unless ::Gitlab::CurrentSettings.arkose_labs_enabled
 
           arkose_public_api_key.present? &&

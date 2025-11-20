@@ -88,41 +88,68 @@ RSpec.describe AntiAbuse::IdentityVerification::Settings, feature_category: :ins
   describe '.arkose_enabled?' do
     let_it_be(:a_user) { create(:user) }
 
-    subject { described_class.arkose_enabled?(user: user, user_agent: 'user_agent') }
+    subject(:enabled) { described_class.arkose_enabled?(user: user, user_agent: 'user_agent') }
 
-    where(:private_key, :public_key, :namespace, :qa_request, :user, :group_saml_user, :result) do
-      nil       | 'public' | 'namespace' | false | ref(:a_user) | false | false
-      'private' | nil      | 'namespace' | false | ref(:a_user) | false | false
-      'private' | 'public' | nil         | false | ref(:a_user) | false | false
-      'private' | 'public' | 'namespace' | true  | ref(:a_user) | false | false
-      'private' | 'public' | 'namespace' | false | ref(:a_user) | true  | false
-      'private' | 'public' | 'namespace' | false | ref(:a_user) | false | true
-      'private' | 'public' | 'namespace' | false | nil          | false | true
+    context 'when fail-open is active' do
+      let(:user) { a_user }
+
+      before do
+        allow(AntiAbuse::IdentityVerification::ArkoseFailOpen).to receive(:active?).and_return(true)
+      end
+
+      it 'returns false immediately' do
+        expect(enabled).to be false
+      end
+
+      it 'short-circuits other checks' do
+        expect(::Gitlab::CurrentSettings).not_to receive(:arkose_labs_enabled)
+        expect(described_class).not_to receive(:arkose_public_api_key)
+        expect(described_class).not_to receive(:arkose_private_api_key)
+
+        enabled
+      end
     end
 
-    with_them do
-      before do
-        allow(described_class).to receive_messages(arkose_private_api_key: private_key,
-          arkose_public_api_key: public_key)
-        stub_application_setting(arkose_labs_namespace: namespace)
-        allow(::Gitlab::Qa).to receive(:request?).with('user_agent').and_return(qa_request)
-        create(:group_saml_identity, user: user) if group_saml_user
+    context 'when fail-open is not active' do
+      where(:private_key, :public_key, :namespace, :qa_request, :user, :group_saml_user, :result) do
+        nil       | 'public' | 'namespace' | false | ref(:a_user) | false | false
+        'private' | nil      | 'namespace' | false | ref(:a_user) | false | false
+        'private' | 'public' | nil         | false | ref(:a_user) | false | false
+        'private' | 'public' | 'namespace' | true  | ref(:a_user) | false | false
+        'private' | 'public' | 'namespace' | false | ref(:a_user) | true  | false
+        'private' | 'public' | 'namespace' | false | ref(:a_user) | false | true
+        'private' | 'public' | 'namespace' | false | nil          | false | true
       end
 
-      context 'when arkose labs is enabled' do
+      with_them do
         before do
-          stub_application_setting(arkose_labs_enabled: true)
+          allow(AntiAbuse::IdentityVerification::ArkoseFailOpen).to receive(:active?).and_return(false)
+
+          allow(described_class).to receive_messages(
+            arkose_private_api_key: private_key,
+            arkose_public_api_key: public_key
+          )
+
+          stub_application_setting(arkose_labs_namespace: namespace)
+          allow(::Gitlab::Qa).to receive(:request?).with('user_agent').and_return(qa_request)
+          create(:group_saml_identity, user: user) if group_saml_user
         end
 
-        it { is_expected.to eq result }
-      end
+        context 'when arkose labs is enabled' do
+          before do
+            stub_application_setting(arkose_labs_enabled: true)
+          end
 
-      context 'when arkose labs is disabled' do
-        before do
-          stub_application_setting(arkose_labs_enabled: false)
+          it { is_expected.to eq result }
         end
 
-        it { is_expected.to be false }
+        context 'when arkose labs is disabled' do
+          before do
+            stub_application_setting(arkose_labs_enabled: false)
+          end
+
+          it { is_expected.to be false }
+        end
       end
     end
   end

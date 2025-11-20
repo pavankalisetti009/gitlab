@@ -16,13 +16,21 @@ module AntiAbuse
       MAX_VERIFICATION_RATE_STREAM_ENTRIES = VERIFICATION_RATE_HISTORY_DAYS * (24 / BUCKET_DURATION_HOURS)
       MIN_ATTEMPTS_FOR_EVALUATION = 400
       MIN_BASELINE_COUNT = 10
+      FAIL_OPEN_TTL_SECONDS = 30.minutes.to_i
 
       COUNTER_SUCCESS_KEY_PREFIX = 'arkose:token_verification:success:'
       COUNTER_FAILURE_KEY_PREFIX = 'arkose:token_verification:failure:'
       VERIFICATION_RATE_STREAM_KEY = 'arkose:token_verification:rates'
+      FAIL_OPEN_ACTIVE_KEY = 'arkose:fail_open:active'
+
+      def active?
+        return false unless Feature.enabled?(:arkose_anomalous_verification_rate_fail_open, :instance)
+
+        fail_open_active?
+      end
 
       def track_token_verification_result(success:)
-        return unless feature_enabled?
+        return unless tracking_feature_enabled?
 
         evaluate_previous_window! if in_new_window?
 
@@ -54,7 +62,7 @@ module AntiAbuse
         record_verification_rate(verification_rate) unless decision.anomalous
       end
 
-      def feature_enabled?
+      def tracking_feature_enabled?
         Feature.enabled?(:track_arkose_token_verification_results, :instance)
       end
 
@@ -99,7 +107,8 @@ module AntiAbuse
           prev_bucket: previous_bucket_id,
           reason: decision.reason
         )
-        # TODO: trigger fail-open mechanism here
+
+        activate_fail_open!(reason: decision.reason)
       end
 
       def increment_counter!(prefix)
@@ -158,6 +167,14 @@ module AntiAbuse
       def historical_verification_rates
         with_redis { |r| r.xrange(VERIFICATION_RATE_STREAM_KEY, '-') }
           .filter_map { |_, fields| fields['vrate']&.to_f }
+      end
+
+      def activate_fail_open!(reason:)
+        with_redis { |r| r.set(FAIL_OPEN_ACTIVE_KEY, reason, ex: FAIL_OPEN_TTL_SECONDS) }
+      end
+
+      def fail_open_active?
+        with_redis { |r| r.exists?(FAIL_OPEN_ACTIVE_KEY) } # rubocop:disable CodeReuse/ActiveRecord -- Redis access is required here; not an AR model
       end
 
       def with_redis
