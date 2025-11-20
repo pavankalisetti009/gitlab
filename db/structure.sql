@@ -21471,49 +21471,6 @@ CREATE SEQUENCE notes_id_seq
 
 ALTER SEQUENCE notes_id_seq OWNED BY notes.id;
 
-CREATE TABLE notes_archived (
-    note text,
-    noteable_type character varying,
-    author_id bigint,
-    created_at timestamp without time zone,
-    updated_at timestamp without time zone,
-    project_id bigint,
-    line_code character varying,
-    commit_id character varying,
-    noteable_id bigint,
-    system boolean DEFAULT false NOT NULL,
-    st_diff text,
-    updated_by_id bigint,
-    type character varying,
-    "position" text,
-    original_position text,
-    resolved_at timestamp without time zone,
-    resolved_by_id bigint,
-    discussion_id character varying,
-    note_html text,
-    cached_markdown_version integer,
-    change_position text,
-    resolved_by_push boolean,
-    review_id bigint,
-    confidential boolean,
-    last_edited_at timestamp with time zone,
-    internal boolean DEFAULT false NOT NULL,
-    id bigint DEFAULT nextval('notes_id_seq'::regclass) NOT NULL,
-    namespace_id bigint,
-    imported_from smallint DEFAULT 0 NOT NULL,
-    organization_id bigint,
-    archived_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT check_1244cbd7d0 CHECK ((noteable_type IS NOT NULL)),
-    CONSTRAINT check_3cd1f25f0d CHECK ((char_length(note_html) <= 1000000)),
-    CONSTRAINT check_438623dd0e CHECK ((char_length(change_position) <= 50000)),
-    CONSTRAINT check_88582b41f4 CHECK ((char_length(st_diff) <= 1000000)),
-    CONSTRAINT check_c73ba3a9d6 CHECK ((char_length(note) <= 1000000)),
-    CONSTRAINT check_ef82c93395 CHECK ((char_length(original_position) <= 50000)),
-    CONSTRAINT check_f13cf06433 CHECK ((char_length("position") <= 50000))
-);
-
-COMMENT ON TABLE notes_archived IS 'Temporary table for storing orphaned notes during namespace_id backfill. To be dropped after migration completion.';
-
 CREATE TABLE notification_settings (
     id bigint NOT NULL,
     user_id bigint NOT NULL,
@@ -35646,9 +35603,6 @@ ALTER TABLE ONLY note_diff_files
 ALTER TABLE ONLY note_metadata
     ADD CONSTRAINT note_metadata_pkey PRIMARY KEY (note_id);
 
-ALTER TABLE ONLY notes_archived
-    ADD CONSTRAINT notes_archived_pkey PRIMARY KEY (id);
-
 ALTER TABLE ONLY notes
     ADD CONSTRAINT notes_pkey PRIMARY KEY (id);
 
@@ -42480,12 +42434,6 @@ CREATE INDEX index_note_diff_files_on_namespace_id ON note_diff_files USING btre
 CREATE INDEX index_note_metadata_on_namespace_id ON note_metadata USING btree (namespace_id);
 
 CREATE INDEX index_note_metadata_on_note_id ON note_metadata USING btree (note_id);
-
-CREATE INDEX index_notes_archived_on_namespace_id ON notes_archived USING btree (namespace_id);
-
-CREATE INDEX index_notes_archived_on_project_id ON notes_archived USING btree (project_id);
-
-CREATE INDEX index_notes_archived_on_review_id ON notes_archived USING btree (review_id);
 
 CREATE INDEX index_notes_for_cherry_picked_merge_requests ON notes USING btree (project_id, commit_id) WHERE ((noteable_type)::text = 'MergeRequest'::text);
 
@@ -50525,9 +50473,6 @@ ALTER TABLE ONLY scan_result_policies
 ALTER TABLE ONLY requirements
     ADD CONSTRAINT fk_85044baef0 FOREIGN KEY (issue_id) REFERENCES issues(id) ON DELETE CASCADE;
 
-ALTER TABLE ONLY notes_archived
-    ADD CONSTRAINT fk_85a7a7742f FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
-
 ALTER TABLE ONLY catalog_resource_components
     ADD CONSTRAINT fk_85bb1d1e79 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
@@ -50981,9 +50926,6 @@ ALTER TABLE ONLY protected_tag_create_access_levels
 ALTER TABLE ONLY status_check_responses
     ADD CONSTRAINT fk_b53bf31a72 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
-ALTER TABLE ONLY notes_archived
-    ADD CONSTRAINT fk_b59ff7568a FOREIGN KEY (review_id) REFERENCES reviews(id) ON DELETE SET NULL;
-
 ALTER TABLE ONLY packages_dependency_links
     ADD CONSTRAINT fk_b5c56b6ede FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
@@ -51193,9 +51135,6 @@ ALTER TABLE ONLY duo_workflows_workflows
 
 ALTER TABLE ONLY user_member_roles
     ADD CONSTRAINT fk_cb5a805cd4 FOREIGN KEY (member_role_id) REFERENCES member_roles(id) ON DELETE CASCADE;
-
-ALTER TABLE ONLY notes_archived
-    ADD CONSTRAINT fk_cb6db52106 FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY boards_epic_board_labels
     ADD CONSTRAINT fk_cb8ded70e2 FOREIGN KEY (group_id) REFERENCES namespaces(id) ON DELETE CASCADE;
