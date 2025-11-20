@@ -17,6 +17,7 @@ import { prerequisitesError } from '../utils';
 import AiCatalogItemActions from '../components/ai_catalog_item_actions.vue';
 import AiCatalogItemView from '../components/ai_catalog_item_view.vue';
 import createAiCatalogItemConsumer from '../graphql/mutations/create_ai_catalog_item_consumer.mutation.graphql';
+import reportAiCatalogItem from '../graphql/mutations/report_ai_catalog_item.mutation.graphql';
 import {
   AI_CATALOG_FLOWS_DUPLICATE_ROUTE,
   AI_CATALOG_FLOWS_EDIT_ROUTE,
@@ -149,6 +150,30 @@ export default {
         Sentry.captureException(error);
       }
     },
+    async reportFlow({ reason, body }) {
+      try {
+        const { data } = await this.$apollo.mutate({
+          mutation: reportAiCatalogItem,
+          variables: {
+            input: {
+              id: this.aiCatalogFlow.id,
+              reason,
+              body,
+            },
+          },
+        });
+
+        if (data.aiCatalogItemReport.errors?.length > 0) {
+          this.errors = data.aiCatalogItemReport.errors;
+          return;
+        }
+
+        this.$toast.show(s__('AICatalog|Report submitted successfully.'));
+      } catch (error) {
+        this.errors = [sprintf(s__('AICatalog|Failed to report flow. %{error}'), { error })];
+        Sentry.captureException(error);
+      }
+    },
     dismissErrors() {
       this.errors = [];
       this.errorTitle = null;
@@ -180,6 +205,7 @@ export default {
           :delete-confirm-title="s__('AICatalog|Delete flow')"
           :delete-confirm-message="s__('AICatalog|Are you sure you want to delete flow %{name}?')"
           @add-to-target="addFlowToTarget"
+          @report-item="reportFlow"
         />
       </template>
     </page-heading>

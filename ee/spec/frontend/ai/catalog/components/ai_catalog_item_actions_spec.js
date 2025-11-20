@@ -44,7 +44,27 @@ describe('AiCatalogItemActions', () => {
   const findAddToGroupButton = () => wrapper.findByTestId('add-to-group-button');
   const findMoreActions = () => wrapper.findByTestId('more-actions-dropdown');
   const findDuplicateButton = () => wrapper.findByTestId('duplicate-button');
+  const findReportButton = () => wrapper.findByTestId('report-button');
   const findDeleteButton = () => wrapper.findByTestId('delete-button');
+
+  describe('when user can report item', () => {
+    beforeEach(() => {
+      createComponent({
+        props: {
+          item: {
+            ...mockAgent,
+            userPermissions: {
+              reportAiCatalogItem: true,
+            },
+          },
+        },
+      });
+    });
+
+    it('renders Report button', () => {
+      expect(findReportButton().exists()).toBe(true);
+    });
+  });
 
   describe.each`
     scenario                           | canAdmin | canUse   | editBtn  | disableBtn | enableBtn | addBtn   | moreActions | duplicateBtn | deleteBtn | itemType
@@ -130,6 +150,10 @@ describe('AiCatalogItemActions', () => {
             },
           });
         }
+      });
+
+      it('does not render Report button', () => {
+        expect(findReportButton().exists()).toBe(false);
       });
 
       it(`${deleteBtn ? 'renders' : 'does not render'} Delete button`, () => {
@@ -222,6 +246,10 @@ describe('AiCatalogItemActions', () => {
             },
           });
         }
+      });
+
+      it('does not render Report button', () => {
+        expect(findReportButton().exists()).toBe(false);
       });
 
       it(`${deleteBtn ? 'renders' : 'does not render'} Delete button`, () => {

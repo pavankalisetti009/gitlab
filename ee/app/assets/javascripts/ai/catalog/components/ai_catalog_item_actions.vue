@@ -11,6 +11,7 @@ import { s__ } from '~/locale';
 import { isLoggedIn } from '~/lib/utils/common_utils';
 import ConfirmActionModal from '~/vue_shared/components/confirm_action_modal.vue';
 import AiCatalogItemConsumerModal from './ai_catalog_item_consumer_modal.vue';
+import AiCatalogItemReportModal from './ai_catalog_item_report_modal.vue';
 
 export default {
   name: 'AiCatalogItemActions',
@@ -22,6 +23,7 @@ export default {
     GlSprintf,
     ConfirmActionModal,
     AiCatalogItemConsumerModal,
+    AiCatalogItemReportModal,
   },
   directives: {
     GlModal: GlModalDirective,
@@ -74,7 +76,7 @@ export default {
       default: null,
     },
   },
-  emits: ['add-to-target'],
+  emits: ['add-to-target', 'report-item'],
   data() {
     return {
       showDeleteModal: false,
@@ -84,6 +86,9 @@ export default {
   computed: {
     canAdmin() {
       return Boolean(this.item.userPermissions?.adminAiCatalogItem);
+    },
+    canReport() {
+      return Boolean(this.item.userPermissions?.reportAiCatalogItem);
     },
     canUse() {
       return isLoggedIn();
@@ -96,6 +101,9 @@ export default {
     },
     showEnable() {
       return this.canAdmin && !this.isGlobal && !this.isEnabled;
+    },
+    showDropdown() {
+      return this.canAdmin || this.canUse || this.canReport;
     },
     showAddToProject() {
       return this.canUse && this.isGlobal;
@@ -160,7 +168,7 @@ export default {
       {{ __('Enable') }}
     </gl-button>
     <gl-disclosure-dropdown
-      v-if="canAdmin || canUse"
+      v-if="showDropdown"
       :toggle-text="__('More actions')"
       category="tertiary"
       icon="ellipsis_v"
@@ -189,6 +197,19 @@ export default {
           <span class="gl-flex gl-gap-2">
             <gl-icon name="cancel" variant="current" aria-hidden="true" />
             {{ __('Disable') }}
+          </span>
+        </template>
+      </gl-disclosure-dropdown-item>
+      <gl-disclosure-dropdown-item
+        v-if="canReport"
+        v-gl-modal="'ai-catalog-item-report-modal'"
+        variant="danger"
+        data-testid="report-button"
+      >
+        <template #list-item>
+          <span class="gl-flex gl-gap-2">
+            <gl-icon name="flag" variant="current" aria-hidden="true" />
+            {{ s__('AICatalog|Report to admin') }}
           </span>
         </template>
       </gl-disclosure-dropdown-item>
@@ -242,6 +263,11 @@ export default {
       :is-project-namespace="showEnable"
       :show-add-to-group="showAddToGroup"
       @submit="$emit('add-to-target', $event)"
+    />
+    <ai-catalog-item-report-modal
+      v-if="canReport"
+      :item="item"
+      @submit="$emit('report-item', $event)"
     />
   </div>
 </template>

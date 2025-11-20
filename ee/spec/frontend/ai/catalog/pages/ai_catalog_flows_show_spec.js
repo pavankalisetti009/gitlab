@@ -12,9 +12,12 @@ import AiCatalogItemView from 'ee/ai/catalog/components/ai_catalog_item_view.vue
 import { TRACK_EVENT_TYPE_FLOW, TRACK_EVENT_VIEW_AI_CATALOG_ITEM } from 'ee/ai/catalog/constants';
 import deleteAiCatalogFlowMutation from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_flow.mutation.graphql';
 import deleteAiCatalogThirdPartyFlowMutation from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_third_party_flow.mutation.graphql';
+import reportAiCatalogItemMutation from 'ee/ai/catalog/graphql/mutations/report_ai_catalog_item.mutation.graphql';
 import {
   mockCatalogFlowDeleteErrorResponse,
   mockCatalogFlowDeleteResponse,
+  mockReportAiCatalogItemSuccessMutation,
+  mockReportAiCatalogItemErrorMutation,
   mockFlow,
   mockThirdPartyFlow,
 } from '../mock_data';
@@ -31,6 +34,9 @@ describe('AiCatalogFlowsShow', () => {
     aiCatalogFlow: mockFlow,
   };
 
+  const reportAiCatalogItemMutationHandler = jest
+    .fn()
+    .mockResolvedValue(mockReportAiCatalogItemSuccessMutation);
   const deleteFlowMutationHandler = jest.fn().mockResolvedValue(mockCatalogFlowDeleteResponse);
   const deleteThirdPartyFlowMutationHandler = jest.fn();
   const routeParams = { id: '1' };
@@ -43,6 +49,7 @@ describe('AiCatalogFlowsShow', () => {
     mockApollo = createMockApollo([
       [deleteAiCatalogFlowMutation, deleteFlowMutationHandler],
       [deleteAiCatalogThirdPartyFlowMutation, deleteThirdPartyFlowMutationHandler],
+      [reportAiCatalogItemMutation, reportAiCatalogItemMutationHandler],
     ]);
 
     wrapper = shallowMount(AiCatalogFlowsShow, {
@@ -151,6 +158,61 @@ describe('AiCatalogFlowsShow', () => {
         await waitForPromises();
         expect(findErrorsAlert().props('errors')).toEqual([
           'Failed to delete flow. Error: Request failed',
+        ]);
+        expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));
+      });
+    });
+  });
+
+  describe('when reporting the flow', () => {
+    const input = {
+      reason: 'SPAM',
+      body: 'This is a test report',
+    };
+
+    const reportFlow = () => findItemActions().vm.$emit('report-item', input);
+
+    it('sends a report request', () => {
+      reportFlow();
+
+      expect(reportAiCatalogItemMutationHandler).toHaveBeenCalledTimes(1);
+      expect(reportAiCatalogItemMutationHandler).toHaveBeenCalledWith({
+        input: {
+          id: mockFlow.id,
+          ...input,
+        },
+      });
+    });
+
+    describe('when request succeeds', () => {
+      it('shows toast', async () => {
+        reportFlow();
+        await waitForPromises();
+
+        expect(mockToast.show).toHaveBeenCalledWith('Report submitted successfully.');
+      });
+    });
+
+    describe('when request succeeds but returns errors', () => {
+      it('shows error alert', async () => {
+        reportAiCatalogItemMutationHandler.mockResolvedValue(mockReportAiCatalogItemErrorMutation);
+        reportFlow();
+        await waitForPromises();
+
+        expect(findErrorsAlert().props('errors')).toEqual([
+          "The resource that you are attempting to access does not exist or you don't have permission to perform this action",
+        ]);
+      });
+    });
+
+    describe('when request fails', () => {
+      it('shows error alert and captures exception', async () => {
+        reportAiCatalogItemMutationHandler.mockRejectedValue(new Error('custom error'));
+        reportFlow();
+        await waitForPromises();
+
+        expect(findErrorsAlert().props('errors')).toEqual([
+          'Failed to report flow. Error: custom error',
         ]);
         expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));
       });

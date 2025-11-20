@@ -12,6 +12,7 @@ fragment BaseAiCatalogItem on AiCatalogItem {
   }
   userPermissions {
     adminAiCatalogItem
+    reportAiCatalogItem
   }
   __typename
 }
