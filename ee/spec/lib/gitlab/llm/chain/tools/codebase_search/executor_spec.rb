@@ -95,7 +95,7 @@ RSpec.describe Gitlab::Llm::Chain::Tools::CodebaseSearch::Executor, feature_cate
             {
               category: 'repository',
               id: "gid://gitlab/Project/#{p.id}",
-              content: '',
+              content: 'non-empty-content',
               metadata: {
                 'name' => p.name,
                 'pathWithNamespace' => p.full_path,
@@ -110,7 +110,7 @@ RSpec.describe Gitlab::Llm::Chain::Tools::CodebaseSearch::Executor, feature_cate
             {
               category: 'directory',
               id: "dir:///User/project/some/path",
-              content: '',
+              content: 'non-empty-content',
               metadata: {
                 'relativePath' => 'some/path',
                 'projectId' => "gid://gitlab/Project/#{project_1.id}",
@@ -253,6 +253,8 @@ RSpec.describe Gitlab::Llm::Chain::Tools::CodebaseSearch::Executor, feature_cate
                   "</search_result>"
                 expect(ac_content).to include(expected_search_result)
               end
+
+              expect(ac_content).not_to include('non-empty-content')
             end
           end
 
