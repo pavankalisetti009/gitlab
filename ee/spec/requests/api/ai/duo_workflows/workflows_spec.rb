@@ -1330,7 +1330,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
         end
 
         let_it_be_with_refind(:duo_agent_platform_setting) do
-          create(:ai_feature_setting, :duo_agent_platform, self_hosted_model: self_hosted_model)
+          create(:ai_feature_setting, :duo_agent_platform_agentic_chat, self_hosted_model: self_hosted_model)
         end
 
         before do
@@ -1395,13 +1395,66 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
         end
       end
 
+      context 'when ai_agentic_chat_feature_setting_split feature flag is disabled for self-hosted agent platform' do
+        before do
+          stub_feature_flags(ai_agentic_chat_feature_setting_split: false)
+        end
+
+        context 'when self_hosted_agent_platform feature flag is enabled' do
+          let_it_be(:self_hosted_model) do
+            create(:ai_self_hosted_model, model: :claude_3, identifier: 'claude-3-7-sonnet-20250219')
+          end
+
+          let_it_be_with_refind(:duo_agent_platform_setting) do
+            create(:ai_feature_setting, :duo_agent_platform, self_hosted_model: self_hosted_model)
+          end
+
+          before do
+            stub_feature_flags(self_hosted_agent_platform: true)
+            stub_feature_flags(duo_agent_platform_model_selection: false)
+          end
+
+          it 'includes model metadata headers in the response' do
+            get_response
+
+            expect(response).to have_gitlab_http_status(:ok)
+
+            headers = json_response['DuoWorkflow']['Headers']
+            expect(headers).to include(
+              'x-gitlab-oauth-token' => 'oauth_token',
+              'x-gitlab-unidirectional-streaming' => 'enabled',
+              'x-gitlab-agent-platform-model-metadata' => be_a(String)
+            )
+
+            metadata = ::Gitlab::Json.parse(headers['x-gitlab-agent-platform-model-metadata'])
+            expect(metadata).to include(
+              'provider' => 'openai',
+              'name' => 'claude_3',
+              'identifier' => self_hosted_model.identifier,
+              'api_key' => self_hosted_model.api_token,
+              'endpoint' => self_hosted_model.endpoint
+            )
+          end
+
+          it 'creates ModelMetadata with the correct feature setting' do
+            expect(::Gitlab::Llm::AiGateway::AgentPlatform::ModelMetadata).to receive(:new)
+              .with(feature_setting: duo_agent_platform_setting)
+              .and_call_original
+
+            get api(path, user), headers: workhorse_headers
+          end
+
+          it_behaves_like 'ServiceURI has the right value', true
+        end
+      end
+
       context 'when self_hosted_agent_platform feature flag is disabled' do
         let_it_be(:self_hosted_model) do
           create(:ai_self_hosted_model, model: :claude_3, identifier: 'claude-3-7-sonnet-20250219')
         end
 
         let_it_be_with_refind(:duo_agent_platform_setting) do
-          create(:ai_feature_setting, :duo_agent_platform, self_hosted_model: self_hosted_model)
+          create(:ai_feature_setting, :duo_agent_platform_agentic_chat, self_hosted_model: self_hosted_model)
         end
 
         before do
@@ -1454,7 +1507,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
       context 'for model selection at instance level' do
         let_it_be(:instance_setting) do
           create(:instance_model_selection_feature_setting,
-            feature: :duo_agent_platform,
+            feature: :duo_agent_platform_agentic_chat,
             offered_model_ref: 'claude-3-7-sonnet-20250219')
         end
 
@@ -1474,12 +1527,49 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
           metadata = ::Gitlab::Json.parse(headers['x-gitlab-agent-platform-model-metadata'])
           expect(metadata).to include(
             'provider' => 'gitlab',
-            'feature_setting' => 'duo_agent_platform',
+            'feature_setting' => 'duo_agent_platform_agentic_chat',
             'identifier' => 'claude-3-7-sonnet-20250219'
           )
         end
 
         it_behaves_like 'ServiceURI has the right value', false
+      end
+
+      context 'when ai_agentic_chat_feature_setting_split feature flag is disabled ' \
+        'for instance-level model selection' do
+        before do
+          stub_feature_flags(ai_agentic_chat_feature_setting_split: false)
+        end
+
+        context 'for model selection at instance level' do
+          let_it_be(:instance_setting) do
+            create(:instance_model_selection_feature_setting,
+              feature: :duo_agent_platform,
+              offered_model_ref: 'claude-3-7-sonnet-20250219')
+          end
+
+          before do
+            stub_feature_flags(duo_agent_platform_model_selection: false)
+            stub_feature_flags(self_hosted_agent_platform: false)
+          end
+
+          it 'includes model metadata headers in the response' do
+            get_response
+
+            expect(response).to have_gitlab_http_status(:ok)
+
+            headers = json_response['DuoWorkflow']['Headers']
+
+            metadata = ::Gitlab::Json.parse(headers['x-gitlab-agent-platform-model-metadata'])
+            expect(metadata).to include(
+              'provider' => 'gitlab',
+              'feature_setting' => 'duo_agent_platform',
+              'identifier' => 'claude-3-7-sonnet-20250219'
+            )
+          end
+
+          it_behaves_like 'ServiceURI has the right value', false
+        end
       end
 
       context 'for model selection at namespace level', :saas do
@@ -1521,7 +1611,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
             let_it_be(:namespace_setting) do
               create(:ai_namespace_feature_setting,
                 namespace: group,
-                feature: :duo_agent_platform,
+                feature: :duo_agent_platform_agentic_chat,
                 offered_model_ref: 'claude_sonnet_3_7_20250219')
             end
 
@@ -1541,7 +1631,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
                 metadata = ::Gitlab::Json.parse(headers['x-gitlab-agent-platform-model-metadata'])
                 expect(metadata).to include(
                   'provider' => 'gitlab',
-                  'feature_setting' => 'duo_agent_platform',
+                  'feature_setting' => 'duo_agent_platform_agentic_chat',
                   'identifier' => 'claude_sonnet_3_7_20250219'
                 )
               end
@@ -1568,7 +1658,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
                     metadata = ::Gitlab::Json.parse(headers['x-gitlab-agent-platform-model-metadata'])
                     expect(metadata).to include(
                       'provider' => 'gitlab',
-                      'feature_setting' => 'duo_agent_platform',
+                      'feature_setting' => 'duo_agent_platform_agentic_chat',
                       'identifier' => 'claude_sonnet_3_7_20250219'
                     )
                   end
@@ -1592,7 +1682,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
                 metadata = ::Gitlab::Json.parse(headers['x-gitlab-agent-platform-model-metadata'])
                 expect(metadata).to include(
                   'provider' => 'gitlab',
-                  'feature_setting' => 'duo_agent_platform',
+                  'feature_setting' => 'duo_agent_platform_agentic_chat',
                   'identifier' => 'claude_sonnet_3_7_20250219'
                 )
               end
@@ -1617,7 +1707,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
                 metadata = ::Gitlab::Json.parse(headers['x-gitlab-agent-platform-model-metadata'])
                 expect(metadata).to include(
                   'provider' => 'gitlab',
-                  'feature_setting' => 'duo_agent_platform',
+                  'feature_setting' => 'duo_agent_platform_agentic_chat',
                   'identifier' => nil
                 )
               end
@@ -1645,7 +1735,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
                   metadata = ::Gitlab::Json.parse(headers['x-gitlab-agent-platform-model-metadata'])
                   expect(metadata).to include(
                     'provider' => 'gitlab',
-                    'feature_setting' => 'duo_agent_platform',
+                    'feature_setting' => 'duo_agent_platform_agentic_chat',
                     'identifier' => user_selected_model_identifier
                   )
                 end
@@ -1665,7 +1755,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
                   metadata = ::Gitlab::Json.parse(headers['x-gitlab-agent-platform-model-metadata'])
                   expect(metadata).to include(
                     'provider' => 'gitlab',
-                    'feature_setting' => 'duo_agent_platform',
+                    'feature_setting' => 'duo_agent_platform_agentic_chat',
                     'identifier' => nil
                   )
                 end
@@ -1685,7 +1775,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
                   metadata = ::Gitlab::Json.parse(headers['x-gitlab-agent-platform-model-metadata'])
                   expect(metadata).to include(
                     'provider' => 'gitlab',
-                    'feature_setting' => 'duo_agent_platform',
+                    'feature_setting' => 'duo_agent_platform_agentic_chat',
                     'identifier' => nil
                   )
                 end

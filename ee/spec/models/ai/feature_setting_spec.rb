@@ -410,7 +410,8 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
           duo_chat_refactor_code: 5,
           duo_chat_fix_code: 6,
           review_merge_request: 15,
-          duo_agent_platform: 16
+          duo_agent_platform: 16,
+          duo_agent_platform_agentic_chat: 17
         }.freeze)
       end
 

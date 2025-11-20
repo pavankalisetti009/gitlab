@@ -16,7 +16,8 @@ module Ai
       duo_chat_refactor_code: 5,
       duo_chat_fix_code: 6,
       review_merge_request: 15,
-      duo_agent_platform: 16
+      duo_agent_platform: 16,
+      duo_agent_platform_agentic_chat: 17
     }.freeze
 
     FLAGGED_FEATURES = {
@@ -33,7 +34,8 @@ module Ai
     FEATURES = STABLE_FEATURES.merge(FLAGGED_FEATURES)
 
     FEATURES_UNDER_FLAGS = {
-      duo_agent_platform: :self_hosted_agent_platform
+      duo_agent_platform: :self_hosted_agent_platform,
+      duo_agent_platform_agentic_chat: :ai_agentic_chat_feature_setting_split
     }.freeze
 
     belongs_to :self_hosted_model, foreign_key: :ai_self_hosted_model_id, inverse_of: :feature_settings
