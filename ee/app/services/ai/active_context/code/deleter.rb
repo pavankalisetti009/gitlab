@@ -28,7 +28,7 @@ module Ai
         private
 
         def options
-          base_options.merge({ operation: 'delete_project' })
+          base_options.merge({ operation: 'delete' })
         end
       end
     end

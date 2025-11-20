@@ -57,7 +57,7 @@ RSpec.describe Ai::ActiveContext::Code::Deleter, feature_category: :global_searc
         partition_name: collection.name,
         partition_number: collection.partition_for(project.id),
         timeout: described_class::TIMEOUT,
-        operation: 'delete_project'
+        operation: 'delete'
       }
     end
 
