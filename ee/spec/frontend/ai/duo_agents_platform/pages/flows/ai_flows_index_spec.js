@@ -6,25 +6,17 @@ import waitForPromises from 'helpers/wait_for_promises';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import AiFlowsIndex from 'ee/ai/duo_agents_platform/pages/flows/ai_flows_index.vue';
 import AiCatalogAddFlowToProjectModal from 'ee/ai/duo_agents_platform/components/catalog/ai_catalog_add_flow_to_project_modal.vue';
-import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
 import AiCatalogListHeader from 'ee/ai/catalog/components/ai_catalog_list_header.vue';
+import AiCatalogConfiguredItemsWrapper from 'ee/ai/duo_agents_platform/components/catalog/ai_catalog_configured_items_wrapper.vue';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
-import ResourceListsEmptyState from '~/vue_shared/components/resource_lists/empty_state.vue';
 import aiCatalogConfiguredItemsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_configured_items.query.graphql';
 import aiCatalogGroupUserPermissionsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_group_user_permissions.query.graphql';
 import aiCatalogProjectUserPermissionsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_project_user_permissions.query.graphql';
 import createAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/create_ai_catalog_item_consumer.mutation.graphql';
-import deleteAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_item_consumer.mutation.graphql';
 import {
-  mockBaseFlow,
-  mockBaseItemConsumer,
-  mockConfiguredFlowsResponse,
-  mockConfiguredItemsEmptyResponse,
   mockAiCatalogItemConsumerCreateSuccessProjectResponse,
   mockAiCatalogItemConsumerCreateErrorResponse,
-  mockAiCatalogItemConsumerDeleteResponse,
-  mockAiCatalogItemConsumerDeleteErrorResponse,
-  mockPageInfo,
+  mockConfiguredItemsEmptyResponse,
   mockGroupUserPermissionsResponse,
   mockProjectUserPermissionsResponse,
 } from 'ee_jest/ai/catalog/mock_data';
@@ -37,15 +29,14 @@ describe('AiFlowsIndex', () => {
   let wrapper;
   let mockApollo;
 
-  const mockRouter = {
-    push: jest.fn(),
-  };
   const mockToast = {
     show: jest.fn(),
   };
   const mockProjectId = 1;
   const mockProjectPath = 'test-group/test-project';
-  const mockConfiguredFlowsQueryHandler = jest.fn().mockResolvedValue(mockConfiguredFlowsResponse);
+  const mockConfiguredItemsQueryHandler = jest
+    .fn()
+    .mockResolvedValue(mockConfiguredItemsEmptyResponse);
   const mockGroupUserPermissionsQueryHandler = jest
     .fn()
     .mockResolvedValue(mockGroupUserPermissionsResponse);
@@ -53,9 +44,6 @@ describe('AiFlowsIndex', () => {
     .fn()
     .mockResolvedValue(mockProjectUserPermissionsResponse);
   const createAiCatalogItemConsumerHandler = jest.fn();
-  const deleteItemConsumerMutationHandler = jest
-    .fn()
-    .mockResolvedValue(mockAiCatalogItemConsumerDeleteResponse);
 
   const defaultProvide = {
     projectId: mockProjectId,
@@ -67,13 +55,12 @@ describe('AiFlowsIndex', () => {
     },
   };
 
-  const createComponent = ({ provide = {}, $route = { query: {} } } = {}) => {
+  const createComponent = ({ provide = {} } = {}) => {
     mockApollo = createMockApollo([
-      [aiCatalogConfiguredItemsQuery, mockConfiguredFlowsQueryHandler],
+      [aiCatalogConfiguredItemsQuery, mockConfiguredItemsQueryHandler],
       [aiCatalogProjectUserPermissionsQuery, mockProjectUserPermissionsQueryHandler],
       [aiCatalogGroupUserPermissionsQuery, mockGroupUserPermissionsQueryHandler],
       [createAiCatalogItemConsumer, createAiCatalogItemConsumerHandler],
-      [deleteAiCatalogItemConsumer, deleteItemConsumerMutationHandler],
     ]);
 
     wrapper = shallowMountExtended(AiFlowsIndex, {
@@ -83,17 +70,17 @@ describe('AiFlowsIndex', () => {
         ...provide,
       },
       mocks: {
-        $router: mockRouter,
-        $route,
         $toast: mockToast,
+      },
+      stubs: {
+        AiCatalogConfiguredItemsWrapper,
       },
     });
   };
 
   const findErrorsAlert = () => wrapper.findComponent(ErrorsAlert);
-  const findAiCatalogList = () => wrapper.findComponent(AiCatalogList);
+  const findConfiguredItemsWrapper = () => wrapper.findComponent(AiCatalogConfiguredItemsWrapper);
   const findAddFlowToProjectModal = () => wrapper.findComponent(AiCatalogAddFlowToProjectModal);
-  const findEmptyState = () => wrapper.findComponent(ResourceListsEmptyState);
 
   describe('component rendering', () => {
     beforeEach(() => {
@@ -104,52 +91,13 @@ describe('AiFlowsIndex', () => {
       expect(wrapper.findComponent(AiCatalogListHeader).exists()).toBe(true);
     });
 
-    it('renders AiCatalogList component', async () => {
-      const expectedItem = {
-        ...mockBaseFlow,
-        itemConsumer: mockBaseItemConsumer,
-      };
-      const catalogList = findAiCatalogList();
-
-      expect(catalogList.props('isLoading')).toBe(true);
-
-      await waitForPromises();
-
-      expect(catalogList.props('items')).toEqual([expectedItem]);
-      expect(catalogList.props('isLoading')).toBe(false);
-    });
-
-    describe('when there are no flows', () => {
-      beforeEach(async () => {
-        mockConfiguredFlowsQueryHandler.mockResolvedValueOnce(mockConfiguredItemsEmptyResponse);
-
-        await waitForPromises();
-      });
-
-      it('renders empty state with correct props for project', () => {
-        expect(findEmptyState().props()).toMatchObject({
-          title: 'Use flows in your project.',
-          description: 'Flows use multiple agents to complete tasks automatically.',
-        });
-      });
-
-      it('renders empty state with correct props for group', async () => {
-        const mockGroupId = 2;
-        mockConfiguredFlowsQueryHandler.mockResolvedValueOnce(mockConfiguredItemsEmptyResponse);
-
-        createComponent({
-          provide: {
-            projectId: null,
-            groupId: mockGroupId,
-          },
-        });
-
-        await waitForPromises();
-
-        expect(findEmptyState().props()).toMatchObject({
-          title: 'Use flows in your group.',
-          description: 'Flows use multiple agents to complete tasks automatically.',
-        });
+    it('renders AiCatalogConfiguredItemsWrapper component with correct props', () => {
+      expect(findConfiguredItemsWrapper().props()).toMatchObject({
+        emptyStateTitle: 'Use flows in your project.',
+        emptyStateDescription: 'Flows use multiple agents to complete tasks automatically.',
+        emptyStateButtonHref: '/explore/ai-catalog/flows',
+        emptyStateButtonText: 'Explore AI Catalog flows',
+        itemTypes: ['FLOW', 'THIRD_PARTY_FLOW'],
       });
     });
   });
@@ -158,18 +106,6 @@ describe('AiFlowsIndex', () => {
     describe('when in project namespace', () => {
       beforeEach(() => {
         createComponent();
-      });
-
-      it('fetches list data with projectId', () => {
-        expect(mockConfiguredFlowsQueryHandler).toHaveBeenCalledWith({
-          itemTypes: ['FLOW', 'THIRD_PARTY_FLOW'],
-          projectId: `gid://gitlab/Project/${mockProjectId}`,
-          includeInherited: false,
-          after: null,
-          before: null,
-          first: 20,
-          last: null,
-        });
       });
 
       it('fetches project user permissions', () => {
@@ -198,17 +134,6 @@ describe('AiFlowsIndex', () => {
         });
       });
 
-      it('fetches list data with groupId', () => {
-        expect(mockConfiguredFlowsQueryHandler).toHaveBeenCalledWith({
-          itemTypes: ['FLOW', 'THIRD_PARTY_FLOW'],
-          groupId: `gid://gitlab/Group/${mockGroupId}`,
-          after: null,
-          before: null,
-          first: 20,
-          last: null,
-        });
-      });
-
       it('fetches group user permissions', () => {
         expect(mockGroupUserPermissionsQueryHandler).toHaveBeenCalledWith({
           fullPath: mockGroupPath,
@@ -217,66 +142,6 @@ describe('AiFlowsIndex', () => {
 
       it('skips project user permissions query', () => {
         expect(mockProjectUserPermissionsQueryHandler).not.toHaveBeenCalled();
-      });
-    });
-
-    describe('disabling a flow', () => {
-      const item = {
-        ...mockBaseFlow,
-        itemConsumer: mockBaseItemConsumer,
-      };
-      const disableFlow = () => findAiCatalogList().props('disableFn')(item);
-
-      beforeEach(() => {
-        createComponent();
-      });
-
-      it('calls delete consumer mutation', () => {
-        disableFlow();
-
-        expect(deleteItemConsumerMutationHandler).toHaveBeenCalledWith({
-          id: mockBaseItemConsumer.id,
-        });
-      });
-
-      describe('when request succeeds', () => {
-        it('shows a toast message and refetches the list', async () => {
-          disableFlow();
-
-          await waitForPromises();
-
-          expect(mockConfiguredFlowsQueryHandler).toHaveBeenCalledTimes(2);
-          expect(mockToast.show).toHaveBeenCalledWith('Flow disabled in this project.');
-        });
-      });
-
-      describe('when request succeeds but returns errors', () => {
-        it('shows alert with error', async () => {
-          deleteItemConsumerMutationHandler.mockResolvedValue(
-            mockAiCatalogItemConsumerDeleteErrorResponse,
-          );
-
-          disableFlow();
-
-          await waitForPromises();
-          expect(findErrorsAlert().props('errors')).toStrictEqual([
-            'Failed to disable flow. You do not have permission to disable this item.',
-          ]);
-        });
-      });
-
-      describe('when request fails', () => {
-        it('shows alert with error and captures exception', async () => {
-          deleteItemConsumerMutationHandler.mockRejectedValue(new Error('Request failed'));
-
-          disableFlow();
-
-          await waitForPromises();
-          expect(findErrorsAlert().props('errors')).toStrictEqual([
-            'Failed to disable flow. Error: Request failed',
-          ]);
-          expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));
-        });
       });
     });
 
@@ -321,8 +186,8 @@ describe('AiFlowsIndex', () => {
           });
         });
 
-        it('refetches the configured items query', () => {
-          expect(mockConfiguredFlowsQueryHandler).toHaveBeenCalledTimes(2);
+        it('refetches aiCatalogConfiguredItemsQuery', () => {
+          expect(mockConfiguredItemsQueryHandler).toHaveBeenCalled();
         });
       });
 
@@ -358,40 +223,21 @@ describe('AiFlowsIndex', () => {
     });
   });
 
-  describe('pagination', () => {
-    beforeEach(async () => {
+  describe('error handling', () => {
+    beforeEach(() => {
       createComponent();
-      await waitForPromises();
     });
 
-    it('passes pageInfo to list component', () => {
-      expect(findAiCatalogList().props('pageInfo')).toMatchObject(mockPageInfo);
-    });
+    it('handles error event from wrapper component', async () => {
+      const errorPayload = {
+        title: 'Failed to disable flow',
+        errors: ['Some error message'],
+      };
 
-    it('refetches query with correct variables when paging backward', () => {
-      findAiCatalogList().vm.$emit('prev-page');
-      expect(mockConfiguredFlowsQueryHandler).toHaveBeenCalledWith({
-        itemTypes: ['FLOW', 'THIRD_PARTY_FLOW'],
-        projectId: `gid://gitlab/Project/${mockProjectId}`,
-        includeInherited: false,
-        after: null,
-        before: 'eyJpZCI6IjUxIn0',
-        first: null,
-        last: 20,
-      });
-    });
+      await findConfiguredItemsWrapper().vm.$emit('error', errorPayload);
 
-    it('refetches query with correct variables when paging forward', () => {
-      findAiCatalogList().vm.$emit('next-page');
-      expect(mockConfiguredFlowsQueryHandler).toHaveBeenCalledWith({
-        itemTypes: ['FLOW', 'THIRD_PARTY_FLOW'],
-        projectId: `gid://gitlab/Project/${mockProjectId}`,
-        includeInherited: false,
-        after: 'eyJpZCI6IjM1In0',
-        before: null,
-        first: 20,
-        last: null,
-      });
+      expect(findErrorsAlert().props('title')).toBe('Failed to disable flow');
+      expect(findErrorsAlert().props('errors')).toEqual(['Some error message']);
     });
   });
 });
