@@ -8,7 +8,7 @@ describe('RegistriesTable', () => {
   let wrapper;
 
   const defaultProps = {
-    registries: groupVirtualRegistries.group.mavenVirtualRegistries.nodes,
+    registries: groupVirtualRegistries.group.virtualRegistriesPackagesMavenRegistries.nodes,
   };
 
   const defaultProvide = {

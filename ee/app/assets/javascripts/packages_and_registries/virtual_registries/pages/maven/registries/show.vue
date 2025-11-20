@@ -32,7 +32,7 @@ export default {
         };
       },
       update(data) {
-        return data.mavenVirtualRegistry || {};
+        return data.virtualRegistriesPackagesMavenRegistry || {};
       },
       result() {
         this.hasLoadedOnce = true;

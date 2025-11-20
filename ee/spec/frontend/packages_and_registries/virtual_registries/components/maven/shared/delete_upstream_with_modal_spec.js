@@ -37,11 +37,18 @@ describe('DeleteUpstreamWithModal', () => {
 
   const mockUpstreamRegistries = {
     data: {
-      mavenUpstreamRegistry: {
+      virtualRegistriesPackagesMavenUpstream: {
         ...mavenUpstreamRegistry,
-        registries: {
-          nodes: mockRegistries,
-        },
+        registryUpstreams: mockRegistries.map((registry) => ({
+          __typename: 'MavenRegistryUpstream',
+          id: registry.id.toString(),
+          position: 0,
+          registry: {
+            __typename: 'MavenVirtualRegistry',
+            id: registry.id.toString(),
+            name: registry.name,
+          },
+        })),
       },
     },
   };
@@ -129,7 +136,6 @@ describe('DeleteUpstreamWithModal', () => {
       it('calls the GraphQL query with right parameters', () => {
         expect(mavenUpstreamRegistriesHandler).toHaveBeenCalledWith({
           id: 'gid://gitlab/VirtualRegistries::Packages::Maven::Upstream/123',
-          first: 20,
         });
       });
 
@@ -158,11 +164,9 @@ describe('DeleteUpstreamWithModal', () => {
         describe('when upstream has no associated registries', () => {
           const handler = jest.fn().mockResolvedValue({
             data: {
-              mavenUpstreamRegistry: {
+              virtualRegistriesPackagesMavenUpstream: {
                 ...mavenUpstreamRegistry,
-                registries: {
-                  nodes: [],
-                },
+                registryUpstreams: [],
               },
             },
           });
