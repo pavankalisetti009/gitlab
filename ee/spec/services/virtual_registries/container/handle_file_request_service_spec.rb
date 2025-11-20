@@ -46,6 +46,24 @@ RSpec.describe VirtualRegistries::Container::HandleFileRequestService, :aggregat
       end
     end
 
+    context 'when requesting manifest by digest that was cached with a tag' do
+      let_it_be(:upstream_etag) { 'sha256:abc123def456abc123def456abc123def456abc123def456abc123def456abcd' }
+      let_it_be(:path) { "my/image/manifests/#{upstream_etag}" }
+      let_it_be(:expected_relative_path) { 'my/image/manifests/latest' }
+      let_it_be(:upstream_resource_url) { upstream.url_for(path) }
+
+      let_it_be(:cache_entry) do
+        create(:virtual_registries_container_cache_entry,
+          :upstream_checked,
+          upstream: upstream,
+          relative_path: 'my/image/manifests/latest',
+          upstream_etag: upstream_etag
+        )
+      end
+
+      it_behaves_like 'returning a service response success response', action: :download_file
+    end
+
     context 'with a User' do
       shared_examples 'container request tests' do
         let(:processing_cache_entry) do
