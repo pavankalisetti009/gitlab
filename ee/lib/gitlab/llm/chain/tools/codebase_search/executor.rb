@@ -63,10 +63,10 @@ module Gitlab
               context.additional_context.each do |ctx|
                 case ctx[:category]
                 when 'repository'
-                  ctx[:content] += repository_info_context(ctx[:metadata])
+                  ctx[:content] = repository_info_context(ctx[:metadata])
                   ctx[:content] += search_results_context('repository', ctx[:id])
                 when 'directory'
-                  ctx[:content] += directory_info_context(ctx[:metadata])
+                  ctx[:content] = directory_info_context(ctx[:metadata])
                   ctx[:content] += search_results_context(
                     'directory',
                     ctx.dig(:metadata, 'projectId'),
