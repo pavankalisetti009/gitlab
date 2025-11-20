@@ -160,7 +160,7 @@ export default {
     </gl-alert>
 
     <gl-alert
-      v-if="isPrivateItem"
+      v-if="isPrivateItem && !isProjectNamespace"
       data-testid="private-alert"
       :dismissible="false"
       variant="info"

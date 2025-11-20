@@ -9,6 +9,7 @@ import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import { prerequisitesError } from '../utils';
 import AiCatalogItemActions from '../components/ai_catalog_item_actions.vue';
 import AiCatalogItemView from '../components/ai_catalog_item_view.vue';
+import aiCatalogAgentQuery from '../graphql/queries/ai_catalog_agent.query.graphql';
 import createAiCatalogItemConsumer from '../graphql/mutations/create_ai_catalog_item_consumer.mutation.graphql';
 import reportAiCatalogItem from '../graphql/mutations/report_ai_catalog_item.mutation.graphql';
 import deleteAiCatalogAgentMutation from '../graphql/mutations/delete_ai_catalog_agent.mutation.graphql';
@@ -80,6 +81,7 @@ export default {
           variables: {
             input,
           },
+          refetchQueries: [aiCatalogAgentQuery],
         });
 
         if (data) {
