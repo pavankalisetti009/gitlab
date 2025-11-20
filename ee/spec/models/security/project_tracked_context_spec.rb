@@ -262,5 +262,16 @@ RSpec.describe Security::ProjectTrackedContext, feature_category: :vulnerability
         expect(described_class.default_refs).to contain_exactly(default_ref)
       end
     end
+
+    describe '.for_ref' do
+      it 'returns refs with matching context_name that are branches or tags' do
+        expect(described_class.for_ref(tracked_ref.context_name)).to contain_exactly(tracked_ref)
+        expect(described_class.for_ref(default_ref.context_name)).to contain_exactly(default_ref)
+      end
+
+      it 'returns empty when no matching refs exist' do
+        expect(described_class.for_ref('nonexistent-ref')).to be_empty
+      end
+    end
   end
 end

@@ -9,6 +9,7 @@ module Sbom
         ::Sbom::Ingestion::Tasks::IngestSources,
         ::Sbom::Ingestion::Tasks::IngestSourcePackages,
         ::Sbom::Ingestion::Tasks::IngestOccurrences,
+        ::Sbom::Ingestion::Tasks::IngestOccurrenceRefs,
         ::Sbom::Ingestion::Tasks::IngestOccurrencesVulnerabilities
       ].freeze
 
