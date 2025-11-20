@@ -1,13 +1,17 @@
+- user_link = tag_pair(link_to('', user_url(@reporter)), :linkStart, :linkEnd)
+- catalog_item_link = tag_pair(link_to('', catalog_item_url), :itemLinkStart, :itemLinkEnd)
+- strong_tag_pair = tag_pair(tag.strong, :strongStart, :strongEnd)
+
 %p= _("Hello Admin,")
 
 %p
-  = html_escape(_("GitLab user %{username} flagged the AI Catalog item %{item_name} for review.")) % { username: link_to(@reporter.username, user_url(@reporter)), item_name: @ai_catalog_item.name }
+  = safe_format(_("GitLab user %{strongStart}@%{username}%{strongEnd} flagged the AI Catalog item %{strongStart}%{item_name}%{strongEnd} for review."), strong_tag_pair, username: @reporter.username, item_name: @ai_catalog_item.name)
 
 %ul
   %li
-    = _("Catalog item: %{name} (ID: %{id})") % { name: @ai_catalog_item.name, id: @ai_catalog_item.id }
+    = safe_format(_("Catalog item: %{itemLinkStart}%{name}%{itemLinkEnd} (ID: %{id})"), catalog_item_link, name: @ai_catalog_item.name, id: @ai_catalog_item.id)
   %li
-    = html_escape(_("Reported by: %{username} at %{time}")) % { username: link_to(@reporter.username, user_url(@reporter)), time: @reported_at.strftime('%Y-%m-%d %H:%M:%S %Z') }
+    = safe_format(_("Reported by: %{linkStart}@%{username}%{linkEnd} at %{time}"), user_link, username: @reporter.username, time: @reported_at.strftime('%Y-%m-%d %H:%M:%S %Z'))
   %li
     = _("Reason:")
     %ul

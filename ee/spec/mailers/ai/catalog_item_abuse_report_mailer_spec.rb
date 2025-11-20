@@ -39,6 +39,16 @@ RSpec.describe Ai::CatalogItemAbuseReportMailer, feature_category: :workflow_cat
       it 'includes link to reporter' do
         expect(email.body.encoded).to include(Gitlab::Routing.url_helpers.user_url(reporter))
       end
+
+      it 'includes link to catalog item' do
+        catalog_item_url = Gitlab::UrlBuilder.build(catalog_item)
+        expect(email.body.encoded).to include(catalog_item_url)
+      end
+
+      it 'includes catalog item URL in the correct format' do
+        expected_url = "#{Settings.gitlab['url']}/explore/ai-catalog/agents/#{catalog_item.id}"
+        expect(email.body.encoded).to include(expected_url)
+      end
     end
 
     context 'when message is not provided' do
@@ -68,6 +78,11 @@ RSpec.describe Ai::CatalogItemAbuseReportMailer, feature_category: :workflow_cat
       end
 
       it { is_expected.to have_body_text 'aiCatalogFlowDelete' }
+
+      it 'includes flow URL in email body' do
+        expected_url = "#{Settings.gitlab['url']}/explore/ai-catalog/flows/#{flow_item.id}"
+        expect(email.body.encoded).to include(expected_url)
+      end
     end
 
     context 'when item is a third_party_flow' do
@@ -86,6 +101,11 @@ RSpec.describe Ai::CatalogItemAbuseReportMailer, feature_category: :workflow_cat
       end
 
       it { is_expected.to have_body_text 'aiCatalogThirdPartyFlowDelete' }
+
+      it 'includes third party flow URL in email body' do
+        expected_url = "#{Settings.gitlab['url']}/explore/ai-catalog/flows/#{third_party_flow_item.id}"
+        expect(email.body.encoded).to include(expected_url)
+      end
     end
 
     context 'when user_id is missing' do

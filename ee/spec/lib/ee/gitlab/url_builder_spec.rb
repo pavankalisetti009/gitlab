@@ -28,6 +28,10 @@ RSpec.describe Gitlab::UrlBuilder do
       [:work_item, :epic] | ->(epic_work_item) { "/#{epic_work_item.project.full_path}/-/work_items/#{epic_work_item.iid}" }
 
       [:issue, :key_result, :group_level] | ->(issue) { "/groups/#{issue.namespace.full_path}/-/work_items/#{issue.iid}" }
+
+      :ai_catalog_agent           | ->(item) { "/explore/ai-catalog/agents/#{item.id}" }
+      :ai_catalog_flow            | ->(item) { "/explore/ai-catalog/flows/#{item.id}" }
+      :ai_catalog_third_party_flow | ->(item) { "/explore/ai-catalog/flows/#{item.id}" }
     end
 
     with_them do
@@ -65,6 +69,16 @@ RSpec.describe Gitlab::UrlBuilder do
 
       it 'returns only the path if only_path is given' do
         expect(subject.build(note, only_path: true)).to eq(path)
+      end
+    end
+
+    context 'when passing an AI catalog item without an id' do
+      let(:item) do
+        build(:ai_catalog_agent)
+      end
+
+      it 'returns nil' do
+        expect(subject.build(item)).to be_nil
       end
     end
   end
