@@ -424,13 +424,8 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
           remove_code: { description: 'Test second permission' }
         )
 
-        expected_sql = if Gitlab.next_rails?
-                         "(member_roles.permissions @> ('{\"see_code\":true}')::jsonb) " \
-                         "OR (member_roles.permissions @> ('{\"remove_code\":true}')::jsonb)"
-                       else
-                         "member_roles.permissions @> ('{\"see_code\":true}')::jsonb " \
-                         "OR member_roles.permissions @> ('{\"remove_code\":true}')::jsonb"
-                       end
+        expected_sql = "(member_roles.permissions @> ('{\"see_code\":true}')::jsonb) " \
+                        "OR (member_roles.permissions @> ('{\"remove_code\":true}')::jsonb)"
 
         expect(described_class.elevating.to_sql).to include(expected_sql)
       end

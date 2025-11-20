@@ -64,11 +64,7 @@ module Geo
       end
 
       def migrations
-        if ::Gitlab.next_rails?
-          database_connection.pool.migration_context.migrations
-        else
-          database_connection.migration_context.migrations
-        end
+        database_connection.pool.migration_context.migrations
       end
 
       def schema_migration
