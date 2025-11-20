@@ -464,7 +464,7 @@ RSpec.describe Analytics::Dashboards::Visualization, feature_category: :product_
         "\"DORAChart\", \"UsageOverview\", \"DoraPerformersScore\", \"DoraProjectsComparison\", " \
         "\"AiImpactTable\", \"ContributionsByUserTable\", \"ContributionsPushesChart\", " \
         "\"ContributionsIssuesChart\", \"ContributionsMergeRequestsChart\", \"NamespaceMetadata\", " \
-        "\"MergeRequestsThroughputTable\", \"BarChart\"]"]
+        "\"MergeRequestsThroughputTable\", \"BarChart\", \"StackedColumnChart\"]"]
       expect(vis&.errors).to match_array(expected)
     end
   end

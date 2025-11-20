@@ -27,7 +27,8 @@
             "ContributionsMergeRequestsChart",
             "NamespaceMetadata",
             "MergeRequestsThroughputTable",
-            "BarChart"
+            "BarChart",
+            "StackedColumnChart"
           ]
         },
         "slug": {
