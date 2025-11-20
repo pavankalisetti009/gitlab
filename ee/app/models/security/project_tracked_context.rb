@@ -57,6 +57,7 @@ module Security
 
     scope :for_project, ->(project_id) { where(project_id: project_id) }
     scope :default_refs, -> { where(is_default: true) }
+    scope :for_ref, ->(ref_name) { where(context_name: ref_name, context_type: [:branch, :tag]) }
 
     STATES.each do |state_name, value|
       scope state_name, -> { where(state: value) }
