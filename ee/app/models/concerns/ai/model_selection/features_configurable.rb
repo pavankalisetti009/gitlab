@@ -71,6 +71,10 @@ module Ai
         raise NotImplementedError, '#model_selection_scope method must be implemented for Model Selection logic'
       end
 
+      def self.agentic_chat_feature_name
+        :duo_agent_platform
+      end
+
       included do
         enum :feature, FEATURES, validate: true
 

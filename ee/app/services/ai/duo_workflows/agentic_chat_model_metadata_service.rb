@@ -2,9 +2,7 @@
 
 module Ai
   module DuoWorkflows
-    class DuoAgentPlatformModelMetadataService
-      FEATURE_NAME = :duo_agent_platform
-
+    class AgenticChatModelMetadataService
       def initialize(root_namespace: nil, current_user: nil, user_selected_model_identifier: nil)
         @root_namespace = root_namespace
         @current_user = current_user
@@ -21,12 +19,16 @@ module Ai
 
       attr_reader :root_namespace, :current_user, :user_selected_model_identifier
 
+      def feature_name
+        ::Ai::ModelSelection::FeaturesConfigurable.agentic_chat_feature_name
+      end
+
       def self_managed?
         !::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
       end
 
       def duo_agent_platform
-        ::Ai::FeatureSetting.find_by_feature(FEATURE_NAME)
+        ::Ai::FeatureSetting.find_by_feature(feature_name)
       end
 
       def duo_agent_platform_in_self_hosted_duo?
@@ -50,9 +52,9 @@ module Ai
       def resolve_self_hosted_duo_model_metadata
         return {} unless Feature.enabled?(:self_hosted_agent_platform, :instance)
 
-        return {} if duo_agent_platform&.disabled?
-
         feature_setting = duo_agent_platform
+
+        return {} if feature_setting.nil? || feature_setting.disabled?
 
         model_metadata_from_setting(feature_setting)
       end
@@ -63,7 +65,7 @@ module Ai
       def resolve_cloud_connected_model_metadata
         # Priority 1: Instance-level model selection
         instance_setting = ::Ai::ModelSelection::InstanceModelSelectionFeatureSetting
-                            .find_or_initialize_by_feature(FEATURE_NAME)
+                            .find_or_initialize_by_feature(feature_name)
 
         return {} unless instance_setting
 
@@ -80,7 +82,7 @@ module Ai
 
         # Priority 1: Namespace-level model selection
         namespace_setting = ::Ai::ModelSelection::NamespaceFeatureSetting
-                             .find_or_initialize_by_feature(root_namespace, FEATURE_NAME)
+                             .find_or_initialize_by_feature(root_namespace, feature_name)
 
         return {} unless namespace_setting
 
@@ -128,7 +130,7 @@ module Ai
         parsed_response =
           ::Gitlab::Ai::ModelSelection::ModelDefinitionResponseParser.new(result.payload)
 
-        parsed_response.selectable_models_for_feature(FEATURE_NAME)
+        parsed_response.selectable_models_for_feature(feature_name)
       end
 
       def user_selected_model_metadata(model_selection_scope)
@@ -141,12 +143,12 @@ module Ai
         if model_selection_scope
           ::Ai::ModelSelection::NamespaceFeatureSetting.build(
             namespace: model_selection_scope,
-            feature: FEATURE_NAME,
+            feature: feature_name,
             offered_model_ref: user_selected_model_identifier
           )
         else
           ::Ai::ModelSelection::InstanceModelSelectionFeatureSetting.build(
-            feature: FEATURE_NAME,
+            feature: feature_name,
             offered_model_ref: user_selected_model_identifier
           )
         end
