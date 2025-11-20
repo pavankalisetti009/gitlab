@@ -188,12 +188,199 @@ RSpec.describe Ai::ActiveContext::Code::Repository, feature_category: :code_sugg
         end
       end
     end
+
+    describe '.not_in_delete_states' do
+      let_it_be(:pending_repository) { create(:ai_active_context_code_repository, state: :pending) }
+      let_it_be(:ready_repository) { create(:ai_active_context_code_repository, state: :ready) }
+      let_it_be(:pending_deletion_repository) do
+        create(:ai_active_context_code_repository, state: :pending_deletion)
+      end
+
+      let_it_be(:deleted_repository) { create(:ai_active_context_code_repository, state: :deleted) }
+
+      it 'excludes repositories in pending_deletion or deleted states' do
+        result = described_class.not_in_delete_states
+
+        expect(result).to contain_exactly(pending_repository, ready_repository)
+      end
+    end
+
+    describe '.no_recent_activity' do
+      let_it_be(:before_cutoff) { (described_class::LAST_ACTIVITY_CUTOFF + 1.day).ago }
+      let_it_be(:after_cutoff) { (described_class::LAST_ACTIVITY_CUTOFF - 1.day).ago }
+
+      let_it_be(:old_repository) do
+        create(:ai_active_context_code_repository, last_queried_at: before_cutoff)
+      end
+
+      let_it_be(:recent_repository) do
+        create(:ai_active_context_code_repository, last_queried_at: after_cutoff)
+      end
+
+      let_it_be(:never_queried_old_repository) do
+        create(:ai_active_context_code_repository, last_queried_at: nil, created_at: before_cutoff)
+      end
+
+      let_it_be(:never_queried_recent_repository) do
+        create(:ai_active_context_code_repository, last_queried_at: nil, created_at: after_cutoff)
+      end
+
+      it 'returns repositories queried before the cutoff date' do
+        result = described_class.no_recent_activity
+
+        expect(result).to contain_exactly(old_repository, never_queried_old_repository)
+      end
+
+      it 'returns repositories never queried but created before the cutoff date' do
+        result = described_class.no_recent_activity
+
+        expect(result).to include(never_queried_old_repository)
+      end
+
+      it 'excludes repositories never queried and created after the cutoff date' do
+        result = described_class.no_recent_activity
+
+        expect(result).not_to include(never_queried_recent_repository)
+      end
+
+      it 'excludes repositories queried after the cutoff date' do
+        result = described_class.no_recent_activity
+
+        expect(result).not_to include(recent_repository)
+      end
+    end
+
+    describe '.duo_features_disabled' do
+      let_it_be(:project_with_duo_enabled) { create(:project) }
+      let_it_be(:project_with_duo_disabled) { create(:project) }
+
+      let_it_be(:repository_duo_enabled) do
+        create(:ai_active_context_code_repository, project: project_with_duo_enabled)
+      end
+
+      let_it_be(:repository_duo_disabled) do
+        create(:ai_active_context_code_repository, project: project_with_duo_disabled)
+      end
+
+      before do
+        project_with_duo_enabled.project_setting.update!(duo_features_enabled: true)
+        project_with_duo_disabled.project_setting.update!(duo_features_enabled: false)
+      end
+
+      it 'returns repositories with duo_features_enabled disabled' do
+        result = described_class.duo_features_disabled
+
+        expect(result).to contain_exactly(repository_duo_disabled)
+      end
+
+      context 'when duo_features_enabled is set on the namespace level' do
+        let_it_be(:group_with_duo_disabled) { create(:group) }
+        let_it_be(:group_with_duo_enabled) { create(:group) }
+        let_it_be(:project_in_disabled_group) { create(:project, namespace: group_with_duo_disabled) }
+        let_it_be(:project_in_enabled_group) { create(:project, namespace: group_with_duo_enabled) }
+
+        let_it_be(:repository_namespace_disabled) do
+          create(:ai_active_context_code_repository, project: project_in_disabled_group)
+        end
+
+        let_it_be(:repository_namespace_enabled) do
+          create(:ai_active_context_code_repository, project: project_in_enabled_group)
+        end
+
+        before do
+          project_in_disabled_group.project_setting.update!(duo_features_enabled: false)
+          project_in_enabled_group.project_setting.update!(duo_features_enabled: false)
+          group_with_duo_disabled.namespace_settings.update!(duo_features_enabled: false)
+          group_with_duo_enabled.namespace_settings.update!(duo_features_enabled: true)
+        end
+
+        it 'includes repositories with namespace-level duo_features_enabled disabled' do
+          result = described_class.duo_features_disabled
+
+          expect(result).to include(repository_namespace_disabled)
+        end
+
+        it 'excludes repositories with namespace-level duo_features_enabled enabled' do
+          result = described_class.duo_features_disabled
+
+          expect(result).not_to include(repository_namespace_enabled)
+        end
+      end
+    end
+
+    describe '.without_enabled_namespace' do
+      let_it_be(:active_connection) { create(:ai_active_context_connection) }
+      let_it_be(:enabled_namespace) do
+        create(:ai_active_context_code_enabled_namespace, active_context_connection: active_connection)
+      end
+
+      let_it_be(:repository_with_namespace) do
+        create(:ai_active_context_code_repository,
+          enabled_namespace: enabled_namespace,
+          active_context_connection: active_connection)
+      end
+
+      let_it_be(:repository_with_nil_namespace) do
+        create(:ai_active_context_code_repository, active_context_connection: active_connection)
+      end
+
+      before do
+        repository_with_nil_namespace.update!(enabled_namespace_id: nil)
+      end
+
+      it 'returns repositories with nil enabled namespaces' do
+        result = described_class.without_enabled_namespace
+
+        expect(result).to contain_exactly(repository_with_nil_namespace)
+      end
+    end
   end
 
   describe 'table partitioning' do
     it 'is partitioned by project_id' do
       expect(described_class.partitioning_strategy).to be_a(Gitlab::Database::Partitioning::IntRangeStrategy)
       expect(described_class.partitioning_strategy.partitioning_key).to eq(:project_id)
+    end
+  end
+
+  describe '.mark_as_pending_deletion_with_reason' do
+    let_it_be(:repository1) { create(:ai_active_context_code_repository, state: :ready) }
+    let_it_be(:repository2) { create(:ai_active_context_code_repository, state: :pending) }
+    let_it_be(:repository3) { create(:ai_active_context_code_repository, state: :ready) }
+
+    it 'updates all repositories in the scope to pending_deletion state' do
+      described_class.where(id: [repository1.id, repository2.id]).mark_as_pending_deletion_with_reason('test_reason')
+
+      expect(repository1.reload.state).to eq('pending_deletion')
+      expect(repository2.reload.state).to eq('pending_deletion')
+      expect(repository3.reload.state).to eq('ready')
+    end
+
+    it 'sets the delete_reason in metadata' do
+      described_class.where(id: repository1.id).mark_as_pending_deletion_with_reason('stale_repository')
+
+      repository1.reload
+      expect(repository1.delete_reason).to eq('stale_repository')
+    end
+
+    it 'preserves existing metadata while adding delete_reason' do
+      repository1.update!(metadata: { last_error: 'Some error' })
+
+      described_class.where(id: repository1.id).mark_as_pending_deletion_with_reason('duo_disabled')
+
+      repository1.reload
+      expect(repository1.delete_reason).to eq('duo_disabled')
+      expect(repository1.last_error).to eq('Some error')
+    end
+
+    it 'handles nil metadata' do
+      repository1.update!(metadata: nil)
+
+      described_class.where(id: repository1.id).mark_as_pending_deletion_with_reason('invalid_namespace')
+
+      repository1.reload
+      expect(repository1.delete_reason).to eq('invalid_namespace')
+      expect(repository1.state).to eq('pending_deletion')
     end
   end
 

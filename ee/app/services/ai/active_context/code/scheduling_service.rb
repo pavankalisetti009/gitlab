@@ -22,6 +22,10 @@ module Ai
             if: -> { ::Ai::ActiveContext::Code::Repository.embedding_indexing_in_progress.exists? },
             dispatch: { event: MarkRepositoryAsReadyEvent }
           },
+          mark_repository_as_pending_deletion: {
+            period: 2.hours,
+            dispatch: { event: MarkRepositoryAsPendingDeletionEvent }
+          },
           saas_initial_indexing: {
             period: 1.hour,
             if: -> { ::Gitlab::Saas.feature_available?(:duo_chat_on_saas) },
