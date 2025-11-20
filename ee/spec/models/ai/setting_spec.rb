@@ -5,6 +5,12 @@ require 'spec_helper'
 RSpec.describe Ai::Setting, feature_category: :ai_abstraction_layer do
   using RSpec::Parameterized::TableSyntax
 
+  describe 'concerns' do
+    it { is_expected.to include_module(Ai::HasRolePermissions) }
+
+    it_behaves_like 'settings with role permissions'
+  end
+
   describe 'associations', :aggregate_failures do
     it 'has expected associations' do
       is_expected.to belong_to(:amazon_q_oauth_application).class_name('Authn::OauthApplication').optional
