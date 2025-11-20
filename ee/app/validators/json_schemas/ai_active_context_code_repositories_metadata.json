@@ -2,6 +2,13 @@
   "description": "AI ActiveContext Code Repository metadata",
   "type": "object",
   "properties": {
+    "delete_reason": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Reason for delete"
+    },
     "initial_indexing_last_queued_item": {
       "type": [
         "string",

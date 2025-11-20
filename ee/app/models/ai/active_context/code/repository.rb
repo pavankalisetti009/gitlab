@@ -8,6 +8,7 @@ module Ai
 
         PARTITION_SIZE = 2_000_000
         METADATA_SIZE_LIMIT = 64.kilobytes
+        LAST_ACTIVITY_CUTOFF = 3.months
 
         self.table_name = 'p_ai_active_context_code_repositories'
         self.primary_key = :id
@@ -43,6 +44,7 @@ module Ai
         }
 
         jsonb_accessor :metadata,
+          delete_reason: :string,
           initial_indexing_last_queued_item: :string,
           incremental_indexing_last_queued_item: :string,
           last_error: :string
@@ -57,6 +59,28 @@ module Ai
 
         scope :ready_with_active_connection, -> { ready.with_active_connection }
         scope :for_project, ->(project_id) { with_active_connection.where(project_id: project_id) }
+        scope :not_in_delete_states, -> { where.not(state: [:pending_deletion, :deleted]) }
+        scope :without_enabled_namespace, -> { where(enabled_namespace_id: nil) }
+
+        scope :no_recent_activity, -> do
+          where('last_queried_at < :cutoff OR ' \
+            '(last_queried_at IS NULL AND p_ai_active_context_code_repositories.created_at < :cutoff)',
+            cutoff: LAST_ACTIVITY_CUTOFF.ago
+          )
+        end
+
+        scope :duo_features_disabled, -> do
+          joins(project: :project_setting).where(project_settings: { duo_features_enabled: false })
+        end
+
+        def self.mark_as_pending_deletion_with_reason(reason)
+          update_all(
+            state: :pending_deletion,
+            metadata: Arel.sql(
+              "jsonb_set(COALESCE(metadata, '{}'::jsonb), '{delete_reason}', '\"#{reason}\"'::jsonb)"
+            )
+          )
+        end
 
         def empty?
           project.empty_repo?
