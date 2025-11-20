@@ -10,6 +10,8 @@ module Types
 
         connection_type_class ::Types::CountableConnectionType
 
+        expose_permissions ::Types::PermissionTypes::Ai::Catalog::ItemConsumer
+
         field :enabled, GraphQL::Types::Boolean,
           null: true,
           description: 'Indicates if the configuration item is enabled.'

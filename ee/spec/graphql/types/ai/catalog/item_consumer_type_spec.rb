@@ -20,6 +20,7 @@ RSpec.describe Types::Ai::Catalog::ItemConsumerType, feature_category: :workflow
       pinned_version_prefix
       service_account
       project
+      user_permissions
     ]
 
     expect(described_class.own_fields.size).to eq(expected_fields.size)
