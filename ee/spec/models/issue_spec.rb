@@ -1449,7 +1449,7 @@ RSpec.describe Issue, feature_category: :team_planning do
     let_it_be(:work_item_issue) { create(:work_item, :issue, project: project) }
     let_it_be(:issue) { described_class.find(work_item_issue.id) }
 
-    subject(:has_parent_link) { issue.has_parent_link? }
+    subject(:has_parent_link) { issue.reload.has_parent_link? }
 
     context 'when there is no associated parent link' do
       it { is_expected.to eq false }
