@@ -47,14 +47,29 @@ module VirtualRegistries
         true
       end
 
+      def extract_digest_from_path(path)
+        path[%r{.*/manifests/(#{Gitlab::PathRegex::OCI_DIGEST_REGEX})\z}o, 1]
+      end
+
       def cache_entry
-        VirtualRegistries::Container::Cache::Entry
-          .default
-          .for_group(registry.group)
-          .for_upstream(registry.upstreams)
-          .find_by_relative_path(path)
+        base_query = build_base_query
+
+        upstream_etag = extract_digest_from_path(path)
+
+        if upstream_etag
+          base_query.find_by_upstream_etag(upstream_etag)
+        else
+          base_query.find_by_relative_path(path)
+        end
       end
       strong_memoize_attr :cache_entry
+
+      def build_base_query
+        VirtualRegistries::Container::Cache::Entry
+          .default
+          .for_upstream(registry.upstreams)
+          .for_group(registry.group)
+      end
 
       def check_registry_upstreams
         service = ::VirtualRegistries::CheckUpstreamsService.new(

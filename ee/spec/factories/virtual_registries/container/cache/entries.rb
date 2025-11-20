@@ -7,7 +7,7 @@ FactoryBot.define do
     group { upstream.group }
     sequence(:relative_path) { |n| "/a/relative/path/test-#{n}.txt" }
     size { 1.kilobyte }
-    upstream_etag { OpenSSL::Digest.hexdigest('SHA256', 'test') }
+    upstream_etag { "sha256:#{OpenSSL::Digest.hexdigest('SHA256', relative_path)}" }
     content_type { 'text/plain' }
     file_md5 { 'd8e8fca2dc0f896fd7cb4cb0031ba249' }
     file_sha1 { '4e1243bd22c66e76c2ba9eddc1f91394e57f9f83' }
