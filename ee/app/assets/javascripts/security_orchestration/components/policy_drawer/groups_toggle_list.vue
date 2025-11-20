@@ -9,6 +9,7 @@ export default {
     groupsInlineListHeader: s__('SecurityOrchestration|All projects in linked groups'),
     groupsInlineListSubHeader: s__('SecurityOrchestration|(%{groups})'),
     projectsHeader: s__('SecurityOrchestration|Excluded projects'),
+    personalProjectsText: s__('SecurityOrchestration|personal projects'),
   },
   name: 'GroupsToggleList',
   components: {
@@ -37,10 +38,15 @@ export default {
       required: false,
       default: false,
     },
+    excludingPersonalProjects: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   computed: {
     hasProjects() {
-      return this.projectsLength > 0;
+      return this.projectsLength > 0 || this.excludingPersonalProjects;
     },
     hasGroups() {
       return this.groupsLength > 0;
@@ -115,6 +121,9 @@ export default {
       <gl-accordion v-if="hasProjects" :header-level="3">
         <gl-accordion-item :title="$options.i18n.projectsHeader" data-testid="projects-list">
           <ul>
+            <li v-if="excludingPersonalProjects" data-testid="personal-projects-item">
+              <span>{{ $options.i18n.personalProjectsText }}</span>
+            </li>
             <li v-for="project of projects" :key="project.fullPath" data-testid="project-item">
               <template v-if="isLink">
                 <gl-link :href="getSecurityPolicyListUrl(project, 'project')" target="_blank">{{

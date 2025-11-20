@@ -45,7 +45,7 @@ export const isDefaultMode = (policyScope) => {
  */
 export const policyScopeHasExcludingProjects = (policyScope = {}) => {
   const { excludingProjects: { nodes: excluding = [] } = {} } = policyScope || {};
-  return excluding?.filter(Boolean).length > 0;
+  return policyScope?.excludingPersonalProjects || excluding?.filter(Boolean).length > 0;
 };
 
 /**
@@ -138,6 +138,7 @@ export const policyScopeProjects = (policyScope = {}) => {
     policyScope?.[`${policyScopeProjectsKey(policyScope)}Projects`] || {};
   return {
     projects: nodes,
+    excludingPersonalProjects: Boolean(policyScope?.excludingPersonalProjects),
     pageInfo,
   };
 };

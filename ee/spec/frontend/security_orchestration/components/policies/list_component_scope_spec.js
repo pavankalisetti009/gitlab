@@ -92,6 +92,7 @@ describe('ListComponentScope', () => {
         expect.objectContaining({
           including: false,
           projects: [{ id: 1 }],
+          excludingPersonalProjects: false,
         }),
       );
     });
@@ -111,6 +112,7 @@ describe('ListComponentScope', () => {
           including: false,
           projects: [{ id: 1 }, { id: 2 }],
           projectsToShow: 2,
+          excludingPersonalProjects: false,
         }),
       );
     });
@@ -127,6 +129,25 @@ describe('ListComponentScope', () => {
       expect(findProjectsToggleList().exists()).toBe(true);
       expect(findProjectsToggleList().props()).toEqual(
         expect.objectContaining({ isInstanceLevel: true }),
+      );
+    });
+
+    it('renders excluding personal projects', () => {
+      createComponent({
+        propsData: {
+          policyScope: {
+            excludingPersonalProjects: true,
+          },
+        },
+      });
+
+      expect(findProjectsToggleList().exists()).toBe(true);
+      expect(findProjectsToggleList().props()).toEqual(
+        expect.objectContaining({
+          including: false,
+          projects: [],
+          excludingPersonalProjects: true,
+        }),
       );
     });
   });
@@ -242,6 +263,25 @@ describe('ListComponentScope', () => {
       expect(findGroupsToggleList().exists()).toBe(true);
       expect(findGroupsToggleList().props('groups')).toEqual(items);
       expect(findGroupsToggleList().props('projects')).toEqual(items);
+      expect(findGroupsToggleList().props('excludingPersonalProjects')).toBe(false);
+    });
+
+    it('renders group scope with personal projects exclusion', () => {
+      createComponent({
+        propsData: {
+          policyScope: {
+            includingGroups: {
+              nodes: items,
+            },
+            excludingPersonalProjects: true,
+          },
+        },
+      });
+
+      expect(findGroupsToggleList().exists()).toBe(true);
+      expect(findGroupsToggleList().props('groups')).toEqual(items);
+      expect(findGroupsToggleList().props('projects')).toEqual([]);
+      expect(findGroupsToggleList().props('excludingPersonalProjects')).toBe(true);
     });
 
     it('does not render group scope when groups are empty and project exceptions are provided', () => {

@@ -94,16 +94,19 @@ describe(isDefaultMode, () => {
 
 describe(policyScopeHasExcludingProjects, () => {
   it.each`
-    input                                                       | output
-    ${undefined}                                                | ${false}
-    ${{}}                                                       | ${false}
-    ${null}                                                     | ${false}
-    ${{ complianceFrameworks: [] }}                             | ${false}
-    ${{ includingProjects: { nodes: [] } }}                     | ${false}
-    ${{ excludingProjects: { nodes: [] } }}                     | ${false}
-    ${{ excludingProjects: { nodes: [{}] } }}                   | ${true}
-    ${{ excludingProjects: { nodes: [undefined] } }}            | ${false}
-    ${{ excludingProjects: { nodes: [{ id: 1 }, { id: 2 }] } }} | ${true}
+    input                                                                    | output
+    ${undefined}                                                             | ${false}
+    ${{}}                                                                    | ${false}
+    ${null}                                                                  | ${false}
+    ${{ complianceFrameworks: [] }}                                          | ${false}
+    ${{ includingProjects: { nodes: [] } }}                                  | ${false}
+    ${{ excludingProjects: { nodes: [] } }}                                  | ${false}
+    ${{ excludingProjects: { nodes: [{}] } }}                                | ${true}
+    ${{ excludingProjects: { nodes: [undefined] } }}                         | ${false}
+    ${{ excludingProjects: { nodes: [{ id: 1 }, { id: 2 }] } }}              | ${true}
+    ${{ excludingPersonalProjects: true }}                                   | ${true}
+    ${{ excludingPersonalProjects: false }}                                  | ${false}
+    ${{ excludingPersonalProjects: true, excludingProjects: { nodes: [] } }} | ${true}
   `('returns `$output` when passed `$input`', ({ input, output }) => {
     expect(policyScopeHasExcludingProjects(input)).toBe(output);
   });
@@ -206,12 +209,14 @@ describe(policyScopeComplianceFrameworks, () => {
 describe(policyScopeProjects, () => {
   it.each`
     input                                                       | output
-    ${undefined}                                                | ${{ pageInfo: {}, projects: [] }}
-    ${{}}                                                       | ${{ pageInfo: {}, projects: [] }}
-    ${null}                                                     | ${{ pageInfo: {}, projects: [] }}
-    ${{ compliance_frameworks: [] }}                            | ${{ pageInfo: {}, projects: [] }}
-    ${{ excludingProjects: { nodes: [{ id: 1 }, { id: 2 }] } }} | ${{ pageInfo: {}, projects: [{ id: 1 }, { id: 2 }] }}
-    ${{ includingProjects: { nodes: [{ id: 1 }, { id: 2 }] } }} | ${{ pageInfo: {}, projects: [{ id: 1 }, { id: 2 }] }}
+    ${undefined}                                                | ${{ pageInfo: {}, projects: [], excludingPersonalProjects: false }}
+    ${{}}                                                       | ${{ pageInfo: {}, projects: [], excludingPersonalProjects: false }}
+    ${null}                                                     | ${{ pageInfo: {}, projects: [], excludingPersonalProjects: false }}
+    ${{ compliance_frameworks: [] }}                            | ${{ pageInfo: {}, projects: [], excludingPersonalProjects: false }}
+    ${{ excludingProjects: { nodes: [{ id: 1 }, { id: 2 }] } }} | ${{ pageInfo: {}, projects: [{ id: 1 }, { id: 2 }], excludingPersonalProjects: false }}
+    ${{ includingProjects: { nodes: [{ id: 1 }, { id: 2 }] } }} | ${{ pageInfo: {}, projects: [{ id: 1 }, { id: 2 }], excludingPersonalProjects: false }}
+    ${{ excludingPersonalProjects: true }}                      | ${{ pageInfo: {}, projects: [], excludingPersonalProjects: true }}
+    ${{ excludingPersonalProjects: false }}                     | ${{ pageInfo: {}, projects: [], excludingPersonalProjects: false }}
   `('returns `$output` when passed `$input`', ({ input, output }) => {
     expect(policyScopeProjects(input)).toEqual(output);
   });

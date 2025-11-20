@@ -77,6 +77,90 @@ describe('ProjectsToggleList', () => {
         expect(findToggleList().props('items')).toHaveLength(1);
       });
     });
+
+    describe('personal project exclusions', () => {
+      describe('only personal projects excluded', () => {
+        beforeEach(() => {
+          createComponent({
+            propsData: {
+              projects: [],
+              including: false,
+              excludingPersonalProjects: true,
+            },
+          });
+        });
+
+        it('should render the toggle list when only personal projects are excluded', () => {
+          expect(findToggleList().exists()).toBe(true);
+        });
+
+        it('should render header for personal projects exclusion in group context', () => {
+          expect(findHeader().text()).toBe('All projects in this group except:');
+        });
+      });
+
+      describe('personal projects excluded with specific projects', () => {
+        beforeEach(() => {
+          createComponent({
+            propsData: {
+              projects: defaultNodes,
+              including: false,
+              excludingPersonalProjects: true,
+            },
+          });
+        });
+
+        it('should render toggle list with only actual projects (filtering out personal type)', () => {
+          expect(findToggleList().exists()).toBe(true);
+          expect(findToggleList().props('items')).toEqual(['personal projects', '1', '2']);
+        });
+
+        it('should render header indicating personal projects and specific projects are excluded', () => {
+          expect(findHeader().text()).toBe('All projects in this group except:');
+        });
+      });
+
+      describe('context-aware headers for personal project exclusions', () => {
+        it('renders instance-level header for personal projects only', () => {
+          createComponent({
+            propsData: {
+              projects: [],
+              including: false,
+              isInstanceLevel: true,
+              excludingPersonalProjects: true,
+            },
+          });
+
+          expect(findHeader().text()).toBe('All projects in this instance except:');
+        });
+
+        it('renders project-level header for personal projects only', () => {
+          createComponent({
+            propsData: {
+              projects: [],
+              including: false,
+              isGroup: false,
+              excludingPersonalProjects: true,
+            },
+          });
+
+          expect(findHeader().text()).toBe('All projects linked to this project except:');
+        });
+
+        it('renders instance-level header for mixed exclusions', () => {
+          createComponent({
+            propsData: {
+              projects: [defaultNodes[0]],
+              including: false,
+              isInstanceLevel: true,
+              excludingPersonalProjects: true,
+            },
+          });
+
+          expect(findHeader().text()).toBe('All projects in this instance except:');
+        });
+      });
+    });
   });
 
   describe('specific projects', () => {

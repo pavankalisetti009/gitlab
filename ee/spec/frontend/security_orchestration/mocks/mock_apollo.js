@@ -237,6 +237,7 @@ export const POLICY_SCOPE_MOCK = {
       nodes: [],
       pageInfo: {},
     },
+    excludingPersonalProjects: false,
     excludingProjects: {
       nodes: [],
       pageInfo: {},

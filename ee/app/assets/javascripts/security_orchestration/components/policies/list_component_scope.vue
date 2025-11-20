@@ -110,6 +110,7 @@ export default {
       inline-list
       :groups="policyScopeGroups"
       :projects="policyExcludingProjects"
+      :excluding-personal-projects="policyScopeProjects.excludingPersonalProjects"
     />
 
     <projects-toggle-list
@@ -120,6 +121,7 @@ export default {
       :bullet-style="false"
       :including="policyScopeHasIncludingProjects"
       :projects="policyScopeProjects.projects"
+      :excluding-personal-projects="policyScopeProjects.excludingPersonalProjects"
       :projects-to-show="$options.MAX_NUMBER_OF_VISIBLE_LABELS"
     />
 

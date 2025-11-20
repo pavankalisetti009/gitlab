@@ -21,6 +21,7 @@ fragment PolicyScope on PolicyScope {
       ...PageInfo
     }
   }
+  excludingPersonalProjects
   excludingProjects {
     nodes {
       id

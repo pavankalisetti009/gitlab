@@ -105,6 +105,29 @@ describe('ScopeInfoRow', () => {
           isInstanceLevel: false,
           including: projectType === 'includingProjects',
           projects: [{ id: 1 }, { id: 2 }],
+          excludingPersonalProjects: false,
+        }),
+      );
+    });
+
+    it('renders policy scope for personal projects exclusion', () => {
+      createComponent({
+        propsData: {
+          policyScope: {
+            excludingPersonalProjects: true,
+          },
+        },
+      });
+
+      expect(findComplianceFrameworksToggleList().exists()).toBe(false);
+      expect(findProjectsToggleList().exists()).toBe(true);
+      expect(findProjectsToggleList().props()).toEqual(
+        expect.objectContaining({
+          isGroup: true,
+          isInstanceLevel: false,
+          including: false,
+          projects: [],
+          excludingPersonalProjects: true,
         }),
       );
     });
@@ -173,6 +196,25 @@ describe('ScopeInfoRow', () => {
         expect(findGroupsToggleList().exists()).toBe(true);
         expect(findGroupsToggleList().props('groups')).toEqual(items);
         expect(findGroupsToggleList().props('projects')).toEqual(items);
+        expect(findGroupsToggleList().props('excludingPersonalProjects')).toBe(false);
+      });
+
+      it('renders group scope with personal projects exclusion', () => {
+        createComponent({
+          propsData: {
+            policyScope: {
+              includingGroups: {
+                nodes: items,
+              },
+              excludingPersonalProjects: true,
+            },
+          },
+        });
+
+        expect(findGroupsToggleList().exists()).toBe(true);
+        expect(findGroupsToggleList().props('groups')).toEqual(items);
+        expect(findGroupsToggleList().props('projects')).toEqual([]);
+        expect(findGroupsToggleList().props('excludingPersonalProjects')).toBe(true);
       });
 
       it('does not render group scope when groups are empty and project exceptions are provided', () => {
