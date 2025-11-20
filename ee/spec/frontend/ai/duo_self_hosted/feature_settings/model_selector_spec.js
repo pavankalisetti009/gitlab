@@ -57,11 +57,8 @@ const EXPECTED_SELF_HOSTED_MODELS_OPTIONS = [
 ];
 
 const EXPECTED_GITLAB_MANAGED_MODELS_OPTIONS = [
-  {
-    text: 'Claude Sonnet 4.0 - Anthropic',
-    value: 'claude_sonnet_4_20250514',
-  },
-  { text: 'Claude Sonnet 3.7 - Vertex', value: 'claude_sonnet_3_7_20250219_vertex' },
+  { text: 'Claude Sonnet 4.0', value: 'claude_sonnet_4_20250514', provider: 'Anthropic' },
+  { text: 'Claude Sonnet 3.7', value: 'claude_sonnet_3_7_20250219_vertex', provider: 'Anthropic' },
 ];
 
 const EXPECTED_SELF_HOSTED_MODELS_GROUPED_OPTIONS = {
@@ -99,7 +96,7 @@ const EXPECTED_GITLAB_MANAGED_MODELS_GROUPED_OPTIONS_WITH_DEFAULT_MODEL_OPTION =
   text: 'GitLab managed models',
   options: [
     ...EXPECTED_GITLAB_MANAGED_MODELS_OPTIONS,
-    { text: 'GitLab default model (Claude Sonnet 4.0 - Anthropic)', value: GITLAB_DEFAULT_MODEL },
+    { text: 'Claude Sonnet 4.0 - Default', value: GITLAB_DEFAULT_MODEL, provider: 'Anthropic' },
   ],
 };
 
@@ -396,12 +393,12 @@ describe('ModelSelector', () => {
     );
 
     describe.each`
-      testCase                   | selectedOption                    | modelName                                                 | provider              | offeredModelRef
-      ${'GitLab managed model'}  | ${mockGitlabManagedModels[0].ref} | ${mockGitlabManagedModels[0].name}                        | ${PROVIDERS.VENDORED} | ${mockGitlabManagedModels[0].ref}
-      ${'GitlLab default model'} | ${GITLAB_DEFAULT_MODEL}           | ${'GitLab default model (Claude Sonnet 4.0 - Anthropic)'} | ${PROVIDERS.VENDORED} | ${GITLAB_DEFAULT_MODEL}
+      testCase                  | selectedOption                    | modelName                          | provider              | offeredModelRef                   | offeredModelProvider
+      ${'GitLab managed model'} | ${mockGitlabManagedModels[0].ref} | ${mockGitlabManagedModels[0].name} | ${PROVIDERS.VENDORED} | ${mockGitlabManagedModels[0].ref} | ${mockGitlabManagedModels[0].modelProvider}
+      ${'GitLab default model'} | ${GITLAB_DEFAULT_MODEL}           | ${'Claude Sonnet 4.0 - Default'}   | ${PROVIDERS.VENDORED} | ${GITLAB_DEFAULT_MODEL}           | ${'Anthropic'}
     `(
       'with $testCase as selected option',
-      ({ selectedOption, modelName, provider, offeredModelRef }) => {
+      ({ selectedOption, modelName, provider, offeredModelProvider, offeredModelRef }) => {
         beforeEach(() => {
           createComponent({
             props: {
@@ -421,6 +418,7 @@ describe('ModelSelector', () => {
           expect(mockShowModal).toHaveBeenCalledWith({
             value: selectedOption,
             text: modelName,
+            provider: offeredModelProvider,
           });
         });
 
@@ -458,8 +456,9 @@ describe('ModelSelector', () => {
 
         const modelSelectDropdown = findModelSelectDropdown();
         expect(modelSelectDropdown.props('selectedOption')).toStrictEqual({
-          text: `GitLab default model (Claude Sonnet 4.0 - Anthropic)`,
+          text: 'Claude Sonnet 4.0 - Default',
           value: GITLAB_DEFAULT_MODEL,
+          provider: 'Anthropic',
         });
       });
 
@@ -568,6 +567,7 @@ describe('ModelSelector', () => {
         expect(modelSelectDropdown.props('selectedOption')).toStrictEqual({
           value: selectedModel.ref,
           text: selectedModel.name,
+          provider: selectedModel.modelProvider,
         });
       });
     });

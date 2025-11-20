@@ -1166,6 +1166,9 @@ msgstr ""
 msgid "%{milliseconds}ms"
 msgstr ""
 
+msgid "%{modelName} - Default"
+msgstr ""
+
 msgid "%{model_name} not found"
 msgstr ""
 
@@ -4867,15 +4870,6 @@ msgid "AdminAIPoweredFeatures|GitLab Duo for issues"
 msgstr ""
 
 msgid "AdminAIPoweredFeatures|GitLab Duo for merge requests"
-msgstr ""
-
-msgid "AdminAIPoweredFeatures|GitLab default model"
-msgstr ""
-
-msgid "AdminAIPoweredFeatures|GitLab default model %{defaultModel}"
-msgstr ""
-
-msgid "AdminAIPoweredFeatures|GitLab default model (%{defaultModel})"
 msgstr ""
 
 msgid "AdminAIPoweredFeatures|GitLab managed model"

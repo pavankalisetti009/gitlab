@@ -7,7 +7,6 @@ import {
   GlIcon,
   GlTooltipDirective,
 } from '@gitlab/ui';
-import { s__ } from '~/locale';
 import { GITLAB_DEFAULT_MODEL } from 'ee/ai/model_selection/constants';
 import { RELEASE_STATES } from './constants';
 
@@ -58,13 +57,7 @@ export default {
       required: false,
       default: false,
     },
-    withDefaultModelTooltip: {
-      type: Boolean,
-      required: false,
-      default: false,
-    },
   },
-
   computed: {
     selected() {
       return this.selectedOption?.value || GITLAB_DEFAULT_MODEL;
@@ -72,16 +65,10 @@ export default {
     dropdownToggleText() {
       return this.selectedOption?.text || this.placeholderDropdownText;
     },
-    defaultModelTooltipText() {
-      return this.withDefaultModelTooltip ? s__('AdminAIPoweredFeatures|GitLab default model') : '';
-    },
   },
   methods: {
     isBetaModel(model) {
       return model?.releaseState === RELEASE_STATES.BETA;
-    },
-    isDefaultModel(model) {
-      return model?.value === GITLAB_DEFAULT_MODEL;
     },
     onSelect(option) {
       this.$emit('select', option);
@@ -96,7 +83,7 @@ export default {
     :items="items"
     :header-text="headerText"
     :loading="isLoading"
-    :fluid_width="true"
+    fluid-width
     category="primary"
     block
     @select="onSelect"
@@ -114,16 +101,6 @@ export default {
         <template #emoji>
           <div data-testid="dropdown-toggle-text" class="gl-flex gl-w-full gl-justify-between">
             <div class="gl-align-items gl-flex gl-overflow-hidden">
-              <gl-badge
-                v-if="isDefaultModel(selectedOption)"
-                v-gl-tooltip
-                :title="defaultModelTooltipText"
-                data-testid="default-model-selected-badge"
-                class="!gl-ml-0 gl-mr-3"
-                variant="info"
-                icon="tanuki"
-                icon-size="sm"
-              />
               <gl-experiment-badge
                 v-if="isBetaModel(selectedOption)"
                 data-testid="beta-model-selected-badge"
@@ -142,15 +119,10 @@ export default {
 
     <template #list-item="{ item }">
       <div class="gl-flex gl-items-center gl-justify-between">
-        {{ item.text }}
-        <gl-badge
-          v-if="isDefaultModel(item)"
-          v-gl-tooltip
-          :title="defaultModelTooltipText"
-          data-testid="default-model-dropdown-badge"
-          variant="info"
-          icon="tanuki"
-        />
+        <span class="gl-mr-4 gl-flex gl-flex-col">
+          <span class="gl-whitespace-nowrap">{{ item.text }}</span>
+          <span v-if="item.provider" class="gl-text-secondary"> {{ item.provider }}</span>
+        </span>
         <gl-badge
           v-if="isBetaModel(item)"
           data-testid="beta-model-dropdown-badge"
