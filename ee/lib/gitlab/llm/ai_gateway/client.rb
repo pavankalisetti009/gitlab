@@ -71,12 +71,7 @@ module Gitlab
 
             response_body
           else
-            parsed_response = ::Gitlab::Json.parse(response_body)
-
-            log_error(message: "Received error from AI gateway",
-              event_name: 'error_response_received',
-              ai_component: 'abstraction_layer',
-              response_from_llm: parsed_response.dig('detail', 0, 'msg'))
+            log_server_error(response)
 
             raise Gitlab::AiGateway::ForbiddenError if response.forbidden?
 
@@ -115,6 +110,8 @@ module Gitlab
 
         def log_server_error(response)
           body = response.parsed_response['detail'] if response.parsed_response.is_a?(Hash)
+          body = body[0] if body.is_a?(Array)
+          body = body['msg'] if body.is_a?(Hash)
 
           log_error(message: 'Error response from AI Gateway',
             event_name: 'error_response_received',

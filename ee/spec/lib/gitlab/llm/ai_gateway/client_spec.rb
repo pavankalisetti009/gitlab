@@ -294,14 +294,15 @@ RSpec.describe Gitlab::Llm::AiGateway::Client, feature_category: :ai_abstraction
             code: http_code,
             success?: false,
             headers: response_headers,
-            body: response_body
+            body: response_body,
+            forbidden?: forbidden_status,
+            parsed_response: Gitlab::Json.parse(response_body)
           )
         end
 
         before do
           allow(ai_client).to receive(:perform_completion_request).and_yield(response_body).and_return(failure)
           allow(logger).to receive(:error)
-          allow(failure).to receive(:forbidden?).and_return(forbidden_status)
         end
 
         context 'when there is problem with connection' do
@@ -312,8 +313,28 @@ RSpec.describe Gitlab::Llm::AiGateway::Client, feature_category: :ai_abstraction
             expect { ai_client.stream(url: url, body: expected_body) }
               .to raise_error(Gitlab::Llm::AiGateway::Client::ConnectionError)
 
-            expect(logger).to have_received(:error).with(a_hash_including(message: "Received error from AI gateway",
-              response_from_llm: "Input is invalid"))
+            expect(logger).to have_received(:error).with(a_hash_including(
+              message: "Error response from AI Gateway",
+              body: "Input is invalid",
+              status: http_code
+            ))
+          end
+
+          context 'when the response has no detail' do
+            let(:response_body) do
+              "Input is invalid".to_json
+            end
+
+            it 'raises error' do
+              expect { ai_client.stream(url: url, body: expected_body) }
+                .to raise_error(Gitlab::Llm::AiGateway::Client::ConnectionError)
+
+              expect(logger).to have_received(:error).with(a_hash_including(
+                message: "Error response from AI Gateway",
+                body: nil,
+                status: http_code
+              ))
+            end
           end
         end
 
@@ -325,8 +346,11 @@ RSpec.describe Gitlab::Llm::AiGateway::Client, feature_category: :ai_abstraction
             expect { ai_client.stream(url: url, body: expected_body) }
               .to raise_error(Gitlab::AiGateway::ForbiddenError)
 
-            expect(logger).to have_received(:error).with(a_hash_including(message: "Received error from AI gateway",
-              response_from_llm: "Input is invalid"))
+            expect(logger).to have_received(:error).with(a_hash_including(
+              message: "Error response from AI Gateway",
+              body: "Input is invalid",
+              status: http_code
+            ))
           end
         end
       end
