@@ -53,11 +53,18 @@ export default {
       required: false,
       default: null,
     },
+    isAgentSelectEnabled: {
+      type: Boolean,
+      required: true,
+    },
   },
   apollo: {
     catalogAgents() {
       return {
         ...getCatalogAgentsQuery(this.catalogAgentsVariables),
+        skip() {
+          return !this.isAgentSelectEnabled;
+        },
         error: (error) => {
           this.$emit('newChatError', error);
           Sentry.captureException(error);
@@ -67,6 +74,9 @@ export default {
     foundationalAgents() {
       return {
         ...getFoundationalAgentsQuery(this.foundationalAgentsVariables),
+        skip() {
+          return !this.isAgentSelectEnabled;
+        },
         error: (error) => {
           this.$emit('newChatError', error);
           Sentry.captureException(error);
@@ -97,7 +107,7 @@ export default {
       };
     },
     hasManyAgents() {
-      return this.agents.length > 1;
+      return this.isAgentSelectEnabled && this.agents.length > 1;
     },
   },
   methods: {
