@@ -3,6 +3,12 @@
 require 'spec_helper'
 
 RSpec.describe Ai::NamespaceSetting, type: :model, feature_category: :ai_abstraction_layer do
+  describe 'concerns' do
+    it { is_expected.to include_module(Ai::HasRolePermissions) }
+
+    it_behaves_like 'settings with role permissions'
+  end
+
   describe 'database' do
     it 'uses the correct table name' do
       expect(described_class.table_name).to eq('namespace_ai_settings')
