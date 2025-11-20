@@ -234,7 +234,7 @@ export default {
       },
       inputAttrs: {
         'data-testid': 'flow-form-input-name',
-        placeholder: s__('AICatalog|e.g., Research Assistant, Creative Writer, Code Helper'),
+        placeholder: s__('AICatalog|Research Assistant, Creative Writer, Code Helper'),
       },
       groupAttrs: {
         labelDescription: s__('AICatalog|Name your flow.'),

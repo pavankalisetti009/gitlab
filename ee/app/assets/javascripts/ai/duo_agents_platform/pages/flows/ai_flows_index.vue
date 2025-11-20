@@ -176,7 +176,7 @@ export default {
         if (data) {
           const { errors } = data.aiCatalogItemConsumerCreate;
           if (errors.length > 0) {
-            this.errorTitle = sprintf(s__('AICatalog|Could not enable flow: %{flowName}'), {
+            this.errorTitle = sprintf(s__('AICatalog|Flow "%{flowName}" could not be enabled.'), {
               flowName,
             });
             this.errors = errors;
@@ -236,7 +236,7 @@ export default {
         s__('AICatalog|Flows use multiple agents to complete tasks automatically.')
       "
       :empty-state-button-href="exploreHref"
-      :empty-state-button-text="s__('AICatalog|Explore AI Catalog flows')"
+      :empty-state-button-text="s__('AICatalog|Explore the AI Catalog')"
       :item-types="itemTypes"
       :item-type-config="itemTypeConfig"
       @error="handleError"

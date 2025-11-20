@@ -184,7 +184,7 @@ export default {
       return s__('AICatalog|Use agents to automate tasks and answer questions.');
     },
     emptyStateButtonText() {
-      return s__('AICatalog|Explore AI Catalog agents');
+      return s__('AICatalog|Explore the AI Catalog');
     },
   },
   methods: {
