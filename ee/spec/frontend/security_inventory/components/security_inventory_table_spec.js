@@ -71,7 +71,7 @@ describe('SecurityInventoryTable', () => {
 
     it('passes fields to GlTableLite component', () => {
       expect(findTable().props('fields')).toEqual([
-        { key: 'name', label: 'Name', thClass: 'gl-max-w-0' },
+        { key: 'name', label: 'Name', thClass: 'gl-w-1/4' },
         { key: 'vulnerabilities', label: 'Vulnerabilities', thClass: 'gl-w-1/5' },
         { key: 'toolCoverage', label: 'Tool Coverage', thClass: 'gl-w-1/3' },
         { key: 'securityAttributes', label: 'Security attributes', thClass: 'gl-w-1/6' },
