@@ -2,6 +2,8 @@
 key_path: counts.count_total_retry_duo_workflow_execution_monthly
 description: Monthly count of retried duo workflow executions
 product_group: agent_foundations
+product_categories:
+- duo_agent_platform
 performance_indicator_type: []
 value_type: number
 status: active
