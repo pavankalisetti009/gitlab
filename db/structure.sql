@@ -4704,18 +4704,33 @@ $$;
 CREATE FUNCTION unset_has_issues_on_vulnerability_reads() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
+DECLARE
+  has_issue_links integer;
 BEGIN
   IF (SELECT current_setting('vulnerability_management.dont_execute_db_trigger', true) = 'true') THEN
     RETURN NULL;
   END IF;
 
-  IF NOT EXISTS (
-    SELECT 1 FROM vulnerability_issue_links
-    WHERE vulnerability_id = OLD.vulnerability_id
-  ) THEN
-    UPDATE vulnerability_reads SET has_issues = false
-    WHERE vulnerability_id = OLD.vulnerability_id;
+  PERFORM 1
+  FROM
+    vulnerability_reads
+  WHERE
+    vulnerability_id = OLD.vulnerability_id
+  FOR UPDATE;
+
+  SELECT 1 INTO has_issue_links FROM vulnerability_issue_links WHERE vulnerability_id = OLD.vulnerability_id LIMIT 1;
+
+  IF (has_issue_links = 1) THEN
+    RETURN NULL;
   END IF;
+
+  UPDATE
+    vulnerability_reads
+  SET
+    has_issues = false
+  WHERE
+    vulnerability_id = OLD.vulnerability_id;
+
   RETURN NULL;
 END
 $$;
@@ -4723,18 +4738,33 @@ $$;
 CREATE FUNCTION unset_has_merge_request_on_vulnerability_reads() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
+DECLARE
+  has_merge_request_links integer;
 BEGIN
   IF (SELECT current_setting('vulnerability_management.dont_execute_db_trigger', true) = 'true') THEN
     RETURN NULL;
   END IF;
 
-  IF NOT EXISTS (
-    SELECT 1 FROM vulnerability_merge_request_links
-    WHERE vulnerability_id = OLD.vulnerability_id
-  ) THEN
-    UPDATE vulnerability_reads SET has_merge_request = false
-    WHERE vulnerability_id = OLD.vulnerability_id;
+  PERFORM 1
+  FROM
+    vulnerability_reads
+  WHERE
+    vulnerability_id = OLD.vulnerability_id
+  FOR UPDATE;
+
+  SELECT 1 INTO has_merge_request_links FROM vulnerability_merge_request_links WHERE vulnerability_id = OLD.vulnerability_id LIMIT 1;
+
+  IF (has_merge_request_links = 1) THEN
+    RETURN NULL;
   END IF;
+
+  UPDATE
+    vulnerability_reads
+  SET
+    has_merge_request = false
+  WHERE
+    vulnerability_id = OLD.vulnerability_id;
+
   RETURN NULL;
 END
 $$;
