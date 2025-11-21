@@ -1,8 +1,12 @@
 import Vue from 'vue';
+import VueRouter from 'vue-router';
 import AdminDataManagementApp from 'ee/admin/data_management/components/app.vue';
 import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
 import { formatListboxItems } from 'ee/admin/data_management/filters';
 import { FILTERED_SEARCH_TOKEN_OPTIONS } from 'ee/admin/data_management/constants';
+import { createRouter } from 'ee/admin/data_management/router';
+
+Vue.use(VueRouter);
 
 export const initAdminDataManagementApp = () => {
   const el = document.getElementById('js-admin-data-management');
@@ -15,6 +19,7 @@ export const initAdminDataManagementApp = () => {
 
   return new Vue({
     el,
+    router: createRouter(basePath),
     provide: {
       basePath,
       listboxItems: formatListboxItems(parsedModelTypes),
