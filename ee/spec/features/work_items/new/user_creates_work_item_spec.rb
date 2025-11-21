@@ -119,7 +119,7 @@ RSpec.describe 'User creates work items', :js, feature_category: :team_planning 
         end
 
         expect(page).to have_link 'I am a new epic'
-        expect(page).to have_css '[data-testid="epic-icon"]'
+        expect(page).to have_css '[data-testid="work-item-epic-icon"]'
 
         click_link('I am a new epic')
 

@@ -7,9 +7,9 @@ module EE
     EE_ICON_NAMES_BY_ACTION = {
       'relate' => 'link',
       'unrelate' => 'unlink',
-      'epic_issue_added' => 'issue-type-issue',
-      'epic_issue_removed' => 'issue-type-issue',
-      'epic_issue_moved' => 'issue-type-issue',
+      'epic_issue_added' => 'work-item-issue',
+      'epic_issue_removed' => 'work-item-issue',
+      'epic_issue_moved' => 'work-item-issue',
       'issue_added_to_epic' => 'epic',
       'issue_removed_from_epic' => 'epic',
       'issue_changed_epic' => 'epic',

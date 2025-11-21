@@ -129,7 +129,7 @@ describe('GfmAutoCompleteEE', () => {
     });
 
     it('should include the epic svg image when iconName is provided', () => {
-      const expectedHtml = `<li><svg class="gl-fill-icon-subtle s16 gl-mr-2"><use xlink:href="/icons.svg#epic" /></svg><small>5</small> Some Work Item Epic</li>`;
+      const expectedHtml = `<li><svg class="gl-fill-icon-subtle s16 gl-mr-2"><use xlink:href="/icons.svg#work-item-epic" /></svg><small>5</small> Some Work Item Epic</li>`;
       expect(
         GfmAutoComplete.Issues.templateFunction({
           id: 5,

@@ -25,19 +25,19 @@ RSpec.describe Groups::AutocompleteSourcesController, feature_category: :team_pl
           'iid' => work_item_epic.iid,
           'title' => work_item_epic.title,
           'reference' => work_item_epic.to_reference,
-          'icon_name' => 'issue-type-epic'
+          'icon_name' => 'work-item-epic'
         },
         {
           'iid' => project_issue.iid,
           'title' => project_issue.title,
           'reference' => project_issue.to_reference(group),
-          'icon_name' => 'issue-type-issue'
+          'icon_name' => 'work-item-issue'
         },
         {
           'iid' => group_issue.iid,
           'title' => group_issue.title,
           'reference' => group_issue.to_reference,
-          'icon_name' => 'issue-type-issue'
+          'icon_name' => 'work-item-issue'
         }
       ]
 

@@ -50,13 +50,13 @@ describe('getTypeTokenOptions', () => {
     });
 
     expect(options).toEqual([
-      { icon: 'issue-type-issue', title: 'Issue', value: 'issue' },
-      { icon: 'issue-type-incident', title: 'Incident', value: 'incident' },
-      { icon: 'issue-type-task', title: 'Task', value: 'task' },
+      { icon: 'work-item-issue', title: 'Issue', value: 'issue' },
+      { icon: 'work-item-incident', title: 'Incident', value: 'incident' },
+      { icon: 'work-item-task', title: 'Task', value: 'task' },
       { icon: 'epic', title: 'Epic', value: 'epic' },
-      { icon: 'issue-type-objective', title: 'Objective', value: 'objective' },
-      { icon: 'issue-type-keyresult', title: 'Key Result', value: 'key_result' },
-      { icon: 'issue-type-test-case', title: 'Test case', value: 'test_case' },
+      { icon: 'work-item-objective', title: 'Objective', value: 'objective' },
+      { icon: 'work-item-keyresult', title: 'Key Result', value: 'key_result' },
+      { icon: 'work-item-test-case', title: 'Test case', value: 'test_case' },
     ]);
   });
 });

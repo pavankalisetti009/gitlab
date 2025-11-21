@@ -69,13 +69,13 @@ export const getTypeTokenOptions = ({
   }
   if (hasOkrsFeature) {
     options.push(
-      { icon: 'issue-type-objective', title: s__('WorkItem|Objective'), value: 'objective' },
-      { icon: 'issue-type-keyresult', title: s__('WorkItem|Key Result'), value: 'key_result' },
+      { icon: 'work-item-objective', title: s__('WorkItem|Objective'), value: 'objective' },
+      { icon: 'work-item-keyresult', title: s__('WorkItem|Key Result'), value: 'key_result' },
     );
   }
   if (hasQualityManagementFeature) {
     options.push({
-      icon: 'issue-type-test-case',
+      icon: 'work-item-test-case',
       title: s__('WorkItem|Test case'),
       value: 'test_case',
     });

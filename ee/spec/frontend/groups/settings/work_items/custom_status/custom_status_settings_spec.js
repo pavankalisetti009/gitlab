@@ -27,13 +27,13 @@ const mockLifecycles = [
       {
         id: 'gid://gitlab/WorkItems::Type/1',
         name: 'Issue',
-        iconName: 'issue-type-issue',
+        iconName: 'work-item-issue',
         __typename: 'WorkItemType',
       },
       {
         id: 'gid://gitlab/WorkItems::Type/2',
         name: 'Task',
-        iconName: 'issue-type-task',
+        iconName: 'work-item-task',
         __typename: 'WorkItemType',
       },
     ],
@@ -77,7 +77,7 @@ const mockLifecycles = [
       {
         id: 'gid://gitlab/WorkItems::Type/3',
         name: 'Incident',
-        iconName: 'issue-type-incident',
+        iconName: 'work-item-incident',
         __typename: 'WorkItemType',
       },
     ],
@@ -85,7 +85,7 @@ const mockLifecycles = [
       {
         id: '4',
         name: 'New',
-        iconName: 'issue-new',
+        iconName: 'work-item-new',
         color: 'red',
         description: '',
         category: 'to_do',
@@ -198,12 +198,12 @@ describe('CustomStatusSettings', () => {
 
       expect(lifecycle.workItemTypes[0]).toMatchObject({
         name: 'Issue',
-        iconName: 'issue-type-issue',
+        iconName: 'work-item-issue',
       });
 
       expect(lifecycle.workItemTypes[1]).toMatchObject({
         name: 'Task',
-        iconName: 'issue-type-task',
+        iconName: 'work-item-task',
       });
     });
 

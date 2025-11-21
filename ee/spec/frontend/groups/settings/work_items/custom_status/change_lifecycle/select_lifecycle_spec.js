@@ -44,7 +44,7 @@ describe('SelectLifecycle', () => {
                 {
                   id: 'gid://gitlab/WorkItems::Type/1',
                   name: 'Issue',
-                  iconName: 'issue-type-issue',
+                  iconName: 'work-item-issue',
                   __typename: 'WorkItemType',
                 },
               ],
@@ -55,7 +55,7 @@ describe('SelectLifecycle', () => {
                 {
                   id: 'gid://gitlab/WorkItems::Type/2',
                   name: 'Task',
-                  iconName: 'issue-type-task',
+                  iconName: 'work-item-task',
                   __typename: 'WorkItemType',
                 },
               ],
@@ -159,7 +159,7 @@ describe('SelectLifecycle', () => {
             {
               id: 'gid://gitlab/WorkItems::Type/1',
               name: 'Issue',
-              iconName: 'issue-type-issue',
+              iconName: 'work-item-issue',
               __typename: 'WorkItemType',
             },
           ],

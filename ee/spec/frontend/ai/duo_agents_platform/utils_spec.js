@@ -208,9 +208,9 @@ describe('duo_agents_platform utils', () => {
       ['grep_files', { icon: 'search', title: 'Search files', level: 0 }],
       ['list_files', { icon: 'search', title: 'List files', level: 0 }],
       ['gitlab_issue_search', { icon: 'search', title: 'Search issues', level: 0 }],
-      ['get_issue', { icon: 'issue-type-issue', title: 'Get issue', level: 0 }],
+      ['get_issue', { icon: 'work-item-issue', title: 'Get issue', level: 0 }],
       ['create_merge_request', { icon: 'git-merge', title: 'Create merge request', level: 1 }],
-      ['list_issue_notes', { icon: 'issue-type-issue', title: 'List comments', level: 0 }],
+      ['list_issue_notes', { icon: 'work-item-issue', title: 'List comments', level: 0 }],
       ['create_commit', { icon: 'commit', title: 'Create commit', level: 1 }],
     ])('returns correct data for %s tool', (toolName, expected) => {
       const toolMessage = { tool_info: { name: toolName } };
@@ -226,7 +226,7 @@ describe('duo_agents_platform utils', () => {
       const result = getToolData(toolMessage);
 
       expect(result).toEqual({
-        icon: 'issue-type-maintenance',
+        icon: 'work-item-maintenance',
         title: 'Action',
         level: 0,
       });
@@ -238,7 +238,7 @@ describe('duo_agents_platform utils', () => {
       const result = getToolData(toolMessage);
 
       expect(result).toEqual({
-        icon: 'issue-type-maintenance',
+        icon: 'work-item-maintenance',
         title: 'Action',
         level: 0,
       });
@@ -248,7 +248,7 @@ describe('duo_agents_platform utils', () => {
       const result = getToolData(null);
 
       expect(result).toEqual({
-        icon: 'issue-type-maintenance',
+        icon: 'work-item-maintenance',
         title: 'Action',
         level: 0,
       });
@@ -264,7 +264,7 @@ describe('duo_agents_platform utils', () => {
       ['user', { icon: 'user', title: 'User messaged agent', level: 1 }],
       ['request', { icon: 'question-o', title: 'Agent required human input', level: 1 }],
       ['agent', { icon: 'tanuki-ai', title: 'Agent reasoning', level: 0 }],
-      ['unknown', { icon: 'issue-type-maintenance', title: 'Action', level: 0 }],
+      ['unknown', { icon: 'work-item-maintenance', title: 'Action', level: 0 }],
     ])('returns correct data for %s message type', (messageType, expected) => {
       const message = { message_type: messageType };
 

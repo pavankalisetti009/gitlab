@@ -23,7 +23,7 @@ describe('Remediated badge component', () => {
     });
 
     it('displays the correct icon', () => {
-      expect(findBadge().props('icon')).toBe('issue-type-issue');
+      expect(findBadge().props('icon')).toBe('work-item-issue');
     });
 
     it('links the badge and the popover', () => {

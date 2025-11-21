@@ -26,7 +26,7 @@ export default {
   },
   computed: {
     iconName() {
-      return this.issueIsClosed ? 'issue-close' : 'issue-type-issue';
+      return this.issueIsClosed ? 'issue-close' : 'work-item-issue';
     },
     iconVariant() {
       return this.issueIsClosed ? 'current' : 'success';

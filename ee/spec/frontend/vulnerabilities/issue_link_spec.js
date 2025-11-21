@@ -50,9 +50,9 @@ describe('IssueLink component', () => {
 
   describe('internal issues', () => {
     describe.each`
-      state       | icon                  | shouldContainClosedText
-      ${'opened'} | ${'issue-type-issue'} | ${false}
-      ${'closed'} | ${'issue-close'}      | ${true}
+      state       | icon                 | shouldContainClosedText
+      ${'opened'} | ${'work-item-issue'} | ${false}
+      ${'closed'} | ${'issue-close'}     | ${true}
     `('with state "$state"', ({ state, icon, shouldContainClosedText }) => {
       beforeEach(() => {
         wrapper = createWrapper({ propsData: { issue: createIssue({ state }) } });
