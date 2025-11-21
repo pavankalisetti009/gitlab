@@ -2973,6 +2973,8 @@ Input type: `AiDuoWorkflowCreateInput`
 | <a id="mutationaiduoworkflowcreateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
 | <a id="mutationaiduoworkflowcreateenvironment"></a>`environment` | [`WorkflowEnvironment`](#workflowenvironment) | Environment for the workflow. |
 | <a id="mutationaiduoworkflowcreategoal"></a>`goal` | [`String`](#string) | Goal of the workflow. |
+| <a id="mutationaiduoworkflowcreateissueid"></a>`issueId` | [`BigInt`](#bigint) | IID of the noteable (Issue) that the workflow is associated with. |
+| <a id="mutationaiduoworkflowcreatemergerequestid"></a>`mergeRequestId` | [`BigInt`](#bigint) | IID of the noteable (MergeRequest) that the workflow is associated with. |
 | <a id="mutationaiduoworkflowcreatenamespaceid"></a>`namespaceId` | [`NamespaceID`](#namespaceid) | Global ID of the namespace the user is acting on. |
 | <a id="mutationaiduoworkflowcreatepreapprovedagentprivileges"></a>`preApprovedAgentPrivileges` | [`[Int!]`](#int) | Actions the agent can perform without asking for approval. |
 | <a id="mutationaiduoworkflowcreateprojectid"></a>`projectId` | [`ProjectID`](#projectid) | Global ID of the project the user is acting on. |
