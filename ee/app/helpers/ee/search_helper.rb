@@ -118,13 +118,9 @@ module EE
 
     override :should_show_zoekt_results?
     def should_show_zoekt_results?(scope, search_type)
-      return false if scope != 'blobs' || search_type != 'zoekt'
+      return false unless scope == 'blobs' && search_type == 'zoekt'
 
-      if ::Feature.enabled?(:zoekt_cross_namespace_search, current_user)
-        @project.blank? || @project.default_branch == repository_ref(@project) || super
-      else
-        @group.present? || (@project.present? && @project.default_branch == repository_ref(@project)) || super
-      end
+      @project.blank? || @project.default_branch == repository_ref(@project) || super
     end
 
     override :blob_data_oversize_message

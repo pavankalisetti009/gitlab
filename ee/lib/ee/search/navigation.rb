@@ -47,17 +47,10 @@ module EE
         return true if super
         return false if project
 
-        global_search_code_enabled = ::Gitlab::CurrentSettings.global_search_code_enabled?
+        global_enabled = ::Gitlab::CurrentSettings.global_search_code_enabled?
 
-        if show_elasticsearch_tabs?
-          return true if group
-
-          return global_search_code_enabled
-        elsif zoekt_enabled?
-          return ::Search::Zoekt.search?(group) if group.present?
-
-          return global_search_code_enabled && ::Feature.enabled?(:zoekt_cross_namespace_search, user, type: :ops)
-        end
+        return group.present? || global_enabled if show_elasticsearch_tabs?
+        return (group.present? ? ::Search::Zoekt.search?(group) : global_enabled) if zoekt_enabled?
 
         false
       end
