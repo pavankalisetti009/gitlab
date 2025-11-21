@@ -2,69 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe PagesDeployment, feature_category: :geo_replication do
-  include EE::GeoHelpers
-
-  let_it_be(:group) { create(:group) }
-  let_it_be(:project) { create(:project, group: group) }
-
-  describe '#save_verification_details' do
-    let(:primary) { create(:geo_node, :primary) }
-    let(:verifiable_model_record) { build(:pages_deployment) }
-    let(:verification_state_table_class) { verifiable_model_record.class.verification_state_table_class }
-
-    before do
-      stub_current_geo_node(primary)
-    end
-
-    context 'when model_record is part of available_verifiables scope' do
-      it 'creates verification details' do
-        expect { verifiable_model_record.save! }.to change { verification_state_table_class.count }.by(1)
-      end
-    end
-  end
-
-  describe '.replicables_for_current_secondary' do
-    using RSpec::Parameterized::TableSyntax
-
-    where(:selective_sync_enabled, :object_storage_sync_enabled, :pages_object_storage_enabled, :synced_pages) do
-      true  | true  | true  | 5
-      true  | true  | false | 5
-      true  | false | true  | 0
-      true  | false | false | 5
-      false | true  | true  | 10
-      false | true  | false | 10
-      false | false | true  | 0
-      false | false | false | 10
-    end
-
-    with_them do
-      let(:secondary) do
-        node = build(:geo_node, sync_object_storage: object_storage_sync_enabled)
-
-        if selective_sync_enabled
-          node.selective_sync_type = 'namespaces'
-          node.namespaces = [group]
-        end
-
-        node.save!
-        node
-      end
-
-      before do
-        stub_current_geo_node(secondary)
-        stub_pages_object_storage(::Pages::DeploymentUploader) if pages_object_storage_enabled
-
-        create_list(:pages_deployment, 5, project: project)
-        create_list(:pages_deployment, 5, project: create(:project))
-      end
-
-      it 'returns the proper number of pages deployments' do
-        expect(described_class.replicables_for_current_secondary(1..described_class.last.id).count).to eq(synced_pages)
-      end
-    end
-  end
-
+RSpec.describe PagesDeployment, feature_category: :pages do
   describe '.search' do
     let_it_be(:pages_deployment1) { create(:pages_deployment) }
     let_it_be(:pages_deployment2) { create(:pages_deployment) }
@@ -102,6 +40,58 @@ RSpec.describe PagesDeployment, feature_category: :geo_replication do
           end
         end
       end
+    end
+  end
+
+  describe 'Geo replication', feature_category: :geo_replication do
+    describe 'associations' do
+      it 'has one verification state table class' do
+        is_expected
+          .to have_one(:pages_deployment_state)
+          .class_name('Geo::PagesDeploymentState')
+          .inverse_of(:pages_deployment)
+          .autosave(false)
+      end
+    end
+
+    include_examples 'a verifiable model for verification state' do
+      let(:verifiable_model_record) { build(:pages_deployment) }
+      let(:unverifiable_model_record) { nil }
+    end
+
+    describe 'replication/verification' do
+      let_it_be(:group_1) { create(:group, organization: create(:organization)) }
+      let_it_be(:group_2) { create(:group, organization: create(:organization)) }
+      let_it_be(:nested_group_1) { create(:group, parent: group_1) }
+      let_it_be(:project_1) { create(:project, group: group_1) }
+      let_it_be(:project_2) { create(:project, group: nested_group_1) }
+      let_it_be(:project_3) { create(:project, group: group_2) }
+
+      # Pages deployment for the root group
+      let!(:first_replicable_and_in_selective_sync) do
+        stub_pages_object_storage(::Pages::DeploymentUploader, enabled: false)
+        create(:pages_deployment, project: project_1)
+      end
+
+      # Pages deployment for a subgroup
+      let!(:second_replicable_and_in_selective_sync) do
+        stub_pages_object_storage(::Pages::DeploymentUploader, enabled: false)
+        create(:pages_deployment, project: project_2)
+      end
+
+      # Pages deployment for a subgroup and on object storage
+      let!(:third_replicable_on_object_storage_and_in_selective_sync) do
+        stub_pages_object_storage(::Pages::DeploymentUploader, enabled: true)
+        create(:pages_deployment, :object_storage, project: project_1)
+      end
+
+      # Pages deployment for a group not in selective sync
+      let!(:last_replicable_and_not_in_selective_sync) do
+        stub_pages_object_storage(::Pages::DeploymentUploader, enabled: false)
+        create(:pages_deployment, project: project_3)
+      end
+
+      include_examples 'Geo Framework selective sync behavior'
     end
   end
 end
