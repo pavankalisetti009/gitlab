@@ -3,7 +3,9 @@
 module Ai
   module DuoWorkflows
     class McpConfigService
-      GITLAB_ENABLED_TOOLS = ['get_issue'].freeze
+      GITLAB_PREAPPROVED_TOOLS = ['get_issue'].freeze
+      GITLAB_TOOLS_REQUIRING_APPROVAL = [].freeze
+      GITLAB_ENABLED_TOOLS = (GITLAB_PREAPPROVED_TOOLS + GITLAB_TOOLS_REQUIRING_APPROVAL).freeze
 
       def initialize(current_user, gitlab_token)
         @current_user = current_user
@@ -18,7 +20,8 @@ module Ai
       #   server_name: {
       #     URL: <server-url>,
       #     Headers: <headers-send-on-each-request>,
-      #     Tools: <list-of-supported-tools> # empty means that all tools will be listed
+      #     Tools: <list-of-supported-tools>, # empty means that all tools will be listed
+      #     PreApprovedTools: <list-of-preapproved-tools> # tools that don't require user approval
       #   }
       # }
       #
@@ -55,7 +58,8 @@ module Ai
           Headers: {
             Authorization: "Bearer #{gitlab_token}"
           },
-          Tools: GITLAB_ENABLED_TOOLS
+          Tools: GITLAB_ENABLED_TOOLS,
+          PreApprovedTools: GITLAB_PREAPPROVED_TOOLS
         }
       end
     end

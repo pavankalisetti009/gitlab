@@ -23,7 +23,8 @@ RSpec.describe Ai::DuoWorkflows::McpConfigService, feature_category: :duo_agent_
         Headers: {
           Authorization: "Bearer #{gitlab_token}"
         },
-        Tools: described_class::GITLAB_ENABLED_TOOLS
+        Tools: described_class::GITLAB_ENABLED_TOOLS,
+        PreApprovedTools: described_class::GITLAB_PREAPPROVED_TOOLS
       )
     end
 
@@ -37,6 +38,12 @@ RSpec.describe Ai::DuoWorkflows::McpConfigService, feature_category: :duo_agent_
       result = service.execute
 
       expect(result[:gitlab][:Tools]).to eq(['get_issue'])
+    end
+
+    it 'includes preapproved tools list' do
+      result = service.execute
+
+      expect(result[:gitlab][:PreApprovedTools]).to eq(['get_issue'])
     end
 
     context 'when mcp_client feature flag is disabled' do
@@ -92,6 +99,12 @@ RSpec.describe Ai::DuoWorkflows::McpConfigService, feature_category: :duo_agent_
   describe 'constant GITLAB_ENABLED_TOOLS' do
     it 'is defined with expected tools' do
       expect(described_class::GITLAB_ENABLED_TOOLS).to eq(['get_issue'])
+    end
+  end
+
+  describe 'constant GITLAB_PREAPPROVED_TOOLS' do
+    it 'is defined with expected tools' do
+      expect(described_class::GITLAB_PREAPPROVED_TOOLS).to eq(['get_issue'])
     end
   end
 end
