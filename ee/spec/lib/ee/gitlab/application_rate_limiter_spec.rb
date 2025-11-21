@@ -17,6 +17,7 @@ RSpec.describe EE::Gitlab::ApplicationRateLimiter, feature_category: :system_acc
       end
 
       where(:key, :threshold, :interval) do
+        :ai_catalog_item_report | 10 | 1.minute
         :unique_project_downloads_for_application | 1 | 1.minute
         :code_suggestions_api_endpoint | 60 | 1.minute
         :code_suggestions_direct_access | 50 | 1.minute
