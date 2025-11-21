@@ -477,72 +477,25 @@ RSpec.describe SearchHelper, feature_category: :global_search do
         allow(helper).to receive_messages(repository_ref: nil, super: false)
       end
 
-      context 'when FF zoekt_cross_namespace_search is enabled' do
-        before do
-          stub_feature_flags(zoekt_cross_namespace_search: true)
-        end
+      context 'when project is blank' do
+        it 'returns true' do
+          helper.instance_variable_set(:@project, nil)
 
-        context 'when project is blank' do
-          it 'returns true' do
-            helper.instance_variable_set(:@project, nil)
-
-            expect(should_show_zoekt_results?).to be true
-          end
-        end
-
-        context 'when project is present' do
-          before do
-            helper.instance_variable_set(:@project, project)
-            allow(project).to receive(:default_branch).and_return('main')
-          end
-
-          context 'when repository ref matches default branch' do
-            it 'returns true' do
-              allow(helper).to receive(:repository_ref).with(project).and_return('main')
-
-              expect(should_show_zoekt_results?).to be true
-            end
-          end
+          expect(should_show_zoekt_results?).to be true
         end
       end
 
-      context 'when FF zoekt_cross_namespace_search is disabled' do
+      context 'when project is present' do
         before do
-          stub_feature_flags(zoekt_cross_namespace_search: false)
+          helper.instance_variable_set(:@project, project)
+          allow(project).to receive(:default_branch).and_return('main')
         end
 
-        context 'when group is present' do
+        context 'when repository ref matches default branch' do
           it 'returns true' do
-            helper.instance_variable_set(:@group, group)
-            helper.instance_variable_set(:@project, nil)
-
-            expect(should_show_zoekt_results?).to be true
-          end
-        end
-
-        context 'when project is present and repository ref matches default branch' do
-          it 'returns true' do
-            helper.instance_variable_set(:@project, project)
-            helper.instance_variable_set(:@group, nil)
-            allow(project).to receive(:default_branch).and_return('main')
             allow(helper).to receive(:repository_ref).with(project).and_return('main')
 
             expect(should_show_zoekt_results?).to be true
-          end
-        end
-
-        context 'in other cases' do
-          before do
-            helper.instance_variable_set(:@project, project)
-            helper.instance_variable_set(:@group, nil)
-            allow(project).to receive(:default_branch).and_return('main')
-            allow(helper).to receive(:repository_ref).with(project).and_return('other-branch')
-          end
-
-          it 'returns false when super returns false' do
-            allow(helper).to receive(:super).and_return(false)
-
-            expect(should_show_zoekt_results?).to be false
           end
         end
       end

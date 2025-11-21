@@ -46,11 +46,6 @@ module EE
       rescue_from Elastic::TimeoutError, with: :render_timeout
 
       before_action :check_search_rate_limit!, only: search_rate_limited_endpoints
-
-      before_action only: :show do
-        push_frontend_feature_flag(:zoekt_cross_namespace_search, current_user)
-      end
-
       before_action :sso_enforcement_redirect, only: [:show]
       after_action :run_index_integrity_worker, only: :show, if: :no_results_for_group_or_project_blobs_advanced_search?
       after_action :track_exact_code_search, only: %i[autocomplete show], if: :track_search_zoekt?

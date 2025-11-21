@@ -21,7 +21,7 @@ module EE
 
       override :zoekt_searchable_scope?
       def zoekt_searchable_scope?
-        ::Feature.enabled?(:zoekt_cross_namespace_search, current_user)
+        true
       end
 
       override :search_level
