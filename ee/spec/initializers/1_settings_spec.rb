@@ -200,6 +200,7 @@ RSpec.describe '1_settings', feature_category: :shared do
         vulnerability_statistics_schedule_worker
         virtual_registries_cleanup_enqueue_policy_worker
         x509_issuer_crl_check_worker
+        drop_timed_out_worker
       ]
     end
 
