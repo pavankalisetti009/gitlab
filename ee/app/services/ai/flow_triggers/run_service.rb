@@ -80,13 +80,16 @@ module Ai
           d.variables = build_variables(params)
         end
 
+        branch_result = branch_args
+        return branch_result unless branch_result.success?
+
         response = ::Ci::Workloads::RunWorkloadService.new(
           project: project,
           current_user: flow_trigger_user,
           source: :duo_workflow,
           workload_definition: workload_definition,
           ci_variables_included: flow_definition['variables'] || [],
-          **branch_args
+          ref: branch_result.payload[:ref]
         ).execute
 
         if response.success?
@@ -174,8 +177,7 @@ module Ai
         branch_response = workload_branch_service.execute
         return branch_response unless branch_response.success?
 
-        ref = branch_response.payload[:branch_name]
-        { ref: ref }
+        ServiceResponse.success(payload: { ref: branch_response.payload[:branch_name] })
       end
 
       def composite_identity_token

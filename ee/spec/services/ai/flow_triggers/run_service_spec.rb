@@ -673,6 +673,31 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_agent_platfo
       end
     end
 
+    context 'when branch creation fails' do
+      before do
+        workload_branch_service = instance_double(Ci::Workloads::WorkloadBranchService)
+        allow(Ci::Workloads::WorkloadBranchService).to receive(:new).and_return(workload_branch_service)
+        allow(workload_branch_service).to receive(:execute).and_return(
+          ServiceResponse.error(message: 'Failed to create branch')
+        )
+      end
+
+      it 'returns error without creating workload' do
+        expect { service.execute(params) }.to change { ::Ai::DuoWorkflows::Workflow.count }.by(1)
+        expect { service.execute(params) }.not_to change { ::Ci::Workloads::Workload.count }
+
+        response = service.execute(params)
+        expect(response).to be_error
+        expect(response.message).to eq('Failed to create branch')
+      end
+
+      it 'does not call RunWorkloadService' do
+        expect(Ci::Workloads::RunWorkloadService).not_to receive(:new)
+
+        service.execute(params)
+      end
+    end
+
     context 'when flow definition file does not exist' do
       before do
         allow(service).to receive(:fetch_flow_definition).and_return(nil)
