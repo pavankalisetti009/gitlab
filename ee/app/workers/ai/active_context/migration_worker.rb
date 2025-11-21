@@ -14,6 +14,7 @@ module Ai
       urgency :low
       data_consistency :sticky
       feature_category :global_search
+      defer_on_database_health_signal :gitlab_main, [:ai_active_context_migrations], 10.minutes
     end
   end
 end
