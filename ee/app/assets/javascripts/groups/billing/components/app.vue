@@ -71,6 +71,14 @@ export default {
       required: false,
       default: '',
     },
+    canAccessDuoChat: {
+      type: Boolean,
+      required: true,
+    },
+    exploreLinks: {
+      type: Object,
+      required: true,
+    },
   },
   computed: {
     attributes() {
@@ -107,6 +115,8 @@ export default {
         :trial-expired="trialExpired"
         :start-trial-path="startTrialPath"
         :upgrade-to-premium-url="upgradeToPremiumUrl"
+        :can-access-duo-chat="canAccessDuoChat"
+        :explore-links="exploreLinks"
       />
     </div>
 
@@ -132,6 +142,7 @@ export default {
             :upgrade-to-premium-url="upgradeToPremiumUrl"
             :cta-label="attributes.premiumCtaLabel"
             :tracking-url="upgradeToPremiumTrackingUrl"
+            :trial-active="trialActive"
           />
 
           <ultimate-plan-billing-header
@@ -171,6 +182,7 @@ export default {
             :upgrade-to-premium-url="upgradeToPremiumUrl"
             :cta-label="attributes.premiumCtaLabel"
             :tracking-url="upgradeToPremiumTrackingUrl"
+            :trial-active="trialActive"
           />
         </div>
 

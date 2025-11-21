@@ -60,6 +60,24 @@ module BillingPlansHelper
         namespace.gitlab_subscription&.seats
       end
 
+    most_recent_project = namespace.all_projects.sorted_by_activity.first
+
+    project_settings_links = if most_recent_project
+                               {
+                                 mergeTrains: project_settings_merge_requests_path(most_recent_project),
+                                 escalationPolicies: project_incident_management_escalation_policies_path(most_recent_project),
+                                 repositoryPullMirroring: project_settings_repository_path(most_recent_project, anchor: "js-push-remote-settings"),
+                                 mergeRequestApprovals: project_settings_merge_requests_path(most_recent_project, anchor: "js-merge-request-approval-settings")
+                               }
+                             else
+                               { mergeTrains: nil, escalationPolicies: nil, repositoryPullMirroring: nil, mergeRequestApprovals: nil }
+                             end
+
+    explore_links = {
+      duoChat: current_user.can?(:access_duo_chat, namespace) ? nil : group_settings_gitlab_duo_seat_utilization_index_path(namespace),
+      epics: group_epics_path(namespace)
+    }.merge(project_settings_links)
+
     {
       seatsInUse: namespace.gitlab_subscription&.seats_in_use,
       totalSeats: total_seats,
@@ -73,8 +91,11 @@ module BillingPlansHelper
       upgradeToPremiumTrackingUrl:
         track_cart_abandonment_gitlab_subscriptions_hand_raise_leads_path(namespace_id: namespace.id, plan: ::Plan::PREMIUM),
       upgradeToUltimateTrackingUrl:
-        track_cart_abandonment_gitlab_subscriptions_hand_raise_leads_path(namespace_id: namespace.id, plan: ::Plan::ULTIMATE)
-    }
+        track_cart_abandonment_gitlab_subscriptions_hand_raise_leads_path(namespace_id: namespace.id, plan: ::Plan::ULTIMATE),
+      canAccessDuoChat: current_user.can?(:access_duo_chat, namespace)
+    }.merge({
+      exploreLinks: explore_links
+    })
   end
 
   def user_billing_data_attributes(plans_data)

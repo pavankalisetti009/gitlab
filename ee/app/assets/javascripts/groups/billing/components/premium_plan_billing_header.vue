@@ -21,6 +21,10 @@ export default {
       type: String,
       required: true,
     },
+    trialActive: {
+      type: Boolean,
+      required: true,
+    },
   },
   methods: {
     handleClick() {
@@ -49,7 +53,7 @@ export default {
     </div>
 
     <gl-button
-      variant="confirm"
+      :variant="trialActive ? 'default' : 'confirm'"
       class="gl-mb-2 gl-mt-5 gl-w-full"
       data-track-action="click_button"
       data-track-label="plan_cta"

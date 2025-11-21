@@ -5,6 +5,7 @@ import {
   utils,
   setAgenticMode,
   saveDuoAgenticModePreference,
+  focusDuoChatInput,
 } from 'ee/ai/utils';
 import { duoChatGlobalState } from '~/super_sidebar/constants';
 import { setCookie } from '~/lib/utils/common_utils';
@@ -258,6 +259,36 @@ describe('AI Utils', () => {
         expect(duoChatGlobalState.isShown).toBe(false);
         expect(duoChatGlobalState.isAgenticChatShown).toBe(true);
       });
+    });
+
+    describe('when in embedded mode', () => {
+      beforeEach(() => {
+        window.gon = {
+          features: { projectStudioEnabled: true },
+        };
+      });
+
+      it('sets activeTab to chat', () => {
+        sendDuoChatCommand({ question: 'hello', resourceId: '1' });
+
+        expect(duoChatGlobalState.activeTab).toBe('chat');
+        expect(duoChatGlobalState.isShown).toBe(false);
+      });
+    });
+  });
+
+  describe('focusDuoChatInput', () => {
+    beforeEach(() => {
+      duoChatGlobalState.focusChatInput = false;
+      duoChatGlobalState.isShown = false;
+      duoChatGlobalState.activeTab = null;
+    });
+
+    it('opens duo chat and updates the focusChatInput state to true', () => {
+      focusDuoChatInput();
+
+      expect(duoChatGlobalState.isShown).toBe(true);
+      expect(duoChatGlobalState.focusChatInput).toBe(true);
     });
   });
 

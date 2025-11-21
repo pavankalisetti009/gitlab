@@ -292,6 +292,14 @@ export default {
         }
       },
     },
+    'duoChatGlobalState.focusChatInput': {
+      handler(newVal) {
+        if (newVal) {
+          this.duoChatGlobalState.focusChatInput = false; // reset global state
+          this.focusInput();
+        }
+      },
+    },
     mode(newMode) {
       this.switchMode(newMode);
     },
@@ -584,7 +592,6 @@ export default {
     // method via Vue's `expose` option. However, doing so would cause several tests to fail in Vue 3
     // because we wrote some assertions directly against the `vm`, which becomes private when `expose`
     // is defined. So we need to _not_ use `expose` and disable vue/no-unused-properties for now.
-    // eslint-disable-next-line vue/no-unused-properties
     focusInput() {
       this.$refs.duoChat?.focusChatInput();
     },
