@@ -13,6 +13,10 @@ query aiCatalogAgent(
       id
       nameWithNamespace
       webUrl
+      rootGroup @gl_introduced(version: "18.6.0") {
+        id
+        fullName
+      }
     }
     latestVersion {
       ...BaseAiCatalogAgentVersion

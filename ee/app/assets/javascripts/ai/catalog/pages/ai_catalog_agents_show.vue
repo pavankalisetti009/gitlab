@@ -4,7 +4,13 @@ import { InternalEvents } from '~/tracking';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
-import { TRACK_EVENT_TYPE_AGENT, TRACK_EVENT_VIEW_AI_CATALOG_ITEM } from 'ee/ai/catalog/constants';
+import {
+  AI_CATALOG_CONSUMER_TYPE_GROUP,
+  AI_CATALOG_CONSUMER_TYPE_PROJECT,
+  AI_CATALOG_CONSUMER_LABELS,
+  TRACK_EVENT_TYPE_AGENT,
+  TRACK_EVENT_VIEW_AI_CATALOG_ITEM,
+} from 'ee/ai/catalog/constants';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import { prerequisitesError } from '../utils';
 import AiCatalogItemActions from '../components/ai_catalog_item_actions.vue';
@@ -69,11 +75,15 @@ export default {
     });
   },
   methods: {
-    async addToProject(target) {
+    async addAgentToTarget(target) {
       const input = {
         itemId: this.aiCatalogAgent.id,
         target,
       };
+      const targetType = target.groupId
+        ? AI_CATALOG_CONSUMER_TYPE_GROUP
+        : AI_CATALOG_CONSUMER_TYPE_PROJECT;
+      const targetTypeLabel = AI_CATALOG_CONSUMER_LABELS[targetType];
 
       try {
         const { data } = await this.$apollo.mutate({
@@ -94,7 +104,7 @@ export default {
             return;
           }
 
-          const name = data.aiCatalogItemConsumerCreate.itemConsumer.project?.name || '';
+          const name = data.aiCatalogItemConsumerCreate.itemConsumer[targetType]?.name || '';
 
           this.$toast.show(sprintf(s__('AICatalog|Agent enabled in %{name}.'), { name }));
         }
@@ -102,8 +112,11 @@ export default {
         this.errors = [
           prerequisitesError(
             s__(
-              'AICatalog|Could not enable agent in the project. Check that the project meets the %{linkStart}prerequisites%{linkEnd} and try again.',
+              'AICatalog|Could not enable agent in the %{target}. Check that the %{target} meets the %{linkStart}prerequisites%{linkEnd} and try again.',
             ),
+            {
+              target: targetTypeLabel,
+            },
           ),
         ];
         Sentry.captureException(error);
@@ -221,7 +234,7 @@ export default {
           :delete-fn="deleteAgent"
           :delete-confirm-title="s__('AICatalog|Delete agent')"
           :delete-confirm-message="s__('AICatalog|Are you sure you want to delete agent %{name}?')"
-          @add-to-target="addToProject"
+          @add-to-target="addAgentToTarget"
           @report-item="reportAgent"
         />
       </template>
