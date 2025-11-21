@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Projects::Settings::BranchRulesHelper, feature_category: :source_code_management do
+RSpec.describe EE::Projects::Settings::BranchRulesHelper, feature_category: :source_code_management do
   include Devise::Test::ControllerHelpers
 
   let_it_be(:project) { build_stubbed(:project) }
@@ -102,7 +102,8 @@ RSpec.describe Projects::Settings::BranchRulesHelper, feature_category: :source_
         rules_path: expose_path(api_v4_projects_approval_rules_path(id: project.id)),
         can_admin_protected_branches: 'false',
         can_admin_group_protected_branches: 'false',
-        group_settings_repository_path: ''
+        group_settings_repository_path: '',
+        security_policies_path: project_security_policies_path(project)
       })
     end
 

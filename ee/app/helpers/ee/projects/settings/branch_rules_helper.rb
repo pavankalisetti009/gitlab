@@ -43,7 +43,8 @@ module EE
             allow_multi_rule: project.multiple_approval_rules_available?.to_s,
             can_admin_protected_branches: can?(current_user, :admin_protected_branch, project).to_s,
             can_admin_group_protected_branches: group_protected_branches_licensed_and_can_admin?(project).to_s,
-            group_settings_repository_path: group_branch_rules_path(project)
+            group_settings_repository_path: group_branch_rules_path(project),
+            security_policies_path: security_policies_path(project)
           }
         end
       end

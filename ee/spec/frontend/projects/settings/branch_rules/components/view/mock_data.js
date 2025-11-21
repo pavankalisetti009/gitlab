@@ -238,6 +238,7 @@ export const branchProtectionsMockResponse = {
               isGroupLevel: false,
               allowForcePush: true,
               codeOwnerApprovalRequired: true,
+              modificationBlockedByPolicy: false,
               mergeAccessLevels: {
                 __typename: 'MergeAccessLevelConnection',
                 edges: mergeAccessLevelEdges,
@@ -267,6 +268,7 @@ export const branchProtectionsMockResponse = {
               isGroupLevel: false,
               allowForcePush: true,
               codeOwnerApprovalRequired: true,
+              modificationBlockedByPolicy: false,
               mergeAccessLevels: {
                 __typename: 'MergeAccessLevelConnection',
                 edges: [],
@@ -309,6 +311,7 @@ export const branchProtectionsNoPushAccessMockResponse = {
               __typename: 'BranchProtection',
               isGroupLevel: false,
               allowForcePush: false,
+              modificationBlockedByPolicy: false,
               mergeAccessLevels: {
                 __typename: 'MergeAccessLevelConnection',
                 edges: mergeAccessLevelEdges,
@@ -438,6 +441,7 @@ export const editBranchRuleMockResponse = {
           isGroupLevel: false,
           allowForcePush: true,
           codeOwnerApprovalRequired: true,
+          modificationBlockedByPolicy: false,
           mergeAccessLevels: mergeAccessLevelsEditResponse,
           pushAccessLevels: {
             __typename: 'PushAccessLevelConnection',

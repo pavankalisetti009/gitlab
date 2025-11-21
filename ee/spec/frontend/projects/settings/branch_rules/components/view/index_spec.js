@@ -1,3 +1,4 @@
+import { GlPopover, GlSprintf } from '@gitlab/ui';
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 // eslint-disable-next-line no-restricted-imports
@@ -50,6 +51,7 @@ describe('View branch rules in enterprise edition', () => {
   const projectPath = 'test/testing';
   const protectedBranchesPath = 'protected/branches';
   const approvalRulesPath = 'approval/rules';
+  const securityPoliciesPath = 'path/to/-/security/policies';
   const statusChecksPath = 'status/checks';
   const branchProtectionsMockRequestHandler = (response = branchProtectionsMockResponse) =>
     jest.fn().mockResolvedValue(response);
@@ -85,9 +87,11 @@ describe('View branch rules in enterprise edition', () => {
       store: new Vuex.Store(store),
       apolloProvider: fakeApollo,
       provide: {
+        canAdminProtectedBranches: true,
         projectPath,
         protectedBranchesPath,
         approvalRulesPath,
+        securityPoliciesPath,
         statusChecksPath,
         showApprovers,
         showStatusChecks,
@@ -96,9 +100,10 @@ describe('View branch rules in enterprise edition', () => {
       },
       stubs: {
         CrudComponent,
+        GlSprintf,
+        Protection,
         ProtectionToggle,
         StatusChecks,
-        Protection,
       },
     });
 
@@ -110,6 +115,7 @@ describe('View branch rules in enterprise edition', () => {
   afterEach(() => axiosMock.restore());
 
   const findDeleteRuleButton = () => wrapper.findByTestId('delete-rule-button');
+  const findDeleteRuleButtonPopover = () => wrapper.findComponent(GlPopover);
   const findAllowedToMerge = () => wrapper.findByTestId('allowed-to-merge-content');
   const findAllowedToPush = () => wrapper.findByTestId('allowed-to-push-content');
   const findStatusChecks = () => wrapper.findByTestId('status-checks-content');
@@ -281,6 +287,46 @@ describe('View branch rules in enterprise edition', () => {
         headerLinkHref: statusChecksPath,
         headerLinkTitle: 'Manage in status checks',
         statusChecks: statusChecksRulesMock,
+      });
+    });
+  });
+
+  describe('Security policies', () => {
+    describe('deleting a branch rule', () => {
+      describe('when a security policy prevents deletion', () => {
+        beforeEach(async () => {
+          const mockResponse = structuredClone(branchProtectionsMockResponse);
+          mockResponse.data.project.branchRules.nodes[0].branchProtection.modificationBlockedByPolicy = true;
+          await createComponent({ editBranchRules: true }, {}, mockResponse);
+        });
+
+        it('renders disabled delete rule button', () => {
+          expect(findDeleteRuleButton().exists()).toBe(true);
+          expect(findDeleteRuleButton().props('disabled')).toBe(true);
+        });
+
+        it('renders the delete button popover', () => {
+          const popover = findDeleteRuleButtonPopover();
+          expect(popover.exists()).toBe(true);
+          expect(popover.text()).toBe(
+            "You can't unprotect this branch because its protection is enforced by one or more security policies. Learn more.",
+          );
+        });
+      });
+
+      describe('when a security policy does not prevent deletion', () => {
+        beforeEach(async () => {
+          await createComponent();
+        });
+
+        it('renders enabled delete rule button', () => {
+          expect(findDeleteRuleButton().exists()).toBe(true);
+          expect(findDeleteRuleButton().props('disabled')).toBe(false);
+        });
+
+        it('does not render the delete button popover', () => {
+          expect(findDeleteRuleButtonPopover().exists()).toBe(false);
+        });
       });
     });
   });
