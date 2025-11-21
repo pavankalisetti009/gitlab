@@ -397,16 +397,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncProjectService, feat
               expect { service.execute }.not_to change { persisted_schedule.snoozed_until }
             end
           end
-
-          context 'with feature disabled' do
-            before do
-              stub_feature_flags(scheduled_pipeline_execution_policies: false)
-            end
-
-            specify do
-              expect { service.execute }.to change { Security::PipelineExecutionProjectSchedule.count }.from(1).to(0)
-            end
-          end
         end
 
         context 'with experiment disabled' do

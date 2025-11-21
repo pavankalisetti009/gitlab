@@ -274,10 +274,7 @@ export default {
       return Boolean(this.glFeatures.securityPoliciesCombinedList);
     },
     hasScheduledPoliciesEnabled() {
-      return (
-        this.enabledExperiments.includes('pipeline_execution_schedule_policy') &&
-        this.glFeatures.scheduledPipelineExecutionPolicies
-      );
+      return this.enabledExperiments.includes('pipeline_execution_schedule_policy');
     },
     flattenedPolicies() {
       return (

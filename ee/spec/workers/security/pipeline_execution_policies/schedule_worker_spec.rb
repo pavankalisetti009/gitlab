@@ -42,18 +42,6 @@ RSpec.describe Security::PipelineExecutionPolicies::ScheduleWorker, '#perform', 
       it 'updates next_run_at' do
         expect { perform }.to change { schedule.reload.next_run_at }
       end
-
-      context 'with feature disabled' do
-        before do
-          stub_feature_flags(scheduled_pipeline_execution_policies: false)
-        end
-
-        it 'does not enqueue the run worker' do
-          expect(Security::PipelineExecutionPolicies::RunScheduleWorker).not_to receive(:perform_async)
-
-          perform
-        end
-      end
     end
 
     it 'avoids N+1 queries' do

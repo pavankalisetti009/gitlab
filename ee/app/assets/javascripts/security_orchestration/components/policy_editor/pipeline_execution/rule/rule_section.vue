@@ -19,6 +19,7 @@ export default {
     ScheduleForm,
   },
   mixins: [glFeatureFlagsMixin()],
+  inject: ['enabledExperiments'],
   props: {
     schedules: {
       type: Array,
@@ -33,8 +34,9 @@ export default {
   },
   computed: {
     hasScheduledPipelines() {
-      return this.glFeatures.scheduledPipelineExecutionPolicies;
+      return this.enabledExperiments.includes('pipeline_execution_schedule_policy');
     },
+
     schedule() {
       return this.schedules[0];
     },

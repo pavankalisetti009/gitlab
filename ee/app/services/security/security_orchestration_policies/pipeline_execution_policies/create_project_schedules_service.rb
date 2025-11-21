@@ -63,8 +63,6 @@ module Security
         end
 
         def feature_enabled?
-          return false if Feature.disabled?(:scheduled_pipeline_execution_policies, project)
-
           policy.security_orchestration_policy_configuration.experiment_enabled?(:pipeline_execution_schedule_policy)
         end
       end

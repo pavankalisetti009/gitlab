@@ -15,7 +15,7 @@ describe('CodeBlockStrategySelector', () => {
 
   const defaultProvide = {
     enabledExperiments: ['pipeline_execution_schedule_policy'],
-    glFeatures: { scheduledPipelineExecutionPolicies: true },
+    glFeatures: {},
   };
 
   const createComponent = ({ propsData = {}, provide = {} } = {}) => {
@@ -102,24 +102,17 @@ describe('CodeBlockStrategySelector', () => {
     });
   });
   describe('schedule strategy with feature flag and enabledExperiments', () => {
-    it.each([
-      [[], false],
-      [[], true],
-      [['pipeline_execution_schedule_policy'], false],
-    ])(
-      "does not render the 'schedule' strategy in the listbox items when enabledExperiments: %s and glFeatures: %s",
-      (enabledExperiments, glFeatures) => {
-        createComponent({
-          provide: {
-            enabledExperiments,
-            glFeatures: { scheduledPipelineExecutionPolicies: glFeatures },
-          },
-        });
-        expect(findListBox().props('items')).toEqual([
-          { text: 'Inject', value: INJECT },
-          { text: 'Override', value: OVERRIDE },
-        ]);
-      },
-    );
+    it("does not render the 'schedule' strategy in the listbox items when enabledExperiments is empty", () => {
+      createComponent({
+        provide: {
+          enabledExperiments: [],
+          glFeatures: {},
+        },
+      });
+      expect(findListBox().props('items')).toEqual([
+        { text: 'Inject', value: INJECT },
+        { text: 'Override', value: OVERRIDE },
+      ]);
+    });
   });
 });

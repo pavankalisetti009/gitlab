@@ -155,7 +155,6 @@ describe('App', () => {
         assignedPolicyProject,
         enabledExperiments: ['pipeline_execution_schedule_policy'],
         glFeatures: {
-          scheduledPipelineExecutionPolicies: true,
           securityPoliciesCombinedList: false,
         },
         namespacePath,
@@ -447,24 +446,17 @@ describe('App', () => {
   });
 
   describe('pipeline execution schedule policy retrieval', () => {
-    it.each([
-      [[], false],
-      [[], true],
-      [['pipeline_execution_schedule_policy'], false],
-    ])(
-      'does not request the pipeline execution schedule policies when enabledExperiments: %s and glFeatures: %s',
-      async (enabledExperiments, glFeatures) => {
-        createWrapper({
-          provide: {
-            enabledExperiments,
-            glFeatures: { scheduledPipelineExecutionPolicies: glFeatures },
-          },
-        });
-        await waitForPromises();
+    it('does not request the pipeline execution schedule policies when enabledExperiments is empty', async () => {
+      createWrapper({
+        provide: {
+          enabledExperiments: [],
+          glFeatures: {},
+        },
+      });
+      await waitForPromises();
 
-        expect(requestHandlers.projectPipelineExecutionSchedulePolicies).not.toHaveBeenCalled();
-      },
-    );
+      expect(requestHandlers.projectPipelineExecutionSchedulePolicies).not.toHaveBeenCalled();
+    });
   });
 
   describe('combined policy list', () => {
@@ -491,7 +483,6 @@ describe('App', () => {
       createWrapper({
         provide: {
           glFeatures: {
-            scheduledPipelineExecutionPolicies: false,
             securityPoliciesCombinedList: true,
           },
         },
@@ -510,7 +501,6 @@ describe('App', () => {
         provide: {
           enabledExperiments: ['pipeline_execution_schedule_policy'],
           glFeatures: {
-            scheduledPipelineExecutionPolicies: true,
             securityPoliciesCombinedList: true,
           },
         },

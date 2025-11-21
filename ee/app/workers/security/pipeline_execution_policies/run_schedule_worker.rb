@@ -20,8 +20,6 @@ module Security
 
         schedule = Security::PipelineExecutionProjectSchedule.find_by_id(schedule_id) || return
 
-        return if Feature.disabled?(:scheduled_pipeline_execution_policies, schedule.project)
-
         return unless experiment_enabled?(schedule)
 
         ensure_security_policy_bot_user(schedule)
