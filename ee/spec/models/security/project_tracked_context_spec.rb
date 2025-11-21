@@ -7,6 +7,8 @@ RSpec.describe Security::ProjectTrackedContext, feature_category: :vulnerability
 
   describe 'associations' do
     it { is_expected.to belong_to(:project) }
+    it { is_expected.to have_many(:sbom_occurrence_refs) }
+    it { is_expected.to have_many(:vulnerability_reads) }
   end
 
   describe 'validations' do
