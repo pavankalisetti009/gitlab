@@ -83,6 +83,20 @@ RSpec.describe GitlabSubscriptions::Trials::WelcomeCreateService, :saas, feature
         expect(execute.payload).to eq({ namespace: Group.last, project: Project.last })
       end
 
+      it 'adds experiment contexts and tracks namespace', :experiment do
+        stub_experiments(
+          lightweight_trial_registration_redesign: :candidate,
+          premium_message_during_trial: :candidate
+        )
+
+        expect_create_lead_success(lead_params)
+        expect_any_instance_of(PremiumMessageDuringTrialExperiment) do |instance|
+          expect(instance).to receive(:track).with(:assignment, namespace: an_instance_of(Group)).and_call_original
+        end
+
+        execute
+      end
+
       context 'when retrying' do
         before do
           allow(GitlabSubscriptions::Trials)
@@ -218,16 +232,16 @@ RSpec.describe GitlabSubscriptions::Trials::WelcomeCreateService, :saas, feature
 
       it 'trial registration experiment is not tracked' do
         trial_experiment = instance_double(ApplicationExperiment)
-        nav_experiment = instance_double(ApplicationExperiment)
+        premium_message_experiment = instance_double(ApplicationExperiment)
 
         allow_next_instance_of(GitlabSubscriptions::Trials::WelcomeCreateService) do |service|
           allow(service).to receive(:experiment).with(:lightweight_trial_registration_redesign,
             actor: user).and_return(trial_experiment)
-          allow(service).to receive(:experiment).with(:default_pinned_nav_items,
-            actor: user).and_return(nav_experiment)
+          allow(service).to receive(:experiment).with(:premium_message_during_trial,
+            namespace: an_instance_of(Group)).and_return(premium_message_experiment)
 
-          allow(nav_experiment).to receive(:enabled?).and_return(false)
-          allow(nav_experiment).to receive(:track).with(:assignment, namespace: anything)
+          allow(premium_message_experiment).to receive(:enabled?).and_return(false)
+          allow(premium_message_experiment).to receive(:track).with(:assignment)
         end
 
         expect(trial_experiment).not_to receive(:track).with(:assignment, namespace: existing_group)
