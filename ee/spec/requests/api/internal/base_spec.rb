@@ -6,6 +6,7 @@ RSpec.describe API::Internal::Base, feature_category: :source_code_management do
   include EE::GeoHelpers
   include APIInternalBaseHelpers
   include NamespaceStorageHelpers
+  include GitlabSubscriptions::SubscriptionHelpers
 
   let_it_be(:primary_url) { 'http://primary.example.com' }
   let_it_be(:secondary_url) { 'http://secondary.example.com' }
@@ -513,7 +514,9 @@ RSpec.describe API::Internal::Base, feature_category: :source_code_management do
 
       before_all do
         project.add_developer(user)
-        create(:gitlab_subscription, :ultimate, namespace: group)
+        # Use create_or_replace_subscription because project.add_developer above
+        # triggers Internal Events tracking, which auto-generates a FREE subscription
+        create_or_replace_subscription(group, :ultimate)
         create(:namespace_root_storage_statistics, namespace: group)
         set_enforcement_limit(group, megabytes: 4)
       end

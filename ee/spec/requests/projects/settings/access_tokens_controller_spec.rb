@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Projects::Settings::AccessTokensController, :saas, feature_category: :system_access do
+  include GitlabSubscriptions::SubscriptionHelpers
+
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group) }
   let_it_be(:resource) { create(:project, group: group, maintainers: user) }
@@ -41,7 +43,9 @@ RSpec.describe Projects::Settings::AccessTokensController, :saas, feature_catego
 
     context 'when has a bronze subscription' do
       before_all do
-        create(:gitlab_subscription, :bronze, namespace: group)
+        # Use create_or_replace_subscription because maintainers: user (line 10)
+        # triggers Internal Events tracking, which auto-generates a FREE subscription
+        create_or_replace_subscription(group, :bronze)
       end
 
       it_behaves_like 'feature unavailable'
@@ -51,7 +55,9 @@ RSpec.describe Projects::Settings::AccessTokensController, :saas, feature_catego
     context 'when has an active trial subscription' do
       before_all do
         create(:plan_limits, :ultimate_trial_plan, project_access_token_limit: 1)
-        create(:gitlab_subscription, :ultimate_trial, namespace: group)
+        # Use create_or_replace_subscription because maintainers: user (line 10)
+        # triggers Internal Events tracking, which auto-generates a FREE subscription
+        create_or_replace_subscription(group, :ultimate_trial)
       end
 
       it 'can create first token successfully' do
@@ -103,7 +109,9 @@ RSpec.describe Projects::Settings::AccessTokensController, :saas, feature_catego
     context 'when has trial subscription' do
       context 'when the trial subscription is active' do
         before do
-          create(:gitlab_subscription, :ultimate_trial, namespace: group)
+          # Use create_or_replace_subscription because maintainers: user (line 10)
+          # triggers Internal Events tracking, which auto-generates a FREE subscription
+          create_or_replace_subscription(group, :ultimate_trial)
         end
 
         it 'can revoke token successfully' do
@@ -115,7 +123,9 @@ RSpec.describe Projects::Settings::AccessTokensController, :saas, feature_catego
 
       context 'when the trial subscription is expired' do
         before do
-          create(:gitlab_subscription, :expired_trial, :free, namespace: group)
+          # Use create_or_replace_subscription because maintainers: user (line 10)
+          # triggers Internal Events tracking, which auto-generates a FREE subscription
+          create_or_replace_subscription(group, :expired_trial, :free)
         end
 
         it 'still can revoke token successfully' do

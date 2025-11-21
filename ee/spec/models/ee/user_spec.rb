@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe User, feature_category: :system_access do
+  include GitlabSubscriptions::SubscriptionHelpers
+
   subject(:user) { described_class.new }
 
   it_behaves_like 'associations with defined deletion strategies'
@@ -2122,7 +2124,9 @@ RSpec.describe User, feature_category: :system_access do
         let_it_be(:ultimate_plan, freeze: true) { create(:ultimate_plan) }
 
         before do
-          create(:gitlab_subscription, namespace: namespace.root_ancestor, hosted_plan: ultimate_plan)
+          # Use create_or_replace_subscription because adding members (various lines)
+          # triggers Internal Events tracking, which auto-generates a FREE subscription
+          create_or_replace_subscription(namespace.root_ancestor, hosted_plan: ultimate_plan)
         end
 
         context 'user is a guest' do
@@ -2158,7 +2162,9 @@ RSpec.describe User, feature_category: :system_access do
 
       context 'when namespace is on a plan that is not free or ultimate' do
         before do
-          create(:gitlab_subscription, namespace: namespace, hosted_plan: create(:premium_plan))
+          # Use create_or_replace_subscription because adding members (various lines)
+          # triggers Internal Events tracking, which auto-generates a FREE subscription
+          create_or_replace_subscription(namespace, hosted_plan: create(:premium_plan))
         end
 
         context 'user is a guest' do

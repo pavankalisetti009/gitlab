@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Dashboard::Projects::ListService, feature_category: :groups_and_projects do
+  include GitlabSubscriptions::SubscriptionHelpers
+
   using RSpec::Parameterized::TableSyntax
 
   let!(:license) { create(:license, plan: License::ULTIMATE_PLAN) }
@@ -64,7 +66,9 @@ RSpec.describe Dashboard::Projects::ListService, feature_category: :groups_and_p
 
       before do
         stub_application_setting(check_namespace_plan: true)
-        create(:gitlab_subscription, :ultimate, namespace: namespace)
+        # Use create_or_replace_subscription because project.add_developer (line 31)
+        # triggers Internal Events tracking, which auto-generates a FREE subscription
+        create_or_replace_subscription(namespace, :ultimate)
       end
 
       where(:plan, :trial, :expired, :available) do
@@ -105,7 +109,9 @@ RSpec.describe Dashboard::Projects::ListService, feature_category: :groups_and_p
         before do
           stub_application_setting(check_namespace_plan: check_namespace_plan)
 
-          create(:gitlab_subscription, plan, namespace: namespace) if plan
+          # Use create_or_replace_subscription because project.add_developer (line 31)
+          # triggers Internal Events tracking, which auto-generates a FREE subscription
+          create_or_replace_subscription(namespace, plan) if plan
         end
 
         if params[:available]

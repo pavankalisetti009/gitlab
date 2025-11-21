@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe API::Files, feature_category: :source_code_management do
   include NamespaceStorageHelpers
+  include GitlabSubscriptions::SubscriptionHelpers
 
   let(:group) { create(:group) }
   let(:user) { create(:user) }
@@ -31,7 +32,9 @@ RSpec.describe API::Files, feature_category: :source_code_management do
 
     context 'with an exceeded namespace storage limit', :saas do
       before do
-        create(:gitlab_subscription, :ultimate, namespace: group)
+        # Use create_or_replace_subscription because project.add_developer (line 15)
+        # triggers Internal Events tracking, which auto-generates a FREE subscription
+        create_or_replace_subscription(group, :ultimate)
         create(:namespace_root_storage_statistics, namespace: group)
         enforce_namespace_storage_limit(group)
         set_enforcement_limit(group, megabytes: 5)
@@ -58,7 +61,9 @@ RSpec.describe API::Files, feature_category: :source_code_management do
 
     context 'with an exceeded namespace storage limit', :saas do
       before do
-        create(:gitlab_subscription, :ultimate, namespace: group)
+        # Use create_or_replace_subscription because project.add_developer (line 15)
+        # triggers Internal Events tracking, which auto-generates a FREE subscription
+        create_or_replace_subscription(group, :ultimate)
         create(:namespace_root_storage_statistics, namespace: group)
         enforce_namespace_storage_limit(group)
         set_enforcement_limit(group, megabytes: 5)
@@ -84,7 +89,9 @@ RSpec.describe API::Files, feature_category: :source_code_management do
 
     context 'with an exceeded namespace storage limit', :saas do
       before do
-        create(:gitlab_subscription, :ultimate, namespace: group)
+        # Use create_or_replace_subscription because project.add_developer (line 15)
+        # triggers Internal Events tracking, which auto-generates a FREE subscription
+        create_or_replace_subscription(group, :ultimate)
         create(:namespace_root_storage_statistics, namespace: group)
         enforce_namespace_storage_limit(group)
         set_enforcement_limit(group, megabytes: 5)
