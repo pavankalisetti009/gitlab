@@ -111,7 +111,7 @@ module ClickHouse
     end
 
     def quote(table)
-      ApplicationRecord.connection.quote_table_name(table)
+      ApplicationRecord.adapter_class.quote_table_name(table)
     end
 
     def iterator

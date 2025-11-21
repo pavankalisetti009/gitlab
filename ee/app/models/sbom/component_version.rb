@@ -26,7 +26,7 @@ module Sbom
 
     def self.select_distinct(on:)
       select_values = column_names.map do |column|
-        connection.quote_table_name("#{table_name}.#{column}")
+        adapter_class.quote_table_name("#{table_name}.#{column}")
       end
 
       distinct_values = Array(on).map { |column| arel_table[column] }
