@@ -956,7 +956,7 @@ module EE
     end
 
     def has_admin_custom_permissions?
-      Authz::Admin.new(self).available_permissions_for_user.present?
+      ::Authz::Admin.new(self).available_permissions_for_user.present?
     end
   end
 end

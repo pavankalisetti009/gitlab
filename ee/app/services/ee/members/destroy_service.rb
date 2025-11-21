@@ -156,8 +156,8 @@ module EE
         return unless group.is_a?(Group)
 
         return unless member.member_role_id ||
-          Authz::UserGroupMemberRole.for_user_in_group_and_shared_groups(user, group).exists? ||
-          Authz::UserProjectMemberRole.for_user_shared_with_group(user, group).exists?
+          ::Authz::UserGroupMemberRole.for_user_in_group_and_shared_groups(user, group).exists? ||
+          ::Authz::UserProjectMemberRole.for_user_shared_with_group(user, group).exists?
 
         ::Authz::UserGroupMemberRoles::DestroyForGroupWorker.perform_async(user.id, group.id)
       end
