@@ -158,6 +158,8 @@ module EE
           store.subscribe ::Security::AnalyzerNamespaceStatuses::ProcessGroupDeletedEventsWorker,
             to: ::Groups::GroupDeletedEvent
 
+          store.subscribe ::Security::Attributes::ProcessProjectTransferEventsWorker,
+            to: ::Projects::ProjectTransferedEvent
           store.subscribe ::Security::Attributes::CleanupScheduleWorker,
             to: ::Groups::GroupTransferedEvent
         end
