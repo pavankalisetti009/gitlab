@@ -74,6 +74,11 @@ Prerequisites:
    - **Off by default**
 1. Select **Save changes**.
 
+These settings apply to:
+
+- Users who have the top-level group as the [default GitLab Duo namespace](../../../gitlab_duo/model_selection.md#assign-a-default-gitlab-duo-namespace).
+- Users without a default namespace, and who visit a namespace that belongs to the top-level group.
+
 If you turn off foundational agents for a top-level group, users with that group as their default GitLab Duo namespace can't access foundational agents in any namespace.
 
 {{< /tab >}}
