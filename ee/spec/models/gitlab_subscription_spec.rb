@@ -1040,4 +1040,10 @@ RSpec.describe GitlabSubscription, :saas, feature_category: :subscription_manage
       it { is_expected.to be(extended_or_reactivated) }
     end
   end
+
+  describe 'constants' do
+    it 'defines SERVICE_ACCOUNT_LIMIT_FOR_TRIAL' do
+      expect(described_class::SERVICE_ACCOUNT_LIMIT_FOR_TRIAL).to eq(100)
+    end
+  end
 end

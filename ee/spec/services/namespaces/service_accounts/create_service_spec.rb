@@ -218,6 +218,84 @@ RSpec.describe Namespaces::ServiceAccounts::CreateService, feature_category: :us
         it_behaves_like 'invalid namespace scenarios'
       end
     end
+
+    context 'when current user is a group owner' do
+      let_it_be(:group_with_trial) { create(:group) }
+      let_it_be(:current_user) { create(:user, owner_of: group_with_trial) }
+      let(:namespace_id) { group_with_trial.id }
+
+      before do
+        stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: true)
+      end
+
+      context 'when subscription of type trial' do
+        before do
+          create(:gitlab_subscription, :active_trial, namespace: group_with_trial, hosted_plan: create(:ultimate_plan))
+        end
+
+        context 'when trial service account limit is not reached' do
+          before do
+            create_list(:user, 10, :service_account, provisioned_by_group_id: group_with_trial.id)
+          end
+
+          it_behaves_like 'service account creation success' do
+            let(:username_prefix) { "service_account_group_#{group_with_trial.id}" }
+          end
+
+          it 'sets provisioned by group' do
+            expect(result.payload[:user].provisioned_by_group_id).to eq(group_with_trial.id)
+          end
+        end
+
+        context 'when trial service account limit is reached' do
+          before do
+            stub_const('GitlabSubscription::SERVICE_ACCOUNT_LIMIT_FOR_TRIAL', 3)
+
+            create_list(:user, GitlabSubscription::SERVICE_ACCOUNT_LIMIT_FOR_TRIAL, :service_account,
+              provisioned_by_group_id: group_with_trial.id)
+          end
+
+          it 'produces an error' do
+            expect(result.status).to eq(:error)
+            expect(result.message).to include('No more seats are available to create Service Account User')
+          end
+        end
+
+        context 'when subscription trial has expired' do
+          let_it_be(:group_with_expired_trial) { create(:group, owners: current_user) }
+          let(:namespace_id) { group_with_expired_trial.id }
+
+          before do
+            create(:gitlab_subscription,
+              namespace: group_with_expired_trial,
+              hosted_plan: create(:premium_plan),
+              trial: true,
+              trial_starts_on: 2.weeks.ago,
+              trial_ends_on: 1.day.ago,
+              seats: 5)
+
+            create_list(:user, 3, :service_account, provisioned_by_group_id: group_with_expired_trial.id)
+          end
+
+          context 'when regular subscription seats are available' do
+            it_behaves_like 'service account creation success' do
+              let(:username_prefix) { "service_account_group_#{group_with_expired_trial.id}" }
+            end
+          end
+
+          context 'when regular subscription seats are not available' do
+            before do
+              group_with_expired_trial.gitlab_subscription.update!(seats: 2)
+            end
+
+            it 'produces an error' do
+              expect(result.status).to eq(:error)
+              expect(result.message).to include('No more seats are available to create Service Account User')
+            end
+          end
+        end
+      end
+    end
   end
 
   def result
