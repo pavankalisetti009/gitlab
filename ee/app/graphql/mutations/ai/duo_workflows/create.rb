@@ -49,6 +49,14 @@ module Mutations
           required: false,
           description: 'ID of the catalog item the workflow is triggered from.'
 
+        argument :issue_id, GraphQL::Types::BigInt,
+          required: false,
+          description: 'IID of the noteable (Issue) that the workflow is associated with.'
+
+        argument :merge_request_id, GraphQL::Types::BigInt,
+          required: false,
+          description: 'IID of the noteable (MergeRequest) that the workflow is associated with.'
+
         field :workflow, Types::Ai::DuoWorkflows::WorkflowType,
           null: true,
           description: 'Created workflow.'
@@ -80,7 +88,9 @@ module Mutations
             workflow_definition: args[:workflow_definition],
             allow_agent_to_request_user: args[:allow_agent_to_request_user],
             environment: args[:environment],
-            ai_catalog_item_version_id: item_version&.id
+            ai_catalog_item_version_id: item_version&.id,
+            issue_id: args[:issue_id],
+            merge_request_id: args[:merge_request_id]
           }.compact
 
           service = ::Ai::DuoWorkflows::CreateWorkflowService.new(

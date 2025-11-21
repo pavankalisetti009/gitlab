@@ -142,10 +142,21 @@ module API
               :shallow_clone
             )
 
-            return wrkf_params unless wrkf_params[:ai_catalog_item_version_id]
+            if wrkf_params[:ai_catalog_item_version_id]
+              wrkf_params[:ai_catalog_item_version] = ::Ai::Catalog::ItemVersion
+                                                        .find(wrkf_params.delete(:ai_catalog_item_version_id))
+            end
 
-            wrkf_params[:ai_catalog_item_version] = ::Ai::Catalog::ItemVersion
-                                                      .find(wrkf_params.delete(:ai_catalog_item_version_id))
+            if wrkf_params[:issue_id] && wrkf_params[:project_id]
+              project = find_project!(wrkf_params[:project_id])
+              wrkf_params[:issue] = project.issues.find_by_iid!(wrkf_params.delete(:issue_id))
+            end
+
+            if wrkf_params[:merge_request_id] && wrkf_params[:project_id]
+              project = find_project!(wrkf_params[:project_id])
+              wrkf_params[:merge_request] = project.merge_requests.find_by_iid!(wrkf_params.delete(:merge_request_id))
+            end
+
             wrkf_params
           end
 
@@ -203,6 +214,12 @@ module API
                 'Defaults to true.',
               default: true,
               documentation: { example: true }
+            optional :issue_id, type: Integer,
+              desc: 'IID of the Issue noteable that the workflow is associated with.',
+              documentation: { example: 123 }
+            optional :merge_request_id, type: Integer,
+              desc: 'IID of the MergeRequest noteable that the workflow is associated with.',
+              documentation: { example: 123 }
             at_least_one_of :project_id, :namespace_id
           end
         end

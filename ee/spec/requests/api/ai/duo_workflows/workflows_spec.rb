@@ -9,6 +9,8 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
   let_it_be(:project) { create(:project, :repository, group: group) }
   let_it_be(:user) { create(:user, maintainer_of: project) }
   let_it_be(:workflow) { create(:duo_workflows_workflow, user: user, project: project) }
+  let_it_be(:issue) { create(:issue, project: project) }
+  let_it_be(:merge_request) { create(:merge_request, source_project: project) }
   let_it_be(:duo_workflow_service_url) { 'duo-workflow-service.example.com:50052' }
   let_it_be(:ai_workflows_oauth_token) { create(:oauth_access_token, user: user, scopes: [:ai_workflows]) }
   let(:agent_privileges) { [::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_FILES] }
@@ -283,6 +285,32 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
           expect(response).to have_gitlab_http_status(:created)
           created_workflow = Ai::DuoWorkflows::Workflow.last
           expect(created_workflow.environment).to eq('chat_partial')
+        end
+      end
+
+      context 'when issue_id is provided' do
+        let(:params) { { project_id: project.id, issue_id: issue.iid } }
+
+        it 'creates a workflow associated with the issue' do
+          post api(path, user), params: params
+
+          expect(response).to have_gitlab_http_status(:created)
+          created_workflow = Ai::DuoWorkflows::Workflow.last
+          expect(created_workflow.issue).to eq(issue)
+          expect(created_workflow.merge_request).to be_nil
+        end
+      end
+
+      context 'when merge_request_id is provided' do
+        let(:params) { { project_id: project.id, merge_request_id: merge_request.iid } }
+
+        it 'creates a workflow associated with the merge request' do
+          post api(path, user), params: params
+
+          expect(response).to have_gitlab_http_status(:created)
+          created_workflow = Ai::DuoWorkflows::Workflow.last
+          expect(created_workflow.merge_request).to eq(merge_request)
+          expect(created_workflow.issue).to be_nil
         end
       end
     end
