@@ -51,6 +51,7 @@ module Namespaces
       override :ultimate?
       def ultimate?
         return super unless saas?
+        return false if namespace.trial? # hosted plan can be ultimate even if a group is on trial
 
         plan_name = namespace.actual_plan_name
         [::Plan::GOLD, ::Plan::ULTIMATE].include?(plan_name)
@@ -61,7 +62,13 @@ module Namespaces
         return super unless saas?
         return true if ultimate?
 
-        namespace.gitlab_subscription.seats > namespace.provisioned_users.service_account.count
+        limit = if namespace.trial_active?
+                  GitlabSubscription::SERVICE_ACCOUNT_LIMIT_FOR_TRIAL
+                else
+                  namespace.gitlab_subscription.seats
+                end
+
+        limit > namespace.provisioned_users.service_account.count
       end
 
       def saas?
