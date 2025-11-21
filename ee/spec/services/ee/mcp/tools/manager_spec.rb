@@ -12,6 +12,10 @@ RSpec.describe Mcp::Tools::Manager, feature_category: :ai_agents do
     }
     stub_const("#{described_class}::CUSTOM_TOOLS", ce_custom_tools)
 
+    # Stub the GRAPHQL_TOOLS with GraphQL tools
+    graphql_tools = {}
+    stub_const("#{described_class}::GRAPHQL_TOOLS", graphql_tools)
+
     # Stub the EE_CUSTOM_TOOLS with EE tools
     ee_custom_tools = {
       'semantic_code_search' => Mcp::Tools::SearchCodebaseService
@@ -28,10 +32,13 @@ RSpec.describe Mcp::Tools::Manager, feature_category: :ai_agents do
     end
 
     context 'with no API routes' do
-      it 'initializes with only custom tools' do
+      it 'initializes with custom and graphql tools' do
         manager = described_class.new
 
-        expect(manager.tools.keys).to contain_exactly('get_mcp_server_version', 'semantic_code_search')
+        expect(manager.tools.keys).to contain_exactly(
+          'get_mcp_server_version',
+          'semantic_code_search'
+        )
       end
     end
 
@@ -108,7 +115,7 @@ RSpec.describe Mcp::Tools::Manager, feature_category: :ai_agents do
           'regular_tool' => api_tool3
         )
 
-        expected_tool_count = 2 + Mcp::Tools::Manager::CUSTOM_TOOLS.size
+        expected_tool_count = 2 + Mcp::Tools::Manager::CUSTOM_TOOLS.size + Mcp::Tools::Manager::GRAPHQL_TOOLS.size
         expected_tool_count += EE::Mcp::Tools::Manager::EE_CUSTOM_TOOLS.size if ::Gitlab.ee?
         expect(manager.tools.size).to eq(expected_tool_count)
       end
@@ -165,7 +172,7 @@ RSpec.describe Mcp::Tools::Manager, feature_category: :ai_agents do
           'standalone_tool' => api_tool4
         )
 
-        expected_tool_count = 3 + Mcp::Tools::Manager::CUSTOM_TOOLS.size
+        expected_tool_count = 3 + Mcp::Tools::Manager::CUSTOM_TOOLS.size + Mcp::Tools::Manager::GRAPHQL_TOOLS.size
         expected_tool_count += EE::Mcp::Tools::Manager::EE_CUSTOM_TOOLS.size if ::Gitlab.ee?
         expect(manager.tools.size).to eq(expected_tool_count)
       end
