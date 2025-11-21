@@ -66,16 +66,6 @@ module GitlabSubscriptions
           # We need to stick to the primary database in order to allow the following request
           # fetch the namespace from an up-to-date replica or a primary database.
           ::Namespace.sticking.stick(:namespace, namespace.id)
-
-          experiment(:default_pinned_nav_items, actor: user) do |e|
-            e.candidate do
-              updated_status = user.onboarding_status.dup
-              updated_status[:experiments] = Array(updated_status[:experiments]) | ['default_pinned_nav_items']
-              user.update(onboarding_status: updated_status)
-            end
-
-            e.track(:assignment, namespace: namespace)
-          end
         end
 
         namespace

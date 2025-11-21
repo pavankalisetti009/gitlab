@@ -88,12 +88,6 @@ module EE
 
     private
 
-    def user_in_experiment(user)
-      strong_memoize_with(:user_in_experiment, user) do
-        user&.onboarding_status&.dig(:experiments)&.include?('default_pinned_nav_items')
-      end
-    end
-
     # Avoid duplicating "Work Items" on the frontend now that
     # :group_issue_list and :group_epic_list are translated in the frontend.
     override :pinned_items
@@ -109,18 +103,14 @@ module EE
       end
     end
 
-    override :project_default_pins
-    def project_default_pins(user)
-      return super unless user_in_experiment(user)
-
-      %w[files pipelines members project_merge_request_list project_issue_list]
-    end
-
-    override :group_default_pins
-    def group_default_pins(user)
-      return super + %w[group_epic_list] unless user_in_experiment(user)
-
-      %w[members group_issue_list group_merge_request_list group_epic_list]
+    override :super_sidebar_default_pins
+    def super_sidebar_default_pins(panel_type)
+      case panel_type
+      when 'group'
+        super + ['group_epic_list']
+      else
+        super
+      end
     end
   end
 end

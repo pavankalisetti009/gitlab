@@ -83,29 +83,6 @@ RSpec.describe GitlabSubscriptions::Trials::WelcomeCreateService, :saas, feature
         expect(execute.payload).to eq({ namespace: Group.last, project: Project.last })
       end
 
-      it 'adds nav experiment context and tracks namespace', :experiment do
-        stub_experiments(
-          default_pinned_nav_items: :candidate,
-          lightweight_trial_registration_redesign: :candidate
-        )
-
-        user.user_detail.update!(onboarding_status: {
-          registration_type: 'trial',
-          role: 0, # software_developer
-          registration_objective: 1 # move_repository
-        })
-
-        expect_create_lead_success(lead_params)
-        expect_any_instance_of(DefaultPinnedNavItemsExperiment) do |instance|
-          expect(instance).to receive(:track).with(:assignment, namespace: anything).and_call_original
-        end
-
-        execute
-
-        user.reload
-        expect(user.onboarding_status[:experiments]).to include('default_pinned_nav_items')
-      end
-
       context 'when retrying' do
         before do
           allow(GitlabSubscriptions::Trials)

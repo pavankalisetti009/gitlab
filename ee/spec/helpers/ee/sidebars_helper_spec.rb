@@ -326,16 +326,10 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
       let_it_be(:panel_type) { 'group' }
 
       context 'when work_item_planning_view feature flag is disabled' do
-        it 'ensure permits epics and issues on the side menu' do
+        it 'permits epics and issues on the side menu' do
           stub_feature_flags(work_item_planning_view: false)
 
-          pinned_items = %w[group_issue_list group_epic_list]
-
-          user = build_stubbed(
-            :user,
-            namespace: user_namespace,
-            pinned_nav_items: { panel_type => pinned_items }
-          )
+          user = build_stubbed(:user, namespace: user_namespace)
 
           sidebar = helper.super_sidebar_logged_in_context(
             user,
@@ -345,7 +339,7 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
             panel_type: panel_type
           )
 
-          expect(sidebar[:pinned_items]).to eq(pinned_items)
+          expect(sidebar[:pinned_items]).to eq(%w[group_issue_list group_merge_request_list group_epic_list])
         end
       end
 
@@ -373,104 +367,6 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
           )
 
           expect(sidebar[:pinned_items]).to eq(result)
-        end
-      end
-    end
-
-    describe '#super_sidebar_default_pins', :experiment do
-      let(:user) do
-        build(:user) do |u|
-          u.user_detail.update!(onboarding_status: {
-            registration_type: 'trial',
-            role: 0, # software_developer
-            registration_objective: 1, # move_repository
-            experiments: []
-          })
-        end
-      end
-
-      context 'when default_pinned_nav_items experiment is control' do
-        before do
-          allow(helper).to receive(:experiment).and_call_original
-        end
-
-        it 'returns "group" default pins' do
-          panel_type = 'group'
-
-          result = helper.super_sidebar_logged_in_context(user, group: group, project: nil, panel: panel,
-            panel_type: panel_type)
-
-          expect(result).to include(pinned_items: %w[group_issue_list group_merge_request_list])
-        end
-
-        it 'returns "project" default pins' do
-          panel_type = 'project'
-
-          result = helper.super_sidebar_logged_in_context(user, group: nil, project: nil, panel: panel,
-            panel_type: panel_type)
-
-          expect(result).to include(pinned_items: %w[project_issue_list project_merge_request_list])
-        end
-      end
-
-      context 'when default_pinned_nav_items experiment is candidate' do
-        before do
-          user.user_detail.onboarding_status[:experiments] << 'default_pinned_nav_items'
-          user.user_detail.save!
-          allow(helper).to receive(:experiment).and_call_original
-        end
-
-        it 'returns "group" default pins' do
-          panel_type = 'group'
-
-          result = helper.super_sidebar_logged_in_context(user, group: group, project: nil, panel: panel,
-            panel_type: panel_type)
-
-          expect(result).to include(pinned_items: %w[members group_issue_list group_merge_request_list])
-        end
-
-        it 'returns "project" default pins' do
-          panel_type = 'project'
-
-          result = helper.super_sidebar_logged_in_context(user, group: nil, project: nil, panel: panel,
-            panel_type: panel_type)
-
-          expect(result).to include(pinned_items: %w[files pipelines members project_merge_request_list
-            project_issue_list])
-        end
-      end
-
-      context 'when experiment flag is does not exist on onboarding status' do
-        let_it_be(:user) do
-          build(:user) do |u|
-            u.user_detail.update!(onboarding_status: {
-              registration_type: 'trial',
-              role: 0, # software_developer
-              registration_objective: 1 # move_repository
-            })
-          end
-        end
-
-        before do
-          allow(helper).to receive(:experiment).and_call_original
-        end
-
-        it 'returns control "group" pins' do
-          panel_type = 'group'
-
-          result = helper.super_sidebar_logged_in_context(user, group: group, project: nil, panel: panel,
-            panel_type: panel_type)
-
-          expect(result).to include(pinned_items: %w[group_issue_list group_merge_request_list])
-        end
-
-        it 'returns control "project" pins' do
-          panel_type = 'project'
-
-          result = helper.super_sidebar_logged_in_context(user, group: nil, project: nil, panel: panel,
-            panel_type: panel_type)
-
-          expect(result).to include(pinned_items: %w[project_issue_list project_merge_request_list])
         end
       end
     end
