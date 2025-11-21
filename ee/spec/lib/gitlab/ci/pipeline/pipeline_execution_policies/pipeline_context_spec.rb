@@ -247,13 +247,14 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
       context 'with source parent_pipeline and experiment "enforce_pipeline_policy_on_child_pipelines"' do
         let(:source) { :parent_pipeline }
         let(:command_attributes) { { bridge: bridge } }
-        let(:bridge_options) { {} }
+        let(:bridge_source) { source }
         let(:bridge) do
           build_stubbed(
             :ci_bridge,
             status: :pending,
             user: user,
-            options: { trigger: { include: { local: 'child.yml' } } }.merge(bridge_options),
+            build_source: build_stubbed(:ci_build_source, source: bridge_source),
+            options: { trigger: { include: { local: 'child.yml' } } },
             pipeline: pipeline
           )
         end
@@ -282,7 +283,7 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
           end
 
           context 'when the bridge was created by a policy' do
-            let(:bridge_options) { { policy: { name: 'My policy' } } }
+            let(:bridge_source) { 'pipeline_execution_policy' }
 
             it 'does not add it to the policy_pipelines' do
               perform

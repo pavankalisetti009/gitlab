@@ -543,6 +543,7 @@ bridges:
 - trigger
 - downstream_pipeline
 - upstream_pipeline
+- build_source
 generic_commit_statuses:
 - user
 - pipeline
@@ -1326,4 +1327,3 @@ vulnerability_read:
   - vulnerability
   - scanner
   - vulnerability_occurrence
-

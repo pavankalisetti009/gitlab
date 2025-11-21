@@ -63,7 +63,7 @@ module Gitlab
             :merge_request, :schedule, :bridge
 
           def parent_pipeline_policy?
-            source&.to_sym == :parent_pipeline && bridge&.options&.dig(:policy).present?
+            source&.to_sym == :parent_pipeline && bridge&.source&.to_sym == :pipeline_execution_policy
           end
         end
       end
