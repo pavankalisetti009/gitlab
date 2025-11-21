@@ -2,6 +2,8 @@
 key_path: redis_hll_counters.count_distinct_project_id_from_include_repository_xray_data_into_code_generation_prompt
 description: Count of unique projects that have repository x-ray data included into code generation AI prompt
 product_group: code_creation
+product_categories:
+- code_suggestions
 performance_indicator_type: []
 value_type: number
 status: active
