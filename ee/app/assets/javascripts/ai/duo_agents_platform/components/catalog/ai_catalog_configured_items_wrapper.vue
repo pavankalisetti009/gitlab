@@ -1,7 +1,7 @@
 <script>
 import { GlButton } from '@gitlab/ui';
 import EMPTY_SVG_URL from '@gitlab/svgs/dist/illustrations/empty-state/empty-ai-catalog-md.svg?url';
-import { s__, sprintf } from '~/locale';
+import { sprintf } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_GROUP, TYPENAME_PROJECT } from '~/graphql_shared/constants';
@@ -16,6 +16,7 @@ import {
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import ResourceListsEmptyState from '~/vue_shared/components/resource_lists/empty_state.vue';
 import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
+import { DISABLE_SUCCESS, DISABLE_ERROR } from 'ee/ai/catalog/messages';
 
 export default {
   name: 'AiCatalogConfiguredItemsWrapper',
@@ -34,6 +35,16 @@ export default {
     },
   },
   props: {
+    disableConfirmTitle: {
+      type: String,
+      required: false,
+      default: null,
+    },
+    disableConfirmMessage: {
+      type: String,
+      required: false,
+      default: null,
+    },
     emptyStateTitle: {
       type: String,
       required: false,
@@ -83,8 +94,8 @@ export default {
       query: aiCatalogConfiguredItemsQuery,
       variables() {
         return {
-          ...this.namespaceVariables,
           itemTypes: this.itemTypes,
+          ...this.namespaceVariables,
           ...this.paginationVariables,
         };
       },
@@ -126,24 +137,11 @@ export default {
         };
       });
     },
-    disableConfirmTitle() {
-      return sprintf(s__('AICatalog|Disable flow from this %{namespaceType}'), {
-        namespaceType: this.namespaceTypeLabel,
-      });
-    },
-    disableConfirmMessage() {
-      if (this.isProjectNamespace) {
-        return s__('AICatalog|Are you sure you want to disable flow %{name}?');
-      }
-
-      return s__(
-        'AICatalog|Are you sure you want to disable flow %{name}? The flow will also be disabled from any projects in this group.',
-      );
-    },
   },
   methods: {
     async disableItem(item) {
       const { id } = item.itemConsumer;
+      const { itemType } = item;
 
       try {
         const { data } = await this.$apollo.mutate({
@@ -156,20 +154,20 @@ export default {
 
         if (!data.aiCatalogItemConsumerDelete.success) {
           this.$emit('error', {
-            title: s__('AICatalog|Failed to disable flow'),
+            title: DISABLE_ERROR[itemType],
             errors: data.aiCatalogItemConsumerDelete.errors,
           });
           return;
         }
 
         this.$toast.show(
-          sprintf(s__('AICatalog|Flow disabled in this %{namespaceType}.'), {
+          sprintf(DISABLE_SUCCESS[itemType], {
             namespaceType: this.namespaceTypeLabel,
           }),
         );
       } catch (error) {
         this.$emit('error', {
-          title: s__('AICatalog|Failed to disable flow'),
+          title: DISABLE_ERROR[itemType],
           errors: [error.message],
         });
         Sentry.captureException(error);
