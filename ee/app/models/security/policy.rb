@@ -145,7 +145,7 @@ module Security
         security_policy_project_links.for_project(project).first_or_create!
         link_policy_rules_project!(project)
 
-        if type_pipeline_execution_schedule_policy? && Feature.enabled?(:scheduled_pipeline_execution_policies, project)
+        if type_pipeline_execution_schedule_policy?
           # Newly introduced columns will be written by https://gitlab.com/gitlab-org/gitlab/-/merge_requests/180714
           # security_pipeline_execution_project_schedules.for_project(project).first_or_create!
         end

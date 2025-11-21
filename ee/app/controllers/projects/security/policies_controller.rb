@@ -12,7 +12,6 @@ module Projects
       before_action :validate_policy_configuration, only: :edit
 
       before_action do
-        push_frontend_feature_flag(:scheduled_pipeline_execution_policies, project)
         push_frontend_feature_flag(:security_policies_split_view, project.group)
         push_frontend_feature_flag(:security_policy_approval_warn_mode, project.group)
         push_frontend_feature_flag(:security_policies_combined_list, project)

@@ -11,7 +11,11 @@ import ScheduleForm from 'ee/security_orchestration/components/policy_editor/pip
 describe('RuleSection', () => {
   let wrapper;
 
-  const createComponent = ({ propsData = {}, provide = {}, isStubbed = true } = {}) => {
+  const createComponent = ({
+    propsData = {},
+    provide = { enabledExperiments: [] },
+    isStubbed = true,
+  } = {}) => {
     const stubs = isStubbed ? { GlSprintf } : {};
 
     wrapper = shallowMountExtended(RuleSection, {
@@ -26,7 +30,7 @@ describe('RuleSection', () => {
   const findScheduleForm = () => wrapper.findComponent(ScheduleForm);
 
   describe('rendering', () => {
-    describe('when feature flag is off', () => {
+    describe('when experiment is disabled', () => {
       it('renders inject/override message when schedule is not selected', () => {
         createComponent({ propsData: { strategy: INJECT } });
         expect(wrapper.findComponent(GlSprintf).exists()).toBe(true);
@@ -34,11 +38,11 @@ describe('RuleSection', () => {
       });
     });
 
-    describe('when feature flag is on', () => {
+    describe('when experiment is enabled', () => {
       it('renders inject/override message when schedule is not selected', () => {
         createComponent({
           propsData: { strategy: INJECT },
-          provide: { glFeatures: { scheduledPipelineExecutionPolicies: true } },
+          provide: { enabledExperiments: ['pipeline_execution_schedule_policy'] },
         });
         expect(wrapper.findComponent(GlSprintf).exists()).toBe(true);
         expect(findScheduleForm().exists()).toBe(false);
@@ -48,7 +52,7 @@ describe('RuleSection', () => {
         it('renders schedule form when schedule is selected', () => {
           createComponent({
             propsData: { strategy: SCHEDULE },
-            provide: { glFeatures: { scheduledPipelineExecutionPolicies: true } },
+            provide: { enabledExperiments: ['pipeline_execution_schedule_policy'] },
           });
           expect(wrapper.findComponent(GlSprintf).exists()).toBe(false);
           expect(findScheduleForm().exists()).toBe(true);
@@ -59,7 +63,7 @@ describe('RuleSection', () => {
           const customSchedule = { type: 'weekly', days: ['Monday'] };
           createComponent({
             propsData: { schedules: [customSchedule], strategy: SCHEDULE },
-            provide: { glFeatures: { scheduledPipelineExecutionPolicies: true } },
+            provide: { enabledExperiments: ['pipeline_execution_schedule_policy'] },
           });
 
           expect(findScheduleForm().props(SCHEDULE)).toEqual(customSchedule);
@@ -68,7 +72,7 @@ describe('RuleSection', () => {
         it('listens for changed event from schedule form', async () => {
           createComponent({
             propsData: { strategy: SCHEDULE },
-            provide: { glFeatures: { scheduledPipelineExecutionPolicies: true } },
+            provide: { enabledExperiments: ['pipeline_execution_schedule_policy'] },
           });
 
           const updatedSchedule = { type: 'monthly', days_of_month: '15' };

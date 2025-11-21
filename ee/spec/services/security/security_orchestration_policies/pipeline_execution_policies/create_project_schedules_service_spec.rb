@@ -249,15 +249,5 @@ RSpec.describe(
         expect(Security::PipelineExecutionProjectSchedule.where(id: existing_schedule.id).count).to be_zero
       end
     end
-
-    context 'when the scheduled_pipeline_execution_policies feature is disabled' do
-      before do
-        stub_feature_flags(scheduled_pipeline_execution_policies: false)
-      end
-
-      specify do
-        expect { execute }.not_to change { policy.security_pipeline_execution_project_schedules.count }
-      end
-    end
   end
 end

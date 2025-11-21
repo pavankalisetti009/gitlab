@@ -75,8 +75,6 @@ module Gitlab
           end
 
           def scheduled_execution_policy_pipeline?
-            return false if Feature.disabled?(:scheduled_pipeline_execution_policies, project)
-
             source == ::Security::PipelineExecutionPolicies::RunScheduleWorker::PIPELINE_SOURCE
           end
 

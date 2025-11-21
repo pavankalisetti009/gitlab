@@ -29,7 +29,6 @@ module Security
 
             iterator.each_batch(of: 1000) do |schedules|
               schedules.each do |schedule|
-                next unless Feature.enabled?(:scheduled_pipeline_execution_policies, schedule.project)
                 next unless schedule.project.licensed_feature_available?(:security_orchestration_policies)
 
                 unless valid_cadence?(schedule.cron)

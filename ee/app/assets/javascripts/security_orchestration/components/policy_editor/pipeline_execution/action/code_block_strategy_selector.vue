@@ -31,10 +31,7 @@ export default {
   },
   computed: {
     hasScheduledPipelines() {
-      return (
-        this.enabledExperiments.includes('pipeline_execution_schedule_policy') &&
-        this.glFeatures.scheduledPipelineExecutionPolicies
-      );
+      return this.enabledExperiments.includes('pipeline_execution_schedule_policy');
     },
 
     showDeprecatedInjectStrategy() {

@@ -103,16 +103,6 @@ RSpec.describe Security::PipelineExecutionPolicies::RunScheduleWorker, feature_c
             .update!(experiments: { pipeline_execution_schedule_policy: { enabled: true } })
         end
 
-        context 'when the scheduled_pipeline_execution_policies feature is disabled' do
-          before do
-            stub_feature_flags(scheduled_pipeline_execution_policies: false)
-          end
-
-          it 'does not create a pipeline' do
-            expect { perform }.not_to change { project.all_pipelines.count }.from(0)
-          end
-        end
-
         it 'creates a pipeline' do
           expect { perform }.to change { project.all_pipelines.count }.from(0).to(1)
         end
