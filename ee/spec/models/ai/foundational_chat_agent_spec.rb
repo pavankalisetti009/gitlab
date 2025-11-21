@@ -112,7 +112,7 @@ RSpec.describe Ai::FoundationalChatAgent, feature_category: :workflow_catalog do
     it 'returns only duo chat' do
       only_chat = described_class.only_duo_chat_agent
       expect(only_chat.size).to eq(1)
-      expect(only_chat[0].name).to eq('GitLab Duo Agent')
+      expect(only_chat[0].name).to eq('GitLab Duo')
     end
   end
 end

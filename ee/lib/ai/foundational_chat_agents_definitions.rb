@@ -9,30 +9,29 @@ module Ai
         id: 1,
         reference: 'chat',
         version: '',
-        name: 'GitLab Duo Agent',
-        description: "Duo is your general development assistant"
+        name: 'GitLab Duo',
+        description: "Your general development assistant. Get help with code, planning,
+        security, project management, and more."
       },
       {
         id: 2,
         reference: 'duo_planner',
         version: 'experimental',
-        name: 'Planner Agent',
+        name: 'Planner',
         description: <<~DESCRIPTION
-          GitLab Planner Agent is a Beta AI planning assistant that helps product teams explore, summarize,
-          and reason about work in GitLab. It can analyze your work items to surface patterns, summarize context,
-          and support planning conversations.
-          This early version is read-only and focused on learning from how users engage with it.
-          Your feedback will help shape future capabilities
+          Get help with planning and workflow management. Organize, prioritize, and track work
+          more effectively in GitLab. The Planner Agent can analyze your work items to surface patterns,
+          summarize context, and support planning conversations. This beta version is read-only and
+          focused on learning from how you engage with it. Your feedback will help shape future capabilities
           like creating or editing work items, prioritization assistance, and roadmap generation.
-          Link to docs on how to engage
-          with the Planner Agent: https://docs.gitlab.com/user/duo_agent_platform/agents/foundational_agents/planner/
+          Learn more: https://docs.gitlab.com/user/duo_agent_platform/agents/foundational_agents/planner/
         DESCRIPTION
       },
       {
         id: 3,
         reference: 'security_analyst_agent',
         version: 'experimental',
-        name: 'Security Analyst Agent',
+        name: 'Security Analyst',
         description: <<~DESCRIPTION
           Automate vulnerability management and security workflows. The Security Analyst Agent acts as an
           AI team member that can autonomously analyze,
