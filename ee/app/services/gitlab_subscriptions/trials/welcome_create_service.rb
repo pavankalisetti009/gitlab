@@ -66,6 +66,8 @@ module GitlabSubscriptions
           # We need to stick to the primary database in order to allow the following request
           # fetch the namespace from an up-to-date replica or a primary database.
           ::Namespace.sticking.stick(:namespace, namespace.id)
+
+          experiment(:premium_message_during_trial, namespace: namespace)
         end
 
         namespace
