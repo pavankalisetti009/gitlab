@@ -3,96 +3,121 @@
 module Analytics
   module AiAnalytics
     class AiUserMetricsService
-      CODE_SUGGESTIONS_ACCEPTED_COUNT_QUERY = <<~SQL.freeze
-        SELECT SUM(occurrences) as code_suggestions_accepted_count, user_id
-        FROM code_suggestion_events_daily
-        WHERE user_id IN ({user_ids:Array(UInt64)})
-        AND date >= {from:Date}
-        AND date <= {to:Date}
-        AND event = #{::Ai::UsageEvent.events['code_suggestion_accepted_in_ide']}
-        AND (
-          {namespace_path:String} = '' OR startsWith(namespace_path, {namespace_path:String})
-        )
-        GROUP BY user_id
-      SQL
-      private_constant :CODE_SUGGESTIONS_ACCEPTED_COUNT_QUERY
-
-      DUO_CHAT_INTERACTIONS_COUNT_QUERY = <<~SQL.freeze
-        SELECT SUM(occurrences) as duo_chat_interactions_count, user_id
-        FROM duo_chat_events_daily
-        WHERE user_id IN ({user_ids:Array(UInt64)})
-        AND date >= {from:Date}
-        AND date <= {to:Date}
-        AND event = #{::Ai::UsageEvent.events['request_duo_chat_response']}
-        AND (
-          {namespace_path:String} = '' OR startsWith(namespace_path, {namespace_path:String})
-        )
-        GROUP BY user_id
-      SQL
-      private_constant :DUO_CHAT_INTERACTIONS_COUNT_QUERY
-
-      def initialize(current_user, namespace:, from:, to:, user_ids:)
-        @current_user = current_user
+      # rubocop: disable CodeReuse/ActiveRecord -- no ActiveRecord
+      def initialize(current_user:, namespace:, from:, to:, user_ids:, feature:)
         @namespace = namespace
         @from = from
         @to = to
         @user_ids = user_ids
+        @feature = feature
+        @current_user = current_user
       end
 
       def execute
-        return feature_unavailable_error unless Gitlab::ClickHouse.enabled_for_analytics?(namespace)
+        return clickhouse_unavailable_error unless Gitlab::ClickHouse.enabled_for_analytics?(namespace)
+        return ServiceResponse.success(payload: {}) unless feature_events.present?
 
-        data = code_suggestions_usage_data
-        data = duo_chat_interactions_data(data)
-
-        ServiceResponse.success(payload: data)
+        user_metrics = query_and_aggregate_metrics
+        ServiceResponse.success(payload: user_metrics)
       end
 
       private
 
-      attr_reader :current_user, :namespace, :from, :to, :user_ids
+      attr_reader :current_user, :namespace, :from, :to, :user_ids, :feature
 
-      def code_suggestions_usage_data(data = {})
-        usage_data(data, CODE_SUGGESTIONS_ACCEPTED_COUNT_QUERY, :code_suggestions_accepted_count)
+      def query_and_aggregate_metrics
+        query = build_clickhouse_query
+        raw_results = ClickHouse::Client.select(query, :main)
+
+        aggregate_metrics_by_user(raw_results)
       end
 
-      def duo_chat_interactions_data(data = {})
-        usage_data(data, DUO_CHAT_INTERACTIONS_COUNT_QUERY, :duo_chat_interactions_count, duo_chat_placeholders)
-      end
+      def aggregate_metrics_by_user(raw_results)
+        user_metrics = {}
 
-      def usage_data(data, raw_query, field, query_placeholders = placeholders)
-        query = ClickHouse::Client::Query.new(raw_query: raw_query, placeholders: query_placeholders)
-        ClickHouse::Client.select(query, :main).each do |row|
-          data[row['user_id']] ||= {}
-          data[row['user_id']][field] = row[field.to_s]
+        raw_results.each do |row|
+          user_id = row['user_id']
+          event_name = event_name_from_id(row['event'])
+
+          user_metrics[user_id] ||= {}
+          user_metrics[user_id][:"#{event_name}_event_count"] = row['count']
         end
 
-        data
+        user_metrics
       end
 
-      def placeholders
-        @placeholders ||= {
-          from: from.to_date.iso8601,
-          to: to.to_date.iso8601,
-          user_ids: user_ids.to_json,
-          namespace_path: filter_by_namespace_path_enabled? ? namespace.traversal_path : ''
-        }
+      def build_clickhouse_query
+        builder = ClickHouse::Client::QueryBuilder.new('ai_usage_events_daily')
+
+        query = builder
+          .select(builder.table[:user_id], builder.table[:event], sum_occurrences_aggregate)
+
+        query = date_range_condition(query, builder)
+                  .group(:user_id, :event)
+                  .order(:event, :asc)
+        query = filter_by_feature(query, builder)
+        apply_optional_filters(query, builder)
       end
 
-      def duo_chat_placeholders
+      def apply_optional_filters(query, builder)
+        query = filter_by_users(query, builder) if user_ids&.any?
+        query = filter_by_namespace(query, builder) if namespace_filtering_enabled?
+        query
+      end
+
+      def date_range_condition(query, builder)
+        formatted_from = from.to_date.iso8601
+        formatted_to = to.to_date.iso8601
+
+        query.where(builder.table[:date].gteq(formatted_from))
+             .where(builder.table[:date].lteq(formatted_to))
+      end
+
+      def filter_by_users(query, builder)
+        query.where(builder.table[:user_id].in(user_ids))
+      end
+
+      def filter_by_feature(query, builder)
+        event_ids = feature_event_ids
+        query.where(builder.table[:event].in(event_ids))
+      end
+
+      def feature_events
+        @feature_events ||= ::Gitlab::Tracking::AiTracking.registered_events(feature).keys
+      end
+
+      def feature_event_ids
+        @feature_event_ids ||= feature_events.filter_map { |name| ::Ai::UsageEvent.events[name] }.compact
+      end
+
+      def filter_by_namespace(query, builder)
+        namespace_path_condition = Arel::Nodes::NamedFunction.new('startsWith', [
+          builder.table[:namespace_path],
+          Arel::Nodes.build_quoted(namespace.traversal_path.to_s)
+        ])
+
+        query.where(namespace_path_condition)
+      end
+
+      def sum_occurrences_aggregate
+        @sum_occurrences_aggregate ||= Arel::Nodes::NamedFunction.new('SUM', [Arel.sql('occurrences')]).as('count')
+      end
+
+      def event_name_from_id(event_id)
+        ::Ai::UsageEvent.events.key(event_id)
+      end
+
+      def namespace_filtering_enabled?
         # for old Duo Chat we don't use namespace filtering for now. See https://gitlab.com/gitlab-org/gitlab/-/issues/578538
-        placeholders.merge(namespace_path: '')
-      end
-
-      def filter_by_namespace_path_enabled?
         Feature.enabled?(:use_ai_events_namespace_path_filter, namespace)
       end
 
-      def feature_unavailable_error
+      def clickhouse_unavailable_error
         ServiceResponse.error(
           message: s_('AiAnalytics|the ClickHouse data store is not available')
         )
       end
+      # rubocop: enable CodeReuse/ActiveRecord
     end
   end
 end
