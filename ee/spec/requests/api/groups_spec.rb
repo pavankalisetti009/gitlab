@@ -269,6 +269,15 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
       let(:params) { { default_branch_protection: Gitlab::Access::PROTECTION_NONE } }
     end
 
+    it 'updates attributes when the dap_group_customizable_permissions feature flag is disabled' do
+      stub_feature_flags(dap_group_customizable_permissions: false)
+
+      put api("/groups/#{group.id}", user), params: { name: 'My New Group Name' }
+
+      expect(response).to have_gitlab_http_status(:ok)
+      expect(group.reload.name).to eq('My New Group Name')
+    end
+
     context 'file_template_project_id' do
       let(:params) { { file_template_project_id: project.id } }
 
@@ -977,6 +986,60 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
           put api("/groups/#{group.id}", user), params: { ai_settings_attributes: { foundational_agents_default_enabled: true } }
         end.to change { group.reload.foundational_agents_default_enabled }.from(nil).to(true)
 
+        expect(response).to have_gitlab_http_status(:ok)
+      end
+    end
+
+    context 'minimum_access_level_execute' do
+      it 'updates minimum_access_level_execute field of namespace AI settings' do
+        put api("/groups/#{group.id}", user), params: { ai_settings_attributes: { minimum_access_level_execute: ::Gitlab::Access::DEVELOPER } }
+
+        expect(group.ai_settings.reload.minimum_access_level_execute).to eq(::Gitlab::Access::DEVELOPER)
+        expect(response).to have_gitlab_http_status(:ok)
+      end
+
+      it 'does not update the field when the feature flag is disabled' do
+        stub_feature_flags(dap_group_customizable_permissions: false)
+
+        put api("/groups/#{group.id}", user), params: { ai_settings_attributes: { minimum_access_level_execute: ::Gitlab::Access::DEVELOPER } }
+
+        expect(group.ai_settings.reload.minimum_access_level_execute).to be_nil
+        expect(response).to have_gitlab_http_status(:ok)
+      end
+    end
+
+    context 'minimum_access_level_manage' do
+      it 'updates minimum_access_level_manage field of namespace AI settings' do
+        put api("/groups/#{group.id}", user), params: { ai_settings_attributes: { minimum_access_level_manage: ::Gitlab::Access::MAINTAINER } }
+
+        expect(group.ai_settings.reload.minimum_access_level_manage).to eq(::Gitlab::Access::MAINTAINER)
+        expect(response).to have_gitlab_http_status(:ok)
+      end
+
+      it 'does not update the field when the feature flag is disabled' do
+        stub_feature_flags(dap_group_customizable_permissions: false)
+
+        put api("/groups/#{group.id}", user), params: { ai_settings_attributes: { minimum_access_level_manage: ::Gitlab::Access::MAINTAINER } }
+
+        expect(group.ai_settings.reload.minimum_access_level_manage).to be_nil
+        expect(response).to have_gitlab_http_status(:ok)
+      end
+    end
+
+    context 'minimum_access_level_enable_on_projects' do
+      it 'updates minimum_access_level_enable_on_projects field of namespace AI settings' do
+        put api("/groups/#{group.id}", user), params: { ai_settings_attributes: { minimum_access_level_enable_on_projects: ::Gitlab::Access::MAINTAINER } }
+
+        expect(group.ai_settings.reload.minimum_access_level_enable_on_projects).to eq(::Gitlab::Access::MAINTAINER)
+        expect(response).to have_gitlab_http_status(:ok)
+      end
+
+      it 'does not update the field when the feature flag is disabled' do
+        stub_feature_flags(dap_group_customizable_permissions: false)
+
+        put api("/groups/#{group.id}", user), params: { ai_settings_attributes: { minimum_access_level_enable_on_projects: ::Gitlab::Access::MAINTAINER } }
+
+        expect(group.ai_settings.reload.minimum_access_level_enable_on_projects).to be_nil
         expect(response).to have_gitlab_http_status(:ok)
       end
     end

@@ -48,25 +48,8 @@ module EE
 
           override :update_group
           def update_group(group)
-            params.delete(:file_template_project_id) unless
-              group.licensed_feature_available?(:custom_file_templates_for_namespace)
-
-            params.delete(:ip_restriction_ranges) unless
-              group.licensed_feature_available?(:group_ip_restriction)
-
-            params.delete(:allowed_email_domains_list) unless
-              group.licensed_feature_available?(:group_allowed_email_domains)
-
-            params.delete(:prevent_forking_outside_group) unless
-              can?(current_user, :change_prevent_group_forking, group)
-
-            params.delete(:service_access_tokens_expiration_enforced) unless
-              group.root? && can?(current_user, :admin_service_accounts, group)
-
-            unless group.licensed_feature_available?(:ai_features) && ::Feature.enabled?(
-              :ai_experiment_sast_fp_detection, group)
-              params.delete(:duo_sast_fp_detection_availability)
-            end
+            remove_unlicensed_params(group)
+            remove_unpermitted_params(group)
 
             unless group.unique_project_download_limit_enabled?
               %i[
@@ -80,15 +63,47 @@ module EE
               end
             end
 
-            unless group.licensed_feature_available?(:group_level_merge_checks_setting)
-              params.delete(:only_allow_merge_if_pipeline_succeeds)
-              params.delete(:allow_merge_on_skipped_pipeline)
-              params.delete(:only_allow_merge_if_all_discussions_are_resolved)
+            unless ::Feature.enabled?(:dap_group_customizable_permissions, group.root_ancestor)
+              params[:ai_settings_attributes]&.except!(
+                :minimum_access_level_execute,
+                :minimum_access_level_manage,
+                :minimum_access_level_enable_on_projects
+              )
             end
 
             validate_merge_request_settings!(group)
 
             super
+          end
+
+          def remove_unlicensed_params(group)
+            params.delete(:file_template_project_id) unless
+              group.licensed_feature_available?(:custom_file_templates_for_namespace)
+
+            params.delete(:ip_restriction_ranges) unless
+              group.licensed_feature_available?(:group_ip_restriction)
+
+            params.delete(:allowed_email_domains_list) unless
+              group.licensed_feature_available?(:group_allowed_email_domains)
+
+            unless group.licensed_feature_available?(:ai_features) && ::Feature.enabled?(
+              :ai_experiment_sast_fp_detection, group)
+              params.delete(:duo_sast_fp_detection_availability)
+            end
+
+            return if group.licensed_feature_available?(:group_level_merge_checks_setting)
+
+            params.delete(:only_allow_merge_if_pipeline_succeeds)
+            params.delete(:allow_merge_on_skipped_pipeline)
+            params.delete(:only_allow_merge_if_all_discussions_are_resolved)
+          end
+
+          def remove_unpermitted_params(group)
+            params.delete(:prevent_forking_outside_group) unless
+              can?(current_user, :change_prevent_group_forking, group)
+
+            params.delete(:service_access_tokens_expiration_enforced) unless
+              group.root? && can?(current_user, :admin_service_accounts, group)
           end
 
           override :authorize_group_creation!
