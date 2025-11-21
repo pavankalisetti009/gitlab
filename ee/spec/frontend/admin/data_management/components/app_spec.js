@@ -1,4 +1,6 @@
 import { shallowMount } from '@vue/test-utils';
+import Vue from 'vue';
+import VueRouter from 'vue-router';
 import models from 'test_fixtures/api/admin/data_management/snippet_repository.json';
 import AdminDataManagementApp from 'ee/admin/data_management/components/app.vue';
 import GeoListTopBar from 'ee/geo_shared/list/components/geo_list_top_bar.vue';
@@ -6,31 +8,27 @@ import GeoList from 'ee/geo_shared/list/components/geo_list.vue';
 import { MOCK_MODEL_TYPES } from 'ee_jest/admin/data_management/mock_data';
 import showToast from '~/vue_shared/plugins/global_toast';
 import {
-  TOKEN_TYPES,
-  DEFAULT_SORT,
   BULK_ACTIONS,
+  DEFAULT_SORT,
   GEO_TROUBLESHOOTING_LINK,
+  TOKEN_TYPES,
 } from 'ee/admin/data_management/constants';
-import { updateHistory } from '~/lib/utils/url_utility';
-import { TEST_HOST } from 'spec/test_constants';
 import { getModels, putBulkModelAction } from 'ee/api/data_management_api';
 import waitForPromises from 'helpers/wait_for_promises';
 import { createAlert } from '~/alert';
 import DataManagementItem from 'ee/admin/data_management/components/data_management_item.vue';
 import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
-import setWindowLocation from 'helpers/set_window_location_helper';
+import { createRouter } from 'ee/admin/data_management/router';
 
-jest.mock('~/lib/utils/url_utility', () => ({
-  ...jest.requireActual('~/lib/utils/url_utility'),
-  visitUrl: jest.fn(),
-  updateHistory: jest.fn(),
-}));
+Vue.use(VueRouter);
+
 jest.mock('~/alert');
 jest.mock('ee/api/data_management_api');
 jest.mock('~/vue_shared/plugins/global_toast');
 
 describe('AdminDataManagementApp', () => {
   let wrapper;
+  let router;
 
   const [defaultModel, otherModel] = MOCK_MODEL_TYPES;
   const defaultModelTitle = defaultModel.titlePlural.toLowerCase();
@@ -38,9 +36,7 @@ describe('AdminDataManagementApp', () => {
 
   const createComponent = () => {
     wrapper = shallowMount(AdminDataManagementApp, {
-      provide: {
-        basePath: defaultBasePath,
-      },
+      router,
       propsData: {
         modelTypes: MOCK_MODEL_TYPES,
         initialModelName: defaultModel.name,
@@ -55,7 +51,7 @@ describe('AdminDataManagementApp', () => {
   const fireBulkAction = (action) => findGeoListTopBar().vm.$emit('bulkAction', action);
 
   beforeEach(() => {
-    createComponent();
+    router = createRouter(defaultBasePath);
   });
 
   it('renders GeoListTopBar', () => {
@@ -183,17 +179,28 @@ describe('AdminDataManagementApp', () => {
   });
 
   describe('when URL has params', () => {
-    beforeEach(() => {
-      const params = new URLSearchParams([
-        [TOKEN_TYPES.MODEL, otherModel.name],
-        [`${TOKEN_TYPES.IDENTIFIERS}[]`, '123'],
-        [`${TOKEN_TYPES.IDENTIFIERS}[]`, '456'],
-        [TOKEN_TYPES.CHECKSUM_STATE, 'failed'],
-      ]);
-
-      setWindowLocation(`?${params.toString()}`);
+    beforeEach(async () => {
+      await router.push({
+        name: 'root',
+        params: { modelName: otherModel.name },
+        query: {
+          [TOKEN_TYPES.IDENTIFIERS]: ['123', '456'],
+          [TOKEN_TYPES.CHECKSUM_STATE]: 'failed',
+        },
+      });
 
       createComponent();
+    });
+
+    it('updates route modelName', () => {
+      expect(router.currentRoute.params.modelName).toBe(otherModel.name);
+    });
+
+    it('updates route query', () => {
+      expect(router.currentRoute.query).toStrictEqual({
+        [TOKEN_TYPES.CHECKSUM_STATE]: 'failed',
+        [TOKEN_TYPES.IDENTIFIERS]: ['123', '456'],
+      });
     });
 
     it('calls getModels with correct parameters', () => {
@@ -218,16 +225,15 @@ describe('AdminDataManagementApp', () => {
   });
 
   describe('when GeoListTopBar emits `listboxChange` event', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
       createComponent();
 
       findGeoListTopBar().vm.$emit('listboxChange', otherModel.name);
+      await waitForPromises();
     });
 
-    it('calls updateHistory with correct url', () => {
-      expect(updateHistory).toHaveBeenCalledWith({
-        url: `${TEST_HOST}/${defaultBasePath}/${otherModel.name}`,
-      });
+    it('updates route modelName', () => {
+      expect(router.currentRoute.params.modelName).toBe(otherModel.name);
     });
 
     it('calls getModels with correct params', () => {
@@ -236,24 +242,21 @@ describe('AdminDataManagementApp', () => {
   });
 
   describe('when GeoListTopBar emits `search` event', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
       createComponent();
 
       findGeoListTopBar().vm.$emit('search', [
         '123 456',
         { type: TOKEN_TYPES.CHECKSUM_STATE, value: { data: 'failed' } },
       ]);
+
+      await waitForPromises();
     });
 
-    it('calls updateHistory with correct params', () => {
-      const params = new URLSearchParams([
-        [`${TOKEN_TYPES.IDENTIFIERS}[]`, '123'],
-        [`${TOKEN_TYPES.IDENTIFIERS}[]`, '456'],
-        [TOKEN_TYPES.CHECKSUM_STATE, 'failed'],
-      ]);
-
-      expect(updateHistory).toHaveBeenCalledWith({
-        url: `${TEST_HOST}/${defaultBasePath}/${defaultModel.name}?${params.toString()}`,
+    it('updates route query', () => {
+      expect(router.currentRoute.query).toStrictEqual({
+        [TOKEN_TYPES.CHECKSUM_STATE]: 'failed',
+        [TOKEN_TYPES.IDENTIFIERS]: ['123', '456'],
       });
     });
 
@@ -262,12 +265,6 @@ describe('AdminDataManagementApp', () => {
         [TOKEN_TYPES.IDENTIFIERS]: ['123', '456'],
         [TOKEN_TYPES.CHECKSUM_STATE]: 'failed',
       });
-    });
-
-    it('shows loading state', () => {
-      createComponent();
-
-      expect(findGeoList().props('isLoading')).toBe(true);
     });
   });
 

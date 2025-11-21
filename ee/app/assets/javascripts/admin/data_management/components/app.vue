@@ -11,7 +11,6 @@ import {
   TOKEN_TYPES,
 } from 'ee/admin/data_management/constants';
 import { isValidFilter, processFilters } from 'ee/admin/data_management/filters';
-import { queryToObject, setUrlParams, updateHistory } from '~/lib/utils/url_utility';
 import { createAlert } from '~/alert';
 import { getModels, putBulkModelAction } from 'ee/api/data_management_api';
 import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
@@ -25,7 +24,6 @@ export default {
     GeoList,
     DataManagementItem,
   },
-  inject: ['basePath'],
   provide() {
     return {
       itemTitle: computed(() => this.modelTitle),
@@ -75,15 +73,19 @@ export default {
       };
     },
     queryParams() {
-      return convertObjectPropsToCamelCase(
-        queryToObject(window.location.search || '', { gatherArrays: true }),
-      );
+      const { query, params } = this.$route;
+      return convertObjectPropsToCamelCase({ ...query, ...params });
     },
   },
-  created() {
-    this.initializeModel();
-    this.initializeFilters();
-    this.fetchModelList();
+  watch: {
+    $route: {
+      handler() {
+        this.initializeModel();
+        this.initializeFilters();
+        this.fetchModelList();
+      },
+      immediate: true,
+    },
   },
   methods: {
     initializeFilters() {
@@ -141,26 +143,13 @@ export default {
         error,
       });
     },
-    handleListboxChange(name) {
-      this.activeModelName = name;
-      this.updateUrl();
+    handleListboxChange(modelName) {
+      const params = { modelName };
+      this.$router.push({ params, query: this.$route.query });
     },
     handleSearch(filters) {
-      this.filters = filters;
-      this.updateUrl();
-    },
-    updateUrl() {
-      const url = new URL(`${this.basePath}/${this.activeModelName}`, window.location.origin);
-      const query = processFilters(this.filters);
-
-      const urlWithParams = setUrlParams(query, {
-        url: url.href,
-        clearParams: true,
-        railsArraySyntax: true,
-      });
-
-      updateHistory({ url: urlWithParams });
-      this.fetchModelList();
+      const query = processFilters(filters);
+      this.$router.push({ params: this.$route.params, query });
     },
   },
   DEFAULT_SORT,
