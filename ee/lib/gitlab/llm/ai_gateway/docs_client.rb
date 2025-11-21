@@ -9,7 +9,6 @@ module Gitlab
         include ::Gitlab::Utils::StrongMemoize
         include ::Gitlab::Llm::Concerns::Logger
 
-        DEFAULT_TIMEOUT = 30.seconds
         DEFAULT_TYPE = 'search-docs'
         DEFAULT_SOURCE = 'GitLab EE'
 
@@ -31,7 +30,7 @@ module Gitlab
             event_name: 'performing_request',
             ai_component: 'duo_chat',
             options: options)
-          timeout = options.delete(:timeout) || DEFAULT_TIMEOUT
+          timeout = options.delete(:timeout) || Gitlab::AiGateway.timeout
 
           response = Gitlab::HTTP.post(
             "#{base_url}/v1/search/gitlab-docs",

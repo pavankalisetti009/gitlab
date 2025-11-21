@@ -9,8 +9,6 @@ module Gitlab
         include ::Gitlab::Llm::Concerns::Logger
         include Langsmith::RunHelpers
 
-        DEFAULT_TIMEOUT = 60.seconds
-
         ConnectionError = Class.new(StandardError)
 
         def initialize(user, unit_primitive_name:, tracking_context: {})
@@ -23,10 +21,11 @@ module Gitlab
           base_url:,
           prompt_name:,
           inputs:,
-          timeout: DEFAULT_TIMEOUT,
+          timeout: nil,
           prompt_version: nil,
           model_metadata: nil
         )
+          timeout ||= Gitlab::AiGateway.timeout
           body = { 'inputs' => inputs, 'prompt_version' => prompt_version }
 
           body['model_metadata'] = model_metadata if model_metadata.present?
@@ -40,7 +39,8 @@ module Gitlab
           )
         end
 
-        def complete(url:, body:, timeout: DEFAULT_TIMEOUT)
+        def complete(url:, body:, timeout: nil)
+          timeout ||= Gitlab::AiGateway.timeout
           response = retry_with_exponential_backoff do
             resp = perform_completion_request(url: url, body: body, timeout: timeout, stream: false)
 
@@ -55,7 +55,8 @@ module Gitlab
           response
         end
 
-        def stream(url:, body:, timeout: DEFAULT_TIMEOUT)
+        def stream(url:, body:, timeout: nil)
+          timeout ||= Gitlab::AiGateway.timeout
           response_body = ""
 
           response = perform_completion_request(

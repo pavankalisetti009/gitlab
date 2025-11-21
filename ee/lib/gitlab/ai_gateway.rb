@@ -48,6 +48,10 @@ module Gitlab
       ::Ai::Setting.instance&.enabled_instance_verbose_ai_logs.to_s || ''
     end
 
+    def self.timeout
+      ::Ai::Setting.instance&.ai_gateway_timeout_seconds&.seconds || 60.seconds
+    end
+
     # Exposes the state of a feature flag to the AI Gateway code.
     #
     # name - The name of the feature flag, e.g. `my_feature`.

@@ -8,7 +8,6 @@ module Gitlab
         include Langsmith::RunHelpers
         include ::Gitlab::Llm::Concerns::Logger
 
-        DEFAULT_TIMEOUT = 60.seconds
         CHAT_V2_ENDPOINT = '/v2/chat/agent'
         EVENT_DELIMITER = "\n"
         EVENT_REGEX = /(\{.*\})#{EVENT_DELIMITER}/i
@@ -84,7 +83,7 @@ module Gitlab
             "#{base_url}#{CHAT_V2_ENDPOINT}",
             headers: Gitlab::AiGateway.headers(user: user, unit_primitive_name: :duo_chat, ai_feature_name: :chat),
             body: params.to_json,
-            timeout: DEFAULT_TIMEOUT,
+            timeout: Gitlab::AiGateway.timeout,
             allow_local_requests: true,
             stream_body: true
           ) do |fragment|

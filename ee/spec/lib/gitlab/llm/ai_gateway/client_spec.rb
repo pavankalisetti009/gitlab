@@ -9,7 +9,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Client, feature_category: :ai_abstraction
   let_it_be(:active_token) { create(:service_access_token, :active) }
 
   let(:expected_body) { { prompt: 'anything' } }
-  let(:timeout) { described_class::DEFAULT_TIMEOUT }
+  let(:timeout) { Gitlab::AiGateway.timeout }
   let(:service) { instance_double(CloudConnector::BaseAvailableServiceData, name: :test) }
   let(:enabled_by_namespace_ids) { [1, 2] }
   let(:enablement_type) { 'add_on' }
@@ -165,7 +165,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Client, feature_category: :ai_abstraction
 
       it 'returns expected response' do
         expect(Gitlab::HTTP).to receive(:post)
-          .with(anything, hash_including(timeout: described_class::DEFAULT_TIMEOUT))
+          .with(anything, hash_including(timeout: Gitlab::AiGateway.timeout))
           .and_call_original
         expect(complete.parsed_response).to eq(expected_response)
       end

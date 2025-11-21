@@ -76,7 +76,7 @@ RSpec.describe Gitlab::Llm::AiGateway::DocsClient, feature_category: :ai_abstrac
     it 'returns response', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/463071' do
       expect(Gitlab::HTTP).to receive(:post).with(
         anything,
-        hash_including(timeout: described_class::DEFAULT_TIMEOUT)
+        hash_including(timeout: Gitlab::AiGateway.timeout)
       ).and_call_original
       expect(result.parsed_response).to eq(expected_response)
     end
@@ -87,7 +87,7 @@ RSpec.describe Gitlab::Llm::AiGateway::DocsClient, feature_category: :ai_abstrac
       it 'returns response for duo_chat' do
         expect(Gitlab::HTTP).to receive(:post).with(
           anything,
-          hash_including(timeout: described_class::DEFAULT_TIMEOUT)
+          hash_including(timeout: Gitlab::AiGateway.timeout)
         ).and_call_original
         expect(result.parsed_response).to eq(expected_response)
       end
@@ -100,7 +100,7 @@ RSpec.describe Gitlab::Llm::AiGateway::DocsClient, feature_category: :ai_abstrac
       it 'returns response for vendored duo_chat' do
         expect(Gitlab::HTTP).to receive(:post).with(
           anything,
-          hash_including(timeout: described_class::DEFAULT_TIMEOUT)
+          hash_including(timeout: Gitlab::AiGateway.timeout)
         ).and_call_original
         expect(result.parsed_response).to eq(expected_response)
       end
