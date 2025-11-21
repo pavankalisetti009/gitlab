@@ -159,6 +159,138 @@ RSpec.describe ProjectTeam, feature_category: :groups_and_projects do
 
       it { is_expected.to be_empty }
     end
+
+    context 'when a group is shared with the project\'s group with a custom role' do
+      let_it_be(:shared_group) { create(:group) }
+      let_it_be(:shared_group_user) { create(:user) }
+      let_it_be(:shared_group_custom_role) { create(:member_role, namespace: group) }
+
+      before do
+        create(:group_member, :developer, group: shared_group, user: shared_group_user)
+
+        create(:group_group_link, :guest,
+          shared_group: group,
+          shared_with_group: shared_group,
+          member_role: shared_group_custom_role
+        )
+      end
+
+      context 'when filtering by the custom role assigned through group sharing' do
+        let_it_be(:levels) { [Gitlab::Access::DEVELOPER] }
+        let_it_be(:member_role_ids) { [shared_group_custom_role.id] }
+
+        it 'returns users from both project membership and shared group with custom role' do
+          expect(members_with_access_level_or_custom_roles).to contain_exactly(developer, shared_group_user)
+        end
+      end
+    end
+
+    context 'when a group is shared with the project with an access level' do
+      let_it_be(:shared_group) { create(:group) }
+      let_it_be(:shared_group_developer) { create(:user) }
+      let_it_be(:shared_group_maintainer) { create(:user) }
+
+      before do
+        create(:group_member, :developer, group: shared_group, user: shared_group_developer)
+        create(:group_member, :maintainer, group: shared_group, user: shared_group_maintainer)
+
+        create(:project_group_link, :guest, project: project, group: shared_group)
+      end
+
+      context 'when filtering by the effective access level (minimum of group share and member access)' do
+        let_it_be(:levels) { [Gitlab::Access::GUEST] }
+        let_it_be(:member_role_ids) { [] }
+
+        it 'returns users with effective access level matching the filter' do
+          expect(members_with_access_level_or_custom_roles).to contain_exactly(
+            shared_group_developer,
+            shared_group_maintainer
+          )
+        end
+      end
+
+      context 'when filtering by access level higher than the group share access' do
+        let_it_be(:levels) { [Gitlab::Access::DEVELOPER] }
+        let_it_be(:member_role_ids) { [] }
+
+        it 'does not return users because effective access is limited by group share' do
+          expect(members_with_access_level_or_custom_roles).not_to include(
+            shared_group_developer,
+            shared_group_maintainer
+          )
+        end
+      end
+    end
+
+    context 'when user has memberships at both project and group levels with different roles' do
+      let_it_be(:root_group) { create(:group) }
+      let_it_be(:test_project) { create(:project, group: root_group) }
+      let_it_be(:user_with_multiple_memberships) { create(:user) }
+      let_it_be(:project_only_user) { create(:user) }
+      let_it_be(:group_only_user) { create(:user) }
+      let_it_be(:another_user_with_multiple_memberships) { create(:user) }
+      let_it_be(:group_custom_role) { create(:member_role, namespace: root_group) }
+      let_it_be(:project_custom_role) { create(:member_role, namespace: root_group) }
+
+      before do
+        create(:project_member, :developer, project: test_project, user: user_with_multiple_memberships,
+          member_role: project_custom_role)
+        create(:group_member, :developer, group: root_group, user: user_with_multiple_memberships,
+          member_role: group_custom_role)
+
+        create(:project_member, :developer, project: test_project, user: project_only_user,
+          member_role: project_custom_role)
+
+        create(:group_member, :developer, group: root_group, user: group_only_user,
+          member_role: group_custom_role)
+
+        create(:project_member, :maintainer, project: test_project, user: another_user_with_multiple_memberships,
+          member_role: project_custom_role)
+        create(:group_member, :maintainer, group: root_group, user: another_user_with_multiple_memberships,
+          member_role: group_custom_role)
+      end
+
+      subject(:members_with_access_level_or_custom_roles) do
+        test_project.team.members_with_access_level_or_custom_roles(levels: levels, member_role_ids: member_role_ids)
+      end
+
+      context 'when filtering by access level present at both levels' do
+        let_it_be(:levels) { [Gitlab::Access::DEVELOPER] }
+        let_it_be(:member_role_ids) { [] }
+
+        it 'returns users based on their project membership, not group membership' do
+          expect(members_with_access_level_or_custom_roles).to contain_exactly(
+            user_with_multiple_memberships,
+            group_only_user,
+            project_only_user
+          )
+        end
+      end
+
+      context 'when filtering by project-level custom role' do
+        let_it_be(:levels) { [] }
+        let_it_be(:member_role_ids) { [project_custom_role.id] }
+
+        it 'returns users based on their project membership, not group membership' do
+          expect(members_with_access_level_or_custom_roles).to contain_exactly(
+            user_with_multiple_memberships,
+            project_only_user,
+            another_user_with_multiple_memberships
+          )
+        end
+      end
+
+      context 'when filtering by custom role that only exists at group level' do
+        let_it_be(:levels) { [] }
+        let_it_be(:member_role_ids) { [group_custom_role.id] }
+
+        it 'does not return users with project membership when filtering by group custom role' do
+          expect(members_with_access_level_or_custom_roles).to contain_exactly(group_only_user,
+            user_with_multiple_memberships, another_user_with_multiple_memberships)
+          expect(members_with_access_level_or_custom_roles).not_to include(project_only_user)
+        end
+      end
+    end
   end
 
   describe '#user_exists_with_access_level_or_custom_roles?' do
