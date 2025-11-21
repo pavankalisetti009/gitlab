@@ -111,12 +111,16 @@ describe('AiAdminSettings', () => {
         duoCoreFeaturesEnabled: false,
         promptCacheEnabled: true,
         foundationalAgentsEnabled: true,
+        duoRemoteFlowsAvailability: false,
+        duoFoundationalFlowsAvailability: false,
       });
       expect(updateApplicationSettings).toHaveBeenCalledTimes(1);
       expect(updateApplicationSettings).toHaveBeenCalledWith({
         duo_availability: AVAILABILITY_OPTIONS.DEFAULT_OFF,
         instance_level_ai_beta_features_enabled: false,
         model_prompt_cache_enabled: true,
+        duo_remote_flows_availability: false,
+        duo_foundational_flows_availability: false,
         disabled_direct_code_suggestions: false,
         enabled_expanded_logging: false,
         duo_chat_expiration_days: 30,
@@ -244,6 +248,8 @@ describe('AiAdminSettings', () => {
         duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_OFF,
         experimentFeaturesEnabled: false,
         duoCoreFeaturesEnabled: false,
+        duoRemoteFlowsAvailability: false,
+        duoFoundationalFlowsAvailability: false,
       });
       await waitForPromises();
       expect(visitUrlWithAlerts).toHaveBeenCalledWith(
@@ -264,6 +270,8 @@ describe('AiAdminSettings', () => {
         duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_OFF,
         experimentFeaturesEnabled: false,
         duoCoreFeaturesEnabled: false,
+        duoRemoteFlowsAvailability: false,
+        duoFoundationalFlowsAvailability: false,
       });
 
       await waitForPromises();

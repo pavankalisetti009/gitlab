@@ -130,6 +130,8 @@ describe('AiGroupSettings', () => {
         experimentFeaturesEnabled: true,
         duoCoreFeaturesEnabled: true,
         promptCacheEnabled: true,
+        duoRemoteFlowsAvailability: false,
+        duoFoundationalFlowsAvailability: false,
         foundationalAgentsEnabled: true,
       });
       expect(updateGroupSettings).toHaveBeenCalledTimes(1);
@@ -138,6 +140,8 @@ describe('AiGroupSettings', () => {
         experiment_features_enabled: true,
         duo_core_features_enabled: true,
         model_prompt_cache_enabled: true,
+        duo_remote_flows_availability: false,
+        duo_foundational_flows_availability: false,
         ai_settings_attributes: {
           duo_workflow_mcp_enabled: false,
           foundational_agents_default_enabled: true,
@@ -153,6 +157,8 @@ describe('AiGroupSettings', () => {
         experimentFeaturesEnabled: true,
         duoCoreFeaturesEnabled: true,
         promptCacheEnabled: true,
+        duoRemoteFlowsAvailability: false,
+        duoFoundationalFlowsAvailability: false,
       });
       expect(updateGroupSettings).toHaveBeenCalledWith(
         '100',
@@ -171,6 +177,8 @@ describe('AiGroupSettings', () => {
         experimentFeaturesEnabled: false,
         duoCoreFeaturesEnabled: false,
         promptCacheEnabled: false,
+        duoRemoteFlowsAvailability: false,
+        duoFoundationalFlowsAvailability: false,
       });
       await waitForPromises();
       expect(visitUrlWithAlerts).toHaveBeenCalledWith(
@@ -193,6 +201,8 @@ describe('AiGroupSettings', () => {
         experimentFeaturesEnabled: false,
         duoCoreFeaturesEnabled: false,
         promptCacheEnabled: true,
+        duoRemoteFlowsAvailability: false,
+        duoFoundationalFlowsAvailability: false,
       });
       await waitForPromises();
       expect(createAlert).toHaveBeenCalledWith(
@@ -215,12 +225,16 @@ describe('AiGroupSettings', () => {
           experimentFeaturesEnabled: false,
           duoCoreFeaturesEnabled: true,
           promptCacheEnabled: true,
+          duoRemoteFlowsAvailability: false,
+          duoFoundationalFlowsAvailability: false,
         });
         expect(updateGroupSettings).toHaveBeenCalledTimes(1);
         expect(updateGroupSettings).toHaveBeenCalledWith('100', {
           duo_availability: AVAILABILITY_OPTIONS.DEFAULT_OFF,
           experiment_features_enabled: false,
           model_prompt_cache_enabled: true,
+          duo_remote_flows_availability: false,
+          duo_foundational_flows_availability: false,
           ai_settings_attributes: {
             duo_workflow_mcp_enabled: false,
           },

@@ -8,24 +8,35 @@ describe('DuoFlowSettings', () => {
   const defaultProvide = {
     isSaaS: true,
     isGroupSettings: false,
+    glFeatures: {
+      duoFoundationalFlows: true,
+    },
     duoRemoteFlowsCascadingSettings: {
+      lockedByAncestor: false,
+      lockedByApplicationSettings: false,
+    },
+    duoFoundationalFlowsCascadingSettings: {
       lockedByAncestor: false,
       lockedByApplicationSettings: false,
     },
   };
 
   const findFormGroup = () => wrapper.findComponent(GlFormGroup);
-  const findAvailabilityCheckbox = () => wrapper.findComponent(GlFormCheckbox);
-  const findLockIcon = () => wrapper.findComponent(GlIcon);
+  const findRemoteFlowsCheckbox = () => wrapper.findAllComponents(GlFormCheckbox).at(0);
+  const findFoundationalFlowsCheckbox = () => wrapper.findAllComponents(GlFormCheckbox).at(1);
+  const findAllLockIcons = () => wrapper.findAllComponents(GlIcon);
   const findHelpLink = () => wrapper.findComponent(GlLink);
-  const findLockButton = () => wrapper.find('[data-testid="duo-flow-feature-checkbox-locked"]');
-  const findCascadingLock = () => wrapper.findComponent(CascadingLockIcon);
+  const findAllLockButtons = () =>
+    wrapper.findAll('[data-testid="duo-flow-feature-checkbox-locked"]');
+  const findAllCascadingLocks = () => wrapper.findAllComponents(CascadingLockIcon);
+  const findAllCheckBoxes = () => wrapper.findAllComponents(GlFormCheckbox);
 
   const createWrapper = (props = {}, provide = {}) => {
     return shallowMount(DuoFlowSettings, {
       propsData: {
         disabledCheckbox: false,
         duoRemoteFlowsAvailability: false,
+        duoFoundationalFlowsAvailability: false,
         ...props,
       },
       provide: {
@@ -52,13 +63,28 @@ describe('DuoFlowSettings', () => {
       expect(findFormGroup().attributes('label')).toBe('Flow execution');
     });
 
-    it('renders the checkbox with correct label', () => {
-      expect(findAvailabilityCheckbox().exists()).toBe(true);
-      expect(wrapper.find('#duo-flow-checkbox-label').text()).toBe('Allow flow execution');
+    it('renders both checkboxes', () => {
+      expect(wrapper.findAllComponents(GlFormCheckbox)).toHaveLength(2);
     });
 
-    it('sets initial checkbox state based on duoRemoteFlowsAvailability prop', () => {
-      expect(findAvailabilityCheckbox().props('checked')).toBe(false);
+    it('renders the remote flows checkbox with correct label', () => {
+      expect(findRemoteFlowsCheckbox().exists()).toBe(true);
+      expect(wrapper.findAll('#duo-flow-checkbox-label').at(0).text()).toBe('Allow flow execution');
+    });
+
+    it('renders the foundational flows checkbox with correct label', () => {
+      expect(findFoundationalFlowsCheckbox().exists()).toBe(true);
+      expect(wrapper.findAll('#duo-flow-checkbox-label').at(1).text()).toBe(
+        'Allow foundational flows',
+      );
+    });
+
+    it('sets initial remote flows checkbox state based on duoRemoteFlowsAvailability prop', () => {
+      expect(findRemoteFlowsCheckbox().props('checked')).toBe(false);
+    });
+
+    it('sets initial foundational flows checkbox state based on duoFoundationalFlowsAvailability prop', () => {
+      expect(findFoundationalFlowsCheckbox().props('checked')).toBe(false);
     });
 
     it('renders help link with correct href', () => {
@@ -69,8 +95,13 @@ describe('DuoFlowSettings', () => {
       expect(findHelpLink().attributes('target')).toBe('_blank');
     });
 
-    it('does not render the cascading lock', () => {
-      expect(findCascadingLock().exists()).toBe(false);
+    it('does not render cascading locks by default', () => {
+      expect(findAllCascadingLocks()).toHaveLength(0);
+    });
+
+    it('shows lock on foundational flows when remote flows is disabled', () => {
+      expect(findFoundationalFlowsCheckbox().props('disabled')).toBe(true);
+      expect(findAllLockButtons()).toHaveLength(1);
     });
   });
 
@@ -79,22 +110,50 @@ describe('DuoFlowSettings', () => {
       wrapper = createWrapper({ duoRemoteFlowsAvailability: true });
     });
 
-    it('sets checkbox as checked', () => {
-      expect(findAvailabilityCheckbox().props('checked')).toBe(true);
+    it('sets remote flows checkbox as checked', () => {
+      expect(findRemoteFlowsCheckbox().props('checked')).toBe(true);
+    });
+
+    it('enables the foundational flows checkbox', () => {
+      expect(findFoundationalFlowsCheckbox().attributes('disabled')).toBe(undefined);
+    });
+
+    it('does not show lock on foundational flows', () => {
+      expect(findAllLockButtons()).toHaveLength(0);
+    });
+  });
+
+  describe('when duoFoundationalFlowsAvailability is true', () => {
+    beforeEach(() => {
+      wrapper = createWrapper({
+        duoRemoteFlowsAvailability: true,
+        duoFoundationalFlowsAvailability: true,
+      });
+    });
+
+    it('sets foundational flows checkbox as checked', () => {
+      expect(findFoundationalFlowsCheckbox().props('checked')).toBe(true);
     });
   });
 
   describe('when disabledCheckbox is false', () => {
     beforeEach(() => {
-      wrapper = createWrapper({ disabledCheckbox: false });
+      wrapper = createWrapper({
+        disabledCheckbox: false,
+        duoRemoteFlowsAvailability: true,
+      });
     });
 
-    it('enables the checkbox', () => {
-      expect(findAvailabilityCheckbox().attributes('disabled')).toBe(undefined);
+    it('enables the remote flows checkbox', () => {
+      expect(findRemoteFlowsCheckbox().attributes('disabled')).toBe(undefined);
     });
 
-    it('does not show lock icon', () => {
-      expect(findLockButton().exists()).toBe(false);
+    it('enables the foundational flows checkbox when remote flows is enabled', () => {
+      expect(findFoundationalFlowsCheckbox().attributes('disabled')).toBe(undefined);
+    });
+
+    it('does not show any lock icons', () => {
+      expect(findAllLockButtons()).toHaveLength(0);
     });
   });
 
@@ -103,81 +162,204 @@ describe('DuoFlowSettings', () => {
       wrapper = createWrapper({ disabledCheckbox: true });
     });
 
-    it('disables the checkbox', () => {
-      expect(findAvailabilityCheckbox().props('disabled')).toBe(true);
+    it('disables both checkboxes', () => {
+      expect(findRemoteFlowsCheckbox().props('disabled')).toBe(true);
+      expect(findFoundationalFlowsCheckbox().props('disabled')).toBe(true);
     });
 
-    it('shows lock icon with tooltip', () => {
-      expect(findLockButton().exists()).toBe(true);
-      expect(findLockIcon().exists()).toBe(true);
-      expect(findLockIcon().props('name')).toBe('lock');
+    it('shows lock icons on both checkboxes', () => {
+      expect(findAllLockButtons()).toHaveLength(2);
+      expect(findAllLockIcons()).toHaveLength(2);
     });
   });
 
-  describe('when duoRemoteFlowsCascadingSettings.lockedByApplicationSetting is true', () => {
+  describe('when remote flows is disabled', () => {
     beforeEach(() => {
-      wrapper = createWrapper(
-        {},
-        {
-          duoRemoteFlowsCascadingSettings: {
-            lockedByAncestor: false,
-            lockedByApplicationSetting: true,
+      wrapper = createWrapper({
+        duoRemoteFlowsAvailability: false,
+        duoFoundationalFlowsAvailability: false,
+      });
+    });
+
+    it('disables the foundational flows checkbox', () => {
+      expect(findFoundationalFlowsCheckbox().props('disabled')).toBe(true);
+    });
+
+    it('shows lock icon on foundational flows only', () => {
+      expect(findAllLockButtons()).toHaveLength(1);
+    });
+  });
+
+  describe('cascading locks for remote flows', () => {
+    describe('when locked by application setting', () => {
+      beforeEach(() => {
+        wrapper = createWrapper(
+          {},
+          {
+            duoRemoteFlowsCascadingSettings: {
+              lockedByAncestor: false,
+              lockedByApplicationSetting: true,
+            },
           },
-        },
-      );
+        );
+      });
+
+      it('shows cascading lock', () => {
+        expect(findAllCascadingLocks()).toHaveLength(1);
+        expect(findAllCascadingLocks().at(0).props('isLockedByApplicationSettings')).toBe(true);
+      });
     });
 
-    it('shows cascading lock icon', () => {
-      expect(findCascadingLock().exists()).toBe(true);
-    });
-  });
-
-  describe('when duoRemoteFlowsCascadingSettings.lockedByAncestor is true', () => {
-    beforeEach(() => {
-      wrapper = createWrapper(
-        {},
-        {
-          duoRemoteFlowsCascadingSettings: {
-            lockedByAncestor: true,
-            lockedByApplicationSetting: false,
+    describe('when locked by ancestor', () => {
+      beforeEach(() => {
+        wrapper = createWrapper(
+          {},
+          {
+            duoRemoteFlowsCascadingSettings: {
+              lockedByAncestor: true,
+              lockedByApplicationSetting: false,
+            },
           },
-        },
-      );
-    });
+        );
+      });
 
-    it('shows cascading lock icon', () => {
-      expect(findCascadingLock().exists()).toBe(true);
+      it('shows cascading lock', () => {
+        expect(findAllCascadingLocks()).toHaveLength(1);
+        expect(findAllCascadingLocks().at(0).props('isLockedByGroupAncestor')).toBe(true);
+      });
     });
   });
 
-  describe('when isGroupSettings is true', () => {
-    beforeEach(() => {
-      wrapper = createWrapper({}, { isGroupSettings: true });
+  describe('cascading locks for foundational flows', () => {
+    describe('when locked by application setting', () => {
+      beforeEach(() => {
+        wrapper = createWrapper(
+          {},
+          {
+            duoFoundationalFlowsCascadingSettings: {
+              lockedByAncestor: false,
+              lockedByApplicationSetting: true,
+            },
+          },
+        );
+      });
+
+      it('shows cascading lock', () => {
+        expect(findAllCascadingLocks()).toHaveLength(1);
+        expect(findAllCascadingLocks().at(0).props('isLockedByApplicationSettings')).toBe(true);
+      });
     });
 
-    it('renders the group copy', () => {
-      expect(wrapper.text()).toContain('this group and its subgroups and projects');
+    describe('when locked by ancestor', () => {
+      beforeEach(() => {
+        wrapper = createWrapper(
+          {},
+          {
+            duoFoundationalFlowsCascadingSettings: {
+              lockedByAncestor: true,
+              lockedByApplicationSetting: false,
+            },
+          },
+        );
+      });
+
+      it('shows cascading lock', () => {
+        expect(findAllCascadingLocks()).toHaveLength(1);
+        expect(findAllCascadingLocks().at(0).props('isLockedByGroupAncestor')).toBe(true);
+      });
+    });
+
+    describe('when both checkboxes are locked', () => {
+      beforeEach(() => {
+        wrapper = createWrapper(
+          {},
+          {
+            duoRemoteFlowsCascadingSettings: {
+              lockedByAncestor: true,
+              lockedByApplicationSetting: false,
+            },
+            duoFoundationalFlowsCascadingSettings: {
+              lockedByAncestor: false,
+              lockedByApplicationSetting: true,
+            },
+          },
+        );
+      });
+
+      it('shows both cascading locks', () => {
+        expect(findAllCascadingLocks()).toHaveLength(2);
+      });
     });
   });
 
-  describe('when isGroupSettings is false', () => {
-    beforeEach(() => {
-      wrapper = createWrapper({}, { isGroupSettings: false });
+  describe('help text variations', () => {
+    describe('when isGroupSettings is true', () => {
+      beforeEach(() => {
+        wrapper = createWrapper({}, { isGroupSettings: true });
+      });
+
+      it('renders the group-specific help text for remote flows', () => {
+        expect(wrapper.text()).toContain('this group and its subgroups and projects');
+      });
+
+      it('renders the group-specific help text for foundational flows', () => {
+        expect(wrapper.text()).toContain(
+          'Allow GitLab Duo agents to execute foundational flows in this group and its subgroups and projects',
+        );
+      });
     });
-    it('renders the group copy', () => {
-      expect(wrapper.text()).toContain('for the instance');
+
+    describe('when isGroupSettings is false', () => {
+      beforeEach(() => {
+        wrapper = createWrapper({}, { isGroupSettings: false });
+      });
+
+      it('renders the instance-specific help text for remote flows', () => {
+        expect(wrapper.text()).toContain('for the instance');
+      });
+
+      it('renders the instance-specific help text for foundational flows', () => {
+        expect(wrapper.text()).toContain(
+          'Allow GitLab Duo agents to execute foundational flows for the instance',
+        );
+      });
     });
   });
 
-  describe('checkbox interaction', () => {
+  describe('checkbox interactions', () => {
     beforeEach(() => {
       wrapper = createWrapper();
     });
 
-    it('emits change event when checkbox is clicked', async () => {
-      await findAvailabilityCheckbox().vm.$emit('change');
+    it('emits change event when remote flows checkbox is clicked', async () => {
+      await findRemoteFlowsCheckbox().vm.$emit('change');
 
       expect(wrapper.emitted('change')).toHaveLength(1);
+    });
+
+    it('emits change-foundational-flows event when foundational flows checkbox is clicked', async () => {
+      await findFoundationalFlowsCheckbox().vm.$emit('change');
+
+      expect(wrapper.emitted('change-foundational-flows')).toHaveLength(1);
+    });
+  });
+
+  describe('when duoFoundationalFlows feature flag is disabled', () => {
+    beforeEach(() => {
+      wrapper = createWrapper(
+        { duoRemoteFlowsAvailability: true },
+        {
+          glFeatures: { duoFoundationalFlows: false },
+        },
+      );
+    });
+
+    it('only renders the remote flows checkbox', () => {
+      expect(findAllCheckBoxes()).toHaveLength(1);
+    });
+
+    it('does not render the foundational flows checkbox', () => {
+      expect(wrapper.find('[data-testid="duo-foundational-flows-checkbox"]').exists()).toBe(false);
     });
   });
 });

@@ -55,6 +55,7 @@ export default {
       experimentFeaturesEnabled,
       duoCoreFeaturesEnabled,
       promptCacheEnabled,
+      duoFoundationalFlowsAvailability,
       foundationalAgentsEnabled,
     }) {
       try {
@@ -63,6 +64,7 @@ export default {
           experiment_features_enabled: experimentFeaturesEnabled,
           model_prompt_cache_enabled: promptCacheEnabled,
           duo_remote_flows_availability: duoRemoteFlowsAvailability,
+          duo_foundational_flows_availability: duoFoundationalFlowsAvailability,
           ai_settings_attributes: {
             duo_workflow_mcp_enabled: this.duoWorkflowMcp,
             foundational_agents_default_enabled: foundationalAgentsEnabled,

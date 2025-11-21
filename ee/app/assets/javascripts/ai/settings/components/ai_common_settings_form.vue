@@ -38,6 +38,10 @@ export default {
       type: Boolean,
       required: true,
     },
+    duoFoundationalFlowsAvailability: {
+      type: Boolean,
+      required: true,
+    },
     experimentFeaturesEnabled: {
       type: Boolean,
       required: true,
@@ -68,6 +72,7 @@ export default {
       experimentsEnabled: this.experimentFeaturesEnabled,
       duoCoreEnabled: this.duoCoreFeaturesEnabled,
       cacheEnabled: this.promptCacheEnabled,
+      foundationalFlowsEnabled: this.duoFoundationalFlowsAvailability,
       foundationalAgentsEnabledInput: this.foundationalAgentsEnabled,
     };
   },
@@ -87,6 +92,9 @@ export default {
     hasFlowFormChanged() {
       return this.flowEnabled !== this.duoRemoteFlowsAvailability;
     },
+    hasFoundationalFlowsFormChanged() {
+      return this.foundationalFlowsEnabled !== this.duoFoundationalFlowsAvailability;
+    },
     hasFoundationalAgentsEnabledChanged() {
       return this.foundationalAgentsEnabled !== this.foundationalAgentsEnabledInput;
     },
@@ -98,6 +106,7 @@ export default {
         this.hasCacheCheckboxChanged ||
         this.hasParentFormChanged ||
         this.hasFlowFormChanged ||
+        this.hasFoundationalFlowsFormChanged ||
         this.hasFoundationalAgentsEnabledChanged
       );
     },
@@ -144,6 +153,10 @@ export default {
       this.flowEnabled = value;
       this.$emit('duo-flow-checkbox-changed', value);
     },
+    onFoundationalFlowsCheckboxChanged(value) {
+      this.foundationalFlowsEnabled = value;
+      this.$emit('duo-foundational-flows-checkbox-changed', value);
+    },
     onFoundationalAgentsEnabledChanged(value) {
       this.foundationalAgentsEnabledInput = value;
       this.$emit('duo-foundational-agents-changed', value);
@@ -172,8 +185,10 @@ export default {
 
     <duo-flow-settings
       :duo-remote-flows-availability="duoRemoteFlowsAvailability"
+      :duo-foundational-flows-availability="duoFoundationalFlowsAvailability"
       :disabled-checkbox="disableConfigCheckboxes"
       @change="onFlowCheckboxChanged"
+      @change-foundational-flows="onFoundationalFlowsCheckboxChanged"
     />
 
     <duo-prompt-cache

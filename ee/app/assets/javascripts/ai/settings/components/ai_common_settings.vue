@@ -30,6 +30,7 @@ export default {
     'onGeneralSettingsPage',
     'promptCacheEnabled',
     'initialDuoRemoteFlowsAvailability',
+    'initialDuoFoundationalFlowsAvailability',
     'foundationalAgentsDefaultEnabled',
   ],
   props: {
@@ -46,6 +47,7 @@ export default {
       duoCoreEnabled: this.duoCoreFeaturesEnabled,
       cacheEnabled: this.promptCacheEnabled,
       duoRemoteFlowsAvailability: this.initialDuoRemoteFlowsAvailability,
+      duoFoundationalFlowsAvailability: this.initialDuoFoundationalFlowsAvailability,
       foundationalAgentsEnabled: this.foundationalAgentsDefaultEnabled,
     };
   },
@@ -57,6 +59,7 @@ export default {
         duoCoreFeaturesEnabled: this.duoCoreEnabled,
         promptCacheEnabled: this.cacheEnabled,
         duoRemoteFlowsAvailability: this.duoRemoteFlowsAvailability,
+        duoFoundationalFlowsAvailability: this.duoFoundationalFlowsAvailability,
         foundationalAgentsEnabled: this.foundationalAgentsEnabled,
       });
     },
@@ -74,6 +77,9 @@ export default {
     },
     onDuoFlowChanged(value) {
       this.duoRemoteFlowsAvailability = value;
+    },
+    onDuoFoundationalFlowsChanged(value) {
+      this.duoFoundationalFlowsAvailability = value;
     },
     onFoundationalAgentsEnabledChanged(value) {
       this.foundationalAgentsEnabled = value;
@@ -104,6 +110,7 @@ export default {
           <ai-common-settings-form
             :duo-availability="duoAvailability"
             :duo-remote-flows-availability="initialDuoRemoteFlowsAvailability"
+            :duo-foundational-flows-availability="initialDuoFoundationalFlowsAvailability"
             :experiment-features-enabled="experimentFeaturesEnabled"
             :duo-core-features-enabled="duoCoreFeaturesEnabled"
             :prompt-cache-enabled="promptCacheEnabled"
@@ -116,6 +123,7 @@ export default {
             @cache-checkbox-changed="onCacheCheckboxChanged"
             @duo-flow-checkbox-changed="onDuoFlowChanged"
             @duo-foundational-agents-changed="onFoundationalAgentsEnabledChanged"
+            @duo-foundational-flows-checkbox-changed="onDuoFoundationalFlowsChanged"
           >
             <template #ai-common-settings-top>
               <slot name="ai-common-settings-top"></slot>
@@ -142,6 +150,7 @@ export default {
       <ai-common-settings-form
         :duo-availability="duoAvailability"
         :duo-remote-flows-availability="initialDuoRemoteFlowsAvailability"
+        :duo-foundational-flows-availability="initialDuoFoundationalFlowsAvailability"
         :experiment-features-enabled="experimentFeaturesEnabled"
         :duo-core-features-enabled="duoCoreFeaturesEnabled"
         :prompt-cache-enabled="promptCacheEnabled"
@@ -153,6 +162,7 @@ export default {
         @duo-core-checkbox-changed="duoCoreCheckboxChanged"
         @cache-checkbox-changed="onCacheCheckboxChanged"
         @duo-flow-checkbox-changed="onDuoFlowChanged"
+        @duo-foundational-flows-checkbox-changed="onDuoFoundationalFlowsChanged"
         @duo-foundational-agents-changed="onFoundationalAgentsEnabledChanged"
       >
         <template #ai-common-settings-top>
