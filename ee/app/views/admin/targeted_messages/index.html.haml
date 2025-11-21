@@ -32,4 +32,12 @@
             variant: :default,
             category: :tertiary,
             icon: 'pencil',
-            size: :small)
+            size: :small,
+            button_options: { class: 'gl-mr-2'})
+          = render Pajamas::ButtonComponent.new(href: admin_targeted_message_path(targeted_message),
+              variant: :danger,
+              category: :tertiary,
+              icon: 'remove',
+              size: :small,
+              method: :delete,
+              button_options: { data: { confirm: s_('TargetedMessages|Are you sure you want to delete this targeted message?') } })

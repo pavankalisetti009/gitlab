@@ -13,6 +13,21 @@ RSpec.describe Notifications::TargetedMessage, feature_category: :acquisition do
   describe 'associations' do
     it { is_expected.to have_many(:targeted_message_namespaces) }
     it { is_expected.to have_many(:namespaces).through(:targeted_message_namespaces) }
+
+    describe 'dependent destroy' do
+      let_it_be(:user) { create(:user) }
+      let_it_be(:targeted_message) { create(:targeted_message) }
+      let_it_be(:dismissal) do
+        create(:targeted_message_dismissal, targeted_message_id: targeted_message.id,
+          namespace: targeted_message.namespaces.take, user: user)
+      end
+
+      it 'destroys associated targeted_message_namespaces and targeted_message_dismissals when message is destroyed' do
+        expect { targeted_message.destroy! }
+          .to change { Notifications::TargetedMessageNamespace.count }.by(-1)
+          .and change { Notifications::TargetedMessageDismissal.count }.by(-1)
+      end
+    end
   end
 
   describe 'enums' do
