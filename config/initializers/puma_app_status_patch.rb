@@ -6,7 +6,7 @@ require 'puma/const'
 
 # This patches Puma with https://github.com/puma/puma/issues/3788.
 # This is only needed if the control app is enabled.
-raise if Gem::Version.new(Puma::Const::PUMA_VERSION) > Gem::Version.new('7.0.4')
+raise if Gem::Version.new(Puma::Const::PUMA_VERSION) > Gem::Version.new('7.1.0')
 
 require "puma/app/status"
 
