@@ -2186,6 +2186,51 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
       end
     end
 
+    context 'when setting duo_sast_fp_detection_enabled' do
+      let(:project_params) { { duo_sast_fp_detection_enabled: false } }
+
+      context 'when licence is available and feature flag is enabled' do
+        before do
+          stub_licensed_features(ai_features: true)
+          stub_feature_flags(ai_experiment_sast_fp_detection: true)
+        end
+
+        it 'updates the value' do
+          expect { subject }.to change { project.reload.duo_sast_fp_detection_enabled }
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['duo_sast_fp_detection_enabled']).to eq false
+        end
+      end
+
+      context 'when licence is available but feature flag is disabled' do
+        before do
+          stub_licensed_features(ai_features: true)
+          stub_feature_flags(ai_experiment_sast_fp_detection: false)
+        end
+
+        it 'does not update the value and does not expose it in response' do
+          expect { subject }.not_to change { project.reload.duo_sast_fp_detection_enabled }
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['duo_sast_fp_detection_enabled']).to be_nil
+        end
+      end
+
+      context 'when licence is not available' do
+        before do
+          stub_feature_flags(ai_experiment_sast_fp_detection: true)
+        end
+
+        it 'does not update the value and does not expose it in response' do
+          expect { subject }.not_to change { project.reload.duo_sast_fp_detection_enabled }
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['duo_sast_fp_detection_enabled']).to be_nil
+        end
+      end
+    end
+
     context 'updating web_based_commit_signing_enabled' do
       using RSpec::Parameterized::TableSyntax
 

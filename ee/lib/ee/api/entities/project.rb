@@ -67,6 +67,7 @@ module EE
           expose :auto_duo_code_review_enabled, if: ->(project, _) { project.namespace.has_active_add_on_purchase?(:duo_enterprise) }
           expose :duo_remote_flows_enabled, if: ->(_, _) { ::Ai::DuoWorkflow.enabled? }
           expose :duo_foundational_flows_enabled, if: ->(_, _) { ::Ai::DuoWorkflow.enabled? }
+          expose :duo_sast_fp_detection_enabled, if: ->(project, _) { project.licensed_feature_available?(:ai_features) && ::Feature.enabled?(:ai_experiment_sast_fp_detection, project) }
           expose :web_based_commit_signing_enabled, if: ->(project, options) do
             ::Gitlab::Saas.feature_available?(:repositories_web_based_commit_signing) &&
               Ability.allowed?(options[:current_user], :admin_project, project)

@@ -637,6 +637,10 @@ RSpec.describe Groups::UpdateService, '#execute', feature_category: :groups_and_
     it_behaves_like 'when updating duo settings', :duo_foundational_flows_enabled, false
   end
 
+  context 'when updating duo_sast_fp_detection_enabled' do
+    it_behaves_like 'when updating duo settings', :duo_sast_fp_detection_enabled, false
+  end
+
   context 'when updating lock_duo_features_enabled' do
     let_it_be_with_reload(:user) { create(:user) }
     let_it_be_with_reload(:group) { create(:group, :public) }

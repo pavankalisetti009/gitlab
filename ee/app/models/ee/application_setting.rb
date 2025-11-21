@@ -371,7 +371,8 @@ module EE
         allow_nil: false,
         inclusion: { in: [true, false], message: N_('must be a boolean value') }
 
-      validates :auto_duo_code_review_enabled, :duo_remote_flows_enabled, :duo_foundational_flows_enabled,
+      validates :auto_duo_code_review_enabled, :duo_remote_flows_enabled,
+        :duo_foundational_flows_enabled, :duo_sast_fp_detection_enabled,
         inclusion: { in: [true, false] }
 
       after_commit :update_personal_access_tokens_lifetime, if: :saved_change_to_max_personal_access_token_lifetime?
@@ -743,6 +744,20 @@ module EE
                                                  else
                                                    true
                                                  end
+    end
+
+    def duo_sast_fp_detection_availability
+      duo_sast_fp_detection_enabled
+    end
+
+    def duo_sast_fp_detection_availability=(value)
+      self.duo_sast_fp_detection_enabled = value
+
+      self.lock_duo_sast_fp_detection_enabled = if value
+                                                  false
+                                                else
+                                                  true
+                                                end
     end
 
     def duo_never_on?

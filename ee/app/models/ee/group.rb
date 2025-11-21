@@ -115,6 +115,7 @@ module EE
       delegate :duo_availability, :duo_availability=, to: :namespace_settings
       delegate :duo_remote_flows_availability, :duo_remote_flows_availability=, to: :namespace_settings
       delegate :duo_foundational_flows_availability, :duo_foundational_flows_availability=, to: :namespace_settings
+      delegate :duo_sast_fp_detection_availability, :duo_sast_fp_detection_availability=, to: :namespace_settings
       delegate :experiment_settings_allowed?, :prompt_cache_settings_allowed?, to: :namespace_settings
       delegate :user_cap_enabled?, to: :namespace_settings
 

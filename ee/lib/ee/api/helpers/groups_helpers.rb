@@ -17,6 +17,7 @@ module EE
             optional :duo_availability, type: String, values: %w[default_on default_off never_on], desc: 'Duo availability. One of `default_on`, `default_off` or `never_on`'
             optional :duo_remote_flows_availability, type: ::Grape::API::Boolean, desc: 'Enable GitLab Duo remote flows for this group'
             optional :duo_foundational_flows_availability, type: ::Grape::API::Boolean, desc: 'Enable GitLab foundational Duo flows for this group'
+            optional :duo_sast_fp_detection_availability, type: ::Grape::API::Boolean, desc: 'Enable GitLab Duo SAST false position detection for this group'
             optional :amazon_q_auto_review_enabled, type: ::Grape::API::Boolean, desc: 'Enable Amazon Q auto review for merge request'
             optional :experiment_features_enabled, type: ::Grape::API::Boolean, desc: 'Enable experiment features for this group'
             optional :model_prompt_cache_enabled, type: ::Grape::API::Boolean, desc: 'Enable model prompt cache for this group'

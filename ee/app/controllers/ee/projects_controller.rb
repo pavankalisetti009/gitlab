@@ -51,7 +51,15 @@ module EE
 
     override :project_setting_attributes
     def project_setting_attributes
-      attributes = %i[
+      attributes = base_project_setting_attributes
+      attributes += licensed_feature_attributes
+      attributes += duo_feature_attributes
+
+      super + attributes
+    end
+
+    def base_project_setting_attributes
+      %i[
         prevent_merge_without_jira_issue
         cve_id_request_enabled
         product_analytics_data_collector_host
@@ -59,13 +67,13 @@ module EE
         cube_api_key
         product_analytics_configurator_connection_string
       ]
+    end
+
+    def licensed_feature_attributes
+      attributes = []
 
       if project&.licensed_feature_available?(:external_status_checks)
         attributes << :only_allow_merge_if_all_status_checks_passed
-      end
-
-      if project&.licensed_ai_features_available? && ::Feature.enabled?(:use_duo_context_exclusion, project)
-        attributes << { duo_context_exclusion_settings: { exclusion_rules: [] } }
       end
 
       if project&.licensed_feature_available?(:security_orchestration_policies)
@@ -77,12 +85,29 @@ module EE
       end
 
       add_duo_workflow_attributes(attributes)
+      attributes
+    end
+
+    def duo_feature_attributes
+      attributes = []
+
+      if duo_context_exclusion_available?
+        attributes << { duo_context_exclusion_settings: { exclusion_rules: [] } }
+      end
 
       unless project&.project_setting&.duo_features_enabled_locked?
         attributes << :duo_features_enabled
       end
 
-      super + attributes
+      unless project&.project_setting&.duo_sast_fp_detection_enabled_locked?
+        attributes << :duo_sast_fp_detection_enabled
+      end
+
+      attributes
+    end
+
+    def duo_context_exclusion_available?
+      project&.licensed_ai_features_available? && ::Feature.enabled?(:use_duo_context_exclusion, project)
     end
 
     def add_duo_workflow_attributes(attributes)

@@ -914,7 +914,50 @@ RSpec.describe ProjectsController, feature_category: :groups_and_projects do
           it 'updates duo_foundational_flows_enabled' do
             expect { request }
               .to change { project.reload.project_setting.duo_foundational_flows_enabled }
-                    .from(false).to(true)
+              .from(false).to(true)
+          end
+        end
+      end
+    end
+
+    context 'when duo_sast_fp_detection_enabled param is specified' do
+      let(:params) { { project_setting_attributes: { duo_sast_fp_detection_enabled: true } } }
+
+      let(:request) do
+        put :update, params: { namespace_id: project.namespace, id: project, project: params }
+      end
+
+      it 'updates duo_sast_fp_detection_enabled' do
+        project.project_setting.duo_sast_fp_detection_enabled = false
+        project.project_setting.save!
+
+        request
+
+        expect(project.reload.project_setting.duo_sast_fp_detection_enabled).to eq(true)
+      end
+
+      context 'when duo sast fp detection is locked by the ancestor' do
+        before do
+          project.project_setting.duo_sast_fp_detection_enabled = false
+          project.project_setting.save!
+
+          project.namespace.namespace_settings.lock_duo_sast_fp_detection_enabled = true
+          project.namespace.namespace_settings.duo_sast_fp_detection_enabled = false
+          project.namespace.namespace_settings.save!
+        end
+
+        it 'does not update duo sast fp detection' do
+          expect { request }.not_to change { project.reload.project_setting.duo_sast_fp_detection_enabled }.from(false)
+        end
+
+        context 'with more params passed' do
+          let(:params) do
+            { project_setting_attributes: { duo_sast_fp_detection_enabled: true }, description: 'Settings test' }
+          end
+
+          it 'does not update duo sast fp detection, but updates other attributes' do
+            expect { request }.not_to change { project.reload.project_setting.duo_sast_fp_detection_enabled }.from(false)
+            expect(project.description).to eq('Settings test')
           end
         end
       end
