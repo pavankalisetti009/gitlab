@@ -7,6 +7,9 @@ import StatusChecks from 'ee/projects/settings/branch_rules/components/view/stat
 import { I18N } from '~/projects/settings/branch_rules/components/view/constants';
 
 const approvalsHelpDocLink = helpPagePath('user/project/merge_requests/approvals/_index');
+const policiesDocumentationLink = helpPagePath(
+  'user/application_security/policies/merge_request_approval_policies.md',
+);
 const statusChecksHelpDocLink = helpPagePath('user/project/merge_requests/status_checks');
 
 // This is a false violation of @gitlab/no-runtime-template-compiler, since it
@@ -18,9 +21,13 @@ export default {
   extends: RuleViewFoss,
   i18n: I18N,
   approvalsHelpDocLink,
+  policiesDocumentationLink,
   statusChecksHelpDocLink,
   inject: {
     approvalRulesPath: {
+      default: '',
+    },
+    securityPoliciesPath: {
       default: '',
     },
     statusChecksPath: {
@@ -28,6 +35,10 @@ export default {
     },
   },
   computed: {
+    // eslint-disable-next-line vue/no-unused-properties -- Used in extended CE template
+    modificationBlockedByPolicy() {
+      return this.branchProtection?.modificationBlockedByPolicy;
+    },
     // eslint-disable-next-line vue/no-unused-properties -- Used in extended CE template
     statusChecksHeader() {
       return this.$options.i18n.statusChecksHeader;

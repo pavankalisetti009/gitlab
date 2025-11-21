@@ -8,6 +8,7 @@ mutation editBrachRuleEE($input: BranchRuleUpdateInput!) {
         isGroupLevel
         allowForcePush
         codeOwnerApprovalRequired
+        modificationBlockedByPolicy
         mergeAccessLevels {
           nodes {
             accessLevel
