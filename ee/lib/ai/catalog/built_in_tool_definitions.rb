@@ -819,6 +819,215 @@ module Ai
             "get_wiki_page(group_id=\"namespace/group\", slug=\"documentation\")    " \
             "- For nested wiki pages, include the path segments in the slug:        " \
             "get_wiki_page(project_id=\"namespace/project\", slug=\"dir/page_name\")"
+        },
+        {
+          id: 77,
+          name: "get_security_finding_details",
+          title: "Get Security Finding Details",
+          description: "Use this tool to get details for a specific security finding identified " \
+            "by its UUID and pipeline ID. " \
+            "A \"Security Finding\" is a potential vulnerability discovered in a pipeline scan. " \
+            "It is an ephemeral object identified by a UUID. " \
+            "**Use this tool when you have both a UUID and pipeline ID.** " \
+            "This is different from a \"Vulnerability\", which is a persisted record " \
+            "on the default branch and has a numeric ID. " \
+            "**Do NOT use this tool for numeric vulnerability IDs; when you have a numeric " \
+            "vulnerability ID, use the 'get_vulnerability_details' tool.** " \
+            "For example: " \
+            "get_security_finding_details( " \
+            "uuid=\"1e9a2bf7-0450-5894-8db5-895c98e39deb\", " \
+            "pipeline_id=12345, " \
+            "project_full_path=\"namespace/project\" " \
+            ")"
+        },
+        {
+          id: 78,
+          name: "gitlab_api_get",
+          title: "Gitlab Api Get",
+          description: "Make read-only GET requests to any GitLab REST API endpoint. " \
+            "Supports both direct API endpoint paths and GitLab resource URLs. " \
+            "Use this to retrieve information about projects, merge requests, issues, " \
+            "pipelines, commits, users, or any other GitLab resource. " \
+            "Common API patterns: " \
+            "- Projects: /api/v4/projects/{id} " \
+            "- Merge Requests: /api/v4/projects/{id}/merge_requests/{iid} " \
+            "- Issues: /api/v4/projects/{id}/issues/{iid} " \
+            "- Pipelines: /api/v4/projects/{id}/pipelines/{id} " \
+            "- Commits: /api/v4/projects/{id}/repository/commits/{sha} " \
+            "- Users: /api/v4/users/{id} " \
+            "See GitLab API documentation for full details."
+        },
+        {
+          id: 79,
+          name: "gitlab_graphql",
+          title: "Gitlab Graphql",
+          description: "Execute read-only GraphQL queries against the GitLab GraphQL API. " \
+            "Use this for complex queries that need to fetch data from multiple related resources " \
+            "or when you need more flexibility than the REST API provides. " \
+            "Best Practice: Always name your queries (e.g., 'query GetMergeRequest') " \
+            "for better traceability in logs and debugging. " \
+            "Use descriptive operation names that indicate the query's purpose. " \
+            "Only queries are supported; mutations (write operations) and subscriptions " \
+            "(real-time data streaming) are not allowed."
+        },
+        {
+          id: 80,
+          name: "link_vulnerability_to_merge_request",
+          title: "Link Vulnerability To Merge Request",
+          description: "Link a security vulnerability to a merge request in a GitLab project " \
+            "using GraphQL. " \
+            "The project must be specified using its full path " \
+            "(e.g., 'namespace/project' or 'group/subgroup/project'). " \
+            "The tool supports linking a vulnerability to a merge request by their respective IDs. " \
+            "This creates a relationship between the vulnerability and the merge request " \
+            "that addresses it. " \
+            "The Merge Request ID used is the global ID, not the IID. " \
+            "The merge request ID given must include `gid://gitlab/MergeRequest/` in the prefix. " \
+            "If the ID does not include `gid://gitlab/MergeRequest/` in the prefix: " \
+            "- ASK THE USER WHAT THEY HAVE GIVEN YOU " \
+            "- If they have given you the MR IID (which is what is shown in the UI), fetch the ID " \
+            "For example: " \
+            "- Link vulnerability with ID 123 to merge request with ID 456 (IID 245): " \
+            "link_vulnerability_to_merge_request( " \
+            "vulnerability_id=\"gid://gitlab/Vulnerability/123\", " \
+            "merge_request_id=\"gid://gitlab/MergeRequest/456\" " \
+            ")"
+        },
+        {
+          id: 81,
+          name: "get_pipeline_failing_jobs",
+          title: "Get Pipeline Failing Jobs",
+          description: "Get the IDs for failed jobs in a pipeline. " \
+            "You can use this tool by passing in a merge request to get the failing jobs " \
+            "in the latest pipeline. You can also use this tool by identifying a pipeline directly. " \
+            "This tool can be used when you have a project_id and merge_request_iid. " \
+            "This tool can be used when you have a merge request URL. " \
+            "This tool can be used when you have a pipeline URL. " \
+            "Be careful to differentiate between a pipeline_id and a job_id when using this tool. " \
+            "To identify a merge request you must provide either: " \
+            "- project_id and merge_request_iid, or " \
+            "- A GitLab URL like: " \
+            "- https://gitlab.com/namespace/project/-/merge_requests/42 " \
+            "- https://gitlab.com/group/subgroup/project/-/merge_requests/42 " \
+            "To identify a pipeline you must provide: " \
+            "- A GitLab URL like: " \
+            "- https://gitlab.com/namespace/project/-/pipelines/33 " \
+            "- https://gitlab.com/group/subgroup/project/-/pipelines/42 " \
+            "For example: " \
+            "- Given project_id 13 and merge_request_iid 9, the tool call would be: " \
+            "get_pipeline_failing_jobs(project_id=13, merge_request_iid=9) " \
+            "- Given a merge request URL " \
+            "https://gitlab.com/namespace/project/-/merge_requests/103, the tool call would be: " \
+            "get_pipeline_failing_jobs(" \
+            "url=\"https://gitlab.com/namespace/project/-/merge_requests/103\") " \
+            "- Given a pipeline URL https://gitlab.com/namespace/project/-/pipelines/33, " \
+            "the tool call would be: " \
+            "get_pipeline_failing_jobs(url=\"https://gitlab.com/namespace/project/-/pipelines/33\")"
+        },
+        {
+          id: 82,
+          name: "run_tests",
+          title: "Run Tests",
+          description: "Execute test commands for any language or framework. " \
+            "The agent should determine the appropriate test command based on: " \
+            "- Project files (package.json, go.mod, Cargo.toml, etc.) " \
+            "- Test frameworks detected (pytest, jest, rspec, etc.) " \
+            "- Existing test scripts or Makefiles " \
+            "Examples: " \
+            "- Python: run_tests(command=\"pytest\") " \
+            "- JavaScript: run_tests(command=\"npm test\") " \
+            "- Go: run_tests(command=\"go test ./...\") " \
+            "- Ruby: run_tests(command=\"bundle exec rspec\") " \
+            "- Custom: run_tests(command=\"make test\")"
+        },
+        {
+          id: 83,
+          name: "extract_lines_from_text",
+          title: "Extract Lines From Text",
+          description: "Extract specific lines from a text content. " \
+            "The tool extracts lines from a large string content that is separated by '\n' characters. " \
+            "It returns the exact block of lines starting from start_line and ending at end_line. " \
+            "Line numbers are 1-indexed (first line is line 1). " \
+            "For example: " \
+            "- Get a single line (line 5): " \
+            "extract_lines_from_text( " \
+            "content=\"line1\nline2\nline3\nline4\nline5\nline6\", " \
+            "start_line=5 " \
+            ") " \
+            "- Get a range of lines (lines 3 to 5): " \
+            "extract_lines_from_text( " \
+            "content=\"line1\nline2\nline3\nline4\nline5\nline6\", " \
+            "start_line=3, " \
+            "end_line=5 " \
+            ")"
+        },
+        {
+          id: 84,
+          name: "list_security_findings",
+          title: "List Security Findings",
+          description: "List ephemeral security findings from a specific GitLab pipeline security scan. " \
+            "Use this tool to see all potential vulnerabilities found in a single pipeline run, such as for a " \
+            "Merge Request. " \
+            "This tool requires a `pipeline_id` to operate. " \
+            "**Do NOT use this tool to list vulnerabilities for an entire project; use 'list_vulnerabilities' " \
+            "for that.** " \
+            "For example: " \
+            "- List all findings in a pipeline: " \
+            "list_security_findings( " \
+            "project_full_path=\"gitlab-org/gitlab\", " \
+            "pipeline_id=\"gid://gitlab/Ci::Pipeline/12345\" " \
+            ") " \
+            "- List only critical SAST findings: " \
+            "list_security_findings( " \
+            "project_full_path=\"gitlab-org/gitlab\", " \
+            "pipeline_id=\"gid://gitlab/Ci::Pipeline/12345\", " \
+            "severity=[SecurityFindingSeverity.CRITICAL], " \
+            "report_type=[SecurityFindingReportType.SAST] " \
+            ") " \
+            "- List non-dismissed findings: " \
+            "list_security_findings( " \
+            "project_full_path=\"gitlab-org/gitlab\", " \
+            "pipeline_id=\"gid://gitlab/Ci::Pipeline/12345\", " \
+            "state=[SecurityFindingState.DETECTED, SecurityFindingState.CONFIRMED] " \
+            ")"
+        },
+        {
+          id: 85,
+          name: "build_review_merge_request_context",
+          title: "Build Review Merge Request Context",
+          description: "Build comprehensive merge request context for code review. " \
+            "Fetches MR details, AI-reviewable diffs, and original files content. " \
+            "Set only_diffs=True to skip fetching original file contents for faster scanning. " \
+            "Identify merge request with either: " \
+            "- project_id and merge_request_iid " \
+            "- GitLab URL (https://gitlab.com/namespace/project/-/merge_requests/42) " \
+            "Examples: " \
+            "- build_review_merge_request_context(project_id=13, merge_request_iid=9) " \
+            "- build_review_merge_request_context(project_id=13, merge_request_iid=9, only_diffs=True) " \
+            "- build_review_merge_request_context(url='https://gitlab.com/...')"
+        },
+        {
+          id: 86,
+          name: "post_sast_fp_analysis_to_gitlab",
+          title: "Post Sast Fp Analysis To Gitlab",
+          description: "Post SAST False Positive detection analysis results to GitLab via API. " \
+            "This tool posts the false positive analysis for a specific vulnerability " \
+            "using GitLab's API. " \
+            "For example: " \
+            "- Post FP analysis: post_sast_fp_analysis_to_gitlab( " \
+            "vulnerability_id=123, " \
+            "false_positive_likelihood=85, " \
+            "explanation=\"This appears to be a false positive because " \
+            "the input is not user-controlled.\" " \
+            ")"
+        },
+        {
+          id: 87,
+          name: "post_duo_code_review",
+          title: "Post Duo Code Review",
+          description: "Post a Duo Code Review to a merge request. " \
+            "Example: post_duo_code_review(project_id=123, merge_request_iid=45, " \
+            "review_output=\"<review>...</review>\")"
         }
       ].freeze
     end
