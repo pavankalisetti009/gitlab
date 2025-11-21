@@ -68,11 +68,27 @@ describe('NavigationRail', () => {
     expect(findSessionsToggle().attributes('aria-selected')).toBeUndefined();
   });
 
-  it('switches active tabs when a mode toggle is clicked', async () => {
-    createComponent({ activeTab: 'suggestions' });
-    await findChatToggle().trigger('click');
+  describe('when buttons are clicked', () => {
+    it.each`
+      buttonName       | finder                           | expectedEvent        | expectedPayload
+      ${'chat'}        | ${() => findChatToggle()}        | ${'handleTabToggle'} | ${'chat'}
+      ${'history'}     | ${() => findHistoryToggle()}     | ${'handleTabToggle'} | ${'history'}
+      ${'sessions'}    | ${() => findSessionsToggle()}    | ${'handleTabToggle'} | ${'sessions'}
+      ${'suggestions'} | ${() => findSuggestionsToggle()} | ${'handleTabToggle'} | ${'suggestions'}
+    `(
+      'emits $expectedEvent with "$expectedPayload" when $buttonName is clicked',
+      async ({ finder, expectedEvent, expectedPayload }) => {
+        await finder().vm.$emit('click');
 
-    expect(wrapper.emitted('handleTabToggle')).toEqual([['chat']]);
+        expect(wrapper.emitted(expectedEvent)).toEqual([[expectedPayload]]);
+      },
+    );
+
+    it('emits new-chat event when new button is clicked', async () => {
+      await findNewChatButton().vm.$emit('new-chat');
+
+      expect(wrapper.emitted('new-chat')).toHaveLength(1);
+    });
   });
 
   it('does not show keyshortcuts when shortcuts are disabled', () => {
@@ -168,11 +184,16 @@ describe('NavigationRail', () => {
   });
 
   describe('new chat button', () => {
-    it('emits starts new chat when a new agent is selected', () => {
-      const mockAgent = { id: 'agent1', name: 'Test Agent' };
-      findNewChatButton().vm.$emit('startNewChat', mockAgent);
+    const mockAgent = { id: 'agent1', name: 'Test Agent' };
 
-      expect(wrapper.emitted('startNewChat')).toEqual([[mockAgent]]);
+    describe('when a new agent is selected', () => {
+      beforeEach(() => {
+        findNewChatButton().vm.$emit('new-chat', mockAgent);
+      });
+
+      it('emits starts new chat when a new agent is selected', () => {
+        expect(wrapper.emitted('new-chat')).toEqual([[mockAgent]]);
+      });
     });
 
     it('shows error if new agent cannot be selected', () => {

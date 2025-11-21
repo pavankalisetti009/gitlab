@@ -1,4 +1,6 @@
-import { GlButton } from '@gitlab/ui';
+import Vue, { nextTick } from 'vue';
+import VueApollo from 'vue-apollo';
+import { GlButton, GlDisclosureDropdown } from '@gitlab/ui';
 import { createMockDirective } from 'helpers/vue_mock_directive';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -14,6 +16,8 @@ import {
 } from '../duo_agentic_chat/components/mock_data';
 
 const disabledTooltipText = 'An administrator has turned off GitLab Duo for this project.';
+
+Vue.use(VueApollo);
 
 describe('NewChatButton', () => {
   let wrapper;
@@ -60,21 +64,109 @@ describe('NewChatButton', () => {
   };
 
   const findNewToggle = () => wrapper.findByTestId('ai-new-toggle');
+  const findAgentDropdown = () => wrapper.findComponent(GlDisclosureDropdown);
+
+  describe('when there are multiple agents', () => {
+    beforeEach(async () => {
+      await createComponent();
+    });
+
+    it('renders dropdown instead of button', () => {
+      expect(findAgentDropdown().exists()).toBe(true);
+      expect(findNewToggle().exists()).toBe(false);
+    });
+
+    describe('when an agent is selected', () => {
+      const mockAgent = {
+        id: 'gid://gitlab/Ai::FoundationalChatAgent/chat',
+        name: 'GitLab Duo Agent',
+        description: 'Duo is your general development assistant',
+      };
+
+      beforeEach(async () => {
+        findAgentDropdown().vm.$emit('action', mockAgent);
+        await nextTick();
+      });
+
+      it('emits new-chat event with the agent as payload', () => {
+        expect(wrapper.emitted('new-chat')).toEqual([[mockAgent]]);
+      });
+    });
+  });
+
+  describe('when there is only one agent or no agents', () => {
+    beforeEach(async () => {
+      aiFoundationalChatAgentsQueryMock.mockResolvedValue({
+        data: { aiFoundationalChatAgents: { nodes: [] } },
+      });
+      configuredAgentsQueryMock.mockResolvedValue({
+        data: { aiCatalogConfiguredItems: { nodes: [] } },
+      });
+
+      await createComponent();
+    });
+
+    it('renders button instead of dropdown', () => {
+      expect(findNewToggle().exists()).toBe(true);
+      expect(findAgentDropdown().exists()).toBe(false);
+    });
+
+    describe('when button is clicked', () => {
+      beforeEach(async () => {
+        await findNewToggle().trigger('click');
+      });
+
+      it('emits new-chat event', () => {
+        expect(wrapper.emitted('new-chat')).toHaveLength(1);
+      });
+    });
+  });
+
+  describe('when Apollo queries fail', () => {
+    describe('for catalog agents query', () => {
+      const error = new Error('Catalog agents query failed');
+
+      beforeEach(async () => {
+        configuredAgentsQueryMock.mockRejectedValueOnce(error);
+
+        await createComponent();
+      });
+
+      it('emits newChatError with error payload', () => {
+        expect(wrapper.emitted('newChatError')).toEqual([[error]]);
+      });
+    });
+
+    describe('for foundational agents query error', () => {
+      const error = new Error('Foundational agents query failed');
+
+      beforeEach(async () => {
+        aiFoundationalChatAgentsQueryMock.mockRejectedValue(error);
+
+        await createComponent();
+      });
+
+      it('emits newChatError wutg error payload', () => {
+        expect(wrapper.emitted('newChatError')).toEqual([[error]]);
+      });
+    });
+  });
 
   describe('when chat is disabled', () => {
-    beforeEach(() => {
-      createComponent({ isChatDisabled: true, chatDisabledTooltip: disabledTooltipText });
+    beforeEach(async () => {
+      aiFoundationalChatAgentsQueryMock.mockResolvedValue({
+        data: { aiFoundationalChatAgents: { nodes: [] } },
+      });
+      configuredAgentsQueryMock.mockResolvedValue({
+        data: { aiCatalogConfiguredItems: { nodes: [] } },
+      });
+
+      await createComponent({ isChatDisabled: true, chatDisabledTooltip: disabledTooltipText });
     });
 
     it('sets aria-disabled', () => {
       expect(findNewToggle().attributes('aria-disabled')).toBe('true');
       expect(findNewToggle().classes()).toContain('gl-opacity-5');
-    });
-
-    it('prevents tab toggle when clicking disabled buttons', async () => {
-      await findNewToggle().trigger('click');
-
-      expect(wrapper.emitted('handleTabToggle')).toBeUndefined();
     });
 
     it('shows disabled tooltip', () => {

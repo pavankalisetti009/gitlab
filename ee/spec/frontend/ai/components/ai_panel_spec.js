@@ -142,14 +142,40 @@ describe('AiPanel', () => {
       expect(Cookies.get(aiPanelStateCookie)).toBe(undefined);
     });
 
-    it('closes the panel when same tab is toggled twice', async () => {
-      createComponent();
-      findNavigationRail().vm.$emit('handleTabToggle', 'chat');
-      await nextTick();
-      findNavigationRail().vm.$emit('handleTabToggle', 'chat');
-      await nextTick();
-      expect(findContentContainer().exists()).toBe(false);
-      expect(Cookies.get(aiPanelStateCookie)).toBe(undefined);
+    describe('when tabs are toggled twice', () => {
+      it.each(['chat', 'suggestions', 'sessions', 'history'])(
+        'closes the panel for %s tab',
+        async (tabName) => {
+          createComponent();
+          findNavigationRail().vm.$emit('handleTabToggle', tabName);
+          await nextTick();
+          findNavigationRail().vm.$emit('handleTabToggle', tabName);
+          await nextTick();
+
+          expect(findContentContainer().exists()).toBe(false);
+          expect(Cookies.get(aiPanelStateCookie)).toBe(undefined);
+        },
+      );
+
+      it('keeps the panel open for new chat', async () => {
+        createComponent();
+        findNavigationRail().vm.$emit('new-chat');
+        await nextTick();
+        findNavigationRail().vm.$emit('new-chat');
+        await nextTick();
+
+        expect(findContentContainer().exists()).toBe(true);
+        expect(findContentContainer().props('activeTab')).toEqual({
+          title: 'New Chat',
+          component: DuoAgenticChat,
+          props: {
+            mode: 'new',
+            isAgenticAvailable: true,
+            isEmbedded: true,
+            showStudioHeader: true,
+          },
+        });
+      });
     });
 
     describe('expansion', () => {
@@ -207,81 +233,152 @@ describe('AiPanel', () => {
   });
 
   describe('panels', () => {
-    it('chat', async () => {
-      createComponent();
-
-      expect(getContentComponentMock).not.toHaveBeenCalled();
-
-      findNavigationRail().vm.$emit('handleTabToggle', 'chat');
-      await nextTick();
-
-      expect(getContentComponentMock).toHaveBeenCalled();
-      expect(findContentContainer().props('activeTab')).toEqual({
-        title: 'GitLab Duo Agentic Chat',
-        component: DuoAgenticChat,
-        props: {
-          mode: 'active',
-          isAgenticAvailable: true,
-          isEmbedded: true,
-          showStudioHeader: true,
-        },
-      });
-      expect(Cookies.get(aiPanelStateCookie)).toBe('chat');
-    });
-
-    it('suggestions', async () => {
-      createComponent();
-      findNavigationRail().vm.$emit('handleTabToggle', 'suggestions');
-      await nextTick();
-
-      expect(getContentComponentMock).not.toHaveBeenCalled();
-      expect(findContentContainer().props('activeTab')).toEqual({
-        title: 'Suggestions',
-        component: 'Suggestions content placeholder',
-      });
-      expect(Cookies.get(aiPanelStateCookie)).toBe('suggestions');
-    });
-
-    describe('sessions', () => {
-      it('shows panel', async () => {
+    it.each(['chat', 'suggestions', 'sessions'])(
+      'stores %s tab in cookie when toggled',
+      async (tabName) => {
         createComponent();
-        findNavigationRail().vm.$emit('handleTabToggle', 'sessions');
+        findNavigationRail().vm.$emit('handleTabToggle', tabName);
         await nextTick();
 
-        expect(getContentComponentMock).not.toHaveBeenCalled();
-        expect(findContentContainer().props('activeTab')).toEqual({
-          title: 'Sessions',
-          component: AgentSessionsRoot,
-          initialRoute: '/agent-sessions/',
+        expect(Cookies.get(aiPanelStateCookie)).toBe(tabName);
+      },
+    );
+
+    describe('router navigation', () => {
+      describe('when chat tab is toggled', () => {
+        it('navigates to root', async () => {
+          createComponent();
+          findNavigationRail().vm.$emit('handleTabToggle', 'chat');
+          await nextTick();
+
+          expect(mockRouter.push).toHaveBeenCalledWith('/');
         });
-        expect(Cookies.get(aiPanelStateCookie)).toBe('sessions');
       });
 
-      describe('when on agents platform show route', () => {
-        it('formats session title with agent flow name', async () => {
+      describe('when suggestions tab is toggled', () => {
+        it('navigates to root', async () => {
+          createComponent();
+          findNavigationRail().vm.$emit('handleTabToggle', 'suggestions');
+          await nextTick();
+
+          expect(mockRouter.push).toHaveBeenCalledWith('/');
+        });
+      });
+
+      describe('when history tab is toggled', () => {
+        it('navigates to root', async () => {
+          createComponent();
+          findNavigationRail().vm.$emit('handleTabToggle', 'history');
+          await nextTick();
+
+          expect(mockRouter.push).toHaveBeenCalledWith('/');
+        });
+      });
+
+      describe('when sessions tab is toggled', () => {
+        it('navigates to initialRoute', async () => {
+          createComponent();
+          findNavigationRail().vm.$emit('handleTabToggle', 'sessions');
+          await nextTick();
+
+          expect(mockRouter.push).toHaveBeenCalledWith('/agent-sessions/');
+        });
+      });
+
+      describe('when new chat is triggered', () => {
+        it('navigates to root', async () => {
+          createComponent();
+          findNavigationRail().vm.$emit('new-chat');
+          await nextTick();
+
+          expect(mockRouter.push).toHaveBeenCalledWith('/');
+        });
+      });
+    });
+
+    describe('when chat tab is toggled', () => {
+      beforeEach(async () => {
+        createComponent();
+        findNavigationRail().vm.$emit('handleTabToggle', 'chat');
+        await nextTick();
+      });
+
+      it('calls getContentComponent', () => {
+        expect(getContentComponentMock).toHaveBeenCalled();
+      });
+
+      it('shows chat panel with correct configuration', () => {
+        expect(findContentContainer().props('activeTab')).toEqual({
+          title: 'GitLab Duo Agentic Chat',
+          component: DuoAgenticChat,
+          props: {
+            mode: 'active',
+            isAgenticAvailable: true,
+            isEmbedded: true,
+            showStudioHeader: true,
+          },
+        });
+      });
+    });
+
+    describe('when suggestions tab is toggled', () => {
+      beforeEach(async () => {
+        createComponent();
+        findNavigationRail().vm.$emit('handleTabToggle', 'suggestions');
+        await nextTick();
+      });
+
+      it('does not call getContentComponent', () => {
+        expect(getContentComponentMock).not.toHaveBeenCalled();
+      });
+
+      it('shows suggestions panel', () => {
+        expect(findContentContainer().props('activeTab')).toEqual({
+          title: 'Suggestions',
+          component: 'Suggestions content placeholder',
+        });
+      });
+    });
+
+    describe('when sessions tab is toggled', () => {
+      describe('and on agents platform show route', () => {
+        beforeEach(async () => {
           createComponent({
             routeName: AGENTS_PLATFORM_SHOW_ROUTE,
             routeParams: { id: '123' },
           });
           findNavigationRail().vm.$emit('handleTabToggle', 'sessions');
           await nextTick();
+        });
 
-          expect(getContentComponentMock).not.toHaveBeenCalled();
+        it('formats session title with agent flow name', () => {
           expect(findContentContainer().props('activeTab').title).toBe('Agent session #123');
+        });
+
+        it('shows sessions panel with correct component', () => {
+          expect(findContentContainer().props('activeTab').component).toBe(AgentSessionsRoot);
         });
       });
 
-      describe('when not on agents platform show route', () => {
-        it('uses default Sessions title', async () => {
+      describe('and not on agents platform show route', () => {
+        beforeEach(async () => {
           createComponent({
-            activeTab: 'sessions',
             routeName: 'some_other_route',
           });
           findNavigationRail().vm.$emit('handleTabToggle', 'sessions');
           await nextTick();
+        });
 
-          expect(getContentComponentMock).not.toHaveBeenCalled();
+        it('uses default Sessions title', () => {
           expect(findContentContainer().props('activeTab').title).toBe('Sessions');
+        });
+
+        it('shows sessions panel with correct configuration', () => {
+          expect(findContentContainer().props('activeTab')).toEqual({
+            title: 'Sessions',
+            component: AgentSessionsRoot,
+            initialRoute: '/agent-sessions/',
+          });
         });
       });
     });
@@ -579,78 +676,68 @@ describe('AiPanel', () => {
   });
 
   describe('tab configuration', () => {
-    it('returns chat tab with mode "active" when chat tab is selected', async () => {
-      createComponent();
-      findNavigationRail().vm.$emit('handleTabToggle', 'chat');
-      await nextTick();
-
-      expect(findContentContainer().props('activeTab')).toEqual({
-        title: 'GitLab Duo Agentic Chat',
-        component: DuoAgenticChat,
-        props: {
-          mode: 'active',
-          isAgenticAvailable: true,
-          isEmbedded: true,
-          showStudioHeader: true,
-        },
+    describe('when chat tab is selected', () => {
+      beforeEach(async () => {
+        createComponent();
+        findNavigationRail().vm.$emit('handleTabToggle', 'chat');
+        await nextTick();
+      });
+      it('returns chat tab with mode "active"', () => {
+        expect(findContentContainer().props('activeTab')).toEqual({
+          title: 'GitLab Duo Agentic Chat',
+          component: DuoAgenticChat,
+          props: {
+            mode: 'active',
+            isAgenticAvailable: true,
+            isEmbedded: true,
+            showStudioHeader: true,
+          },
+        });
       });
     });
 
-    it('keeps the panel open if + tab is toggled twice', async () => {
-      createComponent();
+    describe('when the new chat tab becomes active', () => {
+      beforeEach(async () => {
+        createComponent();
+        findNavigationRail().vm.$emit('new-chat');
+        await nextTick();
+      });
 
-      findNavigationRail().vm.$emit('handleTabToggle', 'new');
-      await nextTick();
-      findNavigationRail().vm.$emit('handleTabToggle', 'new');
-      await nextTick();
+      it('calls getContentComponent', () => {
+        expect(getContentComponentMock).toHaveBeenCalled();
+      });
 
-      expect(findContentContainer().exists()).toBe(true);
-      expect(findContentContainer().props('activeTab')).toEqual({
-        title: 'New Chat',
-        component: DuoAgenticChat,
-        props: {
-          mode: 'new',
-          isAgenticAvailable: true,
-          isEmbedded: true,
-          showStudioHeader: true,
-        },
+      it('returns new chat tab with mode "new"', () => {
+        expect(findContentContainer().props('activeTab')).toEqual({
+          title: 'New Chat',
+          component: DuoAgenticChat,
+          props: {
+            mode: 'new',
+            isAgenticAvailable: true,
+            isEmbedded: true,
+            showStudioHeader: true,
+          },
+        });
       });
     });
 
-    it('returns new chat tab with mode "new"', async () => {
-      createComponent();
-
-      expect(getContentComponentMock).not.toHaveBeenCalled();
-
-      findNavigationRail().vm.$emit('handleTabToggle', 'new');
-      await nextTick();
-
-      expect(findContentContainer().props('activeTab')).toEqual({
-        title: 'New Chat',
-        component: DuoAgenticChat,
-        props: {
-          mode: 'new',
-          isAgenticAvailable: true,
-          isEmbedded: true,
-          showStudioHeader: true,
-        },
+    describe('when history becomes active', () => {
+      beforeEach(async () => {
+        createComponent();
+        findNavigationRail().vm.$emit('handleTabToggle', 'history');
+        await nextTick();
       });
-    });
-
-    it('returns history tab with mode "history"', async () => {
-      createComponent();
-      findNavigationRail().vm.$emit('handleTabToggle', 'history');
-      await nextTick();
-
-      expect(findContentContainer().props('activeTab')).toEqual({
-        title: 'History',
-        component: DuoAgenticChat,
-        props: {
-          mode: 'history',
-          isAgenticAvailable: true,
-          isEmbedded: true,
-          showStudioHeader: true,
-        },
+      it('returns history tab with mode "history"', () => {
+        expect(findContentContainer().props('activeTab')).toEqual({
+          title: 'History',
+          component: DuoAgenticChat,
+          props: {
+            mode: 'history',
+            isAgenticAvailable: true,
+            isEmbedded: true,
+            showStudioHeader: true,
+          },
+        });
       });
     });
   });
@@ -718,7 +805,7 @@ describe('AiPanel', () => {
         await nextTick();
         expect(findContentContainer().props('activeTab').component).toBe(DuoChat);
 
-        findNavigationRail().vm.$emit('handleTabToggle', 'new');
+        findNavigationRail().vm.$emit('new-chat');
         await nextTick();
         expect(findContentContainer().props('activeTab').component).toBe(DuoChat);
         expect(findContentContainer().props('activeTab').title).toBe('New Chat');
@@ -737,7 +824,7 @@ describe('AiPanel', () => {
         await nextTick();
         expect(findContentContainer().props('activeTab').component).toBe(DuoAgenticChat);
 
-        findNavigationRail().vm.$emit('handleTabToggle', 'new');
+        findNavigationRail().vm.$emit('new-chat');
         await nextTick();
         expect(findContentContainer().props('activeTab').component).toBe(DuoAgenticChat);
         expect(findContentContainer().props('activeTab').title).toBe('New Chat');
