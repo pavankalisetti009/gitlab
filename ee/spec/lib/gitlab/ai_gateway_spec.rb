@@ -134,6 +134,26 @@ RSpec.describe Gitlab::AiGateway, feature_category: :system_access do
     end
   end
 
+  describe '.timeout' do
+    context 'when ai_gateway_timeout_seconds is set' do
+      it 'returns the configured timeout in seconds' do
+        ai_setting.update!(ai_gateway_timeout_seconds: 120)
+
+        expect(described_class.timeout).to eq(120.seconds)
+      end
+    end
+
+    context 'when ai_setting instance is nil' do
+      let(:ai_setting) { nil }
+
+      it 'returns the default timeout of 60 seconds' do
+        allow(Ai::Setting).to receive(:instance).and_return(nil)
+
+        expect(described_class.timeout).to eq(60.seconds)
+      end
+    end
+  end
+
   describe '.has_self_hosted_ai_gateway?' do
     subject(:has_self_hosted_ai_gateway) { described_class.has_self_hosted_ai_gateway? }
 
