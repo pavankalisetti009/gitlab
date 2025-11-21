@@ -182,7 +182,7 @@ export default {
       </div>
     </div>
     <div
-      class="ai-panel-body gl-grow gl-flex-wrap gl-justify-center gl-overflow-auto gl-text-secondary"
+      class="ai-panel-body gl-grow gl-flex-wrap gl-justify-center gl-overflow-auto"
       :class="{ 'gl-flex gl-min-h-full': typeof activeTab.component === 'string' }"
     >
       <div
