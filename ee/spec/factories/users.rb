@@ -54,6 +54,10 @@ FactoryBot.modify do
         create(:compromised_password_detection, user: user)
       end
     end
+
+    transient do
+      skip_ai_prefix_validation { nil }
+    end
   end
 
   factory :omniauth_user do
