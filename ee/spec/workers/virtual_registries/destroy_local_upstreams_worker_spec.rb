@@ -31,6 +31,28 @@ RSpec.describe VirtualRegistries::DestroyLocalUpstreamsWorker, :aggregate_failur
     expect(described_class.get_urgency).to eq(:low)
   end
 
+  it_behaves_like 'subscribes to event' do
+    let(:event) { project_deleted_event }
+  end
+
+  it_behaves_like 'subscribes to event' do
+    let(:event) { group_deleted_event }
+  end
+
+  context 'when dependency proxy is disabled' do
+    before do
+      stub_config(dependency_proxy: { enabled: false })
+    end
+
+    it_behaves_like 'ignores the published event' do
+      let(:event) { project_deleted_event }
+    end
+
+    it_behaves_like 'ignores the published event' do
+      let(:event) { group_deleted_event }
+    end
+  end
+
   describe '#handle_event' do
     shared_examples 'not removing any maven upstream' do
       it 'does not remove any maven upstream' do

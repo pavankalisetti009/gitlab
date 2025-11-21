@@ -109,4 +109,19 @@ RSpec.describe Gitlab::EventStore, feature_category: :shared do
       described_class.publish_group(events)
     end
   end
+
+  describe 'virtual registries subscriptions' do
+    expected_subscriptions = {
+      ::Projects::ProjectDeletedEvent => ::VirtualRegistries::DestroyLocalUpstreamsWorker,
+      ::Groups::GroupDeletedEvent => ::VirtualRegistries::DestroyLocalUpstreamsWorker
+    }
+
+    subscriptions = described_class.instance.subscriptions
+
+    expected_subscriptions.each do |event_class, worker_class|
+      it "subscribes #{worker_class} to #{event_class}" do
+        expect(subscriptions[event_class]).to include(have_attributes(worker: worker_class))
+      end
+    end
+  end
 end
