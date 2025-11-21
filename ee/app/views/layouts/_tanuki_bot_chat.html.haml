@@ -18,10 +18,11 @@
     metadata: Gitlab::DuoWorkflow::Client.metadata(current_user).to_json,
     user_model_selection_enabled: user_model_selection_enabled.to_s } }
 
-#js-tanuki-bot-chat-app{ data: {
-  user_id: current_user.to_global_id,
-  resource_id: resource_id,
-  project_id: project_id,
-  root_namespace_id: root_namespace_id,
-  chat_title: chat_title,
-  agentic_available: is_agentic_available.to_s } }
+- if !project_studio_enabled?
+  #js-tanuki-bot-chat-app{ data: {
+    user_id: current_user.to_global_id,
+    resource_id: resource_id,
+    project_id: project_id,
+    root_namespace_id: root_namespace_id,
+    chat_title: chat_title,
+    agentic_available: is_agentic_available.to_s } }
