@@ -37,7 +37,7 @@ RSpec.describe 'AiCatalogItemReport', feature_category: :workflow_catalog do
   end
 
   shared_examples 'schedules email delivery' do
-    it 'schedules the abuse report email and returns success', :aggregate_failures do
+    it 'schedules the abuse report email and returns success', :aggregate_failures, :clean_gitlab_redis_rate_limiting do
       expected_reason = reason.downcase
 
       expect { resolve }.to have_enqueued_mail(Ai::CatalogItemAbuseReportMailer, :notify)
@@ -200,6 +200,54 @@ RSpec.describe 'AiCatalogItemReport', feature_category: :workflow_catalog do
       end
 
       it_behaves_like 'denies access and does not schedule email'
+    end
+  end
+
+  describe 'rate limiting', :clean_gitlab_redis_rate_limiting do
+    let(:current_user) { developer }
+    let(:catalog_item) { public_catalog_item }
+
+    context 'when rate limit is not exceeded' do
+      it 'allows the report and schedules email delivery', :aggregate_failures do
+        expect { resolve }.to have_enqueued_mail(Ai::CatalogItemAbuseReportMailer, :notify)
+
+        expect(response).to have_gitlab_http_status(:success)
+        expect(mutation_response['errors']).to be_empty
+      end
+    end
+
+    context 'when rate limit is exceeded' do
+      before do
+        10.times do
+          Gitlab::ApplicationRateLimiter.throttled?(:ai_catalog_item_report, scope: current_user)
+        end
+      end
+
+      it 'returns an error and does not schedule email delivery', :aggregate_failures do
+        expect { resolve }.not_to have_enqueued_mail(Ai::CatalogItemAbuseReportMailer, :notify)
+
+        expect(response).to have_gitlab_http_status(:success)
+        expect(mutation_response['errors']).to contain_exactly(
+          'You have reported this item too many times. Please try again later.'
+        )
+      end
+    end
+
+    context 'when different users report' do
+      let_it_be(:another_user) { create(:user, developer_of: project) }
+
+      it 'allows different users to report independently', :aggregate_failures do
+        10.times do
+          Gitlab::ApplicationRateLimiter.throttled?(:ai_catalog_item_report, scope: current_user)
+        end
+
+        expect do
+          post_graphql_mutation(mutation, current_user: another_user)
+        end.to have_enqueued_mail(Ai::CatalogItemAbuseReportMailer, :notify)
+
+        expect(response).to have_gitlab_http_status(:success)
+        expect(mutation_response['errors']).to be_empty
+      end
     end
   end
 end

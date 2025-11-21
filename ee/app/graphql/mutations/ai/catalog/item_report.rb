@@ -24,6 +24,12 @@ module Mutations
         def resolve(id:, reason:, body: nil)
           item = authorized_find!(id: id)
 
+          if Gitlab::ApplicationRateLimiter.throttled?(:ai_catalog_item_report, scope: current_user)
+            return {
+              errors: ['You have reported this item too many times. Please try again later.']
+            }
+          end
+
           if reason == 'other' && body.blank?
             return {
               errors: ['Additional details are required when reason is OTHER']

@@ -11,6 +11,7 @@ module EE
         override :rate_limits
         def rate_limits
           super.merge({
+            ai_catalog_item_report: { threshold: 10, interval: 1.minute },
             unique_project_downloads_for_application: {
               threshold: -> { application_settings.max_number_of_repository_downloads },
               interval: -> { application_settings.max_number_of_repository_downloads_within_time_period }
