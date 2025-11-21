@@ -39,6 +39,8 @@ module VirtualRegistries
       end
     end
 
+    private
+
     def id_field(klass)
       EVENT_MAPPING.dig(klass, :id_field)
     end

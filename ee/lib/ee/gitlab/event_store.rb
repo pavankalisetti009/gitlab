@@ -69,6 +69,7 @@ module EE
           register_threat_insights_subscribers(store)
           register_security_policy_subscribers(store)
           register_autoflow_subscribers(store)
+          register_virtual_registries_subscribers(store)
 
           subscribe_to_external_issue_links_events(store)
           subscribe_to_work_item_events(store)
@@ -364,6 +365,15 @@ module EE
           store.subscribe ::Clusters::Agents::AutoFlow::MergeRequests::ReopenedEventWorker,
             to: ::MergeRequests::ReopenedEvent,
             if: ->(event) { ::Clusters::Agents::AutoFlow.merge_request_events_enabled?(event.data[:merge_request_id]) }
+        end
+
+        def register_virtual_registries_subscribers(store)
+          store.subscribe ::VirtualRegistries::DestroyLocalUpstreamsWorker,
+            to: ::Projects::ProjectDeletedEvent,
+            if: ->(_) { ::Gitlab.config.dependency_proxy.enabled }
+          store.subscribe ::VirtualRegistries::DestroyLocalUpstreamsWorker,
+            to: ::Groups::GroupDeletedEvent,
+            if: ->(_) { ::Gitlab.config.dependency_proxy.enabled }
         end
 
         def subscribe_to_analytics_events(store)
