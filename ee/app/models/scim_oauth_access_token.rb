@@ -5,9 +5,12 @@ class ScimOauthAccessToken < ApplicationRecord
 
   TOKEN_PREFIX = 'glsoat-'
 
+  belongs_to :organization, class_name: 'Organizations::Organization', optional: true
   belongs_to :group, optional: true
 
   add_authentication_token_field :token, encrypted: :required, format_with_prefix: :prefix_for_token
+
+  validates :organization_id, presence: true, on: :create, if: -> { group_id.blank? }
 
   before_save :ensure_token
 

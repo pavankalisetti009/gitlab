@@ -7,7 +7,7 @@ RSpec.describe API::Scim::InstanceScim, feature_category: :system_access do
 
   let_it_be(:organization) { create(:organization) }
   let(:user) { create(:user, organizations: [organization]) }
-  let(:scim_token) { create(:scim_oauth_access_token, group: nil) }
+  let(:scim_token) { create(:scim_oauth_access_token, group: nil, organization: organization) }
 
   before do
     stub_licensed_features(instance_level_scim: true)

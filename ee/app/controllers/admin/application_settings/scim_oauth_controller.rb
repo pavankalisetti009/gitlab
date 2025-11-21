@@ -8,7 +8,13 @@ module Admin
 
       # rubocop: disable CodeReuse/ActiveRecord
       def create
-        scim_token = ScimOauthAccessToken.find_or_initialize_by(group: nil)
+        scim_token = ScimOauthAccessToken.find_or_initialize_by(group: nil) do |token|
+          # rubocop:disable Gitlab/AvoidCurrentOrganization -- Instance SCIM tokens need current organization
+          current_organization = Current.organization_assigned && Current.organization
+          token.organization_id = current_organization.presence&.id ||
+            Organizations::Organization::DEFAULT_ORGANIZATION_ID
+          # rubocop:enable Gitlab/AvoidCurrentOrganization
+        end
 
         if scim_token.new_record?
           scim_token.save

@@ -43,6 +43,35 @@ RSpec.describe Admin::ApplicationSettings::ScimOauthController, feature_category
             expect(json_response['scim_token']).to be_present
           end
 
+          it 'sets organization_id' do
+            expect { send_request }.to change { ScimOauthAccessToken.count }.by(1)
+
+            token = ScimOauthAccessToken.last
+            expect(token.organization_id).to be_present
+          end
+
+          context 'when current organization is not set' do
+            let_it_be(:default_organization) do
+              Organizations::Organization.find_or_create_by!(
+                id: Organizations::Organization::DEFAULT_ORGANIZATION_ID
+              ) do |org|
+                org.name = 'Default'
+                org.path = 'default'
+              end
+            end
+
+            before do
+              allow(Current).to receive(:organization_assigned).and_return(false)
+            end
+
+            it 'sets organization_id to default organization' do
+              expect { send_request }.to change { ScimOauthAccessToken.count }.by(1)
+
+              token = ScimOauthAccessToken.last
+              expect(token.organization_id).to eq(Organizations::Organization::DEFAULT_ORGANIZATION_ID)
+            end
+          end
+
           context 'when a token already exists' do
             let(:existing_token) { create(:scim_oauth_access_token, group: nil) }
 
