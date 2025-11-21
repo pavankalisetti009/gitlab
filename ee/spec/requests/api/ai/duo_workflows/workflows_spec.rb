@@ -1051,6 +1051,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
             "Headers" => {
               "Authorization" => "Bearer oauth_token"
             },
+            "PreApprovedTools" => enabled_mcp_tools,
             "Tools" => enabled_mcp_tools
           }
         })
