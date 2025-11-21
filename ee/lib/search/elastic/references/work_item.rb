@@ -12,8 +12,7 @@ module Search
         # The schema_version method dynamically selects the highest version whose migration
         # has completed (or nil), preventing indexing with incomplete schema changes.
         SCHEMA_VERSIONS = {
-          25_44 => :index_work_items_milestone_state,
-          25_27 => nil
+          25_44 => nil
         }.freeze
 
         # Backwards compatibility constant - returns the latest schema version available.
@@ -207,10 +206,7 @@ module Search
 
           milestone_data['milestone_start_date'] = target.milestone&.start_date
           milestone_data['milestone_due_date'] = target.milestone&.due_date
-
-          if ::Elastic::DataMigrationService.migration_has_finished?(:index_work_items_milestone_state)
-            milestone_data['milestone_state'] = target.milestone&.state
-          end
+          milestone_data['milestone_state'] = target.milestone&.state
 
           milestone_data
         end
