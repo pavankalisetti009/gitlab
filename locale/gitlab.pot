@@ -6630,6 +6630,9 @@ msgstr ""
 msgid "AggregationEngine|at least one metric is required"
 msgstr ""
 
+msgid "AggregationEngine|duplicated identifier found: %{identifier}"
+msgstr ""
+
 msgid "AggregationEngine|maximum two dimensions are supported"
 msgstr ""
 
