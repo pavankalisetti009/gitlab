@@ -3786,6 +3786,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: security_attributes_process_project_transfer_events
+  :worker_name: Security::Attributes::ProcessProjectTransferEventsWorker
+  :feature_category: :security_asset_inventories
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: security_collect_policies_limit_audit_events
   :worker_name: Security::CollectPoliciesLimitAuditEventsWorker
   :feature_category: :security_policy_management
