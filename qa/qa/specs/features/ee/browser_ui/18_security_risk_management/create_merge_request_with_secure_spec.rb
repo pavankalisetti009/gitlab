@@ -1,7 +1,10 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Security Risk Management', feature_category: :vulnerability_management do
+  RSpec.describe 'Security Risk Management', feature_category: :vulnerability_management, quarantine: {
+    issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/932',
+    type: :flaky
+  } do
     describe 'Security Reports in a Merge Request Widget' do
       let(:sast_vuln_count) { 8 }
       let(:dependency_scan_vuln_count) { 4 }
