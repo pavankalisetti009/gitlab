@@ -63,6 +63,7 @@ RSpec.describe GitlabSchema.types['Group'], feature_category: :groups_and_projec
   it { expect(described_class).to have_graphql_field(:compliance_frameworks_needing_attention) }
   it { expect(described_class).to have_graphql_field(:web_based_commit_signing_enabled) }
   it { expect(described_class).to have_graphql_field(:virtual_registries_packages_maven_upstreams) }
+  it { expect(described_class).to have_graphql_field(:virtual_registries_cleanup_policy) }
   it { expect(described_class).to have_graphql_field(:webhook) }
 
   describe 'components' do
@@ -531,6 +532,18 @@ RSpec.describe GitlabSchema.types['Group'], feature_category: :groups_and_projec
     end
 
     it { is_expected.to have_graphql_resolver(::Resolvers::VirtualRegistries::Packages::Maven::UpstreamsResolver) }
+  end
+
+  describe 'virtual_registries_cleanup_policy' do
+    subject { described_class.fields['virtualRegistriesCleanupPolicy'] }
+
+    it 'has connection type class' do
+      is_expected.to have_nullable_graphql_type(
+        ::Types::VirtualRegistries::Cleanup::PolicyType
+      )
+    end
+
+    it { is_expected.to have_graphql_resolver(::Resolvers::VirtualRegistries::Cleanup::PolicyResolver) }
   end
 
   describe 'virtual registries setting' do

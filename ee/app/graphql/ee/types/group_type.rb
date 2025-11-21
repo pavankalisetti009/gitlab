@@ -485,6 +485,16 @@ module EE
           resolver: ::Resolvers::VirtualRegistries::Packages::Maven::UpstreamsResolver,
           experiment: { milestone: '18.6' }
 
+        field :virtual_registries_cleanup_policy,
+          ::Types::VirtualRegistries::Cleanup::PolicyType,
+          null: true,
+          skip_type_authorization: :admin_virtual_registry,
+          description: 'Virtual registries cleanup policy of the group. ' \
+            'Returns null if the `maven_virtual_registry` or `virtual_registry_cleanup_policies`' \
+            'feature flag is disabled.',
+          resolver: ::Resolvers::VirtualRegistries::Cleanup::PolicyResolver,
+          experiment: { milestone: '18.7' }
+
         field :webhook, ::Types::WebHooks::GroupHookType,
           null: true,
           resolver: ::Resolvers::WebHooks::GroupHooksResolver.single,
