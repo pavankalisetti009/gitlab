@@ -64,6 +64,21 @@ RSpec.describe EE::Subscribable, feature_category: :team_planning do
           expect(new_subscription.subscribed).to eq(false)
         end
       end
+
+      context 'with other project-level subscriptions' do
+        let(:project) { create(:project, group: group) }
+        let(:issue) { create(:issue, project: project) }
+
+        let!(:issue_subscription) do
+          create(:subscription, user: user1, subscribable: issue, subscribed: true, project: project)
+        end
+
+        it 'does not update unrelated subscriptions' do
+          expect { unsubscribe }.to change { Subscription.count }.by(1)
+
+          expect(issue_subscription.reload.subscribed).to eq(true)
+        end
+      end
     end
 
     context 'when subscribable is an Epic' do
