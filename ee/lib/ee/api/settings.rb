@@ -12,7 +12,6 @@ module EE
           # rubocop:disable Metrics/CyclomaticComplexity
           # rubocop:disable Metrics/PerceivedComplexity
           # rubocop:disable Metrics/AbcSize
-
           override :filter_attributes_using_license
           def filter_attributes_using_license(attrs)
             unless ::License.feature_available?(:repository_mirrors)
@@ -103,6 +102,11 @@ module EE
 
             unless ::Gitlab::Saas.feature_available?(:pipl_compliance)
               attrs = attrs.except(:enforce_pipl_compliance)
+            end
+
+            # Prevent updating duo_features_enabled and duo_remote_flows_enabled on GitLab.com
+            if ::Gitlab::Saas.feature_available?(:gitlab_duo_saas_only)
+              attrs = attrs.except(:duo_features_enabled, :duo_remote_flows_enabled)
             end
 
             attrs

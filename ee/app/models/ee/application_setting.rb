@@ -375,6 +375,10 @@ module EE
         :duo_foundational_flows_enabled, :duo_sast_fp_detection_enabled,
         inclusion: { in: [true, false] }
 
+      validate :duo_settings_immutable_on_saas,
+        on: :update,
+        if: -> { ::Gitlab::Saas.feature_available?(:gitlab_duo_saas_only) }
+
       after_commit :update_personal_access_tokens_lifetime, if: :saved_change_to_max_personal_access_token_lifetime?
       after_commit :trigger_clickhouse_for_analytics_enabled_event
     end
@@ -874,6 +878,12 @@ module EE
       ::Gitlab::EventStore.publish(
         ::Analytics::ClickHouseForAnalyticsEnabledEvent.new(data: { enabled_at: updated_at.iso8601 })
       )
+    end
+
+    def duo_settings_immutable_on_saas
+      return unless duo_features_enabled_changed? || duo_remote_flows_enabled_changed?
+
+      errors.add(:base, 'Duo settings cannot be modified on GitLab.com')
     end
   end
 end
