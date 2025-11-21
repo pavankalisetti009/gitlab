@@ -63,14 +63,14 @@ export const getToolData = (toolMessage) => {
       title: s__('DuoAgentsPlatform|Search issues'),
       level: 0,
     },
-    get_issue: { icon: 'issue-type-issue', title: s__('DuoAgentsPlatform|Get issue'), level: 0 },
+    get_issue: { icon: 'work-item-issue', title: s__('DuoAgentsPlatform|Get issue'), level: 0 },
     create_merge_request: {
       icon: 'git-merge',
       title: s__('DuoAgentsPlatform|Create merge request'),
       level: 1,
     },
     list_issue_notes: {
-      icon: 'issue-type-issue',
+      icon: 'work-item-issue',
       title: s__('DuoAgentsPlatform|List comments'),
       level: 0,
     },
@@ -79,7 +79,7 @@ export const getToolData = (toolMessage) => {
 
   return (
     toolMap[toolName] || {
-      icon: 'issue-type-maintenance',
+      icon: 'work-item-maintenance',
       title: s__('DuoAgentsPlatform|Action'),
       level: 0,
     }
@@ -105,6 +105,6 @@ export const getMessageData = (message) => {
     case 'tool':
       return getToolData(message);
     default:
-      return { icon: 'issue-type-maintenance', title: s__('DuoAgentPlatform|Action'), level: 0 };
+      return { icon: 'work-item-maintenance', title: s__('DuoAgentPlatform|Action'), level: 0 };
   }
 };

@@ -61,7 +61,7 @@ export const GROUPS = [
   {
     text: s__('SecurityReports|Issue'),
     options: [ITEMS.HAS_ISSUE, ITEMS.DOES_NOT_HAVE_ISSUE],
-    icon: 'issue-type-issue',
+    icon: 'work-item-issue',
   },
   {
     text: s__('SecurityReports|Merge Request'),

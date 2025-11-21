@@ -126,7 +126,7 @@ export const workItemTaskEE = {
   workItemType: {
     id: 'gid://gitlab/WorkItems::Type/5',
     name: 'Task',
-    iconName: 'issue-type-task',
+    iconName: 'work-item-task',
     __typename: 'WorkItemType',
   },
   title: '_bar_',
@@ -166,7 +166,7 @@ export const workItemColorWidget = {
   workItemType: {
     id: 'gid://gitlab/WorkItems::Type/1',
     name: 'Epic',
-    iconName: 'issue-type-epic',
+    iconName: 'work-item-epic',
     __typename: 'WorkItemType',
   },
   widgets: [
@@ -225,7 +225,7 @@ export const namespaceWorkItemsWithoutEpicSupport = {
           {
             id: 'gid://gitlab/WorkItems::Type/1',
             name: 'Issue',
-            iconName: 'issue-type-issue',
+            iconName: 'work-item-issue',
             supportedConversionTypes: [
               {
                 id: 'gid://gitlab/WorkItems::Type/2',

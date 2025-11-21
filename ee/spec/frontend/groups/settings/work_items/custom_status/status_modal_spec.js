@@ -29,13 +29,13 @@ describe('StatusLifecycleModal', () => {
       {
         id: 'gid://gitlab/WorkItems::Type/1',
         name: 'Issue',
-        iconName: 'issue-type-issue',
+        iconName: 'work-item-issue',
         __typename: 'WorkItemType',
       },
       {
         id: 'gid://gitlab/WorkItems::Type/2',
         name: 'Task',
-        iconName: 'issue-type-task',
+        iconName: 'work-item-task',
         __typename: 'WorkItemType',
       },
     ],
@@ -467,13 +467,13 @@ describe('StatusLifecycleModal', () => {
           {
             id: 'gid://gitlab/WorkItems::Type/1',
             name: 'Issue',
-            iconName: 'issue-type-issue',
+            iconName: 'work-item-issue',
             __typename: 'WorkItemType',
           },
           {
             id: 'gid://gitlab/WorkItems::Type/5',
             name: 'Task',
-            iconName: 'issue-type-task',
+            iconName: 'work-item-task',
             __typename: 'WorkItemType',
           },
         ],
@@ -574,13 +574,13 @@ describe('StatusLifecycleModal', () => {
                     {
                       id: 'gid://gitlab/WorkItems::Type/1',
                       name: 'Issue',
-                      iconName: 'issue-type-issue',
+                      iconName: 'work-item-issue',
                       __typename: 'WorkItemType',
                     },
                     {
                       id: 'gid://gitlab/WorkItems::Type/5',
                       name: 'Task',
-                      iconName: 'issue-type-task',
+                      iconName: 'work-item-task',
                       __typename: 'WorkItemType',
                     },
                   ],
@@ -698,13 +698,13 @@ describe('StatusLifecycleModal', () => {
           {
             id: 'gid://gitlab/WorkItems::Type/1',
             name: 'Issue',
-            iconName: 'issue-type-issue',
+            iconName: 'work-item-issue',
             __typename: 'WorkItemType',
           },
           {
             id: 'gid://gitlab/WorkItems::Type/5',
             name: 'Task',
-            iconName: 'issue-type-task',
+            iconName: 'work-item-task',
             __typename: 'WorkItemType',
           },
         ],

@@ -27,9 +27,9 @@ RSpec.describe 'Change type action', :js, feature_category: :portfolio_managemen
         wait_for_all_requests
       end
 
-      it_behaves_like 'work items change type', 'Key result', '[data-testid="issue-type-keyresult-icon"]'
-      it_behaves_like 'work items change type', 'Issue', '[data-testid="issue-type-issue-icon"]'
-      it_behaves_like 'work items change type', 'Task', '[data-testid="issue-type-task-icon"]'
+      it_behaves_like 'work items change type', 'Key result', '[data-testid="work-item-keyresult-icon"]'
+      it_behaves_like 'work items change type', 'Issue', '[data-testid="work-item-issue-icon"]'
+      it_behaves_like 'work items change type', 'Task', '[data-testid="work-item-task-icon"]'
 
       context 'when objective has a child' do
         it 'does not allow changing the type' do
@@ -78,9 +78,9 @@ RSpec.describe 'Change type action', :js, feature_category: :portfolio_managemen
         wait_for_all_requests
       end
 
-      it_behaves_like 'work items change type', 'Objective', '[data-testid="issue-type-objective-icon"]'
-      it_behaves_like 'work items change type', 'Issue', '[data-testid="issue-type-issue-icon"]'
-      it_behaves_like 'work items change type', 'Task', '[data-testid="issue-type-task-icon"]'
+      it_behaves_like 'work items change type', 'Objective', '[data-testid="work-item-objective-icon"]'
+      it_behaves_like 'work items change type', 'Issue', '[data-testid="work-item-issue-icon"]'
+      it_behaves_like 'work items change type', 'Task', '[data-testid="work-item-task-icon"]'
 
       context 'when key result has a parent' do
         it 'does not allow changing type' do

@@ -36,7 +36,7 @@ describe('work items graphql cache utils', () => {
         widgetDefinitions: taskWidgetDefinitions,
         workItemType: 'Task',
         workItemTypeId: 'gid://gitlab/WorkItems::Type/5',
-        workItemTypeIconName: 'issue-type-task',
+        workItemTypeIconName: 'work-item-task',
       });
 
       await waitForPromises();

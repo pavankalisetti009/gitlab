@@ -28,7 +28,7 @@ RSpec.describe Groups::AutocompleteService, feature_category: :groups_and_projec
       it 'includes epic work item icon in list' do
         issues = subject.issues.map(&:icon_name)
 
-        expect(issues).to include('issue-type-issue', 'issue-type-epic')
+        expect(issues).to include('work-item-issue', 'work-item-epic')
       end
     end
   end
