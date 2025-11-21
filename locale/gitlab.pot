@@ -26160,9 +26160,6 @@ msgstr ""
 msgid "Embedded view timed out. Add more filters to reduce the number of results."
 msgstr ""
 
-msgid "Embedded view timed out. Try again later."
-msgstr ""
-
 msgid "Emoji"
 msgstr ""
 
@@ -70479,9 +70476,6 @@ msgstr ""
 msgid "Unable to load the merge request widget. Try reloading the page."
 msgstr ""
 
-msgid "Unable to load the next page."
-msgstr ""
-
 msgid "Unable to load user list. Reload the page and try again."
 msgstr ""
 
@@ -77588,6 +77582,9 @@ msgid "You do not have permission to unlock it"
 msgstr ""
 
 msgid "You do not have permission to update the environment."
+msgstr ""
+
+msgid "You do not have permission to view this embedded view."
 msgstr ""
 
 msgid "You do not have permissions to run the import."
