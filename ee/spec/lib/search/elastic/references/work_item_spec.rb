@@ -103,16 +103,6 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
       it 'serializes work_item as a hash' do
         expect(indexed_json).to match(expected_hash)
       end
-
-      context 'when index_work_items_milestone_state migration is not finished' do
-        before do
-          set_elasticsearch_migration_to(:index_work_items_milestone_state, including: false)
-        end
-
-        it 'does not contain the milestone_state field' do
-          expect(indexed_json.keys).not_to include('milestone_state')
-        end
-      end
     end
 
     describe 'project namespace work item' do
@@ -129,16 +119,6 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
 
       it 'serializes work_item as a hash' do
         expect(indexed_json).to match(expected_hash)
-      end
-
-      context 'when index_work_items_milestone_state migration is not finished' do
-        before do
-          set_elasticsearch_migration_to(:index_work_items_milestone_state, including: false)
-        end
-
-        it 'does not contain the milestone_state field' do
-          expect(indexed_json.keys).not_to include('milestone_state')
-        end
       end
     end
   end
@@ -190,20 +170,8 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
   describe '#schema_version' do
     subject(:work_item_reference) { described_class.new(work_item.id, work_item.es_parent) }
 
-    context 'when there are no finished migrations' do
-      before do
-        set_elasticsearch_migration_to(:index_work_items_milestone_state, including: false)
-      end
-
-      it 'returns the baseline schema version' do
-        expect(work_item_reference.schema_version).to eq(25_27)
-      end
-    end
-
-    context 'when index_work_items_milestone_state migration is finished' do
-      it 'returns the latest schema version' do
-        expect(work_item_reference.schema_version).to eq(25_44)
-      end
+    it 'returns the latest schema version' do
+      expect(work_item_reference.schema_version).to eq(25_44)
     end
 
     context 'with SCHEMA_VERSIONS hash validation' do
@@ -253,7 +221,7 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
         # Simulate different migration states
         allow(::Elastic::DataMigrationService).to receive(:migration_has_finished?).and_return(false)
         allow(::Elastic::DataMigrationService).to receive(:migration_has_finished?)
-          .with(:index_work_items_milestone_state).and_return(true)
+          .with(:index_work_items_milestone).and_return(true)
         allow(::Elastic::DataMigrationService).to receive(:migration_has_finished?)
           .with(:intermediate_migration).and_return(true)
       end
@@ -266,7 +234,7 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
         let(:custom_schema_versions) do
           {
             25_50 => :future_migration,
-            25_43 => :index_work_items_milestone_state,
+            25_43 => :index_work_items_milestone,
             25_30 => :intermediate_migration,
             25_27 => nil
           }
@@ -320,7 +288,7 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
         let(:custom_schema_versions) do
           {
             25_50 => :latest_migration,
-            25_43 => :index_work_items_milestone_state,
+            25_43 => :index_work_items_milestone,
             25_27 => nil
           }
         end

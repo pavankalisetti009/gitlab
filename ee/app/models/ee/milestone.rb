@@ -11,13 +11,8 @@ module EE
       has_many :boards
 
       elastic_index_dependant_association :issues, on_change: :title
-
-      elastic_index_dependant_association :issues,
-        on_change: [:due_date, :start_date]
-
-      elastic_index_dependant_association :issues,
-        on_change: :state,
-        depends_on_finished_migration: :index_work_items_milestone_state
+      elastic_index_dependant_association :issues, on_change: [:due_date, :start_date]
+      elastic_index_dependant_association :issues, on_change: :state
     end
 
     class_methods do

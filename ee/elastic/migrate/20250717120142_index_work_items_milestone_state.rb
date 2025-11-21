@@ -19,3 +19,5 @@ class IndexWorkItemsMilestoneState < Elastic::Migration
     }
   end
 end
+
+IndexWorkItemsMilestoneState.prepend ::Search::Elastic::MigrationObsolete
