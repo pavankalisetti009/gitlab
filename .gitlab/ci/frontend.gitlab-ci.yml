@@ -625,6 +625,7 @@ coverage-frontend:
     paths:
       - coverage-frontend/
       - jest-reports/
+      - jest-test-mapping/
     reports:
       coverage_report:
         coverage_format: cobertura
