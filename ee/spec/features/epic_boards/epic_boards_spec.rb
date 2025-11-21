@@ -3,7 +3,6 @@
 require 'spec_helper'
 
 RSpec.describe 'epic boards', :sidekiq_inline, :js, feature_category: :portfolio_management do
-  include DragTo
   include MobileHelpers
 
   let_it_be(:user) { create(:user) }
@@ -211,7 +210,10 @@ RSpec.describe 'epic boards', :sidekiq_inline, :js, feature_category: :portfolio
         expect(find_board_list(2)).to have_content(label.title)
         expect(find_board_list(3)).to have_content(label2.title)
 
-        drag(list_from_index: 2, list_to_index: 1, selector: '.board-header')
+        headers = all('.board-header')
+        from_item = headers.at(2)
+        to_item = headers.at(1)
+        from_item.drag_to(to_item)
 
         wait_for_all_requests
 
@@ -231,7 +233,10 @@ RSpec.describe 'epic boards', :sidekiq_inline, :js, feature_category: :portfolio
         selector = '[data-testid="board-list"]:not(.is-ghost) .board-header'
         expect(page).to have_selector(selector, text: label.title, count: 1)
 
-        drag(list_from_index: 2, list_to_index: 1, selector: '.board-header', perform_drop: false)
+        headers = all('.board-header')
+        from_item = headers.at(2)
+        to_item = headers.at(1)
+        from_item.drag_to(to_item)
 
         expect(page).to have_selector(selector, text: label.title, count: 1)
       end
@@ -446,19 +451,18 @@ RSpec.describe 'epic boards', :sidekiq_inline, :js, feature_category: :portfolio
     find("[data-list-id='gid://gitlab/Boards::EpicList/#{list.id}'] .board-header")
   end
 
-  def drag(selector: '.board-list', list_from_index: 0, from_index: 0, to_index: 0, list_to_index: 0, perform_drop: true)
+  def drag(selector: '.board-list', list_from_index: 0, from_index: 0, to_index: 0, list_to_index: 0)
     # ensure there is enough horizontal space for four lists
     resize_window(2000, 800)
 
-    drag_to(
-      selector: selector,
-      scrollable: '#board-app',
-      list_from_index: list_from_index,
-      from_index: from_index,
-      to_index: to_index,
-      list_to_index: list_to_index,
-      perform_drop: perform_drop
-    )
+    lists = all(selector)
+    from_list = lists.at(list_from_index)
+    from_item = from_list.all('.board-card').at(from_index)
+    to_list = lists.at(list_to_index)
+
+    to_item = to_list.all('.board-card').at(to_index).presence || to_list
+
+    from_item.drag_to(to_item)
   end
 
   def click_value(filter, value)

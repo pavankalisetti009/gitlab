@@ -3,8 +3,6 @@
 require 'spec_helper'
 
 RSpec.describe 'Project issue boards', :js, feature_category: :portfolio_management do
-  include DragTo
-
   let_it_be(:user) { create(:user) }
 
   let(:project) { create(:project, :public) }
@@ -112,14 +110,9 @@ RSpec.describe 'Project issue boards', :js, feature_category: :portfolio_managem
       expect(list_weight_badge(from)).to have_content('3 5', exact: true)
       expect(list_weight_badge(to)).to have_content('0 0', exact: true)
 
-      drag_to(
-        selector: '.board-list',
-        scrollable: '#board-app',
-        list_from_index: 0,
-        from_index: 0,
-        to_index: 0,
-        list_to_index: 1
-      )
+      lists = all('.board-list')
+      item = lists.at(0).find('.board-card:nth-child(1)')
+      item.drag_to(lists.at(1))
 
       expect(card_weight_badge(from)).to have_content('3')
       expect(card_weight_badge(to)).to have_content('2')
@@ -132,14 +125,9 @@ RSpec.describe 'Project issue boards', :js, feature_category: :portfolio_managem
       from = board.lists.first
       to = list
 
-      drag_to(
-        selector: '.board-list',
-        scrollable: '#board-app',
-        list_from_index: 0,
-        from_index: 1,
-        to_index: 0,
-        list_to_index: 1
-      )
+      lists = all('.board-list')
+      item = lists.at(0).all('.board-card').at(1)
+      item.drag_to(lists.at(1))
 
       expect(card_weight_badge(from)).to have_content('2')
       expect(card_weight_badge(to)).to have_content('3')

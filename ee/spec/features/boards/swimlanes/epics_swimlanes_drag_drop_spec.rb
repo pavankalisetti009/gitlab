@@ -3,7 +3,6 @@
 require 'spec_helper'
 
 RSpec.describe 'epics swimlanes', :js, feature_category: :team_planning do
-  include DragTo
   include MobileHelpers
   include BoardHelpers
 
@@ -141,7 +140,10 @@ RSpec.describe 'epics swimlanes', :js, feature_category: :team_planning do
     let_it_be(:list2) { create(:list, board: board, label: label2, position: 1) }
 
     it 're-orders lists' do
-      drag(list_from_index: 1, list_to_index: 2, selector: '.board-header')
+      headers = all('.board-header')
+      from_header = headers.at(1)
+      to_header = headers.at(2)
+      from_header.drag_to(to_header)
 
       wait_for_requests
 
@@ -156,20 +158,14 @@ RSpec.describe 'epics swimlanes', :js, feature_category: :team_planning do
     find(".board:nth-child(#{list_idx}) [data-testid=\"board-list-header\"]")
   end
 
-  def drag(selector: '.board-cell', list_from_index: 0, from_index: 0, to_index: 0, list_to_index: 0, perform_drop: true)
+  def drag(selector: '.board-cell', list_from_index: 0, list_to_index: 0)
     # ensure there is enough horizontal space for four boards
     resize_window(2000, 1200)
 
-    drag_to(
-      selector: selector,
-      scrollable: '#board-app',
-      list_from_index: list_from_index,
-      from_index: from_index,
-      to_index: to_index,
-      list_to_index: list_to_index,
-      perform_drop: perform_drop,
-      extra_height: 50
-    )
+    cells = all(selector)
+    from_item = cells.at(list_from_index).find('.board-card')
+    to_item = cells.at(list_to_index)
+    from_item.drag_to(to_item)
   end
 
   def wait_for_board_cards(board_number, expected_cards)
