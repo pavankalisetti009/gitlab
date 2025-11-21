@@ -25,7 +25,8 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
       variables_attributes: command.variables_attributes,
       chat_data: command.chat_data,
       merge_request: command.merge_request,
-      schedule: command.schedule
+      schedule: command.schedule,
+      bridge: command.bridge
     )
   end
 
@@ -242,6 +243,55 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
           end
         end
       end
+
+      context 'with source parent_pipeline and experiment "enforce_pipeline_policy_on_child_pipelines"' do
+        let(:source) { :parent_pipeline }
+        let(:command_attributes) { { bridge: bridge } }
+        let(:bridge_options) { {} }
+        let(:bridge) do
+          build_stubbed(
+            :ci_bridge,
+            status: :pending,
+            user: user,
+            options: { trigger: { include: { local: 'child.yml' } } }.merge(bridge_options),
+            pipeline: pipeline
+          )
+        end
+
+        let(:policy_configuration) do
+          build_stubbed(:security_orchestration_policy_configuration,
+            experiments: { enforce_pipeline_policy_on_child_pipelines: { enabled: true } })
+        end
+
+        context 'when the experiment is enabled in one policy' do
+          let(:policy_configs) do
+            [
+              build(:pipeline_execution_policy_config,
+                policy_config: policy_configuration,
+                content: namespace_content),
+              build(:pipeline_execution_policy_config,
+                content: project_content)
+            ]
+          end
+
+          it 'adds it to the policy_pipelines' do
+            perform
+
+            expect(context.policy_pipelines).not_to be_empty
+            expect(context.policy_pipelines.size).to eq(1)
+          end
+
+          context 'when the bridge was created by a policy' do
+            let(:bridge_options) { { policy: { name: 'My policy' } } }
+
+            it 'does not add it to the policy_pipelines' do
+              perform
+
+              expect(context.policy_pipelines).to be_empty
+            end
+          end
+        end
+      end
     end
   end
 
@@ -340,6 +390,34 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
               let(:source) { source }
 
               it { is_expected.to eq(false) }
+            end
+          end
+
+          context 'with source "parent_pipeline" and experiment "enforce_pipeline_policy_on_child_pipelines"' do
+            let(:source) { :parent_pipeline }
+            let(:command_attributes) { { bridge: bridge } }
+            let(:bridge) do
+              build_stubbed(
+                :ci_bridge,
+                status: :pending,
+                user: user,
+                options: { trigger: { include: { local: 'child.yml' } } },
+                pipeline: pipeline
+              )
+            end
+
+            let(:policy_configuration) do
+              build_stubbed(:security_orchestration_policy_configuration,
+                experiments: { enforce_pipeline_policy_on_child_pipelines: { enabled: true } })
+            end
+
+            context 'when experiment is enabled on one policy' do
+              let(:namespace_config) do
+                build(:pipeline_execution_policy_config, :override_project_ci,
+                  policy_config: policy_configuration, content: namespace_content)
+              end
+
+              it { is_expected.to eq(true) }
             end
           end
         end

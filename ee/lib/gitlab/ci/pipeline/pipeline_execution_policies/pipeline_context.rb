@@ -20,11 +20,11 @@ module Gitlab
           # rubocop:disable Metrics/ParameterLists -- Explicit parameters needed to replace command object delegation
           def initialize(
             context:, project:, source:, current_user:, ref:, sha_context:,
-            variables_attributes:, chat_data:, merge_request:, schedule:)
+            variables_attributes:, chat_data:, merge_request:, schedule:, is_parent_pipeline_policy:)
             # rubocop:enable Metrics/ParameterLists
             @context = context
             @project = project
-            @source = source
+            @source = source&.to_sym
             @current_user = current_user
             @ref = ref
             @sha_context = sha_context
@@ -32,6 +32,7 @@ module Gitlab
             @chat_data = chat_data
             @merge_request = merge_request
             @schedule = schedule
+            @is_parent_pipeline_policy = is_parent_pipeline_policy
             @policy_pipelines = []
             @override_policy_stages = []
             @injected_policy_stages = []
@@ -168,15 +169,26 @@ module Gitlab
           private
 
           attr_reader :project, :current_policy, :source, :current_user, :ref, :sha_context,
-            :variables_attributes, :chat_data, :merge_request, :schedule
+            :variables_attributes, :chat_data, :merge_request, :schedule, :is_parent_pipeline_policy
 
           def policies
-            return [] if source.blank?
-            return [] if Enums::Ci::Pipeline.dangling_sources.key?(source.to_sym)
+            return [] if Enums::Ci::Pipeline.gitlab_controlled_sources.key?(source)
+            return project_policies unless source == :parent_pipeline
+            return policies_with_child_pipeline_enforcement_enabled unless is_parent_pipeline_policy
 
-            ::Gitlab::Security::Orchestration::ProjectPipelineExecutionPolicies.new(project).configs
+            []
           end
           strong_memoize_attr :policies
+
+          def project_policies
+            ::Gitlab::Security::Orchestration::ProjectPipelineExecutionPolicies.new(project).configs
+          end
+          strong_memoize_attr :project_policies
+
+          def policies_with_child_pipeline_enforcement_enabled
+            project_policies.select { |policy| policy.experiment_enabled?(:enforce_pipeline_policy_on_child_pipelines) }
+          end
+          strong_memoize_attr :policies_with_child_pipeline_enforcement_enabled
 
           def create_pipeline(policy, partition_id)
             measure(HISTOGRAMS.fetch(:single_pipeline)) do

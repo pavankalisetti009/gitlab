@@ -15,10 +15,12 @@ RSpec.describe Gitlab::Ci::Pipeline::ExecutionPolicies::PipelineContext, feature
 
   let_it_be(:project) { create(:project, :repository) }
   let_it_be(:user) { create(:user, developer_of: project) }
-  let(:pipeline) { build(:ci_pipeline, source: 'push', project: project, ref: 'master', user: user) }
+  let(:source) { 'push' }
+  let(:pipeline) { build(:ci_pipeline, source: source, project: project, ref: 'master', user: user) }
+  let(:bridge) { build_stubbed(:ci_bridge) }
   let(:command) do
     Gitlab::Ci::Pipeline::Chain::Command.new(
-      project: project, source: pipeline.source, current_user: user, origin_ref: pipeline.ref
+      project: project, source: pipeline.source, current_user: user, origin_ref: pipeline.ref, bridge: bridge
     )
   end
 
@@ -32,7 +34,8 @@ RSpec.describe Gitlab::Ci::Pipeline::ExecutionPolicies::PipelineContext, feature
       variables_attributes: command.variables_attributes,
       chat_data: command.chat_data,
       merge_request: command.merge_request,
-      schedule: command.schedule
+      schedule: command.schedule,
+      bridge: command.bridge
     )
   end
 
@@ -59,10 +62,52 @@ RSpec.describe Gitlab::Ci::Pipeline::ExecutionPolicies::PipelineContext, feature
           variables_attributes: command.variables_attributes,
           chat_data: command.chat_data,
           merge_request: command.merge_request,
-          schedule: command.schedule
+          schedule: command.schedule,
+          is_parent_pipeline_policy: false
         )
 
       context.pipeline_execution_context
+    end
+
+    describe '#is_parent_pipeline_policy' do
+      context 'when source is nil' do
+        let(:source) { nil }
+
+        it 'initializes it with correct attributes' do
+          expect(::Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext)
+            .to receive(:new).with(
+              include(is_parent_pipeline_policy: false)
+            )
+
+          context.pipeline_execution_context
+        end
+      end
+
+      context 'when source is parent_pipeline' do
+        let(:source) { 'parent_pipeline' }
+
+        it 'initializes it with correct attributes' do
+          expect(::Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext)
+            .to receive(:new).with(
+              include(is_parent_pipeline_policy: false)
+            )
+
+          context.pipeline_execution_context
+        end
+
+        context 'when parent pipeline is a policy pipeline' do
+          let(:bridge) { build_stubbed(:ci_bridge, options: { policy: { name: 'My policy' } }) }
+
+          it 'initializes it with correct attributes' do
+            expect(::Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext)
+              .to receive(:new).with(
+                include(is_parent_pipeline_policy: true)
+              )
+
+            context.pipeline_execution_context
+          end
+        end
+      end
     end
   end
 

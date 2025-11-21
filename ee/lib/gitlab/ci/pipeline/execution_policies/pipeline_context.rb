@@ -11,7 +11,7 @@ module Gitlab
           # rubocop:disable Metrics/ParameterLists -- Explicit parameters needed to replace command object delegation
           def initialize(
             project:, source: nil, current_user: nil, ref: nil, sha_context: nil,
-            variables_attributes: nil, chat_data: nil, merge_request: nil, schedule: nil)
+            variables_attributes: nil, chat_data: nil, merge_request: nil, schedule: nil, bridge: nil)
             # rubocop:enable Metrics/ParameterLists
             @project = project
             @source = source
@@ -22,6 +22,7 @@ module Gitlab
             @chat_data = chat_data
             @merge_request = merge_request
             @schedule = schedule
+            @bridge = bridge
           end
 
           def pipeline_execution_context
@@ -36,7 +37,8 @@ module Gitlab
                 variables_attributes: variables_attributes,
                 chat_data: chat_data,
                 merge_request: merge_request,
-                schedule: schedule
+                schedule: schedule,
+                is_parent_pipeline_policy: parent_pipeline_policy?
               )
           end
           strong_memoize_attr :pipeline_execution_context
@@ -58,7 +60,11 @@ module Gitlab
           private
 
           attr_reader :project, :source, :current_user, :ref, :sha_context, :variables_attributes, :chat_data,
-            :merge_request, :schedule
+            :merge_request, :schedule, :bridge
+
+          def parent_pipeline_policy?
+            source&.to_sym == :parent_pipeline && bridge&.options&.dig(:policy).present?
+          end
         end
       end
     end
