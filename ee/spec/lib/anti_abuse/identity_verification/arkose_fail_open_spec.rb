@@ -11,6 +11,8 @@ RSpec.describe AntiAbuse::IdentityVerification::ArkoseFailOpen,
   let(:success_prefix) { described_class::COUNTER_SUCCESS_KEY_PREFIX }
   let(:failure_prefix) { described_class::COUNTER_FAILURE_KEY_PREFIX }
   let(:stream_key)     { described_class::VERIFICATION_RATE_STREAM_KEY }
+  let(:fail_open_key)  { described_class::FAIL_OPEN_ACTIVE_KEY }
+  let(:fail_open_ttl)  { described_class::FAIL_OPEN_TTL_SECONDS }
 
   # Freeze at bucket boundary for determinism
   let(:t0) { Time.zone.parse('2025-11-05 00:00:00') }
@@ -26,6 +28,10 @@ RSpec.describe AntiAbuse::IdentityVerification::ArkoseFailOpen,
 
   def redis_get(key)
     Gitlab::Redis::SharedState.with { |r| r.get(key)&.to_i }
+  end
+
+  def redis_get_s(key)
+    Gitlab::Redis::SharedState.with { |r| r.get(key) }
   end
 
   def redis_ttl(key)
@@ -58,6 +64,26 @@ RSpec.describe AntiAbuse::IdentityVerification::ArkoseFailOpen,
     end
   end
   # -----------------------------
+
+  describe '#active?' do
+    before do
+      Gitlab::Redis::SharedState.with { |r| r.set(fail_open_key, 'test', ex: fail_open_ttl) }
+    end
+
+    it 'returns true when fail-open key exists' do
+      expect(fail_open.active?).to be(true)
+    end
+
+    context 'when arkose_anomalous_verification_rate_fail_open feature flag is disabled' do
+      before do
+        stub_feature_flags(arkose_anomalous_verification_rate_fail_open: false)
+      end
+
+      it 'returns false even if the key exists' do
+        expect(fail_open.active?).to be(false)
+      end
+    end
+  end
 
   describe '#track_token_verification_result' do
     context 'when feature flag is disabled' do
@@ -336,6 +362,45 @@ RSpec.describe AntiAbuse::IdentityVerification::ArkoseFailOpen,
 
             expect(result).to eq([90.0])
           end
+        end
+      end
+
+      describe 'fail-open activation on anomaly' do
+        before do
+          stub_const("#{described_class}::MIN_ATTEMPTS_FOR_EVALUATION", 5)
+          stub_const("#{described_class}::MIN_BASELINE_COUNT", 10)
+          stub_const("#{described_class}::FAIL_OPEN_TTL_SECONDS", 10 * 60)
+
+          seed_baseline(Array.new(10, 95.0))
+
+          travel_to(prev_bucket_time) { seed_prev_bucket(success: 5, failure: 5, at_time: t0) }
+
+          decision = AntiAbuse::IdentityVerification::ArkoseAnomalyDetection::Decision.new(
+            anomalous: true, reason: 'zscore=-3.2 mean=95.0 std=1.0 current=50.0'
+          )
+          allow(AntiAbuse::IdentityVerification::ArkoseAnomalyDetection)
+            .to receive(:decide).and_return(decision)
+        end
+
+        let(:prev_bucket_time) { t0 + described_class::BUCKET_DURATION_SECONDS.seconds - 5.minutes }
+        let(:new_bucket_time)  { t0 + described_class::BUCKET_DURATION_SECONDS.seconds + 1.minute }
+
+        it 'sets the fail-open key with reason and TTL, marks active, and does not append vrate' do
+          initial_len = redis_xlen(stream_key)
+
+          travel_to(new_bucket_time) do
+            expect { fail_open.track_token_verification_result(success: true) }
+              .not_to change { redis_xlen(stream_key) }
+          end
+
+          value = redis_get_s(fail_open_key)
+          ttl   = redis_ttl(fail_open_key)
+
+          expect(value).to eq('zscore=-3.2 mean=95.0 std=1.0 current=50.0')
+          expect(ttl).to be > 0
+          expect(ttl).to be <= fail_open_ttl
+          expect(fail_open.active?).to be(true)
+          expect(redis_xlen(stream_key)).to eq(initial_len)
         end
       end
     end
