@@ -33,12 +33,9 @@ export default {
       }
       if (maxLength && this.fieldValue?.length > maxLength) {
         this.state = this.fieldValue?.length <= maxLength;
-        this.invalidFeedback = sprintf(
-          s__('AICatalog|Input cannot exceed %{value} characters. Please shorten your input.'),
-          {
-            value: maxLength,
-          },
-        );
+        this.invalidFeedback = sprintf(s__('AICatalog|Input cannot exceed %{value} characters.'), {
+          value: maxLength,
+        });
       }
       return this.state;
     },

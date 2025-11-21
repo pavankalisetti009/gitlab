@@ -91,7 +91,7 @@ export default {
     <page-heading :heading="pageTitle">
       <template #description>
         <div class="gl-border-b gl-pb-3">
-          {{ s__('AICatalog|Modify the flow settings and configuration.') }}
+          {{ s__('AICatalog|Manage flow settings.') }}
         </div>
       </template>
     </page-heading>

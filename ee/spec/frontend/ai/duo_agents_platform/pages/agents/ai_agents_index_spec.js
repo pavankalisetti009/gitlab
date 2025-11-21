@@ -94,7 +94,7 @@ describe('AiAgentsIndex', () => {
         emptyStateTitle: 'Use agents in your project.',
         emptyStateDescription: 'Use agents to automate tasks and answer questions.',
         emptyStateButtonHref: '/explore/ai-catalog/agents',
-        emptyStateButtonText: 'Explore AI Catalog agents',
+        emptyStateButtonText: 'Explore the AI Catalog',
         itemTypes: ['AGENT'],
       });
     });

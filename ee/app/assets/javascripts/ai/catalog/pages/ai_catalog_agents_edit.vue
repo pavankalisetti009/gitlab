@@ -89,7 +89,7 @@ export default {
     <page-heading :heading="pageTitle">
       <template #description>
         <div class="gl-border-b gl-pb-3">
-          {{ s__('AICatalog|Modify the agent settings and configuration.') }}
+          {{ s__('AICatalog|Manage agent settings.') }}
         </div>
       </template>
     </page-heading>

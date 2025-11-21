@@ -96,7 +96,7 @@ describe('AiFlowsIndex', () => {
         emptyStateTitle: 'Use flows in your project.',
         emptyStateDescription: 'Flows use multiple agents to complete tasks automatically.',
         emptyStateButtonHref: '/explore/ai-catalog/flows',
-        emptyStateButtonText: 'Explore AI Catalog flows',
+        emptyStateButtonText: 'Explore the AI Catalog',
         itemTypes: ['FLOW', 'THIRD_PARTY_FLOW'],
       });
     });
@@ -201,7 +201,7 @@ describe('AiFlowsIndex', () => {
           await waitForPromises();
 
           expect(findErrorsAlert().props()).toMatchObject({
-            title: 'Could not enable flow: Test Flow',
+            title: 'Flow "Test Flow" could not be enabled.',
             errors: ['Item already configured.'],
           });
         });

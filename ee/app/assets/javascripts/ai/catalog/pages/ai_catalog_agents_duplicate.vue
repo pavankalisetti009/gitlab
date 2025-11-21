@@ -91,7 +91,7 @@ export default {
     <page-heading :heading="s__('AICatalog|Duplicate agent')">
       <template #description>
         <div class="gl-border-b gl-pb-3">
-          {{ s__('AICatalog|Duplicate this agent with all its settings and configuration.') }}
+          {{ s__('AICatalog|Create a copy of this agent with the same configuration.') }}
         </div>
       </template>
     </page-heading>

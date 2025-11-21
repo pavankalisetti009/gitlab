@@ -204,7 +204,7 @@ export default {
       },
       inputAttrs: {
         'data-testid': 'agent-form-input-name',
-        placeholder: s__('AICatalog|e.g., Research Assistant, Creative Writer, Code Helper'),
+        placeholder: s__('AICatalog|Research Assistant, Creative Writer, Code Helper'),
       },
       groupAttrs: {
         labelDescription: s__('AICatalog|Name your agent.'),
@@ -230,7 +230,7 @@ export default {
       },
       groupAttrs: {
         labelDescription: s__(
-          "AICatalog|Define the agent's personality, expertise, and behavioral guidelines. This shapes how the agent responds and approaches tasks.",
+          "AICatalog|Define the agent's personality, expertise, and behavior. This changes how the agent solves problems and responds to requests.",
         ),
       },
     },
@@ -246,7 +246,7 @@ export default {
       label: s__('AICatalog|Tools'),
       groupAttrs: {
         optional: true,
-        labelDescription: s__('AICatalog|Select tools that this agent will have access to.'),
+        labelDescription: s__('AICatalog|Select which tools this agent can use.'),
       },
     },
   },
@@ -351,7 +351,7 @@ export default {
             :id="$options.fields.tools.id"
             :selected-tokens="selectedTools"
             :dropdown-items="filteredAvailableTools"
-            :placeholder="s__('AICatalog|Search and select tools for this agent.')"
+            :placeholder="s__('AICatalog|Search tools.')"
             allow-clear-all
             data-testid="agent-form-token-selector-tools"
             @input="handleToolsInput"
