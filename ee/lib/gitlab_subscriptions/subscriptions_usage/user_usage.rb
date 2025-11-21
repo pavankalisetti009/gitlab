@@ -40,14 +40,12 @@ module GitlabSubscriptions
         strong_memoize_with(:users, username) do
           case subscription_usage.subscription_target
           when :namespace
-            if username.present?
-              subscription_usage.namespace.users.by_username(username)
-            else
-              subscription_usage.namespace.users
-            end
+            namespace_users = subscription_usage.namespace.users_with_descendants
+
+            username.present? ? namespace_users.by_username(username) : namespace_users
           when :instance
             username.present? ? User.by_username(username) : User.all
-          end&.without_bots
+          end&.human_or_service_user
         end
       end
 
