@@ -4456,4 +4456,6 @@ RSpec.describe Group, feature_category: :groups_and_projects do
       end
     end
   end
+
+  it_behaves_like 'a resource that has custom roles', :group
 end

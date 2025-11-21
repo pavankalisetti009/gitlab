@@ -5706,4 +5706,6 @@ RSpec.describe Project, feature_category: :groups_and_projects do
       expect(described_class.with_duo_features_enabled).to contain_exactly(p_on)
     end
   end
+
+  it_behaves_like 'a resource that has custom roles', :project
 end

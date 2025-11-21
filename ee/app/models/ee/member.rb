@@ -242,55 +242,17 @@ module EE
 
     override :prevent_role_assignement?
     def prevent_role_assignement?(current_user, params)
-      return false if current_user.can_admin_all_resources?
+      target_member_role_id = params[:member_role_id] || member_role_id
 
-      member_role_id = params[:member_role_id] || member_role_id
-
-      # first we need to check if there are possibly more custom abilities than current user has
-      return true if custom_role_abilities_too_high?(current_user, member_role_id)
+      return true if source.custom_role_abilities_too_high?(
+        current_user: current_user,
+        target_member_role_id: target_member_role_id
+      )
 
       super
     end
 
     private
-
-    def custom_role_abilities_too_high?(current_user, member_role_id)
-      return false unless member_role_id
-
-      current_user_access_level = source.max_member_access_for_user(current_user)
-      return false if ::Gitlab::Access::OWNER == current_user_access_level
-
-      current_member_role = ::Member.highest_role(current_user, source)&.member_role
-      current_member_role_abilities = member_role_abilities(
-        current_member_role) + custom_abilities_included_with_base_access_level(current_user_access_level)
-
-      new_member_role = MemberRole.find_by_id(member_role_id)
-      new_member_role_abilities = member_role_abilities(new_member_role)
-
-      (new_member_role_abilities - current_member_role_abilities).present?
-    end
-
-    def custom_abilities_included_with_base_access_level(current_access_level)
-      abilities = []
-
-      customizable_permissions = MemberRole.all_customizable_permissions
-
-      enabled_for_key = :"enabled_for_#{source.class.name.demodulize.downcase}_access_levels"
-
-      customizable_permissions.each do |name, definition|
-        next unless definition.fetch(enabled_for_key, []).include?(current_access_level)
-
-        abilities << name
-      end
-
-      abilities
-    end
-
-    def member_role_abilities(member_role)
-      return [] unless member_role
-
-      member_role.enabled_permissions.keys
-    end
 
     def group_allowed_email_domains
       return [] unless group
