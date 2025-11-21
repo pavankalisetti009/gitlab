@@ -10,6 +10,6 @@
         .form-group
           = f.label :virtual_registries_endpoints_api_limit, s_('VirtualRegistries|API endpoints rate limit')
           = f.number_field :virtual_registries_endpoints_api_limit, class: 'form-control gl-form-input'
-          .form-text.gl-text-muted
+          .form-text.gl-text-subtle
             = _('Limits how many API requests an IP address can make to artifact manager endpoints within a 15-second window.')
       = f.submit _('Save changes'), pajamas_button: true

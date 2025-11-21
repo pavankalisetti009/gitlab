@@ -182,7 +182,7 @@ export default {
               :disabled="isUserCapEnabled"
               :value="newUserCapValue"
             />
-            <small class="form-text text-muted">
+            <small class="form-text gl-text-subtle">
               {{
                 s__(
                   'ApplicationSettings|Users added beyond this limit require administrator approval. Leave blank for unlimited.',
