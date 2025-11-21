@@ -1326,6 +1326,54 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       it { is_expected.to allow_value(false).for(:duo_remote_flows_enabled) }
       it { is_expected.not_to allow_value(nil).for(:duo_remote_flows_enabled) }
     end
+
+    describe 'duo_settings_immutable_on_saas', feature_category: :duo_chat do
+      context 'when on GitLab.com', :saas do
+        it 'prevents updating duo_features_enabled' do
+          setting.update_columns(duo_features_enabled: true)
+          setting.duo_features_enabled = false
+
+          expect(setting).not_to be_valid
+          expect(setting.errors[:base]).to include('Duo settings cannot be modified on GitLab.com')
+        end
+
+        it 'prevents updating duo_remote_flows_enabled' do
+          setting.update_columns(duo_remote_flows_enabled: true)
+          setting.duo_remote_flows_enabled = false
+
+          expect(setting).not_to be_valid
+          expect(setting.errors[:base]).to include('Duo settings cannot be modified on GitLab.com')
+        end
+
+        it 'allows reading duo settings' do
+          setting.update_columns(duo_features_enabled: false, duo_remote_flows_enabled: false)
+
+          expect(setting.duo_features_enabled).to be false
+          expect(setting.duo_remote_flows_enabled).to be false
+        end
+
+        it 'allows updating other settings' do
+          setting.update_columns(duo_features_enabled: true)
+          setting.maintenance_mode = true
+
+          expect(setting).to be_valid
+        end
+      end
+
+      context 'when not on GitLab.com' do
+        it 'allows updating duo_features_enabled' do
+          setting.duo_features_enabled = false
+
+          expect(setting).to be_valid
+        end
+
+        it 'allows updating duo_remote_flows_enabled' do
+          setting.duo_remote_flows_enabled = false
+
+          expect(setting).to be_valid
+        end
+      end
+    end
   end
 
   describe 'search curation settings after .create_from_defaults', feature_category: :global_search do

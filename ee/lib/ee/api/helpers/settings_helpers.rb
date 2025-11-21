@@ -68,6 +68,8 @@ module EE
             optional :disabled_direct_code_suggestions, type: ::Grape::API::Boolean, desc: "Indicates if direct connection for Code Suggestions is disabled for users"
             optional :receptive_cluster_agents_enabled, type: ::Grape::API::Boolean, desc: 'Enable receptive mode for GitLab Agents for Kubernetes'
             optional :auto_duo_code_review_enabled, type: ::Grape::API::Boolean, desc: "Enable automatic reviews by GitLab Duo on merge requests"
+            optional :duo_remote_flows_enabled, type: ::Grape::API::Boolean, desc: "Indicates whether GitLab Duo remote flows are enabled for the instance"
+            optional :lock_duo_remote_flows_enabled, type: ::Grape::API::Boolean, desc: "Indicates if the GitLab Duo remote flows enabled setting is enforced for all subgroups"
           end
         end
 

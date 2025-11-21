@@ -174,6 +174,8 @@ module EE
           virtual_registries_endpoints_api_limit
           disable_invite_members
           auto_duo_code_review_enabled
+          duo_remote_flows_enabled
+          lock_duo_remote_flows_enabled
         ]
     end
 

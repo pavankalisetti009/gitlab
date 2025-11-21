@@ -166,6 +166,62 @@ RSpec.describe API::Settings, 'EE Settings', :aggregate_failures, feature_catego
       end
     end
 
+    context 'GitLab.com restrictions for duo settings' do
+      let(:params) { { duo_features_enabled: false, duo_remote_flows_enabled: false } }
+
+      it_behaves_like 'PUT request permissions for admin mode'
+
+      subject(:api_request) do
+        put api(path, admin, admin_mode: true), params: params
+      end
+
+      context 'when on GitLab.com', :saas do
+        before do
+          stub_licensed_features(ai_features: true)
+        end
+
+        it 'prevents updating duo_features_enabled and duo_remote_flows_enabled' do
+          # Set initial values
+          ApplicationSetting.find_or_create_without_cache.update!(duo_features_enabled: true, duo_remote_flows_enabled: true)
+
+          api_request
+
+          expect(response).to have_gitlab_http_status(:ok)
+          # Values should remain unchanged
+          expect(json_response['duo_features_enabled']).to eq(true)
+          expect(json_response['duo_remote_flows_enabled']).to eq(true)
+        end
+
+        it 'still allows reading the settings' do
+          ApplicationSetting.find_or_create_without_cache.update_columns(duo_features_enabled: false, duo_remote_flows_enabled: false)
+
+          get api(path, admin, admin_mode: true)
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['duo_features_enabled']).to eq(false)
+          expect(json_response['duo_remote_flows_enabled']).to eq(false)
+        end
+      end
+
+      context 'when not on GitLab.com' do
+        before do
+          stub_licensed_features(ai_features: true)
+        end
+
+        it 'allows updating duo_features_enabled and duo_remote_flows_enabled' do
+          # Set initial values
+          ApplicationSetting.find_or_create_without_cache.update!(duo_features_enabled: true, duo_remote_flows_enabled: true)
+
+          api_request
+
+          expect(response).to have_gitlab_http_status(:ok)
+          # Values should be updated
+          expect(json_response['duo_features_enabled']).to eq(false)
+          expect(json_response['duo_remote_flows_enabled']).to eq(false)
+        end
+      end
+    end
+
     context 'with disabled_direct_code_suggestions settings', :with_cloud_connector do
       let(:params) { { disabled_direct_code_suggestions: true } }
 
