@@ -5,4 +5,3 @@ feature_category: continuous_integration
 available_for_tokens: true
 boundaries:
   - project
-
