@@ -56,7 +56,7 @@ module Ai
         def execute_workflow_service(flow_config)
           params = {
             json_config: flow_config,
-            container: flow.project,
+            container: container,
             goal: flow_goal,
             item_version: flow_version
           }

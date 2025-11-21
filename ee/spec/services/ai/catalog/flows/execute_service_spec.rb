@@ -6,9 +6,11 @@ RSpec.describe Ai::Catalog::Flows::ExecuteService, :aggregate_failures, feature_
   include Ai::Catalog::TestHelpers
 
   let_it_be(:developer) { create(:user) }
-  let_it_be(:project) { create(:project, :repository, developers: developer) }
-  let_it_be(:flow) { create(:ai_catalog_flow, project: project) }
+  let_it_be(:flow_owner_project) { create(:project, developers: developer) }
+  let_it_be(:flow) { create(:ai_catalog_flow, project: flow_owner_project) }
   let_it_be(:user_prompt) { nil }
+
+  let_it_be(:project) { create(:project, :repository, developers: developer) }
 
   let_it_be_with_reload(:flow_version) do
     item_version = flow.latest_version
