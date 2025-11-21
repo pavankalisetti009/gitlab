@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe MergeRequests::MergeService, feature_category: :source_code_management do
   include NamespaceStorageHelpers
+  include GitlabSubscriptions::SubscriptionHelpers
 
   let_it_be(:user) { create(:user) }
   let_it_be(:merge_request, reload: true) { create(:merge_request, :simple) }
@@ -36,7 +37,9 @@ RSpec.describe MergeRequests::MergeService, feature_category: :source_code_manag
       let(:namespace) { project.namespace }
 
       before do
-        create(:gitlab_subscription, :premium, namespace: namespace)
+        # Use create_or_replace_subscription because project.add_maintainer (line 15)
+        # triggers Internal Events tracking, which auto-generates a FREE subscription
+        create_or_replace_subscription(namespace, :premium)
         create(:namespace_root_storage_statistics, namespace: namespace)
         enforce_namespace_storage_limit(namespace)
         set_enforcement_limit(namespace, megabytes: 4)
@@ -56,7 +59,9 @@ RSpec.describe MergeRequests::MergeService, feature_category: :source_code_manag
       let(:namespace) { project.namespace }
 
       before do
-        create(:gitlab_subscription, :premium, namespace: namespace)
+        # Use create_or_replace_subscription because project.add_maintainer (line 15)
+        # triggers Internal Events tracking, which auto-generates a FREE subscription
+        create_or_replace_subscription(namespace, :premium)
         create(:namespace_root_storage_statistics, namespace: namespace)
         enforce_namespace_storage_limit(namespace)
         set_enforcement_limit(namespace, megabytes: 10)
@@ -80,7 +85,9 @@ RSpec.describe MergeRequests::MergeService, feature_category: :source_code_manag
       let(:merge_request) { create(:merge_request, :simple, source_project: project) }
 
       before do
-        create(:gitlab_subscription, :premium, namespace: group)
+        # Use create_or_replace_subscription because project.add_maintainer (line 15)
+        # triggers Internal Events tracking, which auto-generates a FREE subscription
+        create_or_replace_subscription(group, :premium)
         create(:namespace_root_storage_statistics, namespace: group)
         enforce_namespace_storage_limit(group)
         set_enforcement_limit(group, megabytes: 6)

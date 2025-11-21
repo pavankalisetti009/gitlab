@@ -5,6 +5,7 @@ require 'spec_helper'
 RSpec.describe 'Project > Settings > Access tokens', :js, :saas, feature_category: :user_management do
   include Spec::Support::Helpers::ModalHelpers
   include Features::AccessTokenHelpers
+  include GitlabSubscriptions::SubscriptionHelpers
 
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group) }
@@ -41,7 +42,9 @@ RSpec.describe 'Project > Settings > Access tokens', :js, :saas, feature_categor
     end
 
     before do
-      create(:gitlab_subscription, :ultimate_trial, namespace: group)
+      # Use create_or_replace_subscription because project.add_maintainer (line 14)
+      # triggers Internal Events tracking, which auto-generates a FREE subscription
+      create_or_replace_subscription(group, :ultimate_trial)
     end
 
     it 'shows access token creation form but no alert when there is no token' do
@@ -67,7 +70,9 @@ RSpec.describe 'Project > Settings > Access tokens', :js, :saas, feature_categor
 
   context 'when has expired trial subscription' do
     before do
-      create(:gitlab_subscription, :expired_trial, :free, namespace: group)
+      # Use create_or_replace_subscription because project.add_maintainer (line 14)
+      # triggers Internal Events tracking, which auto-generates a FREE subscription
+      create_or_replace_subscription(group, :expired_trial, :free)
     end
 
     it 'hides access token creation form' do

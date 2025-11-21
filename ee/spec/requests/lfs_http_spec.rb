@@ -8,6 +8,7 @@ RSpec.describe 'Git LFS API and storage', feature_category: :source_code_managem
   include WorkhorseLfsHelpers
   include EE::GeoHelpers
   include NamespaceStorageHelpers
+  include GitlabSubscriptions::SubscriptionHelpers
 
   let(:user) { create(:user) }
   let!(:lfs_object) { create(:lfs_object, :with_file) }
@@ -224,7 +225,9 @@ RSpec.describe 'Git LFS API and storage', feature_category: :source_code_managem
 
         context 'when the namespace storage limit is exceeded', :saas do
           before do
-            create(:gitlab_subscription, :ultimate, namespace: namespace)
+            # Use create_or_replace_subscription because project.add_developer/add_maintainer
+            # triggers Internal Events tracking, which auto-generates a FREE subscription
+            create_or_replace_subscription(namespace, :ultimate)
             create(:namespace_root_storage_statistics, namespace: namespace)
             enforce_namespace_storage_limit(namespace)
             set_enforcement_limit(namespace, megabytes: 100)
@@ -241,7 +244,9 @@ RSpec.describe 'Git LFS API and storage', feature_category: :source_code_managem
 
         context 'when the push size would exceed the namespace storage limit', :saas do
           before do
-            create(:gitlab_subscription, :ultimate, namespace: namespace)
+            # Use create_or_replace_subscription because project.add_developer/add_maintainer
+            # triggers Internal Events tracking, which auto-generates a FREE subscription
+            create_or_replace_subscription(namespace, :ultimate)
             create(:namespace_root_storage_statistics, namespace: namespace)
             enforce_namespace_storage_limit(namespace)
             set_enforcement_limit(namespace, megabytes: 200)
@@ -377,7 +382,9 @@ RSpec.describe 'Git LFS API and storage', feature_category: :source_code_managem
 
             context 'when the namespace storage limit is exceeded', :saas do
               before do
-                create(:gitlab_subscription, :ultimate, namespace: group)
+                # Use create_or_replace_subscription because project.add_developer/add_maintainer
+                # triggers Internal Events tracking, which auto-generates a FREE subscription
+                create_or_replace_subscription(group, :ultimate)
                 create(:namespace_root_storage_statistics, namespace: group)
                 enforce_namespace_storage_limit(group)
                 set_enforcement_limit(group, megabytes: 70)
@@ -496,7 +503,9 @@ RSpec.describe 'Git LFS API and storage', feature_category: :source_code_managem
 
           context 'when namespace storage limits are enabled', :saas do
             before do
-              create(:gitlab_subscription, :ultimate, namespace: namespace)
+              # Use create_or_replace_subscription because project.add_developer/add_maintainer
+              # triggers Internal Events tracking, which auto-generates a FREE subscription
+              create_or_replace_subscription(namespace, :ultimate)
               create(:namespace_root_storage_statistics, namespace: namespace)
               enforce_namespace_storage_limit(namespace)
               set_enforcement_limit(namespace, megabytes: 50)

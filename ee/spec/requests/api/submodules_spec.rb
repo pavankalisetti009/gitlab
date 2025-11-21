@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe API::Submodules, feature_category: :source_code_management do
   include NamespaceStorageHelpers
+  include GitlabSubscriptions::SubscriptionHelpers
 
   let(:user) { create(:user) }
   let(:group) { create(:group) }
@@ -32,7 +33,9 @@ RSpec.describe API::Submodules, feature_category: :source_code_management do
       let(:size_checker) { Namespaces::Storage::RootSize.new(group) }
 
       before do
-        create(:gitlab_subscription, :ultimate, namespace: group)
+        # Use create_or_replace_subscription because project.add_developer (line 23)
+        # triggers Internal Events tracking, which auto-generates a FREE subscription
+        create_or_replace_subscription(group, :ultimate)
         create(:namespace_root_storage_statistics, namespace: group)
         enforce_namespace_storage_limit(group)
         set_enforcement_limit(group, megabytes: 4)

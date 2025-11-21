@@ -4,6 +4,7 @@ require "spec_helper"
 
 RSpec.describe API::Commits, feature_category: :source_code_management do
   include NamespaceStorageHelpers
+  include GitlabSubscriptions::SubscriptionHelpers
 
   let_it_be(:user) { create(:user) }
   let_it_be(:project) { create(:project, :repository, creator: user, path: "my.project") }
@@ -215,7 +216,9 @@ RSpec.describe API::Commits, feature_category: :source_code_management do
       let(:namespace) { project.namespace }
 
       before do
-        create(:gitlab_subscription, :ultimate, namespace: namespace)
+        # Use create_or_replace_subscription because project.add_maintainer (line 14)
+        # triggers Internal Events tracking, which auto-generates a FREE subscription
+        create_or_replace_subscription(namespace, :ultimate)
         create(:namespace_root_storage_statistics, namespace: namespace)
         enforce_namespace_storage_limit(namespace)
         set_enforcement_limit(namespace, megabytes: 5)
@@ -268,7 +271,9 @@ RSpec.describe API::Commits, feature_category: :source_code_management do
       let(:namespace) { project.namespace }
 
       before do
-        create(:gitlab_subscription, :ultimate, namespace: namespace)
+        # Use create_or_replace_subscription because project.add_maintainer (line 14)
+        # triggers Internal Events tracking, which auto-generates a FREE subscription
+        create_or_replace_subscription(namespace, :ultimate)
         create(:namespace_root_storage_statistics, namespace: namespace)
         enforce_namespace_storage_limit(namespace)
         set_enforcement_limit(namespace, megabytes: 5)
