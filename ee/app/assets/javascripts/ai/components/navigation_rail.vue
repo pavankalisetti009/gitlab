@@ -100,11 +100,11 @@ export default {
         this.$emit('handleTabToggle', tab);
       }
     },
+    handleNewChat(agent) {
+      this.$emit('new-chat', agent);
+    },
     hideTooltips() {
       this.$root.$emit(BV_HIDE_TOOLTIP);
-    },
-    handleStartNewChat(agent) {
-      this.$emit('startNewChat', agent);
     },
     handleNewChatError(error) {
       this.$emit('newChatError', error);
@@ -127,7 +127,7 @@ export default {
       :is-expanded="isExpanded"
       :is-chat-disabled="isChatDisabled"
       :chat-disabled-tooltip="chatDisabledTooltip"
-      @startNewChat="handleStartNewChat"
+      @new-chat="handleNewChat"
       @toggleTab="toggleTab"
       @hideTooltips="hideTooltips"
       @newChatError="handleNewChatError"

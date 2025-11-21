@@ -164,6 +164,12 @@ export default {
       },
       immediate: true,
     },
+    async activeTab(newTab) {
+      if (['chat', 'new'].includes(newTab)) {
+        await this.$nextTick();
+        this.focusInput();
+      }
+    },
   },
   mounted() {
     window.addEventListener('resize', this.handleWindowResize);
@@ -191,12 +197,22 @@ export default {
         Cookies.remove(ACTIVE_TAB_KEY);
       }
     },
+    async handleNewChat(agent) {
+      this.handleChangeTab('new');
+      // Make sure the tab has changed before setting the agent for the UI to update
+      await this.$nextTick();
+      this.selectedAgent = agent;
+    },
     async handleTabToggle(tab) {
-      if (this.activeTab === tab && this.activeTab !== 'new') {
-        this.setActiveTab(undefined);
+      // Clicking on the icon of active tab acts as a toggle
+      if (this.activeTab === tab) {
+        this.closePanel();
         return;
       }
 
+      this.handleChangeTab(tab);
+    },
+    handleChangeTab(tab) {
       this.setActiveTab(tab);
 
       const targetRoute =
@@ -205,11 +221,6 @@ export default {
         '/';
 
       this.$router.push(targetRoute).catch(() => {});
-
-      if (tab === 'chat') {
-        await this.$nextTick();
-        this.focusInput();
-      }
     },
     closePanel() {
       this.setActiveTab(undefined);
@@ -235,9 +246,6 @@ export default {
       //   1. new tabs opened to have the same panel state as the origin tab
       //   2. current tab initial load/reload to have no layout shift
       this.setActiveTab(this.activeTab);
-    },
-    startNewChat(agent) {
-      this.selectedAgent = agent;
     },
     handleNewChatError(error) {
       this.selectedAgentError = error;
@@ -276,7 +284,7 @@ export default {
       :project-id="projectId"
       :namespace-id="namespaceId"
       @handleTabToggle="handleTabToggle"
-      @startNewChat="startNewChat"
+      @new-chat="handleNewChat"
       @newChatError="handleNewChatError"
     />
   </div>

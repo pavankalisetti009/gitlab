@@ -102,7 +102,7 @@ export default {
   },
   methods: {
     handleStartNewChat(agent) {
-      this.$emit('startNewChat', agent);
+      this.$emit('new-chat', agent);
     },
   },
 };
@@ -122,7 +122,6 @@ export default {
     text-sr-only
     :aria-label="$options.i18n.addNewChat"
     no-caret
-    @shown="$emit('toggleTab', 'new')"
     @action="handleStartNewChat"
   >
     <template #list-item="{ item }">
@@ -162,6 +161,6 @@ export default {
     :aria-disabled="isChatDisabled"
     data-testid="ai-new-toggle"
     @mouseout="$emit('hideTooltips')"
-    @click="$emit('toggleTab', 'new')"
+    @click="$emit('new-chat')"
   />
 </template>
