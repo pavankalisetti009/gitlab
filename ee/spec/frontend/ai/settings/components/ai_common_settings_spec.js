@@ -21,6 +21,7 @@ describe('AiCommonSettings', () => {
         promptCacheEnabled: true,
         initialDuoRemoteFlowsAvailability: false,
         foundationalAgentsDefaultEnabled: true,
+        initialDuoFoundationalFlowsAvailability: false,
         onGeneralSettingsPage: false,
         ...provide,
       },
@@ -71,6 +72,7 @@ describe('AiCommonSettings', () => {
     await findForm().vm.$emit('duo-core-checkbox-changed', true);
     await findForm().vm.$emit('duo-flow-checkbox-changed', true);
     await findForm().vm.$emit('duo-foundational-agents-changed', true);
+    await findForm().vm.$emit('duo-foundational-flows-checkbox-changed', true);
     findForm().vm.$emit('submit', {
       preventDefault: jest.fn(),
     });
@@ -81,6 +83,7 @@ describe('AiCommonSettings', () => {
       duoCoreFeaturesEnabled: true,
       promptCacheEnabled: true,
       duoRemoteFlowsAvailability: true,
+      duoFoundationalFlowsAvailability: true,
       foundationalAgentsEnabled: true,
     });
   });

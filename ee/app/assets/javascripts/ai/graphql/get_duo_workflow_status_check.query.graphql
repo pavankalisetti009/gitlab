@@ -4,6 +4,7 @@ query getDuoWorkflowStatusCheck($projectPath: ID!) {
     duoWorkflowStatusCheck {
       enabled
       remoteFlowsEnabled
+      foundationalFlowsEnabled
     }
   }
 }

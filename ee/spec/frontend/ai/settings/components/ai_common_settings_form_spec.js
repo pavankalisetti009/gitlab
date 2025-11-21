@@ -19,6 +19,7 @@ describe('AiCommonSettingsForm', () => {
         duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_ON,
         duoCoreFeaturesEnabled: true,
         duoRemoteFlowsAvailability: false,
+        duoFoundationalFlowsAvailability: false,
         experimentFeaturesEnabled: true,
         promptCacheEnabled: false,
         hasParentFormChanged: false,
@@ -96,6 +97,14 @@ describe('AiCommonSettingsForm', () => {
       expect(findSaveButton().props('disabled')).toBe(true);
 
       await findDuoFlowSettings().vm.$emit('change', true);
+
+      expect(findSaveButton().props('disabled')).toBe(false);
+    });
+
+    it('enables save button when duo foundational flow changes are made', async () => {
+      expect(findSaveButton().props('disabled')).toBe(true);
+
+      await findDuoFlowSettings().vm.$emit('change-foundational-flows', true);
 
       expect(findSaveButton().props('disabled')).toBe(false);
     });
@@ -178,6 +187,24 @@ describe('AiCommonSettingsForm', () => {
       expect(findSaveButton().props('disabled')).toBe(false);
 
       await findDuoFlowSettings().vm.$emit('change', false);
+
+      expect(findSaveButton().props('disabled')).toBe(true);
+    });
+  });
+
+  describe('duo foundational flow integration', () => {
+    it('emits duo-foundational-flows-checkbox-changed event when DuoFlowSettings emits change-foundational-flows', async () => {
+      await findDuoFlowSettings().vm.$emit('change-foundational-flows', true);
+
+      expect(wrapper.emitted('duo-foundational-flows-checkbox-changed')[0]).toEqual([true]);
+    });
+
+    it('updates internal foundationalFlowsEnabled data when change-foundational-flows event is received', async () => {
+      await findDuoFlowSettings().vm.$emit('change-foundational-flows', true);
+
+      expect(findSaveButton().props('disabled')).toBe(false);
+
+      await findDuoFlowSettings().vm.$emit('change-foundational-flows', false);
 
       expect(findSaveButton().props('disabled')).toBe(true);
     });

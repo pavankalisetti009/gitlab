@@ -43,6 +43,7 @@ describe('DuoWorkflowAction component', () => {
         duoWorkflowStatusCheck: {
           enabled: true,
           remoteFlowsEnabled: true,
+          foundationalFlowsEnabled: true,
         },
       },
     },
@@ -55,6 +56,7 @@ describe('DuoWorkflowAction component', () => {
         duoWorkflowStatusCheck: {
           enabled: false,
           remoteFlowsEnabled: false,
+          foundationalFlowsEnabled: false,
         },
       },
     },
@@ -67,18 +69,7 @@ describe('DuoWorkflowAction component', () => {
         duoWorkflowStatusCheck: {
           enabled: true,
           remoteFlowsEnabled: false,
-        },
-      },
-    },
-  };
-
-  const mockDuoWorkflowStatusCheckDisabledButRemoteFlowsEnabled = {
-    data: {
-      project: {
-        id: 'gid://gitlab/Project/1',
-        duoWorkflowStatusCheck: {
-          enabled: false,
-          remoteFlowsEnabled: true,
+          foundationalFlowsEnabled: false,
         },
       },
     },
@@ -149,24 +140,7 @@ describe('DuoWorkflowAction component', () => {
       });
     });
 
-    describe('when duoWorkflowStatusCheck is disabled but remoteFlowsEnabled is true', () => {
-      beforeEach(async () => {
-        mockGetHealthCheckHandler = jest
-          .fn()
-          .mockResolvedValue(mockDuoWorkflowStatusCheckDisabledButRemoteFlowsEnabled);
-        await createComponent();
-      });
-
-      it('does not render button', () => {
-        expect(findButton().exists()).toBe(false);
-      });
-
-      it('calls health checks query', () => {
-        expect(mockGetHealthCheckHandler).toHaveBeenCalled();
-      });
-    });
-
-    describe('when both duoWorkflowStatusCheck and remoteFlowsEnabled are enabled', () => {
+    describe('when duoWorkflowStatusCheck, remoteFlowsEnabled, and foundationalFlowsEnabled are all enabled', () => {
       beforeEach(async () => {
         await createComponent({
           slots: { default: 'My button' },
@@ -207,6 +181,7 @@ describe('DuoWorkflowAction component', () => {
               duoWorkflowStatusCheck: {
                 enabled: true,
                 remoteFlowsEnabled: true,
+                foundationalFlowsEnabled: true,
               },
             },
           },
@@ -227,7 +202,7 @@ describe('DuoWorkflowAction component', () => {
 
     describe('when button is clicked', () => {
       beforeEach(async () => {
-        mock.onPost(duoWorkflowInvokePath).reply(() => new Promise(() => {})); // Never resolves
+        mock.onPost(duoWorkflowInvokePath).reply(() => new Promise(() => {}));
 
         findButton().vm.$emit('click');
         await nextTick();

@@ -23,11 +23,13 @@ export const initAiSettings = (id, component, options = {}) => {
     canManageSelfHostedModels,
     duoAvailabilityCascadingSettings,
     duoRemoteFlowsCascadingSettings,
+    duoFoundationalFlowsCascadingSettings,
     duoAvailability,
     areDuoSettingsLocked,
     experimentFeaturesEnabled,
     duoCoreFeaturesEnabled,
     duoRemoteFlowsAvailability,
+    duoFoundationalFlowsAvailability,
     promptCacheEnabled,
     redirectPath,
     updateId,
@@ -54,6 +56,7 @@ export const initAiSettings = (id, component, options = {}) => {
 
   let duoAvailabilityCascadingSettingsParsed;
   let duoRemoteFlowsCascadingSettingsParsed;
+  let duoFoundationalFlowsCascadingSettingsParsed;
 
   try {
     duoAvailabilityCascadingSettingsParsed = convertObjectPropsToCamelCase(
@@ -65,6 +68,13 @@ export const initAiSettings = (id, component, options = {}) => {
 
     duoRemoteFlowsCascadingSettingsParsed = convertObjectPropsToCamelCase(
       JSON.parse(duoRemoteFlowsCascadingSettings),
+      {
+        deep: true,
+      },
+    );
+
+    duoFoundationalFlowsCascadingSettingsParsed = convertObjectPropsToCamelCase(
+      JSON.parse(duoFoundationalFlowsCascadingSettings),
       {
         deep: true,
       },
@@ -83,6 +93,7 @@ export const initAiSettings = (id, component, options = {}) => {
       canManageSelfHostedModels: parseBoolean(canManageSelfHostedModels),
       duoAvailabilityCascadingSettings: duoAvailabilityCascadingSettingsParsed,
       duoRemoteFlowsCascadingSettings: duoRemoteFlowsCascadingSettingsParsed,
+      duoFoundationalFlowsCascadingSettings: duoFoundationalFlowsCascadingSettingsParsed,
       areDuoSettingsLocked: parseBoolean(areDuoSettingsLocked),
       duoAvailability,
       experimentFeaturesEnabled: parseBoolean(experimentFeaturesEnabled),
@@ -106,6 +117,7 @@ export const initAiSettings = (id, component, options = {}) => {
       duoChatExpirationDays: parseInt(duoChatExpirationDays, 10),
       duoChatExpirationColumn,
       initialDuoRemoteFlowsAvailability: parseBoolean(duoRemoteFlowsAvailability),
+      initialDuoFoundationalFlowsAvailability: parseBoolean(duoFoundationalFlowsAvailability),
       isSaaS: parseBoolean(isSaas),
       isGroupSettings: options?.isGroupSettings || false,
     },

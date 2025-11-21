@@ -104,6 +104,7 @@ export default {
       promptCacheEnabled,
       duoRemoteFlowsAvailability,
       foundationalAgentsEnabled,
+      duoFoundationalFlowsAvailability,
     }) {
       try {
         this.isLoading = true;
@@ -118,6 +119,7 @@ export default {
           instance_level_ai_beta_features_enabled: experimentFeaturesEnabled,
           model_prompt_cache_enabled: promptCacheEnabled,
           duo_remote_flows_availability: duoRemoteFlowsAvailability,
+          duo_foundational_flows_availability: duoFoundationalFlowsAvailability,
           disabled_direct_code_suggestions: this.disabledConnection,
           enabled_expanded_logging: this.expandedLogging,
           duo_chat_expiration_days: this.chatExpirationDays,
