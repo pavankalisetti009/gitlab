@@ -66,6 +66,33 @@ export const setAgenticMode = ({
   }
 };
 
+const openChatAndGetState = () => {
+  // Check if project studio (new design with embedded panel) is enabled
+  const isEmbedded = window.gon?.features?.projectStudioEnabled === true;
+
+  // Get the current chat mode from global state
+  const currentMode = duoChatGlobalState.chatMode;
+  const isAgenticMode = currentMode === CHAT_MODES.AGENTIC;
+
+  // Set the mode to match current user preference (no change to user's preference)
+  setAgenticMode({ agenticMode: isAgenticMode, saveCookie: false, isEmbedded });
+
+  if (isEmbedded) {
+    // Embedded mode: Open the AI panel to chat tab
+    duoChatGlobalState.activeTab = 'chat';
+  } else {
+    // Drawer mode: Open the appropriate chat based on current mode
+    duoChatGlobalState.isShown = !isAgenticMode;
+    duoChatGlobalState.isAgenticChatShown = isAgenticMode;
+  }
+
+  return {
+    isEmbedded,
+    currentMode,
+    isAgenticMode,
+  };
+};
+
 /**
  * Sends a command to DuoChat to execute on. This should be use for
  * a single command.
@@ -91,24 +118,7 @@ export const sendDuoChatCommand = ({
     throw new Error('Both arguments `question` and `resourceId` are required');
   }
 
-  // Check if project studio (new design with embedded panel) is enabled
-  const isEmbedded = window.gon?.features?.projectStudioEnabled === true;
-
-  // Get the current chat mode from global state
-  const currentMode = duoChatGlobalState.chatMode;
-  const isAgenticMode = currentMode === CHAT_MODES.AGENTIC;
-
-  // Set the mode to match current user preference (no change to user's preference)
-  setAgenticMode({ agenticMode: isAgenticMode, saveCookie: false, isEmbedded });
-
-  if (isEmbedded) {
-    // Embedded mode: Open the AI panel to chat tab
-    duoChatGlobalState.activeTab = 'chat';
-  } else {
-    // Drawer mode: Open the appropriate chat based on current mode
-    duoChatGlobalState.isShown = !isAgenticMode;
-    duoChatGlobalState.isAgenticChatShown = isAgenticMode;
-  }
+  const { isAgenticMode } = openChatAndGetState();
 
   window.requestIdleCallback(() => {
     // In Agentic mode, use the agenticPrompt if provided; otherwise fall back to the slash command
@@ -120,6 +130,12 @@ export const sendDuoChatCommand = ({
       variables,
     });
   });
+};
+
+export const focusDuoChatInput = () => {
+  openChatAndGetState();
+
+  duoChatGlobalState.focusChatInput = true;
 };
 
 export const clearDuoChatCommands = () => {

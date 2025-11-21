@@ -175,8 +175,16 @@ RSpec.describe BillingPlansHelper, :saas, feature_category: :subscription_manage
         Hashie::Mash.new(id: 2, code: ::Plan::ULTIMATE)]
     end
 
+    let(:user) { build(:user) }
     let(:gitlab_subscription) { build(:gitlab_subscription) }
     let(:namespace) { build(:group, id: 1, gitlab_subscription: gitlab_subscription) }
+    let(:project) { build(:project, group: namespace) }
+
+    before do
+      allow(helper).to receive(:current_user).and_return(user)
+      allow(namespace).to receive_message_chain(:all_projects, :sorted_by_activity, :first).and_return(project)
+      allow(gitlab_subscription).to receive(:seats_in_use).and_return(5)
+    end
 
     it 'returns billing attributes' do
       expect(helper.free_trial_plan_billing_attributes(namespace, plans_data)).to eql({
@@ -192,7 +200,40 @@ RSpec.describe BillingPlansHelper, :saas, feature_category: :subscription_manage
         upgradeToPremiumTrackingUrl:
           track_cart_abandonment_gitlab_subscriptions_hand_raise_leads_path(namespace_id: namespace.id, plan: ::Plan::PREMIUM),
         upgradeToUltimateTrackingUrl:
-          track_cart_abandonment_gitlab_subscriptions_hand_raise_leads_path(namespace_id: namespace.id, plan: ::Plan::ULTIMATE)
+          track_cart_abandonment_gitlab_subscriptions_hand_raise_leads_path(namespace_id: namespace.id, plan: ::Plan::ULTIMATE),
+        canAccessDuoChat: false,
+        exploreLinks: {
+          duoChat: group_settings_gitlab_duo_seat_utilization_index_path(namespace),
+          mergeTrains: project_settings_merge_requests_path(project),
+          epics: group_epics_path(namespace),
+          escalationPolicies: project_incident_management_escalation_policies_path(project),
+          repositoryPullMirroring: project_settings_repository_path(project, anchor: "js-push-remote-settings"),
+          mergeRequestApprovals: project_settings_merge_requests_path(project, anchor: "js-merge-request-approval-settings")
+        }
+      })
+    end
+
+    it 'returns duoChat empty string and can permission when duo chat is enabled' do
+      allow(user).to receive(:can?).with(:access_duo_chat, namespace).and_return(true)
+
+      attributes = helper.free_trial_plan_billing_attributes(namespace, plans_data)
+
+      expect(attributes[:canAccessDuoChat]).to eq(true)
+      expect(attributes[:exploreLinks][:duoChat]).to eq(nil)
+    end
+
+    it 'returns nil project settings explore links if group has no projects' do
+      allow(namespace).to receive_message_chain(:all_projects, :sorted_by_activity, :first).and_return(nil)
+
+      attributes = helper.free_trial_plan_billing_attributes(namespace, plans_data)
+
+      expect(attributes[:exploreLinks]).to eql({
+        duoChat: group_settings_gitlab_duo_seat_utilization_index_path(namespace),
+        epics: group_epics_path(namespace),
+        mergeTrains: nil,
+        escalationPolicies: nil,
+        repositoryPullMirroring: nil,
+        mergeRequestApprovals: nil
       })
     end
 

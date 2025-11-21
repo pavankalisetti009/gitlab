@@ -150,6 +150,14 @@ export default {
     },
   },
   watch: {
+    'duoChatGlobalState.focusChatInput': {
+      handler(newVal) {
+        if (newVal) {
+          duoChatGlobalState.focusChatInput = false; // reset global state
+          this.focusInput();
+        }
+      },
+    },
     isMaximized: {
       handler(maximized) {
         document.querySelector('.js-page-layout').classList.toggle('ai-panel-maximized', maximized);
@@ -200,12 +208,15 @@ export default {
 
       if (tab === 'chat') {
         await this.$nextTick();
-        this.$refs['content-container']?.getContentComponent()?.focusInput?.();
+        this.focusInput();
       }
     },
     closePanel() {
       this.setActiveTab(undefined);
       this.isMaximized = false;
+    },
+    focusInput() {
+      this.$refs['content-container']?.getContentComponent()?.focusInput?.();
     },
     handleWindowResize() {
       const currentIsDesktop = GlBreakpointInstance.isDesktop();

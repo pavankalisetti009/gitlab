@@ -108,6 +108,7 @@ RSpec.describe 'Billing plan pages', :with_trial_types, :feature, :saas, :js, :w
 
   context 'group billing page' do
     let(:namespace) { create(:group) }
+    let!(:project) { create(:project, group: namespace) }
 
     before do
       namespace.add_owner(user)

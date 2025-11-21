@@ -153,4 +153,13 @@ export const mockBillingPageAttributes = {
   upgradeToUltimateTrackingUrl: '__upgrade_to_ultimate_tracking_url__',
   totalSeats: 5,
   trialEndsOn: null,
+  canAccessDuoChat: true,
+  exploreLinks: {
+    duoChat: '__duo_chat_path__',
+    mergeTrains: '__merge_trains_path__',
+    epics: '__epics_path__',
+    escalationPolicies: '__escalation_policies_path__',
+    repositoryPullMirroring: '__repository_pull_mirroring_path__',
+    mergeRequestApprovals: '__merge_request_approvals_path__',
+  },
 };

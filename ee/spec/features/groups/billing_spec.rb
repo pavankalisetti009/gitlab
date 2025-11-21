@@ -10,6 +10,7 @@ RSpec.describe 'Groups > Billing', :js, :saas, :with_organization_url_helpers, f
   let(:current_organization) { user.organization }
   let_it_be(:auditor) { create(:auditor) }
   let_it_be(:group) { create(:group, owners: user, guests: auditor) }
+  let_it_be(:project) { create(:project, group: group) }
   let_it_be(:bronze_plan) { create(:bronze_plan) }
 
   def formatted_date(date)

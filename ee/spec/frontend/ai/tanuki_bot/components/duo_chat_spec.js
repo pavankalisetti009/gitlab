@@ -1325,6 +1325,21 @@ describeSkipVue3(skipReason, () => {
         expect(onSendChatPromptSpy).not.toHaveBeenCalled();
       });
     });
+
+    describe('duoChatGlobalState.focusChatInput', () => {
+      it('focuses the chat input and reset global state', async () => {
+        duoChatGlobalState.focusChatInput = false;
+        createComponent();
+
+        const focusInputSpy = jest.spyOn(wrapper.vm, 'focusInput');
+
+        duoChatGlobalState.focusChatInput = true;
+        await nextTick();
+
+        expect(focusInputSpy).toHaveBeenCalled();
+        expect(duoChatGlobalState.focusChatInput).toBe(false);
+      });
+    });
   });
 
   describe('duoAgenticModePreference toggle', () => {

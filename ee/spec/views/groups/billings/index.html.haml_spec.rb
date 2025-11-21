@@ -7,6 +7,7 @@ RSpec.describe 'groups/billings/index', :with_trial_types, :saas, :aggregate_fai
 
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group_with_plan, plan: :free_plan) }
+  let_it_be(:project) { create(:project, namespace: group) }
   let_it_be(:plans_data) { billing_plans_data.map { |plan| Hashie::Mash.new(plan) } }
 
   before do
