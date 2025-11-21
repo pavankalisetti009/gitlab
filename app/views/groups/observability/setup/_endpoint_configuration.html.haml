@@ -48,6 +48,20 @@
       %p.gl-mb-4
         = s_('Observability|Configure your OpenTelemetry SDK or collector with the appropriate endpoint based on your chosen transport protocol. For detailed integration instructions specific to your language or framework, please refer to the OpenTelemetry documentation for your SDK.')
 
+      %h4.gl-text-size-h4.gl-font-bold.gl-mb-3
+        = s_('Observability|CI/CD Observability settings')
+
+      - gitlab_observability_export_variable = configuration_settings.group.variables.by_key('GITLAB_OBSERVABILITY_EXPORT').first
+      - if gitlab_observability_export_variable.present?
+        = render Pajamas::AlertComponent.new(variant: :success, dismissible: false, alert_options: { class: 'gl-mb-4' }) do |c|
+          - c.with_body do
+            = s_('Observability|Observability for CI/CD is enabled! Your CI/CD pipelines are automatically configured to export telemetry data, giving you comprehensive insights into your build and deployment processes.')
+      - else
+        = render Pajamas::AlertComponent.new(variant: :info, dismissible: false, alert_options: { class: 'gl-mb-4' }) do |c|
+          - c.with_body do
+            - ci_cd_settings_link = link_to(s_('Observability|CI/CD settings'), group_settings_ci_cd_path(configuration_settings.group, anchor: 'ci-variables'), target: '_blank', rel: 'noopener noreferrer')
+            = safe_format(s_('Observability|To enable Observability for CI/CD, set the %{variable_name} CI/CD variable in your group\'s %{settings_link_start}%{settings_link_end}.'), tag_pair(ci_cd_settings_link, :settings_link_start, :settings_link_end), variable_name: '<code>GITLAB_OBSERVABILITY_EXPORT</code>'.html_safe)
+
       %p
         = s_('Observability|If you encounter any connectivity issues or require additional configuration assistance, please contact your system administrator with the endpoint details provided above.')
 = render Pajamas::CardComponent.new(card_options: { class: 'gl-mb-8' }) do |c|

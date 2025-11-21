@@ -45645,6 +45645,12 @@ msgstr ""
 msgid "Observability|Built on industry-standard OpenTelemetry for seamless integration"
 msgstr ""
 
+msgid "Observability|CI/CD Observability settings"
+msgstr ""
+
+msgid "Observability|CI/CD settings"
+msgstr ""
+
 msgid "Observability|Centralized log management with powerful querying capabilities and advanced search"
 msgstr ""
 
@@ -45664,6 +45670,12 @@ msgid "Observability|Configure your o11y service connection settings."
 msgstr ""
 
 msgid "Observability|Configure your observability service connection settings."
+msgstr ""
+
+msgid "Observability|Copy HTTP endpoint"
+msgstr ""
+
+msgid "Observability|Copy gRPC endpoint"
 msgstr ""
 
 msgid "Observability|Create issues from this page to view them as related items here."
@@ -45726,9 +45738,6 @@ msgstr ""
 msgid "Observability|Endpoint details"
 msgstr ""
 
-msgid "Observability|Ensure your application's network configuration allows outbound connections to these endpoints"
-msgstr ""
-
 msgid "Observability|Enterprise ready"
 msgstr ""
 
@@ -45778,6 +45787,9 @@ msgid "Observability|Filter by group ID"
 msgstr ""
 
 msgid "Observability|Filter data by month:"
+msgstr ""
+
+msgid "Observability|Firewall configuration: Open outbound access to %{endpoint} on ports 4317-4318"
 msgstr ""
 
 msgid "Observability|Free during beta period"
@@ -45894,6 +45906,9 @@ msgstr ""
 msgid "Observability|Native Kubernetes monitoring with pod-level metrics and cluster health insights"
 msgstr ""
 
+msgid "Observability|Network requirements: Allow outbound TCP connections to the endpoints listed above"
+msgstr ""
+
 msgid "Observability|New O11y service setting"
 msgstr ""
 
@@ -45928,6 +45943,9 @@ msgid "Observability|Observability Service Configuration"
 msgstr ""
 
 msgid "Observability|Observability configuration"
+msgstr ""
+
+msgid "Observability|Observability for CI/CD is enabled! Your CI/CD pipelines are automatically configured to export telemetry data, giving you comprehensive insights into your build and deployment processes."
 msgstr ""
 
 msgid "Observability|Observability is already enabled for this group"
@@ -46017,6 +46035,9 @@ msgstr ""
 msgid "Observability|The name of your o11y service instance."
 msgstr ""
 
+msgid "Observability|To enable Observability for CI/CD, set the %{variable_name} CI/CD variable in your group's %{settings_link_start}%{settings_link_end}."
+msgstr ""
+
 msgid "Observability|To widen your search, change or remove filters above"
 msgstr ""
 
@@ -46051,6 +46072,9 @@ msgid "Observability|User email"
 msgstr ""
 
 msgid "Observability|User is required"
+msgstr ""
+
+msgid "Observability|VPN and proxy: If operating within a VPN or behind a proxy, ensure routing rules permit traffic to these external endpoints. Configure proxy settings in your OpenTelemetry SDK if required"
 msgstr ""
 
 msgid "Observability|View our %{documentation} for further instructions on how to use these features."
