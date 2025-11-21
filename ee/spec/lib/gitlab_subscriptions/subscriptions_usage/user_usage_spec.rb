@@ -3,9 +3,15 @@
 require 'spec_helper'
 
 RSpec.describe GitlabSubscriptions::SubscriptionsUsage::UserUsage, feature_category: :consumables_cost_management do
-  let_it_be(:users) { create_list(:user, 3) }
+  let_it_be(:non_group_member_user) { create(:user) }
+  let_it_be(:active_user) { create(:user) }
+  let_it_be(:service_user) { create(:user, :service_user) }
+  let_it_be(:subgroup_user) { create(:user) }
   let_it_be(:bot) { create(:user, :bot) }
-  let_it_be(:group) { create(:group, developers: users.first(2).push(bot)) }
+  let_it_be(:direct_group_members) { [active_user, service_user] }
+  let_it_be(:full_group_user_list) { direct_group_members + [subgroup_user] }
+  let_it_be(:group) { create(:group, developers: direct_group_members + [bot]) }
+  let_it_be(:subgroup) { create(:group, parent: group, developers: subgroup_user) }
   let(:subscription_usage) { instance_double(GitlabSubscriptions::SubscriptionUsage) }
   let(:subscription_usage_client) { instance_double(Gitlab::SubscriptionPortal::SubscriptionUsageClient) }
   let(:client_response) do
@@ -199,15 +205,18 @@ RSpec.describe GitlabSubscriptions::SubscriptionsUsage::UserUsage, feature_categ
         )
       end
 
-      it 'includes namespace users without the bot in the users field' do
-        expect(user_usage.users).to match_array(users.first(2))
+      it 'includes all users in the namespace hierarchy without the bot in the users field' do
+        expect(user_usage.users).to match_array(full_group_user_list)
         expect(user_usage.users).not_to include(bot)
       end
 
       context 'when filtering by username' do
         it 'returns the user matching the username' do
-          first_user = users.first
-          expect(user_usage.users(username: first_user.username)).to match_array([first_user])
+          expect(user_usage.users(username: active_user.username)).to match_array([active_user])
+        end
+
+        it 'returns the user from the subgroup' do
+          expect(user_usage.users(username: subgroup_user.username)).to match_array([subgroup_user])
         end
 
         it 'returns nil when the user does not exist' do
@@ -215,7 +224,7 @@ RSpec.describe GitlabSubscriptions::SubscriptionsUsage::UserUsage, feature_categ
         end
 
         it 'returns nil when user is not a member of the group' do
-          expect(user_usage.users(username: users.third.username)).to be_empty
+          expect(user_usage.users(username: non_group_member_user.username)).to be_empty
         end
 
         it 'returns nil when user is a bot' do
@@ -252,14 +261,13 @@ RSpec.describe GitlabSubscriptions::SubscriptionsUsage::UserUsage, feature_categ
       end
 
       it 'includes all users except bots in the users field' do
-        expect(user_usage.users).to match_array(users)
+        expect(user_usage.users).to match_array(full_group_user_list + [non_group_member_user])
         expect(user_usage.users).not_to include(bot)
       end
 
       context 'when filtering by username' do
         it 'returns the user matching the username' do
-          first_user = users.first
-          expect(user_usage.users(username: first_user.username)).to match_array([first_user])
+          expect(user_usage.users(username: active_user.username)).to match_array([active_user])
         end
 
         it 'returns nil when the user does not exist' do

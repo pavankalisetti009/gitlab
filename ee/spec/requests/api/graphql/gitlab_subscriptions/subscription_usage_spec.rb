@@ -8,9 +8,10 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
   let_it_be(:admin) { create(:admin) }
   let_it_be(:owner) { create(:user, :with_namespace) }
   let_it_be(:maintainer) { create(:user) }
+  let_it_be(:subgroup_user) { create(:user) }
   let_it_be(:bot) { create(:user, :bot) }
   let_it_be(:root_group) { create(:group, owners: owner, maintainers: maintainer, developers: bot) }
-  let_it_be(:subgroup) { create(:group, parent: root_group, owners: owner) }
+  let_it_be(:subgroup) { create(:group, parent: root_group, owners: owner, developers: subgroup_user) }
   let_it_be(:project) { create(:project, namespace: owner.namespace) }
   let_it_be(:user_namespace) { create(:user_namespace, owner: owner) }
 
@@ -437,7 +438,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
               .to match_array([{ date: '2025-10-01', creditsUsed: 321 }.with_indifferent_access])
 
             expect(graphql_data_at(:subscription_usage, :usersUsage, :users, :nodes)).to match_array(
-              root_group.users.excluding(bot).map do |u|
+              root_group.users_with_descendants.without_bots.map do |u|
                 {
                   id: u.to_global_id.to_s,
                   name: u.name,
@@ -492,6 +493,29 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
                   events: user_events
                 }.with_indifferent_access
               ])
+            end
+
+            context 'when user is a subgroup member' do
+              let(:user_arguments) { { username: subgroup_user.username } }
+
+              it 'returns user data for the subgroup member' do
+                expect(graphql_data_at(:subscription_usage, :usersUsage, :users, :nodes)).to match_array([
+                  {
+                    id: subgroup_user.to_global_id.to_s,
+                    name: subgroup_user.name,
+                    username: subgroup_user.username,
+                    avatarUrl: subgroup_user.avatar_url,
+                    usage: {
+                      totalCredits: (subgroup_user.id * 1.25).round(2),
+                      creditsUsed: (subgroup_user.id * 10.45).round(2),
+                      monthlyCommitmentCreditsUsed: (subgroup_user.id * 5.25).round(2),
+                      monthlyWaiverCreditsUsed: (subgroup_user.id * 1.35).round(2),
+                      overageCreditsUsed: (subgroup_user.id * 2.55).round(2)
+                    },
+                    events: user_events
+                  }.with_indifferent_access
+                ])
+              end
             end
 
             context 'when user is a bot' do
