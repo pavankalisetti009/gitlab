@@ -69,11 +69,11 @@ RSpec.describe 'Query.project(id).dashboards.panels(id).visualization', feature_
         1 | 'SingleStat' | 'Code Suggestions usage'
         2 | 'SingleStat' | 'Code Suggestions acceptance rate'
         3 | 'SingleStat' | 'Duo Chat usage'
-        4 | 'AiImpactTable' | 'Duo usage metrics for the %{namespaceName} %{namespaceType}'
-        5 | 'AiImpactTable' | 'Development metrics for the %{namespaceName} %{namespaceType}'
-        6 | 'AiImpactTable' | 'Pipeline metrics for the %{namespaceName} %{namespaceType}'
-        7 | 'BarChart' | 'Code Suggestions acceptance rate by language (Last 30 days)'
-        8 | 'AreaChart' | 'Code generation volume trends (Last 180 days)'
+        4 | 'BarChart' | 'Code Suggestions acceptance rate by language (Last 30 days)'
+        5 | 'AreaChart' | 'Code generation volume trends (Last 180 days)'
+        6 | 'AiImpactTable' | 'Duo usage metrics for the %{namespaceName} %{namespaceType}'
+        7 | 'AiImpactTable' | 'Development metrics for the %{namespaceName} %{namespaceType}'
+        8 | 'AiImpactTable' | 'Pipeline metrics for the %{namespaceName} %{namespaceType}'
         9 | 'DataTable' | 'Code Suggestions accepted by user'
       end
 
