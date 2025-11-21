@@ -77,6 +77,7 @@ export function createConfirmAction({ mountFn, destroyFn }) {
                 },
                 closed() {
                   destroyFn(component);
+                  component = undefined;
                   resolve(confirmed);
                 },
               },
