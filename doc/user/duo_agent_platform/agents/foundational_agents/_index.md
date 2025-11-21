@@ -46,9 +46,9 @@ actionable, and contextually appropriate responses compared to general-purpose A
 
 The following foundational agents are available:
 
-- [GitLab Planner Agent](planner.md), for product management and
+- [Planner](planner.md), for product management and
   planning workflows.
-- [GitLab Security Analyst Agent](security_analyst_agent.md), for
+- [Security Analyst](security_analyst_agent.md), for
   security analysis and vulnerability management.
 
 ## Turn foundational agents on or off

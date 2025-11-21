@@ -14,7 +14,7 @@ RSpec.describe Resolvers::Ai::FoundationalChatAgentsResolver, feature_category: 
 
     it 'returns a list of foundational chat agents sorted by id' do
       expect(resolved).to eq(resolved.sort_by(&:id))
-      expect(resolved[0].name).to eq('GitLab Duo Agent')
+      expect(resolved[0].name).to eq('GitLab Duo')
     end
 
     describe 'access to foundational chat agents' do
