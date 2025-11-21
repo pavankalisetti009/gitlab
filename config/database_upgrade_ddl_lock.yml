@@ -44,4 +44,9 @@
 #        upgrade_issue_url: ""
 #        warning_days: 7
 
-locks: []
+locks:
+  - start_date: "2025-12-03T00:00:00Z"
+    end_date: "2025-12-10T00:00:00Z"
+    details: "Upgrading Patroni clusters from PostgreSQL 16 to PostgreSQL 17"
+    upgrade_issue_url: "https://gitlab.com/gitlab-com/gl-infra/production/-/issues/20440"
+    warning_days: 7
