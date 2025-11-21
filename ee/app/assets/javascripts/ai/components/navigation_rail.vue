@@ -126,6 +126,7 @@ export default {
       :active-tab="activeTab"
       :is-expanded="isExpanded"
       :is-chat-disabled="isChatDisabled"
+      :is-agent-select-enabled="isAgenticMode"
       :chat-disabled-tooltip="chatDisabledTooltip"
       @new-chat="handleNewChat"
       @toggleTab="toggleTab"

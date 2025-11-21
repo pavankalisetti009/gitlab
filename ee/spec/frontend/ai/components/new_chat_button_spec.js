@@ -34,6 +34,7 @@ describe('NewChatButton', () => {
     chatDisabledReason = '',
     isChatDisabled = false,
     chatDisabledTooltip = '',
+    isAgentSelectEnabled = true,
   } = {}) => {
     const apolloProvider = createMockApollo([
       [getConfiguredAgents, configuredAgentsQueryMock],
@@ -54,6 +55,7 @@ describe('NewChatButton', () => {
         chatDisabledReason,
         isChatDisabled,
         chatDisabledTooltip,
+        isAgentSelectEnabled,
       },
       stubs: {
         GlButton,
@@ -171,6 +173,32 @@ describe('NewChatButton', () => {
 
     it('shows disabled tooltip', () => {
       expect(findNewToggle().attributes('title')).toBe(disabledTooltipText);
+    });
+  });
+
+  describe('when isAgentSelectEnabled is false', () => {
+    beforeEach(async () => {
+      await createComponent({ isAgentSelectEnabled: false });
+    });
+
+    it('renders button instead of dropdown', () => {
+      expect(findNewToggle().exists()).toBe(true);
+      expect(findAgentDropdown().exists()).toBe(false);
+    });
+
+    it('does not call Apollo queries', () => {
+      expect(configuredAgentsQueryMock).not.toHaveBeenCalled();
+      expect(aiFoundationalChatAgentsQueryMock).not.toHaveBeenCalled();
+    });
+
+    describe('and button is clicked', () => {
+      beforeEach(async () => {
+        await findNewToggle().trigger('click');
+      });
+
+      it('emits new-chat event', () => {
+        expect(wrapper.emitted('new-chat')).toHaveLength(1);
+      });
     });
   });
 });
