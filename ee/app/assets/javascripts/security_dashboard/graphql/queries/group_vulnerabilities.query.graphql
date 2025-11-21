@@ -27,6 +27,7 @@ query groupVulnerabilities(
   $owaspTopTen2021: [VulnerabilityOwasp2021Top10!]
   $includeSeverityOverrides: Boolean = false
   $includeLatestFlag: Boolean = false
+  $policyViolations: [PolicyViolations!]
   $reachability: ReachabilityType
   $validityCheck: [VulnerabilityFindingTokenStatusState!]
 ) {
@@ -54,6 +55,7 @@ query groupVulnerabilities(
       owaspTopTen: $owaspTopTen
       owaspTopTen2021: $owaspTopTen2021
       identifierName: $identifierName
+      policyViolations: $policyViolations
       reachability: $reachability
       validityCheck: $validityCheck
     ) {

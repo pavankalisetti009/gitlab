@@ -30,6 +30,7 @@ query projectVulnerabilities(
   $includeLatestFlag: Boolean = false
   $reachability: ReachabilityType
   $validityCheck: [VulnerabilityFindingTokenStatusState!]
+  $policyViolations: [PolicyViolations!]
 ) {
   project(fullPath: $fullPath) {
     id
@@ -55,6 +56,7 @@ query projectVulnerabilities(
       image: $image
       identifierName: $identifierName
       owaspTopTen2021: $owaspTopTen2021
+      policyViolations: $policyViolations
       reachability: $reachability
       validityCheck: $validityCheck
     ) {
