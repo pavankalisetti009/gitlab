@@ -56,32 +56,7 @@ module EE
       end
 
       def group_ai_settings_helper_data
-        duo_availability_cascading_settings = cascading_namespace_settings_tooltip_data(:duo_features_enabled, @group, method(:edit_group_path))[:tooltip_data]
-        duo_remote_flows_cascading_settings = cascading_namespace_settings_tooltip_data(:duo_remote_flows_enabled, @group, method(:edit_group_path))[:tooltip_data]
-        duo_foundational_flows_cascading_settings = cascading_namespace_settings_tooltip_data(:duo_foundational_flows_enabled, @group, method(:edit_group_path))[:tooltip_data]
-
-        {
-          duo_availability_cascading_settings: duo_availability_cascading_settings,
-          duo_availability: @group.namespace_settings.duo_availability.to_s,
-          duo_remote_flows_cascading_settings: duo_remote_flows_cascading_settings,
-          are_duo_settings_locked: @group.namespace_settings.duo_features_enabled_locked?.to_s,
-          experiment_features_enabled: @group.namespace_settings.experiment_features_enabled.to_s,
-          duo_core_features_enabled: @group.namespace_settings.duo_core_features_enabled.to_s,
-          prompt_cache_enabled: @group.namespace_settings.model_prompt_cache_enabled.to_s,
-          are_experiment_settings_allowed: (@group.experiment_settings_allowed? && gitlab_com_subscription?).to_s,
-          are_prompt_cache_settings_allowed: (@group.prompt_cache_settings_allowed? && gitlab_com_subscription?).to_s,
-          show_early_access_banner: show_early_access_program_banner?.to_s,
-          early_access_path: group_early_access_opt_in_path(@group),
-          update_id: @group.id,
-          duo_workflow_available: (@group.root? && current_user.can?(:admin_duo_workflow, @group)).to_s,
-          duo_workflow_mcp_enabled: @group.duo_workflow_mcp_enabled.to_s,
-          duo_remote_flows_availability: @group.namespace_settings.duo_remote_flows_availability.to_s,
-          foundational_agents_default_enabled: @group.foundational_agents_default_enabled.to_s,
-          duo_foundational_flows_cascading_settings: duo_foundational_flows_cascading_settings,
-          duo_foundational_flows_availability: @group.namespace_settings.duo_foundational_flows_availability.to_s,
-          is_saas: saas?.to_s,
-          show_foundational_agents_availability: show_foundational_agents_availability?.to_s
-        }
+        duo_cascading_settings_data.merge(duo_feature_settings_data)
       end
 
       def group_amazon_q_settings_view_model_data
@@ -103,6 +78,42 @@ module EE
       end
 
       private
+
+      def duo_cascading_settings_data
+        {
+          duo_availability_cascading_settings: cascading_tooltip_data(:duo_features_enabled),
+          duo_remote_flows_cascading_settings: cascading_tooltip_data(:duo_remote_flows_enabled),
+          duo_foundational_flows_cascading_settings: cascading_tooltip_data(:duo_foundational_flows_enabled),
+          duo_sast_fp_detection_cascading_settings: cascading_tooltip_data(:duo_sast_fp_detection_enabled)
+        }
+      end
+
+      def duo_feature_settings_data
+        {
+          duo_availability: @group.namespace_settings.duo_availability.to_s,
+          are_duo_settings_locked: @group.namespace_settings.duo_features_enabled_locked?.to_s,
+          experiment_features_enabled: @group.namespace_settings.experiment_features_enabled.to_s,
+          duo_core_features_enabled: @group.namespace_settings.duo_core_features_enabled.to_s,
+          prompt_cache_enabled: @group.namespace_settings.model_prompt_cache_enabled.to_s,
+          are_experiment_settings_allowed: (@group.experiment_settings_allowed? && gitlab_com_subscription?).to_s,
+          are_prompt_cache_settings_allowed: (@group.prompt_cache_settings_allowed? && gitlab_com_subscription?).to_s,
+          show_early_access_banner: show_early_access_program_banner?.to_s,
+          early_access_path: group_early_access_opt_in_path(@group),
+          update_id: @group.id,
+          duo_workflow_available: (@group.root? && current_user.can?(:admin_duo_workflow, @group)).to_s,
+          duo_workflow_mcp_enabled: @group.duo_workflow_mcp_enabled.to_s,
+          duo_remote_flows_availability: @group.namespace_settings.duo_remote_flows_availability.to_s,
+          duo_sast_fp_detection_availability: @group.namespace_settings.duo_sast_fp_detection_availability.to_s,
+          foundational_agents_default_enabled: @group.foundational_agents_default_enabled.to_s,
+          duo_foundational_flows_availability: @group.namespace_settings.duo_foundational_flows_availability.to_s,
+          is_saas: saas?.to_s,
+          show_foundational_agents_availability: show_foundational_agents_availability?.to_s
+        }
+      end
+
+      def cascading_tooltip_data(setting_key)
+        cascading_namespace_settings_tooltip_data(setting_key, @group, method(:edit_group_path))[:tooltip_data]
+      end
 
       def show_foundational_agents_availability?
         ::Feature.enabled?(:duo_foundational_agents_availability, @group) && saas? && @group.root?

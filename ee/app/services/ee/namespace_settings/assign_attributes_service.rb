@@ -47,6 +47,14 @@ module EE
           param_key: :lock_duo_foundational_flows_enabled,
           user_policy: :admin_group
         )
+        validate_settings_param_for_admin(
+          param_key: :duo_sast_fp_detection_enabled,
+          user_policy: :admin_group
+        )
+        validate_settings_param_for_admin(
+          param_key: :lock_duo_sast_fp_detection_enabled,
+          user_policy: :admin_group
+        )
         validate_settings_param_for_root_group(
           param_key: :disable_invite_members,
           user_policy: :owner_access

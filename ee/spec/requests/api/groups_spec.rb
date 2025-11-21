@@ -846,6 +846,54 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
       end
     end
 
+    context 'duo_sast_fp_detection_availability' do
+      context 'when licence is available and feature flag is enabled' do
+        before do
+          stub_licensed_features(ai_features: true)
+          stub_feature_flags(ai_experiment_sast_fp_detection: true)
+        end
+
+        it 'updates duo_sast_fp_detection_enabled field of namespace settings' do
+          expect do
+            put api("/groups/#{group.id}", user), params: { duo_sast_fp_detection_availability: false }
+          end.to change { group.reload.namespace_settings.duo_sast_fp_detection_enabled }.from(true).to(false)
+              .and change { group.reload.namespace_settings.lock_duo_sast_fp_detection_enabled }.from(false).to(true)
+
+          expect(response).to have_gitlab_http_status(:ok)
+        end
+      end
+
+      context 'when licence is available but feature flag is disabled' do
+        before do
+          stub_licensed_features(ai_features: true)
+          stub_feature_flags(ai_experiment_sast_fp_detection: false)
+        end
+
+        it 'does not update duo_sast_fp_detection_enabled field of namespace settings' do
+          expect do
+            put api("/groups/#{group.id}", user), params: { duo_sast_fp_detection_availability: false }
+          end.not_to change { group.reload.namespace_settings.duo_sast_fp_detection_enabled }
+
+          expect(response).to have_gitlab_http_status(:ok)
+        end
+      end
+
+      context 'when licence is not available' do
+        before do
+          stub_licensed_features(ai_features: false)
+          stub_feature_flags(ai_experiment_sast_fp_detection: true)
+        end
+
+        it 'does not update duo_sast_fp_detection_enabled field of namespace settings' do
+          expect do
+            put api("/groups/#{group.id}", user), params: { duo_sast_fp_detection_availability: false }
+          end.not_to change { group.reload.namespace_settings.duo_sast_fp_detection_enabled }
+
+          expect(response).to have_gitlab_http_status(:ok)
+        end
+      end
+    end
+
     context 'auto_duo_code_review_enabled', :saas do
       using RSpec::Parameterized::TableSyntax
 

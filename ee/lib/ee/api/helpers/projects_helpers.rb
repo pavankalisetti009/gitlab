@@ -25,6 +25,7 @@ module EE
             optional :prevent_merge_without_jira_issue, type: Grape::API::Boolean, desc: 'Require an associated issue from Jira'
             optional :auto_duo_code_review_enabled, type: Grape::API::Boolean, desc: 'Enable automatic reviews by GitLab Duo on merge requests'
             optional :duo_remote_flows_enabled, type: Grape::API::Boolean, desc: 'Enable GitLab Duo remote flows for this project'
+            optional :duo_sast_fp_detection_enabled, type: Grape::API::Boolean, desc: 'Enable GitLab Duo SAST false positive detection for this project'
             optional :spp_repository_pipeline_access, type: Grape::API::Boolean, desc: 'Grant read-only access to security policy configurations for enforcement in linked CI/CD projects'
           end
 
@@ -53,6 +54,7 @@ module EE
               type: ::Grape::API::Boolean,
               desc: 'Enable web based commit signing for this project'
             optional :duo_remote_flows_enabled, type: Grape::API::Boolean, desc: 'Enable GitLab Duo remote flows for this project'
+            optional :duo_sast_fp_detection_enabled, type: Grape::API::Boolean, desc: 'Enable GitLab Duo SAST false positive detection for this project'
             optional :spp_repository_pipeline_access, type: Grape::API::Boolean, desc: 'Grant read-only access to security policy configurations for enforcement in linked CI/CD projects'
           end
 
@@ -73,6 +75,7 @@ module EE
             super.concat [
               :auto_duo_code_review_enabled,
               :duo_remote_flows_enabled,
+              :duo_sast_fp_detection_enabled,
               :allow_pipeline_trigger_approve_deployment,
               :only_allow_merge_if_all_status_checks_passed,
               :approvals_before_merge,
@@ -116,6 +119,10 @@ module EE
 
           attrs.delete(:auto_duo_code_review_enabled) unless ::License.feature_available?(:review_merge_request)
           attrs.delete(:duo_remote_flows_enabled) unless License.feature_available?(:ai_workflows)
+
+          unless License.feature_available?(:ai_features) && ::Feature.enabled?(:ai_experiment_sast_fp_detection, current_user)
+            attrs.delete(:duo_sast_fp_detection_enabled)
+          end
 
           return if ::License.feature_available?(:security_orchestration_policies)
 

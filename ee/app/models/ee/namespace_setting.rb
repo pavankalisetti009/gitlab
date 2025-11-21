@@ -9,7 +9,7 @@ module EE
       DORMANT_REVIEW_PERIOD = 18.hours.ago
 
       cascading_attr :duo_features_enabled, :model_prompt_cache_enabled, :auto_duo_code_review_enabled,
-        :duo_remote_flows_enabled, :duo_foundational_flows_enabled
+        :duo_remote_flows_enabled, :duo_foundational_flows_enabled, :duo_sast_fp_detection_enabled
 
       scope :requiring_dormant_member_review, ->(limit) do
         # look for settings that have not been reviewed in more than
@@ -184,6 +184,19 @@ module EE
                                                    end
       end
 
+      def duo_sast_fp_detection_availability
+        duo_sast_fp_detection_enabled
+      end
+
+      def duo_sast_fp_detection_availability=(value)
+        self.duo_sast_fp_detection_enabled = value
+        self.lock_duo_sast_fp_detection_enabled = if value
+                                                    false
+                                                  else
+                                                    true
+                                                  end
+      end
+
       def duo_availability
         if duo_features_enabled && !duo_features_enabled_locked?(include_self: true)
           :default_on
@@ -295,6 +308,8 @@ module EE
         auto_duo_code_review_enabled
         duo_remote_flows_enabled
         duo_remote_flows_availability
+        duo_sast_fp_detection_enabled
+        lock_duo_sast_fp_detection_enabled
         enterprise_users_extensions_marketplace_opt_in_status
         allow_enterprise_bypass_placeholder_confirmation
         web_based_commit_signing_enabled

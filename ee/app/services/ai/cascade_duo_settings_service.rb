@@ -3,7 +3,7 @@
 module Ai
   class CascadeDuoSettingsService
     DUO_SETTINGS = %w[duo_features_enabled duo_remote_flows_enabled auto_duo_code_review_enabled
-      duo_foundational_flows_enabled].freeze
+      duo_foundational_flows_enabled duo_sast_fp_detection_enabled].freeze
 
     def initialize(setting_attributes)
       @setting_attributes = setting_attributes.stringify_keys

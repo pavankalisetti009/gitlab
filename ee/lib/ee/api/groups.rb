@@ -63,6 +63,11 @@ module EE
             params.delete(:service_access_tokens_expiration_enforced) unless
               group.root? && can?(current_user, :admin_service_accounts, group)
 
+            unless group.licensed_feature_available?(:ai_features) && ::Feature.enabled?(
+              :ai_experiment_sast_fp_detection, group)
+              params.delete(:duo_sast_fp_detection_availability)
+            end
+
             unless group.unique_project_download_limit_enabled?
               %i[
                 unique_project_download_limit

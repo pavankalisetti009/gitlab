@@ -654,6 +654,26 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
     end
   end
 
+  describe '#duo_sast_fp_detection_availability=' do
+    using RSpec::Parameterized::TableSyntax
+
+    where(:duo_sast_fp_detection_availability, :duo_sast_fp_detection_enabled_expectation, :lock_duo_sast_fp_detection_enabled_expectation) do
+      true  | true  | false
+      false | false | true
+    end
+
+    with_them do
+      before do
+        setting.duo_sast_fp_detection_availability = duo_sast_fp_detection_availability
+      end
+
+      it 'returns the expected response' do
+        expect(setting.duo_sast_fp_detection_enabled).to be duo_sast_fp_detection_enabled_expectation
+        expect(setting.lock_duo_sast_fp_detection_enabled).to be lock_duo_sast_fp_detection_enabled_expectation
+      end
+    end
+  end
+
   describe 'validating new_user_signup_cap' do
     using RSpec::Parameterized::TableSyntax
 
