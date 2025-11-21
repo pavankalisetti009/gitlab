@@ -8,20 +8,8 @@ module EE
     def members_with_access_level_or_custom_roles(levels: [], member_role_ids: [])
       return ::User.none unless levels.any? || member_role_ids.any?
 
-      users = project.authorized_users
-
-      if levels.any? && member_role_ids.any?
-        users = users
-          .where(project_authorizations: { access_level: levels })
-          .or(users.where(members: { member_role_id: member_role_ids }))
-          .joins(:members)
-      elsif levels.any?
-        users = users.where(project_authorizations: { access_level: levels })
-      elsif member_role_ids.any?
-        users = users.joins(:members).where(members: { member_role_id: member_role_ids })
-      end
-
-      users
+      union = ::Gitlab::SQL::Union.new(build_user_id_queries(levels, member_role_ids))
+      ::User.where(::User.arel_table[:id].in(Arel.sql("(#{union.to_sql})"))).distinct
     end
 
     def user_exists_with_access_level_or_custom_roles?(user, levels: [], member_role_ids: [])
@@ -61,6 +49,31 @@ module EE
     override :source_members_for_import
     def source_members_for_import(source_project)
       source_project.project_members.where.not(user: source_project.security_policy_bots).to_a
+    end
+
+    def build_user_id_queries(levels, member_role_ids)
+      queries = []
+
+      if levels.any?
+        queries << project.project_authorizations
+          .where(access_level: levels)
+          .select(Arel.sql('project_authorizations.user_id AS id'))
+      end
+
+      return queries unless member_role_ids.any?
+
+      queries << ::Member
+        .on_project_and_ancestors(project)
+        .where(member_role_id: member_role_ids)
+        .select(Arel.sql('members.user_id AS id'))
+
+      if project.group
+        queries << ::Authz::UserGroupMemberRole
+          .where(group: project.group.traversal_ids, member_role_id: member_role_ids)
+          .select(Arel.sql('user_group_member_roles.user_id AS id'))
+      end
+
+      queries
     end
   end
 end
