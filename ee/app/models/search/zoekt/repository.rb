@@ -61,21 +61,12 @@ module Search
         searchable.minimum(:schema_version)
       end
 
-      # rubocop:disable Database/AvoidUsingPluckWithoutLimit -- Limit is on the call. It is a temporary debugging code.
       def self.create_bulk_tasks(task_type: :index_repo, perform_at: Time.zone.now)
         scope = self
-
         # Only allow indexable repos for non delete_repo tasks
         scope = scope.indexable unless task_type.to_sym == :delete_repo
-
-        log_data = { original_scope_id_state: scope.pluck(:id, :state) } if debug_log?(task_type)
-
         scope = scope.without_pending_tasks_of_type(task_type)
-
-        log_data[:filtered_scope_id_state] = scope.pluck(:id, :state) if debug_log?(task_type)
-
         timestamp = Time.zone.now
-
         tasks = scope.ordered.includes(:zoekt_index).map do |zoekt_repo|
           Search::Zoekt::Task.new(
             zoekt_repository_id: zoekt_repo.id,
@@ -94,28 +85,10 @@ module Search
         unscoped.id_in(active_ids).pending.each_batch do |repos|
           repos.update_all(state: :initializing, updated_at: Time.current)
         end
-
-        if debug_log?(task_type)
-          log_data[:deleted_id_state_before_update] = unscoped.id_in(deleted_ids).pluck(:id, :state)
-        end
-
         unscoped.id_in(deleted_ids).each_batch { |repos| repos.update_all(state: :deleted, updated_at: Time.current) }
-        log_data[:deleted_id_state_final] = unscoped.id_in(deleted_ids).pluck(:id, :state) if debug_log?(task_type)
-        return unless debug_log?(task_type)
-
-        logger.info(log_data.merge(class: self, message: 'debug duplicate delete tasks'))
       end
-      # rubocop:enable Database/AvoidUsingPluckWithoutLimit
 
       private
-
-      def self.logger
-        @logger ||= ::Search::Zoekt::Logger.build
-      end
-
-      def self.debug_log?(task_type)
-        task_type == :delete_repo && Feature.enabled?(:zoekt_debug_delete_repo_logging, Feature.current_request)
-      end
 
       def project_id_matches_project_identifier
         return unless project_id.present?
