@@ -149,7 +149,7 @@ module MergeRequests
 
       start_time = current_monotonic_time
       result = yield
-      duration = (current_monotonic_time - start_time).round(Gitlab::InstrumentationHelper::DURATION_PRECISION)
+      duration = (current_monotonic_time - start_time)
       duration_statistics["#{operation_name}_duration_s"] = duration
       result
     end
@@ -159,7 +159,7 @@ module MergeRequests
 
       start_time = current_monotonic_time
       result = yield
-      duration = (current_monotonic_time - start_time).round(Gitlab::InstrumentationHelper::DURATION_PRECISION)
+      duration = (current_monotonic_time - start_time)
       duration_statistics["#{operation_name}_duration_s"] ||= 0
       duration_statistics["#{operation_name}_duration_s"] += duration
       result
@@ -176,7 +176,12 @@ module MergeRequests
 
     def log_hash_metadata_on_done(hash)
       total_duration = hash.values.sum
+
       hash_with_total = hash.merge('reset_approvals_service_total_duration_s' => total_duration)
+
+      hash_with_total.transform_values! do |duration|
+        duration.round(Gitlab::InstrumentationHelper::DURATION_PRECISION)
+      end
 
       Gitlab::AppJsonLogger.info(
         'event' => 'merge_requests_reset_approvals_service',
