@@ -399,7 +399,10 @@ Whether you can view an epic depends on the [group visibility level](../../publi
 the epic's [confidentiality status](#make-an-epic-confidential):
 
 - Public group and a non-confidential epic: Anyone can view the epic.
-- Private group and non-confidential epic: You must have at least the Guest role for the group.
+- Private group and non-confidential epic: You must have at least the Guest role for the group OR be a member of a project in that group or its subgroups as described in [Groups and Projects Membership](../../../development/permissions/predefined_roles.md#members).
+- Confidential epic (regardless of group visibility): You must have at least the Planner
+- Public group and a non-confidential epic: Anyone can view the epic.
+- Private group and non-confidential epic: You must have at least the Guest role for the group, or be a member of a project in that group or one of its subgroups.
 - Confidential epic (regardless of group visibility): You must have at least the Planner
   role for the group.
 
