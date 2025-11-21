@@ -5,8 +5,8 @@ require 'spec_helper'
 RSpec.describe Sbom::CreateVulnerabilitiesService, feature_category: :software_composition_analysis do
   describe '.execute' do
     let_it_be(:user) { create(:user) }
-    let_it_be(:pipeline) { create(:ee_ci_pipeline, user: user) }
-    let_it_be(:project) { pipeline.project }
+    let_it_be(:project) { create(:project, :repository) }
+    let_it_be(:pipeline) { create(:ee_ci_pipeline, user: user, ref: project.default_branch, project: project) }
     let_it_be(:scanner) { create(:vulnerabilities_scanner, :sbom_scanner, project: project) }
     let(:occurrences_count) { 5 }
     let(:sbom_reports) { pipeline.sbom_reports.reports.select(&:source) }
@@ -193,19 +193,24 @@ RSpec.describe Sbom::CreateVulnerabilitiesService, feature_category: :software_c
       end
 
       context 'with container scanning and dependency scanning reports' do
-        let(:container_scanning_ci_build) do
+        let_it_be(:container_scanning_ci_build) do
           build(:ee_ci_build, :cyclonedx_container_scanning)
         end
 
-        let(:dependency_scanning_ci_build) do
+        let_it_be(:dependency_scanning_ci_build) do
           build(:ee_ci_build, :cyclonedx)
         end
 
-        let(:pipeline) do
-          create(:ee_ci_pipeline, user: user, builds: [container_scanning_ci_build, dependency_scanning_ci_build])
-        end
+        let_it_be(:project) { create(:project, :repository) }
 
-        let(:project) { pipeline.project }
+        let_it_be(:pipeline) do
+          create(:ee_ci_pipeline,
+            user: user,
+            builds: [container_scanning_ci_build, dependency_scanning_ci_build],
+            ref: project.default_branch,
+            project: project
+          )
+        end
 
         let(:sbom_reports) { pipeline.sbom_reports.reports.select(&:source) }
 
