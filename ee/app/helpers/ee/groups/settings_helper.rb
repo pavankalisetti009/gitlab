@@ -107,7 +107,10 @@ module EE
           foundational_agents_default_enabled: @group.foundational_agents_default_enabled.to_s,
           duo_foundational_flows_availability: @group.namespace_settings.duo_foundational_flows_availability.to_s,
           is_saas: saas?.to_s,
-          show_foundational_agents_availability: show_foundational_agents_availability?.to_s
+          show_foundational_agents_availability: show_foundational_agents_availability?.to_s,
+          ai_settings_minimum_access_level_execute: @group.ai_minimum_access_level_execute,
+          ai_settings_minimum_access_level_manage: @group.ai_minimum_access_level_manage,
+          ai_settings_minimum_access_level_enable_on_projects: @group.ai_minimum_access_level_enable_on_projects
         }
       end
 

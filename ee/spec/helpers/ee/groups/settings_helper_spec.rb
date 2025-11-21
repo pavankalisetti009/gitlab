@@ -109,9 +109,44 @@ RSpec.describe EE::Groups::SettingsHelper, feature_category: :groups_and_project
           duo_workflow_mcp_enabled: "true",
           foundational_agents_default_enabled: "true",
           show_foundational_agents_availability: "true",
-          is_saas: 'true'
+          is_saas: 'true',
+          ai_settings_minimum_access_level_execute: group.ai_minimum_access_level_execute,
+          ai_settings_minimum_access_level_manage: group.ai_minimum_access_level_manage,
+          ai_settings_minimum_access_level_enable_on_projects: group.ai_minimum_access_level_enable_on_projects
         }
       )
+    end
+
+    context 'without an ai_settings' do
+      let(:group) { build(:group, namespace_settings: namespace_settings, id: 7) }
+
+      it 'returns the expected data' do
+        is_expected.to include(
+          is_saas: 'true',
+          duo_workflow_mcp_enabled: '',
+          foundational_agents_default_enabled: '',
+          ai_settings_minimum_access_level_execute: nil,
+          ai_settings_minimum_access_level_manage: nil,
+          ai_settings_minimum_access_level_enable_on_projects: nil
+        )
+      end
+    end
+
+    context 'when ai_settings minimum access levels have been set' do
+      let(:ai_settings) do
+        build(:namespace_ai_settings,
+          minimum_access_level_execute: ::Gitlab::Access::GUEST,
+          minimum_access_level_manage: ::Gitlab::Access::MAINTAINER,
+          minimum_access_level_enable_on_projects: ::Gitlab::Access::OWNER)
+      end
+
+      it 'returns the expected data' do
+        is_expected.to include(
+          ai_settings_minimum_access_level_execute: group.ai_minimum_access_level_execute,
+          ai_settings_minimum_access_level_manage: group.ai_minimum_access_level_manage,
+          ai_settings_minimum_access_level_enable_on_projects: group.ai_minimum_access_level_enable_on_projects
+        )
+      end
     end
 
     context 'with a group that is not a root namespace' do
