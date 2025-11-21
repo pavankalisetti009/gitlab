@@ -132,6 +132,20 @@ export default {
         },
       };
     },
+    disableConfirmTitle() {
+      return sprintf(s__('AICatalog|Disable flow from this %{namespaceType}'), {
+        namespaceType: this.namespaceTypeLabel,
+      });
+    },
+    disableConfirmMessage() {
+      if (this.isProjectNamespace) {
+        return s__('AICatalog|Are you sure you want to disable flow %{name}?');
+      }
+
+      return s__(
+        'AICatalog|Are you sure you want to disable flow %{name}? The flow will also be disabled from any projects in this group.',
+      );
+    },
     emptyStateTitle() {
       return sprintf(s__('AICatalog|Use flows in your %{namespaceType}.'), {
         namespaceType: this.namespaceTypeLabel,
@@ -215,6 +229,8 @@ export default {
     </ai-catalog-list-header>
     <errors-alert class="gl-mt-5" :title="errorTitle" :errors="errors" @dismiss="dismissErrors" />
     <ai-catalog-configured-items-wrapper
+      :disable-confirm-title="disableConfirmTitle"
+      :disable-confirm-message="disableConfirmMessage"
       :empty-state-title="emptyStateTitle"
       :empty-state-description="
         s__('AICatalog|Flows use multiple agents to complete tasks automatically.')
