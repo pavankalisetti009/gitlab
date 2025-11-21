@@ -40,4 +40,24 @@ RSpec.describe Sidebars::Projects::Menus::CiCdMenu do
       end
     end
   end
+
+  describe 'Visual CI Editor' do
+    subject { described_class.new(context).renderable_items.index { |e| e.item_id == :visual_ci_editor } }
+
+    context 'when visual_ci_editor feature flag is not enabled' do
+      before do
+        stub_feature_flags(visual_ci_editor: false)
+      end
+
+      it 'does not include visual ci editor menu item' do
+        is_expected.to be_nil
+      end
+    end
+
+    context 'when visual_ci_editor feature flag is enabled' do
+      it 'includes visual ci editor menu item' do
+        is_expected.to be_present
+      end
+    end
+  end
 end
