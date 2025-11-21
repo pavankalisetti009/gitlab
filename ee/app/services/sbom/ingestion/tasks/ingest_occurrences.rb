@@ -44,7 +44,7 @@ module Sbom
               uuid: uuid,
               package_manager: occurrence_map.packager,
               input_file_path: occurrence_map.input_file_path,
-              licenses: licenses.fetch(occurrence_map.report_component, []),
+              licenses: licenses.fetch(occurrence_map.report_component),
               component_name: occurrence_map.name,
               highest_severity: vulnerability_info.highest_severity,
               vulnerability_count: vulnerability_info.count,
@@ -108,83 +108,9 @@ module Sbom
         end
 
         def licenses
-          Licenses.new(project, occurrence_maps)
+          LicensesFetcher.new(project, occurrence_maps)
         end
         strong_memoize_attr :licenses
-
-        # A component's licenses are sourced from Package Metadata DB unless overridden by licenses passed via SBOM.
-        class Licenses
-          include Gitlab::Utils::StrongMemoize
-
-          attr_reader :project, :components
-
-          def initialize(project, occurrence_maps)
-            @project = project
-            @components = occurrence_maps.filter_map do |occurrence_map|
-              next if occurrence_map.report_component.purl.blank?
-
-              Hashie::Mash.new(occurrence_map.to_h.slice(
-                :name,
-                :purl_type,
-                :version
-              ).merge(path: occurrence_map.input_file_path,
-                licenses: occurrence_map.report_component&.licenses || []))
-            end
-          end
-
-          def fetch(report_component, default = [])
-            fetched_licences = licenses.fetch(report_component.key, default)
-            consolidate_unknown_licenses(fetched_licences)
-          end
-
-          private
-
-          def licenses
-            finder = Gitlab::LicenseScanning::PackageLicenses.new(
-              components: components,
-              project: project
-            )
-            finder.fetch.each_with_object({}) do |result, hash|
-              licenses = result
-                           .fetch(:licenses, [])
-                           .filter_map { |license| map_from(license) }
-                           .sort_by { |license| license[:spdx_identifier] }
-              hash[key_for(result)] = licenses if licenses.present?
-            end
-          end
-          strong_memoize_attr :licenses
-
-          def map_from(license)
-            return if license[:spdx_identifier].blank?
-
-            license.slice(:name, :spdx_identifier, :url)
-          end
-
-          def consolidate_unknown_licenses(license_group)
-            unknown_count = 0
-            license_group.reject! do |license|
-              unknown_count += 1 if license[:spdx_identifier] == unknown_license[:spdx_identifier]
-            end
-
-            if unknown_count > 0
-              license_group << {
-                spdx_identifier: unknown_license[:spdx_identifier],
-                name: "#{unknown_count} #{unknown_license[:name]}",
-                url: unknown_license[:url]
-              }
-            end
-
-            license_group
-          end
-
-          def key_for(result)
-            [result.name, result.version, result.purl_type]
-          end
-
-          def unknown_license
-            Gitlab::LicenseScanning::PackageLicenses::UNKNOWN_LICENSE
-          end
-        end
       end
     end
   end
