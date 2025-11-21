@@ -10,6 +10,6 @@ RSpec.describe API::Entities::VirtualRegistries::Cleanup::Policy, feature_catego
   it 'has the expected attributes' do
     expect(entity.keys).to contain_exactly(:group_id, :last_run_at, :enabled, :last_run_deleted_size,
       :last_run_deleted_entries_count, :keep_n_days_after_download, :cadence, :status, :failure_message, :created_at,
-      :updated_at, :last_run_detailed_metrics, :next_run_at)
+      :updated_at, :last_run_detailed_metrics, :next_run_at, :notify_on_success, :notify_on_failure)
   end
 end

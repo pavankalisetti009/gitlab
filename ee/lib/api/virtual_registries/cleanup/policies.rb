@@ -73,6 +73,10 @@ module API
                   desc: 'Number of days after which unused cache entries should be cleaned up'
                 optional :cadence, type: Integer, values: ::VirtualRegistries::Cleanup::Policy::CADENCES,
                   desc: 'How often the cleanup policy should run (daily, weekly, monthly, etc.)'
+                optional :notify_on_success, type: Boolean,
+                  desc: 'Boolean to notify group owners on successful cleanup runs'
+                optional :notify_on_failure, type: Boolean,
+                  desc: 'Boolean to notify group owners on failed cleanup runs'
               end
             end
 
@@ -102,8 +106,12 @@ module API
                   desc: 'Number of days after which unused cache entries should be cleaned up'
                 optional :cadence, type: Integer, values: ::VirtualRegistries::Cleanup::Policy::CADENCES,
                   desc: 'How often the cleanup policy should run (daily, weekly, monthly, etc.)'
+                optional :notify_on_success, type: Boolean,
+                  desc: 'Boolean to notify group owners on successful cleanup runs'
+                optional :notify_on_failure, type: Boolean,
+                  desc: 'Boolean to notify group owners on failed cleanup runs'
               end
-              at_least_one_of :enabled, :keep_n_days_after_download, :cadence
+              at_least_one_of :enabled, :keep_n_days_after_download, :cadence, :notify_on_success, :notify_on_failure
             end
 
             patch do
