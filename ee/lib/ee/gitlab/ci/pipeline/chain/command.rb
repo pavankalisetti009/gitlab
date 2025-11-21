@@ -31,7 +31,8 @@ module EE
                 variables_attributes: variables_attributes,
                 chat_data: chat_data,
                 merge_request: merge_request,
-                schedule: schedule
+                schedule: schedule,
+                bridge: bridge
               )
             end
 
