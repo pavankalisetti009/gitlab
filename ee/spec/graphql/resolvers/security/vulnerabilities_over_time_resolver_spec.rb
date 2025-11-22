@@ -9,7 +9,7 @@ RSpec.describe Resolvers::Security::VulnerabilitiesOverTimeResolver, :elastic_de
     context = { current_user: current_user }
     context[:report_type] = report_type_filter if defined?(report_type_filter)
     context[:project_id] = project_id_filter if defined?(project_id_filter)
-    resolve(described_class, obj: operate_on, args: args, ctx: context)
+    resolve(described_class, obj: operate_on, args: args, ctx: context, lookahead: lookahead)
   end
 
   let_it_be(:group) { create(:group) }
@@ -53,6 +53,12 @@ RSpec.describe Resolvers::Security::VulnerabilitiesOverTimeResolver, :elastic_de
       create(:vulnerability, :with_finding, severity: :low, report_type: :secret_detection, project: project_4,
         created_at: '2019-10-17T00:00:00Z')
     ]
+  end
+
+  let(:lookahead) { positive_lookahead }
+
+  before do
+    allow(lookahead).to receive(:selects?).and_return(true)
   end
 
   describe '#resolve' do
