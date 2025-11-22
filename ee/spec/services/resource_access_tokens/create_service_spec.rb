@@ -3,8 +3,9 @@
 require 'spec_helper'
 
 RSpec.describe ResourceAccessTokens::CreateService, feature_category: :system_access do
-  subject(:service_execute) { described_class.new(user, resource).execute }
+  subject(:service_execute) { described_class.new(user, resource, params).execute }
 
+  let(:params) { {} }
   let_it_be(:user) { create(:user) }
 
   before do
@@ -202,6 +203,30 @@ RSpec.describe ResourceAccessTokens::CreateService, feature_category: :system_ac
         expect { service_execute }.to not_change { resource.members.count }
                           .and not_change { User.bots.count }
         expect(service_execute.error?).to be true
+      end
+    end
+
+    context 'when created by a service account' do
+      let_it_be(:group) { create(:group) }
+      let_it_be(:service_account) { create(:service_account) }
+      let(:user) { service_account }
+
+      it_behaves_like 'token creation succeeds'
+
+      context 'when the service account is attempting to create a token with a higher access level' do
+        let(:resource) { build(:project, namespace: group) }
+        let(:params) { { access_level: Gitlab::Access::OWNER } }
+
+        before do
+          resource.add_maintainer(user)
+        end
+
+        it 'does not cause an error' do
+          response = service_execute
+
+          expect(response.error?).to be true
+          expect(response.message).to eq("Access level of the token contains permissions not held by the creating user")
+        end
       end
     end
   end
