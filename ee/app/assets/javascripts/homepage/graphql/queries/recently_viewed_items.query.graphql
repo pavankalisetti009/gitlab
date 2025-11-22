@@ -1,4 +1,4 @@
-query RecentlyViewedItems {
+query RecentlyViewedItemsEE {
   currentUser {
     id
     recentlyViewedItems {
@@ -10,6 +10,11 @@ query RecentlyViewedItems {
           webUrl
         }
         ... on MergeRequest {
+          id
+          title
+          webUrl
+        }
+        ... on Epic {
           id
           title
           webUrl
