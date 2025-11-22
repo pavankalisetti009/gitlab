@@ -7,6 +7,7 @@ import DuoExperimentBetaFeaturesForm from 'ee/ai/settings/components/duo_experim
 import DuoCoreFeaturesForm from 'ee/ai/settings/components/duo_core_features_form.vue';
 import DuoPromptCacheForm from 'ee/ai/settings/components/duo_prompt_cache_form.vue';
 import DuoFlowSettings from 'ee/ai/settings/components/duo_flow_settings.vue';
+import DuoSastFpDetectionSettings from 'ee/ai/settings/components/duo_sast_fp_detection_settings.vue';
 import DuoFoundationalAgentsSettings from 'ee/ai/settings/components/duo_foundational_agents_settings.vue';
 import { AVAILABILITY_OPTIONS } from 'ee/ai/settings/constants';
 
@@ -20,6 +21,7 @@ describe('AiCommonSettingsForm', () => {
         duoCoreFeaturesEnabled: true,
         duoRemoteFlowsAvailability: false,
         duoFoundationalFlowsAvailability: false,
+        duoSastFpDetectionAvailability: false,
         experimentFeaturesEnabled: true,
         promptCacheEnabled: false,
         hasParentFormChanged: false,
@@ -30,6 +32,10 @@ describe('AiCommonSettingsForm', () => {
         onGeneralSettingsPage: false,
         showFoundationalAgentsAvailability: false,
         ...provide,
+        glFeatures: {
+          aiExperimentSastFpDetection: true,
+          ...(provide.glFeatures || {}),
+        },
       },
     });
   };
@@ -40,6 +46,7 @@ describe('AiCommonSettingsForm', () => {
   const findDuoCoreFeaturesForm = () => wrapper.findComponent(DuoCoreFeaturesForm);
   const findDuoPromptCache = () => wrapper.findComponent(DuoPromptCacheForm);
   const findDuoFlowSettings = () => wrapper.findComponent(DuoFlowSettings);
+  const findDuoSastFpDetectionSettings = () => wrapper.findComponent(DuoSastFpDetectionSettings);
   const findDuoFoundationalAgentsSettings = () =>
     wrapper.findComponent(DuoFoundationalAgentsSettings);
   const findDuoSettingsWarningAlert = () => wrapper.findByTestId('duo-settings-show-warning-alert');
@@ -74,6 +81,73 @@ describe('AiCommonSettingsForm', () => {
       expect(findDuoFlowSettings().exists()).toBe(true);
     });
 
+    it('renders DuoSastFpDetectionSettings component', () => {
+      expect(findDuoSastFpDetectionSettings().exists()).toBe(true);
+    });
+
+    describe('when aiExperimentSastFpDetection feature flag is disabled', () => {
+      let wrapperWithDisabledFlag;
+
+      const createComponentWithDisabledFlag = (props = {}, provide = {}) => {
+        return shallowMountExtended(AiCommonSettingsForm, {
+          propsData: {
+            duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_ON,
+            duoCoreFeaturesEnabled: true,
+            duoRemoteFlowsAvailability: false,
+            duoSastFpDetectionAvailability: false,
+            experimentFeaturesEnabled: true,
+            promptCacheEnabled: false,
+            hasParentFormChanged: false,
+            foundationalAgentsEnabled: false,
+            ...props,
+          },
+          provide: {
+            onGeneralSettingsPage: false,
+            showFoundationalAgentsAvailability: false,
+            glFeatures: {
+              aiExperimentSastFpDetection: false,
+            },
+            ...provide,
+          },
+        });
+      };
+
+      beforeEach(() => {
+        wrapperWithDisabledFlag = createComponentWithDisabledFlag();
+      });
+
+      afterEach(() => {
+        if (wrapperWithDisabledFlag) {
+          wrapperWithDisabledFlag.destroy();
+        }
+      });
+
+      it('does not render DuoSastFpDetectionSettings component', () => {
+        expect(wrapperWithDisabledFlag.findComponent(DuoSastFpDetectionSettings).exists()).toBe(
+          false,
+        );
+      });
+
+      it('save button is enabled when other form changes are made', async () => {
+        expect(wrapperWithDisabledFlag.findComponent(GlButton).props('disabled')).toBe(true);
+
+        await wrapperWithDisabledFlag.findComponent(DuoFlowSettings).vm.$emit('change', true);
+
+        expect(wrapperWithDisabledFlag.findComponent(GlButton).props('disabled')).toBe(false);
+      });
+
+      it('does not include SAST FP detection changes in form validation', async () => {
+        expect(wrapperWithDisabledFlag.findComponent(GlButton).props('disabled')).toBe(true);
+
+        // Change availability which should enable save button
+        await wrapperWithDisabledFlag
+          .findComponent(DuoAvailabilityForm)
+          .vm.$emit('change', AVAILABILITY_OPTIONS.NEVER_ON);
+
+        expect(wrapperWithDisabledFlag.findComponent(GlButton).props('disabled')).toBe(false);
+      });
+    });
+
     it('disables save button when no changes are made', () => {
       expect(findSaveButton().props('disabled')).toBe(true);
     });
@@ -105,6 +179,24 @@ describe('AiCommonSettingsForm', () => {
       expect(findSaveButton().props('disabled')).toBe(true);
 
       await findDuoFlowSettings().vm.$emit('change-foundational-flows', true);
+
+      expect(findSaveButton().props('disabled')).toBe(false);
+    });
+
+    it('enables save button when duo SAST FP detection changes are made', async () => {
+      expect(findSaveButton().props('disabled')).toBe(true);
+
+      await findDuoSastFpDetectionSettings().vm.$emit('change', true);
+
+      expect(findSaveButton().props('disabled')).toBe(false);
+    });
+
+    it('enables save button when duo SAST FP detection changes are made (feature flag enabled)', async () => {
+      createComponent({}, { glFeatures: { aiExperimentSastFpDetection: true } });
+
+      expect(findSaveButton().props('disabled')).toBe(true);
+
+      await findDuoSastFpDetectionSettings().vm.$emit('change', true);
 
       expect(findSaveButton().props('disabled')).toBe(false);
     });
@@ -151,6 +243,47 @@ describe('AiCommonSettingsForm', () => {
 
       expect(findDuoFlowSettings().props('disabledCheckbox')).toBe(true);
     });
+
+    it('disables the duo SAST FP detection checkbox when duo availability is set to never_on', async () => {
+      expect(findDuoSastFpDetectionSettings().props('disabledCheckbox')).toBe(false);
+
+      await findDuoAvailability().vm.$emit('change', AVAILABILITY_OPTIONS.NEVER_ON);
+
+      expect(findDuoSastFpDetectionSettings().props('disabledCheckbox')).toBe(true);
+    });
+
+    it('does not disable SAST FP detection when feature flag is disabled', async () => {
+      const wrapperDisabled = shallowMountExtended(AiCommonSettingsForm, {
+        propsData: {
+          duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_ON,
+          duoCoreFeaturesEnabled: true,
+          duoRemoteFlowsAvailability: false,
+          duoSastFpDetectionAvailability: false,
+          experimentFeaturesEnabled: true,
+          promptCacheEnabled: false,
+          hasParentFormChanged: false,
+          foundationalAgentsEnabled: false,
+        },
+        provide: {
+          onGeneralSettingsPage: false,
+          showFoundationalAgentsAvailability: false,
+          glFeatures: {
+            aiExperimentSastFpDetection: false,
+          },
+        },
+      });
+
+      expect(wrapperDisabled.findComponent(DuoSastFpDetectionSettings).exists()).toBe(false);
+
+      await wrapperDisabled
+        .findComponent(DuoAvailabilityForm)
+        .vm.$emit('change', AVAILABILITY_OPTIONS.NEVER_ON);
+
+      // Component should still not exist
+      expect(wrapperDisabled.findComponent(DuoSastFpDetectionSettings).exists()).toBe(false);
+
+      wrapperDisabled.destroy();
+    });
   });
 
   describe('prompt cache integration', () => {
@@ -170,6 +303,24 @@ describe('AiCommonSettingsForm', () => {
       await findDuoPromptCache().vm.$emit('change', false);
 
       // Verify the form is unchanged
+      expect(findSaveButton().props('disabled')).toBe(true);
+    });
+  });
+
+  describe('duo SAST FP detection integration', () => {
+    it('emits duo-sast-fp-detection-changed event when DuoSastFpDetectionSettings emits change', async () => {
+      await findDuoSastFpDetectionSettings().vm.$emit('change', true);
+
+      expect(wrapper.emitted('duo-sast-fp-detection-changed')[0]).toEqual([true]);
+    });
+
+    it('updates internal sastFpDetectionEnabled data when change event is received', async () => {
+      await findDuoSastFpDetectionSettings().vm.$emit('change', true);
+
+      expect(findSaveButton().props('disabled')).toBe(false);
+
+      await findDuoSastFpDetectionSettings().vm.$emit('change', false);
+
       expect(findSaveButton().props('disabled')).toBe(true);
     });
   });

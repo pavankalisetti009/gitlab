@@ -11,6 +11,10 @@ module Admin
       feature_category :ai_abstraction_layer
       urgency :low
 
+      before_action do
+        push_frontend_feature_flag(:ai_experiment_sast_fp_detection, current_user, type: :wip)
+      end
+
       def index; end
 
       private

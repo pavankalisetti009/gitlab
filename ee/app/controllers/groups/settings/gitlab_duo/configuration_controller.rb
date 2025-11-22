@@ -8,6 +8,10 @@ module Groups
 
         include ::Nav::GitlabDuoSettingsPage
 
+        before_action do
+          push_frontend_feature_flag(:ai_experiment_sast_fp_detection, @group, type: :wip)
+        end
+
         def index
           redirect_to group_settings_gitlab_duo_path(group) unless render_configuration_page?
         end

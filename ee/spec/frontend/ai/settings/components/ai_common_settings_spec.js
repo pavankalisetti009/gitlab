@@ -20,9 +20,13 @@ describe('AiCommonSettings', () => {
         duoCoreFeaturesEnabled: false,
         promptCacheEnabled: true,
         initialDuoRemoteFlowsAvailability: false,
+        initialDuoSastFpDetectionAvailability: false,
         foundationalAgentsDefaultEnabled: true,
         initialDuoFoundationalFlowsAvailability: false,
         onGeneralSettingsPage: false,
+        glFeatures: {
+          aiExperimentSastFpDetection: true,
+        },
         ...provide,
       },
       stubs: {
@@ -84,6 +88,7 @@ describe('AiCommonSettings', () => {
       promptCacheEnabled: true,
       duoRemoteFlowsAvailability: true,
       duoFoundationalFlowsAvailability: true,
+      duoSastFpDetectionAvailability: false,
       foundationalAgentsEnabled: true,
     });
   });

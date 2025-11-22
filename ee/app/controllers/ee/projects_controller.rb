@@ -20,6 +20,7 @@ module EE
         push_frontend_feature_flag(:repository_lock_information, @project)
         push_frontend_feature_flag(:use_duo_context_exclusion, @project)
         push_frontend_feature_flag(:duo_workflow_in_ci, current_user)
+        push_frontend_feature_flag(:ai_experiment_sast_fp_detection, @project, type: :wip)
       end
     end
 
