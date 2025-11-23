@@ -40,25 +40,19 @@ const getEnabledScanTypes = (scanData, scanMode) => {
  * @returns {Array<{reportType: string, scanMode: string}>}
  * @example
  * const scans = {
- *   enabledSecurityScans: {
- *     sast: true,
- *     dast: false,
- *     secretDetection: true,
- *     dependencyScanning: true
- *   }
+ *   enabledSecurityScans: { sast: true, dast: false },
+ *   enabledPartialSecurityScans: { sast: true, dast: false }
  * };
  * transformToEnabledScans(scans)
  * // Returns:
  * [
  *   { reportType: 'SAST', scanMode: 'FULL' },
- *   { reportType: 'SECRET_DETECTION', scanMode: 'FULL' },
- *   { reportType: 'DEPENDENCY_SCANNING', scanMode: 'FULL' }
+ *   { reportType: 'SAST', scanMode: 'PARTIAL' },
  * ]
  */
 export function transformToEnabledScans(scans) {
   return [
     ...getEnabledScanTypes(scans.enabledSecurityScans, 'FULL'),
-    // Partial scans will be implemented in a follow-up
-    // https://gitlab.com/gitlab-org/gitlab/-/issues/574434
+    ...getEnabledScanTypes(scans.enabledPartialSecurityScans, 'PARTIAL'),
   ];
 }
