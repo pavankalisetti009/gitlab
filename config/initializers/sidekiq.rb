@@ -137,8 +137,7 @@ if Rails.env.production?
   #
   # This method should be available in Sidekiq 8.1.0:
   # https://github.com/sidekiq/sidekiq/pull/6865
-  # This needs to be kept in sync with getSidekiqAssetsDestinationPath() set in
-  # config/webpack.config.js.
+  # This needs to be kept in sync with lib/tasks/gitlab/assets.rake.
   Sidekiq::Web.assets_path = Rails.public_path.join('assets', 'sidekiq', Sidekiq::VERSION).to_s
 end
 

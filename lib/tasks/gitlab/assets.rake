@@ -55,6 +55,18 @@ namespace :gitlab do
           ENV['NODE_OPTIONS'] = '--max-old-space-size=16384'
         end
 
+        # Set Sidekiq gem information for webpack
+        require 'bundler'
+        require 'sidekiq'
+        sidekiq_spec = Bundler.load.specs.find { |spec| spec.name == 'sidekiq' }
+
+        abort Rainbow('Unable to find Sidekiq in Gemfile!').red unless sidekiq_spec
+
+        ENV['SIDEKIQ_ASSETS_SRC_PATH'] = File.join(sidekiq_spec.full_gem_path, "web", "assets")
+        # When we upgrade Sidekiq, we want to make sure we don't load stale assets, so
+        # use the version number in the directory path.
+        ENV['SIDEKIQ_ASSETS_DEST_PATH'] = File.join(AssetsSha::PUBLIC_ASSETS_DIR, "sidekiq", Sidekiq::VERSION)
+
         unless system(cmd)
           puts Rainbow('Error: Unable to compile webpack production bundle.').red
 
