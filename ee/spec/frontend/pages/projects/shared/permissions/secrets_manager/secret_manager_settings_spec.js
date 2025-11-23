@@ -7,6 +7,7 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import {
   SECRET_MANAGER_STATUS_ACTIVE,
   SECRET_MANAGER_STATUS_PROVISIONING,
+  SECRET_MANAGER_STATUS_DEPROVISIONING,
 } from 'ee/ci/secrets/constants';
 import enableSecretManagerMutation from 'ee/ci/secrets/graphql/mutations/enable_secret_manager.mutation.graphql';
 import getSecretManagerStatusQuery from 'ee/ci/secrets/graphql/queries/get_secret_manager_status.query.graphql';
@@ -29,6 +30,9 @@ describe('SecretManagerSettings', () => {
 
   const activeResponse = secretManagerSettingsResponse(SECRET_MANAGER_STATUS_ACTIVE);
   const provisioningResponse = secretManagerSettingsResponse(SECRET_MANAGER_STATUS_PROVISIONING);
+  const deprovisioningResponse = secretManagerSettingsResponse(
+    SECRET_MANAGER_STATUS_DEPROVISIONING,
+  );
   // secrets manager has not been provisioned yet, so status would be NULL when it's inactive
   const inactiveResponse = secretManagerSettingsResponse(null);
   const errorResponse = secretManagerSettingsResponse(null, [{ message: 'Some error occurred' }]);
@@ -122,8 +126,7 @@ describe('SecretManagerSettings', () => {
       await createComponent();
     });
 
-    it('disables toggle and shows active state', () => {
-      expect(findToggle().props('disabled')).toBe(true);
+    it('shows active state', () => {
       expect(findToggle().props('value')).toBe(true);
     });
 
@@ -132,9 +135,40 @@ describe('SecretManagerSettings', () => {
     });
   });
 
+  describe('when query receives INACTIVE status', () => {
+    beforeEach(async () => {
+      mockSecretManagerStatus.mockResolvedValue(inactiveResponse);
+      await createComponent();
+    });
+
+    it('shows inactive state', () => {
+      expect(findToggle().props('value')).toBe(false);
+    });
+
+    it('renders permission settings', () => {
+      expect(findPermissionsSettings().exists()).toBe(false);
+    });
+  });
+
   describe('when query receives PROVISIONING status', () => {
     beforeEach(async () => {
       mockSecretManagerStatus.mockResolvedValue(provisioningResponse);
+      await createComponent();
+    });
+
+    it('disables toggle and shows loading state', () => {
+      expect(findToggle().props('disabled')).toBe(true);
+      expect(findToggle().props('isLoading')).toBe(true);
+    });
+
+    it('does not render permission settings', () => {
+      expect(findPermissionsSettings().exists()).toBe(false);
+    });
+  });
+
+  describe('when query receives DEPROVISIONING status', () => {
+    beforeEach(async () => {
+      mockSecretManagerStatus.mockResolvedValue(deprovisioningResponse);
       await createComponent();
     });
 

@@ -4,11 +4,14 @@ import { s__ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import {
   ACTION_ENABLE_SECRET_MANAGER,
+  ACTION_DISABLE_SECRET_MANAGER,
   SECRET_MANAGER_STATUS_ACTIVE,
   SECRET_MANAGER_STATUS_INACTIVE,
   SECRET_MANAGER_STATUS_PROVISIONING,
+  SECRET_MANAGER_STATUS_DEPROVISIONING,
 } from 'ee/ci/secrets/constants';
 import enableSecretManagerMutation from 'ee/ci/secrets/graphql/mutations/enable_secret_manager.mutation.graphql';
+import disableSecretManagerMutation from 'ee/ci/secrets/graphql/mutations/disable_secret_manager.mutation.graphql';
 import getSecretManagerStatusQuery from 'ee/ci/secrets/graphql/queries/get_secret_manager_status.query.graphql';
 import PermissionsSettings from './components/secrets_manager_permissions_settings.vue';
 
@@ -57,13 +60,19 @@ export default {
       update({ projectSecretsManager }) {
         const newStatus = projectSecretsManager?.status || SECRET_MANAGER_STATUS_INACTIVE;
 
-        if (newStatus !== SECRET_MANAGER_STATUS_PROVISIONING) {
-          this.$apollo.queries.secretManagerStatus.stopPolling();
-        }
-
         if (this.isEnablingSecretsManager && newStatus === SECRET_MANAGER_STATUS_ACTIVE) {
+          this.$apollo.queries.secretManagerStatus.stopPolling();
           this.$toast.show(
             s__('SecretsManagerPermissions|Secrets manager has been provisioned for this project.'),
+          );
+        }
+
+        if (this.isDisablingSecretsManager && newStatus === SECRET_MANAGER_STATUS_INACTIVE) {
+          this.$apollo.queries.secretManagerStatus.stopPolling();
+          this.$toast.show(
+            s__(
+              'SecretsManagerPermissions|Secrets manager has been deprovisioned for this project.',
+            ),
           );
         }
 
@@ -91,6 +100,9 @@ export default {
     isEnablingSecretsManager() {
       return this.action === ACTION_ENABLE_SECRET_MANAGER;
     },
+    isDisablingSecretsManager() {
+      return this.action === ACTION_DISABLE_SECRET_MANAGER;
+    },
     isInactive() {
       return this.secretManagerStatus === SECRET_MANAGER_STATUS_INACTIVE;
     },
@@ -100,19 +112,20 @@ export default {
     isProvisioning() {
       return this.secretManagerStatus === SECRET_MANAGER_STATUS_PROVISIONING;
     },
+    isDeprovisioning() {
+      return this.secretManagerStatus === SECRET_MANAGER_STATUS_DEPROVISIONING;
+    },
     isToggleDisabled() {
-      // Note: The logic for disabling the secret manager settings toggle is a work in progress
-      // as discussed in this issue https://gitlab.com/gitlab-org/gitlab/-/issues/479992#note_2062593578
       return (
         this.isLoading ||
         this.isProvisioning ||
-        this.isActive ||
+        this.isDeprovisioning ||
         this.hasError ||
         !this.canManageSecretsManager
       );
     },
     isToggleLoading() {
-      return this.isLoading || this.isProvisioning;
+      return this.isLoading || this.isProvisioning || this.isDeprovisioning;
     },
     hasError() {
       return this.errorMessage.length > 0;
@@ -145,10 +158,39 @@ export default {
           s__('SecretsManagerPermissions|An error occurred while enabling the secrets manager.');
       }
     },
+    async disableProjectSecretsManager() {
+      this.errorMessage = '';
+      try {
+        const {
+          data: {
+            projectSecretsManagerDeprovision: { errors, projectSecretsManager },
+          },
+        } = await this.$apollo.mutate({
+          mutation: disableSecretManagerMutation,
+          variables: {
+            projectPath: this.fullPath,
+          },
+        });
+
+        if (errors.length > 0) {
+          throw new Error(errors[0]);
+        }
+
+        this.secretManagerStatus = projectSecretsManager?.status || SECRET_MANAGER_STATUS_INACTIVE;
+        this.$apollo.queries.secretManagerStatus.startPolling(POLL_INTERVAL);
+      } catch (error) {
+        this.errorMessage =
+          error?.message ||
+          s__('SecretsManagerPermissions|An error occurred while disabling the secrets manager.');
+      }
+    },
     onToggleSecretManager() {
       if (this.isInactive) {
         this.action = ACTION_ENABLE_SECRET_MANAGER;
         this.enableProjectSecretsManager();
+      } else if (this.isActive) {
+        this.action = ACTION_DISABLE_SECRET_MANAGER;
+        this.disableProjectSecretsManager();
       }
     },
   },
