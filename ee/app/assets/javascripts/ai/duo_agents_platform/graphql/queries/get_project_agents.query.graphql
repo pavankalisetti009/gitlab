@@ -4,7 +4,7 @@
 
 query projectAiCatalogAgents(
   $projectPath: ID!
-  $enabled: Boolean = true
+  $enabled: Boolean
   $allAvailable: Boolean = false
   $projectId: ProjectID!
   $before: String
