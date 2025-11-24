@@ -4123,7 +4123,7 @@
   :urgency: :low
   :resource_boundary: :unknown
   :weight: 1
-  :idempotent: false
+  :idempotent: true
   :tags: []
   :queue_namespace:
 - :name: security_scan_result_policies_create_project_warn_mode_push_settings_audit_events
