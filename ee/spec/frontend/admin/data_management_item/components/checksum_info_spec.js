@@ -1,4 +1,4 @@
-import { GlCard, GlSprintf, GlBadge } from '@gitlab/ui';
+import { GlCard, GlSprintf, GlBadge, GlButton } from '@gitlab/ui';
 import models from 'test_fixtures/api/admin/data_management/snippet_repository.json';
 import ChecksumInfo from 'ee/admin/data_management_item/components/checksum_info.vue';
 import ClipboardButton from '~/vue_shared/components/clipboard_button.vue';
@@ -12,7 +12,7 @@ describe('ChecksumInfo', () => {
   const [rawModel] = models;
   const model = convertObjectPropsToCamelCase(rawModel, { deep: true });
 
-  const defaultProps = { details: model.checksumInformation };
+  const defaultProps = { details: model.checksumInformation, checksumLoading: false };
 
   const createComponent = ({ props } = { props: {} }) => {
     wrapper = shallowMountExtended(ChecksumInfo, {
@@ -28,6 +28,7 @@ describe('ChecksumInfo', () => {
   const findChecksumRetry = () => wrapper.findByTestId('checksum-retry');
   const findChecksumLast = () => wrapper.findByTestId('checksum-last');
   const findChecksum = () => wrapper.findByTestId('checksum');
+  const findChecksumButton = () => wrapper.findComponent(GlButton);
 
   it('renders card header', () => {
     createComponent();
@@ -161,6 +162,32 @@ describe('ChecksumInfo', () => {
 
     it('does not render clipboard button', () => {
       expect(findChecksum().findComponent(ClipboardButton).exists()).toBe(false);
+    });
+  });
+
+  describe('when checksumLoading is false', () => {
+    beforeEach(() => {
+      createComponent({ props: { checksumLoading: false } });
+    });
+
+    it('renders checksum button with loading disabled', () => {
+      expect(findChecksumButton().props('loading')).toBe(false);
+    });
+
+    describe('when checksum button is clicked', () => {
+      it('emits `recalculate-checksum` event', () => {
+        findChecksumButton().vm.$emit('click');
+
+        expect(wrapper.emitted('recalculate-checksum')).toHaveLength(1);
+      });
+    });
+  });
+
+  describe('when checksumLoading is true', () => {
+    it('renders checksum button with loading enabled', () => {
+      createComponent({ props: { checksumLoading: true } });
+
+      expect(findChecksumButton().props('loading')).toBe(true);
     });
   });
 });

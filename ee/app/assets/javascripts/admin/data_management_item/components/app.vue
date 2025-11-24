@@ -2,11 +2,12 @@
 import { GlLoadingIcon } from '@gitlab/ui';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import DataManagementItemModelInfo from 'ee/admin/data_management_item/components/data_management_item_model_info.vue';
-import { getModel } from 'ee/api/data_management_api';
+import { getModel, putModelAction } from 'ee/api/data_management_api';
 import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
 import { createAlert } from '~/alert';
 import { sprintf, s__ } from '~/locale';
 import ChecksumInfo from 'ee/admin/data_management_item/components/checksum_info.vue';
+import showToast from '~/vue_shared/plugins/global_toast';
 
 export default {
   name: 'AdminDataManagementItemApp',
@@ -34,6 +35,7 @@ export default {
     return {
       model: null,
       isLoading: true,
+      checksumLoading: false,
     };
   },
   computed: {
@@ -65,6 +67,31 @@ export default {
         this.isLoading = false;
       }
     },
+    async handleRecalculateChecksum() {
+      this.checksumLoading = true;
+
+      try {
+        const { data } = await putModelAction(this.modelName, this.modelId, 'checksum');
+        this.model = convertObjectPropsToCamelCase(data, { deep: true });
+
+        showToast(
+          sprintf(s__('Geo|Successfully recalculated checksum for %{name}.'), { name: this.name }),
+        );
+      } catch (error) {
+        this.handleChecksumError(error);
+      } finally {
+        this.checksumLoading = false;
+      }
+    },
+    handleChecksumError(error) {
+      createAlert({
+        message: sprintf(s__('Geo|There was an error recalculating checksum for %{name}.'), {
+          name: this.name,
+        }),
+        captureError: true,
+        error,
+      });
+    },
   },
 };
 </script>
@@ -74,8 +101,13 @@ export default {
     <page-heading :heading="name" />
     <gl-loading-icon v-if="isLoading" size="xl" class="gl-mt-4" />
     <div v-else-if="model" class="gl-grid gl-gap-4 @md/panel:gl-grid-cols-2">
-      <checksum-info :details="checksumInformation" class="gl-order-2 @md/panel:gl-order-1" />
-      <data-management-item-model-info :model="model" class="gl-order-1 @md/panel:gl-order-2" />
+      <checksum-info
+        class="gl-order-2 @md/panel:gl-order-1"
+        :details="checksumInformation"
+        :checksum-loading="checksumLoading"
+        @recalculate-checksum="handleRecalculateChecksum"
+      />
+      <data-management-item-model-info class="gl-order-1 @md/panel:gl-order-2" :model="model" />
     </div>
   </section>
 </template>
