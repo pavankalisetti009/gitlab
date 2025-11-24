@@ -23,6 +23,14 @@ RSpec.describe Admin::GitlabDuo::SelfHostedController, :enable_admin_mode, featu
     end
   end
 
+  shared_examples 'returns not found' do
+    it 'returns 404' do
+      perform_request
+
+      expect(response).to have_gitlab_http_status(:not_found)
+    end
+  end
+
   describe 'GET #index' do
     let(:page) { Nokogiri::HTML(response.body) }
 
@@ -63,6 +71,62 @@ RSpec.describe Admin::GitlabDuo::SelfHostedController, :enable_admin_mode, featu
         perform_request
 
         expect(response).to have_gitlab_http_status(:not_found)
+      end
+    end
+  end
+
+  context 'when accessing model management routes' do
+    subject(:perform_request) { get "/admin/gitlab_duo/self_hosted/#{vueroute}" }
+
+    context 'when vueroute is nil' do
+      let(:vueroute) { nil }
+
+      it_behaves_like 'returns successful response'
+    end
+
+    context 'when vueroute is empty' do
+      let(:vueroute) { '' }
+
+      it_behaves_like 'returns successful response'
+    end
+
+    context 'with manage_self_hosted_models_settings permission' do
+      before do
+        allow(Ability).to receive(:allowed?).and_call_original
+        allow(Ability).to receive(:allowed?).with(admin,
+          :manage_self_hosted_models_settings, anything).and_return(true)
+      end
+
+      context 'when accessing models/new' do
+        let(:vueroute) { 'models/new' }
+
+        it_behaves_like 'returns successful response'
+      end
+
+      context 'when accessing models/:id/edit' do
+        let(:vueroute) { 'models/123/edit' }
+
+        it_behaves_like 'returns successful response'
+      end
+    end
+
+    context 'without manage_self_hosted_models_settings permission' do
+      before do
+        allow(Ability).to receive(:allowed?).and_call_original
+        allow(Ability).to receive(:allowed?).with(admin,
+          :manage_self_hosted_models_settings, anything).and_return(false)
+      end
+
+      context 'when accessing models/new' do
+        let(:vueroute) { 'models/new' }
+
+        it_behaves_like 'returns not found'
+      end
+
+      context 'when accessing models/:id/edit' do
+        let(:vueroute) { 'models/456/edit' }
+
+        it_behaves_like 'returns not found'
       end
     end
   end
