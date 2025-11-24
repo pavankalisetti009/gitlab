@@ -51,7 +51,6 @@ module EE
       end
 
       def enqueue_code_embedding_indexing
-        return false unless ::Feature.enabled?(:active_context_code_incremental_index_project, project)
         return false unless default_branch?
 
         repository = Ai::ActiveContext::Code::Repository.find_by_project_id(project.id)
