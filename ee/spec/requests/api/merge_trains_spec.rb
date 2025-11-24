@@ -24,6 +24,11 @@ RSpec.describe API::MergeTrains, feature_category: :continuous_integration do
     project.add_reporter(reporter)
   end
 
+  it_behaves_like 'authorizing granular token permissions', :read_merge_train do
+    let(:boundary_object) { project }
+    let(:request) { get api("/projects/#{project.id}/merge_trains", personal_access_token: pat) }
+  end
+
   describe 'GET /projects/:id/merge_trains' do
     subject { get api("/projects/#{project.id}/merge_trains", user), params: params }
 
@@ -103,6 +108,13 @@ RSpec.describe API::MergeTrains, feature_category: :continuous_integration do
     let!(:train_car_2) { create(:merge_train_car, :merged, target_project: project, target_branch: 'master') }
     let!(:train_car_3) { create(:merge_train_car, target_project: project, target_branch: 'feature') }
     let!(:train_car_4) { create(:merge_train_car, target_project: other_project, target_branch: 'master') }
+
+    it_behaves_like 'authorizing granular token permissions', :read_merge_train do
+      let(:boundary_object) { project }
+      let(:request) do
+        get api("/projects/#{project.id}/merge_trains/#{train_car_1.target_branch}", personal_access_token: pat)
+      end
+    end
 
     context 'when the project and target branch exist' do
       subject do
@@ -190,6 +202,14 @@ RSpec.describe API::MergeTrains, feature_category: :continuous_integration do
 
     let!(:train_car_1) { create(:merge_train_car, merge_request: merge_request_1) }
 
+    it_behaves_like 'authorizing granular token permissions', :read_merge_train_merge_request do
+      let(:boundary_object) { project }
+      let(:request) do
+        get api("/projects/#{project.id}/merge_trains/merge_requests/#{merge_request_1.iid}",
+          personal_access_token: pat)
+      end
+    end
+
     context 'when the project and target branch exist' do
       subject { get api("/projects/#{project.id}/merge_trains/merge_requests/#{merge_request_1.iid}", developer) }
 
@@ -266,6 +286,14 @@ RSpec.describe API::MergeTrains, feature_category: :continuous_integration do
         project: merge_request.source_project)
 
       merge_request.update_head_pipeline
+    end
+
+    it_behaves_like 'authorizing granular token permissions', :add_merge_train_merge_request do
+      let(:boundary_object) { project }
+      let(:request) do
+        post api("/projects/#{project.id}/merge_trains/merge_requests/#{merge_request.iid}",
+          personal_access_token: pat)
+      end
     end
 
     shared_examples 'succeeds to add to merge train' do

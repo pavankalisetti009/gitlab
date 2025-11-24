@@ -36,6 +36,7 @@ module API
             type: String, desc: 'Sort by asc (ascending) or desc (descending)', values: %w[asc desc], default: 'desc'
           use :pagination
         end
+        route_setting :authorization, permissions: :read_merge_train, boundary_type: :project
         get do
           all_project_cars = ::MergeTrains::CarsFinder
             .new(user_project, current_user, declared_params(include_missing: false))
@@ -65,6 +66,7 @@ module API
               type: String, desc: 'Sort by asc (ascending) or desc (descending)', values: %w[asc desc], default: 'desc'
             use :pagination
           end
+          route_setting :authorization, permissions: :read_merge_train, boundary_type: :project
           get do
             merge_train = ::MergeTrains::CarsFinder
               .new(user_project, current_user, declared_params(include_missing: false))
@@ -85,6 +87,7 @@ module API
               { code: 404, message: 'Not found' }
             ]
           end
+          route_setting :authorization, permissions: :read_merge_train_merge_request, boundary_type: :project
           get do
             train_car = find_project_merge_request(params[:merge_request_iid]).merge_train_car
 
@@ -118,6 +121,7 @@ module API
           optional :auto_merge, type: Grape::API::Boolean,
             desc: 'When true, this merge request will be set to auto merge'
         end
+        route_setting :authorization, permissions: :add_merge_train_merge_request, boundary_type: :project
         post 'merge_requests/:merge_request_iid', requirements: API::NAMESPACE_OR_PROJECT_REQUIREMENTS do
           merge_request = find_project_merge_request(params[:merge_request_iid])
 
