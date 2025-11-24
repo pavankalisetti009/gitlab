@@ -216,6 +216,7 @@ export const mockAgents = [
 export const mockAgentsWithConfig = [
   mockAgentFactory({
     versions: mockAgentVersions,
+    project: mockProjectWithNamespace,
     configurationForProject: {
       id: 'gid://gitlab/Ai::Catalog::ItemConsumer/1',
       enabled: true,
@@ -228,6 +229,7 @@ export const mockAgentsWithConfig = [
     description: 'Another AI assistant',
     createdAt: '2024-02-10T14:20:00Z',
     versions: mockAgentVersions,
+    project: mockProjectWithNamespace,
     configurationForProject: {
       id: 'gid://gitlab/Ai::Catalog::ItemConsumer/2',
       enabled: true,
@@ -240,6 +242,7 @@ export const mockAgentsWithConfig = [
     description: 'Another AI assistant',
     createdAt: '2024-02-10T14:20:00Z',
     versions: mockAgentVersions,
+    project: mockProjectWithNamespace,
     public: false,
     configurationForProject: {
       id: 'gid://gitlab/Ai::Catalog::ItemConsumer/3',

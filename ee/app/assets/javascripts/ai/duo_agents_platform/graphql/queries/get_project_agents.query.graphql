@@ -32,6 +32,10 @@ query projectAiCatalogAgents(
             ...BaseAiCatalogAgentVersion
           }
         }
+        project {
+          id
+          nameWithNamespace
+        }
         configurationForProject(projectId: $projectId) {
           id
           enabled
