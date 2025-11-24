@@ -11,7 +11,7 @@ module Geo
 
       def initialize
         @ntp_host = ENV.fetch('NTP_HOST', 'pool.ntp.org')
-        @ntp_port = ENV.fetch('NTP_PORT', 'ntp')
+        @ntp_port = ENV.fetch('NTP_PORT', '123')
         @ntp_timeout = ENV.fetch('NTP_TIMEOUT', Net::NTP::TIMEOUT).to_i
       end
 
