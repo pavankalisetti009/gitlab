@@ -187,6 +187,7 @@ RSpec.describe 'getting list of branch rules for a project', feature_category: :
                 "allowForcePush" => false,
                 "codeOwnerApprovalRequired" => false,
                 "modificationBlockedByPolicy" => false,
+                "protectedFromPushBySecurityPolicy" => false,
                 "isGroupLevel" => false
               },
               'createdAt' => branch_rule_a.created_at.iso8601,
@@ -205,6 +206,7 @@ RSpec.describe 'getting list of branch rules for a project', feature_category: :
                 "allowForcePush" => false,
                 "codeOwnerApprovalRequired" => false,
                 "modificationBlockedByPolicy" => false,
+                "protectedFromPushBySecurityPolicy" => false,
                 "isGroupLevel" => false
               },
               'createdAt' => branch_rule_b.created_at.iso8601,
@@ -244,6 +246,7 @@ RSpec.describe 'getting list of branch rules for a project', feature_category: :
                   "allowForcePush" => false,
                   "codeOwnerApprovalRequired" => false,
                   "modificationBlockedByPolicy" => false,
+                  "protectedFromPushBySecurityPolicy" => false,
                   "isGroupLevel" => true
                 },
                 'createdAt' => group_branch_rule.created_at.iso8601,

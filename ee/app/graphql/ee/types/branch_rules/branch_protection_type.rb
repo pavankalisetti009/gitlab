@@ -23,6 +23,12 @@ module EE
             description: 'Indicates if a security policy prevents modification.',
             calls_gitaly: true
 
+          field :protected_from_push_by_security_policy,
+            type: GraphQL::Types::Boolean,
+            null: false,
+            description: 'Indicates if a security policy prevents push or force push.',
+            calls_gitaly: true
+
           field :is_group_level,
             type: GraphQL::Types::Boolean,
             null: false,

@@ -75,6 +75,7 @@ module EE
         .execute
         .include?(name)
     end
+    alias_method :protected_from_push_by_security_policy, :protected_from_push_by_security_policy?
 
     def can_unprotect?(user)
       return true if unprotect_access_levels.empty?
