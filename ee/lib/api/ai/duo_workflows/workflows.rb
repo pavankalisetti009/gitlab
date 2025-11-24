@@ -13,6 +13,10 @@ module API
 
         feature_category :duo_agent_platform
 
+        allow_access_with_scope :ai_workflows, if: ->(request) do
+          request.get? && request.path.eql?('/api/v4/ai/duo_workflows/ws')
+        end
+
         before do
           authenticate!
           set_current_organization

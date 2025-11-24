@@ -1785,10 +1785,10 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
     end
 
     context 'when authenticated with a token that has the ai_workflows scope' do
-      it 'is forbidden' do
+      it 'is allowed' do
         get api(path, oauth_access_token: ai_workflows_oauth_token), headers: workhorse_headers
 
-        expect(response).to have_gitlab_http_status(:forbidden)
+        expect(response).to have_gitlab_http_status(:ok)
       end
     end
   end

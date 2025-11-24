@@ -736,7 +736,7 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
   context 'with setup_script configuration' do
     let(:duo_config) { instance_double(::Gitlab::DuoAgentPlatform::Config) }
     let(:setup_commands) { ['npm install', 'npm run build', 'npm test'] }
-    let(:main_commands) do
+    let(:shared_main_commands) do
       [
         %(echo $DUO_WORKFLOW_DEFINITION),
         %(echo $DUO_WORKFLOW_GOAL),
@@ -745,8 +745,13 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
         %(echo $DUO_WORKFLOW_FLOW_CONFIG),
         %(echo $DUO_WORKFLOW_FLOW_CONFIG_SCHEMA_VERSION),
         %(echo $DUO_WORKFLOW_ADDITIONAL_CONTEXT_CONTENT),
-        %(echo Starting Workflow #{workflow.id}),
-        %(npx -y @gitlab/duo-cli@#{duo_cli_version} run --existing-session-id #{workflow.id} --connection-type grpc)
+        %(echo Starting Workflow #{workflow.id})
+      ]
+    end
+
+    let(:executor_commands) do
+      [
+        "npx -y @gitlab/duo-cli@#{duo_cli_version} run --existing-session-id #{workflow.id} --connection-type websocket"
       ]
     end
 
@@ -773,7 +778,7 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
         expect(execute).to be_success
 
         expect(Ci::Workloads::RunWorkloadService).to have_received(:new) do |workload_definition:, **_kwargs|
-          expect(workload_definition.commands).to eq(setup_commands + main_commands)
+          expect(workload_definition.commands).to eq(setup_commands + shared_main_commands + executor_commands)
         end
 
         expect(execute).to be_success
@@ -784,16 +789,8 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
           stub_feature_flags(ai_dap_use_headless_node_executor: false)
         end
 
-        let(:main_commands) do
+        let(:executor_commands) do
           [
-            %(echo $DUO_WORKFLOW_DEFINITION),
-            %(echo $DUO_WORKFLOW_GOAL),
-            %(echo $DUO_WORKFLOW_SOURCE_BRANCH),
-            %(git checkout $CI_WORKLOAD_REF),
-            %(echo $DUO_WORKFLOW_FLOW_CONFIG),
-            %(echo $DUO_WORKFLOW_FLOW_CONFIG_SCHEMA_VERSION),
-            %(echo $DUO_WORKFLOW_ADDITIONAL_CONTEXT_CONTENT),
-            %(echo Starting Workflow #{workflow.id}),
             %(wget #{Gitlab::DuoWorkflow::Executor.executor_binary_url} -O /tmp/duo-workflow-executor.tar.gz),
             %(tar xf /tmp/duo-workflow-executor.tar.gz --directory /tmp),
             %(chmod +x /tmp/duo-workflow-executor),
@@ -807,7 +804,7 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
           expect(execute).to be_success
 
           expect(Ci::Workloads::RunWorkloadService).to have_received(:new) do |workload_definition:, **_kwargs|
-            expect(workload_definition.commands).to eq(setup_commands + main_commands)
+            expect(workload_definition.commands).to eq(setup_commands + shared_main_commands + executor_commands)
           end
 
           expect(execute).to be_success
@@ -821,28 +818,36 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
         allow(Ci::Workloads::RunWorkloadService).to receive(:new).and_call_original
       end
 
-      let(:main_commands) do
-        [
-          %(echo $DUO_WORKFLOW_DEFINITION),
-          %(echo $DUO_WORKFLOW_GOAL),
-          %(echo $DUO_WORKFLOW_SOURCE_BRANCH),
-          %(git checkout $CI_WORKLOAD_REF),
-          %(echo $DUO_WORKFLOW_FLOW_CONFIG),
-          %(echo $DUO_WORKFLOW_FLOW_CONFIG_SCHEMA_VERSION),
-          %(echo $DUO_WORKFLOW_ADDITIONAL_CONTEXT_CONTENT),
-          %(echo Starting Workflow #{workflow.id}),
-          %(npx -y @gitlab/duo-cli@#{duo_cli_version} run --existing-session-id #{workflow.id} --connection-type grpc)
-        ]
-      end
-
       it 'uses only the main commands' do
         expect(execute).to be_success
 
         expect(Ci::Workloads::RunWorkloadService).to have_received(:new) do |workload_definition:, **_kwargs|
-          expect(workload_definition.commands).to eq(main_commands)
+          expect(workload_definition.commands).to eq(shared_main_commands + executor_commands)
         end
 
         expect(execute).to be_success
+      end
+
+      context 'without ai_dap_executor_connects_over_ws feature flag' do
+        before do
+          stub_feature_flags(ai_dap_executor_connects_over_ws: false)
+        end
+
+        let(:executor_commands) do
+          [
+            %(npx -y @gitlab/duo-cli@#{duo_cli_version} run --existing-session-id #{workflow.id} --connection-type grpc)
+          ]
+        end
+
+        it 'uses only the main commands' do
+          expect(execute).to be_success
+
+          expect(Ci::Workloads::RunWorkloadService).to have_received(:new) do |workload_definition:, **_kwargs|
+            expect(workload_definition.commands).to eq(shared_main_commands + executor_commands)
+          end
+
+          expect(execute).to be_success
+        end
       end
 
       context 'without ai_dap_use_headless_node_executor feature flag' do
@@ -850,16 +855,8 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
           stub_feature_flags(ai_dap_use_headless_node_executor: false)
         end
 
-        let(:main_commands) do
+        let(:executor_commands) do
           [
-            %(echo $DUO_WORKFLOW_DEFINITION),
-            %(echo $DUO_WORKFLOW_GOAL),
-            %(echo $DUO_WORKFLOW_SOURCE_BRANCH),
-            %(git checkout $CI_WORKLOAD_REF),
-            %(echo $DUO_WORKFLOW_FLOW_CONFIG),
-            %(echo $DUO_WORKFLOW_FLOW_CONFIG_SCHEMA_VERSION),
-            %(echo $DUO_WORKFLOW_ADDITIONAL_CONTEXT_CONTENT),
-            %(echo Starting Workflow #{workflow.id}),
             %(wget #{Gitlab::DuoWorkflow::Executor.executor_binary_url} -O /tmp/duo-workflow-executor.tar.gz),
             %(tar xf /tmp/duo-workflow-executor.tar.gz --directory /tmp),
             %(chmod +x /tmp/duo-workflow-executor),
@@ -873,7 +870,7 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
           expect(execute).to be_success
 
           expect(Ci::Workloads::RunWorkloadService).to have_received(:new) do |workload_definition:, **_kwargs|
-            expect(workload_definition.commands).to eq(main_commands)
+            expect(workload_definition.commands).to eq(shared_main_commands + executor_commands)
           end
 
           expect(execute).to be_success
