@@ -96,6 +96,26 @@ RSpec.describe Plan, feature_category: :subscription_management do
     end
   end
 
+  describe '#ultimate_or_ultimate_trial_plans?' do
+    subject { plan.ultimate_or_ultimate_trial_plans? }
+
+    (Plan.all_plans - Plan::ALL_ULTIMATE_PLANS).each do |plan|
+      context "when '#{plan}'" do
+        let(:plan) { build(:"#{plan}_plan") }
+
+        it { is_expected.to be_falsey }
+      end
+    end
+
+    Plan::ALL_ULTIMATE_PLANS.each do |plan|
+      context "when '#{plan}'" do
+        let(:plan) { build(:"#{plan}_plan") }
+
+        it { is_expected.to be_truthy }
+      end
+    end
+  end
+
   describe '::PLANS_ELIGIBLE_FOR_TRIAL' do
     subject { described_class::PLANS_ELIGIBLE_FOR_TRIAL }
 
@@ -106,6 +126,12 @@ RSpec.describe Plan, feature_category: :subscription_management do
     subject { described_class::ULTIMATE_TRIAL_PLANS }
 
     it { is_expected.to match_array(%w[ultimate_trial ultimate_trial_paid_customer]) }
+  end
+
+  describe '::ALL_ULTIMATE_PLANS' do
+    subject { described_class::ALL_ULTIMATE_PLANS }
+
+    it { is_expected.to match_array(%w[ultimate ultimate_trial ultimate_trial_paid_customer]) }
   end
 
   describe '.with_subscriptions' do

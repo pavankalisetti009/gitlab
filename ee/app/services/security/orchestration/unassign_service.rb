@@ -5,10 +5,10 @@ module Security
     class UnassignService < ::BaseContainerService
       include Gitlab::Utils::StrongMemoize
 
-      def execute(delete_bot: true)
+      def execute(delete_bot: true, skip_csp: true)
         return error(_('Policy project doesn\'t exist')) unless security_orchestration_policy_configuration
 
-        if container.designated_as_csp?
+        if container.designated_as_csp? && skip_csp
           return error(_("You cannot unassign security policy project for group designated as CSP."))
         end
 

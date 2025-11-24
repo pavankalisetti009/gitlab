@@ -893,6 +893,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace: :cronjob
+- :name: cronjob:security_unassign_policy_configurations_for_expired_licenses_cron
+  :worker_name: Security::UnassignPolicyConfigurationsForExpiredLicensesCronWorker
+  :feature_category: :security_policy_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace: :cronjob
 - :name: cronjob:security_vulnerability_scanning_destroy_expired_sbom_scans
   :worker_name: Security::VulnerabilityScanning::DestroyExpiredSbomScansWorker
   :feature_category: :software_composition_analysis
@@ -4348,6 +4358,16 @@
   :queue_namespace:
 - :name: security_sync_scan_policies
   :worker_name: Security::SyncScanPoliciesWorker
+  :feature_category: :security_policy_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
+- :name: security_unassign_policy_configurations_for_expired_namespace
+  :worker_name: Security::UnassignPolicyConfigurationsForExpiredNamespaceWorker
   :feature_category: :security_policy_management
   :has_external_dependencies: false
   :urgency: :low

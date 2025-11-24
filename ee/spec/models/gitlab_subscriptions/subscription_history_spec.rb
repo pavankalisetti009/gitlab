@@ -65,6 +65,56 @@ RSpec.describe GitlabSubscriptions::SubscriptionHistory, :saas, feature_category
         it { expect(transitioning_to_plan_after).to eq([]) }
       end
     end
+
+    describe '.with_all_ultimate_plans' do
+      it 'returns histories with any ultimate plan' do
+        premium_plan = create(:premium_plan)
+        create(:gitlab_subscription_history, hosted_plan: premium_plan)
+
+        ultimate_plan = create(:ultimate_plan)
+        history_with_ultimate_plan = create(:gitlab_subscription_history, hosted_plan: ultimate_plan)
+
+        ultimate_trial_plan = create(:ultimate_trial_plan)
+        history_with_ultimate_trial_plan = create(:gitlab_subscription_history, hosted_plan: ultimate_trial_plan)
+
+        expect(described_class.with_all_ultimate_plans).to match_array([
+          history_with_ultimate_plan,
+          history_with_ultimate_trial_plan
+        ])
+      end
+    end
+
+    describe '.ended_on', :freeze_time do
+      it 'returns histories that ended on a given date' do
+        create(:gitlab_subscription_history, end_date: Date.current)
+        create(:gitlab_subscription_history, end_date: Date.tomorrow)
+        history3 = create(:gitlab_subscription_history, end_date: Date.yesterday)
+
+        date = Date.yesterday
+
+        expect(described_class.ended_on(date)).to contain_exactly(history3)
+      end
+    end
+
+    describe '.with_namespace_subscription' do
+      let(:query) do
+        described_class.with_namespace_subscription.find_each do |history|
+          history.namespace&.gitlab_subscription&.hosted_plan
+        end
+      end
+
+      it 'preloads namespace and gitlab_subscription to avoid N+1 queries' do
+        create(:gitlab_subscription_history)
+        create(:gitlab_subscription_history)
+
+        control = ActiveRecord::QueryRecorder.new { query }
+
+        create(:gitlab_subscription_history)
+        create(:gitlab_subscription_history)
+
+        expect { query }.not_to exceed_query_limit(control)
+      end
+    end
   end
 
   describe '.create_from_change' do

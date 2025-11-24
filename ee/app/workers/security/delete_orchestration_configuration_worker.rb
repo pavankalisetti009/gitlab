@@ -9,6 +9,8 @@ module Security
     deduplicate :until_executed
     idempotent!
 
+    concurrency_limit -> { 200 }
+
     def self.idempotency_arguments(arguments)
       configuration_id, _, old_policy_project_id = arguments
 
