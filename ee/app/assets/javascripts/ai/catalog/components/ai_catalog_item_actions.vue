@@ -7,9 +7,10 @@ import {
   GlModalDirective,
   GlSprintf,
 } from '@gitlab/ui';
-import { s__ } from '~/locale';
+import { s__, sprintf } from '~/locale';
 import { isLoggedIn } from '~/lib/utils/common_utils';
 import ConfirmActionModal from '~/vue_shared/components/confirm_action_modal.vue';
+import { AI_CATALOG_ITEM_LABELS } from '../constants';
 import AiCatalogItemConsumerModal from './ai_catalog_item_consumer_modal.vue';
 import AiCatalogItemReportModal from './ai_catalog_item_report_modal.vue';
 
@@ -65,12 +66,7 @@ export default {
       required: false,
       default: () => {},
     },
-    deleteConfirmTitle: {
-      type: String,
-      required: false,
-      default: null,
-    },
-    deleteConfirmMessage: {
+    disableConfirmMessage: {
       type: String,
       required: false,
       default: null,
@@ -120,10 +116,21 @@ export default {
         },
       };
     },
-    disableConfirmMessage() {
-      return s__(
-        'AICatalog|Are you sure you want to disable agent %{name}? The agent and any associated flows and triggers will no longer work in this project.',
-      );
+    itemTypeLabel() {
+      return AI_CATALOG_ITEM_LABELS[this.item.itemType];
+    },
+    disableConfirmTitle() {
+      return sprintf(s__('AICatalog|Disable %{itemType}'), {
+        itemType: this.itemTypeLabel,
+      });
+    },
+    deleteConfirmTitle() {
+      return sprintf(s__('AICatalog|Delete %{itemType}'), {
+        itemType: this.itemTypeLabel,
+      });
+    },
+    deleteConfirmMessage() {
+      return s__('AICatalog|Are you sure you want to delete %{itemType} %{name}?');
     },
   },
 };
@@ -240,13 +247,14 @@ export default {
         <template #name>
           <strong>{{ item.name }}</strong>
         </template>
+        <template #itemType>{{ itemTypeLabel }}</template>
       </gl-sprintf>
     </confirm-action-modal>
     <confirm-action-modal
       v-if="showDisableModal"
       modal-id="disable-item-modal"
       variant="danger"
-      :title="s__('AICatalog|Disable agent')"
+      :title="disableConfirmTitle"
       :action-fn="disableFn"
       :action-text="__('Disable')"
       @close="showDisableModal = false"
