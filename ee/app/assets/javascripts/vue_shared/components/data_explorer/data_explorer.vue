@@ -10,7 +10,7 @@ import {
   GlLink,
   GlAlert,
 } from '@gitlab/ui';
-import ModalCopyButton from '~/vue_shared/components/modal_copy_button.vue';
+import SimpleCopyButton from '~/vue_shared/components/simple_copy_button.vue';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import GlqlResolver from '~/glql/components/common/resolver.vue';
 
@@ -23,7 +23,7 @@ export default {
     GlDashboardPanel,
     GlEmptyState,
     GlLink,
-    ModalCopyButton,
+    SimpleCopyButton,
     GlqlResolver,
   },
   glqlDocsLink: helpPagePath('user/glql/_index'),
@@ -73,7 +73,7 @@ export default {
         textarea-classes="!gl-p-6 !gl-font-monospace"
         autofocus
       />
-      <modal-copy-button
+      <simple-copy-button
         v-if="hasQueryText"
         :title="s__('DataExplorer|Copy query')"
         :text="query"

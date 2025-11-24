@@ -10,7 +10,7 @@ import dastSiteValidationCreateMutation from 'ee/security_configuration/dast_sit
 import createApolloProvider from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import download from '~/lib/utils/downloader';
-import ModalCopyButton from '~/vue_shared/components/modal_copy_button.vue';
+import SimpleCopyButton from '~/vue_shared/components/simple_copy_button.vue';
 import * as responses from '../mock_data/apollo_mock';
 
 jest.mock('~/lib/utils/downloader');
@@ -269,7 +269,7 @@ describe('DastSiteValidationModal', () => {
       });
 
       it('shows a button that copies the http-header to the clipboard', () => {
-        const clipboardButton = wrapper.findComponent(ModalCopyButton);
+        const clipboardButton = wrapper.findComponent(SimpleCopyButton);
 
         expect(clipboardButton.exists()).toBe(true);
         expect(clipboardButton.props()).toMatchObject({
@@ -314,7 +314,7 @@ describe('DastSiteValidationModal', () => {
 
         await enableValidationMethod('meta tag');
 
-        const clipboardButton = wrapper.findComponent(ModalCopyButton);
+        const clipboardButton = wrapper.findComponent(SimpleCopyButton);
 
         expect(clipboardButton.exists()).toBe(true);
         expect(clipboardButton.props()).toMatchObject({

@@ -17,7 +17,7 @@ import { helpPagePath } from '~/helpers/help_page_helper';
 import download from '~/lib/utils/downloader';
 import { cleanLeadingSeparator, joinPaths, stripPathTail } from '~/lib/utils/url_utility';
 import { __, s__ } from '~/locale';
-import ModalCopyButton from '~/vue_shared/components/modal_copy_button.vue';
+import SimpleCopyButton from '~/vue_shared/components/simple_copy_button.vue';
 import {
   DAST_SITE_VALIDATION_MODAL_ID,
   DAST_SITE_VALIDATION_HTTP_HEADER_KEY,
@@ -34,7 +34,7 @@ export default {
   DAST_SITE_VALIDATION_MODAL_ID,
   components: {
     GlAlert,
-    ModalCopyButton,
+    SimpleCopyButton,
     GlButton,
     GlFormGroup,
     GlFormInput,
@@ -273,10 +273,9 @@ export default {
         :label="s__('DastSiteValidation|Step 2 - Add the following HTTP header to your site.')"
       >
         <code class="gl-bg-black gl-p-3 gl-text-white">{{ httpHeader }}</code>
-        <modal-copy-button
+        <simple-copy-button
           :text="httpHeader"
           :title="s__('DastSiteValidation|Copy HTTP header to clipboard')"
-          :modal-id="modalProps.id"
         />
       </gl-form-group>
       <gl-form-group
@@ -284,10 +283,9 @@ export default {
         :label="s__('DastSiteValidation|Step 2 - Add the following meta tag to your site.')"
       >
         <code class="gl-bg-black gl-p-3 gl-text-white">{{ metaTag }}</code>
-        <modal-copy-button
+        <simple-copy-button
           :text="metaTag"
           :title="s__('DastSiteValidation|Copy Meta tag to clipboard')"
-          :modal-id="modalProps.id"
         />
       </gl-form-group>
       <gl-form-group :label="locationStepLabel" class="gl-max-w-62">
