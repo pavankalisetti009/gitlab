@@ -8,11 +8,11 @@ module Observability
 
     def gather_observability_values(params)
       if params[:observability_metric_details].present?
-        parsed = ::Gitlab::Json.parse(CGI.unescape(params[:observability_metric_details]))
+        parsed = ::Gitlab::Json.safe_parse(CGI.unescape(params[:observability_metric_details]))
 
         { metric: { name: parsed['name'], type: "#{parsed['type'].downcase}_type" } }
       elsif params[:observability_log_details].present?
-        parsed = ::Gitlab::Json.parse(CGI.unescape(params[:observability_log_details]))
+        parsed = ::Gitlab::Json.safe_parse(CGI.unescape(params[:observability_log_details]))
 
         {
           log: {
@@ -24,7 +24,7 @@ module Observability
           }
         }
       elsif params[:observability_trace_details].present?
-        parsed = ::Gitlab::Json.parse(CGI.unescape(params[:observability_trace_details]))
+        parsed = ::Gitlab::Json.safe_parse(CGI.unescape(params[:observability_trace_details]))
 
         {
           trace: {
@@ -65,7 +65,7 @@ module Observability
     def safe_parse_json(stringified_json)
       return {} if stringified_json.blank?
 
-      ::Gitlab::Json.parse(CGI.unescape(stringified_json))
+      ::Gitlab::Json.safe_parse(CGI.unescape(stringified_json))
     rescue JSON::ParserError, TypeError
       {}
     end
