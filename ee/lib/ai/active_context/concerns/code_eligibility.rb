@@ -22,7 +22,6 @@ module Ai
             project = find_project(project_obj_or_id)
 
             break false unless project
-            break false unless Feature.enabled?(:active_context_code_index_project, project)
             break false unless project.project_setting.duo_features_enabled
             break false unless enabled_namespace_for_project(project)&.ready?
 
