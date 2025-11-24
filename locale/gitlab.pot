@@ -2508,6 +2508,15 @@ msgstr ""
 msgid "AICatalog|Additional information"
 msgstr ""
 
+msgid "AICatalog|Agent"
+msgstr ""
+
+msgid "AICatalog|Agent \"%{name}\" could not be enabled."
+msgstr ""
+
+msgid "AICatalog|Agent ID: %{id}"
+msgstr ""
+
 msgid "AICatalog|Agent configuration"
 msgstr ""
 
@@ -2527,6 +2536,9 @@ msgid "AICatalog|Agent does not exist"
 msgstr ""
 
 msgid "AICatalog|Agent enabled in %{name}."
+msgstr ""
+
+msgid "AICatalog|Agent is required."
 msgstr ""
 
 msgid "AICatalog|Agent not found."
@@ -2715,6 +2727,9 @@ msgstr ""
 msgid "AICatalog|Enable %{itemType} in a %{targetType}"
 msgstr ""
 
+msgid "AICatalog|Enable agent from group"
+msgstr ""
+
 msgid "AICatalog|Enable flow from group"
 msgstr ""
 
@@ -2748,6 +2763,9 @@ msgstr ""
 msgid "AICatalog|Failed to disable flow"
 msgstr ""
 
+msgid "AICatalog|Failed to load group agents"
+msgstr ""
+
 msgid "AICatalog|Failed to load group flows"
 msgstr ""
 
@@ -2760,7 +2778,7 @@ msgstr ""
 msgid "AICatalog|Flow"
 msgstr ""
 
-msgid "AICatalog|Flow \"%{flowName}\" could not be enabled."
+msgid "AICatalog|Flow \"%{name}\" could not be enabled."
 msgstr ""
 
 msgid "AICatalog|Flow ID: %{id}"
@@ -2850,6 +2868,9 @@ msgstr ""
 msgid "AICatalog|New flow"
 msgstr ""
 
+msgid "AICatalog|Only agents enabled in your top-level group are shown."
+msgstr ""
+
 msgid "AICatalog|Only flows enabled in your top-level group are shown."
 msgstr ""
 
@@ -2923,6 +2944,9 @@ msgid "AICatalog|Select a project for your AI agent to be associated with."
 msgstr ""
 
 msgid "AICatalog|Select a project for your AI flow to be associated with."
+msgstr ""
+
+msgid "AICatalog|Select an agent"
 msgstr ""
 
 msgid "AICatalog|Select at least one trigger."

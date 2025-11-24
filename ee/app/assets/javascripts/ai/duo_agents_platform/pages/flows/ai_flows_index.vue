@@ -26,7 +26,7 @@ import {
   AI_CATALOG_FLOWS_SHOW_ROUTE,
   AI_CATALOG_FLOWS_ROUTE,
 } from 'ee/ai/catalog/router/constants';
-import AiCatalogAddFlowToProjectModal from '../../components/catalog/ai_catalog_add_flow_to_project_modal.vue';
+import AddProjectItemConsumerModal from '../../components/catalog/add_project_item_consumer_modal.vue';
 import AiCatalogConfiguredItemsWrapper from '../../components/catalog/ai_catalog_configured_items_wrapper.vue';
 
 export default {
@@ -35,7 +35,7 @@ export default {
     GlButton,
     ErrorsAlert,
     AiCatalogListHeader,
-    AiCatalogAddFlowToProjectModal,
+    AddProjectItemConsumerModal,
     AiCatalogConfiguredItemsWrapper,
   },
   directives: {
@@ -153,14 +153,7 @@ export default {
     },
   },
   methods: {
-    async addFlowToProject(flowAttributes) {
-      const { flowName, ...flowInput } = flowAttributes;
-      const input = {
-        ...flowInput,
-        target: {
-          projectId: convertToGraphQLId(TYPENAME_PROJECT, this.projectId),
-        },
-      };
+    async addFlowToProject({ itemName, ...input }) {
       const targetType = AI_CATALOG_CONSUMER_TYPE_PROJECT;
       const targetTypeLabel = AI_CATALOG_CONSUMER_LABELS[targetType];
 
@@ -168,7 +161,12 @@ export default {
         const { data } = await this.$apollo.mutate({
           mutation: createAiCatalogItemConsumer,
           variables: {
-            input,
+            input: {
+              ...input,
+              target: {
+                projectId: convertToGraphQLId(TYPENAME_PROJECT, this.projectId),
+              },
+            },
           },
           refetchQueries: [aiCatalogConfiguredItemsQuery],
         });
@@ -176,8 +174,8 @@ export default {
         if (data) {
           const { errors } = data.aiCatalogItemConsumerCreate;
           if (errors.length > 0) {
-            this.errorTitle = sprintf(s__('AICatalog|Flow "%{flowName}" could not be enabled.'), {
-              flowName,
+            this.errorTitle = sprintf(s__('AICatalog|Flow "%{name}" could not be enabled.'), {
+              name: itemName,
             });
             this.errors = errors;
             return;
@@ -211,6 +209,17 @@ export default {
     },
   },
   addFlowModalId: 'add-flow-to-project-modal',
+  modalTexts: {
+    title: s__('AICatalog|Enable flow from group'),
+    label: s__('AICatalog|Flow'),
+    labelDescription: s__('AICatalog|Only flows enabled in your top-level group are shown.'),
+    invalidFeedback: s__('AICatalog|Flow is required.'),
+    error: s__('AICatalog|Failed to load group flows'),
+    dropdownTexts: {
+      placeholder: s__('AICatalog|Select a flow'),
+      itemSublabel: s__('AICatalog|Flow ID: %{id}'),
+    },
+  },
 };
 </script>
 
@@ -241,9 +250,12 @@ export default {
       :item-type-config="itemTypeConfig"
       @error="handleError"
     />
-    <ai-catalog-add-flow-to-project-modal
+    <add-project-item-consumer-modal
       v-if="showAddFlow"
+      :item-types="itemTypes"
       :modal-id="$options.addFlowModalId"
+      :modal-texts="$options.modalTexts"
+      show-triggers
       @submit="addFlowToProject"
     />
   </div>
