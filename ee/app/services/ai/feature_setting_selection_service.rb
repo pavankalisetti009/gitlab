@@ -67,7 +67,7 @@ module Ai
     end
 
     def default_duo_namespace
-      @current_user.user_preference.get_default_duo_namespace
+      @current_user.user_preference.duo_default_namespace_with_fallback
     end
 
     def default_duo_namespace_required?

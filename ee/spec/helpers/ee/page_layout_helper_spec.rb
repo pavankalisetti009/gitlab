@@ -176,11 +176,11 @@ RSpec.describe EE::PageLayoutHelper, feature_category: :shared do
       let(:default_namespace) { create(:group) } # rubocop:disable RSpec/FactoryBot/AvoidCreate -- for persist check
 
       before do
-        allow(user.user_preference).to receive(:get_default_duo_namespace).and_return(default_namespace)
+        allow(user.user_preference).to receive(:duo_default_namespace_with_fallback).and_return(default_namespace)
       end
 
       it 'does not use default namespace when project is present' do
-        expect(user.user_preference).not_to receive(:get_default_duo_namespace)
+        expect(user.user_preference).not_to receive(:duo_default_namespace_with_fallback)
 
         result = helper.duo_chat_panel_data(user, project, nil)
 

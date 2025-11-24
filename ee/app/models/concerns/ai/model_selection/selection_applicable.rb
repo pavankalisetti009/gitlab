@@ -10,26 +10,16 @@ module Ai
       end
 
       included do
-        def get_default_duo_namespace
-          current_user.user_preference.get_default_duo_namespace
+        def duo_default_namespace_with_fallback
+          current_user.user_preference.duo_default_namespace_with_fallback
         end
-        strong_memoize_attr :get_default_duo_namespace
-
-        def distinct_eligible_assignments
-          current_user.user_preference.distinct_eligible_duo_add_on_assignments
-        end
-        strong_memoize_attr :distinct_eligible_assignments
-
-        def user_assigned_duo_namespaces
-          distinct_eligible_assignments.map(&:namespace)
-        end
-        strong_memoize_attr :user_assigned_duo_namespaces
+        strong_memoize_attr :duo_default_namespace_with_fallback
 
         def default_duo_namespace_required?
           # we need to return the default namespace only when there is multiple seats assigned to the user.
           # Otherwise, we might have error in undesirable cases
           # e.g. when self-hosted feature setting are not correctly set
-          return false if get_default_duo_namespace
+          return false if duo_default_namespace_with_fallback
 
           # if any of the assigned seat has a namespace with model switching enable
           # it is required for the user to have a default namespace to be selected.

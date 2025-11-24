@@ -32,7 +32,7 @@ RSpec.describe CodeSuggestions::ModelDetails::CodeCompletion, feature_category: 
   let(:completions_model_details) { described_class.new(current_user: user) }
 
   before do
-    allow(user.user_preference).to receive(:get_default_duo_namespace).and_return(group1)
+    allow(user.user_preference).to receive(:duo_default_namespace_with_fallback).and_return(group1)
     # we add default namespaces to account for no context calls
     # For model selection see https://gitlab.com/gitlab-org/gitlab/-/issues/552082
     # Is test in ee/spec/lib/code_suggestions/model_details/base_spec.rb
@@ -104,7 +104,7 @@ RSpec.describe CodeSuggestions::ModelDetails::CodeCompletion, feature_category: 
             it 'executes the expected number of queries' do
               # We are only expecting 4 queries:
               # 1 - for ModelDetails::Completions#feature_setting
-              # 2 - for UserPreference#get_default_duo_namespace
+              # 2 - for UserPreference#duo_default_namespace_with_fallback
               # 3 - for current_user#duo_available_namespace_ids in ModelDetails::Completions#user_duo_groups
               # 4 - for Group.by_id(<group ids>) in ModelDetails::Completions#user_duo_groups
               expect { actual_result }.not_to exceed_query_limit(4)

@@ -37,21 +37,9 @@ RSpec.describe ::Ai::ModelSelection::SelectionApplicable, feature_category: :"se
     subject(:included_instance) { included_class.new(user) }
 
     context 'when there is no assignment' do
-      describe '#get_default_duo_namespace' do
+      describe '#duo_default_namespace_with_fallback' do
         it 'returns nil' do
-          expect(included_instance.get_default_duo_namespace).to be_nil
-        end
-      end
-
-      describe '#distinct_eligible_assignments' do
-        it 'returns an empty enumerable' do
-          expect(included_instance.distinct_eligible_assignments).to be_empty
-        end
-      end
-
-      describe '#user_assigned_duo_namespaces' do
-        it 'returns an empty enumerable' do
-          expect(included_instance.user_assigned_duo_namespaces).to be_empty
+          expect(included_instance.duo_default_namespace_with_fallback).to be_nil
         end
       end
 
@@ -67,24 +55,9 @@ RSpec.describe ::Ai::ModelSelection::SelectionApplicable, feature_category: :"se
         create(:gitlab_subscription_user_add_on_assignment, add_on_purchase: different_namespace_add_on, user: user)
       end
 
-      describe '#get_default_duo_namespace' do
+      describe '#duo_default_namespace_with_fallback' do
         it 'returns the related group' do
-          expect(included_instance.get_default_duo_namespace).to eq(first_group)
-        end
-      end
-
-      describe '#distinct_eligible_assignments' do
-        it 'returns the related assigment' do
-          actual_assignment = included_instance.distinct_eligible_assignments
-          expected_assignment = [user_assignment]
-
-          expect(actual_assignment).to match_array(expected_assignment)
-        end
-      end
-
-      describe '#user_assigned_duo_namespaces' do
-        it 'returns an array with only one related group inside' do
-          expect(included_instance.user_assigned_duo_namespaces).to match_array([first_group])
+          expect(included_instance.duo_default_namespace_with_fallback).to eq(first_group)
         end
       end
 
@@ -104,32 +77,14 @@ RSpec.describe ::Ai::ModelSelection::SelectionApplicable, feature_category: :"se
         end
       end
 
-      describe '#distinct_eligible_assignments' do
-        it 'returns the related assigments' do
-          actual_assignment = included_instance.distinct_eligible_assignments
-
-          expected_namespaces = [first_group, second_group]
-          actual_namespaces = actual_assignment.map(&:namespace)
-
-          expect(actual_assignment.size).to eq(2)
-          expect(actual_namespaces).to match_array(expected_namespaces)
-        end
-      end
-
-      describe '#user_assigned_duo_namespaces' do
-        it 'returns an array with related groups inside' do
-          expect(included_instance.user_assigned_duo_namespaces).to match_array([first_group, second_group])
-        end
-      end
-
       context 'when user preference has a default duo add on assignment' do
         before do
-          allow(user.user_preference).to receive(:get_default_duo_namespace).and_return(second_group)
+          allow(user.user_preference).to receive(:duo_default_namespace_with_fallback).and_return(second_group)
         end
 
-        describe '#get_default_duo_namespace' do
+        describe '#duo_default_namespace_with_fallback' do
           it 'returns the related group' do
-            expect(included_instance.get_default_duo_namespace).to eq(second_group)
+            expect(included_instance.duo_default_namespace_with_fallback).to eq(second_group)
           end
         end
 
@@ -141,16 +96,16 @@ RSpec.describe ::Ai::ModelSelection::SelectionApplicable, feature_category: :"se
       end
 
       context 'when user preference does not have a default duo add on assignment' do
-        describe '#get_default_duo_namespace' do
+        describe '#duo_default_namespace_with_fallback' do
           it 'returns nil' do
-            expect(included_instance.get_default_duo_namespace).to be_nil
+            expect(included_instance.duo_default_namespace_with_fallback).to be_nil
           end
         end
 
         describe '#default_duo_namespace_required?' do
           context 'when the user has a default namespace set' do
             before do
-              allow(user.user_preference).to receive(:get_default_duo_namespace).and_return(second_group)
+              allow(user.user_preference).to receive(:duo_default_namespace_with_fallback).and_return(second_group)
             end
 
             it 'returns false' do
@@ -160,7 +115,7 @@ RSpec.describe ::Ai::ModelSelection::SelectionApplicable, feature_category: :"se
 
           context 'when the user has no default namespace set' do
             before do
-              allow(user.user_preference).to receive(:get_default_duo_namespace).and_return(nil)
+              allow(user.user_preference).to receive(:duo_default_namespace_with_fallback).and_return(nil)
             end
 
             context 'when user cannot :assign_default_duo_group' do

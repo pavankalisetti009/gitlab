@@ -47,46 +47,5 @@ RSpec.describe Profiles::PreferencesController, feature_category: :user_profile 
         end
       end
     end
-
-    context 'when updating default duo group' do
-      let!(:user_preference) { create(:user_preference, user: user) }
-      let(:namespace) { create(:group) }
-      let(:add_on) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: namespace) }
-      let(:user_assignment) do
-        create(:gitlab_subscription_user_add_on_assignment, add_on_purchase: add_on, user: user)
-      end
-
-      subject do
-        patch :update,
-          params: { user: { user_preference_attributes:
-          { default_duo_add_on_assignment_id: user_assignment.id } } }
-      end
-
-      context "when assign default duo group is not allowed" do
-        before do
-          allow(Ability).to receive(:allowed?).and_call_original
-          allow(Ability).to receive(:allowed?).with(user, :assign_default_duo_group, user).and_return(false)
-        end
-
-        it 'does not update default_duo_add_on_assignment_id' do
-          expect { subject }.not_to change {
-            user_preference.reload.default_duo_add_on_assignment_id
-          }
-        end
-      end
-
-      context "when assign default duo group is allowed" do
-        before do
-          allow(Ability).to receive(:allowed?).and_call_original
-          allow(Ability).to receive(:allowed?).with(user, :assign_default_duo_group, user).and_return(true)
-        end
-
-        it 'updates default_duo_add_on_assignment_id' do
-          expect { subject }.to change {
-            user_preference.reload.default_duo_add_on_assignment_id
-          }.from(nil).to(user_assignment.id)
-        end
-      end
-    end
   end
 end

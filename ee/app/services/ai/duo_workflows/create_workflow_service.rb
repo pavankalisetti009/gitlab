@@ -7,7 +7,7 @@ module Ai
       include Concerns::WorkflowEventTracking
 
       def initialize(container:, current_user:, params:)
-        @container = container || current_user.user_preference.get_default_duo_namespace
+        @container = container || current_user.user_preference.duo_default_namespace_with_fallback
         @current_user = current_user
         # Remove ids to avoid confusion - @container determines the workflow scope, not raw IDs
         @params = params.except(:namespace_id, :project_id)

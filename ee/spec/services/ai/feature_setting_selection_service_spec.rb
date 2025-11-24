@@ -25,7 +25,7 @@ RSpec.describe Ai::FeatureSettingSelectionService, feature_category: :"self-host
     subject(:response) { service.execute }
 
     before do
-      allow(user.user_preference).to receive(:get_default_duo_namespace).and_return(default_duo_namespace)
+      allow(user.user_preference).to receive(:duo_default_namespace_with_fallback).and_return(default_duo_namespace)
     end
 
     let(:default_duo_namespace) { root_namespace }

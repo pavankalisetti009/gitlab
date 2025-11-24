@@ -71,7 +71,8 @@ RSpec.describe Resolvers::Ai::FoundationalChatAgentsResolver, feature_category: 
           allow(root_namespace_foundational_agents_enabled).to receive(:foundational_agents_default_enabled)
                                                                  .and_return(true)
 
-          allow(current_user.user_preference).to receive(:get_default_duo_namespace).and_return(default_namespace)
+          allow(current_user.user_preference)
+            .to receive(:duo_default_namespace_with_fallback).and_return(default_namespace)
           stub_saas_features(gitlab_com_subscriptions: true)
 
           stub_feature_flags(duo_foundational_agents_availability: [root_namespace_foundational_agents_enabled,

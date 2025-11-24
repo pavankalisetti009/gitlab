@@ -58,7 +58,7 @@ module Gitlab
       def self.default_duo_namespace(user:)
         return unless user
 
-        user.user_preference.get_default_duo_namespace
+        user.user_preference.duo_default_namespace_with_fallback
       end
 
       def self.user_model_selection_enabled?(user:, scope:)
@@ -95,13 +95,13 @@ module Gitlab
 
       def self.duo_scope_hash(user, project, group, controller_name)
         if SCOPELESS_CONTROLLERS.include?(controller_name)
-          { namespace: user.user_preference.get_default_duo_namespace }
+          { namespace: user.user_preference.duo_default_namespace_with_fallback }
         elsif project && project.persisted?
           { project: project }
         elsif group && group.persisted?
           { namespace: group }
         else # rubocop:disable Lint/DuplicateBranch -- readability
-          { namespace: user.user_preference.get_default_duo_namespace }
+          { namespace: user.user_preference.duo_default_namespace_with_fallback }
         end
       end
     end
