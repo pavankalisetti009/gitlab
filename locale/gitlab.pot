@@ -29074,9 +29074,6 @@ msgstr ""
 msgid "Filter by test cases that are currently open."
 msgstr ""
 
-msgid "Filter input"
-msgstr ""
-
 msgid "Filter list for %{title}"
 msgstr ""
 
@@ -29221,7 +29218,7 @@ msgstr ""
 msgid "Focus filter bar"
 msgstr ""
 
-msgid "Focus on the filter bar"
+msgid "Focus on the search bar"
 msgstr ""
 
 msgid "FogBugz Email"
@@ -55711,9 +55708,6 @@ msgstr ""
 msgid "RepositoryGraph|Select display option"
 msgstr ""
 
-msgid "Repository|Filter files (*.vue, *.rb...)"
-msgstr ""
-
 msgid "Repository|New branch"
 msgstr ""
 
@@ -55724,6 +55718,9 @@ msgid "Repository|New file"
 msgstr ""
 
 msgid "Repository|New tag"
+msgstr ""
+
+msgid "Repository|Search files (*.vue, *.rb...)"
 msgstr ""
 
 msgid "Repository|This directory"
