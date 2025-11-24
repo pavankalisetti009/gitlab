@@ -226,6 +226,7 @@ describe('Pipeline header', () => {
       const failedNoBranchHandler = jest.fn().mockResolvedValue({
         data: {
           project: {
+            id: 'gid://gitlab/Project/1',
             pipeline: {
               ...pipelineHeaderFailed.data.project.pipeline,
               ref: null,
