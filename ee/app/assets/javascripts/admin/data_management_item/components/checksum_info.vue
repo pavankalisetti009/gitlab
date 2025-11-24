@@ -1,5 +1,5 @@
 <script>
-import { GlSprintf, GlBadge, GlCard } from '@gitlab/ui';
+import { GlSprintf, GlBadge, GlCard, GlButton } from '@gitlab/ui';
 import { VERIFICATION_STATUS_STATES } from 'ee/geo_shared/constants';
 import TimeAgo from '~/vue_shared/components/time_ago_tooltip.vue';
 import ClipboardButton from '~/vue_shared/components/clipboard_button.vue';
@@ -9,6 +9,7 @@ export default {
   components: {
     GlSprintf,
     GlBadge,
+    GlButton,
     GlCard,
     TimeAgo,
     ClipboardButton,
@@ -16,6 +17,10 @@ export default {
   props: {
     details: {
       type: Object,
+      required: true,
+    },
+    checksumLoading: {
+      type: Boolean,
       required: true,
     },
   },
@@ -34,7 +39,7 @@ export default {
       <h5 class="gl-my-0">{{ s__('Geo|Checksum information') }}</h5>
     </template>
 
-    <div class="gl-flex gl-flex-col gl-gap-4">
+    <div class="gl-flex gl-flex-col gl-items-start gl-gap-4">
       <p class="gl-mb-0" data-testid="checksum-status">
         <gl-sprintf :message="s__('Geo|Status: %{badge}')">
           <template #badge>
@@ -95,6 +100,10 @@ export default {
           category="tertiary"
         />
       </p>
+
+      <gl-button :loading="checksumLoading" @click="$emit('recalculate-checksum')">{{
+        s__('Geo|Checksum')
+      }}</gl-button>
     </div>
   </gl-card>
 </template>

@@ -1,17 +1,20 @@
 import { shallowMount } from '@vue/test-utils';
 import { GlLoadingIcon } from '@gitlab/ui';
+import { nextTick } from 'vue';
 import models from 'test_fixtures/api/admin/data_management/snippet_repository.json';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import AdminDataManagementItemApp from 'ee/admin/data_management_item/components/app.vue';
 import ChecksumInfo from 'ee/admin/data_management_item/components/checksum_info.vue';
 import DataManagementItemModelInfo from 'ee/admin/data_management_item/components/data_management_item_model_info.vue';
-import { getModel } from 'ee/api/data_management_api';
+import { getModel, putModelAction } from 'ee/api/data_management_api';
 import waitForPromises from 'helpers/wait_for_promises';
 import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
 import { createAlert } from '~/alert';
+import showToast from '~/vue_shared/plugins/global_toast';
 
 jest.mock('~/alert');
 jest.mock('ee/api/data_management_api');
+jest.mock('~/vue_shared/plugins/global_toast');
 
 describe('AdminDataManagementItemApp', () => {
   let wrapper;
@@ -63,7 +66,10 @@ describe('AdminDataManagementItemApp', () => {
     });
 
     it('renders model details', () => {
-      expect(findChecksumInfo().props('details')).toEqual(model.checksumInformation);
+      expect(findChecksumInfo().props()).toMatchObject({
+        details: model.checksumInformation,
+        checksumLoading: false,
+      });
     });
 
     it('renders checksum info', () => {
@@ -115,6 +121,95 @@ describe('AdminDataManagementItemApp', () => {
 
     it('does not render checksum info', () => {
       expect(findChecksumInfo().exists()).toBe(false);
+    });
+  });
+
+  describe('when checksumInfo emits `recalculate-checksum` event', () => {
+    beforeEach(async () => {
+      getModel.mockResolvedValue({ data: model });
+
+      createComponent();
+      await waitForPromises();
+    });
+
+    it('starts loading state', async () => {
+      findChecksumInfo().vm.$emit('recalculate-checksum');
+      await nextTick();
+
+      expect(findChecksumInfo().props('checksumLoading')).toBe(true);
+    });
+
+    it('calls putModelAction', () => {
+      findChecksumInfo().vm.$emit('recalculate-checksum');
+
+      expect(putModelAction).toHaveBeenCalledWith(
+        model.modelClass,
+        model.recordIdentifier.toString(),
+        'checksum',
+      );
+    });
+
+    describe('when action succeeds', () => {
+      const updatedModel = {
+        ...rawModel,
+        checksum_information: {
+          ...rawModel.checksum_information,
+          last_checksum: '2025-10-28T07:40:22.061Z',
+        },
+      };
+
+      beforeEach(async () => {
+        putModelAction.mockResolvedValue({ data: updatedModel });
+
+        findChecksumInfo().vm.$emit('recalculate-checksum');
+        await waitForPromises();
+      });
+
+      it('updates checksumInfo details', () => {
+        const updatedDetails = convertObjectPropsToCamelCase(updatedModel.checksum_information, {
+          deep: true,
+        });
+
+        expect(findChecksumInfo().props('details')).toStrictEqual(updatedDetails);
+      });
+
+      it('stops loading state', () => {
+        expect(findChecksumInfo().props('checksumLoading')).toBe(false);
+      });
+
+      it('shows toast', () => {
+        expect(showToast).toHaveBeenCalledWith(
+          `Successfully recalculated checksum for ${modelDisplayName}.`,
+        );
+      });
+
+      it('does not create alert', () => {
+        expect(createAlert).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('when action fails', () => {
+      const error = new Error('Failed to calculate checksum');
+
+      beforeEach(async () => {
+        putModelAction.mockRejectedValue(error);
+
+        findChecksumInfo().vm.$emit('recalculate-checksum');
+        await waitForPromises();
+        await nextTick();
+      });
+
+      it('stops loading state', () => {
+        expect(findChecksumInfo().props('checksumLoading')).toBe(false);
+      });
+
+      it('creates alert', () => {
+        expect(createAlert).toHaveBeenCalledWith({
+          message: `There was an error recalculating checksum for ${modelDisplayName}.`,
+          captureError: true,
+          error,
+        });
+      });
     });
   });
 });
