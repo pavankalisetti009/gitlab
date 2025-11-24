@@ -15,6 +15,7 @@ module Types
 
         field :checkpoint, Types::JsonStringType,
           scopes: [:api, :read_api, :ai_features, :ai_workflows],
+          deprecated: { reason: 'Checkpoints are big & contain internal langgraph details', milestone: '18.7' },
           description: 'Checkpoint of the event.'
 
         field :metadata, Types::JsonStringType,
