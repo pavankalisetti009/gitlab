@@ -325,6 +325,7 @@ export const mockProjectPipelineExecutionPolicy = {
   name: `${mockPipelineScanExecutionObject.name}-project`,
   updatedAt: new Date('2021-06-07T00:00:00.000Z'),
   yaml: mockPipelineExecutionManifest,
+  type: 'pipeline_execution_policy',
   editPath: '/policies/policy-name/edit?type="pipeline_execution_policy"',
   policyBlobFilePath: '/path/to/project/-/blob/main/pipeline_execution_jobs.yml',
   enabled: true,

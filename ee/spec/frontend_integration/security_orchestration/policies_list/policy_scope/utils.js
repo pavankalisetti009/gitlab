@@ -48,10 +48,10 @@ export const complianceFrameworks = [
 
 export const normalizeText = (text) => text.replaceAll(/\r?\n|\r/g, '').replaceAll(' ', '');
 
-export const generateMockResponse = (index, basis, newPayload) => ({
-  ...basis[index],
+export const generateMockResponse = (basis, newPayload) => ({
+  ...basis,
   policyScope: {
-    ...basis[index].policyScope,
+    ...basis.policyScope,
     ...newPayload,
   },
 });

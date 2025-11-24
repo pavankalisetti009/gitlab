@@ -33,7 +33,10 @@ import {
   mockScheduledProjectScanExecutionPolicy,
   mockScheduleScanExecutionPoliciesResponse,
 } from '../../mocks/mock_scan_execution_policy_data';
-import { mockScanResultPoliciesResponse } from '../../mocks/mock_scan_result_policy_data';
+import {
+  mockProjectScanResultPolicyCombinedList,
+  mockScanResultPoliciesResponse,
+} from '../../mocks/mock_scan_result_policy_data';
 
 jest.mock('~/alert');
 
@@ -201,16 +204,16 @@ describe('List component', () => {
     });
 
     it.each`
-      type                | policy                                  | policyType
-      ${'scan execution'} | ${mockScanExecutionPoliciesResponse[0]} | ${POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.value}
-      ${'scan result'}    | ${mockScanResultPoliciesResponse[0]}    | ${POLICY_TYPE_COMPONENT_OPTIONS.approval.value}
+      type                | policy                                     | policyType
+      ${'scan execution'} | ${mockScanExecutionPoliciesResponse[0]}    | ${POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.value}
+      ${'scan result'}    | ${mockProjectScanResultPolicyCombinedList} | ${POLICY_TYPE_COMPONENT_OPTIONS.approval.value}
     `('renders opened editor drawer for a $type policy', async ({ policy, policyType }) => {
       mountWrapper();
       findTable().vm.$emit('row-selected', [policy]);
-      await nextTick();
-      await nextTick();
+      await waitForPromises();
       const editorDrawer = findDrawer();
       expect(editorDrawer.exists()).toBe(true);
+
       expect(editorDrawer.props()).toMatchObject({
         open: true,
         policy,
@@ -757,11 +760,6 @@ describe('List component', () => {
       (pageKey) => {
         mountShallowWrapper({
           props: { pageInfo: { [pageKey]: true } },
-          provide: {
-            glFeatures: {
-              securityPoliciesCombinedList: true,
-            },
-          },
         });
 
         expect(findPagination().exists()).toBe(true);
@@ -771,11 +769,6 @@ describe('List component', () => {
     it('emits next and previous page events', async () => {
       mountWrapper({
         props: { pageInfo: { hasNextPage: true, startCursor: 'start', endCursor: 'end' } },
-        provide: {
-          glFeatures: {
-            securityPoliciesCombinedList: true,
-          },
-        },
       });
 
       await findPagination().vm.$emit('next');
