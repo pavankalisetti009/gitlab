@@ -325,13 +325,13 @@ RSpec.describe Gitlab::Llm::TanukiBot, feature_category: :duo_chat do
     end
 
     it 'returns the default duo namespace from user preference' do
-      allow(user.user_preference).to receive(:get_default_duo_namespace).and_return(default_namespace)
+      allow(user.user_preference).to receive(:duo_default_namespace_with_fallback).and_return(default_namespace)
 
       expect(described_class.default_duo_namespace(user: user)).to eq(default_namespace)
     end
 
     it 'returns nil when user preference has no default namespace' do
-      allow(user.user_preference).to receive(:get_default_duo_namespace).and_return(nil)
+      allow(user.user_preference).to receive(:duo_default_namespace_with_fallback).and_return(nil)
 
       expect(described_class.default_duo_namespace(user: user)).to be_nil
     end
@@ -447,7 +447,7 @@ RSpec.describe Gitlab::Llm::TanukiBot, feature_category: :duo_chat do
     let(:non_persisted_group) { build(:group) }
 
     before do
-      allow(user.user_preference).to receive(:get_default_duo_namespace).and_return(default_namespace)
+      allow(user.user_preference).to receive(:duo_default_namespace_with_fallback).and_return(default_namespace)
     end
 
     where(:controller_name, :project_param, :group_param, :expected_result) do

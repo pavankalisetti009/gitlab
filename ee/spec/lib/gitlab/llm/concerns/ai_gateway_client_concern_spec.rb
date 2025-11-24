@@ -363,7 +363,7 @@ RSpec.describe Gitlab::Llm::Concerns::AiGatewayClientConcern, feature_category: 
 
       before do
         allow(::Ai::AmazonQ).to receive(:connected?).and_return(false)
-        allow(user.user_preference).to receive(:get_default_duo_namespace).and_return(nil)
+        allow(user.user_preference).to receive(:duo_default_namespace_with_fallback).and_return(nil)
         allow(Ability).to receive(:allowed?).with(user, :assign_default_duo_group, user).and_return(true)
       end
 

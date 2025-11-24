@@ -11,12 +11,6 @@ module EE::Profiles::PreferencesController
   def preferences_param_names_ee
     params_ee = []
 
-    if Ability.allowed?(user, :assign_default_duo_group, user)
-      params_ee.push({ user_preference_attributes: [
-        :default_duo_add_on_assignment_id
-      ] })
-    end
-
     params_ee.push(:duo_default_namespace_id)
     params_ee.push(:group_view) if License.feature_available?(:security_dashboard)
 

@@ -33,7 +33,7 @@ module Resolvers
 
       def can_use_foundational_chat_agents?(project_id, namespace_id)
         if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
-          namespace = current_user.user_preference.get_default_duo_namespace
+          namespace = current_user.user_preference.duo_default_namespace_with_fallback
 
           return can_namespace_use_foundational_chat_agents?(namespace, current_user) if namespace
 

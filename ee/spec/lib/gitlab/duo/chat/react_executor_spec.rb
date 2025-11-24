@@ -92,7 +92,7 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
       )
       allow(Gitlab::AiGateway).to receive(:headers).and_return({})
       stub_feature_flags(ai_model_switching: true)
-      allow(user.user_preference).to receive(:get_default_duo_namespace).and_return(root_namespace)
+      allow(user.user_preference).to receive(:duo_default_namespace_with_fallback).and_return(root_namespace)
       stub_saas_features(gitlab_com_subscriptions: true)
     end
 

@@ -23,7 +23,7 @@ RSpec.describe CodeSuggestions::ModelDetails::Base, feature_category: :code_sugg
     let(:default_namespace) { create(:group) }
 
     before do
-      allow(user.user_preference).to receive(:get_default_duo_namespace).and_return(default_namespace)
+      allow(user.user_preference).to receive(:duo_default_namespace_with_fallback).and_return(default_namespace)
     end
   end
 

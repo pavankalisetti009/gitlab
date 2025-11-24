@@ -86,7 +86,7 @@ module EE
         eligible_duo_add_on_assignments.none?
       end
 
-      def get_default_duo_namespace
+      def duo_default_namespace_with_fallback
         namespace = duo_default_namespace
 
         return namespace if namespace
@@ -99,7 +99,6 @@ module EE
 
         namespaces.first if namespaces.size == 1
       end
-      alias_method :duo_default_namespace_with_fallback, :get_default_duo_namespace
 
       override :duo_default_namespace
       def duo_default_namespace

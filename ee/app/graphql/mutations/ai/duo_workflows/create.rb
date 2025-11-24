@@ -71,7 +71,7 @@ module Mutations
                       elsif args[:namespace_id]
                         GitlabSchema.find_by_gid(args[:namespace_id]).sync
                       else
-                        current_user.user_preference.get_default_duo_namespace
+                        current_user.user_preference.duo_default_namespace_with_fallback
                       end
 
           item_version = GitlabSchema.find_by_gid(args[:ai_catalog_item_version_id])&.sync
