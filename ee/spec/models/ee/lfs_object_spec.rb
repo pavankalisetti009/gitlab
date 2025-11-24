@@ -2,27 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ::LfsObject, feature_category: :geo_replication do
-  include EE::GeoHelpers
-
-  let_it_be(:group) { create(:group) }
-  let_it_be(:project) { create(:project, :repository, group: group) }
-  let_it_be(:another_project) { create(:project, :repository) }
-
-  context 'when model_record is part of available_verifiables scope' do
-    let(:primary) { create(:geo_node, :primary) }
-    let(:verifiable_model_record) { build(:lfs_object) }
-    let(:verification_state_table_class) { verifiable_model_record.class.verification_state_table_class }
-
-    before do
-      stub_current_geo_node(primary)
-    end
-
-    it 'creates verification details' do
-      expect { verifiable_model_record.save! }.to change { verification_state_table_class.count }.by(1)
-    end
-  end
-
+RSpec.describe ::LfsObject, feature_category: :source_code_management do
   describe '.search' do
     let_it_be(:lfs_object1) { create(:lfs_object) }
     let_it_be(:lfs_object2) { create(:lfs_object) }
@@ -63,46 +43,60 @@ RSpec.describe ::LfsObject, feature_category: :geo_replication do
     end
   end
 
-  describe '.replicables_for_current_secondary' do
-    using RSpec::Parameterized::TableSyntax
-
-    where(:selective_sync_enabled, :object_storage_sync_enabled, :lfs_object_object_storage_enabled, :synced_lfs_objects) do
-      true  | true  | false  | 1
-      true  | false | false  | 1
-      false | true  | false  | 2
-      false | false | false  | 2
-      true  | true  | true   | 1
-      true  | false | true   | 1
-      false | true  | true   | 2
-      false | false | true   | 2
+  describe 'Geo replication', feature_category: :geo_replication do
+    describe 'associations' do
+      it 'has one verification state table class' do
+        is_expected
+          .to have_one(:lfs_object_state)
+          .inverse_of(:lfs_object)
+          .class_name('Geo::LfsObjectState')
+          .autosave(false)
+      end
     end
 
-    with_them do
-      let(:secondary) do
-        node = build(:geo_node, sync_object_storage: object_storage_sync_enabled)
+    include_examples 'a verifiable model for verification state' do
+      let(:verifiable_model_record) { build(:lfs_object) }
+      let(:unverifiable_model_record) { nil }
+    end
 
-        if selective_sync_enabled
-          node.selective_sync_type = 'namespaces'
-          node.namespaces = [group]
-        end
+    describe 'replication/verification' do
+      let_it_be(:group_1) { create(:group, organization: create(:organization)) }
+      let_it_be(:group_2) { create(:group, organization: create(:organization)) }
+      let_it_be(:nested_group_1) { create(:group, parent: group_1) }
+      let_it_be(:project_1) { create(:project, group: group_1) }
+      let_it_be(:project_2) { create(:project, group: nested_group_1) }
+      let_it_be(:project_3) { create(:project, group: group_2) }
 
-        node.save!
-        node
+      # LFS object for the root group
+      let_it_be(:first_replicable_and_in_selective_sync) do
+        lfs_object = create(:lfs_object, :with_file)
+        create(:lfs_objects_project, lfs_object: lfs_object, project: project_1)
+        lfs_object
       end
 
-      before do
-        stub_current_geo_node(secondary)
-        stub_lfs_object_storage(uploader: LfsObjectUploader) if lfs_object_object_storage_enabled
-
-        lfs_object_1 = create(:lfs_object, :with_file)
-        lfs_object_2 = create(:lfs_object, :with_file)
-        create(:lfs_objects_project, lfs_object: lfs_object_1, project: project)
-        create(:lfs_objects_project, lfs_object: lfs_object_2, project: another_project)
+      # LFS object for a subgroup
+      let_it_be(:second_replicable_and_in_selective_sync) do
+        lfs_object = create(:lfs_object, :with_file)
+        create(:lfs_objects_project, lfs_object: lfs_object, project: project_2)
+        lfs_object
       end
 
-      it 'returns the proper number of LFS objects' do
-        expect(described_class.replicables_for_current_secondary(1..described_class.last.id).count).to eq(synced_lfs_objects)
+      # LFS object for a subgroup and on object storage
+      let!(:third_replicable_on_object_storage_and_in_selective_sync) do
+        stub_lfs_object_storage(uploader: LfsObjectUploader)
+        lfs_object = create(:lfs_object, :object_storage, :with_file)
+        create(:lfs_objects_project, lfs_object: lfs_object, project: project_1)
+        lfs_object
       end
+
+      # LFS object for a group not in selective sync
+      let_it_be(:last_replicable_and_not_in_selective_sync) do
+        lfs_object = create(:lfs_object, :with_file)
+        create(:lfs_objects_project, lfs_object: lfs_object, project: project_3)
+        lfs_object
+      end
+
+      include_examples 'Geo Framework selective sync behavior'
     end
   end
 end
