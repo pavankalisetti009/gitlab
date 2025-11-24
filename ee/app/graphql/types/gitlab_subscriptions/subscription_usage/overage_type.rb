@@ -11,17 +11,17 @@ module Types
 
         field :is_allowed,
           GraphQL::Types::Boolean,
-          null: false,
+          null: true,
           description: 'Whether GitLab Credits overage is allowed for the subscription.'
 
         field :credits_used,
           GraphQL::Types::Float,
-          null: false,
+          null: true,
           description: 'Overage consumed by the subscription.'
 
         field :daily_usage,
           [DailyUsageType],
-          null: false,
+          null: true,
           description: 'Array of daily overage usage.'
       end
     end
