@@ -63,34 +63,42 @@ RSpec.describe ::Ai::DuoWorkflows::WorkflowPresenter, feature_category: :duo_age
   end
 
   describe 'first_checkpoint' do
-    it 'returns the first checkpoint of the workflow' do
-      first_checkpoint = instance_double(::Ai::DuoWorkflows::Checkpoint)
-      checkpoints = [first_checkpoint, instance_double(::Ai::DuoWorkflows::Checkpoint)]
+    it 'returns the earliest checkpoint of the workflow' do
+      earliest_checkpoint = instance_double(::Ai::DuoWorkflows::Checkpoint)
+      checkpoints_relation = double
 
-      allow(workflow).to receive(:checkpoints).and_return(checkpoints)
+      allow(workflow).to receive(:checkpoints).and_return(checkpoints_relation)
+      allow(checkpoints_relation).to receive(:earliest).and_return(earliest_checkpoint)
 
-      expect(presenter.first_checkpoint).to eq(first_checkpoint)
+      expect(presenter.first_checkpoint).to eq(earliest_checkpoint)
     end
 
     it 'returns nil when there are no checkpoints' do
-      allow(workflow).to receive(:checkpoints).and_return([])
+      checkpoints_relation = double
+
+      allow(workflow).to receive(:checkpoints).and_return(checkpoints_relation)
+      allow(checkpoints_relation).to receive(:earliest).and_return(nil)
 
       expect(presenter.first_checkpoint).to be_nil
     end
   end
 
   describe 'latest_checkpoint' do
-    it 'returns the last checkpoint of the workflow' do
+    it 'returns the latest checkpoint of the workflow' do
       latest_checkpoint = instance_double(::Ai::DuoWorkflows::Checkpoint)
-      checkpoints = [instance_double(::Ai::DuoWorkflows::Checkpoint), latest_checkpoint]
+      checkpoints_relation = double
 
-      allow(workflow).to receive(:checkpoints).and_return(checkpoints)
+      allow(workflow).to receive(:checkpoints).and_return(checkpoints_relation)
+      allow(checkpoints_relation).to receive(:latest).and_return(latest_checkpoint)
 
       expect(presenter.latest_checkpoint).to eq(latest_checkpoint)
     end
 
     it 'returns nil when there are no checkpoints' do
-      allow(workflow).to receive(:checkpoints).and_return([])
+      checkpoints_relation = double
+
+      allow(workflow).to receive(:checkpoints).and_return(checkpoints_relation)
+      allow(checkpoints_relation).to receive(:latest).and_return(nil)
 
       expect(presenter.latest_checkpoint).to be_nil
     end
