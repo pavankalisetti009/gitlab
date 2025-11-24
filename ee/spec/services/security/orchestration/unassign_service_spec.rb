@@ -68,10 +68,21 @@ RSpec.describe Security::Orchestration::UnassignService, :sidekiq_inline, featur
         include_context 'with csp group configuration'
 
         let(:service) { described_class.new(container: csp_group, current_user: current_user) }
+        let(:policy_configuration) { csp_group.security_orchestration_policy_configuration }
 
         it 'respond with an error', :aggregate_failures do
           expect(result).not_to be_success
           expect(result.message).to eq('You cannot unassign security policy project for group designated as CSP.')
+        end
+
+        context 'when skip_csp is set to false' do
+          subject(:result) { service.execute(skip_csp: false) }
+
+          it 'unassigns policy project from the project', :aggregate_failures do
+            expect(result).to be_success
+            exists = Security::OrchestrationPolicyConfiguration.exists?(policy_configuration.id)
+            expect(exists).to be(false)
+          end
         end
       end
     end

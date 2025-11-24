@@ -55,6 +55,14 @@ module GitlabSubscriptions
       )
     end
 
+    scope :with_all_ultimate_plans, -> do
+      joins(:hosted_plan).where(hosted_plan: { name: EE::Plan::ALL_ULTIMATE_PLANS })
+    end
+
+    scope :ended_on, ->(date) { where(end_date: date) }
+
+    scope :with_namespace_subscription, -> { includes(namespace: [gitlab_subscription: :hosted_plan]) }
+
     def self.create_from_change(change_type, attrs)
       create_attrs = attrs
         .slice(*TRACKED_ATTRIBUTES)

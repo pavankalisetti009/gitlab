@@ -6,6 +6,7 @@ class GitlabSubscription < ApplicationRecord
   include AfterCommitQueue
 
   SERVICE_ACCOUNT_LIMIT_FOR_TRIAL = 100
+  SUBSCRIPTION_GRACE_PERIOD = 14.days.freeze
 
   enum :trial_extension_type, { extended: 1, reactivated: 2 }
 

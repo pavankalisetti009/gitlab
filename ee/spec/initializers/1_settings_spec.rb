@@ -172,6 +172,7 @@ RSpec.describe '1_settings', feature_category: :shared do
         security_orchestration_policy_rule_schedule_worker
         security_pipeline_execution_policies_schedule_worker
         security_scans_purge_worker
+        security_unassign_policy_configurations_for_expired_licenses_worker
         service_desk_custom_email_verification_cleanup
         ssh_keys_expired_notification_worker
         ssh_keys_expiring_soon_notification_worker

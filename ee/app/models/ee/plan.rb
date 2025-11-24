@@ -35,6 +35,7 @@ module EE
       TOP_PLANS = [GOLD, ULTIMATE, OPEN_SOURCE].freeze
       CURRENT_ACTIVE_PLANS = [FREE, PREMIUM, ULTIMATE].freeze
       ULTIMATE_TRIAL_PLANS = [ULTIMATE_TRIAL, ULTIMATE_TRIAL_PAID_CUSTOMER].freeze
+      ALL_ULTIMATE_PLANS = [ULTIMATE, *ULTIMATE_TRIAL_PLANS].freeze
 
       has_many :hosted_subscriptions, class_name: 'GitlabSubscription', foreign_key: 'hosted_plan_id'
       has_many :gitlab_subscription_histories, inverse_of: :hosted_plan,
@@ -75,6 +76,11 @@ module EE
     override :paid?
     def paid?
       PAID_HOSTED_PLANS.include?(name)
+    end
+
+    override :ultimate_or_ultimate_trial_plans?
+    def ultimate_or_ultimate_trial_plans?
+      ALL_ULTIMATE_PLANS.include?(name)
     end
 
     def paid_excluding_trials?(exclude_oss: false)
