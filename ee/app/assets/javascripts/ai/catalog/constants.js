@@ -165,6 +165,7 @@ prompts:
 
       placeholder: history  # Maintains conversation context
 
+    unit_primitives: []
     params:
       timeout: 180  # Seconds before timeout
 

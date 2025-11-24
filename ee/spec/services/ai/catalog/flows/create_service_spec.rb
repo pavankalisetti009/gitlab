@@ -138,6 +138,71 @@ RSpec.describe Ai::Catalog::Flows::CreateService, feature_category: :workflow_ca
       end
     end
 
+    context 'when prompts are present' do
+      let(:definition) do
+        super() + <<~YAML
+          prompts:
+            - prompt_id: local_prompt
+              name: Local Test Prompt
+              model:
+                params:
+                  model_class_provider: 'llm-model'
+                  model: test-model
+                  max_tokens: 1000
+              prompt_template:
+                system: You are a helpful assistant
+                user: Help me with {{goal}}
+              unit_primitives: []
+        YAML
+      end
+
+      it 'creates a flow with prompts' do
+        expect(response).to be_success
+
+        item = Ai::Catalog::Item.last
+        definition_hash = item.latest_version.definition
+
+        expect(definition_hash['prompts']).to be_present
+        expect(definition_hash['prompts'].first).to include(
+          'prompt_id' => 'local_prompt',
+          'name' => 'Local Test Prompt',
+          'unit_primitives' => []
+        )
+      end
+
+      context 'when unit_primitives is missing from prompts' do
+        let(:definition) do
+          <<~YAML
+            version: v1
+            environment: ambient
+            components:
+              - name: main_agent
+                type: AgentComponent
+                prompt_id: test_prompt
+            routers: []
+            flow:
+              entry_point: main_agent
+            prompts:
+              - prompt_id: local_prompt
+                name: Local Test Prompt
+                model:
+                  params:
+                    model_class_provider: 'llm-model'
+                    model: test-model
+                    max_tokens: 1000
+                prompt_template:
+                  system: You are a helpful assistant
+                  user: Help me with {{goal}}
+          YAML
+        end
+
+        it_behaves_like 'an error response', [
+          "Latest version definition object at `/prompts/0` is missing required properties: unit_primitives",
+          "Versions is invalid"
+        ]
+      end
+    end
+
     context 'when there is a validation issue' do
       before do
         params[:name] = nil
