@@ -18,6 +18,7 @@ import AiCatalogItemActions from '../components/ai_catalog_item_actions.vue';
 import AiCatalogItemView from '../components/ai_catalog_item_view.vue';
 import createAiCatalogItemConsumer from '../graphql/mutations/create_ai_catalog_item_consumer.mutation.graphql';
 import reportAiCatalogItem from '../graphql/mutations/report_ai_catalog_item.mutation.graphql';
+import deleteAiCatalogItemConsumer from '../graphql/mutations/delete_ai_catalog_item_consumer.mutation.graphql';
 import {
   AI_CATALOG_FLOWS_DUPLICATE_ROUTE,
   AI_CATALOG_FLOWS_EDIT_ROUTE,
@@ -150,6 +151,35 @@ export default {
         Sentry.captureException(error);
       }
     },
+    async disableFlow() {
+      const { id } = this.aiCatalogFlow.configurationForProject;
+
+      try {
+        const { data } = await this.$apollo.mutate({
+          mutation: deleteAiCatalogItemConsumer,
+          variables: {
+            id,
+          },
+        });
+
+        if (!data.aiCatalogItemConsumerDelete.success) {
+          this.errors = [
+            sprintf(s__('AICatalog|Failed to disable flow. %{error}'), {
+              error: data.aiCatalogItemConsumerDelete.errors?.[0],
+            }),
+          ];
+          return;
+        }
+
+        this.$toast.show(s__('AICatalog|Flow disabled in this project.'));
+        this.$router.push({
+          name: AI_CATALOG_FLOWS_ROUTE,
+        });
+      } catch (error) {
+        this.errors = [sprintf(s__('AICatalog|Failed to disable flow. %{error}'), { error })];
+        Sentry.captureException(error);
+      }
+    },
     async reportFlow({ reason, body }) {
       try {
         const { data } = await this.$apollo.mutate({
@@ -201,9 +231,14 @@ export default {
           :item="aiCatalogFlow"
           :item-routes="$options.itemRoutes"
           :is-flows-available="isFlowsAvailable"
+          :disable-fn="disableFlow"
           :delete-fn="deleteFlow"
-          :delete-confirm-title="s__('AICatalog|Delete flow')"
           :delete-confirm-message="s__('AICatalog|Are you sure you want to delete flow %{name}?')"
+          :disable-confirm-message="
+            s__(
+              'AICatalog|Are you sure you want to disable flow %{name}? The flow and associated triggers and service account will no longer work in this project.',
+            )
+          "
           @add-to-target="addFlowToTarget"
           @report-item="reportFlow"
         />

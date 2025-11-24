@@ -232,8 +232,11 @@ export default {
           :is-agents-available="isAgentsAvailable"
           :disable-fn="disableAgent"
           :delete-fn="deleteAgent"
-          :delete-confirm-title="s__('AICatalog|Delete agent')"
-          :delete-confirm-message="s__('AICatalog|Are you sure you want to delete agent %{name}?')"
+          :disable-confirm-message="
+            s__(
+              'AICatalog|Are you sure you want to disable agent %{name}? The agent and any associated flows and triggers will no longer work in this project.',
+            )
+          "
           @add-to-target="addAgentToTarget"
           @report-item="reportAgent"
         />

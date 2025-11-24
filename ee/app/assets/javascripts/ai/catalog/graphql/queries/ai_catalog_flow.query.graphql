@@ -25,6 +25,7 @@ query aiCatalogFlow(
     }
     configurationForProject(projectId: $projectId) @include(if: $hasProject) {
       id
+      enabled
       flowTrigger {
         id
         eventTypes

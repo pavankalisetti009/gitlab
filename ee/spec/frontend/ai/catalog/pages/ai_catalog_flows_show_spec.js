@@ -13,6 +13,7 @@ import { TRACK_EVENT_TYPE_FLOW, TRACK_EVENT_VIEW_AI_CATALOG_ITEM } from 'ee/ai/c
 import deleteAiCatalogFlowMutation from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_flow.mutation.graphql';
 import deleteAiCatalogThirdPartyFlowMutation from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_third_party_flow.mutation.graphql';
 import reportAiCatalogItemMutation from 'ee/ai/catalog/graphql/mutations/report_ai_catalog_item.mutation.graphql';
+import deleteAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_item_consumer.mutation.graphql';
 import {
   mockCatalogFlowDeleteErrorResponse,
   mockCatalogFlowDeleteResponse,
@@ -20,6 +21,9 @@ import {
   mockReportAiCatalogItemErrorMutation,
   mockFlow,
   mockThirdPartyFlow,
+  mockAiCatalogItemConsumerDeleteResponse,
+  mockAiCatalogItemConsumerDeleteErrorResponse,
+  mockFlowConfigurationForProject,
 } from '../mock_data';
 
 jest.mock('~/sentry/sentry_browser_wrapper');
@@ -31,7 +35,7 @@ describe('AiCatalogFlowsShow', () => {
   let mockApollo;
 
   const defaultProps = {
-    aiCatalogFlow: mockFlow,
+    aiCatalogFlow: { ...mockFlow, configurationForProject: mockFlowConfigurationForProject },
   };
 
   const reportAiCatalogItemMutationHandler = jest
@@ -39,6 +43,10 @@ describe('AiCatalogFlowsShow', () => {
     .mockResolvedValue(mockReportAiCatalogItemSuccessMutation);
   const deleteFlowMutationHandler = jest.fn().mockResolvedValue(mockCatalogFlowDeleteResponse);
   const deleteThirdPartyFlowMutationHandler = jest.fn();
+  const deleteItemConsumerMutationHandler = jest
+    .fn()
+    .mockResolvedValue(mockAiCatalogItemConsumerDeleteResponse);
+
   const routeParams = { id: '1' };
   const mockToast = {
     show: jest.fn(),
@@ -50,6 +58,7 @@ describe('AiCatalogFlowsShow', () => {
       [deleteAiCatalogFlowMutation, deleteFlowMutationHandler],
       [deleteAiCatalogThirdPartyFlowMutation, deleteThirdPartyFlowMutationHandler],
       [reportAiCatalogItemMutation, reportAiCatalogItemMutationHandler],
+      [deleteAiCatalogItemConsumer, deleteItemConsumerMutationHandler],
     ]);
 
     wrapper = shallowMount(AiCatalogFlowsShow, {
@@ -80,11 +89,17 @@ describe('AiCatalogFlowsShow', () => {
   });
 
   it('renders item actions', () => {
-    expect(findItemActions().props('item')).toBe(mockFlow);
+    expect(findItemActions().props('item')).toEqual({
+      ...mockFlow,
+      configurationForProject: mockFlowConfigurationForProject,
+    });
   });
 
   it('renders item view', () => {
-    expect(findItemView().props('item')).toBe(mockFlow);
+    expect(findItemView().props('item')).toEqual({
+      ...mockFlow,
+      configurationForProject: mockFlowConfigurationForProject,
+    });
   });
 
   describe('tracking events', () => {
@@ -158,6 +173,54 @@ describe('AiCatalogFlowsShow', () => {
         await waitForPromises();
         expect(findErrorsAlert().props('errors')).toEqual([
           'Failed to delete flow. Error: Request failed',
+        ]);
+        expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));
+      });
+    });
+  });
+
+  describe('on disabling a flow', () => {
+    const disableFlow = () => findItemActions().props('disableFn')();
+
+    it('calls disable mutation for flow', () => {
+      disableFlow();
+
+      expect(deleteItemConsumerMutationHandler).toHaveBeenCalledWith({
+        id: mockFlowConfigurationForProject.id,
+      });
+    });
+
+    describe('when request succeeds', () => {
+      it('shows toast', async () => {
+        disableFlow();
+        await waitForPromises();
+
+        expect(mockToast.show).toHaveBeenCalledWith('Flow disabled in this project.');
+      });
+    });
+
+    describe('when request succeeds but returns errors', () => {
+      it('shows error alert', async () => {
+        deleteItemConsumerMutationHandler.mockResolvedValue(
+          mockAiCatalogItemConsumerDeleteErrorResponse,
+        );
+        disableFlow();
+        await waitForPromises();
+
+        expect(findErrorsAlert().props('errors')).toEqual([
+          'Failed to disable flow. You do not have permission to disable this item.',
+        ]);
+      });
+    });
+
+    describe('when request fails', () => {
+      it('shows error alert and captures exception', async () => {
+        deleteItemConsumerMutationHandler.mockRejectedValue(new Error('custom error'));
+        disableFlow();
+        await waitForPromises();
+
+        expect(findErrorsAlert().props('errors')).toEqual([
+          'Failed to disable flow. Error: custom error',
         ]);
         expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));
       });
