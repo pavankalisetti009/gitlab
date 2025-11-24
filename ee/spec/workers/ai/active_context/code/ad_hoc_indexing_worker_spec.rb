@@ -71,24 +71,9 @@ RSpec.describe Ai::ActiveContext::Code::AdHocIndexingWorker, feature_category: :
               expect(perform).to be false
             end
           end
-
-          context 'when active_context_code_index_project feature flag is disabled' do
-            before do
-              stub_feature_flags(active_context_code_index_project: false)
-            end
-
-            it 'returns false and does not create repository record' do
-              expect { perform }.not_to change { Ai::ActiveContext::Code::Repository.count }
-              expect(perform).to be false
-            end
-          end
         end
 
         context 'when project is eligible for indexing' do
-          before do
-            stub_feature_flags(active_context_code_index_project: project)
-          end
-
           context 'when no enabled namespace exists for the project' do
             before do
               enabled_namespace.destroy!

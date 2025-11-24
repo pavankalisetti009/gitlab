@@ -326,14 +326,6 @@ RSpec.describe Git::BranchPushService, feature_category: :source_code_management
         end
       end
 
-      context 'when ff active_context_code_incremental_index_project is disabled' do
-        before do
-          stub_feature_flags(active_context_code_incremental_index_project: false)
-        end
-
-        it_behaves_like 'does not trigger enqueue_code_embedding_indexing'
-      end
-
       context 'when pushing to a non-default branch' do
         let(:ref) { 'refs/heads/other' }
 

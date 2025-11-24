@@ -71,35 +71,6 @@ RSpec.describe Ai::ActiveContext::Code::ProcessPendingEnabledNamespaceEventWorke
           end
         end
 
-        context 'when the `active_context_code_index_project` FF is disabled for some projects' do
-          before do
-            # override default test setting and disable `active_context_code_index_project`
-            stub_feature_flags(active_context_code_index_project: false)
-
-            # enable FF for some projects only
-            # project_1 is under the specified namespace, with FF enabled
-            #   - this is the only project where an Ai::ActiveContext::Code::Repository record will be created
-            # project_2 is under the specified namespace, with FF disabled
-            #   - no Ai::ActiveContext::Code::Repository will be created for this project
-            # project_3 is under a different namespace, with FF enabled
-            #   - no Ai::ActiveContext::Code::Repository will be created for this project
-            stub_feature_flags(active_context_code_index_project: [project_1, project_3])
-          end
-
-          it 'creates repository records only for the projects with `active_context_code_index_project` enabled' do
-            expect(enabled_namespace.state).to eq('pending')
-
-            expect { execute }.to change { Ai::ActiveContext::Code::Repository.count }.by(1)
-
-            expect(enabled_namespace.reload.state).to eq('ready')
-
-            klass = Ai::ActiveContext::Code::Repository
-            expect(klass.pluck(:project_id)).to contain_exactly(project_1.id)
-            expect(klass.pluck(:enabled_namespace_id).uniq).to contain_exactly(enabled_namespace.id)
-            expect(klass.pluck(:connection_id).uniq).to contain_exactly(connection.id)
-          end
-        end
-
         context 'when a failure occurs' do
           before do
             allow_next_instance_of(Ai::ActiveContext::Code::Repository) do |repository|

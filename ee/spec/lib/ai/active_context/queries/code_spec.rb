@@ -419,14 +419,6 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
               it_behaves_like 'returns an error result with "use another source" message'
             end
 
-            context 'when `active_context_code_index_project` is disabled' do
-              before do
-                stub_feature_flags(active_context_code_index_project: false)
-              end
-
-              it_behaves_like 'returns an error result with "use another source" message'
-            end
-
             context 'when project has duo_features_enabled setting = false' do
               before do
                 project.project_setting.update!(duo_features_enabled: false)

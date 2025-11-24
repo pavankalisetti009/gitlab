@@ -90,7 +90,6 @@ module Ai
           projects.each do |project|
             next if existing_project_ids.include?(project.id)
             next unless project.project_setting.duo_features_enabled
-            next if Feature.disabled?(:active_context_code_index_project, project, type: :gitlab_com_derisk)
 
             records << {
               project_id: project.id,
