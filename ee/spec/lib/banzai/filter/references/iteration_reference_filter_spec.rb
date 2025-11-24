@@ -5,9 +5,9 @@ require 'spec_helper'
 RSpec.describe Banzai::Filter::References::IterationReferenceFilter, feature_category: :markdown do
   include FilterSpecHelper
 
-  let(:parent_group) { create(:group, :public) }
-  let(:group) { create(:group, :public, parent: parent_group) }
-  let(:project) { create(:project, :public, group: group) }
+  let_it_be(:parent_group) { create(:group, :public) }
+  let_it_be(:group) { create(:group, :public, parent: parent_group) }
+  let_it_be(:project) { create(:project, :public, group: group) }
 
   it 'requires project context' do
     expect { described_class.call('') }.to raise_error(ArgumentError, /:project/)
@@ -222,7 +222,7 @@ RSpec.describe Banzai::Filter::References::IterationReferenceFilter, feature_cat
   end
 
   context 'group context' do
-    let(:group) { create(:group) }
+    let_it_be(:group) { create(:group) }
     let(:context) { { project: nil, group: group } }
 
     context 'when group iteration' do
