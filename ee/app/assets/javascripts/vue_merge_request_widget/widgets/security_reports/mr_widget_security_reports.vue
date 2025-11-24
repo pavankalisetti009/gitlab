@@ -30,6 +30,19 @@ const getFindingWithoutFeedback = (finding) => ({
   issue_feedback: undefined,
 });
 
+// Transform GraphQL finding to match REST API's expected format used by components
+// TODO: Once REST is removed, update GraphQL schema to return expected format
+// to avoid transformation https://gitlab.com/gitlab-org/gitlab/-/issues/581754
+const transformFinding = (finding) => ({
+  uuid: finding.uuid,
+  name: finding.title,
+  severity: finding.severity?.toLowerCase(),
+  state: finding.state?.toLowerCase(),
+  found_by_pipeline: {
+    iid: finding.foundByPipelineIid ? Number(finding.foundByPipelineIid) : null,
+  },
+});
+
 export default {
   name: 'WidgetSecurityReports',
   components: {
@@ -363,7 +376,7 @@ export default {
     fetchCollapsedDataREST(path, reportType) {
       const isPartial = path.indexOf('scan_mode=partial') > -1;
 
-      const props = {
+      const defaultReportStructure = {
         reportType,
         reportTypeDescription: reportTypes[reportType],
         numberOfNewFindings: 0,
@@ -387,7 +400,7 @@ export default {
           }
 
           const report = {
-            ...props,
+            ...defaultReportStructure,
             ...data,
             added,
             fixed,
@@ -409,7 +422,7 @@ export default {
           };
         })
         .catch(({ response: { status, headers } }) => {
-          const report = { ...props, error: true };
+          const report = { ...defaultReportStructure, error: true };
 
           const key = isPartial ? 'partial' : 'full';
           this.reportsByScanType[key] = { ...this.reportsByScanType[key], [reportType]: report };
@@ -425,6 +438,15 @@ export default {
     },
 
     fetchCollapsedDataGraphQL(reportType, scanMode = 'FULL') {
+      const defaultReportStructure = {
+        reportType,
+        reportTypeDescription: reportTypes[reportType],
+        numberOfNewFindings: 0,
+        numberOfFixedFindings: 0,
+        added: [],
+        fixed: [],
+      };
+
       return this.$apollo
         .query({
           query: findingReportsComparerQuery,
@@ -444,8 +466,29 @@ export default {
             return { headers: { 'poll-interval': POLL_INTERVAL }, status: 202, data: {} };
           }
 
+          const added = data.report?.added?.map(transformFinding) || [];
+          const fixed = data.report?.fixed?.map(transformFinding) || [];
+
+          if (added.length === MAX_NEW_VULNERABILITIES) {
+            this.hasAtLeastOneReportWithMaxNewVulnerabilities = true;
+          }
+
+          const report = {
+            ...defaultReportStructure,
+            ...data,
+            added,
+            fixed,
+            findings: [...added, ...fixed],
+            numberOfNewFindings: added.length,
+            numberOfFixedFindings: fixed.length,
+            testId: this.$options.testId[reportType],
+          };
+
+          this.reportsByScanType.full = { ...this.reportsByScanType.full, [reportType]: report };
+          this.$emit('loaded', added.length);
+
           // Pass empty header (no "poll-interval") to stop MrWidget's polling mechanism
-          return { headers: {}, status: 200, data };
+          return { headers: {}, status: 200, data: report };
         });
     },
 

@@ -180,9 +180,37 @@ export const mockFindingReportsComparerSuccessResponse = {
                 severity: 'HIGH',
                 state: 'DETECTED',
                 foundByPipelineIid: '4',
+                __typename: 'ComparedSecurityReportFinding',
               },
             ],
             fixed: [],
+          },
+        },
+      },
+    },
+  },
+};
+
+export const mockFindingReportsComparerSuccessResponseWithFixed = {
+  data: {
+    project: {
+      id: 'gid://gitlab/Project/1',
+      mergeRequest: {
+        id: 'gid://gitlab/MergeRequest/1',
+        findingReportsComparer: {
+          status: 'PARSED',
+          report: {
+            added: [],
+            fixed: [
+              {
+                title: 'Improper neutralization of directives in dynamically evaluated code',
+                uuid: '561f85b8-0ca7-5ac4-9766-15b063f16e3b',
+                severity: 'HIGH',
+                state: 'DETECTED',
+                foundByPipelineIid: '4',
+                __typename: 'ComparedSecurityReportFinding',
+              },
+            ],
           },
         },
       },
