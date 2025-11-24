@@ -1214,14 +1214,6 @@ Gitlab.ee do
 end
 
 #
-# Suggested Reviewers
-#
-Gitlab.ee do
-  Settings['suggested_reviewers'] ||= {}
-  Settings.suggested_reviewers['secret_file'] ||= Rails.root.join('.gitlab_suggested_reviewers_secret')
-end
-
-#
 # Cloud connector
 #
 Gitlab.ee do
