@@ -33,7 +33,7 @@ module Gitlab
     end
 
     def self.self_hosted_url
-      ENV["DEVELOPMENT_SELF_HOSTED_AI_GATEWAY_URL"] || ::Ai::Setting.instance&.ai_gateway_url
+      ::Ai::Setting.instance&.ai_gateway_url
     end
 
     def self.development_url

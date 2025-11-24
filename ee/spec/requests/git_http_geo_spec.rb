@@ -152,23 +152,8 @@ RSpec.describe "Git HTTP requests (Geo)", :geo, feature_category: :geo_replicati
         let(:project_path) { project.full_path }
         let(:endpoint_path) { "/#{project_path}.git/info/refs?service=git-upload-pack" }
 
-        context 'when the repository exists' do
-          context 'but has not successfully synced' do
-            let_it_be(:project) { project_with_repo }
-            let(:redirect_url) { full_redirected_url }
-
-            before do
-              project_registry_with_repo.update!(last_synced_at: nil)
-            end
-
-            it_behaves_like 'a Geo 302 redirect to Primary'
-          end
-
-          context 'and has successfully synced' do
-            let_it_be(:project) { project_with_repo }
-
-            it_behaves_like 'a 200 git request'
-          end
+        context 'for project repository replication v1' do
+          it_behaves_like 'http requests tests for project repository sync'
         end
 
         context 'when the repository does not exist' do
