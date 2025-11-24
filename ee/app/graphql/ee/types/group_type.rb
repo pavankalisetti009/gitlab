@@ -423,6 +423,13 @@ module EE
             'Returns null if the `maven_virtual_registry` feature flag is disabled.',
           experiment: { milestone: '18.6' }
 
+        field :virtual_registries_container_registries,
+          ::Types::VirtualRegistries::Container::RegistryType.connection_type,
+          null: true,
+          description: 'Container virtual registries registered to the group. ' \
+            'Returns null if the `container_virtual_registry` feature flag is disabled.',
+          experiment: { milestone: '18.7' }
+
         field :virtual_registries_setting,
           ::Types::VirtualRegistries::SettingType,
           null: true,
@@ -533,6 +540,12 @@ module EE
           return unless ::VirtualRegistries::Packages::Maven.virtual_registry_available?(object, current_user)
 
           ::VirtualRegistries::Packages::Maven::Registry.for_group(object)
+        end
+
+        def virtual_registries_container_registries
+          return unless ::VirtualRegistries::Container.virtual_registry_available?(object, current_user)
+
+          ::VirtualRegistries::Container::Registry.for_group(object)
         end
 
         def virtual_registries_setting
