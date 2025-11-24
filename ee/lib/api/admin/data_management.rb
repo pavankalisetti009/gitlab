@@ -153,6 +153,8 @@ module API
                 type: String,
                 desc: 'The checksum status of the records to filter by',
                 values: VERIFICATION_STATES
+              optional :cursor, type: String, desc: 'Cursor for obtaining the next set of records'
+              optional :sort, type: String, values: %w[asc desc], default: 'asc', desc: 'Order of sorting'
             end
             get do
               model_class = Gitlab::Geo::ModelMapper.find_from_name(params[:model_name])
@@ -168,9 +170,17 @@ module API
                 relation = relation.with_verification_state(:"verification_#{params[:checksum_state]}")
               end
 
-              relation = relation.order_by_primary_key
+              if params[:pagination] == 'keyset'
+                # the order_by parameter's default value is the primary key column of the model -
+                # using the first column for composite keys
+                model_pk = model_class.primary_key
+                params[:order_by] = model_pk.is_a?(Array) ? model_pk.first : model_pk
 
-              present paginate(relation, without_count: true), with: Entities::Admin::Model
+                present paginate_with_strategies(relation.keyset_order_by_primary_key(params[:sort])),
+                  with: Entities::Admin::Model
+              else
+                present paginate(relation.order_by_primary_key), with: Entities::Admin::Model
+              end
             end
 
             # Example request:
