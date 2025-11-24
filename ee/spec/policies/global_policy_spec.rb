@@ -751,6 +751,24 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
     end
   end
 
+  describe 'read_ai_catalog' do
+    before do
+      allow(Ai::Catalog).to receive(:available?).and_return(ai_catalog_available)
+    end
+
+    context 'when AI Catalog is available for the instance' do
+      let(:ai_catalog_available) { true }
+
+      it { is_expected.to be_allowed(:read_ai_catalog) }
+    end
+
+    context 'when AI Catalog is not available for the instance' do
+      let(:ai_catalog_available) { false }
+
+      it { is_expected.to be_disallowed(:read_ai_catalog) }
+    end
+  end
+
   describe 'git access' do
     context 'security policy bot' do
       let(:current_user) { security_policy_bot }
