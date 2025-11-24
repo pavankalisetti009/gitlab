@@ -80,6 +80,12 @@ module EE
       has_many :vulnerability_state_transitions, foreign_key: :author_id, class_name: 'Vulnerabilities::StateTransition', inverse_of: :author
       has_many :vulnerability_severity_overrides, foreign_key: :author_id, class_name: 'Vulnerabilities::SeverityOverride', inverse_of: :author
       has_many :commented_vulnerability_feedback, foreign_key: :comment_author_id, class_name: 'Vulnerabilities::Feedback'
+      has_many :merge_requests_compliance_violations,
+        foreign_key: :violating_user_id,
+        class_name: 'MergeRequests::ComplianceViolation',
+        inverse_of: :violating_user,
+        dependent: :delete_all # rubocop:disable Cop/ActiveRecordDependent -- database CASCADE already handles deletion
+
       has_many :boards_epic_user_preferences, class_name: 'Boards::EpicUserPreference', inverse_of: :user
       has_many :epic_board_recent_visits, class_name: 'Boards::EpicBoardRecentVisit', inverse_of: :user
 
