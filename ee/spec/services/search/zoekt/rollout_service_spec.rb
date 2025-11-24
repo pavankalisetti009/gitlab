@@ -13,7 +13,6 @@ RSpec.describe ::Search::Zoekt::RolloutService, feature_category: :global_search
   let(:plan) { instance_double(::Search::Zoekt::PlanningService::Plan, to_json: '{"plan": "data"}') }
   let(:default_options) do
     {
-      num_replicas: 1,
       max_indices_per_replica: Search::Zoekt::MAX_INDICES_PER_REPLICA,
       dry_run: true,
       batch_size: 128,
@@ -66,7 +65,6 @@ RSpec.describe ::Search::Zoekt::RolloutService, feature_category: :global_search
         allow(planning_service).to receive(:plan).with(
           enabled_namespaces: enabled_namespaces,
           nodes: nodes,
-          num_replicas: default_options[:num_replicas],
           max_indices_per_replica: default_options[:max_indices_per_replica]
         ).and_return(plan)
       end
@@ -86,7 +84,6 @@ RSpec.describe ::Search::Zoekt::RolloutService, feature_category: :global_search
         allow(planning_service).to receive(:plan).with(
           enabled_namespaces: enabled_namespaces,
           nodes: nodes,
-          num_replicas: default_options[:num_replicas],
           max_indices_per_replica: default_options[:max_indices_per_replica]
         ).and_return(plan)
 
@@ -113,7 +110,6 @@ RSpec.describe ::Search::Zoekt::RolloutService, feature_category: :global_search
         allow(planning_service).to receive(:plan).with(
           enabled_namespaces: enabled_namespaces,
           nodes: nodes,
-          num_replicas: default_options[:num_replicas],
           max_indices_per_replica: default_options[:max_indices_per_replica]
         ).and_return(plan)
 
@@ -139,7 +135,6 @@ RSpec.describe ::Search::Zoekt::RolloutService, feature_category: :global_search
           .with(
             enabled_namespaces: enabled_namespaces,
             nodes: nodes,
-            num_replicas: default_options[:num_replicas],
             max_indices_per_replica: default_options[:max_indices_per_replica]
           ).and_return(plan)
 
@@ -163,7 +158,6 @@ RSpec.describe ::Search::Zoekt::RolloutService, feature_category: :global_search
         allow(planning_service).to receive(:plan).with(
           enabled_namespaces: enabled_namespaces,
           nodes: nodes,
-          num_replicas: default_options[:num_replicas],
           max_indices_per_replica: default_options[:max_indices_per_replica]
         ).and_return(plan)
 

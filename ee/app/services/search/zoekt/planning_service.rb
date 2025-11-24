@@ -20,9 +20,16 @@ module Search
           Plan.new(enabled_namespace: enabled_namespace, nodes: nodes, **options).generate
         end
         failed_plans, successful_plans = all_plans.partition { |plan| plan[:errors].present? }
+        grouped_plans = successful_plans.group_by { |plan| plan[:action] }
+        create_plans = grouped_plans.fetch(:create, [])
+        destroy_plans = grouped_plans.fetch(:destroy, [])
+        unchanged_plans = grouped_plans.fetch(:unchanged, [])
+
         {
-          total_required_storage_bytes: successful_plans.sum { |plan| plan[:namespace_required_storage_bytes] },
-          namespaces: successful_plans,
+          total_required_storage_bytes: create_plans.sum { |plan| plan[:namespace_required_storage_bytes] },
+          create: create_plans,
+          destroy: destroy_plans,
+          unchanged: unchanged_plans,
           nodes: build_node_change_plan,
           failures: failed_plans
         }
@@ -60,15 +67,10 @@ module Search
       class Plan
         include Gitlab::Utils::StrongMemoize
 
-        attr_reader :enabled_namespace, :namespace, :num_replicas, :buffer_factor,
-          :max_indices_per_replica, :errors, :replica_plans, :nodes
-
-        def initialize(
-          enabled_namespace:, num_replicas:, nodes:,
-          buffer_factor: 3, max_indices_per_replica: MAX_INDICES_PER_REPLICA)
+        def initialize(enabled_namespace:, nodes:, buffer_factor: 3, max_indices_per_replica: MAX_INDICES_PER_REPLICA)
           @enabled_namespace = enabled_namespace
           @namespace = enabled_namespace.namespace
-          @num_replicas = num_replicas
+          @num_replicas = enabled_namespace.number_of_replicas
           @buffer_factor = buffer_factor
           @max_indices_per_replica = max_indices_per_replica
           @errors = []
@@ -78,24 +80,57 @@ module Search
         end
 
         def generate
-          if fetch_project_namespaces.exists?
-            num_replicas.times { simulate_replica_plan }
-          else
-            create_empty_replica
-          end
+          existing_replicas_count = enabled_namespace.replicas.size
+          desired_replicas_count = num_replicas
 
-          {
+          result = {
             namespace_id: namespace.id,
             enabled_namespace_id: enabled_namespace.id,
-            namespace_required_storage_bytes: calculate_namespace_storage,
-            replicas: replica_plans,
-            errors: errors.uniq
+            namespace_required_storage_bytes: 0,
+            replicas: [],
+            errors: [],
+            action: determine_action(existing_replicas_count, desired_replicas_count)
           }
+
+          case result[:action]
+          when :create
+            replicas_to_create = desired_replicas_count - existing_replicas_count
+
+            if fetch_project_namespaces.exists?
+              replicas_to_create.times { simulate_replica_plan }
+            else
+              replicas_to_create.times { create_empty_replica }
+            end
+
+            result[:replicas] = replica_plans
+            result[:namespace_required_storage_bytes] = calculate_namespace_storage
+          when :destroy
+            # For destroy, we don't need to simulate - we'll include replica IDs to delete
+            replicas_to_destroy_count = existing_replicas_count - desired_replicas_count
+            replicas = enabled_namespace.replicas
+            replica_ids = replicas.order(:state).order(id: :desc).limit(replicas_to_destroy_count).pluck_primary_key # rubocop:disable CodeReuse/ActiveRecord -- Just order
+            result[:replicas_to_destroy] = replica_ids
+          end
+
+          # Update errors after all operations
+          result[:errors] = errors.uniq
+          result
         end
 
         private
 
-        attr_reader :project_namespace_id
+        attr_reader :enabled_namespace, :namespace, :num_replicas, :buffer_factor, :max_indices_per_replica, :errors,
+          :replica_plans, :nodes, :project_namespace_id
+
+        def determine_action(existing_count, desired_count)
+          if existing_count < desired_count
+            :create
+          elsif existing_count > desired_count
+            :destroy
+          else
+            :unchanged
+          end
+        end
 
         def simulate_replica_plan
           replica_indices = []

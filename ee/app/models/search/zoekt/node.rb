@@ -106,6 +106,9 @@ module Search
       scope :available_for_knowledge_graph_namespace, ->(namespace) do
         with_service(:knowledge_graph).where.not(id: namespace.replicas.select(:zoekt_node_id))
       end
+      scope :available_for_search_indexing, -> do
+        for_search.online.order_by_unclaimed_space_desc
+      end
 
       def self.find_or_initialize_by_task_request(params)
         params = params.with_indifferent_access

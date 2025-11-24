@@ -33,35 +33,21 @@ module Search
         joins(:indices).group(:id).having(raw_sql, state: Search::Zoekt::Index.states[:ready])
       end
 
-      scope :with_too_many_replicas, -> do
-        joins(:replicas)
+      scope :with_mismatched_replicas, -> do
+        left_joins(:replicas)
           .group(:id)
           .having(
-            'COUNT(zoekt_replicas.id) > COALESCE(zoekt_enabled_namespaces.number_of_replicas_override, ?)',
+            "COUNT(#{Replica.table_name}.#{Replica.primary_key}) != " \
+              "COALESCE(#{table_name}.number_of_replicas_override, ?)",
             ::Search::Zoekt::Settings.default_number_of_replicas
           )
       end
 
       validates :metadata, json_schema: { filename: 'zoekt_enabled_namespaces_metadata' }
 
-      # Optimized method to check if any namespaces have too many replicas.
-      # Uses LIMIT 1 to exit early after finding the first match, which is much faster
-      # than processing all records when only checking for existence.
-      #
-      # @return [Boolean] true if at least one namespace has too many replicas
-      def self.has_any_with_too_many_replicas?
-        with_too_many_replicas.limit(1).exists?
-      end
-
-      # Fetches namespaces with too many replicas using batching to avoid full table scans.
-      # Processes records in batches and applies the GROUP BY + HAVING filter to each batch,
-      # which is more efficient than scanning the entire table at once.
-      #
-      # @param batch_size [Integer] The number of records to process per batch
-      # @yield [EnabledNamespace] Each enabled namespace that has too many replicas
-      def self.each_with_too_many_replicas(batch_size: 5000, &block)
+      def self.each_batch_with_mismatched_replicas(batch_size: 5000, &block)
         each_batch(of: batch_size) do |batch|
-          batch.with_too_many_replicas.each(&block)
+          batch.with_mismatched_replicas.each(&block)
         end
       end
 

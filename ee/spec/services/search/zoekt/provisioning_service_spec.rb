@@ -14,10 +14,11 @@ RSpec.describe Search::Zoekt::ProvisioningService, feature_category: :global_sea
 
   let(:plan) do
     {
-      namespaces: [
+      create: [
         {
           namespace_id: namespace.id,
           enabled_namespace_id: enabled_namespace.id,
+          action: :create,
           replicas: [
             {
               indices: [
@@ -58,6 +59,7 @@ RSpec.describe Search::Zoekt::ProvisioningService, feature_category: :global_sea
         {
           namespace_id: namespace2.id,
           enabled_namespace_id: enabled_namespace2.id,
+          action: :create,
           replicas: [
             {
               indices: [
@@ -96,6 +98,8 @@ RSpec.describe Search::Zoekt::ProvisioningService, feature_category: :global_sea
           namespace_required_storage_bytes: 6.gigabytes
         }
       ],
+      destroy: [],
+      unchanged: [],
       total_required_storage_bytes: 16.gigabytes,
       failures: []
     }
@@ -142,7 +146,7 @@ RSpec.describe Search::Zoekt::ProvisioningService, feature_category: :global_sea
         nodes.second.update!(used_bytes: 99.gigabytes) # Simulate node being near full
       end
 
-      it 'accumulates the error and does not provision indices on that node', :freeze_time do
+      it 'accumulates the error and provisions other replicas that don\'t use that node', :freeze_time do
         result = provisioning_result
         expect(result[:errors]).to include(
           a_hash_including(
@@ -151,7 +155,8 @@ RSpec.describe Search::Zoekt::ProvisioningService, feature_category: :global_sea
             node_id: nodes.second.id
           )
         )
-        expect(enabled_namespace.reload.last_rollout_failed_at).to eq(Time.current.iso8601)
+        # Since the second replica for namespace succeeds, last_rollout_failed_at should be reset
+        expect(enabled_namespace.reload.last_rollout_failed_at).to be_nil
       end
     end
 
@@ -169,13 +174,48 @@ RSpec.describe Search::Zoekt::ProvisioningService, feature_category: :global_sea
       end
     end
 
-    context 'when one index can not be created among multiple indices from the plan' do
+    context 'when namespace plan has no replicas' do
       let(:plan) do
         {
-          namespaces: [
+          create: [
             {
               namespace_id: namespace.id,
               enabled_namespace_id: enabled_namespace.id,
+              action: :create,
+              replicas: [],
+              errors: [],
+              namespace_required_storage_bytes: 0
+            }
+          ],
+          destroy: [],
+          unchanged: [],
+          total_required_storage_bytes: 0,
+          failures: []
+        }
+      end
+
+      it 'does not update enabled_namespace failure timestamp when there are no replicas' do
+        # Capture the value before the test runs
+        initial_failed_at = enabled_namespace.reload.last_rollout_failed_at
+
+        result = provisioning_result
+
+        expect(result[:errors]).to be_empty
+        expect(result[:success]).to be_empty
+        expect(Search::Zoekt::Replica.count).to be_zero
+        # last_rollout_failed_at should remain unchanged when total_replicas is 0
+        expect(enabled_namespace.reload.last_rollout_failed_at).to eq(initial_failed_at)
+      end
+    end
+
+    context 'when one index can not be created among multiple indices from the plan' do
+      let(:plan) do
+        {
+          create: [
+            {
+              namespace_id: namespace.id,
+              enabled_namespace_id: enabled_namespace.id,
+              action: :create,
               replicas: [
                 {
                   indices: [
@@ -216,6 +256,7 @@ RSpec.describe Search::Zoekt::ProvisioningService, feature_category: :global_sea
             {
               namespace_id: namespace2.id,
               enabled_namespace_id: enabled_namespace2.id,
+              action: :create,
               replicas: [
                 {
                   indices: [
@@ -254,31 +295,37 @@ RSpec.describe Search::Zoekt::ProvisioningService, feature_category: :global_sea
               namespace_required_storage_bytes: 6.gigabytes
             }
           ],
+          destroy: [],
+          unchanged: [],
           total_required_storage_bytes: 16.gigabytes,
           failures: []
         }
       end
 
-      it 'is atomic, per namespace', :freeze_time do
+      it 'is atomic per replica, not per namespace', :freeze_time do
         result = provisioning_result
         expect(result[:errors]).to include(a_hash_including(message: 'node_not_found'))
         expect(result[:success]).to include(a_hash_including(namespace_id: namespace2.id))
-        expect(enabled_namespace.replicas).to be_empty
-        expect(enabled_namespace.reload.last_rollout_failed_at).to eq(Time.current.iso8601)
+        # The second replica for namespace should succeed even though the first replica failed
+        expect(enabled_namespace.replicas.count).to eq(1)
+        # Since at least one replica succeeded, last_rollout_failed_at should be reset
+        expect(enabled_namespace.reload.last_rollout_failed_at).to be_nil
         expect(enabled_namespace2.replicas).not_to be_empty
-        expect(enabled_namespace.indices).to be_empty
+        # Only the successful replica's indices should be created
+        expect(enabled_namespace.indices.count).to eq(2)
         expect(enabled_namespace2.indices).not_to be_empty
-        expect(result[:success].size).to eq(2)
+        expect(result[:success].size).to eq(3)
       end
     end
 
     context 'when one index reserved_storage_bytes is not sufficient at the time of indices creation', :freeze_time do
       let(:plan) do
         {
-          namespaces: [
+          create: [
             {
               namespace_id: namespace.id,
               enabled_namespace_id: enabled_namespace.id,
+              action: :create,
               replicas: [
                 {
                   indices: [
@@ -319,6 +366,7 @@ RSpec.describe Search::Zoekt::ProvisioningService, feature_category: :global_sea
             {
               namespace_id: namespace2.id,
               enabled_namespace_id: enabled_namespace2.id,
+              action: :create,
               replicas: [
                 {
                   indices: [
@@ -357,12 +405,14 @@ RSpec.describe Search::Zoekt::ProvisioningService, feature_category: :global_sea
               namespace_required_storage_bytes: 6.gigabytes
             }
           ],
+          destroy: [],
+          unchanged: [],
           total_required_storage_bytes: 16.gigabytes,
           failures: []
         }
       end
 
-      it 'skips the namespace, adds metadata for which index can not be created and continue with other namespaces' do
+      it 'skips the failed replica and continues with other replicas' do
         result = provisioning_result
         expect(result[:errors]).to include(
           a_hash_including(
@@ -371,24 +421,28 @@ RSpec.describe Search::Zoekt::ProvisioningService, feature_category: :global_sea
             node_id: nodes.first.id
           )
         )
-        expect(enabled_namespace.reload.last_rollout_failed_at).to eq(Time.current.iso8601)
-        expect(enabled_namespace.metadata['rollout_required_storage_bytes']).to eq(16.gigabytes)
+        # Since at least one replica succeeded, last_rollout_failed_at should be reset
+        expect(enabled_namespace.reload.last_rollout_failed_at).to be_nil
+        expect(enabled_namespace.metadata['rollout_required_storage_bytes']).to be_nil
         expect(result[:success]).to include(a_hash_including(namespace_id: namespace2.id))
-        expect(enabled_namespace.replicas).to be_empty
+        # The second replica for namespace should succeed even though the first replica failed
+        expect(enabled_namespace.replicas.count).to eq(1)
         expect(enabled_namespace2.replicas).not_to be_empty
-        expect(enabled_namespace.indices).to be_empty
+        # Only the successful replica's indices should be created
+        expect(enabled_namespace.indices.count).to eq(2)
         expect(enabled_namespace2.indices).not_to be_empty
-        expect(result[:success].size).to eq(2)
+        expect(result[:success].size).to eq(3)
       end
     end
 
     context 'when a namespace has errors in its plan' do
       let(:plan) do
         {
-          namespaces: [
+          create: [
             {
               namespace_id: namespace2.id,
               enabled_namespace_id: enabled_namespace2.id,
+              action: :create,
               replicas: [
                 {
                   indices: [
@@ -469,7 +523,9 @@ RSpec.describe Search::Zoekt::ProvisioningService, feature_category: :global_sea
               errors: [{ namespace_id: namespace.id, replica_idx: nil, type: :error_type, details: 'Detail' }],
               namespace_required_storage_bytes: 10.gigabytes
             }
-          ]
+          ],
+          destroy: [],
+          unchanged: []
         }
       end
 
@@ -498,10 +554,11 @@ RSpec.describe Search::Zoekt::ProvisioningService, feature_category: :global_sea
     context 'when namespace is not found' do
       let(:plan) do
         {
-          namespaces: [
+          create: [
             {
               namespace_id: non_existing_record_id,
               enabled_namespace_id: enabled_namespace.id,
+              action: :create,
               replicas: [
                 {
                   indices: [
@@ -536,6 +593,8 @@ RSpec.describe Search::Zoekt::ProvisioningService, feature_category: :global_sea
               namespace_required_storage_bytes: 2.gigabytes
             }
           ],
+          destroy: [],
+          unchanged: [],
           total_required_storage_bytes: 5.gigabytes,
           failures: []
         }
@@ -552,14 +611,105 @@ RSpec.describe Search::Zoekt::ProvisioningService, feature_category: :global_sea
       end
     end
 
+    context 'when multiple replicas need to be created' do
+      let_it_be(:namespace3) { create(:group) }
+      let_it_be(:enabled_namespace3) do
+        create(:zoekt_enabled_namespace, namespace: namespace3, number_of_replicas_override: 3)
+      end
+
+      let_it_be(:existing_replica) do
+        create(:zoekt_replica, namespace_id: namespace3.id, zoekt_enabled_namespace: enabled_namespace3)
+      end
+
+      let_it_be(:existing_index) do
+        create(:zoekt_index,
+          replica: existing_replica,
+          zoekt_enabled_namespace: enabled_namespace3,
+          node: nodes.first,
+          metadata: { 'project_namespace_id_to' => 10, 'project_namespace_id_from' => 1 },
+          reserved_storage_bytes: 2.gigabytes
+        )
+      end
+
+      let(:plan) do
+        {
+          create: [
+            {
+              namespace_id: namespace3.id,
+              enabled_namespace_id: enabled_namespace3.id,
+              action: :create,
+              replicas: [
+                {
+                  indices: [
+                    {
+                      node_id: nodes.second.id,
+                      required_storage_bytes: 2.gigabytes,
+                      max_storage_bytes: 80.gigabytes,
+                      projects: { project_namespace_id_from: 1, project_namespace_id_to: 10 }
+                    }
+                  ]
+                },
+                {
+                  indices: [
+                    {
+                      node_id: nodes.third.id,
+                      required_storage_bytes: 2.gigabytes,
+                      max_storage_bytes: 90.gigabytes,
+                      projects: { project_namespace_id_from: 1, project_namespace_id_to: 10 }
+                    }
+                  ]
+                }
+              ],
+              errors: [],
+              namespace_required_storage_bytes: 4.gigabytes
+            }
+          ],
+          destroy: [],
+          unchanged: [],
+          total_required_storage_bytes: 4.gigabytes,
+          failures: []
+        }
+      end
+
+      it 'creates the additional replicas to reach the desired number_of_replicas' do
+        expect(enabled_namespace3.number_of_replicas).to eq(3)
+        expect(enabled_namespace3.reload.replicas.count).to eq(1)
+
+        result = provisioning_result
+
+        expect(result[:errors]).to be_empty
+        expect(enabled_namespace3.reload.replicas.count).to eq(3)
+        expect(enabled_namespace3.indices.count).to eq(3)
+
+        # Verify each replica has one index
+        enabled_namespace3.replicas.each do |replica|
+          expect(replica.indices.count).to eq(1)
+        end
+
+        # Verify indices are on different nodes
+        node_ids = enabled_namespace3.indices.pluck(:zoekt_node_id)
+        expect(node_ids).to contain_exactly(nodes.first.id, nodes.second.id, nodes.third.id)
+
+        # Verify metadata is correct for all indices
+        enabled_namespace3.indices.each do |index|
+          expect(index.metadata).to eq({ 'project_namespace_id_to' => 10, 'project_namespace_id_from' => 1 })
+          expect(index.reserved_storage_bytes).to eq(2.gigabytes)
+        end
+
+        # Result contains only the newly created replicas
+        expect(result[:success].size).to eq(2)
+      end
+    end
+
     context 'when index is already present for a namespace' do
       let_it_be(:index) { create(:zoekt_index, zoekt_enabled_namespace: enabled_namespace) }
       let(:plan) do
         {
-          namespaces: [
+          create: [
             {
               namespace_id: namespace.id,
               enabled_namespace_id: enabled_namespace.id,
+              action: :create,
               replicas: [
                 {
                   indices: [
@@ -594,6 +744,8 @@ RSpec.describe Search::Zoekt::ProvisioningService, feature_category: :global_sea
               namespace_required_storage_bytes: 2.gigabytes
             }
           ],
+          destroy: [],
+          unchanged: [],
           total_required_storage_bytes: 5.gigabytes,
           failures: []
         }
@@ -601,9 +753,364 @@ RSpec.describe Search::Zoekt::ProvisioningService, feature_category: :global_sea
 
       it 'skips the namespace which already has index and continues with the rest', :freeze_time do
         result = provisioning_result
-        expect(result[:errors]).to include(a_hash_including(message: :index_already_exists))
-        expect(enabled_namespace.reload.last_rollout_failed_at).to eq(Time.current.iso8601)
+        # With the new incremental provisioning, orphaned indices don't prevent creating new replicas
+        expect(result[:errors]).to be_empty
+        expect(enabled_namespace.reload.last_rollout_failed_at).to be_nil
         expect(result[:success]).to include(a_hash_including(namespace_id: namespace2.id))
+        expect(result[:success]).to include(a_hash_including(namespace_id: namespace.id))
+      end
+    end
+
+    context 'when plan contains destroy actions' do
+      let_it_be(:namespace_to_scale_down) { create(:group) }
+      let_it_be(:enabled_namespace_scale_down) do
+        create(:zoekt_enabled_namespace, namespace: namespace_to_scale_down, number_of_replicas_override: 2)
+      end
+
+      let_it_be(:replicas_to_remove) do
+        create_list(:zoekt_replica, 3,
+          namespace_id: namespace_to_scale_down.id,
+          zoekt_enabled_namespace: enabled_namespace_scale_down
+        )
+      end
+
+      let_it_be(:_replica_indices) do
+        create(:zoekt_index, replica: replicas_to_remove[0], zoekt_enabled_namespace: enabled_namespace_scale_down,
+          node: nodes.first)
+        create(:zoekt_index, replica: replicas_to_remove[1], zoekt_enabled_namespace: enabled_namespace_scale_down,
+          node: nodes.second)
+        create(:zoekt_index, replica: replicas_to_remove[2], zoekt_enabled_namespace: enabled_namespace_scale_down,
+          node: nodes.third)
+      end
+
+      let(:plan) do
+        {
+          create: [],
+          destroy: [
+            {
+              namespace_id: namespace_to_scale_down.id,
+              enabled_namespace_id: enabled_namespace_scale_down.id,
+              action: :destroy,
+              replicas_to_destroy: [replicas_to_remove[0].id, replicas_to_remove[1].id]
+            }
+          ],
+          unchanged: [],
+          total_required_storage_bytes: 0,
+          failures: []
+        }
+      end
+
+      it 'destroys the specified replicas' do
+        expect(enabled_namespace_scale_down.replicas.count).to eq(3)
+
+        result = provisioning_result
+
+        expect(result[:errors]).to be_empty
+        expect(enabled_namespace_scale_down.reload.replicas.count).to eq(1)
+
+        # Verify the correct replicas were deleted
+        remaining_replica_ids = enabled_namespace_scale_down.replicas.pluck(:id)
+        expect(remaining_replica_ids).to contain_exactly(replicas_to_remove[2].id)
+      end
+
+      it 'includes success information about destroyed replicas' do
+        result = provisioning_result
+
+        expect(result[:success].size).to eq(1)
+        expect(result[:success].first).to include(
+          namespace_id: namespace_to_scale_down.id,
+          replicas_destroyed: 2
+        )
+      end
+    end
+
+    context 'when plan contains both create and destroy actions' do
+      let_it_be(:create_namespace) { create(:group) }
+      let_it_be(:enabled_namespace_create) { create(:zoekt_enabled_namespace, namespace: create_namespace) }
+
+      let_it_be(:destroy_namespace) { create(:group) }
+      let_it_be(:enabled_namespace_destroy) do
+        create(:zoekt_enabled_namespace, namespace: destroy_namespace, number_of_replicas_override: 1)
+      end
+
+      let_it_be(:replicas_destroy) do
+        create_list(:zoekt_replica, 3,
+          namespace_id: destroy_namespace.id,
+          zoekt_enabled_namespace: enabled_namespace_destroy
+        )
+      end
+
+      let(:plan) do
+        {
+          create: [
+            {
+              namespace_id: create_namespace.id,
+              enabled_namespace_id: enabled_namespace_create.id,
+              action: :create,
+              replicas: [
+                {
+                  indices: [
+                    {
+                      node_id: nodes.first.id,
+                      required_storage_bytes: 2.gigabytes,
+                      max_storage_bytes: 90.gigabytes,
+                      projects: { project_namespace_id_from: 1, project_namespace_id_to: 5 }
+                    }
+                  ]
+                }
+              ],
+              errors: [],
+              namespace_required_storage_bytes: 2.gigabytes
+            }
+          ],
+          destroy: [
+            {
+              namespace_id: destroy_namespace.id,
+              enabled_namespace_id: enabled_namespace_destroy.id,
+              action: :destroy,
+              replicas_to_destroy: [replicas_destroy[0].id, replicas_destroy[1].id]
+            }
+          ],
+          unchanged: [],
+          total_required_storage_bytes: 2.gigabytes,
+          failures: []
+        }
+      end
+
+      it 'processes both create and destroy actions successfully' do
+        expect(enabled_namespace_create.replicas.count).to eq(0)
+        expect(enabled_namespace_destroy.replicas.count).to eq(3)
+
+        result = provisioning_result
+
+        expect(result[:errors]).to be_empty
+        expect(enabled_namespace_create.reload.replicas.count).to eq(1)
+        expect(enabled_namespace_destroy.reload.replicas.count).to eq(1)
+
+        # Verify success includes both operations
+        expect(result[:success].size).to eq(2)
+        expect(result[:success]).to include(a_hash_including(namespace_id: create_namespace.id, replica_id: anything))
+        expect(result[:success]).to include(a_hash_including(namespace_id: destroy_namespace.id, replicas_destroyed: 2))
+      end
+    end
+
+    context 'when plan includes unchanged namespaces' do
+      let_it_be(:unchanged_namespace) { create(:group) }
+      let_it_be(:enabled_namespace_unchanged) do
+        create(:zoekt_enabled_namespace, namespace: unchanged_namespace, number_of_replicas_override: 2)
+      end
+
+      let_it_be(:_unchanged_replicas) do
+        create_list(:zoekt_replica, 2,
+          namespace_id: unchanged_namespace.id,
+          zoekt_enabled_namespace: enabled_namespace_unchanged
+        )
+      end
+
+      let(:plan) do
+        {
+          create: [],
+          destroy: [],
+          unchanged: [
+            {
+              namespace_id: unchanged_namespace.id,
+              enabled_namespace_id: enabled_namespace_unchanged.id,
+              action: :unchanged
+            }
+          ],
+          total_required_storage_bytes: 0,
+          failures: []
+        }
+      end
+
+      it 'does not modify unchanged namespaces' do
+        expect(enabled_namespace_unchanged.replicas.count).to eq(2)
+
+        result = provisioning_result
+
+        expect(result[:errors]).to be_empty
+        expect(result[:success]).to be_empty
+        expect(enabled_namespace_unchanged.reload.replicas.count).to eq(2)
+      end
+    end
+
+    context 'when destroy action references non-existent replicas' do
+      let_it_be(:namespace_bad_destroy) { create(:group) }
+      let_it_be(:enabled_namespace_bad_destroy) do
+        create(:zoekt_enabled_namespace, namespace: namespace_bad_destroy)
+      end
+
+      let_it_be(:_existing_replica_only) do
+        create(:zoekt_replica,
+          namespace_id: namespace_bad_destroy.id,
+          zoekt_enabled_namespace: enabled_namespace_bad_destroy
+        )
+      end
+
+      let(:plan) do
+        {
+          create: [],
+          destroy: [
+            {
+              namespace_id: namespace_bad_destroy.id,
+              enabled_namespace_id: enabled_namespace_bad_destroy.id,
+              action: :destroy,
+              replicas_to_destroy: [non_existing_record_id, non_existing_record_id + 1]
+            }
+          ],
+          unchanged: [],
+          total_required_storage_bytes: 0,
+          failures: []
+        }
+      end
+
+      it 'handles gracefully when replica IDs do not exist' do
+        expect(enabled_namespace_bad_destroy.replicas.count).to eq(1)
+
+        result = provisioning_result
+
+        expect(result[:errors]).to be_empty
+        # No replicas should be deleted since the IDs don't exist
+        expect(enabled_namespace_bad_destroy.reload.replicas.count).to eq(1)
+
+        # Success should not include this namespace since nothing was deleted
+        expect(result[:success]).to be_empty
+      end
+    end
+
+    context 'when destroy action has empty replicas_to_destroy list' do
+      let_it_be(:namespace_empty_destroy) { create(:group) }
+      let_it_be(:enabled_namespace_empty_destroy) do
+        create(:zoekt_enabled_namespace, namespace: namespace_empty_destroy)
+      end
+
+      let_it_be(:_existing_replicas_empty) do
+        create_list(:zoekt_replica, 2,
+          namespace_id: namespace_empty_destroy.id,
+          zoekt_enabled_namespace: enabled_namespace_empty_destroy
+        )
+      end
+
+      let(:plan) do
+        {
+          create: [],
+          destroy: [
+            {
+              namespace_id: namespace_empty_destroy.id,
+              enabled_namespace_id: enabled_namespace_empty_destroy.id,
+              action: :destroy,
+              replicas_to_destroy: []
+            }
+          ],
+          unchanged: [],
+          total_required_storage_bytes: 0,
+          failures: []
+        }
+      end
+
+      it 'handles empty replicas_to_destroy list gracefully' do
+        expect(enabled_namespace_empty_destroy.replicas.count).to eq(2)
+
+        result = provisioning_result
+
+        expect(result[:errors]).to be_empty
+        expect(enabled_namespace_empty_destroy.reload.replicas.count).to eq(2)
+        expect(result[:success]).to be_empty
+      end
+    end
+
+    context 'when destroy action cannot find enabled_namespace' do
+      let(:plan) do
+        {
+          create: [],
+          destroy: [
+            {
+              namespace_id: non_existing_record_id,
+              enabled_namespace_id: non_existing_record_id,
+              action: :destroy,
+              replicas_to_destroy: [1, 2, 3]
+            }
+          ],
+          unchanged: [],
+          total_required_storage_bytes: 0,
+          failures: []
+        }
+      end
+
+      it 'accumulates an error for missing enabled_namespace' do
+        result = provisioning_result
+
+        expect(result[:errors]).to include(
+          a_hash_including(
+            message: :missing_enabled_namespace,
+            failed_namespace_id: non_existing_record_id
+          )
+        )
+        expect(result[:success]).to be_empty
+      end
+    end
+
+    context 'when plan is completely empty' do
+      let(:plan) do
+        {
+          create: [],
+          destroy: [],
+          unchanged: [],
+          total_required_storage_bytes: 0,
+          failures: []
+        }
+      end
+
+      it 'completes successfully with no operations' do
+        result = provisioning_result
+
+        expect(result[:errors]).to be_empty
+        expect(result[:success]).to be_empty
+      end
+    end
+
+    context 'when destroy action raises an unexpected error' do
+      let_it_be(:namespace_destroy_error) { create(:group) }
+      let_it_be(:enabled_namespace_destroy_error) do
+        create(:zoekt_enabled_namespace, namespace: namespace_destroy_error)
+      end
+
+      let_it_be(:replicas_error) do
+        create_list(:zoekt_replica, 2,
+          namespace_id: namespace_destroy_error.id,
+          zoekt_enabled_namespace: enabled_namespace_destroy_error
+        )
+      end
+
+      let(:plan) do
+        {
+          create: [],
+          destroy: [
+            {
+              namespace_id: namespace_destroy_error.id,
+              enabled_namespace_id: enabled_namespace_destroy_error.id,
+              action: :destroy,
+              replicas_to_destroy: [replicas_error.first.id]
+            }
+          ],
+          unchanged: [],
+          total_required_storage_bytes: 0,
+          failures: []
+        }
+      end
+
+      it 'captures and aggregates the error' do
+        allow(Search::Zoekt::EnabledNamespace).to receive(:find_by_root_namespace_id)
+          .and_raise(StandardError, 'Unexpected database error')
+
+        result = provisioning_result
+
+        expect(result[:errors]).to include(
+          a_hash_including(
+            message: 'Unexpected database error',
+            failed_namespace_id: namespace_destroy_error.id
+          )
+        )
       end
     end
   end
