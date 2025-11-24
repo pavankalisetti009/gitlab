@@ -272,9 +272,10 @@ export const mockCatalogEmptyItemsResponse = {
   },
 };
 
-export const mockConfigurationForProject = {
+export const mockAgentConfigurationForProject = {
   id: 'gid://gitlab/Ai::Catalog::ItemConsumer/1',
   enabled: true,
+  pinnedItemVersion: mockAgentVersion,
   __typename: TYPENAME_AI_CATALOG_ITEM_CONSUMER,
 };
 
@@ -282,7 +283,7 @@ export const mockAiCatalogAgentResponse = {
   data: {
     aiCatalogItem: {
       ...mockAgent,
-      configurationForProject: mockConfigurationForProject,
+      configurationForProject: mockAgentConfigurationForProject,
     },
   },
 };
@@ -542,7 +543,6 @@ export const mockThirdPartyFlow = mockThirdPartyFlowFactory({
 
 export const mockBaseItemConsumer = {
   id: 'gid://gitlab/Ai::Catalog::ItemConsumer/1',
-  pinnedVersionPrefix: '0.0.1',
   __typename: TYPENAME_AI_CATALOG_ITEM_CONSUMER,
 };
 

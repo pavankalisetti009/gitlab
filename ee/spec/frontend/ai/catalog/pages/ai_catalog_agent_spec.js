@@ -12,7 +12,7 @@ import {
   mockAiCatalogAgentResponse,
   mockAiCatalogAgentNullResponse,
   mockAgent,
-  mockConfigurationForProject,
+  mockAgentConfigurationForProject,
 } from '../mock_data';
 
 jest.mock('~/sentry/sentry_browser_wrapper');
@@ -100,7 +100,7 @@ describe('AiCatalogAgent', () => {
       expect(findRouterView().exists()).toBe(true);
       expect(findRouterView().props('aiCatalogAgent')).toEqual({
         ...mockAgent,
-        configurationForProject: mockConfigurationForProject,
+        configurationForProject: mockAgentConfigurationForProject,
       });
     });
   });
