@@ -1,15 +1,14 @@
 <script>
-import { s__, sprintf } from '~/locale';
+import { sprintf } from '~/locale';
 import { convertToGraphQLId, getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_GROUP } from '~/graphql_shared/constants';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import aiCatalogConfiguredItemsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_configured_items.query.graphql';
 import { PAGE_SIZE } from 'ee/ai/catalog/constants';
-import { createAvailableFlowItemTypes } from 'ee/ai/catalog/utils';
 import SingleSelectDropdown from 'ee/ai/catalog/components/single_select_dropdown.vue';
 
 export default {
-  name: 'AiCatalogGroupFlowDropdown',
+  name: 'GroupItemConsumerDropdown',
   components: {
     SingleSelectDropdown,
   },
@@ -20,6 +19,10 @@ export default {
     },
   },
   props: {
+    dropdownTexts: {
+      type: Object,
+      required: true,
+    },
     id: {
       type: String,
       required: false,
@@ -35,6 +38,10 @@ export default {
       required: false,
       default: true,
     },
+    itemTypes: {
+      type: Array,
+      required: true,
+    },
   },
   query: aiCatalogConfiguredItemsQuery,
   computed: {
@@ -48,12 +55,6 @@ export default {
         last: null,
       };
     },
-    itemTypes() {
-      return createAvailableFlowItemTypes({
-        isFlowsEnabled: this.glFeatures.aiCatalogFlows,
-        isThirdPartyFlowsEnabled: this.glFeatures.aiCatalogThirdPartyFlows,
-      });
-    },
   },
   methods: {
     itemTextFn(item) {
@@ -63,7 +64,7 @@ export default {
       return item?.item?.name;
     },
     itemSubLabelFn(item) {
-      return sprintf(s__('AICatalog|Flow ID: %{id}'), {
+      return sprintf(this.dropdownTexts.itemSublabel, {
         id: getIdFromGraphQLId(item?.item?.id),
       });
     },
@@ -71,7 +72,7 @@ export default {
       this.$emit('input', item);
     },
     onError() {
-      this.$emit('error', s__('AICatalog|Failed to load group flows'));
+      this.$emit('error');
     },
   },
 };
@@ -85,7 +86,7 @@ export default {
     :query="$options.query"
     :query-variables="queryVariables"
     data-key="aiCatalogConfiguredItems"
-    :placeholder-text="s__('AICatalog|Select a flow')"
+    :placeholder-text="dropdownTexts.placeholder"
     :item-text-fn="itemTextFn"
     :item-label-fn="itemLabelFn"
     :item-sub-label-fn="itemSubLabelFn"

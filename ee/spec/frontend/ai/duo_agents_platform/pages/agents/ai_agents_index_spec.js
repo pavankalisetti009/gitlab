@@ -1,25 +1,30 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { GlTabs, GlTab } from '@gitlab/ui';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import AiAgentsIndex from 'ee/ai/duo_agents_platform/pages/agents/ai_agents_index.vue';
-import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
 import AiCatalogListHeader from 'ee/ai/catalog/components/ai_catalog_list_header.vue';
 import AiCatalogConfiguredItemsWrapper from 'ee/ai/duo_agents_platform/components/catalog/ai_catalog_configured_items_wrapper.vue';
+import AddProjectItemConsumerModal from 'ee/ai/duo_agents_platform/components/catalog/add_project_item_consumer_modal.vue';
+import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import ResourceListsEmptyState from '~/vue_shared/components/resource_lists/empty_state.vue';
 import aiCatalogGroupUserPermissionsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_group_user_permissions.query.graphql';
 import aiCatalogProjectUserPermissionsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_project_user_permissions.query.graphql';
-import deleteAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_item_consumer.mutation.graphql';
 import projectAiCatalogAgentsQuery from 'ee/ai/duo_agents_platform/graphql/queries/get_project_agents.query.graphql';
 import {
   mockAgentsWithConfig,
-  mockAiCatalogItemConsumerDeleteResponse,
   mockPageInfo,
   mockGroupUserPermissionsResponse,
   mockProjectUserPermissionsResponse,
+  mockAiCatalogItemConsumerCreateSuccessProjectResponse,
+  mockAiCatalogItemConsumerCreateErrorResponse,
+  mockConfiguredItemsEmptyResponse,
 } from 'ee_jest/ai/catalog/mock_data';
+import createAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/create_ai_catalog_item_consumer.mutation.graphql';
+import aiCatalogConfiguredItemsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_configured_items.query.graphql';
 import { mockProjectAgentsResponse, mockProjectItemsEmptyResponse } from '../../mock_data';
 
 jest.mock('~/sentry/sentry_browser_wrapper');
@@ -38,6 +43,9 @@ describe('AiAgentsIndex', () => {
   };
   const mockProjectId = 1;
   const mockProjectPath = '/mock-group/test-project';
+  const mockConfiguredItemsQueryHandler = jest
+    .fn()
+    .mockResolvedValue(mockConfiguredItemsEmptyResponse);
   const mockProjectAgentsQueryHandler = jest.fn().mockResolvedValue(mockProjectAgentsResponse);
   const mockGroupUserPermissionsQueryHandler = jest
     .fn()
@@ -45,16 +53,15 @@ describe('AiAgentsIndex', () => {
   const mockProjectUserPermissionsQueryHandler = jest
     .fn()
     .mockResolvedValue(mockProjectUserPermissionsResponse);
-  const deleteItemConsumerMutationHandler = jest
-    .fn()
-    .mockResolvedValue(mockAiCatalogItemConsumerDeleteResponse);
+  const createAiCatalogItemConsumerHandler = jest.fn();
 
   const createComponent = ({ provide = {} } = {}) => {
     mockApollo = createMockApollo([
+      [aiCatalogConfiguredItemsQuery, mockConfiguredItemsQueryHandler],
       [projectAiCatalogAgentsQuery, mockProjectAgentsQueryHandler],
       [aiCatalogGroupUserPermissionsQuery, mockGroupUserPermissionsQueryHandler],
       [aiCatalogProjectUserPermissionsQuery, mockProjectUserPermissionsQueryHandler],
-      [deleteAiCatalogItemConsumer, deleteItemConsumerMutationHandler],
+      [createAiCatalogItemConsumer, createAiCatalogItemConsumerHandler],
     ]);
 
     wrapper = shallowMountExtended(AiAgentsIndex, {
@@ -71,12 +78,15 @@ describe('AiAgentsIndex', () => {
       },
       stubs: {
         GlTab,
+        AiCatalogConfiguredItemsWrapper,
       },
     });
   };
 
+  const findErrorsAlert = () => wrapper.findComponent(ErrorsAlert);
   const findConfiguredItemsWrapper = () => wrapper.findComponent(AiCatalogConfiguredItemsWrapper);
-  const findAiCatalogList = () => wrapper.findComponent(AiCatalogList);
+  const findAddProjectItemConsumerModal = () => wrapper.findComponent(AddProjectItemConsumerModal);
+  const findAiCatalogList = () => wrapper.findByTestId('managed-agents-list');
   const findEmptyState = () => wrapper.findComponent(ResourceListsEmptyState);
   const findTabs = () => wrapper.findComponent(GlTabs);
 
@@ -205,11 +215,13 @@ describe('AiAgentsIndex', () => {
     });
 
     describe('when in group namespace', () => {
+      const mockGroupId = 2;
       const mockGroupPath = 'test-group';
 
       beforeEach(() => {
         createComponent({
           provide: {
+            groupId: mockGroupId,
             groupPath: mockGroupPath,
             projectId: null,
             projectPath: null,
@@ -225,6 +237,81 @@ describe('AiAgentsIndex', () => {
 
       it('skips project user permissions query', () => {
         expect(mockProjectUserPermissionsQueryHandler).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('adding an agent to project', () => {
+      const input = {
+        itemId: 'gid://gitlab/Ai::Catalog::Item/1',
+        itemName: 'Test Agent',
+        parentItemConsumerId: 'gid://gitlab/Ai::Catalog::ItemConsumer/1',
+      };
+      const addAgentToProject = () => findAddProjectItemConsumerModal().vm.$emit('submit', input);
+
+      beforeEach(async () => {
+        createComponent();
+        await waitForPromises();
+      });
+
+      describe('when request succeeds', () => {
+        beforeEach(async () => {
+          createAiCatalogItemConsumerHandler.mockResolvedValue(
+            mockAiCatalogItemConsumerCreateSuccessProjectResponse,
+          );
+
+          addAgentToProject();
+          await waitForPromises();
+        });
+
+        it('shows a toast message', () => {
+          expect(mockToast.show).toHaveBeenCalledWith('Agent enabled in Test.');
+        });
+
+        it('calls the mutation with correct variables', () => {
+          expect(createAiCatalogItemConsumerHandler).toHaveBeenCalledWith({
+            input: {
+              itemId: input.itemId,
+              parentItemConsumerId: input.parentItemConsumerId,
+              target: {
+                projectId: `gid://gitlab/Project/${mockProjectId}`,
+              },
+            },
+          });
+        });
+
+        it('refetches aiCatalogConfiguredItemsQuery', () => {
+          expect(mockConfiguredItemsQueryHandler).toHaveBeenCalled();
+        });
+      });
+
+      describe('when request succeeds but returns errors', () => {
+        it('shows alert with error', async () => {
+          createAiCatalogItemConsumerHandler.mockResolvedValue(
+            mockAiCatalogItemConsumerCreateErrorResponse,
+          );
+
+          addAgentToProject();
+          await waitForPromises();
+
+          expect(findErrorsAlert().props()).toMatchObject({
+            title: 'Agent "Test Agent" could not be enabled.',
+            errors: ['Item already configured.'],
+          });
+        });
+      });
+
+      describe('when request fails', () => {
+        it('shows alert with error and captures exception', async () => {
+          createAiCatalogItemConsumerHandler.mockRejectedValue(new Error('Request failed'));
+
+          addAgentToProject();
+          await waitForPromises();
+
+          expect(findErrorsAlert().props('errors')).toEqual([
+            'Could not enable agent in the project. Check that the project meets the <a href="/help/user/duo_agent_platform/ai_catalog#view-the-ai-catalog" target="_blank">prerequisites</a> and try again.',
+          ]);
+          expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));
+        });
       });
     });
   });

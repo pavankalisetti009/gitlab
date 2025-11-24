@@ -1,8 +1,10 @@
 <script>
 import EMPTY_SVG_URL from '@gitlab/svgs/dist/illustrations/empty-state/empty-ai-catalog-md.svg?url';
-import { GlButton, GlTabs, GlTab } from '@gitlab/ui';
+import { GlButton, GlModalDirective, GlTabs, GlTab } from '@gitlab/ui';
 import { __, s__, sprintf } from '~/locale';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import ResourceListsEmptyState from '~/vue_shared/components/resource_lists/empty_state.vue';
 import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
@@ -26,13 +28,16 @@ import {
   AI_CATALOG_AGENTS_ROUTE,
   AI_CATALOG_AGENTS_SHOW_ROUTE,
 } from 'ee/ai/catalog/router/constants';
-import AiCatalogConfiguredItemsWrapper from 'ee/ai/duo_agents_platform/components/catalog/ai_catalog_configured_items_wrapper.vue';
+import createAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/create_ai_catalog_item_consumer.mutation.graphql';
+import aiCatalogConfiguredItemsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_configured_items.query.graphql';
+import { prerequisitesError } from 'ee/ai/catalog/utils';
 import projectAiCatalogAgentsQuery from '../../graphql/queries/get_project_agents.query.graphql';
+import AiCatalogConfiguredItemsWrapper from '../../components/catalog/ai_catalog_configured_items_wrapper.vue';
+import AddProjectItemConsumerModal from '../../components/catalog/add_project_item_consumer_modal.vue';
 
 export default {
   name: 'AiAgentsIndex',
   components: {
-    AiCatalogConfiguredItemsWrapper,
     GlButton,
     GlTabs,
     GlTab,
@@ -40,7 +45,13 @@ export default {
     ErrorsAlert,
     AiCatalogList,
     AiCatalogListHeader,
+    AddProjectItemConsumerModal,
+    AiCatalogConfiguredItemsWrapper,
   },
+  directives: {
+    GlModal: GlModalDirective,
+  },
+  mixins: [glFeatureFlagsMixin()],
   inject: {
     groupPath: {
       default: null,
@@ -126,6 +137,9 @@ export default {
     exploreHref() {
       return `${this.exploreAiCatalogPath}${AI_CATALOG_AGENTS_ROUTE}`;
     },
+    isAgentsAvailable() {
+      return this.glFeatures.aiCatalogAgents;
+    },
     itemTypes() {
       return [AI_CATALOG_TYPE_AGENT];
     },
@@ -160,6 +174,9 @@ export default {
     userPermissions() {
       return this.isProjectNamespace ? this.projectUserPermissions : this.groupUserPermissions;
     },
+    showAddAgent() {
+      return this.isProjectNamespace && this.userPermissions?.adminAiCatalogItemConsumer;
+    },
     disableConfirmTitle() {
       return sprintf(s__('AICatalog|Disable agent from this %{namespaceType}'), {
         namespaceType: this.namespaceTypeLabel,
@@ -188,6 +205,52 @@ export default {
     },
   },
   methods: {
+    async addAgentToProject({ itemName, ...input }) {
+      const targetType = AI_CATALOG_CONSUMER_TYPE_PROJECT;
+      const targetTypeLabel = AI_CATALOG_CONSUMER_LABELS[targetType];
+
+      try {
+        const { data } = await this.$apollo.mutate({
+          mutation: createAiCatalogItemConsumer,
+          variables: {
+            input: {
+              ...input,
+              target: {
+                projectId: convertToGraphQLId(TYPENAME_PROJECT, this.projectId),
+              },
+            },
+          },
+          refetchQueries: [aiCatalogConfiguredItemsQuery],
+        });
+
+        if (data) {
+          const { errors } = data.aiCatalogItemConsumerCreate;
+          if (errors.length > 0) {
+            this.errorTitle = sprintf(s__('AICatalog|Agent "%{name}" could not be enabled.'), {
+              name: itemName,
+            });
+            this.errors = errors;
+            return;
+          }
+
+          const name = data.aiCatalogItemConsumerCreate.itemConsumer[targetType]?.name || '';
+
+          this.$toast.show(sprintf(s__('AICatalog|Agent enabled in %{name}.'), { name }));
+        }
+      } catch (error) {
+        this.errors = [
+          prerequisitesError(
+            s__(
+              'AICatalog|Could not enable agent in the %{target}. Check that the %{target} meets the %{linkStart}prerequisites%{linkEnd} and try again.',
+            ),
+            {
+              target: targetTypeLabel,
+            },
+          ),
+        ];
+        Sentry.captureException(error);
+      }
+    },
     resetPagination() {
       this.paginationVariables = {
         before: null,
@@ -221,6 +284,18 @@ export default {
       this.errorTitle = null;
     },
   },
+  addAgentModalId: 'add-agent-to-project-modal',
+  modalTexts: {
+    title: s__('AICatalog|Enable agent from group'),
+    label: s__('AICatalog|Agent'),
+    labelDescription: s__('AICatalog|Only agents enabled in your top-level group are shown.'),
+    invalidFeedback: s__('AICatalog|Agent is required.'),
+    error: s__('AICatalog|Failed to load group agents'),
+    dropdownTexts: {
+      placeholder: s__('AICatalog|Select an agent'),
+      itemSublabel: s__('AICatalog|Agent ID: %{id}'),
+    },
+  },
   EMPTY_SVG_URL,
 };
 </script>
@@ -230,7 +305,14 @@ export default {
     <ai-catalog-list-header
       :heading="s__('AICatalog|Agents')"
       :can-admin="userPermissions.adminAiCatalogItem"
-    />
+      new-button-variant="default"
+    >
+      <template v-if="isAgentsAvailable" #nav-actions>
+        <gl-button v-if="showAddAgent" v-gl-modal="$options.addAgentModalId" variant="confirm">
+          {{ s__('AICatalog|Enable agent from group') }}
+        </gl-button>
+      </template>
+    </ai-catalog-list-header>
     <errors-alert class="gl-mt-5" :title="errorTitle" :errors="errors" @dismiss="dismissErrors" />
 
     <gl-tabs v-if="isProjectNamespace" v-model="selectedTabIndex" content-class="gl-py-0">
@@ -255,6 +337,7 @@ export default {
           :disable-confirm-title="disableConfirmTitle"
           :disable-confirm-message="disableConfirmMessageProject"
           :page-info="pageInfo"
+          data-testid="managed-agents-list"
           @next-page="handleNextPage"
           @prev-page="handlePrevPage"
         >
@@ -285,6 +368,13 @@ export default {
       :item-types="itemTypes"
       :item-type-config="itemTypeConfigEnabled"
       @error="handleError"
+    />
+    <add-project-item-consumer-modal
+      v-if="showAddAgent"
+      :item-types="itemTypes"
+      :modal-id="$options.addAgentModalId"
+      :modal-texts="$options.modalTexts"
+      @submit="addAgentToProject"
     />
   </div>
 </template>

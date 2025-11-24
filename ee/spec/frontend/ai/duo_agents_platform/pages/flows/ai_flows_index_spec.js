@@ -5,7 +5,7 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import AiFlowsIndex from 'ee/ai/duo_agents_platform/pages/flows/ai_flows_index.vue';
-import AiCatalogAddFlowToProjectModal from 'ee/ai/duo_agents_platform/components/catalog/ai_catalog_add_flow_to_project_modal.vue';
+import AddProjectItemConsumerModal from 'ee/ai/duo_agents_platform/components/catalog/add_project_item_consumer_modal.vue';
 import AiCatalogListHeader from 'ee/ai/catalog/components/ai_catalog_list_header.vue';
 import AiCatalogConfiguredItemsWrapper from 'ee/ai/duo_agents_platform/components/catalog/ai_catalog_configured_items_wrapper.vue';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
@@ -80,7 +80,7 @@ describe('AiFlowsIndex', () => {
 
   const findErrorsAlert = () => wrapper.findComponent(ErrorsAlert);
   const findConfiguredItemsWrapper = () => wrapper.findComponent(AiCatalogConfiguredItemsWrapper);
-  const findAddFlowToProjectModal = () => wrapper.findComponent(AiCatalogAddFlowToProjectModal);
+  const findAddProjectItemConsumerModal = () => wrapper.findComponent(AddProjectItemConsumerModal);
 
   describe('component rendering', () => {
     beforeEach(() => {
@@ -146,13 +146,13 @@ describe('AiFlowsIndex', () => {
     });
 
     describe('adding a flow to project', () => {
-      const flowAttributes = {
+      const input = {
         itemId: 'gid://gitlab/Ai::Catalog::Item/1',
-        flowName: 'Test Flow',
+        itemName: 'Test Flow',
         parentItemConsumerId: 'gid://gitlab/Ai::Catalog::ItemConsumer/1',
         triggerTypes: ['mention'],
       };
-      const addFlowToProject = () => findAddFlowToProjectModal().vm.$emit('submit', flowAttributes);
+      const addFlowToProject = () => findAddProjectItemConsumerModal().vm.$emit('submit', input);
 
       beforeEach(async () => {
         createComponent();
@@ -176,9 +176,9 @@ describe('AiFlowsIndex', () => {
         it('calls the mutation with correct variables', () => {
           expect(createAiCatalogItemConsumerHandler).toHaveBeenCalledWith({
             input: {
-              itemId: flowAttributes.itemId,
-              parentItemConsumerId: flowAttributes.parentItemConsumerId,
-              triggerTypes: flowAttributes.triggerTypes,
+              itemId: input.itemId,
+              parentItemConsumerId: input.parentItemConsumerId,
+              triggerTypes: input.triggerTypes,
               target: {
                 projectId: `gid://gitlab/Project/${mockProjectId}`,
               },
