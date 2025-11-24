@@ -3,6 +3,7 @@
 module Groups
   class DuoAgentsPlatformController < Groups::ApplicationController
     feature_category :duo_agent_platform
+    before_action :ensure_root_group
     before_action :check_access
     before_action do
       push_frontend_feature_flag(:ai_catalog_agents, current_user)
@@ -20,6 +21,10 @@ module Groups
       return unless specific_vueroute?
 
       render_404 unless authorized_for_route?
+    end
+
+    def ensure_root_group
+      render_404 unless group.root?
     end
 
     def specific_vueroute?

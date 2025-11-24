@@ -57,6 +57,15 @@ RSpec.describe Sidebars::Groups::SuperSidebarPanel, feature_category: :navigatio
 
       expect(plan_index).to be < duo_agents_index
     end
+
+    context 'when group is subgroup' do
+      let(:group) { build(:group, :nested) }
+
+      it 'does not include DuoAgentsMenu' do
+        menu_classes = panel.instance_variable_get(:@menus).map(&:class)
+        expect(menu_classes).not_to include(Sidebars::Groups::SuperSidebarMenus::DuoAgentsMenu)
+      end
+    end
   end
 
   it_behaves_like 'a panel with uniquely identifiable menu items'

@@ -10,6 +10,8 @@ module EE
         def configure_menus
           super
 
+          return unless context.group.root?
+
           insert_menu_after(
             ::Sidebars::Groups::SuperSidebarMenus::PlanMenu,
             ::Sidebars::Groups::SuperSidebarMenus::DuoAgentsMenu.new(context)
