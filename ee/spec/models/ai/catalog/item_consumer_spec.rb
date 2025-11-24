@@ -10,6 +10,7 @@ RSpec.describe Ai::Catalog::ItemConsumer, feature_category: :workflow_catalog do
     it { is_expected.to belong_to(:group).optional }
     it { is_expected.to belong_to(:project).optional }
     it { is_expected.to belong_to(:service_account).optional }
+    it { is_expected.to belong_to(:parent_item_consumer).optional }
 
     it { is_expected.to have_one(:flow_trigger).optional }
 
@@ -45,21 +46,18 @@ RSpec.describe Ai::Catalog::ItemConsumer, feature_category: :workflow_catalog do
       subject(:item) { build(:ai_catalog_item_consumer, :for_agent) }
 
       it { is_expected.to validate_absence_of(:service_account) }
-      it { is_expected.to validate_absence_of(:parent_item_consumer) }
     end
 
     context 'when item is a flow' do
       subject(:item) { build(:ai_catalog_item_consumer, :for_flow) }
 
       it { is_expected.not_to validate_absence_of(:service_account) }
-      it { is_expected.not_to validate_absence_of(:parent_item_consumer) }
     end
 
     context 'when item is a third party flow' do
       subject(:item) { build(:ai_catalog_item_consumer, :for_third_party_flow) }
 
       it { is_expected.not_to validate_absence_of(:service_account) }
-      it { is_expected.not_to validate_absence_of(:parent_item_consumer) }
     end
 
     describe '#validate_item_privacy_allowed' do
