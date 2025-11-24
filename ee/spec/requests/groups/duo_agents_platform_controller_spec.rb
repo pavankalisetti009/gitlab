@@ -15,6 +15,16 @@ RSpec.describe 'Groups::DuoAgentsPlatform', feature_category: :duo_agent_platfor
   end
 
   describe 'GET /:group/-/automate' do
+    context 'when group is not a root group' do
+      let(:group) { create(:group, :nested) }
+
+      it 'returns 404' do
+        get group_automate_agents_path(group)
+
+        expect(response).to have_gitlab_http_status(:not_found)
+      end
+    end
+
     context 'when user has access to duo_workflow' do
       it 'renders successfully' do
         get group_automate_flows_path(group)
