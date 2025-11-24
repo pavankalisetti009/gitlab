@@ -29,7 +29,7 @@ module MergeRequests
     scope :in_optimization_array_mapping_scope, ->(id_expression) { where(arel_table[:target_project_id].eq(id_expression)) }
     scope :in_optimization_finder_query, ->(_, id_expression) { where(arel_table[:id].eq(id_expression)) }
 
-    belongs_to :violating_user, class_name: 'User'
+    belongs_to :violating_user, class_name: 'User', inverse_of: :merge_requests_compliance_violations
     belongs_to :merge_request
     belongs_to :target_project, class_name: 'Project', optional: false
 
