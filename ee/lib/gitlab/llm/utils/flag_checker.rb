@@ -10,10 +10,10 @@ module Gitlab
           # Chat is now always enabled
           return true if is_chat
 
-          return true if method.in?(::Gitlab::Llm::Utils::AiFeaturesCatalogue.for_sm.keys)
+          return true if method.in?(::Gitlab::Llm::Utils::AiFeaturesCatalogue.for_saas_and_sm.keys)
 
           return true if Feature.enabled?(:ai_global_switch, type: :ops) &&
-            method.in?(::Gitlab::Llm::Utils::AiFeaturesCatalogue.for_saas.keys)
+            method.in?(::Gitlab::Llm::Utils::AiFeaturesCatalogue.for_saas_only.keys)
 
           # rubocop:enable Gitlab/FeatureFlagWithoutActor
           false
