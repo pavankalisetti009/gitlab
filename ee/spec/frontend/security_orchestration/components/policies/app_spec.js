@@ -17,16 +17,6 @@ import {
   POLICY_TYPE_FILTER_OPTIONS,
 } from 'ee/security_orchestration/components/policies/constants';
 import getSppLinkedProjectsGroups from 'ee/security_orchestration/graphql/queries/get_spp_linked_projects_groups.graphql';
-import projectScanExecutionPoliciesQuery from 'ee/security_orchestration/graphql/queries/project_scan_execution_policies.query.graphql';
-import groupScanExecutionPoliciesQuery from 'ee/security_orchestration/graphql/queries/group_scan_execution_policies.query.graphql';
-import projectScanResultPoliciesQuery from 'ee/security_orchestration/graphql/queries/project_scan_result_policies.query.graphql';
-import groupScanResultPoliciesQuery from 'ee/security_orchestration/graphql/queries/group_scan_result_policies.query.graphql';
-import projectPipelineExecutionPoliciesQuery from 'ee/security_orchestration/graphql/queries/project_pipeline_execution_policies.query.graphql';
-import groupPipelineExecutionPoliciesQuery from 'ee/security_orchestration/graphql/queries/group_pipeline_execution_policies.query.graphql';
-import projectPipelineExecutionSchedulePoliciesQuery from 'ee/security_orchestration/graphql/queries/project_pipeline_execution_schedule_policies.query.graphql';
-import groupPipelineExecutionSchedulePoliciesQuery from 'ee/security_orchestration/graphql/queries/group_pipeline_execution_schedule_policies.query.graphql';
-import projectVulnerabilityManagementPoliciesQuery from 'ee/security_orchestration/graphql/queries/project_vulnerability_management_policies.query.graphql';
-import groupVulnerabilityManagementPoliciesQuery from 'ee/security_orchestration/graphql/queries/group_vulnerability_management_policies.query.graphql';
 import projectSecurityPoliciesQuery from 'ee/security_orchestration/graphql/queries/project_security_policies.query.graphql';
 import groupSecurityPoliciesQuery from 'ee/security_orchestration/graphql/queries/group_security_policies.query.graphql';
 import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
@@ -34,26 +24,11 @@ import * as urlUtils from '~/lib/utils/url_utility';
 import {
   mockGroupPipelineExecutionPolicyCombinedList,
   mockGroupPipelineExecutionSchedulePolicyCombinedList,
-  mockPipelineExecutionPoliciesResponse,
-  mockPipelineExecutionSchedulePoliciesResponse,
   mockProjectPipelineExecutionPolicyCombinedList,
   mockProjectPipelineExecutionSchedulePolicyCombinedList,
 } from '../../mocks/mock_pipeline_execution_policy_data';
+import { mockProjectVulnerabilityManagementPolicyCombinedList } from '../../mocks/mock_vulnerability_management_policy_data';
 import {
-  mockProjectVulnerabilityManagementPolicyCombinedList,
-  mockVulnerabilityManagementPoliciesResponse,
-} from '../../mocks/mock_vulnerability_management_policy_data';
-import {
-  projectScanExecutionPolicies,
-  groupScanExecutionPolicies,
-  projectScanResultPolicies,
-  groupScanResultPolicies,
-  projectPipelineResultPolicies,
-  groupPipelineResultPolicies,
-  projectPipelineExecutionSchedulePolicies,
-  groupPipelineExecutionSchedulePolicies,
-  projectVulnerabilityManagementPolicies,
-  groupVulnerabilityManagementPolicies,
   mockLinkedSppItemsResponse,
   groupSecurityPolicies,
   projectSecurityPolicies,
@@ -62,46 +37,17 @@ import {
 } from '../../mocks/mock_apollo';
 import {
   mockGroupScanExecutionPolicyCombinedList,
-  mockProjectScanExecutionPolicy,
   mockProjectScanExecutionPolicyCombinedList,
-  mockScanExecutionPoliciesResponse,
   mockScanExecutionPoliciesWithSameNamesDifferentSourcesResponse,
 } from '../../mocks/mock_scan_execution_policy_data';
 import {
-  mockScanResultPoliciesResponse,
-  mockProjectScanResultPolicy,
   mockGroupScanResultPolicyCombinedList,
   mockProjectScanResultPolicyCombinedList,
 } from '../../mocks/mock_scan_result_policy_data';
 
 jest.mock('~/alert');
 
-const projectScanExecutionPoliciesSpy = projectScanExecutionPolicies(
-  mockScanExecutionPoliciesResponse,
-);
-const groupScanExecutionPoliciesSpy = groupScanExecutionPolicies(mockScanExecutionPoliciesResponse);
-const projectScanResultPoliciesSpy = projectScanResultPolicies(mockScanResultPoliciesResponse);
-const groupScanResultPoliciesSpy = groupScanResultPolicies(mockScanResultPoliciesResponse);
-const projectPipelineExecutionPoliciesSpy = projectPipelineResultPolicies(
-  mockPipelineExecutionPoliciesResponse,
-);
-const groupPipelineExecutionPoliciesSpy = groupPipelineResultPolicies(
-  mockPipelineExecutionPoliciesResponse,
-);
-const projectPipelineExecutionSchedulePoliciesSpy = projectPipelineExecutionSchedulePolicies(
-  mockPipelineExecutionSchedulePoliciesResponse,
-);
-const groupPipelineExecutionSchedulePoliciesSpy = groupPipelineExecutionSchedulePolicies(
-  mockPipelineExecutionSchedulePoliciesResponse,
-);
-const projectVulnerabilityManagementPoliciesSpy = projectVulnerabilityManagementPolicies(
-  mockVulnerabilityManagementPoliciesResponse,
-);
-const groupVulnerabilityManagementPoliciesSpy = groupVulnerabilityManagementPolicies(
-  mockVulnerabilityManagementPoliciesResponse,
-);
-
-const combinedGroupPolicyList = [
+const groupPolicyList = [
   mockProjectVulnerabilityManagementPolicyCombinedList,
   mockGroupPipelineExecutionPolicyCombinedList,
   mockGroupPipelineExecutionSchedulePolicyCombinedList,
@@ -109,7 +55,7 @@ const combinedGroupPolicyList = [
   mockGroupScanExecutionPolicyCombinedList,
 ];
 
-const combinedProjectPolicyList = [
+const projectPolicyList = [
   mockProjectVulnerabilityManagementPolicyCombinedList,
   mockProjectPipelineExecutionPolicyCombinedList,
   mockProjectPipelineExecutionSchedulePolicyCombinedList,
@@ -117,26 +63,33 @@ const combinedProjectPolicyList = [
   mockProjectScanExecutionPolicyCombinedList,
 ];
 
-const groupSecurityPoliciesSpy = groupSecurityPolicies(combinedGroupPolicyList);
-const projectSecurityPoliciesSpy = projectSecurityPolicies(combinedProjectPolicyList);
+const groupSecurityPoliciesSpy = groupSecurityPolicies(groupPolicyList);
+const projectSecurityPoliciesSpy = projectSecurityPolicies(projectPolicyList);
 
-const flattenedProjectSecurityPolicies = groupByType(combinedProjectPolicyList);
+const flattenedProjectSecurityPolicies = groupByType(projectPolicyList);
 
 const linkedSppItemsResponseSpy = mockLinkedSppItemsResponse();
 const defaultRequestHandlers = {
-  projectScanExecutionPolicies: projectScanExecutionPoliciesSpy,
-  groupScanExecutionPolicies: groupScanExecutionPoliciesSpy,
-  projectScanResultPolicies: projectScanResultPoliciesSpy,
-  groupScanResultPolicies: groupScanResultPoliciesSpy,
-  projectPipelineExecutionPolicies: projectPipelineExecutionPoliciesSpy,
-  groupPipelineExecutionPolicies: groupPipelineExecutionPoliciesSpy,
-  projectPipelineExecutionSchedulePolicies: projectPipelineExecutionSchedulePoliciesSpy,
-  groupPipelineExecutionSchedulePolicies: groupPipelineExecutionSchedulePoliciesSpy,
-  projectVulnerabilityManagementPolicies: projectVulnerabilityManagementPoliciesSpy,
-  groupVulnerabilityManagementPolicies: groupVulnerabilityManagementPoliciesSpy,
   linkedSppItemsResponse: linkedSppItemsResponseSpy,
   groupSecurityPolicies: groupSecurityPoliciesSpy,
   projectSecurityPolicies: projectSecurityPoliciesSpy,
+};
+
+const expectedPolicyList = {
+  [POLICY_TYPE_FILTER_OPTIONS.SCAN_EXECUTION.value]:
+    flattenedProjectSecurityPolicies[POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter],
+  [POLICY_TYPE_FILTER_OPTIONS.APPROVAL.value]:
+    flattenedProjectSecurityPolicies[POLICY_TYPE_COMPONENT_OPTIONS.approval.urlParameter],
+  [POLICY_TYPE_FILTER_OPTIONS.PIPELINE_EXECUTION.value]:
+    flattenedProjectSecurityPolicies[POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter],
+  [POLICY_TYPE_FILTER_OPTIONS.PIPELINE_EXECUTION_SCHEDULE.value]:
+    flattenedProjectSecurityPolicies[
+      POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecutionSchedule.urlParameter
+    ],
+  [POLICY_TYPE_FILTER_OPTIONS.VULNERABILITY_MANAGEMENT.value]:
+    flattenedProjectSecurityPolicies[
+      POLICY_TYPE_COMPONENT_OPTIONS.vulnerabilityManagement.urlParameter
+    ],
 };
 
 describe('App', () => {
@@ -154,9 +107,6 @@ describe('App', () => {
       provide: {
         assignedPolicyProject,
         enabledExperiments: ['pipeline_execution_schedule_policy'],
-        glFeatures: {
-          securityPoliciesCombinedList: false,
-        },
         namespacePath,
         namespaceType: NAMESPACE_TYPES.PROJECT,
         maxScanExecutionPolicyActions: MAX_SCAN_EXECUTION_ACTION_COUNT,
@@ -165,29 +115,8 @@ describe('App', () => {
       },
       apolloProvider: createMockApollo(
         [
-          [projectScanExecutionPoliciesQuery, requestHandlers.projectScanExecutionPolicies],
-          [groupScanExecutionPoliciesQuery, requestHandlers.groupScanExecutionPolicies],
-          [projectScanResultPoliciesQuery, requestHandlers.projectScanResultPolicies],
-          [groupScanResultPoliciesQuery, requestHandlers.groupScanResultPolicies],
           [getSppLinkedProjectsGroups, requestHandlers.linkedSppItemsResponse],
-          [projectPipelineExecutionPoliciesQuery, requestHandlers.projectPipelineExecutionPolicies],
-          [groupPipelineExecutionPoliciesQuery, requestHandlers.groupPipelineExecutionPolicies],
-          [
-            projectPipelineExecutionSchedulePoliciesQuery,
-            requestHandlers.projectPipelineExecutionSchedulePolicies,
-          ],
-          [
-            groupPipelineExecutionSchedulePoliciesQuery,
-            requestHandlers.groupPipelineExecutionSchedulePolicies,
-          ],
-          [
-            projectVulnerabilityManagementPoliciesQuery,
-            requestHandlers.projectVulnerabilityManagementPolicies,
-          ],
-          [
-            groupVulnerabilityManagementPoliciesQuery,
-            requestHandlers.groupVulnerabilityManagementPolicies,
-          ],
+
           [groupSecurityPoliciesQuery, requestHandlers.groupSecurityPolicies],
           [projectSecurityPoliciesQuery, requestHandlers.projectSecurityPolicies],
         ],
@@ -222,16 +151,8 @@ describe('App', () => {
           selectedPolicyType: POLICY_TYPE_FILTER_OPTIONS.ALL.value,
         }),
       );
-      expect(findPoliciesList().props('policiesByType')).toEqual({
-        [POLICY_TYPE_FILTER_OPTIONS.SCAN_EXECUTION.value]: mockScanExecutionPoliciesResponse,
-        [POLICY_TYPE_FILTER_OPTIONS.APPROVAL.value]: mockScanResultPoliciesResponse,
-        [POLICY_TYPE_FILTER_OPTIONS.PIPELINE_EXECUTION.value]:
-          mockPipelineExecutionPoliciesResponse,
-        [POLICY_TYPE_FILTER_OPTIONS.PIPELINE_EXECUTION_SCHEDULE.value]:
-          mockPipelineExecutionSchedulePoliciesResponse,
-        [POLICY_TYPE_FILTER_OPTIONS.VULNERABILITY_MANAGEMENT.value]:
-          mockVulnerabilityManagementPoliciesResponse,
-      });
+
+      expect(findPoliciesList().props('policiesByType')).toEqual(expectedPolicyList);
     });
 
     it('renders the policy header correctly', () => {
@@ -242,12 +163,8 @@ describe('App', () => {
       expect(linkedSppItemsResponseSpy).toHaveBeenCalledTimes(1);
     });
 
-    it('does not fetch combined policy list when ff is false', () => {
-      expect(requestHandlers.projectSecurityPolicies).toHaveBeenCalledTimes(0);
-    });
-
     it('updates the policy list when a the security policy project is changed', async () => {
-      expect(projectScanExecutionPoliciesSpy).toHaveBeenCalledTimes(1);
+      expect(projectSecurityPoliciesSpy).toHaveBeenCalledTimes(1);
       expect(findPoliciesList().props('shouldUpdatePolicyList')).toBe(false);
       expect(findPoliciesList().props('hasPolicyProject')).toBe(false);
       findPoliciesHeader().vm.$emit('update-policy-list', {
@@ -257,35 +174,18 @@ describe('App', () => {
       await nextTick();
       expect(findPoliciesList().props('shouldUpdatePolicyList')).toBe(true);
       expect(findPoliciesList().props('hasPolicyProject')).toBe(true);
-      expect(projectScanExecutionPoliciesSpy).toHaveBeenCalledTimes(2);
+      expect(projectSecurityPoliciesSpy).toHaveBeenCalledTimes(2);
     });
-
-    it.each`
-      type                             | groupHandler                                | projectHandler
-      ${'scan execution'}              | ${'groupScanExecutionPolicies'}             | ${'projectScanExecutionPolicies'}
-      ${'scan result'}                 | ${'groupScanResultPolicies'}                | ${'projectScanResultPolicies'}
-      ${'pipeline execution'}          | ${'groupPipelineExecutionPolicies'}         | ${'projectPipelineExecutionPolicies'}
-      ${'pipeline execution schedule'} | ${'groupPipelineExecutionSchedulePolicies'} | ${'projectPipelineExecutionSchedulePolicies'}
-      ${'vulnerability management'}    | ${'groupVulnerabilityManagementPolicies'}   | ${'projectVulnerabilityManagementPolicies'}
-    `(
-      'fetches project-level $type policies instead of group-level',
-      ({ groupHandler, projectHandler }) => {
-        expect(requestHandlers[groupHandler]).not.toHaveBeenCalled();
-        expect(requestHandlers[projectHandler]).toHaveBeenCalledWith({
-          fullPath: namespacePath,
-          relationship: POLICY_SOURCE_OPTIONS.ALL.value,
-        });
-      },
-    );
   });
 
   it('renders scan execution policies with different sources and same name', async () => {
-    const projectScanExecutionPoliciesWitSameNameSpy = projectScanExecutionPolicies(
-      mockScanExecutionPoliciesWithSameNamesDifferentSourcesResponse,
-    );
+    const projectSecurityPoliciesWitSameNameSpy = projectSecurityPolicies([
+      ...projectPolicyList,
+      mockScanExecutionPoliciesWithSameNamesDifferentSourcesResponse[1],
+    ]);
 
     createWrapper({
-      handlers: { projectScanExecutionPolicies: projectScanExecutionPoliciesWitSameNameSpy },
+      handlers: { projectSecurityPolicies: projectSecurityPoliciesWitSameNameSpy },
     });
     await waitForPromises();
 
@@ -326,7 +226,7 @@ describe('App', () => {
     });
 
     it('shows an alert', () => {
-      expect(createAlert).toHaveBeenCalledTimes(6);
+      expect(createAlert).toHaveBeenCalledTimes(2);
       expect(createAlert).toHaveBeenCalledWith({
         message: 'Something went wrong, unable to fetch policies',
       });
@@ -357,31 +257,22 @@ describe('App', () => {
     it('does not fetch linked SPP items', () => {
       expect(linkedSppItemsResponseSpy).toHaveBeenCalledTimes(0);
     });
-
-    it.each`
-      type                          | groupHandler                              | projectHandler
-      ${'scan execution'}           | ${'groupScanExecutionPolicies'}           | ${'projectScanExecutionPolicies'}
-      ${'scan result'}              | ${'groupScanResultPolicies'}              | ${'projectScanResultPolicies'}
-      ${'pipeline execution'}       | ${'groupPipelineExecutionPolicies'}       | ${'projectPipelineExecutionPolicies'}
-      ${'vulnerability management'} | ${'groupVulnerabilityManagementPolicies'} | ${'projectVulnerabilityManagementPolicies'}
-    `(
-      'fetches group-level $type policies instead of project-level',
-      ({ groupHandler, projectHandler }) => {
-        expect(requestHandlers[projectHandler]).not.toHaveBeenCalled();
-        expect(requestHandlers[groupHandler]).toHaveBeenCalledWith({
-          fullPath: namespacePath,
-          relationship: POLICY_SOURCE_OPTIONS.ALL.value,
-        });
-      },
-    );
   });
 
   describe('invalid policies', () => {
     it('updates "hasInvalidPolicies" when there are deprecated properties in scan result policies that are not "type: scan_result_policy"', async () => {
+      const securityPolicy = projectPolicyList[3];
+      const { policyAttributes } = securityPolicy;
       createWrapper({
         handlers: {
-          projectScanResultPolicies: projectScanResultPolicies([
-            { ...mockProjectScanResultPolicy, deprecatedProperties: ['test', 'test1'] },
+          projectSecurityPolicies: projectSecurityPolicies([
+            {
+              ...securityPolicy,
+              policyAttributes: {
+                ...policyAttributes,
+                deprecatedProperties: ['test', 'test1'],
+              },
+            },
           ]),
         },
       });
@@ -391,25 +282,7 @@ describe('App', () => {
     });
 
     it('does not emit that a policy is invalid when there are deprecated properties in scan result policies that are "type: scan_result_policy"', async () => {
-      createWrapper({
-        handlers: {
-          projectScanResultPolicies: projectScanResultPolicies([
-            { ...mockProjectScanResultPolicy, deprecatedProperties: ['scan_result_policy'] },
-          ]),
-        },
-      });
-      await waitForPromises();
-      expect(findPoliciesHeader().props('hasInvalidPolicies')).toEqual(false);
-    });
-
-    it('does not emit that a policy is invalid when there are no deprecated properties', async () => {
-      createWrapper({
-        handlers: {
-          projectScanResultPolicies: projectScanResultPolicies([
-            { ...mockProjectScanResultPolicy, deprecatedProperties: [] },
-          ]),
-        },
-      });
+      createWrapper();
       await waitForPromises();
       expect(findPoliciesHeader().props('hasInvalidPolicies')).toEqual(false);
     });
@@ -417,12 +290,17 @@ describe('App', () => {
 
   describe('deprecated custom scan action policies', () => {
     it('updates "hasDeprecatedCustomScanPolicies" when there are deprecated properties in scan execution policies', async () => {
+      const securityPolicy = projectPolicyList[4];
+      const { policyAttributes } = securityPolicy;
       createWrapper({
         handlers: {
-          projectScanExecutionPolicies: projectScanExecutionPolicies([
+          projectSecurityPolicies: projectSecurityPolicies([
             {
-              ...mockProjectScanExecutionPolicy,
-              deprecatedProperties: [DEPRECATED_CUSTOM_SCAN_PROPERTY],
+              ...securityPolicy,
+              policyAttributes: {
+                ...policyAttributes,
+                deprecatedProperties: [DEPRECATED_CUSTOM_SCAN_PROPERTY],
+              },
             },
           ]),
         },
@@ -433,86 +311,32 @@ describe('App', () => {
     });
 
     it('does not emit that a policy is invalid when there are no deprecated properties', async () => {
-      createWrapper({
-        handlers: {
-          projectScanExecutionPolicies: projectScanExecutionPolicies([
-            { ...mockProjectScanExecutionPolicy, deprecatedProperties: [] },
-          ]),
-        },
-      });
+      createWrapper();
       await waitForPromises();
       expect(findPoliciesHeader().props('hasDeprecatedCustomScanPolicies')).toEqual(false);
     });
   });
 
-  describe('pipeline execution schedule policy retrieval', () => {
-    it('does not request the pipeline execution schedule policies when enabledExperiments is empty', async () => {
-      createWrapper({
-        provide: {
-          enabledExperiments: [],
-          glFeatures: {},
-        },
-      });
-      await waitForPromises();
-
-      expect(requestHandlers.projectPipelineExecutionSchedulePolicies).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('combined policy list', () => {
-    const policiesByType = {
-      [POLICY_TYPE_FILTER_OPTIONS.SCAN_EXECUTION.value]:
-        flattenedProjectSecurityPolicies[POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter],
-      [POLICY_TYPE_FILTER_OPTIONS.APPROVAL.value]:
-        flattenedProjectSecurityPolicies[POLICY_TYPE_COMPONENT_OPTIONS.approval.urlParameter],
-      [POLICY_TYPE_FILTER_OPTIONS.PIPELINE_EXECUTION.value]:
-        flattenedProjectSecurityPolicies[
-          POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter
-        ],
-      [POLICY_TYPE_FILTER_OPTIONS.PIPELINE_EXECUTION_SCHEDULE.value]:
-        flattenedProjectSecurityPolicies[
-          POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecutionSchedule.urlParameter
-        ],
-      [POLICY_TYPE_FILTER_OPTIONS.VULNERABILITY_MANAGEMENT.value]:
-        flattenedProjectSecurityPolicies[
-          POLICY_TYPE_COMPONENT_OPTIONS.vulnerabilityManagement.urlParameter
-        ],
-    };
-
-    it('loads combined list without scheduled policies', async () => {
-      createWrapper({
-        provide: {
-          glFeatures: {
-            securityPoliciesCombinedList: true,
-          },
-        },
-      });
+  describe('policy list', () => {
+    it('loads policy list without scheduled policies', async () => {
+      createWrapper();
 
       await waitForPromises();
 
       expect(requestHandlers.projectSecurityPolicies).toHaveBeenCalledTimes(1);
-      expect(requestHandlers.projectPipelineExecutionSchedulePolicies).toHaveBeenCalledTimes(0);
 
-      expect(findPoliciesList().props('policiesByType')).toEqual(policiesByType);
+      expect(findPoliciesList().props('policiesByType')).toEqual(expectedPolicyList);
     });
 
-    it('loads full combined policy list', async () => {
+    it('loads full policy list', async () => {
       createWrapper({
         provide: {
           enabledExperiments: ['pipeline_execution_schedule_policy'],
-          glFeatures: {
-            securityPoliciesCombinedList: true,
-          },
         },
       });
       await waitForPromises();
 
       expect(requestHandlers.projectSecurityPolicies).toHaveBeenCalledTimes(1);
-      expect(requestHandlers.projectVulnerabilityManagementPolicies).toHaveBeenCalledTimes(0);
-      expect(requestHandlers.projectScanResultPolicies).toHaveBeenCalledTimes(0);
-      expect(requestHandlers.projectScanExecutionPolicies).toHaveBeenCalledTimes(0);
-      expect(requestHandlers.projectPipelineExecutionPolicies).toHaveBeenCalledTimes(0);
-      expect(requestHandlers.projectPipelineExecutionSchedulePolicies).toHaveBeenCalledTimes(0);
 
       expect(findPoliciesList().props()).toEqual(
         expect.objectContaining({
@@ -524,7 +348,7 @@ describe('App', () => {
       );
 
       expect(findPoliciesList().props('policiesByType')).toEqual({
-        ...policiesByType,
+        ...expectedPolicyList,
         [POLICY_TYPE_FILTER_OPTIONS.PIPELINE_EXECUTION_SCHEDULE.value]:
           flattenedProjectSecurityPolicies[
             POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecutionSchedule.urlParameter
@@ -542,24 +366,8 @@ describe('App', () => {
       ${'PIPELINE_EXECUTION_SCHEDULE'} | ${'PIPELINE_EXECUTION_SCHEDULE_POLICY'}
       ${'VULNERABILITY_MANAGEMENT'}    | ${'VULNERABILITY_MANAGEMENT_POLICY'}
     `('filters policies by type', ({ emittedType, expectedType }) => {
-      it('does not refresh policy list when feature flag is disabled', async () => {
-        createWrapper();
-
-        await waitForPromises();
-
-        await findPoliciesList().vm.$emit('update-policy-type', emittedType);
-
-        expect(requestHandlers.projectSecurityPolicies).toHaveBeenCalledTimes(0);
-      });
-
       it('filters policies by type', async () => {
-        createWrapper({
-          provide: {
-            glFeatures: {
-              securityPoliciesCombinedList: true,
-            },
-          },
-        });
+        createWrapper();
 
         await waitForPromises();
 
@@ -578,13 +386,7 @@ describe('App', () => {
       it('sets correct selected from query type', async () => {
         jest.spyOn(urlUtils, 'getParameterByName').mockReturnValue(emittedType.toLowerCase());
 
-        createWrapper({
-          provide: {
-            glFeatures: {
-              securityPoliciesCombinedList: true,
-            },
-          },
-        });
+        createWrapper();
 
         await waitForPromises();
 
@@ -603,13 +405,8 @@ describe('App', () => {
   describe('pagination', () => {
     it('fetches next page when policy list is changed to a next page', async () => {
       createWrapper({
-        provide: {
-          glFeatures: {
-            securityPoliciesCombinedList: true,
-          },
-        },
         handlers: {
-          projectSecurityPolicies: projectSecurityPolicies(combinedProjectPolicyList, {
+          projectSecurityPolicies: projectSecurityPolicies(projectPolicyList, {
             ...defaultPageInfo,
             endCursor: 'next',
           }),
@@ -630,13 +427,8 @@ describe('App', () => {
 
     it('fetches previous page when policy list is changed to a previous page', async () => {
       createWrapper({
-        provide: {
-          glFeatures: {
-            securityPoliciesCombinedList: true,
-          },
-        },
         handlers: {
-          projectSecurityPolicies: projectSecurityPolicies(combinedProjectPolicyList, {
+          projectSecurityPolicies: projectSecurityPolicies(projectPolicyList, {
             ...defaultPageInfo,
             startCursor: 'previous',
           }),

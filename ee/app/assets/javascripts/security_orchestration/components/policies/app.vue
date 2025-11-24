@@ -16,16 +16,6 @@ import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/compone
 import projectSecurityPoliciesQuery from 'ee/security_orchestration/graphql/queries/project_security_policies.query.graphql';
 import groupSecurityPoliciesQuery from 'ee/security_orchestration/graphql/queries/group_security_policies.query.graphql';
 import { isGroup } from '../utils';
-import projectScanExecutionPoliciesQuery from '../../graphql/queries/project_scan_execution_policies.query.graphql';
-import groupScanExecutionPoliciesQuery from '../../graphql/queries/group_scan_execution_policies.query.graphql';
-import projectScanResultPoliciesQuery from '../../graphql/queries/project_scan_result_policies.query.graphql';
-import groupScanResultPoliciesQuery from '../../graphql/queries/group_scan_result_policies.query.graphql';
-import projectPipelineExecutionPoliciesQuery from '../../graphql/queries/project_pipeline_execution_policies.query.graphql';
-import groupPipelineExecutionPoliciesQuery from '../../graphql/queries/group_pipeline_execution_policies.query.graphql';
-import projectPipelineExecutionSchedulePoliciesQuery from '../../graphql/queries/project_pipeline_execution_schedule_policies.query.graphql';
-import groupPipelineExecutionSchedulePoliciesQuery from '../../graphql/queries/group_pipeline_execution_schedule_policies.query.graphql';
-import projectVulnerabilityManagementPoliciesQuery from '../../graphql/queries/project_vulnerability_management_policies.query.graphql';
-import groupVulnerabilityManagementPoliciesQuery from '../../graphql/queries/group_vulnerability_management_policies.query.graphql';
 import ListHeader from './list_header.vue';
 import ListComponent from './list_component.vue';
 import {
@@ -35,29 +25,6 @@ import {
   POLICIES_PER_PAGE,
   PIPELINE_TYPE_COMBINED_TYPE_MAP,
 } from './constants';
-
-const NAMESPACE_QUERY_DICT = {
-  scanExecution: {
-    [NAMESPACE_TYPES.PROJECT]: projectScanExecutionPoliciesQuery,
-    [NAMESPACE_TYPES.GROUP]: groupScanExecutionPoliciesQuery,
-  },
-  scanResult: {
-    [NAMESPACE_TYPES.PROJECT]: projectScanResultPoliciesQuery,
-    [NAMESPACE_TYPES.GROUP]: groupScanResultPoliciesQuery,
-  },
-  pipelineExecution: {
-    [NAMESPACE_TYPES.PROJECT]: projectPipelineExecutionPoliciesQuery,
-    [NAMESPACE_TYPES.GROUP]: groupPipelineExecutionPoliciesQuery,
-  },
-  pipelineExecutionSchedule: {
-    [NAMESPACE_TYPES.PROJECT]: projectPipelineExecutionSchedulePoliciesQuery,
-    [NAMESPACE_TYPES.GROUP]: groupPipelineExecutionSchedulePoliciesQuery,
-  },
-  vulnerabilityManagement: {
-    [NAMESPACE_TYPES.PROJECT]: projectVulnerabilityManagementPoliciesQuery,
-    [NAMESPACE_TYPES.GROUP]: groupVulnerabilityManagementPoliciesQuery,
-  },
-};
 
 const NAMESPACE_QUERY_DICT_COMBINED_LIST = {
   [NAMESPACE_TYPES.PROJECT]: projectSecurityPoliciesQuery,
@@ -125,90 +92,6 @@ export default {
       update(data) {
         return data?.namespace?.securityPolicies?.nodes ?? [];
       },
-      skip() {
-        return !this.hasCombinedList;
-      },
-      error: createPolicyFetchError,
-    },
-    scanExecutionPolicies: {
-      query() {
-        return NAMESPACE_QUERY_DICT.scanExecution[this.namespaceType];
-      },
-      variables() {
-        return this.queryVariables;
-      },
-      update(data) {
-        return data?.namespace?.scanExecutionPolicies?.nodes ?? [];
-      },
-      result({ data }) {
-        return data?.namespace?.scanExecutionPolicies?.nodes ?? [];
-      },
-      skip() {
-        return this.hasCombinedList;
-      },
-      error: createPolicyFetchError,
-    },
-    scanResultPolicies: {
-      query() {
-        return NAMESPACE_QUERY_DICT.scanResult[this.namespaceType];
-      },
-      variables() {
-        return this.queryVariables;
-      },
-      update(data) {
-        return data?.namespace?.scanResultPolicies?.nodes ?? [];
-      },
-      result({ data }) {
-        return data?.namespace?.scanResultPolicies?.nodes ?? [];
-      },
-      skip() {
-        return this.hasCombinedList;
-      },
-      error: createPolicyFetchError,
-    },
-    pipelineExecutionPolicies: {
-      query() {
-        return NAMESPACE_QUERY_DICT.pipelineExecution[this.namespaceType];
-      },
-      variables() {
-        return this.queryVariables;
-      },
-      update(data) {
-        return data?.namespace?.pipelineExecutionPolicies?.nodes ?? [];
-      },
-      skip() {
-        return this.hasCombinedList;
-      },
-      error: createPolicyFetchError,
-    },
-    pipelineExecutionSchedulePolicies: {
-      query() {
-        return NAMESPACE_QUERY_DICT.pipelineExecutionSchedule[this.namespaceType];
-      },
-      variables() {
-        return this.queryVariables;
-      },
-      update(data) {
-        return data?.namespace?.pipelineExecutionSchedulePolicies?.nodes ?? [];
-      },
-      skip() {
-        return this.hasCombinedList || !this.hasScheduledPoliciesEnabled;
-      },
-      error: createPolicyFetchError,
-    },
-    vulnerabilityManagementPolicies: {
-      query() {
-        return NAMESPACE_QUERY_DICT.vulnerabilityManagement[this.namespaceType];
-      },
-      variables() {
-        return this.queryVariables;
-      },
-      update(data) {
-        return data?.namespace?.vulnerabilityManagementPolicies?.nodes ?? [];
-      },
-      skip() {
-        return this.hasCombinedList;
-      },
       error: createPolicyFetchError,
     },
   },
@@ -223,11 +106,6 @@ export default {
       selectedPolicyType,
       shouldUpdatePolicyList: false,
       linkedSppItems: [],
-      pipelineExecutionPolicies: [],
-      pipelineExecutionSchedulePolicies: [],
-      scanExecutionPolicies: [],
-      scanResultPolicies: [],
-      vulnerabilityManagementPolicies: [],
       pageInfo: {},
       securityPolicies: [],
       type,
@@ -270,9 +148,6 @@ export default {
         policy.deprecatedProperties?.some((prop) => prop !== 'scan_result_policy'),
       );
     },
-    hasCombinedList() {
-      return Boolean(this.glFeatures.securityPoliciesCombinedList);
-    },
     hasScheduledPoliciesEnabled() {
       return this.enabledExperiments.includes('pipeline_execution_schedule_policy');
     },
@@ -312,34 +187,11 @@ export default {
 
       return policiesByType;
     },
-    policiesByTypeMultipleLists() {
-      return {
-        [POLICY_TYPE_FILTER_OPTIONS.SCAN_EXECUTION.value]: this.scanExecutionPolicies,
-        [POLICY_TYPE_FILTER_OPTIONS.APPROVAL.value]: this.scanResultPolicies,
-        [POLICY_TYPE_FILTER_OPTIONS.PIPELINE_EXECUTION.value]: this.pipelineExecutionPolicies,
-        [POLICY_TYPE_FILTER_OPTIONS.PIPELINE_EXECUTION_SCHEDULE.value]:
-          this.pipelineExecutionSchedulePolicies,
-        [POLICY_TYPE_FILTER_OPTIONS.VULNERABILITY_MANAGEMENT.value]:
-          this.vulnerabilityManagementPolicies,
-      };
-    },
     policiesByType() {
-      return this.hasCombinedList
-        ? this.policiesByTypeCombinedList
-        : this.policiesByTypeMultipleLists;
+      return this.policiesByTypeCombinedList;
     },
     isLoadingPolicies() {
-      if (this.hasCombinedList) {
-        return this.$apollo.queries.securityPolicies.loading;
-      }
-
-      return (
-        this.$apollo.queries.scanExecutionPolicies.loading ||
-        this.$apollo.queries.scanResultPolicies.loading ||
-        this.$apollo.queries.pipelineExecutionPolicies.loading ||
-        this.$apollo.queries.pipelineExecutionSchedulePolicies.loading ||
-        this.$apollo.queries.vulnerabilityManagementPolicies.loading
-      );
+      return this.$apollo.queries.securityPolicies.loading;
     },
   },
   methods: {
@@ -353,25 +205,13 @@ export default {
 
       this.shouldUpdatePolicyList = shouldUpdatePolicyList;
 
-      if (this.hasCombinedList) {
-        this.$apollo.queries.securityPolicies.refetch();
-        return;
-      }
-
-      this.$apollo.queries.scanExecutionPolicies.refetch();
-      this.$apollo.queries.scanResultPolicies.refetch();
-      this.$apollo.queries.pipelineExecutionPolicies.refetch();
-      this.$apollo.queries.pipelineExecutionSchedulePolicies.refetch();
-      this.$apollo.queries.vulnerabilityManagementPolicies.refetch();
+      this.$apollo.queries.securityPolicies.refetch();
     },
     handleUpdatePolicySource(value) {
       this.selectedPolicySource = value;
     },
     async handleUpdatePolicyType(value) {
-      if (this.hasCombinedList) {
-        this.type = PIPELINE_TYPE_COMBINED_TYPE_MAP[value] || '';
-      }
-
+      this.type = PIPELINE_TYPE_COMBINED_TYPE_MAP[value] || '';
       this.selectedPolicyType = value;
     },
     async handlePageChange(isNext = false) {

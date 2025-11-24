@@ -27,24 +27,6 @@ rules:
       - newly_detected
 `;
 
-export const zeroActionsScanResultObject = {
-  type: 'approval_policy',
-  name: 'critical vulnerability CS approvals',
-  description: 'This policy enforces critical vulnerability CS approvals',
-  enabled: true,
-  rules: [
-    {
-      type: 'scan_finding',
-      branches: [],
-      scanners: ['container_scanning'],
-      vulnerabilities_allowed: 1,
-      severity_levels: ['critical'],
-      vulnerability_states: ['newly_detected'],
-      id: ruleId,
-    },
-  ],
-};
-
 export const mockNoFallbackScanResultManifest = `type: approval_policy
 name: critical vulnerability CS approvals
 description: This policy enforces critical vulnerability CS approvals
@@ -254,39 +236,6 @@ export const mockDeprecatedScanResultManifest = `approval_policy:
       fail: open
 `;
 
-export const multipleApproverActionsScanResultManifest = zeroActionsScanResultManifest.concat(`
-actions:
-  - type: require_approval
-    approvals_required: 1
-  - type: send_bot_message
-    enabled: true
-  - type: require_approval
-    approvals_required: 1
-`);
-
-export const multipleApproverActionsScanResultObject = {
-  type: 'approval_policy',
-  name: 'critical vulnerability CS approvals',
-  description: 'This policy enforces critical vulnerability CS approvals',
-  enabled: true,
-  rules: [
-    {
-      type: 'scan_finding',
-      branches: [],
-      scanners: ['container_scanning'],
-      vulnerabilities_allowed: 1,
-      severity_levels: ['critical'],
-      vulnerability_states: ['newly_detected'],
-      id: ruleId,
-    },
-  ],
-  actions: [
-    { type: 'require_approval', approvals_required: 1, id: actionId },
-    { type: 'send_bot_message', enabled: true, id: actionId },
-    { type: 'require_approval', approvals_required: 1, id: actionId },
-  ],
-};
-
 export const enabledSendBotMessageActionScanResultManifest = zeroActionsScanResultManifest.concat(`
 actions:
   - type: send_bot_message
@@ -448,17 +397,6 @@ approval_settings:
     )
     .concat('fallback_behavior:\n  fail: open');
 
-export const mockPolicyScopeScanResultManifest = `type: approval_policy
-name: policy scope
-description: This policy enforces policy scope
-enabled: true
-rules: []
-actions: []
-policy_scope:
-  compliance_frameworks:
-    - id: 26
-`;
-
 export const mockApprovalSettingsScanResultObject = {
   ...mockDefaultBranchesScanResultObject,
   approval_settings: {
@@ -610,24 +548,10 @@ export const mockProjectWithAllApproverTypesScanResultPolicy = {
 export const mockProjectFallbackClosedScanResultManifest =
   mockDefaultBranchesScanResultManifest.concat(`fallback_behavior:\n  fail: closed`);
 
-export const mockProjectFallbackClosedScanResultObject = {
-  ...mockDefaultBranchesScanResultObject,
-  fallback_behavior: {
-    fail: 'closed',
-  },
-};
-
 export const mockProjectPolicyTuningScanResultManifest =
   mockDefaultBranchesScanResultManifest.concat(
     `policy_tuning:\n  unblock_rules_using_execution_policies: true`,
   );
-
-export const mockProjectPolicyTuningScanResultObject = {
-  ...mockDefaultBranchesScanResultObject,
-  policy_tuning: {
-    unblock_rules_using_execution_policies: true,
-  },
-};
 
 export const mockInvalidRulesScanResultManifest = `type: approval_policy
 name: critical vulnerability CS approvals

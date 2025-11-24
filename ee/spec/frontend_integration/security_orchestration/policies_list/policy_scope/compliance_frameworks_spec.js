@@ -4,28 +4,30 @@ import { mountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import {
-  projectScanExecutionPolicies,
-  groupScanExecutionPolicies,
-  projectScanResultPolicies,
-  groupScanResultPolicies,
-  projectPipelineResultPolicies,
-  groupPipelineResultPolicies,
   mockLinkedSppItemsResponse,
+  groupSecurityPolicies,
+  projectSecurityPolicies,
 } from 'ee_jest/security_orchestration/mocks/mock_apollo';
-import { mockScanExecutionPoliciesResponse } from 'ee_jest/security_orchestration/mocks/mock_scan_execution_policy_data';
-import { mockScanResultPoliciesResponse } from 'ee_jest/security_orchestration/mocks/mock_scan_result_policy_data';
-import { mockPipelineExecutionPoliciesResponse } from 'ee_jest/security_orchestration/mocks/mock_pipeline_execution_policy_data';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 import App from 'ee/security_orchestration/components/policies/app.vue';
-import projectScanExecutionPoliciesQuery from 'ee/security_orchestration/graphql/queries/project_scan_execution_policies.query.graphql';
-import groupScanExecutionPoliciesQuery from 'ee/security_orchestration/graphql/queries/group_scan_execution_policies.query.graphql';
-import projectScanResultPoliciesQuery from 'ee/security_orchestration/graphql/queries/project_scan_result_policies.query.graphql';
-import groupScanResultPoliciesQuery from 'ee/security_orchestration/graphql/queries/group_scan_result_policies.query.graphql';
-import projectPipelineExecutionPoliciesQuery from 'ee/security_orchestration/graphql/queries/project_pipeline_execution_policies.query.graphql';
-import groupPipelineExecutionPoliciesQuery from 'ee/security_orchestration/graphql/queries/group_pipeline_execution_policies.query.graphql';
+
 import getSppLinkedProjectsGroups from 'ee/security_orchestration/graphql/queries/get_spp_linked_projects_groups.graphql';
+import projectSecurityPoliciesQuery from 'ee/security_orchestration/graphql/queries/project_security_policies.query.graphql';
+import groupSecurityPoliciesQuery from 'ee/security_orchestration/graphql/queries/group_security_policies.query.graphql';
 import ScopeInfoRow from 'ee/security_orchestration/components/policy_drawer/scope_info_row.vue';
 import ListComponentScope from 'ee/security_orchestration/components/policies/list_component_scope.vue';
+import {
+  mockGroupPipelineExecutionPolicyCombinedList,
+  mockProjectPipelineExecutionPolicyCombinedList,
+} from 'ee_jest/security_orchestration/mocks/mock_pipeline_execution_policy_data';
+import {
+  mockGroupScanResultPolicyCombinedList,
+  mockProjectScanResultPolicyCombinedList,
+} from 'ee_jest/security_orchestration/mocks/mock_scan_result_policy_data';
+import {
+  mockGroupScanExecutionPolicyCombinedList,
+  mockProjectScanExecutionPolicyCombinedList,
+} from 'ee_jest/security_orchestration/mocks/mock_scan_execution_policy_data';
 import { DEFAULT_PROVIDE } from '../mocks';
 import {
   groups as includingGroups,
@@ -45,35 +47,29 @@ const projectWithExceptionsScope = {
 };
 
 const mockPipelineExecutionPoliciesProjectResponse = generateMockResponse(
-  0,
-  mockPipelineExecutionPoliciesResponse,
+  mockProjectPipelineExecutionPolicyCombinedList,
   projectWithExceptionsScope,
 );
 const mockPipelineExecutionPoliciesGroupResponse = generateMockResponse(
-  1,
-  mockPipelineExecutionPoliciesResponse,
+  mockGroupPipelineExecutionPolicyCombinedList,
   projectWithExceptionsScope,
 );
 
 const mockScanExecutionPoliciesProjectResponse = generateMockResponse(
-  0,
-  mockScanExecutionPoliciesResponse,
+  mockProjectScanExecutionPolicyCombinedList,
   projectWithExceptionsScope,
 );
 const mockScanExecutionPoliciesGroupResponse = generateMockResponse(
-  1,
-  mockScanExecutionPoliciesResponse,
+  mockGroupScanExecutionPolicyCombinedList,
   projectWithExceptionsScope,
 );
 
 const mockScanResultPoliciesProjectResponse = generateMockResponse(
-  0,
-  mockScanResultPoliciesResponse,
+  mockProjectScanResultPolicyCombinedList,
   projectWithExceptionsScope,
 );
 const mockScanResultPoliciesGroupResponse = generateMockResponse(
-  1,
-  mockScanResultPoliciesResponse,
+  mockGroupScanResultPolicyCombinedList,
   projectWithExceptionsScope,
 );
 
@@ -81,46 +77,22 @@ const mockScanResultPoliciesGroupResponse = generateMockResponse(
  * New mocks for policy scope including linked groups on project level
  * @type {jest.Mock<any, any, any>}
  */
-const newProjectPipelineExecutionPoliciesSpy = projectPipelineResultPolicies([
+const newProjectSecurityPoliciesSpy = projectSecurityPolicies([
   mockPipelineExecutionPoliciesProjectResponse,
-  mockPipelineExecutionPoliciesGroupResponse,
-]);
-
-const newProjectScanExecutionPoliciesSpy = projectScanExecutionPolicies([
   mockScanExecutionPoliciesProjectResponse,
-  mockScanExecutionPoliciesGroupResponse,
-]);
-const newProjectScanResultPoliciesSpy = projectScanResultPolicies([
   mockScanResultPoliciesProjectResponse,
-  mockScanResultPoliciesGroupResponse,
 ]);
 
-/**
- * New mocks for policy scope including linked groups on group level
- * @type {jest.Mock<any, any, any>}
- */
-const newGroupPipelineExecutionPoliciesSpy = groupPipelineResultPolicies([
-  mockPipelineExecutionPoliciesProjectResponse,
+const newGroupSecurityPoliciesSpy = groupSecurityPolicies([
   mockPipelineExecutionPoliciesGroupResponse,
-]);
-
-const newGroupScanExecutionPoliciesSpy = groupScanExecutionPolicies([
-  mockScanExecutionPoliciesProjectResponse,
   mockScanExecutionPoliciesGroupResponse,
-]);
-const newGroupScanResultPoliciesSpy = groupScanResultPolicies([
-  mockScanResultPoliciesProjectResponse,
   mockScanResultPoliciesGroupResponse,
 ]);
 
 const defaultRequestHandlers = {
-  projectScanExecutionPolicies: newProjectScanExecutionPoliciesSpy,
-  groupScanExecutionPolicies: newGroupScanExecutionPoliciesSpy,
-  projectScanResultPolicies: newProjectScanResultPoliciesSpy,
-  groupScanResultPolicies: newGroupScanResultPoliciesSpy,
-  projectPipelineExecutionPolicies: newProjectPipelineExecutionPoliciesSpy,
-  groupPipelineExecutionPolicies: newGroupPipelineExecutionPoliciesSpy,
   linkedSppItemsResponse: mockLinkedSppItemsResponse(),
+  projectSecurityPolicies: newProjectSecurityPoliciesSpy,
+  groupSecurityPolicies: newGroupSecurityPoliciesSpy,
 };
 
 describe('Policies List specific projects policy scope', () => {
@@ -141,13 +113,9 @@ describe('Policies List specific projects policy scope', () => {
         ...provide,
       },
       apolloProvider: createMockApollo([
-        [projectScanExecutionPoliciesQuery, requestHandlers.projectScanExecutionPolicies],
-        [groupScanExecutionPoliciesQuery, requestHandlers.groupScanExecutionPolicies],
-        [projectScanResultPoliciesQuery, requestHandlers.projectScanResultPolicies],
-        [groupScanResultPoliciesQuery, requestHandlers.groupScanResultPolicies],
-        [projectPipelineExecutionPoliciesQuery, requestHandlers.projectPipelineExecutionPolicies],
-        [groupPipelineExecutionPoliciesQuery, requestHandlers.groupPipelineExecutionPolicies],
         [getSppLinkedProjectsGroups, requestHandlers.linkedSppItemsResponse],
+        [groupSecurityPoliciesQuery, requestHandlers.groupSecurityPolicies],
+        [projectSecurityPoliciesQuery, requestHandlers.projectSecurityPolicies],
       ]),
     });
   };
@@ -160,7 +128,7 @@ describe('Policies List specific projects policy scope', () => {
     describe('group policy scope for $policyType', () => {
       it.each`
         policyType              | policyScopeRowIndex | selectedRow
-        ${'Pipeline execution'} | ${4}                | ${mockPipelineExecutionPoliciesProjectResponse}
+        ${'Pipeline execution'} | ${0}                | ${mockPipelineExecutionPoliciesProjectResponse}
         ${'Scan execution'}     | ${1}                | ${mockScanExecutionPoliciesProjectResponse}
         ${'Scan Result'}        | ${2}                | ${mockScanResultPoliciesProjectResponse}
       `(
@@ -179,7 +147,7 @@ describe('Policies List specific projects policy scope', () => {
 
       it.each`
         policyType              | policyScopeRowIndex | selectedRow
-        ${'Pipeline execution'} | ${4}                | ${mockPipelineExecutionPoliciesProjectResponse}
+        ${'Pipeline execution'} | ${0}                | ${mockPipelineExecutionPoliciesProjectResponse}
         ${'Scan execution'}     | ${1}                | ${mockScanExecutionPoliciesProjectResponse}
         ${'Scan Result'}        | ${2}                | ${mockScanResultPoliciesProjectResponse}
       `(
@@ -211,7 +179,7 @@ describe('Policies List specific projects policy scope', () => {
   describe('group level', () => {
     it.each`
       policyType              | policyScopeRowIndex | selectedRow
-      ${'Pipeline execution'} | ${4}                | ${mockPipelineExecutionPoliciesProjectResponse}
+      ${'Pipeline execution'} | ${0}                | ${mockPipelineExecutionPoliciesProjectResponse}
       ${'Scan execution'}     | ${1}                | ${mockScanExecutionPoliciesProjectResponse}
       ${'Scan Result'}        | ${2}                | ${mockScanResultPoliciesProjectResponse}
     `(

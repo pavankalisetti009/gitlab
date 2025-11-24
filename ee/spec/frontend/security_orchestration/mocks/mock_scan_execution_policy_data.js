@@ -253,16 +253,21 @@ export const mockProjectScanExecutionPolicy = {
   name: `${mockDastScanExecutionObject.name}-project`,
   updatedAt: new Date('2021-06-07T00:00:00.000Z'),
   yaml: mockDastScanExecutionManifest,
+  type: 'scan_execution_policy',
+  policyAttributes: {
+    __typename: 'ScanExecutionPolicyAttributesType',
+    deprecatedProperties: [],
+    source: {
+      __typename: 'ProjectSecurityPolicySource',
+      project: {
+        fullPath: 'project/path',
+      },
+    },
+  },
   editPath: '/policies/policy-name/edit?type="scan_execution_policy"',
   enabled: true,
   ...POLICY_SCOPE_MOCK,
   deprecatedProperties: [],
-  source: {
-    __typename: 'ProjectSecurityPolicySource',
-    project: {
-      fullPath: 'project/path',
-    },
-  },
 };
 
 export const mockProjectScanExecutionPolicyCombinedList = {
@@ -371,14 +376,18 @@ export const mockScanExecutionPoliciesWithSameNamesDifferentSourcesResponse = [
   {
     ...mockProjectScanExecutionPolicy,
     updatedAt: new Date('2021-06-09T00:00:00.000Z').getDate(),
-    source: {
-      __typename: 'GroupSecurityPolicySource',
-      inherited: true,
-      namespace: {
-        __typename: 'Namespace',
-        id: '1',
-        fullPath: 'parent-group-path',
-        name: 'parent-group-name',
+    policyAttributes: {
+      __typename: 'ScanExecutionPolicyAttributesType',
+      deprecatedProperties: [],
+      source: {
+        __typename: 'GroupSecurityPolicySource',
+        inherited: true,
+        namespace: {
+          __typename: 'Namespace',
+          id: '1',
+          fullPath: 'parent-group-path',
+          name: 'parent-group-name',
+        },
       },
     },
   },
@@ -388,21 +397,6 @@ export const mockScheduleScanExecutionPoliciesResponse = [
   mockScheduledProjectScanExecutionPolicy,
   ...mockScanExecutionPoliciesResponse,
 ];
-
-export const mockSecretDetectionScanExecutionManifest = `---
-name: Enforce DAST in every pipeline
-enabled: false
-rules:
-- type: pipeline
-  branches:
-  - main
-  - release/*
-  - staging
-actions:
-- scan: secret_detection
-  tags:
-  - linux,
-`;
 
 export const mockCiVariablesWithTagsScanExecutionManifest = `---
 name: Enforce Secret Detection in every pipeline
@@ -465,35 +459,6 @@ export const mockInvalidCadenceScanExecutionObject = {
   rules: [{ type: 'schedule', branches: ['main'], cadence: 'INVALID * * * *', id: ruleId }],
   actions: [{ scan: 'sast', id: actionId }],
 };
-
-export const mockPolicyScopeExecutionManifest = `type: scan_execution_policy
-name: Project scope
-description: This policy enforces policy scope
-enabled: false
-rules:
-  - type: pipeline
-    branches:
-      - main
-actions:
-  - scan: container_scanning
-policy_scope:
-  compliance_frameworks: []
-`;
-
-export const mockPolicyScopeScanExecutionObject = {
-  type: 'scan_execution_policy',
-  name: 'Project scope',
-  enabled: false,
-  description: 'This policy enforces policy scope',
-  rules: [{ type: 'pipeline', branches: ['main'], id: ruleId }],
-  actions: [{ scan: 'container_scanning', id: actionId }],
-  policy_scope: {
-    compliance_frameworks: [],
-  },
-};
-
-export const mockTemplateScanExecutionManifest =
-  mockDastScanExecutionManifest.concat(`template: default\n`);
 
 export const mockTemplateScanExecutionObject = {
   ...mockDastScanExecutionObject,
