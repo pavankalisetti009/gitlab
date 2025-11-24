@@ -4,7 +4,8 @@ require 'spec_helper'
 
 RSpec.describe Security::StoreSbomScanService, feature_category: :dependency_management do
   let_it_be(:user) { create(:user) }
-  let_it_be(:pipeline) { create(:ci_pipeline, user: user) }
+  let_it_be(:project) { create(:project, :repository) }
+  let_it_be(:pipeline) { create(:ci_pipeline, user: user, ref: project.default_branch, project: project) }
   let_it_be(:build) { create(:ee_ci_build, :success, pipeline: pipeline) }
   let_it_be(:report_type) { :dependency_scanning }
   let_it_be_with_refind(:artifact) { create(:ee_ci_job_artifact, :cyclonedx, job: build) }
