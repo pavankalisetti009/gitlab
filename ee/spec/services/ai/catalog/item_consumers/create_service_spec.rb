@@ -190,12 +190,6 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
 
       expect { execute }.not_to change { consumer_project.members.count }
     end
-
-    context 'when passing parent_item_consumer' do
-      let(:params) { { item:, parent_item_consumer: } }
-
-      it_behaves_like 'a failure', "Parent item consumer must be blank"
-    end
   end
 
   it 'tracks internal event on successful creation' do
@@ -514,7 +508,7 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
       let(:item) { agent_item }
 
       it_behaves_like(
-        'a failure', ["Flow trigger ai_catalog_item_consumer is not a flow", "Parent item consumer must be blank"]
+        'a failure', ["Flow trigger ai_catalog_item_consumer is not a flow"]
       )
     end
   end

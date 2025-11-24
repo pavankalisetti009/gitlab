@@ -34,7 +34,6 @@ module Ai
       has_one :flow_trigger, class_name: 'Ai::FlowTrigger', inverse_of: :ai_catalog_item_consumer
 
       validates :service_account, absence: true, unless: -> { item&.flow? || item&.third_party_flow? }
-      validates :parent_item_consumer, absence: true, unless: -> { item&.flow? || item&.third_party_flow? }
 
       scope :by_enabled, ->(enabled) { where(enabled: enabled) }
 
