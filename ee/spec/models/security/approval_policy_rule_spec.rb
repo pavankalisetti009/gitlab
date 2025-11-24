@@ -11,7 +11,6 @@ RSpec.describe Security::ApprovalPolicyRule, feature_category: :security_policy_
   describe 'associations' do
     it { is_expected.to belong_to(:security_policy) }
     it { is_expected.to belong_to(:security_policy_management_project) }
-    it { is_expected.to have_one(:approval_project_rule) }
     it { is_expected.to have_many(:approval_merge_request_rules) }
     it { is_expected.to have_many(:violations) }
     it { is_expected.to have_many(:approval_policy_rule_project_links) }
