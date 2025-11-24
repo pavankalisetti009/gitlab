@@ -9,7 +9,7 @@ RSpec.describe MergeRequests::ComplianceViolation, type: :model, feature_categor
   let_it_be(:user) { create(:user) }
 
   describe "Associations" do
-    it { is_expected.to belong_to(:violating_user) }
+    it { is_expected.to belong_to(:violating_user).inverse_of(:merge_requests_compliance_violations) }
     it { is_expected.to belong_to(:merge_request) }
     it { is_expected.to belong_to(:target_project).required }
   end

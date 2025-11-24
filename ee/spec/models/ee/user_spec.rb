@@ -117,6 +117,7 @@ RSpec.describe User, feature_category: :system_access do
     it { is_expected.to have_many(:subscription_seat_assignments).class_name('GitlabSubscriptions::SeatAssignment') }
     it { is_expected.to have_many(:compromised_password_detections).class_name('Users::CompromisedPasswordDetection').inverse_of(:user) }
     it { is_expected.to have_many(:arkose_sessions).class_name('Users::ArkoseSession').inverse_of(:user) }
+    it { is_expected.to have_many(:merge_requests_compliance_violations).class_name('MergeRequests::ComplianceViolation').inverse_of(:violating_user) }
   end
 
   describe 'nested attributes' do
