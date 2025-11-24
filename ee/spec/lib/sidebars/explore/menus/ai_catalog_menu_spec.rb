@@ -7,8 +7,13 @@ RSpec.describe Sidebars::Explore::Menus::AiCatalogMenu, feature_category: :navig
   let_it_be(:user) { build(:user) }
 
   let(:context) { Sidebars::Context.new(current_user: current_user, container: user) }
+  let(:ai_catalog_available) { true }
 
   subject(:menu_item) { described_class.new(context) }
+
+  before do
+    allow(Ai::Catalog).to receive(:available?).and_return(ai_catalog_available)
+  end
 
   describe '#link' do
     it 'matches the expected path pattern' do
@@ -39,22 +44,12 @@ RSpec.describe Sidebars::Explore::Menus::AiCatalogMenu, feature_category: :navig
       expect(menu_item.render?).to be(true)
     end
 
-    context 'when global_ai_catalog feature flag is disabled' do
-      before do
-        stub_feature_flags(global_ai_catalog: false)
-      end
+    context 'when AI Catalog is not available for the instance' do
+      let(:ai_catalog_available) { false }
 
       it 'does not render the menu' do
         expect(menu_item.render?).to be(false)
       end
-    end
-  end
-
-  describe 'feature flag integration' do
-    it 'calls Feature.enabled? with correct parameters' do
-      expect(Feature).to receive(:enabled?).with(:global_ai_catalog, current_user)
-
-      menu_item.render?
     end
   end
 end

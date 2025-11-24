@@ -599,8 +599,11 @@ RSpec.describe SearchHelper, feature_category: :global_search do
   describe 'AI catalog autocomplete results' do
     let_it_be(:user) { create(:user) }
 
+    let(:ai_catalog_available) { true }
+
     before do
       allow(self).to receive(:current_user).and_return(user)
+      allow(Ai::Catalog).to receive(:available?).and_return(ai_catalog_available)
     end
 
     context 'when global_ai_catalog feature is enabled' do
@@ -696,10 +699,8 @@ RSpec.describe SearchHelper, feature_category: :global_search do
       end
     end
 
-    context 'when global_ai_catalog feature is disabled' do
-      before do
-        stub_feature_flags(global_ai_catalog: false)
-      end
+    context 'when AI Catalog is not available for the instance' do
+      let(:ai_catalog_available) { false }
 
       it 'does not include AI catalog sections' do
         expect(search_autocomplete_opts('ai').size).to eq(0)

@@ -143,7 +143,7 @@ module EE
 
     # Autocomplete results for AI catalog pages
     def default_autocomplete_ai_catalog
-      return [] unless ::Feature.enabled?(:global_ai_catalog, current_user)
+      return [] unless Ability.allowed?(current_user, :read_ai_catalog)
 
       ai_catalog_results = [
         {

@@ -14,6 +14,7 @@ RSpec.describe 'AI Catalog', :js, :with_current_organization, feature_category: 
 
   describe 'Agents' do
     before do
+      sign_in(user)
       visit explore_ai_catalog_path
     end
 
@@ -24,8 +25,8 @@ RSpec.describe 'AI Catalog', :js, :with_current_organization, feature_category: 
       end
     end
 
-    it('does not display new agent button as link') do
-      expect(page).not_to have_link('New agent')
+    it('displays new agent button as link') do
+      expect(page).to have_link('New agent')
     end
 
     it 'displays an empty list of agents' do
@@ -54,26 +55,10 @@ RSpec.describe 'AI Catalog', :js, :with_current_organization, feature_category: 
           project.add_maintainer(user)
         end
 
-        before do
-          sign_in(user)
-          visit explore_ai_catalog_path
-        end
-
         it 'displays public and private agents' do
           agents = page.all('[data-testid="ai-catalog-item"]')
           expect(agents.length).to be(6)
         end
-      end
-    end
-
-    context 'with an authenticated user' do
-      before do
-        sign_in(user)
-        visit explore_ai_catalog_path
-      end
-
-      it('displays new agent button as link') do
-        expect(page).to have_link('New agent')
       end
     end
   end
