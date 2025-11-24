@@ -1,6 +1,6 @@
 <script>
 import { GlCard, GlButton, GlSprintf, GlLink } from '@gitlab/ui';
-import { PROMO_URL, isAbsolute, joinPaths } from 'jh_else_ce/lib/utils/url_utility';
+import { PROMO_URL } from 'jh_else_ce/lib/utils/url_utility';
 
 export default {
   name: 'PurchaseCommitmentCard',
@@ -15,19 +15,9 @@ export default {
       required: true,
       type: Boolean,
     },
-    purchaseCreditsPath: {
-      required: true,
-      type: String,
-    },
-  },
-  computed: {
-    purchaseCreditsUrl() {
-      if (isAbsolute(this.purchaseCreditsPath)) return this.purchaseCreditsPath;
-
-      return joinPaths(gon.subscriptions_url, this.purchaseCreditsPath);
-    },
   },
   pricingLink: `${PROMO_URL}/pricing`,
+  salesLink: `${PROMO_URL}/sales`,
 };
 </script>
 <template>
@@ -52,7 +42,7 @@ export default {
       <div class="gl-mt-auto">
         <gl-button
           variant="confirm"
-          :href="purchaseCreditsUrl"
+          :href="$options.salesLink"
           referrerpolicy="no-referrer-when-downgrade"
         >
           {{ s__('UsageBilling|Increase monthly commitment') }}
@@ -81,7 +71,7 @@ export default {
       <div class="gl-mt-auto">
         <gl-button
           variant="confirm"
-          :href="purchaseCreditsUrl"
+          :href="$options.salesLink"
           referrerpolicy="no-referrer-when-downgrade"
         >
           {{ s__('UsageBilling|Purchase monthly commitment') }}

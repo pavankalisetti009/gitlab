@@ -1,5 +1,6 @@
 import { GlButton, GlSprintf } from '@gitlab/ui';
 import PurchaseCommitmentCard from 'ee/usage_quotas/usage_billing/components/purchase_commitment_card.vue';
+import { PROMO_URL } from 'jh_else_ce/lib/utils/url_utility';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
 describe('PurchaseCommitmentCard', () => {
@@ -19,40 +20,6 @@ describe('PurchaseCommitmentCard', () => {
     });
   };
 
-  beforeEach(() => {
-    window.gon = {
-      subscriptions_url: 'https://customers.gitlab.com/',
-    };
-  });
-
-  describe('purchase credits link', () => {
-    describe('when purchaseCreditsPath is a relative URL', () => {
-      beforeEach(() => {
-        createComponent();
-      });
-
-      it('will be prepended with the subscription portal url', () => {
-        const button = wrapper.findComponent(GlButton);
-        expect(button.props('href')).toBe(
-          'https://customers.gitlab.com/purchase-monthly-commitment',
-        );
-      });
-    });
-
-    describe('when purchaseCreditsPath is an absolute URL', () => {
-      beforeEach(() => {
-        createComponent({
-          purchaseCreditsPath: 'https://example.com/purchase-monthly-commitment',
-        });
-      });
-
-      it('will be used as is', () => {
-        const button = wrapper.findComponent(GlButton);
-        expect(button.props('href')).toBe('https://example.com/purchase-monthly-commitment');
-      });
-    });
-  });
-
   describe('with monthly commmittment', () => {
     beforeEach(() => {
       createComponent({ hasCommitment: true });
@@ -71,7 +38,8 @@ describe('PurchaseCommitmentCard', () => {
     it('renders call to action button', () => {
       const button = wrapper.findComponent(GlButton);
 
-      expect(button.props('href')).toBe('https://customers.gitlab.com/purchase-monthly-commitment');
+      expect(button.props('href')).toBe(`${PROMO_URL}/sales`);
+
       expect(button.text()).toBe('Increase monthly commitment');
     });
   });
@@ -94,7 +62,7 @@ describe('PurchaseCommitmentCard', () => {
     it('renders call to action button', () => {
       const button = wrapper.findComponent(GlButton);
 
-      expect(button.props('href')).toBe('https://customers.gitlab.com/purchase-monthly-commitment');
+      expect(button.props('href')).toBe(`${PROMO_URL}/sales`);
       expect(button.text()).toBe('Purchase monthly commitment');
     });
   });
