@@ -13,13 +13,15 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
     context 'with feature flag enabled' do
       context 'when authenticated as admin' do
         context 'with valid model name' do
+          let(:api_path) { "/admin/data_management/snippet_repository" }
+
           it 'returns matching object data' do
             expected_model = create(:snippet_repository)
 
-            get api("/admin/data_management/snippet_repository", admin, admin_mode: true)
+            get api(api_path, admin, admin_mode: true)
 
             expect(response).to have_gitlab_http_status(:ok)
-            expect(json_response.first).to include('record_identifier' => expected_model.id,
+            expect(json_response.first).to include('record_identifier' => record_identifier(expected_model),
               'model_class' => expected_model.class.name)
           end
 
@@ -27,7 +29,7 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
             it 'paginates results correctly' do
               create_list(:snippet_repository, 9)
 
-              get api("/admin/data_management/snippet_repository?per_page=5", admin, admin_mode: true)
+              get api("#{api_path}?per_page=5", admin, admin_mode: true)
 
               expect(response).to have_gitlab_http_status(:ok)
               expect(json_response.size).to eq(5)
@@ -35,7 +37,7 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
               expect(response.headers['X-Page']).to eq('1')
               expect(response.headers['X-Per-Page']).to eq('5')
 
-              get api("/admin/data_management/snippet_repository?per_page=5&page=2", admin, admin_mode: true)
+              get api("#{api_path}?per_page=5&page=2", admin, admin_mode: true)
 
               expect(response).to have_gitlab_http_status(:ok)
               expect(json_response.size).to eq(4) # Remaining 4 records
@@ -57,27 +59,79 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
               expect(second_page_ids).to eq(second_page_ids.sort)
               expect(first_page_ids.last).to be < second_page_ids.first
             end
+          end
 
-            context 'with composite IDs' do
-              let_it_be(:list) { create_list(:virtual_registries_packages_maven_cache_entry, 9) }
-              # We're using this Entry model because it will be the first model with composite PKs supported by Geo.
-              # The model isn't Geo-ready yet, so we need to mock its interface in this test to simulate its future
-              # implementation.
-              let_it_be(:orderable_klass) do
-                Class.new(list.first.class) do
-                  include Orderable
-                end
+          context 'with keyset pagination and ordering' do
+            let_it_be(:list) { create_list(:snippet_repository, 3) }
+
+            it 'returns first page with cursor to next page' do
+              get api(api_path, admin, admin_mode: true), params: { pagination: 'keyset', per_page: 2 }
+
+              expect(response).to have_gitlab_http_status(:ok)
+              expect(json_response.size).to eq(2)
+              expect(json_response.pluck('record_identifier')).to contain_exactly(list.first.id, list.second.id)
+              expect(response.headers["Link"]).to include("cursor")
+              next_cursor = response.headers["Link"].match("(?<cursor_data>cursor=.*?)&")["cursor_data"]
+
+              get api(api_path, admin, admin_mode: true),
+                params: { pagination: 'keyset', per_page: 2 }.merge(Rack::Utils.parse_query(next_cursor))
+
+              expect(json_response.size).to eq(1)
+              expect(json_response.pluck('record_identifier')).to contain_exactly(list.last.id)
+              expect(response.headers).not_to include("Link")
+            end
+
+            it 'orders descending results correctly' do
+              get api(api_path, admin, admin_mode: true), params: { pagination: 'keyset', per_page: 3, sort: 'desc' }
+
+              expect(response).to have_gitlab_http_status(:ok)
+              expect(json_response.size).to eq(3)
+              expect(json_response.pluck('record_identifier')).to eq(list.map(&:id).reverse)
+            end
+
+            it 'orders ascending results correctly' do
+              get api(api_path, admin, admin_mode: true), params: { pagination: 'keyset', per_page: 3, sort: 'asc' }
+
+              expect(response).to have_gitlab_http_status(:ok)
+              expect(json_response.size).to eq(3)
+              expect(json_response.pluck('record_identifier')).to eq(list.map(&:id))
+            end
+          end
+
+          context 'with composite ids' do
+            let_it_be(:list) { create_list(:virtual_registries_packages_maven_cache_entry, 9) }
+            let_it_be(:ids_list) { list.map { |model| record_identifier(model) } }
+            # We're using this Entry model because it will be the first model with composite PKs supported by Geo.
+            # The model isn't Geo-ready yet, so we need to mock its interface in this test to simulate its future
+            # implementation.
+            let_it_be(:orderable_klass) do
+              Class.new(list.first.class) do
+                include Orderable
               end
+            end
 
-              before do
-                # The VirtualRegistries::Packages::Maven::Cache::Entry model is not in the allowed list yet.
-                # This is why we need to force the ModelMapper to return the stubbed class instead of the model
-                # passed as parameters.
-                allow(Gitlab::Geo::ModelMapper).to receive(:find_from_name).with('project').and_return(orderable_klass)
-              end
+            before do
+              # The VirtualRegistries::Packages::Maven::Cache::Entry model is not in the allowed list yet.
+              # This is why we need to force the ModelMapper to return the stubbed class instead of the model
+              # passed as parameters.
+              allow(Gitlab::Geo::ModelMapper).to receive(:find_from_name)
+                                                   .with('snippet_repository')
+                                                   .and_return(orderable_klass)
+            end
 
+            it 'filters passed ids' do
+              get api("#{api_path}?identifiers[]=#{ids_list.first}&identifiers[]=#{ids_list.last}",
+                admin,
+                admin_mode: true)
+
+              expect(response).to have_gitlab_http_status(:ok)
+              expect(json_response.pluck('record_identifier')).to match_array([ids_list.first, ids_list.last])
+              expect(json_response.size).to eq(2)
+            end
+
+            context 'with offset pagination' do
               it 'paginates results' do
-                get api("/admin/data_management/project?per_page=5", admin, admin_mode: true)
+                get api("#{api_path}?per_page=5", admin, admin_mode: true)
 
                 expect(response).to have_gitlab_http_status(:ok)
                 expect(json_response.size).to eq(5)
@@ -85,12 +139,48 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
                 expect(response.headers['X-Page']).to eq('1')
                 expect(response.headers['X-Per-Page']).to eq('5')
 
-                get api("/admin/data_management/project?per_page=5&page=2", admin, admin_mode: true)
+                get api("#{api_path}?per_page=5&page=2", admin, admin_mode: true)
 
                 expect(response).to have_gitlab_http_status(:ok)
                 expect(json_response.size).to eq(4) # Remaining 4 records
                 expect(response.headers['X-Page']).to eq('2')
                 expect(response.headers['X-Next-Page']).to be_empty
+              end
+            end
+
+            context 'with keyset pagination and ordering' do
+              it 'returns first page with cursor to next page' do
+                get api(api_path, admin, admin_mode: true), params: { pagination: 'keyset', per_page: 5 }
+
+                expect(response).to have_gitlab_http_status(:ok)
+                expect(json_response.size).to eq(5)
+
+                expect(json_response.pluck('record_identifier')).to match_array(ids_list.first(5))
+                expect(response.headers["Link"]).to include("cursor")
+                next_cursor = response.headers["Link"].match("(?<cursor_data>cursor=.*?)&")["cursor_data"]
+
+                get api(api_path, admin, admin_mode: true),
+                  params: { pagination: 'keyset', per_page: 5 }.merge(Rack::Utils.parse_query(next_cursor))
+
+                expect(json_response.size).to eq(4)
+                expect(json_response.pluck('record_identifier')).to match_array(ids_list.last(4))
+                expect(response.headers).not_to include("Link")
+              end
+
+              it 'orders descending results correctly' do
+                get api(api_path, admin, admin_mode: true), params: { pagination: 'keyset', per_page: 9, sort: 'desc' }
+
+                expect(response).to have_gitlab_http_status(:ok)
+                expect(json_response.size).to eq(9)
+                expect(json_response.pluck('record_identifier')).to eq(ids_list.reverse)
+              end
+
+              it 'orders ascending results correctly' do
+                get api(api_path, admin, admin_mode: true), params: { pagination: 'keyset', per_page: 9, sort: 'asc' }
+
+                expect(response).to have_gitlab_http_status(:ok)
+                expect(json_response.size).to eq(9)
+                expect(json_response.pluck('record_identifier')).to eq(ids_list)
               end
             end
           end
@@ -105,45 +195,7 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
                   admin_mode: true)
 
                 expect(response).to have_gitlab_http_status(:ok)
-                expect(json_response.pluck('record_identifier')).to eq([list.first.id, list.last.id])
-                expect(json_response.size).to eq(2)
-              end
-            end
-
-            context 'with composite ids' do
-              let_it_be(:list) { create_list(:virtual_registries_packages_maven_cache_entry, 3) }
-              # We're using this Entry model because it will be the first model with composite PKs supported by Geo.
-              # The model isn't Geo-ready yet, so we need to mock its interface in this test to simulate its future
-              # implementation.
-              let_it_be(:orderable_klass) do
-                Class.new(list.first.class) do
-                  include Orderable
-                end
-              end
-
-              let_it_be(:ids_list) do
-                list.map do |model|
-                  Base64.urlsafe_encode64(orderable_klass
-                                            .primary_key
-                                            .map { |field| model.read_attribute_before_type_cast(field) }
-                                            .join(' '))
-                end
-              end
-
-              before do
-                # The VirtualRegistries::Packages::Maven::Cache::Entry model is not in the allowed list yet.
-                # This is why we need to force the ModelMapper to return the stubbed class instead of the model
-                # passed as parameters.
-                allow(Gitlab::Geo::ModelMapper).to receive(:find_from_name).with('project').and_return(orderable_klass)
-              end
-
-              it 'filters passed ids' do
-                get api("/admin/data_management/project?identifiers[]=#{ids_list.first}&identifiers[]=#{ids_list.last}",
-                  admin,
-                  admin_mode: true)
-
-                expect(response).to have_gitlab_http_status(:ok)
-                expect(json_response.pluck('record_identifier')).to eq([ids_list.first, ids_list.last])
+                expect(json_response.pluck('record_identifier')).to match_array([list.first.id, list.last.id])
                 expect(json_response.size).to eq(2)
               end
             end
@@ -785,9 +837,10 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
 
         describe 'PUT /admin/data_management/:model_name/checksum' do
           let(:list) { create_list(factory_name(model_classes), 3, :verification_failed) }
+          let(:ids_list) { list.map { |model| record_identifier(model) } }
 
           it 'handles parameters appropriately' do
-            query_params = "identifiers[]=#{list.first.id}&identifiers[]=#{list.last.id}&checksum_state=failed"
+            query_params = "identifiers[]=#{ids_list.first}&identifiers[]=#{ids_list.last}&checksum_state=failed"
 
             expected_ids = [list.first.verification_state_object.id, list.last.verification_state_object.id]
             expected_params = { checksum_state: "verification_failed", identifiers: expected_ids }
@@ -823,14 +876,24 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
       end
 
       describe 'GET /admin/data_management/:model_name/:record_identifier' do
+        let(:identifier) { record_identifier(expected_record) }
+
         it 'handles all known replicable model names' do
-          get api("#{api_path}/#{expected_record.id}", admin, admin_mode: true)
+          get api("#{api_path}/#{identifier}", admin, admin_mode: true)
 
           expect(response).to have_gitlab_http_status(:ok)
-          expect(json_response).to include('record_identifier' => expected_record.id,
+          expect(json_response).to include('record_identifier' => identifier,
             'model_class' => expected_record.class.name)
         end
       end
     end
+  end
+
+  def record_identifier(model_record)
+    return model_record.id unless model_record.class.primary_key.is_a?(Array)
+
+    Base64.urlsafe_encode64(model_record.class.primary_key
+                                        .map { |field| model_record.read_attribute_before_type_cast(field) }
+                                        .join(' '))
   end
 end
