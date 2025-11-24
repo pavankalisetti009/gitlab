@@ -16,5 +16,9 @@ module VirtualRegistries
     def self.user_has_access?(group, current_user, permission = :read_virtual_registry)
       Ability.allowed?(current_user, permission, group.virtual_registry_policy_subject)
     end
+
+    def self.virtual_registry_available?(group, current_user, permission = :read_virtual_registry)
+      feature_enabled?(group) && user_has_access?(group, current_user, permission)
+    end
   end
 end

@@ -86,4 +86,65 @@ RSpec.describe VirtualRegistries::Container, feature_category: :virtual_registry
       end
     end
   end
+
+  describe '.virtual_registry_available?' do
+    subject { described_class.virtual_registry_available?(group, user) }
+
+    context 'when all conditions are met' do
+      it { is_expected.to be(true) }
+    end
+
+    context 'when dependency proxy feature is not available' do
+      before do
+        stub_config(dependency_proxy: { enabled: false })
+      end
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when container_virtual_registries feature flag is disabled' do
+      before do
+        stub_feature_flags(container_virtual_registries: false)
+      end
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when container_virtual_registry licensed feature is not available' do
+      before do
+        stub_licensed_features(container_virtual_registry: false)
+      end
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when user does not have read_virtual_registry permission' do
+      let_it_be_with_reload(:user) { create(:user) }
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when virtual registry setting is disabled' do
+      before do
+        allow(VirtualRegistries::Setting).to receive(:find_for_group).with(group).and_return(build_stubbed(
+          :virtual_registries_setting, :disabled, group: group))
+      end
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'for admin_virtual_registry permission' do
+      subject { described_class.virtual_registry_available?(group, user, :admin_virtual_registry) }
+
+      it { is_expected.to be(false) }
+
+      context 'when permission is sufficient' do
+        before_all do
+          group.add_owner(user)
+        end
+
+        it { is_expected.to be(true) }
+      end
+    end
+  end
 end
