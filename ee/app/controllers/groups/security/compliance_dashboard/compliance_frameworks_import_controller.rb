@@ -53,7 +53,7 @@ module Groups
         end
 
         def parse_json
-          @json_payload = ::Gitlab::Json.parse(json_content)
+          @json_payload = ::Gitlab::Json.safe_parse(json_content)
         rescue JSON::ParserError
           false
         end
