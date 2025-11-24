@@ -2,164 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Packages::PackageFile, feature_category: :geo_replication do
-  include ::EE::GeoHelpers
-
-  include_examples 'a verifiable model for verification state' do
-    let(:verifiable_model_record) do
-      build(:package_file)
-    end
-  end
-
-  describe '.replicables_for_current_secondary' do
-    subject(:replicables) { described_class.replicables_for_current_secondary(1..described_class.last.id) }
-
-    it 'returns a package files scope' do
-      secondary = create(:geo_node)
-      package_file = create(:package_file)
-      stub_current_geo_node(secondary)
-
-      expect(replicables).to be_an(ActiveRecord::Relation)
-      expect(replicables).to include(package_file)
-    end
-
-    context 'for object storage' do
-      before do
-        stub_current_geo_node(secondary)
-        stub_package_file_object_storage
-      end
-
-      let_it_be(:local_stored) { create(:package_file) }
-
-      # Cannot let_it_be because it depends on stub_package_file_object_storage
-      let!(:object_stored) { create(:package_file, :object_storage) }
-
-      context 'with sync object storage enabled' do
-        let_it_be(:secondary) { create(:geo_node, sync_object_storage: true) }
-
-        it 'includes local stored and object stored records' do
-          expect(replicables).to include(local_stored)
-          expect(replicables).to include(object_stored)
-        end
-      end
-
-      context 'with sync object storage disabled' do
-        let_it_be(:secondary) { create(:geo_node, sync_object_storage: false) }
-
-        it 'includes local stored and excludes object stored records' do
-          expect(replicables).to include(local_stored)
-          expect(replicables).not_to include(object_stored)
-        end
-      end
-    end
-
-    context 'for selective sync' do
-      # Create a package file owned by a project on shard foo
-      let_it_be(:project_on_shard_foo) { create_project_on_shard('foo') }
-      let_it_be(:package_on_shard_foo) do
-        create(:conan_package, without_package_files: true, project: project_on_shard_foo)
-      end
-
-      let_it_be(:package_file_on_shard_foo) { create(:conan_package_file, package: package_on_shard_foo) }
-
-      # Create a package file owned by a project on shard bar
-      let_it_be(:project_on_shard_bar) { create_project_on_shard('bar') }
-      let_it_be(:package_on_shard_bar) do
-        create(:conan_package, without_package_files: true, project: project_on_shard_bar)
-      end
-
-      let_it_be(:package_file_on_shard_bar) { create(:conan_package_file, package: package_on_shard_bar) }
-
-      # Create a package file owned by a particular namespace, and create
-      # another package file owned via a nested group.
-      let_it_be(:root_group) { create(:group) }
-      let_it_be(:subgroup) { create(:group, parent: root_group) }
-      let_it_be(:project_in_root_group) { create(:project, group: root_group) }
-      let_it_be(:project_in_subgroup) { create(:project, group: subgroup) }
-      let_it_be(:package_in_root_group) do
-        create(:conan_package, without_package_files: true, project: project_in_root_group)
-      end
-
-      let_it_be(:package_in_subgroup) do
-        create(:conan_package, without_package_files: true, project: project_in_subgroup)
-      end
-
-      let_it_be(:package_file_in_root_group) { create(:conan_package_file, package: package_in_root_group) }
-      let_it_be(:package_file_in_subgroup) { create(:conan_package_file, package: package_in_subgroup) }
-
-      before do
-        stub_current_geo_node(secondary)
-      end
-
-      context 'without selective sync' do
-        let_it_be(:secondary) { create(:geo_node) }
-
-        it 'includes records owned by projects in all shards' do
-          expect(replicables).to include(package_file_on_shard_foo)
-          expect(replicables).to include(package_file_on_shard_bar)
-        end
-
-        it 'includes records owned by projects in all namespaces' do
-          expect(replicables).to include(package_file_in_root_group)
-          expect(replicables).to include(package_file_in_subgroup)
-        end
-      end
-
-      context 'with selective sync by shard' do
-        let_it_be(:secondary) { create(:geo_node, selective_sync_type: 'shards', selective_sync_shards: ['foo']) }
-
-        it 'includes records owned by projects on a selected shard' do
-          expect(replicables).to include(package_file_on_shard_foo)
-        end
-
-        it 'excludes records owned by projects not on a selected shard' do
-          expect(replicables).not_to include(package_file_on_shard_bar)
-        end
-      end
-
-      context 'with selective sync by namespace' do
-        context 'with sync object storage enabled' do
-          let_it_be(:secondary) { create(:geo_node, selective_sync_type: 'namespaces', namespaces: [root_group]) }
-
-          it 'includes records owned by projects on a selected namespace' do
-            expect(replicables).to include(package_file_in_root_group)
-            expect(replicables).to include(package_file_in_subgroup)
-          end
-
-          it 'excludes records owned by projects not on a selected namespace' do
-            expect(replicables).not_to include(package_file_on_shard_foo)
-            expect(replicables).not_to include(package_file_on_shard_bar)
-          end
-        end
-
-        # The most complex permutation
-        context 'with sync object storage disabled' do
-          let_it_be(:secondary) do
-            create(:geo_node, selective_sync_type: 'namespaces', namespaces: [root_group], sync_object_storage: false)
-          end
-
-          it 'includes locally stored records owned by projects on a selected namespace' do
-            expect(replicables).to include(package_file_in_root_group)
-            expect(replicables).to include(package_file_in_subgroup)
-          end
-
-          it 'excludes locally stored records owned by projects not on a selected namespace' do
-            expect(replicables).not_to include(package_file_on_shard_foo)
-            expect(replicables).not_to include(package_file_on_shard_bar)
-          end
-
-          it 'excludes object stored records owned by projects on a selected namespace' do
-            package_file_in_root_group.update_column(:file_store, ::Packages::PackageFileUploader::Store::REMOTE)
-            package_file_in_subgroup.update_column(:file_store, ::Packages::PackageFileUploader::Store::REMOTE)
-
-            expect(replicables).not_to include(package_file_in_root_group)
-            expect(replicables).not_to include(package_file_in_subgroup)
-          end
-        end
-      end
-    end
-  end
-
+RSpec.describe Packages::PackageFile, feature_category: :package_registry do
   describe '.search' do
     let_it_be(:package_file1) { create(:package_file) }
     let_it_be(:package_file2) { create(:package_file) }
@@ -203,6 +46,64 @@ RSpec.describe Packages::PackageFile, feature_category: :geo_replication do
           end
         end
       end
+    end
+  end
+
+  describe 'Geo replication', feature_category: :geo_replication do
+    describe 'associations' do
+      it 'has one verification state table class' do
+        is_expected
+          .to have_one(:package_file_state)
+          .class_name('Geo::PackageFileState')
+          .inverse_of(:package_file)
+          .autosave(false)
+      end
+    end
+
+    include_examples 'a verifiable model for verification state' do
+      let(:verifiable_model_record) do
+        build(:package_file)
+      end
+    end
+
+    describe 'replication/verification' do
+      let_it_be(:group_1) { create(:group, organization: create(:organization)) }
+      let_it_be(:group_2) { create(:group, organization: create(:organization)) }
+      let_it_be(:nested_group_1) { create(:group, parent: group_1) }
+      let_it_be(:project_1) { create(:project, group: group_1) }
+      let_it_be(:project_2) { create(:project, group: nested_group_1) }
+      let_it_be(:project_3) { create(:project, group: group_2) }
+
+      let_it_be(:package_1) { create(:conan_package, without_package_files: true, project: project_1) }
+      let_it_be(:package_2) { create(:conan_package, without_package_files: true, project: project_2) }
+      let_it_be(:package_3) { create(:conan_package, without_package_files: true, project: project_1) }
+      let_it_be(:package_4) { create(:conan_package, without_package_files: true, project: project_3) }
+
+      # Package file for the root group
+      let!(:first_replicable_and_in_selective_sync) do
+        stub_package_file_object_storage(enabled: false)
+        create(:conan_package_file, package: package_1)
+      end
+
+      # Package file for a subgroup
+      let!(:second_replicable_and_in_selective_sync) do
+        stub_package_file_object_storage(enabled: false)
+        create(:conan_package_file, package: package_2)
+      end
+
+      # Package file for a subgroup and on object storage
+      let!(:third_replicable_on_object_storage_and_in_selective_sync) do
+        stub_package_file_object_storage(enabled: true)
+        create(:conan_package_file, :object_storage, package: package_3)
+      end
+
+      # Package file for a group not in selective sync
+      let!(:last_replicable_and_not_in_selective_sync) do
+        stub_package_file_object_storage(enabled: false)
+        create(:conan_package_file, package: package_4)
+      end
+
+      include_examples 'Geo Framework selective sync behavior'
     end
   end
 end
