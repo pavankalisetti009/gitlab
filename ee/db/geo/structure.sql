@@ -571,6 +571,37 @@ CREATE SEQUENCE snippet_repository_registry_id_seq
 
 ALTER SEQUENCE snippet_repository_registry_id_seq OWNED BY snippet_repository_registry.id;
 
+CREATE TABLE supply_chain_attestation_registry (
+    id bigint NOT NULL,
+    supply_chain_attestation_id bigint NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    last_synced_at timestamp with time zone,
+    retry_at timestamp with time zone,
+    verified_at timestamp with time zone,
+    verification_started_at timestamp with time zone,
+    verification_retry_at timestamp with time zone,
+    state smallint DEFAULT 0 NOT NULL,
+    verification_state smallint DEFAULT 0 NOT NULL,
+    retry_count smallint DEFAULT 0 NOT NULL,
+    verification_retry_count smallint DEFAULT 0 NOT NULL,
+    checksum_mismatch boolean DEFAULT false NOT NULL,
+    verification_checksum bytea,
+    verification_checksum_mismatched bytea,
+    verification_failure text,
+    last_sync_failure text,
+    CONSTRAINT check_70b27e12c6 CHECK ((char_length(verification_failure) <= 255)),
+    CONSTRAINT check_83facb720c CHECK ((char_length(last_sync_failure) <= 255))
+);
+
+CREATE SEQUENCE supply_chain_attestation_registry_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE supply_chain_attestation_registry_id_seq OWNED BY supply_chain_attestation_registry.id;
+
 CREATE TABLE terraform_state_version_registry (
     id bigint NOT NULL,
     terraform_state_version_id bigint NOT NULL,
@@ -637,6 +668,8 @@ ALTER TABLE ONLY project_wiki_repository_registry ALTER COLUMN id SET DEFAULT ne
 ALTER TABLE ONLY secondary_usage_data ALTER COLUMN id SET DEFAULT nextval('secondary_usage_data_id_seq'::regclass);
 
 ALTER TABLE ONLY snippet_repository_registry ALTER COLUMN id SET DEFAULT nextval('snippet_repository_registry_id_seq'::regclass);
+
+ALTER TABLE ONLY supply_chain_attestation_registry ALTER COLUMN id SET DEFAULT nextval('supply_chain_attestation_registry_id_seq'::regclass);
 
 ALTER TABLE ONLY terraform_state_version_registry ALTER COLUMN id SET DEFAULT nextval('terraform_state_version_registry_id_seq'::regclass);
 
@@ -705,6 +738,9 @@ ALTER TABLE ONLY secondary_usage_data
 
 ALTER TABLE ONLY snippet_repository_registry
     ADD CONSTRAINT snippet_repository_registry_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY supply_chain_attestation_registry
+    ADD CONSTRAINT supply_chain_attestation_registry_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY terraform_state_version_registry
     ADD CONSTRAINT terraform_state_version_registry_pkey PRIMARY KEY (id);
@@ -923,6 +959,12 @@ CREATE INDEX index_snippet_repository_registry_on_verified_at ON snippet_reposit
 
 CREATE INDEX index_state_in_lfs_objects ON lfs_object_registry USING btree (state);
 
+CREATE UNIQUE INDEX index_supply_chain_attestation_registry_on_attestation_id ON supply_chain_attestation_registry USING btree (supply_chain_attestation_id);
+
+CREATE INDEX index_supply_chain_attestation_registry_on_retry_at ON supply_chain_attestation_registry USING btree (retry_at);
+
+CREATE INDEX index_supply_chain_attestation_registry_on_state ON supply_chain_attestation_registry USING btree (state);
+
 CREATE INDEX index_terraform_state_version_registry_on_last_synced_at ON terraform_state_version_registry USING btree (last_synced_at);
 
 CREATE INDEX index_terraform_state_version_registry_on_retry_at ON terraform_state_version_registry USING btree (retry_at);
@@ -994,6 +1036,12 @@ CREATE INDEX snippet_repository_registry_failed_verification ON snippet_reposito
 CREATE INDEX snippet_repository_registry_needs_verification ON snippet_repository_registry USING btree (verification_state) WHERE ((state = 2) AND (verification_state = ANY (ARRAY[0, 3])));
 
 CREATE INDEX snippet_repository_registry_pending_verification ON snippet_repository_registry USING btree (verified_at NULLS FIRST) WHERE ((state = 2) AND (verification_state = 0));
+
+CREATE INDEX supply_chain_attestation_registry_failed_verification ON supply_chain_attestation_registry USING btree (verification_retry_at NULLS FIRST) WHERE ((state = 2) AND (verification_state = 3));
+
+CREATE INDEX supply_chain_attestation_registry_needs_verification ON supply_chain_attestation_registry USING btree (verification_state) WHERE ((state = 2) AND (verification_state = ANY (ARRAY[0, 3])));
+
+CREATE INDEX supply_chain_attestation_registry_pending_verification ON supply_chain_attestation_registry USING btree (verified_at NULLS FIRST) WHERE ((state = 2) AND (verification_state = 0));
 
 CREATE INDEX terraform_state_version_registry_failed_verification ON terraform_state_version_registry USING btree (verification_retry_at NULLS FIRST) WHERE ((state = 2) AND (verification_state = 3));
 
