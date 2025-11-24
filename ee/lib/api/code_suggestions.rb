@@ -39,6 +39,14 @@ module API
         end
       end
 
+      def push_feature_flag_headers
+        Gitlab::AiGateway.push_feature_flag(:expanded_ai_logging, current_user)
+
+        Gitlab::AiGateway.push_feature_flag(:usage_quota_left_check, current_user)
+
+        Gitlab::AiGateway.push_feature_flag(:duo_use_billing_endpoint, current_user)
+      end
+
       def ai_gateway_headers(headers, task)
         Gitlab::AiGateway.headers(
           user: current_user,
@@ -191,9 +199,7 @@ module API
           file_too_large_with_origin_header! if body.size > MAX_BODY_SIZE
 
           # we add expanded_ai_logging to header only if current user is internal user,
-          Gitlab::AiGateway.push_feature_flag(:expanded_ai_logging, current_user)
-
-          Gitlab::AiGateway.push_feature_flag(:usage_quota_left_check, current_user)
+          push_feature_flag_headers
 
           workhorse_headers =
             Gitlab::Workhorse.send_url(
@@ -236,6 +242,8 @@ module API
           service_unavailable!(token[:message]) if token[:status] == :error
 
           unauthorized! if completion_model_details.feature_disabled?
+
+          push_feature_flag_headers
 
           details_hash = completion_model_details.current_model
 
