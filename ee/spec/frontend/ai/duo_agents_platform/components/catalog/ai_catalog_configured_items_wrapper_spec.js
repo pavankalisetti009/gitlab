@@ -12,7 +12,6 @@ import deleteAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/delete_
 import {
   mockBaseFlow,
   mockBaseItemConsumer,
-  mockConfiguredFlowsResponse,
   mockConfiguredItemsEmptyResponse,
   mockAiCatalogItemConsumerDeleteResponse,
   mockAiCatalogItemConsumerDeleteErrorResponse,
@@ -31,7 +30,28 @@ describe('AiCatalogConfiguredItemsWrapper', () => {
     show: jest.fn(),
   };
   const mockProjectId = 1;
-  const mockConfiguredFlowsQueryHandler = jest.fn().mockResolvedValue(mockConfiguredFlowsResponse);
+  const mockProject = {
+    id: 'test-id',
+    nameWithNamespace: 'test/test-id',
+  };
+
+  const mockFlowWithBasicProject = {
+    ...mockBaseFlow,
+    project: mockProject,
+  };
+  const mockConfiguredFlowsQueryHandler = jest.fn().mockResolvedValue({
+    data: {
+      aiCatalogConfiguredItems: {
+        nodes: [
+          {
+            ...mockBaseItemConsumer,
+            item: mockFlowWithBasicProject,
+          },
+        ],
+        pageInfo: mockPageInfo,
+      },
+    },
+  });
   const deleteItemConsumerMutationHandler = jest
     .fn()
     .mockResolvedValue(mockAiCatalogItemConsumerDeleteResponse);
@@ -87,7 +107,7 @@ describe('AiCatalogConfiguredItemsWrapper', () => {
 
     it('renders AiCatalogList component', async () => {
       const expectedItem = {
-        ...mockBaseFlow,
+        ...mockFlowWithBasicProject,
         itemConsumer: mockBaseItemConsumer,
       };
       const catalogList = findAiCatalogList();

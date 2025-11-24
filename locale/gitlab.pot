@@ -2832,6 +2832,9 @@ msgstr ""
 msgid "AICatalog|Managed"
 msgstr ""
 
+msgid "AICatalog|Managed by a private project you don't have access to."
+msgstr ""
+
 msgid "AICatalog|Name is required."
 msgstr ""
 
@@ -2866,6 +2869,9 @@ msgid "AICatalog|Potential security threat"
 msgstr ""
 
 msgid "AICatalog|Private %{itemTypePlural} are best for:"
+msgstr ""
+
+msgid "AICatalog|Private project"
 msgstr ""
 
 msgid "AICatalog|Project is required."

@@ -3,10 +3,11 @@ import {
   GlDisclosureDropdown,
   GlDisclosureDropdownGroup,
   GlDisclosureDropdownItem,
+  GlTruncate,
   GlIcon,
   GlTooltipDirective,
 } from '@gitlab/ui';
-import { __ } from '~/locale';
+import { __, s__ } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import {
   VISIBILITY_TYPE_ICON,
@@ -21,6 +22,7 @@ export default {
     GlDisclosureDropdown,
     GlDisclosureDropdownGroup,
     GlDisclosureDropdownItem,
+    GlTruncate,
     GlIcon,
   },
   directives: {
@@ -73,6 +75,19 @@ export default {
     visibilityLevelLabel() {
       return VISIBILITY_LEVEL_LABELS[this.visibilityLevel];
     },
+    isSourceProjectNull() {
+      return !this.item.project?.nameWithNamespace;
+    },
+    sourceProjectName() {
+      return this.isSourceProjectNull
+        ? s__('AICatalog|Private project')
+        : this.item.project?.nameWithNamespace;
+    },
+    sourceProjectTooltip() {
+      return this.isSourceProjectNull
+        ? s__("AICatalog|Managed by a private project you don't have access to.")
+        : this.item.project?.nameWithNamespace;
+    },
   },
 };
 </script>
@@ -96,13 +111,26 @@ export default {
       >
         {{ item.description }}
       </p>
-      <div class="gl-flex gl-shrink">
+      <div class="gl-z-1 gl-flex gl-shrink gl-gap-4">
+        <div
+          v-gl-tooltip
+          :title="sourceProjectTooltip"
+          data-testid="ai-catalog-item-source-project"
+          class="gl-flex gl-items-center gl-gap-2"
+        >
+          <gl-icon
+            :name="isSourceProjectNull ? 'eye-slash' : 'project'"
+            variant="subtle"
+            :size="14"
+          />
+          <gl-truncate class="gl-max-w-20 gl-pt-px gl-text-subtle" :text="sourceProjectName" />
+        </div>
         <div
           v-if="visibilityTooltip"
           v-gl-tooltip
-          data-testid="ai-catalog-item-tooltip"
           :title="visibilityTooltip"
-          class="gl-z-1 gl-flex gl-items-center gl-gap-2"
+          data-testid="ai-catalog-item-visibility"
+          class="gl-flex gl-items-center gl-gap-2"
         >
           <gl-icon :name="visibilityIconName" variant="subtle" :size="14" />
           <span class="gl-pt-px gl-text-subtle">{{ visibilityLevelLabel }}</span>

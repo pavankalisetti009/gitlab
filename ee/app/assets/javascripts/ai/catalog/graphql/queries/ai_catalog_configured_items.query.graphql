@@ -23,6 +23,13 @@ query aiCatalogConfiguredItems(
   ) {
     nodes {
       ...BaseAiCatalogItemConsumer
+      item {
+        id
+        project {
+          id
+          nameWithNamespace
+        }
+      }
     }
     pageInfo {
       ...PageInfo
