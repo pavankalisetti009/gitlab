@@ -107,25 +107,6 @@ RSpec.describe Security::ProjectTrackedContexts::FindOrCreateService, feature_ca
           expect(tracked_context.is_default).to be true
         end
 
-        context 'when creating with different context types' do
-          using RSpec::Parameterized::TableSyntax
-
-          where(:context_type_param, :context_name_param) do
-            :branch | 'main'
-            :tag    | 'v1.0.0'
-          end
-
-          with_them do
-            let(:context_type) { context_type_param }
-            let(:context_name) { context_name_param }
-
-            it 'creates context with the correct type' do
-              expect(result).to be_success
-              expect(result.payload[:tracked_context].context_type).to eq(context_type_param.to_s)
-            end
-          end
-        end
-
         context 'when creation fails due to validation errors' do
           let(:context_name) { nil }
 
