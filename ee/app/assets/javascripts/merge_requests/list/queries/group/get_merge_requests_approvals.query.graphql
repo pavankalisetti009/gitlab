@@ -27,6 +27,7 @@ query getGroupMergeRequestsApprovalsEE(
   $mergedBefore: Time
   $mergedAfter: Time
   $not: MergeRequestsResolverNegatedParams
+  $or: UnionedMergeRequestFilterInput
   $beforeCursor: String
   $afterCursor: String
   $firstPageSize: Int
@@ -60,6 +61,7 @@ query getGroupMergeRequestsApprovalsEE(
       mergedBefore: $mergedBefore
       mergedAfter: $mergedAfter
       not: $not
+      or: $or
       includeSubgroups: true
       before: $beforeCursor
       after: $afterCursor
