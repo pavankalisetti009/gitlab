@@ -172,8 +172,18 @@ module Ai
         end
 
         [
-          %(npx -y @gitlab/duo-cli@#{DUO_CLI_VERSION} run --existing-session-id #{@workflow.id} --connection-type grpc)
+          [
+            "npx -y @gitlab/duo-cli@#{DUO_CLI_VERSION} run",
+            "--existing-session-id #{@workflow.id}",
+            "--connection-type #{connection_type}"
+          ].join(' ')
         ]
+      end
+
+      def connection_type
+        return "grpc" unless Feature.enabled?(:ai_dap_executor_connects_over_ws, @current_user)
+
+        "websocket"
       end
 
       def workflow_metadata
