@@ -18,43 +18,77 @@ RSpec.describe Search::Zoekt::SelectionService, feature_category: :global_search
     end
 
     context 'with enabled namespaces selection' do
-      let_it_be(:eligible_namespace) { create(:zoekt_enabled_namespace, namespace: ns_1) }
-      let_it_be(:big_namespace) { create(:zoekt_enabled_namespace, namespace: ns_2) }
-      let_it_be(:ns_3) { create(:group) }
+      let_it_be(:namespace_with_too_many) { create(:group) }
+      let_it_be(:namespace_with_too_few) { create(:group) }
+      let_it_be(:namespace_with_exact) { create(:group) }
+      let_it_be(:namespace_failed) { create(:group) }
+
+      let_it_be(:eligible_namespace_too_many) do
+        create(:zoekt_enabled_namespace, namespace: namespace_with_too_many, number_of_replicas_override: 2)
+      end
+
+      let_it_be(:eligible_namespace_too_few) do
+        create(:zoekt_enabled_namespace, namespace: namespace_with_too_few)
+      end
+
+      let_it_be(:namespace_with_exact_replicas) do
+        create(:zoekt_enabled_namespace, namespace: namespace_with_exact)
+      end
+
       let_it_be(:failed_namespace) do
-        create(:zoekt_enabled_namespace, namespace: ns_3, last_rollout_failed_at: Time.current.iso8601)
+        create(:zoekt_enabled_namespace, namespace: namespace_failed, last_rollout_failed_at: Time.current.iso8601,
+          number_of_replicas_override: 2)
       end
 
-      let_it_be(:ns_4) { create(:group) }
-      let_it_be(:eligible_namespace2) do
-        create(:zoekt_enabled_namespace, namespace: ns_4, last_rollout_failed_at: 2.days.ago.iso8601)
+      before do
+        stub_const('Search::Zoekt::Settings', Class.new)
+        allow(Search::Zoekt::Settings).to receive_messages(default_number_of_replicas: 2, rollout_retry_interval: 1.day)
       end
 
-      # eligible namespaces are for which last_rollout_failed_at is nil or older than zoekt_rollout_retry_interval
-      it 'includes all eligible namespaces' do
-        expect(resource_pool.enabled_namespaces).to include(eligible_namespace, big_namespace)
-        expect(resource_pool.enabled_namespaces).not_to include(failed_namespace)
+      before_all do
+        # eligible_namespace_too_many has 3 replicas but needs only 2
+        create_list(:zoekt_replica, 3, zoekt_enabled_namespace: eligible_namespace_too_many)
+
+        # eligible_namespace_too_few has 1 replica but needs 2 (default)
+        create(:zoekt_replica, zoekt_enabled_namespace: eligible_namespace_too_few)
+
+        # namespace_with_exact_replicas has 2 replicas and needs 2 (default) - should be excluded
+        create_list(:zoekt_replica, 2, zoekt_enabled_namespace: namespace_with_exact_replicas)
+
+        # failed_namespace has 3 replicas but needs 2, but should be excluded due to rollout failure
+        create_list(:zoekt_replica, 3, zoekt_enabled_namespace: failed_namespace)
+      end
+
+      it 'includes namespaces with mismatched replicas' do
+        expect(resource_pool.enabled_namespaces).to include(eligible_namespace_too_many, eligible_namespace_too_few)
+      end
+
+      it 'excludes namespaces with exact number of replicas' do
+        expect(resource_pool.enabled_namespaces).not_to include(namespace_with_exact_replicas)
       end
 
       it 'excludes namespaces with rollout blocked flag' do
-        # Verify that the with_rollout_allowed scope is being applied
-        expect(Search::Zoekt::EnabledNamespace).to receive(:with_rollout_allowed).and_call_original
+        expect(resource_pool.enabled_namespaces).not_to include(failed_namespace)
+      end
 
-        # Verify that the namespace with last_rollout_failed_at is excluded
-        result = described_class.execute
-        expect(result.enabled_namespaces).not_to include(failed_namespace)
+      it 'calls each_batch_with_mismatched_replicas' do
+        rollout_allowed_relation = Search::Zoekt::EnabledNamespace.with_rollout_allowed
+        allow(Search::Zoekt::EnabledNamespace).to receive(:with_rollout_allowed).and_return(rollout_allowed_relation)
+        expect(rollout_allowed_relation).to receive(:each_batch_with_mismatched_replicas).and_call_original
+
+        described_class.execute
       end
 
       context 'when testing specific scopes' do
         it 'with_rollout_blocked scope finds namespaces with last_rollout_failed_at' do
           namespaces = Search::Zoekt::EnabledNamespace.with_rollout_blocked
           expect(namespaces).to include(failed_namespace)
-          expect(namespaces).not_to include(eligible_namespace)
+          expect(namespaces).not_to include(eligible_namespace_too_many)
         end
 
         it 'with_rollout_allowed scope finds namespaces without last_rollout_failed_at' do
           namespaces = Search::Zoekt::EnabledNamespace.with_rollout_allowed
-          expect(namespaces).to include(eligible_namespace)
+          expect(namespaces).to include(eligible_namespace_too_many)
           expect(namespaces).not_to include(failed_namespace)
         end
       end
@@ -66,8 +100,16 @@ RSpec.describe Search::Zoekt::SelectionService, feature_category: :global_search
       subject(:resource_pool) { described_class.new(max_batch_size: max_batch_size).execute }
 
       before do
-        # Create more eligible namespaces than the max batch size.
-        create_list(:zoekt_enabled_namespace, 3)
+        stub_const('Search::Zoekt::Settings', Class.new)
+        allow(Search::Zoekt::Settings).to receive_messages(default_number_of_replicas: 2, rollout_retry_interval: 1.day)
+      end
+
+      before_all do
+        # Create more eligible namespaces with mismatched replicas than the max batch size.
+        3.times do
+          enabled_ns = create(:zoekt_enabled_namespace)
+          create(:zoekt_replica, zoekt_enabled_namespace: enabled_ns) # Only 1 replica, needs 2
+        end
       end
 
       it 'limits the number of selected namespaces to the max batch size' do
@@ -91,8 +133,20 @@ RSpec.describe Search::Zoekt::SelectionService, feature_category: :global_search
 
     context 'when no eligible namespaces exist' do
       before do
-        # Create list of failed namespaces only
-        create_list(:zoekt_enabled_namespace, 2, last_rollout_failed_at: Time.current.iso8601)
+        stub_const('Search::Zoekt::Settings', Class.new)
+        allow(Search::Zoekt::Settings).to receive_messages(default_number_of_replicas: 2, rollout_retry_interval: 1.day)
+      end
+
+      before_all do
+        # Create namespaces with exact replica counts (not mismatched)
+        2.times do
+          enabled_ns = create(:zoekt_enabled_namespace)
+          create_list(:zoekt_replica, 2, zoekt_enabled_namespace: enabled_ns) # Exactly 2 replicas, matching default
+        end
+
+        # Create a failed namespace with mismatched replicas
+        failed_ns = create(:zoekt_enabled_namespace, last_rollout_failed_at: Time.current.iso8601)
+        create(:zoekt_replica, zoekt_enabled_namespace: failed_ns) # Only 1 replica but blocked
       end
 
       it 'returns an empty array for namespaces' do

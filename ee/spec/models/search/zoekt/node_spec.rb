@@ -365,6 +365,14 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
         expect(described_class.with_service(:knowledge_graph).to_a).to match_array([node2, node3])
       end
     end
+
+    describe '.available_for_search_indexing' do
+      it 'chains for_search, online, and order_by_unclaimed_space_desc scopes' do
+        expect(described_class).to receive_message_chain(:for_search, :online, :order_by_unclaimed_space_desc)
+
+        described_class.available_for_search_indexing
+      end
+    end
   end
 
   describe '.find_or_initialize_by_task_request', :freeze_time do
