@@ -2,6 +2,9 @@
 
 module Security
   module ProjectTrackedContexts
+    # FindOrCreateService encapsulates the logic to find or create `Security::ProjectTrackedContext` records.
+    # If the tracked context does not exist, it will be created, but only if it's for the default branch.
+    # Otherwise, it expects the context to already exist.
     class FindOrCreateService
       include Gitlab::Utils::StrongMemoize
 
