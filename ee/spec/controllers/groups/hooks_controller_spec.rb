@@ -255,16 +255,11 @@ RSpec.describe Groups::HooksController, feature_category: :webhooks do
 
         context 'when the endpoint receives requests above the limit' do
           before do
-            allow(Gitlab::ApplicationRateLimiter).to receive(:rate_limits)
-              .and_return(web_hook_test: { threshold: 1, interval: 1.minute })
+            allow(::Gitlab::ApplicationRateLimiter).to receive(:throttled?).and_return(true)
           end
 
-          it 'prevents making test requests', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/413270' do
-            expect_next_instance_of(TestHooks::ProjectService) do |service|
-              expect(service).to receive(:execute).and_return(success_response)
-            end
-
-            2.times { post :test, params: { group_id: group.to_param, id: hook } }
+          it 'prevents making test requests' do
+            post :test, params: { group_id: group.to_param, id: hook }
 
             expect(response.body).to eq(_('This endpoint has been requested too many times. Try again later.'))
             expect(response).to have_gitlab_http_status(:too_many_requests)
