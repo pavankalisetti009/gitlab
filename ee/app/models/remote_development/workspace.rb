@@ -23,8 +23,6 @@ module RemoteDevelopment
     has_one :workspace_agentk_state, inverse_of: :workspace, class_name: "RemoteDevelopment::WorkspaceAgentkState"
     has_one :workspace_token, inverse_of: :workspace, class_name: "RemoteDevelopment::WorkspaceToken"
 
-    ignore_column :desired_config_generator_version, remove_with: '18.7', remove_after: '2025-11-15'
-
     validates :user, presence: true
     validates :agent, presence: true
     validates :personal_access_token, presence: true
