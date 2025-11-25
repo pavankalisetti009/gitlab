@@ -235,6 +235,7 @@ describe('ModelSelector', () => {
           value: GITLAB_DEFAULT_MODEL,
           text: 'Claude Sonnet 3.7 - Default',
           provider: 'Anthropic',
+          description: 'Fast, cost-effective responses.',
         });
 
         modelSelectionDropdown.vm.$emit('select', mockSelectedModelId);
@@ -251,6 +252,7 @@ describe('ModelSelector', () => {
           value: mockSelectedModelId,
           text: 'Claude Sonnet 3.5',
           provider: 'Anthropic',
+          description: 'Fast, cost-effective responses.',
         });
       });
 
@@ -296,6 +298,7 @@ describe('ModelSelector', () => {
           value: GITLAB_DEFAULT_MODEL,
           text: 'Claude Sonnet 3.7 - Default',
           provider: 'Anthropic',
+          description: 'Fast, cost-effective responses.',
         });
       });
 

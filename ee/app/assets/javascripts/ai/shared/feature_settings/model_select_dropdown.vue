@@ -67,6 +67,9 @@ export default {
     },
   },
   methods: {
+    isGitLabManagedModel(model) {
+      return model && model.provider;
+    },
     isBetaModel(model) {
       return model?.releaseState === RELEASE_STATES.BETA;
     },
@@ -118,10 +121,24 @@ export default {
     </template>
 
     <template #list-item="{ item }">
-      <div class="gl-flex gl-items-center gl-justify-between">
+      <div class="gl-flex gl-max-w-34 gl-items-center gl-justify-between">
         <span class="gl-mr-4 gl-flex gl-flex-col">
-          <span class="gl-whitespace-nowrap">{{ item.text }}</span>
-          <span v-if="item.provider" class="gl-text-secondary"> {{ item.provider }}</span>
+          <span
+            v-if="item.provider"
+            data-testid="model-provider"
+            class="gl-text-sm gl-font-semibold gl-text-secondary"
+          >
+            {{ item.provider }}
+          </span>
+          <span
+            data-testid="model-name"
+            :class="{ 'gl-whitespace-nowrap gl-font-bold': isGitLabManagedModel(item) }"
+          >
+            {{ item.text }}
+          </span>
+          <span v-if="item.description" data-testid="model-description" class="gl-text-secondary">
+            {{ item.description }}
+          </span>
         </span>
         <gl-badge
           v-if="isBetaModel(item)"

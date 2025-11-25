@@ -136,10 +136,11 @@ export default {
       const validGitlabModels = this.aiFeatureSetting.validGitlabModels?.nodes || [];
       const { defaultGitlabModel } = this.aiFeatureSetting;
 
-      const models = validGitlabModels.map(({ name, ref, modelProvider }) => ({
+      const models = validGitlabModels.map(({ name, ref, modelProvider, modelDescription }) => ({
         value: ref,
         text: name,
         provider: modelProvider,
+        description: modelDescription,
       }));
 
       if (defaultGitlabModel) {
@@ -149,6 +150,7 @@ export default {
           text,
           value: GITLAB_DEFAULT_MODEL,
           provider: defaultGitlabModel.modelProvider,
+          description: defaultGitlabModel.modelDescription,
         });
       }
 
