@@ -45,6 +45,11 @@ export const extractGraphqlAiData = ({
   rootCauseAnalysisUsersCount = null,
   duoAssignedUsersCount = null,
   duoUsedCount = null,
+  codeReview: {
+    requestReviewDuoCodeReviewOnMrByAuthorEventCount = null,
+    requestReviewDuoCodeReviewOnMrByNonAuthorEventCount = null,
+    postCommentDuoCodeReviewOnDiffEventCount = null,
+  } = {},
 } = {}) => {
   const codeSuggestionsUsageRate = calculateRate({
     numerator: codeSuggestionsContributorsCount,
@@ -65,6 +70,13 @@ export const extractGraphqlAiData = ({
     numerator: rootCauseAnalysisUsersCount,
     denominator: duoAssignedUsersCount,
   });
+
+  const duoReviewCount =
+    requestReviewDuoCodeReviewOnMrByAuthorEventCount === null &&
+    requestReviewDuoCodeReviewOnMrByNonAuthorEventCount === null
+      ? '-'
+      : (requestReviewDuoCodeReviewOnMrByAuthorEventCount ?? 0) +
+        (requestReviewDuoCodeReviewOnMrByNonAuthorEventCount ?? 0);
 
   return {
     [AI_METRICS.CODE_SUGGESTIONS_USAGE_RATE]: {
@@ -102,6 +114,14 @@ export const extractGraphqlAiData = ({
     [AI_METRICS.DUO_USED_COUNT]: {
       identifier: AI_METRICS.DUO_USED_COUNT,
       value: duoUsedCount ?? '-',
+    },
+    [AI_METRICS.DUO_REVIEW_REQUESTS_COUNT]: {
+      identifier: AI_METRICS.DUO_REVIEW_REQUESTS_COUNT,
+      value: duoReviewCount ?? '-',
+    },
+    [AI_METRICS.DUO_REVIEW_COMMENT_COUNT]: {
+      identifier: AI_METRICS.DUO_REVIEW_COMMENT_COUNT,
+      value: postCommentDuoCodeReviewOnDiffEventCount ?? '-',
     },
   };
 };
