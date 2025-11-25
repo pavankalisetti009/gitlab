@@ -470,6 +470,33 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
     end
   end
 
+  describe '#latest_released_version_with_fallback' do
+    let(:item) { build(:ai_catalog_item) }
+    let(:latest_released_version) { build(:ai_catalog_item_version, :released) }
+    let(:latest_version) { build(:ai_catalog_item_version, :released) }
+    let(:draft_version) { build(:ai_catalog_item_version, :draft) }
+
+    subject(:latest_released_version_with_fallback) { item.latest_released_version_with_fallback }
+
+    before do
+      allow(item).to receive_messages(latest_released_version: latest_released_version, latest_version: latest_version)
+    end
+
+    it { is_expected.to eq(latest_released_version) }
+
+    context 'when latest_released_version is nil' do
+      let(:latest_released_version) { nil }
+
+      it { is_expected.to eq(latest_version) }
+
+      context 'when latest_version is a draft' do
+        let(:latest_version) { draft_version }
+
+        it { is_expected.to be_nil }
+      end
+    end
+  end
+
   describe '#resolve_version' do
     let_it_be(:item) { create(:ai_catalog_agent) }
     let_it_be(:v1) { create(:ai_catalog_agent_version, item: item, version: '1.0.0') }

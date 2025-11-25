@@ -110,6 +110,16 @@ module Ai
         update(deleted_at: Time.zone.now)
       end
 
+      # Returns the latest released version of this item.
+      # Uses a fallback until a data migration will allow us to use `latest_released_version` directly.
+      # https://gitlab.com/gitlab-org/gitlab/-/issues/572145
+      #
+      # This fallback is safe because all older items without a `latest_released_version` were created
+      # when `latest_version` always pointed to a released version.
+      def latest_released_version_with_fallback
+        latest_released_version || (latest_version if latest_version.released?)
+      end
+
       def definition(pinned_version_prefix = nil, pinned_version_id = nil)
         version = pinned_version_id ? ItemVersion.find(pinned_version_id) : resolve_version(pinned_version_prefix)
 
