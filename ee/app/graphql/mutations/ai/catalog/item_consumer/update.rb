@@ -16,6 +16,10 @@ module Mutations
             required: true,
             description: 'Global ID of the catalog item consumer to update.'
 
+          argument :pinned_version_prefix, GraphQL::Types::String,
+            required: true,
+            description: 'Version to pin the item to.'
+
           argument :service_account_id, ::Types::GlobalIDType[::User],
             required: false,
             description: 'Service account to associate with the item consumer.'
@@ -30,10 +34,7 @@ module Mutations
           def resolve(args)
             item_consumer = authorized_find!(id: args[:id])
 
-            # Currently all arguments in this mutation are no-ops and do not result
-            # in any change to an `ItemConsumer`.
-            # TODO Use args#slice to select specific arguments as we support them.
-            params = {}
+            params = args.slice(:pinned_version_prefix)
 
             result = ::Ai::Catalog::ItemConsumers::UpdateService.new(
               item_consumer,

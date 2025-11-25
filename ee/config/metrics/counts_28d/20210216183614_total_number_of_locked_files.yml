@@ -3,6 +3,8 @@ data_category: optional
 key_path: usage_activity_by_stage_monthly.create.total_number_of_locked_files
 description: The total number of files which have been locked via the GitLab UI
 product_group: source_code
+product_categories:
+- source_code_management
 value_type: number
 status: active
 time_frame: 28d
