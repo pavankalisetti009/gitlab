@@ -27,6 +27,7 @@ query getProjectMergeRequestsApprovalsEE(
   $mergedBefore: Time
   $mergedAfter: Time
   $not: MergeRequestsResolverNegatedParams
+  $or: UnionedMergeRequestFilterInput
   $beforeCursor: String
   $afterCursor: String
   $firstPageSize: Int
@@ -60,6 +61,7 @@ query getProjectMergeRequestsApprovalsEE(
       mergedBefore: $mergedBefore
       mergedAfter: $mergedAfter
       not: $not
+      or: $or
       before: $beforeCursor
       after: $afterCursor
       first: $firstPageSize
