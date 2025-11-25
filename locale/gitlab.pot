@@ -41858,6 +41858,9 @@ msgstr ""
 msgid "Merge request must be open."
 msgstr ""
 
+msgid "Merge request must be rebased, because a fast-forward merge is not possible."
+msgstr ""
+
 msgid "Merge request must not be draft."
 msgstr ""
 
