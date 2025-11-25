@@ -293,7 +293,7 @@ export const mockProjectScanResultPolicy = {
   },
 };
 
-export const mockProjectScanResultPolicyCombinedList = {
+export const mockProjectScanResultPolicyList = {
   __typename: 'ScanResultPolicy',
   csp: false,
   policyAttributes: {
@@ -347,7 +347,7 @@ export const mockGroupScanResultPolicy = {
   },
 };
 
-export const mockGroupScanResultPolicyCombinedList = {
+export const mockGroupScanResultPolicyList = {
   __typename: 'ScanResultPolicy',
   csp: false,
   name: `${mockDefaultBranchesScanResultObject.name}-group`,

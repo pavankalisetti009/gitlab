@@ -15,16 +15,16 @@ import getSppLinkedProjectsGroups from 'ee/security_orchestration/graphql/querie
 import projectSecurityPoliciesQuery from 'ee/security_orchestration/graphql/queries/project_security_policies.query.graphql';
 import groupSecurityPoliciesQuery from 'ee/security_orchestration/graphql/queries/group_security_policies.query.graphql';
 import {
-  mockGroupPipelineExecutionPolicyCombinedList,
-  mockProjectPipelineExecutionPolicyCombinedList,
+  mockGroupPipelineExecutionPolicyList,
+  mockProjectPipelineExecutionPolicyList,
 } from 'ee_jest/security_orchestration/mocks/mock_pipeline_execution_policy_data';
 import {
-  mockGroupScanResultPolicyCombinedList,
-  mockProjectScanResultPolicyCombinedList,
+  mockGroupScanResultPolicyList,
+  mockProjectScanResultPolicyList,
 } from 'ee_jest/security_orchestration/mocks/mock_scan_result_policy_data';
 import {
-  mockGroupScanExecutionPolicyCombinedList,
-  mockProjectScanExecutionPolicyCombinedList,
+  mockGroupScanExecutionPolicyList,
+  mockProjectScanExecutionPolicyList,
 } from 'ee_jest/security_orchestration/mocks/mock_scan_execution_policy_data';
 import ScopeInfoRow from 'ee/security_orchestration/components/policy_drawer/scope_info_row.vue';
 import ListComponentScope from 'ee/security_orchestration/components/policies/list_component_scope.vue';
@@ -51,29 +51,29 @@ const policyGroupScope = {
 };
 
 const mockPipelineExecutionPoliciesProjectResponse = generateMockResponse(
-  mockProjectPipelineExecutionPolicyCombinedList,
+  mockProjectPipelineExecutionPolicyList,
   policyGroupScope,
 );
 const mockPipelineExecutionPoliciesGroupResponse = generateMockResponse(
-  mockGroupPipelineExecutionPolicyCombinedList,
+  mockGroupPipelineExecutionPolicyList,
   policyGroupScope,
 );
 
 const mockScanExecutionPoliciesProjectResponse = generateMockResponse(
-  mockProjectScanExecutionPolicyCombinedList,
+  mockProjectScanExecutionPolicyList,
   policyGroupScope,
 );
 const mockScanExecutionPoliciesGroupResponse = generateMockResponse(
-  mockGroupScanExecutionPolicyCombinedList,
+  mockGroupScanExecutionPolicyList,
   policyGroupScope,
 );
 
 const mockScanResultPoliciesProjectResponse = generateMockResponse(
-  mockProjectScanResultPolicyCombinedList,
+  mockProjectScanResultPolicyList,
   policyGroupScope,
 );
 const mockScanResultPoliciesGroupResponse = generateMockResponse(
-  mockGroupScanResultPolicyCombinedList,
+  mockGroupScanResultPolicyList,
   policyGroupScope,
 );
 

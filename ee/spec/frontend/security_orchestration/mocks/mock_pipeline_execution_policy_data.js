@@ -338,7 +338,7 @@ export const mockProjectPipelineExecutionPolicy = {
   },
 };
 
-export const mockProjectPipelineExecutionPolicyCombinedList = {
+export const mockProjectPipelineExecutionPolicyList = {
   __typename: 'PipelineExecutionPolicy',
   csp: false,
   name: `${mockPipelineScanExecutionObject.name}-project`,
@@ -394,7 +394,7 @@ export const mockGroupPipelineExecutionPolicy = {
   },
 };
 
-export const mockGroupPipelineExecutionPolicyCombinedList = {
+export const mockGroupPipelineExecutionPolicyList = {
   ...mockProjectPipelineExecutionPolicy,
   policyAttributes: {
     __typename: 'PipelineExecutionPolicyAttributesType',
@@ -433,8 +433,8 @@ export const mockProjectPipelineExecutionSchedulePolicy = {
   __typename: 'PipelineExecutionSchedulePolicy',
 };
 
-export const mockProjectPipelineExecutionSchedulePolicyCombinedList = {
-  ...mockProjectPipelineExecutionPolicyCombinedList,
+export const mockProjectPipelineExecutionSchedulePolicyList = {
+  ...mockProjectPipelineExecutionPolicyList,
   editPath: '/policies/policy-name/edit?type="pipeline_execution_schedule_policy"',
   yaml: mockSchedulePipelineExecutionWithTypeManifest,
   __typename: 'PipelineExecutionSchedulePolicy',
@@ -461,8 +461,8 @@ export const mockGroupPipelineExecutionSchedulePolicy = {
   },
 };
 
-export const mockGroupPipelineExecutionSchedulePolicyCombinedList = {
-  ...mockGroupPipelineExecutionPolicyCombinedList,
+export const mockGroupPipelineExecutionSchedulePolicyList = {
+  ...mockGroupPipelineExecutionPolicyList,
   __typename: 'PipelineExecutionSchedulePolicy',
   type: 'pipeline_execution_schedule_policy',
   source: {

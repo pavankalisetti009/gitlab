@@ -12,16 +12,16 @@ import getSppLinkedProjectsGroups from 'ee/security_orchestration/graphql/querie
 import projectSecurityPoliciesQuery from 'ee/security_orchestration/graphql/queries/project_security_policies.query.graphql';
 import groupSecurityPoliciesQuery from 'ee/security_orchestration/graphql/queries/group_security_policies.query.graphql';
 import {
-  mockGroupPipelineExecutionPolicyCombinedList,
-  mockProjectPipelineExecutionPolicyCombinedList,
+  mockGroupPipelineExecutionPolicyList,
+  mockProjectPipelineExecutionPolicyList,
 } from 'ee_jest/security_orchestration/mocks/mock_pipeline_execution_policy_data';
 import {
-  mockGroupScanResultPolicyCombinedList,
-  mockProjectScanResultPolicyCombinedList,
+  mockGroupScanResultPolicyList,
+  mockProjectScanResultPolicyList,
 } from 'ee_jest/security_orchestration/mocks/mock_scan_result_policy_data';
 import {
-  mockGroupScanExecutionPolicyCombinedList,
-  mockProjectScanExecutionPolicyCombinedList,
+  mockGroupScanExecutionPolicyList,
+  mockProjectScanExecutionPolicyList,
 } from 'ee_jest/security_orchestration/mocks/mock_scan_execution_policy_data';
 import ScopeInfoRow from 'ee/security_orchestration/components/policy_drawer/scope_info_row.vue';
 import ListComponentScope from 'ee/security_orchestration/components/policies/list_component_scope.vue';
@@ -31,15 +31,15 @@ import { groups as includingGroups, openDrawer } from './utils';
 const linkedSppItemsResponseSpy = mockLinkedSppItemsResponse();
 
 const newProjectSecurityPoliciesSpy = projectSecurityPolicies([
-  mockProjectPipelineExecutionPolicyCombinedList,
-  mockProjectScanExecutionPolicyCombinedList,
-  mockProjectScanResultPolicyCombinedList,
+  mockProjectPipelineExecutionPolicyList,
+  mockProjectScanExecutionPolicyList,
+  mockProjectScanResultPolicyList,
 ]);
 
 const newGroupSecurityPoliciesSpy = groupSecurityPolicies([
-  mockGroupPipelineExecutionPolicyCombinedList,
-  mockGroupScanExecutionPolicyCombinedList,
-  mockGroupScanResultPolicyCombinedList,
+  mockGroupPipelineExecutionPolicyList,
+  mockGroupScanExecutionPolicyList,
+  mockGroupScanResultPolicyList,
 ]);
 
 const defaultRequestHandlers = {
@@ -79,9 +79,9 @@ describe('Policy list all projects scope', () => {
     describe('default mode policy scope for $policyType', () => {
       it.each`
         policyType              | policyScopeRowIndex | selectedRow
-        ${'Pipeline execution'} | ${0}                | ${mockProjectPipelineExecutionPolicyCombinedList}
-        ${'Scan execution'}     | ${1}                | ${mockProjectScanExecutionPolicyCombinedList}
-        ${'Scan Result'}        | ${2}                | ${mockProjectScanResultPolicyCombinedList}
+        ${'Pipeline execution'} | ${0}                | ${mockProjectPipelineExecutionPolicyList}
+        ${'Scan execution'}     | ${1}                | ${mockProjectScanExecutionPolicyList}
+        ${'Scan Result'}        | ${2}                | ${mockProjectScanResultPolicyList}
       `(
         'scoped to itself when project is not SPP for $policyType',
         async ({ policyScopeRowIndex, selectedRow }) => {
@@ -97,10 +97,10 @@ describe('Policy list all projects scope', () => {
       );
 
       it.each`
-        policyType              | policyScopeRowIndex | selectedRow                                       | expectedResult
-        ${'Pipeline execution'} | ${0}                | ${mockProjectPipelineExecutionPolicyCombinedList} | ${'All projects linked to security policy project.'}
-        ${'Scan execution'}     | ${1}                | ${mockProjectScanExecutionPolicyCombinedList}     | ${'All projects linked to security policy project.'}
-        ${'Scan Result'}        | ${2}                | ${mockProjectScanResultPolicyCombinedList}        | ${'All projects linked to security policy project.'}
+        policyType              | policyScopeRowIndex | selectedRow                               | expectedResult
+        ${'Pipeline execution'} | ${0}                | ${mockProjectPipelineExecutionPolicyList} | ${'All projects linked to security policy project.'}
+        ${'Scan execution'}     | ${1}                | ${mockProjectScanExecutionPolicyList}     | ${'All projects linked to security policy project.'}
+        ${'Scan Result'}        | ${2}                | ${mockProjectScanResultPolicyList}        | ${'All projects linked to security policy project.'}
       `(
         'default mode when project is an SPP for $policyType',
         async ({ policyScopeRowIndex, selectedRow, expectedResult }) => {
@@ -129,10 +129,10 @@ describe('Policy list all projects scope', () => {
 
   describe('group level', () => {
     it.each`
-      policyType              | policyScopeRowIndex | selectedRow                                       | expectedResult
-      ${'Pipeline execution'} | ${0}                | ${mockProjectPipelineExecutionPolicyCombinedList} | ${'Default mode'}
-      ${'Scan execution'}     | ${1}                | ${mockProjectScanExecutionPolicyCombinedList}     | ${'Default mode'}
-      ${'Scan Result'}        | ${2}                | ${mockProjectScanResultPolicyCombinedList}        | ${'Default mode'}
+      policyType              | policyScopeRowIndex | selectedRow                               | expectedResult
+      ${'Pipeline execution'} | ${0}                | ${mockProjectPipelineExecutionPolicyList} | ${'Default mode'}
+      ${'Scan execution'}     | ${1}                | ${mockProjectScanExecutionPolicyList}     | ${'Default mode'}
+      ${'Scan Result'}        | ${2}                | ${mockProjectScanResultPolicyList}        | ${'Default mode'}
     `(
       'scoped to linked groups on a group level for $policyType',
       async ({ policyScopeRowIndex, selectedRow, expectedResult }) => {

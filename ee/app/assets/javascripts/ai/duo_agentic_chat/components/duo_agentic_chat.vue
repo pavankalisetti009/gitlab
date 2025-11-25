@@ -205,7 +205,10 @@ export default {
         return this.projectId ? { projectId: this.projectId } : { groupId: this.namespaceId };
       },
       update(data) {
-        return (data?.aiCatalogConfiguredItems.nodes || []).map((agent) => agent.item);
+        return (data?.aiCatalogConfiguredItems.nodes || []).map((node) => ({
+          ...node.item,
+          pinnedItemVersionId: node.pinnedItemVersion.id,
+        }));
       },
       error(err) {
         this.onError(err);
@@ -381,8 +384,8 @@ export default {
       let activeAgent = null;
 
       if (this.aiCatalogItemVersionId) {
-        activeAgent = this.catalogAgents.find((agent) =>
-          agent.versions.nodes.some((version) => version.id === this.aiCatalogItemVersionId),
+        activeAgent = this.catalogAgents.find(
+          (agent) => agent.pinnedItemVersionId === this.aiCatalogItemVersionId,
         );
       } else {
         activeAgent = this.foundationalAgents.find(

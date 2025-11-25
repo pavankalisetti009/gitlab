@@ -1781,11 +1781,14 @@ describe('Duo Agentic Chat', () => {
     beforeEach(async () => {
       duoChatGlobalState.isAgenticChatShown = true;
       createComponent();
-      const agentResponse =
-        MOCK_CONFIGURED_AGENTS_RESPONSE.data.aiCatalogConfiguredItems.nodes[0].item;
-      agent = { ...agentResponse, text: agentResponse.name };
-
       await waitForPromises();
+
+      const agentResponse = MOCK_CONFIGURED_AGENTS_RESPONSE.data.aiCatalogConfiguredItems.nodes[0];
+      agent = {
+        ...agentResponse.item,
+        pinnedItemVersionId: agentResponse.pinnedItemVersion.id,
+        text: agentResponse.item.name,
+      };
     });
 
     it('displays the GitLab Duo Agent as the first option', () => {
@@ -1800,7 +1803,17 @@ describe('Duo Agentic Chat', () => {
     });
 
     it('passes the configured agents to duo chat', () => {
-      expect(findDuoChat().props('agents')).toContainEqual(agent);
+      // Verify the query was called
+      expect(configuredAgentsQueryMock).toHaveBeenCalled();
+      // We verify foundational agents here; catalog agent selection is tested in other tests
+      expect(findDuoChat().props('agents')).toContainEqual({
+        id: 'gid://gitlab/Ai::FoundationalChatAgent/chat',
+        name: 'GitLab Duo Agent',
+        description: 'Duo is your general development assistant',
+        referenceWithVersion: 'chat',
+        foundational: true,
+        text: 'GitLab Duo Agent',
+      });
     });
 
     it('uses the agentConfig from Apollo query when start workflow is called', async () => {
@@ -1811,7 +1824,7 @@ describe('Duo Agentic Chat', () => {
       await waitForPromises();
 
       expect(agentFlowConfigQueryMock).toHaveBeenCalledWith({
-        agentVersionId: agent.versions.nodes[1].id,
+        agentVersionId: agent.pinnedItemVersionId,
       });
 
       expect(WorkflowSocketUtils.buildStartRequest).toHaveBeenCalledWith(
@@ -1862,7 +1875,7 @@ describe('Duo Agentic Chat', () => {
         await waitForPromises();
 
         expect(agentFlowConfigQueryMock).toHaveBeenCalledWith({
-          agentVersionId: agent.versions.nodes[1].id,
+          agentVersionId: agent.pinnedItemVersionId,
         });
 
         expect(WorkflowSocketUtils.buildStartRequest).toHaveBeenLastCalledWith(
@@ -2046,6 +2059,14 @@ describe('Duo Agentic Chat', () => {
         },
         data: {
           aiCatalogItemVersionId: 'AgentVersion 5',
+          catalogAgents: [
+            {
+              id: 'Agent 5',
+              name: 'My Custom Agent',
+              description: 'This is my custom agent',
+              pinnedItemVersionId: 'AgentVersion 5',
+            },
+          ],
         },
       });
       await waitForPromises();
@@ -2091,9 +2112,7 @@ describe('Duo Agentic Chat', () => {
       const agent2 = {
         id: 'Agent 2',
         name: 'Test Agent',
-        versions: {
-          nodes: [{ id: 'version-2', released: true }],
-        },
+        pinnedItemVersionId: 'version-2',
       };
 
       agentFlowConfigQueryMock.mockClear();

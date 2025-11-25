@@ -68,22 +68,13 @@ export const MOCK_CONFIGURED_AGENTS_RESPONSE = {
       nodes: [
         {
           id: 'Configured Item 5',
+          pinnedItemVersion: {
+            id: 'AgentVersion 5',
+          },
           item: {
             id: 'Agent 5',
             name: 'My Custom Agent',
             description: 'This is my custom agent',
-            versions: {
-              nodes: [
-                {
-                  id: 'AgentVersion 6',
-                  released: false,
-                },
-                {
-                  id: 'AgentVersion 5',
-                  released: true,
-                },
-              ],
-            },
           },
         },
       ],
