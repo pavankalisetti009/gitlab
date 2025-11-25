@@ -11,4 +11,6 @@ data:
         - code_suggestions_acceptance_rate
         - duo_chat_usage_rate
         - duo_rca_usage_rate
+        - duo_review_requests_count
+        - duo_review_comment_count
 options: {}

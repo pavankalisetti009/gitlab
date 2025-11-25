@@ -221,6 +221,8 @@ describe('Metric table', () => {
     ${AI_METRICS.CODE_SUGGESTIONS_ACCEPTANCE_RATE} | ${''}        | ${''}
     ${AI_METRICS.DUO_CHAT_USAGE_RATE}              | ${''}        | ${''}
     ${AI_METRICS.DUO_RCA_USAGE_RATE}               | ${''}        | ${''}
+    ${AI_METRICS.DUO_REVIEW_REQUESTS_COUNT}        | ${''}        | ${''}
+    ${AI_METRICS.DUO_REVIEW_COMMENT_COUNT}         | ${''}        | ${''}
     ${PIPELINE_ANALYTICS_METRICS.COUNT}            | ${namespace} | ${AI_IMPACT_TABLE_TRACKING_PROPERTY}
     ${PIPELINE_ANALYTICS_METRICS.MEDIAN}           | ${namespace} | ${AI_IMPACT_TABLE_TRACKING_PROPERTY}
     ${PIPELINE_ANALYTICS_METRICS.SUCCESS_RATE}     | ${namespace} | ${AI_IMPACT_TABLE_TRACKING_PROPERTY}
@@ -257,6 +259,8 @@ describe('Metric table', () => {
     ${AI_METRICS.CODE_SUGGESTIONS_ACCEPTANCE_RATE} | ${'Code Suggestions acceptance rate'}
     ${AI_METRICS.DUO_CHAT_USAGE_RATE}              | ${'Duo Chat usage'}
     ${AI_METRICS.DUO_RCA_USAGE_RATE}               | ${'Duo RCA usage'}
+    ${AI_METRICS.DUO_REVIEW_REQUESTS_COUNT}        | ${'Duo Code Review requests'}
+    ${AI_METRICS.DUO_REVIEW_COMMENT_COUNT}         | ${'Duo Code Review comments'}
     ${PIPELINE_ANALYTICS_METRICS.COUNT}            | ${'Total pipeline runs'}
     ${PIPELINE_ANALYTICS_METRICS.MEDIAN}           | ${'Median duration'}
     ${PIPELINE_ANALYTICS_METRICS.SUCCESS_RATE}     | ${'Success rate'}

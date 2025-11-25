@@ -6,6 +6,11 @@ fragment AiMetricItem on AiMetrics {
   duoAssignedUsersCount
   duoUsedCount
   rootCauseAnalysisUsersCount
+  codeReview {
+    requestReviewDuoCodeReviewOnMrByAuthorEventCount
+    requestReviewDuoCodeReviewOnMrByNonAuthorEventCount
+    postCommentDuoCodeReviewOnDiffEventCount
+  }
   codeSuggestions(languages: $languages) {
     contributorsCount
     shownCount
