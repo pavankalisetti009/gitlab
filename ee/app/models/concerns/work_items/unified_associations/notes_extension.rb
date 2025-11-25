@@ -37,16 +37,6 @@ module WorkItems
         # We check first if we're loaded to not load unnecessarily.
         loaded? && to_a.all? { |note| note.association(:award_emoji).loaded? }
       end
-
-      def projects_loaded?
-        # We check first if we're loaded to not load unnecessarily.
-        loaded? && to_a.all? { |note| note.association(:project).loaded? }
-      end
-
-      def system_note_metadata_loaded?
-        # We check first if we're loaded to not load unnecessarily.
-        loaded? && to_a.all? { |note| note.association(:system_note_metadata).loaded? }
-      end
     end
   end
 end
