@@ -61,6 +61,16 @@ RSpec.describe Security::Ingestion::FindingMapCollection, feature_category: :vul
         expect(tracked_context_finder).to have_received(:find_or_create_from_pipeline).with(pipeline).exactly(3).times
       end
 
+      context 'when set_tracked_context_during_ingestion is disabled' do
+        before do
+          stub_feature_flags(set_tracked_context_during_ingestion: false)
+        end
+
+        it 'does not call tracked_contect_finder' do
+          expect(tracked_context_finder).not_to have_received(:find_or_create_from_pipeline)
+        end
+      end
+
       context 'with a cyclonedx related security finding' do
         let_it_be(:sbom_scanner) { create(:vulnerabilities_scanner, :sbom_scanner, project: security_scan.project) }
         let_it_be(:cyclonedx_finding) do

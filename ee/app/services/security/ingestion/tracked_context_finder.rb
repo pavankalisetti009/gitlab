@@ -6,8 +6,6 @@ module Security
       include Gitlab::Utils::StrongMemoize
 
       def find_or_create_from_pipeline(pipeline)
-        return pipeline_cache[pipeline.id] if pipeline_cache.key?(pipeline.id)
-
         pipeline_cache[pipeline.id] ||= find_or_create_context(pipeline)
       end
 

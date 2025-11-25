@@ -45,7 +45,7 @@ module Security
                       .slice(*FINDING_ATTRIBUTES)
                       .merge!(
                         uuid: uuid,
-                        security_project_tracked_context_id: tracked_context.id,
+                        security_project_tracked_context_id: tracked_context&.id,
                         scanner_id: scanner_id,
                         primary_identifier_id: identifier_ids.first,
                         location: report_finding.location_data,
