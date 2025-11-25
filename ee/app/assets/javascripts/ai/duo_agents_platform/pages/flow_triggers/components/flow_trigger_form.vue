@@ -154,7 +154,7 @@ export default {
     submitButtonText() {
       return this.isEditMode
         ? s__('DuoAgentsPlatform|Save changes')
-        : s__('DuoAgentsPlatform|Create flow trigger');
+        : s__('DuoAgentsPlatform|Create trigger');
     },
     selectedEventTypeText() {
       const selectedOptions = this.eventTypeOptions
@@ -264,7 +264,7 @@ export default {
         <gl-form-textarea
           id="trigger-description"
           v-model="description"
-          :placeholder="s__('DuoAgentsPlatform|Enter a description for this flow trigger')"
+          :placeholder="s__('DuoAgentsPlatform|Enter a description for this trigger')"
           required
           rows="1"
         />
@@ -299,7 +299,7 @@ export default {
           <br />
           {{
             s__(
-              'DuoAgentsPlatform|Once the service account is configured for use with flow triggers, it cannot be used for other things.',
+              'DuoAgentsPlatform|Once the service account is configured for use with triggers, it cannot be used for other things.',
             )
           }}
         </template>

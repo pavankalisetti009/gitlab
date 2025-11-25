@@ -42,14 +42,13 @@ export default {
           this.errorMessages = errors;
           return;
         }
-        this.$toast.show(s__('DuoAgentsPlatform|Flow trigger created successfully.'));
+        this.$toast.show(s__('DuoAgentsPlatform|Trigger created successfully.'));
         this.$router.push({
           name: FLOW_TRIGGERS_INDEX_ROUTE,
         });
       } catch (error) {
         this.errorMessages = [
-          error.message ||
-            s__('DuoAgentsPlatform|The flow trigger could not be created. Try again.'),
+          error.message || s__('DuoAgentsPlatform|The trigger could not be created. Try again.'),
         ];
       } finally {
         this.isLoading = false;
@@ -64,9 +63,9 @@ export default {
 
 <template>
   <div>
-    <page-heading :heading="s__('DuoAgentsPlatform|New flow trigger')">
+    <page-heading :heading="s__('DuoAgentsPlatform|New trigger')">
       <template #description>
-        {{ s__('DuoAgentsPlatform|Create a new flow trigger.') }}
+        {{ s__('DuoAgentsPlatform|Create a new trigger.') }}
       </template>
     </page-heading>
     <flow-trigger-form
