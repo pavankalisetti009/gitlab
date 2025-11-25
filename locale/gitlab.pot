@@ -1686,6 +1686,9 @@ msgstr ""
 msgid "%{wildcards_link_start}Wildcards%{wildcards_link_end} such as %{code_tag_start}v*%{code_tag_end} or %{code_tag_start}*-release%{code_tag_end} are supported."
 msgstr ""
 
+msgid "'%{entry}' is not a valid domain name"
+msgstr ""
+
 msgid "'%{group_name}' has been scheduled for deletion and will be deleted on %{date}."
 msgstr ""
 
@@ -7609,6 +7612,9 @@ msgstr ""
 msgid "Allow commits from members who can merge to the target branch. %{link_start}About this feature.%{link_end}"
 msgstr ""
 
+msgid "Allow embedding of external videos and designs in Markdown."
+msgstr ""
+
 msgid "Allow group and project access tokens"
 msgstr ""
 
@@ -7682,6 +7688,9 @@ msgid "Allow users with up to Guest role to create groups and personal projects"
 msgstr ""
 
 msgid "Allowed"
+msgstr ""
+
+msgid "Allowed domains"
 msgstr ""
 
 msgid "Allowed email domain restriction only permitted for top-level groups"
@@ -26433,6 +26442,9 @@ msgstr ""
 msgid "Embed"
 msgstr ""
 
+msgid "Embedded content"
+msgstr ""
+
 msgid "Embedded list view"
 msgstr ""
 
@@ -26560,6 +26572,9 @@ msgid "Enable email OTP"
 msgstr ""
 
 msgid "Enable email notification"
+msgstr ""
+
+msgid "Enable embedded content"
 msgstr ""
 
 msgid "Enable feature to choose access level"
@@ -26836,6 +26851,9 @@ msgid "Enter the password for password-protected Elasticsearch or OpenSearch ser
 msgstr ""
 
 msgid "Enter the username for password-protected Elasticsearch or OpenSearch servers."
+msgstr ""
+
+msgid "Enter trusted domains that users can embed content from. One domain per line."
 msgstr ""
 
 msgid "Enter values to populate the .gitlab-ci.yml configuration file."
@@ -38513,6 +38531,9 @@ msgid "KiB"
 msgstr ""
 
 msgid "Kroki"
+msgstr ""
+
+msgid "Kroki URL"
 msgstr ""
 
 msgid "Kubernetes"
@@ -67214,6 +67235,9 @@ msgstr ""
 msgid "The Issue Tracker is the place to add things that need to be improved or solved in a project. You can register or sign in to create issues for this project."
 msgstr ""
 
+msgid "The Kroki server that will be used to generate diagrams."
+msgstr ""
+
 msgid "The Matrix access token (for example, `syt-zyx57W2v1u123ew11`)."
 msgstr ""
 
@@ -72149,9 +72173,6 @@ msgstr ""
 msgid "Use the link below to confirm your email address."
 msgstr ""
 
-msgid "Use the public cloud instance URL (%{kroki_public_url}) or %{install_link_start}install Kroki%{install_link_end} on your own infrastructure and use your own instance URL."
-msgstr ""
-
 msgid "Use the search bar on the top of this page"
 msgstr ""
 
@@ -75458,6 +75479,9 @@ msgid "When enabled, it will send 301 Moved Permanently instead of 302 if you wa
 msgstr ""
 
 msgid "When enabled, job logs are collected by Datadog and displayed along with pipeline execution traces."
+msgstr ""
+
+msgid "When enabled, users can embed YouTube videos, Figma designs, and other external content."
 msgstr ""
 
 msgid "When left blank, default value of %{max_lifetime_in_days} is applied. When set, value must be %{max_lifetime_in_days} or less. When changed, existing access tokens with an expiration date beyond the maximum allowable lifetime are revoked."
