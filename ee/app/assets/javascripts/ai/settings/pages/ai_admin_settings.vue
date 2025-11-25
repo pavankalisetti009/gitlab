@@ -10,6 +10,7 @@ import DuoExpandedLoggingForm from '../components/duo_expanded_logging_form.vue'
 import DuoChatHistoryExpirationForm from '../components/duo_chat_history_expiration.vue';
 import AiModelsForm from '../components/ai_models_form.vue';
 import AiGatewayUrlInputForm from '../components/ai_gateway_url_input_form.vue';
+import AiGatewayTimeoutInputForm from '../components/ai_gateway_timeout_input_form.vue';
 import DuoAgentPlatformServiceUrlInputForm from '../components/duo_agent_platform_service_url_input_form.vue';
 import updateAiSettingsMutation from '../../graphql/update_ai_settings.mutation.graphql';
 
@@ -18,6 +19,7 @@ export default {
   components: {
     AiCommonSettings,
     AiGatewayUrlInputForm,
+    AiGatewayTimeoutInputForm,
     DuoAgentPlatformServiceUrlInputForm,
     AiModelsForm,
     CodeSuggestionsConnectionForm,
@@ -36,6 +38,7 @@ export default {
     'toggleBetaModelsPath',
     'canManageSelfHostedModels',
     'aiGatewayUrl',
+    'aiGatewayTimeoutSeconds',
     'duoAgentPlatformServiceUrl',
     'exposeDuoAgentPlatformServiceUrl',
     'enabledExpandedLogging',
@@ -64,6 +67,7 @@ export default {
       disabledConnection: this.disabledDirectConnectionMethod,
       aiModelsEnabled: this.betaSelfHostedModelsEnabled,
       aiGatewayUrlInput: this.aiGatewayUrl,
+      aiGatewayTimeoutSecondsInput: this.aiGatewayTimeoutSeconds,
       duoAgentPlatformServiceUrlInput: this.duoAgentPlatformServiceUrl,
       expandedLogging: this.enabledExpandedLogging,
       chatExpirationDays: this.duoChatExpirationDays,
@@ -89,7 +93,8 @@ export default {
       return (
         this.aiGatewayUrlInput !== this.aiGatewayUrl ||
         this.duoAgentPlatformServiceUrlInput !== this.duoAgentPlatformServiceUrl ||
-        this.areDuoCoreFeaturesEnabled !== this.duoCoreFeaturesEnabled
+        this.areDuoCoreFeaturesEnabled !== this.duoCoreFeaturesEnabled ||
+        this.aiGatewayTimeoutSecondsInput !== this.aiGatewayTimeoutSeconds
       );
     },
     hasExpandedAiLoggingChanged() {
@@ -156,7 +161,10 @@ export default {
         });
     },
     async updateAiSettings() {
-      const input = { duoCoreFeaturesEnabled: this.areDuoCoreFeaturesEnabled };
+      const input = {
+        duoCoreFeaturesEnabled: this.areDuoCoreFeaturesEnabled,
+        aiGatewayTimeoutSeconds: this.aiGatewayTimeoutSecondsInput,
+      };
 
       if (this.canManageSelfHostedModels) {
         input.aiGatewayUrl = this.aiGatewayUrlInput;
@@ -197,6 +205,9 @@ export default {
     onDuoChatHistoryExpirationColumnChange(value) {
       this.chatExpirationColumn = value;
     },
+    onAiGatewayTimeoutChange(value) {
+      this.aiGatewayTimeoutSecondsInput = value;
+    },
     onError(error) {
       createAlert({
         message: error?.message || this.$options.i18n.errorMessage,
@@ -215,6 +226,10 @@ export default {
         @change-expiration-column="onDuoChatHistoryExpirationColumnChange"
       />
       <code-suggestions-connection-form v-if="duoProVisible" @change="onConnectionFormChange" />
+      <ai-gateway-timeout-input-form
+        :value="aiGatewayTimeoutSecondsInput"
+        @change="onAiGatewayTimeoutChange"
+      />
       <template v-if="canManageSelfHostedModels">
         <ai-models-form @change="onAiModelsFormChange" />
         <duo-expanded-logging-form @change="onExpandedLoggingChange" />

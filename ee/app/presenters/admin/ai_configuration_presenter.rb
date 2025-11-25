@@ -19,6 +19,7 @@ module Admin
       to: :application_settings
 
     delegate :ai_gateway_url,
+      :ai_gateway_timeout_seconds,
       :duo_agent_platform_service_url,
       :duo_core_features_enabled?,
       to: :ai_settings
@@ -26,6 +27,7 @@ module Admin
     def settings
       {
         ai_gateway_url: ai_gateway_url,
+        ai_gateway_timeout_seconds: ai_gateway_timeout_seconds,
         duo_agent_platform_service_url: duo_agent_platform_service_url,
         expose_duo_agent_platform_service_url: ::Feature.enabled?(:self_hosted_agent_platform, :instance),
         are_experiment_settings_allowed: active_duo_add_ons_exist?,
