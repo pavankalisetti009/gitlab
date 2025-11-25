@@ -10,7 +10,7 @@ RSpec.describe Security::Ingestion::TrackedContextFinder, feature_category: :vul
     subject(:find_or_create) { finder.find_or_create_from_pipeline(pipeline) }
 
     context 'when pipeline is on the default branch' do
-      let(:pipeline) { create(:ci_pipeline, project: project, ref: project.default_branch) }
+      let_it_be(:pipeline) { create(:ci_pipeline, project: project, ref: project.default_branch) }
 
       context 'when tracked context does not exist' do
         it 'creates a new tracked context' do
@@ -31,7 +31,7 @@ RSpec.describe Security::Ingestion::TrackedContextFinder, feature_category: :vul
       end
 
       context 'when tracked context already exists' do
-        let!(:existing_context) do
+        let_it_be(:existing_context) do
           create(:security_project_tracked_context, :tracked,
             project: project,
             context_name: pipeline.ref,
@@ -51,7 +51,7 @@ RSpec.describe Security::Ingestion::TrackedContextFinder, feature_category: :vul
         it 'uses the cache and does not query the database again' do
           first_result = find_or_create
 
-          expect(Security::ProjectTrackedContext).not_to receive(:find_by_pipeline)
+          expect(Security::ProjectTrackedContexts::FindOrCreateService).not_to receive(:from_pipeline)
 
           second_result = finder.find_or_create_from_pipeline(pipeline)
 
@@ -61,10 +61,10 @@ RSpec.describe Security::Ingestion::TrackedContextFinder, feature_category: :vul
     end
 
     context 'when pipeline is not on the default branch' do
-      let(:pipeline) { create(:ci_pipeline, project: project, ref: 'feature-branch') }
+      let_it_be(:pipeline) { create(:ci_pipeline, project: project, ref: 'feature-branch') }
 
       context 'when tracked context exists' do
-        let!(:existing_context) do
+        let_it_be(:existing_context) do
           create(:security_project_tracked_context, :tracked,
             project: project,
             context_name: pipeline.ref,
@@ -78,23 +78,36 @@ RSpec.describe Security::Ingestion::TrackedContextFinder, feature_category: :vul
         it 'does not create a new tracked context' do
           expect { find_or_create }.not_to change { Security::ProjectTrackedContext.count }
         end
+
+        context 'when context is not tracked' do
+          before do
+            existing_context.untrack!
+          end
+
+          it 'raises an ArgumentError' do
+            expect { find_or_create }.to raise_error(
+              ArgumentError,
+              'Context is not tracked'
+            )
+          end
+        end
       end
 
       context 'when tracked context does not exist' do
         it 'raises an ArgumentError' do
           expect { find_or_create }.to raise_error(
             ArgumentError,
-            'Expected tracked context to already exist for non-default branches'
+            'Expected context to already exist for non-default branches'
           )
         end
       end
     end
 
     context 'when pipeline is a tag' do
-      let(:pipeline) { create(:ci_pipeline, :tag, project: project, ref: 'v1.0.0') }
+      let_it_be(:pipeline) { create(:ci_pipeline, :tag, project: project, ref: 'v1.0.0') }
 
       context 'when tracked context exists' do
-        let!(:existing_context) do
+        let_it_be(:existing_context) do
           create(:security_project_tracked_context, :tracked, :tag,
             project: project,
             context_name: pipeline.ref)
@@ -109,15 +122,15 @@ RSpec.describe Security::Ingestion::TrackedContextFinder, feature_category: :vul
         it 'raises an ArgumentError' do
           expect { find_or_create }.to raise_error(
             ArgumentError,
-            'Expected tracked context to already exist for non-default branches'
+            'Expected context to already exist for non-default branches'
           )
         end
       end
     end
 
     context 'with multiple pipelines' do
-      let(:pipeline1) { create(:ci_pipeline, project: project, ref: project.default_branch) }
-      let(:pipeline2) { create(:ci_pipeline, project: project, ref: project.default_branch) }
+      let_it_be(:pipeline1) { create(:ci_pipeline, project: project, ref: project.default_branch) }
+      let_it_be(:pipeline2) { create(:ci_pipeline, project: project, ref: project.default_branch) }
 
       it 'caches results per pipeline ID' do
         result1 = finder.find_or_create_from_pipeline(pipeline1)

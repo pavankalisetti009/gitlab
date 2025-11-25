@@ -6,15 +6,9 @@ module Security
       include Gitlab::Utils::StrongMemoize
 
       def find_or_create_from_pipeline(pipeline)
-        cached_context = pipeline_cache[pipeline.id]
+        return pipeline_cache[pipeline.id] if pipeline_cache.key?(pipeline.id)
 
-        return cached_context if cached_context
-
-        tracked_context = find(pipeline) || create!(pipeline)
-
-        pipeline_cache[pipeline.id] ||= tracked_context
-
-        tracked_context
+        pipeline_cache[pipeline.id] ||= find_or_create_context(pipeline)
       end
 
       private
@@ -24,26 +18,12 @@ module Security
       end
       strong_memoize_attr :pipeline_cache
 
-      def find(pipeline)
-        Security::ProjectTrackedContext.find_by_pipeline(pipeline)
-      end
+      def find_or_create_context(pipeline)
+        result = Security::ProjectTrackedContexts::FindOrCreateService.from_pipeline(pipeline).execute
 
-      def create!(pipeline)
-        check_default_branch!(pipeline)
+        raise ArgumentError, result.message unless result.success?
 
-        Security::ProjectTrackedContext.create!(
-          project: pipeline.project,
-          context_name: pipeline.ref,
-          context_type: :branch,
-          state: Security::ProjectTrackedContext::STATES[:tracked],
-          is_default: true
-        )
-      end
-
-      def check_default_branch!(pipeline)
-        return if pipeline.default_branch?
-
-        raise ArgumentError, 'Expected tracked context to already exist for non-default branches'
+        result.payload[:tracked_context]
       end
     end
   end
