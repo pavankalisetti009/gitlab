@@ -223,6 +223,11 @@ module Vulnerabilities
     alias_method :declarative_policy_subject, :project
     alias_attribute :finding_details, :details
 
+    class << self
+      # this is used by the hash method
+      attr_accessor :hash_method_logged
+    end
+
     def self.counted_by_severity
       group(:severity).count.transform_keys do |severity|
         severities[severity]
@@ -491,6 +496,13 @@ module Vulnerabilities
     # Array.difference (-) method uses hash and eql? methods to do comparison
     # TODO: remove this method. See https://gitlab.com/gitlab-org/gitlab/-/issues/576423
     def hash
+      # Log calls to this method, once per process to avoid performance impact, to verify
+      # whether this method is actually used in production
+      unless self.class.hash_method_logged
+        Gitlab::AppLogger.info("Vulnerabilities::Finding#hash triggered")
+        self.class.hash_method_logged = true
+      end
+
       # This is causing N+1 queries whenever we are calling findings, ActiveRecord uses #hash method to make sure the
       # array with findings is uniq before preloading. This method is used only in Gitlab::Ci::Reports::Security::VulnerabilityReportsComparer
       # where we are normalizing security report findings into instances of Vulnerabilities::Finding, this is why we are using original implementation
