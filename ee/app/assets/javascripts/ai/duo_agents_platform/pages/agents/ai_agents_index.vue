@@ -75,7 +75,6 @@ export default {
       variables() {
         return {
           projectPath: this.projectPath,
-          enabled: false,
           projectId: convertToGraphQLId(TYPENAME_PROJECT, this.projectId),
           ...this.paginationVariables,
         };

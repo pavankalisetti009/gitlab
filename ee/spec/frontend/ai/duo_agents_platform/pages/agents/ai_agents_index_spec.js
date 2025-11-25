@@ -132,7 +132,6 @@ describe('AiAgentsIndex', () => {
       expect(mockProjectAgentsQueryHandler).toHaveBeenCalledWith({
         projectId: `gid://gitlab/Project/${mockProjectId}`,
         projectPath: mockProjectPath,
-        enabled: false,
         allAvailable: false,
         after: null,
         before: null,
@@ -156,7 +155,6 @@ describe('AiAgentsIndex', () => {
         expect(mockProjectAgentsQueryHandler).toHaveBeenCalledWith({
           projectId: `gid://gitlab/Project/${mockProjectId}`,
           projectPath: mockProjectPath,
-          enabled: false,
           allAvailable: false,
           after: null,
           before: 'eyJpZCI6IjUxIn0',
@@ -171,7 +169,6 @@ describe('AiAgentsIndex', () => {
         expect(mockProjectAgentsQueryHandler).toHaveBeenCalledWith({
           projectId: `gid://gitlab/Project/${mockProjectId}`,
           projectPath: mockProjectPath,
-          enabled: false,
           allAvailable: false,
           after: 'eyJpZCI6IjM1In0',
           before: null,
