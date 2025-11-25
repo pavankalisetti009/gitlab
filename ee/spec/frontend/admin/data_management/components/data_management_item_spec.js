@@ -68,6 +68,29 @@ describe('DataManagementItem', () => {
         },
       ],
       actionsArray: [checksumAction],
+      errorsArray: [],
+    });
+  });
+
+  describe('when model has checksum failure', () => {
+    const modelWithFailure = {
+      ...model,
+      checksumInformation: {
+        ...model.checksumInformation,
+        checksumState: 'failed',
+        checksumFailure: 'Something went wrong',
+      },
+    };
+
+    it('passes errors array to GeoListItem', () => {
+      createComponent({ initialItem: modelWithFailure });
+
+      expect(findGeoListItem().props('errorsArray')).toStrictEqual([
+        {
+          label: 'Verification failure',
+          message: 'Something went wrong',
+        },
+      ]);
     });
   });
 
