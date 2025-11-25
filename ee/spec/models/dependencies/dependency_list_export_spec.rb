@@ -296,20 +296,21 @@ RSpec.describe Dependencies::DependencyListExport, feature_category: :dependency
   end
 
   describe '#uploads_sharding_key' do
-    it 'returns one of group_id, or porject_id' do
-      parents = { group: nil, project: nil }
+    it 'returns one of organization_id, group_id, or project_id' do
+      parents = { organization: nil, group: nil, project: nil }
 
       parents.each_key do |parent_type|
         parent = build_stubbed(parent_type)
         export = build_stubbed(:dependency_list_export, **parents.merge(parent_type => parent))
 
         key_name = case parent_type
+                   when :organization then :organization_id
                    when :group then :namespace_id
                    when :project then :project_id
                    end
 
         expect(export.uploads_sharding_key).to eq(
-          { namespace_id: nil, project_id: nil }.merge(key_name => parent.id)
+          { organization_id: nil, namespace_id: nil, project_id: nil }.merge(key_name => parent.id)
         )
       end
     end

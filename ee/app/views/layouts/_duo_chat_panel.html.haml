@@ -5,5 +5,5 @@
   - duo_scope_hash = ::Gitlab::Llm::TanukiBot.duo_scope_hash(current_user, @project, @group, controller_name)
   - project = duo_scope_hash[:project]
   - group = duo_scope_hash[:namespace]
-  .paneled-view.ai-panels.-gl-mb-3
+  .paneled-view.ai-panels.-gl-mb-3.lg:gl-mb-0
     #duo-chat-panel.duo-chat-panel{ data: duo_chat_panel_data(current_user, project, group) }

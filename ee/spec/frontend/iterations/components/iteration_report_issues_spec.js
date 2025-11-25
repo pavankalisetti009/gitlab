@@ -4,7 +4,7 @@ import {
   GlBadge,
   GlButton,
   GlLabel,
-  GlPagination,
+  GlKeysetPagination,
   GlSkeletonLoader,
   GlTable,
 } from '@gitlab/ui';
@@ -42,7 +42,7 @@ describe('Iterations report issues', () => {
   const findGlButton = () => wrapper.findComponent(GlButton);
   const findGlLabel = () => wrapper.findComponent(GlLabel);
   const findGlSkeletonLoader = () => wrapper.findComponent(GlSkeletonLoader);
-  const findGlPagination = () => wrapper.findComponent(GlPagination);
+  const findGlKeysetPagination = () => wrapper.findComponent(GlKeysetPagination);
   const findGlTable = () => wrapper.findComponent(GlTable);
   const findHeading = () => wrapper.find('h4');
   const findSection = () => wrapper.find('section');
@@ -254,42 +254,39 @@ describe('Iterations report issues', () => {
         mountComponent({ data });
       });
 
-      const findPagination = () => wrapper.findComponent(GlPagination);
-      const setPage = async (page) => {
-        findPagination().vm.$emit('input', page);
-        await nextTick();
-      };
+      const findPagination = () => wrapper.findComponent(GlKeysetPagination);
 
-      it('passes prev, next, and current page props', () => {
+      it('passes hasNextPage and hasPreviousPage props', () => {
         expect(findPagination().exists()).toBe(true);
         expect(findPagination().props()).toMatchObject({
-          value: wrapper.vm.pagination.currentPage,
-          prevPage: wrapper.vm.prevPage,
-          nextPage: wrapper.vm.nextPage,
+          hasNextPage: true,
+          hasPreviousPage: false,
         });
       });
 
-      it('updates query variables when going to previous page', () => {
-        return setPage(1).then(() => {
-          expect(wrapper.vm.queryVariables).toEqual({
-            beforeCursor: 'first-item',
-            fullPath,
-            id,
-            lastPageSize: 20,
-            isGroup: true,
-          });
+      it('updates query variables when going to previous page', async () => {
+        findPagination().vm.$emit('prev');
+        await nextTick();
+
+        expect(wrapper.vm.queryVariables).toEqual({
+          beforeCursor: 'first-item',
+          fullPath,
+          id,
+          lastPageSize: 20,
+          isGroup: true,
         });
       });
 
-      it('updates query variables when going to next page', () => {
-        return setPage(2).then(() => {
-          expect(wrapper.vm.queryVariables).toEqual({
-            afterCursor: 'last-item',
-            fullPath,
-            id,
-            firstPageSize: 20,
-            isGroup: true,
-          });
+      it('updates query variables when going to next page', async () => {
+        findPagination().vm.$emit('next');
+        await nextTick();
+
+        expect(wrapper.vm.queryVariables).toEqual({
+          afterCursor: 'last-item',
+          fullPath,
+          id,
+          firstPageSize: 20,
+          isGroup: true,
         });
       });
     });
@@ -440,14 +437,14 @@ describe('Iterations report issues', () => {
         expect(findGlButton().props('icon')).toBe('chevron-down');
         expect(findGlButton().attributes('aria-label')).toBe('Collapse issues');
         expect(findGlTable().isVisible()).toBe(true);
-        expect(findGlPagination().isVisible()).toBe(true);
+        expect(findGlKeysetPagination().isVisible()).toBe(true);
 
         await findGlButton().vm.$emit('click');
 
         expect(findGlButton().props('icon')).toBe('chevron-right');
         expect(findGlButton().attributes('aria-label')).toBe('Expand issues');
         expect(findGlTable().isVisible()).toBe(false);
-        expect(findGlPagination().isVisible()).toBe(false);
+        expect(findGlKeysetPagination().isVisible()).toBe(false);
       });
     });
 
@@ -463,14 +460,14 @@ describe('Iterations report issues', () => {
         expect(findGlButton().props('icon')).toBe('chevron-right');
         expect(findGlButton().attributes('aria-label')).toBe('Expand issues');
         expect(findGlTable().isVisible()).toBe(false);
-        expect(findGlPagination().isVisible()).toBe(false);
+        expect(findGlKeysetPagination().isVisible()).toBe(false);
 
         await findGlButton().vm.$emit('click');
 
         expect(findGlButton().props('icon')).toBe('chevron-down');
         expect(findGlButton().attributes('aria-label')).toBe('Collapse issues');
         expect(findGlTable().isVisible()).toBe(true);
-        expect(findGlPagination().isVisible()).toBe(true);
+        expect(findGlKeysetPagination().isVisible()).toBe(true);
       });
     });
   });
