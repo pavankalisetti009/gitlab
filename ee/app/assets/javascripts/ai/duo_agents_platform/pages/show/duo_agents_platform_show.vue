@@ -51,6 +51,9 @@ export default {
       return this.$apollo.queries.agentFlow.loading;
     },
     status() {
+      return this.agentFlow?.status || '';
+    },
+    humanStatus() {
       return formatAgentStatus(this.agentFlow?.humanStatus);
     },
     agentFlowDefinition() {
@@ -82,6 +85,7 @@ export default {
     :class="isFlyout ? 'gl-mx-3' : ''"
     :is-loading="isLoading"
     :status="status"
+    :human-status="humanStatus"
     :agent-flow-definition="agentFlowDefinition"
     :agent-flow-checkpoint="agentFlowCheckpoint"
     :executor-url="executorUrl"

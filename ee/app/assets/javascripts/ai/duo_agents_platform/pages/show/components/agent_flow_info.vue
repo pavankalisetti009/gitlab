@@ -1,13 +1,15 @@
 <script>
-import { GlLink, GlSkeletonLoader } from '@gitlab/ui';
+import { GlBadge, GlLink, GlSkeletonLoader } from '@gitlab/ui';
 import { __, s__ } from '~/locale';
 import { localeDateFormat } from '~/lib/utils/datetime/locale_dateformat';
 import { joinPaths } from '~/lib/utils/url_utility';
+import { getAgentStatusBadge } from '../../../utils';
 
 const AGENT_SESSIONS_PATH = '/-/automate/agent-sessions';
 
 export default {
   components: {
+    GlBadge,
     GlLink,
     GlSkeletonLoader,
   },
@@ -17,6 +19,10 @@ export default {
       type: Boolean,
     },
     status: {
+      required: true,
+      type: String,
+    },
+    humanStatus: {
       required: true,
       type: String,
     },
@@ -45,6 +51,9 @@ export default {
     },
   },
   computed: {
+    itemStatus() {
+      return getAgentStatusBadge(this.status);
+    },
     jobId() {
       const id = this.executorUrl.split('/').pop();
       if (!id || Number.isNaN(Number(id))) {
@@ -63,8 +72,13 @@ export default {
     payload() {
       return [
         {
+          key: s__('DuoAgentPlatform|Session ID'),
+          value: this.$route.params.id,
+          link: this.projectAgentSessionsUrl,
+        },
+        {
           key: __('Status'),
-          value: this.status,
+          value: this.humanStatus,
         },
         {
           key: __('Project'),
@@ -77,14 +91,6 @@ export default {
           link: this.project?.namespace?.webUrl,
         },
         {
-          key: __('Started'),
-          value: this.formatTimestamp(this.createdAt),
-        },
-        {
-          key: __('Last updated'),
-          value: this.formatTimestamp(this.updatedAt),
-        },
-        {
           key: 'Type',
           value: s__('DuoAgentPlatform|Flow'),
         },
@@ -93,14 +99,17 @@ export default {
           value: this.agentFlowDefinition,
         },
         {
-          key: s__('DuoAgentPlatform|Session ID'),
-          value: this.$route.params.id,
-          link: this.projectAgentSessionsUrl,
-        },
-        {
           key: s__('DuoAgentPlatform|Job ID'),
           value: this.jobId,
           link: this.executorUrl,
+        },
+        {
+          key: __('Started'),
+          value: this.formatTimestamp(this.createdAt),
+        },
+        {
+          key: __('Last updated'),
+          value: this.formatTimestamp(this.updatedAt),
         },
       ].map((entry) => {
         return { ...entry, value: entry.value ? entry.value : __('N/A') };
@@ -128,21 +137,31 @@ export default {
 </script>
 <template>
   <div>
-    <dl class="gl-pl-4">
-      <div v-for="entry in payload" :key="entry.key" class="gl-mb-6">
-        <dt class="gl-mb-2">{{ entry.key }}</dt>
-        <template v-if="isLoading">
-          <dd>
+    <div class="gl-pl-4">
+      <h5 data-testid="session-info-heading">{{ s__('DuoAgentPlatform|Session information') }}</h5>
+      <ul class="gl-list-none gl-p-0">
+        <li v-for="entry in payload" :key="entry.key" class="gl-mb-4">
+          <span class="gl-mb-2 gl-text-subtle" data-testid="info-title">
+            {{ sprintf(__('%{label}:'), { label: entry.key }) }}
+          </span>
+          <template v-if="isLoading">
             <gl-skeleton-loader :lines="1" />
-          </dd>
-        </template>
-        <template v-else>
-          <dd>
-            <gl-link v-if="entry.link" :href="entry.link">{{ entry.value }}</gl-link>
-            <template v-else>{{ entry.value }}</template>
-          </dd>
-        </template>
-      </div>
-    </dl>
+          </template>
+          <template v-else>
+            <span data-testid="info-value">
+              <gl-link v-if="entry.link" :href="entry.link">{{ entry.value }}</gl-link>
+              <gl-badge
+                v-else-if="entry.key === 'Status'"
+                class="gl-mr-3"
+                :variant="itemStatus.variant"
+              >
+                {{ entry.value }}
+              </gl-badge>
+              <template v-else>{{ entry.value }}</template>
+            </span>
+          </template>
+        </li>
+      </ul>
+    </div>
   </div>
 </template>

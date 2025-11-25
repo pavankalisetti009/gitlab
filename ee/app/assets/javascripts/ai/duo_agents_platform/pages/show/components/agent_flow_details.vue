@@ -24,6 +24,10 @@ export default {
       required: true,
       type: String,
     },
+    humanStatus: {
+      required: true,
+      type: String,
+    },
     agentFlowDefinition: {
       required: true,
       type: String,
@@ -71,9 +75,10 @@ export default {
         </gl-tab>
         <gl-tab :title="s__('DuoAgentPlatform|Details')">
           <agent-flow-info
-            class="gl-mt-5"
+            class="gl-mt-6"
             :is-loading="isLoading"
             :status="status"
+            :human-status="humanStatus"
             :agent-flow-definition="agentFlowDefinition"
             :created-at="createdAt"
             :project="project"

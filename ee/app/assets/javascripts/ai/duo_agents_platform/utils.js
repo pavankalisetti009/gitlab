@@ -1,7 +1,7 @@
 import { makeVar } from '@apollo/client/core';
 import { s__ } from '~/locale';
 import { humanize } from '~/lib/utils/text_utility';
-import { AGENT_PLATFORM_STATUS_ICON } from './constants';
+import { AGENT_PLATFORM_STATUS_ICON, AGENT_PLATFORM_STATUS_BADGE } from './constants';
 
 export const formatAgentDefinition = (agentDefinition) => {
   return humanize(agentDefinition || s__('DuoAgentsPlatform|Agent session'));
@@ -17,6 +17,10 @@ export const formatAgentStatus = (status) => {
 
 export const getAgentStatusIcon = (status) => {
   return AGENT_PLATFORM_STATUS_ICON[status] || AGENT_PLATFORM_STATUS_ICON.CREATED;
+};
+
+export const getAgentStatusBadge = (status) => {
+  return AGENT_PLATFORM_STATUS_BADGE[status] || AGENT_PLATFORM_STATUS_BADGE.FAILED;
 };
 
 export const parseJsonProperty = (value) => {

@@ -1112,6 +1112,9 @@ msgstr ""
 msgid "%{label_name} was removed"
 msgstr ""
 
+msgid "%{label}:"
+msgstr ""
+
 msgid "%{lessThan} 1 hour"
 msgstr ""
 
@@ -25217,6 +25220,9 @@ msgid "DuoAgentPlatform|Request has been sent to the group Owner"
 msgstr ""
 
 msgid "DuoAgentPlatform|Session ID"
+msgstr ""
+
+msgid "DuoAgentPlatform|Session information"
 msgstr ""
 
 msgid "DuoAgentPlatform|Session triggered"
