@@ -2991,6 +2991,9 @@ msgstr ""
 msgid "AICatalog|There was a problem fetching agents."
 msgstr ""
 
+msgid "AICatalog|There was a problem fetching flows."
+msgstr ""
+
 msgid "AICatalog|This %{itemType} is private and can only be enabled in the project it was created in or its top-level group. Duplicate the agent to use the same configuration in other projects."
 msgstr ""
 
