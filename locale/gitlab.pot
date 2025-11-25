@@ -39403,6 +39403,9 @@ msgstr ""
 msgid "Link to go to GitLab pipeline documentation"
 msgstr ""
 
+msgid "Link to heading '%{heading}'"
+msgstr ""
+
 msgid "Link to your Grafana instance."
 msgstr ""
 
