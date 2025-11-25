@@ -29,8 +29,11 @@ RSpec.describe ::Search::Zoekt::TaskSerializerService, feature_category: :global
     end
 
     it 'serializes the task with GitalyConnectionInfo' do
-      expect(execute_task[:name]).to eq(:index)
-      expect(execute_task[:payload].keys).to contain_exactly(
+      allow(::Search::Zoekt::Settings).to receive_messages(file_size_limit: 100, indexing_timeout: 1.hour)
+      response = execute_task
+      expect(response[:name]).to eq(:index)
+      payload = execute_task[:payload]
+      expect(payload.keys).to contain_exactly(
         :GitalyConnectionInfo,
         :Callback,
         :RepoId,
@@ -41,8 +44,10 @@ RSpec.describe ::Search::Zoekt::TaskSerializerService, feature_category: :global
         :MissingRepo,
         :Metadata
       )
+      expect(payload[:FileSizeLimit]).to eq(100)
+      expect(payload[:Timeout]).to eq("#{1.hour.to_i}s")
 
-      meta = execute_task[:payload][:Metadata]
+      meta = payload[:Metadata]
       expect(meta[:project_id]).to eq(project.id.to_s)
       expect(meta[:traversal_ids]).to eq(project.namespace_ancestry)
       expect(meta[:visibility_level]).to eq(project.visibility_level.to_s)

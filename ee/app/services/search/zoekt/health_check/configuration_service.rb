@@ -36,19 +36,19 @@ module Search
           if setting.zoekt_indexing_enabled?
             log_check("✓ Indexing enabled", :green)
           else
-            add_error("Enable indexing in Admin > Settings > Search > Exact code search configuration")
+            add_error("Enable indexing in Admin > Settings > Search > Exact code search")
             log_check("✗ Indexing disabled", :red)
           end
 
           if setting.zoekt_search_enabled?
             log_check("✓ Searching enabled", :green)
           else
-            add_warning("Enable searching in Admin > Settings > Search > Exact code search configuration")
+            add_warning("Enable searching in Admin > Settings > Search > Exact code search")
             log_check("⚠ Searching disabled", :yellow)
           end
 
           if setting.zoekt_indexing_paused?
-            add_warning("Unpause indexing in Admin > Settings > Search > Exact code search configuration")
+            add_warning("Unpause indexing in Admin > Settings > Search > Exact code search")
             log_check("⚠ Indexing paused", :yellow)
           else
             log_check("✓ Indexing active", :green)

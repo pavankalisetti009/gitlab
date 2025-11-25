@@ -1307,6 +1307,33 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       end
     end
 
+    describe 'zoekt_indexed_file_size_limit' do
+      where(:zoekt_indexed_file_size_limit, :is_valid) do
+        '5B'    | true
+        '1kb'   | true
+        '2mb'   | true
+        '3gb'   | true
+        '1KB'   | true
+        '20MB'  | true
+        '3GB'   | true
+        '05mb'  | false
+        '0.5mb' | false
+        '5.0kb' | false
+        '2XY'   | false
+        '20'    | false
+        'GB'    | false
+        '0mb'   | false
+      end
+
+      with_them do
+        specify do
+          setting.zoekt_indexed_file_size_limit = zoekt_indexed_file_size_limit
+
+          expect(setting.valid?).to eq(is_valid)
+        end
+      end
+    end
+
     describe 'zoekt_rollout_retry_interval' do
       where(:zoekt_rollout_retry_interval, :is_valid) do
         '1m'    | true

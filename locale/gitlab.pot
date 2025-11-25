@@ -40474,6 +40474,9 @@ msgstr ""
 msgid "Maximum field length"
 msgstr ""
 
+msgid "Maximum file size for indexing"
+msgstr ""
+
 msgid "Maximum file size indexed (KiB)"
 msgstr ""
 
@@ -43107,6 +43110,9 @@ msgid "Must be in the following format: `30m`, `2h`, or `1d`. Set to `%{val}` fo
 msgstr ""
 
 msgid "Must be in the following format: `30m`, `2h`, or `1d`. Set to `%{val}` to disable."
+msgstr ""
+
+msgid "Must be in the following format: `5B`, `5b`, `1KB`, `1kb`, `2MB`, `2mb`, `1GB`, or `1gb`"
 msgstr ""
 
 msgid "Must start with letter, digit, emoji, or underscore. Can also contain periods, dashes, spaces, and parentheses."

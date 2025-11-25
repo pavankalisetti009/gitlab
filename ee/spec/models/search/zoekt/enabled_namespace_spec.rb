@@ -415,9 +415,9 @@ RSpec.describe ::Search::Zoekt::EnabledNamespace, feature_category: :global_sear
     let_it_be(:old_failed) { create(:zoekt_enabled_namespace, last_rollout_failed_at: 2.days.ago.iso8601) }
     let_it_be(:never_failed) { create(:zoekt_enabled_namespace) }
 
-    context 'when setting zoekt_rollout_retry_interval is set to 0' do # retry disabled
+    context 'when setting rollout_retry_interval is nil' do
       before do
-        stub_ee_application_setting(zoekt_rollout_retry_interval: '0')
+        allow(::Search::Zoekt::Settings).to receive(:rollout_retry_interval).and_return(nil)
       end
 
       it 'returns records with last_rollout_failed_at is set' do
@@ -426,7 +426,8 @@ RSpec.describe ::Search::Zoekt::EnabledNamespace, feature_category: :global_sear
       end
     end
 
-    it 'returns records with last_rollout_failed_at set newer than DEFAULT_ROLLOUT_RETRY_INTERVAL' do
+    it 'returns records with last_rollout_failed_at set newer than rollout_retry_interval' do
+      allow(::Search::Zoekt::Settings).to receive(:rollout_retry_interval).and_return(1.day)
       expect(described_class.with_rollout_blocked).to include(new_failed)
       expect(described_class.with_rollout_blocked).not_to include(*[old_failed, never_failed])
     end
@@ -438,9 +439,9 @@ RSpec.describe ::Search::Zoekt::EnabledNamespace, feature_category: :global_sear
     let_it_be(:old_failed) { create(:zoekt_enabled_namespace, last_rollout_failed_at: 2.days.ago.iso8601) }
     let_it_be(:never_failed) { create(:zoekt_enabled_namespace) }
 
-    context 'when setting zoekt_rollout_retry_interval is set to 0' do # retry disabled
+    context 'when setting rollout_retry_interval is nil' do
       before do
-        allow(ApplicationSetting).to receive_message_chain(:current, :zoekt_rollout_retry_interval).and_return('0')
+        allow(::Search::Zoekt::Settings).to receive(:rollout_retry_interval).and_return(nil)
       end
 
       it 'returns records with last_rollout_failed_at is not set' do

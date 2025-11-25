@@ -55,7 +55,7 @@ module Search
         gitaly_payload(project).merge(
           Callback: { name: 'index', payload: { task_id: task.id, schema_version: node.schema_version } },
           RepoId: project.id,
-          FileSizeLimit: Gitlab::CurrentSettings.elasticsearch_indexed_file_size_limit_kb.kilobytes,
+          FileSizeLimit: ::Search::Zoekt::Settings.file_size_limit,
           Parallelism: ::Gitlab::CurrentSettings.zoekt_indexing_parallelism,
           Timeout: "#{::Search::Zoekt::Settings.indexing_timeout.to_i}s",
           FileCountLimit: ::Gitlab::CurrentSettings.zoekt_maximum_files,
