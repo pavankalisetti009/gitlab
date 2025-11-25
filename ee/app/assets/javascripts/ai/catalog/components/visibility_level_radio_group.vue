@@ -1,5 +1,5 @@
 <script>
-import { GlAlert, GlFormRadioGroup, GlFormRadio, GlIcon, GlSprintf } from '@gitlab/ui';
+import { GlFormRadioGroup, GlFormRadio, GlIcon, GlSprintf } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import {
   VISIBILITY_LEVEL_LABELS,
@@ -17,7 +17,6 @@ import HelpPopover from '~/vue_shared/components/help_popover.vue';
 
 export default {
   components: {
-    GlAlert,
     GlFormRadioGroup,
     GlFormRadio,
     GlIcon,
@@ -29,14 +28,6 @@ export default {
       type: String,
       required: true,
     },
-    initialValue: {
-      type: Boolean,
-      required: true,
-    },
-    isEditMode: {
-      type: Boolean,
-      required: true,
-    },
     itemType: {
       type: String,
       required: true,
@@ -45,9 +36,7 @@ export default {
       type: Object,
       required: true,
       validator: (texts) =>
-        Object.keys(texts).every((key) =>
-          ['textPrivate', 'textPublic', 'alertTextPrivate', 'alertTextPublic'].includes(key),
-        ),
+        Object.keys(texts).every((key) => ['textPrivate', 'textPublic'].includes(key)),
     },
     validationState: {
       type: Object,
@@ -82,17 +71,6 @@ export default {
           icon: VISIBILITY_TYPE_ICON[VISIBILITY_LEVEL_PUBLIC_STRING],
         },
       ];
-    },
-    visibilityLevelAlertText() {
-      if (this.isEditMode && this.initialValue && this.value === VISIBILITY_LEVEL_PRIVATE) {
-        return this.texts.alertTextPublic;
-      }
-
-      if (!this.initialValue && this.value === VISIBILITY_LEVEL_PUBLIC) {
-        return this.texts.alertTextPrivate;
-      }
-
-      return '';
     },
   },
   methods: {
@@ -157,6 +135,7 @@ export default {
     :id="id"
     :state="validationState"
     :checked="value"
+    class="gl-flex gl-flex-col gl-gap-3"
     @input="(value) => $emit('input', value)"
   >
     <gl-form-radio
@@ -164,7 +143,6 @@ export default {
       :key="level.value"
       :value="level.value"
       :state="validationState"
-      class="gl-mb-3"
     >
       <div class="gl-flex gl-items-center gl-gap-2">
         <gl-icon :size="16" :name="level.icon" />
@@ -198,8 +176,5 @@ export default {
         </help-popover>
       </template>
     </gl-form-radio>
-    <gl-alert v-if="visibilityLevelAlertText" :dismissible="false" class="gl-mt-3" variant="info">
-      {{ visibilityLevelAlertText }}
-    </gl-alert>
   </gl-form-radio-group>
 </template>

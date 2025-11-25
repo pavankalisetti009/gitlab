@@ -2487,12 +2487,6 @@ msgstr ""
 msgid "AICatalog|A public %{itemType}:"
 msgstr ""
 
-msgid "AICatalog|A public agent can be made private only if it is not used."
-msgstr ""
-
-msgid "AICatalog|A public flow can be made private only if it is not used."
-msgstr ""
-
 msgid "AICatalog|AI Catalog"
 msgstr ""
 
@@ -2865,6 +2859,9 @@ msgstr ""
 msgid "AICatalog|Managed"
 msgstr ""
 
+msgid "AICatalog|Managed by"
+msgstr ""
+
 msgid "AICatalog|Managed by a private project you don't have access to."
 msgstr ""
 
@@ -2887,6 +2884,12 @@ msgid "AICatalog|Only agents enabled in your top-level group are shown."
 msgstr ""
 
 msgid "AICatalog|Only flows enabled in your top-level group are shown."
+msgstr ""
+
+msgid "AICatalog|Only members of this project can edit or delete this agent."
+msgstr ""
+
+msgid "AICatalog|Only members of this project can edit or delete this flow."
 msgstr ""
 
 msgid "AICatalog|Open source projects."
@@ -2955,12 +2958,6 @@ msgstr ""
 msgid "AICatalog|Select a flow"
 msgstr ""
 
-msgid "AICatalog|Select a project for your AI agent to be associated with."
-msgstr ""
-
-msgid "AICatalog|Select a project for your AI flow to be associated with."
-msgstr ""
-
 msgid "AICatalog|Select an agent"
 msgstr ""
 
@@ -2977,9 +2974,6 @@ msgid "AICatalog|Selected %{itemType}"
 msgstr ""
 
 msgid "AICatalog|Shared resources."
-msgstr ""
-
-msgid "AICatalog|Source project"
 msgstr ""
 
 msgid "AICatalog|Spam or low quality"
@@ -3006,16 +3000,10 @@ msgstr ""
 msgid "AICatalog|This YAML configuration file determines the prompts, tools, and capabilities of your flow. Required properties: version, environment, components, prompts, routers, flow."
 msgstr ""
 
-msgid "AICatalog|This agent can be made private if it is not used."
-msgstr ""
-
 msgid "AICatalog|This agent can be viewed only by members of this project, or by users with the Owner role for the top-level group. This agent can't be shared with other projects."
 msgstr ""
 
 msgid "AICatalog|This agent specializes in... It can help you with... Best suited for..."
-msgstr ""
-
-msgid "AICatalog|This flow can be made private if it is not used."
 msgstr ""
 
 msgid "AICatalog|This flow can be viewed only by members of this project, or by users with the Owner role for the top-level group. This flow can't be shared with other projects."

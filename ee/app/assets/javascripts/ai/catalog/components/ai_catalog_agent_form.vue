@@ -179,19 +179,17 @@ export default {
   visibilityLevelTexts: {
     textPrivate: AGENT_VISIBILITY_LEVEL_DESCRIPTIONS[VISIBILITY_LEVEL_PRIVATE_STRING],
     textPublic: AGENT_VISIBILITY_LEVEL_DESCRIPTIONS[VISIBILITY_LEVEL_PUBLIC_STRING],
-    alertTextPrivate: s__('AICatalog|This agent can be made private if it is not used.'),
-    alertTextPublic: s__('AICatalog|A public agent can be made private only if it is not used.'),
   },
   fields: {
     projectId: {
       id: 'agent-form-project-id',
-      label: s__('AICatalog|Source project'),
+      label: s__('AICatalog|Managed by'),
       validations: {
         requiredLabel: s__('AICatalog|Project is required.'),
       },
       groupAttrs: {
         labelDescription: s__(
-          'AICatalog|Select a project for your AI agent to be associated with.',
+          'AICatalog|Only members of this project can edit or delete this agent.',
         ),
       },
     },
@@ -297,19 +295,7 @@ export default {
       </form-section>
       <form-section :title="s__('AICatalog|Visibility & access')">
         <form-group
-          :field="$options.fields.visibilityLevel"
-          :field-value="formValues.visibilityLevel"
-        >
-          <visibility-level-radio-group
-            :id="$options.fields.visibilityLevel.id"
-            v-model="formValues.visibilityLevel"
-            :is-edit-mode="isEditMode"
-            :initial-value="initialValues.public"
-            :item-type="$options.AI_CATALOG_TYPE_AGENT"
-            :texts="$options.visibilityLevelTexts"
-          />
-        </form-group>
-        <form-group
+          v-if="isGlobal"
           ref="fieldProject"
           :field="$options.fields.projectId"
           :field-value="formValues.projectId"
@@ -317,8 +303,19 @@ export default {
           <form-project-dropdown
             :id="$options.fields.projectId.id"
             v-model="formValues.projectId"
-            :disabled="isEditMode || !isGlobal"
+            :disabled="isEditMode"
             @error="onError"
+          />
+        </form-group>
+        <form-group
+          :field="$options.fields.visibilityLevel"
+          :field-value="formValues.visibilityLevel"
+        >
+          <visibility-level-radio-group
+            :id="$options.fields.visibilityLevel.id"
+            v-model="formValues.visibilityLevel"
+            :item-type="$options.AI_CATALOG_TYPE_AGENT"
+            :texts="$options.visibilityLevelTexts"
           />
         </form-group>
       </form-section>
