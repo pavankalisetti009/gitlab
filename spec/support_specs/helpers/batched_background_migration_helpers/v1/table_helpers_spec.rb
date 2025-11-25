@@ -2,11 +2,14 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::BackgroundMigration::SpecHelpers::V1::TableHelpers, feature_category: :database do
+RSpec.describe BatchedBackgroundMigrationHelpers::V1::TableHelpers, feature_category: :database do
   let(:test_class) do
     Class.new do
       include MigrationsHelpers
-      include Gitlab::BackgroundMigration::SpecHelpers::V1::TableHelpers
+      include BatchedBackgroundMigrationHelpers::V1::TableHelpers
+
+      # Declare tables explicitly
+      tables :users, :projects, :organizations
 
       # Simulate RSpec metadata for migration schema
       def self.metadata
@@ -65,22 +68,41 @@ RSpec.describe Gitlab::BackgroundMigration::SpecHelpers::V1::TableHelpers, featu
     end
 
     context 'with custom database' do
+      let(:test_class_with_custom) do
+        Class.new do
+          include MigrationsHelpers
+          include BatchedBackgroundMigrationHelpers::V1::TableHelpers
+
+          # Declare custom table
+          tables :custom_table
+
+          def self.metadata
+            { migration: :main }
+          end
+        end
+      end
+
+      let(:instance_with_custom) { test_class_with_custom.new }
+
       before do
-        test_class.configure_table :custom_table, database: :main
+        test_class_with_custom.configure_table :custom_table, database: :main
       end
 
       it 'uses the configured database' do
         # The table helper should be created without error
-        expect { instance.custom_table }.not_to raise_error
+        expect { instance_with_custom.custom_table }.not_to raise_error
       end
     end
   end
 
-  describe 'partitioned tables', migration: :gitlab_ci do
+  describe 'partitioned tables' do
     let(:test_class) do
       Class.new do
         include MigrationsHelpers
-        include Gitlab::BackgroundMigration::SpecHelpers::V1::TableHelpers
+        include BatchedBackgroundMigrationHelpers::V1::TableHelpers
+
+        # Declare tables explicitly for partitioned table tests
+        tables :p_ci_builds
 
         def self.metadata
           { migration: :gitlab_ci }
