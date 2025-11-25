@@ -136,7 +136,7 @@ export default {
   >
     <template #list-item="{ item }">
       <span class="gl-flex gl-flex-col">
-        <span class="gl-mb-1 gl-inline-block gl-font-semibold">
+        <span class="gl-mb-1 gl-inline-block gl-break-all gl-font-semibold">
           {{ item.name }}
           <gl-icon
             v-if="item.foundational"
