@@ -63,6 +63,9 @@ export default {
         rating: this.$options.i18n.ratings[rating],
       });
     },
+    getVulnerabilityReportUrl(project) {
+      return `${project.webUrl}/-/security/vulnerability_report`;
+    },
   },
   i18n: {
     ratings: {
@@ -105,7 +108,7 @@ export default {
         <template #title>
           <div class="gl-flex gl-w-full gl-justify-between gl-gap-6">
             <gl-link
-              :href="riskScore.project.webUrl"
+              :href="getVulnerabilityReportUrl(riskScore.project)"
               target="_blank"
               class="gl-flex-shrink gl-truncate"
               >{{ riskScore.project.name }}</gl-link
