@@ -50,6 +50,26 @@ module Gitlab
           end
 
           class_methods do
+            # Declare tables to be made available as helper methods
+            #
+            # This method generates instance methods for each table name, providing
+            # lazy evaluation and memoization of table helpers.
+            #
+            # @param table_names [Array<Symbol>] Names of tables to declare
+            #
+            # @example
+            #   tables :issues, :projects, :users
+            def tables(*table_names)
+              table_names.each do |table_name|
+                define_method(table_name) do
+                  ivar_name = "@_table_#{table_name}"
+                  return instance_variable_get(ivar_name) if instance_variable_defined?(ivar_name)
+
+                  instance_variable_set(ivar_name, create_table_helper(table_name))
+                end
+              end
+            end
+
             # Configure a table with custom options
             #
             # @param table_name [Symbol] The name of the table
