@@ -25,17 +25,11 @@ export default {
     };
   },
   computed: {
-    flowName() {
-      return this.aiCatalogFlow.name;
-    },
-    pageTitle() {
-      return `${s__('AICatalog|Edit flow')}: ${this.flowName || this.$route.params.id}`;
-    },
     initialValues() {
       return {
         projectId: this.aiCatalogFlow.project?.id,
         type: this.aiCatalogFlow.itemType,
-        name: this.flowName,
+        name: this.aiCatalogFlow.name,
         description: this.aiCatalogFlow.description,
         public: this.aiCatalogFlow.public,
         definition: this.aiCatalogFlow.latestVersion.definition,
@@ -88,7 +82,7 @@ export default {
 
 <template>
   <div>
-    <page-heading :heading="pageTitle">
+    <page-heading :heading="s__('AICatalog|Edit flow')">
       <template #description>
         <div class="gl-border-b gl-pb-3">
           {{ s__('AICatalog|Manage flow settings.') }}

@@ -25,16 +25,10 @@ export default {
     };
   },
   computed: {
-    agentName() {
-      return this.aiCatalogAgent.name;
-    },
-    pageTitle() {
-      return `${s__('AICatalog|Edit agent')}: ${this.agentName || this.$route.params.id}`;
-    },
     initialValues() {
       return {
         projectId: this.aiCatalogAgent.project?.id,
-        name: this.agentName,
+        name: this.aiCatalogAgent.name,
         description: this.aiCatalogAgent.description,
         systemPrompt: this.aiCatalogAgent.latestVersion?.systemPrompt,
         public: this.aiCatalogAgent.public,
@@ -86,7 +80,7 @@ export default {
 
 <template>
   <div>
-    <page-heading :heading="pageTitle">
+    <page-heading :heading="s__('AICatalog|Edit agent')">
       <template #description>
         <div class="gl-border-b gl-pb-3">
           {{ s__('AICatalog|Manage agent settings.') }}
