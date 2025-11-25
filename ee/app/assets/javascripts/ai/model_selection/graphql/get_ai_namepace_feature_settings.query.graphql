@@ -12,11 +12,13 @@ query getAiNamespaceFeatureSettings($groupId: GroupID!) {
       defaultModel {
         name
         modelProvider @gl_introduced(version: "18.6.0")
+        modelDescription @gl_introduced(version: "18.7.0")
       }
       selectableModels {
         ref
         name
         modelProvider @gl_introduced(version: "18.6.0")
+        modelDescription @gl_introduced(version: "18.7.0")
       }
     }
   }

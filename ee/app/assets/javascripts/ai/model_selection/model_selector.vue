@@ -36,17 +36,22 @@ export default {
     },
     defaultModelOption() {
       const { defaultModel } = this.aiFeatureSetting;
-      const provider = defaultModel?.modelProvider || '';
       const text = formatDefaultModelText(defaultModel);
 
-      return { value: GITLAB_DEFAULT_MODEL, text, provider };
+      return {
+        text,
+        value: GITLAB_DEFAULT_MODEL,
+        provider: defaultModel?.modelProvider || '',
+        description: defaultModel?.modelDescription || '',
+      };
     },
     listItems() {
       const modelOptions = this.aiFeatureSetting.selectableModels
-        .map(({ ref, name, modelProvider }) => ({
+        .map(({ ref, name, modelProvider, modelDescription }) => ({
           value: ref,
           text: name,
           provider: modelProvider,
+          description: modelDescription,
         }))
         .sort((a, b) => a.text.localeCompare(b.text));
 

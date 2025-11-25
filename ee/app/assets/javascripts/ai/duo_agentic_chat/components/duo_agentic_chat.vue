@@ -179,10 +179,11 @@ export default {
 
         const defaultModelName = formatDefaultModelText(defaultModel);
 
-        const models = selectableModels.map(({ ref, name, modelProvider }) => ({
+        const models = selectableModels.map(({ ref, name, modelProvider, modelDescription }) => ({
           text: ref === defaultModel?.ref ? defaultModelName : name,
           value: ref === defaultModel?.ref ? GITLAB_DEFAULT_MODEL : ref,
           provider: modelProvider,
+          description: modelDescription,
         }));
 
         this.pinnedModel = pinnedModel?.ref

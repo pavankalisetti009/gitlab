@@ -27,8 +27,10 @@ describe('ModelSelectDropdown', () => {
 
   const findModelSelectDropdown = () => wrapper.findComponent(ModelSelectDropdown);
   const findGLCollapsibleListbox = () => wrapper.findComponent(GlCollapsibleListbox);
-  const findDropdownListItems = () => wrapper.findAllByRole('option');
   const findDropdownToggleText = () => wrapper.findByTestId('dropdown-toggle-text');
+  const findModelNames = () => wrapper.findAllByTestId('model-name');
+  const findModelProviders = () => wrapper.findAllByTestId('model-provider');
+  const findModelDescriptions = () => wrapper.findAllByTestId('model-description');
   const findBetaModelSelectedBadge = () => wrapper.findByTestId('beta-model-selected-badge');
   const findBetaModelDropdownBadges = () => wrapper.findAllByTestId('beta-model-dropdown-badge');
   const findToggleButton = () => wrapper.findByTestId('toggle-button');
@@ -55,6 +57,21 @@ describe('ModelSelectDropdown', () => {
     });
   });
 
+  describe('when isLoading is true', () => {
+    it('renders the loading state', () => {
+      createComponent({ props: { isLoading: true } });
+
+      expect(findGLCollapsibleListbox().props('loading')).toBe(true);
+    });
+  });
+
+  describe('when disabled is true', () => {
+    it('disables the dropdown toggle', () => {
+      createComponent({ props: { disabled: true } });
+      expect(findToggleButton().props('disabled')).toBe(true);
+    });
+  });
+
   describe('items', () => {
     it('renders list items', () => {
       createComponent();
@@ -62,12 +79,54 @@ describe('ModelSelectDropdown', () => {
       expect(findGLCollapsibleListbox().props('items')).toBe(mockSelfHostedModelsItems);
     });
 
-    it('can handle model selection items', () => {
-      createComponent({ props: { items: mockModelSelectionItems } });
+    describe('Self-hosted model items', () => {
+      beforeEach(() => {
+        createComponent();
+      });
 
-      expect(findGLCollapsibleListbox().props('items')).toBe(mockModelSelectionItems);
-      expect(findDropdownListItems().at(0).text()).toMatch('Claude Sonnet 3.5');
-      expect(findDropdownListItems().at(1).text()).toMatch('Claude Sonnet 3.7');
+      it('renders model names', () => {
+        mockSelfHostedModelsItems.forEach((item, index) => {
+          expect(findModelNames().at(index).text()).toEqual(item.text);
+        });
+      });
+
+      describe('beta models', () => {
+        it('displays the beta badge with dropdown options', () => {
+          expect(findBetaModelDropdownBadges()).toHaveLength(3);
+        });
+
+        it('displays the beta badge when beta option is selected', () => {
+          const betaModel = mockSelfHostedModelsItems[1];
+
+          createComponent({ props: { selectedOption: betaModel } });
+
+          expect(findBetaModelSelectedBadge().exists()).toBe(true);
+        });
+      });
+    });
+
+    describe('GitLab model items', () => {
+      beforeEach(() => {
+        createComponent({ props: { items: mockModelSelectionItems } });
+      });
+
+      it('renders model names', () => {
+        mockModelSelectionItems.forEach((item, index) => {
+          expect(findModelNames().at(index).text()).toEqual(item.text);
+        });
+      });
+
+      it('renders model providers', () => {
+        mockModelSelectionItems.forEach((item, index) => {
+          expect(findModelProviders().at(index).text()).toEqual(item.provider);
+        });
+      });
+
+      it('renders model descriptions', () => {
+        mockModelSelectionItems.forEach((item, index) => {
+          expect(findModelDescriptions().at(index).text()).toEqual(item.description);
+        });
+      });
     });
 
     it('sets a default selected value based on the selected option', () => {
@@ -90,39 +149,6 @@ describe('ModelSelectDropdown', () => {
       await nextTick();
 
       expect(wrapper.emitted('select')).toStrictEqual([[selectedOption.value]]);
-    });
-  });
-
-  describe('when isLoading is true', () => {
-    it('renders the loading state', () => {
-      createComponent({ props: { isLoading: true } });
-
-      expect(findGLCollapsibleListbox().props('loading')).toBe(true);
-    });
-  });
-
-  describe('when disabled is true', () => {
-    it('disables the dropdown toggle', () => {
-      createComponent({ props: { disabled: true } });
-      expect(findToggleButton().props('disabled')).toBe(true);
-    });
-  });
-
-  describe('beta model items', () => {
-    beforeEach(() => {
-      createComponent();
-    });
-
-    it('displays the beta badge with dropdown options', () => {
-      expect(findBetaModelDropdownBadges()).toHaveLength(3);
-    });
-
-    it('displays the beta badge when beta option is selected', () => {
-      const betaModel = mockSelfHostedModelsItems[1];
-
-      createComponent({ props: { selectedOption: betaModel } });
-
-      expect(findBetaModelSelectedBadge().exists()).toBe(true);
     });
   });
 });
