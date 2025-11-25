@@ -16340,6 +16340,9 @@ msgstr ""
 msgid "Commit actions"
 msgstr ""
 
+msgid "Commit author"
+msgstr ""
+
 msgid "Commit changes"
 msgstr ""
 
@@ -41476,6 +41479,9 @@ msgid "Merge request approvals"
 msgstr ""
 
 msgid "Merge request approvals settings"
+msgstr ""
+
+msgid "Merge request author"
 msgstr ""
 
 msgid "Merge request author cannot push to target project"
