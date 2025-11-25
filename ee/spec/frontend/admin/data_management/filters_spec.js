@@ -3,7 +3,6 @@ import {
   processFilters,
   isValidFilter,
 } from 'ee/admin/data_management/filters';
-import { TOKEN_TYPES } from 'ee/admin/data_management/constants';
 
 describe('formatListboxItems', () => {
   it('handles empty array', () => {
@@ -48,16 +47,16 @@ describe('isValidFilter', () => {
 
 describe('processFilters', () => {
   it.each`
-    filters                                                                | query
-    ${[]}                                                                  | ${{}}
-    ${[{ type: TOKEN_TYPES.CHECKSUM_STATE, value: { data: 'verified' } }]} | ${{ checksum_state: 'verified' }}
-    ${['123 456 789']}                                                     | ${{ identifiers: ['123', '456', '789'] }}
+    filters                                                      | query
+    ${[]}                                                        | ${{}}
+    ${[{ type: 'checksum_state', value: { data: 'verified' } }]} | ${{ checksum_state: 'verified' }}
+    ${['123 456 789']}                                           | ${{ identifiers: ['123', '456', '789'] }}
   `('returns the correct { query, url } for filters: $filters', ({ filters, query }) => {
     expect(processFilters(filters)).toStrictEqual(query);
   });
 
   it('handles mixed filter types', () => {
-    const filters = ['123 456', { type: TOKEN_TYPES.CHECKSUM_STATE, value: { data: 'verified' } }];
+    const filters = ['123 456', { type: 'checksum_state', value: { data: 'verified' } }];
 
     const expectedQuery = {
       identifiers: ['123', '456'],
