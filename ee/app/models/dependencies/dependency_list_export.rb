@@ -9,6 +9,7 @@ module Dependencies
 
     mount_file_store_uploader AttachmentUploader
 
+    belongs_to :organization, class_name: 'Organizations::Organization'
     belongs_to :project
     belongs_to :group
     belongs_to :pipeline, class_name: 'Ci::Pipeline'
@@ -103,6 +104,7 @@ module Dependencies
 
     def uploads_sharding_key
       {
+        organization_id: organization_id,
         namespace_id: group_id,
         project_id: project_id
       }

@@ -48,8 +48,10 @@ RSpec.describe UserPermissionExportUpload, type: :model do
   end
 
   describe '#uploads_sharding_key' do
-    it 'returns empty hash' do
-      expect(upload.uploads_sharding_key).to eq({})
+    it 'returns user_id' do
+      user = create(:user)
+      upload.user = user
+      expect(upload.uploads_sharding_key).to eq({ uploaded_by_user_id: user.id })
     end
   end
 end

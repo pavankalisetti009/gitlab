@@ -31,7 +31,7 @@ class UserPermissionExportUpload < ApplicationRecord
   end
 
   def uploads_sharding_key
-    {}
+    { uploaded_by_user_id: user_id }
   end
 
   private
