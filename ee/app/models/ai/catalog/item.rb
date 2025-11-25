@@ -144,6 +144,11 @@ module Ai
         end
       end
 
+      def foundational_chat
+        ::Gitlab::Saas.feature_available?(:gitlab_duo_saas_only) &&
+          !!::Ai::FoundationalChatAgent.find_by(global_catalog_id: id)
+      end
+
       private
 
       def prevent_deletion_if_consumers_exist

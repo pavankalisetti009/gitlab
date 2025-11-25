@@ -25,13 +25,6 @@ RSpec.shared_examples 'builds valid flow configuration' do
   it 'builds prompts with correct structure' do
     expect(result['prompts']).to all(include(
       'prompt_id' => match(/.*_prompt$/),
-      'model' => include(
-        'params' => include(
-          'max_tokens' => be_an(Integer),
-          'model_class_provider' => be_a(String),
-          'model' => be_a(String)
-        )
-      ),
       'prompt_template' => include(
         'system' => be_a(String),
         'user' => be_a(String),

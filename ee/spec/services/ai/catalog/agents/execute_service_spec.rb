@@ -211,13 +211,6 @@ RSpec.describe Ai::Catalog::Agents::ExecuteService, :aggregate_failures, feature
           expect(parsed_yaml['prompts']).to match([
             {
               'prompt_id' => be_a(String),
-              'model' => {
-                'params' => {
-                  'max_tokens' => be_a(Integer),
-                  'model_class_provider' => be_a(String),
-                  'model' => be_a(String)
-                }
-              },
               'prompt_template' => {
                 'system' => agent_version.def_system_prompt,
                 'user' => custom_user_prompt,

@@ -19,11 +19,13 @@ module Search
       DEFAULT_ROLLOUT_RETRY_INTERVAL = '1d'
       DEFAULT_LOST_NODE_THRESHOLD = '12h'
       DEFAULT_MAXIMUM_FILES = 500_000
+      DEFAULT_FILE_SIZE_LIMIT = '1MB'
       DEFAULT_NUM_REPLICAS = 1
       DISABLED_VALUE = '0'
       DURATION_BASE_REGEX = %r{([1-9]\d*)([mhd])}
       DURATION_INTERVAL_REGEX = %r{\A(?:0|#{DURATION_BASE_REGEX})\z}
       DURATION_INTERVAL_DISABLED_NOT_ALLOWED_REGEX = %r{\A#{DURATION_BASE_REGEX}\z}
+      SIZE_REGEX = %r{\A([1-9]\d*)(B|KB|MB|GB|b|kb|mb|gb)\z}
 
       SETTINGS = {
         zoekt_indexing_enabled: {
@@ -79,7 +81,8 @@ module Search
           input_options: {
             placeholder: format(
               N_("Must be in the following format: `30m`, `2h`, or `1d`. Set to `%{val}` to disable."),
-              val: DISABLED_VALUE)
+              val: DISABLED_VALUE
+            )
           },
           input_type: :text_field
         },
@@ -95,6 +98,17 @@ module Search
           default: DEFAULT_MAXIMUM_FILES,
           label: -> { _('Maximum number of files per project to be indexed') },
           input_type: :number_field
+        },
+        zoekt_indexed_file_size_limit: {
+          type: :text,
+          default: DEFAULT_FILE_SIZE_LIMIT,
+          label: -> { _('Maximum file size for indexing') },
+          input_options: {
+            placeholder: format(
+              N_('Must be in the following format: `5B`, `5b`, `1KB`, `1kb`, `2MB`, `2mb`, `1GB`, or `1gb`')
+            )
+          },
+          input_type: :text_field
         },
         zoekt_rollout_retry_interval: {
           type: :text,
@@ -120,59 +134,72 @@ module Search
 
       FILTER_ADMIN_UI = ->(settings) { settings.reject { |_, config| config[:admin_ui] == false } }
 
-      def self.all_settings
-        SETTINGS
-      end
-
-      def self.boolean_settings
-        SETTINGS.select { |_, config| config[:type] == :boolean }
-      end
-
-      def self.boolean_settings_ui
-        FILTER_ADMIN_UI.call(boolean_settings)
-      end
-
-      def self.input_settings
-        type_values = %i[float integer text]
-        SETTINGS.select { |_, config| type_values.include?(config[:type]) }
-      end
-
-      def self.input_settings_ui
-        FILTER_ADMIN_UI.call(input_settings)
-      end
-
-      def self.parse_duration(setting_value, default_value, allow_disabled: true)
-        return if setting_value.blank?
-        return if setting_value == DISABLED_VALUE && allow_disabled
-
-        regex = allow_disabled ? DURATION_INTERVAL_REGEX : DURATION_INTERVAL_DISABLED_NOT_ALLOWED_REGEX
-        match = setting_value.match(regex)
-        match ||= default_value.match(regex)
-
-        value = match[1].to_i
-        unit = match[2]
-        case unit
-        when 'm' then value.minute
-        when 'h' then value.hour
-        when 'd' then value.day
+      class << self
+        def all_settings
+          SETTINGS
         end
-      end
 
-      def self.indexing_timeout
-        parse_duration(ApplicationSetting.current&.zoekt_indexing_timeout, DEFAULT_INDEXING_TIMEOUT,
-          allow_disabled: false)
-      end
+        def boolean_settings_ui
+          FILTER_ADMIN_UI.call(SETTINGS.select { |_, config| config[:type] == :boolean })
+        end
 
-      def self.rollout_retry_interval
-        parse_duration(ApplicationSetting.current&.zoekt_rollout_retry_interval, DEFAULT_ROLLOUT_RETRY_INTERVAL)
-      end
+        def input_settings_ui
+          input_types = %i[float integer text]
+          FILTER_ADMIN_UI.call(SETTINGS.select { |_, config| input_types.include?(config[:type]) })
+        end
 
-      def self.lost_node_threshold
-        parse_duration(ApplicationSetting.current&.zoekt_lost_node_threshold, DEFAULT_LOST_NODE_THRESHOLD)
-      end
+        def indexing_timeout
+          set_timeout = ApplicationSetting.current&.zoekt_indexing_timeout
+          parse_duration(set_timeout, DEFAULT_INDEXING_TIMEOUT, allow_disabled: false)
+        end
 
-      def self.default_number_of_replicas
-        ApplicationSetting.current&.zoekt_default_number_of_replicas || 1
+        def file_size_limit
+          parse_size(ApplicationSetting.current&.zoekt_indexed_file_size_limit, DEFAULT_FILE_SIZE_LIMIT)
+        end
+
+        def rollout_retry_interval
+          parse_duration(ApplicationSetting.current&.zoekt_rollout_retry_interval, DEFAULT_ROLLOUT_RETRY_INTERVAL)
+        end
+
+        def lost_node_threshold
+          parse_duration(ApplicationSetting.current&.zoekt_lost_node_threshold, DEFAULT_LOST_NODE_THRESHOLD)
+        end
+
+        def default_number_of_replicas
+          ApplicationSetting.current&.zoekt_default_number_of_replicas || 1
+        end
+
+        private
+
+        def parse_duration(setting_value, default_value, allow_disabled: true)
+          return if setting_value.blank?
+          return if setting_value == DISABLED_VALUE && allow_disabled
+
+          regex = allow_disabled ? DURATION_INTERVAL_REGEX : DURATION_INTERVAL_DISABLED_NOT_ALLOWED_REGEX
+          match = setting_value.match(regex)
+          match ||= default_value.match(regex)
+
+          value = match[1].to_i
+          unit = match[2]
+          case unit
+          when 'm' then value.minute
+          when 'h' then value.hour
+          else value.day # unit can only be one of these [m h d] due to DURATION_BASE_REGEX match
+          end
+        end
+
+        def parse_size(setting_value, default_value)
+          match = setting_value&.match(SIZE_REGEX)
+          match ||= default_value.match(SIZE_REGEX)
+          value = match[1].to_i
+          unit = match[2]
+          case unit.downcase
+          when 'b' then value.bytes
+          when 'kb' then value.kilobytes
+          when 'mb' then value.megabytes
+          else value.gigabytes # unit.downcase can only be one of these [b kb mb gb] due to SIZE_REGEX match
+          end
+        end
       end
     end
   end

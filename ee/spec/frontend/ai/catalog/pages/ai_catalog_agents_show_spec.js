@@ -9,6 +9,7 @@ import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import AiCatalogAgentsShow from 'ee/ai/catalog/pages/ai_catalog_agents_show.vue';
 import AiCatalogItemActions from 'ee/ai/catalog/components/ai_catalog_item_actions.vue';
 import AiCatalogItemView from 'ee/ai/catalog/components/ai_catalog_item_view.vue';
+import FoundationalIcon from 'ee/ai/components/foundational_icon.vue';
 import { TRACK_EVENT_TYPE_AGENT, TRACK_EVENT_VIEW_AI_CATALOG_ITEM } from 'ee/ai/catalog/constants';
 import reportAiCatalogItem from 'ee/ai/catalog/graphql/mutations/report_ai_catalog_item.mutation.graphql';
 import aiCatalogAgentQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_agent.query.graphql';
@@ -60,7 +61,7 @@ describe('AiCatalogAgentsShow', () => {
     .fn()
     .mockResolvedValue(mockAiCatalogItemConsumerDeleteResponse);
 
-  const createComponent = () => {
+  const createComponent = ({ props } = { props: defaultProps }) => {
     mockApollo = createMockApollo([
       [reportAiCatalogItem, reportAiCatalogItemMock],
       [aiCatalogAgentQuery, mockAgentQueryHandler],
@@ -81,7 +82,7 @@ describe('AiCatalogAgentsShow', () => {
     wrapper = shallowMount(AiCatalogAgentsShow, {
       apolloProvider: mockApollo,
       propsData: {
-        ...defaultProps,
+        ...props,
       },
       provide: {
         isGlobal: false,
@@ -99,6 +100,7 @@ describe('AiCatalogAgentsShow', () => {
   const findErrorsAlert = () => wrapper.findComponent(ErrorsAlert);
   const findItemActions = () => wrapper.findComponent(AiCatalogItemActions);
   const findItemView = () => wrapper.findComponent(AiCatalogItemView);
+  const findFoundationalIcon = () => wrapper.findComponent(FoundationalIcon);
 
   beforeEach(() => {
     createComponent();
@@ -115,6 +117,34 @@ describe('AiCatalogAgentsShow', () => {
     expect(findItemView().props('item')).toEqual({
       ...mockAgent,
       configurationForProject: mockAgentConfigurationForProject,
+    });
+  });
+
+  describe('foundational agent', () => {
+    describe('when agent is foundational', () => {
+      beforeEach(() => {
+        createComponent({
+          props: {
+            aiCatalogAgent: {
+              ...mockAgent,
+              foundationalChat: true,
+              configurationForProject: mockAgentConfigurationForProject,
+            },
+          },
+        });
+      });
+
+      it('renders foundational icon with correct resource-id', () => {
+        const foundationalIcon = findFoundationalIcon();
+
+        expect(foundationalIcon.props('resourceId')).toBe(mockAgent.id);
+      });
+    });
+
+    describe('when agent is not foundational', () => {
+      it('does not render foundational icon', () => {
+        expect(findFoundationalIcon().exists()).toBe(false);
+      });
     });
   });
 

@@ -3,6 +3,7 @@ fragment BaseAiCatalogItem on AiCatalogItem {
   createdAt
   itemType
   description
+  foundationalChat @gl_introduced(version: "18.7.0")
   name
   public
   updatedAt

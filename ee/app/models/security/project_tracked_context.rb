@@ -25,8 +25,12 @@ module Security
     validates :context_name, presence: true, length: { maximum: 1024 }
     validates :context_type, presence: true
     validates :context_name, uniqueness: { scope: [:project_id, :context_type] }
+    validates :is_default,
+      uniqueness: { scope: [:project_id], message: 'There is already a default tracked context' },
+      if: :is_default?
     validate :tracked_refs_limit
     validate :default_ref_cannot_be_untracked, if: :is_default?
+    validate :only_branch_refs_can_be_default, if: :is_default?
 
     enum :context_type, {
       branch: 1,
@@ -76,13 +80,19 @@ module Security
 
       return unless tracked_query.limit(MAX_TRACKED_REFS_PER_PROJECT).count >= MAX_TRACKED_REFS_PER_PROJECT
 
-      errors.add(:state, "cannot exceed #{MAX_TRACKED_REFS_PER_PROJECT} tracked refs per project")
+      errors.add(:base, "cannot exceed #{MAX_TRACKED_REFS_PER_PROJECT} tracked refs per project")
     end
 
     def default_ref_cannot_be_untracked
       return unless is_default? && !tracked?
 
-      errors.add(:state, 'default ref must be tracked')
+      errors.add(:base, 'default ref must be tracked')
+    end
+
+    def only_branch_refs_can_be_default
+      return if is_default? && branch?
+
+      errors.add(:base, 'only branch refs can be default')
     end
   end
 end

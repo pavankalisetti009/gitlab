@@ -10,8 +10,15 @@ RSpec.describe Search::Zoekt::Settings, feature_category: :global_search do
         :zoekt_search_enabled,
         :zoekt_indexing_paused,
         :zoekt_auto_index_root_namespace,
-        :zoekt_lost_node_threshold,
+        :zoekt_cache_response,
         :zoekt_cpu_to_tasks_ratio,
+        :zoekt_indexing_parallelism,
+        :zoekt_rollout_batch_size,
+        :zoekt_lost_node_threshold,
+        :zoekt_indexing_timeout,
+        :zoekt_maximum_files,
+        :zoekt_indexed_file_size_limit,
+        :zoekt_rollout_retry_interval,
         :zoekt_default_number_of_replicas
       )
     end
@@ -30,7 +37,8 @@ RSpec.describe Search::Zoekt::Settings, feature_category: :global_search do
         :zoekt_indexing_enabled,
         :zoekt_search_enabled,
         :zoekt_indexing_paused,
-        :zoekt_auto_index_root_namespace
+        :zoekt_auto_index_root_namespace,
+        :zoekt_cache_response
       ]
 
       boolean_settings.each do |setting|
@@ -40,189 +48,86 @@ RSpec.describe Search::Zoekt::Settings, feature_category: :global_search do
 
     it 'has numeric settings with correct type' do
       expect(described_class::SETTINGS[:zoekt_cpu_to_tasks_ratio][:type]).to eq(:float)
+      expect(described_class::SETTINGS[:zoekt_indexing_parallelism][:type]).to eq(:integer)
+      expect(described_class::SETTINGS[:zoekt_rollout_batch_size][:type]).to eq(:integer)
+      expect(described_class::SETTINGS[:zoekt_maximum_files][:type]).to eq(:integer)
+      expect(described_class::SETTINGS[:zoekt_default_number_of_replicas][:type]).to eq(:integer)
     end
 
-    it 'defines input options for numeric settings' do
-      expect(described_class::SETTINGS[:zoekt_cpu_to_tasks_ratio][:input_type]).to eq(:number_field)
+    it 'has text settings with correct type' do
+      %i[
+        zoekt_lost_node_threshold
+        zoekt_indexing_timeout
+        zoekt_indexed_file_size_limit
+        zoekt_rollout_retry_interval
+      ].each do |setting|
+        expect(described_class::SETTINGS[setting][:input_type]).to eq(:text_field)
+      end
+    end
+
+    it 'defines input options' do
       expect(described_class::SETTINGS[:zoekt_cpu_to_tasks_ratio][:input_options]).to include(step: 0.1)
-    end
-  end
-
-  describe '.all_settings' do
-    it 'returns all settings' do
-      expect(described_class.all_settings).to eq(described_class::SETTINGS)
-    end
-
-    it 'returns a frozen hash' do
-      expect(described_class.all_settings).to be_frozen
-    end
-  end
-
-  describe '.boolean_settings' do
-    it 'returns only boolean settings' do
-      boolean_settings = described_class.boolean_settings
-
-      expect(boolean_settings.keys).to contain_exactly(
-        :zoekt_indexing_enabled,
-        :zoekt_search_enabled,
-        :zoekt_indexing_paused,
-        :zoekt_auto_index_root_namespace,
-        :zoekt_cache_response
+      expect(described_class::SETTINGS[:zoekt_lost_node_threshold][:input_options]).to include(
+        placeholder: format(
+          N_("Must be in the following format: `30m`, `2h`, or `1d`. Set to `%{val}` to disable."),
+          val: described_class::DISABLED_VALUE
+        )
       )
-
-      boolean_settings.each_value do |config|
-        expect(config[:type]).to eq(:boolean)
-      end
+      expect(described_class::SETTINGS[:zoekt_indexing_timeout][:input_options]).to include(
+        placeholder: format(N_('Must be in the following format: `30m`, `2h`, or `1d`.'))
+      )
+      expect(described_class::SETTINGS[:zoekt_indexed_file_size_limit][:input_options]).to include(
+        placeholder: format(
+          N_('Must be in the following format: `5B`, `5b`, `1KB`, `1kb`, `2MB`, `2mb`, `1GB`, or `1gb`')
+        )
+      )
+      expect(described_class::SETTINGS[:zoekt_rollout_retry_interval][:input_options]).to include(
+        placeholder: format(
+          N_("Must be in the following format: `30m`, `2h`, or `1d`. Set to `%{val}` for no retries."),
+          val: described_class::DISABLED_VALUE
+        )
+      )
     end
-  end
 
-  describe '.input_settings' do
-    it 'returns only input_settings settings' do
-      expected_list = %i[
-        zoekt_cpu_to_tasks_ratio zoekt_indexing_parallelism zoekt_rollout_batch_size zoekt_indexing_timeout
-        zoekt_maximum_files zoekt_rollout_retry_interval zoekt_lost_node_threshold zoekt_default_number_of_replicas
+    it 'defines label' do
+      all_settings = %i[
+        zoekt_indexing_enabled
+        zoekt_search_enabled
+        zoekt_indexing_paused
+        zoekt_auto_index_root_namespace
+        zoekt_cache_response
+        zoekt_cpu_to_tasks_ratio
+        zoekt_indexing_parallelism
+        zoekt_rollout_batch_size
+        zoekt_lost_node_threshold
+        zoekt_indexing_timeout
+        zoekt_maximum_files
+        zoekt_indexed_file_size_limit
+        zoekt_rollout_retry_interval
+        zoekt_default_number_of_replicas
       ]
-
-      input_settings = described_class.input_settings
-
-      expect(input_settings.keys).to match_array(expected_list)
-      input_settings.each_value do |config|
-        expect(config[:type]).to be_in(%i[float integer text])
-      end
-    end
-  end
-
-  describe '.parse_duration' do
-    using RSpec::Parameterized::TableSyntax
-
-    where(:setting_value, :default, :allow_disabled, :result) do
-      '0'   | '1d'  | true  | nil # nil for 0 means disabled
-      '1x'  | '1d'  | true  | 1.day # default for invalid interval
-      '5m'  | '2d'  | true  | 5.minutes
-      '2h'  | '3d'  | true  | 2.hours
-      '3d'  | '4d'  | true  | 3.days
-      '0'   | '1m'  | false | 1.minute
-    end
-
-    with_them do
-      it 'parses the duration correctly' do
-        expect(described_class.parse_duration(setting_value, default, allow_disabled: allow_disabled)).to eq(result)
-      end
-    end
-  end
-
-  describe '.indexing_timeout' do
-    let_it_be(:_) { create(:application_setting) }
-
-    context 'with various intervals' do
-      before do
-        stub_ee_application_setting(zoekt_indexing_timeout: interval)
+      all_labels = all_settings.map do |setting|
+        described_class::SETTINGS[setting][:label].call
       end
 
-      using RSpec::Parameterized::TableSyntax
-
-      where(:interval, :duration_interval) do
-        '0'   | 30.minutes # default for invalid interval
-        '1x'  | 30.minutes # default for invalid interval
-        '5m'  | 5.minutes
-        '2h'  | 2.hours
-        '3d'  | 3.days
-      end
-
-      with_them do
-        it 'returns the correct duration_interval' do
-          expect(described_class.indexing_timeout).to eq(duration_interval)
-        end
-      end
-    end
-
-    context 'when delegated to parse_duration' do
-      before do
-        allow(ApplicationSetting).to receive_message_chain(:current, :zoekt_rollout_retry_interval).and_return('1d')
-      end
-
-      it 'calls parse_duration with correct arguments' do
-        expect(described_class).to receive(:parse_duration)
-                                     .with('1d', described_class::DEFAULT_ROLLOUT_RETRY_INTERVAL)
-
-        described_class.rollout_retry_interval
-      end
-    end
-  end
-
-  describe '.rollout_retry_interval' do
-    let_it_be(:_) { create(:application_setting) }
-
-    context 'with various intervals' do
-      before do
-        stub_ee_application_setting(zoekt_rollout_retry_interval: interval)
-      end
-
-      using RSpec::Parameterized::TableSyntax
-
-      where(:interval, :duration_interval) do
-        '0'   | nil # nil for 0 means retry is disabled
-        '1x'  | 1.day # default for invalid interval
-        '5m'  | 5.minutes
-        '2h'  | 2.hours
-        '3d'  | 3.days
-      end
-
-      with_them do
-        it 'returns the correct duration_interval' do
-          expect(described_class.rollout_retry_interval).to eq(duration_interval)
-        end
-      end
-    end
-
-    context 'when delegated to parse_duration' do
-      before do
-        allow(ApplicationSetting).to receive_message_chain(:current, :zoekt_rollout_retry_interval).and_return('1d')
-      end
-
-      it 'calls parse_duration with correct arguments' do
-        expect(described_class).to receive(:parse_duration)
-          .with('1d', described_class::DEFAULT_ROLLOUT_RETRY_INTERVAL)
-
-        described_class.rollout_retry_interval
-      end
-    end
-  end
-
-  describe '.lost_node_threshold' do
-    let_it_be(:_) { create(:application_setting) }
-
-    before do
-      stub_ee_application_setting(zoekt_lost_node_threshold: interval)
-    end
-
-    context 'with various intervals' do
-      using RSpec::Parameterized::TableSyntax
-
-      where(:interval, :duration_interval) do
-        '0'   | nil # nil for 0 means disabled
-        '1x'  | 12.hours # default for invalid interval
-        '5m'  | 5.minutes
-        '2h'  | 2.hours
-        '3d'  | 3.days
-      end
-
-      with_them do
-        it 'returns the correct duration_interval' do
-          expect(described_class.lost_node_threshold).to eq(duration_interval)
-        end
-      end
-    end
-
-    context 'when delegated to parse_duration' do
-      let(:interval) { '1h' }
-
-      it 'calls parse_duration with correct arguments' do
-        expect(described_class).to receive(:parse_duration)
-          .with('1h', described_class::DEFAULT_LOST_NODE_THRESHOLD)
-
-        described_class.lost_node_threshold
-      end
+      expect(all_labels).to eq(
+        [
+          _('Enable indexing'),
+          _('Enable searching'),
+          _('Pause indexing'),
+          _('Index root namespaces automatically'),
+          format(_("Cache search results for %{label}"), { label: ::Search::Zoekt::Cache.humanize_expires_in }),
+          _('Indexing CPU to tasks multiplier'),
+          _('Number of parallel processes per indexing task'),
+          _('Number of namespaces per indexing rollout'),
+          _('Offline nodes automatically deleted after'),
+          _('Indexing timeout per project'),
+          _('Maximum number of files per project to be indexed'),
+          _('Maximum file size for indexing'),
+          _('Retry interval for failed namespaces'),
+          _('Specify default number of replicas per namespace. Currently in development. See: https://gitlab.com/groups/gitlab-org/-/epics/19097')
+        ]
+      )
     end
   end
 
@@ -255,6 +160,16 @@ RSpec.describe Search::Zoekt::Settings, feature_category: :global_search do
     end
   end
 
+  describe '.all_settings' do
+    it 'returns all settings' do
+      expect(described_class.all_settings).to eq(described_class::SETTINGS)
+    end
+
+    it 'returns a frozen hash' do
+      expect(described_class.all_settings).to be_frozen
+    end
+  end
+
   describe '.boolean_settings_ui' do
     it 'returns only boolean settings visible in the UI' do
       boolean_ui_settings = described_class.boolean_settings_ui
@@ -272,25 +187,6 @@ RSpec.describe Search::Zoekt::Settings, feature_category: :global_search do
         expect(config[:admin_ui]).not_to be(false)
       end
     end
-
-    it 'is a subset of boolean_settings' do
-      boolean_ui = described_class.boolean_settings_ui
-      all_boolean = described_class.boolean_settings
-
-      expect(all_boolean.keys).to include(*boolean_ui.keys)
-    end
-
-    it 'excludes settings with admin_ui explicitly set to false' do
-      settings_with_admin_ui_false = described_class.boolean_settings.select do |_key, config|
-        config[:admin_ui] == false
-      end
-
-      boolean_ui = described_class.boolean_settings_ui
-
-      settings_with_admin_ui_false.each_key do |key|
-        expect(boolean_ui).not_to have_key(key)
-      end
-    end
   end
 
   describe '.input_settings_ui' do
@@ -298,8 +194,14 @@ RSpec.describe Search::Zoekt::Settings, feature_category: :global_search do
       input_ui_settings = described_class.input_settings_ui
 
       expected_list = %i[
-        zoekt_cpu_to_tasks_ratio zoekt_indexing_parallelism zoekt_rollout_batch_size zoekt_indexing_timeout
-        zoekt_maximum_files zoekt_rollout_retry_interval zoekt_lost_node_threshold
+        zoekt_cpu_to_tasks_ratio
+        zoekt_indexed_file_size_limit
+        zoekt_indexing_parallelism
+        zoekt_indexing_timeout
+        zoekt_lost_node_threshold
+        zoekt_maximum_files
+        zoekt_rollout_batch_size
+        zoekt_rollout_retry_interval
       ]
 
       expect(input_ui_settings.keys).to match_array(expected_list)
@@ -309,23 +211,161 @@ RSpec.describe Search::Zoekt::Settings, feature_category: :global_search do
         expect(config[:admin_ui]).not_to be(false)
       end
     end
+  end
 
-    it 'is a subset of input_settings' do
-      input_ui = described_class.input_settings_ui
-      all_input = described_class.input_settings
+  describe '.indexing_timeout' do
+    let_it_be(:_) { create(:application_setting) }
 
-      expect(all_input.keys).to include(*input_ui.keys)
-    end
-
-    it 'excludes settings with admin_ui explicitly set to false' do
-      settings_with_admin_ui_false = described_class.input_settings.select do |_key, config|
-        config[:admin_ui] == false
+    context 'with various intervals' do
+      before do
+        stub_ee_application_setting(zoekt_indexing_timeout: interval)
       end
 
-      input_ui = described_class.input_settings_ui
+      using RSpec::Parameterized::TableSyntax
 
-      settings_with_admin_ui_false.each_key do |key|
-        expect(input_ui).not_to have_key(key)
+      where(:interval, :duration_interval) do
+        '0'   | 30.minutes # default for invalid interval
+        '1x'  | 30.minutes # default for invalid interval
+        '5m'  | 5.minutes
+        '2h'  | 2.hours
+        '3d'  | 3.days
+      end
+
+      with_them do
+        it 'returns the correct duration_interval' do
+          expect(described_class.indexing_timeout).to eq(duration_interval)
+        end
+      end
+    end
+  end
+
+  describe '.file_size_limit' do
+    subject(:file_size_limit) { described_class.file_size_limit }
+
+    context 'with different combinations of set value' do
+      let_it_be(:_) { create(:application_setting) }
+
+      before do
+        stub_ee_application_setting(zoekt_indexed_file_size_limit: set_size_limit)
+      end
+
+      using RSpec::Parameterized::TableSyntax
+
+      where(:set_size_limit, :result) do
+        '1xy' | 1.megabyte # Invalid value is set, return the default
+        '5B'  | 5.bytes
+        '5KB' | 5.kilobytes
+        '2kb' | 2.kilobytes
+        '1MB' | 1.megabyte
+        '2mb' | 2.megabytes
+        '5GB' | 5.gigabytes
+        '2gb' | 2.gigabytes
+      end
+
+      with_them do
+        it 'returns the correct size in bytes' do
+          expect(file_size_limit).to eq(result)
+        end
+      end
+    end
+
+    context 'when ApplicationSetting is not present' do
+      it 'returns default value' do
+        expect(file_size_limit).to eq(1.megabyte)
+      end
+    end
+  end
+
+  describe '.rollout_retry_interval' do
+    context 'with various intervals' do
+      let_it_be(:_) { create(:application_setting) }
+
+      before do
+        stub_ee_application_setting(zoekt_rollout_retry_interval: interval)
+      end
+
+      using RSpec::Parameterized::TableSyntax
+
+      where(:interval, :duration_interval) do
+        '0'   | nil # nil for 0 means retry is disabled
+        '1x'  | 1.day # default for invalid interval
+        '5m'  | 5.minutes
+        '2h'  | 2.hours
+        '3d'  | 3.days
+      end
+
+      with_them do
+        it 'returns the correct duration_interval' do
+          expect(described_class.rollout_retry_interval).to eq(duration_interval)
+        end
+      end
+    end
+
+    context 'when ApplicationSetting is not present' do
+      it 'returns nil' do
+        expect(described_class.rollout_retry_interval).to be_nil
+      end
+    end
+  end
+
+  describe '.lost_node_threshold' do
+    context 'with various intervals' do
+      let_it_be(:_) { create(:application_setting) }
+
+      before do
+        stub_ee_application_setting(zoekt_lost_node_threshold: interval)
+      end
+
+      using RSpec::Parameterized::TableSyntax
+
+      where(:interval, :duration_interval) do
+        '0'   | nil # nil for 0 means disabled
+        '1x'  | 12.hours # default for invalid interval
+        '5m'  | 5.minutes
+        '2h'  | 2.hours
+        '3d'  | 3.days
+      end
+
+      with_them do
+        it 'returns the correct duration_interval' do
+          expect(described_class.lost_node_threshold).to eq(duration_interval)
+        end
+      end
+    end
+
+    context 'when ApplicationSetting is not present' do
+      it 'returns nil' do
+        expect(described_class.lost_node_threshold).to be_nil
+      end
+    end
+  end
+
+  describe '.default_number_of_replicas' do
+    subject(:default_number_of_replicas) { described_class.default_number_of_replicas }
+
+    context 'with different combinations of set value' do
+      let_it_be(:_) { create(:application_setting) }
+
+      before do
+        stub_ee_application_setting(zoekt_default_number_of_replicas: set_number)
+      end
+
+      using RSpec::Parameterized::TableSyntax
+      where(:set_number, :return_value) do
+        0 | 0
+        1 | 1
+        2 | 2
+      end
+      with_them do
+        it 'returns the set number of replicas' do
+          expect(default_number_of_replicas).to eq(return_value)
+        end
+      end
+    end
+
+    context 'when ApplicationSetting is not present' do
+      it 'returns default value' do
+        expect(default_number_of_replicas).to eq(1)
       end
     end
   end

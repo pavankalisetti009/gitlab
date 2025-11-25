@@ -516,4 +516,36 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
       expect(item.latest_version).to eq(item.versions.last)
     end
   end
+
+  describe '#foundational_chat' do
+    let(:is_saas) { false }
+    let(:item_id) { 100 }
+    let(:item) { build(:ai_catalog_item, :flow, id: item_id) }
+
+    before do
+      stub_saas_features(gitlab_duo_saas_only: is_saas)
+    end
+
+    subject(:is_foundational) { item.foundational_chat }
+
+    context 'when not on GitLab SaaS' do
+      let(:is_saas) { false }
+
+      it { is_expected.to be_falsey }
+    end
+
+    context 'when on GitLab SaaS' do
+      let(:is_saas) { true }
+
+      context 'when item is a foundational agent' do
+        let(:item_id) { 348 }
+
+        it { is_expected.to be_truthy }
+      end
+
+      context 'when item is not a foundational agent' do
+        it { is_expected.to be_falsey }
+      end
+    end
+  end
 end

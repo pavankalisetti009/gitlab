@@ -1,6 +1,6 @@
 <script>
 import { GlIcon } from '@gitlab/ui';
-import { __ } from '~/locale';
+import { __, s__ } from '~/locale';
 import timeagoMixin from '~/vue_shared/mixins/timeago';
 import { formatDate } from '~/lib/utils/datetime/date_format_utility';
 import { getLatestUpdatedAt } from 'ee/ai/catalog/utils';
@@ -22,23 +22,34 @@ export default {
       return getLatestUpdatedAt(this.item);
     },
     metaData() {
-      const showUpdatedAt = this.latestUpdatedAt !== this.item.createdAt;
-      return [
+      const items = [
         {
           text: __('Created on'),
           icon: 'calendar',
           value: formatDate(this.item.createdAt, 'mmmm d, yyyy'),
+          testId: 'created-on',
         },
-        ...(showUpdatedAt
-          ? [
-              {
-                text: __('Modified'),
-                icon: 'clock',
-                value: this.timeFormatted(this.latestUpdatedAt),
-              },
-            ]
-          : []),
       ];
+
+      if (this.item.foundationalChat) {
+        items.push({
+          text: s__('AICatalog|Foundational agent'),
+          icon: 'tanuki-verified',
+          value: '',
+          testId: 'foundational',
+        });
+      }
+
+      if (this.latestUpdatedAt !== this.item.createdAt) {
+        items.push({
+          text: __('Modified'),
+          icon: 'clock',
+          value: this.timeFormatted(this.latestUpdatedAt),
+          testId: 'modified',
+        });
+      }
+
+      return items;
     },
   },
   methods: {
@@ -55,7 +66,8 @@ export default {
     <ul class="gl-flex gl-list-none gl-flex-col gl-gap-3 gl-pl-0">
       <li
         v-for="metaItem in metaData"
-        :key="metaItem.field"
+        :key="metaItem.testId"
+        :data-testid="`metadata-${metaItem.testId}`"
         class="gl-flex gl-items-center gl-gap-3"
       >
         <gl-icon :name="metaItem.icon" variant="subtle" class="gl-mb-px" />

@@ -15,6 +15,7 @@ import {
   VISIBILITY_LEVEL_PUBLIC_STRING,
   VISIBILITY_LEVEL_PRIVATE_STRING,
 } from '~/visibility_level/constants';
+import FoundationalIcon from 'ee/ai/components/foundational_icon.vue';
 
 export default {
   name: 'AiCatalogListItem',
@@ -24,6 +25,7 @@ export default {
     GlDisclosureDropdownItem,
     GlTruncate,
     GlIcon,
+    FoundationalIcon,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -105,6 +107,13 @@ export default {
         >
           {{ item.name }}
         </router-link>
+
+        <foundational-icon
+          v-if="item.foundationalChat"
+          :resource-id="item.id"
+          :size="16"
+          class="gl-ml-1"
+        />
       </h2>
       <p
         class="gl-m-0 gl-line-clamp-3 gl-text-ellipsis gl-p-0 gl-text-subtle @sm:gl-line-clamp-2 @md:gl-line-clamp-1"

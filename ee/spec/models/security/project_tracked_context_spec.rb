@@ -10,12 +10,39 @@ RSpec.describe Security::ProjectTrackedContext, feature_category: :vulnerability
   end
 
   describe 'validations' do
-    subject { build(:security_project_tracked_context, project: project) }
+    subject(:new_ref) { build(:security_project_tracked_context, project: project) }
 
     it { is_expected.to validate_presence_of(:context_name) }
     it { is_expected.to validate_presence_of(:context_type) }
     it { is_expected.to validate_length_of(:context_name).is_at_most(1024) }
     it { is_expected.to validate_uniqueness_of(:context_name).scoped_to([:project_id, :context_type]) }
+
+    describe 'is_default' do
+      context 'when there is an existing default ref' do
+        let_it_be(:existing_ref) { create(:security_project_tracked_context, :default, project: project) }
+
+        it 'fails validation if trying to create a new default ref' do
+          new_ref.is_default = true
+
+          expect(new_ref).not_to be_valid
+          expect(new_ref.errors[:is_default]).to include('There is already a default tracked context')
+        end
+
+        it 'passes validation if ref is not default' do
+          new_ref.is_default = false
+
+          expect(new_ref).to be_valid
+        end
+      end
+    end
+
+    it 'is invalid when trying to make a tag ref default' do
+      new_ref.context_type = :tag
+      new_ref.is_default = true
+
+      expect(new_ref).not_to be_valid
+      expect(new_ref.errors[:base]).to include('only branch refs can be default')
+    end
 
     describe 'tracked_refs_limit' do
       it 'allows up to MAX_TRACKED_REFS_PER_PROJECT tracked refs' do
@@ -32,7 +59,7 @@ RSpec.describe Security::ProjectTrackedContext, feature_category: :vulnerability
 
         ref = build(:security_project_tracked_context, :tracked, project: project)
         expect(ref).not_to be_valid
-        expect(ref.errors[:state]).to include(
+        expect(ref.errors[:base]).to include(
           "cannot exceed #{described_class::MAX_TRACKED_REFS_PER_PROJECT} tracked refs per project"
         )
       end
@@ -51,7 +78,7 @@ RSpec.describe Security::ProjectTrackedContext, feature_category: :vulnerability
       it 'prevents default refs from being untracked' do
         ref = build(:security_project_tracked_context, :default, :untracked, project: project)
         expect(ref).not_to be_valid
-        expect(ref.errors[:state]).to include('default ref must be tracked')
+        expect(ref.errors[:base]).to include('default ref must be tracked')
       end
 
       it 'allows default refs to be tracked' do
