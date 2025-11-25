@@ -388,8 +388,9 @@ RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :duo_agent_
             post_graphql(query, current_user: current_user)
 
             expect(response).to have_gitlab_http_status(:success)
-            error_message = json_response['errors'].first['message']
-            expect(error_message).to eq('Workflow not found')
+            error = json_response['errors'].first
+            expect(error['message']).to eq('Workflow not found')
+            expect(error['extensions']['code']).to eq('WORKFLOW_NOT_FOUND')
           end
         end
 

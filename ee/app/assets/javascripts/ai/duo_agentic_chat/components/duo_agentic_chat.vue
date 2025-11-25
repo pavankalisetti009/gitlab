@@ -54,6 +54,7 @@ import {
 import { getInitialDimensions, calculateDimensions } from '../utils/resize_utils';
 import { validateAgentExists as validateAgent, prepareAgentSelection } from '../utils/agent_utils';
 import { parseThreadForSelection, resetThreadContent } from '../utils/thread_utils';
+import { WORKFLOW_NOT_FOUND_CODE } from '../constants';
 
 export default {
   name: 'DuoAgenticChatApp',
@@ -720,7 +721,7 @@ export default {
         this.chatMessageHistory = messages;
         this.$emit('change-title', parsedWorkflowData?.workflowGoal);
       } catch (err) {
-        this.onError(err);
+        this.onErrorExtended(err);
       } finally {
         this.isLoading = false;
       }
@@ -797,6 +798,14 @@ export default {
     // eslint-disable-next-line vue/no-unused-properties
     focusInput() {
       this.$refs.chat.focusChatInput();
+    },
+    onErrorExtended(errorData) {
+      const workflowNotFoundChecker = (e) => e?.extensions?.code === WORKFLOW_NOT_FOUND_CODE;
+      if (errorData?.graphQLErrors?.some(workflowNotFoundChecker)) {
+        this.onNewChat();
+      } else {
+        this.onError(errorData);
+      }
     },
   },
 };

@@ -76,7 +76,7 @@ module Resolvers
         def resolve_single_workflow(workflow_id)
           Gitlab::Graphql::Lazy.with_value(find_object(id: workflow_id)) do |workflow|
             if workflow.nil?
-              raise_resource_not_available_error! "Workflow not found"
+              raise_resource_not_available_error!('Workflow not found', { code: 'WORKFLOW_NOT_FOUND' })
             elsif !Ability.allowed?(current_user, :read_duo_workflow, workflow)
               raise_resource_not_available_error! "You don't have permission to access this workflow"
             else

@@ -48,8 +48,11 @@ module Mutations
 
       def assign_project(project_or_group, policy_project)
         ::Security::Orchestration::AssignService
-          .new(container: project_or_group, current_user: current_user, params: { policy_project_id: policy_project.id })
-          .execute
+          .new(
+            container: project_or_group,
+            current_user: current_user,
+            params: { policy_project_id: policy_project.id }
+          ).execute
       end
 
       def can_access_security_policy?(policy_project)
