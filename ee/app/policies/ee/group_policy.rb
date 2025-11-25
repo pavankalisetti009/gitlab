@@ -469,26 +469,21 @@ module EE
           user_allowed_to_use_ai_review_mr
       end.enable :access_ai_review_mr
 
-      condition(:assigned_to_duo_enterprise) do
-        @user.assigned_to_duo_enterprise?(@subject)
-      end
-
-      condition(:assigned_to_duo_pro) do
-        @user.assigned_to_duo_pro?(@subject)
+      condition(:ai_analytics_available, scope: :subject) do
+        @subject.feature_available?(:ai_analytics)
       end
 
       condition(:amazon_q_enabled) do
         ::Ai::AmazonQ.enabled?
       end
 
-      condition(:duo_usage_analytics_enabled) do
-        ::Feature.enabled?(:duo_usage_dashboard, @subject.root_ancestor) && @user.assigned_to_duo_add_ons?(@subject)
+      condition(:duo_usage_dashboard_enabled) do
+        ::Feature.enabled?(:duo_usage_dashboard, @subject.root_ancestor)
       end
 
-      rule { can?(:read_customizable_dashboards) & (amazon_q_enabled | assigned_to_duo_pro) }.enable :read_pro_ai_analytics
-      rule { can?(:read_customizable_dashboards) & (amazon_q_enabled | assigned_to_duo_enterprise) }.enable :read_enterprise_ai_analytics
-
-      rule { can?(:read_customizable_dashboards) & duo_usage_analytics_enabled }.enable :read_duo_usage_analytics
+      rule { can?(:read_customizable_dashboards) & ai_analytics_available }.enable :read_pro_ai_analytics
+      rule { can?(:read_customizable_dashboards) & ai_analytics_available }.enable :read_enterprise_ai_analytics
+      rule { can?(:read_customizable_dashboards) & ai_analytics_available & duo_usage_dashboard_enabled }.enable :read_duo_usage_analytics
 
       rule { reporter & group_repository_analytics_available }
         .enable :read_group_repository_analytics

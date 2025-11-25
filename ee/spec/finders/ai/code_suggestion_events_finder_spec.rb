@@ -39,7 +39,7 @@ RSpec.describe Ai::CodeSuggestionEventsFinder, :click_house, feature_category: :
   subject(:results) { described_class.new(user, namespace: group, from: 7.days.ago, to: 7.days.since).execute }
 
   describe '#execute' do
-    let_it_be(:user) { create(:user, :with_self_managed_duo_enterprise_seat, reporter_of: group) }
+    let_it_be(:user) { create(:user, reporter_of: group) }
 
     shared_examples 'fetch code suggestion events' do |flag_enabled|
       before do

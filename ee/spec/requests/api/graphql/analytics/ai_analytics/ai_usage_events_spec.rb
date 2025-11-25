@@ -10,7 +10,7 @@ RSpec.describe '(Group|Project).aiUsageData.all', feature_category: :code_sugges
   let_it_be(:group_project) { create(:project, group: group) }
   let_it_be(:subgroup_project) { create(:project, group: group) }
   let_it_be(:other_group_project) { create(:project) }
-  let_it_be(:current_user) { create(:user, :with_self_managed_duo_enterprise_seat, :with_namespace) }
+  let_it_be(:current_user) { create(:user, :with_namespace) }
   let_it_be(:user_1) { create(:user, :with_namespace) }
   let_it_be(:user_2) { create(:user, :with_namespace) }
   let_it_be(:user_3) { create(:user, :with_namespace) }
@@ -74,12 +74,23 @@ RSpec.describe '(Group|Project).aiUsageData.all', feature_category: :code_sugges
     end
   end
 
+  before do
+    stub_licensed_features(ai_analytics: true)
+  end
+
   shared_examples 'ai usage events endpoint without permissions' do
-    before_all do
+    it 'returns no data for guests' do
       group.add_guest(current_user)
+
+      post_graphql(query, current_user: current_user)
+
+      expect(response_events).to be_nil
     end
 
-    it 'returns no data' do
+    it 'returns no data for non-licensed namespaces' do
+      stub_licensed_features(ai_analytics: false)
+      group.add_reporter(current_user)
+
       post_graphql(query, current_user: current_user)
 
       expect(response_events).to be_nil
@@ -87,11 +98,9 @@ RSpec.describe '(Group|Project).aiUsageData.all', feature_category: :code_sugges
   end
 
   shared_examples 'ai usage events endpoint with permissions' do
-    before_all do
-      group.add_reporter(current_user)
-    end
-
     it 'returns events' do
+      group.add_reporter(current_user)
+
       post_graphql(query, current_user: current_user)
 
       expected_identifiers = expected_events.map { |event| event_identifier(event) }

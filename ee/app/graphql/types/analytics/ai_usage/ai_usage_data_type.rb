@@ -8,7 +8,7 @@ module Types
         description "Usage data for events stored in either PostgreSQL (default) or ClickHouse (when configured). " \
           "Data retention: three months in PostgreSQL, indefinite in ClickHouse. " \
           "Requires a personal access token. Works only on top-level groups. " \
-          "Premium and Ultimate with GitLab Duo Enterprise only."
+          "Premium and Ultimate only."
 
         authorize :read_enterprise_ai_analytics
 
