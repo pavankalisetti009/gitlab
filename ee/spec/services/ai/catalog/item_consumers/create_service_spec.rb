@@ -491,7 +491,7 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
   context 'when passing trigger_types' do
     let(:params) { super().merge(trigger_types: ['mention']) }
 
-    it 'creates the flow triggers' do
+    it 'creates the triggers' do
       expect { execute }.to change { Ai::FlowTrigger.count }.by(1)
       expect(Ai::FlowTrigger.last).to have_attributes(
         project_id: consumer_project.id,
@@ -501,7 +501,7 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
     end
 
     it_behaves_like 'when container is a group' do
-      it_behaves_like 'a failure', "Flow triggers can only be set for projects"
+      it_behaves_like 'a failure', "Triggers can only be set for projects"
     end
 
     context 'when item is an agent' do

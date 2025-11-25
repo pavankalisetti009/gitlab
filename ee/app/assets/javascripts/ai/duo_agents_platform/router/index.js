@@ -90,7 +90,7 @@ export const createRouter = (base, namespace) => {
             path: 'new',
             component: FlowTriggersNew,
             meta: {
-              text: s__('DuoAgentsPlatform|New flow trigger'),
+              text: s__('DuoAgentsPlatform|New trigger'),
             },
           },
           {
@@ -98,7 +98,7 @@ export const createRouter = (base, namespace) => {
             component: FlowTriggersEdit,
             name: FLOW_TRIGGERS_EDIT_ROUTE,
             meta: {
-              text: s__('DuoAgentsPlatform|Edit flow trigger'),
+              text: s__('DuoAgentsPlatform|Edit trigger'),
             },
           },
           {

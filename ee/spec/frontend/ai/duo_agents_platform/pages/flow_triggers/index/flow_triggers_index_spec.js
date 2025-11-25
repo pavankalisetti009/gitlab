@@ -136,7 +136,7 @@ describe('FlowTriggersIndex', () => {
         it('creates an error alert', () => {
           expect(createAlert).toHaveBeenCalledWith({
             captureError: true,
-            message: 'Failed to fetch flow triggers',
+            message: 'Failed to fetch triggers',
           });
         });
 
