@@ -27,7 +27,7 @@ module QA
 
         Page::Project::Menu.perform(&:go_to_work_items)
 
-        Page::Project::Issue::Index.perform do |index|
+        Page::Project::WorkItem::Index.perform do |index|
           expect(index.issuable_weight).to have_content(weight)
         end
       end

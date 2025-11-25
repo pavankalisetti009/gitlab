@@ -39,9 +39,7 @@ module QA
 
         Page::Project::Menu.perform(&:go_to_work_items)
 
-        page_type = Page::Project::Issue::Index
-
-        page_type.perform do |index|
+        Page::Project::WorkItem::Index.perform do |index|
           expect(index).to have_assignee_link_count(3)
           expect(index.avatar_counter).to be_visible
           expect(index.avatar_counter).to have_content('+3')
