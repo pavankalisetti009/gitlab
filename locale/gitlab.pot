@@ -10092,6 +10092,9 @@ msgstr ""
 msgid "Authentication with the AI gateway services succeeded."
 msgstr ""
 
+msgid "Authenticator may have been cloned. Contact your administrator."
+msgstr ""
+
 msgid "Author"
 msgstr ""
 
@@ -20176,6 +20179,12 @@ msgstr ""
 msgid "Could not upload your designs as one or more files uploaded are not supported."
 msgstr ""
 
+msgid "Could not verify device authenticity. Try using a different device."
+msgstr ""
+
+msgid "Could not verify passkey authenticity. Try using a different passkey."
+msgstr ""
+
 msgid "Couldn't assign policy to project or group"
 msgstr ""
 
@@ -28312,10 +28321,16 @@ msgstr ""
 msgid "Failed to add a resource link"
 msgstr ""
 
+msgid "Failed to add authentication method. Try again."
+msgstr ""
+
 msgid "Failed to add compliance requirement control %{control_name}: %{error_message}"
 msgstr ""
 
 msgid "Failed to add emoji. Please try again"
+msgstr ""
+
+msgid "Failed to add passkey. Try again."
 msgstr ""
 
 msgid "Failed to apply commands."
@@ -28347,7 +28362,13 @@ msgstr ""
 msgid "Failed to assign you issues related to the merge request."
 msgstr ""
 
-msgid "Failed to authenticate passkey. Log in with your username and passwordto add a passkey for your account. Learn more about setting up passkeys."
+msgid "Failed to authenticate due to a configuration issue. Try again later or contact support."
+msgstr ""
+
+msgid "Failed to authenticate passkey. Log in with your username and password to add a passkey for your account. Learn more about %{passkey_docs_hyperlink}."
+msgstr ""
+
+msgid "Failed to authenticate. Verify your identity with your device."
 msgstr ""
 
 msgid "Failed to cancel auto stop because failed to update the environment."
@@ -28366,6 +28387,9 @@ msgid "Failed to check related branches."
 msgstr ""
 
 msgid "Failed to clone this item: wrong parameters."
+msgstr ""
+
+msgid "Failed to connect to your device. Try again."
 msgstr ""
 
 msgid "Failed to create a branch for this issue. Please try again."
@@ -28693,6 +28717,15 @@ msgid "Failed to upload object map file"
 msgstr ""
 
 msgid "Failed to validate password due to server or connection issue. Try again."
+msgstr ""
+
+msgid "Failed to verify WebAuthn challenge. Try again."
+msgstr ""
+
+msgid "Failed to verify connection security. Try adding the authentication method again."
+msgstr ""
+
+msgid "Failed to verify cryptographic signature. Try authenticating again."
 msgstr ""
 
 msgid "Failure"
@@ -36224,6 +36257,9 @@ msgstr ""
 msgid "Invalid access credentials. %{cta}"
 msgstr ""
 
+msgid "Invalid credential data received. Try registering the device again."
+msgstr ""
+
 msgid "Invalid date"
 msgstr ""
 
@@ -36252,6 +36288,9 @@ msgid "Invalid login or password"
 msgstr ""
 
 msgid "Invalid name %{input} was given for this default stage, allowed names: %{names}"
+msgstr ""
+
+msgid "Invalid passkey data received. Try creating a new passkey."
 msgstr ""
 
 msgid "Invalid pin code."
@@ -48073,6 +48112,9 @@ msgid "Passkey deleted"
 msgstr ""
 
 msgid "Passkey has been deleted!"
+msgstr ""
+
+msgid "Passkey may have been cloned. Contact your administrator."
 msgstr ""
 
 msgid "Passkey registered"
@@ -68240,6 +68282,9 @@ msgstr ""
 msgid "This attachment has been truncated to avoid exceeding the maximum allowed attachment size of %{size_limit}. %{written_count} of %{total_count} projects have been included."
 msgstr ""
 
+msgid "This authentication method is not supported. Use a different authentication method."
+msgstr ""
+
 msgid "This block is self-referential"
 msgstr ""
 
@@ -70944,6 +70989,9 @@ msgid "Unable to update label prioritization at this time"
 msgstr ""
 
 msgid "Unable to update this issue at this time."
+msgstr ""
+
+msgid "Unable to use this authentication method. Try a different authentication method."
 msgstr ""
 
 msgid "Unapprove a merge request"
@@ -78763,6 +78811,9 @@ msgstr ""
 msgid "Your new comment"
 msgstr ""
 
+msgid "Your passkey did not send a valid JSON response."
+msgstr ""
+
 msgid "Your password"
 msgstr ""
 
@@ -81240,6 +81291,9 @@ msgid "service %{service_num} doesn't exist"
 msgstr ""
 
 msgid "service accounts"
+msgstr ""
+
+msgid "setting up passkeys"
 msgstr ""
 
 msgid "severity|Blocker"
