@@ -70,12 +70,15 @@ RSpec.describe 'Query.vulnerabilities {...fields}', feature_category: :vulnerabi
     let(:finding_description) { '# Finding' }
 
     it 'returns finding information' do
-      html = '<h1 data-sourcepos="1:1-1:9" dir="auto">&#x000A;' \
-             '<a href="#finding" aria-hidden="true" class="anchor" id="user-content-finding"></a>' \
-             'Finding</h1>'
+      html = %(<h1 id="user-content-finding" data-sourcepos="1:1-1:9" dir="auto">
+                 Finding
+                 <a href="#finding" aria-label="Link to heading 'Finding'"
+                    data-heading-content="Finding" class="anchor">
+                 </a>&#x000A;
+              </h1>)
 
       expect(subject.first['description']).to eq('# Finding')
-      expect(subject.first['descriptionHtml']).to eq(html)
+      expect(subject.first['descriptionHtml']).to eq_html(html, trim_text_nodes: true)
     end
   end
 
@@ -84,12 +87,15 @@ RSpec.describe 'Query.vulnerabilities {...fields}', feature_category: :vulnerabi
     let(:finding_description) { '# Finding' }
 
     it 'returns vulnerability information' do
-      html = '<h1 data-sourcepos="1:1-1:15" dir="auto">&#x000A;' \
-             '<a href="#vulnerability" aria-hidden="true" class="anchor" id="user-content-vulnerability"></a>' \
-             'Vulnerability</h1>'
+      html = %(<h1 id="user-content-vulnerability" data-sourcepos="1:1-1:15" dir="auto">
+                 Vulnerability
+                 <a href="#vulnerability" aria-label="Link to heading 'Vulnerability'"
+                    data-heading-content="Vulnerability" class="anchor">
+                 </a>&#x000A;
+              </h1>)
 
       expect(subject.first['description']).to eq('# Vulnerability')
-      expect(subject.first['descriptionHtml']).to eq(html)
+      expect(subject.first['descriptionHtml']).to eq_html(html, trim_text_nodes: true)
     end
   end
 end
