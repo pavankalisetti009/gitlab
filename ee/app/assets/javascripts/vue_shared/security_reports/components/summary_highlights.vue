@@ -18,7 +18,7 @@ export default {
   },
   i18n: {
     highlights: s__(
-      'ciReport|%{criticalStart}critical%{criticalEnd}, %{highStart}high%{highEnd} and %{otherStart}others%{otherEnd}',
+      'ciReport|%{criticalStart}critical%{criticalEnd}, %{highStart}high%{highEnd}, and %{otherStart}others%{otherEnd}',
     ),
   },
   props: {
