@@ -7,7 +7,7 @@ import {
   GlIcon,
   GlLabel,
   GlLink,
-  GlPagination,
+  GlKeysetPagination,
   GlSkeletonLoader,
   GlTable,
 } from '@gitlab/ui';
@@ -60,7 +60,7 @@ export default {
     GlIcon,
     GlLabel,
     GlLink,
-    GlPagination,
+    GlKeysetPagination,
     GlSkeletonLoader,
     GlTable,
     WorkItemStatusBadge,
@@ -144,9 +144,7 @@ export default {
         },
       },
       error: '',
-      pagination: {
-        currentPage: 1,
-      },
+      pagination: {},
       isExpanded: true,
     };
   },
@@ -182,11 +180,11 @@ export default {
 
       return vars;
     },
-    prevPage() {
-      return Number(this.issues.pageInfo.hasPreviousPage);
-    },
-    nextPage() {
-      return Number(this.issues.pageInfo.hasNextPage);
+    paginationInfo() {
+      return {
+        hasNextPage: this.issues.pageInfo.hasNextPage,
+        hasPreviousPage: this.issues.pageInfo.hasPreviousPage,
+      };
     },
     heading() {
       return this.label.title
@@ -213,20 +211,17 @@ export default {
       }
       return __('Closed');
     },
-    handlePageChange(page) {
-      const { startCursor, endCursor } = this.issues.pageInfo;
-
-      if (page > this.pagination.currentPage) {
-        this.pagination = {
-          afterCursor: endCursor,
-          currentPage: page,
-        };
-      } else {
-        this.pagination = {
-          beforeCursor: startCursor,
-          currentPage: page,
-        };
-      }
+    handleNextPage() {
+      const { endCursor } = this.issues.pageInfo;
+      this.pagination = {
+        afterCursor: endCursor,
+      };
+    },
+    handlePrevPage() {
+      const { startCursor } = this.issues.pageInfo;
+      this.pagination = {
+        beforeCursor: startCursor,
+      };
     },
     shouldShowScopedLabel(label) {
       return this.hasScopedLabelsFeature && isScopedLabel(label);
@@ -344,13 +339,11 @@ export default {
       </template>
     </gl-table>
     <div v-show="isExpanded" class="gl-mt-3">
-      <gl-pagination
-        :value="pagination.currentPage"
-        :prev-page="prevPage"
-        :next-page="nextPage"
-        align="center"
-        class="gl-pagination gl-mt-3"
-        @input="handlePageChange"
+      <gl-keyset-pagination
+        v-bind="paginationInfo"
+        class="gl-mt-6 gl-flex gl-justify-center"
+        @prev="handlePrevPage"
+        @next="handleNextPage"
       />
     </div>
   </section>
