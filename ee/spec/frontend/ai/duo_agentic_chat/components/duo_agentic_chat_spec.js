@@ -2040,6 +2040,51 @@ describe('Duo Agentic Chat', () => {
     });
   });
 
+  describe('Workflow deletion handling', () => {
+    beforeEach(() => {
+      duoChatGlobalState.isAgenticChatShown = true;
+    });
+
+    it('starts new chat when loading with deleted workflow after page reload', async () => {
+      getStorageValue.mockReturnValueOnce({
+        exists: true,
+        value: { workflowId: '456', activeThread: MOCK_WORKFLOW_ID },
+      });
+
+      ApolloUtils.fetchWorkflowEvents.mockRejectedValue({
+        graphQLErrors: [
+          { message: 'Workflow not found', extensions: { code: 'WORKFLOW_NOT_FOUND' } },
+        ],
+      });
+
+      createComponent();
+      await waitForPromises();
+
+      expect(findDuoChat().props('messages')).toHaveLength(0);
+      expect(findDuoChat().props('activeThreadId')).toBe('');
+    });
+
+    it('displays error message when loading workflow fails with non-workflow-not-found error', async () => {
+      getStorageValue.mockReturnValueOnce({
+        exists: true,
+        value: { workflowId: '456', activeThread: MOCK_WORKFLOW_ID },
+      });
+
+      const errorText = 'Network timeout occurred';
+      ApolloUtils.fetchWorkflowEvents.mockRejectedValue(new Error(errorText));
+
+      createComponent();
+      await waitForPromises();
+
+      expect(actionSpies.addDuoChatMessage).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          errors: [`Error: ${errorText}`],
+        }),
+      );
+    });
+  });
+
   describe('dynamicTitle', () => {
     beforeEach(() => {
       duoChatGlobalState.isAgenticChatShown = true;
