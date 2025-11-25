@@ -1,5 +1,6 @@
-import Vue from 'vue';
+import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
+import { GlTabs, GlTab } from '@gitlab/ui';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -8,7 +9,9 @@ import AiFlowsIndex from 'ee/ai/duo_agents_platform/pages/flows/ai_flows_index.v
 import AddProjectItemConsumerModal from 'ee/ai/duo_agents_platform/components/catalog/add_project_item_consumer_modal.vue';
 import AiCatalogListHeader from 'ee/ai/catalog/components/ai_catalog_list_header.vue';
 import AiCatalogConfiguredItemsWrapper from 'ee/ai/duo_agents_platform/components/catalog/ai_catalog_configured_items_wrapper.vue';
+import projectAiCatalogFlowsQuery from 'ee/ai/duo_agents_platform/graphql/queries/get_project_flows.query.graphql';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
+import ResourceListsEmptyState from '~/vue_shared/components/resource_lists/empty_state.vue';
 import aiCatalogConfiguredItemsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_configured_items.query.graphql';
 import aiCatalogGroupUserPermissionsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_group_user_permissions.query.graphql';
 import aiCatalogProjectUserPermissionsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_project_user_permissions.query.graphql';
@@ -19,7 +22,10 @@ import {
   mockConfiguredItemsEmptyResponse,
   mockGroupUserPermissionsResponse,
   mockProjectUserPermissionsResponse,
+  mockFlows,
+  mockPageInfo,
 } from 'ee_jest/ai/catalog/mock_data';
+import { mockProjectFlowsResponse, mockProjectItemsEmptyResponse } from '../../mock_data';
 
 jest.mock('~/sentry/sentry_browser_wrapper');
 
@@ -44,6 +50,7 @@ describe('AiFlowsIndex', () => {
     .fn()
     .mockResolvedValue(mockProjectUserPermissionsResponse);
   const createAiCatalogItemConsumerHandler = jest.fn();
+  const mockProjectFlowsQueryHandler = jest.fn().mockResolvedValue(mockProjectFlowsResponse);
 
   const defaultProvide = {
     projectId: mockProjectId,
@@ -61,6 +68,7 @@ describe('AiFlowsIndex', () => {
       [aiCatalogProjectUserPermissionsQuery, mockProjectUserPermissionsQueryHandler],
       [aiCatalogGroupUserPermissionsQuery, mockGroupUserPermissionsQueryHandler],
       [createAiCatalogItemConsumer, createAiCatalogItemConsumerHandler],
+      [projectAiCatalogFlowsQuery, mockProjectFlowsQueryHandler],
     ]);
 
     wrapper = shallowMountExtended(AiFlowsIndex, {
@@ -73,6 +81,7 @@ describe('AiFlowsIndex', () => {
         $toast: mockToast,
       },
       stubs: {
+        GlTab,
         AiCatalogConfiguredItemsWrapper,
       },
     });
@@ -81,6 +90,9 @@ describe('AiFlowsIndex', () => {
   const findErrorsAlert = () => wrapper.findComponent(ErrorsAlert);
   const findConfiguredItemsWrapper = () => wrapper.findComponent(AiCatalogConfiguredItemsWrapper);
   const findAddProjectItemConsumerModal = () => wrapper.findComponent(AddProjectItemConsumerModal);
+  const findAiCatalogList = () => wrapper.findByTestId('managed-flows-list');
+  const findEmptyState = () => wrapper.findComponent(ResourceListsEmptyState);
+  const findTabs = () => wrapper.findComponent(GlTabs);
 
   describe('component rendering', () => {
     beforeEach(() => {
@@ -98,6 +110,89 @@ describe('AiFlowsIndex', () => {
         emptyStateButtonHref: '/explore/ai-catalog/flows',
         emptyStateButtonText: 'Explore the AI Catalog',
         itemTypes: ['FLOW', 'THIRD_PARTY_FLOW'],
+      });
+    });
+  });
+
+  describe('when "Managed" tab is selected', () => {
+    beforeEach(() => {
+      createComponent();
+      findTabs().vm.$emit('input', 1);
+    });
+
+    it('renders AiCatalogList component', async () => {
+      const catalogList = findAiCatalogList();
+
+      expect(catalogList.props('isLoading')).toBe(true);
+
+      await waitForPromises();
+
+      expect(catalogList.props('items')).toEqual(mockFlows);
+      expect(catalogList.props('isLoading')).toBe(false);
+    });
+
+    it('fetches list data', () => {
+      expect(mockProjectFlowsQueryHandler).toHaveBeenCalledWith({
+        projectPath: mockProjectPath,
+        itemTypes: ['FLOW', 'THIRD_PARTY_FLOW'],
+        allAvailable: false,
+        after: null,
+        before: null,
+        first: 20,
+        last: null,
+      });
+    });
+
+    describe('pagination', () => {
+      beforeEach(async () => {
+        await waitForPromises();
+      });
+
+      it('passes pageInfo to list component', () => {
+        expect(findAiCatalogList().props('pageInfo')).toMatchObject(mockPageInfo);
+      });
+
+      it('refetches query with correct variables when paging backward', async () => {
+        findAiCatalogList().vm.$emit('prev-page');
+        await nextTick();
+        expect(mockProjectFlowsQueryHandler).toHaveBeenCalledWith({
+          projectPath: mockProjectPath,
+          itemTypes: ['FLOW', 'THIRD_PARTY_FLOW'],
+          allAvailable: false,
+          after: null,
+          before: 'eyJpZCI6IjUxIn0',
+          first: null,
+          last: 20,
+        });
+      });
+
+      it('refetches query with correct variables when paging forward', async () => {
+        findAiCatalogList().vm.$emit('next-page');
+        await nextTick();
+        expect(mockProjectFlowsQueryHandler).toHaveBeenCalledWith({
+          projectPath: mockProjectPath,
+          itemTypes: ['FLOW', 'THIRD_PARTY_FLOW'],
+          allAvailable: false,
+          after: 'eyJpZCI6IjM1In0',
+          before: null,
+          first: 20,
+          last: null,
+        });
+      });
+    });
+
+    describe('when there are no agents', () => {
+      beforeEach(async () => {
+        mockProjectFlowsQueryHandler.mockResolvedValueOnce(mockProjectItemsEmptyResponse);
+
+        await waitForPromises();
+      });
+
+      it('renders empty state with correct props', () => {
+        expect(findEmptyState().props()).toMatchObject({
+          title: 'Use flows in your project.',
+          description: 'Flows use multiple agents to complete tasks automatically.',
+        });
       });
     });
   });
