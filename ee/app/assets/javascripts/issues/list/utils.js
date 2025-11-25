@@ -5,11 +5,13 @@ import {
   getTypeTokenOptions as getTypeTokenOptionsCE,
   convertToApiParams as convertToApiParamsCE,
   convertToUrlParams as convertToUrlParamsCE,
+  convertMultipleIsTypeTokensToOr,
 } from '~/issues/list/utils';
 import { filtersMap, URL_PARAM } from '~/issues/list/constants';
 import { __, s__ } from '~/locale';
 
 import {
+  TOKEN_TYPE_TYPE,
   OPERATOR_IS,
   TOKEN_TYPE_STATE,
 } from '~/vue_shared/components/filtered_search_bar/constants';
@@ -58,9 +60,10 @@ export const getTypeTokenOptions = ({
   hasOkrsFeature,
   hasQualityManagementFeature,
   isGroupIssuesList = false,
+  isProject = false,
 }) => {
   const options = getTypeTokenOptionsCE();
-  if (hasEpicsFeature && !isGroupIssuesList) {
+  if (hasEpicsFeature && !isGroupIssuesList && !isProject) {
     options.push({
       icon: 'epic',
       title: __('Epic'),
@@ -110,8 +113,8 @@ const getOperatorFromUrlParamKey = (tokenType, urlParamKey) => {
   )[0];
 };
 
-export const getFilterTokens = (locationSearch, options = {}) =>
-  Array.from(new URLSearchParams(locationSearch).entries())
+export const getFilterTokens = (locationSearch, options = {}) => {
+  const tokens = Array.from(new URLSearchParams(locationSearch).entries())
     .filter(([key]) => {
       if (!options.includeStateToken && key === TOKEN_TYPE_STATE) {
         return false;
@@ -127,6 +130,14 @@ export const getFilterTokens = (locationSearch, options = {}) =>
         value: { data, operator },
       };
     });
+
+  if (options.convertTypeTokens) {
+    const hasTypeToken = tokens.some((token) => token.type === TOKEN_TYPE_TYPE);
+    if (hasTypeToken) return convertMultipleIsTypeTokensToOr(tokens);
+  }
+
+  return tokens;
+};
 
 /**
  * @param {Object} token - Custom field token ex. { type: "custom-field[2]", }
