@@ -102,31 +102,14 @@ RSpec.describe Gitlab::BackgroundMigration::SpecHelpers::V1::TableHelpers, featu
     end
   end
 
-  describe '#respond_to_missing?' do
-    it 'returns true for any method name' do
-      expect(instance.respond_to?(:any_table_name)).to be(true)
-      expect(instance.respond_to?(:another_table)).to be(true)
-    end
-  end
-
-  describe 'error handling' do
-    it 'raises NoMethodError for methods with arguments' do
-      expect { instance.users(1, 2, 3) }.to raise_error(NoMethodError)
-    end
-
-    it 'raises NoMethodError for methods with blocks' do
-      expect { instance.users { |x| x } }.to raise_error(NoMethodError)
-    end
-  end
-
   describe 'integration with existing specs' do
     it 'works alongside manual table definitions' do
       manual_table = instance.table(:namespaces)
-      dynamic_table = instance.namespaces
+      dynamic_table = instance.users
 
       # Both should work, though they create separate instances
       expect(manual_table.table_name).to eq('namespaces')
-      expect(dynamic_table.table_name).to eq('namespaces')
+      expect(dynamic_table.table_name).to eq('users')
     end
   end
 end
