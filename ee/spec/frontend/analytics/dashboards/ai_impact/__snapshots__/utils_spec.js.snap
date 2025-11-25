@@ -304,6 +304,20 @@ exports[`AI impact Dashboard utils generateSkeletonTableData returns the skeleto
     },
     "trendStyle": "ASC",
   },
+  {
+    "metric": {
+      "identifier": "duo_review_requests_count",
+      "value": "Duo Code Review requests",
+    },
+    "trendStyle": "ASC",
+  },
+  {
+    "metric": {
+      "identifier": "duo_review_comment_count",
+      "value": "Duo Code Review comments",
+    },
+    "trendStyle": "ASC",
+  },
 ]
 `;
 

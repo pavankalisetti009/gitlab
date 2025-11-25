@@ -1,30 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`AI impact dashboard api extractGraphqlAiData returns code_suggestions_acceptance_rate given {"codeSuggestions": [Object]} 1`] = `
-{
-  "identifier": "code_suggestions_acceptance_rate",
-  "tooltip": "No data",
-  "value": "-",
-}
-`;
-
-exports[`AI impact dashboard api extractGraphqlAiData returns code_suggestions_acceptance_rate given {"codeSuggestions": [Object]} 2`] = `
-{
-  "identifier": "code_suggestions_acceptance_rate",
-  "tooltip": "No data",
-  "value": "-",
-}
-`;
-
-exports[`AI impact dashboard api extractGraphqlAiData returns code_suggestions_acceptance_rate given {"codeSuggestions": [Object]} 3`] = `
-{
-  "identifier": "code_suggestions_acceptance_rate",
-  "tooltip": "3/4",
-  "value": 75,
-}
-`;
-
-exports[`AI impact dashboard api extractGraphqlAiData returns code_suggestions_acceptance_rate given {"codeSuggestions": [Object]} 4`] = `
+exports[`AI impact dashboard api extractGraphqlAiData returns code_suggestions_acceptance_rate given { codeSuggestions: { acceptedCount: 0, shownCount: 20 } } 1`] = `
 {
   "identifier": "code_suggestions_acceptance_rate",
   "tooltip": "0/20",
@@ -32,23 +8,34 @@ exports[`AI impact dashboard api extractGraphqlAiData returns code_suggestions_a
 }
 `;
 
-exports[`AI impact dashboard api extractGraphqlAiData returns code_suggestions_usage_rate given {"codeContributorsCount": 5} 1`] = `
+exports[`AI impact dashboard api extractGraphqlAiData returns code_suggestions_acceptance_rate given { codeSuggestions: { acceptedCount: 3 } } 1`] = `
 {
-  "identifier": "code_suggestions_usage_rate",
+  "identifier": "code_suggestions_acceptance_rate",
   "tooltip": "No data",
   "value": "-",
 }
 `;
 
-exports[`AI impact dashboard api extractGraphqlAiData returns code_suggestions_usage_rate given {"codeContributorsCount": 10, "codeSuggestions": [Object]} 1`] = `
+exports[`AI impact dashboard api extractGraphqlAiData returns code_suggestions_acceptance_rate given { codeSuggestions: { acceptedCount: 3, shownCount: 4 } } 1`] = `
 {
-  "identifier": "code_suggestions_usage_rate",
-  "tooltip": "5/10",
-  "value": 50,
+  "identifier": "code_suggestions_acceptance_rate",
+  "tooltip": "3/4",
+  "value": 75,
 }
 `;
 
-exports[`AI impact dashboard api extractGraphqlAiData returns code_suggestions_usage_rate given {"codeContributorsCount": 10, "codeSuggestions": [Object]} 2`] = `
+exports[`AI impact dashboard api extractGraphqlAiData returns code_suggestions_acceptance_rate given { codeSuggestions: { shownCount: 4 } } 1`] = `
+{
+  "identifier": "code_suggestions_acceptance_rate",
+  "tooltip": "No data",
+  "value": "-",
+}
+`;
+
+exports[`AI impact dashboard api extractGraphqlAiData returns code_suggestions_usage_rate given {
+  codeSuggestions: { contributorsCount: 0 },
+  codeContributorsCount: 10
+} 1`] = `
 {
   "identifier": "code_suggestions_usage_rate",
   "tooltip": "0/10",
@@ -56,7 +43,18 @@ exports[`AI impact dashboard api extractGraphqlAiData returns code_suggestions_u
 }
 `;
 
-exports[`AI impact dashboard api extractGraphqlAiData returns code_suggestions_usage_rate given {"codeSuggestions": [Object]} 1`] = `
+exports[`AI impact dashboard api extractGraphqlAiData returns code_suggestions_usage_rate given {
+  codeSuggestions: { contributorsCount: 5 },
+  codeContributorsCount: 10
+} 1`] = `
+{
+  "identifier": "code_suggestions_usage_rate",
+  "tooltip": "5/10",
+  "value": 50,
+}
+`;
+
+exports[`AI impact dashboard api extractGraphqlAiData returns code_suggestions_usage_rate given { codeContributorsCount: 5 } 1`] = `
 {
   "identifier": "code_suggestions_usage_rate",
   "tooltip": "No data",
@@ -64,7 +62,15 @@ exports[`AI impact dashboard api extractGraphqlAiData returns code_suggestions_u
 }
 `;
 
-exports[`AI impact dashboard api extractGraphqlAiData returns duo_chat_usage_rate given {"duoAssignedUsersCount": 3} 1`] = `
+exports[`AI impact dashboard api extractGraphqlAiData returns code_suggestions_usage_rate given { codeSuggestions: { contributorsCount: 2 } } 1`] = `
+{
+  "identifier": "code_suggestions_usage_rate",
+  "tooltip": "No data",
+  "value": "-",
+}
+`;
+
+exports[`AI impact dashboard api extractGraphqlAiData returns duo_chat_usage_rate given { duoAssignedUsersCount: 3 } 1`] = `
 {
   "identifier": "duo_chat_usage_rate",
   "tooltip": "No data",
@@ -72,7 +78,23 @@ exports[`AI impact dashboard api extractGraphqlAiData returns duo_chat_usage_rat
 }
 `;
 
-exports[`AI impact dashboard api extractGraphqlAiData returns duo_chat_usage_rate given {"duoAssignedUsersCount": 8, "duoChatContributorsCount": 7} 1`] = `
+exports[`AI impact dashboard api extractGraphqlAiData returns duo_chat_usage_rate given { duoChatContributorsCount: 0, duoAssignedUsersCount: 50 } 1`] = `
+{
+  "identifier": "duo_chat_usage_rate",
+  "tooltip": "0/50",
+  "value": 0,
+}
+`;
+
+exports[`AI impact dashboard api extractGraphqlAiData returns duo_chat_usage_rate given { duoChatContributorsCount: 4 } 1`] = `
+{
+  "identifier": "duo_chat_usage_rate",
+  "tooltip": "No data",
+  "value": "-",
+}
+`;
+
+exports[`AI impact dashboard api extractGraphqlAiData returns duo_chat_usage_rate given { duoChatContributorsCount: 7, duoAssignedUsersCount: 8 } 1`] = `
 {
   "identifier": "duo_chat_usage_rate",
   "tooltip": "7/8",
@@ -80,23 +102,7 @@ exports[`AI impact dashboard api extractGraphqlAiData returns duo_chat_usage_rat
 }
 `;
 
-exports[`AI impact dashboard api extractGraphqlAiData returns duo_chat_usage_rate given {"duoAssignedUsersCount": 50, "duoChatContributorsCount": 0} 1`] = `
-{
-  "identifier": "duo_chat_usage_rate",
-  "tooltip": "0/50",
-  "value": 0,
-}
-`;
-
-exports[`AI impact dashboard api extractGraphqlAiData returns duo_chat_usage_rate given {"duoChatContributorsCount": 4} 1`] = `
-{
-  "identifier": "duo_chat_usage_rate",
-  "tooltip": "No data",
-  "value": "-",
-}
-`;
-
-exports[`AI impact dashboard api extractGraphqlAiData returns duo_rca_usage_rate given {"duoAssignedUsersCount": 3} 1`] = `
+exports[`AI impact dashboard api extractGraphqlAiData returns duo_rca_usage_rate given { duoAssignedUsersCount: 3 } 1`] = `
 {
   "identifier": "duo_rca_usage_rate",
   "tooltip": "No data",
@@ -104,7 +110,15 @@ exports[`AI impact dashboard api extractGraphqlAiData returns duo_rca_usage_rate
 }
 `;
 
-exports[`AI impact dashboard api extractGraphqlAiData returns duo_rca_usage_rate given {"duoAssignedUsersCount": 8, "rootCauseAnalysisUsersCount": 5} 1`] = `
+exports[`AI impact dashboard api extractGraphqlAiData returns duo_rca_usage_rate given { rootCauseAnalysisUsersCount: 0, duoAssignedUsersCount: 50 } 1`] = `
+{
+  "identifier": "duo_rca_usage_rate",
+  "tooltip": "0/50",
+  "value": 0,
+}
+`;
+
+exports[`AI impact dashboard api extractGraphqlAiData returns duo_rca_usage_rate given { rootCauseAnalysisUsersCount: 5, duoAssignedUsersCount: 8 } 1`] = `
 {
   "identifier": "duo_rca_usage_rate",
   "tooltip": "5/8",
@@ -112,18 +126,80 @@ exports[`AI impact dashboard api extractGraphqlAiData returns duo_rca_usage_rate
 }
 `;
 
-exports[`AI impact dashboard api extractGraphqlAiData returns duo_rca_usage_rate given {"duoAssignedUsersCount": 50, "rootCauseAnalysisUsersCount": 0} 1`] = `
+exports[`AI impact dashboard api extractGraphqlAiData returns duo_rca_usage_rate given { rootCauseAnalysisUsersCount: 10 } 1`] = `
 {
   "identifier": "duo_rca_usage_rate",
-  "tooltip": "0/50",
+  "tooltip": "No data",
+  "value": "-",
+}
+`;
+
+exports[`AI impact dashboard api extractGraphqlAiData returns duo_review_comment_count given { codeReview: { postCommentDuoCodeReviewOnDiffEventCount: 0 } } 1`] = `
+{
+  "identifier": "duo_review_comment_count",
   "value": 0,
 }
 `;
 
-exports[`AI impact dashboard api extractGraphqlAiData returns duo_rca_usage_rate given {"rootCauseAnalysisUsersCount": 10} 1`] = `
+exports[`AI impact dashboard api extractGraphqlAiData returns duo_review_comment_count given { codeReview: { postCommentDuoCodeReviewOnDiffEventCount: 25 } } 1`] = `
 {
-  "identifier": "duo_rca_usage_rate",
-  "tooltip": "No data",
+  "identifier": "duo_review_comment_count",
+  "value": 25,
+}
+`;
+
+exports[`AI impact dashboard api extractGraphqlAiData returns duo_review_comment_count given {} 1`] = `
+{
+  "identifier": "duo_review_comment_count",
+  "value": "-",
+}
+`;
+
+exports[`AI impact dashboard api extractGraphqlAiData returns duo_review_requests_count given {
+  codeReview: {
+    requestReviewDuoCodeReviewOnMrByAuthorEventCount: 0,
+    requestReviewDuoCodeReviewOnMrByNonAuthorEventCount: 0
+  }
+} 1`] = `
+{
+  "identifier": "duo_review_requests_count",
+  "value": 0,
+}
+`;
+
+exports[`AI impact dashboard api extractGraphqlAiData returns duo_review_requests_count given {
+  codeReview: {
+    requestReviewDuoCodeReviewOnMrByAuthorEventCount: 5,
+    requestReviewDuoCodeReviewOnMrByNonAuthorEventCount: 10
+  }
+} 1`] = `
+{
+  "identifier": "duo_review_requests_count",
+  "value": 15,
+}
+`;
+
+exports[`AI impact dashboard api extractGraphqlAiData returns duo_review_requests_count given {
+  codeReview: { requestReviewDuoCodeReviewOnMrByAuthorEventCount: 10 }
+} 1`] = `
+{
+  "identifier": "duo_review_requests_count",
+  "value": 10,
+}
+`;
+
+exports[`AI impact dashboard api extractGraphqlAiData returns duo_review_requests_count given {
+  codeReview: { requestReviewDuoCodeReviewOnMrByNonAuthorEventCount: 5 }
+} 1`] = `
+{
+  "identifier": "duo_review_requests_count",
+  "value": 5,
+}
+`;
+
+exports[`AI impact dashboard api extractGraphqlAiData returns duo_review_requests_count given {} 1`] = `
+{
+  "identifier": "duo_review_requests_count",
   "value": "-",
 }
 `;

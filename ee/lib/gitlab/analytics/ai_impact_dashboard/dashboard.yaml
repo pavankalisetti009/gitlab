@@ -56,12 +56,12 @@ panels:
       yPos: 5
       xPos: 0
       width: 12
-      height: 3
+      height: 4
     options: {}
   - title: 'Development metrics for the %{namespaceName} %{namespaceType}'
     visualization: ai_impact_lifecycle_metrics_table
     gridAttributes:
-      yPos: 8
+      yPos: 9
       xPos: 0
       width: 12
       height: 3
@@ -69,7 +69,7 @@ panels:
   - title: 'Pipeline metrics for the %{namespaceName} %{namespaceType}'
     visualization: pipeline_metrics_table
     gridAttributes:
-      yPos: 11
+      yPos: 12
       xPos: 0
       width: 12
       height: 3
@@ -77,7 +77,7 @@ panels:
   - title: 'Code Suggestions accepted by user'
     visualization: user_metrics_table
     gridAttributes:
-      yPos: 13
+      yPos: 14
       xPos: 0
       width: 12
       height: 8
