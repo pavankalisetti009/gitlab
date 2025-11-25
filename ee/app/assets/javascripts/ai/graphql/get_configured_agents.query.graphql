@@ -7,16 +7,13 @@ query getConfiguredAgents($projectId: ProjectID, $groupId: GroupID) {
   ) {
     nodes {
       id
+      pinnedItemVersion {
+        id
+      }
       item {
         id
         name
         description
-        versions(first: 2) {
-          nodes {
-            id
-            released
-          }
-        }
       }
     }
   }

@@ -8,15 +8,11 @@ describe('agent_utils', () => {
     const mockCatalogAgents = [
       {
         name: 'Test Agent 1',
-        versions: {
-          nodes: [{ id: 'version-123' }, { id: 'version-456' }],
-        },
+        pinnedItemVersionId: 'version-123',
       },
       {
         name: 'Test Agent 2',
-        versions: {
-          nodes: [{ id: 'version-789' }],
-        },
+        pinnedItemVersionId: 'version-789',
       },
     ];
 
@@ -66,16 +62,16 @@ describe('agent_utils', () => {
       });
     });
 
-    describe('when agent has no versions', () => {
+    describe('when agent has another pinned version', () => {
       it('returns not available with error message', () => {
-        const agentsWithoutVersions = [
+        const agentsWithDifferentVersion = [
           {
             name: 'Test Agent',
-            versions: { nodes: [] },
+            pinnedItemVersionId: 'version-456',
           },
         ];
 
-        const result = validateAgentExists('version-123', agentsWithoutVersions);
+        const result = validateAgentExists('version-123', agentsWithDifferentVersion);
 
         expect(result).toEqual({
           isAvailable: false,
@@ -140,16 +136,10 @@ describe('agent_utils', () => {
     });
 
     describe('when custom catalog agent is selected', () => {
-      it('returns agent data with released version', () => {
+      it('returns agent data with pinned version', () => {
         const agent = {
           id: 'agent-123',
-          versions: {
-            nodes: [
-              { id: 'version-1', released: false },
-              { id: 'version-2', released: true },
-              { id: 'version-3', released: false },
-            ],
-          },
+          pinnedItemVersionId: 'version-2',
         };
 
         const result = prepareAgentSelection(agent, false);

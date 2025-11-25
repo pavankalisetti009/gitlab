@@ -10,8 +10,8 @@ export function validateAgentExists(aiCatalogItemVersionId, catalogAgents) {
   }
 
   // Check if the agent version exists in the catalog
-  const agentExists = catalogAgents?.some((agent) =>
-    agent.versions?.nodes?.some((version) => version.id === aiCatalogItemVersionId),
+  const agentExists = catalogAgents?.some(
+    (agent) => agent.pinnedItemVersionId === aiCatalogItemVersionId,
   );
 
   if (!agentExists) {
@@ -53,9 +53,15 @@ export function prepareAgentSelection(agent, reuseAgent) {
 
   // Select custom catalog agent
   if (agent?.id) {
+    if (!agent.pinnedItemVersionId) {
+      return {
+        ...newParams,
+        agentConfig: null,
+      };
+    }
     return {
       ...newParams,
-      aiCatalogItemVersionId: agent.versions?.nodes?.find(({ released }) => released)?.id || '',
+      aiCatalogItemVersionId: agent.pinnedItemVersionId,
     };
   }
 
