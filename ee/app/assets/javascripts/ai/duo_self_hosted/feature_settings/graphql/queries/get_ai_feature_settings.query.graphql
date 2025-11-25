@@ -14,6 +14,7 @@ query getAiFeatureSetting {
         name
         ref
         modelProvider @gl_introduced(version: "18.6.0")
+        modelDescription @gl_introduced(version: "18.7.0")
       }
       gitlabModel {
         name
@@ -34,6 +35,7 @@ query getAiFeatureSetting {
           name
           ref
           modelProvider @gl_introduced(version: "18.6.0")
+          modelDescription @gl_introduced(version: "18.7.0")
         }
       }
     }

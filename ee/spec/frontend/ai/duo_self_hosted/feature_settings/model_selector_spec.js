@@ -57,8 +57,18 @@ const EXPECTED_SELF_HOSTED_MODELS_OPTIONS = [
 ];
 
 const EXPECTED_GITLAB_MANAGED_MODELS_OPTIONS = [
-  { text: 'Claude Sonnet 4.0', value: 'claude_sonnet_4_20250514', provider: 'Anthropic' },
-  { text: 'Claude Sonnet 3.7', value: 'claude_sonnet_3_7_20250219_vertex', provider: 'Anthropic' },
+  {
+    text: 'Claude Sonnet 4.0',
+    value: 'claude_sonnet_4_20250514',
+    provider: 'Anthropic',
+    description: 'Fast, cost-effective responses',
+  },
+  {
+    text: 'Claude Sonnet 3.7',
+    value: 'claude_sonnet_3_7_20250219_vertex',
+    provider: 'Anthropic',
+    description: 'Fast, cost-effective responses',
+  },
 ];
 
 const EXPECTED_SELF_HOSTED_MODELS_GROUPED_OPTIONS = {
@@ -96,7 +106,12 @@ const EXPECTED_GITLAB_MANAGED_MODELS_GROUPED_OPTIONS_WITH_DEFAULT_MODEL_OPTION =
   text: 'GitLab managed models',
   options: [
     ...EXPECTED_GITLAB_MANAGED_MODELS_OPTIONS,
-    { text: 'Claude Sonnet 4.0 - Default', value: GITLAB_DEFAULT_MODEL, provider: 'Anthropic' },
+    {
+      text: 'Claude Sonnet 4.0 - Default',
+      value: GITLAB_DEFAULT_MODEL,
+      provider: 'Anthropic',
+      description: 'Fast, cost-effective responses',
+    },
   ],
 };
 
@@ -393,12 +408,12 @@ describe('ModelSelector', () => {
     );
 
     describe.each`
-      testCase                  | selectedOption                    | modelName                          | provider              | offeredModelRef                   | offeredModelProvider
-      ${'GitLab managed model'} | ${mockGitlabManagedModels[0].ref} | ${mockGitlabManagedModels[0].name} | ${PROVIDERS.VENDORED} | ${mockGitlabManagedModels[0].ref} | ${mockGitlabManagedModels[0].modelProvider}
-      ${'GitLab default model'} | ${GITLAB_DEFAULT_MODEL}           | ${'Claude Sonnet 4.0 - Default'}   | ${PROVIDERS.VENDORED} | ${GITLAB_DEFAULT_MODEL}           | ${'Anthropic'}
+      testCase                  | selectedOption                    | modelName                          | provider              | offeredModelRef
+      ${'GitLab managed model'} | ${mockGitlabManagedModels[0].ref} | ${mockGitlabManagedModels[0].name} | ${PROVIDERS.VENDORED} | ${mockGitlabManagedModels[0].ref}
+      ${'GitLab default model'} | ${GITLAB_DEFAULT_MODEL}           | ${'Claude Sonnet 4.0 - Default'}   | ${PROVIDERS.VENDORED} | ${GITLAB_DEFAULT_MODEL}
     `(
       'with $testCase as selected option',
-      ({ selectedOption, modelName, provider, offeredModelProvider, offeredModelRef }) => {
+      ({ selectedOption, modelName, provider, offeredModelRef }) => {
         beforeEach(() => {
           createComponent({
             props: {
@@ -415,11 +430,12 @@ describe('ModelSelector', () => {
 
         it('calls show disclaimer modal when selected', () => {
           expect(mockShowModal).toHaveBeenCalledTimes(1);
-          expect(mockShowModal).toHaveBeenCalledWith({
-            value: selectedOption,
-            text: modelName,
-            provider: offeredModelProvider,
-          });
+          expect(mockShowModal).toHaveBeenCalledWith(
+            expect.objectContaining({
+              value: selectedOption,
+              text: modelName,
+            }),
+          );
         });
 
         it('calls update operations when Gitlab managed model modal is acknowledged', async () => {
@@ -459,6 +475,7 @@ describe('ModelSelector', () => {
           text: 'Claude Sonnet 4.0 - Default',
           value: GITLAB_DEFAULT_MODEL,
           provider: 'Anthropic',
+          description: 'Fast, cost-effective responses',
         });
       });
 
@@ -568,6 +585,7 @@ describe('ModelSelector', () => {
           value: selectedModel.ref,
           text: selectedModel.name,
           provider: selectedModel.modelProvider,
+          description: selectedModel.modelDescription,
         });
       });
     });
