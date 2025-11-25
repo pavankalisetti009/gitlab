@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Snippet elastic search', :js, :elastic_delete_by_query, :aggregate_failures, feature_category: :global_search do
+RSpec.describe 'Snippet elastic search', :js, :elastic_delete_by_query, :aggregate_failures, :with_current_organization, feature_category: :global_search do
   let_it_be(:public_project) { create(:project, :public) }
   let_it_be(:regular_user) { create(:user) }
   let_it_be(:authorized_user) { create(:user) }
