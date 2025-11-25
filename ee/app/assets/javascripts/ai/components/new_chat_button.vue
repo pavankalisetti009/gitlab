@@ -136,7 +136,7 @@ export default {
   >
     <template #list-item="{ item }">
       <span class="gl-flex gl-flex-col">
-        <span class="gl-mb-1 gl-inline-block gl-text-lg gl-font-bold gl-text-strong">
+        <span class="gl-mb-1 gl-inline-block gl-font-semibold">
           {{ item.name }}
           <gl-icon
             v-if="item.foundational"
@@ -146,7 +146,9 @@ export default {
             :title="$options.i18n.chatVerifiedAgent"
           />
         </span>
-        <span class="gl-overflow-hidden gl-text-ellipsis gl-whitespace-nowrap gl-text-sm">
+        <span
+          class="gl-overflow-hidden gl-text-ellipsis gl-whitespace-nowrap gl-text-sm gl-text-subtle"
+        >
           {{ item.description }}
         </span>
       </span>
