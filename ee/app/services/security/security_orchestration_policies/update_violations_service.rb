@@ -126,6 +126,7 @@ module Security
 
       def record_violations_detected_audit_event
         ::MergeRequests::PolicyViolationsDetectedAuditEventWorker.perform_async(merge_request.id)
+        ::Security::ScanResultPolicies::AuditWarnModeMergeRequestApprovalSettingsWorker.perform_async(merge_request.id)
       end
 
       def updated_violations

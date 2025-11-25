@@ -187,6 +187,15 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateViolationsService,
         end
       end
 
+      shared_examples 'not enqueuing the AuditWarnModeMergeRequestApprovalSettingsWorker' do
+        it 'does not enqueue Security::ScanResultPolicies::AuditWarnModeMergeRequestApprovalSettingsWorker' do
+          expect(::Security::ScanResultPolicies::AuditWarnModeMergeRequestApprovalSettingsWorker)
+            .not_to receive(:perform_async)
+
+          service.execute
+        end
+      end
+
       context 'when there are policy violations' do
         before do
           service.add([policy_a], [])
@@ -197,6 +206,13 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateViolationsService,
           expect(::MergeRequests::PolicyViolationsDetectedAuditEventWorker).to receive(:perform_async).with(
             merge_request.id
           )
+
+          service.execute
+        end
+
+        it 'enqueues Security::ScanResultPolicies::AuditWarnModeMergeRequestApprovalSettingsWorker' do
+          expect(::Security::ScanResultPolicies::AuditWarnModeMergeRequestApprovalSettingsWorker)
+            .to receive(:perform_async).with(merge_request.id)
 
           service.execute
         end
@@ -214,10 +230,12 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateViolationsService,
         end
 
         it_behaves_like 'not enqueuing the PolicyViolationsDetectedAuditEventWorker'
+        it_behaves_like 'not enqueuing the AuditWarnModeMergeRequestApprovalSettingsWorker'
       end
 
       context "when there are no violations" do
         it_behaves_like 'not enqueuing the PolicyViolationsDetectedAuditEventWorker'
+        it_behaves_like 'not enqueuing the AuditWarnModeMergeRequestApprovalSettingsWorker'
       end
     end
 
