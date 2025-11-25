@@ -21,7 +21,7 @@ module Sidebars # rubocop: disable Gitlab/BoundedContexts -- unknown
 
         override :render?
         def render?
-          Feature.enabled?(:global_ai_catalog, current_user)
+          Ability.allowed?(current_user, :read_ai_catalog)
         end
 
         override :active_routes

@@ -16,6 +16,7 @@ RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :duo_agent_
     create(:duo_workflows_workflow, project: project, user: user, created_at: 1.day.ago).tap do |workflow|
       workload = create(:ci_workload, project: project)
       workflow.workflows_workloads.create!(workload: workload, project: project)
+      create(:ci_build, pipeline: workload.pipeline, project: project)
     end
   end
 

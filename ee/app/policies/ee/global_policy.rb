@@ -127,6 +127,17 @@ module EE
 
       rule { ~anonymous & operations_dashboard_available }.enable :read_operations_dashboard
 
+      # TODO: Change `scope:` to `:global` when we remove passing in the `@user`
+      # which will be when both of the following have been completed:
+      #
+      # - `global_ai_catalog` feature flag removed https://gitlab.com/gitlab-org/gitlab/-/issues/570161
+      # - AI Catalog is defined as a GA feature https://gitlab.com/gitlab-org/gitlab/-/issues/549914
+      condition(:ai_catalog_available, scope: :user) do
+        ::Ai::Catalog.available?(@user)
+      end
+
+      rule { ai_catalog_available }.enable :read_ai_catalog
+
       condition(:remote_development_feature_licensed) do
         License.feature_available?(:remote_development)
       end

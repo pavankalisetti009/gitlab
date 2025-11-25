@@ -6,6 +6,7 @@ module Gitlab
 
     FEATURES =
       %i[
+        ai_catalog
         ai_vertex_embeddings
         cloud_connector_static_catalog
         experimentation
