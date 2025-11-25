@@ -11,9 +11,6 @@ module Ai
           { 'from' => 'context:goal', 'as' => 'goal' },
           { 'from' => 'context:project_id', 'as' => 'project' }
         ].freeze
-        LLM_MODEL_CLASS_PROVIDER = 'anthropic'
-        LLM_MODEL_CLASS_NAME = 'claude-sonnet-4-5-20250929'
-        MAX_TOKEN_SIZE = 32_768
         DUO_FLOW_TIMEOUT = 30
         PLACEHOLDER_VALUE = 'history'
 
@@ -98,13 +95,6 @@ module Ai
 
           {
             'prompt_id' => step_prompt_id(step),
-            'model' => {
-              'params' => {
-                'model_class_provider' => LLM_MODEL_CLASS_PROVIDER,
-                'model' => LLM_MODEL_CLASS_NAME,
-                'max_tokens' => MAX_TOKEN_SIZE
-              }
-            },
             'prompt_template' => {
               'system' => system_prompt(definition),
               'user' => user_prompt(definition),

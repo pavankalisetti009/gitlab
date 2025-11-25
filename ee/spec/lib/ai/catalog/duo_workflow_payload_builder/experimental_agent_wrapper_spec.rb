@@ -48,13 +48,6 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::ExperimentalAgentWrapper,
       expect(result['prompts']).to eq([
         {
           'prompt_id' => "#{agent_flow_id}_prompt",
-          'model' => {
-            'params' => {
-              'max_tokens' => described_class::MAX_TOKEN_SIZE,
-              'model_class_provider' => described_class::LLM_MODEL_CLASS_PROVIDER,
-              'model' => described_class::LLM_MODEL_CLASS_NAME
-            }
-          },
           'prompt_template' => {
             'system' => agent_version.def_system_prompt,
             'user' => user_prompt_input,
