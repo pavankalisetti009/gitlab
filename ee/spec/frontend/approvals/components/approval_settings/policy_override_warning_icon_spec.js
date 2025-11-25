@@ -54,6 +54,14 @@ describe('PolicyOverrideWarningIcon', () => {
     {
       name: 'policy 2',
       enabled: true,
+      enforcement_type: 'enforce',
+      approval_settings: { [REQUIRE_PASSWORD_TO_APPROVE]: true },
+      editPath: 'link 2',
+    },
+    {
+      name: 'policy 3',
+      enabled: true,
+      enforcement_type: 'warn',
       approval_settings: { [REQUIRE_PASSWORD_TO_APPROVE]: true },
       editPath: 'link 2',
     },
@@ -178,5 +186,12 @@ describe('PolicyOverrideWarningIcon', () => {
     expect(findPopover().text()).toContain('Some settings may be affected by policy');
     expect(findPopover().text()).toContain('policy 1');
     expect(findLink().attributes('href')).toBe('link 1');
+  });
+
+  it('does not render warning icon and popover for a warn mode policy', () => {
+    setupStore([scanResultPoliciesWithApprovalSettings[2]]);
+    createComponent();
+
+    expect(findIcon().exists()).toBe(false);
   });
 });
