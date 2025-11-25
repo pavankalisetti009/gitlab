@@ -32,13 +32,17 @@
       "type": "number",
       "description": "The ratio between number of concurrent tasks and number of CPUs"
     },
+    "zoekt_maximum_files": {
+      "type": "number",
+      "description": "Maximum number of files per project to be indexed"
+    },
     "zoekt_indexing_parallelism": {
       "type": "number",
       "description": "Number of parallel processes per indexing task"
     },
-    "zoekt_maximum_files": {
-      "type": "number",
-      "description": "Maximum number of files per project to be indexed"
+    "zoekt_indexed_file_size_limit": {
+      "type": "string",
+      "description": "Maximum file size for indexing"
     },
     "zoekt_rollout_batch_size": {
       "type": "number",

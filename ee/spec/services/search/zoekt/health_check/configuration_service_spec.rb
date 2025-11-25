@@ -39,7 +39,7 @@ RSpec.describe ::Search::Zoekt::HealthCheck::ConfigurationService, :silence_stdo
 
         expect(result[:status]).to eq(:unhealthy)
         expect(result[:errors]).to include(
-          'Enable indexing in Admin > Settings > Search > Exact code search configuration'
+          'Enable indexing in Admin > Settings > Search > Exact code search'
         )
       end
 
@@ -60,7 +60,7 @@ RSpec.describe ::Search::Zoekt::HealthCheck::ConfigurationService, :silence_stdo
 
         expect(result[:status]).to eq(:degraded)
         expect(result[:warnings]).to include(
-          'Enable searching in Admin > Settings > Search > Exact code search configuration'
+          'Enable searching in Admin > Settings > Search > Exact code search'
         )
       end
 
@@ -81,7 +81,7 @@ RSpec.describe ::Search::Zoekt::HealthCheck::ConfigurationService, :silence_stdo
 
         expect(result[:status]).to eq(:degraded)
         expect(result[:warnings]).to include(
-          'Unpause indexing in Admin > Settings > Search > Exact code search configuration'
+          'Unpause indexing in Admin > Settings > Search > Exact code search'
         )
       end
 

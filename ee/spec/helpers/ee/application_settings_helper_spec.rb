@@ -415,16 +415,20 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
         selector = 'input[type="number"][name="application_setting[zoekt_maximum_files]"]' \
           "[value=\"#{Search::Zoekt::Settings::DEFAULT_MAXIMUM_FILES}\"]"
         expect(result[11]).to have_selector(selector)
-        expect(result[12]).to have_selector('label', text: _('Retry interval for failed namespaces'))
+        expect(result[12]).to have_selector('label', text: _('Maximum file size for indexing'))
+        selector = 'input[type="text"][name="application_setting[zoekt_indexed_file_size_limit]"]' \
+          "[value=\"#{Search::Zoekt::Settings::DEFAULT_FILE_SIZE_LIMIT}\"]"
+        expect(result[13]).to have_selector(selector)
+        expect(result[14]).to have_selector('label', text: _('Retry interval for failed namespaces'))
         selector = 'input[type="text"][name="application_setting[zoekt_rollout_retry_interval]"]' \
           "[value=\"#{Search::Zoekt::Settings::DEFAULT_ROLLOUT_RETRY_INTERVAL}\"]"
-        expect(result[13]).to have_selector(selector)
+        expect(result[15]).to have_selector(selector)
       end
     end
 
-    context 'with custom input options' do
+    context 'with custom input_options' do
       before do
-        allow(::Search::Zoekt::Settings).to receive(:input_settings).and_return({
+        allow(::Search::Zoekt::Settings).to receive(:input_settings_ui).and_return({
           zoekt_cpu_to_tasks_ratio: {
             label: -> { 'Custom Label' },
             input_type: :number_field,
@@ -442,12 +446,12 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
       end
     end
 
-    context 'with an unknown input type' do
+    context 'with an unknown input_type' do
       before do
         # Mock Search::Zoekt::Settings to return our test configuration
-        allow(::Search::Zoekt::Settings).to receive(:input_settings).and_return({
+        allow(::Search::Zoekt::Settings).to receive(:input_settings_ui).and_return({
           zoekt_test_setting: {
-            label: -> { "Test Setting" },
+            label: -> { 'Test Setting' },
             input_type: :unknown_type
           }
         })
@@ -462,24 +466,6 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
           # This should execute the actual method including line 319
           expect { helper.zoekt_settings_inputs(form) }.to raise_error(ArgumentError, /Unknown input_type:/)
         end
-      end
-    end
-
-    it 'uses input_settings_ui to filter inputs' do
-      helper.gitlab_ui_form_for(application_setting, url: search_admin_application_settings_path) do |form|
-        expect(::Search::Zoekt::Settings).to receive(:input_settings_ui).and_call_original
-        helper.zoekt_settings_inputs(form)
-      end
-    end
-
-    it 'only includes UI-visible input settings' do
-      allow(::Search::Zoekt::Settings).to receive(:input_settings_ui).and_return({
-        zoekt_cpu_to_tasks_ratio: Search::Zoekt::Settings::SETTINGS[:zoekt_cpu_to_tasks_ratio]
-      })
-
-      helper.gitlab_ui_form_for(application_setting, url: search_admin_application_settings_path) do |form|
-        result = helper.zoekt_settings_inputs(form)
-        expect(result.length).to eq(2) # label and input
       end
     end
   end
