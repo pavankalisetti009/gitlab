@@ -71,9 +71,8 @@ describe('AiCatalogAgentDetails', () => {
     });
 
     it('renders Visibility', () => {
-      expect(accessRightsDetails.at(0).props()).toMatchObject({
-        title: 'Visibility',
-      });
+      expect(accessRightsDetails.at(1).props('title')).toBe('Visibility');
+      expect(accessRightsDetails.at(1).text()).toContain('Public');
       expect(findVisibilityBadge().exists()).toBe(true);
     });
 
@@ -98,11 +97,11 @@ describe('AiCatalogAgentDetails', () => {
       },
     );
 
-    it('renders Source project with link', () => {
-      const sourceProjectField = accessRightsDetails.at(1);
+    it('renders "Managed by" with link', () => {
+      const sourceProjectField = accessRightsDetails.at(0);
       const link = findSourceProjectLink();
 
-      expect(sourceProjectField.props('title')).toBe('Source project');
+      expect(sourceProjectField.props('title')).toBe('Managed by');
       expect(link.attributes('href')).toBe(mockAgent.project.webUrl);
       expect(link.text()).toBe(mockAgent.project.nameWithNamespace);
     });

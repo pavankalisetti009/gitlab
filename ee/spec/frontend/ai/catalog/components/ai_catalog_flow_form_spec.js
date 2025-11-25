@@ -84,7 +84,6 @@ describe('AiCatalogFlowForm', () => {
       expect(findFlowType().props('value')).toBe('FLOW');
       expect(findNameField().props('value')).toBe(initialValues.name);
       expect(findDescriptionField().props('value')).toBe(initialValues.description);
-      expect(findVisibilityLevelRadioGroup().props('initialValue')).toBe(initialValues.public);
       expect(findVisibilityLevelRadioGroup().props('value')).toBe(VISIBILITY_LEVEL_PUBLIC);
       expect(findDefinitionFlowField().props('value')).toBe(initialValues.definition);
       expect(findDefinitionThirdPartyFlowField().exists()).toBe(false);
@@ -93,11 +92,10 @@ describe('AiCatalogFlowForm', () => {
     it('renders the form with default values when no props are provided and form is not global', () => {
       createWrapper({ provide: { isGlobal: false } });
 
-      expect(findProjectDropdown().props('value')).toBe('gid://gitlab/Project/2000000');
+      expect(findProjectDropdown().exists()).toBe(false);
       expect(findFlowType().props('value')).toBe('FLOW');
       expect(findNameField().props('value')).toBe('');
       expect(findDescriptionField().props('value')).toBe('');
-      expect(findVisibilityLevelRadioGroup().props('initialValue')).toBe(false);
       expect(findVisibilityLevelRadioGroup().props('value')).toBe(VISIBILITY_LEVEL_PRIVATE);
       expect(findDefinitionFlowField().props('value')).toBe(DEFAULT_FLOW_YML_STRING);
       expect(findDefinitionThirdPartyFlowField().exists()).toBe(false);
@@ -110,7 +108,6 @@ describe('AiCatalogFlowForm', () => {
       expect(findFlowType().props('value')).toBe('FLOW');
       expect(findNameField().props('value')).toBe('');
       expect(findDescriptionField().props('value')).toBe('');
-      expect(findVisibilityLevelRadioGroup().props('initialValue')).toBe(false);
       expect(findVisibilityLevelRadioGroup().props('value')).toBe(VISIBILITY_LEVEL_PRIVATE);
       expect(findDefinitionFlowField().props('value')).toBe(DEFAULT_FLOW_YML_STRING);
       expect(findDefinitionThirdPartyFlowField().exists()).toBe(false);
