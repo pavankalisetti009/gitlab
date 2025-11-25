@@ -4,8 +4,8 @@ require 'spec_helper'
 
 RSpec.describe API::ProjectSecuritySettings, :aggregate_failures, feature_category: :source_code_management do
   let_it_be(:user) { create(:user) }
-  let_it_be(:security_setting) { create(:project_security_setting) }
-  let_it_be(:project) { security_setting.project }
+  let(:project) { create(:project) }
+  let(:security_setting) { create(:project_security_setting, project: project) }
   let(:url) { "/projects/#{project.id}/security_settings" }
 
   describe 'GET /projects/:id/security_settings' do
@@ -56,7 +56,7 @@ RSpec.describe API::ProjectSecuritySettings, :aggregate_failures, feature_catego
 
     context 'when user is authenticated' do
       context 'when the user is a Maintainer' do
-        before_all do
+        before do
           project.add_maintainer(user)
         end
 
@@ -151,10 +151,10 @@ RSpec.describe API::ProjectSecuritySettings, :aggregate_failures, feature_catego
         end
 
         context 'when projects group is archived' do
-          let_it_be(:group) { create(:group, :archived) }
-          let_it_be(:project) { create(:project, group: group) }
+          let(:group) { create(:group, :archived) }
+          let(:project) { create(:project, group: group) }
 
-          before_all do
+          before do
             project.add_maintainer(user)
           end
 
@@ -167,11 +167,8 @@ RSpec.describe API::ProjectSecuritySettings, :aggregate_failures, feature_catego
       end
 
       context 'when the user is a Developer' do
-        before_all do
-          project.add_developer(user)
-        end
-
         before do
+          project.add_developer(user)
           stub_licensed_features(secret_push_protection: true)
         end
 
@@ -186,11 +183,8 @@ RSpec.describe API::ProjectSecuritySettings, :aggregate_failures, feature_catego
 
   describe 'license and visibility checks' do
     context 'with Ultimate license' do
-      before_all do
-        project.add_developer(user)
-      end
-
       before do
+        project.add_developer(user)
         stub_licensed_features(secret_push_protection: true)
       end
 
@@ -210,11 +204,8 @@ RSpec.describe API::ProjectSecuritySettings, :aggregate_failures, feature_catego
     end
 
     context 'without Ultimate license' do
-      before_all do
-        project.add_developer(user)
-      end
-
       before do
+        project.add_developer(user)
         stub_saas_features(auto_enable_secret_push_protection_public_projects: true)
         stub_licensed_features(secret_push_protection: false)
       end
