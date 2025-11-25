@@ -193,9 +193,11 @@ end
 ## Best Practices
 
 1. **Use the latest version** for new specs unless there's a specific reason not to
-1. **Configure tables at the class level** when you need custom options
+1. **Declare all tables explicitly** using the `tables` method at the class level
+1. **Configure tables at the class level** when you need custom options (after declaring them with `tables`)
 1. **Don't mix approaches** - either use helpers or manual definitions, not both
 1. **Keep configurations minimal** - only configure what you need
+1. **Declare tables in alphabetical order** for consistency and readability
 
 ## Troubleshooting
 
