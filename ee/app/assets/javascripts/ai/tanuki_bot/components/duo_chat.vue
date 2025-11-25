@@ -195,6 +195,8 @@ export default {
       height: window.innerHeight,
       minWidth: 400,
       minHeight: 400,
+      maxHeight: window.innerHeight,
+      maxWidth: window.innerWidth - WIDTH_OFFSET,
       // Explicitly initializing `left` as null to ensure Vue makes it reactive.
       // This allows computed properties and watchers dependent on `left` to work correctly.
       left: null,
