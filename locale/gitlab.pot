@@ -2676,6 +2676,9 @@ msgstr ""
 msgid "AICatalog|Create flow"
 msgstr ""
 
+msgid "AICatalog|Created and maintained by %{boldStart}GitLab%{boldEnd}"
+msgstr ""
+
 msgid "AICatalog|Creating proprietary business logic."
 msgstr ""
 
@@ -2823,6 +2826,9 @@ msgstr ""
 msgid "AICatalog|Flows use multiple agents to complete tasks automatically."
 msgstr ""
 
+msgid "AICatalog|Foundational agent"
+msgstr ""
+
 msgid "AICatalog|Frequently failing or nuisance activity."
 msgstr ""
 
@@ -2845,6 +2851,9 @@ msgid "AICatalog|Is visible only to users with at least the Developer role for t
 msgstr ""
 
 msgid "AICatalog|Is visible to all users."
+msgstr ""
+
+msgid "AICatalog|Learn more about foundational agents"
 msgstr ""
 
 msgid "AICatalog|Manage agent settings."

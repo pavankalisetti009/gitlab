@@ -25,10 +25,12 @@ import {
   AI_CATALOG_AGENTS_DUPLICATE_ROUTE,
   AI_CATALOG_AGENTS_EDIT_ROUTE,
 } from '../router/constants';
+import FoundationalIcon from '../../components/foundational_icon.vue';
 
 export default {
   name: 'AiCatalogAgentsShow',
   components: {
+    FoundationalIcon,
     ErrorsAlert,
     PageHeading,
     AiCatalogItemActions,
@@ -222,6 +224,11 @@ export default {
       <template #heading>
         <span class="gl-line-clamp-1 gl-wrap-anywhere">
           {{ agentName }}
+
+          <foundational-icon
+            v-if="aiCatalogAgent.foundationalChat"
+            :resource-id="aiCatalogAgent.id"
+          />
         </span>
       </template>
       <template #actions>

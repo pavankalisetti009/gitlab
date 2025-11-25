@@ -166,6 +166,7 @@ const mockAgentFactory = (overrides = {}) => ({
   latestVersion: mockBaseLatestVersion,
   userPermissions: mockUserPermissions,
   __typename: TYPENAME_AI_CATALOG_ITEM,
+  foundationalChat: false,
   ...overrides,
 });
 
@@ -380,6 +381,7 @@ const mockFlowFactory = (overrides = {}) => ({
   createdAt: '2024-01-15T10:30:00Z',
   public: true,
   updatedAt: '2024-08-21T14:30:00Z',
+  foundationalChat: false,
   latestVersion: mockBaseLatestVersion,
   userPermissions: mockUserPermissions,
   __typename: TYPENAME_AI_CATALOG_ITEM,
