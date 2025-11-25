@@ -53,6 +53,15 @@ module QA
               click_element('work-item-iteration-link', text: period_display)
             end
 
+            def wait_for_attachment_replication(image_url, max_wait: Runtime::Geo.max_file_replication_time)
+              QA::Runtime::Logger.debug(%(#{self.class.name} - wait_for_attachment_replication))
+              wait_until_geo_max_replication_time(max_wait: max_wait) do
+                asset_exists?(image_url)
+              end
+            end
+
+            private
+
             def wait_iteration_block_finish_loading
               within_element('work-item-iteration') do
                 wait_until(reload: false, max_duration: 10, sleep_interval: 1) do

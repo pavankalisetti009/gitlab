@@ -7,7 +7,6 @@ module QA
         module WorkItem
           module Epic
             class Show < QA::Page::Base
-              include QA::Page::Component::WorkItem::Common
               include QA::Page::Component::WorkItem::Note
 
               view 'app/assets/javascripts/work_items/components/shared/work_item_link_child_contents.vue' do
