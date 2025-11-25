@@ -30,6 +30,11 @@ module Registrations
         e.exclude! if onboarding_user_status.exclude_from_first_orders_experiments?
       end
 
+      experiment(:trial_registration_hierarchy_education, actor: user) do |e|
+        e.exclude! if onboarding_user_status.exclude_from_first_orders_experiments?
+        e.track(:assignment, namespace: group)
+      end
+
       apply_trial if onboarding_user_status.apply_trial?
     end
 
