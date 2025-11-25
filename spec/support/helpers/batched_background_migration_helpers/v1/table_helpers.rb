@@ -85,42 +85,6 @@ module Gitlab
             end
           end
 
-          # Provides dynamic table access with lazy evaluation and memoization
-          #
-          # When a method is called that doesn't exist, this checks if it's a table name.
-          # If so, it creates and memoizes a table helper for that table.
-          #
-          # @param method_name [Symbol] The method being called (table name)
-          # @param args [Array] Method arguments (should be empty for table access)
-          # @return [Class] An ActiveRecord model class for the table
-          def method_missing(method_name, *args, &block)
-            return super unless args.empty? && block.nil?
-
-            # Check if this is a table access
-            table_name = method_name.to_sym
-
-            # Return memoized table if already created
-            ivar_name = :"@#{table_name}"
-            return instance_variable_get(ivar_name) if instance_variable_defined?(ivar_name)
-
-            # Create and memoize the table helper
-            table_helper = create_table_helper(table_name)
-            instance_variable_set(ivar_name, table_helper)
-            table_helper
-          rescue ActiveRecord::StatementInvalid, NameError => e
-            # Re-raise as NoMethodError to maintain expected behavior
-            raise NoMethodError, "undefined method `#{method_name}' - #{e.message}"
-          end
-
-          # Indicates which methods will be handled by method_missing
-          #
-          # @return [Boolean] True if the method will be handled
-          def respond_to_missing?(*)
-            # We can't know all possible table names ahead of time,
-            # so we'll let method_missing handle it and rescue if it fails
-            true
-          end
-
           private
 
           # Creates a table helper using the MigrationsHelpers#table method
