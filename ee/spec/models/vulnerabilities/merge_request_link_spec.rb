@@ -5,6 +5,13 @@ require 'spec_helper'
 RSpec.describe Vulnerabilities::MergeRequestLink, feature_category: :vulnerability_management do
   describe 'associations and fields' do
     it { is_expected.to belong_to(:vulnerability) }
+
+    it 'belongs to finding' do
+      is_expected.to belong_to(:finding)
+        .with_foreign_key(:vulnerability_occurrence_id)
+        .class_name('Vulnerabilities::Finding')
+    end
+
     it { is_expected.to belong_to(:merge_request) }
     it { is_expected.to have_one(:author).through(:merge_request).class_name("User") }
   end

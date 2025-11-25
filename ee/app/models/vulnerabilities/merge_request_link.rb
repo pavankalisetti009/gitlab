@@ -9,7 +9,8 @@ module Vulnerabilities
 
     belongs_to :vulnerability
     belongs_to :merge_request
-    belongs_to :vulnerability_occurrence, optional: true, class_name: 'Vulnerabilities::Finding'
+    belongs_to :finding, foreign_key: :vulnerability_occurrence_id, class_name: 'Vulnerabilities::Finding',
+      optional: true, inverse_of: false
 
     has_one :author, through: :merge_request, class_name: 'User'
 

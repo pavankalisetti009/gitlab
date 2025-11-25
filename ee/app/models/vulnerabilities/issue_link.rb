@@ -9,6 +9,8 @@ module Vulnerabilities
     after_commit :trigger_vulnerability_webhook_event, on: :create
 
     belongs_to :vulnerability
+    belongs_to :finding, foreign_key: :vulnerability_occurrence_id, class_name: 'Vulnerabilities::Finding',
+      optional: true, inverse_of: false
     belongs_to :issue
 
     has_one :author, through: :issue, class_name: 'User'
