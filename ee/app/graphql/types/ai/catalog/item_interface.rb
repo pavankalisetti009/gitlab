@@ -54,6 +54,11 @@ module Types
             description: 'Global ID of the project to return the item configuration of.'
         end
 
+        field :foundational_chat,
+          GraphQL::Types::Boolean,
+          null: false,
+          description: 'Whether the item is a foundational flow or agent (only on GitLab SaaS).'
+
         orphan_types ::Types::Ai::Catalog::AgentType
         orphan_types ::Types::Ai::Catalog::FlowType
         orphan_types ::Types::Ai::Catalog::ThirdPartyFlowType

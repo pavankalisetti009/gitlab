@@ -2,6 +2,7 @@ import { GlDisclosureDropdown, GlDisclosureDropdownItem, GlTruncate, GlIcon } fr
 import { RouterLinkStub as RouterLink } from '@vue/test-utils';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import AiCatalogListItem from 'ee/ai/catalog/components/ai_catalog_list_item.vue';
+import FoundationalIcon from 'ee/ai/components/foundational_icon.vue';
 import { AI_CATALOG_AGENTS_EDIT_ROUTE } from 'ee/ai/catalog/router/constants';
 import {
   VISIBILITY_TYPE_ICON,
@@ -86,6 +87,7 @@ describe('AiCatalogListItem', () => {
   const findVisibilityIcon = () => findVisibilityTooltip().findComponent(GlIcon);
   const findDisclosureDropdown = () => wrapper.findAllComponents(GlDisclosureDropdown);
   const findDisclosureDropdownItems = () => wrapper.findAllComponents(GlDisclosureDropdownItem);
+  const findFoundationalIcon = () => wrapper.findComponent(FoundationalIcon);
 
   beforeEach(() => {
     createComponent();
@@ -241,6 +243,29 @@ describe('AiCatalogListItem', () => {
       disableAction.vm.$emit('action');
 
       expect(wrapper.emitted('disable')[0]).toEqual([]);
+    });
+  });
+
+  describe('foundational agent', () => {
+    describe('when item is foundational', () => {
+      beforeEach(() => {
+        createComponent({
+          item: { ...mockItem, foundationalChat: true },
+        });
+      });
+
+      it('renders foundational icon with correct props', () => {
+        const foundationalIcon = findFoundationalIcon();
+
+        expect(foundationalIcon.props('resourceId')).toBe(mockItem.id);
+        expect(foundationalIcon.props('size')).toBe(16);
+      });
+    });
+
+    describe('when item is not foundational', () => {
+      it('does not render foundational icon', () => {
+        expect(findFoundationalIcon().exists()).toBe(false);
+      });
     });
   });
 });

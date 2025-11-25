@@ -8,6 +8,7 @@ module Ai
       {
         id: 1,
         reference: 'chat',
+        global_catalog_id: nil,
         version: '',
         name: 'GitLab Duo',
         description: "Your general development assistant. Get help with code, planning,
@@ -18,6 +19,7 @@ module Ai
         reference: 'duo_planner',
         version: 'experimental',
         name: 'Planner',
+        global_catalog_id: 348,
         description: <<~DESCRIPTION
           Get help with planning and workflow management. Organize, prioritize, and track work
           more effectively in GitLab. The Planner Agent can analyze your work items to surface patterns,
@@ -29,6 +31,7 @@ module Ai
       },
       {
         id: 3,
+        global_catalog_id: 356,
         reference: 'security_analyst_agent',
         version: 'experimental',
         name: 'Security Analyst',
@@ -42,6 +45,7 @@ module Ai
       {
         id: 4,
         reference: 'analytics_agent',
+        global_catalog_id: nil,
         version: 'v1',
         name: 'Analytics Agent',
         description: <<~DESCRIPTION
