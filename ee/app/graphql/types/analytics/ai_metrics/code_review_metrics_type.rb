@@ -6,7 +6,7 @@ module Types
       # rubocop: disable Graphql/AuthorizeTypes -- authorized by parent type
       class CodeReviewMetricsType < BaseObject
         graphql_name 'codeReviewMetrics'
-        description "Requires ClickHouse. Premium and Ultimate with GitLab Duo Enterprise only."
+        description "Requires ClickHouse. Premium and Ultimate only."
 
         extend ::Analytics::AiEventFields
 

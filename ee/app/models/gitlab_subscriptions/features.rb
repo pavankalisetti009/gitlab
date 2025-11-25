@@ -87,6 +87,7 @@ module GitlabSubscriptions
       ai_chat
       ai_catalog
       ai_workflows
+      ai_analytics
       admin_audit_log
       agent_managed_resources
       agentic_chat

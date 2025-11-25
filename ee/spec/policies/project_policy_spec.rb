@@ -1459,37 +1459,11 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       let(:reporter) { inherited_reporter }
 
       context 'when on SAAS', :saas do
-        let(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: group) }
-
         it_behaves_like 'ai permission to', :read_enterprise_ai_analytics
       end
 
       context 'when on self-managed' do
-        let(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :self_managed) }
-
         it_behaves_like 'ai permission to', :read_enterprise_ai_analytics
-      end
-
-      context 'when Amazon Q is enabled' do
-        using RSpec::Parameterized::TableSyntax
-
-        where(:role, :amazon_q_enabled, :allow_policy) do
-          :guest    | true  | be_disallowed(:read_enterprise_ai_analytics)
-          :reporter | true  | be_allowed(:read_enterprise_ai_analytics)
-          :reporter | false | be_disallowed(:read_enterprise_ai_analytics)
-          :reporter | true  | be_allowed(:read_pro_ai_analytics)
-          :reporter | false | be_disallowed(:read_pro_ai_analytics)
-        end
-
-        with_them do
-          let(:current_user) { public_send(role) }
-
-          before do
-            allow(::Ai::AmazonQ).to receive(:enabled?).and_return(amazon_q_enabled)
-          end
-
-          it { is_expected.to allow_policy }
-        end
       end
     end
 
@@ -1499,31 +1473,11 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       let(:reporter) { inherited_reporter }
 
       context 'when on SAAS', :saas do
-        context 'with pro subscription' do
-          let(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_pro, namespace: group) }
-
-          it_behaves_like 'ai permission to', :read_pro_ai_analytics
-        end
-
-        context 'with enterprise subscription' do
-          let(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: group) }
-
-          it_behaves_like 'ai permission to', :read_pro_ai_analytics
-        end
+        it_behaves_like 'ai permission to', :read_pro_ai_analytics
       end
 
       context 'when on self-managed' do
-        context 'with pro subscription' do
-          let(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_pro, :self_managed) }
-
-          it_behaves_like 'ai permission to', :read_pro_ai_analytics
-        end
-
-        context 'with enterprise subscription' do
-          let(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :self_managed) }
-
-          it_behaves_like 'ai permission to', :read_pro_ai_analytics
-        end
+        it_behaves_like 'ai permission to', :read_pro_ai_analytics
       end
     end
 
@@ -1533,61 +1487,11 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       let(:reporter) { inherited_reporter }
 
       context 'when on SAAS', :saas do
-        context 'with core subscription' do
-          let(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_core, namespace: group) }
-
-          it_behaves_like 'read_duo_usage_analytics permissions'
-        end
-
-        context 'with pro subscription' do
-          let(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_pro, namespace: group) }
-
-          it_behaves_like 'read_duo_usage_analytics permissions'
-        end
-
-        context 'with enterprise subscription' do
-          let(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: group) }
-
-          it_behaves_like 'read_duo_usage_analytics permissions'
-        end
-
-        context 'with amazon q subscription' do
-          let(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_amazon_q, namespace: group) }
-
-          it_behaves_like 'read_duo_usage_analytics permissions'
-        end
+        it_behaves_like 'read_duo_usage_analytics permissions'
       end
 
       context 'when on self-managed' do
-        context 'with self-hosted subscription' do
-          let(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_self_hosted, :self_managed) }
-
-          it_behaves_like 'read_duo_usage_analytics permissions'
-        end
-
-        context 'with core subscription' do
-          let(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_core, :self_managed) }
-
-          it_behaves_like 'read_duo_usage_analytics permissions'
-        end
-
-        context 'with pro subscription' do
-          let(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_pro, :self_managed) }
-
-          it_behaves_like 'read_duo_usage_analytics permissions'
-        end
-
-        context 'with enterprise subscription' do
-          let(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :self_managed) }
-
-          it_behaves_like 'read_duo_usage_analytics permissions'
-        end
-
-        context 'with amazon q subscription' do
-          let(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_amazon_q, :self_managed) }
-
-          it_behaves_like 'read_duo_usage_analytics permissions'
-        end
+        it_behaves_like 'read_duo_usage_analytics permissions'
       end
     end
 

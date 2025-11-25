@@ -8,7 +8,7 @@ module Types
         graphql_name 'codeSuggestionMetricsBasic'
         description <<~DESC
           AI-related metrics with three months of data retention.
-          Premium and Ultimate with GitLab Duo Pro and Enterprise only.
+          Premium and Ultimate only.
         DESC
 
         field :accepted_count, GraphQL::Types::Int,

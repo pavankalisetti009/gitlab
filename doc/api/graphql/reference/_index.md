@@ -24308,7 +24308,7 @@ Extra metadata for AI message.
 
 ### `AiMetrics`
 
-Requires ClickHouse. Premium and Ultimate with GitLab Duo Pro and Enterprise only.
+Requires ClickHouse. Premium and Ultimate only.
 
 #### Fields
 
@@ -24342,7 +24342,7 @@ Returns [`codeSuggestionMetrics`](#codesuggestionmetrics).
 ### `AiMetricsBasic`
 
 AI-related metrics with three months of data retention.
-Premium and Ultimate with GitLab Duo Pro and Enterprise only.
+Premium and Ultimate only.
 
 #### Fields
 
@@ -24402,7 +24402,7 @@ Self-hosted LLM servers.
 
 ### `AiUsageData`
 
-Usage data for events stored in either PostgreSQL (default) or ClickHouse (when configured). Data retention: three months in PostgreSQL, indefinite in ClickHouse. Requires a personal access token. Works only on top-level groups. Premium and Ultimate with GitLab Duo Enterprise only.
+Usage data for events stored in either PostgreSQL (default) or ClickHouse (when configured). Data retention: three months in PostgreSQL, indefinite in ClickHouse. Requires a personal access token. Works only on top-level groups. Premium and Ultimate only.
 
 #### Fields with arguments
 
@@ -24456,7 +24456,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 ### `AiUserMetrics`
 
-Pre-aggregated per-user metrics for GitLab Code Suggestions and GitLab Duo Chat. Require ClickHouse to be enabled and GitLab Ultimate with the Duo Enterprise add-on.
+Pre-aggregated per-user metrics for GitLab Code Suggestions and GitLab Duo Chat. Requires ClickHouse to be enabled. Premium or Ultimate only.
 
 #### Fields
 
@@ -48542,7 +48542,7 @@ Chat user metrics for a user. Requires ClickHouse. Premium and Ultimate with Git
 
 ### `codeReviewMetrics`
 
-Requires ClickHouse. Premium and Ultimate with GitLab Duo Enterprise only.
+Requires ClickHouse. Premium and Ultimate only.
 
 #### Fields
 
@@ -48579,7 +48579,7 @@ Code Review user metrics for a user. Requires ClickHouse. Premium and Ultimate w
 
 ### `codeSuggestionMetrics`
 
-Requires ClickHouse. Premium and Ultimate with GitLab Duo Pro and Enterprise only.
+Requires ClickHouse. Premium and Ultimate only.
 
 #### Fields
 
@@ -48596,7 +48596,7 @@ Requires ClickHouse. Premium and Ultimate with GitLab Duo Pro and Enterprise onl
 ### `codeSuggestionMetricsBasic`
 
 AI-related metrics with three months of data retention.
-Premium and Ultimate with GitLab Duo Pro and Enterprise only.
+Premium and Ultimate only.
 
 #### Fields
 

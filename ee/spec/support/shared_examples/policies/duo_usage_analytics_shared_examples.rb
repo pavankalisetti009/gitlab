@@ -3,7 +3,7 @@
 RSpec.shared_examples 'read_duo_usage_analytics permissions' do
   using RSpec::Parameterized::TableSyntax
 
-  where(:role, :has_subscription_assignment, :feature_flag_enabled, :allowed) do
+  where(:role, :ai_analytics_licensed, :feature_flag_enabled, :allowed) do
     :guest    | false | false | false
     :guest    | false | true | false
     :guest    | true  | false | false
@@ -19,14 +19,7 @@ RSpec.shared_examples 'read_duo_usage_analytics permissions' do
 
     before do
       stub_feature_flags(duo_usage_dashboard: feature_flag_enabled)
-
-      if has_subscription_assignment
-        create(
-          :gitlab_subscription_user_add_on_assignment,
-          user: current_user,
-          add_on_purchase: subscription_purchase
-        )
-      end
+      stub_licensed_features(ai_analytics: ai_analytics_licensed)
     end
 
     it { is_expected.to(allowed ? be_allowed(:read_duo_usage_analytics) : be_disallowed(:read_duo_usage_analytics)) }

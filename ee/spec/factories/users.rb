@@ -54,18 +54,6 @@ FactoryBot.modify do
         create(:compromised_password_detection, user: user)
       end
     end
-
-    trait :with_self_managed_duo_enterprise_seat do
-      after(:create) do |user|
-        subscription_purchase = create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :self_managed)
-
-        create(
-          :gitlab_subscription_user_add_on_assignment,
-          user: user,
-          add_on_purchase: subscription_purchase
-        )
-      end
-    end
   end
 
   factory :omniauth_user do

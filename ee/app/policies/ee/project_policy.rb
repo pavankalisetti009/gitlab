@@ -909,18 +909,21 @@ module EE
         @user.assigned_to_duo_pro?(@subject)
       end
 
-      condition(:duo_usage_analytics_enabled) do
-        ::Feature.enabled?(:duo_usage_dashboard, @subject.root_ancestor) && @user.assigned_to_duo_add_ons?(@subject)
+      condition(:ai_analytics_available, scope: :subject) do
+        @subject.feature_available?(:ai_analytics)
+      end
+
+      condition(:duo_usage_dashboard_enabled) do
+        ::Feature.enabled?(:duo_usage_dashboard, @subject.root_ancestor)
       end
 
       condition(:amazon_q_enabled) do
         ::Ai::AmazonQ.enabled?
       end
 
-      rule { can?(:read_customizable_dashboards) & (amazon_q_enabled | assigned_to_duo_pro) }.enable :read_pro_ai_analytics
-      rule { can?(:read_customizable_dashboards) & (amazon_q_enabled | assigned_to_duo_enterprise) }.enable :read_enterprise_ai_analytics
-
-      rule { can?(:read_customizable_dashboards) & duo_usage_analytics_enabled }.enable :read_duo_usage_analytics
+      rule { can?(:read_customizable_dashboards) & ai_analytics_available }.enable :read_pro_ai_analytics
+      rule { can?(:read_customizable_dashboards) & ai_analytics_available }.enable :read_enterprise_ai_analytics
+      rule { can?(:read_customizable_dashboards) & ai_analytics_available & duo_usage_dashboard_enabled }.enable :read_duo_usage_analytics
 
       rule { project_level_analytics_dashboard_enabled }.enable :read_project_level_analytics_dashboard
 

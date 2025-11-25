@@ -78,27 +78,23 @@ RSpec.describe Resolvers::Analytics::Dashboards::DashboardsResolver, feature_cat
           allow(Gitlab::ClickHouse).to receive(:globally_enabled_for_analytics?).and_return(true)
         end
 
-        context 'when user is not assigned to duo_enterprise' do
+        context 'when namespace is not licensed to ai_analytics' do
+          before do
+            stub_licensed_features(ai_analytics: false)
+          end
+
           it 'does not contain AI impact dashboard' do
             expect(result.map(&:slug)).not_to include(Analytics::Dashboards::Dashboard::AI_IMPACT_DASHBOARD_NAME)
           end
+        end
 
-          context 'when user is assigned to duo enteprise seat' do
-            let_it_be(:subscription_purchase) do
-              create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :self_managed)
-            end
+        context 'when namespace is licensed to ai_analytics' do
+          before do
+            stub_licensed_features(ai_analytics: true)
+          end
 
-            let_it_be(:seat_assignment) do
-              create(
-                :gitlab_subscription_user_add_on_assignment,
-                user: user,
-                add_on_purchase: subscription_purchase
-              )
-            end
-
-            it 'contains AI impact dashboard' do
-              expect(result.map(&:slug)).to include(Analytics::Dashboards::Dashboard::AI_IMPACT_DASHBOARD_NAME)
-            end
+          it 'contains AI impact dashboard' do
+            expect(result.map(&:slug)).to include(Analytics::Dashboards::Dashboard::AI_IMPACT_DASHBOARD_NAME)
           end
         end
       end
