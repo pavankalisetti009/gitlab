@@ -6780,6 +6780,9 @@ msgstr ""
 msgid "AiModelDeprecation|The following models have been deprecated and will stop working after GitLab removes them. Please change to an alternative model before the removal version to avoid disruption."
 msgstr ""
 
+msgid "AiPowered|AI gateway request timeout"
+msgstr ""
+
 msgid "AiPowered|AI logs"
 msgstr ""
 
@@ -6985,6 +6988,9 @@ msgid "AiPowered|Local URL for the GitLab Duo Agent Platform service"
 msgstr ""
 
 msgid "AiPowered|Lock tooltip icon"
+msgstr ""
+
+msgid "AiPowered|Maximum time in seconds to wait for responses from the AI gateway (up to 600 seconds).%{br}Increasing this value might result in degraded user experience."
 msgstr ""
 
 msgid "AiPowered|Might result in requests having higher latency."
@@ -81346,6 +81352,9 @@ msgid "seat"
 msgid_plural "seats"
 msgstr[0] ""
 msgstr[1] ""
+
+msgid "seconds"
+msgstr ""
 
 msgid "security policy bot users cannot be added to other projects"
 msgstr ""

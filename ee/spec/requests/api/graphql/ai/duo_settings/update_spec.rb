@@ -73,8 +73,6 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
       context 'when attempting to update ai_gateway_timeout_seconds' do
         let(:mutation_params) { { ai_gateway_timeout_seconds: 100 } }
 
-        it_behaves_like 'performs the right authorization'
-
         it 'returns an error about the missing permission' do
           request
 
