@@ -145,8 +145,6 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
         expect(job.reload.finished_at).to eq(job.started_at + timeout.seconds)
         expect(Ci::Minutes::NamespaceMonthlyUsage.first.shared_runners_duration).to eq(timeout)
       end
-
-
     end
 
     context 'when failure reason is not job_execution_timeout' do

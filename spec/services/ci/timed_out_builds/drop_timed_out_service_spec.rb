@@ -26,6 +26,4 @@ RSpec.describe Ci::TimedOutBuilds::DropTimedOutService, feature_category: :conti
 
     it_behaves_like 'job is unchanged'
   end
-
-
 end
