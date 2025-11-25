@@ -77,13 +77,12 @@ describe('AiCatalogAgentForm', () => {
 
   describe('Initial Rendering', () => {
     it('renders the form with the correct initial values when props are provided', () => {
-      createWrapper({ props: { initialValues } });
+      createWrapper({ props: { initialValues }, isGlobal: true });
 
       expect(findProjectDropdown().props('value')).toBe(initialValues.projectId);
       expect(findNameField().props('value')).toBe(initialValues.name);
       expect(findDescriptionField().props('value')).toBe(initialValues.description);
       expect(findSystemPromptField().props('value')).toBe(initialValues.systemPrompt);
-      expect(findVisibilityLevelRadioGroup().props('initialValue')).toBe(initialValues.public);
       expect(findVisibilityLevelRadioGroup().props('value')).toBe(VISIBILITY_LEVEL_PUBLIC);
     });
 
@@ -94,25 +93,23 @@ describe('AiCatalogAgentForm', () => {
       expect(findNameField().props('value')).toBe('');
       expect(findDescriptionField().props('value')).toBe('');
       expect(findSystemPromptField().props('value')).toBe('');
-      expect(findVisibilityLevelRadioGroup().props('initialValue')).toBe(false);
       expect(findVisibilityLevelRadioGroup().props('value')).toBe(VISIBILITY_LEVEL_PRIVATE);
     });
 
     it('renders the form with default values and provided project when no props are provided and form is not global', () => {
       createWrapper({ isGlobal: false });
 
-      expect(findProjectDropdown().props('value')).toBe('gid://gitlab/Project/1000000');
+      expect(findProjectDropdown().exists()).toBe(false);
       expect(findNameField().props('value')).toBe('');
       expect(findDescriptionField().props('value')).toBe('');
       expect(findSystemPromptField().props('value')).toBe('');
-      expect(findVisibilityLevelRadioGroup().props('initialValue')).toBe(false);
       expect(findVisibilityLevelRadioGroup().props('value')).toBe(VISIBILITY_LEVEL_PRIVATE);
     });
 
-    it('renders project dropdown as disabled when in edit mode', () => {
+    it('does not render project dropdown when in edit mode', () => {
       createWrapper({ props: { mode: 'edit' } });
 
-      expect(findProjectDropdown().props('disabled')).toBe(true);
+      expect(findProjectDropdown().exists()).toBe(false);
     });
   });
 
@@ -213,7 +210,7 @@ describe('AiCatalogAgentForm', () => {
     const mockErrorMessage = 'The agent could not be created';
 
     beforeEach(() => {
-      createWrapper({ props: { errors: [mockErrorMessage] } });
+      createWrapper({ props: { errors: [mockErrorMessage] }, isGlobal: true });
     });
 
     it('passes error alert', () => {

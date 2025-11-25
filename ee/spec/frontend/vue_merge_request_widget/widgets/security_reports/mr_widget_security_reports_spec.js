@@ -1001,5 +1001,66 @@ describe('MR Widget Security Reports', () => {
         });
       });
     });
+
+    describe('error handling', () => {
+      it('handles GraphQL errors', async () => {
+        const graphqlError = {
+          graphQLErrors: [
+            {
+              extensions: { code: 'PARSING_ERROR' },
+              message: 'Schema parsing failed',
+            },
+          ],
+        };
+
+        const customHandler = jest.fn().mockRejectedValue(graphqlError);
+
+        createComponent({
+          provide: { glFeatures: { mrSecurityWidgetGraphql: true } },
+          mountFn: mountExtended,
+          apolloProvider: createMockApollo([
+            [enabledScansQuery, jest.fn().mockResolvedValue(enabledScansQueryResult())],
+            [findingReportsComparerQuery, customHandler],
+          ]),
+        });
+
+        await waitForPromises();
+
+        const result = await getFirstScanResult();
+        expect(result.status).toBe(500);
+        expect(result.data.error).toBe(true);
+      });
+
+      it('displays parsing error message in DOM', async () => {
+        const graphqlError = {
+          graphQLErrors: [
+            {
+              extensions: { code: 'PARSING_ERROR' },
+              message: 'Schema parsing failed',
+            },
+          ],
+        };
+
+        const customHandler = jest.fn().mockRejectedValue(graphqlError);
+
+        createComponent({
+          provide: { glFeatures: { mrSecurityWidgetGraphql: true } },
+          mountFn: mountExtended,
+          apolloProvider: createMockApollo([
+            [enabledScansQuery, jest.fn().mockResolvedValue(enabledScansQueryResult())],
+            [findingReportsComparerQuery, customHandler],
+          ]),
+        });
+
+        await waitForPromises();
+        await getFirstScanResult(); // Trigger the error
+
+        expect(
+          wrapper
+            .findByText('Parsing schema failed. Check the validity of your .gitlab-ci.yml content.')
+            .exists(),
+        ).toBe(true);
+      });
+    });
   });
 });

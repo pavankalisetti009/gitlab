@@ -1,11 +1,14 @@
 <script>
-import { GlButton, GlModalDirective } from '@gitlab/ui';
+import EMPTY_SVG_URL from '@gitlab/svgs/dist/illustrations/empty-state/empty-ai-catalog-md.svg?url';
+import { GlButton, GlModalDirective, GlTabs, GlTab } from '@gitlab/ui';
 import { __, s__, sprintf } from '~/locale';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
+import ResourceListsEmptyState from '~/vue_shared/components/resource_lists/empty_state.vue';
 import AiCatalogListHeader from 'ee/ai/catalog/components/ai_catalog_list_header.vue';
+import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
 import aiCatalogConfiguredItemsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_configured_items.query.graphql';
 import aiCatalogGroupUserPermissionsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_group_user_permissions.query.graphql';
 import aiCatalogProjectUserPermissionsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_project_user_permissions.query.graphql';
@@ -15,6 +18,7 @@ import {
   AI_CATALOG_CONSUMER_TYPE_PROJECT,
   AI_CATALOG_CONSUMER_LABELS,
   FLOW_VISIBILITY_LEVEL_DESCRIPTIONS,
+  PAGE_SIZE,
 } from 'ee/ai/catalog/constants';
 import { createAvailableFlowItemTypes, prerequisitesError } from 'ee/ai/catalog/utils';
 import { TYPENAME_PROJECT } from '~/graphql_shared/constants';
@@ -26,6 +30,7 @@ import {
   AI_CATALOG_FLOWS_SHOW_ROUTE,
   AI_CATALOG_FLOWS_ROUTE,
 } from 'ee/ai/catalog/router/constants';
+import projectAiCatalogFlowsQuery from '../../graphql/queries/get_project_flows.query.graphql';
 import AddProjectItemConsumerModal from '../../components/catalog/add_project_item_consumer_modal.vue';
 import AiCatalogConfiguredItemsWrapper from '../../components/catalog/ai_catalog_configured_items_wrapper.vue';
 
@@ -33,8 +38,12 @@ export default {
   name: 'AiFlowsIndex',
   components: {
     GlButton,
+    GlTabs,
+    GlTab,
     ErrorsAlert,
+    ResourceListsEmptyState,
     AiCatalogListHeader,
+    AiCatalogList,
     AddProjectItemConsumerModal,
     AiCatalogConfiguredItemsWrapper,
   },
@@ -57,6 +66,26 @@ export default {
     },
   },
   apollo: {
+    aiFlows: {
+      query: projectAiCatalogFlowsQuery,
+      skip() {
+        return !this.projectPath || this.selectedTabIndex === 0;
+      },
+      variables() {
+        return {
+          projectPath: this.projectPath,
+          itemTypes: this.itemTypes,
+          ...this.paginationVariables,
+        };
+      },
+      update: (data) => data?.project?.aiCatalogItems?.nodes || [],
+      result({ data }) {
+        this.pageInfo = data?.project?.aiCatalogItems?.pageInfo || {};
+      },
+      error() {
+        this.errors = [s__('AICatalog|There was a problem fetching flows.')];
+      },
+    },
     groupUserPermissions: {
       query: aiCatalogGroupUserPermissionsQuery,
       skip() {
@@ -84,13 +113,25 @@ export default {
   },
   data() {
     return {
+      aiFlows: [],
       groupUserPermissions: {},
       projectUserPermissions: {},
       errors: [],
       errorTitle: null,
+      pageInfo: {},
+      paginationVariables: {
+        before: null,
+        after: null,
+        first: PAGE_SIZE,
+        last: null,
+      },
+      selectedTabIndex: 0,
     };
   },
   computed: {
+    isLoading() {
+      return this.$apollo.queries.aiFlows.loading;
+    },
     isFlowsAvailable() {
       return this.glFeatures.aiCatalogFlows;
     },
@@ -119,10 +160,6 @@ export default {
     },
     itemTypeConfig() {
       return {
-        disableActionItem: {
-          showActionItem: () => this.userPermissions?.adminAiCatalogItemConsumer || false,
-          text: __('Disable'),
-        },
         showRoute: AI_CATALOG_FLOWS_SHOW_ROUTE,
         visibilityTooltip: {
           [VISIBILITY_LEVEL_PUBLIC_STRING]:
@@ -130,6 +167,15 @@ export default {
           [VISIBILITY_LEVEL_PRIVATE_STRING]:
             FLOW_VISIBILITY_LEVEL_DESCRIPTIONS[VISIBILITY_LEVEL_PRIVATE_STRING],
         },
+      };
+    },
+    itemTypeConfigEnabled() {
+      return {
+        disableActionItem: {
+          showActionItem: () => this.userPermissions?.adminAiCatalogItemConsumer || false,
+          text: __('Disable'),
+        },
+        ...this.itemTypeConfig,
       };
     },
     disableConfirmTitle() {
@@ -150,6 +196,12 @@ export default {
       return sprintf(s__('AICatalog|Use flows in your %{namespaceType}.'), {
         namespaceType: this.namespaceTypeLabel,
       });
+    },
+    emptyStateDescription() {
+      return s__('AICatalog|Flows use multiple agents to complete tasks automatically.');
+    },
+    emptyStateButtonText() {
+      return s__('AICatalog|Explore the AI Catalog');
     },
   },
   methods: {
@@ -199,6 +251,30 @@ export default {
         Sentry.captureException(error);
       }
     },
+    resetPagination() {
+      this.paginationVariables = {
+        before: null,
+        after: null,
+        first: PAGE_SIZE,
+        last: null,
+      };
+    },
+    handleNextPage() {
+      this.paginationVariables = {
+        before: null,
+        after: this.pageInfo.endCursor,
+        first: PAGE_SIZE,
+        last: null,
+      };
+    },
+    handlePrevPage() {
+      this.paginationVariables = {
+        after: null,
+        before: this.pageInfo.startCursor,
+        first: null,
+        last: PAGE_SIZE,
+      };
+    },
     handleError({ title, errors }) {
       this.errorTitle = title;
       this.errors = errors;
@@ -220,6 +296,7 @@ export default {
       itemSublabel: s__('AICatalog|Flow ID: %{id}'),
     },
   },
+  EMPTY_SVG_URL,
 };
 </script>
 
@@ -237,17 +314,59 @@ export default {
       </template>
     </ai-catalog-list-header>
     <errors-alert class="gl-mt-5" :title="errorTitle" :errors="errors" @dismiss="dismissErrors" />
+
+    <gl-tabs v-if="isProjectNamespace" v-model="selectedTabIndex" content-class="gl-py-0">
+      <gl-tab :title="__('Enabled')">
+        <ai-catalog-configured-items-wrapper
+          :disable-confirm-title="disableConfirmTitle"
+          :disable-confirm-message="disableConfirmMessage"
+          :empty-state-title="emptyStateTitle"
+          :empty-state-description="emptyStateDescription"
+          :empty-state-button-href="exploreHref"
+          :empty-state-button-text="emptyStateButtonText"
+          :item-types="itemTypes"
+          :item-type-config="itemTypeConfigEnabled"
+          @error="handleError"
+        />
+      </gl-tab>
+      <gl-tab :title="s__('AICatalog|Managed')" lazy @click="resetPagination">
+        <ai-catalog-list
+          :is-loading="isLoading"
+          :items="aiFlows"
+          :item-type-config="itemTypeConfig"
+          :disable-confirm-title="disableConfirmTitle"
+          :disable-confirm-message="disableConfirmMessage"
+          :page-info="pageInfo"
+          data-testid="managed-flows-list"
+          @next-page="handleNextPage"
+          @prev-page="handlePrevPage"
+        >
+          <template #empty-state>
+            <resource-lists-empty-state
+              :title="emptyStateTitle"
+              :description="emptyStateDescription"
+              :svg-path="$options.EMPTY_SVG_URL"
+            >
+              <template #actions>
+                <gl-button variant="confirm" :href="exploreHref">
+                  {{ emptyStateButtonText }}
+                </gl-button>
+              </template>
+            </resource-lists-empty-state>
+          </template>
+        </ai-catalog-list>
+      </gl-tab>
+    </gl-tabs>
     <ai-catalog-configured-items-wrapper
+      v-else
       :disable-confirm-title="disableConfirmTitle"
       :disable-confirm-message="disableConfirmMessage"
       :empty-state-title="emptyStateTitle"
-      :empty-state-description="
-        s__('AICatalog|Flows use multiple agents to complete tasks automatically.')
-      "
+      :empty-state-description="emptyStateDescription"
       :empty-state-button-href="exploreHref"
-      :empty-state-button-text="s__('AICatalog|Explore the AI Catalog')"
+      :empty-state-button-text="emptyStateButtonText"
       :item-types="itemTypes"
-      :item-type-config="itemTypeConfig"
+      :item-type-config="itemTypeConfigEnabled"
       @error="handleError"
     />
     <add-project-item-consumer-modal

@@ -13,6 +13,11 @@ import SmartInterval from '~/smart_interval';
 import { CRITICAL, HIGH } from 'ee/vulnerabilities/constants';
 import findingReportsComparerQuery from 'ee/vue_merge_request_widget/queries/finding_reports_comparer.query.graphql';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import {
+  HTTP_STATUS_INTERNAL_SERVER_ERROR,
+  HTTP_STATUS_OK,
+  HTTP_STATUS_ACCEPTED,
+} from '~/lib/utils/http_status';
 import SummaryText, { MAX_NEW_VULNERABILITIES } from './summary_text.vue';
 import SecurityTrainingPromoWidget from './security_training_promo_widget.vue';
 import ReportDetails from './mr_widget_security_report_details.vue';
@@ -463,7 +468,11 @@ export default {
 
           if (data?.status !== 'PARSED') {
             // Need to pass "poll-interval" header to trigger MrWidget's polling mechanism
-            return { headers: { 'poll-interval': POLL_INTERVAL }, status: 202, data: {} };
+            return {
+              headers: { 'poll-interval': POLL_INTERVAL },
+              status: HTTP_STATUS_ACCEPTED,
+              data: {},
+            };
           }
 
           const added = data.report?.added?.map(transformFinding) || [];
@@ -488,7 +497,20 @@ export default {
           this.$emit('loaded', added.length);
 
           // Pass empty header (no "poll-interval") to stop MrWidget's polling mechanism
-          return { headers: {}, status: 200, data: report };
+          return { headers: {}, status: HTTP_STATUS_OK, data: report };
+        })
+        .catch((error) => {
+          const report = { ...defaultReportStructure, error: true };
+
+          this.reportsByScanType.full = { ...this.reportsByScanType.full, [reportType]: report };
+
+          if (error.graphQLErrors?.some((err) => err.extensions?.code === 'PARSING_ERROR')) {
+            this.topLevelErrorMessage = s__(
+              'ciReport|Parsing schema failed. Check the validity of your .gitlab-ci.yml content.',
+            );
+          }
+
+          return { headers: {}, status: HTTP_STATUS_INTERNAL_SERVER_ERROR, data: report };
         });
     },
 

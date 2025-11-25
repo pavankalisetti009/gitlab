@@ -63,13 +63,13 @@ export default {
         <ai-catalog-item-field :title="s__('AICatalog|Description')" :value="item.description" />
       </form-section>
       <form-section :title="s__('AICatalog|Visibility & access')">
+        <ai-catalog-item-field v-if="projectName" :title="s__('AICatalog|Managed by')">
+          <gl-link :href="item.project.webUrl">{{ projectName }}</gl-link>
+        </ai-catalog-item-field>
         <ai-catalog-item-visibility-field
           :public="item.public"
           :description-texts="$options.FLOW_VISIBILITY_LEVEL_DESCRIPTIONS"
         />
-        <ai-catalog-item-field v-if="projectName" :title="s__('AICatalog|Source project')">
-          <gl-link :href="item.project.webUrl">{{ projectName }}</gl-link>
-        </ai-catalog-item-field>
       </form-section>
       <form-section :title="s__('AICatalog|Configuration')">
         <ai-catalog-item-field v-if="flowTrigger" :title="s__('DuoAgentsPlatform|Triggers')">

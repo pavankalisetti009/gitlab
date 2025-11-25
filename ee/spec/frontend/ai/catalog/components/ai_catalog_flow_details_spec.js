@@ -63,15 +63,15 @@ describe('AiCatalogFlowDetails', () => {
     });
 
     it('renders "Visibility & access" details', () => {
-      expect(accessRightsDetails.at(0).props('title')).toBe('Visibility');
-      expect(accessRightsDetails.at(0).text()).toContain('Public');
+      expect(accessRightsDetails.at(1).props('title')).toBe('Visibility');
+      expect(accessRightsDetails.at(1).text()).toContain('Public');
     });
 
-    it('renders source project with link', () => {
-      const sourceProjectField = accessRightsDetails.at(1);
+    it('renders "Managed by" with link', () => {
+      const sourceProjectField = accessRightsDetails.at(0);
       const link = findSourceProjectLink();
 
-      expect(sourceProjectField.props('title')).toBe('Source project');
+      expect(sourceProjectField.props('title')).toBe('Managed by');
       expect(link.attributes('href')).toBe(mockFlow.project.webUrl);
       expect(link.text()).toBe(mockFlow.project.nameWithNamespace);
     });
