@@ -5,6 +5,7 @@ require 'spec_helper'
 RSpec.describe Vulnerabilities::ExternalIssueLink, feature_category: :vulnerability_management do
   describe 'associations and fields' do
     it { is_expected.to belong_to(:vulnerability) }
+    it { is_expected.to belong_to(:finding).with_foreign_key(:vulnerability_occurrence_id).class_name('Vulnerabilities::Finding') }
     it { is_expected.to define_enum_for(:link_type).with_values(created: 1) }
 
     it 'provides the "created" as default link_type' do

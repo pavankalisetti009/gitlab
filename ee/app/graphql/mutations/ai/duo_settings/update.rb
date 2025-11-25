@@ -50,10 +50,16 @@ module Mutations
         private
 
         def check_feature_available!(args)
-          [:ai_gateway_url, :duo_agent_platform_service_url, :ai_gateway_timeout_seconds].each do |setting|
+          [:ai_gateway_url, :duo_agent_platform_service_url].each do |setting|
             if args.key?(setting) && !allowed_to_update?(:manage_self_hosted_models_settings)
               raise_resource_not_available_error!(setting)
             end
+          end
+
+          if args.key?(:ai_gateway_timeout_seconds) &&
+              (!allowed_to_update?(:manage_instance_model_selection) ||
+               !allowed_to_update?(:manage_self_hosted_models_settings))
+            raise_resource_not_available_error!(:ai_gateway_timeout_seconds)
           end
 
           raise_resource_not_available_error!(:duo_core_features_enabled) if args.key?(:duo_core_features_enabled) &&

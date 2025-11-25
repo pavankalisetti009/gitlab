@@ -25,6 +25,7 @@ query getGroupMergeRequestsCountEE(
   $mergedBefore: Time
   $mergedAfter: Time
   $not: MergeRequestsResolverNegatedParams
+  $or: UnionedMergeRequestFilterInput
 ) {
   namespace: group(fullPath: $fullPath) {
     id
@@ -55,6 +56,7 @@ query getGroupMergeRequestsCountEE(
       mergedBefore: $mergedBefore
       mergedAfter: $mergedAfter
       not: $not
+      or: $or
       includeSubgroups: true
     ) {
       count
@@ -86,6 +88,7 @@ query getGroupMergeRequestsCountEE(
       mergedBefore: $mergedBefore
       mergedAfter: $mergedAfter
       not: $not
+      or: $or
       includeSubgroups: true
     ) {
       count
@@ -117,6 +120,7 @@ query getGroupMergeRequestsCountEE(
       mergedBefore: $mergedBefore
       mergedAfter: $mergedAfter
       not: $not
+      or: $or
       includeSubgroups: true
     ) {
       count
@@ -148,6 +152,7 @@ query getGroupMergeRequestsCountEE(
       mergedBefore: $mergedBefore
       mergedAfter: $mergedAfter
       not: $not
+      or: $or
       includeSubgroups: true
     ) {
       count

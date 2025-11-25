@@ -5,6 +5,13 @@ require 'spec_helper'
 RSpec.describe Vulnerabilities::IssueLink, feature_category: :vulnerability_management do
   describe 'associations and fields' do
     it { is_expected.to belong_to(:vulnerability) }
+
+    it do
+      is_expected.to belong_to(:finding)
+        .with_foreign_key(:vulnerability_occurrence_id)
+        .class_name('Vulnerabilities::Finding')
+    end
+
     it { is_expected.to belong_to(:issue) }
     it { is_expected.to have_one(:author).through(:issue).class_name("User") }
 
