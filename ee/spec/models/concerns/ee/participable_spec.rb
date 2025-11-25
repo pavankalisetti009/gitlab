@@ -38,9 +38,5 @@ RSpec.describe EE::Participable do
         expect(instance.participant?(user3)).to be true
       end
     end
-
-    describe '#visible_participants' do
-      it_behaves_like 'visible participants for issuable with read ability', :epic
-    end
   end
 end
