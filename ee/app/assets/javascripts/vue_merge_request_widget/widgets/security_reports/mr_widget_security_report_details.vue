@@ -309,7 +309,7 @@ export default {
                       class="gl-mt-2"
                     >
                       <template #body>
-                        {{ $options.SEVERITY_LEVELS[vuln.severity] }}
+                        {{ $options.SEVERITY_LEVELS[vuln.severity] }}:
                         <gl-button
                           variant="link"
                           class="gl-ml-2 gl-overflow-hidden gl-text-ellipsis gl-whitespace-nowrap"

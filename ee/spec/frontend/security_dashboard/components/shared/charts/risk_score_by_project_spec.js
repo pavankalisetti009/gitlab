@@ -151,9 +151,9 @@ describe('RiskScoreByProject chart', () => {
       );
     });
 
-    it('renders a link to the project', () => {
+    it('renders a link to the project vulnerability report', () => {
       expect(findPopoverLink(itemIndex).props('href')).toBe(
-        DEFAULT_RISK_SCORES[itemIndex].project.webUrl,
+        `${DEFAULT_RISK_SCORES[itemIndex].project.webUrl}/-/security/vulnerability_report`,
       );
     });
 

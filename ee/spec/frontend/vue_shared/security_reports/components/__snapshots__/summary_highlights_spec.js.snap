@@ -17,7 +17,7 @@ exports[`MR Widget Security Reports - Summary Highlights should display the summ
   >
     20 high
   </strong>
-  and
+  , and
   <strong
     data-testid="other"
   >

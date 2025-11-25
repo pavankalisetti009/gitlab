@@ -2,6 +2,8 @@
 key_path: counts.count_total_code_suggestions_direct_access_rate_limit_exceeded
 description: Count of the number of requests that have exceeded the rate limit for the `POST /code_suggestions/direct_access` API endpoint.
 product_group: code_creation
+product_categories:
+- code_suggestions
 performance_indicator_type: []
 value_type: number
 status: active
