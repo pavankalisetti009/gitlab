@@ -9,6 +9,9 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Update, feature_category: :
   let_it_be(:maintainer) { create(:user) }
   let_it_be(:project) { create(:project, maintainers: maintainer) }
   let_it_be_with_reload(:item_consumer) { create(:ai_catalog_item_consumer, project: project) }
+  let_it_be_with_reload(:latest_version) do
+    create(:ai_catalog_item_version, :released, item: item_consumer.item, project: project)
+  end
 
   let(:current_user) { maintainer }
   let(:mutation) do
@@ -26,7 +29,8 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Update, feature_category: :
   let(:mutation_response) { graphql_data_at(:ai_catalog_item_consumer_update) }
   let(:params) do
     {
-      id: item_consumer.to_global_id
+      id: item_consumer.to_global_id,
+      pinned_version_prefix: latest_version.version
     }
   end
 
@@ -60,9 +64,9 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Update, feature_category: :
 
   context 'when the item consumer does not exist' do
     let(:params) do
-      {
+      super().merge(
         id: Gitlab::GlobalId.build(model_name: 'Ai::Catalog::ItemConsumer', id: non_existing_record_id)
-      }
+      )
     end
 
     it_behaves_like 'an authorization failure'
@@ -79,25 +83,23 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Update, feature_category: :
     end
 
     it 'returns the service error message and item consumer with original attributes' do
+      original_version = item_consumer.pinned_version_prefix
+
       execute
 
-      expect(graphql_dig_at(mutation_response, :item_consumer, :pinned_version_prefix)).to be_nil
+      expect(graphql_dig_at(mutation_response, :item_consumer, :pinned_version_prefix)).to eq(original_version)
       expect(graphql_dig_at(mutation_response, :errors)).to contain_exactly("Update failed")
     end
   end
 
   context 'when update succeeds' do
-    it 'does not update the item consumer' do
-      # While all mutation arguments are no-ops, we expect no change to the item consumer.
-      expect { execute }.not_to change { item_consumer.reload.attributes }
-    end
-
     it 'returns a success response' do
-      execute
+      expect { execute }
+        .to change { item_consumer.reload.pinned_version_prefix }.to(latest_version.version)
 
       expect(graphql_dig_at(mutation_response, :errors)).to be_empty
       expect(graphql_dig_at(mutation_response, :item_consumer)).to match(
-        a_graphql_entity_for(item_consumer)
+        a_graphql_entity_for(item_consumer, :pinned_version_prefix)
       )
     end
   end
