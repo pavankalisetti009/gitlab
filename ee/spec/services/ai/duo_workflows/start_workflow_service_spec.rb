@@ -783,33 +783,6 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
 
         expect(execute).to be_success
       end
-
-      context 'without ai_dap_use_headless_node_executor feature flag' do
-        before do
-          stub_feature_flags(ai_dap_use_headless_node_executor: false)
-        end
-
-        let(:executor_commands) do
-          [
-            %(wget #{Gitlab::DuoWorkflow::Executor.executor_binary_url} -O /tmp/duo-workflow-executor.tar.gz),
-            %(tar xf /tmp/duo-workflow-executor.tar.gz --directory /tmp),
-            %(chmod +x /tmp/duo-workflow-executor),
-            %(/tmp/duo-workflow-executor)
-          ]
-        end
-
-        it 'prepends setup_script commands to the main commands' do
-          allow(Ci::Workloads::RunWorkloadService).to receive(:new).and_call_original
-
-          expect(execute).to be_success
-
-          expect(Ci::Workloads::RunWorkloadService).to have_received(:new) do |workload_definition:, **_kwargs|
-            expect(workload_definition.commands).to eq(setup_commands + shared_main_commands + executor_commands)
-          end
-
-          expect(execute).to be_success
-        end
-      end
     end
 
     context 'when setup_script is not present' do
@@ -840,33 +813,6 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
         end
 
         it 'uses only the main commands' do
-          expect(execute).to be_success
-
-          expect(Ci::Workloads::RunWorkloadService).to have_received(:new) do |workload_definition:, **_kwargs|
-            expect(workload_definition.commands).to eq(shared_main_commands + executor_commands)
-          end
-
-          expect(execute).to be_success
-        end
-      end
-
-      context 'without ai_dap_use_headless_node_executor feature flag' do
-        before do
-          stub_feature_flags(ai_dap_use_headless_node_executor: false)
-        end
-
-        let(:executor_commands) do
-          [
-            %(wget #{Gitlab::DuoWorkflow::Executor.executor_binary_url} -O /tmp/duo-workflow-executor.tar.gz),
-            %(tar xf /tmp/duo-workflow-executor.tar.gz --directory /tmp),
-            %(chmod +x /tmp/duo-workflow-executor),
-            %(/tmp/duo-workflow-executor)
-          ]
-        end
-
-        it 'prepends setup_script commands to the main commands' do
-          allow(Ci::Workloads::RunWorkloadService).to receive(:new).and_call_original
-
           expect(execute).to be_success
 
           expect(Ci::Workloads::RunWorkloadService).to have_received(:new) do |workload_definition:, **_kwargs|

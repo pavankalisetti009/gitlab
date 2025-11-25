@@ -162,15 +162,6 @@ module Ai
       end
 
       def set_up_executor_commands
-        if Feature.disabled?(:ai_dap_use_headless_node_executor, @current_user)
-          return [
-            %(wget #{Gitlab::DuoWorkflow::Executor.executor_binary_url} -O /tmp/duo-workflow-executor.tar.gz),
-            %(tar xf /tmp/duo-workflow-executor.tar.gz --directory /tmp),
-            %(chmod +x /tmp/duo-workflow-executor),
-            %(/tmp/duo-workflow-executor)
-          ]
-        end
-
         [
           [
             "npx -y @gitlab/duo-cli@#{DUO_CLI_VERSION} run",
@@ -187,8 +178,6 @@ module Ai
       end
 
       def workflow_metadata
-        return @params[:workflow_metadata] if Feature.disabled?(:ai_dap_use_headless_node_executor, @current_user)
-
         # TODO: This is temporary workaround to pass model selection via
         # metadata into node executor to address
         # https://gitlab.com/gitlab-org/editor-extensions/gitlab-lsp/-/issues/1767
