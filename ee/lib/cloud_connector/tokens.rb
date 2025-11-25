@@ -13,8 +13,8 @@ module CloudConnector
     # @param resource [User], [Group], [Project] or [:instance]
     # @param extra_claims [Hash] Additional JWT claims to include
     # @return [String] JWT token
-    def get(unit_primitive:, resource:, extra_claims: {})
-      if use_self_signed_token?(unit_primitive)
+    def get(unit_primitive:, resource:, extra_claims: {}, feature_setting: nil)
+      if use_self_signed_token?(unit_primitive, feature_setting: feature_setting)
         issue_token(resource, extra_claims)
       else
         TokenLoader.new.token
@@ -43,12 +43,13 @@ module CloudConnector
       GitlabSubscriptions::AddOnPurchase.for_active_add_ons(add_on_names, resource).uniq_add_on_names
     end
 
-    def use_self_signed_token?(unit_primitive)
+    def use_self_signed_token?(unit_primitive, feature_setting: nil)
       return true if ::Gitlab::Saas.feature_available?(:cloud_connector_self_signed_tokens)
-
       # This should be removed in https://gitlab.com/gitlab-org/gitlab/-/issues/543706
       return true if unit_primitive == :self_hosted_models
-      return true if ::Ai::FeatureSetting.feature_for_unit_primitive(unit_primitive)&.self_hosted?
+
+      feature_setting ||= ::Ai::FeatureSetting.feature_for_unit_primitive(unit_primitive)
+      return true if feature_setting&.self_hosted?
 
       Gitlab::Utils.to_boolean(ENV['CLOUD_CONNECTOR_SELF_SIGN_TOKENS'])
     end

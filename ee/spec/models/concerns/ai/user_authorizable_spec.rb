@@ -332,6 +332,42 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
       end
     end
 
+    context 'when feature_setting is provided' do
+      let_it_be(:self_hosted_model) do
+        create(:ai_self_hosted_model, model: :claude_3, identifier: 'claude-3-7-sonnet-20250219')
+      end
+
+      let_it_be(:feature_setting) do
+        create(:ai_feature_setting, feature: :code_generations, self_hosted_model: self_hosted_model)
+      end
+
+      let(:self_hosted_unit_primitive) do
+        build(:cloud_connector_unit_primitive, name: :self_hosted_models, add_ons: unit_primitive_add_ons)
+      end
+
+      subject(:allowed_to_use) do
+        user.allowed_to_use(ai_feature, unit_primitive_name: :invalid_unit_primitive, feature_setting: feature_setting)
+      end
+
+      before do
+        stub_licensed_features(licensed_feature => true)
+        allow(self_hosted_unit_primitive).to receive(:cut_off_date).and_return(
+          free_access ? nil : (Time.current - 1.month)
+        )
+        allow(Gitlab::CloudConnector::DataModel::UnitPrimitive).to receive(:find_by_name).with(:self_hosted_models)
+          .and_return(self_hosted_unit_primitive)
+      end
+
+      it 'uses self_hosted_models unit primitive when feature_setting is self_hosted' do
+        expect(Gitlab::CloudConnector::DataModel::UnitPrimitive).to receive(:find_by_name).with(:self_hosted_models)
+          .and_return(self_hosted_unit_primitive)
+
+        allowed_to_use
+      end
+
+      it { is_expected.to eq expected_response }
+    end
+
     context 'when unit_primitive data is missing' do
       let(:expected_allowed) { false }
       let(:unit_primitive) { nil }

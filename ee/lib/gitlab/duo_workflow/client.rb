@@ -48,13 +48,14 @@ module Gitlab
         !!Gitlab.config.duo_workflow.debug
       end
 
-      def self.cloud_connector_headers(user:)
+      def self.cloud_connector_headers(user:, feature_setting: nil)
         headers = Gitlab::AiGateway
           .public_headers(user: user, ai_feature_name: :duo_workflow,
-            unit_primitive_name: :duo_workflow_execute_workflow)
+            unit_primitive_name: :duo_workflow_execute_workflow,
+            feature_setting: feature_setting)
           .transform_keys(&:downcase)
           .merge(
-            'authorization' => "Bearer #{cloud_connector_token(user: user)}",
+            'authorization' => "Bearer #{cloud_connector_token(user: user, feature_setting: feature_setting)}",
             'x-gitlab-authentication-type' => 'oidc'
           )
 
@@ -70,10 +71,11 @@ module Gitlab
         headers
       end
 
-      def self.cloud_connector_token(user:)
+      def self.cloud_connector_token(user:, feature_setting: nil)
         ::CloudConnector::Tokens.get(
           unit_primitive: :duo_agent_platform,
-          resource: user
+          resource: user,
+          feature_setting: feature_setting
         )
       end
 
