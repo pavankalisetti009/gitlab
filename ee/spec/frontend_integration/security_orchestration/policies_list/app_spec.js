@@ -16,20 +16,20 @@ import projectSecurityPoliciesQuery from 'ee/security_orchestration/graphql/quer
 import groupSecurityPoliciesQuery from 'ee/security_orchestration/graphql/queries/group_security_policies.query.graphql';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 import {
-  mockGroupPipelineExecutionPolicyCombinedList,
-  mockGroupPipelineExecutionSchedulePolicyCombinedList,
-  mockProjectPipelineExecutionPolicyCombinedList,
-  mockProjectPipelineExecutionSchedulePolicyCombinedList,
+  mockGroupPipelineExecutionPolicyList,
+  mockGroupPipelineExecutionSchedulePolicyList,
+  mockProjectPipelineExecutionPolicyList,
+  mockProjectPipelineExecutionSchedulePolicyList,
 } from 'ee_jest/security_orchestration/mocks/mock_pipeline_execution_policy_data';
 import {
-  mockGroupScanResultPolicyCombinedList,
-  mockProjectScanResultPolicyCombinedList,
+  mockGroupScanResultPolicyList,
+  mockProjectScanResultPolicyList,
 } from 'ee_jest/security_orchestration/mocks/mock_scan_result_policy_data';
 import {
-  mockGroupScanExecutionPolicyCombinedList,
-  mockProjectScanExecutionPolicyCombinedList,
+  mockGroupScanExecutionPolicyList,
+  mockProjectScanExecutionPolicyList,
 } from 'ee_jest/security_orchestration/mocks/mock_scan_execution_policy_data';
-import { mockProjectVulnerabilityManagementPolicyCombinedList } from 'ee_jest/security_orchestration/mocks/mock_vulnerability_management_policy_data';
+import { mockProjectVulnerabilityManagementPolicyList } from 'ee_jest/security_orchestration/mocks/mock_vulnerability_management_policy_data';
 import { DEFAULT_PROVIDE } from './mocks';
 
 Vue.use(VueApollo);
@@ -37,19 +37,19 @@ Vue.use(VueApollo);
 const linkedSppItemsResponseSpy = mockLinkedSppItemsResponse();
 
 const combinedGroupPolicyList = [
-  mockProjectVulnerabilityManagementPolicyCombinedList,
-  mockGroupPipelineExecutionPolicyCombinedList,
-  mockGroupPipelineExecutionSchedulePolicyCombinedList,
-  mockGroupScanResultPolicyCombinedList,
-  mockGroupScanExecutionPolicyCombinedList,
+  mockProjectVulnerabilityManagementPolicyList,
+  mockGroupPipelineExecutionPolicyList,
+  mockGroupPipelineExecutionSchedulePolicyList,
+  mockGroupScanResultPolicyList,
+  mockGroupScanExecutionPolicyList,
 ];
 
 const combinedProjectPolicyList = [
-  mockProjectVulnerabilityManagementPolicyCombinedList,
-  mockProjectPipelineExecutionPolicyCombinedList,
-  mockProjectPipelineExecutionSchedulePolicyCombinedList,
-  mockProjectScanResultPolicyCombinedList,
-  mockProjectScanExecutionPolicyCombinedList,
+  mockProjectVulnerabilityManagementPolicyList,
+  mockProjectPipelineExecutionPolicyList,
+  mockProjectPipelineExecutionSchedulePolicyList,
+  mockProjectScanResultPolicyList,
+  mockProjectScanExecutionPolicyList,
 ];
 
 const groupSecurityPoliciesSpy = groupSecurityPolicies(combinedGroupPolicyList);

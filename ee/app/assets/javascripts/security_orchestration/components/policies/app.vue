@@ -159,7 +159,7 @@ export default {
         })) || []
       );
     },
-    policiesByTypeCombinedList() {
+    policiesByType() {
       const groupedPolicies = groupBy(this.flattenedPolicies, 'type');
 
       const policiesByType = {
@@ -186,9 +186,6 @@ export default {
       }
 
       return policiesByType;
-    },
-    policiesByType() {
-      return this.policiesByTypeCombinedList;
     },
     isLoadingPolicies() {
       return this.$apollo.queries.securityPolicies.loading;

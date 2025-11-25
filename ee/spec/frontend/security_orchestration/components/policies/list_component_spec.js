@@ -34,7 +34,7 @@ import {
   mockScheduleScanExecutionPoliciesResponse,
 } from '../../mocks/mock_scan_execution_policy_data';
 import {
-  mockProjectScanResultPolicyCombinedList,
+  mockProjectScanResultPolicyList,
   mockScanResultPoliciesResponse,
 } from '../../mocks/mock_scan_result_policy_data';
 
@@ -204,9 +204,9 @@ describe('List component', () => {
     });
 
     it.each`
-      type                | policy                                     | policyType
-      ${'scan execution'} | ${mockScanExecutionPoliciesResponse[0]}    | ${POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.value}
-      ${'scan result'}    | ${mockProjectScanResultPolicyCombinedList} | ${POLICY_TYPE_COMPONENT_OPTIONS.approval.value}
+      type                | policy                                  | policyType
+      ${'scan execution'} | ${mockScanExecutionPoliciesResponse[0]} | ${POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.value}
+      ${'scan result'}    | ${mockProjectScanResultPolicyList}      | ${POLICY_TYPE_COMPONENT_OPTIONS.approval.value}
     `('renders opened editor drawer for a $type policy', async ({ policy, policyType }) => {
       mountWrapper();
       findTable().vm.$emit('row-selected', [policy]);

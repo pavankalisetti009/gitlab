@@ -270,7 +270,7 @@ export const mockProjectScanExecutionPolicy = {
   deprecatedProperties: [],
 };
 
-export const mockProjectScanExecutionPolicyCombinedList = {
+export const mockProjectScanExecutionPolicyList = {
   __typename: 'ScanExecutionPolicy',
   csp: false,
   name: `${mockDastScanExecutionObject.name}-project`,
@@ -335,7 +335,7 @@ export const mockGroupScanExecutionPolicy = {
   },
 };
 
-export const mockGroupScanExecutionPolicyCombinedList = {
+export const mockGroupScanExecutionPolicyList = {
   ...mockProjectScanExecutionPolicy,
   policyAttributes: {
     __typename: 'ScanExecutionPolicyAttributesType',
