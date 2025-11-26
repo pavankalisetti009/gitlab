@@ -124,7 +124,6 @@ module VirtualRegistries
             action_params: {
               file: cache_entry.file,
               file_sha1: cache_entry.file_sha1,
-              file_md5: cache_entry.file_md5,
               content_type: cache_entry.content_type
             }
           }
