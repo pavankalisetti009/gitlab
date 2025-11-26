@@ -2,11 +2,17 @@ import { nextTick } from 'vue';
 import { GlButton } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { createMockDirective } from 'helpers/vue_mock_directive';
+import waitForPromises from 'helpers/wait_for_promises';
+import { copyToClipboard } from '~/lib/utils/copy_to_clipboard';
+import showGlobalToast from '~/vue_shared/plugins/global_toast';
 import AiContentContainer from 'ee/ai/components/content_container.vue';
 import { CHAT_MODES } from 'ee/ai/tanuki_bot/constants';
 import { duoChatGlobalState } from '~/super_sidebar/constants';
 import DuoAgenticChat from 'ee/ai/duo_agentic_chat/components/duo_agentic_chat.vue';
 import DuoChat from 'ee/ai/tanuki_bot/components/duo_chat.vue';
+
+jest.mock('~/lib/utils/copy_to_clipboard');
+jest.mock('~/vue_shared/plugins/global_toast');
 
 describe('AiContentContainer', () => {
   let wrapper;
@@ -67,6 +73,7 @@ describe('AiContentContainer', () => {
   const findCollapseButton = () => wrapper.findByTestId('content-container-collapse-button');
   const findMaximizeButton = () => wrapper.findByTestId('content-container-maximize-button');
   const findBackButton = () => wrapper.findByTestId('content-container-back-button');
+  const findSessionMenu = () => wrapper.findByTestId('content-container-session-menu');
 
   beforeEach(() => {
     // Reset global state before each test
@@ -255,6 +262,106 @@ describe('AiContentContainer', () => {
           $el: expect.anything(),
         }),
       );
+    });
+  });
+
+  describe('session ID menu', () => {
+    const MockComponent = {
+      name: 'MockComponent',
+      template: '<div></div>',
+    };
+
+    const mockComponentTab = {
+      title: 'Test Component',
+      component: MockComponent,
+    };
+
+    it('shows session menu when session ID is received from child', async () => {
+      createComponent({ activeTab: mockComponentTab });
+      expect(findSessionMenu().exists()).toBe(false);
+
+      const dynamicComponent = wrapper.findComponent({ name: 'MockComponent' });
+      dynamicComponent.vm.$emit('session-id-changed', 'new-session-id');
+      await nextTick();
+
+      expect(findSessionMenu().exists()).toBe(true);
+      expect(findSessionMenu().props('items')[0].text).toContain('new-session-id');
+    });
+
+    it('does not render session menu when sessionId is not set', () => {
+      createComponent({ activeTab: mockComponentTab });
+      expect(findSessionMenu().exists()).toBe(false);
+    });
+
+    it('renders session menu with correct props and session ID when set', async () => {
+      createComponent({ activeTab: mockComponentTab });
+
+      const sessionId = 'test-session-123';
+      const dynamicComponent = wrapper.findComponent({ name: 'MockComponent' });
+      dynamicComponent.vm.$emit('session-id-changed', sessionId);
+      await nextTick();
+
+      const menu = findSessionMenu();
+      expect(menu.exists()).toBe(true);
+      expect(menu.props('icon')).toBe('ellipsis_v');
+      expect(menu.props('category')).toBe('tertiary');
+      expect(menu.props('size')).toBe('small');
+      expect(menu.props('noCaret')).toBe(true);
+
+      const items = menu.props('items');
+      expect(items).toHaveLength(1);
+      expect(items[0].text).toContain(sessionId);
+      expect(items[0].text).toContain('Copy Chat Session ID');
+    });
+
+    describe('copying session ID to clipboard', () => {
+      it('copies session ID to clipboard when menu item is clicked', async () => {
+        copyToClipboard.mockResolvedValue();
+        createComponent({ activeTab: mockComponentTab });
+
+        const sessionId = 'test-session-copy';
+        const dynamicComponent = wrapper.findComponent({ name: 'MockComponent' });
+        dynamicComponent.vm.$emit('session-id-changed', sessionId);
+        await nextTick();
+
+        const menu = findSessionMenu();
+        const menuItem = menu.props('items')[0];
+        await menuItem.action();
+
+        expect(copyToClipboard).toHaveBeenCalledWith(sessionId);
+      });
+
+      it('shows success toast when copy succeeds', async () => {
+        copyToClipboard.mockResolvedValue();
+        createComponent({ activeTab: mockComponentTab });
+
+        const dynamicComponent = wrapper.findComponent({ name: 'MockComponent' });
+        dynamicComponent.vm.$emit('session-id-changed', 'test-session-success');
+        await nextTick();
+
+        const menu = findSessionMenu();
+        const menuItem = menu.props('items')[0];
+        await menuItem.action();
+        await waitForPromises();
+
+        expect(showGlobalToast).toHaveBeenCalledWith('Session ID copied to clipboard');
+      });
+
+      it('shows error toast when copy fails', async () => {
+        copyToClipboard.mockRejectedValue(new Error('Failed'));
+        createComponent({ activeTab: mockComponentTab });
+
+        const dynamicComponent = wrapper.findComponent({ name: 'MockComponent' });
+        dynamicComponent.vm.$emit('session-id-changed', 'test-session-fail');
+        await nextTick();
+
+        const menu = findSessionMenu();
+        const menuItem = menu.props('items')[0];
+        await menuItem.action();
+        await waitForPromises();
+
+        expect(showGlobalToast).toHaveBeenCalledWith('Could not copy session ID');
+      });
     });
   });
 });

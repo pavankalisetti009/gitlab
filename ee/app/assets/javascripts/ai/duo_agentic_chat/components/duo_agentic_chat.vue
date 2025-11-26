@@ -438,6 +438,7 @@ export default {
             ? convertToGraphQLId(TYPENAME_AI_DUO_WORKFLOW, parseInt(newWorkflowId, 10))
             : '',
         });
+        this.$emit('session-id-changed', newWorkflowId);
       }
     },
     mode(newMode) {
@@ -458,6 +459,9 @@ export default {
     }
     this.switchMode(this.mode);
     this.loadDuoNextIfNeeded();
+    if (this.workflowId) {
+      this.$emit('session-id-changed', this.workflowId);
+    }
   },
   beforeDestroy() {
     // Remove the event listener when the component is destroyed

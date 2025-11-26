@@ -1,14 +1,17 @@
 <script>
-import { GlButton, GlTooltipDirective } from '@gitlab/ui';
+import { GlButton, GlDisclosureDropdown, GlTooltipDirective } from '@gitlab/ui';
 import SafeHtmlDirective from '~/vue_shared/directives/safe_html';
 import { duoChatGlobalState } from '~/super_sidebar/constants';
-import { __ } from '~/locale';
+import { __, sprintf } from '~/locale';
+import { copyToClipboard } from '~/lib/utils/copy_to_clipboard';
+import showGlobalToast from '~/vue_shared/plugins/global_toast';
 
 export default {
   name: 'AiContentContainer',
   expose: ['getContentComponent'],
   components: {
     GlButton,
+    GlDisclosureDropdown,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -17,6 +20,10 @@ export default {
   inject: ['chatConfiguration'],
   i18n: {
     collapseButtonLabel: __('Collapse panel'),
+    moreOptionsLabel: __('More options'),
+    copySessionIdTooltip: __('Copy Chat Session ID (%{id})'),
+    sessionIdCopiedToast: __('Session ID copied to clipboard'),
+    sessionIdCopyFailedToast: __('Could not copy session ID'),
   },
   props: {
     activeTab: {
@@ -80,6 +87,8 @@ export default {
     return {
       currentTitle: null,
       duoChatGlobalState,
+      sessionId: null,
+      isSessionDropdownVisible: false,
     };
   },
   computed: {
@@ -94,6 +103,22 @@ export default {
       // between modes, ensuring state doesn't persist
       const componentName = this.activeTab.component?.name || 'component';
       return `${componentName}-${this.duoChatGlobalState.chatMode}`;
+    },
+    sessionText() {
+      return sprintf(this.$options.i18n.copySessionIdTooltip, { id: this.sessionId });
+    },
+    sessionIdItems() {
+      return [
+        {
+          text: this.sessionText,
+          action: () => {
+            this.copySessionIdToClipboard();
+          },
+        },
+      ];
+    },
+    showSessionDropdownTooltip() {
+      return !this.isSessionDropdownVisible ? this.$options.i18n.moreOptionsLabel : '';
     },
   },
   watch: {
@@ -118,6 +143,23 @@ export default {
     },
     getContentComponent() {
       return this.$refs['content-component'];
+    },
+    handleSessionIdChanged(sessionId) {
+      this.sessionId = sessionId;
+    },
+    showSessionDropdown() {
+      this.isSessionDropdownVisible = true;
+    },
+    hideSessionDropdown() {
+      this.isSessionDropdownVisible = false;
+    },
+    async copySessionIdToClipboard() {
+      try {
+        await copyToClipboard(this.sessionId);
+        showGlobalToast(this.$options.i18n.sessionIdCopiedToast);
+      } catch {
+        showGlobalToast(this.$options.i18n.sessionIdCopyFailedToast);
+      }
     },
   },
 };
@@ -157,6 +199,20 @@ export default {
       </div>
 
       <div class="ai-panel-header-actions gl-flex gl-gap-x-2 gl-pr-3">
+        <gl-disclosure-dropdown
+          v-if="sessionId"
+          v-gl-tooltip="showSessionDropdownTooltip"
+          icon="ellipsis_v"
+          category="tertiary"
+          text-sr-only
+          size="small"
+          :toggle-text="$options.i18n.moreOptionsLabel"
+          :items="sessionIdItems"
+          no-caret
+          data-testid="content-container-session-menu"
+          @shown="showSessionDropdown"
+          @hidden="hideSessionDropdown"
+        />
         <gl-button
           v-gl-tooltip.bottom
           icon="dash"
@@ -207,6 +263,7 @@ export default {
         class="gl-h-full"
         @switch-to-active-tab="onSwitchToActiveTab"
         @change-title="handleTitleChange"
+        @session-id-changed="handleSessionIdChanged"
       />
     </div>
   </aside>

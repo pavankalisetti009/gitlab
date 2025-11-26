@@ -19834,6 +19834,9 @@ msgstr ""
 msgid "Copy %{protocol} clone URL"
 msgstr ""
 
+msgid "Copy Chat Session ID (%{id})"
+msgstr ""
+
 msgid "Copy ID"
 msgstr ""
 
@@ -20072,6 +20075,9 @@ msgid "Could not connect to FogBugz, check your URL"
 msgstr ""
 
 msgid "Could not connect to Sentry. Refresh the page to try again."
+msgstr ""
+
+msgid "Could not copy session ID"
 msgstr ""
 
 msgid "Could not create Wiki Repository at this time. Please try again later."
@@ -63320,6 +63326,9 @@ msgid "ServicePing|Turn on service ping to review instance-level analytics."
 msgstr ""
 
 msgid "Session ID"
+msgstr ""
+
+msgid "Session ID copied to clipboard"
 msgstr ""
 
 msgid "SessionExpire|Please, sign in again. To avoid data loss, if you have unsaved edits, dismiss the modal and copy the unsaved text before sign in again."
