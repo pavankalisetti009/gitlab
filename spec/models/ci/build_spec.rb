@@ -6131,6 +6131,50 @@ RSpec.describe Ci::Build, feature_category: :continuous_integration, factory_def
     end
   end
 
+  describe 'id_tokens with ci_cd_settings integration' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:user) { create(:user) }
+    let_it_be(:pipeline) { create(:ci_pipeline, project: project, ref: 'main') }
+    let_it_be(:environment) { create(:environment, name: 'production', project: project) }
+
+    let(:build) do
+      create(
+        :ci_build,
+        project: project,
+        pipeline: pipeline,
+        user: user,
+        environment: environment.name,
+        options: { environment: { name: 'production', deployment_tier: 'production' } },
+        id_tokens: { 'ID_TOKEN_1' => { aud: 'https://example.com' } }
+      )
+    end
+
+    before do
+      stub_application_setting(ci_jwt_signing_key: OpenSSL::PKey::RSA.generate(3072).to_s)
+      stub_feature_flags(ci_id_token_environment_sub_claims: true)
+
+      project.ci_cd_settings.update!(
+        id_token_sub_claim_components: %w[project_path environment_protected deployment_tier]
+      )
+    end
+
+    it 'generates JWT with environment_protected and deployment_tier in sub claim' do
+      expect(build.id_tokens).to eq({ 'ID_TOKEN_1' => { 'aud' => 'https://example.com' } })
+
+      expect(project.ci_cd_settings.id_token_sub_claim_components)
+        .to eq(%w[project_path environment_protected deployment_tier])
+
+      id_token = build.variables.find { |v| v[:key] == 'ID_TOKEN_1' }
+      expect(id_token).not_to be_nil
+
+      token = JWT.decode(id_token[:value], nil, false).first
+      expect(token['sub']).to include('project_path')
+      expect(token['sub']).to include('environment_protected')
+      expect(token['sub']).to include('deployment_tier')
+      expect(token['sub']).to eq("project_path:#{project.full_path}:environment_protected:false:deployment_tier:production")
+    end
+  end
+
   describe 'job artifact associations' do
     Ci::JobArtifact.file_types.each do |type, _|
       method = "job_artifacts_#{type}"
