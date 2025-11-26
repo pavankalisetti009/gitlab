@@ -33,7 +33,7 @@ module Ai
       end
 
       def partition_for(routing_value)
-        ::ActiveContext::Hash.consistent_hash(number_of_partitions, routing_value)
+        ::ActiveContext::Hasher.consistent_hash(number_of_partitions, routing_value)
       end
 
       def update_metadata!(new_metadata)
