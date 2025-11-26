@@ -414,4 +414,53 @@ RSpec.describe Ci::RegisterJobService, '#execute', feature_category: :continuous
       end
     end
   end
+
+  describe 'duo workflow restrictions' do
+    let_it_be(:project_for_runner) { create(:project, group: create(:group)) }
+    let_it_be(:project_runner) { create(:ci_runner, :project, projects: [project_for_runner]) }
+
+    subject(:result) { described_class.new(project_runner, nil).execute.build }
+
+    context 'when pipeline is not for duo workflow' do
+      let(:pipeline) do
+        create(:ci_empty_pipeline, project: project_for_runner)
+      end
+
+      it 'picks the build' do
+        expect(result).to be_kind_of(Ci::Build)
+        expect(result).to be_running
+      end
+    end
+
+    context 'when pipeline is for duo workflow' do
+      let(:pipeline) do
+        create(:ci_empty_pipeline, project: project_for_runner, source: Enums::Ci::Pipeline.sources[:duo_workflow])
+      end
+
+      let(:valid_for_duo_workflow) { true }
+
+      before do
+        allow_next_instance_of(Ai::DuoWorkflow::RunnerValidator, project_runner, project_for_runner) do |validator|
+          allow(validator).to receive(:valid?).and_return(valid_for_duo_workflow)
+        end
+      end
+
+      context 'when Ai::DuoWorkflow::RunnerValidator#valid? is true' do
+        it 'picks the build' do
+          expect(result).to be_kind_of(Ci::Build)
+          expect(result).to be_running
+        end
+      end
+
+      context 'when Ai::DuoWorkflow::RunnerValidator#valid? is false' do
+        let(:valid_for_duo_workflow) { false }
+
+        it 'does not pick the build' do
+          expect(result).to be_nil
+          expect(pending_build.reload).to be_failed
+          expect(pending_build.failure_reason).to eq('duo_workflow_not_allowed')
+        end
+      end
+    end
+  end
 end
