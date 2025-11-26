@@ -921,6 +921,9 @@ export default {
     shouldLoad() {
       return !this.isInitialLoadComplete || (!this.isSortKeyInitialized && !this.error);
     },
+    isBulkEditDisabled() {
+      return this.showBulkEditSidebar || this.workItems.length === 0;
+    },
   },
   watch: {
     eeWorkItemUpdateCount() {
@@ -1495,7 +1498,7 @@ export default {
             </gl-button>
             <gl-button
               v-if="allowBulkEditing"
-              :disabled="showBulkEditSidebar"
+              :disabled="isBulkEditDisabled"
               data-testid="bulk-edit-start-button"
               @click="showBulkEditSidebar = true"
             >
@@ -1543,7 +1546,7 @@ export default {
               </gl-button>
               <gl-button
                 v-if="allowBulkEditing"
-                :disabled="showBulkEditSidebar"
+                :disabled="isBulkEditDisabled"
                 data-testid="bulk-edit-start-button"
                 @click="showBulkEditSidebar = true"
               >
