@@ -19,13 +19,13 @@ Vue.use(Vuex);
 const queryResponse = {
   data: {
     namespace: {
-      scanResultPolicies: {
+      securityPolicies: {
         nodes: [mockProjectScanResultPolicy, mockProjectWithBranchesScanResultPolicy],
       },
     },
   },
 };
-const emptyQueryResponse = { data: { project: { scanResultPolicies: { nodes: [] } } } };
+const emptyQueryResponse = { data: { project: { securityPolicies: { nodes: [] } } } };
 
 const NO_SECURITY_POLICIES_MESSAGE = "You don't have any security policies yet";
 

@@ -11,6 +11,7 @@ import {
   exceedsScheduleRulesLimit,
   extractSourceParameter,
   extractTypeParameter,
+  flattenPolicies,
 } from 'ee/security_orchestration/components/policies/utils';
 import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
 import projectSecurityPoliciesQuery from 'ee/security_orchestration/graphql/queries/project_security_policies.query.graphql';
@@ -152,12 +153,7 @@ export default {
       return this.enabledExperiments.includes('pipeline_execution_schedule_policy');
     },
     flattenedPolicies() {
-      return (
-        this.securityPolicies?.filter(Boolean).map(({ policyAttributes = {}, ...policy }) => ({
-          ...policy,
-          ...policyAttributes,
-        })) || []
-      );
+      return flattenPolicies(this.securityPolicies);
     },
     policiesByType() {
       const groupedPolicies = groupBy(this.flattenedPolicies, 'type');

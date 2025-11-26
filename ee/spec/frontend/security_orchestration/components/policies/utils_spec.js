@@ -6,6 +6,7 @@ import {
   buildPolicyViolationList,
   exceedsActionLimit,
   exceedsScheduleRulesLimit,
+  flattenPolicies,
 } from 'ee/security_orchestration/components/policies/utils';
 import {
   POLICY_SOURCE_OPTIONS,
@@ -204,6 +205,21 @@ describe('utils', () => {
           link: '/help/user/application_security/policies/scan_execution_policies',
         },
       ]);
+    });
+  });
+
+  describe('flattenPolicies', () => {
+    it.each`
+      policies                                                                                                                      | expectedResult
+      ${[]}                                                                                                                         | ${[]}
+      ${{}}                                                                                                                         | ${[]}
+      ${undefined}                                                                                                                  | ${[]}
+      ${[{ name: 'policy-1', type: 'approval_policy', policyAttributes: { actionApprovers: [], deprecatedProperties: ['test'] } }]} | ${[{ name: 'policy-1', type: 'approval_policy', actionApprovers: [], deprecatedProperties: ['test'] }]}
+      ${[{ name: 'policy-1', type: 'approval_policy' }]}                                                                            | ${[{ name: 'policy-1', type: 'approval_policy' }]}
+      ${[{ name: 'policy-1', type: 'approval_policy' }, null]}                                                                      | ${[{ name: 'policy-1', type: 'approval_policy' }]}
+      ${[{ name: 'policy-1', type: 'approval_policy', policyAttributes: {} }]}                                                      | ${[{ name: 'policy-1', type: 'approval_policy' }]}
+    `('spreads policy attributes into a flat policy structure', ({ policies, expectedResult }) => {
+      expect(flattenPolicies(policies)).toEqual(expectedResult);
     });
   });
 });

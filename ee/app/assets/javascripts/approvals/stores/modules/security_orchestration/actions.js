@@ -1,20 +1,21 @@
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { s__ } from '~/locale';
 import { createAlert } from '~/alert';
-import projectScanResultPoliciesQuery from 'ee/security_orchestration/graphql/queries/project_scan_result_policies.query.graphql';
-import groupScanResultPoliciesQuery from 'ee/security_orchestration/graphql/queries/group_scan_result_policies.query.graphql';
+import projectSecurityPoliciesQuery from 'ee/security_orchestration/graphql/queries/project_security_policies.query.graphql';
+import groupSecurityPoliciesQuery from 'ee/security_orchestration/graphql/queries/group_security_policies.query.graphql';
 import { gqClient } from 'ee/security_orchestration/utils';
 import { fromYaml } from 'ee/security_orchestration/components/utils';
+import { flattenPolicies } from 'ee/security_orchestration/components/policies/utils';
 import * as types from './mutation_types';
 
 export const fetchScanResultPolicies = ({ commit }, { fullPath, isGroup = false }) => {
   gqClient
     .query({
-      query: isGroup ? groupScanResultPoliciesQuery : projectScanResultPoliciesQuery,
-      variables: { fullPath },
+      query: isGroup ? groupSecurityPoliciesQuery : projectSecurityPoliciesQuery,
+      variables: { fullPath, type: 'APPROVAL_POLICY' },
     })
     .then(({ data }) => {
-      const policies = data.namespace?.scanResultPolicies?.nodes || [];
+      const policies = flattenPolicies(data?.namespace?.securityPolicies?.nodes ?? []);
       const parsedPolicies = policies
         .map((rawPolicy) => {
           try {
