@@ -40,15 +40,13 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
     end
   end
 
-  # rubocop:disable RSpec/MultipleMemoizedHelpers -- helpers are needed
   describe '#request' do
     let(:logger) { instance_double(Gitlab::Llm::Logger) }
     let(:ai_client) { double }
     let(:endpoint) { described_class::ENDPOINT }
     let(:url) { "#{::Gitlab::AiGateway.url}#{endpoint}" }
     let(:model) { nil }
-    let(:expected_model) { described_class::CLAUDE_3_5_SONNET }
-    let(:provider) { :anthropic }
+    let(:provider) { "gitlab" }
     let(:params) do
       {
         max_tokens_to_sample: described_class::DEFAULT_MAX_TOKENS,
@@ -66,7 +64,8 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
       {
         content: user_prompt,
         provider: provider,
-        model: expected_model,
+        feature_setting: "duo_chat",
+        identifier: nil,
         params: params
       }
     end
@@ -159,7 +158,6 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
     context 'when other model is passed' do
       let(:model) { ::Gitlab::Llm::Concerns::AvailableModels::VERTEX_MODEL_CHAT }
       let(:expected_model) { model }
-      let(:provider) { :vertex }
       let(:params) { { temperature: 0.1 } } # This checks that non-vertex params lie `stop_sequence` are filtered out
 
       it_behaves_like 'performing request to the AI Gateway'
@@ -180,34 +178,11 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
       end
     end
 
-    context "when no model is provided" do
-      let(:model) { nil }
-      let(:expected_model) { ::Gitlab::Llm::Concerns::AvailableModels::CLAUDE_3_5_SONNET }
-      let(:expected_response) { "Hello World" }
-
-      it "calls ai gateway client with claude 3.5 sonnet model defaulted" do
-        expect(ai_client).to receive(:stream).with(
-          hash_including(
-            body: hash_including(
-              prompt_components: array_including(
-                hash_including(
-                  payload: hash_including(model: expected_model)
-                )
-              )
-            )
-          )
-        )
-
-        request
-
-        expect(response).to eq(expected_response)
-      end
-    end
-
     context 'when user is using a Self-hosted model' do
       let!(:ai_feature) { create(:ai_feature_setting, self_hosted_model: self_hosted_model, feature: :duo_chat) }
       let!(:self_hosted_model) { create(:ai_self_hosted_model, api_token: 'test_token') }
       let(:expected_model) { self_hosted_model.model.to_s }
+      let_it_be(:license) { create(:license) }
 
       let(:payload) do
         {
@@ -221,7 +196,19 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
         }
       end
 
+      before do
+        allow(license).to receive(:offline_cloud_license?).and_return(true)
+        allow(License).to receive(:current).and_return(license)
+      end
+
       it_behaves_like 'performing request to the AI Gateway'
+
+      context 'when do the UP has no pinned model it falls back to the duo chat setting' do
+        let(:endpoint) { "#{described_class::BASE_ENDPOINT}/explain_code" }
+        let(:unit_primitive) { :explain_code }
+
+        it_behaves_like 'performing request to the AI Gateway'
+      end
     end
 
     context 'when user amazon q is connected' do
@@ -261,8 +248,6 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
     end
 
     context 'when request is sent to chat tools implemented via agents' do
-      let_it_be(:feature_setting) { create(:ai_feature_setting, feature: :duo_chat, provider: :self_hosted) }
-
       let(:options) do
         {
           use_ai_gateway_agent_prompt: true,
@@ -349,7 +334,7 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
               prompt_version: "2.0.0",
               model_metadata: {
                 feature_setting: 'duo_chat_fix_code',
-                identifier: '',
+                identifier: nil,
                 provider: 'gitlab'
               }
             }
@@ -518,5 +503,4 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
       end
     end
   end
-  # rubocop:enable RSpec/MultipleMemoizedHelpers
 end
