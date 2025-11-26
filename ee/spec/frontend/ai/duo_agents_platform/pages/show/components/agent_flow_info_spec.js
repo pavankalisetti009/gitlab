@@ -32,7 +32,7 @@ describe('AgentFlowInfo', () => {
         isLoading: false,
         status: 'RUNNING',
         agentFlowDefinition: 'software_development',
-        executorUrl: 'https://gitlab.com/gitlab-org/gitlab/-/pipelines/123',
+        executorUrl: 'https://gitlab.com/gitlab-org/gitlab/-/jobs/123',
         createdAt: '2023-01-01T00:00:00Z',
         updatedAt: '2024-01-01T00:00:00Z',
         project: {
@@ -117,7 +117,7 @@ describe('AgentFlowInfo', () => {
         'Type',
         'Flow',
         'Session ID',
-        'Executor ID',
+        'Job ID',
       ];
 
       expectedTitles.forEach((expectedTitle, index) => {
@@ -130,8 +130,8 @@ describe('AgentFlowInfo', () => {
       ${1}  | ${'https://gitlab.com/gitlab-org/test-project'}                                | ${'Test Project'}
       ${2}  | ${'https://gitlab.com/gitlab-org'}                                             | ${'gitlab-org'}
       ${7}  | ${'https://gitlab.com/gitlab-org/test-project/-/automate/agent-sessions/4545'} | ${'4545'}
-      ${8}  | ${'https://gitlab.com/gitlab-org/gitlab/-/pipelines/123'}                      | ${'123'}
-    `('renders links for project, group, session ID, and executor ID', ({ index, href, text }) => {
+      ${8}  | ${'https://gitlab.com/gitlab-org/gitlab/-/jobs/123'}                           | ${'123'}
+    `('renders links for project, group, session ID, and job ID', ({ index, href, text }) => {
       const link = findListItems().at(index).findComponent(GlLink);
       expect(link.attributes('href')).toBe(href);
       expect(link.text()).toBe(text);
@@ -190,8 +190,8 @@ describe('AgentFlowInfo', () => {
         });
       });
 
-      it('displays N/A for invalid executor ID', () => {
-        expect(findListItems().at(8).text()).toContain('N/A'); // Executor ID
+      it('displays N/A for invalid job ID', () => {
+        expect(findListItems().at(8).text()).toContain('N/A');
       });
     });
 
@@ -203,7 +203,7 @@ describe('AgentFlowInfo', () => {
       });
 
       it('displays N/A for empty executor URL', () => {
-        expect(findListItems().at(8).text()).toContain('N/A'); // Executor ID
+        expect(findListItems().at(8).text()).toContain('N/A');
       });
     });
 

@@ -101,7 +101,7 @@ export const mockGetAgentFlowResponse = {
             status: 'RUNNING',
             updatedAt: '2024-01-01T00:00:00Z',
             latestCheckpoint: { checkpoint: mockAgentFlowCheckpoint },
-            lastExecutorLogsUrl: 'https://gitlab.com/gitlab-org/gitlab/-/pipelines/123',
+            lastExecutorLogsUrl: 'https://gitlab.com/gitlab-org/gitlab/-/jobs/456',
             errors: null,
             humanStatus: 'running',
             workflowDefinition: 'software_development',
