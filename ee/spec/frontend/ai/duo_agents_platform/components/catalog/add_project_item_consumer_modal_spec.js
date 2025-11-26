@@ -86,8 +86,8 @@ describe('AddProjectItemConsumerModal', () => {
       preventDefault: jest.fn(),
     };
 
-    beforeEach(() => {
-      findGroupItemConsumerDropdown().vm.$emit('input', mockFlowItemConsumer);
+    beforeEach(async () => {
+      await findGroupItemConsumerDropdown().vm.$emit('input', mockFlowItemConsumer);
       findFormCheckboxGroup().vm.$emit('input', ['mention']);
 
       findForm().vm.$emit('submit', mockInput);
@@ -105,6 +105,13 @@ describe('AddProjectItemConsumerModal', () => {
         parentItemConsumerId: mockFlowItemConsumer.id,
         triggerTypes: ['mention'],
       });
+    });
+
+    it('resets form', () => {
+      expect(findGroupItemConsumerDropdown().props('value')).toBeNull();
+      expect(findFormCheckboxGroup().attributes('checked')).toEqual(
+        'mention,assign,assign_reviewer',
+      );
     });
   });
 

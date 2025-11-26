@@ -71,20 +71,26 @@ export default {
     },
   },
   methods: {
+    resetForm() {
+      this.selectedGroupItemConsumer = {};
+      this.triggerTypes = this.showTriggers ? FLOW_TRIGGER_TYPES.map((type) => type.value) : [];
+    },
     handleSubmit() {
       this.isDirty = true;
       if (!this.isGroupItemConsumerValid || !this.isTriggersValid) {
         return;
       }
-      this.$refs.modal.hide();
       this.$emit('submit', {
         itemId: this.selectedGroupItemConsumer.item?.id,
         itemName: this.selectedGroupItemConsumer.item?.name,
         parentItemConsumerId: this.selectedGroupItemConsumer.id,
         ...(this.showTriggers ? { triggerTypes: this.triggerTypes } : {}),
       });
+      this.$refs.modal.hide();
+      this.resetForm();
     },
     onHidden() {
+      this.errors = [];
       this.isDirty = false;
     },
     onGroupItemConsumerSelect(itemConsumer) {
