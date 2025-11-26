@@ -95,7 +95,8 @@ RSpec.describe VirtualRegistries::CheckUpstreamsService, :aggregate_failures, fe
     let_it_be(:upstream2) { create(:virtual_registries_container_upstream, registries: [registry]) }
     let_it_be(:upstream3) { create(:virtual_registries_container_upstream, registries: [registry]) }
 
-    let(:path) { 'com/test/package/1.2.3/package-1.2.3.pom' }
+    let(:path) { 'library/alpine/manifests/3.19' }
+    let(:scope) { 'repository:library/alpine:pull' }
     let(:params) { { path: } }
     let(:service) { described_class.new(registry:, params:) }
 
@@ -115,9 +116,9 @@ RSpec.describe VirtualRegistries::CheckUpstreamsService, :aggregate_failures, fe
 
       with_them do
         before do
-          stub_upstream_request(upstream1, status: statuses[0])
-          stub_upstream_request(upstream2, status: statuses[1])
-          stub_upstream_request(upstream3, status: statuses[2])
+          stub_upstream_request(upstream1, status: statuses[0], scope: scope)
+          stub_upstream_request(upstream2, status: statuses[1], scope: scope)
+          stub_upstream_request(upstream3, status: statuses[2], scope: scope)
         end
 
         it_behaves_like 'returning a service success response with upstream'
@@ -125,9 +126,9 @@ RSpec.describe VirtualRegistries::CheckUpstreamsService, :aggregate_failures, fe
 
       context 'when file not found in any upstream' do
         before do
-          stub_upstream_request(upstream1, status: 404)
-          stub_upstream_request(upstream2, status: 404)
-          stub_upstream_request(upstream3, status: 404)
+          stub_upstream_request(upstream1, status: 404, scope: scope)
+          stub_upstream_request(upstream2, status: 404, scope: scope)
+          stub_upstream_request(upstream3, status: 404, scope: scope)
         end
 
         it { is_expected.to eq(described_class::BASE_ERRORS[:file_not_found_on_upstreams]) }
@@ -135,9 +136,9 @@ RSpec.describe VirtualRegistries::CheckUpstreamsService, :aggregate_failures, fe
 
       context 'when an upstream fails' do
         before do
-          stub_upstream_request(upstream1, status: 404)
-          stub_upstream_request(upstream2, raise_error: true)
-          stub_upstream_request(upstream3, status: 200)
+          stub_upstream_request(upstream1, status: 404, scope: scope)
+          stub_upstream_request(upstream2, raise_error: true, scope: scope)
+          stub_upstream_request(upstream3, status: 200, scope: scope)
         end
 
         it 'raises an error' do
@@ -149,9 +150,9 @@ RSpec.describe VirtualRegistries::CheckUpstreamsService, :aggregate_failures, fe
         let(:expected_upstream) { upstream2 }
 
         before do
-          stub_upstream_request(upstream1, status: 404)
-          stub_upstream_request(upstream2, status: 200)
-          stub_upstream_request(upstream3, raise_error: true)
+          stub_upstream_request(upstream1, status: 404, scope: scope)
+          stub_upstream_request(upstream2, status: 200, scope: scope)
+          stub_upstream_request(upstream3, raise_error: true, scope: scope)
         end
 
         it_behaves_like 'returning a service success response with upstream'
@@ -163,7 +164,7 @@ RSpec.describe VirtualRegistries::CheckUpstreamsService, :aggregate_failures, fe
         it { is_expected.to eq(described_class::BASE_ERRORS[:path_not_present]) }
       end
 
-      def stub_upstream_request(upstream, status: 200, raise_error: false)
+      def stub_upstream_request(upstream, status: 200, raise_error: false, scope: 'repository:test:pull')
         url = upstream.url_for(path)
 
         # Step 1: Auth discovery - HEAD request returns 401 with WWW-Authenticate header
@@ -179,7 +180,7 @@ RSpec.describe VirtualRegistries::CheckUpstreamsService, :aggregate_failures, fe
         stub_request(:get, "https://auth.example.com/token")
           .with(query: {
             "service" => "registry.example.com",
-            "scope" => "repository:test:pull"
+            "scope" => scope
           })
           .to_return(
             status: 200,

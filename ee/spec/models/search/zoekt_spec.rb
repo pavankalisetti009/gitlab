@@ -83,6 +83,12 @@ RSpec.describe Search::Zoekt, feature_category: :global_search do
       it { is_expected.to be(false) }
     end
 
+    context 'when container is nil' do
+      let(:container) { nil }
+
+      it { is_expected.to be(true) }
+    end
+
     context 'when passed an unsupported class' do
       let(:container) { instance_double(Issue) }
 

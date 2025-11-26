@@ -351,6 +351,7 @@ module EE
       validates :zoekt_settings, json_schema: { filename: 'application_setting_zoekt_settings' }
       validates :zoekt_cpu_to_tasks_ratio, numericality: { greater_than: 0.0 }
       validates :zoekt_indexing_parallelism, numericality: { greater_than: 0 }
+      validates :zoekt_default_number_of_replicas, numericality: { greater_than: 0 }
       validates :zoekt_indexed_file_size_limit, format: {
         with: ::Search::Zoekt::Settings::SIZE_REGEX,
         message: N_('Must be in the following format: `5B`, `5b`, `1KB`, `1kb`, `2MB`, `2mb`, `1GB`, or `1gb`')

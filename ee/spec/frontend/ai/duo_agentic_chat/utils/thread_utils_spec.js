@@ -29,7 +29,6 @@ describe('thread_utils', () => {
 
         expect(result).toEqual({
           activeThread: undefined,
-          chatMessageHistory: [],
           multithreadedView: DUO_CHAT_VIEWS.CHAT,
         });
       });

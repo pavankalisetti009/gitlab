@@ -64,8 +64,6 @@ module EE
     end
 
     def can_assign_default_duo_group?
-      return false unless ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
-
       return false if ::Ai::AmazonQ.connected?
 
       return false unless ::Feature.enabled?(:ai_user_default_duo_namespace, user)

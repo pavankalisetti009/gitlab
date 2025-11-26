@@ -310,8 +310,8 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
           expect(setting).to be_valid
         end
 
-        it 'allows code scope on EE' do
-          setting.default_search_scope = 'code'
+        it 'allows blobs scope on EE' do
+          setting.default_search_scope = 'blobs'
 
           expect(setting).to be_valid
         end

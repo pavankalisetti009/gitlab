@@ -11,7 +11,6 @@ export function parseThreadForSelection(thread) {
 export function resetThreadContent() {
   return {
     activeThread: undefined,
-    chatMessageHistory: [],
     multithreadedView: DUO_CHAT_VIEWS.CHAT,
   };
 }
