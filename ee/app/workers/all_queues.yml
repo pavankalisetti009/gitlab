@@ -1463,6 +1463,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: ai_active_context_code_create_enabled_namespace_event
+  :worker_name: Ai::ActiveContext::Code::CreateEnabledNamespaceEventWorker
+  :feature_category: :global_search
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: ai_active_context_code_mark_repository_as_pending_deletion_event
   :worker_name: Ai::ActiveContext::Code::MarkRepositoryAsPendingDeletionEventWorker
   :feature_category: :global_search
