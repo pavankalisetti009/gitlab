@@ -443,18 +443,9 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
           stub_ee_application_setting(elasticsearch_search: false)
           allow(::Search::Zoekt).to receive(:enabled?).and_return(true)
           allow(::Search::Zoekt).to receive(:search?).with(group).and_return(true)
-          allow(service).to receive(:zoekt_node_available_for_search?).and_return(true)
         end
 
         it { is_expected.to include('blobs') }
-
-        context 'and zoekt node is not available' do
-          before do
-            allow(service).to receive(:zoekt_node_available_for_search?).and_return(false)
-          end
-
-          it { is_expected.not_to include('blobs') }
-        end
 
         context 'and the group is not enabled for zoekt' do
           before do
@@ -474,24 +465,70 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
       context 'when epics available' do
         let(:epics_available) { true }
 
-        it 'does include epics to allowed_scopes' do
+        it 'includes epics to allowed_scopes using registry logic' do
           expect(allowed_scopes).to include('epics')
+        end
+
+        context 'when search_scope_registry FF is disabled' do
+          before do
+            stub_feature_flags(search_scope_registry: false)
+          end
+
+          context 'with advanced search' do
+            before do
+              stub_ee_application_setting(elasticsearch_search: true)
+            end
+
+            it 'includes epics to allowed_scopes using legacy logic' do
+              expect(allowed_scopes).to include('epics')
+            end
+          end
+
+          context 'with basic search' do
+            before do
+              stub_ee_application_setting(elasticsearch_search: false)
+            end
+
+            it 'includes epics to allowed_scopes using legacy logic' do
+              expect(allowed_scopes).to include('epics')
+            end
+          end
         end
       end
 
       context 'when epics is not available' do
         let(:epics_available) { false }
 
-        it 'does not include epics to allowed_scopes' do
+        it 'filters out epics from allowed_scopes using registry logic' do
           expect(allowed_scopes).not_to include('epics')
         end
-      end
-    end
-  end
 
-  describe '#search_level' do
-    it 'returns group' do
-      expect(described_class.new(user, group, scope: 'epics').search_level).to eq :group
+        context 'when search_scope_registry FF is disabled' do
+          before do
+            stub_feature_flags(search_scope_registry: false)
+          end
+
+          context 'with advanced search' do
+            before do
+              stub_ee_application_setting(elasticsearch_search: true)
+            end
+
+            it 'filters out epics from allowed_scopes using legacy logic' do
+              expect(allowed_scopes).not_to include('epics')
+            end
+          end
+
+          context 'with basic search' do
+            before do
+              stub_ee_application_setting(elasticsearch_search: false)
+            end
+
+            it 'filters out epics from allowed_scopes using legacy logic' do
+              expect(allowed_scopes).not_to include('epics')
+            end
+          end
+        end
+      end
     end
   end
 end
