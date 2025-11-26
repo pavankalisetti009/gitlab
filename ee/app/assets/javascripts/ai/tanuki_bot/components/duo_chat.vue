@@ -446,11 +446,13 @@ export default {
 
       performance.mark('response-received');
       performance.measure('prompt-to-response', 'prompt-sent', 'response-received');
-      const [{ duration }] = performance.getEntriesByName('prompt-to-response');
+      const entries = performance.getEntriesByName('prompt-to-response');
+      const duration = entries[0]?.duration ?? 0;
+      const numericDuration = parseFloat(duration);
 
       this.trackEvent('ai_response_time', {
         property: requestId,
-        value: parseFloat(duration) || 0,
+        value: Number.isFinite(numericDuration) ? numericDuration : 0,
       });
 
       performance.clearMarks();

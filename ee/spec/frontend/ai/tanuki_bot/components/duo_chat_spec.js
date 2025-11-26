@@ -601,6 +601,25 @@ describeSkipVue3(skipReason, () => {
         expect(performance.mark).toHaveBeenCalledTimes(1);
         expect(trackEventSpy).toHaveBeenCalledTimes(1);
       });
+
+      it.each([
+        ['empty array', []],
+        ['array with NaN duration', [{ duration: NaN }]],
+      ])('tracks 0 when getEntriesByName returns %s', (_, performanceEntries) => {
+        const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+        performance.getEntriesByName = jest.fn(() => performanceEntries);
+
+        findSubscriptions().vm.$emit('response-received', 'request-id-123');
+
+        expect(trackEventSpy).toHaveBeenCalledWith(
+          'ai_response_time',
+          {
+            property: 'request-id-123',
+            value: 0,
+          },
+          undefined,
+        );
+      });
     });
 
     describe('@track-feedback', () => {
