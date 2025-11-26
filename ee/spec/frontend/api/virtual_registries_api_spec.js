@@ -146,7 +146,6 @@ describe('VirtualRegistriesApi', () => {
           group_id: 209,
           upstream_id: 5,
           upstream_checked_at: '2025-05-19T14:22:23.048Z',
-          file_md5: null,
           file_sha1: '4e1243bd22c66e76c2ba9eddc1f91394e57f9f83',
           size: 15,
           relative_path: '/test/bar',

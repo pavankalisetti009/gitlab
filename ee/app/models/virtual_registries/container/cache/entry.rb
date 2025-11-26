@@ -12,6 +12,8 @@ module VirtualRegistries
 
         self.primary_key = %i[upstream_id relative_path status]
 
+        ignore_column :file_md5, remove_with: '18.9', remove_after: '2026-01-15'
+
         belongs_to :group
         belongs_to :upstream,
           class_name: 'VirtualRegistries::Container::Upstream',
@@ -24,7 +26,6 @@ module VirtualRegistries
         enum :status, default: 0, processing: 1, pending_destruction: 2, error: 3
 
         sha_attribute :file_sha1
-        sha_attribute :file_md5
 
         counter_attribute :downloads_count, touch: :downloaded_at
 
@@ -36,7 +37,6 @@ module VirtualRegistries
           presence: true
         validates :upstream_etag, :content_type, length: { maximum: 255 }
         validates :relative_path, :object_storage_key, length: { maximum: 1024 }
-        validates :file_md5, length: { is: 32 }, allow_nil: true
         validates :file_sha1, length: { is: 40 }
         validates :relative_path,
           uniqueness: { scope: [:upstream_id, :status] },

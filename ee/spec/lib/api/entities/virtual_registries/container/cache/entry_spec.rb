@@ -9,6 +9,6 @@ RSpec.describe API::Entities::VirtualRegistries::Container::Cache::Entry, featur
 
   it 'has the expected attributes' do
     is_expected.to include(:id, :group_id, :upstream_id, :upstream_checked_at, :created_at, :updated_at,
-      :file_md5, :file_sha1, :size, :relative_path, :upstream_etag, :content_type, :downloads_count, :downloaded_at)
+      :file_sha1, :size, :relative_path, :upstream_etag, :content_type, :downloads_count, :downloaded_at)
   end
 end
