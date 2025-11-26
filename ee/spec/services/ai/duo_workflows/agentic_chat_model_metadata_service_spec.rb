@@ -133,52 +133,22 @@ RSpec.describe Ai::DuoWorkflows::AgenticChatModelMetadataService, feature_catego
 
           it_behaves_like 'uses the pinned instance model'
 
-          context 'when user-level model selection is enabled' do
-            before do
-              stub_feature_flags(ai_user_model_switching: true)
-            end
+          context 'when a valid user_selected_model_identifier is provided' do
+            let(:user_selected_model_identifier) { 'claude_sonnet_4_20250514' }
 
-            context 'when a valid user_selected_model_identifier is provided' do
-              let(:user_selected_model_identifier) { 'claude_sonnet_4_20250514' }
-
-              it_behaves_like 'uses the pinned instance model'
-            end
-
-            context 'when an invalid user_selected_model_identifier is provided' do
-              let(:user_selected_model_identifier) { 'invalid-model-for-duo-agent-platform' }
-
-              it_behaves_like 'uses the pinned instance model'
-            end
-
-            context 'when an empty user_selected_model_identifier is provided' do
-              let(:user_selected_model_identifier) { '' }
-
-              it_behaves_like 'uses the pinned instance model'
-            end
+            it_behaves_like 'uses the pinned instance model'
           end
 
-          context 'when user-level model selection is disabled' do
-            before do
-              stub_feature_flags(ai_user_model_switching: false)
-            end
+          context 'when an invalid user_selected_model_identifier is provided' do
+            let(:user_selected_model_identifier) { 'invalid-model-for-duo-agent-platform' }
 
-            context 'when a valid user_selected_model_identifier is provided' do
-              let(:user_selected_model_identifier) { 'claude_sonnet_4_20250514' }
+            it_behaves_like 'uses the pinned instance model'
+          end
 
-              it_behaves_like 'uses the pinned instance model'
-            end
+          context 'when an empty user_selected_model_identifier is provided' do
+            let(:user_selected_model_identifier) { '' }
 
-            context 'when an invalid user_selected_model_identifier is provided' do
-              let(:user_selected_model_identifier) { 'invalid-model-for-duo-agent-platform' }
-
-              it_behaves_like 'uses the pinned instance model'
-            end
-
-            context 'when an empty user_selected_model_identifier is provided' do
-              let(:user_selected_model_identifier) { '' }
-
-              it_behaves_like 'uses the pinned instance model'
-            end
+            it_behaves_like 'uses the pinned instance model'
           end
         end
 
@@ -191,12 +161,10 @@ RSpec.describe Ai::DuoWorkflows::AgenticChatModelMetadataService, feature_catego
 
           it_behaves_like 'uses the gitlab default model'
 
-          context 'when user-level model selection is enabled' do
+          context 'for user model selection' do
             include_context 'with model selections fetch definition service side-effect context'
 
             before do
-              stub_feature_flags(ai_user_model_switching: true)
-
               stub_request(:get, fetch_service_endpoint_url)
                 .to_return(
                   status: 200,
@@ -238,30 +206,6 @@ RSpec.describe Ai::DuoWorkflows::AgenticChatModelMetadataService, feature_catego
 
                 it_behaves_like 'uses the gitlab default model'
               end
-            end
-
-            context 'when an invalid user_selected_model_identifier is provided' do
-              let(:user_selected_model_identifier) { 'invalid-model-for-duo-agent-platform' }
-
-              it_behaves_like 'uses the gitlab default model'
-            end
-
-            context 'when an empty user_selected_model_identifier is provided' do
-              let(:user_selected_model_identifier) { '' }
-
-              it_behaves_like 'uses the gitlab default model'
-            end
-          end
-
-          context 'when user-level model selection is disabled' do
-            before do
-              stub_feature_flags(ai_user_model_switching: false)
-            end
-
-            context 'when a valid user_selected_model_identifier is provided' do
-              let(:user_selected_model_identifier) { 'claude_sonnet_4_20250514' }
-
-              it_behaves_like 'uses the gitlab default model'
             end
 
             context 'when an invalid user_selected_model_identifier is provided' do
@@ -346,64 +290,32 @@ RSpec.describe Ai::DuoWorkflows::AgenticChatModelMetadataService, feature_catego
 
           it_behaves_like 'uses the pinned model'
 
-          context 'when user-level model selection is enabled' do
-            before do
-              stub_feature_flags(ai_user_model_switching: true)
-            end
+          context 'when a valid user_selected_model_identifier is provided' do
+            let(:user_selected_model_identifier) { 'claude_sonnet_4_20250514' }
 
-            context 'when a valid user_selected_model_identifier is provided' do
-              let(:user_selected_model_identifier) { 'claude_sonnet_4_20250514' }
-
-              it_behaves_like 'uses the pinned model'
-            end
-
-            context 'when an invalid user_selected_model_identifier is provided' do
-              let(:user_selected_model_identifier) { 'invalid-model-for-duo-agent-platform' }
-
-              it_behaves_like 'uses the pinned model'
-            end
-
-            context 'when an empty user_selected_model_identifier is provided' do
-              let(:user_selected_model_identifier) { '' }
-
-              it_behaves_like 'uses the pinned model'
-            end
+            it_behaves_like 'uses the pinned model'
           end
 
-          context 'when user-level model selection is disabled' do
-            before do
-              stub_feature_flags(ai_user_model_switching: false)
-            end
+          context 'when an invalid user_selected_model_identifier is provided' do
+            let(:user_selected_model_identifier) { 'invalid-model-for-duo-agent-platform' }
 
-            context 'when a valid user_selected_model_identifier is provided' do
-              let(:user_selected_model_identifier) { 'claude_sonnet_4_20250514' }
+            it_behaves_like 'uses the pinned model'
+          end
 
-              it_behaves_like 'uses the pinned model'
-            end
+          context 'when an empty user_selected_model_identifier is provided' do
+            let(:user_selected_model_identifier) { '' }
 
-            context 'when an invalid user_selected_model_identifier is provided' do
-              let(:user_selected_model_identifier) { 'invalid-model-for-duo-agent-platform' }
-
-              it_behaves_like 'uses the pinned model'
-            end
-
-            context 'when an empty user_selected_model_identifier is provided' do
-              let(:user_selected_model_identifier) { '' }
-
-              it_behaves_like 'uses the pinned model'
-            end
+            it_behaves_like 'uses the pinned model'
           end
         end
 
         context 'with no model is pinned for namespace-level model selection' do
           it_behaves_like 'uses the gitlab default model'
 
-          context 'when user-level model selection is enabled' do
+          context 'for user model selection' do
             include_context 'with model selections fetch definition service side-effect context'
 
             before do
-              stub_feature_flags(ai_user_model_switching: true)
-
               stub_request(:get, fetch_service_endpoint_url)
                 .to_return(
                   status: 200,
@@ -445,30 +357,6 @@ RSpec.describe Ai::DuoWorkflows::AgenticChatModelMetadataService, feature_catego
 
                 it_behaves_like 'uses the gitlab default model'
               end
-            end
-
-            context 'when an invalid user_selected_model_identifier is provided' do
-              let(:user_selected_model_identifier) { 'invalid-model-for-duo-agent-platform' }
-
-              it_behaves_like 'uses the gitlab default model'
-            end
-
-            context 'when an empty user_selected_model_identifier is provided' do
-              let(:user_selected_model_identifier) { '' }
-
-              it_behaves_like 'uses the gitlab default model'
-            end
-          end
-
-          context 'when user-level model selection is disabled' do
-            before do
-              stub_feature_flags(ai_user_model_switching: false)
-            end
-
-            context 'when a valid user_selected_model_identifier is provided' do
-              let(:user_selected_model_identifier) { 'claude_sonnet_4_20250514' }
-
-              it_behaves_like 'uses the gitlab default model'
             end
 
             context 'when an invalid user_selected_model_identifier is provided' do
