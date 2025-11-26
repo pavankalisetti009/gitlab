@@ -1688,32 +1688,6 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
                 it_behaves_like 'ServiceURI has the right value', false
               end
-
-              context 'when user level model selection is disabled' do
-                before do
-                  stub_feature_flags(ai_user_model_switching: false)
-                end
-
-                context 'when a valid user_selected_model_identifier is provided' do
-                  let(:user_selected_model_identifier) { 'claude_sonnet_4_20250514' }
-
-                  it 'uses the default model' do
-                    get_response
-
-                    expect(response).to have_gitlab_http_status(:ok)
-
-                    headers = json_response['DuoWorkflow']['Headers']
-                    metadata = ::Gitlab::Json.parse(headers['x-gitlab-agent-platform-model-metadata'])
-                    expect(metadata).to include(
-                      'provider' => 'gitlab',
-                      'feature_setting' => 'duo_agent_platform',
-                      'identifier' => nil
-                    )
-                  end
-
-                  it_behaves_like 'ServiceURI has the right value', false
-                end
-              end
             end
           end
         end

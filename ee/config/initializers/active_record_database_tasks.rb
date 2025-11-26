@@ -33,7 +33,7 @@ module ActiveRecord
       end
 
       def connection_pool
-        ::Gitlab.next_rails? ? ActiveRecord::Base.connection_pool : ActiveRecord::Base.connection
+        ActiveRecord::Base.connection_pool
       end
       # rubocop:enable Database/MultipleDatabases
     end

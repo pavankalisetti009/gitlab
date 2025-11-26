@@ -115,6 +115,23 @@ export const FLOW_TYPE_APOLLO_CONFIG = {
   },
 };
 
+export const DELETE_OPTIONS = [
+  {
+    value: true,
+    text: s__('AICatalog|Hard delete (Recommended)'),
+    help: s__(
+      'AICatalog|Permanently deletes the item from the catalog. This action cannot be undone.',
+    ),
+  },
+  {
+    value: false,
+    text: s__('AICatalog|Soft delete'),
+    help: s__(
+      'AICatalog|The item will be hidden from the catalog but remain functional for projects and groups already using it.',
+    ),
+  },
+];
+
 export const DEFAULT_FLOW_YML_STRING = `\
 # Schema version
 version: "v1"

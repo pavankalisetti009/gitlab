@@ -877,7 +877,7 @@ export default {
       return this.glFeatures.workItemsClientSideBoards;
     },
     isPlanningViewsEnabled() {
-      return this.glFeatures.workItemPlanningView;
+      return this.glFeatures.workItemPlanningView || !this.withTabs;
     },
     preselectedWorkItemType() {
       return this.isEpicsList ? WORK_ITEM_TYPE_NAME_EPIC : WORK_ITEM_TYPE_NAME_ISSUE;

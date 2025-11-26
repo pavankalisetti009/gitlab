@@ -36,7 +36,7 @@ module QA
           end
 
           def has_feedback_message?
-            has_css?('.duo-chat-message-feedback', wait: 30)
+            has_css?('.duo-chat-message-actions', wait: 30)
           end
 
           def has_error?

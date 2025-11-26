@@ -3,6 +3,8 @@ import {
   GlButton,
   GlDisclosureDropdown,
   GlDisclosureDropdownItem,
+  GlFormRadioGroup,
+  GlFormRadio,
   GlIcon,
   GlModalDirective,
   GlSprintf,
@@ -10,7 +12,7 @@ import {
 import { s__, sprintf } from '~/locale';
 import { isLoggedIn } from '~/lib/utils/common_utils';
 import ConfirmActionModal from '~/vue_shared/components/confirm_action_modal.vue';
-import { AI_CATALOG_ITEM_LABELS } from '../constants';
+import { AI_CATALOG_ITEM_LABELS, DELETE_OPTIONS } from '../constants';
 import AiCatalogItemConsumerModal from './ai_catalog_item_consumer_modal.vue';
 import AiCatalogItemReportModal from './ai_catalog_item_report_modal.vue';
 
@@ -20,6 +22,8 @@ export default {
     GlButton,
     GlDisclosureDropdown,
     GlDisclosureDropdownItem,
+    GlFormRadioGroup,
+    GlFormRadio,
     GlIcon,
     GlSprintf,
     ConfirmActionModal,
@@ -77,6 +81,7 @@ export default {
     return {
       showDeleteModal: false,
       showDisableModal: false,
+      forceHardDelete: false,
     };
   },
   computed: {
@@ -85,6 +90,9 @@ export default {
     },
     canReport() {
       return Boolean(this.item.userPermissions?.reportAiCatalogItem);
+    },
+    canHardDelete() {
+      return Boolean(this.item.userPermissions?.forceHardDeleteAiCatalogItem);
     },
     canUse() {
       return isLoggedIn();
@@ -133,6 +141,7 @@ export default {
       return s__('AICatalog|Are you sure you want to delete %{itemType} %{name}?');
     },
   },
+  DELETE_OPTIONS,
 };
 </script>
 
@@ -237,9 +246,10 @@ export default {
     <confirm-action-modal
       v-if="canAdmin && showDeleteModal"
       modal-id="delete-item-modal"
+      data-testid="delete-item-modal"
       variant="danger"
       :title="deleteConfirmTitle"
-      :action-fn="deleteFn"
+      :action-fn="() => deleteFn(forceHardDelete)"
       :action-text="__('Delete')"
       @close="showDeleteModal = false"
     >
@@ -249,6 +259,26 @@ export default {
         </template>
         <template #itemType>{{ itemTypeLabel }}</template>
       </gl-sprintf>
+      <div v-if="canHardDelete">
+        <label for="delete-method" class="gl-mb-0 gl-mt-4 gl-block">
+          {{ s__('AICatalog|Deletion method') }}
+        </label>
+        <p class="gl-mb-3 gl-text-subtle">
+          {{ s__('AICatalog|You can use the GraphQL API to delete items.') }}
+        </p>
+        <gl-form-radio-group id="delete-method" v-model="forceHardDelete">
+          <gl-form-radio
+            v-for="option in $options.DELETE_OPTIONS"
+            :key="option.text"
+            :value="option.value"
+          >
+            {{ option.text }}
+            <template #help>
+              {{ option.help }}
+            </template>
+          </gl-form-radio>
+        </gl-form-radio-group>
+      </div>
     </confirm-action-modal>
     <confirm-action-modal
       v-if="showDisableModal"

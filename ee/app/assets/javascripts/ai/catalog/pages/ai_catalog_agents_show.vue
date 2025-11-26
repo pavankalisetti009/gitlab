@@ -124,13 +124,14 @@ export default {
         Sentry.captureException(error);
       }
     },
-    async deleteAgent() {
+    async deleteAgent(forceHardDelete) {
       const { id } = this.aiCatalogAgent;
       try {
         const { data } = await this.$apollo.mutate({
           mutation: deleteAiCatalogAgentMutation,
           variables: {
             id,
+            forceHardDelete,
           },
         });
 

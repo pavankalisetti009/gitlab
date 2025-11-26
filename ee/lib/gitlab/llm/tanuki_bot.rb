@@ -66,7 +66,6 @@ module Gitlab
 
         return false unless namespace_to_use
         return false if ::Feature.disabled?(:duo_agent_platform_model_selection, namespace_to_use)
-        return false if ::Feature.disabled?(:ai_user_model_switching, user)
 
         result = ::Ai::FeatureSettingSelectionService
                             .new(
