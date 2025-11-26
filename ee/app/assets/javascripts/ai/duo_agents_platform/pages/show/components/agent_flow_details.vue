@@ -28,8 +28,8 @@ export default {
       required: true,
       type: String,
     },
-    agentFlowCheckpoint: {
-      type: String,
+    duoMessages: {
+      type: Array,
       required: true,
     },
     executorUrl: {
@@ -66,7 +66,7 @@ export default {
           <agent-activity-logs
             class="gl-overflow-auto"
             :is-loading="isLoading"
-            :agent-flow-checkpoint="agentFlowCheckpoint"
+            :duo-messages="duoMessages"
           />
         </gl-tab>
         <gl-tab :title="s__('DuoAgentPlatform|Details')">

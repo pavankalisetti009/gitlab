@@ -25273,9 +25273,6 @@ msgstr ""
 msgid "DuoAgentsPlatform|Convert to gitlab ci"
 msgstr ""
 
-msgid "DuoAgentsPlatform|Could not display logs. Please try again."
-msgstr ""
-
 msgid "DuoAgentsPlatform|Create a new trigger."
 msgstr ""
 

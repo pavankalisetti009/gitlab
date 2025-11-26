@@ -56,8 +56,8 @@ export default {
     agentFlowDefinition() {
       return formatAgentDefinition(this.agentFlow?.workflowDefinition);
     },
-    agentFlowCheckpoint() {
-      return this.agentFlow?.latestCheckpoint?.checkpoint || '';
+    duoMessages() {
+      return this.agentFlow?.latestCheckpoint?.duoMessages || [];
     },
     executorUrl() {
       return this.agentFlow?.lastExecutorLogsUrl || '';
@@ -83,7 +83,7 @@ export default {
     :is-loading="isLoading"
     :status="status"
     :agent-flow-definition="agentFlowDefinition"
-    :agent-flow-checkpoint="agentFlowCheckpoint"
+    :duo-messages="duoMessages"
     :executor-url="executorUrl"
     :created-at="createdAt"
     :project="project"

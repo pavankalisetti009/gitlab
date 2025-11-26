@@ -4,7 +4,7 @@ import AgentFlowHeader from 'ee/ai/duo_agents_platform/pages/show/components/age
 import AgentFlowInfo from 'ee/ai/duo_agents_platform/pages/show/components/agent_flow_info.vue';
 import AgentActivityLogs from 'ee/ai/duo_agents_platform/pages/show/components/agent_activity_logs.vue';
 
-import { mockAgentFlowCheckpoint } from '../../../../mocks';
+import { mockDuoMessages } from '../../../../mocks';
 
 describe('AgentFlowDetails', () => {
   let wrapper;
@@ -13,7 +13,7 @@ describe('AgentFlowDetails', () => {
     isLoading: false,
     status: 'RUNNING',
     agentFlowDefinition: 'software_development',
-    agentFlowCheckpoint: mockAgentFlowCheckpoint,
+    duoMessages: mockDuoMessages,
     executorUrl: 'https://gitlab.com/gitlab-org/gitlab/-/jobs/123',
     createdAt: '2023-01-01T00:54:00Z',
     updatedAt: '2024-01-02T00:34:00Z',
