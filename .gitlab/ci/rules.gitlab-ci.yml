@@ -1667,9 +1667,8 @@
     - <<: *if-default-refs
       changes: *code-backstage-patterns
 
-.frontend:rules:fe-islands:predictive:
+.frontend:rules:fe-islands:
   rules:
-    - if: '$ENABLE_JEST_PREDICTIVE == "true"'
     - <<: *if-not-ee
       when: never
     - <<: *if-merge-request
