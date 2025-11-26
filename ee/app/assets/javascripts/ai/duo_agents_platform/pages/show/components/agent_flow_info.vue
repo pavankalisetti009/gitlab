@@ -45,7 +45,7 @@ export default {
     },
   },
   computed: {
-    executorId() {
+    jobId() {
       const id = this.executorUrl.split('/').pop();
       if (!id || Number.isNaN(Number(id))) {
         return null;
@@ -98,8 +98,8 @@ export default {
           link: this.projectAgentSessionsUrl,
         },
         {
-          key: s__('DuoAgentPlatform|Executor ID'),
-          value: this.executorId,
+          key: s__('DuoAgentPlatform|Job ID'),
+          value: this.jobId,
           link: this.executorUrl,
         },
       ].map((entry) => {
