@@ -4476,6 +4476,20 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
 
       it_behaves_like 'does not call custom role query', [:maintainer, :owner]
     end
+
+    context 'scan profile abilities' do
+      context 'when security_scan_profile is available' do
+        context 'for a member role with the `read_security_scan_profiles` ability' do
+          let(:licensed_features) { { security_scan_profiles: true } }
+          let(:member_role_abilities) { { read_security_scan_profiles: true } }
+          let(:allowed_abilities) { [:read_security_scan_profiles] }
+
+          it_behaves_like 'custom roles abilities'
+
+          it_behaves_like 'does not call custom role query', [:developer, :maintainer, :owner]
+        end
+      end
+    end
   end
 
   describe ':destroy_group policy' do
