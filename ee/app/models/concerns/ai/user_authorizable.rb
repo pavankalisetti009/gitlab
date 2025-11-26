@@ -10,8 +10,8 @@ module Ai
     GROUP_WITH_MCP_SERVER_ENABLED_CACHE_PERIOD = 1.hour
     GROUP_WITH_MCP_SERVER_ENABLED_CACHE_KEY = 'group_with_mcp_server_enabled'
 
-    BILLABLE_DUO_PRO_ROOT_GROUP_IDS_CACHE_KEY = 'billable_duo_pro_root_group_ids'
-    BILLABLE_DUO_PRO_ROOT_GROUP_IDS_CACHE_PERIOD = 10.minutes
+    NON_GUEST_ROOT_GROUP_IDS_CACHE_KEY = 'non_guest_root_group_ids'
+    NON_GUEST_ROOT_GROUP_IDS_CACHE_PERIOD = 10.minutes
 
     DUO_PRO_ADD_ON_CACHE_KEY = 'user-%{user_id}-code-suggestions-add-on-cache'
     # refers to add-ons listed in GitlabSubscriptions::AddOn::DUO_ADD_ONS
@@ -70,14 +70,14 @@ module Ai
       end
 
       # rubocop: disable Database/AvoidUsingPluckWithoutLimit -- limited to a single user's groups
-      def billable_gitlab_duo_pro_root_group_ids
+      def non_guest_root_group_ids
         return unless gitlab_com_subscription?
 
         Rails.cache.fetch(
-          ['users', id, BILLABLE_DUO_PRO_ROOT_GROUP_IDS_CACHE_KEY],
-          expires_in: BILLABLE_DUO_PRO_ROOT_GROUP_IDS_CACHE_PERIOD
+          ['users', id, NON_GUEST_ROOT_GROUP_IDS_CACHE_KEY],
+          expires_in: NON_GUEST_ROOT_GROUP_IDS_CACHE_PERIOD
         ) do
-          group_ids_from_project_authorizaton = Project.id_in(project_authorizations.non_guests.select(:project_id))
+          group_ids_from_project_authorization = Project.id_in(project_authorizations.non_guests.select(:project_id))
             .pluck(:namespace_id)
           group_ids_from_memberships = GroupMember.with_user(self).active.non_guests.pluck(:source_id)
           group_ids_from_linked_groups = GroupGroupLink.non_guests
@@ -85,7 +85,7 @@ module Ai
             .pluck(:shared_group_id)
 
           root_group_ids = Group.where(
-            id: group_ids_from_project_authorizaton | group_ids_from_memberships | group_ids_from_linked_groups
+            id: group_ids_from_project_authorization | group_ids_from_memberships | group_ids_from_linked_groups
           ).pluck(Arel.sql('traversal_ids[1]')).uniq
 
           banned_root_group_ids = ::Namespaces::NamespaceBan.where(user_id: id).pluck(:namespace_id)
@@ -244,7 +244,7 @@ module Ai
       end
 
       def groups_with_duo_core_enabled
-        Namespace.id_in(billable_gitlab_duo_pro_root_group_ids)
+        Namespace.id_in(non_guest_root_group_ids)
           .namespace_settings_with_duo_core_features_enabled
       end
 
@@ -287,7 +287,7 @@ module Ai
       def clear_group_with_ai_available_cache(ids)
         cache_keys_ai_features = Array.wrap(ids).map { |id| ["users", id, GROUP_WITH_AI_ENABLED_CACHE_KEY] }
         cache_keys_billable_duo_pro_group_ids = Array.wrap(ids).map do |id|
-          ["users", id, BILLABLE_DUO_PRO_ROOT_GROUP_IDS_CACHE_KEY]
+          ["users", id, NON_GUEST_ROOT_GROUP_IDS_CACHE_KEY]
         end
 
         cache_keys = cache_keys_ai_features + cache_keys_billable_duo_pro_group_ids
