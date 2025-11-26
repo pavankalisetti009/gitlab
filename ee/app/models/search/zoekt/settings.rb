@@ -123,11 +123,8 @@ module Search
         },
         zoekt_default_number_of_replicas: {
           type: :integer,
-          admin_ui: false,
           default: DEFAULT_NUM_REPLICAS,
-          label: -> {
-            _('Specify default number of replicas per namespace. Currently in development. See: https://gitlab.com/groups/gitlab-org/-/epics/19097')
-          },
+          label: -> { _('Number of replicas per namespace') },
           input_type: :number_field
         }
       }.freeze
