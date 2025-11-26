@@ -1494,35 +1494,19 @@ RSpec.describe User, feature_category: :system_access do
 
     context 'without guests' do
       let(:expected_where) do
-        if Gitlab.next_rails?
-          'WHERE \("users"."state" IN \(\'active\'\)\)
-          AND
-          "users"."user_type" IN \(0, 6, 4, 13\)
-          AND
-          "users"."user_type" IN \(0, 4, 5, 15, 17\)
-          AND
-          \(EXISTS \(SELECT 1 FROM "members"
-            LEFT OUTER JOIN "member_roles" ON "member_roles"."id" = "members"."member_role_id"
-            WHERE "members"."user_id" = "users"."id"
-              AND \(\(members.access_level > 10\)
-              OR "members"."access_level" = 10
-              AND "member_roles"."occupies_seat" = TRUE\)
-              AND "members"."requested_at" IS NULL\)\)'.squish # allow_cross_joins_across_databases
-        else
-          'WHERE \("users"."state" IN \(\'active\'\)\)
-          AND
-          "users"."user_type" IN \(0, 6, 4, 13\)
-          AND
-          "users"."user_type" IN \(0, 4, 5, 15, 17\)
-          AND
-          \(EXISTS \(SELECT 1 FROM "members"
-            LEFT OUTER JOIN "member_roles" ON "member_roles"."id" = "members"."member_role_id"
-            WHERE "members"."user_id" = "users"."id"
-              AND \(members.access_level > 10
-              OR "members"."access_level" = 10
-              AND "member_roles"."occupies_seat" = TRUE\)
-              AND "members"."requested_at" IS NULL\)\)'.squish # allow_cross_joins_across_databases
-        end
+        'WHERE \("users"."state" IN \(\'active\'\)\)
+        AND
+        "users"."user_type" IN \(0, 6, 4, 13\)
+        AND
+        "users"."user_type" IN \(0, 4, 5, 15, 17\)
+        AND
+        \(EXISTS \(SELECT 1 FROM "members"
+          LEFT OUTER JOIN "member_roles" ON "member_roles"."id" = "members"."member_role_id"
+          WHERE "members"."user_id" = "users"."id"
+            AND \(\(members.access_level > 10\)
+            OR "members"."access_level" = 10
+            AND "member_roles"."occupies_seat" = TRUE\)
+            AND "members"."requested_at" IS NULL\)\)'.squish # allow_cross_joins_across_databases
       end
 
       before do
