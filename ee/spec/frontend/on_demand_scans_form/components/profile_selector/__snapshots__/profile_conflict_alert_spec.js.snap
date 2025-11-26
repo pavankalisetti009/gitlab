@@ -8,7 +8,6 @@ exports[`ProfileConflictAlert renders properly 1`] = `
   primarybuttontext=""
   secondarybuttonlink=""
   secondarybuttontext=""
-  showicon="true"
   title="You cannot run an active scan against an unvalidated site."
   variant="danger"
 >

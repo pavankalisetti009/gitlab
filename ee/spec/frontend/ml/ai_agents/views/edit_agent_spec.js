@@ -9,7 +9,7 @@ import {
   GlEmptyState,
   GlModal,
 } from '@gitlab/ui';
-import Vue from 'vue';
+import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import EditAgent from 'ee/ml/ai_agents/views/edit_agent.vue';
@@ -153,6 +153,7 @@ describe('ee/ml/ai_agents/views/edit_agent', () => {
     it('submits the update with correct parameters', async () => {
       await findInput().vm.$emit('input', 'agent_1');
       await findTextarea().vm.$emit('input', 'Do something');
+      await nextTick();
 
       await submitForm();
 
