@@ -7,6 +7,8 @@ RSpec.describe Types::PermissionTypes::Ai::Catalog::Item, feature_category: :wor
     expected_permissions = %i[
       read_ai_catalog_item
       admin_ai_catalog_item
+      report_ai_catalog_item
+      force_hard_delete_ai_catalog_item
     ]
 
     expected_permissions.each do |permission|
