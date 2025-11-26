@@ -163,12 +163,12 @@ export default {
     async updateAiSettings() {
       const input = {
         duoCoreFeaturesEnabled: this.areDuoCoreFeaturesEnabled,
-        aiGatewayTimeoutSeconds: this.aiGatewayTimeoutSecondsInput,
       };
 
       if (this.canManageSelfHostedModels) {
         input.aiGatewayUrl = this.aiGatewayUrlInput;
         input.duoAgentPlatformServiceUrl = this.duoAgentPlatformServiceUrlInput;
+        input.aiGatewayTimeoutSeconds = this.aiGatewayTimeoutSecondsInput;
       }
 
       const { data } = await this.$apollo.mutate({
@@ -226,13 +226,13 @@ export default {
         @change-expiration-column="onDuoChatHistoryExpirationColumnChange"
       />
       <code-suggestions-connection-form v-if="duoProVisible" @change="onConnectionFormChange" />
-      <ai-gateway-timeout-input-form
-        :value="aiGatewayTimeoutSecondsInput"
-        @change="onAiGatewayTimeoutChange"
-      />
       <template v-if="canManageSelfHostedModels">
         <ai-models-form @change="onAiModelsFormChange" />
         <duo-expanded-logging-form @change="onExpandedLoggingChange" />
+        <ai-gateway-timeout-input-form
+          :value="aiGatewayTimeoutSecondsInput"
+          @change="onAiGatewayTimeoutChange"
+        />
         <ai-gateway-url-input-form @change="onAiGatewayUrlChange" />
         <duo-agent-platform-service-url-input-form
           v-if="exposeDuoAgentPlatformServiceUrl"
