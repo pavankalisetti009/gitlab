@@ -9,7 +9,7 @@ RSpec.describe 'Subscriptions::Ai::DuoWorkflows::WorkflowEventsUpdated', feature
   let_it_be(:project) { create(:project, :public, group: group) }
   let_it_be(:user) { create(:user) }
   let(:workflow) { create(:duo_workflows_workflow, project: project, user: user) }
-  let(:checkpoint) { create(:duo_workflows_checkpoint, project: project, workflow: workflow) }
+  let(:checkpoint) { create(:duo_workflows_checkpoint, :ui_chat_log, project: project, workflow: workflow) }
   let(:subscription_query) do
     <<~SUBSCRIPTION
       subscription {
@@ -19,6 +19,15 @@ RSpec.describe 'Subscriptions::Ai::DuoWorkflows::WorkflowEventsUpdated', feature
           errors
           workflowStatus
           executionStatus
+          duoMessages {
+            content
+            messageType
+            status
+            toolInfo
+            timestamp
+            correlationId
+            role
+          }
         }
       }
     SUBSCRIPTION
@@ -72,6 +81,11 @@ RSpec.describe 'Subscriptions::Ai::DuoWorkflows::WorkflowEventsUpdated', feature
     end
 
     context 'when user is authorized' do
+      let_it_be(:chat_log) do
+        [{ "content" => "hi", "correlationId" => nil, "messageType" => "user", "role" => nil, "status" => "success",
+           "timestamp" => "2025-11-25T21:10:57.734182+00:00", "toolInfo" => nil }]
+      end
+
       before_all do
         project.add_developer(user)
       end
@@ -82,6 +96,7 @@ RSpec.describe 'Subscriptions::Ai::DuoWorkflows::WorkflowEventsUpdated', feature
         expect(updated_workflow['errors']).to eq([])
         expect(updated_workflow['workflowStatus']).to eq('CREATED')
         expect(updated_workflow['executionStatus']).to eq('Created')
+        expect(updated_workflow['duoMessages']).to eq(chat_log)
       end
 
       context 'when duo_features_enabled settings is turned off' do

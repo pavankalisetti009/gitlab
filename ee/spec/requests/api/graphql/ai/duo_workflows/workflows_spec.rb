@@ -122,6 +122,30 @@ RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :duo_agent_
           metadata
           timestamp
           workflowStatus
+          duoMessages {
+            content
+            messageType
+            status
+            toolInfo
+            timestamp
+            correlationId
+            role
+          }
+        }
+        latestCheckpoint {
+          checkpoint
+          metadata
+          timestamp
+          workflowStatus
+          duoMessages {
+            content
+            messageType
+            status
+            toolInfo
+            timestamp
+            correlationId
+            role
+          }
         }
         lastExecutorLogsUrl
         aiCatalogItemVersionId
