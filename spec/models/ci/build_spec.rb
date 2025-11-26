@@ -2046,6 +2046,37 @@ RSpec.describe Ci::Build, feature_category: :continuous_integration, factory_def
 
     subject(:tag_list) { build.reload.tag_list }
 
+    context 'with various tag input formats' do
+      where(:tag_input, :expected_tags, :description) do
+        ['tag1,tag2']       | %w[tag1 tag2]      | 'comma-delimited string in array'
+        ['tag1, tag2']      | %w[tag1 tag2]      | 'comma-delimited string with spaces'
+        %w[tag1 tag2]       | %w[tag1 tag2]      | 'array of strings'
+        ['']                | []                 | 'empty string in array'
+        []                  | []                 | 'empty array'
+        ['  tag1  , tag2 '] | %w[tag1 tag2]      | 'string with extra whitespace'
+        'tag1,tag2'         | %w[tag1 tag2]      | 'plain comma-delimited string'
+        'tag1, tag2, tag3'  | %w[tag1 tag2 tag3] | 'multiple tags with spaces'
+      end
+
+      with_them do
+        let(:build) { create(:ci_build, tag_list: tag_input, pipeline: pipeline) }
+
+        it 'parses job_definition tags correctly' do
+          expect(tag_list).to match_array(expected_tags)
+        end
+
+        context 'when ci_build_uses_job_definition_tag_list FF is disabled' do
+          before do
+            stub_feature_flags(ci_build_uses_job_definition_tag_list: false)
+          end
+
+          it 'parses job_definition tags correctly' do
+            expect(tag_list).to match_array(expected_tags)
+          end
+        end
+      end
+    end
+
     context 'when tags are preloaded' do
       it 'does not trigger queries' do
         build_with_tags = described_class.eager_load_tags.id_in([build]).to_a.first
