@@ -120,7 +120,7 @@ export default {
         Sentry.captureException(error);
       }
     },
-    async deleteFlow() {
+    async deleteFlow(forceHardDelete) {
       const { id, itemType } = this.aiCatalogFlow;
       const config = FLOW_TYPE_APOLLO_CONFIG[itemType].delete;
 
@@ -129,6 +129,7 @@ export default {
           mutation: config.mutation,
           variables: {
             id,
+            forceHardDelete,
           },
         });
 

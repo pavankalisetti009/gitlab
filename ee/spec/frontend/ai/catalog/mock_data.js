@@ -35,6 +35,7 @@ const mockProjectFactory = (overrides = {}) => ({
 const mockUserPermissionsFactory = (overrides = {}) => ({
   adminAiCatalogItem: true,
   reportAiCatalogItem: true,
+  forceHardDeleteAiCatalogItem: true,
   ...overrides,
 });
 
