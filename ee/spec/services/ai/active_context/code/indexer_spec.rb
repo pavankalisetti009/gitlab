@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
+require_relative 'shared_contexts'
 
 RSpec.describe Ai::ActiveContext::Code::Indexer, feature_category: :global_search do
   let_it_be(:connection) { create(:ai_active_context_connection) }
@@ -15,8 +16,9 @@ RSpec.describe Ai::ActiveContext::Code::Indexer, feature_category: :global_searc
     create(:ai_active_context_code_repository, active_context_connection: connection, project: project)
   end
 
+  let(:adapter_name) { 'elasticsearch' }
   let(:adapter) do
-    instance_double(::ActiveContext::Databases::Elasticsearch::Adapter, name: 'elasticsearch', connection: connection)
+    instance_double(::ActiveContext::Databases::Elasticsearch::Adapter, name: adapter_name, connection: connection)
   end
 
   let(:logger) { instance_double(::Gitlab::ActiveContext::Logger, info: nil, error: nil) }
@@ -81,7 +83,7 @@ RSpec.describe Ai::ActiveContext::Code::Indexer, feature_category: :global_searc
         let(:expected_command) do
           [
             Gitlab.config.elasticsearch.indexer_path,
-            '-adapter', 'elasticsearch',
+            '-adapter', adapter_name,
             '-connection', expected_connection_command_arg,
             '-options', ::Gitlab::Json.generate(expected_options)
           ]
@@ -126,42 +128,49 @@ RSpec.describe Ai::ActiveContext::Code::Indexer, feature_category: :global_searc
         end
 
         describe 'connection option' do
-          context 'when elasticsearch adapter' do
-            before do
-              connection.reload.update!(
-                adapter_class: 'ActiveContext::Databases::Elasticsearch::Adapter',
-                options: {
-                  url: [
-                    { scheme: "http", host: "localhost", port: 9200 },
-                    { scheme: "http", host: "localhost", port: 9200, user: 'dummy', password: 'pass123' }
-                  ]
-                }
-              )
-            end
-
-            let(:adapter) do
-              ::ActiveContext::Databases::Elasticsearch::Adapter.new(
-                connection,
-                options: connection.options
-              )
-            end
-
+          shared_examples 'passes correct connection options' do
             let(:expected_connection_command_arg) do
-              ::Gitlab::Json.generate({
-                url: [
-                  'http://localhost:9200/',
-                  'http://dummy:pass123@localhost:9200/'
-                ]
-              })
+              ::Gitlab::Json.generate(expected_connection_hash)
             end
 
-            it 'ensures that the only connection option is `url` as array of strings' do
-              expect(Gitlab::Popen).to receive(:popen_with_streaming)
-                .with(expected_command, nil, env_vars)
-                .and_return(0)
+            it 'passes the expected connection options' do
+              expect(Gitlab::Popen).to receive(:popen_with_streaming) do |command, dir, env|
+                expect(command[2]).to eq(adapter_name)
+                expect(command[3]).to eq('-connection')
+
+                connection_hash = ::Gitlab::Json.parse(command[4])
+                expect(connection_hash).to eq(expected_connection_hash)
+
+                expect(dir).to be_nil
+                expect(env).to eq(env_vars)
+
+                0
+              end
 
               run
             end
+          end
+
+          context 'when elasticsearch adapter' do
+            include_context 'with elasticsearch connection options'
+
+            let(:expected_connection_hash) { { 'url' => expected_elasticsearch_urls } }
+
+            it_behaves_like 'passes correct connection options'
+          end
+
+          context 'when opensearch adapter' do
+            include_context 'with opensearch connection options'
+
+            let(:expected_connection_hash) { expected_opensearch_connection }
+
+            it_behaves_like 'passes correct connection options'
+          end
+
+          context 'when connection has plain string URLs' do
+            include_context 'with plain string URL connection options'
+
+            it_behaves_like 'passes correct connection options'
           end
         end
 

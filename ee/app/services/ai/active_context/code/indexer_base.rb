@@ -46,13 +46,28 @@ module Ai
         end
 
         # gitlab-elasticsearch-indexer requires connection as { url: ['string1', 'string2'] }
-        # This method converts various URL formats into the required string array format.
+        # This method converts various URL formats into the required string array format
+        # and filters connection options to only those expected by the adapter:
+        # - ElasticsearchConnection: only 'url'
+        # - OpenSearchConnection: 'url', 'aws', 'aws_region', 'aws_access_key', etc.
         def elasticsearch_connection_options
-          urls = Array(adapter.connection.options.symbolize_keys[:url]).map do |url|
+          options = adapter.connection.options.symbolize_keys
+
+          { url: normalize_urls(options[:url]) }.merge(aws_connection_options(options))
+        end
+
+        def normalize_urls(urls)
+          Array(urls).map do |url|
             url.is_a?(Hash) ? Addressable::URI.new(url.symbolize_keys).normalize.to_s : url
           end
+        end
 
-          { url: urls }
+        def aws_connection_options(options)
+          return {} unless options[:aws]
+
+          options.slice(
+            :aws, :aws_region, :aws_access_key, :aws_secret_access_key, :aws_role_arn, :client_request_timeout
+          ).compact
         end
 
         def base_options
