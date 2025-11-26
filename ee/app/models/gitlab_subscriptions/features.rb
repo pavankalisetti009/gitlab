@@ -285,6 +285,7 @@ module GitlabSubscriptions
       security_inventory
       security_on_demand_scans
       security_orchestration_policies
+      security_scan_profiles
       security_training
       ssh_key_expiration_policy
       summarize_mr_changes

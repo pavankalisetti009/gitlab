@@ -708,6 +708,13 @@ module EE
           description: 'Security attributes linked to the project.',
           resolver: ::Resolvers::Security::AttributesResolver,
           experiment: { milestone: '18.5' }
+
+        field :security_scan_profiles,
+          type: [::Types::Security::ScanProfileType],
+          null: true,
+          description: 'Security scan profiles attached to the project.',
+          authorize: :read_security_scan_profiles,
+          experiment: { milestone: '18.7' }
       end
 
       def tracking_key

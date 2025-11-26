@@ -104,6 +104,10 @@ module EE
         @subject.licensed_feature_available?(:security_inventory)
       end
 
+      condition(:security_scan_profiles_available, scope: :subject) do
+        @subject.licensed_feature_available?(:security_scan_profiles)
+      end
+
       condition(:prevent_group_forking_available, scope: :subject) do
         @subject.feature_available?(:group_forking_protection)
       end
@@ -715,6 +719,16 @@ module EE
       end
 
       rule { custom_role_enables_read_security_attribute }.enable(:read_security_attribute)
+
+      rule { can?(:developer_access) }.policy do
+        enable :read_security_scan_profiles
+      end
+
+      rule { custom_role_enables_read_security_scan_profiles }.enable(:read_security_scan_profiles)
+
+      rule { ~security_scan_profiles_available }.policy do
+        prevent :read_security_scan_profiles
+      end
 
       rule { ~security_inventory_available }.prevent :read_security_inventory
 

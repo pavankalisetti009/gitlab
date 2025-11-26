@@ -131,6 +131,9 @@ module EE
       has_many :project_to_security_attributes, class_name: 'Security::ProjectToSecurityAttribute', inverse_of: :project
       has_many :security_attributes, through: :project_to_security_attributes, class_name: 'Security::Attribute'
 
+      has_many :security_scan_profiles_projects, class_name: 'Security::ScanProfileProject', inverse_of: :project
+      has_many :security_scan_profiles, through: :security_scan_profiles_projects, source: :scan_profile
+
       has_many :workspaces, class_name: 'RemoteDevelopment::Workspace', inverse_of: :project
       has_many :workspace_agentk_states, class_name: 'RemoteDevelopment::WorkspaceAgentkState', inverse_of: :project
 

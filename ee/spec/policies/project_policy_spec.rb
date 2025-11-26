@@ -1052,6 +1052,50 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       end
     end
 
+    describe 'read_security_scan_profiles' do
+      let(:policy) { :read_security_scan_profiles }
+
+      context 'when security_scan_profiles is available' do
+        before do
+          stub_licensed_features(security_scan_profiles: true)
+          enable_admin_mode!(current_user) if role == :admin
+        end
+
+        where(:role, :allowed) do
+          :guest      | false
+          :planner    | false
+          :reporter   | false
+          :developer  | true
+          :maintainer | true
+          :owner      | true
+          :admin      | true
+          :auditor    | false
+        end
+
+        with_them do
+          let(:current_user) { public_send(role) }
+
+          it { is_expected.to(allowed ? be_allowed(policy) : be_disallowed(policy)) }
+        end
+      end
+
+      context 'when security_scan_profiles is not available' do
+        where(:role) do
+          [:guest, :planner, :reporter, :developer, :maintainer, :auditor, :owner, :admin]
+        end
+
+        with_them do
+          let(:current_user) { public_send(role) }
+
+          before do
+            enable_admin_mode!(current_user) if role == :admin
+          end
+
+          it { is_expected.to be_disallowed(policy) }
+        end
+      end
+    end
+
     describe 'remove_project when default_project_deletion_protection is set to true' do
       before do
         stub_application_setting(default_project_deletion_protection: true)
