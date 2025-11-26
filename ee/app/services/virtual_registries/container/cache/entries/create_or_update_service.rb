@@ -29,7 +29,6 @@ module VirtualRegistries
               file: file,
               size: file.size,
               file_sha1: file.sha1,
-              file_md5: file.md5,
               content_type: content_type
             }.compact_blank
 

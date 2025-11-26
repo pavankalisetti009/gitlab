@@ -20,7 +20,6 @@ RSpec.describe VirtualRegistries::Container::Cache::Entry, feature_category: :vi
       it { is_expected.to validate_length_of(attr).is_at_most(1024) }
     end
 
-    it { is_expected.to validate_length_of(:file_md5).is_equal_to(32).allow_nil }
     it { is_expected.to validate_length_of(:file_sha1).is_equal_to(40) }
 
     context 'with persisted cached response' do
