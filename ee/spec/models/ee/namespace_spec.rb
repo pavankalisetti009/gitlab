@@ -434,40 +434,6 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
       end
     end
 
-    describe '.not_duo_pro_or_no_add_on', :saas do
-      let_it_be(:namespace_with_paid_plan) { create(:group_with_plan, plan: :ultimate_plan) }
-      let_it_be(:namespace_with_duo_pro) { create(:group_with_plan, plan: :ultimate_plan) }
-      let_it_be(:namespace_with_other_addon) { create(:group_with_plan, plan: :ultimate_plan) }
-      let_it_be(:regular_namespace) { create(:group) }
-
-      before_all do
-        create(:gitlab_subscription_add_on_purchase, :duo_pro, namespace: namespace_with_duo_pro)
-        create(:gitlab_subscription_add_on_purchase, :product_analytics, namespace: namespace_with_other_addon)
-      end
-
-      it 'includes correct namespaces' do
-        expect(described_class.not_duo_pro_or_no_add_on)
-          .to match_array([namespace_with_paid_plan, namespace_with_other_addon, regular_namespace])
-      end
-    end
-
-    describe '.not_duo_enterprise_or_no_add_on', :saas do
-      let_it_be(:namespace_with_paid_plan) { create(:group_with_plan, plan: :ultimate_plan) }
-      let_it_be(:namespace_with_duo) { create(:group_with_plan, plan: :ultimate_plan) }
-      let_it_be(:namespace_with_other_addon) { create(:group_with_plan, plan: :ultimate_plan) }
-      let_it_be(:regular_namespace) { create(:group) }
-
-      before_all do
-        create(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: namespace_with_duo)
-        create(:gitlab_subscription_add_on_purchase, :product_analytics, namespace: namespace_with_other_addon)
-      end
-
-      it 'includes correct namespaces' do
-        expect(described_class.not_duo_enterprise_or_no_add_on)
-          .to match_array([namespace_with_paid_plan, namespace_with_other_addon, regular_namespace])
-      end
-    end
-
     describe '.namespace_settings_with_ai_features_enabled' do
       subject { described_class.namespace_settings_with_ai_features_enabled }
 
