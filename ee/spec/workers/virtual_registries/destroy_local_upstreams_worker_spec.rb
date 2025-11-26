@@ -106,7 +106,7 @@ RSpec.describe VirtualRegistries::DestroyLocalUpstreamsWorker, :aggregate_failur
     end
 
     context 'with wrong event class' do
-      let(:event) { Ci::PipelineCreatedEvent.new(data: { pipeline_id: 5 }) }
+      let(:event) { Ci::PipelineCreatedEvent.new(data: { pipeline_id: 5, partition_id: 100 }) }
 
       it_behaves_like 'not removing any maven upstream'
     end
