@@ -183,7 +183,7 @@ export default {
           <template #itemType>{{ itemTypeLabel }}</template>
         </gl-sprintf>
       </dt>
-      <dd>{{ item.name }}</dd>
+      <dd class="gl-break-all">{{ item.name }}</dd>
     </dl>
 
     <gl-form :id="formId" @submit.prevent="handleSubmit">
