@@ -3,7 +3,10 @@ import { GlIcon, GlLink, GlPopover, GlSprintf } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
 import { mapActions, mapState } from 'vuex';
 import { s__ } from '~/locale';
-import { isMergeRequestSettingOverridden } from 'ee/security_orchestration/components/policy_editor/scan_result/lib';
+import {
+  isMergeRequestSettingOverridden,
+  WARN_VALUE,
+} from 'ee/security_orchestration/components/policy_editor/scan_result/lib';
 
 export default {
   i18n: {
@@ -39,6 +42,7 @@ export default {
       return this.scanResultPolicies.filter(
         (policy) =>
           policy.enabled &&
+          policy.enforcement_type !== WARN_VALUE &&
           Object.entries(policy.approval_settings || []).some(([setting, value]) =>
             isMergeRequestSettingOverridden(setting, value),
           ),
