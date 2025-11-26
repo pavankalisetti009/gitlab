@@ -7,12 +7,7 @@ import GeoListTopBar from 'ee/geo_shared/list/components/geo_list_top_bar.vue';
 import GeoList from 'ee/geo_shared/list/components/geo_list.vue';
 import { MOCK_MODEL_TYPES } from 'ee_jest/admin/data_management/mock_data';
 import showToast from '~/vue_shared/plugins/global_toast';
-import {
-  BULK_ACTIONS,
-  DEFAULT_SORT,
-  GEO_TROUBLESHOOTING_LINK,
-  TOKEN_TYPES,
-} from 'ee/admin/data_management/constants';
+import { BULK_ACTIONS } from 'ee/admin/data_management/constants';
 import { getModels, putBulkModelAction } from 'ee/api/data_management_api';
 import waitForPromises from 'helpers/wait_for_promises';
 import { createAlert } from '~/alert';
@@ -62,7 +57,7 @@ describe('AdminDataManagementApp', () => {
       pageHeadingDescription: 'Review stored data and data health within your instance.',
       filteredSearchOptionLabel: 'Search by ID',
       activeListboxItem: defaultModel.name,
-      activeSort: DEFAULT_SORT,
+      activeSort: { value: 'id', direction: 'asc' },
       bulkActions: BULK_ACTIONS,
       showActions: false,
     });
@@ -78,7 +73,7 @@ describe('AdminDataManagementApp', () => {
         title: `No ${defaultModelTitle} exist`,
         description:
           'If you believe this is an error, see the %{linkStart}Geo troubleshooting%{linkEnd} documentation.',
-        helpLink: GEO_TROUBLESHOOTING_LINK,
+        helpLink: '/help/administration/geo/replication/troubleshooting/_index.md',
         hasFilters: false,
       },
     });
@@ -184,8 +179,8 @@ describe('AdminDataManagementApp', () => {
         name: 'root',
         params: { modelName: otherModel.name },
         query: {
-          [TOKEN_TYPES.IDENTIFIERS]: ['123', '456'],
-          [TOKEN_TYPES.CHECKSUM_STATE]: 'failed',
+          identifiers: ['123', '456'],
+          checksum_state: 'failed',
         },
       });
 
@@ -198,22 +193,22 @@ describe('AdminDataManagementApp', () => {
 
     it('updates route query', () => {
       expect(router.currentRoute.query).toStrictEqual({
-        [TOKEN_TYPES.CHECKSUM_STATE]: 'failed',
-        [TOKEN_TYPES.IDENTIFIERS]: ['123', '456'],
+        checksum_state: 'failed',
+        identifiers: ['123', '456'],
       });
     });
 
     it('calls getModels with correct parameters', () => {
       expect(getModels).toHaveBeenCalledWith(otherModel.name, {
-        [TOKEN_TYPES.IDENTIFIERS]: ['123', '456'],
-        [TOKEN_TYPES.CHECKSUM_STATE]: 'failed',
+        identifiers: ['123', '456'],
+        checksum_state: 'failed',
       });
     });
 
     it('passes initial filter to GeoListTopBar', () => {
       expect(findGeoListTopBar().props('activeFilteredSearchFilters')).toMatchObject([
         '123 456',
-        { type: TOKEN_TYPES.CHECKSUM_STATE, value: { data: 'failed' } },
+        { type: 'checksum_state', value: { data: 'failed' } },
       ]);
     });
 
@@ -247,7 +242,7 @@ describe('AdminDataManagementApp', () => {
 
       findGeoListTopBar().vm.$emit('search', [
         '123 456',
-        { type: TOKEN_TYPES.CHECKSUM_STATE, value: { data: 'failed' } },
+        { type: 'checksum_state', value: { data: 'failed' } },
       ]);
 
       await waitForPromises();
@@ -255,15 +250,15 @@ describe('AdminDataManagementApp', () => {
 
     it('updates route query', () => {
       expect(router.currentRoute.query).toStrictEqual({
-        [TOKEN_TYPES.CHECKSUM_STATE]: 'failed',
-        [TOKEN_TYPES.IDENTIFIERS]: ['123', '456'],
+        checksum_state: 'failed',
+        identifiers: ['123', '456'],
       });
     });
 
     it('calls getModels with correct params', () => {
       expect(getModels).toHaveBeenCalledWith(defaultModel.name, {
-        [TOKEN_TYPES.IDENTIFIERS]: ['123', '456'],
-        [TOKEN_TYPES.CHECKSUM_STATE]: 'failed',
+        identifiers: ['123', '456'],
+        checksum_state: 'failed',
       });
     });
   });
