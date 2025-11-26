@@ -7,6 +7,10 @@ module Ai
         include Gitlab::Scheduling::TaskExecutor
 
         TASKS = {
+          create_enabled_namespace: {
+            period: 1.hour,
+            dispatch: { event: CreateEnabledNamespaceEvent }
+          },
           process_pending_enabled_namespace: {
             period: 30.minutes,
             if: -> { ::Ai::ActiveContext::Code::EnabledNamespace.pending.with_active_connection.exists? },

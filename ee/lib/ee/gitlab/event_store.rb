@@ -222,6 +222,10 @@ module EE
         end
 
         def subscribe_to_active_context_code_events(store)
+          store.subscribe ::Ai::ActiveContext::Code::CreateEnabledNamespaceEventWorker,
+            to: ::Ai::ActiveContext::Code::CreateEnabledNamespaceEvent,
+            if: ->(_) { ::Feature.enabled?(:active_context_code_event_create_enabled_namespaces, :instance) }
+
           store.subscribe ::Ai::ActiveContext::Code::MarkRepositoryAsReadyEventWorker,
             to: ::Ai::ActiveContext::Code::MarkRepositoryAsReadyEvent
 
