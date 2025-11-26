@@ -173,12 +173,11 @@ prompts:
 
         # Add specific instructions for your use case here
 
+      # Available variables depend on your inputs:
+      # {{goal}} - The user's request
+      # {{context}} - Additional context from previous steps
       user: |
         {{goal}}
-
-        # Available variables depend on your inputs:
-        # {{goal}} - The user's request
-        # {{context}} - Additional context from previous steps
 
       placeholder: history  # Maintains conversation context
 
