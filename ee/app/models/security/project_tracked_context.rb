@@ -25,9 +25,6 @@ module Security
     validates :context_name, presence: true, length: { maximum: 1024 }
     validates :context_type, presence: true
     validates :context_name, uniqueness: { scope: [:project_id, :context_type] }
-    validates :is_default,
-      uniqueness: { scope: [:project_id], message: 'There is already a default tracked context' },
-      if: :is_default?
     validate :tracked_refs_limit
     validate :default_ref_cannot_be_untracked, if: :is_default?
     validate :only_branch_refs_can_be_default, if: :is_default?

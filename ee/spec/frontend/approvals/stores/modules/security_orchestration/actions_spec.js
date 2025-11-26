@@ -3,13 +3,13 @@ import testAction from 'helpers/vuex_action_helper';
 import * as types from 'ee/approvals/stores/modules/security_orchestration/mutation_types';
 import getInitialState from 'ee/approvals/stores/modules/security_orchestration/state';
 import { gqClient } from 'ee/security_orchestration/utils';
-import projectScanResultPoliciesQuery from 'ee/security_orchestration/graphql/queries/project_scan_result_policies.query.graphql';
-import groupScanResultPoliciesQuery from 'ee/security_orchestration/graphql/queries/group_scan_result_policies.query.graphql';
+import projectSecurityPoliciesQuery from 'ee/security_orchestration/graphql/queries/project_security_policies.query.graphql';
+import groupSecurityPoliciesQuery from 'ee/security_orchestration/graphql/queries/group_security_policies.query.graphql';
 
 describe('security orchestration actions', () => {
   describe('fetchScanResultPolicies', () => {
     it('uses projectScanResultPoliciesQuery when isGroup is not provided', () => {
-      const queryResponse = { data: { namespace: { scanResultPolicies: { nodes: [] } } } };
+      const queryResponse = { data: { namespace: { securityPolicies: { nodes: [] } } } };
 
       jest.spyOn(gqClient, 'query').mockResolvedValue(queryResponse);
 
@@ -21,13 +21,13 @@ describe('security orchestration actions', () => {
         [],
       );
       expect(gqClient.query).toHaveBeenCalledWith(
-        expect.objectContaining({ query: projectScanResultPoliciesQuery }),
+        expect.objectContaining({ query: projectSecurityPoliciesQuery }),
       );
       return action;
     });
 
     it('uses groupScanResultPoliciesQuery when isGroup is true', () => {
-      const queryResponse = { data: { namespace: { scanResultPolicies: { nodes: [] } } } };
+      const queryResponse = { data: { namespace: { securityPolicies: { nodes: [] } } } };
 
       jest.spyOn(gqClient, 'query').mockResolvedValue(queryResponse);
 
@@ -39,7 +39,7 @@ describe('security orchestration actions', () => {
         [],
       );
       expect(gqClient.query).toHaveBeenCalledWith(
-        expect.objectContaining({ query: groupScanResultPoliciesQuery }),
+        expect.objectContaining({ query: groupSecurityPoliciesQuery }),
       );
       return action;
     });
@@ -80,7 +80,7 @@ describe('security orchestration actions', () => {
           type: 'approval_policy',
         },
       ];
-      const queryResponse = { data: { namespace: { scanResultPolicies: { nodes: policies } } } };
+      const queryResponse = { data: { namespace: { securityPolicies: { nodes: policies } } } };
 
       jest.spyOn(gqClient, 'query').mockResolvedValue(queryResponse);
 

@@ -20,13 +20,13 @@ Vue.use(Vuex);
 const policiesQueryResponse = {
   data: {
     namespace: {
-      scanResultPolicies: {
+      securityPolicies: {
         nodes: [mockProjectApprovalSettingsScanResultPolicy],
       },
     },
   },
 };
-const emptyPoliciesQueryResponse = { data: { project: { scanResultPolicies: { nodes: [] } } } };
+const emptyPoliciesQueryResponse = { data: { project: { securityPolicies: { nodes: [] } } } };
 
 describe('PolicyOverrideWarningIcon', () => {
   let wrapper;

@@ -38,7 +38,7 @@ RSpec.describe 'AI Catalog', :js, feature_category: :workflow_catalog do
   end
 
   def fill_edit_form_and_submit
-    expect(page).to have_css('h1', text: "Edit agent: #{agent1.name}")
+    expect(page).to have_css('h1', text: "Edit agent")
 
     find_by_testid('agent-form-input-name').set('Updated agent name')
     find_by_testid('agent-form-textarea-description').set('Updated agent description')

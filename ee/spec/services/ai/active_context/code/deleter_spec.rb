@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
+require_relative 'shared_contexts'
 
 RSpec.describe Ai::ActiveContext::Code::Deleter, feature_category: :global_search do
   let_it_be(:connection) { create(:ai_active_context_connection) }
@@ -15,8 +16,9 @@ RSpec.describe Ai::ActiveContext::Code::Deleter, feature_category: :global_searc
     create(:ai_active_context_code_repository, active_context_connection: connection, project: project)
   end
 
+  let(:adapter_name) { 'elasticsearch' }
   let(:adapter) do
-    instance_double(::ActiveContext::Databases::Elasticsearch::Adapter, name: 'elasticsearch', connection: connection)
+    instance_double(::ActiveContext::Databases::Elasticsearch::Adapter, name: adapter_name, connection: connection)
   end
 
   let(:logger) { instance_double(::Gitlab::ActiveContext::Logger, info: nil, error: nil) }
@@ -50,40 +52,85 @@ RSpec.describe Ai::ActiveContext::Code::Deleter, feature_category: :global_searc
   end
 
   describe '#run' do
-    let(:env_vars) { { "GITLAB_INDEXER_MODE" => "chunk" } }
-    let(:expected_options) do
-      {
-        project_id: project.id,
-        partition_name: collection.name,
-        partition_number: collection.partition_for(project.id),
-        timeout: described_class::TIMEOUT,
-        operation: 'delete'
-      }
-    end
-
-    let(:expected_command) do
-      [
-        Gitlab.config.elasticsearch.indexer_path,
-        '-adapter', 'elasticsearch',
-        '-connection', ::Gitlab::Json.generate(connection.options),
-        '-options', ::Gitlab::Json.generate(expected_options)
-      ]
-    end
-
     context 'when adapter is available' do
-      context 'when delete command succeeds' do
-        before do
-          allow(Gitlab::Popen).to receive(:popen)
-            .with(expected_command, nil, env_vars)
-            .and_return(["Delete successful\n", 0])
-        end
+      let(:env_vars) { { "GITLAB_INDEXER_MODE" => "chunk" } }
+      let(:expected_options) do
+        {
+          project_id: project.id,
+          partition_name: collection.name,
+          partition_number: collection.partition_for(project.id),
+          timeout: described_class::TIMEOUT,
+          operation: 'delete'
+        }
+      end
 
+      let(:expected_command) do
+        [
+          Gitlab.config.elasticsearch.indexer_path,
+          '-adapter', adapter_name,
+          '-connection', ::Gitlab::Json.generate(connection.options),
+          '-options', ::Gitlab::Json.generate(expected_options)
+        ]
+      end
+
+      describe 'command execution' do
         it 'calls the indexer with the correct command' do
           expect(Gitlab::Popen).to receive(:popen)
             .with(expected_command, nil, env_vars)
             .and_return(["Delete successful\n", 0])
 
           run
+        end
+
+        describe 'connection option' do
+          shared_examples 'passes correct connection options' do
+            it 'passes the expected connection options' do
+              expect(Gitlab::Popen).to receive(:popen) do |command, dir, env|
+                expect(command[1..2]).to eq(['-adapter', adapter_name])
+                expect(command[3]).to eq('-connection')
+
+                connection_hash = ::Gitlab::Json.parse(command[4])
+                expect(connection_hash).to eq(expected_connection_hash)
+
+                expect(dir).to be_nil
+                expect(env).to eq(env_vars)
+
+                ["Delete successful\n", 0]
+              end
+
+              run
+            end
+          end
+
+          context 'when elasticsearch adapter' do
+            include_context 'with elasticsearch connection options'
+
+            let(:expected_connection_hash) { { 'url' => expected_elasticsearch_urls } }
+
+            it_behaves_like 'passes correct connection options'
+          end
+
+          context 'when opensearch adapter' do
+            include_context 'with opensearch connection options'
+
+            let(:expected_connection_hash) { expected_opensearch_connection }
+
+            it_behaves_like 'passes correct connection options'
+          end
+
+          context 'when connection has plain string URLs' do
+            include_context 'with plain string URL connection options'
+
+            it_behaves_like 'passes correct connection options'
+          end
+        end
+      end
+
+      context 'when delete command succeeds' do
+        before do
+          allow(Gitlab::Popen).to receive(:popen)
+            .with(expected_command, nil, env_vars)
+            .and_return(["Delete successful\n", 0])
         end
 
         it 'logs success message' do
@@ -131,53 +178,6 @@ RSpec.describe Ai::ActiveContext::Code::Deleter, feature_category: :global_searc
             described_class::Error,
             "Delete failed with status: 1 and error: #{error_output}"
           )
-        end
-      end
-
-      context 'with elasticsearch adapter connection options' do
-        before do
-          connection.reload.update!(
-            adapter_class: 'ActiveContext::Databases::Elasticsearch::Adapter',
-            options: {
-              url: [
-                { scheme: "http", host: "localhost", port: 9200 },
-                { scheme: "http", host: "localhost", port: 9200, user: 'dummy', password: 'pass123' }
-              ]
-            }
-          )
-        end
-
-        let(:adapter) do
-          ::ActiveContext::Databases::Elasticsearch::Adapter.new(
-            connection,
-            options: connection.options
-          )
-        end
-
-        let(:expected_connection_command_arg) do
-          ::Gitlab::Json.generate({
-            url: [
-              'http://localhost:9200/',
-              'http://dummy:pass123@localhost:9200/'
-            ]
-          })
-        end
-
-        let(:expected_command) do
-          [
-            Gitlab.config.elasticsearch.indexer_path,
-            '-adapter', 'elasticsearch',
-            '-connection', expected_connection_command_arg,
-            '-options', ::Gitlab::Json.generate(expected_options)
-          ]
-        end
-
-        it 'formats connection options correctly for elasticsearch' do
-          expect(Gitlab::Popen).to receive(:popen)
-            .with(expected_command, nil, env_vars)
-            .and_return(["Delete successful\n", 0])
-
-          run
         end
       end
 
