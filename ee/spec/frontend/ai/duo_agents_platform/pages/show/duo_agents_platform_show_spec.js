@@ -71,7 +71,7 @@ describe('DuoAgentsPlatformShow', () => {
       expect(workflowDetailsProps).toMatchObject({
         isLoading: false,
         status: 'Running',
-        executorUrl: 'https://gitlab.com/gitlab-org/gitlab/-/pipelines/123',
+        executorUrl: 'https://gitlab.com/gitlab-org/gitlab/-/jobs/456',
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
         agentFlowDefinition: 'Software development',

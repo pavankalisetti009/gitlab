@@ -14,7 +14,7 @@ describe('AgentFlowDetails', () => {
     status: 'RUNNING',
     agentFlowDefinition: 'software_development',
     agentFlowCheckpoint: mockAgentFlowCheckpoint,
-    executorUrl: 'https://gitlab.com/gitlab-org/gitlab/-/pipelines/123',
+    executorUrl: 'https://gitlab.com/gitlab-org/gitlab/-/jobs/123',
     createdAt: '2023-01-01T00:54:00Z',
     updatedAt: '2024-01-02T00:34:00Z',
     project: {
