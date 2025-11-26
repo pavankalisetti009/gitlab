@@ -3,12 +3,11 @@ import models from 'test_fixtures/api/admin/data_management/snippet_repository.j
 import DataManagementItem from 'ee/admin/data_management/components/data_management_item.vue';
 import GeoListItem from 'ee/geo_shared/list/components/geo_list_item.vue';
 import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
-import { ACTION_TYPES } from 'ee/admin/data_management/constants';
 import { createAlert } from '~/alert';
 import { putModelAction } from 'ee/api/data_management_api';
 import showToast from '~/vue_shared/plugins/global_toast';
 import waitForPromises from 'helpers/wait_for_promises';
-import { VERIFICATION_STATUS_LABELS, VERIFICATION_STATUS_STATES } from 'ee/geo_shared/constants';
+import { VERIFICATION_STATUS_STATES } from 'ee/geo_shared/constants';
 import { joinPaths } from '~/lib/utils/url_utility';
 
 jest.mock('~/alert');
@@ -26,7 +25,7 @@ describe('DataManagementItem', () => {
 
   const checksumAction = {
     id: 'geo-checksum-item',
-    value: ACTION_TYPES.CHECKSUM,
+    value: 'checksum',
     text: 'Checksum',
     loading: false,
     successMessage: `Successfully recalculated checksum for ${modelDisplayName}.`,
@@ -178,12 +177,12 @@ describe('DataManagementItem', () => {
 
   describe.each`
     checksumState  | expectedStatus                          | expectedLabel
-    ${'pending'}   | ${VERIFICATION_STATUS_STATES.PENDING}   | ${VERIFICATION_STATUS_LABELS.PENDING}
-    ${'started'}   | ${VERIFICATION_STATUS_STATES.STARTED}   | ${VERIFICATION_STATUS_LABELS.STARTED}
-    ${'succeeded'} | ${VERIFICATION_STATUS_STATES.SUCCEEDED} | ${VERIFICATION_STATUS_LABELS.SUCCEEDED}
-    ${'failed'}    | ${VERIFICATION_STATUS_STATES.FAILED}    | ${VERIFICATION_STATUS_LABELS.FAILED}
-    ${'disabled'}  | ${VERIFICATION_STATUS_STATES.DISABLED}  | ${VERIFICATION_STATUS_LABELS.DISABLED}
-    ${undefined}   | ${VERIFICATION_STATUS_STATES.UNKNOWN}   | ${VERIFICATION_STATUS_LABELS.UNKNOWN}
+    ${'pending'}   | ${VERIFICATION_STATUS_STATES.PENDING}   | ${'Verification pending'}
+    ${'started'}   | ${VERIFICATION_STATUS_STATES.STARTED}   | ${'Verifying'}
+    ${'succeeded'} | ${VERIFICATION_STATUS_STATES.SUCCEEDED} | ${'Verified'}
+    ${'failed'}    | ${VERIFICATION_STATUS_STATES.FAILED}    | ${'Verification failed'}
+    ${'disabled'}  | ${VERIFICATION_STATUS_STATES.DISABLED}  | ${'Verification disabled'}
+    ${undefined}   | ${VERIFICATION_STATUS_STATES.UNKNOWN}   | ${'Verification unknown'}
   `('when checkSum state is $checksumState', ({ checksumState, expectedStatus, expectedLabel }) => {
     it('passes correct status props to GeoListItem', () => {
       createComponent({
