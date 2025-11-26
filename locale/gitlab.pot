@@ -30608,6 +30608,9 @@ msgstr ""
 msgid "Geo|Verified"
 msgstr ""
 
+msgid "Geo|Verifies data integrity on the primary site by calculating a checksum of the model's data. This can later be used to ensure replicated data matches between primary and secondary Geo sites, helping detect corruption during replication."
+msgstr ""
+
 msgid "Geo|Verifying"
 msgstr ""
 

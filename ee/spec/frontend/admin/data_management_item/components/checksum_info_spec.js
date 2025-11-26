@@ -1,8 +1,10 @@
-import { GlCard, GlSprintf, GlBadge, GlButton } from '@gitlab/ui';
+import { GlCard, GlSprintf, GlBadge, GlButton, GlPopover } from '@gitlab/ui';
 import models from 'test_fixtures/api/admin/data_management/snippet_repository.json';
 import ChecksumInfo from 'ee/admin/data_management_item/components/checksum_info.vue';
 import ClipboardButton from '~/vue_shared/components/clipboard_button.vue';
 import TimeAgo from '~/vue_shared/components/time_ago_tooltip.vue';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
+import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
 import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
@@ -29,11 +31,37 @@ describe('ChecksumInfo', () => {
   const findChecksumLast = () => wrapper.findByTestId('checksum-last');
   const findChecksum = () => wrapper.findByTestId('checksum');
   const findChecksumButton = () => wrapper.findComponent(GlButton);
+  const findHelpIcon = () => wrapper.findComponent(HelpIcon);
+  const findGlPopover = () => wrapper.findComponent(GlPopover);
+  const findHelpPageLink = () => findGlPopover().findComponent(HelpPageLink);
 
   it('renders card header', () => {
     createComponent();
 
     expect(findHeading().text()).toContain('Checksum information');
+  });
+
+  describe('card help popover', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
+    it('renders help icon', () => {
+      expect(findHelpIcon().attributes('id')).toBe('checksum-information-help-icon');
+    });
+
+    it('renders popover', () => {
+      expect(findGlPopover().props('target')).toBe('checksum-information-help-icon');
+      expect(findGlPopover().text()).toContain(
+        "Verifies data integrity on the primary site by calculating a checksum of the model's data. This can later be used to ensure replicated data matches between primary and secondary Geo sites, helping detect corruption during replication.",
+      );
+    });
+
+    it('renders help page link in popover', () => {
+      expect(findHelpPageLink().attributes('href')).toBe(
+        'administration/geo/disaster_recovery/background_verification',
+      );
+    });
   });
 
   describe('when status is known', () => {

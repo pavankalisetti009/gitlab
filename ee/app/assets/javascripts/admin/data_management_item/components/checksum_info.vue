@@ -1,8 +1,10 @@
 <script>
-import { GlSprintf, GlBadge, GlCard, GlButton } from '@gitlab/ui';
+import { GlSprintf, GlBadge, GlCard, GlButton, GlPopover } from '@gitlab/ui';
 import { VERIFICATION_STATUS_STATES } from 'ee/geo_shared/constants';
 import TimeAgo from '~/vue_shared/components/time_ago_tooltip.vue';
 import ClipboardButton from '~/vue_shared/components/clipboard_button.vue';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
+import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
 
 export default {
   name: 'ChecksumInfo',
@@ -11,8 +13,11 @@ export default {
     GlBadge,
     GlButton,
     GlCard,
+    GlPopover,
     TimeAgo,
     ClipboardButton,
+    HelpIcon,
+    HelpPageLink,
   },
   props: {
     details: {
@@ -36,7 +41,28 @@ export default {
 <template>
   <gl-card>
     <template #header>
-      <h5 class="gl-my-0">{{ s__('Geo|Checksum information') }}</h5>
+      <div class="gl-flex gl-items-center">
+        <h5 class="gl-my-0">{{ s__('Geo|Checksum information') }}</h5>
+        <help-icon id="checksum-information-help-icon" class="gl-ml-2" />
+        <gl-popover target="checksum-information-help-icon" placement="top" triggers="hover focus">
+          <p>
+            {{
+              s__(
+                "Geo|Verifies data integrity on the primary site by calculating a checksum of the model's data. This can later be used to ensure replicated data matches between primary and secondary Geo sites, helping detect corruption during replication.",
+              )
+            }}
+          </p>
+          <help-page-link href="administration/geo/disaster_recovery/background_verification">{{
+            __('Learn more')
+          }}</help-page-link>
+        </gl-popover>
+        <gl-button
+          class="gl-ml-auto"
+          :loading="checksumLoading"
+          @click="$emit('recalculate-checksum')"
+          >{{ s__('Geo|Checksum') }}</gl-button
+        >
+      </div>
     </template>
 
     <div class="gl-flex gl-flex-col gl-items-start gl-gap-4">
@@ -100,10 +126,6 @@ export default {
           category="tertiary"
         />
       </p>
-
-      <gl-button :loading="checksumLoading" @click="$emit('recalculate-checksum')">{{
-        s__('Geo|Checksum')
-      }}</gl-button>
     </div>
   </gl-card>
 </template>
