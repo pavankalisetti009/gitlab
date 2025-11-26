@@ -134,5 +134,27 @@ RSpec.describe Projects::WorkItemsController, feature_category: :team_planning d
         end
       end
     end
+
+    describe 'duo_developer_button feature flag' do
+      before do
+        allow(controller).to receive(:push_frontend_feature_flag)
+      end
+
+      describe 'GET #show' do
+        it 'pushes duo_developer_button frontend feature flag' do
+          get :show, params: { namespace_id: project.namespace, project_id: project, iid: work_item.iid }
+
+          expect(controller).to have_received(:push_frontend_feature_flag).with(:duo_developer_button, user)
+        end
+      end
+
+      describe 'GET #index' do
+        it 'pushes duo_developer_button frontend feature flag' do
+          get :index, params: { namespace_id: project.namespace, project_id: project }
+
+          expect(controller).to have_received(:push_frontend_feature_flag).with(:duo_developer_button, user)
+        end
+      end
+    end
   end
 end
