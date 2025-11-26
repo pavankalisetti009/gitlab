@@ -2422,6 +2422,17 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
       let(:failed_status_code) { :not_found }
     end
 
+    it_behaves_like 'authorizing granular token permissions', :read_project do
+      let(:boundary_object) { private_project }
+      let(:request) do
+        get api("/projects/#{private_project.id}/groups", personal_access_token: pat)
+      end
+
+      before do
+        private_project.add_developer(user)
+      end
+    end
+
     shared_examples_for 'successful groups response' do
       it 'returns an array of groups' do
         request
@@ -2552,6 +2563,17 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
       end
     end
 
+    it_behaves_like 'authorizing granular token permissions', :read_project do
+      let(:boundary_object) { project }
+      let(:request) do
+        get api("/projects/#{project.id}/share_locations", personal_access_token: pat)
+      end
+
+      before do
+        project.add_developer(user)
+      end
+    end
+
     context 'when unauthenticated' do
       it 'does not return the groups for the given project' do
         get api(path)
@@ -2634,6 +2656,13 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
 
     it_behaves_like 'GET request permissions for admin mode' do
       let(:failed_status_code) { :not_found }
+    end
+
+    it_behaves_like 'authorizing granular token permissions', :read_project do
+      let(:boundary_object) { project }
+      let(:request) do
+        get api("/projects/#{project.id}", personal_access_token: pat)
+      end
     end
 
     it_behaves_like 'rate limited endpoint', rate_limit_key: :project_api do
@@ -3445,6 +3474,17 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
         end
       end
 
+      it_behaves_like 'authorizing granular token permissions', :read_project do
+        let(:boundary_object) { project }
+        let(:request) do
+          get api("/projects/#{project.id}/users", personal_access_token: pat)
+        end
+
+        before do
+          project4.add_developer(user)
+        end
+      end
+
       it 'returns a 404 error if not found' do
         get api("/projects/#{non_existing_record_id}/users", user)
 
@@ -3553,6 +3593,13 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
             expect(project_fork_target.forked_from_project.id).to eq(project_fork_source.id)
             expect(project_fork_target.fork_network_member).to be_present
             expect(project_fork_target).to be_forked
+          end
+
+          it_behaves_like 'authorizing granular token permissions', :update_project do
+            let(:boundary_object) { project_fork_target }
+            let(:request) do
+              post api("/projects/#{project_fork_target.id}/fork/#{project_fork_source.id}", personal_access_token: pat)
+            end
           end
         end
 
@@ -3692,6 +3739,13 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
             expect(project_fork_target).not_to be_forked
           end
 
+          it_behaves_like 'authorizing granular token permissions', :update_project do
+            let(:boundary_object) { project_fork_target }
+            let(:request) do
+              delete api("/projects/#{project_fork_target.id}/fork", personal_access_token: pat)
+            end
+          end
+
           it_behaves_like '412 response' do
             subject(:request) { api(path, admin, admin_mode: true) }
           end
@@ -3729,6 +3783,17 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
           project_fork_source.reload
           expect(project_fork_source.forks.length).to eq(1)
           expect(project_fork_source.forks).to include(private_fork)
+        end
+
+        it_behaves_like 'authorizing granular token permissions', :read_project do
+          let(:boundary_object) { project_fork_source }
+          let(:request) do
+            get api("/projects/#{project_fork_source.id}/forks", personal_access_token: pat)
+          end
+
+          before do
+            project_fork_source.add_developer(user)
+          end
         end
 
         context 'for a user that can access the forks' do
@@ -3800,6 +3865,14 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
       expect(json_response['group_id']).to eq(group.id)
       expect(json_response['group_access']).to eq(Gitlab::Access::DEVELOPER)
       expect(json_response['expires_at']).to eq(expires_at.to_s)
+    end
+
+    it_behaves_like 'authorizing granular token permissions', :share_project do
+      let(:boundary_object) { project }
+      let(:request) do
+        post api("/projects/#{project.id}/share", personal_access_token: pat),
+          params: { group_id: group.id, group_access: Gitlab::Access::DEVELOPER }
+      end
     end
 
     it 'updates project authorization', :sidekiq_inline do
@@ -3903,6 +3976,17 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
         expect(json_response.length).to eq(3)
         group_ids = json_response.map { |group| group['id'] }
         expect(group_ids).to contain_exactly(direct_group1.id, direct_group2.id, inherited_group.id)
+      end
+
+      it_behaves_like 'authorizing granular token permissions', :read_project do
+        let(:boundary_object) { main_project }
+        let(:request) do
+          get api("/projects/#{main_project.id}/invited_groups", personal_access_token: pat)
+        end
+
+        before do
+          main_project.add_developer(user)
+        end
       end
     end
 
@@ -4046,6 +4130,13 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
         expect(project.project_group_links).to be_empty
       end
 
+      it_behaves_like 'authorizing granular token permissions', :share_project do
+        let(:boundary_object) { project }
+        let(:request) do
+          delete api("/projects/#{project.id}/share/#{group.id}", personal_access_token: pat)
+        end
+      end
+
       it 'updates project authorization', :sidekiq_inline do
         expect do
           delete api("/projects/#{project.id}/share/#{group.id}", user)
@@ -4107,15 +4198,28 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
     let_it_be(:group) { create(:group, owners: user) }
     let_it_be_with_reload(:project) { create(:project, group: group) }
 
-    it 'restores project' do
-      project.update!(archived: true, marked_for_deletion_at: 1.day.ago, deleting_user: user)
+    context 'when project is archived' do
+      before do
+        project.update!(archived: true, marked_for_deletion_at: 1.day.ago, deleting_user: user)
+      end
 
-      post api("/projects/#{project.id}/restore", user)
+      it 'restores project' do
+        post api("/projects/#{project.id}/restore", user)
 
-      expect(response).to have_gitlab_http_status(:created)
-      expect(json_response['archived']).to be_falsey
-      expect(json_response['marked_for_deletion_at']).to be_falsey
-      expect(json_response['marked_for_deletion_on']).to be_falsey
+        expect(response).to have_gitlab_http_status(:created)
+        expect(json_response['archived']).to be_falsey
+        expect(json_response['marked_for_deletion_at']).to be_falsey
+        expect(json_response['marked_for_deletion_on']).to be_falsey
+      end
+
+      it_behaves_like 'authorizing granular token permissions', :restore_project do
+        let!(:project) { create(:project, group: group) }
+        let(:boundary_object) { project }
+
+        let(:request) do
+          post api("/projects/#{project.id}/restore", personal_access_token: pat)
+        end
+      end
     end
 
     it 'returns error if project is already being deleted' do
@@ -4138,6 +4242,13 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
       project.add_maintainer(user)
       project2.add_maintainer(user)
       project2.add_developer(project2_user)
+    end
+
+    it_behaves_like 'authorizing granular token permissions', :update_project do
+      let(:boundary_object) { project2 }
+      let(:request) do
+        post api("/projects/#{project.id}/import_project_members/#{project2.id}", personal_access_token: pat)
+      end
     end
 
     it 'records the query', :request_store, :use_sql_query_cache do
@@ -4265,6 +4376,13 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
     it_behaves_like 'PUT request permissions for admin mode' do
       let(:params) { { visibility: 'internal' } }
       let(:failed_status_code) { :not_found }
+    end
+
+    it_behaves_like 'authorizing granular token permissions', :update_project do
+      let(:boundary_object) { project }
+      let(:request) do
+        put api("/projects/#{project.id}", personal_access_token: pat), params: { name: 'new name' }
+      end
     end
 
     describe 'updating ci_push_repository_for_job_token_allowed attribute' do
@@ -5294,6 +5412,13 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
         expect(response).to have_gitlab_http_status(:created)
         expect(json_response['archived']).to be_truthy
       end
+
+      it_behaves_like 'authorizing granular token permissions', :archive_project do
+        let(:boundary_object) { project }
+        let(:request) do
+          post api("/projects/#{project.id}/archive", personal_access_token: pat)
+        end
+      end
     end
 
     context 'on an archived project' do
@@ -5375,6 +5500,13 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
         project.update!(archived: true)
       end
 
+      it_behaves_like 'authorizing granular token permissions', :archive_project do
+        let(:boundary_object) { project }
+        let(:request) do
+          post api("/projects/#{project.id}/unarchive", personal_access_token: pat)
+        end
+      end
+
       it 'unarchives the project' do
         post api(path, user)
 
@@ -5419,6 +5551,13 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
         expect(response).to have_gitlab_http_status(:created)
         expect(json_response['star_count']).to eq(1)
       end
+
+      it_behaves_like 'authorizing granular token permissions', :star_project do
+        let(:boundary_object) { project }
+        let(:request) do
+          post api("/projects/#{project.id}/star", personal_access_token: pat)
+        end
+      end
     end
 
     context 'on a starred project' do
@@ -5449,6 +5588,13 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
 
         expect(response).to have_gitlab_http_status(:created)
         expect(json_response['star_count']).to eq(0)
+      end
+
+      it_behaves_like 'authorizing granular token permissions', :star_project do
+        let(:boundary_object) { project }
+        let(:request) do
+          post api("/projects/#{project.id}/unstar", personal_access_token: pat)
+        end
       end
     end
 
@@ -5487,6 +5633,17 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
     before do
       user.users_star_projects.create!(project_id: public_project.id)
       private_user.users_star_projects.create!(project_id: public_project.id)
+    end
+
+    it_behaves_like 'authorizing granular token permissions', :read_project do
+      let(:boundary_object) { public_project }
+      let(:request) do
+        get api("/projects/#{public_project.id}/starrers", personal_access_token: pat)
+      end
+
+      before do
+        public_project.add_developer(user)
+      end
     end
 
     it 'returns not_found(404) for not existing project' do
@@ -5552,6 +5709,13 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
 
         expect(response).to have_gitlab_http_status(:not_found)
       end
+
+      it_behaves_like 'authorizing granular token permissions', :read_project do
+        let(:boundary_object) { project }
+        let(:request) do
+          get api("/projects/#{project.id}/languages", personal_access_token: pat)
+        end
+      end
     end
 
     context 'with not authorized user' do
@@ -5587,6 +5751,13 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
     it_behaves_like 'DELETE request permissions for admin mode' do
       let(:success_status_code) { :accepted }
       let(:failed_status_code) { :not_found }
+    end
+
+    it_behaves_like 'authorizing granular token permissions', :delete_project do
+      let(:boundary_object) { project }
+      let(:request) do
+        delete api("/projects/#{project.id}", personal_access_token: pat)
+      end
     end
 
     context 'when authenticated as user' do
@@ -6112,6 +6283,19 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
         expect(response).to have_gitlab_http_status(:created)
       end
 
+      it_behaves_like 'authorizing granular token permissions', :housekeep_project do
+        let!(:project) { create(:project, namespace: user.namespace) }
+        let(:boundary_object) { project }
+
+        before do
+          project.add_owner(user)
+        end
+
+        let(:request) do
+          post api("/projects/#{project.id}/housekeeping", personal_access_token: pat)
+        end
+      end
+
       it 'logs an audit event' do
         expect(housekeeping).to receive(:execute).once.and_yield
         expect(::Gitlab::Audit::Auditor).to receive(:audit).with(a_hash_including(
@@ -6199,6 +6383,13 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
 
         expect(response).to have_gitlab_http_status(:created)
       end
+
+      it_behaves_like 'authorizing granular token permissions', :recalculate_project_storage do
+        let(:boundary_object) { project }
+        let(:request) do
+          post api("/projects/#{project.id}/repository_size", personal_access_token: pat)
+        end
+      end
     end
 
     context 'when authenticated as developer' do
@@ -6268,6 +6459,19 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
       end
     end
 
+    it_behaves_like 'authorizing granular token permissions', :transfer_project do
+      let(:group) { build(:group) }
+      let(:boundary_object) { project }
+      let(:request) do
+        put api("/projects/#{project.id}/transfer", personal_access_token: pat),
+          params: { namespace: group.id }
+      end
+
+      before do
+        group.add_owner(user)
+      end
+    end
+
     context 'when authenticated as developer' do
       before do
         group.add_developer(user)
@@ -6306,6 +6510,13 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
         guest_group.add_guest(user)
         maintainer_group.add_maintainer(user)
         owner_group.add_owner(user)
+      end
+
+      it_behaves_like 'authorizing granular token permissions', :read_project do
+        let(:boundary_object) { project }
+        let(:request) do
+          get api("/projects/#{project.id}/transfer_locations", personal_access_token: pat)
+        end
       end
 
       it 'returns 200' do
