@@ -208,6 +208,7 @@ RSpec.describe Security::Ingestion::MarkAsResolvedService, feature_category: :vu
           )
           expect(representation_info.project_id).to eq(vulnerability.project_id)
           expect(representation_info.resolved_in_commit_sha).to eq(vulnerability.findings.first.sha)
+          expect(representation_info.vulnerability_occurrence_id).to eq(vulnerability.finding_id)
         end
       end
 
