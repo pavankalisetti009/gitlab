@@ -8,6 +8,7 @@ module VirtualRegistries
       TOKEN_REQUEST_TIMEOUT = 10.seconds
       BEARER_TOKEN_CACHE_DURATION = 3.minutes
       AUTH_CHALLENGE_REGEX = /(\w+)="([^"]+)"/
+      RESOURCE_SUFFIX_REGEX = %r{/(manifests|blobs|tags)/.*$}
 
       REGISTRY_ACCEPT_HEADERS = {
         'Accept' => [
@@ -32,11 +33,19 @@ module VirtualRegistries
       validates :username, presence: true, if: :password?
       validates :password, presence: true, if: :username?
       validates :username, :password, length: { maximum: 510 }
+      validates :auth_url, addressable_url: {
+        allow_localhost: false,
+        allow_local_network: false,
+        dns_rebind_protection: true,
+        enforce_sanitization: true
+      }, length: { maximum: 512 }, allow_nil: true, allow_blank: false
       validate :credentials_uniqueness_for_group, if: -> { %i[url username password].any? { |f| changes.key?(f) } }
 
-      prevent_from_serialization(:password)
+      prevent_from_serialization(:password, :auth_url)
 
       scope :search_by_name, ->(query) { fuzzy_search(query, [:name], use_minimum_char_limit: false) }
+
+      before_save :reset_auth_url, if: -> { will_save_change_to_url? }
 
       def url_for(path)
         base_url = url.chomp('/').delete_suffix('/v2')
@@ -69,6 +78,30 @@ module VirtualRegistries
       end
 
       def exchange_credentials_for_bearer_token(path)
+        request_auth_url = auth_url || fetch_auth_url(path)
+        return unless request_auth_url
+
+        response = request_bearer_token(request_auth_url, path)
+
+        # Handle stale auth_url: if cached auth_url returns 404,
+        # Clear it and retry once with a freshly fetched auth_url
+        if response&.not_found? && auth_url.present?
+          request_auth_url = fetch_auth_url(path)
+
+          update(auth_url: nil) && return unless request_auth_url
+
+          response = request_bearer_token(request_auth_url, path)
+        end
+
+        update(auth_url: nil) && return unless response&.success?
+
+        token = parse_token(response)
+        update(auth_url: request_auth_url) if token.present?
+
+        token
+      end
+
+      def fetch_auth_url(path)
         # Step 1: Request for file and get an authenticate header
         auth_challenge = get_auth_challenge(path)
         return unless auth_challenge
@@ -77,8 +110,10 @@ module VirtualRegistries
         token_service_info = parse_auth_challenge(auth_challenge)
         return unless token_service_info
 
-        # Step 3: Exchange credentials for bearer token at authentication URL
-        request_bearer_token(token_service_info)
+        uri = Addressable::URI.parse(token_service_info['realm'])
+        uri.query_values = { service: token_service_info['service'] }.compact_blank
+
+        uri.to_s
       end
 
       def get_auth_challenge(path)
@@ -109,29 +144,39 @@ module VirtualRegistries
         params
       end
 
-      def request_bearer_token(token_service_info)
-        scope = token_service_info['scope']
+      def request_bearer_token(request_auth_url, path)
+        request_auth_url = append_scope(request_auth_url, path)
 
-        token_url = "#{token_service_info['realm']}?service=#{token_service_info['service']}"
-        token_url << "&scope=#{scope}" if scope.present?
-
-        response = ::Gitlab::HTTP.get(
-          token_url,
+        ::Gitlab::HTTP.get(
+          request_auth_url,
           headers: basic_auth_headers,
           follow_redirects: true,
           timeout: TOKEN_REQUEST_TIMEOUT
         )
+      rescue *::Gitlab::HTTP::HTTP_ERRORS => e
+        Gitlab::ErrorTracking.track_exception(e, message: "Token request error for upstream #{id}: #{e.message}")
+        nil
+      end
 
-        return unless response.success?
+      def append_scope(request_auth_url, path)
+        return request_auth_url if path.blank?
 
+        repository_name = path.sub(RESOURCE_SUFFIX_REGEX, '')
+        scope = "repository:#{repository_name}:pull"
+
+        uri = Addressable::URI.parse(request_auth_url)
+        query_values = uri.query_values || {}
+        uri.query_values = query_values.merge(scope: scope)
+
+        uri.to_s
+      end
+
+      def parse_token(response)
         token_data = ::Gitlab::Json.parse(response.body)
         token_data['token'].presence || token_data['access_token'].presence
       rescue JSON::ParserError => e
         Gitlab::ErrorTracking.track_exception(e,
           message: "Failed to parse token response for upstream #{id}: #{e.message}")
-        nil
-      rescue *::Gitlab::HTTP::HTTP_ERRORS => e
-        Gitlab::ErrorTracking.track_exception(e, message: "Token request error for upstream #{id}: #{e.message}")
         nil
       end
 
@@ -159,6 +204,10 @@ module VirtualRegistries
           .none? { |u| u.username == username && Rack::Utils.secure_compare(u.password.to_s, password.to_s) }
 
         errors.add(:group, 'already has an upstream with the same credentials')
+      end
+
+      def reset_auth_url
+        self.auth_url = nil
       end
     end
   end

@@ -11,6 +11,10 @@ FactoryBot.define do
     group { registries.first.group }
     cache_validity_hours { 24 }
 
+    trait :with_auth_url do
+      auth_url { 'https://auth.docker.io/token?service=registry.docker.io' }
+    end
+
     after(:build) do |entry, _|
       entry.registry_upstreams.each { |registry_upstream| registry_upstream.group = entry.group }
     end
