@@ -205,6 +205,7 @@ export default {
       variables() {
         return this.projectId ? { projectId: this.projectId } : { groupId: this.namespaceId };
       },
+      // NOTE, any update here should also be made to ee/app/assets/javascripts/ai/components/new_chat_button.vue
       update(data) {
         return (data?.aiCatalogConfiguredItems.nodes || []).map((node) => ({
           ...node.item,
