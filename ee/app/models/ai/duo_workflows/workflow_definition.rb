@@ -28,6 +28,18 @@ module Ai
             ::Ai::DuoWorkflows::Workflow::AgentPrivileges::USE_GIT
           ],
           environment: "web"
+        },
+        {
+          id: 3,
+          name: "resolve_sast_vulnerability/v1",
+          pre_approved_agent_privileges: [
+            ::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_FILES,
+            ::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_ONLY_GITLAB,
+            ::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_GITLAB,
+            ::Ai::DuoWorkflows::Workflow::AgentPrivileges::RUN_COMMANDS,
+            ::Ai::DuoWorkflows::Workflow::AgentPrivileges::USE_GIT
+          ],
+          environment: "web"
         }
       ].freeze
 
