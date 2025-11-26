@@ -120,6 +120,7 @@ namespace :admin do
     post :trigger_reindexing
     post :cancel_index_deletion
     post :retry_migration
+    post :use_advanced_search_cluster_for_semantic_search
   end
 
   get 'namespace_limits', to: 'namespace_limits#index'

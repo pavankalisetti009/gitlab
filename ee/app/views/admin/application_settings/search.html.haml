@@ -52,3 +52,4 @@
 = render 'admin/application_settings/global_search_settings'
 = render 'admin/application_settings/elasticsearch_form' if License.feature_available?(:elastic_search)
 = render 'admin/application_settings/zoekt_configuration_settings' if ::License.feature_available?(:zoekt_code_search)
+= render 'admin/application_settings/semantic_search_settings' if License.feature_available?(:elastic_search) && ::Gitlab::CurrentSettings.duo_features_enabled?

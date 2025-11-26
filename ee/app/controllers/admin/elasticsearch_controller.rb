@@ -46,6 +46,16 @@ class Admin::ElasticsearchController < Admin::ApplicationController
   end
 
   # POST
+  # Connect to Advanced Search cluster for semantic search
+  def use_advanced_search_cluster_for_semantic_search
+    Ai::ActiveContext::ConnectionService.connect_to_advanced_search_cluster
+
+    flash[:notice] = _('Successfully created connection for semantic search.')
+
+    redirect_to redirect_path(anchor: 'js-semantic-search-settings')
+  end
+
+  # POST
   # Retry a halted migration
   def retry_migration
     migration = Elastic::DataMigrationService[params[:version].to_i]
