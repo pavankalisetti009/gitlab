@@ -232,3 +232,45 @@ export const mockFindingReportsComparerParsingResponse = {
     },
   },
 };
+
+export const mockFindingReportsComparerEmptyResponse = {
+  data: {
+    project: {
+      id: 'gid://gitlab/Project/1',
+      mergeRequest: {
+        id: 'gid://gitlab/MergeRequest/1',
+        findingReportsComparer: {
+          status: 'PARSED',
+          report: {
+            added: [],
+            fixed: [],
+          },
+        },
+      },
+    },
+  },
+};
+
+export const createMockFindingReportsComparerResponse = (
+  reportType,
+  findings = { added: [], fixed: [] },
+) => ({
+  data: {
+    project: {
+      id: 'gid://gitlab/Project/1',
+      __typename: 'Project',
+      mergeRequest: {
+        id: 'gid://gitlab/MergeRequest/1',
+        __typename: 'MergeRequest',
+        findingReportsComparer: {
+          status: 'PARSED',
+          __typename: 'FindingReportsComparer',
+          report: {
+            ...findings,
+            __typename: 'ComparedSecurityReport',
+          },
+        },
+      },
+    },
+  },
+});
