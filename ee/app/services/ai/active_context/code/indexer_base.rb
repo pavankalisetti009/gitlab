@@ -38,7 +38,7 @@ module Ai
         end
 
         def connection
-          if Ai::ActiveContext::Connection::ADAPTERS_FOR_ADVANCED_SEARCH.include?(adapter.class)
+          if Ai::ActiveContext::Connection::ADAPTERS_FOR_ADVANCED_SEARCH.value?(adapter.class)
             return elasticsearch_connection_options
           end
 

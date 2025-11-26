@@ -5,10 +5,10 @@ module Ai
     class Connection < ApplicationRecord
       self.table_name = :ai_active_context_connections
 
-      ADAPTERS_FOR_ADVANCED_SEARCH = [
-        ::ActiveContext::Databases::Elasticsearch::Adapter,
-        ::ActiveContext::Databases::Opensearch::Adapter
-      ].freeze
+      ADAPTERS_FOR_ADVANCED_SEARCH = {
+        elasticsearch: ::ActiveContext::Databases::Elasticsearch::Adapter,
+        opensearch: ::ActiveContext::Databases::Opensearch::Adapter
+      }.freeze
 
       has_many :collections, class_name: 'Ai::ActiveContext::Collection'
 
@@ -64,8 +64,12 @@ module Ai
       end
 
       def use_advanced_search_config?
-        ADAPTERS_FOR_ADVANCED_SEARCH.include?(adapter_class&.safe_constantize) &&
-          read_attribute(:options)['use_advanced_search_config'] == true
+        ADAPTERS_FOR_ADVANCED_SEARCH.value?(adapter_class&.safe_constantize) &&
+          use_advanced_search_config_option == true
+      end
+
+      def use_advanced_search_config_option
+        read_attribute(:options)['use_advanced_search_config']
       end
 
       private

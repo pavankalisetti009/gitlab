@@ -58,6 +58,38 @@ RSpec.describe Ai::ActiveContext::Connection, feature_category: :global_search d
     end
   end
 
+  describe '#use_advanced_search_config_option' do
+    context 'when use_advanced_search_config is true' do
+      let(:connection) do
+        build(:ai_active_context_connection, options: { use_advanced_search_config: true })
+      end
+
+      it 'returns true' do
+        expect(connection.use_advanced_search_config_option).to be true
+      end
+    end
+
+    context 'when use_advanced_search_config is false' do
+      let(:connection) do
+        build(:ai_active_context_connection, options: { use_advanced_search_config: false })
+      end
+
+      it 'returns false' do
+        expect(connection.use_advanced_search_config_option).to be false
+      end
+    end
+
+    context 'when use_advanced_search_config is not present' do
+      let(:connection) do
+        build(:ai_active_context_connection, options: { url: 'http://custom:9200' })
+      end
+
+      it 'returns nil' do
+        expect(connection.use_advanced_search_config_option).to be_nil
+      end
+    end
+  end
+
   describe '#options' do
     context 'when use_advanced_search_config is true for elasticsearch adapter' do
       let(:connection) do
