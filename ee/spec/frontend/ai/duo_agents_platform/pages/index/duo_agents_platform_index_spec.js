@@ -161,6 +161,7 @@ describe('AgentsPlatformIndex', () => {
       expect(tokens[0].options).toEqual([
         { value: 'code_review/v1', title: 'Code review' },
         { value: 'convert_to_gitlab_ci', title: 'Convert to gitlab ci' },
+        { value: 'developer/v1', title: 'Developer' },
         { value: 'fix_pipeline/v1', title: 'Fix pipeline' },
         { value: 'issue_to_merge_request', title: 'Issue to merge request' },
         { value: 'software_development', title: 'Software development' },
