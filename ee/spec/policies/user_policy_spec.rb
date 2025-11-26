@@ -308,86 +308,79 @@ RSpec.describe UserPolicy, feature_category: :user_management do
   end
 
   describe ':assign_default_duo_group' do
-    describe 'When the instance is SAAS', :saas do
-      context 'with no user assignments' do
-        before do
-          stub_feature_flags(ai_model_switching: true)
-          stub_feature_flags(ai_user_default_duo_namespace: true)
-          stub_application_setting(duo_features_enabled: true)
-        end
-
-        it { is_expected.to be_disallowed(:assign_default_duo_group) }
+    context 'with no user assignments' do
+      before do
+        stub_feature_flags(ai_model_switching: true)
+        stub_feature_flags(ai_user_default_duo_namespace: true)
+        stub_application_setting(duo_features_enabled: true)
       end
 
-      context 'with duo user assignments' do
-        let!(:groups) { create_list(:group, 2) }
+      it { is_expected.to be_disallowed(:assign_default_duo_group) }
+    end
 
-        let!(:duo_pro_add_on) { create(:gitlab_subscription_add_on, :duo_pro) }
+    context 'with duo user assignments' do
+      let!(:groups) { create_list(:group, 2) }
 
-        let!(:add_on_purchases) do
-          [
-            create(:gitlab_subscription_add_on_purchase, namespace: groups[0], add_on: duo_pro_add_on),
-            create(:gitlab_subscription_add_on_purchase, namespace: groups[1], add_on: duo_pro_add_on),
-            create(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: groups[0])
-          ]
+      let!(:duo_pro_add_on) { create(:gitlab_subscription_add_on, :duo_pro) }
+
+      let!(:add_on_purchases) do
+        [
+          create(:gitlab_subscription_add_on_purchase, namespace: groups[0], add_on: duo_pro_add_on),
+          create(:gitlab_subscription_add_on_purchase, namespace: groups[1], add_on: duo_pro_add_on),
+          create(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: groups[0])
+        ]
+      end
+
+      let!(:purchases_to_assign) { add_on_purchases }
+
+      let!(:user_assignments) do
+        purchases_to_assign.map do |purchase|
+          create(:gitlab_subscription_user_add_on_assignment, add_on_purchase: purchase, user: current_user)
+        end
+      end
+
+      let(:default_duo_namespace_enabled) { true }
+      let(:duo_features_enabled) { true }
+      let(:amazon_q_enabled) { false }
+
+      before do
+        default_duo_namespace = default_duo_namespace_enabled ? current_user : false
+
+        stub_feature_flags(ai_user_default_duo_namespace: default_duo_namespace)
+
+        stub_application_setting(duo_features_enabled: duo_features_enabled)
+
+        groups.each do |group|
+          group.add_reporter(current_user)
         end
 
-        let!(:purchases_to_assign) { add_on_purchases }
+        allow(::Ai::AmazonQ).to receive(:connected?).and_return(amazon_q_enabled)
+      end
 
-        let!(:user_assignments) do
-          purchases_to_assign.map do |purchase|
-            create(:gitlab_subscription_user_add_on_assignment, add_on_purchase: purchase, user: current_user)
-          end
+      context 'with seats assigned to user' do
+        using RSpec::Parameterized::TableSyntax
+
+        # Since this policy work with logical AND operator
+        # We only need to test when one variable is false and the rest is true to validate it works correctly
+        # This make this test more intelligible
+        where(:amazon_q_enabled, :default_duo_namespace_enabled, :duo_features_enabled, :allowed?) do
+          false | false | true  | false
+          false | true  | false | false
+          false | false | false | false
+          true  | true  | true  | false
+          false | true  | true  | true
         end
 
-        let(:default_duo_namespace_enabled) { true }
-        let(:duo_features_enabled) { true }
-        let(:amazon_q_enabled) { false }
-
-        before do
-          default_duo_namespace = default_duo_namespace_enabled ? current_user : false
-
-          stub_feature_flags(ai_user_default_duo_namespace: default_duo_namespace)
-
-          stub_application_setting(duo_features_enabled: duo_features_enabled)
-
-          groups.each do |group|
-            group.add_reporter(current_user)
-          end
-
-          allow(::Ai::AmazonQ).to receive(:connected?).and_return(amazon_q_enabled)
-        end
-
-        context 'with seats assigned to user' do
-          using RSpec::Parameterized::TableSyntax
-
-          # Since this policy work with logical AND operator
-          # We only need to test when one variable is false and the rest is true to validate it works correctly
-          # This make this test more intelligible
-          where(:amazon_q_enabled, :default_duo_namespace_enabled, :duo_features_enabled, :allowed?) do
-            false | false | true  | false
-            false | true  | false | false
-            false | false | false | false
-            true  | true  | true  | false
-            false | true  | true  | true
-          end
-
-          with_them do
-            it 'allows the user accordingly' do
-              if allowed?
-                is_expected.to be_allowed(:assign_default_duo_group)
-              else
-                is_expected.to be_disallowed(:assign_default_duo_group)
-              end
+        with_them do
+          it 'allows the user accordingly' do
+            if allowed?
+              is_expected.to be_allowed(:assign_default_duo_group)
+            else
+              is_expected.to be_disallowed(:assign_default_duo_group)
             end
           end
         end
       end
-    end
-
-    describe 'When the instance is not SAAS' do
-      # this is a placeholder for future work ahead for DAP
-      it { is_expected.to be_disallowed(:assign_default_duo_group) }
     end
   end
 end
