@@ -58,6 +58,8 @@ module EE
       # rubocop:disable Cop/ActiveRecordDependent -- legacy usage
       has_many :subscription_add_on_purchases, class_name: 'GitlabSubscriptions::AddOnPurchase', dependent: :destroy
       # rubocop:enable Cop/ActiveRecordDependent -- legacy usage
+      has_many :enabled_foundational_flows, class_name: 'Ai::Catalog::EnabledFoundationalFlow',
+        foreign_key: :namespace_id, inverse_of: :namespace
 
       accepts_nested_attributes_for :gitlab_subscription, update_only: true
       accepts_nested_attributes_for :namespace_limit
@@ -697,6 +699,10 @@ module EE
 
     def custom_roles_enabled?
       root_ancestor.licensed_feature_available?(:custom_roles)
+    end
+
+    def enabled_flow_catalog_item_ids
+      enabled_foundational_flows.limit(100).pluck(:catalog_item_id)
     end
 
     def can_assign_custom_roles_to_group_links?

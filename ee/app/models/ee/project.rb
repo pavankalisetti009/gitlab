@@ -259,6 +259,10 @@ module EE
 
       has_many :policy_dismissals, class_name: '::Security::PolicyDismissal', inverse_of: :project
 
+      has_many :enabled_foundational_flows,
+        class_name: 'Ai::Catalog::EnabledFoundationalFlow',
+        foreign_key: :project_id
+
       elastic_index_dependant_association :issues, on_change: :visibility_level
       elastic_index_dependant_association :issues, on_change: :archived
       elastic_index_dependant_association :work_items, on_change: :visibility_level
@@ -807,6 +811,11 @@ module EE
       def verification_state_model_key
         :project_id
       end
+    end
+
+    def enabled_flow_catalog_item_ids
+      project_flows = enabled_foundational_flows.limit(100).pluck(:catalog_item_id)
+      project_flows.presence || namespace.enabled_flow_catalog_item_ids
     end
 
     def project_state

@@ -71,6 +71,8 @@ module Ai
         reorder(order)
       end
 
+      scope :foundational_flows, -> { where.not(foundational_flow_reference: nil) }
+
       before_destroy :prevent_deletion_if_consumers_exist
 
       AGENT_TYPE = :agent
