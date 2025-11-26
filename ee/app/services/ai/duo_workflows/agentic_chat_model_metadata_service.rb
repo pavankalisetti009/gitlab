@@ -106,12 +106,7 @@ module Ai
 
       def do_not_consider_user_selected_model?(setting, model_selection_scope)
         setting.pinned_model? ||
-          user_model_selection_disabled? ||
           invalid_user_selected_model_identifier?(model_selection_scope)
-      end
-
-      def user_model_selection_disabled?
-        Feature.disabled?(:ai_user_model_switching, current_user)
       end
 
       def invalid_user_selected_model_identifier?(model_selection_scope)
