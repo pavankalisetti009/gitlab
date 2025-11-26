@@ -5,14 +5,8 @@ import {
 } from 'ee/ai/duo_agentic_chat/utils/workflow_socket_utils';
 import { GITLAB_DEFAULT_MODEL } from 'ee/ai/model_selection/constants';
 import * as websocketUtils from '~/lib/utils/websocket_utils';
-import { WorkflowUtils } from 'ee/ai/duo_agentic_chat/utils/workflow_utils';
 
 jest.mock('~/lib/utils/websocket_utils');
-jest.mock('ee/ai/duo_agentic_chat/utils/workflow_utils', () => ({
-  WorkflowUtils: {
-    transformChatMessages: jest.fn(),
-  },
-}));
 
 describe('workflow_socket_utils', () => {
   describe('buildWebsocketUrl', () => {
@@ -214,10 +208,12 @@ describe('workflow_socket_utils', () => {
 
     describe('when valid workflow message is received', () => {
       it('processes and returns transformed data', async () => {
-        const mockMessages = [{ content: 'test message', role: 'assistant' }];
+        const mockMessages = [
+          { content: 'test message', role: 'assistant', message_type: 'agent' },
+        ];
         const mockCheckpoint = {
           channel_values: {
-            ui_chat_log: [{ message: 'raw log' }],
+            ui_chat_log: mockMessages,
           },
         };
 
@@ -229,20 +225,110 @@ describe('workflow_socket_utils', () => {
           },
         });
 
-        WorkflowUtils.transformChatMessages.mockReturnValue(mockMessages);
-
         const result = await processWorkflowMessage(mockEvent, mockWorkflowId);
 
         expect(result).toEqual({
-          messages: mockMessages,
+          messages: [
+            {
+              ...mockMessages[0],
+              requestId: '456-0-agent',
+            },
+          ],
           status: 'running',
           goal: 'test goal',
+          lastProcessedIndex: 0,
+        });
+      });
+
+      it('correctly sets indicies on the sequential messages', async () => {
+        const mockMessageFirstPass = { content: 'Hello', role: 'user', message_type: 'user' };
+        const mockMessageSecondPass = {
+          content: 'Hello yourself',
+          role: 'assistant',
+          message_type: 'agent',
+        };
+        const mockMessageThirdPass = { content: 'Bummer', role: 'tool', message_type: 'tool' };
+
+        const mockCheckpoint = (messages) => {
+          return {
+            checkpoint: JSON.stringify({
+              channel_values: {
+                ui_chat_log: messages,
+              },
+            }),
+            status: 'running',
+            goal: 'test goal',
+          };
+        };
+
+        // We build the realistic iterative checkpoint events behavior
+        websocketUtils.parseMessage
+          .mockResolvedValueOnce({
+            newCheckpoint: mockCheckpoint([mockMessageFirstPass]),
+          })
+          .mockResolvedValueOnce({
+            newCheckpoint: mockCheckpoint([mockMessageFirstPass, mockMessageSecondPass]),
+          })
+          .mockResolvedValueOnce({
+            newCheckpoint: mockCheckpoint([
+              mockMessageFirstPass,
+              mockMessageSecondPass,
+              mockMessageThirdPass,
+            ]),
+          });
+
+        // First pass
+        let result = await processWorkflowMessage(mockEvent, mockWorkflowId);
+        let { lastProcessedIndex } = result;
+        expect(result).toEqual({
+          messages: [
+            {
+              ...mockMessageFirstPass,
+              requestId: '456-0-user',
+            },
+          ],
+          status: 'running',
+          goal: 'test goal',
+          lastProcessedIndex: 0,
         });
 
-        expect(WorkflowUtils.transformChatMessages).toHaveBeenCalledWith(
-          mockCheckpoint.channel_values.ui_chat_log,
-          mockWorkflowId,
-        );
+        // Second pass
+        result = await processWorkflowMessage(mockEvent, mockWorkflowId, lastProcessedIndex);
+        ({ lastProcessedIndex } = result);
+        expect(result).toEqual({
+          messages: [
+            {
+              ...mockMessageFirstPass,
+              requestId: '456-0-user',
+            },
+            {
+              ...mockMessageSecondPass,
+              requestId: '456-1-agent',
+            },
+          ],
+          status: 'running',
+          goal: 'test goal',
+          lastProcessedIndex: 1,
+        });
+
+        // Third pass. We shouldn't have user message here already. Also, the
+        // requestId and nextState should be correctly updated
+        result = await processWorkflowMessage(mockEvent, mockWorkflowId, lastProcessedIndex);
+        expect(result).toEqual({
+          messages: [
+            {
+              ...mockMessageSecondPass,
+              requestId: '456-1-agent',
+            },
+            {
+              ...mockMessageThirdPass,
+              requestId: '456-2-tool',
+            },
+          ],
+          status: 'running',
+          goal: 'test goal',
+          lastProcessedIndex: 2,
+        });
       });
     });
   });

@@ -84,9 +84,9 @@ describe('WorkflowUtils', () => {
   });
 
   describe('transformChatMessages', () => {
-    it('maps agent and request message types to assistant role', () => {
-      const workflowId = 'test-workflow';
+    const workflowId = 'test-workflow';
 
+    it('maps agent and request message types to assistant role', () => {
       const result = WorkflowUtils.transformChatMessages(MOCK_ASSISTANT_MESSAGES, workflowId);
 
       expect(result[0].role).toBe(GENIE_CHAT_MODEL_ROLES.assistant);
@@ -94,24 +94,11 @@ describe('WorkflowUtils', () => {
     });
 
     it('preserves original message_type for non-agent/request messages', () => {
-      const workflowId = 'test-workflow';
       const result = WorkflowUtils.transformChatMessages(MOCK_SINGLE_GENERIC_MESSAGE, workflowId);
       expect(result[0].role).toBe('generic');
     });
 
-    it('generates sequential requestIds based on array index', () => {
-      const workflowId = 'seq-test';
-
-      const result = WorkflowUtils.transformChatMessages(MOCK_MULTIPLE_USER_MESSAGES, workflowId);
-
-      expect(result[0].requestId).toBe('seq-test-0');
-      expect(result[1].requestId).toBe('seq-test-1');
-      expect(result[2].requestId).toBe('seq-test-2');
-    });
-
     it('preserves all original message properties', () => {
-      const workflowId = 'preserve-test';
-
       const result = WorkflowUtils.transformChatMessages(
         MOCK_USER_MESSAGE_WITH_PROPERTIES,
         workflowId,
@@ -119,9 +106,29 @@ describe('WorkflowUtils', () => {
 
       expect(result[0]).toEqual({
         ...MOCK_USER_MESSAGE_WITH_PROPERTIES[0],
-        requestId: 'preserve-test-0',
+        requestId: 'test-workflow-0-user',
         role: 'user',
       });
     });
+
+    it.each`
+      lastProcessedIndex | expectedIndicies | desc
+      ${undefined}       | ${[0, 1, 2]}     | ${'starting with 0'}
+      ${5}               | ${[5, 6, 7]}     | ${'starting with lastProcessedIndex'}
+      ${-1}              | ${[0, 1, 2]}     | ${'starting with 0'}
+    `(
+      'generates sequential requestIds $desc when lastProcessedIndex === "$lastProcessedIndex"',
+      ({ lastProcessedIndex, expectedIndicies } = {}) => {
+        const result = WorkflowUtils.transformChatMessages(
+          MOCK_MULTIPLE_USER_MESSAGES,
+          workflowId,
+          lastProcessedIndex,
+        );
+
+        result.forEach((res, i) => {
+          expect(res.requestId).toBe(`test-workflow-${expectedIndicies[i]}-user`);
+        });
+      },
+    );
   });
 });

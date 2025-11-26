@@ -269,7 +269,6 @@ export default {
       agenticWorkflows: [],
       activeThread,
       multithreadedView: DUO_CHAT_VIEWS.CHAT,
-      chatMessageHistory: [],
       selectedModel: null,
       catalogAgents: [],
       aiCatalogItemVersionId: '',
@@ -287,6 +286,9 @@ export default {
       duoChatTitle: s__('DuoAgenticChat|Duo Agent'),
       isLoading: false,
       isWaitingOnPrompt: false,
+      lastProcessedIndex: -1,
+      pendingEvent: null,
+      isProcessingMessage: false,
     };
   },
   computed: {
@@ -402,15 +404,12 @@ export default {
     hasActiveThread() {
       return this.workflowId && this.activeThread;
     },
-    shouldLoadThread() {
-      return this.hasActiveThread && !this.messages?.length;
-    },
   },
   watch: {
     'duoChatGlobalState.isAgenticChatShown': {
       handler(newVal) {
         if (newVal) {
-          if (this.shouldLoadThread) {
+          if (this.hasActiveThread) {
             this.hydrateActiveThread();
           } else {
             this.onNewChat();
@@ -476,13 +475,17 @@ export default {
     this.cleanupSocket();
     // Clear messages when component is destroyed to prevent state leaking
     // between mode switches (classic <-> agentic)
-    this.setMessages([]);
+    this.clearActiveThread();
     this.isLoading = false;
     this.isWaitingOnPrompt = false;
     this.$emit('change-title');
   },
   methods: {
     ...mapActions(['addDuoChatMessage', 'setMessages']),
+    clearActiveThread() {
+      this.setMessages([]);
+      this.lastProcessedIndex = -1;
+    },
     async loadDuoNextIfNeeded() {
       if (this.glFeatures.duoUiNext) {
         try {
@@ -494,7 +497,7 @@ export default {
     },
     switchMode(mode) {
       if (mode === 'active') {
-        if (this.shouldLoadThread) {
+        if (this.hasActiveThread) {
           this.hydrateActiveThread();
         } else {
           this.onNewChat();
@@ -519,6 +522,9 @@ export default {
     cleanupState(resetWorkflowId = true) {
       this.isLoading = false;
       this.isWaitingOnPrompt = false;
+      this.lastProcessedIndex = -1;
+      this.isProcessingMessage = false;
+      this.pendingEvent = null;
       this.cleanupSocket();
       if (resetWorkflowId) {
         this.workflowId = null;
@@ -587,25 +593,66 @@ export default {
     },
 
     async onMessageReceived(event) {
+      // Store the latest event
+      this.pendingEvent = event;
+
+      // If already processing, return - the event is stored and will be processed
+      if (this.isProcessingMessage) {
+        return;
+      }
+
+      // Start the processing loop
+      await this.processMessages();
+    },
+
+    async processMessages() {
+      // If there's no pending event, exit
+      if (this.pendingEvent === null) {
+        this.isProcessingMessage = false;
+        return;
+      }
+
+      this.isProcessingMessage = true;
+
       try {
-        const workflowData = await processWorkflowMessage(event, this.workflowId);
+        const eventToProcess = this.pendingEvent;
+        this.pendingEvent = null; // Clear before processing
 
-        if (!workflowData) {
-          return; // No checkpoint to process
+        const workflowData = await processWorkflowMessage(
+          eventToProcess,
+          this.workflowId,
+          this.lastProcessedIndex,
+        );
+
+        if (workflowData) {
+          this.lastProcessedIndex = workflowData.lastProcessedIndex;
+
+          if (workflowData.messages && workflowData.messages.length > 0) {
+            workflowData.messages.forEach((msg) => {
+              this.addDuoChatMessage(msg);
+            });
+          }
+
+          this.workflowStatus = workflowData.status;
+
+          if (workflowData.goal && !this.activeThread) {
+            this.activeThread = workflowData.goal;
+          }
+
+          if (this.workflowStatus === DUO_WORKFLOW_STATUS_INPUT_REQUIRED) {
+            this.isWaitingOnPrompt = false;
+          }
         }
 
-        this.setMessages(workflowData.messages);
-        this.workflowStatus = workflowData.status;
-
-        if (workflowData.goal && !this.activeThread) {
-          this.activeThread = workflowData.goal;
-        }
-
-        if (this.workflowStatus === DUO_WORKFLOW_STATUS_INPUT_REQUIRED) {
-          this.isWaitingOnPrompt = false;
+        // Check if another event arrived while we were processing
+        // If so, process it recursively
+        if (this.pendingEvent !== null) {
+          await this.processMessages();
         }
       } catch (err) {
         this.onError(err);
+      } finally {
+        this.isProcessingMessage = false;
       }
     },
 
@@ -641,7 +688,8 @@ export default {
         }
       }
 
-      const requestId = `${this.workflowId}-${this.chatMessageHistory.length + (this.messages?.length || 0)}`;
+      // eslint-disable-next-line @gitlab/require-i18n-strings
+      const requestId = `${this.workflowId}-${this.messages.length || 0}-user`;
       const userMessage = { content: question, role: 'user', requestId };
       this.startWorkflow(question, {}, this.additionalContext);
       this.addDuoChatMessage(userMessage);
@@ -677,16 +725,17 @@ export default {
 
       this.activeThread = activeThread;
       this.workflowId = workflowId;
-      this.chatMessageHistory = [];
-      this.setMessages([]);
+      this.clearActiveThread();
       this.cleanupState(false);
 
-      await this.hydrateActiveThread();
-
-      // Check if the thread's agent still exists after hydration
-      this.validateAgentExists();
-
-      if (this.isEmbedded) {
+      if (!this.isEmbedded) {
+        // We should not hydrate when in embedded mode - the SSOT for
+        // when to hydrate the thread is on the `mode` and is managed in
+        // `switchMode()`
+        await this.hydrateActiveThread();
+        // Check if the thread's agent still exists after hydration
+        this.validateAgentExists();
+      } else {
         this.$emit('switch-to-active-tab', DUO_CHAT_VIEWS.CHAT);
       }
 
@@ -722,7 +771,8 @@ export default {
           );
         }
 
-        this.chatMessageHistory = messages;
+        this.lastProcessedIndex = messages.length - 1;
+        this.setMessages(messages);
         this.$emit('change-title', parsedWorkflowData?.workflowGoal);
       } catch (err) {
         this.onErrorExtended(err);
@@ -732,8 +782,7 @@ export default {
     },
     onBackToList() {
       this.multithreadedView = DUO_CHAT_VIEWS.LIST;
-      this.chatMessageHistory = [];
-      this.setMessages([]);
+      this.clearActiveThread();
       try {
         if (this.$apollo?.queries?.agenticWorkflows) {
           this.$apollo.queries.agenticWorkflows.refetch();
@@ -754,7 +803,7 @@ export default {
     },
     async onNewChat(agent, reuseAgent) {
       clearDuoChatCommands();
-      this.setMessages([]);
+      this.clearActiveThread();
 
       const threadContent = resetThreadContent();
       Object.assign(this, threadContent);
@@ -836,7 +885,7 @@ export default {
       id="duo-chat"
       ref="chat"
       :title="dynamicTitle"
-      :messages="messages.length > 0 ? messages : chatMessageHistory"
+      :messages="messages"
       :is-loading="isWaitingOnPrompt"
       :predefined-prompts="predefinedPrompts"
       :thread-list="agenticWorkflows"

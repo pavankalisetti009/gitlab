@@ -195,3 +195,181 @@ export const MOCK_FOUNDATIONAL_CHAT_AGENTS_RESPONSE = {
     },
   },
 };
+
+export const MOCK_CHAT_MESSAGES = {
+  prompt: {
+    content: 'Update the README to explain the main languages used in the project',
+    role: 'user',
+  },
+  user: {
+    message_sub_type: null,
+    message_type: 'user',
+    content: 'Update the README to explain the main languages used in the project',
+    timestamp: '2025-11-18T09:52:38.523380+00:00',
+    status: 'success',
+    correlation_id: null,
+    tool_info: null,
+    additional_context: [
+      {
+        category: 'repository',
+        id: '',
+        content:
+          '<current_gitlab_page_url>gdk.test:8080/gitlab-duo/test</current_gitlab_page_url>\n<current_gitlab_page_title>GitLab Duo / Test · GitLab</current_gitlab_page_title>',
+        metadata: {},
+        type: 'AdditionalContext',
+      },
+    ],
+    role: 'user',
+  },
+  agentStreaming: {
+    status: null,
+    correlation_id: null,
+    message_type: 'agent',
+    message_sub_type: null,
+    timestamp: '2025-11-18T09:52:43.756171+00:00',
+    content: "I'll update",
+    tool_info: null,
+    additional_context: null,
+    role: 'assistant',
+  },
+  agentStreaming1: {
+    status: null,
+    correlation_id: null,
+    message_type: 'agent',
+    message_sub_type: null,
+    timestamp: '2025-11-18T09:52:43.756171+00:00',
+    content: "I'll update the README to explain the main languages",
+    tool_info: null,
+    additional_context: null,
+    role: 'assistant',
+  },
+  agentComplete: {
+    message_type: 'agent',
+    message_sub_type: null,
+    content:
+      "I'll update the README to explain the main languages used in the project. First, let me get the current README content.",
+    timestamp: '2025-11-18T09:52:45.082275+00:00',
+    status: 'success',
+    correlation_id: null,
+    tool_info: null,
+    additional_context: null,
+    role: 'assistant',
+  },
+  tool: {
+    message_type: 'tool',
+    message_sub_type: 'get_repository_file',
+    content: 'Get repository file README.md from project 1000000 at ref HEAD',
+    timestamp: '2025-11-18T09:52:45.530655+00:00',
+    status: 'success',
+    correlation_id: null,
+    tool_info: {
+      name: 'get_repository_file',
+      args: {
+        project_id: 1000000,
+        file_path: 'README.md',
+        ref: 'HEAD',
+      },
+      tool_response: {
+        content:
+          '# Test project for GitLab Duo\\n\\nThis project is for testing GitLab Duo. Seeded by #seed-project-and-group-resources-for-testing-and-evaluation.',
+        additional_kwargs: {},
+        response_metadata: {},
+        type: 'ToolMessage',
+        name: 'get_repository_file',
+        id: null,
+        tool_call_id: 'toolu_vrtx_016EoHinnPT6nxKTHookKNDL',
+        artifact: null,
+        status: 'success',
+      },
+    },
+    additional_context: null,
+    role: 'tool',
+  },
+  agent2Streaming1: {
+    status: null,
+    correlation_id: null,
+    message_type: 'agent',
+    message_sub_type: null,
+    timestamp: '2025-11-18T09:52:47.922360+00:00',
+    content: 'Now',
+    tool_info: null,
+    additional_context: null,
+    role: 'assistant',
+  },
+  agent2Streaming2: {
+    status: null,
+    correlation_id: null,
+    message_type: 'agent',
+    message_sub_type: null,
+    timestamp: '2025-11-18T09:52:47.922360+00:00',
+    content: "Now I'll update the README to",
+    tool_info: null,
+    additional_context: null,
+    role: 'assistant',
+  },
+  request: {
+    status: 'success',
+    content: 'Tool create_commit requires approval. Please confirm if you want to proceed.',
+    timestamp: '2025-11-18T09:52:54.430519+00:00',
+    tool_info: {
+      args: {
+        actions: [
+          {
+            action: 'update',
+            new_str:
+              '# Test project for GitLab Duo\n\nThis project is for testing GitLab Duo. Seeded by #seed-project-and-group-resources-for-testing-and-evaluation.\n\n',
+            old_str:
+              '# Test project for GitLab Duo\n\nThis project is for testing GitLab Duo. Seeded by #seed-project-and-group-resources-for-testing-and-evaluation.',
+            file_path: 'README.md',
+          },
+        ],
+        project_id: 1000000,
+        commit_message: 'Update README to explain main languages used in the project',
+      },
+      name: 'create_commit',
+    },
+    message_type: 'request',
+    correlation_id: null,
+    message_sub_type: null,
+    additional_context: null,
+    role: 'assistant',
+  },
+  tool3Fail: [
+    {
+      message_type: 'tool',
+      message_sub_type: 'create_commit',
+      content:
+        'Failed: Create commit in project 1000000 on new auto-created branch with 1 file action (update) - Tool call failed: ToolException',
+      timestamp: '2025-11-18T10:34:57.625572+00:00',
+      status: 'failure',
+      correlation_id: null,
+      tool_info: {
+        name: 'create_commit',
+        args: {
+          actions: [
+            {
+              action: 'update',
+              content: '# Test project for GitLab Duo\n\nThis project is for testing GitLab Duo.',
+              file_path: 'README.md',
+            },
+          ],
+          project_id: 1000000,
+          commit_message: 'Update README to explain main languages used in the project',
+        },
+      },
+      additional_context: null,
+      role: 'tool',
+    },
+    {
+      status: null,
+      correlation_id: null,
+      message_type: 'agent',
+      message_sub_type: null,
+      timestamp: '2025-11-14T10:15:45.971730+00:00',
+      content: 'Let me try with the full content approach:',
+      tool_info: null,
+      additional_context: null,
+      role: 'assistant',
+    },
+  ],
+};
