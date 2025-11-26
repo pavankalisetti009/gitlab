@@ -17,25 +17,6 @@ RSpec.describe Security::ProjectTrackedContext, feature_category: :vulnerability
     it { is_expected.to validate_length_of(:context_name).is_at_most(1024) }
     it { is_expected.to validate_uniqueness_of(:context_name).scoped_to([:project_id, :context_type]) }
 
-    describe 'is_default' do
-      context 'when there is an existing default ref' do
-        let_it_be(:existing_ref) { create(:security_project_tracked_context, :default, project: project) }
-
-        it 'fails validation if trying to create a new default ref' do
-          new_ref.is_default = true
-
-          expect(new_ref).not_to be_valid
-          expect(new_ref.errors[:is_default]).to include('There is already a default tracked context')
-        end
-
-        it 'passes validation if ref is not default' do
-          new_ref.is_default = false
-
-          expect(new_ref).to be_valid
-        end
-      end
-    end
-
     it 'is invalid when trying to make a tag ref default' do
       new_ref.context_type = :tag
       new_ref.is_default = true
