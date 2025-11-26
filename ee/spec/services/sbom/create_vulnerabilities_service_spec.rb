@@ -8,6 +8,15 @@ RSpec.describe Sbom::CreateVulnerabilitiesService, feature_category: :software_c
     let_it_be(:project) { create(:project, :repository) }
     let_it_be(:pipeline) { create(:ee_ci_pipeline, user: user, ref: project.default_branch, project: project) }
     let_it_be(:scanner) { create(:vulnerabilities_scanner, :sbom_scanner, project: project) }
+
+    let_it_be(:tracked_context) do
+      create(:security_project_tracked_context,
+        :tracked,
+        context_name: project.default_branch,
+        context_type: :branch,
+        project: project)
+    end
+
     let(:occurrences_count) { 5 }
     let(:sbom_reports) { pipeline.sbom_reports.reports.select(&:source) }
     let(:pipeline_components) { sbom_reports.flat_map(&:components) }
@@ -60,6 +69,20 @@ RSpec.describe Sbom::CreateVulnerabilitiesService, feature_category: :software_c
         end
 
         expect(Vulnerability.all).to match_array(expected_vulnerability_attributes)
+      end
+
+      it 'sets tracked context for all findings' do
+        expect(Vulnerabilities::Finding.pluck(:security_project_tracked_context_id)).to all(eq(tracked_context.id))
+      end
+
+      context 'when set_tracked_context_during_ingestion is disabled' do
+        before do
+          stub_feature_flags(set_tracked_context_during_ingestion: false)
+        end
+
+        it 'does not set tracked context on findings' do
+          expect(Vulnerabilities::Finding.pluck(:security_project_tracked_context_id)).to all(be_nil)
+        end
       end
     end
 
@@ -193,20 +216,10 @@ RSpec.describe Sbom::CreateVulnerabilitiesService, feature_category: :software_c
       end
 
       context 'with container scanning and dependency scanning reports' do
-        let_it_be(:container_scanning_ci_build) do
-          build(:ee_ci_build, :cyclonedx_container_scanning)
-        end
-
-        let_it_be(:dependency_scanning_ci_build) do
-          build(:ee_ci_build, :cyclonedx)
-        end
-
-        let_it_be(:project) { create(:project, :repository) }
-
         let_it_be(:pipeline) do
           create(:ee_ci_pipeline,
             user: user,
-            builds: [container_scanning_ci_build, dependency_scanning_ci_build],
+            builds: [build(:ee_ci_build, :cyclonedx_container_scanning), build(:ee_ci_build, :cyclonedx)],
             ref: project.default_branch,
             project: project
           )
@@ -263,8 +276,6 @@ RSpec.describe Sbom::CreateVulnerabilitiesService, feature_category: :software_c
               affected_range: known_affected_range)
           end
         end
-
-        let(:scanner) { create(:vulnerabilities_scanner, :sbom_scanner, project: project) }
 
         let(:affected_packages) { container_scanning_affected_packages + dependency_scanning_affected_packages }
 
