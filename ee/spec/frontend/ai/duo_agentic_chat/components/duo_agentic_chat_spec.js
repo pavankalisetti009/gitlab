@@ -1033,6 +1033,31 @@ describe('Duo Agentic Chat', () => {
         activeThread: MOCK_WORKFLOW_ID,
       });
     });
+
+    it('emits session-id-changed when workflowId changes', async () => {
+      await findDuoChat().vm.$emit('thread-selected', { id: MOCK_WORKFLOW_ID });
+
+      await nextTick();
+
+      expect(wrapper.emitted('session-id-changed')).toBeDefined();
+      expect(wrapper.emitted('session-id-changed')[0]).toEqual(['456']);
+    });
+
+    it('emits session-id-changed on mount when workflowId exists', async () => {
+      getStorageValue.mockReset();
+      getStorageValue.mockReturnValueOnce({
+        exists: true,
+        value: { workflowId: '456', activeThread: MOCK_WORKFLOW_ID },
+      });
+      duoChatGlobalState.isAgenticChatShown = false;
+
+      createComponent();
+      duoChatGlobalState.isAgenticChatShown = true;
+      await waitForPromises();
+
+      expect(wrapper.emitted('session-id-changed')).toBeDefined();
+      expect(wrapper.emitted('session-id-changed')[0]).toEqual(['456']);
+    });
   });
 
   describe('Error conditions', () => {
