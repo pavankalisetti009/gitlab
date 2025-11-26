@@ -1,5 +1,5 @@
-mutation deleteAiCatalogAgent($id: AiCatalogItemID!) {
-  aiCatalogAgentDelete(input: { id: $id }) {
+mutation deleteAiCatalogAgent($id: AiCatalogItemID!, $forceHardDelete: Boolean = false) {
+  aiCatalogAgentDelete(input: { id: $id, forceHardDelete: $forceHardDelete }) {
     errors
     success
   }

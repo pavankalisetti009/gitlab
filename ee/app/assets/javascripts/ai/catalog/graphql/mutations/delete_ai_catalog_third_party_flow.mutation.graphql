@@ -1,5 +1,5 @@
-mutation deleteAiCatalogThirdPartyFlow($id: AiCatalogItemID!) {
-  aiCatalogThirdPartyFlowDelete(input: { id: $id }) {
+mutation deleteAiCatalogThirdPartyFlow($id: AiCatalogItemID!, $forceHardDelete: Boolean = false) {
+  aiCatalogThirdPartyFlowDelete(input: { id: $id, forceHardDelete: $forceHardDelete }) {
     errors
     success
   }

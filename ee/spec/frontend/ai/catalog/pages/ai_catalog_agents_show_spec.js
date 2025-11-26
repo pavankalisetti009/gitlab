@@ -215,13 +215,15 @@ describe('AiCatalogAgentsShow', () => {
   });
 
   describe('on deleting an agent', () => {
-    const deleteAgent = () => findItemActions().props('deleteFn')();
+    const forceHardDelete = false;
+    const deleteAgent = () => findItemActions().props('deleteFn')(forceHardDelete);
 
     it('calls delete mutation for agent', () => {
       deleteAgent();
 
       expect(deleteAgentMutationHandler).toHaveBeenCalledWith({
         id: mockAgent.id,
+        forceHardDelete,
       });
     });
 

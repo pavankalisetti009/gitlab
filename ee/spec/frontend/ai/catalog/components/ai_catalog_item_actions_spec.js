@@ -1,3 +1,5 @@
+import { nextTick } from 'vue';
+import { GlModal, GlFormRadioGroup } from '@gitlab/ui';
 import { isLoggedIn } from '~/lib/utils/common_utils';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import AiCatalogItemActions from 'ee/ai/catalog/components/ai_catalog_item_actions.vue';
@@ -34,6 +36,7 @@ describe('AiCatalogItemActions', () => {
           params: routeParams,
         },
       },
+      stubs: { GlModal },
     });
   };
 
@@ -46,6 +49,7 @@ describe('AiCatalogItemActions', () => {
   const findDuplicateButton = () => wrapper.findByTestId('duplicate-button');
   const findReportButton = () => wrapper.findByTestId('report-button');
   const findDeleteButton = () => wrapper.findByTestId('delete-button');
+  const findDeleteModal = () => wrapper.findByTestId('delete-item-modal');
 
   describe('when user can report item', () => {
     beforeEach(() => {
@@ -280,6 +284,57 @@ describe('AiCatalogItemActions', () => {
 
     it('does not render "Enable in group" button', () => {
       expect(findAddToGroupButton().exists()).toBe(false);
+    });
+  });
+
+  describe('delete modal', () => {
+    describe('when user can hard delete', () => {
+      beforeEach(() => {
+        createComponent({
+          props: {
+            item: {
+              ...mockAgent,
+              userPermissions: {
+                adminAiCatalogItem: true,
+                forceHardDeleteAiCatalogItem: true,
+              },
+            },
+          },
+        });
+      });
+
+      it('displays deletion method radio buttons', async () => {
+        findDeleteButton().vm.$emit('action');
+
+        await nextTick();
+
+        expect(findDeleteModal().exists()).toBe(true);
+        expect(findDeleteModal().findComponent(GlFormRadioGroup).exists()).toBe(true);
+      });
+    });
+
+    describe('when user cannot hard delete', () => {
+      beforeEach(() => {
+        createComponent({
+          props: {
+            item: {
+              ...mockAgent,
+              userPermissions: {
+                adminAiCatalogItem: true,
+                forceHardDeleteAiCatalogItem: false,
+              },
+            },
+          },
+        });
+      });
+
+      it('does not display deletion method radio buttons', async () => {
+        findDeleteButton().vm.$emit('action');
+
+        await nextTick();
+
+        expect(findDeleteModal().findComponent(GlFormRadioGroup).exists()).toBe(false);
+      });
     });
   });
 });
