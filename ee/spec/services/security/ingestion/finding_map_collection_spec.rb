@@ -67,6 +67,8 @@ RSpec.describe Security::Ingestion::FindingMapCollection, feature_category: :vul
         end
 
         it 'does not call tracked_contect_finder' do
+          run_each_slice
+
           expect(tracked_context_finder).not_to have_received(:find_or_create_from_pipeline)
         end
       end

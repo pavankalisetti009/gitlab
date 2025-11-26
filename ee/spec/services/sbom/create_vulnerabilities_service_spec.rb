@@ -72,7 +72,21 @@ RSpec.describe Sbom::CreateVulnerabilitiesService, feature_category: :software_c
       end
 
       it 'sets tracked context for all findings' do
+        result
+
         expect(Vulnerabilities::Finding.pluck(:security_project_tracked_context_id)).to all(eq(tracked_context.id))
+      end
+
+      context 'when FindOrCreateService returns an error' do
+        before do
+          allow_next_instance_of(Security::ProjectTrackedContexts::FindOrCreateService) do |instance|
+            allow(instance).to receive(:execute).and_return(ServiceResponse.error(message: 'Create error'))
+          end
+        end
+
+        it 'raises an ArgumentError' do
+          expect { result }.to raise_error(ArgumentError, 'Create error')
+        end
       end
 
       context 'when set_tracked_context_during_ingestion is disabled' do
@@ -81,6 +95,8 @@ RSpec.describe Sbom::CreateVulnerabilitiesService, feature_category: :software_c
         end
 
         it 'does not set tracked context on findings' do
+          result
+
           expect(Vulnerabilities::Finding.pluck(:security_project_tracked_context_id)).to all(be_nil)
         end
       end
