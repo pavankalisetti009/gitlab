@@ -11,6 +11,7 @@ module Gitlab
           incident_fail_over_completion_provider
           incident_fail_over_generation_provider
           duo_ui_next # Breaks Chat UI still WIP
+          ai_dap_executor_connects_over_ws # WebSocket transport not ready for local development workflows
 
           # Model-specific feature flags disabled by default as they require specific configuration
           duo_agentic_chat_openai_gpt_5 # Ref: https://gitlab.com/gitlab-org/gitlab/-/issues/560561
