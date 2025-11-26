@@ -8,35 +8,48 @@ module Users
     end
 
     def execute
+      validate_add_on!
       return Namespace.none unless add_on_exists?
 
-      items = user.owned_groups.ordered_by_name
-      by_add_on(items)
+      user.owned_groups
+          .in_specific_plans(eligible_plans)
+          .id_not_in(namespace_ids_with_add_on)
+          .ordered_by_name
     end
 
     private
 
     attr_reader :user, :add_on
 
-    def by_add_on(items)
-      case add_on
-      when :duo
-        items.in_specific_plans(GitlabSubscriptions::DuoPro::ELIGIBLE_PLAN)
-             .not_duo_pro_or_no_add_on
-             .not_duo_enterprise_or_no_add_on
-      when :duo_enterprise
-        items.in_specific_plans(GitlabSubscriptions::DuoEnterprise::ELIGIBLE_PLANS).not_duo_enterprise_or_no_add_on
-      end
+    def validate_add_on!
+      return if add_on == :duo || add_on == :duo_enterprise
+
+      raise ArgumentError, "Unknown add_on: #{add_on}"
+    end
+
+    def duo_add_on
+      add_on == :duo
+    end
+
+    def namespace_ids_with_add_on
+      purchases = GitlabSubscriptions::AddOnPurchase.by_namespace(user.owned_groups)
+      for_addons = duo_add_on ? purchases.for_duo_pro_or_duo_enterprise : purchases.for_duo_enterprise
+      for_addons.select(:namespace_id)
     end
 
     def add_on_exists?
-      case add_on
-      when :duo
+      if duo_add_on
         GitlabSubscriptions::AddOn.code_suggestions.or(GitlabSubscriptions::AddOn.duo_enterprise).exists?
-      when :duo_enterprise
-        GitlabSubscriptions::AddOn.duo_enterprise.exists?
       else
-        raise ArgumentError, "Unknown add_on: #{add_on}"
+        GitlabSubscriptions::AddOn.duo_enterprise.exists?
+      end
+    end
+
+    def eligible_plans
+      if duo_add_on
+        GitlabSubscriptions::DuoPro::ELIGIBLE_PLAN
+      else
+        GitlabSubscriptions::DuoEnterprise::ELIGIBLE_PLANS
       end
     end
   end
