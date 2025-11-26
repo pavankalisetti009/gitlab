@@ -70,9 +70,14 @@ query getComplianceViolation($id: ComplianceManagementProjectsComplianceViolatio
         name
       }
     }
-    notes {
+    discussions {
       nodes {
-        ...ComplianceViolationNote
+        id
+        notes {
+          nodes {
+            ...ComplianceViolationNote
+          }
+        }
       }
     }
   }
