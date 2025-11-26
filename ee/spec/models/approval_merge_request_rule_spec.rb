@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ApprovalMergeRequestRule, factory_default: :keep, feature_category: :code_review do
+RSpec.describe ApprovalMergeRequestRule, factory_default: :keep, feature_category: :code_review_workflow do
   let_it_be_with_reload(:project) { create_default(:project, :repository) }
   let_it_be_with_reload(:merge_request) { create_default(:merge_request) }
 
