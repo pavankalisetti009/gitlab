@@ -51,6 +51,28 @@ The following foundational agents are available:
 - [Security Analyst](security_analyst_agent.md), for
   security analysis and vulnerability management.
 
+## Duplicate an agent
+
+To make changes to a foundational agent, create a copy of it.
+
+Prerequisites:
+
+- You must have at least the Maintainer role for the project.
+
+To duplicate an agent:
+
+1. On the left sidebar, select **Search or go to** > **Explore**. If you've [turned on the new navigation](../../../interface_redesign.md#turn-new-navigation-on-or-off), this field is on the top bar.
+1. Select **AI Catalog**, then select the **Agents** tab.
+1. Select the agent you want to duplicate.
+1. In the upper-right corner, select **Actions** ({{< icon name="ellipsis_v" >}}) > **Duplicate**.
+1. Under **Visibility & access**:
+   1. From the **Managed by** dropdown list, select a project for the agent.
+   1. For **Visibility**, select **Private** or **Public**.
+1. Optional. Edit any fields you want to change.
+1. Select **Create agent**.
+
+A custom agent is created. To use it, you must [enable it](../custom.md#enable-an-agent).
+
 ## Turn foundational agents on or off
 
 By default, foundational agents are turned on.
