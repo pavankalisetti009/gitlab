@@ -148,10 +148,10 @@ components:
       - "context:goal"  # Input from user or previous component
     toolset: []  # Add tool names here: ["get_issue", "create_issue_note"]
 
-    # Optional: Add UI logging for debugging
-    # ui_log_events:
-    #   - "on_agent_final_answer"
-    #   - "on_tool_execution_success"
+    # Optional: UI logging
+    ui_log_events:
+      - "on_agent_final_answer"
+      - "on_tool_execution_success"
 
 # Define your prompts here
 # Each prompt configures an AI agent's behavior and model settings
