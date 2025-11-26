@@ -119,7 +119,7 @@ RSpec.describe ::Ai::DuoWorkflows::CreateAndStartWorkflowService, feature_catego
       expect(workflow.workflows_workloads.first).to have_attributes(project_id: project.id, workload_id: workload_id)
 
       workload = Ci::Workloads::Workload.find_by(id: [workload_id])
-      expect(workload.branch_name).to start_with('workloads/')
+      expect(workload.branch_name).to start_with('refs/workloads/')
     end
   end
 end

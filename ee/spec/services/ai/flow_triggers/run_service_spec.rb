@@ -630,52 +630,72 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_agent_platfo
 
       let_it_be(:resource) { merge_request }
 
-      it 'creates workload branch from merge request source branch and passes ref to RunWorkloadService' do
-        workload_branch_service = instance_double(Ci::Workloads::WorkloadBranchService)
-        expect(Ci::Workloads::WorkloadBranchService).to receive(:new).with(
-          current_user: service_account,
-          project: project,
-          source_branch: 'feature-branch'
-        ).and_return(workload_branch_service)
-        expect(workload_branch_service).to receive(:execute).and_return(
-          ServiceResponse.success(payload: { branch_name: 'workloads/abc123' })
-        )
+      shared_examples 'passes workload ref to RunWorkloadService' do |ref_value|
+        it "creates workload ref from merge request source branch and passes ref #{ref_value} to RunWorkloadService" do
+          workload_branch_service = instance_double(Ci::Workloads::WorkloadBranchService)
+          expect(Ci::Workloads::WorkloadBranchService).to receive(:new).with(
+            current_user: service_account,
+            project: project,
+            source_branch: 'feature-branch'
+          ).and_return(workload_branch_service)
+          expect(workload_branch_service).to receive(:execute).and_return(
+            ServiceResponse.success(payload: { ref: ref_value })
+          )
 
-        expect(Ci::Workloads::RunWorkloadService).to receive(:new).with(
-          project: project,
-          current_user: service_account,
-          source: :duo_workflow,
-          workload_definition: an_instance_of(Ci::Workloads::WorkloadDefinition),
-          ci_variables_included: %w[API_KEY DATABASE_URL],
-          ref: 'workloads/abc123'
-        ).and_call_original
+          expect(Ci::Workloads::RunWorkloadService).to receive(:new).with(
+            project: project,
+            current_user: service_account,
+            source: :duo_workflow,
+            workload_definition: an_instance_of(Ci::Workloads::WorkloadDefinition),
+            ci_variables_included: %w[API_KEY DATABASE_URL],
+            ref: ref_value
+          ).and_call_original
 
-        service.execute(params)
+          service.execute(params)
+        end
+      end
+
+      context 'with workload branch' do
+        it_behaves_like 'passes workload ref to RunWorkloadService', 'workloads/xyz789'
+      end
+
+      context 'with workload internal_refs' do
+        it_behaves_like 'passes workload ref to RunWorkloadService', 'refs/workloads/123'
       end
     end
 
     context 'when resource is not a MergeRequest' do
-      it 'creates workload branch without source branch and passes ref to RunWorkloadService' do
-        workload_branch_service = instance_double(Ci::Workloads::WorkloadBranchService)
-        expect(Ci::Workloads::WorkloadBranchService).to receive(:new).with(
-          current_user: service_account,
-          project: project,
-          source_branch: nil
-        ).and_return(workload_branch_service)
-        expect(workload_branch_service).to receive(:execute).and_return(
-          ServiceResponse.success(payload: { branch_name: 'workloads/xyz789' })
-        )
+      shared_examples 'creates workload ref and passes ref to RunWorkloadService' do |ref_value|
+        it "creates workload ref without source branch and passes ref #{ref_value} to RunWorkloadService" do
+          workload_branch_service = instance_double(Ci::Workloads::WorkloadBranchService)
+          expect(Ci::Workloads::WorkloadBranchService).to receive(:new).with(
+            current_user: service_account,
+            project: project,
+            source_branch: nil
+          ).and_return(workload_branch_service)
+          expect(workload_branch_service).to receive(:execute).and_return(
+            ServiceResponse.success(payload: { ref: ref_value })
+          )
 
-        expect(Ci::Workloads::RunWorkloadService).to receive(:new).with(
-          project: project,
-          current_user: service_account,
-          source: :duo_workflow,
-          workload_definition: an_instance_of(Ci::Workloads::WorkloadDefinition),
-          ci_variables_included: %w[API_KEY DATABASE_URL],
-          ref: 'workloads/xyz789'
-        ).and_call_original
+          expect(Ci::Workloads::RunWorkloadService).to receive(:new).with(
+            project: project,
+            current_user: service_account,
+            source: :duo_workflow,
+            workload_definition: an_instance_of(Ci::Workloads::WorkloadDefinition),
+            ci_variables_included: %w[API_KEY DATABASE_URL],
+            ref: ref_value
+          ).and_call_original
 
-        service.execute(params)
+          service.execute(params)
+        end
+      end
+
+      context 'with workload branch' do
+        it_behaves_like 'creates workload ref and passes ref to RunWorkloadService', 'workloads/xyz789'
+      end
+
+      context 'with workload internal_refs' do
+        it_behaves_like 'creates workload ref and passes ref to RunWorkloadService', 'refs/workloads/123'
       end
     end
 
