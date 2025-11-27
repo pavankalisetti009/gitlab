@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['MavenRegistryUpstream'], feature_category: :virtual_registry do
+RSpec.describe GitlabSchema.types['MavenRegistryUpstreamWithRegistry'], feature_category: :virtual_registry do
   include GraphqlHelpers
 
   let_it_be(:user) { create(:user) }

@@ -9,7 +9,7 @@ RSpec.describe GitlabSchema.types['MavenUpstreamDetails'], feature_category: :vi
 
   let_it_be(:fields) do
     %i[id name description url cacheValidityHours metadataCacheValidityHours username
-      registries registry_upstreams registriesCount]
+      registry_upstreams registriesCount]
   end
 
   it { is_expected.to require_graphql_authorizations(:read_virtual_registry) }

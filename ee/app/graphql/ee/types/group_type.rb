@@ -407,15 +407,6 @@ module EE
           authorize: :read_compliance_dashboard,
           experiment: { milestone: '18.1' }
 
-        # This field can be removed once the frontend is updated to use
-        # virtual_registries_packages_maven_registries https://gitlab.com/gitlab-org/gitlab/-/issues/580176
-        field :maven_virtual_registries,
-          ::Types::VirtualRegistries::Packages::Maven::RegistryType.connection_type,
-          null: true,
-          description: 'Maven virtual registries registered to the group. ' \
-            'Returns null if the `maven_virtual_registry` feature flag is disabled.',
-          experiment: { milestone: '18.1' }
-
         field :virtual_registries_packages_maven_registries,
           ::Types::VirtualRegistries::Packages::Maven::RegistryType.connection_type,
           null: true,
@@ -528,12 +519,6 @@ module EE
           return unless object.licensed_feature_available?(:security_inventory)
 
           object.vulnerability_namespace_statistic
-        end
-
-        def maven_virtual_registries
-          return unless ::VirtualRegistries::Packages::Maven.virtual_registry_available?(object, current_user)
-
-          ::VirtualRegistries::Packages::Maven::Registry.for_group(object)
         end
 
         def virtual_registries_packages_maven_registries

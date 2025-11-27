@@ -9,6 +9,15 @@ module Types
           graphql_name 'MavenRegistryDetails'
           description 'Represents Maven virtual registry details'
 
+          field :registry_upstreams,
+            [::Types::VirtualRegistries::Packages::Maven::RegistryUpstreamWithUpstreamType],
+            null: false,
+            description: 'List of registry upstreams for the Maven virtual registry.',
+            experiment: { milestone: '18.7' }
+
+          # This field will be removed once frontend
+          # is updated to use `registry_upstreams`
+          # https://gitlab.com/gitlab-org/gitlab/-/issues/581475
           field :upstreams,
             [::Types::VirtualRegistries::Packages::Maven::UpstreamDetailsType],
             null: true,

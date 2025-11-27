@@ -79,10 +79,8 @@ RSpec.describe GitlabSchema.types['Query'], feature_category: :shared do
       :ai_model_selection_namespace_settings,
       :dependency,
       :project_compliance_violation,
-      :maven_virtual_registry,
       :virtual_registries_packages_maven_registry,
       :namespace_security_projects,
-      :maven_upstream_registry,
       :virtual_registries_packages_maven_upstream,
       :work_item_allowed_statuses,
       :subscription_usage,
@@ -129,30 +127,12 @@ RSpec.describe GitlabSchema.types['Query'], feature_category: :shared do
     end
   end
 
-  describe 'mavenVirtualRegistry field' do
-    subject { described_class.fields['mavenVirtualRegistry'] }
-
-    it 'finds a maven virtual registry by its gid' do
-      is_expected.to have_graphql_arguments(:id)
-      is_expected.to have_graphql_type(::Types::VirtualRegistries::Packages::Maven::RegistryDetailsType)
-    end
-  end
-
   describe 'virtualRegistriesPackagesMavenRegistry field' do
     subject { described_class.fields['virtualRegistriesPackagesMavenRegistry'] }
 
     it 'finds a maven virtual registry by its gid' do
       is_expected.to have_graphql_arguments(:id)
       is_expected.to have_graphql_type(::Types::VirtualRegistries::Packages::Maven::RegistryDetailsType)
-    end
-  end
-
-  describe 'mavenUpstreamRegistry field' do
-    subject { described_class.fields['mavenUpstreamRegistry'] }
-
-    it 'finds a maven upstream registry by its gid' do
-      is_expected.to have_graphql_arguments(:id)
-      is_expected.to have_graphql_type(::Types::VirtualRegistries::Packages::Maven::UpstreamDetailsType)
     end
   end
 

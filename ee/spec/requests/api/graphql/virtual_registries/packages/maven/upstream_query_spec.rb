@@ -20,14 +20,7 @@ RSpec.describe 'Querying a maven upstream registry', feature_category: :virtual_
           registriesCount
           registryUpstreams {
             id
-            position
             registry {
-              name
-            }
-          }
-          registries {
-            nodes {
-              id
               name
             }
           }
@@ -59,8 +52,8 @@ RSpec.describe 'Querying a maven upstream registry', feature_category: :virtual_
   end
 
   context 'when user has access' do
-    before do
-      group.add_member(current_user, Gitlab::Access::GUEST)
+    before_all do
+      group.add_guest(current_user)
     end
 
     context 'when virtual registry is unavailable' do
@@ -80,7 +73,7 @@ RSpec.describe 'Querying a maven upstream registry', feature_category: :virtual_
         end
 
         it 'returns registries for the virtualRegistriesPackagesMavenUpstream field' do
-          expect(maven_upstream_response['registries']['nodes'][0]['name']).to eq('test registry')
+          expect(maven_upstream_response['registryUpstreams'][0]['registry']['name']).to eq('test registry')
         end
 
         context 'when multiple registries exist' do
