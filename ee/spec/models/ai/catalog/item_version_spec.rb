@@ -78,6 +78,27 @@ RSpec.describe Ai::Catalog::ItemVersion, feature_category: :workflow_catalog do
             )
           end
         end
+
+        context 'when prompts are defined with valid params' do
+          before do
+            version.definition['prompts'] = [
+              {
+                'prompt_id' => 'test_prompt',
+                'name' => 'Test Prompt',
+                'prompt_template' => {
+                  'system' => 'You are a helpful assistant'
+                },
+                'unit_primitives' => [],
+                'params' => {
+                  'timeout' => 30,
+                  'vertex_location' => 'global'
+                }
+              }
+            ]
+          end
+
+          it { is_expected.to be_valid }
+        end
       end
 
       context 'when item is third party flow' do

@@ -202,7 +202,6 @@ RSpec.describe Ai::Catalog::Flows::AuditEventMessageService, feature_category: :
               {
                 'prompt_id' => 'prompt1',
                 'name' => 'prompt1',
-                'model' => { 'params' => { 'model_class_provider' => 'test' } },
                 'prompt_template' => { 'system' => 'You are a code helper' },
                 'unit_primitives' => []
               }
@@ -216,7 +215,6 @@ RSpec.describe Ai::Catalog::Flows::AuditEventMessageService, feature_category: :
               {
                 'prompt_id' => 'prompt1',
                 'name' => 'prompt1',
-                'model' => { 'params' => { 'model_class_provider' => 'test' } },
                 'prompt_template' => { 'system' => 'You are a Issue planner helper' },
                 'unit_primitives' => []
               }
@@ -389,7 +387,6 @@ RSpec.describe Ai::Catalog::Flows::AuditEventMessageService, feature_category: :
               {
                 'prompt_id' => 'prompt1',
                 'name' => 'prompt1',
-                'model' => { 'params' => { 'model_class_provider' => 'test' } },
                 'prompt_template' => { 'system' => 'You are a Issue planner helper' },
                 'unit_primitives' => []
               }
