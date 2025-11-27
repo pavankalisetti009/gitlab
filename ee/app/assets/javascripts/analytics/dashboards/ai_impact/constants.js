@@ -103,6 +103,16 @@ export const AI_IMPACT_OVER_TIME_METRICS_TOOLTIPS = {
   },
 };
 
+const duoReviewDataNotAvailableTooltip = {
+  startDate: new Date('2025-08-21'),
+  message: s__(
+    'AiImpactAnalytics|Data available after upgrade to GitLab 18.3. %{linkStart}Learn more%{linkEnd}.',
+  ),
+  link: helpPagePath('user/analytics/duo_and_sdlc_trends', {
+    anchor: 'gitlab-duo-usage-metrics',
+  }),
+};
+
 export const AI_IMPACT_DATA_NOT_AVAILABLE_TOOLTIPS = {
   // Code suggestions usage only started being tracked April 4, 2024
   // https://gitlab.com/gitlab-org/gitlab/-/issues/456108
@@ -124,4 +134,6 @@ export const AI_IMPACT_DATA_NOT_AVAILABLE_TOOLTIPS = {
       anchor: 'gitlab-duo-usage-metrics',
     }),
   },
+  [AI_METRICS.DUO_REVIEW_REQUESTS_COUNT]: duoReviewDataNotAvailableTooltip,
+  [AI_METRICS.DUO_REVIEW_COMMENT_COUNT]: duoReviewDataNotAvailableTooltip,
 };

@@ -384,12 +384,12 @@ exports[`Metric table for the duo_rca_usage_rate table row when the data is load
 
 exports[`Metric table for the duo_review_comment_count table row when the data is loaded renders the metric values 1`] = `
 [
-  "45",
-  "22",
-  "67",
-  "34",
-  "28",
-  "53",
+  "45 Data available after upgrade to GitLab 18.3. Learn more.",
+  "22 Data available after upgrade to GitLab 18.3. Learn more.",
+  "67 Data available after upgrade to GitLab 18.3. Learn more.",
+  "34 Data available after upgrade to GitLab 18.3. Learn more.",
+  "28 Data available after upgrade to GitLab 18.3. Learn more.",
+  "53 Data available after upgrade to GitLab 18.3. Learn more.",
 ]
 `;
 
@@ -424,12 +424,12 @@ exports[`Metric table for the duo_review_comment_count table row when the data i
 
 exports[`Metric table for the duo_review_requests_count table row when the data is loaded renders the metric values 1`] = `
 [
-  "20",
-  "8",
-  "32",
-  "15",
-  "11",
-  "26",
+  "20 Data available after upgrade to GitLab 18.3. Learn more.",
+  "8 Data available after upgrade to GitLab 18.3. Learn more.",
+  "32 Data available after upgrade to GitLab 18.3. Learn more.",
+  "15 Data available after upgrade to GitLab 18.3. Learn more.",
+  "11 Data available after upgrade to GitLab 18.3. Learn more.",
+  "26 Data available after upgrade to GitLab 18.3. Learn more.",
 ]
 `;
 
