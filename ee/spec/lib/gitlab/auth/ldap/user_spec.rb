@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::Auth::Ldap::User do
+RSpec.describe Gitlab::Auth::Ldap::User, feature_category: :user_management do
   include LdapHelpers
 
   let_it_be(:organization) { create(:organization) }

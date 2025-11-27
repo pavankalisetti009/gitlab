@@ -108,8 +108,8 @@ RSpec.describe GitlabSubscriptions::BillableUsersUtils, feature_category: :consu
         context 'when subscription does not exclude guests' do
           let(:plan) { License::PREMIUM_PLAN }
 
-          it 'returns true' do
-            expect(sm_billable_role_change?).to eq(true)
+          it 'returns false' do
+            expect(sm_billable_role_change?).to eq(false)
           end
         end
 

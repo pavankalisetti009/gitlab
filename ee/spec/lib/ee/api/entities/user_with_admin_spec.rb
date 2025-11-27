@@ -2,12 +2,18 @@
 
 require 'spec_helper'
 
-RSpec.describe ::EE::API::Entities::UserWithAdmin do
+RSpec.describe ::EE::API::Entities::UserWithAdmin, feature_category: :user_management do
   subject { entity.as_json }
 
   let_it_be(:user) { create(:user) }
+  let_it_be(:group) { create(:group) }
 
   let(:entity) { ::API::Entities::UserWithAdmin.new(user) }
+
+  before_all do
+    group.add_developer(user)
+    Users::UpdateHighestMemberRoleService.new(user).execute
+  end
 
   context 'using_license_seat' do
     context 'when user is using seat' do

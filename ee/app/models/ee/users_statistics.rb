@@ -12,7 +12,7 @@ module EE
     def non_billable
       return base_non_billable + without_groups_and_projects if exclude_guests_from_active_count?
 
-      base_non_billable
+      base_non_billable + with_highest_role_minimal_access + without_groups_and_projects
     end
 
     def non_billable_guests
@@ -46,7 +46,7 @@ module EE
       if exclude_guests_from_active_count?
         [with_highest_role_guest_with_custom_role]
       else
-        [without_groups_and_projects, with_highest_role_guest, with_highest_role_minimal_access]
+        [with_highest_role_guest]
       end
     end
 

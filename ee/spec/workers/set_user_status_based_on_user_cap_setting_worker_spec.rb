@@ -4,10 +4,16 @@ require 'spec_helper'
 
 RSpec.describe SetUserStatusBasedOnUserCapSettingWorker, type: :worker, feature_category: :user_profile do
   describe '#perform' do
+    let_it_be(:group) { create(:group) }
     let_it_be(:active_user) { create(:user, state: 'active') }
     let_it_be(:active_admin) { create(:user, :admin, state: 'active') }
     let_it_be(:inactive_admin) { create(:user, :admin, :deactivated) }
     let_it_be(:user) { create(:user, :blocked_pending_approval) }
+
+    before_all do
+      group.add_guest(active_user)
+      group.add_guest(active_admin)
+    end
 
     subject { described_class.new.perform(user.id) }
 

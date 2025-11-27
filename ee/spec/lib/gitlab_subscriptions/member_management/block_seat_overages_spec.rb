@@ -10,6 +10,11 @@ RSpec.describe GitlabSubscriptions::MemberManagement::BlockSeatOverages, feature
 
   let(:source) { subgroup }
 
+  before_all do
+    group.add_guest(user1)
+    group.add_guest(user2)
+  end
+
   describe '.block_seat_overages?' do
     subject(:block_seat_overages?) { described_class.block_seat_overages?(source) }
 
