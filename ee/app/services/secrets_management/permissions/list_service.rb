@@ -37,19 +37,17 @@ module SecretsManagement
             granted_by = path_obj.granted_by
             expired_at = path_obj.expired_at
             path_obj.capabilities.each do |capability|
-              if SecretsManagement::SecretPermission::VALID_PERMISSIONS.include?(capability)
+              if SecretsManagement::BaseSecretsPermission::VALID_PERMISSIONS.include?(capability)
                 permissions_set.add(capability)
               end
             end
           end
 
           # Create the permission object
-          permissions << SecretsManagement::SecretPermission.new(
-            project: project,
+          permissions << SecretsManagement::ProjectSecretsPermission.new(
+            resource: project,
             principal_type: principal_type,
             principal_id: principal_id,
-            resource_type: 'Project',
-            resource_id: project.id,
             granted_by: granted_by,
             expired_at: expired_at,
             permissions: permissions_set.to_a

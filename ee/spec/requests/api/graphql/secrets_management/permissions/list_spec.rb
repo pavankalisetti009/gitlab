@@ -122,7 +122,7 @@ RSpec.describe 'Getting secret permissions', :gitlab_secrets_manager, feature_ca
 
       it 'returns the service error' do
         expect_next_instance_of(SecretsManagement::Permissions::ListService) do |service|
-          secret_permission = SecretsManagement::SecretPermission.new
+          secret_permission = SecretsManagement::ProjectSecretsPermission.new
           secret_permission.errors.add(:base, 'some error')
           result = ServiceResponse.error(message: 'some error', payload: { secret_permission: secret_permission })
           expect(service).to receive(:execute).and_return(result)

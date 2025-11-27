@@ -97,6 +97,7 @@ module EE
         mount_mutation ::Mutations::RequirementsManagement::UpdateRequirement
         mount_mutation ::Mutations::SecretsManagement::GroupSecretsManagers::Initialize
         mount_mutation ::Mutations::SecretsManagement::GroupSecretsManagers::Deprovision
+        mount_mutation ::Mutations::SecretsManagement::GroupSecretsPermissions::Update
         mount_mutation ::Mutations::SecretsManagement::ProjectSecretsManagers::Initialize
         mount_mutation ::Mutations::SecretsManagement::ProjectSecretsManagers::Deprovision
         mount_mutation ::Mutations::SecretsManagement::ProjectSecrets::Create

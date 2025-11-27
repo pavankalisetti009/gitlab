@@ -322,7 +322,7 @@ module EE
           description: 'View a specific project secret.',
           resolver: ::Resolvers::SecretsManagement::ProjectSecretViewResolver
 
-        field :secret_permissions, ::Types::SecretsManagement::Permissions::SecretPermissionType.connection_type,
+        field :secret_permissions, ::Types::SecretsManagement::ProjectSecretsPermissionType.connection_type,
           null: true,
           experiment: { milestone: '17.10' },
           description: 'List secret permissions.',

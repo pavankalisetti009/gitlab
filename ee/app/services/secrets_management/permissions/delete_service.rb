@@ -38,7 +38,7 @@ module SecretsManagement
       def valid_principal?(principal)
         return false if principal.blank? || principal[:type].blank? || principal[:id].blank?
 
-        valid_type = SecretsManagement::SecretPermission::VALID_PRINCIPAL_TYPES.include?(principal[:type])
+        valid_type = SecretsManagement::BaseSecretsPermission::VALID_PRINCIPAL_TYPES.include?(principal[:type])
         valid_id = principal[:id].to_s.match?(/\A\d+\z/)
         valid_type && valid_id
       end

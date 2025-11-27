@@ -5,12 +5,16 @@ module Types
     module Permissions
       class PrincipalTypeEnum < BaseEnum
         graphql_name 'PrincipalType'
-        description 'Types of principal that can have secret permissions'
+        description 'Types of principal that can have secrets permissions'
 
-        value 'USER', value: 'User', description: 'user.'
-        value 'GROUP', value: 'Group', description: 'group.'
-        value 'MEMBER_ROLE', value: 'MemberRole', description: 'member role.'
-        value 'ROLE', value: 'Role', description: 'predefined role.'
+        value 'USER', 'user.',
+          value: ::SecretsManagement::BaseSecretsPermission::PRINCIPAL_TYPES[:user]
+        value 'GROUP', 'group.',
+          value: ::SecretsManagement::BaseSecretsPermission::PRINCIPAL_TYPES[:group]
+        value 'MEMBER_ROLE', 'member role.',
+          value: ::SecretsManagement::BaseSecretsPermission::PRINCIPAL_TYPES[:member_role]
+        value 'ROLE', 'predefined role.',
+          value: ::SecretsManagement::BaseSecretsPermission::PRINCIPAL_TYPES[:role]
       end
     end
   end

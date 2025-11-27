@@ -5376,6 +5376,23 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     end
   end
 
+  describe 'configure_group_secrets_permission' do
+    where(:current_user, :match_expected_result) do
+      ref(:owner)      | be_allowed(:configure_group_secrets_permission)
+      ref(:maintainer) | be_disallowed(:configure_group_secrets_permission)
+      ref(:developer)  | be_disallowed(:configure_group_secrets_permission)
+      ref(:anonymous)  | be_disallowed(:configure_group_secrets_permission)
+      ref(:planner)    | be_disallowed(:configure_group_secrets_permission)
+      ref(:reporter)   | be_disallowed(:configure_group_secrets_permission)
+      ref(:guest)      | be_disallowed(:configure_group_secrets_permission)
+      ref(:admin)      | be_disallowed(:configure_group_secrets_permission)
+    end
+
+    with_them do
+      it { is_expected.to match_expected_result }
+    end
+  end
+
   describe 'read_group_secrets_manager' do
     where(:current_user, :match_expected_result) do
       ref(:owner)      | be_allowed(:read_group_secrets_manager)
