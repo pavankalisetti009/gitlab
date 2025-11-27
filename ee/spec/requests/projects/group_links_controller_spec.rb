@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe 'Project group links', :aggregate_failures, feature_category: :groups_and_projects do
   let_it_be(:project) { create(:project) }
-  let_it_be(:user) { create(:user, maintainer_of: project) }
+  let_it_be(:user) { create(:user, owner_of: project) }
   let_it_be(:member_role) { create(:member_role, namespace: project.namespace) }
   let_it_be(:new_member_role) { create(:member_role, namespace: project.namespace) }
 

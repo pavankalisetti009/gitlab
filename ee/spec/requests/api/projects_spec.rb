@@ -2519,7 +2519,7 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
 
     before do
       group.add_developer(user)
-      project.add_maintainer(user)
+      project.add_owner(user)
     end
 
     context 'feature is available' do
