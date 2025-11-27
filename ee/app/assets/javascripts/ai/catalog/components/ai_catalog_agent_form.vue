@@ -319,7 +319,7 @@ export default {
           />
         </form-group>
       </form-section>
-      <form-section :title="s__('AICatalog|Prompts')">
+      <form-section :title="s__('AICatalog|Configuration')">
         <form-group
           #default="{ state, blur }"
           ref="fieldSystemPrompt"
@@ -341,8 +341,6 @@ export default {
             @blur="blur"
           />
         </form-group>
-      </form-section>
-      <form-section :title="s__('AICatalog|Available tools')">
         <form-group :field="$options.fields.tools" :field-value="formValues.tools">
           <gl-token-selector
             :id="$options.fields.tools.id"
