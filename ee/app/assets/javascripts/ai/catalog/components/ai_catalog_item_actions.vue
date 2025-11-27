@@ -6,11 +6,13 @@ import {
   GlFormRadioGroup,
   GlFormRadio,
   GlIcon,
+  GlLink,
   GlModalDirective,
   GlSprintf,
 } from '@gitlab/ui';
 import { s__, sprintf } from '~/locale';
 import { isLoggedIn } from '~/lib/utils/common_utils';
+import { helpPagePath } from '~/helpers/help_page_helper';
 import ConfirmActionModal from '~/vue_shared/components/confirm_action_modal.vue';
 import { AI_CATALOG_ITEM_LABELS, DELETE_OPTIONS } from '../constants';
 import AiCatalogItemConsumerModal from './ai_catalog_item_consumer_modal.vue';
@@ -25,6 +27,7 @@ export default {
     GlFormRadioGroup,
     GlFormRadio,
     GlIcon,
+    GlLink,
     GlSprintf,
     ConfirmActionModal,
     AiCatalogItemConsumerModal,
@@ -142,6 +145,9 @@ export default {
     },
   },
   DELETE_OPTIONS,
+  adminModeDocsLink: helpPagePath('/administration/settings/sign_in_restrictions', {
+    anchor: 'admin-mode',
+  }),
 };
 </script>
 
@@ -274,7 +280,11 @@ export default {
           >
             {{ option.text }}
             <template #help>
-              {{ option.help }}
+              <gl-sprintf :message="option.help">
+                <template #link="{ content }">
+                  <gl-link :href="$options.adminModeDocsLink">{{ content }}</gl-link>
+                </template>
+              </gl-sprintf>
             </template>
           </gl-form-radio>
         </gl-form-radio-group>
