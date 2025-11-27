@@ -395,19 +395,6 @@ module EE
             description: 'Global ID of the project compliance violation.'
         end
 
-        # This field can be removed once the frontend is updated to use
-        # virtual_registries_packages_maven_registry https://gitlab.com/gitlab-org/gitlab/-/issues/580176
-        field :maven_virtual_registry, ::Types::VirtualRegistries::Packages::Maven::RegistryDetailsType,
-          null: true,
-          description: 'Find a Maven virtual registry. ' \
-            'Returns null if the `maven_virtual_registry` feature flag is disabled.',
-          experiment: { milestone: '18.3' } do
-          argument :id,
-            type: ::Types::GlobalIDType[::VirtualRegistries::Packages::Maven::Registry],
-            required: true,
-            description: 'Global ID of the Maven virtual registry.'
-        end
-
         field :virtual_registries_packages_maven_registry,
           ::Types::VirtualRegistries::Packages::Maven::RegistryDetailsType,
           null: true,
@@ -425,19 +412,6 @@ module EE
           null: true,
           description: 'Security-filtered projects for a namespace',
           resolver: ::Resolvers::Security::NamespaceSecurityProjectsResolver
-
-        # This field can be removed once the frontend is updated to use
-        # virtual_registries_packages_maven_upstream https://gitlab.com/gitlab-org/gitlab/-/issues/580176
-        field :maven_upstream_registry, ::Types::VirtualRegistries::Packages::Maven::UpstreamDetailsType,
-          null: true,
-          description: 'Find a Maven upstream registry. ' \
-            'Returns null if the `maven_virtual_registry` feature flag is disabled.',
-          experiment: { milestone: '18.4' } do
-          argument :id,
-            type: ::Types::GlobalIDType[::VirtualRegistries::Packages::Maven::Upstream],
-            required: true,
-            description: 'Global ID of the Maven upstream registry.'
-        end
 
         field :virtual_registries_packages_maven_upstream,
           ::Types::VirtualRegistries::Packages::Maven::UpstreamDetailsType,
@@ -527,14 +501,6 @@ module EE
         return [] unless ::Feature.enabled?(:global_ai_catalog, current_user)
 
         ::Ai::Catalog::BuiltInTool.all.sort_by(&:name)
-      end
-
-      def maven_virtual_registry(id:)
-        find_maven_registry_by_id(id)
-      end
-
-      def maven_upstream_registry(id:)
-        find_maven_registry_by_id(id)
       end
 
       def virtual_registries_packages_maven_registry(id:)

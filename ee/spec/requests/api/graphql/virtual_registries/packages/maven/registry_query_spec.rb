@@ -16,20 +16,12 @@ RSpec.describe 'Querying a maven virtual registry', feature_category: :virtual_r
         virtualRegistriesPackagesMavenRegistry(id: "#{global_id}") {
           id
           name
-          upstreams {
+          registryUpstreams {
             id
-            registries {
-              nodes {
-                id
-                name
-              }
-            }
-            registryUpstreams {
+            position
+            upstream {
               id
-              position
-              registry {
-                name
-              }
+              name
             }
           }
         }
@@ -60,8 +52,8 @@ RSpec.describe 'Querying a maven virtual registry', feature_category: :virtual_r
   end
 
   context 'when user has access' do
-    before do
-      group.add_member(current_user, Gitlab::Access::GUEST)
+    before_all do
+      group.add_guest(current_user)
     end
 
     context 'when virtual registry is unavailable' do
@@ -76,12 +68,13 @@ RSpec.describe 'Querying a maven virtual registry', feature_category: :virtual_r
           expect(maven_registry_response['name']).to eq('name')
         end
 
-        it 'returns registry upstreams for an upstream' do
-          upstreams = maven_registry_response['upstreams']
-          registry_upstreams = upstreams[0]['registryUpstreams']
+        it 'returns registry upstreams with upstream information' do
+          registry_upstreams = maven_registry_response['registryUpstreams']
+          upstream = registry_upstreams[0]['upstream']
 
           expect(registry_upstreams.length).to be 1
           expect(registry_upstreams[0]['position']).to be 1
+          expect(upstream['name']).to eq('name')
         end
       end
 
