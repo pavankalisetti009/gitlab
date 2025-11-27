@@ -9,6 +9,7 @@ import {
   DUO_WORKFLOW_WEBSOCKET_PARAM_NAMESPACE_ID,
   DUO_WORKFLOW_WEBSOCKET_PARAM_PROJECT_ID,
   DUO_WORKFLOW_WEBSOCKET_PARAM_USER_SELECTED_MODEL,
+  GENIE_CHAT_MODEL_ROLES,
 } from 'ee/ai/constants';
 import { WorkflowUtils } from './workflow_utils';
 import { getMessagesToProcess } from './messages_utils';
@@ -96,9 +97,7 @@ export function buildStartRequest({
   return startRequest;
 }
 
-export async function processWorkflowMessage(event, workflowId, indexInTheLastLog) {
-  let lastProcessedIndex = indexInTheLastLog;
-
+export async function processWorkflowMessage(event, currentMessageId) {
   const action = await parseMessage(event);
 
   if (!action || !action.newCheckpoint) {
@@ -106,18 +105,23 @@ export async function processWorkflowMessage(event, workflowId, indexInTheLastLo
   }
 
   const checkpoint = JSON.parse(action.newCheckpoint.checkpoint);
-  const processedResult = getMessagesToProcess(
-    checkpoint.channel_values.ui_chat_log,
-    lastProcessedIndex,
+
+  // The user message has been already added, so no need to re-add the user
+  // message streamed by the server
+  const uiChatLogMessages = checkpoint.channel_values.ui_chat_log.filter(
+    (msg) => msg.message_type !== GENIE_CHAT_MODEL_ROLES.user,
   );
-  const { toProcess } = processedResult;
-  lastProcessedIndex = processedResult.lastProcessedIndex;
-  const messages = WorkflowUtils.transformChatMessages(toProcess, workflowId, indexInTheLastLog);
+
+  const { toProcess, lastProcessedMessageId } = getMessagesToProcess(
+    uiChatLogMessages,
+    currentMessageId,
+  );
+  const messages = WorkflowUtils.transformChatMessages(toProcess);
 
   return {
     messages,
     status: action.newCheckpoint.status,
     goal: action.newCheckpoint.goal,
-    lastProcessedIndex,
+    lastProcessedMessageId,
   };
 }

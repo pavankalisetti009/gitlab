@@ -84,51 +84,34 @@ describe('WorkflowUtils', () => {
   });
 
   describe('transformChatMessages', () => {
-    const workflowId = 'test-workflow';
-
     it('maps agent and request message types to assistant role', () => {
-      const result = WorkflowUtils.transformChatMessages(MOCK_ASSISTANT_MESSAGES, workflowId);
+      const result = WorkflowUtils.transformChatMessages(MOCK_ASSISTANT_MESSAGES);
 
       expect(result[0].role).toBe(GENIE_CHAT_MODEL_ROLES.assistant);
       expect(result[1].role).toBe(GENIE_CHAT_MODEL_ROLES.assistant);
     });
 
     it('preserves original message_type for non-agent/request messages', () => {
-      const result = WorkflowUtils.transformChatMessages(MOCK_SINGLE_GENERIC_MESSAGE, workflowId);
+      const result = WorkflowUtils.transformChatMessages(MOCK_SINGLE_GENERIC_MESSAGE);
       expect(result[0].role).toBe('generic');
     });
 
     it('preserves all original message properties', () => {
-      const result = WorkflowUtils.transformChatMessages(
-        MOCK_USER_MESSAGE_WITH_PROPERTIES,
-        workflowId,
-      );
+      const result = WorkflowUtils.transformChatMessages(MOCK_USER_MESSAGE_WITH_PROPERTIES);
 
       expect(result[0]).toEqual({
         ...MOCK_USER_MESSAGE_WITH_PROPERTIES[0],
-        requestId: 'test-workflow-0-user',
+        requestId: 'msg-7',
         role: 'user',
       });
     });
 
-    it.each`
-      lastProcessedIndex | expectedIndicies | desc
-      ${undefined}       | ${[0, 1, 2]}     | ${'starting with 0'}
-      ${5}               | ${[5, 6, 7]}     | ${'starting with lastProcessedIndex'}
-      ${-1}              | ${[0, 1, 2]}     | ${'starting with 0'}
-    `(
-      'generates sequential requestIds $desc when lastProcessedIndex === "$lastProcessedIndex"',
-      ({ lastProcessedIndex, expectedIndicies } = {}) => {
-        const result = WorkflowUtils.transformChatMessages(
-          MOCK_MULTIPLE_USER_MESSAGES,
-          workflowId,
-          lastProcessedIndex,
-        );
+    it('sets requestId to message_id for each message', () => {
+      const result = WorkflowUtils.transformChatMessages(MOCK_MULTIPLE_USER_MESSAGES);
 
-        result.forEach((res, i) => {
-          expect(res.requestId).toBe(`test-workflow-${expectedIndicies[i]}-user`);
-        });
-      },
-    );
+      expect(result[0].requestId).toBe('msg-4');
+      expect(result[1].requestId).toBe('msg-5');
+      expect(result[2].requestId).toBe('msg-6');
+    });
   });
 });

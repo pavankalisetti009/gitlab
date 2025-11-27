@@ -22,18 +22,16 @@ export const WorkflowUtils = {
     );
   },
 
-  transformChatMessages(uiChatLog, workflowId, lastProcessedIndex = -1) {
-    const startIndex = Math.max(0, Number(lastProcessedIndex || -1)); // index is -1 on the first processing
-    return uiChatLog.map((msg, i) => {
-      const requestId = `${workflowId}-${i + startIndex}-${msg.message_type}`;
+  transformChatMessages(uiChatLog) {
+    return uiChatLog.map((msg) => {
       const role = [CHAT_MESSAGE_TYPES.agent, CHAT_MESSAGE_TYPES.request].includes(msg.message_type)
         ? GENIE_CHAT_MODEL_ROLES.assistant
         : msg.message_type;
 
       return {
         ...msg,
-        requestId,
         role,
+        requestId: msg.message_id,
         message_type: msg.message_type,
       };
     });

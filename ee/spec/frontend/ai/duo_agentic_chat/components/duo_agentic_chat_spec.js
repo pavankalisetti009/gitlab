@@ -392,18 +392,18 @@ describe('Duo Agentic Chat', () => {
   });
 
   describe('clearActiveThread', () => {
-    it('clears the thread and resets lastProcessedIndex', async () => {
+    it('clears the thread and resets lastProcessedMessageId', async () => {
       duoChatGlobalState.isAgenticChatShown = true;
       createComponent({
         data: {
-          lastProcessedIndex: 5,
+          lastProcessedMessageId: 'message-5',
         },
       });
       await waitForPromises();
 
       wrapper.vm.clearActiveThread();
       expect(findDuoChat().props('messages')).toEqual([]);
-      expect(wrapper.vm.lastProcessedIndex).toBe(-1);
+      expect(wrapper.vm.lastProcessedMessageId).toBe(null);
     });
   });
 
@@ -415,7 +415,7 @@ describe('Duo Agentic Chat', () => {
       const clearActiveThreadSpy = jest.spyOn(wrapper.vm, 'clearActiveThread');
       wrapper.destroy();
 
-      // Verify clearActiveThread was called (which resets lastProcessedIndex)
+      // Verify clearActiveThread was called (which resets lastProcessedMessageId)
       expect(clearActiveThreadSpy).toHaveBeenCalled();
     });
   });
@@ -548,8 +548,10 @@ describe('Duo Agentic Chat', () => {
         expect(onNewChatSpy).not.toHaveBeenCalled();
       });
 
-      it('sets the last processed index based on the thread messages', () => {
-        expect(wrapper.vm.lastProcessedIndex).toBe(MOCK_TRANSFORMED_MESSAGES.length - 1);
+      it('sets the last processed message id based on the thread messages', () => {
+        expect(wrapper.vm.lastProcessedMessageId).toBe(
+          MOCK_TRANSFORMED_MESSAGES[MOCK_TRANSFORMED_MESSAGES.length - 1].message_id,
+        );
       });
     });
   });
@@ -876,11 +878,7 @@ describe('Duo Agentic Chat', () => {
 
         await socketCall.onMessage(mockEvent);
 
-        expect(WorkflowSocketUtils.processWorkflowMessage).toHaveBeenCalledWith(
-          mockEvent,
-          '456',
-          -1,
-        );
+        expect(WorkflowSocketUtils.processWorkflowMessage).toHaveBeenCalledWith(mockEvent, null);
 
         expect(actionSpies.addDuoChatMessage).toHaveBeenCalledWith(
           expect.any(Object),
@@ -996,12 +994,12 @@ describe('Duo Agentic Chat', () => {
           .mockResolvedValueOnce({
             messages: [MOCK_TRANSFORMED_MESSAGES[0]],
             status: 'running',
-            lastProcessedIndex: 0,
+            lastProcessedMessageId: 'message-0',
           })
           .mockResolvedValueOnce({
             messages: [MOCK_TRANSFORMED_MESSAGES[0]],
             status: 'running',
-            lastProcessedIndex: 1,
+            lastProcessedMessageId: 'message-1',
           });
 
         // Fire two events rapidly (simulating race condition)
@@ -1013,18 +1011,16 @@ describe('Duo Agentic Chat', () => {
         await nextTick();
 
         // Verify processWorkflowMessage was called sequentially, not concurrently
-        // First call should have index -1, second should have updated index
+        // First call should have null, second should have updated message id
         expect(WorkflowSocketUtils.processWorkflowMessage).toHaveBeenNthCalledWith(
           1,
           expect.anything(),
-          '456',
-          -1,
+          null,
         );
         expect(WorkflowSocketUtils.processWorkflowMessage).toHaveBeenNthCalledWith(
           2,
           expect.anything(),
-          '456',
-          0, // Uses updated lastProcessedIndex from first call
+          'message-0', // Uses updated lastProcessedMessageId from first call
         );
       });
 
@@ -1053,7 +1049,7 @@ describe('Duo Agentic Chat', () => {
           Promise.resolve({
             messages: [MOCK_TRANSFORMED_MESSAGES[0]],
             status: 'running',
-            lastProcessedIndex: 0,
+            lastProcessedMessageId: 'message-0',
           }),
         );
 
@@ -1078,7 +1074,7 @@ describe('Duo Agentic Chat', () => {
         expect(lastCall[0].data).toBeDefined();
       });
 
-      it('maintains correct lastProcessedIndex across sequential processing', async () => {
+      it('maintains correct lastProcessedMessageId across sequential processing', async () => {
         const createMockEvent = (index) => ({
           data: {
             text: () =>
@@ -1088,7 +1084,13 @@ describe('Duo Agentic Chat', () => {
                   newCheckpoint: {
                     checkpoint: JSON.stringify({
                       channel_values: {
-                        ui_chat_log: [{ content: `Message ${index}`, message_type: 'agent' }],
+                        ui_chat_log: [
+                          {
+                            content: `Message ${index}`,
+                            message_type: 'agent',
+                            message_id: `message-${index}`,
+                          },
+                        ],
                       },
                     }),
                     status: 'running',
@@ -1098,17 +1100,17 @@ describe('Duo Agentic Chat', () => {
           },
         });
 
-        // Mock to return incrementing lastProcessedIndex
+        // Mock to return incrementing lastProcessedMessageId
         WorkflowSocketUtils.processWorkflowMessage
           .mockResolvedValueOnce({
             messages: [MOCK_TRANSFORMED_MESSAGES[0]],
             status: 'running',
-            lastProcessedIndex: 0,
+            lastProcessedMessageId: 'message-0',
           })
           .mockResolvedValueOnce({
             messages: [MOCK_TRANSFORMED_MESSAGES[0]],
             status: 'running',
-            lastProcessedIndex: 1,
+            lastProcessedMessageId: 'message-1',
           });
 
         // Send two events
@@ -1118,8 +1120,8 @@ describe('Duo Agentic Chat', () => {
         socketCall.onMessage(createMockEvent(2));
         await waitForPromises();
 
-        // Verify the index was properly updated and passed
-        expect(wrapper.vm.lastProcessedIndex).toBe(1);
+        // Verify the message id was properly updated and passed
+        expect(wrapper.vm.lastProcessedMessageId).toBe('message-1');
       });
 
       it('clears processing state when cleanupState is called', () => {
@@ -1143,7 +1145,7 @@ describe('Duo Agentic Chat', () => {
         WorkflowSocketUtils.processWorkflowMessage.mockResolvedValue({
           messages: [],
           status: 'running',
-          lastProcessedIndex: 0,
+          lastProcessedMessageId: 'message-0',
         });
 
         // Start processing
@@ -2025,7 +2027,7 @@ describe('Duo Agentic Chat', () => {
         );
 
         expect(WorkflowUtils.parseWorkflowData).toHaveBeenCalledWith(MOCK_WORKFLOW_EVENTS_RESPONSE);
-        expect(WorkflowUtils.transformChatMessages).toHaveBeenCalledWith([], '456');
+        expect(WorkflowUtils.transformChatMessages).toHaveBeenCalledWith([]);
 
         expect(findDuoChat().props('multiThreadedView')).toBe(DUO_CHAT_VIEWS.CHAT);
         expect(findDuoChat().props('activeThreadId')).toBe(MOCK_WORKFLOW_ID);
@@ -2099,14 +2101,16 @@ describe('Duo Agentic Chat', () => {
         expect(findDuoChat().props('messages')).toEqual(MOCK_TRANSFORMED_MESSAGES);
       });
 
-      it('set the last processed index based on the thread messages', async () => {
+      it('set the last processed message id based on the thread messages', async () => {
         WorkflowUtils.transformChatMessages.mockReturnValue(MOCK_TRANSFORMED_MESSAGES);
 
-        expect(wrapper.vm.lastProcessedIndex).toBe(-1);
+        expect(wrapper.vm.lastProcessedMessageId).toBe(null);
 
         findDuoChat().vm.$emit('thread-selected', { id: MOCK_WORKFLOW_ID });
         await waitForPromises();
-        expect(wrapper.vm.lastProcessedIndex).toBe(MOCK_TRANSFORMED_MESSAGES.length - 1);
+        expect(wrapper.vm.lastProcessedMessageId).toBe(
+          MOCK_TRANSFORMED_MESSAGES[MOCK_TRANSFORMED_MESSAGES.length - 1].message_id,
+        );
       });
     });
 

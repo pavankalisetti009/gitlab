@@ -45,16 +45,20 @@ export const MOCK_FETCH_WORKFLOW_EVENTS_RESPONSE = {
   },
 };
 
-export const MOCK_ASSISTANT_MESSAGES = [MOCK_AGENT_MESSAGE, MOCK_REQUEST_MESSAGE];
-export const MOCK_SINGLE_GENERIC_MESSAGE = [MOCK_GENERIC_MESSAGE];
+export const MOCK_ASSISTANT_MESSAGES = [
+  { ...MOCK_AGENT_MESSAGE, message_id: 'msg-1' },
+  { ...MOCK_REQUEST_MESSAGE, message_id: 'msg-2' },
+];
+export const MOCK_SINGLE_GENERIC_MESSAGE = [{ ...MOCK_GENERIC_MESSAGE, message_id: 'msg-3' }];
 export const MOCK_MULTIPLE_USER_MESSAGES = [
-  { message_type: 'user', content: 'First' },
-  { message_type: 'user', content: 'Second' },
-  { message_type: 'user', content: 'Third' },
+  { message_type: 'user', content: 'First', message_id: 'msg-4' },
+  { message_type: 'user', content: 'Second', message_id: 'msg-5' },
+  { message_type: 'user', content: 'Third', message_id: 'msg-6' },
 ];
 export const MOCK_USER_MESSAGE_WITH_PROPERTIES = [
   {
     message_type: 'user',
+    message_id: 'msg-7',
     content: 'Test message',
     timestamp: '2025-07-25T14:30:00Z',
     customProperty: 'should be preserved',
@@ -198,10 +202,12 @@ export const MOCK_FOUNDATIONAL_CHAT_AGENTS_RESPONSE = {
 
 export const MOCK_CHAT_MESSAGES = {
   prompt: {
+    message_id: 0,
     content: 'Update the README to explain the main languages used in the project',
     role: 'user',
   },
   user: {
+    message_id: 0,
     message_sub_type: null,
     message_type: 'user',
     content: 'Update the README to explain the main languages used in the project',
@@ -222,6 +228,7 @@ export const MOCK_CHAT_MESSAGES = {
     role: 'user',
   },
   agentStreaming: {
+    message_id: 1,
     status: null,
     correlation_id: null,
     message_type: 'agent',
@@ -233,6 +240,7 @@ export const MOCK_CHAT_MESSAGES = {
     role: 'assistant',
   },
   agentStreaming1: {
+    message_id: 1,
     status: null,
     correlation_id: null,
     message_type: 'agent',
@@ -244,6 +252,7 @@ export const MOCK_CHAT_MESSAGES = {
     role: 'assistant',
   },
   agentComplete: {
+    message_id: 1,
     message_type: 'agent',
     message_sub_type: null,
     content:
@@ -256,6 +265,7 @@ export const MOCK_CHAT_MESSAGES = {
     role: 'assistant',
   },
   tool: {
+    message_id: 2,
     message_type: 'tool',
     message_sub_type: 'get_repository_file',
     content: 'Get repository file README.md from project 1000000 at ref HEAD',
@@ -286,6 +296,7 @@ export const MOCK_CHAT_MESSAGES = {
     role: 'tool',
   },
   agent2Streaming1: {
+    message_id: 3,
     status: null,
     correlation_id: null,
     message_type: 'agent',
@@ -297,6 +308,7 @@ export const MOCK_CHAT_MESSAGES = {
     role: 'assistant',
   },
   agent2Streaming2: {
+    message_id: 3,
     status: null,
     correlation_id: null,
     message_type: 'agent',
@@ -308,6 +320,7 @@ export const MOCK_CHAT_MESSAGES = {
     role: 'assistant',
   },
   request: {
+    message_id: 3,
     status: 'success',
     content: 'Tool create_commit requires approval. Please confirm if you want to proceed.',
     timestamp: '2025-11-18T09:52:54.430519+00:00',
@@ -336,6 +349,7 @@ export const MOCK_CHAT_MESSAGES = {
   },
   tool3Fail: [
     {
+      message_id: 4,
       message_type: 'tool',
       message_sub_type: 'create_commit',
       content:
@@ -361,6 +375,7 @@ export const MOCK_CHAT_MESSAGES = {
       role: 'tool',
     },
     {
+      message_id: 5,
       status: null,
       correlation_id: null,
       message_type: 'agent',

@@ -287,7 +287,7 @@ export default {
       duoChatTitle: s__('DuoAgenticChat|Duo Agent'),
       isLoading: false,
       isWaitingOnPrompt: false,
-      lastProcessedIndex: -1,
+      lastProcessedMessageId: null,
       pendingEvent: null,
       isProcessingMessage: false,
       isInitialLoad: true,
@@ -486,7 +486,7 @@ export default {
     ...mapActions(['addDuoChatMessage', 'setMessages']),
     clearActiveThread() {
       this.setMessages([]);
-      this.lastProcessedIndex = -1;
+      this.lastProcessedMessageId = null;
     },
     async loadDuoNextIfNeeded() {
       if (this.glFeatures.duoUiNext) {
@@ -528,7 +528,7 @@ export default {
     cleanupState(resetWorkflowId = true) {
       this.isLoading = false;
       this.isWaitingOnPrompt = false;
-      this.lastProcessedIndex = -1;
+      this.lastProcessedMessageId = null;
       this.isProcessingMessage = false;
       this.pendingEvent = null;
       this.cleanupSocket();
@@ -628,12 +628,11 @@ export default {
 
         const workflowData = await processWorkflowMessage(
           eventToProcess,
-          this.workflowId,
-          this.lastProcessedIndex,
+          this.lastProcessedMessageId,
         );
 
         if (workflowData) {
-          this.lastProcessedIndex = workflowData.lastProcessedIndex;
+          this.lastProcessedMessageId = workflowData.lastProcessedMessageId;
 
           if (workflowData.messages && workflowData.messages.length > 0) {
             workflowData.messages.forEach((msg) => {
@@ -780,7 +779,7 @@ export default {
 
         const parsedWorkflowData = WorkflowUtils.parseWorkflowData(data);
         const uiChatLog = parsedWorkflowData?.checkpoint?.channel_values?.ui_chat_log || [];
-        const messages = WorkflowUtils.transformChatMessages(uiChatLog, this.workflowId);
+        const messages = WorkflowUtils.transformChatMessages(uiChatLog);
         const [workflow] = data.duoWorkflowWorkflows.nodes ?? [];
 
         this.workflowStatus = parsedWorkflowData?.workflowStatus;
@@ -792,7 +791,7 @@ export default {
           );
         }
 
-        this.lastProcessedIndex = messages.length - 1;
+        this.lastProcessedMessageId = messages.at(-1)?.message_id;
         this.setMessages(messages);
         this.$emit('change-title', parsedWorkflowData?.workflowGoal);
       } catch (err) {
