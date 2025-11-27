@@ -146,7 +146,7 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
     expect(member.access_level).to eq(Member::DEVELOPER)
   end
 
-  context 'when creating the member fails' do
+  context 'when creating the member returns a member with errors' do
     before do
       allow(Members::Projects::CreatorService).to receive(:add_member) do
         build(:project_member).tap { |member| member.errors.add(:base, 'could not create project member') }
@@ -154,6 +154,14 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
     end
 
     it_behaves_like 'a failure', 'could not create project member'
+  end
+
+  context 'when creating the member returns false' do
+    before do
+      allow(Members::Projects::CreatorService).to receive(:add_member).and_return(false)
+    end
+
+    it_behaves_like 'a failure', 'Failed to create item consumer'
   end
 
   context 'when creating the member returns nil' do

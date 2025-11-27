@@ -124,7 +124,7 @@ module Ai
             parent_item_consumer_service_account, Member::DEVELOPER, current_user:
           )
 
-          return [:failure, project_member] if project_member.nil? || !project_member.persisted?
+          return [:failure, project_member.presence] unless project_member.present? && project_member.persisted?
 
           [:success, project_member]
         end
