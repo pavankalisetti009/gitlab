@@ -754,13 +754,13 @@ RSpec.describe EE::Gitlab::Auth::Ldap::Sync::Group, feature_category: :system_ac
         context 'without available seats' do
           let(:active_user_count) { 0 }
 
-          context 'with Premium and users without role being billable' do
+          context 'with Premium and users without role being non-billable' do
             let(:plan) { License::PREMIUM_PLAN }
 
-            it 'allows the requested access level of existing users' do
+            it 'limits the requested access level of existing users to minimal access' do
               sync_group.update_permissions
 
-              expect(access_level).to eq(::Gitlab::Access::DEVELOPER)
+              expect(access_level).to eq(::Gitlab::Access::MINIMAL_ACCESS)
             end
           end
 

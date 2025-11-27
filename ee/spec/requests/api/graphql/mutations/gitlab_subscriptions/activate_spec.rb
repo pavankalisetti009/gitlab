@@ -6,6 +6,7 @@ RSpec.describe 'Activate a subscription', feature_category: :subscription_manage
   include GraphqlHelpers
 
   let_it_be(:current_user) { create(:admin) }
+  let_it_be(:group) { create(:group) }
   let_it_be(:license_key) { build(:gitlab_license).export }
 
   let(:activation_code) { 'activation_code' }
@@ -35,6 +36,10 @@ RSpec.describe 'Activate a subscription', feature_category: :subscription_manage
   end
 
   let(:unique_instance_id) { 'unique_instance_identifier' }
+
+  before_all do
+    group.add_owner(current_user)
+  end
 
   before do
     allow(Gitlab::GlobalAnonymousId).to receive(:instance_uuid).and_return(unique_instance_id)

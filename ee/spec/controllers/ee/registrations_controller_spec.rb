@@ -307,7 +307,12 @@ RSpec.describe RegistrationsController, :with_current_organization, feature_cate
         end
 
         context 'when user signup cap would be exceeded by new user signup' do
-          let!(:users) { create_list(:user, 3) }
+          let_it_be(:group) { create(:group) }
+          let_it_be(:users) { create_list(:user, 3) }
+
+          before_all do
+            users.each { |u| group.add_guest(u) }
+          end
 
           it_behaves_like 'blocked user by default'
         end

@@ -690,7 +690,12 @@ RSpec.describe User, feature_category: :system_access do
         let(:seat_control_user_cap) { true }
 
         context 'when user signup cap has been reached' do
-          let!(:users) { create_list(:user, 3) }
+          let_it_be(:group) { create(:group) }
+          let_it_be(:users) { create_list(:user, 3) }
+
+          before do
+            users.each { |u| group.add_guest(u) }
+          end
 
           it 'enqueues SetUserStatusBasedOnUserCapSettingWorker' do
             expect(SetUserStatusBasedOnUserCapSettingWorker).to receive(:perform_async).once
@@ -1448,6 +1453,7 @@ RSpec.describe User, feature_category: :system_access do
     let_it_be(:regular_user) { create(:user) }
     let_it_be(:project_reporter_user) { create(:project_member, :reporter).user }
     let_it_be(:project_guest_user) { create(:project_member, :guest).user }
+    let_it_be(:minimal_access_user) { create(:group_member, :minimal_access).user }
     let_it_be(:group) { create(:group) }
     let_it_be(:member_role_elevating) { create(:member_role, :billable, namespace: group) }
     let_it_be(:member_role_basic) { create(:member_role, :non_billable, namespace: group) }
@@ -1468,10 +1474,20 @@ RSpec.describe User, feature_category: :system_access do
     context 'with guests' do
       let(:expected_where) do
         'WHERE \("users"."state" IN \(\'active\'\)\)
-        AND
-        "users"."user_type" IN \(0, 6, 4, 13\)
-        AND
-        "users"."user_type" IN \(0, 4, 5, 15, 17\)'.squish
+          AND
+          "users"."user_type" IN \(0, 6, 4, 13\)
+          AND
+          "users"."user_type" IN \(0, 4, 5, 15, 17\)
+          AND
+          \(EXISTS \(SELECT 1 FROM "members"
+            WHERE "members"."user_id" = "users"."id"
+              AND \(members.access_level > 5\)
+              AND "members"."requested_at" IS NULL\)\)'.squish
+      end
+
+      before do
+        license = double('License', exclude_guests_from_active_count?: false)
+        allow(License).to receive(:current) { license }
       end
 
       it 'validates the sql matches the specific index we have' do
@@ -1479,14 +1495,29 @@ RSpec.describe User, feature_category: :system_access do
           "query was changed. Please ensure query is covered with an index and adjust this test case"
       end
 
-      it 'returns users' do
-        expect(users).to include(project_reporter_user)
+      it 'excludes minimal access users' do
+        expect(users).not_to include(minimal_access_user)
+      end
+
+      it 'excludes users without memberships' do
+        expect(users).not_to include(regular_user)
+      end
+
+      it 'excludes users requesting access' do
+        expect(users).not_to include(user_with_access_request)
+      end
+
+      it 'includes guest users' do
         expect(users).to include(project_guest_user)
-        expect(users).to include(regular_user)
         expect(users).to include(guest_with_elevated_role)
         expect(users).to include(guest_without_elevated_role)
-        expect(users).to include(user_with_access_request)
+      end
 
+      it 'includes reporter+ users' do
+        expect(users).to include(project_reporter_user)
+      end
+
+      it 'excludes bots and service accounts' do
         expect(users).not_to include(bot_user)
         expect(users).not_to include(service_account)
       end
@@ -1519,8 +1550,25 @@ RSpec.describe User, feature_category: :system_access do
           "query was changed. Please ensure query is covered with an index and adjust this test case"
       end
 
+      it 'excludes minimal access users' do
+        expect(users).not_to include(minimal_access_user)
+      end
+
+      it 'excludes users without memberships' do
+        expect(users).not_to include(regular_user)
+      end
+
       it 'excludes users requesting access' do
         expect(users).not_to include(user_with_access_request)
+      end
+
+      it 'excludes regular guest users' do
+        expect(users).not_to include(project_guest_user)
+        expect(users).not_to include(guest_without_elevated_role)
+      end
+
+      it 'includes reporter+ users' do
+        expect(users).to include(project_reporter_user)
       end
 
       context 'with elevating role' do
@@ -1528,7 +1576,6 @@ RSpec.describe User, feature_category: :system_access do
           expect(MemberRole).to receive(:occupies_seat).at_least(:once).and_return(MemberRole.where(id: member_role_elevating.id))
 
           expect(users).to include(guest_with_elevated_role)
-          expect(users).not_to include(guest_without_elevated_role)
         end
       end
     end
@@ -2024,6 +2071,10 @@ RSpec.describe User, feature_category: :system_access do
         context 'user is guest' do
           let(:project_guest_user) { create(:project_member, :guest).user }
 
+          before do
+            Users::UpdateHighestMemberRoleService.new(project_guest_user).execute
+          end
+
           it 'returns false if license is ultimate' do
             create(:license, plan: License::ULTIMATE_PLAN)
 
@@ -2037,6 +2088,38 @@ RSpec.describe User, feature_category: :system_access do
           end
         end
 
+        context 'user is minimal access' do
+          let(:minimal_access_user) { create(:group_member, :minimal_access).user }
+
+          it 'returns false on Premium' do
+            create(:license, plan: License::PREMIUM_PLAN)
+
+            expect(minimal_access_user.using_license_seat?).to eq false
+          end
+
+          it 'returns false on Ultimate' do
+            create(:license, plan: License::ULTIMATE_PLAN)
+
+            expect(minimal_access_user.using_license_seat?).to eq false
+          end
+        end
+
+        context 'user without memberships' do
+          let(:user_without_memberships) { create(:user) }
+
+          it 'returns false on Premium' do
+            create(:license, plan: License::PREMIUM_PLAN)
+
+            expect(user_without_memberships.using_license_seat?).to eq false
+          end
+
+          it 'returns false on Ultimate' do
+            create(:license, plan: License::ULTIMATE_PLAN)
+
+            expect(user_without_memberships.using_license_seat?).to eq false
+          end
+        end
+
         context 'user is admin without projects' do
           let(:user) { create(:user, admin: true) }
 
@@ -2046,10 +2129,10 @@ RSpec.describe User, feature_category: :system_access do
             expect(user.using_license_seat?).to eq false
           end
 
-          it 'returns true if license is not ultimate and not nil' do
-            create(:license, plan: License::STARTER_PLAN)
+          it 'returns false if license is premium' do
+            create(:license, plan: License::PREMIUM_PLAN)
 
-            expect(user.using_license_seat?).to eq true
+            expect(user.using_license_seat?).to eq false
           end
         end
 

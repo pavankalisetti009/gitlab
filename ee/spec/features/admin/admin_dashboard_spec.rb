@@ -69,7 +69,7 @@ RSpec.describe 'Admin Dashboard', feature_category: :shared do
       expect(page).to have_content("Users with highest role Maintainer 6")
       expect(page).to have_content("Users with highest role Owner 5")
       expect(page).to have_content("Bots 2")
-      expect(page).to have_content("Billable users 76")
+      expect(page).to have_content("Billable users 53")
       expect(page).to have_content("Active users (total billable + total non-billable) 78")
       expect(page).to have_content("Blocked users 7")
       expect(page).to have_content("Total users (active users + blocked users) 85")

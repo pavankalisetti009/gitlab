@@ -12,7 +12,9 @@ RSpec.shared_examples 'finding user when user cap is set' do
       let(:new_user_signups_cap) { 1 }
 
       it 'does not activate the user' do
-        create(:user)
+        existing_user = create(:user)
+        group = create(:group)
+        group.add_developer(existing_user)
 
         o_auth_user.save # rubocop:disable Rails/SaveBang
 
