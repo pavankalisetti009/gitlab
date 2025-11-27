@@ -73,7 +73,7 @@ RSpec.describe 'Delete Secret Permission', :gitlab_secrets_manager, feature_cate
     end
     it 'returns the service error' do
       expect_next_instance_of(SecretsManagement::Permissions::DeleteService) do |service|
-        secret_permission = SecretsManagement::SecretPermission.new
+        secret_permission = SecretsManagement::ProjectSecretsPermission.new
         secret_permission.errors.add(:base, 'some error')
 
         result = ServiceResponse.error(message: 'some error', payload: { secret_permission: secret_permission })

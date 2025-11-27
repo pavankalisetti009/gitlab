@@ -42,12 +42,12 @@ module Types
         end
 
         def user_role_id
-          return unless type == 'User' && project_id
+          return unless type == 'User' && resource_id
 
           ::Gitlab::Graphql::Lazy.with_value(user_record) do |user|
             next nil unless user
 
-            user.max_member_access_for_project(project_id)&.to_s
+            user.max_member_access_for_project(resource_id)&.to_s
           end
         end
 
@@ -65,8 +65,8 @@ module Types
           Gitlab::Graphql::Loaders::BatchModelLoader.new(Group, id).find
         end
 
-        def project_id
-          @project_id ||= (object[:project_id] || object['project_id'])&.to_i
+        def resource_id
+          @resource_id ||= (object[:resource_id] || object['resource_id'])&.to_i
         end
       end
     end

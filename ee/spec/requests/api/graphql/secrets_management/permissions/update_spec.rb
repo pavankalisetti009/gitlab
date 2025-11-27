@@ -91,14 +91,14 @@ RSpec.describe 'Update Secret Permission', :gitlab_secrets_manager, feature_cate
       end
 
       before do
-        allow_next_instance_of(SecretsManagement::Permissions::UpdateService) do |service|
+        allow_next_instance_of(SecretsManagement::ProjectSecretsPermissions::UpdateService) do |service|
           allow(service).to receive(:execute).and_return(ServiceResponse.error(message: 'some error'))
         end
       end
 
       it 'returns the service error' do
-        expect_next_instance_of(SecretsManagement::Permissions::UpdateService) do |service|
-          secret_permission = SecretsManagement::SecretPermission.new
+        expect_next_instance_of(SecretsManagement::ProjectSecretsPermissions::UpdateService) do |service|
+          secret_permission = SecretsManagement::ProjectSecretsPermission.new
           secret_permission.errors.add(:base, 'some error')
 
           result = ServiceResponse.error(message: 'some error', payload: { secret_permission: secret_permission })

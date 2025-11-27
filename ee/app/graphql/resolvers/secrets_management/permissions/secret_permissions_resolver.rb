@@ -7,7 +7,7 @@ module Resolvers
         include Gitlab::Graphql::Authorize::AuthorizeResource
         include ResolvesProject
 
-        type [::Types::SecretsManagement::Permissions::SecretPermissionType], null: true
+        type [::Types::SecretsManagement::ProjectSecretsPermissionType], null: true
 
         argument :project_path, GraphQL::Types::ID,
           required: true,
