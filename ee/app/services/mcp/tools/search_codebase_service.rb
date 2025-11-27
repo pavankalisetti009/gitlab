@@ -10,12 +10,29 @@ module Mcp
 
       # Register version 0.1.0
       register_version '0.1.0', {
-        description: "Performs semantic code search across project files using vector similarity.\n\n" \
-          "Returns ranked code snippets with file paths and content matches based on natural language queries.\n\n" \
-          "Use this tool for questions about a project's codebase.\n" \
-          "For example: \"how something works\" or \"code that does X\", or finding specific implementations.\n\n" \
-          "This tool supports directory scoping and configurable result limits for targeted code discovery and " \
-          "analysis.",
+        description: <<~DESC.strip,
+          Code search using natural language.
+
+          Returns ranked code snippets with file paths and matching content for natural-language queries.
+
+          Primary use cases:
+          - When you do not know the exact symbol or file path
+          - To see how a behavior or feature is implemented across the codebase
+          - To discover related implementations (clients, jobs, feature flags, background workers)
+
+          How to use:
+          - Provide a concise, specific query (1–2 sentences) with concrete keywords like endpoint, class, or framework names
+          - Add directory_path to narrow scope, e.g., "app/services/" or "ee/app/workers/"
+          - Prefer precise intent over broad terms (e.g., "rate limiting middleware for REST API" instead of "rate limit")
+
+          Example queries:
+          - semantic_query: "JWT verification middleware" with directory_path: "app/"
+          - semantic_query: "CI pipeline triggers downstream jobs" with directory_path: "lib/"
+          - semantic_query: "feature flag to disable email notifications" (no directory_path)
+
+          Output:
+          - Ranked snippets with file paths and the matched content for each hit
+        DESC
         input_schema: {
           type: 'object',
           properties: {
