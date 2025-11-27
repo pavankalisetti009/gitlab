@@ -104,11 +104,11 @@ Generally available features should not have a status.
 For GitLab Duo features available with self-hosted models, use:
 
 ```markdown
-{{< collapsible title="Model information" >}}
+{{</* collapsible title="Model information" */>}}
 
 - Available on [GitLab Duo with self-hosted models](<relative_link_to_gitlab_duo_self_hosted_documentation>)
 
-{{< /collapsible >}}
+{{</* /collapsible */>}}
 ```
 
 Avoid stating that the feature is not available on GitLab Duo with self-hosted models.
@@ -127,13 +127,13 @@ If you need to document the LLMs that the GitLab Duo feature uses:
 For example:
 
 ```markdown
-{{< collapsible title="Model information" >}}
+{{</* collapsible title="Model information" */>}}
 
 - LLMs for code completion: Anthropic [Claude 4.0 Sonnet](https://console.cloud.google.com/vertex-ai/publishers/anthropic/model-garden/claude-sonnet-4)
 - LLMs for code generation: Anthropic [Claude 3.7 Sonnet](https://console.cloud.google.com/vertex-ai/publishers/anthropic/model-garden/claude-3-7-sonnet)
 - LLM for Amazon Q: Amazon Q Developer
 
-{{< /collapsible >}}
+{{</* /collapsible */>}}
 ```
 
 ### History
