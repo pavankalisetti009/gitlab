@@ -1,6 +1,5 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import { itSkipVue3, SkipReason } from 'helpers/vue3_conditional';
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
@@ -181,13 +180,7 @@ describe('EditorWrapper component', () => {
       expect(alert.text()).toBe('error reason');
     });
 
-    const skipReason = new SkipReason({
-      name: 'shows the errors when the subscription fails due to a configuration issue',
-      reason: 'Test times out (CPU pegged at 100%)',
-      issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/458409',
-    });
-
-    itSkipVue3(skipReason, async () => {
+    it('shows the errors when the subscription fails due to a configuration issue', async () => {
       const getSecurityPolicyProjectSubscriptionErrorHandlerMock = jest
         .fn()
         .mockRejectedValue({ message: 'error' });
@@ -196,11 +189,9 @@ describe('EditorWrapper component', () => {
       });
       await waitForPromises();
       const alert = findErrorAlert();
-      // eslint-disable-next-line jest/no-standalone-expect
+
       expect(alert.exists()).toBe(true);
-      // eslint-disable-next-line jest/no-standalone-expect
       expect(alert.props('title')).toBe('error');
-      // eslint-disable-next-line jest/no-standalone-expect
       expect(alert.text()).toBe('');
     });
 

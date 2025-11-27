@@ -11,6 +11,8 @@ import ScanExecutionPolicyEditor from './scan_execution/editor_component.vue';
 import ScanResultPolicyEditor from './scan_result/editor_component.vue';
 import VulnerabilityManagementPolicyEditor from './vulnerability_management/editor_component.vue';
 
+const MAX_RETRY_COUNT = 5;
+
 export default {
   apollo: {
     $subscribe: {
@@ -39,9 +41,13 @@ export default {
             };
           }
         },
+        skip() {
+          return this.subscriptionErrorCount > MAX_RETRY_COUNT;
+        },
         error(e) {
           this.setError(e.message);
           this.setLoadingFlag(false);
+          this.subscriptionErrorCount += 1;
         },
       },
     },
@@ -80,6 +86,7 @@ export default {
       policy: null,
       policyModificationAction: null,
       securityPolicyProject: this.assignedPolicyProject,
+      subscriptionErrorCount: 0,
     };
   },
   computed: {
