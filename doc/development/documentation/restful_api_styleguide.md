@@ -157,6 +157,23 @@ For example:
 - `Use this API to interact with the [Maven package manager client](path/to/file).`
 - `Use this API to interact with namespaces, a special resource category used to organize users and groups. For more information, see [namespaces](path/to/file).`
 
+## Operation titles
+
+Start an operation title with a verb. For consistency,
+use these verbs based on the HTTP method:
+
+| HTTP method      | Verb     | Alternatives | Examples |
+| ---------------- | -------- | ------------ | -------- |
+| `GET` (multiple) | List all |              | `List all group access tokens` |
+| `GET` (single)   | Retrieve | Download     | `Retrieve a group audit event`, `Download a dependency list export` |
+| `POST`           | Create   | Add          | `Create a repository branch`, `Add a new emoji reaction` |
+| `PUT`            | Update   | Replace      | `Update a project topic` |
+| `PATCH`          | Update   | Modify       | `Update a freeze period`, `Modify an existing commit thread note` |
+| `DELETE`         | Delete   |              | `Delete a feature` |
+
+When possible, use the recommended verb. Alternatives might be needed in specific contexts, but
+minimize their use to maintain consistency.
+
 ## Operation descriptions
 
 Each operation should include a short description that explains its use, and highlights any
