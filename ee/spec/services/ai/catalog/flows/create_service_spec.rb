@@ -144,11 +144,6 @@ RSpec.describe Ai::Catalog::Flows::CreateService, feature_category: :workflow_ca
           prompts:
             - prompt_id: local_prompt
               name: Local Test Prompt
-              model:
-                params:
-                  model_class_provider: 'llm-model'
-                  model: test-model
-                  max_tokens: 1000
               prompt_template:
                 system: You are a helpful assistant
                 user: Help me with {{goal}}
@@ -185,11 +180,6 @@ RSpec.describe Ai::Catalog::Flows::CreateService, feature_category: :workflow_ca
             prompts:
               - prompt_id: local_prompt
                 name: Local Test Prompt
-                model:
-                  params:
-                    model_class_provider: 'llm-model'
-                    model: test-model
-                    max_tokens: 1000
                 prompt_template:
                   system: You are a helpful assistant
                   user: Help me with {{goal}}

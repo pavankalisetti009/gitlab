@@ -170,11 +170,6 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Create, feature_category: :workflow
         prompts:
           - prompt_id: test_prompt
             name: Test Prompt
-            model:
-              params:
-                model_class_provider: anthropic
-                model: claude-sonnet-4-20250514
-                max_tokens: 32768
             unit_primitives: []
             prompt_template:
               system: You are a helpful assistant
