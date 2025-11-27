@@ -25,6 +25,14 @@ export default {
       type: String,
       required: true,
     },
+    id: {
+      type: String,
+      required: true,
+    },
+    expanded: {
+      type: Boolean,
+      required: true,
+    },
   },
   data() {
     return {
@@ -94,24 +102,16 @@ export default {
       this.handleLifecycleUpdate();
       this.openStatusModal(newLifecycleId);
     },
-    toggleExpanded(expanded) {
-      if (!expanded && this.$route.hash === '') {
-        return;
-      }
-      this.$router.push({
-        name: 'workItemSettingsHome',
-        hash: expanded ? '#js-custom-status-settings' : '',
-      });
-    },
   },
 };
 </script>
 
 <template>
   <settings-block
-    id="js-custom-status-settings"
+    :id="id"
+    :expanded="expanded"
     :title="s__('WorkItem|Statuses')"
-    @toggle-expand="toggleExpanded"
+    @toggle-expand="$emit('toggle-expand', $event)"
   >
     <template #description>
       <p>

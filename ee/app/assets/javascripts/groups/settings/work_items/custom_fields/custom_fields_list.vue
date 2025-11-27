@@ -44,6 +44,14 @@ export default {
       type: String,
       required: true,
     },
+    id: {
+      type: String,
+      required: true,
+    },
+    expanded: {
+      type: Boolean,
+      required: true,
+    },
   },
   data() {
     return {
@@ -157,15 +165,6 @@ export default {
         throw new Error(data.customFieldArchive.errors.join(', '));
       }
     },
-    toggleExpanded(expanded) {
-      if (!expanded && this.$route.hash === '') {
-        return;
-      }
-      this.$router.push({
-        name: 'workItemSettingsHome',
-        hash: expanded ? '#js-custom-fields-settings' : '',
-      });
-    },
     getFieldById(id) {
       return this.customFieldsForList.find((f) => f.id === id);
     },
@@ -269,9 +268,10 @@ export default {
 
 <template>
   <settings-block
-    id="js-custom-fields-settings"
+    :id="id"
     :title="s__('WorkItem|Custom fields')"
-    @toggle-expand="toggleExpanded"
+    :expanded="expanded"
+    @toggle-expand="$emit('toggle-expand', $event)"
   >
     <template #description>
       <p class="gl-mb-3 gl-text-subtle">

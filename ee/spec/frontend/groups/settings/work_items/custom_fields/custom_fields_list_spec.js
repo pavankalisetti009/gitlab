@@ -77,6 +77,7 @@ describe('CustomFieldsTable', () => {
 
   const createComponent = ({
     fields = [selectField],
+    props = {},
     customFieldsResponse = jest.fn().mockResolvedValue({
       data: {
         group: {
@@ -108,19 +109,44 @@ describe('CustomFieldsTable', () => {
     wrapper = mount(CustomFieldsTable, {
       propsData: {
         fullPath: 'group/path',
+        id: 'js-custom-fields-settings',
+        expanded: false,
+        ...props,
       },
       apolloProvider,
       stubs: { GlIntersperse: true, SettingsBlock },
     });
   };
 
-  it('renders a settings block', () => {
+  it('renders a settings block with correct props', () => {
     createComponent();
 
     expect(findSettingsBlock().props()).toMatchObject({
       id: 'js-custom-fields-settings',
       title: 'Custom fields',
+      expanded: false,
     });
+  });
+
+  it('renders settings block with expanded prop when provided', () => {
+    createComponent({ props: { expanded: true } });
+
+    expect(findSettingsBlock().props('expanded')).toBe(true);
+  });
+
+  it('emits toggle-expand event when settings block is toggled', async () => {
+    createComponent();
+
+    findSettingsBlock().vm.$emit('toggle-expand', true);
+    await nextTick();
+
+    expect(wrapper.emitted('toggle-expand')).toEqual([[true]]);
+  });
+
+  it('passes custom id prop to settings block', () => {
+    createComponent({ props: { id: 'custom-id' } });
+
+    expect(findSettingsBlock().props('id')).toBe('custom-id');
   });
 
   it('renders title and help link', () => {
