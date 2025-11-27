@@ -1,5 +1,6 @@
 fragment BaseAiCatalogItemVersion on AiCatalogItemVersion {
   id
+  updatedAt
   humanVersionName
   versionName
 }
