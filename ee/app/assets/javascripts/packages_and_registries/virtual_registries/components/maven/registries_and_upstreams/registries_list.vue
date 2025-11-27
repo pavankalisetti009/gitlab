@@ -4,8 +4,8 @@ import emptyStateIllustrationUrl from '@gitlab/svgs/dist/illustrations/empty-sta
 import { s__ } from '~/locale';
 import { setUrlParams, updateHistory, queryToObject } from '~/lib/utils/url_utility';
 import { getPageParams } from '~/packages_and_registries/shared/utils';
-import getMavenVirtualRegistries from '../../../graphql/queries/get_maven_virtual_registries.query.graphql';
-import { captureException } from '../../../sentry_utils';
+import getMavenVirtualRegistries from 'ee/packages_and_registries/virtual_registries/graphql/queries/get_maven_virtual_registries.query.graphql';
+import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
 import RegistriesTable from './registries_table.vue';
 
 const PAGE_SIZE = 20;
