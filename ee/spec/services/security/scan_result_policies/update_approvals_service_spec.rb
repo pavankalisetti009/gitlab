@@ -343,6 +343,70 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
         end
       end
 
+      describe 'logging' do
+        it 'logs information about the missing scans' do
+          expect(::Gitlab::AppJsonLogger)
+            .to receive(:info).with(a_hash_including(event: 'update_approvals')).at_least(:once)
+          expect(::Gitlab::AppJsonLogger)
+            .to receive(:info)
+            .with(
+              workflow: 'approval_policy_evaluation',
+              event: 'approval_policy_missing_target_scan',
+              merge_request_id: merge_request.id,
+              merge_request_iid: merge_request.iid,
+              message: 'Enforced scanner missing on target branch',
+              missing_scanners: %w[container_scanning],
+              project_path: project.full_path,
+              target_pipeline_id: target_pipeline.id,
+              target_pipeline_status: 'success',
+              source_pipeline_scans: %w[dependency_scanning container_scanning],
+              target_pipeline_scans: %w[dependency_scanning]
+            )
+
+          execute
+        end
+
+        context 'when an alternative target pipeline could have been chosen using time_window' do
+          let_it_be_with_refind(:time_window_pipeline) do
+            create(:ee_ci_pipeline, :success, :with_dependency_scanning_report, project: project,
+              ref: merge_request.target_branch,
+              sha: 'previous-sha',
+              created_at: target_pipeline.created_at - 5.minutes)
+          end
+
+          let_it_be(:time_window_pipeline_scan) do
+            create(:security_scan, :succeeded, pipeline: time_window_pipeline, scan_type: 'dependency_scanning')
+          end
+
+          let_it_be_with_refind(:latest_target_pipeline_without_artifacts) do
+            create(:ee_ci_pipeline, :skipped, project: project,
+              ref: merge_request.target_branch, sha: merge_request.diff_base_sha)
+          end
+
+          before do
+            # Ensure that target_pipeline previously created doesn't have security reports
+            target_pipeline.builds.delete_all
+          end
+
+          it 'logs additional information' do
+            expect(::Gitlab::AppJsonLogger)
+              .to receive(:info).with(a_hash_including(event: 'update_approvals')).at_least(:once)
+            expect(::Gitlab::AppJsonLogger)
+              .to receive(:info).with(a_hash_including(event: 'approval_policy_pipeline_selection')).at_least(:once)
+            expect(::Gitlab::AppJsonLogger)
+              .to receive(:info)
+              .with(a_hash_including(
+                event: 'approval_policy_missing_target_scan',
+                pipeline_within_time_window_id: time_window_pipeline.id,
+                pipeline_within_time_window_status: 'success',
+                pipeline_within_time_window_scans: %w[dependency_scanning]
+              ))
+
+            execute
+          end
+        end
+      end
+
       context 'when feature flag "approval_policies_enforce_target_scans" is disabled' do
         before do
           stub_feature_flags(approval_policies_enforce_target_scans: false)
@@ -440,6 +504,28 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
             'missing_scans' => ['dependency_scanning']
           }
         end
+      end
+
+      it 'logs information about the missing scans' do
+        expect(::Gitlab::AppJsonLogger)
+          .to receive(:info).with(a_hash_including(event: 'update_approvals')).at_least(:once)
+        expect(::Gitlab::AppJsonLogger)
+          .to receive(:info)
+          .with(
+            workflow: 'approval_policy_evaluation',
+            event: 'approval_policy_missing_target_scan',
+            merge_request_id: merge_request.id,
+            merge_request_iid: merge_request.iid,
+            message: 'Enforced scanner missing on target branch',
+            missing_scanners: %w[dependency_scanning],
+            project_path: project.full_path,
+            target_pipeline_id: nil,
+            target_pipeline_status: nil,
+            source_pipeline_scans: %w[dependency_scanning],
+            target_pipeline_scans: []
+          )
+
+        execute
       end
 
       context 'when feature flag "approval_policies_enforce_target_scans" is disabled' do
