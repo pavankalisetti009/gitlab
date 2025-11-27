@@ -3,7 +3,10 @@ import waitForPromises from 'helpers/wait_for_promises';
 import { getMavenUpstreamRegistriesList } from 'ee/api/virtual_registries_api';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import UpstreamSelector from 'ee/packages_and_registries/virtual_registries/components/maven/registries/show/upstream_selector.vue';
-import { upstreamsResponse, multipleUpstreamsResponse } from '../../../../mock_data';
+import {
+  upstreamsResponse,
+  multipleUpstreamsResponse,
+} from 'ee_jest/packages_and_registries/virtual_registries/mock_data';
 
 jest.mock('ee/api/virtual_registries_api', () => ({
   getMavenUpstreamRegistriesList: jest.fn(),
@@ -52,18 +55,6 @@ describe('UpstreamSelector', () => {
         secondaryText: 'test description',
       },
     ]);
-  });
-
-  describe('when selectedUpstreamName is passed', () => {
-    it('sets listbox toggleText prop', () => {
-      createComponent({
-        props: {
-          selectedUpstreamName: 'test upstream',
-        },
-      });
-
-      expect(findDropdown().props('toggleText')).toBe('test upstream');
-    });
   });
 
   it('does not call fetchUpstreams initially', () => {
@@ -157,11 +148,17 @@ describe('UpstreamSelector', () => {
   });
 
   describe('when listbox emits `select` event', () => {
-    it('emits select event with the selected upstream ID', () => {
+    beforeEach(() => {
       createComponent();
-      findDropdown().vm.$emit('select', 1);
+      findDropdown().vm.$emit('select', 3);
+    });
 
-      expect(wrapper.emitted('select')).toEqual([[1]]);
+    it('emits select event with the selected upstream ID', () => {
+      expect(wrapper.emitted('select')).toEqual([[3]]);
+    });
+
+    it('sets listbox toggleText prop', () => {
+      expect(findDropdown().props('toggleText')).toBe('test');
     });
   });
 });

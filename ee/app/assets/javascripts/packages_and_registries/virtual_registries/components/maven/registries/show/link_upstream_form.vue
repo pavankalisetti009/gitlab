@@ -1,9 +1,10 @@
 <script>
 import { GlAlert, GlButton, GlCard, GlForm, GlFormGroup, GlSkeletonLoader } from '@gitlab/ui';
 import { sprintf, n__ } from '~/locale';
-import { getMavenUpstream } from 'ee/api/virtual_registries_api';
-import { captureException } from '../../../../sentry_utils';
-import TestMavenUpstreamButton from '../../shared/test_maven_upstream_button.vue';
+import getMavenUpstreamSummaryQuery from 'ee/packages_and_registries/virtual_registries/graphql/queries/get_maven_upstream_summary.query.graphql';
+import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
+import { convertToMavenUpstreamGraphQLId } from 'ee/packages_and_registries/virtual_registries/utils';
+import TestMavenUpstreamButton from 'ee/packages_and_registries/virtual_registries/components/maven/shared/test_maven_upstream_button.vue';
 import UpstreamSelector from './upstream_selector.vue';
 
 export default {
@@ -48,14 +49,28 @@ export default {
   data() {
     return {
       fetchUpstreamDetailsError: false,
-      isFetchingUpstreamDetails: false,
+      isFetchingUpstreamDetails: 0,
       selectedUpstream: null,
       selectedUpstreamDetails: null,
     };
   },
-  computed: {
-    selectedUpstreamName() {
-      return this.selectedUpstreamDetails?.name ?? '';
+  apollo: {
+    selectedUpstreamDetails: {
+      query: getMavenUpstreamSummaryQuery,
+      loadingKey: 'isFetchingUpstreamDetails',
+      skip() {
+        return this.selectedUpstream === null;
+      },
+      variables() {
+        return {
+          id: convertToMavenUpstreamGraphQLId(this.selectedUpstream),
+        };
+      },
+      update: (data) => data.virtualRegistriesPackagesMavenUpstream ?? null,
+      error(error) {
+        this.fetchUpstreamDetailsError = true;
+        captureException({ error, component: this.$options.name });
+      },
     },
   },
   methods: {
@@ -63,19 +78,6 @@ export default {
       if (!upstreamId) return;
 
       this.selectedUpstream = upstreamId;
-
-      this.fetchUpstreamDetailsError = false;
-      this.isFetchingUpstreamDetails = true;
-      try {
-        const response = await getMavenUpstream({ id: upstreamId });
-        this.selectedUpstreamDetails = response.data;
-      } catch (error) {
-        this.fetchUpstreamDetailsError = true;
-        this.selectedUpstreamDetails = null;
-        captureException({ error, component: this.$options.name });
-      } finally {
-        this.isFetchingUpstreamDetails = false;
-      }
     },
     getCacheValidityHoursLabel(cacheValidityHours) {
       return sprintf(
@@ -105,7 +107,6 @@ export default {
       class="@md/panel:gl-w-3/10"
     >
       <upstream-selector
-        :selected-upstream-name="selectedUpstreamName"
         :linked-upstreams="linkedUpstreams"
         :upstreams-count="upstreamsCount"
         :initial-upstreams="initialUpstreams"
@@ -140,7 +141,7 @@ export default {
               {{ s__('VirtualRegistry|Artifact caching period') }}
             </span>
             <span>
-              {{ getCacheValidityHoursLabel(selectedUpstreamDetails.cache_validity_hours) }}
+              {{ getCacheValidityHoursLabel(selectedUpstreamDetails.cacheValidityHours) }}
             </span>
           </div>
           <div class="gl-flex gl-flex-col gl-px-5 gl-py-4 @md/panel:gl-flex-row @md/panel:gl-gap-5">
@@ -148,9 +149,7 @@ export default {
               {{ s__('VirtualRegistry|Metadata caching period') }}
             </span>
             <span>
-              {{
-                getCacheValidityHoursLabel(selectedUpstreamDetails.metadata_cache_validity_hours)
-              }}
+              {{ getCacheValidityHoursLabel(selectedUpstreamDetails.metadataCacheValidityHours) }}
             </span>
           </div>
         </div>
@@ -183,10 +182,7 @@ export default {
       <gl-button data-testid="cancel-button" category="secondary" @click="cancel">
         {{ __('Cancel') }}
       </gl-button>
-      <test-maven-upstream-button
-        v-if="selectedUpstreamDetails"
-        :upstream-id="selectedUpstreamDetails.id"
-      />
+      <test-maven-upstream-button v-if="selectedUpstream" :upstream-id="selectedUpstream" />
     </div>
   </gl-form>
 </template>

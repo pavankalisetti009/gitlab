@@ -25,7 +25,7 @@ import {
   mavenVirtualRegistry,
   upstreamsResponse,
   multipleUpstreamsResponse,
-} from '../../../../mock_data';
+} from 'ee_jest/packages_and_registries/virtual_registries/mock_data';
 
 jest.mock('ee/api/virtual_registries_api');
 jest.mock('ee/packages_and_registries/virtual_registries/sentry_utils');

@@ -56,12 +56,6 @@ export function deleteMavenUpstream({ id }) {
   return axios.delete(url);
 }
 
-export function getMavenUpstream({ id }) {
-  const url = buildMavenUpstreamApiUrl(id);
-
-  return axios.get(url);
-}
-
 export function getMavenUpstreamCacheEntries({ id, params = {} }) {
   const url = buildApiUrl(MAVEN_UPSTREAM_CACHE_ENTRIES_PATH).replace(':id', id);
 
