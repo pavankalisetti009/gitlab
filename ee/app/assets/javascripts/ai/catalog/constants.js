@@ -120,7 +120,7 @@ export const DELETE_OPTIONS = [
     value: true,
     text: s__('AICatalog|Hard delete (Recommended)'),
     help: s__(
-      'AICatalog|Permanently deletes the item from the catalog. This action cannot be undone.',
+      'AICatalog|Permanently deletes the item from the catalog. This action cannot be undone. You must be in %{linkStart}Admin Mode%{linkEnd}.',
     ),
   },
   {
