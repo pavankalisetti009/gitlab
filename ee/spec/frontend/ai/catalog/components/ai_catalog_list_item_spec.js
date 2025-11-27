@@ -9,7 +9,7 @@ import {
   VISIBILITY_LEVEL_PUBLIC_STRING,
   VISIBILITY_LEVEL_PRIVATE_STRING,
 } from '~/visibility_level/constants';
-import { mockBaseLatestVersion, mockProjectWithGroup } from '../mock_data';
+import { mockBaseVersion, mockProjectWithGroup } from '../mock_data';
 
 describe('AiCatalogListItem', () => {
   let wrapper;
@@ -25,7 +25,7 @@ describe('AiCatalogListItem', () => {
     public: false,
     updatedAt: '2025-08-19T16:45:00Z',
     project: mockProjectWithGroup,
-    latestVersion: { ...mockBaseLatestVersion, updatedAt: '2025-08-19T16:45:00Z' },
+    latestVersion: { ...mockBaseVersion, updatedAt: '2025-08-19T16:45:00Z' },
     userPermissions: {
       readAiCatalogItem: true,
       adminAiCatalogItem: true,

@@ -21,10 +21,13 @@ const TYPENAME_PROJECT_PERMISSIONS = 'ProjectPermissions';
 const TYPENAME_PROJECTS_CONNECTION = 'ProjectsConnection';
 const TYPENAME_AI_CATALOG_ITEM_REPORT = 'AiCatalogItemReportPayload';
 
-export const mockBaseLatestVersion = {
+const mockVersionFactory = (overrides = {}) => ({
   id: 'gid://gitlab/Ai::Catalog::ItemVersion/1',
   updatedAt: '2025-08-21T14:30:00Z',
-};
+  ...overrides,
+});
+
+export const mockBaseVersion = mockVersionFactory();
 
 const mockProjectFactory = (overrides = {}) => ({
   id: 'gid://gitlab/Project/1',
@@ -137,7 +140,7 @@ export const mockToolsQueryResponse = {
 export const mockAgentVersions = {
   nodes: [
     {
-      id: 'gid://gitlab/Ai::Catalog::ItemVersion/20',
+      ...mockVersionFactory({ id: 'gid://gitlab/Ai::Catalog::ItemVersion/20' }),
       systemPrompt: 'sys',
       tools: { nodes: [], __typename: TYPENAME_AI_CATALOG_AGENT_TOOLS_CONNECTION },
       versionName: '1.0.0',
@@ -164,7 +167,7 @@ const mockAgentFactory = (overrides = {}) => ({
   createdAt: '2024-01-15T10:30:00Z',
   public: true,
   updatedAt: '2024-08-21T14:30:00Z',
-  latestVersion: mockBaseLatestVersion,
+  latestVersion: mockBaseVersion,
   userPermissions: mockUserPermissions,
   __typename: TYPENAME_AI_CATALOG_ITEM,
   foundationalChat: false,
@@ -172,7 +175,7 @@ const mockAgentFactory = (overrides = {}) => ({
 });
 
 export const mockAgentVersion = {
-  ...mockBaseLatestVersion,
+  ...mockBaseVersion,
   humanVersionName: 'v1.0.0-draft',
   versionName: '1.0.0',
   __typename: TYPENAME_AI_CATALOG_AGENT_VERSION,
@@ -185,8 +188,7 @@ export const mockAgentVersion = {
 
 export const mockToolsNodes = aiCatalogBuiltInToolsNodes;
 export const mockAgentPinnedVersion = {
-  ...mockBaseLatestVersion,
-  id: 'gid://gitlab/Ai::Catalog::ItemVersion/55',
+  ...mockVersionFactory({ id: 'gid://gitlab/Ai::Catalog::ItemVersion/2' }),
   humanVersionName: 'v0.9.0',
   versionName: '0.9.0',
   __typename: TYPENAME_AI_CATALOG_AGENT_VERSION,
@@ -386,7 +388,7 @@ export const mockUpdateAiCatalogAgentErrorMutation = {
 /* FLOWS */
 
 export const mockFlowVersion = {
-  ...mockBaseLatestVersion,
+  ...mockBaseVersion,
   humanVersionName: 'v1.0.0-draft',
   versionName: '1.0.0',
   definition: 'version: "v1"',
@@ -402,7 +404,7 @@ const mockFlowFactory = (overrides = {}) => ({
   public: true,
   updatedAt: '2024-08-21T14:30:00Z',
   foundationalChat: false,
-  latestVersion: mockBaseLatestVersion,
+  latestVersion: mockBaseVersion,
   userPermissions: mockUserPermissions,
   __typename: TYPENAME_AI_CATALOG_ITEM,
   ...overrides,
@@ -544,7 +546,7 @@ export const mockCatalogFlowDeleteErrorResponse = {
 /* THIRD-PARTY FLOWS */
 
 export const mockThirdPartyFlowVersion = {
-  ...mockBaseLatestVersion,
+  ...mockBaseVersion,
   humanVersionName: 'v1.0.0-draft',
   versionName: '1.0.0',
   definition: '---\\nimage: node:22\\ncommands:\\n- ls\\ninjectGatewayToken: true\\n',
