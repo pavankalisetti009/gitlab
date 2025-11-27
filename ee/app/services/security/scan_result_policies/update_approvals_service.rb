@@ -32,7 +32,10 @@ module Security
       end
 
       def scan_missing?(approval_rule)
-        target_scans_missing_in_source(approval_rule).any? || target_scans_missing(approval_rule).any?
+        target_scans_missing_in_source(approval_rule).any? || (
+          ::Feature.enabled?(:approval_policies_enforce_target_scans, project) &&
+          target_scans_missing(approval_rule).any?
+        )
       end
 
       private
@@ -95,13 +98,51 @@ module Security
 
         target_scans_diff = target_scans_missing(approval_rule)
         if target_scans_diff.any?
-          handle_scanner_mismatch_error(
-            approval_rule, :target_scan_missing, 'Enforced scanner missing on target branch', target_scans_diff
-          )
-          return true
+          # We log all possible reasons for not finding the target scans to ensure we can roll out the enforcement.
+          # See https://gitlab.com/gitlab-org/gitlab/-/issues/577681#note_2900789165
+          log_missing_target_pipeline_scans(approval_rule, target_scans_diff)
+
+          if ::Feature.enabled?(:approval_policies_enforce_target_scans, project)
+            handle_scanner_mismatch_error(
+              approval_rule, :target_scan_missing, 'Enforced scanner missing on target branch', target_scans_diff
+            )
+            return true
+          end
         end
 
         false
+      end
+
+      def log_missing_target_pipeline_scans(approval_rule, missing_scanners)
+        pipeline = target_pipeline(approval_rule)
+        attributes = {
+          project: merge_request.project,
+          merge_request_id: merge_request.id,
+          merge_request_iid: merge_request.iid,
+          missing_scanners: missing_scanners,
+          target_pipeline_id: pipeline&.id,
+          target_pipeline_status: pipeline&.status,
+          source_pipeline_scans: pipeline_security_scan_types,
+          target_pipeline_scans: target_pipeline_security_scan_types(approval_rule)
+        }
+
+        if pipeline && !pipeline.has_security_reports?
+          # Check if we could find a pipeline with security reports if we used `time_window`.
+          # We try finding a pipeline within the 1 hour window around the considered pipeline.
+          pipeline_within_time_window = find_pipeline_within_time_window(
+            merge_request, pipeline, 60, :scan_finding
+          )
+          attributes.merge!(
+            pipeline_within_time_window_id: pipeline_within_time_window.id,
+            pipeline_within_time_window_status: pipeline_within_time_window.status,
+            pipeline_within_time_window_scans: security_scan_types(pipeline_within_time_window.id)
+          )
+        end
+
+        log_policy_evaluation('approval_policy_missing_target_scan',
+          'Enforced scanner missing on target branch',
+          **attributes
+        )
       end
 
       def handle_scanner_mismatch_error(approval_rule, reason, reason_msg, missing_scans)
@@ -173,8 +214,6 @@ module Security
       end
 
       def target_scans_missing(approval_rule)
-        return [] if ::Feature.disabled?(:approval_policies_enforce_target_scans, project)
-
         scanners = approval_rule.scanners_with_default_fallback
         return scanners unless target_pipeline(approval_rule)
 

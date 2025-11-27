@@ -42,8 +42,6 @@ module Security
       end
 
       def target_pipeline_for_merge_request(merge_request, report_type, approval_rule)
-        target_pipelines = merge_request.target_branch_comparison_pipelines
-
         comparison_pipeline = if report_type == :scan_finding
                                 merge_request.latest_scan_finding_comparison_pipeline
                               else
@@ -52,6 +50,7 @@ module Security
 
         return comparison_pipeline if comparison_pipeline.present?
 
+        target_pipelines = merge_request.target_branch_comparison_pipelines
         time_window = approval_rule.security_report_time_window
         latest_target_branch_pipeline = merge_request.latest_pipeline_for_target_branch
 
@@ -64,8 +63,6 @@ module Security
 
         latest_target_branch_pipeline
       end
-
-      private
 
       def find_pipeline_within_time_window(merge_request, reference_pipeline, time_window, report_type)
         # time_window will be in minutes, so we need to convert it to seconds
@@ -97,6 +94,8 @@ module Security
 
         selected_pipeline || reference_pipeline
       end
+
+      private
 
       def log_pipeline_selection(merge_request, reference_pipeline, selected_pipeline)
         message = if selected_pipeline.present?
