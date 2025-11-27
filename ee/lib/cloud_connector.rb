@@ -35,7 +35,7 @@ module CloudConnector
   # Returns required HTTP header fields when making AI requests through Cloud Connector.
   #
   #  user - User making the request, may be null.
-  #  namespace_ids - Namespaces for which Duo features are available.
+  #  namespace_ids - Root namespace IDs for which Duo features are available.
   #                  This should only be set when the request is made on gitlab.com.
   def ai_headers(user, namespace_ids: [])
     headers(user).merge(
