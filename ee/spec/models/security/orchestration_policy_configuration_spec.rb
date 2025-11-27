@@ -753,6 +753,7 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
     let(:approval_policy) { nil }
     let(:pipeline_execution_policy) { nil }
     let(:pipeline_execution_schedule_policy) { nil }
+    let(:vulnerability_management_policy) { nil }
     let(:experiments) { {} }
 
     let(:policy_yaml) do
@@ -761,6 +762,7 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
         approval_policy: [approval_policy].compact,
         pipeline_execution_policy: [pipeline_execution_policy].compact,
         pipeline_execution_schedule_policy: [pipeline_execution_schedule_policy].compact,
+        vulnerability_management_policy: [vulnerability_management_policy].compact,
         experiments: experiments
       }
     end
@@ -2746,6 +2748,81 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
               "property '/pipeline_execution_schedule_policy/0/schedules' is invalid: error_type=maxItems",
               "property '/pipeline_execution_schedule_policy/0/schedules' is invalid: error_type=uniqueItems")
           end
+        end
+      end
+    end
+
+    describe "vulnerability management policies" do
+      let(:vulnerability_management_policy) { build(:vulnerability_management_policy) }
+
+      it { expect(errors).to be_empty }
+
+      context "with no_longer_detected type" do
+        let(:vulnerability_management_policy) do
+          build(:vulnerability_management_policy,
+            rules: [{
+              type: 'no_longer_detected',
+              scanners: %w[sast],
+              severity_levels: %w[low]
+            }],
+            actions: [{ type: 'auto_resolve' }]
+          )
+        end
+
+        specify { expect(errors).to be_empty }
+      end
+
+      context "with detected type" do
+        let(:vulnerability_management_policy) do
+          build(:vulnerability_management_policy,
+            rules: [{
+              type: 'detected',
+              criteria: [{ type: 'identifier', value: 'CVE-2025-12345' }]
+            }],
+            actions: [{ type: 'auto_dismiss', dismissal_reason: 'used_in_tests' }]
+          )
+        end
+
+        specify { expect(errors).to be_empty }
+      end
+
+      context "with no_longer_detected type and invalid criteria property" do
+        let(:vulnerability_management_policy) do
+          build(:vulnerability_management_policy,
+            rules: [{
+              type: 'no_longer_detected',
+              criteria: [{ type: 'identifier', value: 'CVE-2025-12345' }]
+            }],
+            actions: [{ type: 'auto_resolve' }]
+          )
+        end
+
+        specify do
+          expect(errors).to include(
+            match(%r{property '/vulnerability_management_policy/0/rules/0' is missing required keys: scanners, severity_levels}),
+            match(%r{property '/vulnerability_management_policy/0/rules/0/criteria' is invalid: error_type=schema})
+          )
+        end
+      end
+
+      context "with detected type and invalid scanners and severity_levels properties" do
+        let(:vulnerability_management_policy) do
+          build(:vulnerability_management_policy,
+            rules: [{
+              type: 'detected',
+              scanners: %w[sast],
+              severity_levels: %w[critical]
+            }],
+            actions: [{ type: 'auto_dismiss', dismissal_reason: 'used_in_tests' }]
+          )
+        end
+
+        specify do
+          expect(errors).to include(
+            match(%r{property '/vulnerability_management_policy/0/rules/0' is missing required keys: criteria}),
+            match(%r{property '/vulnerability_management_policy/0/rules/0/scanners' is invalid: error_type=schema}),
+            match(%r{property '/vulnerability_management_policy/0/rules/0/severity_levels' is invalid: error_type=schema})
+          )
         end
       end
     end

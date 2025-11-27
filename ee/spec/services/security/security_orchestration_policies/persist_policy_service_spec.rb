@@ -734,19 +734,18 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
   describe "vulnerability management policies" do
     let(:policy_type) { :vulnerability_management_policy }
 
-    let(:vulnerability_management_policy) do
-      build(:vulnerability_management_policy, :with_policy_scope)
-    end
+    let(:auto_resolve_policy) { build(:vulnerability_management_policy, :auto_resolve, :with_policy_scope) }
+    let(:auto_dismiss_policy) { build(:vulnerability_management_policy, :auto_dismiss, :with_policy_scope) }
 
     let(:policies) do
-      [vulnerability_management_policy]
+      [auto_resolve_policy, auto_dismiss_policy]
     end
 
     context 'without pre-existing policies' do
       it 'creates policies' do
         expect { persist }.to change {
           policy_configuration.security_policies.reload.type_vulnerability_management_policy.count
-        }.by(1)
+        }.by(2)
       end
 
       context 'on exception' do
@@ -769,13 +768,24 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
               {
                 security_orchestration_policy_configuration_id: policy_configuration.id,
                 policy_index: 0,
-                name: vulnerability_management_policy[:name],
+                name: auto_resolve_policy[:name],
                 type: 'vulnerability_management_policy',
-                description: vulnerability_management_policy[:description],
-                checksum: Security::Policy.checksum(vulnerability_management_policy),
+                description: auto_resolve_policy[:description],
+                checksum: Security::Policy.checksum(auto_resolve_policy),
                 enabled: true,
-                scope: vulnerability_management_policy[:policy_scope].deep_stringify_keys,
-                content: vulnerability_management_policy.slice(:actions).deep_stringify_keys
+                scope: auto_resolve_policy[:policy_scope].deep_stringify_keys,
+                content: auto_resolve_policy.slice(:actions).deep_stringify_keys
+              },
+              {
+                security_orchestration_policy_configuration_id: policy_configuration.id,
+                policy_index: 1,
+                name: auto_dismiss_policy[:name],
+                type: 'vulnerability_management_policy',
+                description: auto_dismiss_policy[:description],
+                checksum: Security::Policy.checksum(auto_dismiss_policy),
+                enabled: true,
+                scope: auto_dismiss_policy[:policy_scope].deep_stringify_keys,
+                content: auto_dismiss_policy.slice(:actions).deep_stringify_keys
               }
             ]
           end
