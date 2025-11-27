@@ -37,7 +37,7 @@ module Ai
         strong_memoize_attr def validation_error
           return error_not_project_or_top_level_group unless for_project_or_top_level_group?
           return error_no_permissions unless allowed?
-          return error_parent_item_consumer_not_passed if project_flow_without_parent_item_consumer?
+          return error_parent_item_consumer_not_passed if project_item_without_parent_item_consumer?
           return error_no_pinned_version_prefix if pinned_version_prefix.nil?
 
           error_flow_triggers_must_be_for_project if flow_triggers_not_for_project?
@@ -56,12 +56,14 @@ module Ai
         end
 
         def requires_parent_item_consumer?
-          return false unless ai_catalog_flows_enabled?
+          return false if project.nil?
 
-          (item.flow? || item.third_party_flow?) && project.present?
+          return true if (item.third_party_flow? || item.flow?) && ai_catalog_flows_enabled?
+
+          item.agent? && ai_catalog_agents_enabled?
         end
 
-        def project_flow_without_parent_item_consumer?
+        def project_item_without_parent_item_consumer?
           requires_parent_item_consumer? && parent_item_consumer.nil?
         end
 
@@ -183,6 +185,10 @@ module Ai
 
         def ai_catalog_flows_enabled?
           Feature.enabled?(:ai_catalog_flows, current_user)
+        end
+
+        def ai_catalog_agents_enabled?
+          Feature.enabled?(:ai_catalog_agents, current_user)
         end
 
         def error(message)
