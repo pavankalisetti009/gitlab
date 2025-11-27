@@ -370,5 +370,71 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Rest, feature_category: :sub
       it_behaves_like 'when http call raises an exception'
       it_behaves_like 'a request that sends the GITLAB_QA_USER_AGENT value in the "User-Agent" header'
     end
+
+    describe '#verify_usage_quota' do
+      subject(:verify_usage_quota_request) { client.verify_usage_quota(**method_params) }
+
+      let(:method_params) do
+        {
+          user_id: 1,
+          root_namespace_id: 1,
+          unique_instance_id: '00000000-0000-0000-0000-000000000000'
+        }
+      end
+
+      let(:http_method) { :head }
+      let(:route_path) { 'api/v1/consumers/resolve' }
+      let(:headers) do
+        {
+          'Accept' => 'application/json',
+          'Content-Type' => 'application/json',
+          'User-Agent' => "GitLab/#{Gitlab::VERSION}"
+        }
+      end
+
+      it_behaves_like 'when response is successful'
+      it_behaves_like 'when response code is 422'
+      it_behaves_like 'when response code is 500'
+      it_behaves_like 'when http call raises an exception'
+      it_behaves_like 'a request that sends the GITLAB_QA_USER_AGENT value in the "User-Agent" header'
+
+      context "when checking quota for a namespace" do
+        let(:method_params) { { user_id: 1, root_namespace_id: 1 } }
+
+        it_behaves_like 'when response is successful'
+      end
+
+      context "when checking quota for an instance" do
+        let(:method_params) { { user_id: 1, unique_instance_id: "00000000-0000-0000-0000-000000000000" } }
+
+        it_behaves_like 'when response is successful'
+      end
+
+      context "when user_id param is missing" do
+        let(:method_params) { { root_namespace_id: 1 } }
+
+        it "raises an error" do
+          expect { verify_usage_quota_request }.to raise_error(ArgumentError, "user_id is required")
+        end
+      end
+
+      context "when realm param is missing" do
+        let(:method_params) { { user_id: 1, root_namespace_id: 1, realm: nil } }
+
+        it "raises an error" do
+          expect { verify_usage_quota_request }.to raise_error(ArgumentError, "realm is required")
+        end
+      end
+
+      context "when root_namespace_id param and unique_instance_id are missing" do
+        let(:method_params) { { user_id: 1 } }
+
+        it "raises an error" do
+          expect { verify_usage_quota_request }
+            .to raise_error(ArgumentError,
+              "Either root_namespace_id or unique_instance_id is required")
+        end
+      end
+    end
   end
 end

@@ -65,6 +65,26 @@ module Gitlab
             http_get('api/v1/gitlab/namespaces/trials/trial_types', admin_headers)
           end
 
+          def verify_usage_quota(
+            user_id: nil, root_namespace_id: nil, unique_instance_id: nil,
+            realm: ::CloudConnector.gitlab_realm)
+            raise ArgumentError, "user_id is required" if user_id.blank?
+            raise ArgumentError, "realm is required" if realm.blank?
+
+            if root_namespace_id.blank? && unique_instance_id.blank?
+              raise ArgumentError, "Either root_namespace_id or unique_instance_id is required"
+            end
+
+            query = {
+              user_id: user_id,
+              root_namespace_id: root_namespace_id,
+              unique_instance_id: unique_instance_id,
+              instance_id: unique_instance_id,
+              realm: realm
+            }.compact
+            http_head('api/v1/consumers/resolve', json_headers, query)
+          end
+
           private
 
           def requests_enabled?
@@ -97,6 +117,12 @@ module Gitlab
           def http_post(path, headers, params = {})
             process_http_call do
               Gitlab::HTTP.post("#{base_url}/#{path}", body: params.to_json, headers: headers)
+            end
+          end
+
+          def http_head(path, headers, query = {})
+            process_http_call do
+              Gitlab::HTTP.head("#{base_url}/#{path}", query: query, headers: headers)
             end
           end
 
