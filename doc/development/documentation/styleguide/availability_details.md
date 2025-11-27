@@ -52,7 +52,7 @@ For tier, choose one:
 
 {{< alert type="note" >}}
 
-GitLab Dedicated always includes an Ultimate subscription.
+GitLab Dedicated and GitLab Dedicated for Government always include an Ultimate subscription.
 
 {{< /alert >}}
 
@@ -74,6 +74,7 @@ For offering, use any combination of these entries, in this order, separated by 
 - `GitLab.com`
 - `GitLab Self-Managed`
 - `GitLab Dedicated`
+- `GitLab Dedicated for Government`
 
 For example:
 
@@ -81,6 +82,7 @@ For example:
 - `GitLab.com, GitLab Self-Managed`
 - `GitLab Self-Managed`
 - `GitLab Self-Managed, GitLab Dedicated`
+- `GitLab Dedicated, GitLab Dedicated for Government`
 
 {{< alert type="note" >}}
 
@@ -265,7 +267,7 @@ for the features on the page. For example:
 - If some sections apply to Premium and Ultimate, and others apply to just Ultimate,
   the H1 `Tier:` should be `Premium, Ultimate`.
 - If some sections apply to all instances, and others apply to only `GitLab Self-Managed`,
-  the `Offering:` should be `GitLab.com, GitLab Self-Managed, GitLab Dedicated`.
+  the `Offering:` should be `GitLab.com, GitLab Self-Managed, GitLab Dedicated, GitLab Dedicated for Government`.
 - If some sections are beta, and others are experiment, the H1 `Status:` should be `Beta`.
   If some sections are beta, and others are generally available, then there should
   be no `Status:` for the H1.
