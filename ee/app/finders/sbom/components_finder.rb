@@ -33,7 +33,7 @@ module Sbom
 
     def distinct(on:)
       select_values = Sbom::Component.column_names.map do |column|
-        Sbom::Component.connection.quote_table_name("#{Sbom::Component.table_name}.#{column}")
+        Sbom::Component.adapter_class.quote_table_name("#{Sbom::Component.table_name}.#{column}")
       end
 
       distinct_sql = Arel::Nodes::DistinctOn.new([on]).to_sql
