@@ -4601,6 +4601,9 @@ msgstr ""
 msgid "Add passkey|Follow the instructions on your browser to add a passkey. %{link_start}Learn more about passkeys%{link_end}."
 msgstr ""
 
+msgid "Add passkey|Passkey name"
+msgstr ""
+
 msgid "Add passkey|Passkeys only works with HTTPS-enabled websites. Contact your administrator for more details."
 msgstr ""
 
