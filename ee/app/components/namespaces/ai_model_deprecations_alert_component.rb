@@ -35,6 +35,8 @@ module Namespaces
                              .non_default
                          end
 
+      return [] if deprecated_models.blank?
+
       deprecated_models_by_id = deprecated_models.index_by { |model| model["identifier"] }
       return [] if deprecated_models_by_id.empty?
 
