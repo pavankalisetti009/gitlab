@@ -1,3 +1,4 @@
+import { makeVar } from '@apollo/client/core';
 import { s__ } from '~/locale';
 import { humanize } from '~/lib/utils/text_utility';
 import { AGENT_PLATFORM_STATUS_ICON } from './constants';
@@ -108,3 +109,5 @@ export const getMessageData = (message) => {
       return { icon: 'work-item-maintenance', title: s__('DuoAgentPlatform|Action'), level: 0 };
   }
 };
+
+export const agentSessionStatusVar = makeVar(null);

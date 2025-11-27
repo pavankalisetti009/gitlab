@@ -3,14 +3,18 @@ import { GlButton, GlDisclosureDropdown, GlTooltipDirective } from '@gitlab/ui';
 import SafeHtmlDirective from '~/vue_shared/directives/safe_html';
 import { duoChatGlobalState } from '~/super_sidebar/constants';
 import { __, sprintf } from '~/locale';
+import { AGENTS_PLATFORM_SHOW_ROUTE } from 'ee/ai/duo_agents_platform/router/constants';
+import AgentStatusIcon from 'ee/ai/duo_agents_platform/components/common/agent_status_icon.vue';
 import { copyToClipboard } from '~/lib/utils/copy_to_clipboard';
 import showGlobalToast from '~/vue_shared/plugins/global_toast';
+import { agentSessionStatusVar } from 'ee/ai/duo_agents_platform/utils';
 
 export default {
   name: 'AiContentContainer',
   expose: ['getContentComponent'],
   components: {
     GlButton,
+    AgentStatusIcon,
     GlDisclosureDropdown,
   },
   directives: {
@@ -87,6 +91,7 @@ export default {
     return {
       currentTitle: null,
       duoChatGlobalState,
+      agentSessionStatus: agentSessionStatusVar(),
       sessionId: null,
       isSessionDropdownVisible: false,
     };
@@ -103,6 +108,9 @@ export default {
       // between modes, ensuring state doesn't persist
       const componentName = this.activeTab.component?.name || 'component';
       return `${componentName}-${this.duoChatGlobalState.chatMode}`;
+    },
+    showAgentStatusIcon() {
+      return this.$route.name === AGENTS_PLATFORM_SHOW_ROUTE && Boolean(this.agentSessionStatus);
     },
     sessionText() {
       return sprintf(this.$options.i18n.copySessionIdTooltip, { id: this.sessionId });
@@ -130,6 +138,21 @@ export default {
         }
       },
     },
+  },
+  mounted() {
+    // We need to re-subscribe each time for onNextChange
+    const subscribe = () => {
+      this.unsubscribe = agentSessionStatusVar.onNextChange((newVal) => {
+        this.agentSessionStatus = newVal;
+        subscribe();
+      });
+    };
+    subscribe();
+  },
+  beforeDestroy() {
+    if (this.unsubscribe) {
+      this.unsubscribe();
+    }
   },
   methods: {
     handleGoBack() {
@@ -188,6 +211,12 @@ export default {
           :title="goBackTitle"
           data-testid="content-container-back-button"
           @click="handleGoBack"
+        />
+        <agent-status-icon
+          v-if="showAgentStatusIcon"
+          :status="agentSessionStatus"
+          :human-status="agentSessionStatus"
+          data-testid="agent-status-icon"
         />
         <h3
           class="gl-m-0 gl-truncate gl-text-sm"
