@@ -207,8 +207,6 @@ module EE
       end
 
       condition(:trial_and_identity_verified) do
-        next true unless ::Feature.enabled?(:allow_service_account_creation_on_trial, @subject)
-
         if @subject.root_ancestor.trial_active?
           @user.identity_verified?
         else
@@ -218,8 +216,7 @@ module EE
 
       condition(:service_accounts_available) do
         if @subject.root_ancestor.trial_active?
-          ::Feature.enabled?(:allow_service_account_creation_on_trial, @subject) &&
-            @subject.feature_available?(:service_accounts)
+          @subject.feature_available?(:service_accounts)
         else
           @subject.feature_available_non_trial?(:service_accounts)
         end
