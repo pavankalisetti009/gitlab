@@ -419,6 +419,34 @@ RSpec.describe API::GroupServiceAccounts, :with_current_organization, :aggregate
           end
         end
       end
+
+      context 'when skip_owner_check is maliciously provided by non-owner' do
+        let(:group) { create(:group) }
+        let(:group_id) { group.id }
+        let(:non_owner_user) { create(:user) }
+        let(:malicious_params) do
+          {
+            name: 'John Doe',
+            username: 'test_malicious',
+            email: 'malicious@example.com',
+            skip_owner_check: true,
+            composite_identity_enforced: true
+          }
+        end
+
+        before do
+          stub_licensed_features(service_accounts: true)
+          stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: true)
+          group.add_maintainer(non_owner_user)
+        end
+
+        it 'ignores skip_owner_check and denies service account creation' do
+          post api("/groups/#{group_id}/service_accounts", non_owner_user), params: malicious_params
+
+          expect(response).to have_gitlab_http_status(:forbidden)
+          expect(json_response['message']).to eq('403 Forbidden')
+        end
+      end
     end
 
     context 'when the feature is not licensed' do

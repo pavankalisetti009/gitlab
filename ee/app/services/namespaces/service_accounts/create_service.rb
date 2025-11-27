@@ -68,8 +68,16 @@ module Namespaces
       override :can_create_service_account
       def can_create_service_account?
         return false unless namespace
+        return true if skip_owner_check?
 
         can?(current_user, :create_service_account, namespace)
+      end
+
+      def skip_owner_check?
+        # Allow service account creation for AI catalog items when the user has
+        # :admin_ai_catalog_item_consumer permission. This enables maintainers/developers
+        # to enable foundational flows without requiring group owner privileges.
+        params[:skip_owner_check] == true && params[:composite_identity_enforced] == true
       end
 
       override :ultimate?

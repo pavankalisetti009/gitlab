@@ -101,7 +101,8 @@ module Ai
             avatar: service_account_avatar,
             organization_id: group.organization_id,
             composite_identity_enforced: true,
-            skip_ai_prefix_validation: true
+            skip_ai_prefix_validation: true,
+            skip_owner_check: true
           }
 
           response = ::Namespaces::ServiceAccounts::CreateService.new(
@@ -182,8 +183,6 @@ module Ai
         end
 
         def allowed?
-          return false if group_container? && !Ability.allowed?(current_user, :create_service_account, group)
-
           if item.flow? && !Ability.allowed?(current_user, :create_ai_catalog_flow_item_consumer, container)
             return false
           end

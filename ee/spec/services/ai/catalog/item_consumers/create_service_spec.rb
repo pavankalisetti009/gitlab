@@ -409,7 +409,17 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
         stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: false)
       end
 
-      it_behaves_like 'a failure', 'Item does not exist, or you have insufficient permissions'
+      it 'creates a service account and attaches it to the item consumer' do
+        expect(::Namespaces::ServiceAccounts::CreateService).to receive(:new).and_call_original
+
+        expect { execute }.to change { User.count }.by(1)
+        service_account = User.last
+        expect(service_account).to be_service_account
+        expect(service_account).to have_attributes(
+          username: "ai-item_name-group-name", provisioned_by_group_id: group.id
+        )
+        expect(Ai::Catalog::ItemConsumer.last).to have_attributes(service_account:)
+      end
     end
 
     context 'when the user is not an owner of the group' do
@@ -417,7 +427,17 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
         described_class.new(container: container, current_user: maintainer_user, params: params).execute
       end
 
-      it_behaves_like 'a failure', 'Item does not exist, or you have insufficient permissions'
+      it 'creates a service account and attaches it to the item consumer' do
+        expect(::Namespaces::ServiceAccounts::CreateService).to receive(:new).and_call_original
+
+        expect { execute }.to change { User.count }.by(1)
+        service_account = User.last
+        expect(service_account).to be_service_account
+        expect(service_account).to have_attributes(
+          username: "ai-item_name-group-name", provisioned_by_group_id: group.id
+        )
+        expect(Ai::Catalog::ItemConsumer.last).to have_attributes(service_account:)
+      end
     end
 
     context 'when the service account creation returns an error' do
@@ -482,10 +502,23 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
 
     context 'when the user cannot create a service account' do
       before do
+        allow(Ability).to receive(:allowed?).and_call_original
         allow(Ability).to receive(:allowed?).with(user, :create_service_account, group).and_return(false)
       end
 
-      it_behaves_like 'a failure', 'Item does not exist, or you have insufficient permissions'
+      it 'creates a service account successfully' do
+        expect { execute }.to change { User.count }.by(1)
+        service_account = User.last
+        expect(service_account).to be_service_account
+        expect(service_account).to have_attributes(
+          username: "ai-item_name-group-name", provisioned_by_group_id: group.id
+        )
+      end
+
+      it 'creates the item consumer with the service account' do
+        expect { execute }.to change { Ai::Catalog::ItemConsumer.count }.by(1)
+        expect(Ai::Catalog::ItemConsumer.last).to have_attributes(service_account: User.last)
+      end
     end
 
     context 'when item has no latest_released_version' do
