@@ -20,6 +20,12 @@ module QA
           issue_settings.set_default_issue_template(template)
         end
 
+        Page::Project::Menu.perform(&:go_to_general_settings)
+        Page::Project::Settings::Main.perform(&:expand_default_description_template_for_issues)
+        EE::Page::Project::Settings::IssueTemplateDefault.perform do |issue_settings|
+          expect(issue_settings.default_issue_template_text_project_settings).to eq(template)
+        end
+
         # Clears default description so as not to overwrite default template
         create(:issue, description: nil, project: default_template_project).visit!
 

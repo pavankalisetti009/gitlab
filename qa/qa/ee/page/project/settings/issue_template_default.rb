@@ -17,6 +17,10 @@ module QA
 
               wait_for_requests
             end
+
+            def default_issue_template_text_project_settings
+              find_element('issue-template-field').text
+            end
           end
         end
       end
