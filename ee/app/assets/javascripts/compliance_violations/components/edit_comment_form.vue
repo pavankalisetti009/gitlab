@@ -89,19 +89,31 @@ export default {
       }
 
       const updatedNote = data.updateNote.note;
-      const existingNotes = sourceData.projectComplianceViolation.notes?.nodes || [];
+      const existingDiscussions = sourceData.projectComplianceViolation.discussions?.nodes || [];
 
-      const updatedNotes = existingNotes.map((note) =>
-        note.id === updatedNote.id ? updatedNote : note,
-      );
+      const updatedDiscussions = existingDiscussions.map((discussion) => {
+        const updatedNotes = discussion.notes.nodes.map((note) =>
+          note.id === updatedNote.id ? updatedNote : note,
+        );
+
+        return {
+          ...discussion,
+          notes: {
+            ...discussion.notes,
+            nodes: updatedNotes,
+            __typename: 'NoteConnection',
+          },
+        };
+      });
 
       const updatedData = {
         ...sourceData,
         projectComplianceViolation: {
           ...sourceData.projectComplianceViolation,
-          notes: {
-            ...sourceData.projectComplianceViolation.notes,
-            nodes: updatedNotes,
+          discussions: {
+            ...sourceData.projectComplianceViolation.discussions,
+            nodes: updatedDiscussions,
+            __typename: 'DiscussionConnection',
           },
         },
       };

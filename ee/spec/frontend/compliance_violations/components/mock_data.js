@@ -67,74 +67,92 @@ export const mockComplianceViolation = {
       name: 'John Doe',
     },
   },
-  notes: {
+  discussions: {
     nodes: [
       {
-        id: 'gid://gitlab/Note/1',
-        body: 'Status changed to resolved',
-        bodyHtml: '<p>Status changed to resolved</p>',
-        createdAt: '2025-06-17T10:00:00Z',
-        lastEditedAt: null,
-        lastEditedBy: null,
-        author: {
-          id: 'gid://gitlab/User/1',
-          avatarUrl: 'https://example.com/avatar.png',
-          name: 'Test User',
-          username: 'testuser',
-          webUrl: 'https://example.com/testuser',
-          webPath: '/testuser',
-          __typename: 'UserCore',
+        id: 'gid://gitlab/Discussion/1',
+        notes: {
+          nodes: [
+            {
+              id: 'gid://gitlab/Note/1',
+              body: 'Status changed to resolved',
+              bodyHtml: '<p>Status changed to resolved</p>',
+              createdAt: '2025-06-17T10:00:00Z',
+              lastEditedAt: null,
+              lastEditedBy: null,
+              author: {
+                id: 'gid://gitlab/User/1',
+                avatarUrl: 'https://example.com/avatar.png',
+                name: 'Test User',
+                username: 'testuser',
+                webUrl: 'https://example.com/testuser',
+                webPath: '/testuser',
+                __typename: 'UserCore',
+              },
+              awardEmoji: {
+                nodes: [],
+              },
+              discussion: {
+                id: 'gid://gitlab/Discussion/1',
+                __typename: 'Discussion',
+              },
+              systemNoteIconName: 'status',
+              system: true,
+              internal: false,
+              __typename: 'Note',
+            },
+          ],
+          __typename: 'NoteConnection',
         },
-        awardEmoji: {
-          nodes: [],
-        },
-        discussion: {
-          id: 'gid://gitlab/Discussion/1',
-          __typename: 'Discussion',
-        },
-        systemNoteIconName: 'status',
-        system: true,
-        internal: false,
-        __typename: 'Note',
+        __typename: 'Discussion',
       },
       {
-        id: 'gid://gitlab/Note/2',
-        body: 'Violation reviewed',
-        bodyHtml: '<p>Violation reviewed</p>',
-        createdAt: '2025-06-16T15:30:00Z',
-        lastEditedAt: '2025-06-16T16:00:00Z',
-        lastEditedBy: {
-          id: 'gid://gitlab/User/2',
-          avatarUrl: 'https://example.com/avatar2.png',
-          name: 'Test User 2',
-          username: 'testuser2',
-          webUrl: 'https://example.com/testuser2',
-          webPath: '/testuser2',
-          __typename: 'UserCore',
+        id: 'gid://gitlab/Discussion/2',
+        notes: {
+          nodes: [
+            {
+              id: 'gid://gitlab/Note/2',
+              body: 'Violation reviewed',
+              bodyHtml: '<p>Violation reviewed</p>',
+              createdAt: '2025-06-16T15:30:00Z',
+              lastEditedAt: '2025-06-16T16:00:00Z',
+              lastEditedBy: {
+                id: 'gid://gitlab/User/2',
+                avatarUrl: 'https://example.com/avatar2.png',
+                name: 'Test User 2',
+                username: 'testuser2',
+                webUrl: 'https://example.com/testuser2',
+                webPath: '/testuser2',
+                __typename: 'UserCore',
+              },
+              author: {
+                id: 'gid://gitlab/User/2',
+                avatarUrl: 'https://example.com/avatar2.png',
+                name: 'Test User 2',
+                username: 'testuser2',
+                webUrl: 'https://example.com/testuser2',
+                webPath: '/testuser2',
+                __typename: 'UserCore',
+              },
+              awardEmoji: {
+                nodes: [],
+              },
+              discussion: {
+                id: 'gid://gitlab/Discussion/2',
+                __typename: 'Discussion',
+              },
+              systemNoteIconName: null,
+              system: false,
+              internal: false,
+              __typename: 'Note',
+            },
+          ],
+          __typename: 'NoteConnection',
         },
-        author: {
-          id: 'gid://gitlab/User/2',
-          avatarUrl: 'https://example.com/avatar2.png',
-          name: 'Test User 2',
-          username: 'testuser2',
-          webUrl: 'https://example.com/testuser2',
-          webPath: '/testuser2',
-          __typename: 'UserCore',
-        },
-        awardEmoji: {
-          nodes: [],
-        },
-        discussion: {
-          id: 'gid://gitlab/Discussion/2',
-          __typename: 'Discussion',
-        },
-        systemNoteIconName: null,
-        system: false,
-        internal: false,
-        __typename: 'Note',
+        __typename: 'Discussion',
       },
     ],
-    __typename: 'NoteConnection',
+    __typename: 'DiscussionConnection',
   },
   __typename: 'ComplianceManagement::Projects::ComplianceViolation',
 };
@@ -174,9 +192,9 @@ export const mockDataWithoutNotes = {
   data: {
     projectComplianceViolation: {
       ...mockComplianceViolation,
-      notes: {
+      discussions: {
         nodes: [],
-        __typename: 'NoteConnection',
+        __typename: 'DiscussionConnection',
       },
     },
   },
@@ -186,7 +204,7 @@ export const mockDataWithNullNotes = {
   data: {
     projectComplianceViolation: {
       ...mockComplianceViolation,
-      notes: null,
+      discussions: null,
     },
   },
 };
@@ -195,66 +213,84 @@ export const mockDataWithOnlyNonSystemNotes = {
   data: {
     projectComplianceViolation: {
       ...mockComplianceViolation,
-      notes: {
+      discussions: {
         nodes: [
           {
-            id: 'gid://gitlab/Note/3',
-            body: 'Regular comment',
-            bodyHtml: '<p>Regular comment</p>',
-            createdAt: '2025-06-16T12:00:00Z',
-            lastEditedAt: null,
-            lastEditedBy: null,
-            author: {
-              id: 'gid://gitlab/User/3',
-              avatarUrl: 'https://example.com/avatar3.png',
-              name: 'Test User 3',
-              username: 'testuser3',
-              webUrl: 'https://example.com/testuser3',
-              webPath: '/testuser3',
-              __typename: 'UserCore',
+            id: 'gid://gitlab/Discussion/3',
+            notes: {
+              nodes: [
+                {
+                  id: 'gid://gitlab/Note/3',
+                  body: 'Regular comment',
+                  bodyHtml: '<p>Regular comment</p>',
+                  createdAt: '2025-06-16T12:00:00Z',
+                  lastEditedAt: null,
+                  lastEditedBy: null,
+                  author: {
+                    id: 'gid://gitlab/User/3',
+                    avatarUrl: 'https://example.com/avatar3.png',
+                    name: 'Test User 3',
+                    username: 'testuser3',
+                    webUrl: 'https://example.com/testuser3',
+                    webPath: '/testuser3',
+                    __typename: 'UserCore',
+                  },
+                  awardEmoji: {
+                    nodes: [],
+                  },
+                  discussion: {
+                    id: 'gid://gitlab/Discussion/3',
+                    __typename: 'Discussion',
+                  },
+                  systemNoteIconName: null,
+                  system: false,
+                  internal: false,
+                  __typename: 'Note',
+                },
+              ],
+              __typename: 'NoteConnection',
             },
-            awardEmoji: {
-              nodes: [],
-            },
-            discussion: {
-              id: 'gid://gitlab/Discussion/3',
-              __typename: 'Discussion',
-            },
-            systemNoteIconName: null,
-            system: false,
-            internal: false,
-            __typename: 'Note',
+            __typename: 'Discussion',
           },
           {
-            id: 'gid://gitlab/Note/4',
-            body: 'Another regular comment',
-            bodyHtml: '<p>Another regular comment</p>',
-            createdAt: '2025-06-16T13:00:00Z',
-            lastEditedAt: null,
-            lastEditedBy: null,
-            author: {
-              id: 'gid://gitlab/User/4',
-              avatarUrl: 'https://example.com/avatar4.png',
-              name: 'Test User 4',
-              username: 'testuser4',
-              webUrl: 'https://example.com/testuser4',
-              webPath: '/testuser4',
-              __typename: 'UserCore',
+            id: 'gid://gitlab/Discussion/4',
+            notes: {
+              nodes: [
+                {
+                  id: 'gid://gitlab/Note/4',
+                  body: 'Another regular comment',
+                  bodyHtml: '<p>Another regular comment</p>',
+                  createdAt: '2025-06-16T13:00:00Z',
+                  lastEditedAt: null,
+                  lastEditedBy: null,
+                  author: {
+                    id: 'gid://gitlab/User/4',
+                    avatarUrl: 'https://example.com/avatar4.png',
+                    name: 'Test User 4',
+                    username: 'testuser4',
+                    webUrl: 'https://example.com/testuser4',
+                    webPath: '/testuser4',
+                    __typename: 'UserCore',
+                  },
+                  awardEmoji: {
+                    nodes: [],
+                  },
+                  discussion: {
+                    id: 'gid://gitlab/Discussion/4',
+                    __typename: 'Discussion',
+                  },
+                  systemNoteIconName: null,
+                  system: false,
+                  internal: false,
+                  __typename: 'Note',
+                },
+              ],
+              __typename: 'NoteConnection',
             },
-            awardEmoji: {
-              nodes: [],
-            },
-            discussion: {
-              id: 'gid://gitlab/Discussion/4',
-              __typename: 'Discussion',
-            },
-            systemNoteIconName: null,
-            system: false,
-            internal: false,
-            __typename: 'Note',
+            __typename: 'Discussion',
           },
         ],
-        __typename: 'NoteConnection',
+        __typename: 'DiscussionConnection',
       },
     },
   },

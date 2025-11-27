@@ -32,6 +32,10 @@ describe('CreateCommentForm', () => {
       name: 'Test User',
       username: 'testuser',
     },
+    discussion: {
+      id: 'gid://gitlab/Discussion/789',
+      __typename: 'Discussion',
+    },
   };
 
   const mockCreateNoteSuccess = {
@@ -55,7 +59,7 @@ describe('CreateCommentForm', () => {
   const mockComplianceViolationData = {
     projectComplianceViolation: {
       id: 'gid://gitlab/ComplianceViolation/123',
-      notes: {
+      discussions: {
         nodes: [],
       },
     },

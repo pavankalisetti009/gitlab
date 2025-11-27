@@ -81,15 +81,23 @@ export default {
       }
 
       const newNote = data.createNote.note;
-      const existingNotes = sourceData.projectComplianceViolation.notes?.nodes || [];
+      const existingDiscussions = sourceData.projectComplianceViolation.discussions?.nodes || [];
+
+      const newDiscussion = {
+        ...newNote.discussion,
+        notes: {
+          __typename: 'NoteConnection',
+          nodes: [newNote],
+        },
+      };
 
       const updatedData = {
         ...sourceData,
         projectComplianceViolation: {
           ...sourceData.projectComplianceViolation,
-          notes: {
-            ...sourceData.projectComplianceViolation.notes,
-            nodes: [...existingNotes, newNote],
+          discussions: {
+            ...sourceData.projectComplianceViolation.discussions,
+            nodes: [...existingDiscussions, newDiscussion],
           },
         },
       };

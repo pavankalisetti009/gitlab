@@ -185,32 +185,42 @@ export default {
       }
 
       const { toggledOn, awardEmoji } = data.awardEmojiToggle;
-      const existingNotes = sourceData.projectComplianceViolation.notes?.nodes || [];
+      const existingDiscussions = sourceData.projectComplianceViolation.discussions?.nodes || [];
 
-      const updatedNotes = existingNotes.map((note) => {
-        if (note.id !== this.note.id) {
-          return note;
-        }
+      const updatedDiscussions = existingDiscussions.map((discussion) => {
+        const updatedNotes = discussion.notes.nodes.map((note) => {
+          if (note.id !== this.note.id) {
+            return note;
+          }
 
-        const currentAwardEmojis = note.awardEmoji?.nodes || [];
-        let updatedAwardEmojis;
+          const currentAwardEmojis = note.awardEmoji?.nodes || [];
+          let updatedAwardEmojis;
 
-        if (toggledOn && awardEmoji) {
-          const exists = currentAwardEmojis.some(
-            (emoji) => emoji.name === awardEmoji.name && emoji.user.id === awardEmoji.user.id,
-          );
-          updatedAwardEmojis = exists ? currentAwardEmojis : [...currentAwardEmojis, awardEmoji];
-        } else {
-          updatedAwardEmojis = currentAwardEmojis.filter(
-            (emoji) => !(emoji.name === awardName && emoji.user.id === this.currentUserId),
-          );
-        }
+          if (toggledOn && awardEmoji) {
+            const exists = currentAwardEmojis.some(
+              (emoji) => emoji.name === awardEmoji.name && emoji.user.id === awardEmoji.user.id,
+            );
+            updatedAwardEmojis = exists ? currentAwardEmojis : [...currentAwardEmojis, awardEmoji];
+          } else {
+            updatedAwardEmojis = currentAwardEmojis.filter(
+              (emoji) => !(emoji.name === awardName && emoji.user.id === this.currentUserId),
+            );
+          }
+
+          return {
+            ...note,
+            awardEmoji: {
+              ...note.awardEmoji,
+              nodes: updatedAwardEmojis,
+            },
+          };
+        });
 
         return {
-          ...note,
-          awardEmoji: {
-            ...note.awardEmoji,
-            nodes: updatedAwardEmojis,
+          ...discussion,
+          notes: {
+            ...discussion.notes,
+            nodes: updatedNotes,
           },
         };
       });
@@ -219,9 +229,9 @@ export default {
         ...sourceData,
         projectComplianceViolation: {
           ...sourceData.projectComplianceViolation,
-          notes: {
-            ...sourceData.projectComplianceViolation.notes,
-            nodes: updatedNotes,
+          discussions: {
+            ...sourceData.projectComplianceViolation.discussions,
+            nodes: updatedDiscussions,
           },
         },
       };

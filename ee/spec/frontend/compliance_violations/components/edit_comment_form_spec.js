@@ -57,17 +57,31 @@ describe('EditCommentForm', () => {
   const mockComplianceViolationData = {
     projectComplianceViolation: {
       id: 'gid://gitlab/ComplianceViolation/123',
-      notes: {
+      discussions: {
         nodes: [
           {
-            id: 'gid://gitlab/Note/456',
-            body: 'Original comment',
-            bodyHtml: '<p>Original comment</p>',
+            id: 'gid://gitlab/Discussion/1',
+            notes: {
+              nodes: [
+                {
+                  id: 'gid://gitlab/Note/456',
+                  body: 'Original comment',
+                  bodyHtml: '<p>Original comment</p>',
+                },
+              ],
+            },
           },
           {
-            id: 'gid://gitlab/Note/789',
-            body: 'Another comment',
-            bodyHtml: '<p>Another comment</p>',
+            id: 'gid://gitlab/Discussion/2',
+            notes: {
+              nodes: [
+                {
+                  id: 'gid://gitlab/Note/789',
+                  body: 'Another comment',
+                  bodyHtml: '<p>Another comment</p>',
+                },
+              ],
+            },
           },
         ],
       },
@@ -233,7 +247,7 @@ describe('EditCommentForm', () => {
       const cacheDataWithoutNotes = {
         projectComplianceViolation: {
           id: 'gid://gitlab/ComplianceViolation/123',
-          notes: null,
+          discussions: null,
         },
       };
 
