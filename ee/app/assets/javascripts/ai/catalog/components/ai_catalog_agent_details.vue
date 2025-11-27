@@ -21,16 +21,17 @@ export default {
       type: Object,
       required: true,
     },
+    versionData: {
+      type: Object,
+      required: true,
+    },
   },
   computed: {
     projectName() {
       return this.item.project?.nameWithNamespace;
     },
-    systemPrompt() {
-      return this.item.latestVersion?.systemPrompt;
-    },
-    tools() {
-      return this.item.latestVersion?.tools?.nodes
+    toolTitles() {
+      return this.versionData.tools
         .map((t) => t.title)
         .sort()
         .join(', ');
@@ -60,7 +61,10 @@ export default {
         />
       </form-section>
       <form-section :title="s__('AICatalog|Prompts')">
-        <ai-catalog-item-field v-if="systemPrompt" :title="s__('AICatalog|System prompt')">
+        <ai-catalog-item-field
+          v-if="versionData.systemPrompt"
+          :title="s__('AICatalog|System prompt')"
+        >
           <div class="gl-border gl-mb-3 gl-mt-2 gl-rounded-default gl-bg-default gl-p-3">
             <pre class="gl-m-0 gl-whitespace-pre-wrap"><gl-truncate-text
               :lines="20"
@@ -68,12 +72,12 @@ export default {
               :show-less-text="__('Show less')"
               :toggle-button-props="$options.truncateTextToggleButtonProps"
               class="gl-flex gl-flex-col gl-items-start gl-gap-3"
-            >{{ systemPrompt }}</gl-truncate-text></pre>
+            >{{ versionData.systemPrompt }}</gl-truncate-text></pre>
           </div>
         </ai-catalog-item-field>
       </form-section>
-      <form-section v-if="tools" :title="s__('AICatalog|Available tools')">
-        <ai-catalog-item-field :title="s__('AICatalog|Tools')" :value="tools" />
+      <form-section v-if="toolTitles" :title="s__('AICatalog|Available tools')">
+        <ai-catalog-item-field :title="s__('AICatalog|Tools')" :value="toolTitles" />
       </form-section>
     </dl>
   </div>

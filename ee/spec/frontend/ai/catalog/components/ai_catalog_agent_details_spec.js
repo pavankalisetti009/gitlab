@@ -1,29 +1,27 @@
 import { shallowMount } from '@vue/test-utils';
 import { GlBadge, GlLink, GlTruncateText } from '@gitlab/ui';
+import waitForPromises from 'helpers/wait_for_promises';
 import AiCatalogAgentDetails from 'ee/ai/catalog/components/ai_catalog_agent_details.vue';
 import AiCatalogItemField from 'ee/ai/catalog/components/ai_catalog_item_field.vue';
 import AiCatalogItemVisibilityField from 'ee/ai/catalog/components/ai_catalog_item_visibility_field.vue';
 import FormSection from 'ee/ai/catalog/components/form_section.vue';
-import { mockAgent, mockAgentVersion, mockToolsTitles } from '../mock_data';
+import { mockAgent, mockToolsNodes, mockAgentVersion } from '../mock_data';
 
 describe('AiCatalogAgentDetails', () => {
   let wrapper;
 
   const defaultProps = {
-    item: {
-      ...mockAgent,
-      latestVersion: {
-        ...mockAgentVersion,
-        tools: {
-          nodes: mockToolsTitles.map((t) => ({ title: t })),
-        },
-      },
+    item: mockAgent,
+    versionData: {
+      systemPrompt: mockAgentVersion.systemPrompt,
+      tools: mockToolsNodes,
     },
   };
 
-  const createComponent = ({ props = defaultProps } = {}) => {
+  const createComponent = ({ props } = {}) => {
     wrapper = shallowMount(AiCatalogAgentDetails, {
       propsData: {
+        ...defaultProps,
         ...props,
       },
       stubs: {
@@ -129,6 +127,34 @@ describe('AiCatalogAgentDetails', () => {
     expect(toolsDetails.at(0).props()).toMatchObject({
       title: 'Tools',
       value: 'Ci Linter, Gitlab Blob Search, Run Git Command',
+    });
+  });
+
+  describe('agent versions', () => {
+    it('renders system prompt and tools given versionData prop values', async () => {
+      const mockSystemPrompt = 'a brand new system prompt';
+      const mockTools = [
+        { id: 1, title: 'Newest tool' },
+        { id: 2, title: 'Older tool' },
+      ];
+      createComponent({
+        props: {
+          item: mockAgent,
+          versionData: {
+            systemPrompt: mockSystemPrompt,
+            tools: mockTools,
+          },
+        },
+      });
+      await waitForPromises();
+
+      const promptsDetails = findAllFieldsForSection(2);
+      expect(promptsDetails.at(0).find('pre').text()).toBe(mockSystemPrompt);
+      const toolsDetails = findAllFieldsForSection(3);
+      expect(toolsDetails.at(0).props()).toMatchObject({
+        title: 'Tools',
+        value: 'Newest tool, Older tool',
+      });
     });
   });
 });

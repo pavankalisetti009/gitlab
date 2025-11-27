@@ -17,6 +17,10 @@ export default {
       type: Object,
       required: true,
     },
+    versionData: {
+      type: Object,
+      required: true,
+    },
   },
   data() {
     return {
@@ -30,9 +34,9 @@ export default {
         projectId: this.aiCatalogAgent.project?.id,
         name: this.aiCatalogAgent.name,
         description: this.aiCatalogAgent.description,
-        systemPrompt: this.aiCatalogAgent.latestVersion?.systemPrompt,
+        systemPrompt: this.versionData.systemPrompt,
+        tools: this.versionData.tools?.map((t) => t.id),
         public: this.aiCatalogAgent.public,
-        tools: this.aiCatalogAgent.latestVersion?.tools?.nodes.map((t) => t.id) || [],
       };
     },
   },

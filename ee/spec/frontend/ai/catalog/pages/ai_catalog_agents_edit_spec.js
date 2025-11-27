@@ -12,8 +12,10 @@ import updateAiCatalogAgent from 'ee/ai/catalog/graphql/mutations/update_ai_cata
 import { AI_CATALOG_AGENTS_SHOW_ROUTE } from 'ee/ai/catalog/router/constants';
 import {
   mockAgent,
+  mockAgentConfigurationForProject,
   mockUpdateAiCatalogAgentSuccessMutation,
   mockUpdateAiCatalogAgentErrorMutation,
+  mockAgentVersionDataProp,
 } from '../mock_data';
 
 Vue.use(VueApollo);
@@ -23,11 +25,6 @@ describe('AiCatalogAgentsEdit', () => {
   let wrapper;
   let mockApollo;
 
-  const defaultProps = {
-    aiCatalogAgent: mockAgent,
-  };
-  const agentId = 1;
-  const routeParams = { id: agentId };
   const mockToast = {
     show: jest.fn(),
   };
@@ -35,17 +32,25 @@ describe('AiCatalogAgentsEdit', () => {
     push: jest.fn(),
   };
 
+  const agentId = 1;
+  const routeParams = { id: agentId };
+  const defaultProps = {
+    aiCatalogAgent: mockAgent,
+    versionData: mockAgentVersionDataProp,
+  };
+
   const mockUpdateAiCatalogAgentHandler = jest
     .fn()
     .mockResolvedValue(mockUpdateAiCatalogAgentSuccessMutation);
 
-  const createComponent = () => {
+  const createComponent = (props) => {
     mockApollo = createMockApollo([[updateAiCatalogAgent, mockUpdateAiCatalogAgentHandler]]);
 
     wrapper = shallowMount(AiCatalogAgentsEdit, {
       apolloProvider: mockApollo,
       propsData: {
         ...defaultProps,
+        ...props,
       },
       mocks: {
         $route: {
@@ -63,8 +68,32 @@ describe('AiCatalogAgentsEdit', () => {
     createComponent();
   });
 
-  it('render edit form', () => {
-    expect(findForm().exists()).toBe(true);
+  describe('Initial Rendering', () => {
+    it('render edit form', () => {
+      expect(findForm().exists()).toBe(true);
+    });
+
+    it('renders correct version data as initial values', async () => {
+      const expectedInitialValues = {
+        name: mockAgent.name,
+        description: mockAgent.description,
+        projectId: 'gid://gitlab/Project/1',
+        // we expect the versionData prop values to replace the ones in the aiCatalogAgent prop
+        systemPrompt: mockAgentVersionDataProp.systemPrompt, // uses mock pinned version data
+        tools: mockAgentVersionDataProp.tools.map((t) => t.id),
+        public: true,
+      };
+
+      createComponent({
+        aiCatalogAgent: {
+          ...mockAgent,
+          configurationForProject: mockAgentConfigurationForProject, // uses mock pinned version data
+        },
+      });
+      await waitForPromises();
+
+      expect(findForm().props('initialValues')).toEqual(expectedInitialValues);
+    });
   });
 
   describe('Form Submit', () => {
