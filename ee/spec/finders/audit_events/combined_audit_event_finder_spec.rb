@@ -442,7 +442,6 @@ RSpec.describe AuditEvents::CombinedAuditEventFinder, feature_category: :audit_e
             expect(page1[:records].first.group_id).to eq(another_group.id)
             expect(page1[:cursor_for_next_page]).to be_nil
 
-            # another_group_event2 is outside the date range
             expect(page1[:records]).not_to include(another_group_event2)
           end
         end
@@ -487,13 +486,11 @@ RSpec.describe AuditEvents::CombinedAuditEventFinder, feature_category: :audit_e
           expect(result).to have_key(:records)
           expect(result).to have_key(:page)
           expect(result).to have_key(:per_page)
-          expect(result).to have_key(:total_count)
-          expect(result).to have_key(:total_pages)
+          expect(result).not_to have_key(:total_count)
+          expect(result).not_to have_key(:total_pages)
           expect(result[:records]).to be_an(Array)
           expect(result[:page]).to eq(1)
           expect(result[:per_page]).to eq(20)
-          expect(result[:total_count]).to eq(6)
-          expect(result[:total_pages]).to eq(1)
         end
       end
 
@@ -526,8 +523,6 @@ RSpec.describe AuditEvents::CombinedAuditEventFinder, feature_category: :audit_e
           page1 = described_class.new(params: params).execute
           expect(page1[:records]).to eq([all_events[0]])
           expect(page1[:page]).to eq(1)
-          expect(page1[:total_count]).to eq(6)
-          expect(page1[:total_pages]).to eq(6)
 
           page2 = described_class.new(params: params.merge(page: 2)).execute
           expect(page2[:records]).to eq([all_events[1]])
@@ -549,11 +544,9 @@ RSpec.describe AuditEvents::CombinedAuditEventFinder, feature_category: :audit_e
           expect(page6[:records]).to eq([all_events[5]])
           expect(page6[:page]).to eq(6)
 
-          # Beyond last page
           page7 = described_class.new(params: params.merge(page: 7)).execute
           expect(page7[:records]).to be_empty
           expect(page7[:page]).to eq(7)
-          expect(page7[:total_pages]).to eq(6)
         end
       end
 
@@ -564,7 +557,6 @@ RSpec.describe AuditEvents::CombinedAuditEventFinder, feature_category: :audit_e
           it 'returns events in descending order by ID' do
             result = execute
 
-            # Should be sorted by ID DESC
             expected_order = [
               project_event2,
               group_event2,
@@ -584,7 +576,6 @@ RSpec.describe AuditEvents::CombinedAuditEventFinder, feature_category: :audit_e
           it 'returns events in ascending order by ID' do
             result = execute
 
-            # Should be sorted by ID ASC
             expected_order = [
               project_event2,
               group_event2,
@@ -609,7 +600,6 @@ RSpec.describe AuditEvents::CombinedAuditEventFinder, feature_category: :audit_e
             expected_order = [group_event2, group_event1].sort_by(&:id).reverse
             expect(result[:records]).to eq(expected_order)
             expect(result[:records]).to all(be_a(AuditEvents::GroupAuditEvent))
-            expect(result[:total_count]).to eq(2)
           end
 
           context 'with pagination' do
@@ -620,8 +610,6 @@ RSpec.describe AuditEvents::CombinedAuditEventFinder, feature_category: :audit_e
 
               page1 = execute
               expect(page1[:records]).to eq([expected_order[0]])
-              expect(page1[:total_count]).to eq(2)
-              expect(page1[:total_pages]).to eq(2)
 
               page2 = described_class.new(params: params.merge(page: 2)).execute
               expect(page2[:records]).to eq([expected_order[1]])
@@ -716,8 +704,6 @@ RSpec.describe AuditEvents::CombinedAuditEventFinder, feature_category: :audit_e
                 result = execute
 
                 expect(result[:records]).to be_empty
-                expect(result[:total_count]).to eq(0)
-                expect(result[:total_pages]).to eq(0)
               end
             end
           end
@@ -786,7 +772,6 @@ RSpec.describe AuditEvents::CombinedAuditEventFinder, feature_category: :audit_e
 
               expect(result[:records]).to eq([user_event_with_username])
               expect(result[:records]).to all(have_attributes(user_id: user_with_username.id))
-              expect(result[:total_count]).to eq(1)
             end
           end
         end
@@ -824,7 +809,6 @@ RSpec.describe AuditEvents::CombinedAuditEventFinder, feature_category: :audit_e
             page1 = execute
             expect(page1[:records]).to eq([expected_order[0]])
             expect(page1[:records].first.group_id).to eq(group.id)
-            expect(page1[:total_count]).to eq(2)
 
             page2 = described_class.new(params: params.merge(page: 2)).execute
             expect(page2[:records]).to eq([expected_order[1]])
@@ -853,7 +837,6 @@ RSpec.describe AuditEvents::CombinedAuditEventFinder, feature_category: :audit_e
             page1 = execute
             expect(page1[:records]).to eq([expected_order[0]])
             expect(page1[:records].first.project_id).to eq(project.id)
-            expect(page1[:total_count]).to eq(2)
 
             page2 = described_class.new(params: params.merge(page: 2)).execute
             expect(page2[:records]).to eq([expected_order[1]])
@@ -883,7 +866,6 @@ RSpec.describe AuditEvents::CombinedAuditEventFinder, feature_category: :audit_e
               project_id: project.id,
               author_id: author.id
             )
-            expect(result[:total_count]).to eq(1)
 
             expect(result[:records]).not_to include(project_event1)
           end
@@ -904,8 +886,6 @@ RSpec.describe AuditEvents::CombinedAuditEventFinder, feature_category: :audit_e
             result = execute
 
             expect(result[:records]).to be_empty
-            expect(result[:total_count]).to eq(0)
-            expect(result[:total_pages]).to eq(0)
           end
         end
 
@@ -926,10 +906,7 @@ RSpec.describe AuditEvents::CombinedAuditEventFinder, feature_category: :audit_e
             page1 = execute
             expect(page1[:records]).to eq([another_group_event1])
             expect(page1[:records].first.group_id).to eq(another_group.id)
-            expect(page1[:total_count]).to eq(1)
-            expect(page1[:total_pages]).to eq(1)
 
-            # another_group_event2 is outside the date range
             expect(page1[:records]).not_to include(another_group_event2)
           end
         end
@@ -945,8 +922,6 @@ RSpec.describe AuditEvents::CombinedAuditEventFinder, feature_category: :audit_e
           }).execute
 
           expect(result[:records]).to be_empty
-          expect(result[:total_count]).to eq(0)
-          expect(result[:total_pages]).to eq(0)
         end
       end
 
@@ -976,8 +951,6 @@ RSpec.describe AuditEvents::CombinedAuditEventFinder, feature_category: :audit_e
             result = execute
             expect(result[:records]).to be_empty
             expect(result[:page]).to eq(100)
-            expect(result[:total_count]).to eq(6)
-            expect(result[:total_pages]).to eq(1)
           end
         end
       end
@@ -990,8 +963,8 @@ RSpec.describe AuditEvents::CombinedAuditEventFinder, feature_category: :audit_e
         result = execute
 
         expect(result).to have_key(:page)
-        expect(result).to have_key(:total_count)
-        expect(result).to have_key(:total_pages)
+        expect(result).not_to have_key(:total_count)
+        expect(result).not_to have_key(:total_pages)
         expect(result).not_to have_key(:cursor_for_next_page)
       end
     end
