@@ -64,9 +64,8 @@ module API
           else
             current_page = result[:page]
             per_page = result[:per_page]
-            total_pages = result[:total_pages]
 
-            next_page = current_page < total_pages ? current_page + 1 : nil
+            next_page = result[:records].size == per_page ? current_page + 1 : nil
             prev_page = current_page > 1 ? current_page - 1 : nil
 
             Gitlab::Pagination::OffsetHeaderBuilder.new(
@@ -74,10 +73,8 @@ module API
               per_page: per_page,
               page: current_page,
               next_page: next_page,
-              prev_page: prev_page,
-              total: result[:total_count],
-              total_pages: total_pages
-            ).execute(data_without_counts: result[:total_count].nil?)
+              prev_page: prev_page
+            ).execute(data_without_counts: true)
           end
 
           present result[:records], with: EE::API::Entities::AuditEvent

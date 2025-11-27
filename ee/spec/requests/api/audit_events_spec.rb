@@ -291,8 +291,8 @@ RSpec.describe API::AuditEvents, :aggregate_failures, feature_category: :audit_e
 
                   expect(response.headers['X-Page']).to eq('1')
                   expect(response.headers['X-Per-Page']).to be_present
-                  expect(response.headers).to have_key('X-Total')
-                  expect(response.headers).to have_key('X-Total-Pages')
+                  expect(response.headers).not_to have_key('X-Total')
+                  expect(response.headers).not_to have_key('X-Total-Pages')
                 end
               end
 
@@ -310,7 +310,7 @@ RSpec.describe API::AuditEvents, :aggregate_failures, feature_category: :audit_e
                     expect(link_header).to include('rel="next"')
                     expect(link_header).to include('rel="first"')
                     expect(link_header).not_to include('rel="prev"')
-                    expect(link_header).to include('rel="last"')
+                    expect(link_header).not_to include('rel="last"')
                   end
                 end
 
@@ -327,6 +327,7 @@ RSpec.describe API::AuditEvents, :aggregate_failures, feature_category: :audit_e
                     expect(link_header).to include('rel="next"')
                     expect(link_header).to include('rel="prev"')
                     expect(link_header).to include('rel="first"')
+                    expect(link_header).not_to include('rel="last"')
                   end
                 end
 
@@ -336,13 +337,14 @@ RSpec.describe API::AuditEvents, :aggregate_failures, feature_category: :audit_e
 
                     expect(response.headers['X-Page']).to eq('3')
                     expect(response.headers['X-Per-Page']).to eq('2')
-                    expect(response.headers['X-Next-Page']).to eq("")
+                    expect(response.headers['X-Next-Page']).to eq('4')
                     expect(response.headers['X-Prev-Page']).to eq('2')
 
                     link_header = response.headers['Link']
-                    expect(link_header).not_to include('rel="next"')
+                    expect(link_header).to include('rel="next"')
                     expect(link_header).to include('rel="prev"')
                     expect(link_header).to include('rel="first"')
+                    expect(link_header).not_to include('rel="last"')
                   end
                 end
 
@@ -358,16 +360,15 @@ RSpec.describe API::AuditEvents, :aggregate_failures, feature_category: :audit_e
                   end
                 end
 
-                context 'when total count is requested' do
-                  it 'includes total count headers' do
+                context 'without total count' do
+                  it 'does not include total count headers' do
                     get api(url, admin, admin_mode: true), params: { pagination: 'offset', page: 1, per_page: 2 }
 
-                    expect(response.headers['X-Total']).to eq('6')
-                    expect(response.headers['X-Total-Pages']).to eq('3')
+                    expect(response.headers).not_to have_key('X-Total')
+                    expect(response.headers).not_to have_key('X-Total-Pages')
 
                     link_header = response.headers['Link']
-                    expect(link_header).to include('rel="last"')
-                    expect(link_header).to include('page=3')
+                    expect(link_header).not_to include('rel="last"')
                   end
                 end
               end
@@ -436,7 +437,7 @@ RSpec.describe API::AuditEvents, :aggregate_failures, feature_category: :audit_e
                     }
 
                     expect(json_response.pluck('id')).to eq([group_events[1].id])
-                    expect(response.headers['X-Next-Page']).to eq("")
+                    expect(response.headers['X-Next-Page']).to eq('3')
                     expect(response.headers['X-Prev-Page']).to eq('1')
                   end
                 end

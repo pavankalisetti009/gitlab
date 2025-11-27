@@ -43,7 +43,7 @@ module AuditEvents
   #     }
   #   )
   #   result = finder.execute
-  #   # => { records: [...], page: 20, per_page: 100, total_count: 1234 }
+  #   # => { records: [...], page: 20, per_page: 100 }
   class CombinedAuditEventFinder < BaseAuditEventFinder
     include FromUnion
 
@@ -116,8 +116,6 @@ module AuditEvents
       scopes = build_model_scopes
       scopes = filter_scopes_by_entity_type(scopes) if params[:entity_type].present?
 
-      total_count = calculate_total_count(scopes)
-
       page_num = [page.to_i, 1].max
       page_size = [per_page.to_i, 1].max
       offset = (page_num - 1) * page_size
@@ -128,16 +126,12 @@ module AuditEvents
 
       union_results = execute_offset_union_query(offset_scopes, offset, page_size)
 
-      preloaded_records = preload_records_offset(union_results)
-
-      total_pages = total_count > 0 ? (total_count.to_f / page_size).ceil : 0
+      preloaded_records = preload_records_offset(union_results, page_size)
 
       {
         records: preloaded_records,
         page: page_num,
-        per_page: page_size,
-        total_count: total_count,
-        total_pages: total_pages
+        per_page: page_size
       }
     end
 
@@ -269,11 +263,14 @@ module AuditEvents
     end
 
     # Preload records for offset pagination
-    def preload_records_offset(union_results)
+    def preload_records_offset(union_results, limit)
       return [] if union_results.empty?
 
-      grouped_records = union_results.group_by(&:ar_class)
-      sorted_index = create_sorted_index(union_results)
+      # Only take the requested number of records
+      records_to_load = union_results.first(limit)
+
+      grouped_records = records_to_load.group_by(&:ar_class)
+      sorted_index = create_sorted_index(records_to_load)
       preloaded_records = load_grouped_records_by_id(grouped_records)
 
       preloaded_records.sort_by { |record| sorted_index[record.id] || Float::INFINITY }
@@ -353,14 +350,6 @@ module AuditEvents
 
     def valid_entity_id?
       params[:entity_id].to_i.nonzero?
-    end
-
-    def calculate_total_count(scopes)
-      return 0 if scopes.empty?
-
-      total = scopes.sum(&:count)
-
-      total.to_i
     end
   end
 end
