@@ -123,8 +123,8 @@ RSpec.describe 'SaaS registration from an invite', :with_current_organization, :
   end
 
   def expect_to_be_on_profile_account_page
-    expect(page).to have_current_path(profile_account_path(two_factor_auth_enabled_successfully: true))
-    expect(page).to have_content('You have set up 2FA for your account!')
+    expect(page).to have_current_path(profile_two_factor_auth_path(two_factor_auth_enabled_successfully: true))
+    expect(page).to have_content(_('2FA setup complete!'))
   end
 
   def fill_in_welcome_form(minimal: true)
