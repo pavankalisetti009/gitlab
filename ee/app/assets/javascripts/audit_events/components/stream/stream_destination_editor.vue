@@ -283,7 +283,6 @@ export default {
     <stream-delete-modal
       v-if="isUpdatingExistingItem"
       ref="deleteModal"
-      :type="item.category"
       :item="item"
       @deleting="onDeleting"
       @delete="onDelete"
