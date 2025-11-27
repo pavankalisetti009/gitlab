@@ -1,7 +1,7 @@
 <script>
-import { GlPagination, GlTable } from '@gitlab/ui';
+import { GlKeysetPagination, GlTable } from '@gitlab/ui';
 import EmptyResult from '~/vue_shared/components/empty_result.vue';
-import { getParameterValues, setUrlParams } from '~/lib/utils/url_utility';
+import { getParameterValues, setUrlParams, visitUrl } from '~/lib/utils/url_utility';
 import { s__ } from '~/locale';
 import UserDate from '~/vue_shared/components/user_date.vue';
 import { LONG_DATE_FORMAT_WITH_TZ } from '~/vue_shared/constants';
@@ -13,7 +13,7 @@ export default {
   components: {
     HtmlTableCell,
     GlTable,
-    GlPagination,
+    GlKeysetPagination,
     EmptyResult,
     UrlTableCell,
     UserDate,
@@ -30,25 +30,26 @@ export default {
       default: false,
     },
   },
-  data() {
-    return {
-      page: parseInt(getParameterValues('page')[0], 10) || 1,
-    };
-  },
   computed: {
     displayTable() {
       return this.events.length > 0;
     },
-    prevPage() {
-      return this.page > 1 ? this.page - 1 : null;
+    hasPreviousPage() {
+      return this.getCurrentPage() > 1;
     },
-    nextPage() {
-      return !this.isLastPage ? this.page + 1 : null;
+    hasNextPage() {
+      return !this.isLastPage;
     },
   },
   methods: {
-    generateLink(page) {
-      return setUrlParams({ page });
+    getCurrentPage() {
+      return parseInt(getParameterValues('page')[0], 10) || 1;
+    },
+    onPrev() {
+      visitUrl(setUrlParams({ page: this.getCurrentPage() - 1 }));
+    },
+    onNext() {
+      visitUrl(setUrlParams({ page: this.getCurrentPage() + 1 }));
     },
   },
   fields: [
@@ -106,13 +107,12 @@ export default {
         <user-date :date="value" :date-format="$options.dateTimeFormat" />
       </template>
     </gl-table>
-    <gl-pagination
-      v-model="page"
-      :prev-page="prevPage"
-      :next-page="nextPage"
-      :link-gen="generateLink"
-      align="center"
-      class="gl-w-full"
+    <gl-keyset-pagination
+      class="gl-my-6 gl-flex gl-justify-center"
+      :has-previous-page="hasPreviousPage"
+      :has-next-page="hasNextPage"
+      @prev="onPrev"
+      @next="onNext"
     />
   </div>
   <empty-result v-else type="filter" />

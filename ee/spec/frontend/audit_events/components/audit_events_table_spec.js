@@ -1,11 +1,17 @@
-import { GlPagination, GlTable } from '@gitlab/ui';
+import { GlKeysetPagination, GlTable } from '@gitlab/ui';
 import { mount } from '@vue/test-utils';
 
 import { nextTick } from 'vue';
 import EmptyResult from '~/vue_shared/components/empty_result.vue';
 import AuditEventsTable from 'ee/audit_events/components/audit_events_table.vue';
 import setWindowLocation from 'helpers/set_window_location_helper';
+import { visitUrl } from '~/lib/utils/url_utility';
 import createEvents from '../mock_data';
+
+jest.mock('~/lib/utils/url_utility', () => ({
+  ...jest.requireActual('~/lib/utils/url_utility'),
+  visitUrl: jest.fn(),
+}));
 
 const EVENTS = createEvents();
 
@@ -48,51 +54,60 @@ describe('AuditEventsTable component', () => {
 
   describe('Pagination behaviour', () => {
     it('should show', () => {
-      expect(wrapper.findComponent(GlPagination).exists()).toBe(true);
+      expect(wrapper.findComponent(GlKeysetPagination).exists()).toBe(true);
     });
 
     it('should hide if there is no data', async () => {
       wrapper.setProps({ events: [] });
       await nextTick();
-      expect(wrapper.findComponent(GlPagination).exists()).toBe(false);
+      expect(wrapper.findComponent(GlKeysetPagination).exists()).toBe(false);
     });
 
-    it('should get the page number from the URL', () => {
-      setWindowLocation('?page=2');
-      wrapper = createComponent();
-
-      expect(wrapper.findComponent(GlPagination).props().value).toBe(2);
-    });
-
-    it('should not have a prevPage if the page is 1', () => {
+    it('should not have a previous page if the page is 1', () => {
       setWindowLocation('?page=1');
       wrapper = createComponent();
 
-      expect(wrapper.findComponent(GlPagination).props().prevPage).toBe(null);
+      expect(wrapper.findComponent(GlKeysetPagination).props().hasPreviousPage).toBe(false);
     });
 
-    it('should set the prevPage to 1 if the page is 2', () => {
+    it('should have a previous page if the page is 2', () => {
       setWindowLocation('?page=2');
       wrapper = createComponent();
 
-      expect(wrapper.findComponent(GlPagination).props().prevPage).toBe(1);
+      expect(wrapper.findComponent(GlKeysetPagination).props().hasPreviousPage).toBe(true);
     });
 
-    it('should not have a nextPage if isLastPage is true', async () => {
+    it('should not have a next page if isLastPage is true', async () => {
       wrapper.setProps({ isLastPage: true });
       await nextTick();
-      expect(wrapper.findComponent(GlPagination).props().nextPage).toBe(null);
+      expect(wrapper.findComponent(GlKeysetPagination).props().hasNextPage).toBe(false);
     });
 
-    it('should set the nextPage to 2 if the page is 1', () => {
+    it('should have a next page if the page is 1', () => {
       setWindowLocation('?page=1');
       wrapper = createComponent();
 
-      expect(wrapper.findComponent(GlPagination).props().nextPage).toBe(2);
+      expect(wrapper.findComponent(GlKeysetPagination).props().hasNextPage).toBe(true);
     });
 
-    it('should set the nextPage to 2 if the page is not set', () => {
-      expect(wrapper.findComponent(GlPagination).props().nextPage).toBe(2);
+    describe('navigation', () => {
+      it('should call visitUrl with correct page when prev is emitted', () => {
+        setWindowLocation('?page=2');
+        wrapper = createComponent();
+
+        wrapper.findComponent(GlKeysetPagination).vm.$emit('prev');
+
+        expect(visitUrl).toHaveBeenCalledWith('https://localhost/?page=1');
+      });
+
+      it('should call visitUrl with correct page when next is emitted', () => {
+        setWindowLocation('?page=1');
+        wrapper = createComponent();
+
+        wrapper.findComponent(GlKeysetPagination).vm.$emit('next');
+
+        expect(visitUrl).toHaveBeenCalledWith('https://localhost/?page=2');
+      });
     });
   });
 });
