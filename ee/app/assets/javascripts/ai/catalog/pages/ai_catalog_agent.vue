@@ -57,6 +57,30 @@ export default {
     isAgentNotFound() {
       return this.aiCatalogAgent && Object.keys(this.aiCatalogAgent).length === 0;
     },
+    isProject() {
+      return Boolean(this.projectId);
+    },
+    isGroup() {
+      return !this.isProject && !this.isGlobal;
+    },
+    hasNoConsumer() {
+      return this.isProject && !this.aiCatalogAgent?.configurationForProject;
+    },
+    shouldShowLatestVersion() {
+      return this.isGlobal || this.isGroup || this.hasNoConsumer;
+    },
+    versionData() {
+      let version;
+      if (this.shouldShowLatestVersion) {
+        version = this.aiCatalogAgent.latestVersion;
+      } else {
+        version = this.aiCatalogAgent.configurationForProject?.pinnedItemVersion;
+      }
+      return {
+        systemPrompt: version.systemPrompt,
+        tools: version.tools?.nodes || [],
+      };
+    },
   },
   emptySearchSvg,
 };
@@ -74,6 +98,6 @@ export default {
       :svg-path="$options.emptySearchSvg"
     />
 
-    <router-view v-else :ai-catalog-agent="aiCatalogAgent" />
+    <router-view v-else :ai-catalog-agent="aiCatalogAgent" :version-data="versionData" />
   </div>
 </template>

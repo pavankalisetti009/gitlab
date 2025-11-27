@@ -3,14 +3,18 @@ import AiCatalogItemView from 'ee/ai/catalog/components/ai_catalog_item_view.vue
 import AiCatalogItemMetadata from 'ee/ai/catalog/components/ai_catalog_item_metadata.vue';
 import AiCatalogAgentDetails from 'ee/ai/catalog/components/ai_catalog_agent_details.vue';
 import AiCatalogFlowDetails from 'ee/ai/catalog/components/ai_catalog_flow_details.vue';
-import { mockAgent, mockFlow, mockThirdPartyFlow } from '../mock_data';
+import { mockAgent, mockAgentVersionDataProp, mockFlow, mockThirdPartyFlow } from '../mock_data';
 
 describe('AiCatalogItemView', () => {
   let wrapper;
+  const defaultProps = {
+    versionData: mockAgentVersionDataProp,
+  };
 
-  const createComponent = ({ props = {} } = {}) => {
+  const createComponent = ({ props } = {}) => {
     wrapper = shallowMount(AiCatalogItemView, {
       propsData: {
+        ...defaultProps,
         ...props,
       },
     });

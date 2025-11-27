@@ -183,6 +183,20 @@ export const mockAgentVersion = {
   },
 };
 
+export const mockToolsNodes = aiCatalogBuiltInToolsNodes;
+export const mockAgentPinnedVersion = {
+  ...mockBaseLatestVersion,
+  id: 'gid://gitlab/Ai::Catalog::ItemVersion/55',
+  humanVersionName: 'v0.9.0',
+  versionName: '0.9.0',
+  __typename: TYPENAME_AI_CATALOG_AGENT_VERSION,
+  systemPrompt: 'The system prompt pinned',
+  tools: {
+    nodes: aiCatalogBuiltInToolsNodes,
+    __typename: TYPENAME_AI_CATALOG_AGENT_TOOLS_CONNECTION,
+  },
+};
+
 export const mockBaseAgent = mockAgentFactory();
 
 export const mockAgent = mockAgentFactory({
@@ -275,9 +289,9 @@ export const mockCatalogEmptyItemsResponse = {
 };
 
 export const mockAgentConfigurationForProject = {
-  id: 'gid://gitlab/Ai::Catalog::ItemConsumer/1',
+  id: 'gid://gitlab/Ai::Catalog::ItemConsumer/3',
   enabled: true,
-  pinnedItemVersion: mockAgentVersion,
+  pinnedItemVersion: mockAgentPinnedVersion,
   __typename: TYPENAME_AI_CATALOG_ITEM_CONSUMER,
 };
 
@@ -288,6 +302,11 @@ export const mockAiCatalogAgentResponse = {
       configurationForProject: mockAgentConfigurationForProject,
     },
   },
+};
+
+export const mockAgentVersionDataProp = {
+  systemPrompt: mockAgentPinnedVersion.systemPrompt,
+  tools: mockAgentPinnedVersion.tools.nodes,
 };
 
 export const mockAiCatalogAgentNullResponse = {

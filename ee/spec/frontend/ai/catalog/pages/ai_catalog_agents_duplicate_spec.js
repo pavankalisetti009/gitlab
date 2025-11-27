@@ -12,6 +12,8 @@ import {
   mockAgent,
   mockCreateAiCatalogAgentSuccessMutation,
   mockCreateAiCatalogAgentErrorMutation,
+  mockAgentConfigurationForProject,
+  mockAgentVersionDataProp,
 } from '../mock_data';
 
 Vue.use(VueApollo);
@@ -27,19 +29,22 @@ describe('AiCatalogAgentsDuplicate', () => {
   const mockRouter = {
     push: jest.fn(),
   };
+
   const agentId = 1;
   const routeParams = { id: agentId };
+  const defaultProps = {
+    aiCatalogAgent: mockAgent,
+    versionData: mockAgentVersionDataProp,
+  };
 
-  const createComponent = () => {
+  const createComponent = (props = defaultProps) => {
     createAiCatalogAgentMock = jest.fn().mockResolvedValue(mockCreateAiCatalogAgentSuccessMutation);
 
     const apolloProvider = createMockApollo([[createAiCatalogAgent, createAiCatalogAgentMock]]);
 
     wrapper = shallowMountExtended(AiCatalogAgentsDuplicate, {
       apolloProvider,
-      propsData: {
-        aiCatalogAgent: mockAgent,
-      },
+      propsData: props,
       mocks: {
         $route: {
           params: routeParams,
@@ -57,18 +62,41 @@ describe('AiCatalogAgentsDuplicate', () => {
   });
 
   describe('Form Initial Values', () => {
-    beforeEach(async () => {
-      await waitForPromises();
-    });
-
-    it('sets initial values based on the original agent, but always private and without a project', () => {
+    it('sets initial values based on the pinned version agent, but always private and without a project', async () => {
       const expectedInitialValues = {
         name: `Copy of ${mockAgent.name}`,
         description: mockAgent.description,
-        systemPrompt: mockAgent.latestVersion.systemPrompt,
-        tools: mockAgent.latestVersion.tools.nodes.map((t) => t.id),
+        systemPrompt: mockAgentVersionDataProp.systemPrompt,
+        tools: mockAgentVersionDataProp.tools.map((t) => t.id),
         public: false,
       };
+
+      createComponent({
+        ...defaultProps,
+        aiCatalogAgent: { ...mockAgent, configurationForProject: mockAgentConfigurationForProject },
+      });
+      await waitForPromises();
+
+      expect(findForm().props('initialValues')).toEqual(expectedInitialValues);
+    });
+
+    it('set initial values based on the latest version of the original agent if showLatestVersion prop is set', async () => {
+      const expectedInitialValues = {
+        name: `Copy of ${mockAgent.name}`,
+        description: mockAgent.description,
+        systemPrompt: mockAgentVersionDataProp.systemPrompt,
+        tools: mockAgentVersionDataProp.tools.map((t) => t.id),
+        public: false,
+      };
+
+      createComponent({
+        versionData: mockAgentVersionDataProp,
+        aiCatalogAgent: {
+          ...mockAgent,
+          configurationForProject: mockAgentConfigurationForProject,
+        },
+      });
+      await waitForPromises();
 
       expect(findForm().props('initialValues')).toEqual(expectedInitialValues);
     });

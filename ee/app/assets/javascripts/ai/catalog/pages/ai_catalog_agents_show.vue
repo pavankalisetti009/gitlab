@@ -50,6 +50,10 @@ export default {
       type: Object,
       required: true,
     },
+    versionData: {
+      type: Object,
+      required: true,
+    },
   },
   data() {
     return {
@@ -250,6 +254,6 @@ export default {
         />
       </template>
     </page-heading>
-    <ai-catalog-item-view :item="aiCatalogAgent" />
+    <ai-catalog-item-view :item="aiCatalogAgent" :version-data="versionData" />
   </div>
 </template>

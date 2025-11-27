@@ -33,17 +33,7 @@ query aiCatalogAgent(
       pinnedItemVersion {
         id
         updatedAt
-        ...BaseAiCatalogItemVersion
-        ... on AiCatalogAgentVersion {
-          systemPrompt
-          tools {
-            nodes {
-              id
-              name
-              title
-            }
-          }
-        }
+        ...BaseAiCatalogAgentVersion
       }
     }
   }
