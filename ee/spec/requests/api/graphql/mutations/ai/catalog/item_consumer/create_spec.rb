@@ -153,15 +153,26 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Create, feature_category: :
   end
 
   context 'when the item is an agent' do
-    let_it_be(:item) { create(:ai_catalog_agent, public: true, project: item_project) }
+    let_it_be(:item) { create(:ai_catalog_agent, public: true, project: consumer_project) }
+    let_it_be(:consumer_group_item_consumer) do
+      create(:ai_catalog_item_consumer, item: item, group: consumer_group, pinned_version_prefix: '3.2.1')
+    end
 
     let_it_be(:item_latest_released_version) do
       create(:ai_catalog_agent_version, :released, item: item, version: '3.2.1')
     end
 
-    let(:params) { super().except(:parent_item_consumer_id) }
-
     it_behaves_like 'a successful request', pinned_version_prefix: '3.2.1'
+
+    context 'when ai_catalog_agents feature flag is disabled' do
+      before do
+        stub_feature_flags(ai_catalog_agents: false)
+      end
+
+      let(:params) { super().except(:parent_item_consumer_id) }
+
+      it_behaves_like 'a successful request', pinned_version_prefix: '3.2.1'
+    end
   end
 
   context 'when global_ai_catalog feature flag is disabled' do

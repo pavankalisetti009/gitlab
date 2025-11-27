@@ -162,34 +162,56 @@ RSpec.describe Ai::Catalog::Agents::CreateService, feature_category: :workflow_c
         expect(response.payload[:item]).to be_a(Ai::Catalog::Item)
       end
     end
-  end
 
-  context 'when add_to_project_when_created is false' do
-    it 'does not create item consumer' do
-      expect { response }.not_to change { ::Ai::Catalog::ItemConsumer.count }
-    end
-  end
+    context 'when add_to_project_when_created is false' do
+      before do
+        stub_feature_flags(ai_catalog_agents: false)
+      end
 
-  context 'when add_to_project_when_created is true' do
-    let(:params) { super().merge(add_to_project_when_created: true) }
+      it 'does not create item consumer' do
+        expect { response }.not_to change { ::Ai::Catalog::ItemConsumer.count }
 
-    it 'adds the created item to project' do
-      expect(response).to be_success
-
-      item = response.payload[:item]
-      item_consumer = ::Ai::Catalog::ItemConsumer.for_item(item.id).first
-      expect(item_consumer.project).to eq(project)
-      expect(item_consumer.pinned_version_prefix).to eq(Ai::Catalog::BaseService::DEFAULT_VERSION)
+        expect(response).to be_success
+      end
     end
 
-    context 'and ItemConsumer fails to be created' do
-      it 'returns a success with errors from item consumer creation' do
-        allow_next_instance_of(::Ai::Catalog::ItemConsumers::CreateService) do |instance|
-          expect(instance).to receive(:execute).and_return(ServiceResponse.error(message: 'Failure!'))
+    context 'when add_to_project_when_created is true' do
+      let(:params) { super().merge(add_to_project_when_created: true) }
+
+      it 'creates an agent but does not add it to the project' do
+        expect(response).to be_success
+
+        item = response.payload[:item]
+        expect(item).to be_kind_of(Ai::Catalog::Item)
+
+        item_consumer = ::Ai::Catalog::ItemConsumer.for_item(item.id).first
+        expect(item_consumer).to be_nil
+      end
+
+      context 'when ai_catalog_agents is disabled' do
+        before do
+          stub_feature_flags(ai_catalog_agents: false)
         end
 
-        expect(response.payload[:item]).to be_kind_of(Ai::Catalog::Item)
-        expect(response.errors).to eq(['Failure!'])
+        it 'adds the created item to project' do
+          expect(response).to be_success
+
+          item = response.payload[:item]
+          item_consumer = ::Ai::Catalog::ItemConsumer.for_item(item.id).first
+          expect(item_consumer.project).to eq(project)
+          expect(item_consumer.pinned_version_prefix).to eq(Ai::Catalog::BaseService::DEFAULT_VERSION)
+        end
+
+        context 'and ItemConsumer fails to be created' do
+          it 'returns a success with errors from item consumer creation' do
+            allow_next_instance_of(::Ai::Catalog::ItemConsumers::CreateService) do |instance|
+              expect(instance).to receive(:execute).and_return(ServiceResponse.error(message: 'Failure!'))
+            end
+
+            expect(response.payload[:item]).to be_kind_of(Ai::Catalog::Item)
+            expect(response.errors).to eq(['Failure!'])
+          end
+        end
       end
     end
   end

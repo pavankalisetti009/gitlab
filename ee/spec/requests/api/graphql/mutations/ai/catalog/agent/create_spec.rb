@@ -201,28 +201,43 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Create, feature_category: :workflo
   context 'when add_to_project_when_created is true' do
     let(:params) { super().merge(add_to_project_when_created: true) }
 
-    context 'and item is successfully added to the project' do
-      it 'adds the created item to project' do
-        execute
+    it 'creates an agent but does not add it to the project' do
+      execute
 
-        item = Ai::Catalog::Item.last
+      item = Ai::Catalog::Item.last
 
-        item_consumer = ::Ai::Catalog::ItemConsumer.for_item(item.id).first
-        expect(item_consumer.project).to eq(project)
-      end
+      item_consumer = ::Ai::Catalog::ItemConsumer.for_item(item.id).first
+      expect(item_consumer).to be_nil
     end
 
-    context 'and item is created but not successfully added to the project' do
-      it 'returns the item with a message' do
-        allow_next_instance_of(::Ai::Catalog::ItemConsumers::CreateService) do |instance|
-          expect(instance).to receive(:execute).and_return(ServiceResponse.error(message: 'Failure!'))
+    context 'when ai_catalog_agents is disabled' do
+      before do
+        stub_feature_flags(ai_catalog_agents: false)
+      end
+
+      context 'and item is successfully added to the project' do
+        it 'adds the created item to project' do
+          expect { execute }.to change { ::Ai::Catalog::ItemConsumer.count }
+
+          item = Ai::Catalog::Item.last
+
+          item_consumer = ::Ai::Catalog::ItemConsumer.for_item(item.id).first
+          expect(item_consumer.project).to eq(project)
         end
+      end
 
-        execute
+      context 'and item is created but not successfully added to the project' do
+        it 'returns the item with a message' do
+          allow_next_instance_of(::Ai::Catalog::ItemConsumers::CreateService) do |instance|
+            expect(instance).to receive(:execute).and_return(ServiceResponse.error(message: 'Failure!'))
+          end
 
-        item = Ai::Catalog::Item.last
-        expect(graphql_data_at(:ai_catalog_agent_create, :item)).to match(a_graphql_entity_for(item))
-        expect(graphql_data_at(:ai_catalog_agent_create, :errors)).to contain_exactly("Failure!")
+          execute
+
+          item = Ai::Catalog::Item.last
+          expect(graphql_data_at(:ai_catalog_agent_create, :item)).to match(a_graphql_entity_for(item))
+          expect(graphql_data_at(:ai_catalog_agent_create, :errors)).to contain_exactly("Failure!")
+        end
       end
     end
   end
