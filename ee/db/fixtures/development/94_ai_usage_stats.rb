@@ -14,11 +14,7 @@ require './spec/support/sidekiq_middleware'
 
 # rubocop:disable Rails/Output -- this is a seed script
 class Gitlab::Seeder::AiUsageStats # rubocop:disable Style/ClassAndModuleChildren -- this is a seed script
-  CODE_PUSH_SAMPLE = 10
-  CS_EVENT_COUNT_SAMPLE = 5
-  CHAT_EVENT_COUNT_SAMPLE = 2
-  TROUBLESHOOT_EVENT_COUNT_SAMPLE = 2
-  CODE_REVIEW_EVENT_COUNT_SAMPLE = 10
+  DEFAULT_EVENT_COUNT_SAMPLE = 15
   TIME_PERIOD_DAYS = 90
 
   attr_reader :project
@@ -39,6 +35,7 @@ class Gitlab::Seeder::AiUsageStats # rubocop:disable Style/ClassAndModuleChildre
     Sidekiq::Testing.inline! do
       ::UsageEvents::DumpWriteBufferCronWorker.new.perform
       ::Analytics::AiAnalytics::EventsCountAggregationWorker.new.perform
+      ::Analytics::DumpAiUserMetricsWriteBufferCronWorker.new.perform
     end
   end
 
@@ -47,10 +44,15 @@ class Gitlab::Seeder::AiUsageStats # rubocop:disable Style/ClassAndModuleChildre
   end
 
   def seed!
-    create_code_suggestions_data
-    create_chat_data
-    create_troubleshoot_job_data
-    create_code_review_data
+    if project.users.empty?
+      puts "WARNING: Project '#{project.full_path}' has no users. Skipping AI usage event seeding."
+      return
+    end
+
+    # Dynamically create events for all registered features
+    Gitlab::Tracking::AiTracking.registered_features.each do |feature_name|
+      create_events_for_feature(feature_name)
+    end
   end
 
   private
@@ -59,103 +61,102 @@ class Gitlab::Seeder::AiUsageStats # rubocop:disable Style/ClassAndModuleChildre
     Ai::UsageEvent.new(attributes).tap(&:store_to_pg).tap(&:store_to_clickhouse)
   end
 
-  def create_code_suggestions_data
-    project.users.count.times do
-      user = project.users.sample
+  def create_events_for_feature(feature_name)
+    events = Gitlab::Tracking::AiTracking.registered_events(feature_name).keys
 
-      CODE_PUSH_SAMPLE.times do
-        Event.create!(
-          project: project,
-          author: user,
-          action: :pushed,
-          created_at: rand(TIME_PERIOD_DAYS).days.ago
-        )
-      end
+    if project.users.empty?
+      puts "WARNING: Project '#{project.full_path}' has no users. Skipping AI usage event seeding."
+      return
+    end
 
-      extras = {
-        unique_tracking_id: 'FOO',
-        branch_name: 'main',
-        ide_vendor: 'IDEVendor',
-        ide_version: '8.1.1',
-        extension_name: 'gitlab-editor-extension',
-        extension_version: '2.1.1',
-        language_server_version: '3.2.2'
-      }
-
-      CS_EVENT_COUNT_SAMPLE.times do
-        extras[:suggestion_size] = rand(100)
-        extras[:language] = %w[ruby js go].sample
-        extras[:ide_name] = %w[VSCode Vim Idea].sample
-
-        save_event(
-          user: user,
-          event: 'code_suggestion_shown_in_ide',
-          timestamp: rand(TIME_PERIOD_DAYS).days.ago,
-          namespace: project.project_namespace,
-          extras: extras)
-
-        next unless rand(100) < 35 # 35% acceptance rate
-
-        save_event(
-          user: user,
-          event: 'code_suggestion_accepted_in_ide',
-          timestamp: rand(TIME_PERIOD_DAYS).days.ago + 2.seconds,
-          namespace: project.project_namespace,
-          extras: extras)
+    project.users.sample(5).each do |user|
+      events.each do |event_name|
+        rand(1..DEFAULT_EVENT_COUNT_SAMPLE).times do
+          extras = generate_extras_for_event(event_name)
+          timestamp = rand(TIME_PERIOD_DAYS).days.ago
+          save_event(
+            user: user,
+            event: event_name,
+            timestamp: timestamp,
+            namespace: project.project_namespace,
+            extras: extras
+          )
+          Ai::UserMetrics.refresh_last_activity_on(user, last_duo_activity_on: timestamp)
+        end
       end
     end
   end
 
-  def create_chat_data
-    project.users.count.times do
-      user = project.users.sample
-
-      CHAT_EVENT_COUNT_SAMPLE.times do
-        save_event(user: user, event: 'request_duo_chat_response', timestamp: rand(TIME_PERIOD_DAYS).days.ago)
-      end
+  def generate_extras_for_event(event_name)
+    case event_name.to_s
+    when /code_suggestion/
+      generate_code_suggestion_extras
+    when 'troubleshoot_job'
+      generate_troubleshoot_job_extras
+    when /agent_platform/
+      generate_agent_platform_extras
+    when /mcp/
+      generate_mcp_extras
+    else
+      {}
     end
   end
 
-  def create_troubleshoot_job_data
-    return unless project.builds.count > 0
-
-    builds = project.builds
-
-    project.users.count.times do
-      user = project.users.sample
-
-      TROUBLESHOOT_EVENT_COUNT_SAMPLE.times do
-        job = builds.sample
-        save_event(
-          user: user,
-          event: 'troubleshoot_job',
-          namespace: project.project_namespace,
-          extras: {
-            job_id: job.id,
-            project_id: job.project_id,
-            pipeline_id: job.pipeline&.id,
-            merge_request_id: job.pipeline&.merge_request_id
-          },
-          timestamp: rand(TIME_PERIOD_DAYS).days.ago)
-      end
-    end
+  def generate_code_suggestion_extras
+    {
+      unique_tracking_id: SecureRandom.uuid,
+      suggestion_size: rand(1..500),
+      language: %w[ruby javascript python go java typescript].sample,
+      branch_name: %w[main master develop feature/ai-improvements].sample,
+      ide_name: %w[VSCode Vim Idea Neovim].sample,
+      ide_vendor: %w[Microsoft JetBrains Neovim].sample,
+      ide_version: "#{rand(1..10)}.#{rand(0..9)}.#{rand(0..9)}",
+      extension_name: 'gitlab-editor-extension',
+      extension_version: "#{rand(1..5)}.#{rand(0..9)}.#{rand(0..9)}",
+      language_server_version: "#{rand(1..5)}.#{rand(0..9)}.#{rand(0..9)}",
+      model_name: %w[claude-3-5-sonnet anthropic.claude-3-5-sonnet].sample,
+      model_engine: %w[anthropic vertex-ai].sample
+    }
   end
 
-  def create_code_review_data
-    code_review_events = Gitlab::Tracking::AiTracking.registered_events(:code_review).keys
+  def generate_troubleshoot_job_extras
+    if project.builds.count == 0
+      puts "WARNING: Project '#{project.full_path}' has no builds. Skipping troubleshoot_job extras generation."
 
-    project.users.count.times do
-      user = project.users.sample
-
-      CODE_REVIEW_EVENT_COUNT_SAMPLE.times do
-        save_event(
-          user: user,
-          event: code_review_events.sample,
-          timestamp: rand(TIME_PERIOD_DAYS).days.ago,
-          namespace: project.project_namespace
-        )
-      end
+      return {}
     end
+
+    job = project.builds.sample
+    {
+      job_id: job.id,
+      project_id: job.project_id,
+      pipeline_id: job.pipeline&.id,
+      merge_request_id: job.pipeline&.merge_request_id
+    }
+  end
+
+  def generate_agent_platform_extras
+    {
+      project_id: project.id,
+      session_id: SecureRandom.uuid,
+      flow_type: %w[duo_chat code_review troubleshoot].sample,
+      environment: %w[production development staging].sample
+    }
+  end
+
+  def generate_mcp_extras
+    has_tool_call_success = [true, false].sample.tap do |success|
+      break { failure_reason: nil, error_status: nil } if success
+
+      { failure_reason: %w[timeout permission_denied not_found].sample,
+        error_status: [404, 500, 403].sample }
+    end
+
+    {
+      session_id: SecureRandom.uuid,
+      tool_name: %w[get_file search_code list_files execute_command].sample,
+      has_tool_call_success: has_tool_call_success
+    }
   end
 end
 
@@ -180,7 +181,7 @@ Gitlab::Seeder.quiet do
     Gitlab::Utils.to_boolean(ENV["SEED_AI_USAGE_STATS"]) ? raise("ClickHouse is not configured") : break
   end
 
-  project = Project.find_by(id: ENV['PROJECT_ID'])
+  project = Project.includes(:builds, :users).find_by(id: ENV['PROJECT_ID'])
   project ||= Project.first
 
   Gitlab::Seeder::AiUsageStats.new(project).seed!
