@@ -236,6 +236,7 @@ export default {
     'isIssueRepositioningDisabled',
     'hasProjects',
     'newIssuePath',
+    'workItemPlanningViewEnabled',
   ],
   props: {
     eeWorkItemUpdateCount: {
@@ -910,6 +911,11 @@ export default {
       };
     },
     showProjectNewWorkItem() {
+      if (this.workItemPlanningViewEnabled) {
+        // In CE, groups cannot enable create_work_items, so showNewWorkItem is always false (only enabled in EE).
+        // However, we need to show the button for CE groups with projects (!hasEpicsFeature indicates CE).
+        return (this.isGroup && this.hasProjects && !this.hasEpicsFeature) || this.showNewWorkItem;
+      }
       return this.showNewWorkItem && !this.isGroupIssuesList;
     },
     showGroupNewWorkItem() {
@@ -1563,6 +1569,7 @@ export default {
                 :is-group="isGroup"
                 :preselected-work-item-type="preselectedWorkItemType"
                 :is-epics-list="isEpicsList"
+                :show-project-selector="!hasEpicsFeature"
                 @workItemCreated="handleWorkItemCreated"
               />
               <new-resource-dropdown
@@ -1651,6 +1658,7 @@ export default {
                   :full-path="rootPageFullPath"
                   :is-group="isGroup"
                   :preselected-work-item-type="preselectedWorkItemType"
+                  :show-project-selector="!hasEpicsFeature"
                   @workItemCreated="handleWorkItemCreated"
                 />
               </template>

@@ -77047,6 +77047,9 @@ msgstr ""
 msgid "WorkItem|Toggle details"
 msgstr ""
 
+msgid "WorkItem|Track bugs, plan features, and organize your efforts with work items"
+msgstr ""
+
 msgid "WorkItem|Triage"
 msgstr ""
 
@@ -77108,6 +77111,9 @@ msgid "WorkItem|Use for items that have been completed. Applying a done status w
 msgstr ""
 
 msgid "WorkItem|Use for planned work that is not actively being worked on."
+msgstr ""
+
+msgid "WorkItem|Use work items (also known as tickets or stories on other platforms) to collaborate on ideas, solve problems, and plan your project."
 msgstr ""
 
 msgid "WorkItem|View current version"
