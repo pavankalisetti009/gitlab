@@ -1298,6 +1298,16 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
     end
   end
 
+  describe '.auto_dismiss_policies' do
+    let_it_be(:policy_with_auto_resolve) { create(:security_policy, :vulnerability_management_policy, :auto_resolve) }
+    let_it_be(:policy_with_auto_dismiss) { create(:security_policy, :vulnerability_management_policy, :auto_dismiss) }
+
+    it 'returns only policies with auto_dismiss type' do
+      result = described_class.auto_dismiss_policies
+      expect(result).to contain_exactly(policy_with_auto_dismiss)
+    end
+  end
+
   describe '#bypass_settings' do
     let(:access_token_id) { 42 }
     let(:service_account_id) { 99 }

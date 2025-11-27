@@ -56,7 +56,7 @@ module Vulnerabilities
     def policies
       project
         .vulnerability_management_policies
-        .auto_resolve_policies_with_rules
+        .auto_resolve_policies.including_rules
     end
     strong_memoize_attr :policies
 
