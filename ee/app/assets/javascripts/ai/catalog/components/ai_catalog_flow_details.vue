@@ -1,5 +1,5 @@
 <script>
-import { GlBadge, GlIcon, GlLink } from '@gitlab/ui';
+import { GlIcon, GlLink, GlToken } from '@gitlab/ui';
 import { __ } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { FLOW_TRIGGER_TYPES } from 'ee/ai/duo_agents_platform/constants';
@@ -12,9 +12,9 @@ import FormSection from './form_section.vue';
 
 export default {
   components: {
-    GlBadge,
     GlIcon,
     GlLink,
+    GlToken,
     AiCatalogItemField,
     AiCatalogItemVisibilityField,
     FormFlowDefinition,
@@ -74,21 +74,18 @@ export default {
       <form-section :title="s__('AICatalog|Configuration')">
         <ai-catalog-item-field v-if="flowTrigger" :title="s__('DuoAgentsPlatform|Triggers')">
           <div class="gl-mt-3 gl-flex gl-justify-between">
-            <div class="gl-flex gl-flex-wrap gl-gap-2">
-              <gl-badge
-                v-for="eventType in flowTrigger.eventTypes"
-                :key="eventType"
-                variant="neutral"
-              >
+            <div class="gl-flex gl-flex-wrap gl-gap-2 gl-whitespace-nowrap">
+              <gl-token v-for="eventType in flowTrigger.eventTypes" :key="eventType" view-only>
                 {{ triggerName(eventType) }}
-              </gl-badge>
+              </gl-token>
             </div>
             <gl-link
               v-if="flowTrigger.id"
               :to="triggerEditPath(flowTrigger.id)"
-              class="gl-whitespace-nowrap"
+              class="gl-flex gl-items-center gl-gap-2 gl-whitespace-nowrap"
             >
-              <gl-icon name="pencil" /> {{ __('Edit') }}
+              <gl-icon name="pencil" />
+              {{ __('Edit') }}
             </gl-link>
           </div>
         </ai-catalog-item-field>

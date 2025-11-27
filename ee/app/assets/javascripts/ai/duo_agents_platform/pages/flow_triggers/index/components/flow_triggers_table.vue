@@ -2,12 +2,12 @@
 import {
   GlAvatar,
   GlAvatarLink,
-  GlBadge,
   GlButton,
   GlButtonGroup,
   GlIcon,
   GlLink,
   GlTableLite,
+  GlToken,
   GlTooltipDirective,
 } from '@gitlab/ui';
 import { s__ } from '~/locale';
@@ -24,10 +24,10 @@ export default {
     GlButton,
     GlButtonGroup,
     GlIcon,
-    GlBadge,
     GlAvatar,
     GlAvatarLink,
     GlLink,
+    GlToken,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -104,10 +104,10 @@ export default {
     </template>
 
     <template #cell(eventType)="{ item }">
-      <div class="gl-flex gl-flex-wrap gl-gap-2" data-testid="flow-trigger-badges">
-        <gl-badge v-for="eventType in item.eventTypes" :key="eventType" variant="info">
+      <div class="gl-flex gl-flex-wrap gl-gap-2 gl-whitespace-nowrap">
+        <gl-token v-for="eventType in item.eventTypes" :key="eventType" view-only>
           {{ eventTypes[eventType] }}
-        </gl-badge>
+        </gl-token>
       </div>
     </template>
 

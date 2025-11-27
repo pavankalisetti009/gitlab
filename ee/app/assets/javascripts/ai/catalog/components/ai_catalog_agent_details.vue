@@ -1,5 +1,5 @@
 <script>
-import { GlTruncateText, GlLink } from '@gitlab/ui';
+import { GlLink, GlToken, GlTruncateText } from '@gitlab/ui';
 import { AGENT_VISIBILITY_LEVEL_DESCRIPTIONS } from '../constants';
 import AiCatalogItemField from './ai_catalog_item_field.vue';
 import AiCatalogItemVisibilityField from './ai_catalog_item_visibility_field.vue';
@@ -11,6 +11,7 @@ export default {
     AiCatalogItemVisibilityField,
     FormSection,
     GlLink,
+    GlToken,
     GlTruncateText,
   },
   truncateTextToggleButtonProps: {
@@ -30,11 +31,8 @@ export default {
     projectName() {
       return this.item.project?.nameWithNamespace;
     },
-    toolTitles() {
-      return this.versionData.tools
-        .map((t) => t.title)
-        .sort()
-        .join(', ');
+    tools() {
+      return this.versionData.tools?.map((t) => t.title)?.sort() || [];
     },
   },
   AGENT_VISIBILITY_LEVEL_DESCRIPTIONS,
@@ -60,12 +58,9 @@ export default {
           :description-texts="$options.AGENT_VISIBILITY_LEVEL_DESCRIPTIONS"
         />
       </form-section>
-      <form-section :title="s__('AICatalog|Prompts')">
-        <ai-catalog-item-field
-          v-if="versionData.systemPrompt"
-          :title="s__('AICatalog|System prompt')"
-        >
-          <div class="gl-border gl-mb-3 gl-mt-2 gl-rounded-default gl-bg-default gl-p-3">
+      <form-section :title="s__('AICatalog|Configuration')">
+        <ai-catalog-item-field :title="s__('AICatalog|System prompt')">
+          <div class="gl-border gl-mt-3 gl-rounded-default gl-bg-default gl-p-3">
             <pre class="gl-m-0 gl-whitespace-pre-wrap"><gl-truncate-text
               :lines="20"
               :show-more-text="__('Show more')"
@@ -75,9 +70,16 @@ export default {
             >{{ versionData.systemPrompt }}</gl-truncate-text></pre>
           </div>
         </ai-catalog-item-field>
-      </form-section>
-      <form-section v-if="toolTitles" :title="s__('AICatalog|Available tools')">
-        <ai-catalog-item-field :title="s__('AICatalog|Tools')" :value="toolTitles" />
+        <ai-catalog-item-field :title="s__('AICatalog|Tools')">
+          <template v-if="tools.length === 0">
+            {{ __('None') }}
+          </template>
+          <div v-else class="gl-mt-3 gl-flex gl-flex-wrap gl-gap-2 gl-whitespace-nowrap">
+            <gl-token v-for="tool in tools" :key="tool" view-only>
+              {{ tool }}
+            </gl-token>
+          </div>
+        </ai-catalog-item-field>
       </form-section>
     </dl>
   </div>

@@ -2580,9 +2580,6 @@ msgstr ""
 msgid "AICatalog|Are you sure you want to disable flow %{name}? The flow will also be disabled from any projects in this group."
 msgstr ""
 
-msgid "AICatalog|Available tools"
-msgstr ""
-
 msgid "AICatalog|Basic information"
 msgstr ""
 
@@ -2935,9 +2932,6 @@ msgid "AICatalog|Project members can use this flow. You must have at least the M
 msgstr ""
 
 msgid "AICatalog|Project-specific automation."
-msgstr ""
-
-msgid "AICatalog|Prompts"
 msgstr ""
 
 msgid "AICatalog|Provide a brief description."

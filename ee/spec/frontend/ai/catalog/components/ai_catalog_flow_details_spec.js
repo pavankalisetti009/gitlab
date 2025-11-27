@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
-import { GlBadge, GlLink } from '@gitlab/ui';
+import { GlToken, GlLink } from '@gitlab/ui';
 import AiCatalogFlowDetails from 'ee/ai/catalog/components/ai_catalog_flow_details.vue';
 import AiCatalogItemField from 'ee/ai/catalog/components/ai_catalog_item_field.vue';
 import AiCatalogItemVisibilityField from 'ee/ai/catalog/components/ai_catalog_item_visibility_field.vue';
@@ -102,10 +102,10 @@ describe('AiCatalogFlowDetails', () => {
         const triggersField = findAllFieldsForSection(2).at(0);
         expect(triggersField.props('title')).toBe('Triggers');
 
-        const badges = triggersField.findAllComponents(GlBadge);
+        const tokens = triggersField.findAllComponents(GlToken);
 
-        expect(badges).toHaveLength(1);
-        expect(badges.at(0).text()).toBe('Mention');
+        expect(tokens).toHaveLength(1);
+        expect(tokens.at(0).text()).toBe('Mention');
       });
 
       it('renders trigger edit link', () => {
