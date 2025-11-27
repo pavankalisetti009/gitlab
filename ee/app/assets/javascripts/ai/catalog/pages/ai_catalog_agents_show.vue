@@ -65,9 +65,6 @@ export default {
     isAgentsAvailable() {
       return this.glFeatures.aiCatalogAgents;
     },
-    agentName() {
-      return this.aiCatalogAgent.name;
-    },
     isProjectNamespace() {
       return Boolean(this.projectId);
     },
@@ -103,9 +100,7 @@ export default {
         if (data) {
           const { errors } = data.aiCatalogItemConsumerCreate;
           if (errors.length > 0) {
-            this.errorTitle = sprintf(s__('AICatalog|Could not enable agent: %{agentName}'), {
-              agentName: this.aiCatalogAgent.name,
-            });
+            this.errorTitle = s__('AICatalog|Could not enable agent');
             this.errors = errors;
             return;
           }
@@ -228,7 +223,7 @@ export default {
     <page-heading>
       <template #heading>
         <span class="gl-line-clamp-1 gl-wrap-anywhere">
-          {{ agentName }}
+          {{ aiCatalogAgent.name }}
 
           <foundational-icon
             v-if="aiCatalogAgent.foundationalChat"
