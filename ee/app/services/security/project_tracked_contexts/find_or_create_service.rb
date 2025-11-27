@@ -27,7 +27,12 @@ module Security
       attr_reader :project, :context_name, :context_type, :is_default
 
       def execute
-        return success(existing_context) if existing_context
+        if existing_context.present?
+          return success(existing_context) if existing_context.tracked?
+
+          return ServiceResponse.error(message: 'Context is not tracked')
+        end
+
         return cant_create_non_default_error unless is_default
 
         create_context

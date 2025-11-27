@@ -53,7 +53,9 @@ module Sbom
                 pipeline: pipeline,
                 project: project,
                 purl_type: affected_occurrence.purl.type,
-                scanner: scanner)
+                scanner: scanner,
+                tracked_context: tracked_context
+              )
             end
 
             ingested_ids_by_report_type[sbom_report.source.source_type] += create_vulnerabilities(finding_maps)
@@ -128,6 +130,17 @@ module Sbom
       ::Gitlab::VulnerabilityScanning::SecurityScanner.fabricate
     end
     strong_memoize_attr :scanner
+
+    def tracked_context
+      # This calls IngestCvsSliceService which can only use an instance feature flag.
+      return unless ::Feature.enabled?(:set_tracked_context_during_ingestion, :instance)
+
+      result = ::Security::ProjectTrackedContexts::FindOrCreateService.from_pipeline(pipeline).execute
+
+      raise ArgumentError, result.message unless result.success?
+
+      result.payload[:tracked_context]
+    end
 
     def mark_resolved_vulnerabilities(ingested_ids_by_report_type)
       # MarkAsResolvedService expects a persisted scanner record.

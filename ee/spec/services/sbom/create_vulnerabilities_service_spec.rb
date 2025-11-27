@@ -5,9 +5,18 @@ require 'spec_helper'
 RSpec.describe Sbom::CreateVulnerabilitiesService, feature_category: :software_composition_analysis do
   describe '.execute' do
     let_it_be(:user) { create(:user) }
-    let_it_be(:pipeline) { create(:ee_ci_pipeline, user: user) }
-    let_it_be(:project) { pipeline.project }
+    let_it_be(:project) { create(:project, :repository) }
+    let_it_be(:pipeline) { create(:ee_ci_pipeline, user: user, ref: project.default_branch, project: project) }
     let_it_be(:scanner) { create(:vulnerabilities_scanner, :sbom_scanner, project: project) }
+
+    let_it_be(:tracked_context) do
+      create(:security_project_tracked_context,
+        :tracked,
+        context_name: project.default_branch,
+        context_type: :branch,
+        project: project)
+    end
+
     let(:occurrences_count) { 5 }
     let(:sbom_reports) { pipeline.sbom_reports.reports.select(&:source) }
     let(:pipeline_components) { sbom_reports.flat_map(&:components) }
@@ -60,6 +69,36 @@ RSpec.describe Sbom::CreateVulnerabilitiesService, feature_category: :software_c
         end
 
         expect(Vulnerability.all).to match_array(expected_vulnerability_attributes)
+      end
+
+      it 'sets tracked context for all findings' do
+        result
+
+        expect(Vulnerabilities::Finding.pluck(:security_project_tracked_context_id)).to all(eq(tracked_context.id))
+      end
+
+      context 'when FindOrCreateService returns an error' do
+        before do
+          allow_next_instance_of(Security::ProjectTrackedContexts::FindOrCreateService) do |instance|
+            allow(instance).to receive(:execute).and_return(ServiceResponse.error(message: 'Create error'))
+          end
+        end
+
+        it 'raises an ArgumentError' do
+          expect { result }.to raise_error(ArgumentError, 'Create error')
+        end
+      end
+
+      context 'when set_tracked_context_during_ingestion is disabled' do
+        before do
+          stub_feature_flags(set_tracked_context_during_ingestion: false)
+        end
+
+        it 'does not set tracked context on findings' do
+          result
+
+          expect(Vulnerabilities::Finding.pluck(:security_project_tracked_context_id)).to all(be_nil)
+        end
       end
     end
 
@@ -193,19 +232,14 @@ RSpec.describe Sbom::CreateVulnerabilitiesService, feature_category: :software_c
       end
 
       context 'with container scanning and dependency scanning reports' do
-        let(:container_scanning_ci_build) do
-          build(:ee_ci_build, :cyclonedx_container_scanning)
+        let_it_be(:pipeline) do
+          create(:ee_ci_pipeline,
+            user: user,
+            builds: [build(:ee_ci_build, :cyclonedx_container_scanning), build(:ee_ci_build, :cyclonedx)],
+            ref: project.default_branch,
+            project: project
+          )
         end
-
-        let(:dependency_scanning_ci_build) do
-          build(:ee_ci_build, :cyclonedx)
-        end
-
-        let(:pipeline) do
-          create(:ee_ci_pipeline, user: user, builds: [container_scanning_ci_build, dependency_scanning_ci_build])
-        end
-
-        let(:project) { pipeline.project }
 
         let(:sbom_reports) { pipeline.sbom_reports.reports.select(&:source) }
 
@@ -258,8 +292,6 @@ RSpec.describe Sbom::CreateVulnerabilitiesService, feature_category: :software_c
               affected_range: known_affected_range)
           end
         end
-
-        let(:scanner) { create(:vulnerabilities_scanner, :sbom_scanner, project: project) }
 
         let(:affected_packages) { container_scanning_affected_packages + dependency_scanning_affected_packages }
 
