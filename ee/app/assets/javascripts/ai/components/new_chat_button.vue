@@ -65,6 +65,13 @@ export default {
         skip() {
           return !this.isAgentSelectEnabled;
         },
+        // NOTE any update here should also be made to ee/app/assets/javascripts/ai/duo_agentic_chat/components/duo_agentic_chat.vue
+        update(data) {
+          return (data?.aiCatalogConfiguredItems.nodes || []).map((node) => ({
+            ...node.item,
+            pinnedItemVersionId: node.pinnedItemVersion.id,
+          }));
+        },
         error: (error) => {
           this.$emit('newChatError', error);
           Sentry.captureException(error);
