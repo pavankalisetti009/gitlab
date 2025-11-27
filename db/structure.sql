@@ -45644,8 +45644,6 @@ CREATE INDEX index_users_for_auditors ON users USING btree (id) WHERE (auditor I
 
 CREATE INDEX index_users_on_admin ON users USING btree (admin);
 
-CREATE UNIQUE INDEX index_users_on_confirmation_token ON users USING btree (confirmation_token);
-
 CREATE INDEX index_users_on_created_at ON users USING btree (created_at);
 
 CREATE UNIQUE INDEX index_users_on_email ON users USING btree (email);
@@ -45669,6 +45667,8 @@ CREATE INDEX index_users_on_name ON users USING btree (name);
 CREATE INDEX index_users_on_name_trigram ON users USING gin (name gin_trgm_ops);
 
 CREATE INDEX index_users_on_organization_id ON users USING btree (organization_id);
+
+CREATE UNIQUE INDEX index_users_on_organization_id_and_confirmation_token ON users USING btree (organization_id, confirmation_token);
 
 CREATE UNIQUE INDEX index_users_on_organization_id_and_reset_password_token ON users USING btree (organization_id, reset_password_token);
 
