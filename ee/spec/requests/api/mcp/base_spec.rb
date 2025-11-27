@@ -47,7 +47,7 @@ RSpec.describe API::Mcp::Base, feature_category: :mcp_server do
 
         it 'behaves according to access control rules' do
           post api('/mcp', user, oauth_access_token: access_token),
-            params: { jsonrpc: '2.0', method: 'initialize', id: '1' }
+            params: { jsonrpc: '2.0', method: 'initialize', id: '1', params: { protocolVersion: '2025-06-18' } }
 
           expect(response).to have_gitlab_http_status(expected_status)
         end
@@ -91,7 +91,7 @@ RSpec.describe API::Mcp::Base, feature_category: :mcp_server do
 
         it 'behaves according to access control rules' do
           post api('/mcp', user, oauth_access_token: access_token),
-            params: { jsonrpc: '2.0', method: 'initialize', id: '1' }
+            params: { jsonrpc: '2.0', method: 'initialize', id: '1', params: { protocolVersion: '2025-06-18' } }
 
           expect(response).to have_gitlab_http_status(expected_status)
         end
