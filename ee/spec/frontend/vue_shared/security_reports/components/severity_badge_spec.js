@@ -1,8 +1,5 @@
 import { GlIcon, GlSprintf, GlTooltip } from '@gitlab/ui';
-import {
-  SEVERITY_CLASS_NAME_MAP,
-  SEVERITY_TOOLTIP_TITLE_MAP,
-} from 'ee/vue_shared/security_reports/components/constants';
+import { SEVERITY_TOOLTIP_TITLE_MAP } from 'ee/vue_shared/security_reports/components/constants';
 import SeverityBadge from 'ee/vue_shared/security_reports/components/severity_badge.vue';
 import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
 import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
@@ -51,7 +48,7 @@ describe('Severity Badge', () => {
       createWrapper({ severity });
     });
 
-    const className = SEVERITY_CLASS_NAME_MAP[severity];
+    const className = `severity-text-${severity}`;
 
     it(`renders the component with ${severity} badge`, () => {
       expect(wrapper.find(`.${className}`).exists()).toBe(true);

@@ -131,7 +131,7 @@ export default {
     :loading="$apollo.queries.riskScore.loading"
     :border-color-class="hasFetchError ? 'gl-border-t-red-500' : ''"
     :title-icon="hasFetchError ? 'error' : ''"
-    :title-icon-class="hasFetchError ? 'gl-text-red-500' : ''"
+    :title-icon-class="hasFetchError ? 'gl-text-danger' : ''"
     :title-popover-classes="['gl-min-w-fit']"
   >
     <template #info-popover-title>{{ s__('SecurityReports|Risk score formula') }}</template>
