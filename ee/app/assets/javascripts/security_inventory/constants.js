@@ -89,13 +89,6 @@ export const SCANNER_POPOVER_LABELS = {
 
 export const SEVERITY_SEGMENTS = [CRITICAL, HIGH, MEDIUM, LOW];
 
-export const SEVERITY_BACKGROUND_COLORS = {
-  [CRITICAL]: 'gl-bg-red-800',
-  [HIGH]: 'gl-bg-red-600',
-  [MEDIUM]: 'gl-bg-orange-400',
-  [LOW]: 'gl-bg-orange-300',
-};
-
 export const VULNERABILITY_REPORT_PATHS = {
   PROJECT: '/-/security/vulnerability_report',
   GROUP: '/-/security/vulnerabilities',

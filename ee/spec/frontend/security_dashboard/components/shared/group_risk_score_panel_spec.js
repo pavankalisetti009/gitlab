@@ -349,7 +349,7 @@ describe('GroupRiskScorePanel', () => {
         expect(findDashboardPanel().props()).toMatchObject({
           borderColorClass: 'gl-border-t-red-500',
           titleIcon: 'error',
-          titleIconClass: 'gl-text-red-500',
+          titleIconClass: 'gl-text-danger',
         });
       });
 

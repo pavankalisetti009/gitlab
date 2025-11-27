@@ -2,7 +2,6 @@ import { shallowMount } from '@vue/test-utils';
 import { GlTruncate, GlDashboardPanel, GlLink, GlSprintf } from '@gitlab/ui';
 import { GlSingleStat } from '@gitlab/ui/src/charts';
 import VulnerabilitiesForSeverityPanel from 'ee/security_dashboard/components/shared/charts/vulnerabilities_for_severity_panel.vue';
-import { SEVERITY_CLASS_NAME_MAP } from 'ee/vue_shared/security_reports/components/constants';
 import { SEVERITY_LEVELS } from 'ee/security_dashboard/constants';
 
 describe('VulnerabilitiesForSeverityPanel', () => {
@@ -62,7 +61,7 @@ describe('VulnerabilitiesForSeverityPanel', () => {
 
         it('passes the correct icon class color', () => {
           expect(findDashboardPanel().props('titleIconClass')).toBe(
-            `gl-mr-3 ${SEVERITY_CLASS_NAME_MAP[severity]}`,
+            `gl-mr-3 severity-text-${severity}`,
           );
         });
 
@@ -140,7 +139,7 @@ describe('VulnerabilitiesForSeverityPanel', () => {
       it('passes error icon, color class, and border styling', () => {
         expect(findDashboardPanel().props()).toMatchObject({
           titleIcon: 'error',
-          titleIconClass: 'gl-text-red-500',
+          titleIconClass: 'gl-text-danger',
           borderColorClass: 'gl-border-t-red-500',
         });
       });

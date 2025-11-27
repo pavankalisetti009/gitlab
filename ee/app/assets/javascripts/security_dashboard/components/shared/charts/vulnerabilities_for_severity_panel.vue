@@ -2,7 +2,6 @@
 import { GlDashboardPanel, GlLink, GlSprintf, GlTruncate } from '@gitlab/ui';
 import { GlSingleStat } from '@gitlab/ui/src/charts';
 import { n__, s__, sprintf } from '~/locale';
-import { SEVERITY_CLASS_NAME_MAP } from 'ee/vue_shared/security_reports/components/constants';
 import { SEVERITY_LEVELS_KEYS, SEVERITY_LEVELS } from 'ee/security_dashboard/constants';
 import { constructVulnerabilitiesReportWithFiltersPath } from 'ee/security_dashboard/utils/chart_utils';
 
@@ -59,10 +58,10 @@ export default {
     },
     iconClass() {
       if (this.error) {
-        return 'gl-text-red-500';
+        return 'gl-text-danger';
       }
 
-      return `gl-mr-3 ${SEVERITY_CLASS_NAME_MAP[this.severity]}`;
+      return `gl-mr-3 severity-text-${this.severity}`;
     },
     borderColorClass() {
       if (this.error) {

@@ -70,12 +70,12 @@ describe('MR Widget Security Reports - Summary Highlights', () => {
   });
 
   it.each`
-    severity      | color                   | count
-    ${'critical'} | ${'gl-text-red-800'}    | ${10}
-    ${'high'}     | ${'gl-text-red-600'}    | ${20}
-    ${'medium'}   | ${'gl-text-orange-400'} | ${50}
-    ${'low'}      | ${'gl-text-orange-300'} | ${30}
-    ${'unknown'}  | ${'gl-text-gray-400'}   | ${20}
+    severity      | color                       | count
+    ${'critical'} | ${'severity-text-critical'} | ${10}
+    ${'high'}     | ${'severity-text-high'}     | ${20}
+    ${'medium'}   | ${'severity-text-medium'}   | ${50}
+    ${'low'}      | ${'severity-text-low'}      | ${30}
+    ${'unknown'}  | ${'severity-text-unknown'}  | ${20}
   `(
     "displays a number only when 'showSingleSeverity' property is provided",
     ({ severity, color, count }) => {
