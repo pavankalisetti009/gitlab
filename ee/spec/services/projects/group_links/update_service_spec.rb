@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe Projects::GroupLinks::UpdateService, feature_category: :groups_and_projects do
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create :group }
-  let_it_be(:project) { create(:project, maintainers: user) }
+  let_it_be(:project) { create(:project, owners: user) }
 
   let!(:link) { create(:project_group_link, project: project, group: group, group_access: Gitlab::Access::DEVELOPER) }
 
