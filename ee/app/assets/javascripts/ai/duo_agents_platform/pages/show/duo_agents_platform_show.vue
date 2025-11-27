@@ -5,13 +5,16 @@ import { TYPENAME_AI_DUO_WORKFLOW } from '~/graphql_shared/constants';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { getAgentFlow } from '../../graphql/queries/get_agent_flow.query.graphql';
 import { DUO_AGENTS_PLATFORM_POLLING_INTERVAL } from '../../constants';
-import { formatAgentDefinition, formatAgentStatus } from '../../utils';
+import { formatAgentDefinition, formatAgentStatus, agentSessionStatusVar } from '../../utils';
 import AgentFlowDetails from './components/agent_flow_details.vue';
 
 export default {
   name: 'DuoAgentsPlatformShow',
   components: { AgentFlowDetails },
-  inject: { isFlyout: { default: false } },
+  inject: {
+    isFlyout: { default: false },
+    isSidePanelView: { default: false },
+  },
   data() {
     return {
       agentFlow: null,
@@ -28,6 +31,11 @@ export default {
       },
       update(data) {
         return data?.duoWorkflowWorkflows?.edges?.[0]?.node || {};
+      },
+      result() {
+        if (this.isSidePanelView) {
+          agentSessionStatusVar(this.agentFlow?.status);
+        }
       },
       error(err) {
         createAlert({
@@ -63,6 +71,9 @@ export default {
     project() {
       return this.agentFlow?.project || {};
     },
+  },
+  beforeDestroy() {
+    agentSessionStatusVar(null);
   },
 };
 </script>

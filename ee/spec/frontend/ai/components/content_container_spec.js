@@ -6,10 +6,13 @@ import waitForPromises from 'helpers/wait_for_promises';
 import { copyToClipboard } from '~/lib/utils/copy_to_clipboard';
 import showGlobalToast from '~/vue_shared/plugins/global_toast';
 import AiContentContainer from 'ee/ai/components/content_container.vue';
+import AgentStatusIcon from 'ee/ai/duo_agents_platform/components/common/agent_status_icon.vue';
 import { CHAT_MODES } from 'ee/ai/tanuki_bot/constants';
 import { duoChatGlobalState } from '~/super_sidebar/constants';
 import DuoAgenticChat from 'ee/ai/duo_agentic_chat/components/duo_agentic_chat.vue';
 import DuoChat from 'ee/ai/tanuki_bot/components/duo_chat.vue';
+import { AGENTS_PLATFORM_SHOW_ROUTE } from 'ee/ai/duo_agents_platform/router/constants';
+import { agentSessionStatusVar } from 'ee/ai/duo_agents_platform/utils';
 
 jest.mock('~/lib/utils/copy_to_clipboard');
 jest.mock('~/vue_shared/plugins/global_toast');
@@ -28,6 +31,7 @@ describe('AiContentContainer', () => {
     showBackButton = false,
     propsData = {},
     provide = {},
+    mocks = {},
   } = {}) => {
     mockStore = {
       dispatch: jest.fn(),
@@ -62,6 +66,10 @@ describe('AiContentContainer', () => {
       },
       mocks: {
         $store: mockStore,
+        $route: {
+          name: null,
+        },
+        ...mocks,
       },
       stubs: {
         GlButton,
@@ -73,11 +81,13 @@ describe('AiContentContainer', () => {
   const findCollapseButton = () => wrapper.findByTestId('content-container-collapse-button');
   const findMaximizeButton = () => wrapper.findByTestId('content-container-maximize-button');
   const findBackButton = () => wrapper.findByTestId('content-container-back-button');
+  const findAgentStatusIcon = () => wrapper.findComponent(AgentStatusIcon);
   const findSessionMenu = () => wrapper.findByTestId('content-container-session-menu');
 
   beforeEach(() => {
     // Reset global state before each test
     duoChatGlobalState.chatMode = CHAT_MODES.AGENTIC;
+    agentSessionStatusVar(null);
   });
 
   it('renders the tab title in the header', () => {
@@ -262,6 +272,65 @@ describe('AiContentContainer', () => {
           $el: expect.anything(),
         }),
       );
+    });
+  });
+
+  describe('agent status icon', () => {
+    it('does not show status icon when not on agent platform show route', () => {
+      agentSessionStatusVar('Running');
+
+      createComponent({
+        mocks: {
+          $route: { name: 'some-other-route' },
+        },
+      });
+
+      expect(findAgentStatusIcon().exists()).toBe(false);
+    });
+
+    it('does not show the icon when status is not available', () => {
+      createComponent({
+        mocks: {
+          $route: { name: AGENTS_PLATFORM_SHOW_ROUTE },
+        },
+      });
+
+      expect(findAgentStatusIcon().exists()).toBe(false);
+    });
+
+    it('shows the icon when on agent platform show route and status exists', async () => {
+      agentSessionStatusVar('Running');
+
+      createComponent({
+        mocks: {
+          $route: { name: AGENTS_PLATFORM_SHOW_ROUTE },
+        },
+      });
+
+      await nextTick();
+
+      expect(findAgentStatusIcon().exists()).toBe(true);
+      expect(findAgentStatusIcon().props('status')).toBe('Running');
+      expect(findAgentStatusIcon().props('humanStatus')).toBe('Running');
+    });
+
+    it('updates the icon when reactive variable changes', async () => {
+      agentSessionStatusVar('Running');
+
+      createComponent({
+        mocks: {
+          $route: { name: AGENTS_PLATFORM_SHOW_ROUTE },
+        },
+      });
+
+      await nextTick();
+
+      expect(findAgentStatusIcon().props('status')).toBe('Running');
+
+      agentSessionStatusVar('Finished');
+      await nextTick();
+
+      expect(findAgentStatusIcon().props('status')).toBe('Finished');
     });
   });
 
