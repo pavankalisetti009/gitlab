@@ -270,6 +270,7 @@ describe('MR Widget Security Reports', () => {
     severity: 'HIGH',
     state: 'DETECTED',
     foundByPipelineIid: '123',
+    aiResolutionEnabled: true,
     __typename: 'ComparedSecurityReportFinding',
     ...overrides,
   });
@@ -649,6 +650,7 @@ describe('MR Widget Security Reports', () => {
           name: originalFinding.title,
           severity: originalFinding.severity.toLowerCase(),
           state: originalFinding.state.toLowerCase(),
+          ai_resolution_enabled: originalFinding.aiResolutionEnabled,
           found_by_pipeline: { iid: Number(originalFinding.foundByPipelineIid) },
         });
 
