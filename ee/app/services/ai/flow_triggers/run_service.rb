@@ -224,7 +224,11 @@ module Ai
       # Ideally, it should be prompt variables for better flexibility
       def catalog_item_user_prompt(user_input, event_type)
         if event_type == :mention
-          "Input: #{user_input}\nContext: #{serialized_resource}"
+          input_line = "Input: #{user_input}"
+          id_type, id_value = resource.respond_to?(:iid) ? ['IID', resource.iid] : ['ID', resource.id]
+          context_line = "Context: {#{resource.class.name} #{id_type}: #{id_value}}"
+
+          "#{input_line}\n#{context_line}"
         else
           user_input
         end
