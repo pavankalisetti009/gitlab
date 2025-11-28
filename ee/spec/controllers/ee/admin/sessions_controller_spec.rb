@@ -60,9 +60,11 @@ RSpec.describe Admin::SessionsController, :do_not_mock_admin_mode,
 
       context 'when WebAuthn authentication fails' do
         before do
-          stub_feature_flags(webauthn: true)
-          webauthn_authenticate_service = instance_spy(Webauthn::AuthenticateService, execute: false)
-          allow(Webauthn::AuthenticateService).to receive(:new).and_return(webauthn_authenticate_service)
+          allow_next_instance_of(Webauthn::AuthenticateService) do |instance|
+            allow(instance).to receive(:execute).and_return(
+              ServiceResponse.error(message: _('Authentication via WebAuthn device failed.'))
+            )
+          end
         end
 
         it_behaves_like 'an auditable failed authentication' do
