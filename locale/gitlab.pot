@@ -74743,6 +74743,9 @@ msgstr ""
 msgid "Vulnerability|Namespace:"
 msgstr ""
 
+msgid "Vulnerability|Policy violation detected"
+msgstr ""
+
 msgid "Vulnerability|Possible FP"
 msgstr ""
 

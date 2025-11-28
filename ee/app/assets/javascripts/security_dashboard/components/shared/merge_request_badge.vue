@@ -46,7 +46,12 @@ export default {
 
 <template>
   <div ref="popover" data-testid="vulnerability-solutions-bulb">
-    <gl-badge ref="badge" variant="neutral" icon="merge-request" />
+    <gl-badge
+      ref="badge"
+      variant="neutral"
+      icon="merge-request"
+      :aria-label="s__('SecurityReports|Has merge request')"
+    />
     <gl-popover :target="() => $refs.popover" placement="top">
       <template #title>
         <span>{{ s__('AutoRemediation| 1 Merge Request') }}</span>

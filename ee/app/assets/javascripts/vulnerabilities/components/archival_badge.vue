@@ -26,5 +26,11 @@ export default {
 </script>
 
 <template>
-  <gl-badge v-gl-tooltip variant="warning" icon="archive" :title="popoverContent" />
+  <gl-badge
+    v-gl-tooltip
+    variant="warning"
+    icon="archive"
+    :title="popoverContent"
+    :aria-label="popoverContent"
+  />
 </template>

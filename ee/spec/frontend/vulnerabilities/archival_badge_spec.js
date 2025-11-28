@@ -28,4 +28,8 @@ describe('Archival badge component', () => {
   it('should have the correct title', () => {
     expect(findBadge().attributes('title')).toBe(TOOLTIP_TITLE);
   });
+
+  it('should have the correct aria label', () => {
+    expect(findBadge().attributes('aria-label')).toBe(TOOLTIP_TITLE);
+  });
 });
