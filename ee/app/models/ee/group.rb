@@ -773,6 +773,11 @@ module EE
       levels.merge(::Gitlab::Access::MINIMAL_ACCESS_HASH)
     end
 
+    override :roles_user_can_assign
+    def roles_user_can_assign(current_user, roles = access_level_roles)
+      super(current_user, roles)
+    end
+
     override :users_count
     def users_count
       return all_group_members.count if minimal_access_role_allowed?

@@ -6,6 +6,7 @@ RSpec.describe Group, feature_category: :groups_and_projects do
   include LoginHelpers
   using RSpec::Parameterized::TableSyntax
   include ReactiveCachingHelpers
+  include RolesHelpers
 
   let(:group) { create(:group) }
 
@@ -4458,4 +4459,28 @@ RSpec.describe Group, feature_category: :groups_and_projects do
   end
 
   it_behaves_like 'a resource that has custom roles', :group
+
+  describe '#roles_user_can_assign' do
+    subject(:roles_user_can_assign) { resource.roles_user_can_assign(user) }
+
+    let(:user) { create(:user) }
+    let(:resource) { group }
+    let(:membership) { create(:group_member, user: user, group: resource) }
+
+    before do
+      membership.update!(access_level: access_level_value(:guest))
+    end
+
+    context 'when minimal_access_role is not enabled' do
+      specify { expect(roles_user_can_assign.keys).to match_array(['Guest']) }
+    end
+
+    context 'when minimal_access_role is enabled' do
+      before do
+        stub_licensed_features(minimal_access_role: true)
+      end
+
+      specify { expect(roles_user_can_assign.keys).to match_array(['Guest', 'Minimal Access']) }
+    end
+  end
 end
