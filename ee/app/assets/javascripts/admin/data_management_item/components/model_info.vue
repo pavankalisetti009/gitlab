@@ -6,7 +6,7 @@ import { __ } from '~/locale';
 import { numberToHumanSize } from '~/lib/utils/number_utils';
 
 export default {
-  name: 'DataManagementItemModelInfo',
+  name: 'ModelInfo',
   components: {
     GlSprintf,
     GlCard,

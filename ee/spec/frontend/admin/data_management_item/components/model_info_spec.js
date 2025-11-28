@@ -1,12 +1,12 @@
 import { GlCard, GlSprintf } from '@gitlab/ui';
 import models from 'test_fixtures/api/admin/data_management/snippet_repository.json';
-import DataManagementItemModelInfo from 'ee/admin/data_management_item/components/data_management_item_model_info.vue';
+import ModelInfo from 'ee/admin/data_management_item/components/model_info.vue';
 import TimeAgo from '~/vue_shared/components/time_ago_tooltip.vue';
 import ClipboardButton from '~/vue_shared/components/clipboard_button.vue';
 import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
-describe('DataManagementItemModelInfo', () => {
+describe('ModelInfo', () => {
   let wrapper;
 
   const [rawModel] = models;
@@ -15,7 +15,7 @@ describe('DataManagementItemModelInfo', () => {
   const defaultProps = { model };
 
   const createComponent = ({ props } = { props: {} }) => {
-    wrapper = shallowMountExtended(DataManagementItemModelInfo, {
+    wrapper = shallowMountExtended(ModelInfo, {
       propsData: { ...defaultProps, ...props },
       stubs: { GlCard, GlSprintf },
     });

@@ -5,12 +5,10 @@ import GeoList from 'ee/geo_shared/list/components/geo_list.vue';
 import { sprintf, s__ } from '~/locale';
 import {
   BULK_ACTIONS,
-  CHECKSUM_STATES_ARRAY,
   DEFAULT_SORT,
   GEO_TROUBLESHOOTING_LINK,
-  TOKEN_TYPES,
 } from 'ee/admin/data_management/constants';
-import { isValidFilter, processFilters } from 'ee/admin/data_management/filters';
+import { extractFiltersFromQuery, processFilters } from 'ee/admin/data_management/filters';
 import { createAlert } from '~/alert';
 import { getModels, putBulkModelAction } from 'ee/api/data_management_api';
 import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
@@ -89,18 +87,7 @@ export default {
   },
   methods: {
     initializeFilters() {
-      const filters = [];
-      const { checksumState, identifiers } = this.queryParams;
-
-      if (identifiers) {
-        filters.push(identifiers.join(' '));
-      }
-
-      if (isValidFilter(checksumState, CHECKSUM_STATES_ARRAY)) {
-        filters.push({ type: TOKEN_TYPES.CHECKSUM_STATE, value: { data: checksumState } });
-      }
-
-      this.filters = filters;
+      this.filters = extractFiltersFromQuery(this.queryParams);
     },
     initializeModel() {
       this.activeModelName = this.queryParams.modelName || this.initialModelName;
@@ -158,7 +145,7 @@ export default {
 </script>
 
 <template>
-  <div>
+  <section>
     <geo-list-top-bar
       :active-filtered-search-filters="filters"
       :page-heading-title="__('Data management')"
@@ -182,5 +169,5 @@ export default {
         :initial-item="item"
       />
     </geo-list>
-  </div>
+  </section>
 </template>
