@@ -16,6 +16,7 @@ import {
   MOCK_NETWORK_PROBES,
   MOCK_SYNCHRONIZATION_PROBES,
   MOCK_SYSTEM_EXCHANGE_PROBES,
+  MOCK_DUO_AGENT_PLATFORM_PROBES,
 } from '../mock_data';
 
 const success = {
@@ -25,6 +26,7 @@ const success = {
       probeResults: [
         ...MOCK_NETWORK_PROBES.success,
         ...MOCK_SYNCHRONIZATION_PROBES.success,
+        ...MOCK_DUO_AGENT_PLATFORM_PROBES.success,
         ...MOCK_SYSTEM_EXCHANGE_PROBES.success,
       ],
     },
@@ -38,6 +40,7 @@ const partialFailure = {
       probeResults: [
         ...MOCK_NETWORK_PROBES.success,
         ...MOCK_SYNCHRONIZATION_PROBES.error,
+        ...MOCK_DUO_AGENT_PLATFORM_PROBES.error,
         ...MOCK_SYSTEM_EXCHANGE_PROBES.error,
       ],
     },
@@ -51,6 +54,7 @@ const totalFailure = {
       probeResults: [
         ...MOCK_NETWORK_PROBES.error,
         ...MOCK_SYNCHRONIZATION_PROBES.error,
+        ...MOCK_DUO_AGENT_PLATFORM_PROBES.error,
         ...MOCK_SYSTEM_EXCHANGE_PROBES.error,
       ],
     },

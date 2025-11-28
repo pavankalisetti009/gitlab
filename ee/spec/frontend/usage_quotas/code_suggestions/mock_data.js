@@ -507,3 +507,25 @@ export const MOCK_CODE_SUGGESTIONS_PROBES = {
     },
   ],
 };
+
+export const MOCK_DUO_AGENT_PLATFORM_PROBES = {
+  success: [
+    {
+      name: 'duo_agent_platform_probe',
+      success: true,
+      message: 'GitLab Duo Workflow Service at duo-workflow-svc.example.com:443 is operational.',
+      details: {},
+      errors: [],
+    },
+  ],
+  error: [
+    {
+      name: 'duo_agent_platform_probe',
+      success: false,
+      message:
+        'GitLab Duo Workflow Service at duo-workflow-svc.example.com:443 is not operational.',
+      details: {},
+      errors: [],
+    },
+  ],
+};

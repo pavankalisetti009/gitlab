@@ -32,7 +32,7 @@ export const DUO_HEALTH_CHECK_CATEGORIES = [
     ),
   },
   {
-    values: ['host_probe', 'duo_agent_platform_probe'],
+    values: ['host_probe'],
     title: __('Network'),
     description: s__(
       'CodeSuggestions|Outbound and inbound connections from clients to the GitLab instance must be allowed.',
@@ -49,6 +49,13 @@ export const DUO_HEALTH_CHECK_CATEGORIES = [
     values: ['code_suggestions_license_probe'],
     title: __('Code Suggestions'),
     description: s__('CodeSuggestions|The Code Suggestions feature is available.'),
+  },
+  {
+    values: ['duo_agent_platform_probe'],
+    title: __('GitLab Duo Agent Platform'),
+    description: s__(
+      'CodeSuggestions|The GitLab Duo Agent Platform service must be accessible for agentic workflows.',
+    ),
   },
   {
     values: ['end_to_end_probe'],
