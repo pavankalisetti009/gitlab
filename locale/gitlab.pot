@@ -10119,7 +10119,7 @@ msgstr ""
 msgid "Authentication method updated"
 msgstr ""
 
-msgid "Authentication via WebAuthn device failed."
+msgid "Authentication via WebAuthn device failed. Use another 2FA method or %{two_factor_recovery_hyperlink} your account."
 msgstr ""
 
 msgid "Authentication with the AI gateway services failed: %{error}"
@@ -75004,6 +75004,9 @@ msgstr ""
 msgid "WebAuthn device registered"
 msgstr ""
 
+msgid "WebAuthn device successfully authenticated."
+msgstr ""
+
 msgid "WebAuthn devices"
 msgstr ""
 
@@ -78996,6 +78999,9 @@ msgstr ""
 msgid "Your username is %{username}."
 msgstr ""
 
+msgid "Your webauthn device did not send a valid JSON response."
+msgstr ""
+
 msgid "Your work"
 msgstr ""
 
@@ -81231,6 +81237,9 @@ msgid "reached maximum depth"
 msgstr ""
 
 msgid "read-only"
+msgstr ""
+
+msgid "recover"
 msgstr ""
 
 msgid "register"
