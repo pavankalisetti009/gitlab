@@ -11,7 +11,7 @@ RSpec.describe 'Updating a Namespace Model Selection Feature setting', :saas, fe
   let(:current_user) { group_owner }
   let(:user) { current_user }
 
-  let(:feature_flags_enabled) { true }
+  let(:is_saas) { true }
   let(:namespace_duo_enabled) { true }
 
   let(:offered_model_ref) { 'openai_chatgpt_4o' }
@@ -37,7 +37,7 @@ RSpec.describe 'Updating a Namespace Model Selection Feature setting', :saas, fe
   end
 
   before do
-    stub_feature_flags(ai_model_switching: feature_flags_enabled)
+    stub_saas_features(gitlab_com_subscriptions: is_saas)
 
     group.namespace_settings.update!(duo_features_enabled: namespace_duo_enabled)
 
@@ -53,8 +53,8 @@ RSpec.describe 'Updating a Namespace Model Selection Feature setting', :saas, fe
 
   describe '#resolve' do
     context 'with access issues' do
-      context 'when the ai_model_switching feature flag is disabled' do
-        let(:feature_flags_enabled) { false }
+      context 'when the instance is not SAAS' do
+        let(:is_saas) { false }
 
         it_behaves_like 'a mutation that returns a top-level access error'
       end

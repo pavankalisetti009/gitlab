@@ -7,7 +7,7 @@ RSpec.describe Ai::ModelSelection::NamespaceFeatureSetting, feature_category: :"
   let(:is_saas) { true }
 
   before do
-    allow(::Gitlab::Saas).to receive(:feature_available?).with(:gitlab_com_subscriptions).and_return(is_saas)
+    stub_saas_features(gitlab_com_subscriptions: is_saas)
   end
 
   subject(:ai_feature_setting) do
@@ -81,17 +81,6 @@ RSpec.describe Ai::ModelSelection::NamespaceFeatureSetting, feature_category: :"
 
     context 'when the instance is not SAAS' do
       let(:is_saas) { false }
-
-      it 'returns nil' do
-        result = described_class.find_or_initialize_by_feature(group, existing_feature)
-        expect(result).to be_nil
-      end
-    end
-
-    context 'when the instance is not SAA' do
-      before do
-        allow(group).to receive(:duo_features_enabled).and_return(false)
-      end
 
       it 'returns nil' do
         result = described_class.find_or_initialize_by_feature(group, existing_feature)

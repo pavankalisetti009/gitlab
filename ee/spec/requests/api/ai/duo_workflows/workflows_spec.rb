@@ -1332,7 +1332,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
         before do
           stub_feature_flags(self_hosted_agent_platform: true)
           stub_feature_flags(duo_agent_platform_model_selection: false)
-          stub_feature_flags(ai_model_switching: false)
+          stub_saas_features(gitlab_com_subscriptions: false)
         end
 
         it 'includes model metadata headers in the response' do
@@ -1403,7 +1403,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
         before do
           stub_feature_flags(self_hosted_agent_platform: false)
           stub_feature_flags(duo_agent_platform_model_selection: false)
-          stub_feature_flags(ai_model_switching: false)
+          stub_saas_features(gitlab_com_subscriptions: false)
         end
 
         subject(:get_response) do
@@ -1456,7 +1456,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
         before do
           stub_feature_flags(duo_agent_platform_model_selection: false)
-          stub_feature_flags(ai_model_switching: false)
+          stub_saas_features(gitlab_com_subscriptions: false)
           stub_feature_flags(self_hosted_agent_platform: false)
         end
 
@@ -1483,7 +1483,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
         before do
           stub_feature_flags(duo_agent_platform_model_selection: true)
-          stub_feature_flags(ai_model_switching: true)
+          stub_saas_features(gitlab_com_subscriptions: true)
           stub_feature_flags(self_hosted_agent_platform: false)
 
           stub_request(:get, fetch_service_endpoint_url)

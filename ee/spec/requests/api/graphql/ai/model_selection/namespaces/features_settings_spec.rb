@@ -24,7 +24,7 @@ RSpec.describe 'List of configurable namespace Model Selection feature settings.
     }
   end
 
-  let(:feature_flags_enabled) { true }
+  let(:is_saas) { true }
   let(:namespace_duo_enabled) { true }
   let(:user) { group_owner }
   let(:group_gid) { group.to_global_id.to_s }
@@ -77,7 +77,7 @@ RSpec.describe 'List of configurable namespace Model Selection feature settings.
         .and_return(test_ai_feature_enum)
     )
 
-    stub_feature_flags(ai_model_switching: feature_flags_enabled)
+    stub_saas_features(gitlab_com_subscriptions: is_saas)
 
     group.namespace_settings.update!(duo_features_enabled: namespace_duo_enabled)
 
@@ -93,8 +93,8 @@ RSpec.describe 'List of configurable namespace Model Selection feature settings.
     end
 
     context 'with access issues' do
-      context 'when the ai_model_switching feature flag is disabled' do
-        let(:feature_flags_enabled) { false }
+      context 'when the instance is not saas' do
+        let(:is_saas) { false }
 
         it_behaves_like 'a query that returns a top-level access error'
       end

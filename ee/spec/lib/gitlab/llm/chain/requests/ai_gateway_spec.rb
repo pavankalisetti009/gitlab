@@ -93,7 +93,6 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
       allow(Gitlab::Llm::Logger).to receive(:build).and_return(logger)
       allow(logger).to receive(:conditional_info)
       allow(instance).to receive(:ai_client).and_return(ai_client)
-      stub_feature_flags(ai_model_switching: false)
     end
 
     shared_examples 'performing request to the AI Gateway' do
@@ -403,120 +402,112 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
         end
       end
 
-      context 'when model switching is enabled and model is selected' do
-        let(:unit_primitive) { :explain_code }
-        let(:model_ref) { 'claude-3-7-sonnet-20250219' }
-        let(:prompt) { { prompt: user_prompt, options: {} } }
+      context 'with namespace model selection', :saas_gitlab_com_subscriptions do
+        context 'when a model is selected' do
+          let(:unit_primitive) { :explain_code }
+          let(:model_ref) { 'claude-3-7-sonnet-20250219' }
+          let(:prompt) { { prompt: user_prompt, options: {} } }
 
-        before do
-          stub_feature_flags(ai_model_switching: true)
-          create(:ai_namespace_feature_setting, namespace: root_namespace,
-            feature: :"duo_chat_#{unit_primitive}", offered_model_ref: model_ref)
+          before do
+            create(:ai_namespace_feature_setting, namespace: root_namespace,
+              feature: :"duo_chat_#{unit_primitive}", offered_model_ref: model_ref)
+          end
+
+          it_behaves_like 'sends a request with identifier and feature_setting'
         end
 
-        it_behaves_like 'sends a request with identifier and feature_setting'
-      end
+        context 'when model switching is enabled and a model is explicitly selected as `GitLab Default`' do
+          let(:unit_primitive) { :explain_code }
+          let(:prompt) { { prompt: user_prompt, options: {} } }
+          let(:model_ref) { nil }
 
-      context 'when model switching is enabled and a model is explicitly selected as `GitLab Default`' do
-        let(:unit_primitive) { :explain_code }
-        let(:prompt) { { prompt: user_prompt, options: {} } }
-        let(:model_ref) { nil }
+          before do
+            # When `offered_model_ref` is set to nil, it is considered by AI Gateway as the
+            # GitLab default model.
+            create(:ai_namespace_feature_setting, namespace: root_namespace,
+              feature: :"duo_chat_#{unit_primitive}", offered_model_ref: model_ref)
+          end
 
-        before do
-          stub_feature_flags(ai_model_switching: true)
-          # When `offered_model_ref` is set to nil, it is considered by AI Gateway as the
-          # GitLab default model.
-          create(:ai_namespace_feature_setting, namespace: root_namespace,
-            feature: :"duo_chat_#{unit_primitive}", offered_model_ref: model_ref)
+          it_behaves_like 'sends a request with identifier and feature_setting'
         end
 
-        it_behaves_like 'sends a request with identifier and feature_setting'
-      end
+        context 'when model switching is enabled, but a model is explicitly not selected ' \
+          '(ie, it should behave like the default GitLab model is selected)' do
+          let(:unit_primitive) { :explain_code }
+          let(:prompt) { { prompt: user_prompt, options: {} } }
+          let(:model_ref) { nil }
 
-      context 'when model switching is enabled, but a model is explicitly not selected ' \
-        '(ie, it should behave like the default GitLab model is selected)' do
-        let(:unit_primitive) { :explain_code }
-        let(:prompt) { { prompt: user_prompt, options: {} } }
-        let(:model_ref) { nil }
-
-        before do
-          stub_feature_flags(ai_model_switching: true)
+          it_behaves_like 'sends a request with identifier and feature_setting'
         end
 
-        it_behaves_like 'sends a request with identifier and feature_setting'
-      end
-
-      context 'when using agent prompt with namespace model switching', :saas do
-        let(:unit_primitive) { :explain_code }
-        let(:model_ref) { 'claude-3-7-sonnet-20250219' }
-        let(:prompt) do
-          {
-            options: {
-              use_ai_gateway_agent_prompt: true,
-              inputs: { a: 1 }
+        context 'when using agent prompt with namespace model switching' do
+          let(:unit_primitive) { :explain_code }
+          let(:model_ref) { 'claude-3-7-sonnet-20250219' }
+          let(:prompt) do
+            {
+              options: {
+                use_ai_gateway_agent_prompt: true,
+                inputs: { a: 1 }
+              }
             }
-          }
-        end
+          end
 
-        before do
-          create(:ai_namespace_feature_setting, namespace: root_namespace,
-            feature: :"duo_chat_#{unit_primitive}", offered_model_ref: model_ref)
-        end
+          before do
+            create(:ai_namespace_feature_setting, namespace: root_namespace,
+              feature: :"duo_chat_#{unit_primitive}", offered_model_ref: model_ref)
+          end
 
-        it 'sends model_metadata with identifier and feature_setting' do
-          url = "#{::Gitlab::AiGateway.url}#{described_class::BASE_PROMPTS_CHAT_ENDPOINT}/#{unit_primitive}"
+          it 'sends model_metadata with identifier and feature_setting' do
+            url = "#{::Gitlab::AiGateway.url}#{described_class::BASE_PROMPTS_CHAT_ENDPOINT}/#{unit_primitive}"
 
-          expect(ai_client).to receive(:stream).with(
-            hash_including(
-              url: url,
-              body: hash_including(
-                inputs: { a: 1 },
-                model_metadata: {
-                  provider: 'gitlab',
-                  feature_setting: 'duo_chat_explain_code',
-                  identifier: model_ref
-                },
-                prompt_version: a_kind_of(String)
-              )
-            )
-          ).and_return(response)
-
-          gateway = described_class.new(user, root_namespace: root_namespace, tracking_context: tracking_context)
-          expect(gateway.request(prompt, unit_primitive: unit_primitive)).to eq(response)
-        end
-      end
-
-      context 'when root_namespace is not root' do
-        let(:subgroup) { create(:group, parent: root_namespace) }
-        let(:unit_primitive) { 'write_tests' }
-        let(:prompt) { { prompt: user_prompt, options: {} } }
-
-        before do
-          stub_feature_flags(ai_model_switching: true)
-        end
-
-        it 'ignores model switching' do
-          url = "#{::Gitlab::AiGateway.url}/v1/chat/write_tests"
-
-          expect(ai_client).to receive(:stream).with(
-            hash_including(
-              url: url,
-              body: hash_including(
-                prompt_components: array_including(
-                  hash_including(payload: hash_including(
-                    provider: :anthropic,
-                    model: 'claude-3-5-sonnet-20240620'
-                  ))
+            expect(ai_client).to receive(:stream).with(
+              hash_including(
+                url: url,
+                body: hash_including(
+                  inputs: { a: 1 },
+                  model_metadata: {
+                    provider: 'gitlab',
+                    feature_setting: 'duo_chat_explain_code',
+                    identifier: model_ref
+                  },
+                  prompt_version: a_kind_of(String)
                 )
               )
-            )
-          ).and_return(response)
+            ).and_return(response)
 
-          gateway = described_class.new(user, root_namespace: subgroup, tracking_context: tracking_context)
-          expect(gateway.request(prompt, unit_primitive: unit_primitive)).to eq(response)
+            gateway = described_class.new(user, root_namespace: root_namespace, tracking_context: tracking_context)
+            expect(gateway.request(prompt, unit_primitive: unit_primitive)).to eq(response)
+          end
+        end
+
+        context 'when root_namespace is not root' do
+          let(:subgroup) { create(:group, parent: root_namespace) }
+          let(:unit_primitive) { 'write_tests' }
+          let(:prompt) { { prompt: user_prompt, options: {} } }
+
+          it 'ignores model switching' do
+            url = "#{::Gitlab::AiGateway.url}/v1/chat/write_tests"
+
+            expect(ai_client).to receive(:stream).with(
+              hash_including(
+                url: url,
+                body: hash_including(
+                  prompt_components: array_including(
+                    hash_including(payload: hash_including(
+                      provider: :anthropic,
+                      model: 'claude-3-5-sonnet-20240620'
+                    ))
+                  )
+                )
+              )
+            ).and_return(response)
+
+            gateway = described_class.new(user, root_namespace: subgroup, tracking_context: tracking_context)
+            expect(gateway.request(prompt, unit_primitive: unit_primitive)).to eq(response)
+          end
         end
       end
     end
+    # rubocop:enable RSpec/MultipleMemoizedHelpers
   end
-  # rubocop:enable RSpec/MultipleMemoizedHelpers
 end
