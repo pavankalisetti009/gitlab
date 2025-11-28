@@ -1,4 +1,4 @@
-import { TOKEN_TYPES } from 'ee/admin/data_management/constants';
+import { CHECKSUM_STATES_ARRAY, TOKEN_TYPES } from 'ee/admin/data_management/constants';
 
 export const formatListboxItems = (items) => {
   return items.map((type) => ({
@@ -33,4 +33,18 @@ export const processFilters = (filters) => {
     const { key, transform } = matchingProcessor;
     return { ...acc, [key]: transform(filter) };
   }, {});
+};
+
+export const extractFiltersFromQuery = ({ checksumState, identifiers }) => {
+  const filters = [];
+
+  if (identifiers) {
+    filters.push(identifiers.join(' '));
+  }
+
+  if (isValidFilter(checksumState, CHECKSUM_STATES_ARRAY)) {
+    filters.push({ type: TOKEN_TYPES.CHECKSUM_STATE, value: { data: checksumState } });
+  }
+
+  return filters;
 };

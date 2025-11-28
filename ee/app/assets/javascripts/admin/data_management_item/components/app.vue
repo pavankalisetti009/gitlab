@@ -1,7 +1,7 @@
 <script>
 import { GlLoadingIcon } from '@gitlab/ui';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
-import DataManagementItemModelInfo from 'ee/admin/data_management_item/components/data_management_item_model_info.vue';
+import ModelInfo from 'ee/admin/data_management_item/components/model_info.vue';
 import { getModel, putModelAction } from 'ee/api/data_management_api';
 import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
 import { createAlert } from '~/alert';
@@ -14,7 +14,7 @@ export default {
   components: {
     PageHeading,
     ChecksumInfo,
-    DataManagementItemModelInfo,
+    ModelInfo,
     GlLoadingIcon,
   },
   props: {
@@ -107,7 +107,7 @@ export default {
         :checksum-loading="checksumLoading"
         @recalculate-checksum="handleRecalculateChecksum"
       />
-      <data-management-item-model-info class="gl-order-1 @md/panel:gl-order-2" :model="model" />
+      <model-info class="gl-order-1 @md/panel:gl-order-2" :model="model" />
     </div>
   </section>
 </template>

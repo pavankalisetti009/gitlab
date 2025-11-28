@@ -22,7 +22,7 @@ RSpec.describe 'admin/data_management/show.html.haml', :enable_admin_mode, featu
   it 'sets breadcrumbs' do
     expect(view).to have_received(:breadcrumb_title).with(model.id.to_s)
     expect(view).to have_received(:add_to_breadcrumbs)
-      .with('Project', "#{admin_data_management_path}/project")
+      .with('Projects', "#{admin_data_management_path}/project")
     expect(view).to have_received(:add_to_breadcrumbs)
       .with(_('Data management'), admin_data_management_path)
   end
