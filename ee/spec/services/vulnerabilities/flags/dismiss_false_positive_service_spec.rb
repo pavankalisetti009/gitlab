@@ -20,6 +20,50 @@ RSpec.describe Vulnerabilities::Flags::DismissFalsePositiveService, feature_cate
         project.add_maintainer(user)
       end
 
+      describe 'audit events' do
+        let!(:existing_ai_flag) do
+          create(
+            :vulnerabilities_flag,
+            finding: finding,
+            flag_type: :false_positive,
+            origin: 'ai_sast_fp_detection',
+            confidence_score: 0.8,
+            description: 'AI detected as false positive'
+          )
+        end
+
+        it 'creates an audit event when dismissing a false positive flag', :aggregate_failures do
+          expect { service.execute }.to change { AuditEvent.count }.by(1)
+
+          audit_event = AuditEvent.last
+
+          expect(audit_event).to have_attributes(
+            author: user,
+            entity_type: 'Project',
+            entity_id: project.id,
+            target_details: "#{vulnerability.title} (ID: #{vulnerability.id})"
+          )
+          expect(audit_event.details).to include(
+            custom_message: 'Removed false positive flag',
+            event_name: 'remove_vulnerability_false_positive_flag',
+            target_type: 'Vulnerability'
+          )
+        end
+
+        context 'when flag save fails' do
+          before do
+            allow_next_instance_of(Vulnerabilities::Flag) do |flag|
+              allow(flag).to receive_messages(save: false,
+                errors: instance_double(ActiveModel::Errors, full_messages: ['Validation error']))
+            end
+          end
+
+          it 'does not create an audit event' do
+            expect { service.execute }.not_to change { AuditEvent.count }
+          end
+        end
+      end
+
       context 'when creating a new flag' do
         let!(:existing_ai_flag) do
           create(
