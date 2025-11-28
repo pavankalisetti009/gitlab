@@ -24,9 +24,7 @@ export default {
 </script>
 
 <template>
-  <div
-    class="gl-border gl-flex-1 gl-rounded-b-lg gl-border-t-0 gl-bg-subtle gl-p-6 @md/panel:gl-border-t @md/panel:gl-rounded-l-none @md/panel:gl-rounded-r-lg @md/panel:gl-border-l-0"
-  >
+  <div>
     <div class="gl-pb-6">
       <h3 class="gl-heading-3 gl-mb-1 gl-text-default">{{ s__('Billings|Premium') }}</h3>
       <p class="gl-font-weight-semibold gl-m-0 gl-text-default">

@@ -16,6 +16,8 @@ describe('PricingInformationApp', () => {
       trial_active: false,
       group_billings_href: '/groups/group-1/-/billings',
       upgrade_to_premium_href: '/groups/group-1/-/billings/purchase',
+      can_access_duo_chat: true,
+      explore_links: {},
     },
     {
       id: 2,
@@ -23,6 +25,10 @@ describe('PricingInformationApp', () => {
       trial_active: true,
       group_billings_href: '/groups/group-2/-/billings',
       upgrade_to_premium_href: '/groups/group-2/-/billings/purchase',
+      can_access_duo_chat: false,
+      explore_links: {
+        mock_explore_link: '/mock/explore/link',
+      },
     },
   ];
 
@@ -41,6 +47,7 @@ describe('PricingInformationApp', () => {
   const findFreePlanSection = () => wrapper.findByTestId('free-plan-section');
   const findTrialPlanSection = () => wrapper.findByTestId('trial-plan-section');
   const findPremiumPlanSection = () => wrapper.findByTestId('premium-plan-section');
+  const findUpgradeTrialSection = () => wrapper.findByTestId('upgrade-trial-section');
   const findManageBillingButton = () => wrapper.findByTestId('manage-billing-button');
   const findUpgradeToPremiumButton = () => wrapper.findByTestId('upgrade-to-premium-button');
 
@@ -97,16 +104,31 @@ describe('PricingInformationApp', () => {
       expect(findFreePlanSection().exists()).toBe(true);
       expect(findTrialPlanSection().exists()).toBe(false);
       expect(findPremiumPlanSection().exists()).toBe(true);
+      expect(findUpgradeTrialSection().exists()).toBe(false);
     });
 
-    it('shows trial plan for groups with active trial', async () => {
+    it('shows trial upgrade section for groups with active trial', async () => {
       createComponent();
 
       await selectGroup(2);
 
       expect(findTrialPlanSection().exists()).toBe(true);
       expect(findFreePlanSection().exists()).toBe(false);
-      expect(findPremiumPlanSection().exists()).toBe(true);
+      expect(findPremiumPlanSection().exists()).toBe(false);
+      expect(findUpgradeTrialSection().exists()).toBe(true);
+    });
+
+    it('passes the correct props to the upgrade trial section', async () => {
+      createComponent();
+
+      await selectGroup(2);
+
+      expect(findUpgradeTrialSection().props()).toEqual({
+        canAccessDuoChat: false,
+        exploreLinks: { mock_explore_link: '/mock/explore/link' },
+        groupBillingHref: '/groups/group-2/-/billings',
+        groupId: 2,
+      });
     });
 
     it('renders premium plan section when group is selected', async () => {

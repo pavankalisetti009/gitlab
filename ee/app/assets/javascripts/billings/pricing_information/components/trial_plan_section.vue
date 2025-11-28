@@ -5,14 +5,12 @@ export default {
 </script>
 
 <template>
-  <div
-    class="gl-border gl-flex-1 gl-rounded-t-lg gl-bg-default gl-p-6 @md/panel:gl-rounded-l-lg @md/panel:gl-rounded-r-none"
-  >
+  <div>
     <h3 class="gl-heading-3 gl-text-default">
       {{ s__('Billings|Your group is on a trial of Ultimate + GitLab Duo Enterprise') }}
     </h3>
 
-    <div class="gl-mb-5 gl-text-sm gl-text-subtle">
+    <div class="gl-mb-5 gl-text-subtle">
       <div class="gl-list-style-none gl-p-0">
         <div class="gl-display-flex gl-align-items-start gl-mb-5 gl-text-subtle">
           <span>{{

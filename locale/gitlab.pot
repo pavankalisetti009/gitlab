@@ -11126,6 +11126,9 @@ msgstr ""
 msgid "Billings|Unlimited licensed users"
 msgstr ""
 
+msgid "Billings|Upgrade before your trial ends to maintain access to these Premium features."
+msgstr ""
+
 msgid "Billings|Upgrade to Premium"
 msgstr ""
 
