@@ -842,7 +842,7 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
     end
   end
 
-  describe '#billable_gitlab_duo_pro_root_group_ids', :use_clean_rails_redis_caching do
+  describe '#non_guest_root_group_ids', :use_clean_rails_redis_caching do
     using RSpec::Parameterized::TableSyntax
 
     let_it_be(:root_group) { create(:group) }
@@ -850,7 +850,7 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
     let_it_be(:group_project) { create(:project, group: root_group) }
     let_it_be(:sub_group_project) { create(:project, group: sub_group) }
 
-    subject { user.billable_gitlab_duo_pro_root_group_ids }
+    subject { user.non_guest_root_group_ids }
 
     context 'when on gitlab.com' do
       before do
@@ -888,10 +888,10 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
           it { is_expected.to eq(result) }
 
           it 'caches the result' do
-            user.billable_gitlab_duo_pro_root_group_ids
+            user.non_guest_root_group_ids
 
             expect(
-              Rails.cache.fetch(['users', user.id, described_class::BILLABLE_DUO_PRO_ROOT_GROUP_IDS_CACHE_KEY])
+              Rails.cache.fetch(['users', user.id, described_class::NON_GUEST_ROOT_GROUP_IDS_CACHE_KEY])
             ).to eq(result)
           end
         end
@@ -997,21 +997,21 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
       user.any_group_with_ai_available?
       other_user.any_group_with_ai_available?
 
-      billable_groups_user.billable_gitlab_duo_pro_root_group_ids
+      billable_groups_user.non_guest_root_group_ids
     end
 
     it 'clears cache from users with the given ids', :aggregate_failures do
       expect(Rails.cache.fetch(['users', user.id, 'group_with_ai_enabled'])).to eq(false)
       expect(Rails.cache.fetch(['users', other_user.id, 'group_with_ai_enabled'])).to eq(false)
       expect(Rails.cache.fetch(['users', billable_groups_user.id,
-        described_class::BILLABLE_DUO_PRO_ROOT_GROUP_IDS_CACHE_KEY])).to eq([])
+        described_class::NON_GUEST_ROOT_GROUP_IDS_CACHE_KEY])).to eq([])
 
       User.clear_group_with_ai_available_cache([user.id, yet_another_user.id, billable_groups_user.id])
 
       expect(Rails.cache.fetch(['users', user.id, 'group_with_ai_enabled'])).to be_nil
       expect(Rails.cache.fetch(['users', other_user.id, 'group_with_ai_enabled'])).to eq(false)
       expect(Rails.cache.fetch(['users', billable_groups_user.id,
-        described_class::BILLABLE_DUO_PRO_ROOT_GROUP_IDS_CACHE_KEY])).to be_nil
+        described_class::NON_GUEST_ROOT_GROUP_IDS_CACHE_KEY])).to be_nil
     end
 
     it 'clears cache when given a single id', :aggregate_failures do
