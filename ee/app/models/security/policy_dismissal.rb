@@ -53,6 +53,14 @@ module Security
       applicable_for_findings?(mr_violation_finding_uuids)
     end
 
+    def license_names
+      licenses.keys
+    end
+
+    def components(license_name)
+      licenses.fetch(license_name, [])
+    end
+
     private
 
     def scan_result_policy_violations

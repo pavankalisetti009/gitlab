@@ -479,4 +479,84 @@ RSpec.describe Security::PolicyDismissal, feature_category: :security_policy_man
       end
     end
   end
+
+  describe '#license_names' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:merge_request) { create(:merge_request, target_project: project, source_project: project) }
+    let(:policy_dismissal) do
+      create(:policy_dismissal, project: project, merge_request: merge_request, licenses: licenses)
+    end
+
+    subject(:license_names) { policy_dismissal.license_names }
+
+    context 'without licenses' do
+      let(:licenses) { {} }
+
+      it 'returns an empty array' do
+        expect(license_names).to be_empty
+      end
+
+      context 'with licenses' do
+        let(:mit_license) { 'MIT License' }
+
+        context 'with a single license' do
+          let(:licenses) { { mit_license => ['rack'] } }
+
+          it 'returns the license name' do
+            expect(license_names).to match_array([mit_license])
+          end
+        end
+
+        context 'with multiple licenses' do
+          let(:ruby_license) { 'Ruby' }
+
+          let(:licenses) { { mit_license => ['rack'], ruby_license => ['json'] } }
+
+          it 'returns all license names' do
+            expect(license_names).to match_array([mit_license, ruby_license])
+          end
+        end
+      end
+    end
+  end
+
+  describe '#components' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:merge_request) { create(:merge_request, target_project: project, source_project: project) }
+    let(:policy_dismissal) do
+      create(:policy_dismissal, project: project, merge_request: merge_request, licenses: licenses)
+    end
+
+    subject(:components) { policy_dismissal.components(license_name) }
+
+    context 'without licenses' do
+      let(:licenses) { {} }
+      let(:license_name) { 'MIT License' }
+
+      it 'returns an empty array' do
+        expect(components).to be_empty
+      end
+    end
+
+    context 'with licenses' do
+      let(:license_name) { 'MIT License' }
+      let(:licenses) { { license_name => components_list } }
+
+      context 'when the license has a single component' do
+        let(:components_list) { ['rack'] }
+
+        it 'returns the component' do
+          expect(components).to match_array(components_list)
+        end
+      end
+
+      context 'when the license has multiple components' do
+        let(:components_list) { %w[rack bundler] }
+
+        it 'returns all components' do
+          expect(components).to match_array(components_list)
+        end
+      end
+    end
+  end
 end
