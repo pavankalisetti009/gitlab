@@ -66,8 +66,6 @@ module EE
     def can_assign_default_duo_group?
       return false if ::Ai::AmazonQ.connected?
 
-      return false unless ::Feature.enabled?(:ai_user_default_duo_namespace, user)
-
       return false unless user.user_preference.duo_default_namespace_candidates.exists?
 
       ::Gitlab::CurrentSettings.current_application_settings.duo_features_enabled
