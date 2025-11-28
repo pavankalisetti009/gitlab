@@ -113,4 +113,10 @@ RSpec.describe Ai::DuoWorkflows::McpConfigService, feature_category: :duo_agent_
       expect(described_class::GITLAB_TOOLS_REQUIRING_APPROVAL).to eq(['semantic_code_search'])
     end
   end
+
+  describe 'constant GITLAB_TOOLS_REQUIRING_APPROVAL' do
+    it 'is defined with expected tools' do
+      expect(described_class::GITLAB_TOOLS_REQUIRING_APPROVAL).to eq(['semantic_code_search'])
+    end
+  end
 end
