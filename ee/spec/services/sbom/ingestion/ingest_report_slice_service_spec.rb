@@ -29,7 +29,8 @@ RSpec.describe Sbom::Ingestion::IngestReportSliceService, feature_category: :dep
         ::Sbom::Ingestion::Tasks::IngestComponentVersions,
         ::Sbom::Ingestion::Tasks::IngestSources,
         ::Sbom::Ingestion::Tasks::IngestOccurrences,
-        ::Sbom::Ingestion::Tasks::IngestOccurrencesVulnerabilities
+        ::Sbom::Ingestion::Tasks::IngestOccurrencesVulnerabilities,
+        ::Sbom::Ingestion::Tasks::UpdateSecurityPolicyDismissals
       ]
 
       expect(tasks).to all(receive(:execute).with(pipeline, occurrence_maps).ordered)
