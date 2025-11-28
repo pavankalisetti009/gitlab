@@ -26801,7 +26801,7 @@ CREATE TABLE security_orchestration_policy_rule_schedules (
     updated_at timestamp with time zone NOT NULL,
     next_run_at timestamp with time zone,
     security_orchestration_policy_configuration_id bigint NOT NULL,
-    user_id bigint NOT NULL,
+    user_id bigint,
     policy_index integer NOT NULL,
     cron text NOT NULL,
     rule_index integer DEFAULT 0 NOT NULL,

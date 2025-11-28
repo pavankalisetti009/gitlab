@@ -11,7 +11,6 @@ RSpec.describe Security::OrchestrationPolicyRuleSchedule, feature_category: :sec
   describe 'validations' do
     subject { create(:security_orchestration_policy_rule_schedule) }
 
-    it { is_expected.to validate_presence_of(:owner) }
     it { is_expected.to validate_presence_of(:security_orchestration_policy_configuration) }
     it { is_expected.to validate_presence_of(:cron) }
     it { is_expected.to validate_presence_of(:policy_index) }
