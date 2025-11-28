@@ -65,9 +65,6 @@ export default {
     isProjectNamespace() {
       return Boolean(this.projectId);
     },
-    flowName() {
-      return this.aiCatalogFlow.name;
-    },
     showActions() {
       return this.isGlobal || this.isProjectNamespace;
     },
@@ -99,9 +96,7 @@ export default {
         if (data) {
           const { errors } = data.aiCatalogItemConsumerCreate;
           if (errors.length > 0) {
-            this.errorTitle = sprintf(s__('AICatalog|Could not enable flow: %{flowName}'), {
-              flowName: this.aiCatalogFlow.name,
-            });
+            this.errorTitle = s__('AICatalog|Could not enable flow');
             this.errors = errors;
             return;
           }
@@ -227,7 +222,7 @@ export default {
     <page-heading>
       <template #heading>
         <span class="gl-line-clamp-1 gl-wrap-anywhere">
-          {{ flowName }}
+          {{ aiCatalogFlow.name }}
         </span>
       </template>
       <template #actions>
