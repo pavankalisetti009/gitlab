@@ -3,10 +3,12 @@
 require 'spec_helper'
 
 RSpec.describe VirtualRegistries::Container::HandleFileRequestService, :aggregate_failures, :clean_gitlab_redis_shared_state, feature_category: :virtual_registry do
-  let_it_be(:registry) { create(:virtual_registries_container_registry, :with_upstreams) }
-  let_it_be(:project) { create(:project, namespace: registry.group) }
+  let_it_be(:group) { create(:group) }
+  let_it_be(:project) { create(:project, namespace: group) }
   let_it_be(:user) { create(:user, owner_of: project) }
-  let_it_be(:upstream) { registry.upstreams.first }
+
+  let(:upstream) { create(:virtual_registries_container_upstream, group: group) }
+  let!(:registry) { create(:virtual_registries_container_registry, group: group, upstreams: [upstream]) }
 
   let(:etag_returned_by_upstream) { nil }
   let(:service) { described_class.new(registry: registry, current_user: user, params: { path: path }) }
@@ -50,9 +52,8 @@ RSpec.describe VirtualRegistries::Container::HandleFileRequestService, :aggregat
       let_it_be(:upstream_etag) { 'sha256:abc123def456abc123def456abc123def456abc123def456abc123def456abcd' }
       let_it_be(:path) { "my/image/manifests/#{upstream_etag}" }
       let_it_be(:expected_relative_path) { 'my/image/manifests/latest' }
-      let_it_be(:upstream_resource_url) { upstream.url_for(path) }
-
-      let_it_be(:cache_entry) do
+      let(:upstream_resource_url) { upstream.url_for(path) }
+      let!(:cache_entry) do
         create(:virtual_registries_container_cache_entry,
           :upstream_checked,
           upstream: upstream,
@@ -209,7 +210,7 @@ RSpec.describe VirtualRegistries::Container::HandleFileRequestService, :aggregat
     end
 
     context 'with a DeployToken' do
-      let_it_be(:user) { create(:deploy_token, :group, groups: [registry.group], read_virtual_registry: true) }
+      let(:user) { create(:deploy_token, :group, groups: [registry.group], read_virtual_registry: true) }
       let(:path) { 'my/image/manifests/latest' }
       let(:expected_image_name) { 'my/image' }
       let(:expected_relative_path) { '/v2/my/image/manifests/latest' }
