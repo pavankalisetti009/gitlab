@@ -1,9 +1,8 @@
 import { nextTick } from 'vue';
-import { GlDashboardLayout } from '@gitlab/ui';
+import { GlDashboardLayout, GlExperimentBadge } from '@gitlab/ui';
 import { markRaw } from '~/lib/utils/vue3compat/mark_raw';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { OPERATORS_OR } from '~/vue_shared/components/filtered_search_bar/constants';
-import BetaBadge from '~/vue_shared/components/badges/beta_badge.vue';
 import {
   SEVERITY_LEVELS_KEYS,
   REPORT_TYPES_WITH_MANUALLY_ADDED,
@@ -38,7 +37,7 @@ describe('Project Security Dashboard (new version) - Component', () => {
   const findPanelWithId = (panelId) => getDashboardConfig().panels.find(({ id }) => id === panelId);
   const getVulnerabilitiesOverTimePanel = () => findPanelWithId('1');
   const getTitle = () => wrapper.find('h1');
-  const getBetaBadge = () => wrapper.findComponent(BetaBadge);
+  const getBetaBadge = () => wrapper.findComponent(GlExperimentBadge);
 
   beforeEach(() => {
     createComponent();
