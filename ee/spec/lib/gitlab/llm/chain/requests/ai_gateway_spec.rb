@@ -493,6 +493,5 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
         end
       end
     end
-    # rubocop:enable RSpec/MultipleMemoizedHelpers
   end
 end
