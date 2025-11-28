@@ -64,6 +64,11 @@ export default {
           tdClass: '@sm/panel:gl-max-w-0',
         },
         {
+          key: 'registriesCount',
+          label: s__('VirtualRegistry|Used by registries'),
+          tdClass: '@sm/panel:gl-w-20 @sm/panel:!gl-leading-32',
+        },
+        {
           key: 'actions',
           label: s__('VirtualRegistry|Actions'),
           hide: !this.canEdit,

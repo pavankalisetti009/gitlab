@@ -74030,6 +74030,9 @@ msgstr ""
 msgid "VirtualRegistry|Use the arrow buttons to reorder upstreams. Artifacts are resolved from top to bottom."
 msgstr ""
 
+msgid "VirtualRegistry|Used by registries"
+msgstr ""
+
 msgid "VirtualRegistry|Username (optional)"
 msgstr ""
 
