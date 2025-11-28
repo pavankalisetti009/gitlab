@@ -119,7 +119,7 @@ RSpec.describe Namespaces::NamespaceSettingChangesAuditor, feature_category: :gr
         allow_merge_on_skipped_pipeline default_compliance_framework_id unique_project_download_limit_alertlist
         only_allow_merge_if_all_discussions_are_resolved enterprise_users_extensions_marketplace_opt_in_status
         default_branch_protection_defaults allow_merge_without_pipeline auto_ban_user_on_excessive_projects_download
-        lock_math_rendering_limits_enabled enable_auto_assign_gitlab_duo_pro_seats early_access_program_participant
+        lock_math_rendering_limits_enabled early_access_program_participant
         lock_duo_features_enabled allow_merge_without_pipeline only_allow_merge_if_pipeline_succeeds
         lock_spp_repository_pipeline_access hide_email_on_profile spp_repository_pipeline_access archived
         resource_access_token_notify_inherited lock_resource_access_token_notify_inherited
