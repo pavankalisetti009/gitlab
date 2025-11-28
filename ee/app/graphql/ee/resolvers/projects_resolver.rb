@@ -11,13 +11,6 @@ module EE
           required: false,
           description: 'Include hidden projects.'
 
-        argument :with_code_embeddings_indexed, GraphQL::Types::Boolean,
-          required: false,
-          experiment: { milestone: '18.2' },
-          description: "Include projects with indexed code embeddings. " \
-            "Requires `ids` to be sent. Applies only if the feature flag " \
-            "`allow_with_code_embeddings_indexed_projects_filter` is enabled."
-
         argument :with_duo_eligible, GraphQL::Types::Boolean,
           required: false,
           experiment: { milestone: '18.6' },
@@ -38,20 +31,10 @@ module EE
           .merge(
             args.slice(
               :include_hidden,
-              :with_code_embeddings_indexed,
               :with_duo_eligible
             )
           )
           .merge(filter_expired_saml_session_projects: true)
-      end
-
-      override :validate_args!
-      def validate_args!(args)
-        super(args)
-
-        return unless args[:with_code_embeddings_indexed].present? && args[:ids].nil?
-
-        raise ::Gitlab::Graphql::Errors::ArgumentError, 'with_code_embeddings_indexed should be only used with ids'
       end
     end
   end
