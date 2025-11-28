@@ -1,21 +1,17 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import { apolloProvider } from '~/graphql_shared/issuable_client';
-import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { TYPE_ISSUE } from '~/issues/constants';
-import createDefaultClient from '~/lib/graphql';
 import { parseBoolean } from '~/lib/utils/common_utils';
-import SidebarDropdown from '~/sidebar/components/sidebar_dropdown.vue';
 import * as CEMountSidebar from '~/sidebar/mount_sidebar';
 import { pinia } from '~/pinia/instance';
 import CveIdRequest from './components/cve_id_request/cve_id_request.vue';
-import IterationDropdown from './components/iteration/iteration_dropdown.vue';
 import SidebarIterationWidget from './components/iteration/sidebar_iteration_widget.vue';
 import SidebarDropdownWidget from './components/sidebar_dropdown_widget.vue';
 import SidebarHealthStatusWidget from './components/health_status/sidebar_health_status_widget.vue';
 import SidebarWeightWidget from './components/weight/sidebar_weight_widget.vue';
 import SidebarEscalationPolicy from './components/incidents/sidebar_escalation_policy.vue';
-import { IssuableAttributeType, noEpic, placeholderEpic } from './constants';
+import { IssuableAttributeType } from './constants';
 
 Vue.use(VueApollo);
 
@@ -127,49 +123,6 @@ function mountSidebarEpicWidget() {
   });
 }
 
-export function mountEpicDropdown() {
-  const el = document.querySelector('.js-epic-dropdown-root');
-  const epicFormInput = document.getElementById('issue_epic_id');
-
-  if (!el || !epicFormInput) {
-    return null;
-  }
-
-  Vue.use(VueApollo);
-
-  return new Vue({
-    el,
-    name: 'EpicDropdownRoot',
-    apolloProvider: new VueApollo({
-      defaultClient: createDefaultClient(),
-    }),
-    data() {
-      return {
-        epic: placeholderEpic,
-      };
-    },
-    methods: {
-      handleChange(epic) {
-        this.epic = epic.id === null ? noEpic : epic;
-        epicFormInput.setAttribute('value', getIdFromGraphQLId(this.epic.id));
-      },
-    },
-    render(createElement) {
-      return createElement(SidebarDropdown, {
-        props: {
-          attrWorkspacePath: el.dataset.groupPath,
-          currentAttribute: this.epic,
-          issuableAttribute: IssuableAttributeType.Epic,
-          issuableType: TYPE_ISSUE,
-        },
-        on: {
-          change: this.handleChange.bind(this),
-        },
-      });
-    },
-  });
-}
-
 function mountSidebarIterationWidget() {
   const el = document.querySelector('.js-sidebar-iteration-widget-root');
 
@@ -198,53 +151,6 @@ function mountSidebarIterationWidget() {
           issuableAttribute: IssuableAttributeType.Iteration,
         },
       }),
-  });
-}
-
-export function mountIterationDropdown() {
-  const el = document.querySelector('.js-iteration-dropdown-root');
-  const iterationFormInput = document.getElementById('issue_iteration_id');
-
-  if (!el || !iterationFormInput) {
-    return null;
-  }
-
-  Vue.use(VueApollo);
-
-  return new Vue({
-    el,
-    name: 'IterationDropdownRoot',
-    apolloProvider: new VueApollo({
-      defaultClient: createDefaultClient(),
-    }),
-    provide: {
-      fullPath: el.dataset.fullPath,
-    },
-    methods: {
-      getIdForIteration(iteration) {
-        const noChangeIterationValue = '';
-        const unSetIterationValue = '0';
-
-        if (iteration === null) {
-          return noChangeIterationValue;
-        }
-        if (iteration.id === null) {
-          return unSetIterationValue;
-        }
-
-        return getIdFromGraphQLId(iteration.id);
-      },
-      handleIterationSelect(iteration) {
-        iterationFormInput.setAttribute('value', this.getIdForIteration(iteration));
-      },
-    },
-    render(createElement) {
-      return createElement(IterationDropdown, {
-        on: {
-          onIterationSelect: this.handleIterationSelect.bind(this),
-        },
-      });
-    },
   });
 }
 

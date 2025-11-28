@@ -71,27 +71,7 @@ export const healthStatusTracking = {
   property: 'health_status',
 };
 
-export const iterationSelectTextMap = {
-  iteration: __('Iteration'),
-  noIteration: __('No iteration'),
-  assignIteration: __('Select iteration'),
-  iterationSelectFail: __('Failed to set iteration on this issue. Please try again.'),
-  currentIterationFetchError: __('Failed to fetch the iteration for this issue. Please try again.'),
-  iterationsFetchError: __('Failed to fetch the iterations for the group. Please try again.'),
-  noIterationsFound: s__('Iterations|No iterations found'),
-};
-
 export const noAttributeId = null;
-
-export const noEpic = {
-  id: 0,
-  title: __('No Epic'),
-};
-
-export const placeholderEpic = {
-  id: -1,
-  title: __('Select epic'),
-};
 
 export const SIDEBAR_ESCALATION_POLICY_TITLE = __('Escalation policy');
 

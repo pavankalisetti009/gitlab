@@ -1,14 +1,6 @@
 import Vue from 'vue';
-import { mountEpicDropdown, mountIterationDropdown } from 'ee/sidebar/mount_sidebar';
-import { initForm as initFormCE } from '~/issues';
 import RelatedFeatureFlags from './components/related_feature_flags.vue';
 import UnableToLinkVulnerabilityError from './components/unable_to_link_vulnerability_error.vue';
-
-export function initForm() {
-  mountEpicDropdown();
-  mountIterationDropdown();
-  initFormCE();
-}
 
 export function initRelatedFeatureFlags() {
   const el = document.querySelector('#js-related-feature-flags-root');
