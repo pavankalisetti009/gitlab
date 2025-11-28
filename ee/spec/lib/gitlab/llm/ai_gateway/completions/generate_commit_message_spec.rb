@@ -48,7 +48,6 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::GenerateCommitMessage, featu
     let(:expected_prompt_version) { "1.2.0" }
 
     before do
-      stub_feature_flags(ai_model_switching: false)
       allow(Gitlab::Llm::AiGateway::Client).to receive(:new).and_return(ai_client)
     end
 

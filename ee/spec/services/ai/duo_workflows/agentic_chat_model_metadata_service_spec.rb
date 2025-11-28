@@ -255,13 +255,12 @@ RSpec.describe Ai::DuoWorkflows::AgenticChatModelMetadataService, feature_catego
       end
     end
 
-    context 'for GitLab.com instances', :saas do
+    context 'for GitLab.com instances', :saas_gitlab_com_subscriptions do
       let(:root_namespace) { group }
 
       context 'when duo_agent_platform_model_selection feature flag is enabled' do
         before do
           stub_feature_flags(duo_agent_platform_model_selection: group)
-          stub_feature_flags(ai_model_switching: group)
           stub_feature_flags(self_hosted_agent_platform: false)
         end
 
@@ -393,11 +392,11 @@ RSpec.describe Ai::DuoWorkflows::AgenticChatModelMetadataService, feature_catego
       context 'when duo_agent_platform_model_selection feature flag is disabled' do
         before do
           stub_feature_flags(duo_agent_platform_model_selection: false)
-          stub_feature_flags(ai_model_switching: false)
+          stub_saas_features(gitlab_com_subscriptions: false)
           stub_feature_flags(self_hosted_agent_platform: false)
         end
 
-        it_behaves_like 'returns empty headers'
+        it_behaves_like 'uses the gitlab default model'
       end
     end
   end

@@ -1,11 +1,5 @@
 # frozen_string_literal: true
 
-RSpec.shared_context 'when model_selection is enabled context' do
-  before do
-    stub_feature_flags(ai_model_switching: true)
-  end
-end
-
 RSpec.shared_context 'with model selection definitions' do
   let(:valid_feature) { :duo_chat }
   let(:valid_model_definitions) do
@@ -88,8 +82,6 @@ end
 
 RSpec.shared_examples 'model selection feature setting' do |scope_class_name:|
   context 'when ::Ai::ModelSelection::FeaturesConfigurable is included' do
-    include_context 'when model_selection is enabled context'
-
     it { is_expected.to validate_presence_of(:feature) }
 
     describe '#model_selection_scope' do

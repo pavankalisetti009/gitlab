@@ -50,6 +50,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::SummarizeReview, feature_cat
 
   describe '#execute' do
     before do
+      stub_saas_features(gitlab_com_subscriptions: false)
       stub_feature_flags(use_claude_code_completion: false)
     end
 
@@ -199,7 +200,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::SummarizeReview, feature_cat
         end
       end
 
-      context 'when namespace model switching is enabled', :saas do
+      context 'when namespace model switching is enabled' do
         let(:draft_notes_content) { "Comment: #{draft_note_by_current_user.note}\n" }
         let(:prompt_version) { "2.1.0" }
         let_it_be(:group) { create(:group) }
@@ -216,6 +217,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::SummarizeReview, feature_cat
 
         context 'when the model is pinned to a specific model' do
           before do
+            stub_saas_features(gitlab_com_subscriptions: true)
             create(:ai_namespace_feature_setting,
               namespace: group,
               feature: 'summarize_review'

@@ -142,7 +142,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::SummarizeNewMergeRequest, fe
     end
   end
 
-  describe 'SAAS only namespace feature setting integration', :saas do
+  describe 'SAAS only namespace feature setting integration', :saas_gitlab_com_subscriptions do
     let_it_be(:group) { create(:group) }
     let_it_be(:project) { create(:project, :repository, namespace: group) }
 
@@ -152,10 +152,6 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::SummarizeNewMergeRequest, fe
         target_branch: project.default_branch,
         source_project: project
       }
-    end
-
-    before do
-      stub_feature_flags(ai_model_switching: true)
     end
 
     context 'when namespace has specific feature settings' do

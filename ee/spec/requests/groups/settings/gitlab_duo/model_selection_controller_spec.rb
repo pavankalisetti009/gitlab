@@ -13,7 +13,7 @@ RSpec.describe Groups::Settings::GitlabDuo::ModelSelectionController, type: :req
   subject(:get_index) { get group_settings_gitlab_duo_model_selection_index_path(group_param) }
 
   before do
-    stub_feature_flags(ai_model_switching: true)
+    stub_saas_features(gitlab_com_subscriptions: true)
     sign_in(owner)
   end
 
@@ -32,9 +32,9 @@ RSpec.describe Groups::Settings::GitlabDuo::ModelSelectionController, type: :req
       end
     end
 
-    context 'when the ai_model_switching feature flag is disabled' do
+    context 'when the instance is not SAAS' do
       before do
-        stub_feature_flags(ai_model_switching: false)
+        stub_saas_features(gitlab_com_subscriptions: false)
       end
 
       it_behaves_like 'returns not found'
@@ -62,7 +62,7 @@ RSpec.describe Groups::Settings::GitlabDuo::ModelSelectionController, type: :req
       it_behaves_like 'returns not found'
     end
 
-    context 'when the ai_model_switching feature flag is enabled' do
+    context 'when the instance is SAAS' do
       context 'when the group is a root level group' do
         context 'when the user is a group owner' do
           context 'when the group has duo features enabled' do

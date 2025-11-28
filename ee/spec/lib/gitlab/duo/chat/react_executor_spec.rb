@@ -91,7 +91,6 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
         Gitlab::Llm::Utils::Authorizer::Response.new(allowed: true)
       )
       allow(Gitlab::AiGateway).to receive(:headers).and_return({})
-      stub_feature_flags(ai_model_switching: true)
       allow(user.user_preference).to receive(:duo_default_namespace_with_fallback).and_return(root_namespace)
       stub_saas_features(gitlab_com_subscriptions: true)
     end
@@ -558,7 +557,6 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
       let_it_be(:ai_feature) { create(:ai_feature_setting, self_hosted_model: self_hosted_model, feature: :duo_chat) }
 
       before do
-        stub_feature_flags(ai_model_switching: false)
         stub_saas_features(gitlab_com_subscriptions: false)
       end
 
@@ -586,7 +584,6 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
       let_it_be(:instance_feature) { create(:instance_model_selection_feature_setting, feature: :duo_chat) }
 
       before do
-        stub_feature_flags(ai_model_switching: false)
         stub_saas_features(gitlab_com_subscriptions: false)
       end
 

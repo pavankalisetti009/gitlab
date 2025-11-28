@@ -308,11 +308,14 @@ RSpec.describe UserPolicy, feature_category: :user_management do
   end
 
   describe ':assign_default_duo_group' do
-    context 'with no user assignments' do
-      before do
-        stub_feature_flags(ai_model_switching: true)
-        stub_feature_flags(ai_user_default_duo_namespace: true)
-        stub_application_setting(duo_features_enabled: true)
+    describe 'When the instance is SAAS', :saas do
+      context 'with no user assignments' do
+        before do
+          stub_feature_flags(ai_user_default_duo_namespace: true)
+          stub_application_setting(duo_features_enabled: true)
+        end
+
+        it { is_expected.to be_disallowed(:assign_default_duo_group) }
       end
 
       it { is_expected.to be_disallowed(:assign_default_duo_group) }
