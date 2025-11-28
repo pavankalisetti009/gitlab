@@ -4,7 +4,7 @@ module Ai
   module DuoWorkflows
     class StartWorkflowService
       IMAGE = "registry.gitlab.com/gitlab-org/duo-workflow/default-docker-image/workflow-generic-image:v0.0.4"
-      DUO_CLI_VERSION = "8.41.0"
+      DUO_CLI_VERSION = "8.46.1"
       DWS_STANDARD_CONTEXT_CATEGORY = "agent_platform_standard_context"
 
       def initialize(workflow:, params:)
