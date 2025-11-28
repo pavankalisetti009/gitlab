@@ -485,4 +485,110 @@ RSpec.describe Mcp::Tools::SearchCodebaseService, feature_category: :mcp_server 
       end
     end
   end
+
+  describe '#filter_excluded_results' do
+    let(:service) { described_class.new(name: service_name, version: '0.1.0') }
+
+    let(:result_rb) { { 'path' => 'app/models/user.rb', 'content' => 'class User' } }
+    let(:result_md) { { 'path' => 'README.md', 'content' => '# Project' } }
+    let(:result_yml) { { 'path' => 'config/database.yml', 'content' => 'production:' } }
+    let(:results) { [result_rb, result_md, result_yml] }
+
+    subject(:filter_results) { service.send(:filter_excluded_results, results, project) }
+
+    context 'with no exclusion rules' do
+      before do
+        project.create_project_setting unless project.project_setting
+        project.project_setting.update!(
+          duo_context_exclusion_settings: { exclusion_rules: [] }
+        )
+      end
+
+      it 'returns all results' do
+        is_expected.to match_array(results)
+      end
+    end
+
+    context 'with exclusion rules matching some files' do
+      before do
+        project.create_project_setting unless project.project_setting
+        project.project_setting.update!(
+          duo_context_exclusion_settings: { exclusion_rules: ['*.md'] }
+        )
+      end
+
+      it 'filters out excluded files' do
+        is_expected.to match_array([result_rb, result_yml])
+      end
+    end
+
+    context 'with exclusion rules matching all files' do
+      before do
+        project.create_project_setting unless project.project_setting
+        project.project_setting.update!(
+          duo_context_exclusion_settings: { exclusion_rules: ['*', '**/*'] }
+        )
+      end
+
+      it 'returns empty array' do
+        is_expected.to be_empty
+      end
+    end
+
+    context 'when results array is empty' do
+      let(:results) { [] }
+
+      it 'returns empty array' do
+        is_expected.to be_empty
+      end
+    end
+
+    context 'when FileExclusionService returns error' do
+      before do
+        allow_next_instance_of(Ai::FileExclusionService) do |svc|
+          allow(svc).to receive(:execute).and_return(
+            ServiceResponse.error(message: 'Test error')
+          )
+        end
+      end
+
+      it 'returns all results unfiltered' do
+        is_expected.to match_array(results)
+      end
+    end
+
+    context 'with results containing nil paths' do
+      let(:result_nil) { { 'path' => nil, 'content' => 'something' } }
+      let(:result_no_path) { { 'content' => 'no path key' } }
+      let(:results) { [result_rb, result_nil, result_no_path] }
+
+      before do
+        project.create_project_setting unless project.project_setting
+        project.project_setting.update!(
+          duo_context_exclusion_settings: { exclusion_rules: ['*.rb'] }
+        )
+      end
+
+      it 'handles nil paths gracefully' do
+        is_expected.to match_array([result_nil, result_no_path])
+      end
+    end
+
+    context 'when all results have nil or missing paths' do
+      let(:result_nil1) { { 'path' => nil, 'content' => 'something' } }
+      let(:result_nil2) { { 'content' => 'no path key' } }
+      let(:results) { [result_nil1, result_nil2] }
+
+      before do
+        project.create_project_setting unless project.project_setting
+        project.project_setting.update!(
+          duo_context_exclusion_settings: { exclusion_rules: ['*.md'] }
+        )
+      end
+
+      it 'returns all results when file_paths is empty' do
+        is_expected.to match_array(results)
+      end
+    end
+  end
 end

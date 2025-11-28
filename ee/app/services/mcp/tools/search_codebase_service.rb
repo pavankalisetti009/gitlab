@@ -121,7 +121,10 @@ module Mcp
 
         return failure_response(result, project_id) unless result.success?
 
-        lines = result.map.with_index(1) do |hit, idx|
+        # Filter out excluded files based on Duo context exclusion settings
+        filtered_results = filter_excluded_results(result.to_a, project)
+
+        lines = filtered_results.map.with_index(1) do |hit, idx|
           snippet = hit['content']
           "#{idx}. #{hit['path']}\n   #{snippet}"
         end
@@ -150,6 +153,20 @@ module Mcp
 
       def codebase_query(semantic_query)
         @codebase_query ||= ACTIVE_CONTEXT_QUERY::Code.new(search_term: semantic_query, user: current_user)
+      end
+
+      def filter_excluded_results(results, project)
+        return results if results.empty?
+
+        file_paths = results.filter_map { |hit| hit['path'] }.uniq
+        return results if file_paths.empty?
+
+        exclusion_result = ::Ai::FileExclusionService.new(project).execute(file_paths)
+        return results unless exclusion_result.success?
+
+        excluded_paths = exclusion_result.payload.filter_map { |f| f[:path] if f[:excluded] }.to_set
+
+        results.reject { |hit| excluded_paths.include?(hit['path']) }
       end
     end
   end

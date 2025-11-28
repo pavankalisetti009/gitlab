@@ -11,6 +11,7 @@ module EE
 
       prepended do
         helpers do
+          include ::API::Helpers::SearchHelpers
           extend ::Gitlab::Utils::Override
 
           params :search_params_ee do
