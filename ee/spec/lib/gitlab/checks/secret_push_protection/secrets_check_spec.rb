@@ -291,7 +291,52 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::SecretsCheck, feature_categ
 
                     expect(logged_messages[:warn]).to include(
                       hash_including(
-                        "message" => 'SDS returned a nil response. Falling back to SDS Gem',
+                        "message" => ::Gitlab::Checks::SecretPushProtection::SecretsCheck::ERROR_MESSAGES[:sds_timeout],
+                        "class" => "Gitlab::Checks::SecretPushProtection::SecretsCheck"
+                      )
+                    )
+                  end
+
+                  it 'falls back to gem when response is nil' do
+                    expect_next_instance_of(::Gitlab::SecretDetection::GRPC::Client) do |instance|
+                      expect(instance).to receive(:run_scan).and_return(nil)
+                    end
+
+                    expect_next_instance_of(::Gitlab::SecretDetection::Core::Scanner) do |scanner|
+                      expect(scanner).to receive(:secrets_scan).and_call_original
+                    end
+
+                    expect { secrets_check.validate! }.not_to raise_error
+
+                    expect(logged_messages[:warn]).to include(
+                      hash_including(
+                        "message" => ::Gitlab::Checks::SecretPushProtection::SecretsCheck::ERROR_MESSAGES[:sds_timeout],
+                        "class" => "Gitlab::Checks::SecretPushProtection::SecretsCheck"
+                      )
+                    )
+                  end
+                end
+
+                context 'when SDS times out' do
+                  it 'falls back to gem' do
+                    timeout_response = ::Gitlab::SecretDetection::Core::Response.new(
+                      status: ::Gitlab::SecretDetection::Core::Status::SCAN_ERROR,
+                      metadata: { message: "Deadline Exceeded" }
+                    )
+
+                    expect_next_instance_of(::Gitlab::SecretDetection::GRPC::Client) do |instance|
+                      expect(instance).to receive(:run_scan).and_return(timeout_response)
+                    end
+
+                    expect_next_instance_of(::Gitlab::SecretDetection::Core::Scanner) do |scanner|
+                      expect(scanner).to receive(:secrets_scan).and_call_original
+                    end
+
+                    expect { secrets_check.validate! }.not_to raise_error
+
+                    expect(logged_messages[:warn]).to include(
+                      hash_including(
+                        "message" => ::Gitlab::Checks::SecretPushProtection::SecretsCheck::ERROR_MESSAGES[:sds_timeout],
                         "class" => "Gitlab::Checks::SecretPushProtection::SecretsCheck"
                       )
                     )

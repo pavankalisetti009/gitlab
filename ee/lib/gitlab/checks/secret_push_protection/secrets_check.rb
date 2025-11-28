@@ -9,7 +9,8 @@ module Gitlab
         include ::Gitlab::Loggable
 
         ERROR_MESSAGES = {
-          scan_initialization_error: 'Secret detection scan failed to initialize. %{error_msg}'
+          scan_initialization_error: 'Secret detection scan failed to initialize. %{error_msg}',
+          sds_timeout: 'SDS returned a nil response or timed out. Falling back to SDS Gem'
         }.freeze
 
         LOG_MESSAGES = {
@@ -88,10 +89,10 @@ module Gitlab
               exclusions: exclusions_manager.active_exclusions,
               extra_headers: extra_headers)
 
-            unless response
+            if response.nil? || response_handler.timed_out?(response)
               secret_detection_logger.warn(
                 build_structured_payload(
-                  message: "SDS returned a nil response. Falling back to SDS Gem",
+                  message: ERROR_MESSAGES[:sds_timeout],
                   class: self.class.name
                 )
               )
@@ -176,7 +177,7 @@ module Gitlab
         # Handle the response depending on the status returned
 
         def response_handler
-          @response_handler = Gitlab::Checks::SecretPushProtection::ResponseHandler.new(
+          @response_handler ||= Gitlab::Checks::SecretPushProtection::ResponseHandler.new(
             project: project,
             changes_access: changes_access
           )
