@@ -550,6 +550,29 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
     end
   end
 
+  describe '#scan_execution_policy' do
+    context 'when policy is a scan execution policy' do
+      let_it_be(:scan_execution_policy) do
+        create(:security_policy, :scan_execution_policy, name: 'Test Scan Execution Policy')
+      end
+
+      it 'returns a ScanExecutionPolicy instance' do
+        expect(scan_execution_policy.scan_execution_policy).to be_a(
+          Security::ScanExecutionPolicies::ScanExecutionPolicy
+        )
+        expect(scan_execution_policy.scan_execution_policy.name).to eq('Test Scan Execution Policy')
+      end
+    end
+
+    context 'when policy is not a scan execution policy' do
+      let_it_be(:approval_policy) { create(:security_policy, :approval_policy) }
+
+      it 'returns nil' do
+        expect(approval_policy.scan_execution_policy).to be_nil
+      end
+    end
+  end
+
   describe '#max_rule_index' do
     let_it_be(:policy) { create(:security_policy) }
     let_it_be(:rule1) { create(:approval_policy_rule, security_policy: policy, rule_index: 0) }
