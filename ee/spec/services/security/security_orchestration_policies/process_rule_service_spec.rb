@@ -37,6 +37,50 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessRuleService, feat
         expect(schedule.next_run_at).to be_future
       end
 
+      context 'when there is no policy_last_updated_by user' do
+        before do
+          allow(policy_configuration).to receive(:policy_last_updated_by).and_return(nil)
+        end
+
+        it 'creates new schedule' do
+          service.execute
+
+          expect(Security::OrchestrationPolicyRuleSchedule.count).to eq(1)
+          schedule = Security::OrchestrationPolicyRuleSchedule.last
+          expect(schedule.security_orchestration_policy_configuration).to eq(policy_configuration)
+          expect(schedule.policy_index).to eq(0)
+          expect(schedule.rule_index).to eq(1)
+          expect(schedule.cron).to eq('*/15 * * * *')
+          expect(schedule.owner).to be_nil
+          expect(schedule.policy_type).to eq('scan_execution_policy')
+          expect(schedule.next_run_at).to be_future
+        end
+      end
+
+      context 'when rule schedule is invalid' do
+        before do
+          allow_next_instance_of(Security::OrchestrationPolicyRuleSchedule) do |rule_schedule|
+            allow(rule_schedule).to receive_messages(
+              valid?: false,
+              errors: instance_double(ActiveModel::Errors, full_messages: ['Invalid cron'])
+            )
+          end
+        end
+
+        it 'logs with structured data' do
+          expect(Gitlab::AppLogger).to receive(:warn).with(
+            hash_including(
+              message: "Failed to create policy rule schedule: [\"Invalid cron\"]",
+              policy_configuration_id: policy_configuration.id,
+              policy_index: 0,
+              rule_index: 1
+            )
+          )
+
+          service.execute
+        end
+      end
+
       describe "rule schedule limit" do
         before do
           allow(Gitlab::CurrentSettings).to receive(:scan_execution_policies_schedule_limit).and_return(limit)
