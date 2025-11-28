@@ -34,7 +34,8 @@ RSpec.describe Gitlab::Database::Migrations::Squasher, feature_category: :databa
   let(:bbm_yml_files) do
     [
       'db/docs/batched_background_migrations/background_migration_1.yml',
-      'db/docs/batched_background_migrations/background_migration_2.yml'
+      'db/docs/batched_background_migrations/background_migration_2.yml',
+      'db/docs/batched_background_migrations/background_migration_3.yml'
     ]
   end
 
@@ -49,6 +50,12 @@ RSpec.describe Gitlab::Database::Migrations::Squasher, feature_category: :databa
     {
       'migration_job_name' => 'BackgroundMigration2',
       'finalized_by' => 20251126231656
+    }
+  end
+
+  let(:bbm_3_yml_contents) do
+    {
+      'migration_job_name' => 'BackgroundMigration3'
     }
   end
 
@@ -88,6 +95,7 @@ RSpec.describe Gitlab::Database::Migrations::Squasher, feature_category: :databa
 
       allow(YAML).to receive(:load_file).with(bbm_yml_files[0]).and_return(bbm_1_yml_contents)
       allow(YAML).to receive(:load_file).with(bbm_yml_files[1]).and_return(bbm_2_yml_contents)
+      allow(YAML).to receive(:load_file).with(bbm_yml_files[2]).and_return(bbm_3_yml_contents)
     end
 
     let(:squasher) { described_class.new(git_output) }
