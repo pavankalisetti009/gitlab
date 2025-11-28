@@ -154,15 +154,10 @@ components:
       - "on_tool_execution_success"
 
 # Define your prompts here
-# Each prompt configures an AI agent's behavior and model settings
+# Each prompt configures an AI agent's behavior
 prompts:
   - prompt_id: "my_prompt"  # Must match the prompt_id referenced above
     name: "My Agent Prompt"
-    model:
-      params:
-        model_class_provider: anthropic  # Provider: anthropic, openai, etc.
-        model: claude-sonnet-4-20250514  # Model identifier
-        max_tokens: 8192  # Adjust based on expected response length
 
     # System and user prompts define the agent's behavior
     prompt_template:
