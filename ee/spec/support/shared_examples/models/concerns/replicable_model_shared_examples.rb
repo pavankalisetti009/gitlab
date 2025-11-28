@@ -23,6 +23,10 @@ RSpec.shared_examples 'a replicable model' do
   end
 
   it 'invokes replicator.geo_handle_after_create on create' do
+    # A custom test based on this test has been added to
+    # ee/spec/replicators/geo/project_repository_replicator_spec.rb
+    skip if replicator_class == Geo::ProjectRepositoryReplicator
+
     expect_next_instance_of(replicator_class) do |replicator|
       expect(replicator).to receive(:geo_handle_after_create)
     end
