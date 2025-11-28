@@ -320,6 +320,48 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
             "properties" => {},
             "required" => []
           }
+        },
+        {
+          "name" => "create_workitem_note",
+          "description" => "Create a new note (comment) on a GitLab work item",
+          "inputSchema" => {
+            "type" => "object",
+            "properties" => {
+              "url" => {
+                "type" => "string",
+                "description" => "GitLab URL for the work item (e.g., https://gitlab.com/namespace/project/-/work_items/42)"
+              },
+              "group_id" => {
+                "type" => "string",
+                "description" => "ID or path of the group. Required if URL and project_path are not provided."
+              },
+              "project_id" => {
+                "type" => "string",
+                "description" => "ID or path of the project. Required if URL and group_id are not provided."
+              },
+              "work_item_iid" => {
+                "type" => "integer",
+                "description" => "Internal ID of the work item. Required if URL is not provided."
+              },
+              "body" => {
+                "type" => "string",
+                "description" => "Content of the note/comment (max 1,048,576 characters)",
+                "maxLength" => 1048576
+              },
+              "internal" => {
+                "type" => "boolean",
+                "description" => "Mark note as internal (visible only to project members with Reporter role or higher)",
+                "default" => false
+              },
+              "discussion_id" => {
+                "type" => "string",
+                "description" => "Global ID of the discussion to reply to (format: gid://gitlab/Discussion/<id>)"
+              }
+            },
+            "required" => [
+              "body"
+            ]
+          }
         }
       )
     end
