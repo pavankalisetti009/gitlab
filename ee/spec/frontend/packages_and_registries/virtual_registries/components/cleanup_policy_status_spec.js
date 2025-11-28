@@ -28,6 +28,9 @@ describe('CleanupPolicyStatus', () => {
 
     wrapper = shallowMountExtended(CleanupPolicyStatus, {
       apolloProvider,
+      propsData: {
+        batchKey: 'testBatchKey',
+      },
       provide: {
         fullPath,
         glFeatures: {

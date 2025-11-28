@@ -15,23 +15,6 @@ export const mockCacheEntries = [
   },
 ];
 
-export const mockUpstreams = [
-  {
-    id: 1,
-    name: 'Maven Central',
-    url: 'https://repo1.maven.org/maven2/',
-    cache_validity_hours: 24,
-    metadata_cache_validity_hours: 12,
-  },
-  {
-    id: 2,
-    name: 'JCenter',
-    url: 'https://jcenter.bintray.com/',
-    cache_validity_hours: 48,
-    metadata_cache_validity_hours: 24,
-  },
-];
-
 export const mockUpstream = {
   id: 5,
   name: 'Upstream Registry',
@@ -60,7 +43,6 @@ export const mavenVirtualRegistry = {
       cacheValidityHours: 24,
       metadataCacheValidityHours: 48,
       name: 'Maven upstream',
-      description: 'Maven Central',
       url: 'https://repo.maven.apache.org/maven2',
       registryUpstreams: [
         {
@@ -77,7 +59,6 @@ export const mavenVirtualRegistry = {
       cacheValidityHours: 24,
       metadataCacheValidityHours: 48,
       name: 'Maven upstream 4',
-      description: null,
       url: 'https://repo.maven.apache.org/maven2',
       registryUpstreams: [
         {
@@ -93,7 +74,6 @@ export const mavenVirtualRegistry = {
       cacheValidityHours: 24,
       metadataCacheValidityHours: 48,
       name: 'Maven upstream 4',
-      description: null,
       url: 'https://repo.maven.apache.org/maven2',
       registryUpstreams: [
         {
@@ -109,7 +89,6 @@ export const mavenVirtualRegistry = {
       cacheValidityHours: 24,
       metadataCacheValidityHours: 48,
       name: 'Maven upstream 4',
-      description: null,
       url: 'https://repo.maven.apache.org/maven2',
       registryUpstreams: [
         {
@@ -151,6 +130,56 @@ export const groupVirtualRegistries = {
           id: 'gid://gitlab/VirtualRegistries::Packages::Maven::Registry/2',
           name: 'Maven Registry 1',
           updatedAt: '2023-05-17T08:00:00Z',
+        },
+      ],
+      pageInfo: {
+        hasPreviousPage: false,
+        hasNextPage: false,
+        startCursor: 'start',
+        endCursor: 'end',
+        __typename: 'PageInfo',
+      },
+    },
+  },
+};
+
+export const groupMavenUpstreamsCountResponse = {
+  data: {
+    group: {
+      id: 'gid://gitlab/Group/33',
+      __typename: 'Group',
+      virtualRegistriesPackagesMavenUpstreams: {
+        __typename: 'MavenUpstreamConnection',
+        count: 5,
+      },
+    },
+  },
+};
+
+export const groupMavenUpstreams = {
+  group: {
+    id: 'gid://gitlab/Group/33',
+    __typename: 'Group',
+    virtualRegistriesPackagesMavenUpstreams: {
+      __typename: 'MavenUpstreamConnection',
+      nodes: [
+        {
+          __typename: 'MavenUpstream',
+          id: 'gid://gitlab/VirtualRegistries::Packages::Maven::Upstream/1',
+          name: 'Maven Central',
+          url: 'https://repo1.maven.org/maven2/',
+          cacheValidityHours: 24,
+          metadataCacheValidityHours: 12,
+          registriesCount: 2,
+        },
+        {
+          __typename: 'MavenUpstream',
+          id: 'gid://gitlab/VirtualRegistries::Packages::Maven::Upstream/2',
+          name: 'JCenter',
+          url: 'https://jcenter.bintray.com/',
+          cacheValidityHours: 48,
+          metadataCacheValidityHours: 24,
+          registriesCount: 1,
         },
       ],
       pageInfo: {

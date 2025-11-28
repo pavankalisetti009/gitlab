@@ -5,6 +5,7 @@ import {
   GlTable,
   GlTruncate,
 } from '@gitlab/ui';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import MavenUpstreamsTable from 'ee/packages_and_registries/virtual_registries/components/maven/registries_and_upstreams/upstreams_table.vue';
@@ -12,8 +13,7 @@ import UpstreamClearCacheModal from 'ee/packages_and_registries/virtual_registri
 import DeleteUpstreamWithModal from 'ee/packages_and_registries/virtual_registries/components/maven/shared/delete_upstream_with_modal.vue';
 import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
 import { deleteMavenUpstreamCache } from 'ee/api/virtual_registries_api';
-import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
-import { mockUpstreams } from '../../../mock_data';
+import { groupMavenUpstreams } from '../../../mock_data';
 
 jest.mock('ee/packages_and_registries/virtual_registries/sentry_utils', () => ({
   captureException: jest.fn(),
@@ -26,7 +26,12 @@ describe('MavenUpstreamsTable', () => {
   let wrapper;
 
   const defaultProps = {
-    upstreams: mockUpstreams.map(convertObjectPropsToCamelCase),
+    upstreams: groupMavenUpstreams.group.virtualRegistriesPackagesMavenUpstreams.nodes.map(
+      (upstream) => ({
+        ...upstream,
+        id: getIdFromGraphQLId(upstream.id),
+      }),
+    ),
     busy: false,
   };
 
@@ -85,6 +90,11 @@ describe('MavenUpstreamsTable', () => {
           key: 'name',
           label: 'Upstream',
           tdClass: '@sm/panel:gl-max-w-0',
+        },
+        {
+          key: 'registriesCount',
+          label: 'Used by registries',
+          tdClass: '@sm/panel:gl-w-20 @sm/panel:!gl-leading-32',
         },
         {
           key: 'actions',
@@ -187,7 +197,7 @@ describe('MavenUpstreamsTable', () => {
       });
 
       it('hides the table action column', () => {
-        const actionsColumn = findTable().props('fields')[1];
+        const actionsColumn = findTable().props('fields')[2];
         expect(actionsColumn.hide).toEqual(true);
       });
     });
