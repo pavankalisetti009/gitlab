@@ -37,7 +37,7 @@ RSpec.describe Ai::DuoWorkflows::McpConfigService, feature_category: :duo_agent_
     it 'includes enabled tools list' do
       result = service.execute
 
-      expect(result[:gitlab][:Tools]).to eq(['get_issue'])
+      expect(result[:gitlab][:Tools]).to eq(%w[get_issue semantic_code_search])
     end
 
     it 'includes preapproved tools list' do
@@ -74,7 +74,7 @@ RSpec.describe Ai::DuoWorkflows::McpConfigService, feature_category: :duo_agent_
     it 'returns array of enabled tools' do
       result = service.gitlab_enabled_tools
 
-      expect(result).to eq(['get_issue'])
+      expect(result).to eq(%w[get_issue semantic_code_search])
     end
 
     it 'returns the GITLAB_ENABLED_TOOLS constant' do
@@ -98,13 +98,19 @@ RSpec.describe Ai::DuoWorkflows::McpConfigService, feature_category: :duo_agent_
 
   describe 'constant GITLAB_ENABLED_TOOLS' do
     it 'is defined with expected tools' do
-      expect(described_class::GITLAB_ENABLED_TOOLS).to eq(['get_issue'])
+      expect(described_class::GITLAB_ENABLED_TOOLS).to eq(%w[get_issue semantic_code_search])
     end
   end
 
   describe 'constant GITLAB_PREAPPROVED_TOOLS' do
     it 'is defined with expected tools' do
       expect(described_class::GITLAB_PREAPPROVED_TOOLS).to eq(['get_issue'])
+    end
+  end
+
+  describe 'constant GITLAB_TOOLS_REQUIRING_APPROVAL' do
+    it 'is defined with expected tools' do
+      expect(described_class::GITLAB_TOOLS_REQUIRING_APPROVAL).to eq(['semantic_code_search'])
     end
   end
 end
