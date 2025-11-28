@@ -206,3 +206,21 @@ export const multipleUpstreamsResponse = {
     'x-total': '2',
   },
 };
+
+export const mockVirtualRegistriesCleanupPolicy = (options = {}) => {
+  const { enabled = true, nextRunAt = '2025-01-15T10:00:00Z' } = options;
+
+  return {
+    data: {
+      group: {
+        id: 'gid://gitlab/Group/1',
+        __typename: 'Group',
+        virtualRegistriesCleanupPolicy: {
+          __typename: 'VirtualRegistriesCleanupPolicy',
+          enabled,
+          nextRunAt: enabled ? nextRunAt : null,
+        },
+      },
+    },
+  };
+};
