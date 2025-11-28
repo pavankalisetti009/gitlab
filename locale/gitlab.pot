@@ -2739,6 +2739,9 @@ msgstr ""
 msgid "AICatalog|Explore the AI Catalog"
 msgstr ""
 
+msgid "AICatalog|Explore your GitLab Duo and SDLC trends"
+msgstr ""
+
 msgid "AICatalog|External"
 msgstr ""
 

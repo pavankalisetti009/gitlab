@@ -3,7 +3,10 @@ import { unescape } from 'lodash';
 import { GlAlert, GlSprintf, GlLink } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { sanitize } from '~/lib/dompurify';
-import { joinPaths } from '~/lib/utils/url_utility';
+import {
+  generateAnalyticsDashboardLink,
+  generateAnalyticsDashboardsIndexLink,
+} from '~/analytics/shared/utils';
 import UserCalloutDismisser from '~/vue_shared/components/user_callout_dismisser.vue';
 
 const DORA_METRICS_DASHBOARD_SLUG = 'dora_metrics';
@@ -29,15 +32,17 @@ export default {
   },
   computed: {
     dashboardsLink() {
-      return joinPaths(
-        gon.relative_url_root || '',
-        '/',
-        this.isProject ? this.namespacePath : `groups/${this.namespacePath}`,
-        '/-/analytics/dashboards',
-      );
+      return generateAnalyticsDashboardsIndexLink({
+        namespacePath: this.namespacePath,
+        isGroup: !this.isProject,
+      });
     },
     doraMetricsLink() {
-      return joinPaths(this.dashboardsLink, DORA_METRICS_DASHBOARD_SLUG);
+      return generateAnalyticsDashboardLink({
+        namespacePath: this.namespacePath,
+        isGroup: !this.isProject,
+        dashboardSlug: DORA_METRICS_DASHBOARD_SLUG,
+      });
     },
     userCalloutFeatureName() {
       return this.isProject ? 'dora_dashboard_migration_project' : 'dora_dashboard_migration_group';
