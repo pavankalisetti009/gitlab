@@ -2933,19 +2933,87 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
           :scan_execution_policy,
           name: 'Run DAST in every pipeline',
           actions: [
-            { scan: 'dast', site_profile: 'Site Profile', scanner_profile: 'Scanner Profile' },
-            { scan: 'dast', site_profile: 'Site Profile 2', scanner_profile: 'Scanner Profile' }
+            {
+              scan: 'dast',
+              site_profile: 'Site Profile',
+              scanner_profile: 'Scanner Profile'
+            },
+            {
+              scan: 'dast',
+              site_profile: 'Site Profile 2',
+              scanner_profile: 'Scanner Profile'
+            }
           ])
       ])
     end
 
     before do
       allow(security_policy_management_project).to receive(:repository).and_return(repository)
-      allow(repository).to receive(:blob_data_at).with(default_branch, Security::OrchestrationPolicyConfiguration::POLICY_PATH).and_return(enforce_dast_yaml)
+      allow(repository)
+        .to receive(:blob_data_at)
+        .with(default_branch, Security::OrchestrationPolicyConfiguration::POLICY_PATH)
+        .and_return(enforce_dast_yaml)
     end
 
-    it 'returns list of policy names where site profile is referenced' do
-      expect(security_orchestration_policy_configuration.active_policy_names_with_dast_scanner_profile('Scanner Profile')).to contain_exactly('Run DAST in every pipeline')
+    it 'returns list of policy names where scanner profile is referenced' do
+      result = security_orchestration_policy_configuration
+        .active_policy_names_with_dast_scanner_profile('Scanner Profile')
+
+      expect(result).to contain_exactly('Run DAST in every pipeline')
+    end
+
+    context 'when action does not have scanner_profile' do
+      let(:enforce_dast_yaml) do
+        build(:orchestration_policy_yaml, scan_execution_policy: [
+          build(
+            :scan_execution_policy,
+            name: 'Run DAST without scanner profile',
+            actions: [
+              { scan: 'dast', site_profile: 'Site Profile' }
+            ])
+        ])
+      end
+
+      it 'does not include the policy in scanner profile results' do
+        result = security_orchestration_policy_configuration
+          .active_policy_names_with_dast_scanner_profile('Scanner Profile')
+
+        expect(result).to be_empty
+      end
+
+      it 'still includes the policy in site profile results' do
+        result = security_orchestration_policy_configuration
+          .active_policy_names_with_dast_site_profile('Site Profile')
+
+        expect(result).to contain_exactly('Run DAST without scanner profile')
+      end
+    end
+
+    context 'when action scan type is not DAST' do
+      let(:enforce_dast_yaml) do
+        build(:orchestration_policy_yaml, scan_execution_policy: [
+          build(
+            :scan_execution_policy,
+            name: 'Run SAST scan',
+            actions: [
+              { scan: 'sast' }
+            ])
+        ])
+      end
+
+      it 'does not include non-DAST scans in scanner profile results' do
+        result = security_orchestration_policy_configuration
+          .active_policy_names_with_dast_scanner_profile('Scanner Profile')
+
+        expect(result).to be_empty
+      end
+
+      it 'does not include non-DAST scans in site profile results' do
+        result = security_orchestration_policy_configuration
+          .active_policy_names_with_dast_site_profile('Site Profile')
+
+        expect(result).to be_empty
+      end
     end
   end
 
