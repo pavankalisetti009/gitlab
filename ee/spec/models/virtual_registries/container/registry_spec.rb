@@ -39,6 +39,21 @@ RSpec.describe VirtualRegistries::Container::Registry, feature_category: :virtua
     it { is_expected.to eq([registry]) }
   end
 
+  describe '#purge_cache!' do
+    let_it_be(:registry1) { create(:virtual_registries_container_registry) }
+    let_it_be(:registry2) { create(:virtual_registries_container_registry) }
+    let_it_be(:upstream1) { create(:virtual_registries_container_upstream, registries: [registry1, registry2]) }
+    let_it_be(:upstream2) { create(:virtual_registries_container_upstream, registries: [registry1]) }
+
+    it 'bulk enqueues the MarkEntriesForDestructionWorker' do
+      expect(::VirtualRegistries::Container::Cache::MarkEntriesForDestructionWorker)
+        .to receive(:bulk_perform_async_with_contexts)
+        .with([upstream2], arguments_proc: kind_of(Proc), context_proc: kind_of(Proc))
+
+      registry1.purge_cache!
+    end
+  end
+
   it_behaves_like 'virtual registries: upstreams ordering',
     registry_factory: :virtual_registries_container_registry,
     upstream_factory: :virtual_registries_container_upstream

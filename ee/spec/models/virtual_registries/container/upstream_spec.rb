@@ -520,4 +520,13 @@ RSpec.describe VirtualRegistries::Container::Upstream, feature_category: :virtua
   def with_accept_headers(headers)
     headers.merge(described_class::REGISTRY_ACCEPT_HEADERS)
   end
+
+  describe '#purge_cache!' do
+    it 'enqueues the MarkEntriesForDestructionWorker' do
+      expect(::VirtualRegistries::Container::Cache::MarkEntriesForDestructionWorker)
+        .to receive(:perform_async).with(upstream.id)
+
+      upstream.purge_cache!
+    end
+  end
 end
