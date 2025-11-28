@@ -341,7 +341,7 @@ export default {
                 <span>{{ item.description }}</span>
                 <span
                   v-if="isCSPFramework(item)"
-                  class="gl-border-t gl-mb-2 gl-block gl-pt-2 gl-text-sm gl-text-secondary"
+                  class="gl-border-t gl-mb-2 gl-block gl-pt-2 gl-text-sm gl-text-subtle"
                   >{{ $options.i18n.CSPFramework }}</span
                 >
               </div>

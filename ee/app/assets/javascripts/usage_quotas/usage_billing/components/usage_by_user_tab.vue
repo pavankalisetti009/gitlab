@@ -207,7 +207,7 @@ export default {
 
       <template #empty>
         <div class="gl-py-6 gl-text-center">
-          <p class="gl-mb-0 gl-text-secondary">{{ s__('UsageBilling|No user data available') }}</p>
+          <p class="gl-mb-0 gl-text-subtle">{{ s__('UsageBilling|No user data available') }}</p>
         </div>
       </template>
     </gl-table>

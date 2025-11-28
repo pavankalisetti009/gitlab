@@ -179,10 +179,10 @@ export default {
           :selected="isIdentifierSelected(identifier)"
           :data-testid="`suggestion-${identifier}`"
         />
-        <div v-if="shouldShowPlaceholder" class="gl-p-2 gl-text-secondary">
+        <div v-if="shouldShowPlaceholder" class="gl-p-2 gl-text-subtle">
           {{ $options.i18n.placeholder }}
         </div>
-        <div v-else-if="!identifiers.length" class="gl-p-2 gl-text-secondary">
+        <div v-else-if="!identifiers.length" class="gl-p-2 gl-text-subtle">
           {{ $options.i18n.noResult }}
         </div>
       </template>

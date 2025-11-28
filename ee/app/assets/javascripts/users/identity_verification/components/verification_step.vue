@@ -103,11 +103,11 @@ export default {
         <template #header>
           <div class="gl-flex gl-justify-between">
             <h3 class="gl-m-0 gl-text-lg">{{ title }}</h3>
-            <span v-if="completed" class="gl-text-secondary">
+            <span v-if="completed" class="gl-text-subtle">
               <gl-icon name="check" :size="16" />
               <span>{{ $options.i18n.completed }}</span>
             </span>
-            <span v-else class="gl-text-secondary">{{ stepHelpText }}</span>
+            <span v-else class="gl-text-subtle">{{ stepHelpText }}</span>
           </div>
         </template>
         <template #default>

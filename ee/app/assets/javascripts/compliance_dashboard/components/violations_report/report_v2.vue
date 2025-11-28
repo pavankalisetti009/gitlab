@@ -313,11 +313,11 @@ export default {
           <div class="gl-font-weight-semibold gl-mb-2">
             {{ getAuditEventTitle(item.auditEvent) }}
           </div>
-          <div class="gl-text-sm gl-text-secondary">
+          <div class="gl-text-sm gl-text-subtle">
             {{ getAuditEventAuthor(item.auditEvent) }}
           </div>
         </div>
-        <div v-else class="gl-text-sm gl-text-secondary">
+        <div v-else class="gl-text-sm gl-text-subtle">
           {{ $options.i18n.noAuditEvent }}
         </div>
       </template>

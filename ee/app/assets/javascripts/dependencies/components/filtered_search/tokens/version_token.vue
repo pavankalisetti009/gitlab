@@ -182,10 +182,10 @@ export default {
       </gl-intersperse>
     </template>
     <template #suggestions>
-      <div v-if="noSelectedComponent" class="gl-p-2 gl-text-secondary">
+      <div v-if="noSelectedComponent" class="gl-p-2 gl-text-subtle">
         {{ s__('Dependencies|To filter by version, filter by one component first') }}
       </div>
-      <div v-else-if="multipleSelectedComponents" class="gl-p-2 gl-text-secondary">
+      <div v-else-if="multipleSelectedComponents" class="gl-p-2 gl-text-subtle">
         {{ s__('Dependencies|To filter by version, select exactly one component first') }}
       </div>
       <template v-else>

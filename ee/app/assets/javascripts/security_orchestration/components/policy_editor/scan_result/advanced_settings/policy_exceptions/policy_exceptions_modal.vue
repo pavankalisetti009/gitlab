@@ -173,7 +173,7 @@ export default {
     <template #modal-header>
       <div>
         <h4 data-testid="modal-title" class="gl-mb-2">{{ modalTitle }}</h4>
-        <p v-if="modalSubtitle" data-testid="modal-subtitle" class="gl-mb-0 gl-text-secondary">
+        <p v-if="modalSubtitle" data-testid="modal-subtitle" class="gl-mb-0 gl-text-subtle">
           {{ modalSubtitle }}
         </p>
       </div>
