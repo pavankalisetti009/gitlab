@@ -46,8 +46,7 @@ RSpec.describe ExperimentTrackingHelper, feature_category: :acquisition do
 
       expect do
         Gitlab::Tracking.event('experiment_name', :assignment, context: context_2)
-      end.to raise_error "experiment_name was segmented twice (multiple assignment keys). key-ident and then " \
-        "key-ident-2."
+      end.to raise_error "experiment_name was segmented 2 times (expected 1) - key-ident, key-ident-2."
     end
   end
 end
