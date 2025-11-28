@@ -347,16 +347,6 @@ export const mockCreateAiCatalogAgentSuccessMutation = {
   },
 };
 
-export const mockCreateAiCatalogAgentSuccessWithEnableFailureMutation = {
-  data: {
-    aiCatalogAgentCreate: {
-      errors: ['Could not enable'],
-      item: mockBaseAgent,
-      __typename: TYPENAME_AI_CATALOG_AGENT_CREATE,
-    },
-  },
-};
-
 export const mockCreateAiCatalogAgentErrorMutation = {
   data: {
     aiCatalogAgentCreate: {
@@ -474,16 +464,6 @@ export const mockCreateAiCatalogFlowSuccessMutation = {
   data: {
     aiCatalogFlowCreate: {
       errors: [],
-      item: mockFlow,
-      __typename: TYPENAME_AI_CATALOG_FLOW_CREATE,
-    },
-  },
-};
-
-export const mockCreateAiCatalogFlowSuccessWithEnableFailureMutation = {
-  data: {
-    aiCatalogFlowCreate: {
-      errors: ['Could not enable'],
       item: mockFlow,
       __typename: TYPENAME_AI_CATALOG_FLOW_CREATE,
     },
