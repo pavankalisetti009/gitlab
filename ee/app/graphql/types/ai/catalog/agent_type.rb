@@ -9,6 +9,11 @@ module Types
         authorize :read_ai_catalog_item
 
         implements ::Types::Ai::Catalog::ItemInterface
+
+        field :foundational,
+          GraphQL::Types::Boolean,
+          null: false,
+          description: 'Whether the item is a foundational agent (only on GitLab SaaS).'
       end
     end
   end
