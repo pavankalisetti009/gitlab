@@ -2111,4 +2111,38 @@ RSpec.describe Issue, feature_category: :team_planning do
       end
     end
   end
+
+  describe '#show_as_work_item?' do
+    subject(:issue_as_work_item) { issue.show_as_work_item? }
+
+    context 'with a service desk issue' do
+      let(:issue) { build_stubbed(:issue, project: reusable_project, author: create(:support_bot)) }
+
+      it { is_expected.to be false }
+    end
+
+    context 'with an incident' do
+      let(:issue) { build_stubbed(:incident, project: reusable_project) }
+
+      it { is_expected.to be false }
+    end
+
+    context 'when work_item_type is not set' do
+      let(:issue) { build_stubbed(:issue, work_item_type: nil) }
+
+      it { is_expected.to be true }
+    end
+
+    context 'with a regular issue' do
+      let(:issue) { build_stubbed(:issue, project: reusable_project) }
+
+      it { is_expected.to be true }
+    end
+
+    context 'with a task' do
+      let(:issue) { build_stubbed(:issue, :task, project: reusable_project) }
+
+      it { is_expected.to be true }
+    end
+  end
 end

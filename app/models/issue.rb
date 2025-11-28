@@ -742,7 +742,7 @@ class Issue < ApplicationRecord
   end
 
   def from_service_desk?
-    author_id == Users::Internal.support_bot_id
+    author.support_bot?
   end
 
   def issue_link_type
@@ -896,12 +896,11 @@ class Issue < ApplicationRecord
     epic_work_item? && group_level?
   end
 
+  # Service Desk issues and incidents should not use the work item view,
+  # since these have not been migrated over to using the work items framework.
+  # These should continue to use the .../issues/... path and render as issues.
   def show_as_work_item?
-    # Service Desk issues and incidents should not use the work item view, since these have not been migrated over to
-    # using the work items framework. These should continue to use the .../issues/... path and render as issues.
-    !from_service_desk? &&
-      !work_item_type&.incident? &&
-      Feature.enabled?(:work_item_view_for_issues, project&.group)
+    !from_service_desk? && !work_item_type&.incident?
   end
 
   def ensure_work_item_description
