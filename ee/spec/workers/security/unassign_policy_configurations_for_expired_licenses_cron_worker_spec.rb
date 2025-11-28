@@ -87,7 +87,7 @@ RSpec.describe Security::UnassignPolicyConfigurationsForExpiredLicensesCronWorke
     end
 
     context 'when on self-managed', :without_license do
-      let_it_be(:namespace) { create(:group, id: 20) }
+      let_it_be(:namespace) { create(:group) }
 
       before do
         stub_saas_features(gitlab_com_subscriptions: false)
@@ -152,8 +152,8 @@ RSpec.describe Security::UnassignPolicyConfigurationsForExpiredLicensesCronWorke
       end
 
       context 'when runtime limit is reached' do
-        let_it_be(:namespace2) { create(:group) }
-        let_it_be(:namespace3) { create(:group) }
+        let_it_be(:namespace2) { create(:group, id: namespace.id + 1) }
+        let_it_be(:namespace3) { create(:group, id: namespace.id + 2) }
 
         before do
           stub_const("#{described_class}::BATCH_SIZE", 2)
@@ -165,7 +165,8 @@ RSpec.describe Security::UnassignPolicyConfigurationsForExpiredLicensesCronWorke
           end
         end
 
-        it 'reschedules the worker with the correct cursor' do
+        it 'reschedules the worker with the correct cursor',
+          quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/16561' do
           expect(described_class).to receive(:perform_in).with(described_class::REQUEUE_DELAY, namespace2.id)
 
           worker.perform
@@ -182,7 +183,7 @@ RSpec.describe Security::UnassignPolicyConfigurationsForExpiredLicensesCronWorke
       end
 
       context 'when cursor is present' do
-        let_it_be(:namespace2) { create(:group, id: namespace.id + 1) }
+        let_it_be(:namespace2) { create(:group, id: namespace.id + 3) }
 
         before do
           create(:license,
