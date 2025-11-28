@@ -481,18 +481,6 @@ module EE
           "AND zoekt_repositories.zoekt_index_id = ?)", index_id)
       }
 
-      # can't filter with id on projects because project_id is used as partitioning key
-      # on p_ai_active_context_code_repositories, query by project_id enables partition pruning
-      scope :with_ready_active_context_code_repository_project_ids, ->(project_ids) {
-        unless project_ids.present?
-          raise ArgumentError, "project_ids must be a non-empty array to enable " \
-            "partition scan on active_context_code_repository"
-        end
-
-        joins(:ready_active_context_code_repository)
-          .where(p_ai_active_context_code_repositories: { project_id: project_ids })
-      }
-
       scope :order_by_id_list, ->(ids) do
         ids = Array(ids).compact
         next all if ids.blank?

@@ -842,58 +842,6 @@ RSpec.describe Project, feature_category: :groups_and_projects do
         expect(described_class.without_security_setting).to match_array([project_without_security_setting])
       end
     end
-
-    describe '.with_ready_active_context_code_repository_project_ids' do
-      let_it_be(:project) { create(:project) }
-      let_it_be(:namespace) { create(:group) }
-      let_it_be(:code_embeddings_enabled_namespace) do
-        create(:ai_active_context_code_enabled_namespace, namespace: namespace)
-      end
-
-      let(:code_embeddings_repository) do
-        create(
-          :ai_active_context_code_repository,
-          project: project,
-          enabled_namespace: code_embeddings_enabled_namespace
-        )
-      end
-
-      it 'raises ArgumentError when called without project_ids' do
-        expect do
-          described_class.with_ready_active_context_code_repository_project_ids(nil)
-        end.to raise_error(ArgumentError, /project_ids must be a non-empty array/)
-      end
-
-      it 'raises ArgumentError when called with empty array' do
-        expect do
-          described_class.with_ready_active_context_code_repository_project_ids([])
-        end.to raise_error(ArgumentError, /project_ids must be a non-empty array/)
-      end
-
-      it 'return no project' do
-        expect(described_class.with_ready_active_context_code_repository_project_ids(project.id)).to be_empty
-      end
-
-      context "when embedding repository is ready" do
-        before do
-          code_embeddings_repository.update!(state: :ready)
-        end
-
-        it 'returns projects ai_active_context_code_repositories ready' do
-          expect(described_class.with_ready_active_context_code_repository_project_ids(project.id)).to be_empty
-        end
-
-        context "when embedding repository is ready" do
-          before do
-            code_embeddings_repository.active_context_connection.update!(active: true)
-          end
-
-          it 'returns projects ai_active_context_code_repositories ready' do
-            expect(described_class.with_ready_active_context_code_repository_project_ids(project.id)).to contain_exactly(project)
-          end
-        end
-      end
-    end
   end
 
   describe 'validations' do
