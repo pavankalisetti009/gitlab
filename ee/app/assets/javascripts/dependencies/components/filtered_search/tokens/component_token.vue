@@ -205,10 +205,10 @@ export default {
             {{ component.name }}
           </div>
         </gl-filtered-search-suggestion>
-        <div v-if="shouldShowPlaceholder" class="gl-p-2 gl-text-secondary">
+        <div v-if="shouldShowPlaceholder" class="gl-p-2 gl-text-subtle">
           {{ $options.i18n.placeholder }}
         </div>
-        <div v-else-if="!components.length" class="gl-p-2 gl-text-secondary">
+        <div v-else-if="!components.length" class="gl-p-2 gl-text-subtle">
           {{ $options.i18n.noResult }}
         </div>
       </template>

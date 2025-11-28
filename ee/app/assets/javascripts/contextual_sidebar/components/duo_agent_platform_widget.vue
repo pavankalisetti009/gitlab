@@ -258,11 +258,11 @@ export default {
         class="gl-my-2 gl-flex gl-items-center gl-justify-between gl-gap-3"
         data-testid="request-counter"
       >
-        <span class="gl-text-secondary">
+        <span class="gl-text-subtle">
           {{ __('Team requests') }}
           <button
             v-gl-tooltip
-            class="gl-border-0 gl-bg-transparent gl-p-0 gl-leading-0 gl-text-secondary"
+            class="gl-border-0 gl-bg-transparent gl-p-0 gl-leading-0 gl-text-subtle"
             :title="requestText"
             :aria-label="requestText"
             data-testid="request-icon"
@@ -272,7 +272,7 @@ export default {
           </button>
         </span>
 
-        <span class="gl-text-secondary">
+        <span class="gl-text-subtle">
           {{ requestCount }}
         </span>
       </div>
@@ -334,7 +334,7 @@ export default {
           </gl-button>
         </template>
         <div v-else class="gl-flex gl-w-full gl-justify-between">
-          <gl-badge variant="neutral" class="gl-text-sm gl-text-secondary">
+          <gl-badge variant="neutral" class="gl-text-sm gl-text-subtle">
             {{ __('Requested') }}
           </gl-badge>
 

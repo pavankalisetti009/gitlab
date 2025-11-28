@@ -126,7 +126,7 @@ export default {
             v-gl-tooltip
             :href="$options.static.helpLink"
             target="_blank"
-            class="gl-ml-2 gl-text-secondary"
+            class="gl-ml-2 gl-text-subtle"
             :title="$options.i18n.helpText"
             :aria-label="$options.i18n.helpText"
           >

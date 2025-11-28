@@ -125,7 +125,7 @@ export default {
         {{ framework.description }}
       </div>
 
-      <div v-if="isCSPFramework" class="gl-border-t gl-mb-2 gl-pt-2 gl-text-sm gl-text-secondary">
+      <div v-if="isCSPFramework" class="gl-border-t gl-mb-2 gl-pt-2 gl-text-sm gl-text-subtle">
         {{ $options.i18n.CSPFramework }}
       </div>
 

@@ -93,9 +93,7 @@ export default {
       />
 
       <div class="gl-align-items-center gl-ml-3 gl-flex gl-items-center">
-        <span :class="{ 'gl-text-secondary': enabled }">{{
-          $options.i18n.skipCiExceptionText
-        }}</span>
+        <span :class="{ 'gl-text-subtle': enabled }">{{ $options.i18n.skipCiExceptionText }}</span>
         <user-select
           reset-on-empty
           :disabled="enabled"
