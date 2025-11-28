@@ -600,6 +600,7 @@ RSpec.describe BillingPlansHelper, :saas, feature_category: :subscription_manage
     let_it_be(:current_user) { create(:user) }
     let_it_be(:free_group) { create(:group, name: 'Free Group') }
     let_it_be(:trial_group) { create(:group, name: 'Trial Group') }
+    let_it_be(:free_project) { create(:project, namespace: free_group) }
 
     let(:premium_plan) { double('Plan', code: ::Plan::PREMIUM, id: 1) }
     let(:ultimate_plan) { double('Plan', code: ::Plan::ULTIMATE, id: 2) }
@@ -615,6 +616,8 @@ RSpec.describe BillingPlansHelper, :saas, feature_category: :subscription_manage
 
     before do
       allow(helper).to receive(:current_user).and_return(current_user)
+      allow(current_user).to receive(:can?).with(:access_duo_chat, free_group).and_return(false)
+      allow(current_user).to receive(:can?).with(:access_duo_chat, trial_group).and_return(true)
     end
 
     subject { helper.user_billing_data_attributes(plans_data) }
@@ -652,14 +655,32 @@ RSpec.describe BillingPlansHelper, :saas, feature_category: :subscription_manage
           name: 'Free Group',
           trial_active: false,
           group_billings_href: group_billings_path(free_group),
-          upgrade_to_premium_href: plan_purchase_url(free_group, premium_plan)
+          upgrade_to_premium_href: plan_purchase_url(free_group, premium_plan),
+          can_access_duo_chat: false,
+          explore_links: {
+            mergeTrains: project_settings_merge_requests_path(free_project),
+            escalationPolicies: project_incident_management_escalation_policies_path(free_project),
+            repositoryPullMirroring: project_settings_repository_path(free_project, anchor: "js-push-remote-settings"),
+            mergeRequestApprovals: project_settings_merge_requests_path(free_project, anchor: "js-merge-request-approval-settings"),
+            duoChat: group_settings_gitlab_duo_seat_utilization_index_path(free_group),
+            epics: group_epics_path(free_group)
+          }
         },
         {
           id: trial_group.id,
           name: 'Trial Group',
           trial_active: true,
           group_billings_href: group_billings_path(trial_group),
-          upgrade_to_premium_href: plan_purchase_url(trial_group, premium_plan)
+          upgrade_to_premium_href: plan_purchase_url(trial_group, premium_plan),
+          can_access_duo_chat: true,
+          explore_links: {
+            mergeTrains: nil,
+            escalationPolicies: nil,
+            repositoryPullMirroring: nil,
+            mergeRequestApprovals: nil,
+            duoChat: nil,
+            epics: group_epics_path(trial_group)
+          }
         }
       )
       expect(subject[:dashboardGroupsHref]).to eq(dashboard_groups_path)

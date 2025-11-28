@@ -10,9 +10,7 @@ export default {
 </script>
 
 <template>
-  <div
-    class="gl-border gl-flex-1 gl-rounded-t-lg gl-bg-default gl-p-6 @md/panel:gl-rounded-l-lg @md/panel:gl-rounded-r-none"
-  >
+  <div>
     <h3 class="gl-heading-3 gl-mb-6 gl-text-default">
       {{ s__('Billings|Your group is on the Free plan') }}
     </h3>
