@@ -58,6 +58,23 @@ export default {
     isFlowNotFound() {
       return this.aiCatalogFlow && Object.keys(this.aiCatalogFlow).length === 0;
     },
+    isProject() {
+      return Boolean(this.projectId);
+    },
+    isGroup() {
+      return !this.isProject && !this.isGlobal;
+    },
+    hasNoConsumer() {
+      return this.isProject && !this.aiCatalogFlow?.configurationForProject;
+    },
+    shouldShowLatestVersion() {
+      return this.isGlobal || this.isGroup || this.hasNoConsumer;
+    },
+    versionData() {
+      return this.shouldShowLatestVersion
+        ? this.aiCatalogFlow.latestVersion
+        : this.aiCatalogFlow.configurationForProject.pinnedItemVersion;
+    },
   },
   emptySearchSvg,
 };
@@ -75,6 +92,6 @@ export default {
       :svg-path="$options.emptySearchSvg"
     />
 
-    <router-view v-else :ai-catalog-flow="aiCatalogFlow" />
+    <router-view v-else :ai-catalog-flow="aiCatalogFlow" :version-data="versionData" />
   </div>
 </template>

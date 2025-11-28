@@ -13,7 +13,9 @@ import {
   mockFlow,
   mockUpdateAiCatalogFlowSuccessMutation,
   mockUpdateAiCatalogFlowErrorMutation,
+  mockFlowConfigurationForProject,
   mockThirdPartyFlow,
+  mockFlowPinnedVersion,
 } from '../mock_data';
 
 Vue.use(VueApollo);
@@ -23,16 +25,18 @@ describe('AiCatalogFlowsEdit', () => {
   let wrapper;
   let mockApollo;
 
-  const defaultProps = {
-    aiCatalogFlow: mockFlow,
-  };
-  const flowId = 4;
-  const routeParams = { id: flowId };
   const mockToast = {
     show: jest.fn(),
   };
   const mockRouter = {
     push: jest.fn(),
+  };
+
+  const flowId = 4;
+  const routeParams = { id: flowId };
+  const defaultProps = {
+    versionData: mockFlowPinnedVersion,
+    aiCatalogFlow: mockFlow,
   };
 
   const mockUpdateAiCatalogFlowHandler = jest
@@ -42,7 +46,7 @@ describe('AiCatalogFlowsEdit', () => {
     .fn()
     .mockResolvedValue(mockUpdateAiCatalogFlowSuccessMutation);
 
-  const createComponent = ({ props = {} } = {}) => {
+  const createComponent = ({ props } = {}) => {
     mockApollo = createMockApollo([
       [updateAiCatalogFlow, mockUpdateAiCatalogFlowHandler],
       [updateAiCatalogThirdPartyFlow, mockUpdateAiCatalogThirdPartyFlowHandler],
@@ -50,10 +54,7 @@ describe('AiCatalogFlowsEdit', () => {
 
     wrapper = shallowMount(AiCatalogFlowsEdit, {
       apolloProvider: mockApollo,
-      propsData: {
-        ...defaultProps,
-        ...props,
-      },
+      propsData: { ...defaultProps, ...props },
       mocks: {
         $route: {
           params: routeParams,
@@ -70,8 +71,40 @@ describe('AiCatalogFlowsEdit', () => {
     createComponent();
   });
 
-  it('render edit form', () => {
-    expect(findForm().exists()).toBe(true);
+  describe('Initial Rendering', () => {
+    it('render edit form', () => {
+      expect(findForm().exists()).toBe(true);
+    });
+
+    it('renders initial values with expected version data', async () => {
+      const expectedInitialValues = {
+        type: 'FLOW',
+        name: mockFlow.name,
+        description: mockFlow.description,
+        projectId: 'gid://gitlab/Project/1',
+        definition: mockFlow.latestVersion.definition,
+        public: true,
+      };
+
+      createComponent({
+        props: {
+          versionData: mockFlow.latestVersion,
+          aiCatalogFlow: {
+            ...mockFlow,
+            configurationForProject: {
+              ...mockFlowConfigurationForProject,
+              pinnedItemVersion: {
+                ...mockFlowConfigurationForProject.pinnedItemVersion,
+                definition: 'this is not expected',
+              },
+            },
+          },
+        },
+      });
+      await waitForPromises();
+
+      expect(findForm().props('initialValues')).toEqual(expectedInitialValues);
+    });
   });
 
   describe('Form Submit', () => {

@@ -17,6 +17,10 @@ export default {
       type: Object,
       required: true,
     },
+    versionData: {
+      type: Object,
+      required: true,
+    },
   },
   data() {
     return {
@@ -32,7 +36,7 @@ export default {
         name: this.aiCatalogFlow.name,
         description: this.aiCatalogFlow.description,
         public: this.aiCatalogFlow.public,
-        definition: this.aiCatalogFlow.latestVersion.definition,
+        definition: this.versionData.definition,
       };
     },
   },

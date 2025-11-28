@@ -80,7 +80,7 @@ describe('AiCatalogAgentsDuplicate', () => {
       expect(findForm().props('initialValues')).toEqual(expectedInitialValues);
     });
 
-    it('set initial values based on the latest version of the original agent if showLatestVersion prop is set', async () => {
+    it('set initial values from the data of the original agent', async () => {
       const expectedInitialValues = {
         name: `Copy of ${mockAgent.name}`,
         description: mockAgent.description,

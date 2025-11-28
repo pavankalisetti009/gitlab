@@ -25,13 +25,14 @@ export default {
       type: Object,
       required: true,
     },
+    versionData: {
+      type: Object,
+      required: true,
+    },
   },
   computed: {
     projectName() {
       return this.item.project?.nameWithNamespace;
-    },
-    definition() {
-      return this.item.latestVersion?.definition;
     },
     flowTrigger() {
       return this.item.configurationForProject?.flowTrigger;
@@ -90,7 +91,7 @@ export default {
           </div>
         </ai-catalog-item-field>
         <ai-catalog-item-field :title="s__('AICatalog|Configuration')">
-          <form-flow-definition :value="definition" read-only class="gl-mt-3" />
+          <form-flow-definition :value="versionData.definition" read-only class="gl-mt-3" />
         </ai-catalog-item-field>
       </form-section>
     </dl>

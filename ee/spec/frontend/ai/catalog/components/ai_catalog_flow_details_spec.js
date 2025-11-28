@@ -6,13 +6,19 @@ import AiCatalogItemVisibilityField from 'ee/ai/catalog/components/ai_catalog_it
 import FormFlowDefinition from 'ee/ai/catalog/components/form_flow_definition.vue';
 import FormSection from 'ee/ai/catalog/components/form_section.vue';
 import { FLOW_TRIGGERS_EDIT_ROUTE } from 'ee/ai/duo_agents_platform/router/constants';
-import { mockFlow, mockThirdPartyFlow, mockFlowConfigurationForProject } from '../mock_data';
+import {
+  mockFlow,
+  mockThirdPartyFlow,
+  mockFlowConfigurationForProject,
+  mockThirdPartyFlowConfigurationForProject,
+} from '../mock_data';
 
 describe('AiCatalogFlowDetails', () => {
   let wrapper;
 
   const defaultProps = {
     item: mockFlow,
+    versionData: mockFlowConfigurationForProject.pinnedItemVersion,
   };
 
   const createComponent = ({ props = {} } = {}) => {
@@ -79,10 +85,18 @@ describe('AiCatalogFlowDetails', () => {
 
   describe('renders "Configuration" details', () => {
     it('renders flow definition', () => {
-      const configurationField = findAllFieldsForSection(2).at(0);
+      createComponent({
+        props: {
+          item: {
+            ...mockFlow,
+            configurationForProject: mockFlowConfigurationForProject,
+          },
+        },
+      });
+      const configurationField = findAllFieldsForSection(2).at(1);
       expect(configurationField.props('title')).toBe('Configuration');
       expect(configurationField.findComponent(FormFlowDefinition).props('value')).toBe(
-        mockFlow.latestVersion.definition,
+        mockFlowConfigurationForProject.pinnedItemVersion.definition,
       );
     });
 
@@ -123,7 +137,7 @@ describe('AiCatalogFlowDetails', () => {
         const configurationField = findAllFieldsForSection(2).at(1);
         expect(configurationField.props('title')).toBe('Configuration');
         expect(configurationField.findComponent(FormFlowDefinition).props('value')).toBe(
-          mockFlow.latestVersion.definition,
+          mockFlowConfigurationForProject.pinnedItemVersion.definition,
         );
       });
     });
@@ -133,7 +147,13 @@ describe('AiCatalogFlowDetails', () => {
     beforeEach(() => {
       createComponent({
         props: {
-          item: mockThirdPartyFlow,
+          versionData: {
+            ...mockThirdPartyFlowConfigurationForProject.pinnedItemVersion,
+          },
+          item: {
+            ...mockThirdPartyFlow,
+            configurationForProject: mockThirdPartyFlowConfigurationForProject,
+          },
         },
       });
     });
@@ -146,10 +166,10 @@ describe('AiCatalogFlowDetails', () => {
     });
 
     it('renders "Configuration" details', () => {
-      const configurationField = findAllFieldsForSection(2).at(0);
+      const configurationField = findAllFieldsForSection(2).at(1);
       expect(configurationField.props('title')).toBe('Configuration');
       expect(configurationField.findComponent(FormFlowDefinition).props('value')).toBe(
-        mockThirdPartyFlow.latestVersion.definition,
+        mockThirdPartyFlowConfigurationForProject.pinnedItemVersion.definition,
       );
     });
   });
