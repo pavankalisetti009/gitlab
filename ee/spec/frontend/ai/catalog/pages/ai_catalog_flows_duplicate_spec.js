@@ -13,6 +13,8 @@ import {
   mockFlow,
   mockCreateAiCatalogFlowSuccessMutation,
   mockCreateAiCatalogFlowErrorMutation,
+  mockFlowConfigurationForProject,
+  mockFlowPinnedVersion,
 } from '../mock_data';
 
 Vue.use(VueApollo);
@@ -34,7 +36,12 @@ describe('AiCatalogFlowsDuplicate', () => {
     push: jest.fn(),
   };
 
-  const createComponent = ({ provide = {} } = {}) => {
+  const defaultProps = {
+    versionData: mockFlowPinnedVersion,
+    aiCatalogFlow: mockFlow,
+  };
+
+  const createComponent = ({ provide = {}, props = defaultProps } = {}) => {
     const apolloProvider = createMockApollo([
       [createAiCatalogFlow, createAiCatalogFlowMock],
       [createAiCatalogThirdPartyFlow, createAiCatalogThirdPartyFlowMock],
@@ -42,9 +49,7 @@ describe('AiCatalogFlowsDuplicate', () => {
 
     wrapper = shallowMountExtended(AiCatalogFlowsDuplicate, {
       apolloProvider,
-      propsData: {
-        aiCatalogFlow: mockFlow,
-      },
+      propsData: { ...defaultProps, ...props },
       provide: {
         ...provide,
       },
@@ -69,14 +74,35 @@ describe('AiCatalogFlowsDuplicate', () => {
       await waitForPromises();
     });
 
-    it('sets initial values based on the original agent, but always private and without a project', () => {
+    it('sets initial values with correct version data, but always private and without a project', async () => {
+      const definition = 'This is the pinned version value';
       const expectedInitialValues = {
         type: 'FLOW',
         name: `Copy of ${mockFlow.name}`,
         description: mockFlow.description,
-        definition: mockFlow.latestVersion.definition,
+        definition,
         public: false,
       };
+
+      createComponent({
+        props: {
+          versionData: {
+            ...mockFlowConfigurationForProject.pinnedItemVersion,
+            definition,
+          },
+          aiCatalogFlow: {
+            ...mockFlow,
+            configurationForProject: {
+              ...mockFlowConfigurationForProject,
+              pinnedItemVersion: {
+                ...mockFlowConfigurationForProject.pinnedItemVersion,
+                definition: 'this is not expected',
+              },
+            },
+          },
+        },
+      });
+      await waitForPromises();
 
       expect(findForm().props('initialValues')).toEqual(expectedInitialValues);
     });

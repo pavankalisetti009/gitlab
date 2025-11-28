@@ -24,6 +24,7 @@ import {
   mockAiCatalogItemConsumerDeleteResponse,
   mockAiCatalogItemConsumerDeleteErrorResponse,
   mockFlowConfigurationForProject,
+  mockFlowVersion,
 } from '../mock_data';
 
 jest.mock('~/sentry/sentry_browser_wrapper');
@@ -35,6 +36,7 @@ describe('AiCatalogFlowsShow', () => {
   let mockApollo;
 
   const defaultProps = {
+    versionData: mockFlowVersion,
     aiCatalogFlow: { ...mockFlow, configurationForProject: mockFlowConfigurationForProject },
   };
 

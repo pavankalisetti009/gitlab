@@ -47,6 +47,10 @@ export default {
       type: Object,
       required: true,
     },
+    versionData: {
+      type: Object,
+      required: true,
+    },
   },
   data() {
     return {
@@ -245,6 +249,6 @@ export default {
         />
       </template>
     </page-heading>
-    <ai-catalog-item-view :item="aiCatalogFlow" />
+    <ai-catalog-item-view :item="aiCatalogFlow" :version-data="versionData" />
   </div>
 </template>

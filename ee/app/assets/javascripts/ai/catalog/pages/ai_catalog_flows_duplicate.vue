@@ -19,6 +19,10 @@ export default {
       type: Object,
       required: true,
     },
+    versionData: {
+      type: Object,
+      required: true,
+    },
   },
   data() {
     return {
@@ -36,7 +40,7 @@ export default {
         name: `${s__('AICatalog|Copy of')} ${this.flowName}`,
         public: false,
         description: this.aiCatalogFlow.description,
-        definition: this.aiCatalogFlow.latestVersion.definition,
+        definition: this.versionData.definition,
       };
     },
   },

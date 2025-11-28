@@ -395,6 +395,15 @@ export const mockFlowVersion = {
   __typename: TYPENAME_AI_CATALOG_FLOW_VERSION,
 };
 
+export const mockFlowPinnedVersion = {
+  ...mockFlowVersion,
+  id: 'gid://gitlab/Ai::Catalog::ItemVersion/25',
+  humanVersionName: 'v0.9.0',
+  versionName: '0.9.0',
+  definition: 'version: "v1" pinned',
+  __typename: TYPENAME_AI_CATALOG_FLOW_VERSION,
+};
+
 const mockFlowFactory = (overrides = {}) => ({
   id: 'gid://gitlab/Ai::Catalog::Item/4',
   name: 'Test AI Flow 1',
@@ -447,6 +456,7 @@ export const mockFlowConfigurationForProject = {
   id: 'gid://gitlab/Ai::Catalog::ItemConsumer/12',
   enabled: true,
   flowTrigger: mockFlowTrigger,
+  pinnedItemVersion: mockFlowVersion,
   __typename: TYPENAME_AI_CATALOG_ITEM_CONSUMER,
 };
 
@@ -551,6 +561,13 @@ export const mockThirdPartyFlowVersion = {
   versionName: '1.0.0',
   definition: '---\\nimage: node:22\\ncommands:\\n- ls\\ninjectGatewayToken: true\\n',
   __typename: TYPENAME_AI_CATALOG_THIRD_PARTY_FLOW_VERSION,
+};
+
+export const mockThirdPartyFlowConfigurationForProject = {
+  id: 'gid://gitlab/Ai::Catalog::ItemConsumer/12',
+  flowTrigger: mockFlowTrigger,
+  pinnedItemVersion: mockThirdPartyFlowVersion,
+  __typename: TYPENAME_AI_CATALOG_ITEM_CONSUMER,
 };
 
 const mockThirdPartyFlowFactory = (overrides = {}) => ({
