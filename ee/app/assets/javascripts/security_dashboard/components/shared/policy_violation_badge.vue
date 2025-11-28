@@ -11,7 +11,11 @@ export default {
 
 <template>
   <div ref="popover">
-    <gl-badge variant="neutral" icon="flag" />
+    <gl-badge
+      variant="neutral"
+      icon="flag"
+      :aria-label="s__('Vulnerability|Policy violation detected')"
+    />
     <gl-popover
       :target="() => $refs.popover"
       placement="top"

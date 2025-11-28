@@ -18,7 +18,7 @@ export default {
 
 <template>
   <div ref="popover">
-    <gl-badge variant="neutral" icon="bulb" />
+    <gl-badge variant="neutral" icon="bulb" :aria-label="$options.i18n.title" />
     <gl-popover
       :target="() => $refs.popover"
       placement="top"
