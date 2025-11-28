@@ -2,8 +2,15 @@
 import { camelCase } from 'lodash';
 import { GlLink } from '@gitlab/ui';
 import { GlLineChart, GlChartSeriesLabel } from '@gitlab/ui/src/charts';
-import { constructVulnerabilitiesReportWithFiltersPath } from 'ee/security_dashboard/utils/chart_utils';
-import { COLORS } from 'ee/security_dashboard/components/shared/vulnerability_report/constants';
+import {
+  listenSystemColorSchemeChange,
+  removeListenerSystemColorSchemeChange,
+} from '~/lib/utils/css_utils';
+import {
+  constructVulnerabilitiesReportWithFiltersPath,
+  getSeverityColors,
+} from 'ee/security_dashboard/utils/chart_utils';
+import { REPORT_TYPE_COLORS } from 'ee/security_dashboard/components/shared/vulnerability_report/constants';
 
 export default {
   components: {
@@ -34,6 +41,11 @@ export default {
       default: () => ({}),
     },
   },
+  data() {
+    return {
+      severityColors: {},
+    };
+  },
   computed: {
     chartStartDate() {
       // Chart data structure: chartSeries = [{ name: 'Series Name', data: [[date, value], [date, value], ...] }, ...]
@@ -45,7 +57,9 @@ export default {
     },
     chartSeriesWithColors() {
       return this.chartSeries.map((series) => {
-        const color = COLORS[camelCase(series.id)];
+        const normalizedSeriesId = camelCase(series.id);
+        const color =
+          this.severityColors[normalizedSeriesId] || REPORT_TYPE_COLORS[normalizedSeriesId];
 
         if (color) {
           return {
@@ -98,7 +112,17 @@ export default {
       };
     },
   },
+  mounted() {
+    this.setSeverityColors();
+    listenSystemColorSchemeChange(this.setSeverityColors);
+  },
+  destroyed() {
+    removeListenerSystemColorSchemeChange(this.setSeverityColors);
+  },
   methods: {
+    setSeverityColors() {
+      this.severityColors = getSeverityColors();
+    },
     vulnerabilitiesReportWithFiltersPath(seriesId) {
       return constructVulnerabilitiesReportWithFiltersPath({
         securityVulnerabilitiesPath: this.securityVulnerabilitiesPath,

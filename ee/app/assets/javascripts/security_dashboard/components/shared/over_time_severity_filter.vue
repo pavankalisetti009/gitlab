@@ -2,7 +2,7 @@
 import { GlCollapsibleListbox } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';
-import { SEVERITY_LEVELS } from 'ee/security_dashboard/utils/chart_utils';
+import { SEVERITY_LEVELS } from 'ee/security_dashboard/constants';
 import { ALL_ID } from 'ee/security_dashboard/components/shared/filters/constants';
 
 export default {
@@ -47,7 +47,7 @@ export default {
   },
   SEVERITY_FILTER_LISTBOX_ITEMS: Object.entries(SEVERITY_LEVELS).map(([key, value]) => ({
     text: value,
-    value: key,
+    value: key.toUpperCase(),
   })),
 };
 </script>
