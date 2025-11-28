@@ -1032,6 +1032,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
         expect(response.media_type).to eq(Gitlab::Workhorse::INTERNAL_API_CONTENT_TYPE)
 
         enabled_mcp_tools = ::Ai::DuoWorkflows::McpConfigService::GITLAB_ENABLED_TOOLS
+        preapproved_mcp_tools = ::Ai::DuoWorkflows::McpConfigService::GITLAB_PREAPPROVED_TOOLS
         expect(json_response['DuoWorkflow']['Headers']).to include(
           'x-gitlab-oauth-token' => 'oauth_token',
           'authorization' => 'Bearer token',
@@ -1051,7 +1052,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
             "Headers" => {
               "Authorization" => "Bearer oauth_token"
             },
-            "PreApprovedTools" => enabled_mcp_tools,
+            "PreApprovedTools" => preapproved_mcp_tools,
             "Tools" => enabled_mcp_tools
           }
         })
