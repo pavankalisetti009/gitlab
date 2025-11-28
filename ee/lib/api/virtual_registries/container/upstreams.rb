@@ -52,7 +52,7 @@ module API
 
             desc 'List all container virtual registry upstreams for a group' do
               detail 'This feature was introduced in GitLab 18.5. \
-                  This feature is currently in experiment state. \
+                  This feature is an experiment. \
                   This feature is behind the `container_virtual_registries` feature flag.'
               success code: 200, model: Entities::VirtualRegistries::Container::Upstream
               failure [
@@ -85,8 +85,8 @@ module API
               namespace :upstreams do
                 desc 'List all container virtual registry upstreams for a registry' do
                   detail 'This feature was introduced in GitLab 18.5. \
-                      This feature is currently in experiment state. \
-                      This feature behind the `container_virtual_registries` feature flag.'
+                      This feature is an experiment. \
+                      This feature is behind the `container_virtual_registries` feature flag.'
                   success code: 200
                   failure [
                     { code: 400, message: 'Bad Request' },
@@ -107,8 +107,8 @@ module API
 
                 desc 'Add a container virtual registry upstream' do
                   detail 'This feature was introduced in GitLab 18.5. \
-                      This feature is currently in experiment state. \
-                      This feature behind the `container_virtual_registries` feature flag.'
+                      This feature is an experiment. \
+                      This feature is behind the `container_virtual_registries` feature flag.'
                   success code: 201, model: ::API::Entities::VirtualRegistries::Container::Upstream
                   failure [
                     { code: 400, message: 'Bad Request' },
@@ -153,8 +153,8 @@ module API
             route_param :id, type: Integer, desc: 'The ID of the container virtual registry upstream' do
               desc 'Get a specific container virtual registry upstream' do
                 detail 'This feature was introduced in GitLab 18.5. \
-                      This feature is currently in experiment state. \
-                      This feature behind the `container_virtual_registries` feature flag.'
+                      This feature is an experiment. \
+                      This feature is behind the `container_virtual_registries` feature flag.'
                 success ::API::Entities::VirtualRegistries::Container::Upstream
                 failure [
                   { code: 400, message: 'Bad Request' },
@@ -174,8 +174,8 @@ module API
 
               desc 'Update a container virtual registry upstream' do
                 detail 'This feature was introduced in GitLab 18.5. \
-                      This feature is currently in experiment state. \
-                      This feature behind the `container_virtual_registries` feature flag.'
+                      This feature is an experiment. \
+                      This feature is behind the `container_virtual_registries` feature flag.'
                 success code: 200
                 failure [
                   { code: 400, message: 'Bad Request' },
@@ -208,8 +208,8 @@ module API
 
               desc 'Delete a container virtual registry upstream' do
                 detail 'This feature was introduced in GitLab 18.5. \
-                      This feature is currently in experiment state. \
-                      This feature behind the `container_virtual_registries` feature flag.'
+                      This feature is an experiment. \
+                      This feature is behind the `container_virtual_registries` feature flag.'
                 success code: 204
                 failure [
                   { code: 400, message: 'Bad Request' },
@@ -230,6 +230,26 @@ module API
                     upstream.destroy
                   end
                 end
+              end
+
+              desc 'Purge cache for a container virtual registry upstream' do
+                detail 'This feature was introduced in GitLab 18.7. \
+                        This feature is currently an experiment. \
+                        This feature is behind the `container_virtual_registries` feature flag.'
+                success code: 204
+                failure [
+                  { code: 400, message: 'Bad Request' },
+                  { code: 401, message: 'Unauthorized' },
+                  { code: 403, message: 'Forbidden' },
+                  { code: 404, message: 'Not found' }
+                ]
+                tags %w[container_virtual_registries]
+                hidden true
+              end
+              delete :cache do
+                authorize! :destroy_virtual_registry, upstream
+
+                destroy_conditionally!(upstream) { upstream.purge_cache! }
               end
             end
           end

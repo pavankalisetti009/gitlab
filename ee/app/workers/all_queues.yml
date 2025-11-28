@@ -1033,6 +1033,16 @@
   :idempotent: false
   :tags: []
   :queue_namespace: :cronjob
+- :name: dependency_proxy_blob:virtual_registries_container_cache_mark_entries_for_destruction
+  :worker_name: VirtualRegistries::Container::Cache::MarkEntriesForDestructionWorker
+  :feature_category: :virtual_registry
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace: :dependency_proxy_blob
 - :name: dependency_proxy_blob:virtual_registries_packages_cache_mark_entries_for_destruction
   :worker_name: VirtualRegistries::Packages::Cache::MarkEntriesForDestructionWorker
   :feature_category: :virtual_registry

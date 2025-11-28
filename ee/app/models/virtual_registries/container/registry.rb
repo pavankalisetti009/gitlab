@@ -12,6 +12,14 @@ module VirtualRegistries
       has_many :upstreams,
         class_name: '::VirtualRegistries::Container::Upstream',
         through: :registry_upstreams
+
+      def purge_cache!
+        ::VirtualRegistries::Container::Cache::MarkEntriesForDestructionWorker.bulk_perform_async_with_contexts(
+          exclusive_upstreams,
+          arguments_proc: ->(upstream) { [upstream.id] },
+          context_proc: ->(upstream) { { namespace: upstream.group } }
+        )
+      end
     end
   end
 end

@@ -66,6 +66,10 @@ module VirtualRegistries
         cache_entries.default
       end
 
+      def purge_cache!
+        ::VirtualRegistries::Container::Cache::MarkEntriesForDestructionWorker.perform_async(id)
+      end
+
       private
 
       def get_bearer_token(path)
