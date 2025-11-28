@@ -376,11 +376,11 @@ RSpec.describe Projects::IssuesController, feature_category: :team_planning do
       end
 
       context 'edit action' do
-        let(:query) { { query: 'any' } }
+        let(:query) { { query: 'any', edit: 'true' } }
 
         it_behaves_like 'redirects to show work item page' do
           subject(:make_request) do
-            get :edit, params: { namespace_id: project.namespace, project_id: project, id: work_item.iid, **query }
+            get :edit, params: { namespace_id: project.namespace, project_id: project, id: work_item.iid, query: 'any' }
           end
         end
       end
@@ -415,11 +415,11 @@ RSpec.describe Projects::IssuesController, feature_category: :team_planning do
       end
 
       context 'edit action' do
-        let(:query) { { query: 'any' } }
+        let(:query) { { query: 'any', edit: 'true' } }
 
         it_behaves_like 'redirects to show work item page' do
           subject(:make_request) do
-            get :edit, params: { namespace_id: project.namespace, project_id: project, id: work_item.iid, **query }
+            get :edit, params: { namespace_id: project.namespace, project_id: project, id: work_item.iid, query: 'any' }
           end
         end
       end
