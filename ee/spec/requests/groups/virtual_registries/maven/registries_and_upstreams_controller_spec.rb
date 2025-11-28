@@ -55,6 +55,26 @@ RSpec.describe Groups::VirtualRegistries::Maven::RegistriesAndUpstreamsControlle
 
           expect(response.body).to have_pushed_frontend_ability(updateVirtualRegistry: true)
         end
+
+        it 'pushes adminVirtualRegistry: false ability to frontend' do
+          get_index
+
+          expect(response.body).to have_pushed_frontend_ability(adminVirtualRegistry: false)
+        end
+      end
+
+      context 'when user is group owner' do
+        before_all do
+          group.add_owner(user)
+        end
+
+        it_behaves_like 'pushed feature flag', :ui_for_virtual_registry_cleanup_policy
+
+        it 'pushes adminVirtualRegistry: true ability to frontend' do
+          get_index
+
+          expect(response.body).to have_pushed_frontend_ability(adminVirtualRegistry: true)
+        end
       end
     end
   end

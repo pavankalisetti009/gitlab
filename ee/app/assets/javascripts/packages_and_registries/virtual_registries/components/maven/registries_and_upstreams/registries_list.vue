@@ -53,6 +53,9 @@ export default {
   apollo: {
     mavenRegistries: {
       query: getMavenVirtualRegistries,
+      context: {
+        batchKey: 'MavenVirtualRegistries',
+      },
       loadingKey: 'isLoading',
       skip() {
         return this.pageParams === null;
