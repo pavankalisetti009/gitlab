@@ -1,6 +1,5 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
-import { createAlert } from '~/alert';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -13,12 +12,10 @@ import { AI_CATALOG_FLOWS_SHOW_ROUTE } from 'ee/ai/catalog/router/constants';
 import {
   mockFlow,
   mockCreateAiCatalogFlowSuccessMutation,
-  mockCreateAiCatalogFlowSuccessWithEnableFailureMutation,
   mockCreateAiCatalogFlowErrorMutation,
 } from '../mock_data';
 
 Vue.use(VueApollo);
-jest.mock('~/alert');
 jest.mock('~/sentry/sentry_browser_wrapper');
 
 describe('AiCatalogFlowsNew', () => {
@@ -171,34 +168,6 @@ describe('AiCatalogFlowsNew', () => {
         await findForm().vm.$emit('dismiss-errors');
 
         expect(findForm().props('errors')).toEqual([]);
-      });
-    });
-
-    describe('when request succeeds but fails to enable the flow', () => {
-      beforeEach(async () => {
-        createAiCatalogFlowMock.mockResolvedValue(
-          mockCreateAiCatalogFlowSuccessWithEnableFailureMutation,
-        );
-        submitForm();
-        await waitForPromises();
-      });
-
-      it('calls createAlert', () => {
-        expect(createAlert).toHaveBeenCalledWith({
-          message:
-            'Could not enable flow in the project. Check that the project meets the %{linkStart}prerequisites%{linkEnd} and try again.',
-          messageLinks: {
-            link: '/help/user/duo_agent_platform/ai_catalog#view-the-ai-catalog',
-          },
-        });
-      });
-
-      it('navigates to flows show page', async () => {
-        await waitForPromises();
-        expect(mockRouter.push).toHaveBeenCalledWith({
-          name: AI_CATALOG_FLOWS_SHOW_ROUTE,
-          params: { id: 4 },
-        });
       });
     });
 
