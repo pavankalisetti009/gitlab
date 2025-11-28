@@ -290,21 +290,30 @@ describe('workflow_socket_utils', () => {
             ]),
           });
 
-        // First pass - user messages are filtered out, so no messages to process
+        // First pass - user message is included
         let result = await processWorkflowMessage(mockEvent, null);
         let { lastProcessedMessageId } = result;
         expect(result).toEqual({
-          messages: [],
+          messages: [
+            {
+              ...mockMessageFirstPass,
+              requestId: mockMessageFirstPass.message_id,
+            },
+          ],
           status: 'running',
           goal: 'test goal',
-          lastProcessedMessageId: null,
+          lastProcessedMessageId: mockMessageFirstPass.message_id,
         });
 
-        // Second pass - user message filtered out, only agent message processed
+        // Second pass - returns all messages from the last processed message onwards
         result = await processWorkflowMessage(mockEvent, lastProcessedMessageId);
         ({ lastProcessedMessageId } = result);
         expect(result).toEqual({
           messages: [
+            {
+              ...mockMessageFirstPass,
+              requestId: mockMessageFirstPass.message_id,
+            },
             {
               ...mockMessageSecondPass,
               requestId: mockMessageSecondPass.message_id,
@@ -315,7 +324,7 @@ describe('workflow_socket_utils', () => {
           lastProcessedMessageId: mockMessageSecondPass.message_id,
         });
 
-        // Third pass - user message filtered out, agent and tool messages processed
+        // Third pass - returns messages from the last processed message onwards (agent + tool)
         result = await processWorkflowMessage(mockEvent, lastProcessedMessageId);
         expect(result).toEqual({
           messages: [

@@ -26,6 +26,7 @@ import {
   DUO_WORKFLOW_ADDITIONAL_CONTEXT_REPOSITORY,
   DUO_CURRENT_WORKFLOW_STORAGE_KEY,
   DUO_CHAT_VIEWS,
+  DUO_AGENTIC_CHAT_PENDING_USER_MESSAGE_ID,
 } from 'ee/ai/constants';
 import getAiChatContextPresets from 'ee/ai/graphql/get_ai_chat_context_presets.query.graphql';
 import getAiChatAvailableModels from 'ee/ai/graphql/get_ai_chat_available_models.query.graphql';
@@ -697,9 +698,11 @@ export default {
         await this.validateWorkflowExists();
       }
 
-      // eslint-disable-next-line @gitlab/require-i18n-strings
-      const requestId = `${this.workflowId}-${this.messages.length || 0}-user`;
-      const userMessage = { content: question, role: 'user', requestId };
+      const userMessage = {
+        content: question,
+        role: 'user',
+        requestId: DUO_AGENTIC_CHAT_PENDING_USER_MESSAGE_ID,
+      };
       this.startWorkflow(question, {}, this.additionalContext);
       this.addDuoChatMessage(userMessage);
     },

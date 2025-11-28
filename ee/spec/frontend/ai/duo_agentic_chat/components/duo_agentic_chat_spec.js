@@ -42,6 +42,7 @@ import {
   DUO_CURRENT_WORKFLOW_STORAGE_KEY,
   DUO_CHAT_VIEWS,
   DUO_WORKFLOW_STATUS_RUNNING,
+  DUO_AGENTIC_CHAT_PENDING_USER_MESSAGE_ID,
 } from 'ee/ai/constants';
 import { WIDTH_OFFSET } from 'ee/ai/tanuki_bot/constants';
 import { createWebSocket, closeSocket } from '~/lib/utils/websocket_utils';
@@ -712,7 +713,7 @@ describe('Duo Agentic Chat', () => {
           expect.objectContaining({
             content: MOCK_USER_MESSAGE.content,
             role: 'user',
-            requestId: `456-0-user`,
+            requestId: DUO_AGENTIC_CHAT_PENDING_USER_MESSAGE_ID,
           }),
         );
       });
@@ -753,7 +754,7 @@ describe('Duo Agentic Chat', () => {
           expect.objectContaining({
             content: MOCK_USER_MESSAGE.content,
             role: 'user',
-            requestId: `456-0-user`,
+            requestId: DUO_AGENTIC_CHAT_PENDING_USER_MESSAGE_ID,
           }),
         );
       });
@@ -822,17 +823,16 @@ describe('Duo Agentic Chat', () => {
         expect(mockSocketManager.connect).toHaveBeenCalled();
       });
 
-      it('generates requestId with correct format including -user suffix', async () => {
+      it('adds user message with pending requestId', async () => {
         findDuoChat().vm.$emit('send-chat-prompt', 'Test question');
         await waitForPromises();
 
-        // RequestId should have format: workflowId-count-user
         expect(actionSpies.addDuoChatMessage).toHaveBeenCalledWith(
           expect.anything(),
           expect.objectContaining({
             content: 'Test question',
             role: 'user',
-            requestId: expect.stringMatching(/^456-\d+-user$/),
+            requestId: DUO_AGENTIC_CHAT_PENDING_USER_MESSAGE_ID,
           }),
         );
       });
@@ -1857,7 +1857,7 @@ describe('Duo Agentic Chat', () => {
             expect.objectContaining({
               content: testQuestion,
               role: 'user',
-              requestId: expect.stringMatching(/^456-\d+-user$/),
+              requestId: DUO_AGENTIC_CHAT_PENDING_USER_MESSAGE_ID,
             }),
           );
         });
