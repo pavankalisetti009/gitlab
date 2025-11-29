@@ -1,11 +1,10 @@
 <script>
-import { GlSprintf, GlExperimentBadge } from '@gitlab/ui';
+import { GlSprintf } from '@gitlab/ui';
 
 export default {
-  components: { GlSprintf, GlExperimentBadge },
+  components: { GlSprintf },
   props: {
     sprintfMessage: { type: String, required: true },
-    showExperimentBadge: { type: Boolean, default: false, required: false },
   },
   computed: {
     valueName() {
@@ -20,7 +19,6 @@ export default {
   <li :data-testid="valueName" class="!gl-ml-0 gl-mb-4 gl-list-none">
     <gl-sprintf :message="sprintfMessage">
       <template #label="{ content }">
-        <gl-experiment-badge v-if="showExperimentBadge" type="beta" class="!gl-mx-0" />
         <strong data-testid="label">{{ content }}</strong>
       </template>
       <template #[valueName]>
