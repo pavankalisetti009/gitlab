@@ -119,8 +119,8 @@ RSpec.describe Resolvers::Vulnerabilities::IdentifierSearchResolver, feature_cat
         )
         ensure_elasticsearch_index!
 
-        allow(::Search::Elastic::VulnerabilityIndexingHelper)
-          .to receive(:vulnerability_indexing_allowed?).and_return(true)
+        allow(::Search::Elastic::VulnerabilityIndexHelper)
+          .to receive(:indexing_allowed?).and_return(true)
       end
 
       it_behaves_like 'when the current user has access'

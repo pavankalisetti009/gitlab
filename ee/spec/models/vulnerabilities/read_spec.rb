@@ -1054,7 +1054,7 @@ RSpec.describe Vulnerabilities::Read, type: :model, feature_category: :vulnerabi
 
     context 'when vulnerability indexing is allowed' do
       before do
-        allow(::Search::Elastic::VulnerabilityIndexingHelper).to receive(:vulnerability_indexing_allowed?).and_return(true)
+        allow(::Search::Elastic::VulnerabilityIndexHelper).to receive(:indexing_allowed?).and_return(true)
       end
 
       it_behaves_like 'uses elasticsearch'
@@ -1062,7 +1062,7 @@ RSpec.describe Vulnerabilities::Read, type: :model, feature_category: :vulnerabi
 
     context 'when vulnerability indexing is disallowed' do
       before do
-        allow(::Search::Elastic::VulnerabilityIndexingHelper).to receive(:vulnerability_indexing_allowed?).and_return(false)
+        allow(::Search::Elastic::VulnerabilityIndexHelper).to receive(:indexing_allowed?).and_return(false)
       end
 
       it_behaves_like 'does not use elasticsearch'

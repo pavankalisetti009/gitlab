@@ -24,8 +24,8 @@ RSpec.shared_context 'with ES stubs' do
   let(:received_vulnerabilities) { [] }
 
   before do
-    allow(::Search::Elastic::VulnerabilityIndexingHelper)
-      .to receive(:vulnerability_indexing_allowed?).and_return(true)
+    allow(::Search::Elastic::VulnerabilityIndexHelper)
+      .to receive(:indexing_allowed?).and_return(true)
 
     allow(::Elastic::ProcessBookkeepingService).to receive(:track!) do |*vulnerabilities|
       received_vulnerabilities.concat(vulnerabilities)

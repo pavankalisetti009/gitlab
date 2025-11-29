@@ -10,7 +10,7 @@ module Vulnerabilities
     def execute
       return unless block_given?
 
-      return yield relation unless ::Search::Elastic::VulnerabilityIndexingHelper.vulnerability_indexing_allowed?
+      return yield relation unless ::Search::Elastic::VulnerabilityIndexHelper.indexing_allowed?
 
       vulnerabilities = if preload_associations
                           preload(relation)
