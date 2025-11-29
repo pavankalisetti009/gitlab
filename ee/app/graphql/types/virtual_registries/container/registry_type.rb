@@ -9,19 +9,9 @@ module Types
 
         authorize :read_virtual_registry
 
+        implements Types::VirtualRegistries::RegistryInterface
+
         alias_method :registry, :object
-
-        field :id, GraphQL::Types::ID, null: false,
-          description: 'ID of the virtual registry.'
-
-        field :name, GraphQL::Types::String, null: false,
-          description: 'Name of the virtual registry.'
-
-        field :description, GraphQL::Types::String, null: true,
-          description: 'Description of the virtual registry.'
-
-        field :updated_at, ::Types::TimeType, null: false,
-          description: 'Timestamp of when the virtual registry was updated.'
       end
     end
   end

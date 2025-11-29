@@ -11,4 +11,5 @@ RSpec.describe GitlabSchema.types['ContainerRegistry'], feature_category: :virtu
 
   it { is_expected.to require_graphql_authorizations(:read_virtual_registry) }
   it { is_expected.to have_graphql_fields(fields) }
+  it { is_expected.to have_attributes(interfaces: include(Types::VirtualRegistries::RegistryInterface)) }
 end
