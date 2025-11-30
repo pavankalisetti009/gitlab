@@ -36,6 +36,23 @@ module EE
             method: :group_level?,
             experiment: { milestone: '18.3' }
         end
+
+        def push_access_levels
+          return no_one_push_access_level if object.protected_from_push_by_security_policy?
+
+          object.push_access_levels
+        end
+
+        private
+
+        def no_one_push_access_level
+          [
+            ::ProtectedBranch::PushAccessLevel.new(
+              access_level: ::Gitlab::Access::NO_ACCESS,
+              protected_branch: object
+            )
+          ]
+        end
       end
     end
   end
