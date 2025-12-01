@@ -18,7 +18,11 @@ RSpec.describe Ai::ActiveContext::Code::Deleter, feature_category: :global_searc
 
   let(:adapter_name) { 'elasticsearch' }
   let(:adapter) do
-    instance_double(::ActiveContext::Databases::Elasticsearch::Adapter, name: adapter_name, connection: connection)
+    instance_double(
+      ::ActiveContext::Databases::Elasticsearch::Adapter,
+      name: adapter_name,
+      indexer_connection_options: double
+    )
   end
 
   let(:logger) { instance_double(::Gitlab::ActiveContext::Logger, info: nil, error: nil) }
@@ -68,7 +72,7 @@ RSpec.describe Ai::ActiveContext::Code::Deleter, feature_category: :global_searc
         [
           Gitlab.config.elasticsearch.indexer_path,
           '-adapter', adapter_name,
-          '-connection', ::Gitlab::Json.generate(connection.options),
+          '-connection', ::Gitlab::Json.generate(adapter.indexer_connection_options),
           '-options', ::Gitlab::Json.generate(expected_options)
         ]
       end
