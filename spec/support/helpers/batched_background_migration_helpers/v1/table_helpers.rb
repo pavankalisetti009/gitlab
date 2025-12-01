@@ -57,11 +57,18 @@ module BatchedBackgroundMigrationHelpers
         # lazy evaluation and memoization of table helpers.
         #
         # @param table_names [Array<Symbol>] Names of tables to declare
+        # @raise [ArgumentError] if a method with the same name already exists
         #
         # @example
         #   tables :issues, :projects, :users
         def tables(*table_names)
           table_names.each do |table_name|
+            if method_defined?(table_name) || private_method_defined?(table_name)
+              raise ArgumentError,
+                "Cannot define table helper '#{table_name}': method already exists. " \
+                "This may conflict with existing RSpec helpers or other included modules."
+            end
+
             define_method(table_name) do
               ivar_name = "@_table_#{table_name}"
               return instance_variable_get(ivar_name) if instance_variable_defined?(ivar_name)
