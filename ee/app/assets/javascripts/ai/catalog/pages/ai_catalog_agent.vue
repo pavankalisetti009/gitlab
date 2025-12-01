@@ -74,10 +74,10 @@ export default {
       if (this.shouldShowLatestVersion) {
         version = this.aiCatalogAgent.latestVersion;
       } else {
-        version = this.aiCatalogAgent.configurationForProject?.pinnedItemVersion;
+        version = this.aiCatalogAgent.configurationForProject.pinnedItemVersion;
       }
       return {
-        systemPrompt: version.systemPrompt,
+        ...version,
         tools: version.tools?.nodes || [],
       };
     },
