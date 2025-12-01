@@ -145,21 +145,6 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
         expect(job.reload.finished_at).to eq(job.started_at + timeout.seconds)
         expect(Ci::Minutes::NamespaceMonthlyUsage.first.shared_runners_duration).to eq(timeout)
       end
-
-      context 'when enforce_job_configured_timeouts is disabled', :sidekiq_inline, :freeze_time do
-        before do
-          stub_feature_flags(enforce_job_configured_timeouts: false)
-        end
-
-        it 'does not overwrite finished_at' do
-          expect(Ci::Minutes::UpdateBuildMinutesService)
-            .to receive(:new).and_call_original
-
-          job.drop!(:job_execution_timeout)
-          expect(job.reload.finished_at).to eq(job.started_at + started_before.seconds)
-          expect(Ci::Minutes::NamespaceMonthlyUsage.first.shared_runners_duration).to eq(started_before)
-        end
-      end
     end
 
     context 'when failure reason is not job_execution_timeout' do
