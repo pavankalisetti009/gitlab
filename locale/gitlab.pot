@@ -46876,9 +46876,6 @@ msgstr ""
 msgid "Organization|Internal - The organization can be accessed by any signed in user except external users."
 msgstr ""
 
-msgid "Organization|Learn more about visibility levels"
-msgstr ""
-
 msgid "Organization|Manage"
 msgstr ""
 
@@ -47019,9 +47016,6 @@ msgid "Organization|Update your organization name, description, and avatar. %{li
 msgstr ""
 
 msgid "Organization|View all"
-msgstr ""
-
-msgid "Organization|Who can see this organization?"
 msgstr ""
 
 msgid "Organization|You can now start using your new organization."
