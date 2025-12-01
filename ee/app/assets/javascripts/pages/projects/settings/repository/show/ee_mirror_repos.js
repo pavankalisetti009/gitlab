@@ -120,6 +120,10 @@ export default class EEMirrorRepos extends MirrorRepos {
       $('.js-mirror-protected-hidden', this.$form).val('0');
       $('.js-mirror-branch-regex-hidden', this.$form).val('');
     }
+
+    if (this.$mirrorBranchSettingInput.filter(':checked').val() === 'protected') {
+      $('.js-mirror-branch-regex-hidden', this.$form).val('');
+    }
   }
 
   registerUpdateListeners() {
