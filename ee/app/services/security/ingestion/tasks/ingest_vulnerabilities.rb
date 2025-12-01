@@ -29,7 +29,7 @@ module Security
         end
 
         def mark_resolved_vulnerabilities_as_detected
-          IngestVulnerabilities::MarkResolvedAsDetected.execute(pipeline, partitioned_maps.second, context)
+          IngestVulnerabilities::MarkResolvedAsDetected.execute(pipeline, partitioned_maps.second)
         end
 
         def partitioned_maps

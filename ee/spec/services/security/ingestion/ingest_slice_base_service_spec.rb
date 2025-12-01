@@ -30,10 +30,8 @@ RSpec.describe Security::Ingestion::IngestSliceBaseService, feature_category: :v
 
   describe '#execute' do
     it 'executes all tasks and returns the vulnerability IDs' do
-      expect(Security::Ingestion::Tasks::TaskOne).to receive(:execute).with(
-        pipeline, finding_maps, an_instance_of(Security::Ingestion::Context))
-      expect(Security::Ingestion::Tasks::TaskTwo).to receive(:execute).with(
-        pipeline, finding_maps, an_instance_of(Security::Ingestion::Context))
+      expect(Security::Ingestion::Tasks::TaskOne).to receive(:execute).with(pipeline, finding_maps)
+      expect(Security::Ingestion::Tasks::TaskTwo).to receive(:execute).with(pipeline, finding_maps)
 
       result = service.execute
 

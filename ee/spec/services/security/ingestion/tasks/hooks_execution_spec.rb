@@ -12,9 +12,7 @@ RSpec.describe Security::Ingestion::Tasks::HooksExecution, feature_category: :vu
     let_it_be(:finding_map_2) { create(:finding_map, vulnerability: vulnerabilities[1], new_record: true) }
     let_it_be(:finding_map_3) { create(:finding_map, vulnerability: vulnerabilities[2]) }
 
-    let(:context) { Security::Ingestion::Context.new }
-
-    let!(:service_object) { described_class.new(pipeline, [finding_map_1, finding_map_2, finding_map_3], context) }
+    let!(:service_object) { described_class.new(pipeline, [finding_map_1, finding_map_2, finding_map_3]) }
 
     subject(:ingest_finding_remediations) { service_object.execute }
 
@@ -30,7 +28,7 @@ RSpec.describe Security::Ingestion::Tasks::HooksExecution, feature_category: :vu
           vulnerabilities[1]
         ])
 
-      ingest_finding_remediations
+      SecApplicationRecord.transaction { ingest_finding_remediations }
     end
 
     it 'executes the hooks associated with all new vulnerabilities' do
@@ -39,8 +37,6 @@ RSpec.describe Security::Ingestion::Tasks::HooksExecution, feature_category: :vu
     end
 
     it 'triggers false positive detection associated with all new vulnerabilities' do
-      context.run_sec_after_commit_tasks
-
       expect(vulnerabilities[0]).to have_received(:trigger_false_positive_detection)
       expect(vulnerabilities[1]).to have_received(:trigger_false_positive_detection)
     end
@@ -50,8 +46,6 @@ RSpec.describe Security::Ingestion::Tasks::HooksExecution, feature_category: :vu
     end
 
     it 'does not trigger false positive detection associated with existing vulnerabilities' do
-      context.run_sec_after_commit_tasks
-
       expect(vulnerabilities[2]).not_to have_received(:trigger_false_positive_detection)
     end
   end

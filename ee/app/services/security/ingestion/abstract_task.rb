@@ -9,10 +9,9 @@ module Security
         new(...).execute
       end
 
-      def initialize(pipeline, finding_maps, context = nil)
+      def initialize(pipeline, finding_maps)
         @pipeline = pipeline
         @finding_maps = finding_maps
-        @context = context
       end
 
       def execute
@@ -21,7 +20,7 @@ module Security
 
       private
 
-      attr_reader :pipeline, :finding_maps, :context
+      attr_reader :pipeline, :finding_maps
 
       def set_tracked_context?
         actor = if pipeline.nil?
