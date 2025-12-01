@@ -275,7 +275,7 @@ export default {
       aiCatalogItemVersionId: '',
       foundationalAgents: [],
       selectedFoundationalAgent: null,
-      agentDeletedError: '',
+      agentOrWorkflowDeletedError: '',
       isChatAvailable: true,
       isEmbedded: this.chatConfiguration?.defaultProps?.isEmbedded ?? false,
       // this is required for classic/agentic toggle
@@ -290,6 +290,7 @@ export default {
       lastProcessedIndex: -1,
       pendingEvent: null,
       isProcessingMessage: false,
+      isInitialLoad: true,
     };
   },
   computed: {
@@ -498,6 +499,10 @@ export default {
     },
     switchMode(mode) {
       if (mode === 'active') {
+        if (this.isLoading) {
+          return;
+        }
+
         if (this.hasActiveThread) {
           this.hydrateActiveThread();
         } else {
@@ -531,6 +536,8 @@ export default {
         this.workflowId = null;
       }
       this.workflowStatus = null;
+      this.isChatAvailable = true;
+      this.agentOrWorkflowDeletedError = '';
     },
 
     setDimensions() {
@@ -687,6 +694,8 @@ export default {
           this.isWaitingOnPrompt = false;
           return;
         }
+      } else {
+        await this.validateWorkflowExists();
       }
 
       // eslint-disable-next-line @gitlab/require-i18n-strings
@@ -745,17 +754,28 @@ export default {
       }
     },
     async hydrateActiveThread() {
+      this.isLoading = true;
       this.multithreadedView = DUO_CHAT_VIEWS.CHAT;
-      await this.loadActiveThread();
-      this.validateAgentExists();
 
-      if (this.workflowStatus === DUO_WORKFLOW_STATUS_RUNNING) {
-        this.startWorkflow('');
+      try {
+        const workflowExists = await this.validateWorkflowExists();
+
+        if (!this.isChatAvailable || !workflowExists) {
+          return;
+        }
+
+        await this.loadActiveThread();
+        this.validateAgentExists();
+
+        if (this.workflowStatus === DUO_WORKFLOW_STATUS_RUNNING) {
+          this.startWorkflow('');
+        }
+      } finally {
+        this.isLoading = false;
       }
     },
     async loadActiveThread() {
       try {
-        this.isLoading = true;
         const data = await ApolloUtils.fetchWorkflowEvents(this.$apollo, this.activeThread);
 
         const parsedWorkflowData = WorkflowUtils.parseWorkflowData(data);
@@ -776,9 +796,10 @@ export default {
         this.setMessages(messages);
         this.$emit('change-title', parsedWorkflowData?.workflowGoal);
       } catch (err) {
-        this.onErrorExtended(err);
+        this.onError(err);
       } finally {
         this.isLoading = false;
+        this.isInitialLoad = false;
       }
     },
     onBackToList() {
@@ -810,6 +831,8 @@ export default {
       Object.assign(this, threadContent);
 
       this.cleanupState();
+      this.isChatAvailable = true;
+      this.agentOrWorkflowDeletedError = '';
       this.$emit('change-title');
 
       const agentState = prepareAgentSelection(agent, reuseAgent);
@@ -824,6 +847,7 @@ export default {
       if (this.$route?.path !== '/chat') {
         this.$router.push('/chat');
       }
+      this.isInitialLoad = false;
     },
     onModelSelect(selectedModelValue) {
       const model = getModel(this.availableModels, selectedModelValue);
@@ -841,7 +865,7 @@ export default {
       );
 
       this.isChatAvailable = isAvailable;
-      this.agentDeletedError = errorMessage;
+      this.agentOrWorkflowDeletedError = errorMessage;
 
       return isAvailable;
     },
@@ -853,12 +877,41 @@ export default {
     focusInput() {
       this.$refs.chat.focusChatInput();
     },
-    onErrorExtended(errorData) {
-      const workflowNotFoundChecker = (e) => e?.extensions?.code === WORKFLOW_NOT_FOUND_CODE;
-      if (errorData?.graphQLErrors?.some(workflowNotFoundChecker)) {
-        this.onNewChat();
-      } else {
-        this.onError(errorData);
+    ensureActiveThreadId() {
+      if (this.workflowId) {
+        this.activeThread = convertToGraphQLId(
+          TYPENAME_AI_DUO_WORKFLOW,
+          parseInt(this.workflowId, 10),
+        );
+      }
+    },
+    hasActiveMessagesButWorkflowDeleted(hasWorkflowNotFoundError) {
+      return hasWorkflowNotFoundError && !this.isInitialLoad && this.messages.length > 0;
+    },
+    async validateWorkflowExists() {
+      this.ensureActiveThreadId();
+
+      if (!this.activeThread) {
+        return false;
+      }
+
+      try {
+        await ApolloUtils.fetchWorkflowEvents(this.$apollo, this.activeThread);
+        return true;
+      } catch (errorData) {
+        const workflowNotFoundChecker = (e) => e?.extensions?.code === WORKFLOW_NOT_FOUND_CODE;
+        const hasWorkflowNotFoundError = errorData?.graphQLErrors?.some(workflowNotFoundChecker);
+
+        if (this.hasActiveMessagesButWorkflowDeleted(hasWorkflowNotFoundError)) {
+          this.isChatAvailable = false;
+          this.agentOrWorkflowDeletedError = s__('DuoAgenticChat|This chat was deleted.');
+        } else if (hasWorkflowNotFoundError && this.messages.length === 0) {
+          await this.$nextTick();
+          this.onNewChat();
+        } else {
+          this.onError(errorData);
+        }
+        return false;
       }
     },
   },
@@ -904,7 +957,7 @@ export default {
       :is-tool-approval-processing="isProcessingToolApproval"
       :agents="agents"
       :is-chat-available="isChatAvailable"
-      :error="multithreadedView === 'chat' ? agentDeletedError : ''"
+      :error="multithreadedView === 'chat' ? agentOrWorkflowDeletedError : ''"
       :should-auto-focus-input="!isEmbedded"
       class="gl-h-full gl-w-full"
       @new-chat="onNewChat"
