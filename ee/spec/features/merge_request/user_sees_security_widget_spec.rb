@@ -19,7 +19,6 @@ RSpec.describe "Merge request > User sees security widget",
       sast: true
     )
 
-    stub_feature_flags(mr_security_widget_graphql: false)
     stub_feature_flags(mr_reports_tab: false)
 
     project.add_developer(user)
@@ -27,7 +26,7 @@ RSpec.describe "Merge request > User sees security widget",
   end
 
   context "when there are changes in the vulnerabilities detected" do
-    let(:vuln_text) { "New Medium Test finding" }
+    let(:vuln_text) { "New Medium: Test finding" }
 
     before do
       # Create security scan to enable SAST scanning
@@ -42,8 +41,7 @@ RSpec.describe "Merge request > User sees security widget",
       )
     end
 
-    it "shows the security widget",
-      quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/7073' do
+    it "shows the security widget" do
       visit(merge_request_path)
 
       page.within(mr_widget_app_selector) do
@@ -58,8 +56,7 @@ RSpec.describe "Merge request > User sees security widget",
     end
   end
 
-  context "when vulnerabilities in an MR have already been detected on main",
-    quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/7074' do
+  context "when vulnerabilities in an MR have already been detected on main" do
     let!(:ci_pipeline) do
       create(
         :ci_pipeline,
@@ -88,8 +85,7 @@ RSpec.describe "Merge request > User sees security widget",
       )
     end
 
-    it "does not show them as new vulnerabilities",
-      quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/7074' do
+    it "does not show them as new vulnerabilities" do
       visit(merge_request_path)
 
       page.within(mr_widget_app_selector) do
