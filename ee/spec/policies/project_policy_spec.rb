@@ -5351,6 +5351,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       it { is_expected.to be_disallowed(:admin_ai_catalog_item) }
       it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
       it { is_expected.to be_disallowed(:read_ai_catalog_item_consumer) }
+      it { is_expected.to be_disallowed(:execute_ai_catalog_item) }
     end
 
     shared_examples 'no permissions when Duo features are not available' do
@@ -5359,6 +5360,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       it { is_expected.to be_disallowed(:admin_ai_catalog_item) }
       it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
       it { is_expected.to be_disallowed(:read_ai_catalog_item_consumer) }
+      it { is_expected.to be_disallowed(:execute_ai_catalog_item) }
     end
 
     shared_examples 'no permissions when global_ai_catalog feature flag is disabled' do
@@ -5369,6 +5371,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       it { is_expected.to be_disallowed(:admin_ai_catalog_item) }
       it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
       it { is_expected.to be_disallowed(:read_ai_catalog_item_consumer) }
+      it { is_expected.to be_disallowed(:execute_ai_catalog_item) }
     end
 
     before do
@@ -5382,6 +5385,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       it { is_expected.to be_allowed(:admin_ai_catalog_item) }
       it { is_expected.to be_allowed(:admin_ai_catalog_item_consumer) }
       it { is_expected.to be_allowed(:read_ai_catalog_item_consumer) }
+      it { is_expected.to be_allowed(:execute_ai_catalog_item) }
 
       it_behaves_like 'no permissions when StageCheck is not available'
       it_behaves_like 'no permissions when Duo features are not available'
@@ -5394,6 +5398,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       it { is_expected.to be_disallowed(:admin_ai_catalog_item) }
       it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
       it { is_expected.to be_allowed(:read_ai_catalog_item_consumer) }
+      it { is_expected.to be_allowed(:execute_ai_catalog_item) }
 
       it_behaves_like 'no permissions when StageCheck is not available'
       it_behaves_like 'no permissions when Duo features are not available'
@@ -5406,6 +5411,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       it { is_expected.to be_disallowed(:admin_ai_catalog_item) }
       it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
       it { is_expected.to be_disallowed(:read_ai_catalog_item_consumer) }
+      it { is_expected.to be_disallowed(:execute_ai_catalog_item) }
     end
 
     context 'when guest' do
@@ -5414,6 +5420,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       it { is_expected.to be_disallowed(:admin_ai_catalog_item) }
       it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
       it { is_expected.to be_disallowed(:read_ai_catalog_item_consumer) }
+      it { is_expected.to be_disallowed(:execute_ai_catalog_item) }
     end
 
     context 'when anonymous' do
@@ -5422,6 +5429,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       it { is_expected.to be_disallowed(:admin_ai_catalog_item) }
       it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
       it { is_expected.to be_disallowed(:read_ai_catalog_item_consumer) }
+      it { is_expected.to be_disallowed(:execute_ai_catalog_item) }
     end
   end
 

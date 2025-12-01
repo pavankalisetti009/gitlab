@@ -20,7 +20,6 @@ module Ai
         @json_config = params[:json_config]
         @container = params[:container]
         @goal = params[:goal]
-        @item_version = params[:item_version]
       end
 
       def execute
@@ -45,7 +44,7 @@ module Ai
 
       private
 
-      attr_reader :current_user, :json_config, :container, :goal, :item_version
+      attr_reader :current_user, :json_config, :container, :goal
 
       def error(message, payload: {})
         ServiceResponse.error(message: Array(message), payload: payload)
@@ -123,7 +122,7 @@ module Ai
       end
 
       def allowed?
-        Ability.allowed?(current_user, :execute_ai_catalog_item_version, item_version)
+        Ability.allowed?(current_user, :execute_ai_catalog_item, container)
       end
 
       def flow_config_schema_version

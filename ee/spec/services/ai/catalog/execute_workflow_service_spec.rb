@@ -9,7 +9,7 @@ RSpec.describe Ai::Catalog::ExecuteWorkflowService, :aggregate_failures, feature
   let_it_be(:user) { create(:user) }
   let_it_be(:project) { create(:project, :repository, organization: organization, developers: user) }
   let_it_be(:item) { create(:ai_catalog_item, project:) }
-  let_it_be(:item_version) { item.versions.last.tap { |version| version.update!(release_date: 1.hour.ago) } }
+  let_it_be(:item_enabled_project) { create(:project, :repository, developers: user) }
 
   let(:json_config) do
     {
@@ -27,8 +27,7 @@ RSpec.describe Ai::Catalog::ExecuteWorkflowService, :aggregate_failures, feature
     {
       json_config: json_config,
       container: container,
-      goal: goal,
-      item_version: item_version
+      goal: goal
     }
   end
 
@@ -62,7 +61,7 @@ RSpec.describe Ai::Catalog::ExecuteWorkflowService, :aggregate_failures, feature
   context 'when container is missing' do
     let(:container) { nil }
 
-    it_behaves_like 'returns error response', 'container must be a Project or Namespace'
+    it_behaves_like 'returns error response', 'You have insufficient permissions'
   end
 
   context 'when goal is missing' do
@@ -89,6 +88,13 @@ RSpec.describe Ai::Catalog::ExecuteWorkflowService, :aggregate_failures, feature
     let(:user) { create(:user, reporter_of: project) }
 
     it_behaves_like 'returns error response', 'You have insufficient permissions'
+
+    context 'when the container does not own the catalog item' do
+      let(:project) { item_enabled_project }
+      let(:user) { create(:user, reporter_of: item_enabled_project) }
+
+      it_behaves_like 'returns error response', 'You have insufficient permissions'
+    end
   end
 
   context 'when validation passes' do
@@ -198,6 +204,13 @@ RSpec.describe Ai::Catalog::ExecuteWorkflowService, :aggregate_failures, feature
           .and_return(ServiceResponse.success(payload: { workload_id: 123 }))
 
         service.execute
+      end
+
+      context 'when the container does not own the catalog item' do
+        let(:project) { item_enabled_project }
+        let(:user) { create(:user, developer_of: item_enabled_project) }
+
+        it_behaves_like 'starts workflow execution'
       end
 
       context 'when oauth token creation fails' do
