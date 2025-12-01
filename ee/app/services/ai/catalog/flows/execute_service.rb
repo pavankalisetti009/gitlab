@@ -7,11 +7,16 @@ module Ai
         include Gitlab::Utils::StrongMemoize
 
         def initialize(project:, current_user:, params:)
-          @flow = params[:flow]
-          @flow_version = params[:flow_version]
+          @item_consumer = params[:item_consumer]
           @execute_workflow = params[:execute_workflow]
           @event_type = params[:event_type]
           @user_prompt = params[:user_prompt]
+
+          if @item_consumer
+            @flow = @item_consumer.item
+            @flow_version = @flow&.resolve_version(@item_consumer.pinned_version_prefix)
+          end
+
           super
         end
 
@@ -37,16 +42,18 @@ module Ai
 
         private
 
-        attr_reader :flow, :flow_version, :event_type, :user_prompt, :execute_workflow
+        attr_reader :flow, :flow_version, :event_type, :user_prompt, :execute_workflow, :item_consumer
 
         def allowed?
-          Ability.allowed?(current_user, :execute_ai_catalog_item_version, flow_version)
+          Ability.allowed?(current_user, :execute_ai_catalog_item, item_consumer)
         end
 
         def validate
-          return error('Flow is required') unless flow && flow.flow?
-          return error('Flow version is required') unless flow_version
-          return error('Flow version must belong to the flow') unless flow_version.item == flow
+          return error('Item consumer is required') unless item_consumer
+          return error('Item consumer must be associated with a flow') unless flow
+          return error('Item must be a flow type') unless flow.flow?
+          return error('Flow version could not be resolved from pinned version') unless flow_version
+          return error('Flow version is in draft state and cannot be executed') if flow_version.draft?
           return error('Trigger event type is required') if event_type.blank?
 
           ServiceResponse.success
@@ -56,9 +63,8 @@ module Ai
         def execute_workflow_service(flow_config)
           params = {
             json_config: flow_config,
-            container: container,
-            goal: flow_goal,
-            item_version: flow_version
+            container: item_consumer.project,
+            goal: flow_goal
           }
 
           ::Ai::Catalog::ExecuteWorkflowService.new(current_user, params).execute

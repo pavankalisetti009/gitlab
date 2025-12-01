@@ -479,6 +479,7 @@ module EE
         enable :read_vulnerability
         enable :update_secret_detection_validity_checks_status
         enable :read_ai_catalog_item_consumer
+        enable :execute_ai_catalog_item
       end
 
       rule { can?(:push_code) }.policy do
@@ -1360,6 +1361,7 @@ module EE
         prevent :admin_ai_catalog_item
         prevent :admin_ai_catalog_item_consumer
         prevent :read_ai_catalog_item_consumer
+        prevent :execute_ai_catalog_item
       end
 
       rule { container_registry_disabled }.policy do

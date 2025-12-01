@@ -7,10 +7,13 @@ RSpec.describe Ai::Catalog::Flows::ExecuteService, :aggregate_failures, feature_
 
   let_it_be(:developer) { create(:user) }
   let_it_be(:flow_owner_project) { create(:project, developers: developer) }
-  let_it_be(:flow) { create(:ai_catalog_flow, project: flow_owner_project) }
+  let_it_be(:flow) { create(:ai_catalog_flow, project: flow_owner_project, public: true) }
   let_it_be(:user_prompt) { nil }
-
-  let_it_be(:project) { create(:project, :repository, developers: developer) }
+  let_it_be(:another_project) { create(:project) }
+  let_it_be(:item_enabled_project) { create(:project, :repository, developers: developer) }
+  let(:ai_catalog_item_consumer) do
+    create(:ai_catalog_item_consumer, item: flow, project: item_enabled_project, pinned_version_prefix: nil)
+  end
 
   let_it_be_with_reload(:flow_version) do
     item_version = flow.latest_version
@@ -20,8 +23,7 @@ RSpec.describe Ai::Catalog::Flows::ExecuteService, :aggregate_failures, feature_
 
   let(:service_params) do
     {
-      flow: flow,
-      flow_version: flow_version,
+      item_consumer: ai_catalog_item_consumer,
       event_type: 'manual',
       execute_workflow: true,
       user_prompt: user_prompt
@@ -33,6 +35,7 @@ RSpec.describe Ai::Catalog::Flows::ExecuteService, :aggregate_failures, feature_
   end
 
   let(:current_user) { developer }
+  let(:project) { ai_catalog_item_consumer.project }
 
   let(:service) do
     described_class.new(
@@ -59,7 +62,7 @@ RSpec.describe Ai::Catalog::Flows::ExecuteService, :aggregate_failures, feature_
     end
 
     context 'when user lack permission' do
-      let(:current_user) { create(:user).tap { |user| project.add_reporter(user) } }
+      let(:current_user) { create(:user).tap { |user| item_enabled_project.add_reporter(user) } }
 
       it_behaves_like 'returns error response', 'You have insufficient permissions'
 
@@ -68,38 +71,60 @@ RSpec.describe Ai::Catalog::Flows::ExecuteService, :aggregate_failures, feature_
 
         it_behaves_like 'returns error response', 'You have insufficient permissions'
       end
+
+      context 'when the catalog item is not accessible to the project' do
+        let(:project) { another_project }
+
+        before do
+          project.add_maintainer(current_user)
+        end
+
+        it_behaves_like 'returns error response', 'You have insufficient permissions'
+      end
     end
 
-    context 'when flow is nil' do
-      let(:service_params) { super().merge({ flow: nil }) }
+    context 'when item_consumer is nil' do
+      let(:service_params) { super().merge({ item_consumer: nil }) }
 
-      it_behaves_like 'returns error response', 'Flow is required'
+      it_behaves_like 'returns error response', 'Item consumer is required'
     end
 
-    context 'when flow item_type is agent' do
-      let(:service_params) { super().merge({ flow: build(:ai_catalog_agent) }) }
+    context 'when item_consumer is not associated with a flow' do
+      before do
+        allow(ai_catalog_item_consumer).to receive(:item).and_return(nil)
+      end
 
-      it_behaves_like 'returns error response', 'Flow is required'
+      it_behaves_like 'returns error response', 'Item consumer must be associated with a flow'
     end
 
-    context 'when flow_version is nil' do
-      let(:service_params) { super().merge({ flow_version: nil }) }
+    context 'when item_consumer is associated with an agent instead of a flow' do
+      before do
+        ai_catalog_item_consumer.update!(item: create(:ai_catalog_agent))
+      end
 
-      it_behaves_like 'returns error response', 'Flow version is required'
+      it_behaves_like 'returns error response', 'Item must be a flow type'
+    end
+
+    context 'when flow version cannot be resolved from the pinned version' do
+      before do
+        ai_catalog_item_consumer.update!(pinned_version_prefix: non_existing_record_id)
+      end
+
+      it_behaves_like 'returns error response', 'Flow version could not be resolved from pinned version'
+    end
+
+    context 'when flow version is in draft state' do
+      before do
+        allow(flow_version).to receive(:release_date).and_return(nil)
+      end
+
+      it_behaves_like 'returns error response', 'Flow version is in draft state and cannot be executed'
     end
 
     context 'when event_type is nil' do
       let(:service_params) { super().merge({ event_type: nil }) }
 
       it_behaves_like 'returns error response', 'Trigger event type is required'
-    end
-
-    context 'when flow_version does not belong to the flow' do
-      let(:other_flow) { build(:ai_catalog_flow, project: project) }
-      let(:other_flow_version) { other_flow.versions.last.tap { |version| version.release_date = 1.hour.ago } }
-      let(:service_params) { super().merge({ flow_version: other_flow_version }) }
-
-      it_behaves_like 'returns error response', 'Flow version must belong to the flow'
     end
 
     context 'when execute_workflow is false' do
@@ -151,8 +176,7 @@ RSpec.describe Ai::Catalog::Flows::ExecuteService, :aggregate_failures, feature_
           hash_including(
             json_config: be_a(Hash),
             container: project,
-            goal: flow.description,
-            item_version: flow_version
+            goal: flow.description
           )
         ).and_call_original
 
@@ -213,6 +237,14 @@ RSpec.describe Ai::Catalog::Flows::ExecuteService, :aggregate_failures, feature_
         subject { execute }
       end
 
+      context 'when user is not member of the project that owns the flow while has permissions where item is enabled' do
+        let(:current_user) { create(:user).tap { |user| project.add_developer(user) } }
+
+        it_behaves_like 'creates CI pipeline for Duo Workflow execution' do
+          subject { execute }
+        end
+      end
+
       context 'when workflow execution process fails' do
         let(:execute_workflow_service) { instance_double(::Ai::Catalog::ExecuteWorkflowService) }
 
@@ -234,8 +266,7 @@ RSpec.describe Ai::Catalog::Flows::ExecuteService, :aggregate_failures, feature_
             hash_including(
               json_config: be_a(Hash),
               container: project,
-              goal: "test input",
-              item_version: flow_version
+              goal: "test input"
             )
           ).and_call_original
 

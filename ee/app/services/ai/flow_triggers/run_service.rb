@@ -110,8 +110,7 @@ module Ai
           project: project,
           current_user: current_user,
           params: {
-            flow: catalog_item,
-            flow_version: catalog_item.resolve_version(catalog_item_pinned_version),
+            item_consumer: flow_trigger.ai_catalog_item_consumer,
             event_type: params[:event].to_s,
             user_prompt: catalog_item_user_prompt(params[:input], params[:event]),
             execute_workflow: true
