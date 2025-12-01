@@ -32,7 +32,8 @@ lazy evaluation and memoization:
 RSpec.describe Gitlab::BackgroundMigration::BackfillProjectId do
   include Gitlab::BackgroundMigration::SpecHelpers::V1
 
-  # Tables are automatically available when accessed
+  # Declare the tables you need
+  tables :projects, :issues, :notes, :users
 end
 ```
 
@@ -57,16 +58,19 @@ end
 
 ## Features
 
-### Automatic Table Helpers
+### Explicit Table Declaration
 
-Tables are created automatically on first access:
+Tables must be explicitly declared using the `tables` method before they can be accessed:
 
 ```ruby
 RSpec.describe Gitlab::BackgroundMigration::BackfillNamespaceId do
   include Gitlab::BackgroundMigration::SpecHelpers::V1
 
+  # Declare all tables needed in your spec
+  tables :issues, :namespaces, :projects
+
   it 'backfills namespace_id' do
-    # Tables are created on first access
+    # Tables are created on first access after declaration
     namespace = namespaces.create!(name: 'test', path: 'test')
     project = projects.create!(namespace_id: namespace.id)
     issue = issues.create!(project_id: project.id)
@@ -79,11 +83,17 @@ end
 Table helpers are memoized, so repeated access returns the same instance:
 
 ```ruby
-it 'uses memoized tables' do
-  users_1 = users  # Creates the helper
-  users_2 = users  # Returns the same instance
+RSpec.describe Gitlab::BackgroundMigration::SomeMigration do
+  include Gitlab::BackgroundMigration::SpecHelpers::V1
 
-  expect(users_1).to be(users_2)
+  tables :users
+
+  it 'uses memoized tables' do
+    users_1 = users  # Creates the helper on first access
+    users_2 = users  # Returns the same instance
+
+    expect(users_1).to be(users_2)
+  end
 end
 ```
 
@@ -97,6 +107,7 @@ You can configure tables with custom options:
 RSpec.describe Gitlab::BackgroundMigration::SomeMigration do
   include Gitlab::BackgroundMigration::SpecHelpers::V1
 
+  tables :custom_table
   configure_table :custom_table, primary_key: :custom_id
 
   it 'uses custom primary key' do
@@ -112,6 +123,7 @@ end
 RSpec.describe Gitlab::BackgroundMigration::SomeMigration do
   include Gitlab::BackgroundMigration::SpecHelpers::V1
 
+  tables :ci_builds
   configure_table :ci_builds, database: :ci
 end
 ```
@@ -122,6 +134,7 @@ end
 RSpec.describe Gitlab::BackgroundMigration::SomeMigration, migration: :gitlab_ci do
   include Gitlab::BackgroundMigration::SpecHelpers::V1
 
+  tables :p_ci_builds
   configure_table :p_ci_builds, partitioned: true, database: :ci
 
   it 'works with partitioned tables' do
