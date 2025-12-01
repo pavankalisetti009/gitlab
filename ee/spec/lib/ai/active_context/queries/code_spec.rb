@@ -182,11 +182,11 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
       end
 
       describe 'setting last_queried_at', :freeze_time do
+        let(:ac_repository) { project.ready_active_context_code_repository }
+
         before do
           ac_repository.update!(last_queried_at: nil)
         end
-
-        let(:ac_repository) { project.ready_active_context_code_repository }
 
         it 'updates the last queried timestamp of the active_context repository records', :freeze_time do
           expect { codebase_query.filter(project_id: project.id) }
@@ -470,6 +470,25 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
 
           it_behaves_like 'returns no code embeddings error result' do
             let(:expected_error_detail) { described_class::MESSAGE_INITIAL_INDEXING_ONGOING }
+          end
+        end
+
+        context 'when project has a deleted ActiveContext repository record' do
+          before do
+            project_2.reload.ready_active_context_code_repository.deleted!
+            allow(Ai::ActiveContext::Code::AdHocIndexingWorker).to receive(:perform_async).and_return(true)
+          end
+
+          let(:project_id) { project_2.id }
+
+          it 'triggers ad-hoc indexing' do
+            expect(Ai::ActiveContext::Code::AdHocIndexingWorker).to receive(:perform_async).with(project_2.id)
+
+            result
+          end
+
+          it_behaves_like 'returns no code embeddings error result' do
+            let(:expected_error_detail) { described_class::MESSAGE_INITIAL_INDEXING_STARTED }
           end
         end
       end
