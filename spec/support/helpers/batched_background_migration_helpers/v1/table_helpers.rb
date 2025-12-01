@@ -66,7 +66,7 @@ module BatchedBackgroundMigrationHelpers
             if method_defined?(table_name) || private_method_defined?(table_name)
               raise ArgumentError,
                 "Cannot define table helper '#{table_name}': method already exists. " \
-                "This may conflict with existing RSpec helpers or other included modules."
+                  "This may conflict with existing RSpec helpers or other included modules."
             end
 
             define_method(table_name) do
