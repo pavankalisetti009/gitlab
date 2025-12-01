@@ -3,8 +3,6 @@
 require 'spec_helper'
 
 RSpec.describe SentNotificationsController, feature_category: :team_planning do
-  include SentNotificationHelpers
-
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, group: group) }
 
@@ -19,7 +17,7 @@ RSpec.describe SentNotificationsController, feature_category: :team_planning do
 
       context 'when sent_notifications belongs to a group level issue' do
         let_it_be(:issue) { create(:issue, :group_level, namespace: group) }
-        let_it_be(:sent_notification) { create_sent_notification(project: nil, noteable: issue, recipient: user) }
+        let_it_be(:sent_notification) { create(:sent_notification, project: nil, noteable: issue, recipient: user) }
 
         it 'unsubscribes and redirects to issue path' do
           get unsubscribe_sent_notification_path(sent_notification)
