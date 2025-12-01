@@ -166,11 +166,15 @@ RSpec.describe Ci::CreateDownstreamPipelineService, feature_category: :continuou
     end
 
     context 'when the bridge job was triggered by a policy' do
-      let(:trigger) do
-        {
-          policy: { name: 'My policy' },
-          trigger: { include: 'child-pipeline.yml' }
-        }
+      let(:bridge) do
+        create(
+          :ci_bridge,
+          status: :pending,
+          user: user,
+          options: trigger,
+          pipeline: upstream_pipeline,
+          build_source: build(:ci_build_source, source: 'pipeline_execution_policy')
+        )
       end
 
       it_behaves_like 'pipeline created without policy jobs injected'
