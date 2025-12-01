@@ -432,9 +432,19 @@ describe('Duo Agentic Chat', () => {
       });
 
       it('renders the loading state during initialization', async () => {
-        await findDuoChat().vm.$emit('thread-selected', { id: MOCK_WORKFLOW_ID });
+        let resolvePromise = null;
+        const pendingPromise = new Promise((resolve) => {
+          resolvePromise = resolve;
+        });
+        ApolloUtils.fetchWorkflowEvents
+          .mockResolvedValueOnce(MOCK_WORKFLOW_EVENTS_RESPONSE)
+          .mockReturnValueOnce(pendingPromise);
+
+        findDuoChat().vm.$emit('thread-selected', { id: MOCK_WORKFLOW_ID });
+        await waitForPromises();
 
         expect(findChatLoadingState().exists()).toBe(true);
+        resolvePromise('');
       });
 
       it('passes isToolApprovalProcessing prop to AgenticDuoChat component', () => {
@@ -541,6 +551,89 @@ describe('Duo Agentic Chat', () => {
       it('sets the last processed index based on the thread messages', () => {
         expect(wrapper.vm.lastProcessedIndex).toBe(MOCK_TRANSFORMED_MESSAGES.length - 1);
       });
+    });
+  });
+
+  describe('Workflow deletion handling', () => {
+    beforeEach(() => {
+      duoChatGlobalState.isAgenticChatShown = true;
+    });
+
+    it('shows error when sending message to workflow deleted in different instance', async () => {
+      createComponent({ initialState: { messages: ['test'] }, data: { isInititalLoad: false } });
+      await waitForPromises();
+
+      findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
+      await waitForPromises();
+
+      expect(wrapper.vm.workflowId).toBe('456');
+
+      ApolloUtils.fetchWorkflowEvents.mockRejectedValue({
+        graphQLErrors: [
+          { message: 'Workflow not found', extensions: { code: 'WORKFLOW_NOT_FOUND' } },
+        ],
+      });
+
+      findDuoChat().vm.$emit('send-chat-prompt', 'Follow-up question');
+      await waitForPromises();
+      expect(findDuoChat().props('isChatAvailable')).toBe(false);
+      expect(findDuoChat().props('error')).toBe('This chat was deleted.');
+    });
+
+    it('starts new chat when loading with deleted workflow after page reload', async () => {
+      getStorageValue.mockReturnValueOnce({
+        exists: true,
+        value: { workflowId: '456', activeThread: MOCK_WORKFLOW_ID },
+      });
+
+      ApolloUtils.fetchWorkflowEvents.mockRejectedValue({
+        graphQLErrors: [
+          { message: 'Workflow not found', extensions: { code: 'WORKFLOW_NOT_FOUND' } },
+        ],
+      });
+
+      createComponent();
+      await waitForPromises();
+
+      expect(findDuoChat().props('messages')).toHaveLength(0);
+      expect(findDuoChat().props('activeThreadId')).toBe('');
+    });
+
+    it('shows error when navigating to deleted workflow from history in same instance', async () => {
+      createComponent();
+      await waitForPromises();
+
+      ApolloUtils.fetchWorkflowEvents.mockRejectedValue({
+        graphQLErrors: [
+          { message: 'Workflow not found', extensions: { code: 'WORKFLOW_NOT_FOUND' } },
+        ],
+      });
+
+      findDuoChat().vm.$emit('thread-selected', { id: MOCK_WORKFLOW_ID });
+      await waitForPromises();
+
+      expect(findDuoChat().props('messages')).toHaveLength(0);
+      expect(findDuoChat().props('activeThreadId')).toBe('');
+    });
+
+    it('displays generic error for non-deletion errors', async () => {
+      getStorageValue.mockReturnValueOnce({
+        exists: true,
+        value: { workflowId: '456', activeThread: MOCK_WORKFLOW_ID },
+      });
+
+      const errorText = 'Network timeout occurred';
+      ApolloUtils.fetchWorkflowEvents.mockRejectedValue(new Error(errorText));
+
+      createComponent();
+      await waitForPromises();
+
+      expect(actionSpies.addDuoChatMessage).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          errors: [`Error: ${errorText}`],
+        }),
+      );
     });
   });
 
@@ -1483,6 +1576,41 @@ describe('Duo Agentic Chat', () => {
           expect(hydrateActiveThreadSpy).toHaveBeenCalledTimes(1);
         });
       });
+      describe('when isLoading is true', () => {
+        it('does not start a new chat or hydrate when switching to active mode', async () => {
+          let resolvePromise = null;
+          const pendingPromise = new Promise((resolve) => {
+            resolvePromise = resolve;
+          });
+
+          ApolloUtils.fetchWorkflowEvents = jest.fn().mockReturnValue(pendingPromise);
+
+          onNewChatSpy = jest.spyOn(DuoAgenticChatApp.methods, 'onNewChat');
+          hydrateActiveThreadSpy = jest.spyOn(DuoAgenticChatApp.methods, 'hydrateActiveThread');
+
+          createComponent({
+            data: {
+              workflowId: MOCK_WORKFLOW_ID,
+              activeThread: MOCK_WORKFLOW_ID,
+            },
+            propsData: { mode: 'history' },
+          });
+
+          duoChatGlobalState.isAgenticChatShown = true;
+          await nextTick();
+
+          hydrateActiveThreadSpy.mockClear();
+          onNewChatSpy.mockClear();
+
+          wrapper.setProps({ mode: 'active' });
+          await nextTick();
+
+          expect(onNewChatSpy).not.toHaveBeenCalled();
+          expect(hydrateActiveThreadSpy).not.toHaveBeenCalled();
+
+          resolvePromise(MOCK_WORKFLOW_EVENTS_RESPONSE);
+        });
+      });
     });
   });
 
@@ -1964,7 +2092,7 @@ describe('Duo Agentic Chat', () => {
 
         WorkflowUtils.transformChatMessages.mockReturnValue(MOCK_TRANSFORMED_MESSAGES);
 
-        findDuoChat().vm.$emit('thread-selected', {});
+        findDuoChat().vm.$emit('thread-selected', { id: MOCK_WORKFLOW_ID });
         await waitForPromises();
 
         expect(clearActiveThreadSpy).toHaveBeenCalled();
@@ -1976,7 +2104,7 @@ describe('Duo Agentic Chat', () => {
 
         expect(wrapper.vm.lastProcessedIndex).toBe(-1);
 
-        findDuoChat().vm.$emit('thread-selected', {});
+        findDuoChat().vm.$emit('thread-selected', { id: MOCK_WORKFLOW_ID });
         await waitForPromises();
         expect(wrapper.vm.lastProcessedIndex).toBe(MOCK_TRANSFORMED_MESSAGES.length - 1);
       });
@@ -2484,7 +2612,7 @@ describe('Duo Agentic Chat', () => {
 
     it('hides error in history view', () => {
       createComponent({
-        data: { multithreadedView: DUO_CHAT_VIEWS.LIST, agentDeletedError: 'Error' },
+        data: { multithreadedView: DUO_CHAT_VIEWS.LIST, agentOrWorkflowDeletedError: 'Error' },
       });
 
       expect(findDuoChat().props('error')).toBe('');
@@ -2516,51 +2644,6 @@ describe('Duo Agentic Chat', () => {
       // Verify chat is re-enabled and error is cleared
       expect(findDuoChat().props('isChatAvailable')).toBe(true);
       expect(findDuoChat().props('error')).toBe('');
-    });
-  });
-
-  describe('Workflow deletion handling', () => {
-    beforeEach(() => {
-      duoChatGlobalState.isAgenticChatShown = true;
-    });
-
-    it('starts new chat when loading with deleted workflow after page reload', async () => {
-      getStorageValue.mockReturnValueOnce({
-        exists: true,
-        value: { workflowId: '456', activeThread: MOCK_WORKFLOW_ID },
-      });
-
-      ApolloUtils.fetchWorkflowEvents.mockRejectedValue({
-        graphQLErrors: [
-          { message: 'Workflow not found', extensions: { code: 'WORKFLOW_NOT_FOUND' } },
-        ],
-      });
-
-      createComponent();
-      await waitForPromises();
-
-      expect(findDuoChat().props('messages')).toHaveLength(0);
-      expect(findDuoChat().props('activeThreadId')).toBe('');
-    });
-
-    it('displays error message when loading workflow fails with non-workflow-not-found error', async () => {
-      getStorageValue.mockReturnValueOnce({
-        exists: true,
-        value: { workflowId: '456', activeThread: MOCK_WORKFLOW_ID },
-      });
-
-      const errorText = 'Network timeout occurred';
-      ApolloUtils.fetchWorkflowEvents.mockRejectedValue(new Error(errorText));
-
-      createComponent();
-      await waitForPromises();
-
-      expect(actionSpies.addDuoChatMessage).toHaveBeenCalledWith(
-        expect.anything(),
-        expect.objectContaining({
-          errors: [`Error: ${errorText}`],
-        }),
-      );
     });
   });
 
