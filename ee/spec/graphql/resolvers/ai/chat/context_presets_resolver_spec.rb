@@ -61,6 +61,15 @@ RSpec.describe Resolvers::Ai::Chat::ContextPresetsResolver, feature_category: :d
         end
       end
 
+      context 'when user is missing' do
+        let(:project_id) { GitlabSchema.id_from_object(project) }
+        let(:current_user) { nil }
+
+        it "does not pass an AI resource" do
+          expect(resolver[:ai_resource_data]).to be_nil
+        end
+      end
+
       context "with commit resource" do
         let(:project_id) { GitlabSchema.id_from_object(project) }
         let(:commit) { project.repository.commit }
