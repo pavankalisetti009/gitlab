@@ -1,15 +1,15 @@
 import DataTable from './data_table.vue';
-import FormatPercent from './format_percent.vue';
+import CalculatePercent from './calculate_percent.vue';
 
 export default {
-  component: FormatPercent,
-  title: 'ee/analytics/analytics_dashboards/components/visualizations/data_table/format_percent',
+  component: CalculatePercent,
+  title: 'ee/analytics/analytics_dashboards/components/visualizations/data_table/calculate_percent',
 };
 
 const Template = (args, { argTypes }) => ({
-  components: { FormatPercent },
+  components: { CalculatePercent },
   props: Object.keys(argTypes),
-  template: `<format-percent :numerator="numerator" :denominator="denominator" />`,
+  template: `<calculate-percent :numerator="numerator" :denominator="denominator" />`,
 });
 
 const TableTemplate = (args, { argTypes }) => ({
@@ -40,7 +40,7 @@ InTable.args = {
   options: {
     fields: [
       { key: 'value', label: 'Raw value' },
-      { key: 'rate', label: 'Rate %', component: 'FormatPercent' },
+      { key: 'rate', label: 'Rate %', component: 'CalculatePercent' },
     ],
   },
 };

@@ -152,6 +152,7 @@
                 "enum": [
                   "AssigneeAvatars",
                   "DiffLineChanges",
+                  "CalculatePercent",
                   "FormatTime",
                   "FormatTimeRange",
                   "MergeRequestLink",
@@ -161,6 +162,9 @@
                   "TrendLine",
                   "UserLink"
                 ]
+              },
+              "componentProps": {
+                "type": "object"
               }
             }
           }

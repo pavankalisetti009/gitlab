@@ -6,7 +6,7 @@ import { isNumeric } from '~/lib/utils/number_utils';
 import { formatMetric } from 'ee/analytics/dashboards/utils';
 
 export default {
-  name: 'FormatPercent',
+  name: 'CalculatePercent',
   directives: {
     GlTooltip: GlTooltipDirective,
   },

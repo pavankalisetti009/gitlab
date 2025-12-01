@@ -1,8 +1,8 @@
 import { shallowMount } from '@vue/test-utils';
 import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
-import FormatPercent from 'ee/analytics/analytics_dashboards/components/visualizations/data_table/format_percent.vue';
+import CalculatePercent from 'ee/analytics/analytics_dashboards/components/visualizations/data_table/calculate_percent.vue';
 
-describe('FormatPercent', () => {
+describe('CalculatePercent', () => {
   let wrapper;
 
   const defaultProps = {
@@ -11,7 +11,7 @@ describe('FormatPercent', () => {
   };
 
   const createWrapper = (props = {}) => {
-    wrapper = shallowMount(FormatPercent, {
+    wrapper = shallowMount(CalculatePercent, {
       propsData: {
         ...defaultProps,
         ...props,

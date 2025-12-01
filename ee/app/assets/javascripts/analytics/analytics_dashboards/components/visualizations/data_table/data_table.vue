@@ -17,7 +17,7 @@ export default {
     GlKeysetPagination,
     AssigneeAvatars: () => import('./assignee_avatars.vue'),
     DiffLineChanges: () => import('./diff_line_changes.vue'),
-    FormatPercent: () => import('./format_percent.vue'),
+    CalculatePercent: () => import('./calculate_percent.vue'),
     FormatTime: () => import('./format_time.vue'),
     FormatTimeRange: () => import('./format_time_range.vue'),
     MergeRequestLink: () => import('./merge_request_link.vue'),
@@ -72,6 +72,13 @@ export default {
     },
   },
   methods: {
+    mapComponentProps(item, props) {
+      if (!props) return {};
+      return Object.entries(props).reduce(
+        (acc, [newKey, oldKey]) => ({ ...acc, [newKey]: item[oldKey] }),
+        {},
+      );
+    },
     isLink(value) {
       return Boolean(value?.text && value?.href);
     },
@@ -115,8 +122,12 @@ export default {
       hover
       class="gl-mt-4"
     >
-      <template #cell()="{ value, field }">
-        <component :is="field.component" v-if="field.component" v-bind="value" />
+      <template #cell()="{ item, value, field }">
+        <component
+          :is="field.component"
+          v-if="field.component"
+          v-bind="{ ...value, ...mapComponentProps(item, field.componentProps) }"
+        />
         <gl-link v-else-if="isLink(value)" :href="value.href"
           >{{ formatVisualizationValue(value.text) }}
           <gl-icon

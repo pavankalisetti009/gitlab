@@ -7,6 +7,18 @@ fragment AiUserMetricItem on AiUserMetrics {
     webUrl
     lastDuoActivityOn
   }
+  codeSuggestions @gl_introduced(version: "18.7.0-pre") {
+    codeSuggestionAcceptedInIdeEventCount
+    codeSuggestionShownInIdeEventCount
+  }
+  codeReview @gl_introduced(version: "18.7.0-pre") {
+    requestReviewDuoCodeReviewOnMrByAuthorEventCount
+    reactThumbsDownOnDuoCodeReviewCommentEventCount
+    reactThumbsUpOnDuoCodeReviewCommentEventCount
+  }
+  troubleshootJob @gl_introduced(version: "18.7.0-pre") {
+    troubleshootJobEventCount
+  }
   codeSuggestionsAcceptedCount
   duoChatInteractionsCount
 }
