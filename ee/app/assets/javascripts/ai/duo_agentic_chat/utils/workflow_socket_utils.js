@@ -13,6 +13,15 @@ import {
 import { WorkflowUtils } from './workflow_utils';
 import { getMessagesToProcess } from './messages_utils';
 
+// Client capabilities is how gitlab-lsp/browser -> workhorse -> Duo Workflow Service communicates
+// capabilities that can be used by Duo Workflow Service without breaking
+// backwards compatibility. We intersect the capabilities of all parties and
+// then new behaviour can only depend on that behaviour if it makes it all the
+// way through. Whenever you add to this list you must also update the constant in
+// workhorse/internal/ai_assist/duoworkflow/runner.go and gitlab-lsp before
+// the feature becomes available.
+export const CLIENT_CAPABILITIES = [];
+
 export function buildWebsocketUrl({
   rootNamespaceId,
   namespaceId,
@@ -69,6 +78,7 @@ export function buildStartRequest({
       clientVersion: DUO_WORKFLOW_CLIENT_VERSION,
       workflowDefinition: workflowDefinition || DUO_WORKFLOW_CHAT_DEFINITION,
       workflowMetadata: metadata,
+      clientCapabilities: CLIENT_CAPABILITIES,
       goal,
       approval,
     },
