@@ -11,6 +11,7 @@ module Ai
         @current_user = current_user
         # Remove ids to avoid confusion - @container determines the workflow scope, not raw IDs
         @params = params.except(:namespace_id, :project_id)
+        @params[:agent_privileges] ||= ::Ai::DuoWorkflows::Workflow::AgentPrivileges::DEFAULT_PRIVILEGES
       end
 
       def execute

@@ -199,7 +199,10 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
           created_workflow = Ai::DuoWorkflows::Workflow.last
           expect(created_workflow.pre_approved_agent_privileges).to match_array(
-            ::Ai::DuoWorkflows::Workflow::AgentPrivileges::DEFAULT_PRIVILEGES
+            [
+              Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_FILES,
+              Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_ONLY_GITLAB
+            ]
           )
         end
       end
@@ -1938,7 +1941,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
       expect(privilege4['id']).to eq(4)
       expect(privilege4['name']).to eq('run_commands')
       expect(privilege4['description']).to eq('Allow running any commands')
-      expect(privilege4['default_enabled']).to eq(false)
+      expect(privilege4['default_enabled']).to eq(true)
     end
   end
 end

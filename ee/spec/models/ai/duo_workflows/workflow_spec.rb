@@ -147,7 +147,7 @@ RSpec.describe Ai::DuoWorkflows::Workflow, feature_category: :duo_agent_platform
     it { is_expected.to validate_length_of(:goal).is_at_most(16_384) }
     it { is_expected.to validate_length_of(:image).is_at_most(2048) }
 
-    describe '#only_known_agent_priviliges' do
+    describe '#only_known_agent_privileges' do
       it 'is valid with a valid privilege' do
         workflow = described_class.new(
           agent_privileges: [
@@ -288,11 +288,15 @@ RSpec.describe Ai::DuoWorkflows::Workflow, feature_category: :duo_agent_platform
 
       expect(workflow.agent_privileges).to match_array([
         described_class::AgentPrivileges::READ_WRITE_FILES,
-        described_class::AgentPrivileges::READ_ONLY_GITLAB
+        described_class::AgentPrivileges::READ_ONLY_GITLAB,
+        described_class::AgentPrivileges::READ_WRITE_GITLAB,
+        described_class::AgentPrivileges::RUN_COMMANDS,
+        described_class::AgentPrivileges::USE_GIT,
+        described_class::AgentPrivileges::RUN_MCP_TOOLS
       ])
     end
 
-    it 'replaces with DEFAULT_PRIVILEGES when not set' do
+    it 'replaces with database defaults when not set' do
       workflow = described_class.new(environment: :ide)
 
       # Validation triggers setting the default
