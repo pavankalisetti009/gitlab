@@ -241,7 +241,7 @@ export default {
           :delete-fn="deleteAgent"
           :disable-confirm-message="
             s__(
-              'AICatalog|Are you sure you want to disable agent %{name}? The agent and any associated flows and triggers will no longer work in this project.',
+              'AICatalog|Are you sure you want to disable agent %{name}? The agent will no longer work in this project.',
             )
           "
           @add-to-target="addAgentToTarget"

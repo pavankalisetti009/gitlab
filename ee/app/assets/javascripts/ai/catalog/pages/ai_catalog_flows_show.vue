@@ -236,7 +236,7 @@ export default {
           :delete-confirm-message="s__('AICatalog|Are you sure you want to delete flow %{name}?')"
           :disable-confirm-message="
             s__(
-              'AICatalog|Are you sure you want to disable flow %{name}? The flow and associated triggers and service account will no longer work in this project.',
+              'AICatalog|Are you sure you want to disable flow %{name}? The flow, its service account, and any associated triggers will no longer work in this project.',
             )
           "
           @add-to-target="addFlowToTarget"
