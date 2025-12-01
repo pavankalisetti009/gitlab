@@ -38,58 +38,32 @@ module Gitlab
         def create_add_on_purchases!(group: nil)
           ::GitlabSubscriptions::AddOnPurchase.by_namespace(group).delete_all
 
-          duo_core_add_on = ::GitlabSubscriptions::AddOn.find_or_create_by_name(:duo_core)
-          response = ::GitlabSubscriptions::AddOnPurchases::CreateService.new(
-            group,
-            duo_core_add_on,
-            {
-              quantity: 100,
-              started_on: Time.current,
-              expires_on: 1.year.from_now,
-              purchase_xid: 'A-S0001'
-            }
-          ).execute
+          create_add_on_purchase!(group, :duo_core, 'A-S0001', "Duo Core add-on added...")
 
-          raise response.message unless response.success?
-
-          if @args[:add_on] == 'duo_pro'
-            create_duo_pro_purchase!(group)
+          case @args[:add_on]
+          when 'duo_core'
+            # Core already created, nothing more needed
+          when 'duo_pro'
+            create_add_on_purchase!(group, :code_suggestions, 'C-12345', "Duo Pro add-on added...")
           else
-            create_enterprise_purchase!(group)
+            # Default to enterprise
+            create_add_on_purchase!(group, :duo_enterprise, 'C-98766', "Duo Enterprise add-on added...")
           end
         end
 
-        def create_duo_pro_purchase!(group)
-          add_on = ::GitlabSubscriptions::AddOn.find_or_create_by_name(:code_suggestions)
-
+        def create_add_on_purchase!(group, add_on_name, purchase_xid, message)
+          add_on = ::GitlabSubscriptions::AddOn.find_or_create_by_name(add_on_name)
           response = ::GitlabSubscriptions::AddOnPurchases::CreateService.new(group, add_on, {
             quantity: 100,
             started_on: Time.current,
             expires_on: 1.year.from_now,
-            purchase_xid: 'C-12345'
+            purchase_xid: purchase_xid
           }).execute
 
           raise response.message unless response.success?
 
           response.payload[:add_on_purchase].update!(users: [User.find_by_username('root')])
-
-          puts "Duo Pro add-on added..."
-        end
-
-        def create_enterprise_purchase!(group)
-          add_on = ::GitlabSubscriptions::AddOn.find_or_create_by_name(:duo_enterprise)
-
-          response = ::GitlabSubscriptions::AddOnPurchases::CreateService.new(group, add_on, {
-            quantity: 100,
-            started_on: Time.current,
-            expires_on: 1.year.from_now,
-            purchase_xid: 'C-98766'
-          }).execute
-
-          raise response.message unless response.success?
-
-          response.payload[:add_on_purchase].update!(users: [User.find_by_username('root')])
-          puts "Duo enterprise add-on added..."
+          puts message
         end
       end
 
