@@ -61,6 +61,22 @@ RSpec.describe Resolvers::Ai::FoundationalChatAgentsResolver, feature_category: 
       expect(resolved[0].name).to eq('GitLab Duo')
     end
 
+    context 'when user is not set' do
+      let(:current_user) { nil }
+
+      context 'when is saas' do
+        before do
+          stub_saas_features(gitlab_com_subscriptions: true)
+        end
+
+        it_behaves_like 'returns only duo chat'
+      end
+
+      context 'when is self-managed' do
+        it_behaves_like 'returns all foundational agents'
+      end
+    end
+
     describe 'access to foundational chat agents' do
       context 'when is saas' do
         let(:default_namespace) { root_namespace_foundational_agents_enabled }
