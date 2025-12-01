@@ -75,11 +75,7 @@ module Mcp
       }
 
       def available?
-        return false unless ACTIVE_CONTEXT_QUERY::Code.available?
-
-        return false unless current_user
-
-        Feature.enabled?(:code_snippet_search_graphqlapi, current_user)
+        current_user.present? && ACTIVE_CONTEXT_QUERY::Code.available?
       end
 
       override :ability
