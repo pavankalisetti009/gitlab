@@ -15,12 +15,12 @@ RSpec.shared_context 'with elasticsearch connection options' do
   end
 
   let(:adapter) do
-    ::ActiveContext::Databases::Elasticsearch::Adapter.new(connection, options: connection.options)
+    ::ActiveContext::Databases::Elasticsearch::Adapter.new(connection, options: connection_options)
   end
 
   before do
-    connection.reload.update!(
-      adapter_class: 'ActiveContext::Databases::Elasticsearch::Adapter',
+    connection.update!(
+      adapter_class: adapter.class,
       options: connection_options
     )
   end
@@ -46,12 +46,12 @@ RSpec.shared_context 'with opensearch connection options' do
   end
 
   let(:adapter) do
-    ::ActiveContext::Databases::Opensearch::Adapter.new(connection, options: connection.options)
+    ::ActiveContext::Databases::Opensearch::Adapter.new(connection, options: connection_options)
   end
 
   before do
-    connection.reload.update!(
-      adapter_class: 'ActiveContext::Databases::Opensearch::Adapter',
+    connection.update!(
+      adapter_class: adapter.class,
       options: connection_options
     )
   end
@@ -61,14 +61,13 @@ RSpec.shared_context 'with plain string URL connection options' do
   let(:connection_options) { { url: ['http://localhost:9200', 'http://localhost:9201'] } }
   let(:expected_connection_hash) { connection_options.stringify_keys }
   let(:adapter) do
-    ::ActiveContext::Databases::Elasticsearch::Adapter.new(connection, options: connection.options)
+    ::ActiveContext::Databases::Elasticsearch::Adapter.new(connection, options: connection_options)
   end
 
   before do
-    connection.reload.update!(
-      adapter_class: 'ActiveContext::Databases::Elasticsearch::Adapter',
+    connection.update!(
+      adapter_class: adapter.class,
       options: connection_options
     )
-    allow(::ActiveContext).to receive(:adapter).and_return(adapter)
   end
 end

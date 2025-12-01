@@ -18,7 +18,11 @@ RSpec.describe Ai::ActiveContext::Code::Indexer, feature_category: :global_searc
 
   let(:adapter_name) { 'elasticsearch' }
   let(:adapter) do
-    instance_double(::ActiveContext::Databases::Elasticsearch::Adapter, name: adapter_name, connection: connection)
+    instance_double(
+      ::ActiveContext::Databases::Elasticsearch::Adapter,
+      name: adapter_name,
+      indexer_connection_options: double
+    )
   end
 
   let(:logger) { instance_double(::Gitlab::ActiveContext::Logger, info: nil, error: nil) }
@@ -84,13 +88,9 @@ RSpec.describe Ai::ActiveContext::Code::Indexer, feature_category: :global_searc
           [
             Gitlab.config.elasticsearch.indexer_path,
             '-adapter', adapter_name,
-            '-connection', expected_connection_command_arg,
+            '-connection', ::Gitlab::Json.generate(adapter.indexer_connection_options),
             '-options', ::Gitlab::Json.generate(expected_options)
           ]
-        end
-
-        let(:expected_connection_command_arg) do
-          ::Gitlab::Json.generate(connection.options)
         end
 
         it 'calls the indexer with the correct command' do
@@ -129,10 +129,6 @@ RSpec.describe Ai::ActiveContext::Code::Indexer, feature_category: :global_searc
 
         describe 'connection option' do
           shared_examples 'passes correct connection options' do
-            let(:expected_connection_command_arg) do
-              ::Gitlab::Json.generate(expected_connection_hash)
-            end
-
             it 'passes the expected connection options' do
               expect(Gitlab::Popen).to receive(:popen_with_streaming) do |command, dir, env|
                 expect(command[2]).to eq(adapter_name)
