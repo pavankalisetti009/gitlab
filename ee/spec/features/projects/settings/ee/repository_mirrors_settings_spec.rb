@@ -285,6 +285,31 @@ RSpec.describe 'Project settings > [EE] repository', feature_category: :source_c
           expect(project.only_mirror_protected_branches).to be_falsey
         end
       end
+
+      context 'when mirror previously had "Mirror specific branches" enabled' do
+        let(:project) { build(:project_empty_repo, mirror_branch_regex: 'branch') }
+
+        it 'updates settings when "Only protected branches" option is selected', :js do
+          fill_and_wait_for_mirror_url_javascript('url', ssh_url)
+
+          select 'SSH public key', from: 'Authentication method'
+          select_direction('pull')
+
+          find('#mirror_branch_setting_protected').click
+
+          Sidekiq::Testing.fake! do
+            click_button 'Mirror repository'
+          end
+
+          expect(page).to have_content('Mirroring settings were successfully updated')
+          wait_for_requests
+          project.reload
+
+          expect(project.mirror_branches_setting).to eq('protected')
+          expect(project.mirror_branch_regex).to be_nil
+          expect(project.only_mirror_protected_branches).to be_truthy
+        end
+      end
     end
 
     def select_direction(direction = 'push')
