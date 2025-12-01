@@ -293,7 +293,7 @@ describe('View branch rules in enterprise edition', () => {
 
   describe('Security policies', () => {
     describe('deleting a branch rule', () => {
-      describe('when a security policy prevents deletion', () => {
+      describe('when it prevents deletion', () => {
         beforeEach(async () => {
           const mockResponse = structuredClone(branchProtectionsMockResponse);
           mockResponse.data.project.branchRules.nodes[0].branchProtection.modificationBlockedByPolicy = true;
@@ -311,10 +311,11 @@ describe('View branch rules in enterprise edition', () => {
           expect(popover.text()).toBe(
             "You can't unprotect this branch because its protection is enforced by one or more security policies. Learn more.",
           );
+          expect(findDeleteRuleButtonPopover().exists()).toBe(true);
         });
       });
 
-      describe('when a security policy does not prevent deletion', () => {
+      describe('when it does not prevent deletion', () => {
         beforeEach(async () => {
           await createComponent();
         });
@@ -326,6 +327,38 @@ describe('View branch rules in enterprise edition', () => {
 
         it('does not render the delete button popover', () => {
           expect(findDeleteRuleButtonPopover().exists()).toBe(false);
+        });
+      });
+    });
+
+    describe('preventing push/force push', () => {
+      describe('when it prevents pushing/force pushing to a branch', () => {
+        beforeEach(async () => {
+          const mockResponse = structuredClone(branchProtectionsMockResponse);
+          mockResponse.data.project.branchRules.nodes[0].branchProtection.protectedFromPushBySecurityPolicy = true;
+          await createComponent({ editBranchRules: true }, {}, mockResponse);
+        });
+
+        it('renders the allowed to push button with the correct props', () => {
+          expect(findAllowedToPush().props('isProtectedByPolicy')).toBe(true);
+        });
+
+        it('renders the force push toggle with the correct props', () => {
+          expect(findAllowForcePushToggle().props('isProtectedByPolicy')).toBe(true);
+        });
+      });
+
+      describe('when it does not prevent pushing/force pushing to a branch', () => {
+        beforeEach(async () => {
+          await createComponent();
+        });
+
+        it('renders the allowed to push button with the correct props', () => {
+          expect(findAllowedToPush().props('isProtectedByPolicy')).toBe(false);
+        });
+
+        it('renders the force push toggle with the correct props', () => {
+          expect(findAllowForcePushToggle().props('isProtectedByPolicy')).toBe(false);
         });
       });
     });

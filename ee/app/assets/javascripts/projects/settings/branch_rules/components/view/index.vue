@@ -40,6 +40,10 @@ export default {
       return this.branchProtection?.modificationBlockedByPolicy;
     },
     // eslint-disable-next-line vue/no-unused-properties -- Used in extended CE template
+    protectedFromPushBySecurityPolicy() {
+      return this.branchProtection?.protectedFromPushBySecurityPolicy;
+    },
+    // eslint-disable-next-line vue/no-unused-properties -- Used in extended CE template
     statusChecksHeader() {
       return this.$options.i18n.statusChecksHeader;
     },
