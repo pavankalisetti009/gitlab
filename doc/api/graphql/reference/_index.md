@@ -24821,6 +24821,23 @@ An AI catalog agent.
 
 #### Fields with arguments
 
+##### `AiCatalogAgent.configurationForGroup`
+
+{{< details >}}
+**Introduced** in GitLab 18.7.
+**Status**: Experiment.
+{{< /details >}}
+
+Item configuration for the given group.
+
+Returns [`AiCatalogItemConsumer`](#aicatalogitemconsumer).
+
+###### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="aicatalogagentconfigurationforgroupgroupid"></a>`groupId` | [`GroupID!`](#groupid) | Global ID of the group to return the item configuration of. |
+
 ##### `AiCatalogAgent.configurationForProject`
 
 {{< details >}}
@@ -24905,6 +24922,23 @@ An AI catalog flow.
 | <a id="aicatalogflowversions"></a>`versions` | [`AiCatalogItemVersionConnection`](#aicatalogitemversionconnection) | Versions of the item. (see [Connections](#connections)) |
 
 #### Fields with arguments
+
+##### `AiCatalogFlow.configurationForGroup`
+
+{{< details >}}
+**Introduced** in GitLab 18.7.
+**Status**: Experiment.
+{{< /details >}}
+
+Item configuration for the given group.
+
+Returns [`AiCatalogItemConsumer`](#aicatalogitemconsumer).
+
+###### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="aicatalogflowconfigurationforgroupgroupid"></a>`groupId` | [`GroupID!`](#groupid) | Global ID of the group to return the item configuration of. |
 
 ##### `AiCatalogFlow.configurationForProject`
 
@@ -25030,6 +25064,23 @@ An AI catalog third party flow.
 | <a id="aicatalogthirdpartyflowversions"></a>`versions` | [`AiCatalogItemVersionConnection`](#aicatalogitemversionconnection) | Versions of the item. (see [Connections](#connections)) |
 
 #### Fields with arguments
+
+##### `AiCatalogThirdPartyFlow.configurationForGroup`
+
+{{< details >}}
+**Introduced** in GitLab 18.7.
+**Status**: Experiment.
+{{< /details >}}
+
+Item configuration for the given group.
+
+Returns [`AiCatalogItemConsumer`](#aicatalogitemconsumer).
+
+###### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="aicatalogthirdpartyflowconfigurationforgroupgroupid"></a>`groupId` | [`GroupID!`](#groupid) | Global ID of the group to return the item configuration of. |
 
 ##### `AiCatalogThirdPartyFlow.configurationForProject`
 
@@ -55765,6 +55816,23 @@ Implementations:
 | <a id="aicatalogitemversions"></a>`versions` | [`AiCatalogItemVersionConnection`](#aicatalogitemversionconnection) | Versions of the item. (see [Connections](#connections)) |
 
 ##### Fields with arguments
+
+###### `AiCatalogItem.configurationForGroup`
+
+{{< details >}}
+**Introduced** in GitLab 18.7.
+**Status**: Experiment.
+{{< /details >}}
+
+Item configuration for the given group.
+
+Returns [`AiCatalogItemConsumer`](#aicatalogitemconsumer).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="aicatalogitemconfigurationforgroupgroupid"></a>`groupId` | [`GroupID!`](#groupid) | Global ID of the group to return the item configuration of. |
 
 ###### `AiCatalogItem.configurationForProject`
 

@@ -380,6 +380,54 @@ RSpec.describe Ai::Catalog::ItemConsumer, feature_category: :workflow_catalog do
       end
     end
 
+    describe '.for_container_item_pairs' do
+      let_it_be(:group) { create(:group) }
+      let_it_be(:project1) { create(:project) }
+      let_it_be(:project2) { create(:project) }
+      let_it_be(:item1) { create(:ai_catalog_item) }
+      let_it_be(:item2) { create(:ai_catalog_item) }
+      let_it_be(:group_item1_consumer) { create(:ai_catalog_item_consumer, group: group, item: item1) }
+      let_it_be(:project1_item1_consumer) { create(:ai_catalog_item_consumer, project: project1, item: item1) }
+      let_it_be(:project1_item2_consumer) { create(:ai_catalog_item_consumer, project: project1, item: item2) }
+      let_it_be(:project2_item1_consumer) { create(:ai_catalog_item_consumer, project: project2, item: item1) }
+
+      context 'for groups' do
+        it 'returns consumers matching the group-item pairs' do
+          expect(described_class.for_container_item_pairs(:group, [[group.id, item1.id]])).to contain_exactly(
+            group_item1_consumer
+          )
+        end
+      end
+
+      context 'for projects' do
+        it 'returns consumers matching the project-item pairs' do
+          container_item_pairs = [
+            [project1.id, item1.id],
+            [project1.id, item2.id]
+          ]
+
+          expect(described_class.for_container_item_pairs(:project, container_item_pairs)).to contain_exactly(
+            project1_item1_consumer,
+            project1_item2_consumer
+          )
+        end
+      end
+
+      context 'with non-existent pairs' do
+        it 'returns empty result' do
+          expect(described_class.for_container_item_pairs(:group,
+            [[non_existing_record_id, non_existing_record_id]])).to be_empty
+        end
+      end
+
+      context 'with unknown container type' do
+        it 'raises an error' do
+          expect { described_class.for_container_item_pairs(:invalid, [[1, 1]]) }
+            .to raise_error(ArgumentError)
+        end
+      end
+    end
+
     describe '.not_for_projects' do
       it 'excludes records that belong to the given projects' do
         excluded_projects = create_list(:project, 2)

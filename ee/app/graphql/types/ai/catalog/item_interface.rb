@@ -53,6 +53,13 @@ module Types
           argument :project_id, ::Types::GlobalIDType[::Project], required: true,
             description: 'Global ID of the project to return the item configuration of.'
         end
+        field :configuration_for_group, ::Types::Ai::Catalog::ItemConsumerType,
+          null: true,
+          experiment: { milestone: '18.7' },
+          description: 'Item configuration for the given group.' do
+          argument :group_id, ::Types::GlobalIDType[::Group], required: true,
+            description: 'Global ID of the group to return the item configuration of.'
+        end
 
         field :foundational_chat,
           GraphQL::Types::Boolean,
@@ -80,10 +87,32 @@ module Types
         end
 
         def configuration_for_project(project_id:)
-          BatchLoader::GraphQL.for(project_id.model_id.to_i).batch do |project_ids, loader|
-            ::Ai::Catalog::ItemConsumer.for_item(object).for_projects(project_ids).each do |consumer|
-              loader.call(consumer.project_id, consumer)
-            end
+          BatchLoader::GraphQL.for([project_id.model_id.to_i, object.id]).batch do |container_item_pairs, loader|
+            load_item_consumer_configuration(
+              container_item_pairs: container_item_pairs,
+              loader: loader,
+              container_type: :project
+            )
+          end
+        end
+
+        def configuration_for_group(group_id:)
+          BatchLoader::GraphQL.for([group_id.model_id.to_i, object.id]).batch do |container_item_pairs, loader|
+            load_item_consumer_configuration(
+              container_item_pairs: container_item_pairs,
+              loader: loader,
+              container_type: :group
+            )
+          end
+        end
+
+        private
+
+        def load_item_consumer_configuration(container_item_pairs:, loader:, container_type:)
+          consumers = ::Ai::Catalog::ItemConsumer.for_container_item_pairs(container_type, container_item_pairs)
+          consumers.find_each do |consumer|
+            container_id = container_type == :project ? consumer.project_id : consumer.group_id
+            loader.call([container_id, consumer.ai_catalog_item_id], consumer)
           end
         end
 
