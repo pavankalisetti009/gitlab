@@ -2,6 +2,7 @@ import {
   buildWebsocketUrl,
   buildStartRequest,
   processWorkflowMessage,
+  CLIENT_CAPABILITIES,
 } from 'ee/ai/duo_agentic_chat/utils/workflow_socket_utils';
 import { GITLAB_DEFAULT_MODEL } from 'ee/ai/model_selection/constants';
 import * as websocketUtils from '~/lib/utils/websocket_utils';
@@ -106,6 +107,7 @@ describe('workflow_socket_utils', () => {
             clientVersion: '1.0',
             workflowDefinition: 'chat',
             workflowMetadata: 'test metadata',
+            clientCapabilities: CLIENT_CAPABILITIES,
             goal: 'test goal',
             approval: {},
           },
@@ -128,6 +130,7 @@ describe('workflow_socket_utils', () => {
             clientVersion: '1.0',
             workflowDefinition: 'agent/v1',
             workflowMetadata: 'test metadata',
+            clientCapabilities: CLIENT_CAPABILITIES,
             goal: 'test goal',
             approval: {},
           },
