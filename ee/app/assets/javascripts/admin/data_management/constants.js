@@ -80,3 +80,5 @@ export const DEFAULT_SORT = {
   value: SORT_OPTIONS.ID.value,
   direction: SORT_DIRECTION.ASC,
 };
+
+export const SORT_OPTIONS_ARRAY = Object.values(SORT_OPTIONS);

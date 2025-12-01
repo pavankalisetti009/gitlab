@@ -83,7 +83,11 @@ describe('AdminDataManagementApp', () => {
     it('calls getModels with correct parameters', () => {
       createComponent();
 
-      expect(getModels).toHaveBeenCalledWith(defaultModel.name, {});
+      expect(getModels).toHaveBeenCalledWith(defaultModel.name, {
+        order_by: 'id',
+        sort: 'asc',
+        pagination: 'keyset',
+      });
     });
 
     describe('while loading model is querying', () => {
@@ -181,6 +185,8 @@ describe('AdminDataManagementApp', () => {
         query: {
           identifiers: ['123', '456'],
           checksum_state: 'failed',
+          order_by: 'name',
+          sort: 'desc',
         },
       });
 
@@ -195,6 +201,8 @@ describe('AdminDataManagementApp', () => {
       expect(router.currentRoute.query).toStrictEqual({
         checksum_state: 'failed',
         identifiers: ['123', '456'],
+        order_by: 'name',
+        sort: 'desc',
       });
     });
 
@@ -202,6 +210,9 @@ describe('AdminDataManagementApp', () => {
       expect(getModels).toHaveBeenCalledWith(otherModel.name, {
         identifiers: ['123', '456'],
         checksum_state: 'failed',
+        order_by: 'name',
+        sort: 'desc',
+        pagination: 'keyset',
       });
     });
 
@@ -221,6 +232,11 @@ describe('AdminDataManagementApp', () => {
 
   describe('when GeoListTopBar emits `listboxChange` event', () => {
     beforeEach(async () => {
+      await router.push({
+        name: 'root',
+        query: { identifiers: [1], order_by: 'name', sort: 'asc' },
+      });
+
       createComponent();
 
       findGeoListTopBar().vm.$emit('listboxChange', otherModel.name);
@@ -231,34 +247,97 @@ describe('AdminDataManagementApp', () => {
       expect(router.currentRoute.params.modelName).toBe(otherModel.name);
     });
 
+    it('does not change route query', () => {
+      expect(router.currentRoute.query).toStrictEqual({
+        identifiers: ['1'],
+        order_by: 'name',
+        sort: 'asc',
+      });
+    });
+
     it('calls getModels with correct params', () => {
-      expect(getModels).toHaveBeenCalledWith(otherModel.name, {});
+      expect(getModels).toHaveBeenCalledWith(otherModel.name, {
+        identifiers: ['1'],
+        order_by: 'name',
+        sort: 'asc',
+        pagination: 'keyset',
+      });
     });
   });
 
   describe('when GeoListTopBar emits `search` event', () => {
     beforeEach(async () => {
+      await router.push({
+        name: 'root',
+        params: { modelName: otherModel.name },
+        query: { order_by: 'name', sort: 'asc' },
+      });
+
       createComponent();
 
       findGeoListTopBar().vm.$emit('search', [
         '123 456',
         { type: 'checksum_state', value: { data: 'failed' } },
       ]);
-
       await waitForPromises();
     });
 
-    it('updates route query', () => {
+    it('does not change route params', () => {
+      expect(router.currentRoute.params).toStrictEqual({ modelName: otherModel.name });
+    });
+
+    it('updates route filter query', () => {
       expect(router.currentRoute.query).toStrictEqual({
-        checksum_state: 'failed',
         identifiers: ['123', '456'],
+        checksum_state: 'failed',
+        order_by: 'name',
+        sort: 'asc',
       });
     });
 
-    it('calls getModels with correct params', () => {
-      expect(getModels).toHaveBeenCalledWith(defaultModel.name, {
+    it('calls getModels with updated filter params', () => {
+      expect(getModels).toHaveBeenCalledWith(otherModel.name, {
         identifiers: ['123', '456'],
         checksum_state: 'failed',
+        order_by: 'name',
+        sort: 'asc',
+        pagination: 'keyset',
+      });
+    });
+  });
+
+  describe('when GeoListTopBar emits `sort` event', () => {
+    beforeEach(async () => {
+      await router.push({
+        name: 'root',
+        params: { modelName: otherModel.name },
+        query: { identifiers: ['123', '456'], order_by: 'updated-at', sort: 'asc' },
+      });
+
+      createComponent();
+
+      findGeoListTopBar().vm.$emit('sort', { value: 'name', direction: 'desc' });
+      await waitForPromises();
+    });
+
+    it('does not change route params', () => {
+      expect(router.currentRoute.params).toStrictEqual({ modelName: otherModel.name });
+    });
+
+    it('updates route sort query', () => {
+      expect(router.currentRoute.query).toStrictEqual({
+        identifiers: ['123', '456'],
+        order_by: 'name',
+        sort: 'desc',
+      });
+    });
+
+    it('calls getModels with new sort params', () => {
+      expect(getModels).toHaveBeenCalledWith(otherModel.name, {
+        identifiers: ['123', '456'],
+        order_by: 'name',
+        sort: 'desc',
+        pagination: 'keyset',
       });
     });
   });

@@ -39,10 +39,11 @@ export default {
   },
   data() {
     return {
-      isLoading: true,
+      activeModelName: this.initialModelName,
       modelItems: [],
       filters: [],
-      activeModelName: this.initialModelName,
+      pageInfo: {},
+      isLoading: true,
     };
   },
   computed: {
@@ -70,15 +71,27 @@ export default {
         hasFilters: this.hasFilters,
       };
     },
-    queryParams() {
+    routerParams() {
       const { query, params } = this.$route;
       return convertObjectPropsToCamelCase({ ...query, ...params });
+    },
+    query() {
+      const filterQuery = processFilters(this.filters);
+      return {
+        ...filterQuery,
+        order_by: this.pageInfo.sort.value,
+        sort: this.pageInfo.sort.direction,
+      };
+    },
+    queryWithPagination() {
+      return { ...this.query, pagination: 'keyset' };
     },
   },
   watch: {
     $route: {
       handler() {
         this.initializeModel();
+        this.initializePageInfo();
         this.initializeFilters();
         this.fetchModelList();
       },
@@ -86,18 +99,25 @@ export default {
     },
   },
   methods: {
+    initializePageInfo() {
+      this.pageInfo = {
+        sort: {
+          value: this.routerParams.orderBy || DEFAULT_SORT.value,
+          direction: this.routerParams.sort || DEFAULT_SORT.direction,
+        },
+      };
+    },
     initializeFilters() {
-      this.filters = extractFiltersFromQuery(this.queryParams);
+      this.filters = extractFiltersFromQuery(this.routerParams);
     },
     initializeModel() {
-      this.activeModelName = this.queryParams.modelName || this.initialModelName;
+      this.activeModelName = this.routerParams.modelName || this.initialModelName;
     },
     async fetchModelList() {
       this.isLoading = true;
 
       try {
-        const query = processFilters(this.filters);
-        const { data } = await getModels(this.activeModelName, query);
+        const { data } = await getModels(this.activeModelName, this.queryWithPagination);
 
         this.modelItems = convertObjectPropsToCamelCase(data, { deep: true });
       } catch (error) {
@@ -132,14 +152,17 @@ export default {
     },
     handleListboxChange(modelName) {
       const params = { modelName };
-      this.$router.push({ params, query: this.$route.query });
+      this.$router.push({ params, query: this.query });
     },
     handleSearch(filters) {
-      const query = processFilters(filters);
-      this.$router.push({ params: this.$route.params, query });
+      this.filters = filters;
+      this.$router.push({ params: this.$route.params, query: this.query });
+    },
+    handleSort(sort) {
+      this.pageInfo = { ...this.pageInfo, sort };
+      this.$router.push({ params: this.$route.params, query: this.query });
     },
   },
-  DEFAULT_SORT,
   BULK_ACTIONS,
 };
 </script>
@@ -154,11 +177,12 @@ export default {
       "
       :filtered-search-option-label="__('Search by ID')"
       :active-listbox-item="activeModelName"
-      :active-sort="$options.DEFAULT_SORT"
+      :active-sort="pageInfo.sort"
       :bulk-actions="$options.BULK_ACTIONS"
       :show-actions="hasItems"
       @listboxChange="handleListboxChange"
       @search="handleSearch"
+      @sort="handleSort"
       @bulkAction="handleBulkAction"
     />
     <geo-list :is-loading="isLoading" :has-items="hasItems" :empty-state="emptyState">
