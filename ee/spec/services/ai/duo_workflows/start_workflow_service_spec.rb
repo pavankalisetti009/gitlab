@@ -41,27 +41,12 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
 
       workload_id = execute.payload[:workload_id]
       expect(workload_id).not_to be_nil
-      expect(workflow.workflows_workloads.first).to have_attributes(project_id: project.id, workload_id: workload_id)
+      expect(workflow.workflows_workloads.first).to have_attributes(project_id: project.id,
+        workload_id: workload_id)
 
       workload = Ci::Workloads::Workload.find_by_id([workload_id])
       expect(workload.branch_name).to start_with('workloads/')
       expect(workload.branch_name).to start_with('workloads/')
-    end
-
-    context 'when duo_agent_platform_ci_job_tags is disabled' do
-      before do
-        stub_feature_flags(duo_agent_platform_ci_job_tags: false)
-      end
-
-      it 'does not include tags' do
-        expect(Ci::Workloads::RunWorkloadService).to receive(:new).and_wrap_original do |method, **kwargs|
-          workload_definition = kwargs[:workload_definition]
-          expect(workload_definition.tags).to be_nil
-          method.call(**kwargs)
-        end
-
-        expect(execute).to be_success
-      end
     end
   end
 
