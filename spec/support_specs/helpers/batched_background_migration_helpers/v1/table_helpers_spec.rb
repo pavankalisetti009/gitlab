@@ -134,4 +134,57 @@ RSpec.describe BatchedBackgroundMigrationHelpers::V1::TableHelpers, feature_cate
       expect(dynamic_table.table_name).to eq('users')
     end
   end
+
+  describe 'method name shadowing prevention' do
+    it 'raises an error when attempting to define a table helper that conflicts with an existing method' do
+      conflicting_class = Class.new do
+        include MigrationsHelpers
+        include BatchedBackgroundMigrationHelpers::V1::TableHelpers
+
+        # Define a method that will conflict
+        def table
+          'existing method'
+        end
+
+        def self.metadata
+          { migration: :main }
+        end
+      end
+
+      expect do
+        conflicting_class.class_eval do
+          tables :table
+        end
+      end.to raise_error(
+        ArgumentError,
+        /Cannot define table helper 'table': method already exists/
+      )
+    end
+
+    it 'raises an error when attempting to define a table helper that conflicts with a private method' do
+      conflicting_class = Class.new do
+        include MigrationsHelpers
+        include BatchedBackgroundMigrationHelpers::V1::TableHelpers
+
+        def self.metadata
+          { migration: :main }
+        end
+
+        private
+
+        def create_table_helper
+          'existing private method'
+        end
+      end
+
+      expect do
+        conflicting_class.class_eval do
+          tables :create_table_helper
+        end
+      end.to raise_error(
+        ArgumentError,
+        /Cannot define table helper 'create_table_helper': method already exists/
+      )
+    end
+  end
 end
