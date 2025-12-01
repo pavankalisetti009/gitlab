@@ -138,7 +138,7 @@ RSpec.describe MergeRequests::AfterCreateService, feature_category: :code_review
       include_examples 'audit event logging' do
         let(:operation) { execute }
         let(:event_type) { 'merge_request_created_by_project_bot' }
-        let(:fail_condition!) { expect(project_bot).to receive(:project_bot?).and_return(false) }
+        let(:fail_condition!) { expect(project_bot).to receive(:project_bot?).at_most(:twice).and_return(false) }
         let(:attributes) do
           {
             author_id: project_bot.id,

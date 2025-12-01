@@ -9,7 +9,7 @@ RSpec.describe ::API::Entities::Issue, feature_category: :team_planning do
   let_it_be(:project_issue) { create(:issue, project: project) }
   let_it_be(:group_issue) { create(:issue, :group_level, namespace: group) }
 
-  let(:user_namespace_issue) { build_stubbed(:issue, :user_namespace_level) }
+  let(:user_namespace_issue) { create(:issue, :user_namespace_level) }
   let(:options) { { current_user: current_user }.merge(option_addons) }
   let(:option_addons) { {} }
   let(:entity) { described_class.new(issue, options) }
