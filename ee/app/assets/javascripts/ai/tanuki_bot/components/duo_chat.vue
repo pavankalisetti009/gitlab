@@ -12,7 +12,6 @@ import { getCookie } from '~/lib/utils/common_utils';
 import { duoChatGlobalState } from '~/super_sidebar/constants';
 import { clearDuoChatCommands, generateEventLabelFromText, setAgenticMode } from 'ee/ai/utils';
 import DuoChatCallout from 'ee/ai/components/global_callout/duo_chat_callout.vue';
-import getAiMessages from 'ee/ai/graphql/get_ai_messages.query.graphql';
 import getAiConversationThreads from 'ee/ai/graphql/get_ai_conversation_threads.query.graphql';
 import getAiMessagesWithThread from 'ee/ai/graphql/get_ai_messages_with_thread.query.graphql';
 import chatMutation from 'ee/ai/graphql/chat.mutation.graphql';
@@ -29,7 +28,6 @@ import {
 } from 'ee/ai/constants';
 import getAiSlashCommands from 'ee/ai/graphql/get_ai_slash_commands.query.graphql';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
-import { fetchPolicies } from '~/lib/graphql';
 import getAiChatContextPresets from 'ee/ai/graphql/get_ai_chat_context_presets.query.graphql';
 import {
   TANUKI_BOT_TRACKING_EVENT_NAME,
@@ -100,7 +98,7 @@ export default {
     mode: {
       type: String,
       required: false,
-      default: 'default',
+      default: 'new',
     },
     isEmbedded: {
       type: Boolean,
@@ -109,27 +107,6 @@ export default {
     },
   },
   apollo: {
-    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
-    aiMessages: {
-      query: getAiMessages,
-      variables() {
-        return {
-          conversationType: 'DUO_CHAT',
-        };
-      },
-      skip() {
-        return this.shouldSkipQueries || Boolean(this.activeThread);
-      },
-      fetchPolicy: fetchPolicies.NETWORK_ONLY,
-      result({ data }) {
-        if (data?.aiMessages?.nodes) {
-          this.setMessages(data.aiMessages.nodes);
-        }
-      },
-      error(err) {
-        this.onError(err);
-      },
-    },
     aiConversationThreads: {
       query: getAiConversationThreads,
       skip() {
@@ -313,15 +290,6 @@ export default {
       window.addEventListener('resize', this.onWindowResize);
     }
 
-    // Handle initialization based on persisted state
-    if (this.activeThread) {
-      // Reload the active thread from previous session
-      this.loadActiveThread();
-    } else if (this.mode === 'default') {
-      // Start a new chat if no active thread
-      this.onNewChat();
-    }
-
     this.switchMode(this.mode);
   },
   beforeDestroy() {
@@ -337,15 +305,10 @@ export default {
       if (mode === 'chat') {
         if (this.activeThread) {
           this.loadActiveThread();
-        } else {
-          this.onNewChat();
         }
       }
       if (mode === 'new') {
-        // Only start a new chat if we don't have an active thread to preserve
-        if (!this.activeThread) {
-          this.onNewChat();
-        }
+        this.onNewChat();
       }
       if (mode === 'history') {
         this.onBackToList();
@@ -383,6 +346,13 @@ export default {
     findPredefinedPrompt(question) {
       return this.formattedContextPresets.find(({ text }) => text === question);
     },
+    navigateToChat() {
+      this.$emit('switch-to-active-tab', DUO_CHAT_VIEWS.CHAT);
+
+      if (this.$route?.path !== '/chat') {
+        this.$router.push(`/chat`);
+      }
+    },
     async onThreadSelected(e) {
       try {
         const { data } = await this.$apollo.query({
@@ -399,29 +369,22 @@ export default {
       } catch (err) {
         this.onError(err);
       }
-      this.$emit('switch-to-active-tab', DUO_CHAT_VIEWS.CHAT);
-
-      if (this.$route?.path !== '/chat') {
-        this.$router.push(`/chat`);
-      }
+      this.navigateToChat();
     },
     async loadActiveThread() {
       this.onThreadSelected({ id: this.activeThread });
     },
-    onNewChat() {
-      clearDuoChatCommands();
-      this.activeThread = undefined;
+    cleanState() {
       this.setMessages([]);
-      this.multithreadedView = DUO_CHAT_VIEWS.CHAT;
       this.isWaitingOnPrompt = false;
       this.completedRequestId = null;
       this.cancelledRequestIds = [];
-
-      this.$emit('switch-to-active-tab', DUO_CHAT_VIEWS.CHAT);
-
-      if (this.$route?.path !== '/chat') {
-        this.$router.push(`/chat`);
-      }
+      this.activeThread = undefined;
+    },
+    onNewChat() {
+      clearDuoChatCommands();
+      this.cleanState();
+      this.multithreadedView = DUO_CHAT_VIEWS.CHAT;
     },
     onChatCancel() {
       // pushing last requestId of messages to canceled Request Id's
@@ -508,6 +471,7 @@ export default {
 
           if (aiAction.threadId && !this.activeThread) {
             this.activeThread = aiAction.threadId;
+            this.navigateToChat();
           }
 
           this.addDuoChatMessage({

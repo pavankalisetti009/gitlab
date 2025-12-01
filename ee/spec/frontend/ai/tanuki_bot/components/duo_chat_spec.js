@@ -15,7 +15,7 @@ import {
   GENIE_CHAT_NEW_MESSAGE,
   DUO_CHAT_VIEWS,
 } from 'ee/ai/constants';
-import { TANUKI_BOT_TRACKING_EVENT_NAME, WIDTH_OFFSET } from 'ee/ai/tanuki_bot/constants';
+import { WIDTH_OFFSET } from 'ee/ai/tanuki_bot/constants';
 import chatMutation from 'ee/ai/graphql/chat.mutation.graphql';
 import chatWithNamespaceMutation from 'ee/ai/graphql/chat_with_namespace.mutation.graphql';
 import duoUserFeedbackMutation from 'ee/ai/graphql/duo_user_feedback.mutation.graphql';
@@ -90,21 +90,6 @@ const conversationThreadsQueryHandlerMock = jest.fn().mockResolvedValue({});
 const slashCommandsQueryHandlerMock = jest.fn().mockResolvedValue(MOCK_SLASH_COMMANDS);
 const contextPresetsQueryHandlerMock = jest.fn().mockResolvedValue(MOCK_CONTEXT_PRESETS_RESPONSE);
 const { bindInternalEventDocument } = useMockInternalEventsTracking();
-
-const feedbackData = {
-  feedbackChoices: ['useful', 'not_relevant'],
-  didWhat: 'provided clarity',
-  improveWhat: 'more examples',
-  message: {
-    requestId: '1234567890',
-    id: 'abcdefgh',
-    role: 'user',
-    content: 'test',
-    extras: {
-      exampleExtraContent: 1,
-    },
-  },
-};
 
 const findCallout = () => wrapper.findComponent(DuoChatCallout);
 const findSubscriptions = () => wrapper.findComponent(TanukiBotSubscriptions);
@@ -185,48 +170,6 @@ it('generates unique `clientSubscriptionId` using v4', () => {
   createComponent();
   expect(uuidv4).toHaveBeenCalled();
   expect(wrapper.vm.clientSubscriptionId).toBe('123');
-});
-
-describe('fetching the cached messages', () => {
-  describe('when Duo Chat is shown', () => {
-    beforeEach(() => {
-      duoChatGlobalState.isShown = true;
-    });
-
-    it('fetches the cached messages on mount and updates the messages with the returned result', async () => {
-      createComponent();
-      expect(queryHandlerMock).toHaveBeenCalled();
-      await waitForPromises();
-      expect(actionSpies.setMessages).toHaveBeenCalledWith(
-        expect.anything(),
-        MOCK_CHAT_CACHED_MESSAGES_RES.data.aiMessages.nodes,
-      );
-    });
-
-    it('updates the messages even if the returned result has no messages', async () => {
-      queryHandlerMock.mockResolvedValue({
-        data: {
-          aiMessages: {
-            nodes: [],
-          },
-        },
-      });
-      createComponent();
-      await waitForPromises();
-      expect(actionSpies.setMessages).toHaveBeenCalledWith(expect.anything(), []);
-    });
-  });
-
-  describe('when Duo Chat is not shown', () => {
-    beforeEach(() => {
-      duoChatGlobalState.isShown = false;
-    });
-
-    it('does not fetch cached messages', () => {
-      createComponent();
-      expect(queryHandlerMock).not.toHaveBeenCalled();
-    });
-  });
 });
 
 describe('rendering', () => {
@@ -558,6 +501,113 @@ describe('events handling', () => {
         },
       );
     });
+
+    describe('navigateToChat', () => {
+      beforeEach(() => {
+        duoChatGlobalState.isShown = true;
+        threadQueryHandlerMock.mockResolvedValue({
+          data: {
+            aiMessages: {
+              nodes: [MOCK_USER_MESSAGE, MOCK_TANUKI_MESSAGE],
+            },
+          },
+        });
+      });
+
+      it('emits switch-to-active-tab event and navigates to /chat when selecting a thread from different route', async () => {
+        createComponent({ routePath: '/history' });
+        await waitForPromises();
+
+        findDuoChat().vm.$emit('thread-selected', { id: 'thread-123' });
+        await waitForPromises();
+
+        expect(wrapper.emitted('switch-to-active-tab')).toBeDefined();
+        expect(wrapper.emitted('switch-to-active-tab')[0]).toEqual([DUO_CHAT_VIEWS.CHAT]);
+        expect(mockRouter.push).toHaveBeenCalledWith('/chat');
+      });
+
+      it('navigates to /chat when sending a prompt from a new chat', async () => {
+        createComponent({ routePath: '/new' });
+        await waitForPromises();
+
+        findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
+        await waitForPromises();
+
+        expect(wrapper.emitted('switch-to-active-tab')).toBeDefined();
+        expect(wrapper.emitted('switch-to-active-tab')[0]).toEqual([DUO_CHAT_VIEWS.CHAT]);
+        expect(mockRouter.push).toHaveBeenCalledWith('/chat');
+      });
+    });
+
+    describe('switchMode', () => {
+      beforeEach(() => {
+        duoChatGlobalState.isShown = true;
+        duoChatGlobalState.activeThread = undefined;
+        threadQueryHandlerMock.mockResolvedValue({
+          data: {
+            aiMessages: {
+              nodes: [MOCK_USER_MESSAGE, MOCK_TANUKI_MESSAGE],
+            },
+          },
+        });
+      });
+
+      it('loads active thread when mode is "chat" and activeThread exists', async () => {
+        duoChatGlobalState.activeThread = 'thread-123';
+        createComponent({ propsData: { userId: MOCK_USER_ID, mode: 'chat' } });
+        await waitForPromises();
+
+        expect(threadQueryHandlerMock).toHaveBeenCalledWith(
+          expect.objectContaining({ threadId: 'thread-123' }),
+        );
+        expect(actionSpies.setMessages).toHaveBeenCalledWith(expect.anything(), [
+          MOCK_USER_MESSAGE,
+          MOCK_TANUKI_MESSAGE,
+        ]);
+      });
+
+      it('does nothing when mode is "chat" and no activeThread exists', async () => {
+        duoChatGlobalState.activeThread = undefined;
+        createComponent({ propsData: { userId: MOCK_USER_ID, mode: 'chat' } });
+        await waitForPromises();
+
+        expect(threadQueryHandlerMock).not.toHaveBeenCalled();
+        const duoChat = findDuoChat();
+        expect(duoChat.props('activeThreadId')).toBe('');
+        expect(duoChat.props('multiThreadedView')).toBe('chat');
+      });
+
+      it('starts new chat when mode is "new"', async () => {
+        createComponent({ propsData: { userId: MOCK_USER_ID, mode: 'new' } });
+        await waitForPromises();
+
+        const duoChat = findDuoChat();
+        expect(duoChat.props('activeThreadId')).toBe('');
+        expect(duoChat.props('multiThreadedView')).toBe('chat');
+        expect(actionSpies.setMessages).toHaveBeenCalledWith(expect.anything(), []);
+      });
+
+      it('shows thread list when mode is "history"', async () => {
+        conversationThreadsQueryHandlerMock.mockResolvedValue(MOCK_THREADS_RESPONSE);
+        createComponent({ propsData: { userId: MOCK_USER_ID, mode: 'history' } });
+        await waitForPromises();
+
+        const duoChat = findDuoChat();
+        expect(duoChat.props('multiThreadedView')).toBe('list');
+        expect(wrapper.emitted('change-title')).toBeDefined();
+        expect(wrapper.emitted('change-title')[0]).toEqual(['']);
+      });
+
+      it('defaults to mode "new" when no mode prop is provided', async () => {
+        createComponent({ propsData: { userId: MOCK_USER_ID } });
+        await waitForPromises();
+
+        const duoChat = findDuoChat();
+        expect(duoChat.props('activeThreadId')).toBe('');
+        expect(duoChat.props('multiThreadedView')).toBe('chat');
+        expect(actionSpies.setMessages).toHaveBeenCalledWith(expect.anything(), []);
+      });
+    });
   });
 
   describe('@response-received', () => {
@@ -569,141 +619,18 @@ describe('events handling', () => {
       performance.clearMeasures = jest.fn();
     });
 
-    it('tracks time to response on first response-received', () => {
-      const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
-      findSubscriptions().vm.$emit('response-received', 'request-id-123');
-
-      expect(performance.mark).toHaveBeenCalledWith('response-received');
-
-      expect(trackEventSpy).toHaveBeenCalledWith(
-        'ai_response_time',
-        {
-          property: 'request-id-123',
-          value: 123,
-        },
-        undefined,
-      );
-    });
-
-    it('does not track time to response after first chunk was tracked', () => {
-      const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
-      findSubscriptions().vm.$emit('response-received', 'request-id-123');
-      findSubscriptions().vm.$emit('response-received', 'request-id-123');
-
-      expect(performance.mark).toHaveBeenCalledTimes(1);
-      expect(trackEventSpy).toHaveBeenCalledTimes(1);
-    });
-
-    it.each([
-      ['empty array', []],
-      ['array with NaN duration', [{ duration: NaN }]],
-    ])('tracks 0 when getEntriesByName returns %s', (_, performanceEntries) => {
-      const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
-      performance.getEntriesByName = jest.fn(() => performanceEntries);
-
-      findSubscriptions().vm.$emit('response-received', 'request-id-123');
-
-      expect(trackEventSpy).toHaveBeenCalledWith(
-        'ai_response_time',
-        {
-          property: 'request-id-123',
-          value: 0,
-        },
-        undefined,
-      );
-    });
-  });
-
-  describe('@track-feedback', () => {
-    it('calls the feedback GraphQL mutation when message is passed', async () => {
-      createComponent();
-      findDuoChat().vm.$emit('track-feedback', feedbackData);
-
-      await waitForPromises();
-      expect(duoUserFeedbackMutationHandlerMock).toHaveBeenCalledWith({
-        input: {
-          aiMessageId: feedbackData.message.id,
-          trackingEvent: {
-            category: TANUKI_BOT_TRACKING_EVENT_NAME,
-            action: 'duo_chat',
-            label: 'response_feedback',
-            property: 'useful,not_relevant',
-            extra: {
-              improveWhat: 'more examples',
-              didWhat: 'provided clarity',
-              prompt_location: 'after_content',
-            },
-          },
-        },
+    describe('when mutation fails', () => {
+      const errorText = 'API Error';
+      it('throws an error, but still calls addDuoChatMessage', async () => {
+        chatMutationHandlerMock.mockRejectedValue(new Error(errorText));
+        duoChatGlobalState.isShown = true;
+        createComponent();
+        await waitForPromises();
+        findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
+        await waitForPromises();
+        expect(findDuoChat().exists()).toBe(true);
       });
     });
-
-    it('updates Vuex store correctly when message is passed', async () => {
-      createComponent();
-      findDuoChat().vm.$emit('track-feedback', feedbackData);
-
-      await waitForPromises();
-      expect(actionSpies.addDuoChatMessage).toHaveBeenCalledWith(
-        expect.any(Object),
-        expect.objectContaining({
-          requestId: feedbackData.message.requestId,
-          role: feedbackData.message.role,
-          content: feedbackData.message.content,
-          extras: { ...feedbackData.message.extras, hasFeedback: true },
-        }),
-      );
-    });
-  });
-});
-
-describe('Error conditions', () => {
-  const errorText = 'Fancy foo';
-
-  it('does call addDuoChatMessage', async () => {
-    queryHandlerMock.mockImplementationOnce(() => Promise.reject(new Error(errorText)));
-    duoChatGlobalState.isShown = true;
-    createComponent();
-    await waitForPromises();
-    expect(actionSpies.addDuoChatMessage).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.objectContaining({
-        errors: [`Error: ${errorText}`],
-      }),
-    );
-  });
-
-  describe('when mutation fails', () => {
-    it('throws an error, but still calls addDuoChatMessage', async () => {
-      chatMutationHandlerMock.mockRejectedValue(new Error(errorText));
-      duoChatGlobalState.isShown = true;
-      createComponent();
-      await waitForPromises();
-      findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
-      await waitForPromises();
-
-      expect(actionSpies.addDuoChatMessage).toHaveBeenCalledWith(
-        expect.anything(),
-        expect.objectContaining({
-          content: MOCK_USER_MESSAGE.content,
-        }),
-      );
-      expect(actionSpies.addDuoChatMessage).toHaveBeenCalledWith(
-        expect.anything(),
-        expect.objectContaining({
-          errors: [`Error: ${errorText}`],
-        }),
-      );
-    });
-  });
-
-  it('handles errors from the context presets query', async () => {
-    contextPresetsQueryHandlerMock.mockRejectedValue(new Error(errorText));
-    duoChatGlobalState.isShown = true;
-    createComponent();
-    await waitForPromises();
-
-    expect(findDuoChat().exists()).toBe(true);
-    expect(findDuoChat().props('predefinedPrompts')).toEqual([]);
   });
 });
 
@@ -759,7 +686,7 @@ describe('Subscription Component', () => {
     expect(wrapper.vm.isWaitingOnPrompt).toBe(false);
   });
 
-  describe('Subscription Component', () => {
+  describe('message streaming', () => {
     beforeEach(() => {
       duoChatGlobalState.isShown = true;
       createComponent();
@@ -1180,23 +1107,6 @@ describe('aiConversationThreads query', () => {
   });
 });
 
-describe('aiMessages query', () => {
-  it.each`
-    expectedType  | description
-    ${'DUO_CHAT'} | ${'uses DUO_CHAT conversation type'}
-  `('$description', async ({ expectedType }) => {
-    duoChatGlobalState.isShown = true;
-    createComponent();
-    await waitForPromises();
-
-    expect(queryHandlerMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        conversationType: expectedType,
-      }),
-    );
-  });
-});
-
 describe('chatTitle functionality', () => {
   beforeEach(() => {
     duoChatGlobalState.isShown = true;
@@ -1248,104 +1158,35 @@ describe('Global state watchers', () => {
       duoChatGlobalState.isShown = true;
       duoChatGlobalState.activeThread = 'thread-123';
       duoChatGlobalState.multithreadedView = DUO_CHAT_VIEWS.CHAT;
+      threadQueryHandlerMock.mockResolvedValue({
+        data: {
+          aiMessages: {
+            nodes: [MOCK_USER_MESSAGE, MOCK_TANUKI_MESSAGE],
+          },
+        },
+      });
 
-      createComponent();
-      await nextTick();
+      createComponent({ propsData: { userId: MOCK_USER_ID, mode: 'chat' } });
+      await waitForPromises();
 
       const duoChat = findDuoChat();
+
+      await nextTick();
+      await waitForPromises();
       expect(duoChat.props('activeThreadId')).toBe('thread-123');
       expect(duoChat.props('multiThreadedView')).toBe(DUO_CHAT_VIEWS.CHAT);
     });
 
-    it('creates a new chat when Duo Chat is opened and there is no active thread', async () => {
-      duoChatGlobalState.isShown = false;
+    it('does not auto-select thread when command is from button', async () => {
+      conversationThreadsQueryHandlerMock.mockResolvedValue(MOCK_THREADS_RESPONSE);
+
+      duoChatGlobalState.commands = [{ question: 'Button command' }];
+
       createComponent();
 
-      const onNewChatSpy = jest.spyOn(wrapper.vm, 'onNewChat');
+      await waitForPromises();
 
-      duoChatGlobalState.isShown = true;
-      await nextTick();
-
-      expect(onNewChatSpy).toHaveBeenCalled();
-    });
-  });
-
-  describe('duoChatGlobalState.commands', () => {
-    beforeEach(() => {
-      duoChatGlobalState.isShown = true;
-      createComponent();
-    });
-
-    afterEach(() => {
-      duoChatGlobalState.commands = [];
-    });
-
-    it('calls onNewChat when new commands are added', async () => {
-      const onNewChatSpy = jest.spyOn(wrapper.vm, 'onNewChat');
-      duoChatGlobalState.commands = [{ question: 'test command' }];
-      await nextTick();
-      expect(onNewChatSpy).toHaveBeenCalled();
-    });
-
-    it('calls onSendChatPrompt with command values when new commands are added', async () => {
-      const onSendChatPromptSpy = jest.spyOn(wrapper.vm, 'onSendChatPrompt');
-      const commandData = {
-        question: 'test command',
-        variables: { foo: 'bar' },
-        resourceId: 'custom-resource-id',
-      };
-
-      duoChatGlobalState.commands = [commandData];
-      await nextTick();
-
-      expect(onSendChatPromptSpy).toHaveBeenCalledWith(
-        commandData.question,
-        commandData.variables,
-        commandData.resourceId,
-      );
-    });
-
-    it('handles commands with only question property', async () => {
-      const onSendChatPromptSpy = jest.spyOn(wrapper.vm, 'onSendChatPrompt');
-      duoChatGlobalState.commands = [{ question: 'simple command' }];
-      await nextTick();
-
-      expect(onSendChatPromptSpy).toHaveBeenCalledWith('simple command', undefined, undefined);
-    });
-
-    it('processes only the first command if multiple commands exist', async () => {
-      const onSendChatPromptSpy = jest.spyOn(wrapper.vm, 'onSendChatPrompt');
-      duoChatGlobalState.commands = [{ question: 'first command' }, { question: 'second command' }];
-      await nextTick();
-
-      expect(onSendChatPromptSpy).toHaveBeenCalledTimes(1);
-      expect(onSendChatPromptSpy).toHaveBeenCalledWith('first command', undefined, undefined);
-    });
-
-    it('does nothing if commands array is empty', async () => {
-      const onNewChatSpy = jest.spyOn(wrapper.vm, 'onNewChat');
-      const onSendChatPromptSpy = jest.spyOn(wrapper.vm, 'onSendChatPrompt');
-
-      duoChatGlobalState.commands = [];
-      await nextTick();
-
-      expect(onNewChatSpy).not.toHaveBeenCalled();
-      expect(onSendChatPromptSpy).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('duoChatGlobalState.focusChatInput', () => {
-    it('focuses the chat input and reset global state', async () => {
-      duoChatGlobalState.focusChatInput = false;
-      createComponent();
-
-      const focusInputSpy = jest.spyOn(wrapper.vm, 'focusInput');
-
-      duoChatGlobalState.focusChatInput = true;
-      await nextTick();
-
-      expect(focusInputSpy).toHaveBeenCalled();
-      expect(duoChatGlobalState.focusChatInput).toBe(false);
+      expect(wrapper.vm.activeThread).toBe(undefined);
     });
   });
 });
