@@ -96,7 +96,7 @@ module EE
         return false unless params.group?
         return false if exclude_group_level_work_items?
 
-        params.group.supports_group_work_items?
+        params.group.supports_work_items?
       end
 
       def with_namespace_cte

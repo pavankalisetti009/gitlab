@@ -311,10 +311,6 @@ module EE
       licensed_feature_available?(:code_suggestions) || licensed_feature_available?(:ai_chat)
     end
 
-    def work_item_epics_enabled?
-      licensed_feature_available?(:epics)
-    end
-
     def allow_group_items_in_project_autocompletion?
       ::Feature.enabled?(:allow_group_items_in_project_autocompletion, self, type: :gitlab_com_derisk) &&
         licensed_feature_available?(:epics)

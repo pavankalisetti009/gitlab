@@ -5,8 +5,9 @@ require 'spec_helper'
 RSpec.describe Resolvers::Namespaces::WorkItemsResolver, feature_category: :portfolio_management do
   include GraphqlHelpers
 
-  let_it_be(:group)        { create(:group) }
-  let_it_be(:subgroup)     { create(:group, parent: group) }
+  # Refind required to clear memoized methods
+  let_it_be_with_refind(:group) { create(:group) }
+  let_it_be_with_refind(:subgroup) { create(:group, parent: group) }
   let_it_be(:current_user) { create(:user, developer_of: group) }
 
   specify do
@@ -43,8 +44,6 @@ RSpec.describe Resolvers::Namespaces::WorkItemsResolver, feature_category: :port
     context 'when epics are enabled' do
       before do
         stub_licensed_features(epics: true)
-        group.clear_memoization(:supports_group_work_items?)
-        subgroup.clear_memoization(:supports_group_work_items?)
       end
 
       it 'does return work items' do
@@ -59,8 +58,8 @@ RSpec.describe Resolvers::Namespaces::WorkItemsResolver, feature_category: :port
         it 'raises an error if the timeframe exceeds 3.5 years' do
           expect_graphql_error_to_be_created(Gitlab::Graphql::Errors::ArgumentError,
             'Timeframe cannot exceed 3.5 years for work item queries') do
-            perform_with_timeframe(timeframe: { start: '2020-01-01', end: '2023-08-01' })
-          end
+              perform_with_timeframe(timeframe: { start: '2020-01-01', end: '2023-08-01' })
+            end
         end
 
         context 'when work item start and due dates are both present' do
@@ -125,7 +124,7 @@ RSpec.describe Resolvers::Namespaces::WorkItemsResolver, feature_category: :port
 
           it 'excludes work items from projects within the group when exclude_projects is true' do
             expect(resolve_items({ exclude_projects: true,
-include_descendants: true })).not_to include(project_work_item)
+              include_descendants: true })).not_to include(project_work_item)
           end
         end
 
