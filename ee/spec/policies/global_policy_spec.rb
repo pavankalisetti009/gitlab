@@ -895,6 +895,18 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
         end
       end
     end
+
+    describe 'read_enterprise_ai_analytics' do
+      context "when regular user" do
+        let(:current_user) { build(:user) }
+
+        it { is_expected.to be_disallowed(:read_enterprise_ai_analytics) }
+      end
+
+      context 'when admin', :enable_admin_mode do
+        it { is_expected.to be_allowed(:read_enterprise_ai_analytics) }
+      end
+    end
   end
 
   context 'custom permissions', :enable_admin_mode do

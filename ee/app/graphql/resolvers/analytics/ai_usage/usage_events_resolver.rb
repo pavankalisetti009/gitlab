@@ -51,7 +51,10 @@ module Resolvers
         end
 
         def namespace
-          object.is_a?(Namespace) ? object : object.project_namespace
+          case object
+          when Namespace then object
+          when Project then object.project_namespace
+          end
         end
 
         def params_with_defaults(args)
