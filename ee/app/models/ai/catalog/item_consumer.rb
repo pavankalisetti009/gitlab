@@ -40,7 +40,14 @@ module Ai
       accepts_nested_attributes_for :flow_trigger
 
       scope :not_for_projects, ->(project) { where.not(project: project) }
-      scope :for_projects, ->(project) { where(project: project) }
+      scope :for_projects, ->(projects) { where(project: projects) }
+      scope :for_container_item_pairs, ->(container_type, container_item_pairs) do
+        raise ArgumentError, "Unknown container_type: #{container_type}" unless container_type.in?([:project, :group])
+
+        columns = [:"#{container_type}_id", :ai_catalog_item_id]
+        where(columns => container_item_pairs)
+      end
+
       scope :for_item, ->(item_id) { where(ai_catalog_item_id: item_id) }
       scope :with_item_type, ->(item_type) { joins(:item).where(item: { item_type: item_type }) }
 
