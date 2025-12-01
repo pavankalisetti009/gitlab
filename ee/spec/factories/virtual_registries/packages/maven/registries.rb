@@ -4,7 +4,7 @@ FactoryBot.define do
   factory :virtual_registries_packages_maven_registry, class: 'VirtualRegistries::Packages::Maven::Registry' do
     group
 
-    name { 'name' }
+    sequence(:name) { |n| "registry #{n}" }
     description { 'description' }
 
     transient do
