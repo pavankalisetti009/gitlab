@@ -26,8 +26,8 @@ export const AGENT_PLATFORM_STATUS_ICON = {
     color: 'neutral',
   },
   STOPPED: {
-    icon: 'pause',
-    color: 'neutral',
+    icon: 'cancel',
+    color: 'red',
   },
   INPUT_REQUIRED: {
     icon: 'status',
@@ -44,6 +44,36 @@ export const AGENT_PLATFORM_STATUS_ICON = {
   FAILED: {
     icon: 'error',
     color: 'red',
+  },
+};
+
+export const AGENT_PLATFORM_STATUS_BADGE = {
+  CREATED: {
+    variant: 'neutral',
+  },
+  RUNNING: {
+    variant: 'info',
+  },
+  FINISHED: {
+    variant: 'success',
+  },
+  PAUSED: {
+    variant: 'neutral',
+  },
+  STOPPED: {
+    variant: 'danger',
+  },
+  INPUT_REQUIRED: {
+    variant: 'warning',
+  },
+  PLAN_APPROVAL_REQUIRED: {
+    variant: 'warning',
+  },
+  TOOL_CALL_APPROVAL_REQUIRED: {
+    variant: 'warning',
+  },
+  FAILED: {
+    variant: 'danger',
   },
 };
 

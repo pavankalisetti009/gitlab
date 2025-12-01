@@ -70,7 +70,8 @@ describe('DuoAgentsPlatformShow', () => {
       // as a 'class' prop, while Vue 2 does not include it in component props
       expect(workflowDetailsProps).toMatchObject({
         isLoading: false,
-        status: 'Running',
+        status: 'RUNNING',
+        humanStatus: 'Running',
         executorUrl: 'https://gitlab.com/gitlab-org/gitlab/-/jobs/456',
         createdAt: expect.any(String),
         updatedAt: expect.any(String),

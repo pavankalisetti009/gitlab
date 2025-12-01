@@ -1,4 +1,4 @@
-import { GlLink, GlSkeletonLoader } from '@gitlab/ui';
+import { GlBadge, GlLink, GlSkeletonLoader } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
 import AgentFlowInfo from 'ee/ai/duo_agents_platform/pages/show/components/agent_flow_info.vue';
 import { localeDateFormat } from '~/lib/utils/datetime/locale_dateformat';
@@ -31,6 +31,7 @@ describe('AgentFlowInfo', () => {
       propsData: {
         isLoading: false,
         status: 'RUNNING',
+        humanStatus: 'Running',
         agentFlowDefinition: 'software_development',
         executorUrl: 'https://gitlab.com/gitlab-org/gitlab/-/jobs/123',
         createdAt: '2023-01-01T00:00:00Z',
@@ -58,9 +59,14 @@ describe('AgentFlowInfo', () => {
     });
   };
 
-  const findListItems = () => wrapper.findAll('dd');
-  const findListItemTitles = () => wrapper.findAll('dt');
+  const findHeading = () => wrapper.find('h5');
+  const findInfoList = () => wrapper.find('ul');
+  const findListItems = () => wrapper.findAll('li');
+  const findListItemTitles = () => wrapper.findAll('[data-testid="info-title"]');
+  const findListItemValues = () => wrapper.findAll('[data-testid="info-value"]');
   const findSkeletonLoaders = () => wrapper.findAllComponents(GlSkeletonLoader);
+  const findLinks = () => wrapper.findAllComponents(GlLink);
+  const findBadge = () => wrapper.findComponent(GlBadge);
 
   describe('when loading', () => {
     beforeEach(() => {
@@ -69,7 +75,15 @@ describe('AgentFlowInfo', () => {
       });
     });
 
-    it('renders UI copy as usual', () => {
+    it('renders the heading', () => {
+      expect(findHeading().text()).toBe('Session information');
+    });
+
+    it('renders the info list', () => {
+      expect(findInfoList().exists()).toBe(true);
+    });
+
+    it('renders all session info items as list items', () => {
       expect(findListItems()).toHaveLength(9);
     });
 
@@ -87,18 +101,18 @@ describe('AgentFlowInfo', () => {
       createComponent();
     });
 
-    it('renders all expected list data', () => {
-      const listItems = findListItems();
+    it('renders all expected info values in the correct order', () => {
+      const listItems = findListItemValues();
       const expectedData = [
-        'RUNNING',
-        'Test Project',
-        'gitlab-org',
-        'Jan 1, 2023, 12:00 AM',
-        'Jan 1, 2024, 12:00 AM',
-        'Flow',
-        'software_development',
-        '4545',
-        '123',
+        '4545', // Session ID
+        'Running', // Status
+        'Test Project', // Project
+        'gitlab-org', // Group
+        'Flow', // Type
+        'software_development', // Flow
+        '123', // Executor ID
+        'Jan 1, 2023, 12:00 AM', // Started
+        'Jan 1, 2024, 12:00 AM', // Last updated
       ];
 
       expectedData.forEach((expectedText, index) => {
@@ -106,18 +120,28 @@ describe('AgentFlowInfo', () => {
       });
     });
 
-    it('renders all the expected titles', () => {
+    it('renders the status badge with the correct props', () => {
+      const badge = findBadge();
+
+      expect(badge.exists()).toBe(true);
+      expect(badge.props()).toMatchObject({
+        variant: 'info',
+      });
+      expect(badge.text()).toBe('Running');
+    });
+
+    it('renders all the expected titles in the correct order', () => {
       const listItemTitles = findListItemTitles();
       const expectedTitles = [
+        'Session ID',
         'Status',
         'Project',
         'Group',
-        'Started',
-        'Last updated',
         'Type',
         'Flow',
-        'Session ID',
         'Job ID',
+        'Started',
+        'Last updated',
       ];
 
       expectedTitles.forEach((expectedTitle, index) => {
@@ -127,14 +151,14 @@ describe('AgentFlowInfo', () => {
 
     it.each`
       index | href                                                                           | text
+      ${0}  | ${'https://gitlab.com/gitlab-org/test-project/-/automate/agent-sessions/4545'} | ${'4545'}
       ${1}  | ${'https://gitlab.com/gitlab-org/test-project'}                                | ${'Test Project'}
       ${2}  | ${'https://gitlab.com/gitlab-org'}                                             | ${'gitlab-org'}
-      ${7}  | ${'https://gitlab.com/gitlab-org/test-project/-/automate/agent-sessions/4545'} | ${'4545'}
-      ${8}  | ${'https://gitlab.com/gitlab-org/gitlab/-/jobs/123'}                           | ${'123'}
-    `('renders links for project, group, session ID, and job ID', ({ index, href, text }) => {
-      const link = findListItems().at(index).findComponent(GlLink);
-      expect(link.attributes('href')).toBe(href);
-      expect(link.text()).toBe(text);
+      ${3}  | ${'https://gitlab.com/gitlab-org/gitlab/-/jobs/123'}                           | ${'123'}
+    `('renders links for session ID, project, group, and job ID', ({ index, href, text }) => {
+      const links = findLinks();
+      expect(links.at(index).attributes('href')).toBe(href);
+      expect(links.at(index).text()).toBe(text);
     });
 
     describe('when project information is missing', () => {
@@ -145,8 +169,8 @@ describe('AgentFlowInfo', () => {
       });
 
       it('displays N/A for missing project information', () => {
-        expect(findListItems().at(1).text()).toContain('N/A'); // Project name
-        expect(findListItems().at(2).text()).toContain('N/A'); // Group name
+        expect(findListItems().at(2).text()).toContain('N/A'); // Project name
+        expect(findListItems().at(3).text()).toContain('N/A'); // Group name
       });
 
       it('does not display links for project, group, and sessionId', () => {
@@ -169,17 +193,21 @@ describe('AgentFlowInfo', () => {
       });
 
       it('displays N/A for missing namespace information', () => {
-        expect(findListItems().at(1).text()).toContain('Test Project'); // Project name should still show
-        expect(findListItems().at(2).text()).toContain('N/A'); // Group name should be N/A
+        expect(findListItems().at(2).text()).toContain('Test Project'); // Project name should still show
+        expect(findListItems().at(3).text()).toContain('N/A'); // Group name should be N/A
       });
 
-      it('does not display group link', () => {
-        expect(findListItems().at(2).findComponent(GlLink).exists()).toBe(false); // Group link
-      });
+      it('displays project, sessionId, and executor links but not group link', () => {
+        const links = findLinks();
 
-      it('displays project and sessionId links', () => {
-        expect(findListItems().at(1).findComponent(GlLink).exists()).toBe(true); // Project link
-        expect(findListItems().at(7).findComponent(GlLink).exists()).toBe(true); // SessionId link
+        expect(links).toHaveLength(3);
+        expect(links.at(0).attributes('href')).toBe(
+          'https://gitlab.com/gitlab-org/test-project/-/automate/agent-sessions/4545',
+        );
+        expect(links.at(1).attributes('href')).toBe('https://gitlab.com/gitlab-org/test-project');
+        expect(links.at(2).attributes('href')).toBe(
+          'https://gitlab.com/gitlab-org/gitlab/-/jobs/123',
+        );
       });
     });
 
@@ -191,7 +219,7 @@ describe('AgentFlowInfo', () => {
       });
 
       it('displays N/A for invalid job ID', () => {
-        expect(findListItems().at(8).text()).toContain('N/A');
+        expect(findListItems().at(6).text()).toContain('N/A');
       });
     });
 
@@ -203,7 +231,7 @@ describe('AgentFlowInfo', () => {
       });
 
       it('displays N/A for empty executor URL', () => {
-        expect(findListItems().at(8).text()).toContain('N/A');
+        expect(findListItems().at(6).text()).toContain('N/A');
       });
     });
 
@@ -222,8 +250,8 @@ describe('AgentFlowInfo', () => {
       });
 
       it('displays N/A for invalid dates', () => {
-        expect(findListItems().at(3).text()).toContain('N/A'); // Started
-        expect(findListItems().at(4).text()).toContain('N/A'); // Last updated
+        expect(findListItems().at(7).text()).toContain('N/A'); // Started
+        expect(findListItems().at(8).text()).toContain('N/A'); // Last updated
       });
 
       it('does not call the date formatter for invalid dates', () => {
