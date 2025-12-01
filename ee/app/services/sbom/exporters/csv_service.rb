@@ -39,7 +39,7 @@ module Sbom
               # rubocop:enable CodeReuse/ActiveRecord
               # rubocop:enable Database/AvoidUsingPluckWithoutLimit
             },
-            s_('DependencyListExport|Project') => ->(occurrence) { occurrence.project.full_path },
+            s_('DependencyListExport|Project') => ->(occurrence) { occurrence.project&.full_path },
             s_('DependencyListExport|Vulnerabilities Detected') => 'vulnerability_count',
             s_('DependencyListExport|Vulnerability IDs') => ->(occurrence) {
               serialize_list(occurrence.vulnerabilities.map(&:id))
