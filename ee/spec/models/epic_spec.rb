@@ -1553,11 +1553,24 @@ RSpec.describe Epic, feature_category: :portfolio_management do
   end
 
   describe '#participants' do
-    it_behaves_like 'issuable participants' do
-      let_it_be(:issuable_parent) { create(:group, :public) }
-      let_it_be_with_refind(:issuable) { create(:epic, group: issuable_parent) }
+    context 'with public group' do
+      it_behaves_like 'issuable participants' do
+        let_it_be(:issuable_parent) { create(:group, :public) }
+        let(:author) { create(:user, developer_of: issuable_parent) }
+        let(:issuable) { create(:epic, group: issuable_parent, author: author) }
 
-      let(:params) { { noteable: issuable } }
+        let(:params) { { noteable: issuable } }
+      end
+    end
+
+    context 'with private group' do
+      it_behaves_like 'issuable participants' do
+        let_it_be(:issuable_parent) { create(:group, :private) }
+        let(:author) { create(:user, developer_of: issuable_parent) }
+        let(:issuable) { create(:epic, group: issuable_parent, author: author) }
+
+        let(:params) { { noteable: issuable } }
+      end
     end
   end
 
