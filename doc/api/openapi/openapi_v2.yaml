@@ -8348,7 +8348,9 @@ paths:
         '200':
           description: List group merge requests
           schema:
-            "$ref": "#/definitions/API_Entities_MergeRequestBasic"
+            type: array
+            items:
+              "$ref": "#/definitions/API_Entities_MergeRequestBasic"
         '401':
           description: Unauthorized
         '404':
@@ -27276,7 +27278,9 @@ paths:
         '200':
           description: List project merge requests
           schema:
-            "$ref": "#/definitions/API_Entities_MergeRequestBasic"
+            type: array
+            items:
+              "$ref": "#/definitions/API_Entities_MergeRequestBasic"
         '401':
           description: Unauthorized
         '404':
@@ -44877,7 +44881,9 @@ paths:
         '200':
           description: List merge requests
           schema:
-            "$ref": "#/definitions/API_Entities_MergeRequestBasic"
+            type: array
+            items:
+              "$ref": "#/definitions/API_Entities_MergeRequestBasic"
         '401':
           description: Unauthorized
         '422':
