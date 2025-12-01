@@ -412,7 +412,7 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
 
       context 'without elasticsearch' do
         before do
-          allow(::Search::Elastic::VulnerabilityIndexingHelper).to receive(:vulnerability_indexing_allowed?).and_return(false)
+          allow(::Search::Elastic::VulnerabilityIndexHelper).to receive(:indexing_allowed?).and_return(false)
         end
 
         it_behaves_like 'raises ES errors'
@@ -420,7 +420,7 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
 
       context 'with advanced_vulnerability_management FF disabled' do
         before do
-          allow(::Search::Elastic::VulnerabilityIndexingHelper).to receive(:vulnerability_indexing_allowed?).and_return(true)
+          allow(::Search::Elastic::VulnerabilityIndexHelper).to receive(:indexing_allowed?).and_return(true)
           stub_feature_flags(advanced_vulnerability_management: false)
         end
 
@@ -590,7 +590,7 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
 
       context 'without elasticsearch' do
         before do
-          allow(::Search::Elastic::VulnerabilityIndexingHelper).to receive(:vulnerability_indexing_allowed?).and_return(false)
+          allow(::Search::Elastic::VulnerabilityIndexHelper).to receive(:indexing_allowed?).and_return(false)
         end
 
         it_behaves_like 'raises ES errors'
@@ -598,7 +598,7 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
 
       context 'with advanced_vulnerability_management FF disabled' do
         before do
-          allow(::Search::Elastic::VulnerabilityIndexingHelper).to receive(:vulnerability_indexing_allowed?).and_return(true)
+          allow(::Search::Elastic::VulnerabilityIndexHelper).to receive(:indexing_allowed?).and_return(true)
           stub_feature_flags(advanced_vulnerability_management: false)
         end
 

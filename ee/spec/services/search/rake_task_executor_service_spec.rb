@@ -956,8 +956,8 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
 
     context 'when vulnerability indexing is not allowed' do
       before do
-        allow(::Search::Elastic::VulnerabilityIndexingHelper)
-          .to receive(:vulnerability_indexing_allowed?).and_return(false)
+        allow(::Search::Elastic::VulnerabilityIndexHelper)
+          .to receive(:indexing_allowed?).and_return(false)
       end
 
       it 'skips indexing and logs warning' do
@@ -998,8 +998,8 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
 
     context 'when vulnerability indexing is allowed' do
       before do
-        allow(::Search::Elastic::VulnerabilityIndexingHelper)
-          .to receive(:vulnerability_indexing_allowed?).and_return(true)
+        allow(::Search::Elastic::VulnerabilityIndexHelper)
+          .to receive(:indexing_allowed?).and_return(true)
       end
 
       it_behaves_like 'it performs indexing'
