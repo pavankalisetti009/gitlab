@@ -133,5 +133,167 @@ RSpec.describe Security::Ingestion::IngestReportsService, feature_category: :vul
         end
       end
     end
+
+    describe 'vulnerability policy auto-dismissal' do
+      before do
+        stub_licensed_features(security_orchestration_policies: true)
+        allow(Ability).to receive(:allowed?).with(bot_user, :create_vulnerability_state_transition, project).and_return(true)
+      end
+
+      let_it_be(:vulnerability_3) { create(:vulnerability, :with_scanner, scanner: sast_scanner, project: pipeline.project) }
+      let(:ids_1) { [vulnerability_1.id, vulnerability_3.id] }
+
+      let_it_be(:security_orchestration_policy_configuration) do
+        create(:security_orchestration_policy_configuration, project: project)
+      end
+
+      let!(:policy) do
+        create(:security_policy, :vulnerability_management_policy,
+          security_orchestration_policy_configuration: security_orchestration_policy_configuration,
+          content: policy_content,
+          linked_projects: [project])
+      end
+
+      let!(:policy_rule) do
+        create(:vulnerability_management_policy_rule, :detected, security_policy: policy, content: rule_content)
+      end
+
+      let(:policy_content) do
+        {
+          'actions' => [
+            {
+              'type' => 'auto_dismiss',
+              'dismissal_reason' => 'acceptable_risk'
+            }
+          ]
+        }
+      end
+
+      let(:cve_identifier) { vulnerability_3.finding.identifiers.first.name }
+      let(:rule_content) do
+        {
+          'criteria' => [
+            {
+              'type' => 'identifier',
+              'value' => cve_identifier
+            }
+          ]
+        }
+      end
+
+      let_it_be(:bot_user) { create(:user, :security_policy_bot, guest_of: project) }
+
+      it 'automatically dismisses the vulnerabilities in the given project based on criteria', :aggregate_failures do
+        expect(Gitlab::AppJsonLogger).to receive(:debug).with(
+          message: "Auto-dismissed vulnerabilities",
+          project_id: project.id,
+          pipeline_id: pipeline.id,
+          scanner: sast_scanner,
+          count: 1
+        )
+
+        expect { ingest_reports }.to change { vulnerability_3.reload.state }.from('detected').to('dismissed')
+          .and not_change { vulnerability_1.reload.state }.from('detected')
+      end
+
+      shared_examples_for 'does not dismiss the vulnerabilities' do
+        it 'does not dismiss the vulnerabilities' do
+          ingest_reports
+
+          expect(project.vulnerabilities).to all be_detected
+        end
+      end
+
+      context 'when no vulnerabilities need to be dismissed' do
+        before do
+          policy_rule.update!(content: { 'criteria' => [{ 'type' => 'identifier', 'value' => 'CVE-222222' }] })
+        end
+
+        it 'does not log any message' do
+          expect(Gitlab::AppJsonLogger).not_to receive(:debug)
+
+          ingest_reports
+        end
+
+        it_behaves_like 'does not dismiss the vulnerabilities'
+      end
+
+      context 'when auto-dismissal fails' do
+        before do
+          allow_next_instance_of(Vulnerabilities::AutoDismissService) do |instance|
+            allow(instance).to receive(:execute).and_return(ServiceResponse.error(
+              message: 'Could not dismiss vulnerabilities',
+              reason: 'something failed'
+            ))
+          end
+        end
+
+        it 'logs an error message' do
+          expect(Gitlab::AppJsonLogger).to receive(:error).with(
+            message: "Failed to auto-dismiss vulnerabilities",
+            project_id: project.id,
+            pipeline_id: pipeline.id,
+            scanner: sast_scanner,
+            error: "Could not dismiss vulnerabilities",
+            reason: 'something failed'
+          )
+
+          ingest_reports
+
+          expect(project.vulnerabilities).to all be_detected
+        end
+      end
+
+      context 'when unexpected exception occurs' do
+        before do
+          allow_next_instance_of(Vulnerabilities::AutoDismissService) do |instance|
+            allow(instance).to receive(:execute).and_raise('something failed')
+          end
+        end
+
+        it 'logs an error message', :aggregate_failures do
+          expect(Gitlab::AppJsonLogger).to receive(:error).with(
+            message: "Exception during auto-dismiss vulnerabilities",
+            project_id: project.id,
+            pipeline_id: pipeline.id,
+            error: 'something failed'
+          )
+          expect(Gitlab::ErrorTracking).to receive(:track_exception).with(StandardError)
+
+          ingest_reports
+        end
+      end
+
+      context 'when criteria do not match' do
+        let(:rule_content) do
+          {
+            'criteria' => [
+              {
+                'type' => 'identifier',
+                'value' => 'CVE-12345'
+              }
+            ]
+          }
+        end
+
+        it_behaves_like 'does not dismiss the vulnerabilities'
+      end
+
+      context 'when feature is not licensed' do
+        before do
+          stub_licensed_features(security_orchestration_policies: false)
+        end
+
+        it_behaves_like 'does not dismiss the vulnerabilities'
+      end
+
+      context 'when feature flag "auto_dismiss_vulnerability_policies" is disabled' do
+        before do
+          stub_feature_flags(auto_dismiss_vulnerability_policies: false)
+        end
+
+        it_behaves_like 'does not dismiss the vulnerabilities'
+      end
+    end
   end
 end
