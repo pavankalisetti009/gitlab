@@ -115,7 +115,7 @@ export default {
       >
         <gl-sprintf :message="disableConfirmMessage">
           <template #name>
-            <strong>{{ itemToDisable.name }}</strong>
+            <strong class="gl-wrap-anywhere">{{ itemToDisable.name }}</strong>
           </template>
         </gl-sprintf>
       </confirm-action-modal>
