@@ -64,11 +64,12 @@ RSpec.describe Gitlab::Duo::Developments::Setup, :gitlab_duo, :silence_stdout, f
   end
 
   shared_examples 'creates add-on purchases' do
-    it 'creates enterprise add-on purchases', :aggregate_failures do
+    it 'creates duo core and enterprise add-on purchases by default', :aggregate_failures do
       setup
 
       expect(::GitlabSubscriptions::AddOnPurchase.for_gitlab_duo_pro.count).to eq(0)
       expect(::GitlabSubscriptions::AddOnPurchase.for_duo_enterprise.count).to eq(1)
+      expect(::GitlabSubscriptions::AddOnPurchase.for_duo_core.count).to eq(1)
     end
   end
 
@@ -107,11 +108,24 @@ RSpec.describe Gitlab::Duo::Developments::Setup, :gitlab_duo, :silence_stdout, f
     context 'when creating duo pro add on' do
       let(:args) { { add_on: 'duo_pro' } }
 
-      it 'creates duo pro add-on only' do
+      it 'creates duo core and duo pro add-on' do
         setup
 
         expect(::GitlabSubscriptions::AddOnPurchase.for_gitlab_duo_pro.count).to eq(1)
         expect(::GitlabSubscriptions::AddOnPurchase.for_duo_enterprise.count).to eq(0)
+        expect(::GitlabSubscriptions::AddOnPurchase.for_duo_core.count).to eq(1)
+      end
+    end
+
+    context 'when creating duo core add on' do
+      let(:args) { { add_on: 'duo_core' } }
+
+      it 'creates duo core add-on only' do
+        setup
+
+        expect(::GitlabSubscriptions::AddOnPurchase.for_gitlab_duo_pro.count).to eq(0)
+        expect(::GitlabSubscriptions::AddOnPurchase.for_duo_enterprise.count).to eq(0)
+        expect(::GitlabSubscriptions::AddOnPurchase.for_duo_core.count).to eq(1)
       end
     end
 
