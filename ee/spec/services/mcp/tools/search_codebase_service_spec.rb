@@ -474,14 +474,6 @@ RSpec.describe Mcp::Tools::SearchCodebaseService, feature_category: :mcp_server 
         end
 
         it { is_expected.to be(true) }
-
-        context 'when `code_snippet_search_graphqlapi` is disabled' do
-          before do
-            stub_feature_flags(code_snippet_search_graphqlapi: false)
-          end
-
-          it { is_expected.to be(false) }
-        end
       end
     end
   end
