@@ -1006,6 +1006,28 @@ RSpec.describe Sbom::Occurrence, type: :model, feature_category: :dependency_man
           )
         end
       end
+
+      context 'when project is nil' do
+        # Project shouldn't be nil, but occasionally an SbomOccurrence could be orphaned when
+        # a project is deleted.
+        # Tracked in https://gitlab.com/gitlab-org/gitlab/-/issues/541931
+        let(:occurrence) do
+          occurrence = build(:sbom_occurrence)
+          occurrence.project = nil
+          occurrence
+        end
+
+        it 'returns nil for the blob_path' do
+          expect(location).to eq(
+            {
+              blob_path: nil,
+              path: occurrence.input_file_path,
+              top_level: false,
+              ancestors: []
+            }
+          )
+        end
+      end
     end
   end
 

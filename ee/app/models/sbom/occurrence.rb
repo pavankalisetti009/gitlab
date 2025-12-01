@@ -303,7 +303,10 @@ module Sbom
     private
 
     def input_file_blob_path
-      return unless input_file_path.present?
+      # Project shouldn't be nil, but occasionally an SbomOccurrence could be orphaned when
+      # a project is deleted.
+      # Tracked in https://gitlab.com/gitlab-org/gitlab/-/issues/541931
+      return unless input_file_path.present? && project.present?
 
       Gitlab::Routing.url_helpers.project_blob_path(project, File.join(commit_sha, input_file_path))
     end
