@@ -166,10 +166,12 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillProjectId,
 
   include Gitlab::BackgroundMigration::SpecHelpers::V1
 
+  tables :approval_merge_request_rules, :merge_requests, :projects
+
   it 'backfills project_id' do
     project = projects.create!(name: 'test')
     mr = merge_requests.create!(target_project_id: project.id)
-    rule = approval_rules.create!(merge_request_id: mr.id)
+    rule = approval_merge_request_rules.create!(merge_request_id: mr.id)
 
     # test logic
   end
