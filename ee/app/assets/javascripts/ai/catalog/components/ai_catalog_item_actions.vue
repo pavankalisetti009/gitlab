@@ -113,10 +113,15 @@ export default {
       return this.canAdmin || this.canUse || this.canReport;
     },
     showAddToProject() {
-      return this.canUse && this.isGlobal;
+      return this.canUse && this.isGlobal && !this.item.foundationalChat;
     },
     showAddToGroup() {
-      return this.canUse && this.isGlobal && (this.isFlowsAvailable || this.isAgentsAvailable);
+      return (
+        this.canUse &&
+        this.isGlobal &&
+        (this.isFlowsAvailable || this.isAgentsAvailable) &&
+        !this.item.foundationalChat
+      );
     },
     duplicateItemProps() {
       return {

@@ -71,16 +71,19 @@ describe('AiCatalogItemActions', () => {
   });
 
   describe.each`
-    scenario                           | canAdmin | canUse   | editBtn  | disableBtn | enableBtn | addBtn   | moreActions | duplicateBtn | deleteBtn | itemType
-    ${'not logged in'}                 | ${false} | ${false} | ${false} | ${false}   | ${false}  | ${false} | ${false}    | ${false}     | ${false}  | ${AI_CATALOG_TYPE_AGENT}
-    ${'logged in, not admin of item'}  | ${false} | ${true}  | ${false} | ${false}   | ${false}  | ${true}  | ${true}     | ${true}      | ${false}  | ${AI_CATALOG_TYPE_AGENT}
-    ${'logged in, admin of item'}      | ${true}  | ${true}  | ${true}  | ${false}   | ${false}  | ${true}  | ${true}     | ${true}      | ${true}   | ${AI_CATALOG_TYPE_AGENT}
-    ${'logged in, admin of flow item'} | ${true}  | ${true}  | ${true}  | ${false}   | ${false}  | ${true}  | ${true}     | ${true}      | ${true}   | ${AI_CATALOG_TYPE_FLOW}
+    scenario                                 | canAdmin | canUse   | foundationalChat | editBtn  | disableBtn | enableBtn | addBtn   | moreActions | duplicateBtn | deleteBtn | itemType
+    ${'not logged in'}                       | ${false} | ${false} | ${false}         | ${false} | ${false}   | ${false}  | ${false} | ${false}    | ${false}     | ${false}  | ${AI_CATALOG_TYPE_AGENT}
+    ${'logged in, not admin of item'}        | ${false} | ${true}  | ${false}         | ${false} | ${false}   | ${false}  | ${true}  | ${true}     | ${true}      | ${false}  | ${AI_CATALOG_TYPE_AGENT}
+    ${'logged in, admin of item'}            | ${true}  | ${true}  | ${false}         | ${true}  | ${false}   | ${false}  | ${true}  | ${true}     | ${true}      | ${true}   | ${AI_CATALOG_TYPE_AGENT}
+    ${'logged in, admin of flow item'}       | ${true}  | ${true}  | ${false}         | ${true}  | ${false}   | ${false}  | ${true}  | ${true}     | ${true}      | ${true}   | ${AI_CATALOG_TYPE_FLOW}
+    ${'logged in, foundational agent'}       | ${false} | ${true}  | ${true}          | ${false} | ${false}   | ${false}  | ${false} | ${true}     | ${true}      | ${false}  | ${AI_CATALOG_TYPE_AGENT}
+    ${'logged in, admin foundational agent'} | ${true}  | ${true}  | ${true}          | ${true}  | ${false}   | ${false}  | ${false} | ${true}     | ${true}      | ${true}   | ${AI_CATALOG_TYPE_AGENT}
   `(
     'at the Explore level, when $scenario',
     ({
       canAdmin,
       canUse,
+      foundationalChat,
       editBtn,
       disableBtn,
       enableBtn,
@@ -96,6 +99,7 @@ describe('AiCatalogItemActions', () => {
             item: {
               ...mockAgent,
               itemType,
+              foundationalChat,
               userPermissions: {
                 adminAiCatalogItem: canAdmin,
               },

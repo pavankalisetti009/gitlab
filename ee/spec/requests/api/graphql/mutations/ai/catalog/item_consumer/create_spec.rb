@@ -203,4 +203,26 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Create, feature_category: :
       )
     end
   end
+
+  context 'when item is a foundational chat agent' do
+    let_it_be(:foundational_item) { create(:ai_catalog_agent, public: true, project: item_project, id: 348) }
+
+    let(:params) do
+      {
+        target: target,
+        item_id: foundational_item.to_global_id,
+        parent_item_consumer_id: consumer_group_item_consumer.to_global_id
+      }
+    end
+
+    it 'returns an error and does not create an item consumer' do
+      stub_saas_features(gitlab_duo_saas_only: true)
+
+      expect { execute }.not_to change { Ai::Catalog::ItemConsumer.count }
+
+      expect(graphql_data_at(:ai_catalog_item_consumer_create, :item_consumer)).to be_nil
+      expect(graphql_data_at(:ai_catalog_item_consumer_create,
+        :errors)).to eq(["Foundational agents must be configured in admin settings."])
+    end
+  end
 end
