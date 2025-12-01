@@ -19,6 +19,7 @@ module EE
       include ::WorkItems::Parent
       include Elastic::MaintainElasticsearchOnGroupUpdate
       include ProductAnalyticsHelpers
+      include ::Ai::CustomizablePermission
 
       ALLOWED_ACTIONS_TO_USE_FILTERING_OPTIMIZATION = [:read_epic, :read_confidential_epic, :read_work_item, :read_confidential_issues].freeze
       EPIC_BATCH_SIZE = 500
