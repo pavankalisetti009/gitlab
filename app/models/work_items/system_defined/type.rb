@@ -11,8 +11,6 @@ module WorkItems
       attribute :base_type, :string
       attribute :icon_name, :string
 
-      EE_BASE_TYPES = %w[epic key_result objective requirement].freeze
-
       class << self
         def fixed_items
           [
@@ -62,6 +60,39 @@ module WorkItems
         ::Gitlab::GlobalId.build(self, model_name: 'WorkItems::Type', id: id)
       end
       alias_method :to_gid, :to_global_id
+
+      def widget_definitions
+        WorkItems::SystemDefined::WidgetDefinition.where(work_item_type_id: id)
+      end
+
+      def widgets(_resource_parent)
+        widget_definitions.filter(&:widget_class)
+      end
+
+      def widget_classes(resource_parent)
+        widgets(resource_parent).map(&:widget_class)
+      end
+
+      def unavailable_widgets_on_conversion(target_type, resource_parent)
+        source_widgets = widgets(resource_parent)
+        target_widgets = target_type.widgets(resource_parent)
+        target_widget_types = target_widgets.map(&:widget_type).to_set
+        source_widgets.reject { |widget| target_widget_types.include?(widget.widget_type) }
+      end
+
+      # TODO: remove the supports_assignee? and supports_time_tracking? and replace it with this method
+      def supports_widget?(resource_parent, widget_class)
+        widget_classes(resource_parent).include?(widget_class)
+      end
+
+      # TODO: Move to something generic like .supports_widget?(widget_type)
+      def supports_assignee?(resource_parent)
+        widget_classes(resource_parent).include?(::WorkItems::Widgets::Assignees)
+      end
+
+      def supports_time_tracking?(resource_parent)
+        widget_classes(resource_parent).include?(::WorkItems::Widgets::TimeTracking)
+      end
 
       def allowed_child_types_by_name
         child_type_ids = WorkItems::SystemDefined::HierarchyRestriction
@@ -120,11 +151,23 @@ module WorkItems
       end
       strong_memoize_attr :descendant_types
 
+      def configuration_class
+        WorkItems::SystemDefined::Types.const_get(base_type.camelize, false)
+      end
+
+      def licence_name
+        configuration_class.try(:licence_name)
+      end
+
+      def licenced?
+        licence_name.present?
+      end
+
       private
 
       # resource_parent is used in EE
       def supported_conversion_base_types(_resource_parent, _user)
-        self.class.all.map(&:base_type).excluding(*EE_BASE_TYPES)
+        self.class.all.map(&:base_type)
       end
 
       # overridden in EE to check for EE-specific restrictions

@@ -4,6 +4,23 @@ module WorkItems
   module SystemDefined
     module Types
       module Requirement
+        WIDGETS = %w[
+          award_emoji
+          current_user_todos
+          custom_fields
+          description
+          linked_items
+          notes
+          notifications
+          participants
+          requirement_legacy
+          verification_status
+          test_reports
+          time_tracking
+        ].freeze
+
+        WIDGET_OPTIONS = {}.freeze
+
         def self.configuration
           {
             id: 4,
@@ -11,6 +28,10 @@ module WorkItems
             base_type: 'requirement',
             icon_name: "work-item-requirement"
           }
+        end
+
+        def self.licence_name
+          :requirements
         end
       end
     end

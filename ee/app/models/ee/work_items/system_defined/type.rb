@@ -23,34 +23,80 @@ module EE
           work_item_status: ::WorkItems::Widgets::Status
         }.freeze
 
-        LICENSED_TYPES = { epic: :epics, objective: :okrs, key_result: :okrs, requirement: :requirements }.freeze
-
         LICENSED_HIERARCHY_TYPES = {
           issue: { parent: { epic: :epics } },
           epic: { parent: { epic: :subepics }, child: { epic: :subepics, issue: :epics } }
         }.freeze
+
+        BASE_TYPES = [
+          ::WorkItems::SystemDefined::Types::Epic.configuration,
+          ::WorkItems::SystemDefined::Types::KeyResult.configuration,
+          ::WorkItems::SystemDefined::Types::Objective.configuration,
+          ::WorkItems::SystemDefined::Types::Requirement.configuration,
+          ::WorkItems::SystemDefined::Types::TestCase.configuration
+        ].freeze
 
         class_methods do
           extend ::Gitlab::Utils::Override
 
           override :fixed_items
           def fixed_items
-            super + [
-              ::WorkItems::SystemDefined::Types::Epic.configuration,
-              ::WorkItems::SystemDefined::Types::KeyResult.configuration,
-              ::WorkItems::SystemDefined::Types::Objective.configuration,
-              ::WorkItems::SystemDefined::Types::Requirement.configuration,
-              ::WorkItems::SystemDefined::Types::TestCase.configuration
-            ]
+            super + BASE_TYPES
           end
+        end
+
+        override :widgets
+        def widgets(resource_parent)
+          unavailable_widgets = unlicensed_widget_classes(resource_parent)
+
+          super.reject { |widget_def| unavailable_widgets.include?(widget_def.widget_class) }
+        end
+
+        def status_lifecycle_for(namespace_id)
+          custom_lifecycle_for(namespace_id) || system_defined_lifecycle
+        end
+
+        def custom_status_enabled_for?(namespace_id)
+          return false unless namespace_id
+
+          ::WorkItems::TypeCustomLifecycle.exists?(
+            work_item_type_id: id,
+            namespace_id: namespace_id
+          )
+        end
+
+        def custom_lifecycle_for(namespace_id)
+          return unless namespace_id
+
+          ::WorkItems::Statuses::Custom::Lifecycle
+            .includes(:statuses, :default_open_status, :default_closed_status, :default_duplicate_status)
+            .joins(:type_custom_lifecycles)
+            .find_by(
+              namespace_id: namespace_id,
+              type_custom_lifecycles: { work_item_type_id: id, namespace_id: namespace_id }
+            )
+        end
+
+        def system_defined_lifecycle
+          ::WorkItems::Statuses::SystemDefined::Lifecycle.of_work_item_base_type(key)
         end
 
         private
 
+        def unlicensed_widget_classes(resource_parent)
+          LICENSED_WIDGETS.flat_map do |licensed_feature, widget_class|
+            widget_class unless resource_parent.licensed_feature_available?(licensed_feature)
+          end.compact
+        end
+
         override :supported_conversion_base_types
         def supported_conversion_base_types(resource_parent, user)
-          ee_base_types = LICENSED_TYPES.flat_map do |type, licensed_feature|
-            type.to_s if resource_parent.licensed_feature_available?(licensed_feature.to_sym)
+          all_types = super - BASE_TYPES.pluck(:base_type) # rubocop:disable Database/AvoidUsingPluckWithoutLimit -- It's an array of hashed not active record relations
+
+          ee_base_types = self.class.all.filter_map do |type|
+            if type.licenced? && resource_parent.licensed_feature_available?(type.licence_name.to_sym)
+              type.base_type.to_s
+            end
           end.compact
 
           group = resource_parent.is_a?(Group) ? resource_parent : resource_parent.group
@@ -65,7 +111,7 @@ module EE
 
           ee_base_types -= %w[objective key_result] unless project && ::Feature.enabled?(:okrs_mvc, project)
 
-          super + ee_base_types
+          all_types + ee_base_types
         end
 
         override :authorized_types

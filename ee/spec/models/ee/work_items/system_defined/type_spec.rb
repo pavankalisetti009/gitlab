@@ -229,7 +229,7 @@ RSpec.describe ::WorkItems::SystemDefined::Type, feature_category: :team_plannin
       it 'returns only CE types' do
         result = issue_type.supported_conversion_types(project, user)
 
-        expect(result.map(&:base_type)).to match_array(%w[task incident ticket test_case])
+        expect(result.map(&:base_type)).to match_array(%w[task incident ticket])
       end
     end
   end
