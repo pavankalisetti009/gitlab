@@ -42,6 +42,6 @@ export default {
 <template>
   <div class="gl-flex gl-flex-col gl-gap-5 @md:gl-flex-row">
     <component :is="detailsComponent" :item="item" :version-data="versionData" class="gl-grow" />
-    <ai-catalog-item-metadata :item="item" class="gl-shrink-0" />
+    <ai-catalog-item-metadata :item="item" :version-data="versionData" class="gl-shrink-0" />
   </div>
 </template>
