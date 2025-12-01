@@ -278,6 +278,10 @@ RSpec.describe Group, feature_category: :groups_and_projects do
     end
   end
 
+  describe 'concerns' do
+    it { is_expected.to include_module(::Ai::CustomizablePermission) }
+  end
+
   describe 'validations' do
     context 'max_personal_access_token_lifetime' do
       before do
