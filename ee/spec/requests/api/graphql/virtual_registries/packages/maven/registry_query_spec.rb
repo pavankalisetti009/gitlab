@@ -64,8 +64,8 @@ RSpec.describe 'Querying a maven virtual registry', feature_category: :virtual_r
       let(:virtual_registry_available) { true }
 
       context 'when registry exists' do
-        it 'returns registry for the virtualRegistriesPackagesMavenRegistry field' do
-          expect(maven_registry_response['name']).to eq('name')
+        it 'returns registry for the mavenVirtualRegistry field' do
+          expect(maven_registry_response['name']).to eq(registry.name)
         end
 
         it 'returns registry upstreams with upstream information' do
