@@ -74,10 +74,24 @@ panels:
       width: 12
       height: 3
     options: {}
-  - title: 'Code Suggestions accepted by user'
-    visualization: user_metrics_table
+  - title: 'Duo Code Suggestions usage by user (Last 30 days)'
+    visualization: duo_code_suggestions_by_user
     gridAttributes:
       yPos: 14
       xPos: 0
-      width: 12
-      height: 8
+      width: 6
+      height: 4
+  - title: 'Duo Code Review usage by user (Last 30 days)'
+    visualization: duo_code_review_usage_by_user
+    gridAttributes:
+      yPos: 13
+      xPos: 6
+      width: 6
+      height: 4
+  - title: 'Duo Root Cause Analysis usage by user (Last 30 days)'
+    visualization: duo_rca_usage_by_user
+    gridAttributes:
+      yPos: 17
+      xPos: 0
+      width: 6
+      height: 4

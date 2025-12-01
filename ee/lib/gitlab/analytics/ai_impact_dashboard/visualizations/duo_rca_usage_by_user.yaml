@@ -9,8 +9,8 @@ options:
     - key: 'user'
       component: 'UserLink'
     - key: 'user.lastDuoActivityOn'
-      label: 'Last duo activity'
-    - key: 'codeSuggestionsAcceptedCount'
-      label: 'Code suggestions accepted'
+      label: 'Last activity'
+    - key: 'troubleshootJobEventCount'
+      label: 'Usage'
       thClass: "gl-text-right"
       tdClass: "gl-text-right"

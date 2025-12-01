@@ -74,7 +74,9 @@ RSpec.describe 'Query.project(id).dashboards.panels(id).visualization', feature_
         6 | 'AiImpactTable' | 'Duo usage metrics for the %{namespaceName} %{namespaceType}'
         7 | 'AiImpactTable' | 'Development metrics for the %{namespaceName} %{namespaceType}'
         8 | 'AiImpactTable' | 'Pipeline metrics for the %{namespaceName} %{namespaceType}'
-        9 | 'DataTable' | 'Code Suggestions accepted by user'
+        9 | 'DataTable' | 'Duo Code Suggestions usage by user (Last 30 days)'
+        10 | 'DataTable' | 'Duo Code Review usage by user (Last 30 days)'
+        11 | 'DataTable' | 'Duo Root Cause Analysis usage by user (Last 30 days)'
       end
 
       with_them do

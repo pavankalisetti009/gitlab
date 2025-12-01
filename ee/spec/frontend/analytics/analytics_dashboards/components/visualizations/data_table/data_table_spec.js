@@ -3,6 +3,7 @@ import { mount, shallowMount } from '@vue/test-utils';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
 import DataTable from 'ee/analytics/analytics_dashboards/components/visualizations/data_table/data_table.vue';
 import DiffLineChanges from 'ee/analytics/analytics_dashboards/components/visualizations/data_table/diff_line_changes.vue';
+import CalculatePercent from 'ee/analytics/analytics_dashboards/components/visualizations/data_table/calculate_percent.vue';
 
 describe('DataTable Visualization', () => {
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
@@ -25,6 +26,7 @@ describe('DataTable Visualization', () => {
         },
         stubs: {
           DiffLineChanges,
+          CalculatePercent,
         },
       }),
     );
@@ -326,6 +328,29 @@ describe('DataTable Visualization', () => {
         });
 
         expect(wrapper.findComponent(DiffLineChanges).props()).toMatchObject(customData);
+      });
+
+      it('applies any relevant `componentProps` to the custom component', () => {
+        createWrapper(mount, {
+          data: { nodes: [{ additions: 5, deletions: 10 }] },
+          options: {
+            fields: [
+              {
+                key: 'customData',
+                component: 'CalculatePercent',
+                componentProps: {
+                  numerator: 'additions',
+                  denominator: 'deletions',
+                },
+              },
+            ],
+          },
+        });
+
+        expect(wrapper.findComponent(CalculatePercent).props()).toMatchObject({
+          numerator: 5,
+          denominator: 10,
+        });
       });
     });
   });
