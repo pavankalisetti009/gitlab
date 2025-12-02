@@ -119,6 +119,28 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::SecretsCheck, feature_categ
           it_behaves_like 'calls SDS'
           it_behaves_like 'skips the push check'
 
+          describe 'logging duration' do
+            let(:start_time) { 100.0 }
+            let(:end_time) { 102.5 }
+            let(:expected_duration) { 2.5 }
+
+            before do
+              allow(Gitlab::Metrics::System).to receive(:monotonic_time).and_return(start_time, end_time)
+            end
+
+            it 'logs the duration when validation completes successfully' do
+              secrets_check.validate!
+
+              expect(logged_messages[:info]).to include(
+                hash_including(
+                  'message' => 'Secret push protection validation completed',
+                  'method' => 'run_validation_dark_launch!',
+                  'duration_s' => expected_duration
+                )
+              )
+            end
+          end
+
           context 'when unexpected exceptions are raised' do
             where(:method_name, :target_class, :exception, :exception_msg) do
               [
@@ -197,6 +219,31 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::SecretsCheck, feature_categ
           context 'when license is ultimate' do
             before do
               stub_licensed_features(secret_push_protection: true)
+            end
+
+            describe 'logging duration of run_validation!' do
+              let(:start_time) { 100.0 }
+              let(:end_time) { 102.5 }
+              let(:expected_duration) { 2.5 }
+
+              before do
+                allow_next_instance_of(Gitlab::Checks::SecretPushProtection::EligibilityChecker) do |checker|
+                  allow(checker).to receive(:should_scan?).and_return(true)
+                end
+                allow(Gitlab::Metrics::System).to receive(:monotonic_time).and_return(start_time, end_time)
+              end
+
+              it 'logs the duration when validation completes successfully' do
+                secrets_check.validate!
+
+                expect(logged_messages[:info]).to include(
+                  hash_including(
+                    'message' => 'Secret push protection validation completed',
+                    'method' => 'run_validation!',
+                    'duration_s' => expected_duration
+                  )
+                )
+              end
             end
 
             context 'when payload processor returns nil' do
