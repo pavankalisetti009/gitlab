@@ -11289,6 +11289,7 @@ CREATE TABLE ai_settings (
     minimum_access_level_execute smallint,
     minimum_access_level_manage smallint,
     minimum_access_level_enable_on_projects smallint,
+    minimum_access_level_execute_async smallint,
     CONSTRAINT check_3cf9826589 CHECK ((char_length(ai_gateway_url) <= 2048)),
     CONSTRAINT check_900d7a89b3 CHECK ((char_length(duo_agent_platform_service_url) <= 2048)),
     CONSTRAINT check_a02bd8868c CHECK ((char_length(amazon_q_role_arn) <= 2048)),
@@ -21302,7 +21303,8 @@ CREATE TABLE namespace_ai_settings (
     foundational_agents_default_enabled boolean DEFAULT true,
     minimum_access_level_execute smallint,
     minimum_access_level_manage smallint,
-    minimum_access_level_enable_on_projects smallint
+    minimum_access_level_enable_on_projects smallint,
+    minimum_access_level_execute_async smallint
 );
 
 CREATE TABLE namespace_bans (
