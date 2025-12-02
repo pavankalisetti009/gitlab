@@ -42,9 +42,19 @@ RSpec.describe GitlabSubscriptions::CartAbandonmentWorker, feature_category: :su
     end
 
     context 'when namespace actual_plan_name returns nil' do
+      let(:plans_data) do
+        [
+          Hashie::Mash.new(id: 'premium-plan-id', code: 'premium'),
+          Hashie::Mash.new(id: 'ultimate-plan-id', code: 'ultimate')
+        ]
+      end
+
       before do
         allow(Namespace).to receive(:find_by_id).with(namespace.id).and_return(namespace)
         allow(namespace).to receive(:actual_plan_name).and_return(nil)
+        allow_next_instance_of(GitlabSubscriptions::FetchSubscriptionPlansService) do |service|
+          allow(service).to receive(:execute).and_return(plans_data)
+        end
       end
 
       it 'sends lead because plan name is nil' do
@@ -58,10 +68,19 @@ RSpec.describe GitlabSubscriptions::CartAbandonmentWorker, feature_category: :su
 
     context 'when plan has not changed' do
       let(:previous_plan_name) { 'free' }
+      let(:plans_data) do
+        [
+          Hashie::Mash.new(id: 'premium-plan-id', code: 'premium'),
+          Hashie::Mash.new(id: 'ultimate-plan-id', code: 'ultimate')
+        ]
+      end
 
       before do
         allow(Namespace).to receive(:find_by_id).with(namespace.id).and_return(namespace)
         allow(namespace).to receive(:actual_plan_name).and_return('free')
+        allow_next_instance_of(GitlabSubscriptions::FetchSubscriptionPlansService) do |service|
+          allow(service).to receive(:execute).and_return(plans_data)
+        end
       end
 
       it 'sends lead because user never upgraded' do
@@ -74,6 +93,19 @@ RSpec.describe GitlabSubscriptions::CartAbandonmentWorker, feature_category: :su
     end
 
     context 'when user did not purchase' do
+      let(:plans_data) do
+        [
+          Hashie::Mash.new(id: 'premium-plan-id', code: 'premium'),
+          Hashie::Mash.new(id: 'ultimate-plan-id', code: 'ultimate')
+        ]
+      end
+
+      before do
+        allow_next_instance_of(GitlabSubscriptions::FetchSubscriptionPlansService) do |service|
+          allow(service).to receive(:execute).and_return(plans_data)
+        end
+      end
+
       it 'sends lead with correct params' do
         expect_next_instance_of(GitlabSubscriptions::CreateHandRaiseLeadService) do |service|
           expect(service).to receive(:execute).with(
@@ -82,7 +114,7 @@ RSpec.describe GitlabSubscriptions::CartAbandonmentWorker, feature_category: :su
               work_email: user.email,
               opt_in: user.onboarding_status_email_opt_in,
               namespace_id: namespace.id,
-              plan_id: namespace.actual_plan.id,
+              plan_id: 'premium-plan-id',
               existing_plan: namespace.actual_plan_name,
               skip_country_validation: true
             )
@@ -150,13 +182,76 @@ RSpec.describe GitlabSubscriptions::CartAbandonmentWorker, feature_category: :su
           worker.perform(user_without_attrs.id, namespace.id, product_interaction, previous_plan_name)
         end
       end
+
+      context 'when product interaction is for ultimate plan' do
+        let(:product_interaction) { 'cart abandonment - SaaS Ultimate' }
+
+        it 'sends lead with ultimate plan_id' do
+          expect_next_instance_of(GitlabSubscriptions::CreateHandRaiseLeadService) do |service|
+            expect(service).to receive(:execute).with(
+              hash_including(plan_id: 'ultimate-plan-id')
+            )
+          end
+
+          worker.perform(user.id, namespace.id, product_interaction, previous_plan_name)
+        end
+      end
+
+      context 'when FetchSubscriptionPlansService returns nil' do
+        before do
+          allow_next_instance_of(GitlabSubscriptions::FetchSubscriptionPlansService) do |service|
+            allow(service).to receive(:execute).and_return(nil)
+          end
+        end
+
+        it 'sends lead with nil plan_id' do
+          expect_next_instance_of(GitlabSubscriptions::CreateHandRaiseLeadService) do |service|
+            expect(service).to receive(:execute).with(
+              hash_including(plan_id: nil)
+            )
+          end
+
+          worker.perform(user.id, namespace.id, product_interaction, previous_plan_name)
+        end
+      end
+
+      context 'when no matching plan code is found' do
+        let(:plans_data) do
+          [Hashie::Mash.new(id: 'other-plan-id', code: 'other')]
+        end
+
+        before do
+          allow_next_instance_of(GitlabSubscriptions::FetchSubscriptionPlansService) do |service|
+            allow(service).to receive(:execute).and_return(plans_data)
+          end
+        end
+
+        it 'sends lead with nil plan_id' do
+          expect_next_instance_of(GitlabSubscriptions::CreateHandRaiseLeadService) do |service|
+            expect(service).to receive(:execute).with(
+              hash_including(plan_id: nil)
+            )
+          end
+
+          worker.perform(user.id, namespace.id, product_interaction, previous_plan_name)
+        end
+      end
     end
   end
 
   it_behaves_like 'an idempotent worker' do
     let(:job_args) { [user.id, namespace.id, product_interaction, previous_plan_name] }
+    let(:plans_data) do
+      [
+        Hashie::Mash.new(id: 'premium-plan-id', code: 'premium'),
+        Hashie::Mash.new(id: 'ultimate-plan-id', code: 'ultimate')
+      ]
+    end
 
     before do
+      allow_next_instance_of(GitlabSubscriptions::FetchSubscriptionPlansService) do |service|
+        allow(service).to receive(:execute).and_return(plans_data)
+      end
       allow_next_instance_of(GitlabSubscriptions::CreateHandRaiseLeadService) do |service|
         allow(service).to receive(:execute).and_return(ServiceResponse.success)
       end
