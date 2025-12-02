@@ -13,14 +13,15 @@ module Ai
         data_consistency :sticky
         urgency :low
         idempotent!
-        defer_on_database_health_signal :gitlab_main, [:p_ai_active_context_code_enabled_namespaces], 10.minutes
+        defer_on_database_health_signal :gitlab_main,
+          [:p_ai_active_context_code_enabled_namespaces, :gitlab_subscriptions],
+          10.minutes
 
         BATCH_SIZE = 1000
 
         def handle_event(_)
-          return false if ::Gitlab::Saas.feature_available?(:duo_chat_on_saas)
-          return false unless ::Ai::ActiveContext::Collections::Code.indexing?
           return false unless eligible_instance?
+          return false unless ::Ai::ActiveContext::Collections::Code.indexing?
 
           process_in_batches!
         end
@@ -28,8 +29,10 @@ module Ai
         private
 
         def eligible_instance?
-          return false unless ::License.ai_features_available?
+          return true if gitlab_com
+
           return false unless ::Gitlab::CurrentSettings.instance_level_ai_beta_features_enabled?
+          return false unless ::License.ai_features_available?
 
           true
         end
@@ -38,10 +41,19 @@ module Ai
           total_count = 0
 
           Namespace.group_namespaces.top_level.each_batch(of: BATCH_SIZE) do |batch|
-            namespace_ids = batch.pluck_primary_key
-            records_to_insert = collect_eligible_namespaces(namespace_ids)
+            namespace_ids = if gitlab_com
+                              filter_eligible_namespace_ids(batch).pluck_primary_key
+                            else
+                              batch.pluck_primary_key
+                            end
 
-            next if records_to_insert.empty?
+            eligible_namespace_ids = namespace_ids - existing_namespace_ids(namespace_ids)
+
+            next if eligible_namespace_ids.empty?
+
+            records_to_insert = eligible_namespace_ids.map do |namespace_id|
+              { namespace_id: namespace_id, connection_id: active_connection.id, state: 'ready' }
+            end
 
             Ai::ActiveContext::Code::EnabledNamespace.insert_all(
               records_to_insert,
@@ -50,21 +62,25 @@ module Ai
 
             total_count += records_to_insert.size
 
-            break if total_count >= BATCH_SIZE
+            if total_count >= BATCH_SIZE
+              reemit_event
+              break
+            end
           end
 
           log_extra_metadata_on_done(:enabled_namespaces_created, total_count)
         end
 
-        def collect_eligible_namespaces(namespace_ids)
-          return [] if namespace_ids.empty?
+        def reemit_event
+          Gitlab::EventStore.publish(CreateEnabledNamespaceEvent.new(data: {}))
+        end
 
-          eligible_namespace_ids = namespace_ids - existing_namespace_ids(namespace_ids)
-          return [] if eligible_namespace_ids.empty?
-
-          eligible_namespace_ids.map do |namespace_id|
-            { namespace_id: namespace_id, connection_id: active_connection.id, state: 'ready' }
-          end
+        def filter_eligible_namespace_ids(namespace_batch)
+          Namespace
+            .id_in(namespace_batch.pluck_primary_key)
+            .namespace_settings_with_ai_features_enabled
+            .with_ai_supported_plan
+            .merge(GitlabSubscription.not_expired)
         end
 
         def existing_namespace_ids(namespace_ids)
@@ -75,6 +91,11 @@ module Ai
           Ai::ActiveContext::Connection.active
         end
         strong_memoize_attr :active_connection
+
+        def gitlab_com
+          ::Gitlab::Saas.feature_available?(:duo_chat_on_saas)
+        end
+        strong_memoize_attr :gitlab_com
       end
     end
   end
