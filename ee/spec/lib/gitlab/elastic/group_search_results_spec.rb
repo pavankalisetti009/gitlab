@@ -478,17 +478,6 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, feature_category: 
     include_examples 'calls Elasticsearch the expected number of times',
       scopes: (allowed_scopes - scopes_with_notes_query), scopes_with_multiple: scopes_with_notes_query
 
-    context 'when flags for searching notes of Notable items are false' do
-      before do
-        stub_feature_flags(search_merge_request_queries_notes: false)
-      end
-
-      scopes_with_notes_query = %w[issues]
-
-      include_examples 'calls Elasticsearch the expected number of times',
-        scopes: (allowed_scopes - scopes_with_notes_query), scopes_with_multiple: scopes_with_notes_query
-    end
-
     allowed_scopes_and_index_names = [
       %W[projects #{Project.index_name}],
       %W[notes #{Note.index_name}],
