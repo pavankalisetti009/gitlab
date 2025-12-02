@@ -3,13 +3,13 @@
 
 require_relative 'child_pipeline_artifact_downloader'
 
-# Downloads E2E backend coverage artifacts from a child pipeline
+# Downloads E2E frontend coverage artifacts from a child pipeline
 # triggered by the e2e:test-on-gdk job.
 if __FILE__ == $PROGRAM_NAME
   downloader = ChildPipelineArtifactDownloader.new(
     bridge_name: 'e2e:test-on-gdk',
-    job_name: 'process-backend-coverage',
-    coverage_type: 'backend'
+    job_name: 'process-frontend-coverage',
+    coverage_type: 'frontend'
   )
 
   begin
