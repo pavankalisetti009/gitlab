@@ -8,6 +8,7 @@ RSpec.describe 'layouts/_page', feature_category: :global_search do
 
   describe 'EE tanuki_bot_chat' do
     before do
+      skip 'Test not applicable in new UI' if Users::ProjectStudio.enabled_for_user?(user)
       assign(:project, project)
       allow(view).to receive(:current_user).and_return(user)
       allow(view).to receive(:current_user_mode).and_return(Gitlab::Auth::CurrentUserMode.new(user))

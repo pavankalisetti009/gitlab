@@ -33,22 +33,12 @@ RSpec.describe 'Duo Chat > User navigates Duo Chat history', :js, :saas, :with_c
     allow(user).to receive(:can?).and_call_original
 
     sign_in(user)
-
-    stub_feature_flags(paneled_view: true)
-    user.update!(new_ui_enabled: true)
+    skip 'Test not applicable in classic UI' unless Users::ProjectStudio.enabled_for_user?(user) # rubocop:disable RSpec/AvoidConditionalStatements -- temporary Project Studio rollout
 
     visit project_path(project)
     dismiss_welcome_banner_if_present(page)
-
-    # rubocop:disable RSpec/AvoidConditionalStatements -- temporary Project Studio rollout
-    if Users::ProjectStudio.enabled_for_user?(user)
-      open_duo_chat
-      close_popover
-    else
-      close_popover
-      open_duo_chat
-    end
-    # rubocop:enable RSpec/AvoidConditionalStatements
+    open_duo_chat
+    close_popover
   end
 
   context 'when Chat History button is clicked' do
