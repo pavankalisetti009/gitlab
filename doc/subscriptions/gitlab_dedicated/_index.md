@@ -310,7 +310,7 @@ In GitLab Dedicated:
 - Features enabled by default are available.
 - Features disabled by default are not available and cannot be enabled.
 
-When a feature becomes generally available, it's available in the same version 
+When a feature becomes generally available, it's available in the same version
 following the [release schedule](maintenance.md) for deployments.
 
 ### GitLab Pages
