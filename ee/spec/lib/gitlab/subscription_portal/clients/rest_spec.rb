@@ -435,6 +435,70 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Rest, feature_category: :sub
               "Either root_namespace_id or unique_instance_id is required")
         end
       end
+
+      describe 'url' do
+        let(:expected_url) { "#{::Gitlab::Routing.url_helpers.subscription_portal_url}/#{route_path}" }
+        let(:response) { Net::HTTPSuccess.new(1.0, '201', 'OK') }
+
+        before do
+          allow(Gitlab::HTTP).to receive(http_method).and_return(gitlab_http_response)
+          stub_feature_flags(use_mock_dot_api_for_usage_quota: false)
+        end
+
+        it 'uses SUBSCRIPTION_PORTAL_URL' do
+          verify_usage_quota_request
+          expect(Gitlab::HTTP).to have_received(http_method).with(expected_url, anything)
+        end
+
+        context 'when in development mode' do
+          before do
+            stub_rails_env('development')
+          end
+
+          it 'uses SUBSCRIPTION_PORTAL_URL' do
+            verify_usage_quota_request
+            expect(Gitlab::HTTP).to have_received(http_method).with(expected_url, anything)
+          end
+        end
+
+        context 'when feature flag is set' do
+          before do
+            stub_feature_flags(use_mock_dot_api_for_usage_quota: true)
+          end
+
+          it 'uses SUBSCRIPTION_PORTAL_URL' do
+            verify_usage_quota_request
+            expect(Gitlab::HTTP).to have_received(http_method).with(expected_url, anything)
+          end
+        end
+
+        context 'when in development mode and feature flag is set' do
+          before do
+            stub_feature_flags(use_mock_dot_api_for_usage_quota: true)
+            stub_rails_env('development')
+          end
+
+          let(:expected_url) { "http://localhost:4567/#{route_path}" }
+
+          it 'uses mock server url' do
+            verify_usage_quota_request
+            expect(Gitlab::HTTP).to have_received(http_method).with(expected_url, anything)
+          end
+
+          context 'when env variable is set' do
+            before do
+              stub_env('MOCK_CUSTOMER_DOT_PORTAL_SERVER_URL', 'http://another-url.com')
+            end
+
+            let(:expected_url) { "http://another-url.com/#{route_path}" }
+
+            it 'uses env mock server url' do
+              verify_usage_quota_request
+              expect(Gitlab::HTTP).to have_received(http_method).with(expected_url, anything)
+            end
+          end
+        end
+      end
     end
   end
 end
