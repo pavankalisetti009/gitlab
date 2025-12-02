@@ -298,8 +298,8 @@ Prerequisites:
 1. Mention, assign, or request a review from the flow service account user.
    For example:
 
-   ```markdown
-   @service-account-username can you help analyze this code change?
+   ```plaintext
+   @service-account-username Can you help analyze this code change?
    ```
 
 1. After the external agent has completed the task, you see a confirmation, and either a
