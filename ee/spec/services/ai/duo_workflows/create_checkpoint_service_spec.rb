@@ -55,5 +55,68 @@ RSpec.describe ::Ai::DuoWorkflows::CreateCheckpointService, feature_category: :d
         expect(GraphqlTriggers).not_to have_received(:workflow_events_updated).with(execute[:checkpoint])
       end
     end
+
+    describe 'setting goal when first checkpoint' do
+      let(:goal) { 'Hello, World!' }
+      let(:checkpoint) do
+        {
+          "channel_values" => {
+            "__start__" => {
+              "goal" => goal
+            }
+          }
+        }
+      end
+
+      let(:params) { { thread_ts: thread_ts, parent_ts: parent_ts, checkpoint: checkpoint, metadata: metadata } }
+
+      context 'when first checkpoint' do
+        it 'updates the workflows goal to be new goal' do
+          expect { execute }.to change { workflow.reload.goal }.to('Hello, World!')
+        end
+
+        context 'when goal is nil' do
+          let(:goal) { nil }
+
+          it 'does not update the workflows goal' do
+            expect { execute }.to not_change { workflow.reload.goal }
+          end
+        end
+
+        context 'when goal is blank' do
+          let(:goal) { '' }
+
+          it 'does not update the workflows goal' do
+            expect { execute }.to not_change { workflow.reload.goal }
+          end
+        end
+
+        context 'when goal field is not present' do
+          let(:checkpoint) do
+            {
+              "channel_values" => {
+                "__start__" => {
+                  "another_goal" => goal
+                }
+              }
+            }
+          end
+
+          it 'does not update the workflows goal' do
+            expect { execute }.to not_change { workflow.reload.goal }
+          end
+        end
+      end
+
+      context 'when not first checkpoint' do
+        let!(:existing_checkpoint) do
+          create(:duo_workflows_checkpoint, workflow: workflow)
+        end
+
+        it 'does not update the workflows goal' do
+          expect { execute }.to not_change { workflow.reload.goal }
+        end
+      end
+    end
   end
 end
