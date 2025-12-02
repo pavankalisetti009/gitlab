@@ -126,37 +126,4 @@ RSpec.describe Gitlab::EventStore, feature_category: :shared do
       end
     end
   end
-
-  describe 'active context code subscriptions' do
-    let(:subscriptions) { described_class.instance.subscriptions }
-    let(:event) { Ai::ActiveContext::Code::CreateEnabledNamespaceEvent.new(data: {}) }
-
-    describe 'CreateEnabledNamespaceEventWorker subscription' do
-      let(:subscription) do
-        subscriptions[Ai::ActiveContext::Code::CreateEnabledNamespaceEvent].find do |sub|
-          sub.worker == ::Ai::ActiveContext::Code::CreateEnabledNamespaceEventWorker
-        end
-      end
-
-      context 'when feature flag is enabled' do
-        before do
-          stub_feature_flags(active_context_code_event_create_enabled_namespaces: true)
-        end
-
-        it 'processes the event' do
-          expect(subscription.condition.call(event)).to be true
-        end
-      end
-
-      context 'when feature flag is disabled' do
-        before do
-          stub_feature_flags(active_context_code_event_create_enabled_namespaces: false)
-        end
-
-        it 'does not process the event' do
-          expect(subscription.condition.call(event)).to be false
-        end
-      end
-    end
-  end
 end
