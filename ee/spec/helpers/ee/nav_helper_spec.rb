@@ -32,6 +32,10 @@ RSpec.describe EE::NavHelper, feature_category: :navigation do
   end
 
   describe '#top_bar_duo_button_enabled?' do
+    before do
+      skip 'Test not applicable in new UI' if Users::ProjectStudio.enabled_for_user?(user)
+    end
+
     context 'when TanukiBot.show_breadcrumbs_entry_point? returns true' do
       before do
         allow(::Gitlab::Llm::TanukiBot).to receive(:show_breadcrumbs_entry_point?).with(user: user).and_return(true)
