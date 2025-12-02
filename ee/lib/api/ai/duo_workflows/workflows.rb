@@ -334,7 +334,10 @@ module API
 
               gitlab_token = gitlab_oauth_token.plaintext_token
               mcp_config_service = ::Ai::DuoWorkflows::McpConfigService.new(current_user, gitlab_token)
-              grpc_headers = Gitlab::DuoWorkflow::Client.cloud_connector_headers(user: current_user).merge(
+              grpc_headers = Gitlab::DuoWorkflow::Client.cloud_connector_headers(
+                user: current_user,
+                feature_setting: feature_setting
+              ).merge(
                 'x-gitlab-oauth-token' => gitlab_token,
                 'x-gitlab-unidirectional-streaming' => 'enabled',
                 'x-gitlab-enabled-mcp-server-tools' => mcp_config_service.gitlab_enabled_tools.join(','),

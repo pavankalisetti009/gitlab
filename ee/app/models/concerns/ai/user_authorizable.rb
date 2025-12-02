@@ -125,7 +125,7 @@ module Ai
         allowed_to_use(...).namespace_ids
       end
 
-      def allowed_to_use(ai_feature, unit_primitive_name: nil, licensed_feature: :ai_features)
+      def allowed_to_use(ai_feature, unit_primitive_name: nil, licensed_feature: :ai_features, feature_setting: nil)
         amazon_q_response = check_amazon_q_feature(ai_feature)
         return amazon_q_response if amazon_q_response
 
@@ -133,7 +133,7 @@ module Ai
         feature_data = Gitlab::Llm::Utils::AiFeaturesCatalogue.search_by_name(ai_feature)
         return denied_response unless feature_data
 
-        unit_primitive = get_unit_primitive_model(unit_primitive_name || ai_feature)
+        unit_primitive = get_unit_primitive_model(unit_primitive_name || ai_feature, feature_setting: feature_setting)
         return denied_response unless unit_primitive
 
         # Access through Duo Pro and Duo Enterprise
@@ -153,15 +153,12 @@ module Ai
 
       private
 
-      def unit_primitive_is_self_hosted?(unit_primitive_name)
-        return false if ::Gitlab::Saas.feature_available?(:cloud_connector_static_catalog)
+      def get_unit_primitive_model(unit_primitive_name, feature_setting: nil)
+        unless ::Gitlab::Saas.feature_available?(:cloud_connector_static_catalog)
+          feature_setting ||= ::Ai::FeatureSetting.feature_for_unit_primitive(unit_primitive_name)
 
-        ::Ai::FeatureSetting.feature_for_unit_primitive(unit_primitive_name)&.self_hosted?
-      end
-
-      def get_unit_primitive_model(unit_primitive_name)
-        # Override unit_primitive_name for self-hosted models.
-        unit_primitive_name = :self_hosted_models if unit_primitive_is_self_hosted?(unit_primitive_name)
+          unit_primitive_name = :self_hosted_models if feature_setting&.self_hosted?
+        end
 
         Gitlab::CloudConnector::DataModel::UnitPrimitive.find_by_name(unit_primitive_name)
       end

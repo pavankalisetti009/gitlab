@@ -327,7 +327,7 @@ RSpec.describe Gitlab::AiGateway, feature_category: :system_access do
         .with(unit_primitive: unit_primitive_name, resource: user)
         .and_return(token)
       allow(user).to receive(:allowed_to_use)
-        .with(ai_feature, unit_primitive_name: unit_primitive_name)
+        .with(ai_feature, unit_primitive_name: unit_primitive_name, feature_setting: nil)
         .and_return(auth_response)
       allow(::CloudConnector).to(
         receive(:ai_headers).with(user, namespace_ids: namespace_ids).and_return(cloud_connector_headers)
@@ -424,9 +424,11 @@ RSpec.describe Gitlab::AiGateway, feature_category: :system_access do
     let(:ai_headers) { { 'x-gitlab-feature-enabled-by-namespace-ids' => '' } }
     let(:standard_context) { instance_double(::Gitlab::Tracking::StandardContext) }
     let(:is_team_member) { false }
+    let(:feature_setting) { nil }
 
     subject(:public_headers) do
-      described_class.public_headers(user: user, ai_feature_name: ai_feature, unit_primitive_name: unit_primitive_name)
+      described_class.public_headers(user: user, ai_feature_name: ai_feature, unit_primitive_name: unit_primitive_name,
+        feature_setting: feature_setting)
     end
 
     before do
@@ -435,7 +437,7 @@ RSpec.describe Gitlab::AiGateway, feature_category: :system_access do
       end
 
       allow(user).to receive(:allowed_to_use)
-        .with(ai_feature, unit_primitive_name: unit_primitive_name)
+        .with(ai_feature, unit_primitive_name: unit_primitive_name, feature_setting: nil)
         .and_return(auth_response)
 
       allow(described_class).to receive(:enabled_feature_flags)
@@ -506,6 +508,19 @@ RSpec.describe Gitlab::AiGateway, feature_category: :system_access do
         }
 
         expect(public_headers).to eq(expected_headers)
+      end
+    end
+
+    context 'when feature_setting is provided' do
+      let_it_be(:model) { create(:ai_self_hosted_model, model: :claude_3, identifier: 'claude-3-7-sonnet-20250219') }
+      let_it_be(:feature_setting) { create(:ai_feature_setting, feature: :code_generations, self_hosted_model: model) }
+
+      it 'passes feature_setting to user.allowed_to_use' do
+        expect(user).to receive(:allowed_to_use)
+          .with(ai_feature, unit_primitive_name: unit_primitive_name, feature_setting: feature_setting)
+          .and_return(auth_response)
+
+        public_headers
       end
     end
   end
