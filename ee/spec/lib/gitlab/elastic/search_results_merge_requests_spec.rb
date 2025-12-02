@@ -130,17 +130,6 @@ RSpec.describe Gitlab::Elastic::SearchResults, 'merge_requests', feature_categor
         expect(merge_requests).to contain_exactly(merge_request)
         expect(results.merge_requests_count).to eq 1
       end
-
-      context 'when search_merge_request_queries_notes is false' do
-        before do
-          stub_feature_flags(search_merge_request_queries_notes: false)
-        end
-
-        it 'does not return the merge request when searching with note text' do
-          expect(merge_requests).to be_empty
-          expect(results.merge_requests_count).to eq 0
-        end
-      end
     end
 
     describe 'filtering' do
