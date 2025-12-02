@@ -185,7 +185,9 @@ export default {
     },
     disableConfirmMessage() {
       if (this.isProjectNamespace) {
-        return s__('AICatalog|Are you sure you want to disable flow %{name}?');
+        return s__(
+          'AICatalog|Are you sure you want to disable flow %{name}? The flow, its service account, and any associated triggers will no longer work in this project.',
+        );
       }
 
       return s__(

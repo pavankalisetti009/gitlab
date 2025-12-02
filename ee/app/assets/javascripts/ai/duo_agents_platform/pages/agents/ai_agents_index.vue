@@ -188,7 +188,7 @@ export default {
     },
     disableConfirmMessageProject() {
       return s__(
-        'AICatalog|Are you sure you want to disable agent %{name}? The agent and any associated flows, triggers, and service accounts will no longer work in this project.',
+        'AICatalog|Are you sure you want to disable agent %{name}? The agent will no longer work in this project.',
       );
     },
     emptyStateTitle() {
