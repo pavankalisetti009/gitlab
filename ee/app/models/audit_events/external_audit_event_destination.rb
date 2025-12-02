@@ -22,6 +22,9 @@ module AuditEvents
     validate :root_level_group?
     validates :name, uniqueness: { scope: :namespace_id }
     validates :destination_url, uniqueness: { scope: :namespace_id }, length: { maximum: 255 }
+    validates :verification_token,
+      uniqueness: { scope: :namespace_id },
+      allow_nil: true
 
     def allowed_to_stream?(audit_event_type, audit_event)
       return false unless entity_allowed_to_stream?(audit_event)
