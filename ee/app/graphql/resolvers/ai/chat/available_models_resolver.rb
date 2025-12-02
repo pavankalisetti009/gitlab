@@ -41,8 +41,12 @@ module Resolvers
           # so let's return an empty result if it's not present
           return empty_result unless feature_setting.present?
 
-          decorated = ::Gitlab::Graphql::Representation::ModelSelection::FeatureSetting
-                        .decorate([feature_setting].compact, model_definitions: model_definitions)
+          decorated = ::Gitlab::Graphql::Representation::ModelSelection::FeatureSetting.decorate(
+            [feature_setting].compact,
+            model_definitions: model_definitions,
+            current_user: current_user,
+            group_id: namespace&.id
+          )
 
           decorator_result = decorated.find do |object|
             object.feature_setting&.feature&.to_sym == feature_setting.feature.to_sym
