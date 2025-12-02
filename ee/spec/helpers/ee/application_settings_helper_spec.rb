@@ -90,6 +90,8 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
     %i[
       secret_push_protection_available
       virtual_registries_endpoints_api_limit
+      dependency_scanning_sbom_scan_api_upload_limit
+      dependency_scanning_sbom_scan_api_download_limit
       disable_invite_members
     ].each do |setting|
       it "contains #{setting}" do

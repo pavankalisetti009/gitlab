@@ -7,6 +7,7 @@ RSpec.describe 'Admin updates EE-only settings', :with_current_organization, fea
   include ListboxHelpers
 
   let_it_be(:admin) { create(:admin) }
+  let_it_be(:default_organization) { Organizations::Organization.default_organization }
 
   before do
     stub_env('IN_MEMORY_APPLICATION_SETTINGS', 'false')
@@ -400,6 +401,44 @@ RSpec.describe 'Admin updates EE-only settings', :with_current_organization, fea
 
       it 'does not display the virtual registry settings' do
         expect(page).not_to have_selector('[data-testid="virtual-registries-form"]')
+      end
+    end
+  end
+
+  context 'with dependency scanning settings', feature_category: :software_composition_analysis do
+    context 'when dependency_scanning feature is enabled' do
+      before do
+        stub_licensed_features(dependency_scanning: true)
+        visit security_and_compliance_admin_application_settings_path
+      end
+
+      it 'allows you to change the dependency_scanning_sbom_scan_api_upload_limit setting' do
+        within_testid('admin-dependency-scanning-settings') do
+          fill_in 'application_setting[dependency_scanning_sbom_scan_api_upload_limit]', with: 500
+          click_button 'Save'
+        end
+
+        expect(current_settings.dependency_scanning_sbom_scan_api_upload_limit).to be 500
+      end
+
+      it 'allows you to change the dependency_scanning_sbom_scan_api_download_limit setting' do
+        within_testid('admin-dependency-scanning-settings') do
+          fill_in 'application_setting[dependency_scanning_sbom_scan_api_download_limit]', with: 500
+          click_button 'Save'
+        end
+
+        expect(current_settings.dependency_scanning_sbom_scan_api_download_limit).to be 500
+      end
+    end
+
+    context 'when dependency_scanning feature is disabled' do
+      before do
+        stub_licensed_features(dependency_scanning: false)
+        visit security_and_compliance_admin_application_settings_path
+      end
+
+      it 'does not display the dependency scanning settings' do
+        expect(page).not_to have_selector('[data-testid="admin-dependency-scanning-settings"]')
       end
     end
   end

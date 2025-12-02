@@ -255,6 +255,8 @@ module EE
 
       validates :dashboard_limit,
         :repository_size_limit,
+        :dependency_scanning_sbom_scan_api_upload_limit,
+        :dependency_scanning_sbom_scan_api_download_limit,
         :elasticsearch_indexed_field_length_limit,
         :elasticsearch_client_request_timeout,
         :virtual_registries_endpoints_api_limit,
@@ -456,6 +458,8 @@ module EE
       override :rate_limits_definition
       def rate_limits_definition
         super.merge(
+          dependency_scanning_sbom_scan_api_upload_limit: [:integer, { default: 400 }],
+          dependency_scanning_sbom_scan_api_download_limit: [:integer, { default: 6000 }],
           virtual_registries_endpoints_api_limit: [:integer, { default: 1000 }]
         )
       end
