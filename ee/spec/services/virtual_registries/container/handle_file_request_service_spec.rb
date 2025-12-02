@@ -22,6 +22,7 @@ RSpec.describe VirtualRegistries::Container::HandleFileRequestService, :aggregat
       end
 
       it 'returns a success service response' do
+        event_data = event_data_from(action)
         expect(service).to receive(:can?).and_call_original
 
         if action == :download_file
@@ -29,6 +30,11 @@ RSpec.describe VirtualRegistries::Container::HandleFileRequestService, :aggregat
             expect(expected_cache_entry).to receive(:bump_downloads_count)
           end
         end
+
+        expect { execute }
+          .to trigger_internal_events('pull_container_file_through_virtual_registry')
+          .with(**event_data[:args])
+          .and increment_usage_metrics(event_data[:metric_key])
 
         is_expected.to be_success.and have_attributes(payload: a_hash_including(action:))
 
@@ -45,6 +51,16 @@ RSpec.describe VirtualRegistries::Container::HandleFileRequestService, :aggregat
             file_sha1: an_instance_of(String)
           )
         end
+      end
+
+      def event_data_from(action)
+        event_label = action == :workhorse_upload_url ? 'from_upstream' : 'from_cache'
+        metric_key = "counts.count_total_pull_container_file_through_virtual_registry_#{event_label}"
+
+        args = { namespace: registry.group, additional_properties: { label: event_label } }
+        args[:user] = user if user.is_a?(User)
+
+        { args:, metric_key: }
       end
     end
 
