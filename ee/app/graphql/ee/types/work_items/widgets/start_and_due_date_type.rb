@@ -12,6 +12,7 @@ module EE
               ::GraphQL::Types::Boolean,
               method: :fixed?,
               null: false,
+              scopes: [:api, :read_api, :ai_workflows],
               description: 'Indicates if the work item is using fixed dates.'
 
             field :start_date_sourcing_work_item,

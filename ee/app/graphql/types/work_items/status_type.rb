@@ -8,6 +8,10 @@ module Types
       graphql_name 'WorkItemStatus'
       description 'Represents status'
 
+      def self.authorization_scopes
+        super + [:ai_workflows]
+      end
+
       field :id, Types::GlobalIDType,
         null: true,
         experiment: { milestone: '17.11' },
@@ -15,6 +19,7 @@ module Types
 
       field :name, GraphQL::Types::String,
         null: true,
+        scopes: [:api, :read_api, :ai_workflows],
         experiment: { milestone: '17.11' },
         description: 'Name of the status.'
 

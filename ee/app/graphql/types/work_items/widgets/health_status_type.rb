@@ -10,9 +10,13 @@ module Types
 
         implements ::Types::WorkItems::WidgetInterface
 
+        def self.authorization_scopes
+          super + [:ai_workflows]
+        end
+
         field :health_status,
           ::Types::HealthStatusEnum,
-          null: true,
+          null: true, scopes: [:api, :read_api, :ai_workflows],
           description: 'Health status of the work item.'
 
         field :rolled_up_health_status, [::Types::WorkItems::Widgets::HealthStatusCountType],
