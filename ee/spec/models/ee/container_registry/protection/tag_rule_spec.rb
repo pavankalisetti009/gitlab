@@ -152,6 +152,34 @@ RSpec.describe ContainerRegistry::Protection::TagRule, type: :model, feature_cat
     end
   end
 
+  describe '#type' do
+    subject { rule.type }
+
+    context 'when the rule is immutable' do
+      let(:rule) do
+        build(
+          :container_registry_protection_tag_rule,
+          minimum_access_level_for_push: nil,
+          minimum_access_level_for_delete: nil
+        )
+      end
+
+      it { is_expected.to eq('immutable') }
+    end
+
+    context 'when the rule is mutable' do
+      let(:rule) do
+        build(
+          :container_registry_protection_tag_rule,
+          minimum_access_level_for_push: ::Gitlab::Access::OWNER,
+          minimum_access_level_for_delete: ::Gitlab::Access::OWNER
+        )
+      end
+
+      it { is_expected.to eq('mutable') }
+    end
+  end
+
   describe '#push_restricted?' do
     subject { rule.push_restricted?(user_access_level) }
 
