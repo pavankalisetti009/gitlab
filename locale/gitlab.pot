@@ -10623,9 +10623,6 @@ msgstr ""
 msgid "BetaBadge|Are supported on a commercially-reasonable effort basis."
 msgstr ""
 
-msgid "BetaBadge|Beta"
-msgstr ""
-
 msgid "BetaBadge|Beta features:"
 msgstr ""
 
