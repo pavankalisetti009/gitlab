@@ -7,7 +7,6 @@ import * as CEMountSidebar from '~/sidebar/mount_sidebar';
 import { pinia } from '~/pinia/instance';
 import CveIdRequest from './components/cve_id_request/cve_id_request.vue';
 import SidebarIterationWidget from './components/iteration/sidebar_iteration_widget.vue';
-import SidebarDropdownWidget from './components/sidebar_dropdown_widget.vue';
 import SidebarHealthStatusWidget from './components/health_status/sidebar_health_status_widget.vue';
 import SidebarWeightWidget from './components/weight/sidebar_weight_widget.vue';
 import SidebarEscalationPolicy from './components/incidents/sidebar_escalation_policy.vue';
@@ -91,38 +90,6 @@ function mountSidebarCveIdRequest() {
   });
 }
 
-function mountSidebarEpicWidget() {
-  const el = document.querySelector('.js-sidebar-epic-widget-root');
-  const workItemEpics = window.gon?.features?.workItemEpics;
-
-  if (!el) {
-    return null;
-  }
-
-  const { groupPath, canEdit, projectPath, issueIid, issueId } = el.dataset;
-  return new Vue({
-    el,
-    name: 'SidebarEpicWidgetRoot',
-    apolloProvider,
-    provide: {
-      canUpdate: parseBoolean(canEdit),
-      isClassicSidebar: true,
-    },
-    render: (createElement) =>
-      createElement(SidebarDropdownWidget, {
-        props: {
-          attrWorkspacePath: groupPath,
-          workspacePath: projectPath,
-          iid: issueIid,
-          issueId,
-          issuableType: TYPE_ISSUE,
-          issuableAttribute: IssuableAttributeType.Epic,
-          showWorkItemEpics: workItemEpics,
-        },
-      }),
-  });
-}
-
 function mountSidebarIterationWidget() {
   const el = document.querySelector('.js-sidebar-iteration-widget-root');
 
@@ -189,7 +156,6 @@ export function mountSidebar(mediator) {
   CEMountSidebar.mountSidebar(mediator);
   mountSidebarWeightWidget();
   mountSidebarHealthStatusWidget();
-  mountSidebarEpicWidget();
   mountSidebarIterationWidget();
   mountSidebarEscalationPolicy();
   mountSidebarCveIdRequest();
