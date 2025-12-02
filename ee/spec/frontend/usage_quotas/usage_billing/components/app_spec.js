@@ -9,6 +9,7 @@ import getSubscriptionUsageQuery from 'ee/usage_quotas/usage_billing/graphql/get
 import createMockApollo from 'helpers/mock_apollo_helper';
 import UsageBillingApp from 'ee/usage_quotas/usage_billing/components/app.vue';
 import UsageByUserTab from 'ee/usage_quotas/usage_billing/components/usage_by_user_tab.vue';
+import UsageTrendsChart from 'ee/usage_quotas/usage_billing/components/usage_trends_chart.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { logError } from '~/lib/logger';
@@ -51,6 +52,7 @@ describe('UsageBillingApp', () => {
   const findAlert = () => wrapper.findComponent(GlAlert);
   const findSkeletonLoaders = () => wrapper.findByTestId('skeleton-loaders');
   const findUsageByUserTab = () => wrapper.findComponent(UsageByUserTab);
+  const findUsageTrendsChart = () => wrapper.findComponent(UsageTrendsChart);
   const findPageHeading = () => wrapper.findComponent(PageHeading);
   const findOutdatedClientAlert = () => wrapper.findByTestId('outdated-client-alert');
   const findDisabledStateAlert = () => wrapper.findByTestId('usage-billing-disabled-alert');
@@ -193,17 +195,17 @@ describe('UsageBillingApp', () => {
 
   describe('summary cards visibility', () => {
     describe.each`
-      scenario                                                      | currentUsageCard | monthlyWaiverCard | currentOverageUsageCard | monthlyCommitment                        | monthlyWaiver                              | overage
-      ${'monthly commitment'}                                       | ${true}          | ${false}          | ${false}                | ${{ creditsUsed: 10, totalCredits: 24 }} | ${null}                                    | ${{ isAllowed: false, creditsUsed: 0 }}
-      ${'monthly commitment with monthly waiver'}                   | ${true}          | ${true}           | ${false}                | ${{ creditsUsed: 10, totalCredits: 24 }} | ${{ creditsUsed: 50, totalCredits: 100 }}  | ${{ isAllowed: false, creditsUsed: 0 }}
-      ${'monthly commitment with monthly waiver and empty overage'} | ${true}          | ${true}           | ${false}                | ${{ creditsUsed: 10, totalCredits: 24 }} | ${{ creditsUsed: 50, totalCredits: 100 }}  | ${{ isAllowed: true, creditsUsed: 0 }}
-      ${'monthly commitment with monthly waiver and overage'}       | ${true}          | ${false}          | ${true}                 | ${{ creditsUsed: 10, totalCredits: 24 }} | ${{ creditsUsed: 100, totalCredits: 100 }} | ${{ isAllowed: true, creditsUsed: 100 }}
-      ${'monthly commitment with overage'}                          | ${true}          | ${false}          | ${true}                 | ${{ creditsUsed: 10, totalCredits: 24 }} | ${null}                                    | ${{ isAllowed: true, creditsUsed: 100 }}
-      ${'no commitment no monthly waiver no overage'}               | ${false}         | ${false}          | ${false}                | ${null}                                  | ${null}                                    | ${{ isAllowed: false, creditsUsed: 0 }}
-      ${'monthly waiver'}                                           | ${false}         | ${true}           | ${false}                | ${null}                                  | ${{ creditsUsed: 50, totalCredits: 100 }}  | ${{ isAllowed: false, creditsUsed: 0 }}
-      ${'monthly waiver with empty overage'}                        | ${false}         | ${true}           | ${false}                | ${null}                                  | ${{ creditsUsed: 100, totalCredits: 100 }} | ${{ isAllowed: true, creditsUsed: 0 }}
-      ${'monthly waiver with overage'}                              | ${false}         | ${false}          | ${true}                 | ${null}                                  | ${{ creditsUsed: 100, totalCredits: 100 }} | ${{ isAllowed: true, creditsUsed: 100 }}
-      ${'overage'}                                                  | ${false}         | ${false}          | ${true}                 | ${null}                                  | ${null}                                    | ${{ isAllowed: true, creditsUsed: 100 }}
+      scenario                                                      | currentUsageCard | monthlyWaiverCard | currentOverageUsageCard | usageTrendsChart | monthlyCommitment                                        | monthlyWaiver                                              | overage
+      ${'monthly commitment'}                                       | ${true}          | ${false}          | ${false}                | ${true}          | ${{ creditsUsed: 10, totalCredits: 24, dailyUsage: [] }} | ${null}                                                    | ${{ isAllowed: false, creditsUsed: 0, dailyUsage: [] }}
+      ${'monthly commitment with monthly waiver'}                   | ${true}          | ${true}           | ${false}                | ${true}          | ${{ creditsUsed: 10, totalCredits: 24, dailyUsage: [] }} | ${{ creditsUsed: 50, totalCredits: 100, dailyUsage: [] }}  | ${{ isAllowed: false, creditsUsed: 0, dailyUsage: [] }}
+      ${'monthly commitment with monthly waiver and empty overage'} | ${true}          | ${true}           | ${false}                | ${true}          | ${{ creditsUsed: 10, totalCredits: 24, dailyUsage: [] }} | ${{ creditsUsed: 50, totalCredits: 100, dailyUsage: [] }}  | ${{ isAllowed: true, creditsUsed: 0, dailyUsage: [] }}
+      ${'monthly commitment with monthly waiver and overage'}       | ${true}          | ${false}          | ${true}                 | ${true}          | ${{ creditsUsed: 10, totalCredits: 24, dailyUsage: [] }} | ${{ creditsUsed: 100, totalCredits: 100, dailyUsage: [] }} | ${{ isAllowed: true, creditsUsed: 100, dailyUsage: [] }}
+      ${'monthly commitment with overage'}                          | ${true}          | ${false}          | ${true}                 | ${true}          | ${{ creditsUsed: 10, totalCredits: 24, dailyUsage: [] }} | ${null}                                                    | ${{ isAllowed: true, creditsUsed: 100, dailyUsage: [] }}
+      ${'no commitment no monthly waiver no overage'}               | ${false}         | ${false}          | ${false}                | ${false}         | ${null}                                                  | ${null}                                                    | ${{ isAllowed: false, creditsUsed: 0, dailyUsage: [] }}
+      ${'monthly waiver'}                                           | ${false}         | ${true}           | ${false}                | ${true}          | ${null}                                                  | ${{ creditsUsed: 50, totalCredits: 100, dailyUsage: [] }}  | ${{ isAllowed: false, creditsUsed: 0, dailyUsage: [] }}
+      ${'monthly waiver with empty overage'}                        | ${false}         | ${true}           | ${false}                | ${true}          | ${null}                                                  | ${{ creditsUsed: 100, totalCredits: 100, dailyUsage: [] }} | ${{ isAllowed: true, creditsUsed: 0, dailyUsage: [] }}
+      ${'monthly waiver with overage'}                              | ${false}         | ${false}          | ${true}                 | ${true}          | ${null}                                                  | ${{ creditsUsed: 100, totalCredits: 100, dailyUsage: [] }} | ${{ isAllowed: true, creditsUsed: 100, dailyUsage: [] }}
+      ${'overage'}                                                  | ${false}         | ${false}          | ${true}                 | ${true}          | ${null}                                                  | ${null}                                                    | ${{ isAllowed: true, creditsUsed: 100, dailyUsage: [] }}
     `(
       'scenario: $scenario',
       ({
@@ -213,6 +215,7 @@ describe('UsageBillingApp', () => {
         currentUsageCard,
         monthlyWaiverCard,
         currentOverageUsageCard,
+        usageTrendsChart,
       }) => {
         beforeEach(async () => {
           createComponent({
@@ -243,6 +246,10 @@ describe('UsageBillingApp', () => {
             currentOverageUsageCard,
           );
         });
+
+        it(`will switch UsageTrendsChart visibility: ${usageTrendsChart}`, () => {
+          expect(findUsageTrendsChart().exists()).toBe(usageTrendsChart);
+        });
       },
     );
   });
@@ -256,7 +263,7 @@ describe('UsageBillingApp', () => {
     it('renders current-usage-card', () => {
       expect(wrapper.findComponent(CurrentUsageCard).props()).toMatchObject({
         poolCreditsUsed: 50.333,
-        poolTotalCredits: 300,
+        poolTotalCredits: 100,
         monthEndDate: '2025-10-31',
       });
     });
@@ -276,8 +283,8 @@ describe('UsageBillingApp', () => {
 
     it('renders monthly-waiver-card', () => {
       expect(wrapper.findComponent(MonthlyWaiverCard).props()).toMatchObject({
-        monthlyWaiverTotalCredits: 1000,
-        monthlyWaiverCreditsUsed: 750,
+        monthlyWaiverTotalCredits: 100,
+        monthlyWaiverCreditsUsed: 75,
       });
     });
   });
@@ -295,8 +302,8 @@ describe('UsageBillingApp', () => {
     it('renders current-overage-usage-card', () => {
       expect(wrapper.findComponent(CurrentOverageUsageCard).exists()).toBe(true);
       expect(wrapper.findComponent(CurrentOverageUsageCard).props()).toMatchObject({
-        overageCreditsUsed: 100,
-        monthlyWaiverCreditsUsed: 1000,
+        overageCreditsUsed: 24,
+        monthlyWaiverCreditsUsed: 100,
       });
     });
   });
@@ -358,6 +365,37 @@ describe('UsageBillingApp', () => {
       const purchaseCommitmentCard = wrapper.findComponent(PurchaseCommitmentCard);
 
       expect(purchaseCommitmentCard.props('hasCommitment')).toBe(false);
+    });
+  });
+
+  describe('tabs', () => {
+    beforeEach(async () => {
+      createComponent();
+      await waitForPromises();
+    });
+
+    describe('UsageTrendsChart', () => {
+      it('passes correct props to UsageTrendsChart', () => {
+        expect(findUsageTrendsChart().exists()).toBe(true);
+        expect(findUsageTrendsChart().props()).toMatchObject({
+          monthStartDate: '2025-10-01',
+          monthEndDate: '2025-10-31',
+          monthlyCommitmentDailyUsage: [
+            { creditsUsed: 5, date: '2025-10-06' },
+            { creditsUsed: 12, date: '2025-10-07' },
+            { creditsUsed: 18, date: '2025-10-10' },
+            { creditsUsed: 15.333, date: '2025-10-11' },
+          ],
+          monthlyWaiverDailyUsage: [],
+          overageDailyUsage: [],
+        });
+      });
+    });
+
+    describe('UsageByUserTab', () => {
+      it('renders UsageByUserTab component', () => {
+        expect(findUsageByUserTab().exists()).toBe(true);
+      });
     });
   });
 
