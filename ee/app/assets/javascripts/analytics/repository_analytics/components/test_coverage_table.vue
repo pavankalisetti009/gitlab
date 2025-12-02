@@ -152,6 +152,10 @@ export default {
         return acc;
       }, {});
     },
+    resetAllProjects() {
+      this.allProjectsSelected = false;
+      this.selectedProjectIds = {};
+    },
     toggleProject(ids) {
       if (this.allProjectsSelected) {
         this.allProjectsSelected = false;
@@ -214,6 +218,7 @@ export default {
           placement="bottom-end"
           @projects-query-error="handleError"
           @select-all-projects="selectAllProjects"
+          @reset-all-projects="resetAllProjects"
           @select-project="toggleProject"
         />
         <download-test-coverage />

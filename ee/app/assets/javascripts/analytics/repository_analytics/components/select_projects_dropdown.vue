@@ -103,7 +103,7 @@ export default {
     },
     resetAllProjects() {
       this.selectedProjectsIds = [];
-      this.$emit('select-all-projects', []);
+      this.$emit('reset-all-projects', []);
     },
     handleError() {
       this.$emit('projects-query-error');

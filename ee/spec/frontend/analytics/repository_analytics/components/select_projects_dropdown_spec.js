@@ -75,6 +75,7 @@ describe('Select projects dropdown component', () => {
       await nextTick();
 
       expect(findDropdown().props('selected')).toEqual([]);
+      expect(wrapper.emitted('reset-all-projects')).toEqual([[[]]]);
     });
 
     it('should emit select-all-projects event', () => {
