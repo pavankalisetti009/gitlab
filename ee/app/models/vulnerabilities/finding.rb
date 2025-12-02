@@ -119,6 +119,8 @@ module Vulnerabilities
 
     has_one :finding_evidence, class_name: 'Vulnerabilities::Finding::Evidence', inverse_of: :finding, foreign_key: 'vulnerability_occurrence_id'
 
+    has_many :detection_transitions, class_name: 'Vulnerabilities::DetectionTransition', inverse_of: :finding, foreign_key: 'vulnerability_occurrence_id'
+
     has_many :security_findings,
       class_name: 'Security::Finding',
       primary_key: :uuid,
