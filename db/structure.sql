@@ -14794,7 +14794,8 @@ CREATE TABLE ci_pending_builds (
     tag_ids bigint[] DEFAULT '{}'::bigint[],
     namespace_traversal_ids bigint[] DEFAULT '{}'::bigint[],
     partition_id bigint NOT NULL,
-    plan_id bigint
+    plan_id bigint,
+    plan_name_uid smallint
 );
 
 CREATE SEQUENCE ci_pending_builds_id_seq
@@ -15259,6 +15260,7 @@ CREATE TABLE ci_runners (
     allowed_plans text[] DEFAULT '{}'::text[] NOT NULL,
     allowed_plan_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     organization_id bigint,
+    allowed_plan_name_uids smallint[] DEFAULT '{}'::smallint[] NOT NULL,
     CONSTRAINT check_030ad0773d CHECK ((char_length(token_encrypted) <= 512)),
     CONSTRAINT check_1f8618ab23 CHECK ((char_length(name) <= 256)),
     CONSTRAINT check_24b281f5bf CHECK ((char_length(maintainer_note) <= 1024)),
@@ -18233,6 +18235,7 @@ CREATE TABLE gitlab_subscription_histories (
     auto_renew boolean,
     trial_extension_type smallint,
     seats_in_use integer,
+    hosted_plan_name_uid smallint,
     CONSTRAINT check_6d5f27a106 CHECK ((namespace_id IS NOT NULL))
 );
 
@@ -18264,6 +18267,7 @@ CREATE TABLE gitlab_subscriptions (
     trial_extension_type smallint,
     max_seats_used_changed_at timestamp with time zone,
     last_seat_refresh_at timestamp with time zone,
+    hosted_plan_name_uid smallint,
     CONSTRAINT check_77fea3f0e7 CHECK ((namespace_id IS NOT NULL))
 );
 
@@ -18726,6 +18730,7 @@ CREATE TABLE group_type_ci_runners (
     allowed_plans text[] DEFAULT '{}'::text[] NOT NULL,
     allowed_plan_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     organization_id bigint,
+    allowed_plan_name_uids smallint[] DEFAULT '{}'::smallint[] NOT NULL,
     CONSTRAINT check_030ad0773d CHECK ((char_length(token_encrypted) <= 512)),
     CONSTRAINT check_1f8618ab23 CHECK ((char_length(name) <= 256)),
     CONSTRAINT check_24b281f5bf CHECK ((char_length(maintainer_note) <= 1024)),
@@ -19390,6 +19395,7 @@ CREATE TABLE instance_type_ci_runners (
     allowed_plans text[] DEFAULT '{}'::text[] NOT NULL,
     allowed_plan_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     organization_id bigint,
+    allowed_plan_name_uids smallint[] DEFAULT '{}'::smallint[] NOT NULL,
     CONSTRAINT check_030ad0773d CHECK ((char_length(token_encrypted) <= 512)),
     CONSTRAINT check_1f8618ab23 CHECK ((char_length(name) <= 256)),
     CONSTRAINT check_24b281f5bf CHECK ((char_length(maintainer_note) <= 1024)),
@@ -23834,7 +23840,8 @@ CREATE TABLE plan_limits (
     import_placeholder_user_limit_tier_4 integer DEFAULT 0 NOT NULL,
     ci_max_artifact_size_slsa_provenance_statement bigint DEFAULT 0 NOT NULL,
     cargo_max_file_size bigint DEFAULT '5368709120'::bigint NOT NULL,
-    ci_max_artifact_size_scip integer DEFAULT 200 NOT NULL
+    ci_max_artifact_size_scip integer DEFAULT 200 NOT NULL,
+    plan_name_uid smallint
 );
 
 CREATE SEQUENCE plan_limits_id_seq
@@ -25436,6 +25443,7 @@ CREATE TABLE project_type_ci_runners (
     allowed_plans text[] DEFAULT '{}'::text[] NOT NULL,
     allowed_plan_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     organization_id bigint,
+    allowed_plan_name_uids smallint[] DEFAULT '{}'::smallint[] NOT NULL,
     CONSTRAINT check_030ad0773d CHECK ((char_length(token_encrypted) <= 512)),
     CONSTRAINT check_1f8618ab23 CHECK ((char_length(name) <= 256)),
     CONSTRAINT check_24b281f5bf CHECK ((char_length(maintainer_note) <= 1024)),
@@ -40783,6 +40791,8 @@ CREATE UNIQUE INDEX index_ci_pending_builds_on_partition_id_build_id ON ci_pendi
 
 CREATE INDEX index_ci_pending_builds_on_plan_id ON ci_pending_builds USING btree (plan_id);
 
+CREATE INDEX index_ci_pending_builds_on_plan_name_uid ON ci_pending_builds USING btree (plan_name_uid);
+
 CREATE INDEX index_ci_pending_builds_on_project_id ON ci_pending_builds USING btree (project_id);
 
 CREATE INDEX index_ci_pending_builds_on_tag_ids ON ci_pending_builds USING btree (tag_ids) WHERE (cardinality(tag_ids) > 0);
@@ -41649,9 +41659,13 @@ CREATE INDEX index_gitlab_subscription_histories_on_end_date ON gitlab_subscript
 
 CREATE INDEX index_gitlab_subscription_histories_on_gitlab_subscription_id ON gitlab_subscription_histories USING btree (gitlab_subscription_id);
 
+CREATE INDEX index_gitlab_subscription_histories_on_hosted_plan_name_uid ON gitlab_subscription_histories USING btree (hosted_plan_name_uid);
+
 CREATE INDEX index_gitlab_subscriptions_on_end_date_and_namespace_id ON gitlab_subscriptions USING btree (end_date, namespace_id);
 
 CREATE INDEX index_gitlab_subscriptions_on_hosted_plan_id_and_trial ON gitlab_subscriptions USING btree (hosted_plan_id, trial);
+
+CREATE INDEX index_gitlab_subscriptions_on_hosted_plan_name_uid_and_trial ON gitlab_subscriptions USING btree (hosted_plan_name_uid, trial);
 
 CREATE INDEX index_gitlab_subscriptions_on_max_seats_used_changed_at ON gitlab_subscriptions USING btree (max_seats_used_changed_at, namespace_id);
 
@@ -43280,6 +43294,8 @@ CREATE INDEX index_pipeline_metadata_on_name_text_pattern_pipeline_id ON ci_pipe
 CREATE INDEX index_pipl_users_on_initial_email_sent_at ON pipl_users USING btree (initial_email_sent_at);
 
 CREATE UNIQUE INDEX index_plan_limits_on_plan_id ON plan_limits USING btree (plan_id);
+
+CREATE INDEX index_plan_limits_on_plan_name_uid ON plan_limits USING btree (plan_name_uid);
 
 CREATE UNIQUE INDEX index_plans_on_name ON plans USING btree (name);
 
