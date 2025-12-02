@@ -82,7 +82,10 @@ module Gitlab
               instance_id: unique_instance_id,
               realm: realm
             }.compact
-            http_head('api/v1/consumers/resolve', json_headers, query)
+            http_head(
+              'api/v1/consumers/resolve', json_headers, query,
+              base_url_to_call: usage_quota_base_url
+            )
           end
 
           private
@@ -120,9 +123,9 @@ module Gitlab
             end
           end
 
-          def http_head(path, headers, query = {})
+          def http_head(path, headers, query = {}, base_url_to_call: base_url)
             process_http_call do
-              Gitlab::HTTP.head("#{base_url}/#{path}", query: query, headers: headers)
+              Gitlab::HTTP.head("#{base_url_to_call}/#{path}", query: query, headers: headers)
             end
           end
 
@@ -132,6 +135,20 @@ module Gitlab
           rescue *Gitlab::HTTP::HTTP_ERRORS => e
             track_exception(e.message)
             { success: false, data: { errors: error_message } }.with_indifferent_access
+          end
+
+          def usage_quota_base_url
+            return base_url unless use_mock_usage_quota_endpoint?
+
+            env_url = ENV['MOCK_CUSTOMER_DOT_PORTAL_SERVER_URL']
+            return env_url if env_url.present?
+
+            'http://localhost:4567'
+          end
+
+          def use_mock_usage_quota_endpoint?
+            Rails.env.development? &&
+              Feature.enabled?(:use_mock_dot_api_for_usage_quota, :instance)
           end
         end
       end
