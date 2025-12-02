@@ -52,4 +52,9 @@ RSpec.describe VirtualRegistries::Container::RegistryUpstream, feature_category:
   it_behaves_like 'registry upstream position sync',
     registry_factory: :virtual_registries_container_registry,
     registry_upstream_factory: :virtual_registries_container_registry_upstream
+
+  it_behaves_like 'registry upstream registries count',
+    upstream_factory: :virtual_registries_container_upstream,
+    registry_factory: :virtual_registries_container_registry,
+    registry_upstream_factory: :virtual_registries_container_registry_upstream
 end
