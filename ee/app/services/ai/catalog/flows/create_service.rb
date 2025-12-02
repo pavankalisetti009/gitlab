@@ -24,7 +24,8 @@ module Ai
             schema_version: ::Ai::Catalog::ItemVersion::FLOW_SCHEMA_VERSION,
             version: DEFAULT_VERSION,
             definition: definition,
-            release_date: Time.zone.now
+            release_date: Time.zone.now,
+            created_by: current_user
           }
 
           item = Ai::Catalog::Item.new(item_params)

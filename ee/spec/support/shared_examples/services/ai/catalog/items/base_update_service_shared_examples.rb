@@ -119,7 +119,8 @@ RSpec.shared_examples Ai::Catalog::Items::BaseUpdateService do
             schema_version: item_schema_version,
             version: '1.2.0',
             release_date: Time.zone.now,
-            definition: expected_updated_definition.stringify_keys
+            definition: expected_updated_definition.stringify_keys,
+            created_by: user
           )
         end
 
@@ -137,7 +138,8 @@ RSpec.shared_examples Ai::Catalog::Items::BaseUpdateService do
               schema_version: item_schema_version,
               version: '1.1.1',
               release_date: Time.zone.now,
-              definition: expected_updated_definition.stringify_keys
+              definition: expected_updated_definition.stringify_keys,
+              created_by: user
             )
           end
         end

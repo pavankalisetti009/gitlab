@@ -74,7 +74,8 @@ RSpec.describe Ai::Catalog::Agents::CreateService, feature_category: :workflow_c
           system_prompt: params[:system_prompt],
           tools: [1],
           user_prompt: params[:user_prompt]
-        }.stringify_keys
+        }.stringify_keys,
+        created_by: user
       )
       expect(item.latest_released_version).to eq(item.latest_version)
     end

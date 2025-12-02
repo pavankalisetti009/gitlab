@@ -22,7 +22,8 @@ module Ai
               system_prompt: params[:system_prompt],
               user_prompt: params[:user_prompt] || ""
             },
-            release_date: Time.zone.now
+            release_date: Time.zone.now,
+            created_by: current_user
           }
 
           item = Ai::Catalog::Item.new(item_params)

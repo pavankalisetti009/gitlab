@@ -79,7 +79,8 @@ RSpec.describe Ai::Catalog::ThirdPartyFlows::CreateService, feature_category: :w
         schema_version: 1,
         version: '1.0.0',
         release_date: Time.zone.now,
-        definition: YAML.safe_load(definition).merge('yaml_definition' => definition)
+        definition: YAML.safe_load(definition).merge('yaml_definition' => definition),
+        created_by: user
       )
       expect(item.latest_released_version).to eq(item.latest_version)
     end
