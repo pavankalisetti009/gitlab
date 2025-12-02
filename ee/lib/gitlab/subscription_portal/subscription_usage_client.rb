@@ -38,6 +38,10 @@ module Gitlab
               monthlyWaiver {
                 creditsUsed
                 totalCredits
+                dailyUsage {
+                  date
+                  creditsUsed
+                }
               }
             }
           }

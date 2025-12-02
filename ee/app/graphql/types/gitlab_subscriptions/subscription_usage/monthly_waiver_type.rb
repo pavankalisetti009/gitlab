@@ -18,6 +18,11 @@ module Types
           type: GraphQL::Types::Float,
           null: true,
           description: 'GitLab Credits used from the Monthly Waiver allocation.'
+
+        field :daily_usage,
+          [DailyUsageType],
+          null: true,
+          description: 'Array of daily usage of the Monthly Waiver allocation.'
       end
     end
   end

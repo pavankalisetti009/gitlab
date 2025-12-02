@@ -339,7 +339,8 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
             success: true,
             monthlyWaiver: {
               totalCredits: 1000.55,
-              creditsUsed: 25.32
+              creditsUsed: 25.32,
+              dailyUsage: [{ date: '2025-10-01', creditsUsed: 25.32 }]
             }
           }
         end
@@ -348,6 +349,15 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
           expect(monthly_waiver).to be_a(GitlabSubscriptions::SubscriptionUsage::MonthlyWaiver)
           expect(monthly_waiver).to have_attributes(
             total_credits: 1000.55,
+            credits_used: 25.32,
+            daily_usage: be_an(Array),
+            declarative_policy_subject: subscription_usage
+          )
+
+          expect(monthly_waiver.daily_usage.size).to eq(1)
+          expect(monthly_waiver.daily_usage.first).to be_a(GitlabSubscriptions::SubscriptionUsage::DailyUsage)
+          expect(monthly_waiver.daily_usage.first).to have_attributes(
+            date: '2025-10-01',
             credits_used: 25.32,
             declarative_policy_subject: subscription_usage
           )
@@ -375,6 +385,7 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
           expect(monthly_waiver).to have_attributes(
             total_credits: nil,
             credits_used: nil,
+            daily_usage: [],
             declarative_policy_subject: subscription_usage
           )
         end
@@ -395,7 +406,8 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
           success: true,
           monthlyWaiver: {
             totalCredits: 2000.12,
-            creditsUsed: 123.99
+            creditsUsed: 123.99,
+            dailyUsage: [{ date: '2025-10-01', creditsUsed: 123.99 }]
           }
         }
       end
@@ -408,6 +420,15 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
         expect(monthly_waiver).to be_a(GitlabSubscriptions::SubscriptionUsage::MonthlyWaiver)
         expect(monthly_waiver).to have_attributes(
           total_credits: 2000.12,
+          credits_used: 123.99,
+          daily_usage: be_an(Array),
+          declarative_policy_subject: subscription_usage
+        )
+
+        expect(monthly_waiver.daily_usage.size).to eq(1)
+        expect(monthly_waiver.daily_usage.first).to be_a(GitlabSubscriptions::SubscriptionUsage::DailyUsage)
+        expect(monthly_waiver.daily_usage.first).to have_attributes(
+          date: '2025-10-01',
           credits_used: 123.99,
           declarative_policy_subject: subscription_usage
         )
@@ -448,10 +469,11 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
           expect(monthly_commitment).to have_attributes(
             total_credits: 1000,
             credits_used: 750,
+            daily_usage: be_an(Array),
             declarative_policy_subject: subscription_usage
           )
 
-          expect(monthly_commitment.daily_usage).to be_a(Array)
+          expect(monthly_commitment.daily_usage.size).to eq(1)
           expect(monthly_commitment.daily_usage.first).to be_a(GitlabSubscriptions::SubscriptionUsage::DailyUsage)
           expect(monthly_commitment.daily_usage.first).to have_attributes(
             date: '2025-10-01',
@@ -518,10 +540,11 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
         expect(monthly_commitment).to have_attributes(
           total_credits: 2000,
           credits_used: 1500,
+          daily_usage: be_an(Array),
           declarative_policy_subject: subscription_usage
         )
 
-        expect(monthly_commitment.daily_usage).to be_a(Array)
+        expect(monthly_commitment.daily_usage.size).to eq(1)
         expect(monthly_commitment.daily_usage.first).to be_a(GitlabSubscriptions::SubscriptionUsage::DailyUsage)
         expect(monthly_commitment.daily_usage.first).to have_attributes(
           date: '2025-10-01',
@@ -565,10 +588,11 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
           expect(overage).to have_attributes(
             is_allowed: true,
             credits_used: 750,
+            daily_usage: be_an(Array),
             declarative_policy_subject: subscription_usage
           )
 
-          expect(overage.daily_usage).to be_a(Array)
+          expect(overage.daily_usage.size).to eq(1)
           expect(overage.daily_usage.first).to be_a(GitlabSubscriptions::SubscriptionUsage::DailyUsage)
           expect(overage.daily_usage.first).to have_attributes(
             date: '2025-10-01',
@@ -635,10 +659,11 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
         expect(overage).to have_attributes(
           is_allowed: true,
           credits_used: 1500,
+          daily_usage: be_an(Array),
           declarative_policy_subject: subscription_usage
         )
 
-        expect(overage.daily_usage).to be_a(Array)
+        expect(overage.daily_usage.size).to eq(1)
         expect(overage.daily_usage.first).to be_a(GitlabSubscriptions::SubscriptionUsage::DailyUsage)
         expect(overage.daily_usage.first).to have_attributes(
           date: '2025-10-01',

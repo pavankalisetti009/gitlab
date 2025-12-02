@@ -4,7 +4,7 @@ module GitlabSubscriptions
   class SubscriptionUsage
     include ::Gitlab::Utils::StrongMemoize
 
-    MonthlyWaiver = Struct.new(:total_credits, :credits_used, :declarative_policy_subject)
+    MonthlyWaiver = Struct.new(:total_credits, :credits_used, :daily_usage, :declarative_policy_subject)
     MonthlyCommitment = Struct.new(:total_credits, :credits_used, :daily_usage, :declarative_policy_subject)
     Overage = Struct.new(:is_allowed, :credits_used, :daily_usage, :declarative_policy_subject)
     DailyUsage = Struct.new(:date, :credits_used, :declarative_policy_subject)
@@ -53,6 +53,7 @@ module GitlabSubscriptions
       MonthlyWaiver.new(
         total_credits: monthly_waiver_response.dig(:monthlyWaiver, :totalCredits),
         credits_used: monthly_waiver_response.dig(:monthlyWaiver, :creditsUsed),
+        daily_usage: build_daily_usage(monthly_waiver_response.dig(:monthlyWaiver, :dailyUsage)),
         declarative_policy_subject: self
       )
     end

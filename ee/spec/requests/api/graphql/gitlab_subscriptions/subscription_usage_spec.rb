@@ -66,7 +66,8 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
       :end_date,
       query_graphql_field(:monthly_waiver, {}, [
         :total_credits,
-        :credits_used
+        :credits_used,
+        query_graphql_field(:daily_usage, {}, [:date, :credits_used])
       ]),
       :purchase_credits_path,
       query_graphql_field(:monthly_commitment, {}, [
@@ -225,7 +226,8 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
       success: true,
       monthlyWaiver: {
         totalCredits: 1000.5,
-        creditsUsed: 15.32
+        creditsUsed: 15.32,
+        dailyUsage: [{ date: '2025-10-01', creditsUsed: 15.32 }]
       }
     }
 
@@ -279,7 +281,8 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
 
           expect(graphql_data_at(:subscription_usage, :monthlyWaiver)).to eq({
             totalCredits: 1000.5,
-            creditsUsed: 15.32
+            creditsUsed: 15.32,
+            dailyUsage: [{ date: '2025-10-01', creditsUsed: 15.32 }]
           }.with_indifferent_access)
 
           expect(graphql_data_at(:subscription_usage, :monthlyCommitment)).to eq({
@@ -415,7 +418,8 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
 
             expect(graphql_data_at(:subscription_usage, :monthlyWaiver)).to eq({
               totalCredits: 1000.5,
-              creditsUsed: 15.32
+              creditsUsed: 15.32,
+              dailyUsage: [{ date: '2025-10-01', creditsUsed: 15.32 }]
             }.with_indifferent_access)
 
             expect(graphql_data_at(:subscription_usage, :monthlyCommitment)).to eq({

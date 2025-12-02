@@ -184,7 +184,8 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
     let(:monthly_waiver) do
       {
         creditsUsed: 12.25,
-        totalCredits: 1000.91
+        totalCredits: 1000.91,
+        dailyUsage: [{ date: '2025-10-01', creditsUsed: 12.25 }]
       }
     end
 
