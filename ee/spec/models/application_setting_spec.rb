@@ -64,6 +64,8 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
         dashboard_limit: 0,
         dashboard_limit_enabled: false,
         default_project_deletion_protection: false,
+        dependency_scanning_sbom_scan_api_upload_limit: 400,
+        dependency_scanning_sbom_scan_api_download_limit: 6000,
         disable_invite_members: false,
         disable_personal_access_tokens: false,
         disabled_direct_code_suggestions: false,
@@ -369,6 +371,20 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
                          .only_integer
                          .is_greater_than_or_equal_to(0)
                          .is_less_than_or_equal_to(20)
+      end
+    end
+
+    describe 'dependency scanning limits', feature_category: :software_composition_analysis do
+      where(:attribute) do
+        %i[
+          dependency_scanning_sbom_scan_api_upload_limit
+          dependency_scanning_sbom_scan_api_download_limit
+        ]
+      end
+
+      with_them do
+        it { is_expected.to validate_numericality_of(attribute).only_integer.is_greater_than_or_equal_to(0) }
+        it { is_expected.not_to allow_value(nil).for(attribute) }
       end
     end
 
