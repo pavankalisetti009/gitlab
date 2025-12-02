@@ -777,6 +777,34 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
         expect(described_class.find_by_namespace_and_add_on(namespace, add_on_1)).to eq add_on_purchase_2
       end
     end
+
+    describe '.for_self_hosted_dap' do
+      subject(:scope) { described_class.for_self_hosted_dap }
+
+      context 'when self_hosted_dap_sku feature flag is disabled' do
+        before do
+          stub_feature_flags(self_hosted_dap_sku: false)
+        end
+
+        it 'returns none' do
+          expect(scope).to be_empty
+        end
+      end
+
+      context 'when self_hosted_dap_sku feature flag is enabled' do
+        before do
+          stub_feature_flags(self_hosted_dap_sku: true)
+        end
+
+        it 'returns active self-managed add-ons' do
+          active_sm_addon = create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :active, :self_managed)
+          create(:gitlab_subscription_add_on_purchase, :duo_pro, :expired, :self_managed)
+          create(:gitlab_subscription_add_on_purchase, :duo_core, :active) # SaaS
+
+          expect(scope).to contain_exactly(active_sm_addon)
+        end
+      end
+    end
   end
 
   describe 'delegations' do
