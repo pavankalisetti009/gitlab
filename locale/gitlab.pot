@@ -10206,6 +10206,9 @@ msgstr ""
 msgid "Auto-cancel redundant pipelines"
 msgstr ""
 
+msgid "Auto-dismissed by the vulnerability management policy named '%{policy_name}' as the vulnerability matched the policy criteria in pipeline %{pipeline_link}."
+msgstr ""
+
 msgid "Auto-resolved by the vulnerability management policy named '%{policy_name}' as the vulnerability was no longer detected in pipeline %{pipeline_link}."
 msgstr ""
 

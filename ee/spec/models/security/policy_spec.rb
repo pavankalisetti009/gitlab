@@ -1042,6 +1042,22 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
     end
   end
 
+  describe '#dismissal_reason' do
+    subject(:dismissal_reason) { policy.dismissal_reason }
+
+    let(:policy) do
+      build(:security_policy, :vulnerability_management_policy, :auto_dismiss, dismissal_reason: 'used_in_tests')
+    end
+
+    it { is_expected.to eq 'used_in_tests' }
+
+    context 'when policy does not have a dismissal_reason' do
+      let(:policy) { build(:security_policy, :vulnerability_management_policy, :auto_resolve) }
+
+      it { is_expected.to be_nil }
+    end
+  end
+
   describe '#enforcement_type' do
     let(:policy) { build(:security_policy, content: content) }
 
