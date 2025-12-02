@@ -21615,6 +21615,9 @@ msgstr ""
 msgid "DastProfiles|%{linkStart}Headers may appear in vulnerability reports%{linkEnd}."
 msgstr ""
 
+msgid "DastProfiles|(Deprecated) A list of modules and their intended logging level for use in the console log."
+msgstr ""
+
 msgid "DastProfiles|(Experimental) Set to a comma-separated list of wildcard URL patterns with at least one `*`. To reduce scan time, the scanner groups and analyzes only one matched URL per pattern."
 msgstr ""
 
@@ -21631,9 +21634,6 @@ msgid "DastProfiles|A comma-separated list of selectors representing elements to
 msgstr ""
 
 msgid "DastProfiles|A cookie name and value to be added to every request."
-msgstr ""
-
-msgid "DastProfiles|A list of modules and their intended logging level for use in the console log."
 msgstr ""
 
 msgid "DastProfiles|A list of modules and their intended logging level for use in the file log."
