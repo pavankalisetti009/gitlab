@@ -176,21 +176,7 @@ module Security
       strong_memoize_attr :previous_enforced_scan_finding_violations
 
       def license_scanning_violations
-        merged_by_license = violations.each_with_object({}) do |violation, result|
-          license_map = violation.data&.dig('violations', 'license_scanning')
-          next unless license_map
-
-          license_map.each { |license, dependencies| (result[license] ||= Set.new).merge(dependencies) }
-        end
-
-        license_spdx_map = license_spdx(merged_by_license.keys)
-        merged_by_license.map do |license, dependencies|
-          LicenseScanningViolation.new(
-            license: license,
-            dependencies: dependencies.sort.to_a,
-            url: Gitlab::LicenseScanning::PackageLicenses.url_for(license_spdx_map[license])
-          )
-        end
+        extract_license_scanning_violations(violations)
       end
       strong_memoize_attr :license_scanning_violations
 
@@ -261,6 +247,16 @@ module Security
           .security_policies
           .reject(&:warn_mode?)
       end
+
+      def enforced_license_scanning_violations
+        extract_license_scanning_violations(enforced_violations)
+      end
+      strong_memoize_attr :enforced_license_scanning_violations
+
+      def warn_mode_license_scanning_violations
+        extract_license_scanning_violations(warn_mode_violations)
+      end
+      strong_memoize_attr :warn_mode_license_scanning_violations
 
       private
 
@@ -354,6 +350,26 @@ module Security
       def extract_from_violation_data(keys, violations_list = violations)
         violations_list.each_with_object(Set.new) do |violation, result|
           result.merge(violation.data&.dig(*keys) || [])
+        end
+      end
+
+      def extract_license_scanning_violations(violations_list)
+        return [] if violations_list.empty?
+
+        merged_by_license = violations_list.each_with_object({}) do |violation, result|
+          license_map = violation.data&.dig('violations', 'license_scanning')
+          next unless license_map
+
+          license_map.each { |license, dependencies| (result[license] ||= Set.new).merge(dependencies) }
+        end
+
+        license_spdx_map = license_spdx(merged_by_license.keys)
+        merged_by_license.map do |license, dependencies|
+          LicenseScanningViolation.new(
+            license: license,
+            dependencies: dependencies.sort.to_a,
+            url: Gitlab::LicenseScanning::PackageLicenses.url_for(license_spdx_map[license])
+          )
         end
       end
     end

@@ -449,38 +449,206 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationComment, feature_cat
           end
         end
         # rubocop:enable RSpec/MultipleMemoizedHelpers
-      end
 
-      context 'with enforced license_finding violations' do
-        let_it_be(:policy2) do
-          create(:scan_result_policy_read, project: project,
-            security_orchestration_policy_configuration: security_orchestration_policy_configuration)
+        # rubocop:disable RSpec/MultipleMemoizedHelpers -- required for test setup
+        context 'with license_finding violations' do
+          let_it_be(:policy2) do
+            create(:scan_result_policy_read, project: project,
+              security_orchestration_policy_configuration: security_orchestration_policy_configuration)
+          end
+
+          let_it_be(:normal_db_policy_2) do
+            create(:security_policy, policy_index: 5,
+              security_orchestration_policy_configuration: security_orchestration_policy_configuration)
+          end
+
+          let_it_be(:normal_policy_rule_2) { create(:approval_policy_rule, security_policy: normal_db_policy_2) }
+
+          let_it_be(:license_warn_db_policy) do
+            create(:security_policy, :enforcement_type_warn, policy_index: 6,
+              security_orchestration_policy_configuration: security_orchestration_policy_configuration)
+          end
+
+          let_it_be(:license_warn_policy_rule) do
+            create(:approval_policy_rule, security_policy: license_warn_db_policy)
+          end
+
+          context 'with only enforced license_finding violations' do
+            before do
+              comment.add_report_type('license_scanning', true)
+
+              build_violation_details(:license_scanning,
+                {
+                  violations: { license_scanning: { 'MIT' => %w[package-a package-b] } }
+                },
+                policy_read: policy2,
+                policy_rule: normal_policy_rule_2,
+                name: 'License Policy')
+            end
+
+            it { is_expected.to include(described_class::VIOLATIONS_BLOCKING_TITLE) }
+            it { is_expected.to exclude(described_class::VIOLATIONS_BYPASSABLE_TITLE) }
+            it { is_expected.to include('Enforced `license_finding` violations') }
+            it { is_expected.to include('Out-of-policy licenses:') }
+            it { is_expected.to include('MIT') }
+            it { is_expected.to include('Used by package-a, package-b') }
+          end
+
+          context 'with only bypassable license_finding violations' do
+            let_it_be(:policy3) do
+              create(:scan_result_policy_read, project: project,
+                security_orchestration_policy_configuration: security_orchestration_policy_configuration)
+            end
+
+            before do
+              comment.add_report_type('license_scanning', true)
+
+              build_violation_details(:license_scanning,
+                {
+                  violations: { license_scanning: { 'Apache-2.0' => %w[package-c package-d] } }
+                },
+                policy_read: policy3,
+                policy_rule: license_warn_policy_rule,
+                name: 'Warn License Policy')
+            end
+
+            it { is_expected.to exclude(described_class::VIOLATIONS_BLOCKING_TITLE) }
+            it { is_expected.to include(described_class::VIOLATIONS_BYPASSABLE_TITLE) }
+            it { is_expected.to include('`license_finding` violations that users can bypass') }
+            it { is_expected.to include('Out-of-policy licenses:') }
+            it { is_expected.to include('Apache-2.0') }
+            it { is_expected.to include('Used by package-c, package-d') }
+          end
+
+          context 'with both enforced and bypassable license_finding violations' do
+            let_it_be(:policy3) do
+              create(:scan_result_policy_read, project: project,
+                security_orchestration_policy_configuration: security_orchestration_policy_configuration)
+            end
+
+            before do
+              comment.add_report_type('license_scanning', true)
+
+              build_violation_details(:license_scanning,
+                {
+                  violations: { license_scanning: { 'MIT' => %w[package-a package-b] } }
+                },
+                policy_read: policy2,
+                policy_rule: normal_policy_rule_2,
+                name: 'License Policy')
+
+              build_violation_details(:license_scanning,
+                {
+                  violations: { license_scanning: { 'GPL-3.0' => %w[package-e] } }
+                },
+                policy_read: policy3,
+                policy_rule: license_warn_policy_rule,
+                name: 'Warn License Policy')
+            end
+
+            it { is_expected.to include(described_class::VIOLATIONS_BLOCKING_TITLE) }
+            it { is_expected.to include(described_class::VIOLATIONS_BYPASSABLE_TITLE) }
+            it { is_expected.to include('Enforced `license_finding` violations') }
+            it { is_expected.to include('`license_finding` violations that users can bypass') }
+            it { is_expected.to include('MIT') }
+            it { is_expected.to include('Used by package-a, package-b') }
+            it { is_expected.to include('GPL-3.0') }
+            it { is_expected.to include('Used by package-e') }
+          end
+
+          context 'with mixed scan_finding and license_finding violations' do
+            let_it_be(:policy3) do
+              create(:scan_result_policy_read, project: project,
+                security_orchestration_policy_configuration: security_orchestration_policy_configuration)
+            end
+
+            before do
+              comment.add_report_type('license_scanning', true)
+
+              build_violation_details(:scan_finding,
+                {
+                  context: { pipeline_ids: [pipeline.id] },
+                  violations: { scan_finding: { uuids: { newly_detected: [uuid_new] } } }
+                },
+                policy_rule: normal_policy_rule)
+
+              build_violation_details(:license_scanning,
+                {
+                  violations: { license_scanning: { 'MIT' => %w[package-a] } }
+                },
+                policy_read: policy3,
+                policy_rule: license_warn_policy_rule,
+                name: 'Warn License Policy')
+            end
+
+            it { is_expected.to include(described_class::VIOLATIONS_BLOCKING_TITLE) }
+            it { is_expected.to include(described_class::VIOLATIONS_BYPASSABLE_TITLE) }
+            it { is_expected.to include('Newly detected enforced `scan_finding` violations') }
+            it { is_expected.to include('`license_finding` violations that users can bypass') }
+            it { is_expected.to include('MIT') }
+            it { is_expected.to include('Used by package-a') }
+          end
+
+          context 'with license violations exceeding MAX_VIOLATIONS' do
+            let_it_be(:policy3) do
+              create(:scan_result_policy_read, project: project,
+                security_orchestration_policy_configuration: security_orchestration_policy_configuration)
+            end
+
+            let(:many_dependencies) do
+              (0..Security::ScanResultPolicyViolation::MAX_VIOLATIONS).map { |n| "package-#{n.to_s.rjust(3, '0')}" }
+            end
+
+            before do
+              comment.add_report_type('license_scanning', true)
+
+              build_violation_details(:license_scanning,
+                {
+                  violations: { license_scanning: { 'Apache-2.0' => many_dependencies } }
+                },
+                policy_read: policy3,
+                policy_rule: normal_policy_rule_2,
+                name: 'License Policy')
+            end
+
+            it { is_expected.to include('Apache-2.0') }
+            it { is_expected.to include('…and more') }
+
+            it 'includes only MAX_VIOLATIONS dependencies' do
+              many_dependencies.first(Security::ScanResultPolicyViolation::MAX_VIOLATIONS).each do |dep|
+                expect(body).to include(dep)
+              end
+            end
+          end
+
+          context 'with feature disabled' do
+            let_it_be(:policy3) do
+              create(:scan_result_policy_read, project: project,
+                security_orchestration_policy_configuration: security_orchestration_policy_configuration)
+            end
+
+            before do
+              stub_feature_flags(security_policy_approval_warn_mode: false)
+
+              comment.add_report_type('license_scanning', true)
+
+              build_violation_details(:license_scanning,
+                {
+                  violations: { license_scanning: { 'Apache-2.0' => %w[package-c] } }
+                },
+                policy_read: policy3,
+                policy_rule: license_warn_policy_rule,
+                name: 'Warn License Policy')
+            end
+
+            it { is_expected.to exclude('Enforced `license_finding` violations') }
+            it { is_expected.to exclude('`license_finding` violations that users can bypass') }
+            it { is_expected.to exclude(described_class::VIOLATIONS_BYPASSABLE_TITLE) }
+            it { is_expected.to include('Out-of-policy licenses:') }
+            it { is_expected.to include('Apache-2.0') }
+          end
+          # rubocop:enable RSpec/MultipleMemoizedHelpers
         end
-
-        let_it_be(:normal_db_policy_2) do
-          create(:security_policy, policy_index: 5,
-            security_orchestration_policy_configuration: security_orchestration_policy_configuration)
-        end
-
-        let_it_be(:normal_policy_rule_2) { create(:approval_policy_rule, security_policy: normal_db_policy_2) }
-
-        before do
-          comment.add_report_type('license_scanning', true)
-
-          build_violation_details(:license_scanning,
-            {
-              violations: { license_scanning: { 'MIT' => %w[package-a package-b] } }
-            },
-            policy_read: policy2,
-            policy_rule: normal_policy_rule_2,
-            name: 'License Policy')
-        end
-
-        it { is_expected.to include(described_class::VIOLATIONS_BLOCKING_TITLE) }
-        it { is_expected.to include('Enforced `license_finding` violations') }
-        it { is_expected.to include('Out-of-policy licenses:') }
-        it { is_expected.to include('MIT') }
-        it { is_expected.to include('Used by package-a, package-b') }
       end
 
       describe 'summary' do
@@ -721,16 +889,13 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationComment, feature_cat
               )
             end
 
-            it 'lists more restrictive policies',
-              quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/9622' do
-              expect(body).to include(
-                <<~MARKDOWN
-                * __Prevent approval by merge request creator__: `#{warn_mode_policy_3.name}`, `#{warn_mode_policy_4.name}`
-                * __Prevent approvals by users who add commits__: `#{warn_mode_policy_3.name}`
-                * __When a commit is added: Remove all approvals__: `#{warn_mode_policy_3.name}`
-                * __Require user re-authentication (password or SAML) to approve__: `#{warn_mode_policy_3.name}`
-                MARKDOWN
-              )
+            it 'lists more restrictive policies' do
+              expect(body).to include('__Prevent approval by merge request creator__')
+              expect(body).to include('__Prevent approvals by users who add commits__')
+              expect(body).to include('__When a commit is added: Remove all approvals__')
+              expect(body).to include('__Require user re-authentication (password or SAML) to approve__')
+              expect(body).to include("`#{warn_mode_policy_3.name}`")
+              expect(body).to include("`#{warn_mode_policy_4.name}`")
             end
 
             context 'with feature disabled' do
