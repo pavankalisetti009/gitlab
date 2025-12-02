@@ -1,4 +1,4 @@
-import { UNITS } from '~/analytics/shared/constants';
+import { dateFormats, UNITS } from '~/analytics/shared/constants';
 import { formatBigInt } from '~/analytics/shared/utils';
 import { s__, __ } from '~/locale';
 import {
@@ -9,8 +9,11 @@ import {
   monthInWords,
   nSecondsBefore,
   nDaysBefore,
+  cloneDate,
+  localeDateFormat,
 } from '~/lib/utils/datetime_utility';
 import { days, percentHundred, minutes } from '~/lib/utils/unit_format';
+import dateFormat from '~/lib/dateformat';
 import {
   TABLE_METRICS,
   SUPPORTED_DORA_METRICS,
@@ -407,4 +410,42 @@ export const generateTableAlerts = (alertGroups) =>
  */
 export const generateNoDataTooltip = (value) => {
   return value ? null : __('No data');
+};
+
+/**
+ * @typedef {Object} MonthDateRange
+ * @property {string} fromDate - ISO-formatted date string (YYYY-MM-DD) for the first day of the month
+ * @property {string} toDate - ISO-formatted date string (YYYY-MM-DD) for the last day of the month (or endDate if it falls within the month)
+ * @property {string} monthLabel - Human-readable label with abbreviated month name in the format "MMM YYYY" (e.g., "Jan 2024")
+ */
+
+/**
+ * Generates an array of objects representing each month in the date range.
+ *
+ * @param {Date} startDate - The starting date of the range.
+ * @param {Date} endDate - The ending date of the range.
+ * @returns {MonthDateRange[]} An array of month date range objects.
+ */
+export const getMonthsInDateRange = (startDate, endDate) => {
+  const dateRangeData = [];
+  const formatISODate = (date) => dateFormat(date, dateFormats.isoDate, true);
+
+  for (
+    let fromDate = cloneDate(startDate);
+    fromDate < endDate;
+    fromDate.setMonth(fromDate.getMonth() + 1, 1)
+  ) {
+    let toDate = cloneDate(fromDate);
+    toDate.setMonth(toDate.getMonth() + 1, 0);
+
+    if (toDate > endDate) toDate = endDate;
+
+    dateRangeData.push({
+      fromDate: formatISODate(fromDate),
+      toDate: formatISODate(toDate),
+      monthLabel: localeDateFormat.asMonthYear.format(fromDate),
+    });
+  }
+
+  return dateRangeData;
 };

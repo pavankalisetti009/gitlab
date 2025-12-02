@@ -24,6 +24,7 @@ import {
   getRestrictedTableMetrics,
   generateTableAlerts,
   generateNoDataTooltip,
+  getMonthsInDateRange,
 } from 'ee/analytics/dashboards/utils';
 import { LEAD_TIME_METRIC_TYPE, CYCLE_TIME_METRIC_TYPE } from '~/api/analytics_api';
 import {
@@ -407,6 +408,31 @@ describe('Analytics Dashboards utils', () => {
 
     it('returns null if value is present', () => {
       expect(generateNoDataTooltip(2000)).toBeNull();
+    });
+  });
+
+  describe('getMonthsInDateRange', () => {
+    it('returns months in date range as expected', () => {
+      const startDate = new Date('2025-08-03');
+      const endDate = new Date('2025-10-10');
+
+      expect(getMonthsInDateRange(startDate, endDate)).toEqual([
+        {
+          fromDate: '2025-08-03',
+          toDate: '2025-08-31',
+          monthLabel: 'Aug 2025',
+        },
+        {
+          fromDate: '2025-09-01',
+          toDate: '2025-09-30',
+          monthLabel: 'Sep 2025',
+        },
+        {
+          fromDate: '2025-10-01',
+          toDate: '2025-10-10',
+          monthLabel: 'Oct 2025',
+        },
+      ]);
     });
   });
 });

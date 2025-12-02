@@ -81,6 +81,12 @@ describe('StackedColumnChart Visualization', () => {
     expect(findStackedColumnChart().props().includeLegendAvgMax).toBe(true);
   });
 
+  it('does not pass `tooltip` option to chart options', () => {
+    createWrapper({ options: { tooltip: { description: 'Panel tooltip' } } });
+
+    expect(findStackedColumnChart().props().option).not.toHaveProperty('tooltip');
+  });
+
   describe('tooltip', () => {
     const mockParams = {
       value: 'Jan 2025',
