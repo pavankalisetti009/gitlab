@@ -54686,6 +54686,9 @@ msgstr ""
 msgid "Rate limits can help reduce request volume (like from crawlers or abusive bots)."
 msgstr ""
 
+msgid "Rate limits for specific Users API endpoints."
+msgstr ""
+
 msgid "Rate the review"
 msgstr ""
 
