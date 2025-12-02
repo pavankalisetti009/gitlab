@@ -142,7 +142,8 @@ module Ai
           GITLAB_BASE_URL: Gitlab.config.gitlab.url,
           GITLAB_PROJECT_PATH: project.full_path,
           AGENT_PLATFORM_GITLAB_VERSION: Gitlab.version_info.to_s,
-          AGENT_PLATFORM_MODEL_METADATA: agent_platform_model_metadata_json
+          AGENT_PLATFORM_MODEL_METADATA: agent_platform_model_metadata_json,
+          AGENT_PLATFORM_FEATURE_SETTING_NAME: feature_setting_name
         )
       end
 
@@ -207,6 +208,10 @@ module Ai
 
       def feature_setting
         @params.fetch(:duo_agent_platform_feature_setting, nil)
+      end
+
+      def feature_setting_name
+        feature_setting&.feature.to_s
       end
 
       def agent_platform_model_metadata_json
