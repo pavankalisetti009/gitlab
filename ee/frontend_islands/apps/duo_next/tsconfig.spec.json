@@ -8,12 +8,6 @@
     }
   },
   "include": [
-    "./src/**/*.ts",
-    "./src/**/*.d.ts",
-    "./src/**/*.tsx",
-    "./src/**/*.vue"
-  ],
-  "exclude": [
     "./src/**/*_spec.ts",
     "./src/**/*.spec.ts"
   ]

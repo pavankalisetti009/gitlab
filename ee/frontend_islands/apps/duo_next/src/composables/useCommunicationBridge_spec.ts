@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type { Mock } from 'vitest';
 import { ref, computed, type InjectionKey } from 'vue';
 import { useCommunicationBridge } from './useCommunicationBridge';
 
@@ -22,7 +23,7 @@ interface TestServices {
 }
 
 describe('useCommunicationBridge', () => {
-  let mockEmit: ReturnType<typeof vi.fn>;
+  let mockEmit: Mock;
   let testProps: TestProps;
 
   beforeEach(() => {
