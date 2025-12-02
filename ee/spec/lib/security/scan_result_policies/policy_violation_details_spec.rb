@@ -894,6 +894,16 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
   describe '#license_scanning_violations' do
     subject(:violations) { details.license_scanning_violations }
 
+    context 'with violation without data' do
+      before do
+        build_violation_details(policy1, nil)
+      end
+
+      it 'returns empty list' do
+        expect(violations).to be_empty
+      end
+    end
+
     context 'when a violation exists' do
       context 'when software license matching the name does not exists' do
         before do
@@ -939,6 +949,190 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
       end
     end
   end
+
+  # rubocop:disable RSpec/MultipleMemoizedHelpers -- required for test setup
+  describe 'license scanning violations' do
+    let(:normal_db_policy) do
+      create(:security_policy, policy_index: 1,
+        security_orchestration_policy_configuration: security_orchestration_policy_configuration)
+    end
+
+    let(:normal_policy_rule) { create(:approval_policy_rule, security_policy: normal_db_policy) }
+
+    shared_context 'with violations' do
+      let(:another_normal_db_policy) do
+        create(:security_policy, policy_index: 2,
+          security_orchestration_policy_configuration: security_orchestration_policy_configuration)
+      end
+
+      let(:another_normal_policy_rule) { create(:approval_policy_rule, security_policy: another_normal_db_policy) }
+
+      let(:another_warn_mode_db_policy) do
+        create(:security_policy, :enforcement_type_warn, policy_index: 4,
+          security_orchestration_policy_configuration: security_orchestration_policy_configuration)
+      end
+
+      let(:another_warn_policy_rule) { create(:approval_policy_rule, security_policy: another_warn_mode_db_policy) }
+
+      let_it_be(:another_policy) do
+        create(:scan_result_policy_read, project: project,
+          security_orchestration_policy_configuration: security_orchestration_policy_configuration)
+      end
+
+      let_it_be(:another_policy_warn) do
+        create(:scan_result_policy_read, project: project,
+          security_orchestration_policy_configuration: security_orchestration_policy_configuration)
+      end
+    end
+
+    describe '#enforced_license_scanning_violations' do
+      subject(:enforced_license_scanning_violations) { details.enforced_license_scanning_violations }
+
+      include_context 'with violations'
+
+      context 'when there are both enforced and warn mode violations' do
+        before do
+          create(:scan_result_policy_violation, project: project, merge_request: merge_request,
+            scan_result_policy_read: policy2,
+            approval_policy_rule: normal_policy_rule,
+            violation_data: { 'violations' => { 'license_scanning' => { 'MIT License' => %w[A B] } } })
+
+          create(:scan_result_policy_violation, project: project, merge_request: merge_request,
+            scan_result_policy_read: policy_warn_mode,
+            approval_policy_rule: warn_mode_policy_rule,
+            violation_data: { 'violations' => { 'license_scanning' => { 'Apache-2.0' => %w[C D] } } })
+        end
+
+        it 'returns only license scanning violations from enforced (non-warn mode) policies' do
+          expect(enforced_license_scanning_violations).to contain_exactly(
+            have_attributes(
+              license: 'MIT License',
+              dependencies: %w[A B],
+              url: 'https://spdx.org/licenses/MIT.html'
+            )
+          )
+        end
+      end
+
+      context 'when there are only warn mode violations' do
+        before do
+          create(:scan_result_policy_violation, project: project, merge_request: merge_request,
+            scan_result_policy_read: policy_warn_mode,
+            approval_policy_rule: warn_mode_policy_rule,
+            violation_data: { 'violations' => { 'license_scanning' => { 'MIT License' => %w[A B] } } })
+        end
+
+        it { is_expected.to be_empty }
+      end
+
+      context 'when there are multiple enforced violations' do
+        before do
+          create(:report_approver_rule, :license_scanning, merge_request: merge_request,
+            scan_result_policy_read: another_policy, name: 'Another Policy')
+
+          create(:scan_result_policy_violation, project: project, merge_request: merge_request,
+            scan_result_policy_read: policy2,
+            approval_policy_rule: normal_policy_rule,
+            violation_data: { 'violations' => { 'license_scanning' => { 'MIT License' => %w[A B] } } })
+
+          create(:scan_result_policy_violation, project: project, merge_request: merge_request,
+            scan_result_policy_read: another_policy,
+            approval_policy_rule: another_normal_policy_rule,
+            violation_data: {
+              'violations' => { 'license_scanning' => { 'MIT License' => %w[C], 'w3m License' => %w[D] } }
+            })
+        end
+
+        it 'merges licenses from multiple enforced violations' do
+          expect(enforced_license_scanning_violations).to contain_exactly(
+            have_attributes(
+              license: 'MIT License',
+              dependencies: %w[A B C],
+              url: 'https://spdx.org/licenses/MIT.html'
+            ),
+            have_attributes(
+              license: 'w3m License',
+              dependencies: %w[D],
+              url: 'https://spdx.org/licenses/w3m.html'
+            )
+          )
+        end
+      end
+    end
+
+    describe '#warn_mode_license_scanning_violations' do
+      subject(:warn_mode_license_scanning_violations) { details.warn_mode_license_scanning_violations }
+
+      include_context 'with violations'
+
+      context 'when there are both enforced and warn mode violations' do
+        before do
+          create(:scan_result_policy_violation, project: project, merge_request: merge_request,
+            scan_result_policy_read: policy2,
+            approval_policy_rule: normal_policy_rule,
+            violation_data: { 'violations' => { 'license_scanning' => { 'MIT License' => %w[A B] } } })
+
+          create(:scan_result_policy_violation, project: project, merge_request: merge_request,
+            scan_result_policy_read: policy_warn_mode,
+            approval_policy_rule: warn_mode_policy_rule,
+            violation_data: { 'violations' => { 'license_scanning' => { 'Apache-2.0' => %w[C D] } } })
+        end
+
+        it 'returns only license scanning violations from warn mode policies' do
+          expect(warn_mode_license_scanning_violations).to contain_exactly(
+            have_attributes(
+              license: 'Apache-2.0',
+              dependencies: %w[C D]
+            )
+          )
+        end
+      end
+
+      context 'when there are only enforced violations' do
+        before do
+          create(:scan_result_policy_violation, project: project, merge_request: merge_request,
+            scan_result_policy_read: policy2,
+            approval_policy_rule: normal_policy_rule,
+            violation_data: { 'violations' => { 'license_scanning' => { 'MIT License' => %w[A B] } } })
+        end
+
+        it { is_expected.to be_empty }
+      end
+
+      context 'when there are multiple warn mode violations' do
+        before do
+          create(:report_approver_rule, :license_scanning, merge_request: merge_request,
+            scan_result_policy_read: another_policy_warn, name: 'Another Warn Policy')
+
+          create(:scan_result_policy_violation, project: project, merge_request: merge_request,
+            scan_result_policy_read: policy_warn_mode,
+            approval_policy_rule: warn_mode_policy_rule,
+            violation_data: { 'violations' => { 'license_scanning' => { 'MIT License' => %w[A B] } } })
+
+          create(:scan_result_policy_violation, project: project, merge_request: merge_request,
+            scan_result_policy_read: another_policy_warn,
+            approval_policy_rule: another_warn_policy_rule,
+            violation_data: {
+              'violations' => { 'license_scanning' => { 'MIT License' => %w[C], 'GPL-3.0' => %w[D] } }
+            })
+        end
+
+        it 'merges licenses from multiple warn mode violations' do
+          expect(warn_mode_license_scanning_violations).to contain_exactly(
+            have_attributes(
+              license: 'MIT License',
+              dependencies: %w[A B C]
+            ),
+            have_attributes(
+              license: 'GPL-3.0',
+              dependencies: %w[D]
+            )
+          )
+        end
+      end
+    end
+  end
+  # rubocop:enable RSpec/MultipleMemoizedHelpers
 
   describe '#errors' do
     subject(:errors) { details.errors }

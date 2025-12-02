@@ -158,7 +158,7 @@ module Security
             "merge request approval policies: #{any_merge_request_policies.join(', ')}."
         end
 
-        if license_scanning_policies.present? && license_scanning_violations.present?
+        if license_scanning_policies.present? && enforced_license_scanning_violations_list.present?
           summary << ("Remove all denied licenses identified by the following merge request approval policies: " \
             "#{license_scanning_policies.join(', ')}")
         end
@@ -247,14 +247,14 @@ module Security
       end
 
       def enforced_license_finding_violations
-        return if details.license_scanning_violations.empty?
+        return if details.enforced_license_scanning_violations.empty?
 
         <<~MARKDOWN
         #### Enforced `license_finding` violations
 
         Out-of-policy licenses:
 
-        #{violations_list(license_scanning_violations_list)}
+        #{violations_list(enforced_license_scanning_violations_list)}
         MARKDOWN
       end
 
@@ -265,6 +265,7 @@ module Security
         ### #{VIOLATIONS_BYPASSABLE_TITLE}
         #{warn_mode_scan_finding_violations}
         #{warn_mode_any_merge_request_violations}
+        #{warn_mode_license_finding_violations}
         ---
         MARKDOWN
       end
@@ -300,6 +301,18 @@ module Security
         <<~MARKDOWN
         #### Previously found `scan_finding` violations that users can bypass
         #{scan_finding_violations(violations)}
+        MARKDOWN
+      end
+
+      def warn_mode_license_finding_violations
+        return if details.warn_mode_license_scanning_violations.empty?
+
+        <<~MARKDOWN
+        #### `license_finding` violations that users can bypass
+
+        Out-of-policy licenses:
+
+        #{violations_list(warn_mode_license_scanning_violations_list)}
         MARKDOWN
       end
 
@@ -339,13 +352,30 @@ module Security
         MARKDOWN
       end
 
+      # TODO: Remove with `security_policy_approval_warn_mode` feature flag
       def license_scanning_violations_list
         details.license_scanning_violations.map do |violation|
-          dependencies = violation.dependencies
-          "1. #{violation.url.present? ? "[#{violation.license}](#{violation.url})" : violation.license}: " \
-            "Used by #{dependencies.first(Security::ScanResultPolicyViolation::MAX_VIOLATIONS).join(', ')}" \
-            "#{dependencies.size > Security::ScanResultPolicyViolation::MAX_VIOLATIONS ? ', …and more' : ''}"
+          build_license_scanning_violation_line(violation)
         end
+      end
+
+      def enforced_license_scanning_violations_list
+        details.enforced_license_scanning_violations.map do |violation|
+          build_license_scanning_violation_line(violation)
+        end
+      end
+
+      def warn_mode_license_scanning_violations_list
+        details.warn_mode_license_scanning_violations.map do |violation|
+          build_license_scanning_violation_line(violation)
+        end
+      end
+
+      def build_license_scanning_violation_line(violation)
+        dependencies = violation.dependencies
+        "1. #{violation.url.present? ? "[#{violation.license}](#{violation.url})" : violation.license}: " \
+          "Used by #{dependencies.first(Security::ScanResultPolicyViolation::MAX_VIOLATIONS).join(', ')}" \
+          "#{dependencies.size > Security::ScanResultPolicyViolation::MAX_VIOLATIONS ? ', …and more' : ''}"
       end
 
       def build_scan_finding_violation_line(violation)
