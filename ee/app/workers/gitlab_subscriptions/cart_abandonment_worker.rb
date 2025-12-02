@@ -12,6 +12,11 @@ module GitlabSubscriptions
     deduplicate :until_executing, including_scheduled: true, if_deduplicated: :reschedule_once
     loggable_arguments 0, 1, 2, 3
 
+    PRODUCT_INTERACTION_TO_PLAN = {
+      'cart abandonment - SaaS Premium' => 'premium',
+      'cart abandonment - SaaS Ultimate' => 'ultimate'
+    }.freeze
+
     def perform(user_id, namespace_id, product_interaction, previous_plan_name)
       user = User.find_by_id(user_id)
       namespace = Namespace.find_by_id(namespace_id)
@@ -46,7 +51,7 @@ module GitlabSubscriptions
         work_email: user.email,
         opt_in: user.onboarding_status_email_opt_in,
         namespace_id: namespace.id,
-        plan_id: namespace.actual_plan.id,
+        plan_id: plan_id_for_selected_plan(product_interaction, namespace),
         existing_plan: namespace.actual_plan_name,
         skip_country_validation: true
       }.tap do |params|
@@ -56,6 +61,18 @@ module GitlabSubscriptions
             ::Gitlab::I18n.trimmed_language_name(user.preferred_language)
         end
       end
+    end
+
+    def plan_id_for_selected_plan(product_interaction, namespace)
+      selected_plan = PRODUCT_INTERACTION_TO_PLAN[product_interaction]
+      plans_data = GitlabSubscriptions::FetchSubscriptionPlansService.new(
+        plan: namespace.plan_name_for_upgrading,
+        namespace_id: namespace.id
+      ).execute
+
+      return unless plans_data
+
+      plans_data.detect { |plan| plan.code == selected_plan }&.id
     end
   end
 end
