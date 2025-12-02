@@ -5055,6 +5055,10 @@ CREATE FUNCTION unset_has_issues_on_vulnerability_reads() RETURNS trigger
 DECLARE
   has_issue_links integer;
 BEGIN
+  IF (SELECT current_setting('vulnerability_management.dont_execute_db_trigger', true) = 'true') THEN
+    RETURN NULL;
+  END IF;
+
   PERFORM 1
   FROM
     vulnerability_reads
@@ -5085,6 +5089,10 @@ CREATE FUNCTION unset_has_merge_request_on_vulnerability_reads() RETURNS trigger
 DECLARE
   has_merge_request_links integer;
 BEGIN
+  IF (SELECT current_setting('vulnerability_management.dont_execute_db_trigger', true) = 'true') THEN
+    RETURN NULL;
+  END IF;
+
   PERFORM 1
   FROM
     vulnerability_reads
