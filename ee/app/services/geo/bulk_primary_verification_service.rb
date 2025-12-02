@@ -11,15 +11,11 @@ module Geo
 
     private
 
-    override :model_to_update
-    def model_to_update
-      log_error("Model not found") && return unless class_name
-
-      model_class = class_name.safe_constantize
-      log_error("Model #{class_name} not found") && return unless model_class
-
+    override :class_to_update
+    def class_to_update
       model_class.verification_state_table_class
     end
+    strong_memoize_attr :class_to_update
 
     override :attributes_to_update
     def attributes_to_update
@@ -28,7 +24,7 @@ module Geo
 
     override :update_scope
     def update_scope
-      scope = model_to_update.verification_state_not_pending
+      scope = class_to_update.verification_state_not_pending
       scope = scope.primary_key_in(params[:identifiers]) if params[:identifiers].present?
       scope = scope.with_verification_state(params[:checksum_state]) if params[:checksum_state].present?
 

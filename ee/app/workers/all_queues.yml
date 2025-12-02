@@ -2455,6 +2455,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: geo_bulk_registry_resync
+  :worker_name: Geo::BulkRegistryResyncWorker
+  :feature_category: :geo_replication
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: gitlab_subscriptions_add_on_purchases_bulk_refresh_user_assignments
   :worker_name: GitlabSubscriptions::AddOnPurchases::BulkRefreshUserAssignmentsWorker
   :feature_category: :seat_cost_management

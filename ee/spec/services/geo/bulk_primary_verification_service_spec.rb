@@ -30,14 +30,10 @@ RSpec.describe Geo::BulkPrimaryVerificationService, :geo, feature_category: :geo
     context 'with invalid model_name' do
       let(:model_name) { 'invalid' }
 
-      it 'returns and log an error' do
+      it 'raises a NotImplemented error' do
         expect(Geo::BulkPrimaryVerificationWorker).not_to receive(:perform_async)
 
-        result = service.async_execute
-
-        expect(result).to be_error
-        expect(result.message).to eq("No table found from invalid")
-        expect(result.payload[:status]).to eq(:failed)
+        expect { service.async_execute }.to raise_error(NotImplementedError, /Cannot find a class for invalid/)
       end
     end
   end
@@ -195,14 +191,10 @@ RSpec.describe Geo::BulkPrimaryVerificationService, :geo, feature_category: :geo
     context 'with invalid model_name' do
       let(:model_name) { 'invalid' }
 
-      it 'returns and log an error' do
+      it 'raises a NotImplemented error' do
         expect(Geo::BulkPrimaryVerificationWorker).not_to receive(:perform_async)
 
-        result = service.execute
-
-        expect(result).to be_error
-        expect(result.message).to eq("No table found from invalid")
-        expect(result.payload[:status]).to eq(:failed)
+        expect { service.execute }.to raise_error(NotImplementedError, /Cannot find a class for invalid/)
       end
     end
 
