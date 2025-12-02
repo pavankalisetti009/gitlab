@@ -171,7 +171,13 @@ FactoryBot.define do
     end
 
     trait :auto_dismiss do
-      content { { actions: [{ type: 'auto_dismiss', dismissal_reason: 'used_in_tests' }] } }
+      transient do
+        dismissal_reason { 'used_in_tests' }
+      end
+
+      after(:build) do |policy, evaluator|
+        policy.content = { actions: [{ type: 'auto_dismiss', dismissal_reason: evaluator.dismissal_reason }] }
+      end
     end
 
     trait :pipeline_execution_schedule_policy do
