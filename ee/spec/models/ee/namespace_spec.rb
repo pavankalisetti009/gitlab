@@ -34,6 +34,7 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
   it { is_expected.to have_one(:ai_settings).class_name('Ai::NamespaceSetting') }
   it { is_expected.to have_many(:custom_statuses).class_name('WorkItems::Statuses::Custom::Status') }
   it { is_expected.to have_many(:converted_statuses).class_name('WorkItems::Statuses::Custom::Status') }
+  it { is_expected.to have_many(:enabled_foundational_flows).class_name('Ai::Catalog::EnabledFoundationalFlow') }
 
   it { is_expected.to delegate_method(:trial?).to(:gitlab_subscription) }
   it { is_expected.to delegate_method(:trial_ends_on).to(:gitlab_subscription) }
@@ -3108,6 +3109,49 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
 
       it 'returns only direct compliance framework IDs' do
         expect(framework_ids_with_csp).to contain_exactly(direct_framework.id)
+      end
+    end
+  end
+
+  describe '#enabled_flow_catalog_item_ids' do
+    let_it_be(:namespace) { create(:group) }
+    let_it_be(:catalog_item_1) { create(:ai_catalog_item, :with_foundational_flow_reference) }
+    let_it_be(:catalog_item_2) { create(:ai_catalog_item, :with_foundational_flow_reference) }
+    let_it_be(:catalog_item_3) { create(:ai_catalog_item, :with_foundational_flow_reference) }
+
+    subject { namespace.enabled_flow_catalog_item_ids }
+
+    context 'when namespace has no enabled foundational flows' do
+      it 'returns an empty array' do
+        expect(subject).to eq([])
+      end
+    end
+
+    context 'when namespace has enabled foundational flows' do
+      before do
+        create(:ai_catalog_enabled_foundational_flow, :for_namespace, namespace: namespace, catalog_item: catalog_item_1)
+        create(:ai_catalog_enabled_foundational_flow, :for_namespace, namespace: namespace, catalog_item: catalog_item_2)
+      end
+
+      it 'returns the catalog item ids' do
+        expect(subject).to match_array([catalog_item_1.id, catalog_item_2.id])
+      end
+    end
+
+    context 'when namespace has more than 100 enabled foundational flows' do
+      before do
+        allow(namespace.enabled_foundational_flows).to receive(:limit).with(100).and_return(
+          namespace.enabled_foundational_flows.limit(3)
+        )
+
+        4.times do
+          catalog_item = create(:ai_catalog_item, :with_foundational_flow_reference)
+          create(:ai_catalog_enabled_foundational_flow, :for_namespace, namespace: namespace, catalog_item: catalog_item)
+        end
+      end
+
+      it 'returns only the limit of catalog item ids' do
+        expect(subject.size).to eq(3)
       end
     end
   end

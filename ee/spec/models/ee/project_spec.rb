@@ -118,6 +118,7 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     it { is_expected.to have_many(:configured_ai_catalog_items).class_name('Ai::Catalog::ItemConsumer') }
     it { is_expected.to have_many(:ai_flow_triggers).class_name('Ai::FlowTrigger') }
     it { is_expected.to have_many(:policy_dismissals).class_name('Security::PolicyDismissal') }
+    it { is_expected.to have_many(:enabled_foundational_flows).class_name('Ai::Catalog::EnabledFoundationalFlow') }
 
     include_examples 'ci_cd_settings delegation' do
       let(:attributes_with_prefix) do
@@ -5652,6 +5653,56 @@ RSpec.describe Project, feature_category: :groups_and_projects do
 
     it 'filters by project_settings.duo_features_enabled = true' do
       expect(described_class.with_duo_features_enabled).to contain_exactly(p_on)
+    end
+  end
+
+  describe '.enabled_flow_catalog_item_ids' do
+    let_it_be(:namespace) { create(:group) }
+    let_it_be(:project) { create(:project, group: namespace) }
+    let_it_be(:catalog_item_1) { create(:ai_catalog_item, :with_foundational_flow_reference) }
+    let_it_be(:catalog_item_2) { create(:ai_catalog_item, :with_foundational_flow_reference) }
+    let_it_be(:catalog_item_3) { create(:ai_catalog_item, :with_foundational_flow_reference) }
+
+    subject { project.enabled_flow_catalog_item_ids }
+
+    context 'when project has no enabled foundational flows' do
+      before do
+        create(:ai_catalog_enabled_foundational_flow, :for_namespace, namespace: namespace, catalog_item: catalog_item_1)
+        create(:ai_catalog_enabled_foundational_flow, :for_namespace, namespace: namespace, catalog_item: catalog_item_2)
+      end
+
+      it 'returns the namespace catalog item ids' do
+        expect(subject).to match_array([catalog_item_1.id, catalog_item_2.id])
+      end
+    end
+
+    context 'when project has enabled foundational flows' do
+      before do
+        create(:ai_catalog_enabled_foundational_flow, :for_project, project: project, catalog_item: catalog_item_1)
+        create(:ai_catalog_enabled_foundational_flow, :for_project, project: project, catalog_item: catalog_item_2)
+        create(:ai_catalog_enabled_foundational_flow, :for_namespace, namespace: namespace, catalog_item: catalog_item_3)
+      end
+
+      it 'returns the project catalog item ids' do
+        expect(subject).to match_array([catalog_item_1.id, catalog_item_2.id])
+      end
+    end
+
+    context 'when project has more than 100 enabled foundational flows' do
+      before do
+        allow(project.enabled_foundational_flows).to receive(:limit).with(100).and_return(
+          project.enabled_foundational_flows.limit(3)
+        )
+
+        4.times do
+          catalog_item = create(:ai_catalog_item, :with_foundational_flow_reference)
+          create(:ai_catalog_enabled_foundational_flow, :for_project, project: project, catalog_item: catalog_item)
+        end
+      end
+
+      it 'returns only the limit of catalog item ids' do
+        expect(subject.size).to eq(3)
+      end
     end
   end
 
