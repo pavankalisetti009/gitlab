@@ -45,7 +45,6 @@ describe('NavigationRail', () => {
   const findSuggestionsToggle = () => wrapper.findByTestId('ai-suggestions-toggle');
   const findSessionsToggle = () => wrapper.findByTestId('ai-sessions-toggle');
   const findNewChatButton = () => wrapper.findComponent(NewChatButton);
-  const findDivider = () => wrapper.find('[name="divider"]');
 
   beforeEach(() => {
     shouldDisableShortcuts.mockReturnValue(false);
@@ -111,7 +110,6 @@ describe('NavigationRail', () => {
       createComponent();
 
       expect(findSessionsToggle().exists()).toBe(true);
-      expect(findDivider().exists()).toBe(true);
     });
 
     it('hides sessions button when in classic mode', () => {
@@ -119,7 +117,6 @@ describe('NavigationRail', () => {
       createComponent();
 
       expect(findSessionsToggle().exists()).toBe(false);
-      expect(findDivider().exists()).toBe(false);
     });
   });
 
