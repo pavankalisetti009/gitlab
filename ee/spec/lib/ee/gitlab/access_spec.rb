@@ -105,4 +105,92 @@ RSpec.describe Gitlab::Access, feature_category: :permissions do
       expect(described_class.options_for_custom_roles).to eq(expected_result)
     end
   end
+
+  describe '.options' do
+    context 'when security manager role is disabled' do
+      it 'does not include Security Manager in options' do
+        with_security_manager_disabled do
+          expect(described_class.options).not_to have_key('Security Manager')
+          expect(described_class.options.values).not_to include(25)
+        end
+      end
+
+      it 'returns roles in correct order' do
+        with_security_manager_disabled do
+          expect(described_class.options.keys).to eq(%w[Guest Planner Reporter Developer Maintainer])
+        end
+      end
+    end
+
+    context 'when security manager role is enabled' do
+      it 'includes Security Manager in options' do
+        with_security_manager_enabled do
+          expect(described_class.options).to have_key('Security Manager')
+          expect(described_class.options['Security Manager']).to eq(25)
+        end
+      end
+
+      it 'returns roles in correct order between Reporter and Developer' do
+        with_security_manager_enabled do
+          expect(described_class.options.keys).to eq(["Guest", "Planner", "Reporter", "Security Manager", "Developer",
+            "Maintainer"])
+        end
+      end
+    end
+  end
+
+  describe '.option_descriptions' do
+    context 'when security manager role is disabled' do
+      it 'does not include Security Manager description' do
+        with_security_manager_disabled do
+          expect(described_class.option_descriptions).not_to have_key(25)
+        end
+      end
+    end
+
+    context 'when security manager role is enabled' do
+      it 'includes Security Manager description' do
+        with_security_manager_enabled do
+          expect(described_class.option_descriptions).to have_key(25)
+          expect(described_class.option_descriptions[25]).to include('Security Manager')
+        end
+      end
+    end
+  end
+
+  describe '.sym_options' do
+    context 'when security manager role is disabled' do
+      it 'does not include security_manager in sym_options' do
+        with_security_manager_disabled do
+          expect(described_class.sym_options).not_to have_key(:security_manager)
+          expect(described_class.sym_options.values).not_to include(25)
+        end
+      end
+
+      it 'returns roles in correct order' do
+        with_security_manager_disabled do
+          expect(described_class.sym_options.keys).to eq(
+            [:guest, :planner, :reporter, :developer, :maintainer]
+          )
+        end
+      end
+    end
+
+    context 'when security manager role is enabled' do
+      it 'includes security_manager in sym_options' do
+        with_security_manager_enabled do
+          expect(described_class.sym_options).to have_key(:security_manager)
+          expect(described_class.sym_options[:security_manager]).to eq(25)
+        end
+      end
+
+      it 'returns roles in correct order between reporter and developer' do
+        with_security_manager_enabled do
+          expect(described_class.sym_options.keys).to eq(
+            [:guest, :planner, :reporter, :security_manager, :developer, :maintainer]
+          )
+        end
+      end
+    end
+  end
 end

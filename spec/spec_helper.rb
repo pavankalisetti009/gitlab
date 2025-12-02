@@ -223,6 +223,7 @@ RSpec.configure do |config|
   config.include WorkItems::DataSync::AssociationsHelpers
   config.include StateMachinesRspec::Matchers
   config.include Ci::JobHelpers
+  config.include SecurityManagerHelpers
 
   config.include_context 'when rendered has no HTML escapes', type: :view
   config.include_context 'with STI disabled', type: :model
