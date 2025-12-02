@@ -320,36 +320,5 @@ RSpec.describe Ai::ActiveContext::Code::SchedulingService, feature_category: :gl
         end
       end
     end
-
-    describe 'saas_initial_indexing' do
-      before do
-        allow(Gitlab::EventStore).to receive(:publish)
-      end
-
-      context 'when duo_chat_on_saas feature is available' do
-        before do
-          allow(::Gitlab::Saas).to receive(:feature_available?).with(:duo_chat_on_saas).and_return(true)
-        end
-
-        it 'publishes SaasInitialIndexingEvent' do
-          described_class.new(:saas_initial_indexing).execute
-
-          expect(Gitlab::EventStore).to have_received(:publish)
-            .with(an_instance_of(Ai::ActiveContext::Code::SaasInitialIndexingEvent))
-        end
-      end
-
-      context 'when duo_chat_on_saas feature is not available' do
-        before do
-          allow(::Gitlab::Saas).to receive(:feature_available?).with(:duo_chat_on_saas).and_return(false)
-        end
-
-        it 'does not publish the event' do
-          described_class.new(:saas_initial_indexing).execute
-
-          expect(Gitlab::EventStore).not_to have_received(:publish)
-        end
-      end
-    end
   end
 end
