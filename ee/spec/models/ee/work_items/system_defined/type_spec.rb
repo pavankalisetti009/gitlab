@@ -375,4 +375,116 @@ RSpec.describe ::WorkItems::SystemDefined::Type, feature_category: :team_plannin
       end
     end
   end
+
+  describe '#widgets' do
+    let(:issue_type) { build(:work_item_system_defined_type, :issue) }
+    let(:epic_type) { build(:work_item_system_defined_type, :epic) }
+
+    context 'with project as resource_parent' do
+      context 'when all licensed features are available' do
+        before do
+          stub_licensed_features(
+            iterations: true,
+            issue_weights: true,
+            issuable_health_status: true,
+            okrs: true,
+            epic_colors: true,
+            custom_fields: true,
+            security_dashboard: true,
+            work_item_status: true,
+            requirements: true
+          )
+        end
+
+        it 'includes widgets from the super method' do
+          widgets = issue_type.widgets(project)
+          widget_types = widgets.map(&:widget_type)
+
+          # Should include both CE and EE widgets
+          expect(widget_types).to include('assignees', 'description', 'labels')
+        end
+
+        it 'includes licensed widgets when licenses are available' do
+          widgets = issue_type.widgets(project)
+          widget_types = widgets.map(&:widget_type)
+
+          expect(widget_types).to include('vulnerabilities', 'weight', 'health_status')
+        end
+      end
+
+      context 'when some licensed features are not available' do
+        before do
+          stub_licensed_features(
+            issue_weights: true,
+            issuable_health_status: false,
+            custom_fields: false,
+            work_item_status: false
+          )
+        end
+
+        it 'excludes widgets that require unavailable licenses' do
+          widgets = issue_type.widgets(project)
+          widget_types = widgets.map(&:widget_type)
+
+          expect(widget_types).not_to include('status', 'health_status', 'custom_fields')
+        end
+
+        it 'includes widgets with available licenses' do
+          widgets = issue_type.widgets(project)
+          widget_types = widgets.map(&:widget_type)
+
+          expect(widget_types).to include('weight')
+        end
+
+        it 'includes CE widgets that do not require licenses' do
+          widgets = issue_type.widgets(project)
+          widget_types = widgets.map(&:widget_type)
+
+          expect(widget_types).to include('assignees', 'description', 'labels', 'milestone')
+        end
+      end
+    end
+
+    context 'with group as resource_parent' do
+      context 'when licensed features are available' do
+        before do
+          stub_licensed_features(
+            issuable_health_status: true,
+            issue_weights: true,
+            epics: true
+          )
+        end
+
+        it 'includes licensed widgets for group' do
+          widgets = epic_type.widgets(group)
+          widget_types = widgets.map(&:widget_type)
+
+          expect(widget_types).to include('health_status', 'weight')
+        end
+
+        it 'includes CE widgets' do
+          widgets = epic_type.widgets(group)
+          widget_types = widgets.map(&:widget_type)
+
+          expect(widget_types).to include('description', 'labels')
+        end
+      end
+
+      context 'when licensed features are not available' do
+        before do
+          stub_licensed_features(
+            iterations: false,
+            issue_weights: false
+          )
+        end
+
+        it 'excludes unlicensed widgets' do
+          widgets = epic_type.widgets(group)
+          widget_types = widgets.map(&:widget_type)
+
+          expect(widget_types).not_to include('iteration', 'weight')
+        end
+      end
+    end
+  end
 end

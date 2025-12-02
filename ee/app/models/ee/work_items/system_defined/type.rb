@@ -7,22 +7,6 @@ module EE
         extend ActiveSupport::Concern
         extend ::Gitlab::Utils::Override
 
-        LICENSED_WIDGETS = {
-          iterations: ::WorkItems::Widgets::Iteration,
-          issue_weights: ::WorkItems::Widgets::Weight,
-          requirements: [
-            ::WorkItems::Widgets::VerificationStatus,
-            ::WorkItems::Widgets::RequirementLegacy,
-            ::WorkItems::Widgets::TestReports
-          ],
-          issuable_health_status: ::WorkItems::Widgets::HealthStatus,
-          okrs: ::WorkItems::Widgets::Progress,
-          epic_colors: ::WorkItems::Widgets::Color,
-          custom_fields: ::WorkItems::Widgets::CustomFields,
-          security_dashboard: ::WorkItems::Widgets::Vulnerabilities,
-          work_item_status: ::WorkItems::Widgets::Status
-        }.freeze
-
         LICENSED_HIERARCHY_TYPES = {
           issue: { parent: { epic: :epics } },
           epic: { parent: { epic: :subepics }, child: { epic: :subepics, issue: :epics } }
@@ -47,9 +31,8 @@ module EE
 
         override :widgets
         def widgets(resource_parent)
-          unavailable_widgets = unlicensed_widget_classes(resource_parent)
-
-          super.reject { |widget_def| unavailable_widgets.include?(widget_def.widget_class) }
+          # Only include widgets if the resource_parent has the appropriate license or if the widget is not licensed
+          super.reject { |widget_def| !widget_def.licensed?(resource_parent) }
         end
 
         def status_lifecycle_for(namespace_id)
@@ -78,16 +61,10 @@ module EE
         end
 
         def system_defined_lifecycle
-          ::WorkItems::Statuses::SystemDefined::Lifecycle.of_work_item_base_type(key)
+          ::WorkItems::Statuses::SystemDefined::Lifecycle.of_work_item_base_type(base_type)
         end
 
         private
-
-        def unlicensed_widget_classes(resource_parent)
-          LICENSED_WIDGETS.flat_map do |licensed_feature, widget_class|
-            widget_class unless resource_parent.licensed_feature_available?(licensed_feature)
-          end.compact
-        end
 
         override :supported_conversion_base_types
         def supported_conversion_base_types(resource_parent, user)

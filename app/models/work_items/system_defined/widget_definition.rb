@@ -75,6 +75,11 @@ module WorkItems
       def build_widget(work_item)
         widget_class.new(work_item, widget_definition: self)
       end
+
+      # all CE widgets are available without license, we override this method in EE
+      def licensed?(_resource_parent)
+        true
+      end
     end
   end
 end
