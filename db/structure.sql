@@ -43696,7 +43696,7 @@ CREATE INDEX index_push_rules_on_project_id ON push_rules USING btree (project_i
 
 CREATE UNIQUE INDEX index_queries_service_pings_on_org_id_recorded_at ON queries_service_pings USING btree (organization_id, recorded_at);
 
-CREATE INDEX index_raw_usage_data_on_organization_id ON raw_usage_data USING btree (organization_id);
+CREATE UNIQUE INDEX index_raw_usage_data_on_organization_id_recorded_at ON raw_usage_data USING btree (organization_id, recorded_at);
 
 CREATE UNIQUE INDEX index_raw_usage_data_on_recorded_at ON raw_usage_data USING btree (recorded_at);
 
