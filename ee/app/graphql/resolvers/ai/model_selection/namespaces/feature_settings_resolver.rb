@@ -21,8 +21,12 @@ module Resolvers
             model_definitions = fetch_model_definitions(group)
             feature_settings = get_feature_settings(group)
 
-            ::Gitlab::Graphql::Representation::ModelSelection::FeatureSetting
-              .decorate(feature_settings, model_definitions: model_definitions)
+            ::Gitlab::Graphql::Representation::ModelSelection::FeatureSetting.decorate(
+              feature_settings,
+              model_definitions: model_definitions,
+              current_user: current_user,
+              group_id: group&.id
+            )
           end
 
           private
