@@ -71,12 +71,13 @@ RSpec.describe 'Query.project(id).dashboards.panels(id).visualization', feature_
         3 | 'SingleStat' | 'Duo Chat usage'
         4 | 'BarChart' | 'Code Suggestions acceptance rate by language (Last 30 days)'
         5 | 'AreaChart' | 'Code generation volume trends (Last 180 days)'
-        6 | 'AiImpactTable' | 'Duo usage metrics for the %{namespaceName} %{namespaceType}'
-        7 | 'AiImpactTable' | 'Development metrics for the %{namespaceName} %{namespaceType}'
-        8 | 'AiImpactTable' | 'Pipeline metrics for the %{namespaceName} %{namespaceType}'
-        9 | 'DataTable' | 'Duo Code Suggestions usage by user (Last 30 days)'
-        10 | 'DataTable' | 'Duo Code Review usage by user (Last 30 days)'
-        11 | 'DataTable' | 'Duo Root Cause Analysis usage by user (Last 30 days)'
+        6 | 'StackedColumnChart' | 'GitLab Duo Code Review requests by role (Last 180 days)'
+        7 | 'AiImpactTable' | 'Duo usage metrics for the %{namespaceName} %{namespaceType}'
+        8 | 'AiImpactTable' | 'Development metrics for the %{namespaceName} %{namespaceType}'
+        9 | 'AiImpactTable' | 'Pipeline metrics for the %{namespaceName} %{namespaceType}'
+        10 | 'DataTable' | 'Duo Code Suggestions usage by user (Last 30 days)'
+        11 | 'DataTable' | 'Duo Code Review usage by user (Last 30 days)'
+        12 | 'DataTable' | 'Duo Root Cause Analysis usage by user (Last 30 days)'
       end
 
       with_them do

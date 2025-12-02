@@ -73,6 +73,7 @@ module Analytics
         duo_code_review_usage_by_user
         duo_code_suggestions_by_user
         duo_rca_usage_by_user
+        code_review_requests_by_role_chart
       ].freeze
 
       CONTRIBUTIONS_DASHBOARD_PATH = 'ee/lib/gitlab/analytics/contributions_dashboard/visualizations'

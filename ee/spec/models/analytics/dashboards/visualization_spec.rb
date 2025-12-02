@@ -54,6 +54,7 @@ RSpec.describe Analytics::Dashboards::Visualization, feature_category: :product_
       duo_code_review_usage_by_user
       duo_code_suggestions_by_user
       duo_rca_usage_by_user
+      code_review_requests_by_role_chart
     ]
   end
 

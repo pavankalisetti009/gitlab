@@ -50,10 +50,18 @@ panels:
       width: 6
       height: 4
     options: {}
+  - title: 'GitLab Duo Code Review requests by role (Last 180 days)'
+    visualization: code_review_requests_by_role_chart
+    gridAttributes:
+      yPos: 5
+      xPos: 0
+      width: 12
+      height: 4
+    options: {}
   - title: 'Duo usage metrics for the %{namespaceName} %{namespaceType}'
     visualization: ai_impact_ai_metrics_table
     gridAttributes:
-      yPos: 5
+      yPos: 9
       xPos: 0
       width: 12
       height: 4
@@ -61,7 +69,7 @@ panels:
   - title: 'Development metrics for the %{namespaceName} %{namespaceType}'
     visualization: ai_impact_lifecycle_metrics_table
     gridAttributes:
-      yPos: 9
+      yPos: 13
       xPos: 0
       width: 12
       height: 3
@@ -69,7 +77,7 @@ panels:
   - title: 'Pipeline metrics for the %{namespaceName} %{namespaceType}'
     visualization: pipeline_metrics_table
     gridAttributes:
-      yPos: 12
+      yPos: 16
       xPos: 0
       width: 12
       height: 3
@@ -77,21 +85,21 @@ panels:
   - title: 'Duo Code Suggestions usage by user (Last 30 days)'
     visualization: duo_code_suggestions_by_user
     gridAttributes:
-      yPos: 14
+      yPos: 19
       xPos: 0
       width: 6
       height: 4
   - title: 'Duo Code Review usage by user (Last 30 days)'
     visualization: duo_code_review_usage_by_user
     gridAttributes:
-      yPos: 13
+      yPos: 19
       xPos: 6
       width: 6
       height: 4
   - title: 'Duo Root Cause Analysis usage by user (Last 30 days)'
     visualization: duo_rca_usage_by_user
     gridAttributes:
-      yPos: 17
+      yPos: 23
       xPos: 0
       width: 6
       height: 4

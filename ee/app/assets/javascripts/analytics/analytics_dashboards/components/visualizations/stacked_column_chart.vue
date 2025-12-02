@@ -1,7 +1,7 @@
 <script>
 import { GlStackedColumnChart, GlChartSeriesLabel } from '@gitlab/ui/src/charts';
-import merge from 'lodash/merge';
 import { stackedPresentationOptions } from '@gitlab/ui/src/utils/constants';
+import { omit, merge } from 'lodash';
 import {
   formatChartTooltipTitle,
   humanizeChartTooltipValue,
@@ -35,7 +35,8 @@ export default {
     fullOptions() {
       const defaultOptions = { xAxis: { axisPointer: { type: 'shadow' } } };
 
-      return merge({}, defaultOptions, this.options);
+      // Exclude `tooltip` to prevent ECharts from rendering default tooltip
+      return merge({}, defaultOptions, omit(this.options, 'tooltip'));
     },
     includeLegendAvgMax() {
       return Boolean(this.options.includeLegendAvgMax);

@@ -1,19 +1,19 @@
-import codeGenerationVolumeOverTime from 'ee/analytics/analytics_dashboards/data_sources/code_generation_volume_over_time';
+import codeReviewRequestsByRoleOverTime from 'ee/analytics/analytics_dashboards/data_sources/code_review_requests_by_role_over_time';
 import { defaultClient } from 'ee/analytics/analytics_dashboards/graphql/client';
 import { DATE_RANGE_OPTION_LAST_60_DAYS } from 'ee/analytics/analytics_dashboards/components/filters/constants';
 
-describe('`Code generation volume over time` data source', () => {
+describe('`Code review requests by role over time` data source', () => {
   let res;
 
   const namespace = 'test-namespace';
 
-  const mockCodeSuggestionsResponse = (response = {}) => ({
+  const mockCodeReviewMetricsResponse = (response = {}) => ({
     data: {
       group: {
         aiMetrics: {
-          codeSuggestions: {
+          codeReview: {
             ...response,
-            __typename: 'codeSuggestionMetrics',
+            __typename: 'codeReviewMetrics',
           },
           __typename: 'AiMetrics',
         },
@@ -22,39 +22,24 @@ describe('`Code generation volume over time` data source', () => {
     },
   });
 
-  const mockCodeGenerationVolumeTrendsData = [
-    {
-      data: [
-        ['May 2020', 3],
-        ['Jun 2020', 0],
-        ['Jul 2020', 20],
-      ],
-      name: 'Lines of code accepted',
-    },
-    {
-      data: [
-        ['May 2020', 10],
-        ['Jun 2020', 0],
-        ['Jul 2020', 100],
-      ],
-      name: 'Lines of code shown',
-    },
-  ];
+  const setVisualizationOverrides = jest.fn();
 
   const fetch = async (args) => {
-    res = await codeGenerationVolumeOverTime({
+    res = await codeReviewRequestsByRoleOverTime({
       namespace,
       query: { dateRange: DATE_RANGE_OPTION_LAST_60_DAYS },
+      setVisualizationOverrides,
       ...args,
     });
   };
 
   const mockResolvedQuery = () =>
-    jest
-      .spyOn(defaultClient, 'query')
-      .mockResolvedValue(
-        mockCodeSuggestionsResponse({ acceptedLinesOfCode: 500, shownLinesOfCode: 1000 }),
-      );
+    jest.spyOn(defaultClient, 'query').mockResolvedValue(
+      mockCodeReviewMetricsResponse({
+        requestReviewDuoCodeReviewOnMrByAuthorEventCount: 500,
+        requestReviewDuoCodeReviewOnMrByNonAuthorEventCount: 1000,
+      }),
+    );
 
   const expectQueryWithVariables = (variables) =>
     expect(defaultClient.query).toHaveBeenCalledWith(
@@ -73,13 +58,22 @@ describe('`Code generation volume over time` data source', () => {
         jest
           .spyOn(defaultClient, 'query')
           .mockResolvedValueOnce(
-            mockCodeSuggestionsResponse({ acceptedLinesOfCode: 3, shownLinesOfCode: 10 }),
+            mockCodeReviewMetricsResponse({
+              requestReviewDuoCodeReviewOnMrByAuthorEventCount: 4500,
+              requestReviewDuoCodeReviewOnMrByNonAuthorEventCount: 7800,
+            }),
           )
           .mockResolvedValueOnce(
-            mockCodeSuggestionsResponse({ acceptedLinesOfCode: null, shownLinesOfCode: null }),
+            mockCodeReviewMetricsResponse({
+              requestReviewDuoCodeReviewOnMrByAuthorEventCount: 0,
+              requestReviewDuoCodeReviewOnMrByNonAuthorEventCount: 0,
+            }),
           )
           .mockResolvedValueOnce(
-            mockCodeSuggestionsResponse({ acceptedLinesOfCode: 20, shownLinesOfCode: 100 }),
+            mockCodeReviewMetricsResponse({
+              requestReviewDuoCodeReviewOnMrByAuthorEventCount: 4800,
+              requestReviewDuoCodeReviewOnMrByNonAuthorEventCount: 9200,
+            }),
           );
 
         return fetch();
@@ -101,21 +95,51 @@ describe('`Code generation volume over time` data source', () => {
         });
       });
 
-      it('returns data series for accepted and shown lines of code', () => {
-        expect(res).toEqual(mockCodeGenerationVolumeTrendsData);
+      it('returns data series duo code review requests by authors and non-authors', () => {
+        expect(res).toEqual({
+          bars: [
+            {
+              name: 'Requests by authors',
+              data: [4500, 0, 4800],
+            },
+            {
+              name: 'Requests by non-authors',
+              data: [7800, 0, 9200],
+            },
+          ],
+          groupBy: ['May 2020', 'Jun 2020', 'Jul 2020'],
+        });
+      });
+
+      it('calls `setVisualizationOverrides` with correct tooltip description and link', () => {
+        expect(setVisualizationOverrides).toHaveBeenCalledWith({
+          visualizationOptionOverrides: expect.objectContaining({
+            tooltip: {
+              description:
+                'Tracks users who initiated GitLab Duo Code Review. %{linkStart}Learn more%{linkEnd}.',
+              descriptionLink:
+                '/help/user/analytics/duo_and_sdlc_trends#gitlab-duo-code-review-requests-by-role',
+            },
+          }),
+        });
       });
     });
   });
 
   describe('with no data available', () => {
     beforeEach(() => {
-      jest.spyOn(defaultClient, 'query').mockResolvedValue({ data: {} });
+      jest.spyOn(defaultClient, 'query').mockResolvedValue(
+        mockCodeReviewMetricsResponse({
+          requestReviewDuoCodeReviewOnMrByAuthorEventCount: 0,
+          requestReviewDuoCodeReviewOnMrByNonAuthorEventCount: 0,
+        }),
+      );
 
       return fetch();
     });
 
-    it('returns an empty array', () => {
-      expect(res).toEqual([]);
+    it('returns an empty object', () => {
+      expect(res).toEqual({});
     });
   });
 
