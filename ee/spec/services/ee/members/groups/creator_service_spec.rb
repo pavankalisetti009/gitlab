@@ -308,7 +308,6 @@ RSpec.describe Members::Groups::CreatorService, feature_category: :groups_and_pr
     end
 
     context 'when adding a service_account member' do
-      let_it_be(:user) { create(:user, :service_account) }
       let_it_be(:source) { create(:group) }
       let_it_be(:group_owner) { create(:user) }
 
@@ -316,16 +315,161 @@ RSpec.describe Members::Groups::CreatorService, feature_category: :groups_and_pr
         source.add_owner(group_owner)
       end
 
-      before do
-        allow(group_owner).to receive(:can?).and_return(false)
-        allow(group_owner).to receive(:can?).with(:admin_service_account_member, anything).and_return(true)
+      context 'when service account is a regular service account' do
+        let_it_be(:user) { create(:user, :service_account) }
+
+        before do
+          allow(group_owner).to receive(:can?).and_return(false)
+          allow(group_owner).to receive(:can?).with(:admin_service_account_member, anything).and_return(true)
+        end
+
+        it 'checks the appropriate permission' do
+          member = described_class.add_member(source, user, :maintainer, current_user: group_owner)
+
+          expect(member).to be_a GroupMember
+          expect(member).to be_persisted
+        end
       end
 
-      it 'checks the appropriate permission' do
-        member = described_class.add_member(source, user, :maintainer, current_user: group_owner)
+      context 'with composite identity service accounts' do
+        let_it_be(:subgroup) { create(:group, parent: source) }
+        let_it_be(:other_group) { create(:group) }
 
-        expect(member).to be_a GroupMember
-        expect(member).to be_persisted
+        context 'when feature is available' do
+          before do
+            stub_saas_features(service_accounts_invite_restrictions: true)
+          end
+
+          context 'when service account is provisioned in the same group hierarchy' do
+            let_it_be(:user) do
+              create(:user, :service_account, composite_identity_enforced: true, provisioned_by_group: source)
+            end
+
+            before do
+              allow(group_owner).to receive(:can?).and_return(false)
+              allow(group_owner).to receive(:can?).with(:admin_service_account_member, anything).and_return(true)
+            end
+
+            it 'allows adding the service account' do
+              member = described_class.add_member(source, user, :maintainer, current_user: group_owner)
+
+              expect(member).to be_a GroupMember
+              expect(member).to be_persisted
+            end
+          end
+
+          context 'when service account is provisioned in a parent group' do
+            let_it_be(:user) do
+              create(:user, :service_account, composite_identity_enforced: true, provisioned_by_group: source)
+            end
+
+            before do
+              allow(group_owner).to receive(:can?).and_return(false)
+              allow(group_owner).to receive(:can?).with(:admin_service_account_member, anything).and_return(true)
+            end
+
+            it 'allows adding the service account to a subgroup' do
+              subgroup.add_owner(group_owner)
+              member = described_class.add_member(subgroup, user, :maintainer, current_user: group_owner)
+
+              expect(member).to be_a GroupMember
+              expect(member).to be_persisted
+            end
+          end
+
+          context 'when service account is provisioned outside the group hierarchy' do
+            let_it_be(:user) do
+              create(:user, :service_account, composite_identity_enforced: true, provisioned_by_group: other_group)
+            end
+
+            before do
+              allow(group_owner).to receive(:can?).and_return(false)
+              allow(group_owner).to receive(:can?).with(:admin_service_account_member, anything).and_return(true)
+            end
+
+            it 'prevents adding the service account' do
+              member = described_class.add_member(source, user, :maintainer, current_user: group_owner)
+
+              expect(member).not_to be_persisted
+              expect(member.errors.full_messages).to include(/not authorized to create member/)
+            end
+          end
+
+          context 'when service account is provisioned in a subgroup' do
+            let_it_be(:user) do
+              create(:user, :service_account, composite_identity_enforced: true, provisioned_by_group: subgroup)
+            end
+
+            before do
+              allow(group_owner).to receive(:can?).and_return(false)
+              allow(group_owner).to receive(:can?).with(:admin_service_account_member, anything).and_return(true)
+            end
+
+            it 'prevents adding the service account to parent group' do
+              member = described_class.add_member(source, user, :maintainer, current_user: group_owner)
+
+              expect(member).not_to be_persisted
+              expect(member.errors.full_messages).to include(/not authorized to create member/)
+            end
+          end
+
+          context 'when service account is instance-wide' do
+            let_it_be(:user) do
+              create(:user, :service_account, composite_identity_enforced: true, provisioned_by_group: nil)
+            end
+
+            before do
+              allow(group_owner).to receive(:can?).and_return(false)
+              allow(group_owner).to receive(:can?).with(:admin_service_account_member, anything).and_return(true)
+            end
+
+            it 'allows adding the service account' do
+              member = described_class.add_member(source, user, :maintainer, current_user: group_owner)
+
+              expect(member).to be_a GroupMember
+              expect(member).to be_persisted
+            end
+          end
+
+          context 'when feature flag is disabled' do
+            let_it_be(:user) do
+              create(:user, :service_account, composite_identity_enforced: true, provisioned_by_group: other_group)
+            end
+
+            before do
+              stub_saas_features(service_accounts_invite_restrictions: true)
+              stub_feature_flags(restrict_invites_for_comp_id_service_accounts: false)
+              allow(group_owner).to receive(:can?).and_return(false)
+              allow(group_owner).to receive(:can?).with(:admin_service_account_member, anything).and_return(true)
+            end
+
+            it 'allows adding the service account from outside hierarchy' do
+              member = described_class.add_member(source, user, :maintainer, current_user: group_owner)
+
+              expect(member).to be_a GroupMember
+              expect(member).to be_persisted
+            end
+          end
+        end
+
+        context 'when feature is not available' do
+          let_it_be(:user) do
+            create(:user, :service_account, composite_identity_enforced: true, provisioned_by_group: other_group)
+          end
+
+          before do
+            stub_saas_features(service_accounts_invite_restrictions: false)
+            allow(group_owner).to receive(:can?).and_return(false)
+            allow(group_owner).to receive(:can?).with(:admin_service_account_member, anything).and_return(true)
+          end
+
+          it 'allows adding the service account from outside hierarchy' do
+            member = described_class.add_member(source, user, :maintainer, current_user: group_owner)
+
+            expect(member).to be_a GroupMember
+            expect(member).to be_persisted
+          end
+        end
       end
     end
 

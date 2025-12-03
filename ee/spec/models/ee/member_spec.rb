@@ -985,6 +985,101 @@ RSpec.describe Member, type: :model, feature_category: :groups_and_projects do
     let_it_be(:shared_group) { create(:group) }
     let_it_be(:invited_group) { create(:group) }
 
+    context 'with service account invite restrictions' do
+      let_it_be(:subgroup) { create(:group, parent: shared_group) }
+      let_it_be(:other_group) { create(:group) }
+
+      let_it_be(:regular_user) { create(:user) }
+      let_it_be(:instance_wide_sa) do
+        create(:user, :service_account, composite_identity_enforced: true, provisioned_by_group: nil)
+      end
+
+      let_it_be(:shared_group_sa) do
+        create(:user, :service_account, composite_identity_enforced: true, provisioned_by_group: shared_group)
+      end
+
+      let_it_be(:subgroup_sa) do
+        create(:user, :service_account, composite_identity_enforced: true, provisioned_by_group: subgroup)
+      end
+
+      let_it_be(:other_group_sa) do
+        create(:user, :service_account, composite_identity_enforced: true, provisioned_by_group: other_group)
+      end
+
+      let_it_be(:regular_member) { create(:group_member, user: regular_user, source: invited_group) }
+      let_it_be(:instance_sa_member) { create(:group_member, user: instance_wide_sa, source: invited_group) }
+      let_it_be(:shared_group_sa_member) { create(:group_member, user: shared_group_sa, source: invited_group) }
+      let_it_be(:subgroup_sa_member) { create(:group_member, user: subgroup_sa, source: invited_group) }
+      let_it_be(:other_group_sa_member) { create(:group_member, user: other_group_sa, source: invited_group) }
+
+      before do
+        create(:group_group_link, shared_group: shared_group, shared_with_group: invited_group)
+      end
+
+      subject(:shared_members) { described_class.shared_members(shared_group) }
+
+      context 'when feature is available' do
+        before do
+          stub_saas_features(service_accounts_invite_restrictions: true)
+        end
+
+        it 'filters out service accounts provisioned outside the group hierarchy' do
+          expect(shared_members).to include(regular_member, instance_sa_member, shared_group_sa_member)
+          expect(shared_members).not_to include(subgroup_sa_member, other_group_sa_member)
+        end
+
+        context 'when CompositeIdMembersFinder filters members' do
+          let(:allowed_members) do
+            described_class.where(id: [regular_member.id, instance_sa_member.id, shared_group_sa_member.id])
+          end
+
+          before do
+            allow_next_instance_of(::Members::ServiceAccounts::CompositeIdMembersFinder) do |finder|
+              allow(finder).to receive(:execute).and_return(allowed_members)
+            end
+          end
+
+          it 'includes only the allowed service accounts' do
+            expect(shared_members).to include(regular_member, instance_sa_member, shared_group_sa_member)
+            expect(shared_members).not_to include(subgroup_sa_member, other_group_sa_member)
+          end
+        end
+
+        context 'when feature flag is disabled' do
+          before do
+            stub_feature_flags(restrict_invites_for_comp_id_service_accounts: false)
+          end
+
+          it 'does not filter service accounts' do
+            expect(shared_members).to include(
+              regular_member,
+              instance_sa_member,
+              shared_group_sa_member,
+              subgroup_sa_member,
+              other_group_sa_member
+            )
+          end
+        end
+      end
+
+      context 'when feature is not available' do
+        before do
+          stub_saas_features(service_accounts_invite_restrictions: false)
+          stub_feature_flags(restrict_invites_for_comp_id_service_accounts: true)
+        end
+
+        it 'does not filter service accounts' do
+          expect(shared_members).to include(
+            regular_member,
+            instance_sa_member,
+            shared_group_sa_member,
+            subgroup_sa_member,
+            other_group_sa_member
+          )
+        end
+      end
+    end
+
     where(:user_access, :group_access, :expected_access_level, :expected_member_role) do
       10 | 30 | 10 | ref(:user_role)
       30 | 10 | 10 | ref(:group_role)

@@ -91,5 +91,127 @@ RSpec.describe Members::InviteUsersFinder, feature_category: :groups_and_project
         end
       end
     end
+
+    context 'for service account invite restrictions' do
+      let_it_be(:resource) { root_group }
+
+      let_it_be(:instance_wide_sa) do
+        create(:user, :service_account, composite_identity_enforced: true, provisioned_by_group: nil)
+      end
+
+      let_it_be(:root_group_sa) do
+        create(:user, :service_account, composite_identity_enforced: true, provisioned_by_group: root_group)
+      end
+
+      let_it_be(:subgroup_sa) do
+        create(:user, :service_account, composite_identity_enforced: true, provisioned_by_group: subgroup)
+      end
+
+      let_it_be(:other_group_sa) do
+        create(:user, :service_account, composite_identity_enforced: true, provisioned_by_group: create(:group))
+      end
+
+      let(:searchable_users_ordered_by_id_desc) do
+        [
+          current_user,
+          regular_user,
+          admin_user,
+          external_user,
+          unconfirmed_user,
+          omniauth_user,
+          service_account_user,
+          instance_wide_sa,
+          root_group_sa
+        ].sort_by(&:id).reverse
+      end
+
+      before do
+        stub_saas_features(service_accounts_invite_restrictions: true)
+      end
+
+      it 'excludes service accounts from subgroups and other groups' do
+        result = finder.execute
+
+        expect(result).to include(instance_wide_sa, root_group_sa)
+        expect(result).not_to include(subgroup_sa, other_group_sa)
+      end
+
+      it 'returns searchable users ordered by id descending' do
+        expect(finder.execute).to eq(searchable_users_ordered_by_id_desc)
+      end
+
+      context 'when CompositeIdUsersFinder filters users' do
+        it 'includes only the allowed service accounts' do
+          result = finder.execute
+
+          expect(result).not_to include(subgroup_sa, other_group_sa)
+          expect(result).to include(instance_wide_sa, root_group_sa)
+        end
+      end
+
+      context 'when resource is a project' do
+        let_it_be(:resource) { create(:project, namespace: root_group, creator: current_user) }
+
+        it 'does not filter service accounts' do
+          result = finder.execute
+
+          expect(result).to include(subgroup_sa, other_group_sa)
+        end
+      end
+
+      context 'when resource is a subgroup' do
+        let_it_be(:resource) { subgroup }
+
+        let(:searchable_users_ordered_by_id_desc) do
+          [
+            current_user,
+            regular_user,
+            admin_user,
+            external_user,
+            unconfirmed_user,
+            omniauth_user,
+            service_account_user,
+            instance_wide_sa,
+            root_group_sa,
+            subgroup_sa
+          ].sort_by(&:id).reverse
+        end
+
+        it 'excludes service accounts from other groups only' do
+          result = finder.execute
+
+          expect(result).to include(instance_wide_sa, root_group_sa, subgroup_sa)
+          expect(result).not_to include(other_group_sa)
+        end
+
+        it 'returns searchable users ordered by id descending' do
+          expect(finder.execute).to eq(searchable_users_ordered_by_id_desc)
+        end
+      end
+
+      context 'when feature flag is disabled' do
+        before do
+          stub_feature_flags(restrict_invites_for_comp_id_service_accounts: false)
+        end
+
+        it 'does not filter service accounts' do
+          result = finder.execute
+
+          expect(result).to include(subgroup_sa, other_group_sa)
+        end
+      end
+
+      context 'when feature is not available' do
+        before do
+          stub_saas_features(service_accounts_invite_restrictions: false)
+        end
+
+        it 'does not filter service accounts' do
+          result = finder.execute
+
+          expect(result).to include(subgroup_sa, other_group_sa)
+        end
+      end
+    end
   end
 end
