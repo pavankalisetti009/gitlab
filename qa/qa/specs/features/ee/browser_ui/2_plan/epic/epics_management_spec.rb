@@ -10,7 +10,11 @@ module QA
         Flow::Login.sign_in
       end
 
-      it 'creates an epic', testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347980' do
+      it 'creates an epic', testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347980', quarantine: {
+        issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/work_items/17261',
+        type: :investigating,
+        only: { subdomain: :staging }
+      } do
         epic_title = 'Epic created via GUI'
 
         EE::Resource::WorkItemEpic.fabricate_via_browser_ui! do |epic|
@@ -21,7 +25,12 @@ module QA
         expect(page).to have_content(epic_title)
       end
 
-      it 'creates a confidential epic', testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347979' do
+      it 'creates a confidential epic', testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347979',
+        quarantine: {
+          issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/work_items/17260',
+          type: :investigating,
+          only: { subdomain: :staging }
+        } do
         epic_title = 'Confidential epic created via GUI'
 
         EE::Resource::WorkItemEpic.fabricate_via_browser_ui! do |epic|
