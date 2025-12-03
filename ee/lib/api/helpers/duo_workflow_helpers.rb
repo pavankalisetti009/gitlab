@@ -21,7 +21,6 @@ module API
         Gitlab::AiGateway.push_feature_flag(:duo_workflow_stream_during_tool_call_generation, current_user)
         Gitlab::AiGateway.push_feature_flag(:duo_workflow_compress_checkpoint, current_user)
         Gitlab::AiGateway.push_feature_flag(:duo_use_billing_endpoint, current_user)
-        Gitlab::AiGateway.push_feature_flag(:ai_gateway_allow_conversation_caching, current_user)
         Gitlab::AiGateway.push_feature_flag(:usage_quota_left_check, current_user)
         Gitlab::AiGateway.push_feature_flag(:ai_per_model_context_window, current_user)
         Gitlab::AiGateway.push_feature_flag(:use_generic_gitlab_api_tools, current_user)
