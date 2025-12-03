@@ -2619,6 +2619,9 @@ msgstr ""
 msgid "AICatalog|Connect an agent to automate complex tasks"
 msgstr ""
 
+msgid "AICatalog|Connects to an AI model provider outside GitLab."
+msgstr ""
+
 msgid "AICatalog|Contains dangerous code, exploits, or harmful actions."
 msgstr ""
 
