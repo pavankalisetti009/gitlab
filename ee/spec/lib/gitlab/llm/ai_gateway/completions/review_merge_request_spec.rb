@@ -61,7 +61,8 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
 
   let(:help_page_link) do
     ::Gitlab::Utils.append_path(Gitlab::Routing.url_helpers.root_url,
-      Gitlab::Routing.url_helpers.help_page_path('user/gitlab_duo/context_exclusion.md'))
+      Gitlab::Routing.url_helpers.help_page_path('user/gitlab_duo/context.md',
+        anchor: 'exclude-context-from-gitlab-duo'))
   end
 
   subject(:completion) { described_class.new(review_prompt_message, review_prompt_class, options) }
