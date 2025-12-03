@@ -37,7 +37,7 @@ module VulnerabilitiesHelper
       can_modify_related_issues: current_user.can?(:admin_vulnerability_issue_link, vulnerability),
       can_admin: current_user.can?(:admin_vulnerability, vulnerability.project),
       issue_tracking_help_path: help_page_path('user/project/issues/_index.md'),
-      permissions_help_path: help_page_path('user/permissions.md', anchor: 'project-members-permissions'),
+      permissions_help_path: help_page_path('user/permissions.md', anchor: 'project-permissions'),
       dismissal_descriptions: dismissal_descriptions,
       representation_information: format_vulnerability_representation_information(vulnerability.representation_information),
       severity_override: severity_override_data(vulnerability),
