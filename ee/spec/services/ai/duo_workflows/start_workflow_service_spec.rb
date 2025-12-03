@@ -883,9 +883,18 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
       ]
     end
 
-    let(:executor_commands) do
+    let(:cli_install_commands) do
       [
-        "npx -y @gitlab/duo-cli@#{duo_cli_version} run --existing-session-id #{workflow.id} --connection-type websocket"
+        %(npm install -g @gitlab/duo-cli@#{duo_cli_version}),
+        %(ls -la $(npm root -g)/@gitlab/duo-cli || echo "GitLab Duo package not found"),
+        %(export PATH="$(npm bin -g):$PATH"),
+        %(which duo || echo "duo not in PATH")
+      ]
+    end
+
+    let(:executor_commands) do
+      cli_install_commands + [
+        %(duo run --existing-session-id #{workflow.id} --connection-type websocket)
       ]
     end
 
@@ -941,8 +950,8 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
         end
 
         let(:executor_commands) do
-          [
-            %(npx -y @gitlab/duo-cli@#{duo_cli_version} run --existing-session-id #{workflow.id} --connection-type grpc)
+          cli_install_commands + [
+            %(duo run --existing-session-id #{workflow.id} --connection-type grpc)
           ]
         end
 
@@ -991,6 +1000,144 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
         end.and_call_original
 
         expect(execute).to be_success
+      end
+    end
+
+    context 'with sandbox integration' do
+      let(:sandbox) { instance_double(::Gitlab::DuoWorkflow::Sandbox) }
+      let(:duo_cli_command) { %(duo run --existing-session-id #{workflow.id} --connection-type websocket) }
+
+      before do
+        allow(::Gitlab::DuoWorkflow::Sandbox).to receive(:new).and_return(sandbox)
+        allow(duo_config).to receive(:setup_script).and_return(nil)
+      end
+
+      context 'when sandbox is enabled (no custom image)' do
+        let(:image) { nil }
+        let(:duo_workflow_service_url) { 'https://duo-workflow-service.example.com:443' }
+        let(:wrapped_commands) do
+          [
+            %(if which srt > /dev/null; then),
+            %(  echo "SRT found, creating config..."),
+            %(  srt --settings /tmp/srt-settings.json #{duo_cli_command}),
+            %(fi)
+          ]
+        end
+
+        let(:sandbox_env_vars) do
+          {
+            NPM_CONFIG_CACHE: "/tmp/.npm-cache",
+            GITLAB_LSP_STORAGE_DIR: "/tmp"
+          }
+        end
+
+        before do
+          allow(Gitlab::DuoWorkflow::Client).to receive(:url_for).and_return(duo_workflow_service_url)
+          allow(sandbox).to receive(:wrap_command).with(duo_cli_command).and_return(wrapped_commands)
+          allow(sandbox).to receive(:environment_variables).and_return(sandbox_env_vars)
+        end
+
+        it 'creates sandbox instance with correct parameters' do
+          execute
+
+          expect(::Gitlab::DuoWorkflow::Sandbox).to have_received(:new).with(
+            current_user: maintainer,
+            duo_workflow_service_url: duo_workflow_service_url
+          )
+        end
+
+        it 'wraps executor command with sandbox' do
+          allow(Ci::Workloads::RunWorkloadService).to receive(:new).and_call_original
+
+          expect(execute).to be_success
+
+          expect(sandbox).to have_received(:wrap_command).with(duo_cli_command)
+          expect(Ci::Workloads::RunWorkloadService).to have_received(:new) do |workload_definition:, **_kwargs|
+            commands = workload_definition.commands
+            expect(commands).to include(*wrapped_commands)
+          end
+        end
+
+        it 'includes sandbox environment variables' do
+          allow(Ci::Workloads::RunWorkloadService).to receive(:new).and_call_original
+
+          expect(execute).to be_success
+
+          expect(sandbox).to have_received(:environment_variables)
+          expect(Ci::Workloads::RunWorkloadService).to have_received(:new) do |workload_definition:, **_kwargs|
+            variables = workload_definition.variables
+            expect(variables[:NPM_CONFIG_CACHE]).to eq("/tmp/.npm-cache")
+            expect(variables[:GITLAB_LSP_STORAGE_DIR]).to eq("/tmp")
+          end
+        end
+
+        it 'combines setup_script, main commands, CLI install, and wrapped executor commands' do
+          allow(duo_config).to receive(:setup_script).and_return(['npm install'])
+          allow(Ci::Workloads::RunWorkloadService).to receive(:new).and_call_original
+
+          expect(execute).to be_success
+
+          expect(Ci::Workloads::RunWorkloadService).to have_received(:new) do |workload_definition:, **_kwargs|
+            commands = workload_definition.commands
+            expect(commands[0]).to eq('npm install')
+            expect(commands[1..8]).to eq(shared_main_commands)
+            expect(commands[9..12]).to eq(cli_install_commands)
+            expect(commands[13..]).to eq(wrapped_commands)
+          end
+        end
+      end
+
+      shared_examples 'sandbox is disabled' do
+        let(:duo_cli_command) { %(duo run --existing-session-id #{workflow.id} --connection-type websocket) }
+
+        it 'does not wrap executor command with sandbox' do
+          allow(Ci::Workloads::RunWorkloadService).to receive(:new).and_call_original
+
+          expect(execute).to be_success
+
+          expect(sandbox).not_to have_received(:wrap_command)
+          expect(Ci::Workloads::RunWorkloadService).to have_received(:new) do |workload_definition:, **_kwargs|
+            commands = workload_definition.commands
+            expect(commands).to include(duo_cli_command)
+            expect(commands).not_to include(%(if which srt > /dev/null; then))
+          end
+        end
+
+        it 'does not include sandbox environment variables' do
+          allow(Ci::Workloads::RunWorkloadService).to receive(:new).and_call_original
+
+          expect(execute).to be_success
+
+          expect(sandbox).not_to have_received(:environment_variables)
+          expect(Ci::Workloads::RunWorkloadService).to have_received(:new) do |workload_definition:, **_kwargs|
+            variables = workload_definition.variables
+            expect(variables).not_to have_key(:NPM_CONFIG_CACHE)
+            expect(variables).not_to have_key(:GITLAB_LSP_STORAGE_DIR)
+          end
+        end
+      end
+
+      context 'when sandbox is disabled (custom image specified)' do
+        let(:image) { 'custom-image:latest' }
+
+        before do
+          allow(sandbox).to receive(:wrap_command)
+          allow(sandbox).to receive(:environment_variables).and_return({})
+        end
+
+        it_behaves_like 'sandbox is disabled'
+      end
+
+      context 'when sandbox is disabled (configured image specified)' do
+        let(:image) { nil }
+
+        before do
+          allow(duo_config).to receive(:default_image).and_return('config-image:latest')
+          allow(sandbox).to receive(:wrap_command)
+          allow(sandbox).to receive(:environment_variables).and_return({})
+        end
+
+        it_behaves_like 'sandbox is disabled'
       end
     end
   end
