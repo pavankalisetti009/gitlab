@@ -85,7 +85,11 @@ module QA
           end
         end
 
-        it_behaves_like 'audit event', ["Added email", "Removed email"]
+        context 'with quarantine',
+          quarantine: { issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/work_items/16723',
+                        type: :flaky } do
+          it_behaves_like 'audit event', ["Added email", "Removed email"]
+        end
       end
 
       context 'for change password', :skip_signup_disabled,
