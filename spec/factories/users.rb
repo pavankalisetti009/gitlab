@@ -291,6 +291,7 @@ FactoryBot.define do
 
     factory :support_bot do
       user_type { :support_bot }
+      username { 'support-bot' }
     end
   end
 end
