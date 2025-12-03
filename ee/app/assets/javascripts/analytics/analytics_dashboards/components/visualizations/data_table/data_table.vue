@@ -16,6 +16,7 @@ export default {
     GlTableLite,
     GlKeysetPagination,
     AssigneeAvatars: () => import('./assignee_avatars.vue'),
+    CalculateSum: () => import('./calculate_sum.vue'),
     DiffLineChanges: () => import('./diff_line_changes.vue'),
     CalculatePercent: () => import('./calculate_percent.vue'),
     FormatTime: () => import('./format_time.vue'),

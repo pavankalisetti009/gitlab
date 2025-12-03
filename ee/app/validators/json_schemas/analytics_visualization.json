@@ -151,6 +151,7 @@
               "component": {
                 "enum": [
                   "AssigneeAvatars",
+                  "CalculateSum",
                   "DiffLineChanges",
                   "CalculatePercent",
                   "FormatTime",
