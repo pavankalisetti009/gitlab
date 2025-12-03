@@ -1,6 +1,6 @@
 import { GlButton, GlSprintf } from '@gitlab/ui';
 import PurchaseCommitmentCard from 'ee/usage_quotas/usage_billing/components/purchase_commitment_card.vue';
-import { PROMO_URL } from 'jh_else_ce/lib/utils/url_utility';
+import { CUSTOMERS_PORTAL_URL } from 'jh_else_ce/lib/utils/url_utility';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
 describe('PurchaseCommitmentCard', () => {
@@ -38,7 +38,7 @@ describe('PurchaseCommitmentCard', () => {
     it('renders call to action button', () => {
       const button = wrapper.findComponent(GlButton);
 
-      expect(button.props('href')).toBe(`${PROMO_URL}/sales`);
+      expect(button.props('href')).toBe(`${CUSTOMERS_PORTAL_URL}/contact_us`);
 
       expect(button.text()).toBe('Increase monthly commitment');
     });
@@ -62,7 +62,7 @@ describe('PurchaseCommitmentCard', () => {
     it('renders call to action button', () => {
       const button = wrapper.findComponent(GlButton);
 
-      expect(button.props('href')).toBe(`${PROMO_URL}/sales`);
+      expect(button.props('href')).toBe(`${CUSTOMERS_PORTAL_URL}/contact_us`);
       expect(button.text()).toBe('Purchase monthly commitment');
     });
   });
