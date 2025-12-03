@@ -27,27 +27,40 @@ export default {
   },
   data() {
     return {
-      loading: true,
+      shouldFetch: false,
+      searchTerm: '',
       projects: [],
     };
   },
+  apollo: {
+    projects: {
+      query: getNamespaceProjects,
+      skip() {
+        return !this.shouldFetch;
+      },
+      variables() {
+        return {
+          fullPath: this.config.fullPath,
+          search: this.searchTerm,
+        };
+      },
+      update(data) {
+        return data.group?.projects?.nodes || [];
+      },
+      error() {
+        createAlert({ message: __('There was a problem fetching projects.') });
+      },
+    },
+  },
+  computed: {
+    loading() {
+      return this.$apollo.queries.projects?.loading ?? false;
+    },
+  },
   methods: {
     fetchProjects(search = '') {
-      this.loading = true;
-      return this.$apollo
-        .query({
-          query: getNamespaceProjects,
-          variables: { fullPath: this.config.fullPath, search },
-        })
-        .then(({ data }) => {
-          this.projects = data.group?.projects?.nodes || [];
-        })
-        .catch(() => {
-          createAlert({ message: __('There was a problem fetching projects.') });
-        })
-        .finally(() => {
-          this.loading = false;
-        });
+      this.searchTerm = search;
+      this.shouldFetch = true;
     },
     getActiveProject(projects, data) {
       if (!data) {
