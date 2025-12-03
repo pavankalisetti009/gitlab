@@ -159,6 +159,9 @@ module EE
             to: ::Projects::ProjectTransferedEvent
           store.subscribe ::Security::Attributes::CleanupScheduleWorker,
             to: ::Groups::GroupTransferedEvent
+
+          store.subscribe ::Security::ScanProfiles::ProcessProjectTransferEventsWorker,
+            to: ::Projects::ProjectTransferedEvent
         end
 
         def subscribe_to_external_issue_links_events(store)
