@@ -52,10 +52,48 @@ RSpec.describe ComplianceManagement::UpdateDefaultFrameworkWorker, feature_categ
 
     it_behaves_like 'an idempotent worker'
 
-    it 'rescues and logs the exception if project does not exist' do
-      expect(Gitlab::ErrorTracking).to receive(:log_exception).with(instance_of(ActiveRecord::RecordNotFound))
+    context 'when framework is already assigned to the project' do
+      before do
+        project.compliance_management_frameworks << framework
+      end
 
-      worker.perform(user.id, non_existing_record_id, framework.id)
+      it 'does not invoke the service' do
+        expect(ComplianceManagement::Frameworks::UpdateProjectService).not_to receive(:new)
+
+        worker.perform(*job_args)
+      end
+    end
+
+    context 'when project does not exist' do
+      it 'logs the exception' do
+        expect(Gitlab::ErrorTracking).to receive(:log_exception).with(instance_of(ActiveRecord::RecordNotFound))
+
+        worker.perform(user.id, non_existing_record_id, framework.id)
+      end
+    end
+
+    context 'when framework does not exist' do
+      it 'logs the exception' do
+        expect(Gitlab::ErrorTracking).to receive(:log_exception).with(instance_of(ActiveRecord::RecordNotFound))
+
+        worker.perform(user.id, project.id, non_existing_record_id)
+      end
+    end
+
+    context 'when the service returns an error' do
+      let(:error_message) { 'Something went wrong' }
+
+      before do
+        allow_next_instance_of(ComplianceManagement::Frameworks::UpdateProjectService) do |service|
+          allow(service).to receive(:execute).and_return(ServiceResponse.error(message: error_message))
+        end
+      end
+
+      it 'raises an error with the service message' do
+        expect do
+          worker.perform(*job_args)
+        end.to raise_error("Failed to assign default compliance framework: #{error_message}")
+      end
     end
   end
 end
