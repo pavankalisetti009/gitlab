@@ -158,11 +158,11 @@ describe('workflow_socket_utils', () => {
           workflowId: '123',
           goal: 'test goal',
           metadata: 'test metadata',
-          agentConfig: 'components:\n  - name: test\n    type: agent',
+          agentConfig: 'version: my_version\ncomponents:\n  - name: test\n    type: agent',
         });
 
         expect(request.startRequest.flowConfig).toBeDefined();
-        expect(request.startRequest.flowConfigSchemaVersion).toBe('experimental');
+        expect(request.startRequest.flowConfigSchemaVersion).toBe('my_version');
       });
     });
 

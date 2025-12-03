@@ -89,8 +89,10 @@ export function buildStartRequest({
   }
 
   if (agentConfig) {
-    startRequest.startRequest.flowConfig = parseDocument(agentConfig);
-    startRequest.startRequest.flowConfigSchemaVersion = 'experimental';
+    const parsedAgentConfig = parseDocument(agentConfig);
+
+    startRequest.startRequest.flowConfig = parsedAgentConfig;
+    startRequest.startRequest.flowConfigSchemaVersion = parsedAgentConfig.toJSON().version;
   }
 
   return startRequest;
