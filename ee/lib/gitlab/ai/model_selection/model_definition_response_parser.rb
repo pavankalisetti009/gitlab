@@ -42,7 +42,8 @@ module Gitlab
                 'name' => model['name'],
                 'ref' => model['identifier'],
                 'model_provider' => model['provider'],
-                'model_description' => model['description']
+                'model_description' => model['description'],
+                'cost_indicator' => model['cost_indicator']
               }
             ]
           end

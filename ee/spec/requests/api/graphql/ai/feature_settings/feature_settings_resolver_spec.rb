@@ -45,12 +45,14 @@ RSpec.describe 'List of configurable AI feature with metadata.', feature_categor
               name
               modelProvider
               modelDescription
+              costIndicator
             }
             gitlabModel {
               ref
               name
               modelProvider
               modelDescription
+              costIndicator
             }
             validGitlabModels {
               nodes {
@@ -58,6 +60,7 @@ RSpec.describe 'List of configurable AI feature with metadata.', feature_categor
                 name
                 modelProvider
                 modelDescription
+                costIndicator
               }
             }
           }
@@ -214,12 +217,14 @@ RSpec.describe 'List of configurable AI feature with metadata.', feature_categor
                   name
                   modelProvider
                   modelDescription
+                  costIndicator
                 }
                 gitlabModel {
                   ref
                   name
                   modelProvider
                   modelDescription
+                  costIndicator
                 }
                 validGitlabModels {
                   nodes {
@@ -227,6 +232,7 @@ RSpec.describe 'List of configurable AI feature with metadata.', feature_categor
                     name
                     modelProvider
                     modelDescription
+                    costIndicator
                   }
                 }
               }
@@ -285,7 +291,8 @@ RSpec.describe 'List of configurable AI feature with metadata.', feature_categor
             'name' => 'GPT-4',
             'identifier' => 'gpt-4',
             "provider" => "OpenAI",
-            "description" => 'For high-volume coding, reasoning, and routine workflows.'
+            "description" => 'For high-volume coding, reasoning, and routine workflows.',
+            'cost_indicator' => '$'
           }
         ],
         'unit_primitives' => [
@@ -312,7 +319,8 @@ RSpec.describe 'List of configurable AI feature with metadata.', feature_categor
         'name' => 'GPT-4',
         'ref' => 'gpt-4',
         'modelProvider' => "OpenAI",
-        'modelDescription' => 'For high-volume coding, reasoning, and routine workflows.'
+        'modelDescription' => 'For high-volume coding, reasoning, and routine workflows.',
+        'costIndicator' => '$'
       }
 
       expect(result.dig('glab_ask_git_command', 'validGitlabModels', 'nodes')).to be_empty
@@ -330,7 +338,8 @@ RSpec.describe 'List of configurable AI feature with metadata.', feature_categor
                         'name' => 'GPT-4',
                         'ref' => 'gpt-4',
                         'modelProvider' => 'OpenAI',
-                        'modelDescription' => 'For high-volume coding, reasoning, and routine workflows.'
+                        'modelDescription' => 'For high-volume coding, reasoning, and routine workflows.',
+                        'costIndicator' => '$'
                       },
                       'gitlabModel' => nil,
                       'validGitlabModels' => {
@@ -339,7 +348,8 @@ RSpec.describe 'List of configurable AI feature with metadata.', feature_categor
                             'name' => 'GPT-4',
                             'ref' => 'gpt-4',
                             'modelProvider' => 'OpenAI',
-                            'modelDescription' => 'For high-volume coding, reasoning, and routine workflows.'
+                            'modelDescription' => 'For high-volume coding, reasoning, and routine workflows.',
+                            'costIndicator' => '$'
                           }
                         ]
                       }

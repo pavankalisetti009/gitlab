@@ -19,6 +19,10 @@ module Types
         field :model_description, String, null: true, # rubocop:disable GraphQL/ExtractType -- this is an offered model attribute, no need for new type
           experiment: { milestone: '18.7' },
           description: 'Brief description of the model, e.g "Fast, cost-effective responses".'
+
+        field :cost_indicator, String, null: true,
+          experiment: { milestone: '18.7' },
+          description: 'Presentational cost indicator for model usage, e.g "$", "$$", "$$$".'
       end
       # rubocop: enable Graphql/AuthorizeTypes
     end

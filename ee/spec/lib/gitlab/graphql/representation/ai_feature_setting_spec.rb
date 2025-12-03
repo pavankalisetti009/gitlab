@@ -80,7 +80,8 @@ RSpec.describe Gitlab::Graphql::Representation::AiFeatureSetting, feature_catego
             'name' => 'Claude Sonnet',
             'ref' => 'claude-sonnet',
             'model_provider' => 'Anthropic',
-            'model_description' => 'Fast, cost-effective responses.'
+            'model_description' => 'Fast, cost-effective responses.',
+            'cost_indicator' => '$$$'
           })
           expect(duo_chat_setting.valid_gitlab_models).to be_present
         end
@@ -116,13 +117,15 @@ RSpec.describe Gitlab::Graphql::Representation::AiFeatureSetting, feature_catego
               'name' => 'Claude Sonnet',
               'ref' => 'claude-sonnet',
               'model_provider' => 'Anthropic',
-              'model_description' => 'Fast, cost-effective responses.'
+              'model_description' => 'Fast, cost-effective responses.',
+              'cost_indicator' => '$$$'
             },
             {
               'name' => 'GPT-4',
               'ref' => 'gpt-4',
               'model_provider' => 'OpenAI',
-              'model_description' => 'For high-volume coding, reasoning, and routine workflows.'
+              'model_description' => 'For high-volume coding, reasoning, and routine workflows.',
+              'cost_indicator' => '$'
             }
           )
         end
@@ -142,7 +145,8 @@ RSpec.describe Gitlab::Graphql::Representation::AiFeatureSetting, feature_catego
             "ref" => 'gpt-4',
             "name" => 'GPT-4',
             "model_provider" => 'OpenAI',
-            'model_description' => 'For high-volume coding, reasoning, and routine workflows.'
+            'model_description' => 'For high-volume coding, reasoning, and routine workflows.',
+            'cost_indicator' => '$'
           })
         end
 
@@ -152,7 +156,8 @@ RSpec.describe Gitlab::Graphql::Representation::AiFeatureSetting, feature_catego
               "ref" => 'gpt-4',
               "name" => 'GPT-4',
               "model_provider" => 'OpenAI',
-              'model_description' => 'For high-volume coding, reasoning, and routine workflows.'
+              'model_description' => 'For high-volume coding, reasoning, and routine workflows.',
+              'cost_indicator' => '$'
             }
           ])
         end
@@ -176,7 +181,8 @@ RSpec.describe Gitlab::Graphql::Representation::AiFeatureSetting, feature_catego
             'name' => 'Claude Sonnet',
             'ref' => 'claude-sonnet',
             'model_provider' => 'Anthropic',
-            'model_description' => 'Fast, cost-effective responses.'
+            'model_description' => 'Fast, cost-effective responses.',
+            'cost_indicator' => '$$$'
           })
         end
       end
