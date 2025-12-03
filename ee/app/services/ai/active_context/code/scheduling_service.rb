@@ -8,7 +8,7 @@ module Ai
 
         TASKS = {
           create_enabled_namespace: {
-            period: 1.hour,
+            period: 1.day,
             dispatch: { event: CreateEnabledNamespaceEvent }
           },
           process_pending_enabled_namespace: {
