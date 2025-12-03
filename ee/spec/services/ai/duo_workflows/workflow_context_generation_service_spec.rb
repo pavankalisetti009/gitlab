@@ -76,6 +76,29 @@ RSpec.describe Ai::DuoWorkflows::WorkflowContextGenerationService, :aggregate_fa
         expect(result).to be_success
         expect(result.payload[:oauth_access_token]).to eq(oauth_token)
       end
+
+      context 'when passing service_account' do
+        let(:service_account) { build(:user, :service_account) }
+
+        let(:service) do
+          described_class.new(
+            current_user: user,
+            organization: container.organization,
+            workflow_definition: workflow_definition,
+            service_account: service_account,
+            container: container
+          )
+        end
+
+        it 'passes the service_account to CreateCompositeOauthAccessTokenService' do
+          expect(Ai::DuoWorkflows::CreateCompositeOauthAccessTokenService)
+            .to receive(:new)
+            .with(a_hash_including(service_account:))
+            .and_return(composite_oauth_service)
+
+          service.generate_composite_oauth_token
+        end
+      end
     end
 
     context 'when token creation fails' do

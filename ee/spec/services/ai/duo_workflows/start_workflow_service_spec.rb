@@ -8,6 +8,8 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
   let_it_be(:developer) { create(:user, developer_of: project) }
   let_it_be(:maintainer) { create(:user, maintainer_of: project) }
   let_it_be(:reporter) { create(:user, reporter_of: project) }
+  let_it_be(:duo_workflow_service_account) { create(:user, :service_account, composite_identity_enforced: true) }
+  let_it_be(:service_account) { create(:user, :service_account) }
 
   let(:image) { 'example.com/example-image:latest' }
   let(:duo_cli_version) { described_class::DUO_CLI_VERSION }
@@ -24,6 +26,10 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
       workflow_metadata: { key: 'val' }.to_json,
       duo_agent_platform_feature_setting: duo_agent_platform_feature_setting
     }
+  end
+
+  before do
+    Ai::Setting.instance.update!(duo_workflow_service_account_user: duo_workflow_service_account)
   end
 
   shared_examples "success" do
@@ -378,16 +384,32 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
   context 'when use_service_account param is set' do
     include_context 'with Duo enabled'
 
-    let_it_be(:service_account) { create(:user, :service_account, composite_identity_enforced: true) }
-
     before do
       params[:use_service_account] = true
-      Ai::Setting.instance.update!(duo_workflow_service_account_user: service_account)
     end
 
     it 'creates developer authorization for service account' do
       execute
-      expect(project.member(service_account).access_level).to eq(Gitlab::Access::DEVELOPER)
+      expect(project.member(duo_workflow_service_account).access_level).to eq(Gitlab::Access::DEVELOPER)
+    end
+
+    it 'creates the workload as the service account' do
+      expect(Ci::Workloads::RunWorkloadService)
+        .to receive(:new).and_wrap_original do |method, **kwargs|
+        expect(kwargs[:current_user]).to eq(duo_workflow_service_account)
+        method.call(**kwargs)
+      end
+
+      expect(execute).to be_success
+    end
+  end
+
+  context 'when a custom service_account is set' do
+    include_context 'with Duo enabled'
+
+    before do
+      project.add_member(service_account, Gitlab::Access::DEVELOPER)
+      params[:service_account] = service_account
     end
 
     it 'creates the workload as the service account' do
@@ -398,6 +420,21 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
       end
 
       expect(execute).to be_success
+    end
+  end
+
+  context 'when both use_service_account and service_account params are set' do
+    include_context 'with Duo enabled'
+
+    before do
+      project.add_member(service_account, Gitlab::Access::DEVELOPER)
+      params[:service_account] = service_account
+      params[:use_service_account] = true
+    end
+
+    it 'does not add the duo developer to the project' do
+      expect(execute).to be_success
+      expect(project.member(duo_workflow_service_account)).to be_nil
     end
   end
 

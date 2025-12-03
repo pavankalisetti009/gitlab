@@ -98,7 +98,8 @@ module Ai
             namespace_id: group.id,
             name: item.name,
             username: service_account_username,
-            organization_id: group.organization_id
+            organization_id: group.organization_id,
+            composite_identity_enforced: true
           }
 
           # TODO: Handle duplicate username (possible with my-flow a-group-name and my-flow-a group-name)

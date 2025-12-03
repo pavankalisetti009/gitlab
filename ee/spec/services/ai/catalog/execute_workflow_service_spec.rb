@@ -213,6 +213,27 @@ RSpec.describe Ai::Catalog::ExecuteWorkflowService, :aggregate_failures, feature
         it_behaves_like 'starts workflow execution'
       end
 
+      context 'when service_account is passed' do
+        let(:service_account) { build(:user, :service_account) }
+
+        let(:params) { super().merge(service_account:) }
+
+        it 'passes the service_account to the StartWorkflowService' do
+          expect(::Ai::DuoWorkflows::StartWorkflowService).to receive(:new) do |args|
+            params = args[:params]
+
+            expect(params[:service_account]).to eq(service_account)
+
+            start_workflow_service
+          end
+
+          allow(start_workflow_service).to receive(:execute)
+            .and_return(ServiceResponse.success(payload: { workload_id: 123 }))
+
+          service.execute
+        end
+      end
+
       context 'when oauth token creation fails' do
         before do
           allow_next_instance_of(::Ai::DuoWorkflows::WorkflowContextGenerationService) do |service|

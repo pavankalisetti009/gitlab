@@ -11,6 +11,7 @@ module Ai
           @execute_workflow = params[:execute_workflow]
           @event_type = params[:event_type]
           @user_prompt = params[:user_prompt]
+          @service_account = params[:service_account]
 
           if @item_consumer
             @flow = @item_consumer.item
@@ -42,7 +43,7 @@ module Ai
 
         private
 
-        attr_reader :flow, :flow_version, :event_type, :user_prompt, :execute_workflow, :item_consumer
+        attr_reader :flow, :flow_version, :event_type, :user_prompt, :execute_workflow, :item_consumer, :service_account
 
         def allowed?
           Ability.allowed?(current_user, :execute_ai_catalog_item, item_consumer)
@@ -64,7 +65,9 @@ module Ai
           params = {
             json_config: flow_config,
             container: item_consumer.project,
-            goal: flow_goal
+            goal: flow_goal,
+            item_version: flow_version,
+            service_account: service_account
           }
 
           ::Ai::Catalog::ExecuteWorkflowService.new(current_user, params).execute
