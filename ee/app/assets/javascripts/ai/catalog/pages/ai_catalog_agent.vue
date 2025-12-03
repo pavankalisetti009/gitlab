@@ -8,6 +8,7 @@ import { TYPENAME_PROJECT } from '~/graphql_shared/constants';
 import { TYPENAME_AI_CATALOG_ITEM } from 'ee/graphql_shared/constants';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import aiCatalogAgentQuery from '../graphql/queries/ai_catalog_agent.query.graphql';
+import { AI_CATALOG_TYPE_AGENT } from '../constants';
 
 export default {
   name: 'AiCatalogAgent',
@@ -42,7 +43,11 @@ export default {
         };
       },
       update(data) {
-        return data?.aiCatalogItem || {};
+        const item = data?.aiCatalogItem || {};
+        if (item.itemType !== AI_CATALOG_TYPE_AGENT) {
+          return {};
+        }
+        return item;
       },
       error(error) {
         this.errors = [s__('AICatalog|Agent does not exist')];

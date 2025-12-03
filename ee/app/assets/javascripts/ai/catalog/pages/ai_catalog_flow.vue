@@ -8,6 +8,7 @@ import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_AI_CATALOG_ITEM } from 'ee/graphql_shared/constants';
 import aiCatalogFlowQuery from '../graphql/queries/ai_catalog_flow.query.graphql';
+import { AI_CATALOG_TYPE_FLOW, AI_CATALOG_TYPE_THIRD_PARTY_FLOW } from '../constants';
 
 export default {
   name: 'AiCatalogFlow',
@@ -43,7 +44,11 @@ export default {
         };
       },
       update(data) {
-        return data?.aiCatalogItem || {};
+        const item = data?.aiCatalogItem || {};
+        if (![AI_CATALOG_TYPE_FLOW, AI_CATALOG_TYPE_THIRD_PARTY_FLOW].includes(item.itemType)) {
+          return {};
+        }
+        return item;
       },
       error(error) {
         this.errors = [s__('AICatalog|Flow does not exist')];
