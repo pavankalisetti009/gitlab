@@ -3,7 +3,7 @@
 module Ai
   module DuoWorkflows
     class StartWorkflowService
-      IMAGE = "registry.gitlab.com/gitlab-org/duo-workflow/default-docker-image/workflow-generic-image:v0.0.4"
+      IMAGE = "registry.gitlab.com/gitlab-org/duo-workflow/default-docker-image/workflow-generic-image:v0.0.5"
       DUO_CLI_VERSION = "8.48.0"
       DWS_STANDARD_CONTEXT_CATEGORY = "agent_platform_standard_context"
 
@@ -94,6 +94,17 @@ module Ai
         duo_config.default_image
       end
 
+      def sandbox
+        @sandbox ||= ::Gitlab::DuoWorkflow::Sandbox.new(
+          current_user: @current_user,
+          duo_workflow_service_url: duo_workflow_service_url
+        )
+      end
+
+      def sandbox_enabled?
+        @workflow.image.blank? && configured_image.blank?
+      end
+
       def duo_config
         @duo_config ||= ::Gitlab::DuoAgentPlatform::Config.new(project)
       end
@@ -118,7 +129,7 @@ module Ai
       end
 
       def variables
-        git_clone_variables.merge(
+        base_variables = git_clone_variables.merge(
           DUO_WORKFLOW_ADDITIONAL_CONTEXT_CONTENT: serialized_flow_additional_context,
           DUO_WORKFLOW_BASE_PATH: './',
           DUO_WORKFLOW_DEFINITION: @workflow.workflow_definition,
@@ -128,10 +139,7 @@ module Ai
           DUO_WORKFLOW_SOURCE_BRANCH: @params.fetch(:source_branch, nil),
           DUO_WORKFLOW_WORKFLOW_ID: String(@workflow.id),
           GITLAB_OAUTH_TOKEN: @params[:workflow_oauth_token],
-          DUO_WORKFLOW_SERVICE_SERVER: Gitlab::DuoWorkflow::Client.url_for(
-            feature_setting: feature_setting,
-            user: @current_user
-          ),
+          DUO_WORKFLOW_SERVICE_SERVER: duo_workflow_service_url,
           DUO_WORKFLOW_SERVICE_TOKEN: @params[:workflow_service_token],
           DUO_WORKFLOW_SERVICE_REALM: ::CloudConnector.gitlab_realm,
           DUO_WORKFLOW_GLOBAL_USER_ID: Gitlab::GlobalAnonymousId.user_id(@current_user),
@@ -154,6 +162,8 @@ module Ai
           AGENT_PLATFORM_MODEL_METADATA: agent_platform_model_metadata_json,
           AGENT_PLATFORM_FEATURE_SETTING_NAME: feature_setting_name
         )
+
+        sandbox_enabled? ? base_variables.merge(sandbox.environment_variables) : base_variables
       end
 
       def commands
@@ -175,13 +185,17 @@ module Ai
       end
 
       def set_up_executor_commands
-        [
-          [
-            "npx -y @gitlab/duo-cli@#{DUO_CLI_VERSION} run",
-            "--existing-session-id #{@workflow.id}",
-            "--connection-type #{connection_type}"
-          ].join(' ')
+        cli_install_commands = [
+          %(npm install -g @gitlab/duo-cli@#{DUO_CLI_VERSION}),
+          %(ls -la $(npm root -g)/@gitlab/duo-cli || echo "GitLab Duo package not found"),
+          %(export PATH="$(npm bin -g):$PATH"),
+          %(which duo || echo "duo not in PATH")
         ]
+
+        cli_command = %(duo run --existing-session-id #{@workflow.id} --connection-type #{connection_type})
+        wrapped_commands = sandbox_enabled? ? sandbox.wrap_command(cli_command) : [cli_command]
+
+        cli_install_commands + wrapped_commands
       end
 
       def connection_type
@@ -200,6 +214,13 @@ module Ai
           ::Gitlab::Json.parse(@params[:workflow_metadata]).merge(
             'modelMetadata' => agent_platform_model_metadata_json
           )
+        )
+      end
+
+      def duo_workflow_service_url
+        Gitlab::DuoWorkflow::Client.url_for(
+          feature_setting: feature_setting,
+          user: @current_user
         )
       end
 
