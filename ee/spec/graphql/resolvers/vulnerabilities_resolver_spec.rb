@@ -537,7 +537,12 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
       def create_vuln_with_status(severity:, status: nil)
         vuln = create(:vulnerability, :with_read, project: project, severity: severity)
         if status
-          finding = create(:vulnerabilities_finding, vulnerability: vuln, project: project)
+          finding = create(
+            :vulnerabilities_finding,
+            report_type: :secret_detection,
+            vulnerability: vuln,
+            project: project
+          )
           create(:finding_token_status, finding: finding, project: project, status: status)
         end
 
