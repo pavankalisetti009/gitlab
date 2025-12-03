@@ -69,8 +69,6 @@ RSpec.describe Resolvers::Security::VulnerabilitiesPerSeverityResolver, :elastic
       stub_licensed_features(security_dashboard: true)
       stub_feature_flags(group_security_dashboard_new: true)
       stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
-      # Ensure the migration is marked as completed so age stats are included
-      set_elasticsearch_migration_to(:add_detected_at_field_to_vulnerability)
     end
 
     shared_examples 'returns resource not available' do
@@ -204,6 +202,14 @@ RSpec.describe Resolvers::Security::VulnerabilitiesPerSeverityResolver, :elastic
       context 'when the current user does not have access' do
         it_behaves_like 'returns resource not available'
       end
+
+      context 'when validating advanced vulnerability management' do
+        before_all do
+          group.add_developer(current_user)
+        end
+
+        it_behaves_like 'validates advanced vulnerability management'
+      end
     end
 
     context 'when operated on a project' do
@@ -238,6 +244,14 @@ RSpec.describe Resolvers::Security::VulnerabilitiesPerSeverityResolver, :elastic
 
       context 'when the current user does not have access' do
         it_behaves_like 'returns resource not available'
+      end
+
+      context 'when validating advanced vulnerability management' do
+        before_all do
+          project.add_developer(current_user)
+        end
+
+        it_behaves_like 'validates advanced vulnerability management'
       end
     end
 

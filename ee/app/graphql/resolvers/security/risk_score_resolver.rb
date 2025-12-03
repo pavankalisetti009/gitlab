@@ -11,6 +11,7 @@ module Resolvers
 
       def resolve
         authorize!(object) unless resolve_vulnerabilities_for_instance_security_dashboard?
+        validate_advanced_vuln_management!
 
         return if !vulnerable || Feature.disabled?(:new_security_dashboard_total_risk_score, vulnerable)
 

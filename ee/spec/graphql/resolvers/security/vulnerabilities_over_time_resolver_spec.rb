@@ -358,6 +358,14 @@ RSpec.describe Resolvers::Security::VulnerabilitiesOverTimeResolver, :elastic_de
 
         it_behaves_like 'returns resource not available'
       end
+
+      context 'when validating advanced vulnerability management' do
+        before_all do
+          group.add_developer(current_user)
+        end
+
+        it_behaves_like 'validates advanced vulnerability management'
+      end
     end
 
     context 'when operated on a project' do
@@ -389,6 +397,14 @@ RSpec.describe Resolvers::Security::VulnerabilitiesOverTimeResolver, :elastic_de
         end
 
         it_behaves_like 'returns resource not available'
+      end
+
+      context 'when validating advanced vulnerability management' do
+        before_all do
+          project.add_developer(current_user)
+        end
+
+        it_behaves_like 'validates advanced vulnerability management'
       end
     end
   end

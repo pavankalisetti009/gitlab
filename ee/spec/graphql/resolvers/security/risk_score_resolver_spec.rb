@@ -11,6 +11,9 @@ RSpec.describe Resolvers::Security::RiskScoreResolver, :elastic_delete_by_query,
     resolve(described_class, obj: operate_on, args: {}, ctx: context)
   end
 
+  let(:current_user) { user }
+  let(:resolved_value) { resolved_risk_score }
+
   let_it_be(:group) { create(:group) }
   let_it_be(:project1) { create(:project, group: group) }
   let_it_be(:project2) { create(:project, group: group) }
@@ -470,6 +473,14 @@ RSpec.describe Resolvers::Security::RiskScoreResolver, :elastic_delete_by_query,
 
         it_behaves_like 'returns resource not available'
       end
+
+      context 'when validating advanced vulnerability management' do
+        before_all do
+          group.add_developer(user)
+        end
+
+        it_behaves_like 'validates advanced vulnerability management'
+      end
     end
 
     context 'when operated on a project' do
@@ -499,6 +510,14 @@ RSpec.describe Resolvers::Security::RiskScoreResolver, :elastic_delete_by_query,
         end
 
         it_behaves_like 'returns resource not available'
+      end
+
+      context 'when validating advanced vulnerability management' do
+        before_all do
+          project1.add_developer(user)
+        end
+
+        it_behaves_like 'validates advanced vulnerability management'
       end
     end
   end

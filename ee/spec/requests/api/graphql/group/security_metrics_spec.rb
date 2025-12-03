@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Security metrics through GroupQuery', :freeze_time, feature_category: :vulnerability_management do
+RSpec.describe 'Security metrics through GroupQuery', :elastic_helpers, :freeze_time, feature_category: :vulnerability_management do
   include GraphqlHelpers
 
   let_it_be(:current_user) { create(:user) }
@@ -71,6 +71,8 @@ RSpec.describe 'Security metrics through GroupQuery', :freeze_time, feature_cate
 
   before do
     stub_licensed_features(security_dashboard: true)
+    stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
+    set_elasticsearch_migration_to(:backfill_vulnerabilities_for_self_managed)
   end
 
   describe 'when user has access' do
