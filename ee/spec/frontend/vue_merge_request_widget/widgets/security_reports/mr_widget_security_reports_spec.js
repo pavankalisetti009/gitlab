@@ -950,6 +950,72 @@ describe('MR Widget Security Reports', () => {
     });
   });
 
+  describe('partial scans', () => {
+    it('displays loading state until enabled scans are fetched', async () => {
+      createComponent({
+        mountFn: mountExtended,
+        mockApolloProvider: createMockApollo([
+          [enabledScansQuery, jest.fn().mockResolvedValue(enabledScansQueryResult())],
+        ]),
+      });
+
+      const loadingText = 'Security scanning is loading';
+      expect(findWidget().text()).toBe(loadingText);
+
+      await waitForPromises();
+      expect(findWidget().text()).not.toBe(loadingText);
+    });
+
+    it.each`
+      fullScans | partialScans | expectedScanModes
+      ${false}  | ${false}     | ${[]}
+      ${true}   | ${false}     | ${['FULL']}
+      ${false}  | ${true}      | ${['PARTIAL']}
+      ${true}   | ${true}      | ${['FULL', 'PARTIAL']}
+    `(
+      'should fetch full scans=$fullScans, partial scans=$partialScans',
+      async ({ fullScans, partialScans, expectedScanModes }) => {
+        const handler = jest.fn().mockResolvedValue(mockFindingReportsComparerSuccessResponse);
+
+        createComponent({
+          mountFn: mountExtended,
+          propsData: {
+            mr: {
+              enabledReports: {
+                sast: true,
+              },
+            },
+          },
+          mockApolloProvider: createMockApollo([
+            [
+              enabledScansQuery,
+              jest.fn().mockResolvedValue(
+                enabledScansQueryResult({
+                  full: { sast: fullScans },
+                  partial: { sast: partialScans },
+                }),
+              ),
+            ],
+            [findingReportsComparerQuery, handler],
+          ]),
+        });
+
+        await waitForPromises();
+
+        expect(handler).toHaveBeenCalledTimes(expectedScanModes.length);
+
+        expectedScanModes.forEach((scanMode) => {
+          expect(handler).toHaveBeenCalledWith({
+            fullPath: defaultMrPropsData.targetProjectFullPath,
+            iid: String(defaultMrPropsData.iid),
+            reportType: 'SAST',
+            scanMode,
+          });
+        });
+      },
+    );
+  });
+
   describe('when using REST', () => {
     describe('partial scans', () => {
       it('should display a loading state until enabled scans are fetched', async () => {
