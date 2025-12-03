@@ -94,6 +94,10 @@ module Gitlab
         end
 
         def available_on_stage?(feature, maturity)
+          if Feature.enabled?(:agentic_chat_ga) && feature == :agentic_chat # rubocop:disable Gitlab/FeatureFlagWithoutActor -- We can't easily tie this to an actor
+            return :ga == maturity
+          end
+
           ::Gitlab::Llm::Utils::AiFeaturesCatalogue::LIST.dig(feature, :maturity) == maturity
         end
       end

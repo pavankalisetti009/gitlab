@@ -1,0 +1,10 @@
+---
+name: agentic_chat_ga
+description: Make agentic chat the default and generally available
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/562720
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/213639
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/581872
+milestone: '18.7'
+group: group::duo chat
+type: beta
+default_enabled: false
