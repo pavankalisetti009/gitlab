@@ -16,6 +16,7 @@ import {
   VISIBILITY_LEVEL_PRIVATE_STRING,
 } from '~/visibility_level/constants';
 import FoundationalIcon from 'ee/ai/components/foundational_icon.vue';
+import { AI_CATALOG_TYPE_THIRD_PARTY_FLOW } from '../constants';
 
 export default {
   name: 'AiCatalogListItem',
@@ -90,6 +91,9 @@ export default {
         ? s__("AICatalog|Managed by a private project you don't have access to.")
         : this.item.project?.nameWithNamespace;
     },
+    isThirdPartyFlow() {
+      return this.item.itemType === AI_CATALOG_TYPE_THIRD_PARTY_FLOW;
+    },
   },
 };
 </script>
@@ -143,6 +147,16 @@ export default {
         >
           <gl-icon :name="visibilityIconName" variant="subtle" :size="14" />
           <span class="gl-pt-px gl-text-subtle">{{ visibilityLevelLabel }}</span>
+        </div>
+        <div
+          v-if="isThirdPartyFlow"
+          v-gl-tooltip
+          :title="s__('AICatalog|Connects to an AI model provider outside GitLab.')"
+          data-testid="ai-catalog-item-external"
+          class="gl-flex gl-items-center gl-gap-2"
+        >
+          <gl-icon name="connected" variant="subtle" :size="14" />
+          <span class="gl-pt-px gl-text-subtle">{{ s__('AICatalog|External') }}</span>
         </div>
       </div>
     </div>

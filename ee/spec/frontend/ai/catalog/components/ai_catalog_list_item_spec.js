@@ -4,6 +4,7 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import AiCatalogListItem from 'ee/ai/catalog/components/ai_catalog_list_item.vue';
 import FoundationalIcon from 'ee/ai/components/foundational_icon.vue';
 import { AI_CATALOG_AGENTS_EDIT_ROUTE } from 'ee/ai/catalog/router/constants';
+import { AI_CATALOG_TYPE_THIRD_PARTY_FLOW } from 'ee/ai/catalog/constants';
 import {
   VISIBILITY_TYPE_ICON,
   VISIBILITY_LEVEL_PUBLIC_STRING,
@@ -83,6 +84,7 @@ describe('AiCatalogListItem', () => {
   const findSourceProjectIcon = () => findSourceProjectTooltip().findComponent(GlIcon);
   const findSourceProjectText = () => findSourceProjectTooltip().findComponent(GlTruncate);
   const findVisibilityTooltip = () => wrapper.findByTestId('ai-catalog-item-visibility');
+  const findExternalLabel = () => wrapper.findByTestId('ai-catalog-item-external');
   const findListItemLink = () => wrapper.findComponent(RouterLink);
   const findVisibilityIcon = () => findVisibilityTooltip().findComponent(GlIcon);
   const findDisclosureDropdown = () => wrapper.findAllComponents(GlDisclosureDropdown);
@@ -265,6 +267,33 @@ describe('AiCatalogListItem', () => {
     describe('when item is not foundational', () => {
       it('does not render foundational icon', () => {
         expect(findFoundationalIcon().exists()).toBe(false);
+      });
+    });
+  });
+
+  describe('external agent label', () => {
+    describe('when item is THIRD_PARTY_FLOW', () => {
+      beforeEach(() => {
+        createComponent({
+          item: { ...mockItem, itemType: AI_CATALOG_TYPE_THIRD_PARTY_FLOW },
+        });
+      });
+
+      it('renders external label and icon', () => {
+        expect(findExternalLabel().text()).toBe('External');
+        expect(findExternalLabel().findComponent(GlIcon).props('name')).toBe('connected');
+      });
+
+      it('renders tooltip with correct text', () => {
+        expect(findExternalLabel().attributes('title')).toBe(
+          'Connects to an AI model provider outside GitLab.',
+        );
+      });
+    });
+
+    describe('when item is not THIRD_PARTY_FLOW', () => {
+      it('does not render external indicator', () => {
+        expect(findExternalLabel().exists()).toBe(false);
       });
     });
   });
