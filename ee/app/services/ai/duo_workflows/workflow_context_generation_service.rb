@@ -5,10 +5,11 @@ module Ai
     class WorkflowContextGenerationService
       include ::Gitlab::Utils::StrongMemoize
 
-      def initialize(current_user:, organization:, workflow_definition: nil, container: nil)
+      def initialize(current_user:, organization:, workflow_definition: nil, container: nil, service_account: nil)
         @current_user = current_user
         @container = container
         @organization = organization
+        @service_account = service_account
         @workflow_definition = workflow_definition
       end
 
@@ -23,7 +24,8 @@ module Ai
       def generate_composite_oauth_token
         ::Ai::DuoWorkflows::CreateCompositeOauthAccessTokenService.new(
           current_user: current_user,
-          organization: organization
+          organization: organization,
+          service_account: service_account
         ).execute
       end
 
@@ -59,7 +61,7 @@ module Ai
 
       private
 
-      attr_reader :current_user, :container, :organization, :workflow_definition
+      attr_reader :current_user, :container, :organization, :workflow_definition, :service_account
 
       def composite_identity_enabled?
         ::Ai::DuoWorkflow.available? && Feature.enabled?(:duo_workflow_use_composite_identity, current_user)

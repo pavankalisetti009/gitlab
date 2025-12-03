@@ -10,7 +10,18 @@ module Ai
       def initialize(workflow:, params:)
         @workflow = workflow
         @current_user = workflow.user
+        @service_account = params[:service_account]
+        @use_instance_wide_service_account = service_account.nil? && params[:use_service_account]
         @params = params
+
+        @workload_user =
+          if service_account.present?
+            service_account
+          elsif use_instance_wide_service_account
+            duo_workflow_service_account
+          else
+            @current_user
+          end
       end
 
       def execute
@@ -25,16 +36,12 @@ module Ai
             reason: :feature_unavailable)
         end
 
-        @workload_user = @current_user
-
-        use_service_account = @params.fetch(:use_service_account, false)
-        if use_service_account
-          response = add_service_account_to_project
+        if use_instance_wide_service_account
+          response = add_duo_workflow_service_account_to_project
           return ServiceResponse.error(message: response.message, reason: :service_account_error) if response.error?
-
-          link_composite_identity
-          @workload_user = duo_workflow_service_account
         end
+
+        link_composite_identity if use_instance_wide_service_account || service_account.present?
 
         branch_response = create_workload_branch
         return branch_response unless branch_response.success?
@@ -66,6 +73,8 @@ module Ai
       end
 
       private
+
+      attr_reader :service_account, :use_instance_wide_service_account
 
       def workload_definition
         ::Ci::Workloads::WorkloadDefinition.new do |d|
@@ -197,7 +206,7 @@ module Ai
         ::Ai::Setting.instance.duo_workflow_service_account_user
       end
 
-      def add_service_account_to_project
+      def add_duo_workflow_service_account_to_project
         ::Ai::ServiceAccountMemberAddService.new(project, duo_workflow_service_account).execute
       end
 
@@ -218,7 +227,7 @@ module Ai
       end
 
       def link_composite_identity
-        identity = ::Gitlab::Auth::Identity.fabricate(duo_workflow_service_account)
+        identity = ::Gitlab::Auth::Identity.fabricate(@workload_user)
         identity.link!(@current_user) if identity&.composite?
       end
 

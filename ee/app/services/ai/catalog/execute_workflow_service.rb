@@ -20,6 +20,8 @@ module Ai
         @json_config = params[:json_config]
         @container = params[:container]
         @goal = params[:goal]
+        @item_version = params[:item_version]
+        @service_account = params[:service_account]
       end
 
       def execute
@@ -44,7 +46,7 @@ module Ai
 
       private
 
-      attr_reader :current_user, :json_config, :container, :goal
+      attr_reader :current_user, :json_config, :container, :goal, :item_version, :service_account
 
       def error(message, payload: {})
         ServiceResponse.error(message: Array(message), payload: payload)
@@ -102,6 +104,7 @@ module Ai
           workflow_oauth_token: oauth_token_result.payload[:oauth_access_token].plaintext_token,
           workflow_service_token: workflow_token_result.payload[:token],
           use_service_account: workflow_context_service.use_service_account?,
+          service_account: service_account,
           source_branch: nil,
           workflow_metadata: Gitlab::DuoWorkflow::Client.metadata(current_user).to_json,
           duo_agent_platform_feature_setting: workflow_context_service.duo_agent_platform_feature_setting
@@ -113,6 +116,7 @@ module Ai
           current_user: current_user,
           organization: container.organization,
           container: container,
+          service_account: service_account,
           workflow_definition: determine_workflow_definition
         )
       end

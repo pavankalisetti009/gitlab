@@ -766,6 +766,9 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_agent_platfo
           current_user: current_user,
           params: {
             item_consumer: ai_catalog_item_consumer,
+            flow: ai_catalog_item,
+            service_account: service_account,
+            flow_version: ai_catalog_item.latest_version,
             event_type: 'mention',
             user_prompt: start_with("Input: test input\nContext:"),
             execute_workflow: true
