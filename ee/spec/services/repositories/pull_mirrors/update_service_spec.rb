@@ -33,6 +33,12 @@ RSpec.describe Repositories::PullMirrors::UpdateService, feature_category: :sour
 
     let(:updated_project) { execute.payload[:project] }
 
+    before do
+      allow_next_instance_of(Import::ValidateRemoteGitEndpointService) do |service|
+        allow(service).to receive(:execute).and_return(ServiceResponse.success)
+      end
+    end
+
     it 'updates a pull mirror' do
       is_expected.to be_success
 
@@ -144,6 +150,70 @@ RSpec.describe Repositories::PullMirrors::UpdateService, feature_category: :sour
       it 'returns an error' do
         is_expected.to be_error
         expect(execute.message.full_messages).to include(/Import URL is blocked/)
+      end
+    end
+
+    context 'when URL validation is enabled' do
+      before do
+        stub_feature_flags(validate_pull_mirror_url: true)
+      end
+
+      context 'when import URL is not accessible' do
+        let(:url) { 'http://not-existing-url-1/git' }
+
+        before do
+          allow_next_instance_of(Import::ValidateRemoteGitEndpointService) do |service|
+            allow(service).to receive(:execute).and_return(
+              ServiceResponse.error(message: 'Unable to access repository with the URL and credentials provided')
+            )
+          end
+        end
+
+        it 'returns an error' do
+          is_expected.to be_error
+          expect(execute.message.full_messages).to(
+            include(/Unable to access repository with the URL and credentials provided/)
+          )
+        end
+      end
+    end
+
+    context 'when URL validation is disabled' do
+      before do
+        stub_feature_flags(validate_pull_mirror_url: false)
+      end
+
+      context 'with an inaccessible URL' do
+        it 'allows the update without validation' do
+          service_with_inaccessible_url = described_class.new(project, user, params.merge(import_url: 'http://not-existing-url-1/git'))
+          result = service_with_inaccessible_url.execute
+
+          expect(result).to be_success
+        end
+      end
+    end
+
+    context 'when import_url is blank' do
+      let(:params) { { import_url: '' } }
+
+      before do
+        create(:import_state, project: project)
+      end
+
+      it 'skips validation' do
+        expect(Import::ValidateRemoteGitEndpointService).not_to receive(:new)
+
+        is_expected.to be_success
+      end
+    end
+
+    context 'when mirror is disabled and url is provided' do
+      let(:enabled) { false }
+
+      it 'skips validation' do
+        expect(Import::ValidateRemoteGitEndpointService).not_to receive(:new)
+
+        is_expected.to be_success
       end
     end
   end

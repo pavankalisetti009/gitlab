@@ -22,6 +22,12 @@ module Repositories
 
         update_project_import_relations
 
+        is_valid = project.valid?
+
+        validate_import_url if is_valid
+
+        return false if project.errors.any?
+
         project.save
 
         # It's possible that import state is not created, when user doesn't set an import_url
@@ -55,6 +61,22 @@ module Repositories
 
       def allowed?
         Ability.allowed?(current_user, :admin_remote_mirror, project)
+      end
+
+      def validate_import_url
+        return unless Feature.enabled?(:validate_pull_mirror_url, project)
+
+        import_url = allowed_attributes[:import_url] || allowed_attributes[:username_only_import_url]
+        return if import_url.blank?
+        return if mirror_disabled?
+
+        result = Import::ValidateRemoteGitEndpointService.new(
+          url: import_url,
+          user: allowed_attributes.dig(:import_data_attributes, :user),
+          password: allowed_attributes.dig(:import_data_attributes, :password)
+        ).execute
+
+        project.errors.add(:import_url, result.message) if result.error?
       end
     end
   end

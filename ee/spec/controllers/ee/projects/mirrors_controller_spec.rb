@@ -5,6 +5,12 @@ require 'spec_helper'
 RSpec.describe Projects::MirrorsController, feature_category: :source_code_management do
   include ReactiveCachingHelpers
 
+  before do
+    allow_next_instance_of(Import::ValidateRemoteGitEndpointService) do |service|
+      allow(service).to receive(:execute).and_return(ServiceResponse.success)
+    end
+  end
+
   describe 'setting up a remote mirror' do
     let_it_be(:project) { create(:project, :repository) }
     let_it_be(:first_owner) { project.first_owner }
@@ -223,30 +229,82 @@ RSpec.describe Projects::MirrorsController, feature_category: :source_code_manag
       end
     end
 
-    context 'with a valid URL for a pull' do
-      it 'processes a successful update' do
-        do_put(project, mirror: true, username_only_import_url: "https://updated.example.com")
+    context 'when URL validation is enabled' do
+      before do
+        stub_feature_flags(validate_pull_mirror_url: true)
+      end
 
-        expect(response).to redirect_to(project_settings_repository_path(project, anchor: 'js-push-remote-settings'))
-        expect(flash[:notice]).to match(/successfully updated/)
+      context 'with a valid URL for a pull' do
+        it 'processes a successful update' do
+          do_put(project, mirror: true, username_only_import_url: "https://updated.example.com")
+
+          expect(response).to redirect_to(project_settings_repository_path(project, anchor: 'js-push-remote-settings'))
+          expect(flash[:notice]).to match(/successfully updated/)
+        end
+      end
+
+      context 'with a invalid URL for a pull' do
+        it 'processes an unsuccessful update' do
+          do_put(project, mirror: true, username_only_import_url: "ftp://invalid.invalid'")
+
+          expect(response).to redirect_to(project_settings_repository_path(project, anchor: 'js-push-remote-settings'))
+          expect(flash[:alert]).to match(/is blocked/)
+        end
+      end
+
+      context 'with an invalid port for a pull' do
+        it 'processes an unsuccessful update' do
+          do_put(project, mirror: true, username_only_import_url: 'https://updated.example.com:wrong_port')
+
+          expect(response).to redirect_to(project_settings_repository_path(project, anchor: 'js-push-remote-settings'))
+          expect(flash[:alert]).to match(/is blocked/)
+        end
+      end
+
+      context 'when URL is valid but not accessible' do
+        it 'returns an error' do
+          allow_next_instance_of(Import::ValidateRemoteGitEndpointService) do |service|
+            allow(service).to receive(:execute).and_return(
+              ServiceResponse.error(message: 'Unable to access repository with the URL and credentials provided')
+            )
+          end
+
+          do_put(project, mirror: true, username_only_import_url: 'https://updated.example.com')
+
+          expect(response).to redirect_to(project_settings_repository_path(project, anchor: 'js-push-remote-settings'))
+          expect(flash[:alert]).to match(/Unable to access repository/)
+        end
       end
     end
 
-    context 'with a invalid URL for a pull' do
-      it 'processes an unsuccessful update' do
-        do_put(project, mirror: true, username_only_import_url: "ftp://invalid.invalid'")
+    context 'when URL validation is disabled' do
+      before do
+        stub_feature_flags(validate_pull_mirror_url: false)
+      end
 
-        expect(response).to redirect_to(project_settings_repository_path(project, anchor: 'js-push-remote-settings'))
-        expect(flash[:alert]).to match(/is blocked/)
+      context 'with an invalid URL for a pull' do
+        it 'allows the update without validation' do
+          do_put(project, mirror: true, username_only_import_url: "http://not-existing-url-1/git")
+
+          expect(response).to redirect_to(project_settings_repository_path(project, anchor: 'js-push-remote-settings'))
+          expect(flash[:notice]).to match(/successfully updated/)
+        end
       end
     end
 
-    context 'with an invalid port for a pull' do
-      it 'processes an unsuccessful update' do
-        do_put(project, mirror: true, username_only_import_url: 'https://updated.example.com:wrong_port')
+    context 'when disabling an existing pull mirror' do
+      let_it_be(:project) { create(:project, :repository, :mirror, import_url: 'https://example.com') }
+
+      it 'does not validate URL when disabling mirror' do
+        expect_next_instance_of(Projects::UpdateService) do |service|
+          expect(service).to receive(:execute).and_call_original
+        end
+
+        do_put(project, mirror: false)
 
         expect(response).to redirect_to(project_settings_repository_path(project, anchor: 'js-push-remote-settings'))
-        expect(flash[:alert]).to match(/is blocked/)
+        expect(flash[:notice]).to match(/successfully disabled/)
+        expect(project.reload.mirror).to be_falsey
       end
     end
 

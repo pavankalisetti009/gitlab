@@ -455,6 +455,12 @@ RSpec.describe API::ProjectMirror, feature_category: :source_code_management do
     let(:mirror_url) { 'http://example.com' }
 
     shared_examples 'pull mirror configuration' do
+      before do
+        allow_next_instance_of(Import::ValidateRemoteGitEndpointService) do |service|
+          allow(service).to receive(:execute).and_return(ServiceResponse.success)
+        end
+      end
+
       context 'when user is missing' do
         let(:current_user) { nil }
 

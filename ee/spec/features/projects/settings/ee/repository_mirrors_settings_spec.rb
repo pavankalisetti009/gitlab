@@ -11,6 +11,9 @@ RSpec.describe 'Project settings > [EE] repository', feature_category: :source_c
   before do
     project.add_maintainer(user)
     sign_in(user)
+    allow_next_instance_of(Import::ValidateRemoteGitEndpointService) do |service|
+      allow(service).to receive(:execute).and_return(ServiceResponse.success)
+    end
   end
 
   context 'unlicensed' do
