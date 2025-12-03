@@ -9,7 +9,10 @@ module Ai
 
       validates :pinned_version_prefix, length: { maximum: 50 }
 
-      validate :validate_exactly_one_sharding_key_present
+      validates_with ExactlyOnePresentValidator, fields: :sharding_keys,
+        message: ->(_fields) {
+          s_('AICatalog|The item consumer must belong to only one organization, group, or project')
+        }
       validate :validate_organization_match
       validate :validate_item_privacy_allowed, if: :item_changed?
       validate :validate_service_account, if: :service_account_id?
@@ -53,6 +56,10 @@ module Ai
 
       private
 
+      def sharding_keys
+        [:organization, :group, :project]
+      end
+
       def organization_id_from_sharding_key
         organization_id || group&.organization_id || project&.organization_id
       end
@@ -61,12 +68,6 @@ module Ai
         return if ai_catalog_item_id.nil? || item.organization_id == organization_id_from_sharding_key
 
         errors.add(:item, s_("AICatalog|organization must match the item consumer's organization"))
-      end
-
-      def validate_exactly_one_sharding_key_present
-        return if [organization, group, project].compact.one?
-
-        errors.add(:base, s_('AICatalog|The item consumer must belong to only one organization, group, or project'))
       end
 
       def validate_item_privacy_allowed

@@ -31,7 +31,7 @@ module Ai
 
     validate :event_types_are_valid
     validate :user_is_service_account, if: :user
-    validate :exactly_one_config_source
+    validates_with ExactlyOnePresentValidator, fields: [:config_path, :ai_catalog_item_consumer]
     validate :catalog_item_valid, if: -> { ai_catalog_item_consumer.present? }
 
     scope :with_ids, ->(ids) { where(id: ids) }
@@ -51,12 +51,6 @@ module Ai
       return if user.service_account?
 
       errors.add(:user, 'user must be a service account')
-    end
-
-    def exactly_one_config_source
-      return if [config_path.presence, ai_catalog_item_consumer].compact.one?
-
-      errors.add(:base, 'must have only one config_path or ai_catalog_item_consumer')
     end
 
     def catalog_item_valid

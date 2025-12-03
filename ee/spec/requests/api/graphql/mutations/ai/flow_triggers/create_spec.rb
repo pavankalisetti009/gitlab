@@ -169,7 +169,7 @@ RSpec.describe Mutations::Ai::FlowTriggers::Create, feature_category: :duo_agent
         execute
 
         expect(graphql_data_at(:ai_flow_trigger_create, :errors).first).to include(
-          'must have only one config_path or ai_catalog_item_consumer'
+          'Exactly one of config_path, ai_catalog_item_consumer must be present'
         )
       end
     end
