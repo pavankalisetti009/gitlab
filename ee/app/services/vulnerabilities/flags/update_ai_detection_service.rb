@@ -40,7 +40,7 @@ module Vulnerabilities
         # rubocop:disable CodeReuse/ActiveRecord -- Need to instantiate a new record here if none exist yet
         current_finding.vulnerability_flags.find_or_initialize_by(
           flag_type: :false_positive,
-          origin: AI_SAST_FP_DETECTION_ORIGIN
+          origin: params[:origin] || AI_SAST_FP_DETECTION_ORIGIN
         )
         # rubocop:enable CodeReuse/ActiveRecord
       end
