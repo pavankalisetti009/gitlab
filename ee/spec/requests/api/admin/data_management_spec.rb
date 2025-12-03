@@ -13,7 +13,7 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
     context 'with feature flag enabled' do
       context 'when authenticated as admin' do
         context 'with valid model name' do
-          let(:api_path) { "/admin/data_management/snippet_repository" }
+          let(:api_path) { "/admin/data_management/snippet_repositories" }
 
           it 'returns matching object data' do
             expected_model = create(:snippet_repository)
@@ -48,10 +48,10 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
             it 'handles pagination with ordering correctly' do
               create_list(:project, 10)
 
-              get api("/admin/data_management/project?per_page=3", admin, admin_mode: true)
+              get api("/admin/data_management/projects?per_page=3", admin, admin_mode: true)
               first_page_ids = json_response.pluck('record_identifier')
 
-              get api("/admin/data_management/project?per_page=3&page=2", admin, admin_mode: true)
+              get api("/admin/data_management/projects?per_page=3&page=2", admin, admin_mode: true)
               second_page_ids = json_response.pluck('record_identifier')
 
               # Verify ordering is maintained across pages
@@ -190,7 +190,7 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
               let_it_be(:list) { create_list(:project, 3) }
 
               it 'filters passed ids' do
-                get api("/admin/data_management/project?identifiers[]=#{list.first.id}&identifiers[]=#{list.last.id}",
+                get api("/admin/data_management/projects?identifiers[]=#{list.first.id}&identifiers[]=#{list.last.id}",
                   admin,
                   admin_mode: true)
 
@@ -204,7 +204,7 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
               it 'returns 400 with mixed ids' do
                 fake_b64 = Base64.urlsafe_encode64('1 2 3')
 
-                get api("/admin/data_management/project?identifiers[]=1&identifiers[]=#{fake_b64}",
+                get api("/admin/data_management/projects?identifiers[]=1&identifiers[]=#{fake_b64}",
                   admin,
                   admin_mode: true)
 
@@ -214,7 +214,7 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
 
               it 'returns 400 with invalid composite keys' do
                 fake_ids = [Base64.urlsafe_encode64('1 2 3'), Base64.urlsafe_encode64('4-5-6')]
-                url = "/admin/data_management/project?identifiers[]=#{fake_ids.first}&identifiers[]=#{fake_ids.last}"
+                url = "/admin/data_management/projects?identifiers[]=#{fake_ids.first}&identifiers[]=#{fake_ids.last}"
 
                 get api(url, admin, admin_mode: true)
 
@@ -225,7 +225,7 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
               it 'does not filter with empty ids' do
                 list = create_list(:project, 3)
 
-                get api("/admin/data_management/project?identifiers[]=", admin, admin_mode: true)
+                get api("/admin/data_management/projects?identifiers[]=", admin, admin_mode: true)
 
                 expect(response).to have_gitlab_http_status(:ok)
                 expect(json_response.pluck('record_identifier')).to match_array(list.map(&:id))
@@ -261,7 +261,7 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
               where(status: %w[pending started succeeded failed disabled])
               with_them do
                 it 'returns matching object data' do
-                  get api("/admin/data_management/upload?checksum_state=#{status}", admin, admin_mode: true)
+                  get api("/admin/data_management/uploads?checksum_state=#{status}", admin, admin_mode: true)
 
                   expect(response).to have_gitlab_http_status(:ok)
                   expect(json_response.first).to include('record_identifier' => send(:"#{status}_record").id)
@@ -272,7 +272,7 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
 
             context 'with invalid status' do
               it 'returns 400' do
-                get api('/admin/data_management/project?checksum_state=invalid', admin, admin_mode: true)
+                get api('/admin/data_management/projects?checksum_state=invalid', admin, admin_mode: true)
 
                 expect(response).to have_gitlab_http_status(:bad_request)
               end
@@ -289,7 +289,7 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
               end
 
               it 'returns matching object data' do
-                get api('/admin/data_management/packages_nuget_symbol?checksum_state=succeeded', admin,
+                get api('/admin/data_management/packages_nuget_symbols?checksum_state=succeeded', admin,
                   admin_mode: true)
 
                 expect(response).to have_gitlab_http_status(:ok)
@@ -302,13 +302,13 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
 
         context 'with case variations' do
           it 'returns 400 for uppercase model names' do
-            get api('/admin/data_management/LFS_OBJECT', admin, admin_mode: true)
+            get api('/admin/data_management/LFS_OBJECTS', admin, admin_mode: true)
 
             expect(response).to have_gitlab_http_status(:bad_request)
           end
 
           it 'returns 400 for mixed case model names' do
-            get api('/admin/data_management/Lfs_Object', admin, admin_mode: true)
+            get api('/admin/data_management/Lfs_Objects', admin, admin_mode: true)
 
             expect(response).to have_gitlab_http_status(:bad_request)
           end
@@ -348,7 +348,7 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
         context 'with URL encoding' do
           # Edge cases - URL encoded characters
           it 'handles URL encoded model names' do
-            get api('/admin/data_management/lfs%5Fobject', admin, admin_mode: true)
+            get api('/admin/data_management/lfs%5Fobjects', admin, admin_mode: true)
 
             expect(response).to have_gitlab_http_status(:ok)
           end
@@ -362,7 +362,7 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
 
         context 'when model exists but no records' do
           it 'returns the model class even when no records exist' do
-            get api("/admin/data_management/upload", admin, admin_mode: true)
+            get api("/admin/data_management/uploads", admin, admin_mode: true)
 
             expect(response).to have_gitlab_http_status(:ok)
             expect(json_response).to eq([])
@@ -373,19 +373,19 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
       context 'when not authenticated as admin' do
         # Security boundary tests
         it 'denies access for regular users' do
-          get api('/admin/data_management/lfs_object', user)
+          get api('/admin/data_management/lfs_objects', user)
 
           expect(response).to have_gitlab_http_status(:forbidden)
         end
 
         it 'denies access for unauthenticated requests' do
-          get api('/admin/data_management/lfs_object')
+          get api('/admin/data_management/lfs_objects')
 
           expect(response).to have_gitlab_http_status(:unauthorized)
         end
 
         it 'denies access for admin without admin mode' do
-          get api('/admin/data_management/lfs_object', admin)
+          get api('/admin/data_management/lfs_objects', admin)
 
           expect(response).to have_gitlab_http_status(:forbidden)
         end
@@ -397,7 +397,7 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
           allow(Gitlab::Geo::ModelMapper).to receive(:find_from_name)
                                                .and_raise(StandardError)
 
-          get api('/admin/data_management/lfs_object', admin, admin_mode: true)
+          get api('/admin/data_management/lfs_objects', admin, admin_mode: true)
 
           expect(response).to have_gitlab_http_status(:internal_server_error)
         end
@@ -406,7 +406,7 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
           allow(Gitlab::Geo::ModelMapper).to receive(:find_from_name)
                                                .and_return(nil)
 
-          get api('/admin/data_management/lfs_object', admin, admin_mode: true)
+          get api('/admin/data_management/lfs_objects', admin, admin_mode: true)
 
           expect(response).to have_gitlab_http_status(:not_found)
         end
@@ -419,7 +419,7 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
       end
 
       it 'returns 404' do
-        get api("/admin/data_management/lfs_object", admin, admin_mode: true)
+        get api("/admin/data_management/lfs_objects", admin, admin_mode: true)
 
         expect(response).to have_gitlab_http_status(:not_found)
       end
@@ -429,7 +429,7 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
   describe 'PUT /admin/data_management/:model_name/checksum' do
     context 'with feature flag enabled' do
       let_it_be(:node) { create(:geo_node) }
-      let_it_be(:api_path) { "/admin/data_management/merge_request_diff/checksum" }
+      let_it_be(:api_path) { "/admin/data_management/merge_request_diffs/checksum" }
 
       before do
         stub_current_geo_node(node)
@@ -512,13 +512,13 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
         context 'with URL encoding' do
           # Edge cases - URL encoded characters
           it 'handles URL encoded model names' do
-            put api('/admin/data_management/lfs%5Fobject/checksum', admin, admin_mode: true)
+            put api('/admin/data_management/lfs%5Fobjects/checksum', admin, admin_mode: true)
 
             expect(response).to have_gitlab_http_status(:ok)
           end
 
           it 'handles URL encoded special characters' do
-            put api('/admin/data_management/lfs%40object/checksum', admin, admin_mode: true)
+            put api('/admin/data_management/lfs%40objects/checksum', admin, admin_mode: true)
 
             expect(response).to have_gitlab_http_status(:bad_request)
           end
@@ -553,7 +553,7 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
       end
 
       it 'returns 404' do
-        put api("/admin/data_management/terraform_state_version/checksum", admin, admin_mode: true)
+        put api("/admin/data_management/terraform_state_versions/checksum", admin, admin_mode: true)
 
         expect(response).to have_gitlab_http_status(:not_found)
       end
@@ -567,7 +567,7 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
 
         context 'with valid integer id' do
           it 'returns matching object data' do
-            get api("/admin/data_management/snippet_repository/#{expected_model.id}", admin, admin_mode: true)
+            get api("/admin/data_management/snippet_repositories/#{expected_model.id}", admin, admin_mode: true)
 
             expect(response).to have_gitlab_http_status(:ok)
             expect(json_response).to include('record_identifier' => expected_model.id,
@@ -599,7 +599,7 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
           end
 
           it 'returns matching object data' do
-            get api("/admin/data_management/project/#{base64_id}", admin, admin_mode: true)
+            get api("/admin/data_management/projects/#{base64_id}", admin, admin_mode: true)
 
             expect(response).to have_gitlab_http_status(:ok)
             expect(json_response).to include('record_identifier' => base64_id)
@@ -608,13 +608,13 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
 
         context 'with invalid id' do
           it 'returns 404 when ID does not exist' do
-            get api("/admin/data_management/snippet_repository/#{non_existing_record_id}", admin, admin_mode: true)
+            get api("/admin/data_management/snippet_repositories/#{non_existing_record_id}", admin, admin_mode: true)
 
             expect(response).to have_gitlab_http_status(:not_found)
           end
 
           it 'returns 400 when ID is alphanumeric containing valid ID' do
-            get api("/admin/data_management/snippet_repository/rand#{expected_model.id}", admin, admin_mode: true)
+            get api("/admin/data_management/snippet_repositories/rand#{expected_model.id}", admin, admin_mode: true)
 
             expect(response).to have_gitlab_http_status(:bad_request)
           end
@@ -635,7 +635,7 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
           end
 
           it 'returns 400 when base64 does not contain spaces' do
-            get api("/admin/data_management/project/#{base64_id}", admin, admin_mode: true)
+            get api("/admin/data_management/projects/#{base64_id}", admin, admin_mode: true)
 
             expect(response).to have_gitlab_http_status(:bad_request)
             expect(json_response).to include('message' => '400 Bad request - Invalid composite key format')
@@ -660,7 +660,7 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
 
       context 'when model exists but no records' do
         it 'returns not_found when no records exist' do
-          get api("/admin/data_management/upload/1", admin, admin_mode: true)
+          get api("/admin/data_management/uploads/1", admin, admin_mode: true)
 
           expect(response).to have_gitlab_http_status(:not_found)
         end
@@ -670,19 +670,19 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
     context 'when not authenticated as admin' do
       # Security boundary tests
       it 'denies access for regular users' do
-        get api('/admin/data_management/project/1', user)
+        get api('/admin/data_management/projects/1', user)
 
         expect(response).to have_gitlab_http_status(:forbidden)
       end
 
       it 'denies access for unauthenticated requests' do
-        get api('/admin/data_management/project/1')
+        get api('/admin/data_management/projects/1')
 
         expect(response).to have_gitlab_http_status(:unauthorized)
       end
 
       it 'denies access for admin without admin mode' do
-        get api('/admin/data_management/project/1', admin)
+        get api('/admin/data_management/projects/1', admin)
 
         expect(response).to have_gitlab_http_status(:forbidden)
       end
@@ -696,7 +696,7 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
       it 'returns 404' do
         project = create(:project)
 
-        get api("/admin/data_management/project/#{project.id}", admin, admin_mode: true)
+        get api("/admin/data_management/projects/#{project.id}", admin, admin_mode: true)
 
         expect(response).to have_gitlab_http_status(:not_found)
       end
@@ -705,7 +705,7 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
 
   describe 'PUT /admin/data_management/:model_name/:record_identifier/checksum' do
     let_it_be(:expected_model) { create(:snippet_repository) }
-    let_it_be(:api_path) { "/admin/data_management/snippet_repository/#{expected_model.id}/checksum" }
+    let_it_be(:api_path) { "/admin/data_management/snippet_repositories/#{expected_model.id}/checksum" }
     let_it_be(:node) { create(:geo_node) }
 
     before do
@@ -802,7 +802,7 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
               put api(api_path, admin, admin_mode: true)
 
               expect(response).to have_gitlab_http_status(:bad_request)
-              expect(json_response['message']).to include("Verifying snippet_repository/#{expected_model.id} failed")
+              expect(json_response['message']).to include("Verifying snippet_repositories/#{expected_model.id} failed")
             end
           end
         end
@@ -815,7 +815,7 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
 
     where(model_classes: Gitlab::Geo::Replicator.subclasses.map(&:model))
     with_them do
-      let(:model_name) { Gitlab::Geo::ModelMapper.convert_to_name(model_classes) }
+      let(:model_name) { Gitlab::Geo::ModelMapper.convert_to_name(model_classes).pluralize }
       let(:expected_record) { create(factory_name(model_classes)) } # rubocop:disable Rails/SaveBang -- factory
       let(:api_path) { "/admin/data_management/#{model_name}" }
 

@@ -1,5 +1,5 @@
 import { GlCard, GlSprintf } from '@gitlab/ui';
-import models from 'test_fixtures/api/admin/data_management/snippet_repository.json';
+import models from 'test_fixtures/api/admin/data_management/snippet_repositories.json';
 import ModelInfo from 'ee/admin/data_management_item/components/model_info.vue';
 import TimeAgo from '~/vue_shared/components/time_ago_tooltip.vue';
 import ClipboardButton from '~/vue_shared/components/clipboard_button.vue';

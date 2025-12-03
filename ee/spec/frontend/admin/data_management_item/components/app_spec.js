@@ -1,7 +1,7 @@
 import { shallowMount } from '@vue/test-utils';
 import { GlLoadingIcon } from '@gitlab/ui';
 import { nextTick } from 'vue';
-import models from 'test_fixtures/api/admin/data_management/snippet_repository.json';
+import models from 'test_fixtures/api/admin/data_management/snippet_repositories.json';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import AdminDataManagementItemApp from 'ee/admin/data_management_item/components/app.vue';
 import ChecksumInfo from 'ee/admin/data_management_item/components/checksum_info.vue';

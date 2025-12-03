@@ -35,7 +35,7 @@ RSpec.describe 'User with read_admin_monitoring', :enable_admin_mode, feature_ca
 
   describe Admin::DataManagementController do
     let_it_be(:model) { create(:project) }
-    let_it_be(:model_name) { Gitlab::Geo::ModelMapper.convert_to_name(model.class) }
+    let_it_be(:model_name) { Gitlab::Geo::ModelMapper.convert_to_name(model.class).pluralize }
 
     let_it_be(:show_path) { "#{admin_data_management_path}/#{model_name}/#{model.id}" }
 

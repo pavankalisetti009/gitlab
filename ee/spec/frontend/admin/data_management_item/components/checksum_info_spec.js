@@ -1,5 +1,5 @@
 import { GlCard, GlSprintf, GlBadge, GlButton, GlPopover } from '@gitlab/ui';
-import models from 'test_fixtures/api/admin/data_management/snippet_repository.json';
+import models from 'test_fixtures/api/admin/data_management/snippet_repositories.json';
 import ChecksumInfo from 'ee/admin/data_management_item/components/checksum_info.vue';
 import ClipboardButton from '~/vue_shared/components/clipboard_button.vue';
 import TimeAgo from '~/vue_shared/components/time_ago_tooltip.vue';
