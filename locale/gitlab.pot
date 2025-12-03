@@ -2199,9 +2199,6 @@ msgstr ""
 msgid ":%{startLine} to %{endLine}"
 msgstr ""
 
-msgid "A %{incident_docs_start}modified issue%{incident_docs_end} to guide the resolution of incidents."
-msgstr ""
-
 msgid "A %{linkStart}merge train%{linkEnd} is a queued list of merge requests, each waiting to be merged into the target branch."
 msgstr ""
 
@@ -4814,9 +4811,6 @@ msgid "Adds a to-do item."
 msgstr ""
 
 msgid "Adds email participants that don't have a GitLab account."
-msgstr ""
-
-msgid "Adds this %{issuable_type} as related to the %{issuable_type} it was created from"
 msgstr ""
 
 msgid "AdherenceReport|%{pendingCount}/%{totalCount} control is pending"
@@ -28557,12 +28551,6 @@ msgstr ""
 msgid "Failed to fetch Namespace: %{fullPath}"
 msgstr ""
 
-msgid "Failed to fetch the iteration for this issue. Please try again."
-msgstr ""
-
-msgid "Failed to fetch the iterations for the group. Please try again."
-msgstr ""
-
 msgid "Failed to find import label for Jira import."
 msgstr ""
 
@@ -28762,9 +28750,6 @@ msgid "Failed to set a reaction. Please try again."
 msgstr ""
 
 msgid "Failed to set due date because the date format is invalid."
-msgstr ""
-
-msgid "Failed to set iteration on this issue. Please try again."
 msgstr ""
 
 msgid "Failed to sign in using smart card authentication."
@@ -29509,13 +29494,7 @@ msgstr ""
 msgid "For files larger than this limit, only index the file name. The file content is neither indexed nor searchable."
 msgstr ""
 
-msgid "For general work"
-msgstr ""
-
 msgid "For individual use, create a separate account under your personal email address, not tied to the Enterprise email domain."
-msgstr ""
-
-msgid "For investigating IT service disruptions or outages"
 msgstr ""
 
 msgid "For more information %{support_link_start}contact support%{link_end}."
@@ -36862,9 +36841,6 @@ msgstr ""
 msgid "Issue published on status page."
 msgstr ""
 
-msgid "Issue types"
-msgstr ""
-
 msgid "Issue update failed"
 msgstr ""
 
@@ -37239,9 +37215,6 @@ msgid "Iterations|No closed iterations."
 msgstr ""
 
 msgid "Iterations|No iteration cadences to show"
-msgstr ""
-
-msgid "Iterations|No iterations found"
 msgstr ""
 
 msgid "Iterations|No iterations in cadence."
@@ -44105,9 +44078,6 @@ msgstr ""
 msgid "No AI gateway available."
 msgstr ""
 
-msgid "No Epic"
-msgstr ""
-
 msgid "No Google Cloud projects - You need at least one Google Cloud project"
 msgstr ""
 
@@ -44271,9 +44241,6 @@ msgid "No issues"
 msgstr ""
 
 msgid "No issues found"
-msgstr ""
-
-msgid "No iteration"
 msgstr ""
 
 msgid "No label"
@@ -55039,9 +55006,6 @@ msgstr ""
 msgid "Rejected (closed)"
 msgstr ""
 
-msgid "Relate to %{issuable_type} %{add_related_issue_link}"
-msgstr ""
-
 msgid "Related"
 msgstr ""
 
@@ -62848,9 +62812,6 @@ msgstr ""
 msgid "Select Git revision"
 msgstr ""
 
-msgid "Select Iteration"
-msgstr ""
-
 msgid "Select Profile"
 msgstr ""
 
@@ -62966,9 +62927,6 @@ msgid "Select due date"
 msgstr ""
 
 msgid "Select environment or create wildcard"
-msgstr ""
-
-msgid "Select epic"
 msgstr ""
 
 msgid "Select group"
