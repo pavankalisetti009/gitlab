@@ -2,11 +2,19 @@
 
 module Ai
   module DuoWorkflows
-    class AgenticChatModelMetadataService
-      def initialize(root_namespace: nil, current_user: nil, user_selected_model_identifier: nil)
+    class DuoAgentPlatformModelMetadataService
+      include ::Gitlab::Utils::StrongMemoize
+
+      def initialize(
+        feature_name:,
+        root_namespace: nil,
+        current_user: nil,
+        user_selected_model_identifier: nil
+      )
         @root_namespace = root_namespace
         @current_user = current_user
         @user_selected_model_identifier = user_selected_model_identifier.to_s
+        @feature_name = feature_name&.to_sym
       end
 
       def execute
@@ -17,11 +25,7 @@ module Ai
 
       private
 
-      attr_reader :root_namespace, :current_user, :user_selected_model_identifier
-
-      def feature_name
-        ::Ai::ModelSelection::FeaturesConfigurable.agentic_chat_feature_name
-      end
+      attr_reader :root_namespace, :current_user, :user_selected_model_identifier, :feature_name
 
       def self_managed?
         !::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
@@ -30,6 +34,7 @@ module Ai
       def duo_agent_platform
         ::Ai::FeatureSetting.find_by_feature(feature_name)
       end
+      strong_memoize_attr :duo_agent_platform
 
       def duo_agent_platform_in_self_hosted_duo?
         # There is a `disabled` option for Duo Self-Hosted.
@@ -105,6 +110,9 @@ module Ai
       end
 
       def do_not_consider_user_selected_model?(setting, model_selection_scope)
+        # Only consider user selected model for agentic chat
+        return true unless feature_name == ::Ai::ModelSelection::FeaturesConfigurable.agentic_chat_feature_name
+
         setting.pinned_model? ||
           invalid_user_selected_model_identifier?(model_selection_scope)
       end

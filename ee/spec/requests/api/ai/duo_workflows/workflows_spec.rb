@@ -1710,6 +1710,53 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
         end
       end
 
+      context 'for X-Gitlab-Agent-Platform-Feature-Setting-Name header', :saas do
+        context 'when X-Gitlab-Agent-Platform-Feature-Setting-Name header is provided' do
+          let(:custom_feature_name) { 'any_dap_feature' }
+
+          it 'uses the header value as feature_name when calling DuoAgentPlatformModelMetadataService' do
+            expect(::Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService).to receive(:new).with(
+              hash_including(feature_name: custom_feature_name.to_sym)
+            ).and_call_original
+
+            get api(path, user),
+              headers: workhorse_headers.merge('X-Gitlab-Agent-Platform-Feature-Setting-Name' => custom_feature_name)
+          end
+
+          it 'uses the header value when calling FeatureSettingSelectionService' do
+            expect(::Ai::FeatureSettingSelectionService).to receive(:new).with(
+              user,
+              custom_feature_name.to_sym,
+              anything
+            ).and_call_original
+
+            get api(path, user), headers: workhorse_headers.merge(
+              'X-Gitlab-Agent-Platform-Feature-Setting-Name' => custom_feature_name
+            ), params: { root_namespace_id: group.id }
+          end
+        end
+
+        context 'when X-Gitlab-Agent-Platform-Feature-Setting-Name header is not provided' do
+          it 'defaults to agentic_chat_feature_name when calling DuoAgentPlatformModelMetadataService' do
+            expect(::Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService).to receive(:new).with(
+              hash_including(feature_name: ::Ai::ModelSelection::FeaturesConfigurable.agentic_chat_feature_name)
+            ).and_call_original
+
+            get api(path, user), headers: workhorse_headers, params: { root_namespace_id: group.id }
+          end
+
+          it 'defaults to agentic_chat_feature_name when calling FeatureSettingSelectionService' do
+            expect(::Ai::FeatureSettingSelectionService).to receive(:new).with(
+              user,
+              ::Ai::ModelSelection::FeaturesConfigurable.agentic_chat_feature_name,
+              anything
+            ).and_call_original
+
+            get api(path, user), headers: workhorse_headers, params: { root_namespace_id: group.id }
+          end
+        end
+      end
+
       context 'for x-gitlab-model-prompt-cache-enabled at instance-level' do
         it 'returns false in x-gitlab-model-prompt-cache-enabled header' do
           get api(path, user), headers: workhorse_headers

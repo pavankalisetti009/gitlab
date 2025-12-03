@@ -2,16 +2,18 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::DuoWorkflows::AgenticChatModelMetadataService, feature_category: :duo_agent_platform do
+RSpec.describe Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService, feature_category: :duo_agent_platform do
   let_it_be(:group) { create(:group) }
   let_it_be(:user) { create(:user) }
   let_it_be(:user_selected_model_identifier) { nil }
+  let(:feature_name) { ::Ai::ModelSelection::FeaturesConfigurable.agentic_chat_feature_name }
 
   subject(:service) do
     described_class.new(
       root_namespace: root_namespace,
       current_user: user,
-      user_selected_model_identifier: user_selected_model_identifier
+      user_selected_model_identifier: user_selected_model_identifier,
+      feature_name: feature_name
     )
   end
 
@@ -389,6 +391,15 @@ RSpec.describe Ai::DuoWorkflows::AgenticChatModelMetadataService, feature_catego
         end
       end
 
+      context 'when duo_agent_platform_model_selection feature flag is not enabled' do
+        before do
+          stub_feature_flags(duo_agent_platform_model_selection: false)
+          stub_feature_flags(self_hosted_agent_platform: false)
+        end
+
+        it_behaves_like 'returns empty headers'
+      end
+
       context 'when duo_agent_platform_model_selection feature flag is disabled' do
         before do
           stub_feature_flags(duo_agent_platform_model_selection: false)
@@ -397,6 +408,124 @@ RSpec.describe Ai::DuoWorkflows::AgenticChatModelMetadataService, feature_catego
         end
 
         it_behaves_like 'uses the gitlab default model'
+      end
+    end
+  end
+
+  describe 'feature_name parameter' do
+    let(:root_namespace) { group }
+
+    before do
+      stub_feature_flags(duo_agent_platform_model_selection: group)
+      stub_feature_flags(self_hosted_agent_platform: false)
+    end
+
+    context 'when feature_name is provided' do
+      let(:feature_name) { :duo_agent_platform }
+
+      it 'uses the provided feature_name when finding feature settings', :saas do
+        expect(::Ai::ModelSelection::NamespaceFeatureSetting)
+          .to receive(:find_or_initialize_by_feature)
+          .with(group, :duo_agent_platform)
+          .and_call_original
+
+        service.execute
+      end
+
+      it 'uses the provided feature_name when finding instance feature settings' do
+        stub_feature_flags(self_hosted_agent_platform: false)
+
+        expect(::Ai::ModelSelection::InstanceModelSelectionFeatureSetting)
+          .to receive(:find_or_initialize_by_feature)
+          .with(:duo_agent_platform)
+          .and_call_original
+
+        service.execute
+      end
+
+      it 'uses the provided feature_name when finding self-hosted feature settings' do
+        stub_feature_flags(self_hosted_agent_platform: true)
+
+        expect(::Ai::FeatureSetting)
+          .to receive(:find_by_feature)
+          .with(:duo_agent_platform)
+          .and_call_original
+
+        service.execute
+      end
+    end
+
+    context 'when feature_name is nil' do
+      let(:feature_name) { nil }
+
+      it 'sets feature_name to nil' do
+        expect(service.send(:feature_name)).to be_nil
+      end
+    end
+
+    context 'when feature_name is different from agentic_chat_feature_name' do
+      let(:feature_name) { :duo_chat }
+      let(:user_selected_model_identifier) { 'claude_sonnet_3_7_20250219' }
+
+      include_context 'with model selections fetch definition service side-effect context'
+
+      before do
+        stub_request(:get, fetch_service_endpoint_url)
+          .to_return(
+            status: 200,
+            body: model_definitions_response,
+            headers: { 'Content-Type' => 'application/json' }
+          )
+
+        create(:ai_namespace_feature_setting,
+          namespace: group,
+          feature: :duo_chat,
+          offered_model_ref: nil)
+      end
+
+      it 'does not consider user selected model even when valid' do
+        result = service.execute
+
+        expect(result).to include(
+          'x-gitlab-agent-platform-model-metadata' => {
+            'provider' => 'gitlab',
+            'feature_setting' => 'duo_chat',
+            'identifier' => nil
+          }.to_json
+        )
+      end
+    end
+
+    context 'when feature_name is agentic_chat_feature_name' do
+      let(:feature_name) { ::Ai::ModelSelection::FeaturesConfigurable.agentic_chat_feature_name }
+      let(:user_selected_model_identifier) { 'claude_sonnet_4_20250514' }
+
+      include_context 'with model selections fetch definition service side-effect context'
+
+      before do
+        stub_request(:get, fetch_service_endpoint_url)
+          .to_return(
+            status: 200,
+            body: model_definitions_response,
+            headers: { 'Content-Type' => 'application/json' }
+          )
+
+        create(:ai_namespace_feature_setting,
+          namespace: group,
+          feature: :duo_agent_platform,
+          offered_model_ref: nil)
+      end
+
+      it 'considers user selected model when valid' do
+        result = service.execute
+
+        expect(result).to include(
+          'x-gitlab-agent-platform-model-metadata' => {
+            'provider' => 'gitlab',
+            'feature_setting' => 'duo_agent_platform',
+            'identifier' => user_selected_model_identifier
+          }.to_json
+        )
       end
     end
   end
