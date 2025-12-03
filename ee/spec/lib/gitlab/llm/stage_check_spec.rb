@@ -135,5 +135,21 @@ RSpec.describe Gitlab::Llm::StageCheck, feature_category: :ai_abstraction_layer 
         it_behaves_like 'expected stage check results'
       end
     end
+
+    context 'with agentic_chat_ga feature flag' do
+      let_it_be(:root_group) { create(:group, :private) }
+      let_it_be(:project) { create(:project, group: root_group) }
+
+      it 'considers agentic_chat as GA based on the flag' do
+        stub_licensed_features(agentic_chat: true)
+        stub_feature_flags(agentic_chat_ga: true)
+
+        expect(described_class.available?(project, :agentic_chat)).to eq(true)
+
+        stub_feature_flags(agentic_chat_ga: false)
+
+        expect(described_class.available?(project, :agentic_chat)).to eq(false)
+      end
+    end
   end
 end
