@@ -96,6 +96,11 @@ export async function defineLibraryConfig(options = {}) {
   return {
     plugins,
     resolve,
+    css: {
+      // Prevent Vite from walking up to find root postcss.config.js
+      // Tailwind v4 uses the Vite plugin, not PostCSS plugin
+      postcss: {},
+    },
     define: {
       __VUE_OPTIONS_API__: JSON.stringify(true),
       __VUE_PROD_DEVTOOLS__: JSON.stringify(false),
