@@ -1,6 +1,7 @@
 import { shallowMount } from '@vue/test-utils';
 import Vue from 'vue';
 import VueRouter from 'vue-router';
+import { GlKeysetPagination } from '@gitlab/ui';
 import models from 'test_fixtures/api/admin/data_management/snippet_repository.json';
 import AdminDataManagementApp from 'ee/admin/data_management/components/app.vue';
 import GeoListTopBar from 'ee/geo_shared/list/components/geo_list_top_bar.vue';
@@ -41,6 +42,7 @@ describe('AdminDataManagementApp', () => {
 
   const findGeoListTopBar = () => wrapper.findComponent(GeoListTopBar);
   const findGeoList = () => wrapper.findComponent(GeoList);
+  const findGlKeysetPagination = () => wrapper.findComponent(GlKeysetPagination);
   const findDataManagementItem = () => wrapper.findComponent(DataManagementItem);
 
   const fireBulkAction = (action) => findGeoListTopBar().vm.$emit('bulkAction', action);
@@ -95,12 +97,16 @@ describe('AdminDataManagementApp', () => {
         createComponent();
 
         expect(findGeoList().props('isLoading')).toBe(true);
+        expect(findGlKeysetPagination().props('disabled')).toBe(true);
       });
     });
 
     describe('when loading models succeeds', () => {
       beforeEach(async () => {
-        getModels.mockResolvedValue({ data: models });
+        getModels.mockResolvedValue({
+          data: models,
+          headers: { 'x-next-cursor': 'next', 'x-prev-cursor': 'prev' },
+        });
         createComponent();
         await waitForPromises();
       });
@@ -117,6 +123,7 @@ describe('AdminDataManagementApp', () => {
 
       it('stops loading state', () => {
         expect(findGeoList().props('isLoading')).toBe(false);
+        expect(findGlKeysetPagination().props('disabled')).toBe(false);
       });
 
       it('does not create alert', () => {
@@ -130,7 +137,10 @@ describe('AdminDataManagementApp', () => {
 
     describe('when loading models returns empty array', () => {
       beforeEach(async () => {
-        getModels.mockResolvedValue({ data: [] });
+        getModels.mockResolvedValue({
+          data: [],
+          headers: { 'x-next-cursor': 'next', 'x-prev-cursor': 'prev' },
+        });
         createComponent();
         await waitForPromises();
       });
@@ -142,6 +152,7 @@ describe('AdminDataManagementApp', () => {
 
       it('stops loading state', () => {
         expect(findGeoList().props('isLoading')).toBe(false);
+        expect(findGlKeysetPagination().props('disabled')).toBe(false);
       });
 
       it('does not create alert', () => {
@@ -169,6 +180,7 @@ describe('AdminDataManagementApp', () => {
 
       it('stops loading state', () => {
         expect(findGeoList().props('isLoading')).toBe(false);
+        expect(findGlKeysetPagination().props('disabled')).toBe(false);
       });
 
       it('does not show bulk actions', () => {
@@ -187,6 +199,7 @@ describe('AdminDataManagementApp', () => {
           checksum_state: 'failed',
           order_by: 'name',
           sort: 'desc',
+          cursor: 'cursor',
         },
       });
 
@@ -203,6 +216,7 @@ describe('AdminDataManagementApp', () => {
         identifiers: ['123', '456'],
         order_by: 'name',
         sort: 'desc',
+        cursor: 'cursor',
       });
     });
 
@@ -213,6 +227,7 @@ describe('AdminDataManagementApp', () => {
         order_by: 'name',
         sort: 'desc',
         pagination: 'keyset',
+        cursor: 'cursor',
       });
     });
 
@@ -234,7 +249,7 @@ describe('AdminDataManagementApp', () => {
     beforeEach(async () => {
       await router.push({
         name: 'root',
-        query: { identifiers: [1], order_by: 'name', sort: 'asc' },
+        query: { identifiers: [1], order_by: 'name', sort: 'asc', cursor: 'cursor' },
       });
 
       createComponent();
@@ -247,7 +262,7 @@ describe('AdminDataManagementApp', () => {
       expect(router.currentRoute.params.modelName).toBe(otherModel.name);
     });
 
-    it('does not change route query', () => {
+    it('retains route query except cursor', () => {
       expect(router.currentRoute.query).toStrictEqual({
         identifiers: ['1'],
         order_by: 'name',
@@ -270,7 +285,7 @@ describe('AdminDataManagementApp', () => {
       await router.push({
         name: 'root',
         params: { modelName: otherModel.name },
-        query: { order_by: 'name', sort: 'asc' },
+        query: { order_by: 'name', sort: 'asc', cursor: 'cursor' },
       });
 
       createComponent();
@@ -286,7 +301,7 @@ describe('AdminDataManagementApp', () => {
       expect(router.currentRoute.params).toStrictEqual({ modelName: otherModel.name });
     });
 
-    it('updates route filter query', () => {
+    it('updates route filter query and drops cursor', () => {
       expect(router.currentRoute.query).toStrictEqual({
         identifiers: ['123', '456'],
         checksum_state: 'failed',
@@ -312,6 +327,7 @@ describe('AdminDataManagementApp', () => {
         name: 'root',
         params: { modelName: otherModel.name },
         query: { identifiers: ['123', '456'], order_by: 'updated-at', sort: 'asc' },
+        cursor: 'cursor',
       });
 
       createComponent();
@@ -324,7 +340,7 @@ describe('AdminDataManagementApp', () => {
       expect(router.currentRoute.params).toStrictEqual({ modelName: otherModel.name });
     });
 
-    it('updates route sort query', () => {
+    it('updates route sort query and drops cursor', () => {
       expect(router.currentRoute.query).toStrictEqual({
         identifiers: ['123', '456'],
         order_by: 'name',
@@ -346,7 +362,7 @@ describe('AdminDataManagementApp', () => {
     const [action] = BULK_ACTIONS;
 
     beforeEach(async () => {
-      getModels.mockResolvedValue({ data: [] });
+      getModels.mockResolvedValue({ data: [], headers: {} });
       createComponent();
 
       await waitForPromises();
@@ -404,6 +420,112 @@ describe('AdminDataManagementApp', () => {
 
       it('does not reload models', () => {
         expect(getModels).not.toHaveBeenCalled();
+      });
+    });
+  });
+
+  describe('when has x-next-cursor', () => {
+    beforeEach(async () => {
+      getModels.mockResolvedValue({ data: models, headers: { 'x-next-cursor': 'next' } });
+      createComponent();
+      await waitForPromises();
+    });
+
+    it('enables next button on pagination', () => {
+      expect(findGlKeysetPagination().props('hasNextPage')).toBe(true);
+      expect(findGlKeysetPagination().props('hasPreviousPage')).toBe(false);
+    });
+  });
+
+  describe('when has x-prev-cursor', () => {
+    beforeEach(async () => {
+      getModels.mockResolvedValue({ data: models, headers: { 'x-prev-cursor': 'prev' } });
+      createComponent();
+      await waitForPromises();
+    });
+
+    it('enables previous button on pagination', () => {
+      expect(findGlKeysetPagination().props('hasPreviousPage')).toBe(true);
+      expect(findGlKeysetPagination().props('hasNextPage')).toBe(false);
+    });
+  });
+
+  describe('when GlKeysetPagination emits `next` event', () => {
+    beforeEach(async () => {
+      getModels.mockResolvedValue({
+        data: models,
+        headers: { 'x-next-cursor': 'next' },
+      });
+
+      await router.push({
+        name: 'root',
+        params: { modelName: defaultModel.name },
+        query: { identifiers: ['123'], order_by: 'name', sort: 'asc' },
+      });
+
+      createComponent();
+      await waitForPromises();
+
+      findGlKeysetPagination().vm.$emit('next');
+      await waitForPromises();
+    });
+
+    it('updates route with next cursor', () => {
+      expect(router.currentRoute.query).toMatchObject({
+        identifiers: ['123'],
+        order_by: 'name',
+        sort: 'asc',
+        cursor: 'next',
+      });
+    });
+
+    it('calls getModels with cursor param', () => {
+      expect(getModels).toHaveBeenCalledWith(defaultModel.name, {
+        identifiers: ['123'],
+        order_by: 'name',
+        sort: 'asc',
+        pagination: 'keyset',
+        cursor: 'next',
+      });
+    });
+  });
+
+  describe('when GlKeysetPagination emits `prev` event', () => {
+    beforeEach(async () => {
+      getModels.mockResolvedValue({
+        data: models,
+        headers: { 'x-prev-cursor': 'prev' },
+      });
+
+      await router.push({
+        name: 'root',
+        params: { modelName: defaultModel.name },
+        query: { identifiers: ['456'], order_by: 'id', sort: 'desc' },
+      });
+
+      createComponent();
+      await waitForPromises();
+
+      findGlKeysetPagination().vm.$emit('prev');
+      await waitForPromises();
+    });
+
+    it('updates route with previous cursor', () => {
+      expect(router.currentRoute.query).toMatchObject({
+        identifiers: ['456'],
+        order_by: 'id',
+        sort: 'desc',
+        cursor: 'prev',
+      });
+    });
+
+    it('calls getModels with cursor param', () => {
+      expect(getModels).toHaveBeenCalledWith(defaultModel.name, {
+        identifiers: ['456'],
+        order_by: 'id',
+        sort: 'desc',
+        pagination: 'keyset',
+        cursor: 'prev',
       });
     });
   });
