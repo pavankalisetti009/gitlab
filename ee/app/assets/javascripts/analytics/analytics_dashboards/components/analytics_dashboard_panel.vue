@@ -181,6 +181,12 @@ export default {
         ...this.visualizationQueryOverrides,
       };
     },
+    aggregatedQuery() {
+      return {
+        ...this.visualization.data.query,
+        ...this.aggregatedQueryOverrides,
+      };
+    },
     isPermitted() {
       switch (this.visualization.slug) {
         case VISUALIZATION_SLUG_VSD_SECURITY_METRICS_TABLE:
@@ -266,7 +272,10 @@ export default {
       this.fetchData();
     },
     onUpdateQuery(queryOverrides) {
-      this.visualizationQueryOverrides = queryOverrides;
+      this.visualizationQueryOverrides = {
+        ...this.visualizationQueryOverrides,
+        ...queryOverrides,
+      };
     },
     async fetchData() {
       const { aggregatedQueryOverrides, filters } = this;
@@ -403,6 +412,7 @@ export default {
         class="gl-overflow-hidden"
         :data="data"
         :options="visualizationOptions"
+        :query="aggregatedQuery"
         @set-alerts="setAlerts"
         @updateQuery="onUpdateQuery"
       />
