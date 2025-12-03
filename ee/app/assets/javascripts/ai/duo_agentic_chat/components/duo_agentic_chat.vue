@@ -20,6 +20,7 @@ import {
   GENIE_CHAT_RESET_MESSAGE,
   GENIE_CHAT_CLEAR_MESSAGE,
   GENIE_CHAT_NEW_MESSAGE,
+  DUO_AGENTIC_CHAT_CLIENT_CAPABILITIES,
   DUO_WORKFLOW_STATUS_TOOL_CALL_APPROVAL_REQUIRED,
   DUO_WORKFLOW_STATUS_RUNNING,
   DUO_WORKFLOW_STATUS_INPUT_REQUIRED,
@@ -572,6 +573,10 @@ export default {
     startWorkflow(goal, approval = {}, additionalContext) {
       this.cleanupSocket();
 
+      const clientCapabilities = this.glFeatures.duoAgenticChatIncrementalStreaming
+        ? DUO_AGENTIC_CHAT_CLIENT_CAPABILITIES.concat(['incremental_streaming'])
+        : DUO_AGENTIC_CHAT_CLIENT_CAPABILITIES;
+
       const startRequest = buildStartRequest({
         workflowId: this.workflowId,
         workflowDefinition: this.selectedFoundationalAgent?.referenceWithVersion,
@@ -580,6 +585,7 @@ export default {
         additionalContext,
         agentConfig: this.agentConfig,
         metadata: this.metadata,
+        clientCapabilities,
       });
 
       this.socketManager = createWebSocket(this.websocketUrl, {

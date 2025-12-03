@@ -68,6 +68,15 @@ export const DUO_WORKFLOW_WEBSOCKET_PARAM_NAMESPACE_ID = 'namespace_id';
 export const DUO_WORKFLOW_WEBSOCKET_PARAM_PROJECT_ID = 'project_id';
 export const DUO_WORKFLOW_WEBSOCKET_PARAM_USER_SELECTED_MODEL = 'user_selected_model_identifier';
 
+// Client capabilities is how gitlab-lsp/browser -> workhorse -> Duo Workflow Service communicates
+// capabilities that can be used by Duo Workflow Service without breaking
+// backwards compatibility. We intersect the capabilities of all parties and
+// then new behaviour can only depend on that behaviour if it makes it all the
+// way through. Whenever you add to this list you must also update the constant in
+// workhorse/internal/ai_assist/duoworkflow/runner.go and gitlab-lsp/browser before
+// the feature becomes available.
+export const DUO_AGENTIC_CHAT_CLIENT_CAPABILITIES = [];
+
 export const DUO_AGENTIC_CHAT_SELECTED_MODEL_KEY = 'agentic-chat-user-selected-model';
 
 export const DUO_AGENTIC_CHAT_PENDING_USER_MESSAGE_ID = 'pending-user-msg-id';
