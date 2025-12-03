@@ -186,4 +186,20 @@ describe('Test coverage table component', () => {
       );
     });
   });
+
+  describe('clear all', () => {
+    it('resets projects when using clear all', async () => {
+      createComponent({ mountFn: mount });
+
+      await clickSelectAllProjects();
+
+      expect(findTable().exists()).toBe(true);
+
+      findProjectsDropdown().vm.$emit('reset-all-projects', []);
+
+      await waitForPromises();
+
+      expect(findTable().exists()).toBe(false);
+    });
+  });
 });
