@@ -87,6 +87,7 @@ export default {
       const input = {
         itemId: this.aiCatalogAgent.id,
         target,
+        parentItemConsumerId: this.aiCatalogAgent.configurationForGroup?.id,
       };
       const targetType = target.groupId
         ? AI_CATALOG_CONSUMER_TYPE_GROUP

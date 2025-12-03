@@ -19,6 +19,7 @@ import deleteAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/delete_
 import {
   mockAgent,
   mockAgentConfigurationForProject,
+  mockItemConfigurationForGroup,
   mockAiCatalogAgentResponse,
   mockAiCatalogItemConsumerCreateSuccessProjectResponse,
   mockAiCatalogItemConsumerCreateErrorResponse,
@@ -44,7 +45,11 @@ describe('AiCatalogAgentsShow', () => {
   };
 
   const defaultProps = {
-    aiCatalogAgent: { ...mockAgent, configurationForProject: mockAgentConfigurationForProject },
+    aiCatalogAgent: {
+      ...mockAgent,
+      configurationForProject: mockAgentConfigurationForProject,
+      configurationForGroup: mockItemConfigurationForGroup,
+    },
     versionData: mockAgentVersionDataProp,
   };
 
@@ -113,6 +118,7 @@ describe('AiCatalogAgentsShow', () => {
     expect(findItemActions().props('item')).toEqual({
       ...mockAgent,
       configurationForProject: mockAgentConfigurationForProject,
+      configurationForGroup: mockItemConfigurationForGroup,
     });
   });
 
@@ -120,6 +126,7 @@ describe('AiCatalogAgentsShow', () => {
     expect(findItemView().props('item')).toEqual({
       ...mockAgent,
       configurationForProject: mockAgentConfigurationForProject,
+      configurationForGroup: mockItemConfigurationForGroup,
     });
   });
 
@@ -172,6 +179,7 @@ describe('AiCatalogAgentsShow', () => {
         input: {
           itemId: mockAgent.id,
           target: { projectId: '1' },
+          parentItemConsumerId: mockItemConfigurationForGroup.id,
         },
       });
     });

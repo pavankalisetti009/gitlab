@@ -13,7 +13,7 @@ import {
   mockAiCatalogAgentNullResponse,
   mockAgent,
   mockAgentConfigurationForProject,
-  mockAgentConfigurationForGroup,
+  mockItemConfigurationForGroup,
   mockAgentVersion,
   mockAgentPinnedVersion,
 } from '../mock_data';
@@ -107,7 +107,7 @@ describe('AiCatalogAgent', () => {
       expect(findRouterView().props('aiCatalogAgent')).toEqual({
         ...mockAgent,
         configurationForProject: mockAgentConfigurationForProject,
-        configurationForGroup: mockAgentConfigurationForGroup,
+        configurationForGroup: mockItemConfigurationForGroup,
       });
     });
   });

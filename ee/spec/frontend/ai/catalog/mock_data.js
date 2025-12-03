@@ -297,7 +297,7 @@ export const mockAgentConfigurationForProject = {
   __typename: TYPENAME_AI_CATALOG_ITEM_CONSUMER,
 };
 
-export const mockAgentConfigurationForGroup = {
+export const mockItemConfigurationForGroup = {
   id: 'gid://gitlab/Ai::Catalog::ItemConsumer/4',
   enabled: true,
   __typename: TYPENAME_AI_CATALOG_ITEM_CONSUMER,
@@ -308,7 +308,7 @@ export const mockAiCatalogAgentResponse = {
     aiCatalogItem: {
       ...mockAgent,
       configurationForProject: mockAgentConfigurationForProject,
-      configurationForGroup: mockAgentConfigurationForGroup,
+      configurationForGroup: mockItemConfigurationForGroup,
     },
   },
 };
@@ -510,6 +510,7 @@ export const mockAiCatalogFlowResponse = {
     aiCatalogItem: {
       ...mockFlow,
       configurationForProject: mockFlowConfigurationForProject,
+      configurationForGroup: mockItemConfigurationForGroup,
     },
   },
 };
