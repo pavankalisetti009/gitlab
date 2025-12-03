@@ -4,6 +4,9 @@ module Projects
   module Ci
     class VisualCiEditorController < Projects::ApplicationController
       before_action :check_visual_ci_editor_available!
+      before_action do
+        push_frontend_feature_flag(:visual_ci_editor, project)
+      end
 
       feature_category :pipeline_composition
 
