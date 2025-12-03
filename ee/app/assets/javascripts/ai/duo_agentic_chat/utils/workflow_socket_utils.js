@@ -96,9 +96,7 @@ export function buildStartRequest({
   return startRequest;
 }
 
-export async function processWorkflowMessage(event, workflowId, indexInTheLastLog) {
-  let lastProcessedIndex = indexInTheLastLog;
-
+export async function processWorkflowMessage(event, currentMessageId) {
   const action = await parseMessage(event);
 
   if (!action || !action.newCheckpoint) {
@@ -106,18 +104,17 @@ export async function processWorkflowMessage(event, workflowId, indexInTheLastLo
   }
 
   const checkpoint = JSON.parse(action.newCheckpoint.checkpoint);
-  const processedResult = getMessagesToProcess(
+
+  const { toProcess, lastProcessedMessageId } = getMessagesToProcess(
     checkpoint.channel_values.ui_chat_log,
-    lastProcessedIndex,
+    currentMessageId,
   );
-  const { toProcess } = processedResult;
-  lastProcessedIndex = processedResult.lastProcessedIndex;
-  const messages = WorkflowUtils.transformChatMessages(toProcess, workflowId, indexInTheLastLog);
+  const messages = WorkflowUtils.transformChatMessages(toProcess);
 
   return {
     messages,
     status: action.newCheckpoint.status,
     goal: action.newCheckpoint.goal,
-    lastProcessedIndex,
+    lastProcessedMessageId,
   };
 }

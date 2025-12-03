@@ -1,29 +1,27 @@
-export const getMessagesToProcess = (messages, lastProcessedIndex) => {
+export const getMessagesToProcess = (messages, lastProcessedMessageId) => {
   if (!messages || messages.length === 0) {
     return {
       toProcess: [],
-      lastProcessedIndex: -1,
+      lastProcessedMessageId: null,
     };
   }
 
-  const newLen = messages.length;
-
   // First run or log shrank (truncate / reset): process everything.
-  const isFirstRunOrReset = lastProcessedIndex === -1;
-  const lastLogLength = lastProcessedIndex + 1;
+  const isFirstRunOrReset = lastProcessedMessageId === null;
   let startIndex;
   if (isFirstRunOrReset) {
     startIndex = 0;
-  } else if (newLen === lastLogLength) {
-    startIndex = newLen - 1;
   } else {
-    startIndex = lastProcessedIndex;
+    startIndex = messages.findIndex((msg) => msg.message_id === lastProcessedMessageId);
+    if (startIndex === -1) {
+      startIndex = 0;
+    }
   }
 
   const toProcess = messages.slice(startIndex);
 
   return {
     toProcess,
-    lastProcessedIndex: newLen - 1,
+    lastProcessedMessageId: messages.at(-1).message_id,
   };
 };

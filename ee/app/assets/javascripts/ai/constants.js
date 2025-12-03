@@ -69,3 +69,5 @@ export const DUO_WORKFLOW_WEBSOCKET_PARAM_PROJECT_ID = 'project_id';
 export const DUO_WORKFLOW_WEBSOCKET_PARAM_USER_SELECTED_MODEL = 'user_selected_model_identifier';
 
 export const DUO_AGENTIC_CHAT_SELECTED_MODEL_KEY = 'agentic-chat-user-selected-model';
+
+export const DUO_AGENTIC_CHAT_PENDING_USER_MESSAGE_ID = 'pending-user-msg-id';

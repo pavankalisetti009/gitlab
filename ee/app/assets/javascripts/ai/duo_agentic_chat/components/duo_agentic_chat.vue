@@ -26,6 +26,7 @@ import {
   DUO_WORKFLOW_ADDITIONAL_CONTEXT_REPOSITORY,
   DUO_CURRENT_WORKFLOW_STORAGE_KEY,
   DUO_CHAT_VIEWS,
+  DUO_AGENTIC_CHAT_PENDING_USER_MESSAGE_ID,
 } from 'ee/ai/constants';
 import getAiChatContextPresets from 'ee/ai/graphql/get_ai_chat_context_presets.query.graphql';
 import getAiChatAvailableModels from 'ee/ai/graphql/get_ai_chat_available_models.query.graphql';
@@ -287,7 +288,7 @@ export default {
       duoChatTitle: s__('DuoAgenticChat|Duo Agent'),
       isLoading: false,
       isWaitingOnPrompt: false,
-      lastProcessedIndex: -1,
+      lastProcessedMessageId: null,
       pendingEvent: null,
       isProcessingMessage: false,
       isInitialLoad: true,
@@ -486,7 +487,7 @@ export default {
     ...mapActions(['addDuoChatMessage', 'setMessages']),
     clearActiveThread() {
       this.setMessages([]);
-      this.lastProcessedIndex = -1;
+      this.lastProcessedMessageId = null;
     },
     async loadDuoNextIfNeeded() {
       if (this.glFeatures.duoUiNext) {
@@ -528,7 +529,7 @@ export default {
     cleanupState(resetWorkflowId = true) {
       this.isLoading = false;
       this.isWaitingOnPrompt = false;
-      this.lastProcessedIndex = -1;
+      this.lastProcessedMessageId = null;
       this.isProcessingMessage = false;
       this.pendingEvent = null;
       this.cleanupSocket();
@@ -628,12 +629,11 @@ export default {
 
         const workflowData = await processWorkflowMessage(
           eventToProcess,
-          this.workflowId,
-          this.lastProcessedIndex,
+          this.lastProcessedMessageId,
         );
 
         if (workflowData) {
-          this.lastProcessedIndex = workflowData.lastProcessedIndex;
+          this.lastProcessedMessageId = workflowData.lastProcessedMessageId;
 
           if (workflowData.messages && workflowData.messages.length > 0) {
             workflowData.messages.forEach((msg) => {
@@ -698,9 +698,11 @@ export default {
         await this.validateWorkflowExists();
       }
 
-      // eslint-disable-next-line @gitlab/require-i18n-strings
-      const requestId = `${this.workflowId}-${this.messages.length || 0}-user`;
-      const userMessage = { content: question, role: 'user', requestId };
+      const userMessage = {
+        content: question,
+        role: 'user',
+        requestId: DUO_AGENTIC_CHAT_PENDING_USER_MESSAGE_ID,
+      };
       this.startWorkflow(question, {}, this.additionalContext);
       this.addDuoChatMessage(userMessage);
     },
@@ -780,7 +782,7 @@ export default {
 
         const parsedWorkflowData = WorkflowUtils.parseWorkflowData(data);
         const uiChatLog = parsedWorkflowData?.checkpoint?.channel_values?.ui_chat_log || [];
-        const messages = WorkflowUtils.transformChatMessages(uiChatLog, this.workflowId);
+        const messages = WorkflowUtils.transformChatMessages(uiChatLog);
         const [workflow] = data.duoWorkflowWorkflows.nodes ?? [];
 
         this.workflowStatus = parsedWorkflowData?.workflowStatus;
@@ -792,7 +794,7 @@ export default {
           );
         }
 
-        this.lastProcessedIndex = messages.length - 1;
+        this.lastProcessedMessageId = messages.at(-1)?.message_id;
         this.setMessages(messages);
         this.$emit('change-title', parsedWorkflowData?.workflowGoal);
       } catch (err) {
