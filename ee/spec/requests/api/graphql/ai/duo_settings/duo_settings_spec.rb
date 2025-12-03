@@ -6,7 +6,7 @@ RSpec.describe 'GitLab Duo settings.', feature_category: :'self-hosted_models' d
   include GraphqlHelpers
 
   let_it_be(:current_user) { create(:admin) }
-  let_it_be(:duo_settings) { create(:ai_settings) }
+  let_it_be_with_refind(:duo_settings) { create(:ai_settings) }
 
   let(:query) do
     %(
@@ -60,6 +60,34 @@ RSpec.describe 'GitLab Duo settings.', feature_category: :'self-hosted_models' d
           }
         )
       end
+
+      it 'returns nil for minimum access level settings' do
+        duo_settings.update!(
+          minimum_access_level_execute: ::Gitlab::Access::DEVELOPER,
+          minimum_access_level_manage: ::Gitlab::Access::DEVELOPER,
+          minimum_access_level_enable_on_projects: ::Gitlab::Access::DEVELOPER
+        )
+
+        query = %(
+          query getDuoSettings {
+            duoSettings {
+              minimumAccessLevelExecute
+              minimumAccessLevelManage
+              minimumAccessLevelEnableOnProjects
+            }
+          }
+        )
+
+        post_graphql(query, current_user: current_user)
+
+        expect(duo_settings_data).to eq(
+          {
+            'minimumAccessLevelExecute' => nil,
+            'minimumAccessLevelManage' => nil,
+            'minimumAccessLevelEnableOnProjects' => nil
+          }
+        )
+      end
     end
 
     context 'when user is authorized for everything' do
@@ -74,6 +102,34 @@ RSpec.describe 'GitLab Duo settings.', feature_category: :'self-hosted_models' d
           {
             'aiGatewayUrl' => 'http://0.0.0.0:5052',
             'duoCoreFeaturesEnabled' => false
+          }
+        )
+      end
+
+      it 'returns minimum access level settings' do
+        duo_settings.update!(
+          minimum_access_level_execute: ::Gitlab::Access::DEVELOPER,
+          minimum_access_level_manage: ::Gitlab::Access::DEVELOPER,
+          minimum_access_level_enable_on_projects: ::Gitlab::Access::DEVELOPER
+        )
+
+        query = %(
+          query getDuoSettings {
+            duoSettings {
+              minimumAccessLevelExecute
+              minimumAccessLevelManage
+              minimumAccessLevelEnableOnProjects
+            }
+          }
+        )
+
+        post_graphql(query, current_user: current_user)
+
+        expect(duo_settings_data).to eq(
+          {
+            'minimumAccessLevelExecute' => ::Gitlab::Access::DEVELOPER,
+            'minimumAccessLevelManage' => ::Gitlab::Access::DEVELOPER,
+            'minimumAccessLevelEnableOnProjects' => ::Gitlab::Access::DEVELOPER
           }
         )
       end
