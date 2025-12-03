@@ -29,7 +29,7 @@ module QA
         end
 
         Page::File::Show.perform do |file|
-          file.highlight_text
+          file.double_click_code_token('class')
           file.explain_code
         end
 
