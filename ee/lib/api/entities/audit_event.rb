@@ -10,7 +10,7 @@ module API
       expose :event_name do |audit_event|
         audit_event.details.fetch :event_name, nil
       end
-      expose :details do |audit_event|
+      expose :details do |audit_event, _options|
         audit_event.formatted_details
       end
       expose :created_at

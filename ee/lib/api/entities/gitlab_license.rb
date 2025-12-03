@@ -20,7 +20,7 @@ module API
         license.expired? ? license.overage_with_historical_max : license.overage(options[:current_active_users_count])
       end
 
-      expose :user_limit, documentation: { type: 'Integer', example: 200 } do |license, options|
+      expose :user_limit, documentation: { type: 'Integer', example: 200 } do |license, _options|
         license.restricted?(:active_user_count) ? license.restrictions[:active_user_count] : 0
       end
     end

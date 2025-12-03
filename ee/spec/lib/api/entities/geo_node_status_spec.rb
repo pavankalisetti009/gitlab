@@ -9,7 +9,7 @@ RSpec.describe ::API::Entities::GeoNodeStatus, feature_category: :geo_replicatio
   let(:entity) { described_class.new(geo_node_status, request: double) }
   let(:error) { 'Could not connect to Geo database' }
 
-  subject { entity.as_json }
+  subject(:entity_json) { entity.as_json }
 
   before do
     stub_primary_node
@@ -18,7 +18,7 @@ RSpec.describe ::API::Entities::GeoNodeStatus, feature_category: :geo_replicatio
   describe '#healthy' do
     context 'when node is healthy' do
       it 'returns true' do
-        expect(subject[:healthy]).to eq true
+        expect(entity_json[:healthy]).to be true
       end
     end
 
@@ -27,10 +27,8 @@ RSpec.describe ::API::Entities::GeoNodeStatus, feature_category: :geo_replicatio
         geo_node_status.status_message = error
       end
 
-      subject { entity.as_json }
-
       it 'returns false' do
-        expect(subject[:healthy]).to eq false
+        expect(entity_json[:healthy]).to be false
       end
     end
   end
@@ -38,7 +36,7 @@ RSpec.describe ::API::Entities::GeoNodeStatus, feature_category: :geo_replicatio
   describe '#health' do
     context 'when node is healthy' do
       it 'exposes the health message' do
-        expect(subject[:health]).to eq GeoNodeStatus::HEALTHY_STATUS
+        expect(entity_json[:health]).to eq GeoNodeStatus::HEALTHY_STATUS
       end
     end
 
@@ -47,10 +45,8 @@ RSpec.describe ::API::Entities::GeoNodeStatus, feature_category: :geo_replicatio
         geo_node_status.status_message = error
       end
 
-      subject { entity.as_json }
-
       it 'exposes the error message' do
-        expect(subject[:health]).to eq error
+        expect(entity_json[:health]).to eq error
       end
     end
   end
@@ -61,7 +57,7 @@ RSpec.describe ::API::Entities::GeoNodeStatus, feature_category: :geo_replicatio
         job_artifacts_failed_count: 12,
         job_artifacts_synced_count: 123)
 
-      expect(subject[:job_artifacts_synced_in_percentage]).to eq '48.05%'
+      expect(entity_json[:job_artifacts_synced_in_percentage]).to eq '48.05%'
     end
   end
 
@@ -73,7 +69,7 @@ RSpec.describe ::API::Entities::GeoNodeStatus, feature_category: :geo_replicatio
         container_repositories_synced_count: 123
       )
 
-      expect(subject[:container_repositories_synced_in_percentage]).to eq '48.05%'
+      expect(entity_json[:container_repositories_synced_in_percentage]).to eq '48.05%'
     end
   end
 
@@ -82,23 +78,23 @@ RSpec.describe ::API::Entities::GeoNodeStatus, feature_category: :geo_replicatio
       geo_node_status.assign_attributes(replication_slots_count: 4,
         replication_slots_used_count: 2)
 
-      expect(subject[:replication_slots_used_in_percentage]).to eq '50.00%'
+      expect(entity_json[:replication_slots_used_in_percentage]).to eq '50.00%'
     end
   end
 
   describe '#namespaces' do
     it 'returns empty array when full sync is active' do
-      expect(subject[:namespaces]).to be_empty
+      expect(entity_json[:namespaces]).to be_empty
     end
 
     it 'returns array of namespace ids and paths for selective sync' do
       namespace = create(:namespace)
       geo_node_status.geo_node.namespaces << namespace
 
-      expect(subject[:namespaces]).not_to be_empty
-      expect(subject[:namespaces]).to be_an(Array)
-      expect(subject[:namespaces].first[:id]).to eq(namespace.id)
-      expect(subject[:namespaces].first[:path]).to eq(namespace.path)
+      expect(entity_json[:namespaces]).not_to be_empty
+      expect(entity_json[:namespaces]).to be_an(Array)
+      expect(entity_json[:namespaces].first[:id]).to eq(namespace.id)
+      expect(entity_json[:namespaces].first[:path]).to eq(namespace.path)
     end
   end
 
@@ -106,12 +102,12 @@ RSpec.describe ::API::Entities::GeoNodeStatus, feature_category: :geo_replicatio
     it 'returns the config' do
       shards = StorageShard.all
 
-      expect(subject[:storage_shards].count).to eq(shards.count)
-      expect(subject[:storage_shards].first[:name]).to eq(shards.first.name)
+      expect(entity_json[:storage_shards].count).to eq(shards.count)
+      expect(entity_json[:storage_shards].first[:name]).to eq(shards.first.name)
     end
   end
 
-  context 'secondary Geo node' do
+  context 'when node is a secondary Geo node' do
     before do
       stub_secondary_node
     end

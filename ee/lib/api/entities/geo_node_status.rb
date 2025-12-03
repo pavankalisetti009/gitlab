@@ -64,7 +64,7 @@ module API
       #
       # We don't yet cached the state of the shard information in the database, so if
       # we don't have this information omit from the serialization entirely.
-      expose :storage_shards, using: StorageShardEntity, if: ->(status, options) do
+      expose :storage_shards, using: StorageShardEntity, if: ->(status, _options) do
         status.storage_shards.present?
       end
 

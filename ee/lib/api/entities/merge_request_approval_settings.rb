@@ -7,7 +7,10 @@ module API
     #
     # To be removed in https://gitlab.com/gitlab-org/gitlab/issues/13574.
     class MergeRequestApprovalSettings < MergeRequestApprovalState
-      expose :wrapped_approval_rules, as: :rules, using: ::API::Entities::MergeRequestApprovalSettingRule, override: true
+      expose :wrapped_approval_rules,
+        as: :rules,
+        using: ::API::Entities::MergeRequestApprovalSettingRule,
+        override: true
     end
   end
 end
