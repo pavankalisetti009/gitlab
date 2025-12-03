@@ -9,5 +9,9 @@ module Security
       inverse_of: :scan_profile_projects, optional: false
 
     validates :project_id, uniqueness: { scope: :security_scan_profile_id }
+
+    scope :not_in_root_namespace, ->(root_namespace) {
+      joins(:scan_profile).where.not(security_scan_profiles: { namespace: root_namespace })
+    }
   end
 end
