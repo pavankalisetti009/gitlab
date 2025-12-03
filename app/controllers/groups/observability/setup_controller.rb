@@ -10,10 +10,9 @@ module Groups
       urgency :low
 
       def show
-        @settings = group.observability_group_o11y_setting
-        return unless provisioning?
+        return if group.observability_group_o11y_setting.present?
 
-        @configuration_settings ||= group.build_observability_group_o11y_setting(o11y_service_name: group.id)
+        group.build_observability_group_o11y_setting(o11y_service_name: group.id) if provisioning?
       end
 
       private

@@ -45648,9 +45648,6 @@ msgstr ""
 msgid "Observability|CI/CD Observability settings"
 msgstr ""
 
-msgid "Observability|CI/CD settings"
-msgstr ""
-
 msgid "Observability|Centralized log management with powerful querying capabilities and advanced search"
 msgstr ""
 
@@ -45663,7 +45660,7 @@ msgstr ""
 msgid "Observability|Configuration notes"
 msgstr ""
 
-msgid "Observability|Configure your OpenTelemetry SDK or collector with the appropriate endpoint based on your chosen transport protocol. For detailed integration instructions specific to your language or framework, please refer to the OpenTelemetry documentation for your SDK."
+msgid "Observability|Configure your OpenTelemetry SDK or collector with the appropriate endpoint based on your chosen transport protocol. For detailed integration instructions specific to your language or framework, please refer to the %{otel_docs_link_start}OpenTelemetry documentation for your SDK%{otel_docs_link_end}."
 msgstr ""
 
 msgid "Observability|Configure your o11y service connection settings."
@@ -45673,6 +45670,9 @@ msgid "Observability|Configure your observability service connection settings."
 msgstr ""
 
 msgid "Observability|Copy HTTP endpoint"
+msgstr ""
+
+msgid "Observability|Copy curl command"
 msgstr ""
 
 msgid "Observability|Copy gRPC endpoint"
@@ -45742,6 +45742,9 @@ msgid "Observability|Enterprise ready"
 msgstr ""
 
 msgid "Observability|Enterprise-grade observability for GitLab"
+msgstr ""
+
+msgid "Observability|Example curl command"
 msgstr ""
 
 msgid "Observability|Exception tracking"
@@ -45966,6 +45969,9 @@ msgstr ""
 msgid "Observability|Observability settings for group %{group_name} updated successfully."
 msgstr ""
 
+msgid "Observability|Once provisioned, you can test your HTTP endpoint by sending a sample OpenTelemetry payload using curl. This helps verify that your endpoint is accessible and configured correctly."
+msgstr ""
+
 msgid "Observability|OpenTelemetry native"
 msgstr ""
 
@@ -46020,6 +46026,9 @@ msgstr ""
 msgid "Observability|Superior query performance and data compression with ClickHouse backend"
 msgstr ""
 
+msgid "Observability|Testing your endpoints"
+msgstr ""
+
 msgid "Observability|The HTTP endpoint (port 4318) accepts OTLP/HTTP protocol and is suitable for applications using HTTP-based transport"
 msgstr ""
 
@@ -46035,7 +46044,7 @@ msgstr ""
 msgid "Observability|The name of your o11y service instance."
 msgstr ""
 
-msgid "Observability|To enable Observability for CI/CD, set the %{variable_name} CI/CD variable in your group's %{settings_link_start}%{settings_link_end}."
+msgid "Observability|To enable Observability for CI/CD, set the %{variable_name} CI/CD variable in your group's %{settings_link_start}CI/CD settings%{settings_link_end} to a comma-separated list of data types to export: metrics, logs, and/or traces (e.g., %{metrics_logs} or %{all_data_types})."
 msgstr ""
 
 msgid "Observability|To widen your search, change or remove filters above"
@@ -46102,6 +46111,12 @@ msgid "Observability|You are not authorized to request observability access"
 msgstr ""
 
 msgid "Observability|You can contact us through our %{issue_link_start}feedback issue in GitLab%{issue_link_end}. You can also join our %{discord_link_start}Discord channel%{discord_link_end} for community discussions and support."
+msgstr ""
+
+msgid "Observability|You can test your HTTP endpoint by sending a sample OpenTelemetry payload using curl. This helps verify that your endpoint is accessible and configured correctly."
+msgstr ""
+
+msgid "Observability|Your OpenTelemetry (OTel) telemetry data collection endpoints are being provisioned. Once complete, they will be ready to receive data. Please configure your instrumentation with the following endpoints:"
 msgstr ""
 
 msgid "Observability|Your OpenTelemetry (OTel) telemetry data collection endpoints have been provisioned and are ready to receive data. Please configure your instrumentation with the following endpoints:"
