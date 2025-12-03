@@ -40,16 +40,6 @@ RSpec.describe Search::Zoekt::RolloutWorker, feature_category: :global_search do
 
         it_behaves_like 'no op'
       end
-
-      context 'when FF zoekt_rollout_worker is disabled' do
-        before do
-          allow(Gitlab::CurrentSettings).to receive(:zoekt_indexing_paused?).and_return(false)
-          allow(Search::Zoekt).to receive(:licensed_and_indexing_enabled?).and_return(true)
-          stub_feature_flags(zoekt_rollout_worker: false)
-        end
-
-        it_behaves_like 'no op'
-      end
     end
 
     context 'when worker runs' do
