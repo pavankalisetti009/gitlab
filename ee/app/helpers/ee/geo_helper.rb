@@ -51,9 +51,9 @@ module EE
     end
 
     def replicable_types
-      ::Gitlab::Geo::REPLICATOR_CLASSES.map do |replicator_class|
-        replicable_class_data(replicator_class)
-      end
+      ::Gitlab::Geo::REPLICATOR_CLASSES
+        .map { |replicator_class| replicable_class_data(replicator_class) }
+        .sort_by { |data| data[:title] }
     end
 
     def replicable_class_data(replicator_class)
@@ -75,9 +75,9 @@ module EE
     end
 
     def model_types
-      ::Gitlab::Geo::ModelMapper.available_models.map do |klass|
-        model_data(klass)
-      end
+      ::Gitlab::Geo::ModelMapper.available_models
+        .map { |model_class| model_data(model_class) }
+        .sort_by { |data| data[:title] }
     end
 
     def model_data(model_class)
