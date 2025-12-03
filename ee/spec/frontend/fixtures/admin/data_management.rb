@@ -16,8 +16,8 @@ RSpec.describe API::Admin::DataManagement, '(JavaScript fixtures)', :geo,
     stub_current_geo_node(node)
   end
 
-  it 'api/admin/data_management/snippet_repository.json' do
-    get api("/admin/data_management/snippet_repository", admin, admin_mode: true)
+  it 'api/admin/data_management/snippet_repositories.json' do
+    get api("/admin/data_management/snippet_repositories", admin, admin_mode: true)
 
     expect(response).to be_successful
   end

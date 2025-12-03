@@ -2,7 +2,7 @@ import { shallowMount } from '@vue/test-utils';
 import Vue from 'vue';
 import VueRouter from 'vue-router';
 import { GlKeysetPagination } from '@gitlab/ui';
-import models from 'test_fixtures/api/admin/data_management/snippet_repository.json';
+import models from 'test_fixtures/api/admin/data_management/snippet_repositories.json';
 import AdminDataManagementApp from 'ee/admin/data_management/components/app.vue';
 import GeoListTopBar from 'ee/geo_shared/list/components/geo_list_top_bar.vue';
 import GeoList from 'ee/geo_shared/list/components/geo_list.vue';

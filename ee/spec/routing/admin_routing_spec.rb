@@ -163,7 +163,7 @@ RSpec.describe 'EE-specific admin routing' do
     where(model_classes: Gitlab::Geo::ModelMapper.available_models)
 
     with_them do
-      let(:model_name) { Gitlab::Geo::ModelMapper.convert_to_name(model_classes) }
+      let(:model_name) { Gitlab::Geo::ModelMapper.convert_to_name(model_classes).pluralize }
 
       it 'routes to #show' do
         expect(get("/admin/data_management/#{model_name}/1")).to route_to('admin/data_management#show',

@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
-import models from 'test_fixtures/api/admin/data_management/snippet_repository.json';
+import models from 'test_fixtures/api/admin/data_management/snippet_repositories.json';
 import DataManagementItem from 'ee/admin/data_management/components/data_management_item.vue';
 import GeoListItem from 'ee/geo_shared/list/components/geo_list_item.vue';
 import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
