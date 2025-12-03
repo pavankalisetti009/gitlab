@@ -391,6 +391,13 @@ module EE
           description: 'Security categories for the group.',
           resolver: ::Resolvers::Security::CategoryResolver
 
+        field :available_security_scan_profiles, [::Types::Security::ScanProfileType],
+          null: true,
+          description: 'Security scan profiles available for the group.',
+          authorize: :read_security_scan_profiles,
+          experiment: { milestone: '18.8' },
+          resolver: ::Resolvers::Security::ScanProfilesResolver
+
         field :compliance_requirement_control_coverage,
           ::Types::ComplianceManagement::ComplianceFramework::RequirementControlCoverageType,
           null: true,

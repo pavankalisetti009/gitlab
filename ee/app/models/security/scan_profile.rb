@@ -23,6 +23,9 @@ module Security
     validates :description, length: { maximum: 2047 }, allow_blank: true
     validate :root_namespace_validation
 
+    scope :by_namespace, ->(namespace) { where(namespace: namespace) }
+    scope :by_type, ->(type) { where(scan_type: type) }
+
     private
 
     def root_namespace_validation
