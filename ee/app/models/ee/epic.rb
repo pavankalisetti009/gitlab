@@ -134,8 +134,13 @@ module EE
       end
 
       scope :with_web_entity_associations, -> { preload(:author, group: [:ip_restrictions, :route]) }
-      scope :with_api_entity_associations, -> do
-        preload(:author, :sync_object, :labels, :parent, group: [:saml_provider, :route])
+      scope :with_api_entity_associations_from_work_item, -> do
+        preload(:sync_object, :parent, group: [:saml_provider, :route],
+          work_item: [
+            :namespace, :work_item_type, :dates_source, :labels, :color, :label_links, :author,
+            { parent_link: { work_item_parent: :sync_object } }
+          ]
+        )
       end
       scope :preload_for_indexing, -> do
         includes(:author, :sync_object, :group, :start_date_sourcing_epic, :due_date_sourcing_epic,

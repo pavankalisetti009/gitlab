@@ -127,7 +127,9 @@ module API
         end
         get path, urgency: :low do
           validate_search_rate_limit! if declared_params[:search].present?
-          epics = paginate(find_epics(finder_params: { group_id: user_group.id })).with_api_entity_associations
+          epics = paginate(find_epics(finder_params: { group_id: user_group.id }))
+            .with_api_entity_associations_from_work_item
+
           epics.each(&:lazy_labels)
           # issuable_metadata has to be set because `Entities::Epic` doesn't inherit from `Entities::IssuableEntity`
           extra_options = {
