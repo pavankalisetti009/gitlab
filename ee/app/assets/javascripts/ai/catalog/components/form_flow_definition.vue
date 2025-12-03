@@ -94,6 +94,7 @@ export default {
       :value="value"
       file-name="*.yaml"
       :editor-options="editorOptions"
+      :use-dynamic-height="false"
       @input="onInput"
     />
   </div>
