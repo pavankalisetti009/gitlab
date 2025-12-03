@@ -43,6 +43,8 @@ module EE
         override :can_create_new_member?
         def can_create_new_member?
           if member.user&.service_account?
+            return false if ::Ability.composite_id_service_account_outside_origin_group?(member.user, source)
+
             current_user.can?(:admin_service_account_member, member.group)
           else
             current_user.can?(:invite_group_members, member.group)
