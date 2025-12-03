@@ -45,12 +45,12 @@ module DescriptionDiffActions
   end
 
   def verify_description_diffs_enabled!
-    return render_404 unless issuable.resource_parent.feature_available?(:description_diffs)
+    render_404 unless issuable.resource_parent.feature_available?(:description_diffs)
   end
 
   def authorize_delete_description_version!
     rule = "admin_#{issuable.class.to_ability_name}"
 
-    return render_404 unless can?(current_user, rule, issuable)
+    render_404 unless can?(current_user, rule, issuable)
   end
 end

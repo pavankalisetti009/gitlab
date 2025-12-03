@@ -17,7 +17,7 @@ module Groups
 
         override :authorize_stage
         def authorize_stage
-          return render_403 unless can?(current_user, :read_group_stage, @group)
+          render_403 unless can?(current_user, :read_group_stage, @group)
         end
       end
     end

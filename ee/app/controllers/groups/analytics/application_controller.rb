@@ -16,11 +16,11 @@ class Groups::Analytics::ApplicationController < Groups::ApplicationController
   end
 
   def authorize_view_by_action!(action)
-    return render_403 unless can?(current_user, action, group)
+    render_403 unless can?(current_user, action, group)
   end
 
   def check_feature_availability!(feature)
-    return render_403 unless group && group.licensed_feature_available?(feature)
+    render_403 unless group && group.licensed_feature_available?(feature)
   end
 
   def load_project

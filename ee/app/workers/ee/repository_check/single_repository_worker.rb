@@ -8,7 +8,7 @@ module EE
 
       override :perform
       def perform(shard_name)
-        return super unless ::Gitlab::Geo.secondary?
+        super unless ::Gitlab::Geo.secondary?
       end
     end
   end

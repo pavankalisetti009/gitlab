@@ -13,7 +13,7 @@ module EE
     def read_only_message
       return ::Gitlab::MaintenanceModeHelper.maintenance_mode_message if ::Gitlab.maintenance_mode?
 
-      return super unless ::Gitlab::Geo.secondary?
+      super unless ::Gitlab::Geo.secondary?
     end
 
     def read_only_description

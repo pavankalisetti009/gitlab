@@ -76,7 +76,7 @@ class Vulnerabilities::FindingEntity < Grape::Entity
   alias_method :occurrence, :object
 
   def current_user
-    return request.current_user if request.respond_to?(:current_user)
+    request.current_user if request.respond_to?(:current_user)
   end
 
   private

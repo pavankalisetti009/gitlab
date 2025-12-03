@@ -125,7 +125,7 @@ module Projects
         protected
 
         def check_feature_enabled!
-          return render_404 unless project.jira_issues_integration_available? &&
+          render_404 unless project.jira_issues_integration_available? &&
             jira_integration&.active &&
             (jira_integration&.issues_enabled || jira_integration&.vulnerabilities_enabled)
         end

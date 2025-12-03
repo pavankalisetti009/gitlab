@@ -34,7 +34,7 @@ class Groups::Analytics::TasksByTypeController < Groups::Analytics::ApplicationC
   end
 
   def validate_label_name
-    return respond_422 if Array(params[:label_names]).empty?
+    respond_422 if Array(params[:label_names]).empty?
   end
 
   def prepare_date_range
@@ -43,7 +43,7 @@ class Groups::Analytics::TasksByTypeController < Groups::Analytics::ApplicationC
 
     @created_before = parse_date(params[:created_before]) || Date.today
 
-    return respond_422 if @created_after > @created_before
+    respond_422 if @created_after > @created_before
   end
 
   def parse_date(value)

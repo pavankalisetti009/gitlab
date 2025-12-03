@@ -67,7 +67,8 @@ module EE
       error_message_object = size_checker.error_message
 
       return error_message_object.push_warning if size_checker.usage_ratio >= 0.95 && size_checker.usage_ratio < 1
-      return error_message_object.push_error if size_checker.usage_ratio >= 1
+
+      error_message_object.push_error if size_checker.usage_ratio >= 1
     end
   end
 end

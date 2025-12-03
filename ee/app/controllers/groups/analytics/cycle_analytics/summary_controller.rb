@@ -41,7 +41,7 @@ module Groups
         end
 
         def authorize_access
-          return render_403 unless can?(current_user, :read_cycle_analytics, namespace)
+          render_403 unless can?(current_user, :read_cycle_analytics, namespace)
         end
 
         def data_collector_for(summary_class)

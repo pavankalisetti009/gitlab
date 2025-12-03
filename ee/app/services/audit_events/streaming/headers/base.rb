@@ -18,7 +18,7 @@ module AuditEvents
         end
 
         def execute
-          return destination_error if destination.blank?
+          destination_error if destination.blank?
         end
 
         private

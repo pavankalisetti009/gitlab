@@ -56,7 +56,7 @@ module EE
     end
 
     def can_create_epic?
-      return can?(current_user, :create_epic, current_board_namespace).to_s if board.is_a?(::Boards::EpicBoard)
+      can?(current_user, :create_epic, current_board_namespace).to_s if board.is_a?(::Boards::EpicBoard)
     end
 
     override :can_update?

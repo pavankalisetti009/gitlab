@@ -61,7 +61,7 @@ module EE
             lock_info = project.find_path_lock(path)
 
             if lock_info && lock_info.user != user_access.user
-              return format(_("'%{lock_path}' is locked by @%{lock_user_name}"),
+              format(_("'%{lock_path}' is locked by @%{lock_user_name}"),
                 lock_path: lock_info.path, lock_user_name: lock_info.user.username)
             end
           end
