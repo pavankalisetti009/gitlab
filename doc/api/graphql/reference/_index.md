@@ -32882,6 +32882,23 @@ Returns [`[AutocompletedUser!]`](#autocompleteduser).
 | ---- | ---- | ----------- |
 | <a id="groupautocompleteuserssearch"></a>`search` | [`String`](#string) | Query to search users by name, username, or public email. |
 
+##### `Group.availableSecurityScanProfiles`
+
+{{< details >}}
+**Introduced** in GitLab 18.8.
+**Status**: Experiment.
+{{< /details >}}
+
+Security scan profiles available for the group.
+
+Returns [`[ScanProfileType!]`](#scanprofiletype).
+
+###### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="groupavailablesecurityscanprofilestype"></a>`type` | [`SecurityScanProfileType`](#securityscanprofiletype) | Filter scan profiles by type. |
+
 ##### `Group.billableMembersCount`
 
 Number of billable users in the group.
@@ -45299,7 +45316,7 @@ A scan profile.
 | <a id="scanprofiletypecreatedat"></a>`createdAt` | [`ISO8601DateTime!`](#iso8601datetime) | Timestamp of when the scan profile was created. |
 | <a id="scanprofiletypedescription"></a>`description` | [`String!`](#string) | Description of the security scan profile. |
 | <a id="scanprofiletypegitlabrecommended"></a>`gitlabRecommended` | [`Boolean!`](#boolean) | Indicates whether the scan profile is a default profile. |
-| <a id="scanprofiletypeid"></a>`id` | [`SecurityScanProfileID!`](#securityscanprofileid) | Global ID of the security scan profile. |
+| <a id="scanprofiletypeid"></a>`id` | [`SecurityScanProfileID`](#securityscanprofileid) | Global ID of the security scan profile. |
 | <a id="scanprofiletypename"></a>`name` | [`String!`](#string) | Name of the security scan profile. |
 | <a id="scanprofiletypescantype"></a>`scanType` | [`SecurityScanProfileType!`](#securityscanprofiletype) | Scan profile type. |
 | <a id="scanprofiletypeupdatedat"></a>`updatedAt` | [`ISO8601DateTime!`](#iso8601datetime) | Timestamp of when the scan profile was last updated. |

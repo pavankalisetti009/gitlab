@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['SecurityAttribute'], feature_category: :security_asset_inventories do
+RSpec.describe Types::Security::AttributeType, feature_category: :security_asset_inventories do
   include GraphqlHelpers
 
   it 'exposes the expected fields' do
