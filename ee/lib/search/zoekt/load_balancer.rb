@@ -40,7 +40,6 @@ module Search
       def pick
         return if nodes.empty?
         return nodes.first if nodes.size == 1
-        return nodes.sample unless enabled?
 
         with_redis do |redis|
           # Select node with lowest load
@@ -49,8 +48,6 @@ module Search
       end
 
       def increase_load(node, weight: 1)
-        return unless enabled?
-
         # Increase by weight (heavy queries count more)
         with_redis do |redis|
           redis.multi do |r|
@@ -61,8 +58,6 @@ module Search
       end
 
       def decrease_load(node, weight: 1)
-        return unless enabled?
-
         # Reduce load when query completes
         with_redis do |redis|
           new_value = redis.incrbyfloat(node_key(node), -weight)
@@ -80,10 +75,6 @@ module Search
 
       def with_redis(&block)
         Gitlab::Redis::Cache.with(&block) # rubocop:disable CodeReuse/ActiveRecord -- N/A
-      end
-
-      def enabled?
-        Feature.enabled?(:zoekt_load_balancer, Feature.current_request)
       end
     end
   end
