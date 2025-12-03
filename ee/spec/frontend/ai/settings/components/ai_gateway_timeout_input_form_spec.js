@@ -33,12 +33,12 @@ describe('AiGatewayTimeoutInputForm', () => {
   });
 
   it('has the correct label', () => {
-    expect(findFormGroup().attributes('label')).toBe('AI gateway request timeout');
+    expect(findFormGroup().attributes('label')).toBe('AI Gateway request timeout');
   });
 
   it('has the correct label description', () => {
     expect(findFormGroup().text()).toContain(
-      'Maximum time in seconds to wait for responses from the AI gateway (up to 600 seconds).',
+      'Maximum time in seconds to wait for responses from the AI Gateway (up to 600 seconds).',
     );
     expect(findFormGroup().text()).toContain(
       'Increasing this value might result in degraded user experience.',

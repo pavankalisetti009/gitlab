@@ -29,7 +29,7 @@ export default {
 <template>
   <div>
     <gl-form-group
-      :label="s__('AiPowered|AI gateway request timeout')"
+      :label="s__('AiPowered|AI Gateway request timeout')"
       label-for="ai-gateway-timeout"
       class="gl-my-4"
     >
@@ -37,7 +37,7 @@ export default {
         <gl-sprintf
           :message="
             s__(
-              'AiPowered|Maximum time in seconds to wait for responses from the AI gateway (up to 600 seconds).%{br}Increasing this value might result in degraded user experience.',
+              'AiPowered|Maximum time in seconds to wait for responses from the AI Gateway (up to 600 seconds).%{br}Increasing this value might result in degraded user experience.',
             )
           "
         >
