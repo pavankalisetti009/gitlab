@@ -46,4 +46,44 @@ RSpec.describe Ai::SettingPolicy, :enable_admin_mode, feature_category: :"self-h
       it { is_expected.to be_allowed(:read_duo_core_settings) }
     end
   end
+
+  describe 'update_ai_role_based_permission_settings' do
+    context 'when user is nil' do
+      let!(:current_user) { nil }
+
+      it { is_expected.to be_disallowed(:update_ai_role_based_permission_settings) }
+    end
+
+    context 'when user is not authorized to manage Duo Core settings' do
+      before do
+        stub_licensed_features(code_suggestions: false, ai_chat: false)
+      end
+
+      it { is_expected.to be_disallowed(:update_ai_role_based_permission_settings) }
+    end
+
+    context 'when user is authorized to manage Duo Core settings' do
+      it { is_expected.to be_allowed(:update_ai_role_based_permission_settings) }
+    end
+  end
+
+  describe 'read_ai_role_based_permission_settings' do
+    context 'when user is nil' do
+      let!(:current_user) { nil }
+
+      it { is_expected.to be_disallowed(:read_ai_role_based_permission_settings) }
+    end
+
+    context 'when user is not authorized to manage Duo Core settings' do
+      before do
+        stub_licensed_features(code_suggestions: false, ai_chat: false)
+      end
+
+      it { is_expected.to be_disallowed(:read_ai_role_based_permission_settings) }
+    end
+
+    context 'when user is authorized to manage Duo Core settings' do
+      it { is_expected.to be_allowed(:read_ai_role_based_permission_settings) }
+    end
+  end
 end

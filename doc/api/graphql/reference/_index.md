@@ -6671,6 +6671,9 @@ Input type: `DuoSettingsUpdateInput`
 | <a id="mutationduosettingsupdateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
 | <a id="mutationduosettingsupdateduoagentplatformserviceurl"></a>`duoAgentPlatformServiceUrl` | [`String`](#string) | URL for the local Duo Agent Platform service. |
 | <a id="mutationduosettingsupdateduocorefeaturesenabled"></a>`duoCoreFeaturesEnabled` | [`Boolean`](#boolean) | Indicates whether GitLab Duo Core features are enabled. |
+| <a id="mutationduosettingsupdateminimumaccesslevelenableonprojects"></a>`minimumAccessLevelEnableOnProjects` {{< icon name="warning-solid" >}} | [`Int`](#int) | **Deprecated**: **Status**: Experiment. Introduced in GitLab 18.7. |
+| <a id="mutationduosettingsupdateminimumaccesslevelexecute"></a>`minimumAccessLevelExecute` {{< icon name="warning-solid" >}} | [`Int`](#int) | **Deprecated**: **Status**: Experiment. Introduced in GitLab 18.7. |
+| <a id="mutationduosettingsupdateminimumaccesslevelmanage"></a>`minimumAccessLevelManage` {{< icon name="warning-solid" >}} | [`Int`](#int) | **Deprecated**: **Status**: Experiment. Introduced in GitLab 18.7. |
 
 #### Fields
 
@@ -31052,6 +31055,9 @@ GitLab Duo settings.
 | <a id="duosettingsaigatewayurl"></a>`aiGatewayUrl` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 17.9. **Status**: Experiment. URL for local AI gateway server. |
 | <a id="duosettingsduoagentplatformserviceurl"></a>`duoAgentPlatformServiceUrl` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 18.4. **Status**: Experiment. URL for local Duo Agent Platform service. |
 | <a id="duosettingsduocorefeaturesenabled"></a>`duoCoreFeaturesEnabled` {{< icon name="warning-solid" >}} | [`Boolean`](#boolean) | **Introduced** in GitLab 18.0. **Status**: Experiment. Indicates whether GitLab Duo Core features are enabled. |
+| <a id="duosettingsminimumaccesslevelenableonprojects"></a>`minimumAccessLevelEnableOnProjects` {{< icon name="warning-solid" >}} | [`Int`](#int) | **Introduced** in GitLab 18.7. **Status**: Experiment. Minimum access level required to enable Duo Agent Platform. Returns `null` if `dap_instance_customizable_permissions` feature flag is disabled. |
+| <a id="duosettingsminimumaccesslevelexecute"></a>`minimumAccessLevelExecute` {{< icon name="warning-solid" >}} | [`Int`](#int) | **Introduced** in GitLab 18.7. **Status**: Experiment. Minimum access level required to execute Duo Agent Platform. Returns `null` if `dap_instance_customizable_permissions` feature flag is disabled. |
+| <a id="duosettingsminimumaccesslevelmanage"></a>`minimumAccessLevelManage` {{< icon name="warning-solid" >}} | [`Int`](#int) | **Introduced** in GitLab 18.7. **Status**: Experiment. Minimum access level required to manage Duo Agent Platform. Returns `null` if `dap_instance_customizable_permissions` feature flag is disabled. |
 | <a id="duosettingsupdatedat"></a>`updatedAt` {{< icon name="warning-solid" >}} | [`Time!`](#time) | **Introduced** in GitLab 17.9. **Status**: Experiment. Timestamp of last GitLab Duo setting update. |
 
 ### `DuoWorkflow`
