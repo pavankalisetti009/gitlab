@@ -4,11 +4,18 @@ query groupComplianceViolations(
   $after: String
   $last: Int
   $before: String
+  $filters: ProjectComplianceViolationFilterInput
 ) {
   group(fullPath: $fullPath) {
     id
     name
-    projectComplianceViolations(first: $first, after: $after, last: $last, before: $before) {
+    projectComplianceViolations(
+      first: $first
+      after: $after
+      last: $last
+      before: $before
+      filters: $filters
+    ) {
       nodes {
         id
         createdAt

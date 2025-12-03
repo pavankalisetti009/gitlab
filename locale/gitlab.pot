@@ -17261,6 +17261,9 @@ msgstr ""
 msgid "ComplianceReport|Compliance pipelines are deprecated"
 msgstr ""
 
+msgid "ComplianceReport|Control"
+msgstr ""
+
 msgid "ComplianceReport|Controls"
 msgstr ""
 
@@ -17295,6 +17298,9 @@ msgid "ComplianceReport|Failed to update compliance violation status. Please try
 msgstr ""
 
 msgid "ComplianceReport|Failed to update violation status. Please try again."
+msgstr ""
+
+msgid "ComplianceReport|Filter by"
 msgstr ""
 
 msgid "ComplianceReport|For more information, see %{linkStart}how to migrate from compliance pipelines to pipeline execution policies%{linkEnd}."
@@ -17403,6 +17409,9 @@ msgid "ComplianceReport|There are no controls."
 msgstr ""
 
 msgid "ComplianceReport|There are no requirements."
+msgstr ""
+
+msgid "ComplianceReport|There was a problem fetching compliance controls."
 msgstr ""
 
 msgid "ComplianceReport|There was a problem fetching compliance frameworks."
