@@ -1354,7 +1354,7 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
 
           expect(updates).to eq(merge: merge_request.diff_head_sha)
 
-          expect(message).to eq('Scheduled to merge this merge request (Merge when checks pass).')
+          expect(message).to eq('Set to auto-merge.')
         end
       end
     end
@@ -1380,7 +1380,7 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
 
         expect(updates).to eq(merge: issuable.diff_head_sha)
 
-        expect(message).to eq('Scheduled to merge this merge request (Merge when checks pass).')
+        expect(message).to eq('Set to auto-merge.')
       end
     end
 
