@@ -54707,6 +54707,9 @@ msgstr ""
 msgid "RapidDiffs|View file at %{codeStart}%{commit}%{codeEnd}"
 msgstr ""
 
+msgid "RapidDiffs|View on %{environment}"
+msgstr ""
+
 msgid "Rate Limits"
 msgstr ""
 
