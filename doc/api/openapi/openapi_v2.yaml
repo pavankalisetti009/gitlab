@@ -11031,6 +11031,13 @@ paths:
           only on Premium and Ultimate tiers.
         type: string
         required: false
+      - in: query
+        name: search_recent_successful_pipelines
+        description: Search across recent successful pipelines instead of just the
+          latest one.
+        type: boolean
+        default: false
+        required: false
       responses:
         '200':
           description: Download the artifacts archive from a job
