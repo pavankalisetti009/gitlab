@@ -36,7 +36,7 @@ module Security
     enum :status, { open: 0, preserved: 1 }
 
     def preserve!
-      return destroy! unless applicable_for_all_violations?
+      return destroy! unless applicable_for_all_violations? || for_any_merge_request_violation?
 
       update!(status: :preserved)
 
@@ -60,7 +60,7 @@ module Security
     end
 
     def applicable_for_all_violations?
-      applicable_for_findings?(mr_violation_finding_uuids)
+      applicable_for_findings?(mr_violation_finding_uuids) && applicable_for_licenses?(mr_violation_licenses)
     end
 
     def license_names
@@ -73,6 +73,13 @@ module Security
 
     private
 
+    def for_any_merge_request_violation?
+      security_findings_uuids.blank? &&
+        licenses.blank? &&
+        mr_violation_finding_uuids.empty? &&
+        mr_violation_licenses.empty?
+    end
+
     def scan_result_policy_violations
       merge_request.scan_result_policy_violations
                    .joins(:security_policy)
@@ -81,6 +88,12 @@ module Security
 
     def mr_violation_finding_uuids
       scan_result_policy_violations.flat_map(&:finding_uuids).uniq
+    end
+
+    def mr_violation_licenses
+      scan_result_policy_violations.flat_map(&:licenses).reduce({}) do |acc, license_hash|
+        acc.deep_merge(license_hash) { |_key, old_val, new_val| (Array(old_val) + Array(new_val)).uniq }
+      end
     end
 
     def dismissal_types_are_valid
