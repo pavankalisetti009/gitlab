@@ -116,6 +116,9 @@ export default {
     fileTreeBrowserIsPeekOn() {
       this.$nextTick(() => this.observeItemVisibility());
     },
+    currentRouterPath(newPath, oldPath) {
+      if (newPath && newPath !== oldPath) this.expandPathAncestors(newPath);
+    },
   },
   mounted() {
     this.observeItemVisibility();
