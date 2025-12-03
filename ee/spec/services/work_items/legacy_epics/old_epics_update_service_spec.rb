@@ -655,41 +655,36 @@ RSpec.describe WorkItems::LegacyEpics::UpdateService, feature_category: :portfol
               end
 
               context 'when updating labels' do
-                let_it_be(:label_on_epic) { create(:group_label, group: group) }
-                let_it_be(:label_on_epic_work_item) { create(:group_label, group: group) }
+                let_it_be(:label1) { create(:group_label, group: group) }
+                let_it_be(:label2) { create(:group_label, group: group) }
                 let_it_be(:new_labels) { create_list(:group_label, 2, group: group) }
 
                 before do
-                  epic.labels << label_on_epic
-                  epic.work_item.labels << label_on_epic_work_item
+                  epic.labels << label1
+                  epic.work_item.labels << label2
                 end
 
                 context 'and replacing labels with `label_ids` param' do
                   let(:opts) { { label_ids: new_labels.map(&:id) } }
                   let(:expected_labels) { new_labels }
-                  let(:expected_epic_own_labels) { [] }
                   let(:expected_epic_work_item_own_labels) { new_labels }
 
                   it_behaves_like 'syncs labels between epics and epic work items'
                 end
 
                 context 'and removing label assigned to epic' do
-                  let(:opts) { { add_label_ids: new_labels.map(&:id), remove_label_ids: [label_on_epic.id] } }
-                  let(:expected_labels) { [new_labels, label_on_epic_work_item].flatten }
-                  let(:expected_epic_own_labels) { [] }
-                  let(:expected_epic_work_item_own_labels) { [label_on_epic_work_item, new_labels].flatten }
+                  let(:opts) { { add_label_ids: new_labels.map(&:id), remove_label_ids: [label1.id] } }
+                  let(:expected_labels) { [new_labels, label2].flatten }
 
                   it_behaves_like 'syncs labels between epics and epic work items'
                 end
 
                 context 'and removing label assigned to epic work item' do
                   let(:opts) do
-                    { add_label_ids: new_labels.map(&:id), remove_label_ids: [label_on_epic_work_item.id] }
+                    { add_label_ids: new_labels.map(&:id), remove_label_ids: [label2.id] }
                   end
 
-                  let(:expected_labels) { [new_labels, label_on_epic].flatten }
-                  let(:expected_epic_own_labels) { label_on_epic }
-                  let(:expected_epic_work_item_own_labels) { new_labels }
+                  let(:expected_labels) { [new_labels, label1].flatten }
 
                   it_behaves_like 'syncs labels between epics and epic work items'
                 end
