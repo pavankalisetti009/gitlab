@@ -33053,12 +33053,6 @@ msgstr ""
 msgid "GroupSettings|Add additional webhook triggers for group access token expiration"
 msgstr ""
 
-msgid "GroupSettings|After the instance reaches the user cap, any user who is added or requests access must be approved by an administrator. Leave empty for an unlimited user cap. If you change the user cap to unlimited, you must re-enable %{project_sharing_docs_link_start}project sharing%{link_end} and %{group_sharing_docs_link_start}group sharing%{link_end}."
-msgstr ""
-
-msgid "GroupSettings|After the instance reaches the user cap, any user who is added or requests access must be approved by an administrator. Leave empty for an unlimited user cap. If you change the user cap to unlimited, you must re-enable %{project_sharing_docs_link_start}project sharing%{link_end} and %{group_sharing_docs_link_start}group sharing%{link_end}. Increasing the user cap does not automatically approve pending users."
-msgstr ""
-
 msgid "GroupSettings|Allow members of projects and groups to create runners with runner registration tokens"
 msgstr ""
 
