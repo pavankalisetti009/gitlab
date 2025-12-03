@@ -17,7 +17,7 @@ module QA
             email_settings.fill_additional_text(random_custom_text)
             email_settings.save_changes
 
-            expect(email_settings.additional_text_textarea_text).to have_content(random_custom_text)
+            expect { email_settings.additional_text_textarea_text }.to eventually_eq(random_custom_text).within(max_duration: 10)
           end
         end
       end
