@@ -17,9 +17,9 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillOccurrenceIdToMergeRequestLi
       model.create!(
         created_at: now,
         updated_at: now,
-        author_id: user.id,
         vulnerability_id: vulnerability.id,
-        merge_request_id: merge_request.id
+        merge_request_id: merge_request.id,
+        project_id: project.id
       )
     end
   end
