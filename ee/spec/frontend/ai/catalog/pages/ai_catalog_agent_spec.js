@@ -190,4 +190,24 @@ describe('AiCatalogAgent', () => {
       });
     });
   });
+
+  describe('when itemType is not AGENT', () => {
+    it('renders agent not found', async () => {
+      const mockFlowResponse = {
+        data: {
+          aiCatalogItem: {
+            ...mockAgent,
+            itemType: 'FLOW',
+          },
+        },
+      };
+      createComponent({
+        agentQueryHandler: jest.fn().mockResolvedValue(mockFlowResponse),
+      });
+      await waitForPromises();
+
+      expect(findGlEmptyState().exists()).toBe(true);
+      expect(findRouterView().exists()).toBe(false);
+    });
+  });
 });

@@ -166,4 +166,24 @@ describe('AiCatalogFlow', () => {
       expect(routerView.props('versionData')).toMatchObject({});
     });
   });
+
+  describe('when itemType is not FLOW or THIRD_PARTY_FLOW', () => {
+    it('renders flow not found', async () => {
+      const mockAgentResponse = {
+        data: {
+          aiCatalogItem: {
+            ...mockFlow,
+            itemType: 'AGENT',
+          },
+        },
+      };
+      createComponent({
+        flowQueryHandler: jest.fn().mockResolvedValue(mockAgentResponse),
+      });
+      await waitForPromises();
+
+      expect(findGlEmptyState().exists()).toBe(true);
+      expect(findRouterView().exists()).toBe(false);
+    });
+  });
 });
