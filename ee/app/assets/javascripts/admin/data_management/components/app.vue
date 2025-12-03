@@ -1,5 +1,6 @@
 <script>
 import { computed } from 'vue';
+import { GlKeysetPagination } from '@gitlab/ui';
 import GeoListTopBar from 'ee/geo_shared/list/components/geo_list_top_bar.vue';
 import GeoList from 'ee/geo_shared/list/components/geo_list.vue';
 import { sprintf, s__ } from '~/locale';
@@ -20,6 +21,7 @@ export default {
   components: {
     GeoListTopBar,
     GeoList,
+    GlKeysetPagination,
     DataManagementItem,
   },
   provide() {
@@ -59,6 +61,12 @@ export default {
     hasFilters() {
       return Boolean(this.filters.length);
     },
+    hasNextPage() {
+      return Boolean(this.pageInfo.nextCursor);
+    },
+    hasPrevPage() {
+      return Boolean(this.pageInfo.prevCursor);
+    },
     emptyState() {
       return {
         title: sprintf(s__('Geo|No %{itemTitle} exist'), {
@@ -84,7 +92,7 @@ export default {
       };
     },
     queryWithPagination() {
-      return { ...this.query, pagination: 'keyset' };
+      return { ...this.query, pagination: 'keyset', cursor: this.pageInfo.currentCursor };
     },
   },
   watch: {
@@ -101,6 +109,7 @@ export default {
   methods: {
     initializePageInfo() {
       this.pageInfo = {
+        currentCursor: this.routerParams.cursor,
         sort: {
           value: this.routerParams.orderBy || DEFAULT_SORT.value,
           direction: this.routerParams.sort || DEFAULT_SORT.direction,
@@ -113,13 +122,21 @@ export default {
     initializeModel() {
       this.activeModelName = this.routerParams.modelName || this.initialModelName;
     },
+    updateCursor(headers) {
+      this.pageInfo = {
+        ...this.pageInfo,
+        prevCursor: headers['x-prev-cursor'],
+        nextCursor: headers['x-next-cursor'],
+      };
+    },
     async fetchModelList() {
       this.isLoading = true;
 
       try {
-        const { data } = await getModels(this.activeModelName, this.queryWithPagination);
+        const { data, headers } = await getModels(this.activeModelName, this.queryWithPagination);
 
         this.modelItems = convertObjectPropsToCamelCase(data, { deep: true });
+        this.updateCursor(headers);
       } catch (error) {
         this.handleFetchError(error);
       } finally {
@@ -162,6 +179,14 @@ export default {
       this.pageInfo = { ...this.pageInfo, sort };
       this.$router.push({ params: this.$route.params, query: this.query });
     },
+    handleNextPage() {
+      this.pageInfo.currentCursor = this.pageInfo.nextCursor;
+      this.$router.push({ params: this.$route.params, query: this.queryWithPagination });
+    },
+    handlePrevPage() {
+      this.pageInfo.currentCursor = this.pageInfo.prevCursor;
+      this.$router.push({ params: this.$route.params, query: this.queryWithPagination });
+    },
   },
   BULK_ACTIONS,
 };
@@ -193,5 +218,14 @@ export default {
         :initial-item="item"
       />
     </geo-list>
+    <div class="gl-mt-6 gl-flex gl-justify-center">
+      <gl-keyset-pagination
+        :disabled="isLoading"
+        :has-next-page="hasNextPage"
+        :has-previous-page="hasPrevPage"
+        @next="handleNextPage"
+        @prev="handlePrevPage"
+      />
+    </div>
   </section>
 </template>
