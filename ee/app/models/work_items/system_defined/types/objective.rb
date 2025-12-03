@@ -4,26 +4,30 @@ module WorkItems
   module SystemDefined
     module Types
       module Objective
-        WIDGETS = %w[
-          assignees
-          award_emoji
-          current_user_todos
-          custom_fields
-          description
-          health_status
-          hierarchy
-          labels
-          linked_items
-          milestone
-          notes
-          notifications
-          participants
-          progress
-        ].freeze
-
-        WIDGET_OPTIONS = {}.freeze
-
         class << self
+          def widgets
+            %w[
+              assignees
+              award_emoji
+              current_user_todos
+              custom_fields
+              description
+              health_status
+              hierarchy
+              labels
+              linked_items
+              milestone
+              notes
+              notifications
+              participants
+              progress
+            ]
+          end
+
+          def widget_options
+            {}
+          end
+
           def configuration
             {
               id: 6,

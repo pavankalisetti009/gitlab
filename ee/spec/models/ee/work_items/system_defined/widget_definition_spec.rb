@@ -97,4 +97,19 @@ RSpec.describe ::WorkItems::SystemDefined::WidgetDefinition, feature_category: :
       end
     end
   end
+
+  describe '#build_widget' do
+    let(:work_item) { build(:work_item) }
+
+    context 'with widget_options' do
+      let(:definition) { build(:work_item_system_defined_widget_definition, widget_type: 'weight') }
+
+      it 'passes widget_definition with options to the widget' do
+        widget = definition.build_widget(work_item)
+        widget_def = widget.instance_variable_get(:@widget_definition)
+
+        expect(widget_def.widget_options).to eq(definition.widget_options)
+      end
+    end
+  end
 end

@@ -64,6 +64,7 @@ module WorkItems
       def widget_definitions
         WorkItems::SystemDefined::WidgetDefinition.where(work_item_type_id: id)
       end
+      strong_memoize_attr :widget_definitions
 
       def widgets(_resource_parent)
         widget_definitions.filter(&:widget_class)

@@ -15,16 +15,19 @@ module WorkItems
 
       belongs_to_fixed_items :work_item_type, fixed_items_class: WorkItems::SystemDefined::Type
 
+      validates :widget_type, presence: true
+      validates :work_item_type_id, presence: true
+
       class << self
         def fixed_items
           # Instead of having a huge matrix here, let's build the items based on a configuration module per type.
           Type.all.flat_map do |type|
             configuration_class = type.configuration_class
-            configuration_class::WIDGETS.map do |widget_type|
+            configuration_class.widgets.map do |widget_type|
               {
                 widget_type: widget_type.to_s,
                 work_item_type_id: type.id,
-                widget_options: configuration_class::WIDGET_OPTIONS[widget_type.to_sym],
+                widget_options: configuration_class.widget_options[widget_type.to_sym],
                 name: widget_type.to_s.humanize
               }.compact
             end
@@ -58,7 +61,7 @@ module WorkItems
 
         # List of all available widgets as classes
         def available_widgets
-          widget_types.filter_map do |type|
+          widget_types.map do |type|
             new(widget_type: type).widget_class
           end
         end

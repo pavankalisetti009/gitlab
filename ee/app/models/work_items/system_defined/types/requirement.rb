@@ -4,24 +4,28 @@ module WorkItems
   module SystemDefined
     module Types
       module Requirement
-        WIDGETS = %w[
-          award_emoji
-          current_user_todos
-          custom_fields
-          description
-          linked_items
-          notes
-          notifications
-          participants
-          requirement_legacy
-          verification_status
-          test_reports
-          time_tracking
-        ].freeze
-
-        WIDGET_OPTIONS = {}.freeze
-
         class << self
+          def widgets
+            %w[
+              award_emoji
+              current_user_todos
+              custom_fields
+              description
+              linked_items
+              notes
+              notifications
+              participants
+              requirement_legacy
+              verification_status
+              test_reports
+              time_tracking
+            ]
+          end
+
+          def widget_options
+            {}
+          end
+
           def configuration
             {
               id: 4,

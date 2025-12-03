@@ -51,10 +51,10 @@ RSpec.describe WorkItems::SystemDefined::WidgetDefinition, feature_category: :te
       expect(fixed_items).to all(include(:widget_type, :work_item_type_id, :name))
     end
 
-    it 'sets widget_type from configuration class WIDGETS constant' do
+    it 'sets widget_type from configuration class .widgets method' do
       issue_widgets = fixed_items.select { |item| item[:work_item_type_id] == issue_type.id }
 
-      expected_widget_types = WorkItems::SystemDefined::Types::Issue::WIDGETS
+      expected_widget_types = WorkItems::SystemDefined::Types::Issue.widgets
       actual_widget_types = issue_widgets.pluck(:widget_type)
 
       expect(actual_widget_types).to match_array(expected_widget_types)
@@ -66,12 +66,12 @@ RSpec.describe WorkItems::SystemDefined::WidgetDefinition, feature_category: :te
       expect(task_widgets).to all(include(work_item_type_id: task_type.id))
     end
 
-    it 'sets widget_options from configuration class WIDGET_OPTIONS constant' do
+    it 'sets widget_options from configuration class .widget_options method' do
       definition = fixed_items.find do |item|
         item[:work_item_type_id] == issue_type.id && item[:widget_type] == 'weight'
       end
 
-      expect(definition[:widget_options]).to eq(WorkItems::SystemDefined::Types::Issue::WIDGET_OPTIONS[:weight])
+      expect(definition[:widget_options]).to eq(WorkItems::SystemDefined::Types::Issue.widget_options[:weight])
     end
 
     it 'sets name as humanized version of widget_type' do
@@ -104,8 +104,8 @@ RSpec.describe WorkItems::SystemDefined::WidgetDefinition, feature_category: :te
     context 'for integration with Type configuration classes' do
       let(:config_class) { issue_type.configuration_class }
 
-      it 'correctly reads WIDGET_OPTIONS constant from configuration class' do
-        expect(config_class::WIDGET_OPTIONS).to be_a(Hash)
+      it 'correctly reads .widget_options method from configuration class' do
+        expect(config_class.widget_options).to be_a(Hash)
       end
     end
 
@@ -215,19 +215,6 @@ RSpec.describe WorkItems::SystemDefined::WidgetDefinition, feature_category: :te
     it 'returns unique widget classes' do
       expect(available_widgets.uniq.size).to eq(available_widgets.size)
     end
-
-    context 'when a widget type does not have a corresponding class' do
-      before do
-        # Stub widget_types to include a non-existent widget
-        allow(described_class).to receive(:widget_types)
-          .and_return([:assignees, :nonexistent_widget, :description])
-      end
-
-      it 'excludes the non-existent widget from available_widgets' do
-        expect(available_widgets).not_to include(nil)
-        expect(available_widgets.size).to eq(2) # Only assignees and description
-      end
-    end
   end
 
   describe '#widget_class' do
@@ -312,17 +299,6 @@ RSpec.describe WorkItems::SystemDefined::WidgetDefinition, feature_category: :te
         widget = definition.build_widget(work_item)
 
         expect(widget).to be_a(WorkItems::Widgets::Description)
-      end
-    end
-
-    context 'with widget_options' do
-      let(:definition) { build(:work_item_system_defined_widget_definition, widget_type: 'weight') }
-
-      it 'passes widget_definition with options to the widget' do
-        widget = definition.build_widget(work_item)
-        widget_def = widget.instance_variable_get(:@widget_definition)
-
-        expect(widget_def.widget_options).to eq(definition.widget_options)
       end
     end
 

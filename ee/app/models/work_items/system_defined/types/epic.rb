@@ -4,32 +4,34 @@ module WorkItems
   module SystemDefined
     module Types
       module Epic
-        WIDGETS = %w[
-          assignees
-          award_emoji
-          color
-          current_user_todos
-          custom_fields
-          description
-          health_status
-          hierarchy
-          labels
-          linked_items
-          milestone
-          notes
-          notifications
-          participants
-          start_and_due_date
-          verification_status
-          time_tracking
-          weight
-        ].freeze
-
-        WIDGET_OPTIONS = {
-          weight: { editable: false, rollup: true }
-        }.freeze
-
         class << self
+          def widgets
+            %w[
+              assignees
+              award_emoji
+              color
+              current_user_todos
+              custom_fields
+              description
+              health_status
+              hierarchy
+              labels
+              linked_items
+              milestone
+              notes
+              notifications
+              participants
+              start_and_due_date
+              verification_status
+              time_tracking
+              weight
+            ]
+          end
+
+          def widget_options
+            { weight: { editable: false, rollup: true } }
+          end
+
           def configuration
             {
               id: 8,
@@ -43,10 +45,14 @@ module WorkItems
             :epics
           end
 
+          # This method adds a configuration for the parent of the Type, and it coresponding license.
+          # It should be a Hash with the format of: { parent.base_type.to_s: license_name.to_sym }
           def licenses_for_parent
             { 'epic' => :subepics }
           end
 
+          # This method adds a configuration for the children of the Type, and it coresponding license.
+          # It should be a Hash with the format of: { child.base_type.to_s: license_name.to_sym }
           def licenses_for_child
             { 'epic' => :subepics, 'issue' => :epics }
           end
