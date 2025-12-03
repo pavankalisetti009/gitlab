@@ -285,6 +285,103 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::PayloadProcessor, feature_c
     end
   end
 
+  describe '#diff_blobs' do
+    let(:changed_path_no_diff) do
+      instance_double(
+        Gitlab::Git::ChangedPath,
+        old_blob_id: 'same123',
+        new_blob_id: 'same123',
+        path: 'renamed.md',
+        status: :renamed,
+        old_mode: '100644',
+        new_mode: '100644',
+        old_path: 'old_name.md'
+      )
+    end
+
+    before do
+      # We test only the case when raw_info feature flag is disabled here because it throws
+      # a `GRPC::InvalidArgument: 3:request contains no file pairs to diff.` exception when
+      # the `blob_pair_ids` are empty. When using `raw_info`, no `blob_pairs` are used.
+      stub_feature_flags(secret_detection_transition_to_raw_info_gitaly_endpoint: false)
+    end
+
+    context 'when all changed paths have identical blob ids' do
+      before do
+        allow(project.repository).to receive_messages(
+          new_commits: [],
+          find_changed_paths: [changed_path_no_diff]
+        )
+      end
+
+      let(:paths) do
+        [
+          instance_double(
+            Gitlab::Git::ChangedPath,
+            old_blob_id: 'abc123',
+            new_blob_id: 'abc123',
+            path: 'README.md',
+            status: :modified,
+            old_mode: '100644',
+            new_mode: '100755'
+          )
+        ]
+      end
+
+      it 'returns empty array without calling repository.diff_blobs' do
+        expect(project.repository).not_to receive(:diff_blobs)
+
+        result = payload_processor.standardize_payloads
+
+        expect(result).to be_nil
+      end
+    end
+
+    context 'when at least one changed path has different blob ids' do
+      let(:changed_path_with_diff) do
+        instance_double(
+          Gitlab::Git::ChangedPath,
+          old_blob_id: 'old456',
+          new_blob_id: 'new789',
+          path: 'modified.rb',
+          status: :modified,
+          old_mode: '100644',
+          new_mode: '100644',
+          old_path: 'modified.rb'
+        )
+      end
+
+      let(:diff_blob) do
+        ::Gitlab::GitalyClient::DiffBlob.new(
+          left_blob_id: 'old456',
+          right_blob_id: 'new789',
+          patch: "@@ -1,1 +1,1 @@\n-old content\n+new content\n",
+          status: :STATUS_END_OF_PATCH,
+          binary: false,
+          over_patch_bytes_limit: false
+        )
+      end
+
+      before do
+        allow(project.repository).to receive_messages(
+          new_commits: [],
+          find_changed_paths: [changed_path_no_diff, changed_path_with_diff]
+        )
+      end
+
+      it 'calls repository.diff_blobs with the diffable blob pair' do
+        expect(project.repository).to receive(:diff_blobs)
+          .and_return([diff_blob])
+
+        payloads = payload_processor.standardize_payloads
+
+        expect(payloads).to be_an(Array)
+        expect(payloads.size).to eq(1)
+        expect(payloads.first.id).to eq('new789')
+      end
+    end
+  end
+
   describe '#build_payload' do
     let(:datum) { { id: 'test-blob-id', data: 'test payload data', offset: 2 } }
 
