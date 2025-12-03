@@ -331,6 +331,26 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
     end
   end
 
+  describe '#configuration_sha' do
+    let(:last_commit) { instance_double(Commit, id: 'abc123') }
+
+    subject(:configuration_sha) { security_orchestration_policy_configuration.configuration_sha }
+
+    before do
+      allow(security_orchestration_policy_configuration).to receive(:policy_last_commit).and_return(last_commit)
+    end
+
+    it 'returns the SHA of the last commit to the policy file' do
+      expect(configuration_sha).to eq('abc123')
+    end
+
+    context 'when policy_last_commit is nil' do
+      let(:last_commit) { nil }
+
+      it { is_expected.to be_nil }
+    end
+  end
+
   describe '#policy_configuration_exists?' do
     subject { security_orchestration_policy_configuration.policy_configuration_exists? }
 
