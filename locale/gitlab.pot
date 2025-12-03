@@ -51148,6 +51148,9 @@ msgstr ""
 msgid "ProfilesAuthentication|Passkeys sign-in"
 msgstr ""
 
+msgid "ProfilesAuthentication|Passkeys unavailable"
+msgstr ""
+
 msgid "ProfilesAuthentication|Register another 2FA method above to automatically use passkeys as default 2FA."
 msgstr ""
 
@@ -51155,6 +51158,9 @@ msgid "ProfilesAuthentication|Sign in faster with passkeys"
 msgstr ""
 
 msgid "ProfilesAuthentication|To use passkeys as your default two-factor authentication, please register at least one backup 2FA method first below."
+msgstr ""
+
+msgid "ProfilesAuthentication|To use passkeys, an administrator must allow password authentication. %{link_start}Learn more%{link_end}."
 msgstr ""
 
 msgid "ProfilesAuthentication|Use passkey as 2FA"
