@@ -834,10 +834,6 @@ module EE
       ::Feature.enabled?(:okrs_mvc, self)
     end
 
-    def okr_automatic_rollups_enabled?
-      ::Feature.enabled?(:okr_automatic_rollups, self)
-    end
-
     def has_dependencies?
       sbom_occurrences.exists?
     end
