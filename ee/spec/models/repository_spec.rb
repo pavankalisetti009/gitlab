@@ -403,6 +403,47 @@ RSpec.describe Repository, feature_category: :source_code_management do
     end
   end
 
+  describe '#merge_to_branch' do
+    let_it_be(:user) { create(:user) }
+
+    let(:merge_request) do
+      create(:merge_request, source_branch: 'feature', target_branch: project.default_branch, source_project: project)
+    end
+
+    let(:params) do
+      {
+        source_sha: merge_request.diff_head_sha,
+        target_branch: merge_request.target_branch,
+        target_sha: repository.commit(merge_request.target_branch).sha,
+        message: 'New merge commit'
+      }
+    end
+
+    describe 'sets commits signing depending on GitLab installation and settings' do
+      using RSpec::Parameterized::TableSyntax
+
+      where(:is_saas, :web_based_commit_signing_enabled, :expected_sign) do
+        true  | true  | true   # GitLab.com with signing enabled
+        true  | false | false  # GitLab.com with signing disabled
+        false | false | true   # Self-managed with signing enabled (should always be true)
+      end
+
+      with_them do
+        before do
+          stub_saas_features(repositories_web_based_commit_signing: is_saas)
+          allow(repository.project).to receive(:web_based_commit_signing_enabled)
+            .and_return(web_based_commit_signing_enabled)
+        end
+
+        it 'calls merge_to_branch with the expected value for sign' do
+          expect(repository.raw_repository).to receive(:merge).with(user, **params.merge(sign: expected_sign))
+
+          repository.merge_to_branch(user, **params)
+        end
+      end
+    end
+  end
+
   describe '.group' do
     let_it_be(:group) { create(:group, :wiki_repo) }
     let_it_be(:project_within_group) { create(:project, :repository, group: group) }
