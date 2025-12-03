@@ -48,10 +48,6 @@ RSpec.describe Security::ProjectTrackedContexts::FindOrCreateService, feature_ca
     context 'when pipeline is for the default branch' do
       let_it_be(:pipeline) { create(:ci_pipeline, project: project, ref: project.default_branch) }
 
-      before do
-        allow(pipeline).to receive(:default_branch?).and_return(true)
-      end
-
       it 'sets is_default to true' do
         expect(service.is_default).to be true
       end
