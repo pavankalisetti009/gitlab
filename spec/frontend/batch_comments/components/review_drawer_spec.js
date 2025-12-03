@@ -48,7 +48,7 @@ describe('ReviewDrawer', () => {
     await findForm().vm.$emit('submit', { preventDefault: jest.fn() });
   };
 
-  const createComponent = ({ canApprove = true, glFeatures = {} } = {}) => {
+  const createComponent = ({ canApprove = true } = {}) => {
     const requestHandlers = [
       [
         userCanApproveQuery,
@@ -74,7 +74,6 @@ describe('ReviewDrawer', () => {
     wrapper = mountExtended(ReviewDrawer, {
       pinia,
       apolloProvider,
-      provide: { glFeatures },
     });
   };
 
@@ -345,33 +344,31 @@ describe('ReviewDrawer', () => {
     });
   });
 
-  describe('when mrReviewBatchSubmit is enabled', () => {
-    it('calls publishReview when drafts count is 0', async () => {
-      useBatchComments().drafts = [];
+  it('calls publishReview when drafts count is 0', async () => {
+    useBatchComments().drafts = [];
 
-      useBatchComments().drawerOpened = true;
+    useBatchComments().drawerOpened = true;
 
-      createComponent({ glFeatures: { mrReviewBatchSubmit: true } });
+    createComponent();
 
-      await waitForPromises();
+    await waitForPromises();
 
-      findForm().vm.$emit('submit', { preventDefault: jest.fn() });
+    findForm().vm.$emit('submit', { preventDefault: jest.fn() });
 
-      expect(useBatchComments().publishReview).toHaveBeenCalled();
-    });
+    expect(useBatchComments().publishReview).toHaveBeenCalled();
+  });
 
-    it('calls publishReviewInBatches when drafts count is more than 0', async () => {
-      useBatchComments().drafts = new Array(1).fill({});
+  it('calls publishReviewInBatches when drafts count is more than 0', async () => {
+    useBatchComments().drafts = new Array(1).fill({});
 
-      useBatchComments().drawerOpened = true;
+    useBatchComments().drawerOpened = true;
 
-      createComponent({ glFeatures: { mrReviewBatchSubmit: true } });
+    createComponent();
 
-      await waitForPromises();
+    await waitForPromises();
 
-      findForm().vm.$emit('submit', { preventDefault: jest.fn() });
+    findForm().vm.$emit('submit', { preventDefault: jest.fn() });
 
-      expect(useBatchComments().publishReviewInBatches).toHaveBeenCalled();
-    });
+    expect(useBatchComments().publishReviewInBatches).toHaveBeenCalled();
   });
 });
