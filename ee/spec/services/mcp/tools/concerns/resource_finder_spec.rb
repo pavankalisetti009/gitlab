@@ -21,25 +21,30 @@ RSpec.describe Mcp::Tools::Concerns::ResourceFinder, feature_category: :mcp_serv
 
   describe '#find_work_item_in_parent' do
     let_it_be(:user) { create(:user) }
-    let_it_be(:group) { create(:group) }
-    let_it_be(:group_work_item) { create(:work_item, :epic, namespace: group, iid: 123) }
+    let_it_be(:group) { create(:group, developers: user) }
+    let_it_be(:group_work_item) { create(:work_item, :epic, namespace: group) }
+
+    let(:work_item_iid) { group_work_item.iid }
     let(:service) { test_class.new(user) }
 
-    before_all do
-      group.add_developer(user)
-    end
+    subject(:find_work_item_in_parent) { service.test_find_work_item_in_parent(group, work_item_iid) }
 
     context 'with group parent (epic)' do
-      it 'finds work item by iid' do
+      before do
         stub_licensed_features(epics: true)
-
-        result = service.test_find_work_item_in_parent(group, group_work_item.iid)
-        expect(result).to eq(group_work_item)
       end
 
-      it 'raises error when work item not found' do
-        expect { service.test_find_work_item_in_parent(group, 99999) }
-          .to raise_error(ArgumentError, 'Work item #99999 not found')
+      it 'finds work item by iid' do
+        is_expected.to eq(group_work_item)
+      end
+
+      context 'when work item not found' do
+        let(:work_item_iid) { non_existing_record_iid }
+
+        it 'raises error' do
+          expect { find_work_item_in_parent }
+            .to raise_error(ArgumentError, "Work item ##{work_item_iid} not found")
+        end
       end
     end
   end
