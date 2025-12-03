@@ -13,7 +13,9 @@ FactoryBot.define do
     initialize_with do
       policy = attributes[:policy]
       policy[:content] = attributes[:content] if attributes[:content].present?
-      new(policy: policy, policy_config: attributes[:policy_config], policy_index: attributes[:policy_index])
+      policy_config = attributes[:policy_config]
+      allow(policy_config).to receive(:configuration_sha).and_return(attributes[:policy_sha] || 'policy_sha')
+      new(policy: policy, policy_config: policy_config, policy_index: attributes[:policy_index])
     end
 
     trait :override_project_ci do

@@ -162,7 +162,9 @@ module Gitlab
             {
               name: current_policy.name,
               variables_override: current_policy.variables_override_strategy,
-              pre_succeeds: current_policy.experiment_enabled?(:ensure_pipeline_policy_pre_succeeds)
+              pre_succeeds: current_policy.experiment_enabled?(:ensure_pipeline_policy_pre_succeeds),
+              project_id: current_policy.policy_project_id,
+              sha: current_policy.policy_sha
             }.compact_blank
           end
 

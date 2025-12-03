@@ -89,6 +89,10 @@ module Security
       self.exists?(security_policy_management_project_id: project_id)
     end
 
+    def configuration_sha
+      policy_last_commit&.id
+    end
+
     def policy_hash
       Rails.cache.fetch(policy_cache_key, expires_in: CACHE_DURATION) do
         policy_yaml
@@ -123,12 +127,16 @@ module Security
       end
     end
 
-    def policy_last_updated_at
-      strong_memoize(:policy_last_updated_at) do
+    def policy_last_commit
+      strong_memoize(:policy_last_commit) do
         capture_git_error(:last_commit_for_path) do
-          policy_repo.last_commit_for_path(default_branch_or_main, POLICY_PATH)&.committed_date
+          policy_repo.last_commit_for_path(default_branch_or_main, POLICY_PATH)
         end
       end
+    end
+
+    def policy_last_updated_at
+      policy_last_commit&.committed_date
     end
 
     def latest_commit_before_configured_at

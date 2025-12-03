@@ -10,6 +10,10 @@ RSpec.describe Security::PipelineExecutionPolicy::Config, feature_category: :sec
   let(:config) { described_class.new(**params) }
   let(:params) { { policy_config: security_orchestration_policy_configuration, policy_index: 1, policy: policy } }
 
+  before do
+    allow(security_orchestration_policy_configuration).to receive(:configuration_sha).and_return('config_sha')
+  end
+
   describe '#strategy_override_project_ci?' do
     subject { config.strategy_override_project_ci? }
 
@@ -139,5 +143,13 @@ RSpec.describe Security::PipelineExecutionPolicy::Config, feature_category: :sec
 
       it { is_expected.to be(false) }
     end
+  end
+
+  describe '#policy_sha' do
+    subject { config.policy_sha }
+
+    let(:policy) { build(:pipeline_execution_policy) }
+
+    it { is_expected.to eq('config_sha') }
   end
 end

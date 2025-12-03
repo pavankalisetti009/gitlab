@@ -533,7 +533,7 @@ RSpec.describe Gitlab::Ci::YamlProcessor, feature_category: :pipeline_compositio
       include_context 'with pipeline policy context'
 
       let(:current_policy) do
-        build(:pipeline_execution_policy_config,
+        build(:pipeline_execution_policy_config, policy_sha: 'my_policy_sha',
           policy: build(:pipeline_execution_policy, :variables_override_disallowed, name: 'My policy'))
       end
 
@@ -554,6 +554,8 @@ RSpec.describe Gitlab::Ci::YamlProcessor, feature_category: :pipeline_compositio
             script: ['rspec'],
             policy: {
               name: 'My policy',
+              project_id: policy_project_id,
+              sha: 'my_policy_sha',
               variables_override: { allowed: false }
             }
           })])
