@@ -275,12 +275,31 @@ describe('EditorComponent', () => {
             });
           });
 
-          it('disables warn option when license scanning exists', () => {
-            factoryWithExistingPolicy({
-              provide: { glFeatures: { securityPolicyApprovalWarnMode: true } },
-              policy: allowDenyScanResultLicenseObject,
+          describe('with the securityPolicyWarnModeLicenseScanning feature flag on', () => {
+            it('disables warn option when license scanning exists', () => {
+              factoryWithExistingPolicy({
+                provide: {
+                  glFeatures: {
+                    securityPolicyApprovalWarnMode: true,
+                    securityPolicyWarnModeLicenseScanning: true,
+                  },
+                },
+                policy: allowDenyScanResultLicenseObject,
+              });
+              expect(findEnforcementSection().props('disabledEnforcementOptions')).toEqual([]);
             });
-            expect(findEnforcementSection().props('disabledEnforcementOptions')).toEqual(['warn']);
+          });
+
+          describe('with the securityPolicyWarnModeLicenseScanning feature flag off', () => {
+            it('disables warn option when license scanning exists', () => {
+              factoryWithExistingPolicy({
+                provide: { glFeatures: { securityPolicyApprovalWarnMode: true } },
+                policy: allowDenyScanResultLicenseObject,
+              });
+              expect(findEnforcementSection().props('disabledEnforcementOptions')).toEqual([
+                'warn',
+              ]);
+            });
           });
         });
 

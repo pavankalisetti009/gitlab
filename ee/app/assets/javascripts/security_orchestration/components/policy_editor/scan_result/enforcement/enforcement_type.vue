@@ -10,6 +10,7 @@ import {
 } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { ENFORCEMENT_OPTIONS, WARN_VALUE } from '../lib';
 
 export default {
@@ -28,6 +29,7 @@ export default {
     GlLink,
     GlSprintf,
   },
+  mixins: [glFeatureFlagsMixin()],
   props: {
     disabledEnforcementOptions: {
       type: Array,
@@ -51,19 +53,28 @@ export default {
   computed: {
     alertText() {
       if (this.isWarnMode) {
-        return s__(
-          'SecurityOrchestration|In warn mode, project approval settings are not overridden by policy and violations are reported, but fixes for the violations are not mandatory. License scanning is not supported in warn mode. %{linkStart}Learn more%{linkEnd}',
-        );
+        return this.isLicenseScanningAllowedInWarnMode
+          ? s__(
+              'SecurityOrchestration|In warn mode, project approval settings are not overridden by policy and violations are reported, but fixes for the violations are not mandatory. %{linkStart}Learn more%{linkEnd}',
+            )
+          : s__(
+              'SecurityOrchestration|In warn mode, project approval settings are not overridden by policy and violations are reported, but fixes for the violations are not mandatory. License scanning is not supported in warn mode. %{linkStart}Learn more%{linkEnd}',
+            );
       }
 
       return s__(
         'SecurityOrchestration|This policy was previously in warn mode, which was an experimental feature. Due to changes in the feature, warn mode is now disabled. To enable the new warn mode setting, update this property.',
       );
     },
+    isLicenseScanningAllowedInWarnMode() {
+      return this.glFeatures.securityPolicyWarnModeLicenseScanning;
+    },
     options() {
       return ENFORCEMENT_OPTIONS.map((option) => ({
         ...option,
-        disabled: this.disabledEnforcementOptions.includes(option.value),
+        disabled: this.isLicenseScanningAllowedInWarnMode
+          ? false
+          : this.disabledEnforcementOptions.includes(option.value),
       }));
     },
     showAlert() {
