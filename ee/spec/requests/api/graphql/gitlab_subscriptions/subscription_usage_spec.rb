@@ -299,7 +299,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
           expect(graphql_data_at(:subscription_usage, :usersUsage, :totalUsersUsingOverage)).to eq(1)
           expect(graphql_data_at(:subscription_usage, :usersUsage, :creditsUsed)).to eq(123.45)
           expect(graphql_data_at(:subscription_usage, :usersUsage, :dailyUsage))
-              .to match_array([{ date: '2025-10-01', creditsUsed: 321 }.with_indifferent_access])
+            .to match_array([{ date: '2025-10-01', creditsUsed: 321 }.with_indifferent_access])
 
           expect(graphql_data_at(:subscription_usage, :usersUsage, :users, :nodes)).to match_array(
             User.all.without_bots.map do |u|
@@ -334,6 +334,152 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
 
           it 'returns subscription usage for the group' do
             expect(graphql_data_at(:subscription_usage, :enabled)).to be false
+          end
+        end
+
+        context 'when subscription can accept overage terms' do
+          let(:query_fields) do
+            [:overage_terms_accepted, :can_accept_overage_terms, :dap_promo_enabled,
+              :subscription_portal_usage_dashboard_url]
+          end
+
+          let(:metadata) do
+            {
+              success: true,
+              subscriptionUsage: {
+                overageTermsAccepted: false,
+                canAcceptOverageTerms: true,
+                dapPromoEnabled: false,
+                usageDashboardPath: "/subscriptions/A-S00012345/usage"
+              }
+            }
+          end
+
+          it 'exposes acceptance flags and dashboard URL correctly' do
+            post_graphql(query, current_user: admin)
+
+            expect(graphql_data_at(:subscription_usage, :overageTermsAccepted)).to be false
+            expect(graphql_data_at(:subscription_usage, :canAcceptOverageTerms)).to be true
+            expect(graphql_data_at(:subscription_usage, :dapPromoEnabled)).to be false
+
+            expect(graphql_data_at(:subscription_usage, :subscriptionPortalUsageDashboardUrl)).to eq(
+              'https://customers.gitlab.com/subscriptions/A-S00012345/usage'
+            )
+          end
+        end
+
+        context 'when subscription cannot accept overage terms' do
+          let(:query_fields) { [:can_accept_overage_terms, :subscription_portal_usage_dashboard_url] }
+
+          let(:metadata) do
+            {
+              success: true,
+              subscriptionUsage: {
+                canAcceptOverageTerms: false,
+                usageDashboardPath: '/subscriptions/A-S00012345/usage'
+              }
+            }
+          end
+
+          it 'returns false and no dashboard URL' do
+            expect(graphql_data_at(:subscription_usage, :canAcceptOverageTerms)).to be false
+            expect(graphql_data_at(:subscription_usage, :subscriptionPortalUsageDashboardUrl)).to be_nil
+          end
+        end
+
+        context 'when usage dashboard path is blank' do
+          let(:query_fields) { [:subscription_portal_usage_dashboard_url] }
+
+          let(:metadata) do
+            {
+              success: true,
+              subscriptionUsage: {
+                canAcceptOverageTerms: true,
+                usageDashboardPath: nil
+              }
+            }
+          end
+
+          it 'returns nil subscriptionPortalUsageDashboardUrl' do
+            post_graphql(query, current_user: admin)
+
+            expect(graphql_data_at(:subscription_usage, :subscriptionPortalUsageDashboardUrl)).to be_nil
+          end
+        end
+
+        context 'when DAP promo is enabled' do
+          let(:query_fields) { [:dap_promo_enabled] }
+
+          let(:metadata) do
+            {
+              success: true,
+              subscriptionUsage: {
+                dapPromoEnabled: true
+              }
+            }
+          end
+
+          it 'returns true for dapPromoEnabled' do
+            post_graphql(query, current_user: admin)
+
+            expect(graphql_data_at(:subscription_usage, :dapPromoEnabled)).to be true
+          end
+        end
+
+        context 'when DAP promo is disabled' do
+          let(:query_fields) { [:dap_promo_enabled] }
+
+          let(:metadata) do
+            {
+              success: true,
+              subscriptionUsage: {
+                dapPromoEnabled: false
+              }
+            }
+          end
+
+          it 'returns false for dapPromoEnabled' do
+            post_graphql(query, current_user: admin)
+
+            expect(graphql_data_at(:subscription_usage, :dapPromoEnabled)).to be false
+          end
+        end
+
+        context 'when overage terms are accepted' do
+          let(:query_fields) { [:overage_terms_accepted] }
+
+          let(:metadata) do
+            {
+              success: true,
+              subscriptionUsage: {
+                overageTermsAccepted: true
+              }
+            }
+          end
+
+          it 'returns true for overageTermsAccepted' do
+            post_graphql(query, current_user: admin)
+
+            expect(graphql_data_at(:subscription_usage, :overageTermsAccepted)).to be true
+          end
+        end
+
+        context 'when overage terms are not accepted' do
+          let(:query_fields) { [:overage_terms_accepted] }
+
+          let(:metadata) do
+            {
+              success: true,
+              subscriptionUsage: {
+                overageTermsAccepted: false
+              }
+            }
+          end
+
+          it 'returns false for overageTermsAccepted' do
+            post_graphql(query, current_user: admin)
+
+            expect(graphql_data_at(:subscription_usage, :overageTermsAccepted)).to be false
           end
         end
 

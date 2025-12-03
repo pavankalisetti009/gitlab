@@ -51,6 +51,22 @@ module Types
       field :users_usage, SubscriptionUsage::UsersUsageType,
         null: true,
         description: 'Consumption usage for users under the subscription.'
+
+      field :overage_terms_accepted, GraphQL::Types::Boolean,
+        null: false,
+        description: 'Indicates whether overage terms have been accepted for the subscription.'
+
+      field :can_accept_overage_terms, GraphQL::Types::Boolean,
+        null: false,
+        description: 'Indicates whether the subscription is currently eligible to accept overage terms.'
+
+      field :dap_promo_enabled, GraphQL::Types::Boolean,
+        null: false,
+        description: 'Indicates whether the Duo AI promo (DAP) is enabled for the subscription.'
+
+      field :subscription_portal_usage_dashboard_url, GraphQL::Types::String,
+        null: true,
+        description: 'Full URL to the GitLab Credits usage dashboard in the Customer Portal.'
     end
   end
 end

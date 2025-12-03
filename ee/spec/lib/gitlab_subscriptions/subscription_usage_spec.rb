@@ -664,4 +664,127 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
       subscription_usage.users_usage
     end
   end
+
+  describe '#overage_terms_accepted' do
+    let(:subscription_usage) do
+      described_class.new(
+        subscription_target: :instance,
+        subscription_usage_client: subscription_usage_client
+      )
+    end
+
+    let(:client_response) do
+      { success: true, subscriptionUsage: { overageTermsAccepted: value } }
+    end
+
+    before do
+      allow(subscription_usage_client).to receive(:get_metadata).and_return(client_response)
+    end
+
+    where(:value) { [true, false] }
+
+    with_them do
+      it 'returns the raw value from metadata' do
+        expect(subscription_usage.overage_terms_accepted).to eq(value)
+      end
+    end
+  end
+
+  describe '#can_accept_overage_terms' do
+    where(:cdot_value, :return_value) do
+      true  | true
+      false | false
+      nil   | false
+    end
+
+    with_them do
+      let(:subscription_usage) do
+        described_class.new(
+          subscription_target: :instance,
+          subscription_usage_client: subscription_usage_client
+        )
+      end
+
+      let(:client_response) do
+        { success: true, subscriptionUsage: { canAcceptOverageTerms: cdot_value } }
+      end
+
+      before do
+        allow(subscription_usage_client).to receive(:get_metadata).and_return(client_response)
+      end
+
+      it "returns #{params[:return_value]} when CDot returns #{params[:cdot_value].inspect}" do
+        expect(subscription_usage.can_accept_overage_terms).to be(return_value)
+      end
+    end
+  end
+
+  describe '#dap_promo_enabled' do
+    let(:subscription_usage) do
+      described_class.new(
+        subscription_target: :instance,
+        subscription_usage_client: subscription_usage_client
+      )
+    end
+
+    let(:client_response) do
+      { success: true, subscriptionUsage: { dapPromoEnabled: value } }
+    end
+
+    before do
+      allow(subscription_usage_client).to receive(:get_metadata).and_return(client_response)
+    end
+
+    where(:value) { [true, false] }
+
+    with_them do
+      it 'returns the raw value from metadata' do
+        expect(subscription_usage.dap_promo_enabled).to eq(value)
+      end
+    end
+  end
+
+  describe '#subscription_portal_usage_dashboard_url' do
+    let(:subscription_usage) do
+      described_class.new(
+        subscription_target: :instance,
+        subscription_usage_client: subscription_usage_client
+      )
+    end
+
+    subject(:url) { subscription_usage.subscription_portal_usage_dashboard_url }
+
+    context 'when subscription cannot accept overage terms' do
+      before do
+        allow(subscription_usage).to receive(:can_accept_overage_terms).and_return(false)
+      end
+
+      it 'returns nil' do
+        expect(url).to be_nil
+      end
+    end
+
+    context 'when subscription can accept overage terms but path is blank' do
+      before do
+        allow(subscription_usage).to receive_messages(can_accept_overage_terms: true, usage_dashboard_path: nil)
+      end
+
+      it 'returns nil' do
+        expect(url).to be_nil
+      end
+    end
+
+    context 'when subscription can accept overage terms and path is present' do
+      before do
+        allow(subscription_usage).to receive_messages(can_accept_overage_terms: true,
+          usage_dashboard_path: '/subscriptions/A-S00012345/usage')
+      end
+
+      it 'returns the full Subscription Portal URL' do
+        expect(url).to eq(
+          "#{::Gitlab::SubscriptionPortal.default_production_customer_portal_url}/subscriptions/A-S00012345/usage"
+        )
+      end
+    end
+  end
 end
