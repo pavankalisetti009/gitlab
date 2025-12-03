@@ -82,6 +82,7 @@ export default {
     :open="isOpen"
     :z-index="$options.DRAWER_Z_INDEX"
     :header-height="headerHeight"
+    header-sticky
     @close="$emit('toggleSettings', $event)"
   >
     <template #title>
@@ -101,6 +102,7 @@ export default {
         @setProgressTracking="setLocalSettings"
       />
       <roadmap-toggle-labels
+        class="gl-mb-12"
         :is-showing-labels="isShowingLabels"
         @setLabelsVisibility="setLocalSettings"
       />
