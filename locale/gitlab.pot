@@ -27375,9 +27375,6 @@ msgstr ""
 msgid "Error creating or updating PreScanVerificationStep: %{errors}"
 msgstr ""
 
-msgid "Error creating repository for snippet with id %{snippet_id}"
-msgstr ""
-
 msgid "Error creating the snippet"
 msgstr ""
 

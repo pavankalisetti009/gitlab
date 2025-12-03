@@ -53693,7 +53693,6 @@ Possible types of user.
 | <a id="usertypeghost"></a>`GHOST` | Ghost. |
 | <a id="usertypehuman"></a>`HUMAN` | Human. |
 | <a id="usertypeimport_user"></a>`IMPORT_USER` | Import user. |
-| <a id="usertypemigration_bot"></a>`MIGRATION_BOT` | Migration bot. |
 | <a id="usertypeplaceholder"></a>`PLACEHOLDER` | Placeholder. |
 | <a id="usertypeproject_bot"></a>`PROJECT_BOT` | Project bot. |
 | <a id="usertypesecurity_bot"></a>`SECURITY_BOT` | Security bot. |
