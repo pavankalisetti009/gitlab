@@ -148,7 +148,11 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
               enabled: true,
               isOutdatedClient: false,
               lastEventTransactionAt: "2025-10-01T16:19:59Z",
-              purchaseCreditsPath: '/mock/path'
+              purchaseCreditsPath: '/mock/path',
+              overageTermsAccepted: true,
+              canAcceptOverageTerms: true,
+              dapPromoEnabled: false,
+              usageDashboardPath: "/subscriptions/A-S00012345/usage"
             }
           }
         }
@@ -164,7 +168,11 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
           enabled: true,
           isOutdatedClient: false,
           lastEventTransactionAt: "2025-10-01T16:19:59Z",
-          purchaseCreditsPath: '/mock/path'
+          purchaseCreditsPath: '/mock/path',
+          overageTermsAccepted: true,
+          canAcceptOverageTerms: true,
+          dapPromoEnabled: false,
+          usageDashboardPath: "/subscriptions/A-S00012345/usage"
         }
       }
     end

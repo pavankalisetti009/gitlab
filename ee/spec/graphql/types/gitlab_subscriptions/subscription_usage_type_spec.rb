@@ -17,7 +17,11 @@ RSpec.describe GitlabSchema.types['GitlabSubscriptionUsage'], feature_category: 
       :monthly_waiver,
       :monthly_commitment,
       :overage,
-      :users_usage
+      :users_usage,
+      :overage_terms_accepted,
+      :can_accept_overage_terms,
+      :dap_promo_enabled,
+      :subscription_portal_usage_dashboard_url
     ])
   end
 end

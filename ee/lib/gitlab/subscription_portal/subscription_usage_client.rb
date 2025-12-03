@@ -22,6 +22,10 @@ module Gitlab
               isOutdatedClient(gitlabVersion: $gitlabVersion)
               lastEventTransactionAt
               purchaseCreditsPath
+              overageTermsAccepted
+              canAcceptOverageTerms
+              dapPromoEnabled
+              usageDashboardPath
             }
           }
         }
