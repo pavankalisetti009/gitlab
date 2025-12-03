@@ -109,9 +109,9 @@ module API
       get ':id/epics/:epic_iid/related_epics' do
         authorize_can_read!
 
-        preload_for_collection = [:author, :sync_object, { group: [:saml_provider, :route] }]
+        preload_for_collection = [:author, :sync_object, :work_item, { group: [:saml_provider, :route] }]
         related_epics = epic.related_epics(current_user, preload: preload_for_collection) do |epics|
-          epics.with_api_entity_associations
+          epics.with_api_entity_associations_from_work_item
           epics.each(&:lazy_labels)
         end
 

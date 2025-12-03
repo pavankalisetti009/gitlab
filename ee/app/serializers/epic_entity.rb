@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class EpicEntity < IssuableEntity
+  include Gitlab::Utils::StrongMemoize
+
   expose :group_id
 
   expose :group_name do |epic|
@@ -13,25 +15,76 @@ class EpicEntity < IssuableEntity
     epic.group.full_path
   end
 
-  expose :created_at
-  expose :updated_at
-  expose :start_date
-  expose :start_date_is_fixed?, as: :start_date_is_fixed
-  expose :start_date_fixed, :start_date_from_milestones
-  expose :end_date # @deprecated
-  expose :end_date, as: :due_date
-  expose :due_date_is_fixed?, as: :due_date_is_fixed
-  expose :due_date_fixed, :due_date_from_milestones
-  expose :state
-  expose :lock_version
-  expose :confidential
-  expose :color
-  expose :text_color
+  expose :created_at do |epic|
+    epic.work_item.created_at
+  end
+
+  expose :updated_at do |epic|
+    epic.work_item.updated_at
+  end
+
+  expose :start_date do |epic|
+    epic.work_item.start_date
+  end
+
+  expose :start_date_is_fixed?, as: :start_date_is_fixed do |epic|
+    rollupable_dates(epic).fixed?
+  end
+
+  expose :start_date_fixed do |epic|
+    rollupable_dates(epic).start_date
+  end
+
+  expose :start_date_from_milestones do |epic|
+    rollupable_dates(epic).start_date
+  end
+
+  expose :end_date do |epic| # @deprecated
+    epic.work_item.due_date
+  end
+
+  expose :end_date, as: :due_date do |epic|
+    epic.work_item.due_date
+  end
+
+  expose :due_date_is_fixed?, as: :due_date_is_fixed do |epic|
+    rollupable_dates(epic).fixed?
+  end
+
+  expose :due_date_fixed do |epic|
+    rollupable_dates(epic).due_date
+  end
+
+  expose :due_date_from_milestones do |epic|
+    rollupable_dates(epic).due_date
+  end
+
+  expose :state do |epic|
+    epic.work_item.state
+  end
+
+  expose :lock_version do |epic|
+    epic.work_item.lock_version
+  end
+
+  expose :confidential do |epic|
+    epic.work_item.confidential
+  end
+
+  expose :color do |epic|
+    epic.work_item.color&.color.to_s
+  end
+
+  expose :text_color do |epic|
+    epic.work_item.color&.text_color.to_s
+  end
 
   expose :web_url do |epic|
     group_epic_path(epic.group, epic)
   end
-  expose :labels, using: LabelEntity
+  expose :labels, using: LabelEntity do |epic|
+    epic.work_item.labels
+  end
 
   expose :current_user do
     expose :can_create_note do |epic|
@@ -55,7 +108,15 @@ class EpicEntity < IssuableEntity
     preview_markdown_path(epic.group, target_type: 'Epic', target_id: epic.iid)
   end
 
-  expose :confidential_epics_docs_path, if: ->(epic) { epic.confidential? } do |epic|
+  expose :confidential_epics_docs_path, if: ->(epic) { epic.work_item.confidential? } do |epic|
     help_page_path('user/group/epics/manage_epics.md', anchor: 'make-an-epic-confidential')
+  end
+
+  private
+
+  def rollupable_dates(epic)
+    strong_memoize(:rollupable_dates) do
+      epic.work_item.get_widget(:start_and_due_date)
+    end
   end
 end
