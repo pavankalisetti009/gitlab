@@ -447,6 +447,18 @@ describe('AnalyticsDashboardPanel', () => {
               queryOverrides: { ...mockPanel.queryOverrides, foo: 'bar' },
             }),
           );
+
+          findVisualization().vm.$emit('updateQuery', { foo2: 'bar2' });
+
+          await waitForPromises();
+
+          expect(mockFetch).toHaveBeenCalledTimes(3);
+
+          expect(mockFetch).toHaveBeenCalledWith(
+            expect.objectContaining({
+              queryOverrides: { ...mockPanel.queryOverrides, foo: 'bar', foo2: 'bar2' },
+            }),
+          );
         });
       });
     });

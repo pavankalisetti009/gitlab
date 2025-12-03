@@ -1,9 +1,7 @@
 <script>
-import { GlIcon, GlLink, GlTableLite, GlKeysetPagination } from '@gitlab/ui';
-
+import { GlIcon, GlLink, GlTable, GlTableLite, GlKeysetPagination } from '@gitlab/ui';
 import { __ } from '~/locale';
 import { isExternal } from '~/lib/utils/url_utility';
-
 import { formatVisualizationValue } from '../utils';
 
 const DEFAULT_PAGE_SIZE = 20;
@@ -13,6 +11,7 @@ export default {
   components: {
     GlIcon,
     GlLink,
+    GlTable,
     GlTableLite,
     GlKeysetPagination,
     AssigneeAvatars: () => import('./assignee_avatars.vue'),
@@ -39,8 +38,17 @@ export default {
       required: false,
       default: () => ({}),
     },
+    query: {
+      type: Object,
+      required: false,
+      default: () => ({}),
+    },
   },
   computed: {
+    tableComponent() {
+      const hasSorting = this.options.fields?.some(({ sortable }) => Boolean(sortable));
+      return hasSorting ? GlTable : GlTableLite;
+    },
     nodes() {
       return this.data.nodes || [];
     },
@@ -60,11 +68,12 @@ export default {
       }));
     },
     sanitizedOptions() {
-      const { responsive, fixed, stacked, fields } = this.options;
+      const { responsive, fixed, stacked, fields, refetchOnSort } = this.options;
       return {
         responsive: responsive ?? true,
         fixed: fixed ?? false,
         stacked: stacked ?? false,
+        refetchOnSort: refetchOnSort ?? false,
         fields: fields || this.derivedFields,
       };
     },
@@ -105,6 +114,11 @@ export default {
         },
       });
     },
+    onSortingChanged({ sortBy, sortDesc }) {
+      if (this.sanitizedOptions.refetchOnSort) {
+        this.$emit('updateQuery', { sortBy, sortDesc });
+      }
+    },
   },
   i18n: {
     externalLink: __('external link'),
@@ -114,14 +128,19 @@ export default {
 
 <template>
   <div>
-    <gl-table-lite
+    <component
+      :is="tableComponent"
       :fields="sanitizedOptions.fields"
       :responsive="sanitizedOptions.responsive"
       :fixed="sanitizedOptions.fixed"
       :stacked="sanitizedOptions.stacked"
+      :no-local-sorting="sanitizedOptions.refetchOnSort"
       :items="nodes"
+      :sort-by="query.sortBy"
+      :sort-desc="query.sortDesc"
       hover
       class="gl-mt-4"
+      @sort-changed="onSortingChanged"
     >
       <template #cell()="{ item, value, field }">
         <component
@@ -143,7 +162,7 @@ export default {
           {{ formatVisualizationValue(value) }}
         </template>
       </template>
-    </gl-table-lite>
+    </component>
     <gl-keyset-pagination
       v-if="showPaginationControls"
       class="gl-m-3 gl-flex gl-items-center gl-justify-center"
