@@ -47,7 +47,7 @@ RSpec.describe MergeRequests::ApprovalRule, type: :model, feature_category: :cod
 
         it 'has the correct error message' do
           rule.valid?
-          expect(rule.errors[:base]).to contain_exactly("Must have either `group_id` or `project_id`")
+          expect(rule.errors[:base]).to contain_exactly('Exactly one of group_id, project_id must be present')
         end
       end
 
@@ -58,7 +58,7 @@ RSpec.describe MergeRequests::ApprovalRule, type: :model, feature_category: :cod
 
         it 'has the correct error message' do
           rule.valid?
-          expect(rule.errors[:base]).to contain_exactly("Cannot have both `group_id` and `project_id`")
+          expect(rule.errors[:base]).to contain_exactly('Exactly one of group_id, project_id must be present')
         end
       end
     end
