@@ -121,7 +121,7 @@ module WorkItems
 
         return types unless authorize
 
-        authorized_types(types, resource_parent, :child)
+        authorized_types(types, resource_parent, licenses_for_child)
       end
 
       def allowed_parent_types(authorize: false, resource_parent: nil)
@@ -129,7 +129,7 @@ module WorkItems
 
         return types unless authorize
 
-        authorized_types(types, resource_parent, :parent)
+        authorized_types(types, resource_parent, licenses_for_parent)
       end
 
       def descendant_types
@@ -155,15 +155,23 @@ module WorkItems
         WorkItems::SystemDefined::Types.const_get(base_type.camelize, false)
       end
 
-      def licence_name
-        configuration_class.try(:licence_name)
+      def license_name
+        configuration_class.try(:license_name)
       end
 
-      def licenced?
-        licence_name.present?
+      def licensed?
+        license_name.present?
       end
 
       private
+
+      def licenses_for_parent
+        configuration_class.try(:licenses_for_parent)
+      end
+
+      def licenses_for_child
+        configuration_class.try(:licenses_for_child)
+      end
 
       # resource_parent is used in EE
       def supported_conversion_base_types(_resource_parent, _user)

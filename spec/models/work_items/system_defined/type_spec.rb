@@ -585,14 +585,6 @@ RSpec.describe WorkItems::SystemDefined::Type, feature_category: :team_planning 
         let(:project) { build(:project) }
         let(:user) { build(:user) }
 
-        it 'calls authorized_types with correct parameters' do
-          expect(issue_type).to receive(:authorized_types)
-            .with(anything, project, :child)
-            .and_call_original
-
-          issue_type.allowed_child_types(authorize: true, resource_parent: project)
-        end
-
         it 'returns authorized child types' do
           children = issue_type.allowed_child_types(
             authorize: true,
@@ -621,14 +613,6 @@ RSpec.describe WorkItems::SystemDefined::Type, feature_category: :team_planning 
 
       context 'when authorize is true' do
         let(:project) { build(:project) }
-
-        it 'calls authorized_types with correct parameters' do
-          expect(task_type).to receive(:authorized_types)
-            .with(anything, project, :parent)
-            .and_call_original
-
-          task_type.allowed_parent_types(authorize: true, resource_parent: project)
-        end
 
         it 'returns authorized parent types' do
           parents = task_type.allowed_parent_types(

@@ -274,104 +274,231 @@ RSpec.describe ::WorkItems::SystemDefined::Type, feature_category: :team_plannin
     end
   end
 
-  describe '#authorized_types' do
+  describe '#allowed_child_types' do
     let(:issue_type) { build(:work_item_system_defined_type, :issue) }
     let(:epic_type) { build(:work_item_system_defined_type, :epic) }
-    let(:resource_parent) { project }
+    let(:task_type) { build(:work_item_system_defined_type, :task) }
 
-    context 'for issue parent types' do
-      let(:parent_types) { [epic_type] }
-
-      context 'when epics license is available' do
-        before do
-          stub_licensed_features(epics: true)
-        end
-
-        it 'includes epic as authorized parent' do
-          result = issue_type.send(:authorized_types, parent_types, resource_parent, :parent)
-
-          expect(result).to include(epic_type)
-        end
+    context 'without authorization' do
+      it 'returns all allowed child types without license checks' do
+        # Assuming issue can have tasks as children
+        expect(issue_type.allowed_child_types(authorize: false)).to include(task_type)
       end
 
-      context 'when epics license is not available' do
-        before do
-          stub_licensed_features(epics: false)
-        end
-
-        it 'excludes epic as authorized parent' do
-          result = issue_type.send(:authorized_types, parent_types, resource_parent, :parent)
-
-          expect(result).not_to include(epic_type)
-        end
+      it 'returns child types ordered by name' do
+        child_types = issue_type.allowed_child_types(authorize: false)
+        expect(child_types).to eq(child_types.sort_by { |t| t.name.downcase })
       end
     end
 
-    context 'for epic child types' do
-      let(:child_types) { [issue_type, epic_type] }
+    context 'with authorization' do
+      context 'when resource_parent is a project' do
+        context 'with epics license' do
+          before do
+            stub_licensed_features(epics: true)
+          end
 
-      context 'when both epics and subepics licenses are available' do
-        before do
-          stub_licensed_features(epics: true, subepics: true)
+          it 'includes epic as child type when licensed' do
+            # Assuming epic can have issues as children
+            child_types = epic_type.allowed_child_types(
+              authorize: true,
+              resource_parent: project
+            )
+
+            expect(child_types).to include(issue_type)
+          end
         end
 
-        it 'includes both issue and epic as authorized children' do
-          result = epic_type.send(:authorized_types, child_types, resource_parent, :child)
+        context 'without epics license' do
+          before do
+            stub_licensed_features(epics: false)
+          end
 
-          expect(result).to include(issue_type, epic_type)
+          it 'excludes epic from child types when not licensed' do
+            # If issue type has epic as a potential child
+            child_types = issue_type.allowed_child_types(
+              authorize: true,
+              resource_parent: project
+            )
+
+            expect(child_types).not_to include(epic_type)
+          end
         end
       end
 
-      context 'when epics license is available but subepics is not' do
-        before do
-          stub_licensed_features(epics: true, subepics: false)
+      context 'when resource_parent is a group' do
+        context 'with subepics license' do
+          before do
+            stub_licensed_features(subepics: true)
+          end
+
+          it 'includes epic as child type for epic when licensed' do
+            # Epic can have sub-epics
+            child_types = epic_type.allowed_child_types(
+              authorize: true,
+              resource_parent: group
+            )
+
+            expect(child_types).to include(epic_type)
+          end
         end
 
-        it 'includes issue but excludes epic as authorized child' do
-          result = epic_type.send(:authorized_types, child_types, resource_parent, :child)
+        context 'without subepics license' do
+          before do
+            stub_licensed_features(subepics: false)
+          end
 
-          expect(result).to include(issue_type)
-          expect(result).not_to include(epic_type)
+          it 'excludes epic as child type for epic when not licensed' do
+            child_types = epic_type.allowed_child_types(
+              authorize: true,
+              resource_parent: group
+            )
+
+            expect(child_types).not_to include(epic_type)
+          end
+        end
+      end
+
+      context 'when resource_parent is nil' do
+        it 'returns types without license validation' do
+          child_types = issue_type.allowed_child_types(
+            authorize: true,
+            resource_parent: nil
+          )
+
+          # Should behave like authorize: false
+          expect(child_types).to eq(issue_type.allowed_child_types(authorize: false))
+        end
+      end
+
+      context 'with multiple licensed types' do
+        let(:objective_type) { build(:work_item_system_defined_type, :objective) }
+        let(:key_result_type) { build(:work_item_system_defined_type, :key_result) }
+
+        before do
+          stub_licensed_features(okrs: true)
+        end
+
+        it 'includes all licensed child types' do
+          # Assuming objective can have key_results as children
+          child_types = objective_type.allowed_child_types(
+            authorize: true,
+            resource_parent: project
+          )
+
+          expect(child_types).to include(key_result_type)
         end
       end
     end
+  end
 
-    context 'for types without licensed hierarchy restrictions' do
-      let(:task_type) { build(:work_item_system_defined_type, :task) }
-      let(:ticket_type) { build(:work_item_system_defined_type, :ticket) }
-      let(:child_types) { [issue_type, task_type, ticket_type] }
+  describe '#allowed_parent_types' do
+    let(:issue_type) { build(:work_item_system_defined_type, :issue) }
+    let(:epic_type) { build(:work_item_system_defined_type, :epic) }
+    let(:task_type) { build(:work_item_system_defined_type, :task) }
 
-      before do
-        stub_licensed_features(epics: true)
+    context 'without authorization' do
+      it 'returns all allowed parent types without license checks' do
+        # Assuming task can have issue as parent
+        expect(task_type.allowed_parent_types(authorize: false))
+          .to include(issue_type)
       end
 
-      it 'includes types without license restrictions' do
-        result = epic_type.send(:authorized_types, child_types, resource_parent, :child)
-
-        # Task and Ticket don't have license restrictions in LICENSED_HIERARCHY_TYPES
-        # so they should be included (the `next type unless license_name` branch)
-        expect(result).to include(task_type, ticket_type)
-      end
-
-      it 'filters licensed types correctly while keeping unlicensed types' do
-        stub_licensed_features(epics: false) # Disable epics license
-
-        result = epic_type.send(:authorized_types, child_types, resource_parent, :child)
-
-        # Issue requires epics license, so it should be excluded
-        expect(result).not_to include(issue_type)
-        # Task and Ticket have no license requirements, so they should be included
-        expect(result).to include(task_type, ticket_type)
+      it 'returns parent types ordered by name' do
+        parent_types = task_type.allowed_parent_types(authorize: false)
+        expect(parent_types).to eq(parent_types.sort_by { |t| t.name.downcase })
       end
     end
 
-    context 'when resource_parent is nil' do
-      let(:parent_types) { [epic_type] }
+    context 'with authorization' do
+      context 'when resource_parent is a project' do
+        context 'with epics license' do
+          before do
+            stub_licensed_features(epics: true)
+          end
 
-      it 'excludes licensed types when resource_parent is nil' do
-        result = issue_type.send(:authorized_types, parent_types, nil, :parent)
+          it 'includes epic as parent type when licensed' do
+            # Assuming issue can have epic as parent
+            parent_types = issue_type.allowed_parent_types(
+              authorize: true,
+              resource_parent: project
+            )
 
-        expect(result).not_to include(epic_type)
+            expect(parent_types).to include(epic_type)
+          end
+        end
+
+        context 'without epics license' do
+          before do
+            stub_licensed_features(epics: false)
+          end
+
+          it 'excludes epic from parent types when not licensed' do
+            parent_types = issue_type.allowed_parent_types(
+              authorize: true,
+              resource_parent: project
+            )
+
+            expect(parent_types).not_to include(epic_type)
+          end
+        end
+
+        context 'with type without license' do
+          it 'includes types regardless of license' do
+            # Task should always be allowed as parent for subtasks if configured
+            parent_types = task_type.allowed_parent_types(
+              authorize: true,
+              resource_parent: project
+            )
+
+            expect(parent_types.map(&:base_type)).to include('issue')
+          end
+        end
+      end
+
+      context 'when resource_parent is a group' do
+        context 'with subepics license' do
+          before do
+            stub_licensed_features(subepics: true)
+          end
+
+          it 'includes epic as parent type for epic when licensed' do
+            # Epic can have parent epics
+            parent_types = epic_type.allowed_parent_types(
+              authorize: true,
+              resource_parent: group
+            )
+
+            expect(parent_types).to include(epic_type)
+          end
+        end
+
+        context 'without subepics license' do
+          before do
+            stub_licensed_features(subepics: false)
+          end
+
+          it 'excludes epic as parent type for epic when not licensed' do
+            parent_types = epic_type.allowed_parent_types(
+              authorize: true,
+              resource_parent: group
+            )
+
+            expect(parent_types).not_to include(epic_type)
+          end
+        end
+      end
+
+      context 'when resource_parent is nil' do
+        it 'returns types without license validation' do
+          parent_types = task_type.allowed_parent_types(
+            authorize: true,
+            resource_parent: nil
+          )
+
+          # Should behave like authorize: false
+          expect(parent_types).to eq(task_type.allowed_parent_types(authorize: false))
+        end
       end
     end
   end

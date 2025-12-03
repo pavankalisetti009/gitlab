@@ -23,17 +23,19 @@ module WorkItems
 
         WIDGET_OPTIONS = {}.freeze
 
-        def self.configuration
-          {
-            id: 6,
-            name: 'Objective',
-            base_type: 'objective',
-            icon_name: "work-item-objective"
-          }
-        end
+        class << self
+          def configuration
+            {
+              id: 6,
+              name: 'Objective',
+              base_type: 'objective',
+              icon_name: "work-item-objective"
+            }
+          end
 
-        def self.licence_name
-          :okrs
+          def license_name
+            :okrs
+          end
         end
       end
     end

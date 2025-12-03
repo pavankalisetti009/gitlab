@@ -7,11 +7,6 @@ module EE
         extend ActiveSupport::Concern
         extend ::Gitlab::Utils::Override
 
-        LICENSED_HIERARCHY_TYPES = {
-          issue: { parent: { epic: :epics } },
-          epic: { parent: { epic: :subepics }, child: { epic: :subepics, issue: :epics } }
-        }.freeze
-
         BASE_TYPES = [
           ::WorkItems::SystemDefined::Types::Epic.configuration,
           ::WorkItems::SystemDefined::Types::KeyResult.configuration,
@@ -71,7 +66,7 @@ module EE
           all_types = super - BASE_TYPES.pluck(:base_type) # rubocop:disable Database/AvoidUsingPluckWithoutLimit -- It's an array of hashed not active record relations
 
           ee_base_types = self.class.all.filter_map do |type|
-            if type.licenced? && resource_parent.licensed_feature_available?(type.licence_name.to_sym)
+            if type.licensed? && resource_parent.licensed_feature_available?(type.license_name.to_sym)
               type.base_type.to_s
             end
           end.compact
@@ -92,12 +87,11 @@ module EE
         end
 
         override :authorized_types
-        def authorized_types(types, resource_parent, relation)
-          licenses_for_relation = LICENSED_HIERARCHY_TYPES[base_type.to_sym].try(:[], relation)
+        def authorized_types(types, resource_parent, licenses_for_relation)
           return super unless licenses_for_relation
 
           types.select do |type|
-            license_name = licenses_for_relation[type.base_type.to_sym]
+            license_name = licenses_for_relation[type.base_type]
             next type unless license_name
 
             resource_parent&.licensed_feature_available?(license_name)

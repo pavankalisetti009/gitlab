@@ -21,17 +21,19 @@ module WorkItems
 
         WIDGET_OPTIONS = {}.freeze
 
-        def self.configuration
-          {
-            id: 4,
-            name: 'Requirement',
-            base_type: 'requirement',
-            icon_name: "work-item-requirement"
-          }
-        end
+        class << self
+          def configuration
+            {
+              id: 4,
+              name: 'Requirement',
+              base_type: 'requirement',
+              icon_name: "work-item-requirement"
+            }
+          end
 
-        def self.licence_name
-          :requirements
+          def license_name
+            :requirements
+          end
         end
       end
     end

@@ -23,17 +23,19 @@ module WorkItems
 
         WIDGET_OPTIONS = {}.freeze
 
-        def self.configuration
-          {
-            id: 7,
-            name: 'Key Result',
-            base_type: 'key_result',
-            icon_name: "work-item-keyresult"
-          }
-        end
+        class << self
+          def configuration
+            {
+              id: 7,
+              name: 'Key Result',
+              base_type: 'key_result',
+              icon_name: "work-item-keyresult"
+            }
+          end
 
-        def self.licence_name
-          :okrs
+          def license_name
+            :okrs
+          end
         end
       end
     end

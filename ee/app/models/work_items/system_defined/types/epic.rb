@@ -29,17 +29,27 @@ module WorkItems
           weight: { editable: false, rollup: true }
         }.freeze
 
-        def self.configuration
-          {
-            id: 8,
-            name: 'Epic',
-            base_type: 'epic',
-            icon_name: "work-item-epic"
-          }
-        end
+        class << self
+          def configuration
+            {
+              id: 8,
+              name: 'Epic',
+              base_type: 'epic',
+              icon_name: "work-item-epic"
+            }
+          end
 
-        def self.licence_name
-          :epics
+          def license_name
+            :epics
+          end
+
+          def licenses_for_parent
+            { 'epic' => :subepics }
+          end
+
+          def licenses_for_child
+            { 'epic' => :subepics, 'issue' => :epics }
+          end
         end
       end
     end
