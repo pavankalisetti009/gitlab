@@ -492,6 +492,33 @@ describe('Tree List', () => {
       await waitForPromises();
       expect(getQueryHandlerSuccess).toHaveBeenCalledTimes(2); // root + dir_0
     });
+
+    it('expands path ancestors when route changes', async () => {
+      const treeNode = mockResponse.data.project.repository.paginatedTree.nodes[0];
+      const response = cloneDeep(mockResponse);
+      response.data.project.repository.paginatedTree.nodes[0].trees.nodes = [
+        { ...treeNode.trees.nodes[0], name: 'test_dir', path: 'test_dir', flatPath: 'test_dir' },
+      ];
+
+      getQueryHandlerSuccess = jest.fn().mockResolvedValueOnce(response);
+
+      const route = Vue.observable({ params: {} });
+      wrapper = shallowMountExtended(TreeList, {
+        apolloProvider: createMockApollo([[paginatedTreeQuery, getQueryHandlerSuccess]]),
+        pinia,
+        propsData: { projectPath: 'group/project', currentRef: 'main' },
+        mocks: { $router: { push: jest.fn() }, $route: route },
+      });
+      await waitForPromises();
+
+      route.params = { path: 'test_dir/file.txt' };
+      await nextTick();
+      await waitForPromises();
+
+      expect(getQueryHandlerSuccess).toHaveBeenCalledWith(
+        expect.objectContaining({ path: 'test_dir' }),
+      );
+    });
   });
 
   describe('keyboard navigation', () => {
