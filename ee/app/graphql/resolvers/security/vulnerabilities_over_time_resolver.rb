@@ -27,6 +27,7 @@ module Resolvers
 
       def resolve_with_lookahead(start_date:, end_date:, **args)
         authorize!(object) unless resolve_vulnerabilities_for_instance_security_dashboard?
+        validate_advanced_vuln_management!
         validate_date_range!(start_date, end_date)
 
         return [] if !vulnerable || !feature_enabled?(vulnerable)

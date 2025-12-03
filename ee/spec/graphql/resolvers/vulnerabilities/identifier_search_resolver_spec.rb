@@ -110,6 +110,9 @@ RSpec.describe Resolvers::Vulnerabilities::IdentifierSearchResolver, feature_cat
       end
 
       let!(:args) { { name: 'cwe' } }
+      let(:current_user) { user }
+      let(:obj) { group }
+      let(:vulnerable) { obj }
 
       before do
         stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
@@ -125,6 +128,7 @@ RSpec.describe Resolvers::Vulnerabilities::IdentifierSearchResolver, feature_cat
 
       it_behaves_like 'when the current user has access'
       it_behaves_like 'when the current user does not have access'
+      it_behaves_like 'validates self-managed first backfill'
     end
   end
 end
