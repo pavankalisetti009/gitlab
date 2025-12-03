@@ -682,6 +682,85 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
     end
   end
 
+  shared_examples 'sets AGENT_PLATFORM_FEATURE_SETTING_NAME' do
+    it 'sets the correct feature setting name' do
+      expect(Ci::Workloads::RunWorkloadService)
+        .to receive(:new).and_wrap_original do |method, **kwargs|
+        variables = kwargs[:workload_definition].variables
+        expect(variables[:AGENT_PLATFORM_FEATURE_SETTING_NAME]).to eq(expected_feature_setting_name)
+        method.call(**kwargs)
+      end
+
+      expect(execute).to be_success
+    end
+  end
+
+  context 'for AGENT_PLATFORM_FEATURE_SETTING_NAME' do
+    before do
+      allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
+      allow(maintainer).to receive(:allowed_to_use?).and_return(true)
+      project.project_setting.update!(duo_features_enabled: true, duo_remote_flows_enabled: true)
+    end
+
+    context 'when self-hosted feature setting exists' do
+      let(:expected_feature_setting_name) { 'duo_agent_platform' }
+
+      let_it_be(:model) do
+        create(:ai_self_hosted_model, model: :claude_3, identifier: 'claude-3-7-sonnet-20250219')
+      end
+
+      let_it_be(:duo_agent_platform_feature_setting) do
+        create(:ai_feature_setting, :duo_agent_platform, self_hosted_model: model)
+      end
+
+      it_behaves_like 'sets AGENT_PLATFORM_FEATURE_SETTING_NAME'
+    end
+
+    context 'when instance level model selection exists' do
+      let(:expected_feature_setting_name) { 'duo_agent_platform' }
+
+      let_it_be(:duo_agent_platform_feature_setting) do
+        create(:instance_model_selection_feature_setting, feature: :duo_agent_platform)
+      end
+
+      it_behaves_like 'sets AGENT_PLATFORM_FEATURE_SETTING_NAME'
+    end
+
+    context 'when namespace level model selection exists', :saas do
+      let(:expected_feature_setting_name) { 'duo_agent_platform' }
+
+      let_it_be(:duo_agent_platform_feature_setting) do
+        create(:ai_namespace_feature_setting,
+          namespace: project.namespace,
+          feature: :duo_agent_platform,
+          offered_model_ref: "claude_sonnet_3_7_20250219")
+      end
+
+      it_behaves_like 'sets AGENT_PLATFORM_FEATURE_SETTING_NAME'
+    end
+
+    context 'when feature setting is for review_merge_request', :saas do
+      let(:expected_feature_setting_name) { 'review_merge_request' }
+
+      let_it_be(:review_merge_request_feature_setting) do
+        create(:ai_namespace_feature_setting,
+          namespace: project.namespace,
+          feature: :review_merge_request,
+          offered_model_ref: "claude_sonnet_3_7")
+      end
+
+      let(:duo_agent_platform_feature_setting) { review_merge_request_feature_setting }
+
+      it_behaves_like 'sets AGENT_PLATFORM_FEATURE_SETTING_NAME'
+    end
+
+    context 'when no feature setting exists' do
+      let(:expected_feature_setting_name) { '' }
+
+      it_behaves_like 'sets AGENT_PLATFORM_FEATURE_SETTING_NAME'
+    end
+  end
+
   shared_examples 'sets DUO_WORKFLOW_SERVICE_SERVER' do
     it 'sets the correct service server URL' do
       expect(Ci::Workloads::RunWorkloadService)
