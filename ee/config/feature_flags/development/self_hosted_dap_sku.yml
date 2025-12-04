@@ -1,0 +1,9 @@
+---
+name: self_hosted_dap_sku
+feature_issue_url: https://gitlab.com/groups/gitlab-org/-/epics/20079
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/214790
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/work_items/582204
+milestone: '18.7'
+group: group::custom models
+type: development
+default_enabled: false
