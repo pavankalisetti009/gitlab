@@ -1,4 +1,4 @@
-import { GlKeysetPagination, GlSprintf } from '@gitlab/ui';
+import { GlButton, GlKeysetPagination, GlSprintf } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
 import AiCatalogListItem from 'ee/ai/catalog/components/ai_catalog_list_item.vue';
@@ -26,6 +26,8 @@ describe('AiCatalogList', () => {
         disableConfirmTitle: mockDisableTitle,
         disableConfirmMessage: mockDisableMessage,
         disableFn: mockDisableFn,
+        emptyStateTitle: 'Custom Title',
+        emptyStateDescription: 'Custom Description',
         ...props,
       },
       slots,
@@ -40,6 +42,7 @@ describe('AiCatalogList', () => {
   const findListItems = () => wrapper.findAllComponents(AiCatalogListItem);
   const findConfirmModal = () => wrapper.findComponent(ConfirmActionModal);
   const findPaginator = () => wrapper.findComponent(GlKeysetPagination);
+  const findEmptyStateButton = () => wrapper.findComponent(GlButton);
 
   describe('component rendering', () => {
     beforeEach(() => {
@@ -128,26 +131,30 @@ describe('AiCatalogList', () => {
         expect(listItems).toHaveLength(0);
       });
 
-      it('renders default empty state with correct props', () => {
-        expect(findEmptyState().props()).toMatchObject({
-          title: 'Get started with the AI Catalog',
-          description: 'Build agents and flows to automate tasks and solve complex problems.',
-        });
-      });
-
-      it('renders default empty state with search prop', () => {
+      it('renders custom empty state with provided props', () => {
         createComponent({
-          props: { items: [], search: '' },
+          props: {
+            items: [],
+          },
         });
 
         expect(findEmptyState().props()).toMatchObject({
-          title: 'Get started with the AI Catalog',
-          description: 'Build agents and flows to automate tasks and solve complex problems.',
-          search: '',
+          title: 'Custom Title',
+          description: 'Custom Description',
         });
       });
 
-      it('renders custom empty state', () => {
+      it('renders empty state with search prop', () => {
+        createComponent({
+          props: { items: [], search: 'test search' },
+        });
+
+        expect(findEmptyState().props()).toMatchObject({
+          search: 'test search',
+        });
+      });
+
+      it('renders custom empty state slot', () => {
         createComponent({
           props: { items: [] },
           slots: {
@@ -157,6 +164,36 @@ describe('AiCatalogList', () => {
 
         expect(wrapper.findByTestId('custom-empty-state').exists()).toBe(true);
         expect(findEmptyState().exists()).toBe(false);
+      });
+
+      it('renders empty state with button when emptyStateButtonHref is provided', () => {
+        createComponent({
+          props: {
+            items: [],
+            emptyStateTitle: 'No items',
+            emptyStateDescription: 'Get started',
+            emptyStateButtonHref: '/explore',
+            emptyStateButtonText: 'Explore',
+          },
+        });
+
+        const button = findEmptyStateButton();
+        expect(button.exists()).toBe(true);
+        expect(button.props('variant')).toBe('confirm');
+        expect(button.attributes('href')).toBe('/explore');
+        expect(button.text()).toBe('Explore');
+      });
+
+      it('does not render button when emptyStateButtonHref is not provided', () => {
+        createComponent({
+          props: {
+            items: [],
+            emptyStateTitle: 'No items',
+            emptyStateDescription: 'Get started',
+          },
+        });
+
+        expect(findEmptyStateButton().exists()).toBe(false);
       });
     });
   });

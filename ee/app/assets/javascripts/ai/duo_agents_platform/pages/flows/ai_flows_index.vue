@@ -1,14 +1,14 @@
 <script>
 import EMPTY_SVG_URL from '@gitlab/svgs/dist/illustrations/empty-state/empty-ai-catalog-md.svg?url';
 import { GlButton, GlModalDirective, GlTabs, GlTab } from '@gitlab/ui';
+import { fetchPolicies } from '~/lib/graphql';
 import { __, s__, sprintf } from '~/locale';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
-import ResourceListsEmptyState from '~/vue_shared/components/resource_lists/empty_state.vue';
 import AiCatalogListHeader from 'ee/ai/catalog/components/ai_catalog_list_header.vue';
-import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
+import AiCatalogListWrapper from 'ee/ai/catalog/components/ai_catalog_list_wrapper.vue';
 import aiCatalogConfiguredItemsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_configured_items.query.graphql';
 import aiCatalogGroupUserPermissionsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_group_user_permissions.query.graphql';
 import aiCatalogProjectUserPermissionsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_project_user_permissions.query.graphql';
@@ -41,9 +41,8 @@ export default {
     GlTabs,
     GlTab,
     ErrorsAlert,
-    ResourceListsEmptyState,
     AiCatalogListHeader,
-    AiCatalogList,
+    AiCatalogListWrapper,
     AddProjectItemConsumerModal,
     AiCatalogConfiguredItemsWrapper,
   },
@@ -75,9 +74,12 @@ export default {
         return {
           projectPath: this.projectPath,
           itemTypes: this.itemTypes,
+          search: this.searchTerm,
           ...this.paginationVariables,
         };
       },
+      // fetchPolicy needed to refresh items after creating an item
+      fetchPolicy: fetchPolicies.CACHE_AND_NETWORK,
       update: (data) => data?.project?.aiCatalogItems?.nodes || [],
       result({ data }) {
         this.pageInfo = data?.project?.aiCatalogItems?.pageInfo || {};
@@ -126,6 +128,7 @@ export default {
         last: null,
       },
       selectedTabIndex: 0,
+      searchTerm: '',
     };
   },
   computed: {
@@ -277,6 +280,12 @@ export default {
         last: PAGE_SIZE,
       };
     },
+    handleSearch(filters) {
+      [this.searchTerm] = filters;
+    },
+    handleClearSearch() {
+      this.searchTerm = '';
+    },
     handleError({ title, errors }) {
       this.errorTitle = title;
       this.errors = errors;
@@ -332,31 +341,23 @@ export default {
         />
       </gl-tab>
       <gl-tab :title="s__('AICatalog|Managed')" lazy @click="resetPagination">
-        <ai-catalog-list
+        <ai-catalog-list-wrapper
           :is-loading="isLoading"
           :items="aiFlows"
           :item-type-config="itemTypeConfig"
+          :page-info="pageInfo"
+          :empty-state-title="emptyStateTitle"
+          :empty-state-description="emptyStateDescription"
+          :empty-state-button-href="exploreHref"
+          :empty-state-button-text="emptyStateButtonText"
           :disable-confirm-title="disableConfirmTitle"
           :disable-confirm-message="disableConfirmMessage"
-          :page-info="pageInfo"
           data-testid="managed-flows-list"
           @next-page="handleNextPage"
           @prev-page="handlePrevPage"
-        >
-          <template #empty-state>
-            <resource-lists-empty-state
-              :title="emptyStateTitle"
-              :description="emptyStateDescription"
-              :svg-path="$options.EMPTY_SVG_URL"
-            >
-              <template #actions>
-                <gl-button variant="confirm" :href="exploreHref">
-                  {{ emptyStateButtonText }}
-                </gl-button>
-              </template>
-            </resource-lists-empty-state>
-          </template>
-        </ai-catalog-list>
+          @search="handleSearch"
+          @clear-search="handleClearSearch"
+        />
       </gl-tab>
     </gl-tabs>
     <ai-catalog-configured-items-wrapper

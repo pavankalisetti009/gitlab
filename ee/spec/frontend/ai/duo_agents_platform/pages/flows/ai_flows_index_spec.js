@@ -90,7 +90,7 @@ describe('AiFlowsIndex', () => {
   const findErrorsAlert = () => wrapper.findComponent(ErrorsAlert);
   const findConfiguredItemsWrapper = () => wrapper.findComponent(AiCatalogConfiguredItemsWrapper);
   const findAddProjectItemConsumerModal = () => wrapper.findComponent(AddProjectItemConsumerModal);
-  const findAiCatalogList = () => wrapper.findByTestId('managed-flows-list');
+  const findAiCatalogListWrapper = () => wrapper.findByTestId('managed-flows-list');
   const findEmptyState = () => wrapper.findComponent(ResourceListsEmptyState);
   const findTabs = () => wrapper.findComponent(GlTabs);
 
@@ -121,7 +121,7 @@ describe('AiFlowsIndex', () => {
     });
 
     it('renders AiCatalogList component', async () => {
-      const catalogList = findAiCatalogList();
+      const catalogList = findAiCatalogListWrapper();
 
       expect(catalogList.props('isLoading')).toBe(true);
 
@@ -136,6 +136,7 @@ describe('AiFlowsIndex', () => {
         projectPath: mockProjectPath,
         itemTypes: ['FLOW', 'THIRD_PARTY_FLOW'],
         allAvailable: false,
+        search: '',
         after: null,
         before: null,
         first: 20,
@@ -149,15 +150,16 @@ describe('AiFlowsIndex', () => {
       });
 
       it('passes pageInfo to list component', () => {
-        expect(findAiCatalogList().props('pageInfo')).toMatchObject(mockPageInfo);
+        expect(findAiCatalogListWrapper().props('pageInfo')).toMatchObject(mockPageInfo);
       });
 
       it('refetches query with correct variables when paging backward', async () => {
-        findAiCatalogList().vm.$emit('prev-page');
+        findAiCatalogListWrapper().vm.$emit('prev-page');
         await nextTick();
         expect(mockProjectFlowsQueryHandler).toHaveBeenCalledWith({
           projectPath: mockProjectPath,
           itemTypes: ['FLOW', 'THIRD_PARTY_FLOW'],
+          search: '',
           allAvailable: false,
           after: null,
           before: 'eyJpZCI6IjUxIn0',
@@ -167,11 +169,12 @@ describe('AiFlowsIndex', () => {
       });
 
       it('refetches query with correct variables when paging forward', async () => {
-        findAiCatalogList().vm.$emit('next-page');
+        findAiCatalogListWrapper().vm.$emit('next-page');
         await nextTick();
         expect(mockProjectFlowsQueryHandler).toHaveBeenCalledWith({
           projectPath: mockProjectPath,
           itemTypes: ['FLOW', 'THIRD_PARTY_FLOW'],
+          search: '',
           allAvailable: false,
           after: 'eyJpZCI6IjM1In0',
           before: null,
@@ -181,7 +184,50 @@ describe('AiFlowsIndex', () => {
       });
     });
 
-    describe('when there are no agents', () => {
+    describe('search functionality', () => {
+      beforeEach(async () => {
+        await waitForPromises();
+      });
+
+      it('refetches query with search term when search is submitted', async () => {
+        findAiCatalogListWrapper().vm.$emit('search', ['test flow']);
+        await nextTick();
+
+        expect(mockProjectFlowsQueryHandler).toHaveBeenCalledWith({
+          projectPath: mockProjectPath,
+          itemTypes: ['FLOW', 'THIRD_PARTY_FLOW'],
+          allAvailable: false,
+          search: 'test flow',
+          after: null,
+          before: null,
+          first: 20,
+          last: null,
+        });
+      });
+
+      it('clears search term when clear-search is emitted', async () => {
+        // First set a search term
+        findAiCatalogListWrapper().vm.$emit('search', ['test flow']);
+        await nextTick();
+
+        // Then clear it
+        findAiCatalogListWrapper().vm.$emit('clear-search');
+        await nextTick();
+
+        expect(mockProjectFlowsQueryHandler).toHaveBeenLastCalledWith({
+          projectPath: mockProjectPath,
+          itemTypes: ['FLOW', 'THIRD_PARTY_FLOW'],
+          allAvailable: false,
+          search: '',
+          after: null,
+          before: null,
+          first: 20,
+          last: null,
+        });
+      });
+    });
+
+    describe('when there are no flows', () => {
       beforeEach(async () => {
         mockProjectFlowsQueryHandler.mockResolvedValueOnce(mockProjectItemsEmptyResponse);
 

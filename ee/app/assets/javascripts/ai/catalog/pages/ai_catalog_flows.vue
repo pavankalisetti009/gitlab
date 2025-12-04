@@ -1,16 +1,14 @@
 <script>
-import { GlFilteredSearch } from '@gitlab/ui';
 import { fetchPolicies } from '~/lib/graphql';
 import {
   VISIBILITY_LEVEL_PUBLIC_STRING,
   VISIBILITY_LEVEL_PRIVATE_STRING,
 } from '~/visibility_level/constants';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
-import { FILTERED_SEARCH_TERM } from '~/vue_shared/components/filtered_search_bar/constants';
 import { InternalEvents } from '~/tracking';
 import aiCatalogFlowsQuery from '../graphql/queries/ai_catalog_flows.query.graphql';
 import AiCatalogListHeader from '../components/ai_catalog_list_header.vue';
-import AiCatalogList from '../components/ai_catalog_list.vue';
+import AiCatalogListWrapper from '../components/ai_catalog_list_wrapper.vue';
 import { AI_CATALOG_FLOWS_SHOW_ROUTE } from '../router/constants';
 import {
   FLOW_VISIBILITY_LEVEL_DESCRIPTIONS,
@@ -23,9 +21,8 @@ import { createAvailableFlowItemTypes } from '../utils';
 export default {
   name: 'AiCatalogFlows',
   components: {
-    AiCatalogList,
+    AiCatalogListWrapper,
     AiCatalogListHeader,
-    GlFilteredSearch,
   },
   mixins: [glFeatureFlagsMixin(), InternalEvents.mixin()],
   apollo: {
@@ -79,14 +76,6 @@ export default {
         },
       };
     },
-    filteredSearchValue() {
-      return [
-        {
-          type: FILTERED_SEARCH_TERM,
-          value: { data: this.searchTerm },
-        },
-      ];
-    },
   },
   mounted() {
     this.trackEvent(TRACK_EVENT_VIEW_AI_CATALOG_ITEM_INDEX, {
@@ -126,22 +115,15 @@ export default {
   <div>
     <ai-catalog-list-header />
 
-    <div class="gl-border-b gl-bg-subtle gl-p-5">
-      <gl-filtered-search
-        :value="filteredSearchValue"
-        @submit="handleSearch"
-        @clear="handleClearSearch"
-      />
-    </div>
-
-    <ai-catalog-list
+    <ai-catalog-list-wrapper
       :is-loading="isLoading"
       :items="aiCatalogFlows"
       :item-type-config="itemTypeConfig"
       :page-info="pageInfo"
-      :search="searchTerm"
       @next-page="handleNextPage"
       @prev-page="handlePrevPage"
+      @search="handleSearch"
+      @clear-search="handleClearSearch"
     />
   </div>
 </template>
