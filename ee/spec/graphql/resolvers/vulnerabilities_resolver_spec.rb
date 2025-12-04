@@ -55,6 +55,7 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
           records.first.finding.scanner
           records.first.finding.identifiers
           records.first.vulnerability_read
+          records.first.dismissed_by
         end.not_to exceed_query_limit(0)
       end
     end
