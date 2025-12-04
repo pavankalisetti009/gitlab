@@ -3,7 +3,7 @@
 module Ai
   module DuoWorkflows
     class McpConfigService
-      GITLAB_PREAPPROVED_TOOLS = %w[get_issue gitlab_search].freeze
+      GITLAB_PREAPPROVED_TOOLS = %w[gitlab_search].freeze
       GITLAB_TOOLS_REQUIRING_APPROVAL = ['semantic_code_search'].freeze
       GITLAB_ENABLED_TOOLS = (GITLAB_PREAPPROVED_TOOLS + GITLAB_TOOLS_REQUIRING_APPROVAL).freeze
 
