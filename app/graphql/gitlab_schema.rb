@@ -14,6 +14,7 @@ class GitlabSchema < GraphQL::Schema
   trace_with Gitlab::Graphql::Tracers::InstrumentationTracer
   trace_with Gitlab::Graphql::VersionFilter::IntroducedTracer
 
+  use GraphQL::Schema::Visibility
   use Gitlab::Graphql::Subscriptions::ActionCableWithLoadBalancing
   use BatchLoader::GraphQL
   use Gitlab::Graphql::Pagination::Connections
