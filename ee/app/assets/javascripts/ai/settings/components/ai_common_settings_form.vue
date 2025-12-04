@@ -67,6 +67,10 @@ export default {
       type: Boolean,
       required: true,
     },
+    foundationalAgentsStatuses: {
+      type: Array,
+      required: true,
+    },
     hasParentFormChanged: {
       type: Boolean,
       required: false,
@@ -83,6 +87,8 @@ export default {
       cacheEnabled: this.promptCacheEnabled,
       foundationalFlowsEnabled: this.duoFoundationalFlowsAvailability,
       foundationalAgentsEnabledInput: this.foundationalAgentsEnabled,
+      foundationalAgentsStatusesInput: this.foundationalAgentsStatuses,
+      hasFoundationalAgentsStatusesChanged: false,
     };
   },
   computed: {
@@ -123,7 +129,8 @@ export default {
         this.hasFlowFormChanged ||
         this.hasFoundationalFlowsFormChanged ||
         this.hasSastFpDetectionFormChanged ||
-        this.hasFoundationalAgentsEnabledChanged
+        this.hasFoundationalAgentsEnabledChanged ||
+        this.hasFoundationalAgentsStatusesChanged
       );
     },
     showWarning() {
@@ -181,6 +188,11 @@ export default {
       this.foundationalAgentsEnabledInput = value;
       this.$emit('duo-foundational-agents-changed', value);
     },
+    onFoundationalAgentsToggled(agentStatuses) {
+      this.foundationalAgentsStatusesInput = agentStatuses;
+      this.hasFoundationalAgentsStatusesChanged = true;
+      this.$emit('duo-foundational-agents-statuses-change', agentStatuses);
+    },
   },
 };
 </script>
@@ -211,6 +223,14 @@ export default {
       @change-foundational-flows="onFoundationalFlowsCheckboxChanged"
     />
 
+    <duo-foundational-agents-settings
+      v-if="showFoundationalAgentsAvailability"
+      :enabled="foundationalAgentsEnabledInput"
+      :agent-statuses="foundationalAgentsStatusesInput"
+      @change="onFoundationalAgentsEnabledChanged"
+      @agent-toggle="onFoundationalAgentsToggled"
+    />
+
     <duo-sast-fp-detection-settings
       v-if="glFeatures.aiExperimentSastFpDetection"
       :duo-sast-fp-detection-availability="duoSastFpDetectionAvailability"
@@ -222,12 +242,6 @@ export default {
       :prompt-cache-enabled="cacheEnabled"
       :disabled-checkbox="disableConfigCheckboxes"
       @change="onCacheCheckboxChanged"
-    />
-
-    <duo-foundational-agents-settings
-      v-if="showFoundationalAgentsAvailability"
-      :enabled="foundationalAgentsEnabledInput"
-      @change="onFoundationalAgentsEnabledChanged"
     />
 
     <slot name="ai-common-settings-bottom"></slot>

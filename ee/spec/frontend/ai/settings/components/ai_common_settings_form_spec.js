@@ -10,6 +10,7 @@ import DuoFlowSettings from 'ee/ai/settings/components/duo_flow_settings.vue';
 import DuoSastFpDetectionSettings from 'ee/ai/settings/components/duo_sast_fp_detection_settings.vue';
 import DuoFoundationalAgentsSettings from 'ee/ai/settings/components/duo_foundational_agents_settings.vue';
 import { AVAILABILITY_OPTIONS } from 'ee/ai/settings/constants';
+import { mockAgentStatuses } from '../../mocks';
 
 describe('AiCommonSettingsForm', () => {
   let wrapper;
@@ -26,6 +27,7 @@ describe('AiCommonSettingsForm', () => {
         promptCacheEnabled: false,
         hasParentFormChanged: false,
         foundationalAgentsEnabled: false,
+        foundationalAgentsStatuses: mockAgentStatuses,
         ...props,
       },
       provide: {
@@ -94,11 +96,13 @@ describe('AiCommonSettingsForm', () => {
             duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_ON,
             duoCoreFeaturesEnabled: true,
             duoRemoteFlowsAvailability: false,
+            duoFoundationalFlowsAvailability: false,
             duoSastFpDetectionAvailability: false,
             experimentFeaturesEnabled: true,
             promptCacheEnabled: false,
             hasParentFormChanged: false,
             foundationalAgentsEnabled: false,
+            foundationalAgentsStatuses: mockAgentStatuses,
             ...props,
           },
           provide: {
@@ -258,11 +262,13 @@ describe('AiCommonSettingsForm', () => {
           duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_ON,
           duoCoreFeaturesEnabled: true,
           duoRemoteFlowsAvailability: false,
+          duoFoundationalFlowsAvailability: false,
           duoSastFpDetectionAvailability: false,
           experimentFeaturesEnabled: true,
           promptCacheEnabled: false,
           hasParentFormChanged: false,
           foundationalAgentsEnabled: false,
+          foundationalAgentsStatuses: mockAgentStatuses,
         },
         provide: {
           onGeneralSettingsPage: false,
@@ -386,6 +392,12 @@ describe('AiCommonSettingsForm', () => {
         expect(findDuoFoundationalAgentsSettings().props('enabled')).toEqual(false);
       });
 
+      it('passes foundationalAgentsStatuses to the component', () => {
+        expect(findDuoFoundationalAgentsSettings().props('agentStatuses')).toEqual(
+          mockAgentStatuses,
+        );
+      });
+
       it('emits duo-foundational-agents-changed event when DuoFoundationalAgentsSettings emits change', async () => {
         findDuoFoundationalAgentsSettings().vm.$emit('change', true);
         await nextTick();
@@ -410,6 +422,32 @@ describe('AiCommonSettingsForm', () => {
         await nextTick();
 
         expect(findSaveButton().props('disabled')).toBe(true);
+      });
+
+      describe('for per agent settings', () => {
+        const updatedStatuses = [
+          { reference: 'security-analyst', name: 'Security Analyst', enabled: false },
+          { reference: 'code-reviewer', name: 'Code Reviewer', enabled: false },
+        ];
+
+        it('emits duo-foundational-agents-statuses-change event when agent is toggled', async () => {
+          findDuoFoundationalAgentsSettings().vm.$emit('agent-toggle', updatedStatuses);
+          await nextTick();
+
+          expect(wrapper.emitted('duo-foundational-agents-statuses-change')).toHaveLength(1);
+          expect(wrapper.emitted('duo-foundational-agents-statuses-change')[0]).toEqual([
+            updatedStatuses,
+          ]);
+        });
+
+        it('enables save button when agent statuses change', async () => {
+          expect(findSaveButton().props('disabled')).toBe(true);
+
+          findDuoFoundationalAgentsSettings().vm.$emit('agent-toggle', updatedStatuses);
+          await nextTick();
+
+          expect(findSaveButton().props('disabled')).toBe(false);
+        });
       });
     });
   });

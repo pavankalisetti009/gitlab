@@ -8,6 +8,7 @@ import AiGroupSettings from 'ee/ai/settings/pages/ai_group_settings.vue';
 import DuoWorkflowSettingsForm from 'ee/ai/settings/components/duo_workflow_settings_form.vue';
 import waitForPromises from 'helpers/wait_for_promises';
 import { AVAILABILITY_OPTIONS } from 'ee/ai/settings/constants';
+import { mockAgentStatuses, expectedFilteredAgentStatuses } from '../../mocks';
 
 jest.mock('ee/api/groups_api');
 jest.mock('~/lib/utils/url_utility');
@@ -130,9 +131,11 @@ describe('AiGroupSettings', () => {
         experimentFeaturesEnabled: true,
         duoCoreFeaturesEnabled: true,
         promptCacheEnabled: true,
+        duoSastFpDetectionAvailability: false,
         duoRemoteFlowsAvailability: false,
         duoFoundationalFlowsAvailability: false,
         foundationalAgentsEnabled: true,
+        foundationalAgentsStatuses: mockAgentStatuses,
       });
       expect(updateGroupSettings).toHaveBeenCalledTimes(1);
       expect(updateGroupSettings).toHaveBeenCalledWith('100', {
@@ -142,6 +145,8 @@ describe('AiGroupSettings', () => {
         model_prompt_cache_enabled: true,
         duo_remote_flows_availability: false,
         duo_foundational_flows_availability: false,
+        duo_sast_fp_detection_availability: false,
+        foundational_agents_statuses: expectedFilteredAgentStatuses,
         ai_settings_attributes: {
           duo_workflow_mcp_enabled: false,
           foundational_agents_default_enabled: true,

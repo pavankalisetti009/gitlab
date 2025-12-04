@@ -19,6 +19,7 @@ import { AVAILABILITY_OPTIONS } from 'ee/ai/settings/constants';
 import updateAiSettingsMutation from 'ee/ai/graphql/update_ai_settings.mutation.graphql';
 import DuoExpandedLoggingForm from 'ee/ai/settings/components/duo_expanded_logging_form.vue';
 import DuoChatHistoryExpirationForm from 'ee/ai/settings/components/duo_chat_history_expiration.vue';
+import { mockAgentStatuses, expectedFilteredAgentStatuses } from '../../mocks';
 
 jest.mock('~/rest_api');
 jest.mock('~/lib/utils/url_utility');
@@ -118,7 +119,14 @@ describe('AiAdminSettings', () => {
         foundationalAgentsEnabled: true,
         duoRemoteFlowsAvailability: false,
         duoFoundationalFlowsAvailability: false,
+        foundationalAgentsStatuses: mockAgentStatuses,
       });
+
+      const transformedFilteredAgentStatuses = expectedFilteredAgentStatuses.map((agent) => ({
+        reference: agent.reference,
+        enabled: agent.enabled,
+      }));
+
       expect(updateApplicationSettings).toHaveBeenCalledTimes(1);
       expect(updateApplicationSettings).toHaveBeenCalledWith({
         duo_availability: AVAILABILITY_OPTIONS.DEFAULT_OFF,
@@ -131,6 +139,7 @@ describe('AiAdminSettings', () => {
         duo_chat_expiration_days: 30,
         duo_chat_expiration_column: 'last_updated_at',
         foundational_agents_default_enabled: true,
+        foundational_agents_statuses: transformedFilteredAgentStatuses,
       });
     });
 

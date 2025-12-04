@@ -5,6 +5,7 @@ import AiCommonSettingsForm from 'ee/ai/settings/components/ai_common_settings_f
 import SettingsBlock from '~/vue_shared/components/settings/settings_block.vue';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { AVAILABILITY_OPTIONS } from 'ee/ai/settings/constants';
+import { mockAgentStatuses } from '../../mocks';
 
 describe('AiCommonSettings', () => {
   let wrapper;
@@ -22,6 +23,7 @@ describe('AiCommonSettings', () => {
         initialDuoRemoteFlowsAvailability: false,
         initialDuoSastFpDetectionAvailability: false,
         foundationalAgentsDefaultEnabled: true,
+        initialFoundationalAgentsStatuses: mockAgentStatuses,
         initialDuoFoundationalFlowsAvailability: false,
         onGeneralSettingsPage: false,
         glFeatures: {
@@ -90,6 +92,7 @@ describe('AiCommonSettings', () => {
       duoFoundationalFlowsAvailability: true,
       duoSastFpDetectionAvailability: false,
       foundationalAgentsEnabled: true,
+      foundationalAgentsStatuses: mockAgentStatuses,
     });
   });
 
@@ -150,12 +153,32 @@ describe('AiCommonSettings', () => {
       expect(findForm().props('foundationalAgentsEnabled')).toEqual(true);
     });
 
-    it('includes foundational agents in submit event', async () => {
+    it('includes foundational agents enabled in submit event', async () => {
       await findForm().vm.$emit('duo-foundational-agents-changed', false);
       findForm().vm.$emit('submit', { preventDefault: jest.fn() });
 
       const [[{ foundationalAgentsEnabled }]] = wrapper.emitted('submit');
       expect(foundationalAgentsEnabled).toEqual(false);
+    });
+
+    describe('per agent settings', () => {
+      it('passes foundational-agents-statuses to the form', () => {
+        expect(findForm().props('foundationalAgentsStatuses')).toEqual(mockAgentStatuses);
+      });
+
+      it('includes foundational agents statuses in submit event', async () => {
+        const updatedStatuses = [
+          { reference: 'security-analyst', name: 'Security Analyst', enabled: false },
+          { reference: 'code-reviewer', name: 'Code Reviewer', enabled: true },
+          { reference: 'test-agent', name: 'Test Agent', enabled: null },
+        ];
+
+        await findForm().vm.$emit('duo-foundational-agents-statuses-change', updatedStatuses);
+        findForm().vm.$emit('submit', { preventDefault: jest.fn() });
+
+        const [[{ foundationalAgentsStatuses }]] = wrapper.emitted('submit');
+        expect(foundationalAgentsStatuses).toEqual(updatedStatuses);
+      });
     });
   });
 });

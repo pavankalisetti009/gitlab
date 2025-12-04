@@ -1,43 +1,163 @@
 <script>
-import { GlLink, GlSprintf, GlFormRadioGroup, GlFormRadio, GlFormGroup } from '@gitlab/ui';
+import {
+  GlLink,
+  GlSprintf,
+  GlFormRadioGroup,
+  GlFormRadio,
+  GlFormGroup,
+  GlTableLite,
+  GlCollapsibleListbox,
+} from '@gitlab/ui';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { s__ } from '~/locale';
 
+export const FOUNDATIONAL_AGENTS_AVAILABILITY_VALUES = {
+  enabled: 'enabled',
+  disabled: 'disabled',
+  default: 'use_default',
+};
+
 export default {
   name: 'FoundationalAgentsSettings',
-  i18n: {
-    sectionTitle: s__('FoundationalAgents|Foundational agents'),
-    sectionDescription: s__(
-      'FoundationalAgents|Control availability of %{linkStart}GitLab Duo Foundational agents%{linkEnd}',
-    ),
-    onByDefaultLabel: s__('FoundationalAgents|On by default'),
-    onByDefaultHelpText: s__(
-      'FoundationalAgents|New foundational agents are automatically enabled for projects in this group.',
-    ),
-    offByDefaultLabel: s__('FoundationalAgents|Off by default'),
-    offByDefaultHelpText: s__('FoundationalAgents|Foundational agents are disabled by default.'),
-  },
+  tableHeaderFields: [
+    {
+      key: 'name',
+      label: s__('FoundationalAgents|Agent'),
+    },
+    {
+      key: 'availability',
+      id: 'agent-availability',
+      label: s__('FoundationalAgents|Availability'),
+      thClass: 'gl-w-1/2',
+      tdClass: 'gl-w-1/2',
+    },
+  ],
   components: {
     GlFormRadioGroup,
     GlFormRadio,
     GlFormGroup,
     GlLink,
     GlSprintf,
+    GlTableLite,
+    GlCollapsibleListbox,
   },
+  inject: ['showFoundationalAgentsPerAgentAvailability'],
   props: {
     enabled: {
       type: Boolean,
       required: true,
     },
+    agentStatuses: {
+      type: Array,
+      required: true,
+    },
   },
+  emits: ['change', 'agent-toggle'],
   data() {
     return {
       enabledInput: this.enabled,
     };
   },
+  computed: {
+    showAgentsTable() {
+      return this.showFoundationalAgentsPerAgentAvailability && this.agentStatuses.length;
+    },
+    sectionTitle() {
+      if (this.showFoundationalAgentsPerAgentAvailability) {
+        return s__('FoundationalAgents|Default Availability');
+      }
+
+      return s__('FoundationalAgents|Foundational agents');
+    },
+    description() {
+      if (this.showFoundationalAgentsPerAgentAvailability) {
+        return s__(
+          'FoundationalAgents|Applied to all foundational agents unless explicitly configured.',
+        );
+      }
+
+      return s__(
+        'FoundationalAgents|Control availability of %{linkStart}GitLab Duo Foundational agents%{linkEnd}',
+      );
+    },
+    enabledLabel() {
+      if (this.showFoundationalAgentsPerAgentAvailability) return s__('FoundationalAgents|Enabled');
+
+      return s__('FoundationalAgents|On by default');
+    },
+    disabledLabel() {
+      if (this.showFoundationalAgentsPerAgentAvailability)
+        return s__('FoundationalAgents|Disabled');
+
+      return s__('FoundationalAgents|Off by default');
+    },
+    onByDefaultHelpText() {
+      if (!this.showFoundationalAgentsPerAgentAvailability)
+        return s__(
+          'FoundationalAgents|New foundational agents are automatically enabled for projects in this group.',
+        );
+
+      return '';
+    },
+    offByDefaultHelpText() {
+      if (!this.showFoundationalAgentsPerAgentAvailability) {
+        return s__('FoundationalAgents|Foundational agents are disabled by default.');
+      }
+      return '';
+    },
+    availabilityOptions() {
+      const defaultText = this.enabled
+        ? s__('FoundationalAgents|Enabled (using default)')
+        : s__('FoundationalAgents|Disabled (using default)');
+
+      return [
+        {
+          value: FOUNDATIONAL_AGENTS_AVAILABILITY_VALUES.enabled,
+          text: s__('FoundationalAgents|Enabled'),
+        },
+        {
+          value: FOUNDATIONAL_AGENTS_AVAILABILITY_VALUES.disabled,
+          text: s__('FoundationalAgents|Disabled'),
+        },
+        {
+          value: FOUNDATIONAL_AGENTS_AVAILABILITY_VALUES.default,
+          text: defaultText,
+        },
+      ];
+    },
+  },
   methods: {
+    getSelectedOption(value) {
+      if (value === null) return FOUNDATIONAL_AGENTS_AVAILABILITY_VALUES.default;
+
+      return value
+        ? FOUNDATIONAL_AGENTS_AVAILABILITY_VALUES.enabled
+        : FOUNDATIONAL_AGENTS_AVAILABILITY_VALUES.disabled;
+    },
+    getToggleText(value) {
+      const selectedValue = this.getSelectedOption(value);
+      const option = this.availabilityOptions.find((opt) => opt.value === selectedValue);
+      return option?.text || '';
+    },
     radioChanged(value) {
       this.$emit('change', value);
+    },
+    getEnabledValue(optionValue) {
+      switch (optionValue) {
+        case FOUNDATIONAL_AGENTS_AVAILABILITY_VALUES.enabled:
+          return true;
+        case FOUNDATIONAL_AGENTS_AVAILABILITY_VALUES.disabled:
+          return false;
+        default:
+          return null;
+      }
+    },
+    toggleAgent(reference, value) {
+      const agentStatuses = this.agentStatuses.map((agent) => ({
+        ...agent,
+        enabled: agent.reference === reference ? this.getEnabledValue(value) : agent.enabled,
+      }));
+      this.$emit('agent-toggle', agentStatuses);
     },
   },
   foundationalAgentsHelpPath: helpPagePath(
@@ -47,34 +167,78 @@ export default {
 </script>
 <template>
   <div>
-    <gl-form-group :label="$options.i18n.sectionTitle" class="gl-mt-4">
+    <template v-if="showFoundationalAgentsPerAgentAvailability">
+      <h3 class="gl-heading-3 gl-mb-2">{{ s__('FoundationalAgents|Foundational Agents') }}</h3>
+      <gl-sprintf
+        :message="
+          s__(
+            'FoundationalAgents| Managed by GitLab. When enabled here, these items will be enabled for every project. %{linkStart}Learn more%{linkEnd}.',
+          )
+        "
+      >
+        <template #link="{ content }">
+          <gl-link :href="$options.foundationalAgentsHelpPath">{{ content }}</gl-link>
+        </template>
+      </gl-sprintf>
+    </template>
+    <gl-form-group :label="sectionTitle" class="gl-mt-5">
       <template #label-description>
-        <gl-sprintf :message="$options.i18n.sectionDescription">
+        <gl-sprintf :message="description">
           <template #link="{ content }">
-            <gl-link :href="$options.foundationalAgentsHelpPath" target="_blank">{{
-              content
-            }}</gl-link>
+            <gl-link :href="$options.foundationalAgentsHelpPath">{{ content }}</gl-link>
           </template>
         </gl-sprintf>
       </template>
 
       <gl-form-radio-group v-model="enabledInput">
         <gl-form-radio :value="true" @change="radioChanged">
-          {{ $options.i18n.onByDefaultLabel }}
+          {{ enabledLabel }}
 
           <template #help>
-            {{ $options.i18n.onByDefaultHelpText }}
+            {{ onByDefaultHelpText }}
           </template>
         </gl-form-radio>
 
         <gl-form-radio :value="false" @change="radioChanged">
-          {{ $options.i18n.offByDefaultLabel }}
+          {{ disabledLabel }}
 
           <template #help>
-            {{ $options.i18n.offByDefaultHelpText }}
+            {{ offByDefaultHelpText }}
           </template>
         </gl-form-radio>
       </gl-form-radio-group>
+    </gl-form-group>
+    <gl-form-group
+      v-if="showAgentsTable"
+      :label="s__('FoundationalAgents|Availability Configuration')"
+      class="gl-mt-4"
+    >
+      <gl-table-lite
+        :fields="$options.tableHeaderFields"
+        :items="agentStatuses"
+        data-testid="foundational-agents-table"
+        class="gl-border gl-rounded-lg gl-border-section gl-bg-subtle"
+        thead-tr-class="gl-bg-section"
+        responsive
+        borderless
+      >
+        <template #cell(name)="{ item }">
+          <span class="@md/panel:gl-pt-3">{{ item.name }}</span>
+        </template>
+        <template #cell(availability)="{ item }">
+          <gl-collapsible-listbox
+            block
+            aria-labelledby="agent-availability"
+            category="primary"
+            class="gl-max-w-34"
+            :toggle-text="getToggleText(item.enabled)"
+            :selected="getSelectedOption(item.enabled)"
+            :items="availabilityOptions"
+            :data-testid="`agent-${item.reference}-dropdown`"
+            @select="toggleAgent(item.reference, $event)"
+          />
+        </template>
+      </gl-table-lite>
     </gl-form-group>
   </div>
 </template>

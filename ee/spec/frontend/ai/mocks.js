@@ -167,3 +167,15 @@ export const mockCreateFlowResponse = {
   mcp_enabled: true,
   gitlab_url: 'https://gitlab.com',
 };
+
+export const mockAgentStatuses = [
+  { reference: 'security-analyst', name: 'Security Analyst', enabled: true },
+  { reference: 'code-reviewer', name: 'Code Reviewer', enabled: false },
+  { reference: 'test-agent', name: 'Test Agent', enabled: null },
+];
+
+// agents with `enabled: null` are filtered out
+export const expectedFilteredAgentStatuses = [
+  { reference: 'security-analyst', name: 'Security Analyst', enabled: true },
+  { reference: 'code-reviewer', name: 'Code Reviewer', enabled: false },
+];

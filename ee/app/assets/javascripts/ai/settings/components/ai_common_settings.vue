@@ -33,6 +33,7 @@ export default {
     'initialDuoFoundationalFlowsAvailability',
     'initialDuoSastFpDetectionAvailability',
     'foundationalAgentsDefaultEnabled',
+    'initialFoundationalAgentsStatuses',
   ],
   props: {
     hasParentFormChanged: {
@@ -51,6 +52,7 @@ export default {
       duoFoundationalFlowsAvailability: this.initialDuoFoundationalFlowsAvailability,
       duoSastFpDetectionAvailability: this.initialDuoSastFpDetectionAvailability,
       foundationalAgentsEnabled: this.foundationalAgentsDefaultEnabled,
+      foundationalAgentsStatuses: this.initialFoundationalAgentsStatuses,
     };
   },
   methods: {
@@ -64,6 +66,7 @@ export default {
         duoFoundationalFlowsAvailability: this.duoFoundationalFlowsAvailability,
         duoSastFpDetectionAvailability: this.duoSastFpDetectionAvailability,
         foundationalAgentsEnabled: this.foundationalAgentsEnabled,
+        foundationalAgentsStatuses: this.foundationalAgentsStatuses,
       });
     },
     onRadioChanged(value) {
@@ -89,6 +92,9 @@ export default {
     },
     onDuoSastFpDetectionChanged(value) {
       this.duoSastFpDetectionAvailability = value;
+    },
+    onFoundationalAgentsStatusesChanged(agentStatuses) {
+      this.foundationalAgentsStatuses = agentStatuses;
     },
   },
   aiFeaturesHelpPath: helpPagePath('user/gitlab_duo/_index'),
@@ -123,6 +129,7 @@ export default {
             :prompt-cache-enabled="promptCacheEnabled"
             :has-parent-form-changed="hasParentFormChanged"
             :foundational-agents-enabled="foundationalAgentsDefaultEnabled"
+            :foundational-agents-statuses="foundationalAgentsStatuses"
             @submit="submitForm"
             @radio-changed="onRadioChanged"
             @experiment-checkbox-changed="experimentCheckboxChanged"
@@ -131,6 +138,7 @@ export default {
             @duo-flow-checkbox-changed="onDuoFlowChanged"
             @duo-sast-fp-detection-changed="onDuoSastFpDetectionChanged"
             @duo-foundational-agents-changed="onFoundationalAgentsEnabledChanged"
+            @duo-foundational-agents-statuses-change="onFoundationalAgentsStatusesChanged"
             @duo-foundational-flows-checkbox-changed="onDuoFoundationalFlowsChanged"
           >
             <template #ai-common-settings-top>
@@ -165,6 +173,7 @@ export default {
         :prompt-cache-enabled="promptCacheEnabled"
         :has-parent-form-changed="hasParentFormChanged"
         :foundational-agents-enabled="foundationalAgentsDefaultEnabled"
+        :foundational-agents-statuses="foundationalAgentsStatuses"
         @submit="submitForm"
         @radio-changed="onRadioChanged"
         @experiment-checkbox-changed="experimentCheckboxChanged"
@@ -174,6 +183,7 @@ export default {
         @duo-foundational-flows-checkbox-changed="onDuoFoundationalFlowsChanged"
         @duo-sast-fp-detection-changed="onDuoSastFpDetectionChanged"
         @duo-foundational-agents-changed="onFoundationalAgentsEnabledChanged"
+        @duo-foundational-agents-statuses-change="onFoundationalAgentsStatusesChanged"
       >
         <template #ai-common-settings-top>
           <slot name="ai-common-settings-top"></slot>
