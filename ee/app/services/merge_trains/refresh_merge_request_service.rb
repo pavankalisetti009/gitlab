@@ -20,10 +20,26 @@ module MergeTrains
       log_running_security_scans
 
       merge! if merge_train_car.merge_ready_pipeline?
-
       success(pipeline_created: pipeline_created.present?)
     rescue ProcessError => e
       abort(e)
+    rescue StandardError => e
+      if Feature.enabled?(:merge_train_rescue_standard_error, merge_request.project)
+        Gitlab::ErrorTracking.track_exception(
+          e,
+          merge_request_id: merge_request.id,
+          merge_request_iid: merge_request.iid,
+          project_id: merge_request.target_project_id
+        )
+
+        abort(
+          ProcessError.new(
+            "unexpected error occurred - correlation id: #{Labkit::Correlation::CorrelationId.current_or_new_id}"
+          )
+        )
+      else
+        raise e
+      end
     end
 
     private
