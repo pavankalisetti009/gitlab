@@ -373,33 +373,6 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
     it { is_expected.to contain_exactly(setting_1) }
   end
 
-  describe '#duo_default_on?' do
-    it 'returns true when duo_availability is "default_on"' do
-      setting.duo_availability = "default_on"
-
-      expect(setting.duo_default_on?).to be true
-    end
-
-    it 'returns false when not set to "default_on"' do
-      setting.duo_availability = "default_off"
-
-      expect(setting.duo_default_on?).to be false
-    end
-  end
-
-  describe '#duo_default_off?' do
-    it 'returns true when duo_availability is "default_off"' do
-      setting.duo_availability = "default_off"
-
-      expect(setting.duo_default_off?).to be true
-    end
-
-    it 'returns false when not set to "default_off"' do
-      setting.duo_availability = "default_on"
-      expect(setting.duo_default_off?).to be false
-    end
-  end
-
   describe '#prevent_forking_outside_group?' do
     context 'with feature available' do
       before do

@@ -129,9 +129,8 @@ RSpec.describe Namespaces::NamespaceSettingChangesAuditor, feature_category: :gr
         lock_model_prompt_cache_enabled model_prompt_cache_enabled lock_web_based_commit_signing_enabled
         web_based_commit_signing_enabled allow_enterprise_bypass_placeholder_confirmation enterprise_bypass_expires_at
         allow_personal_snippets lock_auto_duo_code_review_enabled auto_duo_code_review_enabled
-        lock_duo_remote_flows_enabled duo_remote_flows_enabled duo_agent_platform_request_count
-        lock_duo_foundational_flows_enabled duo_foundational_flows_enabled
-        lock_duo_sast_fp_detection_enabled duo_sast_fp_detection_enabled]
+        lock_duo_remote_flows_enabled duo_remote_flows_enabled lock_duo_foundational_flows_enabled
+        duo_foundational_flows_enabled lock_duo_sast_fp_detection_enabled duo_sast_fp_detection_enabled]
 
       columns_to_audit = Namespaces::NamespaceSettingChangesAuditor::EVENT_NAME_PER_COLUMN.keys.map(&:to_s)
 

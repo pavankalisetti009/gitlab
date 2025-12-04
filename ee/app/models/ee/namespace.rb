@@ -176,8 +176,6 @@ module EE
         :duo_foundational_flows_enabled, :lock_duo_foundational_flows_enabled,
         :duo_sast_fp_detection_enabled, :lock_duo_sast_fp_detection_enabled,
         to: :namespace_settings, allow_nil: true
-      delegate :duo_agent_platform_request_count, :duo_default_on?, :duo_default_off?,
-        :experiment_features_enabled?, to: :namespace_settings
       delegate :pipeline_execution_policies_per_configuration_limit,
         :pipeline_execution_policies_per_configuration_limit=, :scan_execution_policies_per_configuration_limit,
         :scan_execution_policies_per_configuration_limit=, :approval_policies_per_configuration_limit,

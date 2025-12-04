@@ -1,7 +1,9 @@
 ---
 description: Turn on Duo agent platform in the sidebar widget
 internal_events: true
-status: active
+status: removed
+milestone_removed: '18.7'
+removed_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/214108
 action: click_turn_on_duo_agent_platform_widget_confirm_modal_in_sidebar
 identifiers:
 - namespace

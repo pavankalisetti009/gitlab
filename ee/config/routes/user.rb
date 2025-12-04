@@ -7,9 +7,6 @@ end
 
 scope '-/users', module: :users do
   resources :targeted_message_dismissals, only: [:create]
-  resources :group_callouts, only: [] do
-    post :request_duo_agent_platform, on: :collection
-  end
 end
 
 scope(constraints: { username: Gitlab::PathRegex.root_namespace_route_regex }) do
