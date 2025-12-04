@@ -409,6 +409,19 @@ RSpec.describe GitlabSubscriptions::MemberManagement::BlockSeatOverages, feature
         end
 
         it { is_expected.to be false }
+
+        context 'when user is already billable' do
+          let(:billable_user) { create(:user) }
+          let(:user_id) { billable_user.id }
+
+          before do
+            allow(User).to receive(:billable).and_return(User.where(id: billable_user.id))
+          end
+
+          it 'returns true for already-billable users' do
+            expect(seat_upgrade_allowed).to be true
+          end
+        end
       end
     end
   end
