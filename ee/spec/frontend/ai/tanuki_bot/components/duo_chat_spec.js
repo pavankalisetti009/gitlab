@@ -31,7 +31,6 @@ import { duoChatGlobalState } from '~/super_sidebar/constants';
 import getAiSlashCommands from 'ee/ai/graphql/get_ai_slash_commands.query.graphql';
 import getAiChatContextPresets from 'ee/ai/graphql/get_ai_chat_context_presets.query.graphql';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
-import { getCookie } from '~/lib/utils/common_utils';
 
 import {
   MOCK_USER_MESSAGE,
@@ -1136,7 +1135,9 @@ describe('chatTitle functionality', () => {
 
   it('passes chatTitle prop to DuoChat component', async () => {
     const chatTitle = 'Custom Chat Title';
-    createComponent({ propsData: { chatTitle } });
+    createComponent({
+      propsData: { userId: MOCK_USER_ID, resourceId: MOCK_RESOURCE_ID, chatTitle },
+    });
     await nextTick();
     expect(findDuoChat().props('title')).toBe(chatTitle);
   });
@@ -1213,56 +1214,47 @@ describe('Global state watchers', () => {
   });
 });
 
-describe('duoAgenticModePreference toggle', () => {
+describe('toggle position based on chatMode', () => {
+  const findGlToggle = () => wrapper.findComponent(GlToggle);
+
   beforeEach(() => {
     duoChatGlobalState.isShown = true;
     jest.clearAllMocks();
   });
 
-  describe('getter', () => {
-    it.each`
-      cookieValue | expected
-      ${'true'}   | ${true}
-      ${'false'}  | ${false}
-      ${null}     | ${false}
-      ${''}       | ${false}
-    `('returns $expected when cookie value is $cookieValue', ({ cookieValue, expected }) => {
-      getCookie.mockReturnValue(cookieValue);
-      createComponent();
-
-      expect(wrapper.vm.duoAgenticModePreference).toBe(expected);
-      expect(getCookie).toHaveBeenCalledWith('duo_agentic_mode_on');
+  it('shows toggle as checked when in agentic mode', () => {
+    duoChatGlobalState.chatMode = 'agentic';
+    createComponent({
+      propsData: {
+        userId: MOCK_USER_ID,
+        resourceId: MOCK_RESOURCE_ID,
+        agenticAvailable: true,
+      },
     });
+
+    expect(findGlToggle().props('value')).toBe(true);
   });
 
-  describe('setter', () => {
-    beforeEach(() => {
-      getCookie.mockReturnValue('false');
-      createComponent();
+  it('shows toggle as unchecked when in classic mode', () => {
+    duoChatGlobalState.chatMode = 'classic';
+    createComponent({
+      propsData: {
+        userId: MOCK_USER_ID,
+        resourceId: MOCK_RESOURCE_ID,
+        agenticAvailable: true,
+      },
     });
 
-    it.each`
-      value    | description
-      ${true}  | ${'true'}
-      ${false} | ${'false'}
-    `('calls setAgenticMode with $description and saveCookie=true', ({ value }) => {
-      wrapper.vm.duoAgenticModePreference = value;
-
-      expect(setAgenticMode).toHaveBeenCalledWith({
-        agenticMode: value,
-        saveCookie: true,
-        isEmbedded: false,
-      });
-    });
+    expect(findGlToggle().props('value')).toBe(false);
   });
 });
 
-describe('Agentic Mode Toggle', () => {
+describe('Agentic Mode Toggle (when agenticChatGa FF is disabled)', () => {
   const findGlToggle = () => wrapper.findComponent(GlToggle);
 
   beforeEach(() => {
     duoChatGlobalState.isShown = true;
-    getCookie.mockReturnValue('false');
+    duoChatGlobalState.chatMode = 'classic';
     createComponent({
       propsData: {
         userId: MOCK_USER_ID,
@@ -1272,32 +1264,9 @@ describe('Agentic Mode Toggle', () => {
     });
   });
 
-  it('renders the GlToggle component in subheader', () => {
+  it('renders the GlToggle component with "Agentic mode" label', () => {
     expect(findGlToggle().exists()).toBe(true);
     expect(findGlToggle().text()).toContain('Agentic mode');
-  });
-
-  it('passes correct props to GlToggle', () => {
-    const toggle = findGlToggle();
-
-    expect(toggle.props()).toMatchObject({
-      labelPosition: 'left',
-      value: false,
-    });
-  });
-
-  it('binds duoAgenticModePreference to v-model', async () => {
-    getCookie.mockReturnValue('true');
-    createComponent({
-      propsData: {
-        userId: MOCK_USER_ID,
-        resourceId: MOCK_RESOURCE_ID,
-        agenticAvailable: true,
-      },
-    });
-    await nextTick();
-
-    expect(findGlToggle().props('value')).toBe(true);
   });
 
   it('calls setAgenticMode when toggle value changes', async () => {
@@ -1313,36 +1282,64 @@ describe('Agentic Mode Toggle', () => {
     });
   });
 
-  it('updates the toggle value when duoAgenticModePreference changes', async () => {
-    getCookie.mockReturnValue('false');
+  describe('when Duo Chat is not shown', () => {
+    beforeEach(() => {
+      duoChatGlobalState.isShown = false;
+      createComponent();
+    });
+
+    it('does not render the GlToggle component', () => {
+      expect(findGlToggle().exists()).toBe(false);
+    });
+  });
+});
+
+describe('Chat (Classic) Toggle (when agenticChatGa FF is enabled)', () => {
+  const findGlToggle = () => wrapper.findComponent(GlToggle);
+
+  beforeEach(() => {
+    duoChatGlobalState.isShown = true;
+    duoChatGlobalState.chatMode = 'classic';
+    jest.clearAllMocks();
     createComponent({
       propsData: {
         userId: MOCK_USER_ID,
         resourceId: MOCK_RESOURCE_ID,
-        agenticAvailable: true, // Add this line
+        agenticAvailable: true,
+      },
+      glFeatures: {
+        agenticChatGa: true,
       },
     });
+  });
+
+  it('renders the GlToggle component with "Chat (Classic)" label', () => {
+    expect(findGlToggle().exists()).toBe(true);
+    expect(findGlToggle().text()).toContain('Chat (Classic)');
+  });
+
+  it('calls setAgenticMode with inverted value when toggle changes', async () => {
+    const toggle = findGlToggle();
+
+    // Turning OFF classic mode (value = false) should enable agentic mode (agenticMode = true)
+    toggle.vm.$emit('change', false);
     await nextTick();
 
-    expect(findGlToggle().props('value')).toBe(false);
-
-    getCookie.mockReturnValue('true');
-    createComponent({
-      propsData: {
-        userId: MOCK_USER_ID,
-        resourceId: MOCK_RESOURCE_ID,
-        agenticAvailable: true, // Add this line
-      },
+    expect(setAgenticMode).toHaveBeenCalledWith({
+      agenticMode: true,
+      saveCookie: true,
+      isEmbedded: false,
     });
-    await nextTick();
-
-    expect(findGlToggle().props('value')).toBe(true);
   });
 
   describe('when Duo Chat is not shown', () => {
     beforeEach(() => {
       duoChatGlobalState.isShown = false;
-      createComponent();
+      createComponent({
+        glFeatures: {
+          agenticChatGa: true,
+        },
+      });
     });
 
     it('does not render the GlToggle component', () => {

@@ -9,7 +9,6 @@ import getConfiguredAgents from 'ee/ai/graphql/get_configured_agents.query.graph
 import getFoundationalChatAgents from 'ee/ai/graphql/get_foundational_chat_agents.graphql';
 import getAgentFlowConfig from 'ee/ai/graphql/get_agent_flow_config.query.graphql';
 import { renderGFM } from '~/behaviors/markdown/render_gfm';
-import { getCookie } from '~/lib/utils/common_utils';
 import { getStorageValue, saveStorageValue } from '~/lib/utils/local_storage';
 import { duoChatGlobalState } from '~/super_sidebar/constants';
 import { clearDuoChatCommands, setAgenticMode } from 'ee/ai/utils';
@@ -38,7 +37,6 @@ import { logError } from '~/lib/logger';
 import { GITLAB_DEFAULT_MODEL } from 'ee/ai/model_selection/constants';
 import { s__ } from '~/locale';
 import { formatDefaultModelText } from 'ee/ai/shared/model_selection/utils';
-import { DUO_AGENTIC_MODE_COOKIE } from '../../tanuki_bot/constants';
 import { WorkflowUtils } from '../utils/workflow_utils';
 import { ApolloUtils } from '../utils/apollo_utils';
 import {
@@ -361,10 +359,26 @@ export default {
     },
     duoAgenticModePreference: {
       get() {
-        return getCookie(DUO_AGENTIC_MODE_COOKIE) === 'true';
+        return this.duoChatGlobalState.chatMode === 'agentic';
       },
       set(value) {
-        setAgenticMode({ agenticMode: value, saveCookie: true, isEmbedded: this.isEmbedded });
+        setAgenticMode({
+          agenticMode: value,
+          saveCookie: true,
+          isEmbedded: this.isEmbedded,
+        });
+      },
+    },
+    duoClassicModePreference: {
+      get() {
+        return this.duoChatGlobalState.chatMode === 'classic';
+      },
+      set(value) {
+        setAgenticMode({
+          agenticMode: !value,
+          saveCookie: true,
+          isEmbedded: this.isEmbedded,
+        });
       },
     },
     agents() {
@@ -465,6 +479,7 @@ export default {
       this.setDimensions();
       window.addEventListener('resize', this.onWindowResize);
     }
+
     this.switchMode(this.mode);
     this.loadDuoNextIfNeeded();
     if (this.workflowId) {
@@ -996,7 +1011,14 @@ export default {
           />
         </div>
       </template>
-      <template #agentic-switch>
+      <template v-if="glFeatures.agenticChatGa" #agentic-switch>
+        <gl-toggle v-model="duoClassicModePreference" label-position="left" class="gl-h-5">
+          <template #label>
+            <span class="gl-font-normal gl-text-subtle">{{ s__('DuoChat|Chat (Classic)') }}</span>
+          </template>
+        </gl-toggle>
+      </template>
+      <template v-else #agentic-switch>
         <gl-toggle v-model="duoAgenticModePreference" label-position="left" class="gl-h-5">
           <template #label>
             <span class="gl-font-normal gl-text-subtle">{{
