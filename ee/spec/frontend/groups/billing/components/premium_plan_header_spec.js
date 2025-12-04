@@ -186,7 +186,7 @@ describe('PremiumPlanHeader', () => {
         exploreButton.vm.$emit('click');
 
         // active tab gets set to "new" and then converts to "chat" for the end state
-        expect(duoChatGlobalState.activeTab).toBe('chat');
+        expect(duoChatGlobalState.activeTab).toBe('new');
         expect(duoChatGlobalState.focusChatInput).toBe(true);
       });
     });

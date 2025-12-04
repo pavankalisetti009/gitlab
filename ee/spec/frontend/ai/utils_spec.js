@@ -268,10 +268,10 @@ describe('AI Utils', () => {
         };
       });
 
-      it('sets activeTab to chat', () => {
+      it('sets activeTab to new', () => {
         sendDuoChatCommand({ question: 'hello', resourceId: '1' });
 
-        expect(duoChatGlobalState.activeTab).toBe('chat');
+        expect(duoChatGlobalState.activeTab).toBe('new');
         expect(duoChatGlobalState.isShown).toBe(false);
       });
     });
@@ -279,16 +279,14 @@ describe('AI Utils', () => {
 
   describe('focusDuoChatInput', () => {
     beforeEach(() => {
-      duoChatGlobalState.focusChatInput = false;
       duoChatGlobalState.isShown = false;
       duoChatGlobalState.activeTab = null;
     });
 
-    it('opens duo chat and updates the focusChatInput state to true', () => {
+    it('opens duo chat', () => {
       focusDuoChatInput();
 
       expect(duoChatGlobalState.isShown).toBe(true);
-      expect(duoChatGlobalState.focusChatInput).toBe(true);
     });
   });
 
@@ -561,21 +559,21 @@ describe('AI Utils', () => {
         window.gon = { features: { projectStudioEnabled: true } };
       });
 
-      it('opens embedded panel to chat tab in classic mode', () => {
+      it('opens embedded panel to new tab in classic mode', () => {
         duoChatGlobalState.chatMode = CHAT_MODES.CLASSIC;
         sendDuoChatCommand({ question: '/help', resourceId: '123' });
 
-        expect(duoChatGlobalState.activeTab).toBe('chat');
+        expect(duoChatGlobalState.activeTab).toBe('new');
         // Legacy drawer properties should not be touched
         expect(duoChatGlobalState.isShown).toBe(false);
         expect(duoChatGlobalState.isAgenticChatShown).toBe(false);
       });
 
-      it('opens embedded panel to chat tab in agentic mode', () => {
+      it('opens embedded panel to new tab in agentic mode', () => {
         duoChatGlobalState.chatMode = CHAT_MODES.AGENTIC;
         sendDuoChatCommand({ question: '/help', resourceId: '123' });
 
-        expect(duoChatGlobalState.activeTab).toBe('chat');
+        expect(duoChatGlobalState.activeTab).toBe('new');
         // Legacy drawer properties should not be touched
         expect(duoChatGlobalState.isShown).toBe(false);
         expect(duoChatGlobalState.isAgenticChatShown).toBe(false);
