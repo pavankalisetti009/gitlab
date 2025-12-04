@@ -56,18 +56,6 @@ RSpec.describe Search::Zoekt::LoadBalancer, :clean_gitlab_redis_cache, feature_c
         end
       end
     end
-
-    context 'when :zoekt_load_balancer FF is disabled' do
-      before do
-        stub_feature_flags(zoekt_load_balancer: false)
-      end
-
-      it 'calls #sample on nodes' do
-        expect(nodes).to receive(:sample).and_return(:node)
-
-        expect(balancer.pick).to eq(:node)
-      end
-    end
   end
 
   describe '#increase_load and #decrease_load' do
