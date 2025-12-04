@@ -32,7 +32,7 @@ module Types
             end
 
             define_method(:total_event_count) do
-              self.class.exposed_events(feature).sum { |event| object[self.class.count_field_name(event)] || 0 }
+              object[:total_events_count] || 0
             end
           end
         end

@@ -43,7 +43,7 @@ RSpec.describe 'aiUserMetrics', :freeze_time, feature_category: :value_stream_ma
     feature_event_keys = feature_events.map { |event| :"#{event}#{count_field_suffix}" }
 
     payload.transform_values do |user_metrics|
-      user_metrics.slice(*feature_event_keys)
+      user_metrics.slice(*feature_event_keys, :total_events_count)
     end
   end
 
@@ -63,7 +63,7 @@ RSpec.describe 'aiUserMetrics', :freeze_time, feature_category: :value_stream_ma
       let(:service_payload) { { current_user.id => event_counts } }
 
       it 'returns total event count' do
-        expected_total = event_counts.values.compact.sum
+        expected_total = event_counts[:total_events_count]
         expect(ai_user_metrics['nodes'].first['totalEventCount']).to eq(expected_total)
       end
 
@@ -95,10 +95,7 @@ RSpec.describe 'aiUserMetrics', :freeze_time, feature_category: :value_stream_ma
 
         Gitlab::Tracking::AiTracking.registered_features.each do |feature|
           feature_key = feature.to_s.camelize(:lower)
-          feature_events = exposed_events_for(feature)
-          expected_feature_total = feature_events.sum do |event|
-            event_counts[:"#{event}#{count_field_suffix}"] || 0
-          end
+          expected_feature_total = event_counts[:total_events_count] || 0
 
           expect(response_node[feature_key]['totalEventCount']).to eq(expected_feature_total)
         end
@@ -184,7 +181,14 @@ RSpec.describe 'aiUserMetrics', :freeze_time, feature_category: :value_stream_ma
 
       context 'when querying only totalEventCount' do
         let(:fields) { ['totalEventCount', 'user { id }'] }
-        let(:service_payload) { { current_user.id => { code_suggestion_accepted_in_ide_event_count: 10 } } }
+        let(:service_payload) do
+          {
+            current_user.id => {
+              code_suggestion_accepted_in_ide_event_count: 10,
+              total_events_count: 10
+            }
+          }
+        end
 
         it 'returns the sum of all event counts' do
           expect(ai_user_metrics['nodes'].first['totalEventCount']).to eq(10)
@@ -277,12 +281,15 @@ RSpec.describe 'aiUserMetrics', :freeze_time, feature_category: :value_stream_ma
   def sample_event_counts
     @sample_event_counts ||= {}.tap do |payload|
       count = 1
+      total = 0
       Gitlab::Tracking::AiTracking.registered_features.each do |feature|
         exposed_events_for(feature).each do |event|
           payload[:"#{event}#{count_field_suffix}"] = count
+          total += count
           count += 1
         end
       end
+      payload[:total_events_count] = total
     end
   end
 end

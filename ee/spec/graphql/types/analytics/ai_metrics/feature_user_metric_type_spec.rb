@@ -51,27 +51,5 @@ RSpec.describe Types::Analytics::AiMetrics::FeatureUserMetricType, feature_categ
       expect(type.fields).to include('codeSuggestionAcceptedInIdeEventCount')
       expect(type.fields).to include('codeSuggestionRejectedInIdeEventCount')
     end
-
-    describe '#total_event_count' do
-      it 'sums only fields ending with _event_count' do
-        type = described_class[:code_suggestions]
-        data = {
-          code_suggestion_shown_in_ide_event_count: 10,
-          code_suggestion_accepted_in_ide_event_count: 5,
-          code_suggestion_rejected_in_ide_event_count: 3,
-          some_other_field: 100 # Should not be included in sum
-        }
-        instance = type.authorized_new(data, query_context)
-
-        expect(instance.total_event_count).to eq(18)
-      end
-
-      it 'returns 0 when no event count fields are present' do
-        type = described_class[:code_suggestions]
-        instance = type.authorized_new({}, query_context)
-
-        expect(instance.total_event_count).to eq(0)
-      end
-    end
   end
 end
