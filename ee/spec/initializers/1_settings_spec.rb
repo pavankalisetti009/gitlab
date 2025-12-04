@@ -445,4 +445,64 @@ RSpec.describe '1_settings', feature_category: :shared do
       end
     end
   end
+
+  describe 'ActionCable allowed origins' do
+    let(:config) { {} }
+
+    before do
+      Settings.gitlab = config
+      load_settings
+    end
+
+    after do
+      Settings.gitlab = {}
+      load_settings
+    end
+
+    it 'returns default setting' do
+      expect(Settings.gitlab.action_cable_allowed_origins).to eq([])
+    end
+
+    context 'with settings' do
+      let(:config) { { action_cable_allowed_origins: %w[http://origin1.url http://origin2.url] } }
+
+      it 'uses provided config' do
+        expect(Settings.gitlab.action_cable_allowed_origins).to eq(%w[http://origin1.url http://origin2.url])
+      end
+    end
+  end
+
+  describe 'geo' do
+    let(:config) { {} }
+
+    before do
+      Settings.geo = config
+      load_settings
+    end
+
+    after do
+      Settings.geo = {}
+      load_settings
+    end
+
+    it 'provides default config' do
+      expect(Settings.geo.node_name).to eq(Settings.gitlab['url'])
+      expect(Settings.geo.registry_replication['enabled']).to eq(false)
+    end
+
+    context 'when config is provided' do
+      let(:config) do
+        {
+          node_name: 'my primary node',
+          registry_replication: { enabled: true, primary_api_url: 'http://primary.url' }
+        }
+      end
+
+      it 'uses provided config' do
+        expect(Settings.geo.node_name).to eq('my primary node')
+        expect(Settings.geo.registry_replication['enabled']).to eq(true)
+        expect(Settings.geo.registry_replication['primary_api_url']).to eq('http://primary.url')
+      end
+    end
+  end
 end
