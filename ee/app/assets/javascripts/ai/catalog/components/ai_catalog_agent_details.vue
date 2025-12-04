@@ -71,9 +71,9 @@ export default {
           </div>
         </ai-catalog-item-field>
         <ai-catalog-item-field :title="s__('AICatalog|Tools')">
-          <template v-if="tools.length === 0">
+          <span v-if="tools.length === 0" class="gl-text-subtle">
             {{ __('None') }}
-          </template>
+          </span>
           <div v-else class="gl-mt-3 gl-flex gl-flex-wrap gl-gap-2 gl-whitespace-nowrap">
             <gl-token v-for="tool in tools" :key="tool" view-only>
               {{ tool }}
