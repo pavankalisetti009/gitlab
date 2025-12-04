@@ -2,7 +2,7 @@
 
 module Ai
   module ModelSelection
-    class UpdateService
+    class UpdateNamespaceFeatureSettingService
       include Gitlab::InternalEventsTracking
 
       def initialize(feature_setting, user, params)

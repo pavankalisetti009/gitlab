@@ -2,7 +2,9 @@
 
 require 'spec_helper'
 
-RSpec.describe ::Ai::ModelSelection::UpdateService, :saas, feature_category: :"self-hosted_models" do
+RSpec.describe ::Ai::ModelSelection::UpdateNamespaceFeatureSettingService,
+  :saas,
+  feature_category: :"self-hosted_models" do
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group) }
   let(:offered_model_ref) { 'openai_chatgpt_4o' }

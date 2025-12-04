@@ -59,7 +59,7 @@ module Mutations
           def upsert_feature_setting(group, args)
             feature_setting = find_or_initialize_object(group, feature: args[:feature])
 
-            ::Ai::ModelSelection::UpdateService.new(
+            ::Ai::ModelSelection::UpdateNamespaceFeatureSettingService.new(
               feature_setting, current_user, args
             ).execute
           end
