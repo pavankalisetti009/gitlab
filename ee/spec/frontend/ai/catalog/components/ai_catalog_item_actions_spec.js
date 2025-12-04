@@ -291,6 +291,44 @@ describe('AiCatalogItemActions', () => {
     });
   });
 
+  describe('at Project level', () => {
+    describe('when hasParentConsumer is false', () => {
+      beforeEach(() => {
+        isLoggedIn.mockReturnValue(true);
+        createComponent({
+          provide: {
+            isGlobal: false,
+          },
+          props: {
+            hasParentConsumer: false,
+          },
+        });
+      });
+
+      it('disables the "Enable" button', () => {
+        expect(findEnableButton().props('disabled')).toBe(true);
+      });
+    });
+
+    describe('when hasParentConsumer is true', () => {
+      beforeEach(() => {
+        isLoggedIn.mockReturnValue(true);
+        createComponent({
+          provide: {
+            isGlobal: false,
+          },
+          props: {
+            hasParentConsumer: true,
+          },
+        });
+      });
+
+      it('does not disable the "Enable" button', () => {
+        expect(findEnableButton().props('disabled')).toBe(false);
+      });
+    });
+  });
+
   describe('delete modal', () => {
     describe('when user can hard delete', () => {
       beforeEach(() => {

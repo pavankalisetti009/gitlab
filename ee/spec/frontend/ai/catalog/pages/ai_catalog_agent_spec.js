@@ -13,6 +13,7 @@ import {
   mockAiCatalogAgentNullResponse,
   mockAgent,
   mockAgentConfigurationForProject,
+  mockAgentConfigurationForGroup,
   mockAgentVersion,
   mockAgentPinnedVersion,
 } from '../mock_data';
@@ -92,7 +93,7 @@ describe('AiCatalogAgent', () => {
   describe('when request succeeds', () => {
     beforeEach(async () => {
       createComponent({
-        provide: { projectId: 1 },
+        provide: { projectId: 1, rootGroupId: '1' },
       });
       await waitForPromises();
     });
@@ -106,6 +107,7 @@ describe('AiCatalogAgent', () => {
       expect(findRouterView().props('aiCatalogAgent')).toEqual({
         ...mockAgent,
         configurationForProject: mockAgentConfigurationForProject,
+        configurationForGroup: mockAgentConfigurationForGroup,
       });
     });
   });
@@ -113,7 +115,7 @@ describe('AiCatalogAgent', () => {
   describe('when displaying soft-deleted agents', () => {
     it('should show soft-deleted agents in the Projects area', async () => {
       createComponent({
-        provide: { projectId: 1 },
+        provide: { projectId: 1, rootGroupId: '1' },
       });
       await waitForPromises();
 
@@ -122,6 +124,8 @@ describe('AiCatalogAgent', () => {
         showSoftDeleted: true,
         hasProject: true,
         projectId: 'gid://gitlab/Project/1',
+        hasGroup: true,
+        groupId: 'gid://gitlab/Group/1',
       });
     });
 
@@ -136,6 +140,8 @@ describe('AiCatalogAgent', () => {
         showSoftDeleted: false,
         hasProject: false,
         projectId: 'gid://gitlab/Project/0',
+        hasGroup: false,
+        groupId: 'gid://gitlab/Group/0',
       });
     });
   });

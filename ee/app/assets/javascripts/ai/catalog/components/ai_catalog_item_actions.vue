@@ -8,6 +8,7 @@ import {
   GlIcon,
   GlLink,
   GlModalDirective,
+  GlTooltipDirective,
   GlSprintf,
 } from '@gitlab/ui';
 import { s__, sprintf } from '~/locale';
@@ -35,13 +36,11 @@ export default {
   },
   directives: {
     GlModal: GlModalDirective,
+    GlTooltip: GlTooltipDirective,
   },
   inject: {
     isGlobal: {
       default: false,
-    },
-    projectId: {
-      default: null,
     },
   },
   props: {
@@ -59,6 +58,11 @@ export default {
       default: false,
     },
     isFlowsAvailable: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+    hasParentConsumer: {
       type: Boolean,
       required: false,
       default: false,
@@ -148,6 +152,18 @@ export default {
     deleteConfirmMessage() {
       return s__('AICatalog|Are you sure you want to delete %{itemType} %{name}?');
     },
+    pendingMessage() {
+      return !this.hasParentConsumer
+        ? sprintf(
+            s__(
+              'AICatalog|This %{itemType} requires approval from your parent group owner before it can be used',
+            ),
+            {
+              itemType: this.itemTypeLabel,
+            },
+          )
+        : null;
+    },
   },
   DELETE_OPTIONS,
   adminModeDocsLink: helpPagePath('/administration/settings/sign_in_restrictions', {
@@ -185,15 +201,17 @@ export default {
     >
       {{ s__('AICatalog|Enable in project') }}
     </gl-button>
-    <gl-button
-      v-else-if="showEnable"
-      v-gl-modal="'add-item-consumer-modal'"
-      variant="confirm"
-      category="primary"
-      data-testid="enable-button"
-    >
-      {{ __('Enable') }}
-    </gl-button>
+    <span v-else-if="showEnable" v-gl-tooltip="!hasParentConsumer" :title="pendingMessage">
+      <gl-button
+        v-gl-modal="'add-item-consumer-modal'"
+        :disabled="!hasParentConsumer"
+        variant="confirm"
+        category="primary"
+        data-testid="enable-button"
+      >
+        {{ __('Enable') }}
+      </gl-button>
+    </span>
     <gl-disclosure-dropdown
       v-if="showDropdown"
       :toggle-text="__('More actions')"

@@ -54,6 +54,11 @@ export default {
       type: Object,
       required: true,
     },
+    hasParentConsumer: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   data() {
     return {
@@ -237,6 +242,7 @@ export default {
           :item="aiCatalogAgent"
           :item-routes="$options.itemRoutes"
           :is-agents-available="isAgentsAvailable"
+          :has-parent-consumer="hasParentConsumer"
           :disable-fn="disableAgent"
           :delete-fn="deleteAgent"
           :disable-confirm-message="

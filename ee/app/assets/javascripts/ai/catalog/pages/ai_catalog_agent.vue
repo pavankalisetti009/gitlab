@@ -4,7 +4,7 @@ import emptySearchSvg from '@gitlab/svgs/dist/illustrations/empty-state/empty-se
 import { s__ } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
-import { TYPENAME_PROJECT } from '~/graphql_shared/constants';
+import { TYPENAME_PROJECT, TYPENAME_GROUP } from '~/graphql_shared/constants';
 import { TYPENAME_AI_CATALOG_ITEM } from 'ee/graphql_shared/constants';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import aiCatalogAgentQuery from '../graphql/queries/ai_catalog_agent.query.graphql';
@@ -24,6 +24,9 @@ export default {
     projectId: {
       default: null,
     },
+    rootGroupId: {
+      default: null,
+    },
   },
   data() {
     return {
@@ -40,6 +43,8 @@ export default {
           showSoftDeleted: !this.isGlobal,
           hasProject: Boolean(this.projectId),
           projectId: convertToGraphQLId(TYPENAME_PROJECT, this.projectId || '0'),
+          hasGroup: Boolean(this.rootGroupId),
+          groupId: convertToGraphQLId(TYPENAME_GROUP, this.rootGroupId || '0'),
         };
       },
       update(data) {
@@ -86,6 +91,9 @@ export default {
         tools: version.tools?.nodes || [],
       };
     },
+    hasParentConsumer() {
+      return this.aiCatalogAgent?.configurationForGroup?.enabled;
+    },
   },
   emptySearchSvg,
 };
@@ -103,6 +111,11 @@ export default {
       :svg-path="$options.emptySearchSvg"
     />
 
-    <router-view v-else :ai-catalog-agent="aiCatalogAgent" :version-data="versionData" />
+    <router-view
+      v-else
+      :ai-catalog-agent="aiCatalogAgent"
+      :version-data="versionData"
+      :has-parent-consumer="hasParentConsumer"
+    />
   </div>
 </template>
