@@ -80,7 +80,7 @@ export default {
 <template>
   <gl-dashboard-layout :config="dashboard" data-testid="project-security-dashboard-new">
     <template #title>
-      <h1 class="gl-heading-1 gl-my-0 gl-mr-3">{{ s__('SecurityReports|Security dashboard') }}</h1>
+      <h1 class="gl-heading-1 gl-my-0">{{ s__('SecurityReports|Security dashboard') }}</h1>
       <gl-experiment-badge type="beta" />
     </template>
     <template #description>

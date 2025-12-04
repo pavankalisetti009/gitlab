@@ -150,7 +150,8 @@ describe('VulnerabilitiesOverTimePanel', () => {
 
     it('passes the correct tooltip to the panels base', () => {
       expect(findExtendedDashboardPanel().props('tooltip')).toEqual({
-        description: 'Vulnerability trends over time',
+        description:
+          'Open vulnerability trends over time. To interact with a link in a chart popover, click to pin the popover first.',
       });
     });
 

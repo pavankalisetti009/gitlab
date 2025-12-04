@@ -103,7 +103,7 @@ describe('SecurityDashboardDescription', () => {
 
     it('renders the correct description', () => {
       expect(wrapper.text()).toContain(
-        'Panels that categorize vulnerabilities as open include those with Needs triage or Confirmed status. To interact with a link in a chart popover, click to pin the popover first. To unstick it, click outside the popover. Learn more',
+        'Panels that categorize vulnerabilities as open include those with Needs triage or Confirmed status. Hover over the info icon () to view more information about the data shown in each panel. To interact with a link in a chart popover, click to pin the popover first. To unstick it, click outside the popover. Learn more',
       );
     });
 

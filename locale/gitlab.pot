@@ -62377,10 +62377,13 @@ msgstr ""
 msgid "SecurityReports|Oops, something doesn't seem right."
 msgstr ""
 
+msgid "SecurityReports|Open vulnerability trends over time. To interact with a link in a chart popover, click to pin the popover first."
+msgstr ""
+
 msgid "SecurityReports|Operational vulnerabilities"
 msgstr ""
 
-msgid "SecurityReports|Panels that categorize vulnerabilities as open include those with Needs triage or Confirmed status. To interact with a link in a chart popover, click to pin the popover first. To unstick it, click outside the popover. %{learnMoreStart}Learn more%{learnMoreEnd}"
+msgid "SecurityReports|Panels that categorize vulnerabilities as open include those with Needs triage or Confirmed status. Hover over the info icon (%{infoIcon}) to view more information about the data shown in each panel. To interact with a link in a chart popover, click to pin the popover first. To unstick it, click outside the popover. %{learnMoreStart}Learn more%{learnMoreEnd}"
 msgstr ""
 
 msgid "SecurityReports|Parsing errors and warnings in pipeline"
@@ -62602,9 +62605,6 @@ msgid "SecurityReports|Vulnerability Resolution unavailable"
 msgstr ""
 
 msgid "SecurityReports|Vulnerability report"
-msgstr ""
-
-msgid "SecurityReports|Vulnerability trends over time"
 msgstr ""
 
 msgid "SecurityReports|Vulnerability will be archived on %{date}"

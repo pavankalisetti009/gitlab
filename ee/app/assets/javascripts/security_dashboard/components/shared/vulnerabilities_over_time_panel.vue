@@ -196,7 +196,9 @@ export default {
     },
   },
   tooltip: {
-    description: s__('SecurityReports|Vulnerability trends over time'),
+    description: s__(
+      'SecurityReports|Open vulnerability trends over time. To interact with a link in a chart popover, click to pin the popover first.',
+    ),
   },
 };
 </script>
