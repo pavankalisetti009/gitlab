@@ -12,6 +12,7 @@ module Search
 
       def search?(container)
         return false unless enabled?
+        return true if container.nil?
 
         root_namespace_id = fetch_root_namespace_id(container)
         return false unless root_namespace_id

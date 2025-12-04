@@ -56,27 +56,5 @@ RSpec.describe 'Signup', :with_current_organization, feature_category: :system_a
         expect(password_reset_email).to eq(nil)
       end
     end
-
-    context 'when the cap has been reached' do
-      before do
-        create_list(:user, 2)
-      end
-
-      it 'sends notification email to the admin', :sidekiq_inline do
-        perform_enqueued_jobs do
-          fill_in_sign_up_form(new_user)
-        end
-
-        cap_reached_notification_email = ActionMailer::Base.deliveries.find do |m|
-          m.subject == 'Important information about usage on your GitLab instance'
-        end
-        expect(cap_reached_notification_email.to).to eq([admin.email])
-        expect(cap_reached_notification_email.text_part.body).to have_content(
-          'Your GitLab instance has reached the maximum allowed user cap'
-        )
-
-        expect(ActionMailer::Base.deliveries.count).to eq(1)
-      end
-    end
   end
 end

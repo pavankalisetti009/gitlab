@@ -156,6 +156,7 @@ export default {
       options: [
         { value: 'code_review/v1', title: __('Code review') },
         { value: 'convert_to_gitlab_ci', title: s__('DuoAgentsPlatform|Convert to gitlab ci') },
+        { value: 'developer/v1', title: s__('DuoAgentsPlatform|Developer') },
         { value: 'fix_pipeline/v1', title: s__('DuoAgentsPlatform|Fix pipeline') },
         { value: 'issue_to_merge_request', title: s__('DuoAgentsPlatform|Issue to merge request') },
         { value: 'software_development', title: s__('DuoAgentsPlatform|Software development') },

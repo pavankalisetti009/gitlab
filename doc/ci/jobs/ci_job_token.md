@@ -21,7 +21,7 @@ Use a CI/CD job token to authenticate with certain GitLab features from running 
 The token receives the same access level as the user that triggered the pipeline,
 but has [access to fewer resources](#job-token-access) than a personal access token. A user can cause a job to run
 with an action like pushing a commit, triggering a manual job, or being the owner of a scheduled pipeline.
-This user must have a [role that has the required privileges](../../user/permissions.md#cicd)
+This user must have a [role that has the required privileges](../../user/permissions.md#project-cicd)
 to access the resources.
 
 You can use a job token to authenticate with GitLab to access another group or project's resources (the target project).
@@ -367,7 +367,7 @@ push to your project.
 When you use a job token to push to the project, no CI pipelines are triggered. The job token has
 the same access permissions as the user who started the job.
 
-If you use the tool semantic-release, with **Allow Git push requests to the repository** setting enabled, the tool gives precedence to CI_JOB_TOKEN embedded over a GitLab personal access token, if one is configured. There is an [open issue](https://github.com/semantic-release/gitlab/issues/891) that tracks resolution for this edge case.
+If you use the tool semantic-release, with **Allow Git push requests to the repository** setting enabled, the tool gives precedence to `CI_JOB_TOKEN` embedded over a GitLab personal access token, if one is configured. There is an [open issue](https://github.com/semantic-release/gitlab/issues/891) that tracks resolution for this edge case.
 
 {{< alert type="warning" >}}
 

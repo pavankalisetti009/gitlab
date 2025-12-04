@@ -31,12 +31,16 @@ describe('buildDefaultPipeLineRule', () => {
 });
 
 describe('buildDefaultScheduleRule', () => {
-  it('builds a schedule rule', () => {
+  it('builds a schedule rule with default time_window', () => {
     expect(buildDefaultScheduleRule()).toEqual({
       branches: [],
       cadence: '0 0 * * *',
       id: ruleId,
       type: 'schedule',
+      time_window: {
+        distribution: 'random',
+        value: 36000,
+      },
     });
   });
 });

@@ -1,46 +1,24 @@
 # frozen_string_literal: true
 
 module Vulnerabilities
-  class AutoResolveService
-    include Gitlab::Utils::StrongMemoize
-    include Gitlab::InternalEventsTracking
-
+  class AutoResolveService < BaseAutoStateTransitionService
     def initialize(pipeline, vulnerability_ids, budget)
-      @pipeline = pipeline
-      @vulnerability_ids = vulnerability_ids
+      super(pipeline, vulnerability_ids)
       @budget = budget
     end
 
     def execute
-      return ServiceResponse.success(payload: { count: 0 }) if policies.blank?
+      return success if policies.blank?
 
-      ensure_bot_user_exists
-
-      unless can_create_state_transitions?
-        return error_response(reason: 'Bot user does not have permission to create state transitions')
+      super do
+        perform_state_transition(vulnerabilities_to_resolve, rules_by_vulnerability)
+        vulnerabilities_to_resolve.size
       end
-
-      resolve_vulnerabilities
-      refresh_statistics
-
-      ServiceResponse.success(payload: { count: vulnerabilities_to_resolve.size })
-    rescue ActiveRecord::ActiveRecordError => e
-      error_response(reason: 'ActiveRecord error', exception: e)
     end
 
     private
 
-    attr_reader :pipeline, :vulnerability_ids, :budget
-
-    delegate :project, to: :pipeline
-
-    def vulnerability_reads
-      Vulnerabilities::Read.by_vulnerabilities(vulnerability_ids).with_states(auto_resolve_states)
-    end
-
-    def auto_resolve_states
-      ::Enums::Vulnerability.vulnerability_states.except(:resolved, :dismissed).values
-    end
+    attr_reader :budget
 
     def vulnerabilities_to_resolve
       rules_by_vulnerability.keys.first(budget)
@@ -56,7 +34,7 @@ module Vulnerabilities
     def policies
       project
         .vulnerability_management_policies
-        .auto_resolve_policies_with_rules
+        .auto_resolve_policies.including_rules
     end
     strong_memoize_attr :policies
 
@@ -67,15 +45,11 @@ module Vulnerabilities
     end
     strong_memoize_attr :rules
 
-    def ensure_bot_user_exists
-      ::Security::Orchestration::CreateBotService.new(project, nil, skip_authorization: true).execute
-    end
-
-    def resolve_vulnerabilities
-      return if vulnerabilities_to_resolve.empty?
-
+    def update_transaction(vulnerabilities_to_resolve, rules_by_vulnerability)
       Vulnerability.transaction do
-        Vulnerabilities::StateTransition.insert_all!(state_transition_attrs)
+        Vulnerabilities::StateTransition.insert_all!(
+          state_transition_attrs(vulnerabilities_to_resolve, rules_by_vulnerability)
+        )
 
         # The caller (Security::Ingestion::MarkAsResolvedService) operates on ALL Vulnerability::Read rows
         # narrowed by scanner type in batches of 1000. If we apply any sort of limit here then this poses a problem:
@@ -105,70 +79,30 @@ module Vulnerabilities
           projects: project
         ).execute
       end
+    end
 
-      Note.transaction do
-        results = Note.insert_all!(system_note_attrs, returning: %w[id])
-        SystemNoteMetadata.insert_all!(note_metadata_attrs(results))
-      end
+    def internal_event_name
+      'autoresolve_vulnerability_in_project_after_pipeline_run_if_policy_is_set'
+    end
 
-      track_internal_event(
-        'autoresolve_vulnerability_in_project_after_pipeline_run_if_policy_is_set',
-        project: project,
-        additional_properties: {
-          value: vulnerabilities_to_resolve.size
-        }
+    def target_state
+      :resolved
+    end
+
+    def formatted_system_note(vulnerability, rules_by_vulnerability)
+      ::SystemNotes::VulnerabilitiesService.formatted_note(
+        'changed',
+        :resolved,
+        nil,
+        comment(vulnerability, rules_by_vulnerability)
       )
     end
 
-    def state_transition_attrs
-      vulnerabilities_to_resolve.map do |vulnerability|
-        {
-          vulnerability_id: vulnerability.id,
-          from_state: vulnerability.state,
-          to_state: :resolved,
-          author_id: user.id,
-          comment: comment(vulnerability),
-          created_at: now,
-          updated_at: now
-        }
-      end
+    def note_metadata_action
+      'vulnerability_resolved'
     end
 
-    def system_note_attrs
-      vulnerabilities_to_resolve.map do |vulnerability|
-        {
-          noteable_type: "Vulnerability",
-          noteable_id: vulnerability.id,
-          project_id: project.id,
-          namespace_id: project.project_namespace_id,
-          system: true,
-          note: ::SystemNotes::VulnerabilitiesService.formatted_note(
-            'changed',
-            :resolved,
-            nil,
-            comment(vulnerability)
-          ),
-          author_id: user.id,
-          created_at: now,
-          updated_at: now
-        }
-      end
-    end
-
-    def note_metadata_attrs(results)
-      results.map do |row|
-        id = row['id']
-
-        {
-          note_id: id,
-          action: 'vulnerability_resolved',
-          created_at: now,
-          updated_at: now
-        }
-      end
-    end
-
-    def comment(vulnerability)
+    def comment(vulnerability, rules_by_vulnerability)
       rule = rules_by_vulnerability[vulnerability]
       format(
         _("Auto-resolved by the vulnerability management policy named '%{policy_name}' " \
@@ -178,51 +112,8 @@ module Vulnerabilities
       )
     end
 
-    def pipeline_link
-      "[#{pipeline.id}](#{pipeline_url})"
-    end
-    strong_memoize_attr :pipeline_link
-
-    def pipeline_url
-      Gitlab::UrlBuilder.build(pipeline)
-    end
-
-    def user
-      @user ||= project.security_policy_bot
-    end
-
-    def refresh_statistics
-      Vulnerabilities::Statistics::AdjustmentWorker.perform_async([project.id])
-    end
-
-    def can_create_state_transitions?
-      Ability.allowed?(user, :create_vulnerability_state_transition, project)
-    end
-
-    # We use this for setting the created_at and updated_at timestamps
-    # for the various records created by this service.
-    # The time is memoized on the first call to this method so all of the
-    # created records will have the same timestamps.
-    def now
-      @now ||= Time.current.utc
-    end
-
-    def trigger_webhook_events(vulnerabilities_to_update)
-      return unless project.has_active_hooks?(:vulnerability_hooks)
-
-      vulnerabilities = vulnerabilities_to_update.with_projects_and_routes
-                                                 .with_issue_links_and_issues
-                                                 .with_findings_and_identifiers
-
-      vulnerabilities.each(&:trigger_webhook_event)
-    end
-
-    def error_response(reason:, exception: nil)
-      ServiceResponse.error(
-        message: "Could not resolve vulnerabilities",
-        reason: reason,
-        payload: { exception: exception }
-      )
+    def base_error_message
+      "Could not resolve vulnerabilities"
     end
   end
 end

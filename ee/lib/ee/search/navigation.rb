@@ -73,6 +73,13 @@ module EE
         ::Gitlab::CurrentSettings.global_search_epics_enabled?
       end
 
+      override :scope_visible?
+      def scope_visible?(scope_key)
+        return show_epics_search_tab? if scope_key == :epics
+
+        super
+      end
+
       override :show_commits_search_tab?
       def show_commits_search_tab?
         return true if super # project search & user can search commits

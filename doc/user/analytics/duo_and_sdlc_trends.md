@@ -111,6 +111,12 @@ The **Metric trends** table displays metrics for the last six months, with month
 
 - **Duo Code Review comments**: Number of comments posted by GitLab Duo Code Review on merge request diffs.
 
+  {{< alert type="note" >}}
+
+  Usage data for Duo Code Review requests and comments is calculated with data starting from GitLab 18.3.
+
+  {{< /alert >}}
+
 ### Development metrics
 
 - [**Lead time**](../group/value_stream_analytics/_index.md#lifecycle-metrics)
@@ -153,6 +159,27 @@ The **Code generation volume trends** chart displays the volume of code generate
 
 - **Lines of code accepted**: Lines of code from Code Suggestions that were accepted.
 - **Lines of code shown**: Lines of code displayed in Code Suggestions.
+
+## GitLab Duo Code Review requests by role
+
+{{< history >}}
+
+- [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/574003) in GitLab 18.7.
+
+{{< /history >}}
+
+The **GitLab Duo Code Review requests by role** chart displays the number of GitLab Duo Code Review requests over the last 180 days, aggregated by month. The chart shows:
+
+- **Review requests by authors**: Number of GitLab Duo Code Review requests made by the merge request author. This includes code reviews requested automatically through the project setting and manually in the merge request by the author.
+- **Review requests by non-authors**: Number of GitLab Duo Code Review requests made by users other than the merge request author. For example, reviewers who ask GitLab Duo to review the merge request changes.
+
+Higher author adoption indicates teams embracing automated review workflows.
+
+{{< alert type="note" >}}
+
+Usage data for Code Review requests is calculated with data starting from GitLab 18.3.
+
+{{< /alert >}}
 
 ## View GitLab Duo and SDLC trends
 

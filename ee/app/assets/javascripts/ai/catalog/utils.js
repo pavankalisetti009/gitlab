@@ -18,6 +18,9 @@ export const prerequisitesError = (message, params = {}) => {
   );
 };
 
+/**
+ * Note that this utility method *does not* use the `pinnedItemVersion`.
+ */
 export const getLatestUpdatedAt = (item) => {
   return item.latestVersion.updatedAt > item.updatedAt
     ? item.latestVersion.updatedAt

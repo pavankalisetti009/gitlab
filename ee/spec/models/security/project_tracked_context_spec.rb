@@ -17,25 +17,6 @@ RSpec.describe Security::ProjectTrackedContext, feature_category: :vulnerability
     it { is_expected.to validate_length_of(:context_name).is_at_most(1024) }
     it { is_expected.to validate_uniqueness_of(:context_name).scoped_to([:project_id, :context_type]) }
 
-    describe 'is_default' do
-      context 'when there is an existing default ref' do
-        let_it_be(:existing_ref) { create(:security_project_tracked_context, :default, project: project) }
-
-        it 'fails validation if trying to create a new default ref' do
-          new_ref.is_default = true
-
-          expect(new_ref).not_to be_valid
-          expect(new_ref.errors[:is_default]).to include('There is already a default tracked context')
-        end
-
-        it 'passes validation if ref is not default' do
-          new_ref.is_default = false
-
-          expect(new_ref).to be_valid
-        end
-      end
-    end
-
     it 'is invalid when trying to make a tag ref default' do
       new_ref.context_type = :tag
       new_ref.is_default = true
@@ -299,6 +280,81 @@ RSpec.describe Security::ProjectTrackedContext, feature_category: :vulnerability
       it 'returns empty when no matching refs exist' do
         expect(described_class.for_ref('nonexistent-ref')).to be_empty
       end
+    end
+  end
+
+  describe '.for_pipeline' do
+    let_it_be(:branch_context) { create(:security_project_tracked_context, context_type: :branch, project: project) }
+    let_it_be(:tag_context) { create(:security_project_tracked_context, context_type: :tag, project: project) }
+
+    before_all do
+      other_project = create(:project)
+      create(:ci_pipeline, :tag, ref: tag_context.context_name, project: other_project)
+      create(:ci_pipeline, ref: branch_context.context_name, project: other_project)
+      create(:security_project_tracked_context,
+        context_name: branch_context.context_name,
+        context_type: :branch,
+        project: other_project
+      )
+      create(:security_project_tracked_context,
+        context_name: tag_context.context_name,
+        context_type: :tag,
+        project: other_project
+      )
+    end
+
+    context 'with a branch pipeline' do
+      let_it_be(:pipeline) { create(:ci_pipeline, ref: branch_context.context_name, project: project) }
+
+      it 'returns refs matching the pipeline ref and type' do
+        expect(described_class.for_pipeline(pipeline)).to contain_exactly(branch_context)
+      end
+    end
+
+    context 'with a tag pipeline' do
+      let_it_be(:pipeline) { create(:ci_pipeline, :tag, ref: tag_context.context_name, project: project) }
+
+      it 'returns refs matching the pipeline ref and type' do
+        expect(described_class.for_pipeline(pipeline)).to contain_exactly(tag_context)
+      end
+    end
+
+    context 'when no matching ref exists' do
+      let_it_be(:pipeline) { create(:ci_pipeline, ref: 'non-existent-branch', project: project) }
+
+      it 'returns an empty relation' do
+        expect(described_class.for_pipeline(pipeline)).to be_empty
+      end
+    end
+  end
+
+  describe '.tracked_pipeline?' do
+    let_it_be(:tracked_branch_ref) do
+      create(:security_project_tracked_context, :tracked, project: project, context_name: 'feature-branch')
+    end
+
+    let_it_be(:untracked_branch_ref) do
+      create(:security_project_tracked_context, project: project, context_name: 'untracked-branch')
+    end
+
+    subject(:tracked_pipeline?) { described_class.tracked_pipeline?(pipeline) }
+
+    context 'with a tracked pipeline' do
+      let_it_be(:pipeline) { build_stubbed(:ci_pipeline, project: project, ref: tracked_branch_ref.context_name) }
+
+      it { is_expected.to be true }
+    end
+
+    context 'with an untracked pipeline' do
+      let_it_be(:pipeline) { build_stubbed(:ci_pipeline, project: project, ref: untracked_branch_ref.context_name) }
+
+      it { is_expected.to be false }
+    end
+
+    context 'when no matching ref exists' do
+      let_it_be(:pipeline) { build_stubbed(:ci_pipeline, project: project, ref: 'non-existent-branch') }
+
+      it { is_expected.to be false }
     end
   end
 end

@@ -1,18 +1,27 @@
 import { shallowMount } from '@vue/test-utils';
-import { GlBadge, GlLink } from '@gitlab/ui';
+import { GlToken, GlLink, GlSprintf } from '@gitlab/ui';
 import AiCatalogFlowDetails from 'ee/ai/catalog/components/ai_catalog_flow_details.vue';
 import AiCatalogItemField from 'ee/ai/catalog/components/ai_catalog_item_field.vue';
 import AiCatalogItemVisibilityField from 'ee/ai/catalog/components/ai_catalog_item_visibility_field.vue';
 import FormFlowDefinition from 'ee/ai/catalog/components/form_flow_definition.vue';
 import FormSection from 'ee/ai/catalog/components/form_section.vue';
-import { FLOW_TRIGGERS_EDIT_ROUTE } from 'ee/ai/duo_agents_platform/router/constants';
-import { mockFlow, mockThirdPartyFlow, mockFlowConfigurationForProject } from '../mock_data';
+import {
+  FLOW_TRIGGERS_EDIT_ROUTE,
+  FLOW_TRIGGERS_NEW_ROUTE,
+} from 'ee/ai/duo_agents_platform/router/constants';
+import {
+  mockFlow,
+  mockThirdPartyFlow,
+  mockFlowConfigurationForProject,
+  mockThirdPartyFlowConfigurationForProject,
+} from '../mock_data';
 
 describe('AiCatalogFlowDetails', () => {
   let wrapper;
 
   const defaultProps = {
     item: mockFlow,
+    versionData: mockFlow.latestVersion,
   };
 
   const createComponent = ({ props = {} } = {}) => {
@@ -23,6 +32,7 @@ describe('AiCatalogFlowDetails', () => {
       },
       stubs: {
         AiCatalogItemVisibilityField,
+        GlSprintf,
       },
     });
   };
@@ -78,7 +88,7 @@ describe('AiCatalogFlowDetails', () => {
   });
 
   describe('renders "Configuration" details', () => {
-    it('renders flow definition', () => {
+    it('renders latestVersion flow definition', () => {
       const configurationField = findAllFieldsForSection(2).at(0);
       expect(configurationField.props('title')).toBe('Configuration');
       expect(configurationField.findComponent(FormFlowDefinition).props('value')).toBe(
@@ -86,45 +96,80 @@ describe('AiCatalogFlowDetails', () => {
       );
     });
 
-    describe('when configurationForProject.flowTrigger exists', () => {
-      beforeEach(() => {
-        createComponent({
-          props: {
-            item: {
-              ...mockFlow,
-              configurationForProject: mockFlowConfigurationForProject,
+    it('does not render triggers field', () => {
+      const configurationFields = findAllFieldsForSection(2);
+      expect(configurationFields).toHaveLength(1);
+      expect(configurationFields.at(0).props('title')).toBe('Configuration');
+    });
+
+    describe('when configurationForProject exists', () => {
+      describe('when flowTrigger is empty', () => {
+        beforeEach(() => {
+          createComponent({
+            props: {
+              item: {
+                ...mockFlow,
+                configurationForProject: {
+                  ...mockFlowConfigurationForProject,
+                  flowTrigger: null,
+                },
+              },
             },
-          },
+          });
+        });
+
+        it('renders triggers field as "No triggers configured"', () => {
+          const triggersField = findAllFieldsForSection(2).at(0);
+          const link = triggersField.findComponent(GlLink);
+
+          expect(triggersField.text()).toBe(
+            'No triggers configured. Add a trigger to make this flow available.',
+          );
+          expect(link.props('to')).toEqual({ name: FLOW_TRIGGERS_NEW_ROUTE });
         });
       });
 
-      it('renders triggers', () => {
-        const triggersField = findAllFieldsForSection(2).at(0);
-        expect(triggersField.props('title')).toBe('Triggers');
-
-        const badges = triggersField.findAllComponents(GlBadge);
-
-        expect(badges).toHaveLength(1);
-        expect(badges.at(0).text()).toBe('Mention');
-      });
-
-      it('renders trigger edit link', () => {
-        const triggersField = findAllFieldsForSection(2).at(0);
-        const editLink = triggersField.findComponent(GlLink);
-
-        expect(editLink.text()).toBe('Edit');
-        expect(editLink.props('to')).toEqual({
-          name: FLOW_TRIGGERS_EDIT_ROUTE,
-          params: { id: 73 },
+      describe('when flowTrigger exists', () => {
+        beforeEach(() => {
+          createComponent({
+            props: {
+              item: {
+                ...mockFlow,
+                configurationForProject: mockFlowConfigurationForProject,
+              },
+              versionData: mockFlowConfigurationForProject.pinnedItemVersion,
+            },
+          });
         });
-      });
 
-      it('renders flow definition', () => {
-        const configurationField = findAllFieldsForSection(2).at(1);
-        expect(configurationField.props('title')).toBe('Configuration');
-        expect(configurationField.findComponent(FormFlowDefinition).props('value')).toBe(
-          mockFlow.latestVersion.definition,
-        );
+        it('renders triggers', () => {
+          const triggersField = findAllFieldsForSection(2).at(0);
+          expect(triggersField.props('title')).toBe('Triggers');
+
+          const tokens = triggersField.findAllComponents(GlToken);
+
+          expect(tokens).toHaveLength(1);
+          expect(tokens.at(0).text()).toBe('Mention');
+        });
+
+        it('renders trigger edit link', () => {
+          const triggersField = findAllFieldsForSection(2).at(0);
+          const editLink = triggersField.findComponent(GlLink);
+
+          expect(editLink.text()).toBe('Edit');
+          expect(editLink.props('to')).toEqual({
+            name: FLOW_TRIGGERS_EDIT_ROUTE,
+            params: { id: 73 },
+          });
+        });
+
+        it('renders pinnedItemVersion flow definition', () => {
+          const configurationField = findAllFieldsForSection(2).at(1);
+          expect(configurationField.props('title')).toBe('Configuration');
+          expect(configurationField.findComponent(FormFlowDefinition).props('value')).toBe(
+            mockFlowConfigurationForProject.pinnedItemVersion.definition,
+          );
+        });
       });
     });
   });
@@ -133,7 +178,16 @@ describe('AiCatalogFlowDetails', () => {
     beforeEach(() => {
       createComponent({
         props: {
-          item: mockThirdPartyFlow,
+          versionData: {
+            ...mockThirdPartyFlowConfigurationForProject.pinnedItemVersion,
+          },
+          item: {
+            ...mockThirdPartyFlow,
+            configurationForProject: {
+              ...mockThirdPartyFlowConfigurationForProject,
+              flowTrigger: null,
+            },
+          },
         },
       });
     });
@@ -145,11 +199,19 @@ describe('AiCatalogFlowDetails', () => {
       expect(findSection(2).attributes('title')).toBe('Configuration');
     });
 
+    it('renders triggers field as "No triggers configured"', () => {
+      const triggersField = findAllFieldsForSection(2).at(0);
+
+      expect(triggersField.text()).toBe(
+        'No triggers configured. Add a trigger to make this flow available.',
+      );
+    });
+
     it('renders "Configuration" details', () => {
-      const configurationField = findAllFieldsForSection(2).at(0);
+      const configurationField = findAllFieldsForSection(2).at(1);
       expect(configurationField.props('title')).toBe('Configuration');
       expect(configurationField.findComponent(FormFlowDefinition).props('value')).toBe(
-        mockThirdPartyFlow.latestVersion.definition,
+        mockThirdPartyFlowConfigurationForProject.pinnedItemVersion.definition,
       );
     });
   });

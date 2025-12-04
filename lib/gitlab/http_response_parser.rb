@@ -3,21 +3,47 @@
 # rubocop: disable Gitlab/NamespacedClass -- General utility
 module Gitlab
   class HttpResponseParser < HTTParty::Parser
+    # rubocop:disable Gitlab/Json -- Using JSON.parse for compatibility reasons
     def json
-      log_oversize_response if oversize_response?
+      log_and_raise_oversize_response! if oversize_response?
+
+      JSON.parse(body, quirks_mode: true, allow_nan: true, max_nesting: max_json_depth)
+    end
+    # rubocop:enable Gitlab/Json
+
+    def xml
+      log_parse_method_called(:xml, (body.count('<') / 2) + body.count('='))
+
+      super
+    end
+
+    def csv
+      log_parse_method_called(:csv, body.count(",\n"))
+
       super
     end
 
     private
 
     def oversize_response?
-      oversize_threshold > 0 && total_value_count_estimate > oversize_threshold
+      max_json_structural_chars > 0 && total_value_count_estimate > max_json_structural_chars
     end
 
-    def log_oversize_response
-      Gitlab::AppJsonLogger.info(
+    def log_and_raise_oversize_response!
+      Gitlab::AppJsonLogger.error(
         message: 'Large HTTP JSON response',
         number_of_fields: total_value_count_estimate,
+        caller: Gitlab::BacktraceCleaner.clean_backtrace(caller)
+      )
+
+      raise JSON::ParserError, 'JSON response exceeded the maximum number of objects'
+    end
+
+    def log_parse_method_called(parse_method, structural_element_count)
+      Gitlab::AppJsonLogger.info(
+        message: 'HttpResponseParser method called',
+        parse_method: parse_method,
+        structural_element_count: structural_element_count,
         caller: Gitlab::BacktraceCleaner.clean_backtrace(caller)
       )
     end
@@ -31,8 +57,12 @@ module Gitlab
       @total_value_count_estimate ||= body.count('{[,:')
     end
 
-    def oversize_threshold
-      @oversize_threshold ||= ENV['GITLAB_JSON_SIZE_THRESHOLD'].to_i
+    def max_json_structural_chars
+      Gitlab::CurrentSettings.max_http_response_json_structural_chars
+    end
+
+    def max_json_depth
+      Gitlab::CurrentSettings.max_http_response_json_depth
     end
   end
 end

@@ -242,31 +242,6 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
           buy_pipeline_minutes_path: "/groups/#{group.path}/-/usage_quotas"
         })
       end
-
-      describe 'for Duo agent platform widget' do
-        before do
-          stub_saas_features(gitlab_duo_saas_only: true)
-        end
-
-        describe 'does not return widget data' do
-          it { is_expected.not_to include(:duoAgentWidgetProvide) }
-        end
-
-        context 'when widget is valid to show' do
-          before do
-            presenter = instance_double(
-              GitlabSubscriptions::Duo::GitlabCom::AuthorizedAgentPlatformWidgetPresenter,
-              attributes: { duoAgentWidgetProvide: {} }
-            )
-            allow(GitlabSubscriptions::Duo::AgentPlatformWidgetPresenter)
-              .to receive(:new).with(user, context: group).and_return(presenter)
-          end
-
-          it 'returns widget data' do
-            expect(super_sidebar_context).to include(:duoAgentWidgetProvide)
-          end
-        end
-      end
     end
 
     context 'when neither in a group nor in a project scope' do

@@ -3,14 +3,19 @@ import {
   GlButton,
   GlDisclosureDropdown,
   GlDisclosureDropdownItem,
+  GlFormRadioGroup,
+  GlFormRadio,
   GlIcon,
+  GlLink,
   GlModalDirective,
+  GlTooltipDirective,
   GlSprintf,
 } from '@gitlab/ui';
 import { s__, sprintf } from '~/locale';
 import { isLoggedIn } from '~/lib/utils/common_utils';
+import { helpPagePath } from '~/helpers/help_page_helper';
 import ConfirmActionModal from '~/vue_shared/components/confirm_action_modal.vue';
-import { AI_CATALOG_ITEM_LABELS } from '../constants';
+import { AI_CATALOG_ITEM_LABELS, DELETE_OPTIONS } from '../constants';
 import AiCatalogItemConsumerModal from './ai_catalog_item_consumer_modal.vue';
 import AiCatalogItemReportModal from './ai_catalog_item_report_modal.vue';
 
@@ -20,7 +25,10 @@ export default {
     GlButton,
     GlDisclosureDropdown,
     GlDisclosureDropdownItem,
+    GlFormRadioGroup,
+    GlFormRadio,
     GlIcon,
+    GlLink,
     GlSprintf,
     ConfirmActionModal,
     AiCatalogItemConsumerModal,
@@ -28,13 +36,11 @@ export default {
   },
   directives: {
     GlModal: GlModalDirective,
+    GlTooltip: GlTooltipDirective,
   },
   inject: {
     isGlobal: {
       default: false,
-    },
-    projectId: {
-      default: null,
     },
   },
   props: {
@@ -52,6 +58,11 @@ export default {
       default: false,
     },
     isFlowsAvailable: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+    hasParentConsumer: {
       type: Boolean,
       required: false,
       default: false,
@@ -77,6 +88,7 @@ export default {
     return {
       showDeleteModal: false,
       showDisableModal: false,
+      forceHardDelete: false,
     };
   },
   computed: {
@@ -85,6 +97,9 @@ export default {
     },
     canReport() {
       return Boolean(this.item.userPermissions?.reportAiCatalogItem);
+    },
+    canHardDelete() {
+      return Boolean(this.item.userPermissions?.forceHardDeleteAiCatalogItem);
     },
     canUse() {
       return isLoggedIn();
@@ -102,10 +117,15 @@ export default {
       return this.canAdmin || this.canUse || this.canReport;
     },
     showAddToProject() {
-      return this.canUse && this.isGlobal;
+      return this.canUse && this.isGlobal && !this.item.foundational;
     },
     showAddToGroup() {
-      return this.canUse && this.isGlobal && (this.isFlowsAvailable || this.isAgentsAvailable);
+      return (
+        this.canUse &&
+        this.isGlobal &&
+        (this.isFlowsAvailable || this.isAgentsAvailable) &&
+        !this.item.foundational
+      );
     },
     duplicateItemProps() {
       return {
@@ -132,7 +152,23 @@ export default {
     deleteConfirmMessage() {
       return s__('AICatalog|Are you sure you want to delete %{itemType} %{name}?');
     },
+    pendingMessage() {
+      return !this.hasParentConsumer
+        ? sprintf(
+            s__(
+              'AICatalog|This %{itemType} requires approval from your parent group owner before it can be used',
+            ),
+            {
+              itemType: this.itemTypeLabel,
+            },
+          )
+        : null;
+    },
   },
+  DELETE_OPTIONS,
+  adminModeDocsLink: helpPagePath('/administration/settings/sign_in_restrictions', {
+    anchor: 'admin-mode',
+  }),
 };
 </script>
 
@@ -165,15 +201,17 @@ export default {
     >
       {{ s__('AICatalog|Enable in project') }}
     </gl-button>
-    <gl-button
-      v-else-if="showEnable"
-      v-gl-modal="'add-item-consumer-modal'"
-      variant="confirm"
-      category="primary"
-      data-testid="enable-button"
-    >
-      {{ __('Enable') }}
-    </gl-button>
+    <span v-else-if="showEnable" v-gl-tooltip="!hasParentConsumer" :title="pendingMessage">
+      <gl-button
+        v-gl-modal="'add-item-consumer-modal'"
+        :disabled="!hasParentConsumer"
+        variant="confirm"
+        category="primary"
+        data-testid="enable-button"
+      >
+        {{ __('Enable') }}
+      </gl-button>
+    </span>
     <gl-disclosure-dropdown
       v-if="showDropdown"
       :toggle-text="__('More actions')"
@@ -237,9 +275,10 @@ export default {
     <confirm-action-modal
       v-if="canAdmin && showDeleteModal"
       modal-id="delete-item-modal"
+      data-testid="delete-item-modal"
       variant="danger"
       :title="deleteConfirmTitle"
-      :action-fn="deleteFn"
+      :action-fn="() => deleteFn(forceHardDelete)"
       :action-text="__('Delete')"
       @close="showDeleteModal = false"
     >
@@ -249,6 +288,30 @@ export default {
         </template>
         <template #itemType>{{ itemTypeLabel }}</template>
       </gl-sprintf>
+      <div v-if="canHardDelete">
+        <label for="delete-method" class="gl-mb-0 gl-mt-4 gl-block">
+          {{ s__('AICatalog|Deletion method') }}
+        </label>
+        <p class="gl-mb-3 gl-text-subtle">
+          {{ s__('AICatalog|You can use the GraphQL API to delete items.') }}
+        </p>
+        <gl-form-radio-group id="delete-method" v-model="forceHardDelete">
+          <gl-form-radio
+            v-for="option in $options.DELETE_OPTIONS"
+            :key="option.text"
+            :value="option.value"
+          >
+            {{ option.text }}
+            <template #help>
+              <gl-sprintf :message="option.help">
+                <template #link="{ content }">
+                  <gl-link :href="$options.adminModeDocsLink">{{ content }}</gl-link>
+                </template>
+              </gl-sprintf>
+            </template>
+          </gl-form-radio>
+        </gl-form-radio-group>
+      </div>
     </confirm-action-modal>
     <confirm-action-modal
       v-if="showDisableModal"
@@ -261,7 +324,7 @@ export default {
     >
       <gl-sprintf :message="disableConfirmMessage">
         <template #name>
-          <strong>{{ item.name }}</strong>
+          <strong class="gl-wrap-anywhere">{{ item.name }}</strong>
         </template>
       </gl-sprintf>
     </confirm-action-modal>

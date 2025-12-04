@@ -34,7 +34,15 @@ module Security
             policy_type: 'scan_execution_policy'
           )
 
-          next unless rule_schedule.valid?
+          unless rule_schedule.valid?
+            Gitlab::AppLogger.warn(
+              message: "Failed to create policy rule schedule: #{rule_schedule.errors.full_messages}",
+              policy_configuration_id: policy_configuration.id,
+              policy_index: policy_index,
+              rule_index: rule_index
+            )
+            next
+          end
 
           rule_schedule.save!
 

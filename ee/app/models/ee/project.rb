@@ -131,6 +131,9 @@ module EE
       has_many :project_to_security_attributes, class_name: 'Security::ProjectToSecurityAttribute', inverse_of: :project
       has_many :security_attributes, through: :project_to_security_attributes, class_name: 'Security::Attribute'
 
+      has_many :security_scan_profiles_projects, class_name: 'Security::ScanProfileProject', inverse_of: :project
+      has_many :security_scan_profiles, through: :security_scan_profiles_projects, source: :scan_profile
+
       has_many :workspaces, class_name: 'RemoteDevelopment::Workspace', inverse_of: :project
       has_many :workspace_agentk_states, class_name: 'RemoteDevelopment::WorkspaceAgentkState', inverse_of: :project
 
@@ -255,6 +258,10 @@ module EE
         class_name: 'Ai::ActiveContext::Code::Repository'
 
       has_many :policy_dismissals, class_name: '::Security::PolicyDismissal', inverse_of: :project
+
+      has_many :enabled_foundational_flows,
+        class_name: 'Ai::Catalog::EnabledFoundationalFlow',
+        foreign_key: :project_id
 
       elastic_index_dependant_association :issues, on_change: :visibility_level
       elastic_index_dependant_association :issues, on_change: :archived
@@ -476,18 +483,6 @@ module EE
       scope :without_zoekt_repositories_for_index, ->(index_id) {
         where("NOT EXISTS (SELECT 1 FROM zoekt_repositories WHERE zoekt_repositories.project_id = projects.id " \
           "AND zoekt_repositories.zoekt_index_id = ?)", index_id)
-      }
-
-      # can't filter with id on projects because project_id is used as partitioning key
-      # on p_ai_active_context_code_repositories, query by project_id enables partition pruning
-      scope :with_ready_active_context_code_repository_project_ids, ->(project_ids) {
-        unless project_ids.present?
-          raise ArgumentError, "project_ids must be a non-empty array to enable " \
-            "partition scan on active_context_code_repository"
-        end
-
-        joins(:ready_active_context_code_repository)
-          .where(p_ai_active_context_code_repositories: { project_id: project_ids })
       }
 
       scope :order_by_id_list, ->(ids) do
@@ -818,6 +813,11 @@ module EE
       end
     end
 
+    def enabled_flow_catalog_item_ids
+      project_flows = enabled_foundational_flows.limit(100).pluck(:catalog_item_id)
+      project_flows.presence || namespace.enabled_flow_catalog_item_ids
+    end
+
     def project_state
       super || build_project_state
     end
@@ -832,10 +832,6 @@ module EE
 
     def okrs_mvc_feature_flag_enabled?
       ::Feature.enabled?(:okrs_mvc, self)
-    end
-
-    def okr_automatic_rollups_enabled?
-      ::Feature.enabled?(:okr_automatic_rollups, self)
     end
 
     def has_dependencies?

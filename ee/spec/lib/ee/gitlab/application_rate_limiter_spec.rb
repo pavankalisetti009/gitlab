@@ -14,6 +14,8 @@ RSpec.describe EE::Gitlab::ApplicationRateLimiter, feature_category: :system_acc
         stub_application_setting(max_number_of_repository_downloads_within_time_period: 60)
         stub_application_setting(soft_phone_verification_transactions_daily_limit: 60)
         stub_application_setting(hard_phone_verification_transactions_daily_limit: 100)
+        stub_application_setting(dependency_scanning_sbom_scan_api_upload_limit: 500)
+        stub_application_setting(dependency_scanning_sbom_scan_api_download_limit: 500)
       end
 
       where(:key, :threshold, :interval) do
@@ -29,8 +31,8 @@ RSpec.describe EE::Gitlab::ApplicationRateLimiter, feature_category: :system_acc
         :hard_phone_verification_transactions_limit | 100 | 1.day
         :container_scanning_for_registry_scans | 50 | 1.day
         :dependency_scanning_sbom_scan_api_throttling | 50 | 1.hour
-        :dependency_scanning_sbom_scan_api_upload | 400 | 1.hour
-        :dependency_scanning_sbom_scan_api_download | 6000 | 1.hour
+        :dependency_scanning_sbom_scan_api_upload | 500 | 1.hour
+        :dependency_scanning_sbom_scan_api_download | 500 | 1.hour
         :virtual_registries_endpoints_api_limit | 1000 | 15.seconds
         :partner_aws_api | 400 | 1.second
         :partner_gcp_api | 500 | 1.second

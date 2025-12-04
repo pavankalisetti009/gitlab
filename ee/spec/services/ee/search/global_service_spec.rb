@@ -154,18 +154,48 @@ RSpec.describe Search::GlobalService, feature_category: :global_search do
 
   describe '#allowed_scopes' do
     context 'when ES is used' do
-      it 'includes ES-specific scopes' do
-        expect(described_class.new(user, {}).allowed_scopes).to include('commits')
+      before do
+        stub_ee_application_setting(elasticsearch_search: true)
+      end
+
+      it 'includes ES-specific scopes from registry' do
+        expect(described_class.new(user, {}).allowed_scopes).to include('commits', 'epics')
       end
     end
 
-    context 'when elasticearch_search is disabled' do
+    context 'when elasticsearch_search is disabled' do
       before do
         stub_ee_application_setting(elasticsearch_search: false)
       end
 
-      it 'does not include ES-specific scopes' do
-        expect(described_class.new(user, {}).allowed_scopes).not_to include('commits')
+      it 'does not include ES-specific scopes including epics' do
+        expect(described_class.new(user, {}).allowed_scopes).not_to include('commits', 'epics')
+      end
+    end
+
+    context 'when search_scope_registry FF is disabled' do
+      before do
+        stub_feature_flags(search_scope_registry: false)
+      end
+
+      context 'when ES is used' do
+        before do
+          stub_ee_application_setting(elasticsearch_search: true)
+        end
+
+        it 'includes ES-specific scopes from legacy allowed scopes' do
+          expect(described_class.new(user, {}).allowed_scopes).to include('commits', 'epics')
+        end
+      end
+
+      context 'when elasticsearch_search is disabled' do
+        before do
+          stub_ee_application_setting(elasticsearch_search: false)
+        end
+
+        it 'does not include ES-specific scopes and epics in legacy mode' do
+          expect(described_class.new(user, {}).allowed_scopes).not_to include('commits', 'epics')
+        end
       end
     end
 
@@ -281,12 +311,6 @@ RSpec.describe Search::GlobalService, feature_category: :global_search do
       let_it_be(:noteable) { create(:issue, project: project) }
 
       it_behaves_like 'search confidential notes shared examples', :note_on_issue
-    end
-  end
-
-  describe '#search_level' do
-    it 'returns global' do
-      expect(described_class.new(user, {}).search_level).to eq :global
     end
   end
 end

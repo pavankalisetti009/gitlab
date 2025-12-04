@@ -139,6 +139,8 @@ describe('CustomStatusSettings', () => {
     wrapper = shallowMountExtended(NamespaceLifecycles, {
       propsData: {
         fullPath: 'gitlab-org',
+        id: 'js-custom-status-settings',
+        expanded: false,
         ...props,
       },
       apolloProvider,
@@ -149,13 +151,35 @@ describe('CustomStatusSettings', () => {
   };
 
   describe('Default', () => {
-    it('renders a settings block', () => {
+    it('renders a settings block with correct props', () => {
       createComponent();
 
       expect(findSettingsBlock().props()).toMatchObject({
         id: 'js-custom-status-settings',
         title: 'Statuses',
+        expanded: false,
       });
+    });
+
+    it('renders settings block with expanded prop when provided', () => {
+      createComponent({ props: { expanded: true } });
+
+      expect(findSettingsBlock().props('expanded')).toBe(true);
+    });
+
+    it('emits toggle-expand event when settings block is toggled', async () => {
+      createComponent();
+
+      findSettingsBlock().vm.$emit('toggle-expand', true);
+      await nextTick();
+
+      expect(wrapper.emitted('toggle-expand')).toEqual([[true]]);
+    });
+
+    it('passes custom id prop to settings block', () => {
+      createComponent({ props: { id: 'custom-id' } });
+
+      expect(findSettingsBlock().props('id')).toBe('custom-id');
     });
 
     it('renders the help page link', async () => {

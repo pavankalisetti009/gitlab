@@ -136,6 +136,10 @@ module EE
           @subject.licensed_feature_available?(:security_scans_api)
       end
 
+      condition(:security_scan_profiles_available, scope: :subject) do
+        @subject.licensed_feature_available?(:security_scan_profiles)
+      end
+
       condition(:coverage_fuzzing_enabled, scope: :subject) do
         @subject.feature_available?(:coverage_fuzzing)
       end
@@ -475,6 +479,7 @@ module EE
         enable :read_vulnerability
         enable :update_secret_detection_validity_checks_status
         enable :read_ai_catalog_item_consumer
+        enable :execute_ai_catalog_item
       end
 
       rule { can?(:push_code) }.policy do
@@ -580,6 +585,16 @@ module EE
 
       rule { can?(:maintainer_access) }.policy do
         enable :admin_security_attributes
+      end
+
+      rule { can?(:developer_access) }.policy do
+        enable :read_security_scan_profiles
+      end
+
+      rule { custom_role_enables_read_security_scan_profiles }.enable(:read_security_scan_profiles)
+
+      rule { ~security_scan_profiles_available }.policy do
+        prevent :read_security_scan_profiles
       end
 
       rule { ~validity_checks_available }.policy do
@@ -1346,6 +1361,7 @@ module EE
         prevent :admin_ai_catalog_item
         prevent :admin_ai_catalog_item_consumer
         prevent :read_ai_catalog_item_consumer
+        prevent :execute_ai_catalog_item
       end
 
       rule { container_registry_disabled }.policy do

@@ -229,7 +229,9 @@ describe('ComplianceViolationDetailsApp', () => {
 
       it('renders system notes with correct props', () => {
         const systemNotes = findSystemNotes();
-        const systemNotesData = mockComplianceViolation.notes.nodes.filter((note) => note.system);
+        const systemNotesData = mockComplianceViolation.discussions.nodes
+          .filter((discussion) => discussion.notes.nodes[0].system)
+          .map((discussion) => discussion.notes.nodes[0]);
 
         systemNotes.wrappers.forEach((noteWrapper, index) => {
           expect(noteWrapper.props('note')).toEqual(systemNotesData[index]);
@@ -238,9 +240,9 @@ describe('ComplianceViolationDetailsApp', () => {
 
       it('renders discussion notes with correct props', () => {
         const discussionNotes = findDiscussionNotes();
-        const discussionNotesData = mockComplianceViolation.notes.nodes.filter(
-          (note) => !note.system,
-        );
+        const discussionNotesData = mockComplianceViolation.discussions.nodes
+          .filter((discussion) => !discussion.notes.nodes[0].system)
+          .map((discussion) => discussion.notes.nodes[0]);
 
         discussionNotes.wrappers.forEach((noteWrapper, index) => {
           expect(noteWrapper.props('note')).toEqual(discussionNotesData[index]);

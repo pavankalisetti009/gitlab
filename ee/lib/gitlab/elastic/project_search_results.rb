@@ -112,9 +112,7 @@ module Gitlab
             root_ancestor_ids: [project.root_ancestor.id], related_ids: related_ids_for_notes(Issue.name))
         when :merge_requests
           options = super
-          if Feature.enabled?(:search_merge_request_queries_notes, current_user)
-            options[:related_ids] = related_ids_for_notes(MergeRequest.name)
-          end
+          options[:related_ids] = related_ids_for_notes(MergeRequest.name)
 
           options
         else

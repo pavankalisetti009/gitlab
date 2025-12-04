@@ -4,9 +4,14 @@ require 'spec_helper'
 
 RSpec.describe 'displays new user signups cap alert', :js, feature_category: :acquisition do
   let_it_be(:admin) { create(:admin) }
+  let_it_be(:group) { create(:group) }
 
   let(:help_page_href) { help_page_path('administration/settings/sign_up_restrictions.md') }
   let(:expected_content) { 'Your instance has reached its user cap' }
+
+  before_all do
+    group.add_owner(admin)
+  end
 
   context 'when reached active users cap', :do_not_mock_admin_mode_setting do
     before do

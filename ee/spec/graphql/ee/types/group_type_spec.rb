@@ -56,7 +56,6 @@ RSpec.describe GitlabSchema.types['Group'], feature_category: :groups_and_projec
   it { expect(described_class).to have_graphql_field(:project_compliance_requirements_status) }
   it { expect(described_class).to have_graphql_field(:component_versions) }
   it { expect(described_class).to have_graphql_field(:compliance_requirement_control_coverage) }
-  it { expect(described_class).to have_graphql_field(:maven_virtual_registries) }
   it { expect(described_class).to have_graphql_field(:virtual_registries_packages_maven_registries) }
   it { expect(described_class).to have_graphql_field(:virtual_registries_container_registries) }
   it { expect(described_class).to have_graphql_field(:security_metrics) }
@@ -501,16 +500,6 @@ RSpec.describe GitlabSchema.types['Group'], feature_category: :groups_and_projec
     it { is_expected.to have_graphql_resolver(::Resolvers::Sbom::ComponentVersionResolver) }
 
     it { is_expected.to include_graphql_arguments(:component_name) }
-  end
-
-  describe 'maven_virtual_registries' do
-    subject { described_class.fields['mavenVirtualRegistries'] }
-
-    it 'has connection type class' do
-      is_expected.to have_nullable_graphql_type(
-        ::Types::VirtualRegistries::Packages::Maven::RegistryType.connection_type
-      )
-    end
   end
 
   describe 'virtual_registries_container_registries' do

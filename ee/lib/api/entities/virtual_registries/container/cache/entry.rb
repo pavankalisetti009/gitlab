@@ -13,7 +13,6 @@ module API
             expose :group_id,
               :upstream_id,
               :upstream_checked_at,
-              :file_md5,
               :file_sha1,
               :size,
               :relative_path,

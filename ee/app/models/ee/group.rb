@@ -19,6 +19,7 @@ module EE
       include ::WorkItems::Parent
       include Elastic::MaintainElasticsearchOnGroupUpdate
       include ProductAnalyticsHelpers
+      include ::Ai::CustomizablePermission
 
       ALLOWED_ACTIONS_TO_USE_FILTERING_OPTIMIZATION = [:read_epic, :read_confidential_epic, :read_work_item, :read_confidential_issues].freeze
       EPIC_BATCH_SIZE = 500
@@ -309,10 +310,6 @@ module EE
 
     def licensed_duo_core_features_available?
       licensed_feature_available?(:code_suggestions) || licensed_feature_available?(:ai_chat)
-    end
-
-    def work_item_epics_enabled?
-      licensed_feature_available?(:epics)
     end
 
     def allow_group_items_in_project_autocompletion?
@@ -771,6 +768,11 @@ module EE
       return levels unless minimal_access_role_allowed?
 
       levels.merge(::Gitlab::Access::MINIMAL_ACCESS_HASH)
+    end
+
+    override :roles_user_can_assign
+    def roles_user_can_assign(current_user, roles = access_level_roles)
+      super(current_user, roles)
     end
 
     override :users_count

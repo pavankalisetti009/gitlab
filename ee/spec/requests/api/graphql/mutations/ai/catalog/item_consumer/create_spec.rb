@@ -153,15 +153,26 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Create, feature_category: :
   end
 
   context 'when the item is an agent' do
-    let_it_be(:item) { create(:ai_catalog_agent, public: true, project: item_project) }
+    let_it_be(:item) { create(:ai_catalog_agent, public: true, project: consumer_project) }
+    let_it_be(:consumer_group_item_consumer) do
+      create(:ai_catalog_item_consumer, item: item, group: consumer_group, pinned_version_prefix: '3.2.1')
+    end
 
     let_it_be(:item_latest_released_version) do
       create(:ai_catalog_agent_version, :released, item: item, version: '3.2.1')
     end
 
-    let(:params) { super().except(:parent_item_consumer_id) }
-
     it_behaves_like 'a successful request', pinned_version_prefix: '3.2.1'
+
+    context 'when ai_catalog_agents feature flag is disabled' do
+      before do
+        stub_feature_flags(ai_catalog_agents: false)
+      end
+
+      let(:params) { super().except(:parent_item_consumer_id) }
+
+      it_behaves_like 'a successful request', pinned_version_prefix: '3.2.1'
+    end
   end
 
   context 'when global_ai_catalog feature flag is disabled' do
@@ -201,6 +212,28 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Create, feature_category: :
         'serviceAccount' => a_hash_including('id' => service_account.to_global_id.to_s),
         'pinnedVersionPrefix' => '3.2.1'
       )
+    end
+  end
+
+  context 'when item is a foundational chat agent' do
+    let_it_be(:foundational_item) { create(:ai_catalog_agent, public: true, project: item_project, id: 348) }
+
+    let(:params) do
+      {
+        target: target,
+        item_id: foundational_item.to_global_id,
+        parent_item_consumer_id: consumer_group_item_consumer.to_global_id
+      }
+    end
+
+    it 'returns an error and does not create an item consumer' do
+      stub_saas_features(gitlab_duo_saas_only: true)
+
+      expect { execute }.not_to change { Ai::Catalog::ItemConsumer.count }
+
+      expect(graphql_data_at(:ai_catalog_item_consumer_create, :item_consumer)).to be_nil
+      expect(graphql_data_at(:ai_catalog_item_consumer_create,
+        :errors)).to eq(["Foundational agents must be configured in admin settings."])
     end
   end
 end

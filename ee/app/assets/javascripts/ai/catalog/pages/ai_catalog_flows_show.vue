@@ -47,6 +47,15 @@ export default {
       type: Object,
       required: true,
     },
+    versionData: {
+      type: Object,
+      required: true,
+    },
+    hasParentConsumer: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   data() {
     return {
@@ -60,9 +69,6 @@ export default {
     },
     isProjectNamespace() {
       return Boolean(this.projectId);
-    },
-    flowName() {
-      return this.aiCatalogFlow.name;
     },
     showActions() {
       return this.isGlobal || this.isProjectNamespace;
@@ -95,9 +101,7 @@ export default {
         if (data) {
           const { errors } = data.aiCatalogItemConsumerCreate;
           if (errors.length > 0) {
-            this.errorTitle = sprintf(s__('AICatalog|Could not enable flow: %{flowName}'), {
-              flowName: this.aiCatalogFlow.name,
-            });
+            this.errorTitle = s__('AICatalog|Could not enable flow');
             this.errors = errors;
             return;
           }
@@ -120,7 +124,7 @@ export default {
         Sentry.captureException(error);
       }
     },
-    async deleteFlow() {
+    async deleteFlow(forceHardDelete) {
       const { id, itemType } = this.aiCatalogFlow;
       const config = FLOW_TYPE_APOLLO_CONFIG[itemType].delete;
 
@@ -129,6 +133,7 @@ export default {
           mutation: config.mutation,
           variables: {
             id,
+            forceHardDelete,
           },
         });
 
@@ -222,7 +227,7 @@ export default {
     <page-heading>
       <template #heading>
         <span class="gl-line-clamp-1 gl-wrap-anywhere">
-          {{ flowName }}
+          {{ aiCatalogFlow.name }}
         </span>
       </template>
       <template #actions>
@@ -231,12 +236,13 @@ export default {
           :item="aiCatalogFlow"
           :item-routes="$options.itemRoutes"
           :is-flows-available="isFlowsAvailable"
+          :has-parent-consumer="hasParentConsumer"
           :disable-fn="disableFlow"
           :delete-fn="deleteFlow"
           :delete-confirm-message="s__('AICatalog|Are you sure you want to delete flow %{name}?')"
           :disable-confirm-message="
             s__(
-              'AICatalog|Are you sure you want to disable flow %{name}? The flow and associated triggers and service account will no longer work in this project.',
+              'AICatalog|Are you sure you want to disable flow %{name}? The flow, its service account, and any associated triggers will no longer work in this project.',
             )
           "
           @add-to-target="addFlowToTarget"
@@ -244,6 +250,6 @@ export default {
         />
       </template>
     </page-heading>
-    <ai-catalog-item-view :item="aiCatalogFlow" />
+    <ai-catalog-item-view :item="aiCatalogFlow" :version-data="versionData" />
   </div>
 </template>

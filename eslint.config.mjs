@@ -436,30 +436,39 @@ export default [
           },
         },
       ],
-
       'unicorn/no-array-callback-reference': 'off',
-
-      'vue/no-undef-components': [
-        'error',
-        {
-          ignorePatterns: ['^router-link$', '^router-view$', '^gl-emoji$', 'fe-island-duo-next'],
-        },
-      ],
-
       'local-rules/require-valid-help-page-path': 'error',
       'local-rules/vue-require-valid-help-page-link-component': 'error',
     },
   },
   {
-    files: ['**/*.vue'],
+    files: ['*.vue', '**/*.vue'],
     rules: {
+      'vue/require-name-property': 'error',
       'vue/no-unused-properties': [
         'error',
         {
-          groups: ['props', 'data', 'computed', 'methods'],
+          groups: ['props', 'data', 'computed', 'methods', 'setup'],
         },
       ],
-      'vue/require-name-property': 'error',
+      'vue/no-undef-components': [
+        'error',
+        {
+          ignorePatterns: [
+            '^router-link$',
+            '^router-view$',
+            '^gl-emoji$',
+            'fe-island-duo-next',
+            'fe-island-visual-ci-editor',
+          ],
+        },
+      ],
+
+      // Vue 3 events compatibility rules
+      'vue/v-on-event-hyphenation': 'error',
+      'vue/custom-event-name-casing': ['error', 'kebab-case'],
+      'vue/no-deprecated-v-on-native-modifier': 'error',
+      'vue/require-explicit-emits': 'error',
     },
   },
   {

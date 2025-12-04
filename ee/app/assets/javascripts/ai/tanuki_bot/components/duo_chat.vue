@@ -8,11 +8,9 @@ import { v4 as uuidv4 } from 'uuid';
 import { __, s__ } from '~/locale';
 import { renderGFM } from '~/behaviors/markdown/render_gfm';
 import { helpPagePath } from '~/helpers/help_page_helper';
-import { getCookie } from '~/lib/utils/common_utils';
 import { duoChatGlobalState } from '~/super_sidebar/constants';
 import { clearDuoChatCommands, generateEventLabelFromText, setAgenticMode } from 'ee/ai/utils';
 import DuoChatCallout from 'ee/ai/components/global_callout/duo_chat_callout.vue';
-import getAiMessages from 'ee/ai/graphql/get_ai_messages.query.graphql';
 import getAiConversationThreads from 'ee/ai/graphql/get_ai_conversation_threads.query.graphql';
 import getAiMessagesWithThread from 'ee/ai/graphql/get_ai_messages_with_thread.query.graphql';
 import chatMutation from 'ee/ai/graphql/chat.mutation.graphql';
@@ -29,14 +27,12 @@ import {
 } from 'ee/ai/constants';
 import getAiSlashCommands from 'ee/ai/graphql/get_ai_slash_commands.query.graphql';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
-import { fetchPolicies } from '~/lib/graphql';
 import getAiChatContextPresets from 'ee/ai/graphql/get_ai_chat_context_presets.query.graphql';
 import {
   TANUKI_BOT_TRACKING_EVENT_NAME,
   MESSAGE_TYPES,
   WIDTH_OFFSET,
   MULTI_THREADED_CONVERSATION_TYPE,
-  DUO_AGENTIC_MODE_COOKIE,
 } from '../constants';
 import TanukiBotSubscriptions from './tanuki_bot_subscriptions.vue';
 
@@ -100,7 +96,7 @@ export default {
     mode: {
       type: String,
       required: false,
-      default: 'default',
+      default: 'new',
     },
     isEmbedded: {
       type: Boolean,
@@ -109,27 +105,6 @@ export default {
     },
   },
   apollo: {
-    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
-    aiMessages: {
-      query: getAiMessages,
-      variables() {
-        return {
-          conversationType: 'DUO_CHAT',
-        };
-      },
-      skip() {
-        return this.shouldSkipQueries || Boolean(this.activeThread);
-      },
-      fetchPolicy: fetchPolicies.NETWORK_ONLY,
-      result({ data }) {
-        if (data?.aiMessages?.nodes) {
-          this.setMessages(data.aiMessages.nodes);
-        }
-      },
-      error(err) {
-        this.onError(err);
-      },
-    },
     aiConversationThreads: {
       query: getAiConversationThreads,
       skip() {
@@ -195,6 +170,8 @@ export default {
       height: window.innerHeight,
       minWidth: 400,
       minHeight: 400,
+      maxHeight: window.innerHeight,
+      maxWidth: window.innerWidth - WIDTH_OFFSET,
       // Explicitly initializing `left` as null to ensure Vue makes it reactive.
       // This allows computed properties and watchers dependent on `left` to work correctly.
       left: null,
@@ -228,10 +205,26 @@ export default {
     },
     duoAgenticModePreference: {
       get() {
-        return getCookie(DUO_AGENTIC_MODE_COOKIE) === 'true';
+        return this.duoChatGlobalState.chatMode === 'agentic';
       },
       set(value) {
-        setAgenticMode({ agenticMode: value, saveCookie: true, isEmbedded: this.isEmbedded });
+        setAgenticMode({
+          agenticMode: value,
+          saveCookie: true,
+          isEmbedded: this.isEmbedded,
+        });
+      },
+    },
+    duoClassicModePreference: {
+      get() {
+        return this.duoChatGlobalState.chatMode === 'classic';
+      },
+      set(value) {
+        setAgenticMode({
+          agenticMode: !value,
+          saveCookie: true,
+          isEmbedded: this.isEmbedded,
+        });
       },
     },
     computedResourceId() {
@@ -292,14 +285,6 @@ export default {
         }
       },
     },
-    'duoChatGlobalState.focusChatInput': {
-      handler(newVal) {
-        if (newVal) {
-          this.duoChatGlobalState.focusChatInput = false; // reset global state
-          this.focusInput();
-        }
-      },
-    },
     mode(newMode) {
       this.switchMode(newMode);
     },
@@ -309,15 +294,6 @@ export default {
     if (!this.isEmbedded) {
       this.setDimensions();
       window.addEventListener('resize', this.onWindowResize);
-    }
-
-    // Handle initialization based on persisted state
-    if (this.activeThread) {
-      // Reload the active thread from previous session
-      this.loadActiveThread();
-    } else if (this.mode === 'default') {
-      // Start a new chat if no active thread
-      this.onNewChat();
     }
 
     this.switchMode(this.mode);
@@ -335,15 +311,10 @@ export default {
       if (mode === 'chat') {
         if (this.activeThread) {
           this.loadActiveThread();
-        } else {
-          this.onNewChat();
         }
       }
       if (mode === 'new') {
-        // Only start a new chat if we don't have an active thread to preserve
-        if (!this.activeThread) {
-          this.onNewChat();
-        }
+        this.onNewChat();
       }
       if (mode === 'history') {
         this.onBackToList();
@@ -381,6 +352,13 @@ export default {
     findPredefinedPrompt(question) {
       return this.formattedContextPresets.find(({ text }) => text === question);
     },
+    navigateToChat() {
+      this.$emit('switch-to-active-tab', DUO_CHAT_VIEWS.CHAT);
+
+      if (this.$route?.path !== '/chat') {
+        this.$router.push(`/chat`);
+      }
+    },
     async onThreadSelected(e) {
       try {
         const { data } = await this.$apollo.query({
@@ -396,30 +374,26 @@ export default {
         }
       } catch (err) {
         this.onError(err);
+      } finally {
+        await this.focusInput();
       }
-      this.$emit('switch-to-active-tab', DUO_CHAT_VIEWS.CHAT);
-
-      if (this.$route?.path !== '/chat') {
-        this.$router.push(`/chat`);
-      }
+      this.navigateToChat();
     },
     async loadActiveThread() {
       this.onThreadSelected({ id: this.activeThread });
     },
-    onNewChat() {
-      clearDuoChatCommands();
-      this.activeThread = undefined;
+    cleanState() {
       this.setMessages([]);
-      this.multithreadedView = DUO_CHAT_VIEWS.CHAT;
       this.isWaitingOnPrompt = false;
       this.completedRequestId = null;
       this.cancelledRequestIds = [];
-
-      this.$emit('switch-to-active-tab', DUO_CHAT_VIEWS.CHAT);
-
-      if (this.$route?.path !== '/chat') {
-        this.$router.push(`/chat`);
-      }
+      this.activeThread = undefined;
+    },
+    async onNewChat() {
+      clearDuoChatCommands();
+      this.cleanState();
+      this.multithreadedView = DUO_CHAT_VIEWS.CHAT;
+      await this.focusInput();
     },
     onChatCancel() {
       // pushing last requestId of messages to canceled Request Id's
@@ -446,11 +420,13 @@ export default {
 
       performance.mark('response-received');
       performance.measure('prompt-to-response', 'prompt-sent', 'response-received');
-      const [{ duration }] = performance.getEntriesByName('prompt-to-response');
+      const entries = performance.getEntriesByName('prompt-to-response');
+      const duration = entries[0]?.duration ?? 0;
+      const numericDuration = parseFloat(duration);
 
       this.trackEvent('ai_response_time', {
         property: requestId,
-        value: parseFloat(duration) || 0,
+        value: Number.isFinite(numericDuration) ? numericDuration : 0,
       });
 
       performance.clearMarks();
@@ -504,6 +480,7 @@ export default {
 
           if (aiAction.threadId && !this.activeThread) {
             this.activeThread = aiAction.threadId;
+            this.navigateToChat();
           }
 
           this.addDuoChatMessage({
@@ -588,12 +565,9 @@ export default {
         })
         .catch(this.onError);
     },
-    // `focusInput` can be called by the parent component. Ideally, we would mark this as a public
-    // method via Vue's `expose` option. However, doing so would cause several tests to fail in Vue 3
-    // because we wrote some assertions directly against the `vm`, which becomes private when `expose`
-    // is defined. So we need to _not_ use `expose` and disable vue/no-unused-properties for now.
-    focusInput() {
-      this.$refs.duoChat?.focusChatInput();
+    async focusInput() {
+      await this.$nextTick();
+      this.$refs.duoChat?.focusChatInput?.();
     },
   },
 };
@@ -646,7 +620,14 @@ export default {
         @track-feedback="onTrackFeedback"
         @chat-resize="onChatResize"
       >
-        <template v-if="agenticAvailable" #agentic-switch>
+        <template v-if="agenticAvailable && glFeatures.agenticChatGa" #agentic-switch>
+          <gl-toggle v-model="duoClassicModePreference" label-position="left">
+            <template #label>
+              <span class="gl-font-normal gl-text-subtle">{{ s__('DuoChat|Chat (Classic)') }}</span>
+            </template>
+          </gl-toggle>
+        </template>
+        <template v-else-if="agenticAvailable" #agentic-switch>
           <gl-toggle v-model="duoAgenticModePreference" label-position="left">
             <template #label>
               <span class="gl-font-normal gl-text-subtle">{{

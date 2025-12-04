@@ -543,6 +543,7 @@ bridges:
 - trigger
 - downstream_pipeline
 - upstream_pipeline
+- build_source
 generic_commit_statuses:
 - user
 - pipeline
@@ -985,6 +986,9 @@ project:
 - security_attributes
 - project_to_security_attributes
 - policy_dismissals
+- security_scan_profiles
+- security_scan_profiles_projects
+- enabled_foundational_flows
 award_emoji:
 - awardable
 - user
@@ -1311,6 +1315,7 @@ vulnerability_finding:
   - cve_enrichments
   - triggered_workflows
   - flip_guard
+  - detection_transitions
 scanner:
   - findings
   - security_findings
@@ -1326,4 +1331,3 @@ vulnerability_read:
   - vulnerability
   - scanner
   - vulnerability_occurrence
-

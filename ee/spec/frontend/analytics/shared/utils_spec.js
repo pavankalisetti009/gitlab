@@ -4,6 +4,7 @@ import {
   buildCycleAnalyticsInitialData,
   buildNullSeries,
   pairDataAndLabels,
+  hasAnyNonNullFields,
 } from 'ee/analytics/shared/utils';
 
 const rawValueStream = `{
@@ -391,5 +392,19 @@ describe('pairDataAndLabels', () => {
     result.forEach((res, index) => {
       expect(res).toEqual(expectedDatasets[index]);
     });
+  });
+});
+
+describe('hasAnyNonNullFields', () => {
+  const fields = ['some', 'cool', 'field'];
+
+  it.each`
+    nodes                                                     | response
+    ${[]}                                                     | ${false}
+    ${[{ some: null, cool: null }]}                           | ${false}
+    ${[{ some: null, cool: null }, { some: 10, cool: null }]} | ${true}
+    ${[{ some: null, cool: {} }]}                             | ${true}
+  `('returns $response with nodes $nodes', ({ nodes, response }) => {
+    expect(hasAnyNonNullFields(nodes, fields)).toBe(response);
   });
 });

@@ -3,6 +3,7 @@ import { GlButton } from '@gitlab/ui';
 import EMPTY_SVG_URL from '@gitlab/svgs/dist/illustrations/empty-state/empty-ai-catalog-md.svg?url';
 import { sprintf } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import { fetchPolicies } from '~/lib/graphql';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_GROUP, TYPENAME_PROJECT } from '~/graphql_shared/constants';
 import aiCatalogConfiguredItemsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_configured_items.query.graphql';
@@ -92,6 +93,8 @@ export default {
   apollo: {
     configuredItems: {
       query: aiCatalogConfiguredItemsQuery,
+      // fetchPolicy needed to refresh items after deletion from the show page
+      fetchPolicy: fetchPolicies.CACHE_AND_NETWORK,
       variables() {
         return {
           itemTypes: this.itemTypes,

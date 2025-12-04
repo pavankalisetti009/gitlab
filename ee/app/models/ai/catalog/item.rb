@@ -71,6 +71,8 @@ module Ai
         reorder(order)
       end
 
+      scope :foundational_flows, -> { where.not(foundational_flow_reference: nil) }
+
       before_destroy :prevent_deletion_if_consumers_exist
 
       AGENT_TYPE = :agent
@@ -158,6 +160,7 @@ module Ai
         ::Gitlab::Saas.feature_available?(:gitlab_duo_saas_only) &&
           !!::Ai::FoundationalChatAgent.find_by(global_catalog_id: id)
       end
+      alias_method :foundational, :foundational_chat
 
       private
 

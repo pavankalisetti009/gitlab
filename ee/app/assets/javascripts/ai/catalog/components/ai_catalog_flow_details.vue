@@ -1,10 +1,13 @@
 <script>
-import { GlBadge, GlIcon, GlLink } from '@gitlab/ui';
+import { GlIcon, GlLink, GlSprintf, GlToken } from '@gitlab/ui';
 import { __ } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { FLOW_TRIGGER_TYPES } from 'ee/ai/duo_agents_platform/constants';
-import { FLOW_TRIGGERS_EDIT_ROUTE } from 'ee/ai/duo_agents_platform/router/constants';
-import { FLOW_VISIBILITY_LEVEL_DESCRIPTIONS } from '../constants';
+import {
+  FLOW_TRIGGERS_NEW_ROUTE,
+  FLOW_TRIGGERS_EDIT_ROUTE,
+} from 'ee/ai/duo_agents_platform/router/constants';
+import { AI_CATALOG_ITEM_LABELS, FLOW_VISIBILITY_LEVEL_DESCRIPTIONS } from '../constants';
 import AiCatalogItemField from './ai_catalog_item_field.vue';
 import AiCatalogItemVisibilityField from './ai_catalog_item_visibility_field.vue';
 import FormFlowDefinition from './form_flow_definition.vue';
@@ -12,9 +15,10 @@ import FormSection from './form_section.vue';
 
 export default {
   components: {
-    GlBadge,
     GlIcon,
     GlLink,
+    GlSprintf,
+    GlToken,
     AiCatalogItemField,
     AiCatalogItemVisibilityField,
     FormFlowDefinition,
@@ -25,16 +29,23 @@ export default {
       type: Object,
       required: true,
     },
+    versionData: {
+      type: Object,
+      required: true,
+    },
   },
   computed: {
     projectName() {
       return this.item.project?.nameWithNamespace;
     },
-    definition() {
-      return this.item.latestVersion?.definition;
+    hasProjectConfiguration() {
+      return Boolean(this.item.configurationForProject);
     },
     flowTrigger() {
       return this.item.configurationForProject?.flowTrigger;
+    },
+    itemTypeLabel() {
+      return AI_CATALOG_ITEM_LABELS[this.item.itemType];
     },
   },
   methods: {
@@ -48,6 +59,7 @@ export default {
       };
     },
   },
+  FLOW_TRIGGERS_NEW_ROUTE,
   FLOW_VISIBILITY_LEVEL_DESCRIPTIONS,
 };
 </script>
@@ -72,28 +84,42 @@ export default {
         />
       </form-section>
       <form-section :title="s__('AICatalog|Configuration')">
-        <ai-catalog-item-field v-if="flowTrigger" :title="s__('DuoAgentsPlatform|Triggers')">
-          <div class="gl-mt-3 gl-flex gl-justify-between">
-            <div class="gl-flex gl-flex-wrap gl-gap-2">
-              <gl-badge
-                v-for="eventType in flowTrigger.eventTypes"
-                :key="eventType"
-                variant="neutral"
-              >
+        <ai-catalog-item-field
+          v-if="hasProjectConfiguration"
+          :title="s__('DuoAgentsPlatform|Triggers')"
+        >
+          <div v-if="flowTrigger" class="gl-mt-3 gl-flex gl-justify-between">
+            <div class="gl-flex gl-flex-wrap gl-gap-2 gl-whitespace-nowrap">
+              <gl-token v-for="eventType in flowTrigger.eventTypes" :key="eventType" view-only>
                 {{ triggerName(eventType) }}
-              </gl-badge>
+              </gl-token>
             </div>
             <gl-link
               v-if="flowTrigger.id"
               :to="triggerEditPath(flowTrigger.id)"
-              class="gl-whitespace-nowrap"
+              class="gl-flex gl-items-center gl-gap-2 gl-whitespace-nowrap"
             >
-              <gl-icon name="pencil" /> {{ __('Edit') }}
+              <gl-icon name="pencil" />
+              {{ __('Edit') }}
             </gl-link>
+          </div>
+          <div v-else class="gl-text-subtle">
+            <gl-sprintf
+              :message="
+                s__(
+                  'AICatalog|No triggers configured. %{linkStart}Add a trigger%{linkEnd} to make this %{itemType} available.',
+                )
+              "
+            >
+              <template #link="{ content }">
+                <gl-link :to="{ name: $options.FLOW_TRIGGERS_NEW_ROUTE }">{{ content }}</gl-link>
+              </template>
+              <template #itemType>{{ itemTypeLabel }}</template>
+            </gl-sprintf>
           </div>
         </ai-catalog-item-field>
         <ai-catalog-item-field :title="s__('AICatalog|Configuration')">
-          <form-flow-definition :value="definition" read-only class="gl-mt-3" />
+          <form-flow-definition :value="versionData.definition" read-only class="gl-mt-3" />
         </ai-catalog-item-field>
       </form-section>
     </dl>

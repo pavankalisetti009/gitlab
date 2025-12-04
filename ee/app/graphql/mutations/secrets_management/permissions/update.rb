@@ -26,7 +26,7 @@ module Mutations
         argument :expired_at, GraphQL::Types::ISO8601Date, required: false,
           description: "Expiration date for Secret Permission (optional)."
 
-        field :secret_permission, Types::SecretsManagement::Permissions::SecretPermissionType,
+        field :secret_permission, Types::SecretsManagement::ProjectSecretsPermissionType,
           null: true,
           description: 'Secret Permission that was created.'
 
@@ -37,22 +37,24 @@ module Mutations
             raise_resource_not_available_error!("`secrets_manager` feature flag is disabled.")
           end
 
-          result = ::SecretsManagement::Permissions::UpdateService
+          result = ::SecretsManagement::ProjectSecretsPermissions::UpdateService
             .new(project, current_user)
-            .execute(principal_id: principal.id,
+            .execute(
+              principal_id: principal.id,
               principal_type: principal.type,
               permissions: permissions,
-              expired_at: expired_at)
+              expired_at: expired_at
+            )
 
           if result.success?
             {
-              secret_permission: result.payload[:secret_permission],
+              secret_permission: result.payload[:secrets_permission],
               errors: []
             }
           else
             {
               secret_permission: nil,
-              errors: error_messages(result, [:secret_permission])
+              errors: error_messages(result, [:secrets_permission])
             }
           end
         end

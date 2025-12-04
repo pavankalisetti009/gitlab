@@ -133,6 +133,10 @@ export default {
       @hideTooltips="hideTooltips"
       @newChatError="handleNewChatError"
     />
+    <div
+      class="gl-mx-2 gl-my-3 gl-h-5 gl-w-1 gl-border-0 gl-border-r-1 gl-border-solid gl-border-strong lg:gl-mx-auto lg:gl-h-1 lg:gl-w-5 lg:gl-border-r-0 lg:gl-border-t-1"
+      name="divider"
+    ></div>
     <gl-button
       v-gl-tooltip.left="{
         title: formattedDuoShortcutTooltip,
@@ -175,10 +179,6 @@ export default {
       @click="toggleTab('history')"
     />
     <template v-if="showSessionsButton">
-      <div
-        class="gl-my-3 gl-h-5 gl-w-1 gl-border-0 gl-border-r-1 gl-border-solid gl-border-strong lg:gl-mx-auto lg:gl-h-1 lg:gl-w-5 lg:gl-border-r-0 lg:gl-border-t-1"
-        name="divider"
-      ></div>
       <gl-button
         v-gl-tooltip.left
         icon="session-ai"

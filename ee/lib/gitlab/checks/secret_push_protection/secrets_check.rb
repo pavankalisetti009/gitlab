@@ -9,7 +9,8 @@ module Gitlab
         include ::Gitlab::Loggable
 
         ERROR_MESSAGES = {
-          scan_initialization_error: 'Secret detection scan failed to initialize. %{error_msg}'
+          scan_initialization_error: 'Secret detection scan failed to initialize. %{error_msg}',
+          sds_timeout: 'SDS returned a nil response or timed out. Falling back to SDS Gem'
         }.freeze
 
         LOG_MESSAGES = {
@@ -45,6 +46,8 @@ module Gitlab
         # Only runs for public projects that don't have SPP enabled or licensed.
         # See: https://gitlab.com/gitlab-org/gitlab/-/issues/551932
         def run_validation_dark_launch!
+          start_time = Gitlab::Metrics::System.monotonic_time
+
           audit_logger.track_spp_scan_executed('dark-launch')
 
           logger.log_timed(LOG_MESSAGES[:secrets_check]) do
@@ -69,9 +72,14 @@ module Gitlab
               error_class: e.class.name
             )
           )
+        ensure
+          log_duration(start_time, 'run_validation_dark_launch!')
         end
 
+        # rubocop:disable Metrics/AbcSize -- this method will be refactored as part of https://gitlab.com/gitlab-org/gitlab/-/work_items/582653
         def run_validation!
+          start_time = Gitlab::Metrics::System.monotonic_time
+
           return unless eligibility_checker.should_scan?
 
           audit_logger.track_spp_scan_executed('regular')
@@ -88,10 +96,10 @@ module Gitlab
               exclusions: exclusions_manager.active_exclusions,
               extra_headers: extra_headers)
 
-            unless response
+            if response.nil? || response_handler.timed_out?(response)
               secret_detection_logger.warn(
                 build_structured_payload(
-                  message: "SDS returned a nil response. Falling back to SDS Gem",
+                  message: ERROR_MESSAGES[:sds_timeout],
                   class: self.class.name
                 )
               )
@@ -112,7 +120,6 @@ module Gitlab
           # TODO: Perhaps have a separate message for each and better logging?
           rescue ::Gitlab::SecretDetection::Core::Ruleset::RulesetParseError,
             ::Gitlab::SecretDetection::Core::Ruleset::RulesetCompilationError => e
-
             message = format(ERROR_MESSAGES[:scan_initialization_error], { error_msg: e.message })
             secret_detection_logger.error(build_structured_payload(message:))
           rescue ::Gitlab::GitAccess::ForbiddenError => e
@@ -122,10 +129,24 @@ module Gitlab
               .new(project.repository, changes_access.user_access.user, changes_access.protocol)
               .add_message
           end
+        ensure
+          log_duration(start_time, 'run_validation!')
         end
+        # rubocop:enable Metrics/AbcSize
 
         ##############################
         # Helpers
+
+        def log_duration(start_time, method_name)
+          duration = Gitlab::Metrics::System.monotonic_time - start_time
+          secret_detection_logger.info(
+            build_structured_payload(
+              message: 'Secret push protection validation completed',
+              method: method_name,
+              duration_s: duration.round(1)
+            )
+          )
+        end
 
         def ruleset
           ::Gitlab::SecretDetection::Core::Ruleset.new(
@@ -176,7 +197,7 @@ module Gitlab
         # Handle the response depending on the status returned
 
         def response_handler
-          @response_handler = Gitlab::Checks::SecretPushProtection::ResponseHandler.new(
+          @response_handler ||= Gitlab::Checks::SecretPushProtection::ResponseHandler.new(
             project: project,
             changes_access: changes_access
           )

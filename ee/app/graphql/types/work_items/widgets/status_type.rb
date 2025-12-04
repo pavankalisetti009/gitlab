@@ -12,9 +12,14 @@ module Types
 
         implements ::Types::WorkItems::WidgetInterface
 
+        def self.authorization_scopes
+          super + [:ai_workflows]
+        end
+
         field :status, Types::WorkItems::StatusType,
           null: true,
           experiment: { milestone: '17.11' },
+          scopes: [:api, :read_api, :ai_workflows],
           description: 'Status assigned to work item.',
           resolver: Resolvers::WorkItems::Statuses::StatusResolver
       end

@@ -2,8 +2,8 @@ import {
   formatListboxItems,
   processFilters,
   isValidFilter,
+  extractFiltersFromQuery,
 } from 'ee/admin/data_management/filters';
-import { TOKEN_TYPES } from 'ee/admin/data_management/constants';
 
 describe('formatListboxItems', () => {
   it('handles empty array', () => {
@@ -48,16 +48,16 @@ describe('isValidFilter', () => {
 
 describe('processFilters', () => {
   it.each`
-    filters                                                                | query
-    ${[]}                                                                  | ${{}}
-    ${[{ type: TOKEN_TYPES.CHECKSUM_STATE, value: { data: 'verified' } }]} | ${{ checksum_state: 'verified' }}
-    ${['123 456 789']}                                                     | ${{ identifiers: ['123', '456', '789'] }}
+    filters                                                      | query
+    ${[]}                                                        | ${{}}
+    ${[{ type: 'checksum_state', value: { data: 'verified' } }]} | ${{ checksum_state: 'verified' }}
+    ${['123 456 789']}                                           | ${{ identifiers: ['123', '456', '789'] }}
   `('returns the correct { query, url } for filters: $filters', ({ filters, query }) => {
     expect(processFilters(filters)).toStrictEqual(query);
   });
 
   it('handles mixed filter types', () => {
-    const filters = ['123 456', { type: TOKEN_TYPES.CHECKSUM_STATE, value: { data: 'verified' } }];
+    const filters = ['123 456', { type: 'checksum_state', value: { data: 'verified' } }];
 
     const expectedQuery = {
       identifiers: ['123', '456'],
@@ -74,5 +74,43 @@ describe('processFilters', () => {
     };
 
     expect(processFilters(filters)).toStrictEqual(expectedQuery);
+  });
+});
+
+describe('extractFiltersFromQuery', () => {
+  it('returns empty array when no query parameters provided', () => {
+    expect(extractFiltersFromQuery({})).toStrictEqual([]);
+  });
+
+  it('returns single identifier', () => {
+    const query = { identifiers: ['123'] };
+
+    expect(extractFiltersFromQuery(query)).toStrictEqual(['123']);
+  });
+
+  it('returns multiple identifiers', () => {
+    const query = { identifiers: ['123', '456', '789'] };
+
+    expect(extractFiltersFromQuery(query)).toStrictEqual(['123 456 789']);
+  });
+
+  it('returns checksum state filter', () => {
+    const query = { checksumState: 'succeeded' };
+
+    expect(extractFiltersFromQuery(query)).toStrictEqual([
+      { type: 'checksum_state', value: { data: 'succeeded' } },
+    ]);
+  });
+
+  it('ignores invalid checksum state', () => {
+    const query = { checksumState: 'invalid_state' };
+
+    expect(extractFiltersFromQuery(query)).toStrictEqual([]);
+  });
+
+  it('handles empty identifiers array', () => {
+    const query = { identifiers: [] };
+
+    expect(extractFiltersFromQuery(query)).toStrictEqual(['']);
   });
 });

@@ -22,8 +22,21 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+const wsWriteDeadline = 60 * time.Second
 const wsCloseTimeout = 5 * time.Second
 const wsStopWorkflowTimeout = 10 * time.Second
+
+// ClientCapabilities is how gitlab-lsp -> workhorse -> Duo Workflow Service communicates
+// capabilities that can be used by Duo Workflow Service without breaking
+// backwards compatibility. We intersect the capabilities of all parties and
+// then new behavior can only depend on that behavior if it makes it all the
+// way through. Whenever you add to this list you must also update the constant in
+// ee/app/assets/javascripts/ai/duo_agentic_chat/utils/workflow_socket_utils.js
+// and gitlab-lsp .
+var ClientCapabilities = []string{
+	"shell_command",
+	"incremental_streaming",
+}
 
 var errFailedToAcquireLockError = errors.New("handleWebSocketMessages: failed to acquire lock")
 
@@ -43,6 +56,7 @@ type websocketConn interface {
 	WriteMessage(int, []byte) error
 	WriteControl(int, []byte, time.Time) error
 	SetReadDeadline(time.Time) error
+	SetWriteDeadline(time.Time) error
 	Close() error
 }
 
@@ -87,6 +101,13 @@ func newRunner(conn websocketConn, rails *api.API, r *http.Request, cfg *api.Duo
 		log.WithRequest(r).WithError(err).Info("failed to initialize MCP server(s)")
 	}
 
+	lockFlow := cfg.LockConcurrentFlow
+
+	if lockFlow && rdb == nil {
+		log.WithRequest(r).Info("Workflow locking will be skipped as redis is not configured")
+		lockFlow = false
+	}
+
 	return &runner{
 		rails:       rails,
 		token:       cfg.Headers["x-gitlab-oauth-token"],
@@ -97,7 +118,7 @@ func newRunner(conn websocketConn, rails *api.API, r *http.Request, cfg *api.Duo
 		client:      client,
 		mcpManager:  mcpManager,
 		lockManager: newWorkflowLockManager(rdb),
-		lockFlow:    cfg.LockConcurrentFlow,
+		lockFlow:    lockFlow,
 	}, nil
 }
 
@@ -113,9 +134,7 @@ func (r *runner) Execute(ctx context.Context) error {
 	// we release it here instead.
 	defer func() {
 		if r.lockFlow {
-			log.WithContextFields(ctx, log.Fields{
-				"workflowID": r.workflowID,
-			}).Info("Releasing lock for workflow")
+			log.WithRequest(r.originalReq).Info("Releasing lock for workflow")
 			r.lockManager.releaseLock(ctx, r.mutex, r.workflowID)
 		}
 	}()
@@ -213,6 +232,10 @@ func (r *runner) handleWebSocketMessage(message []byte) error {
 
 		startReq.McpTools = append(startReq.McpTools, r.mcpManager.Tools()...)
 		startReq.PreapprovedTools = append(startReq.PreapprovedTools, r.mcpManager.PreApprovedTools()...)
+		startReq.ClientCapabilities = intersectClientCapabilities(startReq.ClientCapabilities)
+		log.WithRequest(r.originalReq).WithFields(log.Fields{
+			"client_capabilities": startReq.ClientCapabilities,
+		}).Info("Sending startRequest")
 	}
 
 	log.WithContextFields(r.originalReq.Context(), log.Fields{
@@ -233,6 +256,20 @@ func (r *runner) handleWebSocketMessage(message []byte) error {
 	return nil
 }
 
+// Returns the intersection of what gitlab-lsp passed in and what workhorse
+// supports.
+func intersectClientCapabilities(fromClient []string) []string {
+	var result = []string{}
+
+	for _, cap := range ClientCapabilities {
+		if slices.Contains(fromClient, cap) {
+			result = append(result, cap)
+		}
+	}
+
+	return result
+}
+
 func (r *runner) acquireWorkflowLock(startReq *pb.StartWorkflowRequest) error {
 	r.workflowID = startReq.WorkflowID
 
@@ -243,7 +280,6 @@ func (r *runner) acquireWorkflowLock(startReq *pb.StartWorkflowRequest) error {
 
 	mutex, err := r.lockManager.acquireLock(r.originalReq.Context(), r.workflowID)
 	if err != nil {
-		log.WithRequest(r.originalReq).WithError(err).Error("Failed to acquire workflow lock")
 		return errFailedToAcquireLockError
 	}
 
@@ -321,6 +357,11 @@ func (r *runner) sendActionToWs(action *pb.Action) error {
 	r.marshalBuf, err = marshaler.MarshalAppend(r.marshalBuf[:0], action)
 	if err != nil {
 		return fmt.Errorf("sendActionToWs: failed to unmarshal action: %v", err)
+	}
+
+	deadline := time.Now().Add(wsWriteDeadline)
+	if deadlineErr := r.conn.SetWriteDeadline(deadline); deadlineErr != nil {
+		return fmt.Errorf("sendActionToWs: failed to set write deadline: %v", deadlineErr)
 	}
 
 	if err = r.conn.WriteMessage(websocket.BinaryMessage, r.marshalBuf); err != nil {

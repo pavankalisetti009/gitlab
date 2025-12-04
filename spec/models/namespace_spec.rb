@@ -1040,56 +1040,6 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
 
   it_behaves_like 'an isolatable', :namespace
 
-  describe 'archive and unarchive' do
-    let_it_be(:namespace) { create(:group) }
-
-    describe '#archive' do
-      context 'when namespace is not archived' do
-        before do
-          namespace.namespace_settings.update!(archived: false)
-        end
-
-        it 'archives the namespace' do
-          expect(namespace.archive).to be true
-          expect(namespace.namespace_settings.reload.archived).to eq(true)
-        end
-      end
-
-      context 'when namespace is already archived' do
-        before do
-          namespace.namespace_settings.update!(archived: true)
-        end
-
-        it 'returns false' do
-          expect(namespace.archive).to be false
-        end
-      end
-    end
-
-    describe '#unarchive' do
-      context 'when namespace is archived' do
-        before do
-          namespace.namespace_settings.update!(archived: true)
-        end
-
-        it 'unarchives the namespace' do
-          expect(namespace.unarchive).to be true
-          expect(namespace.namespace_settings.reload.archived).to eq(false)
-        end
-      end
-
-      context 'when namespace is not archived' do
-        before do
-          namespace.namespace_settings.update!(archived: false)
-        end
-
-        it 'returns false' do
-          expect(namespace.unarchive).to be false
-        end
-      end
-    end
-  end
-
   describe '#self_archived?' do
     let_it_be(:namespace) { create(:group) }
 
@@ -3300,6 +3250,59 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
         metadata = namespace.namespace_details.reload.state_metadata
         expect(metadata['last_changed_by_user_id']).to be_nil
       end
+    end
+  end
+
+  describe '#allowed_work_item_types' do
+    before do
+      namespace.clear_memoization(:allowed_work_item_types)
+    end
+
+    it 'uses WorkItems::TypesFilter and memoizes the result' do
+      expect_next_instance_of(::WorkItems::TypesFilter) do |types_filter|
+        expect(types_filter).to receive(:allowed_types).once.and_call_original
+      end
+
+      2.times { namespace.allowed_work_item_types }
+    end
+  end
+
+  describe '#allowed_work_item_type?' do
+    it 'returns boolean when work item type exists' do
+      ::WorkItems::Type.base_types.each_key do |name|
+        expect(namespace.allowed_work_item_type?(name))
+          .to be(true).or(be(false))
+      end
+    end
+
+    it 'raises an exception when work item type not exist' do
+      expect { namespace.allowed_work_item_type?(:unknown) }
+        .to raise_error(
+          ArgumentError,
+          '"unknown" is not a valid WorkItems::Type.base_types'
+        )
+    end
+  end
+
+  describe '#supports_work_items?' do
+    before do
+      namespace.clear_memoization(:supports_work_items?)
+    end
+
+    it 'returns true when ::WorkItems::TyepsFilter has non-empty allowed_types and memoizes the result' do
+      expect_next_instance_of(::WorkItems::TypesFilter) do |types_filter|
+        expect(types_filter).to receive(:allowed_types).once.and_return([:issue])
+      end
+
+      2.times { expect(namespace.supports_work_items?).to be true }
+    end
+
+    it 'returns false when ::WorkItems::TyepsFilter has an empty allowed_types and memoizes the result' do
+      expect_next_instance_of(::WorkItems::TypesFilter) do |types_filter|
+        expect(types_filter).to receive(:allowed_types).once.and_return([])
+      end
+
+      2.times { expect(namespace.supports_work_items?).to be false }
     end
   end
 end

@@ -65,6 +65,29 @@ module Gitlab
             http_get('api/v1/gitlab/namespaces/trials/trial_types', admin_headers)
           end
 
+          def verify_usage_quota(
+            user_id: nil, root_namespace_id: nil, unique_instance_id: nil,
+            realm: ::CloudConnector.gitlab_realm)
+            raise ArgumentError, "user_id is required" if user_id.blank?
+            raise ArgumentError, "realm is required" if realm.blank?
+
+            if root_namespace_id.blank? && unique_instance_id.blank?
+              raise ArgumentError, "Either root_namespace_id or unique_instance_id is required"
+            end
+
+            query = {
+              user_id: user_id,
+              root_namespace_id: root_namespace_id,
+              unique_instance_id: unique_instance_id,
+              instance_id: unique_instance_id,
+              realm: realm
+            }.compact
+            http_head(
+              'api/v1/consumers/resolve', json_headers, query,
+              base_url_to_call: usage_quota_base_url
+            )
+          end
+
           private
 
           def requests_enabled?
@@ -100,12 +123,32 @@ module Gitlab
             end
           end
 
+          def http_head(path, headers, query = {}, base_url_to_call: base_url)
+            process_http_call do
+              Gitlab::HTTP.head("#{base_url_to_call}/#{path}", query: query, headers: headers)
+            end
+          end
+
           def process_http_call
             response = yield
             parse_response(response)
           rescue *Gitlab::HTTP::HTTP_ERRORS => e
             track_exception(e.message)
             { success: false, data: { errors: error_message } }.with_indifferent_access
+          end
+
+          def usage_quota_base_url
+            return base_url unless use_mock_usage_quota_endpoint?
+
+            env_url = ENV['MOCK_CUSTOMER_DOT_PORTAL_SERVER_URL']
+            return env_url if env_url.present?
+
+            'http://localhost:4567'
+          end
+
+          def use_mock_usage_quota_endpoint?
+            Rails.env.development? &&
+              Feature.enabled?(:use_mock_dot_api_for_usage_quota, :instance)
           end
         end
       end

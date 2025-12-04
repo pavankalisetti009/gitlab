@@ -33,7 +33,9 @@ required upgrade stops occur at versions:
 
 ## Issues to be aware of when upgrading from 17.11
 
-- [PostgreSQL 14 is not supported starting from GitLab 18](../deprecations.md#postgresql-14-and-15-no-longer-supported). Upgrade PostgreSQL to at least version 16.8 before upgrading to GitLab 18.0 or later.
+- [PostgreSQL 14 is not supported starting from GitLab 18](../deprecations.md#postgresql-14-and-15-no-longer-supported).
+  Upgrade PostgreSQL to at least version 16.5 before upgrading to GitLab 18.0 or later. For more information, see
+  [installation requirements](../../install/requirements.md#postgresql).
 
   {{< alert type="warning" >}}
 
@@ -124,8 +126,8 @@ For more information, see [HTTP request limits](../../administration/instance_li
 ### GitLab Duo
 
 - A new worker `LdapAddOnSeatSyncWorker` was introduced, which could unintentionally remove all users from
-GitLab Duo seats nightly when LDAP is enabled. This was fixed in GitLab 18.4.0 and 18.3.2. See
-[issue 565064](https://gitlab.com/gitlab-org/gitlab/-/issues/565064) for details.
+  GitLab Duo seats nightly when LDAP is enabled. This was fixed in GitLab 18.4.0 and 18.3.2. See
+  [issue 565064](https://gitlab.com/gitlab-org/gitlab/-/issues/565064) for details.
 
 ### Geo installations 18.3.0
 

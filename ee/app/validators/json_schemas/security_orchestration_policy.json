@@ -95,73 +95,159 @@
             "additionalItems": false,
             "items": {
               "type": "object",
-              "required": [
-                "type",
-                "scanners",
-                "severity_levels"
-              ],
-              "properties": {
-                "type": {
-                  "enum": [
-                    "no_longer_detected"
+              "oneOf": [
+                {
+                  "required": [
+                    "type",
+                    "scanners",
+                    "severity_levels"
                   ],
-                  "type": "string",
-                  "description": "Specifies a type of the policy rule."
+                  "properties": {
+                    "type": {
+                      "enum": [
+                        "no_longer_detected"
+                      ],
+                      "type": "string",
+                      "description": "Specifies a type of the policy rule."
+                    },
+                    "scanners": {
+                      "description": "Specifies a list of scanners that should be considered to enforce this policy. Possible values: `sast`, `secret_detection`, `dependency_scanning`, `container_scanning`, `dast`, `coverage_fuzzing`, `api_fuzzing`.",
+                      "type": "array",
+                      "additionalItems": false,
+                      "items": {
+                        "type": "string",
+                        "enum": [
+                          "sast",
+                          "secret_detection",
+                          "dependency_scanning",
+                          "container_scanning",
+                          "dast",
+                          "coverage_fuzzing",
+                          "api_fuzzing"
+                        ]
+                      }
+                    },
+                    "severity_levels": {
+                      "description": "Specifies a list of vulnerability security levels that should be considered to enforce this policy. Possible values: `info`, `unknown`, `low`, `medium`, `high`, `critical`.",
+                      "type": "array",
+                      "additionalItems": false,
+                      "items": {
+                        "type": "string",
+                        "enum": [
+                          "critical",
+                          "high",
+                          "medium",
+                          "low",
+                          "info",
+                          "unknown"
+                        ]
+                      }
+                    }
+                  },
+                  "additionalProperties": false
                 },
-                "scanners": {
-                  "description": "Specifies a list of scanners that should be considered to enforce this policy. Possible values: `sast`, `secret_detection`, `dependency_scanning`, `container_scanning`, `dast`, `coverage_fuzzing`, `api_fuzzing`.",
-                  "type": "array",
-                  "additionalItems": false,
-                  "items": {
-                    "type": "string",
-                    "enum": [
-                      "sast",
-                      "secret_detection",
-                      "dependency_scanning",
-                      "container_scanning",
-                      "dast",
-                      "coverage_fuzzing",
-                      "api_fuzzing"
-                    ]
-                  }
-                },
-                "severity_levels": {
-                  "description": "Specifies a list of vulnerability security levels that should be considered to enforce this policy. Possible values: `info`, `unknown`, `low`, `medium`, `high`, `critical`.",
-                  "type": "array",
-                  "additionalItems": false,
-                  "items": {
-                    "type": "string",
-                    "enum": [
-                      "critical",
-                      "high",
-                      "medium",
-                      "low",
-                      "info",
-                      "unknown"
-                    ]
-                  }
+                {
+                  "required": [
+                    "type",
+                    "criteria"
+                  ],
+                  "properties": {
+                    "type": {
+                      "enum": [
+                        "detected"
+                      ],
+                      "type": "string",
+                      "description": "Specifies a type of the policy rule for matching detected vulnerabilities."
+                    },
+                    "criteria": {
+                      "description": "Specifies the criteria for matching vulnerabilities. All specified criteria must match for the policy rule to trigger.",
+                      "type": "array",
+                      "minItems": 1,
+                      "maxItems": 3,
+                      "additionalItems": false,
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "type",
+                          "value"
+                        ],
+                        "properties": {
+                          "type": {
+                            "description": "The type of criteria to match against. Possible values: `file_path`, `directory`, `identifier`.",
+                            "type": "string",
+                            "enum": [
+                              "file_path",
+                              "directory",
+                              "identifier"
+                            ]
+                          },
+                          "value": {
+                            "description": "The value to match against. For `file_path` and `directory`, supports glob patterns including wildcards. For `identifier`, supports exact match or wildcard patterns for CVE, CWE, or scanner-specific IDs.",
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 1000
+                          }
+                        },
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "additionalProperties": false
                 }
-              },
-              "additionalProperties": false
+              ]
             }
           },
           "actions": {
             "type": "array",
-            "description": "Specificies what actions should be performed on the matched vulnerabilities.",
+            "description": "Specifies what actions should be performed on the matched vulnerabilities.",
             "additionalItems": false,
             "maxItems": 1,
             "items": {
               "type": "object",
-              "properties": {
-                "type": {
-                  "description": "The type of action that should be taken. Available: `auto_resolve`.",
-                  "enum": [
-                    "auto_resolve"
+              "oneOf": [
+                {
+                  "required": [
+                    "type"
                   ],
-                  "type": "string"
+                  "properties": {
+                    "type": {
+                      "enum": [
+                        "auto_resolve"
+                      ],
+                      "type": "string",
+                      "description": "The type of action that should be taken for auto-resolving vulnerabilities."
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                {
+                  "required": [
+                    "type",
+                    "dismissal_reason"
+                  ],
+                  "properties": {
+                    "type": {
+                      "enum": [
+                        "auto_dismiss"
+                      ],
+                      "type": "string",
+                      "description": "The type of action that should be taken for auto-dismissing vulnerabilities."
+                    },
+                    "dismissal_reason": {
+                      "description": "Specifies the reason for dismissing vulnerabilities. Possible values: `acceptable_risk`, `false_positive`, `mitigating_control`, `used_in_tests`, `not_applicable`.",
+                      "type": "string",
+                      "enum": [
+                        "acceptable_risk",
+                        "false_positive",
+                        "mitigating_control",
+                        "used_in_tests",
+                        "not_applicable"
+                      ]
+                    }
+                  },
+                  "additionalProperties": false
                 }
-              },
-              "additionalProperties": false
+              ]
             }
           },
           "policy_scope": {

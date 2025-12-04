@@ -436,4 +436,59 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::ResponseHandler, feature_ca
       end
     end
   end
+
+  describe '#timed_out?' do
+    context 'when response has SCAN_ERROR status with Deadline Exceeded message' do
+      let(:response) do
+        ::Gitlab::SecretDetection::Core::Response.new(
+          status: ::Gitlab::SecretDetection::Core::Status::SCAN_ERROR,
+          metadata: { message: "Deadline Exceeded" }
+        )
+      end
+
+      it { expect(response_handler.timed_out?(response)).to be true }
+    end
+
+    context 'when response has SCAN_ERROR status with different message' do
+      let(:response) do
+        ::Gitlab::SecretDetection::Core::Response.new(
+          status: ::Gitlab::SecretDetection::Core::Status::SCAN_ERROR,
+          metadata: { message: "Some other error" }
+        )
+      end
+
+      it { expect(response_handler.timed_out?(response)).to be false }
+    end
+
+    context 'when response has SCAN_ERROR status with no metadata' do
+      let(:response) do
+        ::Gitlab::SecretDetection::Core::Response.new(
+          status: ::Gitlab::SecretDetection::Core::Status::SCAN_ERROR,
+          metadata: nil
+        )
+      end
+
+      it { expect(response_handler.timed_out?(response)).to be false }
+    end
+
+    context 'when response has different status' do
+      let(:response) do
+        ::Gitlab::SecretDetection::Core::Response.new(
+          status: ::Gitlab::SecretDetection::Core::Status::NOT_FOUND
+        )
+      end
+
+      it { expect(response_handler.timed_out?(response)).to be false }
+    end
+
+    context 'when response has SCAN_ERROR status but no metadata' do
+      let(:response) do
+        ::Gitlab::SecretDetection::Core::Response.new(
+          status: ::Gitlab::SecretDetection::Core::Status::SCAN_ERROR
+        )
+      end
+
+      it { expect(response_handler.timed_out?(response)).to be false }
+    end
+  end
 end

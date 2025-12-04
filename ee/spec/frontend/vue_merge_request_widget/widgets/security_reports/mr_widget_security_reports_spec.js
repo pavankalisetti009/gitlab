@@ -10,7 +10,9 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import MRSecurityWidget from 'ee/vue_merge_request_widget/widgets/security_reports/mr_widget_security_reports.vue';
 import ReportDetails from 'ee/vue_merge_request_widget/widgets/security_reports/mr_widget_security_report_details.vue';
 import VulnerabilityFindingModal from 'ee/security_dashboard/components/pipeline/vulnerability_finding_modal.vue';
-import SummaryText from 'ee/vue_merge_request_widget/widgets/security_reports/summary_text.vue';
+import SummaryText, {
+  MAX_NEW_VULNERABILITIES,
+} from 'ee/vue_merge_request_widget/widgets/security_reports/summary_text.vue';
 import SummaryHighlights from 'ee/vue_shared/security_reports/components/summary_highlights.vue';
 import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import SmartInterval from '~/smart_interval';
@@ -27,8 +29,9 @@ import {
 } from '~/lib/utils/http_status';
 import {
   mockFindingReportsComparerSuccessResponse,
-  mockFindingReportsComparerParsingResponse,
   mockFindingReportsComparerSuccessResponseWithFixed,
+  mockFindingReportsComparerParsingResponse,
+  createMockFindingReportsComparerResponse,
 } from '../../mock_data';
 
 Vue.use(VueApollo);
@@ -45,6 +48,7 @@ jest.mock('~/smart_interval');
 describe('MR Widget Security Reports', () => {
   let wrapper;
   let mockAxios;
+  let findingReportsComparerHandler;
 
   const securityConfigurationPath = '/help/user/application_security/_index.md';
   const sourceProjectFullPath = 'namespace/project';
@@ -136,9 +140,17 @@ describe('MR Widget Security Reports', () => {
 
   const defaultMockApollo = createMockApollo([
     [enabledScansQuery, jest.fn().mockResolvedValue(enabledScansQueryResult())],
+    [
+      findingReportsComparerQuery,
+      jest.fn().mockResolvedValue(mockFindingReportsComparerSuccessResponse),
+    ],
   ]);
 
-  const createComponent = ({
+  const defaultMockApolloRest = createMockApollo([
+    [enabledScansQuery, jest.fn().mockResolvedValue(enabledScansQueryResult())],
+  ]);
+
+  const createComponentREST = ({
     propsData,
     provide,
     mountFn = shallowMountExtended,
@@ -147,7 +159,10 @@ describe('MR Widget Security Reports', () => {
   } = {}) => {
     wrapper = mountFn(MRSecurityWidget, {
       apolloProvider: mockApolloProvider || createMockApollo(),
-      provide,
+      provide: {
+        glFeatures: { mrSecurityWidgetGraphql: false },
+        ...provide,
+      },
       propsData: {
         ...propsData,
         mr: {
@@ -162,14 +177,55 @@ describe('MR Widget Security Reports', () => {
     });
   };
 
-  const createComponentAndExpandWidget = async ({
+  const createComponent = ({
+    propsData,
+    provide,
+    mountFn = shallowMountExtended,
+    mockApolloProvider,
+    ...options
+  } = {}) => {
+    wrapper = mountFn(MRSecurityWidget, {
+      apolloProvider: mockApolloProvider || createMockApollo(),
+      provide: {
+        glFeatures: { mrSecurityWidgetGraphql: true },
+        ...provide,
+      },
+      propsData: {
+        ...propsData,
+        mr: {
+          ...defaultMrPropsData,
+          ...propsData?.mr,
+        },
+      },
+      stubs: {
+        VulnerabilityFindingModal: stubComponent(VulnerabilityFindingModal),
+      },
+      ...options,
+    });
+  };
+
+  const createComponentGraphQL = (mockResponse) => {
+    findingReportsComparerHandler = jest.fn().mockResolvedValue(mockResponse);
+
+    createComponent({
+      mountFn: mountExtended,
+      apolloProvider: createMockApollo([
+        [enabledScansQuery, jest.fn().mockResolvedValue(enabledScansQueryResult())],
+        [findingReportsComparerQuery, findingReportsComparerHandler],
+      ]),
+    });
+
+    return waitForPromises();
+  };
+
+  const createComponentAndExpandWidgetRest = async ({
     mockDataFn,
     mockDataProps,
     mrProps = {},
     ...options
   }) => {
     mockDataFn(mockDataProps);
-    createComponent({
+    createComponentREST({
       mountFn: mountExtended,
       propsData: {
         mr: mrProps,
@@ -208,6 +264,22 @@ describe('MR Widget Security Reports', () => {
   const findDismissedBadge = () => wrapper.findComponent(GlBadge);
   const findStandaloneModal = () => wrapper.findByTestId('vulnerability-finding-modal');
 
+  const createFinding = (overrides = {}) => ({
+    uuid: '1',
+    title: 'Password leak',
+    severity: 'HIGH',
+    state: 'DETECTED',
+    foundByPipelineIid: '123',
+    aiResolutionEnabled: true,
+    __typename: 'ComparedSecurityReportFinding',
+    ...overrides,
+  });
+
+  const getFirstScanResult = () => {
+    const fetchFunctions = findWidget().props('fetchCollapsedData')();
+    return fetchFunctions[0]();
+  };
+
   beforeEach(() => {
     jest.spyOn(api, 'trackRedisCounterEvent').mockImplementation(() => {});
     mockAxios = new MockAdapter(axios);
@@ -237,152 +309,10 @@ describe('MR Widget Security Reports', () => {
     });
   });
 
-  describe('partial scans', () => {
-    it('should display a loading state until enabled scans are fetched', async () => {
-      createComponent({
-        mountFn: mountExtended,
-        mockApolloProvider: defaultMockApollo,
-      });
-
-      expect(findWidget().text()).toBe('Security scanning is loading');
-      await waitForPromises();
-      expect(findWidget().text()).not.toBe('Security scanning is loading');
-    });
-
-    it.each`
-      fullScans | partialScans | expectedNumberOfRESTcalls | expectedScanModes
-      ${false}  | ${false}     | ${0}                      | ${[]}
-      ${true}   | ${false}     | ${1}                      | ${['full']}
-      ${false}  | ${true}      | ${1}                      | ${['partial']}
-      ${true}   | ${true}      | ${2}                      | ${['full', 'partial']}
-    `(
-      'should fetch full scans=$fullScans, partial scans=$partialScans',
-      async ({ fullScans, partialScans, expectedNumberOfRESTcalls, expectedScanModes }) => {
-        createComponent({
-          mountFn: mountExtended,
-          mockApolloProvider: createMockApollo([
-            [
-              enabledScansQuery,
-              jest.fn().mockResolvedValue(
-                enabledScansQueryResult({
-                  full: {
-                    sast: fullScans,
-                  },
-                  partial: {
-                    sast: partialScans,
-                  },
-                }),
-              ),
-            ],
-          ]),
-        });
-
-        await waitForPromises();
-
-        expect(mockAxios.history.get).toHaveLength(expectedNumberOfRESTcalls);
-
-        for (let i = 0; i < expectedNumberOfRESTcalls; i += 1) {
-          expect(mockAxios.history.get[i].url).toEqual(
-            reportEndpoints.sastComparisonPathV2.concat(`&scan_mode=${expectedScanModes[i]}`),
-          );
-        }
-      },
-    );
-
-    it('should refetch the query if scan is not ready', async () => {
-      // For some reason if this is not present, tests break
-      mockAxios = new MockAdapter(axios);
-
-      createComponent({
-        mountFn: mountExtended,
-        apolloProvider: createMockApollo([
-          [
-            enabledScansQuery,
-            jest
-              .fn()
-              .mockResolvedValueOnce(
-                enabledScansQueryResult({ full: { ready: false }, partial: { ready: false } }),
-              )
-              .mockResolvedValueOnce(
-                enabledScansQueryResult({
-                  full: { ready: true },
-                  partial: { ready: true },
-                }),
-              ),
-          ],
-        ]),
-      });
-
-      await waitForPromises();
-
-      expect(SmartInterval).toHaveBeenCalledWith(
-        expect.objectContaining({
-          callback: expect.any(Function),
-          incrementByFactorOf: 1,
-          startingInterval: 3000,
-          immediateExecution: true,
-        }),
-      );
-
-      // Widget should be loading
-      expect(findWidget().text()).toBe('Security scanning is loading');
-
-      const spy = jest.spyOn(wrapper.vm.$options.pollingInterval, 'destroy');
-
-      wrapper.vm.$apollo.queries.enabledScans.refetch();
-
-      await waitForPromises();
-
-      expect(spy).toHaveBeenCalledTimes(1);
-    });
-
-    it('when the query fails', async () => {
-      createComponent({
-        mountFn: mountExtended,
-        apolloProvider: createMockApollo([
-          [
-            enabledScansQuery,
-            jest.fn().mockRejectedValue({
-              data: {},
-            }),
-          ],
-        ]),
-      });
-
-      await waitForPromises();
-
-      expect(
-        wrapper.findByText('Error while fetching enabled scans. Please try again later.').exists(),
-      ).toBe(true);
-    });
-
-    it('when the pipeline is null, it should not render anything', async () => {
-      createComponent({
-        mountFn: mountExtended,
-        apolloProvider: createMockApollo([
-          [
-            enabledScansQuery,
-            jest.fn().mockResolvedValueOnce({
-              data: {
-                project: {
-                  id: 'gid://1',
-                  pipeline: null,
-                },
-              },
-            }),
-          ],
-        ]),
-      });
-
-      await waitForPromises();
-
-      expect(wrapper.text()).toBe('');
-    });
-  });
-
   describe('with empty MR data', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
       createComponent({ mockApolloProvider: defaultMockApollo });
+      await waitForPromises();
     });
 
     it('should mount the widget component', () => {
@@ -413,58 +343,28 @@ describe('MR Widget Security Reports', () => {
   });
 
   describe('with MR data', () => {
-    const mockWithData = ({ findings, scanMode = 'full' } = {}) => {
-      mockAxios
-        .onGet(reportEndpoints.sastComparisonPathV2.concat(`&scan_mode=${scanMode}`))
-        .replyOnce(
-          HTTP_STATUS_OK,
-          findings?.sast || {
-            added: [
-              {
-                uuid: '1',
-                severity: 'critical',
-                name: 'Password leak',
-                state: 'dismissed',
-              },
-              { uuid: '2', severity: 'high', name: 'XSS vulnerability' },
-            ],
-            fixed: [
-              { uuid: '14abc', severity: 'high', name: 'SQL vulnerability' },
-              { uuid: 'bc41e', severity: 'high', name: 'SQL vulnerability 2' },
-            ],
-          },
-        );
+    const expandWidget = async () => {
+      // Click on the toggle button to expand data
+      wrapper.findByRole('button', { name: 'Show details' }).trigger('click');
+      await nextTick();
 
-      mockAxios
-        .onGet(reportEndpoints.dastComparisonPathV2.concat(`&scan_mode=${scanMode}`))
-        .replyOnce(
-          HTTP_STATUS_OK,
-          findings?.dast || {
-            added: [
-              { uuid: '5', severity: 'low', name: 'SQL Injection' },
-              { uuid: '3', severity: 'unknown', name: 'Weak password' },
-            ],
-          },
-        );
-
-      [
-        reportEndpoints.dependencyScanningComparisonPathV2,
-        reportEndpoints.coverageFuzzingComparisonPathV2,
-        reportEndpoints.apiFuzzingComparisonPathV2,
-        reportEndpoints.secretDetectionComparisonPathV2,
-        reportEndpoints.containerScanningComparisonPathV2,
-      ].forEach((path) => {
-        mockAxios.onGet(path.concat(`&scan_mode=${scanMode}`)).replyOnce(HTTP_STATUS_OK, {
-          added: [],
-        });
-      });
+      // Second next tick is for the dynamic scroller
+      await nextTick();
     };
 
-    const createComponentWithData = async (mockWithDataProps) => {
-      mockWithData(mockWithDataProps);
+    it('should make a call only for enabled reports', async () => {
+      const handler = jest.fn().mockResolvedValue(mockFindingReportsComparerSuccessResponse);
 
       createComponent({
         mountFn: mountExtended,
+        propsData: {
+          mr: {
+            enabledReports: {
+              sast: true,
+              dast: true,
+            },
+          },
+        },
         mockApolloProvider: createMockApollo([
           [
             enabledScansQuery,
@@ -477,30 +377,25 @@ describe('MR Widget Security Reports', () => {
               }),
             ),
           ],
+          [findingReportsComparerQuery, handler],
         ]),
       });
 
       await waitForPromises();
-    };
 
-    it('should make a call only for enabled reports', async () => {
-      mockWithData();
-
-      createComponent({
-        mountFn: mountExtended,
-        propsData: {
-          mr: {
-            enabledReports: {
-              sast: true,
-              dast: true,
-            },
-          },
-        },
+      expect(handler).toHaveBeenCalledTimes(2);
+      expect(handler).toHaveBeenCalledWith({
+        fullPath: defaultMrPropsData.targetProjectFullPath,
+        iid: String(defaultMrPropsData.iid),
+        reportType: 'SAST',
+        scanMode: 'FULL',
       });
-
-      await waitForPromises();
-
-      expect(mockAxios.history.get).toHaveLength(2);
+      expect(handler).toHaveBeenCalledWith({
+        fullPath: defaultMrPropsData.targetProjectFullPath,
+        iid: String(defaultMrPropsData.iid),
+        reportType: 'DAST',
+        scanMode: 'FULL',
+      });
     });
 
     it('should display the view all pipeline findings button', async () => {
@@ -516,7 +411,31 @@ describe('MR Widget Security Reports', () => {
     });
 
     it('should mount the widget component', async () => {
-      await createComponentWithData();
+      const handler = jest.fn().mockResolvedValue(
+        createMockFindingReportsComparerResponse('SAST', {
+          added: [createFinding(), createFinding()],
+          fixed: [createFinding(), createFinding()],
+        }),
+      );
+
+      createComponent({
+        mountFn: mountExtended,
+        mockApolloProvider: createMockApollo([
+          [
+            enabledScansQuery,
+            jest.fn().mockResolvedValue(
+              enabledScansQueryResult({
+                full: {
+                  sast: true,
+                },
+              }),
+            ),
+          ],
+          [findingReportsComparerQuery, handler],
+        ]),
+      });
+
+      await waitForPromises();
 
       expect(findWidget().props()).toMatchObject({
         statusIconName: 'warning',
@@ -529,7 +448,46 @@ describe('MR Widget Security Reports', () => {
     });
 
     it('computes the total number of new potential vulnerabilities correctly', async () => {
-      await createComponentWithData();
+      const sastHandler = jest.fn().mockResolvedValue(
+        createMockFindingReportsComparerResponse('SAST', {
+          added: [createFinding({ severity: 'CRITICAL' }), createFinding({ severity: 'HIGH' })],
+          fixed: [createFinding(), createFinding()],
+        }),
+      );
+
+      const dastHandler = jest.fn().mockResolvedValue(
+        createMockFindingReportsComparerResponse('DAST', {
+          added: [createFinding({ severity: 'LOW' }), createFinding({ severity: 'UNKNOWN' })],
+          fixed: [],
+        }),
+      );
+
+      createComponent({
+        mountFn: mountExtended,
+        mockApolloProvider: createMockApollo([
+          [
+            enabledScansQuery,
+            jest.fn().mockResolvedValue(
+              enabledScansQueryResult({
+                full: {
+                  sast: true,
+                  dast: true,
+                },
+              }),
+            ),
+          ],
+          [
+            findingReportsComparerQuery,
+            jest.fn((variables) => {
+              if (variables.reportType === 'SAST') return sastHandler(variables);
+              if (variables.reportType === 'DAST') return dastHandler(variables);
+              return Promise.resolve(mockFindingReportsComparerSuccessResponse);
+            }),
+          ],
+        ]),
+      });
+
+      await waitForPromises();
 
       expect(findSummaryText().props()).toMatchObject({ totalNewVulnerabilities: 4 });
       expect(findSummaryHighlights().props()).toMatchObject({
@@ -538,10 +496,26 @@ describe('MR Widget Security Reports', () => {
     });
 
     it('tells the widget to be collapsible only if there is data', async () => {
-      mockWithData();
+      const handler = jest.fn().mockResolvedValue(
+        createMockFindingReportsComparerResponse('SAST', {
+          added: [createFinding()],
+          fixed: [],
+        }),
+      );
 
       createComponent({
         mountFn: mountExtended,
+        mockApolloProvider: createMockApollo([
+          [
+            enabledScansQuery,
+            jest.fn().mockResolvedValue(
+              enabledScansQueryResult({
+                full: { sast: true },
+              }),
+            ),
+          ],
+          [findingReportsComparerQuery, handler],
+        ]),
       });
 
       expect(findWidget().props('isCollapsible')).toBe(false);
@@ -550,27 +524,50 @@ describe('MR Widget Security Reports', () => {
     });
 
     it('tells summary-text to display a ui hint when there are 25 findings in a single report', async () => {
-      await createComponentAndExpandWidget({
-        mockDataFn: mockWithData,
-        mockDataProps: {
-          findings: {
-            sast: {
-              added: [...Array(25)].map((i) => ({
-                uuid: `${i}4abc`,
-                severity: 'high',
-                name: 'SQL vulnerability',
-              })),
-            },
-            dast: {
-              added: [...Array(10)].map((i) => ({
-                uuid: `${i}3abc`,
-                severity: 'critical',
-                name: 'Dast vulnerability',
-              })),
-            },
-          },
-        },
+      const sastHandler = jest.fn().mockResolvedValue(
+        createMockFindingReportsComparerResponse('SAST', {
+          added: [...Array(MAX_NEW_VULNERABILITIES)].map((_, i) =>
+            createFinding({ uuid: `${i}4abc` }),
+          ),
+          fixed: [],
+        }),
+      );
+
+      const dastHandler = jest.fn().mockResolvedValue(
+        createMockFindingReportsComparerResponse('DAST', {
+          added: [...Array(10)].map((_, i) => createFinding({ uuid: `${i}3abc` })),
+          fixed: [],
+        }),
+      );
+
+      createComponent({
+        mountFn: mountExtended,
+        mockApolloProvider: createMockApollo([
+          [
+            enabledScansQuery,
+            jest.fn().mockResolvedValue(
+              enabledScansQueryResult({
+                full: {
+                  sast: true,
+                  dast: true,
+                },
+              }),
+            ),
+          ],
+          [
+            findingReportsComparerQuery,
+            jest.fn((variables) => {
+              if (variables.reportType === 'SAST') return sastHandler(variables);
+              if (variables.reportType === 'DAST') return dastHandler(variables);
+              return Promise.resolve(mockFindingReportsComparerSuccessResponse);
+            }),
+          ],
+        ]),
       });
+
+      await waitForPromises();
+
+      await expandWidget();
 
       // header
       expect(findSummaryText().props('showAtLeastHint')).toBe(true);
@@ -581,27 +578,49 @@ describe('MR Widget Security Reports', () => {
     });
 
     it('tells summary-text NOT to display a ui hint when there are less 25 findings', async () => {
-      await createComponentAndExpandWidget({
-        mockDataFn: mockWithData,
-        mockDataProps: {
-          findings: {
-            sast: {
-              added: [...Array(24)].map((i) => ({
-                uuid: `${i}4abc`,
-                severity: 'high',
-                name: 'SQL vulnerability',
-              })),
-            },
-            dast: {
-              added: [...Array(10)].map((i) => ({
-                uuid: `${i}3abc`,
-                severity: 'critical',
-                name: 'Dast vulnerability',
-              })),
-            },
-          },
-        },
+      const belowThreshold = MAX_NEW_VULNERABILITIES - 1;
+      const sastHandler = jest.fn().mockResolvedValue(
+        createMockFindingReportsComparerResponse('SAST', {
+          added: [...Array(belowThreshold)].map((_, i) => createFinding({ uuid: `${i}4abc` })),
+          fixed: [],
+        }),
+      );
+
+      const dastHandler = jest.fn().mockResolvedValue(
+        createMockFindingReportsComparerResponse('DAST', {
+          added: [...Array(10)].map((_, i) => createFinding({ uuid: `${i}3abc` })),
+          fixed: [],
+        }),
+      );
+
+      createComponent({
+        mountFn: mountExtended,
+        mockApolloProvider: createMockApollo([
+          [
+            enabledScansQuery,
+            jest.fn().mockResolvedValue(
+              enabledScansQueryResult({
+                full: {
+                  sast: true,
+                  dast: true,
+                },
+              }),
+            ),
+          ],
+          [
+            findingReportsComparerQuery,
+            jest.fn((variables) => {
+              if (variables.reportType === 'SAST') return sastHandler(variables);
+              if (variables.reportType === 'DAST') return dastHandler(variables);
+              return Promise.resolve(mockFindingReportsComparerSuccessResponse);
+            }),
+          ],
+        ]),
       });
+
+      await waitForPromises();
+
+      await expandWidget();
 
       // header
       expect(findSummaryText().props('showAtLeastHint')).toBe(false);
@@ -612,138 +631,193 @@ describe('MR Widget Security Reports', () => {
     });
   });
 
-  describe('error states', () => {
-    const mockWithData = ({ errorCode = HTTP_STATUS_INTERNAL_SERVER_ERROR } = {}) => {
-      mockAxios
-        .onGet(reportEndpoints.sastComparisonPathV2.concat('&scan_mode=full'))
-        .replyOnce(errorCode);
+  describe('successful response', () => {
+    it.each`
+      type       | mockResponse                                          | expectedAdded | expectedFixed
+      ${'added'} | ${mockFindingReportsComparerSuccessResponse}          | ${1}          | ${0}
+      ${'fixed'} | ${mockFindingReportsComparerSuccessResponseWithFixed} | ${0}          | ${1}
+    `(
+      'transforms "$type" GraphQL findings to expected format',
+      async ({ type, mockResponse, expectedAdded, expectedFixed }) => {
+        await createComponentGraphQL(mockResponse);
+        const result = await getFirstScanResult();
 
-      mockAxios
-        .onGet(reportEndpoints.dastComparisonPathV2.concat('&scan_mode=full'))
-        .replyOnce(HTTP_STATUS_OK, {
-          added: [
-            { uuid: 5, severity: 'low', name: 'SQL Injection' },
-            { uuid: 3, severity: 'unknown', name: 'Weak password' },
-          ],
+        const originalFinding =
+          mockResponse.data.project.mergeRequest.findingReportsComparer.report[type][0];
+
+        expect(result.data[type][0]).toEqual({
+          uuid: originalFinding.uuid,
+          name: originalFinding.title,
+          severity: originalFinding.severity.toLowerCase(),
+          state: originalFinding.state.toLowerCase(),
+          ai_resolution_enabled: originalFinding.aiResolutionEnabled,
+          found_by_pipeline: { iid: Number(originalFinding.foundByPipelineIid) },
         });
 
-      [
-        reportEndpoints.dependencyScanningComparisonPathV2,
-        reportEndpoints.coverageFuzzingComparisonPathV2,
-        reportEndpoints.apiFuzzingComparisonPathV2,
-        reportEndpoints.secretDetectionComparisonPathV2,
-        reportEndpoints.containerScanningComparisonPathV2,
-      ].forEach((path) => {
-        mockAxios.onGet(path.concat('&scan_mode=full')).replyOnce(HTTP_STATUS_OK, {
-          added: [],
-        });
+        expect(result.data.numberOfNewFindings).toBe(expectedAdded);
+        expect(result.data.numberOfFixedFindings).toBe(expectedFixed);
+      },
+    );
+  });
+
+  describe('error handling', () => {
+    const createComponentWithGraphQLError = async () => {
+      const graphqlError = {
+        graphQLErrors: [
+          {
+            extensions: { code: 'PARSING_ERROR' },
+            message: 'Schema parsing failed',
+          },
+        ],
+      };
+
+      const customHandler = jest.fn().mockRejectedValue(graphqlError);
+
+      createComponent({
+        mountFn: mountExtended,
+        apolloProvider: createMockApollo([
+          [enabledScansQuery, jest.fn().mockResolvedValue(enabledScansQueryResult())],
+          [findingReportsComparerQuery, customHandler],
+        ]),
       });
+      await waitForPromises();
     };
 
-    it('displays a top level error message when there is a bad request', async () => {
-      mockWithData({ errorCode: HTTP_STATUS_BAD_REQUEST });
-      createComponent({ mountFn: mountExtended });
+    it('handles GraphQL errors', async () => {
+      await createComponentWithGraphQLError();
 
-      await waitForPromises();
+      const result = await getFirstScanResult();
+      expect(result.status).toBe(500);
+      expect(result.data.error).toBe(true);
+    });
+
+    it('displays parsing error message in DOM', async () => {
+      await createComponentWithGraphQLError();
+      await getFirstScanResult(); // Trigger the error
 
       expect(
         wrapper
           .findByText('Parsing schema failed. Check the validity of your .gitlab-ci.yml content.')
           .exists(),
       ).toBe(true);
+    });
+  });
 
-      expect(wrapper.findByText('SAST: Loading resulted in an error').exists()).toBe(false);
+  describe('polling behaviour', () => {
+    const expectProcessingResult = (result) => {
+      expect(result.status).toBe(202);
+      expect(result.headers).toEqual({ 'poll-interval': 3000 });
+      return result;
+    };
+
+    const expectParsedResult = (result) => {
+      expect(result.status).toBe(200);
+      expect(result.headers).toEqual({});
+      expect(result.data.status).toBe('PARSED');
+      return result;
+    };
+
+    describe('when status is PARSED', () => {
+      beforeEach(async () => {
+        await createComponentGraphQL(mockFindingReportsComparerSuccessResponse);
+      });
+
+      it('returns parsed data without polling headers', async () => {
+        const result = await getFirstScanResult();
+
+        expectParsedResult(result);
+        expect(result.headers['poll-interval']).toBeUndefined();
+      });
+    });
+
+    describe('when status is PROCESSING', () => {
+      beforeEach(async () => {
+        await createComponentGraphQL(mockFindingReportsComparerParsingResponse);
+      });
+
+      it('returns polling headers with 3 second interval', async () => {
+        const result = await getFirstScanResult();
+
+        expectProcessingResult(result);
+      });
+    });
+
+    describe('polling sequence', () => {
+      it('makes multiple requests when polling until PARSED', async () => {
+        const customFindingReportsHandler = jest.fn();
+        customFindingReportsHandler
+          .mockResolvedValueOnce(mockFindingReportsComparerParsingResponse) // Component setup
+          .mockResolvedValueOnce(mockFindingReportsComparerParsingResponse) // 1st poll - PROCESSING
+          .mockResolvedValueOnce(mockFindingReportsComparerSuccessResponse); // 2nd poll - PARSED
+
+        createComponent({
+          mountFn: mountExtended,
+          apolloProvider: createMockApollo([
+            [enabledScansQuery, jest.fn().mockResolvedValue(enabledScansQueryResult())],
+            [findingReportsComparerQuery, customFindingReportsHandler],
+          ]),
+        });
+
+        await waitForPromises();
+
+        // 1st poll - returns PROCESSING
+        let result = await getFirstScanResult();
+        expectProcessingResult(result);
+
+        // 2nd poll - returns PARSED
+        result = await getFirstScanResult();
+        expectParsedResult(result);
+
+        expect(customFindingReportsHandler).toHaveBeenCalledTimes(3);
+      });
     });
   });
 
   describe('modal', () => {
-    let mockedFindings = [];
-
-    beforeEach(() => {
-      mockedFindings = [];
-    });
-
-    const mockFinding = (props) => {
-      const finding = {
-        uuid: '1',
-        severity: 'critical',
-        name: 'Password leak',
-        found_by_pipeline: {
-          iid: 1,
-        },
-        project: {
-          id: 278964,
-          name: 'GitLab',
-          full_path: '/gitlab-org/gitlab',
-          full_name: 'GitLab.org / GitLab',
-        },
-        ...props,
-      };
-
-      mockedFindings.push(finding);
-
-      return finding;
-    };
-
-    const mockWithData = (props) => {
-      Object.keys(reportEndpoints).forEach((key, i) => {
-        mockAxios.onGet(reportEndpoints[key].concat('&scan_mode=full')).replyOnce(HTTP_STATUS_OK, {
-          added: [mockFinding({ uuid: i.toString(), ...props })],
-        });
-      });
-    };
-
-    const createComponentExpandWidgetAndOpenModal = async ({
-      mockDataFn = mockWithData,
-      mockDataProps,
-      mrProps,
-      ...options
-    } = {}) => {
-      await createComponentAndExpandWidget({
-        mockDataFn,
-        mockDataProps,
-        mrProps,
-        ...options,
-      });
-
-      // Click on the vulnerability name
-      findWidgetRow().vm.$emit('modal-data', mockedFindings[0]);
-
-      await nextTick();
-    };
-
-    const mockWithDataOneFinding = (state = 'dismissed') => {
-      mockAxios
-        .onGet(reportEndpoints.sastComparisonPathV2.concat('&scan_mode=full'))
-        .replyOnce(HTTP_STATUS_OK, {
-          added: [mockFinding({ state })],
+    const createComponentAndExpandWidget = async (options = {}) => {
+      const handler = jest.fn().mockResolvedValue(
+        createMockFindingReportsComparerResponse('SAST', {
+          added: [createFinding({ state: options.state || 'DETECTED' })],
           fixed: [],
-        });
+        }),
+      );
 
-      [
-        reportEndpoints.dastComparisonPathV2,
-        reportEndpoints.dependencyScanningComparisonPathV2,
-        reportEndpoints.coverageFuzzingComparisonPathV2,
-        reportEndpoints.apiFuzzingComparisonPathV2,
-        reportEndpoints.secretDetectionComparisonPathV2,
-        reportEndpoints.containerScanningComparisonPathV2,
-      ].forEach((path) => {
-        mockAxios.onGet(path.concat('&scan_mode=full')).replyOnce(HTTP_STATUS_OK, {
-          added: [],
-        });
+      createComponent({
+        mountFn: mountExtended,
+        propsData: options.propsData,
+        mockApolloProvider: createMockApollo([
+          [
+            enabledScansQuery,
+            jest.fn().mockResolvedValue(
+              enabledScansQueryResult({
+                full: { sast: true },
+              }),
+            ),
+          ],
+          [findingReportsComparerQuery, handler],
+        ]),
       });
+
+      await waitForPromises();
+
+      // Click on the toggle button to expand data
+      wrapper.findByRole('button', { name: 'Show details' }).trigger('click');
+      await nextTick();
+      await nextTick(); // Second next tick is for the dynamic scroller
+
+      return wrapper.vm.reportsByScanType.full.SAST.added[0];
     };
 
     it('does not display the modal until the finding is clicked', async () => {
-      await createComponentAndExpandWidget({
-        mockDataFn: mockWithData,
-      });
-
+      await createComponentAndExpandWidget();
       expect(findStandaloneModal().exists()).toBe(false);
     });
 
     it('clears modal data when the modal is closed', async () => {
-      await createComponentExpandWidgetAndOpenModal();
+      const transformedFinding = await createComponentAndExpandWidget();
+
+      findWidgetRow().vm.$emit('modal-data', transformedFinding);
+      await nextTick();
 
       expect(findStandaloneModal().props('modal')).not.toBe(null);
 
@@ -755,15 +829,18 @@ describe('MR Widget Security Reports', () => {
 
     it('renders the modal when the finding is clicked', async () => {
       const targetProjectFullPath = 'root/security-reports-v2';
-      await createComponentExpandWidgetAndOpenModal({
-        mrProps: { targetProjectFullPath },
+      const transformedFinding = await createComponentAndExpandWidget({
+        propsData: { mr: { targetProjectFullPath } },
       });
+
+      findWidgetRow().vm.$emit('modal-data', transformedFinding);
+      await nextTick();
 
       const modal = findStandaloneModal();
 
       expect(modal.props()).toMatchObject({
-        findingUuid: '0',
-        pipelineIid: 1,
+        findingUuid: '1',
+        pipelineIid: 123,
         projectFullPath: targetProjectFullPath,
         sourceProjectFullPath,
         branchRef: sourceBranch,
@@ -784,7 +861,9 @@ describe('MR Widget Security Reports', () => {
       };
 
       beforeEach(async () => {
-        await createComponentExpandWidgetAndOpenModal();
+        const transformedFinding = await createComponentAndExpandWidget();
+        findWidgetRow().vm.$emit('modal-data', transformedFinding);
+        await nextTick();
       });
 
       afterEach(() => {
@@ -840,226 +919,633 @@ describe('MR Widget Security Reports', () => {
       });
     });
 
-    it('renders the dismissed badge when `dismissed` is emitted', async () => {
-      await createComponentExpandWidgetAndOpenModal({
-        mockDataFn: mockWithDataOneFinding,
-        mockDataProps: { state: 'detected' },
+    describe('dismissed badge', () => {
+      it('renders the dismissed badge when `dismissed` is emitted', async () => {
+        const transformedFinding = await createComponentAndExpandWidget();
+
+        findWidgetRow().vm.$emit('modal-data', transformedFinding);
+        await nextTick();
+
+        expect(findDismissedBadge().exists()).toBe(false);
+
+        findStandaloneModal().vm.$emit('dismissed');
+        await nextTick();
+
+        expect(transformedFinding.state).toBe('dismissed');
       });
 
-      expect(findDismissedBadge().exists()).toBe(false);
+      it('does not render the dismissed badge when `detected` is emitted', async () => {
+        const transformedFinding = await createComponentAndExpandWidget({ state: 'DISMISSED' });
 
-      findStandaloneModal().vm.$emit('dismissed');
-      await nextTick();
+        findWidgetRow().vm.$emit('modal-data', transformedFinding);
+        await nextTick();
 
-      expect(mockedFindings[0].state).toBe('dismissed');
-    });
+        expect(findDismissedBadge().exists()).toBe(true);
 
-    it('does not render the dismissed badge when `detected` is emitted', async () => {
-      await createComponentExpandWidgetAndOpenModal({ mockDataFn: mockWithDataOneFinding });
+        findStandaloneModal().vm.$emit('detected');
+        await nextTick();
 
-      expect(findDismissedBadge().exists()).toBe(true);
-
-      findStandaloneModal().vm.$emit('detected');
-      await nextTick();
-
-      expect(mockedFindings[0].state).toBe('detected');
+        expect(transformedFinding.state).toBe('detected');
+      });
     });
   });
 
-  describe('when mrSecurityWidgetGraphql FF is enabled', () => {
-    let findingReportsComparerHandler;
-
-    const createGraphQLComponent = (mockResponse) => {
-      findingReportsComparerHandler = jest.fn().mockResolvedValue(mockResponse);
-
+  describe('partial scans', () => {
+    it('displays loading state until enabled scans are fetched', async () => {
       createComponent({
-        provide: {
-          glFeatures: {
-            vulnerabilityPartialScans: true,
-            mrSecurityWidgetGraphql: true,
-          },
-        },
         mountFn: mountExtended,
-        apolloProvider: createMockApollo([
+        mockApolloProvider: createMockApollo([
           [enabledScansQuery, jest.fn().mockResolvedValue(enabledScansQueryResult())],
-          [findingReportsComparerQuery, findingReportsComparerHandler],
         ]),
       });
 
-      return waitForPromises();
-    };
+      const loadingText = 'Security scanning is loading';
+      expect(findWidget().text()).toBe(loadingText);
 
-    const getFirstScanResult = () => {
-      const fetchFunctions = findWidget().props('fetchCollapsedData')();
-      return fetchFunctions[0]();
-    };
-
-    it('makes GraphQL query when component loads', async () => {
-      await createGraphQLComponent(mockFindingReportsComparerSuccessResponse);
-
-      expect(findingReportsComparerHandler).toHaveBeenCalledWith({
-        fullPath: defaultMrPropsData.targetProjectFullPath,
-        iid: String(defaultMrPropsData.iid),
-        reportType: 'SAST',
-        scanMode: 'FULL',
-      });
+      await waitForPromises();
+      expect(findWidget().text()).not.toBe(loadingText);
     });
 
     it.each`
-      type       | mockResponse                                          | expectedAdded | expectedFixed
-      ${'added'} | ${mockFindingReportsComparerSuccessResponse}          | ${1}          | ${0}
-      ${'fixed'} | ${mockFindingReportsComparerSuccessResponseWithFixed} | ${0}          | ${1}
+      fullScans | partialScans | expectedScanModes
+      ${false}  | ${false}     | ${[]}
+      ${true}   | ${false}     | ${['FULL']}
+      ${false}  | ${true}      | ${['PARTIAL']}
+      ${true}   | ${true}      | ${['FULL', 'PARTIAL']}
     `(
-      'transforms "$type" GraphQL findings to expected format',
-      async ({ type, mockResponse, expectedAdded, expectedFixed }) => {
-        await createGraphQLComponent(mockResponse);
-        const result = await getFirstScanResult();
+      'should fetch full scans=$fullScans, partial scans=$partialScans',
+      async ({ fullScans, partialScans, expectedScanModes }) => {
+        const handler = jest.fn().mockResolvedValue(mockFindingReportsComparerSuccessResponse);
 
-        const originalFinding =
-          mockResponse.data.project.mergeRequest.findingReportsComparer.report[type][0];
-
-        expect(result.data[type][0]).toEqual({
-          uuid: originalFinding.uuid,
-          name: originalFinding.title,
-          severity: originalFinding.severity.toLowerCase(),
-          state: originalFinding.state.toLowerCase(),
-          found_by_pipeline: { iid: Number(originalFinding.foundByPipelineIid) },
+        createComponent({
+          mountFn: mountExtended,
+          propsData: {
+            mr: {
+              enabledReports: {
+                sast: true,
+              },
+            },
+          },
+          mockApolloProvider: createMockApollo([
+            [
+              enabledScansQuery,
+              jest.fn().mockResolvedValue(
+                enabledScansQueryResult({
+                  full: { sast: fullScans },
+                  partial: { sast: partialScans },
+                }),
+              ),
+            ],
+            [findingReportsComparerQuery, handler],
+          ]),
         });
 
-        expect(result.data.numberOfNewFindings).toBe(expectedAdded);
-        expect(result.data.numberOfFixedFindings).toBe(expectedFixed);
+        await waitForPromises();
+
+        expect(handler).toHaveBeenCalledTimes(expectedScanModes.length);
+
+        expectedScanModes.forEach((scanMode) => {
+          expect(handler).toHaveBeenCalledWith({
+            fullPath: defaultMrPropsData.targetProjectFullPath,
+            iid: String(defaultMrPropsData.iid),
+            reportType: 'SAST',
+            scanMode,
+          });
+        });
       },
     );
+  });
 
-    describe('polling behavior', () => {
-      const expectProcessingResult = (result) => {
-        expect(result.status).toBe(202);
-        expect(result.headers).toEqual({ 'poll-interval': 3000 });
-        return result;
-      };
-
-      const expectParsedResult = (result) => {
-        expect(result.status).toBe(200);
-        expect(result.headers).toEqual({});
-        expect(result.data.status).toBe('PARSED');
-        return result;
-      };
-
-      describe('when status is PARSED', () => {
-        beforeEach(async () => {
-          await createGraphQLComponent(mockFindingReportsComparerSuccessResponse);
+  describe('when using REST', () => {
+    describe('partial scans', () => {
+      it('should display a loading state until enabled scans are fetched', async () => {
+        createComponentREST({
+          mountFn: mountExtended,
+          mockApolloProvider: defaultMockApolloRest,
         });
 
-        it('returns parsed data without polling headers', async () => {
-          const result = await getFirstScanResult();
-
-          expectParsedResult(result);
-          expect(result.headers['poll-interval']).toBeUndefined();
-        });
+        expect(findWidget().text()).toBe('Security scanning is loading');
+        await waitForPromises();
+        expect(findWidget().text()).not.toBe('Security scanning is loading');
       });
 
-      describe('when status is PARSING', () => {
-        beforeEach(async () => {
-          await createGraphQLComponent(mockFindingReportsComparerParsingResponse);
-        });
-
-        it('returns polling headers with 3 second interval', async () => {
-          const result = await getFirstScanResult();
-
-          expectProcessingResult(result);
-        });
-      });
-
-      describe('polling sequence', () => {
-        it('makes multiple requests when polling until PARSED', async () => {
-          const customFindingReportsHandler = jest.fn();
-          customFindingReportsHandler
-            .mockResolvedValueOnce(mockFindingReportsComparerParsingResponse) // Component setup
-            .mockResolvedValueOnce(mockFindingReportsComparerParsingResponse) // 1st poll: PARSING
-            .mockResolvedValueOnce(mockFindingReportsComparerSuccessResponse); // 2nd poll: PARSED
-
-          createComponent({
-            provide: { glFeatures: { mrSecurityWidgetGraphql: true } },
+      it.each`
+        fullScans | partialScans | expectedNumberOfRESTcalls | expectedScanModes
+        ${false}  | ${false}     | ${0}                      | ${[]}
+        ${true}   | ${false}     | ${1}                      | ${['full']}
+        ${false}  | ${true}      | ${1}                      | ${['partial']}
+        ${true}   | ${true}      | ${2}                      | ${['full', 'partial']}
+      `(
+        'should fetch full scans=$fullScans, partial scans=$partialScans',
+        async ({ fullScans, partialScans, expectedNumberOfRESTcalls, expectedScanModes }) => {
+          createComponentREST({
+            provide: { glFeatures: { mrSecurityWidgetGraphql: false } },
             mountFn: mountExtended,
-            apolloProvider: createMockApollo([
-              [enabledScansQuery, jest.fn().mockResolvedValue(enabledScansQueryResult())],
-              [findingReportsComparerQuery, customFindingReportsHandler],
+            mockApolloProvider: createMockApollo([
+              [
+                enabledScansQuery,
+                jest.fn().mockResolvedValue(
+                  enabledScansQueryResult({
+                    full: {
+                      sast: fullScans,
+                    },
+                    partial: {
+                      sast: partialScans,
+                    },
+                  }),
+                ),
+              ],
             ]),
           });
 
           await waitForPromises();
 
-          // 1st poll - returns PARSING
-          let result = await getFirstScanResult();
-          expectProcessingResult(result);
+          expect(mockAxios.history.get).toHaveLength(expectedNumberOfRESTcalls);
 
-          // 2nd poll - returns PARSED
-          result = await getFirstScanResult();
-          expectParsedResult(result);
+          for (let i = 0; i < expectedNumberOfRESTcalls; i += 1) {
+            expect(mockAxios.history.get[i].url).toEqual(
+              reportEndpoints.sastComparisonPathV2.concat(`&scan_mode=${expectedScanModes[i]}`),
+            );
+          }
+        },
+      );
 
-          expect(customFindingReportsHandler).toHaveBeenCalledTimes(3);
+      it('should refetch the query if scan is not ready', async () => {
+        // For some reason if this is not present, tests break
+        mockAxios = new MockAdapter(axios);
+
+        createComponentREST({
+          mountFn: mountExtended,
+          apolloProvider: createMockApollo([
+            [
+              enabledScansQuery,
+              jest
+                .fn()
+                .mockResolvedValueOnce(
+                  enabledScansQueryResult({ full: { ready: false }, partial: { ready: false } }),
+                )
+                .mockResolvedValueOnce(
+                  enabledScansQueryResult({
+                    full: { ready: true },
+                    partial: { ready: true },
+                  }),
+                ),
+            ],
+          ]),
         });
+
+        await waitForPromises();
+
+        expect(SmartInterval).toHaveBeenCalledWith(
+          expect.objectContaining({
+            callback: expect.any(Function),
+            incrementByFactorOf: 1,
+            startingInterval: 3000,
+            immediateExecution: true,
+          }),
+        );
+
+        // Widget should be loading
+        expect(findWidget().text()).toBe('Security scanning is loading');
+
+        const spy = jest.spyOn(wrapper.vm.$options.pollingInterval, 'destroy');
+
+        wrapper.vm.$apollo.queries.enabledScans.refetch();
+
+        await waitForPromises();
+
+        expect(spy).toHaveBeenCalledTimes(1);
+      });
+
+      it('when the query fails', async () => {
+        createComponentREST({
+          mountFn: mountExtended,
+          apolloProvider: createMockApollo([
+            [
+              enabledScansQuery,
+              jest.fn().mockRejectedValue({
+                data: {},
+              }),
+            ],
+          ]),
+        });
+
+        await waitForPromises();
+
+        expect(
+          wrapper
+            .findByText('Error while fetching enabled scans. Please try again later.')
+            .exists(),
+        ).toBe(true);
+      });
+
+      it('when the pipeline is null, it should not render anything', async () => {
+        createComponentREST({
+          mountFn: mountExtended,
+          apolloProvider: createMockApollo([
+            [
+              enabledScansQuery,
+              jest.fn().mockResolvedValueOnce({
+                data: {
+                  project: {
+                    id: 'gid://1',
+                    pipeline: null,
+                  },
+                },
+              }),
+            ],
+          ]),
+        });
+
+        await waitForPromises();
+
+        expect(wrapper.text()).toBe('');
       });
     });
 
-    describe('error handling', () => {
-      it('handles GraphQL errors', async () => {
-        const graphqlError = {
-          graphQLErrors: [
-            {
-              extensions: { code: 'PARSING_ERROR' },
-              message: 'Schema parsing failed',
+    describe('with MR data (REST)', () => {
+      const mockWithData = ({ findings, scanMode = 'full' } = {}) => {
+        mockAxios
+          .onGet(reportEndpoints.sastComparisonPathV2.concat(`&scan_mode=${scanMode}`))
+          .replyOnce(
+            HTTP_STATUS_OK,
+            findings?.sast || {
+              added: [
+                {
+                  uuid: '1',
+                  severity: 'critical',
+                  name: 'Password leak',
+                  state: 'dismissed',
+                },
+                { uuid: '2', severity: 'high', name: 'XSS vulnerability' },
+              ],
+              fixed: [
+                { uuid: '14abc', severity: 'high', name: 'SQL vulnerability' },
+                { uuid: 'bc41e', severity: 'high', name: 'SQL vulnerability 2' },
+              ],
             },
-          ],
-        };
+          );
 
-        const customHandler = jest.fn().mockRejectedValue(graphqlError);
+        mockAxios
+          .onGet(reportEndpoints.dastComparisonPathV2.concat(`&scan_mode=${scanMode}`))
+          .replyOnce(
+            HTTP_STATUS_OK,
+            findings?.dast || {
+              added: [
+                { uuid: '5', severity: 'low', name: 'SQL Injection' },
+                { uuid: '3', severity: 'unknown', name: 'Weak password' },
+              ],
+            },
+          );
 
-        createComponent({
-          provide: { glFeatures: { mrSecurityWidgetGraphql: true } },
+        [
+          reportEndpoints.dependencyScanningComparisonPathV2,
+          reportEndpoints.coverageFuzzingComparisonPathV2,
+          reportEndpoints.apiFuzzingComparisonPathV2,
+          reportEndpoints.secretDetectionComparisonPathV2,
+          reportEndpoints.containerScanningComparisonPathV2,
+        ].forEach((path) => {
+          mockAxios.onGet(path.concat(`&scan_mode=${scanMode}`)).replyOnce(HTTP_STATUS_OK, {
+            added: [],
+          });
+        });
+      };
+
+      const createComponentWithData = async (mockWithDataProps) => {
+        mockWithData(mockWithDataProps);
+
+        createComponentREST({
           mountFn: mountExtended,
-          apolloProvider: createMockApollo([
-            [enabledScansQuery, jest.fn().mockResolvedValue(enabledScansQueryResult())],
-            [findingReportsComparerQuery, customHandler],
+          mockApolloProvider: createMockApollo([
+            [
+              enabledScansQuery,
+              jest.fn().mockResolvedValue(
+                enabledScansQueryResult({
+                  full: {
+                    sast: true,
+                    dast: true,
+                  },
+                }),
+              ),
+            ],
           ]),
         });
 
         await waitForPromises();
+      };
 
-        const result = await getFirstScanResult();
-        expect(result.status).toBe(500);
-        expect(result.data.error).toBe(true);
+      it('should make a call only for enabled reports', async () => {
+        mockWithData();
+
+        createComponentREST({
+          mountFn: mountExtended,
+          propsData: {
+            mr: {
+              enabledReports: {
+                sast: true,
+                dast: true,
+              },
+            },
+          },
+        });
+
+        await waitForPromises();
+
+        expect(mockAxios.history.get).toHaveLength(2);
       });
 
-      it('displays parsing error message in DOM', async () => {
-        const graphqlError = {
-          graphQLErrors: [
-            {
-              extensions: { code: 'PARSING_ERROR' },
-              message: 'Schema parsing failed',
-            },
-          ],
-        };
+      it('should display the view all pipeline findings button', async () => {
+        await createComponentREST({ mockApolloProvider: defaultMockApollo });
 
-        const customHandler = jest.fn().mockRejectedValue(graphqlError);
+        expect(findWidget().props('actionButtons')).toEqual([
+          {
+            href: '/path/to/pipeline/security',
+            text: 'View all pipeline findings',
+            trackFullReportClicked: true,
+          },
+        ]);
+      });
 
-        createComponent({
-          provide: { glFeatures: { mrSecurityWidgetGraphql: true } },
+      it('should mount the widget component', async () => {
+        await createComponentWithData();
+
+        expect(findWidget().props()).toMatchObject({
+          statusIconName: 'warning',
+          widgetName: 'WidgetSecurityReports',
+          errorText: 'Security reports failed loading results',
+          loadingText: 'Loading',
+          fetchCollapsedData: wrapper.vm.fetchCollapsedData,
+          multiPolling: true,
+        });
+      });
+
+      it('computes the total number of new potential vulnerabilities correctly', async () => {
+        await createComponentWithData();
+
+        expect(findSummaryText().props()).toMatchObject({ totalNewVulnerabilities: 4 });
+        expect(findSummaryHighlights().props()).toMatchObject({
+          highlights: { critical: 1, high: 1, other: 2 },
+        });
+      });
+
+      it('tells the widget to be collapsible only if there is data', async () => {
+        mockWithData();
+
+        createComponentREST({
           mountFn: mountExtended,
-          apolloProvider: createMockApollo([
-            [enabledScansQuery, jest.fn().mockResolvedValue(enabledScansQueryResult())],
-            [findingReportsComparerQuery, customHandler],
-          ]),
         });
 
+        expect(findWidget().props('isCollapsible')).toBe(false);
         await waitForPromises();
-        await getFirstScanResult(); // Trigger the error
+        expect(findWidget().props('isCollapsible')).toBe(true);
+      });
+
+      it('tells summary-text to display a ui hint when there are 25 findings in a single report', async () => {
+        await createComponentAndExpandWidgetRest({
+          mockDataFn: mockWithData,
+          mockDataProps: {
+            findings: {
+              sast: {
+                added: [...Array(25)].map((i) => ({
+                  uuid: `${i}4abc`,
+                  severity: 'high',
+                  name: 'SQL vulnerability',
+                })),
+              },
+              dast: {
+                added: [...Array(10)].map((i) => ({
+                  uuid: `${i}3abc`,
+                  severity: 'critical',
+                  name: 'Dast vulnerability',
+                })),
+              },
+            },
+          },
+        });
+
+        // header
+        expect(findSummaryText().props('showAtLeastHint')).toBe(true);
+        // sast and dast reports. These are always true because individual reports
+        // will not return more than 25 records.
+        expect(findReportSummaryText(1).props('showAtLeastHint')).toBe(true);
+        expect(findReportSummaryText(2).props('showAtLeastHint')).toBe(true);
+      });
+
+      it('tells summary-text NOT to display a ui hint when there are less 25 findings', async () => {
+        await createComponentAndExpandWidgetRest({
+          mockDataFn: mockWithData,
+          mockDataProps: {
+            findings: {
+              sast: {
+                added: [...Array(24)].map((i) => ({
+                  uuid: `${i}4abc`,
+                  severity: 'high',
+                  name: 'SQL vulnerability',
+                })),
+              },
+              dast: {
+                added: [...Array(10)].map((i) => ({
+                  uuid: `${i}3abc`,
+                  severity: 'critical',
+                  name: 'Dast vulnerability',
+                })),
+              },
+            },
+          },
+        });
+
+        // header
+        expect(findSummaryText().props('showAtLeastHint')).toBe(false);
+        // sast and dast reports. These are always true because individual reports
+        // will not return more than 25 records.
+        expect(findReportSummaryText(1).props('showAtLeastHint')).toBe(true);
+        expect(findReportSummaryText(2).props('showAtLeastHint')).toBe(true);
+      });
+    });
+
+    describe('error states (REST)', () => {
+      const mockWithData = ({ errorCode = HTTP_STATUS_INTERNAL_SERVER_ERROR } = {}) => {
+        mockAxios
+          .onGet(reportEndpoints.sastComparisonPathV2.concat('&scan_mode=full'))
+          .replyOnce(errorCode);
+
+        mockAxios
+          .onGet(reportEndpoints.dastComparisonPathV2.concat('&scan_mode=full'))
+          .replyOnce(HTTP_STATUS_OK, {
+            added: [
+              { uuid: 5, severity: 'low', name: 'SQL Injection' },
+              { uuid: 3, severity: 'unknown', name: 'Weak password' },
+            ],
+          });
+
+        [
+          reportEndpoints.dependencyScanningComparisonPathV2,
+          reportEndpoints.coverageFuzzingComparisonPathV2,
+          reportEndpoints.apiFuzzingComparisonPathV2,
+          reportEndpoints.secretDetectionComparisonPathV2,
+          reportEndpoints.containerScanningComparisonPathV2,
+        ].forEach((path) => {
+          mockAxios.onGet(path.concat('&scan_mode=full')).replyOnce(HTTP_STATUS_OK, {
+            added: [],
+          });
+        });
+      };
+
+      it('displays a top level error message when there is a bad request', async () => {
+        mockWithData({ errorCode: HTTP_STATUS_BAD_REQUEST });
+        createComponentREST({ mountFn: mountExtended });
+
+        await waitForPromises();
 
         expect(
           wrapper
             .findByText('Parsing schema failed. Check the validity of your .gitlab-ci.yml content.')
             .exists(),
         ).toBe(true);
+
+        expect(wrapper.findByText('SAST: Loading resulted in an error').exists()).toBe(false);
+      });
+    });
+
+    describe('modal (REST)', () => {
+      let mockedFindings = [];
+
+      beforeEach(() => {
+        mockedFindings = [];
+      });
+
+      const mockFinding = (props) => {
+        const finding = {
+          uuid: '1',
+          severity: 'critical',
+          name: 'Password leak',
+          found_by_pipeline: {
+            iid: 1,
+          },
+          project: {
+            id: 278964,
+            name: 'GitLab',
+            full_path: '/gitlab-org/gitlab',
+            full_name: 'GitLab.org / GitLab',
+          },
+          ...props,
+        };
+
+        mockedFindings.push(finding);
+
+        return finding;
+      };
+
+      const mockWithData = (props) => {
+        Object.keys(reportEndpoints).forEach((key, i) => {
+          mockAxios
+            .onGet(reportEndpoints[key].concat('&scan_mode=full'))
+            .replyOnce(HTTP_STATUS_OK, {
+              added: [mockFinding({ uuid: i.toString(), ...props })],
+            });
+        });
+      };
+
+      const createComponentExpandWidgetAndOpenModal = async ({
+        mockDataFn = mockWithData,
+        mockDataProps,
+        mrProps,
+        ...options
+      } = {}) => {
+        await createComponentAndExpandWidgetRest({
+          mockDataFn,
+          mockDataProps,
+          mrProps,
+          ...options,
+        });
+
+        // Click on the vulnerability name
+        findWidgetRow().vm.$emit('modal-data', mockedFindings[0]);
+
+        await nextTick();
+      };
+
+      const mockWithDataOneFinding = (state = 'dismissed') => {
+        mockAxios
+          .onGet(reportEndpoints.sastComparisonPathV2.concat('&scan_mode=full'))
+          .replyOnce(HTTP_STATUS_OK, {
+            added: [mockFinding({ state })],
+            fixed: [],
+          });
+
+        [
+          reportEndpoints.dastComparisonPathV2,
+          reportEndpoints.dependencyScanningComparisonPathV2,
+          reportEndpoints.coverageFuzzingComparisonPathV2,
+          reportEndpoints.apiFuzzingComparisonPathV2,
+          reportEndpoints.secretDetectionComparisonPathV2,
+          reportEndpoints.containerScanningComparisonPathV2,
+        ].forEach((path) => {
+          mockAxios.onGet(path.concat('&scan_mode=full')).replyOnce(HTTP_STATUS_OK, {
+            added: [],
+          });
+        });
+      };
+
+      it('does not display the modal until the finding is clicked', async () => {
+        await createComponentAndExpandWidgetRest({
+          mockDataFn: mockWithData,
+        });
+
+        expect(findStandaloneModal().exists()).toBe(false);
+      });
+
+      it('clears modal data when the modal is closed', async () => {
+        await createComponentExpandWidgetAndOpenModal();
+
+        expect(findStandaloneModal().props('modal')).not.toBe(null);
+
+        findStandaloneModal().vm.$emit('hidden');
+        await nextTick();
+
+        expect(findStandaloneModal().exists()).toBe(false);
+      });
+
+      it('renders the modal when the finding is clicked', async () => {
+        const targetProjectFullPath = 'root/security-reports-v2';
+        await createComponentExpandWidgetAndOpenModal({
+          mrProps: { targetProjectFullPath },
+        });
+
+        const modal = findStandaloneModal();
+
+        expect(modal.props()).toMatchObject({
+          findingUuid: '0',
+          pipelineIid: 1,
+          projectFullPath: targetProjectFullPath,
+          sourceProjectFullPath,
+          branchRef: sourceBranch,
+        });
+      });
+
+      it('renders the dismissed badge when `dismissed` is emitted', async () => {
+        await createComponentExpandWidgetAndOpenModal({
+          mockDataFn: mockWithDataOneFinding,
+          mockDataProps: { state: 'detected' },
+        });
+
+        expect(findDismissedBadge().exists()).toBe(false);
+
+        findStandaloneModal().vm.$emit('dismissed');
+        await nextTick();
+
+        expect(mockedFindings[0].state).toBe('dismissed');
+      });
+
+      it('does not render the dismissed badge when `detected` is emitted', async () => {
+        await createComponentExpandWidgetAndOpenModal({ mockDataFn: mockWithDataOneFinding });
+
+        expect(findDismissedBadge().exists()).toBe(true);
+
+        findStandaloneModal().vm.$emit('detected');
+        await nextTick();
+
+        expect(mockedFindings[0].state).toBe('detected');
       });
     });
   });

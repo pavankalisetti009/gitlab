@@ -466,7 +466,7 @@ module Search
 
       # Skip for GitLab self-managed, to be revisited with https://gitlab.com/gitlab-org/gitlab/-/issues/525484
       indexing_allowed = Rails.env.development? ||
-        ::Search::Elastic::VulnerabilityIndexingHelper.vulnerability_indexing_allowed?
+        ::Search::Elastic::VulnerabilityIndexHelper.indexing_allowed?
 
       unless indexing_allowed
         logger.info(Rainbow('Skipping vulnerability indexing as it is not allowed.').orange)

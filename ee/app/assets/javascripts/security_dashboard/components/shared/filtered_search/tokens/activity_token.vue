@@ -74,7 +74,7 @@ const setSelectedStatus = (keyWhenTrue, keyWhenFalse, selectedActivities = []) =
 };
 
 export default {
-  defaultValues: [ITEMS.STILL_DETECTED.value],
+  defaultValues: () => [ITEMS.STILL_DETECTED.value],
   transformFilters: (filters, { dashboardType }) => {
     const showAiResolutionFilter = window.gon?.abilities?.resolveVulnerabilityWithAi;
     const showPolicyViolationFilter =
@@ -104,6 +104,10 @@ export default {
     }
 
     return transformedFilters;
+  },
+  transformQueryParams: (filters) => {
+    if (filters.length === 0) return ALL_ACTIVITY_VALUE;
+    return filters.join(',');
   },
   components: {
     GlBadge,

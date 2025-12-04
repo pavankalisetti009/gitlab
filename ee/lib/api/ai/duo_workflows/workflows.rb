@@ -37,6 +37,17 @@ module API
             namespace&.root_ancestor
           end
 
+          def find_feature_setting_name
+            # This header is sent only from the Node Executor.
+            feature_setting_name_from_header =
+              headers['X-Gitlab-Agent-Platform-Feature-Setting-Name'].presence
+
+            # We treat agentic chat as the default feature for the /ws endpoint if
+            # no header is present.
+            (feature_setting_name_from_header ||
+              ::Ai::ModelSelection::FeaturesConfigurable.agentic_chat_feature_name).to_sym
+          end
+
           def find_user_selected_model_identifier
             # Currently, only the web agentic chat UI sends this attribute, as a query param.
             # The IDE does not yet send this attribute.
@@ -316,17 +327,19 @@ module API
 
               push_feature_flags
               root_namespace = find_root_namespace
+              feature_setting_name = find_feature_setting_name
 
-              model_metadata_headers = ::Ai::DuoWorkflows::AgenticChatModelMetadataService.new(
+              model_metadata_headers = ::Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService.new(
                 root_namespace: root_namespace,
                 current_user: current_user,
-                user_selected_model_identifier: find_user_selected_model_identifier
+                user_selected_model_identifier: find_user_selected_model_identifier,
+                feature_name: feature_setting_name
               ).execute
 
               feature_setting = ::Ai::FeatureSettingSelectionService
                                   .new(
                                     current_user,
-                                    ::Ai::ModelSelection::FeaturesConfigurable.agentic_chat_feature_name,
+                                    feature_setting_name,
                                     root_namespace
                                   ).execute.payload
 
@@ -334,7 +347,10 @@ module API
 
               gitlab_token = gitlab_oauth_token.plaintext_token
               mcp_config_service = ::Ai::DuoWorkflows::McpConfigService.new(current_user, gitlab_token)
-              grpc_headers = Gitlab::DuoWorkflow::Client.cloud_connector_headers(user: current_user).merge(
+              grpc_headers = Gitlab::DuoWorkflow::Client.cloud_connector_headers(
+                user: current_user,
+                feature_setting: feature_setting
+              ).merge(
                 'x-gitlab-oauth-token' => gitlab_token,
                 'x-gitlab-unidirectional-streaming' => 'enabled',
                 'x-gitlab-enabled-mcp-server-tools' => mcp_config_service.gitlab_enabled_tools.join(','),
@@ -382,7 +398,7 @@ module API
               end
               post do
                 ::Gitlab::QueryLimiting.disable!(
-                  'https://gitlab.com/gitlab-org/gitlab/-/issues/566195', new_threshold: 112
+                  'https://gitlab.com/gitlab-org/gitlab/-/issues/566195', new_threshold: 115
                 )
 
                 container = if params[:project_id]

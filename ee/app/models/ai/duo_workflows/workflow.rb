@@ -8,6 +8,8 @@ module Ai
       include EachBatch
       include Sortable
 
+      WORKLOAD_TAG = 'gitlab--duo'
+
       self.table_name = :duo_workflows_workflows
 
       belongs_to :user
@@ -28,7 +30,7 @@ module Ai
       validates :goal, length: { maximum: 16_384 }
       validates :image, length: { maximum: 2048 }, allow_blank: true
 
-      validate :only_known_agent_priviliges
+      validate :only_known_agent_privileges
       validate :only_known_pre_approved_agent_privileges
       validate :pre_approved_privileges_included_in_agent_privileges, on: :create
 
@@ -155,7 +157,11 @@ module Ai
 
         DEFAULT_PRIVILEGES = [
           READ_WRITE_FILES,
-          READ_ONLY_GITLAB
+          READ_ONLY_GITLAB,
+          READ_WRITE_GITLAB,
+          RUN_COMMANDS,
+          USE_GIT,
+          RUN_MCP_TOOLS
         ].freeze
       end
 
@@ -173,7 +179,7 @@ module Ai
         end
       end
 
-      def only_known_agent_priviliges
+      def only_known_agent_privileges
         self.agent_privileges ||= AgentPrivileges::DEFAULT_PRIVILEGES
 
         agent_privileges.each do |privilege|

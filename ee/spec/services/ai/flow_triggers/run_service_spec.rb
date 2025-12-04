@@ -765,7 +765,9 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_agent_platfo
           project: project,
           current_user: current_user,
           params: {
+            item_consumer: ai_catalog_item_consumer,
             flow: ai_catalog_item,
+            service_account: service_account,
             flow_version: ai_catalog_item.latest_version,
             event_type: 'mention',
             user_prompt: start_with("Input: test input\nContext:"),
@@ -933,19 +935,32 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_agent_platfo
   end
 
   describe '#catalog_item_user_prompt' do
-    let(:input) { '123' }
-    let(:serialized_resource) { '{"id":123,"type":"Issue"}' }
-
-    before do
-      allow(service).to receive(:serialized_resource).and_return(serialized_resource)
-    end
+    let(:input) { '11' }
 
     context 'when event type is mention' do
-      let(:input) { '@issue_planner can you plan this issue?' }
+      let(:input) { '@issue_planner Please help me with this task' }
 
-      it 'returns input with context' do
+      it 'returns input with context using IID' do
         result = service.send(:catalog_item_user_prompt, input, :mention)
-        expect(result).to eq("Input: #{input}\nContext: #{serialized_resource}")
+        expect(result).to eq("Input: #{input}\nContext: {#{resource.class.name} IID: #{resource.iid}}")
+      end
+
+      context 'when resource does not have iid' do
+        let_it_be(:another_resource) { create(:project, namespace: project.namespace) }
+
+        subject(:service) do
+          described_class.new(
+            project: project,
+            current_user: current_user,
+            resource: another_resource,
+            flow_trigger: flow_trigger
+          )
+        end
+
+        it 'returns prompt with ID instead of IID' do
+          result = service.send(:catalog_item_user_prompt, input, :mention)
+          expect(result).to eq("Input: #{input}\nContext: {#{another_resource.class.name} ID: #{another_resource.id}}")
+        end
       end
     end
 

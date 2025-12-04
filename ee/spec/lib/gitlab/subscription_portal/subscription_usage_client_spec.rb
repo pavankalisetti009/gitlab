@@ -55,8 +55,8 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
     end
   end
 
-  shared_examples 'returns error on unsuccessful subscription portal response' do
-    it 'logs and returns error from subscription portal' do
+  shared_examples 'raises error on unsuccessful subscription portal response' do
+    it 'raises an error from subscription portal' do
       response = instance_double(
         HTTParty::Response,
         response: Net::HTTPSuccess.new(1.0, '200', 'OK'),
@@ -68,11 +68,11 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
         }
       )
 
-      expect(Gitlab::ErrorTracking).to receive(:track_and_raise_for_dev_exception).with(
+      expect(Gitlab::ErrorTracking).to receive(:track_and_raise_exception).with(
         a_kind_of(described_class::ResponseError),
         query: query,
         response: response.parsed_response
-      )
+      ).and_call_original
 
       expect(::Gitlab::HTTP).to receive(:post).with(
         graphql_url,
@@ -80,20 +80,20 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
         body: params.to_json
       ).and_return(response)
 
-      expect(request).to eq({ success: false, errors: 'some error' })
+      expect { request }.to raise_error(described_class::ResponseError, 'Received an error from CustomerDot')
     end
 
-    it 'logs and returns error when subscription portal is not available' do
+    it 'raises an error when subscription portal is not available' do
       http_response = instance_double(
         HTTParty::Response,
         response: Net::HTTPServiceUnavailable.new(1.0, '503', 'Service Unavailable')
       )
 
-      expect(Gitlab::ErrorTracking).to receive(:track_and_raise_for_dev_exception).with(
+      expect(Gitlab::ErrorTracking).to receive(:track_and_raise_exception).with(
         a_kind_of(described_class::ResponseError),
         query: query,
         response: { data: { errors: 'Service Unavailable' } }
-      )
+      ).and_call_original
 
       expect(::Gitlab::HTTP).to receive(:post).with(
         graphql_url,
@@ -101,7 +101,7 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
         body: params.to_json
       ).and_return(http_response)
 
-      expect(request).to eq({ success: false, errors: 'Service Unavailable' })
+      expect { request }.to raise_error(described_class::ResponseError, 'Received an error from CustomerDot')
     end
   end
 
@@ -116,7 +116,7 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
 
     include_examples 'performs request with correct params'
     include_examples 'returns successfully'
-    include_examples 'returns error on unsuccessful subscription portal response'
+    include_examples 'raises error on unsuccessful subscription portal response'
   end
 
   shared_context 'for gitlab.com request' do
@@ -131,7 +131,7 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
 
     include_examples 'performs request with correct params'
     include_examples 'returns successfully'
-    include_examples 'returns error on unsuccessful subscription portal response'
+    include_examples 'raises error on unsuccessful subscription portal response'
   end
 
   describe '#get_metadata' do
@@ -148,7 +148,11 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
               enabled: true,
               isOutdatedClient: false,
               lastEventTransactionAt: "2025-10-01T16:19:59Z",
-              purchaseCreditsPath: '/mock/path'
+              purchaseCreditsPath: '/mock/path',
+              overageTermsAccepted: true,
+              canAcceptOverageTerms: true,
+              dapPromoEnabled: false,
+              usageDashboardPath: "/subscriptions/A-S00012345/usage"
             }
           }
         }
@@ -164,7 +168,11 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
           enabled: true,
           isOutdatedClient: false,
           lastEventTransactionAt: "2025-10-01T16:19:59Z",
-          purchaseCreditsPath: '/mock/path'
+          purchaseCreditsPath: '/mock/path',
+          overageTermsAccepted: true,
+          canAcceptOverageTerms: true,
+          dapPromoEnabled: false,
+          usageDashboardPath: "/subscriptions/A-S00012345/usage"
         }
       }
     end
@@ -184,7 +192,8 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
     let(:monthly_waiver) do
       {
         creditsUsed: 12.25,
-        totalCredits: 1000.91
+        totalCredits: 1000.91,
+        dailyUsage: [{ date: '2025-10-01', creditsUsed: 12.25 }]
       }
     end
 

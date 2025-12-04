@@ -44,7 +44,7 @@ RSpec.describe SecretsManagement::GroupSecretsManagers::InitiateDeprovisionServi
 
       it 'fails' do
         expect(result).to be_error
-        expect(result.message).to eq('Secrets manager is not active.')
+        expect(result.message).to eq('Secrets manager is not active')
         expect(deprovision_worker_spy).not_to have_received(:perform_async)
       end
     end

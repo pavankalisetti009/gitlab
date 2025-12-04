@@ -118,6 +118,7 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     it { is_expected.to have_many(:configured_ai_catalog_items).class_name('Ai::Catalog::ItemConsumer') }
     it { is_expected.to have_many(:ai_flow_triggers).class_name('Ai::FlowTrigger') }
     it { is_expected.to have_many(:policy_dismissals).class_name('Security::PolicyDismissal') }
+    it { is_expected.to have_many(:enabled_foundational_flows).class_name('Ai::Catalog::EnabledFoundationalFlow') }
 
     include_examples 'ci_cd_settings delegation' do
       let(:attributes_with_prefix) do
@@ -840,58 +841,6 @@ RSpec.describe Project, feature_category: :groups_and_projects do
 
       it 'only returns projects without security_setting' do
         expect(described_class.without_security_setting).to match_array([project_without_security_setting])
-      end
-    end
-
-    describe '.with_ready_active_context_code_repository_project_ids' do
-      let_it_be(:project) { create(:project) }
-      let_it_be(:namespace) { create(:group) }
-      let_it_be(:code_embeddings_enabled_namespace) do
-        create(:ai_active_context_code_enabled_namespace, namespace: namespace)
-      end
-
-      let(:code_embeddings_repository) do
-        create(
-          :ai_active_context_code_repository,
-          project: project,
-          enabled_namespace: code_embeddings_enabled_namespace
-        )
-      end
-
-      it 'raises ArgumentError when called without project_ids' do
-        expect do
-          described_class.with_ready_active_context_code_repository_project_ids(nil)
-        end.to raise_error(ArgumentError, /project_ids must be a non-empty array/)
-      end
-
-      it 'raises ArgumentError when called with empty array' do
-        expect do
-          described_class.with_ready_active_context_code_repository_project_ids([])
-        end.to raise_error(ArgumentError, /project_ids must be a non-empty array/)
-      end
-
-      it 'return no project' do
-        expect(described_class.with_ready_active_context_code_repository_project_ids(project.id)).to be_empty
-      end
-
-      context "when embedding repository is ready" do
-        before do
-          code_embeddings_repository.update!(state: :ready)
-        end
-
-        it 'returns projects ai_active_context_code_repositories ready' do
-          expect(described_class.with_ready_active_context_code_repository_project_ids(project.id)).to be_empty
-        end
-
-        context "when embedding repository is ready" do
-          before do
-            code_embeddings_repository.active_context_connection.update!(active: true)
-          end
-
-          it 'returns projects ai_active_context_code_repositories ready' do
-            expect(described_class.with_ready_active_context_code_repository_project_ids(project.id)).to contain_exactly(project)
-          end
-        end
       end
     end
   end
@@ -4848,19 +4797,6 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     end
   end
 
-  describe '#okr_automatic_rollups_enabled?' do
-    let_it_be(:project) { create(:project) }
-
-    it 'returns true if feature_flag is enabled' do
-      expect(project.okr_automatic_rollups_enabled?).to be_truthy
-    end
-
-    it 'returns false if feature_flag is disabled' do
-      stub_feature_flags(okr_automatic_rollups: false)
-      expect(project.okr_automatic_rollups_enabled?).to be_falsey
-    end
-  end
-
   describe '#member_usernames_among' do
     let_it_be(:users) { create_list(:user, 3) }
 
@@ -5704,6 +5640,56 @@ RSpec.describe Project, feature_category: :groups_and_projects do
 
     it 'filters by project_settings.duo_features_enabled = true' do
       expect(described_class.with_duo_features_enabled).to contain_exactly(p_on)
+    end
+  end
+
+  describe '.enabled_flow_catalog_item_ids' do
+    let_it_be(:namespace) { create(:group) }
+    let_it_be(:project) { create(:project, group: namespace) }
+    let_it_be(:catalog_item_1) { create(:ai_catalog_item, :with_foundational_flow_reference) }
+    let_it_be(:catalog_item_2) { create(:ai_catalog_item, :with_foundational_flow_reference) }
+    let_it_be(:catalog_item_3) { create(:ai_catalog_item, :with_foundational_flow_reference) }
+
+    subject { project.enabled_flow_catalog_item_ids }
+
+    context 'when project has no enabled foundational flows' do
+      before do
+        create(:ai_catalog_enabled_foundational_flow, :for_namespace, namespace: namespace, catalog_item: catalog_item_1)
+        create(:ai_catalog_enabled_foundational_flow, :for_namespace, namespace: namespace, catalog_item: catalog_item_2)
+      end
+
+      it 'returns the namespace catalog item ids' do
+        expect(subject).to match_array([catalog_item_1.id, catalog_item_2.id])
+      end
+    end
+
+    context 'when project has enabled foundational flows' do
+      before do
+        create(:ai_catalog_enabled_foundational_flow, :for_project, project: project, catalog_item: catalog_item_1)
+        create(:ai_catalog_enabled_foundational_flow, :for_project, project: project, catalog_item: catalog_item_2)
+        create(:ai_catalog_enabled_foundational_flow, :for_namespace, namespace: namespace, catalog_item: catalog_item_3)
+      end
+
+      it 'returns the project catalog item ids' do
+        expect(subject).to match_array([catalog_item_1.id, catalog_item_2.id])
+      end
+    end
+
+    context 'when project has more than 100 enabled foundational flows' do
+      before do
+        allow(project.enabled_foundational_flows).to receive(:limit).with(100).and_return(
+          project.enabled_foundational_flows.limit(3)
+        )
+
+        4.times do
+          catalog_item = create(:ai_catalog_item, :with_foundational_flow_reference)
+          create(:ai_catalog_enabled_foundational_flow, :for_project, project: project, catalog_item: catalog_item)
+        end
+      end
+
+      it 'returns only the limit of catalog item ids' do
+        expect(subject.size).to eq(3)
+      end
     end
   end
 

@@ -2,14 +2,21 @@
 
 require 'spec_helper'
 
-RSpec.describe UsersStatistics do
+RSpec.describe UsersStatistics, feature_category: :user_management do
+  # Note: Expected values in these tests are based on the factory defaults in spec/factories/users_statistics.rb
   let(:users_statistics) do
     build(:users_statistics, with_highest_role_minimal_access: 5, with_highest_role_guest_with_custom_role: 2)
   end
 
   describe '#billable' do
-    it 'sums users statistics values excluding blocked users and bots' do
-      expect(users_statistics.billable).to eq(81)
+    context 'when there is a premium license' do
+      before do
+        create_current_license(plan: License::PREMIUM_PLAN)
+      end
+
+      it 'excludes blocked users, bots, minimal access users, and users without a group or project' do
+        expect(users_statistics.billable).to eq(53)
+      end
     end
 
     context 'when there is an ultimate license' do
@@ -30,8 +37,14 @@ RSpec.describe UsersStatistics do
   end
 
   describe '#non_billable' do
-    it 'includes bots only' do
-      expect(users_statistics.non_billable).to eq(2)
+    context 'when there is a premium license' do
+      before do
+        create_current_license(plan: License::PREMIUM_PLAN)
+      end
+
+      it 'includes bots, minimal access users, and users without a group or project' do
+        expect(users_statistics.non_billable).to eq(30)
+      end
     end
 
     context 'when there is an ultimate license' do

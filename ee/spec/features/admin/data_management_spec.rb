@@ -30,7 +30,7 @@ RSpec.describe 'Admin > Data Management', :enable_admin_mode, feature_category: 
 
   describe 'show' do
     let_it_be(:model) { create(:project) }
-    let_it_be(:show_path) { "#{path}/#{model.class.name}/#{model.id}" }
+    let_it_be(:show_path) { "#{path}/#{model.class.name.pluralize}/#{model.id}" }
 
     it 'renders page', :js do
       visit show_path

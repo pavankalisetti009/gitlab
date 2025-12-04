@@ -37,6 +37,12 @@ class User < ApplicationRecord
   include Ci::PipelineScheduleOwnershipValidator
   include Users::DependentAssociations
   include Users::EmailOtpEnrollment
+  include Cells::Claimable
+
+  cells_claims_attribute :id, type: CLAIMS_BUCKET_TYPE::USER_IDS
+  cells_claims_attribute :username, type: CLAIMS_BUCKET_TYPE::USERNAMES
+
+  cells_claims_metadata subject_type: CLAIMS_SUBJECT_TYPE::USER, subject_key: :id
 
   ignore_column :skype, remove_after: '2025-09-18', remove_with: '18.4'
 
@@ -166,9 +172,9 @@ class User < ApplicationRecord
   has_many :expired_today_and_unnotified_keys, -> { expired_today_and_not_notified }, class_name: 'Key'
   has_many :expiring_soon_and_unnotified_keys, -> { expiring_soon_and_not_notified }, class_name: 'Key'
   has_many :deploy_keys, -> { where(type: 'DeployKey') }, dependent: :nullify # rubocop:disable Cop/ActiveRecordDependent
-  has_many :gpg_keys
+  has_many :gpg_keys, dependent: :destroy # rubocop:disable Cop/ActiveRecordDependent -- needed to unclaim
 
-  has_many :emails
+  has_many :emails, dependent: :destroy # rubocop:disable Cop/ActiveRecordDependent -- needed to unclaim
   has_many :personal_access_tokens, dependent: :destroy # rubocop:disable Cop/ActiveRecordDependent
   has_many :expiring_soon_and_unnotified_personal_access_tokens, -> { expiring_and_not_notified_without_impersonation }, class_name: 'PersonalAccessToken'
 
@@ -304,6 +310,8 @@ class User < ApplicationRecord
 
   has_many :timelogs
 
+  has_many :created_saved_views, class_name: 'WorkItems::SavedViews::SavedView', foreign_key: :created_by_id, dependent: :nullify # rubocop:disable Cop/ActiveRecordDependent
+  has_many :user_saved_views, class_name: 'WorkItems::SavedViews::UserSavedView', dependent: :delete_all # rubocop:disable Cop/ActiveRecordDependent
   has_many :resource_label_events, dependent: :nullify # rubocop:disable Cop/ActiveRecordDependent
   has_many :resource_state_events, dependent: :nullify # rubocop:disable Cop/ActiveRecordDependent
   has_many :issue_assignment_events, class_name: 'ResourceEvents::IssueAssignmentEvent', dependent: :nullify # rubocop:disable Cop/ActiveRecordDependent

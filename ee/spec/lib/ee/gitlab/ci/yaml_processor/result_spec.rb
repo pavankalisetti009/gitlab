@@ -34,8 +34,10 @@ RSpec.describe Gitlab::Ci::YamlProcessor::Result, feature_category: :pipeline_co
         include_context 'with pipeline policy context'
 
         let(:creating_policy_pipeline) { true }
+        let(:pipeline) { FactoryBot.build(:ci_empty_pipeline, ref: 'master') }
         let(:ci_config) do
-          Gitlab::Ci::Config.new(config_content, user: user, pipeline_policy_context: pipeline_policy_context)
+          Gitlab::Ci::Config.new(config_content, user: user, pipeline_policy_context: pipeline_policy_context,
+            pipeline: pipeline)
         end
 
         let(:config_content) do
@@ -44,8 +46,9 @@ RSpec.describe Gitlab::Ci::YamlProcessor::Result, feature_category: :pipeline_co
           )
         end
 
-        it 'saves the policy name in :options' do
-          expect(build.dig(:options, :policy, :name)).to eq 'Policy'
+        it 'saves the policy data in :options' do
+          expect(build.dig(:options, :policy))
+            .to eq(name: 'Policy', sha: policy_config_sha, project_id: policy_project_id)
         end
 
         context 'when creating_policy_pipeline? is false' do

@@ -4,7 +4,7 @@ module SecretsManagement
   class GroupBaseService < BaseService
     include Gitlab::Utils::StrongMemoize
     include Helpers::ExclusiveLeaseHelper
-    include ErrorResponseHelper
+    include Helpers::ErrorResponseHelper
 
     def initialize(group, user = nil)
       @group = group

@@ -11,40 +11,115 @@ module EE
         expose :work_item_id, documentation: {
           type: "integer", example: 123, documentation: "ID of the corresponding work item for a legacy epic"
         }
-        expose :iid, documentation: { type: "integer", example: 123 }
-        expose :color, documentation: { type: "string", example: "#1068bf" }
-        expose :text_color, documentation: { type: "string", example: "#1068bf" }
-        expose :group_id, documentation: { type: "integer", example: 17 }
-        expose :parent_id, documentation: { type: "integer", example: 12 }
-        expose :parent_iid, documentation: { type: "integer", example: 19 } do |epic|
-          epic.parent.iid if epic.has_parent?
+        expose :iid, documentation: { type: "integer", example: 123 } do |epic|
+          epic.work_item.iid
         end
-        expose :imported?, as: :imported, documentation: { type: "boolean", example: false }
-        expose :imported_from, documentation: { type: "string", example: "github" }
-        expose :title, documentation: { type: "string", example: "My Epic" }
-        expose :description, documentation: { type: "string", example: "Epic description" }
-        expose :confidential, documentation: { type: "boolean", example: false }
-        expose :author, using: ::API::Entities::UserBasic
-        expose :start_date, documentation: { type: "dateTime", example: "2022-01-31T15:10:45.080Z" }
+
+        expose :color, documentation: { type: "string", example: "#1068bf" } do |epic|
+          epic.work_item.color&.color.to_s
+        end
+
+        expose :text_color, documentation: { type: "string", example: "#1068bf" } do |epic|
+          epic.work_item.color&.text_color.to_s
+        end
+
+        expose :group_id, documentation: { type: "integer", example: 17 } do |epic|
+          epic.work_item.namespace_id
+        end
+
+        expose :parent_id, documentation: { type: "integer", example: 12 } do |epic|
+          next nil unless epic.work_item_parent_link_id
+
+          epic.work_item.parent_link&.work_item_parent&.sync_object&.id
+        end
+
+        expose :parent_iid, documentation: { type: "integer", example: 19 } do |epic|
+          next nil unless epic.work_item_parent_link_id
+
+          epic.work_item.parent_link&.work_item_parent&.iid
+        end
+
+        expose :imported?, as: :imported, documentation: { type: "boolean", example: false } do |epic|
+          epic.work_item.imported?
+        end
+
+        expose :imported_from, documentation: { type: "string", example: "github" } do |epic|
+          epic.work_item.imported_from
+        end
+
+        expose :title, documentation: { type: "string", example: "My Epic" } do |epic|
+          epic.work_item.title
+        end
+
+        expose :description, documentation: { type: "string", example: "Epic description" } do |epic|
+          epic.work_item.description
+        end
+
+        expose :confidential, documentation: { type: "boolean", example: false } do |epic|
+          epic.work_item.confidential
+        end
+
+        expose :author, using: ::API::Entities::UserBasic do |epic|
+          epic.work_item.author
+        end
+
+        expose :start_date, documentation: { type: "dateTime", example: "2022-01-31T15:10:45.080Z" } do |_epic|
+          rollupable_dates.start_date
+        end
+
         expose :start_date_is_fixed?,
           as: :start_date_is_fixed,
-          documentation: { type: "boolean", example: true }
+          documentation: { type: "boolean", example: true } do |_epic|
+          rollupable_dates.fixed?
+        end
+
         expose :start_date_fixed,
-          :start_date_from_inherited_source,
-          documentation: { type: "dateTime", example: "2022-01-31T15:10:45.080Z" }
+          documentation: { type: "dateTime", example: "2022-01-31T15:10:45.080Z" } do |_epic|
+          rollupable_dates.start_date
+        end
+
+        expose :start_date_from_inherited_source,
+          documentation: { type: "dateTime", example: "2022-01-31T15:10:45.080Z" } do |_epic|
+          rollupable_dates.start_date&.to_time&.iso8601
+        end
+
         expose :start_date_from_milestones, # @deprecated in favor of start_date_from_inherited_source
-          documentation: { type: "dateTime", example: "2022-01-31T15:10:45.080Z" }
-        expose :end_date, documentation: { type: "dateTime", example: "2022-01-31T15:10:45.080Z" } # @deprecated in favor of due_date
-        expose :end_date, as: :due_date, documentation: { type: "dateTime", example: "2022-01-31T15:10:45.080Z" }
+          documentation: { type: "dateTime", example: "2022-01-31T15:10:45.080Z" } do |_epic|
+          rollupable_dates.start_date&.to_time&.iso8601
+        end
+
+        expose :end_date, documentation: { type: "dateTime", example: "2022-01-31T15:10:45.080Z" } do |_epic| # @deprecated in favor of due_date
+          rollupable_dates.due_date
+        end
+
+        expose :end_date, as: :due_date, documentation: { type: "dateTime", example: "2022-01-31T15:10:45.080Z" } do |_epic|
+          rollupable_dates.due_date
+        end
+
         expose :due_date_is_fixed?,
           as: :due_date_is_fixed,
-          documentation: { type: "boolean", example: true }
+          documentation: { type: "boolean", example: true } do |_epic|
+          rollupable_dates.fixed?
+        end
+
         expose :due_date_fixed,
-          :due_date_from_inherited_source,
-          documentation: { type: "boolean", example: true }
+          documentation: { type: "dateTime", example: "2022-01-31T15:10:45.080Z" } do |_epic|
+          rollupable_dates.due_date
+        end
+
+        expose :due_date_from_inherited_source,
+          documentation: { type: "dateTime", example: "2022-01-31T15:10:45.080Z" } do |_epic|
+          rollupable_dates.due_date&.to_time&.iso8601
+        end
+
         expose :due_date_from_milestones, # @deprecated in favor of due_date_from_inherited_source
-          documentation: { type: "dateTime", example: "2022-01-31T15:10:45.080Z" }
-        expose :state, documentation: { type: "string", example: "opened" }
+          documentation: { type: "dateTime", example: "2022-01-31T15:10:45.080Z" } do |_epic|
+          rollupable_dates.due_date&.to_time&.iso8601
+        end
+
+        expose :state, documentation: { type: "string", example: "opened" } do |epic|
+          epic.work_item.state
+        end
         expose :web_edit_url, # @deprecated
           documentation: { type: "string", example: "http://gitlab.example.com/groups/test/-/epics/4/edit" }
         expose :web_url, documentation: { type: "string", example: "http://gitlab.example.com/groups/test/-/epics/4" }
@@ -56,9 +131,18 @@ module EE
         expose :reference, if: { with_reference: true } do |epic|
           epic.to_reference(full: true)
         end
-        expose :created_at, documentation: { type: "dateTime", example: "2022-01-31T15:10:45.080Z" }
-        expose :updated_at, documentation: { type: "dateTime", example: "2022-01-31T15:10:45.080Z" }
-        expose :closed_at, documentation: { type: "dateTime", example: "2022-01-31T15:10:45.080Z" }
+        expose :created_at, documentation: { type: "dateTime", example: "2022-01-31T15:10:45.080Z" } do |epic|
+          epic.work_item.created_at
+        end
+
+        expose :updated_at, documentation: { type: "dateTime", example: "2022-01-31T15:10:45.080Z" } do |epic|
+          epic.work_item.updated_at
+        end
+
+        expose :closed_at, documentation: { type: "dateTime", example: "2022-01-31T15:10:45.080Z" } do |epic|
+          epic.work_item.closed_at
+        end
+
         expose :labels, documentation: { is_array: true } do |epic, options|
           labels = epic.lazy_labels.sort_by(&:title)
 
@@ -95,6 +179,10 @@ module EE
 
         def web_edit_url
           ::Gitlab::Routing.url_helpers.group_epic_path(object.group, object)
+        end
+
+        def rollupable_dates
+          object.work_item.get_widget(:start_and_due_date)
         end
 
         expose :_links do

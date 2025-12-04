@@ -38,8 +38,14 @@ module EE
             },
             container_scanning_for_registry_scans: { threshold: 50, interval: 1.day },
             dependency_scanning_sbom_scan_api_throttling: { threshold: 50, interval: 1.hour },
-            dependency_scanning_sbom_scan_api_upload: { threshold: 400, interval: 1.hour },
-            dependency_scanning_sbom_scan_api_download: { threshold: 6000, interval: 1.hour },
+            dependency_scanning_sbom_scan_api_upload: {
+              threshold: -> { application_settings.dependency_scanning_sbom_scan_api_upload_limit },
+              interval: 1.hour
+            },
+            dependency_scanning_sbom_scan_api_download: {
+              threshold: -> { application_settings.dependency_scanning_sbom_scan_api_download_limit },
+              interval: 1.hour
+            },
             virtual_registries_endpoints_api_limit: { threshold: -> {
               application_settings.virtual_registries_endpoints_api_limit
             }, interval: 15.seconds },

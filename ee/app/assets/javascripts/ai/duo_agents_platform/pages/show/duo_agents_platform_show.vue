@@ -5,13 +5,16 @@ import { TYPENAME_AI_DUO_WORKFLOW } from '~/graphql_shared/constants';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { getAgentFlow } from '../../graphql/queries/get_agent_flow.query.graphql';
 import { DUO_AGENTS_PLATFORM_POLLING_INTERVAL } from '../../constants';
-import { formatAgentDefinition, formatAgentStatus } from '../../utils';
+import { formatAgentDefinition, formatAgentStatus, agentSessionStatusVar } from '../../utils';
 import AgentFlowDetails from './components/agent_flow_details.vue';
 
 export default {
   name: 'DuoAgentsPlatformShow',
   components: { AgentFlowDetails },
-  inject: { isFlyout: { default: false } },
+  inject: {
+    isFlyout: { default: false },
+    isSidePanelView: { default: false },
+  },
   data() {
     return {
       agentFlow: null,
@@ -29,6 +32,11 @@ export default {
       update(data) {
         return data?.duoWorkflowWorkflows?.edges?.[0]?.node || {};
       },
+      result() {
+        if (this.isSidePanelView) {
+          agentSessionStatusVar(this.agentFlow?.status);
+        }
+      },
       error(err) {
         createAlert({
           message:
@@ -43,13 +51,16 @@ export default {
       return this.$apollo.queries.agentFlow.loading;
     },
     status() {
+      return this.agentFlow?.status || '';
+    },
+    humanStatus() {
       return formatAgentStatus(this.agentFlow?.humanStatus);
     },
     agentFlowDefinition() {
       return formatAgentDefinition(this.agentFlow?.workflowDefinition);
     },
-    agentFlowCheckpoint() {
-      return this.agentFlow?.latestCheckpoint?.checkpoint || '';
+    duoMessages() {
+      return this.agentFlow?.latestCheckpoint?.duoMessages || [];
     },
     executorUrl() {
       return this.agentFlow?.lastExecutorLogsUrl || '';
@@ -64,6 +75,9 @@ export default {
       return this.agentFlow?.project || {};
     },
   },
+  beforeDestroy() {
+    agentSessionStatusVar(null);
+  },
 };
 </script>
 <template>
@@ -71,8 +85,9 @@ export default {
     :class="isFlyout ? 'gl-mx-3' : ''"
     :is-loading="isLoading"
     :status="status"
+    :human-status="humanStatus"
     :agent-flow-definition="agentFlowDefinition"
-    :agent-flow-checkpoint="agentFlowCheckpoint"
+    :duo-messages="duoMessages"
     :executor-url="executorUrl"
     :created-at="createdAt"
     :project="project"

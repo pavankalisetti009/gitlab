@@ -7,6 +7,8 @@ module Groups
         before_action :verify_read_virtual_registry!, only: [:index]
 
         before_action :push_update_ability, only: [:index]
+        before_action :push_admin_ability, only: [:index]
+        before_action :push_feature_flags, only: [:index]
 
         feature_category :virtual_registry
         urgency :low
@@ -18,6 +20,15 @@ module Groups
         def push_update_ability
           push_frontend_ability(ability: :update_virtual_registry,
             resource: group.virtual_registry_policy_subject, user: current_user)
+        end
+
+        def push_admin_ability
+          push_frontend_ability(ability: :admin_virtual_registry,
+            resource: group.virtual_registry_policy_subject, user: current_user)
+        end
+
+        def push_feature_flags
+          push_frontend_feature_flag(:ui_for_virtual_registry_cleanup_policy, group)
         end
       end
     end

@@ -1336,6 +1336,7 @@ ee:
     project:
       - :requirements_enabled
       - :requirements_access_level
+      - :enabled_foundational_flows
     resource_iteration_events:
       - :user_id
       - :action

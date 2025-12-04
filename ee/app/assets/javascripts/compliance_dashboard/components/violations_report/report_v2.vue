@@ -10,7 +10,10 @@ import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import ComplianceFrameworkBadge from 'ee/compliance_dashboard/components/shared/framework_badge.vue';
 import groupComplianceViolationsQuery from 'ee/compliance_violations/graphql/compliance_violations.query.graphql';
 import updateProjectComplianceViolation from 'ee/compliance_violations/graphql/mutations/update_project_compliance_violation.mutation.graphql';
+import complianceRequirementControlsQuery from 'ee/compliance_dashboard/graphql/compliance_requirement_controls.query.graphql';
+import { humanize } from '~/lib/utils/text_utility';
 import { statusesInfo } from '../standards_adherence_report/components/details_drawer/statuses_info';
+import FiltersBar from './components/filters_bar.vue';
 
 Vue.use(GlToast);
 
@@ -26,6 +29,7 @@ export default {
     GlKeysetPagination,
     ComplianceViolationStatusDropdown,
     ComplianceFrameworkBadge,
+    FiltersBar,
   },
   props: {
     groupPath: {
@@ -38,10 +42,12 @@ export default {
       queryError: false,
       violations: { nodes: [] },
       isStatusUpdating: false,
+      filters: {},
       cursor: {
         before: null,
         after: null,
       },
+      controlDefinitions: [],
     };
   },
   computed: {
@@ -51,8 +57,25 @@ export default {
     emptyText() {
       return this.$options.i18n.noViolationsFound;
     },
+    graphqlFilters() {
+      const { projectId, controlId, status } = this.filters;
+      const filters = {
+        ...(projectId && { projectId }),
+        ...(controlId && { controlId }),
+        ...(status && { status: [status] }),
+      };
+      return Object.keys(filters).length > 0 ? filters : undefined;
+    },
   },
   methods: {
+    handleFiltersChange(newFilters) {
+      this.filters = newFilters;
+      this.cursor = {
+        before: null,
+        after: null,
+      };
+    },
+
     onPrevPage() {
       this.cursor = {
         before: this.violations.pageInfo.startCursor,
@@ -180,8 +203,25 @@ export default {
         return this.$options.i18n.invalidControl;
       }
 
+      // First try statusesInfo for standards adherence display names
       const statusInfo = statusesInfo[control.name];
-      return statusInfo?.title || control.name;
+      if (statusInfo?.title) {
+        return statusInfo.title;
+      }
+
+      // Use externalControlName if available
+      if (control.externalControlName) {
+        return control.externalControlName;
+      }
+
+      // Try to find the control definition with proper display name
+      const definition = this.controlDefinitions.find((def) => def.id === control.name);
+      if (definition?.name) {
+        return definition.name;
+      }
+
+      // Fallback: format the control name for better readability
+      return humanize(control.name);
     },
   },
   apollo: {
@@ -192,6 +232,7 @@ export default {
           fullPath: this.groupPath,
           ...this.cursor,
           [this.cursor.before ? 'last' : 'first']: VIOLATION_PAGE_SIZE,
+          filters: this.graphqlFilters,
         };
       },
       update(data) {
@@ -201,6 +242,10 @@ export default {
         Sentry.captureException(e);
         this.queryError = true;
       },
+    },
+    controlDefinitions: {
+      query: complianceRequirementControlsQuery,
+      update: (data) => data.complianceRequirementControls.controlExpressions || [],
     },
   },
   fields: [
@@ -271,6 +316,8 @@ export default {
       {{ $options.i18n.queryError }}
     </gl-alert>
 
+    <filters-bar :group-path="groupPath" class="gl-mb-5" @update:filters="handleFiltersChange" />
+
     <gl-table
       ref="table"
       :fields="$options.fields"
@@ -313,11 +360,11 @@ export default {
           <div class="gl-font-weight-semibold gl-mb-2">
             {{ getAuditEventTitle(item.auditEvent) }}
           </div>
-          <div class="gl-text-sm gl-text-secondary">
+          <div class="gl-text-sm gl-text-subtle">
             {{ getAuditEventAuthor(item.auditEvent) }}
           </div>
         </div>
-        <div v-else class="gl-text-sm gl-text-secondary">
+        <div v-else class="gl-text-sm gl-text-subtle">
           {{ $options.i18n.noAuditEvent }}
         </div>
       </template>

@@ -1,9 +1,14 @@
 <script>
-import { GlIcon, GlLink, GlPopover, GlSprintf } from '@gitlab/ui';
+import { GlIcon, GlPopover } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
 import { mapActions, mapState } from 'vuex';
 import { s__ } from '~/locale';
-import { isMergeRequestSettingOverridden } from 'ee/security_orchestration/components/policy_editor/scan_result/lib';
+import {
+  isMergeRequestSettingOverridden,
+  ENFORCE_VALUE,
+  WARN_VALUE,
+} from 'ee/security_orchestration/components/policy_editor/scan_result/lib';
+import PolicyOverrideText from './policy_override_text.vue';
 
 export default {
   i18n: {
@@ -18,9 +23,8 @@ export default {
   name: 'PolicyOverrideWarningIcon',
   components: {
     GlIcon,
-    GlLink,
     GlPopover,
-    GlSprintf,
+    PolicyOverrideText,
   },
   inject: {
     fullPath: {
@@ -35,20 +39,21 @@ export default {
     ...mapState({
       scanResultPolicies: (state) => state.securityOrchestrationModule.scanResultPolicies || [],
     }),
-    policiesWithMergeRequestSettingsOverride() {
-      return this.scanResultPolicies.filter(
-        (policy) =>
-          policy.enabled &&
-          Object.entries(policy.approval_settings || []).some(([setting, value]) =>
-            isMergeRequestSettingOverridden(setting, value),
-          ),
+    policiesWithSettingsOverride() {
+      return this.scanResultPolicies.filter(this.hasSettingsOverride);
+    },
+    enforcedPoliciesWithSettingsOverride() {
+      return this.policiesWithSettingsOverride.filter(
+        (policy) => policy.enforcement_type === ENFORCE_VALUE,
+      );
+    },
+    warnPoliciesWithSettingsOverride() {
+      return this.policiesWithSettingsOverride.filter(
+        (policy) => policy.enforcement_type === WARN_VALUE,
       );
     },
     hasApprovalSettingsOverride() {
-      return this.policiesWithMergeRequestSettingsOverride.length > 0;
-    },
-    hasMultiplePolicies() {
-      return this.policiesWithMergeRequestSettingsOverride.length > 1;
+      return this.policiesWithSettingsOverride.length > 0;
     },
   },
   created() {
@@ -57,6 +62,16 @@ export default {
   },
   methods: {
     ...mapActions('securityOrchestrationModule', ['fetchScanResultPolicies']),
+    hasSettingsOverride({ approval_settings, enabled }) {
+      if (!enabled) {
+        return false;
+      }
+
+      // eslint-disable-next-line camelcase
+      return Object.entries(approval_settings ?? {}).some(([setting, value]) =>
+        isMergeRequestSettingOverridden(setting, value),
+      );
+    },
   },
 };
 </script>
@@ -68,25 +83,15 @@ export default {
       target="policy-override-warning-icon"
       show-close-button
     >
-      <template v-if="hasMultiplePolicies">
-        {{ $options.i18n.popoverTextMultiple }}
-        <ul class="gl-pl-5">
-          <li v-for="(policy, index) in policiesWithMergeRequestSettingsOverride" :key="index">
-            <gl-link :href="policy.editPath" target="_blank" :data-testid="`policy-item-${index}`">
-              {{ policy.name }}
-            </gl-link>
-          </li>
-        </ul>
-      </template>
-      <template v-else>
-        <gl-sprintf :message="$options.i18n.popoverTextSingle">
-          <template #policyName>
-            <gl-link :href="policiesWithMergeRequestSettingsOverride[0].editPath" target="_blank">
-              {{ policiesWithMergeRequestSettingsOverride[0].name }}
-            </gl-link>
-          </template>
-        </gl-sprintf>
-      </template>
+      <policy-override-text
+        v-if="enforcedPoliciesWithSettingsOverride.length"
+        :policies="enforcedPoliciesWithSettingsOverride"
+      />
+      <policy-override-text
+        v-if="warnPoliciesWithSettingsOverride.length"
+        :policies="warnPoliciesWithSettingsOverride"
+        is-warn
+      />
     </gl-popover>
 
     <gl-icon id="policy-override-warning-icon" name="warning" />

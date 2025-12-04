@@ -14,7 +14,7 @@ import { createAlert } from '~/alert';
 import { TYPENAME_AI_DUO_WORKFLOW } from '~/graphql_shared/constants';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 
-import { mockGetAgentFlowResponse } from '../../../mocks';
+import { mockGetAgentFlowResponse, mockDuoMessages } from '../../../mocks';
 
 Vue.use(VueApollo);
 jest.mock('~/alert');
@@ -70,14 +70,13 @@ describe('DuoAgentsPlatformShow', () => {
       // as a 'class' prop, while Vue 2 does not include it in component props
       expect(workflowDetailsProps).toMatchObject({
         isLoading: false,
-        status: 'Running',
-        executorUrl: 'https://gitlab.com/gitlab-org/gitlab/-/pipelines/123',
+        status: 'RUNNING',
+        humanStatus: 'Running',
+        executorUrl: 'https://gitlab.com/gitlab-org/gitlab/-/jobs/456',
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
         agentFlowDefinition: 'Software development',
-        agentFlowCheckpoint:
-          mockGetAgentFlowResponse.data.duoWorkflowWorkflows.edges[0].node.latestCheckpoint
-            .checkpoint,
+        duoMessages: mockDuoMessages,
         project: mockGetAgentFlowResponse.data.duoWorkflowWorkflows.edges[0].node.project,
       });
     });

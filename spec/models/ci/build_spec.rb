@@ -1413,12 +1413,12 @@ RSpec.describe Ci::Build, feature_category: :continuous_integration, factory_def
 
   describe '#cache' do
     let(:options) do
-      { cache: [{ key: "key", paths: ["public"], policy: "pull-push" }] }
+      { cache: [{ key: "cache", paths: ["public"], policy: "pull-push" }] }
     end
 
     let(:options_with_fallback_keys) do
       { cache: [
-        { key: "key", paths: ["public"], policy: "pull-push", fallback_keys: %w[key1 key2] }
+        { key: "cache", paths: ["public"], policy: "pull-push", fallback_keys: %w[cache1 cache2] }
       ] }
     end
 
@@ -1432,15 +1432,15 @@ RSpec.describe Ci::Build, feature_category: :continuous_integration, factory_def
       context 'when build has multiple caches' do
         let(:options) do
           { cache: [
-            { key: "key", paths: ["public"], policy: "pull-push" },
-            { key: "key2", paths: ["public"], policy: "pull-push" }
+            { key: "cache", paths: ["public"], policy: "pull-push" },
+            { key: "cache2", paths: ["public"], policy: "pull-push" }
           ] }
         end
 
         let(:options_with_fallback_keys) do
           { cache: [
-            { key: "key", paths: ["public"], policy: "pull-push", fallback_keys: %w[key3 key4] },
-            { key: "key2", paths: ["public"], policy: "pull-push", fallback_keys: %w[key5 key6] }
+            { key: "cache", paths: ["public"], policy: "pull-push", fallback_keys: %w[cache3 cache4] },
+            { key: "cache2", paths: ["public"], policy: "pull-push", fallback_keys: %w[cache5 cache6] }
           ] }
         end
 
@@ -1448,11 +1448,11 @@ RSpec.describe Ci::Build, feature_category: :continuous_integration, factory_def
           allow_any_instance_of(Project).to receive(:jobs_cache_index).and_return(1)
         end
 
-        it { is_expected.to match([a_hash_including(key: 'key-1-non_protected'), a_hash_including(key: 'key2-1-non_protected')]) }
+        it { is_expected.to match([a_hash_including(key: 'cache-1-non_protected'), a_hash_including(key: 'cache2-1-non_protected')]) }
 
-        context 'when pipeline is on a protected ref' do
+        context 'when build uses protected cache' do
           before do
-            allow(build.pipeline).to receive(:protected_ref?).and_return(true)
+            allow(build).to receive(:uses_protected_cache?).and_return(true)
           end
 
           context 'without the `unprotect` option' do
@@ -1521,6 +1521,28 @@ RSpec.describe Ci::Build, feature_category: :continuous_integration, factory_def
           end
         end
 
+        context 'when pipeline is on a protected ref' do
+          before do
+            allow(build.pipeline).to receive(:protected_ref?).and_return(true)
+            allow(build).to receive(:uses_protected_cache?).and_return(false)
+          end
+
+          it 'uses protected cache even for non-maintainer users' do
+            is_expected.to all(a_hash_including(key: a_string_matching(/-protected$/)))
+          end
+
+          context 'and the caches have fallback keys' do
+            let(:options) { options_with_fallback_keys }
+
+            it 'applies protected suffix to both keys and fallback keys' do
+              is_expected.to all(a_hash_including({
+                key: a_string_matching(/-protected$/),
+                fallback_keys: array_including(a_string_matching(/-protected$/))
+              }))
+            end
+          end
+        end
+
         context 'when separated caches are disabled' do
           before do
             allow_any_instance_of(Project).to receive(:ci_separated_caches).and_return(false)
@@ -1532,7 +1554,7 @@ RSpec.describe Ci::Build, feature_category: :continuous_integration, factory_def
             end
 
             it 'is expected to have no type suffix' do
-              is_expected.to match([a_hash_including(key: 'key-1'), a_hash_including(key: 'key2-1')])
+              is_expected.to match([a_hash_including(key: 'cache-1'), a_hash_including(key: 'cache2-1')])
             end
 
             context 'and the caches have fallback keys' do
@@ -1541,12 +1563,12 @@ RSpec.describe Ci::Build, feature_category: :continuous_integration, factory_def
               it do
                 is_expected.to match([
                   a_hash_including({
-                    key: 'key-1',
-                    fallback_keys: %w[key3-1 key4-1]
+                    key: 'cache-1',
+                    fallback_keys: %w[cache3-1 cache4-1]
                   }),
                   a_hash_including({
-                    key: 'key2-1',
-                    fallback_keys: %w[key5-1 key6-1]
+                    key: 'cache2-1',
+                    fallback_keys: %w[cache5-1 cache6-1]
                   })
                 ])
               end
@@ -1559,7 +1581,7 @@ RSpec.describe Ci::Build, feature_category: :continuous_integration, factory_def
             end
 
             it 'is expected to have no type suffix' do
-              is_expected.to match([a_hash_including(key: 'key-1'), a_hash_including(key: 'key2-1')])
+              is_expected.to match([a_hash_including(key: 'cache-1'), a_hash_including(key: 'cache2-1')])
             end
 
             context 'and the caches have fallback keys' do
@@ -1568,12 +1590,12 @@ RSpec.describe Ci::Build, feature_category: :continuous_integration, factory_def
               it do
                 is_expected.to match([
                   a_hash_including({
-                    key: 'key-1',
-                    fallback_keys: %w[key3-1 key4-1]
+                    key: 'cache-1',
+                    fallback_keys: %w[cache3-1 cache4-1]
                   }),
                   a_hash_including({
-                    key: 'key2-1',
-                    fallback_keys: %w[key5-1 key6-1]
+                    key: 'cache2-1',
+                    fallback_keys: %w[cache5-1 cache6-1]
                   })
                 ])
               end
@@ -1587,15 +1609,15 @@ RSpec.describe Ci::Build, feature_category: :continuous_integration, factory_def
           allow_any_instance_of(Project).to receive(:jobs_cache_index).and_return(1)
         end
 
-        it { is_expected.to be_an(Array).and all(include(key: a_string_matching(/^key-1-(?>protected|non_protected)/))) }
+        it { is_expected.to be_an(Array).and all(include(key: a_string_matching(/^cache-1-(?>protected|non_protected)/))) }
 
         context 'and the cache have fallback keys' do
           let(:options) { options_with_fallback_keys }
 
           it do
             is_expected.to be_an(Array).and all(include({
-              key: a_string_matching(/^key-1-(?>protected|non_protected)/),
-              fallback_keys: array_including(a_string_matching(/^key\d-1-(?>protected|non_protected)/))
+              key: a_string_matching(/^cache-1-(?>protected|non_protected)/),
+              fallback_keys: array_including(a_string_matching(/^cache\d-1-(?>protected|non_protected)/))
             }))
           end
         end
@@ -1634,6 +1656,180 @@ RSpec.describe Ci::Build, feature_category: :continuous_integration, factory_def
       end
 
       it { is_expected.to be_empty }
+    end
+  end
+
+  describe '#uses_protected_cache?' do
+    let_it_be(:cache_user) { create(:user) }
+
+    let(:test_build) { create(:ci_build, user: cache_user, project: project) }
+
+    subject { test_build.uses_protected_cache? }
+
+    before do
+      project.update!(ci_separated_caches: true)
+    end
+
+    context 'when build has no user' do
+      let(:test_build) { create(:ci_build, user: nil, project: project) }
+
+      it { is_expected.to be_falsey }
+    end
+
+    context 'when ci_separated_caches is disabled' do
+      before do
+        project.update!(ci_separated_caches: false)
+      end
+
+      it { is_expected.to be_falsey }
+    end
+
+    context 'when user is a developer' do
+      before do
+        project.add_developer(cache_user)
+      end
+
+      it { is_expected.to be_falsey }
+    end
+
+    context 'when user is a maintainer' do
+      before do
+        project.add_maintainer(cache_user)
+      end
+
+      it { is_expected.to be_truthy }
+    end
+  end
+
+  describe 'cache protection integration' do
+    let_it_be(:developer_user) { create(:user) }
+    let_it_be(:maintainer_user) { create(:user) }
+
+    before_all do
+      project.add_developer(developer_user)
+      project.add_maintainer(maintainer_user)
+    end
+
+    context 'when ci_separated_caches is enabled' do
+      before do
+        project.update!(ci_separated_caches: true)
+      end
+
+      context 'with protected branch' do
+        let(:protected_branch) { create(:protected_branch, project: project, name: 'main') }
+        let(:protected_pipeline) { create(:ci_pipeline, project: project, ref: protected_branch.name) }
+
+        context 'when developer triggers pipeline on protected branch' do
+          let(:test_build) do
+            create(:ci_build, pipeline: protected_pipeline, user: developer_user, options: { cache: [{ key: 'test-cache' }] })
+          end
+
+          it 'uses protected cache due to branch protection' do
+            expect(test_build.cache).to all(a_hash_including(key: a_string_matching(/-protected$/)))
+          end
+        end
+
+        context 'when maintainer triggers pipeline on protected branch' do
+          let(:test_build) do
+            create(:ci_build, pipeline: protected_pipeline, user: maintainer_user, options: { cache: [{ key: 'test-cache' }] })
+          end
+
+          it 'uses protected cache due to user role' do
+            expect(test_build.cache).to all(a_hash_including(key: a_string_matching(/-protected$/)))
+          end
+        end
+      end
+
+      context 'with non-protected branch' do
+        let(:non_protected_pipeline) { create(:ci_pipeline, project: project, ref: 'feature-branch') }
+
+        context 'when developer triggers pipeline on non-protected branch' do
+          let(:test_build) do
+            create(:ci_build, pipeline: non_protected_pipeline, user: developer_user, options: { cache: [{ key: 'test-cache' }] })
+          end
+
+          it 'uses non-protected cache' do
+            expect(test_build.cache).to all(a_hash_including(key: a_string_matching(/-non_protected$/)))
+          end
+        end
+
+        context 'when maintainer triggers pipeline on non-protected branch' do
+          let(:test_build) do
+            create(:ci_build, pipeline: non_protected_pipeline, user: maintainer_user, options: { cache: [{ key: 'test-cache' }] })
+          end
+
+          it 'uses protected cache due to user role' do
+            expect(test_build.cache).to all(a_hash_including(key: a_string_matching(/-protected$/)))
+          end
+        end
+      end
+
+      context 'when pipeline is nil' do
+        let(:test_build) do
+          build_stubbed(:ci_build, project: project, user: developer_user, options: { cache: [{ key: 'test-cache' }] }).tap do |build|
+            allow(build).to receive(:pipeline).and_return(nil)
+          end
+        end
+
+        it 'uses non-protected cache' do
+          expect(test_build.cache).to all(a_hash_including(key: a_string_matching(/-non_protected$/)))
+        end
+      end
+    end
+
+    context 'when ci_separated_caches is disabled' do
+      before do
+        project.update!(ci_separated_caches: false)
+      end
+
+      context 'with protected branch' do
+        let(:protected_branch) { create(:protected_branch, project: project, name: 'main') }
+        let(:protected_pipeline) { create(:ci_pipeline, project: project, ref: protected_branch.name) }
+
+        context 'when developer triggers pipeline on protected branch' do
+          let(:test_build) do
+            create(:ci_build, pipeline: protected_pipeline, user: developer_user, options: { cache: [{ key: 'test-cache' }] })
+          end
+
+          it 'uses cache without suffix' do
+            expect(test_build.cache).to all(a_hash_including(key: 'test-cache'))
+          end
+        end
+
+        context 'when maintainer triggers pipeline on protected branch' do
+          let(:test_build) do
+            create(:ci_build, pipeline: protected_pipeline, user: maintainer_user, options: { cache: [{ key: 'test-cache' }] })
+          end
+
+          it 'uses cache without suffix' do
+            expect(test_build.cache).to all(a_hash_including(key: 'test-cache'))
+          end
+        end
+      end
+
+      context 'with non-protected branch' do
+        let(:non_protected_pipeline) { create(:ci_pipeline, project: project, ref: 'feature-branch') }
+
+        context 'when developer triggers pipeline on non-protected branch' do
+          let(:test_build) do
+            create(:ci_build, pipeline: non_protected_pipeline, user: developer_user, options: { cache: [{ key: 'test-cache' }] })
+          end
+
+          it 'uses cache without suffix' do
+            expect(test_build.cache).to all(a_hash_including(key: 'test-cache'))
+          end
+        end
+
+        context 'when maintainer triggers pipeline on non-protected branch' do
+          let(:test_build) do
+            create(:ci_build, pipeline: non_protected_pipeline, user: maintainer_user, options: { cache: [{ key: 'test-cache' }] })
+          end
+
+          it 'uses cache without suffix' do
+            expect(test_build.cache).to all(a_hash_including(key: 'test-cache'))
+          end
+        end
+      end
     end
   end
 
@@ -2045,6 +2241,37 @@ RSpec.describe Ci::Build, feature_category: :continuous_integration, factory_def
     let_it_be(:build) { create(:ci_build, tag_list: ['tag'], pipeline: pipeline) }
 
     subject(:tag_list) { build.reload.tag_list }
+
+    context 'with various tag input formats' do
+      where(:tag_input, :expected_tags, :description) do
+        ['tag1,tag2']       | %w[tag1 tag2]      | 'comma-delimited string in array'
+        ['tag1, tag2']      | %w[tag1 tag2]      | 'comma-delimited string with spaces'
+        %w[tag1 tag2]       | %w[tag1 tag2]      | 'array of strings'
+        ['']                | []                 | 'empty string in array'
+        []                  | []                 | 'empty array'
+        ['  tag1  , tag2 '] | %w[tag1 tag2]      | 'string with extra whitespace'
+        'tag1,tag2'         | %w[tag1 tag2]      | 'plain comma-delimited string'
+        'tag1, tag2, tag3'  | %w[tag1 tag2 tag3] | 'multiple tags with spaces'
+      end
+
+      with_them do
+        let(:build) { create(:ci_build, tag_list: tag_input, pipeline: pipeline) }
+
+        it 'parses job_definition tags correctly' do
+          expect(tag_list).to match_array(expected_tags)
+        end
+
+        context 'when ci_build_uses_job_definition_tag_list FF is disabled' do
+          before do
+            stub_feature_flags(ci_build_uses_job_definition_tag_list: false)
+          end
+
+          it 'parses job_definition tags correctly' do
+            expect(tag_list).to match_array(expected_tags)
+          end
+        end
+      end
+    end
 
     context 'when tags are preloaded' do
       it 'does not trigger queries' do
@@ -4372,26 +4599,6 @@ RSpec.describe Ci::Build, feature_category: :continuous_integration, factory_def
         expect(build.reload.finished_at).not_to eq(build.started_at + timeout.seconds)
       end
     end
-
-    context 'when FF enforce_job_configured_timeouts is disabled' do
-      before do
-        stub_feature_flags(enforce_job_configured_timeouts: false)
-      end
-
-      context 'when failure reason is job_execution_timeout' do
-        it 'does not overwrite finished_at' do
-          build.drop!(:job_execution_timeout)
-          expect(build.reload.finished_at).not_to eq(build.started_at + timeout.seconds)
-        end
-      end
-
-      context 'when the failure reason is not job_execution_timeout' do
-        it 'does not overwrite finished_at' do
-          build.drop!(:script_failure)
-          expect(build.reload.finished_at).not_to eq(build.started_at + timeout.seconds)
-        end
-      end
-    end
   end
 
   describe '#has_valid_build_dependencies?' do
@@ -6100,6 +6307,50 @@ RSpec.describe Ci::Build, feature_category: :continuous_integration, factory_def
     end
   end
 
+  describe 'id_tokens with ci_cd_settings integration' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:user) { create(:user) }
+    let_it_be(:pipeline) { create(:ci_pipeline, project: project, ref: 'main') }
+    let_it_be(:environment) { create(:environment, name: 'production', project: project) }
+
+    let(:build) do
+      create(
+        :ci_build,
+        project: project,
+        pipeline: pipeline,
+        user: user,
+        environment: environment.name,
+        options: { environment: { name: 'production', deployment_tier: 'production' } },
+        id_tokens: { 'ID_TOKEN_1' => { aud: 'https://example.com' } }
+      )
+    end
+
+    before do
+      stub_application_setting(ci_jwt_signing_key: OpenSSL::PKey::RSA.generate(3072).to_s)
+      stub_feature_flags(ci_id_token_environment_sub_claims: true)
+
+      project.ci_cd_settings.update!(
+        id_token_sub_claim_components: %w[project_path environment_protected deployment_tier]
+      )
+    end
+
+    it 'generates JWT with environment_protected and deployment_tier in sub claim' do
+      expect(build.id_tokens).to eq({ 'ID_TOKEN_1' => { 'aud' => 'https://example.com' } })
+
+      expect(project.ci_cd_settings.id_token_sub_claim_components)
+        .to eq(%w[project_path environment_protected deployment_tier])
+
+      id_token = build.variables.find { |v| v[:key] == 'ID_TOKEN_1' }
+      expect(id_token).not_to be_nil
+
+      token = JWT.decode(id_token[:value], nil, false).first
+      expect(token['sub']).to include('project_path')
+      expect(token['sub']).to include('environment_protected')
+      expect(token['sub']).to include('deployment_tier')
+      expect(token['sub']).to eq("project_path:#{project.full_path}:environment_protected:false:deployment_tier:production")
+    end
+  end
+
   describe 'job artifact associations' do
     Ci::JobArtifact.file_types.each do |type, _|
       method = "job_artifacts_#{type}"
@@ -6171,18 +6422,6 @@ RSpec.describe Ci::Build, feature_category: :continuous_integration, factory_def
         ci_build.ensure_token
         expect(ci_build.token).to match(/^glcbt-64_[\w-]{20}$/)
       end
-    end
-  end
-
-  describe '#source' do
-    it 'defaults to the pipeline source name' do
-      expect(build.source).to eq(build.pipeline.source)
-    end
-
-    it 'returns the associated source name when present' do
-      create(:ci_build_source, build: build, source: 'scan_execution_policy')
-
-      expect(build.source).to eq('scan_execution_policy')
     end
   end
 

@@ -72,10 +72,23 @@ module Ci
       track_if: -> { !importing? },
       ensure_if: -> { !importing? },
       init: ->(pipeline, scope) do
-        if pipeline
-          pipeline.project&.all_pipelines&.maximum(:iid) || pipeline.project&.all_pipelines&.count
-        elsif scope
-          ::Ci::Pipeline.where(**scope).maximum(:iid)
+        # Remove this line with FF `update_init_iid_to_read_from_ci_pipeline_iids`
+        project_actor = pipeline&.project || scope&.dig(:project)
+
+        if Feature.enabled?(:update_init_iid_to_read_from_ci_pipeline_iids, project_actor)
+          scope = { project: pipeline.project } if pipeline && !scope
+          next unless scope
+
+          max_from_pipeline_iids = ::Ci::PipelineIid.where(**scope).maximum(:iid)
+          max_from_pipelines = ::Ci::Pipeline.where(**scope).maximum(:iid)
+
+          [max_from_pipeline_iids, max_from_pipelines].compact.max || ::Ci::Pipeline.where(**scope).count
+        else
+          if pipeline # rubocop:disable Style/IfInsideElse -- Temporary for readability behind feature flag
+            pipeline.project&.all_pipelines&.maximum(:iid) || pipeline.project&.all_pipelines&.count
+          elsif scope
+            ::Ci::Pipeline.where(**scope).maximum(:iid)
+          end
         end
       end
 
@@ -484,6 +497,7 @@ module Ci
     end
     scope :for_status, ->(status) { where(status: status) }
     scope :created_after, ->(time) { where(arel_table[:created_at].gt(time)) }
+    scope :created_on_or_after, ->(time) { where(arel_table[:created_at].gteq(time)) }
     scope :created_before, ->(time) { where(arel_table[:created_at].lt(time)) }
     scope :created_before_id, ->(id) { where(arel_table[:id].lt(id)) }
     scope :before_pipeline, ->(pipeline) { created_before_id(pipeline.id).outside_pipeline_family(pipeline) }
@@ -519,6 +533,7 @@ module Ci
 
     scope :order_id_asc, -> { order(id: :asc) }
     scope :order_id_desc, -> { order(id: :desc) }
+    scope :order_created_at_asc_id_asc, -> { order(created_at: :asc, id: :asc) }
 
     scope :not_archived, -> do
       archive_cutoff = Gitlab::CurrentSettings.archive_builds_older_than

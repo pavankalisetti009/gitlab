@@ -50,6 +50,15 @@ export default {
       type: Object,
       required: true,
     },
+    versionData: {
+      type: Object,
+      required: true,
+    },
+    hasParentConsumer: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   data() {
     return {
@@ -60,9 +69,6 @@ export default {
   computed: {
     isAgentsAvailable() {
       return this.glFeatures.aiCatalogAgents;
-    },
-    agentName() {
-      return this.aiCatalogAgent.name;
     },
     isProjectNamespace() {
       return Boolean(this.projectId);
@@ -99,9 +105,7 @@ export default {
         if (data) {
           const { errors } = data.aiCatalogItemConsumerCreate;
           if (errors.length > 0) {
-            this.errorTitle = sprintf(s__('AICatalog|Could not enable agent: %{agentName}'), {
-              agentName: this.aiCatalogAgent.name,
-            });
+            this.errorTitle = s__('AICatalog|Could not enable agent');
             this.errors = errors;
             return;
           }
@@ -124,13 +128,14 @@ export default {
         Sentry.captureException(error);
       }
     },
-    async deleteAgent() {
+    async deleteAgent(forceHardDelete) {
       const { id } = this.aiCatalogAgent;
       try {
         const { data } = await this.$apollo.mutate({
           mutation: deleteAiCatalogAgentMutation,
           variables: {
             id,
+            forceHardDelete,
           },
         });
 
@@ -223,12 +228,9 @@ export default {
     <page-heading>
       <template #heading>
         <span class="gl-line-clamp-1 gl-wrap-anywhere">
-          {{ agentName }}
+          {{ aiCatalogAgent.name }}
 
-          <foundational-icon
-            v-if="aiCatalogAgent.foundationalChat"
-            :resource-id="aiCatalogAgent.id"
-          />
+          <foundational-icon v-if="aiCatalogAgent.foundational" :resource-id="aiCatalogAgent.id" />
         </span>
       </template>
       <template #actions>
@@ -237,11 +239,12 @@ export default {
           :item="aiCatalogAgent"
           :item-routes="$options.itemRoutes"
           :is-agents-available="isAgentsAvailable"
+          :has-parent-consumer="hasParentConsumer"
           :disable-fn="disableAgent"
           :delete-fn="deleteAgent"
           :disable-confirm-message="
             s__(
-              'AICatalog|Are you sure you want to disable agent %{name}? The agent and any associated flows and triggers will no longer work in this project.',
+              'AICatalog|Are you sure you want to disable agent %{name}? The agent will no longer work in this project.',
             )
           "
           @add-to-target="addAgentToTarget"
@@ -249,6 +252,6 @@ export default {
         />
       </template>
     </page-heading>
-    <ai-catalog-item-view :item="aiCatalogAgent" />
+    <ai-catalog-item-view :item="aiCatalogAgent" :version-data="versionData" />
   </div>
 </template>

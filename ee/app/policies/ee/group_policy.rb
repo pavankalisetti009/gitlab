@@ -104,6 +104,10 @@ module EE
         @subject.licensed_feature_available?(:security_inventory)
       end
 
+      condition(:security_scan_profiles_available, scope: :subject) do
+        @subject.licensed_feature_available?(:security_scan_profiles)
+      end
+
       condition(:prevent_group_forking_available, scope: :subject) do
         @subject.feature_available?(:group_forking_protection)
       end
@@ -711,6 +715,16 @@ module EE
 
       rule { custom_role_enables_read_security_attribute }.enable(:read_security_attribute)
 
+      rule { can?(:developer_access) }.policy do
+        enable :read_security_scan_profiles
+      end
+
+      rule { custom_role_enables_read_security_scan_profiles }.enable(:read_security_scan_profiles)
+
+      rule { ~security_scan_profiles_available }.policy do
+        prevent :read_security_scan_profiles
+      end
+
       rule { ~security_inventory_available }.prevent :read_security_inventory
 
       rule { custom_role_enables_read_vulnerability }.policy do
@@ -1121,7 +1135,7 @@ module EE
       condition(:group_model_selection_enabled) do
         next false unless subject.root?
         next false if ::Ai::Setting.self_hosted?
-        next false unless ::Feature.enabled?(:ai_model_switching, subject)
+        next false unless ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
         next false if ::Ai::AmazonQ.connected?
 
         subject.namespace_settings&.duo_features_enabled?
@@ -1173,6 +1187,7 @@ module EE
 
       rule { can?(:owner_access) }.policy do
         enable :configure_group_secrets_manager
+        enable :configure_group_secrets_permission
       end
 
       rule { can?(:maintainer_access) }.policy do

@@ -29,13 +29,17 @@ module Admin
 
     def find_or_default_model_class
       mapper = ::Gitlab::Geo::ModelMapper
-      return mapper.available_models.first if model_params[:model_name].blank?
+      return mapper.available_models.first if model_name.blank?
 
-      mapper.find_from_name(model_params[:model_name])
+      mapper.find_from_name(model_name)
     end
 
     def model_params
       params.permit(:model_name, :id)
+    end
+
+    def model_name
+      @model_name ||= model_params[:model_name]&.singularize
     end
   end
 end

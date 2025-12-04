@@ -315,6 +315,19 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
         end
       end
     end
+
+    describe '.foundational_flows' do
+      let_it_be(:item_with_reference) { create(:ai_catalog_item, :with_foundational_flow_reference) }
+      let_it_be(:item_without_reference) { create(:ai_catalog_item) }
+
+      it 'returns only items with foundational_flow_reference' do
+        expect(described_class.foundational_flows).to contain_exactly(item_with_reference)
+      end
+
+      it 'excludes items without foundational_flow_reference' do
+        expect(described_class.foundational_flows).not_to include(item_without_reference)
+      end
+    end
   end
 
   describe 'callbacks' do

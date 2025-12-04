@@ -19,17 +19,11 @@ title: Zoekt
 - [Enabled on GitLab.com and GitLab Self-Managed](https://gitlab.com/gitlab-org/gitlab/-/issues/388519) in GitLab 16.6.
 - Global code search [introduced](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/147077) in GitLab 16.11 [with a flag](../../administration/feature_flags/_index.md) named `zoekt_cross_namespace_search`. Disabled by default.
 - Feature flags `index_code_with_zoekt` and `search_code_with_zoekt` [removed](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/148378) in GitLab 17.1.
+- Feature flag `zoekt_rollout_worker` [added](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/175666) in GitLab 17.9. Disabled by default.
 - [Changed](https://gitlab.com/groups/gitlab-org/-/epics/17918) from beta to limited availability in GitLab 18.6.
-- Feature flag `zoekt_cross_namespace_search` [removed](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/213413) in GitLab 18.7.
+- Feature flags [`zoekt_cross_namespace_search`](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/213413) and [`zoekt_rollout_worker`](https://gitlab.com/gitlab-org/gitlab/-/issues/519660) removed in GitLab 18.7.
 
 {{< /history >}}
-
-{{< alert type="flag" >}}
-
-The availability of this feature is controlled by a feature flag.
-For more information, see the history.
-
-{{< /alert >}}
 
 {{< alert type="warning" >}}
 
@@ -148,7 +142,7 @@ Indexing timeout per project:                      30m
 Maximum number of files per project to be indexed: 500000
 Maximum file size for indexing:                    1MB
 Retry interval for failed namespaces:              1d
-Specify default number of replicas per namespace. Currently in development. See: https://gitlab.com/groups/gitlab-org/-/epics/19097: 1
+Number of replicas per namespace:                  1
 
 Nodes
 # Number of Zoekt nodes and their status
@@ -178,10 +172,7 @@ Tasks count:                      10
 Tasks pending/processing by type: (none)
 
 Feature Flags (Non-Default Values)
-- zoekt_load_balancer:             disabled
-- zoekt_rollout_worker:            enabled
 - zoekt_search_meta_project_ids:   disabled
-- zoekt_traversal_id_queries:      disabled
 
 Feature Flags (Default Values)
 - zoekt_too_many_replicas_event: disabled
@@ -533,6 +524,34 @@ To define the retry interval for failed namespaces:
 1. Expand **Exact code search**.
 1. In the **Retry interval for failed namespaces** text box, enter a value
    (for example, `30m` (30 minutes), `2h` (two hours), or `1d` (one day)).
+1. Select **Save changes**.
+
+## Set the number of replicas per namespace
+
+{{< history >}}
+
+- [Introduced](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/214067) in GitLab 18.7.
+
+{{< /history >}}
+
+Prerequisites:
+
+- You must have administrator access to the instance.
+
+You can set the number of replicas per namespace.
+The default value is `1` (one replica per namespace).
+
+Increasing the number of replicas per namespace improves search availability
+by distributing the load across multiple Zoekt nodes.
+More replicas increase storage requirements.
+
+To set the number of replicas per namespace:
+
+1. On the left sidebar, at the bottom, select **Admin**. If you've [turned on the new navigation](../../user/interface_redesign.md#turn-new-navigation-on-or-off), in the upper-right corner, select **Admin**.
+1. Select **Settings** > **Search**.
+1. Expand **Exact code search**.
+1. In the **Number of replicas per namespace** text box,
+   enter a number greater than zero.
 1. Select **Save changes**.
 
 ## Run Zoekt on a separate server

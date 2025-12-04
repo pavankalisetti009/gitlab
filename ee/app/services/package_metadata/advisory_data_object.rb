@@ -36,13 +36,13 @@ module PackageMetadata
 
     private_class_method :extract_cve
 
-    attr_accessor :advisory_xid, :source_xid, :published_date, :title, :description, :cvss_v2, :cvss_v3, :urls,
-      :identifiers, :affected_packages, :cve
+    attr_accessor :advisory_xid, :source_xid, :published_date, :title, :description, :cvss_v2, :cvss_v3, :cvss_v4,
+      :urls, :identifiers, :affected_packages, :cve
 
     # rubocop:disable Metrics/ParameterLists
     def initialize(
-      advisory_xid:, source_xid:, published_date:, title: '', description: '', cvss_v2: nil, cvss_v3: nil, urls: [],
-      identifiers: [], affected_packages: [], cve: nil)
+      advisory_xid:, source_xid:, published_date:, title: '', description: '', cvss_v2: nil, cvss_v3: nil, cvss_v4: nil,
+      urls: [], identifiers: [], affected_packages: [], cve: nil)
       # rubocop:enable Metrics/ParameterLists
       @advisory_xid = advisory_xid
       @source_xid = source_xid
@@ -51,6 +51,7 @@ module PackageMetadata
       @description = description
       @cvss_v2 = cvss_v2
       @cvss_v3 = cvss_v3
+      @cvss_v4 = cvss_v4
       @urls = urls
       @identifiers = identifiers.map { |ident| ident.transform_keys(&:to_sym) }
       @affected_packages = affected_packages

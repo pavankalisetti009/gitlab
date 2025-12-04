@@ -42,6 +42,7 @@ module Gitlab
         hide_project_instance_tab
         cloud_connector_self_signed_tokens
         group_disable_invite_members
+        service_accounts_invite_restrictions
         notify_compromised_passwords
         repositories_web_based_commit_signing
         security_scans_api

@@ -4,6 +4,8 @@ module Gitlab
   module Llm
     module Utils
       class AiFeaturesCatalogue
+        # `self_managed`: true => SaaS and Self-Managed
+        #                 false => SaaS-only
         LIST = {
           explain_vulnerability: {
             service_class: nil,
@@ -253,11 +255,11 @@ module Gitlab
           LIST.select { |_, v| v[:service_class].present? }
         end
 
-        def self.for_saas
+        def self.for_saas_only
           LIST.select { |_, v| v[:self_managed] == false }
         end
 
-        def self.for_sm
+        def self.for_saas_and_sm
           LIST.select { |_, v| v[:self_managed] == true }
         end
 

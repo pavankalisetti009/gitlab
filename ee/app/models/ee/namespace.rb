@@ -58,6 +58,8 @@ module EE
       # rubocop:disable Cop/ActiveRecordDependent -- legacy usage
       has_many :subscription_add_on_purchases, class_name: 'GitlabSubscriptions::AddOnPurchase', dependent: :destroy
       # rubocop:enable Cop/ActiveRecordDependent -- legacy usage
+      has_many :enabled_foundational_flows, class_name: 'Ai::Catalog::EnabledFoundationalFlow',
+        foreign_key: :namespace_id, inverse_of: :namespace
 
       accepts_nested_attributes_for :gitlab_subscription, update_only: true
       accepts_nested_attributes_for :namespace_limit
@@ -107,30 +109,6 @@ module EE
           .left_joins(gitlab_subscription: :hosted_plan)
           .where(plans: { name: plan_names })
           .allow_cross_joins_across_databases(url: "https://gitlab.com/gitlab-org/gitlab/-/issues/419988")
-      end
-
-      scope :not_duo_pro_or_no_add_on, -> do
-        # We return any namespace that does not have a duo pro add on.
-        # We get all namespaces that do not have an add on from the left_joins and the
-        # or nil condition preserves the unmatched data what would be removed due to the not eq
-        # condition without it.
-        left_joins(:subscription_add_on_purchases)
-          .where(
-            GitlabSubscriptions::AddOnPurchase.arel_table[:subscription_add_on_id].not_eq(
-              GitlabSubscriptions::AddOn.code_suggestions.pick(:id)
-            ).or(GitlabSubscriptions::AddOnPurchase.arel_table[:subscription_add_on_id].eq(nil)))
-      end
-
-      scope :not_duo_enterprise_or_no_add_on, -> do
-        # We return any namespace that does not have a duo enterprise add on.
-        # We get all namespaces that do not have an add on from the left_joins and the
-        # or nil condition preserves the unmatched data what would be removed due to the not eq
-        # condition without it.
-        left_joins(:subscription_add_on_purchases)
-          .where(
-            GitlabSubscriptions::AddOnPurchase.arel_table[:subscription_add_on_id].not_eq(
-              GitlabSubscriptions::AddOn.duo_enterprise.pick(:id)
-            ).or(GitlabSubscriptions::AddOnPurchase.arel_table[:subscription_add_on_id].eq(nil)))
       end
 
       scope :with_feature_available_in_plan, ->(feature) do
@@ -198,8 +176,6 @@ module EE
         :duo_foundational_flows_enabled, :lock_duo_foundational_flows_enabled,
         :duo_sast_fp_detection_enabled, :lock_duo_sast_fp_detection_enabled,
         to: :namespace_settings, allow_nil: true
-      delegate :duo_agent_platform_request_count, :duo_default_on?, :duo_default_off?,
-        :experiment_features_enabled?, to: :namespace_settings
       delegate :pipeline_execution_policies_per_configuration_limit,
         :pipeline_execution_policies_per_configuration_limit=, :scan_execution_policies_per_configuration_limit,
         :scan_execution_policies_per_configuration_limit=, :approval_policies_per_configuration_limit,
@@ -721,6 +697,10 @@ module EE
 
     def custom_roles_enabled?
       root_ancestor.licensed_feature_available?(:custom_roles)
+    end
+
+    def enabled_flow_catalog_item_ids
+      enabled_foundational_flows.limit(100).pluck(:catalog_item_id)
     end
 
     def can_assign_custom_roles_to_group_links?

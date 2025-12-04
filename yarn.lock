@@ -1389,10 +1389,10 @@
     core-js "^3.29.1"
     mitt "^3.0.1"
 
-"@gitlab/duo-ui@^15.0.1":
-  version "15.0.1"
-  resolved "https://registry.yarnpkg.com/@gitlab/duo-ui/-/duo-ui-15.0.1.tgz#58259a338c1d0e27c9a23c0495c95073511b57ca"
-  integrity sha512-rRI+K8HT/t6MYWN54fW2e4/Am38b+Lgb6uqmF8dhCtXhtGrG8Kxw3UmBOd/q20+fO8OSh2/BIIvEWITbk4sI1Q==
+"@gitlab/duo-ui@^15.0.4":
+  version "15.0.4"
+  resolved "https://registry.yarnpkg.com/@gitlab/duo-ui/-/duo-ui-15.0.4.tgz#a6065e6f0a843e3d1ad3d733d65376dfc96edf51"
+  integrity sha512-UxITbGG3RjzZE41dqYBaxdHg4He/dwjA6M/f8QrseDJ9VwkKPXzFe6P4RmVN1HQuzPqIpHplcYviem/bMoHZTw==
   dependencies:
     "@floating-ui/dom" "1.7.4"
     diff "^8.0.2"
@@ -1433,7 +1433,8 @@
   resolved "https://registry.yarnpkg.com/@gitlab/fonts/-/fonts-1.3.1.tgz#dd335ed25cb33927abc1d80dfbfa31fc93e9bd15"
   integrity sha512-/7Q5Sy9Q3pmutV/1EgURm3iDZtV0HcE4nTwFpHLCrGDdxQ3pNv6SdujzeJExnfiI5Y+1FGfOvKwOlmiVuyDtzA==
 
-"@gitlab/noop@^1.0.1":
+"@gitlab/noop@^1.0.1", jackspeak@^3.1.2, "jackspeak@npm:@gitlab/noop@1.0.1":
+  name jackspeak
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/@gitlab/noop/-/noop-1.0.1.tgz#71a831146ee02732b4a61d2d3c11204564753454"
   integrity sha512-s++4wjMYeDvBp9IO59DBrWjy8SE/gFkjTDO5ck2W0S6Vv7OlqgErwL7pHngAnrSmTJAzyUG8wHGqo0ViS4jn5Q==
@@ -1455,15 +1456,15 @@
     stylelint-declaration-strict-value "1.10.4"
     stylelint-scss "6.0.0"
 
-"@gitlab/svgs@3.150.0":
-  version "3.150.0"
-  resolved "https://registry.yarnpkg.com/@gitlab/svgs/-/svgs-3.150.0.tgz#52370e0bdd3b6652ed8bb96a9c9c81315b4718c8"
-  integrity sha512-gjkFo1CjhXZO4uml6Q3LBzx9IrAXCOHLK4iHgBjth3RarywX5qYBAxPxgRewtiQiEzXS14W1+1Zu8wzrcu1xAQ==
+"@gitlab/svgs@3.151.0":
+  version "3.151.0"
+  resolved "https://registry.yarnpkg.com/@gitlab/svgs/-/svgs-3.151.0.tgz#61f6b3b132273b7dd39572f27924c82b6569e73c"
+  integrity sha512-GrOaRaYfBAcMhuQfGvvMoxR1piDZqyFbEwA3YtohrzXsYICDDXkwO0X4qk1yRDgDRRafs+Om+TWp5m2ZHWKEAw==
 
-"@gitlab/ui@124.4.3":
-  version "124.4.3"
-  resolved "https://registry.yarnpkg.com/@gitlab/ui/-/ui-124.4.3.tgz#15c9e459e2ad547fd4473589dc507acc66b817f1"
-  integrity sha512-FuQagkpyTpnD7EzgltSYiyUKycjxHhvrRCQviWKl816EQeXYclOUdcJPqXo98VathpbtkYu32AaqPJoU8fEsOg==
+"@gitlab/ui@126.3.2":
+  version "126.3.2"
+  resolved "https://registry.yarnpkg.com/@gitlab/ui/-/ui-126.3.2.tgz#17526d0c010507861cb76b8b79779316cf630834"
+  integrity sha512-vVE+B6ZByFh+h/ScAGUhEts+0i68aHAHZRXFBhmWH4zoZWd6LOrO1m2NyljrHbNfsoL/iBQgq8DJO9P11e5hpA==
   dependencies:
     "@floating-ui/dom" "1.7.4"
     echarts "^5.6.0"
@@ -1489,10 +1490,10 @@
   dependencies:
     "@vue/devtools-api" "^6.0.0-beta.11"
 
-"@gitlab/web-ide@^0.0.1-dev-20251030144717":
-  version "0.0.1-dev-20251030144717"
-  resolved "https://registry.yarnpkg.com/@gitlab/web-ide/-/web-ide-0.0.1-dev-20251030144717.tgz#d71d1bc2d4f5b463b4d924ca403ef1440ce1fec2"
-  integrity sha512-s5qwi3Y6ee8rcazLxWRjY2oaVYrJPc2hgmgVfr0JnMdPJwNRv24CQLQ89I+PKDy4kIKdd+S1YpvkXj8+oOW4Ag==
+"@gitlab/web-ide@^0.0.1-dev-20251124181521":
+  version "0.0.1-dev-20251124181521"
+  resolved "https://registry.yarnpkg.com/@gitlab/web-ide/-/web-ide-0.0.1-dev-20251124181521.tgz#c4ca56465e052444b6c8efc7c3effdb3b55522e2"
+  integrity sha512-CUf+guLl0dwjOc+Bq8AanjPLzxPnVdkT5I/iS+F3cmC2koUbcTnaL/IE2M82BUJdrTcOwZQLIRggmLsCuuMSYA==
 
 "@gleam-lang/highlight.js-gleam@^1.5.0":
   version "1.5.0"
@@ -2590,51 +2591,51 @@
   resolved "https://registry.yarnpkg.com/@rtsao/scc/-/scc-1.1.0.tgz#927dd2fae9bc3361403ac2c7a00c32ddce9ad7e8"
   integrity sha512-zt6OdqaDoOnJ1ZYsCYGt9YmWzDXl4vQdKTyJev62gFhRGKdx7mcT54V9KIjg+d2wi9EXsPvAPKe7i7WjfVWB8g==
 
-"@sentry-internal/browser-utils@10.25.0":
-  version "10.25.0"
-  resolved "https://registry.yarnpkg.com/@sentry-internal/browser-utils/-/browser-utils-10.25.0.tgz#3ef1c2e6044fdf80dba75a9ce18c8133184e57da"
-  integrity sha512-wzg1ITZxrRtQouHPCgpt3tl1GiNAWFVy2RYK2KstFEhpYBAOUn9BAdP7KU9UyHBFKqbAvV4oGtAT8H2/Y4+leA==
+"@sentry-internal/browser-utils@10.27.0":
+  version "10.27.0"
+  resolved "https://registry.yarnpkg.com/@sentry-internal/browser-utils/-/browser-utils-10.27.0.tgz#e37295cec899428ebf66d532d8a1b0f703be00a6"
+  integrity sha512-17tO6AXP+rmVQtLJ3ROQJF2UlFmvMWp7/8RDT5x9VM0w0tY31z8Twc0gw2KA7tcDxa5AaHDUbf9heOf+R6G6ow==
   dependencies:
-    "@sentry/core" "10.25.0"
+    "@sentry/core" "10.27.0"
 
-"@sentry-internal/feedback@10.25.0":
-  version "10.25.0"
-  resolved "https://registry.yarnpkg.com/@sentry-internal/feedback/-/feedback-10.25.0.tgz#9a335f11bada42bde307e3fa58b0aaf764aea40e"
-  integrity sha512-qlbT4tOd+WRyKpLdsbi26rkynGBoVabnY8/9rFnTxZ0WIUG5EFhJFqEeRLMyv+uk0uRFF3H0I9+u+qP/BKxIcQ==
+"@sentry-internal/feedback@10.27.0":
+  version "10.27.0"
+  resolved "https://registry.yarnpkg.com/@sentry-internal/feedback/-/feedback-10.27.0.tgz#a7cfdd32c455d8a4f3684475f61583cd3fec43fe"
+  integrity sha512-UecsIDJcv7VBwycge/MDvgSRxzevDdcItE1i0KSwlPz00rVVxLY9kV28PJ4I2E7r6/cIaP9BkbWegCEcv09NuA==
   dependencies:
-    "@sentry/core" "10.25.0"
+    "@sentry/core" "10.27.0"
 
-"@sentry-internal/replay-canvas@10.25.0":
-  version "10.25.0"
-  resolved "https://registry.yarnpkg.com/@sentry-internal/replay-canvas/-/replay-canvas-10.25.0.tgz#cd3a5f953b9b3cbc1fc3fbdfb6ac0bdbfa1f7cc3"
-  integrity sha512-zuj5jVNswZ/aA1nPPbU+VIFkQG0695lbyIfS1Skq+5o2FdRIS3MGnBXw1abI9h4pft8GLQWcKiBxISM7UpSz6w==
+"@sentry-internal/replay-canvas@10.27.0":
+  version "10.27.0"
+  resolved "https://registry.yarnpkg.com/@sentry-internal/replay-canvas/-/replay-canvas-10.27.0.tgz#4e695ef0e3361476b2cad805a09ab456ef0a4859"
+  integrity sha512-inhsRYSVBpu3BI1kZphXj6uB59baJpYdyHeIPCiTfdFNBE5tngNH0HS/aedZ1g9zICw290lwvpuyrWJqp4VBng==
   dependencies:
-    "@sentry-internal/replay" "10.25.0"
-    "@sentry/core" "10.25.0"
+    "@sentry-internal/replay" "10.27.0"
+    "@sentry/core" "10.27.0"
 
-"@sentry-internal/replay@10.25.0":
-  version "10.25.0"
-  resolved "https://registry.yarnpkg.com/@sentry-internal/replay/-/replay-10.25.0.tgz#5aa936c551bcac5ce0825550ec382e83e9774142"
-  integrity sha512-V/kKQn9T46HBTiP0bIThmpVr94K4vXwYM3/EHVpGSq4P9RynX06cgps8GLHq94+A0kX/DbK9igEMZmIuzS1q3A==
+"@sentry-internal/replay@10.27.0":
+  version "10.27.0"
+  resolved "https://registry.yarnpkg.com/@sentry-internal/replay/-/replay-10.27.0.tgz#9f2798f212de18bfd306ea966a52402b6d11bb4b"
+  integrity sha512-tKSzHq1hNzB619Ssrqo25cqdQJ84R3xSSLsUWEnkGO/wcXJvpZy94gwdoS+KmH18BB1iRRRGtnMxZcUkiPSesw==
   dependencies:
-    "@sentry-internal/browser-utils" "10.25.0"
-    "@sentry/core" "10.25.0"
+    "@sentry-internal/browser-utils" "10.27.0"
+    "@sentry/core" "10.27.0"
 
-"@sentry/browser@10.25.0":
-  version "10.25.0"
-  resolved "https://registry.yarnpkg.com/@sentry/browser/-/browser-10.25.0.tgz#d97fffc53f955ed75369f781bf458d0a47d286ac"
-  integrity sha512-UgSVT3RTM3vsK914TPuHVJQsjq5ooXVmjMtsWP3Ep+6f7N+1UVX4ZXsyyj5lDOcWdc79FgproD+MrEf9Cj6uBg==
+"@sentry/browser@10.27.0":
+  version "10.27.0"
+  resolved "https://registry.yarnpkg.com/@sentry/browser/-/browser-10.27.0.tgz#44cdd6ee7be079383eb7bc22e3e65ad639b6507c"
+  integrity sha512-G8q362DdKp9y1b5qkQEmhTFzyWTOVB0ps1rflok0N6bVA75IEmSDX1pqJsNuY3qy14VsVHYVwQBJQsNltQLS0g==
   dependencies:
-    "@sentry-internal/browser-utils" "10.25.0"
-    "@sentry-internal/feedback" "10.25.0"
-    "@sentry-internal/replay" "10.25.0"
-    "@sentry-internal/replay-canvas" "10.25.0"
-    "@sentry/core" "10.25.0"
+    "@sentry-internal/browser-utils" "10.27.0"
+    "@sentry-internal/feedback" "10.27.0"
+    "@sentry-internal/replay" "10.27.0"
+    "@sentry-internal/replay-canvas" "10.27.0"
+    "@sentry/core" "10.27.0"
 
-"@sentry/core@10.25.0":
-  version "10.25.0"
-  resolved "https://registry.yarnpkg.com/@sentry/core/-/core-10.25.0.tgz#99e5253a1a5e52f7e8972c89dcf3e710700e4059"
-  integrity sha512-mGi4BYIPwZjWdOXHrPoXz1AW4/cQbFoiuW/m+OOATmtSoGTDnWYwP+qZU7VLlL+v8ZEzxfPi2C1NPfJtPj7QWA==
+"@sentry/core@10.27.0":
+  version "10.27.0"
+  resolved "https://registry.yarnpkg.com/@sentry/core/-/core-10.27.0.tgz#47e457ffc113f62f49f3a759e7e7da56b1268609"
+  integrity sha512-Zc68kdH7tWTDtDbV1zWIbo3Jv0fHAU2NsF5aD2qamypKgfSIMSbWVxd22qZyDBkaX8gWIPm/0Sgx6aRXRBXrYQ==
 
 "@sinclair/typebox@^0.27.8":
   version "0.27.8"
@@ -7444,19 +7445,19 @@ eslint-config-prettier@^9.1.0:
   resolved "https://registry.yarnpkg.com/eslint-config-prettier/-/eslint-config-prettier-9.1.0.tgz#31af3d94578645966c082fcb71a5846d3c94867f"
   integrity sha512-NSWl5BFQWEPi1j4TjVNItzYV7dZXZ+wP6I6ZhrBGpChQhZRUaElihE9uRRkcbRnNb76UMKDF3r+WTmNcGPKsqw==
 
-eslint-formatter-codeclimate@^1.0.0:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/eslint-formatter-codeclimate/-/eslint-formatter-codeclimate-1.0.2.tgz#f1096624e766ee8121f0e39e80c5f9a8cc706fa2"
-  integrity sha512-9ygAJag38O/oITwzPnvNXz8vuke6JuX1qeSbch+2m5ZQT/1exCyHkrymfJZpR5GZuYd17Khb1SOAsehSMV/W0Q==
+eslint-formatter-codeclimate@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/eslint-formatter-codeclimate/-/eslint-formatter-codeclimate-2.0.0.tgz#6bedfbce6b48ef744b14db8e64e45a8f93b8663e"
+  integrity sha512-Xg/5QWF5o/BijQvZzOFojzxQkWoKQIZatGSEx9pfOkdrcx8ovh+J1N+IvwK210jrj8+yRvFGDJLWV8oEQP3T6A==
   dependencies:
     codeclimate-types "^0.3.0"
 
-eslint-formatter-gitlab@^6.0.1:
-  version "6.0.1"
-  resolved "https://registry.yarnpkg.com/eslint-formatter-gitlab/-/eslint-formatter-gitlab-6.0.1.tgz#766c842e76ebbe39d6f707b1471e1c2d545c9267"
-  integrity sha512-GjAdu74EPUQMQjldx4wu/P0CgTY7nk9uJ4q2ZW6TkXH+rK9LR2q3dV+cWTaQKMaCcosn+XU8nJOE8QQe8czHZA==
+eslint-formatter-gitlab@^7.0.0:
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/eslint-formatter-gitlab/-/eslint-formatter-gitlab-7.0.0.tgz#6178816af01cb9d67bbd6e3874cb73e5ac852b65"
+  integrity sha512-bs0cKMCDjvDw0gBLK/jXC0HEJDi9lt48c3HXuMPDj7dC9QblB81dXiNymrrtBs3u+RGANtQugMR5Vbd66Q3YwA==
   dependencies:
-    eslint-formatter-codeclimate "^1.0.0"
+    eslint-formatter-codeclimate "^2.0.0"
     yaml "^2.0.0"
 
 eslint-import-resolver-jest@3.0.2:
@@ -9640,11 +9641,6 @@ istanbul-reports@^3.1.3:
   dependencies:
     html-escaper "^2.0.0"
     istanbul-lib-report "^3.0.0"
-
-jackspeak@^3.1.2, "jackspeak@npm:@gitlab/noop@1.0.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@gitlab/noop/-/noop-1.0.1.tgz#71a831146ee02732b4a61d2d3c11204564753454"
-  integrity sha512-s++4wjMYeDvBp9IO59DBrWjy8SE/gFkjTDO5ck2W0S6Vv7OlqgErwL7pHngAnrSmTJAzyUG8wHGqo0ViS4jn5Q==
 
 jed@^1.1.1:
   version "1.1.1"

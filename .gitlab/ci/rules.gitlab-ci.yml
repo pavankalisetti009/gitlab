@@ -151,6 +151,9 @@
 .if-merge-request-labels-skip-undercoverage: &if-merge-request-labels-skip-undercoverage
   if: '($CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_EVENT_TYPE != "merge_train") && $CI_MERGE_REQUEST_LABELS =~ /pipeline:skip-undercoverage/'
 
+.if-merge-request-labels-skip-check-deprecated-files: &if-merge-request-labels-skip-check-deprecated-files
+  if: '($CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_EVENT_TYPE != "merge_train") && $CI_MERGE_REQUEST_LABELS =~ /pipeline:skip-check-deprecated-files/'
+
 .if-merge-request-labels-jh-contribution: &if-merge-request-labels-jh-contribution
   if: '($CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_EVENT_TYPE != "merge_train") && $CI_MERGE_REQUEST_LABELS =~ /JiHu contribution/'
 
@@ -201,6 +204,18 @@
 
 .if-schedule-maintenance: &if-schedule-maintenance
   if: '$CI_PIPELINE_SOURCE == "schedule" && $SCHEDULE_TYPE == "maintenance"'
+
+.if-missing-clickhouse-coverage-credentials: &if-missing-clickhouse-coverage-credentials
+  if: '$GLCI_CLICKHOUSE_METRICS_URL == null || $GLCI_CLICKHOUSE_TEST_COVERAGE_DB == null || $GLCI_CLICKHOUSE_METRICS_USERNAME == null || $GLCI_CLICKHOUSE_METRICS_PASSWORD == null'
+
+.if-coverband-enabled: &if-coverband-enabled
+  if: '$COVERBAND_ENABLED == "true"'
+
+.if-babel-env-istanbul: &if-babel-env-istanbul
+  if: '$BABEL_ENV == "istanbul"'
+
+.if-export-coverage: &if-export-coverage
+  if: '$GLCI_EXPORT_COVERAGE == "true"'
 
 .if-default-branch-schedule-nightly: &if-default-branch-schedule-nightly
   if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "schedule" && $SCHEDULE_TYPE == "nightly"'
@@ -1661,9 +1676,8 @@
     - <<: *if-default-refs
       changes: *code-backstage-patterns
 
-.frontend:rules:fe-islands:predictive:
+.frontend:rules:fe-islands:
   rules:
-    - if: '$ENABLE_JEST_PREDICTIVE == "true"'
     - <<: *if-not-ee
       when: never
     - <<: *if-merge-request
@@ -1715,6 +1729,7 @@
       when: never
     - <<: *if-merge-request
       when: never
+    - <<: *if-export-coverage
     - <<: *if-default-branch-refs
       changes: *code-backstage-patterns
 
@@ -2112,6 +2127,7 @@
 ###############
 .rails:rules:setup-test-env:
   rules:
+    - <<: *if-export-coverage
     - if: '$ENABLE_RSPEC == "true"'
     - <<: *if-default-refs
       changes: *setup-test-env-patterns
@@ -2655,16 +2671,27 @@
       when: never
     - <<: *if-merge-request
       changes: *code-backstage-patterns
+    - <<: *if-export-coverage
     - <<: *if-schedule-maintenance
     - <<: *if-merge-request-labels-run-all-rspec
 
-.rails:rules:coverage-export:
+# Export merged RSpec + E2E coverage to ClickHouse
+.rails:rules:coverage-export-rspec-and-e2e:
   rules:
     - <<: *if-not-ee
       when: never
-    - if: '$GLCI_CLICKHOUSE_METRICS_URL == null || $GLCI_CLICKHOUSE_TEST_COVERAGE_DB == null || $GLCI_CLICKHOUSE_METRICS_USERNAME == null || $GLCI_CLICKHOUSE_METRICS_PASSWORD == null'
+    - <<: *if-missing-clickhouse-coverage-credentials
       when: never
-    - <<: *if-schedule-maintenance
+    - <<: *if-export-coverage
+
+# Export merged Jest + E2E coverage to ClickHouse
+.frontend:rules:coverage-export-jest-and-e2e:
+  rules:
+    - <<: *if-not-ee
+      when: never
+    - <<: *if-missing-clickhouse-coverage-credentials
+      when: never
+    - <<: *if-export-coverage
 
 .rails:rules:rspec-undercoverage:
   rules:
@@ -2806,6 +2833,17 @@
       changes: *code-backstage-qa-patterns
     - <<: *if-default-refs
       changes: *docs-patterns
+
+.static-analysis:rules:check-deprecated-files:
+  rules:
+    - <<: *if-merge-request-labels-skip-check-deprecated-files
+      when: never
+    - <<: *if-security-merge-request
+      when: never
+    - <<: *if-merge-request-targeting-stable-branch
+      when: never
+    - <<: *if-merge-request
+      changes: *code-patterns
 
 .semgrep-appsec-custom-rules:rules:
   rules:
@@ -3155,8 +3193,17 @@
 ###################
 .workhorse:rules:workhorse:
   rules:
+    - <<: *if-export-coverage
     - <<: *if-default-refs
       changes: *workhorse-patterns
+
+.workhorse:rules:workhorse-coverage:
+  rules:
+    - <<: *if-not-ee
+      when: never
+    - <<: *if-missing-clickhouse-coverage-credentials
+      when: never
+    - <<: *if-export-coverage
 
 #############
 # GDK rules #
@@ -3170,6 +3217,8 @@
     - <<: *if-merge-request-labels-pipeline-expedite
       when: never
     - <<: *if-merge-request-targeting-stable-branch
+      when: never
+    - <<: *if-tag
       when: never
     - <<: *if-default-refs
       changes: *gdk-update-patterns

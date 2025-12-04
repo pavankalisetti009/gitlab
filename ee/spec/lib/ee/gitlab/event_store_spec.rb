@@ -8,6 +8,7 @@ RSpec.describe Gitlab::EventStore, feature_category: :shared do
       instance = described_class.instance
 
       expect(instance.subscriptions.keys).to match_array([
+        Ai::ActiveContext::Code::CreateEnabledNamespaceEvent,
         Ai::ActiveContext::Code::MarkRepositoryAsReadyEvent,
         Ai::ActiveContext::Code::MarkRepositoryAsPendingDeletionEvent,
         Ai::ActiveContext::Code::ProcessPendingEnabledNamespaceEvent,

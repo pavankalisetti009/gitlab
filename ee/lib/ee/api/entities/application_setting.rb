@@ -24,6 +24,8 @@ module EE
           expose :maven_package_requests_forwarding, if: ->(_instance, _opts) { ::License.feature_available?(:package_forwarding) }
           expose :npm_package_requests_forwarding, if: ->(_instance, _opts) { ::License.feature_available?(:package_forwarding) }
           expose :virtual_registries_endpoints_api_limit, if: ->(_instance, _opts) { ::License.feature_available?(:packages_virtual_registry) }
+          expose :dependency_scanning_sbom_scan_api_upload_limit, if: ->(_instance, _opts) { ::License.feature_available?(:dependency_scanning) }
+          expose :dependency_scanning_sbom_scan_api_download_limit, if: ->(_instance, _opts) { ::License.feature_available?(:dependency_scanning) }
           expose :secret_push_protection_available, if: ->(_instance, _opts) { ::License.feature_available?(:secret_push_protection) }
           expose :secret_push_protection_available,
             if: ->(_instance, _opts) { ::License.feature_available?(:secret_push_protection) },

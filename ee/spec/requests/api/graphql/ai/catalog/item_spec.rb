@@ -264,6 +264,53 @@ RSpec.describe 'getting an AI catalog item', :with_current_organization, feature
     end
   end
 
+  describe 'configurationForGroup field' do
+    let_it_be(:group) { create(:group, reporters: reporter_user, developers: developer_user) }
+    let_it_be(:item_consumer) { create(:ai_catalog_item_consumer, item: catalog_item, group: group) }
+
+    let_it_be(:item_consumer_for_other_group) do
+      create(:ai_catalog_item_consumer,
+        item: catalog_item,
+        group: create(:group, organization: current_organization)
+      )
+    end
+
+    let_it_be(:other_item) { create(:ai_catalog_item, organization: current_organization) }
+    let_it_be(:item_consumer_for_other_item) { create(:ai_catalog_item_consumer, group: group, item: other_item) }
+
+    let(:data) { graphql_data_at(:ai_catalog_item, :configuration_for_group) }
+
+    let(:query) do
+      <<~GRAPHQL
+        query {
+          aiCatalogItem(id: "#{params[:id]}") {
+            configurationForGroup(groupId: "#{group.to_global_id}") {
+              id
+              enabled
+            }
+          }
+        }
+      GRAPHQL
+    end
+
+    context 'when the user does not have permission' do
+      let(:current_user) { reporter_user }
+
+      it_behaves_like 'an unsuccessful query'
+    end
+
+    context 'when the user has permission' do
+      let(:current_user) { developer_user }
+
+      it 'returns the item configuration' do
+        post_graphql(query, current_user: current_user)
+
+        expect(response).to have_gitlab_http_status(:success)
+        expect(data).to match(a_graphql_entity_for(item_consumer, :enabled))
+      end
+    end
+  end
+
   context 'when item is a flow' do
     let_it_be(:flow) { create(:ai_catalog_flow, project: project, public: true) }
     let(:params) { { id: flow.to_global_id } }

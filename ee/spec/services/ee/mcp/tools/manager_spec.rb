@@ -13,7 +13,9 @@ RSpec.describe Mcp::Tools::Manager, feature_category: :ai_agents do
     stub_const("#{described_class}::CUSTOM_TOOLS", ce_custom_tools)
 
     # Stub the GRAPHQL_TOOLS with GraphQL tools
-    graphql_tools = {}
+    graphql_tools = {
+      'create_workitem_note' => Mcp::Tools::WorkItems::GraphqlCreateWorkItemNoteService
+    }
     stub_const("#{described_class}::GRAPHQL_TOOLS", graphql_tools)
 
     # Stub the EE_CUSTOM_TOOLS with EE tools
@@ -37,6 +39,7 @@ RSpec.describe Mcp::Tools::Manager, feature_category: :ai_agents do
 
         expect(manager.tools.keys).to contain_exactly(
           'get_mcp_server_version',
+          'create_workitem_note',
           'semantic_code_search'
         )
       end
@@ -67,9 +70,10 @@ RSpec.describe Mcp::Tools::Manager, feature_category: :ai_agents do
           'create_user' => api_tool1,
           'delete_user' => api_tool2,
           'get_mcp_server_version' => be_a(Mcp::Tools::GetServerVersionService),
+          'create_workitem_note' => be_a(Mcp::Tools::WorkItems::GraphqlCreateWorkItemNoteService),
           'semantic_code_search' => be_a(Mcp::Tools::SearchCodebaseService)
         )
-        expect(manager.tools.size).to eq(4)
+        expect(manager.tools.size).to eq(5)
       end
 
       it 'converts tool_name symbols to strings' do
@@ -202,9 +206,10 @@ RSpec.describe Mcp::Tools::Manager, feature_category: :ai_agents do
         expect(manager.tools).to include(
           'valid_tool' => api_tool1,
           'get_mcp_server_version' => be_a(Mcp::Tools::GetServerVersionService),
+          'create_workitem_note' => be_a(Mcp::Tools::WorkItems::GraphqlCreateWorkItemNoteService),
           'semantic_code_search' => be_a(Mcp::Tools::SearchCodebaseService)
         )
-        expect(manager.tools.size).to eq(3)
+        expect(manager.tools.size).to eq(4)
         expect(Mcp::Tools::ApiTool).to have_received(:new).once.with(name: 'valid_tool', route: route1)
         expect(Mcp::Tools::ApiTool).not_to have_received(:new).with('route2', route2)
         expect(Mcp::Tools::ApiTool).not_to have_received(:new).with('route3', route3)
@@ -327,6 +332,37 @@ RSpec.describe Mcp::Tools::Manager, feature_category: :ai_agents do
           expect { manager.get_tool(name: 'gitlab_search', version: '99.99.99') }
             .to raise_error(described_class::VersionNotFoundError) do |error|
             expect(error.tool_name).to eq('gitlab_search')
+            expect(error.requested_version).to eq('99.99.99')
+            expect(error.available_versions).to eq(['0.1.0'])
+          end
+        end
+      end
+    end
+
+    context 'with graphql tool' do
+      context 'when requesting specific version' do
+        it 'returns the correct version' do
+          tool = manager.get_tool(name: 'create_workitem_note', version: '0.1.0')
+
+          expect(tool).to be_a(Mcp::Tools::WorkItems::GraphqlCreateWorkItemNoteService)
+          expect(tool.version).to eq('0.1.0')
+        end
+      end
+
+      context 'when requesting latest version' do
+        it 'returns the latest version' do
+          tool = manager.get_tool(name: 'create_workitem_note')
+
+          expect(tool).to be_a(Mcp::Tools::WorkItems::GraphqlCreateWorkItemNoteService)
+          expect(tool.version).to eq('0.1.0')
+        end
+      end
+
+      context 'when requesting non-existent version' do
+        it 'raises VersionNotFoundError' do
+          expect { manager.get_tool(name: 'create_workitem_note', version: '99.99.99') }
+            .to raise_error(described_class::VersionNotFoundError) do |error|
+            expect(error.tool_name).to eq('create_workitem_note')
             expect(error.requested_version).to eq('99.99.99')
             expect(error.available_versions).to eq(['0.1.0'])
           end

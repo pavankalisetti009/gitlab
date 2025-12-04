@@ -357,6 +357,10 @@ export default {
       };
     },
     formatNumber,
+    dataNotAvailableTooltip(metricId, dateRangeEnd) {
+      const tooltip = AI_IMPACT_DATA_NOT_AVAILABLE_TOOLTIPS[metricId];
+      return tooltip && dateRangeEnd < tooltip.startDate ? tooltip : undefined;
+    },
   },
   dataNotAvailableTooltips: AI_IMPACT_DATA_NOT_AVAILABLE_TOOLTIPS,
 };
@@ -397,7 +401,10 @@ export default {
       <span v-else data-testid="ai-impact-table-value-cell">
         <span
           :ref="`${key}-${identifier}`"
-          :class="{ 'gl-cursor-pointer hover:gl-underline': tooltip }"
+          :class="{
+            'gl-cursor-pointer hover:gl-underline':
+              tooltip || dataNotAvailableTooltip(identifier, end),
+          }"
           data-testid="formatted-metric-value"
         >
           {{ formatNumber(value) }}
@@ -411,16 +418,16 @@ export default {
           />
         </span>
 
-        <gl-tooltip v-if="tooltip" :target="() => $refs[`${key}-${identifier}`]">
+        <gl-tooltip
+          v-if="tooltip || dataNotAvailableTooltip(identifier, end)"
+          :target="() => $refs[`${key}-${identifier}`]"
+        >
           <gl-sprintf
-            v-if="
-              $options.dataNotAvailableTooltips[identifier] &&
-              end < $options.dataNotAvailableTooltips[identifier].startDate
-            "
-            :message="$options.dataNotAvailableTooltips[identifier].message"
+            v-if="dataNotAvailableTooltip(identifier, end)"
+            :message="dataNotAvailableTooltip(identifier, end).message"
           >
             <template #link="{ content }">
-              <gl-link :href="$options.dataNotAvailableTooltips[identifier].link" target="_blank">{{
+              <gl-link :href="dataNotAvailableTooltip(identifier, end).link" target="_blank">{{
                 content
               }}</gl-link>
             </template>

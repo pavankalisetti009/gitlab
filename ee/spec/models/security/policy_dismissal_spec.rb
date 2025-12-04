@@ -210,6 +210,63 @@ RSpec.describe Security::PolicyDismissal, feature_category: :security_policy_man
       end
     end
 
+    describe '.for_license_occurrence_uuids' do
+      let_it_be(:dismissed_license_occurrence_uuid) { SecureRandom.uuid }
+      let_it_be(:non_dismissed_license_occurrence_uuid) { SecureRandom.uuid }
+      let_it_be(:dismissed_license_occurrence_uuids) { [dismissed_license_occurrence_uuid] }
+      let_it_be(:uuids) { [dismissed_license_occurrence_uuid] }
+
+      subject(:policy_dismissal_for_license_occurrence_uuids) { described_class.for_license_occurrence_uuids(uuids) }
+
+      context 'when the policy dismissal is not preserved' do
+        let_it_be(:security_policy_dismissal) do
+          create(:policy_dismissal, license_occurrence_uuids: dismissed_license_occurrence_uuids)
+        end
+
+        it 'returns none' do
+          expect(policy_dismissal_for_license_occurrence_uuids).to be_empty
+        end
+      end
+
+      context 'when the policy dismissal is preserved' do
+        let_it_be(:security_policy_dismissal) do
+          create(:policy_dismissal, :preserved, license_occurrence_uuids: dismissed_license_occurrence_uuids)
+        end
+
+        context 'when querying for a single UUID' do
+          it 'returns dismissals that contain the finding UUID' do
+            expect(policy_dismissal_for_license_occurrence_uuids).to contain_exactly(security_policy_dismissal)
+          end
+        end
+
+        context 'when querying for multiple UUIDs' do
+          let_it_be(:other_dismissed_license_occurrence_uuid) { SecureRandom.uuid }
+          let_it_be(:uuids) { [dismissed_license_occurrence_uuid, other_dismissed_license_occurrence_uuid] }
+
+          context 'when the license occurrence UUIDs were dismissed by the same policy' do
+            let_it_be(:dismissed_license_occurrence_uuids) do
+              [dismissed_license_occurrence_uuid, other_dismissed_license_occurrence_uuid]
+            end
+
+            it 'returns dismissals that contain the license occurrence UUIDs' do
+              expect(policy_dismissal_for_license_occurrence_uuids).to contain_exactly(security_policy_dismissal)
+            end
+          end
+
+          context 'when the license occurrence UUIDs were dismissed by different policies' do
+            let_it_be(:other_security_policy_dismissal) do
+              create(:policy_dismissal, :preserved, license_occurrence_uuids: [other_dismissed_license_occurrence_uuid])
+            end
+
+            it 'returns dismissals that contain the license occurrence UUIDs' do
+              expect(policy_dismissal_for_license_occurrence_uuids).to contain_exactly(security_policy_dismissal,
+                other_security_policy_dismissal)
+            end
+          end
+        end
+      end
+    end
+
     describe '.including_merge_request_and_user' do
       let_it_be(:policy_dismissal) { create(:policy_dismissal) }
 
@@ -476,6 +533,86 @@ RSpec.describe Security::PolicyDismissal, feature_category: :security_policy_man
         preserve
 
         expect(Gitlab::EventStore).not_to have_received(:publish)
+      end
+    end
+  end
+
+  describe '#license_names' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:merge_request) { create(:merge_request, target_project: project, source_project: project) }
+    let(:policy_dismissal) do
+      create(:policy_dismissal, project: project, merge_request: merge_request, licenses: licenses)
+    end
+
+    subject(:license_names) { policy_dismissal.license_names }
+
+    context 'without licenses' do
+      let(:licenses) { {} }
+
+      it 'returns an empty array' do
+        expect(license_names).to be_empty
+      end
+
+      context 'with licenses' do
+        let(:mit_license) { 'MIT License' }
+
+        context 'with a single license' do
+          let(:licenses) { { mit_license => ['rack'] } }
+
+          it 'returns the license name' do
+            expect(license_names).to match_array([mit_license])
+          end
+        end
+
+        context 'with multiple licenses' do
+          let(:ruby_license) { 'Ruby' }
+
+          let(:licenses) { { mit_license => ['rack'], ruby_license => ['json'] } }
+
+          it 'returns all license names' do
+            expect(license_names).to match_array([mit_license, ruby_license])
+          end
+        end
+      end
+    end
+  end
+
+  describe '#components' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:merge_request) { create(:merge_request, target_project: project, source_project: project) }
+    let(:policy_dismissal) do
+      create(:policy_dismissal, project: project, merge_request: merge_request, licenses: licenses)
+    end
+
+    subject(:components) { policy_dismissal.components(license_name) }
+
+    context 'without licenses' do
+      let(:licenses) { {} }
+      let(:license_name) { 'MIT License' }
+
+      it 'returns an empty array' do
+        expect(components).to be_empty
+      end
+    end
+
+    context 'with licenses' do
+      let(:license_name) { 'MIT License' }
+      let(:licenses) { { license_name => components_list } }
+
+      context 'when the license has a single component' do
+        let(:components_list) { ['rack'] }
+
+        it 'returns the component' do
+          expect(components).to match_array(components_list)
+        end
+      end
+
+      context 'when the license has multiple components' do
+        let(:components_list) { %w[rack bundler] }
+
+        it 'returns all components' do
+          expect(components).to match_array(components_list)
+        end
       end
     end
   end

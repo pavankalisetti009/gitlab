@@ -95,13 +95,13 @@ describe('ActivityLogs', () => {
     describe('when message is at index 0', () => {
       it.each(['user', 'agent', 'tool', 'workflow_end', 'unknown'])(
         'does not render markdown with type %s',
-        ({ messageType }) => {
+        (messageType) => {
           wrapper = createWrapper({
             items: [
               {
                 id: 0,
                 content: 'New workflow item',
-                message_type: messageType,
+                messageType,
                 status: 'success',
                 timestamp: '2023-01-01T10:15:00Z',
               },
@@ -128,14 +128,14 @@ describe('ActivityLogs', () => {
             {
               id: 0,
               content: 'initialmessage',
-              message_type: 'agent',
+              messageType: 'agent',
               status: 'success',
               timestamp: '2023-01-01T10:15:00Z',
             },
             {
               id: 1,
               content: 'New workflow item',
-              message_type: messageType,
+              messageType,
               status: 'success',
               timestamp: '2023-01-01T10:15:00Z',
             },
@@ -250,7 +250,7 @@ describe('ActivityLogs', () => {
         {
           id: 4,
           content: 'New workflow item',
-          message_type: 'tool',
+          messageType: 'tool',
           status: 'success',
           timestamp: '2023-01-01T10:15:00Z',
         },
@@ -277,7 +277,7 @@ describe('ActivityLogs', () => {
           {
             id: 5,
             content: 'Another new item',
-            message_type: 'assistant',
+            messageType: 'assistant',
             status: 'success',
             timestamp: '2023-01-01T10:20:00Z',
           },

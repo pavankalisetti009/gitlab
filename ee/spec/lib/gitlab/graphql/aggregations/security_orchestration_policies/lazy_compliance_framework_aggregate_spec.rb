@@ -164,6 +164,8 @@ RSpec.describe Gitlab::Graphql::Aggregations::SecurityOrchestrationPolicies::Laz
         )
       end
 
+      let(:policy_type) { :scan_execution_policies }
+      let(:policy_yaml) { policy_yaml_with_duplicates }
       let(:fake_state) { { pending_frameworks: Set.new([framework]), loaded_objects: {} } }
 
       before do
@@ -172,18 +174,44 @@ RSpec.describe Gitlab::Graphql::Aggregations::SecurityOrchestrationPolicies::Laz
 
         allow(Project).to receive(:find_by_full_path).with(content[:project]).and_return(ref_project)
         allow_next_instance_of(Repository) do |repository|
-          allow(repository).to receive(:blob_data_at).and_return(policy_yaml_with_duplicates)
+          allow(repository).to receive(:blob_data_at).and_return(policy_yaml)
         end
       end
 
       context 'when there are duplicate policies' do
-        let(:policy_type) { :scan_execution_policies }
-
-        it 'deduplicates policies with same checksum and management project id' do
+        it 'deduplicates policies with same name and management project id' do
           policies = lazy_aggregate.execute
 
           expect(policies.count).to eq(1)
           expect(policies.first[:name]).to eq('Duplicate Policy')
+        end
+      end
+
+      context 'when policies have the same name but from different management projects' do
+        let_it_be(:other_project) { create(:project, maintainers: current_user) }
+        let_it_be_with_reload(:other_policy_configuration) do
+          create(:security_orchestration_policy_configuration, project: other_project)
+        end
+
+        let_it_be_with_reload(:other_compliance_framework_security_policy) do
+          create(:compliance_framework_security_policy,
+            policy_configuration: other_policy_configuration,
+            framework: framework)
+        end
+
+        let(:policy_yaml_with_same_name) do
+          build(:orchestration_policy_yaml,
+            scan_execution_policy: [build(:scan_execution_policy, name: 'Same Name Policy', policy_scope: policy_scope)]
+          )
+        end
+
+        let(:policy_yaml) { policy_yaml_with_same_name }
+
+        it 'does not deduplicate policies from different management projects' do
+          policies = lazy_aggregate.execute
+
+          expect(policies.count).to eq(2)
+          expect(policies.pluck(:name)).to match_array(['Same Name Policy', 'Same Name Policy'])
         end
       end
     end

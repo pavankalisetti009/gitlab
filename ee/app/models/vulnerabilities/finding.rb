@@ -7,6 +7,9 @@ module Vulnerabilities
     include Presentable
     include ::VulnerabilityFindingHelpers
     include EachBatch
+    include SafelyChangeColumnDefault
+
+    columns_changing_default :detected_at
 
     # https://gitlab.com/groups/gitlab-org/-/epics/3148
     # https://gitlab.com/gitlab-org/gitlab/-/issues/214563#note_370782508 is why the table names are not renamed
@@ -115,6 +118,8 @@ module Vulnerabilities
     has_many :feedbacks, class_name: 'Vulnerabilities::Feedback', inverse_of: :finding, primary_key: 'uuid', foreign_key: 'finding_uuid'
 
     has_one :finding_evidence, class_name: 'Vulnerabilities::Finding::Evidence', inverse_of: :finding, foreign_key: 'vulnerability_occurrence_id'
+
+    has_many :detection_transitions, class_name: 'Vulnerabilities::DetectionTransition', inverse_of: :finding, foreign_key: 'vulnerability_occurrence_id'
 
     has_many :security_findings,
       class_name: 'Security::Finding',

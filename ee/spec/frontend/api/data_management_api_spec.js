@@ -1,5 +1,5 @@
 import MockAdapter from 'axios-mock-adapter';
-import models from 'test_fixtures/api/admin/data_management/snippet_repository.json';
+import models from 'test_fixtures/api/admin/data_management/snippet_repositories.json';
 import axios from '~/lib/utils/axios_utils';
 import { HTTP_STATUS_OK } from '~/lib/utils/http_status';
 import {

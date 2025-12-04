@@ -15,6 +15,7 @@ module Types
 
         field :checkpoint, Types::JsonStringType,
           scopes: [:api, :read_api, :ai_features, :ai_workflows],
+          deprecated: { reason: 'Checkpoints are big & contain internal langgraph details', milestone: '18.7' },
           description: 'Checkpoint of the event.'
 
         field :metadata, Types::JsonStringType,
@@ -57,6 +58,10 @@ module Types
         field :workflow_definition, GraphQL::Types::String,
           description: 'GitLab Duo Agent Platform flow type based on its capabilities.'
         # rubocop:enable GraphQL/ExtractType -- we want to keep this way for backwards compatibility
+
+        field :duo_messages, [Types::Ai::DuoWorkflows::DuoMessageType],
+          scopes: [:api, :read_api, :ai_features, :ai_workflows],
+          description: 'Messages from the ui_chat_log for the checkpoint.'
       end
     end
   end

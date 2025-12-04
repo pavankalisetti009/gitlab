@@ -28,6 +28,7 @@ module GitlabSubscriptions
       trial_ends_on
       namespace_id
       hosted_plan_id
+      hosted_plan_name_uid
       seats_in_use
       max_seats_used
       seats

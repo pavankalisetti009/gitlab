@@ -24,6 +24,7 @@ import {
   mockAiCatalogItemConsumerDeleteResponse,
   mockAiCatalogItemConsumerDeleteErrorResponse,
   mockFlowConfigurationForProject,
+  mockFlowVersion,
 } from '../mock_data';
 
 jest.mock('~/sentry/sentry_browser_wrapper');
@@ -35,6 +36,7 @@ describe('AiCatalogFlowsShow', () => {
   let mockApollo;
 
   const defaultProps = {
+    versionData: mockFlowVersion,
     aiCatalogFlow: { ...mockFlow, configurationForProject: mockFlowConfigurationForProject },
   };
 
@@ -114,13 +116,14 @@ describe('AiCatalogFlowsShow', () => {
   });
 
   describe('on deleting a flow', () => {
-    const deleteFlow = () => findItemActions().props('deleteFn')();
+    const forceHardDelete = false;
+    const deleteFlow = () => findItemActions().props('deleteFn')(forceHardDelete);
 
     it('calls delete mutation for flow', () => {
       deleteFlow();
 
       expect(deleteThirdPartyFlowMutationHandler).not.toHaveBeenCalled();
-      expect(deleteFlowMutationHandler).toHaveBeenCalledWith({ id: mockFlow.id });
+      expect(deleteFlowMutationHandler).toHaveBeenCalledWith({ id: mockFlow.id, forceHardDelete });
     });
 
     describe('when flow type is third-party flow', () => {
@@ -138,6 +141,7 @@ describe('AiCatalogFlowsShow', () => {
         expect(deleteFlowMutationHandler).not.toHaveBeenCalled();
         expect(deleteThirdPartyFlowMutationHandler).toHaveBeenCalledWith({
           id: mockThirdPartyFlow.id,
+          forceHardDelete,
         });
       });
     });

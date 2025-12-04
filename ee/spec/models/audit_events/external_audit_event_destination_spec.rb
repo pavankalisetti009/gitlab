@@ -34,6 +34,27 @@ RSpec.describe AuditEvents::ExternalAuditEventDestination, feature_category: :au
       expect(subject.errors.full_messages).to contain_exactly('Headers are limited to 20 per destination')
     end
 
+    context 'for verification_token uniqueness' do
+      let(:group_2) { create(:group) }
+
+      it 'validates uniqueness scoped to namespace' do
+        create(:external_audit_event_destination, group: group, verification_token: 'token123456789012345')
+        destination2 = build(:external_audit_event_destination, group: group,
+          verification_token: 'token123456789012345')
+
+        expect(destination2).not_to be_valid
+        expect(destination2.errors[:verification_token]).to include('has already been taken')
+      end
+
+      it 'allows same token in different namespaces' do
+        create(:external_audit_event_destination, group: group, verification_token: 'token123456789012345')
+        destination = build(:external_audit_event_destination, group: group_2,
+          verification_token: 'token123456789012345')
+
+        expect(destination).to be_valid
+      end
+    end
+
     context 'for destination_url' do
       let_it_be(:group_2) { create(:group) }
 

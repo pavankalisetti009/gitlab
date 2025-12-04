@@ -3,6 +3,7 @@ import VueApollo from 'vue-apollo';
 import { GlToast } from '@gitlab/ui';
 import createDefaultClient from '~/lib/graphql';
 import { injectVueAppBreadcrumbs } from '~/lib/utils/breadcrumbs';
+import { parseBoolean } from '~/lib/utils/common_utils';
 import AiCatalogBreadcrumbs from './router/ai_catalog_breadcrumbs.vue';
 
 import AiCatalogApp from './ai_catalog_app.vue';
@@ -16,7 +17,7 @@ export const initAiCatalog = (selector = '#js-ai-catalog') => {
   }
 
   const { dataset } = el;
-  const { aiCatalogIndexPath } = dataset;
+  const { aiCatalogIndexPath, aiImpactDashboardEnabled } = dataset;
 
   Vue.use(VueApollo);
   Vue.use(GlToast);
@@ -36,6 +37,7 @@ export const initAiCatalog = (selector = '#js-ai-catalog') => {
     apolloProvider,
     provide: {
       isGlobal: true,
+      aiImpactDashboardEnabled: parseBoolean(aiImpactDashboardEnabled),
     },
     render(h) {
       return h(AiCatalogApp);

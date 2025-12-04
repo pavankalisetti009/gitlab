@@ -22,7 +22,7 @@ export default {
           (item) =>
             typeof item === 'object' &&
             item.content &&
-            item.message_type &&
+            item.messageType &&
             item.status &&
             item.timestamp,
         );
@@ -57,10 +57,10 @@ export default {
       return getMessageData(message)?.icon;
     },
     filePath(item) {
-      return item.tool_info?.args?.file_path;
+      return item.toolInfo?.args?.file_path;
     },
     isMarkdown(item, index) {
-      return item.message_type !== 'user' && index > 0;
+      return item.messageType !== 'user' && index > 0;
     },
     title(message, index) {
       if (index === 0) {

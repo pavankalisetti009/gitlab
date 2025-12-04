@@ -20,10 +20,18 @@ module Ai
 
           project = Project.find_by_id(project_id)
           return false unless project
-          return false if Ai::ActiveContext::Code::Repository.for_project(project.id).exists?
+
+          existing_repository = Ai::ActiveContext::Code::Repository.for_project(project.id).first
+          return false if existing_repository && !existing_repository.deleted?
           return false unless project_eligible_for_indexing?(project, force_cache_reload: true)
 
-          repository = create_repository_record(project)
+          if existing_repository
+            existing_repository.update(state: :pending, delete_reason: nil)
+            repository = existing_repository
+          else
+            repository = create_repository_record(project)
+          end
+
           RepositoryIndexWorker.perform_async(repository.id)
         end
 

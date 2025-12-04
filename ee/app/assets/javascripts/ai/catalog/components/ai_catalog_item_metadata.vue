@@ -16,6 +16,10 @@ export default {
       type: Object,
       required: true,
     },
+    versionData: {
+      type: Object,
+      required: true,
+    },
   },
   computed: {
     latestUpdatedAt() {
@@ -31,7 +35,7 @@ export default {
         },
       ];
 
-      if (this.item.foundationalChat) {
+      if (this.item.foundational) {
         items.push({
           text: s__('AICatalog|Foundational agent'),
           icon: 'tanuki-verified',
@@ -48,6 +52,12 @@ export default {
           testId: 'modified',
         });
       }
+
+      items.push({
+        icon: 'tag',
+        value: this.versionData.humanVersionName,
+        testId: 'version',
+      });
 
       return items;
     },

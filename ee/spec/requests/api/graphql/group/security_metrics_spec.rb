@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Security metrics through GroupQuery', :freeze_time, feature_category: :vulnerability_management do
+RSpec.describe 'Security metrics through GroupQuery', :elastic_helpers, :freeze_time, feature_category: :vulnerability_management do
   include GraphqlHelpers
 
   let_it_be(:current_user) { create(:user) }
@@ -71,6 +71,8 @@ RSpec.describe 'Security metrics through GroupQuery', :freeze_time, feature_cate
 
   before do
     stub_licensed_features(security_dashboard: true)
+    stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
+    set_elasticsearch_migration_to(:backfill_vulnerabilities_for_self_managed)
   end
 
   describe 'when user has access' do
@@ -295,6 +297,130 @@ RSpec.describe 'Security metrics through GroupQuery', :freeze_time, feature_cate
           expect(first_day['byReportType']).to include(
             { 'reportType' => 'SAST', 'count' => 1 }
           )
+        end
+
+        context 'when querying only bySeverity' do
+          let(:severity_only_query) do
+            graphql_query_for(
+              'group',
+              { 'fullPath' => group.full_path },
+              <<~GRAPHQL
+                securityMetrics {
+                  vulnerabilitiesOverTime(startDate: "#{start_date.iso8601}", endDate: "#{end_date.iso8601}") {
+                    nodes {
+                      date
+                      count
+                      bySeverity {
+                        severity
+                        count
+                      }
+                    }
+                  }
+                }
+              GRAPHQL
+            )
+          end
+
+          before do
+            allow_next_instance_of(
+              ::Search::AdvancedFinders::Security::Vulnerability::CountOverTimeFinder
+            ) do |finder|
+              allow(finder).to receive(:execute).and_return([
+                {
+                  date: 2.days.ago(Time.zone.now).to_date.iso8601,
+                  count: 1,
+                  by_severity: [{ severity: 'critical', count: 1 }]
+                },
+                {
+                  date: 1.day.ago(Time.zone.now).to_date.iso8601,
+                  count: 2,
+                  by_severity: [
+                    { severity: 'high', count: 1 },
+                    { severity: 'medium', count: 1 }
+                  ]
+                }
+              ])
+            end
+          end
+
+          it 'returns only bySeverity data without byReportType' do
+            post_graphql(severity_only_query, current_user: current_user)
+
+            expect(vulnerabilities_over_time_data).to be_an(Array)
+            expect(vulnerabilities_over_time_data).to have_attributes(size: 2)
+
+            first_day = vulnerabilities_over_time_data.first
+            expect(first_day).to include(
+              'date' => 2.days.ago(Time.zone.now).to_date.iso8601,
+              'count' => 1
+            )
+            expect(first_day['bySeverity']).to include(
+              { 'severity' => 'CRITICAL', 'count' => 1 }
+            )
+            expect(first_day).not_to have_key('byReportType')
+          end
+        end
+
+        context 'when querying only byReportType' do
+          let(:report_type_only_query) do
+            graphql_query_for(
+              'group',
+              { 'fullPath' => group.full_path },
+              <<~GRAPHQL
+                securityMetrics {
+                  vulnerabilitiesOverTime(startDate: "#{start_date.iso8601}", endDate: "#{end_date.iso8601}") {
+                    nodes {
+                      date
+                      count
+                      byReportType {
+                        reportType
+                        count
+                      }
+                    }
+                  }
+                }
+              GRAPHQL
+            )
+          end
+
+          before do
+            allow_next_instance_of(
+              ::Search::AdvancedFinders::Security::Vulnerability::CountOverTimeFinder
+            ) do |finder|
+              allow(finder).to receive(:execute).and_return([
+                {
+                  date: 2.days.ago(Time.zone.now).to_date.iso8601,
+                  count: 1,
+                  by_report_type: [{ report_type: 'sast', count: 1 }]
+                },
+                {
+                  date: 1.day.ago(Time.zone.now).to_date.iso8601,
+                  count: 2,
+                  by_report_type: [
+                    { report_type: 'sast', count: 1 },
+                    { report_type: 'dast', count: 1 }
+                  ]
+                }
+              ])
+            end
+          end
+
+          it 'returns only byReportType data without bySeverity' do
+            post_graphql(report_type_only_query, current_user: current_user)
+
+            expect(vulnerabilities_over_time_data).to be_an(Array)
+            expect(vulnerabilities_over_time_data).to have_attributes(size: 2)
+
+            first_day = vulnerabilities_over_time_data.first
+            expect(first_day).to include(
+              'date' => 2.days.ago(Time.zone.now).to_date.iso8601,
+              'count' => 1
+            )
+            expect(first_day['byReportType']).to include(
+              { 'reportType' => 'SAST', 'count' => 1 }
+            )
+            expect(first_day).not_to have_key('bySeverity')
+          end
         end
       end
 

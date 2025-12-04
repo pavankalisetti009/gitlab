@@ -4,12 +4,13 @@ require 'spec_helper'
 
 RSpec.describe Security::Ingestion::FindingMap, feature_category: :vulnerability_management do
   let_it_be(:pipeline) { build_stubbed(:ci_pipeline) }
+  let_it_be(:tracked_context) { build_stubbed(:security_project_tracked_context, :tracked) }
 
   let(:security_finding) { build(:security_finding) }
   let(:identifier) { build(:ci_reports_security_identifier) }
   let(:report_finding) { build(:ci_reports_security_finding, identifiers: [identifier]) }
   let(:finding_map) do
-    build(:finding_map, security_finding: security_finding, report_finding: report_finding, pipeline: pipeline)
+    described_class.new(pipeline, tracked_context, security_finding, report_finding)
   end
 
   describe 'delegations' do
@@ -20,6 +21,12 @@ RSpec.describe Security::Ingestion::FindingMap, feature_category: :vulnerability
     it { is_expected.to delegate_method(:severity).to(:security_finding) }
     it { is_expected.to delegate_method(:project).to(:pipeline) }
     it { is_expected.to delegate_method(:evidence).to(:report_finding) }
+  end
+
+  describe '#tracked_context' do
+    it 'returns the tracked context' do
+      expect(finding_map.tracked_context).to eq(tracked_context)
+    end
   end
 
   describe '#identifiers' do
@@ -42,6 +49,7 @@ RSpec.describe Security::Ingestion::FindingMap, feature_category: :vulnerability
     let(:expected_hash) do
       {
         uuid: security_finding.uuid,
+        security_project_tracked_context_id: tracked_context.id,
         scanner_id: security_finding.scanner_id,
         primary_identifier_id: nil,
         location_fingerprint: report_finding.location.fingerprint,
@@ -66,8 +74,16 @@ RSpec.describe Security::Ingestion::FindingMap, feature_category: :vulnerability
       }
     end
 
-    subject { finding_map.to_hash }
+    subject(:hash) { finding_map.to_hash }
 
     it { is_expected.to eq(expected_hash) }
+
+    context 'when tracked context is nil' do
+      let_it_be(:tracked_context) { nil }
+
+      it 'returns nil for security_project_tracked_context_id' do
+        expect(hash[:security_project_tracked_context_id]).to be_nil
+      end
+    end
   end
 end

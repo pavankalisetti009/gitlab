@@ -6,8 +6,6 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :continuous_integrat
   include AfterNextHelpers
   include RepoHelpers
 
-  subject(:execute) { service.execute(:push) }
-
   let_it_be(:project) { create(:project, :repository, path: 'website') }
   let_it_be(:user) { project.first_owner }
   let_it_be(:compliance_group) { create(:group, :private) }
@@ -30,6 +28,10 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :continuous_integrat
   end
 
   let(:service) { described_class.new(project, user, { ref: 'master' }) }
+
+  let(:source) { :push }
+
+  subject(:execute) { service.execute(source) }
 
   before do
     stub_licensed_features(evaluate_group_level_compliance_pipeline: true)
@@ -64,6 +66,14 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :continuous_integrat
 
     it do
       expect(execute.payload.processables.map(&:name)).to contain_exactly('compliance_build', 'compliance_test')
+    end
+
+    context 'when the pipeline is a duo_workflow pipeline' do
+      let(:source) { :duo_workflow }
+
+      it 'does not include compliance jobs' do
+        expect(execute.payload.processables.map(&:name)).not_to include('compliance_build', 'compliance_test')
+      end
     end
   end
 

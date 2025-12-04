@@ -33,10 +33,10 @@ RSpec.describe 'Query.openbaoHealth', feature_category: :secrets_management do
       sign_in(current_user)
     end
 
-    context 'when OpenBao is healthy' do
+    context 'when OpenBao is available' do
       before do
         allow_next_instance_of(SecretsManagement::SecretsManagerClient) do |instance|
-          allow(instance).to receive(:check_health).and_return(true)
+          allow(instance).to receive(:server_available?).and_return(true)
         end
       end
 
@@ -47,10 +47,10 @@ RSpec.describe 'Query.openbaoHealth', feature_category: :secrets_management do
       end
     end
 
-    context 'when OpenBao is not healthy' do
+    context 'when OpenBao is not available' do
       before do
         allow_next_instance_of(SecretsManagement::SecretsManagerClient) do |instance|
-          allow(instance).to receive(:check_health).and_return(false)
+          allow(instance).to receive(:server_available?).and_return(false)
         end
       end
 

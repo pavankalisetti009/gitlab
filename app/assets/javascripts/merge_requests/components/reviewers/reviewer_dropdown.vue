@@ -14,6 +14,7 @@ import {
   REQUEST_REVIEW_SIMPLE,
   SEARCH_SELECT_REVIEWER_EVENT,
   SELECT_REVIEWER_EVENT,
+  REMOVE_REVIEWER_EVENT,
 } from '../../constants';
 import {
   getReviewersForList,
@@ -222,7 +223,7 @@ export default {
     removeAllReviewers() {
       this.currentSelectedReviewers = [];
     },
-    trackReviewersSelectEvent() {
+    trackReviewersChangeEvent() {
       const telemetryEvent = this.search ? SEARCH_SELECT_REVIEWER_EVENT : SELECT_REVIEWER_EVENT;
       const previousUsernames = toUsernames(this.selectedReviewers);
       const listUsernames = toUsernames(this.usersForList);
@@ -234,6 +235,7 @@ export default {
       // so we should exclude them for when we check the position
       const selectableList = difference(listUsernames, previousUsernames);
       const additions = difference(this.currentSelectedReviewers, previousUsernames);
+      const removals = difference(previousUsernames, this.currentSelectedReviewers);
 
       additions.forEach((added) => {
         // Convert from 0- to 1-index
@@ -246,12 +248,19 @@ export default {
           selectable_reviewers_count: selectableList.length,
         });
       });
+      removals.forEach(() => {
+        this.trackEvent(REMOVE_REVIEWER_EVENT, {
+          via: `ui_${this.usage}`,
+        });
+      });
+
+      return additions.length;
     },
     processReviewers() {
-      this.trackReviewersSelectEvent();
+      const additions = this.trackReviewersChangeEvent();
       this.updateReviewers();
 
-      if (this.usage === 'simple') {
+      if (additions > 0 && this.usage === 'simple') {
         this.trackEvent(REQUEST_REVIEW_SIMPLE);
       }
     },

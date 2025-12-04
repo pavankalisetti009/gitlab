@@ -96,7 +96,8 @@ RSpec.describe Gitlab::Ci::Pipeline::ExecutionPolicies::PipelineContext, feature
         end
 
         context 'when parent pipeline is a policy pipeline' do
-          let(:bridge) { build_stubbed(:ci_bridge, options: { policy: { name: 'My policy' } }) }
+          let(:build_source) { build_stubbed(:ci_build_source, source: 'pipeline_execution_policy') }
+          let(:bridge) { build_stubbed(:ci_bridge, build_source: build_source) }
 
           it 'initializes it with correct attributes' do
             expect(::Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext)

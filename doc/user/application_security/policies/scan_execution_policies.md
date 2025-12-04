@@ -77,7 +77,7 @@ Use the scan execution policy editor to create or edit a scan execution policy.
 
 Prerequisites:
 
-- By default, only group, subgroup, or project Owners have the [permissions](../../permissions.md#application-security)
+- By default, only group, subgroup, or project Owners have the [permissions](../../permissions.md#project-application-security)
   required to create or assign a security policy project. Alternatively, you can create a custom role with the permission to [manage security policy links](../../custom_roles/abilities.md#security-policy-management).
 
 When you create your first scan execution policies, templates help you to get started with some of the most common use cases:
@@ -130,7 +130,7 @@ where the policy is defined:
 
 - For policies in projects, in the rule mode editor, choose from a list of profiles that are already defined in the project.
 - For policies in groups, you must type in the names of the profiles to use. To prevent pipeline errors, profiles with
-matching names must exist in all of the group's projects.
+  matching names must exist in all of the group's projects.
 
 {{< /alert >}}
 
@@ -265,7 +265,7 @@ A scheduled pipeline:
   permissions to create pipelines and read the repository's content from a CI/CD job. This account
   is created when the policy is linked to a group or project.
 - On GitLab.com, only the first 10 `schedule` rules in a scan execution policy are enforced. Rules
-that exceed the limit have no effect.
+  that exceed the limit have no effect.
 
 | Field      | Type | Required | Possible values | Description |
 |------------|------|----------|-----------------|-------------|

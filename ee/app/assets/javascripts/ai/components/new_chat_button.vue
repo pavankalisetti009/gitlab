@@ -65,6 +65,13 @@ export default {
         skip() {
           return !this.isAgentSelectEnabled;
         },
+        // NOTE any update here should also be made to ee/app/assets/javascripts/ai/duo_agentic_chat/components/duo_agentic_chat.vue
+        update(data) {
+          return (data?.aiCatalogConfiguredItems.nodes || []).map((node) => ({
+            ...node.item,
+            pinnedItemVersionId: node.pinnedItemVersion.id,
+          }));
+        },
         error: (error) => {
           this.$emit('newChatError', error);
           Sentry.captureException(error);
@@ -136,7 +143,7 @@ export default {
   >
     <template #list-item="{ item }">
       <span class="gl-flex gl-flex-col">
-        <span class="gl-mb-1 gl-inline-block gl-font-semibold">
+        <span class="gl-mb-1 gl-inline-block gl-break-all gl-font-semibold">
           {{ item.name }}
           <gl-icon
             v-if="item.foundational"

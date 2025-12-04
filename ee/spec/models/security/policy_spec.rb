@@ -550,6 +550,29 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
     end
   end
 
+  describe '#scan_execution_policy' do
+    context 'when policy is a scan execution policy' do
+      let_it_be(:scan_execution_policy) do
+        create(:security_policy, :scan_execution_policy, name: 'Test Scan Execution Policy')
+      end
+
+      it 'returns a ScanExecutionPolicy instance' do
+        expect(scan_execution_policy.scan_execution_policy).to be_a(
+          Security::ScanExecutionPolicies::ScanExecutionPolicy
+        )
+        expect(scan_execution_policy.scan_execution_policy.name).to eq('Test Scan Execution Policy')
+      end
+    end
+
+    context 'when policy is not a scan execution policy' do
+      let_it_be(:approval_policy) { create(:security_policy, :approval_policy) }
+
+      it 'returns nil' do
+        expect(approval_policy.scan_execution_policy).to be_nil
+      end
+    end
+  end
+
   describe '#max_rule_index' do
     let_it_be(:policy) { create(:security_policy) }
     let_it_be(:rule1) { create(:approval_policy_rule, security_policy: policy, rule_index: 0) }
@@ -1019,6 +1042,22 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
     end
   end
 
+  describe '#dismissal_reason' do
+    subject(:dismissal_reason) { policy.dismissal_reason }
+
+    let(:policy) do
+      build(:security_policy, :vulnerability_management_policy, :auto_dismiss, dismissal_reason: 'used_in_tests')
+    end
+
+    it { is_expected.to eq 'used_in_tests' }
+
+    context 'when policy does not have a dismissal_reason' do
+      let(:policy) { build(:security_policy, :vulnerability_management_policy, :auto_resolve) }
+
+      it { is_expected.to be_nil }
+    end
+  end
+
   describe '#enforcement_type' do
     let(:policy) { build(:security_policy, content: content) }
 
@@ -1295,6 +1334,16 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
     it 'returns only policies with non-empty warn_mode' do
       result = described_class.with_warn_mode
       expect(result).to contain_exactly(policy_with_warn_mode)
+    end
+  end
+
+  describe '.auto_dismiss_policies' do
+    let_it_be(:policy_with_auto_resolve) { create(:security_policy, :vulnerability_management_policy, :auto_resolve) }
+    let_it_be(:policy_with_auto_dismiss) { create(:security_policy, :vulnerability_management_policy, :auto_dismiss) }
+
+    it 'returns only policies with auto_dismiss type' do
+      result = described_class.auto_dismiss_policies
+      expect(result).to contain_exactly(policy_with_auto_dismiss)
     end
   end
 

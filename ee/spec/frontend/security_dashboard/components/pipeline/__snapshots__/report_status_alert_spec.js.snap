@@ -8,7 +8,6 @@ exports[`ee/security_dashboard/components/pipeline/report_status_alert.vue rende
   primarybuttontext=""
   secondarybuttonlink=""
   secondarybuttontext=""
-  showicon="true"
   title=""
   variant="info"
 >

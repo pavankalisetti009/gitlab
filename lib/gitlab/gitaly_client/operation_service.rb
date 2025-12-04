@@ -145,7 +145,7 @@ module Gitlab
         end
       end
 
-      def user_merge_to_ref(user, source_sha:, branch:, target_ref:, message:, first_parent_ref:, expected_old_oid: "")
+      def user_merge_to_ref(user, source_sha:, branch:, target_ref:, message:, first_parent_ref:, expected_old_oid: '', sign: false)
         request = Gitaly::UserMergeToRefRequest.new(
           repository: @gitaly_repo,
           source_sha: source_sha,
@@ -155,7 +155,8 @@ module Gitlab
           message: encode_binary(message),
           first_parent_ref: encode_binary(first_parent_ref),
           expected_old_oid: expected_old_oid,
-          timestamp: Google::Protobuf::Timestamp.new(seconds: Time.now.utc.to_i)
+          timestamp: Google::Protobuf::Timestamp.new(seconds: Time.now.utc.to_i),
+          sign: sign
         )
 
         response = gitaly_client_call(@repository.storage, :operation_service,
@@ -164,7 +165,7 @@ module Gitlab
         response.commit_id
       end
 
-      def user_merge_branch(user, source_sha:, target_branch:, message:, target_sha: nil)
+      def user_merge_branch(user, source_sha:, target_branch:, message:, target_sha: nil, sign: true)
         request_enum = QueueEnumerator.new
         response_enum = gitaly_client_call(
           @repository.storage,
@@ -182,7 +183,8 @@ module Gitlab
             branch: encode_binary(target_branch),
             expected_old_oid: target_sha,
             message: encode_binary(message),
-            timestamp: Google::Protobuf::Timestamp.new(seconds: Time.now.utc.to_i)
+            timestamp: Google::Protobuf::Timestamp.new(seconds: Time.now.utc.to_i),
+            sign: sign
           )
         )
 
@@ -453,7 +455,7 @@ module Gitlab
         response.commit_id
       end
 
-      def user_squash(user, start_sha, end_sha, author, message, time = Time.now.utc)
+      def user_squash(user, start_sha:, end_sha:, author:, message:, time: Time.now.utc)
         request = Gitaly::UserSquashRequest.new(
           repository: @gitaly_repo,
           user: gitaly_user(user),

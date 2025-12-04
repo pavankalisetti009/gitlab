@@ -313,6 +313,29 @@ RSpec.describe Namespaces::AiModelDeprecationsAlertComponent, :saas, feature_cat
         expect(selected_deprecated_models).to eq([])
       end
     end
+
+    context 'when deprecated_models is nil' do
+      before do
+        stub_saas_features(gitlab_com_subscriptions: true)
+        allow(component).to receive(:deprecated_models).and_return(nil)
+      end
+
+      let_it_be(:namespace_setting) do
+        build_stubbed(:ai_namespace_feature_setting,
+          namespace: group,
+          feature: :review_merge_request,
+          offered_model_ref: 'claude-sonnet-3-7',
+          model_definitions: fetch_model_definitions_example)
+      end
+
+      it 'returns empty array without raising an error' do
+        allow(::Ai::ModelSelection::NamespaceFeatureSetting)
+          .to receive_message_chain(:for_namespace, :non_default)
+          .and_return([namespace_setting])
+
+        expect(selected_deprecated_models).to eq([])
+      end
+    end
   end
 
   describe '#fetch_deprecated_models' do

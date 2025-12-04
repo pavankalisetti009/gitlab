@@ -348,6 +348,22 @@ RSpec.describe Admin::ApplicationSettingsController, feature_category: :shared d
       end
     end
 
+    context 'with dependency scanning settings' do
+      let(:license_feature) { :dependency_scanning }
+
+      context 'when updating `dependency_scanning_sbom_scan_api_upload_limit`' do
+        let(:settings) { { dependency_scanning_sbom_scan_api_upload_limit: 500 } }
+
+        it_behaves_like 'settings for licensed features'
+      end
+
+      context 'when updating `dependency_scanning_sbom_scan_api_download_limit`' do
+        let(:settings) { { dependency_scanning_sbom_scan_api_download_limit: 500 } }
+
+        it_behaves_like 'settings for licensed features'
+      end
+    end
+
     context 'with secret detection settings' do
       let(:settings) { { secret_push_protection_available: true } }
       let(:license_feature) { :secret_push_protection }

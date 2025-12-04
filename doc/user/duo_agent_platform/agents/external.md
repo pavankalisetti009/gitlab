@@ -60,7 +60,7 @@ The following integrations have been tested by GitLab and are available:
 - [Amazon Q](https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/command-line.html)
 - [Google Gemini CLI](https://github.com/google-gemini/gemini-cli)
 
-For a click-through demo, see [DAP with Amazon Q](https://gitlab.navattic.com/dap-with-q).
+For a click-through demo, see [GitLab Duo Agent Platform with Amazon Q](https://gitlab.navattic.com/dap-with-q).
 <!-- Demo published on 2025-11-03 -->
 
 ## Prerequisites
@@ -95,7 +95,7 @@ This way, you do not have to manage and rotate API keys yourself.
 
 When you use GitLab-managed credentials:
 
-- Set `injectGatewayToken: true` in your flow configuration file.
+- Set `injectGatewayToken: true` in your external agent configuration.
 - Remove the API key variables (for example, `ANTHROPIC_API_KEY`) from your CI/CD variables.
 - Configure the external agent to use the GitLab AI gateway proxy endpoints.
 
@@ -104,7 +104,27 @@ The following environment variables are automatically injected when `injectGatew
 - `AI_FLOW_AI_GATEWAY_TOKEN`: the authentication token for AI Gateway
 - `AI_FLOW_AI_GATEWAY_HEADERS`: formatted headers for API requests
 
-GitLab-managed credentials are available only for Anthropic Claude and Codex.
+GitLab-managed credentials are available only for Anthropic Claude and OpenAI Codex.
+
+#### Supported models
+
+For GitLab-managed credentials, the following AI models are supported:
+
+Anthropic Claude:
+
+- `claude-3-sonnet-20240229`
+- `claude-3-5-sonnet-20240620`
+- `claude-3-haiku-20240307`
+- `claude-3-5-haiku-20241022`
+- `claude-3-5-sonnet-20241022`
+- `claude-3-7-sonnet-20250219`
+- `claude-sonnet-4-20250514`
+- `claude-sonnet-4-5-20250929`
+
+OpenAI Codex:
+
+- `gpt-5`
+- `gpt-5-codex`
 
 ## Create a service account
 
@@ -185,9 +205,9 @@ For more information, see how to [add CI/CD variables to a project's settings](.
 
 ## Create an external agent
 
-Create an external agent and configure it to run on your environment with a flow configuration.
+Create an external agent and configure it to run on your environment.
 
-### By using the AI Catalog
+### By using the UI
 
 {{< details >}}
 
@@ -218,27 +238,28 @@ Prerequisites:
 1. Under **Basic information**:
    1. In **Display name**, enter a name.
    1. In **Description**, enter a description.
-1. Under **Visibility & access**:
-   1. For **Visibility**, select **Private** or **Public**.
-1. Under **Configuration**, enter your flow configuration.
-   You can write your own configuration, or edit one of the templates below.
+1. Under **Visibility & access**, for **Visibility**, select **Private** or **Public**.
+1. Under **Configuration**:
+   1. Select **External**.
+   1. Enter your external agent configuration.
+      You can write your own YAML, or edit an example configuration.
 1. Select **Create flow**.
 
 The external agent appears in the AI Catalog.
 
-### By using a flow configuration file
+### By using a configuration file
 
-If you create external agents by manually adding flow configuration files,
-you must create a different AI flow configuration file for each external agent.
+If you create external agents by manually adding configuration files,
+you must create a different configuration file for each external agent.
 
 Prerequisites:
 
 - You must have at least the Developer role for the project.
 
-To create a flow configuration file:
+To create a configuration file:
 
 1. In your project, create a YAML file, for example: `.gitlab/duo/flows/claude.yaml`
-1. Populate the file by using [one of the flow configuration file examples](flow_examples.md).
+1. Populate the file by using [one of the configuration file examples](external_examples.md).
 
 ## Enable an external agent
 
@@ -251,8 +272,7 @@ Prerequisites:
 To enable an external agent in a project:
 
 1. On the left sidebar, select **Search or go to** > **Explore**.
-1. Select **AI Catalog**.
-1. Select the **Flows** tab.
+1. Select **AI Catalog**, then select the **Flows** tab.
 1. Select your external agent, then select **Enable in project**.
 1. From the dropdown list, select the project you want to enable the external agent in.
 1. Select **Enable**.
@@ -275,11 +295,11 @@ Prerequisites:
 - To allow the agent to push to workload branches (`workloads/*`), you might have to create [branch rules](../../project/repository/branches/branch_rules.md).
 
 1. In your project, open an issue, merge request, or epic.
-1. Mention, assign, or request a review from the flow service account user.
+1. Mention, assign, or request a review from the service account user.
    For example:
 
-   ```markdown
-   @service-account-username can you help analyze this code change?
+   ```plaintext
+   @service-account-username Can you help analyze this code change?
    ```
 
 1. After the external agent has completed the task, you see a confirmation, and either a

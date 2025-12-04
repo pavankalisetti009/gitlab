@@ -3,7 +3,10 @@ import VueRouter from 'vue-router';
 import AdminDataManagementApp from 'ee/admin/data_management/components/app.vue';
 import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
 import { formatListboxItems } from 'ee/admin/data_management/filters';
-import { FILTERED_SEARCH_TOKEN_OPTIONS } from 'ee/admin/data_management/constants';
+import {
+  FILTERED_SEARCH_TOKEN_OPTIONS,
+  SORT_OPTIONS_ARRAY,
+} from 'ee/admin/data_management/constants';
 import { createRouter } from 'ee/admin/data_management/router';
 
 Vue.use(VueRouter);
@@ -24,6 +27,7 @@ export const initAdminDataManagementApp = () => {
       basePath,
       listboxItems: formatListboxItems(parsedModelTypes),
       filteredSearchTokens: FILTERED_SEARCH_TOKEN_OPTIONS,
+      sortOptions: SORT_OPTIONS_ARRAY,
     },
     render(createElement) {
       return createElement(AdminDataManagementApp, {

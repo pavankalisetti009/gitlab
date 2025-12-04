@@ -53,9 +53,9 @@ A user is not counted as a billable user if:
 - They are [deactivated](../administration/moderate_users.md#deactivate-a-user),
   [banned](../user/group/moderate_users.md#ban-a-user),
   or [blocked](../administration/moderate_users.md#block-a-user).
-- They are not a member of any projects or groups (Ultimate subscriptions only).
+- They are not a member of any projects or groups.
 - They have only the [Guest role](#free-guest-users) (Ultimate subscriptions only).
-- They have only the [Minimal Access role](../user/permissions.md#users-with-minimal-access) for any GitLab.com subscriptions.
+- They have only the [Minimal Access role](../user/permissions.md#users-with-minimal-access).
 - The account is a GitLab-created service account:
   - [Ghost User](../user/profile/account/delete_account.md#associated-records).
   - Bots:
@@ -110,10 +110,10 @@ In the **Ultimate** tier, users who are assigned the Guest role do not consume a
 The user must not be assigned any other role, anywhere in the instance for GitLab Self-Managed or in the namespace for GitLab.com.
 
 - If your project is:
-  - Private or internal, a user with the Guest role has [a set of permissions](../user/permissions.md#project-members-permissions).
+  - Private or internal, a user with the Guest role has [a set of permissions](../user/permissions.md#project-permissions).
   - Public, all users, including those with the Guest role, can access your project.
 - For GitLab.com, if a user with the Guest role creates a project in their personal namespace, the user does not consume a seat.
-The project is under the user's personal namespace and does not relate to the group with the Ultimate subscription.
+  The project is under the user's personal namespace and does not relate to the group with the Ultimate subscription.
 - On GitLab Self-Managed, a user's highest assigned role is updated asynchronously and may take some time to update.
 
 {{< alert type="note" >}}

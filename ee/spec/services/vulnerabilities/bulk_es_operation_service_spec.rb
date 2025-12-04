@@ -8,7 +8,7 @@ RSpec.describe Vulnerabilities::BulkEsOperationService, feature_category: :vulne
   let_it_be(:vulnerabilities_set_1) { create_list(:vulnerability, 2, project: project) }
 
   before do
-    allow(::Search::Elastic::VulnerabilityIndexingHelper).to receive(:vulnerability_indexing_allowed?).and_return(true)
+    allow(::Search::Elastic::VulnerabilityIndexHelper).to receive(:indexing_allowed?).and_return(true)
 
     allow_next_found_instance_of(Vulnerability) do |instance|
       allow(instance).to receive(:maintaining_elasticsearch?).and_return(true)

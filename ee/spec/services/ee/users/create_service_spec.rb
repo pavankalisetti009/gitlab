@@ -91,17 +91,53 @@ RSpec.describe Users::CreateService, feature_category: :user_management do
       let(:seats) { 10 }
 
       describe 'when licensed user count reached' do
+        let_it_be(:group) { create(:group) }
         let(:seats) { 1 }
 
-        it 'does not create a user' do
-          expect { service.execute }.not_to change(User, :count)
+        before_all do
+          group.add_guest(current_user)
         end
 
-        it 'returns an error' do
-          expect(service.execute).to have_attributes(
-            message: 'NO_SEATS_AVAILABLE',
-            status: :error
-          )
+        context 'when new user will have a membership' do
+          let(:params) do
+            {
+              name: 'John Doe',
+              username: 'jduser',
+              email: 'jd@example.com',
+              password: User.random_password,
+              organization_id: organization.id,
+              projects_limit: 10
+            }
+          end
+
+          before do
+            allow_next_instance_of(User) do |user|
+              allow(user).to receive(:using_license_seat?).and_return(true)
+            end
+          end
+
+          it 'does not create a user' do
+            expect { service.execute }.not_to change(User, :count)
+          end
+
+          it 'returns an error' do
+            expect(service.execute).to have_attributes(
+              message: 'NO_SEATS_AVAILABLE',
+              status: :error
+            )
+          end
+        end
+
+        context 'when new user will not have a membership' do
+          it 'creates a user because they will not consume a seat' do
+            expect { service.execute }.to change(User, :count).by(1)
+          end
+
+          it 'returns success' do
+            expect(service.execute).to have_attributes(
+              status: :success
+            )
+          end
         end
 
         context 'when seat control feature is not licensed' do

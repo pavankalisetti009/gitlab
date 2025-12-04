@@ -4,7 +4,7 @@ import { debounce } from 'lodash';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 import { getMavenUpstreamRegistriesList } from 'ee/api/virtual_registries_api';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
-import { captureException } from '../../../../sentry_utils';
+import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
 
 const PAGE_SIZE = 20;
 
@@ -15,11 +15,6 @@ export default {
   },
   inject: ['groupPath'],
   props: {
-    selectedUpstreamName: {
-      type: String,
-      required: false,
-      default: '',
-    },
     linkedUpstreams: {
       type: Array,
       required: true,
@@ -38,7 +33,7 @@ export default {
     return {
       searchTerm: '',
       page: 1,
-      selectedUpstream: this.selectedUpstreamName,
+      selectedUpstream: null,
       isFetchingUpstreams: false,
       upstreams: this.initialUpstreams,
       totalUpstreamsCount: this.upstreamsCount,
@@ -71,6 +66,11 @@ export default {
           secondaryText: upstream.description,
         };
       });
+    },
+    selectedUpstreamName() {
+      return (
+        this.linkableUpstreams.find((upstream) => upstream.id === this.selectedUpstream)?.name ?? ''
+      );
     },
   },
   created() {

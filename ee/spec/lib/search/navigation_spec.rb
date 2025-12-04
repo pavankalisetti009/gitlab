@@ -327,5 +327,70 @@ RSpec.describe Search::Navigation, feature_category: :global_search do
         end
       end
     end
+
+    context 'for epics with search_scope_registry feature flag' do
+      let(:project) { nil }
+      let(:group) { group_double }
+      let(:options) { { show_epics: true } }
+
+      it 'includes epics as a sub-item under Work items' do
+        expect(tabs[:issues][:sub_items]).to have_key(:epic)
+        expect(tabs[:issues][:sub_items][:epic][:scope]).to eq('epics')
+        expect(tabs[:issues][:sub_items][:epic][:condition]).to be_truthy
+      end
+
+      it 'does not include epics as a standalone tab' do
+        expect(tabs[:epics]).to be_nil
+      end
+
+      context 'when work_item_scope_frontend FF is disabled' do
+        before do
+          stub_feature_flags(work_item_scope_frontend: false)
+        end
+
+        it 'includes epics from registry as standalone tab' do
+          expect(tabs[:epics]).to be_present
+          expect(tabs[:epics][:condition]).to be_truthy
+        end
+
+        it 'does not have sub_items under issues' do
+          expect(tabs[:issues][:sub_items]).to be_nil
+        end
+      end
+
+      context 'when search_scope_registry FF is disabled' do
+        before do
+          stub_feature_flags(search_scope_registry: false)
+        end
+
+        it 'includes epics as a sub-item under Work items (legacy behavior)' do
+          expect(tabs[:issues][:sub_items]).to have_key(:epic)
+          expect(tabs[:issues][:sub_items][:epic][:scope]).to eq('epics')
+          expect(tabs[:issues][:sub_items][:epic][:condition]).to be_truthy
+        end
+
+        it 'does not include epics as a standalone tab' do
+          expect(tabs[:epics]).to be_nil
+        end
+
+        context 'when work_item_scope_frontend FF is disabled' do
+          before do
+            stub_feature_flags(work_item_scope_frontend: false)
+          end
+
+          it 'includes epics as a standalone tab (legacy behavior)' do
+            expect(tabs[:epics]).to be_present
+            expect(tabs[:epics][:sort]).to eq(3)
+            expect(tabs[:epics][:label]).to eq('Epics')
+            expect(tabs[:epics][:condition]).to be_truthy
+          end
+
+          it 'does not have issues with sub_items' do
+            expect(tabs[:issues]).to be_present
+            expect(tabs[:issues][:sub_items]).to be_nil
+          end
+        end
+      end
+    end
   end
 end

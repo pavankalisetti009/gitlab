@@ -63,6 +63,7 @@ RSpec.describe License, feature_category: :plan_provisioning do
     end
 
     describe '#check_trueup' do
+      let(:group) { create(:group) }
       let(:active_user_count) { described_class.current.daily_billable_users_count + 10 }
       let(:date)              { described_class.current.starts_at }
 
@@ -72,7 +73,9 @@ RSpec.describe License, feature_category: :plan_provisioning do
 
       shared_examples 'invalid if active users with threshold exceeds restricted user count' do
         before do
-          create_list(:user, 12)
+          users = create_list(:user, 12)
+          users.each { |u| group.add_guest(u) }
+          create(:usage_trends_measurement, identifier: :billable_users, count: 12)
         end
 
         it 'is not valid' do
@@ -219,10 +222,13 @@ RSpec.describe License, feature_category: :plan_provisioning do
     end
 
     describe '#check_available_seats' do
+      let(:group_for_seats_check) { create(:group) }
+
       context 'when reconciliation_completed is true' do
         before do
           set_restrictions(seats: 10, reconciliation_completed: true)
-          create_list(:user, user_count)
+          users = create_list(:user, user_count)
+          users.each { |u| group_for_seats_check.add_guest(u) }
           create(:historical_data, recorded_at: described_class.current.starts_at, active_user_count: 100)
         end
 
@@ -274,7 +280,8 @@ RSpec.describe License, feature_category: :plan_provisioning do
         context 'when the seats with threshold is less than active_user_count' do
           before do
             set_restrictions(seats: 10, reconciliation_completed: false)
-            create_list(:user, 12)
+            users = create_list(:user, 12)
+            users.each { |u| group_for_seats_check.add_guest(u) }
             create(:historical_data, recorded_at: described_class.current.starts_at, active_user_count: 100)
           end
 
@@ -380,10 +387,12 @@ RSpec.describe License, feature_category: :plan_provisioning do
       end
 
       context 'without historical data' do
+        let(:group_for_users_limit) { create(:group) }
         let(:active_user_count) { 9 }
 
         before do
-          create_list(:user, billable_users_count)
+          users = create_list(:user, billable_users_count)
+          users.each { |u| group_for_users_limit.add_guest(u) }
         end
 
         context 'with previous user count' do
@@ -413,10 +422,12 @@ RSpec.describe License, feature_category: :plan_provisioning do
       end
 
       context 'with historical data in the term of an existing current license' do
+        let(:group_for_users_limit) { create(:group) }
         let(:active_user_count) { 9 }
 
         before do
-          create_list(:user, billable_users_count)
+          users = create_list(:user, billable_users_count)
+          users.each { |u| group_for_users_limit.add_guest(u) }
           create_historical_data(described_class.current.expires_at, prior_active_user_count)
         end
 
@@ -436,11 +447,13 @@ RSpec.describe License, feature_category: :plan_provisioning do
       end
 
       context 'with historical data in the term of the new license (no current license exists)' do
+        let(:group_for_users_limit) { create(:group) }
         let(:active_user_count) { 9 }
         let(:restrictions) { { active_user_count: active_user_count } }
 
         before do
-          create_list(:user, billable_users_count)
+          users = create_list(:user, billable_users_count)
+          users.each { |u| group_for_users_limit.add_guest(u) }
 
           allow(described_class).to receive(:current).and_return(nil)
         end

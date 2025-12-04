@@ -72,8 +72,10 @@ module EE
 
       def zoekt_group_id; end
 
-      override :allowed_scopes
-      def allowed_scopes
+      private
+
+      override :legacy_allowed_scopes
+      def legacy_allowed_scopes
         scopes = super
         return scopes if params[:search_type] == 'basic'
 
@@ -82,7 +84,7 @@ module EE
 
         scopes.uniq
       end
-      strong_memoize_attr :allowed_scopes
+      strong_memoize_attr :legacy_allowed_scopes
     end
   end
 end

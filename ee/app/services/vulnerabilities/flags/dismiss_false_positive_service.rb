@@ -45,10 +45,24 @@ module Vulnerabilities
         )
 
         if flag.save
+          send_audit_event
           ServiceResponse.success(payload: { flag: flag, is_new_flag: true })
         else
           ServiceResponse.error(message: flag.errors.full_messages.join(', '))
         end
+      end
+
+      def send_audit_event
+        audit_context = {
+          name: 'remove_vulnerability_false_positive_flag',
+          author: user,
+          scope: project,
+          target: vulnerability,
+          target_details: "#{vulnerability.title} (ID: #{vulnerability.id})",
+          message: 'Removed false positive flag'
+        }
+
+        ::Gitlab::Audit::Auditor.audit(audit_context)
       end
 
       def unique_manual_origin

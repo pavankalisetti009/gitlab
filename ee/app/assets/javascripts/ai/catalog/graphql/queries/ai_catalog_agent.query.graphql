@@ -1,5 +1,4 @@
 #import "../fragments/ai_catalog_item.fragment.graphql"
-#import "../fragments/ai_catalog_item_version.fragment.graphql"
 #import "../fragments/ai_catalog_agent_version.fragment.graphql"
 
 query aiCatalogAgent(
@@ -7,6 +6,8 @@ query aiCatalogAgent(
   $showSoftDeleted: Boolean
   $projectId: ProjectID!
   $hasProject: Boolean = false
+  $groupId: GroupID!
+  $hasGroup: Boolean = false
 ) {
   aiCatalogItem(id: $id, showSoftDeleted: $showSoftDeleted) {
     ...BaseAiCatalogItem
@@ -31,20 +32,12 @@ query aiCatalogAgent(
       id
       enabled
       pinnedItemVersion {
-        id
-        updatedAt
-        ...BaseAiCatalogItemVersion
-        ... on AiCatalogAgentVersion {
-          systemPrompt
-          tools {
-            nodes {
-              id
-              name
-              title
-            }
-          }
-        }
+        ...BaseAiCatalogAgentVersion
       }
+    }
+    configurationForGroup(groupId: $groupId) @include(if: $hasGroup) {
+      id
+      enabled
     }
   }
 }

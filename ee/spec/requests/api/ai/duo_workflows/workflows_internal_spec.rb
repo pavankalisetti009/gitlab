@@ -66,6 +66,38 @@ RSpec.describe API::Ai::DuoWorkflows::WorkflowsInternal, :aggregate_failures, fe
       })
     end
 
+    describe 'setting goal when first checkpoint' do
+      let(:checkpoint) do
+        {
+          "channel_values" => {
+            "__start__" => {
+              "goal" => "Hello, World!"
+            }
+          }
+        }
+      end
+
+      context 'when first checkpoint' do
+        it 'updates the workflows goal to be new goal' do
+          expect do
+            post api(path, user), params: params
+          end.to change { workflow.reload.goal }.to('Hello, World!')
+        end
+      end
+
+      context 'when not first checkpoint' do
+        let!(:existing_checkpoint) do
+          create(:duo_workflows_checkpoint, workflow: workflow)
+        end
+
+        it 'does not update the workflows goal' do
+          expect do
+            post api(path, user), params: params
+          end.to not_change { workflow.reload.goal }
+        end
+      end
+    end
+
     context 'with compressed checkpoint' do
       let(:checkpoint_data) { { 'key' => 'value', 'nested' => { 'data' => 'test' } } }
       let(:compressed_checkpoint) { 'eJyrVspOrVSyUipLzClNVdJRykstLklNUbKqVkpJLEkESpQABZRqawENlQ1i' }

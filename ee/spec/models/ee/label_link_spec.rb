@@ -4,6 +4,48 @@ require 'spec_helper'
 
 RSpec.describe LabelLink, feature_category: :global_search do
   describe 'callback' do
+    describe 'before_save' do
+      describe '#rewrite_epic_type' do
+        let_it_be(:label) { create(:label) }
+        let_it_be(:issue) { create(:issue) }
+        let_it_be(:epic) { create(:epic) }
+
+        context 'when creating a label link with Epic target_type' do
+          it 'rewrites target_type from Epic to Issue' do
+            label_link = build(:label_link, target_type: 'Epic', target_id: epic.id, label: label)
+
+            expect { label_link.save! }.to change { label_link.target_type }.from('Epic').to('Issue')
+              .and change { label_link.target_id }.from(epic.id).to(epic.issue_id)
+          end
+        end
+
+        context 'when updating an existing label link' do
+          let_it_be(:label_link) { create(:label_link, target: issue, label: label) }
+
+          it 'does not rewrite target_type on update' do
+            label_link.target_type = 'Epic'
+            label_link.target_id = epic.id
+
+            label_link.save!
+
+            expect(label_link.reload.target_type).to eq('Epic')
+            expect(label_link.reload.target_id).to eq(epic.id)
+          end
+        end
+
+        context 'when target_type is not Epic' do
+          it 'does not modify target_type for Issue' do
+            label_link = build(:label_link, target: issue, label: label)
+
+            label_link.save!
+
+            expect(label_link.reload.target_type).to eq('Issue')
+            expect(label_link.reload.target_id).to eq(issue.id)
+          end
+        end
+      end
+    end
+
     describe 'after_destroy' do
       let_it_be_with_reload(:label) { create(:label) }
       let_it_be(:label2) { create(:label) }
@@ -26,7 +68,7 @@ RSpec.describe LabelLink, feature_category: :global_search do
         let_it_be(:epic3) { create(:labeled_issue, labels: [label2]) }
 
         it 'synchronizes elasticsearch only for epics which have deleted label attached' do
-          expect(Elastic::ProcessBookkeepingService).to receive(:track!).with(epic).once
+          expect(Elastic::ProcessBookkeepingService).to receive(:track!).with(Issue.find(epic.issue_id)).once
           expect(Elastic::ProcessBookkeepingService).to receive(:track!).with(epic2).once
           label.destroy!
         end

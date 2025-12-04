@@ -3,109 +3,121 @@ import {
   GlAlert,
   GlEmptyState,
   GlFilteredSearch,
-  GlPagination,
+  GlKeysetPagination,
   GlSkeletonLoader,
 } from '@gitlab/ui';
 import emptyStateIllustrationUrl from '@gitlab/svgs/dist/illustrations/empty-state/empty-radar-md.svg?url';
 import { s__ } from '~/locale';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import EmptyResult from '~/vue_shared/components/empty_result.vue';
-import { getMavenUpstreamRegistriesList } from 'ee/api/virtual_registries_api';
-import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
+import getMavenUpstreamsQuery from '../../../graphql/queries/get_maven_upstreams.query.graphql';
 import { captureException } from '../../../sentry_utils';
 import UpstreamsTable from './upstreams_table.vue';
 
-const PAGE_SIZE = 20;
-const INITIAL_PAGE = 1;
+const INITIAL_VALUE = {
+  nodes: [],
+  pageInfo: {},
+};
 
 export default {
   name: 'MavenUpstreamsList',
-  perPage: PAGE_SIZE,
   components: {
     EmptyResult,
     GlAlert,
     GlEmptyState,
     GlFilteredSearch,
-    GlPagination,
+    GlKeysetPagination,
     GlSkeletonLoader,
     UpstreamsTable,
   },
   inject: ['fullPath'],
+  props: {
+    searchTerm: {
+      type: String,
+      required: false,
+      default: null,
+    },
+    pageParams: {
+      type: Object,
+      required: true,
+    },
+  },
   data() {
     return {
       alertMessage: '',
-      isLoading: false,
-      searchTerm: '',
-      page: INITIAL_PAGE,
-      mavenUpstreams: [],
-      mavenUpstreamsTotalCount: 0,
+      isLoading: 0,
+      mavenUpstreams: INITIAL_VALUE,
       upstreamDeleteSuccessMessage: '',
     };
   },
+  apollo: {
+    mavenUpstreams: {
+      query: getMavenUpstreamsQuery,
+      loadingKey: 'isLoading',
+      variables() {
+        return this.queryVariables;
+      },
+      update: (data) => data.group?.virtualRegistriesPackagesMavenUpstreams ?? INITIAL_VALUE,
+      error(error) {
+        this.alertMessage =
+          error.message ||
+          s__('VirtualRegistry|Failed to fetch list of maven upstream registries.');
+        captureException({ error, component: this.$options.name });
+      },
+    },
+  },
   computed: {
+    filteredSearchValue() {
+      return [
+        {
+          type: 'filtered-search-term',
+          value: { data: this.searchTerm || '' },
+        },
+      ];
+    },
+    queryVariables() {
+      return {
+        groupPath: this.fullPath,
+        upstreamName: this.searchTerm,
+        ...this.pageParams,
+      };
+    },
     hasSearchTerm() {
-      return this.searchTerm.length > 0;
+      return Boolean(this.searchTerm?.length);
     },
     showUpstreamsTable() {
-      return this.mavenUpstreams.length > 0 || this.hasSearchTerm;
+      return this.hasUpstreams || this.hasSearchTerm;
     },
     upstreams() {
-      return this.mavenUpstreams.map((upstream) => {
-        const { id, name, url, cacheValidityHours, metadataCacheValidityHours } =
-          convertObjectPropsToCamelCase(upstream);
-        return { id, name, url, cacheValidityHours, metadataCacheValidityHours };
-      });
+      return this.mavenUpstreams.nodes.map((upstream) => ({
+        ...upstream,
+        id: getIdFromGraphQLId(upstream.id),
+      }));
+    },
+    pageInfo() {
+      return this.mavenUpstreams.pageInfo;
     },
     hasUpstreams() {
       return this.upstreams.length > 0;
     },
-    showPagination() {
-      return this.mavenUpstreamsTotalCount > this.$options.perPage;
-    },
-  },
-  created() {
-    this.fetchMavenUpstreamRegistriesList();
   },
   methods: {
-    async fetchMavenUpstreamRegistriesList(searchTerm = '', page = this.page) {
-      this.searchTerm = searchTerm;
-      this.setAlertMessage();
-      try {
-        this.isLoading = true;
-        const response = await getMavenUpstreamRegistriesList({
-          id: this.fullPath,
-          params: {
-            upstream_name: this.searchTerm,
-            page,
-            per_page: PAGE_SIZE,
-          },
-        });
-
-        this.mavenUpstreamsTotalCount = Number(response.headers['x-total']) || 0;
-        this.mavenUpstreams = response.data;
-        this.$emit('updateCount', this.mavenUpstreamsTotalCount);
-      } catch (error) {
-        const alertMessage =
-          error.message ||
-          s__('VirtualRegistry|Failed to fetch list of maven upstream registries.');
-        this.setAlertMessage(alertMessage);
-        captureException({ error, component: this.$options.name });
-      } finally {
-        this.isLoading = false;
-      }
+    handleNextPage() {
+      this.$emit('page-change', { after: this.pageInfo.endCursor });
     },
-    handlePageChange(page) {
-      this.page = page;
-      this.fetchMavenUpstreamRegistriesList(this.searchTerm);
+    handlePreviousPage() {
+      this.$emit('page-change', { before: this.pageInfo.startCursor });
+    },
+    clearSearch() {
+      this.$emit('submit', null);
     },
     searchUpstreams(filters) {
       const [searchTerm] = filters;
-      this.page = INITIAL_PAGE;
-      this.fetchMavenUpstreamRegistriesList(searchTerm);
+      this.$emit('submit', searchTerm);
     },
     handleUpstreamDelete() {
       this.upstreamDeleteSuccessMessage = s__('VirtualRegistry|Maven upstream has been deleted.');
-      this.page = INITIAL_PAGE;
-      this.fetchMavenUpstreamRegistriesList(this.searchTerm);
+      this.$emit('upstream-deleted');
     },
     setAlertMessage(message = '') {
       this.alertMessage = message;
@@ -128,8 +140,10 @@ export default {
           class="gl-min-w-0 gl-grow"
           :placeholder="__('Filter results')"
           :search-text-option-label="__('Search for this text')"
+          :value="filteredSearchValue"
           terms-as-tokens
           @submit="searchUpstreams"
+          @clear="clearSearch"
         />
       </div>
       <gl-alert v-if="alertMessage" variant="danger" @dismiss="setAlertMessage">
@@ -138,20 +152,14 @@ export default {
       <upstreams-table
         v-if="hasUpstreams"
         :upstreams="upstreams"
-        :busy="isLoading"
+        :busy="Boolean(isLoading)"
         @upstreamDeleted="handleUpstreamDelete"
         @upstreamDeleteFailed="setAlertMessage"
       />
       <empty-result v-else />
-      <gl-pagination
-        v-if="showPagination"
-        :value="page"
-        :per-page="$options.perPage"
-        :total-items="mavenUpstreamsTotalCount"
-        align="center"
-        class="gl-mt-5"
-        @input="handlePageChange"
-      />
+      <div class="gl-flex gl-justify-center">
+        <gl-keyset-pagination v-bind="pageInfo" @next="handleNextPage" @prev="handlePreviousPage" />
+      </div>
     </div>
     <div v-else>
       <gl-alert v-if="alertMessage" variant="danger" :dismissible="false">

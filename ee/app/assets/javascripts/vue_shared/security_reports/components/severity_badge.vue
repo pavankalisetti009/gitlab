@@ -5,7 +5,7 @@ import { SEVERITY_LEVELS } from 'ee/security_dashboard/constants';
 import { __, sprintf } from '~/locale';
 import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
-import { SEVERITY_CLASS_NAME_MAP, SEVERITY_TOOLTIP_TITLE_MAP } from './constants';
+import { SEVERITY_TOOLTIP_TITLE_MAP } from './constants';
 
 export default {
   name: 'SeverityBadge',
@@ -54,13 +54,10 @@ export default {
       );
     },
     hasSeverityBadge() {
-      return Object.keys(SEVERITY_CLASS_NAME_MAP).includes(this.severityKey);
+      return ['critical', 'high', 'medium', 'low', 'info', 'unknown'].includes(this.severityKey);
     },
     severityKey() {
       return this.severity?.toLowerCase();
-    },
-    className() {
-      return SEVERITY_CLASS_NAME_MAP[this.severityKey];
     },
     iconName() {
       return `severity-${this.severityKey}`;
@@ -83,7 +80,7 @@ export default {
     v-if="hasSeverityBadge"
     class="severity-badge gl-whitespace-nowrap gl-text-default @sm/panel:gl-text-left"
   >
-    <span :class="className"
+    <span :class="`severity-text-${severityKey}`"
       ><gl-icon v-gl-tooltip="tooltipTitle" :name="iconName" :size="12" class="gl-mr-3" /></span
     >{{ severityTitle
     }}<span

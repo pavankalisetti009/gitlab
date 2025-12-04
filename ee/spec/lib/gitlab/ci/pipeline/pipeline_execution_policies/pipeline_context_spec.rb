@@ -57,10 +57,14 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
 
   shared_context 'with mocked policy configs' do
     let(:namespace_content) { { job: { script: 'namespace script' } } }
-    let(:namespace_config) { build(:pipeline_execution_policy_config, content: namespace_content) }
+    let(:namespace_config) do
+      build(:pipeline_execution_policy_config, content: namespace_content, config_sha: 'namespace_sha')
+    end
 
     let(:project_content) { { job: { script: 'project script' } } }
-    let(:project_config) { build(:pipeline_execution_policy_config, :suffix_never, content: project_content) }
+    let(:project_config) do
+      build(:pipeline_execution_policy_config, :suffix_never, content: project_content, config_sha: 'project_sha')
+    end
 
     let(:policy_configs) { [project_config, namespace_config] }
 
@@ -247,13 +251,14 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
       context 'with source parent_pipeline and experiment "enforce_pipeline_policy_on_child_pipelines"' do
         let(:source) { :parent_pipeline }
         let(:command_attributes) { { bridge: bridge } }
-        let(:bridge_options) { {} }
+        let(:bridge_source) { source }
         let(:bridge) do
           build_stubbed(
             :ci_bridge,
             status: :pending,
             user: user,
-            options: { trigger: { include: { local: 'child.yml' } } }.merge(bridge_options),
+            build_source: build_stubbed(:ci_build_source, source: bridge_source),
+            options: { trigger: { include: { local: 'child.yml' } } },
             pipeline: pipeline
           )
         end
@@ -282,7 +287,7 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
           end
 
           context 'when the bridge was created by a policy' do
-            let(:bridge_options) { { policy: { name: 'My policy' } } }
+            let(:bridge_source) { 'pipeline_execution_policy' }
 
             it 'does not add it to the policy_pipelines' do
               perform
@@ -706,12 +711,17 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
 
     context 'when building policy pipeline' do
       let(:current_policy) do
-        build(:pipeline_execution_policy_config,
+        build(:pipeline_execution_policy_config, policy_sha: 'my_policy_sha',
           policy: build(:pipeline_execution_policy, :variables_override_disallowed, name: 'My policy'))
       end
 
       it 'includes policy-specific options' do
-        expect(job_options).to eq(name: 'My policy', variables_override: { allowed: false })
+        expect(job_options).to eq(
+          name: 'My policy',
+          sha: 'my_policy_sha',
+          project_id: current_policy.policy_config.security_policy_management_project_id,
+          variables_override: { allowed: false }
+        )
       end
 
       describe 'experiments' do

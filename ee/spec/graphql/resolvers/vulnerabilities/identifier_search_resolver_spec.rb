@@ -110,6 +110,9 @@ RSpec.describe Resolvers::Vulnerabilities::IdentifierSearchResolver, feature_cat
       end
 
       let!(:args) { { name: 'cwe' } }
+      let(:current_user) { user }
+      let(:obj) { group }
+      let(:vulnerable) { obj }
 
       before do
         stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
@@ -119,12 +122,43 @@ RSpec.describe Resolvers::Vulnerabilities::IdentifierSearchResolver, feature_cat
         )
         ensure_elasticsearch_index!
 
-        allow(::Search::Elastic::VulnerabilityIndexingHelper)
-          .to receive(:vulnerability_indexing_allowed?).and_return(true)
+        allow(::Search::Elastic::VulnerabilityIndexHelper)
+          .to receive(:indexing_allowed?).and_return(true)
       end
 
       it_behaves_like 'when the current user has access'
       it_behaves_like 'when the current user does not have access'
+
+      context 'when on self-managed with Elasticsearch' do
+        before do
+          allow(::Search::Elastic::VulnerabilityIndexHelper)
+            .to receive(:self_managed_with_es?).and_return(true)
+        end
+
+        it_behaves_like 'validates self-managed first backfill'
+      end
+
+      context 'when not on self-managed with Elasticsearch' do
+        let(:current_user) { user }
+        let(:obj) { group }
+
+        before do
+          # Stubbing advanced_vulnerability_management_allowed? as the policy internally uses it.
+          # Otherwise the other stub on self_managed_with_es? causes the policy to return false.
+          allow(::Search::Elastic::VulnerabilityIndexHelper)
+            .to receive_messages(
+              advanced_vulnerability_management_allowed?: true,
+              self_managed_with_es?: false
+            )
+        end
+
+        it 'does not validate self-managed first backfill', :aggregate_failures do
+          expect(::Search::Elastic::VulnerabilityIndexHelper)
+            .not_to receive(:self_managed_and_first_backfill_completed?)
+
+          expect(search_results).to contain_exactly('CWE-23', 'CWE-24', 'CWE-25')
+        end
+      end
     end
   end
 end

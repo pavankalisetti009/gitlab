@@ -8,13 +8,19 @@ module EE
           extend ::Gitlab::Utils::Override
           include ::Gitlab::Utils::StrongMemoize
 
+          EXCLUDED_SOURCES = [
+            :security_orchestration_policy,
+            :ondemand_dast_scan,
+            :duo_workflow
+          ].freeze
+
           override :content
           def content
             return unless available?
             return unless pipeline_configuration_full_path.present?
             return if pipeline_source_bridge && pipeline_source == :parent_pipeline
 
-            return if [:security_orchestration_policy, :ondemand_dast_scan].include?(pipeline_source)
+            return if EXCLUDED_SOURCES.include?(pipeline_source)
 
             path_file, path_project = pipeline_configuration_full_path.split('@', 2)
             ci_yaml_include({ 'project' => path_project, 'file' => path_file })

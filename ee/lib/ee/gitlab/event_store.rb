@@ -159,6 +159,9 @@ module EE
             to: ::Projects::ProjectTransferedEvent
           store.subscribe ::Security::Attributes::CleanupScheduleWorker,
             to: ::Groups::GroupTransferedEvent
+
+          store.subscribe ::Security::ScanProfiles::ProcessProjectTransferEventsWorker,
+            to: ::Projects::ProjectTransferedEvent
         end
 
         def subscribe_to_external_issue_links_events(store)
@@ -222,6 +225,9 @@ module EE
         end
 
         def subscribe_to_active_context_code_events(store)
+          store.subscribe ::Ai::ActiveContext::Code::CreateEnabledNamespaceEventWorker,
+            to: ::Ai::ActiveContext::Code::CreateEnabledNamespaceEvent
+
           store.subscribe ::Ai::ActiveContext::Code::MarkRepositoryAsReadyEventWorker,
             to: ::Ai::ActiveContext::Code::MarkRepositoryAsReadyEvent
 
@@ -294,10 +300,7 @@ module EE
             to: ::Search::Zoekt::SaasRolloutEvent
 
           store.subscribe ::Search::Zoekt::TooManyReplicasEventWorker,
-            to: ::Search::Zoekt::TooManyReplicasEvent,
-            if: ->(_event) do
-              ::Feature.enabled?(:zoekt_too_many_replicas_event, ::Feature.current_request)
-            end
+            to: ::Search::Zoekt::TooManyReplicasEvent
         end
 
         def subscribe_to_elastic_events(store)

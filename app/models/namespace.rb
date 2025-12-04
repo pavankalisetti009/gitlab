@@ -23,8 +23,13 @@ class Namespace < ApplicationRecord
   include UseSqlFunctionForPrimaryKeyLookups
   include SafelyChangeColumnDefault
   include Todoable
+  include Cells::Claimable
 
   extend Gitlab::Utils::Override
+
+  cells_claims_attribute :id, type: CLAIMS_BUCKET_TYPE::NAMESPACE_IDS
+
+  cells_claims_metadata subject_type: CLAIMS_SUBJECT_TYPE::NAMESPACE, subject_key: :id
 
   ignore_columns :description, :description_html, :cached_markdown_version, remove_with: '18.3', remove_after: '2025-07-17'
 
@@ -407,18 +412,6 @@ class Namespace < ApplicationRecord
         )
         .where(namespace_setting_table[:archived].eq(true))
     end
-  end
-
-  def archive
-    return false if archived?
-
-    namespace_settings.update(archived: true)
-  end
-
-  def unarchive
-    return false unless archived?
-
-    namespace_settings.update(archived: false)
   end
 
   def archived?
@@ -867,6 +860,27 @@ class Namespace < ApplicationRecord
     user_access = max_member_access_for_user(user)
     Gitlab::Access.human_access(user_access)
   end
+
+  def allowed_work_item_types
+    ::WorkItems::TypesFilter.new(container: self).allowed_types
+  end
+  strong_memoize_attr :allowed_work_item_types
+
+  def allowed_work_item_type?(type)
+    type = type.to_s
+
+    unless ::WorkItems::TypesFilter.base_types.include?(type)
+      raise ArgumentError,
+        %("#{type}" is not a valid WorkItems::Type.base_types)
+    end
+
+    allowed_work_item_types.include?(type)
+  end
+
+  def supports_work_items?
+    allowed_work_item_types.present?
+  end
+  strong_memoize_attr :supports_work_items?
 
   private
 

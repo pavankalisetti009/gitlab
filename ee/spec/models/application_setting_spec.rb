@@ -64,6 +64,8 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
         dashboard_limit: 0,
         dashboard_limit_enabled: false,
         default_project_deletion_protection: false,
+        dependency_scanning_sbom_scan_api_upload_limit: 400,
+        dependency_scanning_sbom_scan_api_download_limit: 6000,
         disable_invite_members: false,
         disable_personal_access_tokens: false,
         disabled_direct_code_suggestions: false,
@@ -123,8 +125,14 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
         lock_memberships_to_saml: false,
         lock_model_prompt_cache_enabled: false,
         maintenance_mode: false,
-        max_number_of_repository_downloads: 0,
+        max_github_response_json_value_count: 250_000,
+        max_github_response_size_limit: 8,
+        max_http_decompressed_size: 100,
+        max_http_response_json_depth: 32,
+        max_http_response_json_structural_chars: 1_000_000,
+        max_http_response_size_limit: 100,
         max_number_of_repository_downloads_within_time_period: 0,
+        max_number_of_repository_downloads: 0,
         max_personal_access_token_lifetime: nil,
         max_ssh_key_lifetime: nil,
         mirror_capacity_threshold: Settings.gitlab['mirror_capacity_threshold'],
@@ -304,8 +312,8 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
           expect(setting).to be_valid
         end
 
-        it 'allows code scope on EE' do
-          setting.default_search_scope = 'code'
+        it 'allows blobs scope on EE' do
+          setting.default_search_scope = 'blobs'
 
           expect(setting).to be_valid
         end
@@ -363,6 +371,20 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
                          .only_integer
                          .is_greater_than_or_equal_to(0)
                          .is_less_than_or_equal_to(20)
+      end
+    end
+
+    describe 'dependency scanning limits', feature_category: :software_composition_analysis do
+      where(:attribute) do
+        %i[
+          dependency_scanning_sbom_scan_api_upload_limit
+          dependency_scanning_sbom_scan_api_download_limit
+        ]
+      end
+
+      with_them do
+        it { is_expected.to validate_numericality_of(attribute).only_integer.is_greater_than_or_equal_to(0) }
+        it { is_expected.not_to allow_value(nil).for(attribute) }
       end
     end
 

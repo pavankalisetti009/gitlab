@@ -118,6 +118,8 @@ RSpec.describe API::Epics, :aggregate_failures, feature_category: :portfolio_man
         create_list(:epic, 2, group: subgroup_2, parent: epic2)
 
         expect { get api(url, personal_access_token: pat), params: params }.not_to exceed_all_query_limit(control)
+          .with_threshold(1)
+
         expect(response).to have_gitlab_http_status(:ok)
       end
 
@@ -616,6 +618,7 @@ RSpec.describe API::Epics, :aggregate_failures, feature_category: :portfolio_man
 
       it 'exposes closed_at attribute' do
         epic.close
+        epic.work_item.close
 
         get api(url)
 

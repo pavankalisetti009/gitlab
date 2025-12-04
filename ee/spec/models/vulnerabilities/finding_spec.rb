@@ -33,6 +33,7 @@ RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_manage
       it { is_expected.to have_many(:merge_request_links).through(:vulnerability) }
       it { is_expected.to have_many(:security_findings).class_name('Security::Finding') }
       it { is_expected.to have_many(:triggered_workflows).class_name('::Vulnerabilities::TriggeredWorkflow') }
+      it { is_expected.to have_many(:detection_transitions).class_name('::Vulnerabilities::DetectionTransition') }
     end
 
     describe 'validations' do

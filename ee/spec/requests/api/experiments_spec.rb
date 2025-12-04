@@ -67,7 +67,8 @@ RSpec.describe API::Experiments, feature_category: :acquisition do
               type: 'experiment',
               group: 'group::acquisition',
               default_enabled: false,
-              log_state_changes: nil
+              log_state_changes: nil,
+              observed: nil
             },
             current_status: {
               state: :off,

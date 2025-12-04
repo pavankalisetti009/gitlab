@@ -18,7 +18,7 @@ module Mutations
           required: true,
           description: 'Whose permission to be deleted.'
 
-        field :secret_permission, Types::SecretsManagement::Permissions::SecretPermissionType,
+        field :secret_permission, Types::SecretsManagement::ProjectSecretsPermissionType,
           null: true,
           description: 'Deleted Secret Permission.'
 

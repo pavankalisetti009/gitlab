@@ -391,6 +391,13 @@ module EE
           description: 'Security categories for the group.',
           resolver: ::Resolvers::Security::CategoryResolver
 
+        field :available_security_scan_profiles, [::Types::Security::ScanProfileType],
+          null: true,
+          description: 'Security scan profiles available for the group.',
+          authorize: :read_security_scan_profiles,
+          experiment: { milestone: '18.8' },
+          resolver: ::Resolvers::Security::ScanProfilesResolver
+
         field :compliance_requirement_control_coverage,
           ::Types::ComplianceManagement::ComplianceFramework::RequirementControlCoverageType,
           null: true,
@@ -405,15 +412,6 @@ module EE
           description: 'Detailed compliance framework coverage for each framework in the group.',
           resolver: ::Resolvers::ComplianceManagement::ComplianceFramework::FrameworkCoverageDetailsResolver,
           authorize: :read_compliance_dashboard,
-          experiment: { milestone: '18.1' }
-
-        # This field can be removed once the frontend is updated to use
-        # virtual_registries_packages_maven_registries https://gitlab.com/gitlab-org/gitlab/-/issues/580176
-        field :maven_virtual_registries,
-          ::Types::VirtualRegistries::Packages::Maven::RegistryType.connection_type,
-          null: true,
-          description: 'Maven virtual registries registered to the group. ' \
-            'Returns null if the `maven_virtual_registry` feature flag is disabled.',
           experiment: { milestone: '18.1' }
 
         field :virtual_registries_packages_maven_registries,
@@ -528,12 +526,6 @@ module EE
           return unless object.licensed_feature_available?(:security_inventory)
 
           object.vulnerability_namespace_statistic
-        end
-
-        def maven_virtual_registries
-          return unless ::VirtualRegistries::Packages::Maven.virtual_registry_available?(object, current_user)
-
-          ::VirtualRegistries::Packages::Maven::Registry.for_group(object)
         end
 
         def virtual_registries_packages_maven_registries

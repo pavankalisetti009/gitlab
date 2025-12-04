@@ -1,16 +1,15 @@
 <script>
 import { computed } from 'vue';
+import { GlKeysetPagination } from '@gitlab/ui';
 import GeoListTopBar from 'ee/geo_shared/list/components/geo_list_top_bar.vue';
 import GeoList from 'ee/geo_shared/list/components/geo_list.vue';
 import { sprintf, s__ } from '~/locale';
 import {
   BULK_ACTIONS,
-  CHECKSUM_STATES_ARRAY,
   DEFAULT_SORT,
   GEO_TROUBLESHOOTING_LINK,
-  TOKEN_TYPES,
 } from 'ee/admin/data_management/constants';
-import { isValidFilter, processFilters } from 'ee/admin/data_management/filters';
+import { extractFiltersFromQuery, processFilters } from 'ee/admin/data_management/filters';
 import { createAlert } from '~/alert';
 import { getModels, putBulkModelAction } from 'ee/api/data_management_api';
 import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
@@ -22,6 +21,7 @@ export default {
   components: {
     GeoListTopBar,
     GeoList,
+    GlKeysetPagination,
     DataManagementItem,
   },
   provide() {
@@ -41,10 +41,11 @@ export default {
   },
   data() {
     return {
-      isLoading: true,
+      activeModelName: this.initialModelName,
       modelItems: [],
       filters: [],
-      activeModelName: this.initialModelName,
+      pageInfo: {},
+      isLoading: true,
     };
   },
   computed: {
@@ -60,6 +61,12 @@ export default {
     hasFilters() {
       return Boolean(this.filters.length);
     },
+    hasNextPage() {
+      return Boolean(this.pageInfo.nextCursor);
+    },
+    hasPrevPage() {
+      return Boolean(this.pageInfo.prevCursor);
+    },
     emptyState() {
       return {
         title: sprintf(s__('Geo|No %{itemTitle} exist'), {
@@ -72,15 +79,27 @@ export default {
         hasFilters: this.hasFilters,
       };
     },
-    queryParams() {
+    routerParams() {
       const { query, params } = this.$route;
       return convertObjectPropsToCamelCase({ ...query, ...params });
+    },
+    query() {
+      const filterQuery = processFilters(this.filters);
+      return {
+        ...filterQuery,
+        order_by: this.pageInfo.sort.value,
+        sort: this.pageInfo.sort.direction,
+      };
+    },
+    queryWithPagination() {
+      return { ...this.query, pagination: 'keyset', cursor: this.pageInfo.currentCursor };
     },
   },
   watch: {
     $route: {
       handler() {
         this.initializeModel();
+        this.initializePageInfo();
         this.initializeFilters();
         this.fetchModelList();
       },
@@ -88,31 +107,36 @@ export default {
     },
   },
   methods: {
+    initializePageInfo() {
+      this.pageInfo = {
+        currentCursor: this.routerParams.cursor,
+        sort: {
+          value: this.routerParams.orderBy || DEFAULT_SORT.value,
+          direction: this.routerParams.sort || DEFAULT_SORT.direction,
+        },
+      };
+    },
     initializeFilters() {
-      const filters = [];
-      const { checksumState, identifiers } = this.queryParams;
-
-      if (identifiers) {
-        filters.push(identifiers.join(' '));
-      }
-
-      if (isValidFilter(checksumState, CHECKSUM_STATES_ARRAY)) {
-        filters.push({ type: TOKEN_TYPES.CHECKSUM_STATE, value: { data: checksumState } });
-      }
-
-      this.filters = filters;
+      this.filters = extractFiltersFromQuery(this.routerParams);
     },
     initializeModel() {
-      this.activeModelName = this.queryParams.modelName || this.initialModelName;
+      this.activeModelName = this.routerParams.modelName || this.initialModelName;
+    },
+    updateCursor(headers) {
+      this.pageInfo = {
+        ...this.pageInfo,
+        prevCursor: headers['x-prev-cursor'],
+        nextCursor: headers['x-next-cursor'],
+      };
     },
     async fetchModelList() {
       this.isLoading = true;
 
       try {
-        const query = processFilters(this.filters);
-        const { data } = await getModels(this.activeModelName, query);
+        const { data, headers } = await getModels(this.activeModelName, this.queryWithPagination);
 
         this.modelItems = convertObjectPropsToCamelCase(data, { deep: true });
+        this.updateCursor(headers);
       } catch (error) {
         this.handleFetchError(error);
       } finally {
@@ -145,20 +169,31 @@ export default {
     },
     handleListboxChange(modelName) {
       const params = { modelName };
-      this.$router.push({ params, query: this.$route.query });
+      this.$router.push({ params, query: this.query });
     },
     handleSearch(filters) {
-      const query = processFilters(filters);
-      this.$router.push({ params: this.$route.params, query });
+      this.filters = filters;
+      this.$router.push({ params: this.$route.params, query: this.query });
+    },
+    handleSort(sort) {
+      this.pageInfo = { ...this.pageInfo, sort };
+      this.$router.push({ params: this.$route.params, query: this.query });
+    },
+    handleNextPage() {
+      this.pageInfo.currentCursor = this.pageInfo.nextCursor;
+      this.$router.push({ params: this.$route.params, query: this.queryWithPagination });
+    },
+    handlePrevPage() {
+      this.pageInfo.currentCursor = this.pageInfo.prevCursor;
+      this.$router.push({ params: this.$route.params, query: this.queryWithPagination });
     },
   },
-  DEFAULT_SORT,
   BULK_ACTIONS,
 };
 </script>
 
 <template>
-  <div>
+  <section>
     <geo-list-top-bar
       :active-filtered-search-filters="filters"
       :page-heading-title="__('Data management')"
@@ -167,11 +202,12 @@ export default {
       "
       :filtered-search-option-label="__('Search by ID')"
       :active-listbox-item="activeModelName"
-      :active-sort="$options.DEFAULT_SORT"
+      :active-sort="pageInfo.sort"
       :bulk-actions="$options.BULK_ACTIONS"
       :show-actions="hasItems"
       @listboxChange="handleListboxChange"
       @search="handleSearch"
+      @sort="handleSort"
       @bulkAction="handleBulkAction"
     />
     <geo-list :is-loading="isLoading" :has-items="hasItems" :empty-state="emptyState">
@@ -182,5 +218,14 @@ export default {
         :initial-item="item"
       />
     </geo-list>
-  </div>
+    <div class="gl-mt-6 gl-flex gl-justify-center">
+      <gl-keyset-pagination
+        :disabled="isLoading"
+        :has-next-page="hasNextPage"
+        :has-previous-page="hasPrevPage"
+        @next="handleNextPage"
+        @prev="handlePrevPage"
+      />
+    </div>
+  </section>
 </template>

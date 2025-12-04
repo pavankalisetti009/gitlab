@@ -69,7 +69,7 @@ module Ai
         def handle_no_ready_active_context_repository(project_id, ac_repository)
           error_detail = nil
 
-          if ac_repository.nil?
+          if ac_repository.nil? || ac_repository.deleted?
             if project_eligible_for_indexing?(project_id)
               ad_hoc_indexing = try_trigger_ad_hoc_indexing(project_id)
               error_detail = ad_hoc_indexing ? MESSAGE_INITIAL_INDEXING_STARTED : MESSAGE_ADHOC_INDEXING_TRIGGER_FAILED

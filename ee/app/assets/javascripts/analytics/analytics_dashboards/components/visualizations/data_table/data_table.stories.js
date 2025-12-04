@@ -10,7 +10,7 @@ export default {
 const Template = (args, { argTypes }) => ({
   components: { DataTable, DashboardLayout },
   props: Object.keys(argTypes),
-  template: `<data-table :data="data" :options="options" />`,
+  template: `<data-table :data="data" :options="options" :query="query" />`,
 });
 
 const WithDashboard = (args, { argTypes }) => ({
@@ -18,7 +18,7 @@ const WithDashboard = (args, { argTypes }) => ({
   props: Object.keys(argTypes),
   template: `
       <dashboard-layout :panels="panelsConfig">
-        <data-table :data="data" :options="options" />
+        <data-table :data="data" :options="options" :query="query" />
       </dashboard-layout>`,
 });
 
@@ -74,6 +74,21 @@ WithPagination.args = {
     pageInfo: {
       hasNextPage: true,
     },
+  },
+};
+
+export const WithSorting = Template.bind({});
+WithSorting.args = {
+  data,
+  query: { sortBy: 'title', sortDesc: true },
+  options: {
+    fields: [
+      { key: 'title', sortable: true },
+      { key: 'additions', sortable: true },
+      { key: 'deletions', sortable: true },
+      { key: 'commitCount' },
+      { key: 'userNotesCount' },
+    ],
   },
 };
 

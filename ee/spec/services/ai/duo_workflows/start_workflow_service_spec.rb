@@ -8,6 +8,8 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
   let_it_be(:developer) { create(:user, developer_of: project) }
   let_it_be(:maintainer) { create(:user, maintainer_of: project) }
   let_it_be(:reporter) { create(:user, reporter_of: project) }
+  let_it_be(:duo_workflow_service_account) { create(:user, :service_account, composite_identity_enforced: true) }
+  let_it_be(:service_account) { create(:user, :service_account) }
 
   let(:image) { 'example.com/example-image:latest' }
   let(:duo_cli_version) { described_class::DUO_CLI_VERSION }
@@ -26,12 +28,18 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
     }
   end
 
+  before do
+    Ai::Setting.instance.update!(duo_workflow_service_account_user: duo_workflow_service_account)
+  end
+
   shared_examples "success" do
     it 'creates a workload to execute workflow with the correct definition' do
       shadowed_project = project
       expect(Ci::Workloads::RunWorkloadService).to receive(:new).and_wrap_original do |method, **kwargs|
         project = kwargs[:project]
+        workload_definition = kwargs[:workload_definition]
         expect(project).to eq(shadowed_project)
+        expect(workload_definition.tags).to eq([::Ai::DuoWorkflows::Workflow::WORKLOAD_TAG])
         method.call(**kwargs)
       end
 
@@ -39,7 +47,8 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
 
       workload_id = execute.payload[:workload_id]
       expect(workload_id).not_to be_nil
-      expect(workflow.workflows_workloads.first).to have_attributes(project_id: project.id, workload_id: workload_id)
+      expect(workflow.workflows_workloads.first).to have_attributes(project_id: project.id,
+        workload_id: workload_id)
 
       workload = Ci::Workloads::Workload.find_by_id([workload_id])
       expect(workload.branch_name).to start_with('workloads/')
@@ -360,16 +369,32 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
   context 'when use_service_account param is set' do
     include_context 'with Duo enabled'
 
-    let_it_be(:service_account) { create(:user, :service_account, composite_identity_enforced: true) }
-
     before do
       params[:use_service_account] = true
-      Ai::Setting.instance.update!(duo_workflow_service_account_user: service_account)
     end
 
     it 'creates developer authorization for service account' do
       execute
-      expect(project.member(service_account).access_level).to eq(Gitlab::Access::DEVELOPER)
+      expect(project.member(duo_workflow_service_account).access_level).to eq(Gitlab::Access::DEVELOPER)
+    end
+
+    it 'creates the workload as the service account' do
+      expect(Ci::Workloads::RunWorkloadService)
+        .to receive(:new).and_wrap_original do |method, **kwargs|
+        expect(kwargs[:current_user]).to eq(duo_workflow_service_account)
+        method.call(**kwargs)
+      end
+
+      expect(execute).to be_success
+    end
+  end
+
+  context 'when a custom service_account is set' do
+    include_context 'with Duo enabled'
+
+    before do
+      project.add_member(service_account, Gitlab::Access::DEVELOPER)
+      params[:service_account] = service_account
     end
 
     it 'creates the workload as the service account' do
@@ -380,6 +405,21 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
       end
 
       expect(execute).to be_success
+    end
+  end
+
+  context 'when both use_service_account and service_account params are set' do
+    include_context 'with Duo enabled'
+
+    before do
+      project.add_member(service_account, Gitlab::Access::DEVELOPER)
+      params[:service_account] = service_account
+      params[:use_service_account] = true
+    end
+
+    it 'does not add the duo developer to the project' do
+      expect(execute).to be_success
+      expect(project.member(duo_workflow_service_account)).to be_nil
     end
   end
 
@@ -664,6 +704,85 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
     end
   end
 
+  shared_examples 'sets AGENT_PLATFORM_FEATURE_SETTING_NAME' do
+    it 'sets the correct feature setting name' do
+      expect(Ci::Workloads::RunWorkloadService)
+        .to receive(:new).and_wrap_original do |method, **kwargs|
+        variables = kwargs[:workload_definition].variables
+        expect(variables[:AGENT_PLATFORM_FEATURE_SETTING_NAME]).to eq(expected_feature_setting_name)
+        method.call(**kwargs)
+      end
+
+      expect(execute).to be_success
+    end
+  end
+
+  context 'for AGENT_PLATFORM_FEATURE_SETTING_NAME' do
+    before do
+      allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
+      allow(maintainer).to receive(:allowed_to_use?).and_return(true)
+      project.project_setting.update!(duo_features_enabled: true, duo_remote_flows_enabled: true)
+    end
+
+    context 'when self-hosted feature setting exists' do
+      let(:expected_feature_setting_name) { 'duo_agent_platform' }
+
+      let_it_be(:model) do
+        create(:ai_self_hosted_model, model: :claude_3, identifier: 'claude-3-7-sonnet-20250219')
+      end
+
+      let_it_be(:duo_agent_platform_feature_setting) do
+        create(:ai_feature_setting, :duo_agent_platform, self_hosted_model: model)
+      end
+
+      it_behaves_like 'sets AGENT_PLATFORM_FEATURE_SETTING_NAME'
+    end
+
+    context 'when instance level model selection exists' do
+      let(:expected_feature_setting_name) { 'duo_agent_platform' }
+
+      let_it_be(:duo_agent_platform_feature_setting) do
+        create(:instance_model_selection_feature_setting, feature: :duo_agent_platform)
+      end
+
+      it_behaves_like 'sets AGENT_PLATFORM_FEATURE_SETTING_NAME'
+    end
+
+    context 'when namespace level model selection exists', :saas do
+      let(:expected_feature_setting_name) { 'duo_agent_platform' }
+
+      let_it_be(:duo_agent_platform_feature_setting) do
+        create(:ai_namespace_feature_setting,
+          namespace: project.namespace,
+          feature: :duo_agent_platform,
+          offered_model_ref: "claude_sonnet_3_7_20250219")
+      end
+
+      it_behaves_like 'sets AGENT_PLATFORM_FEATURE_SETTING_NAME'
+    end
+
+    context 'when feature setting is for review_merge_request', :saas do
+      let(:expected_feature_setting_name) { 'review_merge_request' }
+
+      let_it_be(:review_merge_request_feature_setting) do
+        create(:ai_namespace_feature_setting,
+          namespace: project.namespace,
+          feature: :review_merge_request,
+          offered_model_ref: "claude_sonnet_3_7")
+      end
+
+      let(:duo_agent_platform_feature_setting) { review_merge_request_feature_setting }
+
+      it_behaves_like 'sets AGENT_PLATFORM_FEATURE_SETTING_NAME'
+    end
+
+    context 'when no feature setting exists' do
+      let(:expected_feature_setting_name) { '' }
+
+      it_behaves_like 'sets AGENT_PLATFORM_FEATURE_SETTING_NAME'
+    end
+  end
+
   shared_examples 'sets DUO_WORKFLOW_SERVICE_SERVER' do
     it 'sets the correct service server URL' do
       expect(Ci::Workloads::RunWorkloadService)
@@ -749,9 +868,18 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
       ]
     end
 
-    let(:executor_commands) do
+    let(:cli_install_commands) do
       [
-        "npx -y @gitlab/duo-cli@#{duo_cli_version} run --existing-session-id #{workflow.id} --connection-type websocket"
+        %(npm install -g @gitlab/duo-cli@#{duo_cli_version}),
+        %(ls -la $(npm root -g)/@gitlab/duo-cli || echo "GitLab Duo package not found"),
+        %(export PATH="$(npm bin -g):$PATH"),
+        %(which duo || echo "duo not in PATH")
+      ]
+    end
+
+    let(:executor_commands) do
+      cli_install_commands + [
+        %(duo run --existing-session-id #{workflow.id} --connection-type websocket)
       ]
     end
 
@@ -807,8 +935,8 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
         end
 
         let(:executor_commands) do
-          [
-            %(npx -y @gitlab/duo-cli@#{duo_cli_version} run --existing-session-id #{workflow.id} --connection-type grpc)
+          cli_install_commands + [
+            %(duo run --existing-session-id #{workflow.id} --connection-type grpc)
           ]
         end
 
@@ -857,6 +985,144 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
         end.and_call_original
 
         expect(execute).to be_success
+      end
+    end
+
+    context 'with sandbox integration' do
+      let(:sandbox) { instance_double(::Gitlab::DuoWorkflow::Sandbox) }
+      let(:duo_cli_command) { %(duo run --existing-session-id #{workflow.id} --connection-type websocket) }
+
+      before do
+        allow(::Gitlab::DuoWorkflow::Sandbox).to receive(:new).and_return(sandbox)
+        allow(duo_config).to receive(:setup_script).and_return(nil)
+      end
+
+      context 'when sandbox is enabled (no custom image)' do
+        let(:image) { nil }
+        let(:duo_workflow_service_url) { 'https://duo-workflow-service.example.com:443' }
+        let(:wrapped_commands) do
+          [
+            %(if which srt > /dev/null; then),
+            %(  echo "SRT found, creating config..."),
+            %(  srt --settings /tmp/srt-settings.json #{duo_cli_command}),
+            %(fi)
+          ]
+        end
+
+        let(:sandbox_env_vars) do
+          {
+            NPM_CONFIG_CACHE: "/tmp/.npm-cache",
+            GITLAB_LSP_STORAGE_DIR: "/tmp"
+          }
+        end
+
+        before do
+          allow(Gitlab::DuoWorkflow::Client).to receive(:url_for).and_return(duo_workflow_service_url)
+          allow(sandbox).to receive(:wrap_command).with(duo_cli_command).and_return(wrapped_commands)
+          allow(sandbox).to receive(:environment_variables).and_return(sandbox_env_vars)
+        end
+
+        it 'creates sandbox instance with correct parameters' do
+          execute
+
+          expect(::Gitlab::DuoWorkflow::Sandbox).to have_received(:new).with(
+            current_user: maintainer,
+            duo_workflow_service_url: duo_workflow_service_url
+          )
+        end
+
+        it 'wraps executor command with sandbox' do
+          allow(Ci::Workloads::RunWorkloadService).to receive(:new).and_call_original
+
+          expect(execute).to be_success
+
+          expect(sandbox).to have_received(:wrap_command).with(duo_cli_command)
+          expect(Ci::Workloads::RunWorkloadService).to have_received(:new) do |workload_definition:, **_kwargs|
+            commands = workload_definition.commands
+            expect(commands).to include(*wrapped_commands)
+          end
+        end
+
+        it 'includes sandbox environment variables' do
+          allow(Ci::Workloads::RunWorkloadService).to receive(:new).and_call_original
+
+          expect(execute).to be_success
+
+          expect(sandbox).to have_received(:environment_variables)
+          expect(Ci::Workloads::RunWorkloadService).to have_received(:new) do |workload_definition:, **_kwargs|
+            variables = workload_definition.variables
+            expect(variables[:NPM_CONFIG_CACHE]).to eq("/tmp/.npm-cache")
+            expect(variables[:GITLAB_LSP_STORAGE_DIR]).to eq("/tmp")
+          end
+        end
+
+        it 'combines setup_script, main commands, CLI install, and wrapped executor commands' do
+          allow(duo_config).to receive(:setup_script).and_return(['npm install'])
+          allow(Ci::Workloads::RunWorkloadService).to receive(:new).and_call_original
+
+          expect(execute).to be_success
+
+          expect(Ci::Workloads::RunWorkloadService).to have_received(:new) do |workload_definition:, **_kwargs|
+            commands = workload_definition.commands
+            expect(commands[0]).to eq('npm install')
+            expect(commands[1..8]).to eq(shared_main_commands)
+            expect(commands[9..12]).to eq(cli_install_commands)
+            expect(commands[13..]).to eq(wrapped_commands)
+          end
+        end
+      end
+
+      shared_examples 'sandbox is disabled' do
+        let(:duo_cli_command) { %(duo run --existing-session-id #{workflow.id} --connection-type websocket) }
+
+        it 'does not wrap executor command with sandbox' do
+          allow(Ci::Workloads::RunWorkloadService).to receive(:new).and_call_original
+
+          expect(execute).to be_success
+
+          expect(sandbox).not_to have_received(:wrap_command)
+          expect(Ci::Workloads::RunWorkloadService).to have_received(:new) do |workload_definition:, **_kwargs|
+            commands = workload_definition.commands
+            expect(commands).to include(duo_cli_command)
+            expect(commands).not_to include(%(if which srt > /dev/null; then))
+          end
+        end
+
+        it 'does not include sandbox environment variables' do
+          allow(Ci::Workloads::RunWorkloadService).to receive(:new).and_call_original
+
+          expect(execute).to be_success
+
+          expect(sandbox).not_to have_received(:environment_variables)
+          expect(Ci::Workloads::RunWorkloadService).to have_received(:new) do |workload_definition:, **_kwargs|
+            variables = workload_definition.variables
+            expect(variables).not_to have_key(:NPM_CONFIG_CACHE)
+            expect(variables).not_to have_key(:GITLAB_LSP_STORAGE_DIR)
+          end
+        end
+      end
+
+      context 'when sandbox is disabled (custom image specified)' do
+        let(:image) { 'custom-image:latest' }
+
+        before do
+          allow(sandbox).to receive(:wrap_command)
+          allow(sandbox).to receive(:environment_variables).and_return({})
+        end
+
+        it_behaves_like 'sandbox is disabled'
+      end
+
+      context 'when sandbox is disabled (configured image specified)' do
+        let(:image) { nil }
+
+        before do
+          allow(duo_config).to receive(:default_image).and_return('config-image:latest')
+          allow(sandbox).to receive(:wrap_command)
+          allow(sandbox).to receive(:environment_variables).and_return({})
+        end
+
+        it_behaves_like 'sandbox is disabled'
       end
     end
   end

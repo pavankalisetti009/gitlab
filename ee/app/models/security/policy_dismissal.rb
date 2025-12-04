@@ -29,6 +29,9 @@ module Security
     scope :pluck_security_findings_uuid, -> { pluck(Arel.sql('DISTINCT unnest(security_findings_uuids)')) } # rubocop: disable Database/AvoidUsingPluckWithoutLimit -- pluck limited to batch size in ee/lib/search/elastic/references/vulnerability.rb#preload_indexing_data
     scope :including_merge_request_and_user, -> { includes(:user, :merge_request) }
     scope :for_merge_requests, ->(merge_request_ids) { where(merge_request_id: merge_request_ids) }
+    scope :for_license_occurrence_uuids, ->(license_occurrence_uuids) do
+      where("license_occurrence_uuids && ARRAY[?]::text[]", license_occurrence_uuids).preserved
+    end
 
     enum :status, { open: 0, preserved: 1 }
 
@@ -51,6 +54,14 @@ module Security
 
     def applicable_for_all_violations?
       applicable_for_findings?(mr_violation_finding_uuids)
+    end
+
+    def license_names
+      licenses.keys
+    end
+
+    def components(license_name)
+      licenses.fetch(license_name, [])
     end
 
     private

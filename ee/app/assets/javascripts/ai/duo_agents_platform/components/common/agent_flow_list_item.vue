@@ -2,6 +2,7 @@
 import { GlLink } from '@gitlab/ui';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { getTimeago } from '~/lib/utils/datetime/timeago_utility';
+import { joinPaths } from '~/lib/utils/url_utility';
 import { AGENTS_PLATFORM_SHOW_ROUTE } from '../../router/constants';
 import { formatAgentFlowName, formatAgentStatus } from '../../utils';
 import AgentStatusIcon from './agent_status_icon.vue';
@@ -33,6 +34,15 @@ export default {
         'focus:active:gl-no-underline',
       ];
     },
+    sessionUrl() {
+      return this.item.project?.webUrl
+        ? joinPaths(
+            this.item.project.webUrl,
+            '-/automate/agent-sessions',
+            String(this.formatId(this.item.id)),
+          )
+        : null;
+    },
   },
   methods: {
     formatId(id) {
@@ -51,6 +61,14 @@ export default {
         return timestamp || '';
       }
     },
+    handleItemSelected(event) {
+      if (event.metaKey || event.ctrlKey) return;
+      event.preventDefault();
+      this.$router.push({
+        name: this.$options.showRoute,
+        params: { id: this.formatId(this.item.id) },
+      });
+    },
   },
   showRoute: AGENTS_PLATFORM_SHOW_ROUTE,
 };
@@ -58,9 +76,10 @@ export default {
 <template>
   <li class="gl-list-none">
     <gl-link
-      :to="{ name: $options.showRoute, params: { id: formatId(item.id) } }"
+      :href="sessionUrl"
       class="gl-flex gl-flex-col gl-p-4"
       :class="linkHoverStyles"
+      @click="handleItemSelected"
     >
       <div class="gl-flex gl-items-center gl-justify-between">
         <div class="gl-flex gl-items-center">

@@ -525,4 +525,59 @@ RSpec.describe ProtectedBranch, feature_category: :source_code_management do
       end
     end
   end
+
+  describe '#protected_from_push_by_security_policy?' do
+    subject(:result) { protected_branch.protected_from_push_by_security_policy? }
+
+    before do
+      stub_licensed_features(security_orchestration_policies: true)
+      project.repository.add_branch(project.creator, branch_name, 'HEAD')
+    end
+
+    context 'with project-level protected branch' do
+      let_it_be(:project) { create(:project, :repository) }
+      let_it_be_with_refind(:protected_branch) { create(:protected_branch, project: project) }
+      let_it_be_with_refind(:policy_configuration) { create(:security_orchestration_policy_configuration, project: project) }
+
+      context 'without blocking approval policy' do
+        let(:approval_policies) { [] }
+
+        it { is_expected.to be(false) }
+      end
+
+      include_context 'with approval policy blocking protected branches' do
+        let(:branch_name) { protected_branch.name }
+        let(:approval_policy) do
+          build(:approval_policy,
+            branches: [branch_name],
+            approval_settings: { prevent_pushing_and_force_pushing: true })
+        end
+
+        it { is_expected.to be(true) }
+
+        context 'without feature available' do
+          before do
+            stub_licensed_features(security_orchestration_policies: false)
+          end
+
+          it { is_expected.to be(false) }
+        end
+
+        context 'with mismatching name' do
+          let(:branch_name) { 'other_branch' }
+
+          it { is_expected.to be(false) }
+        end
+      end
+    end
+
+    context 'with group-level protected branch' do
+      let(:group) { create(:group) }
+      let(:project) { create(:project, :repository, group: group) }
+      let(:protected_branch) { create(:protected_branch, :group_level, group: group) }
+      let(:branch_name) { protected_branch.name }
+
+      it { is_expected.to be(false) }
+    end
+  end
 end

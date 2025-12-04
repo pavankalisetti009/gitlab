@@ -51,7 +51,10 @@ RSpec.describe Analytics::Dashboards::Visualization, feature_category: :product_
       pipeline_metrics_table
       code_suggestions_acceptance_rate_by_language_chart
       code_generation_volume_trends_chart
-      user_metrics_table
+      duo_code_review_usage_by_user
+      duo_code_suggestions_by_user
+      duo_rca_usage_by_user
+      code_review_requests_by_role_chart
     ]
   end
 

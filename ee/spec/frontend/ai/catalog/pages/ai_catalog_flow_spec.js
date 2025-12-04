@@ -17,7 +17,7 @@ Vue.use(VueApollo);
 const RouterViewStub = Vue.extend({
   name: 'RouterViewStub',
   // eslint-disable-next-line vue/require-prop-types
-  props: ['aiCatalogFlow'],
+  props: ['aiCatalogFlow', 'versionData'],
   template: '<div />',
 });
 
@@ -93,10 +93,11 @@ describe('AiCatalogFlow', () => {
   });
 
   describe('when displaying soft-deleted flows', () => {
-    it('should show flow details in the Projects area', () => {
+    it('should show soft-deleted flows in the Projects area', () => {
       createComponent({
         provide: {
           projectId: '200',
+          rootGroupId: 1,
         },
       });
 
@@ -105,10 +106,12 @@ describe('AiCatalogFlow', () => {
         showSoftDeleted: true,
         hasProject: true,
         projectId: 'gid://gitlab/Project/200',
+        hasGroup: true,
+        groupId: 'gid://gitlab/Group/1',
       });
     });
 
-    it('should not show flow details in the explore area', () => {
+    it('should not show soft-deleted flows in the explore area', () => {
       createComponent({
         provide: { isGlobal: true }, // "Projects" area is not global, "Explore" is
       });
@@ -118,6 +121,8 @@ describe('AiCatalogFlow', () => {
         showSoftDeleted: false,
         hasProject: false,
         projectId: 'gid://gitlab/Project/0',
+        hasGroup: false,
+        groupId: 'gid://gitlab/Group/0',
       });
     });
   });
@@ -142,6 +147,48 @@ describe('AiCatalogFlow', () => {
       expect(findErrorAlert().exists()).toBe(true);
       expect(findErrorAlert().props('errors')).toEqual(['Flow does not exist']);
       expect(Sentry.captureException).toHaveBeenCalledWith(error);
+    });
+  });
+
+  describe('when displaying different flow versions', () => {
+    it('should show latest version when in the explore area', async () => {
+      createComponent({
+        provide: { isGlobal: true },
+      });
+      await waitForPromises();
+
+      const routerView = findRouterView();
+      expect(routerView.props('versionData')).toMatchObject({});
+    });
+
+    it('should show pinned version when in project area', async () => {
+      createComponent({
+        provide: { projectId: 1 },
+      });
+      await waitForPromises();
+
+      const routerView = findRouterView();
+      expect(routerView.props('versionData')).toMatchObject({});
+    });
+  });
+
+  describe('when itemType is not FLOW or THIRD_PARTY_FLOW', () => {
+    it('renders flow not found', async () => {
+      const mockAgentResponse = {
+        data: {
+          aiCatalogItem: {
+            ...mockFlow,
+            itemType: 'AGENT',
+          },
+        },
+      };
+      createComponent({
+        flowQueryHandler: jest.fn().mockResolvedValue(mockAgentResponse),
+      });
+      await waitForPromises();
+
+      expect(findGlEmptyState().exists()).toBe(true);
+      expect(findRouterView().exists()).toBe(false);
     });
   });
 });

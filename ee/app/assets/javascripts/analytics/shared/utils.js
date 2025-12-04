@@ -366,3 +366,19 @@ export const transformFilters = ({
 
   return newFilters;
 };
+
+const fieldHasAnyData = (field, nodes = []) => nodes.some((item) => Boolean(item[field]));
+
+/**
+ * Checks each of the nodes for the existence of any of the fields specified
+ *
+ * Useful when using the `gl_introduced` directive, as we need to check
+ * that the fields actually exist in the response and are not just `null`
+ *
+ * @param {Array} nodes - Graphql query response nodes
+ * @param {Array} fieldsToCheck - array of field names to be checked
+ *
+ * @returns {Boolean}
+ */
+export const hasAnyNonNullFields = (nodes, fieldsToCheck = []) =>
+  fieldsToCheck.some((field) => fieldHasAnyData(field, nodes));

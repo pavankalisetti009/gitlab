@@ -16,7 +16,7 @@ module SecretsManagement
       delegate :secrets_manager, to: :project
 
       def execute_secret_deletion(name)
-        return inactive_response unless secrets_manager&.active?
+        return secrets_manager_inactive_response unless secrets_manager&.active?
 
         read_service = ProjectSecrets::ReadService.new(project, current_user)
         read_result = read_service.execute(name)

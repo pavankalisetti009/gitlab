@@ -1,5 +1,5 @@
 <script>
-import { GlSprintf, GlLink, GlAlert } from '@gitlab/ui';
+import { GlSprintf, GlLink, GlAlert, GlIcon } from '@gitlab/ui';
 import { getStorageValue, saveStorageValue } from '~/lib/utils/local_storage';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import projectVulnerabilityManagementPolicies from 'ee/security_dashboard/graphql/queries/project_vulnerability_management_policies.query.graphql';
@@ -11,6 +11,7 @@ export default {
     GlSprintf,
     GlLink,
     GlAlert,
+    GlIcon,
   },
   inject: {
     fullPath: {
@@ -94,7 +95,7 @@ export default {
       <gl-sprintf
         :message="
           s__(
-            'SecurityReports|Panels that categorize vulnerabilities as open include those with Needs triage or Confirmed status. To interact with a link in a chart popover, click to pin the popover first. To unstick it, click outside the popover. %{learnMoreStart}Learn more%{learnMoreEnd}',
+            'SecurityReports|Panels that categorize vulnerabilities as open include those with Needs triage or Confirmed status. Hover over the info icon (%{infoIcon}) to view more information about the data shown in each panel. To interact with a link in a chart popover, click to pin the popover first. To unstick it, click outside the popover. %{learnMoreStart}Learn more%{learnMoreEnd}',
           )
         "
       >
@@ -102,6 +103,9 @@ export default {
           <gl-link :href="$options.securityDashboardHelpLink" target="_blank">{{
             content
           }}</gl-link>
+        </template>
+        <template #infoIcon>
+          <gl-icon name="information-o" />
         </template>
       </gl-sprintf>
     </span>

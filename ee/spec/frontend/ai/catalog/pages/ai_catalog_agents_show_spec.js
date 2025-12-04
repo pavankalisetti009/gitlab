@@ -28,6 +28,7 @@ import {
   mockAiCatalogItemConsumerDeleteErrorResponse,
   mockReportAiCatalogItemSuccessMutation,
   mockReportAiCatalogItemErrorMutation,
+  mockAgentVersionDataProp,
 } from '../mock_data';
 
 jest.mock('~/sentry/sentry_browser_wrapper');
@@ -44,6 +45,7 @@ describe('AiCatalogAgentsShow', () => {
 
   const defaultProps = {
     aiCatalogAgent: { ...mockAgent, configurationForProject: mockAgentConfigurationForProject },
+    versionData: mockAgentVersionDataProp,
   };
 
   const routeParams = { id: '1' };
@@ -61,7 +63,7 @@ describe('AiCatalogAgentsShow', () => {
     .fn()
     .mockResolvedValue(mockAiCatalogItemConsumerDeleteResponse);
 
-  const createComponent = ({ props } = { props: defaultProps }) => {
+  const createComponent = ({ props } = {}) => {
     mockApollo = createMockApollo([
       [reportAiCatalogItem, reportAiCatalogItemMock],
       [aiCatalogAgentQuery, mockAgentQueryHandler],
@@ -82,6 +84,7 @@ describe('AiCatalogAgentsShow', () => {
     wrapper = shallowMount(AiCatalogAgentsShow, {
       apolloProvider: mockApollo,
       propsData: {
+        ...defaultProps,
         ...props,
       },
       provide: {
@@ -127,7 +130,7 @@ describe('AiCatalogAgentsShow', () => {
           props: {
             aiCatalogAgent: {
               ...mockAgent,
-              foundationalChat: true,
+              foundational: true,
               configurationForProject: mockAgentConfigurationForProject,
             },
           },
@@ -215,13 +218,15 @@ describe('AiCatalogAgentsShow', () => {
   });
 
   describe('on deleting an agent', () => {
-    const deleteAgent = () => findItemActions().props('deleteFn')();
+    const forceHardDelete = false;
+    const deleteAgent = () => findItemActions().props('deleteFn')(forceHardDelete);
 
     it('calls delete mutation for agent', () => {
       deleteAgent();
 
       expect(deleteAgentMutationHandler).toHaveBeenCalledWith({
         id: mockAgent.id,
+        forceHardDelete,
       });
     });
 

@@ -16,31 +16,59 @@
     # Note: GLCI_CLICKHOUSE_METRICS_PASSWORD is read directly from the environment
     # by the test-coverage script and is not passed via CLI for security reasons
 
-test-coverage:export-rspec:
+test-coverage:export-rspec-and-e2e:
   extends:
     - .coverage-export-base
-    - .rails:rules:coverage-export
+    - .rails:rules:coverage-export-rspec-and-e2e
+  stage: post-qa
   needs:
+    - job: e2e:test-on-gdk
     - job: rspec:coverage
     - job: update-tests-metadata
   script:
-    - echo "Exporting RSpec coverage to ClickHouse..."
+    - ruby scripts/coverage/download_e2e_coverage_from_child_pipeline.rb
+    - ruby scripts/coverage/merge_backend_coverage.rb
+    - echo "Exporting merged RSpec + E2E coverage to ClickHouse..."
     - bundle exec test-coverage
         --test-reports 'rspec/rspec-*.json'
-        --coverage-report 'coverage/lcov/gitlab.lcov'
+        --coverage-report 'coverage-backend/coverage.lcov'
         --test-map 'crystalball/packed-mapping.json.gz'
         --clickhouse-url "${CLICKHOUSE_URL}"
         --clickhouse-database "${CLICKHOUSE_DATABASE}"
         --clickhouse-username "${CLICKHOUSE_USERNAME}"
+  artifacts:
+    paths:
+      - coverage-backend/
+      - coverage-e2e-backend/
+      - coverage/
+      - crystalball/
+      - rspec/
+    expire_in: 7d
 
-test-coverage:export-jest:
+# Job is temporary disabled as it relies on `process-frontend-coverage` job that
+# was causing master pipeline failures.
+# Example https://gitlab.com/gitlab-org/gitlab/-/jobs/12319670339
+.test-coverage:export-jest-and-e2e:
   extends:
     - .coverage-export-base
-    - .rails:rules:coverage-export
+    - .with-ci-node-image
+    - .yarn-cache
+    - .frontend:rules:coverage-export-jest-and-e2e
+  stage: post-qa
   needs:
+    - job: e2e:test-on-gdk
     - job: coverage-frontend
+  before_script:
+    - !reference [.default-utils-before_script, before_script]
+    - eval "bundle install ${BUNDLE_INSTALL_FLAGS}"
+    - source scripts/utils.sh
+    - yarn_install_script
   script:
-    - echo "Exporting Jest coverage to ClickHouse..."
+    - ruby scripts/coverage/download_e2e_frontend_coverage_from_child_pipeline.rb
+    - |
+      echo "Merging Jest + E2E coverage..."
+      node scripts/frontend/merge_coverage_frontend.js
+    - echo "Exporting merged Jest + E2E coverage to ClickHouse..."
     - bundle exec test-coverage
         --test-reports 'jest-reports/**/*.json'
         --coverage-report 'coverage-frontend/lcov.info'
@@ -48,3 +76,32 @@ test-coverage:export-jest:
         --clickhouse-url "${CLICKHOUSE_URL}"
         --clickhouse-database "${CLICKHOUSE_DATABASE}"
         --clickhouse-username "${CLICKHOUSE_USERNAME}"
+  artifacts:
+    paths:
+      - coverage-frontend/
+      - coverage-e2e-frontend/
+      - jest-reports/
+      - jest-test-mapping/
+    expire_in: 7d
+
+test-coverage:export-workhorse:
+  extends:
+    - .coverage-export-base
+    - .workhorse:rules:workhorse-coverage
+  needs:
+    - job: workhorse-coverage
+  script:
+    - echo "Exporting Workhorse Go coverage to ClickHouse..."
+    - bundle exec test-coverage
+        --test-reports 'workhorse-test-reports/workhorse-tests.json'
+        --coverage-report 'workhorse/coverage.lcov'
+        --test-map 'workhorse-test-mapping/workhorse-source-to-test.json'
+        --clickhouse-url "${CLICKHOUSE_URL}"
+        --clickhouse-database "${CLICKHOUSE_DATABASE}"
+        --clickhouse-username "${CLICKHOUSE_USERNAME}"
+  artifacts:
+    paths:
+      - workhorse/
+      - workhorse-test-reports/
+      - workhorse-test-mapping/
+    expire_in: 7d

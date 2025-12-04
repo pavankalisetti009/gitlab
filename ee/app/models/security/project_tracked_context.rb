@@ -25,9 +25,6 @@ module Security
     validates :context_name, presence: true, length: { maximum: 1024 }
     validates :context_type, presence: true
     validates :context_name, uniqueness: { scope: [:project_id, :context_type] }
-    validates :is_default,
-      uniqueness: { scope: [:project_id], message: 'There is already a default tracked context' },
-      if: :is_default?
     validate :tracked_refs_limit
     validate :default_ref_cannot_be_untracked, if: :is_default?
     validate :only_branch_refs_can_be_default, if: :is_default?
@@ -62,6 +59,15 @@ module Security
     scope :for_project, ->(project_id) { where(project_id: project_id) }
     scope :default_refs, -> { where(is_default: true) }
     scope :for_ref, ->(ref_name) { where(context_name: ref_name, context_type: [:branch, :tag]) }
+    scope :for_pipeline, ->(pipeline) do
+      context_type = pipeline.tag? ? :tag : :branch
+
+      where(
+        project: pipeline.project,
+        context_name: pipeline.ref,
+        context_type: context_type
+      )
+    end
 
     STATES.each do |state_name, value|
       scope state_name, -> { where(state: value) }
@@ -69,6 +75,10 @@ module Security
 
     # Maximum number of tracked refs per project (default branch + 15 additional refs)
     MAX_TRACKED_REFS_PER_PROJECT = 16
+
+    def self.tracked_pipeline?(pipeline)
+      for_pipeline(pipeline).tracked.exists?
+    end
 
     private
 

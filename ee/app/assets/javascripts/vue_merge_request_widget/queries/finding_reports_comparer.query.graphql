@@ -4,6 +4,7 @@ fragment FindingFields on ComparedSecurityReportFinding {
   severity
   state
   foundByPipelineIid
+  aiResolutionEnabled
 }
 
 query FindingReportsComparer(

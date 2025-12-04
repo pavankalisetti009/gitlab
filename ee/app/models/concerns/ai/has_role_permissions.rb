@@ -10,6 +10,11 @@ module Ai
         numericality: { greater_than_or_equal_to: Gitlab::Access::DEVELOPER },
         allow_nil: true
 
+      validates :minimum_access_level_execute_async,
+        inclusion: { in: Gitlab::Access.sym_options_with_admin.values },
+        numericality: { greater_than_or_equal_to: Gitlab::Access::DEVELOPER },
+        allow_nil: true
+
       validates :minimum_access_level_manage,
         inclusion: { in: Gitlab::Access.sym_options_with_admin.values },
         numericality: { greater_than_or_equal_to: Gitlab::Access::DEVELOPER },

@@ -1,6 +1,6 @@
 <script>
 import { GlCard, GlButton, GlSprintf, GlLink } from '@gitlab/ui';
-import { PROMO_URL } from 'jh_else_ce/lib/utils/url_utility';
+import { PROMO_URL, CUSTOMERS_PORTAL_URL } from 'jh_else_ce/lib/utils/url_utility';
 
 export default {
   name: 'PurchaseCommitmentCard',
@@ -17,7 +17,7 @@ export default {
     },
   },
   pricingLink: `${PROMO_URL}/pricing`,
-  salesLink: `${PROMO_URL}/sales`,
+  salesLink: `${CUSTOMERS_PORTAL_URL}/contact_us`,
 };
 </script>
 <template>

@@ -45,7 +45,7 @@ When you select a project, the **Project overview** page shows the project conte
 - Creation date
 
 For public projects, and members of internal and private projects
-with [permissions to view the project's code](../permissions.md#project-members-permissions),
+with [permissions to view the project's code](../permissions.md#project-permissions),
 the project overview page shows:
 
 - A [`README` or index file](repository/files/_index.md#readme-and-index-files).
@@ -251,7 +251,7 @@ Prerequisites:
 1. Select **Settings** > **General**.
 1. In the **Project name** text box, enter your project name. See the [limitations on project names](../reserved_names.md).
 1. Optional. In the **Project description** text box, enter your project description. The description is limited to 2,000 characters.
-Components published in the CI/CD catalog require a project description.
+   Components published in the CI/CD catalog require a project description.
 1. Select **Save changes**.
 
 ### Rename a repository
@@ -662,7 +662,7 @@ repository. For example, if an administrator creates the alias `gitlab` for the 
 
 ## Related topics
 
-- [Import a project](import/_index.md).
+- [Import and migrate to GitLab](../import/_index.md).
 - [Connect an external repository to GitLab CI/CD](../../ci/ci_cd_for_external_repos/_index.md).
 - [Fork a project](repository/forking_workflow.md#create-a-fork).
 - Adjust [project visibility](../public_access.md#change-project-visibility) and [permissions](settings/_index.md#configure-project-features-and-permissions).

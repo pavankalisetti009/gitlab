@@ -115,6 +115,23 @@ export const FLOW_TYPE_APOLLO_CONFIG = {
   },
 };
 
+export const DELETE_OPTIONS = [
+  {
+    value: true,
+    text: s__('AICatalog|Hard delete (Recommended)'),
+    help: s__(
+      'AICatalog|Permanently deletes the item from the catalog. This action cannot be undone. You must be in %{linkStart}Admin Mode%{linkEnd}.',
+    ),
+  },
+  {
+    value: false,
+    text: s__('AICatalog|Soft delete'),
+    help: s__(
+      'AICatalog|The item will be hidden from the catalog but remain functional for projects and groups already using it.',
+    ),
+  },
+];
+
 export const DEFAULT_FLOW_YML_STRING = `\
 # Schema version
 version: "v1"
@@ -131,21 +148,16 @@ components:
       - "context:goal"  # Input from user or previous component
     toolset: []  # Add tool names here: ["get_issue", "create_issue_note"]
 
-    # Optional: Add UI logging for debugging
-    # ui_log_events:
-    #   - "on_agent_final_answer"
-    #   - "on_tool_execution_success"
+    # Optional: UI logging
+    ui_log_events:
+      - "on_agent_final_answer"
+      - "on_tool_execution_success"
 
 # Define your prompts here
-# Each prompt configures an AI agent's behavior and model settings
+# Each prompt configures an AI agent's behavior
 prompts:
   - prompt_id: "my_prompt"  # Must match the prompt_id referenced above
     name: "My Agent Prompt"
-    model:
-      params:
-        model_class_provider: anthropic  # Provider: anthropic, openai, etc.
-        model: claude-sonnet-4-20250514  # Model identifier
-        max_tokens: 8192  # Adjust based on expected response length
 
     # System and user prompts define the agent's behavior
     prompt_template:
@@ -156,12 +168,11 @@ prompts:
 
         # Add specific instructions for your use case here
 
+      # Available variables depend on your inputs:
+      # {{goal}} - The user's request
+      # {{context}} - Additional context from previous steps
       user: |
         {{goal}}
-
-        # Available variables depend on your inputs:
-        # {{goal}} - The user's request
-        # {{context}} - Additional context from previous steps
 
       placeholder: history  # Maintains conversation context
 

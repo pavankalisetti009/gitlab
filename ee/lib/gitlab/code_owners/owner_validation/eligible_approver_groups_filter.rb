@@ -17,9 +17,16 @@ module Gitlab
         end
 
         def output_groups
-          preload_associations
+          result = if Feature.enabled?(:optimize_codeowners_group_validation, project)
+                     input_groups.select { |group| groups_with_eligible_approvers.include?(group.id) }
+                   else
+                     preload_associations
+                     input_groups.select { |group| any_approvers?(group) }
+                   end
 
-          input_groups.select { |group| any_approvers?(group) }
+          log_user_ids_loaded
+
+          result
         end
         strong_memoize_attr :output_groups
 
@@ -41,6 +48,44 @@ module Gitlab
 
         attr_reader :project, :input_groups, :input_group_names
 
+        # rubocop:disable CodeReuse/ActiveRecord -- Optimized query for performance
+        def eligible_project_users_subquery
+          banned_users_subquery = Namespaces::NamespaceBan
+            .where('namespace_bans.user_id = users.id')
+            .where(namespace: project.root_namespace)
+
+          project.authorized_users
+                .where(project_authorizations: { access_level: Gitlab::Access::DEVELOPER..Gitlab::Access::ADMIN })
+                .where_not_exists(banned_users_subquery)
+                .select(:user_id)
+        end
+        strong_memoize_attr :eligible_project_users_subquery
+
+        def groups_with_eligible_approvers
+          GroupMember
+            .active_without_invites_and_requests
+            .with_source(input_groups)
+            .where(user_id: eligible_project_users_subquery)
+            .distinct
+            .pluck(:source_id)
+            .to_set
+        end
+        # rubocop:enable CodeReuse/ActiveRecord
+        strong_memoize_attr :groups_with_eligible_approvers
+
+        # log user ID count processed per validation
+        def log_user_ids_loaded
+          return unless Feature.enabled?(:log_codeowners_validation_user_ids, project)
+
+          Gitlab::AppLogger.info(
+            message: "CODEOWNERS group validation user IDs loaded",
+            project_id: project.id,
+            eligible_user_ids_count: eligible_project_users_subquery.count,
+            groups_count: input_groups.size
+          )
+        end
+
+        # Legacy implementation for when feature flag is disabled
         def preload_associations
           ActiveRecord::Associations::Preloader.new(records: input_groups, associations: [users: :namespace_bans]).call
           user_ids = input_groups.flat_map(&:user_ids).uniq

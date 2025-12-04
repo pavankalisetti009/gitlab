@@ -2,7 +2,7 @@ import { GlTableLite } from '@gitlab/ui';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
 import RegistriesTable from 'ee/packages_and_registries/virtual_registries/components/maven/registries_and_upstreams/registries_table.vue';
-import { groupVirtualRegistries } from '../../../mock_data';
+import { groupVirtualRegistries } from 'ee_jest/packages_and_registries/virtual_registries/mock_data';
 
 describe('RegistriesTable', () => {
   let wrapper;

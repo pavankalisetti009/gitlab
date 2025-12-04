@@ -14,45 +14,87 @@ const mockPageInfo = {
   __typename: 'PageInfo',
 };
 
-const mockUserAiMetrics = [
-  {
-    user: {
-      id: 'gid://gitlab/User/106',
-      name: 'P Dawn Turner',
-      avatarUrl:
-        'https://www.gravatar.com/avatar/3dd3516a13d37b25b66c7915ab9bedfe7b20ffaf32da3f50c3cb5ee9f3f8aba6?s=80\u0026d=identicon',
-      username: 'p-user-dawn-turner-e5c194af9850',
-      webUrl: 'http://gdk.test:3001/p-user-dawn-turner-e5c194af9850',
-      lastDuoActivityOn: '2025-10-01',
-      __typename: 'AddOnUser',
-    },
-    codeSuggestionsAcceptedCount: 0,
-    duoChatInteractionsCount: 0,
-    __typename: 'AiUserMetrics',
+const mockUserOne = {
+  id: 'gid://gitlab/User/106',
+  name: 'P Dawn Turner',
+  avatarUrl:
+    'https://www.gravatar.com/avatar/3dd3516a13d37b25b66c7915ab9bedfe7b20ffaf32da3f50c3cb5ee9f3f8aba6?s=80\u0026d=identicon',
+  username: 'p-user-dawn-turner-e5c194af9850',
+  webUrl: 'http://gdk.test:3001/p-user-dawn-turner-e5c194af9850',
+  lastDuoActivityOn: '2025-10-01',
+  __typename: 'AddOnUser',
+};
+
+const mockUserTwo = {
+  id: 'gid://gitlab/User/105',
+  name: 'P Homer Hodkiewicz',
+  avatarUrl:
+    'https://www.gravatar.com/avatar/142fcdcab9580b9edd2b623335dde4e6559a628daea89773acf60ba419da66bb?s=80\u0026d=identicon',
+  username: 'p-user-homer-hodkiewicz-e5c194af9850',
+  webUrl: 'http://gdk.test:3001/p-user-homer-hodkiewicz-e5c194af9850',
+  lastDuoActivityOn: '2025-10-04',
+  __typename: 'AddOnUser',
+};
+
+const nullValueUser = {
+  user: mockUserOne,
+  codeReview: null,
+  codeSuggestions: null,
+  troubleshootJob: null,
+  __typename: 'AiUserMetrics',
+};
+
+const zeroValueUser = {
+  user: mockUserTwo,
+  codeSuggestions: {
+    codeSuggestionAcceptedInIdeEventCount: 0,
+    codeSuggestionShownInIdeEventCount: 0,
+    __typename: 'codeSuggestionsUserMetrics',
   },
+  codeReview: {
+    requestReviewDuoCodeReviewOnMrByAuthorEventCount: 0,
+    reactThumbsDownOnDuoCodeReviewCommentEventCount: 0,
+    reactThumbsUpOnDuoCodeReviewCommentEventCount: 0,
+    __typename: 'codeReviewUserMetrics',
+  },
+  troubleshootJob: {
+    troubleshootJobEventCount: 0,
+    __typename: 'troubleshootJobUserMetrics',
+  },
+  __typename: 'AiUserMetrics',
+};
+
+const mockUserAiMetrics = [
+  zeroValueUser,
   {
-    user: {
-      id: 'gid://gitlab/User/105',
-      name: 'P Homer Hodkiewicz',
-      avatarUrl:
-        'https://www.gravatar.com/avatar/142fcdcab9580b9edd2b623335dde4e6559a628daea89773acf60ba419da66bb?s=80\u0026d=identicon',
-      username: 'p-user-homer-hodkiewicz-e5c194af9850',
-      webUrl: 'http://gdk.test:3001/p-user-homer-hodkiewicz-e5c194af9850',
-      lastDuoActivityOn: '2025-10-04',
-      __typename: 'AddOnUser',
+    user: mockUserOne,
+    codeSuggestions: {
+      codeSuggestionAcceptedInIdeEventCount: 1,
+      codeSuggestionShownInIdeEventCount: 3,
+      __typename: 'codeSuggestionsUserMetrics',
     },
-    codeSuggestionsAcceptedCount: 0,
-    duoChatInteractionsCount: 0,
+    codeReview: {
+      requestReviewDuoCodeReviewOnMrByAuthorEventCount: 10,
+      reactThumbsDownOnDuoCodeReviewCommentEventCount: 5,
+      reactThumbsUpOnDuoCodeReviewCommentEventCount: 3,
+      __typename: 'codeReviewUserMetrics',
+    },
+    troubleshootJob: {
+      troubleshootJobEventCount: 3,
+      __typename: 'troubleshootJobUserMetrics',
+    },
     __typename: 'AiUserMetrics',
   },
 ];
 
-const mockUserAiUsageDataResponseData = {
+const mockUserAiMetricsMissingFields = [nullValueUser];
+
+const mockUserAiUsageDataResponseData = (nodes = mockUserAiMetrics) => ({
   aiUserMetrics: {
-    nodes: mockUserAiMetrics,
+    nodes,
     pageInfo: mockPageInfo,
   },
-};
+});
 
 const mockResolvedQuery = ({ aiUserMetrics = [] } = {}) =>
   jest.spyOn(defaultClient, 'query').mockResolvedValue({ data: { project: { aiUserMetrics } } });
@@ -123,7 +165,7 @@ describe('User ai usage data source', () => {
 
   describe('with data available', () => {
     beforeEach(async () => {
-      mockResolvedQuery(mockUserAiUsageDataResponseData);
+      mockResolvedQuery(mockUserAiUsageDataResponseData());
 
       res = await fetch({
         namespace,
@@ -156,8 +198,34 @@ describe('User ai usage data source', () => {
       });
     });
 
-    it('returns an empty array', () => {
-      expect(res).toHaveLength(0);
+    it('returns an empty object', () => {
+      expect(res).toEqual({});
+    });
+  });
+
+  describe('when fields are not available', () => {
+    it('correctly returns an empty object', async () => {
+      mockResolvedQuery(mockUserAiUsageDataResponseData(mockUserAiMetricsMissingFields));
+
+      res = await fetch({
+        namespace,
+        query: defaultQueryParams,
+      });
+
+      expect(res).toEqual({});
+    });
+
+    it('is not empty if the field is available in any of the nodes', async () => {
+      mockResolvedQuery(
+        mockUserAiUsageDataResponseData([...mockUserAiMetricsMissingFields, zeroValueUser]),
+      );
+
+      res = await fetch({
+        namespace,
+        query: defaultQueryParams,
+      });
+
+      expect(res.nodes).toMatchSnapshot();
     });
   });
 });

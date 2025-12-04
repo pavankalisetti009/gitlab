@@ -85,43 +85,33 @@ describe('WorkflowUtils', () => {
 
   describe('transformChatMessages', () => {
     it('maps agent and request message types to assistant role', () => {
-      const workflowId = 'test-workflow';
-
-      const result = WorkflowUtils.transformChatMessages(MOCK_ASSISTANT_MESSAGES, workflowId);
+      const result = WorkflowUtils.transformChatMessages(MOCK_ASSISTANT_MESSAGES);
 
       expect(result[0].role).toBe(GENIE_CHAT_MODEL_ROLES.assistant);
       expect(result[1].role).toBe(GENIE_CHAT_MODEL_ROLES.assistant);
     });
 
     it('preserves original message_type for non-agent/request messages', () => {
-      const workflowId = 'test-workflow';
-      const result = WorkflowUtils.transformChatMessages(MOCK_SINGLE_GENERIC_MESSAGE, workflowId);
+      const result = WorkflowUtils.transformChatMessages(MOCK_SINGLE_GENERIC_MESSAGE);
       expect(result[0].role).toBe('generic');
     });
 
-    it('generates sequential requestIds based on array index', () => {
-      const workflowId = 'seq-test';
-
-      const result = WorkflowUtils.transformChatMessages(MOCK_MULTIPLE_USER_MESSAGES, workflowId);
-
-      expect(result[0].requestId).toBe('seq-test-0');
-      expect(result[1].requestId).toBe('seq-test-1');
-      expect(result[2].requestId).toBe('seq-test-2');
-    });
-
     it('preserves all original message properties', () => {
-      const workflowId = 'preserve-test';
-
-      const result = WorkflowUtils.transformChatMessages(
-        MOCK_USER_MESSAGE_WITH_PROPERTIES,
-        workflowId,
-      );
+      const result = WorkflowUtils.transformChatMessages(MOCK_USER_MESSAGE_WITH_PROPERTIES);
 
       expect(result[0]).toEqual({
         ...MOCK_USER_MESSAGE_WITH_PROPERTIES[0],
-        requestId: 'preserve-test-0',
+        requestId: 'msg-7',
         role: 'user',
       });
+    });
+
+    it('sets requestId to message_id for each message', () => {
+      const result = WorkflowUtils.transformChatMessages(MOCK_MULTIPLE_USER_MESSAGES);
+
+      expect(result[0].requestId).toBe('msg-4');
+      expect(result[1].requestId).toBe('msg-5');
+      expect(result[2].requestId).toBe('msg-6');
     });
   });
 });

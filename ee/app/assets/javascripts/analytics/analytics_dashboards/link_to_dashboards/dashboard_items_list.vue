@@ -1,6 +1,6 @@
 <script>
 import { GlDisclosureDropdownGroup, GlDisclosureDropdownItem } from '@gitlab/ui';
-import { joinPaths } from '~/lib/utils/url_utility';
+import { generateAnalyticsDashboardLink } from '~/analytics/shared/utils';
 import { OVERLAY_GOTO } from '~/super_sidebar/components/global_search/command_palette/constants';
 import FrequentItem from '~/super_sidebar/components/global_search/components/frequent_item.vue';
 import FrequentItemSkeleton from '~/super_sidebar/components/global_search/components/frequent_item_skeleton.vue';
@@ -54,13 +54,11 @@ export default {
   computed: {
     formattedItems() {
       return this.items.map((item) => {
-        const basePath = this.isGroup ? `/groups/${item.fullPath}` : `/${item.fullPath}`;
-        const dashboardHref = joinPaths(
-          gon.relative_url_root || '/',
-          basePath,
-          '-/analytics/dashboards',
-          this.dashboardName,
-        );
+        const dashboardHref = generateAnalyticsDashboardLink({
+          namespacePath: item.fullPath,
+          isGroup: this.isGroup,
+          dashboardSlug: this.dashboardName,
+        });
 
         return {
           forDropdown: {

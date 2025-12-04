@@ -3,10 +3,12 @@
 require 'spec_helper'
 
 RSpec.describe VirtualRegistries::Container::HandleFileRequestService, :aggregate_failures, :clean_gitlab_redis_shared_state, feature_category: :virtual_registry do
-  let_it_be(:registry) { create(:virtual_registries_container_registry, :with_upstreams) }
-  let_it_be(:project) { create(:project, namespace: registry.group) }
+  let_it_be(:group) { create(:group) }
+  let_it_be(:project) { create(:project, namespace: group) }
   let_it_be(:user) { create(:user, owner_of: project) }
-  let_it_be(:upstream) { registry.upstreams.first }
+
+  let(:upstream) { create(:virtual_registries_container_upstream, group: group) }
+  let!(:registry) { create(:virtual_registries_container_registry, group: group, upstreams: [upstream]) }
 
   let(:etag_returned_by_upstream) { nil }
   let(:service) { described_class.new(registry: registry, current_user: user, params: { path: path }) }
@@ -20,6 +22,7 @@ RSpec.describe VirtualRegistries::Container::HandleFileRequestService, :aggregat
       end
 
       it 'returns a success service response' do
+        event_data = event_data_from(action)
         expect(service).to receive(:can?).and_call_original
 
         if action == :download_file
@@ -27,6 +30,11 @@ RSpec.describe VirtualRegistries::Container::HandleFileRequestService, :aggregat
             expect(expected_cache_entry).to receive(:bump_downloads_count)
           end
         end
+
+        expect { execute }
+          .to trigger_internal_events('pull_container_file_through_virtual_registry')
+          .with(**event_data[:args])
+          .and increment_usage_metrics(event_data[:metric_key])
 
         is_expected.to be_success.and have_attributes(payload: a_hash_including(action:))
 
@@ -44,15 +52,24 @@ RSpec.describe VirtualRegistries::Container::HandleFileRequestService, :aggregat
           )
         end
       end
+
+      def event_data_from(action)
+        event_label = action == :workhorse_upload_url ? 'from_upstream' : 'from_cache'
+        metric_key = "counts.count_total_pull_container_file_through_virtual_registry_#{event_label}"
+
+        args = { namespace: registry.group, additional_properties: { label: event_label } }
+        args[:user] = user if user.is_a?(User)
+
+        { args:, metric_key: }
+      end
     end
 
     context 'when requesting manifest by digest that was cached with a tag' do
       let_it_be(:upstream_etag) { 'sha256:abc123def456abc123def456abc123def456abc123def456abc123def456abcd' }
       let_it_be(:path) { "my/image/manifests/#{upstream_etag}" }
       let_it_be(:expected_relative_path) { 'my/image/manifests/latest' }
-      let_it_be(:upstream_resource_url) { upstream.url_for(path) }
-
-      let_it_be(:cache_entry) do
+      let(:upstream_resource_url) { upstream.url_for(path) }
+      let!(:cache_entry) do
         create(:virtual_registries_container_cache_entry,
           :upstream_checked,
           upstream: upstream,
@@ -209,7 +226,7 @@ RSpec.describe VirtualRegistries::Container::HandleFileRequestService, :aggregat
     end
 
     context 'with a DeployToken' do
-      let_it_be(:user) { create(:deploy_token, :group, groups: [registry.group], read_virtual_registry: true) }
+      let(:user) { create(:deploy_token, :group, groups: [registry.group], read_virtual_registry: true) }
       let(:path) { 'my/image/manifests/latest' }
       let(:expected_image_name) { 'my/image' }
       let(:expected_relative_path) { '/v2/my/image/manifests/latest' }

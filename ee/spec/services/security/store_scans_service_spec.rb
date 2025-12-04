@@ -3,8 +3,9 @@
 require 'spec_helper'
 
 RSpec.describe Security::StoreScansService, feature_category: :vulnerability_management do
+  let_it_be(:project) { create(:project, :repository) }
   let_it_be(:user) { create(:user) }
-  let_it_be(:pipeline) { create(:ci_pipeline, user: user) }
+  let_it_be(:pipeline) { create(:ci_pipeline, user: user, project: project) }
 
   describe '.execute' do
     let(:mock_service_object) { instance_double(described_class, execute: true) }
@@ -50,10 +51,10 @@ RSpec.describe Security::StoreScansService, feature_category: :vulnerability_man
   describe '#execute' do
     let(:service_object) { described_class.new(pipeline) }
 
-    let_it_be(:sast_build) { create(:ee_ci_build, pipeline: pipeline) }
-    let_it_be(:dast_build) { create(:ee_ci_build, pipeline: pipeline) }
-    let_it_be(:sast_artifact) { create(:ee_ci_job_artifact, :sast, job: sast_build) }
-    let_it_be(:dast_artifact) { create(:ee_ci_job_artifact, :dast, job: dast_build) }
+    let_it_be(:sast_build) { create(:ee_ci_build, pipeline: pipeline, project: project) }
+    let_it_be(:dast_build) { create(:ee_ci_build, pipeline: pipeline, project: project) }
+    let_it_be(:sast_artifact) { create(:ee_ci_job_artifact, :sast, job: sast_build, project: project) }
+    let_it_be(:dast_artifact) { create(:ee_ci_job_artifact, :dast, job: dast_build, project: project) }
 
     subject(:store_group_of_artifacts) { service_object.execute }
 
@@ -109,7 +110,7 @@ RSpec.describe Security::StoreScansService, feature_category: :vulnerability_man
     end
 
     context 'when there is a dependency scanning SBoM' do
-      let_it_be(:cyclonedx_build) { create(:ee_ci_build, :success, pipeline: pipeline) }
+      let_it_be(:cyclonedx_build) { create(:ee_ci_build, :success, pipeline: pipeline, project: project) }
       let_it_be(:cyclonedx_artifact) { create(:ee_ci_job_artifact, :cyclonedx, job: cyclonedx_build) }
 
       it 'stores the sbom scans' do
@@ -354,8 +355,8 @@ RSpec.describe Security::StoreScansService, feature_category: :vulnerability_man
     end
 
     context 'with two artifacts related to the same job' do
-      let_it_be(:pipeline) { create(:ci_pipeline, user: user) }
-      let_it_be(:build) { create(:ee_ci_build, :success, pipeline: pipeline) }
+      let_it_be(:pipeline) { create(:ci_pipeline, ref: project.default_branch, user: user, project: project) }
+      let_it_be(:build) { create(:ee_ci_build, :success, pipeline: pipeline, project: project) }
       let_it_be(:cyclonedx_artifact) { create(:ee_ci_job_artifact, :cyclonedx, job: build) }
       let_it_be(:dependency_scanning_artifact) { create(:ee_ci_job_artifact, :dependency_scanning, job: build) }
       let_it_be(:cyclonedx_findings_count) { 1 }
@@ -391,7 +392,7 @@ RSpec.describe Security::StoreScansService, feature_category: :vulnerability_man
     end
 
     context 'with different jobs with the same cyclonedx related findings' do
-      let_it_be(:build) { create(:ee_ci_build, :success, pipeline: pipeline) }
+      let_it_be(:build) { create(:ee_ci_build, :success, pipeline: pipeline, project: project) }
       let_it_be(:cyclonedx_artifact) { create(:ee_ci_job_artifact, :cyclonedx, job: build) }
       let_it_be(:cyclonedx_findings_count) { 1 }
       let_it_be(:affected_package) do

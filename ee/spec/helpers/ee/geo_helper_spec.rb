@@ -31,6 +31,12 @@ RSpec.describe EE::GeoHelper, feature_category: :geo_replication do
 
       expect(replicable_types).to include(*expected_replicable_types)
     end
+
+    it 'sorts by title' do
+      titles = replicable_types.pluck(:title)
+
+      expect(titles).to eq(titles.sort)
+    end
   end
 
   describe '#replicable_class_data' do
@@ -135,6 +141,12 @@ RSpec.describe EE::GeoHelper, feature_category: :geo_replication do
       end
 
       expect(model_types).to include(*expected_model_types)
+    end
+
+    it 'sorts by title' do
+      titles = model_types.pluck(:title)
+
+      expect(titles).to eq(titles.sort)
     end
   end
 

@@ -26,11 +26,7 @@ describe('WorkItemProgress component', () => {
   const findEditButton = () => wrapper.findByTestId('edit-button');
   const findProgressPopover = () => wrapper.findComponent(GlPopover);
 
-  const createComponent = ({
-    canUpdate = false,
-    okrAutomaticRollups = false,
-    progress = 0,
-  } = {}) => {
+  const createComponent = ({ canUpdate = false, progress = 0 } = {}) => {
     wrapper = shallowMountExtended(WorkItemProgress, {
       apolloProvider: createMockApollo([[updateWorkItemMutation, updateWorkItemMutationHandler]]),
       propsData: {
@@ -39,27 +35,16 @@ describe('WorkItemProgress component', () => {
         workItemId: 'gid://gitlab/WorkItem/1',
         workItemType: 'Objective',
       },
-      provide: {
-        glFeatures: {
-          okrAutomaticRollups,
-        },
-      },
       stubs: {
         WorkItemSidebarWidget,
       },
     });
   };
 
-  it('displays progress popover if the feature is enabled', () => {
-    createComponent({ okrAutomaticRollups: true });
+  it('displays progress popover for objectives', () => {
+    createComponent();
 
     expect(findProgressPopover().exists()).toBe(true);
-  });
-
-  it('does not display progress popover if the feature is disabled', () => {
-    createComponent({ okrAutomaticRollups: false });
-
-    expect(findProgressPopover().exists()).toBe(false);
   });
 
   describe('when user cannot update progress', () => {

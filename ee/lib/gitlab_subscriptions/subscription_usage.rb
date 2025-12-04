@@ -4,7 +4,7 @@ module GitlabSubscriptions
   class SubscriptionUsage
     include ::Gitlab::Utils::StrongMemoize
 
-    MonthlyWaiver = Struct.new(:total_credits, :credits_used, :declarative_policy_subject)
+    MonthlyWaiver = Struct.new(:total_credits, :credits_used, :daily_usage, :declarative_policy_subject)
     MonthlyCommitment = Struct.new(:total_credits, :credits_used, :daily_usage, :declarative_policy_subject)
     Overage = Struct.new(:is_allowed, :credits_used, :daily_usage, :declarative_policy_subject)
     DailyUsage = Struct.new(:date, :credits_used, :declarative_policy_subject)
@@ -45,6 +45,22 @@ module GitlabSubscriptions
       usage_metadata[:purchaseCreditsPath]
     end
 
+    def overage_terms_accepted
+      !!usage_metadata[:overageTermsAccepted]
+    end
+
+    def can_accept_overage_terms
+      !!usage_metadata[:canAcceptOverageTerms]
+    end
+
+    def dap_promo_enabled
+      !!usage_metadata[:dapPromoEnabled]
+    end
+
+    def usage_dashboard_path
+      usage_metadata[:usageDashboardPath]
+    end
+
     def monthly_waiver
       monthly_waiver_response = subscription_usage_client.get_monthly_waiver
 
@@ -53,6 +69,7 @@ module GitlabSubscriptions
       MonthlyWaiver.new(
         total_credits: monthly_waiver_response.dig(:monthlyWaiver, :totalCredits),
         credits_used: monthly_waiver_response.dig(:monthlyWaiver, :creditsUsed),
+        daily_usage: build_daily_usage(monthly_waiver_response.dig(:monthlyWaiver, :dailyUsage)),
         declarative_policy_subject: self
       )
     end
@@ -92,6 +109,16 @@ module GitlabSubscriptions
       )
     end
     strong_memoize_attr :users_usage
+
+    def subscription_portal_usage_dashboard_url
+      return unless can_accept_overage_terms
+
+      path = usage_dashboard_path
+      return if path.blank?
+
+      "#{::Gitlab::SubscriptionPortal.default_production_customer_portal_url}#{path}"
+    end
+    strong_memoize_attr :subscription_portal_usage_dashboard_url
 
     private
 

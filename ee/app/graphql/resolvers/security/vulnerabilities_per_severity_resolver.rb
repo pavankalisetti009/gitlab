@@ -22,6 +22,8 @@ module Resolvers
       def resolve(start_date: nil, end_date: nil)
         authorize!(object) unless resolve_vulnerabilities_for_instance_security_dashboard?
 
+        validate_advanced_vuln_management!
+
         validate_date_range!(start_date, end_date)
 
         return {} unless vulnerable

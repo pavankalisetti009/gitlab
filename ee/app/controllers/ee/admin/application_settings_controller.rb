@@ -166,6 +166,10 @@ module EE
             :security_approval_policies_limit,
             :vulnerability_management_policies_per_configuration_limit
           ],
+          dependency_scanning: [
+            :dependency_scanning_sbom_scan_api_upload_limit,
+            :dependency_scanning_sbom_scan_api_download_limit
+          ],
           disable_personal_access_tokens: :disable_personal_access_tokens,
           integrations_allow_list: :allowed_integrations_raw,
           packages_virtual_registry: :virtual_registries_endpoints_api_limit,

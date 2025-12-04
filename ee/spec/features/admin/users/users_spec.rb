@@ -159,6 +159,12 @@ RSpec.describe 'Admin::Users', :with_current_organization, feature_category: :us
     end
 
     context 'with a user cap set' do
+      let_it_be(:group) { create(:group) }
+
+      before_all do
+        group.add_guest(admin)
+      end
+
       before do
         stub_application_setting(new_user_signups_cap: 2)
         stub_ee_application_setting(seat_control: ::ApplicationSetting::SEAT_CONTROL_USER_CAP)
@@ -197,32 +203,15 @@ RSpec.describe 'Admin::Users', :with_current_organization, feature_category: :us
           expect(password_reset_email).to eq(nil)
         end
       end
-
-      context 'when the cap has been reached' do
-        before do
-          user
-        end
-
-        it 'sends only a notification email to the admin', :sidekiq_inline do
-          visit new_admin_user_path
-
-          fill_in_new_user_form
-
-          perform_enqueued_jobs do
-            click_button 'Create user'
-          end
-
-          email = ActionMailer::Base.deliveries.last
-          expect(email.to).to eq([admin.email])
-          expect(email.subject).to eq('Important information about usage on your GitLab instance')
-          expect(email.text_part.body).to have_content('Your GitLab instance has reached the maximum allowed user cap')
-
-          expect(ActionMailer::Base.deliveries.count).to eq(1)
-        end
-      end
     end
 
     context 'when generating overages' do
+      let_it_be(:group) { create(:group) }
+
+      before_all do
+        group.add_guest(admin)
+      end
+
       before do
         create_current_license(plan: License::PREMIUM_PLAN, seats: 1)
       end
@@ -240,6 +229,10 @@ RSpec.describe 'Admin::Users', :with_current_organization, feature_category: :us
       context 'when block seat overages is active' do
         before do
           stub_ee_application_setting(seat_control: ::ApplicationSetting::SEAT_CONTROL_BLOCK_OVERAGES)
+
+          allow_next_instance_of(User) do |user|
+            allow(user).to receive(:using_license_seat?).and_return(true)
+          end
         end
 
         it 'shows an error' do

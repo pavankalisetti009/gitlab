@@ -17,7 +17,8 @@ RSpec.describe ::Gitlab::Ai::ModelSelection::ModelDefinitionResponseParser, feat
             'name' => 'Claude Sonnet',
             'ref' => 'claude-sonnet',
             'model_provider' => 'Anthropic',
-            'model_description' => 'Fast, cost-effective responses.'
+            'model_description' => 'Fast, cost-effective responses.',
+            'cost_indicator' => '$$$'
           }
         )
       end
@@ -95,19 +96,22 @@ RSpec.describe ::Gitlab::Ai::ModelSelection::ModelDefinitionResponseParser, feat
             'name' => 'Claude Sonnet',
             'ref' => 'claude-sonnet',
             'model_provider' => 'Anthropic',
-            'model_description' => 'Fast, cost-effective responses.'
+            'model_description' => 'Fast, cost-effective responses.',
+            'cost_indicator' => '$$$'
           },
           'gpt-4' => {
             'name' => 'GPT-4',
             'ref' => 'gpt-4',
             'model_provider' => 'OpenAI',
-            'model_description' => 'For high-volume coding, reasoning, and routine workflows.'
+            'model_description' => 'For high-volume coding, reasoning, and routine workflows.',
+            'cost_indicator' => '$'
           },
           'claude-sonnet-3-7' => {
             'name' => 'Claude Sonnet 3.7',
             'ref' => 'claude-sonnet-3-7',
             'model_provider' => 'Anthropic',
-            'model_description' => 'Fast, cost-effective responses.'
+            'model_description' => 'Fast, cost-effective responses.',
+            'cost_indicator' => '$$'
           }
         }
       )
@@ -182,7 +186,8 @@ RSpec.describe ::Gitlab::Ai::ModelSelection::ModelDefinitionResponseParser, feat
           'deprecation' => {
             'deprecation_date' => '2025-10-28',
             'removal_version' => '18.8'
-          }
+          },
+          'cost_indicator' => '$$'
         }
       ])
     end

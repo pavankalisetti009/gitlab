@@ -38,6 +38,31 @@ RSpec.describe VirtualRegistries::Container::Upstream, feature_category: :virtua
     it { is_expected.to validate_presence_of(:password) }
     it { is_expected.to validate_length_of(:password).is_at_most(510) }
 
+    it { is_expected.to validate_length_of(:auth_url).is_at_most(512) }
+    it { is_expected.not_to allow_value('').for(:auth_url) }
+
+    describe '#auth_url validations' do
+      where(:auth_url, :valid, :error_message) do
+        'http://localhost:8080'        | false | 'Auth url is blocked: Requests to localhost are not allowed'
+        'http://192.168.1.1'           | false | 'Auth url is blocked: Requests to the local network are not allowed'
+        'https://example.com/<img src=x>'   | false | 'Auth url is blocked: HTML/CSS/JS tags are not allowed'
+        'https://registry.example.com/auth' | true  | nil
+      end
+
+      with_them do
+        subject(:upstream) { build(:virtual_registries_container_upstream, auth_url: auth_url) }
+
+        if params[:valid]
+          it { is_expected.to be_valid }
+        else
+          it 'has invalid errors' do
+            is_expected.not_to be_valid
+            expect(upstream.errors).to contain_exactly(error_message)
+          end
+        end
+      end
+    end
+
     context 'for credentials' do
       # rubocop:disable Lint/BinaryOperatorWithIdenticalOperands -- false positive
       where(:username, :password, :valid, :error_message) do
@@ -189,6 +214,7 @@ RSpec.describe VirtualRegistries::Container::Upstream, feature_category: :virtua
     subject { upstream.as_json }
 
     it { is_expected.not_to include('password') }
+    it { is_expected.not_to include('auth_url') }
   end
 
   describe '#object_storage_key' do
@@ -248,24 +274,147 @@ RSpec.describe VirtualRegistries::Container::Upstream, feature_category: :virtua
   end
 
   describe '#headers' do
+    let_it_be_with_reload(:upstream) do
+      create(:virtual_registries_container_upstream,
+        group: group,
+        url: 'https://registry-1.docker.io',
+        username: 'testuser',
+        password: 'testpassword'
+      )
+    end
+
+    let(:basis_auth_header) { { 'Authorization' => 'Basic dGVzdHVzZXI6dGVzdHBhc3N3b3Jk' } }
     let(:path) { 'library/alpine/manifests/latest' }
 
-    subject { upstream.headers(path) }
+    subject(:headers) { upstream.headers(path) }
+
+    shared_examples 'handle blank path' do
+      where(:path) do
+        [
+          [nil],
+          ['']
+        ]
+      end
+
+      with_them do
+        let(:request_auth_url) { 'https://auth.docker.io/token?service=registry.docker.io' }
+        let(:auth_url) { 'https://auth.docker.io/token?service=registry.docker.io' }
+
+        before do
+          # Stub the authentication discovery request (Layer 1 discovery)
+          stub_request(:head, "#{upstream.url}/v2")
+          .to_return(
+            status: 401,
+            headers: {
+              'www-authenticate' => 'Bearer realm="https://auth.docker.io/token",service="registry.docker.io"'
+            }
+          )
+
+          # Stub the token exchange request (Layer 1 authentication)
+          stub_request(:get, request_auth_url)
+            .to_return(
+              status: 200,
+              body: '{"token": "successful_bearer_token_123"}'
+            )
+        end
+
+        it { is_expected.to eq(with_accept_headers({ 'Authorization' => 'Bearer successful_bearer_token_123' })) }
+      end
+    end
+
+    shared_examples 'update auth_url' do
+      it 'updates auth_url' do
+        headers
+
+        expect(upstream.auth_url).to eq(auth_url)
+      end
+
+      context 'when auth_url has existed' do
+        before do
+          upstream.update!(auth_url: auth_url)
+        end
+
+        it_behaves_like 'does not update auth_url'
+      end
+    end
+
+    shared_examples 'does not update auth_url' do
+      it 'does not update auth_url' do
+        expect { headers }.not_to change { upstream.auth_url }
+      end
+    end
+
+    shared_examples 'reset auth_url' do
+      context 'when saved auth_url responses with not found' do
+        let(:saved_auth_url) { 'https://auth-saved.docker.io/token?service=registry.docker.io' }
+        let(:retry_auth_url) { 'https://auth-retry.docker.io/token?service=registry.docker.io' }
+
+        let(:request_saved_auth_url) { 'https://auth-saved.docker.io/token?scope=repository:library/alpine:pull&service=registry.docker.io' }
+        let(:request_retry_auth_url) { 'https://auth-retry.docker.io/token?scope=repository:library/alpine:pull&service=registry.docker.io' }
+
+        before do
+          upstream.update!(auth_url: saved_auth_url)
+
+          stub_request(:head, "#{upstream.url}/v2/#{path}")
+            .to_return({
+              status: 401,
+              headers: {
+                'www-authenticate' => 'Bearer realm="https://auth-retry.docker.io/token",service="registry.docker.io"'
+              }
+            })
+
+          stub_request(:get, request_saved_auth_url).to_return(status: 404, body: '{}')
+          stub_request(:get, request_retry_auth_url).to_return(
+            status: 200, body: '{"token": "successful_bearer_token_123"}'
+          )
+        end
+
+        it 'updates auth_url with retry_auth_url' do
+          headers
+
+          expect(upstream.auth_url).to eq(retry_auth_url)
+        end
+
+        context 'when request to retry_auth_url responses with not found' do
+          before do
+            stub_request(:get, request_retry_auth_url).to_return(status: 404, body: '{}')
+          end
+
+          it 'leaves auth_url as nil' do
+            headers
+
+            expect(upstream.auth_url).to be_nil
+          end
+        end
+
+        context 'when fetching auth url failed' do
+          before do
+            stub_request(:head, "#{upstream.url}/v2/#{path}").to_return({ status: 404 })
+          end
+
+          it 'leaves auth_url as nil' do
+            headers
+
+            expect(upstream.auth_url).to be_nil
+          end
+        end
+      end
+    end
 
     context 'without credentials' do
+      let(:request_auth_url) { 'https://auth.docker.io/token?scope=repository:library/alpine:pull&service=registry.docker.io' }
+      let(:auth_url) { 'https://auth.docker.io/token?service=registry.docker.io' }
+
       # rubocop:disable Lint/BinaryOperatorWithIdenticalOperands -- binary operator is used in parameterized table
       where(:username, :password) do
         nil  |  nil
         ''   |  ''
-        ''   |  nil
-        nil  |  ''
       end
       # rubocop:enable Lint/BinaryOperatorWithIdenticalOperands
 
       with_them do
         before do
-          upstream.username = username
-          upstream.password = password
+          upstream.update!(username: username, password: password)
 
           # Stub the authentication discovery request (Layer 1 discovery)
           stub_request(:head, "#{upstream.url}/v2/#{path}")
@@ -277,21 +426,26 @@ RSpec.describe VirtualRegistries::Container::Upstream, feature_category: :virtua
           )
 
           # Stub the token exchange request (Layer 1 authentication)
-          stub_request(:get, 'https://auth.docker.io/token?service=registry.docker.io&scope=repository:library/alpine:pull')
+          stub_request(:get, request_auth_url)
             .to_return(
               status: 200,
               body: '{"token": "successful_bearer_token_123"}'
             )
         end
 
+        it_behaves_like 'update auth_url'
+        it_behaves_like 'reset auth_url'
+        it_behaves_like 'handle blank path'
+
         it { is_expected.to eq(with_accept_headers({ 'Authorization' => 'Bearer successful_bearer_token_123' })) }
       end
     end
 
     context 'with credentials and successful authentication' do
-      before do
-        upstream.url = 'https://registry-1.docker.io'
+      let(:request_auth_url) { 'https://auth.docker.io/token?scope=repository:library/alpine:pull&service=registry.docker.io' }
+      let(:auth_url) { 'https://auth.docker.io/token?service=registry.docker.io' }
 
+      before do
         # Stub the authentication discovery request (Layer 1 discovery)
         stub_request(:head, "#{upstream.url}/v2/#{path}")
           .to_return(
@@ -302,13 +456,16 @@ RSpec.describe VirtualRegistries::Container::Upstream, feature_category: :virtua
           )
 
         # Stub the token exchange request (Layer 1 authentication)
-        stub_request(:get, 'https://auth.docker.io/token?service=registry.docker.io&scope=repository:library/alpine:pull')
-          .with(headers: { 'Authorization' => 'Basic dGVzdHVzZXI6dGVzdHBhc3N3b3Jk' })
+        stub_request(:get, request_auth_url).with(headers: basis_auth_header)
           .to_return(
             status: 200,
             body: '{"token": "successful_bearer_token_123"}'
           )
       end
+
+      it_behaves_like 'update auth_url'
+      it_behaves_like 'reset auth_url'
+      it_behaves_like 'handle blank path'
 
       it { is_expected.to eq(with_accept_headers({ 'Authorization' => 'Bearer successful_bearer_token_123' })) }
     end
@@ -318,6 +475,8 @@ RSpec.describe VirtualRegistries::Container::Upstream, feature_category: :virtua
         stub_request(:head, "#{upstream.url}/v2/#{path}")
           .to_return(status: 200)
       end
+
+      it_behaves_like 'does not update auth_url'
 
       it { is_expected.to eq({}) }
     end
@@ -333,17 +492,24 @@ RSpec.describe VirtualRegistries::Container::Upstream, feature_category: :virtua
           )
 
         stub_request(:get, 'https://auth.docker.io/token?service=registry.docker.io&scope=repository:library/alpine:pull')
-          .with(headers: { 'Authorization' => 'Basic dGVzdHVzZXI6dGVzdHBhc3N3b3Jk' })
+          .with(headers: basis_auth_header)
           .to_return(status: 401, body: '{"error": "invalid_credentials"}')
       end
+
+      it_behaves_like 'does not update auth_url'
 
       it { is_expected.to eq({}) }
     end
 
     context 'with different registry types' do
+      let(:request_auth_url) { "#{auth_realm}?scope=#{CGI.escape(scope)}&service=#{service_name}" }
+      let(:auth_url) { "#{auth_realm}?service=#{service_name}" }
+
+      let(:scope) { 'repository:library/alpine:pull' }
+
       # rubocop:disable Layout/LineLength -- have the params in the same line for readability
       where(:registry_url, :auth_realm, :service_name, :expected_token) do
-        'https://registry-1.docker.io' | 'https://auth.docker.io/token' | 'registry.docker.io' | 'dockerhub_bearer_token'
+        'https://registry-1.docker.io' | 'https://auth.docker.io/token'      | 'registry.docker.io'  | 'dockerhub_bearer_token'
         'https://gcr.io'               | 'https://gcr.io/v2/token'           | 'gcr.io'              | 'gcr_bearer_token'
         'https://public.ecr.aws'       | 'https://public.ecr.aws/token'      | 'public.ecr.aws'      | 'ecr_bearer_token'
         'https://quay.io'              | 'https://quay.io/v2/auth'           | 'quay.io'             | 'quay_bearer_token'
@@ -353,8 +519,7 @@ RSpec.describe VirtualRegistries::Container::Upstream, feature_category: :virtua
 
       with_them do
         before do
-          upstream.url = registry_url
-          scope = 'repository:library/alpine:pull'
+          upstream.update_column(:url, registry_url)
 
           # Stub auth discovery for each registry type
           stub_request(:head, "#{registry_url}/v2/#{path}")
@@ -366,93 +531,106 @@ RSpec.describe VirtualRegistries::Container::Upstream, feature_category: :virtua
             )
 
           # Stub token exchange for each registry type
-          stub_request(:get, "#{auth_realm}?service=#{service_name}&scope=#{scope}")
-            .with(headers: { 'Authorization' => 'Basic dGVzdHVzZXI6dGVzdHBhc3N3b3Jk' })
+          stub_request(:get, request_auth_url).with(headers: basis_auth_header)
             .to_return(
               status: 200,
               body: "{\"token\": \"#{expected_token}\"}"
             )
         end
 
+        it_behaves_like 'update auth_url'
+
         it 'successfully authenticates with different registry types' do
-          result = upstream.headers(path)
-          expect(result).to eq(with_accept_headers({ 'Authorization' => "Bearer #{expected_token}" }))
+          expect(headers).to eq(with_accept_headers({ 'Authorization' => "Bearer #{expected_token}" }))
         end
       end
     end
 
     context 'with network error scenarios' do
-      before do
-        upstream.url = 'https://registry-1.docker.io'
-      end
+      context 'with auth discovery network errors' do
+        before do
+          stub_request(:head, "#{upstream.url}/v2/#{path}")
+            .to_raise(Errno::ECONNREFUSED.new('Network timeout'))
+        end
 
-      it 'handles auth discovery network errors gracefully' do
-        stub_request(:head, "#{upstream.url}/v2/#{path}")
-          .to_raise(Errno::ECONNREFUSED.new('Network timeout'))
+        it_behaves_like 'does not update auth_url'
 
-        expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
-          an_instance_of(Errno::ECONNREFUSED),
-          hash_including(message: /Failed to get auth challenge/)
-        )
-        expect(upstream.headers(path)).to eq({})
-      end
-
-      it 'handles token exchange network errors gracefully' do
-        # Successful auth discovery
-        stub_request(:head, "#{upstream.url}/v2/#{path}")
-          .to_return(
-            status: 401,
-            headers: {
-              'www-authenticate' => 'Bearer realm="https://auth.docker.io/token",service="registry.docker.io",scope="repository:library/alpine:pull"'
-            }
+        it 'handles error gracefully' do
+          expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
+            an_instance_of(Errno::ECONNREFUSED),
+            hash_including(message: /Failed to get auth challenge/)
           )
-
-        # Failed token exchange
-        stub_request(:get, 'https://auth.docker.io/token?service=registry.docker.io&scope=repository:library/alpine:pull')
-          .to_raise(SocketError.new('Auth service unavailable'))
-
-        expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
-          an_instance_of(SocketError),
-          hash_including(message: /Token request error/)
-        )
-        expect(upstream.headers(path)).to eq({})
+          expect(headers).to eq({})
+        end
       end
 
-      it 'handles invalid JSON token response gracefully' do
-        # Successful auth discovery
-        stub_request(:head, "#{upstream.url}/v2/#{path}")
-          .to_return(
-            status: 401,
-            headers: {
-              'www-authenticate' => 'Bearer realm="https://auth.docker.io/token",service="registry.docker.io",scope="repository:library/alpine:pull"'
-            }
+      context 'with token exchange network errors' do
+        before do
+          # Successful auth discovery
+          stub_request(:head, "#{upstream.url}/v2/#{path}")
+            .to_return(
+              status: 401,
+              headers: {
+                'www-authenticate' => 'Bearer realm="https://auth.docker.io/token",service="registry.docker.io",scope="repository:library/alpine:pull"'
+              }
+            )
+
+          # Failed token exchange
+          stub_request(:get, 'https://auth.docker.io/token?service=registry.docker.io&scope=repository:library/alpine:pull')
+            .to_raise(SocketError.new('Auth service unavailable'))
+        end
+
+        it { is_expected.to eq({}) }
+
+        it 'handles error gracefully' do
+          expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
+            an_instance_of(SocketError),
+            hash_including(message: /Token request error/)
           )
+          expect(headers).to eq({})
+        end
+      end
 
-        # Token exchange with invalid JSON
-        stub_request(:get, 'https://auth.docker.io/token?service=registry.docker.io&scope=repository:library/alpine:pull')
-          .to_return(status: 200, body: 'invalid json response')
+      context 'with invalid JSON token response' do
+        before do
+          # Successful auth discovery
+          stub_request(:head, "#{upstream.url}/v2/#{path}")
+            .to_return(
+              status: 401,
+              headers: {
+                'www-authenticate' => 'Bearer realm="https://auth.docker.io/token",service="registry.docker.io",scope="repository:library/alpine:pull"'
+              }
+            )
 
-        expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
-          an_instance_of(JSON::ParserError),
-          hash_including(message: /Failed to parse token response/)
-        )
-        expect(upstream.headers(path)).to eq({})
+          # Token exchange with invalid JSON
+          stub_request(:get, 'https://auth.docker.io/token?service=registry.docker.io&scope=repository:library/alpine:pull')
+            .to_return(status: 200, body: 'invalid json response')
+        end
+
+        it { is_expected.to eq({}) }
+
+        it 'handles error gracefully' do
+          expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
+            an_instance_of(JSON::ParserError),
+            hash_including(message: /Failed to parse token response/)
+          )
+          expect(headers).to eq({})
+        end
       end
     end
 
     context 'with malformed auth challenges' do
+      let(:request_auth_url) { 'https://auth.docker.io/token?scope=repository:library/alpine:pull&service=registry.docker.io' }
+      let(:auth_url) { 'https://auth.docker.io/token?service=registry.docker.io' }
+
       before do
-        upstream.url = 'https://registry-1.docker.io'
         stub_request(:head, "#{upstream.url}/v2/#{path}")
                     .to_return(
                       status: 401,
                       headers: { 'www-authenticate' => auth_header }
                     )
 
-        unless should_fail
-          stub_request(:get, 'https://auth.docker.io/token?service=registry.docker.io')
-            .to_return(status: 200, body: '{"token": "valid_token"}')
-        end
+        stub_request(:get, request_auth_url).to_return(status: 200, body: '{"token": "valid_token"}') unless should_fail
       end
 
       where(:auth_header, :should_fail) do
@@ -465,21 +643,24 @@ RSpec.describe VirtualRegistries::Container::Upstream, feature_category: :virtua
 
       with_them do
         if params[:should_fail]
-          it 'returns empty headers for malformed auth challenges' do
-            expect(upstream.headers(path)).to eq({})
-          end
+          it_behaves_like 'does not update auth_url'
+
+          it { is_expected.to eq({}) }
         else
+          it_behaves_like 'update auth_url'
+
           it 'processes valid auth challenges successfully' do
-            expect(upstream.headers(path)).to eq(with_accept_headers({ 'Authorization' => 'Bearer valid_token' }))
+            expect(headers).to eq(with_accept_headers({ 'Authorization' => 'Bearer valid_token' }))
           end
         end
       end
     end
 
     context 'without scope parameter' do
-      before do
-        upstream.url = 'https://registry-1.docker.io'
+      let(:request_auth_url) { 'https://auth.docker.io/token?scope=repository:library/alpine:pull&service=registry.docker.io' }
+      let(:auth_url) { 'https://auth.docker.io/token?service=registry.docker.io' }
 
+      before do
         # Auth discovery without scope
         stub_request(:head, "#{upstream.url}/v2/#{path}")
           .to_return(
@@ -490,17 +671,17 @@ RSpec.describe VirtualRegistries::Container::Upstream, feature_category: :virtua
           )
 
         # Token exchange without scope parameter
-        stub_request(:get, 'https://auth.docker.io/token?service=registry.docker.io')
-          .with(headers: { 'Authorization' => 'Basic dGVzdHVzZXI6dGVzdHBhc3N3b3Jk' })
+        stub_request(:get, request_auth_url).with(headers: basis_auth_header)
           .to_return(
             status: 200,
             body: '{"access_token": "no_scope_token"}'
           )
       end
 
+      it_behaves_like 'update auth_url'
+
       it 'handles authentication without scope parameter' do
-        result = upstream.headers(path)
-        expect(result).to eq(with_accept_headers({ 'Authorization' => 'Bearer no_scope_token' }))
+        expect(headers).to eq(with_accept_headers({ 'Authorization' => 'Bearer no_scope_token' }))
       end
     end
   end
@@ -517,7 +698,36 @@ RSpec.describe VirtualRegistries::Container::Upstream, feature_category: :virtua
     it { is_expected.to contain_exactly(default_cache_entry) }
   end
 
+  describe 'callbacks' do
+    describe '#reset_auth_url' do
+      let_it_be(:upstream) { create(:virtual_registries_container_upstream, :with_auth_url) }
+
+      subject(:update_url) { upstream.update!(url: 'http://test.com/new/url') }
+
+      context 'when url will be updated' do
+        it 'resets auth_url' do
+          update_url
+
+          expect(upstream.auth_url).to be_nil
+        end
+      end
+
+      context 'when url will not be updated' do
+        it { expect { update_url }.not_to change { upstream.auth_url } }
+      end
+    end
+  end
+
   def with_accept_headers(headers)
     headers.merge(described_class::REGISTRY_ACCEPT_HEADERS)
+  end
+
+  describe '#purge_cache!' do
+    it 'enqueues the MarkEntriesForDestructionWorker' do
+      expect(::VirtualRegistries::Container::Cache::MarkEntriesForDestructionWorker)
+        .to receive(:perform_async).with(upstream.id)
+
+      upstream.purge_cache!
+    end
   end
 end

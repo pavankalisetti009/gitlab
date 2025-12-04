@@ -219,7 +219,7 @@ GEM
       nkf
       rexml
     RedCloth (4.3.4)
-    acme-client (2.0.26)
+    acme-client (2.0.27)
       base64 (~> 0.2)
       faraday (>= 1.0, < 3.0.0)
       faraday-retry (>= 1.0, < 3.0.0)
@@ -732,7 +732,7 @@ GEM
     git (1.19.1)
       addressable (~> 2.8)
       rchardet (~> 1.8)
-    gitaly (18.6.0.pre.rc1)
+    gitaly (18.6.0)
       grpc (~> 1.0)
     gitlab (4.19.0)
       httparty (~> 0.20)
@@ -818,8 +818,8 @@ GEM
       omniauth (>= 1.3, < 3)
       pyu-ruby-sasl (>= 0.0.3.3, < 0.1)
       rubyntlm (~> 0.5)
-    gitlab_quality-test_tooling (3.0.0)
-      activesupport (>= 7.0, < 7.3)
+    gitlab_quality-test_tooling (3.1.0)
+      activesupport (>= 7.0)
       amatch (~> 0.4.1)
       fog-google (~> 1.24, >= 1.24.1)
       gitlab (>= 4.19, < 7.0)
@@ -1002,6 +1002,7 @@ GEM
       guard (~> 2.1)
       guard-compat (~> 1.1)
       rspec (>= 2.99.0, < 4.0)
+    gvltools (0.4.0)
     haml (5.2.2)
       temple (>= 0.8.0)
       tilt
@@ -1168,7 +1169,7 @@ GEM
     loofah (2.24.1)
       crass (~> 1.0.2)
       nokogiri (>= 1.12.0)
-    lookbook (2.3.4)
+    lookbook (2.3.13)
       activemodel
       css_parser
       htmlbeautifier (~> 1.3)
@@ -1539,7 +1540,7 @@ GEM
       date
       stringio
     public_suffix (6.0.1)
-    puma (6.6.1)
+    puma (7.1.0)
       nio4r (~> 2.0)
     pyu-ruby-sasl (0.0.3.3)
     raabro (1.4.0)
@@ -2003,7 +2004,7 @@ GEM
     unparser (0.6.7)
       diff-lcs (~> 1.3)
       parser (>= 3.2.0)
-    uri (0.13.3)
+    uri (1.1.1)
     useragent (0.16.11)
     valid_email (0.1.3)
       activemodel
@@ -2174,7 +2175,7 @@ DEPENDENCIES
   gettext (~> 3.5, >= 3.5.1)
   gettext_i18n_rails (~> 1.13.0)
   git (~> 1.8)
-  gitaly (~> 18.6.0.pre.rc1)
+  gitaly (~> 18.6.0)
   gitlab-active-context!
   gitlab-backup-cli!
   gitlab-chronic (~> 0.10.5)
@@ -2207,7 +2208,7 @@ DEPENDENCIES
   gitlab-utils!
   gitlab_chronic_duration (~> 0.12)
   gitlab_omniauth-ldap (~> 2.3.0)
-  gitlab_quality-test_tooling (~> 3.0.0)
+  gitlab_quality-test_tooling (~> 3.1.0)
   gon (~> 6.5.0)
   google-apis-androidpublisher_v3 (~> 0.86.0)
   google-apis-cloudbilling_v1 (~> 0.22.0)
@@ -2239,6 +2240,7 @@ DEPENDENCIES
   grpc (~> 1.76.0)
   gssapi (~> 1.3.1)
   guard-rspec
+  gvltools (~> 0.4.0)
   haml_lint (~> 0.58)
   hamlit (~> 3.0.0)
   hashdiff (~> 1.2.0)
@@ -2351,7 +2353,7 @@ DEPENDENCIES
   pry-byebug
   pry-rails (~> 0.3.9)
   pry-shell (~> 0.6.4)
-  puma (= 6.6.1)
+  puma (~> 7.1)
   rack (~> 2.2.9)
   rack-attack (~> 6.8.0)
   rack-cors (~> 2.0.1)
@@ -2436,7 +2438,7 @@ DEPENDENCIES
   undercover (~> 0.7.0)
   unicode-emoji (~> 4.0)
   unleash (~> 3.2.2)
-  uri (= 0.13.3)
+  uri (~> 1.1.1)
   valid_email (~> 0.1)
   validates_hostname (~> 1.0.13)
   version_sorter (~> 2.3)

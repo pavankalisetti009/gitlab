@@ -22,6 +22,10 @@ module Gitlab
               isOutdatedClient(gitlabVersion: $gitlabVersion)
               lastEventTransactionAt
               purchaseCreditsPath
+              overageTermsAccepted
+              canAcceptOverageTerms
+              dapPromoEnabled
+              usageDashboardPath
             }
           }
         }
@@ -38,6 +42,10 @@ module Gitlab
               monthlyWaiver {
                 creditsUsed
                 totalCredits
+                dailyUsage {
+                  date
+                  creditsUsed
+                }
               }
             }
           }
@@ -326,16 +334,11 @@ module Gitlab
       end
 
       def error(query, response)
-        Gitlab::ErrorTracking.track_and_raise_for_dev_exception(
+        Gitlab::ErrorTracking.track_and_raise_exception(
           ResponseError.new("Received an error from CustomerDot"),
           query: query,
           response: response
         )
-
-        {
-          success: false,
-          errors: response.dig(:data, :errors)
-        }
       end
 
       def default_headers

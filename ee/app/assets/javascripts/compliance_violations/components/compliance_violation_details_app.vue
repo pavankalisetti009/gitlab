@@ -82,15 +82,20 @@ export default {
         violationId: this.violationId,
       });
     },
-    hasNotes() {
-      return this.projectComplianceViolation?.notes?.nodes?.length > 0;
+    hasDiscussions() {
+      return this.projectComplianceViolation?.discussions?.nodes?.length > 0;
     },
-    notesNodes() {
-      if (!this.hasNotes) return [];
-      return this.projectComplianceViolation.notes.nodes;
+    discussions() {
+      if (!this.hasDiscussions) return [];
+      return this.projectComplianceViolation.discussions.nodes;
     },
   },
   methods: {
+    getDiscussionKey(discussion) {
+      // discussion key is important like this since after first comment changes
+      const discussionId = discussion.id;
+      return discussionId.split('/')[discussionId.split('/').length - 1];
+    },
     async handleStatusChange(newStatus) {
       this.isStatusUpdating = true;
       try {
@@ -126,6 +131,9 @@ export default {
       this.$toast.show(errorMessage, {
         variant: 'danger',
       });
+    },
+    isSystemNote(note) {
+      return note.notes.nodes[0].system;
     },
   },
   i18n: {
@@ -194,15 +202,19 @@ export default {
       :violation-id="graphqlViolationId"
       :project-path="projectComplianceViolation.project.fullPath"
     />
-    <section v-if="hasNotes" class="issuable-discussion">
+    <section v-if="hasDiscussions" class="issuable-discussion">
       <h2 class="gl-mb-4 gl-mt-0 gl-text-size-h1">{{ $options.i18n.activity }}</h2>
       <ul class="timeline main-notes-list notes">
-        <template v-for="note in notesNodes">
-          <system-note v-if="note.system" :key="note.id" :note="note" />
+        <template v-for="discussion in discussions">
+          <system-note
+            v-if="isSystemNote(discussion)"
+            :key="discussion.notes.nodes[0].id"
+            :note="discussion.notes.nodes[0]"
+          />
           <discussion-note
             v-else
-            :key="note.id"
-            :note="note"
+            :key="getDiscussionKey(discussion)"
+            :note="discussion.notes.nodes[0]"
             :violation-id="graphqlViolationId"
             @noteDeleted="handleNoteDeleted"
             @error="handleCommentError"

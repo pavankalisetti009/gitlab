@@ -184,37 +184,39 @@ these parameters:
 
 - `allow_all_integrations`
 - `allowed_integrations`
-- `group_owners_can_manage_default_branch_protection`
+- `default_project_deletion_protection`
+- `delete_unconfirmed_users`
+- `dependency_scanning_sbom_scan_api_download_limit`
+- `dependency_scanning_sbom_scan_api_upload_limit`
+- `disable_personal_access_tokens`
+- `duo_features_enabled`
 - `file_template_project_id`
 - `geo_node_allowed_ips`
 - `geo_status_timeout`
-- `default_project_deletion_protection`
-- `disable_personal_access_tokens`
-- `security_policy_global_group_approvers_enabled`
-- `security_approval_policies_limit`
+- `group_owners_can_manage_default_branch_protection`
+- `lock_duo_features_enabled`
 - `scan_execution_policies_action_limit`
 - `scan_execution_policies_schedule_limit`
-- `delete_unconfirmed_users`
-- `unconfirmed_users_delete_after_days`
-- `duo_features_enabled`
-- `lock_duo_features_enabled`
-- `use_clickhouse_for_analytics`
 - `secret_push_protection_available`
+- `security_approval_policies_limit`
+- `security_policy_global_group_approvers_enabled`
+- `unconfirmed_users_delete_after_days`
+- `use_clickhouse_for_analytics`
 - `virtual_registries_endpoints_api_limit`
 
 ```json
 {
-  "id": 1,
-  "signup_enabled": true,
-  "group_owners_can_manage_default_branch_protection": true,
-  "file_template_project_id": 1,
-  "geo_node_allowed_ips": "0.0.0.0/0, ::/0",
+  "allow_all_integrations": true,
+  "allowed_integrations": [],
   "default_project_deletion_protection": false,
   "disable_personal_access_tokens": false,
   "duo_features_enabled": true,
+  "file_template_project_id": 1,
+  "geo_node_allowed_ips": "0.0.0.0/0, ::/0",
+  "group_owners_can_manage_default_branch_protection": true,
+  "id": 1,
   "lock_duo_features_enabled": false,
-  "allow_all_integrations": true,
-  "allowed_integrations": [],
+  "signup_enabled": true,
   "virtual_registries_endpoints_api_limit": 1000,
   ...
 }
@@ -532,7 +534,7 @@ to configure other related settings. These requirements are
 | `diff_max_lines`                         | integer          | no                                   | Maximum [lines in a diff](../administration/diff_limits.md). |
 | `disable_admin_oauth_scopes`             | boolean          | no                                   | Stops administrators from connecting their GitLab accounts to non-trusted OAuth 2.0 applications that have the `api`, `read_api`, `read_repository`, `write_repository`, `read_registry`, `write_registry`, or `sudo` scopes. |
 | `disable_feed_token`                     | boolean          | no                                   | Disable display of RSS/Atom and calendar feed tokens. |
-| `disable_personal_access_tokens`         | boolean          | no                                   | Disable personal access tokens. GitLab Self-Managed, Premium and Ultimate only. There is no method available to enable a personal access token that's been disabled through the API. This is a [known issue](https://gitlab.com/gitlab-org/gitlab/-/issues/399233). For more information about available workarounds, see [Workaround](https://gitlab.com/gitlab-org/gitlab/-/issues/399233#workaround).      |
+| `disable_personal_access_tokens`         | boolean          | no                                   | Disable personal access tokens. GitLab Self-Managed, Premium and Ultimate only. There is no method available to enable a personal access token that's been disabled through the API. This is a [known issue](https://gitlab.com/gitlab-org/gitlab/-/issues/399233). For more information about available workarounds, see [Workaround](https://gitlab.com/gitlab-org/gitlab/-/issues/399233#workaround).     |
 | `disabled_oauth_sign_in_sources`         | array of strings | no                                   | Disabled OAuth sign-in sources. |
 | `disable_password_authentication_for_users_with_sso_identities` | boolean | no                     | Disable password authentication in the web interface for users with an SSO identity. This does not affect Git operations over HTTP(S). Default is `false`. |
 | `dns_rebinding_protection_enabled`       | boolean          | no                                   | Enforce DNS-rebinding attack protection. |
@@ -636,12 +638,14 @@ to configure other related settings. These requirements are
 | `maintenance_mode`                       | boolean          | no                                   | When instance is in maintenance mode, non-administrative users can sign in with read-only access and make read-only API requests. Premium and Ultimate only. |
 | `max_artifacts_size`                     | integer          | no                                   | Maximum artifacts size in MB. |
 | `max_attachment_size`                    | integer          | no                                   | Limit attachment size in MB. |
-| `max_decompressed_archive_size`          | integer          | no                                   | Maximum decompressed file size for imported archives in MB. Set to `0` for unlimited. Default is `25600`.  |
+| `max_decompressed_archive_size`          | integer          | no                                   | Maximum decompressed file size for imported archives in MB. Set to `0` for unlimited. Default is `25600`. |
 | `max_export_size`                        | integer          | no                                   | Maximum export size in MB. 0 for unlimited. Default = 0 (unlimited). |
 | `max_github_response_size_limit`         | integer          | no                                   | Maximum allowed GitHub API response size in MB. 0 for unlimited. |
 | `max_github_response_json_value_count`   | integer          | no                                   | Maximum allowed value count for GitHub API responses. 0 for unlimited. Count is an estimate based on the number of `:` `,` `{` and `[` occurrences in the response. |
-| `max_http_decompressed_size`             | integer          | no                                   | Maximum allowed size in MiB for Gzip-compressed HTTP responses after decompression. 0 for unlimited. |
-| `max_http_response_size_limit`           | integer          | no                                   | Maximum allowed size in MiB for HTTP responses. 0 for unlimited. |
+| `max_http_decompressed_size`             | integer          | no                                   | Maximum allowed size in MiB for Gzip-compressed HTTP responses from outbound requests after decompression. 0 for unlimited. |
+| `max_http_response_json_depth`           | integer          | no                                   | Maximum allowed nesting depth in JSON HTTP responses from outbound requests. |
+| `max_http_response_json_structural_chars` | integer         | no                                   | Maximum allowed object count in JSON HTTP responses from outbound requests. Count is an estimate based on the number of `:` `,` `{` and `[` occurrences in the response. Introduced in GitLab 18.4. |
+| `max_http_response_size_limit`           | integer          | no                                   | Maximum allowed size in MiB for HTTP responses from outbound requests. 0 for unlimited. Applicable for integrations, importers and webhooks. Introduced in GitLab 18.4. |
 | `max_import_size`                        | integer          | no                                   | Maximum import size in MB. 0 for unlimited. Default = 0 (unlimited). |
 | `max_import_remote_file_size`            | integer          | no                                   | Maximum remote file size for imports from external object storages. [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/384976) in GitLab 16.3. |
 | `max_login_attempts`                     | integer          | no                                   | Maximum number of sign-in attempts before locking out the user. |
@@ -681,6 +685,7 @@ to configure other related settings. These requirements are
 | `performance_bar_enabled`                | boolean          | no                                   | (Deprecated: Pass `performance_bar_allowed_group_path: nil` instead) Allow enabling the performance bar. |
 | `personal_access_token_prefix`           | string           | no                                   | Prefix for all generated personal access tokens. |
 | `pipeline_limit_per_project_user_sha`    | integer          | no                                   | Maximum number of pipeline creation requests per minute per user and commit. Disabled by default. |
+| `pipeline_limit_per_user`                | integer          | no                                   | Maximum number of pipeline creation requests per minute per user. |
 | `gitpod_enabled`                         | boolean          | no                                   | (**If enabled, requires**: `gitpod_url`) Enable [Ona integration](../integration/gitpod.md). Default is `false`. |
 | `gitpod_url`                             | string           | required by: `gitpod_enabled`        | The Ona instance URL for integration. |
 | `inactive_resource_access_tokens_delete_after_days`| integer | no                                   | Specifies retention period for inactive project and group access tokens. Default is `30`. |
@@ -696,13 +701,13 @@ to configure other related settings. These requirements are
 | `runner_jobs_request_api_limit`          | integer          | no                                   | Max number of requests per minute per runner token for requests to the `/jobs/request` runner jobs API endpoint. Default: 2000. To disable throttling, set to 0. [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/462537) in GitLab 18.5. |
 | `runner_jobs_patch_trace_api_limit`      | integer          | no                                   | Max number of requests per minute per runner token for requests to the `PATCH /jobs/:id/trace` runner jobs API endpoint. Default: 2000. To disable throttling, set to 0. [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/462537) in GitLab 18.5. |
 | `runner_jobs_endpoints_api_limit`        | integer          | no                                   | Max number of requests per minute per job token for requests to `/jobs/*` requests to the runner jobs API endpoints. Default: 200. To disable throttling, set to 0. [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/462537) in GitLab 18.5. |
-| `users_api_limit_following` | integer |    no    | Max number of requests per minute, per user or IP address. Default: 100. Set to `0` to disable limits. [Introduced](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/181054) in GitLab 17.10.  |
-| `users_api_limit_followers` | integer |    no    | Max number of requests per minute, per user or IP address. Default: 100. Set to `0` to disable limits. [Introduced](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/181054) in GitLab 17.10.  |
-| `users_api_limit_status`    | integer |    no    | Max number of requests per minute, per user or IP address. Default: 240. Set to `0` to disable limits. [Introduced](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/181054) in GitLab 17.10.  |
-| `users_api_limit_keys`      | integer |    no    | Max number of requests per minute, per user or IP address. Default: 120. Set to `0` to disable limits. [Introduced](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/181054) in GitLab 17.10.  |
-| `users_api_limit_key`       | integer |    no    | Max number of requests per minute, per user or IP address. Default: 120. Set to `0` to disable limits. [Introduced](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/181054) in GitLab 17.10.  |
-| `users_api_limit_gpg_keys`  | integer |    no    | Max number of requests per minute, per user or IP address. Default: 120. Set to `0` to disable limits. [Introduced](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/181054) in GitLab 17.10.  |
-| `users_api_limit_gpg_key`   | integer |    no    | Max number of requests per minute, per user or IP address. Default: 120. Set to `0` to disable limits. [Introduced](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/181054) in GitLab 17.10.  |
+| `users_api_limit_following` | integer |    no    | Max number of requests per minute, per user or IP address. Default: 100. Set to `0` to disable limits. [Introduced](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/181054) in GitLab 17.10. |
+| `users_api_limit_followers` | integer |    no    | Max number of requests per minute, per user or IP address. Default: 100. Set to `0` to disable limits. [Introduced](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/181054) in GitLab 17.10. |
+| `users_api_limit_status`    | integer |    no    | Max number of requests per minute, per user or IP address. Default: 240. Set to `0` to disable limits. [Introduced](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/181054) in GitLab 17.10. |
+| `users_api_limit_keys`      | integer |    no    | Max number of requests per minute, per user or IP address. Default: 120. Set to `0` to disable limits. [Introduced](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/181054) in GitLab 17.10. |
+| `users_api_limit_key`       | integer |    no    | Max number of requests per minute, per user or IP address. Default: 120. Set to `0` to disable limits. [Introduced](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/181054) in GitLab 17.10. |
+| `users_api_limit_gpg_keys`  | integer |    no    | Max number of requests per minute, per user or IP address. Default: 120. Set to `0` to disable limits. [Introduced](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/181054) in GitLab 17.10. |
+| `users_api_limit_gpg_key`   | integer |    no    | Max number of requests per minute, per user or IP address. Default: 120. Set to `0` to disable limits. [Introduced](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/181054) in GitLab 17.10. |
 | `virtual_registries_endpoints_api_limit`          | integer          | no                                   | Max number of requests on virtual registries endpoints, per IP address, per 15 seconds. Default: 1000. To disable limits, set to `0`. [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/521692) in GitLab 17.11. |
 | `prometheus_metrics_enabled`             | boolean          | no                                   | Enable Prometheus metrics. |
 | `protected_ci_variables`                 | boolean          | no                                   | CI/CD variables are protected by default. |
@@ -730,7 +735,7 @@ to configure other related settings. These requirements are
 | `require_email_verification_on_account_locked` | boolean    | no                                   | If `true`, all users on the instance must verify their identity after suspicious sign-in activity is detected. |
 | `require_personal_access_token_expiry`   | boolean          | no                                   | When enabled, users must set an expiration date when creating a group or project access token, or a personal access token owned by a non-service account. |
 | `require_two_factor_authentication`      | boolean          | no                                   | (**If enabled, requires**: `two_factor_grace_period`) Require all users to set up two-factor authentication. |
-| `resource_usage_limits`                | hash             | no                                   | Definition for resource usage limits enforced in Sidekiq workers. This setting is available for GitLab.com only.  |
+| `resource_usage_limits`                | hash             | no                                   | Definition for resource usage limits enforced in Sidekiq workers. This setting is available for GitLab.com only. |
 | `restricted_visibility_levels`           | array of strings | no                                   | Selected levels cannot be used by non-Administrator users for groups, projects or snippets. Can take `private`, `internal` and `public` as a parameter. Default is `null` which means there is no restriction.[Changed](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/131203) in GitLab 16.4: cannot select levels that are set as `default_project_visibility` and `default_group_visibility`. |
 | `rsa_key_restriction`                    | integer          | no                                   | The minimum allowed bit length of an uploaded RSA key. Default is `0` (no restriction). `-1` disables RSA keys. |
 | `session_expire_delay`                   | integer          | no                                   | Session duration in minutes. GitLab restart is required to apply changes. |

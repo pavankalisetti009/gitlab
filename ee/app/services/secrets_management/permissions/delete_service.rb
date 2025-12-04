@@ -3,7 +3,6 @@
 module SecretsManagement
   module Permissions
     class DeleteService < ProjectBaseService
-      include ErrorResponseHelper
       include Helpers::ExclusiveLeaseHelper
 
       def execute(principal:)
@@ -16,7 +15,7 @@ module SecretsManagement
 
       def execute_delete_permission(principal:)
         secrets_manager = project.secrets_manager
-        return inactive_response unless secrets_manager&.active?
+        return secrets_manager_inactive_response unless secrets_manager&.active?
 
         return invalid_principal_response unless valid_principal?(principal)
 
@@ -38,7 +37,7 @@ module SecretsManagement
       def valid_principal?(principal)
         return false if principal.blank? || principal[:type].blank? || principal[:id].blank?
 
-        valid_type = SecretsManagement::SecretPermission::VALID_PRINCIPAL_TYPES.include?(principal[:type])
+        valid_type = SecretsManagement::BaseSecretsPermission::VALID_PRINCIPAL_TYPES.include?(principal[:type])
         valid_id = principal[:id].to_s.match?(/\A\d+\z/)
         valid_type && valid_id
       end

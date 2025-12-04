@@ -68,6 +68,10 @@ func (m *mockWebSocketConn) SetReadDeadline(_ time.Time) error {
 	return m.setDeadlineError
 }
 
+func (m *mockWebSocketConn) SetWriteDeadline(_ time.Time) error {
+	return m.setDeadlineError
+}
+
 type mockWorkflowStream struct {
 	sendEvents  []*pb.ClientEvent
 	sendMu      sync.Mutex
@@ -197,7 +201,8 @@ func Test_newRunner(t *testing.T) {
 			"Authorization":        "Bearer test-token",
 			"x-gitlab-oauth-token": "oauth-token-123",
 		},
-		Secure: false,
+		Secure:             false,
+		LockConcurrentFlow: true,
 	}
 
 	runner, err := newRunner(mockConn, apiClient, req, cfg, initRdb(t))
@@ -210,6 +215,37 @@ func Test_newRunner(t *testing.T) {
 	require.NotNil(t, runner.wf)
 	require.NotNil(t, runner.client)
 	require.Equal(t, apiClient, runner.rails)
+
+	runner.Close()
+}
+
+func Test_newRunner_WithoutRedis(t *testing.T) {
+	server := setupTestServer(t)
+	mockConn := &mockWebSocketConn{}
+
+	apiServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", api.ResponseContentType)
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer apiServer.Close()
+
+	apiURL, err := url.Parse(apiServer.URL)
+	require.NoError(t, err)
+
+	apiClient := api.NewAPI(apiURL, "test-version", http.DefaultTransport)
+
+	req := httptest.NewRequest("GET", "/duo", nil)
+	cfg := &api.DuoWorkflow{
+		ServiceURI:         server.Addr,
+		Headers:            map[string]string{},
+		LockConcurrentFlow: true,
+	}
+
+	runner, err := newRunner(mockConn, apiClient, req, cfg, nil)
+
+	require.NoError(t, err)
+	require.False(t, runner.lockFlow)
+	require.Nil(t, runner.lockManager)
 
 	runner.Close()
 }
@@ -398,12 +434,13 @@ func TestRunner_Execute_with_close_errors(t *testing.T) {
 
 func TestRunner_handleWebSocketMessage(t *testing.T) {
 	tests := []struct {
-		name           string
-		message        []byte
-		sendError      error
-		mcpManager     *mockMcpManager
-		expectedErrMsg string
-		expectMcpTools bool
+		name               string
+		message            []byte
+		clientCapabilities []string
+		sendError          error
+		mcpManager         *mockMcpManager
+		expectedErrMsg     string
+		expectMcpTools     bool
 	}{
 		{
 			name:           "invalid json",
@@ -428,8 +465,9 @@ func TestRunner_handleWebSocketMessage(t *testing.T) {
 			expectedErrMsg: "",
 		},
 		{
-			name:    "start request with mcp tools",
-			message: []byte(`{"startRequest": {"workflowID": "id-123", "goal": "test goal", "mcpTools": [{"name": "get_issue"}]}}`),
+			name:               "start request with mcp tools",
+			message:            []byte(`{"startRequest": {"workflowID": "id-123", "goal": "test goal", "mcpTools": [{"name": "get_issue"}]}}`),
+			clientCapabilities: []string{},
 			mcpManager: &mockMcpManager{
 				tools: []*pb.McpTool{
 					{Name: "test_tool", Description: "A test tool"},
@@ -439,11 +477,18 @@ func TestRunner_handleWebSocketMessage(t *testing.T) {
 			expectedErrMsg: "",
 		},
 		{
-			name:           "start request without mcp manager",
-			message:        []byte(`{"startRequest": {"workflowID": "id-123", "goal": "test goal"}}`),
-			mcpManager:     nil,
-			expectMcpTools: false,
-			expectedErrMsg: "",
+			name:               "start request without mcp manager",
+			message:            []byte(`{"startRequest": {"workflowID": "id-123", "goal": "test goal"}}`),
+			clientCapabilities: []string{},
+			mcpManager:         nil,
+			expectMcpTools:     false,
+			expectedErrMsg:     "",
+		},
+		{
+			name:               "start request with supported and unsupported ClientCapabilities",
+			message:            []byte(`{"startRequest": {"workflowID": "id-123", "goal": "test goal", "clientCapabilities": ["shell_command", "incremental_streaming", "unsupported_capability"]}}`),
+			clientCapabilities: []string{"shell_command", "incremental_streaming"},
+			expectedErrMsg:     "",
 		},
 	}
 
@@ -485,6 +530,13 @@ func TestRunner_handleWebSocketMessage(t *testing.T) {
 					assert.Equal(t, "get_issue", startReq.McpTools[0].Name)
 					assert.Equal(t, "test_tool", startReq.McpTools[1].Name)
 					assert.Equal(t, "A test tool", startReq.McpTools[1].Description)
+				}
+
+				if tt.clientCapabilities != nil {
+					require.Len(t, mockWf.sendEvents, 1)
+					startReq := mockWf.sendEvents[0].GetStartRequest()
+					require.NotNil(t, startReq)
+					assert.Equal(t, tt.clientCapabilities, startReq.ClientCapabilities)
 				}
 			}
 		})
@@ -790,10 +842,11 @@ func TestRunner_closeWebSocketConnection(t *testing.T) {
 
 func TestRunner_sendActionToWs(t *testing.T) {
 	tests := []struct {
-		name           string
-		action         *pb.Action
-		writeError     error
-		expectedErrMsg string
+		name             string
+		action           *pb.Action
+		writeError       error
+		setDeadlineError error
+		expectedErrMsg   string
 	}{
 		{
 			name: "successful send",
@@ -820,12 +873,26 @@ func TestRunner_sendActionToWs(t *testing.T) {
 			writeError:     errors.New("write failed"),
 			expectedErrMsg: "sendActionToWs: failed to send WS message: write failed",
 		},
+		{
+			name: "set write deadline error",
+			action: &pb.Action{
+				RequestID: "req-789",
+				Action: &pb.Action_RunCommand{
+					RunCommand: &pb.RunCommandAction{
+						Program: "ls",
+					},
+				},
+			},
+			setDeadlineError: errors.New("set write deadline failed"),
+			expectedErrMsg:   "sendActionToWs: failed to set write deadline: set write deadline failed",
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockConn := &mockWebSocketConn{
-				writeError: tt.writeError,
+				writeError:       tt.writeError,
+				setDeadlineError: tt.setDeadlineError,
 			}
 
 			testURL, _ := url.Parse("http://example.com")

@@ -64,7 +64,7 @@ RSpec.describe Security::ProjectTrackedContexts::FindOrCreateService, feature_ca
     context 'when tracked context already exists' do
       let_it_be(:existing_context) do
         create(:security_project_tracked_context,
-          :untracked,
+          :tracked,
           project: project,
           context_name: 'main',
           context_type: :branch)
@@ -85,6 +85,17 @@ RSpec.describe Security::ProjectTrackedContexts::FindOrCreateService, feature_ca
         service.execute
 
         expect(existing_context.reload.state).to eq(original_state)
+      end
+
+      context 'when context is not tracked' do
+        before do
+          existing_context.untrack!
+        end
+
+        it 'returns an error' do
+          expect(result).to be_error
+          expect(result.message).to eq('Context is not tracked')
+        end
       end
     end
 
@@ -169,6 +180,7 @@ RSpec.describe Security::ProjectTrackedContexts::FindOrCreateService, feature_ca
     context 'when finding existing context by different attributes' do
       let_it_be(:branch_context) do
         create(:security_project_tracked_context,
+          :tracked,
           project: project,
           context_name: 'develop',
           context_type: :branch)
@@ -176,6 +188,7 @@ RSpec.describe Security::ProjectTrackedContexts::FindOrCreateService, feature_ca
 
       let_it_be(:tag_context) do
         create(:security_project_tracked_context,
+          :tracked,
           project: project,
           context_name: 'develop',
           context_type: :tag)
@@ -206,6 +219,7 @@ RSpec.describe Security::ProjectTrackedContexts::FindOrCreateService, feature_ca
       let_it_be(:other_project) { create(:project) }
       let_it_be(:other_project_context) do
         create(:security_project_tracked_context,
+          :tracked,
           project: other_project,
           context_name: 'main',
           context_type: :branch)

@@ -55,6 +55,7 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
           records.first.finding.scanner
           records.first.finding.identifiers
           records.first.vulnerability_read
+          records.first.dismissed_by
         end.not_to exceed_query_limit(0)
       end
     end
@@ -267,8 +268,6 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
         it "returns vulnerabilities for all projects on the current user's instance security dashboard" do
           is_expected.to contain_exactly(critical_vulnerability, high_vulnerability, low_vulnerability)
         end
-
-        it_behaves_like 'vulnerability filterable', :params
       end
 
       context 'when user does not have valid projects' do
@@ -277,28 +276,6 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
 
         it 'returns no vulnerabilities' do
           is_expected.to be_empty
-        end
-      end
-
-      context 'when filtering vulnerabilities with owasp_top_10_2021', :elastic do
-        let(:params) { { owasp_top_ten_2021: ['A1:2021-Broken Access Control'] } }
-        let(:error_msg) { "Feature is not supported for InstanceSecurityDashboard" }
-
-        it 'raises an error' do
-          expect_graphql_error_to_be_created(Gitlab::Graphql::Errors::ArgumentError, s_(error_msg)) do
-            resolved
-          end
-        end
-      end
-
-      context 'when filtering vulnerabilities with policy_violations', :elastic do
-        let(:params) { { policy_violations: ['DISMISSED_IN_MR'] } }
-        let(:error_msg) { "Feature is not supported for InstanceSecurityDashboard" }
-
-        it 'raises an error' do
-          expect_graphql_error_to_be_created(Gitlab::Graphql::Errors::ArgumentError, s_(error_msg)) do
-            resolved
-          end
         end
       end
     end
@@ -410,23 +387,6 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
 
       let_it_be(:vuln_read) { create(:vulnerability_read, severity: :medium) }
 
-      context 'without elasticsearch' do
-        before do
-          allow(::Search::Elastic::VulnerabilityIndexingHelper).to receive(:vulnerability_indexing_allowed?).and_return(false)
-        end
-
-        it_behaves_like 'raises ES errors'
-      end
-
-      context 'with advanced_vulnerability_management FF disabled' do
-        before do
-          allow(::Search::Elastic::VulnerabilityIndexingHelper).to receive(:vulnerability_indexing_allowed?).and_return(true)
-          stub_feature_flags(advanced_vulnerability_management: false)
-        end
-
-        it_behaves_like 'raises ES errors'
-      end
-
       context 'with elastic search' do
         before do
           stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
@@ -466,10 +426,6 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
           expect do
             resolve(described_class, obj: vulnerable, args: params, ctx: { current_user: current_user }).to_a
           end.not_to exceed_query_limit(control)
-        end
-
-        context 'when owasp_top_ten_2021 includes "none" and other values' do
-          it_behaves_like 'validates owasp_top_ten_2021 filter', :params
         end
 
         context 'with reachability as parameter' do
@@ -537,7 +493,12 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
       def create_vuln_with_status(severity:, status: nil)
         vuln = create(:vulnerability, :with_read, project: project, severity: severity)
         if status
-          finding = create(:vulnerabilities_finding, vulnerability: vuln, project: project)
+          finding = create(
+            :vulnerabilities_finding,
+            report_type: :secret_detection,
+            vulnerability: vuln,
+            project: project
+          )
           create(:finding_token_status, finding: finding, project: project, status: status)
         end
 
@@ -587,23 +548,6 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
 
     context 'when filtering vulnerabilities with policy_violations', :elastic do
       let(:params) { { policy_violations: ['DISMISSED_IN_MR'] } }
-
-      context 'without elasticsearch' do
-        before do
-          allow(::Search::Elastic::VulnerabilityIndexingHelper).to receive(:vulnerability_indexing_allowed?).and_return(false)
-        end
-
-        it_behaves_like 'raises ES errors'
-      end
-
-      context 'with advanced_vulnerability_management FF disabled' do
-        before do
-          allow(::Search::Elastic::VulnerabilityIndexingHelper).to receive(:vulnerability_indexing_allowed?).and_return(true)
-          stub_feature_flags(advanced_vulnerability_management: false)
-        end
-
-        it_behaves_like 'raises ES errors'
-      end
 
       shared_examples_for 'when elasticsearch is available' do
         let_it_be(:dismissed_vulnerability_read) { create(:vulnerability_read, project: project) }
@@ -689,6 +633,8 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
       context 'when vulnerable is a group' do
         let(:vulnerable) { group }
 
+        it_behaves_like 'validates filters from vulnerability filterable', :params
+
         context 'when the group has more vulnerabilities than the max' do
           let(:error_msg) { 'Group has more than 20k vulnerabilities.' }
           let(:max) { group.vulnerabilities.count - 1 }
@@ -717,14 +663,6 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
           it 'only returns vulnerabilities with matching identifier_name alone' do
             is_expected.to contain_exactly(vuln_read_with_identifier_name_first.vulnerability)
           end
-        end
-
-        context 'with access advanced vulnerability management enabled' do
-          before do
-            allow(current_user).to receive(:can?).with(:access_advanced_vulnerability_management, vulnerable).and_return(true)
-          end
-
-          it_behaves_like 'vulnerability filterable', :params
         end
       end
     end
@@ -767,7 +705,7 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
       end
     end
 
-    it_behaves_like 'vulnerability filterable', :params
+    it_behaves_like 'validates filters from vulnerability filterable', :params
 
     describe "association preloading" do
       context "when filtering by postgres" do

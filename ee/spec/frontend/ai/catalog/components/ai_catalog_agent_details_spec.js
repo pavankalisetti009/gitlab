@@ -1,29 +1,26 @@
 import { shallowMount } from '@vue/test-utils';
-import { GlBadge, GlLink, GlTruncateText } from '@gitlab/ui';
+import { GlBadge, GlLink, GlToken, GlTruncateText } from '@gitlab/ui';
 import AiCatalogAgentDetails from 'ee/ai/catalog/components/ai_catalog_agent_details.vue';
 import AiCatalogItemField from 'ee/ai/catalog/components/ai_catalog_item_field.vue';
 import AiCatalogItemVisibilityField from 'ee/ai/catalog/components/ai_catalog_item_visibility_field.vue';
 import FormSection from 'ee/ai/catalog/components/form_section.vue';
-import { mockAgent, mockAgentVersion, mockToolsTitles } from '../mock_data';
+import { mockAgent, mockToolsNodes, mockAgentVersion } from '../mock_data';
 
 describe('AiCatalogAgentDetails', () => {
   let wrapper;
 
   const defaultProps = {
-    item: {
-      ...mockAgent,
-      latestVersion: {
-        ...mockAgentVersion,
-        tools: {
-          nodes: mockToolsTitles.map((t) => ({ title: t })),
-        },
-      },
+    item: mockAgent,
+    versionData: {
+      systemPrompt: mockAgentVersion.systemPrompt,
+      tools: mockToolsNodes,
     },
   };
 
-  const createComponent = ({ props = defaultProps } = {}) => {
+  const createComponent = ({ props } = {}) => {
     wrapper = shallowMount(AiCatalogAgentDetails, {
       propsData: {
+        ...defaultProps,
         ...props,
       },
       stubs: {
@@ -45,11 +42,10 @@ describe('AiCatalogAgentDetails', () => {
   });
 
   it('renders sections', () => {
-    expect(findAllSections()).toHaveLength(4);
+    expect(findAllSections()).toHaveLength(3);
     expect(findSection(0).attributes('title')).toBe('Basic information');
     expect(findSection(1).attributes('title')).toBe('Visibility & access');
-    expect(findSection(2).attributes('title')).toBe('Prompts');
-    expect(findSection(3).attributes('title')).toBe('Available tools');
+    expect(findSection(2).attributes('title')).toBe('Configuration');
   });
 
   it('renders "Basic information" details', () => {
@@ -107,28 +103,38 @@ describe('AiCatalogAgentDetails', () => {
     });
   });
 
-  it('renders "Prompts" details', () => {
-    const promptsDetails = findAllFieldsForSection(2);
-    expect(promptsDetails.at(0).props()).toMatchObject({
-      title: 'System prompt',
+  describe('renders "Configuration" details', () => {
+    let configurationDetails;
+
+    beforeEach(() => {
+      configurationDetails = findAllFieldsForSection(2);
     });
 
-    const truncateText = findSystemPromptTruncateText();
-    expect(truncateText.props()).toMatchObject({
-      lines: 20,
-      showMoreText: 'Show more',
-      showLessText: 'Show less',
-      toggleButtonProps: { class: 'gl-font-regular' },
+    it('renders "System prompt"', () => {
+      expect(configurationDetails.at(0).props()).toMatchObject({
+        title: 'System prompt',
+      });
+
+      const truncateText = findSystemPromptTruncateText();
+      expect(truncateText.props()).toMatchObject({
+        lines: 20,
+        showMoreText: 'Show more',
+        showLessText: 'Show less',
+        toggleButtonProps: { class: 'gl-font-regular' },
+      });
+
+      expect(configurationDetails.at(0).find('pre').text()).toBe(mockAgentVersion.systemPrompt);
     });
 
-    expect(promptsDetails.at(0).find('pre').text()).toBe(mockAgent.latestVersion.systemPrompt);
-  });
+    it('renders "Tools" with sorted values', () => {
+      const toolsField = configurationDetails.at(1);
+      expect(toolsField.props('title')).toBe('Tools');
 
-  it('renders "Tools" details with sorted values', () => {
-    const toolsDetails = findAllFieldsForSection(3);
-    expect(toolsDetails.at(0).props()).toMatchObject({
-      title: 'Tools',
-      value: 'Ci Linter, Gitlab Blob Search, Run Git Command',
+      const tokens = toolsField.findAllComponents(GlToken);
+      expect(tokens).toHaveLength(3);
+      expect(tokens.at(0).text()).toBe('Ci Linter');
+      expect(tokens.at(1).text()).toBe('Gitlab Blob Search');
+      expect(tokens.at(2).text()).toBe('Run Git Command');
     });
   });
 });

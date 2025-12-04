@@ -54,7 +54,7 @@ module EE
         end
 
         before_action do
-          push_force_frontend_feature_flag(:work_item_epics, !!project&.group&.work_item_epics_enabled?)
+          push_force_frontend_feature_flag(:work_item_epics, !!project&.group&.allowed_work_item_type?(:epic))
         end
 
         before_action only: %i[show index] do

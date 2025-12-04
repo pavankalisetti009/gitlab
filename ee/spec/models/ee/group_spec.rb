@@ -6,6 +6,7 @@ RSpec.describe Group, feature_category: :groups_and_projects do
   include LoginHelpers
   using RSpec::Parameterized::TableSyntax
   include ReactiveCachingHelpers
+  include RolesHelpers
 
   let(:group) { create(:group) }
 
@@ -275,6 +276,10 @@ RSpec.describe Group, feature_category: :groups_and_projects do
         expect(described_class.not_indexed_in_elasticsearch).to contain_exactly(not_indexed_group)
       end
     end
+  end
+
+  describe 'concerns' do
+    it { is_expected.to include_module(::Ai::CustomizablePermission) }
   end
 
   describe 'validations' do
@@ -1420,7 +1425,6 @@ RSpec.describe Group, feature_category: :groups_and_projects do
       group.add_maintainer(create(:user, :alert_bot))
       group.add_maintainer(create(:user, :support_bot))
       group.add_maintainer(create(:user, :visual_review_bot))
-      group.add_maintainer(create(:user, :migration_bot))
       group.add_maintainer(create(:user, :security_bot))
       group.add_maintainer(create(:user, :automation_bot))
       group.add_maintainer(create(:user, :admin_bot))
@@ -1574,7 +1578,6 @@ RSpec.describe Group, feature_category: :groups_and_projects do
       project.add_maintainer(create(:user, :alert_bot))
       project.add_maintainer(create(:user, :support_bot))
       project.add_maintainer(create(:user, :visual_review_bot))
-      project.add_maintainer(create(:user, :migration_bot))
       project.add_maintainer(create(:user, :security_bot))
       project.add_maintainer(create(:user, :automation_bot))
       project.add_maintainer(create(:user, :admin_bot))
@@ -1698,7 +1701,6 @@ RSpec.describe Group, feature_category: :groups_and_projects do
       invited_group.add_maintainer(create(:user, :alert_bot))
       invited_group.add_maintainer(create(:user, :support_bot))
       invited_group.add_maintainer(create(:user, :visual_review_bot))
-      invited_group.add_maintainer(create(:user, :migration_bot))
       invited_group.add_maintainer(create(:user, :security_bot))
       invited_group.add_maintainer(create(:user, :automation_bot))
       invited_group.add_maintainer(create(:user, :admin_bot))
@@ -2055,7 +2057,6 @@ RSpec.describe Group, feature_category: :groups_and_projects do
       invited_group.add_maintainer(create(:user, :alert_bot))
       invited_group.add_maintainer(create(:user, :support_bot))
       invited_group.add_maintainer(create(:user, :visual_review_bot))
-      invited_group.add_maintainer(create(:user, :migration_bot))
       invited_group.add_maintainer(create(:user, :security_bot))
       invited_group.add_maintainer(create(:user, :automation_bot))
       invited_group.add_maintainer(create(:user, :admin_bot))
@@ -2202,7 +2203,6 @@ RSpec.describe Group, feature_category: :groups_and_projects do
       group.add_maintainer(create(:user, :alert_bot))
       group.add_maintainer(create(:user, :support_bot))
       group.add_maintainer(create(:user, :visual_review_bot))
-      group.add_maintainer(create(:user, :migration_bot))
       group.add_maintainer(create(:user, :security_bot))
       group.add_maintainer(create(:user, :automation_bot))
       group.add_maintainer(create(:user, :admin_bot))
@@ -4151,28 +4151,6 @@ RSpec.describe Group, feature_category: :groups_and_projects do
     end
   end
 
-  describe '#work_item_epics_enabled?' do
-    let_it_be(:group) { build(:group) }
-
-    subject { group.work_item_epics_enabled? }
-
-    context 'when license is available' do
-      before do
-        stub_licensed_features(epics: true)
-      end
-
-      it { is_expected.to be true }
-    end
-
-    context 'when license is unavailable' do
-      before do
-        stub_licensed_features(epics: false)
-      end
-
-      it { is_expected.to be false }
-    end
-  end
-
   describe '#can_manage_extensions_marketplace_for_enterprise_users?' do
     let_it_be(:root_group) { create(:group) }
     let_it_be(:child_group) { create(:group, parent: root_group) }
@@ -4458,4 +4436,28 @@ RSpec.describe Group, feature_category: :groups_and_projects do
   end
 
   it_behaves_like 'a resource that has custom roles', :group
+
+  describe '#roles_user_can_assign' do
+    subject(:roles_user_can_assign) { resource.roles_user_can_assign(user) }
+
+    let(:user) { create(:user) }
+    let(:resource) { group }
+    let(:membership) { create(:group_member, user: user, group: resource) }
+
+    before do
+      membership.update!(access_level: access_level_value(:guest))
+    end
+
+    context 'when minimal_access_role is not enabled' do
+      specify { expect(roles_user_can_assign.keys).to match_array(['Guest']) }
+    end
+
+    context 'when minimal_access_role is enabled' do
+      before do
+        stub_licensed_features(minimal_access_role: true)
+      end
+
+      specify { expect(roles_user_can_assign.keys).to match_array(['Guest', 'Minimal Access']) }
+    end
+  end
 end

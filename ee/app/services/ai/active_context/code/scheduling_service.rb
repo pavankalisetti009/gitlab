@@ -7,6 +7,10 @@ module Ai
         include Gitlab::Scheduling::TaskExecutor
 
         TASKS = {
+          create_enabled_namespace: {
+            period: 1.day,
+            dispatch: { event: CreateEnabledNamespaceEvent }
+          },
           process_pending_enabled_namespace: {
             period: 30.minutes,
             if: -> { ::Ai::ActiveContext::Code::EnabledNamespace.pending.with_active_connection.exists? },
@@ -30,11 +34,6 @@ module Ai
           mark_repository_as_pending_deletion: {
             period: 2.hours,
             dispatch: { event: MarkRepositoryAsPendingDeletionEvent }
-          },
-          saas_initial_indexing: {
-            period: 1.hour,
-            if: -> { ::Gitlab::Saas.feature_available?(:duo_chat_on_saas) },
-            dispatch: { event: SaasInitialIndexingEvent }
           }
         }.freeze
 

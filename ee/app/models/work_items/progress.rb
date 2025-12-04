@@ -52,8 +52,7 @@ module WorkItems
     end
 
     def rollups_enabled?
-      work_item.project.okr_automatic_rollups_enabled? &&
-        rollup_progress?
+      rollup_progress?
     end
   end
 end

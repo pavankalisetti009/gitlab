@@ -21,7 +21,7 @@ Sessions show the status of the agents and flows you've run in GitLab.
 In the Agent Platform, sessions are created when you:
 
 - Run an agent or flow in the GitLab UI. This includes:
-  - Flows like the [Fix your CI/CD Pipeline Flow](../flows/convert_to_gitlab_ci.md).
+  - Flows like the [Fix your CI/CD Pipeline Flow](../flows/fix_pipeline.md).
   - Any flow invoked with a trigger.
 
 Sessions are not created when:
@@ -48,3 +48,11 @@ To view a list of sessions you've triggered:
 1. On the right sidebar, select **GitLab Duo sessions**.
 1. Select any session to view more details.
 1. Optional. Filter the details to show all logs or a concise subset only.
+
+## Session retention
+
+Sessions are automatically deleted 30 days after the last activity.
+The retention period resets each time you interact with the session.
+For example, if you interact with a session every 20 days, it will never be automatically deleted.
+
+In the IDE, you can also manually delete sessions before the 30-day retention period expires.

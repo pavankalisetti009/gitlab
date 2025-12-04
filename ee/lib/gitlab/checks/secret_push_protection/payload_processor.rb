@@ -180,8 +180,7 @@ module Gitlab
         private
 
         def diff_blobs(paths_slice)
-          blob_pair_ids = paths_slice
-          .filter_map do |path|
+          blob_pair_ids = paths_slice.filter_map do |path|
             next if path.old_blob_id == path.new_blob_id
 
             Gitaly::DiffBlobsRequest::BlobPair.new(
@@ -189,6 +188,9 @@ module Gitlab
               right_blob: path.new_blob_id
             )
           end
+
+          return [] if blob_pair_ids.empty?
+
           project.repository.diff_blobs(blob_pair_ids, patch_bytes_limit: PAYLOAD_BYTES_LIMIT).to_a
         end
 

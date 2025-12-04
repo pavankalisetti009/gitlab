@@ -49,6 +49,11 @@ class Project < ApplicationRecord
   include SafelyChangeColumnDefault
   include Todoable
   include Namespaces::AdjournedDeletable
+  include Cells::Claimable
+
+  cells_claims_attribute :id, type: CLAIMS_BUCKET_TYPE::PROJECT_IDS
+
+  cells_claims_metadata subject_type: CLAIMS_SUBJECT_TYPE::PROJECT, subject_key: :id
 
   columns_changing_default :organization_id
 
@@ -200,7 +205,7 @@ class Project < ApplicationRecord
   belongs_to :namespace
   # Sync deletion via DB Trigger to ensure we do not have
   # a project without a project_namespace (or vice-versa)
-  belongs_to :project_namespace, autosave: true, class_name: 'Namespaces::ProjectNamespace', foreign_key: 'project_namespace_id', inverse_of: :project
+  belongs_to :project_namespace, autosave: true, class_name: 'Namespaces::ProjectNamespace', foreign_key: 'project_namespace_id', inverse_of: :project, dependent: :destroy # rubocop:disable Cop/ActiveRecordDependent -- needed to unclaim
   alias_method :parent, :namespace
   alias_attribute :parent_id, :namespace_id
 
@@ -539,7 +544,11 @@ class Project < ApplicationRecord
 
   with_options to: :project_namespace, allow_nil: true do
     delegate :deletion_schedule
+    delegate :allowed_work_item_types
+    delegate :allowed_work_item_type?
+    delegate :supports_work_items?
   end
+
   delegate :merge_requests_access_level, :forking_access_level, :issues_access_level, :wiki_access_level, :snippets_access_level, :builds_access_level, :repository_access_level, :package_registry_access_level, :pages_access_level, :metrics_dashboard_access_level, :analytics_access_level, :operations_access_level, :security_and_compliance_access_level, :container_registry_access_level, :environments_access_level, :feature_flags_access_level, :monitor_access_level, :releases_access_level, :infrastructure_access_level, :model_experiments_access_level, :model_registry_access_level, to: :project_feature, allow_nil: true
   delegate :name, to: :owner, allow_nil: true, prefix: true
   delegate :jira_dvcs_server_last_sync_at, to: :feature_usage
@@ -955,7 +964,7 @@ class Project < ApplicationRecord
   end
 
   scope :with_api_commit_entity_associations, -> {
-    preload(:project_feature, :route, namespace: [:route, :owner])
+    preload(:ci_pipelines, :project_feature, :route, namespace: [:route, :owner])
   }
 
   scope :with_group_child_entity_associations, -> {
@@ -1032,7 +1041,8 @@ class Project < ApplicationRecord
   mount_uploader :bfg_object_map, AttachmentUploader
 
   def self.with_api_entity_associations
-    preload(:project_feature, :route, :topics, :group, :timelogs, namespace: [:route, :owner])
+    with_fork_network_associations
+      .preload(:project_feature, :route, :topics, :group, :timelogs, namespace: [:route, :owner])
   end
 
   def self.with_web_entity_associations

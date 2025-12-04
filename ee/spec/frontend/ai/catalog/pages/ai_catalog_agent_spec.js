@@ -13,6 +13,9 @@ import {
   mockAiCatalogAgentNullResponse,
   mockAgent,
   mockAgentConfigurationForProject,
+  mockAgentConfigurationForGroup,
+  mockAgentVersion,
+  mockAgentPinnedVersion,
 } from '../mock_data';
 
 jest.mock('~/sentry/sentry_browser_wrapper');
@@ -22,7 +25,7 @@ Vue.use(VueApollo);
 const RouterViewStub = Vue.extend({
   name: 'RouterViewStub',
   // eslint-disable-next-line vue/require-prop-types
-  props: ['aiCatalogAgent'],
+  props: ['aiCatalogAgent', 'versionData'],
   template: '<div />',
 });
 
@@ -89,6 +92,9 @@ describe('AiCatalogAgent', () => {
 
   describe('when request succeeds', () => {
     beforeEach(async () => {
+      createComponent({
+        provide: { projectId: 1, rootGroupId: '1' },
+      });
       await waitForPromises();
     });
 
@@ -101,14 +107,15 @@ describe('AiCatalogAgent', () => {
       expect(findRouterView().props('aiCatalogAgent')).toEqual({
         ...mockAgent,
         configurationForProject: mockAgentConfigurationForProject,
+        configurationForGroup: mockAgentConfigurationForGroup,
       });
     });
   });
 
   describe('when displaying soft-deleted agents', () => {
-    it('should show agent details in the Projects area', async () => {
+    it('should show soft-deleted agents in the Projects area', async () => {
       createComponent({
-        provide: { projectId: 1 },
+        provide: { projectId: 1, rootGroupId: '1' },
       });
       await waitForPromises();
 
@@ -117,10 +124,12 @@ describe('AiCatalogAgent', () => {
         showSoftDeleted: true,
         hasProject: true,
         projectId: 'gid://gitlab/Project/1',
+        hasGroup: true,
+        groupId: 'gid://gitlab/Group/1',
       });
     });
 
-    it('should not show agent details in the explore area', async () => {
+    it('should not show soft-deleted agents in the explore area', async () => {
       createComponent({
         provide: { isGlobal: true }, // "Projects" area is not global, "Explore" is
       });
@@ -131,6 +140,8 @@ describe('AiCatalogAgent', () => {
         showSoftDeleted: false,
         hasProject: false,
         projectId: 'gid://gitlab/Project/0',
+        hasGroup: false,
+        groupId: 'gid://gitlab/Group/0',
       });
     });
   });
@@ -155,6 +166,54 @@ describe('AiCatalogAgent', () => {
       expect(findErrorAlert().exists()).toBe(true);
       expect(findErrorAlert().props('errors')).toEqual(['Agent does not exist']);
       expect(Sentry.captureException).toHaveBeenCalledWith(error);
+    });
+  });
+
+  describe('when displaying different agent versions', () => {
+    it('should show latest version when in the explore area', async () => {
+      createComponent({
+        provide: { isGlobal: true },
+      });
+      await waitForPromises();
+
+      const routerView = findRouterView();
+      expect(routerView.props('versionData')).toMatchObject({
+        systemPrompt: mockAgentVersion.systemPrompt, // uses mock latest version data
+        tools: mockAgentVersion.tools.nodes,
+      });
+    });
+
+    it('should show pinned version when in project area', async () => {
+      createComponent({
+        provide: { projectId: 1 },
+      });
+      await waitForPromises();
+
+      const routerView = findRouterView();
+      expect(routerView.props('versionData')).toMatchObject({
+        systemPrompt: mockAgentPinnedVersion.systemPrompt, // uses mock pinned version data
+        tools: mockAgentPinnedVersion.tools.nodes,
+      });
+    });
+  });
+
+  describe('when itemType is not AGENT', () => {
+    it('renders agent not found', async () => {
+      const mockFlowResponse = {
+        data: {
+          aiCatalogItem: {
+            ...mockAgent,
+            itemType: 'FLOW',
+          },
+        },
+      };
+      createComponent({
+        agentQueryHandler: jest.fn().mockResolvedValue(mockFlowResponse),
+      });
+      await waitForPromises();
+
+      expect(findGlEmptyState().exists()).toBe(true);
+      expect(findRouterView().exists()).toBe(false);
     });
   });
 });

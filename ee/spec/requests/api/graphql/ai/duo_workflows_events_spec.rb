@@ -10,7 +10,7 @@ RSpec.describe 'Querying Duo Workflow Events', feature_category: :duo_agent_plat
   let_it_be(:another_project) { create(:project, group: group) }
   let_it_be(:user) { create(:user, developer_of: [project, another_project]) }
   let_it_be(:another_user) { create(:user, developer_of: project) }
-  let_it_be(:checkpoints) { create_list(:duo_workflows_checkpoint, 3, project: project) }
+  let_it_be(:checkpoints) { create_list(:duo_workflows_checkpoint, 3, :ui_chat_log, project: project) }
 
   let_it_be(:ide_workflow) do
     create(:duo_workflows_workflow, project: project, user: user, checkpoints: checkpoints, environment: :ide)
@@ -40,7 +40,16 @@ RSpec.describe 'Querying Duo Workflow Events', feature_category: :duo_agent_plat
           workflowGoal,
           workflowDefinition,
           threadTs,
-          parentTs
+          parentTs,
+          duoMessages {
+            content
+            messageType
+            status
+            toolInfo
+            timestamp
+            correlationId
+            role
+          }
         }
     }
     GRAPHQL
@@ -60,6 +69,11 @@ RSpec.describe 'Querying Duo Workflow Events', feature_category: :duo_agent_plat
   end
 
   context 'when user is logged in' do
+    let_it_be(:chat_log) do
+      [{ "content" => "hi", "correlationId" => nil, "messageType" => "user", "role" => nil, "status" => "success",
+         "timestamp" => "2025-11-25T21:10:57.734182+00:00", "toolInfo" => nil }]
+    end
+
     before do
       allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
       # rubocop:disable RSpec/AnyInstanceOf  -- not the next instance
@@ -82,6 +96,7 @@ RSpec.describe 'Querying Duo Workflow Events', feature_category: :duo_agent_plat
         expect(event['parentTs']).to eq(checkpoints[i].parent_ts)
         expect(event['workflowGoal']).to eq("Fix pipeline")
         expect(event['workflowDefinition']).to eq("software_development")
+        expect(event['duoMessages']).to eq(chat_log)
       end
     end
   end

@@ -7,8 +7,8 @@ introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/issues/376180
 feature_category: source_code_management
 milestone: '15.7'
 group_ability: true
-enabled_for_group_access_levels: [20, 30, 40, 50]
+enabled_for_group_access_levels: [15, 20, 30, 40, 50]
 project_ability: true
-enabled_for_project_access_levels: [20, 30, 40, 50]
+enabled_for_project_access_levels: [15, 20, 30, 40, 50]
 skip_seat_consumption: true
-available_from_access_level: 20
+available_from_access_level: 15

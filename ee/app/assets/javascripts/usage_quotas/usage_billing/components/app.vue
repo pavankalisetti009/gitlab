@@ -1,5 +1,5 @@
 <script>
-import { GlAlert, GlSprintf, GlLink } from '@gitlab/ui';
+import { GlAlert, GlSprintf, GlLink, GlTab, GlTabs } from '@gitlab/ui';
 import { logError } from '~/lib/logger';
 import { captureException } from '~/sentry/sentry_browser_wrapper';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
@@ -12,6 +12,7 @@ import UsageByUserTab from './usage_by_user_tab.vue';
 import CurrentUsageCard from './current_usage_card.vue';
 import CurrentOverageUsageCard from './current_overage_usage_card.vue';
 import MonthlyWaiverCard from './monthly_waiver_card.vue';
+import UsageTrendsChart from './usage_trends_chart.vue';
 
 export default {
   name: 'UsageBillingApp',
@@ -19,6 +20,8 @@ export default {
     GlAlert,
     GlSprintf,
     GlLink,
+    GlTabs,
+    GlTab,
     PageHeading,
     PurchaseCommitmentCard,
     UsageByUserTab,
@@ -27,6 +30,7 @@ export default {
     MonthlyWaiverCard,
     UserDate,
     HumanTimeframe,
+    UsageTrendsChart,
   },
   apollo: {
     subscriptionUsage: {
@@ -37,7 +41,7 @@ export default {
         };
       },
       update({ subscriptionUsage }) {
-        return subscriptionUsage;
+        return subscriptionUsage ?? {};
       },
       error(error) {
         logError(error);
@@ -71,11 +75,17 @@ export default {
     poolTotalCredits() {
       return this.subscriptionUsage?.monthlyCommitment?.totalCredits ?? 0;
     },
+    poolDailyUsage() {
+      return this.subscriptionUsage?.monthlyCommitment?.dailyUsage ?? [];
+    },
     overageIsAllowed() {
       return Boolean(this.subscriptionUsage?.overage?.isAllowed);
     },
     overageCreditsUsed() {
       return this.subscriptionUsage?.overage?.creditsUsed ?? 0;
+    },
+    overageDailyUsage() {
+      return this.subscriptionUsage?.overage?.dailyUsage ?? [];
     },
     isLoading() {
       return this.$apollo.queries.subscriptionUsage.loading;
@@ -86,11 +96,19 @@ export default {
     monthlyWaiverCreditsUsed() {
       return this.subscriptionUsage?.monthlyWaiver?.creditsUsed ?? 0;
     },
+    monthlyWaiverDailyUsage() {
+      return this.subscriptionUsage?.monthlyWaiver?.dailyUsage ?? [];
+    },
     isMonthlyWaiverAvailable() {
       return Boolean(this.monthlyWaiverTotalCredits);
     },
-    monthEndDate() {
-      return this.subscriptionUsage?.endDate;
+    usageTrendsTabIsAvailable() {
+      return (
+        this.poolIsAvailable ||
+        this.isMonthlyWaiverAvailable ||
+        this.overageIsAllowed ||
+        this.overageCreditsUsed
+      );
     },
   },
   LONG_DATE_FORMAT_WITH_TZ,
@@ -194,7 +212,7 @@ export default {
           v-if="poolIsAvailable"
           :pool-total-credits="poolTotalCredits"
           :pool-credits-used="poolCreditsUsed"
-          :month-end-date="monthEndDate"
+          :month-end-date="subscriptionUsage.endDate"
         />
 
         <monthly-waiver-card
@@ -207,7 +225,7 @@ export default {
           v-else-if="overageIsAllowed || overageCreditsUsed"
           :overage-credits-used="overageCreditsUsed"
           :monthly-waiver-credits-used="monthlyWaiverCreditsUsed"
-          :month-end-date="monthEndDate"
+          :month-end-date="subscriptionUsage.endDate"
         />
 
         <purchase-commitment-card
@@ -215,7 +233,20 @@ export default {
           :has-commitment="poolIsAvailable"
         />
       </section>
-      <usage-by-user-tab />
+      <gl-tabs class="gl-mt-5" lazy>
+        <gl-tab v-if="usageTrendsTabIsAvailable" :title="s__('UsageBilling|Usage trends')">
+          <usage-trends-chart
+            :month-start-date="subscriptionUsage.startDate"
+            :month-end-date="subscriptionUsage.endDate"
+            :monthly-commitment-daily-usage="poolDailyUsage"
+            :monthly-waiver-daily-usage="monthlyWaiverDailyUsage"
+            :overage-daily-usage="overageDailyUsage"
+          />
+        </gl-tab>
+        <gl-tab :title="s__('UsageBilling|Usage by user')">
+          <usage-by-user-tab />
+        </gl-tab>
+      </gl-tabs>
     </template>
   </section>
 </template>

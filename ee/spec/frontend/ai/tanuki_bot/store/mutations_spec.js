@@ -1,7 +1,11 @@
 import * as types from 'ee/ai/tanuki_bot/store/mutation_types';
 import mutations from 'ee/ai/tanuki_bot/store/mutations';
 import createState from 'ee/ai/tanuki_bot/store/state';
-import { GENIE_CHAT_MODEL_ROLES, CHAT_MESSAGE_TYPES } from 'ee/ai/constants';
+import {
+  GENIE_CHAT_MODEL_ROLES,
+  CHAT_MESSAGE_TYPES,
+  DUO_AGENTIC_CHAT_PENDING_USER_MESSAGE_ID,
+} from 'ee/ai/constants';
 import { MOCK_USER_MESSAGE, MOCK_TANUKI_MESSAGE, MOCK_FAILING_USER_MESSAGE } from '../mock_data';
 
 describe('GitLab Duo Chat Store Mutations', () => {
@@ -145,6 +149,31 @@ describe('GitLab Duo Chat Store Mutations', () => {
           expect.objectContaining(responseToPrompt),
           userMessageWithRequestId,
         ]);
+      });
+
+      it('updates the pending user message when it has the pending requestId and matching content', () => {
+        const pendingUserMessage = {
+          content: 'Initial content',
+          role: GENIE_CHAT_MODEL_ROLES.user,
+          requestId: DUO_AGENTIC_CHAT_PENDING_USER_MESSAGE_ID,
+        };
+
+        state.messages.push(pendingUserMessage);
+
+        const updatedUserMessage = {
+          content: 'Initial content',
+          role: GENIE_CHAT_MODEL_ROLES.user,
+          requestId: 'actual-request-id',
+        };
+
+        mutations[types.ADD_MESSAGE](state, updatedUserMessage);
+
+        expect(state.messages).toHaveLength(1);
+        expect(state.messages[0]).toEqual({
+          content: 'Initial content',
+          role: GENIE_CHAT_MODEL_ROLES.user,
+          requestId: 'actual-request-id',
+        });
       });
 
       it('updates an existing tool message with the same requestId', () => {

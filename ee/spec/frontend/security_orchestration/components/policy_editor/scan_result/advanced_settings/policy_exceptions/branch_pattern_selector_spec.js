@@ -31,7 +31,7 @@ describe('BranchPatternSelector', () => {
   describe('initial rendering', () => {
     it('displays the title', () => {
       expect(findComponentHeader().text()).toContain(
-        'Define branch patterns that can bypass policy requirements using wildcards and regex patterns. Use * for simple wildcards or regex patterns for advanced matching. Learn more',
+        'Define branch patterns that can bypass policy requirements. Use an asterisk (*) as a wildcard to match any combination of characters. Learn more',
       );
     });
 

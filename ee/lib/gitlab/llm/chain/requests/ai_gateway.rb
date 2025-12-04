@@ -152,18 +152,6 @@ module Gitlab
             ::Gitlab::Llm::AiGateway::ModelMetadata.new(feature_setting: feature_setting).to_params
           end
 
-          # TODO: Remove the check for merge_request_reader
-          # See https://gitlab.com/gitlab-org/gitlab/-/issues/549647
-          def namespace_feature_setting(unit_primitive)
-            feature = if !unit_primitive || unit_primitive == 'merge_request_reader'
-                        'duo_chat'
-                      else
-                        "duo_chat_#{unit_primitive}"
-                      end
-
-            ::Ai::ModelSelection::NamespaceFeatureSetting.find_or_initialize_by_feature(root_namespace, feature)
-          end
-
           def model_params(options, unit_primitive = nil)
             unit_primitive ||= options[:unit_primitive]
             feature_setting = feature_setting(unit_primitive)
@@ -181,7 +169,16 @@ module Gitlab
 
           def feature_setting(unit_primitive)
             strong_memoize_with(:feature_setting, unit_primitive) do
-              namespace_feature_setting(unit_primitive) || chat_feature_setting(unit_primitive: unit_primitive)
+              feature_name = ::Ai::FeatureSetting.unit_primitive_to_feature_name_map[unit_primitive.to_s]
+              feature_name ||= 'duo_chat'
+
+              feature_setting = get_feature_setting_for(feature_name)
+
+              if feature_setting.nil? && feature_name&.to_sym != :duo_chat
+                feature_setting = get_feature_setting_for(:duo_chat)
+              end
+
+              feature_setting
             end
           end
 
@@ -204,18 +201,14 @@ module Gitlab
             TRACKING_CLASS_NAMES.fetch(provider)
           end
 
-          def chat_feature_setting(unit_primitive: nil)
-            feature_name = unit_primitive ? :"duo_chat_#{unit_primitive}" : :duo_chat
-            feature_setting = ::Ai::FeatureSetting.find_by_feature(feature_name)
-
-            # fallback to duo_chat if sub feature setting is not found
-            feature_setting ||= ::Ai::FeatureSetting.find_by_feature(:duo_chat)
-
-            feature_setting
-          end
-
           def unavailable_resources
             %w[Pipelines Vulnerabilities]
+          end
+
+          def get_feature_setting_for(feature_name)
+            ::Ai::FeatureSettingSelectionService
+                                .new(user, feature_name, root_namespace)
+                                .execute.payload
           end
         end
       end

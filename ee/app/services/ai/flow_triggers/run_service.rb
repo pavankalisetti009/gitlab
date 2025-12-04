@@ -110,7 +110,9 @@ module Ai
           project: project,
           current_user: current_user,
           params: {
+            item_consumer: flow_trigger.ai_catalog_item_consumer,
             flow: catalog_item,
+            service_account: flow_trigger_user,
             flow_version: catalog_item.resolve_version(catalog_item_pinned_version),
             event_type: params[:event].to_s,
             user_prompt: catalog_item_user_prompt(params[:input], params[:event]),
@@ -224,7 +226,11 @@ module Ai
       # Ideally, it should be prompt variables for better flexibility
       def catalog_item_user_prompt(user_input, event_type)
         if event_type == :mention
-          "Input: #{user_input}\nContext: #{serialized_resource}"
+          input_line = "Input: #{user_input}"
+          id_type, id_value = resource.respond_to?(:iid) ? ['IID', resource.iid] : ['ID', resource.id]
+          context_line = "Context: {#{resource.class.name} #{id_type}: #{id_value}}"
+
+          "#{input_line}\n#{context_line}"
         else
           user_input
         end

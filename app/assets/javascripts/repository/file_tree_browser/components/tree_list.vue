@@ -7,7 +7,7 @@ import FileTreeBrowserToggle from '~/repository/file_tree_browser/components/fil
 import { s__, __ } from '~/locale';
 import { waitForElement } from '~/lib/utils/dom_utils';
 import { InternalEvents } from '~/tracking';
-import { joinPaths, buildURLwithRefType } from '~/lib/utils/url_utility';
+import { joinPaths, buildURLwithRefType, visitUrl } from '~/lib/utils/url_utility';
 import paginatedTreeQuery from 'shared_queries/repository/paginated_tree.query.graphql';
 import { TREE_PAGE_SIZE } from '~/repository/constants';
 import { getRefType } from '~/repository/utils/ref_type';
@@ -99,6 +99,11 @@ export default {
       });
       return map;
     },
+    activeStyles() {
+      return {
+        backgroundColor: 'var(--gl-highlight-target-background-color)',
+      };
+    },
     ...mapState(useFileTreeBrowserVisibility, ['fileTreeBrowserIsPeekOn']),
   },
   watch: {
@@ -110,6 +115,9 @@ export default {
     },
     fileTreeBrowserIsPeekOn() {
       this.$nextTick(() => this.observeItemVisibility());
+    },
+    currentRouterPath(newPath, oldPath) {
+      if (newPath && newPath !== oldPath) this.expandPathAncestors(newPath);
     },
   },
   mounted() {
@@ -144,8 +152,8 @@ export default {
     buildList(path, level) {
       const contents = this.getDirectoryContents(path);
       return this.processDirectories({ trees: contents.trees, path, level })
-        .concat(this.processFiles({ blobs: contents.blobs, path, level }))
-        .concat(this.processSubmodules({ submodules: contents.submodules, path, level }));
+        .concat(this.processSubmodules({ submodules: contents.submodules, path, level }))
+        .concat(this.processFiles({ blobs: contents.blobs, path, level }));
     },
     processDirectories({ trees = [], path, level }) {
       const directoryList = [];
@@ -218,6 +226,7 @@ export default {
           id: `${submodulePath}-${submodule.id}-${index}`,
           fileHash: submodule.sha,
           path: submodulePath,
+          webUrl: submodule.webUrl,
           name: submodule.name,
           submodule: true,
           level,
@@ -396,6 +405,7 @@ export default {
         event.preventDefault();
         if (item?.isShowMore) this.handleShowMore(item.parentPath, event);
         if (item?.type === 'tree') this.toggleDirectory(item.path, { toggleClose: false });
+        if (item?.submodule && item?.webUrl) visitUrl(item.webUrl);
         if (item?.routerPath && !this.isCurrentPath(item?.path)) this.$router.push(item.routerPath);
         return;
       }
@@ -414,6 +424,9 @@ export default {
     },
     observeListItems() {
       this.$nextTick(() => observeElements(this.$refs.fileTreeList, this.itemObserver));
+    },
+    handleClickSubmodule(webUrl) {
+      visitUrl(webUrl);
     },
     async handleShowMore(parentPath, event) {
       const prevItem = event.target.closest('li')?.previousElementSibling;
@@ -490,8 +503,8 @@ export default {
           :aria-posinset="siblingInfo(item)[1]"
           :aria-label="item.name"
           :tabindex="item.id === activeItemId ? 0 : -1"
-          class="gl-rounded-base focus-visible:gl-focus-inset"
-          :class="{ '!gl-bg-gray-50': isCurrentPath(item.path) }"
+          class="gl-action-neutral-colors gl-rounded-lg focus-visible:gl-focus-inset"
+          :style="isCurrentPath(item.path) ? activeStyles : {}"
           @click="activeItemId = item.id"
         >
           <file-row
@@ -507,9 +520,11 @@ export default {
             :class="{
               'tree-list-parent': item.level > 0,
             }"
+            :file-classes="isCurrentPath(item.path) ? 'gl-font-bold' : 'gl-text-subtle'"
             class="gl-relative !gl-mx-0 gl-w-fit gl-min-w-full"
             truncate-middle
             @clickTree="(options) => toggleDirectory(item.path, options)"
+            @clickSubmodule="handleClickSubmodule"
             @showMore="handleShowMore(item.parentPath, $event)"
           />
           <div v-else data-placeholder-item class="gl-h-7" tabindex="-1"></div>

@@ -9,7 +9,10 @@ module Ai
 
       validates :pinned_version_prefix, length: { maximum: 50 }
 
-      validate :validate_exactly_one_sharding_key_present
+      validates_with ExactlyOnePresentValidator, fields: :sharding_keys,
+        message: ->(_fields) {
+          s_('AICatalog|The item consumer must belong to only one organization, group, or project')
+        }
       validate :validate_organization_match
       validate :validate_item_privacy_allowed, if: :item_changed?
       validate :validate_service_account, if: :service_account_id?
@@ -40,11 +43,22 @@ module Ai
       accepts_nested_attributes_for :flow_trigger
 
       scope :not_for_projects, ->(project) { where.not(project: project) }
-      scope :for_projects, ->(project) { where(project: project) }
+      scope :for_projects, ->(projects) { where(project: projects) }
+      scope :for_container_item_pairs, ->(container_type, container_item_pairs) do
+        raise ArgumentError, "Unknown container_type: #{container_type}" unless container_type.in?([:project, :group])
+
+        columns = [:"#{container_type}_id", :ai_catalog_item_id]
+        where(columns => container_item_pairs)
+      end
+
       scope :for_item, ->(item_id) { where(ai_catalog_item_id: item_id) }
       scope :with_item_type, ->(item_type) { joins(:item).where(item: { item_type: item_type }) }
 
       private
+
+      def sharding_keys
+        [:organization, :group, :project]
+      end
 
       def organization_id_from_sharding_key
         organization_id || group&.organization_id || project&.organization_id
@@ -54,12 +68,6 @@ module Ai
         return if ai_catalog_item_id.nil? || item.organization_id == organization_id_from_sharding_key
 
         errors.add(:item, s_("AICatalog|organization must match the item consumer's organization"))
-      end
-
-      def validate_exactly_one_sharding_key_present
-        return if [organization, group, project].compact.one?
-
-        errors.add(:base, s_('AICatalog|The item consumer must belong to only one organization, group, or project'))
       end
 
       def validate_item_privacy_allowed

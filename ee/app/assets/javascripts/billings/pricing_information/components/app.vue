@@ -5,6 +5,7 @@ import { s__ } from '~/locale';
 import FreePlanSection from './free_plan_section.vue';
 import PremiumPlanSection from './premium_plan_section.vue';
 import TrialPlanSection from './trial_plan_section.vue';
+import TrialUpgradeSection from './trial_upgrade_section.vue';
 
 export default {
   name: 'PricingInformationApp',
@@ -17,6 +18,7 @@ export default {
     FreePlanSection,
     PremiumPlanSection,
     TrialPlanSection,
+    TrialUpgradeSection,
     GlSprintf,
   },
   mixins: [InternalEvents.mixin()],
@@ -105,13 +107,30 @@ export default {
     </div>
     <div v-if="selectedGroupId" data-testid="plan-sections-container">
       <div class="gl-flex gl-flex-col @md/panel:gl-flex-row">
-        <free-plan-section v-if="!trialActive" data-testid="free-plan-section" />
-        <trial-plan-section v-if="trialActive" data-testid="trial-plan-section" />
-        <premium-plan-section
-          data-testid="premium-plan-section"
-          :group-id="selectedGroupId"
-          :group-billing-href="selectedGroup.group_billings_href"
-        />
+        <div
+          class="gl-border gl-flex-1 gl-rounded-t-lg gl-bg-default gl-p-6 @md/panel:gl-rounded-l-lg @md/panel:gl-rounded-r-none"
+        >
+          <free-plan-section v-if="!trialActive" data-testid="free-plan-section" />
+          <trial-plan-section v-else data-testid="trial-plan-section" />
+        </div>
+        <div
+          class="gl-border gl-flex-1 gl-rounded-b-lg gl-border-t-0 gl-bg-subtle gl-p-6 @md/panel:gl-border-t @md/panel:gl-rounded-l-none @md/panel:gl-rounded-r-lg @md/panel:gl-border-l-0"
+        >
+          <premium-plan-section
+            v-if="!trialActive"
+            data-testid="premium-plan-section"
+            :group-id="selectedGroupId"
+            :group-billing-href="selectedGroup.group_billings_href"
+          />
+          <trial-upgrade-section
+            v-else
+            data-testid="upgrade-trial-section"
+            :group-id="selectedGroupId"
+            :group-billing-href="selectedGroup.group_billings_href"
+            :can-access-duo-chat="selectedGroup.can_access_duo_chat"
+            :explore-links="selectedGroup.explore_links"
+          />
+        </div>
       </div>
 
       <div class="gl-mt-5 gl-flex gl-grow gl-items-center gl-justify-end gl-gap-3">

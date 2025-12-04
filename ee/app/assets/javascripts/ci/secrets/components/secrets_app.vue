@@ -95,7 +95,7 @@ export default {
         {{ s__('SecretsManager|Provisioning in progress') }}
       </p>
     </div>
-    <p class="gl-mt-4 gl-text-secondary">
+    <p class="gl-mt-4 gl-text-subtle">
       {{
         s__(
           'SecretsManager|Please wait while the secrets manager is provisioned. You can refresh at any time.',

@@ -4,6 +4,16 @@
 - @force_desktop_expanded_sidebar = true
 - @hide_search_settings = true
 
+- if License.feature_available?(:dependency_scanning)
+  = render ::Layouts::SettingsBlockComponent.new(_('Dependency Scanning'),
+    id: 'js-dependency-scanning-settings',
+    testid: 'admin-dependency-scanning-settings',
+    expanded: expanded_by_default?) do |c|
+    - c.with_description do
+      = _('Manage dependency scanning behavior for all projects in your GitLab instance')
+    - c.with_body do
+      = render 'dependency_scanning'
+
 = render ::Layouts::SettingsBlockComponent.new(_('License Compliance'),
   id: 'js-license-compliance-settings',
   testid: 'admin-license-compliance-settings',

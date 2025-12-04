@@ -37,6 +37,29 @@ module Types
           description: 'Indicates whether GitLab Duo Core features are enabled.',
           authorize: :read_duo_core_settings,
           experiment: { milestone: '18.0' }
+
+        # rubocop: disable GraphQL/ExtractType -- suggestion does not make sense
+        field :minimum_access_level_execute, Integer,
+          null: true,
+          description: 'Minimum access level required to execute Duo Agent Platform. ' \
+            'Returns `null` if `dap_instance_customizable_permissions` feature flag is disabled.',
+          authorize: :read_ai_role_based_permission_settings,
+          experiment: { milestone: '18.7' }
+
+        field :minimum_access_level_manage, Integer,
+          null: true,
+          description: 'Minimum access level required to manage Duo Agent Platform. ' \
+            'Returns `null` if `dap_instance_customizable_permissions` feature flag is disabled.',
+          authorize: :read_ai_role_based_permission_settings,
+          experiment: { milestone: '18.7' }
+
+        field :minimum_access_level_enable_on_projects, Integer,
+          null: true,
+          description: 'Minimum access level required to enable Duo Agent Platform. ' \
+            'Returns `null` if `dap_instance_customizable_permissions` feature flag is disabled.',
+          authorize: :read_ai_role_based_permission_settings,
+          experiment: { milestone: '18.7' }
+        # rubocop: enable GraphQL/ExtractType
       end
     end
   end

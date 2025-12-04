@@ -1,33 +1,6 @@
-import codeGenerationVolumeOverTime, {
-  getMonthsInDateRange,
-} from 'ee/analytics/analytics_dashboards/data_sources/code_generation_volume_over_time';
+import codeGenerationVolumeOverTime from 'ee/analytics/analytics_dashboards/data_sources/code_generation_volume_over_time';
 import { defaultClient } from 'ee/analytics/analytics_dashboards/graphql/client';
 import { DATE_RANGE_OPTION_LAST_60_DAYS } from 'ee/analytics/analytics_dashboards/components/filters/constants';
-
-describe('getMonthsInDateRange', () => {
-  it('returns months in date range as expected', () => {
-    const startDate = new Date('2025-08-03');
-    const endDate = new Date('2025-10-10');
-
-    expect(getMonthsInDateRange(startDate, endDate)).toEqual([
-      {
-        fromDate: '2025-08-03',
-        toDate: '2025-08-31',
-        monthLabel: 'Aug 2025',
-      },
-      {
-        fromDate: '2025-09-01',
-        toDate: '2025-09-30',
-        monthLabel: 'Sep 2025',
-      },
-      {
-        fromDate: '2025-10-01',
-        toDate: '2025-10-10',
-        monthLabel: 'Oct 2025',
-      },
-    ]);
-  });
-});
 
 describe('`Code generation volume over time` data source', () => {
   let res;

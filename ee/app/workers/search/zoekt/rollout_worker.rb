@@ -25,7 +25,6 @@ module Search
       def perform(retry_count = 0)
         return false if Gitlab::CurrentSettings.zoekt_indexing_paused?
         return false unless Search::Zoekt.licensed_and_indexing_enabled?
-        return false unless Feature.enabled?(:zoekt_rollout_worker, Feature.current_request)
 
         in_lock(self.class.name.underscore, ttl: 10.minutes, retries: 10, sleep_sec: 1) do
           result = RolloutService.execute(dry_run: false, batch_size: Gitlab::CurrentSettings.zoekt_rollout_batch_size)

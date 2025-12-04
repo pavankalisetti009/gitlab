@@ -66,7 +66,7 @@ module Resolvers
         def authorized_resource?(object)
           return unless object
 
-          current_user.can?("read_#{object.to_ability_name}", object)
+          Ability.allowed?(current_user, "read_#{object.to_ability_name}", object)
         end
       end
     end

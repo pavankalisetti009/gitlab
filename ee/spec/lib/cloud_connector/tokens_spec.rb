@@ -7,12 +7,14 @@ RSpec.describe CloudConnector::Tokens, feature_category: :system_access do
     let(:resource) { build(:user) }
     let(:token_string) { 'ABCDEF' }
     let(:extra_claims) { {} }
+    let(:feature_setting) { nil }
 
     subject(:encoded_token) do
       described_class.get(
         unit_primitive: unit_primitive,
         resource: resource,
-        extra_claims: extra_claims
+        extra_claims: extra_claims,
+        feature_setting: feature_setting
       )
     end
 
@@ -66,6 +68,19 @@ RSpec.describe CloudConnector::Tokens, feature_category: :system_access do
       end
     end
 
+    context 'when feature_setting is self_hosted' do
+      let(:unit_primitive) { :invalid_unit_primitive }
+      let_it_be(:feature_setting) { create(:ai_feature_setting, feature: :code_generations, provider: :self_hosted) }
+
+      it_behaves_like 'uses self-signed path'
+    end
+
+    context 'when unit_primitive is :self_hosted_models' do
+      let(:unit_primitive) { :self_hosted_models }
+
+      it_behaves_like 'uses self-signed path'
+    end
+
     context 'when self_hosted model is configured for the feature' do
       let(:unit_primitive) { :observability_all }
 
@@ -90,6 +105,17 @@ RSpec.describe CloudConnector::Tokens, feature_category: :system_access do
     context 'when none of the self-signing conditions are met' do
       context 'and feature_for_unit_primitive returns nil' do
         let(:unit_primitive) { :observability_all }
+
+        before do
+          allow(Ai::FeatureSetting).to receive(:feature_for_unit_primitive).with(unit_primitive).and_return(nil)
+        end
+
+        it_behaves_like 'uses TokenLoader to obtain a token'
+      end
+
+      context 'and feature_setting is not self_hosted' do
+        let(:unit_primitive) { :observability_all }
+        let(:feature_setting) { instance_double(Ai::FeatureSetting, self_hosted?: false) }
 
         before do
           allow(Ai::FeatureSetting).to receive(:feature_for_unit_primitive).with(unit_primitive).and_return(nil)

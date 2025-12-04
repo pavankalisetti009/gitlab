@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ApprovalState do
+RSpec.describe ApprovalState, feature_category: :code_review_workflow do
   def create_rule(additional_params = {})
     params = additional_params.reverse_merge(merge_request: merge_request, users: [default_approver])
     factory =

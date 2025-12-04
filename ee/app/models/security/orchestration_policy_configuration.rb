@@ -24,14 +24,23 @@ module Security
     # json_schemer computes an $id fallback property for schemas lacking one.
     # But this schema is kept anonymous on purpose, so the $id is stripped.
     POLICY_SCHEMA_JSON = POLICY_SCHEMA.value.except('$id')
-    AVAILABLE_POLICY_TYPES = %i[approval_policy scan_execution_policy pipeline_execution_policy pipeline_execution_schedule_policy vulnerability_management_policy ci_component_publishing_policy].freeze
+    AVAILABLE_POLICY_TYPES = %i[
+      approval_policy
+      scan_execution_policy
+      pipeline_execution_policy
+      pipeline_execution_schedule_policy
+      vulnerability_management_policy
+      ci_component_publishing_policy
+    ].freeze
     JSON_SCHEMA_VALIDATION_TIMEOUT = 5.seconds
     ALL_PROJECT_IDS_BATCH_SIZE = 1000
 
     belongs_to :project, inverse_of: :security_orchestration_policy_configuration, optional: true
     belongs_to :namespace, inverse_of: :security_orchestration_policy_configuration, optional: true
-    belongs_to :security_policy_management_project, class_name: 'Project', foreign_key: 'security_policy_management_project_id'
-    has_many :security_policies, class_name: 'Security::Policy', foreign_key: 'security_orchestration_policy_configuration_id'
+    belongs_to :security_policy_management_project, class_name: 'Project',
+      foreign_key: 'security_policy_management_project_id'
+    has_many :security_policies, class_name: 'Security::Policy',
+      foreign_key: 'security_orchestration_policy_configuration_id'
 
     has_many :compliance_framework_security_policies,
       class_name: 'ComplianceManagement::ComplianceFramework::SecurityPolicy',
@@ -47,11 +56,16 @@ module Security
     scope :for_project, ->(project_id) { where(project_id: project_id) }
     scope :for_namespace, ->(namespace_id) { where(namespace_id: namespace_id) }
     scope :with_project_and_namespace, -> { includes(:project, :namespace) }
-    scope :for_management_project, ->(management_project_id) { where(security_policy_management_project_id: management_project_id) }
+    scope :for_management_project, ->(management_project_id) {
+      where(security_policy_management_project_id: management_project_id)
+    }
     scope :with_security_policies, -> { includes(:security_policies) }
     scope :with_outdated_configuration, -> do
       joins(:security_policy_management_project)
-        .where(arel_table[:configured_at].lt(Project.arel_table[:last_repository_updated_at]).or(arel_table[:configured_at].eq(nil)))
+        .where(
+          arel_table[:configured_at].lt(Project.arel_table[:last_repository_updated_at])
+            .or(arel_table[:configured_at].eq(nil))
+        )
     end
     scope :for_management_project_within_descendants, ->(management_project_id, group) do
       groups = group.descendants
@@ -73,6 +87,10 @@ module Security
 
     def self.policy_management_project?(project_id)
       self.exists?(security_policy_management_project_id: project_id)
+    end
+
+    def configuration_sha
+      policy_last_commit&.id
     end
 
     def policy_hash
@@ -109,12 +127,16 @@ module Security
       end
     end
 
-    def policy_last_updated_at
-      strong_memoize(:policy_last_updated_at) do
+    def policy_last_commit
+      strong_memoize(:policy_last_commit) do
         capture_git_error(:last_commit_for_path) do
-          policy_repo.last_commit_for_path(default_branch_or_main, POLICY_PATH)&.committed_date
+          policy_repo.last_commit_for_path(default_branch_or_main, POLICY_PATH)
         end
       end
+    end
+
+    def policy_last_updated_at
+      policy_last_commit&.committed_date
     end
 
     def latest_commit_before_configured_at
@@ -224,7 +246,8 @@ module Security
       yaml_differs_from_db?(security_policies.type_approval_policy, scan_result_policies) ||
         yaml_differs_from_db?(security_policies.type_scan_execution_policy, scan_execution_policy) ||
         yaml_differs_from_db?(security_policies.type_pipeline_execution_policy, pipeline_execution_policy) ||
-        yaml_differs_from_db?(security_policies.type_pipeline_execution_schedule_policy, pipeline_execution_schedule_policy) ||
+        yaml_differs_from_db?(security_policies.type_pipeline_execution_schedule_policy,
+          pipeline_execution_schedule_policy) ||
         yaml_differs_from_db?(security_policies.type_vulnerability_management_policy, vulnerability_management_policy)
     end
 
@@ -308,7 +331,11 @@ module Security
     end
 
     def available_policy_types
-      policies_to_exclude = experiment_enabled?(:pipeline_execution_schedule_policy) ? [] : [:pipeline_execution_schedule_policy]
+      policies_to_exclude = if experiment_enabled?(:pipeline_execution_schedule_policy)
+                              []
+                            else
+                              [:pipeline_execution_schedule_policy]
+                            end
 
       AVAILABLE_POLICY_TYPES - policies_to_exclude
     end

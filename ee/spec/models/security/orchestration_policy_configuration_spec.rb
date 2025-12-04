@@ -331,6 +331,26 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
     end
   end
 
+  describe '#configuration_sha' do
+    let(:last_commit) { instance_double(Commit, id: 'abc123') }
+
+    subject(:configuration_sha) { security_orchestration_policy_configuration.configuration_sha }
+
+    before do
+      allow(security_orchestration_policy_configuration).to receive(:policy_last_commit).and_return(last_commit)
+    end
+
+    it 'returns the SHA of the last commit to the policy file' do
+      expect(configuration_sha).to eq('abc123')
+    end
+
+    context 'when policy_last_commit is nil' do
+      let(:last_commit) { nil }
+
+      it { is_expected.to be_nil }
+    end
+  end
+
   describe '#policy_configuration_exists?' do
     subject { security_orchestration_policy_configuration.policy_configuration_exists? }
 
@@ -753,6 +773,7 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
     let(:approval_policy) { nil }
     let(:pipeline_execution_policy) { nil }
     let(:pipeline_execution_schedule_policy) { nil }
+    let(:vulnerability_management_policy) { nil }
     let(:experiments) { {} }
 
     let(:policy_yaml) do
@@ -761,6 +782,7 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
         approval_policy: [approval_policy].compact,
         pipeline_execution_policy: [pipeline_execution_policy].compact,
         pipeline_execution_schedule_policy: [pipeline_execution_schedule_policy].compact,
+        vulnerability_management_policy: [vulnerability_management_policy].compact,
         experiments: experiments
       }
     end
@@ -2750,6 +2772,81 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
       end
     end
 
+    describe "vulnerability management policies" do
+      let(:vulnerability_management_policy) { build(:vulnerability_management_policy) }
+
+      it { expect(errors).to be_empty }
+
+      context "with no_longer_detected type" do
+        let(:vulnerability_management_policy) do
+          build(:vulnerability_management_policy,
+            rules: [{
+              type: 'no_longer_detected',
+              scanners: %w[sast],
+              severity_levels: %w[low]
+            }],
+            actions: [{ type: 'auto_resolve' }]
+          )
+        end
+
+        specify { expect(errors).to be_empty }
+      end
+
+      context "with detected type" do
+        let(:vulnerability_management_policy) do
+          build(:vulnerability_management_policy,
+            rules: [{
+              type: 'detected',
+              criteria: [{ type: 'identifier', value: 'CVE-2025-12345' }]
+            }],
+            actions: [{ type: 'auto_dismiss', dismissal_reason: 'used_in_tests' }]
+          )
+        end
+
+        specify { expect(errors).to be_empty }
+      end
+
+      context "with no_longer_detected type and invalid criteria property" do
+        let(:vulnerability_management_policy) do
+          build(:vulnerability_management_policy,
+            rules: [{
+              type: 'no_longer_detected',
+              criteria: [{ type: 'identifier', value: 'CVE-2025-12345' }]
+            }],
+            actions: [{ type: 'auto_resolve' }]
+          )
+        end
+
+        specify do
+          expect(errors).to include(
+            match(%r{property '/vulnerability_management_policy/0/rules/0' is missing required keys: scanners, severity_levels}),
+            match(%r{property '/vulnerability_management_policy/0/rules/0/criteria' is invalid: error_type=schema})
+          )
+        end
+      end
+
+      context "with detected type and invalid scanners and severity_levels properties" do
+        let(:vulnerability_management_policy) do
+          build(:vulnerability_management_policy,
+            rules: [{
+              type: 'detected',
+              scanners: %w[sast],
+              severity_levels: %w[critical]
+            }],
+            actions: [{ type: 'auto_dismiss', dismissal_reason: 'used_in_tests' }]
+          )
+        end
+
+        specify do
+          expect(errors).to include(
+            match(%r{property '/vulnerability_management_policy/0/rules/0' is missing required keys: criteria}),
+            match(%r{property '/vulnerability_management_policy/0/rules/0/scanners' is invalid: error_type=schema}),
+            match(%r{property '/vulnerability_management_policy/0/rules/0/severity_levels' is invalid: error_type=schema})
+          )
+        end
+      end
+    end
+
     context 'when file is valid' do
       it { is_expected.to eq([]) }
     end
@@ -2856,19 +2953,87 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
           :scan_execution_policy,
           name: 'Run DAST in every pipeline',
           actions: [
-            { scan: 'dast', site_profile: 'Site Profile', scanner_profile: 'Scanner Profile' },
-            { scan: 'dast', site_profile: 'Site Profile 2', scanner_profile: 'Scanner Profile' }
+            {
+              scan: 'dast',
+              site_profile: 'Site Profile',
+              scanner_profile: 'Scanner Profile'
+            },
+            {
+              scan: 'dast',
+              site_profile: 'Site Profile 2',
+              scanner_profile: 'Scanner Profile'
+            }
           ])
       ])
     end
 
     before do
       allow(security_policy_management_project).to receive(:repository).and_return(repository)
-      allow(repository).to receive(:blob_data_at).with(default_branch, Security::OrchestrationPolicyConfiguration::POLICY_PATH).and_return(enforce_dast_yaml)
+      allow(repository)
+        .to receive(:blob_data_at)
+        .with(default_branch, Security::OrchestrationPolicyConfiguration::POLICY_PATH)
+        .and_return(enforce_dast_yaml)
     end
 
-    it 'returns list of policy names where site profile is referenced' do
-      expect(security_orchestration_policy_configuration.active_policy_names_with_dast_scanner_profile('Scanner Profile')).to contain_exactly('Run DAST in every pipeline')
+    it 'returns list of policy names where scanner profile is referenced' do
+      result = security_orchestration_policy_configuration
+        .active_policy_names_with_dast_scanner_profile('Scanner Profile')
+
+      expect(result).to contain_exactly('Run DAST in every pipeline')
+    end
+
+    context 'when action does not have scanner_profile' do
+      let(:enforce_dast_yaml) do
+        build(:orchestration_policy_yaml, scan_execution_policy: [
+          build(
+            :scan_execution_policy,
+            name: 'Run DAST without scanner profile',
+            actions: [
+              { scan: 'dast', site_profile: 'Site Profile' }
+            ])
+        ])
+      end
+
+      it 'does not include the policy in scanner profile results' do
+        result = security_orchestration_policy_configuration
+          .active_policy_names_with_dast_scanner_profile('Scanner Profile')
+
+        expect(result).to be_empty
+      end
+
+      it 'still includes the policy in site profile results' do
+        result = security_orchestration_policy_configuration
+          .active_policy_names_with_dast_site_profile('Site Profile')
+
+        expect(result).to contain_exactly('Run DAST without scanner profile')
+      end
+    end
+
+    context 'when action scan type is not DAST' do
+      let(:enforce_dast_yaml) do
+        build(:orchestration_policy_yaml, scan_execution_policy: [
+          build(
+            :scan_execution_policy,
+            name: 'Run SAST scan',
+            actions: [
+              { scan: 'sast' }
+            ])
+        ])
+      end
+
+      it 'does not include non-DAST scans in scanner profile results' do
+        result = security_orchestration_policy_configuration
+          .active_policy_names_with_dast_scanner_profile('Scanner Profile')
+
+        expect(result).to be_empty
+      end
+
+      it 'does not include non-DAST scans in site profile results' do
+        result = security_orchestration_policy_configuration
+          .active_policy_names_with_dast_site_profile('Site Profile')
+
+        expect(result).to be_empty
+      end
     end
   end
 

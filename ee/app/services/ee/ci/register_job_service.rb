@@ -9,11 +9,16 @@ module EE
       def pre_assign_runner_checks
         super.merge({
           ip_restriction_failure: ->(build, _) { build.project.group && !::Gitlab::IpRestriction::Enforcer.new(build.project.group).allows_current_ip? },
-          secrets_provider_not_found: ->(build, _) { secrets_provider_not_found?(build) }
+          secrets_provider_not_found: ->(build, _) { secrets_provider_not_found?(build) },
+          duo_workflow_not_allowed: ->(build, _) { duo_workflow_not_allowed?(build) }
         })
       end
 
       private
+
+      def duo_workflow_not_allowed?(build)
+        build.pipeline.duo_workflow? && !Ai::DuoWorkflow::RunnerValidator.new(runner, build.project).valid?
+      end
 
       def secrets_provider_not_found?(build)
         return false unless build.ci_secrets_management_available?

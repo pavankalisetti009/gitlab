@@ -32,6 +32,20 @@ RSpec.describe Search::Zoekt::Settings, feature_category: :global_search do
       end
     end
 
+    # This spec ensures labels don't break the gitlab:zoekt:info output formatting
+    # Long labels can break the output
+    it 'has labels with reasonable length to prevent breaking info output' do
+      max_label_length = 80 # Maximum reasonable length for display formatting
+
+      described_class::SETTINGS.each do |setting_name, config|
+        label = config[:label].call
+        expect(label.length).to be <= max_label_length,
+          "Label for '#{setting_name}' is too long (#{label.length} chars). " \
+            "Maximum allowed is #{max_label_length} chars to prevent breaking gitlab:zoekt:info output formatting. " \
+            "Label: #{label}"
+      end
+    end
+
     it 'has boolean settings with correct type' do
       boolean_settings = [
         :zoekt_indexing_enabled,
@@ -125,7 +139,7 @@ RSpec.describe Search::Zoekt::Settings, feature_category: :global_search do
           _('Maximum number of files per project to be indexed'),
           _('Maximum file size for indexing'),
           _('Retry interval for failed namespaces'),
-          _('Specify default number of replicas per namespace. Currently in development. See: https://gitlab.com/groups/gitlab-org/-/epics/19097')
+          _('Number of replicas per namespace')
         ]
       )
     end
@@ -202,6 +216,7 @@ RSpec.describe Search::Zoekt::Settings, feature_category: :global_search do
         zoekt_maximum_files
         zoekt_rollout_batch_size
         zoekt_rollout_retry_interval
+        zoekt_default_number_of_replicas
       ]
 
       expect(input_ui_settings.keys).to match_array(expected_list)

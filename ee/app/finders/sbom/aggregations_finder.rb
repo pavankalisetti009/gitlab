@@ -191,7 +191,7 @@ module Sbom
 
     def column_expression(column, table_name = 'sbom_occurrences')
       if column == :primary_license_spdx_identifier
-        Sbom::Occurrence.connection.quote_table_name(table_name)
+        Sbom::Occurrence.adapter_class.quote_table_name(table_name)
           .then { |table_name| Arel.sql("(#{table_name}.\"licenses\" -> 0 ->> 'spdx_identifier')::text") }
       else
         Sbom::Occurrence.arel_table.alias(table_name)[column]
@@ -200,7 +200,7 @@ module Sbom
 
     def distinct(on:, table_name: 'sbom_occurrences')
       select_values = Sbom::Occurrence.column_names.map do |column|
-        Sbom::Occurrence.connection.quote_table_name("#{table_name}.#{column}")
+        Sbom::Occurrence.adapter_class.quote_table_name("#{table_name}.#{column}")
       end
       distinct_values = on.map { |column| column_expression(column, table_name) }
 

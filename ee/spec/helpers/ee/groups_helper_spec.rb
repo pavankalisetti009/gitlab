@@ -344,16 +344,6 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
         expect(helper.duo_home_app_data(group)).to include(usage_dashboard_path: nil)
       end
     end
-
-    context 'with feature flag ai_model_switching set to false' do
-      before do
-        stub_feature_flags(ai_model_switching: false)
-      end
-
-      it 'sets model_switching_enabled to false' do
-        expect(helper.duo_home_app_data(group)).to include(model_switching_enabled: 'false')
-      end
-    end
   end
 
   describe '#code_suggestions_usage_app_data' do
@@ -641,45 +631,6 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
       end
 
       it { is_expected.to include(identity_verification_required: 'true') }
-    end
-  end
-
-  describe '#access_level_roles_user_can_assign' do
-    subject { helper.access_level_roles_user_can_assign(group, roles) }
-
-    let_it_be(:group) { create(:group) }
-    let_it_be_with_reload(:user) { create(:user) }
-
-    context 'when user is provided' do
-      before do
-        allow(helper).to receive(:current_user).and_return(user)
-      end
-
-      context 'when a user is a group member' do
-        before do
-          group.add_developer(user)
-        end
-
-        context 'when the passed roles include the minimal access role and the minimal access role is available' do
-          let(:roles) { group.access_level_roles }
-
-          before do
-            stub_licensed_features(minimal_access_role: true)
-          end
-
-          it 'includes the minimal access role' do
-            expect(subject).to include(EE::Gitlab::Access::MINIMAL_ACCESS_HASH)
-          end
-        end
-
-        context 'when the passed roles do not include the minimal access role' do
-          let(:roles) { GroupMember.access_level_roles }
-
-          it 'does not include the minimal access role' do
-            expect(subject).not_to include(EE::Gitlab::Access::MINIMAL_ACCESS_HASH)
-          end
-        end
-      end
     end
   end
 

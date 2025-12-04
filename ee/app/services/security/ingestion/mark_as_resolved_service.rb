@@ -96,7 +96,7 @@ module Security
           projects: project
         ).execute
 
-        CreateVulnerabilityRepresentationInformation.execute(pipeline, no_longer_detected_vulnerability_ids)
+        CreateVulnerabilityRepresentationInformation.execute(pipeline, vulnerabilities_relation)
 
         track_no_longer_detected_vulnerabilities(no_longer_detected_vulnerability_ids.count)
       end

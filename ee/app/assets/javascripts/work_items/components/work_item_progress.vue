@@ -61,9 +61,7 @@ export default {
       };
     },
     showProgressPopover() {
-      return (
-        this.glFeatures.okrAutomaticRollups && this.workItemType === WORK_ITEM_TYPE_NAME_OBJECTIVE
-      );
+      return this.workItemType === WORK_ITEM_TYPE_NAME_OBJECTIVE;
     },
     isValidProgress() {
       if (this.localProgress === '') {

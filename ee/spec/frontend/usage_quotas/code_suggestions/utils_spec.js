@@ -29,7 +29,7 @@ describe('Code Suggestions Utils', () => {
         probes: MOCK_SYNCHRONIZATION_PROBES.success,
       });
       expect(expected[2]).toStrictEqual({
-        ...DUO_HEALTH_CHECK_CATEGORIES[4],
+        ...DUO_HEALTH_CHECK_CATEGORIES[5],
         probes: MOCK_SYSTEM_EXCHANGE_PROBES.success,
       });
     });

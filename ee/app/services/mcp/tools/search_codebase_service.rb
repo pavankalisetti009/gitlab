@@ -10,12 +10,29 @@ module Mcp
 
       # Register version 0.1.0
       register_version '0.1.0', {
-        description: "Performs semantic code search across project files using vector similarity.\n\n" \
-          "Returns ranked code snippets with file paths and content matches based on natural language queries.\n\n" \
-          "Use this tool for questions about a project's codebase.\n" \
-          "For example: \"how something works\" or \"code that does X\", or finding specific implementations.\n\n" \
-          "This tool supports directory scoping and configurable result limits for targeted code discovery and " \
-          "analysis.",
+        description: <<~DESC.strip,
+          Code search using natural language.
+
+          Returns ranked code snippets with file paths and matching content for natural-language queries.
+
+          Primary use cases:
+          - When you do not know the exact symbol or file path
+          - To see how a behavior or feature is implemented across the codebase
+          - To discover related implementations (clients, jobs, feature flags, background workers)
+
+          How to use:
+          - Provide a concise, specific query (1–2 sentences) with concrete keywords like endpoint, class, or framework names
+          - Add directory_path to narrow scope, e.g., "app/services/" or "ee/app/workers/"
+          - Prefer precise intent over broad terms (e.g., "rate limiting middleware for REST API" instead of "rate limit")
+
+          Example queries:
+          - semantic_query: "JWT verification middleware" with directory_path: "app/"
+          - semantic_query: "CI pipeline triggers downstream jobs" with directory_path: "lib/"
+          - semantic_query: "feature flag to disable email notifications" (no directory_path)
+
+          Output:
+          - Ranked snippets with file paths and the matched content for each hit
+        DESC
         input_schema: {
           type: 'object',
           properties: {
@@ -58,11 +75,7 @@ module Mcp
       }
 
       def available?
-        return false unless ACTIVE_CONTEXT_QUERY::Code.available?
-
-        return false unless current_user
-
-        Feature.enabled?(:code_snippet_search_graphqlapi, current_user)
+        current_user.present? && ACTIVE_CONTEXT_QUERY::Code.available?
       end
 
       override :ability
@@ -104,7 +117,10 @@ module Mcp
 
         return failure_response(result, project_id) unless result.success?
 
-        lines = result.map.with_index(1) do |hit, idx|
+        # Filter out excluded files based on Duo context exclusion settings
+        filtered_results = filter_excluded_results(result.to_a, project)
+
+        lines = filtered_results.map.with_index(1) do |hit, idx|
           snippet = hit['content']
           "#{idx}. #{hit['path']}\n   #{snippet}"
         end
@@ -133,6 +149,20 @@ module Mcp
 
       def codebase_query(semantic_query)
         @codebase_query ||= ACTIVE_CONTEXT_QUERY::Code.new(search_term: semantic_query, user: current_user)
+      end
+
+      def filter_excluded_results(results, project)
+        return results if results.empty?
+
+        file_paths = results.filter_map { |hit| hit['path'] }.uniq
+        return results if file_paths.empty?
+
+        exclusion_result = ::Ai::FileExclusionService.new(project).execute(file_paths)
+        return results unless exclusion_result.success?
+
+        excluded_paths = exclusion_result.payload.filter_map { |f| f[:path] if f[:excluded] }.to_set
+
+        results.reject { |hit| excluded_paths.include?(hit['path']) }
       end
     end
   end

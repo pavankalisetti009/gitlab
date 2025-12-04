@@ -1039,7 +1039,7 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
     end
   end
 
-  describe '.check_health' do
+  describe '.server_available?' do
     context 'when OpenBao is healthy' do
       before do
         allow(client).to receive(:make_request).with(:get, "sys/health")
@@ -1047,7 +1047,7 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
       end
 
       it 'returns true' do
-        expect(client.check_health).to be true
+        expect(client.server_available?).to be true
       end
     end
 
@@ -1058,7 +1058,7 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
       end
 
       it 'returns false' do
-        expect(client.check_health).to be false
+        expect(client.server_available?).to be false
       end
     end
 
@@ -1069,7 +1069,7 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
       end
 
       it 'returns false' do
-        expect(client.check_health).to be false
+        expect(client.server_available?).to be false
       end
     end
 
@@ -1080,7 +1080,7 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
       end
 
       it 'returns false' do
-        expect(client.check_health).to be false
+        expect(client.server_available?).to be false
       end
     end
 
@@ -1091,7 +1091,7 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
       end
 
       it 'returns false' do
-        expect(client.check_health).to be false
+        expect(client.server_available?).to be false
       end
     end
 
@@ -1102,7 +1102,7 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
       end
 
       it 'returns false' do
-        expect(client.check_health).to be false
+        expect(client.server_available?).to be false
       end
     end
 
@@ -1113,7 +1113,7 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
       end
 
       it 'returns false' do
-        expect(client.check_health).to be false
+        expect(client.server_available?).to be false
       end
     end
   end

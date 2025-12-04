@@ -1,3 +1,5 @@
+import { nextTick } from 'vue';
+import { GlModal, GlFormRadioGroup } from '@gitlab/ui';
 import { isLoggedIn } from '~/lib/utils/common_utils';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import AiCatalogItemActions from 'ee/ai/catalog/components/ai_catalog_item_actions.vue';
@@ -34,6 +36,7 @@ describe('AiCatalogItemActions', () => {
           params: routeParams,
         },
       },
+      stubs: { GlModal },
     });
   };
 
@@ -46,6 +49,7 @@ describe('AiCatalogItemActions', () => {
   const findDuplicateButton = () => wrapper.findByTestId('duplicate-button');
   const findReportButton = () => wrapper.findByTestId('report-button');
   const findDeleteButton = () => wrapper.findByTestId('delete-button');
+  const findDeleteModal = () => wrapper.findByTestId('delete-item-modal');
 
   describe('when user can report item', () => {
     beforeEach(() => {
@@ -67,16 +71,19 @@ describe('AiCatalogItemActions', () => {
   });
 
   describe.each`
-    scenario                           | canAdmin | canUse   | editBtn  | disableBtn | enableBtn | addBtn   | moreActions | duplicateBtn | deleteBtn | itemType
-    ${'not logged in'}                 | ${false} | ${false} | ${false} | ${false}   | ${false}  | ${false} | ${false}    | ${false}     | ${false}  | ${AI_CATALOG_TYPE_AGENT}
-    ${'logged in, not admin of item'}  | ${false} | ${true}  | ${false} | ${false}   | ${false}  | ${true}  | ${true}     | ${true}      | ${false}  | ${AI_CATALOG_TYPE_AGENT}
-    ${'logged in, admin of item'}      | ${true}  | ${true}  | ${true}  | ${false}   | ${false}  | ${true}  | ${true}     | ${true}      | ${true}   | ${AI_CATALOG_TYPE_AGENT}
-    ${'logged in, admin of flow item'} | ${true}  | ${true}  | ${true}  | ${false}   | ${false}  | ${true}  | ${true}     | ${true}      | ${true}   | ${AI_CATALOG_TYPE_FLOW}
+    scenario                                 | canAdmin | canUse   | foundational | editBtn  | disableBtn | enableBtn | addBtn   | moreActions | duplicateBtn | deleteBtn | itemType
+    ${'not logged in'}                       | ${false} | ${false} | ${false}     | ${false} | ${false}   | ${false}  | ${false} | ${false}    | ${false}     | ${false}  | ${AI_CATALOG_TYPE_AGENT}
+    ${'logged in, not admin of item'}        | ${false} | ${true}  | ${false}     | ${false} | ${false}   | ${false}  | ${true}  | ${true}     | ${true}      | ${false}  | ${AI_CATALOG_TYPE_AGENT}
+    ${'logged in, admin of item'}            | ${true}  | ${true}  | ${false}     | ${true}  | ${false}   | ${false}  | ${true}  | ${true}     | ${true}      | ${true}   | ${AI_CATALOG_TYPE_AGENT}
+    ${'logged in, admin of flow item'}       | ${true}  | ${true}  | ${false}     | ${true}  | ${false}   | ${false}  | ${true}  | ${true}     | ${true}      | ${true}   | ${AI_CATALOG_TYPE_FLOW}
+    ${'logged in, foundational agent'}       | ${false} | ${true}  | ${true}      | ${false} | ${false}   | ${false}  | ${false} | ${true}     | ${true}      | ${false}  | ${AI_CATALOG_TYPE_AGENT}
+    ${'logged in, admin foundational agent'} | ${true}  | ${true}  | ${true}      | ${true}  | ${false}   | ${false}  | ${false} | ${true}     | ${true}      | ${true}   | ${AI_CATALOG_TYPE_AGENT}
   `(
     'at the Explore level, when $scenario',
     ({
       canAdmin,
       canUse,
+      foundational,
       editBtn,
       disableBtn,
       enableBtn,
@@ -92,6 +99,7 @@ describe('AiCatalogItemActions', () => {
             item: {
               ...mockAgent,
               itemType,
+              foundational,
               userPermissions: {
                 adminAiCatalogItem: canAdmin,
               },
@@ -280,6 +288,95 @@ describe('AiCatalogItemActions', () => {
 
     it('does not render "Enable in group" button', () => {
       expect(findAddToGroupButton().exists()).toBe(false);
+    });
+  });
+
+  describe('at Project level', () => {
+    describe('when hasParentConsumer is false', () => {
+      beforeEach(() => {
+        isLoggedIn.mockReturnValue(true);
+        createComponent({
+          provide: {
+            isGlobal: false,
+          },
+          props: {
+            hasParentConsumer: false,
+          },
+        });
+      });
+
+      it('disables the "Enable" button', () => {
+        expect(findEnableButton().props('disabled')).toBe(true);
+      });
+    });
+
+    describe('when hasParentConsumer is true', () => {
+      beforeEach(() => {
+        isLoggedIn.mockReturnValue(true);
+        createComponent({
+          provide: {
+            isGlobal: false,
+          },
+          props: {
+            hasParentConsumer: true,
+          },
+        });
+      });
+
+      it('does not disable the "Enable" button', () => {
+        expect(findEnableButton().props('disabled')).toBe(false);
+      });
+    });
+  });
+
+  describe('delete modal', () => {
+    describe('when user can hard delete', () => {
+      beforeEach(() => {
+        createComponent({
+          props: {
+            item: {
+              ...mockAgent,
+              userPermissions: {
+                adminAiCatalogItem: true,
+                forceHardDeleteAiCatalogItem: true,
+              },
+            },
+          },
+        });
+      });
+
+      it('displays deletion method radio buttons', async () => {
+        findDeleteButton().vm.$emit('action');
+
+        await nextTick();
+
+        expect(findDeleteModal().exists()).toBe(true);
+        expect(findDeleteModal().findComponent(GlFormRadioGroup).exists()).toBe(true);
+      });
+    });
+
+    describe('when user cannot hard delete', () => {
+      beforeEach(() => {
+        createComponent({
+          props: {
+            item: {
+              ...mockAgent,
+              userPermissions: {
+                adminAiCatalogItem: true,
+                forceHardDeleteAiCatalogItem: false,
+              },
+            },
+          },
+        });
+      });
+
+      it('does not display deletion method radio buttons', async () => {
+        findDeleteButton().vm.$emit('action');
+
+        await nextTick();
+
+        expect(findDeleteModal().findComponent(GlFormRadioGroup).exists()).toBe(false);
+      });
     });
   });
 });

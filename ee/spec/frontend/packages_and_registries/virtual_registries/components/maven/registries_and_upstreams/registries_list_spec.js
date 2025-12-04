@@ -11,7 +11,7 @@ import RegistriesTable from 'ee/packages_and_registries/virtual_registries/compo
 import * as urlUtils from '~/lib/utils/url_utility';
 import { TEST_HOST } from 'spec/test_constants';
 import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
-import { groupVirtualRegistries } from '../../../mock_data';
+import { groupVirtualRegistries } from 'ee_jest/packages_and_registries/virtual_registries/mock_data';
 
 jest.mock('ee/packages_and_registries/virtual_registries/sentry_utils');
 

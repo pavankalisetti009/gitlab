@@ -61,7 +61,8 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
 
   let(:help_page_link) do
     ::Gitlab::Utils.append_path(Gitlab::Routing.url_helpers.root_url,
-      Gitlab::Routing.url_helpers.help_page_path('user/gitlab_duo/context_exclusion.md'))
+      Gitlab::Routing.url_helpers.help_page_path('user/gitlab_duo/context.md',
+        anchor: 'exclude-context-from-gitlab-duo'))
   end
 
   subject(:completion) { described_class.new(review_prompt_message, review_prompt_class, options) }
@@ -121,7 +122,6 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
     end
 
     before do
-      stub_feature_flags(ai_model_switching: false)
       stub_feature_flags(use_duo_context_exclusion: false)
       stub_feature_flags(duo_code_review_on_agent_platform: false)
 
@@ -1671,7 +1671,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
       end
     end
 
-    context 'with model switching enabled', :saas do
+    context 'with model switching enabled', :saas_gitlab_com_subscriptions do
       it_behaves_like 'review merge request with prompt version'
 
       context 'when the model is pinned to a specific model' do

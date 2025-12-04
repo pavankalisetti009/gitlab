@@ -44,7 +44,7 @@ module MergeRequests
 
     has_many :group_users, -> { distinct }, through: :approver_groups, source: :users, disable_joins: true
 
-    validate :ensure_single_sharding_key
+    validates_with ExactlyOnePresentValidator, fields: :sharding_keys
 
     with_options validate: true do
       enum :rule_type, { regular: 0, code_owner: 1, report_approver: 2, any_approver: 3 }, default: :regular
@@ -132,22 +132,8 @@ module MergeRequests
       end
     end
 
-    def ensure_single_sharding_key
-      return errors.add(:base, "Must have either `group_id` or `project_id`") if no_sharding_key?
-
-      errors.add(:base, "Cannot have both `group_id` and `project_id`") if multiple_sharding_keys?
-    end
-
     def sharding_keys
-      [group_id, project_id]
-    end
-
-    def no_sharding_key?
-      sharding_keys.all?(&:blank?)
-    end
-
-    def multiple_sharding_keys?
-      sharding_keys.all?(&:present?)
+      [:group_id, :project_id]
     end
   end
 end

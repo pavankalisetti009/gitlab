@@ -1,6 +1,7 @@
+import { makeVar } from '@apollo/client/core';
 import { s__ } from '~/locale';
 import { humanize } from '~/lib/utils/text_utility';
-import { AGENT_PLATFORM_STATUS_ICON } from './constants';
+import { AGENT_PLATFORM_STATUS_ICON, AGENT_PLATFORM_STATUS_BADGE } from './constants';
 
 export const formatAgentDefinition = (agentDefinition) => {
   return humanize(agentDefinition || s__('DuoAgentsPlatform|Agent session'));
@@ -16,6 +17,10 @@ export const formatAgentStatus = (status) => {
 
 export const getAgentStatusIcon = (status) => {
   return AGENT_PLATFORM_STATUS_ICON[status] || AGENT_PLATFORM_STATUS_ICON.CREATED;
+};
+
+export const getAgentStatusBadge = (status) => {
+  return AGENT_PLATFORM_STATUS_BADGE[status] || AGENT_PLATFORM_STATUS_BADGE.FAILED;
 };
 
 export const parseJsonProperty = (value) => {
@@ -43,7 +48,7 @@ export const getNamespaceDatasetProperties = (dataset, properties, jsonPropertie
 };
 
 export const getToolData = (toolMessage) => {
-  const toolName = toolMessage?.tool_info?.name;
+  const toolName = toolMessage?.toolInfo?.name;
 
   const toolMap = {
     read_file: { icon: 'eye', title: s__('DuoAgentsPlatform|Read file'), level: 0 },
@@ -87,11 +92,11 @@ export const getToolData = (toolMessage) => {
 };
 
 export const getMessageData = (message) => {
-  if (!message.message_type) {
+  if (!message.messageType) {
     throw new Error(`Message requires property 'message_type' but got ${JSON.stringify(message)} `);
   }
 
-  switch (message.message_type) {
+  switch (message.messageType) {
     case 'user':
       return { icon: 'user', title: s__('DuoAgentPlatform|User messaged agent'), level: 1 };
     case 'request':
@@ -108,3 +113,5 @@ export const getMessageData = (message) => {
       return { icon: 'work-item-maintenance', title: s__('DuoAgentPlatform|Action'), level: 0 };
   }
 };
+
+export const agentSessionStatusVar = makeVar(null);

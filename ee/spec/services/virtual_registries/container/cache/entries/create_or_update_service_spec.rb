@@ -15,8 +15,7 @@ RSpec.describe VirtualRegistries::Container::Cache::Entries::CreateOrUpdateServi
   let(:file) do
     UploadedFile.new(
       Tempfile.new(etag).path,
-      sha1: '4e1243bd22c66e76c2ba9eddc1f91394e57f9f83',
-      md5: 'd8e8fca2dc0f896fd7cb4cb0031ba249'
+      sha1: '4e1243bd22c66e76c2ba9eddc1f91394e57f9f83'
     )
   end
 
@@ -46,8 +45,7 @@ RSpec.describe VirtualRegistries::Container::Cache::Entries::CreateOrUpdateServi
             relative_path: "/#{path}",
             upstream_etag: etag,
             content_type: content_type,
-            file_sha1: '4e1243bd22c66e76c2ba9eddc1f91394e57f9f83',
-            file_md5: 'd8e8fca2dc0f896fd7cb4cb0031ba249'
+            file_sha1: '4e1243bd22c66e76c2ba9eddc1f91394e57f9f83'
           )
         end
       end

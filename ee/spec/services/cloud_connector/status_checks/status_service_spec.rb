@@ -21,7 +21,8 @@ RSpec.describe CloudConnector::StatusChecks::StatusService, feature_category: :d
         an_instance_of(CloudConnector::StatusChecks::Probes::HostProbe),
         an_instance_of(CloudConnector::StatusChecks::Probes::AccessProbe),
         an_instance_of(CloudConnector::StatusChecks::Probes::TokenProbe),
-        an_instance_of(CloudConnector::StatusChecks::Probes::EndToEndProbe)
+        an_instance_of(CloudConnector::StatusChecks::Probes::EndToEndProbe),
+        an_instance_of(CloudConnector::StatusChecks::Probes::DuoAgentPlatformProbe)
       ]
     end
 
@@ -37,7 +38,7 @@ RSpec.describe CloudConnector::StatusChecks::StatusService, feature_category: :d
       it 'creates default probes' do
         service_probes = service.probes
 
-        expect(service_probes.count).to eq(6)
+        expect(service_probes.count).to eq(7)
         expect(service_probes).to match(default_probes)
       end
     end
@@ -67,7 +68,7 @@ RSpec.describe CloudConnector::StatusChecks::StatusService, feature_category: :d
           it 'adds default probes to the list of probes' do
             service_probes = service.probes
 
-            expect(service_probes.count).to eq(9)
+            expect(service_probes.count).to eq(10)
             expect(service_probes).to match(default_probes + self_hosted_probes)
           end
         end

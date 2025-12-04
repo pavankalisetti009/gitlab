@@ -1,0 +1,10 @@
+---
+name: set_tracked_context_during_ingestion
+description:
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/work_items/555981
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/213439
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/582109
+milestone: '18.7'
+group: group::security insights
+type: gitlab_com_derisk
+default_enabled: false

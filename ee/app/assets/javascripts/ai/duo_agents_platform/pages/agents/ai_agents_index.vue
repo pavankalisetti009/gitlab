@@ -1,14 +1,14 @@
 <script>
 import EMPTY_SVG_URL from '@gitlab/svgs/dist/illustrations/empty-state/empty-ai-catalog-md.svg?url';
 import { GlButton, GlModalDirective, GlTabs, GlTab } from '@gitlab/ui';
+import { fetchPolicies } from '~/lib/graphql';
 import { __, s__, sprintf } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
-import ResourceListsEmptyState from '~/vue_shared/components/resource_lists/empty_state.vue';
-import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
 import AiCatalogListHeader from 'ee/ai/catalog/components/ai_catalog_list_header.vue';
+import AiCatalogListWrapper from 'ee/ai/catalog/components/ai_catalog_list_wrapper.vue';
 import aiCatalogProjectUserPermissionsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_project_user_permissions.query.graphql';
 import aiCatalogGroupUserPermissionsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_group_user_permissions.query.graphql';
 import {
@@ -41,10 +41,9 @@ export default {
     GlButton,
     GlTabs,
     GlTab,
-    ResourceListsEmptyState,
     ErrorsAlert,
-    AiCatalogList,
     AiCatalogListHeader,
+    AiCatalogListWrapper,
     AddProjectItemConsumerModal,
     AiCatalogConfiguredItemsWrapper,
   },
@@ -76,9 +75,12 @@ export default {
         return {
           projectPath: this.projectPath,
           projectId: convertToGraphQLId(TYPENAME_PROJECT, this.projectId),
+          search: this.searchTerm,
           ...this.paginationVariables,
         };
       },
+      // fetchPolicy needed to refresh items after creating an item
+      fetchPolicy: fetchPolicies.CACHE_AND_NETWORK,
       update: (data) => data?.project?.aiCatalogItems?.nodes || [],
       result({ data }) {
         this.pageInfo = data?.project?.aiCatalogItems?.pageInfo || {};
@@ -127,6 +129,7 @@ export default {
         last: null,
       },
       selectedTabIndex: 0,
+      searchTerm: '',
     };
   },
   computed: {
@@ -188,7 +191,7 @@ export default {
     },
     disableConfirmMessageProject() {
       return s__(
-        'AICatalog|Are you sure you want to disable agent %{name}? The agent and any associated flows, triggers, and service accounts will no longer work in this project.',
+        'AICatalog|Are you sure you want to disable agent %{name}? The agent will no longer work in this project.',
       );
     },
     emptyStateTitle() {
@@ -274,6 +277,12 @@ export default {
         last: PAGE_SIZE,
       };
     },
+    handleSearch(filters) {
+      [this.searchTerm] = filters;
+    },
+    handleClearSearch() {
+      this.searchTerm = '';
+    },
     handleError({ title, errors }) {
       this.errorTitle = title;
       this.errors = errors;
@@ -329,31 +338,23 @@ export default {
         />
       </gl-tab>
       <gl-tab :title="s__('AICatalog|Managed')" lazy @click="resetPagination">
-        <ai-catalog-list
+        <ai-catalog-list-wrapper
           :is-loading="isLoading"
           :items="aiAgents"
           :item-type-config="itemTypeConfig"
+          :page-info="pageInfo"
+          :empty-state-title="emptyStateTitle"
+          :empty-state-description="emptyStateDescription"
+          :empty-state-button-href="exploreHref"
+          :empty-state-button-text="emptyStateButtonText"
           :disable-confirm-title="disableConfirmTitle"
           :disable-confirm-message="disableConfirmMessageProject"
-          :page-info="pageInfo"
           data-testid="managed-agents-list"
           @next-page="handleNextPage"
           @prev-page="handlePrevPage"
-        >
-          <template #empty-state>
-            <resource-lists-empty-state
-              :title="emptyStateTitle"
-              :description="emptyStateDescription"
-              :svg-path="$options.EMPTY_SVG_URL"
-            >
-              <template #actions>
-                <gl-button variant="confirm" :href="exploreHref">
-                  {{ emptyStateButtonText }}
-                </gl-button>
-              </template>
-            </resource-lists-empty-state>
-          </template>
-        </ai-catalog-list>
+          @search="handleSearch"
+          @clear-search="handleClearSearch"
+        />
       </gl-tab>
     </gl-tabs>
     <ai-catalog-configured-items-wrapper

@@ -624,6 +624,7 @@ RSpec.describe GroupsController, :with_current_organization, feature_category: :
 
       before do
         sign_in user
+        stub_licensed_features(epics: true)
         group.add_developer(user)
       end
 
@@ -694,6 +695,12 @@ RSpec.describe GroupsController, :with_current_organization, feature_category: :
 
       context 'when work_item_planning_view feature flag is enabled' do
         it_behaves_like 'epic parameter redirect', :group_work_items_path
+
+        it 'redirects to work items path with epic exclusion filter when epics are available' do
+          get :issues, params: { id: group.to_param }
+
+          expect(response).to redirect_to(group_work_items_path(group, params: { 'not[type][]' => 'epic' }))
+        end
       end
     end
   end

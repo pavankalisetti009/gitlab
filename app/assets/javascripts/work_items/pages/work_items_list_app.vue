@@ -61,7 +61,7 @@ import { fetchPolicies } from '~/lib/graphql';
 import { isPositiveInteger } from '~/lib/utils/number_utils';
 import { scrollUp } from '~/lib/utils/scroll_utils';
 import { getParameterByName, removeParams, updateHistory } from '~/lib/utils/url_utility';
-import { __, s__, n__ } from '~/locale';
+import { __, s__, n__, formatNumber } from '~/locale';
 import {
   OPERATOR_IS,
   OPERATORS_AFTER_BEFORE,
@@ -237,6 +237,7 @@ export default {
     'isIssueRepositioningDisabled',
     'hasProjects',
     'newIssuePath',
+    'workItemPlanningViewEnabled',
   ],
   props: {
     eeWorkItemUpdateCount: {
@@ -661,6 +662,7 @@ export default {
           token: WorkItemTypeToken,
           operators: OPERATORS_IS_NOT_OR,
           multiSelect: true,
+          fetchWorkItemTypes: this.fetchWorkItemTypes,
         });
       }
 
@@ -877,7 +879,7 @@ export default {
       return this.glFeatures.workItemsClientSideBoards;
     },
     isPlanningViewsEnabled() {
-      return this.glFeatures.workItemPlanningView;
+      return this.glFeatures.workItemPlanningView || !this.withTabs;
     },
     preselectedWorkItemType() {
       return this.isEpicsList ? WORK_ITEM_TYPE_NAME_EPIC : WORK_ITEM_TYPE_NAME_ISSUE;
@@ -903,6 +905,11 @@ export default {
       };
     },
     showProjectNewWorkItem() {
+      if (this.workItemPlanningViewEnabled) {
+        // In CE, groups cannot enable create_work_items, so showNewWorkItem is always false (only enabled in EE).
+        // However, we need to show the button for CE groups with projects (!hasEpicsFeature indicates CE).
+        return (this.isGroup && this.hasProjects && !this.hasEpicsFeature) || this.showNewWorkItem;
+      }
       return this.showNewWorkItem && !this.isGroupIssuesList;
     },
     showGroupNewWorkItem() {
@@ -912,7 +919,10 @@ export default {
       if (this.workItemsCount === null) {
         return '';
       }
-      return n__('WorkItem|%d item', 'WorkItem|%d items', this.workItemsCount);
+      return n__('WorkItem|%d item', 'WorkItem|%d items', this.workItemsCount).replace(
+        '%d',
+        formatNumber(this.workItemsCount),
+      );
     },
     workItemTypeId() {
       const workItemTypeName = this.workItemType || WORK_ITEM_TYPE_NAME_ISSUE;
@@ -920,6 +930,9 @@ export default {
     },
     shouldLoad() {
       return !this.isInitialLoadComplete || (!this.isSortKeyInitialized && !this.error);
+    },
+    isBulkEditDisabled() {
+      return this.showBulkEditSidebar || this.workItems.length === 0;
     },
   },
   watch: {
@@ -1407,6 +1420,15 @@ export default {
     extractProjects(data) {
       return data?.group?.projects?.nodes;
     },
+    fetchWorkItemTypes() {
+      return this.$apollo.query({
+        query: namespaceWorkItemTypesQuery,
+        variables: {
+          fullPath: this.rootPageFullPath,
+          onlyAvailable: this.isProject,
+        },
+      });
+    },
   },
   constants: {
     METADATA_KEYS,
@@ -1495,7 +1517,7 @@ export default {
             </gl-button>
             <gl-button
               v-if="allowBulkEditing"
-              :disabled="showBulkEditSidebar"
+              :disabled="isBulkEditDisabled"
               data-testid="bulk-edit-start-button"
               @click="showBulkEditSidebar = true"
             >
@@ -1543,7 +1565,7 @@ export default {
               </gl-button>
               <gl-button
                 v-if="allowBulkEditing"
-                :disabled="showBulkEditSidebar"
+                :disabled="isBulkEditDisabled"
                 data-testid="bulk-edit-start-button"
                 @click="showBulkEditSidebar = true"
               >
@@ -1557,6 +1579,7 @@ export default {
                 :is-group="isGroup"
                 :preselected-work-item-type="preselectedWorkItemType"
                 :is-epics-list="isEpicsList"
+                :show-project-selector="!hasEpicsFeature"
                 @workItemCreated="handleWorkItemCreated"
               />
               <new-resource-dropdown
@@ -1645,6 +1668,7 @@ export default {
                   :full-path="rootPageFullPath"
                   :is-group="isGroup"
                   :preselected-work-item-type="preselectedWorkItemType"
+                  :show-project-selector="!hasEpicsFeature"
                   @workItemCreated="handleWorkItemCreated"
                 />
               </template>

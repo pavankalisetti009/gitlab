@@ -95,6 +95,23 @@ RSpec.describe Ai::ActiveContext::Code::AdHocIndexingWorker, feature_category: :
               expect { perform }.not_to change { Ai::ActiveContext::Code::Repository.count }
               expect(perform).to be false
             end
+
+            context 'when repository record already exists in deleted state' do
+              before do
+                existing_repository.update!(state: :deleted, delete_reason: 'test_reason')
+              end
+
+              it 'updates the repository state to pending, clears delete_reason, and enqueues RepositoryIndexWorker' do
+                expect(Ai::ActiveContext::Code::RepositoryIndexWorker).to receive(:perform_async)
+                  .with(existing_repository.id)
+
+                expect { perform }.not_to change { Ai::ActiveContext::Code::Repository.count }
+
+                existing_repository.reload
+                expect(existing_repository.state).to eq('pending')
+                expect(existing_repository.delete_reason).to be_nil
+              end
+            end
           end
 
           context 'when repository record does not exist' do

@@ -686,13 +686,14 @@ module Gitlab
         end
       end
 
-      def merge(user, source_sha:, target_branch:, message:, target_sha: nil, &block)
+      def merge(user, source_sha:, target_branch:, message:, target_sha: nil, sign: true, &block)
         wrapped_gitaly_errors do
           gitaly_operation_client.user_merge_branch(user,
             source_sha: source_sha,
             target_branch: target_branch,
             message: message,
             target_sha: target_sha,
+            sign: sign,
             &block)
         end
       end
@@ -994,7 +995,7 @@ module Gitlab
 
       def squash(user, start_sha:, end_sha:, author:, message:)
         wrapped_gitaly_errors do
-          gitaly_operation_client.user_squash(user, start_sha, end_sha, author, message)
+          gitaly_operation_client.user_squash(user, start_sha: start_sha, end_sha: end_sha, author: author, message: message)
         end
       end
 

@@ -147,6 +147,8 @@ module ApplicationSettingImplementation
         max_github_response_json_value_count: 250_000,
         max_http_decompressed_size: 100,
         max_http_response_size_limit: 100,
+        max_http_response_json_depth: 32,
+        max_http_response_json_structural_chars: 1_000_000,
         max_import_size: 0,
         max_import_remote_file_size: 10240,
         max_login_attempts: nil,
@@ -359,7 +361,9 @@ module ApplicationSettingImplementation
         disable_invite_members: false,
         enforce_pipl_compliance: false,
         model_prompt_cache_enabled: true,
-        lock_model_prompt_cache_enabled: false
+        lock_model_prompt_cache_enabled: false,
+        pipeline_limit_per_user: 0,
+        background_operations_max_jobs: 10
       }.tap do |hsh|
         hsh.merge!(non_production_defaults) unless Rails.env.production?
       end

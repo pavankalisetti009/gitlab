@@ -47,14 +47,6 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
 
       it { is_expected.to eq(expected_type) }
 
-      context 'when use_default_branch? is false' do
-        before do
-          allow(search_service).to receive(:use_default_branch?).and_return(false)
-        end
-
-        it { is_expected.to eq('basic') }
-      end
-
       %w[basic advanced zoekt].each do |search_type|
         context "with search_type param #{search_type}" do
           let(:search_service) do
@@ -430,12 +422,6 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
     it 'calls on Node.searchable_for_project' do
       expect(Search::Zoekt::Node).to receive(:searchable_for_project).with(project).and_return(:result)
       expect(service.zoekt_nodes).to eq(:result)
-    end
-  end
-
-  describe '#search_level' do
-    it 'returns project' do
-      expect(described_class.new(user, project, scope: 'notes').search_level).to eq :project
     end
   end
 

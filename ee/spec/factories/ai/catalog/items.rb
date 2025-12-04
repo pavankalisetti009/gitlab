@@ -34,6 +34,10 @@ FactoryBot.define do
       deleted_at { Time.zone.now }
     end
 
+    trait :with_foundational_flow_reference do
+      foundational_flow_reference { "fix_pipeline/v1" }
+    end
+
     versions do |item|
       version_factory = "ai_catalog_#{item.item_type}_version"
       build_list(version_factory, 1, item: nil)

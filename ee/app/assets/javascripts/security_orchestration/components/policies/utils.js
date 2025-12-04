@@ -172,3 +172,18 @@ export const buildPolicyViolationList = ({
 
   return violationList;
 };
+
+/**
+ * Universal for all types policy structure
+ * has policyAttributes properties wrapped in an object
+ * this method unwraps it and merges into policy
+ * @param {Array} policies array of generic policies
+ */
+export const flattenPolicies = (policies) => {
+  if (!Array.isArray(policies)) return [];
+
+  return policies.filter(Boolean).map(({ policyAttributes = {}, ...policy }) => ({
+    ...policy,
+    ...policyAttributes,
+  }));
+};

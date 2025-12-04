@@ -1033,6 +1033,16 @@
   :idempotent: false
   :tags: []
   :queue_namespace: :cronjob
+- :name: dependency_proxy_blob:virtual_registries_container_cache_mark_entries_for_destruction
+  :worker_name: VirtualRegistries::Container::Cache::MarkEntriesForDestructionWorker
+  :feature_category: :virtual_registry
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace: :dependency_proxy_blob
 - :name: dependency_proxy_blob:virtual_registries_packages_cache_mark_entries_for_destruction
   :worker_name: VirtualRegistries::Packages::Cache::MarkEntriesForDestructionWorker
   :feature_category: :virtual_registry
@@ -1455,6 +1465,16 @@
   :queue_namespace:
 - :name: ai_active_context_code_ad_hoc_indexing
   :worker_name: Ai::ActiveContext::Code::AdHocIndexingWorker
+  :feature_category: :global_search
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
+- :name: ai_active_context_code_create_enabled_namespace_event
+  :worker_name: Ai::ActiveContext::Code::CreateEnabledNamespaceEventWorker
   :feature_category: :global_search
   :has_external_dependencies: false
   :urgency: :low
@@ -2427,6 +2447,16 @@
   :queue_namespace:
 - :name: geo_bulk_primary_verification
   :worker_name: Geo::BulkPrimaryVerificationWorker
+  :feature_category: :geo_replication
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
+- :name: geo_bulk_registry_resync
+  :worker_name: Geo::BulkRegistryResyncWorker
   :feature_category: :geo_replication
   :has_external_dependencies: false
   :urgency: :low
@@ -4096,6 +4126,16 @@
   :idempotent: false
   :tags: []
   :queue_namespace:
+- :name: security_scan_profiles_process_project_transfer_events
+  :worker_name: Security::ScanProfiles::ProcessProjectTransferEventsWorker
+  :feature_category: :security_asset_inventories
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: security_scan_result_policies_add_approvers_to_rules
   :worker_name: Security::ScanResultPolicies::AddApproversToRulesWorker
   :feature_category: :security_policy_management
@@ -4709,6 +4749,16 @@
   :queue_namespace:
 - :name: vulnerabilities_trigger_false_positive_detection_workflow
   :worker_name: Vulnerabilities::TriggerFalsePositiveDetectionWorkflowWorker
+  :feature_category: :vulnerability_management
+  :has_external_dependencies: false
+  :urgency: :throttled
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
+- :name: vulnerabilities_trigger_resolution_workflow
+  :worker_name: Vulnerabilities::TriggerResolutionWorkflowWorker
   :feature_category: :vulnerability_management
   :has_external_dependencies: false
   :urgency: :throttled

@@ -163,10 +163,20 @@ FactoryBot.define do
 
     trait :vulnerability_management_policy do
       type { Security::Policy.types[:vulnerability_management_policy] }
-      content do
-        {
-          actions: [{ type: 'auto_resolve' }]
-        }
+      auto_resolve
+    end
+
+    trait :auto_resolve do
+      content { { actions: [{ type: 'auto_resolve' }] } }
+    end
+
+    trait :auto_dismiss do
+      transient do
+        dismissal_reason { 'used_in_tests' }
+      end
+
+      after(:build) do |policy, evaluator|
+        policy.content = { actions: [{ type: 'auto_dismiss', dismissal_reason: evaluator.dismissal_reason }] }
       end
     end
 
@@ -253,17 +263,33 @@ FactoryBot.define do
     sequence(:name) { |n| "test-vulnerability-management-policy-#{n}" }
     description { 'This policy enforces resolving of no longer detected low SAST vulnerabilities' }
     enabled { true }
-    rules do
-      [
-        {
-          type: 'no_longer_detected',
-          scanners: %w[sast],
-          severity_levels: %w[low]
-        }
-      ]
-    end
-    actions { [{ type: 'auto_resolve' }] }
     policy_scope { {} }
+    auto_resolve
+
+    trait :auto_resolve do
+      rules do
+        [
+          {
+            type: 'no_longer_detected',
+            scanners: %w[sast],
+            severity_levels: %w[low]
+          }
+        ]
+      end
+      actions { [{ type: 'auto_resolve' }] }
+    end
+
+    trait :auto_dismiss do
+      rules do
+        [
+          {
+            type: 'detected',
+            criteria: [{ type: 'identifier', value: 'CVE-2025-12345' }]
+          }
+        ]
+      end
+      actions { [{ type: 'auto_dismiss', dismissal_reason: 'used_in_tests' }] }
+    end
   end
 
   factory :ci_component_publishing_policy,

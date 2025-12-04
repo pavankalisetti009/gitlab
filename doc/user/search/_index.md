@@ -31,18 +31,18 @@ For code search, GitLab uses these types in this order:
 Scopes describe the type of data you're searching.
 The following scopes are available for basic search:
 
-| Scope          | Global <sup>1</sup>                         | Group                                       | Project |
-|----------------|:-------------------------------------------:|:-------------------------------------------:|:-------:|
-| Code           | {{< icon name="dash-circle" >}} No          | {{< icon name="dash-circle" >}} No          | {{< icon name="check-circle-filled" >}} Yes |
-| Comments       | {{< icon name="dash-circle" >}} No          | {{< icon name="dash-circle" >}} No          | {{< icon name="check-circle-filled" >}} Yes |
-| Commits        | {{< icon name="dash-circle" >}} No          | {{< icon name="dash-circle" >}} No          | {{< icon name="check-circle-filled" >}} Yes |
-| Epics          | {{< icon name="dash-circle" >}} No          | {{< icon name="check-circle-filled" >}} Yes | {{< icon name="dash-circle" >}} No |
-| Issues         | {{< icon name="check-circle-filled" >}} Yes | {{< icon name="check-circle-filled" >}} Yes | {{< icon name="check-circle-filled" >}} Yes |
-| Merge requests | {{< icon name="check-circle-filled" >}} Yes | {{< icon name="check-circle-filled" >}} Yes | {{< icon name="check-circle-filled" >}} Yes |
-| Milestones     | {{< icon name="check-circle-filled" >}} Yes | {{< icon name="check-circle-filled" >}} Yes | {{< icon name="check-circle-filled" >}} Yes |
-| Projects       | {{< icon name="check-circle-filled" >}} Yes | {{< icon name="check-circle-filled" >}} Yes | {{< icon name="dash-circle" >}} No |
-| Users          | {{< icon name="check-circle-filled" >}} Yes | {{< icon name="check-circle-filled" >}} Yes | {{< icon name="check-circle-filled" >}} Yes |
-| Wikis          | {{< icon name="dash-circle" >}} No          | {{< icon name="dash-circle" >}} No          | {{< icon name="check-circle-filled" >}} Yes |
+| Scope          | Global <sup>1</sup> |    Group    | Project |
+|----------------|:-------------------:|:-----------:|:-------:|
+| Code           |     {{< no >}}      | {{< no >}}  | {{< yes >}} |
+| Comments       |     {{< no >}}      | {{< no >}}  | {{< yes >}} |
+| Commits        |     {{< no >}}      | {{< no >}}  | {{< yes >}} |
+| Epics          |     {{< no >}}      | {{< yes >}} | {{< no >}} |
+| Issues         |     {{< yes >}}     | {{< yes >}} | {{< yes >}} |
+| Merge requests |     {{< yes >}}     | {{< yes >}} | {{< yes >}} |
+| Milestones     |     {{< yes >}}     | {{< yes >}} | {{< yes >}} |
+| Projects       |     {{< yes >}}     | {{< yes >}} | {{< no >}} |
+| Users          |     {{< yes >}}     | {{< yes >}} | {{< yes >}} |
+| Wikis          |     {{< no >}}      | {{< no >}}  | {{< yes >}} |
 
 **Footnotes**:
 
@@ -184,7 +184,7 @@ For more information, see the history.
 
 As you type in the search box, autocomplete suggestions are displayed for:
 
-- [Projects](#search-for-a-project-by-full-path) and groups
+- Projects and groups
 - Users from authorized projects and groups
 - Help pages
 - Project features (for example, milestones)
@@ -212,23 +212,6 @@ To search in a project:
 1. Press <kbd>Enter</kbd> to search, or select from the list.
 
 The results are displayed. To filter the results, on the left sidebar, select a filter.
-
-## Search for a project by full path
-
-{{< history >}}
-
-- [Introduced](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/108906) in GitLab 15.9 [with a flag](../../administration/feature_flags/_index.md) named `full_path_project_search`. Disabled by default.
-- [Generally available](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/114932) in GitLab 15.11. Feature flag `full_path_project_search` removed.
-
-{{< /history >}}
-
-You can search for a project by entering its full path (including the namespace it belongs to) in the search box.
-As you type the project path, [autocomplete suggestions](#autocomplete-suggestions) are displayed.
-
-For example:
-
-- `gitlab-org/gitlab` searches for the `gitlab` project in the `gitlab-org` namespace.
-- `gitlab-org/` displays autocomplete suggestions for projects that belong to the `gitlab-org` namespace.
 
 ## Include archived projects in search results
 
@@ -306,12 +289,8 @@ Basic search uses exact substring matching with the following options:
 
 ### Examples
 
-<!-- markdownlint-disable MD044 -->
-
 | Query                                 | Description |
 |---------------------------------------|-------------|
 | `rails -filename:gemfile.lock`        | Returns `rails` in all files except the `gemfile.lock` file. |
 | `helper -extension:yml -extension:js` | Returns `helper` in all files except files with a `.yml` or `.js` extension. |
 | `helper path:lib/git`                 | Returns `helper` in all files with a `lib/git*` path (for example, `spec/lib/gitlab`). |
-
-<!-- markdownlint-enable MD044 -->

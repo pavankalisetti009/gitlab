@@ -8,8 +8,7 @@ RSpec.describe GitlabSchema.types['VirtualRegistryCleanupPolicy'], feature_categ
   subject { described_class }
 
   let_it_be(:fields) do
-    %i[group_id
-      enabled
+    %i[enabled
       next_run_at
       last_run_at
       last_run_deleted_size

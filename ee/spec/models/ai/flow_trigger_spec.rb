@@ -78,22 +78,24 @@ RSpec.describe Ai::FlowTrigger, feature_category: :duo_agent_platform do
 
       context 'when using both config_path and ai_catalog_item_consumer' do
         it 'is invalid' do
+          error_message = 'Exactly one of config_path, ai_catalog_item_consumer must be present'
           flow_trigger = build(:ai_flow_trigger,
             project: project,
             config_path: 'path/to/config.yml',
             ai_catalog_item_consumer: item_consumer)
 
           expect(flow_trigger).not_to be_valid
-          expect(flow_trigger.errors[:base]).to include('must have only one config_path or ai_catalog_item_consumer')
+          expect(flow_trigger.errors[:base]).to include(error_message)
         end
       end
 
       context 'when using neither config_path nor ai_catalog_item_consumer' do
         it 'is invalid' do
+          error_message = 'Exactly one of config_path, ai_catalog_item_consumer must be present'
           flow_trigger = build(:ai_flow_trigger, config_path: nil)
 
           expect(flow_trigger).not_to be_valid
-          expect(flow_trigger.errors[:base]).to include('must have only one config_path or ai_catalog_item_consumer')
+          expect(flow_trigger.errors[:base]).to include(error_message)
         end
       end
     end
@@ -107,10 +109,11 @@ RSpec.describe Ai::FlowTrigger, feature_category: :duo_agent_platform do
         let(:project) { create(:project) }
 
         it 'is invalid' do
+          error_message = 'Exactly one of config_path, ai_catalog_item_consumer must be present'
           flow_trigger = build(:ai_flow_trigger, project: project, ai_catalog_item_consumer: item_consumer)
 
           expect(flow_trigger).not_to be_valid
-          expect(flow_trigger.errors[:base]).to include('must have only one config_path or ai_catalog_item_consumer')
+          expect(flow_trigger.errors[:base]).to include(error_message)
         end
       end
 

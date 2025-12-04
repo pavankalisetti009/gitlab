@@ -63,9 +63,9 @@ To generate a new Support PIN:
 1. On the left sidebar, select **Account**.
 1. Select **Generate New PIN**.
 
-## Access your Support Pin
+## Access your Support PIN
 
-If you've created a Support Pin previously,
+If you've created a Support PIN previously,
 the PIN is accessible in your profile and expires seven days after creation.
 
 To access your Support PIN:
@@ -121,8 +121,8 @@ You can update your [primary email address](#change-your-primary-email).
 
 {{< alert type="note" >}}
 
-[Making your email non-public](#set-your-public-email) does not prevent it from being used for commit matching,
-[project imports](../project/import/_index.md), and [group migrations](../group/import/_index.md).
+[Making your email non-public](#set-your-public-email) does not prevent it from being used for commit matching and
+[group and project imports](../import/_index.md).
 
 {{< /alert >}}
 
@@ -535,6 +535,7 @@ a session if the browser is closed or the existing session expires.
 
 - [Create users](account/create_accounts.md)
 - [Sign in to your GitLab account](../../administration/auth/_index.md)
+- [Locked user accounts](../../security/unlock_user.md)
 - [Change your password](user_passwords.md)
 - Receive emails for:
   - [Sign-ins from unknown IP addresses or devices](notifications.md#notifications-for-unknown-sign-ins)

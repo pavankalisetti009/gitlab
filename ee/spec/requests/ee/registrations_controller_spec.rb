@@ -319,36 +319,45 @@ RSpec.describe RegistrationsController, :with_current_organization, type: :reque
 
     describe 'block seat overages' do
       context 'when there are no seats remaining on a premium license' do
+        let_it_be(:existing_user) { create(:user) }
+        let_it_be(:group) { create(:group) }
+
+        before_all do
+          group.add_developer(existing_user)
+        end
+
         before do
           stub_ee_application_setting(seat_control: ::EE::ApplicationSetting::SEAT_CONTROL_BLOCK_OVERAGES)
 
-          create(:user, :developer)
           license = create(:license, plan: License::PREMIUM_PLAN, seats: 1)
           allow(License).to receive(:current).and_return(license)
         end
 
         it 'prevents new user registration' do
-          create_user
+          expect { create_user }.not_to change { User.count }
 
           expect(flash[:alert]).to eq('There are no seats left on your GitLab instance. ' \
             'Please contact your GitLab administrator.')
-          expect(User.count).to eq(1)
         end
       end
 
       context 'when there are no seats remaining on an ultimate license' do
+        let_it_be(:existing_user) { create(:user) }
+        let_it_be(:group) { create(:group) }
+
+        before_all do
+          group.add_developer(existing_user)
+        end
+
         before do
           stub_ee_application_setting(seat_control: ::EE::ApplicationSetting::SEAT_CONTROL_BLOCK_OVERAGES)
 
-          create(:user, :developer)
           license = create(:license, plan: License::ULTIMATE_PLAN, seats: 1)
           allow(License).to receive(:current).and_return(license)
         end
 
         it 'allows new user registration' do
-          create_user
-
-          expect(User.count).to eq(2)
+          expect { create_user }.to change { User.count }.by(1)
         end
       end
     end

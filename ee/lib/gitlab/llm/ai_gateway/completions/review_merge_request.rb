@@ -649,7 +649,8 @@ module Gitlab
 
           def _context_exclusion_help_path
             ::Gitlab::Utils.append_path(Gitlab::Routing.url_helpers.root_url,
-              Gitlab::Routing.url_helpers.help_page_path('user/gitlab_duo/context_exclusion.md'))
+              Gitlab::Routing.url_helpers.help_page_path('user/gitlab_duo/context.md',
+                anchor: 'exclude-context-from-gitlab-duo'))
           end
         end
       end

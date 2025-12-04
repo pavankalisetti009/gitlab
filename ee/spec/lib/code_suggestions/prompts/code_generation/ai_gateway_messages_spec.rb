@@ -7,7 +7,7 @@ RSpec.describe CodeSuggestions::Prompts::CodeGeneration::AiGatewayMessages, feat
   let(:prompt_version) { 3 }
 
   before do
-    stub_feature_flags(ai_model_switching: true)
+    stub_saas_features(gitlab_com_subscriptions: true)
   end
 
   it_behaves_like 'code generation AI Gateway request params' do

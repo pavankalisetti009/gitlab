@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Geo::SystemCheck::ClocksSynchronizationCheck, :silence_stdout, feature_category: :geo_replication do
   let(:ntp_host_env) { 'pool.ntp.org' }
-  let(:ntp_port_env) { 'ntp' }
+  let(:ntp_port_env) { '123' }
   let(:ntp_timeout_env) { '60' }
 
   subject(:clocks_synchronization_check) { described_class.new }
@@ -18,7 +18,7 @@ RSpec.describe Geo::SystemCheck::ClocksSynchronizationCheck, :silence_stdout, fe
 
     describe '#ntp_port' do
       it 'returns the default value' do
-        expect(clocks_synchronization_check.ntp_port).to eq('ntp')
+        expect(clocks_synchronization_check.ntp_port).to eq('123')
       end
     end
 

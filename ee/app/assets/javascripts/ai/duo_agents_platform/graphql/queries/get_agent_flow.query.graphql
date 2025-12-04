@@ -6,7 +6,15 @@ query getAgentFlow($workflowId: AiDuoWorkflowsWorkflowID!) {
       node {
         ...FlowFragment
         latestCheckpoint {
-          checkpoint
+          duoMessages {
+            content
+            correlationId
+            role
+            messageType
+            status
+            timestamp
+            toolInfo
+          }
         }
         lastExecutorLogsUrl
         createdAt

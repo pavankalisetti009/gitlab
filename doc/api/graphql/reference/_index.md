@@ -209,7 +209,6 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="queryadminprojectstopics"></a>`topics` | [`[String!]`](#string) | Filter projects by topics. |
 | <a id="queryadminprojectstrending"></a>`trending` | [`Boolean`](#boolean) | Return only projects that are trending. |
 | <a id="queryadminprojectsvisibilitylevel"></a>`visibilityLevel` | [`VisibilityLevelsEnum`](#visibilitylevelsenum) | Filter projects by visibility level. |
-| <a id="queryadminprojectswithcodeembeddingsindexed"></a>`withCodeEmbeddingsIndexed` {{< icon name="warning-solid" >}} | [`Boolean`](#boolean) | **Introduced** in GitLab 18.2. **Status**: Experiment. Include projects with indexed code embeddings. Requires `ids` to be sent. Applies only if the feature flag `allow_with_code_embeddings_indexed_projects_filter` is enabled. |
 | <a id="queryadminprojectswithduoeligible"></a>`withDuoEligible` {{< icon name="warning-solid" >}} | [`Boolean`](#boolean) | **Introduced** in GitLab 18.6. **Status**: Experiment. Include only projects that are eligible for GitLab Duo and have Duo features enabled.Applies only if the feature flag `with_duo_eligible_projects_filter` is enabled. |
 | <a id="queryadminprojectswithissuesenabled"></a>`withIssuesEnabled` | [`Boolean`](#boolean) | Return only projects with issues enabled. |
 | <a id="queryadminprojectswithmergerequestsenabled"></a>`withMergeRequestsEnabled` | [`Boolean`](#boolean) | Return only projects with merge requests enabled. |
@@ -829,6 +828,21 @@ four standard [pagination arguments](#pagination-arguments):
 | ---- | ---- | ----------- |
 | <a id="querydevopsadoptionenablednamespacesdisplaynamespaceid"></a>`displayNamespaceId` | [`NamespaceID`](#namespaceid) | Filter by display namespace. |
 
+### `Query.duoDefaultNamespaceCandidates`
+
+{{< details >}}
+**Introduced** in GitLab 18.7.
+**Status**: Experiment.
+{{< /details >}}
+
+List namespaces suitable to be set as default namespace.
+
+Returns [`NamespaceConnection`](#namespaceconnection).
+
+This field returns a [connection](#connections). It accepts the
+four standard [pagination arguments](#pagination-arguments):
+`before: String`, `after: String`, `first: Int`, and `last: Int`.
+
 ### `Query.duoSettings`
 
 {{< details >}}
@@ -1209,40 +1223,6 @@ This field returns a [connection](#connections). It accepts the
 four standard [pagination arguments](#pagination-arguments):
 `before: String`, `after: String`, `first: Int`, and `last: Int`.
 
-### `Query.mavenUpstreamRegistry`
-
-{{< details >}}
-**Introduced** in GitLab 18.4.
-**Status**: Experiment.
-{{< /details >}}
-
-Find a Maven upstream registry. Returns null if the `maven_virtual_registry` feature flag is disabled.
-
-Returns [`MavenUpstreamDetails`](#mavenupstreamdetails).
-
-#### Arguments
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| <a id="querymavenupstreamregistryid"></a>`id` | [`VirtualRegistriesPackagesMavenUpstreamID!`](#virtualregistriespackagesmavenupstreamid) | Global ID of the Maven upstream registry. |
-
-### `Query.mavenVirtualRegistry`
-
-{{< details >}}
-**Introduced** in GitLab 18.3.
-**Status**: Experiment.
-{{< /details >}}
-
-Find a Maven virtual registry. Returns null if the `maven_virtual_registry` feature flag is disabled.
-
-Returns [`MavenRegistryDetails`](#mavenregistrydetails).
-
-#### Arguments
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| <a id="querymavenvirtualregistryid"></a>`id` | [`VirtualRegistriesPackagesMavenRegistryID!`](#virtualregistriespackagesmavenregistryid) | Global ID of the Maven virtual registry. |
-
 ### `Query.memberRole`
 
 {{< details >}}
@@ -1607,7 +1587,6 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="queryprojectstopics"></a>`topics` | [`[String!]`](#string) | Filter projects by topics. |
 | <a id="queryprojectstrending"></a>`trending` | [`Boolean`](#boolean) | Return only projects that are trending. |
 | <a id="queryprojectsvisibilitylevel"></a>`visibilityLevel` | [`VisibilityLevelsEnum`](#visibilitylevelsenum) | Filter projects by visibility level. |
-| <a id="queryprojectswithcodeembeddingsindexed"></a>`withCodeEmbeddingsIndexed` {{< icon name="warning-solid" >}} | [`Boolean`](#boolean) | **Introduced** in GitLab 18.2. **Status**: Experiment. Include projects with indexed code embeddings. Requires `ids` to be sent. Applies only if the feature flag `allow_with_code_embeddings_indexed_projects_filter` is enabled. |
 | <a id="queryprojectswithduoeligible"></a>`withDuoEligible` {{< icon name="warning-solid" >}} | [`Boolean`](#boolean) | **Introduced** in GitLab 18.6. **Status**: Experiment. Include only projects that are eligible for GitLab Duo and have Duo features enabled.Applies only if the feature flag `with_duo_eligible_projects_filter` is enabled. |
 | <a id="queryprojectswithissuesenabled"></a>`withIssuesEnabled` | [`Boolean`](#boolean) | Return only projects with issues enabled. |
 | <a id="queryprojectswithmergerequestsenabled"></a>`withMergeRequestsEnabled` | [`Boolean`](#boolean) | Return only projects with merge requests enabled. |
@@ -2443,6 +2422,7 @@ Input type: `AdminSidekiqQueuesDeleteJobsInput`
 | <a id="mutationadminsidekiqqueuesdeletejobsclientid"></a>`clientId` | [`String`](#string) | Delete jobs matching client_id in the context metadata. |
 | <a id="mutationadminsidekiqqueuesdeletejobsclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
 | <a id="mutationadminsidekiqqueuesdeletejobsfeaturecategory"></a>`featureCategory` | [`String`](#string) | Delete jobs matching feature_category in the context metadata. |
+| <a id="mutationadminsidekiqqueuesdeletejobsfeatureflags"></a>`featureFlags` | [`String`](#string) | Delete jobs matching feature_flags in the context metadata. |
 | <a id="mutationadminsidekiqqueuesdeletejobsgluserid"></a>`glUserId` | [`String`](#string) | Delete jobs matching gl_user_id in the context metadata. |
 | <a id="mutationadminsidekiqqueuesdeletejobsjobid"></a>`jobId` | [`String`](#string) | Delete jobs matching job_id in the context metadata. |
 | <a id="mutationadminsidekiqqueuesdeletejobskubernetesagentid"></a>`kubernetesAgentId` | [`String`](#string) | Delete jobs matching kubernetes_agent_id in the context metadata. |
@@ -6692,6 +6672,9 @@ Input type: `DuoSettingsUpdateInput`
 | <a id="mutationduosettingsupdateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
 | <a id="mutationduosettingsupdateduoagentplatformserviceurl"></a>`duoAgentPlatformServiceUrl` | [`String`](#string) | URL for the local Duo Agent Platform service. |
 | <a id="mutationduosettingsupdateduocorefeaturesenabled"></a>`duoCoreFeaturesEnabled` | [`Boolean`](#boolean) | Indicates whether GitLab Duo Core features are enabled. |
+| <a id="mutationduosettingsupdateminimumaccesslevelenableonprojects"></a>`minimumAccessLevelEnableOnProjects` {{< icon name="warning-solid" >}} | [`Int`](#int) | **Deprecated**: **Status**: Experiment. Introduced in GitLab 18.7. |
+| <a id="mutationduosettingsupdateminimumaccesslevelexecute"></a>`minimumAccessLevelExecute` {{< icon name="warning-solid" >}} | [`Int`](#int) | **Deprecated**: **Status**: Experiment. Introduced in GitLab 18.7. |
+| <a id="mutationduosettingsupdateminimumaccesslevelmanage"></a>`minimumAccessLevelManage` {{< icon name="warning-solid" >}} | [`Int`](#int) | **Deprecated**: **Status**: Experiment. Introduced in GitLab 18.7. |
 
 #### Fields
 
@@ -7644,6 +7627,28 @@ Input type: `GroupSecretsManagerInitializeInput`
 | <a id="mutationgroupsecretsmanagerinitializeclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
 | <a id="mutationgroupsecretsmanagerinitializeerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
 | <a id="mutationgroupsecretsmanagerinitializegroupsecretsmanager"></a>`groupSecretsManager` | [`GroupSecretsManager`](#groupsecretsmanager) | Group secrets manager. |
+
+### `Mutation.groupSecretsPermissionUpdate`
+
+Input type: `GroupSecretsPermissionUpdateInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationgroupsecretspermissionupdateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationgroupsecretspermissionupdateexpiredat"></a>`expiredAt` | [`ISO8601Date`](#iso8601date) | Expiration date for Secret Permission (optional). |
+| <a id="mutationgroupsecretspermissionupdategrouppath"></a>`groupPath` | [`ID!`](#id) | Group to which the permissions are added. |
+| <a id="mutationgroupsecretspermissionupdatepermissions"></a>`permissions` | [`[String!]!`](#string) | Permissions to be provided. ['create', 'update', 'read', 'delete']. |
+| <a id="mutationgroupsecretspermissionupdateprincipal"></a>`principal` | [`PrincipalInput!`](#principalinput) | User/MemberRole/Role/Group that is provided access. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationgroupsecretspermissionupdateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationgroupsecretspermissionupdateerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
+| <a id="mutationgroupsecretspermissionupdatesecretspermission"></a>`secretsPermission` | [`GroupSecretsPermission`](#groupsecretspermission) | Secrets Permission that was created. |
 
 ### `Mutation.groupUpdate`
 
@@ -10247,6 +10252,35 @@ Input type: `PagesMarkOnboardingCompleteInput`
 | <a id="mutationpagesmarkonboardingcompleteerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
 | <a id="mutationpagesmarkonboardingcompleteonboardingcomplete"></a>`onboardingComplete` | [`Boolean!`](#boolean) | Indicates the new onboarding_complete state of the project's Pages metadata. |
 
+### `Mutation.personalAccessTokenCreate`
+
+{{< details >}}
+**Introduced** in GitLab 18.7.
+**Status**: Experiment.
+{{< /details >}}
+
+Creates a personal access token for the current user.
+
+Input type: `PersonalAccessTokenCreateInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationpersonalaccesstokencreateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationpersonalaccesstokencreatedescription"></a>`description` | [`String`](#string) | Description of the token. |
+| <a id="mutationpersonalaccesstokencreateexpiresat"></a>`expiresAt` | [`ISO8601Date`](#iso8601date) | Expiration date of the token. |
+| <a id="mutationpersonalaccesstokencreategranularscopes"></a>`granularScopes` | [`[GranularScopeInput!]!`](#granularscopeinput) | List of granular scopes to assign to the token. |
+| <a id="mutationpersonalaccesstokencreatename"></a>`name` | [`String!`](#string) | Name of the token. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationpersonalaccesstokencreateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationpersonalaccesstokencreateerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
+| <a id="mutationpersonalaccesstokencreatetoken"></a>`token` | [`PersonalAccessToken`](#personalaccesstoken) | Created personal access token. |
+
 ### `Mutation.pipelineCancel`
 
 Input type: `PipelineCancelInput`
@@ -12202,6 +12236,31 @@ Input type: `SecurityFindingExternalIssueLinkCreateInput`
 | <a id="mutationsecurityfindingexternalissuelinkcreateerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
 | <a id="mutationsecurityfindingexternalissuelinkcreateexternalissuelink"></a>`externalIssueLink` | [`VulnerabilityExternalIssueLink`](#vulnerabilityexternalissuelink) | Created external issue link. |
 
+### `Mutation.securityFindingJiraIssueFormUrlCreate`
+
+{{< details >}}
+**Introduced** in GitLab 18.7.
+**Status**: Experiment.
+{{< /details >}}
+
+Input type: `SecurityFindingJiraIssueFormUrlCreateInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationsecurityfindingjiraissueformurlcreateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationsecurityfindingjiraissueformurlcreateproject"></a>`project` | [`ProjectID!`](#projectid) | ID of the project to attach the issue to. |
+| <a id="mutationsecurityfindingjiraissueformurlcreateuuid"></a>`uuid` | [`String!`](#string) | UUID of the security finding to be used to create an issue. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationsecurityfindingjiraissueformurlcreateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationsecurityfindingjiraissueformurlcreateerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
+| <a id="mutationsecurityfindingjiraissueformurlcreatejiraissueformurl"></a>`jiraIssueFormUrl` | [`String`](#string) | URL to Jira issue creation form with pre-filled vulnerability data. |
+
 ### `Mutation.securityFindingRevertToDetected`
 
 Input type: `SecurityFindingRevertToDetectedInput`
@@ -14022,6 +14081,7 @@ Input type: `UserPreferencesUpdateInput`
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="mutationuserpreferencesupdateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationuserpreferencesupdateduodefaultnamespaceid"></a>`duoDefaultNamespaceId` | [`Int`](#int) | Default namespace context for Duo features when namespace can not be inferred. |
 | <a id="mutationuserpreferencesupdateextensionsmarketplaceoptinstatus"></a>`extensionsMarketplaceOptInStatus` | [`ExtensionsMarketplaceOptInStatus`](#extensionsmarketplaceoptinstatus) | Status of the Web IDE Extension Marketplace opt-in for the user. |
 | <a id="mutationuserpreferencesupdateissuessort"></a>`issuesSort` | [`IssueSort`](#issuesort) | Sort order for issue lists. |
 | <a id="mutationuserpreferencesupdatemergerequestdashboardlisttype"></a>`mergeRequestDashboardListType` | [`MergeRequestsDashboardListType`](#mergerequestsdashboardlisttype) | Merge request dashboard list rendering type. |
@@ -15300,10 +15360,23 @@ The connection type for [`Achievement`](#achievement).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="achievementconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="achievementconnectionedges"></a>`edges` | [`[AchievementEdge]`](#achievementedge) | A list of edges. |
 | <a id="achievementconnectionnodes"></a>`nodes` | [`[Achievement]`](#achievement) | A list of nodes. |
 | <a id="achievementconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `AchievementConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="achievementconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `AchievementEdge`
 
@@ -15324,10 +15397,23 @@ The connection type for [`AddOnUser`](#addonuser).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="addonuserconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="addonuserconnectionedges"></a>`edges` | [`[AddOnUserEdge]`](#addonuseredge) | A list of edges. |
 | <a id="addonuserconnectionnodes"></a>`nodes` | [`[AddOnUser]`](#addonuser) | A list of nodes. |
 | <a id="addonuserconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `AddOnUserConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="addonuserconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `AddOnUserEdge`
 
@@ -15463,10 +15549,23 @@ The connection type for [`AiCatalogItem`](#aicatalogitem).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="aicatalogitemconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="aicatalogitemconnectionedges"></a>`edges` | [`[AiCatalogItemEdge]`](#aicatalogitemedge) | A list of edges. |
 | <a id="aicatalogitemconnectionnodes"></a>`nodes` | [`[AiCatalogItem]`](#aicatalogitem) | A list of nodes. |
 | <a id="aicatalogitemconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `AiCatalogItemConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="aicatalogitemconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `AiCatalogItemConsumerConnection`
 
@@ -15476,10 +15575,23 @@ The connection type for [`AiCatalogItemConsumer`](#aicatalogitemconsumer).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="aicatalogitemconsumerconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="aicatalogitemconsumerconnectionedges"></a>`edges` | [`[AiCatalogItemConsumerEdge]`](#aicatalogitemconsumeredge) | A list of edges. |
 | <a id="aicatalogitemconsumerconnectionnodes"></a>`nodes` | [`[AiCatalogItemConsumer]`](#aicatalogitemconsumer) | A list of nodes. |
 | <a id="aicatalogitemconsumerconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `AiCatalogItemConsumerConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="aicatalogitemconsumerconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `AiCatalogItemConsumerEdge`
 
@@ -15511,10 +15623,23 @@ The connection type for [`AiCatalogItemVersion`](#aicatalogitemversion).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="aicatalogitemversionconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="aicatalogitemversionconnectionedges"></a>`edges` | [`[AiCatalogItemVersionEdge]`](#aicatalogitemversionedge) | A list of edges. |
 | <a id="aicatalogitemversionconnectionnodes"></a>`nodes` | [`[AiCatalogItemVersion]`](#aicatalogitemversion) | A list of nodes. |
 | <a id="aicatalogitemversionconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `AiCatalogItemVersionConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="aicatalogitemversionconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `AiCatalogItemVersionEdge`
 
@@ -15581,10 +15706,23 @@ The connection type for [`AiFlowTriggerType`](#aiflowtriggertype).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="aiflowtriggertypeconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="aiflowtriggertypeconnectionedges"></a>`edges` | [`[AiFlowTriggerTypeEdge]`](#aiflowtriggertypeedge) | A list of edges. |
 | <a id="aiflowtriggertypeconnectionnodes"></a>`nodes` | [`[AiFlowTriggerType]`](#aiflowtriggertype) | A list of nodes. |
 | <a id="aiflowtriggertypeconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `AiFlowTriggerTypeConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="aiflowtriggertypeconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `AiFlowTriggerTypeEdge`
 
@@ -16065,10 +16203,23 @@ The connection type for [`BoardEpic`](#boardepic).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="boardepicconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="boardepicconnectionedges"></a>`edges` | [`[BoardEpicEdge]`](#boardepicedge) | A list of edges. |
 | <a id="boardepicconnectionnodes"></a>`nodes` | [`[BoardEpic]`](#boardepic) | A list of nodes. |
 | <a id="boardepicconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `BoardEpicConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="boardepicconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `BoardEpicEdge`
 
@@ -16204,10 +16355,23 @@ The connection type for [`CiCatalogResource`](#cicatalogresource).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="cicatalogresourceconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="cicatalogresourceconnectionedges"></a>`edges` | [`[CiCatalogResourceEdge]`](#cicatalogresourceedge) | A list of edges. |
 | <a id="cicatalogresourceconnectionnodes"></a>`nodes` | [`[CiCatalogResource]`](#cicatalogresource) | A list of nodes. |
 | <a id="cicatalogresourceconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `CiCatalogResourceConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="cicatalogresourceconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `CiCatalogResourceEdge`
 
@@ -16228,10 +16392,23 @@ The connection type for [`CiCatalogResourceVersion`](#cicatalogresourceversion).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="cicatalogresourceversionconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="cicatalogresourceversionconnectionedges"></a>`edges` | [`[CiCatalogResourceVersionEdge]`](#cicatalogresourceversionedge) | A list of edges. |
 | <a id="cicatalogresourceversionconnectionnodes"></a>`nodes` | [`[CiCatalogResourceVersion]`](#cicatalogresourceversion) | A list of nodes. |
 | <a id="cicatalogresourceversionconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `CiCatalogResourceVersionConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="cicatalogresourceversionconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `CiCatalogResourceVersionEdge`
 
@@ -16672,10 +16849,23 @@ The connection type for [`CiJobTokenAuthLog`](#cijobtokenauthlog).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="cijobtokenauthlogconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="cijobtokenauthlogconnectionedges"></a>`edges` | [`[CiJobTokenAuthLogEdge]`](#cijobtokenauthlogedge) | A list of edges. |
 | <a id="cijobtokenauthlogconnectionnodes"></a>`nodes` | [`[CiJobTokenAuthLog]`](#cijobtokenauthlog) | A list of nodes. |
 | <a id="cijobtokenauthlogconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `CiJobTokenAuthLogConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="cijobtokenauthlogconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `CiJobTokenAuthLogEdge`
 
@@ -16696,10 +16886,23 @@ The connection type for [`CiJobTokenScopeAllowlistEntry`](#cijobtokenscopeallowl
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="cijobtokenscopeallowlistentryconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="cijobtokenscopeallowlistentryconnectionedges"></a>`edges` | [`[CiJobTokenScopeAllowlistEntryEdge]`](#cijobtokenscopeallowlistentryedge) | A list of edges. |
 | <a id="cijobtokenscopeallowlistentryconnectionnodes"></a>`nodes` | [`[CiJobTokenScopeAllowlistEntry]`](#cijobtokenscopeallowlistentry) | A list of nodes. |
 | <a id="cijobtokenscopeallowlistentryconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `CiJobTokenScopeAllowlistEntryConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="cijobtokenscopeallowlistentryconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `CiJobTokenScopeAllowlistEntryEdge`
 
@@ -16789,10 +16992,23 @@ The connection type for [`CiProjectSubscription`](#ciprojectsubscription).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="ciprojectsubscriptionconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="ciprojectsubscriptionconnectionedges"></a>`edges` | [`[CiProjectSubscriptionEdge]`](#ciprojectsubscriptionedge) | A list of edges. |
 | <a id="ciprojectsubscriptionconnectionnodes"></a>`nodes` | [`[CiProjectSubscription]`](#ciprojectsubscription) | A list of nodes. |
 | <a id="ciprojectsubscriptionconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `CiProjectSubscriptionConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="ciprojectsubscriptionconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `CiProjectSubscriptionEdge`
 
@@ -16837,11 +17053,24 @@ The connection type for [`CiRunner`](#cirunner).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="cirunnerconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="cirunnerconnectionedges"></a>`edges` | [`[CiRunnerEdge]`](#cirunneredge) | A list of edges. |
 | <a id="cirunnerconnectionjobsstatistics"></a>`jobsStatistics` | [`CiJobsStatistics`](#cijobsstatistics) | Jobs statistics for jobs executed by a collection of runners. Available only to admins. |
 | <a id="cirunnerconnectionnodes"></a>`nodes` | [`[CiRunner]`](#cirunner) | A list of nodes. |
 | <a id="cirunnerconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `CiRunnerConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="cirunnerconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `CiRunnerEdge`
 
@@ -16864,10 +17093,23 @@ The connection type for [`CiRunnerManager`](#cirunnermanager).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="cirunnermanagerconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="cirunnermanagerconnectionedges"></a>`edges` | [`[CiRunnerManagerEdge]`](#cirunnermanageredge) | A list of edges. |
 | <a id="cirunnermanagerconnectionnodes"></a>`nodes` | [`[CiRunnerManager]`](#cirunnermanager) | A list of nodes. |
 | <a id="cirunnermanagerconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `CiRunnerManagerConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="cirunnermanagerconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `CiRunnerManagerEdge`
 
@@ -16948,10 +17190,23 @@ The connection type for [`CiSubscriptionsProject`](#cisubscriptionsproject).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="cisubscriptionsprojectconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="cisubscriptionsprojectconnectionedges"></a>`edges` | [`[CiSubscriptionsProjectEdge]`](#cisubscriptionsprojectedge) | A list of edges. |
 | <a id="cisubscriptionsprojectconnectionnodes"></a>`nodes` | [`[CiSubscriptionsProject]`](#cisubscriptionsproject) | A list of nodes. |
 | <a id="cisubscriptionsprojectconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `CiSubscriptionsProjectConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="cisubscriptionsprojectconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `CiSubscriptionsProjectEdge`
 
@@ -16972,10 +17227,23 @@ The connection type for [`ClusterAgentActivityEvent`](#clusteragentactivityevent
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="clusteragentactivityeventconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="clusteragentactivityeventconnectionedges"></a>`edges` | [`[ClusterAgentActivityEventEdge]`](#clusteragentactivityeventedge) | A list of edges. |
 | <a id="clusteragentactivityeventconnectionnodes"></a>`nodes` | [`[ClusterAgentActivityEvent]`](#clusteragentactivityevent) | A list of nodes. |
 | <a id="clusteragentactivityeventconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `ClusterAgentActivityEventConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="clusteragentactivityeventconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `ClusterAgentActivityEventEdge`
 
@@ -17042,10 +17310,23 @@ The connection type for [`ClusterAgent`](#clusteragent).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="clusteragentconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="clusteragentconnectionedges"></a>`edges` | [`[ClusterAgentEdge]`](#clusteragentedge) | A list of edges. |
 | <a id="clusteragentconnectionnodes"></a>`nodes` | [`[ClusterAgent]`](#clusteragent) | A list of nodes. |
 | <a id="clusteragentconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `ClusterAgentConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="clusteragentconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `ClusterAgentEdge`
 
@@ -17066,10 +17347,23 @@ The connection type for [`ClusterAgentToken`](#clusteragenttoken).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="clusteragenttokenconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="clusteragenttokenconnectionedges"></a>`edges` | [`[ClusterAgentTokenEdge]`](#clusteragenttokenedge) | A list of edges. |
 | <a id="clusteragenttokenconnectionnodes"></a>`nodes` | [`[ClusterAgentToken]`](#clusteragenttoken) | A list of nodes. |
 | <a id="clusteragenttokenconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `ClusterAgentTokenConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="clusteragenttokenconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `ClusterAgentTokenEdge`
 
@@ -17090,10 +17384,23 @@ The connection type for [`ClusterAgentUrlConfiguration`](#clusteragenturlconfigu
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="clusteragenturlconfigurationconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="clusteragenturlconfigurationconnectionedges"></a>`edges` | [`[ClusterAgentUrlConfigurationEdge]`](#clusteragenturlconfigurationedge) | A list of edges. |
 | <a id="clusteragenturlconfigurationconnectionnodes"></a>`nodes` | [`[ClusterAgentUrlConfiguration]`](#clusteragenturlconfiguration) | A list of nodes. |
 | <a id="clusteragenturlconfigurationconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `ClusterAgentUrlConfigurationConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="clusteragenturlconfigurationconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `ClusterAgentUrlConfigurationEdge`
 
@@ -17137,10 +17444,23 @@ The connection type for [`CodeQualityDegradation`](#codequalitydegradation).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="codequalitydegradationconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="codequalitydegradationconnectionedges"></a>`edges` | [`[CodeQualityDegradationEdge]`](#codequalitydegradationedge) | A list of edges. |
 | <a id="codequalitydegradationconnectionnodes"></a>`nodes` | [`[CodeQualityDegradation]`](#codequalitydegradation) | A list of nodes. |
 | <a id="codequalitydegradationconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `CodeQualityDegradationConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="codequalitydegradationconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `CodeQualityDegradationEdge`
 
@@ -17207,10 +17527,23 @@ The connection type for [`ComplianceFramework`](#complianceframework).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="complianceframeworkconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="complianceframeworkconnectionedges"></a>`edges` | [`[ComplianceFrameworkEdge]`](#complianceframeworkedge) | A list of edges. |
 | <a id="complianceframeworkconnectionnodes"></a>`nodes` | [`[ComplianceFramework]`](#complianceframework) | A list of nodes. |
 | <a id="complianceframeworkconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `ComplianceFrameworkConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="complianceframeworkconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `ComplianceFrameworkCoverageDetailConnection`
 
@@ -17590,10 +17923,23 @@ The connection type for [`CountableVulnerability`](#countablevulnerability).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="countablevulnerabilityconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="countablevulnerabilityconnectionedges"></a>`edges` | [`[CountableVulnerabilityEdge]`](#countablevulnerabilityedge) | A list of edges. |
 | <a id="countablevulnerabilityconnectionnodes"></a>`nodes` | [`[CountableVulnerability]`](#countablevulnerability) | A list of nodes. |
 | <a id="countablevulnerabilityconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `CountableVulnerabilityConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="countablevulnerabilityconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `CountableVulnerabilityEdge`
 
@@ -17637,10 +17983,23 @@ The connection type for [`CustomEmoji`](#customemoji).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="customemojiconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="customemojiconnectionedges"></a>`edges` | [`[CustomEmojiEdge]`](#customemojiedge) | A list of edges. |
 | <a id="customemojiconnectionnodes"></a>`nodes` | [`[CustomEmoji]`](#customemoji) | A list of nodes. |
 | <a id="customemojiconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `CustomEmojiConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="customemojiconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `CustomEmojiEdge`
 
@@ -17661,10 +18020,23 @@ The connection type for [`CustomField`](#customfield).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="customfieldconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="customfieldconnectionedges"></a>`edges` | [`[CustomFieldEdge]`](#customfieldedge) | A list of edges. |
 | <a id="customfieldconnectionnodes"></a>`nodes` | [`[CustomField]`](#customfield) | A list of nodes. |
 | <a id="customfieldconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `CustomFieldConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="customfieldconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `CustomFieldEdge`
 
@@ -17846,10 +18218,23 @@ The connection type for [`DastProfile`](#dastprofile).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="dastprofileconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="dastprofileconnectionedges"></a>`edges` | [`[DastProfileEdge]`](#dastprofileedge) | A list of edges. |
 | <a id="dastprofileconnectionnodes"></a>`nodes` | [`[DastProfile]`](#dastprofile) | A list of nodes. |
 | <a id="dastprofileconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `DastProfileConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="dastprofileconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `DastProfileEdge`
 
@@ -18500,10 +18885,23 @@ The connection type for [`Epic`](#epic).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="epicconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="epicconnectionedges"></a>`edges` | [`[EpicEdge]`](#epicedge) | A list of edges. |
 | <a id="epicconnectionnodes"></a>`nodes` | [`[Epic]`](#epic) | A list of nodes. |
 | <a id="epicconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `EpicConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="epicconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `EpicEdge`
 
@@ -18524,11 +18922,24 @@ The connection type for [`EpicIssue`](#epicissue).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="epicissueconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="epicissueconnectionedges"></a>`edges` | [`[EpicIssueEdge]`](#epicissueedge) | A list of edges. |
 | <a id="epicissueconnectionnodes"></a>`nodes` | [`[EpicIssue]`](#epicissue) | A list of nodes. |
 | <a id="epicissueconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
 | <a id="epicissueconnectionweight"></a>`weight` | [`Int!`](#int) | Total weight of issues collection. |
+
+##### Fields with arguments
+
+###### `EpicIssueConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="epicissueconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `EpicIssueEdge`
 
@@ -18572,10 +18983,23 @@ The connection type for [`ErrorTrackingStackTrace`](#errortrackingstacktrace).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="errortrackingstacktraceconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="errortrackingstacktraceconnectionedges"></a>`edges` | [`[ErrorTrackingStackTraceEdge]`](#errortrackingstacktraceedge) | A list of edges. |
 | <a id="errortrackingstacktraceconnectionnodes"></a>`nodes` | [`[ErrorTrackingStackTrace]`](#errortrackingstacktrace) | A list of nodes. |
 | <a id="errortrackingstacktraceconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `ErrorTrackingStackTraceConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="errortrackingstacktraceconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `ErrorTrackingStackTraceEdge`
 
@@ -18849,10 +19273,23 @@ The connection type for [`Group`](#group).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="groupconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="groupconnectionedges"></a>`edges` | [`[GroupEdge]`](#groupedge) | A list of edges. |
 | <a id="groupconnectionnodes"></a>`nodes` | [`[Group]`](#group) | A list of nodes. |
 | <a id="groupconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `GroupConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="groupconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `GroupEdge`
 
@@ -18873,10 +19310,23 @@ The connection type for [`GroupInterface`](#groupinterface).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="groupinterfaceconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="groupinterfaceconnectionedges"></a>`edges` | [`[GroupInterfaceEdge]`](#groupinterfaceedge) | A list of edges. |
 | <a id="groupinterfaceconnectionnodes"></a>`nodes` | [`[GroupInterface]`](#groupinterface) | A list of nodes. |
 | <a id="groupinterfaceconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `GroupInterfaceConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="groupinterfaceconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `GroupInterfaceEdge`
 
@@ -18920,10 +19370,23 @@ The connection type for [`GroupSavedReply`](#groupsavedreply).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="groupsavedreplyconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="groupsavedreplyconnectionedges"></a>`edges` | [`[GroupSavedReplyEdge]`](#groupsavedreplyedge) | A list of edges. |
 | <a id="groupsavedreplyconnectionnodes"></a>`nodes` | [`[GroupSavedReply]`](#groupsavedreply) | A list of nodes. |
 | <a id="groupsavedreplyconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `GroupSavedReplyConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="groupsavedreplyconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `GroupSavedReplyEdge`
 
@@ -19234,11 +19697,24 @@ The connection type for [`Issue`](#issue).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="issueconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="issueconnectionedges"></a>`edges` | [`[IssueEdge]`](#issueedge) | A list of edges. |
 | <a id="issueconnectionnodes"></a>`nodes` | [`[Issue]`](#issue) | A list of nodes. |
 | <a id="issueconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
 | <a id="issueconnectionweight"></a>`weight` | [`Int!`](#int) | Total weight of issues collection. |
+
+##### Fields with arguments
+
+###### `IssueConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="issueconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `IssueEdge`
 
@@ -19411,10 +19887,23 @@ The connection type for [`Label`](#label).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="labelconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="labelconnectionedges"></a>`edges` | [`[LabelEdge]`](#labeledge) | A list of edges. |
 | <a id="labelconnectionnodes"></a>`nodes` | [`[Label]`](#label) | A list of nodes. |
 | <a id="labelconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `LabelConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="labelconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `LabelEdge`
 
@@ -19564,10 +20053,23 @@ The connection type for [`MavenUpstream`](#mavenupstream).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="mavenupstreamconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="mavenupstreamconnectionedges"></a>`edges` | [`[MavenUpstreamEdge]`](#mavenupstreamedge) | A list of edges. |
 | <a id="mavenupstreamconnectionnodes"></a>`nodes` | [`[MavenUpstream]`](#mavenupstream) | A list of nodes. |
 | <a id="mavenupstreamconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `MavenUpstreamConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mavenupstreamconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `MavenUpstreamEdge`
 
@@ -19588,10 +20090,23 @@ The connection type for [`MemberApproval`](#memberapproval).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="memberapprovalconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="memberapprovalconnectionedges"></a>`edges` | [`[MemberApprovalEdge]`](#memberapprovaledge) | A list of edges. |
 | <a id="memberapprovalconnectionnodes"></a>`nodes` | [`[MemberApproval]`](#memberapproval) | A list of nodes. |
 | <a id="memberapprovalconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `MemberApprovalConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="memberapprovalconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `MemberApprovalEdge`
 
@@ -19681,10 +20196,23 @@ The connection type for [`MergeRequestAssignee`](#mergerequestassignee).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="mergerequestassigneeconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="mergerequestassigneeconnectionedges"></a>`edges` | [`[MergeRequestAssigneeEdge]`](#mergerequestassigneeedge) | A list of edges. |
 | <a id="mergerequestassigneeconnectionnodes"></a>`nodes` | [`[MergeRequestAssignee]`](#mergerequestassignee) | A list of nodes. |
 | <a id="mergerequestassigneeconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `MergeRequestAssigneeConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mergerequestassigneeconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `MergeRequestAssigneeEdge`
 
@@ -19705,11 +20233,24 @@ The connection type for [`MergeRequest`](#mergerequest).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="mergerequestconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="mergerequestconnectionedges"></a>`edges` | [`[MergeRequestEdge]`](#mergerequestedge) | A list of edges. |
 | <a id="mergerequestconnectionnodes"></a>`nodes` | [`[MergeRequest]`](#mergerequest) | A list of nodes. |
 | <a id="mergerequestconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
 | <a id="mergerequestconnectiontotaltimetomerge"></a>`totalTimeToMerge` | [`Float`](#float) | Total sum of time to merge, in seconds, for the collection of merge requests. |
+
+##### Fields with arguments
+
+###### `MergeRequestConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mergerequestconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `MergeRequestDiffConnection`
 
@@ -19790,10 +20331,23 @@ The connection type for [`MergeRequestParticipant`](#mergerequestparticipant).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="mergerequestparticipantconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="mergerequestparticipantconnectionedges"></a>`edges` | [`[MergeRequestParticipantEdge]`](#mergerequestparticipantedge) | A list of edges. |
 | <a id="mergerequestparticipantconnectionnodes"></a>`nodes` | [`[MergeRequestParticipant]`](#mergerequestparticipant) | A list of nodes. |
 | <a id="mergerequestparticipantconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `MergeRequestParticipantConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mergerequestparticipantconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `MergeRequestParticipantEdge`
 
@@ -19814,10 +20368,23 @@ The connection type for [`MergeRequestReviewer`](#mergerequestreviewer).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="mergerequestreviewerconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="mergerequestreviewerconnectionedges"></a>`edges` | [`[MergeRequestReviewerEdge]`](#mergerequestrevieweredge) | A list of edges. |
 | <a id="mergerequestreviewerconnectionnodes"></a>`nodes` | [`[MergeRequestReviewer]`](#mergerequestreviewer) | A list of nodes. |
 | <a id="mergerequestreviewerconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `MergeRequestReviewerConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mergerequestreviewerconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `MergeRequestReviewerEdge`
 
@@ -19838,10 +20405,23 @@ The connection type for [`MergeTrainCar`](#mergetraincar).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="mergetraincarconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="mergetraincarconnectionedges"></a>`edges` | [`[MergeTrainCarEdge]`](#mergetraincaredge) | A list of edges. |
 | <a id="mergetraincarconnectionnodes"></a>`nodes` | [`[MergeTrainCar]`](#mergetraincar) | A list of nodes. |
 | <a id="mergetraincarconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `MergeTrainCarConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mergetraincarconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `MergeTrainCarEdge`
 
@@ -19862,10 +20442,23 @@ The connection type for [`MergeTrain`](#mergetrain).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="mergetrainconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="mergetrainconnectionedges"></a>`edges` | [`[MergeTrainEdge]`](#mergetrainedge) | A list of edges. |
 | <a id="mergetrainconnectionnodes"></a>`nodes` | [`[MergeTrain]`](#mergetrain) | A list of nodes. |
 | <a id="mergetrainconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `MergeTrainConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mergetrainconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `MergeTrainEdge`
 
@@ -20237,10 +20830,23 @@ The connection type for [`Note`](#note).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="noteconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="noteconnectionedges"></a>`edges` | [`[NoteEdge]`](#noteedge) | A list of edges. |
 | <a id="noteconnectionnodes"></a>`nodes` | [`[Note]`](#note) | A list of nodes. |
 | <a id="noteconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `NoteConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="noteconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `NoteEdge`
 
@@ -20261,10 +20867,23 @@ The connection type for [`ObservabilityLog`](#observabilitylog).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="observabilitylogconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="observabilitylogconnectionedges"></a>`edges` | [`[ObservabilityLogEdge]`](#observabilitylogedge) | A list of edges. |
 | <a id="observabilitylogconnectionnodes"></a>`nodes` | [`[ObservabilityLog]`](#observabilitylog) | A list of nodes. |
 | <a id="observabilitylogconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `ObservabilityLogConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="observabilitylogconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `ObservabilityLogEdge`
 
@@ -20285,10 +20904,23 @@ The connection type for [`ObservabilityMetric`](#observabilitymetric).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="observabilitymetricconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="observabilitymetricconnectionedges"></a>`edges` | [`[ObservabilityMetricEdge]`](#observabilitymetricedge) | A list of edges. |
 | <a id="observabilitymetricconnectionnodes"></a>`nodes` | [`[ObservabilityMetric]`](#observabilitymetric) | A list of nodes. |
 | <a id="observabilitymetricconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `ObservabilityMetricConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="observabilitymetricconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `ObservabilityMetricEdge`
 
@@ -20309,10 +20941,23 @@ The connection type for [`ObservabilityTrace`](#observabilitytrace).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="observabilitytraceconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="observabilitytraceconnectionedges"></a>`edges` | [`[ObservabilityTraceEdge]`](#observabilitytraceedge) | A list of edges. |
 | <a id="observabilitytraceconnectionnodes"></a>`nodes` | [`[ObservabilityTrace]`](#observabilitytrace) | A list of nodes. |
 | <a id="observabilitytraceconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `ObservabilityTraceConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="observabilitytraceconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `ObservabilityTraceEdge`
 
@@ -20356,10 +21001,23 @@ The connection type for [`Organization`](#organization).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="organizationconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="organizationconnectionedges"></a>`edges` | [`[OrganizationEdge]`](#organizationedge) | A list of edges. |
 | <a id="organizationconnectionnodes"></a>`nodes` | [`[Organization]`](#organization) | A list of nodes. |
 | <a id="organizationconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `OrganizationConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="organizationconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `OrganizationEdge`
 
@@ -20403,10 +21061,23 @@ The connection type for [`PackageBase`](#packagebase).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="packagebaseconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="packagebaseconnectionedges"></a>`edges` | [`[PackageBaseEdge]`](#packagebaseedge) | A list of edges. |
 | <a id="packagebaseconnectionnodes"></a>`nodes` | [`[PackageBase]`](#packagebase) | A list of nodes. |
 | <a id="packagebaseconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `PackageBaseConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="packagebaseconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `PackageBaseEdge`
 
@@ -20427,10 +21098,23 @@ The connection type for [`Package`](#package).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="packageconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="packageconnectionedges"></a>`edges` | [`[PackageEdge]`](#packageedge) | A list of edges. |
 | <a id="packageconnectionnodes"></a>`nodes` | [`[Package]`](#package) | A list of nodes. |
 | <a id="packageconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `PackageConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="packageconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `PackageDependencyLinkConnection`
 
@@ -20617,10 +21301,23 @@ The connection type for [`PagesDeployment`](#pagesdeployment).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="pagesdeploymentconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="pagesdeploymentconnectionedges"></a>`edges` | [`[PagesDeploymentEdge]`](#pagesdeploymentedge) | A list of edges. |
 | <a id="pagesdeploymentconnectionnodes"></a>`nodes` | [`[PagesDeployment]`](#pagesdeployment) | A list of nodes. |
 | <a id="pagesdeploymentconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `PagesDeploymentConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="pagesdeploymentconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `PagesDeploymentEdge`
 
@@ -20784,10 +21481,23 @@ The connection type for [`Pipeline`](#pipeline).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="pipelineconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="pipelineconnectionedges"></a>`edges` | [`[PipelineEdge]`](#pipelineedge) | A list of edges. |
 | <a id="pipelineconnectionnodes"></a>`nodes` | [`[Pipeline]`](#pipeline) | A list of nodes. |
 | <a id="pipelineconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `PipelineConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="pipelineconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `PipelineEdge`
 
@@ -20900,10 +21610,23 @@ The connection type for [`PipelineSchedule`](#pipelineschedule).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="pipelinescheduleconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="pipelinescheduleconnectionedges"></a>`edges` | [`[PipelineScheduleEdge]`](#pipelinescheduleedge) | A list of edges. |
 | <a id="pipelinescheduleconnectionnodes"></a>`nodes` | [`[PipelineSchedule]`](#pipelineschedule) | A list of nodes. |
 | <a id="pipelinescheduleconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `PipelineScheduleConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="pipelinescheduleconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `PipelineScheduleEdge`
 
@@ -20970,10 +21693,23 @@ The connection type for [`PipelineTrigger`](#pipelinetrigger).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="pipelinetriggerconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="pipelinetriggerconnectionedges"></a>`edges` | [`[PipelineTriggerEdge]`](#pipelinetriggeredge) | A list of edges. |
 | <a id="pipelinetriggerconnectionnodes"></a>`nodes` | [`[PipelineTrigger]`](#pipelinetrigger) | A list of nodes. |
 | <a id="pipelinetriggerconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `PipelineTriggerConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="pipelinetriggerconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `PipelineTriggerEdge`
 
@@ -21063,10 +21799,23 @@ The connection type for [`Project`](#project).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="projectconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="projectconnectionedges"></a>`edges` | [`[ProjectEdge]`](#projectedge) | A list of edges. |
 | <a id="projectconnectionnodes"></a>`nodes` | [`[Project]`](#project) | A list of nodes. |
 | <a id="projectconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `ProjectConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="projectconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `ProjectEdge`
 
@@ -21087,10 +21836,23 @@ The connection type for [`ProjectInterface`](#projectinterface).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="projectinterfaceconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="projectinterfaceconnectionedges"></a>`edges` | [`[ProjectInterfaceEdge]`](#projectinterfaceedge) | A list of edges. |
 | <a id="projectinterfaceconnectionnodes"></a>`nodes` | [`[ProjectInterface]`](#projectinterface) | A list of nodes. |
 | <a id="projectinterfaceconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `ProjectInterfaceConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="projectinterfaceconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `ProjectInterfaceEdge`
 
@@ -21171,10 +21933,23 @@ The connection type for [`ProjectSavedReply`](#projectsavedreply).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="projectsavedreplyconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="projectsavedreplyconnectionedges"></a>`edges` | [`[ProjectSavedReplyEdge]`](#projectsavedreplyedge) | A list of edges. |
 | <a id="projectsavedreplyconnectionnodes"></a>`nodes` | [`[ProjectSavedReply]`](#projectsavedreply) | A list of nodes. |
 | <a id="projectsavedreplyconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `ProjectSavedReplyConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="projectsavedreplyconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `ProjectSavedReplyEdge`
 
@@ -21241,10 +22016,23 @@ The connection type for [`ProjectTargetBranchRule`](#projecttargetbranchrule).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="projecttargetbranchruleconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="projecttargetbranchruleconnectionedges"></a>`edges` | [`[ProjectTargetBranchRuleEdge]`](#projecttargetbranchruleedge) | A list of edges. |
 | <a id="projecttargetbranchruleconnectionnodes"></a>`nodes` | [`[ProjectTargetBranchRule]`](#projecttargetbranchrule) | A list of nodes. |
 | <a id="projecttargetbranchruleconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `ProjectTargetBranchRuleConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="projecttargetbranchruleconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `ProjectTargetBranchRuleEdge`
 
@@ -21417,10 +22205,23 @@ The connection type for [`Release`](#release).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="releaseconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="releaseconnectionedges"></a>`edges` | [`[ReleaseEdge]`](#releaseedge) | A list of edges. |
 | <a id="releaseconnectionnodes"></a>`nodes` | [`[Release]`](#release) | A list of nodes. |
 | <a id="releaseconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `ReleaseConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="releaseconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `ReleaseEdge`
 
@@ -21671,10 +22472,23 @@ The connection type for [`SavedReply`](#savedreply).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="savedreplyconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="savedreplyconnectionedges"></a>`edges` | [`[SavedReplyEdge]`](#savedreplyedge) | A list of edges. |
 | <a id="savedreplyconnectionnodes"></a>`nodes` | [`[SavedReply]`](#savedreply) | A list of nodes. |
 | <a id="savedreplyconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `SavedReplyConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="savedreplyconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `SavedReplyEdge`
 
@@ -22078,10 +22892,23 @@ The connection type for [`TerraformState`](#terraformstate).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="terraformstateconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="terraformstateconnectionedges"></a>`edges` | [`[TerraformStateEdge]`](#terraformstateedge) | A list of edges. |
 | <a id="terraformstateconnectionnodes"></a>`nodes` | [`[TerraformState]`](#terraformstate) | A list of nodes. |
 | <a id="terraformstateconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `TerraformStateConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="terraformstateconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `TerraformStateEdge`
 
@@ -22139,10 +22966,23 @@ The connection type for [`TestCase`](#testcase).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="testcaseconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="testcaseconnectionedges"></a>`edges` | [`[TestCaseEdge]`](#testcaseedge) | A list of edges. |
 | <a id="testcaseconnectionnodes"></a>`nodes` | [`[TestCase]`](#testcase) | A list of nodes. |
 | <a id="testcaseconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `TestCaseConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="testcaseconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `TestCaseEdge`
 
@@ -22186,10 +23026,23 @@ The connection type for [`TestSuiteSummary`](#testsuitesummary).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="testsuitesummaryconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="testsuitesummaryconnectionedges"></a>`edges` | [`[TestSuiteSummaryEdge]`](#testsuitesummaryedge) | A list of edges. |
 | <a id="testsuitesummaryconnectionnodes"></a>`nodes` | [`[TestSuiteSummary]`](#testsuitesummary) | A list of nodes. |
 | <a id="testsuitesummaryconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `TestSuiteSummaryConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="testsuitesummaryconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `TestSuiteSummaryEdge`
 
@@ -22279,11 +23132,24 @@ The connection type for [`Timelog`](#timelog).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="timelogconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="timelogconnectionedges"></a>`edges` | [`[TimelogEdge]`](#timelogedge) | A list of edges. |
 | <a id="timelogconnectionnodes"></a>`nodes` | [`[Timelog]`](#timelog) | A list of nodes. |
 | <a id="timelogconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
 | <a id="timelogconnectiontotalspenttime"></a>`totalSpentTime` | [`BigInt!`](#bigint) | Total time spent in seconds. |
+
+##### Fields with arguments
+
+###### `TimelogConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="timelogconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `TimelogEdge`
 
@@ -22304,10 +23170,23 @@ The connection type for [`Todo`](#todo).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="todoconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="todoconnectionedges"></a>`edges` | [`[TodoEdge]`](#todoedge) | A list of edges. |
 | <a id="todoconnectionnodes"></a>`nodes` | [`[Todo]`](#todo) | A list of nodes. |
 | <a id="todoconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `TodoConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="todoconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `TodoEdge`
 
@@ -22480,10 +23359,23 @@ The connection type for [`UserAchievement`](#userachievement).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="userachievementconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="userachievementconnectionedges"></a>`edges` | [`[UserAchievementEdge]`](#userachievementedge) | A list of edges. |
 | <a id="userachievementconnectionnodes"></a>`nodes` | [`[UserAchievement]`](#userachievement) | A list of nodes. |
 | <a id="userachievementconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `UserAchievementConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="userachievementconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `UserAchievementEdge`
 
@@ -22550,10 +23442,23 @@ The connection type for [`UserCore`](#usercore).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="usercoreconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="usercoreconnectionedges"></a>`edges` | [`[UserCoreEdge]`](#usercoreedge) | A list of edges. |
 | <a id="usercoreconnectionnodes"></a>`nodes` | [`[UserCore]`](#usercore) | A list of nodes. |
 | <a id="usercoreconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `UserCoreConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="usercoreconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `UserCoreEdge`
 
@@ -22597,10 +23502,23 @@ The connection type for [`UsersQueuedForRolePromotion`](#usersqueuedforrolepromo
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="usersqueuedforrolepromotionconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="usersqueuedforrolepromotionconnectionedges"></a>`edges` | [`[UsersQueuedForRolePromotionEdge]`](#usersqueuedforrolepromotionedge) | A list of edges. |
 | <a id="usersqueuedforrolepromotionconnectionnodes"></a>`nodes` | [`[UsersQueuedForRolePromotion]`](#usersqueuedforrolepromotion) | A list of nodes. |
 | <a id="usersqueuedforrolepromotionconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `UsersQueuedForRolePromotionConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="usersqueuedforrolepromotionconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `UsersQueuedForRolePromotionEdge`
 
@@ -22967,10 +23885,23 @@ The connection type for [`WorkItem`](#workitem).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="workitemconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="workitemconnectionedges"></a>`edges` | [`[WorkItemEdge]`](#workitemedge) | A list of edges. |
 | <a id="workitemconnectionnodes"></a>`nodes` | [`[WorkItem]`](#workitem) | A list of nodes. |
 | <a id="workitemconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+##### Fields with arguments
+
+###### `WorkItemConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="workitemconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `WorkItemDescriptionTemplateConnection`
 
@@ -23106,11 +24037,24 @@ The connection type for [`WorkItemTimelog`](#workitemtimelog).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="workitemtimelogconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="workitemtimelogconnectionedges"></a>`edges` | [`[WorkItemTimelogEdge]`](#workitemtimelogedge) | A list of edges. |
 | <a id="workitemtimelogconnectionnodes"></a>`nodes` | [`[WorkItemTimelog]`](#workitemtimelog) | A list of nodes. |
 | <a id="workitemtimelogconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
 | <a id="workitemtimelogconnectiontotalspenttime"></a>`totalSpentTime` | [`BigInt!`](#bigint) | Total time spent in seconds. |
+
+##### Fields with arguments
+
+###### `WorkItemTimelogConnection.count`
+
+Total count of collection. Returns limit + 1 for counts greater than the limit.
+
+Returns [`Int!`](#int).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="workitemtimelogconnectioncountlimit"></a>`limit` | [`Int`](#int) | Limit applied to the count query, returns limit + 1. When not provided, returns the exact count. |
 
 #### `WorkItemTimelogEdge`
 
@@ -23614,9 +24558,9 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="addonuserpersonalaccesstokenscreatedafter"></a>`createdAfter` | [`Time`](#time) | Filter personal access tokens created after the timestamp. |
 | <a id="addonuserpersonalaccesstokensexpiresafter"></a>`expiresAfter` | [`Date`](#date) | Filter personal access tokens that expire after the timestamp. |
 | <a id="addonuserpersonalaccesstokenslastusedafter"></a>`lastUsedAfter` | [`Time`](#time) | Filter personal access tokens last used after the timestamp. |
-| <a id="addonuserpersonalaccesstokensrevoked"></a>`revoked` | [`Boolean`](#boolean) | Filter personal access tokens by their revoked status. Default is `false`. |
+| <a id="addonuserpersonalaccesstokensrevoked"></a>`revoked` | [`Boolean`](#boolean) | Filter personal access tokens by their revoked status. |
 | <a id="addonuserpersonalaccesstokenssort"></a>`sort` | [`AccessTokenSort`](#accesstokensort) | Sort personal access tokens by the given criteria. Default is `expires_at_asc`. |
-| <a id="addonuserpersonalaccesstokensstate"></a>`state` | [`AccessTokenState`](#accesstokenstate) | Filter personal access tokens by state. Default is `active`. |
+| <a id="addonuserpersonalaccesstokensstate"></a>`state` | [`AccessTokenState`](#accesstokenstate) | Filter personal access tokens by state. |
 
 ##### `AddOnUser.reviewRequestedMergeRequests`
 
@@ -23937,6 +24881,7 @@ An AI catalog agent.
 | ---- | ---- | ----------- |
 | <a id="aicatalogagentcreatedat"></a>`createdAt` | [`Time!`](#time) | Timestamp of when the item was created. |
 | <a id="aicatalogagentdescription"></a>`description` | [`String!`](#string) | Description of the item. |
+| <a id="aicatalogagentfoundational"></a>`foundational` | [`Boolean!`](#boolean) | Whether the item is a foundational agent (only on GitLab SaaS). |
 | <a id="aicatalogagentfoundationalchat"></a>`foundationalChat` | [`Boolean!`](#boolean) | Whether the item is a foundational flow or agent (only on GitLab SaaS). |
 | <a id="aicatalogagentid"></a>`id` | [`ID!`](#id) | ID of the item. |
 | <a id="aicatalogagentitemtype"></a>`itemType` | [`AiCatalogItemType!`](#aicatalogitemtype) | Type of the item. |
@@ -23950,6 +24895,23 @@ An AI catalog agent.
 | <a id="aicatalogagentversions"></a>`versions` | [`AiCatalogItemVersionConnection`](#aicatalogitemversionconnection) | Versions of the item. (see [Connections](#connections)) |
 
 #### Fields with arguments
+
+##### `AiCatalogAgent.configurationForGroup`
+
+{{< details >}}
+**Introduced** in GitLab 18.7.
+**Status**: Experiment.
+{{< /details >}}
+
+Item configuration for the given group.
+
+Returns [`AiCatalogItemConsumer`](#aicatalogitemconsumer).
+
+###### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="aicatalogagentconfigurationforgroupgroupid"></a>`groupId` | [`GroupID!`](#groupid) | Global ID of the group to return the item configuration of. |
 
 ##### `AiCatalogAgent.configurationForProject`
 
@@ -24022,6 +24984,7 @@ An AI catalog flow.
 | ---- | ---- | ----------- |
 | <a id="aicatalogflowcreatedat"></a>`createdAt` | [`Time!`](#time) | Timestamp of when the item was created. |
 | <a id="aicatalogflowdescription"></a>`description` | [`String!`](#string) | Description of the item. |
+| <a id="aicatalogflowfoundational"></a>`foundational` | [`Boolean!`](#boolean) | Whether the item is a foundational flow (only on GitLab SaaS). |
 | <a id="aicatalogflowfoundationalchat"></a>`foundationalChat` | [`Boolean!`](#boolean) | Whether the item is a foundational flow or agent (only on GitLab SaaS). |
 | <a id="aicatalogflowid"></a>`id` | [`ID!`](#id) | ID of the item. |
 | <a id="aicatalogflowitemtype"></a>`itemType` | [`AiCatalogItemType!`](#aicatalogitemtype) | Type of the item. |
@@ -24035,6 +24998,23 @@ An AI catalog flow.
 | <a id="aicatalogflowversions"></a>`versions` | [`AiCatalogItemVersionConnection`](#aicatalogitemversionconnection) | Versions of the item. (see [Connections](#connections)) |
 
 #### Fields with arguments
+
+##### `AiCatalogFlow.configurationForGroup`
+
+{{< details >}}
+**Introduced** in GitLab 18.7.
+**Status**: Experiment.
+{{< /details >}}
+
+Item configuration for the given group.
+
+Returns [`AiCatalogItemConsumer`](#aicatalogitemconsumer).
+
+###### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="aicatalogflowconfigurationforgroupgroupid"></a>`groupId` | [`GroupID!`](#groupid) | Global ID of the group to return the item configuration of. |
 
 ##### `AiCatalogFlow.configurationForProject`
 
@@ -24133,6 +25113,7 @@ Check permissions for the current user on an AI catalog item.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="aicatalogitempermissionsadminaicatalogitem"></a>`adminAiCatalogItem` | [`Boolean!`](#boolean) | If `true`, the user can perform `admin_ai_catalog_item` on this resource. |
+| <a id="aicatalogitempermissionsforceharddeleteaicatalogitem"></a>`forceHardDeleteAiCatalogItem` | [`Boolean!`](#boolean) | If `true`, the user can perform `force_hard_delete_ai_catalog_item` on this resource. |
 | <a id="aicatalogitempermissionsreadaicatalogitem"></a>`readAiCatalogItem` | [`Boolean!`](#boolean) | If `true`, the user can perform `read_ai_catalog_item` on this resource. |
 | <a id="aicatalogitempermissionsreportaicatalogitem"></a>`reportAiCatalogItem` | [`Boolean!`](#boolean) | If `true`, the user can perform `report_ai_catalog_item` on this resource. |
 
@@ -24159,6 +25140,23 @@ An AI catalog third party flow.
 | <a id="aicatalogthirdpartyflowversions"></a>`versions` | [`AiCatalogItemVersionConnection`](#aicatalogitemversionconnection) | Versions of the item. (see [Connections](#connections)) |
 
 #### Fields with arguments
+
+##### `AiCatalogThirdPartyFlow.configurationForGroup`
+
+{{< details >}}
+**Introduced** in GitLab 18.7.
+**Status**: Experiment.
+{{< /details >}}
+
+Item configuration for the given group.
+
+Returns [`AiCatalogItemConsumer`](#aicatalogitemconsumer).
+
+###### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="aicatalogthirdpartyflowconfigurationforgroupgroupid"></a>`groupId` | [`GroupID!`](#groupid) | Global ID of the group to return the item configuration of. |
 
 ##### `AiCatalogThirdPartyFlow.configurationForProject`
 
@@ -24375,6 +25373,7 @@ Model offered for Model Selection.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="aimodelselectionofferedmodelcostindicator"></a>`costIndicator` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 18.7. **Status**: Experiment. Presentational cost indicator for model usage, e.g "$", "$$", "$$$". |
 | <a id="aimodelselectionofferedmodelmodeldescription"></a>`modelDescription` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 18.7. **Status**: Experiment. Brief description of the model, e.g "Fast, cost-effective responses". |
 | <a id="aimodelselectionofferedmodelmodelprovider"></a>`modelProvider` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 18.6. **Status**: Experiment. Provider for the model, e.g "OpenAI". |
 | <a id="aimodelselectionofferedmodelname"></a>`name` | [`String!`](#string) | Humanized name for the offered model, e.g "Chat GPT 4o". |
@@ -25188,9 +26187,9 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="autocompleteduserpersonalaccesstokenscreatedafter"></a>`createdAfter` | [`Time`](#time) | Filter personal access tokens created after the timestamp. |
 | <a id="autocompleteduserpersonalaccesstokensexpiresafter"></a>`expiresAfter` | [`Date`](#date) | Filter personal access tokens that expire after the timestamp. |
 | <a id="autocompleteduserpersonalaccesstokenslastusedafter"></a>`lastUsedAfter` | [`Time`](#time) | Filter personal access tokens last used after the timestamp. |
-| <a id="autocompleteduserpersonalaccesstokensrevoked"></a>`revoked` | [`Boolean`](#boolean) | Filter personal access tokens by their revoked status. Default is `false`. |
+| <a id="autocompleteduserpersonalaccesstokensrevoked"></a>`revoked` | [`Boolean`](#boolean) | Filter personal access tokens by their revoked status. |
 | <a id="autocompleteduserpersonalaccesstokenssort"></a>`sort` | [`AccessTokenSort`](#accesstokensort) | Sort personal access tokens by the given criteria. Default is `expires_at_asc`. |
-| <a id="autocompleteduserpersonalaccesstokensstate"></a>`state` | [`AccessTokenState`](#accesstokenstate) | Filter personal access tokens by state. Default is `active`. |
+| <a id="autocompleteduserpersonalaccesstokensstate"></a>`state` | [`AccessTokenState`](#accesstokenstate) | Filter personal access tokens by state. |
 
 ##### `AutocompletedUser.reviewRequestedMergeRequests`
 
@@ -26202,6 +27201,7 @@ Histogram of durations for a group of CI/CD jobs or pipelines.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="cidurationstatisticsmean"></a>`mean` {{< icon name="warning-solid" >}} | [`Duration`](#duration) | **Introduced** in GitLab 18.7. **Status**: Experiment. Mean (average) duration. |
 | <a id="cidurationstatisticsp50"></a>`p50` {{< icon name="warning-solid" >}} | [`Duration`](#duration) | **Introduced** in GitLab 15.8. **Status**: Experiment. 50th percentile. 50% of the durations are lower than this value. |
 | <a id="cidurationstatisticsp75"></a>`p75` {{< icon name="warning-solid" >}} | [`Duration`](#duration) | **Introduced** in GitLab 15.8. **Status**: Experiment. 75th percentile. 75% of the durations are lower than this value. |
 | <a id="cidurationstatisticsp90"></a>`p90` {{< icon name="warning-solid" >}} | [`Duration`](#duration) | **Introduced** in GitLab 15.8. **Status**: Experiment. 90th percentile. 90% of the durations are lower than this value. |
@@ -26410,6 +27410,43 @@ CI/CD job analytics data.
 | <a id="cijobanalyticsrateoffailed"></a>`rateOfFailed` | [`Float`](#float) | Percentage of failed jobs. |
 | <a id="cijobanalyticsrateofsuccess"></a>`rateOfSuccess` | [`Float`](#float) | Percentage of successful jobs. |
 | <a id="cijobanalyticsstage"></a>`stage` | [`CiStage`](#cistage) | Stage information. |
+| <a id="cijobanalyticsstatistics"></a>`statistics` | [`CiJobAnalyticsStatistics`](#cijobanalyticsstatistics) | Statistics for the jobs. |
+
+### `CiJobAnalyticsStatistics`
+
+Statistics for CI/CD job analytics.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="cijobanalyticsstatisticsdurationstatistics"></a>`durationStatistics` | [`CiDurationStatistics`](#cidurationstatistics) | Duration statistics for the jobs. |
+
+#### Fields with arguments
+
+##### `CiJobAnalyticsStatistics.count`
+
+Count of jobs, optionally filtered by status.
+
+Returns [`BigInt`](#bigint).
+
+###### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="cijobanalyticsstatisticscountstatus"></a>`status` | [`PipelineAnalyticsJobStatus`](#pipelineanalyticsjobstatus) | Filter job count by status. |
+
+##### `CiJobAnalyticsStatistics.rate`
+
+Percentage of jobs, optionally filtered by status.
+
+Returns [`Float`](#float).
+
+###### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="cijobanalyticsstatisticsratestatus"></a>`status` | [`PipelineAnalyticsJobStatus`](#pipelineanalyticsjobstatus) | Filter job rate by status. If not specified, returns 100.0 (representing all jobs). |
 
 ### `CiJobArtifact`
 
@@ -28034,6 +29071,7 @@ Represents a vulnerability. The connection type is countable.
 | <a id="countablevulnerabilitymergerequest"></a>`mergeRequest` | [`MergeRequest`](#mergerequest) | Merge request that fixes the vulnerability. |
 | <a id="countablevulnerabilitymergerequests"></a>`mergeRequests` | [`MergeRequestConnection`](#mergerequestconnection) | Merge requests that are linked to fix the vulnerability. (see [Connections](#connections)) |
 | <a id="countablevulnerabilityname"></a>`name` | [`String`](#string) | Name or title of the object. |
+| <a id="countablevulnerabilitypolicyautodismissed"></a>`policyAutoDismissed` {{< icon name="warning-solid" >}} | [`Boolean`](#boolean) | **Introduced** in GitLab 18.7. **Status**: Experiment. Indicates whether the vulnerability was auto-dismissed by a security policy. |
 | <a id="countablevulnerabilitypolicyviolations"></a>`policyViolations` {{< icon name="warning-solid" >}} | [`PolicyViolations`](#policyviolations) | **Introduced** in GitLab 18.6. **Status**: Experiment. Policy violation for the vulnerability. |
 | <a id="countablevulnerabilitypresentondefaultbranch"></a>`presentOnDefaultBranch` | [`Boolean!`](#boolean) | Indicates whether the vulnerability is present on the default branch or not. |
 | <a id="countablevulnerabilityprimaryidentifier"></a>`primaryIdentifier` | [`VulnerabilityIdentifier`](#vulnerabilityidentifier) | Primary identifier of the vulnerability. |
@@ -28476,9 +29514,9 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="currentuserpersonalaccesstokenscreatedafter"></a>`createdAfter` | [`Time`](#time) | Filter personal access tokens created after the timestamp. |
 | <a id="currentuserpersonalaccesstokensexpiresafter"></a>`expiresAfter` | [`Date`](#date) | Filter personal access tokens that expire after the timestamp. |
 | <a id="currentuserpersonalaccesstokenslastusedafter"></a>`lastUsedAfter` | [`Time`](#time) | Filter personal access tokens last used after the timestamp. |
-| <a id="currentuserpersonalaccesstokensrevoked"></a>`revoked` | [`Boolean`](#boolean) | Filter personal access tokens by their revoked status. Default is `false`. |
+| <a id="currentuserpersonalaccesstokensrevoked"></a>`revoked` | [`Boolean`](#boolean) | Filter personal access tokens by their revoked status. |
 | <a id="currentuserpersonalaccesstokenssort"></a>`sort` | [`AccessTokenSort`](#accesstokensort) | Sort personal access tokens by the given criteria. Default is `expires_at_asc`. |
-| <a id="currentuserpersonalaccesstokensstate"></a>`state` | [`AccessTokenState`](#accesstokenstate) | Filter personal access tokens by state. Default is `active`. |
+| <a id="currentuserpersonalaccesstokensstate"></a>`state` | [`AccessTokenState`](#accesstokenstate) | Filter personal access tokens by state. |
 
 ##### `CurrentUser.reviewRequestedMergeRequests`
 
@@ -30055,6 +31093,22 @@ Settings for Duo context exclusion rules.
 | ---- | ---- | ----------- |
 | <a id="duocontextexclusionsettingsexclusionrules"></a>`exclusionRules` | [`[String!]`](#string) | List of rules for excluding files from Duo context. |
 
+### `DuoMessage`
+
+A message in a Duo Workflow chat log.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="duomessagecontent"></a>`content` | [`String!`](#string) | Content of the message. |
+| <a id="duomessagecorrelationid"></a>`correlationId` | [`String`](#string) | Correlation ID of the message. |
+| <a id="duomessagemessagetype"></a>`messageType` | [`String!`](#string) | Type of the message. |
+| <a id="duomessagerole"></a>`role` | [`String`](#string) | Role of the message. |
+| <a id="duomessagestatus"></a>`status` | [`String`](#string) | Status of the message. |
+| <a id="duomessagetimestamp"></a>`timestamp` | [`String`](#string) | Timestamp of the message. |
+| <a id="duomessagetoolinfo"></a>`toolInfo` | [`String`](#string) | Tool information for the message. |
+
 ### `DuoSettings`
 
 GitLab Duo settings.
@@ -30067,6 +31121,9 @@ GitLab Duo settings.
 | <a id="duosettingsaigatewayurl"></a>`aiGatewayUrl` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 17.9. **Status**: Experiment. URL for local AI gateway server. |
 | <a id="duosettingsduoagentplatformserviceurl"></a>`duoAgentPlatformServiceUrl` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 18.4. **Status**: Experiment. URL for local Duo Agent Platform service. |
 | <a id="duosettingsduocorefeaturesenabled"></a>`duoCoreFeaturesEnabled` {{< icon name="warning-solid" >}} | [`Boolean`](#boolean) | **Introduced** in GitLab 18.0. **Status**: Experiment. Indicates whether GitLab Duo Core features are enabled. |
+| <a id="duosettingsminimumaccesslevelenableonprojects"></a>`minimumAccessLevelEnableOnProjects` {{< icon name="warning-solid" >}} | [`Int`](#int) | **Introduced** in GitLab 18.7. **Status**: Experiment. Minimum access level required to enable Duo Agent Platform. Returns `null` if `dap_instance_customizable_permissions` feature flag is disabled. |
+| <a id="duosettingsminimumaccesslevelexecute"></a>`minimumAccessLevelExecute` {{< icon name="warning-solid" >}} | [`Int`](#int) | **Introduced** in GitLab 18.7. **Status**: Experiment. Minimum access level required to execute Duo Agent Platform. Returns `null` if `dap_instance_customizable_permissions` feature flag is disabled. |
+| <a id="duosettingsminimumaccesslevelmanage"></a>`minimumAccessLevelManage` {{< icon name="warning-solid" >}} | [`Int`](#int) | **Introduced** in GitLab 18.7. **Status**: Experiment. Minimum access level required to manage Duo Agent Platform. Returns `null` if `dap_instance_customizable_permissions` feature flag is disabled. |
 | <a id="duosettingsupdatedat"></a>`updatedAt` {{< icon name="warning-solid" >}} | [`Time!`](#time) | **Introduced** in GitLab 17.9. **Status**: Experiment. Timestamp of last GitLab Duo setting update. |
 
 ### `DuoWorkflow`
@@ -30136,7 +31193,8 @@ Events that describe the history and progress of a GitLab Duo Agent Platform ses
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="duoworkfloweventcheckpoint"></a>`checkpoint` | [`JsonString`](#jsonstring) | Checkpoint of the event. |
+| <a id="duoworkfloweventcheckpoint"></a>`checkpoint` {{< icon name="warning-solid" >}} | [`JsonString`](#jsonstring) | **Deprecated** in GitLab 18.7. Checkpoints are big & contain internal langgraph details. |
+| <a id="duoworkfloweventduomessages"></a>`duoMessages` | [`[DuoMessage!]`](#duomessage) | Messages from the ui_chat_log for the checkpoint. |
 | <a id="duoworkfloweventerrors"></a>`errors` | [`[String!]`](#string) | Message errors. |
 | <a id="duoworkfloweventexecutionstatus"></a>`executionStatus` {{< icon name="warning-solid" >}} | [`String!`](#string) | **Introduced** in GitLab 17.10. **Status**: Experiment. Granular status of the session's execution. |
 | <a id="duoworkfloweventmetadata"></a>`metadata` | [`JsonString`](#jsonstring) | Metadata associated with the event. |
@@ -31410,6 +32468,7 @@ GitLab Credits used from the Monthly Waiver allocation.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="gitlabsubscriptionmonthlywaivercreditsused"></a>`creditsUsed` | [`Float`](#float) | GitLab Credits used from the Monthly Waiver allocation. |
+| <a id="gitlabsubscriptionmonthlywaiverdailyusage"></a>`dailyUsage` | [`[GitlabSubscriptionDailyUsage!]`](#gitlabsubscriptiondailyusage) | Array of daily usage of the Monthly Waiver allocation. |
 | <a id="gitlabsubscriptionmonthlywaivertotalcredits"></a>`totalCredits` | [`Float`](#float) | Total of GitLab Credits allocated as Monthly Waiver. |
 
 ### `GitlabSubscriptionOverage`
@@ -31432,6 +32491,8 @@ Describes the usage of consumables under the subscription.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="gitlabsubscriptionusagecanacceptoverageterms"></a>`canAcceptOverageTerms` | [`Boolean!`](#boolean) | Indicates whether the subscription is currently eligible to accept overage terms. |
+| <a id="gitlabsubscriptionusagedappromoenabled"></a>`dapPromoEnabled` | [`Boolean!`](#boolean) | Indicates whether the Duo AI promo (DAP) is enabled for the subscription. |
 | <a id="gitlabsubscriptionusageenabled"></a>`enabled` | [`Boolean!`](#boolean) | Indicates if the Customer Portal GitLab Credits API is enabled. |
 | <a id="gitlabsubscriptionusageenddate"></a>`endDate` | [`ISO8601Date`](#iso8601date) | End date of the period covered by the usage data. |
 | <a id="gitlabsubscriptionusageisoutdatedclient"></a>`isOutdatedClient` | [`Boolean`](#boolean) | Indicates if the GitLab instance has an outdated API contract with the Customer Portal. |
@@ -31439,8 +32500,10 @@ Describes the usage of consumables under the subscription.
 | <a id="gitlabsubscriptionusagemonthlycommitment"></a>`monthlyCommitment` | [`GitlabSubscriptionMonthlyCommitment`](#gitlabsubscriptionmonthlycommitment) | Monthly commitment usage for the subscription. |
 | <a id="gitlabsubscriptionusagemonthlywaiver"></a>`monthlyWaiver` | [`GitlabSubscriptionMonthlyWaiver`](#gitlabsubscriptionmonthlywaiver) | Monthly waiver usage for the subscription. |
 | <a id="gitlabsubscriptionusageoverage"></a>`overage` | [`GitlabSubscriptionOverage`](#gitlabsubscriptionoverage) | Overage statistics. |
+| <a id="gitlabsubscriptionusageoveragetermsaccepted"></a>`overageTermsAccepted` | [`Boolean!`](#boolean) | Indicates whether overage terms have been accepted for the subscription. |
 | <a id="gitlabsubscriptionusagepurchasecreditspath"></a>`purchaseCreditsPath` | [`String`](#string) | URL to purchase GitLab Credits. |
 | <a id="gitlabsubscriptionusagestartdate"></a>`startDate` | [`ISO8601Date`](#iso8601date) | Start date of the period covered by the usage data. |
+| <a id="gitlabsubscriptionusagesubscriptionportalusagedashboardurl"></a>`subscriptionPortalUsageDashboardUrl` | [`String`](#string) | Full URL to the GitLab Credits usage dashboard in the Customer Portal. |
 | <a id="gitlabsubscriptionusageusersusage"></a>`usersUsage` | [`GitlabSubscriptionUsageUsersUsage`](#gitlabsubscriptionusageusersusage) | Consumption usage for users under the subscription. |
 
 ### `GitlabSubscriptionUsageUser`
@@ -31705,7 +32768,6 @@ GPG signature for a signed commit.
 | <a id="groupmarkedfordeletion"></a>`markedForDeletion` {{< icon name="warning-solid" >}} | [`Boolean!`](#boolean) | **Introduced** in GitLab 18.2. **Status**: Experiment. Indicates if group or any ancestor is scheduled to be deleted. |
 | <a id="groupmarkedfordeletionon"></a>`markedForDeletionOn` {{< icon name="warning-solid" >}} | [`Time`](#time) | **Introduced** in GitLab 16.11. **Status**: Experiment. Date when group was scheduled to be deleted. |
 | <a id="groupmathrenderinglimitsenabled"></a>`mathRenderingLimitsEnabled` | [`Boolean`](#boolean) | Indicates if math rendering limits are used for the group. |
-| <a id="groupmavenvirtualregistries"></a>`mavenVirtualRegistries` {{< icon name="warning-solid" >}} | [`MavenRegistryConnection`](#mavenregistryconnection) | **Introduced** in GitLab 18.1. **Status**: Experiment. Maven virtual registries registered to the group. Returns null if the `maven_virtual_registry` feature flag is disabled. |
 | <a id="groupmaxaccesslevel"></a>`maxAccessLevel` | [`AccessLevel!`](#accesslevel) | Maximum access level of the current user in the group. |
 | <a id="groupmentionsdisabled"></a>`mentionsDisabled` | [`Boolean`](#boolean) | Indicates if a group is disabled from getting mentioned. |
 | <a id="groupmergerequestsenabled"></a>`mergeRequestsEnabled` {{< icon name="warning-solid" >}} | [`Boolean!`](#boolean) | **Introduced** in GitLab 18.3. **Status**: Experiment. Indicates if merge requests are enabled for the namespace. |
@@ -31892,6 +32954,23 @@ Returns [`[AutocompletedUser!]`](#autocompleteduser).
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="groupautocompleteuserssearch"></a>`search` | [`String`](#string) | Query to search users by name, username, or public email. |
+
+##### `Group.availableSecurityScanProfiles`
+
+{{< details >}}
+**Introduced** in GitLab 18.8.
+**Status**: Experiment.
+{{< /details >}}
+
+Security scan profiles available for the group.
+
+Returns [`[ScanProfileType!]`](#scanprofiletype).
+
+###### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="groupavailablesecurityscanprofilestype"></a>`type` | [`SecurityScanProfileType`](#securityscanprofiletype) | Filter scan profiles by type. |
 
 ##### `Group.billableMembersCount`
 
@@ -34070,6 +35149,20 @@ Representation of a group secrets manager.
 | <a id="groupsecretsmanagergroup"></a>`group` | [`Group!`](#group) | Group the secrets manager belongs to. |
 | <a id="groupsecretsmanagerstatus"></a>`status` | [`GroupSecretsManagerStatus`](#groupsecretsmanagerstatus) | Status of the group secrets manager. |
 
+### `GroupSecretsPermission`
+
+Representation of a group secrets permission.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="groupsecretspermissionexpiredat"></a>`expiredAt` | [`ISO8601Date`](#iso8601date) | Expiration date for Secret Permission (optional). |
+| <a id="groupsecretspermissiongrantedby"></a>`grantedBy` | [`UserCore`](#usercore) | User who created the Secret Permission. |
+| <a id="groupsecretspermissiongroup"></a>`group` | [`Group!`](#group) | Group the secret permission belong to. |
+| <a id="groupsecretspermissionpermissions"></a>`permissions` | [`String!`](#string) | Permissions to be provided. ['create', 'update', 'read', 'delete']. |
+| <a id="groupsecretspermissionprincipal"></a>`principal` | [`Principal!`](#principal) | Who is provided access to. For eg: User/Role/MemberRole/Group. |
+
 ### `GroupSecurityPolicySource`
 
 Represents the source of a security policy belonging to a group.
@@ -35230,7 +36323,7 @@ Represents a Maven virtual registry.
 | <a id="mavenregistrydescription"></a>`description` | [`String`](#string) | Description of the virtual registry. |
 | <a id="mavenregistryid"></a>`id` | [`ID!`](#id) | ID of the virtual registry. |
 | <a id="mavenregistryname"></a>`name` | [`String!`](#string) | Name of the virtual registry. |
-| <a id="mavenregistryupdatedat"></a>`updatedAt` | [`Time`](#time) | Timestamp of when the virtual registry was updated. |
+| <a id="mavenregistryupdatedat"></a>`updatedAt` | [`Time!`](#time) | Timestamp of when the virtual registry was updated. |
 
 ### `MavenRegistryDetails`
 
@@ -35243,20 +36336,33 @@ Represents Maven virtual registry details.
 | <a id="mavenregistrydetailsdescription"></a>`description` | [`String`](#string) | Description of the virtual registry. |
 | <a id="mavenregistrydetailsid"></a>`id` | [`ID!`](#id) | ID of the virtual registry. |
 | <a id="mavenregistrydetailsname"></a>`name` | [`String!`](#string) | Name of the virtual registry. |
-| <a id="mavenregistrydetailsupdatedat"></a>`updatedAt` | [`Time`](#time) | Timestamp of when the virtual registry was updated. |
+| <a id="mavenregistrydetailsregistryupstreams"></a>`registryUpstreams` {{< icon name="warning-solid" >}} | [`[MavenRegistryUpstreamWithUpstream!]!`](#mavenregistryupstreamwithupstream) | **Introduced** in GitLab 18.7. **Status**: Experiment. List of registry upstreams for the Maven virtual registry. |
+| <a id="mavenregistrydetailsupdatedat"></a>`updatedAt` | [`Time!`](#time) | Timestamp of when the virtual registry was updated. |
 | <a id="mavenregistrydetailsupstreams"></a>`upstreams` {{< icon name="warning-solid" >}} | [`[MavenUpstreamDetails!]`](#mavenupstreamdetails) | **Introduced** in GitLab 18.1. **Status**: Experiment. List of upstream registries for the Maven virtual registry. |
 
-### `MavenRegistryUpstream`
+### `MavenRegistryUpstreamWithRegistry`
 
-Represents the upstream registries of a Maven virtual registry.
+Represents a Maven virtual registry upstream and its relationship to the registry.
 
 #### Fields
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="mavenregistryupstreamid"></a>`id` {{< icon name="warning-solid" >}} | [`ID!`](#id) | **Introduced** in GitLab 18.2. **Status**: Experiment. ID of the registry upstream. |
-| <a id="mavenregistryupstreamposition"></a>`position` {{< icon name="warning-solid" >}} | [`Int!`](#int) | **Introduced** in GitLab 18.2. **Status**: Experiment. Position of the upstream registry in an ordered list. |
-| <a id="mavenregistryupstreamregistry"></a>`registry` {{< icon name="warning-solid" >}} | [`MavenRegistry!`](#mavenregistry) | **Introduced** in GitLab 18.6. **Status**: Experiment. Maven registry associated with the registry upstream. |
+| <a id="mavenregistryupstreamwithregistryid"></a>`id` {{< icon name="warning-solid" >}} | [`ID!`](#id) | **Introduced** in GitLab 18.2. **Status**: Experiment. ID of the registry upstream. |
+| <a id="mavenregistryupstreamwithregistryposition"></a>`position` {{< icon name="warning-solid" >}} | [`Int!`](#int) | **Introduced** in GitLab 18.2. **Status**: Experiment. Position of the upstream registry in an ordered list. |
+| <a id="mavenregistryupstreamwithregistryregistry"></a>`registry` {{< icon name="warning-solid" >}} | [`MavenRegistry!`](#mavenregistry) | **Introduced** in GitLab 18.6. **Status**: Experiment. Maven registry associated with the registry upstream. |
+
+### `MavenRegistryUpstreamWithUpstream`
+
+Represents a Maven virtual registry upstream and its relationship to the upstream.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mavenregistryupstreamwithupstreamid"></a>`id` {{< icon name="warning-solid" >}} | [`ID!`](#id) | **Introduced** in GitLab 18.2. **Status**: Experiment. ID of the registry upstream. |
+| <a id="mavenregistryupstreamwithupstreamposition"></a>`position` {{< icon name="warning-solid" >}} | [`Int!`](#int) | **Introduced** in GitLab 18.2. **Status**: Experiment. Position of the upstream registry in an ordered list. |
+| <a id="mavenregistryupstreamwithupstreamupstream"></a>`upstream` {{< icon name="warning-solid" >}} | [`MavenUpstream!`](#mavenupstream) | **Introduced** in GitLab 18.7. **Status**: Experiment. Maven upstream associated with the registry upstream. |
 
 ### `MavenUpstream`
 
@@ -35288,9 +36394,8 @@ Represents Maven upstream registry details.
 | <a id="mavenupstreamdetailsid"></a>`id` {{< icon name="warning-solid" >}} | [`ID!`](#id) | **Introduced** in GitLab 18.1. **Status**: Experiment. ID of the upstream registry. |
 | <a id="mavenupstreamdetailsmetadatacachevalidityhours"></a>`metadataCacheValidityHours` {{< icon name="warning-solid" >}} | [`Int!`](#int) | **Introduced** in GitLab 18.4. **Status**: Experiment. Time before the cache expires for Maven metadata. |
 | <a id="mavenupstreamdetailsname"></a>`name` {{< icon name="warning-solid" >}} | [`String!`](#string) | **Introduced** in GitLab 18.1. **Status**: Experiment. Name of the upstream registry. |
-| <a id="mavenupstreamdetailsregistries"></a>`registries` {{< icon name="warning-solid" >}} | [`MavenRegistryConnection!`](#mavenregistryconnection) | **Introduced** in GitLab 18.4. **Status**: Experiment. Represents the virtual registries which use the upstream. |
 | <a id="mavenupstreamdetailsregistriescount"></a>`registriesCount` {{< icon name="warning-solid" >}} | [`Int!`](#int) | **Introduced** in GitLab 18.6. **Status**: Experiment. Number of registries using the upstream. |
-| <a id="mavenupstreamdetailsregistryupstreams"></a>`registryUpstreams` {{< icon name="warning-solid" >}} | [`[MavenRegistryUpstream!]!`](#mavenregistryupstream) | **Introduced** in GitLab 18.2. **Status**: Experiment. Represents the upstream registry for the upstream which contains the position data. |
+| <a id="mavenupstreamdetailsregistryupstreams"></a>`registryUpstreams` {{< icon name="warning-solid" >}} | [`[MavenRegistryUpstreamWithRegistry!]!`](#mavenregistryupstreamwithregistry) | **Introduced** in GitLab 18.2. **Status**: Experiment. Represents the upstream registry for the upstream which contains the position data. |
 | <a id="mavenupstreamdetailsurl"></a>`url` {{< icon name="warning-solid" >}} | [`String!`](#string) | **Introduced** in GitLab 18.1. **Status**: Experiment. URL of the upstream registry. |
 | <a id="mavenupstreamdetailsusername"></a>`username` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 18.1. **Status**: Experiment. Username to sign in to the upstream registry. |
 
@@ -35837,9 +36942,9 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="mergerequestassigneepersonalaccesstokenscreatedafter"></a>`createdAfter` | [`Time`](#time) | Filter personal access tokens created after the timestamp. |
 | <a id="mergerequestassigneepersonalaccesstokensexpiresafter"></a>`expiresAfter` | [`Date`](#date) | Filter personal access tokens that expire after the timestamp. |
 | <a id="mergerequestassigneepersonalaccesstokenslastusedafter"></a>`lastUsedAfter` | [`Time`](#time) | Filter personal access tokens last used after the timestamp. |
-| <a id="mergerequestassigneepersonalaccesstokensrevoked"></a>`revoked` | [`Boolean`](#boolean) | Filter personal access tokens by their revoked status. Default is `false`. |
+| <a id="mergerequestassigneepersonalaccesstokensrevoked"></a>`revoked` | [`Boolean`](#boolean) | Filter personal access tokens by their revoked status. |
 | <a id="mergerequestassigneepersonalaccesstokenssort"></a>`sort` | [`AccessTokenSort`](#accesstokensort) | Sort personal access tokens by the given criteria. Default is `expires_at_asc`. |
-| <a id="mergerequestassigneepersonalaccesstokensstate"></a>`state` | [`AccessTokenState`](#accesstokenstate) | Filter personal access tokens by state. Default is `active`. |
+| <a id="mergerequestassigneepersonalaccesstokensstate"></a>`state` | [`AccessTokenState`](#accesstokenstate) | Filter personal access tokens by state. |
 
 ##### `MergeRequestAssignee.reviewRequestedMergeRequests`
 
@@ -36293,9 +37398,9 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="mergerequestauthorpersonalaccesstokenscreatedafter"></a>`createdAfter` | [`Time`](#time) | Filter personal access tokens created after the timestamp. |
 | <a id="mergerequestauthorpersonalaccesstokensexpiresafter"></a>`expiresAfter` | [`Date`](#date) | Filter personal access tokens that expire after the timestamp. |
 | <a id="mergerequestauthorpersonalaccesstokenslastusedafter"></a>`lastUsedAfter` | [`Time`](#time) | Filter personal access tokens last used after the timestamp. |
-| <a id="mergerequestauthorpersonalaccesstokensrevoked"></a>`revoked` | [`Boolean`](#boolean) | Filter personal access tokens by their revoked status. Default is `false`. |
+| <a id="mergerequestauthorpersonalaccesstokensrevoked"></a>`revoked` | [`Boolean`](#boolean) | Filter personal access tokens by their revoked status. |
 | <a id="mergerequestauthorpersonalaccesstokenssort"></a>`sort` | [`AccessTokenSort`](#accesstokensort) | Sort personal access tokens by the given criteria. Default is `expires_at_asc`. |
-| <a id="mergerequestauthorpersonalaccesstokensstate"></a>`state` | [`AccessTokenState`](#accesstokenstate) | Filter personal access tokens by state. Default is `active`. |
+| <a id="mergerequestauthorpersonalaccesstokensstate"></a>`state` | [`AccessTokenState`](#accesstokenstate) | Filter personal access tokens by state. |
 
 ##### `MergeRequestAuthor.reviewRequestedMergeRequests`
 
@@ -36800,9 +37905,9 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="mergerequestparticipantpersonalaccesstokenscreatedafter"></a>`createdAfter` | [`Time`](#time) | Filter personal access tokens created after the timestamp. |
 | <a id="mergerequestparticipantpersonalaccesstokensexpiresafter"></a>`expiresAfter` | [`Date`](#date) | Filter personal access tokens that expire after the timestamp. |
 | <a id="mergerequestparticipantpersonalaccesstokenslastusedafter"></a>`lastUsedAfter` | [`Time`](#time) | Filter personal access tokens last used after the timestamp. |
-| <a id="mergerequestparticipantpersonalaccesstokensrevoked"></a>`revoked` | [`Boolean`](#boolean) | Filter personal access tokens by their revoked status. Default is `false`. |
+| <a id="mergerequestparticipantpersonalaccesstokensrevoked"></a>`revoked` | [`Boolean`](#boolean) | Filter personal access tokens by their revoked status. |
 | <a id="mergerequestparticipantpersonalaccesstokenssort"></a>`sort` | [`AccessTokenSort`](#accesstokensort) | Sort personal access tokens by the given criteria. Default is `expires_at_asc`. |
-| <a id="mergerequestparticipantpersonalaccesstokensstate"></a>`state` | [`AccessTokenState`](#accesstokenstate) | Filter personal access tokens by state. Default is `active`. |
+| <a id="mergerequestparticipantpersonalaccesstokensstate"></a>`state` | [`AccessTokenState`](#accesstokenstate) | Filter personal access tokens by state. |
 
 ##### `MergeRequestParticipant.reviewRequestedMergeRequests`
 
@@ -37275,9 +38380,9 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="mergerequestreviewerpersonalaccesstokenscreatedafter"></a>`createdAfter` | [`Time`](#time) | Filter personal access tokens created after the timestamp. |
 | <a id="mergerequestreviewerpersonalaccesstokensexpiresafter"></a>`expiresAfter` | [`Date`](#date) | Filter personal access tokens that expire after the timestamp. |
 | <a id="mergerequestreviewerpersonalaccesstokenslastusedafter"></a>`lastUsedAfter` | [`Time`](#time) | Filter personal access tokens last used after the timestamp. |
-| <a id="mergerequestreviewerpersonalaccesstokensrevoked"></a>`revoked` | [`Boolean`](#boolean) | Filter personal access tokens by their revoked status. Default is `false`. |
+| <a id="mergerequestreviewerpersonalaccesstokensrevoked"></a>`revoked` | [`Boolean`](#boolean) | Filter personal access tokens by their revoked status. |
 | <a id="mergerequestreviewerpersonalaccesstokenssort"></a>`sort` | [`AccessTokenSort`](#accesstokensort) | Sort personal access tokens by the given criteria. Default is `expires_at_asc`. |
-| <a id="mergerequestreviewerpersonalaccesstokensstate"></a>`state` | [`AccessTokenState`](#accesstokenstate) | Filter personal access tokens by state. Default is `active`. |
+| <a id="mergerequestreviewerpersonalaccesstokensstate"></a>`state` | [`AccessTokenState`](#accesstokenstate) | Filter personal access tokens by state. |
 
 ##### `MergeRequestReviewer.reviewRequestedMergeRequests`
 
@@ -38780,7 +39885,6 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="organizationprojectstopics"></a>`topics` | [`[String!]`](#string) | Filter projects by topics. |
 | <a id="organizationprojectstrending"></a>`trending` | [`Boolean`](#boolean) | Return only projects that are trending. |
 | <a id="organizationprojectsvisibilitylevel"></a>`visibilityLevel` | [`VisibilityLevelsEnum`](#visibilitylevelsenum) | Filter projects by visibility level. |
-| <a id="organizationprojectswithcodeembeddingsindexed"></a>`withCodeEmbeddingsIndexed` {{< icon name="warning-solid" >}} | [`Boolean`](#boolean) | **Introduced** in GitLab 18.2. **Status**: Experiment. Include projects with indexed code embeddings. Requires `ids` to be sent. Applies only if the feature flag `allow_with_code_embeddings_indexed_projects_filter` is enabled. |
 | <a id="organizationprojectswithduoeligible"></a>`withDuoEligible` {{< icon name="warning-solid" >}} | [`Boolean`](#boolean) | **Introduced** in GitLab 18.6. **Status**: Experiment. Include only projects that are eligible for GitLab Duo and have Duo features enabled.Applies only if the feature flag `with_duo_eligible_projects_filter` is enabled. |
 | <a id="organizationprojectswithissuesenabled"></a>`withIssuesEnabled` | [`Boolean`](#boolean) | Return only projects with issues enabled. |
 | <a id="organizationprojectswithmergerequestsenabled"></a>`withMergeRequestsEnabled` | [`Boolean`](#boolean) | Return only projects with merge requests enabled. |
@@ -40232,6 +41336,7 @@ Project-level settings for product analytics provider.
 | <a id="projectsecuritypolicyproject"></a>`securityPolicyProject` | [`Project`](#project) | Security policy project assigned to the project, absent if assigned to a parent group. |
 | <a id="projectsecuritypolicyprojectlinkednamespaces"></a>`securityPolicyProjectLinkedNamespaces` {{< icon name="warning-solid" >}} | [`NamespaceConnection`](#namespaceconnection) | **Deprecated** in GitLab 17.4. This was renamed. Use: `security_policy_project_linked_groups`. |
 | <a id="projectsecuritypolicyprojectlinkedprojects"></a>`securityPolicyProjectLinkedProjects` | [`ProjectConnection`](#projectconnection) | Projects linked to the project, when used as Security Policy Project. (see [Connections](#connections)) |
+| <a id="projectsecurityscanprofiles"></a>`securityScanProfiles` {{< icon name="warning-solid" >}} | [`[ScanProfileType!]`](#scanprofiletype) | **Introduced** in GitLab 18.7. **Status**: Experiment. Security scan profiles attached to the project. |
 | <a id="projectsecurityscanners"></a>`securityScanners` | [`SecurityScanners`](#securityscanners) | Information about security analyzers used in the project. |
 | <a id="projectsentryerrors"></a>`sentryErrors` | [`SentryErrorCollection`](#sentryerrorcollection) | Paginated collection of Sentry errors on the project. |
 | <a id="projectservicedeskaddress"></a>`serviceDeskAddress` | [`String`](#string) | E-mail address of the Service Desk. |
@@ -44273,6 +45378,22 @@ Represents policy fields related to the scan execution policy.
 | <a id="scanexecutionpolicyattributestypedeprecatedproperties"></a>`deprecatedProperties` {{< icon name="warning-solid" >}} | [`[String!]`](#string) | **Introduced** in GitLab 17.3. **Status**: Experiment. All deprecated properties in the policy. |
 | <a id="scanexecutionpolicyattributestypesource"></a>`source` | [`SecurityPolicySource!`](#securitypolicysource) | Source of the policy. Its fields depend on the source type. |
 
+### `ScanProfileType`
+
+A scan profile.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="scanprofiletypecreatedat"></a>`createdAt` | [`ISO8601DateTime!`](#iso8601datetime) | Timestamp of when the scan profile was created. |
+| <a id="scanprofiletypedescription"></a>`description` | [`String!`](#string) | Description of the security scan profile. |
+| <a id="scanprofiletypegitlabrecommended"></a>`gitlabRecommended` | [`Boolean!`](#boolean) | Indicates whether the scan profile is a default profile. |
+| <a id="scanprofiletypeid"></a>`id` | [`SecurityScanProfileID`](#securityscanprofileid) | Global ID of the security scan profile. |
+| <a id="scanprofiletypename"></a>`name` | [`String!`](#string) | Name of the security scan profile. |
+| <a id="scanprofiletypescantype"></a>`scanType` | [`SecurityScanProfileType!`](#securityscanprofiletype) | Scan profile type. |
+| <a id="scanprofiletypeupdatedat"></a>`updatedAt` | [`ISO8601DateTime!`](#iso8601datetime) | Timestamp of when the scan profile was last updated. |
+
 ### `ScanResultPolicy`
 
 Represents the scan result policy.
@@ -45872,9 +46993,9 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="usercorepersonalaccesstokenscreatedafter"></a>`createdAfter` | [`Time`](#time) | Filter personal access tokens created after the timestamp. |
 | <a id="usercorepersonalaccesstokensexpiresafter"></a>`expiresAfter` | [`Date`](#date) | Filter personal access tokens that expire after the timestamp. |
 | <a id="usercorepersonalaccesstokenslastusedafter"></a>`lastUsedAfter` | [`Time`](#time) | Filter personal access tokens last used after the timestamp. |
-| <a id="usercorepersonalaccesstokensrevoked"></a>`revoked` | [`Boolean`](#boolean) | Filter personal access tokens by their revoked status. Default is `false`. |
+| <a id="usercorepersonalaccesstokensrevoked"></a>`revoked` | [`Boolean`](#boolean) | Filter personal access tokens by their revoked status. |
 | <a id="usercorepersonalaccesstokenssort"></a>`sort` | [`AccessTokenSort`](#accesstokensort) | Sort personal access tokens by the given criteria. Default is `expires_at_asc`. |
-| <a id="usercorepersonalaccesstokensstate"></a>`state` | [`AccessTokenState`](#accesstokenstate) | Filter personal access tokens by state. Default is `active`. |
+| <a id="usercorepersonalaccesstokensstate"></a>`state` | [`AccessTokenState`](#accesstokenstate) | Filter personal access tokens by state. |
 
 ##### `UserCore.reviewRequestedMergeRequests`
 
@@ -46080,7 +47201,7 @@ four standard [pagination arguments](#pagination-arguments):
 | ---- | ---- | ----------- |
 | <a id="usergroupcalloutdismissedat"></a>`dismissedAt` | [`Time!`](#time) | Date when the callout was dismissed. |
 | <a id="usergroupcalloutfeaturename"></a>`featureName` | [`UserGroupCalloutFeatureName!`](#usergroupcalloutfeaturename) | Name of the feature that the callout is for. |
-| <a id="usergroupcalloutgroupid"></a>`groupId` | [`ID!`](#id) | Group id that the callout applies. |
+| <a id="usergroupcalloutgroupid"></a>`groupId` | [`GroupID!`](#groupid) | Group id that the callout applies. |
 
 ### `UserMemberRole`
 
@@ -46437,7 +47558,6 @@ Represents a virtual registry cleanup policy.
 | <a id="virtualregistrycleanuppolicycreatedat"></a>`createdAt` {{< icon name="warning-solid" >}} | [`Time!`](#time) | **Introduced** in GitLab 18.7. **Status**: Experiment. Timestamp when the cleanup policy was created. |
 | <a id="virtualregistrycleanuppolicyenabled"></a>`enabled` {{< icon name="warning-solid" >}} | [`Boolean!`](#boolean) | **Introduced** in GitLab 18.7. **Status**: Experiment. Whether the cleanup policy is enabled. |
 | <a id="virtualregistrycleanuppolicyfailuremessage"></a>`failureMessage` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 18.7. **Status**: Experiment. Error message when the cleanup policy fails. |
-| <a id="virtualregistrycleanuppolicygroupid"></a>`groupId` {{< icon name="warning-solid" >}} | [`ID!`](#id) | **Introduced** in GitLab 18.7. **Status**: Experiment. ID of the Group. |
 | <a id="virtualregistrycleanuppolicykeepndaysafterdownload"></a>`keepNDaysAfterDownload` {{< icon name="warning-solid" >}} | [`Int!`](#int) | **Introduced** in GitLab 18.7. **Status**: Experiment. Number of days to keep cached entries after their last download. |
 | <a id="virtualregistrycleanuppolicylastrunat"></a>`lastRunAt` {{< icon name="warning-solid" >}} | [`Time`](#time) | **Introduced** in GitLab 18.7. **Status**: Experiment. Last time that the virtual registry cleanup policy executed. |
 | <a id="virtualregistrycleanuppolicylastrundeletedentriescount"></a>`lastRunDeletedEntriesCount` {{< icon name="warning-solid" >}} | [`Int`](#int) | **Introduced** in GitLab 18.7. **Status**: Experiment. Number of entries deleted during the last cleanup run. |
@@ -46533,6 +47653,7 @@ Represents a vulnerability.
 | <a id="vulnerabilitymergerequest"></a>`mergeRequest` | [`MergeRequest`](#mergerequest) | Merge request that fixes the vulnerability. |
 | <a id="vulnerabilitymergerequests"></a>`mergeRequests` | [`MergeRequestConnection`](#mergerequestconnection) | Merge requests that are linked to fix the vulnerability. (see [Connections](#connections)) |
 | <a id="vulnerabilityname"></a>`name` | [`String`](#string) | Name or title of the object. |
+| <a id="vulnerabilitypolicyautodismissed"></a>`policyAutoDismissed` {{< icon name="warning-solid" >}} | [`Boolean`](#boolean) | **Introduced** in GitLab 18.7. **Status**: Experiment. Indicates whether the vulnerability was auto-dismissed by a security policy. |
 | <a id="vulnerabilitypolicyviolations"></a>`policyViolations` {{< icon name="warning-solid" >}} | [`PolicyViolations`](#policyviolations) | **Introduced** in GitLab 18.6. **Status**: Experiment. Policy violation for the vulnerability. |
 | <a id="vulnerabilitypresentondefaultbranch"></a>`presentOnDefaultBranch` | [`Boolean!`](#boolean) | Indicates whether the vulnerability is present on the default branch or not. |
 | <a id="vulnerabilityprimaryidentifier"></a>`primaryIdentifier` | [`VulnerabilityIdentifier`](#vulnerabilityidentifier) | Primary identifier of the vulnerability. |
@@ -49328,6 +50449,7 @@ Values for sorting CI/CD job analytics.
 | <a id="cijobfailurereasondeployment_rejected"></a>`DEPLOYMENT_REJECTED` | A job that failed due to deployment rejected. |
 | <a id="cijobfailurereasondownstream_bridge_project_not_found"></a>`DOWNSTREAM_BRIDGE_PROJECT_NOT_FOUND` | A job that failed due to downstream bridge project not found. |
 | <a id="cijobfailurereasondownstream_pipeline_creation_failed"></a>`DOWNSTREAM_PIPELINE_CREATION_FAILED` | A job that failed due to downstream pipeline creation failed. |
+| <a id="cijobfailurereasonduo_workflow_not_allowed"></a>`DUO_WORKFLOW_NOT_ALLOWED` | A job that failed due to duo workflow not allowed. |
 | <a id="cijobfailurereasonenvironment_creation_failure"></a>`ENVIRONMENT_CREATION_FAILURE` | A job that failed due to environment creation failure. |
 | <a id="cijobfailurereasonfailed_outdated_deployment_job"></a>`FAILED_OUTDATED_DEPLOYMENT_JOB` | A job that failed due to failed outdated deployment job. |
 | <a id="cijobfailurereasonforward_deployment_failure"></a>`FORWARD_DEPLOYMENT_FAILURE` | A job that failed due to forward deployment failure. |
@@ -50999,6 +52121,7 @@ Member role permission.
 | <a id="memberrolepermissionread_dependency"></a>`READ_DEPENDENCY` | Allows read-only access to the dependencies and licenses. |
 | <a id="memberrolepermissionread_runners"></a>`READ_RUNNERS` | Allows read-only access to group or project runners, including the runner fleet dashboard. |
 | <a id="memberrolepermissionread_security_attribute"></a>`READ_SECURITY_ATTRIBUTE` | Allows read-only access to the security categories and attributes belonging to a top-level group. |
+| <a id="memberrolepermissionread_security_scan_profiles"></a>`READ_SECURITY_SCAN_PROFILES` | Read security scan profiles. |
 | <a id="memberrolepermissionread_vulnerability"></a>`READ_VULNERABILITY` | Read vulnerability reports and security dashboards. |
 | <a id="memberrolepermissionremove_group"></a>`REMOVE_GROUP` | Ability to delete or restore a group. This ability does not allow deleting top-level groups. Review the Retention period settings to prevent accidental deletion. |
 | <a id="memberrolepermissionremove_project"></a>`REMOVE_PROJECT` | Allows deletion of projects. |
@@ -51036,6 +52159,7 @@ Member role standard permission.
 | <a id="memberrolestandardpermissionread_dependency"></a>`READ_DEPENDENCY` | Allows read-only access to the dependencies and licenses. |
 | <a id="memberrolestandardpermissionread_runners"></a>`READ_RUNNERS` | Allows read-only access to group or project runners, including the runner fleet dashboard. |
 | <a id="memberrolestandardpermissionread_security_attribute"></a>`READ_SECURITY_ATTRIBUTE` {{< icon name="warning-solid" >}} | **Introduced** in GitLab 18.6. **Status**: Experiment. Allows read-only access to the security categories and attributes belonging to a top-level group. |
+| <a id="memberrolestandardpermissionread_security_scan_profiles"></a>`READ_SECURITY_SCAN_PROFILES` | Read security scan profiles. |
 | <a id="memberrolestandardpermissionread_vulnerability"></a>`READ_VULNERABILITY` | Read vulnerability reports and security dashboards. |
 | <a id="memberrolestandardpermissionremove_group"></a>`REMOVE_GROUP` | Ability to delete or restore a group. This ability does not allow deleting top-level groups. Review the Retention period settings to prevent accidental deletion. |
 | <a id="memberrolestandardpermissionremove_project"></a>`REMOVE_PROJECT` | Allows deletion of projects. |
@@ -51773,7 +52897,7 @@ Lists the status of a virtual registry cleanup policy.
 
 ### `PrincipalType`
 
-Types of principal that can have secret permissions.
+Types of principal that can have secrets permissions.
 
 | Value | Description |
 | ----- | ----------- |
@@ -52169,6 +53293,17 @@ Template type for predefined security categories.
 | <a id="securityreporttypeenumsast_advanced"></a>`SAST_ADVANCED` | SAST ADVANCED scan report. |
 | <a id="securityreporttypeenumsast_iac"></a>`SAST_IAC` | SAST IAC scan report. |
 | <a id="securityreporttypeenumsecret_detection"></a>`SECRET_DETECTION` | SECRET DETECTION scan report. |
+
+### `SecurityScanProfileType`
+
+Scan profile type.
+
+| Value | Description |
+| ----- | ----------- |
+| <a id="securityscanprofiletypecontainer_scanning"></a>`CONTAINER_SCANNING` | Container scanning. |
+| <a id="securityscanprofiletypedependency_scanning"></a>`DEPENDENCY_SCANNING` | Dependency scanning. |
+| <a id="securityscanprofiletypesast"></a>`SAST` | Sast. |
+| <a id="securityscanprofiletypesecret_detection"></a>`SECRET_DETECTION` | Secret detection. |
 
 ### `SecurityScannerType`
 
@@ -52589,7 +53724,6 @@ Name of the feature that the callout is for.
 | <a id="usergroupcalloutfeaturenameci_minutes_limit_alert_exceeded_stage"></a>`CI_MINUTES_LIMIT_ALERT_EXCEEDED_STAGE` | Callout feature name for ci_minutes_limit_alert_exceeded_stage. |
 | <a id="usergroupcalloutfeaturenameci_minutes_limit_alert_warning_stage"></a>`CI_MINUTES_LIMIT_ALERT_WARNING_STAGE` | Callout feature name for ci_minutes_limit_alert_warning_stage. |
 | <a id="usergroupcalloutfeaturenamecompliance_framework_settings_moved_callout"></a>`COMPLIANCE_FRAMEWORK_SETTINGS_MOVED_CALLOUT` | Callout feature name for compliance_framework_settings_moved_callout. |
-| <a id="usergroupcalloutfeaturenameduo_agent_platform_requested"></a>`DUO_AGENT_PLATFORM_REQUESTED` | Callout feature name for duo_agent_platform_requested. |
 | <a id="usergroupcalloutfeaturenameenforcement_at_limit_alert"></a>`ENFORCEMENT_AT_LIMIT_ALERT` | Callout feature name for enforcement_at_limit_alert. |
 | <a id="usergroupcalloutfeaturenameexpired_duo_enterprise_trial_widget"></a>`EXPIRED_DUO_ENTERPRISE_TRIAL_WIDGET` | Callout feature name for expired_duo_enterprise_trial_widget. |
 | <a id="usergroupcalloutfeaturenameexpired_duo_pro_trial_widget"></a>`EXPIRED_DUO_PRO_TRIAL_WIDGET` | Callout feature name for expired_duo_pro_trial_widget. |
@@ -52649,7 +53783,6 @@ Possible types of user.
 | <a id="usertypeghost"></a>`GHOST` | Ghost. |
 | <a id="usertypehuman"></a>`HUMAN` | Human. |
 | <a id="usertypeimport_user"></a>`IMPORT_USER` | Import user. |
-| <a id="usertypemigration_bot"></a>`MIGRATION_BOT` | Migration bot. |
 | <a id="usertypeplaceholder"></a>`PLACEHOLDER` | Placeholder. |
 | <a id="usertypeproject_bot"></a>`PROJECT_BOT` | Project bot. |
 | <a id="usertypesecurity_bot"></a>`SECURITY_BOT` | Security bot. |
@@ -54381,6 +55514,12 @@ A `SecurityProjectSecurityExclusionID` is a global ID. It is encoded as a string
 
 An example `SecurityProjectSecurityExclusionID` is: `"gid://gitlab/Security::ProjectSecurityExclusion/1"`.
 
+### `SecurityScanProfileID`
+
+A `SecurityScanProfileID` is a global ID. It is encoded as a string.
+
+An example `SecurityScanProfileID` is: `"gid://gitlab/Security::ScanProfile/1"`.
+
 ### `SecurityTrainingProviderID`
 
 A `SecurityTrainingProviderID` is a global ID. It is encoded as a string.
@@ -54834,6 +55973,23 @@ Implementations:
 | <a id="aicatalogitemversions"></a>`versions` | [`AiCatalogItemVersionConnection`](#aicatalogitemversionconnection) | Versions of the item. (see [Connections](#connections)) |
 
 ##### Fields with arguments
+
+###### `AiCatalogItem.configurationForGroup`
+
+{{< details >}}
+**Introduced** in GitLab 18.7.
+**Status**: Experiment.
+{{< /details >}}
+
+Item configuration for the given group.
+
+Returns [`AiCatalogItemConsumer`](#aicatalogitemconsumer).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="aicatalogitemconfigurationforgroupgroupid"></a>`groupId` | [`GroupID!`](#groupid) | Global ID of the group to return the item configuration of. |
 
 ###### `AiCatalogItem.configurationForProject`
 
@@ -55637,6 +56793,23 @@ Implementations:
 | <a id="projectinterfaceuserpermissions"></a>`userPermissions` | [`ProjectPermissions`](#projectpermissions) | Permissions for the current user on the project. |
 | <a id="projectinterfaceweburl"></a>`webUrl` | [`String`](#string) | Web URL of the project. |
 
+#### `RegistryInterface`
+
+Implementations:
+
+- [`ContainerRegistry`](#containerregistry)
+- [`MavenRegistry`](#mavenregistry)
+- [`MavenRegistryDetails`](#mavenregistrydetails)
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="registryinterfacedescription"></a>`description` | [`String`](#string) | Description of the virtual registry. |
+| <a id="registryinterfaceid"></a>`id` | [`ID!`](#id) | ID of the virtual registry. |
+| <a id="registryinterfacename"></a>`name` | [`String!`](#string) | Name of the virtual registry. |
+| <a id="registryinterfaceupdatedat"></a>`updatedAt` | [`Time!`](#time) | Timestamp of when the virtual registry was updated. |
+
 #### `ResolvableInterface`
 
 Implementations:
@@ -56026,9 +57199,9 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="userpersonalaccesstokenscreatedafter"></a>`createdAfter` | [`Time`](#time) | Filter personal access tokens created after the timestamp. |
 | <a id="userpersonalaccesstokensexpiresafter"></a>`expiresAfter` | [`Date`](#date) | Filter personal access tokens that expire after the timestamp. |
 | <a id="userpersonalaccesstokenslastusedafter"></a>`lastUsedAfter` | [`Time`](#time) | Filter personal access tokens last used after the timestamp. |
-| <a id="userpersonalaccesstokensrevoked"></a>`revoked` | [`Boolean`](#boolean) | Filter personal access tokens by their revoked status. Default is `false`. |
+| <a id="userpersonalaccesstokensrevoked"></a>`revoked` | [`Boolean`](#boolean) | Filter personal access tokens by their revoked status. |
 | <a id="userpersonalaccesstokenssort"></a>`sort` | [`AccessTokenSort`](#accesstokensort) | Sort personal access tokens by the given criteria. Default is `expires_at_asc`. |
-| <a id="userpersonalaccesstokensstate"></a>`state` | [`AccessTokenState`](#accesstokenstate) | Filter personal access tokens by state. Default is `active`. |
+| <a id="userpersonalaccesstokensstate"></a>`state` | [`AccessTokenState`](#accesstokenstate) | Filter personal access tokens by state. |
 
 ###### `User.reviewRequestedMergeRequests`
 
@@ -56860,6 +58033,18 @@ Labels for the Node Pool of a GKE cluster.
 | <a id="googlecloudnodepoollabelkey"></a>`key` | [`String!`](#string) | Key of the label. |
 | <a id="googlecloudnodepoollabelvalue"></a>`value` | [`String!`](#string) | Value of the label. |
 
+### `GranularScopeInput`
+
+Attributes for a granular scope of an access token.
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="granularscopeinputaccess"></a>`access` | [`AccessTokenGranularScopeAccess!`](#accesstokengranularscopeaccess) | Access to configure for the granular scope. |
+| <a id="granularscopeinputpermissions"></a>`permissions` | [`[String!]!`](#string) | List of permissions for the granular scope. |
+| <a id="granularscopeinputresourceids"></a>`resourceIds` | [`[GlobalID!]`](#globalid) | IDs of groups or projects to associate with each granular scope. |
+
 ### `GroupProjectRequirementComplianceStatusInput`
 
 #### Arguments
@@ -57110,7 +58295,8 @@ Representation of who is provided access to. For eg: User/Role/MemberRole/Group.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="principalinputid"></a>`id` | [`Int!`](#int) | ID of the principal. |
+| <a id="principalinputgrouppath"></a>`groupPath` | [`ID`](#id) | Full path of the group principal. Only used when type is GROUP. |
+| <a id="principalinputid"></a>`id` | [`Int`](#int) | ID of the principal. Required unless group_path is provided for Group type. |
 | <a id="principalinputtype"></a>`type` | [`PrincipalType!`](#principaltype) | Type of the principal. |
 
 ### `ProjectComplianceControlStatusInput`

@@ -94,7 +94,7 @@ RSpec.describe SecretsManagement::Permissions::ListService, :gitlab_secrets_mana
       it 'returns an error' do
         result = service.execute
         expect(result).to be_error
-        expect(result.message).to eq('Project secrets manager is not active')
+        expect(result.message).to eq('Secrets manager is not active')
       end
     end
   end

@@ -3,6 +3,7 @@
 module Security
   module Ingestion
     class FindingMapCollection
+      include Gitlab::Utils::StrongMemoize
       include Enumerable
 
       def initialize(pipeline, security_scan)
@@ -29,7 +30,12 @@ module Security
         # if we have a matching one.
         report_uuid = security_finding.overridden_uuid || security_finding.uuid
 
-        FindingMap.new(pipeline, security_finding, report_findings_map[report_uuid])
+        FindingMap.new(
+          pipeline,
+          tracked_context(pipeline),
+          security_finding,
+          report_findings_map[report_uuid]
+        )
       end
 
       def report_findings_map
@@ -49,6 +55,21 @@ module Security
       def sbom_scanner
         @sbom_scanner ||= Vulnerabilities::Scanner.sbom_scanner(project_id: project.id)
       end
+
+      def tracked_context_finder
+        @tracked_context_finder ||= TrackedContextFinder.new
+      end
+
+      def tracked_context(pipeline)
+        return unless set_tracked_context?
+
+        tracked_context_finder.find_or_create_from_pipeline(pipeline)
+      end
+
+      def set_tracked_context?
+        ::Feature.enabled?(:set_tracked_context_during_ingestion, pipeline.project)
+      end
+      strong_memoize_attr :set_tracked_context?
     end
   end
 end

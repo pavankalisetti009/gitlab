@@ -26,12 +26,13 @@ module MergeTrains
     private
 
     def update_merge_params_train_ref(create_ref_result)
-      @merge_request.merge_params['train_ref'] =
-        create_ref_result
+      params = {
+        'train_ref' => create_ref_result
           .payload
           .slice(:commit_sha, :merge_commit_sha, :squash_commit_sha)
           .stringify_keys
-
+      }
+      @merge_request.append_merge_params(params)
       @merge_request.save
     end
   end

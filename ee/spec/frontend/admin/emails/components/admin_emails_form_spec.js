@@ -190,6 +190,7 @@ describe('AdminEmailsForm', () => {
 
         findGlListbox().vm.$emit('select', 'group-1');
         await nextTick();
+        await nextTick();
 
         expect(findGlListbox().props('selected')).toBe('group-1');
         expect(wrapper.find('input[name="recipients"]').element.value).toBe('group-1');

@@ -37,6 +37,10 @@ module EE
           !mutable?
         end
 
+        def type
+          immutable? ? 'immutable' : super
+        end
+
         override :push_restricted?
         def push_restricted?(access_level)
           immutable? ? immutable_restriction? : super

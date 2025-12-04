@@ -4,7 +4,7 @@ module SecretsManagement
   module ProjectSecrets
     class ListService < ProjectBaseService
       def execute(include_rotation_info: true)
-        return inactive_response unless project.secrets_manager&.active?
+        return secrets_manager_inactive_response unless project.secrets_manager&.active?
 
         rotation_info_mapping = {}
         secrets = user_client.list_secrets(

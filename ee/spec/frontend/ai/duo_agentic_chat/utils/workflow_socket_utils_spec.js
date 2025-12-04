@@ -5,14 +5,8 @@ import {
 } from 'ee/ai/duo_agentic_chat/utils/workflow_socket_utils';
 import { GITLAB_DEFAULT_MODEL } from 'ee/ai/model_selection/constants';
 import * as websocketUtils from '~/lib/utils/websocket_utils';
-import { WorkflowUtils } from 'ee/ai/duo_agentic_chat/utils/workflow_utils';
 
 jest.mock('~/lib/utils/websocket_utils');
-jest.mock('ee/ai/duo_agentic_chat/utils/workflow_utils', () => ({
-  WorkflowUtils: {
-    transformChatMessages: jest.fn(),
-  },
-}));
 
 describe('workflow_socket_utils', () => {
   describe('buildWebsocketUrl', () => {
@@ -112,6 +106,7 @@ describe('workflow_socket_utils', () => {
             clientVersion: '1.0',
             workflowDefinition: 'chat',
             workflowMetadata: 'test metadata',
+            clientCapabilities: [],
             goal: 'test goal',
             approval: {},
           },
@@ -134,6 +129,7 @@ describe('workflow_socket_utils', () => {
             clientVersion: '1.0',
             workflowDefinition: 'agent/v1',
             workflowMetadata: 'test metadata',
+            clientCapabilities: [],
             goal: 'test goal',
             approval: {},
           },
@@ -182,11 +178,36 @@ describe('workflow_socket_utils', () => {
         expect(request.startRequest.approval).toEqual(approval);
       });
     });
+
+    describe('when clientCapabilities is provided', () => {
+      it('includes clientCapabilities in request', () => {
+        const clientCapabilities = ['incremental_streaming'];
+        const request = buildStartRequest({
+          workflowId: '123',
+          goal: 'test goal',
+          metadata: 'test metadata',
+          clientCapabilities,
+        });
+
+        expect(request.startRequest.clientCapabilities).toEqual(clientCapabilities);
+      });
+    });
+
+    describe('when clientCapabilities is not provided', () => {
+      it('defaults to empty array', () => {
+        const request = buildStartRequest({
+          workflowId: '123',
+          goal: 'test goal',
+          metadata: 'test metadata',
+        });
+
+        expect(request.startRequest.clientCapabilities).toEqual([]);
+      });
+    });
   });
 
   describe('processWorkflowMessage', () => {
     const mockEvent = { data: 'test' };
-    const mockWorkflowId = '456';
 
     beforeEach(() => {
       jest.clearAllMocks();
@@ -196,7 +217,7 @@ describe('workflow_socket_utils', () => {
       it('returns null', async () => {
         websocketUtils.parseMessage.mockResolvedValue(null);
 
-        const result = await processWorkflowMessage(mockEvent, mockWorkflowId);
+        const result = await processWorkflowMessage(mockEvent, null);
 
         expect(result).toBeNull();
       });
@@ -206,7 +227,7 @@ describe('workflow_socket_utils', () => {
       it('returns null', async () => {
         websocketUtils.parseMessage.mockResolvedValue({ otherData: 'value' });
 
-        const result = await processWorkflowMessage(mockEvent, mockWorkflowId);
+        const result = await processWorkflowMessage(mockEvent, null);
 
         expect(result).toBeNull();
       });
@@ -214,10 +235,12 @@ describe('workflow_socket_utils', () => {
 
     describe('when valid workflow message is received', () => {
       it('processes and returns transformed data', async () => {
-        const mockMessages = [{ content: 'test message', role: 'assistant' }];
+        const mockMessages = [
+          { content: 'test message', role: 'assistant', message_type: 'agent' },
+        ];
         const mockCheckpoint = {
           channel_values: {
-            ui_chat_log: [{ message: 'raw log' }],
+            ui_chat_log: mockMessages,
           },
         };
 
@@ -229,20 +252,120 @@ describe('workflow_socket_utils', () => {
           },
         });
 
-        WorkflowUtils.transformChatMessages.mockReturnValue(mockMessages);
-
-        const result = await processWorkflowMessage(mockEvent, mockWorkflowId);
+        const result = await processWorkflowMessage(mockEvent, null);
 
         expect(result).toEqual({
-          messages: mockMessages,
+          messages: [
+            {
+              ...mockMessages[0],
+              requestId: mockMessages[0].message_id,
+            },
+          ],
           status: 'running',
           goal: 'test goal',
+          lastProcessedMessageId: mockMessages[0].message_id,
+        });
+      });
+
+      it('correctly sets message IDs on the sequential messages', async () => {
+        const mockMessageFirstPass = {
+          content: 'Hello',
+          role: 'user',
+          message_type: 'user',
+          message_id: 0,
+        };
+        const mockMessageSecondPass = {
+          content: 'Hello yourself',
+          role: 'assistant',
+          message_type: 'agent',
+          message_id: 1,
+        };
+        const mockMessageThirdPass = {
+          content: 'Bummer',
+          role: 'tool',
+          message_type: 'tool',
+          message_id: 2,
+        };
+
+        const mockCheckpoint = (messages) => {
+          return {
+            checkpoint: JSON.stringify({
+              channel_values: {
+                ui_chat_log: messages,
+              },
+            }),
+            status: 'running',
+            goal: 'test goal',
+          };
+        };
+
+        // We build the realistic iterative checkpoint events behavior
+        websocketUtils.parseMessage
+          .mockResolvedValueOnce({
+            newCheckpoint: mockCheckpoint([mockMessageFirstPass]),
+          })
+          .mockResolvedValueOnce({
+            newCheckpoint: mockCheckpoint([mockMessageFirstPass, mockMessageSecondPass]),
+          })
+          .mockResolvedValueOnce({
+            newCheckpoint: mockCheckpoint([
+              mockMessageFirstPass,
+              mockMessageSecondPass,
+              mockMessageThirdPass,
+            ]),
+          });
+
+        // First pass - user message is included
+        let result = await processWorkflowMessage(mockEvent, null);
+        let { lastProcessedMessageId } = result;
+        expect(result).toEqual({
+          messages: [
+            {
+              ...mockMessageFirstPass,
+              requestId: mockMessageFirstPass.message_id,
+            },
+          ],
+          status: 'running',
+          goal: 'test goal',
+          lastProcessedMessageId: mockMessageFirstPass.message_id,
         });
 
-        expect(WorkflowUtils.transformChatMessages).toHaveBeenCalledWith(
-          mockCheckpoint.channel_values.ui_chat_log,
-          mockWorkflowId,
-        );
+        // Second pass - returns all messages from the last processed message onwards
+        result = await processWorkflowMessage(mockEvent, lastProcessedMessageId);
+        ({ lastProcessedMessageId } = result);
+        expect(result).toEqual({
+          messages: [
+            {
+              ...mockMessageFirstPass,
+              requestId: mockMessageFirstPass.message_id,
+            },
+            {
+              ...mockMessageSecondPass,
+              requestId: mockMessageSecondPass.message_id,
+            },
+          ],
+          status: 'running',
+          goal: 'test goal',
+          lastProcessedMessageId: mockMessageSecondPass.message_id,
+        });
+
+        // Third pass - returns messages from the last processed message onwards (agent + tool)
+        result = await processWorkflowMessage(mockEvent, lastProcessedMessageId);
+        expect(result).toEqual({
+          messages: [
+            {
+              ...mockMessageSecondPass,
+              requestId: mockMessageSecondPass.message_id,
+            },
+            {
+              ...mockMessageThirdPass,
+              requestId: mockMessageThirdPass.message_id,
+            },
+          ],
+          status: 'running',
+          goal: 'test goal',
+          lastProcessedMessageId: mockMessageThirdPass.message_id,
+        });
       });
     });
   });

@@ -273,14 +273,8 @@ describe('GfmAutoCompleteEE', () => {
   describe('Statuses', () => {
     const mockWorkItemFullPath = 'gitlab-org/gitlab-test';
     const mockWorkItemTypeId = 'gid://gitlab/WorkItems::Type/1';
-    const originalGon = window.gon;
 
     beforeEach(() => {
-      window.gon = {
-        features: {
-          workItemViewForIssues: true,
-        },
-      };
       document.body.dataset.page = 'projects:issues:show';
       setHTMLFixture(`
         <section>
@@ -294,10 +288,6 @@ describe('GfmAutoCompleteEE', () => {
       $textarea = $('textarea');
       autocomplete = new GfmAutoCompleteEE(dataSources);
       autocomplete.setup($textarea, { statuses: true });
-    });
-
-    afterEach(() => {
-      window.gon = originalGon;
     });
 
     it('should list all statuses when `/status "` is typed', () => {
@@ -341,7 +331,7 @@ describe('GfmAutoCompleteEE', () => {
               style="color: #737278;"
             >
               <use
-                xlink:href="undefined#status-waiting"
+                xlink:href="/icons.svg#status-waiting"
               />
             </svg>
             <span>
@@ -367,7 +357,7 @@ describe('GfmAutoCompleteEE', () => {
               style="color: #737278;"
             >
               <use
-                xlink:href="undefined#status-waiting"
+                xlink:href="/icons.svg#status-waiting"
               />
             </svg>
             <span>

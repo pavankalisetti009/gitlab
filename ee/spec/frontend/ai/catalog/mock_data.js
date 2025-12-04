@@ -1,13 +1,14 @@
-const TYPENAME_AI_CATALOG_ITEM = 'AiCatalogItem';
 export const TYPENAME_AI_CATALOG_ITEM_CONNECTION = 'AiCatalogItemConnection';
 const TYPENAME_AI_CATALOG_ITEM_CONSUMER = 'AiCatalogItemConsumer';
 const TYPENAME_AI_CATALOG_ITEM_CONSUMER_DELETE = 'AiCatalogItemConsumerDeletePayload';
 const TYPENAME_AI_CATALOG_ITEM_CONSUMER_CONNECTION = 'AiCatalogItemConsumerConnection';
+const TYPENAME_AI_CATALOG_AGENT = 'AiCatalogAgent';
 const TYPENAME_AI_CATALOG_AGENT_CREATE = 'AiCatalogAgentCreatePayload';
 const TYPENAME_AI_CATALOG_AGENT_UPDATE = 'AiCatalogAgentUpdatePayload';
 const TYPENAME_AI_CATALOG_AGENT_DELETE = 'AiCatalogAgentDeletePayload';
 const TYPENAME_AI_CATALOG_AGENT_VERSION = 'AiCatalogAgentVersion';
 const TYPENAME_AI_CATALOG_AGENT_TOOLS_CONNECTION = 'AiCatalogBuiltInToolConnection';
+const TYPENAME_AI_CATALOG_FLOW = 'AiCatalogFlow';
 const TYPENAME_AI_CATALOG_FLOW_VERSION = 'AiCatalogFlowVersion';
 const TYPENAME_AI_CATALOG_FLOW_CREATE = 'AiCatalogFlowCreatePayload';
 const TYPENAME_AI_CATALOG_FLOW_UPDATE = 'AiCatalogFlowUpdatePayload';
@@ -21,10 +22,13 @@ const TYPENAME_PROJECT_PERMISSIONS = 'ProjectPermissions';
 const TYPENAME_PROJECTS_CONNECTION = 'ProjectsConnection';
 const TYPENAME_AI_CATALOG_ITEM_REPORT = 'AiCatalogItemReportPayload';
 
-export const mockBaseLatestVersion = {
+const mockVersionFactory = (overrides = {}) => ({
   id: 'gid://gitlab/Ai::Catalog::ItemVersion/1',
   updatedAt: '2025-08-21T14:30:00Z',
-};
+  ...overrides,
+});
+
+export const mockBaseVersion = mockVersionFactory();
 
 const mockProjectFactory = (overrides = {}) => ({
   id: 'gid://gitlab/Project/1',
@@ -35,6 +39,7 @@ const mockProjectFactory = (overrides = {}) => ({
 const mockUserPermissionsFactory = (overrides = {}) => ({
   adminAiCatalogItem: true,
   reportAiCatalogItem: true,
+  forceHardDeleteAiCatalogItem: true,
   ...overrides,
 });
 
@@ -136,7 +141,7 @@ export const mockToolsQueryResponse = {
 export const mockAgentVersions = {
   nodes: [
     {
-      id: 'gid://gitlab/Ai::Catalog::ItemVersion/20',
+      ...mockVersionFactory({ id: 'gid://gitlab/Ai::Catalog::ItemVersion/20' }),
       systemPrompt: 'sys',
       tools: { nodes: [], __typename: TYPENAME_AI_CATALOG_AGENT_TOOLS_CONNECTION },
       versionName: '1.0.0',
@@ -163,21 +168,34 @@ const mockAgentFactory = (overrides = {}) => ({
   createdAt: '2024-01-15T10:30:00Z',
   public: true,
   updatedAt: '2024-08-21T14:30:00Z',
-  latestVersion: mockBaseLatestVersion,
+  latestVersion: mockBaseVersion,
   userPermissions: mockUserPermissions,
-  __typename: TYPENAME_AI_CATALOG_ITEM,
-  foundationalChat: false,
+  __typename: TYPENAME_AI_CATALOG_AGENT,
+  foundational: false,
   ...overrides,
 });
 
 export const mockAgentVersion = {
-  ...mockBaseLatestVersion,
+  ...mockBaseVersion,
   humanVersionName: 'v1.0.0-draft',
   versionName: '1.0.0',
   __typename: TYPENAME_AI_CATALOG_AGENT_VERSION,
   systemPrompt: 'The system prompt',
   tools: {
     nodes: [],
+    __typename: TYPENAME_AI_CATALOG_AGENT_TOOLS_CONNECTION,
+  },
+};
+
+export const mockToolsNodes = aiCatalogBuiltInToolsNodes;
+export const mockAgentPinnedVersion = {
+  ...mockVersionFactory({ id: 'gid://gitlab/Ai::Catalog::ItemVersion/2' }),
+  humanVersionName: 'v0.9.0',
+  versionName: '0.9.0',
+  __typename: TYPENAME_AI_CATALOG_AGENT_VERSION,
+  systemPrompt: 'The system prompt pinned',
+  tools: {
+    nodes: aiCatalogBuiltInToolsNodes,
     __typename: TYPENAME_AI_CATALOG_AGENT_TOOLS_CONNECTION,
   },
 };
@@ -274,9 +292,15 @@ export const mockCatalogEmptyItemsResponse = {
 };
 
 export const mockAgentConfigurationForProject = {
-  id: 'gid://gitlab/Ai::Catalog::ItemConsumer/1',
+  id: 'gid://gitlab/Ai::Catalog::ItemConsumer/3',
   enabled: true,
-  pinnedItemVersion: mockAgentVersion,
+  pinnedItemVersion: mockAgentPinnedVersion,
+  __typename: TYPENAME_AI_CATALOG_ITEM_CONSUMER,
+};
+
+export const mockAgentConfigurationForGroup = {
+  id: 'gid://gitlab/Ai::Catalog::ItemConsumer/4',
+  enabled: true,
   __typename: TYPENAME_AI_CATALOG_ITEM_CONSUMER,
 };
 
@@ -285,8 +309,14 @@ export const mockAiCatalogAgentResponse = {
     aiCatalogItem: {
       ...mockAgent,
       configurationForProject: mockAgentConfigurationForProject,
+      configurationForGroup: mockAgentConfigurationForGroup,
     },
   },
+};
+
+export const mockAgentVersionDataProp = {
+  systemPrompt: mockAgentPinnedVersion.systemPrompt,
+  tools: mockAgentPinnedVersion.tools.nodes,
 };
 
 export const mockAiCatalogAgentNullResponse = {
@@ -325,16 +355,6 @@ export const mockCreateAiCatalogAgentSuccessMutation = {
   },
 };
 
-export const mockCreateAiCatalogAgentSuccessWithEnableFailureMutation = {
-  data: {
-    aiCatalogAgentCreate: {
-      errors: ['Could not enable'],
-      item: mockBaseAgent,
-      __typename: TYPENAME_AI_CATALOG_AGENT_CREATE,
-    },
-  },
-};
-
 export const mockCreateAiCatalogAgentErrorMutation = {
   data: {
     aiCatalogAgentCreate: {
@@ -366,10 +386,19 @@ export const mockUpdateAiCatalogAgentErrorMutation = {
 /* FLOWS */
 
 export const mockFlowVersion = {
-  ...mockBaseLatestVersion,
+  ...mockBaseVersion,
   humanVersionName: 'v1.0.0-draft',
   versionName: '1.0.0',
   definition: 'version: "v1"',
+  __typename: TYPENAME_AI_CATALOG_FLOW_VERSION,
+};
+
+export const mockFlowPinnedVersion = {
+  ...mockFlowVersion,
+  id: 'gid://gitlab/Ai::Catalog::ItemVersion/25',
+  humanVersionName: 'v0.9.0',
+  versionName: '0.9.0',
+  definition: 'version: "v1" pinned',
   __typename: TYPENAME_AI_CATALOG_FLOW_VERSION,
 };
 
@@ -381,10 +410,10 @@ const mockFlowFactory = (overrides = {}) => ({
   createdAt: '2024-01-15T10:30:00Z',
   public: true,
   updatedAt: '2024-08-21T14:30:00Z',
-  foundationalChat: false,
-  latestVersion: mockBaseLatestVersion,
+  foundational: false,
+  latestVersion: mockBaseVersion,
   userPermissions: mockUserPermissions,
-  __typename: TYPENAME_AI_CATALOG_ITEM,
+  __typename: TYPENAME_AI_CATALOG_FLOW,
   ...overrides,
 });
 
@@ -425,6 +454,7 @@ export const mockFlowConfigurationForProject = {
   id: 'gid://gitlab/Ai::Catalog::ItemConsumer/12',
   enabled: true,
   flowTrigger: mockFlowTrigger,
+  pinnedItemVersion: mockFlowPinnedVersion,
   __typename: TYPENAME_AI_CATALOG_ITEM_CONSUMER,
 };
 
@@ -442,16 +472,6 @@ export const mockCreateAiCatalogFlowSuccessMutation = {
   data: {
     aiCatalogFlowCreate: {
       errors: [],
-      item: mockFlow,
-      __typename: TYPENAME_AI_CATALOG_FLOW_CREATE,
-    },
-  },
-};
-
-export const mockCreateAiCatalogFlowSuccessWithEnableFailureMutation = {
-  data: {
-    aiCatalogFlowCreate: {
-      errors: ['Could not enable'],
       item: mockFlow,
       __typename: TYPENAME_AI_CATALOG_FLOW_CREATE,
     },
@@ -524,11 +544,18 @@ export const mockCatalogFlowDeleteErrorResponse = {
 /* THIRD-PARTY FLOWS */
 
 export const mockThirdPartyFlowVersion = {
-  ...mockBaseLatestVersion,
+  ...mockBaseVersion,
   humanVersionName: 'v1.0.0-draft',
   versionName: '1.0.0',
   definition: '---\\nimage: node:22\\ncommands:\\n- ls\\ninjectGatewayToken: true\\n',
   __typename: TYPENAME_AI_CATALOG_THIRD_PARTY_FLOW_VERSION,
+};
+
+export const mockThirdPartyFlowConfigurationForProject = {
+  id: 'gid://gitlab/Ai::Catalog::ItemConsumer/12',
+  flowTrigger: mockFlowTrigger,
+  pinnedItemVersion: mockThirdPartyFlowVersion,
+  __typename: TYPENAME_AI_CATALOG_ITEM_CONSUMER,
 };
 
 const mockThirdPartyFlowFactory = (overrides = {}) => ({

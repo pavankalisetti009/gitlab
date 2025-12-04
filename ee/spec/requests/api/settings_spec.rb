@@ -447,6 +447,19 @@ RSpec.describe API::Settings, 'EE Settings', :aggregate_failures, feature_catego
     it_behaves_like 'settings for licensed features'
   end
 
+  context 'dependency scanning sbom scan api endpoint limit' do
+    let(:settings) do
+      {
+        dependency_scanning_sbom_scan_api_download_limit: 500,
+        dependency_scanning_sbom_scan_api_upload_limit: 500
+      }
+    end
+
+    let(:feature) { :dependency_scanning }
+
+    it_behaves_like 'settings for licensed features'
+  end
+
   context 'custom email footer' do
     let(:settings) { { email_additional_text: 'this is a scary legal footer' } }
     let(:feature) { :email_additional_text }

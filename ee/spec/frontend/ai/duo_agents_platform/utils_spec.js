@@ -213,7 +213,7 @@ describe('duo_agents_platform utils', () => {
       ['list_issue_notes', { icon: 'work-item-issue', title: 'List comments', level: 0 }],
       ['create_commit', { icon: 'commit', title: 'Create commit', level: 1 }],
     ])('returns correct data for %s tool', (toolName, expected) => {
-      const toolMessage = { tool_info: { name: toolName } };
+      const toolMessage = { toolInfo: { name: toolName } };
 
       const result = getToolData(toolMessage);
 
@@ -221,7 +221,7 @@ describe('duo_agents_platform utils', () => {
     });
 
     it('returns default data for unknown tool', () => {
-      const toolMessage = { tool_info: { name: 'unknown_tool' } };
+      const toolMessage = { toolInfo: { name: 'unknown_tool' } };
 
       const result = getToolData(toolMessage);
 
@@ -232,7 +232,7 @@ describe('duo_agents_platform utils', () => {
       });
     });
 
-    it('handles missing tool_info', () => {
+    it('handles missing toolInfo', () => {
       const toolMessage = {};
 
       const result = getToolData(toolMessage);
@@ -266,7 +266,7 @@ describe('duo_agents_platform utils', () => {
       ['agent', { icon: 'tanuki-ai', title: 'Agent reasoning', level: 0 }],
       ['unknown', { icon: 'work-item-maintenance', title: 'Action', level: 0 }],
     ])('returns correct data for %s message type', (messageType, expected) => {
-      const message = { message_type: messageType };
+      const message = { messageType };
 
       const result = getMessageData(message);
 
@@ -275,8 +275,8 @@ describe('duo_agents_platform utils', () => {
 
     it('returns tool data for tool message type', () => {
       const message = {
-        message_type: 'tool',
-        tool_info: { name: 'read_file' },
+        messageType: 'tool',
+        toolInfo: { name: 'read_file' },
       };
 
       const result = getMessageData(message);
@@ -291,10 +291,10 @@ describe('duo_agents_platform utils', () => {
     it.each([
       [{}, "Message requires property 'message_type' but got {}"],
       [
-        { message_type: null },
-        'Message requires property \'message_type\' but got {"message_type":null}',
+        { messageType: null },
+        'Message requires property \'message_type\' but got {"messageType":null}',
       ],
-    ])('throws error when message_type is invalid: %p', (message, expectedError) => {
+    ])('throws error when messageType is invalid: %p', (message, expectedError) => {
       expect(() => getMessageData(message)).toThrow(expectedError);
     });
   });

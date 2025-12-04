@@ -1039,8 +1039,8 @@ spec:
       default: 'test-user'
     flags:
       default: ''
-title: The pipeline configuration would follow...
 ---
+# The pipeline configuration would follow...
 ```
 
 In this example:
@@ -1083,8 +1083,8 @@ spec:
   inputs:
     flags:
       description: 'Sample description of the `flags` input details.'
-title: The pipeline configuration would follow...
 ---
+# The pipeline configuration would follow...
 ```
 
 ---
@@ -1103,7 +1103,7 @@ The limit is 50 options per input.
 **Keyword type**: Header keyword. `spec` must be declared at the top of the configuration file,
 in a header section.
 
-**Supported values**: An array of input options.
+**Supported values**: An array of input options. Only string and number [`type`](#specinputstype) inputs can be used with options.
 
 **Example of `spec:inputs:options`**:
 
@@ -1115,8 +1115,8 @@ spec:
         - development
         - staging
         - production
-title: The pipeline configuration would follow...
 ---
+# The pipeline configuration would follow...
 ```
 
 In this example:
@@ -1155,8 +1155,8 @@ spec:
   inputs:
     version:
       regex: ^v\d\.\d+(\.\d+)?$
-title: The pipeline configuration would follow...
 ---
+# The pipeline configuration would follow...
 ```
 
 In this example, inputs of `v1.0` or `v1.2.3` match the regular expression and pass validation.
@@ -1204,8 +1204,8 @@ spec:
       type: boolean
     array_input:
       type: array
-title: The pipeline configuration would follow...
 ---
+# The pipeline configuration would follow...
 ```
 
 ---
@@ -1280,6 +1280,7 @@ deploy:
 {{< history >}}
 
 - [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/438275) in GitLab 18.6 as a [beta](../../policy/development_stages_support.md#beta) [with a flag](../../administration/feature_flags/_index.md) named `ci_component_context_interpolation`. Enabled by default.
+- [Generally available](https://gitlab.com/gitlab-org/gitlab/-/issues/571986) in GitLab 18.7. Feature flag `ci_component_context_interpolation` removed.
 
 {{< /history >}}
 
@@ -2115,8 +2116,7 @@ rspec:
 
 **Related topics**:
 
-- See the [common `cache` use cases](../caching/_index.md#common-use-cases-for-caches) for more
-  `cache:paths` examples.
+- See the [CI/CD caching examples](../caching/examples.md) for more `cache:paths` examples.
 
 ---
 
@@ -2169,8 +2169,7 @@ cache-job:
 - You can specify a [fallback cache key](../caching/_index.md#use-a-fallback-cache-key)
   to use if the specified `cache:key` is not found.
 - You can [use multiple cache keys](../caching/_index.md#use-multiple-caches) in a single job.
-- See the [common `cache` use cases](../caching/_index.md#common-use-cases-for-caches) for more
-  `cache:key` examples.
+- See the [CI/CD caching examples](../caching/examples.md) for more `cache:key` examples.
 
 ---
 
@@ -2470,7 +2469,7 @@ faster-test-job:
 
 **Related topics**:
 
-- You can [use a variable to control a job's cache policy](../caching/_index.md#use-a-variable-to-control-a-jobs-cache-policy).
+- You can [use a variable to control a job's cache policy](../caching/examples.md#use-a-variable-to-control-a-jobs-cache-policy).
 
 ---
 
@@ -2911,12 +2910,11 @@ deploy:
 
 This configuration:
 
-- Sets up the `deploy` job to deploy to the `production`
-environment
-- Associates the [agent](../../user/clusters/agent/_index.md) named `agent-name` with the environment
+- Sets up the `deploy` job to deploy to the `production` environment.
+- Associates the [agent](../../user/clusters/agent/_index.md) named `agent-name` with the environment.
 - Configures the [dashboard for Kubernetes](../environments/kubernetes_dashboard.md) for an environment with
-the namespace `my-namespace` and the `flux_resource_path` set to
-`helm.toolkit.fluxcd.io/v2/namespaces/flux-system/helmreleases/helm-release-resource`.
+  the namespace `my-namespace` and the `flux_resource_path` set to
+  `helm.toolkit.fluxcd.io/v2/namespaces/flux-system/helmreleases/helm-release-resource`.
 
 **Additional details**:
 
@@ -4445,6 +4443,7 @@ for `PROVIDER` and `STACK`:
   the jobs from each other, but [large values can cause names to exceed limits](https://gitlab.com/gitlab-org/gitlab/-/issues/362262):
   - [Job names](../jobs/_index.md#job-names) must be 255 characters or fewer.
   - When using [`needs`](#needs), job names must be 128 characters or fewer.
+- You cannot use the matrix values as variables for [`rules:if`](#rulesif).
 - You cannot create multiple matrix configurations with the same values but different names.
   Job names are generated from the matrix values, not the names, so matrix entries
   with identical values generate identical job names that overwrite each other.

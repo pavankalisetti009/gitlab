@@ -10,8 +10,8 @@ module Ai
     GROUP_WITH_MCP_SERVER_ENABLED_CACHE_PERIOD = 1.hour
     GROUP_WITH_MCP_SERVER_ENABLED_CACHE_KEY = 'group_with_mcp_server_enabled'
 
-    BILLABLE_DUO_PRO_ROOT_GROUP_IDS_CACHE_KEY = 'billable_duo_pro_root_group_ids'
-    BILLABLE_DUO_PRO_ROOT_GROUP_IDS_CACHE_PERIOD = 10.minutes
+    NON_GUEST_ROOT_GROUP_IDS_CACHE_KEY = 'non_guest_root_group_ids'
+    NON_GUEST_ROOT_GROUP_IDS_CACHE_PERIOD = 10.minutes
 
     DUO_PRO_ADD_ON_CACHE_KEY = 'user-%{user_id}-code-suggestions-add-on-cache'
     # refers to add-ons listed in GitlabSubscriptions::AddOn::DUO_ADD_ONS
@@ -70,14 +70,14 @@ module Ai
       end
 
       # rubocop: disable Database/AvoidUsingPluckWithoutLimit -- limited to a single user's groups
-      def billable_gitlab_duo_pro_root_group_ids
+      def non_guest_root_group_ids
         return unless gitlab_com_subscription?
 
         Rails.cache.fetch(
-          ['users', id, BILLABLE_DUO_PRO_ROOT_GROUP_IDS_CACHE_KEY],
-          expires_in: BILLABLE_DUO_PRO_ROOT_GROUP_IDS_CACHE_PERIOD
+          ['users', id, NON_GUEST_ROOT_GROUP_IDS_CACHE_KEY],
+          expires_in: NON_GUEST_ROOT_GROUP_IDS_CACHE_PERIOD
         ) do
-          group_ids_from_project_authorizaton = Project.id_in(project_authorizations.non_guests.select(:project_id))
+          group_ids_from_project_authorization = Project.id_in(project_authorizations.non_guests.select(:project_id))
             .pluck(:namespace_id)
           group_ids_from_memberships = GroupMember.with_user(self).active.non_guests.pluck(:source_id)
           group_ids_from_linked_groups = GroupGroupLink.non_guests
@@ -85,7 +85,7 @@ module Ai
             .pluck(:shared_group_id)
 
           root_group_ids = Group.where(
-            id: group_ids_from_project_authorizaton | group_ids_from_memberships | group_ids_from_linked_groups
+            id: group_ids_from_project_authorization | group_ids_from_memberships | group_ids_from_linked_groups
           ).pluck(Arel.sql('traversal_ids[1]')).uniq
 
           banned_root_group_ids = ::Namespaces::NamespaceBan.where(user_id: id).pluck(:namespace_id)
@@ -125,7 +125,7 @@ module Ai
         allowed_to_use(...).namespace_ids
       end
 
-      def allowed_to_use(ai_feature, unit_primitive_name: nil, licensed_feature: :ai_features)
+      def allowed_to_use(ai_feature, unit_primitive_name: nil, licensed_feature: :ai_features, feature_setting: nil)
         amazon_q_response = check_amazon_q_feature(ai_feature)
         return amazon_q_response if amazon_q_response
 
@@ -133,7 +133,7 @@ module Ai
         feature_data = Gitlab::Llm::Utils::AiFeaturesCatalogue.search_by_name(ai_feature)
         return denied_response unless feature_data
 
-        unit_primitive = get_unit_primitive_model(unit_primitive_name || ai_feature)
+        unit_primitive = get_unit_primitive_model(unit_primitive_name || ai_feature, feature_setting: feature_setting)
         return denied_response unless unit_primitive
 
         # Access through Duo Pro and Duo Enterprise
@@ -153,15 +153,12 @@ module Ai
 
       private
 
-      def unit_primitive_is_self_hosted?(unit_primitive_name)
-        return false if ::Gitlab::Saas.feature_available?(:cloud_connector_static_catalog)
+      def get_unit_primitive_model(unit_primitive_name, feature_setting: nil)
+        unless ::Gitlab::Saas.feature_available?(:cloud_connector_static_catalog)
+          feature_setting ||= ::Ai::FeatureSetting.feature_for_unit_primitive(unit_primitive_name)
 
-        ::Ai::FeatureSetting.feature_for_unit_primitive(unit_primitive_name)&.self_hosted?
-      end
-
-      def get_unit_primitive_model(unit_primitive_name)
-        # Override unit_primitive_name for self-hosted models.
-        unit_primitive_name = :self_hosted_models if unit_primitive_is_self_hosted?(unit_primitive_name)
+          unit_primitive_name = :self_hosted_models if feature_setting&.self_hosted?
+        end
 
         Gitlab::CloudConnector::DataModel::UnitPrimitive.find_by_name(unit_primitive_name)
       end
@@ -244,7 +241,7 @@ module Ai
       end
 
       def groups_with_duo_core_enabled
-        Namespace.id_in(billable_gitlab_duo_pro_root_group_ids)
+        Namespace.id_in(non_guest_root_group_ids)
           .namespace_settings_with_duo_core_features_enabled
       end
 
@@ -287,7 +284,7 @@ module Ai
       def clear_group_with_ai_available_cache(ids)
         cache_keys_ai_features = Array.wrap(ids).map { |id| ["users", id, GROUP_WITH_AI_ENABLED_CACHE_KEY] }
         cache_keys_billable_duo_pro_group_ids = Array.wrap(ids).map do |id|
-          ["users", id, BILLABLE_DUO_PRO_ROOT_GROUP_IDS_CACHE_KEY]
+          ["users", id, NON_GUEST_ROOT_GROUP_IDS_CACHE_KEY]
         end
 
         cache_keys = cache_keys_ai_features + cache_keys_billable_duo_pro_group_ids

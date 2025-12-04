@@ -123,6 +123,18 @@ describe('ActivityToken', () => {
       expect(wrapper.findByTestId('activity-token-placeholder').text()).toBe('All activity');
     });
 
+    it('has a defaultValues function', () => {
+      expect(ActivityToken.defaultValues()).toEqual(['STILL_DETECTED']);
+    });
+
+    it('transforms the query params correctly', () => {
+      expect(ActivityToken.transformQueryParams([])).toBe('ALL');
+
+      expect(ActivityToken.transformQueryParams(['NO_LONGER_DETECTED', 'HAS_ISSUE'])).toBe(
+        'NO_LONGER_DETECTED,HAS_ISSUE',
+      );
+    });
+
     const baseOptions = [
       'All activity',
       'Still detected',

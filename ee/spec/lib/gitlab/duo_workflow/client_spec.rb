@@ -190,6 +190,25 @@ RSpec.describe Gitlab::DuoWorkflow::Client, feature_category: :duo_agent_platfor
         expect(described_class.cloud_connector_headers(user: user)).to eq(expected_headers)
       end
     end
+
+    context 'when feature_setting is provided' do
+      let_it_be(:model) do
+        create(:ai_self_hosted_model, model: :claude_3, identifier: 'claude-3-7-sonnet-20250219')
+      end
+
+      let_it_be(:duo_agent_platform_feature_setting) do
+        create(:ai_feature_setting, :duo_agent_platform, self_hosted_model: model)
+      end
+
+      it 'passes feature_setting to cloud_connector_token' do
+        expect(described_class).to receive(:cloud_connector_token).with(
+          user: user,
+          feature_setting: duo_agent_platform_feature_setting
+        ).and_return(token)
+
+        described_class.cloud_connector_headers(user: user, feature_setting: duo_agent_platform_feature_setting)
+      end
+    end
   end
 
   describe '.cloud_connector_token' do
@@ -205,10 +224,31 @@ RSpec.describe Gitlab::DuoWorkflow::Client, feature_category: :duo_agent_platfor
     it 'gets token with correct parameters' do
       expect(::CloudConnector::Tokens).to receive(:get).with(
         unit_primitive: :duo_agent_platform,
+        feature_setting: nil,
         resource: user
       )
 
       expect(described_class.cloud_connector_token(user: user)).to eq(token)
+    end
+
+    context 'when feature_setting is provided' do
+      let_it_be(:self_hosted_model) do
+        create(:ai_self_hosted_model, model: :claude_3, identifier: 'claude-3-7-sonnet-20250219')
+      end
+
+      let_it_be(:feature_setting) do
+        create(:ai_feature_setting, :duo_agent_platform, self_hosted_model: self_hosted_model)
+      end
+
+      it 'passes feature_setting to CloudConnector::Tokens.get' do
+        expect(::CloudConnector::Tokens).to receive(:get).with(
+          unit_primitive: :duo_agent_platform,
+          feature_setting: feature_setting,
+          resource: user
+        ).and_return(token)
+
+        expect(described_class.cloud_connector_token(user: user, feature_setting: feature_setting)).to eq(token)
+      end
     end
   end
 

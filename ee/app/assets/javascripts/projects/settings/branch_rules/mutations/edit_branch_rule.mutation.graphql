@@ -9,6 +9,7 @@ mutation editBrachRuleEE($input: BranchRuleUpdateInput!) {
         allowForcePush
         codeOwnerApprovalRequired
         modificationBlockedByPolicy
+        protectedFromPushBySecurityPolicy @gl_introduced(version: "18.7.0")
         mergeAccessLevels {
           nodes {
             accessLevel

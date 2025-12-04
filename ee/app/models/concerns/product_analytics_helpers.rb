@@ -6,6 +6,10 @@ module ProductAnalyticsHelpers
   EVENTS_PER_ADD_ON_PURCHASE = 1_000_000
   GITLAB_PRODUCT_ANALYTICS_DOMAIN = 'gl-product-analytics.com'
 
+  def self.ai_impact_dashboard_globally_available?
+    Gitlab::ClickHouse.globally_enabled_for_analytics?
+  end
+
   def product_analytics_enabled?
     return false unless ::Gitlab::CurrentSettings.product_analytics_enabled?
 
@@ -43,7 +47,7 @@ module ProductAnalyticsHelpers
   end
 
   def ai_impact_dashboard_available_for?(user)
-    return false unless Gitlab::ClickHouse.globally_enabled_for_analytics?
+    return false unless ProductAnalyticsHelpers.ai_impact_dashboard_globally_available?
 
     Ability.allowed?(user, :read_enterprise_ai_analytics, self)
   end

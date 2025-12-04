@@ -38,21 +38,7 @@ module Ai
         end
 
         def connection
-          if Ai::ActiveContext::Connection::ADAPTERS_FOR_ADVANCED_SEARCH.include?(adapter.class)
-            return elasticsearch_connection_options
-          end
-
-          adapter.connection.options
-        end
-
-        # gitlab-elasticsearch-indexer requires connection as { url: ['string1', 'string2'] }
-        # This method converts various URL formats into the required string array format.
-        def elasticsearch_connection_options
-          urls = Array(adapter.connection.options.symbolize_keys[:url]).map do |url|
-            url.is_a?(Hash) ? Addressable::URI.new(url.symbolize_keys).normalize.to_s : url
-          end
-
-          { url: urls }
+          adapter.indexer_connection_options
         end
 
         def base_options

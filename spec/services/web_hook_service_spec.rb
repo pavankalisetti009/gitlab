@@ -403,7 +403,7 @@ RSpec.describe WebHookService, :request_store, :clean_gitlab_redis_shared_state,
       it 'handles exceptions' do
         expect(service_instance.execute).to have_attributes(
           status: :error,
-          message: 'bad URI(is not URI?): "http://server.com/my path/"'
+          message: 'bad URI (is not URI?): "http://server.com/my path/"'
         )
         expect { service_instance.execute }.not_to raise_error
       end
@@ -899,6 +899,20 @@ RSpec.describe WebHookService, :request_store, :clean_gitlab_redis_shared_state,
             end.to raise_error(Gitlab::SidekiqMiddleware::SizeLimiter::ExceedLimitError)
           end
         end
+      end
+    end
+
+    describe 'max response size' do
+      before do
+        stub_application_setting(max_http_response_size_limit: 1)
+        stub_full_request(project_hook.url, method: :post)
+      end
+
+      it 'sets max_bytes to max_http_response_size_limit' do
+        expect(Gitlab::HTTP).to receive(:post).with(project_hook.url,
+          hash_including(max_bytes: 1.megabyte)).and_call_original
+
+        service_instance.execute
       end
     end
   end

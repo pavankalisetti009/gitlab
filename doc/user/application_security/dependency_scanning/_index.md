@@ -52,10 +52,7 @@ table.no-vertical-table-lines tr {
 
 {{< alert type="warning" >}}
 
-The dependency scanning feature based on the Gemnasium analyzer is deprecated in GitLab 17.9 and is planned for removal in
-GitLab 19.0. It is being replaced with [dependency scanning using SBOM](dependency_scanning_sbom/_index.md)
-and the [new dependency scanning analyzer](https://gitlab.com/gitlab-org/security-products/analyzers/dependency-scanning).
-For more information, see [epic 15961](https://gitlab.com/groups/gitlab-org/-/epics/15961).
+The dependency scanning feature based on the Gemnasium analyzer is deprecated in GitLab 17.9 and is proposed for removal in GitLab 20.0. However, the removal timeline is not finalized, and you can continue using Gemnasium as needed. For more information, see [epic 15961](https://gitlab.com/groups/gitlab-org/-/epics/15961).
 
 {{< /alert >}}
 
@@ -474,7 +471,7 @@ The following languages and dependency managers are supported by dependency scan
       <td>N</td>
     </tr>
     <tr>
-      <td>Cocoapods<sup>9</sup></td>
+      <td>CocoaPods<sup>9</sup></td>
       <td>All versions</td>
       <td><a href="https://cocoapods.org/">CocoaPods</a></td>
       <td><code>Podfile.lock</code></td>
@@ -1281,7 +1278,7 @@ Follow these steps to modify the `settings.xml` file:
 1. Check if there's an existing `<pluginRepositories>` section in the file.
 
 1. If a `<pluginRepositories>` section already exists, add only the following `<pluginRepository>` element inside it.
-Otherwise, add the entire `<pluginRepositories>` section:
+   Otherwise, add the entire `<pluginRepositories>` section:
 
    ```xml
      <pluginRepositories>

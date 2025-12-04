@@ -15,7 +15,7 @@ const DISMISSAL_REASON_VALUES = GROUPS[1].options.slice(1).map(({ value }) => va
 const dismissalReasonKeys = Object.keys(DISMISSAL_REASONS);
 
 export default {
-  defaultValues: [detected.searchParamValue, confirmed.searchParamValue],
+  defaultValues: () => [detected.searchParamValue, confirmed.searchParamValue],
   transformFilters: (filters) => {
     const dismissalReason = filters.filter((value) =>
       dismissalReasonKeys.includes(value.toLowerCase()),
@@ -29,6 +29,10 @@ export default {
       state,
       dismissalReason,
     };
+  },
+  transformQueryParams: (filters) => {
+    if (filters.length === 0) return ALL_STATUS_VALUE;
+    return filters.join(',');
   },
   components: {
     GlFilteredSearchToken,

@@ -1,4 +1,4 @@
-import { GlSprintf } from '@gitlab/ui';
+import { GlSprintf, GlAlert } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import mockTimezones from 'test_fixtures/timezones/full.json';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
@@ -58,6 +58,7 @@ describe('ScheduleRuleComponent', () => {
   const findScheduleRuleDayDropDown = () => wrapper.findByTestId('rule-component-day');
   const findTimezoneDropdown = () => wrapper.findComponent(TimezoneDropdown);
   const findTimezoneLabel = () => wrapper.findByTestId('timezone-label');
+  const findTimeWindowWarning = () => wrapper.findComponent(GlAlert);
 
   describe('select branch scope', () => {
     beforeEach(() => {
@@ -246,6 +247,51 @@ describe('ScheduleRuleComponent', () => {
           },
         ],
       ]);
+    });
+  });
+
+  describe('time window warning', () => {
+    it('shows warning when time_window is not set', () => {
+      createComponent({
+        initRule: {
+          type: SCAN_EXECUTION_SCHEDULE_RULE,
+          branches: [],
+          cadence: CRON_DEFAULT_TIME,
+        },
+      });
+
+      expect(findTimeWindowWarning().exists()).toBe(true);
+      expect(findTimeWindowWarning().props('variant')).toBe('warning');
+      expect(findTimeWindowWarning().props('dismissible')).toBe(false);
+      expect(findTimeWindowWarning().text()).toContain(
+        'A time window is not set. Setting a time window helps distribute scheduled scans and reduces the load on runner infrastructure. We recommend a time window of at least 6 hours.',
+      );
+    });
+
+    it('shows warning when time_window value is not set', () => {
+      createComponent({
+        initRule: {
+          type: SCAN_EXECUTION_SCHEDULE_RULE,
+          branches: [],
+          cadence: CRON_DEFAULT_TIME,
+          time_window: { distribution: 'random' },
+        },
+      });
+
+      expect(findTimeWindowWarning().exists()).toBe(true);
+    });
+
+    it('does not show warning when time_window is properly set', () => {
+      createComponent({
+        initRule: {
+          type: SCAN_EXECUTION_SCHEDULE_RULE,
+          branches: [],
+          cadence: CRON_DEFAULT_TIME,
+          time_window: { distribution: 'random', value: 36000 },
+        },
+      });
+
+      expect(findTimeWindowWarning().exists()).toBe(false);
     });
   });
 });

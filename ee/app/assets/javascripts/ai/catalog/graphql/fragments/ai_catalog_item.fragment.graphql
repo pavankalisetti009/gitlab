@@ -3,7 +3,12 @@ fragment BaseAiCatalogItem on AiCatalogItem {
   createdAt
   itemType
   description
-  foundationalChat @gl_introduced(version: "18.7.0")
+  ... on AiCatalogAgent {
+    foundational @gl_introduced(version: "18.7.0")
+  }
+  ... on AiCatalogFlow {
+    foundational @gl_introduced(version: "18.7.0")
+  }
   name
   public
   updatedAt
@@ -14,6 +19,7 @@ fragment BaseAiCatalogItem on AiCatalogItem {
   userPermissions {
     adminAiCatalogItem
     reportAiCatalogItem
+    forceHardDeleteAiCatalogItem
   }
   __typename
 }

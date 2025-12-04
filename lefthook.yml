@@ -156,9 +156,19 @@ pre-push:
       files: git diff --name-only --diff-filter=d $(git merge-base origin/master HEAD)..HEAD
       glob: '{config/authz/permissions/*.yml,app/policies/*,rb.ee/app/policies/*.rb}'
       run: bundle exec rake gitlab:permissions:validate
+    observed-feature-flags:
+      tags: backend
+      files: git diff --name-only --diff-filter=d $(git merge-base origin/master HEAD)..HEAD
+      glob: '{config/feature_flags/**/*.yml,ee/config/feature_flags/**/*.yml}'
+      run: scripts/validate_observed_feature_flags
     check-deprecated-files:
       tags: backend frontend view haml
       run: scripts/lint/check_deprecated_files.rb
+    validate-fast-spec-helper:
+      tags: backend test
+      files: git diff --name-only --diff-filter=A $(git merge-base origin/master HEAD)..HEAD
+      glob: '{spec,ee/spec}/**/*_spec.rb'
+      run: scripts/lint/validate_fast_spec_helper_usage.rb
 
   scripts:
     'merge_conflicts':
@@ -226,7 +236,6 @@ pre-commit:
     type-check-fe-islands:
       tags: frontend
       root: ee/frontend_islands
-      files: git diff --name-only --diff-filter=d --staged
       glob: 'ee/frontend_islands/apps/**/*.{ts,vue}'
       run: 'yarn run lint:types'
 

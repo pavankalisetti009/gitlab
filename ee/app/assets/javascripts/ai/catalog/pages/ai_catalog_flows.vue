@@ -1,41 +1,28 @@
 <script>
-import { GlFilteredSearch } from '@gitlab/ui';
-import { s__, sprintf } from '~/locale';
 import { fetchPolicies } from '~/lib/graphql';
 import {
   VISIBILITY_LEVEL_PUBLIC_STRING,
   VISIBILITY_LEVEL_PRIVATE_STRING,
 } from '~/visibility_level/constants';
-import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
-import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
-import { FILTERED_SEARCH_TERM } from '~/vue_shared/components/filtered_search_bar/constants';
 import { InternalEvents } from '~/tracking';
 import aiCatalogFlowsQuery from '../graphql/queries/ai_catalog_flows.query.graphql';
-import createAiCatalogItemConsumer from '../graphql/mutations/create_ai_catalog_item_consumer.mutation.graphql';
 import AiCatalogListHeader from '../components/ai_catalog_list_header.vue';
-import AiCatalogList from '../components/ai_catalog_list.vue';
-import AiCatalogItemConsumerModal from '../components/ai_catalog_item_consumer_modal.vue';
+import AiCatalogListWrapper from '../components/ai_catalog_list_wrapper.vue';
 import { AI_CATALOG_FLOWS_SHOW_ROUTE } from '../router/constants';
 import {
-  AI_CATALOG_CONSUMER_TYPE_GROUP,
-  AI_CATALOG_CONSUMER_TYPE_PROJECT,
-  AI_CATALOG_CONSUMER_LABELS,
   FLOW_VISIBILITY_LEVEL_DESCRIPTIONS,
   PAGE_SIZE,
   TRACK_EVENT_VIEW_AI_CATALOG_ITEM_INDEX,
   TRACK_EVENT_TYPE_FLOW,
 } from '../constants';
-import { createAvailableFlowItemTypes, prerequisitesError } from '../utils';
+import { createAvailableFlowItemTypes } from '../utils';
 
 export default {
   name: 'AiCatalogFlows',
   components: {
-    AiCatalogList,
+    AiCatalogListWrapper,
     AiCatalogListHeader,
-    AiCatalogItemConsumerModal,
-    ErrorsAlert,
-    GlFilteredSearch,
   },
   mixins: [glFeatureFlagsMixin(), InternalEvents.mixin()],
   apollo: {
@@ -61,9 +48,6 @@ export default {
   data() {
     return {
       aiCatalogFlows: [],
-      aiCatalogFlowToBeAdded: null,
-      errors: [],
-      errorTitle: null,
       pageInfo: {},
       searchTerm: '',
     };
@@ -92,14 +76,6 @@ export default {
         },
       };
     },
-    filteredSearchValue() {
-      return [
-        {
-          type: FILTERED_SEARCH_TERM,
-          value: { data: this.searchTerm },
-        },
-      ];
-    },
   },
   mounted() {
     this.trackEvent(TRACK_EVENT_VIEW_AI_CATALOG_ITEM_INDEX, {
@@ -107,59 +83,6 @@ export default {
     });
   },
   methods: {
-    setAiCatalogFlowToBeAdded(flow = null) {
-      this.aiCatalogFlowToBeAdded = flow;
-    },
-    async addFlowToTarget(target) {
-      const flow = this.aiCatalogFlowToBeAdded;
-
-      const input = {
-        itemId: flow.id,
-        target,
-      };
-      const targetType = target.groupId
-        ? AI_CATALOG_CONSUMER_TYPE_GROUP
-        : AI_CATALOG_CONSUMER_TYPE_PROJECT;
-      const targetTypeLabel = AI_CATALOG_CONSUMER_LABELS[targetType];
-
-      this.setAiCatalogFlowToBeAdded(null);
-
-      try {
-        const { data } = await this.$apollo.mutate({
-          mutation: createAiCatalogItemConsumer,
-          variables: {
-            input,
-          },
-        });
-
-        if (data) {
-          const { errors } = data.aiCatalogItemConsumerCreate;
-          if (errors.length > 0) {
-            this.errorTitle = sprintf(s__('AICatalog|Could not enable flow: %{flowName}'), {
-              flowName: flow.name,
-            });
-            this.errors = errors;
-            return;
-          }
-
-          const name = data.aiCatalogItemConsumerCreate.itemConsumer[targetType]?.name || '';
-
-          this.$toast.show(sprintf(s__('AICatalog|Flow enabled in %{name}.'), { name }));
-        }
-      } catch (error) {
-        this.errors = [
-          prerequisitesError(
-            s__(
-              'AICatalog|Could not enable flow in the %{target}. Check that the %{target} meets the %{linkStart}prerequisites%{linkEnd} and try again.',
-            ),
-            {
-              target: targetTypeLabel,
-            },
-          ),
-        ];
-        Sentry.captureException(error);
-      }
-    },
     handleNextPage() {
       this.$apollo.queries.aiCatalogFlows.refetch({
         ...this.$apollo.queries.aiCatalogFlows.variables,
@@ -184,10 +107,6 @@ export default {
     handleClearSearch() {
       this.searchTerm = '';
     },
-    dismissErrors() {
-      this.errors = [];
-      this.errorTitle = null;
-    },
   },
 };
 </script>
@@ -195,32 +114,16 @@ export default {
 <template>
   <div>
     <ai-catalog-list-header />
-    <errors-alert class="gl-mt-5" :title="errorTitle" :errors="errors" @dismiss="dismissErrors" />
 
-    <div class="gl-border-b gl-bg-subtle gl-p-5">
-      <gl-filtered-search
-        :value="filteredSearchValue"
-        @submit="handleSearch"
-        @clear="handleClearSearch"
-      />
-    </div>
-
-    <ai-catalog-list
+    <ai-catalog-list-wrapper
       :is-loading="isLoading"
       :items="aiCatalogFlows"
       :item-type-config="itemTypeConfig"
       :page-info="pageInfo"
-      :search="searchTerm"
       @next-page="handleNextPage"
       @prev-page="handlePrevPage"
-    />
-    <ai-catalog-item-consumer-modal
-      v-if="aiCatalogFlowToBeAdded"
-      :item="aiCatalogFlowToBeAdded"
-      :show-add-to-group="isFlowsAvailable"
-      open
-      @submit="addFlowToTarget"
-      @hide="setAiCatalogFlowToBeAdded(null)"
+      @search="handleSearch"
+      @clear-search="handleClearSearch"
     />
   </div>
 </template>

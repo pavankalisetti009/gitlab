@@ -389,6 +389,8 @@ module ApplicationSettingsHelper
       :max_github_response_json_value_count,
       :max_http_decompressed_size,
       :max_http_response_size_limit,
+      :max_http_response_json_depth,
+      :max_http_response_json_structural_chars,
       :max_import_size,
       :max_import_remote_file_size,
       :max_login_attempts,
@@ -578,6 +580,7 @@ module ApplicationSettingsHelper
       :group_runner_token_expiration_interval,
       :project_runner_token_expiration_interval,
       :pipeline_limit_per_project_user_sha,
+      :pipeline_limit_per_user,
       :invitation_flow_enforcement,
       :can_create_group,
       :can_create_organization,
@@ -650,7 +653,8 @@ module ApplicationSettingsHelper
       :resource_usage_limits,
       :runner_jobs_request_api_limit,
       :runner_jobs_patch_trace_api_limit,
-      :runner_jobs_endpoints_api_limit
+      :runner_jobs_endpoints_api_limit,
+      :background_operations_max_jobs
     ].tap do |settings|
       unless Gitlab.com?
         settings << :deactivate_dormant_users

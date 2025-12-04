@@ -11,6 +11,7 @@ import { ComplianceViolationStatusDropdown } from 'ee/vue_shared/compliance';
 import ComplianceFrameworkBadge from 'ee/compliance_dashboard/components/shared/framework_badge.vue';
 import groupComplianceViolationsQuery from 'ee/compliance_violations/graphql/compliance_violations.query.graphql';
 import updateProjectComplianceViolation from 'ee/compliance_violations/graphql/mutations/update_project_compliance_violation.mutation.graphql';
+import complianceRequirementControlsQuery from 'ee/compliance_dashboard/graphql/compliance_requirement_controls.query.graphql';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
@@ -218,6 +219,14 @@ describe('ComplianceViolationsReportV2 component', () => {
 
   const tableRows = () => wrapper.findAll('tbody tr');
 
+  const mockControlDefinitionsResponse = {
+    data: {
+      complianceRequirementControls: {
+        controlExpressions: [],
+      },
+    },
+  };
+
   const createMockApolloProvider = (
     resolverMock = mockGraphQlLoading,
     mutationMock = mockUpdateMutationSuccess,
@@ -225,6 +234,10 @@ describe('ComplianceViolationsReportV2 component', () => {
     return createMockApollo([
       [groupComplianceViolationsQuery, resolverMock],
       [updateProjectComplianceViolation, mutationMock],
+      [
+        complianceRequirementControlsQuery,
+        jest.fn().mockResolvedValue(mockControlDefinitionsResponse),
+      ],
     ]);
   };
 
@@ -280,6 +293,7 @@ describe('ComplianceViolationsReportV2 component', () => {
         first: VIOLATION_PAGE_SIZE,
         after: null,
         before: null,
+        filters: undefined,
       });
     });
   });
@@ -499,14 +513,13 @@ describe('ComplianceViolationsReportV2 component', () => {
     });
 
     it('shows success toast when mutation succeeds', async () => {
-      const mockToast = { show: jest.fn() };
-      wrapper.vm.$toast = mockToast;
+      const showSpy = jest.spyOn(wrapper.vm.$toast, 'show');
 
       const statusDropdown = findStatusDropdown();
       statusDropdown.vm.$emit('change', 'resolved');
       await waitForPromises();
 
-      expect(mockToast.show).toHaveBeenCalledWith('Violation status updated successfully.', {
+      expect(showSpy).toHaveBeenCalledWith('Violation status updated successfully.', {
         variant: 'success',
       });
     });
@@ -519,17 +532,15 @@ describe('ComplianceViolationsReportV2 component', () => {
       });
       await waitForPromises();
 
-      const mockToast = { show: jest.fn() };
-      wrapper.vm.$toast = mockToast;
+      const showSpy = jest.spyOn(wrapper.vm.$toast, 'show');
 
       const statusDropdown = findStatusDropdown();
       statusDropdown.vm.$emit('change', 'resolved');
       await waitForPromises();
 
-      expect(mockToast.show).toHaveBeenCalledWith(
-        'Failed to update violation status. Please try again.',
-        { variant: 'danger' },
-      );
+      expect(showSpy).toHaveBeenCalledWith('Failed to update violation status. Please try again.', {
+        variant: 'danger',
+      });
     });
 
     it('shows error toast when mutation returns errors', async () => {
@@ -550,17 +561,15 @@ describe('ComplianceViolationsReportV2 component', () => {
       });
       await waitForPromises();
 
-      const mockToast = { show: jest.fn() };
-      wrapper.vm.$toast = mockToast;
+      const showSpy = jest.spyOn(wrapper.vm.$toast, 'show');
 
       const statusDropdown = findStatusDropdown();
       statusDropdown.vm.$emit('change', 'resolved');
       await waitForPromises();
 
-      expect(mockToast.show).toHaveBeenCalledWith(
-        'Failed to update violation status. Please try again.',
-        { variant: 'danger' },
-      );
+      expect(showSpy).toHaveBeenCalledWith('Failed to update violation status. Please try again.', {
+        variant: 'danger',
+      });
     });
 
     it('resets loading state even when mutation fails', async () => {
@@ -823,13 +832,13 @@ describe('ComplianceViolationsReportV2 component', () => {
       );
     });
 
-    it('returns original name when control name not found in statusesInfo', () => {
+    it('returns formatted name when control name not found in statusesInfo', () => {
       const control = {
         name: 'unknown_control_name',
       };
 
       const result = wrapper.vm.getComplianceControlTitle(control);
-      expect(result).toBe('unknown_control_name');
+      expect(result).toBe('Unknown control name');
     });
 
     it('returns "Invalid control" when control is null or undefined', () => {
@@ -891,7 +900,7 @@ describe('ComplianceViolationsReportV2 component', () => {
       };
 
       const result = wrapper.vm.getComplianceControlTitle(control);
-      expect(result).toBe('test_control_null_fixes');
+      expect(result).toBe('Test control null fixes');
     });
 
     it('handles statusInfo with empty fixes array', () => {
@@ -903,7 +912,7 @@ describe('ComplianceViolationsReportV2 component', () => {
       };
 
       const result = wrapper.vm.getComplianceControlTitle(control);
-      expect(result).toBe('test_control_empty_fixes');
+      expect(result).toBe('Test control empty fixes');
     });
 
     it('handles statusInfo with fixes[0] but no linkTitle', () => {
@@ -920,7 +929,7 @@ describe('ComplianceViolationsReportV2 component', () => {
       };
 
       const result = wrapper.vm.getComplianceControlTitle(control);
-      expect(result).toBe('test_control_no_link_title');
+      expect(result).toBe('Test control no link title');
     });
 
     it('handles statusInfo with title as null', () => {
@@ -938,7 +947,7 @@ describe('ComplianceViolationsReportV2 component', () => {
       };
 
       const result = wrapper.vm.getComplianceControlTitle(control);
-      expect(result).toBe('test_control_null_link_title');
+      expect(result).toBe('Test control null link title');
     });
   });
 

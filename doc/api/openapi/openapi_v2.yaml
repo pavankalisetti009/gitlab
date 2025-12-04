@@ -8348,7 +8348,9 @@ paths:
         '200':
           description: List group merge requests
           schema:
-            "$ref": "#/definitions/API_Entities_MergeRequestBasic"
+            type: array
+            items:
+              "$ref": "#/definitions/API_Entities_MergeRequestBasic"
         '401':
           description: Unauthorized
         '404':
@@ -9029,13 +9031,26 @@ paths:
         type: boolean
         required: false
       - in: query
+        name: include_archived
+        description: Includes archived projects in the search.
+        type: boolean
+        default: false
+        required: false
+      - in: query
         name: fields
-        description: Array of fields you wish to search
+        description: Array of fields you wish to search. Available with advanced search.
         type: array
         items:
           type: string
           enum:
           - title
+        required: false
+      - in: query
+        name: exclude_forks
+        description: Excludes forked projects in the search. Available with exact
+          code search.
+        type: boolean
+        default: true
         required: false
       - in: query
         name: page
@@ -11030,6 +11045,13 @@ paths:
         description: To be used with triggers for multi-project pipelines, available
           only on Premium and Ultimate tiers.
         type: string
+        required: false
+      - in: query
+        name: search_recent_successful_pipelines
+        description: Search across recent successful pipelines instead of just the
+          latest one.
+        type: boolean
+        default: false
         required: false
       responses:
         '200':
@@ -27276,7 +27298,9 @@ paths:
         '200':
           description: List project merge requests
           schema:
-            "$ref": "#/definitions/API_Entities_MergeRequestBasic"
+            type: array
+            items:
+              "$ref": "#/definitions/API_Entities_MergeRequestBasic"
         '401':
           description: Unauthorized
         '404':
@@ -38360,7 +38384,7 @@ paths:
         required: false
       - in: query
         name: fields
-        description: Array of fields you wish to search
+        description: Array of fields you wish to search. Available with advanced search.
         type: array
         items:
           type: string
@@ -44877,7 +44901,9 @@ paths:
         '200':
           description: List merge requests
           schema:
-            "$ref": "#/definitions/API_Entities_MergeRequestBasic"
+            type: array
+            items:
+              "$ref": "#/definitions/API_Entities_MergeRequestBasic"
         '401':
           description: Unauthorized
         '422':
@@ -45544,13 +45570,26 @@ paths:
         type: boolean
         required: false
       - in: query
+        name: include_archived
+        description: Includes archived projects in the search.
+        type: boolean
+        default: false
+        required: false
+      - in: query
         name: fields
-        description: Array of fields you wish to search
+        description: Array of fields you wish to search. Available with advanced search.
         type: array
         items:
           type: string
           enum:
           - title
+        required: false
+      - in: query
+        name: exclude_forks
+        description: Excludes forked projects in the search. Available with exact
+          code search.
+        type: boolean
+        default: true
         required: false
       - in: query
         name: page
@@ -52766,6 +52805,8 @@ definitions:
       admin_web_hook:
         type: boolean
       read_compliance_dashboard:
+        type: boolean
+      read_security_scan_profiles:
         type: boolean
       read_admin_cicd:
         type: boolean

@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-RSpec.describe EE::Users::CalloutsHelper do
+RSpec.describe EE::Users::CalloutsHelper, feature_category: :user_management do
   include Devise::Test::ControllerHelpers
   using RSpec::Parameterized::TableSyntax
 
@@ -127,6 +127,8 @@ RSpec.describe EE::Users::CalloutsHelper do
     end
 
     context 'when feature flag is enabled', :do_not_mock_admin_mode_setting do
+      let(:group) { create(:group) }
+
       where(:seat_control_user_cap, :new_user_signups_cap, :active_user_count, :result) do
         false | nil | 10 | false
         true  | 10  | 9  | false
@@ -137,7 +139,14 @@ RSpec.describe EE::Users::CalloutsHelper do
       with_them do
         before do
           allow(helper).to receive(:current_user).and_return(admin)
-          allow(User.billable).to receive(:count).and_return(active_user_count)
+
+          group.add_owner(admin)
+
+          (active_user_count - 1).times do
+            user = create(:user)
+            group.add_guest(user)
+          end
+
           allow(Gitlab::CurrentSettings.current_application_settings)
             .to receive(:new_user_signups_cap).and_return(new_user_signups_cap)
           allow(Gitlab::CurrentSettings.current_application_settings)

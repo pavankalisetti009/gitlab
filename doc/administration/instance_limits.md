@@ -312,11 +312,16 @@ There is a limit when embedding metrics in GitLab Flavored Markdown (GLFM) for p
 
 ### Maximum Gzip-compressed size
 
-This setting is used to restrict the maximum allowed size in MiB for Gzip-compressed
-HTTP responses after decompression to prevent DoS.
+{{< history >}}
+
+- Introduced in GitLab 17.10.
+
+{{< /history >}}
+
+This setting restricts the maximum allowed size in MiB for Gzip-compressed
+HTTP responses after decompression.
 
 The default maximum size is 100 MiB. To disable this limit, set the value to 0.
-If the value is too high, it could expose the instance to DoS attacks.
 
 You can change this limit by using the GitLab Rails console or use
 [application setting API](../api/settings.md)
@@ -325,13 +330,18 @@ You can change this limit by using the GitLab Rails console or use
  ApplicationSetting.update(max_http_decompressed_size: 50)
  ```
 
-### Maximum HTTP responses size
+### Maximum HTTP responses size from outbound requests
 
-This setting is used to restrict the maximum allowed size in MiB for decompressed
-HTTP responses to prevent DoS. It applies to integrations, importers, and webhooks.
+{{< history >}}
+
+- Introduced in GitLab 17.10.
+
+{{< /history >}}
+
+This setting restricts the maximum allowed size in MiB for decompressed
+HTTP responses. It applies to integrations, importers, and webhooks.
 
 The default maximum size is 100 MiB. To disable this limit, set the value to 0.
-If the value is too high, it could expose the instance to DoS attacks.
 
 You can change this limit by using the GitLab Rails console or use
 [application setting API](../api/settings.md)
@@ -339,6 +349,47 @@ You can change this limit by using the GitLab Rails console or use
  ```ruby
  ApplicationSetting.update(max_http_response_size_limit: 60)
  ```
+
+### Maximum allowed object count in JSON HTTP responses from outbound requests
+
+{{< history >}}
+
+- Introduced in GitLab 18.4.
+
+{{< /history >}}
+
+This setting restricts the maximum allowed object count in JSON HTTP
+responses from outbound requests. The number of objects is estimated based on
+the number of occurrences of `:`, `,`, `{`, and `[` in the response.
+
+The default maximum count is 1,000,000 objects. To disable this limit, set the value to 0.
+
+You can change this limit by using the GitLab Rails console or use the
+[application setting API](../api/settings.md):
+
+```ruby
+ApplicationSetting.update(max_http_response_json_structural_chars: 500000)
+```
+
+### Maximum allowed nesting depth in JSON HTTP responses from outbound requests
+
+{{< history >}}
+
+- Introduced in GitLab 18.4.
+
+{{< /history >}}
+
+This setting restricts the maximum allowed nesting depth in JSON HTTP
+responses from outbound requests.
+
+The default maximum nesting depth is 32.
+
+You can change this limit by using the GitLab Rails console or use the
+[application setting API](../api/settings.md):
+
+```ruby
+ApplicationSetting.update(max_http_response_json_depth: 100)
+```
 
 ## HTTP request limits
 
@@ -1482,6 +1533,15 @@ The [changelog API](../api/repositories.md#add-changelog-data-to-file) enforces 
 ### Amazon S3
 
 - Each top-level group can have a maximum of 5 Amazon S3 streaming destinations.
+
+## Dependency Scanning using SBOM limits
+
+The [dependency scanning using SBOM feature](../user/application_security/dependency_scanning/dependency_scanning_sbom/_index.md) uses an internal API with the following limits:
+
+- Maximum number of upload requests per project per hour: 400
+- Maximum number of download requests per project per hour: 6000
+
+You can configure these limits for GitLab Self-Managed instances using [the Dependency Scanning settings](settings/security_and_compliance.md#sbom-scan-api-limits).
 
 ## List all instance limits
 

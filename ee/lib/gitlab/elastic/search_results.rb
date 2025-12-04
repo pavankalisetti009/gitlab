@@ -338,14 +338,7 @@ module Gitlab
       end
 
       def add_related_ids(options, name)
-        search_feature_enabled = case name
-                                 when MergeRequest.name
-                                   Feature.enabled?(:search_merge_request_queries_notes, current_user)
-                                 when Issue.name
-                                   true
-                                 else
-                                   false
-                                 end
+        search_feature_enabled = [MergeRequest.name, Issue.name].include?(name)
 
         if search_feature_enabled && !::Gitlab::Saas.feature_available?(:advanced_search)
           options[:related_ids] = related_ids_for_notes(name)

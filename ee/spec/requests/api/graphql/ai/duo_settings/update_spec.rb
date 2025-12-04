@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted_models" do
   include GraphqlHelpers
+  using RSpec::Parameterized::TableSyntax
 
   let_it_be_with_reload(:current_user) { create(:admin) }
   let_it_be(:license) { create(:license, plan: License::ULTIMATE_PLAN) }
@@ -99,6 +100,30 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
           expect(graphql_errors.pluck('message')).to match_array(
             "You don't have permission to update the setting duo_core_features_enabled."
           )
+        end
+      end
+
+      context 'when attempting to update ai minimum access level settings' do
+        where(:permission) do
+          %i[
+            minimum_access_level_execute
+            minimum_access_level_manage
+            minimum_access_level_enable_on_projects
+          ]
+        end
+
+        with_them do
+          let(:mutation_params) { { permission => ::Gitlab::Access::DEVELOPER } }
+
+          it 'returns an error about the missing permission' do
+            request
+
+            expect(duo_settings.reload.public_send(permission)).to be_nil
+            expect(graphql_errors).to be_present
+            expect(graphql_errors.pluck('message')).to match_array(
+              "You don't have permission to update the setting #{permission}."
+            )
+          end
         end
       end
     end
@@ -276,6 +301,90 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
 
             expect { duo_settings.reload }.to change { duo_settings.ai_gateway_url }.to('http://new-ai-gateway-url')
               .and not_change { duo_settings.duo_core_features_enabled }
+          end
+        end
+
+        context 'when updating minimum_access_level_execute' do
+          let(:mutation_params) { { minimum_access_level_execute: ::Gitlab::Access::DEVELOPER } }
+
+          it 'updates the field' do
+            request
+
+            result = json_response['data']['duoSettingsUpdate']
+
+            expect(duo_settings.reload.minimum_access_level_execute).to eq(::Gitlab::Access::DEVELOPER)
+            expect(result['duoSettings']).to include(
+              'minimumAccessLevelExecute' => ::Gitlab::Access::DEVELOPER
+            )
+          end
+
+          it 'does not update the field when the feature flag is disabled' do
+            stub_feature_flags(dap_instance_customizable_permissions: false)
+
+            request
+
+            result = json_response['data']['duoSettingsUpdate']
+
+            expect(duo_settings.reload.minimum_access_level_execute).to be_nil
+            expect(result['duoSettings']).to include(
+              'minimumAccessLevelExecute' => nil
+            )
+          end
+        end
+
+        context 'when updating minimum_access_level_manage' do
+          let(:mutation_params) { { minimum_access_level_manage: ::Gitlab::Access::DEVELOPER } }
+
+          it 'updates the field' do
+            request
+
+            result = json_response['data']['duoSettingsUpdate']
+
+            expect(duo_settings.reload.minimum_access_level_manage).to eq(::Gitlab::Access::DEVELOPER)
+            expect(result['duoSettings']).to include(
+              'minimumAccessLevelManage' => ::Gitlab::Access::DEVELOPER
+            )
+          end
+
+          it 'does not update the field when the feature flag is disabled' do
+            stub_feature_flags(dap_instance_customizable_permissions: false)
+
+            request
+
+            result = json_response['data']['duoSettingsUpdate']
+
+            expect(duo_settings.reload.minimum_access_level_manage).to be_nil
+            expect(result['duoSettings']).to include(
+              'minimumAccessLevelManage' => nil
+            )
+          end
+        end
+
+        context 'when updating minimum_access_level_enable_on_projects' do
+          let(:mutation_params) { { minimum_access_level_enable_on_projects: ::Gitlab::Access::MAINTAINER } }
+
+          it 'updates the field' do
+            request
+
+            result = json_response['data']['duoSettingsUpdate']
+
+            expect(duo_settings.reload.minimum_access_level_enable_on_projects).to eq(::Gitlab::Access::MAINTAINER)
+            expect(result['duoSettings']).to include(
+              'minimumAccessLevelEnableOnProjects' => ::Gitlab::Access::MAINTAINER
+            )
+          end
+
+          it 'does not update the field when the feature flag is disabled' do
+            stub_feature_flags(dap_instance_customizable_permissions: false)
+
+            request
+
+            result = json_response['data']['duoSettingsUpdate']
+
+            expect(duo_settings.reload.minimum_access_level_enable_on_projects).to be_nil
+            expect(result['duoSettings']).to include(
+              'minimumAccessLevelEnableOnProjects' => nil
+            )
           end
         end
       end

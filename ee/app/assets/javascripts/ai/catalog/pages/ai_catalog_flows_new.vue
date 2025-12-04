@@ -1,13 +1,12 @@
 <script>
 import { s__ } from '~/locale';
-import { createAlert } from '~/alert';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { AI_CATALOG_FLOWS_SHOW_ROUTE } from '../router/constants';
 import { FLOW_TYPE_APOLLO_CONFIG } from '../constants';
 import AiCatalogFlowForm from '../components/ai_catalog_flow_form.vue';
-import { prerequisitesPath, prerequisitesError } from '../utils';
+import { prerequisitesError } from '../utils';
 
 export default {
   name: 'AiCatalogFlowsNew',
@@ -38,18 +37,7 @@ export default {
         if (data) {
           const createResponse = data[config.responseKey];
           const { errors, item } = createResponse;
-          if (errors.length > 0 && item !== null) {
-            // created but not added to the project
-            createAlert({
-              message: s__(
-                'AICatalog|Could not enable flow in the project. Check that the project meets the %{linkStart}prerequisites%{linkEnd} and try again.',
-              ),
-              messageLinks: {
-                link: prerequisitesPath,
-              },
-            });
-          } else if (errors.length > 0 && item === null) {
-            // neither created nor added to the project
+          if (errors.length > 0) {
             this.errors = errors;
             return;
           }

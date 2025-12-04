@@ -124,5 +124,43 @@ RSpec.describe Sbom::Exporters::CsvService, feature_category: :dependency_manage
         end.to issue_same_number_of_queries_as(control).or_fewer
       end
     end
+
+    context 'when the group has an orphaned dependency' do
+      # Project shouldn't be nil, but occasionally an SbomOccurrence could be orphaned when
+      # a project is deleted.
+      # Tracked in https://gitlab.com/gitlab-org/gitlab/-/issues/541931
+      let_it_be(:kept_occurrence) { create(:sbom_occurrence, :mit, project: project) }
+      let_it_be(:orphaned_occurrence) do
+        # To simulate this, we start with a fully valid project...
+        occurrence = create(:sbom_occurrence, :apache_2, project: project)
+        # ...then we orphan the record by setting the project_id to a not-found value.
+        # project_id_seq starts from 1, so 0 is always invalid.
+        occurrence.project_id = 0
+        occurrence.save!(validate: false)
+        # We could do this by creating a project, associating it to the occurrence then
+        # deleting the project, but that was then cascading the delete to the occurrence
+        # (as it should!) which was making this test setup hard. This achieves the same
+        # end setup through a slightly different means.
+        occurrence
+      end
+
+      it 'includes each occurrence, with a nil blob_path for orphaned occurrences' do
+        expect(csv[0]['Name']).to eq(kept_occurrence.name)
+        expect(csv[0]['Version']).to eq(kept_occurrence.version)
+        expect(csv[0]['Packager']).to eq(kept_occurrence.package_manager)
+        expect(csv[0]['Location']).to eq(kept_occurrence.location[:blob_path])
+        expect(csv[0]['License Identifiers']).to eq('MIT')
+        expect(csv[0]['Project']).to eq(project.full_path)
+        expect(csv[0]['Vulnerabilities Detected']).to eq('0')
+
+        expect(csv[1]['Name']).to eq(orphaned_occurrence.name)
+        expect(csv[1]['Version']).to eq(orphaned_occurrence.version)
+        expect(csv[1]['Packager']).to eq(orphaned_occurrence.package_manager)
+        expect(csv[1]['Location']).to be_nil
+        expect(csv[1]['License Identifiers']).to eq('Apache-2.0')
+        expect(csv[1]['Project']).to be_nil
+        expect(csv[1]['Vulnerabilities Detected']).to eq('0')
+      end
+    end
   end
 end

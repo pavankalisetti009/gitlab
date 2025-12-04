@@ -11,6 +11,7 @@ import {
   DUO_WORKFLOW_WEBSOCKET_PARAM_USER_SELECTED_MODEL,
 } from 'ee/ai/constants';
 import { WorkflowUtils } from './workflow_utils';
+import { getMessagesToProcess } from './messages_utils';
 
 export function buildWebsocketUrl({
   rootNamespaceId,
@@ -61,6 +62,7 @@ export function buildStartRequest({
   additionalContext,
   agentConfig,
   metadata,
+  clientCapabilities = [],
 }) {
   const startRequest = {
     startRequest: {
@@ -68,6 +70,7 @@ export function buildStartRequest({
       clientVersion: DUO_WORKFLOW_CLIENT_VERSION,
       workflowDefinition: workflowDefinition || DUO_WORKFLOW_CHAT_DEFINITION,
       workflowMetadata: metadata,
+      clientCapabilities,
       goal,
       approval,
     },
@@ -85,7 +88,7 @@ export function buildStartRequest({
   return startRequest;
 }
 
-export async function processWorkflowMessage(event, workflowId) {
+export async function processWorkflowMessage(event, currentMessageId) {
   const action = await parseMessage(event);
 
   if (!action || !action.newCheckpoint) {
@@ -93,14 +96,17 @@ export async function processWorkflowMessage(event, workflowId) {
   }
 
   const checkpoint = JSON.parse(action.newCheckpoint.checkpoint);
-  const messages = WorkflowUtils.transformChatMessages(
+
+  const { toProcess, lastProcessedMessageId } = getMessagesToProcess(
     checkpoint.channel_values.ui_chat_log,
-    workflowId,
+    currentMessageId,
   );
+  const messages = WorkflowUtils.transformChatMessages(toProcess);
 
   return {
     messages,
     status: action.newCheckpoint.status,
     goal: action.newCheckpoint.goal,
+    lastProcessedMessageId,
   };
 }

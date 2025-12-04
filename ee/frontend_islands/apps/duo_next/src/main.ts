@@ -1,3 +1,5 @@
+/// <reference types="vite/client" />
+
 import { defineCustomElement } from 'vue';
 import CommunicationLayer from './CommunicationLayer.vue';
 import tailwind from './style.css?inline';

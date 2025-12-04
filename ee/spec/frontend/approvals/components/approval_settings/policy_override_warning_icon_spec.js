@@ -1,8 +1,9 @@
-import { GlPopover, GlSprintf, GlLink, GlIcon } from '@gitlab/ui';
+import { GlPopover, GlIcon } from '@gitlab/ui';
 import Vue from 'vue';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import PolicyOverrideText from 'ee/approvals/components/approval_settings/policy_override_text.vue';
 import PolicyOverrideWarningIcon from 'ee/approvals/components/approval_settings/policy_override_warning_icon.vue';
 import {
   BLOCK_BRANCH_MODIFICATION,
@@ -20,13 +21,13 @@ Vue.use(Vuex);
 const policiesQueryResponse = {
   data: {
     namespace: {
-      scanResultPolicies: {
+      securityPolicies: {
         nodes: [mockProjectApprovalSettingsScanResultPolicy],
       },
     },
   },
 };
-const emptyPoliciesQueryResponse = { data: { project: { scanResultPolicies: { nodes: [] } } } };
+const emptyPoliciesQueryResponse = { data: { project: { securityPolicies: { nodes: [] } } } };
 
 describe('PolicyOverrideWarningIcon', () => {
   let wrapper;
@@ -48,12 +49,21 @@ describe('PolicyOverrideWarningIcon', () => {
     {
       name: 'policy 1',
       enabled: true,
+      enforcement_type: 'enforce',
       approval_settings: { [PREVENT_APPROVAL_BY_AUTHOR]: true },
       editPath: 'link 1',
     },
     {
       name: 'policy 2',
       enabled: true,
+      enforcement_type: 'enforce',
+      approval_settings: { [REQUIRE_PASSWORD_TO_APPROVE]: true },
+      editPath: 'link 2',
+    },
+    {
+      name: 'policy 3',
+      enabled: true,
+      enforcement_type: 'warn',
       approval_settings: { [REQUIRE_PASSWORD_TO_APPROVE]: true },
       editPath: 'link 2',
     },
@@ -72,10 +82,7 @@ describe('PolicyOverrideWarningIcon', () => {
   const createComponent = ({ provideData = {} } = {}) => {
     wrapper = shallowMountExtended(PolicyOverrideWarningIcon, {
       store,
-      stubs: {
-        GlPopover,
-        GlSprintf,
-      },
+      stubs: { GlPopover },
       provide: {
         fullPath,
         ...provideData,
@@ -84,9 +91,8 @@ describe('PolicyOverrideWarningIcon', () => {
   };
 
   const findIcon = () => wrapper.findComponent(GlIcon);
-  const findLink = () => wrapper.findComponent(GlLink);
   const findPopover = () => wrapper.findComponent(GlPopover);
-  const findPolicyItem = (index) => wrapper.findByTestId(`policy-item-${index}`);
+  const findAllPolicyOverrideTexts = () => wrapper.findAllComponents(PolicyOverrideText);
 
   afterEach(() => {
     store = null;
@@ -155,28 +161,58 @@ describe('PolicyOverrideWarningIcon', () => {
     expect(findIcon().exists()).toBe(expectedExists);
   });
 
-  it('renders warning icon and popover for multiple policies', () => {
-    setupStore(scanResultPoliciesWithApprovalSettings);
-    createComponent();
+  describe('enforced policies', () => {
+    beforeEach(() => {
+      setupStore([scanResultPoliciesWithApprovalSettings[0]]);
+      createComponent();
+    });
 
-    expect(findIcon().props('name')).toBe('warning');
-    expect(findPopover().text()).toContain(
-      'Some settings may be affected by the following policies',
-    );
+    it('renders warning icon', () => {
+      expect(findIcon().props('name')).toBe('warning');
+      expect(findPopover().exists()).toBe(true);
+    });
 
-    expect(findPolicyItem(0).text()).toBe('policy 1');
-    expect(findPolicyItem(1).text()).toBe('policy 2');
-    expect(findPolicyItem(0).findComponent(GlLink).attributes('href')).toBe('link 1');
-    expect(findPolicyItem(1).findComponent(GlLink).attributes('href')).toBe('link 2');
+    it('renders enforced policy text', () => {
+      expect(findAllPolicyOverrideTexts()).toHaveLength(1);
+      const enforcedText = findAllPolicyOverrideTexts().at(0);
+      expect(enforcedText.props('policies')).toHaveLength(1);
+      expect(enforcedText.props('policies')[0].name).toBe('policy 1');
+      expect(enforcedText.props('isWarn')).toBe(false);
+    });
   });
 
-  it('renders warning icon and popover for single policy', () => {
-    setupStore([scanResultPoliciesWithApprovalSettings[0]]);
-    createComponent();
+  describe('warn policies', () => {
+    it('renders warning icon and popover for warn mode policy', () => {
+      setupStore([scanResultPoliciesWithApprovalSettings[2]]);
+      createComponent();
+      expect(findAllPolicyOverrideTexts()).toHaveLength(1);
+      const warnText = findAllPolicyOverrideTexts().at(0);
+      expect(warnText.props('policies')).toHaveLength(1);
+      expect(warnText.props('policies')[0].name).toBe('policy 3');
+      expect(warnText.props('isWarn')).toBe(true);
+    });
+  });
 
-    expect(findIcon().props('name')).toBe('warning');
-    expect(findPopover().text()).toContain('Some settings may be affected by policy');
-    expect(findPopover().text()).toContain('policy 1');
-    expect(findLink().attributes('href')).toBe('link 1');
+  describe('mixed enforced policies', () => {
+    beforeEach(() => {
+      setupStore(scanResultPoliciesWithApprovalSettings);
+      createComponent();
+    });
+
+    it('renders enforced policy text', () => {
+      expect(findAllPolicyOverrideTexts()).toHaveLength(2);
+      const enforcedText = findAllPolicyOverrideTexts().at(0);
+      expect(enforcedText.props('policies')).toHaveLength(2);
+      expect(enforcedText.props('policies')[0].name).toBe('policy 1');
+      expect(enforcedText.props('policies')[1].name).toBe('policy 2');
+      expect(enforcedText.props('isWarn')).toBe(false);
+    });
+
+    it('renders warning icon and popover for warn mode policy', () => {
+      const warnText = findAllPolicyOverrideTexts().at(1);
+      expect(warnText.props('policies')).toHaveLength(1);
+      expect(warnText.props('policies')[0].name).toBe('policy 3');
+      expect(warnText.props('isWarn')).toBe(true);
+    });
   });
 });

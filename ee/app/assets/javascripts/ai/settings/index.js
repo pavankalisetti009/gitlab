@@ -99,7 +99,7 @@ export const initAiSettings = (id, component, options = {}) => {
     apolloProvider,
     provide: {
       aiGatewayUrl,
-      aiGatewayTimeoutSeconds,
+      aiGatewayTimeoutSeconds: parseInt(aiGatewayTimeoutSeconds, 10),
       duoAgentPlatformServiceUrl,
       exposeDuoAgentPlatformServiceUrl: parseBoolean(exposeDuoAgentPlatformServiceUrl),
       canManageSelfHostedModels: parseBoolean(canManageSelfHostedModels),

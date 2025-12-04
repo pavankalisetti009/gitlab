@@ -29,8 +29,8 @@ Scan result policies feature was renamed to merge request approval policies in G
 You can use merge request approval policies for multiple purposes, including:
 
 - Detect results from security and license scanners to enforce approval rules. For example, one type of merge request
-policy is a security approval policy that allows approval to be required based on the
-findings of one or more security scan jobs. Merge request approval policies are evaluated after a CI scanning job is fully executed and both vulnerability and license type policies are evaluated based on the job artifact reports that are published in the completed pipeline.
+  policy is a security approval policy that allows approval to be required based on the
+  findings of one or more security scan jobs. Merge request approval policies are evaluated after a CI scanning job is fully executed and both vulnerability and license type policies are evaluated based on the job artifact reports that are published in the completed pipeline.
 - Enforce approval rules on all merge requests that meet certain conditions. For example, enforce that MRs are reviewed by multiple users with Developer and Maintainer roles for all MRs that target default branches.
 - Enforce settings for security and compliance on a project. For example, prevent users who have authored or committed changes to an MR from approving the MR. Or prevent users from pushing or force pushing to the default branch to ensure all changes go through an MR.
 
@@ -79,8 +79,9 @@ following when implementing a merge request approval policy:
   - Branches created before the security scans were configured.
   - Projects with inconsistent scanner configurations between branches.
 - The pipeline must produce artifacts for all enabled scanners, for both the source and target
-  branches. If not, there's no basis for comparison and so the policy can't be evaluated. You should
-  use a scan execution policy to enforce this requirement.
+  branches. If not, there's no basis for comparison and so the policy can't be evaluated reliably.
+  See [Missing security scans](#missing-security-scans) for more information.
+  You should use a scan execution policy to enforce this requirement.
 - Policy evaluation depends on a successful and completed merge base pipeline. If the merge base
   pipeline is skipped, merge requests with the merge base pipeline are blocked.
 - Security scanners specified in a policy must be configured and enabled in the projects on which
@@ -157,7 +158,7 @@ For parent-child pipelines, policy evaluation considers a maximum of 1,000 child
 
 {{< alert type="note" >}}
 
-Only project Owners have the [permissions](../../permissions.md#project-members-permissions)
+Only project Owners have the [permissions](../../permissions.md#project-permissions)
 to select Security Policy Project.
 
 {{< /alert >}}
@@ -769,7 +770,7 @@ Users who have these exceptions can bypass at two levels:
 
 {{< alert type="note" >}}
 
-The `security_policy.bypass_reason` push option works only for branches with push protection from a merge request approval policy configured with [approval_settings](merge_request_approval_policies.md#approval_settings). Pushes to protected branches that are not covered by a merge request approval policy cannot be bypassed with this option.
+The `security_policy.bypass_reason` push option works only for branches with push protection from a merge request approval policy configured with [`approval_settings`](merge_request_approval_policies.md#approval_settings). Pushes to protected branches that are not covered by a merge request approval policy cannot be bypassed with this option.
 
 {{< /alert >}}
 
@@ -1089,13 +1090,13 @@ When using merge request approval policies, you may encounter situations where m
 
 Example scenarios:
 
-- Missing scans on source or target branches
+- Missing scans on source branches
 
-  If security scans are missing on either the source or target branch, GitLab cannot effectively evaluate whether the merge request is introducing new vulnerabilities. In such cases, approval is required as a precautionary measure.
+  If security scans are missing on the source branch, GitLab cannot effectively evaluate whether the merge request is introducing new vulnerabilities. In such cases, approval is required as a precautionary measure.
 
-- New projects
+- Missing scans on target branches
 
-  For new projects where security scans have not yet been set up or executed on the target branch, all merge requests require approval. This ensures that security checks are active from the project's inception.
+  If security scans are missing on the target branch, GitLab cannot effectively compare the vulnerabilities detected on the source branch. In such cases, any detected vulnerabilities are reported as new.
 
 - Projects with no files to scan
 

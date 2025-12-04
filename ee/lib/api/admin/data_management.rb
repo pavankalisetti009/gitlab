@@ -9,7 +9,7 @@ module API
       feature_category :geo_replication
       urgency :low
 
-      AVAILABLE_MODEL_NAMES = Gitlab::Geo::ModelMapper.available_model_names.freeze
+      AVAILABLE_MODEL_NAMES = Gitlab::Geo::ModelMapper.available_model_names.map(&:pluralize).freeze
       VERIFICATION_STATES = %w[pending started succeeded failed disabled].freeze
 
       before do
@@ -41,7 +41,7 @@ module API
         end
 
         def find_verifiable_model_class
-          model_class = Gitlab::Geo::ModelMapper.find_from_name(params[:model_name])
+          model_class = Gitlab::Geo::ModelMapper.find_from_name(singular_model_name)
           not_found!(params[:model_name]) unless model_class
           bad_request!("#{model_class} is not a verifiable model.") unless verifiable?(model_class)
 
@@ -59,6 +59,10 @@ module API
           end
         rescue ArgumentError, TypeError => e
           bad_request!(e)
+        end
+
+        def singular_model_name
+          params[:model_name].singularize
         end
       end
 
@@ -88,7 +92,7 @@ module API
               end
 
               get do
-                model_class = Gitlab::Geo::ModelMapper.find_from_name(params[:model_name])
+                model_class = Gitlab::Geo::ModelMapper.find_from_name(singular_model_name)
                 not_found!(params[:model_name]) unless model_class
 
                 model = find_model_from_record_identifier(params[:record_identifier], model_class)
@@ -157,7 +161,7 @@ module API
               optional :sort, type: String, values: %w[asc desc], default: 'asc', desc: 'Order of sorting'
             end
             get do
-              model_class = Gitlab::Geo::ModelMapper.find_from_name(params[:model_name])
+              model_class = Gitlab::Geo::ModelMapper.find_from_name(singular_model_name)
               not_found!(params[:model_name]) unless model_class
 
               relation = model_class.respond_to?(:with_state_details) ? model_class.with_state_details : model_class

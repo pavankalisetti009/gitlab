@@ -278,7 +278,6 @@ This section lists the features that are not available for GitLab Dedicated.
 | LDAP authentication                           | Authentication using corporate LDAP/Active Directory credentials.     | Must use GitLab-specific passwords or access tokens instead. |
 | Smart card authentication                     | Authentication using smart cards for enhanced security.               | Cannot use existing smart card infrastructure.               |
 | Kerberos authentication                       | Single sign-on authentication using Kerberos protocol.                | Must authenticate separately to GitLab.                      |
-| Multiple login providers                      | Configuration of multiple OAuth/SAML providers (Google, GitHub).      | Limited to a single identity provider.                       |
 | FortiAuthenticator/FortiToken 2FA             | Two-factor authentication using Fortinet security solutions.          | Cannot integrate existing Fortinet 2FA infrastructure.       |
 | Git clone using HTTPS with username/password  | Git operations using username and password authentication over HTTPS. | Must use access tokens for Git operations.                   |
 | [Sigstore](../../ci/yaml/signing_examples.md) | Keyless signing and verification for software supply chain security.  | Must use traditional code signing methods.                   |
@@ -310,8 +309,8 @@ In GitLab Dedicated:
 - Features enabled by default are available.
 - Features disabled by default are not available and cannot be enabled.
 
-When a feature becomes generally available, it's available in the same version 
-following the [release schedule](maintenance.md) for deployments.
+When a feature becomes generally available, it's available in the same version
+following the [release schedule](../../administration/dedicated/maintenance.md) for deployments.
 
 ### GitLab Pages
 
@@ -378,9 +377,9 @@ To migrate your data to GitLab Dedicated:
   - Use [direct transfer](../../user/group/import/_index.md).
   - Use the [direct transfer API](../../api/bulk_imports.md).
 - From third-party services:
-  - Use the [import sources](../../user/project/import/_index.md) (migration tools).
+  - Use the [import sources](../../user/import/_index.md) (migration tools).
 - For complex migrations:
-  - Engage [Professional Services](../../user/project/import/_index.md#migrate-by-engaging-professional-services).
+  - Engage [Professional Services](../../user/import/_index.md#migrate-by-engaging-professional-services).
 
 ## Expired subscriptions
 

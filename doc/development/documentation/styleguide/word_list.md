@@ -69,7 +69,7 @@ Do not confuse **ability** or **able** with [permissions](#permissions) or [role
 Use:
 
 - You cannot change this setting.
-- To change this setting, you must have the Maintainer role.
+- To change this setting, you must have at least the Developer role.
 - Confirm you can sign in.
 - The external load balancer cannot connect.
 - Option to delete branches introduced in GitLab 17.1.
@@ -109,9 +109,9 @@ Capitalize these words when you refer to the UI. Otherwise use lowercase.
 
 When a specific access level is required, use one of these patterns:
 
-- You must have **at least** the Administrator access level.
-- You must have the Administrator access level **or higher**.
-- You must be an Administrator.
+- You must have **at least** the administrator access level.
+- You must have the administrator access level **or higher**.
+- You must be an administrator.
 
 When there is no specific access level, use **minimum** access level as a noun phrase. For example:
 
@@ -120,8 +120,8 @@ When there is no specific access level, use **minimum** access level as a noun p
 Use **higher** and **lower** to describe the hierarchy:
 
 - **Higher** access levels have more permissions.
-- Administrator is a **higher** access level than Regular.
-- Regular is a **lower** access level than Administrator.
+- Administrator is a **higher** access level than regular.
+- Regular is a **lower** access level than administrator.
 
 ## add
 
@@ -1203,11 +1203,21 @@ feature.
 
 ## GitLab Dedicated
 
-Use **GitLab Dedicated** to refer to the product offering. It refers to a GitLab instance that's hosted and managed by GitLab for customers.
+Use **GitLab Dedicated** to refer to the product offering.
+It refers to a GitLab instance that's hosted and managed by GitLab for customers.
 
 GitLab Dedicated can be referred to as a single-tenant SaaS service.
 
 Do not use **Dedicated** by itself. Always use **GitLab Dedicated**.
+
+## GitLab Dedicated for Government
+
+Use **GitLab Dedicated for Government** to refer to the government-specific offering.
+It refers to a GitLab instance that's hosted and managed by GitLab for government agencies and organizations requiring FedRAMP compliance.
+
+GitLab Dedicated for Government is a single-tenant SaaS service, similar to GitLab Dedicated but optimized for government requirements.
+
+Do not use **Dedicated for Government** by itself. Always use **GitLab Dedicated for Government**.
 
 ## GitLab Duo
 
@@ -1732,7 +1742,7 @@ When writing about the Maintainer role:
   - Instead of: if you are a maintainer
 
 - When the Maintainer role is the minimum required role:
-  - Use: at least the Maintainer role
+  - Use: the Maintainer or Owner role
   - Instead of: the Maintainer role or higher
 
 Do not use bold.
@@ -1948,6 +1958,7 @@ The current product offerings are:
 - [GitLab.com](#gitlabcom)
 - [GitLab Self-Managed](#self-managed)
 - [GitLab Dedicated](#gitlab-dedicated)
+- [GitLab Dedicated for Government](#gitlab-dedicated-for-government)
 
 The [availability details](availability_details.md) reflect these offerings.
 
@@ -2896,7 +2907,7 @@ Use:
 
 - The GitLab virtual registry supports A, B, and C.
 - You can configure your applications to use one virtual registry instead
-of multiple upstream registries.
+  of multiple upstream registries.
 
 ## VS Code user interface
 

@@ -43,6 +43,7 @@ const transformFinding = (finding) => ({
   name: finding.title,
   severity: finding.severity?.toLowerCase(),
   state: finding.state?.toLowerCase(),
+  ai_resolution_enabled: finding.aiResolutionEnabled,
   found_by_pipeline: {
     iid: finding.foundByPipelineIid ? Number(finding.foundByPipelineIid) : null,
   },
@@ -368,8 +369,8 @@ export default {
 
     fetchCollapsedData() {
       if (this.glFeatures.mrSecurityWidgetGraphql) {
-        return this.enabledScansGraphQL.map(({ reportType }) => () => {
-          return this.fetchCollapsedDataGraphQL(reportType);
+        return this.enabledScansGraphQL.map(({ reportType, scanMode }) => () => {
+          return this.fetchCollapsedDataGraphQL(reportType, scanMode);
         });
       }
 
@@ -443,6 +444,7 @@ export default {
     },
 
     fetchCollapsedDataGraphQL(reportType, scanMode = 'FULL') {
+      const scanModeKey = scanMode === 'PARTIAL' ? 'partial' : 'full';
       const defaultReportStructure = {
         reportType,
         reportTypeDescription: reportTypes[reportType],
@@ -493,7 +495,10 @@ export default {
             testId: this.$options.testId[reportType],
           };
 
-          this.reportsByScanType.full = { ...this.reportsByScanType.full, [reportType]: report };
+          this.reportsByScanType[scanModeKey] = {
+            ...this.reportsByScanType[scanModeKey],
+            [reportType]: report,
+          };
           this.$emit('loaded', added.length);
 
           // Pass empty header (no "poll-interval") to stop MrWidget's polling mechanism
@@ -502,7 +507,10 @@ export default {
         .catch((error) => {
           const report = { ...defaultReportStructure, error: true };
 
-          this.reportsByScanType.full = { ...this.reportsByScanType.full, [reportType]: report };
+          this.reportsByScanType[scanModeKey] = {
+            ...this.reportsByScanType[scanModeKey],
+            [reportType]: report,
+          };
 
           if (error.graphQLErrors?.some((err) => err.extensions?.code === 'PARSING_ERROR')) {
             this.topLevelErrorMessage = s__(

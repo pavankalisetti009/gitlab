@@ -12,7 +12,8 @@ module Security
       schedule: 'schedule'
     }.freeze
 
-    SCAN_TYPES = %w[dast secret_detection cluster_image_scanning container_scanning sast sast_iac dependency_scanning].freeze
+    SCAN_TYPES = %w[dast secret_detection cluster_image_scanning container_scanning sast sast_iac
+      dependency_scanning].freeze
     PIPELINE_SCAN_TYPES = SCAN_TYPES.excluding("cluster_image_scanning").freeze
     ON_DEMAND_SCANS = %w[dast].freeze
 
@@ -59,10 +60,18 @@ module Security
       branch_service = Security::SecurityOrchestrationPolicies::PolicyBranchesService.new(project: project)
       scope_checker = Security::SecurityOrchestrationPolicies::PolicyScopeChecker.new(project: project)
 
-      active_scan_execution_policies
+      policies = active_scan_execution_policies
         .select { |policy| scope_checker.policy_applicable?(policy) }
-        .select { |policy| applicable_for_ref?(block_given? ? yield(policy[:rules]) : policy[:rules], ref, branch_service) }
-        .select { |policy| applicable_for_pipeline_source?(block_given? ? yield(policy[:rules]) : policy[:rules], pipeline_source) }
+
+      policies = policies.select do |policy|
+        applicable_for_ref?(block_given? ? yield(policy[:rules]) : policy[:rules], ref,
+          branch_service)
+      end
+
+      policies.select do |policy|
+        applicable_for_pipeline_source?(block_given? ? yield(policy[:rules]) : policy[:rules],
+          pipeline_source)
+      end
     end
 
     def active_scan_execution_policy_names(ref, project)
@@ -90,7 +99,9 @@ module Security
             next unless action[:scan].in?(ON_DEMAND_SCANS)
 
             profiles[:site_profiles][action[:site_profile]] += [policy[:name]]
-            profiles[:scanner_profiles][action[:scanner_profile]] += [policy[:name]] if action[:scanner_profile].present?
+            if action[:scanner_profile].present?
+              profiles[:scanner_profiles][action[:scanner_profile]] += [policy[:name]]
+            end
           end
         end
 

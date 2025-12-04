@@ -3,6 +3,7 @@ import {
   GlFormInput,
   GlSprintf,
   GlCollapsibleListbox,
+  GlAlert,
   GlTooltipDirective as GlTooltip,
 } from '@gitlab/ui';
 import { s__, sprintf } from '~/locale';
@@ -54,6 +55,9 @@ export default {
     branchTimezoneLabel: s__('ScanExecutionPolicy|on %{hostname}'),
     agentTimezoneTooltipText: s__("ScanExecutionPolicy|Kubernetes agent's timezone"),
     branchTimezoneTooltipText: s__("ScanExecutionPolicy|%{hostname}'s timezone"),
+    timeWindowWarning: s__(
+      'ScanExecutionPolicy|A time window is not set. Setting a time window helps distribute scheduled scans and reduces the load on runner infrastructure. We recommend a time window of at least 6 hours.',
+    ),
   },
   name: 'ScheduleRuleComponent',
   components: {
@@ -62,6 +66,7 @@ export default {
     GlFormInput,
     GlCollapsibleListbox,
     GlSprintf,
+    GlAlert,
     TimezoneDropdown,
   },
   directives: {
@@ -127,6 +132,9 @@ export default {
       return this.isBranchScope
         ? sprintf(this.$options.i18n.branchTimezoneTooltipText, { hostname: this.hostname })
         : this.$options.i18n.agentTimezoneTooltipText;
+    },
+    showTimeWindowWarning() {
+      return !this.initRule.time_window?.value;
     },
   },
   methods: {
@@ -211,106 +219,111 @@ export default {
 </script>
 
 <template>
-  <base-rule-component
-    :default-selected-rule="$options.SCAN_EXECUTION_RULES_SCHEDULE_KEY"
-    :init-rule="initRule"
-    :is-branch-scope="isBranchScope"
-    v-on="$listeners"
-  >
-    <template #scopes>
-      <gl-collapsible-listbox
-        data-testid="rule-component-scope"
-        :items="convertToListboxItems($options.SCAN_EXECUTION_RULE_SCOPE_TYPE)"
-        :selected="selectedScope"
-        :toggle-text="selectedScopeText"
-        @select="setScopeSelected"
-      />
-    </template>
-
-    <template #agents>
-      <gl-form-input
-        v-if="!isBranchScope"
-        class="gl-max-w-34"
-        :value="agent"
-        :placeholder="$options.i18n.selectedAgentsPlaceholder"
-        data-testid="pipeline-rule-agent"
-        @update="updateAgent"
-      />
-    </template>
-
-    <template #namespaces>
-      <template v-if="!isBranchScope">
-        <span>{{ $options.i18n.namespaceLabel }}</span>
+  <div>
+    <gl-alert v-if="showTimeWindowWarning" variant="warning" :dismissible="false" class="gl-mb-5">
+      {{ $options.i18n.timeWindowWarning }}
+    </gl-alert>
+    <base-rule-component
+      :default-selected-rule="$options.SCAN_EXECUTION_RULES_SCHEDULE_KEY"
+      :init-rule="initRule"
+      :is-branch-scope="isBranchScope"
+      v-on="$listeners"
+    >
+      <template #scopes>
+        <gl-collapsible-listbox
+          data-testid="rule-component-scope"
+          :items="convertToListboxItems($options.SCAN_EXECUTION_RULE_SCOPE_TYPE)"
+          :selected="selectedScope"
+          :toggle-text="selectedScopeText"
+          @select="setScopeSelected"
+        />
       </template>
 
-      <gl-form-input
-        v-if="!isBranchScope"
-        class="gl-max-w-34"
-        :value="nameSpacesToAdd"
-        :placeholder="$options.i18n.selectedNamespacesPlaceholder"
-        data-testid="pipeline-rule-namespaces"
-        @update="updateNamespaces"
-      />
-    </template>
+      <template #agents>
+        <gl-form-input
+          v-if="!isBranchScope"
+          class="gl-max-w-34"
+          :value="agent"
+          :placeholder="$options.i18n.selectedAgentsPlaceholder"
+          data-testid="pipeline-rule-agent"
+          @update="updateAgent"
+        />
+      </template>
 
-    <template #period>
-      <span class="gl-flex gl-flex-wrap gl-items-center gl-gap-3">
-        <gl-sprintf :message="$options.i18n.schedulePeriod">
-          <template #period>
-            <gl-collapsible-listbox
-              data-testid="rule-component-period"
-              :items="convertToListboxItems($options.SCAN_EXECUTION_RULE_PERIOD_TYPE)"
-              :toggle-text="selectedPeriodText"
-              :selected="selectedPeriod"
-              @select="setPeriodSelected"
-            />
-          </template>
+      <template #namespaces>
+        <template v-if="!isBranchScope">
+          <span>{{ $options.i18n.namespaceLabel }}</span>
+        </template>
 
-          <template #days>
-            <gl-collapsible-listbox
-              v-if="!isCronDaily"
-              data-testid="rule-component-day"
-              :items="convertToListboxItems($options.DAYS)"
-              :selected="selectedDayIndex"
-              :toggle-text="selectedDay"
-              @select="setDaySelected"
-            />
-          </template>
+        <gl-form-input
+          v-if="!isBranchScope"
+          class="gl-max-w-34"
+          :value="nameSpacesToAdd"
+          :placeholder="$options.i18n.selectedNamespacesPlaceholder"
+          data-testid="pipeline-rule-namespaces"
+          @update="updateNamespaces"
+        />
+      </template>
 
-          <template #time>
-            <gl-collapsible-listbox
-              data-testid="rule-component-time"
-              :items="convertToListboxItems($options.HOUR_MINUTE_LIST)"
-              :toggle-text="selectedTime"
-              :selected="selectedTimeIndex"
-              @select="setTimeSelected"
-            />
-          </template>
+      <template #period>
+        <span class="gl-flex gl-flex-wrap gl-items-center gl-gap-3">
+          <gl-sprintf :message="$options.i18n.schedulePeriod">
+            <template #period>
+              <gl-collapsible-listbox
+                data-testid="rule-component-period"
+                :items="convertToListboxItems($options.SCAN_EXECUTION_RULE_PERIOD_TYPE)"
+                :toggle-text="selectedPeriodText"
+                :selected="selectedPeriod"
+                @select="setPeriodSelected"
+              />
+            </template>
 
-          <template #timezoneLabel>
-            <span data-testid="timezone-label">{{ timezoneLabel }}</span>
-          </template>
+            <template #days>
+              <gl-collapsible-listbox
+                v-if="!isCronDaily"
+                data-testid="rule-component-day"
+                :items="convertToListboxItems($options.DAYS)"
+                :selected="selectedDayIndex"
+                :toggle-text="selectedDay"
+                @select="setDaySelected"
+              />
+            </template>
 
-          <template #timezone>
-            <timezone-dropdown
-              v-gl-tooltip.right.viewport
-              class="gl-max-w-26"
-              :header-text="timezoneHeader"
-              :value="timezone"
-              :timezone-data="timezones"
-              :title="timezoneTooltipText"
-              @input="handleTimeZoneInput"
-            />
-          </template>
-          <template #duration>
-            <duration-selector
-              :minimum-seconds="$options.TIME_UNITS.HOUR"
-              :time-window="initRule.time_window"
-              @changed="handleTimeWindowUpdate"
-            />
-          </template>
-        </gl-sprintf>
-      </span>
-    </template>
-  </base-rule-component>
+            <template #time>
+              <gl-collapsible-listbox
+                data-testid="rule-component-time"
+                :items="convertToListboxItems($options.HOUR_MINUTE_LIST)"
+                :toggle-text="selectedTime"
+                :selected="selectedTimeIndex"
+                @select="setTimeSelected"
+              />
+            </template>
+
+            <template #timezoneLabel>
+              <span data-testid="timezone-label">{{ timezoneLabel }}</span>
+            </template>
+
+            <template #timezone>
+              <timezone-dropdown
+                v-gl-tooltip.right.viewport
+                class="gl-max-w-26"
+                :header-text="timezoneHeader"
+                :value="timezone"
+                :timezone-data="timezones"
+                :title="timezoneTooltipText"
+                @input="handleTimeZoneInput"
+              />
+            </template>
+            <template #duration>
+              <duration-selector
+                :minimum-seconds="$options.TIME_UNITS.HOUR"
+                :time-window="initRule.time_window"
+                @changed="handleTimeWindowUpdate"
+              />
+            </template>
+          </gl-sprintf>
+        </span>
+      </template>
+    </base-rule-component>
+  </div>
 </template>

@@ -199,7 +199,10 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
           created_workflow = Ai::DuoWorkflows::Workflow.last
           expect(created_workflow.pre_approved_agent_privileges).to match_array(
-            ::Ai::DuoWorkflows::Workflow::AgentPrivileges::DEFAULT_PRIVILEGES
+            [
+              Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_FILES,
+              Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_ONLY_GITLAB
+            ]
           )
         end
       end
@@ -1032,6 +1035,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
         expect(response.media_type).to eq(Gitlab::Workhorse::INTERNAL_API_CONTENT_TYPE)
 
         enabled_mcp_tools = ::Ai::DuoWorkflows::McpConfigService::GITLAB_ENABLED_TOOLS
+        preapproved_mcp_tools = ::Ai::DuoWorkflows::McpConfigService::GITLAB_PREAPPROVED_TOOLS
         expect(json_response['DuoWorkflow']['Headers']).to include(
           'x-gitlab-oauth-token' => 'oauth_token',
           'authorization' => 'Bearer token',
@@ -1051,7 +1055,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
             "Headers" => {
               "Authorization" => "Bearer oauth_token"
             },
-            "PreApprovedTools" => enabled_mcp_tools,
+            "PreApprovedTools" => preapproved_mcp_tools,
             "Tools" => enabled_mcp_tools
           }
         })
@@ -1332,7 +1336,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
         before do
           stub_feature_flags(self_hosted_agent_platform: true)
           stub_feature_flags(duo_agent_platform_model_selection: false)
-          stub_feature_flags(ai_model_switching: false)
+          stub_saas_features(gitlab_com_subscriptions: false)
         end
 
         it 'includes model metadata headers in the response' do
@@ -1403,7 +1407,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
         before do
           stub_feature_flags(self_hosted_agent_platform: false)
           stub_feature_flags(duo_agent_platform_model_selection: false)
-          stub_feature_flags(ai_model_switching: false)
+          stub_saas_features(gitlab_com_subscriptions: false)
         end
 
         subject(:get_response) do
@@ -1456,7 +1460,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
         before do
           stub_feature_flags(duo_agent_platform_model_selection: false)
-          stub_feature_flags(ai_model_switching: false)
+          stub_saas_features(gitlab_com_subscriptions: false)
           stub_feature_flags(self_hosted_agent_platform: false)
         end
 
@@ -1483,7 +1487,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
         before do
           stub_feature_flags(duo_agent_platform_model_selection: true)
-          stub_feature_flags(ai_model_switching: true)
+          stub_saas_features(gitlab_com_subscriptions: true)
           stub_feature_flags(self_hosted_agent_platform: false)
 
           stub_request(:get, fetch_service_endpoint_url)
@@ -1688,32 +1692,6 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
                 it_behaves_like 'ServiceURI has the right value', false
               end
-
-              context 'when user level model selection is disabled' do
-                before do
-                  stub_feature_flags(ai_user_model_switching: false)
-                end
-
-                context 'when a valid user_selected_model_identifier is provided' do
-                  let(:user_selected_model_identifier) { 'claude_sonnet_4_20250514' }
-
-                  it 'uses the default model' do
-                    get_response
-
-                    expect(response).to have_gitlab_http_status(:ok)
-
-                    headers = json_response['DuoWorkflow']['Headers']
-                    metadata = ::Gitlab::Json.parse(headers['x-gitlab-agent-platform-model-metadata'])
-                    expect(metadata).to include(
-                      'provider' => 'gitlab',
-                      'feature_setting' => 'duo_agent_platform',
-                      'identifier' => nil
-                    )
-                  end
-
-                  it_behaves_like 'ServiceURI has the right value', false
-                end
-              end
             end
           end
         end
@@ -1729,6 +1707,53 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
           get_response
 
           expect(response).to have_gitlab_http_status(:not_found)
+        end
+      end
+
+      context 'for X-Gitlab-Agent-Platform-Feature-Setting-Name header', :saas do
+        context 'when X-Gitlab-Agent-Platform-Feature-Setting-Name header is provided' do
+          let(:custom_feature_name) { 'any_dap_feature' }
+
+          it 'uses the header value as feature_name when calling DuoAgentPlatformModelMetadataService' do
+            expect(::Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService).to receive(:new).with(
+              hash_including(feature_name: custom_feature_name.to_sym)
+            ).and_call_original
+
+            get api(path, user),
+              headers: workhorse_headers.merge('X-Gitlab-Agent-Platform-Feature-Setting-Name' => custom_feature_name)
+          end
+
+          it 'uses the header value when calling FeatureSettingSelectionService' do
+            expect(::Ai::FeatureSettingSelectionService).to receive(:new).with(
+              user,
+              custom_feature_name.to_sym,
+              anything
+            ).and_call_original
+
+            get api(path, user), headers: workhorse_headers.merge(
+              'X-Gitlab-Agent-Platform-Feature-Setting-Name' => custom_feature_name
+            ), params: { root_namespace_id: group.id }
+          end
+        end
+
+        context 'when X-Gitlab-Agent-Platform-Feature-Setting-Name header is not provided' do
+          it 'defaults to agentic_chat_feature_name when calling DuoAgentPlatformModelMetadataService' do
+            expect(::Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService).to receive(:new).with(
+              hash_including(feature_name: ::Ai::ModelSelection::FeaturesConfigurable.agentic_chat_feature_name)
+            ).and_call_original
+
+            get api(path, user), headers: workhorse_headers, params: { root_namespace_id: group.id }
+          end
+
+          it 'defaults to agentic_chat_feature_name when calling FeatureSettingSelectionService' do
+            expect(::Ai::FeatureSettingSelectionService).to receive(:new).with(
+              user,
+              ::Ai::ModelSelection::FeaturesConfigurable.agentic_chat_feature_name,
+              anything
+            ).and_call_original
+
+            get api(path, user), headers: workhorse_headers, params: { root_namespace_id: group.id }
+          end
         end
       end
 
@@ -1964,7 +1989,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
       expect(privilege4['id']).to eq(4)
       expect(privilege4['name']).to eq('run_commands')
       expect(privilege4['description']).to eq('Allow running any commands')
-      expect(privilege4['default_enabled']).to eq(false)
+      expect(privilege4['default_enabled']).to eq(true)
     end
   end
 end

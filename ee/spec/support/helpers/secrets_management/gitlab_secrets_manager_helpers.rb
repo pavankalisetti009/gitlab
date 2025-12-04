@@ -77,6 +77,10 @@ module SecretsManagement
       ProjectSecretsManagers::ProvisionService.new(secrets_manager, user).execute
     end
 
+    def deprovision_project_secrets_manager(secrets_manager, user)
+      ProjectSecretsManagers::DeprovisionService.new(secrets_manager, user).execute
+    end
+
     def expect_kv_secret_engine_to_be_mounted(namespace_path, path)
       client = secrets_manager_client.with_namespace(namespace_path)
       expect { client.read_secrets_engine_configuration(path) }.not_to raise_error
@@ -164,20 +168,20 @@ module SecretsManagement
     end
 
     def update_secret_permission(user:, project:, principal:, permissions:, expired_at: nil)
-      result = SecretsManagement::Permissions::UpdateService.new(project, user).execute(
+      result = SecretsManagement::ProjectSecretsPermissions::UpdateService.new(project, user).execute(
         principal_id: principal[:id],
         principal_type: principal[:type],
         permissions: permissions,
         expired_at: expired_at
       )
 
-      secret_permission = result.payload[:secret_permission]
+      secrets_permission = result.payload[:secrets_permission]
 
-      if secret_permission.errors.any?
-        raise "secret permission creation failed with errors: #{secret_permission.errors.full_messages.to_sentence}"
+      if secrets_permission.errors.any?
+        raise "secret permission creation failed with errors: #{secrets_permission.errors.full_messages.to_sentence}"
       end
 
-      secret_permission
+      secrets_permission
     end
 
     def secret_rotation_info_for_project_secret(project, name, version = 1)
@@ -262,6 +266,10 @@ module SecretsManagement
 
     def provision_group_secrets_manager(secrets_manager, user)
       GroupSecretsManagers::ProvisionService.new(secrets_manager, user).execute
+    end
+
+    def deprovision_group_secrets_manager(secrets_manager, user)
+      GroupSecretsManagers::DeprovisionService.new(secrets_manager, user).execute
     end
 
     def expect_group_to_have_no_policies(group_namespace)

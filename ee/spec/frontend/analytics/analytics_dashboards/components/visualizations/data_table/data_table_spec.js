@@ -1,14 +1,16 @@
-import { GlIcon, GlTableLite, GlKeysetPagination } from '@gitlab/ui';
+import { GlIcon, GlTable, GlTableLite, GlKeysetPagination } from '@gitlab/ui';
 import { mount, shallowMount } from '@vue/test-utils';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
 import DataTable from 'ee/analytics/analytics_dashboards/components/visualizations/data_table/data_table.vue';
 import DiffLineChanges from 'ee/analytics/analytics_dashboards/components/visualizations/data_table/diff_line_changes.vue';
+import CalculatePercent from 'ee/analytics/analytics_dashboards/components/visualizations/data_table/calculate_percent.vue';
 
 describe('DataTable Visualization', () => {
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
   let wrapper;
 
   const findTable = () => wrapper.findComponent(GlTableLite);
+  const findSortableTable = () => wrapper.findComponent(GlTable);
   const findTableHeaders = () => findTable().findAll('th');
   const findTableRowCells = (idx) => findTable().find('tbody').findAll('tr').at(idx).findAll('td');
   const findPagination = () => wrapper.findComponent(GlKeysetPagination);
@@ -25,6 +27,7 @@ describe('DataTable Visualization', () => {
         },
         stubs: {
           DiffLineChanges,
+          CalculatePercent,
         },
       }),
     );
@@ -243,6 +246,81 @@ describe('DataTable Visualization', () => {
     });
   });
 
+  describe('sorting', () => {
+    const sortableOpts = { fields: [{ sortable: true }] };
+
+    it('uses GlTableLite when no fields are sortable', () => {
+      createWrapper(shallowMount);
+
+      expect(findTable().exists()).toBe(true);
+      expect(findSortableTable().exists()).toBe(false);
+    });
+
+    it('does not pass sort params when not provided in the query', () => {
+      createWrapper(shallowMount, { options: sortableOpts });
+
+      expect(findSortableTable().props('sortBy')).toBeUndefined();
+      expect(findSortableTable().props('sortDesc')).toBe(false);
+    });
+
+    it('passes sortBy to the table when set in the query', () => {
+      createWrapper(shallowMount, {
+        options: sortableOpts,
+        query: {
+          sortBy: 'field_one',
+        },
+      });
+
+      expect(findSortableTable().props('sortBy')).toBe('field_one');
+    });
+
+    it('passes sortDesc to the table when set in the query', () => {
+      createWrapper(shallowMount, {
+        options: sortableOpts,
+        query: {
+          sortDesc: true,
+        },
+      });
+
+      expect(findSortableTable().props('sortDesc')).toBe(true);
+    });
+
+    it('emits updateQuery when refetchOnSort is enabled and sorting changes', () => {
+      createWrapper(shallowMount, {
+        options: {
+          ...sortableOpts,
+          refetchOnSort: true,
+        },
+      });
+
+      findSortableTable().vm.$emit('sort-changed', {
+        sortBy: 'field_two',
+        sortDesc: true,
+      });
+
+      expect(wrapper.emitted('updateQuery')[0][0]).toMatchObject({
+        sortBy: 'field_two',
+        sortDesc: true,
+      });
+    });
+
+    it('does not emit updateQuery when refetchOnSort is disabled and sorting changes', () => {
+      createWrapper(shallowMount, {
+        options: {
+          ...sortableOpts,
+          refetchOnSort: false,
+        },
+      });
+
+      findSortableTable().vm.$emit('sort-changed', {
+        sortBy: 'field_two',
+        sortDesc: true,
+      });
+
+      expect(wrapper.emitted('updateQuery')).toBeUndefined();
+    });
+  });
+
   describe('options', () => {
     describe('fields', () => {
       it('can specify the fields to render', () => {
@@ -297,6 +375,16 @@ describe('DataTable Visualization', () => {
         expect(findTable().attributes().stacked).toBe('md');
       });
 
+      it('disables local sorting when refetchOnSort is enabled', () => {
+        createWrapper(shallowMount, {
+          options: {
+            refetchOnSort: true,
+          },
+        });
+
+        expect(findTable().attributes('no-local-sorting')).toBe('true');
+      });
+
       it('can customize column labels', () => {
         createWrapper(mount, {
           options: {
@@ -326,6 +414,29 @@ describe('DataTable Visualization', () => {
         });
 
         expect(wrapper.findComponent(DiffLineChanges).props()).toMatchObject(customData);
+      });
+
+      it('applies any relevant `componentProps` to the custom component', () => {
+        createWrapper(mount, {
+          data: { nodes: [{ additions: 5, deletions: 10 }] },
+          options: {
+            fields: [
+              {
+                key: 'customData',
+                component: 'CalculatePercent',
+                componentProps: {
+                  numerator: 'additions',
+                  denominator: 'deletions',
+                },
+              },
+            ],
+          },
+        });
+
+        expect(wrapper.findComponent(CalculatePercent).props()).toMatchObject({
+          numerator: 5,
+          denominator: 10,
+        });
       });
     });
   });

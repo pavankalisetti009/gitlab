@@ -113,6 +113,76 @@
   :idempotent: true
   :tags: []
   :queue_namespace: :auto_merge
+- :name: background_operations:database_background_operation_base_orchestrator
+  :worker_name: Database::BackgroundOperation::BaseOrchestratorWorker
+  :feature_category: :database
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: false
+  :tags: []
+  :queue_namespace: :background_operations
+- :name: background_operations:database_background_operation_ci_orchestrator
+  :worker_name: Database::BackgroundOperation::CiOrchestratorWorker
+  :feature_category: :database
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: false
+  :tags: []
+  :queue_namespace: :background_operations
+- :name: background_operations:database_background_operation_ci_orchestrator_cell_local
+  :worker_name: Database::BackgroundOperation::CiOrchestratorCellLocalWorker
+  :feature_category: :database
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: false
+  :tags: []
+  :queue_namespace: :background_operations
+- :name: background_operations:database_background_operation_main_orchestrator
+  :worker_name: Database::BackgroundOperation::MainOrchestratorWorker
+  :feature_category: :database
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: false
+  :tags: []
+  :queue_namespace: :background_operations
+- :name: background_operations:database_background_operation_main_orchestrator_cell_local
+  :worker_name: Database::BackgroundOperation::MainOrchestratorCellLocalWorker
+  :feature_category: :database
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: false
+  :tags: []
+  :queue_namespace: :background_operations
+- :name: background_operations:database_background_operation_sec_orchestrator
+  :worker_name: Database::BackgroundOperation::SecOrchestratorWorker
+  :feature_category: :database
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: false
+  :tags: []
+  :queue_namespace: :background_operations
+- :name: background_operations:database_background_operation_sec_orchestrator_cell_local
+  :worker_name: Database::BackgroundOperation::SecOrchestratorCellLocalWorker
+  :feature_category: :database
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: false
+  :tags: []
+  :queue_namespace: :background_operations
 - :name: batched_background_migrations:database_batched_background_migration_ci_execution
   :worker_name: Database::BatchedBackgroundMigration::CiExecutionWorker
   :feature_category: :database
@@ -369,6 +439,16 @@
 - :name: cronjob:bulk_imports_stale_import
   :worker_name: BulkImports::StaleImportWorker
   :feature_category: :importers
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace: :cronjob
+- :name: cronjob:cells_lost_transaction_recovery
+  :worker_name: Cells::LostTransactionRecoveryWorker
+  :feature_category: :cell
   :has_external_dependencies: false
   :urgency: :low
   :resource_boundary: :unknown
@@ -2515,6 +2595,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace: :package_repositories
+- :name: package_repositories:packages_npm_process_temporary_package_file
+  :worker_name: Packages::Npm::ProcessTemporaryPackageFileWorker
+  :feature_category: :package_registry
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace: :package_repositories
 - :name: package_repositories:packages_nuget_create_symbols
   :worker_name: Packages::Nuget::CreateSymbolsWorker
   :feature_category: :package_registry
@@ -2715,6 +2805,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace: :pipeline_creation
+- :name: pipeline_default:ci_catalog_resources_track_component_usage
+  :worker_name: Ci::Catalog::Resources::TrackComponentUsageWorker
+  :feature_category: :pipeline_composition
+  :has_external_dependencies: false
+  :urgency: :throttled
+  :resource_boundary: :unknown
+  :weight: 3
+  :idempotent: true
+  :tags: []
+  :queue_namespace: :pipeline_default
 - :name: pipeline_default:ci_create_downstream_pipeline
   :worker_name: Ci::CreateDownstreamPipelineWorker
   :feature_category: :continuous_integration

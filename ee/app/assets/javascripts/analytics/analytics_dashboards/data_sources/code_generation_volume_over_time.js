@@ -4,38 +4,10 @@ import {
   START_DATES,
   startOfTomorrow,
 } from 'ee/analytics/analytics_dashboards/components/filters/constants';
-import { formatDateAsMonth } from '~/lib/utils/datetime/date_format_utility';
-import dateFormat from '~/lib/dateformat';
-import { dateFormats } from '~/analytics/shared/constants';
-import { cloneDate } from '~/lib/utils/datetime/date_calculation_utility';
 import { defaultClient } from 'ee/analytics/analytics_dashboards/graphql/client';
 import { extractQueryResponseFromNamespace } from '~/analytics/shared/utils';
 import { s__ } from '~/locale';
-
-export const getMonthsInDateRange = (startDate, endDate) => {
-  const dateRangeData = [];
-  const formatDate = (date) => dateFormat(date, dateFormats.isoDate, true);
-
-  for (
-    let fromDate = cloneDate(startDate);
-    fromDate < endDate;
-    fromDate.setMonth(fromDate.getMonth() + 1, 1)
-  ) {
-    let toDate = cloneDate(fromDate);
-    toDate.setMonth(toDate.getMonth() + 1, 0);
-    if (toDate > endDate) toDate = endDate;
-
-    const formattedFromDate = formatDate(fromDate);
-
-    dateRangeData.push({
-      fromDate: formattedFromDate,
-      toDate: formatDate(toDate),
-      monthLabel: `${formatDateAsMonth(formattedFromDate)} ${fromDate.getFullYear()}`,
-    });
-  }
-
-  return dateRangeData;
-};
+import { getMonthsInDateRange } from 'ee/analytics/dashboards/utils';
 
 const extractLinesOfCodeMetrics = (result) => {
   const { codeSuggestions } = extractQueryResponseFromNamespace({

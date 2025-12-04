@@ -37,7 +37,7 @@ module Ai
         strong_memoize_attr def validation_error
           return error_not_project_or_top_level_group unless for_project_or_top_level_group?
           return error_no_permissions unless allowed?
-          return error_parent_item_consumer_not_passed if project_flow_without_parent_item_consumer?
+          return error_parent_item_consumer_not_passed if project_item_without_parent_item_consumer?
           return error_no_pinned_version_prefix if pinned_version_prefix.nil?
 
           error_flow_triggers_must_be_for_project if flow_triggers_not_for_project?
@@ -56,12 +56,14 @@ module Ai
         end
 
         def requires_parent_item_consumer?
-          return false unless ai_catalog_flows_enabled?
+          return false if project.nil?
 
-          (item.flow? || item.third_party_flow?) && project.present?
+          return true if (item.third_party_flow? || item.flow?) && ai_catalog_flows_enabled?
+
+          item.agent? && ai_catalog_agents_enabled?
         end
 
-        def project_flow_without_parent_item_consumer?
+        def project_item_without_parent_item_consumer?
           requires_parent_item_consumer? && parent_item_consumer.nil?
         end
 
@@ -96,7 +98,8 @@ module Ai
             namespace_id: group.id,
             name: item.name,
             username: service_account_username,
-            organization_id: group.organization_id
+            organization_id: group.organization_id,
+            composite_identity_enforced: true
           }
 
           # TODO: Handle duplicate username (possible with my-flow a-group-name and my-flow-a group-name)
@@ -124,7 +127,7 @@ module Ai
             parent_item_consumer_service_account, Member::DEVELOPER, current_user:
           )
 
-          return [:failure, project_member] if project_member.nil? || !project_member.persisted?
+          return [:failure, project_member.presence] unless project_member.present? && project_member.persisted?
 
           [:success, project_member]
         end
@@ -183,6 +186,10 @@ module Ai
 
         def ai_catalog_flows_enabled?
           Feature.enabled?(:ai_catalog_flows, current_user)
+        end
+
+        def ai_catalog_agents_enabled?
+          Feature.enabled?(:ai_catalog_agents, current_user)
         end
 
         def error(message)

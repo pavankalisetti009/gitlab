@@ -3,19 +3,25 @@
 module EE
   module API
     module Search
-      ELASTICSEARCH_SCOPES = %w[blobs commits notes wiki_blobs].freeze
+      ADVANCED_SEARCH_SCOPES = %w[blobs commits notes wiki_blobs].freeze
       BLOB_SEARCH_TYPES = %w[advanced zoekt].freeze
-      ELASTICSEARCH_SEARCH_TYPE = 'advanced'
+      ADVANCED_SEARCH_SEARCH_TYPE = 'advanced'
 
       extend ActiveSupport::Concern
 
       prepended do
         helpers do
+          include ::API::Helpers::SearchHelpers
           extend ::Gitlab::Utils::Override
 
-          params :search_params_ee do
+          params :search_params_common_ee do
             optional :fields, type: Array[String], coerce_with: ::API::Validations::Types::CommaSeparatedToArray.coerce,
-              values: %w[title], desc: 'Array of fields you wish to search'
+              values: %w[title], desc: 'Array of fields you wish to search. Available with advanced search.'
+          end
+
+          params :search_params_forks_filter_ee do
+            optional :exclude_forks, type: Grape::API::Boolean, default: true,
+              desc: 'Excludes forked projects in the search. Available with exact code search.'
           end
 
           override :scope_preload_method
@@ -29,12 +35,12 @@ module EE
             if search_scope == 'blobs'
               return if BLOB_SEARCH_TYPES.include?(search_type)
 
-              return render_api_error!({ error: 'Scope supported only with Elasticsearch or Zoekt' }, 400)
+              return render_api_error!({ error: 'Scope supported only with advanced search or exact code search' }, 400)
             end
 
-            return if ELASTICSEARCH_SCOPES.exclude?(search_scope) || search_type == ELASTICSEARCH_SEARCH_TYPE
+            return if ADVANCED_SEARCH_SCOPES.exclude?(search_scope) || search_type == ADVANCED_SEARCH_SEARCH_TYPE
 
-            render_api_error!({ error: 'Scope supported only with Elasticsearch' }, 400)
+            render_api_error!({ error: 'Scope supported only with advanced search' }, 400)
           end
         end
       end

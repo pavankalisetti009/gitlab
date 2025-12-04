@@ -596,6 +596,7 @@ class ApplicationSetting < ApplicationRecord
       :max_artifacts_content_include_size,
       :max_artifacts_size,
       :max_attachment_size,
+      :max_http_response_json_depth,
       :max_yaml_depth,
       :max_yaml_size_bytes,
       :namespace_aggregation_schedule_lease_duration_in_seconds,
@@ -661,6 +662,7 @@ class ApplicationSetting < ApplicationRecord
       :max_github_response_json_value_count,
       :max_http_decompressed_size,
       :max_http_response_size_limit,
+      :max_http_response_json_structural_chars,
       :max_import_remote_file_size,
       :max_import_size,
       :max_pages_custom_domains_per_project,
@@ -672,6 +674,7 @@ class ApplicationSetting < ApplicationRecord
       :packages_cleanup_package_file_worker_capacity,
       :pages_extra_deployments_default_expiry_seconds,
       :pipeline_limit_per_project_user_sha,
+      :pipeline_limit_per_user,
       :project_api_limit,
       :project_invited_groups_api_limit,
       :projects_api_limit,
@@ -722,6 +725,8 @@ class ApplicationSetting < ApplicationRecord
   jsonb_accessor :response_limits,
     max_http_response_size_limit: [:integer, { default: 100 }],
     max_http_decompressed_size: [:integer, { default: 100 }],
+    max_http_response_json_depth: [:integer, { default: 32 }],
+    max_http_response_json_structural_chars: [:integer, { default: 1_000_000 }],
     max_github_response_size_limit: [:integer, { default: 8 }],
     max_github_response_json_value_count: [:integer, { default: 250_000 }]
 
@@ -760,7 +765,16 @@ class ApplicationSetting < ApplicationRecord
   validates :search, json_schema: { filename: 'application_setting_search' }
   validates :default_search_scope,
     inclusion: {
-      in: Gitlab::Search::AbuseDetection::ALLOWED_SCOPES + [SEARCH_SCOPE_SYSTEM_DEFAULT],
+      in: -> {
+        scopes =
+          if Feature.enabled?(:search_scope_registry, :instance)
+            ::Search::Scopes.all_scope_names
+          else
+            ::Gitlab::Search::AbuseDetection::LEGACY_ALLOWED_SCOPES
+          end
+
+        scopes + [SEARCH_SCOPE_SYSTEM_DEFAULT]
+      },
       message: 'invalid scope selected'
     },
     allow_blank: true
@@ -932,6 +946,11 @@ class ApplicationSetting < ApplicationRecord
     reindexing_minimum_relative_bloat_size: [:float, { default: 0.2 }]
 
   validates :database_reindexing, json_schema: { filename: "application_setting_database_reindexing" }
+
+  jsonb_accessor :database_settings,
+    background_operations_max_jobs: [:integer, { default: 10 }]
+
+  validates :database_settings, json_schema: { filename: "application_setting_database_settings" }
 
   attr_encrypted :external_auth_client_key, encryption_options_base_32_aes_256_gcm
   attr_encrypted :external_auth_client_key_pass, encryption_options_base_32_aes_256_gcm
@@ -1221,7 +1240,8 @@ class ApplicationSetting < ApplicationRecord
       users_api_limit_ssh_keys: [:integer, { default: 120 }],
       users_api_limit_ssh_key: [:integer, { default: 120 }],
       users_api_limit_gpg_keys: [:integer, { default: 120 }],
-      users_api_limit_gpg_key: [:integer, { default: 120 }]
+      users_api_limit_gpg_key: [:integer, { default: 120 }],
+      pipeline_limit_per_user: [:integer, { default: 0 }]
     }
   end
 
@@ -1283,7 +1303,11 @@ class ApplicationSetting < ApplicationRecord
   end
 
   def custom_default_search_scope_set?
-    ::Gitlab::Search::AbuseDetection::ALLOWED_SCOPES.include?(default_search_scope)
+    if Feature.enabled?(:search_scope_registry, :instance)
+      ::Search::Scopes.all_scope_names.include?(default_search_scope)
+    else
+      ::Gitlab::Search::AbuseDetection::LEGACY_ALLOWED_SCOPES.include?(default_search_scope)
+    end
   end
 
   private

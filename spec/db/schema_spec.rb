@@ -174,7 +174,7 @@ RSpec.describe 'Database schema',
       p_sent_notifications: %w[project_id noteable_id recipient_id commit_id in_reply_to_discussion_id],
       slack_integrations: %w[team_id user_id bot_user_id], # these are external Slack IDs
       snippets: %w[author_id],
-      spam_logs: %w[user_id target_id],
+      spam_logs: %w[target_id],
       status_check_responses: %w[external_approval_rule_id],
       subscriptions: %w[subscribable_id],
       suggestions: %w[commit_id],
@@ -260,13 +260,8 @@ RSpec.describe 'Database schema',
       workspaces_agent_config_versions: %w[item_id], # polymorphic associations
       work_item_types: %w[correct_id old_id], # temporary columns that are not foreign keys
       instance_integrations: %w[project_id group_id inherit_from_id], # these columns are not used in instance integrations
-      group_scim_identities: %w[temp_source_id], # temporary column that is not a foreign key
-      group_scim_auth_access_tokens: %w[temp_source_id], # temporary column that is not a foreign key
       secret_detection_token_statuses: %w[project_id],
       security_finding_token_statuses: %w[security_finding_id project_id],
-      system_access_group_microsoft_graph_access_tokens: %w[temp_source_id], # temporary column that is not a foreign key
-      system_access_group_microsoft_applications: %w[temp_source_id], # temporary column that is not a foreign key
-      system_note_metadata: %w[organization_id], # column will be dropped in 18.8
       subscription_user_add_on_assignment_versions: %w[item_id user_id purchase_id], # Managed by paper_trail gem, no need for FK on the historical data
       virtual_registries_packages_maven_cache_entries: %w[group_id], # We can't use a foreign key due to object storage references
       # system_defined_status_id reference to fixed items model which is stored in code

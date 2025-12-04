@@ -4476,6 +4476,20 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
 
       it_behaves_like 'does not call custom role query', [:maintainer, :owner]
     end
+
+    context 'scan profile abilities' do
+      context 'when security_scan_profile is available' do
+        context 'for a member role with the `read_security_scan_profiles` ability' do
+          let(:licensed_features) { { security_scan_profiles: true } }
+          let(:member_role_abilities) { { read_security_scan_profiles: true } }
+          let(:allowed_abilities) { [:read_security_scan_profiles] }
+
+          it_behaves_like 'custom roles abilities'
+
+          it_behaves_like 'does not call custom role query', [:developer, :maintainer, :owner]
+        end
+      end
+    end
   end
 
   describe ':destroy_group policy' do
@@ -4912,13 +4926,13 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
   end
 
   describe 'admin_group_model_selection' do
-    let(:feature_flags_enabled) { true }
+    let(:is_saas) { true }
     let(:namespace_duo_enabled) { true }
     let(:with_self_hosted) { false }
     let(:amazon_q_enabled) { false }
 
     before do
-      stub_feature_flags(ai_model_switching: feature_flags_enabled)
+      stub_saas_features(gitlab_com_subscriptions: is_saas)
       allow(::Ai::Setting).to receive(:self_hosted?).and_return(with_self_hosted)
       allow(::Ai::AmazonQ).to receive(:connected?).and_return(amazon_q_enabled)
 
@@ -4942,7 +4956,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     context 'when user can admin the group' do
       let(:current_user) { owner }
 
-      where(:amazon_q_enabled, :feature_flags_enabled, :namespace_duo_enabled, :with_self_hosted, :enabled_for_user) do
+      where(:amazon_q_enabled, :is_saas, :namespace_duo_enabled, :with_self_hosted, :enabled_for_user) do
         false | false | false | false | be_disallowed(:admin_group_model_selection)
         false | false | false | true  | be_disallowed(:admin_group_model_selection)
         false | true  | false | false | be_disallowed(:admin_group_model_selection)
@@ -5355,6 +5369,23 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       ref(:reporter)   | be_disallowed(:configure_group_secrets_manager)
       ref(:guest)      | be_disallowed(:configure_group_secrets_manager)
       ref(:admin)      | be_disallowed(:configure_group_secrets_manager)
+    end
+
+    with_them do
+      it { is_expected.to match_expected_result }
+    end
+  end
+
+  describe 'configure_group_secrets_permission' do
+    where(:current_user, :match_expected_result) do
+      ref(:owner)      | be_allowed(:configure_group_secrets_permission)
+      ref(:maintainer) | be_disallowed(:configure_group_secrets_permission)
+      ref(:developer)  | be_disallowed(:configure_group_secrets_permission)
+      ref(:anonymous)  | be_disallowed(:configure_group_secrets_permission)
+      ref(:planner)    | be_disallowed(:configure_group_secrets_permission)
+      ref(:reporter)   | be_disallowed(:configure_group_secrets_permission)
+      ref(:guest)      | be_disallowed(:configure_group_secrets_permission)
+      ref(:admin)      | be_disallowed(:configure_group_secrets_permission)
     end
 
     with_them do

@@ -9,6 +9,7 @@ jest.mock('~/lib/utils/datetime/timeago_utility');
 
 describe('AgentFlowListItem', () => {
   let wrapper;
+  let mockRouter;
 
   const mockTimeago = {
     format: jest.fn(),
@@ -23,6 +24,7 @@ describe('AgentFlowListItem', () => {
     project: {
       id: 'gid://gitlab/Project/1',
       name: 'Test Project',
+      webUrl: 'https://gitlab.com/gitlab-org/test-project',
       namespace: {
         id: 'gid://gitlab/Group/1',
         name: 'gitlab-org',
@@ -34,10 +36,17 @@ describe('AgentFlowListItem', () => {
   const findStatusIcon = () => wrapper.findComponent(AgentStatusIcon);
 
   const createWrapper = (props = {}) => {
+    mockRouter = {
+      push: jest.fn(),
+    };
+
     wrapper = shallowMount(AgentFlowListItem, {
       propsData: {
         item: mockItem,
         ...props,
+      },
+      mocks: {
+        $router: mockRouter,
       },
     });
   };
@@ -54,12 +63,11 @@ describe('AgentFlowListItem', () => {
         expect(wrapper.find('li').exists()).toBe(true);
       });
 
-      it('renders and sets the correct route for the link', () => {
+      it('renders the link with correct href', () => {
         expect(findLink().exists()).toBe(true);
-        expect(findLink().props('to')).toEqual({
-          name: AGENTS_PLATFORM_SHOW_ROUTE,
-          params: { id: 1 },
-        });
+        expect(findLink().attributes('href')).toBe(
+          `${mockItem.project.webUrl}/-/automate/agent-sessions/1`,
+        );
       });
 
       it('renders the status icon', () => {
@@ -85,6 +93,31 @@ describe('AgentFlowListItem', () => {
 
       it('does not display project information', () => {
         expect(wrapper.text()).not.toContain('Test Project');
+      });
+
+      describe('link click handling', () => {
+        it('uses router navigation for regular clicks', () => {
+          const event = { metaKey: false, ctrlKey: false, preventDefault: jest.fn() };
+          findLink().vm.$emit('click', event);
+
+          expect(event.preventDefault).toHaveBeenCalled();
+          expect(mockRouter.push).toHaveBeenCalledWith({
+            name: AGENTS_PLATFORM_SHOW_ROUTE,
+            params: { id: 1 },
+          });
+        });
+
+        it.each`
+          modifier     | metaKey  | ctrlKey
+          ${'Command'} | ${true}  | ${false}
+          ${'Ctrl'}    | ${false} | ${true}
+        `('allows browser navigation for $modifier+click', ({ metaKey, ctrlKey }) => {
+          const event = { metaKey, ctrlKey, preventDefault: jest.fn() };
+          findLink().vm.$emit('click', event);
+
+          expect(event.preventDefault).not.toHaveBeenCalled();
+          expect(mockRouter.push).not.toHaveBeenCalled();
+        });
       });
     });
 
@@ -120,6 +153,24 @@ describe('AgentFlowListItem', () => {
 
       it('defaults to not showing project information', () => {
         expect(wrapper.text()).not.toContain('Test Project');
+      });
+    });
+
+    describe('when project webUrl is not available', () => {
+      it('renders link with null href', () => {
+        getTimeago.mockReturnValue(mockTimeago);
+        mockTimeago.format.mockReturnValue('2 days ago');
+        createWrapper({
+          item: {
+            ...mockItem,
+            project: {
+              ...mockItem.project,
+              webUrl: null,
+            },
+          },
+        });
+
+        expect(findLink().attributes('href')).toBeUndefined();
       });
     });
   });

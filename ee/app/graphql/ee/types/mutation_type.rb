@@ -97,6 +97,7 @@ module EE
         mount_mutation ::Mutations::RequirementsManagement::UpdateRequirement
         mount_mutation ::Mutations::SecretsManagement::GroupSecretsManagers::Initialize
         mount_mutation ::Mutations::SecretsManagement::GroupSecretsManagers::Deprovision
+        mount_mutation ::Mutations::SecretsManagement::GroupSecretsPermissions::Update
         mount_mutation ::Mutations::SecretsManagement::ProjectSecretsManagers::Initialize
         mount_mutation ::Mutations::SecretsManagement::ProjectSecretsManagers::Deprovision
         mount_mutation ::Mutations::SecretsManagement::ProjectSecrets::Create
@@ -106,6 +107,7 @@ module EE
         mount_mutation ::Mutations::SecretsManagement::Permissions::Delete
         mount_mutation ::Mutations::Security::Finding::CreateIssue
         mount_mutation ::Mutations::Security::Finding::CreateExternalIssueLink
+        mount_mutation ::Mutations::Security::Finding::CreateJiraIssueFormUrl, experiment: { milestone: '18.7' }
         mount_mutation ::Mutations::Security::Finding::CreateMergeRequest
         mount_mutation ::Mutations::Security::Finding::CreateVulnerability, experiment: { milestone: '17.5' }
         mount_mutation ::Mutations::Security::Finding::Dismiss

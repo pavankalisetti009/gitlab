@@ -11,10 +11,6 @@ module Types
 
         alias_method :policy, :object
 
-        field :group_id, GraphQL::Types::ID, null: false,
-          description: 'ID of the Group.',
-          experiment: { milestone: '18.7' }
-
         field :enabled, GraphQL::Types::Boolean, null: false,
           description: 'Whether the cleanup policy is enabled.',
           experiment: { milestone: '18.7' }

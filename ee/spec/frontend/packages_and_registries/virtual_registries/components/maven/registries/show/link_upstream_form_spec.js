@@ -1,13 +1,18 @@
+import Vue from 'vue';
+import VueApollo from 'vue-apollo';
 import { GlForm, GlSkeletonLoader } from '@gitlab/ui';
 import { cloneDeep } from 'lodash';
+import mavenUpstreamSummaryPayload from 'test_fixtures/ee/graphql/packages_and_registries/virtual_registries/graphql/queries/get_maven_upstream_summary.query.graphql.json';
+import createMockApollo from 'helpers/mock_apollo_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import waitForPromises from 'helpers/wait_for_promises';
 import LinkUpstreamForm from 'ee/packages_and_registries/virtual_registries/components/maven/registries/show/link_upstream_form.vue';
 import TestMavenUpstreamButton from 'ee/packages_and_registries/virtual_registries/components/maven/shared/test_maven_upstream_button.vue';
 import UpstreamSelector from 'ee/packages_and_registries/virtual_registries/components/maven/registries/show/upstream_selector.vue';
-import { getMavenUpstream } from 'ee/api/virtual_registries_api';
-import { mockUpstream, upstreamsResponse } from '../../../../mock_data';
+import getMavenUpstreamSummaryQuery from 'ee/packages_and_registries/virtual_registries/graphql/queries/get_maven_upstream_summary.query.graphql';
+import { upstreamsResponse } from 'ee_jest/packages_and_registries/virtual_registries/mock_data';
 
-jest.mock('ee/api/virtual_registries_api');
+Vue.use(VueApollo);
 
 describe('LinkUpstreamForm', () => {
   let wrapper;
@@ -18,14 +23,17 @@ describe('LinkUpstreamForm', () => {
     initialUpstreams: upstreamsResponse.data,
   };
 
-  const mavenUpstreamResponse = {
-    data: { ...mockUpstream, cache_validity_hours: 24, metadata_cache_validity_hours: 48 },
-  };
-
   const upstreamId = upstreamsResponse.data[0].id;
+  const mockUpstream = mavenUpstreamSummaryPayload.data.virtualRegistriesPackagesMavenUpstream;
 
-  const createComponent = ({ props = defaultProps } = {}) => {
+  const mavenUpstreamHandler = jest.fn().mockResolvedValue(mavenUpstreamSummaryPayload);
+
+  const createComponent = ({
+    handlers = [[getMavenUpstreamSummaryQuery, mavenUpstreamHandler]],
+    props = defaultProps,
+  } = {}) => {
     wrapper = shallowMountExtended(LinkUpstreamForm, {
+      apolloProvider: createMockApollo(handlers),
       propsData: props,
     });
   };
@@ -46,7 +54,6 @@ describe('LinkUpstreamForm', () => {
 
   it('renders upstream select', () => {
     expect(cloneDeep(findUpstreamSelect().props())).toEqual({
-      selectedUpstreamName: '',
       upstreamsCount: defaultProps.upstreamsCount,
       linkedUpstreams: defaultProps.linkedUpstreams,
       initialUpstreams: defaultProps.initialUpstreams,
@@ -69,6 +76,10 @@ describe('LinkUpstreamForm', () => {
     expect(findTestUpstreamButton().exists()).toBe(false);
   });
 
+  it('does not call maven upstream graphql query', () => {
+    expect(mavenUpstreamHandler).not.toHaveBeenCalled();
+  });
+
   describe('when upstream is selected', () => {
     it('renders a loader', async () => {
       await findUpstreamSelect().vm.$emit('select', upstreamId);
@@ -78,21 +89,19 @@ describe('LinkUpstreamForm', () => {
 
     describe('and API succeeds', () => {
       beforeEach(() => {
-        getMavenUpstream.mockResolvedValue(mavenUpstreamResponse);
         findUpstreamSelect().vm.$emit('select', upstreamId);
       });
 
-      it('calls get upstream API', () => {
-        expect(getMavenUpstream).toHaveBeenCalledWith({
-          id: upstreamId,
+      it('calls maven upstream graphql query', () => {
+        expect(mavenUpstreamHandler).toHaveBeenCalledTimes(1);
+        expect(mavenUpstreamHandler).toHaveBeenCalledWith({
+          id: 'gid://gitlab/VirtualRegistries::Packages::Maven::Upstream/3',
         });
       });
 
-      it('sets selected upstream name', () => {
-        expect(findUpstreamSelect().props('selectedUpstreamName')).toBe(mockUpstream.name);
-      });
+      it('renders upstream summary', async () => {
+        await waitForPromises();
 
-      it('renders upstream summary', () => {
         expect(wrapper.text()).toContain('URL');
         expect(wrapper.text()).toContain(mockUpstream.url);
         expect(wrapper.text()).toContain('Description');
@@ -104,34 +113,52 @@ describe('LinkUpstreamForm', () => {
       });
 
       it('renders Test upstream button', () => {
-        expect(findTestUpstreamButton().props('upstreamId')).toBe(mockUpstream.id);
+        expect(findTestUpstreamButton().props('upstreamId')).toBe(3);
       });
     });
 
     describe('and API fails', () => {
       beforeEach(() => {
-        getMavenUpstream.mockRejectedValue();
+        createComponent({
+          handlers: [
+            [getMavenUpstreamSummaryQuery, jest.fn().mockResolvedValue(new Error('GraphQL error'))],
+          ],
+        });
         findUpstreamSelect().vm.$emit('select', upstreamId);
       });
 
-      it('renders alert message', () => {
+      it('renders alert message', async () => {
+        await waitForPromises();
         expect(wrapper.text()).toContain('Failed to fetch upstream summary.');
       });
 
-      it('does not render Test upstream button', () => {
-        expect(findTestUpstreamButton().exists()).toBe(false);
+      it('renders Test upstream button', () => {
+        expect(findTestUpstreamButton().props('upstreamId')).toBe(upstreamId);
       });
     });
 
     describe('when resolved upstream does not have description', () => {
-      beforeEach(() => {
-        getMavenUpstream.mockResolvedValue({
-          data: {
-            ...mavenUpstreamResponse.data,
-            description: '',
+      const upstreamResponseWithNullDescription = {
+        data: {
+          ...mavenUpstreamSummaryPayload.data,
+          virtualRegistriesPackagesMavenUpstream: {
+            ...mockUpstream,
+            description: null,
           },
+        },
+      };
+
+      beforeEach(async () => {
+        createComponent({
+          handlers: [
+            [
+              getMavenUpstreamSummaryQuery,
+              jest.fn().mockResolvedValue(upstreamResponseWithNullDescription),
+            ],
+          ],
         });
         findUpstreamSelect().vm.$emit('select', upstreamId);
+        await waitForPromises();
       });
 
       it('does not render `Description` label', () => {
@@ -151,7 +178,6 @@ describe('LinkUpstreamForm', () => {
     });
 
     it('emits event if upstream is selected', async () => {
-      getMavenUpstream.mockResolvedValue(mavenUpstreamResponse);
       await findUpstreamSelect().vm.$emit('select', upstreamId);
 
       findForm().vm.$emit('submit', { preventDefault: () => {} });

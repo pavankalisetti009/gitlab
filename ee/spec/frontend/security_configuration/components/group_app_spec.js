@@ -1,8 +1,7 @@
 import { shallowMount } from '@vue/test-utils';
-import { GlTab } from '@gitlab/ui';
+import { GlTab, GlExperimentBadge } from '@gitlab/ui';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import App from 'ee/security_configuration/components/app.vue';
-import BetaBadge from '~/vue_shared/components/badges/beta_badge.vue';
 import ConfigureAttributes from 'ee/security_configuration/components/security_attributes/configure_attributes.vue';
 
 describe('Group Security configuration', () => {
@@ -26,7 +25,7 @@ describe('Group Security configuration', () => {
     expect(findPageHeading().props('heading')).toBe('Security configuration');
     expect(findTab().text()).toContain('Security attributes');
     expect(findTab().text()).toContain('Use security attributes to categorize projects');
-    expect(findTab().findComponent(BetaBadge).exists()).toBe(true);
+    expect(findTab().findComponent(GlExperimentBadge).exists()).toBe(true);
     expect(findConfigureSecurityAttributes().exists()).toBe(true);
   });
 });

@@ -20,18 +20,16 @@ title: Foundational flows
 
 {{< /collapsible >}}
 
-Foundational flows are built and maintained by GitLab.
+Foundational flows are built and maintained by GitLab and display a GitLab-maintained badge ({{< icon name="tanuki-verified" >}}).
 
 Each flow is designed to solve a specific problem or help you with a development task.
 
 The following foundational flows are available:
 
+- [Software development](software_development.md).
 - [Fix your CI/CD pipeline](fix_pipeline.md).
 - [Convert a Jenkinsfile to `.gitlab-ci.yml` file](convert_to_gitlab_ci.md).
 - [Convert an issue to a merge request](issue_to_mr.md).
-- Work with any aspect of [software development](software_development.md). In this flow,
-  you describe your needs and GitLab Duo understands your repository, the codebase,
-  and its structure.
 
 ## Supported APIs and permissions
 

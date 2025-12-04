@@ -319,13 +319,13 @@ RSpec.describe UserPreference do
       let_it_be(:top_level_group) { create(:group) }
       let_it_be(:subgroup) { create(:group, parent: top_level_group) }
 
-      it 'returns top level authorized groups and user namespace' do
+      it 'returns top level authorized groups' do
         top_level_group.add_maintainer(user)
         subgroup.add_maintainer(user)
 
         result = user_preference.duo_default_namespace_candidates
 
-        expect(result).to include(top_level_group, user.namespace)
+        expect(result).to include(top_level_group)
       end
     end
   end

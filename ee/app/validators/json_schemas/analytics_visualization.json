@@ -81,7 +81,8 @@
             "mean_time_to_merge",
             "code_suggestions_acceptance_by_language",
             "code_generation_volume_over_time",
-            "user_ai_usage_data"
+            "user_ai_usage_data",
+            "code_review_requests_by_role_over_time"
           ]
         },
         "query": {
@@ -143,6 +144,9 @@
         "stacked": {
           "type": "string"
         },
+        "refetchOnSort": {
+          "type": "boolean"
+        },
         "fields": {
           "type": "array",
           "items": {
@@ -151,7 +155,9 @@
               "component": {
                 "enum": [
                   "AssigneeAvatars",
+                  "CalculateSum",
                   "DiffLineChanges",
+                  "CalculatePercent",
                   "FormatTime",
                   "FormatTimeRange",
                   "MergeRequestLink",
@@ -161,6 +167,9 @@
                   "TrendLine",
                   "UserLink"
                 ]
+              },
+              "componentProps": {
+                "type": "object"
               }
             }
           }

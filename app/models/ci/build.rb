@@ -49,6 +49,7 @@ module Ci
     DEGRADATION_THRESHOLD_VARIABLE_NAME = 'DEGRADATION_THRESHOLD'
     RUNNERS_STATUS_CACHE_EXPIRATION = 1.minute
     DEPLOYMENT_NAMES = %w[deploy release rollout].freeze
+    MAX_PIPELINES_TO_SEARCH = 100
 
     TOKEN_PREFIX = 'glcbt-'
 
@@ -63,13 +64,6 @@ module Ci
       partition_foreign_key: :partition_id
     has_many :report_results, class_name: 'Ci::BuildReportResult', foreign_key: :build_id, inverse_of: :build
     has_one :namespace, through: :project
-
-    has_one :build_source,
-      ->(build) { in_partition(build) },
-      class_name: 'Ci::BuildSource',
-      foreign_key: :build_id,
-      inverse_of: :build,
-      partition_foreign_key: :partition_id
 
     # Projects::DestroyService destroys Ci::Pipelines, which use_fast_destroy on :job_artifacts
     # before we delete builds. By doing this, the relation should be empty and not fire any
@@ -299,6 +293,27 @@ module Ci
       def supported_keyset_orderings
         { id: [:desc] }
       end
+
+      def latest_with_artifacts_for_ref(project, job_name, ref_name, limit: MAX_PIPELINES_TO_SEARCH)
+        joins(:pipeline)
+          .joins(:job_artifacts)
+          .where(
+            pipeline: {
+              id: Ci::Pipeline
+                .where(project_id: project.id)
+                .for_ref(ref_name)
+                .success
+                .order(id: :desc)
+                .limit(limit)
+                .select(:id)
+            }
+          )
+          .by_name(job_name)
+          .success
+          .where(job_artifacts: { file_type: Ci::JobArtifact.file_types[:archive] })
+          .order('pipeline.id DESC')
+          .first
+      end
     end
 
     state_machine :status do
@@ -431,8 +446,7 @@ module Ci
       end
 
       before_transition running: [:failed] do |build|
-        if build.failure_reason&.to_sym == :job_execution_timeout &&
-            Feature.enabled?(:enforce_job_configured_timeouts, :instance)
+        if build.failure_reason&.to_sym == :job_execution_timeout
           # If job was stuck or timed-out, only bill the set timeout.
           build.finished_at = build.started_at + build.timeout.seconds
         end
@@ -882,9 +896,9 @@ module Ci
     def tag_list
       # Check job_definition first to avoid loading project if not needed
       return super if job_definition.nil?
-      return super if Feature.disabled?(:ci_build_uses_job_definition_tag_list, project)
+      return super if Feature.disabled?(:ci_build_uses_job_definition_tag_list, Project.actor_from_id(project_id))
 
-      Gitlab::Ci::Tags::TagList.new(job_definition.config.fetch(:tag_list, []))
+      job_definition.tag_list
     end
     strong_memoize_attr :tag_list
 
@@ -1017,28 +1031,8 @@ module Ci
 
     def cache
       cache = Array.wrap(options[:cache])
-
-      cache.each do |single_cache|
-        single_cache[:fallback_keys] = [] unless single_cache.key?(:fallback_keys)
-      end
-
-      if project.jobs_cache_index
-        cache = cache.map do |single_cache|
-          cache = single_cache.merge(key: "#{single_cache[:key]}-#{project.jobs_cache_index}")
-          fallback = cache.slice(:fallback_keys).transform_values { |keys| keys.map { |key| "#{key}-#{project.jobs_cache_index}" } }
-          cache.merge(fallback.compact)
-        end
-      end
-
-      return cache unless project.ci_separated_caches
-
-      cache.map do |entry|
-        type_suffix = !entry[:unprotect] && pipeline.protected_ref? ? 'protected' : 'non_protected'
-
-        cache = entry.merge(key: "#{entry[:key]}-#{type_suffix}")
-        fallback = cache.slice(:fallback_keys).transform_values { |keys| keys.map { |key| "#{key}-#{type_suffix}" } }
-        cache.merge(fallback.compact)
-      end
+      cache = apply_jobs_cache_index(cache)
+      apply_cache_protection_suffix(cache)
     end
 
     def fallback_cache_keys_defined?
@@ -1303,11 +1297,6 @@ module Ci
     end
     strong_memoize_attr :time_in_queue_seconds
 
-    def source
-      build_source&.source || pipeline.source
-    end
-    strong_memoize_attr :source
-
     def token
       return encoded_jwt if user&.composite_identity_enforced? || use_jwt_for_ci_cd_job_token?
 
@@ -1331,6 +1320,13 @@ module Ci
       :wait_expired
     end
 
+    def uses_protected_cache?
+      return false unless user
+      return false unless project.ci_separated_caches
+
+      project.team.max_member_access(user.id) >= Gitlab::Access::MAINTAINER
+    end
+
     protected
 
     def run_status_commit_hooks!
@@ -1340,6 +1336,37 @@ module Ci
     end
 
     private
+
+    def apply_jobs_cache_index(cache)
+      return cache unless project.jobs_cache_index
+
+      cache.map do |entry|
+        entry.merge(
+          key: "#{entry[:key]}-#{project.jobs_cache_index}",
+          fallback_keys: (entry[:fallback_keys] || []).map { |key| "#{key}-#{project.jobs_cache_index}" }
+        )
+      end
+    end
+
+    def apply_cache_protection_suffix(cache)
+      return cache unless project.ci_separated_caches
+
+      cache.map do |entry|
+        suffix = cache_suffix_for(entry)
+        entry.merge(
+          key: "#{entry[:key]}-#{suffix}",
+          fallback_keys: (entry[:fallback_keys] || []).map { |key| "#{key}-#{suffix}" }
+        )
+      end
+    end
+
+    def cache_suffix_for(entry)
+      return 'non_protected' if entry[:unprotect]
+      return 'protected' if uses_protected_cache?
+      return 'protected' if pipeline&.protected_ref?
+
+      'non_protected'
+    end
 
     def reports_definitions
       options.dig(:artifacts, :reports)

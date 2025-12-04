@@ -42,10 +42,11 @@ module ComplianceManagement
         ##
 
         def security_scanner_running?(scanner, project, _context = {})
-          pipeline = project.latest_successful_pipeline_for_default_branch
+          return false unless SECURITY_SCANNERS.include?(scanner)
+
+          pipeline = project.ci_pipelines.newest_first(ref: project.default_branch).first
 
           return false if pipeline.nil?
-          return false unless SECURITY_SCANNERS.include?(scanner)
 
           pipeline.job_artifacts.send(scanner).any? # rubocop: disable GitlabSecurity/PublicSend -- limited to supported scanners
         end
@@ -117,7 +118,7 @@ module ComplianceManagement
         end
 
         def scanner_iac_running?(project, _context = {})
-          pipeline = project.latest_successful_pipeline_for_default_branch
+          pipeline = project.ci_pipelines.newest_first(ref: project.default_branch).first
 
           return false if pipeline.nil?
 

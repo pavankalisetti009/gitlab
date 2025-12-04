@@ -10,7 +10,6 @@ import {
   SEVERITY_COUNT_LIMIT,
 } from 'ee/vulnerabilities/constants';
 import { s__, sprintf } from '~/locale';
-import { SEVERITY_CLASS_NAME_MAP } from './constants';
 
 export default {
   components: {
@@ -98,7 +97,6 @@ export default {
       return 'span';
     },
   },
-  cssClass: SEVERITY_CLASS_NAME_MAP,
 };
 </script>
 
@@ -107,7 +105,7 @@ export default {
     <component
       :is="component(highlights[showSingleSeverity])"
       v-if="showSingleSeverity"
-      :class="$options.cssClass[showSingleSeverity]"
+      :class="`severity-text-${showSingleSeverity}`"
       >{{ formattedCounts(highlights[showSingleSeverity]) }}
       {{ n__('vulnerability', 'vulnerabilities', highlights[showSingleSeverity]) }}</component
     >
@@ -115,13 +113,13 @@ export default {
       <template #critical="{ content }"
         ><component
           :is="component(criticalSeverityCount)"
-          class="gl-text-red-800"
+          class="severity-text-critical"
           data-testid="critical"
           >{{ criticalSeverityCount }} {{ content }}</component
         ></template
       >
       <template #high="{ content }"
-        ><component :is="component(highSeverityCount)" class="gl-text-red-600" data-testid="high"
+        ><component :is="component(highSeverityCount)" class="severity-text-high" data-testid="high"
           >{{ highSeverityCount }} {{ content }}</component
         ></template
       >

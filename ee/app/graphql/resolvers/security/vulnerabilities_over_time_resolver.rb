@@ -4,6 +4,7 @@ module Resolvers
   module Security
     class VulnerabilitiesOverTimeResolver < VulnerabilitiesBaseResolver
       include Gitlab::Graphql::Authorize::AuthorizeResource
+      include LooksAhead
 
       MAX_DATE_RANGE_DAYS = 31
 
@@ -24,21 +25,39 @@ module Resolvers
         required: false,
         description: 'Filter vulnerabilities by severity.'
 
-      def resolve(start_date:, end_date:, **args)
+      def resolve_with_lookahead(start_date:, end_date:, **args)
         authorize!(object) unless resolve_vulnerabilities_for_instance_security_dashboard?
+        validate_advanced_vuln_management!
         validate_date_range!(start_date, end_date)
 
         return [] if !vulnerable || !feature_enabled?(vulnerable)
 
         base_params = build_base_params(start_date, end_date, args)
 
-        severity_results = fetch_grouped_results(base_params.merge(group_by: 'severity'))
-        report_type_results = fetch_grouped_results(base_params.merge(group_by: 'report_type'))
+        # Check which fields are requested
+        severity_requested = field_requested?(:by_severity)
+        report_type_requested = field_requested?(:by_report_type)
+
+        severity_results = if severity_requested
+                             fetch_grouped_results(base_params.merge(group_by: 'severity'))
+                           else
+                             []
+                           end
+
+        report_type_results = if report_type_requested
+                                fetch_grouped_results(base_params.merge(group_by: 'report_type'))
+                              else
+                                []
+                              end
 
         transform_results(severity_results, report_type_results)
       end
 
       private
+
+      def field_requested?(field_name)
+        lookahead.selection(:nodes).selects?(field_name)
+      end
 
       def feature_enabled?(vulnerable)
         if vulnerable.is_a?(Project)
@@ -79,12 +98,16 @@ module Resolvers
 
         date_map = {}
 
-        process_results(severity_results, date_map) do |result, entry|
-          entry[:by_severity] = transform_severity_data(result[:by_severity])
+        unless severity_results.empty?
+          process_results(severity_results, date_map) do |result, entry|
+            entry[:by_severity] = transform_severity_data(result[:by_severity])
+          end
         end
 
-        process_results(report_type_results, date_map) do |result, entry|
-          entry[:by_report_type] = transform_report_type_data(result[:by_report_type])
+        unless report_type_results.empty?
+          process_results(report_type_results, date_map) do |result, entry|
+            entry[:by_report_type] = transform_report_type_data(result[:by_report_type])
+          end
         end
 
         date_map.values.select do |entry|

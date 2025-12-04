@@ -1,5 +1,9 @@
 import { isObject, uniqueId } from 'lodash';
-import { GENIE_CHAT_MODEL_ROLES, CHAT_MESSAGE_TYPES } from '../../constants';
+import {
+  GENIE_CHAT_MODEL_ROLES,
+  CHAT_MESSAGE_TYPES,
+  DUO_AGENTIC_CHAT_PENDING_USER_MESSAGE_ID,
+} from '../../constants';
 import * as types from './mutation_types';
 
 export default {
@@ -9,14 +13,18 @@ export default {
         return;
       }
 
-      const getExistingMessagesIndex = (role) =>
+      const getExistingMessagesIndex = (role, requestId = newMessageData.requestId) =>
         state.messages.findIndex(
-          (msg) => msg.requestId === newMessageData.requestId && msg.role.toLowerCase() === role,
+          (msg) => msg.requestId === requestId && msg.role.toLowerCase() === role,
         );
       const userMessageWithRequestIdIndex = getExistingMessagesIndex(GENIE_CHAT_MODEL_ROLES.user);
       const isErrorMessage = newMessageData?.errors?.length > 0;
       const isLastMessageError = state.messages[state.messages.length - 1]?.errors?.length > 0;
       const userMessageExists = !isLastMessageError && userMessageWithRequestIdIndex > -1;
+      const pendingUserMessageIndex = getExistingMessagesIndex(
+        GENIE_CHAT_MODEL_ROLES.user,
+        DUO_AGENTIC_CHAT_PENDING_USER_MESSAGE_ID,
+      );
 
       const isUserMessage = newMessageData.role.toLowerCase() === GENIE_CHAT_MODEL_ROLES.user;
       const isAssistantMessage =
@@ -43,7 +51,16 @@ export default {
           state.messages.push(newMessageData);
         }
       } else if (isUserMessage) {
-        if (userMessageExists) {
+        const shouldUpdatePendingUserMessage =
+          pendingUserMessageIndex > -1 &&
+          state.messages[pendingUserMessageIndex].content === newMessageData.content;
+        if (shouldUpdatePendingUserMessage) {
+          // We update the existing USER message object instead of pushing a new one
+          state.messages.splice(pendingUserMessageIndex, 1, {
+            ...state.messages[pendingUserMessageIndex],
+            ...newMessageData,
+          });
+        } else if (userMessageExists) {
           // We update the existing USER message object instead of pushing a new one
           state.messages.splice(userMessageWithRequestIdIndex, 1, {
             ...state.messages[userMessageWithRequestIdIndex],

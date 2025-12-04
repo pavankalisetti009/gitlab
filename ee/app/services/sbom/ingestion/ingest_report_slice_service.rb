@@ -10,7 +10,8 @@ module Sbom
         ::Sbom::Ingestion::Tasks::IngestSourcePackages,
         ::Sbom::Ingestion::Tasks::IngestOccurrences,
         ::Sbom::Ingestion::Tasks::IngestOccurrenceRefs,
-        ::Sbom::Ingestion::Tasks::IngestOccurrencesVulnerabilities
+        ::Sbom::Ingestion::Tasks::IngestOccurrencesVulnerabilities,
+        ::Sbom::Ingestion::Tasks::UpdateSecurityPolicyDismissals
       ].freeze
 
       def self.execute(pipeline, occurrence_maps)

@@ -1,4 +1,4 @@
-import { GlBadge, GlAvatar } from '@gitlab/ui';
+import { GlToken, GlAvatar } from '@gitlab/ui';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import FlowTriggersTable from 'ee/ai/duo_agents_platform/pages/flow_triggers/index/components/flow_triggers_table.vue';
 import { FLOW_TRIGGERS_EDIT_ROUTE } from 'ee/ai/duo_agents_platform/router/constants';
@@ -13,7 +13,7 @@ describe('FlowTriggersTable', () => {
   let wrapper;
 
   const findAvatar = () => wrapper.findComponent(GlAvatar);
-  const findBadges = () => wrapper.findAllComponents(GlBadge);
+  const findTokens = () => wrapper.findAllComponents(GlToken);
   const findConfigPath = () => wrapper.findByTestId('flow-trigger-config-path');
   const findConfigPathFallback = () => wrapper.findByTestId('flow-trigger-config-path-fallback');
   const findEditButton = () => wrapper.findByTestId('flow-trigger-edit-action');
@@ -34,12 +34,12 @@ describe('FlowTriggersTable', () => {
       createComponent();
     });
 
-    it('displays correct event type badges', () => {
-      const badges = findBadges();
+    it('displays correct event type tokens', () => {
+      const tokens = findTokens();
 
-      expect(badges).toHaveLength(2);
-      expect(badges.at(0).text()).toBe('Mention');
-      expect(badges.at(1).text()).toBe('Assign');
+      expect(tokens).toHaveLength(2);
+      expect(tokens.at(0).text()).toBe('Mention');
+      expect(tokens.at(1).text()).toBe('Assign');
     });
 
     it('sets a link to edit the item', () => {

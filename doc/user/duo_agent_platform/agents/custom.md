@@ -43,12 +43,18 @@ start using it with GitLab Duo Chat.
 
 ## Agent visibility
 
-When you create a custom agent, you associate it with a source project and choose whether it is public or private.
+When you create a custom agent, you select a project to manage it and choose whether the agent is public or private.
 
-- A public agent can be viewed by anyone and can be enabled in any project that meets the prerequisites.
-- A private agent can be viewed only by members of the source project who have at least the Developer role.
-  Private agents cannot be enabled in projects other than the source project.
-  You cannot make a private agent public if the agent is currently enabled.
+Public agents:
+
+- Can be viewed by anyone and can be enabled in any project that meets the prerequisites.
+
+Private agents:
+
+- Can be viewed only by members of the managing project who have at least the Developer role.
+- Cannot be enabled in projects other than the managing project.
+
+You cannot make a private agent public if the agent is currently enabled.
 
 ## View the agents for your project
 
@@ -56,10 +62,12 @@ Prerequisites:
 
 - You must have at least the Developer role for the project.
 
-To view a list of agents enabled in your project:
+To view a list of agents associated with your project:
 
 1. On the left sidebar, select **Search or go to** and find your project. If you've [turned on the new navigation](../../interface_redesign.md#turn-new-navigation-on-or-off), this field is on the top bar.
 1. Select **Automate** > **Agents**.
+   - To view agents enabled in the project, select the **Enabled** tab.
+   - To view agents managed by the project, select the **Managed** tab.
 
 Select an agent to view its details.
 
@@ -106,8 +114,8 @@ To create an agent:
    1. In **Display name**, enter a name for the agent.
    1. In **Description**, enter a description for the agent.
 1. Under **Visibility & access**:
+   1. From the **Managed by** dropdown list, select a project for the agent.
    1. For **Visibility**, select **Private** or **Public**.
-   1. From the **Source project** dropdown list, select a project for the agent.
 1. Under **Prompts**, in **System prompt**, enter a prompt to define
    the agent's personality, expertise, and behavior.
 1. Optional. Under **Available tools**, from the **Tools** dropdown list,
@@ -132,7 +140,8 @@ Prerequisites:
 - You must have at least the Maintainer role for the project.
 
 1. On the left sidebar, select **Search or go to** > **Explore**. If you've [turned on the new navigation](../../interface_redesign.md#turn-new-navigation-on-or-off), this field is on the top bar.
-1. Select **AI Catalog** and select the agent you want to enable.
+1. Select **AI Catalog**, then select the **Agents** tab.
+1. Select the agent you want to enable.
 1. In the upper-right corner, select **Enable in project**.
 1. From the **Project** dropdown list, select your project.
 1. Select **Enable**.
@@ -158,8 +167,7 @@ The agent no longer appears in the project, and is not available in Chat.
 
 ## Duplicate an agent
 
-Create a copy of an existing agent in a different source project.
-Do this if you want to use an agent someone else created, or make changes to an agent without overwriting the original.
+To make changes to an agent without overwriting the original, create a copy of an existing agent.
 
 Prerequisites:
 
@@ -168,7 +176,8 @@ Prerequisites:
 To duplicate an agent:
 
 1. On the left sidebar, select **Search or go to** > **Explore**. If you've [turned on the new navigation](../../interface_redesign.md#turn-new-navigation-on-or-off), this field is on the top bar.
-1. Select **AI Catalog** and select the agent you want to duplicate.
+1. Select **AI Catalog**, then select the **Agents** tab.
+1. Select the agent you want to duplicate.
 1. In the upper-right corner, select **Actions** ({{< icon name="ellipsis_v" >}}) > **Duplicate**.
 1. Optional. Edit any fields you want to change.
 1. Select **Create agent**.
@@ -179,12 +188,13 @@ Edit an agent to change its configuration, or delete it to remove it from the AI
 
 Prerequisites:
 
-- You must be a member of the source project and have at least the Maintainer role.
+- You must be a member of the managing project and have at least the Maintainer role.
 
 To manage an agent:
 
 1. On the left sidebar, select **Search or go to** > **Explore**. If you've [turned on the new navigation](../../interface_redesign.md#turn-new-navigation-on-or-off), this field is on the top bar.
-1. Select **AI Catalog** and select the agent you want to manage.
+1. Select **AI Catalog**, then select the **Agents** tab.
+1. Select the agent you want to manage.
    - To edit an agent:
      1. In the upper-right corner, select **Edit**.
      1. Edit any fields you want to change, then select **Save changes**.

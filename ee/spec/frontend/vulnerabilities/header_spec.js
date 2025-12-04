@@ -783,5 +783,61 @@ describe('Vulnerability Header', () => {
         },
       );
     });
+
+    describe('agentic resolve vulnerability button', () => {
+      beforeEach(() => {
+        window.gon = { relative_url_root: '/gitlab' };
+        createWrapper({
+          vulnerability: {
+            ...defaultVulnerability,
+            project: {
+              id: 456,
+              fullPath: 'gitlab-org/gitlab',
+            },
+          },
+        });
+      });
+
+      it('calls Api.triggerVulnerabilityResolution with correct parameters', async () => {
+        const apiResponse = { id: 789, status: 'running' };
+        jest.spyOn(Api, 'triggerVulnerabilityResolution').mockResolvedValue({ data: apiResponse });
+
+        await clickButton('agentic-resolve-vulnerability');
+
+        expect(Api.triggerVulnerabilityResolution).toHaveBeenCalledWith(
+          defaultVulnerability.id,
+          456,
+        );
+      });
+
+      it('shows a success alert with a link to the agent session', async () => {
+        const apiResponse = { id: 789, status: 'running' };
+        jest.spyOn(Api, 'triggerVulnerabilityResolution').mockResolvedValue({ data: apiResponse });
+
+        await clickButton('agentic-resolve-vulnerability');
+
+        expect(createAlert).toHaveBeenCalledWith({
+          variant: 'success',
+          message: 'Agent session started to resolve vulnerability.',
+          primaryButton: {
+            text: 'View agent session',
+            link: '/gitlab/gitlab-org/gitlab/-/automate/agent-sessions/789',
+          },
+        });
+      });
+
+      it('shows an error alert when the API call fails', async () => {
+        const error = new Error('API Error');
+        jest.spyOn(Api, 'triggerVulnerabilityResolution').mockRejectedValue(error);
+
+        await clickButton('agentic-resolve-vulnerability');
+
+        expect(createAlert).toHaveBeenCalledWith({
+          captureError: true,
+          error,
+          message: 'Something went wrong, could not start Duo agent session.',
+        });
+      });
+    });
   });
 });

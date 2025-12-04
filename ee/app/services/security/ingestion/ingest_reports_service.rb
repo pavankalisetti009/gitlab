@@ -18,6 +18,7 @@ module Security
       def execute
         store_reports
         mark_resolved_vulnerabilities
+        auto_dismiss_vulnerabilities
         mark_project_as_vulnerable!
         set_latest_pipeline!
         schedule_mark_dropped_vulnerabilities
@@ -74,6 +75,41 @@ module Security
         ingested_ids_by_scanner.each do |scanner, ingested_ids|
           MarkAsResolvedService.execute(pipeline, scanner, ingested_ids)
         end
+      end
+
+      def auto_dismiss_vulnerabilities
+        ingested_ids_by_scanner.each do |scanner, ingested_ids|
+          next if ingested_ids.empty?
+
+          result = Vulnerabilities::AutoDismissService.new(pipeline, ingested_ids).execute
+
+          if result.error?
+            Gitlab::AppJsonLogger.error(
+              message: "Failed to auto-dismiss vulnerabilities",
+              project_id: project.id,
+              pipeline_id: pipeline.id,
+              scanner: scanner,
+              error: result.message,
+              reason: result.reason
+            )
+          elsif result.payload[:count] > 0
+            Gitlab::AppJsonLogger.debug(
+              message: "Auto-dismissed vulnerabilities",
+              project_id: project.id,
+              pipeline_id: pipeline.id,
+              scanner: scanner,
+              count: result.payload[:count]
+            )
+          end
+        end
+      rescue StandardError => e
+        Gitlab::AppJsonLogger.error(
+          message: "Exception during auto-dismiss vulnerabilities",
+          project_id: project.id,
+          pipeline_id: pipeline.id,
+          error: e.message
+        )
+        Gitlab::ErrorTracking.track_exception(e)
       end
 
       def schedule_mark_dropped_vulnerabilities

@@ -24,12 +24,16 @@ export default {
       required: true,
       type: String,
     },
+    humanStatus: {
+      required: true,
+      type: String,
+    },
     agentFlowDefinition: {
       required: true,
       type: String,
     },
-    agentFlowCheckpoint: {
-      type: String,
+    duoMessages: {
+      type: Array,
       required: true,
     },
     executorUrl: {
@@ -66,14 +70,15 @@ export default {
           <agent-activity-logs
             class="gl-overflow-auto"
             :is-loading="isLoading"
-            :agent-flow-checkpoint="agentFlowCheckpoint"
+            :duo-messages="duoMessages"
           />
         </gl-tab>
         <gl-tab :title="s__('DuoAgentPlatform|Details')">
           <agent-flow-info
-            class="gl-mt-5"
+            class="gl-mt-6"
             :is-loading="isLoading"
             :status="status"
+            :human-status="humanStatus"
             :agent-flow-definition="agentFlowDefinition"
             :created-at="createdAt"
             :project="project"

@@ -10,7 +10,7 @@ module Security
     class FindingMap
       FINDING_ATTRIBUTES = %i[metadata_version name raw_metadata report_type severity details description message solution].freeze
 
-      attr_reader :pipeline, :security_finding, :report_finding
+      attr_reader :pipeline, :tracked_context, :security_finding, :report_finding
       attr_accessor :finding_id, :vulnerability_id, :new_record, :transitioned_to_detected, :identifier_ids
 
       delegate :uuid, :scanner_id, :severity, to: :security_finding
@@ -18,8 +18,9 @@ module Security
       delegate :project, to: :pipeline
       delegate :evidence, to: :report_finding
 
-      def initialize(pipeline, security_finding, report_finding)
+      def initialize(pipeline, tracked_context, security_finding, report_finding)
         @pipeline = pipeline
+        @tracked_context = tracked_context
         @security_finding = security_finding
         @report_finding = report_finding
         @identifier_ids = []
@@ -44,6 +45,7 @@ module Security
                       .slice(*FINDING_ATTRIBUTES)
                       .merge!(
                         uuid: uuid,
+                        security_project_tracked_context_id: tracked_context&.id,
                         scanner_id: scanner_id,
                         primary_identifier_id: identifier_ids.first,
                         location: report_finding.location_data,

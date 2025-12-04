@@ -39,6 +39,16 @@
       "minimum": 0,
       "description": "Number of requests allowed to the POST /api/v4/organizations endpoint."
     },
+    "dependency_scanning_sbom_scan_api_upload_limit": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Maximum number of SBOM uploads allowed for Dependency Scanning Sbom Scan API."
+    },
+    "dependency_scanning_sbom_scan_api_download_limit": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Maximum number of SBOM downloads allowed for Dependency Scanning Sbom Scan API."
+    },
     "group_archive_unarchive_api_limit": {
       "type": "integer",
       "minimum": 0,
@@ -182,6 +192,11 @@
       "type": "integer",
       "minimum": 0,
       "description": "Number of requests allowed to /api/v4/virtual_registries/packages/:package_format/:id/* endpoints."
+    },
+    "pipeline_limit_per_user": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of pipelines allowed to be created per user"
     }
   }
 }

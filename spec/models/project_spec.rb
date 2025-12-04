@@ -15,6 +15,12 @@ RSpec.describe Project, factory_default: :keep, feature_category: :groups_and_pr
 
   it_behaves_like 'having unique enum values'
 
+  it_behaves_like 'cells claimable model',
+    subject_type: Cells::Claimable::CLAIMS_SUBJECT_TYPE::PROJECT,
+    subject_key: :id,
+    source_type: Cells::Claimable::CLAIMS_SOURCE_TYPE::RAILS_TABLE_PROJECTS,
+    claiming_attributes: [:id]
+
   context 'when runner registration is allowed' do
     let_it_be(:project) { create(:project, :allow_runner_registration_token) }
 
@@ -736,7 +742,7 @@ RSpec.describe Project, factory_default: :keep, feature_category: :groups_and_pr
 
       context 'when parent group is archived' do
         before do
-          group.archive
+          group.namespace_settings.update!(archived: true)
         end
 
         it 'returns all projects in the group' do
@@ -759,7 +765,7 @@ RSpec.describe Project, factory_default: :keep, feature_category: :groups_and_pr
 
       context 'when parent group is archived' do
         before do
-          group.archive
+          group.namespace_settings.update!(archived: true)
         end
 
         it 'excludes all projects in the group' do
@@ -1526,7 +1532,7 @@ RSpec.describe Project, factory_default: :keep, feature_category: :groups_and_pr
 
     context 'when project is not archived but parent group is archived' do
       it 'returns true' do
-        group.archive
+        group.namespace_settings.update!(archived: true)
 
         expect(group_project.ancestors_archived?).to eq(true)
       end
@@ -1534,7 +1540,7 @@ RSpec.describe Project, factory_default: :keep, feature_category: :groups_and_pr
 
     context 'when project is not archived but parent subgroup is archived' do
       it 'returns true' do
-        subgroup.archive
+        subgroup.namespace_settings.update!(archived: true)
 
         expect(subgroup_project.ancestors_archived?).to eq(true)
       end
@@ -1766,6 +1772,9 @@ RSpec.describe Project, factory_default: :keep, feature_category: :groups_and_pr
     it { is_expected.to delegate_method(:pypi_package_requests_forwarding).to(:namespace) }
     it { is_expected.to delegate_method(:npm_package_requests_forwarding).to(:namespace) }
     it { is_expected.to delegate_method(:deletion_schedule).to(:project_namespace).allow_nil }
+    it { is_expected.to delegate_method(:allowed_work_item_types).to(:project_namespace).allow_nil }
+    it { is_expected.to delegate_method(:allowed_work_item_type?).to(:project_namespace).allow_nil }
+    it { is_expected.to delegate_method(:supports_work_items?).to(:project_namespace).allow_nil }
 
     describe 'read project settings' do
       %i[
@@ -10552,6 +10561,13 @@ RSpec.describe Project, factory_default: :keep, feature_category: :groups_and_pr
         expect_worker_to_be_enqueued
         run_export
       end
+    end
+  end
+
+  describe '#roles_user_can_assign' do
+    it_behaves_like 'roles_user_can_assign' do
+      let(:resource) { create(:project) }
+      let(:membership) { create(:project_member, user: user, project: resource) }
     end
   end
 end

@@ -174,6 +174,8 @@ module EE
           secret_detection_service_auth_token
           secret_detection_service_url
           virtual_registries_endpoints_api_limit
+          dependency_scanning_sbom_scan_api_upload_limit
+          dependency_scanning_sbom_scan_api_download_limit
           disable_invite_members
           auto_duo_code_review_enabled
           duo_remote_flows_enabled

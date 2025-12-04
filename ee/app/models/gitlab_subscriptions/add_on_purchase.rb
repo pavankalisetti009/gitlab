@@ -91,7 +91,7 @@ module GitlabSubscriptions
     end
     scope :for_duo_core_pro_or_enterprise, -> { for_duo_core.or(for_duo_pro_or_duo_enterprise) }
     scope :select_distinct_namespace_id, -> { select(:namespace_id).distinct }
-    scope :for_user, ->(user) { by_namespace(user.billable_gitlab_duo_pro_root_group_ids) }
+    scope :for_user, ->(user) { by_namespace(user.non_guest_root_group_ids) }
     scope :assigned_to_user, ->(user) do
       active.joins(:assigned_users).merge(UserAddOnAssignment.by_user(user))
     end
@@ -104,6 +104,18 @@ module GitlabSubscriptions
         .where("last_assigned_users_refreshed_at < ? OR last_assigned_users_refreshed_at is NULL", 8.hours.ago)
         .limit(limit)
     end
+
+    # Placeholder scope for Self-hosted DAP SKU
+    # Returns all active self-managed add-ons when feature flag is enabled
+    # TODO: Filter by actual Self-hosted DAP add-on when provisioned by Fulfillment
+    # Tracked in: https://gitlab.com/gitlab-org/gitlab/-/issues/582054
+    scope :for_self_hosted_dap, -> {
+      if Feature.enabled?(:self_hosted_dap_sku, :instance)
+        for_self_managed.active
+      else
+        none
+      end
+    }
 
     delegate :name, :seat_assignable?, to: :add_on, prefix: true
 

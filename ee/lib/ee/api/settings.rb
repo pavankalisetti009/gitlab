@@ -52,6 +52,13 @@ module EE
               )
             end
 
+            unless License.feature_available?(:dependency_scanning)
+              attrs = attrs.except(
+                :dependency_scanning_sbom_scan_api_upload_limit,
+                :dependency_scanning_sbom_scan_api_download_limit
+              )
+            end
+
             unless ::License.feature_available?(:password_complexity)
               attrs = attrs.except(*EE::ApplicationSettingsHelper.password_complexity_attributes)
             end

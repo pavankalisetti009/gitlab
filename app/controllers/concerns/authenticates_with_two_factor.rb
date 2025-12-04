@@ -5,6 +5,7 @@
 # Controller concern to handle two-factor authentication
 module AuthenticatesWithTwoFactor
   extend ActiveSupport::Concern
+  include Authn::WebauthnInstrumentation
 
   # Store the user's ID in the session for later retrieval and render the
   # two factor code prompt
@@ -109,14 +110,32 @@ module AuthenticatesWithTwoFactor
   end
 
   def authenticate_with_two_factor_via_webauthn(user)
-    if Webauthn::AuthenticateService.new(user, user_params[:device_response], session[:challenge]).execute
+    if passkey_via_2fa_enabled?(user)
+      # Passkeys would be the default 2FA option so we can reasonably assume it'll be used
+      track_passkey_internal_event(
+        event_name: 'authenticate_passkey',
+        status: 0,
+        entry_point: 3,
+        user: current_user
+      )
+    end
+
+    result = Webauthn::AuthenticateService.new(user, user_params[:device_response], session[:challenge]).execute
+
+    if result.success?
       handle_two_factor_success(user)
     else
-      handle_two_factor_failure(user, 'WebAuthn', _('Authentication via WebAuthn device failed.'))
+      handle_two_factor_failure(user, 'WebAuthn', result.message)
     end
   end
 
   def authenticate_with_passwordless_authentication_via_passkey
+    track_passkey_internal_event(
+      event_name: 'authenticate_passkey',
+      status: 0,
+      entry_point: 4
+    )
+
     result = Authn::Passkey::AuthenticateService.new(
       passwordless_passkey_params[:device_response],
       session[:challenge]
@@ -161,6 +180,15 @@ module AuthenticatesWithTwoFactor
   end
 
   def handle_two_factor_success(user)
+    if passkey_via_2fa_enabled?(user)
+      # Passkeys would be the default 2FA option so we can reasonably assume it'll be used
+      track_passkey_internal_event(
+        event_name: 'authenticate_passkey',
+        status: 1,
+        user: current_user
+      )
+    end
+
     # Remove any lingering user data from login
     clear_two_factor_attempt!
 
@@ -169,6 +197,15 @@ module AuthenticatesWithTwoFactor
   end
 
   def handle_two_factor_failure(user, method, message)
+    if passkey_via_2fa_enabled?(user)
+      # Passkeys would be the default 2FA option so we can reasonably assume it'll be used
+      track_passkey_internal_event(
+        event_name: 'authenticate_passkey',
+        status: 2,
+        user: current_user
+      )
+    end
+
     user.increment_failed_attempts!
     log_failed_two_factor(user, method)
 
@@ -178,6 +215,12 @@ module AuthenticatesWithTwoFactor
   end
 
   def handle_passwordless_auth_with_passkey_success(user)
+    track_passkey_internal_event(
+      event_name: 'authenticate_passkey',
+      status: 1,
+      user: current_user
+    )
+
     clear_two_factor_attempt!
 
     remember_me(user) if passwordless_passkey_params[:remember_me] == '1'
@@ -187,6 +230,11 @@ module AuthenticatesWithTwoFactor
   end
 
   def handle_passwordless_auth_with_passkey_failure(method, message)
+    track_passkey_internal_event(
+      event_name: 'authenticate_passkey',
+      status: 2
+    )
+
     Gitlab::AppLogger.info(
       message: "Failed Login",
       login_method: method,

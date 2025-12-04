@@ -1,11 +1,10 @@
 <script>
-import { GlDashboardLayout } from '@gitlab/ui';
+import { GlDashboardLayout, GlExperimentBadge } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { markRaw } from '~/lib/utils/vue3compat/mark_raw';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { generateVulnerabilitiesForSeverityPanels } from 'ee/security_dashboard/utils/chart_generators';
 import { OPERATORS_OR } from '~/vue_shared/components/filtered_search_bar/constants';
-import BetaBadge from '~/vue_shared/components/badges/beta_badge.vue';
 import {
   REPORT_TYPES_WITH_MANUALLY_ADDED,
   REPORT_TYPES_CONTAINER_SCANNING_FOR_REGISTRY,
@@ -35,7 +34,7 @@ export default {
     GlDashboardLayout,
     SecurityDashboardDescription,
     FilteredSearch,
-    BetaBadge,
+    GlExperimentBadge,
   },
   mixins: [glFeatureFlagMixin()],
   data() {
@@ -81,8 +80,8 @@ export default {
 <template>
   <gl-dashboard-layout :config="dashboard" data-testid="project-security-dashboard-new">
     <template #title>
-      <h1 class="gl-heading-1 gl-my-0 gl-mr-3">{{ s__('SecurityReports|Security dashboard') }}</h1>
-      <beta-badge />
+      <h1 class="gl-heading-1 gl-my-0">{{ s__('SecurityReports|Security dashboard') }}</h1>
+      <gl-experiment-badge type="beta" />
     </template>
     <template #description>
       <security-dashboard-description scope="project" />

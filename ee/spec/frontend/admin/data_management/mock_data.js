@@ -23,7 +23,7 @@ export const MOCK_MODEL_TYPES = [
     name: 'snippet_repository',
     namePlural: 'snippet_repositories',
     modelClass: 'SnippetRepository',
-    restEndpoint: '/api/v4/admin/data_management/snippet_repository',
+    restEndpoint: '/api/v4/admin/data_management/snippet_repositories',
     checksumEnabled: true,
   },
 ];

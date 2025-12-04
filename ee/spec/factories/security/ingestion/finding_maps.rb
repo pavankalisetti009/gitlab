@@ -5,6 +5,7 @@ FactoryBot.define do
     security_finding
     report_finding factory: :ci_reports_security_finding
     pipeline factory: :ci_pipeline
+    tracked_context factory: [:security_project_tracked_context, :tracked]
 
     trait :with_finding do
       finding { association(:vulnerabilities_finding, severity: security_finding.severity) }
@@ -18,7 +19,7 @@ FactoryBot.define do
     end
 
     initialize_with do
-      ::Security::Ingestion::FindingMap.new(*attributes.values_at(:pipeline, :security_finding,
+      ::Security::Ingestion::FindingMap.new(*attributes.values_at(:pipeline, :tracked_context, :security_finding,
         :report_finding)).tap do |object|
         object.finding_id = attributes[:finding]&.id
         object.vulnerability_id = attributes[:vulnerability]&.id

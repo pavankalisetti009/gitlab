@@ -36,7 +36,7 @@ RSpec.describe ComplianceManagement::Standards::Gitlab::DastService,
         stub_licensed_features(group_level_compliance_dashboard: true)
       end
 
-      shared_examples 'scanner run marked fail' do
+      shared_examples 'scanner run marked fail when no artifacts present' do
         it 'sets scanner run check as fail' do
           response = service.execute
 
@@ -95,19 +95,31 @@ RSpec.describe ComplianceManagement::Standards::Gitlab::DastService,
         end
 
         context 'when the pipeline do not have dast job artifacts' do
-          it_behaves_like 'scanner run marked fail'
+          it_behaves_like 'scanner run marked fail when no artifacts present'
         end
       end
 
-      context 'when project does not have successful pipeline for default branch' do
-        let(:master_pipeline_failed) { create(:ci_pipeline, :failed, project: project, ref: "master") }
+      context 'when project has failed pipeline for default branch with dast artifacts' do
+        let(:master_pipeline_failed) { create(:ci_pipeline, :failed, project: project, ref: 'master') }
         let(:ci_build_master_failed) { create(:ci_build, pipeline: master_pipeline_failed, project: project) }
 
         before do
           create(:ee_ci_job_artifact, :dast, project: project, job: ci_build_master_failed)
         end
 
-        it_behaves_like 'scanner run marked fail'
+        it 'sets scanner run as success' do
+          response = service.execute
+
+          expect(response.status).to eq(:success)
+          expect(project.compliance_standards_adherence.last)
+            .to have_attributes(
+              project_id: project.id,
+              namespace_id: project.namespace_id,
+              status: 'success',
+              check_name: 'dast',
+              standard: 'gitlab'
+            )
+        end
       end
 
       context 'when project has successful pipeline for non default branch with dast artifacts' do
@@ -118,7 +130,7 @@ RSpec.describe ComplianceManagement::Standards::Gitlab::DastService,
           create(:ee_ci_job_artifact, :dast, project: project, job: ci_build_nonmaster_success)
         end
 
-        it_behaves_like 'scanner run marked fail'
+        it_behaves_like 'scanner run marked fail when no artifacts present'
       end
     end
   end

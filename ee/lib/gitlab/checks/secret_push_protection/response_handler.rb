@@ -4,6 +4,8 @@ module Gitlab
   module Checks
     module SecretPushProtection
       class ResponseHandler < ::Gitlab::Checks::SecretPushProtection::Base
+        DEADLINE_EXCEEDED_MESSAGE = "Deadline Exceeded"
+
         ERROR_MESSAGES = {
           failed_to_scan_regex_error: "\n    - Failed to scan blob(id: %{payload_id}) due to regex error.",
           blob_timed_out_error: "\n    - Scanning blob(id: %{payload_id}) timed out.",
@@ -97,6 +99,11 @@ module Gitlab
               build_structured_payload(message: ERROR_MESSAGES[:invalid_scan_status_code_error])
             )
           end
+        end
+
+        def timed_out?(response)
+          response.status == ::Gitlab::SecretDetection::Core::Status::SCAN_ERROR &&
+            response.metadata&.dig(:message) == DEADLINE_EXCEEDED_MESSAGE
         end
 
         private
