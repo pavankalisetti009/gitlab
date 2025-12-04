@@ -221,14 +221,6 @@ module EE
         end
       end
 
-      def duo_default_on?
-        duo_availability == :default_on
-      end
-
-      def duo_default_off?
-        duo_availability == :default_off
-      end
-
       private
 
       def trigger_todo_creation

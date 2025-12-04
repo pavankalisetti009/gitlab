@@ -1,7 +1,9 @@
 ---
 description: Learn more clicks in the Duo agent platform widget
 internal_events: true
-status: active
+status: removed
+milestone_removed: '18.7'
+removed_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/214108
 action: click_learn_more_in_duo_agent_platform_widget_in_sidebar
 identifiers:
 - namespace

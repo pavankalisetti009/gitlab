@@ -2,34 +2,6 @@
 
 module GitlabSubscriptions
   module Duo
-    def self.agent_fully_enabled?(namespace)
-      namespace.duo_default_on? &&
-        namespace.experiment_features_enabled? &&
-        namespace.duo_core_features_enabled?
-    end
-
-    def self.enabled_without_beta_features?(namespace)
-      namespace.duo_default_on? &&
-        !namespace.experiment_features_enabled? &&
-        namespace.duo_core_features_enabled?
-    end
-
-    def self.only_duo_default_off?(namespace)
-      namespace.duo_default_off? &&
-        namespace.experiment_features_enabled? &&
-        namespace.duo_core_features_enabled?
-    end
-
-    def self.enabled_without_core?(namespace)
-      namespace.duo_default_on? &&
-        namespace.experiment_features_enabled? &&
-        !namespace.duo_core_features_enabled?
-    end
-
-    def self.requestable?(namespace)
-      !namespace.duo_default_on? || !namespace.duo_core_features_enabled?
-    end
-
     def self.todo_message
       s_('Todos|You now have access to AI-native features. Learn how to set up Code Suggestions and Chat in your IDE')
     end

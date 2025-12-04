@@ -57,10 +57,6 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
   it { is_expected.to delegate_method(:lock_duo_remote_flows_enabled).to(:namespace_settings).allow_nil }
   it { is_expected.to delegate_method(:duo_sast_fp_detection_enabled).to(:namespace_settings).allow_nil }
   it { is_expected.to delegate_method(:lock_duo_sast_fp_detection_enabled).to(:namespace_settings).allow_nil }
-  it { is_expected.to delegate_method(:duo_default_on?).to(:namespace_settings) }
-  it { is_expected.to delegate_method(:duo_default_off?).to(:namespace_settings) }
-  it { is_expected.to delegate_method(:experiment_features_enabled?).to(:namespace_settings) }
-  it { is_expected.to delegate_method(:duo_agent_platform_request_count).to(:namespace_settings) }
   it { is_expected.to delegate_method(:security_policy_management_project).to(:security_orchestration_policy_configuration) }
   it { is_expected.to delegate_method(:allow_enterprise_bypass_placeholder_confirmation).to(:namespace_settings).allow_nil }
   it { is_expected.to delegate_method(:allow_enterprise_bypass_placeholder_confirmation=).to(:namespace_settings).with_arguments(:args) }
