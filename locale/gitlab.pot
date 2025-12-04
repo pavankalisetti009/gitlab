@@ -25258,10 +25258,19 @@ msgstr ""
 msgid "DuoAgenticChat|GitLab Duo Agentic Chat"
 msgstr ""
 
+msgid "DuoAgenticChat|GitLab Duo is already responding to this chat in another tab or location. Start a new chat, or wait for GitLab Duo to finish before sending a new message."
+msgstr ""
+
+msgid "DuoAgenticChat|Invalid chat state provided"
+msgstr ""
+
 msgid "DuoAgenticChat|The agent associated with this conversation is no longer available. You can view the conversation history but cannot send new messages."
 msgstr ""
 
 msgid "DuoAgenticChat|This chat was deleted."
+msgstr ""
+
+msgid "DuoAgenticChat|Unable to connect to workflow service. Please try again."
 msgstr ""
 
 msgid "DuoAgentsPlatform|AI Catalog"

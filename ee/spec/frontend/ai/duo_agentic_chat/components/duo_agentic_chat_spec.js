@@ -19,6 +19,7 @@ import getAiChatAvailableModels from 'ee/ai/graphql/get_ai_chat_available_models
 import getConfiguredAgents from 'ee/ai/graphql/get_configured_agents.query.graphql';
 import getAgentFlowConfig from 'ee/ai/graphql/get_agent_flow_config.query.graphql';
 import getFoundationalChatAgents from 'ee/ai/graphql/get_foundational_chat_agents.graphql';
+import getFlowStatus from 'ee/ai/graphql/get_flow_status.query.graphql';
 import DuoAgenticChatApp from 'ee/ai/duo_agentic_chat/components/duo_agentic_chat.vue';
 import { ApolloUtils } from 'ee/ai/duo_agentic_chat/utils/apollo_utils';
 import { WorkflowUtils } from 'ee/ai/duo_agentic_chat/utils/workflow_utils';
@@ -289,6 +290,20 @@ describe('Duo Agentic Chat', () => {
     .fn()
     .mockResolvedValue(MOCK_FOUNDATIONAL_CHAT_AGENTS_RESPONSE);
   const agentFlowConfigQueryMock = jest.fn().mockResolvedValue(MOCK_FLOW_CONFIG_RESPONSE);
+  const flowStatusQueryMock = jest.fn().mockResolvedValue({
+    data: {
+      duoWorkflowWorkflows: {
+        edges: [
+          {
+            node: {
+              id: '1',
+              status: 'completed',
+            },
+          },
+        ],
+      },
+    },
+  });
 
   const findDuoChat = () => wrapper.findComponent(WebAgenticDuoChat);
   const findDuoNext = () => wrapper.find('fe-island-duo-next');
@@ -326,6 +341,7 @@ describe('Duo Agentic Chat', () => {
       [getConfiguredAgents, configuredAgentsQueryMock],
       [getFoundationalChatAgents, aiFoundationalChatAgentsQueryMock],
       [getAgentFlowConfig, agentFlowConfigQueryMock],
+      [getFlowStatus, flowStatusQueryMock],
       ...apolloHandlers,
     ]);
 
@@ -1894,11 +1910,113 @@ describe('Duo Agentic Chat', () => {
     });
   });
 
-  describe('Socket cleanup', () => {
-    beforeEach(() => {
-      jest.clearAllMocks();
+  describe('when socket connection terminates', () => {
+    beforeEach(async () => {
+      duoChatGlobalState.isAgenticChatShown = true;
+      flowStatusQueryMock.mockResolvedValueOnce({
+        data: {
+          duoWorkflowWorkflows: {
+            edges: [
+              {
+                node: {
+                  id: 'gid://gitlab/Ai::DuoWorkflows::Workflow/456',
+                  status: 'running',
+                },
+              },
+            ],
+          },
+        },
+      });
+      createComponent();
+      wrapper.vm.workflowId = '456';
+      wrapper.vm.workflowStatus = 'running';
+
+      // Trigger a workflow to create the WebSocket connection
+      findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
+      await waitForPromises();
     });
 
+    describe('and the code is 1013 (close and try again)', () => {
+      beforeEach(async () => {
+        const socketCall = getLastSocketCall();
+        const mockError = { code: 1013 };
+        socketCall.onClose(mockError);
+        await waitForPromises();
+        await nextTick();
+      });
+
+      it('disables the chat and passes reason text', () => {
+        expect(findDuoChat().props('chatState')).toMatchObject({
+          isEnabled: false,
+          reason:
+            'GitLab Duo is already responding to this chat in another tab or location. Start a new chat, or wait for GitLab Duo to finish before sending a new message.',
+        });
+      });
+
+      it('starts polling for workflow status', () => {
+        expect(flowStatusQueryMock).toHaveBeenCalledWith({
+          id: 'gid://gitlab/Ai::DuoWorkflows::Workflow/456',
+        });
+      });
+    });
+
+    describe('when status changes', () => {
+      beforeEach(async () => {
+        findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
+        await waitForPromises();
+
+        const socketCall = getLastSocketCall();
+        socketCall.onClose({ code: 1013 });
+        await waitForPromises();
+        await nextTick();
+      });
+
+      it('re-enables the chat', async () => {
+        expect(findDuoChat().props('chatState')).toMatchObject({
+          isEnabled: false,
+          reason:
+            'GitLab Duo is already responding to this chat in another tab or location. Start a new chat, or wait for GitLab Duo to finish before sending a new message.',
+        });
+
+        // Next poll will give us an updated status
+        flowStatusQueryMock.mockResolvedValueOnce({
+          data: {
+            duoWorkflowWorkflows: {
+              edges: [
+                {
+                  node: {
+                    id: 'gid://gitlab/Ai::DuoWorkflows::Workflow/456',
+                    status: 'input_required',
+                  },
+                },
+              ],
+            },
+          },
+        });
+
+        jest.advanceTimersByTime(3000);
+        await waitForPromises();
+        await nextTick();
+
+        expect(findDuoChat().props('chatState')).toMatchObject({ isEnabled: true });
+      });
+
+      it('hydrates the active thread to reconnect', async () => {
+        ApolloUtils.fetchWorkflowEvents.mockClear();
+
+        jest.advanceTimersByTime(3000);
+        await waitForPromises();
+        await nextTick();
+
+        expect(ApolloUtils.fetchWorkflowEvents).toHaveBeenCalledWith(
+          expect.anything(),
+          MOCK_WORKFLOW_ID,
+        );
+      });
+    });
+  });
+
+  describe('Socket cleanup', () => {
     it('cleans up socket and clears state on component destroy', () => {
       duoChatGlobalState.isAgenticChatShown = true;
       createComponent();

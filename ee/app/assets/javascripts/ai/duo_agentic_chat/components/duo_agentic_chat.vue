@@ -3,6 +3,7 @@
 import { mapActions, mapState } from 'vuex';
 import { WebAgenticDuoChat } from '@gitlab/duo-ui';
 import { GlToggle, GlTooltipDirective } from '@gitlab/ui';
+import getFlowStatus from 'ee/ai/graphql/get_flow_status.query.graphql';
 import ChatLoadingState from 'ee/ai/components/chat_loading_state.vue';
 import getUserWorkflows from 'ee/ai/graphql/get_user_workflow.query.graphql';
 import getConfiguredAgents from 'ee/ai/graphql/get_configured_agents.query.graphql';
@@ -131,6 +132,21 @@ export default {
     },
   },
   apollo: {
+    workflowStatus: {
+      query: getFlowStatus,
+      pollInterval: 3000,
+      skip() {
+        return !this.isFlowLocked;
+      },
+      variables() {
+        return {
+          id: convertToGraphQLId(TYPENAME_AI_DUO_WORKFLOW, this.workflowId),
+        };
+      },
+      update(data) {
+        return data?.duoWorkflowWorkflows?.edges[0]?.node.status;
+      },
+    },
     agenticWorkflows: {
       query: getUserWorkflows,
       variables() {
@@ -261,6 +277,7 @@ export default {
       agentConfig: null,
       duoChatGlobalState,
       ...getInitialDimensions(),
+      chatState: { isEnabled: true, reason: '' },
       contextPresets: [],
       availableModels: [],
       pinnedModel: null,
@@ -278,6 +295,7 @@ export default {
       selectedFoundationalAgent: null,
       agentOrWorkflowDeletedError: '',
       isChatAvailable: true,
+      isFlowLocked: false,
       isEmbedded: this.chatConfiguration?.defaultProps?.isEmbedded ?? false,
       // this is required for classic/agentic toggle
       // eslint-disable-next-line vue/no-unused-properties
@@ -436,6 +454,17 @@ export default {
       ) {
         this.isProcessingToolApproval = false;
       }
+
+      // When a flow is locked, we poll in the background because the
+      // websocket connection has closed. If a new status arrives,
+      // we resume the connection.
+      if (this.isFlowLocked && newStatus) {
+        this.isFlowLocked = false;
+        this.setChatState({
+          isEnabled: true,
+        });
+        this.hydrateActiveThread();
+      }
     },
     workflowId(newWorkflowId, oldWorkflowId) {
       if (newWorkflowId !== oldWorkflowId) {
@@ -496,6 +525,16 @@ export default {
         } catch (err) {
           logError('Failed to load frontend islands duo_next module', err);
         }
+      }
+    },
+    setChatState(state) {
+      if (
+        (state.isEnabled === false && typeof state.reason === 'string') ||
+        state.isEnabled === true
+      ) {
+        this.chatState = state;
+      } else {
+        throw new Error(s__('DuoAgenticChat|Invalid chat state provided'));
       }
     },
     switchMode(mode) {
@@ -585,10 +624,22 @@ export default {
       this.socketManager = createWebSocket(this.websocketUrl, {
         onMessage: this.onMessageReceived,
         onError: () => {
-          // eslint-disable-next-line @gitlab/require-i18n-strings
-          this.onError(new Error('Unable to connect to workflow service. Please try again.'));
+          this.onError(
+            new Error(
+              s__('DuoAgenticChat|Unable to connect to workflow service. Please try again.'),
+            ),
+          );
         },
-        onClose: () => {
+        onClose: (event) => {
+          if (event?.code === 1013) {
+            this.isFlowLocked = true;
+            this.setChatState({
+              isEnabled: false,
+              reason: s__(
+                'DuoAgenticChat|GitLab Duo is already responding to this chat in another tab or location. Start a new chat, or wait for GitLab Duo to finish before sending a new message.',
+              ),
+            });
+          }
           // Only set waiting on prompt to false if we're not waiting for tool approval
           // and we don't have a pending workflow that will create a new connection
           if (this.workflowStatus !== DUO_WORKFLOW_STATUS_TOOL_CALL_APPROVAL_REQUIRED) {
@@ -938,6 +989,7 @@ export default {
       v-else
       id="duo-chat"
       ref="chat"
+      :chat-state="chatState"
       :title="dynamicTitle"
       :messages="messages"
       :is-loading="isWaitingOnPrompt"
