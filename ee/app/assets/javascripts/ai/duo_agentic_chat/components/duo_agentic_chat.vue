@@ -802,6 +802,7 @@ export default {
       } finally {
         this.isLoading = false;
         this.isInitialLoad = false;
+        await this.focusInput();
       }
     },
     onBackToList() {
@@ -850,6 +851,7 @@ export default {
         this.$router.push('/chat');
       }
       this.isInitialLoad = false;
+      await this.focusInput();
     },
     onModelSelect(selectedModelValue) {
       const model = getModel(this.availableModels, selectedModelValue);
@@ -871,13 +873,9 @@ export default {
 
       return isAvailable;
     },
-    // `focusInput` can be called by the parent component. Ideally, we would mark this as a public
-    // method via Vue's `expose` option. However, doing so would cause several tests to fail in Vue 3
-    // because we wrote some assertions directly against the `vm`, which becomes private when `expose`
-    // is defined. So we need to _not_ use `expose` and disable vue/no-unused-properties for now.
-    // eslint-disable-next-line vue/no-unused-properties
-    focusInput() {
-      this.$refs.chat.focusChatInput();
+    async focusInput() {
+      await this.$nextTick();
+      this.$refs.chat?.focusChatInput?.();
     },
     ensureActiveThreadId() {
       if (this.workflowId) {
