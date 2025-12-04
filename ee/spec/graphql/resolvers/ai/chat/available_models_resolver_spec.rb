@@ -19,20 +19,23 @@ RSpec.describe Resolvers::Ai::Chat::AvailableModelsResolver, :saas, feature_cate
           'name' => 'Claude Sonnet 4.0',
           'identifier' => 'claude_sonnet_4_20250514',
           'provider' => 'Anthropic',
-          'description' => 'Fast, cost-effective responses.'
+          'description' => 'Fast, cost-effective responses.',
+          'cost_indicator' => '$$$'
         },
         {
           'name' => 'Claude Sonnet 3.7',
           'identifier' => 'claude_sonnet_3_7_20250219',
           'provider' => 'Anthropic',
-          'description' => 'Fast, cost-effective responses.'
+          'description' => 'Fast, cost-effective responses.',
+          'cost_indicator' => '$$$'
         },
         # Add Vertex providers for coverage
         {
           'name' => 'Claude Sonnet 4.0',
           'identifier' => 'claude_sonnet_4_20250514_vertex',
           'provider' => 'Vertex',
-          'description' => 'Fast, cost-effective responses.'
+          'description' => 'Fast, cost-effective responses.',
+          'cost_indicator' => '$$$'
         }
       ],
       'unit_primitives' => [
@@ -51,7 +54,8 @@ RSpec.describe Resolvers::Ai::Chat::AvailableModelsResolver, :saas, feature_cate
       name: 'Claude Sonnet 4.0',
       ref: 'claude_sonnet_4_20250514',
       model_provider: 'Anthropic',
-      model_description: 'Fast, cost-effective responses.'
+      model_description: 'Fast, cost-effective responses.',
+      cost_indicator: '$$$'
     }
   end
 
@@ -61,13 +65,15 @@ RSpec.describe Resolvers::Ai::Chat::AvailableModelsResolver, :saas, feature_cate
         name: 'Claude Sonnet 4.0',
         ref: 'claude_sonnet_4_20250514',
         model_provider: 'Anthropic',
-        model_description: 'Fast, cost-effective responses.'
+        model_description: 'Fast, cost-effective responses.',
+        cost_indicator: '$$$'
       },
       {
         name: 'Claude Sonnet 3.7',
         ref: 'claude_sonnet_3_7_20250219',
         model_provider: 'Anthropic',
-        model_description: 'Fast, cost-effective responses.'
+        model_description: 'Fast, cost-effective responses.',
+        cost_indicator: '$$$'
       }
     ]
   end

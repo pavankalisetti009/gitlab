@@ -172,7 +172,8 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
                 'name' => 'Claude Sonnet',
                 'ref' => 'claude-sonnet',
                 'modelProvider' => 'Anthropic',
-                'modelDescription' => 'Fast, cost-effective responses.'
+                'modelDescription' => 'Fast, cost-effective responses.',
+                'costIndicator' => '$$$'
               }
             )
           end

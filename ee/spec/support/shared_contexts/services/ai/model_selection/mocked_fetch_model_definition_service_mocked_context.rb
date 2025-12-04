@@ -8,20 +8,23 @@ RSpec.shared_context 'with fetch_model_definitions_example' do
           'name' => 'Claude Sonnet',
           'identifier' => 'claude-sonnet',
           'provider' => 'Anthropic',
-          'description' => 'Fast, cost-effective responses.'
+          'description' => 'Fast, cost-effective responses.',
+          'cost_indicator' => '$$$'
         },
         {
           'name' => 'GPT-4',
           'identifier' => 'gpt-4',
           'provider' => 'OpenAI',
-          'description' => 'For high-volume coding, reasoning, and routine workflows.'
+          'description' => 'For high-volume coding, reasoning, and routine workflows.',
+          'cost_indicator' => '$'
         },
         {
           'name' => 'Claude Sonnet 3.7',
           'identifier' => 'claude-sonnet-3-7',
           'provider' => 'Anthropic',
           'description' => 'Fast, cost-effective responses.',
-          'deprecation' => { 'deprecation_date' => '2025-10-28', 'removal_version' => '18.8' }
+          'deprecation' => { 'deprecation_date' => '2025-10-28', 'removal_version' => '18.8' },
+          'cost_indicator' => '$$'
         }
       ],
       'unit_primitives' => [

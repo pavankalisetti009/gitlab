@@ -12,8 +12,10 @@ RSpec.describe Gitlab::Graphql::Representation::ModelSelection::FeatureSetting,
   let(:model_definitions) do
     {
       'models' => [
-        { 'identifier' => 'm1', 'name' => 'Model One', 'provider' => 'anthropic' },
-        { 'identifier' => 'm2', 'name' => 'Model Two', 'provider' => 'anthropic' },
+        { 'identifier' => 'm1', 'name' => 'Model One', 'provider' => 'anthropic',
+          'description' => 'Model one description', 'cost_indicator' => '$' },
+        { 'identifier' => 'm2', 'name' => 'Model Two', 'provider' => 'anthropic',
+          'description' => 'Model two description', 'cost_indicator' => '$$' },
         { 'identifier' => 'm3', 'name' => 'Model Three', 'provider' => 'openai' }
       ],
       'unit_primitives' => [
@@ -60,12 +62,16 @@ RSpec.describe Gitlab::Graphql::Representation::ModelSelection::FeatureSetting,
         dec = result.first
 
         expect(dec.feature_setting).to eq(feature_setting_record)
-        expect(dec.default_model).to eq({ ref: 'm1', name: 'Model One', model_provider: 'anthropic',
-model_description: nil })
+        expect(dec.default_model).to eq(
+          { ref: 'm1', name: 'Model One', model_provider: 'anthropic', model_description: 'Model one description',
+            cost_indicator: '$' }
+        )
         expect(dec.selectable_models).to match_array(
           [
-            { ref: 'm1', name: 'Model One', model_provider: 'anthropic', model_description: nil },
-            { ref: 'm2', name: 'Model Two', model_provider: 'anthropic', model_description: nil }
+            { ref: 'm1', name: 'Model One', model_provider: 'anthropic', model_description: 'Model one description',
+              cost_indicator: '$' },
+            { ref: 'm2', name: 'Model Two', model_provider: 'anthropic', model_description: 'Model two description',
+              cost_indicator: '$$' }
           ]
         )
       end
@@ -82,12 +88,16 @@ model_description: nil })
           group_id: group.id
         ).first
 
-        expect(dec.default_model).to eq({ ref: 'm1', name: 'Model One', model_provider: 'anthropic',
-model_description: nil })
+        expect(dec.default_model).to eq(
+          { ref: 'm1', name: 'Model One', model_provider: 'anthropic', model_description: 'Model one description',
+            cost_indicator: '$' }
+        )
         expect(dec.selectable_models).to match_array(
           [
-            { ref: 'm1', name: 'Model One', model_provider: 'anthropic', model_description: nil },
-            { ref: 'm2', name: 'Model Two', model_provider: 'anthropic', model_description: nil }
+            { ref: 'm1', name: 'Model One', model_provider: 'anthropic', model_description: 'Model one description',
+              cost_indicator: '$' },
+            { ref: 'm2', name: 'Model Two', model_provider: 'anthropic', model_description: 'Model two description',
+              cost_indicator: '$$' }
           ]
         )
       end
@@ -102,12 +112,16 @@ model_description: nil })
           group_id: group.id
         ).first
 
-        expect(dec.default_model).to eq({ ref: 'm1', name: 'Model One', model_provider: 'anthropic',
-model_description: nil })
+        expect(dec.default_model).to eq(
+          { ref: 'm1', name: 'Model One', model_provider: 'anthropic', model_description: 'Model one description',
+            cost_indicator: '$' }
+        )
         expect(dec.selectable_models).to match_array(
           [
-            { ref: 'm1', name: 'Model One', model_provider: 'anthropic', model_description: nil },
-            { ref: 'm2', name: 'Model Two', model_provider: 'anthropic', model_description: nil }
+            { ref: 'm1', name: 'Model One', model_provider: 'anthropic', model_description: 'Model one description',
+              cost_indicator: '$' },
+            { ref: 'm2', name: 'Model Two', model_provider: 'anthropic', model_description: 'Model two description',
+              cost_indicator: '$$' }
           ]
         )
       end
@@ -125,14 +139,18 @@ model_description: nil })
         )
 
         dec = result.first
-        expect(dec.default_model).to eq({ ref: 'm1', name: 'Model One', model_provider: 'anthropic',
-model_description: nil })
+        expect(dec.default_model).to eq(
+          { ref: 'm1', name: 'Model One', model_provider: 'anthropic', model_description: 'Model one description',
+            cost_indicator: '$' }
+        )
         # selectable = base + dev (unique, blanks removed)
         expect(dec.selectable_models).to match_array(
           [
-            { ref: 'm1', name: 'Model One', model_provider: 'anthropic', model_description: nil },
-            { ref: 'm2', name: 'Model Two', model_provider: 'anthropic', model_description: nil },
-            { ref: 'm3', name: 'Model Three', model_provider: 'openai', model_description: nil }
+            { ref: 'm1', name: 'Model One', model_provider: 'anthropic', model_description: 'Model one description',
+              cost_indicator: '$' },
+            { ref: 'm2', name: 'Model Two', model_provider: 'anthropic', model_description: 'Model two description',
+              cost_indicator: '$$' },
+            { ref: 'm3', name: 'Model Three', model_provider: 'openai', model_description: nil, cost_indicator: nil }
           ]
         )
       end
@@ -152,12 +170,16 @@ model_description: nil })
           group_id: group.id
         ).first
 
-        expect(dec.default_model).to eq({ ref: 'm1', name: 'Model One', model_provider: 'anthropic',
-model_description: nil })
+        expect(dec.default_model).to eq(
+          { ref: 'm1', name: 'Model One', model_provider: 'anthropic', model_description: 'Model one description',
+            cost_indicator: '$' }
+        )
         expect(dec.selectable_models).to match_array(
           [
-            { ref: 'm1', name: 'Model One', model_provider: 'anthropic', model_description: nil },
-            { ref: 'm2', name: 'Model Two', model_provider: 'anthropic', model_description: nil }
+            { ref: 'm1', name: 'Model One', model_provider: 'anthropic', model_description: 'Model one description',
+              cost_indicator: '$' },
+            { ref: 'm2', name: 'Model Two', model_provider: 'anthropic', model_description: 'Model two description',
+              cost_indicator: '$$' }
           ]
         )
       end
@@ -174,14 +196,16 @@ model_description: nil })
           group_id: group.id
         ).first
 
-        expect(dec.default_model).to eq({ ref: 'm1', name: 'Model One', model_provider: 'anthropic',
-model_description: nil })
+        expect(dec.default_model).to eq(
+          { ref: 'm1', name: 'Model One', model_provider: 'anthropic', model_description: 'Model one description',
+            cost_indicator: '$' }
+        )
         expect(dec.selectable_models).to match_array(
           [
-            { ref: 'm1', name: 'Model One', model_provider: 'anthropic',
-              model_description: nil },
-            { ref: 'm2', name: 'Model Two', model_provider: 'anthropic',
-              model_description: nil }
+            { ref: 'm1', name: 'Model One', model_provider: 'anthropic', model_description: 'Model one description',
+              cost_indicator: '$' },
+            { ref: 'm2', name: 'Model Two', model_provider: 'anthropic', model_description: 'Model two description',
+              cost_indicator: '$$' }
           ]
         )
       end
@@ -201,12 +225,16 @@ model_description: nil })
           group_id: group.id
         ).first
 
-        expect(dec.default_model).to eq({ ref: 'm1', name: 'Model One', model_provider: 'anthropic',
-model_description: nil })
+        expect(dec.default_model).to eq(
+          { ref: 'm1', name: 'Model One', model_provider: 'anthropic', model_description: 'Model one description',
+            cost_indicator: '$' }
+        )
         expect(dec.selectable_models).to match_array(
           [
-            { ref: 'm1', name: 'Model One', model_provider: 'anthropic', model_description: nil },
-            { ref: 'm2', name: 'Model Two', model_provider: 'anthropic', model_description: nil }
+            { ref: 'm1', name: 'Model One', model_provider: 'anthropic', model_description: 'Model one description',
+              cost_indicator: '$' },
+            { ref: 'm2', name: 'Model Two', model_provider: 'anthropic', model_description: 'Model two description',
+              cost_indicator: '$$' }
           ]
         )
       end
@@ -223,12 +251,16 @@ model_description: nil })
           group_id: 99999 # different group_id
         ).first
 
-        expect(dec.default_model).to eq({ ref: 'm1', name: 'Model One', model_provider: 'anthropic',
-model_description: nil })
+        expect(dec.default_model).to eq(
+          { ref: 'm1', name: 'Model One', model_provider: 'anthropic', model_description: 'Model one description',
+            cost_indicator: '$' }
+        )
         expect(dec.selectable_models).to match_array(
           [
-            { ref: 'm1', name: 'Model One', model_provider: 'anthropic', model_description: nil },
-            { ref: 'm2', name: 'Model Two', model_provider: 'anthropic', model_description: nil }
+            { ref: 'm1', name: 'Model One', model_provider: 'anthropic', model_description: 'Model one description',
+              cost_indicator: '$' },
+            { ref: 'm2', name: 'Model Two', model_provider: 'anthropic', model_description: 'Model two description',
+              cost_indicator: '$$' }
           ]
         )
       end
@@ -281,8 +313,10 @@ model_description: nil })
         allow(fs).to receive(:model_definitions).and_return(model_definitions)
 
         dec = described_class.decorate([fs]).first
-        expect(dec.default_model).to eq({ ref: 'm1', name: 'Model One', model_provider: 'anthropic',
-model_description: nil })
+        expect(dec.default_model).to eq(
+          { ref: 'm1', name: 'Model One', model_provider: 'anthropic', model_description: 'Model one description',
+            cost_indicator: '$' }
+        )
       end
     end
   end
