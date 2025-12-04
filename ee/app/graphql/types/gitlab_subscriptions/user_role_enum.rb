@@ -10,7 +10,7 @@ module Types
       value 'PLANNER', value: :planner, description: 'Planner.'
       value 'REPORTER', value: :reporter, description: 'Reporter.'
       value 'SECURITY_MANAGER',
-        value: Gitlab::Access::SECURITY_MANAGER,
+        value: :security_manager,
         description: 'Security manager access.' do
         def visible?(_context)
           Gitlab::Security::SecurityManagerConfig.enabled?
