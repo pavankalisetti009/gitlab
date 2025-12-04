@@ -4,7 +4,7 @@ module SecretsManagement
   class ProjectBaseService < BaseService
     include Gitlab::Utils::StrongMemoize
     include Helpers::ExclusiveLeaseHelper
-    include ErrorResponseHelper
+    include Helpers::ErrorResponseHelper
 
     def global_secrets_manager_client
       jwt = SecretsManagerJwt.new(

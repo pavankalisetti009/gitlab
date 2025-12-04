@@ -54,7 +54,7 @@ RSpec.describe SecretsManagement::Permissions::DeleteService, :gitlab_secrets_ma
     context 'when the project secrets manager is not active' do
       it 'returns an error' do
         expect(result).to be_error
-        expect(result.message).to eq('Project secrets manager is not active')
+        expect(result.message).to eq('Secrets manager is not active')
       end
     end
   end

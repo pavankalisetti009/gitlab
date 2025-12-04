@@ -27,7 +27,7 @@ module SecretsManagement
       delegate :secrets_manager, to: :project
 
       def execute_secret_creation(name:, value:, environment:, branch:, description:, rotation_interval_days:)
-        return inactive_response unless secrets_manager&.active?
+        return secrets_manager_inactive_response unless secrets_manager&.active?
 
         secret_rotation_info = build_secret_rotation_info(name, rotation_interval_days) if rotation_interval_days
 

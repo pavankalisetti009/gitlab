@@ -7,7 +7,7 @@ module SecretsManagement
         secrets_manager = group.secrets_manager
 
         return ServiceResponse.error(message: 'Secrets manager not found for the group.') unless secrets_manager
-        return ServiceResponse.error(message: 'Secrets manager is not active.') unless secrets_manager.active?
+        return secrets_manager_inactive_response unless secrets_manager.active?
 
         secrets_manager.initiate_deprovision!
 

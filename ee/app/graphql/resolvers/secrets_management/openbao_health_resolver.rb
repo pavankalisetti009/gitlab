@@ -12,7 +12,7 @@ module Resolvers
 
         # we don't need JWT here since the health endpoint from Openbao is public
         client = ::SecretsManagement::SecretsManagerClient.new(jwt: nil)
-        client.check_health
+        client.server_available?
       end
     end
   end

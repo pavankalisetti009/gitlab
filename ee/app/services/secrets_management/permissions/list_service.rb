@@ -3,10 +3,8 @@
 module SecretsManagement
   module Permissions
     class ListService < ProjectBaseService
-      include ErrorResponseHelper
-
       def execute
-        return inactive_response unless project.secrets_manager&.active?
+        return secrets_manager_inactive_response unless project.secrets_manager&.active?
 
         secret_permissions = list_secret_permissions(project)
 

@@ -591,14 +591,14 @@ RSpec.describe SecretsManagement::ProjectSecrets::CreateService, :gitlab_secrets
 
       it 'fails' do
         expect(result).to be_error
-        expect(result.message).to eq('Project secrets manager is not active')
+        expect(result.message).to eq('Secrets manager is not active')
       end
     end
 
     context 'when the project has not enabled secrets manager at all' do
       it 'fails' do
         expect(result).to be_error
-        expect(result.message).to eq('Project secrets manager is not active')
+        expect(result.message).to eq('Secrets manager is not active')
       end
     end
   end

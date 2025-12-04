@@ -40,7 +40,7 @@ module SecretsManagement
         branch: nil,
         rotation_interval_days: nil
       )
-        return inactive_response unless project.secrets_manager&.active?
+        return secrets_manager_inactive_response unless project.secrets_manager&.active?
 
         read_result = read_project_secret(name)
         return read_result unless read_result.success?
