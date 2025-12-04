@@ -24,7 +24,7 @@ module Resolvers
         validate_args(args)
 
         if advanced_vuln_mgmt_available?
-          validate_self_managed_first_backfill!
+          validate_self_managed_first_backfill! if ::Search::Elastic::VulnerabilityIndexHelper.self_managed_with_es?
           return search_from_es(args)
         end
 
