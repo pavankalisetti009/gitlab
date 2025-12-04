@@ -8,7 +8,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { __, s__ } from '~/locale';
 import { renderGFM } from '~/behaviors/markdown/render_gfm';
 import { helpPagePath } from '~/helpers/help_page_helper';
-import { getCookie } from '~/lib/utils/common_utils';
 import { duoChatGlobalState } from '~/super_sidebar/constants';
 import { clearDuoChatCommands, generateEventLabelFromText, setAgenticMode } from 'ee/ai/utils';
 import DuoChatCallout from 'ee/ai/components/global_callout/duo_chat_callout.vue';
@@ -34,7 +33,6 @@ import {
   MESSAGE_TYPES,
   WIDTH_OFFSET,
   MULTI_THREADED_CONVERSATION_TYPE,
-  DUO_AGENTIC_MODE_COOKIE,
 } from '../constants';
 import TanukiBotSubscriptions from './tanuki_bot_subscriptions.vue';
 
@@ -207,10 +205,26 @@ export default {
     },
     duoAgenticModePreference: {
       get() {
-        return getCookie(DUO_AGENTIC_MODE_COOKIE) === 'true';
+        return this.duoChatGlobalState.chatMode === 'agentic';
       },
       set(value) {
-        setAgenticMode({ agenticMode: value, saveCookie: true, isEmbedded: this.isEmbedded });
+        setAgenticMode({
+          agenticMode: value,
+          saveCookie: true,
+          isEmbedded: this.isEmbedded,
+        });
+      },
+    },
+    duoClassicModePreference: {
+      get() {
+        return this.duoChatGlobalState.chatMode === 'classic';
+      },
+      set(value) {
+        setAgenticMode({
+          agenticMode: !value,
+          saveCookie: true,
+          isEmbedded: this.isEmbedded,
+        });
       },
     },
     computedResourceId() {
@@ -606,7 +620,14 @@ export default {
         @track-feedback="onTrackFeedback"
         @chat-resize="onChatResize"
       >
-        <template v-if="agenticAvailable" #agentic-switch>
+        <template v-if="agenticAvailable && glFeatures.agenticChatGa" #agentic-switch>
+          <gl-toggle v-model="duoClassicModePreference" label-position="left">
+            <template #label>
+              <span class="gl-font-normal gl-text-subtle">{{ s__('DuoChat|Chat (Classic)') }}</span>
+            </template>
+          </gl-toggle>
+        </template>
+        <template v-else-if="agenticAvailable" #agentic-switch>
           <gl-toggle v-model="duoAgenticModePreference" label-position="left">
             <template #label>
               <span class="gl-font-normal gl-text-subtle">{{
