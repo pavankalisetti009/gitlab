@@ -11,6 +11,7 @@ query projectsInGroupWithComplianceFramework(
     projects(
       complianceFrameworkFilters: { ids: [$frameworkId] }
       includeSubgroups: true
+      includeArchived: false
       first: $pageCount
       after: $after
     ) {
