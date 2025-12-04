@@ -53,6 +53,10 @@ class Admin::ElasticsearchController < Admin::ApplicationController
     flash[:notice] = _('Successfully created connection for semantic search.')
 
     redirect_to redirect_path(anchor: 'js-semantic-search-settings')
+  rescue Ai::ActiveContext::ConnectionService::ConnectionError => e
+    flash[:alert] = format(_('Failed to connect to Advanced Search cluster: %{error}'), error: e.message)
+
+    redirect_to redirect_path(anchor: 'js-semantic-search-settings')
   end
 
   # POST

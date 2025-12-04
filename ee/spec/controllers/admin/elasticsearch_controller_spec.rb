@@ -102,6 +102,20 @@ RSpec.describe Admin::ElasticsearchController, feature_category: :global_search 
       expected_redirect = search_admin_application_settings_path(anchor: 'js-semantic-search-settings')
       expect(response).to redirect_to expected_redirect
     end
+
+    it 'handles connection errors gracefully' do
+      error_message = 'Connection invalid'
+      allow(Ai::ActiveContext::ConnectionService).to receive(:connect_to_advanced_search_cluster)
+        .and_raise(Ai::ActiveContext::ConnectionService::ConnectionError, error_message)
+
+      post :use_advanced_search_cluster_for_semantic_search
+
+      expect(controller).to set_flash[:alert].to include('Failed to connect to Advanced Search cluster')
+      expect(controller).to set_flash[:alert].to include(error_message)
+
+      expected_redirect = search_admin_application_settings_path(anchor: 'js-semantic-search-settings')
+      expect(response).to redirect_to expected_redirect
+    end
   end
 
   describe 'POST #retry_migration' do

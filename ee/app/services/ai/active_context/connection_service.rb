@@ -3,11 +3,15 @@
 module Ai
   module ActiveContext
     class ConnectionService
+      ConnectionError = Class.new(StandardError)
+
       def self.connect_to_advanced_search_cluster
-        name = if ApplicationSetting.current.elasticsearch_aws
+        name = if ::Gitlab::Elastic::Helper.default.matching_distribution?(:opensearch)
                  :opensearch
-               else
+               elsif ::Gitlab::Elastic::Helper.default.matching_distribution?(:elasticsearch)
                  :elasticsearch
+               else
+                 raise ConnectionError, 'Connection invalid'
                end
 
         adapter_class = Ai::ActiveContext::Connection::ADAPTERS_FOR_ADVANCED_SEARCH[name]

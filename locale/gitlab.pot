@@ -28455,6 +28455,9 @@ msgstr ""
 msgid "Failed to clone this item: wrong parameters."
 msgstr ""
 
+msgid "Failed to connect to Advanced Search cluster: %{error}"
+msgstr ""
+
 msgid "Failed to connect to your device. Try again."
 msgstr ""
 
