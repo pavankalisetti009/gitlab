@@ -23,26 +23,6 @@ RSpec.describe GitlabSubscriptions::HandRaiseLeadsHelper, feature_category: :acq
     end
   end
 
-  describe '#discover_page_hand_raise_lead_data' do
-    it 'provides the expected dataset' do
-      result = {
-        glm_content: 'trial_discover_page',
-        cta_tracking: {
-          action: 'click_contact_sales',
-          label: 'trial_expired'
-        }.to_json,
-        button_attributes: {
-          variant: 'confirm',
-          category: 'secondary',
-          'data-testid': 'trial-discover-hand-raise-lead-button',
-          class: 'gl-w-full @sm/panel:gl-w-auto'
-        }.to_json
-      }
-
-      expect(helper.discover_page_hand_raise_lead_data(build_stubbed(:group))).to eq(result)
-    end
-  end
-
   describe '#free_plan_billing_hand_raise_lead_data' do
     it 'provides the expected dataset' do
       result = {

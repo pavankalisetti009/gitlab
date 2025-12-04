@@ -15,22 +15,6 @@ module GitlabSubscriptions
       }
     end
 
-    def discover_page_hand_raise_lead_data(group)
-      {
-        glm_content: 'trial_discover_page',
-        cta_tracking: {
-          action: 'click_contact_sales',
-          label: group_trial_status(group)
-        }.to_json,
-        button_attributes: {
-          variant: 'confirm',
-          category: 'secondary',
-          'data-testid': 'trial-discover-hand-raise-lead-button',
-          class: 'gl-w-full @sm/panel:gl-w-auto'
-        }.to_json
-      }
-    end
-
     def free_plan_billing_hand_raise_lead_data
       {
         glm_content: 'billing-group',
