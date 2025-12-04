@@ -35,7 +35,7 @@ export default {
         },
       ];
 
-      if (this.item.foundationalChat) {
+      if (this.item.foundational) {
         items.push({
           text: s__('AICatalog|Foundational agent'),
           icon: 'tanuki-verified',

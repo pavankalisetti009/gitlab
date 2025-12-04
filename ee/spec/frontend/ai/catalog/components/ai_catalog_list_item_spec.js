@@ -252,7 +252,7 @@ describe('AiCatalogListItem', () => {
     describe('when item is foundational', () => {
       beforeEach(() => {
         createComponent({
-          item: { ...mockItem, foundationalChat: true },
+          item: { ...mockItem, foundational: true },
         });
       });
 

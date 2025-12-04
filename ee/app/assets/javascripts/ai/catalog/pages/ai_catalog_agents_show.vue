@@ -230,10 +230,7 @@ export default {
         <span class="gl-line-clamp-1 gl-wrap-anywhere">
           {{ aiCatalogAgent.name }}
 
-          <foundational-icon
-            v-if="aiCatalogAgent.foundationalChat"
-            :resource-id="aiCatalogAgent.id"
-          />
+          <foundational-icon v-if="aiCatalogAgent.foundational" :resource-id="aiCatalogAgent.id" />
         </span>
       </template>
       <template #actions>

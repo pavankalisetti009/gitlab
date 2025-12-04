@@ -117,14 +117,14 @@ export default {
       return this.canAdmin || this.canUse || this.canReport;
     },
     showAddToProject() {
-      return this.canUse && this.isGlobal && !this.item.foundationalChat;
+      return this.canUse && this.isGlobal && !this.item.foundational;
     },
     showAddToGroup() {
       return (
         this.canUse &&
         this.isGlobal &&
         (this.isFlowsAvailable || this.isAgentsAvailable) &&
-        !this.item.foundationalChat
+        !this.item.foundational
       );
     },
     duplicateItemProps() {

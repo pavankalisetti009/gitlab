@@ -43,9 +43,9 @@ describe('AiCatalogItemMetadata', () => {
         },
         item: {
           ...mockAgent,
-          createdAt: '2024-01-15T00:00:00Z', // createdAt
-          updatedAt: '2025-08-21T00:00:00Z', // updatedAt
-          foundationalChat: true, // foundationalChat
+          createdAt: '2024-01-15T00:00:00Z',
+          updatedAt: '2025-08-21T00:00:00Z',
+          foundational: true,
         },
       });
 
@@ -86,7 +86,7 @@ describe('AiCatalogItemMetadata', () => {
       createComponent({
         item: {
           ...mockAgent,
-          foundationalChat: true,
+          foundational: true,
         },
       });
     });
@@ -101,7 +101,7 @@ describe('AiCatalogItemMetadata', () => {
       createComponent({
         item: {
           ...mockAgent,
-          foundationalChat: false,
+          foundational: false,
         },
       });
 
