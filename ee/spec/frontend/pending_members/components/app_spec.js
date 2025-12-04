@@ -130,10 +130,8 @@ describe('PendingMembersApp', () => {
         hasNextPage: true,
         startCursor: 'MTE',
         endCursor: 'MjA',
-        prevText: 'Previous',
         prevButtonLink: null,
         navigationLabel: 'Pagination',
-        nextText: 'Next',
         nextButtonLink: null,
         disabled: false,
       });
