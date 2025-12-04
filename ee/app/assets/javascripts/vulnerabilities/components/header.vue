@@ -9,17 +9,18 @@ import { i18n } from 'ee/ai/constants';
 import vulnerabilityStateMutations from 'ee/security_dashboard/graphql/mutate_vulnerability_state';
 import vulnerabilitiesSeverityOverrideMutation from 'ee/security_dashboard/graphql/mutations/vulnerabilities_severity_override.mutation.graphql';
 import StatusBadge from 'ee/vue_shared/security_reports/components/status_badge.vue';
-import { createAlert } from '~/alert';
+import { createAlert, VARIANT_SUCCESS } from '~/alert';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_USER, TYPENAME_VULNERABILITY } from '~/graphql_shared/constants';
 import { BV_SHOW_MODAL } from '~/lib/utils/constants';
 import axios from '~/lib/utils/axios_utils';
 import { convertObjectPropsToSnakeCase } from '~/lib/utils/common_utils';
 import download from '~/lib/utils/downloader';
-import { visitUrl } from '~/lib/utils/url_utility';
+import { visitUrl, joinPaths } from '~/lib/utils/url_utility';
 import UsersCache from '~/lib/utils/users_cache';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { sprintf, s__ } from '~/locale';
+import Api from 'ee/api';
 import aiResponseSubscription from 'ee/graphql_shared/subscriptions/ai_completion_response.subscription.graphql';
 import aiResolveVulnerability from '../graphql/ai_resolve_vulnerability.mutation.graphql';
 import { VULNERABILITY_STATE_OBJECTS, FEEDBACK_TYPES } from '../constants';
@@ -358,6 +359,35 @@ export default {
     stopSubscription() {
       this.$apollo.subscriptions.aiCompletionResponse.stop();
     },
+    triggerResolution() {
+      Api.triggerVulnerabilityResolution(this.vulnerability.id, this.vulnerability.project.id)
+        .then(({ data }) => {
+          createAlert({
+            variant: VARIANT_SUCCESS,
+            message: s__('VulnerabilityManagement|Agent session started to resolve vulnerability.'),
+            primaryButton: {
+              text: s__('VulnerabilityManagement|View agent session'),
+              link: joinPaths(
+                '/',
+                gon.relative_url_root,
+                this.vulnerability.project.fullPath,
+                '-',
+                'automate/agent-sessions',
+                data.id.toString(),
+              ),
+            },
+          });
+        })
+        .catch((error) => {
+          createAlert({
+            captureError: true,
+            error,
+            message: s__(
+              'VulnerabilityManagement|Something went wrong, could not start Duo agent session.',
+            ),
+          });
+        });
+    },
     handleError(error) {
       this.stopSubscription();
       this.isProcessingAction = false;
@@ -434,6 +464,7 @@ export default {
           @download-patch="downloadPatch"
           @explain-vulnerability="explainVulnerability"
           @resolve-vulnerability="startSubscription"
+          @agentic-resolve-vulnerability="triggerResolution"
         />
       </div>
     </div>

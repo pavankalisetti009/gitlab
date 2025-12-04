@@ -1,6 +1,7 @@
 import Api, { DEFAULT_PER_PAGE } from '~/api';
 import axios from '~/lib/utils/axios_utils';
 import { contentTypeMultipartFormData } from '~/lib/utils/headers';
+import { VULNERABILITY_RESOLUTION_AGENT_PRIVILEGES } from '~/duo_agent_platform/constants';
 
 export default {
   ...Api,
@@ -22,6 +23,7 @@ export default {
   vulnerabilityPath: '/api/:version/vulnerabilities/:id',
   vulnerabilityActionPath: '/api/:version/vulnerabilities/:id/:action',
   vulnerabilityIssueLinksPath: '/api/:version/vulnerabilities/:id/issue_links',
+  duoWorkflowsPath: '/api/:version/ai/duo_workflows/workflows',
   descendantGroupsPath: '/api/:version/groups/:group_id/descendant_groups',
   projectDeploymentFrequencyAnalyticsPath:
     '/api/:version/projects/:id/analytics/deployment_frequency',
@@ -138,6 +140,24 @@ export default {
       .replace(':action', state);
 
     return axios.post(url);
+  },
+
+  triggerVulnerabilityResolution(vulnerabilityId, projectId) {
+    const url = Api.buildUrl(this.duoWorkflowsPath);
+
+    return axios.post(url, {
+      project_id: projectId,
+      agent_privileges: VULNERABILITY_RESOLUTION_AGENT_PRIVILEGES,
+      // eslint-disable-next-line @gitlab/require-i18n-strings
+      goal: `Fix vulnerability ID: ${vulnerabilityId}`,
+      start_workflow: true,
+      workflow_definition: 'resolve_sast_vulnerability/v1',
+      environment: 'web',
+      source_branch: `security/sast/resolve-vulnerability-${vulnerabilityId}`,
+      context: {
+        vulnerability_id: vulnerabilityId,
+      },
+    });
   },
 
   getGeoSites() {

@@ -3,6 +3,7 @@ import Api from 'ee/api';
 import axios from '~/lib/utils/axios_utils';
 import { contentTypeMultipartFormData } from '~/lib/utils/headers';
 import { HTTP_STATUS_CREATED, HTTP_STATUS_OK } from '~/lib/utils/http_status';
+import { VULNERABILITY_RESOLUTION_AGENT_PRIVILEGES } from '~/duo_agent_platform/constants';
 
 describe('Api', () => {
   const dummyApiVersion = 'v3000';
@@ -139,6 +140,39 @@ describe('Api', () => {
         expect(mock.history.post).toContainEqual(expect.objectContaining({ url: expectedUrl }));
         expect(data).toEqual(expectedResponse);
       });
+    });
+  });
+
+  describe('triggerVulnerabilityResolution', () => {
+    it('POSTs to the duo workflows endpoint with correct parameters', async () => {
+      const vulnerabilityId = 123;
+      const projectId = 456;
+      const expectedUrl = `${dummyUrlRoot}/api/${dummyApiVersion}/ai/duo_workflows/workflows`;
+      const expectedResponse = { id: 789, status: 'running' };
+      const expectedPayload = {
+        project_id: projectId,
+        agent_privileges: VULNERABILITY_RESOLUTION_AGENT_PRIVILEGES,
+        goal: `Fix vulnerability ID: ${vulnerabilityId}`,
+        start_workflow: true,
+        workflow_definition: 'resolve_sast_vulnerability/v1',
+        environment: 'web',
+        source_branch: `security/sast/resolve-vulnerability-${vulnerabilityId}`,
+        context: {
+          vulnerability_id: vulnerabilityId,
+        },
+      };
+
+      mock.onPost(expectedUrl).replyOnce(HTTP_STATUS_OK, expectedResponse);
+
+      const { data } = await Api.triggerVulnerabilityResolution(vulnerabilityId, projectId);
+
+      expect(data).toEqual(expectedResponse);
+      expect(mock.history.post).toContainEqual(
+        expect.objectContaining({
+          url: expectedUrl,
+          data: JSON.stringify(expectedPayload),
+        }),
+      );
     });
   });
 
