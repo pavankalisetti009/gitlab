@@ -3,12 +3,17 @@
 require 'spec_helper'
 
 RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: :keep, feature_category: :global_search do
+  include ProjectForksHelper
+
   let_it_be(:user) { create(:user, developer_of: group) }
   let_it_be(:group) { create(:group) }
-  let_it_be(:namespace) { create_default(:namespace).freeze }
-  let_it_be(:label) { create(:label) }
-  let(:project) { create(:project, :public, :repository, :wiki_repo, name: 'awesome project', group: group) }
-  let(:milestone) { create(:milestone, project: project) }
+  let_it_be(:label) { create(:label, group: group) }
+  let_it_be(:project) do
+    create(:project, :public, :repository, :wiki_repo, name: 'awesome project', group: group)
+  end
+
+  let_it_be(:forked_project) { fork_project(project, nil, repository: true) }
+  let_it_be(:milestone) { create(:milestone, project: project) }
 
   shared_examples 'response is correct' do |schema:, size: 1|
     it 'responds correctly' do
@@ -79,6 +84,12 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
   end
 
   shared_examples 'elasticsearch enabled' do |level:|
+    before do
+      ::Elastic::ProcessInitialBookkeepingService.backfill_projects!(project)
+
+      ensure_elasticsearch_index!
+    end
+
     context 'for merge_requests scope' do
       before do
         create_list(:merge_request, 3, :unique_branches, source_project: project, author: user,
@@ -138,28 +149,31 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
         it_behaves_like 'pagination', scope: 'commits'
 
         it 'avoids N+1 queries' do
-          control = ActiveRecord::QueryRecorder.new do
-            get api(endpoint, user), params: { scope: 'commits', search: 'folder' }
-          end
-
-          project_2 = create(:project, :public, :repository, :wiki_repo, group: group, name: 'awesome project 2')
+          project_2 = create(:project, :public, :repository, group: group)
           project_2.repository.index_commits_and_blobs
-          3.times do |i|
-            commit_sha = project.repository.create_file(user, i.to_s, "folder #{i}", message: "committing folder #{i}",
-              branch_name: 'master')
-            project.repository.commit(commit_sha)
-          end
-
-          project.repository.index_commits_and_blobs
           ensure_elasticsearch_index!
 
-          # N+1 queries still exist (ci_pipelines)
+          api_endpoint = level == :project ? "/projects/#{project_2.id}/-/search" : endpoint
+
+          control = ActiveRecord::QueryRecorder.new do
+            get api(api_endpoint, user), params: { scope: 'commits', search: 'folder' }
+          end
+
+          initial_count = json_response.count
+
+          3.times do |i|
+            commit_sha = project_2.repository.create_file(user, i.to_s, "folder #{i}",
+              message: "committing folder #{i}", branch_name: 'master')
+            project_2.repository.commit(commit_sha)
+          end
+
+          project_2.repository.index_commits_and_blobs
+          ensure_elasticsearch_index!
+
           expect do
-            get api(endpoint, user), params: { scope: 'commits', search: 'folder' }
-          end.not_to exceed_query_limit(control).with_threshold(6)
-          # support global, group, and project search results expected counts
-          expected_count = level == :project ? 5 : 7
-          expect(json_response.count).to be expected_count
+            get api(api_endpoint, user), params: { scope: 'commits', search: 'folder' }
+          end.not_to exceed_query_limit(control)
+          expect(json_response.count).to eq(initial_count + 3)
         end
       end
 
@@ -173,27 +187,31 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
         it_behaves_like 'pagination', scope: 'blobs'
 
         it 'avoids N+1 queries' do
-          control = ActiveRecord::QueryRecorder.new do
-            get api(endpoint, user), params: { scope: 'blobs', search: 'Issue team' }
-          end
-
-          project_2 = create(:project, :public, :repository, :wiki_repo, group: group, name: 'awesome project 2')
+          project_2 = create(:project, :public, :repository, group: group)
           project_2.repository.index_commits_and_blobs
-          3.times do |i|
-            commit_sha = project.repository.create_file(user, i.to_s, "Issue team #{i}", message: i.to_s,
-              branch_name: 'master')
-            project.repository.commit(commit_sha)
+          ensure_elasticsearch_index!
+
+          api_endpoint = level == :project ? "/projects/#{project_2.id}/-/search" : endpoint
+
+          control = ActiveRecord::QueryRecorder.new do
+            get api(api_endpoint, user), params: { scope: 'blobs', search: 'Issue team' }
           end
 
-          project.repository.index_commits_and_blobs
+          initial_count = json_response.count
+
+          3.times do |i|
+            commit_sha = project_2.repository.create_file(user, i.to_s, "Issue team #{i}", message: i.to_s,
+              branch_name: 'master')
+            project_2.repository.commit(commit_sha)
+          end
+
+          project_2.repository.index_commits_and_blobs
           ensure_elasticsearch_index!
 
           expect do
-            get api(endpoint, user), params: { scope: 'blobs', search: 'Issue team' }
+            get api(api_endpoint, user), params: { scope: 'blobs', search: 'Issue team' }
           end.not_to exceed_query_limit(control)
-          # support global, group, and project search results expected counts
-          expected_count = level == :project ? 6 : 9
-          expect(json_response.count).to be expected_count
+          expect(json_response.count).to eq(initial_count + 3)
         end
 
         context 'with filters' do
@@ -289,9 +307,8 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
     end
 
     unless level == :project
-      context 'for projects scope' do
+      context 'for projects scope', :sidekiq_inline do
         before do
-          project
           create(:project, :public, name: 'second project', group: group)
 
           ensure_elasticsearch_index!
@@ -303,15 +320,15 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
           control = ActiveRecord::QueryRecorder.new(skip_cached: false) do
             get api(endpoint, user), params: { scope: 'projects', search: '*' }
           end
+
           create_list(:project, 3, :public, group: group)
           create_list(:project, 4, :public)
 
           ensure_elasticsearch_index!
 
-          # Some N+1 queries still exist
           expect do
             get api(endpoint, user), params: { scope: 'projects', search: '*' }
-          end.not_to exceed_query_limit(control).with_threshold(4)
+          end.not_to exceed_query_limit(control)
         end
       end
     end
@@ -344,8 +361,9 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
       before do
         create_list(:user, 2).each_with_index do |user, index|
           user.update!(name: "foo_#{index}")
-          project.add_developer(user)
+          project.add_developer(user) # rubocop:disable RSpec/BeforeAllRoleAssignment -- Does not work in before_all
         end
+
         ensure_elasticsearch_index!
       end
 
@@ -388,6 +406,73 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
     end
   end
 
+  shared_examples 'exact code search enabled' do |level:|
+    before_all do
+      zoekt_ensure_project_indexed!(project)
+      zoekt_ensure_project_indexed!(forked_project)
+    end
+
+    it_behaves_like 'response is correct', schema: 'public_api/v4/blobs', size: 14 do
+      before do
+        get api(endpoint, user), params: { scope: 'blobs', search: 'Issue' }
+      end
+    end
+
+    describe 'blobs scope' do
+      context 'with filters' do
+        context 'for exclude_forks' do
+          let(:api_endpoint) do
+            case level
+            when :project
+              "/projects/#{forked_project.id}/-/search"
+            when :group
+              "/groups/#{forked_project.namespace.id}/-/search"
+            else
+              endpoint
+            end
+          end
+
+          it 'excludes forks by default' do
+            get api(api_endpoint, user), params: { scope: 'blobs', search: 'monitors' }
+            expect(response).to have_gitlab_http_status(:success)
+
+            project_ids_in_response = json_response.pluck('project_id').uniq
+            if level == :project
+              expect(project_ids_in_response).to include(forked_project.id)
+            else
+              expect(project_ids_in_response).not_to include(forked_project.id)
+            end
+          end
+
+          context 'when exclude_forks is true' do
+            it 'excludes forks' do
+              get api(api_endpoint, user), params: { scope: 'blobs', search: 'monitors', exclude_forks: true }
+              expect(response).to have_gitlab_http_status(:success)
+
+              project_ids_in_response = json_response.pluck('project_id').uniq
+              if level == :project
+                expect(project_ids_in_response).to include(forked_project.id)
+              else
+                expect(project_ids_in_response).not_to include(forked_project.id)
+              end
+            end
+          end
+
+          context 'when exclude_forks is false' do
+            it 'includes forks' do
+              get api(api_endpoint, user), params: { scope: 'blobs', search: 'monitors', exclude_forks: false }
+
+              expect(response).to have_gitlab_http_status(:success)
+
+              project_ids_in_response = json_response.pluck('project_id').uniq
+              expect(project_ids_in_response).to include(forked_project.id)
+            end
+          end
+        end
+      end
+    end
+  end
+
   describe 'GET /search' do
     let(:endpoint) { '/search' }
 
@@ -412,7 +497,7 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
         end
       end
 
-      context 'when elasticsearch is enabled', :elastic_delete_by_query do
+      context 'when elasticsearch is enabled', :elastic_delete_by_query, :sidekiq_inline do
         before do
           stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
         end
@@ -422,7 +507,7 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
             stub_ee_application_setting(elasticsearch_limit_indexing: true)
           end
 
-          context 'and namespace is indexed', :elastic_delete_by_query do
+          context 'and namespace is indexed' do
             before do
               create :elasticsearch_indexed_namespace, namespace: group
             end
@@ -431,8 +516,7 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
           end
         end
 
-        context 'when elasticsearch_limit_indexing off', :elastic_delete_by_query,
-          quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/461421' do
+        context 'when elasticsearch_limit_indexing off', :elastic_delete_by_query, :sidekiq_inline do
           before do
             stub_ee_application_setting(elasticsearch_limit_indexing: false)
           end
@@ -450,6 +534,10 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
 
           get api(endpoint, user), params: { scope: 'issues', search: 'john doe' }
         end
+      end
+
+      context 'when zoekt is enabled', :zoekt_settings_enabled, :zoekt_cache_disabled do
+        it_behaves_like 'exact code search enabled', level: :global
       end
     end
 
@@ -499,7 +587,7 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
         it_behaves_like 'elasticsearch disabled'
       end
 
-      context 'when elasticsearch is enabled', :elastic_delete_by_query do
+      context 'when elasticsearch is enabled', :elastic_delete_by_query, :sidekiq_inline do
         before do
           stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
           stub_application_setting(global_search_block_anonymous_searches_enabled: true)
@@ -524,7 +612,7 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
           end
         end
 
-        context 'when elasticsearch_limit_indexing off', :elastic_delete_by_query do
+        context 'when elasticsearch_limit_indexing off', :elastic_delete_by_query, :sidekiq_inline do
           before do
             stub_ee_application_setting(elasticsearch_limit_indexing: false)
           end
@@ -533,16 +621,8 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
         end
       end
 
-      context 'when zoekt is enabled', :zoekt_settings_enabled do
-        before do
-          zoekt_ensure_project_indexed!(project)
-        end
-
-        it_behaves_like 'response is correct', schema: 'public_api/v4/blobs', size: 14 do
-          before do
-            get api(endpoint, user), params: { scope: 'blobs', search: 'Issue' }
-          end
-        end
+      context 'when zoekt is enabled', :zoekt_settings_enabled, :zoekt_cache_disabled do
+        it_behaves_like 'exact code search enabled', level: :group
       end
     end
   end
@@ -648,6 +728,10 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
 
           it_behaves_like 'elasticsearch enabled', level: :project
         end
+      end
+
+      context 'when zoekt is enabled', :zoekt_settings_enabled, :zoekt_cache_disabled do
+        it_behaves_like 'exact code search enabled', level: :project
       end
     end
   end
