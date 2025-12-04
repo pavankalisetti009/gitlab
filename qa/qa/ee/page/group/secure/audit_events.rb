@@ -7,20 +7,13 @@ module QA
         module Secure
           class AuditEvents < QA::Page::Base
             view 'ee/app/assets/javascripts/audit_events/components/audit_events_app.vue' do
-              element 'audit-events-tabs'
               element 'streams-tab'
               element 'streams-tab-button'
             end
 
             view 'ee/app/assets/javascripts/audit_events/components/audit_events_stream.vue' do
-              element 'stream-destinations'
+              element 'dropdown-toggle'
               element 'all-stream-destinations'
-            end
-
-            view 'ee/app/assets/javascripts/audit_events/components/stream/stream_http_destination_editor.vue' do
-              element 'destination-name'
-              element 'destination-url'
-              element 'stream-destination-submit-button'
             end
 
             view 'ee/app/assets/javascripts/audit_events/components/stream/stream_empty_state.vue' do
@@ -28,8 +21,19 @@ module QA
               element 'add-http-destination'
             end
 
-            view 'ee/app/assets/javascripts/audit_events/components/stream/stream_item.vue' do
-              element 'toggle-btn'
+            view 'ee/app/assets/javascripts/audit_events/components/stream/stream_destination_editor.vue' do
+              element 'destination-name'
+              element 'stream-destination-submit-button'
+            end
+
+            view 'ee/app/assets/javascripts/audit_events/components/stream/stream_destination_editor_http_fields.vue' do
+              element 'destination-url'
+            end
+
+            def click_streams_tab
+              click_element('streams-tab-button')
+              find_element('streams-tab')
+              wait_for_requests
             end
 
             def add_streaming_destination(name, url)
@@ -38,11 +42,6 @@ module QA
               fill_element('destination-name', name)
               fill_element('destination-url', url)
               click_element('stream-destination-submit-button')
-            end
-
-            def click_streams_tab
-              click_element('streams-tab-button')
-              find_element('streams-tab')
               wait_for_requests
             end
 
