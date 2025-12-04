@@ -2,6 +2,7 @@
 import EMPTY_SVG_URL from '@gitlab/svgs/dist/illustrations/empty-state/empty-ai-catalog-md.svg?url';
 import { GlButton, GlModalDirective, GlTabs, GlTab } from '@gitlab/ui';
 import { fetchPolicies } from '~/lib/graphql';
+import { InternalEvents } from '~/tracking';
 import { __, s__, sprintf } from '~/locale';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
@@ -18,6 +19,8 @@ import {
   AI_CATALOG_CONSUMER_LABELS,
   AI_CATALOG_TYPE_FLOW,
   FLOW_VISIBILITY_LEVEL_DESCRIPTIONS,
+  TRACK_EVENT_VIEW_AI_CATALOG_PROJECT_MANAGED,
+  TRACK_EVENT_TYPE_FLOW,
   PAGE_SIZE,
   ENABLE_FLOW_MODAL_TEXTS,
 } from 'ee/ai/catalog/constants';
@@ -50,6 +53,7 @@ export default {
   directives: {
     GlModal: GlModalDirective,
   },
+  mixins: [InternalEvents.mixin()],
   inject: {
     groupPath: {
       default: null,
@@ -284,6 +288,14 @@ export default {
       this.errors = [];
       this.errorTitle = null;
     },
+    onClickManagedTab() {
+      this.resetPagination();
+      if (this.selectedTabIndex !== 1) {
+        this.trackEvent(TRACK_EVENT_VIEW_AI_CATALOG_PROJECT_MANAGED, {
+          label: TRACK_EVENT_TYPE_FLOW,
+        });
+      }
+    },
   },
   addFlowModalId: 'add-flow-to-project-modal',
   itemTypes: [AI_CATALOG_TYPE_FLOW],
@@ -322,7 +334,7 @@ export default {
           @error="handleError"
         />
       </gl-tab>
-      <gl-tab :title="s__('AICatalog|Managed')" lazy @click="resetPagination">
+      <gl-tab :title="s__('AICatalog|Managed')" lazy @click="onClickManagedTab">
         <ai-catalog-list-wrapper
           :is-loading="isLoading"
           :items="aiFlows"

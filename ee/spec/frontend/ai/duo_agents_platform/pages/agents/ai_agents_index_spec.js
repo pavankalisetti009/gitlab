@@ -5,6 +5,7 @@ import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 import AiAgentsIndex from 'ee/ai/duo_agents_platform/pages/agents/ai_agents_index.vue';
 import AiCatalogListHeader from 'ee/ai/catalog/components/ai_catalog_list_header.vue';
 import AiCatalogConfiguredItemsWrapper from 'ee/ai/duo_agents_platform/components/catalog/ai_catalog_configured_items_wrapper.vue';
@@ -24,6 +25,10 @@ import {
 } from 'ee_jest/ai/catalog/mock_data';
 import createAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/create_ai_catalog_item_consumer.mutation.graphql';
 import aiCatalogConfiguredItemsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_configured_items.query.graphql';
+import {
+  TRACK_EVENT_VIEW_AI_CATALOG_PROJECT_MANAGED,
+  TRACK_EVENT_TYPE_AGENT,
+} from 'ee/ai/catalog/constants';
 import { mockProjectAgentsResponse } from '../../mock_data';
 
 jest.mock('~/sentry/sentry_browser_wrapper');
@@ -53,6 +58,8 @@ describe('AiAgentsIndex', () => {
     .fn()
     .mockResolvedValue(mockProjectUserPermissionsResponse);
   const createAiCatalogItemConsumerHandler = jest.fn();
+
+  const { bindInternalEventDocument } = useMockInternalEventsTracking();
 
   const createComponent = ({ provide = {} } = {}) => {
     mockApollo = createMockApollo([
@@ -419,6 +426,42 @@ describe('AiAgentsIndex', () => {
           ]);
           expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));
         });
+      });
+    });
+  });
+
+  describe('tracking events', () => {
+    describe('when "Managed" tab is clicked', () => {
+      it(`tracks ${TRACK_EVENT_VIEW_AI_CATALOG_PROJECT_MANAGED} event`, () => {
+        const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+        createComponent();
+        findAllTabs().at(1).vm.$emit('click');
+
+        expect(trackEventSpy).toHaveBeenCalledWith(
+          TRACK_EVENT_VIEW_AI_CATALOG_PROJECT_MANAGED,
+          { label: TRACK_EVENT_TYPE_AGENT },
+          undefined,
+        );
+      });
+    });
+
+    describe('when "Managed" tab is clicked but was already active', () => {
+      beforeEach(() => {
+        createComponent();
+        findTabs().vm.$emit('input', 1);
+      });
+
+      it(`does not track ${TRACK_EVENT_VIEW_AI_CATALOG_PROJECT_MANAGED} event again`, () => {
+        const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+        findAllTabs().at(1).vm.$emit('click');
+
+        expect(trackEventSpy).not.toHaveBeenCalledWith(
+          TRACK_EVENT_VIEW_AI_CATALOG_PROJECT_MANAGED,
+          { label: TRACK_EVENT_TYPE_AGENT },
+          undefined,
+        );
       });
     });
   });
