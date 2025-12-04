@@ -461,7 +461,10 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
       let_it_be(:build) { create(:ci_build, :secret_detection_report, :success, pipeline: pipeline, project: project) }
 
       before do
-        allow(project).to receive(:latest_successful_pipeline_for_default_branch).and_return(pipeline)
+        allow(project.ci_pipelines)
+          .to receive(:newest_first)
+          .with(ref: project.default_branch)
+          .and_return(Ci::Pipeline.where(id: pipeline.id))
       end
 
       it 'returns true if the latest successful pipeline has the scanner job artifact' do
@@ -483,12 +486,20 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
         expect(described_class.send(:security_scanner_running?, :secret_detection, project)).to be false
       end
 
-      it 'returns false if the latest pipeline has a scanner job artifact and has failed' do
+      it 'returns true if the latest pipeline has the scanner job artifact even when pipeline failed' do
         project = create(:project, namespace: namespace)
         pipeline = create(:ci_pipeline, :failed, project: project)
         create(:ci_build, :secret_detection_report, :success, pipeline: pipeline, project: project)
 
-        expect(described_class.send(:security_scanner_running?, :secret_detection, project)).to be false
+        expect(described_class.send(:security_scanner_running?, :secret_detection, project)).to be true
+      end
+
+      it 'returns true if the latest pipeline has the scanner job artifact even when pipeline was cancelled' do
+        project = create(:project, namespace: namespace)
+        pipeline = create(:ci_pipeline, :canceled, project: project)
+        create(:ci_build, :secret_detection_report, :success, pipeline: pipeline, project: project)
+
+        expect(described_class.send(:security_scanner_running?, :secret_detection, project)).to be true
       end
 
       it 'returns false if the project has a successful pipeline with a job artifact for a non-default branch' do
@@ -504,12 +515,18 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
       let_it_be(:pipeline) { create(:ci_pipeline, :success, project: project) }
 
       before do
-        allow(project).to receive(:latest_successful_pipeline_for_default_branch).and_return(pipeline)
+        allow(project.ci_pipelines)
+          .to receive(:newest_first)
+          .with(ref: project.default_branch)
+          .and_return(Ci::Pipeline.where(id: pipeline.id))
       end
 
       context 'when pipeline is nil' do
         before do
-          allow(project).to receive(:latest_successful_pipeline_for_default_branch).and_return(nil)
+          allow(project.ci_pipelines)
+            .to receive(:newest_first)
+            .with(ref: project.default_branch)
+            .and_return(Ci::Pipeline.none)
         end
 
         it 'returns false' do
@@ -540,6 +557,19 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
       context 'when kics-iac-sast job does not exist' do
         it 'returns false' do
           expect(described_class.map_field(project, 'scanner_iac_running')).to be false
+        end
+      end
+
+      context 'when pipeline failed but has SAST artifacts' do
+        let_it_be(:pipeline) { create(:ci_pipeline, :failed, project: project) }
+        let_it_be(:iac_build) { create(:ci_build, name: 'kics-iac-sast', pipeline: pipeline, project: project) }
+
+        before do
+          create(:ci_job_artifact, :sast, job: iac_build, project: project)
+        end
+
+        it 'returns true' do
+          expect(described_class.map_field(project, 'scanner_iac_running')).to be true
         end
       end
     end
