@@ -74434,6 +74434,9 @@ msgstr ""
 msgid "VulnerabilityManagement|Add vulnerability finding"
 msgstr ""
 
+msgid "VulnerabilityManagement|Agent session started to resolve vulnerability."
+msgstr ""
+
 msgid "VulnerabilityManagement|An unverified non-confirmed finding"
 msgstr ""
 
@@ -74557,6 +74560,9 @@ msgstr ""
 msgid "VulnerabilityManagement|Something went wrong, could not get user."
 msgstr ""
 
+msgid "VulnerabilityManagement|Something went wrong, could not start Duo agent session."
+msgstr ""
+
 msgid "VulnerabilityManagement|Something went wrong, could not update vulnerability severity."
 msgstr ""
 
@@ -74573,6 +74579,9 @@ msgid "VulnerabilityManagement|Summary, detailed description, steps to reproduce
 msgstr ""
 
 msgid "VulnerabilityManagement|Verified as fixed or mitigated"
+msgstr ""
+
+msgid "VulnerabilityManagement|View agent session"
 msgstr ""
 
 msgid "VulnerabilityManagement|Vulnerability name or type. Ex: Cross-site scripting"
