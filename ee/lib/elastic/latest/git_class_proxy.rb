@@ -41,37 +41,6 @@ module Elastic
 
       private
 
-      def abilities_for(project_ids, user)
-        return {} if user.blank?
-
-        ::Authz::Project.new(user, scope: project_ids).permitted
-      end
-
-      def filter_ids_by_ability(project_ids, user, abilities)
-        return [] if user.blank? || abilities.blank?
-
-        actual_abilities = abilities_for(project_ids, user)
-        target_abilities = Array(abilities)
-
-        project_ids.find_all do |project_id|
-          (actual_abilities[project_id] || []).intersection(target_abilities).any?
-        end
-      end
-
-      def filter_ids_by_feature(project_ids, user, feature_name)
-        super(project_ids, user, feature_name) +
-          filter_ids_by_ability(project_ids, user, abilities_to_access(feature_name))
-      end
-
-      def abilities_to_access(feature_name)
-        case feature_name&.to_sym
-        when :repository
-          [:read_code]
-        else
-          []
-        end
-      end
-
       def options_filter_context(type, options)
         repository_ids = [options[:repository_id]].flatten
         languages = [options[:language]].flatten
