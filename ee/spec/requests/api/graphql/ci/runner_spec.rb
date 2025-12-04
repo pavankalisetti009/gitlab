@@ -255,6 +255,7 @@ RSpec.describe 'Query.runner(id)', feature_category: :fleet_visibility do
         expect(jobs_data).not_to be_nil
         expect(jobs_data).to match a_hash_including(
           'queuedDuration' => {
+            'mean' => nil, # Not yet handled
             'p50' => 180.0,
             'p75' => 210.0,
             'p90' => 228.0,
@@ -271,6 +272,7 @@ RSpec.describe 'Query.runner(id)', feature_category: :fleet_visibility do
           expect(jobs_data).not_to be_nil
           expect(jobs_data).to match a_hash_including(
             'queuedDuration' => {
+              'mean' => nil, # Not yet handled
               'p50' => nil,
               'p75' => nil,
               'p90' => nil,
@@ -319,6 +321,7 @@ RSpec.describe 'Query.runner(id)', feature_category: :fleet_visibility do
           expect(jobs_data).not_to be_nil
           expect(jobs_data).to match a_hash_including(
             'queuedDuration' => {
+              'mean' => nil, # Not yet handled
               'p50' => 180.0,
               'p75' => 210.0,
               'p90' => 228.0,
