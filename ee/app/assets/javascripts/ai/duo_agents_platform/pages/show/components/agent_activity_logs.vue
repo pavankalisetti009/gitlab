@@ -1,7 +1,6 @@
 <script>
 import { GlCollapsibleListbox, GlEmptyState, GlSkeletonLoader, GlSprintf } from '@gitlab/ui';
 import emptyJobPendingSvg from '@gitlab/svgs/dist/illustrations/empty-state/empty-job-pending-md.svg?url';
-import { createAlert } from '~/alert';
 import { s__ } from '~/locale';
 import { getMessageData } from '../../../utils';
 import ActivityLogs from '../../../components/common/activity_logs.vue';
@@ -19,8 +18,8 @@ export default {
       type: Boolean,
       required: true,
     },
-    agentFlowCheckpoint: {
-      type: String,
+    duoMessages: {
+      type: Array,
       required: true,
     },
   },
@@ -31,26 +30,11 @@ export default {
   },
   computed: {
     hasLogs() {
-      return this.logs && this.logs.length > 0;
-    },
-    parsedCheckpoint() {
-      if (!this.agentFlowCheckpoint) return null;
-
-      try {
-        return JSON.parse(this.agentFlowCheckpoint);
-      } catch (err) {
-        createAlert({
-          message: s__('DuoAgentsPlatform|Could not display logs. Please try again.'),
-        });
-        return null;
-      }
-    },
-    logs() {
-      return this.parsedCheckpoint?.channel_values?.ui_chat_log || [];
+      return this.duoMessages && this.duoMessages.length > 0;
     },
     filteredLogs() {
       if (this.selectedFilter === 'important') {
-        return this.logs.filter((item, index) => {
+        return this.duoMessages.filter((item, index) => {
           // Always include the first item (start message)
           // https://gitlab.com/gitlab-org/gitlab/-/issues/562418
           if (index === 0) {
@@ -61,7 +45,7 @@ export default {
           return messageData && messageData.level && messageData.level > 0;
         });
       }
-      return this.logs;
+      return this.duoMessages;
     },
     selectedFilterText() {
       const option = this.$options.filterOptions.find((o) => o.value === this.selectedFilter);

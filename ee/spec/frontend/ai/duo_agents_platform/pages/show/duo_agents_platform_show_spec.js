@@ -14,7 +14,7 @@ import { createAlert } from '~/alert';
 import { TYPENAME_AI_DUO_WORKFLOW } from '~/graphql_shared/constants';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 
-import { mockGetAgentFlowResponse } from '../../../mocks';
+import { mockGetAgentFlowResponse, mockDuoMessages } from '../../../mocks';
 
 Vue.use(VueApollo);
 jest.mock('~/alert');
@@ -76,9 +76,7 @@ describe('DuoAgentsPlatformShow', () => {
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
         agentFlowDefinition: 'Software development',
-        agentFlowCheckpoint:
-          mockGetAgentFlowResponse.data.duoWorkflowWorkflows.edges[0].node.latestCheckpoint
-            .checkpoint,
+        duoMessages: mockDuoMessages,
         project: mockGetAgentFlowResponse.data.duoWorkflowWorkflows.edges[0].node.project,
       });
     });

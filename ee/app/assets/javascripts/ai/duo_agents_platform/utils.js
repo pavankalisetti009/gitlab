@@ -48,7 +48,7 @@ export const getNamespaceDatasetProperties = (dataset, properties, jsonPropertie
 };
 
 export const getToolData = (toolMessage) => {
-  const toolName = toolMessage?.tool_info?.name;
+  const toolName = toolMessage?.toolInfo?.name;
 
   const toolMap = {
     read_file: { icon: 'eye', title: s__('DuoAgentsPlatform|Read file'), level: 0 },
@@ -92,11 +92,11 @@ export const getToolData = (toolMessage) => {
 };
 
 export const getMessageData = (message) => {
-  if (!message.message_type) {
+  if (!message.messageType) {
     throw new Error(`Message requires property 'message_type' but got ${JSON.stringify(message)} `);
   }
 
-  switch (message.message_type) {
+  switch (message.messageType) {
     case 'user':
       return { icon: 'user', title: s__('DuoAgentPlatform|User messaged agent'), level: 1 };
     case 'request':

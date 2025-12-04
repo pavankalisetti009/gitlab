@@ -1,10 +1,7 @@
 import { shallowMount } from '@vue/test-utils';
 import { GlCollapsibleListbox, GlEmptyState, GlSkeletonLoader } from '@gitlab/ui';
-import { createAlert } from '~/alert';
 import AgentActivityLogs from 'ee/ai/duo_agents_platform/pages/show/components/agent_activity_logs.vue';
 import ActivityLogs from 'ee/ai/duo_agents_platform/components/common/activity_logs.vue';
-
-jest.mock('~/alert');
 
 describe('AgentActivityLogs', () => {
   let wrapper;
@@ -19,13 +16,13 @@ describe('AgentActivityLogs', () => {
     return shallowMount(AgentActivityLogs, {
       propsData: {
         isLoading: false,
-        agentFlowCheckpoint: '',
+        duoMessages: [],
         ...props,
       },
     });
   };
 
-  describe('when parsing of the checkpoint does not throw', () => {
+  describe('when component is rendered', () => {
     describe('and it is loading', () => {
       beforeEach(() => {
         wrapper = createWrapper({ isLoading: true });
@@ -51,7 +48,7 @@ describe('AgentActivityLogs', () => {
     describe('when not loading', () => {
       describe('when no logs', () => {
         beforeEach(() => {
-          wrapper = createWrapper({ agentFlowCheckpoint: '' });
+          wrapper = createWrapper({ duoMessages: [] });
         });
 
         it('displays the empty state', () => {
@@ -72,37 +69,33 @@ describe('AgentActivityLogs', () => {
       });
 
       describe('when has logs', () => {
-        const validCheckpoint = JSON.stringify({
-          channel_values: {
-            ui_chat_log: [
-              {
-                id: 1,
-                content: 'Start message',
-                message_type: 'agent',
-                status: 'success',
-                timestamp: '2022-03-11T04:34:59Z',
-              },
-              {
-                id: 2,
-                content: 'Tool message',
-                message_type: 'tool',
-                status: 'success',
-                timestamp: '2022-03-11T04:34:59Z',
-                tool_info: { name: 'read_file' },
-              },
-              {
-                id: 3,
-                content: 'Agent reasoning',
-                message_type: 'agent',
-                status: 'success',
-                timestamp: '2022-03-11T04:34:59Z',
-              },
-            ],
+        const mockDuoMessages = [
+          {
+            id: 1,
+            content: 'Start message',
+            messageType: 'agent',
+            status: 'success',
+            timestamp: '2022-03-11T04:34:59Z',
           },
-        });
+          {
+            id: 2,
+            content: 'Tool message',
+            messageType: 'tool',
+            status: 'success',
+            timestamp: '2022-03-11T04:34:59Z',
+            toolInfo: { name: 'read_file' },
+          },
+          {
+            id: 3,
+            content: 'Agent reasoning',
+            messageType: 'agent',
+            status: 'success',
+            timestamp: '2022-03-11T04:34:59Z',
+          },
+        ];
 
         beforeEach(() => {
-          wrapper = createWrapper({ agentFlowCheckpoint: validCheckpoint });
+          wrapper = createWrapper({ duoMessages: mockDuoMessages });
         });
 
         it('renders ActivityLogs component', () => {
@@ -115,7 +108,7 @@ describe('AgentActivityLogs', () => {
 
         describe('when Full filter is selected', () => {
           beforeEach(() => {
-            wrapper = createWrapper({ agentFlowCheckpoint: validCheckpoint });
+            wrapper = createWrapper({ duoMessages: mockDuoMessages });
           });
 
           it('passes all logs to ActivityLogs component', () => {
@@ -129,7 +122,7 @@ describe('AgentActivityLogs', () => {
 
         describe('when important filter is selected', () => {
           beforeEach(() => {
-            wrapper = createWrapper({ agentFlowCheckpoint: validCheckpoint });
+            wrapper = createWrapper({ duoMessages: mockDuoMessages });
           });
 
           it('filters logs to show only important messages', async () => {
@@ -143,7 +136,7 @@ describe('AgentActivityLogs', () => {
 
         describe('collapsible listbox configuration', () => {
           beforeEach(() => {
-            wrapper = createWrapper({ agentFlowCheckpoint: validCheckpoint });
+            wrapper = createWrapper({ duoMessages: mockDuoMessages });
           });
 
           it('configures listbox with correct props', () => {
@@ -163,7 +156,7 @@ describe('AgentActivityLogs', () => {
 
         describe('when filter selection changes', () => {
           beforeEach(() => {
-            wrapper = createWrapper({ agentFlowCheckpoint: validCheckpoint });
+            wrapper = createWrapper({ duoMessages: mockDuoMessages });
           });
 
           it('updates filtered logs when switching', async () => {
@@ -179,30 +172,6 @@ describe('AgentActivityLogs', () => {
           });
         });
       });
-    });
-  });
-
-  describe('when parsing throws', () => {
-    beforeEach(() => {
-      wrapper = createWrapper({ agentFlowCheckpoint: 'invalid-json' });
-    });
-
-    it('shows error message', () => {
-      expect(createAlert).toHaveBeenCalledWith({
-        message: 'Could not display logs. Please try again.',
-      });
-    });
-
-    it('displays fallback message', () => {
-      expect(findEmptyState().exists()).toBe(true);
-    });
-
-    it('render Detail level selector', () => {
-      expect(findCollapsibleListbox().exists()).toBe(true);
-    });
-
-    it('does not render the acvtivity logs', () => {
-      expect(findActivityLogs().exists()).toBe(false);
     });
   });
 });
