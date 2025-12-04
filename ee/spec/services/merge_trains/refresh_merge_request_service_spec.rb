@@ -98,6 +98,60 @@ RSpec.describe MergeTrains::RefreshMergeRequestService, feature_category: :sourc
       end
     end
 
+    context 'when an unexpected error occurs during execution' do
+      let(:unexpected_error) { StandardError.new("boom") }
+
+      before do
+        allow(merge_request.merge_train_car).to receive_messages(
+          requires_new_pipeline?: false,
+          merge_ready_pipeline?: true
+        )
+
+        allow(service).to receive_messages(
+          require_recreate?: false,
+          create_pipeline!: nil
+        )
+
+        allow(service).to receive(:merge!).and_raise(unexpected_error)
+      end
+
+      context 'when feature flag is enabled' do
+        before do
+          stub_feature_flags(merge_train_rescue_standard_error: true)
+        end
+
+        it 'tracks the error and aborts with a ProcessError' do
+          expect(Gitlab::ErrorTracking)
+            .to receive(:track_exception)
+            .with(
+              unexpected_error,
+              merge_request_id: merge_request.id,
+              merge_request_iid: merge_request.iid,
+              project_id: merge_request.target_project_id
+            )
+
+          expect(service).to receive(:abort) do |error|
+            expect(error).to be_a(described_class::ProcessError)
+            expect(error.message).to eq(
+              "unexpected error occurred - correlation id: #{Labkit::Correlation::CorrelationId.current_or_new_id}"
+            )
+          end
+
+          subject
+        end
+      end
+
+      context 'when feature flag is disabled' do
+        before do
+          stub_feature_flags(merge_train_rescue_standard_error: false)
+        end
+
+        it 're-raises the unexpected error' do
+          expect { subject }.to raise_error(unexpected_error)
+        end
+      end
+    end
+
     context 'when merge pipelines project configuration is disabled' do
       before do
         project.update!(merge_pipelines_enabled: false)
