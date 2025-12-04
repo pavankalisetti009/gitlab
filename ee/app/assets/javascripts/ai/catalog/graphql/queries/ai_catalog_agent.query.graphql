@@ -6,6 +6,8 @@ query aiCatalogAgent(
   $showSoftDeleted: Boolean
   $projectId: ProjectID!
   $hasProject: Boolean = false
+  $groupId: GroupID!
+  $hasGroup: Boolean = false
 ) {
   aiCatalogItem(id: $id, showSoftDeleted: $showSoftDeleted) {
     ...BaseAiCatalogItem
@@ -32,6 +34,10 @@ query aiCatalogAgent(
       pinnedItemVersion {
         ...BaseAiCatalogAgentVersion
       }
+    }
+    configurationForGroup(groupId: $groupId) @include(if: $hasGroup) {
+      id
+      enabled
     }
   }
 }

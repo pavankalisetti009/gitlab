@@ -51,6 +51,11 @@ export default {
       type: Object,
       required: true,
     },
+    hasParentConsumer: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   data() {
     return {
@@ -231,6 +236,7 @@ export default {
           :item="aiCatalogFlow"
           :item-routes="$options.itemRoutes"
           :is-flows-available="isFlowsAvailable"
+          :has-parent-consumer="hasParentConsumer"
           :disable-fn="disableFlow"
           :delete-fn="deleteFlow"
           :delete-confirm-message="s__('AICatalog|Are you sure you want to delete flow %{name}?')"

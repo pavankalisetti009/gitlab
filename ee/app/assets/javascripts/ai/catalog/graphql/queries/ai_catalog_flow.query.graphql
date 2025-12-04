@@ -7,6 +7,8 @@ query aiCatalogFlow(
   $showSoftDeleted: Boolean
   $projectId: ProjectID!
   $hasProject: Boolean = false
+  $groupId: GroupID!
+  $hasGroup: Boolean = false
 ) {
   aiCatalogItem(id: $id, showSoftDeleted: $showSoftDeleted) {
     ...BaseAiCatalogItem
@@ -34,6 +36,10 @@ query aiCatalogFlow(
         ...BaseAiCatalogFlowVersion
         ...BaseAiCatalogThirdPartyFlowVersion
       }
+    }
+    configurationForGroup(groupId: $groupId) @include(if: $hasGroup) {
+      id
+      enabled
     }
   }
 }

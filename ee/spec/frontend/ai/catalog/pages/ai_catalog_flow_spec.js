@@ -97,6 +97,7 @@ describe('AiCatalogFlow', () => {
       createComponent({
         provide: {
           projectId: '200',
+          rootGroupId: 1,
         },
       });
 
@@ -105,6 +106,8 @@ describe('AiCatalogFlow', () => {
         showSoftDeleted: true,
         hasProject: true,
         projectId: 'gid://gitlab/Project/200',
+        hasGroup: true,
+        groupId: 'gid://gitlab/Group/1',
       });
     });
 
@@ -118,6 +121,8 @@ describe('AiCatalogFlow', () => {
         showSoftDeleted: false,
         hasProject: false,
         projectId: 'gid://gitlab/Project/0',
+        hasGroup: false,
+        groupId: 'gid://gitlab/Group/0',
       });
     });
   });
