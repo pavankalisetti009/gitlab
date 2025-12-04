@@ -84,7 +84,7 @@ describe('PolicyExceptionsModal', () => {
 
       expect(findModalTitle().text()).toBe('Source Branch Patterns');
       expect(findModalSubtitle().text()).toBe(
-        'Define branch patterns that can bypass policy requirements using wildcards and regex patterns. Use * for simple wildcards or regex patterns for advanced matching.',
+        'Define branch patterns that can bypass policy requirements. Use an asterisk (*) as a wildcard to match any combination of characters.',
       );
     });
 

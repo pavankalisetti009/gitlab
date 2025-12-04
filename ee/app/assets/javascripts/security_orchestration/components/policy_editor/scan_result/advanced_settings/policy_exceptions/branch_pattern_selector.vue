@@ -14,7 +14,7 @@ export default {
   i18n: {
     addPatternButton: s__('ScanResultPolicy|Add new criteria'),
     description: s__(
-      'ScanResultPolicy|Define branch patterns that can bypass policy requirements using wildcards and regex patterns. Use * for simple wildcards or regex patterns for advanced matching. %{linkStart}Learn more%{linkEnd}.',
+      'ScanResultPolicy|Define branch patterns that can bypass policy requirements. Use an asterisk (*) as a wildcard to match any combination of characters. %{linkStart}Learn more%{linkEnd}.',
     ),
   },
   name: 'BranchPatternSelector',

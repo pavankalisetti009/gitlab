@@ -98,7 +98,7 @@ export const EXCEPTIONS_FULL_OPTIONS_MAP = {
   [SOURCE_BRANCH_PATTERNS]: {
     header: s__('SourceBranchPattern|Source Branch Patterns'),
     subHeader: s__(
-      'ScanResultPolicy|Define branch patterns that can bypass policy requirements using wildcards and regex patterns. Use * for simple wildcards or regex patterns for advanced matching.',
+      'ScanResultPolicy|Define branch patterns that can bypass policy requirements. Use an asterisk (*) as a wildcard to match any combination of characters.',
     ),
     description: s__(
       'ScanResultPolicy|Allow specific types of branches to bypass policies based on naming conventions.',
