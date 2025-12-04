@@ -37,22 +37,6 @@ module GitlabSubscriptions
       }
     end
 
-    def discover_duo_pro_hand_raise_lead_data(namespace)
-      {
-        namespace_id: namespace.id,
-        glm_content: 'discover-duo-pro',
-        cta_tracking: {
-          action: 'click_contact_sales',
-          label: duo_pro_trial_status_cta_label(namespace)
-        }.to_json,
-        button_attributes: {
-          category: 'secondary',
-          variant: 'confirm',
-          class: 'gl-w-full @sm/panel:gl-w-auto'
-        }.to_json
-      }
-    end
-
     def code_suggestions_usage_app_hand_raise_lead_data
       {
         glm_content: 'code-suggestions',

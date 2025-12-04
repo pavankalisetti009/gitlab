@@ -72,80 +72,52 @@ RSpec.describe GitlabSubscriptions::HandRaiseLeadsHelper, feature_category: :acq
     end
   end
 
-  describe 'discover_duo_pro_hand_raise_lead_data' do
-    let_it_be(:namespace) { build_stubbed(:group) }
+  describe '#group_trial_status' do
+    let_it_be(:group) { build_stubbed(:group) }
 
-    describe 'discover_duo_pro_hand_raise_lead_data' do
-      let(:namespace) { build_stubbed(:group) }
+    context 'when trial is active' do
+      before do
+        allow(group).to receive(:trial_active?).and_return(true)
+      end
 
-      it 'provides the expected dataset' do
-        expected_label = helper.duo_pro_trial_status_cta_label(namespace)
-
-        result = {
-          namespace_id: namespace.id,
-          glm_content: 'discover-duo-pro',
-          cta_tracking: {
-            action: 'click_contact_sales',
-            label: expected_label
-          }.to_json,
-          button_attributes: {
-            category: 'secondary',
-            variant: 'confirm',
-            class: 'gl-w-full @sm/panel:gl-w-auto'
-          }.to_json
-        }
-
-        expect(helper.discover_duo_pro_hand_raise_lead_data(namespace)).to eq(result)
+      it 'returns correct status' do
+        expect(helper.group_trial_status(group)).to eq 'trial_active'
       end
     end
 
-    describe '#group_trial_status' do
-      let_it_be(:group) { build_stubbed(:group) }
-
-      context 'when trial is active' do
-        before do
-          allow(group).to receive(:trial_active?).and_return(true)
-        end
-
-        it 'returns correct status' do
-          expect(helper.group_trial_status(group)).to eq 'trial_active'
-        end
+    context 'when trial is expired' do
+      before do
+        allow(group).to receive(:trial_active?).and_return(false)
       end
 
-      context 'when trial is expired' do
-        before do
-          allow(group).to receive(:trial_active?).and_return(false)
-        end
+      it 'returns correct status' do
+        expect(helper.group_trial_status(group)).to eq 'trial_expired'
+      end
+    end
+  end
 
-        it 'returns correct status' do
-          expect(helper.group_trial_status(group)).to eq 'trial_expired'
-        end
+  describe '#duo_pro_trial_status_cta_label' do
+    let(:namespace) { build_stubbed(:namespace) }
+
+    context 'when an active trial DuoPro add-on purchase exists' do
+      before do
+        allow(GitlabSubscriptions::Trials::DuoPro).to receive(:active_add_on_purchase_for_namespace?)
+          .with(namespace).and_return(true)
+      end
+
+      it 'returns the active trial label' do
+        expect(helper.duo_pro_trial_status_cta_label(namespace)).to eq('duo_pro_active_trial')
       end
     end
 
-    describe '#duo_pro_trial_status_cta_label' do
-      let(:namespace) { build_stubbed(:namespace) }
-
-      context 'when an active trial DuoPro add-on purchase exists' do
-        before do
-          allow(GitlabSubscriptions::Trials::DuoPro).to receive(:active_add_on_purchase_for_namespace?)
-            .with(namespace).and_return(true)
-        end
-
-        it 'returns the active trial label' do
-          expect(helper.duo_pro_trial_status_cta_label(namespace)).to eq('duo_pro_active_trial')
-        end
+    context 'when an expired trial DuoPro add-on purchase exists' do
+      before do
+        allow(GitlabSubscriptions::Trials::DuoPro).to receive(:active_add_on_purchase_for_namespace?)
+          .with(namespace).and_return(false)
       end
 
-      context 'when an expired trial DuoPro add-on purchase exists' do
-        before do
-          allow(GitlabSubscriptions::Trials::DuoPro).to receive(:active_add_on_purchase_for_namespace?)
-            .with(namespace).and_return(false)
-        end
-
-        it 'returns the expired trial label' do
-          expect(helper.duo_pro_trial_status_cta_label(namespace)).to eq('duo_pro_expired_trial')
-        end
+      it 'returns the expired trial label' do
+        expect(helper.duo_pro_trial_status_cta_label(namespace)).to eq('duo_pro_expired_trial')
       end
     end
   end
