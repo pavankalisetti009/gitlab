@@ -6,6 +6,7 @@ import {
   GlDisclosureDropdown,
   GlDisclosureDropdownItem,
   GlDisclosureDropdownGroup,
+  GlModal,
   GlTooltipDirective,
 } from '@gitlab/ui';
 import { convertToGraphQLId, getIdFromGraphQLId } from '~/graphql_shared/utils';
@@ -38,6 +39,7 @@ export default {
     GlDisclosureDropdown,
     GlDisclosureDropdownItem,
     GlDisclosureDropdownGroup,
+    GlModal,
     NoteHeader,
     TimelineEntryItem,
   },
@@ -55,7 +57,13 @@ export default {
       type: String,
       required: true,
     },
+    isFirstNote: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
+  emits: ['error', 'start-replying'],
   data() {
     return {
       isDeleting: false,
@@ -109,6 +117,10 @@ export default {
       toast(__('Link copied to clipboard.'));
       this.$refs.dropdown.close();
     },
+    showDeleteNoteModal() {
+      this.$refs.deleteNoteModal.show();
+      this.$refs.dropdown.close();
+    },
     async deleteNote() {
       if (this.isDeleting) return;
 
@@ -122,6 +134,7 @@ export default {
               id: this.note.id,
             },
           },
+          update: this.updateCacheAfterDelete,
         });
 
         if (data?.destroyNote?.errors?.length > 0) {
@@ -129,13 +142,11 @@ export default {
           return;
         }
 
-        this.$emit('noteDeleted', this.note.id);
         toast(s__('ComplianceViolation|Comment deleted successfully.'));
       } catch (error) {
         toast(this.$options.i18n.deleteCommentError);
       } finally {
         this.isDeleting = false;
-        this.$refs.dropdown.close();
       }
     },
     editNote() {
@@ -168,6 +179,62 @@ export default {
       } catch (error) {
         toast(s__('ComplianceViolation|Failed to toggle emoji reaction.'));
       }
+    },
+    updateCacheAfterDelete(cache) {
+      const variables = { id: this.violationId };
+      const sourceData = cache.readQuery({
+        query: complianceViolationQuery,
+        variables,
+      });
+
+      if (!sourceData?.projectComplianceViolation) {
+        return;
+      }
+
+      const existingDiscussions = sourceData.projectComplianceViolation.discussions?.nodes || [];
+
+      // Filter out the deleted note from discussions
+      const updatedDiscussions = existingDiscussions
+        .map((discussion) => {
+          if (discussion.id !== this.note.discussion.id) {
+            return discussion;
+          }
+
+          const updatedNotes = discussion.notes.nodes.filter((note) => note.id !== this.note.id);
+
+          // If this was the only note in the discussion, we'll filter out the discussion entirely
+          if (updatedNotes.length === 0) {
+            return null;
+          }
+
+          return {
+            ...discussion,
+            notes: {
+              ...discussion.notes,
+              nodes: updatedNotes,
+              __typename: 'NoteConnection',
+            },
+          };
+        })
+        .filter(Boolean); // Remove null discussions
+
+      const updatedData = {
+        ...sourceData,
+        projectComplianceViolation: {
+          ...sourceData.projectComplianceViolation,
+          discussions: {
+            ...sourceData.projectComplianceViolation.discussions,
+            nodes: updatedDiscussions,
+            __typename: 'DiscussionConnection',
+          },
+        },
+      };
+
+      cache.writeQuery({
+        query: complianceViolationQuery,
+        variables,
+        data: updatedData,
+      });
     },
     updateAwardEmojiCache(cache, { data }, awardName) {
       if (data?.awardEmojiToggle?.errors?.length > 0) {
@@ -281,17 +348,26 @@ export default {
             :note-id="noteId"
             :note-url="noteUrl"
           />
-          <div v-if="!isEditing" class="note-actions gl-ml-auto gl-flex gl-gap-2">
+          <div v-if="!isEditing" class="note-actions">
             <emoji-picker
               toggle-class="add-reaction-button btn-default-tertiary"
               data-testid="note-emoji-button"
               @click="setAwardEmoji"
             />
             <gl-button
+              v-if="isFirstNote"
+              v-gl-tooltip
+              icon="reply"
+              category="tertiary"
+              :title="__('Reply to comment')"
+              :aria-label="__('Reply to comment')"
+              data-testid="reply-note-button"
+              @click="$emit('start-replying')"
+            />
+            <gl-button
               v-gl-tooltip
               icon="pencil"
               category="tertiary"
-              size="small"
               :title="__('Edit comment')"
               :aria-label="__('Edit comment')"
               data-testid="edit-note-button"
@@ -319,7 +395,7 @@ export default {
                   data-testid="delete-note-action"
                   variant="danger"
                   :disabled="isDeleting"
-                  @action="deleteNote"
+                  @action="showDeleteNoteModal"
                 >
                   <template #list-item>
                     {{ __('Delete comment') }}
@@ -367,5 +443,16 @@ export default {
         </div>
       </div>
     </div>
+    <gl-modal
+      ref="deleteNoteModal"
+      modal-id="delete-note-modal"
+      :title="__('Delete comment?')"
+      :ok-title="__('Delete comment')"
+      ok-variant="danger"
+      size="sm"
+      @primary="deleteNote"
+    >
+      {{ __('Are you sure you want to delete this comment?') }}
+    </gl-modal>
   </timeline-entry-item>
 </template>

@@ -18475,6 +18475,9 @@ msgstr ""
 msgid "ComplianceViolation|Related issues"
 msgstr ""
 
+msgid "ComplianceViolation|Reply to comment"
+msgstr ""
+
 msgid "ComplianceViolation|Requirement"
 msgstr ""
 
@@ -18482,6 +18485,9 @@ msgid "ComplianceViolation|Resolved"
 msgstr ""
 
 msgid "ComplianceViolation|Something went wrong when creating the comment. Please try again."
+msgstr ""
+
+msgid "ComplianceViolation|Something went wrong when creating the reply. Please try again."
 msgstr ""
 
 msgid "ComplianceViolation|Something went wrong when deleting the comment. Please try again."

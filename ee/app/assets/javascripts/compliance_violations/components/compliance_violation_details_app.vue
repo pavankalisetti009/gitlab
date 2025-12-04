@@ -10,7 +10,7 @@ import updateProjectComplianceViolation from '../graphql/mutations/update_projec
 import complianceViolationQuery from '../graphql/compliance_violation.query.graphql';
 import AuditEvent from './audit_event.vue';
 import CreateCommentForm from './create_comment_form.vue';
-import DiscussionNote from './discussion_note.vue';
+import ComplianceViolationDiscussion from './compliance_violation_discussion.vue';
 import FixSuggestionSection from './fix_suggestion_section.vue';
 import RelatedIssues from './related_issues.vue';
 import ViolationSection from './violation_section.vue';
@@ -23,7 +23,7 @@ export default {
     AuditEvent,
     ComplianceViolationStatusDropdown,
     CreateCommentForm,
-    DiscussionNote,
+    ComplianceViolationDiscussion,
     FixSuggestionSection,
     GlAlert,
     GlLoadingIcon,
@@ -124,9 +124,6 @@ export default {
         this.isStatusUpdating = false;
       }
     },
-    handleNoteDeleted() {
-      this.$apollo.queries.projectComplianceViolation.refetch();
-    },
     handleCommentError(errorMessage) {
       this.$toast.show(errorMessage, {
         variant: 'danger',
@@ -211,12 +208,11 @@ export default {
             :key="discussion.notes.nodes[0].id"
             :note="discussion.notes.nodes[0]"
           />
-          <discussion-note
+          <compliance-violation-discussion
             v-else
             :key="getDiscussionKey(discussion)"
-            :note="discussion.notes.nodes[0]"
+            :discussion="discussion"
             :violation-id="graphqlViolationId"
-            @noteDeleted="handleNoteDeleted"
             @error="handleCommentError"
           />
         </template>
