@@ -387,7 +387,7 @@
 {"name":"logger","version":"1.7.0","platform":"ruby","checksum":"196edec7cc44b66cfb40f9755ce11b392f21f7967696af15d274dde7edff0203"},
 {"name":"lograge","version":"0.11.2","platform":"ruby","checksum":"4cbd1554b86f545d795eff15a0c24fd25057d2ac4e1caa5fc186168b3da932ef"},
 {"name":"loofah","version":"2.24.1","platform":"ruby","checksum":"655a30842b70ec476410b347ab1cd2a5b92da46a19044357bbd9f401b009a337"},
-{"name":"lookbook","version":"2.3.4","platform":"ruby","checksum":"16484c9eb514ac0c23c4b59cfd5a52697141d35056e3a9c2a22b314c1b887605"},
+{"name":"lookbook","version":"2.3.13","platform":"ruby","checksum":"acfa04a1ba7a87b057c222d78a2d72763546f52549e97590993344c8373f6d21"},
 {"name":"lru_redux","version":"1.1.0","platform":"ruby","checksum":"ee71d0ccab164c51de146c27b480a68b3631d5b4297b8ffe8eda1c72de87affb"},
 {"name":"lumberjack","version":"1.2.7","platform":"ruby","checksum":"a5c6aae6b4234f1420dbcd80b23e3bca0817bd239440dde097ebe3fa63c63b1f"},
 {"name":"mail","version":"2.9.0","platform":"ruby","checksum":"6fa6673ecd71c60c2d996260f9ee3dd387d4673b8169b502134659ece6d34941"},
