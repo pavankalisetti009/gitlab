@@ -130,7 +130,7 @@ describe('AiCatalogAgentsShow', () => {
           props: {
             aiCatalogAgent: {
               ...mockAgent,
-              foundationalChat: true,
+              foundational: true,
               configurationForProject: mockAgentConfigurationForProject,
             },
           },

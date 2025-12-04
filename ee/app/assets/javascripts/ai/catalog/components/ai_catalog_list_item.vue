@@ -113,7 +113,7 @@ export default {
         </router-link>
 
         <foundational-icon
-          v-if="item.foundationalChat"
+          v-if="item.foundational"
           :resource-id="item.id"
           :size="16"
           class="gl-ml-1"

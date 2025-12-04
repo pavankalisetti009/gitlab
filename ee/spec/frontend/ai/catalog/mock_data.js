@@ -1,13 +1,14 @@
-const TYPENAME_AI_CATALOG_ITEM = 'AiCatalogItem';
 export const TYPENAME_AI_CATALOG_ITEM_CONNECTION = 'AiCatalogItemConnection';
 const TYPENAME_AI_CATALOG_ITEM_CONSUMER = 'AiCatalogItemConsumer';
 const TYPENAME_AI_CATALOG_ITEM_CONSUMER_DELETE = 'AiCatalogItemConsumerDeletePayload';
 const TYPENAME_AI_CATALOG_ITEM_CONSUMER_CONNECTION = 'AiCatalogItemConsumerConnection';
+const TYPENAME_AI_CATALOG_AGENT = 'AiCatalogAgent';
 const TYPENAME_AI_CATALOG_AGENT_CREATE = 'AiCatalogAgentCreatePayload';
 const TYPENAME_AI_CATALOG_AGENT_UPDATE = 'AiCatalogAgentUpdatePayload';
 const TYPENAME_AI_CATALOG_AGENT_DELETE = 'AiCatalogAgentDeletePayload';
 const TYPENAME_AI_CATALOG_AGENT_VERSION = 'AiCatalogAgentVersion';
 const TYPENAME_AI_CATALOG_AGENT_TOOLS_CONNECTION = 'AiCatalogBuiltInToolConnection';
+const TYPENAME_AI_CATALOG_FLOW = 'AiCatalogFlow';
 const TYPENAME_AI_CATALOG_FLOW_VERSION = 'AiCatalogFlowVersion';
 const TYPENAME_AI_CATALOG_FLOW_CREATE = 'AiCatalogFlowCreatePayload';
 const TYPENAME_AI_CATALOG_FLOW_UPDATE = 'AiCatalogFlowUpdatePayload';
@@ -169,8 +170,8 @@ const mockAgentFactory = (overrides = {}) => ({
   updatedAt: '2024-08-21T14:30:00Z',
   latestVersion: mockBaseVersion,
   userPermissions: mockUserPermissions,
-  __typename: TYPENAME_AI_CATALOG_ITEM,
-  foundationalChat: false,
+  __typename: TYPENAME_AI_CATALOG_AGENT,
+  foundational: false,
   ...overrides,
 });
 
@@ -402,10 +403,10 @@ const mockFlowFactory = (overrides = {}) => ({
   createdAt: '2024-01-15T10:30:00Z',
   public: true,
   updatedAt: '2024-08-21T14:30:00Z',
-  foundationalChat: false,
+  foundational: false,
   latestVersion: mockBaseVersion,
   userPermissions: mockUserPermissions,
-  __typename: TYPENAME_AI_CATALOG_ITEM,
+  __typename: TYPENAME_AI_CATALOG_FLOW,
   ...overrides,
 });
 
