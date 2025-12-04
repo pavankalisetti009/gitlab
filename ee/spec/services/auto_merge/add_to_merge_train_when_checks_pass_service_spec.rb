@@ -298,6 +298,23 @@ RSpec.describe AutoMerge::AddToMergeTrainWhenChecksPassService, feature_category
 
       it { is_expected.to be(false) }
     end
+
+    context 'when pipeline is being created' do
+      before do
+        allow(merge_request).to receive(:pipeline_creating?).and_return(true)
+      end
+
+      it { is_expected.to be(true) }
+    end
+
+    context 'when merge request is mergeable and pipeline is not in progress and not being created' do
+      before do
+        allow(merge_request).to receive_messages(mergeable?: true, diff_head_pipeline_considered_in_progress?: false,
+          pipeline_creating?: false)
+      end
+
+      it { is_expected.to be(false) }
+    end
   end
 
   describe '#availability_details' do
@@ -377,6 +394,33 @@ RSpec.describe AutoMerge::AddToMergeTrainWhenChecksPassService, feature_category
         aggregate_failures do
           expect(availability_check.available?).to be false
           expect(availability_check.unavailable_reason).to eq :forbidden
+        end
+      end
+    end
+
+    context 'when pipeline is being created' do
+      before do
+        allow(merge_request).to receive(:pipeline_creating?).and_return(true)
+      end
+
+      it 'is available and has no unavailable reason' do
+        aggregate_failures do
+          expect(availability_check.available?).to be true
+          expect(availability_check.unavailable_reason).to be_nil
+        end
+      end
+    end
+
+    context 'when merge request is mergeable and pipeline is not in progress and not being created' do
+      before do
+        allow(merge_request).to receive_messages(mergeable?: true, diff_head_pipeline_considered_in_progress?: false,
+          pipeline_creating?: false)
+      end
+
+      it 'is unavailable and returns the correct reason' do
+        aggregate_failures do
+          expect(availability_check.available?).to be false
+          expect(availability_check.unavailable_reason).to eq :default
         end
       end
     end
