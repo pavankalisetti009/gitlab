@@ -134,7 +134,7 @@ RSpec.describe GitlabSubscriptions::Duo::BulkAssignService, feature_category: :s
 
           it 'executes a limited number of queries', :use_clean_rails_redis_caching do
             control = ActiveRecord::QueryRecorder.new { bulk_assign }
-            expect(control.count).to be <= 23
+            expect(control.count).to be <= 24
           end
 
           it 'returns assigned and not eligible users' do
@@ -250,6 +250,37 @@ RSpec.describe GitlabSubscriptions::Duo::BulkAssignService, feature_category: :s
                 expect { response }.not_to raise_error
                 expect(response.errors).to eq(['NOT_ENOUGH_SEATS'])
               end
+            end
+          end
+
+          context 'when some users are already assigned' do
+            let_it_be(:user_1) { create(:user) }
+            let_it_be(:user_2) { create(:user) }
+            let_it_be(:user_3) { create(:user) }
+            let_it_be(:service_instance) do
+              described_class.new(
+                add_on_purchase: add_on_purchase,
+                user_ids: [user_1.id, user_2.id, user_3.id]
+              )
+            end
+
+            before_all do
+              add_on_purchase.update!(quantity: 3)
+              namespace.add_developer(user_1)
+              namespace.add_developer(user_2)
+              namespace.add_developer(user_3)
+              create(:gitlab_subscription_user_add_on_assignment, add_on_purchase: add_on_purchase, user: user_1)
+            end
+
+            it 'triggers iterable worker only for newly assigned users' do
+              worker_params = { 'product_interaction' => 'duo_pro_add_on_seat_assigned' }
+
+              expect(::Onboarding::AddOnSeatAssignmentIterableTriggerWorker)
+                .to receive(:perform_async)
+                .with(namespace.id, [user_2.id, user_3.id], worker_params)
+                .and_call_original
+
+              service_instance.execute
             end
           end
         end
@@ -485,6 +516,27 @@ RSpec.describe GitlabSubscriptions::Duo::BulkAssignService, feature_category: :s
               threads.each(&:join)
 
               expect(add_on_purchase.assigned_users.count).to eq(1)
+            end
+          end
+
+          context 'when some users are already assigned' do
+            let_it_be(:user_1) { create(:user) }
+            let_it_be(:user_2) { create(:user) }
+            let_it_be(:user_3) { create(:user) }
+            let(:user_ids) { [user_1.id, user_2.id, user_3.id] }
+
+            before_all do
+              add_on_purchase.update!(quantity: 3)
+              create(:gitlab_subscription_user_add_on_assignment, add_on_purchase: add_on_purchase, user: user_1)
+            end
+
+            it 'triggers email worker only for newly assigned users', :sidekiq_inline do
+              expect(::GitlabSubscriptions::AddOnPurchases::EmailOnDuoBulkUserAssignmentsWorker)
+                .to receive(:perform_async)
+                .with([user_3.id, user_2.id], 'duo_pro_email')
+                .and_call_original
+
+              bulk_assign
             end
           end
         end
