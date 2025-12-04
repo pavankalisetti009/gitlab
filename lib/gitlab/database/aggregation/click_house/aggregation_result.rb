@@ -3,12 +3,12 @@
 module Gitlab
   module Database
     module Aggregation
-      module ActiveRecord
+      module ClickHouse
         class AggregationResult < Gitlab::Database::Aggregation::AggregationResult
           private
 
           def load_data
-            query.model.connection.select_all(query.to_sql)
+            ::ClickHouse::Client.select(query, :main)
           end
         end
       end
