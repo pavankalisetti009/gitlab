@@ -82,9 +82,7 @@ module Ai
           d.variables = variables
           d.commands = commands
           d.cache = cache_configuration if cache_configuration.present?
-          if Feature.enabled?(:duo_agent_platform_ci_job_tags, project)
-            d.tags = [::Ai::DuoWorkflows::Workflow::WORKLOAD_TAG]
-          end
+          d.tags = [::Ai::DuoWorkflows::Workflow::WORKLOAD_TAG]
         end
       end
 
