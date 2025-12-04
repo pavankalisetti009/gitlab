@@ -1,13 +1,12 @@
 import VueApollo from 'vue-apollo';
 import Vue from 'vue';
-import { GlFilteredSearch } from '@gitlab/ui';
 import { isLoggedIn } from '~/lib/utils/common_utils';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 import AiCatalogAgents from 'ee/ai/catalog/pages/ai_catalog_agents.vue';
-import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
+import AiCatalogListWrapper from 'ee/ai/catalog/components/ai_catalog_list_wrapper.vue';
 import AiCatalogListHeader from 'ee/ai/catalog/components/ai_catalog_list_header.vue';
 import aiCatalogAgentsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_agents.query.graphql';
 import {
@@ -51,8 +50,7 @@ describe('AiCatalogAgents', () => {
     });
   };
 
-  const findFilteredSearch = () => wrapper.findComponent(GlFilteredSearch);
-  const findAiCatalogList = () => wrapper.findComponent(AiCatalogList);
+  const findAiCatalogListWrapper = () => wrapper.findComponent(AiCatalogListWrapper);
 
   afterEach(() => {
     jest.clearAllMocks();
@@ -67,30 +65,27 @@ describe('AiCatalogAgents', () => {
       expect(wrapper.findComponent(AiCatalogListHeader).exists()).toBe(true);
     });
 
-    it('renders filter search', () => {
-      expect(findFilteredSearch().exists()).toBe(true);
+    it('renders AiCatalogListWrapper component', () => {
+      const catalogListWrapper = findAiCatalogListWrapper();
+
+      expect(catalogListWrapper.exists()).toBe(true);
     });
 
-    it('renders AiCatalogList component', () => {
-      const catalogList = findAiCatalogList();
+    it('passes correct props to AiCatalogListWrapper', async () => {
+      const catalogListWrapper = findAiCatalogListWrapper();
+      await waitForPromises();
 
-      expect(catalogList.exists()).toBe(true);
-    });
-
-    it('passes correct props to AiCatalogList', () => {
-      const catalogList = findAiCatalogList();
-
-      expect(catalogList.props('items')).toEqual(mockAgents);
-      expect(catalogList.props('isLoading')).toBe(false);
+      expect(catalogListWrapper.props('items')).toEqual(mockAgents);
+      expect(catalogListWrapper.props('isLoading')).toBe(false);
     });
   });
 
   describe('when loading', () => {
-    it('passes loading state with boolean true to AiCatalogList', () => {
+    it('passes loading state with boolean true to AiCatalogListWrapper', () => {
       createComponent();
-      const catalogList = findAiCatalogList();
+      const catalogListWrapper = findAiCatalogListWrapper();
 
-      expect(catalogList.props('isLoading')).toBe(true);
+      expect(catalogListWrapper.props('isLoading')).toBe(true);
     });
   });
 
@@ -103,30 +98,17 @@ describe('AiCatalogAgents', () => {
       expect(mockCatalogItemsQueryHandler).toHaveBeenCalled();
     });
 
-    it('passes agent data to AiCatalogList', () => {
-      const catalogList = findAiCatalogList();
+    it('passes agent data to AiCatalogListWrapper', () => {
+      const catalogListWrapper = findAiCatalogListWrapper();
 
-      expect(catalogList.props('items')).toEqual(mockAgents);
-      expect(catalogList.props('items')).toHaveLength(3);
+      expect(catalogListWrapper.props('items')).toEqual(mockAgents);
+      expect(catalogListWrapper.props('items')).toHaveLength(3);
     });
 
     it('passes isLoading as false when not loading', () => {
-      const catalogList = findAiCatalogList();
+      const catalogListWrapper = findAiCatalogListWrapper();
 
-      expect(catalogList.props('isLoading')).toBe(false);
-    });
-
-    it('passes search param to agents query on search', async () => {
-      findFilteredSearch().vm.$emit('submit', ['foo']);
-      await waitForPromises();
-
-      expect(mockCatalogItemsQueryHandler).toHaveBeenCalledWith({
-        after: null,
-        before: null,
-        first: 20,
-        last: null,
-        search: 'foo',
-      });
+      expect(catalogListWrapper.props('isLoading')).toBe(false);
     });
   });
 
@@ -135,14 +117,14 @@ describe('AiCatalogAgents', () => {
       createComponent();
       await waitForPromises();
 
-      expect(findAiCatalogList().props('pageInfo')).toMatchObject(mockPageInfo);
+      expect(findAiCatalogListWrapper().props('pageInfo')).toMatchObject(mockPageInfo);
     });
 
     it('refetches query with correct variables when paging backward', async () => {
       createComponent();
       await waitForPromises();
 
-      findAiCatalogList().vm.$emit('prev-page');
+      findAiCatalogListWrapper().vm.$emit('prev-page');
       expect(mockCatalogItemsQueryHandler).toHaveBeenCalledWith({
         after: null,
         before: 'eyJpZCI6IjUxIn0',
@@ -156,9 +138,46 @@ describe('AiCatalogAgents', () => {
       createComponent();
       await waitForPromises();
 
-      findAiCatalogList().vm.$emit('next-page');
+      findAiCatalogListWrapper().vm.$emit('next-page');
       expect(mockCatalogItemsQueryHandler).toHaveBeenCalledWith({
         after: 'eyJpZCI6IjM1In0',
+        before: null,
+        first: 20,
+        last: null,
+        search: '',
+      });
+    });
+  });
+
+  describe('search', () => {
+    beforeEach(async () => {
+      await createComponent();
+    });
+
+    it('passes search param to agents query on search', async () => {
+      findAiCatalogListWrapper().vm.$emit('search', ['foo']);
+      await waitForPromises();
+
+      expect(mockCatalogItemsQueryHandler).toHaveBeenCalledWith({
+        after: null,
+        before: null,
+        first: 20,
+        last: null,
+        search: 'foo',
+      });
+    });
+
+    it('clears search param when clear-search is emitted', async () => {
+      // First set a search term
+      findAiCatalogListWrapper().vm.$emit('search', ['foo']);
+      await waitForPromises();
+
+      // Then clear it
+      findAiCatalogListWrapper().vm.$emit('clear-search');
+      await waitForPromises();
+
+      expect(mockCatalogItemsQueryHandler).toHaveBeenCalledWith({
+        after: null,
         before: null,
         first: 20,
         last: null,

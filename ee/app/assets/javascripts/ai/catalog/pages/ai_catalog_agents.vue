@@ -1,15 +1,13 @@
 <script>
-import { GlFilteredSearch } from '@gitlab/ui';
 import { fetchPolicies } from '~/lib/graphql';
 import { InternalEvents } from '~/tracking';
 import {
   VISIBILITY_LEVEL_PUBLIC_STRING,
   VISIBILITY_LEVEL_PRIVATE_STRING,
 } from '~/visibility_level/constants';
-import { FILTERED_SEARCH_TERM } from '~/vue_shared/components/filtered_search_bar/constants';
 import aiCatalogAgentsQuery from '../graphql/queries/ai_catalog_agents.query.graphql';
 import AiCatalogListHeader from '../components/ai_catalog_list_header.vue';
-import AiCatalogList from '../components/ai_catalog_list.vue';
+import AiCatalogListWrapper from '../components/ai_catalog_list_wrapper.vue';
 import { AI_CATALOG_AGENTS_SHOW_ROUTE } from '../router/constants';
 import {
   AGENT_VISIBILITY_LEVEL_DESCRIPTIONS,
@@ -22,8 +20,7 @@ export default {
   name: 'AiCatalogAgents',
   components: {
     AiCatalogListHeader,
-    AiCatalogList,
-    GlFilteredSearch,
+    AiCatalogListWrapper,
   },
   mixins: [InternalEvents.mixin()],
   data() {
@@ -46,9 +43,9 @@ export default {
         };
       },
       fetchPolicy: fetchPolicies.CACHE_AND_NETWORK,
-      update: (data) => data.aiCatalogItems.nodes,
+      update: (data) => data?.aiCatalogItems?.nodes || [],
       result({ data }) {
-        this.pageInfo = data.aiCatalogItems.pageInfo;
+        this.pageInfo = data?.aiCatalogItems?.pageInfo || {};
       },
     },
   },
@@ -66,14 +63,6 @@ export default {
             AGENT_VISIBILITY_LEVEL_DESCRIPTIONS[VISIBILITY_LEVEL_PRIVATE_STRING],
         },
       };
-    },
-    filteredSearchValue() {
-      return [
-        {
-          type: FILTERED_SEARCH_TERM,
-          value: { data: this.searchTerm },
-        },
-      ];
     },
   },
   mounted() {
@@ -114,22 +103,15 @@ export default {
   <div>
     <ai-catalog-list-header />
 
-    <div class="gl-border-b gl-bg-subtle gl-p-5">
-      <gl-filtered-search
-        :value="filteredSearchValue"
-        @submit="handleSearch"
-        @clear="handleClearSearch"
-      />
-    </div>
-
-    <ai-catalog-list
+    <ai-catalog-list-wrapper
       :is-loading="isLoading"
       :items="aiCatalogAgents"
       :item-type-config="itemTypeConfig"
       :page-info="pageInfo"
-      :search="searchTerm"
       @next-page="handleNextPage"
       @prev-page="handlePrevPage"
+      @search="handleSearch"
+      @clear-search="handleClearSearch"
     />
   </div>
 </template>

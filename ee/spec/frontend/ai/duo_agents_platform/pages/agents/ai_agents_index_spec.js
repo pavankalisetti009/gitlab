@@ -86,7 +86,7 @@ describe('AiAgentsIndex', () => {
   const findErrorsAlert = () => wrapper.findComponent(ErrorsAlert);
   const findConfiguredItemsWrapper = () => wrapper.findComponent(AiCatalogConfiguredItemsWrapper);
   const findAddProjectItemConsumerModal = () => wrapper.findComponent(AddProjectItemConsumerModal);
-  const findAiCatalogList = () => wrapper.findByTestId('managed-agents-list');
+  const findAiCatalogListWrapper = () => wrapper.findByTestId('managed-agents-list');
   const findEmptyState = () => wrapper.findComponent(ResourceListsEmptyState);
   const findTabs = () => wrapper.findComponent(GlTabs);
 
@@ -118,7 +118,7 @@ describe('AiAgentsIndex', () => {
     });
 
     it('renders AiCatalogList component', async () => {
-      const catalogList = findAiCatalogList();
+      const catalogList = findAiCatalogListWrapper();
 
       expect(catalogList.props('isLoading')).toBe(true);
 
@@ -132,11 +132,24 @@ describe('AiAgentsIndex', () => {
       expect(mockProjectAgentsQueryHandler).toHaveBeenCalledWith({
         projectId: `gid://gitlab/Project/${mockProjectId}`,
         projectPath: mockProjectPath,
+        search: '',
         allAvailable: false,
         after: null,
         before: null,
         first: 20,
         last: null,
+      });
+    });
+
+    it('passes empty state props to AiCatalogListWrapper', async () => {
+      await waitForPromises();
+
+      const catalogListWrapper = findAiCatalogListWrapper();
+      expect(catalogListWrapper.props()).toMatchObject({
+        emptyStateTitle: 'Use agents in your project.',
+        emptyStateDescription: 'Use agents to automate tasks and answer questions.',
+        emptyStateButtonHref: '/explore/ai-catalog/agents',
+        emptyStateButtonText: 'Explore the AI Catalog',
       });
     });
 
@@ -146,16 +159,17 @@ describe('AiAgentsIndex', () => {
       });
 
       it('passes pageInfo to list component', () => {
-        expect(findAiCatalogList().props('pageInfo')).toMatchObject(mockPageInfo);
+        expect(findAiCatalogListWrapper().props('pageInfo')).toMatchObject(mockPageInfo);
       });
 
       it('refetches query with correct variables when paging backward', async () => {
-        findAiCatalogList().vm.$emit('prev-page');
+        findAiCatalogListWrapper().vm.$emit('prev-page');
         await nextTick();
         expect(mockProjectAgentsQueryHandler).toHaveBeenCalledWith({
           projectId: `gid://gitlab/Project/${mockProjectId}`,
           projectPath: mockProjectPath,
           allAvailable: false,
+          search: '',
           after: null,
           before: 'eyJpZCI6IjUxIn0',
           first: null,
@@ -164,13 +178,57 @@ describe('AiAgentsIndex', () => {
       });
 
       it('refetches query with correct variables when paging forward', async () => {
-        findAiCatalogList().vm.$emit('next-page');
+        findAiCatalogListWrapper().vm.$emit('next-page');
         await nextTick();
         expect(mockProjectAgentsQueryHandler).toHaveBeenCalledWith({
           projectId: `gid://gitlab/Project/${mockProjectId}`,
           projectPath: mockProjectPath,
           allAvailable: false,
+          search: '',
           after: 'eyJpZCI6IjM1In0',
+          before: null,
+          first: 20,
+          last: null,
+        });
+      });
+    });
+
+    describe('search functionality', () => {
+      beforeEach(async () => {
+        await waitForPromises();
+      });
+
+      it('refetches query with search term when search is submitted', async () => {
+        findAiCatalogListWrapper().vm.$emit('search', ['test agent']);
+        await nextTick();
+
+        expect(mockProjectAgentsQueryHandler).toHaveBeenCalledWith({
+          projectId: `gid://gitlab/Project/${mockProjectId}`,
+          projectPath: mockProjectPath,
+          allAvailable: false,
+          search: 'test agent',
+          after: null,
+          before: null,
+          first: 20,
+          last: null,
+        });
+      });
+
+      it('clears search term when clear-search is emitted', async () => {
+        // First set a search term
+        findAiCatalogListWrapper().vm.$emit('search', ['test agent']);
+        await nextTick();
+
+        // Then clear it
+        findAiCatalogListWrapper().vm.$emit('clear-search');
+        await nextTick();
+
+        expect(mockProjectAgentsQueryHandler).toHaveBeenLastCalledWith({
+          projectId: `gid://gitlab/Project/${mockProjectId}`,
+          projectPath: mockProjectPath,
+          allAvailable: false,
+          search: '',
+          after: null,
           before: null,
           first: 20,
           last: null,

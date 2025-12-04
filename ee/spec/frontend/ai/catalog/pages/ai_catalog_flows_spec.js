@@ -1,6 +1,5 @@
 import VueApollo from 'vue-apollo';
 import Vue from 'vue';
-import { GlFilteredSearch } from '@gitlab/ui';
 import { isLoggedIn } from '~/lib/utils/common_utils';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
@@ -8,7 +7,7 @@ import waitForPromises from 'helpers/wait_for_promises';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 import AiCatalogFlows from 'ee/ai/catalog/pages/ai_catalog_flows.vue';
 import AiCatalogListHeader from 'ee/ai/catalog/components/ai_catalog_list_header.vue';
-import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
+import AiCatalogListWrapper from 'ee/ai/catalog/components/ai_catalog_list_wrapper.vue';
 import aiCatalogFlowsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_flows.query.graphql';
 import {
   TRACK_EVENT_VIEW_AI_CATALOG_ITEM_INDEX,
@@ -57,8 +56,7 @@ describe('AiCatalogFlows', () => {
     });
   };
 
-  const findFilteredSearch = () => wrapper.findComponent(GlFilteredSearch);
-  const findAiCatalogList = () => wrapper.findComponent(AiCatalogList);
+  const findAiCatalogListWrapper = () => wrapper.findComponent(AiCatalogListWrapper);
 
   describe('component rendering', () => {
     beforeEach(() => {
@@ -69,8 +67,8 @@ describe('AiCatalogFlows', () => {
       expect(wrapper.findComponent(AiCatalogListHeader).exists()).toBe(true);
     });
 
-    it('passes correct props to AiCatalogList', async () => {
-      const catalogList = findAiCatalogList();
+    it('passes correct props to AiCatalogListWrapper', async () => {
+      const catalogList = findAiCatalogListWrapper();
 
       expect(catalogList.props('isLoading')).toBe(true);
 
@@ -105,11 +103,11 @@ describe('AiCatalogFlows', () => {
     });
 
     it('passes pageInfo to list component', () => {
-      expect(findAiCatalogList().props('pageInfo')).toMatchObject(mockPageInfo);
+      expect(findAiCatalogListWrapper().props('pageInfo')).toMatchObject(mockPageInfo);
     });
 
     it('refetches query with correct variables when paging backward', () => {
-      findAiCatalogList().vm.$emit('prev-page');
+      findAiCatalogListWrapper().vm.$emit('prev-page');
       expect(mockCatalogItemsQueryHandler).toHaveBeenCalledWith({
         itemTypes: ['FLOW', 'THIRD_PARTY_FLOW'],
         after: null,
@@ -121,7 +119,7 @@ describe('AiCatalogFlows', () => {
     });
 
     it('refetches query with correct variables when paging forward', () => {
-      findAiCatalogList().vm.$emit('next-page');
+      findAiCatalogListWrapper().vm.$emit('next-page');
       expect(mockCatalogItemsQueryHandler).toHaveBeenCalledWith({
         itemTypes: ['FLOW', 'THIRD_PARTY_FLOW'],
         after: 'eyJpZCI6IjM1In0',
@@ -135,12 +133,11 @@ describe('AiCatalogFlows', () => {
 
   describe('search', () => {
     beforeEach(async () => {
-      createComponent();
-      await waitForPromises();
+      await createComponent();
     });
 
     it('passes search param to agents query on search', async () => {
-      findFilteredSearch().vm.$emit('submit', ['foo']);
+      findAiCatalogListWrapper().vm.$emit('search', ['foo']);
       await waitForPromises();
 
       expect(mockCatalogItemsQueryHandler).toHaveBeenCalledWith({
@@ -150,6 +147,25 @@ describe('AiCatalogFlows', () => {
         first: 20,
         last: null,
         search: 'foo',
+      });
+    });
+
+    it('clears search param when clear-search is emitted', async () => {
+      // First set a search term
+      findAiCatalogListWrapper().vm.$emit('search', ['foo']);
+      await waitForPromises();
+
+      // Then clear it
+      findAiCatalogListWrapper().vm.$emit('clear-search');
+      await waitForPromises();
+
+      expect(mockCatalogItemsQueryHandler).toHaveBeenCalledWith({
+        itemTypes: ['FLOW', 'THIRD_PARTY_FLOW'],
+        after: null,
+        before: null,
+        first: 20,
+        last: null,
+        search: '',
       });
     });
   });

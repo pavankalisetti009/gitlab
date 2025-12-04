@@ -1,5 +1,5 @@
 <script>
-import { GlKeysetPagination, GlSprintf } from '@gitlab/ui';
+import { GlButton, GlKeysetPagination, GlSprintf } from '@gitlab/ui';
 import EMPTY_SVG_URL from '@gitlab/svgs/dist/illustrations/empty-state/empty-ai-catalog-md.svg?url';
 import { __ } from '~/locale';
 import ConfirmActionModal from '~/vue_shared/components/confirm_action_modal.vue';
@@ -13,6 +13,7 @@ export default {
     AiCatalogListItem,
     AiCatalogListSkeleton,
     ConfirmActionModal,
+    GlButton,
     GlKeysetPagination,
     GlSprintf,
     ResourceListsEmptyState,
@@ -57,7 +58,27 @@ export default {
       required: false,
       default: '',
     },
+    emptyStateTitle: {
+      type: String,
+      required: true,
+    },
+    emptyStateDescription: {
+      type: String,
+      required: false,
+      default: null,
+    },
+    emptyStateButtonHref: {
+      type: String,
+      required: false,
+      default: null,
+    },
+    emptyStateButtonText: {
+      type: String,
+      required: false,
+      default: null,
+    },
   },
+  emits: ['next-page', 'prev-page'],
   data() {
     return {
       itemToDisable: null,
@@ -124,13 +145,17 @@ export default {
     <template v-else>
       <slot name="empty-state">
         <resource-lists-empty-state
-          :title="s__('AICatalog|Get started with the AI Catalog')"
-          :description="
-            s__('AICatalog|Build agents and flows to automate tasks and solve complex problems.')
-          "
+          :title="emptyStateTitle"
+          :description="emptyStateDescription"
           :svg-path="$options.EMPTY_SVG_URL"
           :search="search"
-        />
+        >
+          <template v-if="emptyStateButtonHref" #actions>
+            <gl-button variant="confirm" :href="emptyStateButtonHref">
+              {{ emptyStateButtonText }}
+            </gl-button>
+          </template>
+        </resource-lists-empty-state>
       </slot>
     </template>
   </div>
