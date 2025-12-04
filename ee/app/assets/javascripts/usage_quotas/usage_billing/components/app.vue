@@ -116,23 +116,21 @@ export default {
 </script>
 <template>
   <section>
-    <page-heading>
+    <page-heading class="gl-mb-6">
       <template #heading>
-        <span data-testid="usage-billing-title">{{
-          s__('UsageBilling|GitLab Credits dashboard')
-        }}</span>
+        <span data-testid="usage-billing-title">{{ s__('UsageBilling|GitLab Credits') }}</span>
       </template>
       <template #description>
         <div
           v-if="subscriptionUsage.startDate && subscriptionUsage.endDate"
-          class="gl-text-default"
+          class="gl-mb-2 gl-text-lg gl-text-default"
         >
           <span class="gl-font-bold">
             {{ s__('UsageBilling|Usage period:') }}
           </span>
           <human-timeframe :from="subscriptionUsage.startDate" :till="subscriptionUsage.endDate" />
         </div>
-        <div v-if="subscriptionUsage.lastEventTransactionAt">
+        <div v-if="subscriptionUsage.lastEventTransactionAt" class="gl-text-sm">
           {{ s__('UsageBilling|Last event transaction at:') }}
           <user-date
             :date="subscriptionUsage.lastEventTransactionAt"
