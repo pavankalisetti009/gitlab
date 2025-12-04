@@ -1,34 +1,88 @@
 import { nextTick } from 'vue';
-import { GlFormRadio, GlFormRadioGroup } from '@gitlab/ui';
-import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import DuoFoundationalAgentsSettings from 'ee/ai/settings/components/duo_foundational_agents_settings.vue';
+import { GlFormRadio, GlFormRadioGroup, GlTableLite, GlCollapsibleListbox } from '@gitlab/ui';
+import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import DuoFoundationalAgentsSettings, {
+  FOUNDATIONAL_AGENTS_AVAILABILITY_VALUES,
+} from 'ee/ai/settings/components/duo_foundational_agents_settings.vue';
+import { mockAgentStatuses } from '../../mocks';
 
 describe('DuoFoundationalAgentsSettings', () => {
   let wrapper;
 
-  const createComponent = (props = {}) => {
-    wrapper = shallowMountExtended(DuoFoundationalAgentsSettings, {
+  const createComponent = ({ props = {}, provide = {}, mountFn = shallowMountExtended } = {}) => {
+    wrapper = mountFn(DuoFoundationalAgentsSettings, {
       propsData: {
         enabled: true,
+        agentStatuses: [],
         ...props,
+      },
+      provide: {
+        showFoundationalAgentsPerAgentAvailability: true,
+        ...provide,
+      },
+      stubs: {
+        GlCollapsibleListbox,
       },
     });
   };
 
-  const findOnByDefaultRadio = () => wrapper.findAllComponents(GlFormRadio).at(0);
-  const findOffByDefaultRadio = () => wrapper.findAllComponents(GlFormRadio).at(1);
+  const findEnabledRadio = () => wrapper.findAllComponents(GlFormRadio).at(0);
+  const findDisabledRadio = () => wrapper.findAllComponents(GlFormRadio).at(1);
   const findFormRadioGroup = () => wrapper.findComponent(GlFormRadioGroup);
+  const findAgentsTable = () => wrapper.findComponent(GlTableLite);
+  const findAgentDropdowns = () => wrapper.findAllComponents(GlCollapsibleListbox);
 
   beforeEach(() => {
     createComponent();
   });
 
-  it('selects "On by default" when enabledByDefault is true', () => {
+  describe('radio button labels', () => {
+    describe('when showFoundationalAgentsPerAgentAvailability is true', () => {
+      beforeEach(() => {
+        createComponent({ mountFn: mountExtended });
+      });
+
+      it('shows "Enabled" and "Disabled" labels', () => {
+        expect(findEnabledRadio().text()).toContain('Enabled');
+        expect(findDisabledRadio().text()).toContain('Disabled');
+      });
+
+      it('does not show help text', () => {
+        expect(findEnabledRadio().text()).not.toContain('automatically enabled');
+        expect(findDisabledRadio().text()).not.toContain('disabled by default');
+      });
+    });
+
+    describe('when showFoundationalAgentsPerAgentAvailability is false', () => {
+      beforeEach(() => {
+        createComponent({
+          provide: { showFoundationalAgentsPerAgentAvailability: false },
+          mountFn: mountExtended,
+        });
+      });
+
+      it('shows "On by default" and "Off by default" labels', () => {
+        expect(findEnabledRadio().text()).toContain('On by default');
+        expect(findDisabledRadio().text()).toContain('Off by default');
+      });
+
+      it('shows help text', () => {
+        expect(findEnabledRadio().text()).toContain(
+          'New foundational agents are automatically enabled for projects in this group.',
+        );
+        expect(findDisabledRadio().text()).toContain(
+          'Foundational agents are disabled by default.',
+        );
+      });
+    });
+  });
+
+  it('selects enabled when enabled prop is true', () => {
     expect(findFormRadioGroup().attributes('checked')).toBe('true');
   });
 
   it('emits change event when enabled radio button is selected', async () => {
-    findOnByDefaultRadio().vm.$emit('change', true);
+    findEnabledRadio().vm.$emit('change', true);
     await nextTick();
 
     expect(wrapper.emitted('change')).toHaveLength(1);
@@ -36,10 +90,89 @@ describe('DuoFoundationalAgentsSettings', () => {
   });
 
   it('emits change event when disabled radio button is selected', async () => {
-    findOffByDefaultRadio().vm.$emit('change', false);
+    findDisabledRadio().vm.$emit('change', false);
     await nextTick();
 
     expect(wrapper.emitted('change')).toHaveLength(1);
     expect(wrapper.emitted('change')).toEqual([[false]]);
+  });
+
+  describe('agents table', () => {
+    it('does not render the agents table when feature flag is disabled', () => {
+      createComponent({
+        provide: { showFoundationalAgentsPerAgentAvailability: false },
+      });
+
+      expect(findAgentsTable().exists()).toBe(false);
+    });
+
+    describe('when the feature flag is enabled', () => {
+      it('does not render the agents table when agentStatuses is empty', () => {
+        createComponent({
+          props: { agentStatuses: [] },
+        });
+        expect(findAgentsTable().exists()).toBe(false);
+      });
+
+      describe('when agentStatuses has items', () => {
+        beforeEach(() => {
+          createComponent({
+            props: { agentStatuses: mockAgentStatuses },
+            mountFn: mountExtended,
+          });
+        });
+
+        it('renders the agents table when feature flag is enabled', () => {
+          expect(findAgentsTable().exists()).toBe(true);
+          expect(findAgentsTable().props('items')).toEqual(mockAgentStatuses);
+        });
+
+        it('sets dropdown selected state based on agent enabled status', () => {
+          expect(findAgentDropdowns().at(0).props('selected')).toBe('enabled');
+          expect(findAgentDropdowns().at(1).props('selected')).toBe('disabled');
+          expect(findAgentDropdowns().at(2).props('selected')).toBe('use_default');
+        });
+
+        it.each`
+          defaultEnabledValue | expectedToggleText
+          ${true}             | ${'Enabled (using default)'}
+          ${false}            | ${'Disabled (using default)'}
+        `(
+          'sets dropdown toggle text based on agent enabled status and default value',
+          ({ defaultEnabledValue, expectedToggleText }) => {
+            createComponent({
+              props: {
+                enabled: defaultEnabledValue,
+                agentStatuses: mockAgentStatuses,
+              },
+              mountFn: mountExtended,
+            });
+
+            expect(findAgentDropdowns().at(0).props('toggleText')).toBe('Enabled');
+            expect(findAgentDropdowns().at(1).props('toggleText')).toBe('Disabled');
+            expect(findAgentDropdowns().at(2).props('toggleText')).toBe(expectedToggleText);
+          },
+        );
+
+        it.each`
+          optionValue                                         | expectedValue
+          ${FOUNDATIONAL_AGENTS_AVAILABILITY_VALUES.disabled} | ${false}
+          ${FOUNDATIONAL_AGENTS_AVAILABILITY_VALUES.enabled}  | ${true}
+          ${FOUNDATIONAL_AGENTS_AVAILABILITY_VALUES.default}  | ${null}
+        `(
+          'emits agent-toggle event when the dropdown selection value is updated to: $optionValue',
+          async ({ optionValue, expectedValue }) => {
+            findAgentDropdowns().at(0).vm.$emit('select', optionValue);
+            await nextTick();
+
+            expect(wrapper.emitted('agent-toggle')[0][0]).toEqual([
+              { reference: 'security-analyst', name: 'Security Analyst', enabled: expectedValue },
+              { reference: 'code-reviewer', name: 'Code Reviewer', enabled: false },
+              { reference: 'test-agent', name: 'Test Agent', enabled: null },
+            ]);
+          },
+        );
+      });
+    });
   });
 });

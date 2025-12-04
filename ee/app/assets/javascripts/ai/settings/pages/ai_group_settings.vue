@@ -58,8 +58,13 @@ export default {
       promptCacheEnabled,
       duoFoundationalFlowsAvailability,
       foundationalAgentsEnabled,
+      foundationalAgentsStatuses,
     }) {
       try {
+        const transformedFoundationalAgentsStatuses = foundationalAgentsStatuses?.filter(
+          (agent) => agent.enabled !== null,
+        );
+
         const input = {
           duo_availability: duoAvailability,
           experiment_features_enabled: experimentFeaturesEnabled,
@@ -67,6 +72,9 @@ export default {
           duo_remote_flows_availability: duoRemoteFlowsAvailability,
           duo_foundational_flows_availability: duoFoundationalFlowsAvailability,
           duo_sast_fp_detection_availability: duoSastFpDetectionAvailability,
+          ...(foundationalAgentsStatuses && {
+            foundational_agents_statuses: transformedFoundationalAgentsStatuses,
+          }),
           ai_settings_attributes: {
             duo_workflow_mcp_enabled: this.duoWorkflowMcp,
             foundational_agents_default_enabled: foundationalAgentsEnabled,

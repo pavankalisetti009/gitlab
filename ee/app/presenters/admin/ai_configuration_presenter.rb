@@ -50,7 +50,8 @@ module Admin
         redirect_path: url_helpers.admin_gitlab_duo_path,
         toggle_beta_models_path: url_helpers.admin_ai_duo_self_hosted_toggle_beta_models_path,
         foundational_agents_default_enabled: foundational_agents_default_enabled,
-        show_foundational_agents_availability: show_foundational_agents_availability?
+        show_foundational_agents_availability: show_foundational_agents_availability?,
+        show_foundational_agents_per_agent_availability: show_foundational_agents_per_agent_availability?
       }.transform_values(&:to_s)
     end
 
@@ -58,6 +59,10 @@ module Admin
 
     def show_foundational_agents_availability?
       ::Feature.enabled?(:duo_foundational_agents_availability, :instance)
+    end
+
+    def show_foundational_agents_per_agent_availability?
+      ::Feature.enabled?(:duo_foundational_agents_per_agent_availability, :instance)
     end
 
     def active_duo_add_ons_exist?

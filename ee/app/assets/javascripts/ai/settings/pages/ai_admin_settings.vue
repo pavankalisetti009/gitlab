@@ -111,6 +111,7 @@ export default {
       duoSastFpDetectionAvailability,
       foundationalAgentsEnabled,
       duoFoundationalFlowsAvailability,
+      foundationalAgentsStatuses,
     }) {
       try {
         this.isLoading = true;
@@ -119,6 +120,13 @@ export default {
         if (this.haveAiSettingsChanged) {
           await this.updateAiSettings();
         }
+
+        const transformedFoundationalAgentsStatuses = foundationalAgentsStatuses
+          ?.filter((agent) => agent.enabled !== null)
+          .map((agent) => ({
+            reference: agent.reference,
+            enabled: agent.enabled,
+          }));
 
         await updateApplicationSettings({
           duo_availability: duoAvailability,
@@ -132,6 +140,9 @@ export default {
           duo_chat_expiration_days: this.chatExpirationDays,
           duo_chat_expiration_column: this.chatExpirationColumn,
           foundational_agents_default_enabled: foundationalAgentsEnabled,
+          ...(foundationalAgentsStatuses && {
+            foundational_agents_statuses: transformedFoundationalAgentsStatuses,
+          }),
         });
 
         if (this.hasAiModelsFormChanged) {

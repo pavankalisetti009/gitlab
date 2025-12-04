@@ -55,6 +55,8 @@ export const initAiSettings = (id, component, options = {}) => {
     isSaas,
     foundationalAgentsDefaultEnabled,
     showFoundationalAgentsAvailability,
+    showFoundationalAgentsPerAgentAvailability,
+    foundationalAgentsStatuses,
   } = el.dataset;
 
   let duoAvailabilityCascadingSettingsParsed;
@@ -94,6 +96,15 @@ export const initAiSettings = (id, component, options = {}) => {
     duoAvailabilityCascadingSettingsParsed = null;
   }
 
+  const parsedFoundationalAgentsStatuses = foundationalAgentsStatuses
+    ? convertObjectPropsToCamelCase(JSON.parse(foundationalAgentsStatuses), {
+        deep: true,
+      }).map((agent) => ({
+        ...agent,
+        enabled: agent.enabled === null ? null : parseBoolean(agent.enabled),
+      }))
+    : [];
+
   return new Vue({
     el,
     apolloProvider,
@@ -119,6 +130,10 @@ export const initAiSettings = (id, component, options = {}) => {
       betaSelfHostedModelsEnabled: parseBoolean(betaSelfHostedModelsEnabled),
       foundationalAgentsDefaultEnabled: parseBoolean(foundationalAgentsDefaultEnabled),
       showFoundationalAgentsAvailability: parseBoolean(showFoundationalAgentsAvailability),
+      showFoundationalAgentsPerAgentAvailability: parseBoolean(
+        showFoundationalAgentsPerAgentAvailability,
+      ),
+      initialFoundationalAgentsStatuses: parsedFoundationalAgentsStatuses,
       toggleBetaModelsPath,
       enabledExpandedLogging: parseBoolean(enabledExpandedLogging),
       earlyAccessPath,
