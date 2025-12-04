@@ -88,8 +88,16 @@ describe('Status Token component', () => {
       });
     });
 
-    it('has a defaultValues property', () => {
-      expect(StatusToken.defaultValues).toEqual(['DETECTED', 'CONFIRMED']);
+    it('has a defaultValues function', () => {
+      expect(StatusToken.defaultValues()).toEqual(['DETECTED', 'CONFIRMED']);
+    });
+
+    it('transforms the query params correctly', () => {
+      expect(StatusToken.transformQueryParams([])).toBe('ALL');
+
+      expect(StatusToken.transformQueryParams(['DISMISSED', 'CONFIRMED'])).toBe(
+        'DISMISSED,CONFIRMED',
+      );
     });
 
     it('shows the label', () => {
