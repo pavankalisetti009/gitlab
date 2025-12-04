@@ -715,6 +715,7 @@ describe('Duo Agentic Chat', () => {
           additionalContext: expectedAdditionalContext,
           agentConfig: null,
           metadata: null,
+          clientCapabilities: [],
         });
 
         expect(actionSpies.addDuoChatMessage).toHaveBeenCalledWith(
@@ -844,6 +845,54 @@ describe('Duo Agentic Chat', () => {
             requestId: DUO_AGENTIC_CHAT_PENDING_USER_MESSAGE_ID,
           }),
         );
+      });
+
+      it('includes incremental_streaming capability when feature flag is enabled', async () => {
+        createComponent({
+          provide: {
+            glFeatures: {
+              duoAgenticChatIncrementalStreaming: true,
+            },
+          },
+        });
+        duoChatGlobalState.isAgenticChatShown = true;
+
+        findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
+        await waitForPromises();
+
+        expect(WorkflowSocketUtils.buildStartRequest).toHaveBeenCalledWith({
+          workflowId: '456',
+          goal: MOCK_USER_MESSAGE.content,
+          approval: {},
+          additionalContext: expectedAdditionalContext,
+          agentConfig: null,
+          metadata: null,
+          clientCapabilities: ['incremental_streaming'],
+        });
+      });
+
+      it('does not include incremental_streaming capability when feature flag is disabled', async () => {
+        createComponent({
+          provide: {
+            glFeatures: {
+              duoAgenticChatIncrementalStreaming: false,
+            },
+          },
+        });
+        duoChatGlobalState.isAgenticChatShown = true;
+
+        findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
+        await waitForPromises();
+
+        expect(WorkflowSocketUtils.buildStartRequest).toHaveBeenCalledWith({
+          workflowId: '456',
+          goal: MOCK_USER_MESSAGE.content,
+          approval: {},
+          additionalContext: expectedAdditionalContext,
+          agentConfig: null,
+          metadata: null,
+          clientCapabilities: [],
+        });
       });
     });
 
@@ -1243,6 +1292,7 @@ describe('Duo Agentic Chat', () => {
           additionalContext: expectedAdditionalContext,
           agentConfig: null,
           metadata: null,
+          clientCapabilities: [],
         });
 
         expect(mockSocketManager.connect).toHaveBeenCalled();
@@ -1334,6 +1384,7 @@ describe('Duo Agentic Chat', () => {
           additionalContext: expectedAdditionalContext,
           agentConfig: null,
           metadata: null,
+          clientCapabilities: [],
         });
 
         expect(mockSocketManager.connect).toHaveBeenCalled();
@@ -2459,6 +2510,7 @@ describe('Duo Agentic Chat', () => {
       expect(WorkflowSocketUtils.buildStartRequest).toHaveBeenCalledWith(
         expect.objectContaining({
           agentConfig: MOCK_FLOW_AGENT_CONFIG,
+          clientCapabilities: [],
         }),
       );
 
@@ -2477,6 +2529,7 @@ describe('Duo Agentic Chat', () => {
         expect.objectContaining({
           workflowDefinition: 'agent/v1',
           agentConfig: null,
+          clientCapabilities: [],
         }),
       );
 
@@ -2495,6 +2548,7 @@ describe('Duo Agentic Chat', () => {
           expect.objectContaining({
             workflowDefinition: 'agent/v1',
             agentConfig: null,
+            clientCapabilities: [],
           }),
         );
 
@@ -2510,6 +2564,7 @@ describe('Duo Agentic Chat', () => {
         expect(WorkflowSocketUtils.buildStartRequest).toHaveBeenLastCalledWith(
           expect.objectContaining({
             workflowDefinition: undefined,
+            clientCapabilities: [],
           }),
         );
 
@@ -2540,6 +2595,7 @@ describe('Duo Agentic Chat', () => {
       expect(WorkflowSocketUtils.buildStartRequest).toHaveBeenCalledWith(
         expect.objectContaining({
           agentConfig: MOCK_FLOW_AGENT_CONFIG,
+          clientCapabilities: [],
         }),
       );
 
@@ -2558,6 +2614,7 @@ describe('Duo Agentic Chat', () => {
       expect(WorkflowSocketUtils.buildStartRequest).toHaveBeenCalledWith(
         expect.objectContaining({
           agentConfig: MOCK_FLOW_AGENT_CONFIG,
+          clientCapabilities: [],
         }),
       );
     });
@@ -2574,6 +2631,7 @@ describe('Duo Agentic Chat', () => {
       expect(WorkflowSocketUtils.buildStartRequest).toHaveBeenCalledWith(
         expect.objectContaining({
           agentConfig: MOCK_FLOW_AGENT_CONFIG,
+          clientCapabilities: [],
         }),
       );
 
@@ -2593,6 +2651,7 @@ describe('Duo Agentic Chat', () => {
         expect.objectContaining({
           workflowDefinition: MOCK_FETCHED_FOUNDATIONAL_AGENT.referenceWithVersion,
           agentConfig: null,
+          clientCapabilities: [],
         }),
       );
     });

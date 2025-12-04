@@ -1,0 +1,10 @@
+---
+name: duo_agentic_chat_incremental_streaming
+description:
+feature_issue_url:
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/214392
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/582782
+milestone: '18.7'
+group: group::agent foundations
+type: gitlab_com_derisk
+default_enabled: false

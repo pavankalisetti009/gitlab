@@ -2,7 +2,6 @@ import {
   buildWebsocketUrl,
   buildStartRequest,
   processWorkflowMessage,
-  CLIENT_CAPABILITIES,
 } from 'ee/ai/duo_agentic_chat/utils/workflow_socket_utils';
 import { GITLAB_DEFAULT_MODEL } from 'ee/ai/model_selection/constants';
 import * as websocketUtils from '~/lib/utils/websocket_utils';
@@ -107,7 +106,7 @@ describe('workflow_socket_utils', () => {
             clientVersion: '1.0',
             workflowDefinition: 'chat',
             workflowMetadata: 'test metadata',
-            clientCapabilities: CLIENT_CAPABILITIES,
+            clientCapabilities: [],
             goal: 'test goal',
             approval: {},
           },
@@ -130,7 +129,7 @@ describe('workflow_socket_utils', () => {
             clientVersion: '1.0',
             workflowDefinition: 'agent/v1',
             workflowMetadata: 'test metadata',
-            clientCapabilities: CLIENT_CAPABILITIES,
+            clientCapabilities: [],
             goal: 'test goal',
             approval: {},
           },
@@ -177,6 +176,32 @@ describe('workflow_socket_utils', () => {
         });
 
         expect(request.startRequest.approval).toEqual(approval);
+      });
+    });
+
+    describe('when clientCapabilities is provided', () => {
+      it('includes clientCapabilities in request', () => {
+        const clientCapabilities = ['incremental_streaming'];
+        const request = buildStartRequest({
+          workflowId: '123',
+          goal: 'test goal',
+          metadata: 'test metadata',
+          clientCapabilities,
+        });
+
+        expect(request.startRequest.clientCapabilities).toEqual(clientCapabilities);
+      });
+    });
+
+    describe('when clientCapabilities is not provided', () => {
+      it('defaults to empty array', () => {
+        const request = buildStartRequest({
+          workflowId: '123',
+          goal: 'test goal',
+          metadata: 'test metadata',
+        });
+
+        expect(request.startRequest.clientCapabilities).toEqual([]);
       });
     });
   });
