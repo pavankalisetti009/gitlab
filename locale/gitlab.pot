@@ -71694,6 +71694,9 @@ msgstr ""
 msgid "UsageBilling|Date/Time"
 msgstr ""
 
+msgid "UsageBilling|GitLab Credits"
+msgstr ""
+
 msgid "UsageBilling|GitLab Credits - Monthly Waiver"
 msgstr ""
 
