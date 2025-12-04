@@ -60550,6 +60550,12 @@ msgstr ""
 msgid "SecurityOrchestration|Authorized business risk acceptance"
 msgstr ""
 
+msgid "SecurityOrchestration|Auto-Dismiss"
+msgstr ""
+
+msgid "SecurityOrchestration|Auto-Resolve"
+msgstr ""
+
 msgid "SecurityOrchestration|Automate %{strongStart}vulnerability management%{strongEnd} workflows."
 msgstr ""
 
@@ -60710,9 +60716,6 @@ msgid "SecurityOrchestration|Details"
 msgstr ""
 
 msgid "SecurityOrchestration|Direct"
-msgstr ""
-
-msgid "SecurityOrchestration|Dismissed"
 msgstr ""
 
 msgid "SecurityOrchestration|Don't show the alert anymore"
