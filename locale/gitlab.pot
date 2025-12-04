@@ -58062,6 +58062,9 @@ msgstr ""
 msgid "ScanExecutionPolicy|A runner will be selected automatically from those available."
 msgstr ""
 
+msgid "ScanExecutionPolicy|A time window is not set. Setting a time window helps distribute scheduled scans and reduces the load on runner infrastructure. We recommend a time window of at least 6 hours."
+msgstr ""
+
 msgid "ScanExecutionPolicy|Add new CI variable"
 msgstr ""
 

@@ -27,6 +27,10 @@ export const buildDefaultScheduleRule = () => {
     type: SCAN_EXECUTION_SCHEDULE_RULE,
     branches: [],
     cadence: CRON_DEFAULT_TIME,
+    time_window: {
+      distribution: 'random',
+      value: 36000, // 10 hours in seconds
+    },
   };
 };
 

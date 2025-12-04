@@ -81,6 +81,9 @@ export const mockScheduleScanExecutionManifest = `scan_execution_policy:
       - type: schedule
         branches: []
         cadence: 0 0 * * *
+        time_window:
+          distribution: random
+          value: 36000
       - type: pipeline
         branch_type: target_default
         pipeline_sources:
