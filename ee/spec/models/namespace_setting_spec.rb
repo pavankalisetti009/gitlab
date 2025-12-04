@@ -733,7 +733,7 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
       let(:seat_control) { :off }
       let(:user_cap) { nil }
 
-      it 'also sets share_with_group_lock and prevent_sharing_groups_outside_hierarchy to true' do
+      it 'sets prevent_sharing_groups_outside_hierarchy to true but does not set share_with_group_lock' do
         expect(group.new_user_signups_cap).to be_nil
         expect(group.share_with_group_lock).to be_falsey
         expect(settings.prevent_sharing_groups_outside_hierarchy).to be_falsey
@@ -742,11 +742,11 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
         group.reload
 
         expect(group.new_user_signups_cap).to eq(10)
-        expect(group.share_with_group_lock).to be_truthy
+        expect(group.share_with_group_lock).to be_falsey
         expect(settings.reload.prevent_sharing_groups_outside_hierarchy).to be_truthy
       end
 
-      it 'has share_with_group_lock and prevent_sharing_groups_outside_hierarchy returning true for descendent groups' do
+      it 'sets prevent_sharing_groups_outside_hierarchy for descendent groups but not share_with_group_lock' do
         descendent = create(:group, parent: group)
         desc_settings = descendent.namespace_settings
 
@@ -755,7 +755,7 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
 
         settings.update!(seat_control: :user_cap, new_user_signups_cap: 10)
 
-        expect(descendent.reload.share_with_group_lock).to be_truthy
+        expect(descendent.reload.share_with_group_lock).to be_falsey
         expect(desc_settings.reload.prevent_sharing_groups_outside_hierarchy).to be_truthy
       end
     end
@@ -764,14 +764,39 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
       let(:seat_control) { :user_cap }
       let(:user_cap) { 10 }
 
-      it 'leaves share_with_group_lock and prevent_sharing_groups_outside_hierarchy set to true to the related group' do
-        expect(group.share_with_group_lock).to be_truthy
+      it 'leaves prevent_sharing_groups_outside_hierarchy set to true to the related group' do
         expect(settings.prevent_sharing_groups_outside_hierarchy).to be_truthy
 
         settings.update!(seat_control: :off, new_user_signups_cap: nil)
 
-        expect(group.reload.share_with_group_lock).to be_truthy
         expect(settings.reload.prevent_sharing_groups_outside_hierarchy).to be_truthy
+      end
+    end
+
+    context 'when seat controls are enabled' do
+      let(:seat_control) { :off }
+      let(:user_cap) { nil }
+
+      it 'allows share_with_group_lock to be independently configured with user cap' do
+        settings.update!(seat_control: :user_cap, new_user_signups_cap: 10)
+        group.reload
+
+        expect(group.share_with_group_lock).to be_falsey
+
+        group.update!(share_with_group_lock: true)
+
+        expect(group.reload.share_with_group_lock).to be_truthy
+      end
+
+      it 'allows share_with_group_lock to be independently configured with block overages', :saas do
+        settings.update!(seat_control: :block_overages)
+        group.reload
+
+        expect(group.share_with_group_lock).to be_falsey
+
+        group.update!(share_with_group_lock: true)
+
+        expect(group.reload.share_with_group_lock).to be_truthy
       end
     end
   end
@@ -782,10 +807,12 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
 
     it 'becomes enabled when block seat overages becomes enabled', :saas do
       expect(settings.prevent_sharing_groups_outside_hierarchy).to eq(false)
+      expect(group.share_with_group_lock).to be_falsey
 
       settings.update!(seat_control: :block_overages)
 
       expect(settings.reload.prevent_sharing_groups_outside_hierarchy).to eq(true)
+      expect(group.reload.share_with_group_lock).to be_falsey
     end
 
     context 'when block seat overages is already enabled for the group', :saas do

@@ -966,8 +966,32 @@ RSpec.describe 'Edit group settings', :js, feature_category: :groups_and_project
         group.namespace_settings.update!(seat_control: :user_cap, new_user_signups_cap: 10)
       end
 
-      it 'forces the setting on' do
+      it 'forces prevent_sharing_groups_outside_hierarchy on and prevents it from being disabled' do
         visit edit_group_path(group, anchor: 'js-permissions-settings')
+
+        expect(page).to have_checked_field('group_prevent_sharing_groups_outside_hierarchy')
+
+        uncheck 'group_prevent_sharing_groups_outside_hierarchy'
+
+        page.within('#js-permissions-settings') do
+          click_button 'Save changes'
+        end
+
+        expect(page).to have_checked_field('group_prevent_sharing_groups_outside_hierarchy')
+      end
+
+      it 'does not force share_with_group_lock on and allows independent configuration' do
+        visit edit_group_path(group, anchor: 'js-permissions-settings')
+
+        expect(page).to have_unchecked_field('group_share_with_group_lock')
+
+        check 'group_share_with_group_lock'
+
+        page.within('#js-permissions-settings') do
+          click_button 'Save changes'
+        end
+
+        expect(page).to have_checked_field('group_share_with_group_lock')
 
         uncheck 'group_share_with_group_lock'
 
@@ -975,7 +999,7 @@ RSpec.describe 'Edit group settings', :js, feature_category: :groups_and_project
           click_button 'Save changes'
         end
 
-        expect(page).to have_checked_field('group_share_with_group_lock')
+        expect(page).to have_unchecked_field('group_share_with_group_lock')
       end
     end
   end
