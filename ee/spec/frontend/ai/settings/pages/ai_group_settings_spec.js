@@ -33,6 +33,7 @@ const createComponent = ({ props = {}, provide = {} } = {}) => {
       onGeneralSettingsPage: false,
       duoWorkflowAvailable: true,
       duoWorkflowMcpEnabled: false,
+      availableFoundationalFlows: [],
       ...provide,
     },
   });
@@ -131,11 +132,12 @@ describe('AiGroupSettings', () => {
         experimentFeaturesEnabled: true,
         duoCoreFeaturesEnabled: true,
         promptCacheEnabled: true,
-        duoSastFpDetectionAvailability: false,
         duoRemoteFlowsAvailability: false,
         duoFoundationalFlowsAvailability: false,
+        duoSastFpDetectionAvailability: false,
         foundationalAgentsEnabled: true,
         foundationalAgentsStatuses: mockAgentStatuses,
+        selectedFoundationalFlowIds: [],
       });
       expect(updateGroupSettings).toHaveBeenCalledTimes(1);
       expect(updateGroupSettings).toHaveBeenCalledWith('100', {
@@ -147,6 +149,7 @@ describe('AiGroupSettings', () => {
         duo_foundational_flows_availability: false,
         duo_sast_fp_detection_availability: false,
         foundational_agents_statuses: expectedFilteredAgentStatuses,
+        enabled_foundational_flows: [],
         ai_settings_attributes: {
           duo_workflow_mcp_enabled: false,
           foundational_agents_default_enabled: true,
@@ -164,10 +167,13 @@ describe('AiGroupSettings', () => {
         promptCacheEnabled: true,
         duoRemoteFlowsAvailability: false,
         duoFoundationalFlowsAvailability: false,
+        duoSastFpDetectionAvailability: false,
+        selectedFoundationalFlowIds: [],
       });
       expect(updateGroupSettings).toHaveBeenCalledWith(
         '100',
         expect.objectContaining({
+          enabled_foundational_flows: [],
           ai_settings_attributes: {
             duo_workflow_mcp_enabled: true,
           },
@@ -184,6 +190,8 @@ describe('AiGroupSettings', () => {
         promptCacheEnabled: false,
         duoRemoteFlowsAvailability: false,
         duoFoundationalFlowsAvailability: false,
+        duoSastFpDetectionAvailability: false,
+        selectedFoundationalFlowIds: [],
       });
       await waitForPromises();
       expect(visitUrlWithAlerts).toHaveBeenCalledWith(
@@ -208,6 +216,8 @@ describe('AiGroupSettings', () => {
         promptCacheEnabled: true,
         duoRemoteFlowsAvailability: false,
         duoFoundationalFlowsAvailability: false,
+        duoSastFpDetectionAvailability: false,
+        selectedFoundationalFlowIds: [],
       });
       await waitForPromises();
       expect(createAlert).toHaveBeenCalledWith(
@@ -232,6 +242,8 @@ describe('AiGroupSettings', () => {
           promptCacheEnabled: true,
           duoRemoteFlowsAvailability: false,
           duoFoundationalFlowsAvailability: false,
+          duoSastFpDetectionAvailability: false,
+          selectedFoundationalFlowIds: [],
         });
         expect(updateGroupSettings).toHaveBeenCalledTimes(1);
         expect(updateGroupSettings).toHaveBeenCalledWith('100', {
@@ -240,6 +252,8 @@ describe('AiGroupSettings', () => {
           model_prompt_cache_enabled: true,
           duo_remote_flows_availability: false,
           duo_foundational_flows_availability: false,
+          duo_sast_fp_detection_availability: false,
+          enabled_foundational_flows: [],
           ai_settings_attributes: {
             duo_workflow_mcp_enabled: false,
           },
@@ -248,6 +262,29 @@ describe('AiGroupSettings', () => {
           expect.anything(),
           expect.objectContaining({
             duo_core_features_enabled: expect.anything(),
+          }),
+        );
+      });
+    });
+
+    describe('foundational flow selection', () => {
+      it('passes selectedFoundationalFlowIds to API when provided', async () => {
+        updateGroupSettings.mockResolvedValue({});
+        await findAiCommonSettings().vm.$emit('submit', {
+          duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_OFF,
+          experimentFeaturesEnabled: false,
+          duoCoreFeaturesEnabled: false,
+          promptCacheEnabled: false,
+          duoRemoteFlowsAvailability: false,
+          duoFoundationalFlowsAvailability: false,
+          duoSastFpDetectionAvailability: false,
+          selectedFoundationalFlowIds: [1, 2, 3],
+        });
+
+        expect(updateGroupSettings).toHaveBeenCalledWith(
+          '100',
+          expect.objectContaining({
+            enabled_foundational_flows: [1, 2, 3],
           }),
         );
       });

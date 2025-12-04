@@ -57,6 +57,8 @@ export const initAiSettings = (id, component, options = {}) => {
     showFoundationalAgentsAvailability,
     showFoundationalAgentsPerAgentAvailability,
     foundationalAgentsStatuses,
+    availableFoundationalFlows,
+    selectedFoundationalFlows,
   } = el.dataset;
 
   let duoAvailabilityCascadingSettingsParsed;
@@ -149,6 +151,14 @@ export const initAiSettings = (id, component, options = {}) => {
       initialDuoSastFpDetectionAvailability: parseBoolean(duoSastFpDetectionAvailability),
       isSaaS: parseBoolean(isSaas),
       isGroupSettings: options?.isGroupSettings || false,
+      availableFoundationalFlows: (() => {
+        const flows = availableFoundationalFlows ? JSON.parse(availableFoundationalFlows) : [];
+        return flows;
+      })(),
+      initialSelectedFoundationalFlowIds: (() => {
+        const selected = selectedFoundationalFlows ? JSON.parse(selectedFoundationalFlows) : [];
+        return selected;
+      })(),
     },
     render: (createElement) =>
       createElement(component, {
