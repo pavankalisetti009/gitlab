@@ -92,7 +92,6 @@ module EE
 
       before_save :clear_new_user_signups_cap, unless: -> { seat_control_user_cap? }
       before_save :set_prevent_sharing_groups_outside_hierarchy
-      after_save :disable_project_sharing!, if: -> { user_cap_enabled? || seat_control_block_overages? }
 
       after_commit :trigger_todo_creation, on: :update, if: :saved_change_to_duo_core_features_enabled?
 
@@ -259,10 +258,6 @@ module EE
         return unless user_cap_enabled? || namespace.block_seat_overages?
 
         self.prevent_sharing_groups_outside_hierarchy = true
-      end
-
-      def disable_project_sharing!
-        namespace.update_attribute(:share_with_group_lock, true)
       end
 
       def active_owner_ids

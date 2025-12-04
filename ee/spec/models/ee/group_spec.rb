@@ -4128,17 +4128,23 @@ RSpec.describe Group, feature_category: :groups_and_projects do
         group.namespace_settings.update!(seat_control: :user_cap, new_user_signups_cap: 1)
       end
 
-      it 'cannot be set to false' do
-        group.update!(share_with_group_lock: false)
+      it 'can be independently configured' do
+        expect(group.share_with_group_lock).to be_falsey
 
-        expect(group.share_with_group_lock).to eq(true)
+        group.update!(share_with_group_lock: true)
+
+        expect(group.reload.share_with_group_lock).to be_truthy
       end
     end
 
-    it 'becomes enabled when block seat overages becomes enabled', :saas do
+    it 'can be independently configured when block seat overages is enabled', :saas do
       expect(group.share_with_group_lock).to eq(false)
 
       settings.update!(seat_control: :block_overages)
+
+      expect(group.reload.share_with_group_lock).to eq(false)
+
+      group.update!(share_with_group_lock: true)
 
       expect(group.reload.share_with_group_lock).to eq(true)
     end
@@ -4148,10 +4154,16 @@ RSpec.describe Group, feature_category: :groups_and_projects do
         settings.update!(seat_control: :block_overages)
       end
 
-      it 'cannot be disabled' do
+      it 'can be independently configured' do
+        expect(group.share_with_group_lock).to be_falsey
+
+        group.update!(share_with_group_lock: true)
+
+        expect(group.reload.share_with_group_lock).to be_truthy
+
         group.update!(share_with_group_lock: false)
 
-        expect(group.reload.share_with_group_lock).to eq(true)
+        expect(group.reload.share_with_group_lock).to be_falsey
       end
     end
   end
