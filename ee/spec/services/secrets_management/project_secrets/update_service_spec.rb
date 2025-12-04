@@ -824,7 +824,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
 
     it 'returns an error' do
       expect(result).to be_error
-      expect(result.message).to eq('Project secrets manager is not active')
+      expect(result.message).to eq('Secrets manager is not active')
     end
   end
 end

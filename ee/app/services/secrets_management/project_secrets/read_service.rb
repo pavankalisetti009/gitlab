@@ -4,7 +4,7 @@ module SecretsManagement
   module ProjectSecrets
     class ReadService < ProjectBaseService
       def execute(name, include_rotation_info: true)
-        return inactive_response unless project.secrets_manager&.active?
+        return secrets_manager_inactive_response unless project.secrets_manager&.active?
         return invalid_name_response unless /\A[a-zA-Z0-9_]+\z/.match?(name)
 
         secret_metadata = user_client.read_secret_metadata(
