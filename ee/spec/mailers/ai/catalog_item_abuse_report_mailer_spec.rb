@@ -49,6 +49,10 @@ RSpec.describe Ai::CatalogItemAbuseReportMailer, feature_category: :workflow_cat
         expected_url = "#{Settings.gitlab['url']}/explore/ai-catalog/agents/#{catalog_item.id}"
         expect(email.body.encoded).to include(expected_url)
       end
+
+      it 'includes UI deletion instructions' do
+        expect(email.body.encoded).to include('To delete the item from the UI:')
+      end
     end
 
     context 'when message is not provided' do
