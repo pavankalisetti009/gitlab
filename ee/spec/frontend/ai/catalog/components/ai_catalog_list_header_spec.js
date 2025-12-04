@@ -1,4 +1,4 @@
-import { GlExperimentBadge, GlLink, GlIcon } from '@gitlab/ui';
+import { GlExperimentBadge, GlLink, GlIcon, GlPopover, GlSprintf } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import AiCatalogListHeader from 'ee/ai/catalog/components/ai_catalog_list_header.vue';
@@ -10,6 +10,9 @@ import {
   TRACKING_LABEL_AI_CATALOG_HEADER,
 } from 'ee/analytics/analytics_dashboards/link_to_dashboards/tracking';
 import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
+import { DOCS_URL } from 'jh_else_ce/lib/utils/url_utility';
+
+jest.mock('lodash/uniqueId', () => (x) => x);
 
 describe('AiCatalogListHeader', () => {
   let wrapper;
@@ -18,11 +21,13 @@ describe('AiCatalogListHeader', () => {
   const findExperimentBadge = () => wrapper.findComponent(GlExperimentBadge);
   const findDashboardLink = () => wrapper.findComponent(GlLink);
   const findDashboardIcon = () => wrapper.findComponent(GlIcon);
+  const findPopover = () => wrapper.findComponent(GlPopover);
+  const findPopoverLink = () => findPopover().findComponent(GlLink);
   const findLinkToDashboardModal = () => wrapper.findComponent(LinkToDashboardModal);
   const findNavTabs = () => wrapper.findComponent(AiCatalogNavTabs);
   const findNavActions = () => wrapper.findComponent(AiCatalogNavActions);
 
-  const createComponent = ({ props = {}, provide = {} } = {}) => {
+  const createComponent = ({ props = {}, provide = {}, stubs = {} } = {}) => {
     wrapper = shallowMountExtended(AiCatalogListHeader, {
       propsData: {
         ...props,
@@ -36,6 +41,7 @@ describe('AiCatalogListHeader', () => {
       directives: {
         GlModal: createMockDirective('gl-modal'),
       },
+      stubs,
     });
   };
 
@@ -64,7 +70,7 @@ describe('AiCatalogListHeader', () => {
   describe('dashboard link', () => {
     describe('when aiImpactDashboardEnabled is true', () => {
       beforeEach(() => {
-        createComponent({ provide: { aiImpactDashboardEnabled: true } });
+        createComponent({ provide: { aiImpactDashboardEnabled: true }, stubs: { GlSprintf } });
       });
 
       it('renders link to dashboard with correct text', () => {
@@ -100,6 +106,20 @@ describe('AiCatalogListHeader', () => {
       it('renders modal with correct dashboard name', () => {
         expect(findLinkToDashboardModal().exists()).toBe(true);
         expect(findLinkToDashboardModal().props('dashboardName')).toBe('duo_and_sdlc_trends');
+      });
+
+      it('renders the info popover', () => {
+        expect(findDashboardIcon().attributes('id')).toBe('dashboard-link');
+        expect(findPopover().props('target')).toBe('dashboard-link');
+      });
+
+      it('renders the popover content with link', () => {
+        expect(findPopover().text()).toMatchInterpolatedText(
+          'This key dashboard provides visibility into SDLC metrics in the context of AI adoption for projects and groups. Learn more',
+        );
+        expect(findPopoverLink().attributes('href')).toBe(
+          `${DOCS_URL}/user/analytics/duo_and_sdlc_trends/`,
+        );
       });
     });
 

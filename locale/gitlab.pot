@@ -3027,6 +3027,9 @@ msgstr ""
 msgid "AICatalog|This flow specializes in... It can help you with... Best suited for..."
 msgstr ""
 
+msgid "AICatalog|This key dashboard provides visibility into SDLC metrics in the context of AI adoption for projects and groups. %{linkStart}Learn more%{linkEnd}"
+msgstr ""
+
 msgid "AICatalog|Tools"
 msgstr ""
 
