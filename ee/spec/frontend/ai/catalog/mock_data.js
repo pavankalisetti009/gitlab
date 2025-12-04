@@ -446,7 +446,7 @@ export const mockFlowConfigurationForProject = {
   id: 'gid://gitlab/Ai::Catalog::ItemConsumer/12',
   enabled: true,
   flowTrigger: mockFlowTrigger,
-  pinnedItemVersion: mockFlowVersion,
+  pinnedItemVersion: mockFlowPinnedVersion,
   __typename: TYPENAME_AI_CATALOG_ITEM_CONSUMER,
 };
 

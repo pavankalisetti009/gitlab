@@ -2880,6 +2880,9 @@ msgstr ""
 msgid "AICatalog|New flow"
 msgstr ""
 
+msgid "AICatalog|No triggers configured. %{linkStart}Add a trigger%{linkEnd} to make this %{itemType} available."
+msgstr ""
+
 msgid "AICatalog|Only agents enabled in your top-level group are shown."
 msgstr ""
 
