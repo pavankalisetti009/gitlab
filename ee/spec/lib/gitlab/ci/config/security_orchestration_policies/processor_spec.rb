@@ -209,6 +209,14 @@ RSpec.describe Gitlab::Ci::Config::SecurityOrchestrationPolicies::Processor, fea
               end
             end
 
+            context 'when stages are invalid' do
+              let(:config) { { stages: { stages: %w[build test deploy] } } }
+
+              it 'does not modify the config' do
+                expect(perform_service).to eq(config)
+              end
+            end
+
             context 'when .pre stage is not available' do
               it 'includes scan-policies stage as a first stage' do
                 expect(subject[:stages]).to eq(%w[scan-policies not-test release dast])

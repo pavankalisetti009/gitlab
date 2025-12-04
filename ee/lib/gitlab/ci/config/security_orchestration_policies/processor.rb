@@ -26,6 +26,8 @@ module Gitlab
 
           def perform
             return @config unless scan_execution_policy_context&.has_scan_execution_policies?
+            # We're expecting stages as array. If they are invalid, we shouldn't try to process them.
+            return @config if @config[:stages].present? && !Entry::Stages.new(@config[:stages]).valid?
 
             @config[:workflow] = { rules: [{ when: 'always' }] } if @config.empty?
 
