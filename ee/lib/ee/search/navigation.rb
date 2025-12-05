@@ -70,6 +70,9 @@ module EE
         return false unless options[:show_epics]
         return true if group
 
+        # For global search, epics require elasticsearch
+        return false unless show_elasticsearch_tabs?
+
         ::Gitlab::CurrentSettings.global_search_epics_enabled?
       end
 

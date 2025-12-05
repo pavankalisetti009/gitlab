@@ -9,8 +9,8 @@ module EE
           label: -> { _('Epics') },
           sort: 3,
           availability: {
-            global: %i[zoekt advanced],
-            group: %i[zoekt advanced basic]
+            global: %i[advanced],
+            group: %i[advanced basic]
           }
         }
       }.freeze

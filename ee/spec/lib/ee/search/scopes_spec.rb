@@ -114,12 +114,12 @@ RSpec.describe Search::Scopes, feature_category: :global_search do
           expect(result).to be true
         end
 
-        it 'returns true when licensed and zoekt available' do
+        it 'returns false when zoekt requested (zoekt does not support epics)' do
           allow(group).to receive(:licensed_feature_available?).with(:epics).and_return(true)
           allow(Search::Zoekt).to receive(:search?).with(group).and_return(true)
 
           result = described_class.send(:valid_definition?, scope, definition, context, group, :zoekt)
-          expect(result).to be true
+          expect(result).to be false
         end
       end
 
@@ -254,6 +254,18 @@ RSpec.describe Search::Scopes, feature_category: :global_search do
             context: :group, container: group, requested_search_type: :basic
           )
           expect(scopes).to include('basic_scope')
+        end
+
+        it 'treats invalid search_type as if no search_type was specified' do
+          allow(Gitlab::CurrentSettings).to receive(:search_using_elasticsearch?).with(scope: group).and_return(true)
+
+          scopes = described_class.available_for_context(
+            context: :group, container: group, requested_search_type: 'invalid_xyz'
+          )
+
+          # Should include advanced search scopes since ES is available
+          expect(scopes).to include('blobs', 'issues', 'merge_requests')
+          expect(scopes).not_to be_empty
         end
       end
     end
