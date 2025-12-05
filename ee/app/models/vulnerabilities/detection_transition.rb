@@ -2,6 +2,9 @@
 
 module Vulnerabilities
   class DetectionTransition < ::SecApplicationRecord
+    include EachBatch
+    include BulkInsertSafe
+
     self.table_name = 'vulnerability_detection_transitions'
 
     belongs_to :finding,
