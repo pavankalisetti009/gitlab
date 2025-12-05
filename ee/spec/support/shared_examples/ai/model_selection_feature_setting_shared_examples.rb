@@ -54,6 +54,12 @@ RSpec.shared_context 'with model selections fetch definition service side-effect
           'default_model' => 'claude_sonnet_4_20250514',
           'selectable_models' => %w[claude_sonnet_4_20250514 claude_sonnet_3_7],
           'beta_models' => []
+        },
+        {
+          'feature_setting' => 'duo_agent_platform_agentic_chat',
+          'default_model' => 'claude_sonnet_4_20250514',
+          'selectable_models' => %w[claude_sonnet_4_20250514 claude_sonnet_3_7],
+          'beta_models' => []
         }
       ]
     }

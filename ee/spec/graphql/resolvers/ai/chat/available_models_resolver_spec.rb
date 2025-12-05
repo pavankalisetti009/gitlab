@@ -40,7 +40,7 @@ RSpec.describe Resolvers::Ai::Chat::AvailableModelsResolver, :saas, feature_cate
       ],
       'unit_primitives' => [
         {
-          'feature_setting' => 'duo_agent_platform',
+          'feature_setting' => 'duo_agent_platform_agentic_chat',
           'default_model' => 'claude_sonnet_4_20250514',
           'selectable_models' => %w[claude_sonnet_4_20250514 claude_sonnet_3_7_20250219],
           'beta_models' => []
@@ -144,7 +144,7 @@ RSpec.describe Resolvers::Ai::Chat::AvailableModelsResolver, :saas, feature_cate
           before do
             feature_setting = create(:ai_namespace_feature_setting,
               namespace: group,
-              feature: :duo_agent_platform,
+              feature: :duo_agent_platform_agentic_chat,
               offered_model_ref: 'claude_sonnet_3_7_20250219')
 
             allow_next_instance_of(::Ai::FeatureSettingSelectionService) do |service|
@@ -270,7 +270,7 @@ RSpec.describe Resolvers::Ai::Chat::AvailableModelsResolver, :saas, feature_cate
         end
       end
 
-      context 'when duo_agent_platform feature setting is not found' do
+      context 'when duo_agent_platform_agentic_chat feature setting is not found' do
         before do
           different_model_definitions = {
             'models' => [{ 'name' => 'Claude Sonnet', 'identifier' => 'claude-sonnet', 'provider' => 'Anthropic' }],
@@ -291,6 +291,190 @@ RSpec.describe Resolvers::Ai::Chat::AvailableModelsResolver, :saas, feature_cate
         end
 
         it 'returns empty result' do
+          expect(resolver).to eq(empty_result)
+        end
+      end
+    end
+
+    context 'when ai_agentic_chat_feature_setting_split feature flag is disabled' do
+      let(:args) { { root_namespace_id: root_namespace_id } }
+      let(:legacy_model_definitions) do
+        {
+          'models' => [
+            {
+              'name' => 'Claude Sonnet 4.0',
+              'identifier' => 'claude_sonnet_4_20250514',
+              'provider' => 'Anthropic',
+              'description' => 'Fast, cost-effective responses.',
+              'cost_indicator' => '$$$'
+            },
+            {
+              'name' => 'Claude Sonnet 4.0',
+              'identifier' => 'claude_sonnet_4_20250514_vertex',
+              'provider' => 'Anthropic',
+              'description' => 'Fast, cost-effective responses.',
+              'cost_indicator' => '$$$'
+            },
+            {
+              'name' => 'Claude Sonnet 3.7',
+              'identifier' => 'claude_sonnet_3_7_20250219',
+              'provider' => 'Anthropic',
+              'description' => 'Fast, cost-effective responses.',
+              'cost_indicator' => '$$$'
+            },
+            {
+              'name' => 'Claude Sonnet 3.7',
+              'identifier' => 'claude_sonnet_3_7_20250219_vertex',
+              'provider' => 'Vertex',
+              'description' => 'Fast, cost-effective responses.',
+              'cost_indicator' => '$$$'
+            }
+          ],
+          'unit_primitives' => [
+            {
+              'feature_setting' => 'duo_agent_platform',
+              'default_model' => 'claude_sonnet_4_20250514',
+              'selectable_models' => %w[claude_sonnet_4_20250514 claude_sonnet_3_7_20250219],
+              'beta_models' => []
+            }
+          ]
+        }
+      end
+
+      before do
+        stub_feature_flags(ai_agentic_chat_feature_setting_split: false)
+        allow(Ability).to receive(:allowed?)
+          .with(current_user, :access_duo_agentic_chat, group)
+          .and_return(true)
+        allow_next_instance_of(::Ai::ModelSelection::FetchModelDefinitionsService) do |service|
+          allow(service).to receive(:execute).and_return(ServiceResponse.success(payload: legacy_model_definitions))
+        end
+      end
+
+      context 'when there is a pinned model' do
+        let!(:pinned_feature_setting) do
+          create(:ai_namespace_feature_setting,
+            namespace: group,
+            feature: :duo_agent_platform,
+            offered_model_ref: 'claude_sonnet_3_7_20250219')
+        end
+
+        let(:expected_pinned_model) do
+          {
+            name: 'Claude Sonnet 3.7',
+            ref: 'claude_sonnet_3_7_20250219',
+            model_provider: 'Anthropic',
+            model_description: 'Fast, cost-effective responses.',
+            cost_indicator: '$$$'
+          }
+        end
+
+        it 'returns the pinned model information' do
+          expect(resolver).to eq({
+            default_model: default_model,
+            selectable_models: selectable_models,
+            pinned_model: expected_pinned_model
+          })
+        end
+      end
+
+      context 'when feature setting is not pinned' do
+        let!(:unpinned_feature_setting) do
+          create(:ai_namespace_feature_setting,
+            namespace: group,
+            feature: :duo_agent_platform,
+            offered_model_ref: nil)
+        end
+
+        it 'returns nil for pinned model when not pinned' do
+          expect(resolver).to eq({
+            default_model: default_model,
+            selectable_models: selectable_models,
+            pinned_model: nil
+          })
+        end
+      end
+
+      context 'when feature setting returns ai_feature_setting payload' do
+        let_it_be(:model) do
+          create(:ai_self_hosted_model, model: :claude_3, identifier: 'claude-3-7-sonnet-20250219')
+        end
+
+        let_it_be(:feature_setting) do
+          create(:ai_feature_setting, feature: :duo_agent_platform, self_hosted_model: model)
+        end
+
+        before do
+          allow_next_instance_of(::Ai::FeatureSettingSelectionService) do |service|
+            allow(service).to receive(:execute).and_return(ServiceResponse.success(payload: feature_setting))
+          end
+        end
+
+        it 'returns nil for pinned model when user_model_selection_available? is false' do
+          expect(resolver).to eq({
+            default_model: default_model,
+            selectable_models: selectable_models,
+            pinned_model: nil
+          })
+        end
+      end
+
+      context 'when feature setting returns ai_namespace_feature_setting payload' do
+        let_it_be(:feature_setting) do
+          create(:ai_namespace_feature_setting,
+            namespace: group,
+            feature: :duo_agent_platform,
+            offered_model_ref: 'claude_sonnet_3_7_20250219')
+        end
+
+        let(:expected_pinned_model) do
+          {
+            name: 'Claude Sonnet 3.7',
+            ref: 'claude_sonnet_3_7_20250219',
+            model_provider: 'Anthropic',
+            model_description: 'Fast, cost-effective responses.',
+            cost_indicator: '$$$'
+          }
+        end
+
+        before do
+          allow_next_instance_of(::Ai::FeatureSettingSelectionService) do |service|
+            allow(service).to receive(:execute).and_return(ServiceResponse.success(payload: feature_setting))
+          end
+        end
+
+        it 'returns the pinned model when user_model_selection_available? is true' do
+          expect(resolver).to eq({
+            default_model: default_model,
+            selectable_models: selectable_models,
+            pinned_model: expected_pinned_model
+          })
+        end
+      end
+
+      context 'when duo_agent_platform feature setting is not found' do
+        before do
+          different_model_definitions = {
+            'models' => [
+              { 'name' => 'Claude Sonnet', 'identifier' => 'claude-sonnet', 'provider' => 'Anthropic' }
+            ],
+            'unit_primitives' => [
+              {
+                'feature_setting' => 'code_suggestions',
+                'default_model' => 'claude-sonnet',
+                'selectable_models' => ['claude-sonnet'],
+                'beta_models' => []
+              }
+            ]
+          }
+
+          allow_next_instance_of(::Ai::ModelSelection::FetchModelDefinitionsService) do |service|
+            allow(service)
+              .to receive(:execute).and_return(ServiceResponse.success(payload: different_model_definitions))
+          end
+        end
+
+        it 'returns an empty list' do
           expect(resolver).to eq(empty_result)
         end
       end

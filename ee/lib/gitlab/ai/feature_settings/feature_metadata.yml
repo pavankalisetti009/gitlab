@@ -232,7 +232,7 @@ review_merge_request:
   unit_primitives:
     - review_merge_request
 duo_agent_platform:
-  title: GitLab Duo Agent Platform - all agents
+  title: All agents, except Agentic Chat
   release_state: GA
   main_feature: GitLab Duo Agent Platform
   compatible_llms:
@@ -242,3 +242,12 @@ duo_agent_platform:
   unit_primitives:
     - duo_workflow_execute_workflow
     - duo_agent_platform
+duo_agent_platform_agentic_chat:
+  title: Agentic Chat
+  release_state: GA
+  main_feature: GitLab Duo Agent Platform
+  compatible_llms:
+    - claude_3
+    - gpt
+    - general
+  unit_primitives: [] # No unit primitives for this feature as it is part of the duo_agent_platform feature

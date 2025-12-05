@@ -1,0 +1,10 @@
+---
+name: ai_agentic_chat_feature_setting_split
+description:
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/581374
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/213517
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/581556
+milestone: '18.7'
+group: group::custom models
+type: gitlab_com_derisk
+default_enabled: false

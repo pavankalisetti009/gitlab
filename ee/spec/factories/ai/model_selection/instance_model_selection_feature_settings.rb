@@ -90,6 +90,13 @@ FactoryBot.define do
             "selectable_models" => %w[claude-3-7-sonnet-20250219 claude-3-5-sonnet-20240620],
             "beta_models" => [],
             "unit_primitives" => ["duo_agent_platform"]
+          },
+          {
+            "feature_setting" => "duo_agent_platform_agentic_chat",
+            "default_model" => "claude-3-7-sonnet-20250219",
+            "selectable_models" => %w[claude-3-7-sonnet-20250219 claude-3-5-sonnet-20240620],
+            "beta_models" => [],
+            "unit_primitives" => []
           }
         ]
       }

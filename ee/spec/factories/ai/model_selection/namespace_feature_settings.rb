@@ -100,6 +100,16 @@ FactoryBot.define do
             ],
             "beta_models" => [],
             "unit_primitives" => ["duo_agent_platform"]
+          },
+          {
+            "feature_setting" => "duo_agent_platform_agentic_chat",
+            "default_model" => "claude_sonnet_4_20250514",
+            "selectable_models" => %w[
+              claude_sonnet_3_7_20250219
+              claude_sonnet_4_20250514
+            ],
+            "beta_models" => [],
+            "unit_primitives" => []
           }
         ]
       }
