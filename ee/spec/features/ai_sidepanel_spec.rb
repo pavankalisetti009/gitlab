@@ -36,7 +36,7 @@ RSpec.describe 'AI Sidepanel', :js, feature_category: :duo_agent_platform do
     before do
       # NOTE: We will stub all existing methods on Users::ProjectStudio to return false, to ensure that
       #       it always is disabled, regardless of how it may be refactored in the future.
-      project_studio_instance = instance_double(Users::ProjectStudio, enabled?: false, available?: false)
+      project_studio_instance = instance_double(Users::ProjectStudio, enabled?: false)
       allow(Users::ProjectStudio).to receive_messages(new: project_studio_instance, enabled_for_user?: false)
     end
 
@@ -71,19 +71,6 @@ RSpec.describe 'AI Sidepanel', :js, feature_category: :duo_agent_platform do
 
         # Verify we're now in the agent sessions view
         expect(page).to have_content("Sessions")
-      end
-
-      context 'when Project Studio is not enabled for user' do
-        before do
-          user.update!(new_ui_enabled: false)
-        end
-
-        it 'does not show AI sidepanel' do
-          visit project_path(project)
-          dismiss_welcome_banner_if_present(page)
-
-          expect(page).not_to have_css(ai_sidepanel_selector)
-        end
       end
     end
 
