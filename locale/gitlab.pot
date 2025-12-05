@@ -45616,6 +45616,9 @@ msgstr ""
 msgid "Observability|Application performance monitoring with p99 latency tracking and real-time metrics visualization"
 msgstr ""
 
+msgid "Observability|Apply"
+msgstr ""
+
 msgid "Observability|Are you sure you want to delete the observability service settings? This action cannot be undone."
 msgstr ""
 
