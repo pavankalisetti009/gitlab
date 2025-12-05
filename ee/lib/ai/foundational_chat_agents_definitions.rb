@@ -49,8 +49,7 @@ module Ai
         version: 'v1',
         name: 'Analytics Agent',
         description: <<~DESCRIPTION
-          AI querying assistant that helps product teams explore, summarize, and share their analytical
-          data in GitLab using GLQL queries
+          Beta AI assistant for analyzing data in GitLab, powered by GLQL
         DESCRIPTION
       }
     ].freeze
