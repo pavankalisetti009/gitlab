@@ -334,11 +334,13 @@ export default {
     },
     currentModel: {
       get() {
-        return getCurrentModel({
-          availableModels: this.availableModels,
-          pinnedModel: this.pinnedModel,
-          selectedModel: this.selectedModel,
-        });
+        return this.$apollo.queries?.availableModels?.loading
+          ? null
+          : getCurrentModel({
+              availableModels: this.availableModels,
+              pinnedModel: this.pinnedModel,
+              selectedModel: this.selectedModel,
+            });
       },
       set(val) {
         this.selectedModel = val;
