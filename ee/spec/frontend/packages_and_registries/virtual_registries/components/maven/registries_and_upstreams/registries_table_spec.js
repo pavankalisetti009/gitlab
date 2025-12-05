@@ -112,8 +112,20 @@ describe('RegistriesTable', () => {
       });
 
       it('hides the table action column', () => {
-        const actionsColumn = findTable().props('fields')[2];
-        expect(actionsColumn.hide).toEqual(true);
+        expect(findTable().props('fields')).toEqual([
+          {
+            key: 'name',
+            label: 'Registry',
+            thClass: '!gl-border-t-0',
+            tdClass: '@sm/panel:gl-max-w-0 !gl-py-3',
+          },
+          {
+            key: 'updated',
+            label: 'Last updated',
+            thClass: 'gl-w-20 !gl-border-t-0',
+            tdClass: '!gl-py-3',
+          },
+        ]);
       });
     });
   });

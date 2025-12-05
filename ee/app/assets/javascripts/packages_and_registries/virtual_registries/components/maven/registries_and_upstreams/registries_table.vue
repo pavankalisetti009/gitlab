@@ -48,7 +48,7 @@ export default {
           thClass: 'gl-w-6 gl-text-right !gl-border-t-0',
           tdClass: 'gl-text-right !gl-py-3',
         },
-      ];
+      ].filter((field) => !field.hide);
     },
   },
   methods: {

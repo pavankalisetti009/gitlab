@@ -5,7 +5,7 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { stubComponent } from 'helpers/stub_component';
 import waitForPromises from 'helpers/wait_for_promises';
-
+import UserCalloutDismisser from '~/vue_shared/components/user_callout_dismisser.vue';
 import getMavenUpstreamsCountQuery from 'ee/packages_and_registries/virtual_registries/graphql/queries/get_maven_upstreams_count.query.graphql';
 import MavenRegistriesAndUpstreamsApp from 'ee/packages_and_registries/virtual_registries/pages/maven/registries_and_upstreams/index.vue';
 import RegistriesList from 'ee/packages_and_registries/virtual_registries/components/maven/registries_and_upstreams/registries_list.vue';
@@ -52,6 +52,7 @@ describe('MavenRegistriesAndUpstreamsApp', () => {
   const findUpstreamsCount = () => wrapper.findByTestId('upstreams-tab-counter-badge');
   const findUpstreamsList = () => wrapper.findComponent(UpstreamsList);
   const findCleanupPolicyStatus = () => wrapper.findComponent(CleanupPolicyStatus);
+  const findUserCalloutDismisser = () => wrapper.findComponent(UserCalloutDismisser);
 
   beforeEach(() => {
     createComponent();
@@ -88,6 +89,12 @@ describe('MavenRegistriesAndUpstreamsApp', () => {
 
   it('renders CleanupPolicyStatus component', () => {
     expect(findCleanupPolicyStatus().exists()).toBe(true);
+  });
+
+  it('renders UserCalloutDismisser component', () => {
+    expect(findUserCalloutDismisser().props('featureName')).toBe(
+      'virtual_registry_permission_change_alert',
+    );
   });
 
   describe('when MavenRegistriesList emits `updateCount` event', () => {

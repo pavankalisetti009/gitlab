@@ -1,6 +1,7 @@
 <script>
-import { GlTabs, GlTab, GlBadge } from '@gitlab/ui';
+import { GlAlert, GlTabs, GlTab, GlBadge } from '@gitlab/ui';
 import { n__, sprintf } from '~/locale';
+import UserCalloutDismisser from '~/vue_shared/components/user_callout_dismisser.vue';
 import { getPageParams } from '~/packages_and_registries/shared/utils';
 import RegistriesList from 'ee/packages_and_registries/virtual_registries/components/maven/registries_and_upstreams/registries_list.vue';
 import CleanupPolicyStatus from 'ee/packages_and_registries/virtual_registries/components/cleanup_policy_status.vue';
@@ -15,6 +16,7 @@ const INITIAL_PAGE_PARAMS = {
 export default {
   name: 'MavenVirtualRegistriesAndUpstreamsApp',
   components: {
+    GlAlert,
     GlBadge,
     GlTabs,
     GlTab,
@@ -24,6 +26,7 @@ export default {
       import(
         'ee/packages_and_registries/virtual_registries/components/maven/registries_and_upstreams/upstreams_list.vue'
       ),
+    UserCalloutDismisser,
   },
   inject: ['fullPath'],
   data() {
@@ -99,6 +102,17 @@ export default {
 <template>
   <div>
     <cleanup-policy-status batch-key="MavenVirtualRegistries" />
+    <user-callout-dismisser feature-name="virtual_registry_permission_change_alert">
+      <template #default="{ dismiss, shouldShowCallout }">
+        <gl-alert v-if="shouldShowCallout" class="gl-my-3" @dismiss="dismiss">
+          {{
+            s__(
+              'VirtualRegistry|Direct project membership no longer grants access to the Maven virtual registry. To access the virtual registry, you must be a member of the top-level group or an administrator.',
+            )
+          }}
+        </gl-alert>
+      </template>
+    </user-callout-dismisser>
     <gl-tabs content-class="gl-p-0" sync-active-tab-with-query-params>
       <gl-tab query-param-value="registries">
         <template #title>
