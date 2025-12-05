@@ -1,5 +1,41 @@
-import { initSetUserCapRadio } from 'ee/groups/settings/permissions/index';
+import Vue from 'vue';
+import VueApollo from 'vue-apollo';
+import {
+  initSetUserCapRadio,
+  initGroupSecretsManagerSettings,
+} from 'ee/groups/settings/permissions/index';
 import { setHTMLFixture, resetHTMLFixture } from 'helpers/fixtures';
+
+Vue.use(VueApollo);
+
+describe('Group Settings Permissions', () => {
+  describe('initGroupSecretsManagerSettings', () => {
+    afterEach(() => {
+      resetHTMLFixture();
+    });
+
+    it('does not initialize when mount element is not in the DOM', () => {
+      setHTMLFixture('<div></div>');
+
+      expect(initGroupSecretsManagerSettings()).toBe(null);
+    });
+
+    it('mounts the SecretsManagerSettings component', () => {
+      setHTMLFixture(`
+        <div class="js-group-secrets-manager-settings"
+             data-can-manage-secrets-manager="true"
+             data-full-path="gitlab-org/gitlab"
+             data-group-id="123">
+        </div>
+      `);
+
+      const result = initGroupSecretsManagerSettings();
+
+      expect(result).not.toBe(null);
+      expect(result.$el).toBeDefined();
+    });
+  });
+});
 
 describe('RadioNumberCombo', () => {
   const setDOM = ({ seatControl = 'off', userCap = '' } = {}) => {

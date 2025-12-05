@@ -4,6 +4,7 @@ import validateRestrictedIpAddress from 'ee/groups/settings/access_restriction_f
 import {
   initGroupPermissionsFormSubmit,
   initSetUserCapRadio,
+  initGroupSecretsManagerSettings,
 } from 'ee/groups/settings/permissions';
 import { initPlaceholderBypassGroupSetting } from 'ee/groups/settings/permissions/components';
 import { initServicePingSettingsClickTracking } from 'ee/registration_features_discovery_message';
@@ -32,6 +33,8 @@ initDeactivateDormantMembersPeriodInputSection();
 initPlaceholderBypassGroupSetting();
 
 initGroupPermissionsFormSubmit();
+
+initGroupSecretsManagerSettings();
 
 initSetUserCapRadio();
 

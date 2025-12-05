@@ -59382,6 +59382,9 @@ msgstr ""
 msgid "SecretsManagerPermissions|Can update details of existing secrets."
 msgstr ""
 
+msgid "SecretsManagerPermissions|Enable the secrets manager to securely store and manage sensitive information for this group."
+msgstr ""
+
 msgid "SecretsManagerPermissions|Enable the secrets manager to securely store and manage sensitive information for this project."
 msgstr ""
 
@@ -59404,6 +59407,9 @@ msgid "SecretsManagerPermissions|Secrets manager"
 msgstr ""
 
 msgid "SecretsManagerPermissions|Secrets manager has been deprovisioned for this project."
+msgstr ""
+
+msgid "SecretsManagerPermissions|Secrets manager has been provisioned for this group."
 msgstr ""
 
 msgid "SecretsManagerPermissions|Secrets manager has been provisioned for this project."

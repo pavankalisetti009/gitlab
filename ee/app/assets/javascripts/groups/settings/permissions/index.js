@@ -1,6 +1,11 @@
 import Vue from 'vue';
+import VueApollo from 'vue-apollo';
 import { isEqual } from 'lodash';
 import { __, s__ } from '~/locale';
+import { parseBoolean } from '~/lib/utils/common_utils';
+import createDefaultClient from '~/lib/graphql';
+import { ENTITY_GROUP } from 'ee/ci/secrets/constants';
+import SecretsManagerSettings from 'ee/pages/projects/shared/permissions/secrets_manager/secrets_manager_settings.vue';
 import ConfirmModal from 'ee/groups/settings/permissions/components/confirm_modal.vue';
 
 const confirmModalWrapperClassName = 'js-general-permissions-confirm-modal-wrapper';
@@ -106,6 +111,36 @@ export const initGroupPermissionsFormSubmit = () => {
   groupPermissionsForm.append(confirmModalWrapper);
 
   groupPermissionsForm.addEventListener('submit', onGroupPermissionsFormSubmit);
+};
+
+export const initGroupSecretsManagerSettings = () => {
+  const el = document.querySelector('.js-group-secrets-manager-settings');
+
+  if (!el) {
+    return null;
+  }
+
+  const { canManageSecretsManager, fullPath } = el.dataset;
+
+  Vue.use(VueApollo);
+
+  const apolloProvider = new VueApollo({
+    defaultClient: createDefaultClient(),
+  });
+
+  return new Vue({
+    el,
+    apolloProvider,
+    render(createElement) {
+      return createElement(SecretsManagerSettings, {
+        props: {
+          context: ENTITY_GROUP,
+          canManageSecretsManager: parseBoolean(canManageSecretsManager),
+          fullPath,
+        },
+      });
+    },
+  });
 };
 
 export const initSetUserCapRadio = () => {
