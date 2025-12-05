@@ -67,7 +67,7 @@ module VirtualRegistries
           end
 
           def relative_path
-            path.start_with?('/') ? path : "/#{path}"
+            "/#{path}"
           end
 
           def etag

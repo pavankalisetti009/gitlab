@@ -4,10 +4,26 @@ module VirtualRegistries
   # TODO: Extract shared JWT authentication logic
   # Issue: https://gitlab.com/gitlab-org/gitlab/-/issues/578299
   class ContainerController < ::ApplicationController
+    include SendFileUpload
+    include ::PackagesHelper
     include Gitlab::Utils::StrongMemoize
 
     EMPTY_AUTH_RESULT = Gitlab::Auth::Result.new(nil, nil, nil, nil).freeze
-    PERMITTED_PARAMS = %i[id image tag_or_digest sha].freeze
+    PERMITTED_PARAMS = %i[id path].freeze
+
+    EXTRA_RESPONSE_HEADERS = {
+      'Docker-Distribution-Api-Version' => 'registry/2.0',
+      'Content-Security-Policy' => "sandbox; default-src 'none'; require-trusted-types-for 'script'",
+      'X-Content-Type-Options' => 'nosniff'
+    }.freeze
+
+    ALLOWED_RESPONSE_HEADERS = %w[
+      Content-Length
+      Content-Type
+      Docker-Content-Digest
+      Docker-Distribution-Api-Version
+      Etag
+    ].freeze
 
     delegate :actor, to: :@authentication_result, allow_nil: true
     alias_method :authenticated_user, :actor
@@ -23,12 +39,18 @@ module VirtualRegistries
     feature_category :virtual_registry
     urgency :low
 
-    def manifest
-      render json: { message: 'Not implemented' }, status: :not_implemented
-    end
+    def show
+      service_response = ::VirtualRegistries::Container::HandleFileRequestService.new(
+        registry: registry,
+        current_user: authenticated_user,
+        params: { path: path }
+      ).execute
 
-    def blob
-      render json: { message: 'Not implemented' }, status: :not_implemented
+      if service_response.error?
+        send_error_response_from!(service_response: service_response)
+      else
+        send_successful_response_from(service_response: service_response)
+      end
     end
 
     private
@@ -63,7 +85,6 @@ module VirtualRegistries
           sign_in(user_or_token) if can_sign_in?(user_or_token)
         when PersonalAccessToken
           set_auth_result(user_or_token.user, :personal_access_token)
-          @personal_access_token = user_or_token
         when DeployToken
           set_auth_result(user_or_token, :deploy_token)
         end
@@ -89,6 +110,66 @@ module VirtualRegistries
 
     def ensure_user_has_access!
       render_404 unless ::VirtualRegistries::Container.user_has_access?(registry.group, authenticated_user)
+    end
+
+    def path
+      permitted_params[:path]
+    end
+
+    def send_successful_response_from(service_response:)
+      action, action_params = service_response.to_h.values_at(:action, :action_params)
+
+      case action
+      when :download_file
+        send_cached_file(action_params)
+      when :workhorse_upload_url
+        send_workhorse_proxy(action_params)
+      end
+    end
+
+    def send_cached_file(action_params)
+      file = action_params[:file]
+      content_type = action_params[:content_type]
+      upstream_etag = action_params[:upstream_etag]
+
+      extra_headers = EXTRA_RESPONSE_HEADERS.dup
+      extra_headers['Content-Type'] = content_type if content_type.present?
+      extra_headers['Docker-Content-Digest'] = upstream_etag if manifest_request? && upstream_etag.present?
+      extra_headers.each { |key, value| response.headers[key] = value }
+
+      send_upload(
+        file,
+        proxy: true,
+        redirect_params: { query: { 'response-content-type' => content_type } },
+        send_params: { type: content_type },
+        ssrf_params: {
+          restrict_forwarded_response_headers: {
+            enabled: true,
+            allow_list: ALLOWED_RESPONSE_HEADERS
+          }
+        }
+      )
+    end
+
+    def send_workhorse_proxy(_)
+      render json: { message: 'Not implemented' }, status: :not_implemented
+    end
+
+    def manifest_request?
+      path.include?('/manifests/')
+    end
+
+    def send_error_response_from!(service_response:)
+      case service_response.reason
+      when :unauthorized
+        access_denied!(service_response.message)
+      when :no_upstreams, :file_not_found_on_upstreams
+        render_404
+      when :upstream_not_available
+        render_503(service_response.message)
+      else
+        render json: { message: 'Bad Request' }, status: :bad_request
+      end
     end
   end
 end

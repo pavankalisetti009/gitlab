@@ -7,8 +7,10 @@ RSpec.describe VirtualRegistries::Container::HandleFileRequestService, :aggregat
   let_it_be(:project) { create(:project, namespace: group) }
   let_it_be(:user) { create(:user, owner_of: project) }
 
-  let(:upstream) { create(:virtual_registries_container_upstream, group: group) }
-  let!(:registry) { create(:virtual_registries_container_registry, group: group, upstreams: [upstream]) }
+  let_it_be_with_reload(:upstream) { create(:virtual_registries_container_upstream, group: group) }
+  let_it_be_with_reload(:registry) do
+    create(:virtual_registries_container_registry, group: group, upstreams: [upstream])
+  end
 
   let(:etag_returned_by_upstream) { nil }
   let(:service) { described_class.new(registry: registry, current_user: user, params: { path: path }) }
@@ -64,21 +66,29 @@ RSpec.describe VirtualRegistries::Container::HandleFileRequestService, :aggregat
       end
     end
 
-    context 'when requesting manifest by digest that was cached with a tag' do
+    context 'with an existing cache entry' do
       let_it_be(:upstream_etag) { 'sha256:abc123def456abc123def456abc123def456abc123def456abc123def456abcd' }
+      let_it_be(:expected_relative_path) { '/my/image/manifests/latest' }
+      let_it_be(:upstream_resource_url) { upstream.url_for(path) }
       let_it_be(:path) { "my/image/manifests/#{upstream_etag}" }
-      let_it_be(:expected_relative_path) { 'my/image/manifests/latest' }
-      let(:upstream_resource_url) { upstream.url_for(path) }
-      let!(:cache_entry) do
+      let_it_be(:cache_entry) do
         create(:virtual_registries_container_cache_entry,
           :upstream_checked,
           upstream: upstream,
-          relative_path: 'my/image/manifests/latest',
+          relative_path: '/my/image/manifests/latest',
           upstream_etag: upstream_etag
         )
       end
 
-      it_behaves_like 'returning a service response success response', action: :download_file
+      context 'when requesting manifest by digest' do
+        it_behaves_like 'returning a service response success response', action: :download_file
+      end
+
+      context 'when requesting a blob by digest' do
+        let_it_be(:path) { "my/image/blobs/#{upstream_etag}" }
+
+        it_behaves_like 'returning a service response success response', action: :download_file
+      end
     end
 
     context 'with a User' do
@@ -183,14 +193,14 @@ RSpec.describe VirtualRegistries::Container::HandleFileRequestService, :aggregat
       context 'when requesting a manifest' do
         let(:path) { 'my/image/manifests/latest' }
         let(:expected_image_name) { 'my/image' }
-        let(:expected_relative_path) { 'my/image/manifests/latest' }
+        let(:expected_relative_path) { '/my/image/manifests/latest' }
         let(:upstream_resource_url) { upstream.url_for(path) }
 
         it_behaves_like 'container request tests'
 
         context 'when requesting by digest' do
           let(:path) { 'my/image/manifests/sha256:abc123' }
-          let(:expected_relative_path) { 'my/image/manifests/sha256:abc123' }
+          let(:expected_relative_path) { '/my/image/manifests/sha256:abc123' }
           let(:upstream_resource_url) { upstream.url_for(path) }
 
           it_behaves_like 'container request tests'
@@ -199,7 +209,7 @@ RSpec.describe VirtualRegistries::Container::HandleFileRequestService, :aggregat
         context 'with nested image name' do
           let(:path) { 'library/nginx/app/manifests/v1.0' }
           let(:expected_image_name) { 'library/nginx/app' }
-          let(:expected_relative_path) { 'library/nginx/app/manifests/v1.0' }
+          let(:expected_relative_path) { '/library/nginx/app/manifests/v1.0' }
           let(:upstream_resource_url) { upstream.url_for(path) }
 
           it_behaves_like 'container request tests'
@@ -209,7 +219,7 @@ RSpec.describe VirtualRegistries::Container::HandleFileRequestService, :aggregat
       context 'when requesting a blob' do
         let(:path) { 'my/image/blobs/sha256:def456' }
         let(:expected_image_name) { 'my/image' }
-        let(:expected_relative_path) { 'my/image/blobs/sha256:def456' }
+        let(:expected_relative_path) { '/my/image/blobs/sha256:def456' }
         let(:upstream_resource_url) { upstream.url_for(path) }
 
         it_behaves_like 'container request tests'
@@ -217,7 +227,7 @@ RSpec.describe VirtualRegistries::Container::HandleFileRequestService, :aggregat
         context 'with nested image name' do
           let(:path) { 'library/nginx/app/blobs/sha256:ghi789' }
           let(:expected_image_name) { 'library/nginx/app' }
-          let(:expected_relative_path) { 'library/nginx/app/blobs/sha256:ghi789' }
+          let(:expected_relative_path) { '/library/nginx/app/blobs/sha256:ghi789' }
           let(:upstream_resource_url) { upstream.url_for(path) }
 
           it_behaves_like 'container request tests'
@@ -226,10 +236,11 @@ RSpec.describe VirtualRegistries::Container::HandleFileRequestService, :aggregat
     end
 
     context 'with a DeployToken' do
-      let(:user) { create(:deploy_token, :group, groups: [registry.group], read_virtual_registry: true) }
+      let_it_be(:user) { create(:deploy_token, :group, groups: [registry.group], read_virtual_registry: true) }
+
       let(:path) { 'my/image/manifests/latest' }
       let(:expected_image_name) { 'my/image' }
-      let(:expected_relative_path) { '/v2/my/image/manifests/latest' }
+      let(:expected_relative_path) { '/my/image/manifests/latest' }
       let(:upstream_resource_url) { upstream.url_for(path) }
 
       it_behaves_like 'returning a service response success response', action: :workhorse_upload_url
