@@ -38,6 +38,10 @@ module EE
               required: false,
               description: 'Filter by weight ID wildcard. Incompatible with weight.',
               experiment: { milestone: '18.2' }
+            argument :status, ::Types::WorkItems::Widgets::StatusFilterInputType,
+              required: false,
+              description: 'Filter by status.',
+              experiment: { milestone: '18.7' }
 
             validates mutually_exclusive: [:weight, :weight_wildcard_id]
             validates mutually_exclusive: [:iteration_id, :iteration_wildcard_id]
@@ -59,6 +63,8 @@ module EE
             if args[:iteration_cadence_id].present?
               params[:iteration_cadence_id] = iteration_cadence_ids_from_args(args)
             end
+
+            params[:status] = args[:status].to_h if args[:status].present?
 
             rewrite_param_name(params, :iteration_wildcard_id, :iteration_id)
             params
