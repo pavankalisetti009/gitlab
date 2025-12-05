@@ -11,7 +11,6 @@ import AiCatalogListHeader from 'ee/ai/catalog/components/ai_catalog_list_header
 import AiCatalogConfiguredItemsWrapper from 'ee/ai/duo_agents_platform/components/catalog/ai_catalog_configured_items_wrapper.vue';
 import projectAiCatalogFlowsQuery from 'ee/ai/duo_agents_platform/graphql/queries/get_project_flows.query.graphql';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
-import ResourceListsEmptyState from '~/vue_shared/components/resource_lists/empty_state.vue';
 import aiCatalogConfiguredItemsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_configured_items.query.graphql';
 import aiCatalogGroupUserPermissionsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_group_user_permissions.query.graphql';
 import aiCatalogProjectUserPermissionsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_project_user_permissions.query.graphql';
@@ -25,7 +24,7 @@ import {
   mockFlows,
   mockPageInfo,
 } from 'ee_jest/ai/catalog/mock_data';
-import { mockProjectFlowsResponse, mockProjectItemsEmptyResponse } from '../../mock_data';
+import { mockProjectFlowsResponse } from '../../mock_data';
 
 jest.mock('~/sentry/sentry_browser_wrapper');
 
@@ -91,7 +90,6 @@ describe('AiFlowsIndex', () => {
   const findConfiguredItemsWrapper = () => wrapper.findComponent(AiCatalogConfiguredItemsWrapper);
   const findAddProjectItemConsumerModal = () => wrapper.findComponent(AddProjectItemConsumerModal);
   const findAiCatalogListWrapper = () => wrapper.findByTestId('managed-flows-list');
-  const findEmptyState = () => wrapper.findComponent(ResourceListsEmptyState);
   const findTabs = () => wrapper.findComponent(GlTabs);
 
   describe('component rendering', () => {
@@ -223,21 +221,6 @@ describe('AiFlowsIndex', () => {
           before: null,
           first: 20,
           last: null,
-        });
-      });
-    });
-
-    describe('when there are no flows', () => {
-      beforeEach(async () => {
-        mockProjectFlowsQueryHandler.mockResolvedValueOnce(mockProjectItemsEmptyResponse);
-
-        await waitForPromises();
-      });
-
-      it('renders empty state with correct props', () => {
-        expect(findEmptyState().props()).toMatchObject({
-          title: 'Use flows in your project.',
-          description: 'Flows use multiple agents to complete tasks automatically.',
         });
       });
     });

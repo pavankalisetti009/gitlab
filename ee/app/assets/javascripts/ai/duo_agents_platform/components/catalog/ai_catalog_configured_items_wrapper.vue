@@ -1,5 +1,4 @@
 <script>
-import { GlButton } from '@gitlab/ui';
 import EMPTY_SVG_URL from '@gitlab/svgs/dist/illustrations/empty-state/empty-ai-catalog-md.svg?url';
 import { sprintf } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
@@ -15,15 +14,12 @@ import {
   PAGE_SIZE,
 } from 'ee/ai/catalog/constants';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
-import ResourceListsEmptyState from '~/vue_shared/components/resource_lists/empty_state.vue';
 import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
 import { DISABLE_SUCCESS, DISABLE_ERROR } from 'ee/ai/catalog/messages';
 
 export default {
   name: 'AiCatalogConfiguredItemsWrapper',
   components: {
-    GlButton,
-    ResourceListsEmptyState,
     AiCatalogList,
   },
   mixins: [glFeatureFlagsMixin()],
@@ -206,21 +202,11 @@ export default {
     :disable-confirm-message="disableConfirmMessage"
     :disable-fn="disableItem"
     :page-info="pageInfo"
+    :empty-state-title="emptyStateTitle"
+    :empty-state-description="emptyStateDescription"
+    :empty-state-button-href="emptyStateButtonHref"
+    :empty-state-button-text="emptyStateButtonText"
     @next-page="handleNextPage"
     @prev-page="handlePrevPage"
-  >
-    <template #empty-state>
-      <resource-lists-empty-state
-        :title="emptyStateTitle"
-        :description="emptyStateDescription"
-        :svg-path="$options.EMPTY_SVG_URL"
-      >
-        <template #actions>
-          <gl-button variant="confirm" :href="emptyStateButtonHref">
-            {{ emptyStateButtonText }}
-          </gl-button>
-        </template>
-      </resource-lists-empty-state>
-    </template>
-  </ai-catalog-list>
+  />
 </template>
