@@ -52,6 +52,13 @@ module Security
       finding_uuids.to_set.subset?(security_findings_uuids.to_set)
     end
 
+    def applicable_for_licenses?(violation_licenses)
+      all_violated_components = violation_licenses.values.flatten.compact.to_set
+      dismissed_components = licenses.values.flatten.to_set
+
+      all_violated_components.subset?(dismissed_components)
+    end
+
     def applicable_for_all_violations?
       applicable_for_findings?(mr_violation_finding_uuids)
     end

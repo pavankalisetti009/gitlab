@@ -92,7 +92,7 @@ module Security
 
       return false unless dismissal
 
-      dismissal.applicable_for_findings?(finding_uuids)
+      dismissal.applicable_for_findings?(finding_uuids) && dismissal.applicable_for_licenses?(licenses)
     end
   end
 end
