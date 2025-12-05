@@ -39,6 +39,7 @@ module EE
 
         push_frontend_feature_flag(:duo_ui_next, current_user)
         push_frontend_feature_flag(:duo_agentic_chat_incremental_streaming, current_user)
+        push_frontend_feature_flag(:agentic_chat_ga, current_user)
       end
 
       # Exposes if a licensed feature is available.
