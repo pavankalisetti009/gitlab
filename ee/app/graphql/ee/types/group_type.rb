@@ -490,6 +490,15 @@ module EE
           resolver: ::Resolvers::VirtualRegistries::Packages::Maven::UpstreamsResolver,
           experiment: { milestone: '18.6' }
 
+        field :virtual_registries_container_upstreams,
+          ::Types::VirtualRegistries::Container::UpstreamType.connection_type,
+          null: true,
+          skip_type_authorization: :read_virtual_registry,
+          description: 'Container upstreams registered to the group. ' \
+            'Returns null if the `container_virtual_registry` feature flag is disabled.',
+          resolver: ::Resolvers::VirtualRegistries::Container::UpstreamsResolver,
+          experiment: { milestone: '18.7' }
+
         field :virtual_registries_cleanup_policy,
           ::Types::VirtualRegistries::Cleanup::PolicyType,
           null: true,
