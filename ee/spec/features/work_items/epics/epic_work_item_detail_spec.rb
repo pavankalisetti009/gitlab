@@ -77,7 +77,7 @@ RSpec.describe 'Epic work item detail', :js, feature_category: :team_planning do
 
       it_behaves_like 'work items assignees'
       it_behaves_like 'work items labels', 'group'
-      it_behaves_like 'work items rolled up dates'
+      it_behaves_like 'work items rolled up dates', quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/work_items/14456'
 
       context 'with quarantine', quarantine: {
         issue: [
