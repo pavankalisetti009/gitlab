@@ -76,7 +76,7 @@ export default {
           thClass: 'gl-w-26',
           tdClass: 'gl-text-right',
         },
-      ];
+      ].filter((field) => !field.hide);
     },
     selectedUpstreamId() {
       return this.selectedUpstream?.id ?? null;

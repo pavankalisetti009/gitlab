@@ -197,8 +197,18 @@ describe('MavenUpstreamsTable', () => {
       });
 
       it('hides the table action column', () => {
-        const actionsColumn = findTable().props('fields')[2];
-        expect(actionsColumn.hide).toEqual(true);
+        expect(findTable().props('fields')).toEqual([
+          {
+            key: 'name',
+            label: 'Upstream',
+            tdClass: '@sm/panel:gl-max-w-0',
+          },
+          {
+            key: 'registriesCount',
+            label: 'Used by registries',
+            tdClass: '@sm/panel:gl-w-20 @sm/panel:!gl-leading-32',
+          },
+        ]);
       });
     });
 
