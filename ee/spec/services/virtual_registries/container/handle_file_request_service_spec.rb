@@ -97,11 +97,15 @@ RSpec.describe VirtualRegistries::Container::HandleFileRequestService, :aggregat
           it_behaves_like 'returning a service response success response', action: :workhorse_upload_url
 
           context 'with upstream returning an error' do
+            let(:expected_response) do
+              ::VirtualRegistries::Upstreams::CheckBaseService::ERRORS[:file_not_found_on_upstreams]
+            end
+
             before do
               stub_external_registry_request(status: 404)
             end
 
-            it { is_expected.to eq(described_class::ERRORS[:file_not_found_on_upstreams]) }
+            it { is_expected.to eq(expected_response) }
           end
 
           context 'with upstream head raising an error' do

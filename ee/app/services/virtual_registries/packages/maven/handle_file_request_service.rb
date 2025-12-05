@@ -80,8 +80,8 @@ module VirtualRegistries
         end
 
         def check_registry_upstreams_response
-          ::VirtualRegistries::CheckUpstreamsService.new(
-            registry: registry,
+          ::VirtualRegistries::Upstreams::CheckService.new(
+            upstreams: registry.upstreams,
             params: { path: base_file_path }
           ).execute
         end
