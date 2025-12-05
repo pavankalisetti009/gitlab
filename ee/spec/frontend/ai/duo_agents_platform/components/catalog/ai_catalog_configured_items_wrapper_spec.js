@@ -6,7 +6,6 @@ import waitForPromises from 'helpers/wait_for_promises';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import AiCatalogConfiguredItemsWrapper from 'ee/ai/duo_agents_platform/components/catalog/ai_catalog_configured_items_wrapper.vue';
 import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
-import ResourceListsEmptyState from '~/vue_shared/components/resource_lists/empty_state.vue';
 import aiCatalogConfiguredItemsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_configured_items.query.graphql';
 import deleteAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_item_consumer.mutation.graphql';
 import {
@@ -98,7 +97,6 @@ describe('AiCatalogConfiguredItemsWrapper', () => {
   };
 
   const findAiCatalogList = () => wrapper.findComponent(AiCatalogList);
-  const findEmptyState = () => wrapper.findComponent(ResourceListsEmptyState);
 
   describe('component rendering', () => {
     beforeEach(() => {
@@ -127,14 +125,14 @@ describe('AiCatalogConfiguredItemsWrapper', () => {
         await waitForPromises();
       });
 
-      it('renders empty state with correct props for project', () => {
-        expect(findEmptyState().props()).toMatchObject({
-          title: 'Use flows in your project.',
-          description: 'Flows use multiple agents to complete tasks automatically.',
+      it('passes empty state props for project to catalog list', () => {
+        expect(findAiCatalogList().props()).toMatchObject({
+          emptyStateTitle: 'Use flows in your project.',
+          emptyStateDescription: 'Flows use multiple agents to complete tasks automatically.',
         });
       });
 
-      it('renders empty state with correct props for group', async () => {
+      it('passes empty state props for group to catalog list', async () => {
         const mockGroupId = 2;
         mockConfiguredFlowsQueryHandler.mockResolvedValueOnce(mockConfiguredItemsEmptyResponse);
 
@@ -150,9 +148,9 @@ describe('AiCatalogConfiguredItemsWrapper', () => {
 
         await waitForPromises();
 
-        expect(findEmptyState().props()).toMatchObject({
-          title: 'Use flows in your group.',
-          description: 'Flows use multiple agents to complete tasks automatically.',
+        expect(findAiCatalogList().props()).toMatchObject({
+          emptyStateTitle: 'Use flows in your group.',
+          emptyStateDescription: 'Flows use multiple agents to complete tasks automatically.',
         });
       });
     });
