@@ -18,14 +18,22 @@ module Analytics
 
       def execute
         return feature_unavailable_error unless Gitlab::ClickHouse.enabled_for_analytics?(namespace)
-        return ServiceResponse.success(payload: {}) unless fields.present?
+        return ServiceResponse.success(payload: empty_payload) unless fields.present?
 
-        ServiceResponse.success(payload: usage_data.symbolize_keys!)
+        ServiceResponse.success(payload: success_payload)
       end
 
       private
 
       attr_reader :current_user, :namespace, :from, :to, :fields
+
+      def success_payload
+        usage_data.symbolize_keys!
+      end
+
+      def empty_payload
+        {}
+      end
 
       def fetch_contributions_from_new_table?
         Feature.enabled?(:fetch_contributions_data_from_new_tables, namespace)
@@ -49,6 +57,7 @@ module Analytics
           to: to.to_date.iso8601
         }
       end
+      strong_memoize_attr :placeholders
 
       def usage_data
         new_query = replace_contributors_filter(raw_query)

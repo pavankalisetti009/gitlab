@@ -24836,6 +24836,20 @@ Information about a connected Agent.
 | <a id="agentmetadatapodnamespace"></a>`podNamespace` | [`String`](#string) | Namespace of the pod running the Agent. |
 | <a id="agentmetadataversion"></a>`version` | [`String`](#string) | Agent version tag. |
 
+### `AgentPlatformFlowMetric`
+
+Agent platform aggregated metrics by flow type.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="agentplatformflowmetriccompletionrate"></a>`completionRate` | [`Float`](#float) | Completion rate as a percentage. |
+| <a id="agentplatformflowmetricflowtype"></a>`flowType` | [`String!`](#string) | Type of the flow. |
+| <a id="agentplatformflowmetricmedianexecutiontime"></a>`medianExecutionTime` | [`Float`](#float) | Median flow execution time in seconds. |
+| <a id="agentplatformflowmetricsessionscount"></a>`sessionsCount` | [`Int!`](#int) | Total number of sessions. |
+| <a id="agentplatformflowmetricuserscount"></a>`usersCount` | [`Int!`](#int) | Number of unique users. |
+
 ### `AgentVersionWarning`
 
 Version-related warning for a connected Agent.
@@ -25350,6 +25364,7 @@ Requires ClickHouse. Premium and Ultimate only.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="aimetricsagentplatform"></a>`agentPlatform` | [`agentPlatformMetrics`](#agentplatformmetrics) | Agent platform metrics. |
 | <a id="aimetricscodecontributorscount"></a>`codeContributorsCount` | [`Int`](#int) | Number of code contributors. |
 | <a id="aimetricscodereview"></a>`codeReview` | [`codeReviewMetrics`](#codereviewmetrics) | Code review metrics. |
 | <a id="aimetricscodesuggestionsacceptedcount"></a>`codeSuggestionsAcceptedCount` {{< icon name="warning-solid" >}} | [`Int`](#int) | **Deprecated** in GitLab 18.0. moved to codeSuggestions field. |
@@ -49715,6 +49730,16 @@ X.509 signature for a signed commit.
 | <a id="x509signatureuser"></a>`user` | [`UserCore`](#usercore) | User associated with the key. |
 | <a id="x509signatureverificationstatus"></a>`verificationStatus` | [`VerificationStatus`](#verificationstatus) | Indicates verification status of the associated key or certificate. |
 | <a id="x509signaturex509certificate"></a>`x509Certificate` | [`X509Certificate`](#x509certificate) | Certificate used for the signature. |
+
+### `agentPlatformMetrics`
+
+Requires ClickHouse. Premium and Ultimate only.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="agentplatformmetricsflowmetrics"></a>`flowMetrics` | [`[AgentPlatformFlowMetric!]`](#agentplatformflowmetric) | Aggregated flow metrics for agent platform. |
 
 ### `agentPlatformUserMetrics`
 
