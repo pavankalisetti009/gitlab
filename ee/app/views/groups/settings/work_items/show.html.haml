@@ -1,5 +1,5 @@
 - add_page_specific_style 'page_bundles/work_item_settings'
-- title = s_("WorkItem|Issues settings")
+- title = @group.work_items_consolidated_list_enabled?(current_user) ? s_("WorkItem|Work items settings") : s_("WorkItem|Issues settings")
 - request_path_params = request.path_parameters.values.last
 
 - if request_path_params === 'lifecycle/issue' || request_path_params === 'lifecycle/task'
@@ -7,7 +7,6 @@
   - breadcrumb_title sprintf(s_('WorkItem|Change lifecycle: %{workItemType}'), { workItemType: request_path_params.split("/").last.capitalize })
   - page_title s_("WorkItem|Change lifecycle"), @group.name, _("Groups")
 - else
-  - title = s_("WorkItem|Issues settings")
   - breadcrumb_title title
   - page_title title
 

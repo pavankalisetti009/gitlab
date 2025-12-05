@@ -417,6 +417,34 @@ RSpec.describe Sidebars::Groups::Menus::SettingsMenu, feature_category: :navigat
 
         it { expect(issues_menu).not_to be_present }
       end
+
+      context 'when menu is visible' do
+        let(:user) { owner }
+
+        before do
+          stub_licensed_features(custom_fields: true, work_item_status: true)
+        end
+
+        context 'when work_items_consolidated_list is enabled' do
+          before do
+            stub_feature_flags(work_item_planning_view: true)
+          end
+
+          it 'displays "Work items" title' do
+            expect(issues_menu.title).to eq('Work items')
+          end
+        end
+
+        context 'when work_items_consolidated_list is disabled' do
+          before do
+            stub_feature_flags(work_item_planning_view: false)
+          end
+
+          it 'displays "Issues" title' do
+            expect(issues_menu.title).to eq('Issues')
+          end
+        end
+      end
     end
 
     describe 'Custom Roles' do

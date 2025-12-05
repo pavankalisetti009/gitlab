@@ -1,4 +1,5 @@
 <script>
+import { __ } from '~/locale';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import SearchSettings from '~/search_settings/components/search_settings.vue';
 import CustomFieldsList from './custom_fields/custom_fields_list.vue';
@@ -34,8 +35,14 @@ export default {
     };
   },
   computed: {
+    isPlanningViewsEnabled() {
+      return this.glFeatures.workItemPlanningView;
+    },
     workItemConfigurableTypesEnabled() {
       return this.glFeatures.workItemConfigurableTypes;
+    },
+    pageTitle() {
+      return this.isPlanningViewsEnabled ? __('Work items') : __('Issues');
     },
   },
   mounted() {
@@ -89,7 +96,7 @@ export default {
       @collapse="onSearchCollapse"
     />
     <h1 class="settings-title gl-heading-1 gl-mb-1">
-      {{ __('Issues') }}
+      {{ pageTitle }}
     </h1>
     <p class="gl-text-subtle">
       {{
