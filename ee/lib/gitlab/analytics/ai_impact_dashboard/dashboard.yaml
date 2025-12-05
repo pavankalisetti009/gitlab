@@ -3,14 +3,14 @@ title: GitLab Duo and SDLC trends
 description: Visualize Duo usage and development trends side-by-side.
 version: "2"
 panels:
-  - title: "Assigned Duo seat engagement"
+  - title: "Assigned GitLab Duo seat engagement"
     visualization: duo_usage_rate_over_time
     gridAttributes:
       yPos: 0
       xPos: 0
       width: 3
       height: 1
-  - title: "Code Suggestions usage"
+  - title: "GitLab Duo Code Suggestions usage"
     visualization: code_suggestions_usage_rate_over_time
     gridAttributes:
       yPos: 0
@@ -18,7 +18,7 @@ panels:
       width: 3
       height: 1
     options: {}
-  - title: "Code Suggestions acceptance rate"
+  - title: "GitLab Duo Code Suggestions acceptance rate"
     visualization: code_suggestions_acceptance_rate_over_time
     gridAttributes:
       yPos: 0
@@ -26,7 +26,7 @@ panels:
       width: 3
       height: 1
     options: {}
-  - title: "Duo Chat usage"
+  - title: "GitLab Duo Chat usage"
     visualization: duo_chat_usage_rate_over_time
     gridAttributes:
       yPos: 0
@@ -34,7 +34,7 @@ panels:
       width: 3
       height: 1
     options: {}
-  - title: 'Code Suggestions acceptance rate by language (Last 30 days)'
+  - title: 'GitLab Duo Code Suggestions acceptance rate by language (Last 30 days)'
     visualization: code_suggestions_acceptance_rate_by_language_chart
     gridAttributes:
       yPos: 1
@@ -58,7 +58,7 @@ panels:
       width: 12
       height: 4
     options: {}
-  - title: 'Duo usage metrics for the %{namespaceName} %{namespaceType}'
+  - title: 'GitLab Duo usage metrics for the %{namespaceName} %{namespaceType}'
     visualization: ai_impact_ai_metrics_table
     gridAttributes:
       yPos: 9
@@ -82,21 +82,21 @@ panels:
       width: 12
       height: 3
     options: {}
-  - title: 'Duo Code Suggestions usage by user (Last 30 days)'
+  - title: 'GitLab Duo Code Suggestions usage by user (Last 30 days)'
     visualization: duo_code_suggestions_by_user
     gridAttributes:
       yPos: 19
       xPos: 0
       width: 6
       height: 4
-  - title: 'Duo Code Review usage by user (Last 30 days)'
+  - title: 'GitLab Duo Code Review usage by user (Last 30 days)'
     visualization: duo_code_review_usage_by_user
     gridAttributes:
       yPos: 19
       xPos: 6
       width: 6
       height: 4
-  - title: 'Duo Root Cause Analysis usage by user (Last 30 days)'
+  - title: 'GitLab Duo Root Cause Analysis usage by user (Last 30 days)'
     visualization: duo_rca_usage_by_user
     gridAttributes:
       yPos: 23

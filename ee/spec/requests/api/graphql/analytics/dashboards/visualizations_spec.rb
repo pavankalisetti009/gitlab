@@ -65,19 +65,19 @@ RSpec.describe 'Query.project(id).dashboards.panels(id).visualization', feature_
       end
 
       where(:node_idx, :panel_type, :panel_title) do
-        0 | 'SingleStat' | 'Assigned Duo seat engagement'
-        1 | 'SingleStat' | 'Code Suggestions usage'
-        2 | 'SingleStat' | 'Code Suggestions acceptance rate'
-        3 | 'SingleStat' | 'Duo Chat usage'
-        4 | 'BarChart' | 'Code Suggestions acceptance rate by language (Last 30 days)'
+        0 | 'SingleStat' | 'Assigned GitLab Duo seat engagement'
+        1 | 'SingleStat' | 'GitLab Duo Code Suggestions usage'
+        2 | 'SingleStat' | 'GitLab Duo Code Suggestions acceptance rate'
+        3 | 'SingleStat' | 'GitLab Duo Chat usage'
+        4 | 'BarChart' | 'GitLab Duo Code Suggestions acceptance rate by language (Last 30 days)'
         5 | 'AreaChart' | 'Code generation volume trends (Last 180 days)'
         6 | 'StackedColumnChart' | 'GitLab Duo Code Review requests by role (Last 180 days)'
-        7 | 'AiImpactTable' | 'Duo usage metrics for the %{namespaceName} %{namespaceType}'
+        7 | 'AiImpactTable' | 'GitLab Duo usage metrics for the %{namespaceName} %{namespaceType}'
         8 | 'AiImpactTable' | 'Development metrics for the %{namespaceName} %{namespaceType}'
         9 | 'AiImpactTable' | 'Pipeline metrics for the %{namespaceName} %{namespaceType}'
-        10 | 'DataTable' | 'Duo Code Suggestions usage by user (Last 30 days)'
-        11 | 'DataTable' | 'Duo Code Review usage by user (Last 30 days)'
-        12 | 'DataTable' | 'Duo Root Cause Analysis usage by user (Last 30 days)'
+        10 | 'DataTable' | 'GitLab Duo Code Suggestions usage by user (Last 30 days)'
+        11 | 'DataTable' | 'GitLab Duo Code Review usage by user (Last 30 days)'
+        12 | 'DataTable' | 'GitLab Duo Root Cause Analysis usage by user (Last 30 days)'
       end
 
       with_them do
