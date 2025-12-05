@@ -2,8 +2,8 @@
 
 module SecretsManagement
   module ProjectSecretsPermissions
-    class UpdateService < ProjectBaseService
-      include SecretsPermissions::UpdateServiceHelpers
+    class DeleteService < ProjectBaseService
+      include SecretsPermissions::DeleteServiceHelpers
 
       private
 
@@ -13,10 +13,6 @@ module SecretsManagement
 
       def client
         project_secrets_manager_client
-      end
-
-      def permission_class
-        SecretsManagement::ProjectSecretsPermission
       end
     end
   end

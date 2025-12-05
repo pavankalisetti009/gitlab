@@ -8,6 +8,7 @@ module Mutations
 
         include ResolvesGroup
         include Helpers::ErrorMessagesHelpers
+        include ::SecretsManagement::MutationErrorHandling
 
         authorize :configure_group_secrets_permission
 

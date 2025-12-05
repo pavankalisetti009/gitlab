@@ -2,8 +2,8 @@
 
 module SecretsManagement
   module GroupSecretsPermissions
-    class UpdateService < GroupBaseService
-      include SecretsPermissions::UpdateServiceHelpers
+    class ListService < GroupBaseService
+      include SecretsPermissions::ListServiceHelpers
 
       private
 

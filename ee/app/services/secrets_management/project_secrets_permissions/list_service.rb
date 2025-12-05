@@ -2,8 +2,8 @@
 
 module SecretsManagement
   module ProjectSecretsPermissions
-    class UpdateService < ProjectBaseService
-      include SecretsPermissions::UpdateServiceHelpers
+    class ListService < ProjectBaseService
+      include SecretsPermissions::ListServiceHelpers
 
       private
 

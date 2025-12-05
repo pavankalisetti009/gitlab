@@ -1,37 +1,34 @@
 # frozen_string_literal: true
 
 module SecretsManagement
-  module Permissions
-    class DeleteService < ProjectBaseService
-      include Helpers::ExclusiveLeaseHelper
+  module SecretsPermissions
+    module DeleteServiceHelpers
+      extend ActiveSupport::Concern
 
       def execute(principal:)
-        with_exclusive_lease_for(project) do
+        with_exclusive_lease_for(resource) do
           execute_delete_permission(principal: principal)
         end
       end
 
       private
 
-      def execute_delete_permission(principal:)
-        secrets_manager = project.secrets_manager
-        return secrets_manager_inactive_response unless secrets_manager&.active?
+      delegate :secrets_manager, to: :resource
 
+      def execute_delete_permission(principal:)
+        return secrets_manager_inactive_response unless secrets_manager&.active?
         return invalid_principal_response unless valid_principal?(principal)
 
-        secret_permission = secrets_manager.policy_name_for_principal(
+        secrets_permission = secrets_manager.policy_name_for_principal(
           principal_type: principal[:type],
           principal_id: principal[:id])
 
-        delete_permission(secret_permission)
+        delete_permission(secrets_permission)
       end
 
-      def delete_permission(secret_permission)
-        project_secrets_manager_client.delete_policy(secret_permission)
-        ServiceResponse.success(payload: { secret_permission: nil })
-      rescue SecretsManagement::SecretsManagerClient::ConnectionError => e
-        ServiceResponse.error(message: "Failed to delete permission: #{e.message}",
-          payload: { secret_permission: nil })
+      def delete_permission(secrets_permission)
+        client.delete_policy(secrets_permission)
+        ServiceResponse.success(payload: { secrets_permission: nil })
       end
 
       def valid_principal?(principal)

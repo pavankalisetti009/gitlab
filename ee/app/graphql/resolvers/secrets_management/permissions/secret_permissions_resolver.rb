@@ -8,7 +8,7 @@ module Resolvers
         include ResolvesProject
         include ::SecretsManagement::ResolverErrorHandling
 
-        type [::Types::SecretsManagement::ProjectSecretsPermissionType], null: true
+        type [::Types::SecretsManagement::Permissions::SecretPermissionType], null: true
 
         argument :project_path, GraphQL::Types::ID,
           required: true,
@@ -19,7 +19,7 @@ module Resolvers
         def resolve(project_path:)
           project = authorized_find!(project_path: project_path)
 
-          result = ::SecretsManagement::Permissions::ListService.new(
+          result = ::SecretsManagement::ProjectSecretsPermissions::ListService.new(
             project,
             current_user
           ).execute
