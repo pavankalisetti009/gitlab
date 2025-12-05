@@ -499,6 +499,73 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Rest, feature_category: :sub
           end
         end
       end
+
+      describe 'caching', :use_clean_rails_memory_store_caching do
+        let(:response) { Net::HTTPSuccess.new(1.0, '201', 'OK') }
+
+        before do
+          allow(Gitlab::HTTP).to receive(http_method).and_return(gitlab_http_response)
+          Rails.cache.clear
+        end
+
+        it 'caches the response for 1 hour' do
+          # \b[a-f0-9]{64}\b regex for output of Digest::SHA256.hexdigest
+          expect(Rails.cache).to receive(:fetch).with(
+            including(/usage_quota_dot_query:\b[a-f0-9]{64}\b/),
+            expires_in: 1.hour
+          ).and_call_original
+
+          verify_usage_quota_request
+        end
+
+        it 'uses cached response on subsequent calls' do
+          client.verify_usage_quota(**method_params)
+          client.verify_usage_quota(**method_params)
+
+          expect(Gitlab::HTTP).to have_received(http_method).once
+        end
+
+        it 'generates different cache keys for different user' do
+          client.verify_usage_quota(user_id: 1, root_namespace_id: 2, unique_instance_id: 3)
+          client.verify_usage_quota(user_id: 4, root_namespace_id: 2, unique_instance_id: 3)
+
+          expect(Gitlab::HTTP).to have_received(http_method).twice
+        end
+
+        it 'generates different cache keys for different namespace' do
+          client.verify_usage_quota(user_id: 1, root_namespace_id: 2, unique_instance_id: 3)
+          client.verify_usage_quota(user_id: 1, root_namespace_id: 4, unique_instance_id: 3)
+
+          expect(Gitlab::HTTP).to have_received(http_method).twice
+        end
+
+        it 'generates different cache keys for different instance' do
+          client.verify_usage_quota(user_id: 1, root_namespace_id: 2, unique_instance_id: 3)
+          client.verify_usage_quota(user_id: 1, root_namespace_id: 2, unique_instance_id: 4)
+
+          expect(Gitlab::HTTP).to have_received(http_method).twice
+        end
+
+        context 'when using mock endpoint' do
+          before do
+            stub_feature_flags(use_mock_dot_api_for_usage_quota: true)
+            stub_rails_env('development')
+          end
+
+          it 'does not cache the response' do
+            expect(Rails.cache).not_to receive(:fetch)
+
+            verify_usage_quota_request
+          end
+
+          it 'makes HTTP request on every call' do
+            client.verify_usage_quota(**method_params)
+            client.verify_usage_quota(**method_params)
+
+            expect(Gitlab::HTTP).to have_received(http_method).twice
+          end
+        end
+      end
     end
   end
 end
