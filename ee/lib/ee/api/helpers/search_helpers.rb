@@ -21,7 +21,7 @@ module EE
 
           override :search_param_keys
           def search_param_keys
-            [*super, :fields, :exclude_forks]
+            [*super, :fields]
           end
         end
       end
