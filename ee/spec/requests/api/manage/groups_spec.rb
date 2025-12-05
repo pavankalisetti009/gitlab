@@ -980,6 +980,8 @@ RSpec.describe API::Manage::Groups, :aggregate_failures, feature_category: :syst
         end
 
         it 'avoids N+1 queries' do
+          create(:personal_key, user: user)
+
           dpop_header_val = dpop_headers_for(current_user)
           control = ActiveRecord::QueryRecorder.new(skip_cached: false) do
             get(api(path, personal_access_token: personal_access_token), headers: dpop_header_val)
