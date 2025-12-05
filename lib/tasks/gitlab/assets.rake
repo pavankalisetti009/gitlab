@@ -63,9 +63,7 @@ namespace :gitlab do
         abort Rainbow('Unable to find Sidekiq in Gemfile!').red unless sidekiq_spec
 
         ENV['SIDEKIQ_ASSETS_SRC_PATH'] = File.join(sidekiq_spec.full_gem_path, "web", "assets")
-        # When we upgrade Sidekiq, we want to make sure we don't load stale assets, so
-        # use the version number in the directory path.
-        ENV['SIDEKIQ_ASSETS_DEST_PATH'] = File.join(AssetsSha::PUBLIC_ASSETS_DIR, "sidekiq", Sidekiq::VERSION)
+        ENV['SIDEKIQ_ASSETS_DEST_PATH'] = File.join(AssetsSha::PUBLIC_ASSETS_DIR, "sidekiq")
 
         unless system(cmd)
           puts Rainbow('Error: Unable to compile webpack production bundle.').red
