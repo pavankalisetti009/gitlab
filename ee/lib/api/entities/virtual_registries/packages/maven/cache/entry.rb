@@ -8,7 +8,7 @@ module API
           module Cache
             class Entry < Grape::Entity
               expose :id do |cache_entry, _options|
-                Base64.urlsafe_encode64("#{cache_entry.upstream_id} #{cache_entry.relative_path}")
+                cache_entry.generate_id
               end
 
               expose :group_id,

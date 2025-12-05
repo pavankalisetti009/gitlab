@@ -9,6 +9,7 @@ RSpec.describe 'Querying a maven upstream registry', feature_category: :virtual_
   let_it_be(:group) { create(:group, :private) }
   let_it_be(:registry) { create(:virtual_registries_packages_maven_registry, group: group, name: 'test registry') }
   let_it_be(:upstream) { create(:virtual_registries_packages_maven_upstream, registries: [registry]) }
+  let_it_be(:cache_entries) { create_list(:virtual_registries_packages_maven_cache_entry, 5, upstream:) }
 
   let(:global_id) { upstream.to_gid }
   let(:query) do
@@ -22,6 +23,12 @@ RSpec.describe 'Querying a maven upstream registry', feature_category: :virtual_
             id
             registry {
               name
+            }
+          }
+          cacheEntries {
+            count
+            nodes {
+              id
             }
           }
         }
@@ -74,6 +81,11 @@ RSpec.describe 'Querying a maven upstream registry', feature_category: :virtual_
 
         it 'returns registries for the virtualRegistriesPackagesMavenUpstream field' do
           expect(maven_upstream_response['registryUpstreams'][0]['registry']['name']).to eq('test registry')
+        end
+
+        it 'returns cache entries and count for the virtualRegistriesPackagesMavenUpstream field' do
+          expect(maven_upstream_response['cacheEntries']['count']).to eq(5)
+          expect(maven_upstream_response['cacheEntries']['nodes'][0]['id']).to eq(cache_entries.last.generate_id)
         end
 
         context 'when multiple registries exist' do

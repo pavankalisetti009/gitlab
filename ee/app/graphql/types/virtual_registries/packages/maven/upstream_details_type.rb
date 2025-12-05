@@ -15,6 +15,13 @@ module Types
             description: 'Represents the upstream registry for the upstream ' \
               'which contains the position data.',
             experiment: { milestone: '18.2' }
+
+          field :cache_entries,
+            ::Types::VirtualRegistries::Packages::Maven::Cache::EntryType.connection_type,
+            null: true,
+            description: 'Represents cache entries for the upstream.',
+            resolver: ::Resolvers::VirtualRegistries::Packages::Maven::Cache::EntriesResolver,
+            experiment: { milestone: '18.7' }
         end
         # rubocop: enable Graphql/AuthorizeTypes
       end

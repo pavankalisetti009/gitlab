@@ -87,6 +87,10 @@ module VirtualRegistries
             raise
           end
 
+          def generate_id
+            Base64.urlsafe_encode64("#{upstream_id} #{relative_path}")
+          end
+
           def filename
             return unless relative_path
 
