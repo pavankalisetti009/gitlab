@@ -9,6 +9,7 @@ import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import AiCatalogFlowsShow from 'ee/ai/catalog/pages/ai_catalog_flows_show.vue';
 import AiCatalogItemActions from 'ee/ai/catalog/components/ai_catalog_item_actions.vue';
 import AiCatalogItemView from 'ee/ai/catalog/components/ai_catalog_item_view.vue';
+import FoundationalIcon from 'ee/ai/components/foundational_icon.vue';
 import { TRACK_EVENT_TYPE_FLOW, TRACK_EVENT_VIEW_AI_CATALOG_ITEM } from 'ee/ai/catalog/constants';
 import aiCatalogFlowQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_flow.query.graphql';
 import createAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/create_ai_catalog_item_consumer.mutation.graphql';
@@ -110,6 +111,7 @@ describe('AiCatalogFlowsShow', () => {
   const findErrorsAlert = () => wrapper.findComponent(ErrorsAlert);
   const findItemActions = () => wrapper.findComponent(AiCatalogItemActions);
   const findItemView = () => wrapper.findComponent(AiCatalogItemView);
+  const findFoundationalIcon = () => wrapper.findComponent(FoundationalIcon);
 
   beforeEach(() => {
     createComponent();
@@ -128,6 +130,35 @@ describe('AiCatalogFlowsShow', () => {
       ...mockFlow,
       configurationForProject: mockFlowConfigurationForProject,
       configurationForGroup: mockItemConfigurationForGroup,
+    });
+  });
+
+  describe('foundational flow', () => {
+    describe('when flow is foundational', () => {
+      beforeEach(() => {
+        createComponent({
+          props: {
+            aiCatalogFlow: {
+              ...mockFlow,
+              foundational: true,
+              configurationForProject: mockFlowConfigurationForProject,
+            },
+          },
+        });
+      });
+
+      it('renders foundational icon with correct resource-id and itemType', () => {
+        const foundationalIcon = findFoundationalIcon();
+
+        expect(foundationalIcon.props('resourceId')).toBe(mockFlow.id);
+        expect(foundationalIcon.props('itemType')).toBe(mockFlow.itemType);
+      });
+    });
+
+    describe('when flow is not foundational', () => {
+      it('does not render foundational icon', () => {
+        expect(findFoundationalIcon().exists()).toBe(false);
+      });
     });
   });
 

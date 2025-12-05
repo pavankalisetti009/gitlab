@@ -1,12 +1,14 @@
 import { shallowMount } from '@vue/test-utils';
 import { GlIcon, GlPopover, GlLink, GlSprintf } from '@gitlab/ui';
 import FoundationalIcon from 'ee/ai/components/foundational_icon.vue';
+import { AI_CATALOG_TYPE_AGENT, AI_CATALOG_TYPE_FLOW } from 'ee/ai/catalog/constants';
 
 describe('FoundationalIcon', () => {
   let wrapper;
 
   const defaultProps = {
     resourceId: 'gid://gitlab/Ai::Catalog::Item/1',
+    itemType: AI_CATALOG_TYPE_AGENT,
   };
 
   const createComponent = (props = {}) => {
@@ -58,15 +60,40 @@ describe('FoundationalIcon', () => {
       );
     });
 
-    it('renders help page link', () => {
-      const link = findLink();
+    describe('when itemType is AGENT', () => {
+      beforeEach(() => {
+        createComponent({ itemType: AI_CATALOG_TYPE_AGENT });
+      });
 
-      expect(link.exists()).toBe(true);
-      expect(link.props('href')).toBe(
-        '/help/user/duo_agent_platform/agents/foundational_agents/_index.md',
-      );
-      expect(link.props('target')).toBe('_blank');
-      expect(link.text()).toBe('Learn more about foundational agents');
+      it('renders help page link', () => {
+        const link = findLink();
+
+        expect(link.props('href')).toBe(
+          '/help/user/duo_agent_platform/agents/foundational_agents/_index.md',
+        );
+        expect(link.text()).toBe('Learn more about foundational agents');
+      });
+    });
+
+    describe('when itemType is FLOW', () => {
+      beforeEach(() => {
+        createComponent({ itemType: AI_CATALOG_TYPE_FLOW });
+      });
+
+      it('renders help page link', () => {
+        const link = findLink();
+
+        expect(link.props('href')).toBe(
+          '/help/user/duo_agent_platform/flows/foundational_flows/_index.md',
+        );
+        expect(link.text()).toBe('Learn more about foundational flows');
+      });
+    });
+
+    it('does not render link when itemType is invalid', () => {
+      createComponent({ itemType: 'INVALID_TYPE' });
+
+      expect(findLink().exists()).toBe(false);
     });
   });
 });

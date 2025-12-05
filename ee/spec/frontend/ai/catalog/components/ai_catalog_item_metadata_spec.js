@@ -2,7 +2,7 @@ import { GlIcon } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { stubComponent } from 'helpers/stub_component';
 import AiCatalogItemMetadata from 'ee/ai/catalog/components/ai_catalog_item_metadata.vue';
-import { mockAgent, mockAgentPinnedVersion } from '../mock_data';
+import { mockAgent, mockAgentPinnedVersion, mockFlow } from '../mock_data';
 
 describe('AiCatalogItemMetadata', () => {
   let wrapper;
@@ -81,20 +81,39 @@ describe('AiCatalogItemMetadata', () => {
     });
   });
 
-  describe('foundational agent metadata', () => {
-    beforeEach(() => {
-      createComponent({
-        item: {
-          ...mockAgent,
-          foundational: true,
-        },
+  describe('foundational field', () => {
+    describe('when item is a foundational agent', () => {
+      beforeEach(() => {
+        createComponent({
+          item: {
+            ...mockAgent,
+            foundational: true,
+          },
+        });
+      });
+
+      it('displays "Foundational agent" text', () => {
+        const foundational = findFoundationalItem();
+        expect(foundational.text()).toContain('Foundational agent');
+        expect(foundational.findComponent(GlIcon).props('name')).toBe('tanuki-verified');
       });
     });
 
-    it('displays foundational metadata when item is foundational', () => {
-      const foundational = findFoundationalItem();
-      expect(foundational.text()).toContain('Foundational agent');
-      expect(foundational.findComponent(GlIcon).props('name')).toBe('tanuki-verified');
+    describe('when item is a foundational flow', () => {
+      beforeEach(() => {
+        createComponent({
+          item: {
+            ...mockFlow,
+            foundational: true,
+          },
+        });
+      });
+
+      it('displays "Foundational flow" text', () => {
+        const foundational = findFoundationalItem();
+        expect(foundational.text()).toContain('Foundational flow');
+        expect(foundational.findComponent(GlIcon).props('name')).toBe('tanuki-verified');
+      });
     });
 
     it('does not display foundational metadata when item is not foundational', () => {

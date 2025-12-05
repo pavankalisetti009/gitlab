@@ -1,12 +1,22 @@
 <script>
 import { GlIcon, GlPopover, GlSprintf, GlTooltipDirective, GlLink } from '@gitlab/ui';
+import { s__ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
+import { AI_CATALOG_TYPE_AGENT, AI_CATALOG_TYPE_FLOW } from 'ee/ai/catalog/constants';
+
+const FOUNDATIONAL_ITEM_HELP_ATTRIBUTES = {
+  [AI_CATALOG_TYPE_AGENT]: {
+    path: helpPagePath('user/duo_agent_platform/agents/foundational_agents/_index.md'),
+    text: s__('AICatalog|Learn more about foundational agents'),
+  },
+  [AI_CATALOG_TYPE_FLOW]: {
+    path: helpPagePath('user/duo_agent_platform/flows/foundational_flows/_index.md'),
+    text: s__('AICatalog|Learn more about foundational flows'),
+  },
+};
 
 export default {
   name: 'FoundationalIcon',
-  foundationalAgentsHelpPagePath: helpPagePath(
-    'user/duo_agent_platform/agents/foundational_agents/_index.md',
-  ),
   components: {
     GlIcon,
     GlPopover,
@@ -21,6 +31,11 @@ export default {
       type: String,
       required: true,
     },
+    itemType: {
+      type: String,
+      required: false,
+      default: AI_CATALOG_TYPE_AGENT,
+    },
     size: {
       type: Number,
       required: false,
@@ -30,6 +45,12 @@ export default {
   computed: {
     popoverTarget() {
       return `${this.resourceId}-foundational-icon`;
+    },
+    helpPagePath() {
+      return FOUNDATIONAL_ITEM_HELP_ATTRIBUTES[this.itemType]?.path;
+    },
+    helpLinkText() {
+      return FOUNDATIONAL_ITEM_HELP_ATTRIBUTES[this.itemType]?.text;
     },
   },
 };
@@ -57,8 +78,8 @@ export default {
             </template>
           </gl-sprintf>
         </span>
-        <gl-link :href="$options.foundationalAgentsHelpPagePath" target="_blank">
-          {{ s__('AICatalog|Learn more about foundational agents') }}
+        <gl-link v-if="helpPagePath" :href="helpPagePath">
+          {{ helpLinkText }}
         </gl-link>
       </div>
     </gl-popover>

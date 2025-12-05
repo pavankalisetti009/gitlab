@@ -4,6 +4,7 @@ import { __, s__ } from '~/locale';
 import timeagoMixin from '~/vue_shared/mixins/timeago';
 import { formatDate } from '~/lib/utils/datetime/date_format_utility';
 import { getLatestUpdatedAt } from 'ee/ai/catalog/utils';
+import { AI_CATALOG_TYPE_FLOW } from '../constants';
 
 export default {
   name: 'AiCatalogItemMetadata',
@@ -36,8 +37,13 @@ export default {
       ];
 
       if (this.item.foundational) {
+        const foundationalText =
+          this.item.itemType === AI_CATALOG_TYPE_FLOW
+            ? s__('AICatalog|Foundational flow')
+            : s__('AICatalog|Foundational agent');
+
         items.push({
-          text: s__('AICatalog|Foundational agent'),
+          text: foundationalText,
           icon: 'tanuki-verified',
           value: '',
           testId: 'foundational',

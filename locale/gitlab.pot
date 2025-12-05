@@ -2820,6 +2820,9 @@ msgstr ""
 msgid "AICatalog|Foundational agent"
 msgstr ""
 
+msgid "AICatalog|Foundational flow"
+msgstr ""
+
 msgid "AICatalog|Frequently failing or nuisance activity."
 msgstr ""
 
@@ -2848,6 +2851,9 @@ msgid "AICatalog|Is visible to all users."
 msgstr ""
 
 msgid "AICatalog|Learn more about foundational agents"
+msgstr ""
+
+msgid "AICatalog|Learn more about foundational flows"
 msgstr ""
 
 msgid "AICatalog|Manage agent settings."
