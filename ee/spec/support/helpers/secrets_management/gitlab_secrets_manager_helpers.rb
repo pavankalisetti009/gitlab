@@ -184,6 +184,23 @@ module SecretsManagement
       secrets_permission
     end
 
+    def update_group_secrets_permission(user:, group:, principal:, permissions:, expired_at: nil)
+      result = SecretsManagement::GroupSecretsPermissions::UpdateService.new(group, user).execute(
+        principal_id: principal[:id],
+        principal_type: principal[:type],
+        permissions: permissions,
+        expired_at: expired_at
+      )
+
+      secret_permission = result.payload[:secrets_permission]
+
+      if secret_permission.errors.any?
+        raise "secret permission creation failed with errors: #{secret_permission.errors.full_messages.to_sentence}"
+      end
+
+      secret_permission
+    end
+
     def secret_rotation_info_for_project_secret(project, name, version = 1)
       SecretRotationInfo.for_project_secret(project, name, version)
     end

@@ -1199,6 +1199,7 @@ module EE
 
       rule { can?(:maintainer_access) }.policy do
         enable :read_group_secrets_manager
+        enable :read_group_secrets_permission
       end
     end
 

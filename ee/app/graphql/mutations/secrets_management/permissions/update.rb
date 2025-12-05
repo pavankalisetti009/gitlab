@@ -27,7 +27,7 @@ module Mutations
         argument :expired_at, GraphQL::Types::ISO8601Date, required: false,
           description: "Expiration date for Secret Permission (optional)."
 
-        field :secret_permission, Types::SecretsManagement::ProjectSecretsPermissionType,
+        field :secret_permission, Types::SecretsManagement::Permissions::SecretPermissionType,
           null: true,
           description: 'Secret Permission that was created.'
 

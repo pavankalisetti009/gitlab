@@ -1,22 +1,26 @@
 # frozen_string_literal: true
 
 module SecretsManagement
-  module Permissions
-    class ListService < ProjectBaseService
-      def execute
-        return secrets_manager_inactive_response unless project.secrets_manager&.active?
+  module SecretsPermissions
+    module ListServiceHelpers
+      extend ActiveSupport::Concern
 
-        secret_permissions = list_secret_permissions(project)
+      def execute
+        return secrets_manager_inactive_response unless resource.secrets_manager&.active?
+
+        secret_permissions = list_secret_permissions(resource)
 
         ServiceResponse.success(payload: { secret_permissions: secret_permissions })
       end
 
       private
 
-      def list_secret_permissions(project)
+      delegate :secrets_manager, to: :resource
+
+      def list_secret_permissions(resource)
         permissions = []
 
-        project_secrets_manager_client.list_policies(type: :users) do |policy_data|
+        client.list_policies(type: :users) do |policy_data|
           policy_name = policy_data["key"]
           policy = policy_data["metadata"]
 
@@ -42,8 +46,8 @@ module SecretsManagement
           end
 
           # Create the permission object
-          permissions << SecretsManagement::ProjectSecretsPermission.new(
-            resource: project,
+          permissions << permission_class.new(
+            resource: resource,
             principal_type: principal_type,
             principal_id: principal_id,
             granted_by: granted_by,

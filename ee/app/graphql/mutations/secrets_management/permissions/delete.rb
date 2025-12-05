@@ -7,6 +7,7 @@ module Mutations
         graphql_name 'SecretPermissionDelete'
 
         include ResolvesProject
+        include ::SecretsManagement::MutationErrorHandling
 
         authorize :admin_project_secrets_manager
 
@@ -18,7 +19,7 @@ module Mutations
           required: true,
           description: 'Whose permission to be deleted.'
 
-        field :secret_permission, Types::SecretsManagement::ProjectSecretsPermissionType,
+        field :secret_permission, Types::SecretsManagement::Permissions::SecretPermissionType,
           null: true,
           description: 'Deleted Secret Permission.'
 
@@ -29,7 +30,7 @@ module Mutations
             raise_resource_not_available_error!("`secrets_manager` feature flag is disabled.")
           end
 
-          result = ::SecretsManagement::Permissions::DeleteService
+          result = ::SecretsManagement::ProjectSecretsPermissions::DeleteService
             .new(project, current_user)
             .execute(principal: principal)
 
