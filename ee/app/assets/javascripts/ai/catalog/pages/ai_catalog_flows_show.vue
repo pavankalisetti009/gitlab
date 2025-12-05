@@ -16,6 +16,7 @@ import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import { prerequisitesError } from '../utils';
 import AiCatalogItemActions from '../components/ai_catalog_item_actions.vue';
 import AiCatalogItemView from '../components/ai_catalog_item_view.vue';
+import aiCatalogFlowQuery from '../graphql/queries/ai_catalog_flow.query.graphql';
 import createAiCatalogItemConsumer from '../graphql/mutations/create_ai_catalog_item_consumer.mutation.graphql';
 import reportAiCatalogItem from '../graphql/mutations/report_ai_catalog_item.mutation.graphql';
 import deleteAiCatalogItemConsumer from '../graphql/mutations/delete_ai_catalog_item_consumer.mutation.graphql';
@@ -84,6 +85,7 @@ export default {
       const input = {
         itemId: this.aiCatalogFlow.id,
         target,
+        parentItemConsumerId: this.aiCatalogFlow.configurationForGroup?.id,
       };
       const targetType = target.groupId
         ? AI_CATALOG_CONSUMER_TYPE_GROUP
@@ -96,6 +98,7 @@ export default {
           variables: {
             input,
           },
+          refetchQueries: [aiCatalogFlowQuery],
         });
 
         if (data) {

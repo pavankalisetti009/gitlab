@@ -10,11 +10,17 @@ import AiCatalogFlowsShow from 'ee/ai/catalog/pages/ai_catalog_flows_show.vue';
 import AiCatalogItemActions from 'ee/ai/catalog/components/ai_catalog_item_actions.vue';
 import AiCatalogItemView from 'ee/ai/catalog/components/ai_catalog_item_view.vue';
 import { TRACK_EVENT_TYPE_FLOW, TRACK_EVENT_VIEW_AI_CATALOG_ITEM } from 'ee/ai/catalog/constants';
+import aiCatalogFlowQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_flow.query.graphql';
+import createAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/create_ai_catalog_item_consumer.mutation.graphql';
 import deleteAiCatalogFlowMutation from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_flow.mutation.graphql';
 import deleteAiCatalogThirdPartyFlowMutation from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_third_party_flow.mutation.graphql';
 import reportAiCatalogItemMutation from 'ee/ai/catalog/graphql/mutations/report_ai_catalog_item.mutation.graphql';
 import deleteAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_item_consumer.mutation.graphql';
 import {
+  mockAiCatalogFlowResponse,
+  mockAiCatalogItemConsumerCreateSuccessProjectResponse,
+  mockAiCatalogItemConsumerCreateErrorResponse,
+  mockItemConfigurationForGroup,
   mockCatalogFlowDeleteErrorResponse,
   mockCatalogFlowDeleteResponse,
   mockReportAiCatalogItemSuccessMutation,
@@ -37,9 +43,17 @@ describe('AiCatalogFlowsShow', () => {
 
   const defaultProps = {
     versionData: mockFlowVersion,
-    aiCatalogFlow: { ...mockFlow, configurationForProject: mockFlowConfigurationForProject },
+    aiCatalogFlow: {
+      ...mockFlow,
+      configurationForProject: mockFlowConfigurationForProject,
+      configurationForGroup: mockItemConfigurationForGroup,
+    },
   };
 
+  const mockFlowQueryHandler = jest.fn().mockResolvedValue(mockAiCatalogFlowResponse);
+  const createAiCatalogItemConsumerHandler = jest
+    .fn()
+    .mockResolvedValue(mockAiCatalogItemConsumerCreateSuccessProjectResponse);
   const reportAiCatalogItemMutationHandler = jest
     .fn()
     .mockResolvedValue(mockReportAiCatalogItemSuccessMutation);
@@ -57,11 +71,22 @@ describe('AiCatalogFlowsShow', () => {
 
   const createComponent = ({ props = {} } = {}) => {
     mockApollo = createMockApollo([
+      [aiCatalogFlowQuery, mockFlowQueryHandler],
+      [createAiCatalogItemConsumer, createAiCatalogItemConsumerHandler],
       [deleteAiCatalogFlowMutation, deleteFlowMutationHandler],
       [deleteAiCatalogThirdPartyFlowMutation, deleteThirdPartyFlowMutationHandler],
       [reportAiCatalogItemMutation, reportAiCatalogItemMutationHandler],
       [deleteAiCatalogItemConsumer, deleteItemConsumerMutationHandler],
     ]);
+    // refetchQueries will only refetch active queries, so simply registering a query handler is not enough.
+    // We need to call `subscribe()` to make the query observable and avoid "Unknown query" errors.
+    // This simulates what the actual code in VueApollo is doing when adding a smart query.
+    // Docs: https://www.apollographql.com/docs/react/api/core/ApolloClient/#watchquery
+    mockApollo.clients.defaultClient
+      .watchQuery({
+        query: aiCatalogFlowQuery,
+      })
+      .subscribe();
 
     wrapper = shallowMount(AiCatalogFlowsShow, {
       apolloProvider: mockApollo,
@@ -94,6 +119,7 @@ describe('AiCatalogFlowsShow', () => {
     expect(findItemActions().props('item')).toEqual({
       ...mockFlow,
       configurationForProject: mockFlowConfigurationForProject,
+      configurationForGroup: mockItemConfigurationForGroup,
     });
   });
 
@@ -101,6 +127,7 @@ describe('AiCatalogFlowsShow', () => {
     expect(findItemView().props('item')).toEqual({
       ...mockFlow,
       configurationForProject: mockFlowConfigurationForProject,
+      configurationForGroup: mockItemConfigurationForGroup,
     });
   });
 
@@ -112,6 +139,62 @@ describe('AiCatalogFlowsShow', () => {
         { label: TRACK_EVENT_TYPE_FLOW },
         undefined,
       );
+    });
+  });
+
+  describe('on adding flow to project', () => {
+    const addFlowToProject = () => findItemActions().vm.$emit('add-to-target', { projectId: '1' });
+
+    it('calls create consumer mutation for flow', () => {
+      addFlowToProject();
+
+      expect(createAiCatalogItemConsumerHandler).toHaveBeenCalledWith({
+        input: {
+          itemId: mockFlow.id,
+          target: { projectId: '1' },
+          parentItemConsumerId: mockItemConfigurationForGroup.id,
+        },
+      });
+    });
+
+    describe('when request succeeds', () => {
+      beforeEach(async () => {
+        addFlowToProject();
+        await waitForPromises();
+      });
+
+      it('shows toast', () => {
+        expect(mockToast.show).toHaveBeenCalledWith('Flow enabled in Test.');
+      });
+
+      it('refetches flow data', () => {
+        expect(mockFlowQueryHandler).toHaveBeenCalled();
+      });
+    });
+
+    describe('when request succeeds but returns errors', () => {
+      it('shows error alert', async () => {
+        createAiCatalogItemConsumerHandler.mockResolvedValue(
+          mockAiCatalogItemConsumerCreateErrorResponse,
+        );
+        addFlowToProject();
+        await waitForPromises();
+
+        expect(findErrorsAlert().props('errors')).toEqual(['Item already configured.']);
+      });
+    });
+
+    describe('when request fails', () => {
+      it('shows error alert and captures exception', async () => {
+        createAiCatalogItemConsumerHandler.mockRejectedValue(new Error('custom error'));
+        addFlowToProject();
+        await waitForPromises();
+
+        expect(findErrorsAlert().props('errors')).toEqual([
+          'Could not enable flow in the project. Check that the project meets the <a href="/help/user/duo_agent_platform/ai_catalog#view-the-ai-catalog" target="_blank">prerequisites</a> and try again.',
+        ]);
+        expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));
+      });
     });
   });
 

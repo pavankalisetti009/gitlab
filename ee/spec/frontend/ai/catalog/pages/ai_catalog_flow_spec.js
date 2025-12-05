@@ -163,7 +163,7 @@ describe('AiCatalogFlow', () => {
 
     it('should show pinned version when in project area', async () => {
       createComponent({
-        provide: { projectId: 1 },
+        provide: { projectId: 1, rootGroupId: 1 },
       });
       await waitForPromises();
 
