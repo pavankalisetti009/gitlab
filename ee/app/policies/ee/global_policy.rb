@@ -186,6 +186,7 @@ module EE
         enable :manage_ldap_admin_links
         enable :manage_self_hosted_models_settings
         enable :manage_instance_model_selection
+        enable :read_enterprise_ai_analytics
       end
 
       rule { ~instance_model_configuration_allowed }.policy do

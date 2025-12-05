@@ -35,6 +35,11 @@ module EE
           description: "Core agents in GitLab.",
           max_page_size: 1_000,
           experiment: { milestone: '18.6' }
+        field :ai_usage_data,
+          ::Types::Analytics::AiUsage::AiInstanceUsageDataType,
+          description: 'Instance level AI-related data. Admins only.',
+          resolver_method: :itself,
+          experiment: { milestone: '18.7' }
         field :blob_search, ::Types::Search::Blob::BlobSearchType,
           null: true,
           resolver: ::Resolvers::Search::Blob::BlobSearchResolver,

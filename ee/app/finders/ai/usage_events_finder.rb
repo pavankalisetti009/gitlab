@@ -12,7 +12,7 @@ module Ai
     end
 
     def execute
-      if @namespace && ::Gitlab::ClickHouse.enabled_for_analytics?(@namespace)
+      if ::Gitlab::ClickHouse.enabled_for_analytics?(@namespace)
         Ai::ClickHouseUsageEventsFinder.new(@current_user, **@options).execute
       else
         Ai::PostgresqlUsageEventsFinder.new(@current_user, **@options).execute

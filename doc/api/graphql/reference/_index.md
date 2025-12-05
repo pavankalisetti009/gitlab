@@ -507,6 +507,17 @@ Returns [`[SlashCommand!]`](#slashcommand).
 | ---- | ---- | ----------- |
 | <a id="queryaislashcommandsurl"></a>`url` | [`String!`](#string) | URL of the page the user is currently on. |
 
+### `Query.aiUsageData`
+
+{{< details >}}
+**Introduced** in GitLab 18.7.
+**Status**: Experiment.
+{{< /details >}}
+
+Instance level AI-related data. Admins only.
+
+Returns [`AiInstanceUsageData`](#aiinstanceusagedata).
+
 ### `Query.auditEventDefinitions`
 
 Definitions for all audit events available on the instance.
@@ -15758,6 +15769,29 @@ The edge type for [`AiFoundationalChatAgent`](#aifoundationalchatagent).
 | <a id="aifoundationalchatagentedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
 | <a id="aifoundationalchatagentedgenode"></a>`node` | [`AiFoundationalChatAgent`](#aifoundationalchatagent) | The item at the end of the edge. |
 
+#### `AiInstanceUsageEventConnection`
+
+The connection type for [`AiInstanceUsageEvent`](#aiinstanceusageevent).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="aiinstanceusageeventconnectionedges"></a>`edges` | [`[AiInstanceUsageEventEdge]`](#aiinstanceusageeventedge) | A list of edges. |
+| <a id="aiinstanceusageeventconnectionnodes"></a>`nodes` | [`[AiInstanceUsageEvent]`](#aiinstanceusageevent) | A list of nodes. |
+| <a id="aiinstanceusageeventconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+#### `AiInstanceUsageEventEdge`
+
+The edge type for [`AiInstanceUsageEvent`](#aiinstanceusageevent).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="aiinstanceusageeventedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
+| <a id="aiinstanceusageeventedgenode"></a>`node` | [`AiInstanceUsageEvent`](#aiinstanceusageevent) | The item at the end of the edge. |
+
 #### `AiMessageConnection`
 
 The connection type for [`AiMessage`](#aimessage).
@@ -25322,6 +25356,43 @@ Core Agent available for GitLab features.
 | <a id="aifoundationalchatagentreference"></a>`reference` | [`String!`](#string) | Reference ID of the agent. |
 | <a id="aifoundationalchatagentreferencewithversion"></a>`referenceWithVersion` | [`String`](#string) | Versioned reference of the agent. |
 | <a id="aifoundationalchatagentversion"></a>`version` | [`String`](#string) | Version of the agent. |
+
+### `AiInstanceUsageData`
+
+Instance wide usage data for events stored in either PostgreSQL (default) or ClickHouse (when configured). Data retention: three months in PostgreSQL, indefinite in ClickHouse. Premium and Ultimate only.
+
+#### Fields with arguments
+
+##### `AiInstanceUsageData.all`
+
+All Duo usage events.
+
+Returns [`AiInstanceUsageEventConnection`](#aiinstanceusageeventconnection).
+
+This field returns a [connection](#connections). It accepts the
+four standard [pagination arguments](#pagination-arguments):
+`before: String`, `after: String`, `first: Int`, and `last: Int`.
+
+###### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="aiinstanceusagedataallenddate"></a>`endDate` | [`Date`](#date) | End date for the date range. Default is the current day. |
+| <a id="aiinstanceusagedataallevents"></a>`events` | [`[AiUsageEventType!]`](#aiusageeventtype) | Filters by events. |
+| <a id="aiinstanceusagedataallstartdate"></a>`startDate` | [`Date`](#date) | Start date for the date range. Default is 7 days before the current date. |
+| <a id="aiinstanceusagedataalluserids"></a>`userIds` | [`[UserID!]`](#userid) | Filters by users. |
+
+### `AiInstanceUsageEvent`
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="aiinstanceusageeventevent"></a>`event` | [`AiUsageEventType!`](#aiusageeventtype) | Type of the event. |
+| <a id="aiinstanceusageeventextras"></a>`extras` | [`JSON`](#json) | Associated event context data. |
+| <a id="aiinstanceusageeventnamespacepath"></a>`namespacePath` | [`String`](#string) | Namespace hierarchy for Namespace or ProjectNamespace associated with the event. |
+| <a id="aiinstanceusageeventtimestamp"></a>`timestamp` | [`Time!`](#time) | When the event happened. |
+| <a id="aiinstanceusageeventuser"></a>`user` | [`UserCore!`](#usercore) | User associated with the event. |
 
 ### `AiMessage`
 
