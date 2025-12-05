@@ -26,27 +26,23 @@ RSpec.describe Security::Ingestion::IngestReportSliceService, feature_category: 
     end
 
     it 'runs the series of tasks in correct order' do
-      context = service_object.send(:context)
-      allow(context).to receive(:run_sec_after_commit_tasks)
-
       ingest_report_slice
 
       expect(Security::Ingestion::Tasks::UpdateVulnerabilityUuids).to have_received(:execute).ordered.with(pipeline, finding_maps)
-      expect(Security::Ingestion::Tasks::IngestIdentifiers).to have_received(:execute).ordered.with(pipeline, finding_maps, context)
-      expect(Security::Ingestion::Tasks::IngestFindings).to have_received(:execute).ordered.with(pipeline, finding_maps, context)
-      expect(Security::Ingestion::Tasks::IngestVulnerabilities).to have_received(:execute).ordered.with(pipeline, finding_maps, context)
-      expect(Security::Ingestion::Tasks::IncreaseCountersTask).to have_received(:execute).ordered.with(pipeline, finding_maps, context)
-      expect(Security::Ingestion::Tasks::AttachFindingsToVulnerabilities).to have_received(:execute).ordered.with(pipeline, finding_maps, context)
-      expect(Security::Ingestion::Tasks::IngestFindingIdentifiers).to have_received(:execute).ordered.with(pipeline, finding_maps, context)
-      expect(Security::Ingestion::Tasks::IngestFindingLinks).to have_received(:execute).ordered.with(pipeline, finding_maps, context)
-      expect(Security::Ingestion::Tasks::IngestFindingSignatures).to have_received(:execute).ordered.with(pipeline, finding_maps, context)
-      expect(Security::Ingestion::Tasks::IngestFindingEvidence).to have_received(:execute).ordered.with(pipeline, finding_maps, context)
-      expect(Security::Ingestion::Tasks::IngestVulnerabilityFlags).to have_received(:execute).ordered.with(pipeline, finding_maps, context)
-      expect(Security::Ingestion::Tasks::IngestVulnerabilityReads).to have_received(:execute).ordered.with(pipeline, finding_maps, context)
-      expect(Security::Ingestion::Tasks::IngestVulnerabilityStatistics).to have_received(:execute).ordered.with(pipeline, finding_maps, context)
-      expect(Security::Ingestion::Tasks::IngestRemediations).to have_received(:execute).ordered.with(pipeline, finding_maps, context)
-      expect(Security::Ingestion::Tasks::HooksExecution).to have_received(:execute).ordered.with(pipeline, finding_maps, context)
-      expect(context).to have_received(:run_sec_after_commit_tasks).ordered
+      expect(Security::Ingestion::Tasks::IngestIdentifiers).to have_received(:execute).ordered.with(pipeline, finding_maps)
+      expect(Security::Ingestion::Tasks::IngestFindings).to have_received(:execute).ordered.with(pipeline, finding_maps)
+      expect(Security::Ingestion::Tasks::IngestVulnerabilities).to have_received(:execute).ordered.with(pipeline, finding_maps)
+      expect(Security::Ingestion::Tasks::IncreaseCountersTask).to have_received(:execute).ordered.with(pipeline, finding_maps)
+      expect(Security::Ingestion::Tasks::AttachFindingsToVulnerabilities).to have_received(:execute).ordered.with(pipeline, finding_maps)
+      expect(Security::Ingestion::Tasks::IngestFindingIdentifiers).to have_received(:execute).ordered.with(pipeline, finding_maps)
+      expect(Security::Ingestion::Tasks::IngestFindingLinks).to have_received(:execute).ordered.with(pipeline, finding_maps)
+      expect(Security::Ingestion::Tasks::IngestFindingSignatures).to have_received(:execute).ordered.with(pipeline, finding_maps)
+      expect(Security::Ingestion::Tasks::IngestFindingEvidence).to have_received(:execute).ordered.with(pipeline, finding_maps)
+      expect(Security::Ingestion::Tasks::IngestVulnerabilityFlags).to have_received(:execute).ordered.with(pipeline, finding_maps)
+      expect(Security::Ingestion::Tasks::IngestVulnerabilityReads).to have_received(:execute).ordered.with(pipeline, finding_maps)
+      expect(Security::Ingestion::Tasks::IngestVulnerabilityStatistics).to have_received(:execute).ordered.with(pipeline, finding_maps)
+      expect(Security::Ingestion::Tasks::IngestRemediations).to have_received(:execute).ordered.with(pipeline, finding_maps)
+      expect(Security::Ingestion::Tasks::HooksExecution).to have_received(:execute).ordered.with(pipeline, finding_maps)
     end
 
     context 'when the project does not have vulnerability quota' do

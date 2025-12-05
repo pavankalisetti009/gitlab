@@ -33,9 +33,8 @@ RSpec.describe Security::Ingestion::Tasks::IngestVulnerabilities::MarkResolvedAs
   let(:new_finding_map) { create(:finding_map, pipeline: pipeline) }
 
   let(:finding_maps) { [existing_detected_finding_map, existing_resolved_finding_map, new_finding_map] }
-  let(:context) { Security::Ingestion::Context.new }
 
-  subject(:mark_resolved_as_detected) { described_class.new(pipeline, finding_maps, context).execute }
+  subject(:mark_resolved_as_detected) { described_class.new(pipeline, finding_maps).execute }
 
   before do
     existing_detected_finding_map.vulnerability_id = existing_vulnerability.id
@@ -81,10 +80,11 @@ RSpec.describe Security::Ingestion::Tasks::IngestVulnerabilities::MarkResolvedAs
 
   describe 'after sec transaction is committed' do
     before do
-      mark_resolved_as_detected
+      # Create finding_maps outside of transaction
+      finding_maps
     end
 
-    subject(:post_commit) { context.run_sec_after_commit_tasks }
+    subject(:post_commit) { SecApplicationRecord.transaction { mark_resolved_as_detected } }
 
     it 'publishes the bulk dismissed event', :freeze_time do
       expect { post_commit }.to publish_event(Vulnerabilities::BulkRedetectedEvent).with(

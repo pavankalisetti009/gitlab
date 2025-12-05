@@ -28,10 +28,9 @@ RSpec.describe Security::Ingestion::Tasks::IngestVulnerabilities, feature_catego
     end
 
     let(:finding_maps) { create_list(:finding_map, 5, pipeline: pipeline) }
-    let(:context) { Security::Ingestion::Context.new }
     let_it_be(:some_findings) { create_list(:vulnerabilities_finding, 3) }
 
-    subject(:ingest_vulnerabilities) { described_class.new(pipeline, finding_maps, context).execute }
+    subject(:ingest_vulnerabilities) { described_class.new(pipeline, finding_maps).execute }
 
     before do
       finding_maps.first.vulnerability_id = existing_vulnerability.id
@@ -83,7 +82,7 @@ RSpec.describe Security::Ingestion::Tasks::IngestVulnerabilities, feature_catego
 
       it 'changes the state to detected' do
         expect(described_class::MarkResolvedAsDetected).to receive(:execute)
-          .with(pipeline, existing_vulnerabilities, context)
+          .with(pipeline, existing_vulnerabilities)
 
         ingest_vulnerabilities
       end

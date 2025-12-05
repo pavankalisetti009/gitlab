@@ -12,7 +12,7 @@ module Security
 
             mark_as_resolved
 
-            context.run_after_sec_commit do
+            SecApplicationRecord.current_transaction.after_commit do
               publish_redetected_event
             end
 

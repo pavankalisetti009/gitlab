@@ -16,7 +16,6 @@ module Security
 
       def execute
         run_tasks_in_sec_db
-        context.run_sec_after_commit_tasks
         run_tasks_in_main_db
 
         update_elasticsearch
@@ -49,13 +48,8 @@ module Security
       end
 
       def execute_task(task)
-        Tasks.const_get(task, false).execute(pipeline, finding_maps, context)
+        Tasks.const_get(task, false).execute(pipeline, finding_maps)
       end
-
-      def context
-        Context.new
-      end
-      strong_memoize_attr :context
 
       def update_elasticsearch
         vulnerabilities = Vulnerability.id_in(vulnerability_ids)

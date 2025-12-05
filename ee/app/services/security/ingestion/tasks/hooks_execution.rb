@@ -7,7 +7,7 @@ module Security
         def execute
           new_vulnerabilities.each(&:execute_hooks)
 
-          context.run_after_sec_commit do
+          SecApplicationRecord.current_transaction.after_commit do
             new_vulnerabilities.each(&:trigger_false_positive_detection)
           end
         end
