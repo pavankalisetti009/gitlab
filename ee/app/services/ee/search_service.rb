@@ -3,19 +3,7 @@
 module EE
   module SearchService
     extend ::Gitlab::Utils::Override
-
-    module ClassMethods
-      extend ::Gitlab::Utils::Override
-
-      override :supported_search_types
-      def supported_search_types
-        super + %w[advanced zoekt]
-      end
-    end
-
-    def self.prepended(base)
-      base.singleton_class.prepend ClassMethods
-    end
+    SUPPORTED_SEARCH_TYPES = %w[advanced basic zoekt].freeze
 
     # This is a proper method instead of a `delegate` in order to
     # avoid adding unnecessary methods to Search::SnippetService
@@ -74,7 +62,7 @@ module EE
         errors << 'Zoekt is not available' unless use_zoekt?
         errors << 'Zoekt can only be used for blobs' unless scope == 'blobs'
       else
-        errors << "Search type should be one of these: #{::SearchService.supported_search_types.join(', ')}"
+        errors << "Search type should be one of these: #{SUPPORTED_SEARCH_TYPES.join(', ')}"
       end
       return if errors.compact.empty?
 

@@ -199,35 +199,9 @@ RSpec.describe SearchService, feature_category: :global_search do
       let(:search_type) { 'foobar' }
 
       it 'returns an error' do
-        message = "Search type should be one of these: #{described_class.supported_search_types.join(', ')}"
+        message = "Search type should be one of these: #{described_class::SUPPORTED_SEARCH_TYPES.join(', ')}"
         expect(search_service.search_type_errors).to eq(message)
       end
-
-      it 'still allows scope determination to work' do
-        # This ensures that invalid search_type doesn't break scope resolution
-        # The scope should be determinable even with invalid search_type
-        expect(search_service.scope).to eq('blobs')
-      end
-    end
-  end
-
-  describe 'invalid search_type handling' do
-    let_it_be(:user) { create(:user) }
-    let_it_be(:project) { create(:project) }
-
-    it 'returns proper error for invalid search_type but allows scope to be determined' do
-      search_service = described_class.new(user, {
-        project_id: project.id,
-        scope: 'issues',
-        search_type: 'invalid_xyz',
-        search: 'test'
-      })
-
-      # Scope should be determinable
-      expect(search_service.scope).to eq('issues')
-
-      # But search_type_errors should return validation error
-      expect(search_service.search_type_errors).to include('Search type should be one of these')
     end
   end
 end

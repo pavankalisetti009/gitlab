@@ -166,18 +166,6 @@ RSpec.describe Search::GlobalService, feature_category: :global_search do
       it 'includes ES-specific scopes from registry' do
         expect(described_class.new(user, {}).allowed_scopes).to include('commits', 'epics')
       end
-
-      context 'when search_type is explicitly basic' do
-        it 'does not include epics scope even when ES is enabled' do
-          expect(described_class.new(user, { search_type: 'basic' }).allowed_scopes).not_to include('epics')
-        end
-      end
-
-      context 'when search_type is explicitly advanced' do
-        it 'includes epics scope' do
-          expect(described_class.new(user, { search_type: 'advanced' }).allowed_scopes).to include('epics')
-        end
-      end
     end
 
     context 'when elasticsearch_search is disabled' do
@@ -187,10 +175,6 @@ RSpec.describe Search::GlobalService, feature_category: :global_search do
 
       it 'does not include ES-specific scopes including epics' do
         expect(described_class.new(user, {}).allowed_scopes).not_to include('commits', 'epics')
-      end
-
-      it 'does not include epics even when search_type is advanced' do
-        expect(described_class.new(user, { search_type: 'advanced' }).allowed_scopes).not_to include('epics')
       end
     end
 

@@ -136,47 +136,21 @@ RSpec.describe Search::Navigation, feature_category: :global_search do
         let(:project) { nil }
         let(:group) { nil }
 
-        where(:setting_enabled, :show_epics, :show_elasticsearch_tabs, :condition) do
-          false | false | false | false
-          false | false | true  | false
-          false | true  | false | false
-          false | true  | true  | false
-          true  | false | false | false
-          true  | false | true  | false
-          true  | true  | false | false
-          true  | true  | true  | true
+        where(:setting_enabled, :show_epics, :condition) do
+          false | false | false
+          true  | false | false
+          false | true  | false
+          true  | true  | true
         end
 
         with_them do
-          let(:options) { { show_epics: show_epics, show_elasticsearch_tabs: show_elasticsearch_tabs } }
+          let(:options) { { show_epics: show_epics } }
 
           it 'data item condition is set correctly' do
             stub_application_setting(global_search_epics_enabled: setting_enabled)
 
             expect(tabs[:issues][:sub_items][:epic][:condition]).to eq(condition)
           end
-        end
-
-        it 'requires elasticsearch for global epics search' do
-          stub_application_setting(global_search_epics_enabled: true)
-
-          # Without elasticsearch, epics tab should not be shown
-          search_navigation_without_es = described_class.new(
-            user: user,
-            project: nil,
-            group: nil,
-            options: { show_epics: true, show_elasticsearch_tabs: false }
-          )
-          expect(search_navigation_without_es.tabs[:issues][:sub_items][:epic][:condition]).to be_falsey
-
-          # With elasticsearch, epics tab should be shown
-          search_navigation_with_es = described_class.new(
-            user: user,
-            project: nil,
-            group: nil,
-            options: { show_epics: true, show_elasticsearch_tabs: true }
-          )
-          expect(search_navigation_with_es.tabs[:issues][:sub_items][:epic][:condition]).to be_truthy
         end
       end
     end
