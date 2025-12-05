@@ -7,6 +7,7 @@ module Mutations
         graphql_name 'ProjectSecretsManagerDeprovision'
 
         include ResolvesProject
+        include ::SecretsManagement::MutationErrorHandling
 
         authorize :admin_project_secrets_manager
 

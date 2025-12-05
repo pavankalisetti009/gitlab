@@ -8,6 +8,7 @@ module Mutations
 
         include ResolvesProject
         include Helpers::ErrorMessagesHelpers
+        include ::SecretsManagement::MutationErrorHandling
 
         authorize :admin_project_secrets_manager
 

@@ -5,6 +5,7 @@ module Resolvers
     class GroupSecretsManagerResolver < BaseResolver
       include Gitlab::Graphql::Authorize::AuthorizeResource
       include ResolvesGroup
+      include ::SecretsManagement::ResolverErrorHandling
 
       type ::Types::SecretsManagement::GroupSecretsManagerType, null: true
 

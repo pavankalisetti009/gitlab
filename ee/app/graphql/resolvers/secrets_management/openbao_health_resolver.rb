@@ -4,6 +4,7 @@ module Resolvers
   module SecretsManagement
     class OpenbaoHealthResolver < BaseResolver
       type GraphQL::Types::Boolean, null: false
+      include ::SecretsManagement::ResolverErrorHandling
 
       description 'Check if OpenBao instance is healthy and reachable'
 

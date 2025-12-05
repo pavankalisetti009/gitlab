@@ -9,6 +9,7 @@ module Mutations
         include ResolvesProject
         include Gitlab::InternalEventsTracking
         include Helpers::ErrorMessagesHelpers
+        include ::SecretsManagement::MutationErrorHandling
 
         authorize :create_project_secrets
 

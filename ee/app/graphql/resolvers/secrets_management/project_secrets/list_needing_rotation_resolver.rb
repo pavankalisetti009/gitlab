@@ -6,6 +6,7 @@ module Resolvers
       class ListNeedingRotationResolver < BaseResolver
         include Gitlab::Graphql::Authorize::AuthorizeResource
         include ResolvesProject
+        include ::SecretsManagement::ResolverErrorHandling
 
         type [::Types::SecretsManagement::ProjectSecretType], null: true
 

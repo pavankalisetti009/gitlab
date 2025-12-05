@@ -39,8 +39,6 @@ module SecretsManagement
         load_rotation_info(secrets, rotation_info_mapping) if rotation_info_mapping.any?
 
         ServiceResponse.success(payload: { project_secrets: secrets })
-      rescue StandardError => e
-        ServiceResponse.error(message: e.message)
       end
 
       private
