@@ -40512,6 +40512,7 @@ Personal access token.
 | <a id="pipelineenabledpartialsecurityscans"></a>`enabledPartialSecurityScans` {{< icon name="warning-solid" >}} | [`EnabledSecurityScans!`](#enabledsecurityscans) | **Introduced** in GitLab 18.3. **Status**: Experiment. Partial scans present in the pipeline and its descendents for each report type. |
 | <a id="pipelineenabledsecurityscans"></a>`enabledSecurityScans` {{< icon name="warning-solid" >}} | [`EnabledSecurityScans!`](#enabledsecurityscans) | **Introduced** in GitLab 18.3. **Status**: Experiment. Security scans present in the pipeline and its descendents for each report type. |
 | <a id="pipelineerrormessages"></a>`errorMessages` | [`PipelineMessageConnection`](#pipelinemessageconnection) | Pipeline error messages. (see [Connections](#connections)) |
+| <a id="pipelinefailedjobscount"></a>`failedJobsCount` | [`Int!`](#int) | Number of failed jobs in the pipeline, including trigger jobs and external jobs. |
 | <a id="pipelinefailurereason"></a>`failureReason` | [`String`](#string) | Reason why the pipeline failed. |
 | <a id="pipelinefinishedat"></a>`finishedAt` | [`Time`](#time) | Timestamp of the pipeline's completion. |
 | <a id="pipelinehasmanualactions"></a>`hasManualActions` | [`Boolean!`](#boolean) | Indicates if the pipeline has manual actions. |
