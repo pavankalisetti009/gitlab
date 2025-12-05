@@ -46,10 +46,8 @@ module API
               end
 
               params do
-                with(type: Integer, allow_blank: false) do
-                  requires :registry_id, desc: 'The ID of the maven registry'
-                  requires :upstream_id, desc: 'The ID of the maven upstream'
-                end
+                requires :registry_id, type: Integer, allow_blank: false, desc: 'The ID of the maven registry'
+                requires :upstream_id, type: Integer, allow_blank: false, desc: 'The ID of the maven upstream'
               end
 
               post do
