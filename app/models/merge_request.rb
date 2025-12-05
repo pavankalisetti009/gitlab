@@ -81,8 +81,10 @@ class MergeRequest < ApplicationRecord
 
   has_one :merge_request_diff,
     -> { regular.order('merge_request_diffs.id DESC') }, inverse_of: :merge_request
+  # Enabling inverse relationship causes previously cached merge_head_diff to be returned as merge_request_diff
+  # MR: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/214072
   has_one :merge_head_diff,
-    -> { merge_head }, inverse_of: :merge_request, class_name: 'MergeRequestDiff'
+    -> { merge_head }, inverse_of: false, class_name: 'MergeRequestDiff'
   has_one :cleanup_schedule, inverse_of: :merge_request
   has_one :predictions, inverse_of: :merge_request
   delegate :suggested_reviewers, to: :predictions
