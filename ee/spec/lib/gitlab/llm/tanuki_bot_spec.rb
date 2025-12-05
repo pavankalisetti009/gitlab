@@ -227,6 +227,35 @@ RSpec.describe Gitlab::Llm::TanukiBot, feature_category: :duo_chat do
     end
   end
 
+  describe '.credits_available?' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:group) { create(:group) }
+
+    context 'when user is nil' do
+      it 'returns false' do
+        expect(described_class.credits_available?(user: nil, project: project, group: group)).to be_falsy
+      end
+    end
+
+    context 'when scope params are not present' do
+      it 'returns false' do
+        expect(described_class.credits_available?(user: user)).to be_falsey
+      end
+    end
+
+    context 'when required params are present' do
+      before do
+        allow_next_instance_of(::Ai::UsageQuotaService) do |service|
+          allow(service).to receive(:execute).and_return(ServiceResponse.success)
+        end
+      end
+
+      it 'calls service' do
+        expect(described_class.credits_available?(user: user, project: project)).to be_truthy
+      end
+    end
+  end
+
   describe '.resource_id' do
     let(:issue) { build_stubbed(:issue) }
 
