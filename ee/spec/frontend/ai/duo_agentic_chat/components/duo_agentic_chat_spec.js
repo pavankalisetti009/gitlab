@@ -2405,18 +2405,36 @@ describe('Duo Agentic Chat', () => {
         expect(testId).toBe('model-dropdown-container');
       });
 
-      it('renders `ModelSelectDropdown`', () => {
-        expect(findModelSelectDropdown().exists()).toBe(true);
+      describe('when availableModels query is loading', () => {
+        it('triggers a loading state', () => {
+          expect(findModelSelectDropdown().props('isLoading')).toBe(true);
+          expect(findModelSelectDropdown().props('selectedOption')).toBe(null);
+          expect(getCurrentModel).not.toHaveBeenCalled();
+        });
       });
 
-      it('passes the correct props to `ModelSelectDropdown`', async () => {
-        await waitForPromises();
+      describe('when availableModels query has loaded', () => {
+        it('invokes `getCurrentModel()` with the correct arguments', async () => {
+          await waitForPromises();
 
-        expect(findModelSelectDropdown().props('placeholderDropdownText')).toBe('Select a model');
-        expect(findModelSelectDropdown().props('items')).toMatchObject(MOCK_MODEL_LIST_ITEMS);
-        expect(findModelSelectDropdown().props('selectedOption')).toMatchObject(
-          MOCK_GITLAB_DEFAULT_MODEL_ITEM,
-        );
+          expect(getCurrentModel).toHaveBeenCalledWith({
+            availableModels: MOCK_MODEL_LIST_ITEMS,
+            pinnedModel: null,
+            selectedModel: null,
+          });
+        });
+
+        it('passes the correct props to `ModelSelectDropdown`', async () => {
+          await waitForPromises();
+
+          expect(findModelSelectDropdown().props('isLoading')).toBe(false);
+          expect(findModelSelectDropdown().props('disabled')).toBe(false);
+          expect(findModelSelectDropdown().props('placeholderDropdownText')).toBe('Select a model');
+          expect(findModelSelectDropdown().props('items')).toMatchObject(MOCK_MODEL_LIST_ITEMS);
+          expect(findModelSelectDropdown().props('selectedOption')).toMatchObject(
+            MOCK_GITLAB_DEFAULT_MODEL_ITEM,
+          );
+        });
       });
 
       it('calls saveModel utility and starts new chat when model is selected', async () => {
