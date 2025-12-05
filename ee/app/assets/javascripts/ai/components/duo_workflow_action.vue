@@ -71,6 +71,11 @@ export default {
       required: false,
       default: null,
     },
+    workItemId: {
+      type: [String, Number],
+      required: false,
+      default: null,
+    },
     additionalContext: {
       type: Array,
       required: false,
@@ -167,6 +172,10 @@ export default {
         requestData.source_branch = this.sourceBranch;
       } else if (this.currentRef) {
         requestData.source_branch = this.currentRef;
+      }
+
+      if (this.workItemId) {
+        requestData.issue_id = this.workItemId;
       }
 
       this.isStartingFlow = true;

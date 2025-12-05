@@ -342,6 +342,281 @@ RSpec.describe ::Ai::DuoWorkflows::UpdateWorkflowStatusService, feature_category
           expect(workflow.reload.human_status_name).to eq("running")
         end
       end
+
+      context 'on system note update' do
+        let_it_be(:issue) { create(:issue, project: project) }
+
+        context 'when workflow is associated with an issue' do
+          let(:workflow) do
+            create(
+              :duo_workflows_workflow,
+              project: project,
+              user: user,
+              issue: issue,
+              status: workflow_initial_status_enum
+            )
+          end
+
+          context 'when finishing workflow' do
+            it 'creates a completion system note on the issue' do
+              expect(SystemNoteService).to receive(:agent_session_completed).with(
+                issue,
+                project,
+                workflow.id
+              )
+
+              described_class.new(
+                workflow: workflow,
+                current_user: user,
+                status_event: "finish"
+              ).execute
+            end
+          end
+
+          context 'when dropping workflow' do
+            it 'creates a failure system note on the issue with "dropped" reason' do
+              expect(SystemNoteService).to receive(:agent_session_failed).with(
+                issue,
+                project,
+                workflow.id,
+                'dropped'
+              )
+
+              described_class.new(
+                workflow: workflow,
+                current_user: user,
+                status_event: "drop"
+              ).execute
+            end
+          end
+
+          context 'when stopping workflow' do
+            it 'creates a failure system note on the issue with "stopped" reason' do
+              expect(SystemNoteService).to receive(:agent_session_failed).with(
+                issue,
+                project,
+                workflow.id,
+                'stopped'
+              )
+
+              described_class.new(
+                workflow: workflow,
+                current_user: user,
+                status_event: "stop"
+              ).execute
+            end
+          end
+
+          context 'when pausing workflow' do
+            it 'does not create a system note' do
+              expect(SystemNoteService).not_to receive(:agent_session_completed)
+              expect(SystemNoteService).not_to receive(:agent_session_failed)
+
+              described_class.new(
+                workflow: workflow,
+                current_user: user,
+                status_event: "pause"
+              ).execute
+            end
+          end
+
+          context 'when SystemNoteService raises an error' do
+            before do
+              allow(SystemNoteService).to receive(:agent_session_completed)
+                .and_raise(StandardError, 'Note creation failed')
+            end
+
+            it 'tracks the exception and workflow update completes successfully' do
+              expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
+                instance_of(StandardError),
+                hash_including(
+                  workflow_id: workflow.id,
+                  noteable_type: 'Issue',
+                  noteable_id: issue.id
+                )
+              )
+
+              result = described_class.new(
+                workflow: workflow,
+                current_user: user,
+                status_event: "finish"
+              ).execute
+
+              expect(result[:status]).to eq(:success)
+              expect(workflow.reload.human_status_name).to eq("finished")
+            end
+          end
+        end
+
+        context 'when workflow has no noteable association' do
+          let(:workflow) do
+            create(:duo_workflows_workflow, project: project, user: user, status: workflow_initial_status_enum)
+          end
+
+          it 'does not create a system note' do
+            expect(SystemNoteService).not_to receive(:agent_session_completed)
+            expect(SystemNoteService).not_to receive(:agent_session_failed)
+
+            described_class.new(
+              workflow: workflow,
+              current_user: user,
+              status_event: "finish"
+            ).execute
+          end
+        end
+
+        context 'when noteable does not have a project' do
+          let(:workflow) do
+            create(
+              :duo_workflows_workflow,
+              project: project,
+              user: user,
+              issue: issue,
+              status: workflow_initial_status_enum
+            )
+          end
+
+          before do
+            allow(issue).to receive(:project).and_return(nil)
+          end
+
+          it 'does not create a system note' do
+            expect(SystemNoteService).not_to receive(:agent_session_completed)
+            expect(SystemNoteService).not_to receive(:agent_session_failed)
+
+            described_class.new(
+              workflow: workflow,
+              current_user: user,
+              status_event: "finish"
+            ).execute
+          end
+
+          it 'still updates the workflow status successfully' do
+            result = described_class.new(
+              workflow: workflow,
+              current_user: user,
+              status_event: "finish"
+            ).execute
+
+            expect(result[:status]).to eq(:success)
+            expect(workflow.reload.human_status_name).to eq("finished")
+          end
+        end
+
+        context 'when noteable project is not present' do
+          let(:workflow) do
+            create(
+              :duo_workflows_workflow,
+              project: project,
+              user: user,
+              issue: issue,
+              status: workflow_initial_status_enum
+            )
+          end
+
+          let(:empty_project) { instance_double(Project, present?: false) }
+
+          before do
+            allow(issue).to receive(:project).and_return(empty_project)
+          end
+
+          it 'does not create a system note' do
+            expect(SystemNoteService).not_to receive(:agent_session_completed)
+            expect(SystemNoteService).not_to receive(:agent_session_failed)
+
+            described_class.new(
+              workflow: workflow,
+              current_user: user,
+              status_event: "finish"
+            ).execute
+          end
+
+          it 'still updates the workflow status successfully' do
+            result = described_class.new(
+              workflow: workflow,
+              current_user: user,
+              status_event: "finish"
+            ).execute
+
+            expect(result[:status]).to eq(:success)
+            expect(workflow.reload.human_status_name).to eq("finished")
+          end
+        end
+
+        context 'when system note creation fails for drop event' do
+          let(:workflow) do
+            create(
+              :duo_workflows_workflow,
+              project: project,
+              user: user,
+              issue: issue,
+              status: workflow_initial_status_enum
+            )
+          end
+
+          before do
+            allow(SystemNoteService).to receive(:agent_session_failed)
+              .and_raise(StandardError, 'Failed note creation')
+          end
+
+          it 'tracks the exception but does not fail the workflow update' do
+            expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
+              instance_of(StandardError),
+              hash_including(
+                workflow_id: workflow.id,
+                noteable_type: 'Issue',
+                noteable_id: issue.id
+              )
+            )
+
+            result = described_class.new(
+              workflow: workflow,
+              current_user: user,
+              status_event: "drop"
+            ).execute
+
+            expect(result[:status]).to eq(:success)
+            expect(workflow.reload.human_status_name).to eq("failed")
+          end
+        end
+
+        context 'when system note creation fails for stop event' do
+          let(:workflow) do
+            create(
+              :duo_workflows_workflow,
+              project: project,
+              user: user,
+              issue: issue,
+              status: workflow_initial_status_enum
+            )
+          end
+
+          before do
+            allow(SystemNoteService).to receive(:agent_session_failed)
+              .and_raise(StandardError, 'Failed note creation')
+          end
+
+          it 'tracks the exception but does not fail the workflow update' do
+            expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
+              instance_of(StandardError),
+              hash_including(
+                workflow_id: workflow.id,
+                noteable_type: 'Issue',
+                noteable_id: issue.id
+              )
+            )
+
+            result = described_class.new(
+              workflow: workflow,
+              current_user: user,
+              status_event: "stop"
+            ).execute
+
+            expect(result[:status]).to eq(:success)
+            expect(workflow.reload.human_status_name).to eq("stopped")
+          end
+        end
+      end
     end
   end
 end

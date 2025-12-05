@@ -5,25 +5,25 @@ module SystemNotes # rubocop:disable Gitlab/BoundedContexts -- SystemNotes modul
     # Called when a new agent session is started
     #
     # session_id - The ID of the agent session
-    # trigger_source - What triggered the session (default: 'User')
-    # agent_name - Name of the agent (default: 'Duo Developer')
+    # trigger_source - Who/what triggered the session. Can be a User object or a String (default: 'User')
     #
     # Example Note text:
     #
-    # "Duo Developer started session [123](session_url) triggered by Issue to merge request"
+    # "started session [123](session_url) triggered by [Jane Doe](user_profile_url)"
     #
     # Returns the created Note object
-    def agent_session_started(session_id, trigger_source = 'User', agent_name = 'Duo Developer')
+    def agent_session_started(session_id, trigger_source)
       session_link = create_session_link(session_id)
+      trigger_source_reference = format_trigger_source(trigger_source)
 
-      body = "**#{agent_name}** started session #{session_link}"
+      body = "started session #{session_link}"
 
-      body += " triggered by #{trigger_source}" if trigger_source.present?
+      body += " triggered by #{trigger_source_reference}" if trigger_source.present?
 
       create_note(NoteSummary.new(
         noteable,
         project,
-        author,
+        agent_author,
         body,
         action: 'duo_agent_started'
       ))
@@ -32,22 +32,21 @@ module SystemNotes # rubocop:disable Gitlab/BoundedContexts -- SystemNotes modul
     # Called when a Duo agent session is completed
     #
     # session_id - The ID of the agent session
-    # agent_name - Name of the agent (default: 'Duo Developer')
     #
     # Example Note text:
     #
-    # "Duo Developer completed session [123](session_url)"
+    # "completed session [123](session_url)"
     #
     # Returns the created Note object
-    def agent_session_completed(session_id, agent_name = 'Duo Developer')
+    def agent_session_completed(session_id)
       session_link = create_session_link(session_id)
 
-      body = "**#{agent_name}** completed session #{session_link}"
+      body = "completed session #{session_link}"
 
       create_note(NoteSummary.new(
         noteable,
         project,
-        author,
+        agent_author,
         body,
         action: 'duo_agent_completed'
       ))
@@ -57,31 +56,34 @@ module SystemNotes # rubocop:disable Gitlab/BoundedContexts -- SystemNotes modul
     #
     # session_id - The ID of the agent session
     # reason - Optional reason for failure
-    # agent_name - Name of the agent (default: 'Duo Developer')
     #
     # Example Note text:
     #
-    # "Duo Developer session [123](session_url) failed"
-    # "Duo Developer session [123](session_url) failed (dropped)"
+    # "session [123](session_url) failed"
+    # "session [123](session_url) failed (dropped)"
     #
     # Returns the created Note object
-    def agent_session_failed(session_id, reason = nil, agent_name = 'Duo Developer')
+    def agent_session_failed(session_id, reason = nil)
       session_link = create_session_link(session_id)
 
-      body = "**#{agent_name}** session #{session_link} failed"
+      body = "session #{session_link} failed"
 
       body += " (#{reason})" if reason.present?
 
       create_note(NoteSummary.new(
         noteable,
         project,
-        author,
+        agent_author,
         body,
         action: 'duo_agent_failed'
       ))
     end
 
     private
+
+    def agent_author
+      Ai::Setting.instance.duo_workflow_service_account_user
+    end
 
     def create_session_link(session_id)
       session_id = ERB::Util.html_escape(session_id)
@@ -91,6 +93,25 @@ module SystemNotes # rubocop:disable Gitlab/BoundedContexts -- SystemNotes modul
       session_url = "#{project.web_url}/-/automate/agent-sessions/#{session_id}"
 
       "[#{session_id}](#{session_url})"
+    end
+
+    # Formats a trigger source into a markdown link or escaped string.
+    #
+    # @param trigger_source [User, String] The trigger source to format
+    # @return [String] Markdown link for User objects, escaped string otherwise
+    #
+    # Examples:
+    #   format_trigger_source(user)     # => "[Jane Doe](https://example.com/jdoe)"
+    #   format_trigger_source("agent") # => "agent"
+    def format_trigger_source(trigger_source)
+      if trigger_source.is_a?(User)
+        user_name_escaped = ERB::Util.html_escape(trigger_source.name)
+        user_profile_url = "#{Gitlab.config.gitlab.url}/#{trigger_source.username}"
+
+        "[#{user_name_escaped}](#{user_profile_url})"
+      else
+        ERB::Util.html_escape(trigger_source.to_s)
+      end
     end
   end
 end

@@ -322,4 +322,68 @@ RSpec.describe 'AiDuoWorkflowCreate', feature_category: :duo_chat do
       expect(mutation_response['errors']).to be_empty
     end
   end
+
+  context 'when issue_id is provided', :saas do
+    let(:input) do
+      super().merge(issue_id: issue.iid)
+    end
+
+    it 'creates a workflow associated with the issue' do
+      expect(::Ai::DuoWorkflows::CreateWorkflowService).to receive(:new).with(
+        container: container,
+        current_user: current_user,
+        params: {
+          goal: "Automate PR reviews",
+          agent_privileges: [1, 2, 3],
+          pre_approved_agent_privileges: [1],
+          workflow_definition: workflow_type,
+          allow_agent_to_request_user: true,
+          environment: 'web',
+          ai_catalog_item_version_id: agent_version.id,
+          issue_id: issue.iid
+        }
+      ).and_call_original
+
+      post_graphql_mutation(mutation, current_user: current_user)
+
+      expect(response).to have_gitlab_http_status(:success)
+
+      workflow = ::Ai::DuoWorkflows::Workflow.last
+      expect(workflow.issue).to eq(issue)
+      expect(workflow.merge_request).to be_nil
+      expect(mutation_response['errors']).to be_empty
+    end
+  end
+
+  context 'when invalid issue_id is provided', :saas do
+    let(:invalid_issue_iid) { 999999 }
+    let(:input) do
+      super().merge(issue_id: invalid_issue_iid)
+    end
+
+    it 'creates a workflow without issue association' do
+      expect(::Ai::DuoWorkflows::CreateWorkflowService).to receive(:new).with(
+        container: container,
+        current_user: current_user,
+        params: {
+          goal: "Automate PR reviews",
+          agent_privileges: [1, 2, 3],
+          pre_approved_agent_privileges: [1],
+          workflow_definition: workflow_type,
+          allow_agent_to_request_user: true,
+          environment: 'web',
+          ai_catalog_item_version_id: agent_version.id,
+          issue_id: invalid_issue_iid
+        }
+      ).and_call_original
+
+      post_graphql_mutation(mutation, current_user: current_user)
+
+      expect(response).to have_gitlab_http_status(:success)
+
+      workflow = ::Ai::DuoWorkflows::Workflow.last
+      expect(workflow.issue).to be_nil
+      expect(mutation_response['errors']).to be_empty
+    end
+  end
 end

@@ -17,6 +17,7 @@ RSpec.describe ::Ai::DuoWorkflows::CreateWorkflowService, feature_category: :duo
     end
 
     before do
+      allow(Ability).to receive(:allowed?).and_call_original
       allow(Ability).to receive(:allowed?).with(user, :duo_workflow, container).and_return(true)
     end
 
@@ -221,6 +222,211 @@ RSpec.describe ::Ai::DuoWorkflows::CreateWorkflowService, feature_category: :duo
           )
 
           execute
+        end
+      end
+    end
+
+    context 'on system note creation' do
+      context 'when noteable is an issue' do
+        context 'when issue_id is valid' do
+          let_it_be(:issue) { create(:issue, project: project) }
+          let(:params) { { environment: "web", issue_id: issue.iid } }
+
+          it 'creates a workflow associated with the issue' do
+            expect { execute }.to change { Ai::DuoWorkflows::Workflow.count }.by(1)
+
+            workflow = execute[:workflow]
+            expect(workflow.issue).to eq(issue)
+          end
+
+          it 'creates a system note on the issue' do
+            expect(SystemNoteService).to receive(:agent_session_started).with(
+              issue,
+              project,
+              be_a(Integer),
+              user
+            )
+
+            execute
+          end
+        end
+
+        context 'when issue_id is invalid' do
+          let(:params) { { environment: "web", issue_id: 999999 } }
+
+          it 'creates a workflow without issue association' do
+            expect { execute }.to change { Ai::DuoWorkflows::Workflow.count }.by(1)
+
+            workflow = execute[:workflow]
+            expect(workflow.issue).to be_nil
+          end
+
+          it 'does not create a system note' do
+            expect(SystemNoteService).not_to receive(:agent_session_started)
+
+            execute
+          end
+        end
+      end
+
+      context 'when SystemNoteService raises an error' do
+        let_it_be(:issue) { create(:issue, project: project) }
+        let(:params) { { environment: "web", issue_id: issue.iid } }
+
+        before do
+          allow(SystemNoteService).to receive(:agent_session_started).and_raise(StandardError, 'Note creation failed')
+        end
+
+        it 'tracks the exception and workflow creation continues successfully' do
+          expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
+            instance_of(StandardError),
+            hash_including(
+              workflow_id: be_a(Integer),
+              noteable_type: 'Issue',
+              noteable_id: issue.id
+            )
+          )
+
+          expect { execute }.to change { Ai::DuoWorkflows::Workflow.count }.by(1)
+          expect(execute[:status]).to eq(:success)
+        end
+
+        it 'does not fail the workflow creation' do
+          result = execute
+
+          expect(result[:status]).to eq(:success)
+          expect(result[:workflow]).to be_persisted
+          expect(result[:workflow].issue).to eq(issue)
+        end
+      end
+
+      context 'when finder raises an error' do
+        context 'when IssuesFinder raises an error for issue_id' do
+          let(:params) { { environment: "web", issue_id: 1 } }
+          let(:error) { StandardError.new('Database connection failed') }
+
+          before do
+            allow_next_instance_of(IssuesFinder) do |finder|
+              allow(finder).to receive(:execute).and_raise(error)
+            end
+          end
+
+          it 'tracks the exception with issue_iid' do
+            expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
+              error,
+              hash_including(
+                issue_iid: 1,
+                container_id: project.id
+              )
+            )
+
+            execute
+          end
+
+          it 'creates workflow without issue association' do
+            workflow = execute[:workflow]
+
+            expect(workflow).to be_persisted
+            expect(workflow.issue).to be_nil
+          end
+
+          it 'does not create a system note' do
+            expect(SystemNoteService).not_to receive(:agent_session_started)
+
+            execute
+          end
+        end
+      end
+
+      context 'when noteable does not have a project' do
+        let_it_be(:issue) { create(:issue, project: project) }
+        let(:params) { { environment: "web", issue_id: issue.iid } }
+
+        before do
+          allow_next_found_instance_of(Issue) do |instance|
+            allow(instance).to receive(:project).and_return(nil)
+          end
+        end
+
+        it 'does not create a system note' do
+          expect(SystemNoteService).not_to receive(:agent_session_started)
+
+          execute
+        end
+
+        it 'still creates the workflow successfully' do
+          expect { execute }.to change { Ai::DuoWorkflows::Workflow.count }.by(1)
+          expect(execute[:status]).to eq(:success)
+        end
+      end
+
+      context 'when noteable project is not present' do
+        let_it_be(:issue) { create(:issue, project: project) }
+        let(:params) { { environment: "web", issue_id: issue.iid } }
+        let(:empty_project) { instance_double(Project, present?: false) }
+
+        before do
+          allow_next_found_instance_of(Issue) do |instance|
+            allow(instance).to receive(:project).and_return(empty_project)
+          end
+        end
+
+        it 'does not create a system note' do
+          expect(SystemNoteService).not_to receive(:agent_session_started)
+
+          execute
+        end
+
+        it 'still creates the workflow successfully' do
+          expect { execute }.to change { Ai::DuoWorkflows::Workflow.count }.by(1)
+          expect(execute[:status]).to eq(:success)
+        end
+      end
+
+      context 'when noteable does not respond to project method' do
+        let_it_be(:issue) { create(:issue, project: project) }
+        let(:params) { { environment: "web", issue_id: issue.iid } }
+
+        before do
+          allow_next_instance_of(IssuesFinder) do |finder|
+            allow(finder).to receive(:execute).and_return(Issue.none)
+          end
+        end
+
+        it 'does not create a system note' do
+          expect(SystemNoteService).not_to receive(:agent_session_started)
+
+          execute
+        end
+
+        it 'creates workflow without issue association' do
+          workflow = execute[:workflow]
+
+          expect(workflow).to be_persisted
+          expect(workflow.issue_id).to be_nil
+        end
+      end
+
+      context 'when container is not a Project' do
+        let(:container) { group }
+        let(:params) { { environment: "web", issue_id: 1, workflow_definition: 'chat' } }
+
+        before do
+          allow(Ability).to receive(:allowed?).with(user, :access_duo_agentic_chat, container).and_return(true)
+        end
+
+        it 'does not attempt to find the issue' do
+          expect(IssuesFinder).not_to receive(:new)
+
+          execute
+        end
+
+        it 'creates workflow without issue association' do
+          workflow = execute[:workflow]
+
+          expect(workflow).to be_persisted
+          expect(workflow.issue).to be_nil
+          expect(workflow.namespace).to eq(group)
         end
       end
     end
