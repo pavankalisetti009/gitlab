@@ -475,129 +475,226 @@ RSpec.describe Security::ScanResultPolicyViolation, feature_category: :security_
     end
 
     context 'when dismissal exists' do
-      let_it_be(:policy_dismissal) do
-        create(:policy_dismissal,
-          project: project,
-          merge_request: merge_request,
-          security_policy: security_policy,
-          security_findings_uuids: %w[uuid-1 uuid-2 uuid-3]
-        )
-      end
-
-      context 'when violation has no finding UUIDs' do
-        let(:violation) do
-          create(:scan_result_policy_violation,
+      context 'for security findings' do
+        let_it_be(:policy_dismissal) do
+          create(:policy_dismissal,
             project: project,
             merge_request: merge_request,
-            scan_result_policy_read: scan_result_policy_read,
-            approval_policy_rule: approval_policy_rule,
-            violation_data: { 'violations' => { 'any_merge_request' => { 'commits' => ['abc123'] } } }
+            security_policy: security_policy,
+            security_findings_uuids: %w[uuid-1 uuid-2 uuid-3],
+            licenses: { "MIT License": ["rack"] }
           )
         end
 
-        it { is_expected.to be(true) }
-      end
-
-      context 'when all finding UUIDs are dismissed' do
-        let(:violation) do
-          create(:scan_result_policy_violation, :new_scan_finding,
-            project: project,
-            merge_request: merge_request,
-            scan_result_policy_read: scan_result_policy_read,
-            approval_policy_rule: approval_policy_rule,
-            uuids: %w[uuid-1 uuid-2]
-          )
-        end
-
-        it { is_expected.to be(true) }
-
-        it 'does not execute additional queries when associations are preloaded' do
-          queries_without_preload = ActiveRecord::QueryRecorder.new do
-            violation.dismissed?
+        context 'when violation has no finding UUIDs' do
+          let(:violation) do
+            create(:scan_result_policy_violation,
+              project: project,
+              merge_request: merge_request,
+              scan_result_policy_read: scan_result_policy_read,
+              approval_policy_rule: approval_policy_rule,
+              violation_data: { 'violations' => { 'any_merge_request' => { 'commits' => ['abc123'] } } }
+            )
           end
 
-          with_loaded_associations = described_class.with_security_policy_dismissal.find(violation.id)
+          it { is_expected.to be(true) }
+        end
 
-          queries_with_preload = ActiveRecord::QueryRecorder.new do
-            with_loaded_associations.dismissed?
+        context 'when all finding UUIDs are dismissed' do
+          let(:violation) do
+            create(:scan_result_policy_violation, :new_scan_finding,
+              project: project,
+              merge_request: merge_request,
+              scan_result_policy_read: scan_result_policy_read,
+              approval_policy_rule: approval_policy_rule,
+              uuids: %w[uuid-1 uuid-2]
+            )
           end
 
-          expect(queries_with_preload.count).to be < queries_without_preload.count
-        end
-      end
+          it { is_expected.to be(true) }
 
-      context 'when some finding UUIDs are missing from dismissal' do
-        let(:violation) do
-          create(:scan_result_policy_violation, :new_scan_finding,
-            project: project,
-            merge_request: merge_request,
-            scan_result_policy_read: scan_result_policy_read,
-            approval_policy_rule: approval_policy_rule,
-            uuids: %w[uuid-1 uuid-4]
-          )
-        end
+          it 'does not execute additional queries when associations are preloaded' do
+            queries_without_preload = ActiveRecord::QueryRecorder.new do
+              violation.dismissed?
+            end
 
-        it { is_expected.to be(false) }
-      end
+            with_loaded_associations = described_class.with_security_policy_dismissal.find(violation.id)
 
-      context 'when dismissal contains extra UUIDs beyond violation UUIDs' do
-        let(:violation) do
-          create(:scan_result_policy_violation, :new_scan_finding,
-            project: project,
-            merge_request: merge_request,
-            scan_result_policy_read: scan_result_policy_read,
-            approval_policy_rule: approval_policy_rule,
-            uuids: ['uuid-1']
-          )
+            queries_with_preload = ActiveRecord::QueryRecorder.new do
+              with_loaded_associations.dismissed?
+            end
+
+            expect(queries_with_preload.count).to be < queries_without_preload.count
+          end
         end
 
-        it { is_expected.to be(true) }
-      end
+        context 'when some finding UUIDs are missing from dismissal' do
+          let(:violation) do
+            create(:scan_result_policy_violation, :new_scan_finding,
+              project: project,
+              merge_request: merge_request,
+              scan_result_policy_read: scan_result_policy_read,
+              approval_policy_rule: approval_policy_rule,
+              uuids: %w[uuid-1 uuid-4]
+            )
+          end
 
-      context 'when violation has both newly detected and previously existing UUIDs' do
-        let(:violation) do
-          create(:scan_result_policy_violation,
-            project: project,
-            merge_request: merge_request,
-            scan_result_policy_read: scan_result_policy_read,
-            approval_policy_rule: approval_policy_rule,
-            violation_data: {
-              'violations' => {
-                'scan_finding' => {
-                  'uuids' => {
-                    'newly_detected' => ['uuid-1'],
-                    'previously_existing' => ['uuid-2']
+          it { is_expected.to be(false) }
+        end
+
+        context 'when dismissal contains extra UUIDs beyond violation UUIDs' do
+          let(:violation) do
+            create(:scan_result_policy_violation, :new_scan_finding,
+              project: project,
+              merge_request: merge_request,
+              scan_result_policy_read: scan_result_policy_read,
+              approval_policy_rule: approval_policy_rule,
+              uuids: ['uuid-1']
+            )
+          end
+
+          it { is_expected.to be(true) }
+        end
+
+        context 'when violation has both newly detected and previously existing UUIDs' do
+          let(:violation) do
+            create(:scan_result_policy_violation,
+              project: project,
+              merge_request: merge_request,
+              scan_result_policy_read: scan_result_policy_read,
+              approval_policy_rule: approval_policy_rule,
+              violation_data: {
+                'violations' => {
+                  'scan_finding' => {
+                    'uuids' => {
+                      'newly_detected' => ['uuid-1'],
+                      'previously_existing' => ['uuid-2']
+                    }
                   }
                 }
               }
-            }
-          )
+            )
+          end
+
+          it { is_expected.to be(true) }
         end
 
-        it { is_expected.to be(true) }
-      end
-
-      context 'when violation has mixed UUIDs with some not dismissed' do
-        let(:violation) do
-          create(:scan_result_policy_violation,
-            project: project,
-            merge_request: merge_request,
-            scan_result_policy_read: scan_result_policy_read,
-            approval_policy_rule: approval_policy_rule,
-            violation_data: {
-              'violations' => {
-                'scan_finding' => {
-                  'uuids' => {
-                    'newly_detected' => %w[uuid-1 uuid-missing],
-                    'previously_existing' => ['uuid-2']
+        context 'when violation has mixed UUIDs with some not dismissed' do
+          let(:violation) do
+            create(:scan_result_policy_violation,
+              project: project,
+              merge_request: merge_request,
+              scan_result_policy_read: scan_result_policy_read,
+              approval_policy_rule: approval_policy_rule,
+              violation_data: {
+                'violations' => {
+                  'scan_finding' => {
+                    'uuids' => {
+                      'newly_detected' => %w[uuid-1 uuid-missing],
+                      'previously_existing' => ['uuid-2']
+                    }
                   }
                 }
               }
-            }
+            )
+          end
+
+          it { is_expected.to be(false) }
+        end
+      end
+
+      context 'with license scanning violations' do
+        let_it_be(:policy_dismissal) do
+          create(:policy_dismissal,
+            project: project,
+            merge_request: merge_request,
+            security_policy: security_policy,
+            licenses: { "MIT License": ["rack"], "Other License": ["dependency"] }
           )
         end
 
-        it { is_expected.to be(false) }
+        context 'when violation has no licenses' do
+          let(:violation) do
+            create(:scan_result_policy_violation,
+              project: project,
+              merge_request: merge_request,
+              scan_result_policy_read: scan_result_policy_read,
+              approval_policy_rule: approval_policy_rule
+            )
+          end
+
+          it { is_expected.to be(true) }
+        end
+
+        context 'when all licenses are dismissed' do
+          let(:violation) do
+            create(:scan_result_policy_violation,
+              project: project,
+              merge_request: merge_request,
+              scan_result_policy_read: scan_result_policy_read,
+              approval_policy_rule: approval_policy_rule,
+              violation_data: {
+                'violations' => {
+                  'license_scanning' => {
+                    "MIT License": ["rack"],
+                    "Other License": ["dependency"]
+                  }
+                }
+              }
+            )
+          end
+
+          it { is_expected.to be(true) }
+
+          it 'does not execute additional queries when associations are preloaded' do
+            queries_without_preload = ActiveRecord::QueryRecorder.new do
+              violation.dismissed?
+            end
+
+            with_loaded_associations = described_class.with_security_policy_dismissal.find(violation.id)
+
+            queries_with_preload = ActiveRecord::QueryRecorder.new do
+              with_loaded_associations.dismissed?
+            end
+
+            expect(queries_with_preload.count).to be < queries_without_preload.count
+          end
+        end
+
+        context 'when some licenses are missing from dismissal' do
+          let(:violation) do
+            create(:scan_result_policy_violation,
+              project: project,
+              merge_request: merge_request,
+              scan_result_policy_read: scan_result_policy_read,
+              approval_policy_rule: approval_policy_rule,
+              violation_data: {
+                'violations' => {
+                  'license_scanning' => {
+                    "MIT License": ['rack'],
+                    'Ruby License': ['json']
+                  }
+                }
+              }
+            )
+          end
+
+          it { is_expected.to be(false) }
+        end
+
+        context 'when dismissal contains extra licenses' do
+          let(:violation) do
+            create(:scan_result_policy_violation,
+              project: project,
+              merge_request: merge_request,
+              scan_result_policy_read: scan_result_policy_read,
+              approval_policy_rule: approval_policy_rule,
+              violation_data: { 'violations' => { 'license_scanning' => { "MIT License": ["rack"] } } }
+            )
+          end
+
+          it { is_expected.to be(true) }
+        end
       end
     end
   end
