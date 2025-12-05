@@ -18,8 +18,13 @@ module Search
 
     def search_type
       return params[:search_type] if params[:search_type]
-      return 'zoekt' if scope == 'blobs' && use_zoekt?
-      return 'advanced' if use_elasticsearch?
+
+      if scope == 'blobs'
+        return 'zoekt' if use_zoekt?
+        return 'advanced' if Gitlab::CurrentSettings.elasticsearch_code_scope && use_elasticsearch?
+      elsif use_elasticsearch?
+        return 'advanced'
+      end
 
       'basic'
     end

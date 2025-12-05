@@ -27,31 +27,42 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
   end
 
   describe '#search_type' do
-    let(:search_service) { described_class.new(user, project, scope: scope) }
+    let(:service) { described_class.new(user, project, scope: scope) }
 
-    subject(:search_type) { search_service.search_type }
+    subject(:search_type) { service.search_type }
 
-    where(:use_zoekt, :use_elasticsearch, :scope, :expected_type) do
-      true   | true  | 'blobs'  | 'zoekt'
-      false  | true  | 'blobs'  | 'advanced'
-      false  | false | 'blobs'  | 'basic'
-      true   | true  | 'issues' | 'advanced'
-      true   | false | 'issues' | 'basic'
+    where(:use_zoekt, :use_elasticsearch, :scope, :elasticsearch_code_scope_setting, :expected_type) do
+      true   | true  | 'blobs'  | false | 'zoekt'
+      false  | true  | 'blobs'  | false | 'basic'
+      false  | false | 'blobs'  | false | 'basic'
+      true   | true  | 'issues' | false | 'advanced'
+      true   | false | 'issues' | false | 'basic'
+      true   | true  | 'blobs'  | true  | 'zoekt'
+      false  | true  | 'blobs'  | true  | 'advanced'
+      false  | false | 'blobs'  | true  | 'basic'
+      true   | true  | 'issues' | true  | 'advanced'
+      true   | false | 'issues' | true  | 'basic'
     end
 
     with_them do
       before do
-        allow(search_service).to receive_messages(scope: scope, use_zoekt?: use_zoekt,
-          use_elasticsearch?: use_elasticsearch)
+        allow(service).to receive_messages(scope: scope, use_zoekt?: use_zoekt, use_elasticsearch?: use_elasticsearch)
+        stub_ee_application_setting(elasticsearch_code_scope: elasticsearch_code_scope_setting)
       end
 
       it { is_expected.to eq(expected_type) }
 
+      context 'when use_default_branch? is false' do
+        before do
+          allow(service).to receive(:use_default_branch?).and_return(false)
+        end
+
+        it { is_expected.to eq('basic') }
+      end
+
       %w[basic advanced zoekt].each do |search_type|
         context "with search_type param #{search_type}" do
-          let(:search_service) do
-            described_class.new(user, project, { scope: scope, search_type: search_type })
-          end
+          let(:service) { described_class.new(user, project, { scope: scope, search_type: search_type }) }
 
           it { is_expected.to eq(search_type) }
         end
@@ -139,9 +150,12 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
 
         expect(service.use_zoekt?).to be(true)
         expect(service.zoekt_searchable_scope).to eq(project)
-        expect(Search::Zoekt::SearchResults).to receive(:new)
-          .with(user, 'foobar', nil, hash_including(filters: { include_archived: true, exclude_forks: false }))
-          .and_call_original
+        expect(Search::Zoekt::SearchResults).to receive(:new).with(
+          user,
+          'foobar',
+          nil,
+          hash_including(filters: { include_archived: true, exclude_forks: false })
+        ).and_call_original
         result = service.execute
         expect(result).to be_kind_of(::Search::Zoekt::SearchResults)
       end
@@ -298,38 +312,80 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
       let(:scope) { 'merge_requests' }
 
       let_it_be(:old_result) do
-        create(:merge_request, :opened, source_project: project, source_branch: 'old-1', title: 'sorted old',
-          created_at: 1.month.ago)
+        create(
+          :merge_request,
+          :opened,
+          source_project: project,
+          source_branch: 'old-1',
+          title: 'sorted old',
+          created_at: 1.month.ago
+        )
       end
 
       let_it_be(:new_result) do
-        create(:merge_request, :opened, source_project: project, source_branch: 'new-1', title: 'sorted recent',
-          created_at: 1.day.ago)
+        create(
+          :merge_request,
+          :opened,
+          source_project: project,
+          source_branch: 'new-1',
+          title: 'sorted recent',
+          created_at: 1.day.ago
+        )
       end
 
       let_it_be(:very_old_result) do
-        create(:merge_request, :opened, source_project: project, source_branch: 'very-old-1', title: 'sorted very old',
-          created_at: 1.year.ago)
+        create(
+          :merge_request,
+          :opened,
+          source_project: project,
+          source_branch: 'very-old-1',
+          title: 'sorted very old',
+          created_at: 1.year.ago
+        )
       end
 
       let_it_be(:old_updated) do
-        create(:merge_request, :opened, source_project: project, source_branch: 'updated-old-1', title: 'updated old',
-          updated_at: 1.month.ago)
+        create(
+          :merge_request,
+          :opened,
+          source_project: project,
+          source_branch: 'updated-old-1',
+          title: 'updated old',
+          updated_at: 1.month.ago
+        )
       end
 
       let_it_be(:new_updated) do
-        create(:merge_request, :opened, source_project: project, source_branch: 'updated-new-1',
-          title: 'updated recent', updated_at: 1.day.ago)
+        create(
+          :merge_request,
+          :opened,
+          source_project: project,
+          source_branch: 'updated-new-1',
+          title: 'updated recent',
+          updated_at: 1.day.ago
+        )
       end
 
       let_it_be(:very_old_updated) do
-        create(:merge_request, :opened, source_project: project, source_branch: 'updated-very-old-1',
-          title: 'updated very old', updated_at: 1.year.ago)
+        create(
+          :merge_request,
+          :opened,
+          source_project: project,
+          source_branch: 'updated-very-old-1',
+          title: 'updated very old',
+          updated_at: 1.year.ago
+        )
       end
 
       before do
-        Elastic::ProcessInitialBookkeepingService.track!(old_result, new_result, very_old_result, old_updated,
-          new_updated, very_old_updated)
+        Elastic::ProcessInitialBookkeepingService.track!(
+          old_result,
+          new_result,
+          very_old_result,
+          old_updated,
+          new_updated,
+          very_old_updated
+        )
         ensure_elasticsearch_index!
       end
 
@@ -422,6 +478,12 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
     it 'calls on Node.searchable_for_project' do
       expect(Search::Zoekt::Node).to receive(:searchable_for_project).with(project).and_return(:result)
       expect(service.zoekt_nodes).to eq(:result)
+    end
+  end
+
+  describe '#search_level' do
+    it 'returns project' do
+      expect(described_class.new(user, project, scope: 'notes').search_level).to eq :project
     end
   end
 

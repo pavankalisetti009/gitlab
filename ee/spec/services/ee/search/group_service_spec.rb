@@ -22,33 +22,36 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
   end
 
   describe '#search_type' do
-    let(:search_service) { described_class.new(user, group, scope: scope) }
+    let(:service) { described_class.new(user, group, scope: scope) }
 
-    subject(:search_type) { search_service.search_type }
+    subject(:search_type) { service.search_type }
 
     using RSpec::Parameterized::TableSyntax
 
-    where(:use_zoekt, :use_elasticsearch, :scope, :expected_type) do
-      true   | true  | 'blobs'  | 'zoekt'
-      false  | true  | 'blobs'  | 'advanced'
-      false  | false | 'blobs'  | 'basic'
-      true   | true  | 'issues' | 'advanced'
-      true   | false | 'issues' | 'basic'
+    where(:use_zoekt, :use_elasticsearch, :scope, :elasticsearch_code_scope_setting, :expected_type) do
+      true   | true  | 'blobs'  | false | 'zoekt'
+      false  | true  | 'blobs'  | false | 'basic'
+      false  | false | 'blobs'  | false | 'basic'
+      true   | true  | 'issues' | false | 'advanced'
+      true   | false | 'issues' | false | 'basic'
+      true   | true  | 'blobs'  | true  | 'zoekt'
+      false  | true  | 'blobs'  | true  | 'advanced'
+      false  | false | 'blobs'  | true  | 'basic'
+      true   | true  | 'issues' | true  | 'advanced'
+      true   | false | 'issues' | true  | 'basic'
     end
 
     with_them do
       before do
-        allow(search_service).to receive_messages(scope: scope, use_zoekt?: use_zoekt,
-          use_elasticsearch?: use_elasticsearch)
+        allow(service).to receive_messages(scope: scope, use_zoekt?: use_zoekt, use_elasticsearch?: use_elasticsearch)
+        stub_ee_application_setting(elasticsearch_code_scope: elasticsearch_code_scope_setting)
       end
 
       it { is_expected.to eq(expected_type) }
 
       %w[basic advanced zoekt].each do |search_type|
         context "with search_type param #{search_type}" do
-          let(:search_service) do
-            described_class.new(user, group, { scope: scope, search_type: search_type })
-          end
+          let(:service) { described_class.new(user, group, { scope: scope, search_type: search_type }) }
 
           it { is_expected.to eq(search_type) }
         end

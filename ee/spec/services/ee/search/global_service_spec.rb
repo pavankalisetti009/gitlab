@@ -19,31 +19,36 @@ RSpec.describe Search::GlobalService, feature_category: :global_search do
   end
 
   describe '#search_type' do
-    let(:search_service) { described_class.new(user, scope: scope) }
+    let(:service) { described_class.new(user, scope: scope) }
 
-    subject(:search_type) { search_service.search_type }
+    subject(:search_type) { service.search_type }
 
     using RSpec::Parameterized::TableSyntax
 
-    where(:use_zoekt, :use_elasticsearch, :scope, :expected_type) do
-      true   | true  | 'blobs'  | 'zoekt'
-      false  | true  | 'blobs'  | 'advanced'
-      false  | false | 'blobs'  | 'basic'
-      true   | true  | 'issues' | 'advanced'
-      true   | false | 'issues' | 'basic'
+    where(:use_zoekt, :use_elasticsearch, :scope, :elasticsearch_code_scope_setting, :expected_type) do
+      true   | true  | 'blobs'  | false | 'zoekt'
+      false  | true  | 'blobs'  | false | 'basic'
+      false  | false | 'blobs'  | false | 'basic'
+      true   | true  | 'issues' | false | 'advanced'
+      true   | false | 'issues' | false | 'basic'
+      true   | true  | 'blobs'  | true  | 'zoekt'
+      false  | true  | 'blobs'  | true  | 'advanced'
+      false  | false | 'blobs'  | true  | 'basic'
+      true   | true  | 'issues' | true  | 'advanced'
+      true   | false | 'issues' | true  | 'basic'
     end
 
     with_them do
       before do
-        allow(search_service).to receive_messages(scope: scope, use_zoekt?: use_zoekt,
-          use_elasticsearch?: use_elasticsearch)
+        allow(service).to receive_messages(scope: scope, use_zoekt?: use_zoekt, use_elasticsearch?: use_elasticsearch)
+        stub_ee_application_setting(elasticsearch_code_scope: elasticsearch_code_scope_setting)
       end
 
       it { is_expected.to eq(expected_type) }
 
       %w[basic advanced zoekt].each do |search_type|
         context "with search_type param #{search_type}" do
-          let(:search_service) { described_class.new(user, { scope: scope, search_type: search_type }) }
+          let(:service) { described_class.new(user, { scope: scope, search_type: search_type }) }
 
           it { is_expected.to eq(search_type) }
         end
@@ -194,23 +199,54 @@ RSpec.describe Search::GlobalService, feature_category: :global_search do
         stub_feature_flags(search_scope_registry: false)
       end
 
+      context 'when request search_type is basic' do
+        it 'returns scopes that are available for basic search' do
+          expected_scopes = %w[issues merge_requests milestones projects users]
+          expect(described_class.new(user, { search_type: 'basic' }).allowed_scopes).to match_array(expected_scopes)
+        end
+      end
+
       context 'when ES is used' do
         before do
           stub_ee_application_setting(elasticsearch_search: true)
         end
 
         it 'includes ES-specific scopes from legacy allowed scopes' do
-          expect(described_class.new(user, {}).allowed_scopes).to include('commits', 'epics')
+          expect(described_class.new(user, {}).allowed_scopes).to include('blobs', 'commits', 'epics')
+        end
+
+        context 'when elasticsearch_code_scope is false' do
+          before do
+            stub_ee_application_setting(elasticsearch_code_scope: false)
+          end
+
+          it 'includes ES-specific scopes but not blobs' do
+            expect(described_class.new(user, {}).allowed_scopes).to include('commits', 'epics')
+            expect(described_class.new(user, {}).allowed_scopes).not_to include('blobs')
+          end
         end
       end
 
       context 'when elasticsearch_search is disabled' do
+        let(:service) { described_class.new(user, {}) }
+
         before do
           stub_ee_application_setting(elasticsearch_search: false)
         end
 
         it 'does not include ES-specific scopes and epics in legacy mode' do
-          expect(described_class.new(user, {}).allowed_scopes).not_to include('commits', 'epics')
+          expect(service.allowed_scopes).not_to include('blobs', 'commits', 'epics')
+        end
+
+        context 'when zoekt is enabled' do
+          before do
+            allow(service).to receive(:use_zoekt?).and_return(true)
+          end
+
+          it 'does not include ES-specific scopes and epics but includes blobs' do
+            expect(service.allowed_scopes).not_to include('commits', 'epics')
+            expect(service.allowed_scopes).to include('blobs')
+          end
         end
       end
     end

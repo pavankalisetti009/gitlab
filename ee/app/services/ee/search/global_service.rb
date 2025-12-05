@@ -79,7 +79,11 @@ module EE
         scopes = super
         return scopes if params[:search_type] == 'basic'
 
-        scopes += %w[blobs commits epics notes wiki_blobs] if use_elasticsearch?
+        if use_elasticsearch?
+          scopes += %w[commits epics notes wiki_blobs]
+          scopes << 'blobs' if ::Gitlab::CurrentSettings.elasticsearch_code_scope
+        end
+
         scopes += %w[blobs] if use_zoekt?
 
         scopes.uniq

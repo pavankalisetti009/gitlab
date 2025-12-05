@@ -4,6 +4,22 @@ require 'spec_helper'
 
 RSpec.describe Search::Scopes, feature_category: :global_search do
   describe '.available_for_context' do
+    context 'when availability is empty' do
+      before do
+        allow(described_class).to receive(:scope_definitions).and_return({
+          test_scope: {
+            label: -> { 'Test' },
+            sort: 99,
+            availability: {}
+          }
+        })
+      end
+
+      it 'does not include the scope with empty availability' do
+        expect(described_class.available_for_context(context: :project)).not_to include(:test_scope)
+      end
+    end
+
     context 'for global context' do
       it 'includes code scopes with advanced search' do
         allow(Gitlab::CurrentSettings).to receive(:search_using_elasticsearch?).with(scope: nil).and_return(true)
@@ -24,6 +40,59 @@ RSpec.describe Search::Scopes, feature_category: :global_search do
 
         expect(scopes).to include('epics')
       end
+
+      context 'when setting elasticsearch_code_scope is false' do
+        before do
+          allow(Gitlab::CurrentSettings).to receive(:search_using_elasticsearch?).and_return(true)
+          stub_ee_application_setting(elasticsearch_code_scope: false)
+        end
+
+        context 'when zoekt is not available' do
+          before do
+            allow(Search::Zoekt).to receive(:search?).and_return(false)
+          end
+
+          it 'does not include blobs' do
+            scopes = described_class.available_for_context(context: :global)
+
+            expect(scopes).to include(
+              'commits',
+              'epics',
+              'issues',
+              'merge_requests',
+              'milestones',
+              'notes',
+              'projects',
+              'users',
+              'wiki_blobs'
+            )
+            expect(scopes).not_to include('blobs')
+          end
+        end
+
+        context 'when zoekt is available' do
+          before do
+            allow(Search::Zoekt).to receive(:search?).and_return(true)
+          end
+
+          it 'includes blobs' do
+            scopes = described_class.available_for_context(context: :global)
+
+            expect(scopes).to include(
+              'blobs',
+              'commits',
+              'epics',
+              'issues',
+              'merge_requests',
+              'milestones',
+              'notes',
+              'projects',
+              'users',
+              'wiki_blobs'
+            )
+          end
+        end
+      end
     end
 
     context 'for group context' do
@@ -41,6 +110,59 @@ RSpec.describe Search::Scopes, feature_category: :global_search do
         expect(scopes).to include('projects', 'issues', 'merge_requests', 'blobs')
         expect(scopes).to include('milestones', 'users')
       end
+
+      context 'when setting elasticsearch_code_scope is false' do
+        before do
+          allow(Gitlab::CurrentSettings).to receive(:search_using_elasticsearch?).and_return(true)
+          stub_ee_application_setting(elasticsearch_code_scope: false)
+        end
+
+        context 'when zoekt is not available' do
+          before do
+            allow(Search::Zoekt).to receive(:search?).and_return(false)
+          end
+
+          it 'does not include blobs' do
+            scopes = described_class.available_for_context(context: :group)
+
+            expect(scopes).to include(
+              'commits',
+              'epics',
+              'issues',
+              'merge_requests',
+              'milestones',
+              'notes',
+              'projects',
+              'users',
+              'wiki_blobs'
+            )
+            expect(scopes).not_to include('blobs')
+          end
+        end
+
+        context 'when zoekt is available' do
+          before do
+            allow(Search::Zoekt).to receive(:search?).and_return(true)
+          end
+
+          it 'includes blobs' do
+            scopes = described_class.available_for_context(context: :group)
+
+            expect(scopes).to include(
+              'blobs',
+              'commits',
+              'epics',
+              'issues',
+              'merge_requests',
+              'milestones',
+              'notes',
+              'projects',
+              'users',
+              'wiki_blobs'
+            )
+          end
+        end
+      end
     end
 
     context 'for project context' do
@@ -48,6 +170,55 @@ RSpec.describe Search::Scopes, feature_category: :global_search do
         scopes = described_class.available_for_context(context: :project, requested_search_type: :advanced)
 
         expect(scopes).not_to include('epics')
+      end
+
+      context 'when setting elasticsearch_code_scope is false' do
+        before do
+          allow(Gitlab::CurrentSettings).to receive(:search_using_elasticsearch?).and_return(true)
+          stub_ee_application_setting(elasticsearch_code_scope: false)
+        end
+
+        context 'when zoekt is not available' do
+          before do
+            allow(Search::Zoekt).to receive(:search?).and_return(false)
+          end
+
+          it 'includes blobs' do # Through basic search
+            scopes = described_class.available_for_context(context: :project)
+
+            expect(scopes).to include(
+              'blobs',
+              'issues',
+              'merge_requests',
+              'wiki_blobs',
+              'commits',
+              'notes',
+              'milestones',
+              'users'
+            )
+          end
+        end
+
+        context 'when zoekt is available' do
+          before do
+            allow(Search::Zoekt).to receive(:search?).and_return(true)
+          end
+
+          it 'includes blobs' do
+            scopes = described_class.available_for_context(context: :project)
+
+            expect(scopes).to include(
+              'blobs',
+              'commits',
+              'issues',
+              'merge_requests',
+              'milestones',
+              'notes',
+              'users',
+              'wiki_blobs'
+            )
+          end
+        end
       end
     end
   end
@@ -217,22 +388,6 @@ RSpec.describe Search::Scopes, feature_category: :global_search do
 
           scopes = described_class.available_for_context(context: :group, container: group)
           expect(scopes).not_to include('blobs')
-        end
-
-        it 'handles context with no availability' do
-          # Create a custom definition with nil availability for the context
-          # This tests the safe navigation operator branch in line 87
-          custom_definition = {
-            label: -> { 'Test' },
-            sort: 99,
-            availability: {}
-          }
-          allow(described_class).to receive(:scope_definitions).and_return({
-            test_scope: custom_definition
-          })
-
-          scopes = described_class.available_for_context(context: :group, container: group)
-          expect(scopes).not_to include('test_scope')
         end
 
         it 'delegates to CE when scope has only basic search type' do

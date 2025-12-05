@@ -111,6 +111,10 @@
         "typhoeus",
         "net_http"
       ]
+    },
+    "elasticsearch_code_scope": {
+      "type": "boolean",
+      "default": true
     }
   },
   "additionalProperties": false
