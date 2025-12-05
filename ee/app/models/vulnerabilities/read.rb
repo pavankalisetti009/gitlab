@@ -36,6 +36,8 @@ module Vulnerabilities
     belongs_to :project
     belongs_to :scanner, class_name: 'Vulnerabilities::Scanner'
     belongs_to :vulnerability_occurrence, optional: true, class_name: 'Vulnerabilities::Finding'
+    belongs_to :tracked_context, class_name: 'Security::ProjectTrackedContext', optional: true,
+      foreign_key: :security_project_tracked_context_id, inverse_of: :vulnerability_reads
 
     validates :vulnerability_id, uniqueness: true, presence: true
     validates :project_id, presence: true

@@ -11,6 +11,7 @@ FactoryBot.define do
     uuid { SecureRandom.uuid }
     owasp_top_10 { 'undefined' }
     traits_for_enum :dismissal_reason, Vulnerabilities::DismissalReasonEnum.values.keys
+    tracked_context factory: :security_project_tracked_context
 
     after(:build) do |vulnerability_read, _|
       vulnerability_read.archived = vulnerability_read.project&.archived

@@ -21,6 +21,10 @@ module Security
       class_name: 'Sbom::OccurrenceRef',
       foreign_key: 'security_project_tracked_context_id',
       inverse_of: :tracked_context
+    has_many :vulnerability_reads,
+      class_name: 'Vulnerabilities::Read',
+      foreign_key: 'security_project_tracked_context_id',
+      inverse_of: :tracked_context
 
     validates :context_name, presence: true, length: { maximum: 1024 }
     validates :context_type, presence: true
