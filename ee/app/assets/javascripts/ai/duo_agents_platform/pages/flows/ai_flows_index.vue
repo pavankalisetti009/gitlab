@@ -352,6 +352,7 @@ export default {
           :empty-state-button-text="emptyStateButtonText"
           :disable-confirm-title="disableConfirmTitle"
           :disable-confirm-message="disableConfirmMessage"
+          :search-term="searchTerm"
           data-testid="managed-flows-list"
           @next-page="handleNextPage"
           @prev-page="handlePrevPage"

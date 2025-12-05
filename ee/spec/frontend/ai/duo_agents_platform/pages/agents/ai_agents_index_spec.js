@@ -87,6 +87,7 @@ describe('AiAgentsIndex', () => {
   const findAddProjectItemConsumerModal = () => wrapper.findComponent(AddProjectItemConsumerModal);
   const findAiCatalogListWrapper = () => wrapper.findByTestId('managed-agents-list');
   const findTabs = () => wrapper.findComponent(GlTabs);
+  const findAllTabs = () => wrapper.findAllComponents(GlTab);
 
   describe('component rendering', () => {
     beforeEach(() => {
@@ -226,6 +227,27 @@ describe('AiAgentsIndex', () => {
           projectPath: mockProjectPath,
           allAvailable: false,
           search: '',
+          after: null,
+          before: null,
+          first: 20,
+          last: null,
+        });
+      });
+
+      it('maintains search term when switching tabs', async () => {
+        // First set a search term
+        findAiCatalogListWrapper().vm.$emit('search', ['test flow']);
+        await nextTick();
+
+        // Click on Enabled tab
+        findAllTabs().at(0).vm.$emit('click');
+        await nextTick();
+
+        expect(mockProjectAgentsQueryHandler).toHaveBeenLastCalledWith({
+          projectId: `gid://gitlab/Project/${mockProjectId}`,
+          projectPath: mockProjectPath,
+          allAvailable: false,
+          search: 'test flow',
           after: null,
           before: null,
           first: 20,
