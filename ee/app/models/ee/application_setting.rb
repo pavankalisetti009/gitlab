@@ -467,8 +467,16 @@ module EE
     end
 
     def auto_duo_code_review_settings_available?
-      duo_features_enabled &&
-        ::GitlabSubscriptions::AddOnPurchase.for_active_add_ons(:duo_enterprise, resource: :instance).any?
+      return false unless duo_features_enabled
+
+      # Start with Duo Enterprise (classic flow)
+      # Duo Enterprise is always available when the add-on is active, regardless of feature flags
+      add_ons = [:duo_enterprise]
+
+      # We're already past 18.6 cut-off so we don't need to check for beta features
+      add_ons += [:duo_pro, :duo_core] if ::Feature.enabled?(:duo_code_review_on_agent_platform, :instance)
+
+      ::GitlabSubscriptions::AddOnPurchase.for_active_add_ons(add_ons, :instance).any?
     end
 
     def allowed_integrations_raw=(value)

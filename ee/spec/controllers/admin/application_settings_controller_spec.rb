@@ -503,6 +503,13 @@ RSpec.describe Admin::ApplicationSettingsController, feature_category: :shared d
 
     context 'when updating auto_duo_code_review_enabled setting' do
       let(:settings) { { auto_duo_code_review_enabled: true } }
+      let!(:duo_enterprise_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
+      let!(:duo_core_add_on) { create(:gitlab_subscription_add_on, :duo_core) }
+
+      before do
+        ApplicationSetting.current.update!(duo_features_enabled: true)
+        stub_feature_flags(duo_code_review_on_agent_platform: false)
+      end
 
       context 'when duo features are disabled' do
         before do
@@ -518,11 +525,7 @@ RSpec.describe Admin::ApplicationSettingsController, feature_category: :shared d
       end
 
       context 'when duo features are enabled' do
-        before do
-          ApplicationSetting.current.update!(duo_features_enabled: true)
-        end
-
-        context 'without duo enterprise add-on' do
+        context 'without any duo add-on' do
           it 'does not update the setting when not available' do
             expect { put :update, params: { application_setting: settings } }
               .not_to change { ApplicationSetting.current.reload.auto_duo_code_review_enabled }
@@ -532,8 +535,6 @@ RSpec.describe Admin::ApplicationSettingsController, feature_category: :shared d
         end
 
         context 'with duo enterprise add-on' do
-          let!(:duo_enterprise_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
-
           before do
             create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: duo_enterprise_add_on)
           end
@@ -552,6 +553,25 @@ RSpec.describe Admin::ApplicationSettingsController, feature_category: :shared d
 
             expect(ApplicationSetting.current.auto_duo_code_review_enabled).to be_falsey
             expect(ApplicationSetting.current.auto_duo_code_review_settings_available?).to be_truthy
+          end
+        end
+
+        context 'when duo_code_review_on_agent_platform feature flag is enabled' do
+          before do
+            stub_feature_flags(duo_code_review_on_agent_platform: true)
+          end
+
+          context 'with duo_core add-on' do
+            before do
+              create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: duo_core_add_on)
+            end
+
+            it 'updates the setting and it is available' do
+              put :update, params: { application_setting: settings }
+
+              expect(ApplicationSetting.current.auto_duo_code_review_enabled).to be_truthy
+              expect(ApplicationSetting.current.auto_duo_code_review_settings_available?).to be_truthy
+            end
           end
         end
       end

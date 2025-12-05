@@ -64,7 +64,7 @@ module EE
           })
         end
 
-        if project.duo_enterprise_features_available?
+        if project.auto_duo_code_review_settings_available?
           settings.push({
             text: s_("DuoCodeReview|GitLab Duo Code Review"),
             href: project_settings_merge_requests_path(project, anchor: 'merge-request-duo-code-review-settings')

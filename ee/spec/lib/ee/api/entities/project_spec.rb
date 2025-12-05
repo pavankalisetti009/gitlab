@@ -126,16 +126,9 @@ RSpec.describe ::EE::API::Entities::Project, feature_category: :shared do
   end
 
   describe 'auto_duo_code_review_enabled' do
-    let(:duo_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
-
-    context 'when project is licensed to use review_merge_request' do
+    context 'when namespace has auto_duo_code_review_settings available' do
       before do
-        stub_licensed_features(review_merge_request: true)
-
-        allow(project.namespace)
-          .to receive(:has_active_add_on_purchase?)
-          .with(:duo_enterprise)
-          .and_return(true)
+        allow(project.namespace).to receive(:auto_duo_code_review_settings_available?).and_return(true)
       end
 
       it 'returns a boolean value' do
@@ -143,11 +136,9 @@ RSpec.describe ::EE::API::Entities::Project, feature_category: :shared do
       end
     end
 
-    context 'when project is not licensed to use review_merge_request' do
-      let(:current_user) { developer }
-
+    context 'when namespace does not have auto_duo_code_review_settings available' do
       before do
-        stub_licensed_features(review_merge_request: false)
+        allow(project.namespace).to receive(:auto_duo_code_review_settings_available?).and_return(false)
       end
 
       it 'returns nil' do

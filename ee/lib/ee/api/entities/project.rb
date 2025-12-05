@@ -64,7 +64,7 @@ module EE
           expose :only_allow_merge_if_all_status_checks_passed, if: ->(project, _) { project.feature_available?(:external_status_checks) }
           expose :allow_pipeline_trigger_approve_deployment, documentation: { type: 'boolean' }, if: ->(project, _) { project.feature_available?(:protected_environments) }
           expose :prevent_merge_without_jira_issue, if: ->(project, _) { project.feature_available?(:jira_issue_association_enforcement) }
-          expose :auto_duo_code_review_enabled, if: ->(project, _) { project.namespace.has_active_add_on_purchase?(:duo_enterprise) }
+          expose :auto_duo_code_review_enabled, if: ->(project, _) { project.namespace.auto_duo_code_review_settings_available? }
           expose :duo_remote_flows_enabled, if: ->(_, _) { ::Ai::DuoWorkflow.enabled? }
           expose :duo_foundational_flows_enabled, if: ->(_, _) { ::Ai::DuoWorkflow.enabled? }
           expose :duo_sast_fp_detection_enabled, if: ->(project, _) { project.licensed_feature_available?(:ai_features) && ::Feature.enabled?(:ai_experiment_sast_fp_detection, project) }

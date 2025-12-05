@@ -13,7 +13,7 @@ module EE
       def assign_duo_as_reviewer(merge_request)
         project = merge_request.project
         return unless project.auto_duo_code_review_enabled
-        return unless project.duo_enterprise_features_available?
+        return unless project.auto_duo_code_review_settings_available?
 
         if merge_request.ai_review_merge_request_allowed?(current_user)
           duo_bot = ::Users::Internal.duo_code_review_bot
@@ -74,9 +74,22 @@ module EE
         #   Duo code review will then be triggered in AfterCreateService after diffs are created.
         return unless merge_request.merge_request_diff.persisted?
         return if merge_request.merge_request_diff.empty?
-        return unless merge_request.ai_review_merge_request_allowed?(current_user)
 
-        ::Llm::ReviewMergeRequestService.new(current_user, merge_request).execute
+        if use_duo_agent_platform?(merge_request)
+          ::Ai::DuoWorkflows::CodeReview::ReviewMergeRequestService.new(
+            user: current_user,
+            merge_request: merge_request
+          ).execute
+        elsif merge_request.ai_review_merge_request_allowed?(current_user)
+          ::Llm::ReviewMergeRequestService.new(current_user, merge_request).execute
+        end
+      end
+
+      def use_duo_agent_platform?(merge_request)
+        ::Ai::DuoWorkflows::CodeReview::AvailabilityValidator.new(
+          user: current_user,
+          resource: merge_request.project
+        ).available?
       end
 
       def reset_approvals?(merge_request, _newrev)

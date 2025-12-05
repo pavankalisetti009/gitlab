@@ -1313,6 +1313,10 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
 
     subject { namespace.auto_duo_code_review_settings_available? }
 
+    before do
+      stub_feature_flags(duo_code_review_on_agent_platform: false)
+    end
+
     context 'when duo_features_enabled is false' do
       before do
         allow(namespace.namespace_settings).to receive(:duo_features_enabled?).and_return(false)
@@ -1385,6 +1389,110 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
 
             it { is_expected.to be_falsey }
           end
+        end
+      end
+
+      context 'when DAP feature flag is enabled', :saas do
+        before do
+          stub_ee_application_setting(should_check_namespace_plan: true)
+          stub_feature_flags(duo_code_review_on_agent_platform: namespace)
+        end
+
+        context 'when experiment_features_enabled is false' do
+          before do
+            allow(namespace.namespace_settings).to receive(:experiment_features_enabled).and_return(false)
+          end
+
+          context 'when namespace has duo_core add-on' do
+            before do
+              create(:gitlab_subscription_add_on_purchase, :duo_core, namespace: namespace)
+            end
+
+            it { is_expected.to be_falsey }
+          end
+        end
+
+        context 'when experiment_features_enabled is true' do
+          where(:add_on_type, :add_on_factory, :expected_result) do
+            [
+              ['duo_pro',       :duo_pro,       true],
+              ['duo_core',      :duo_core,      true],
+              ['duo_enterprise', nil,           true]
+            ]
+          end
+
+          with_them do
+            before do
+              allow(namespace.namespace_settings).to receive(:experiment_features_enabled).and_return(true)
+
+              if add_on_factory
+                create(:gitlab_subscription_add_on_purchase, add_on_factory, namespace: namespace)
+              else
+                create(:gitlab_subscription_add_on_purchase, namespace: namespace, add_on: duo_enterprise_add_on)
+              end
+            end
+
+            it "returns #{params[:expected_result]} for #{params[:add_on_type]}" do
+              expect(subject).to eq(expected_result)
+            end
+          end
+
+          context 'for subgroups inheriting add-ons from parent' do
+            let_it_be(:parent) { create(:group) }
+            let_it_be(:subgroup) { create(:group, parent: parent) }
+
+            subject { subgroup.auto_duo_code_review_settings_available? }
+
+            where(:add_on_type, :add_on_factory, :requires_feature_flag) do
+              [
+                ['duo_core',       :duo_core,      true],
+                ['duo_enterprise', nil,            false]
+              ]
+            end
+
+            with_them do
+              before do
+                allow(subgroup.namespace_settings).to receive(:experiment_features_enabled).and_return(true)
+
+                if requires_feature_flag
+                  stub_feature_flags(duo_code_review_on_agent_platform: subgroup)
+                  subgroup.namespace_settings.update!(duo_features_enabled: true)
+                end
+
+                if add_on_factory
+                  create(:gitlab_subscription_add_on_purchase, add_on_factory, namespace: parent)
+                else
+                  create(:gitlab_subscription_add_on_purchase, namespace: parent, add_on: duo_enterprise_add_on)
+                end
+              end
+
+              it "inherits #{params[:add_on_type]} from parent namespace" do
+                expect(subject).to be_truthy
+              end
+            end
+          end
+        end
+      end
+
+      context 'when DAP feature flag is enabled on self-managed' do
+        before do
+          stub_feature_flags(duo_code_review_on_agent_platform: namespace)
+        end
+
+        context 'when instance has duo_enterprise add-on' do
+          before do
+            create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: duo_enterprise_add_on)
+          end
+
+          it { is_expected.to be_truthy }
+        end
+
+        context 'when instance has expired duo_enterprise add-on' do
+          before do
+            create(:gitlab_subscription_add_on_purchase, :expired, :self_managed, add_on: duo_enterprise_add_on)
+          end
+
+          it { is_expected.to be_falsey }
         end
       end
     end

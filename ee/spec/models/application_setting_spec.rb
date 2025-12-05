@@ -2318,8 +2318,15 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
 
   describe '#auto_duo_code_review_settings_available?' do
     let(:application_setting) { build(:application_setting) }
+    let!(:duo_enterprise_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
+    let!(:duo_core_add_on) { create(:gitlab_subscription_add_on, :duo_core) }
 
     subject { application_setting.auto_duo_code_review_settings_available? }
+
+    before do
+      application_setting.duo_features_enabled = true
+      stub_feature_flags(duo_code_review_on_agent_platform: false)
+    end
 
     context 'when duo_features_enabled is false' do
       before do
@@ -2330,13 +2337,7 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
     end
 
     context 'when duo_features_enabled is true' do
-      let!(:duo_enterprise_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
-
-      before do
-        application_setting.duo_features_enabled = true
-      end
-
-      context 'without duo_enterprise add-on' do
+      context 'without any duo add-on' do
         it { is_expected.to be_falsey }
       end
 
@@ -2354,6 +2355,20 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
         end
 
         it { is_expected.to be_falsey }
+      end
+
+      context 'when duo_code_review_on_agent_platform feature flag is enabled' do
+        before do
+          stub_feature_flags(duo_code_review_on_agent_platform: true)
+        end
+
+        context 'with active duo_core add-on' do
+          before do
+            create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: duo_core_add_on)
+          end
+
+          it { is_expected.to be_truthy }
+        end
       end
     end
   end

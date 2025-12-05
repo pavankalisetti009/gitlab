@@ -760,7 +760,7 @@ module EE
     end
 
     def ai_review_merge_request_allowed?(user)
-      project.ai_review_merge_request_allowed?(user) && Ability.allowed?(user, :create_note, self)
+      ::Ai::CodeReviewAuthorization.new(self).allowed?(user) && Ability.allowed?(user, :create_note, self)
     end
 
     def ai_reviewable_diff_files

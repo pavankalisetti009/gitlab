@@ -69,8 +69,11 @@ module GitlabSubscriptions
     #     Allowed to be nil, in which case results will not be filtered by resource.
     scope :for_active_add_ons, ->(add_on_names, resource) do
       add_on_names = Array.wrap(add_on_names)
-
-      normalized_names = add_on_names.filter_map { |name| NORMALIZED_ADD_ON_NAME_INVERTED[name] || name }
+      normalized_names = add_on_names.filter_map do |name|
+        # Normalize to string first to handle both symbols and strings
+        name_str = name.to_s
+        NORMALIZED_ADD_ON_NAME_INVERTED[name_str] || name_str
+      end
       scope = by_add_on_name(normalized_names).active
 
       # On SM/Dedicated, or when requesting instance-wide purchases, we do not need to check namespace rules.

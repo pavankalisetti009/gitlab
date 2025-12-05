@@ -908,27 +908,82 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
 
       let!(:duo_enterprise_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
 
-      context 'authenticated as group owner' do
-        where(:param, :value, :result) do
-          'auto_duo_code_review_enabled' | false | false
-          'auto_duo_code_review_enabled' | true  | true
-        end
+      before do
+        stub_ee_application_setting(should_check_namespace_plan: true)
+        stub_feature_flags(duo_code_review_on_agent_platform: false)
+        group.add_owner(user)
+      end
 
-        with_them do
-          let(:params) { { param => value } }
+      context 'authenticated as group owner' do
+        context 'with duo_enterprise add-on and duo_features_enabled' do
+          let(:params) { { auto_duo_code_review_enabled: false } }
 
           before do
-            stub_ee_application_setting(should_check_namespace_plan: true)
-            group.add_owner(user)
             group.namespace_settings.update!(duo_features_enabled: true)
             create(:gitlab_subscription_add_on_purchase, namespace: group, add_on: duo_enterprise_add_on)
           end
 
-          it 'updates the attribute as expected' do
+          it 'updates the attribute' do
             put api("/groups/#{group.id}", user), params: params
 
             expect(response).to have_gitlab_http_status(:ok)
-            expect(json_response[param]).to eq(result)
+            expect(json_response['auto_duo_code_review_enabled']).to eq(false)
+          end
+        end
+
+        context 'without duo_enterprise add-on' do
+          let(:params) { { auto_duo_code_review_enabled: false } }
+
+          it 'does not update the attribute' do
+            put api("/groups/#{group.id}", user), params: params
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(json_response['auto_duo_code_review_enabled']).to be_nil
+          end
+        end
+
+        context 'when duo_code_review_on_agent_platform feature flag is enabled' do
+          before do
+            stub_feature_flags(duo_code_review_on_agent_platform: true)
+            group.namespace_settings.update!(duo_features_enabled: true)
+          end
+
+          context 'when experiment_features_enabled is false' do
+            before do
+              group.namespace_settings.update!(experiment_features_enabled: false)
+            end
+
+            context 'with duo_core add-on' do
+              before do
+                create(:gitlab_subscription_add_on_purchase, :duo_core, namespace: group)
+              end
+
+              it 'does not allow setting auto_duo_code_review_enabled' do
+                put api("/groups/#{group.id}", user), params: { auto_duo_code_review_enabled: true }
+
+                expect(response).to have_gitlab_http_status(:ok)
+                expect(json_response['auto_duo_code_review_enabled']).to be_nil
+              end
+            end
+          end
+
+          context 'when experiment_features_enabled is true' do
+            before do
+              group.namespace_settings.update!(experiment_features_enabled: true)
+            end
+
+            context 'with duo_core add-on' do
+              before do
+                create(:gitlab_subscription_add_on_purchase, :duo_core, namespace: group)
+              end
+
+              it 'allows setting auto_duo_code_review_enabled' do
+                put api("/groups/#{group.id}", user), params: { auto_duo_code_review_enabled: true }
+
+                expect(response).to have_gitlab_http_status(:ok)
+                expect(json_response['auto_duo_code_review_enabled']).to eq(true)
+              end
+            end
           end
         end
       end

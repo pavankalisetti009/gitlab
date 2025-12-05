@@ -895,6 +895,8 @@ RSpec.describe MergeRequests::RefreshService, feature_category: :code_review_wor
 
         context 'when Duo Code Review bot is assigned as a reviewer' do
           before do
+            stub_feature_flags(duo_code_review_on_agent_platform: false)
+
             merge_request.reviewers = [::Users::Internal.duo_code_review_bot]
           end
 
@@ -918,6 +920,42 @@ RSpec.describe MergeRequests::RefreshService, feature_category: :code_review_wor
 
               subject
             end
+          end
+        end
+
+        context 'when Duo Code Review bot is assigned as a reviewer with DAP flow enabled' do
+          let!(:duo_core_add_on) { create(:gitlab_subscription_add_on, :duo_core) }
+
+          before do
+            stub_ee_application_setting(instance_level_ai_beta_features_enabled: true)
+            project.project_setting.update!(duo_features_enabled: true)
+            create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: duo_core_add_on)
+            merge_request.reviewers = [::Users::Internal.duo_code_review_bot]
+            allow(current_user).to receive(:allowed_to_use?).with(:duo_agent_platform).and_return(true)
+            allow(Ability).to receive(:allowed?).and_call_original
+            allow(Ability).to receive(:allowed?).with(current_user, :create_note, merge_request).and_return(true)
+          end
+
+          it 'calls Ai::DuoWorkflows::CodeReview::ReviewMergeRequestService' do
+            expect_next_instance_of(
+              Ai::DuoWorkflows::CodeReview::ReviewMergeRequestService,
+              user: current_user,
+              merge_request: merge_request
+            ) do |svc|
+              expect(svc).to receive(:execute)
+            end
+
+            subject
+          end
+
+          it 'does not call legacy Llm::ReviewMergeRequestService' do
+            allow_next_instance_of(Ai::DuoWorkflows::CodeReview::ReviewMergeRequestService) do |svc|
+              allow(svc).to receive(:execute)
+            end
+
+            expect(Llm::ReviewMergeRequestService).not_to receive(:new)
+
+            subject
           end
         end
       end

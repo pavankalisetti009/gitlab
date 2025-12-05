@@ -26,15 +26,6 @@ module Gitlab
             # Progress note may not exist for existing jobs so we create one if we can
             @progress_note = find_progress_note || create_progress_note
 
-            if should_use_duo_agent_platform?
-              update_review_state('review_started') if merge_request
-              execute_duo_agent_platform_flow
-            else
-              execute_legacy_flow
-            end
-          end
-
-          def execute_legacy_flow
             unless progress_note.present?
               Gitlab::ErrorTracking.track_exception(
                 StandardError.new("Unable to perform Duo Code Review: progress_note and resource not found"),
@@ -68,42 +59,6 @@ module Gitlab
             @progress_note&.destroy
           end
 
-          def execute_duo_agent_platform_flow
-            result = ::Ai::DuoWorkflows::CreateAndStartWorkflowService.new(
-              container: merge_request.project,
-              current_user: user,
-              workflow_definition: ::Ai::DuoWorkflows::WorkflowDefinition['code_review/v1'],
-              goal: merge_request.iid,
-              source_branch: merge_request.source_branch
-            ).execute
-
-            # If workflow fails to start, post error comment and reset review state
-            unless result.success?
-              if progress_note.present?
-                update_progress_note(::Ai::CodeReviewMessages.could_not_start_workflow_error, with_todo: true)
-              end
-
-              update_review_state('reviewed') if merge_request.present?
-              @progress_note&.destroy
-              return result
-            end
-
-            # Schedule timeout cleanup job for 30 minutes from now in case workflow fails midway
-            ::Ai::DuoWorkflows::CodeReview::TimeoutWorker.perform_in(30.minutes, merge_request.id)
-
-            result
-          rescue StandardError => error
-            Gitlab::ErrorTracking.track_exception(error, unit_primitive: UNIT_PRIMITIVE)
-
-            if progress_note.present?
-              update_progress_note(::Ai::CodeReviewMessages.could_not_start_workflow_error, with_todo: true)
-            end
-
-            update_review_state('reviewed') if merge_request.present?
-            @progress_note&.destroy
-            ServiceResponse.error(message: error.message)
-          end
-
           override :inputs
           def inputs
             @prompt_inputs
@@ -126,20 +81,6 @@ module Gitlab
 
           def user
             prompt_message.user
-          end
-
-          def should_use_duo_agent_platform?
-            return false unless Feature.enabled?(:duo_code_review_on_agent_platform, user)
-
-            feature_setting = selected_feature_setting(user)
-
-            # SaaS customers always use DAP
-            return true unless feature_setting&.self_hosted?
-
-            return false if feature_setting&.self_hosted_model&.unsupported_family_for_duo_agent_platform_code_review?
-
-            # Self-hosted customers need DWS configured to use DAP
-            ::Gitlab::DuoWorkflow::Client.self_hosted_url.present?
           end
 
           def perform_review

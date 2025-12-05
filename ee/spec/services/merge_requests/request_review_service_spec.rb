@@ -14,6 +14,7 @@ RSpec.describe ::MergeRequests::RequestReviewService, feature_category: :code_re
 
   context 'when requesting review from duo code review bot' do
     before do
+      stub_feature_flags(duo_code_review_on_agent_platform: false)
       allow(merge_request.merge_request_diff).to receive_messages(
         persisted?: persisted,
         empty?: empty
@@ -72,6 +73,73 @@ RSpec.describe ::MergeRequests::RequestReviewService, feature_category: :code_re
             service.execute(merge_request, user)
           end
         end
+      end
+    end
+  end
+
+  context 'when requesting review from duo code review bot with DAP flow enabled' do
+    before do
+      stub_feature_flags(duo_code_review_on_agent_platform: true)
+      merge_request.project.project_setting.update!(duo_features_enabled: true)
+
+      allow_next_instance_of(Ai::DuoWorkflows::CodeReview::AvailabilityValidator) do |validator|
+        allow(validator).to receive(:available?).and_return(true)
+      end
+
+      allow(merge_request.merge_request_diff).to receive_messages(
+        persisted?: persisted,
+        empty?: empty
+      )
+    end
+
+    context 'when merge_request_diff is persisted' do
+      let(:persisted) { true }
+      let(:empty) { false }
+
+      it 'calls Ai::DuoWorkflows::CodeReview::ReviewMergeRequestService' do
+        expect_next_instance_of(
+          Ai::DuoWorkflows::CodeReview::ReviewMergeRequestService,
+          user: current_user,
+          merge_request: merge_request
+        ) do |svc|
+          expect(svc).to receive(:execute)
+        end
+
+        service.execute(merge_request, user)
+      end
+
+      it 'does not call legacy Llm::ReviewMergeRequestService' do
+        allow_next_instance_of(Ai::DuoWorkflows::CodeReview::ReviewMergeRequestService) do |svc|
+          allow(svc).to receive(:execute)
+        end
+
+        expect(Llm::ReviewMergeRequestService).not_to receive(:new)
+
+        service.execute(merge_request, user)
+      end
+    end
+
+    context 'when merge_request_diff is not persisted' do
+      let(:persisted) { false }
+      let(:empty) { false }
+
+      it 'does not trigger any review service' do
+        expect(Llm::ReviewMergeRequestService).not_to receive(:new)
+        expect(Ai::DuoWorkflows::CodeReview::ReviewMergeRequestService).not_to receive(:new)
+
+        service.execute(merge_request, user)
+      end
+    end
+
+    context 'when merge_request_diff is empty' do
+      let(:persisted) { true }
+      let(:empty) { true }
+
+      it 'does not trigger any review service' do
+        expect(Llm::ReviewMergeRequestService).not_to receive(:new)
+        expect(Ai::DuoWorkflows::CodeReview::ReviewMergeRequestService).not_to receive(:new)
+
+        service.execute(merge_request, user)
       end
     end
   end

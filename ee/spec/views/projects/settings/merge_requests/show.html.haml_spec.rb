@@ -13,13 +13,11 @@ RSpec.describe 'projects/settings/merge_requests/show', feature_category: :code_
   end
 
   describe 'Duo Code Review' do
-    before do
-      allow(project.project_setting).to receive(:duo_features_enabled?).and_return(duo_enabled)
-      allow(project.namespace).to receive(:has_active_add_on_purchase?).and_return(true)
-    end
-
-    context 'when Duo Code Review is enabled' do
-      let(:duo_enabled) { true }
+    context 'when auto_duo_code_review_settings are available' do
+      before do
+        allow(project.project_setting).to receive(:duo_features_enabled?).and_return(true)
+        allow(project.namespace).to receive(:auto_duo_code_review_settings_available?).and_return(true)
+      end
 
       it 'displays the setting header' do
         render
@@ -34,13 +32,14 @@ RSpec.describe 'projects/settings/merge_requests/show', feature_category: :code_
       end
     end
 
-    context 'when Duo Code Review is not enabled' do
-      let(:duo_enabled) { false }
+    context 'when auto_duo_code_review_settings are not available' do
+      before do
+        allow(project.project_setting).to receive(:duo_features_enabled?).and_return(false)
+      end
 
       it 'does not display the setting' do
         render
-
-        expect(rendered.to_s).not_to have_content 'GitLab Duo Code Review'
+        expect(rendered).not_to have_content 'GitLab Duo Code Review'
       end
     end
   end
