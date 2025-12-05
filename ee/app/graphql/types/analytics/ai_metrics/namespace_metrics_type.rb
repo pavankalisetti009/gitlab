@@ -9,6 +9,10 @@ module Types
         graphql_name 'AiMetrics'
         description "Requires ClickHouse. Premium and Ultimate only."
 
+        field :agent_platform, Types::Analytics::AiMetrics::AgentPlatformMetricsType,
+          null: true,
+          description: 'Agent platform metrics.',
+          resolver_method: :object
         field :code_contributors_count, GraphQL::Types::Int,
           description: 'Number of code contributors.',
           null: true
