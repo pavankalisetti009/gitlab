@@ -81614,6 +81614,9 @@ msgstr ""
 msgid "started on %{timebox_start_date}"
 msgstr ""
 
+msgid "starting with 'duo-', 'duo_', 'ai-' or 'ai_' is reserved for GitLab AI entities. Please choose a different name."
+msgstr ""
+
 msgid "starts on %{timebox_start_date}"
 msgstr ""
 

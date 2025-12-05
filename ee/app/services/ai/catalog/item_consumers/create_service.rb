@@ -99,7 +99,8 @@ module Ai
             name: item.name,
             username: service_account_username,
             organization_id: group.organization_id,
-            composite_identity_enforced: true
+            composite_identity_enforced: true,
+            skip_ai_prefix_validation: true
           }
 
           # TODO: Handle duplicate username (possible with my-flow a-group-name and my-flow-a group-name)

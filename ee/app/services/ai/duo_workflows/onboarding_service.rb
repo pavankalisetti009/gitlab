@@ -59,7 +59,8 @@ module Ai
               username: 'duo-developer',
               composite_identity_enforced: true,
               organization_id: @organization.id,
-              private_profile: true
+              private_profile: true,
+              skip_ai_prefix_validation: true
             }
           ).execute
         )

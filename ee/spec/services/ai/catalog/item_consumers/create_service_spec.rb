@@ -374,8 +374,11 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
     end
 
     context 'when the service account username already exists' do
-      let_it_be(:existing_service_account_with_same_name) do
-        create(:user, :with_namespace, :service_account, username: "ai-item_name-group-name")
+      let!(:existing_service_account_with_same_name) do
+        build(:user, :with_namespace, :service_account, username: "ai-item_name-group-name").tap do |user|
+          user.skip_ai_prefix_validation = true
+          user.save!
+        end
       end
 
       it 'logs the error' do

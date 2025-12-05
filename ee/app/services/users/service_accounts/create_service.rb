@@ -53,7 +53,8 @@ module Users
           organization_id: params[:organization_id],
           avatar: params[:avatar].presence,
           composite_identity_enforced: !!params[:composite_identity_enforced],
-          private_profile: private_profile
+          private_profile: private_profile,
+          skip_ai_prefix_validation: params[:skip_ai_prefix_validation]
         }
       end
 
