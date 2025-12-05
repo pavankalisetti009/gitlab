@@ -74,6 +74,7 @@ module EE
         field :finding_reports_comparer,
           type: ::Types::Security::FindingReportsComparerType,
           null: true,
+          calls_gitaly: true,
           experiment: { milestone: '16.1' },
           description: 'Vulnerability finding reports comparison reported on the merge request.',
           resolver: ::Resolvers::SecurityReport::FindingReportsComparerResolver
