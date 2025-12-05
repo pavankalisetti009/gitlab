@@ -19,7 +19,10 @@ module Gitlab
         END_OF_DIFF = '\\'
 
         LOG_MESSAGES = {
-          invalid_encoding: "Could not convert data to UTF-8 from %{encoding}"
+          invalid_encoding: "Could not convert data to UTF-8 from %{encoding}",
+          paths_sent_to_scan: "Number of changed paths broken down by their type",
+          populated_lookup_map: "Populated the lookup map used to associate a " \
+            "finding to commit sha + file path"
         }.freeze
 
         # The `standardize_payloads` method gets payloads containing git diffs
@@ -29,14 +32,19 @@ module Gitlab
         # For a more thorough explanation of the diff parsing logic, see the comment above the `parse_diffs` method.
 
         def standardize_payloads
-          payloads = get_diffs
+          # The lookup map is used to store and lookup the payloads metadata (commit sha / file path)
+          lookup_map = Hash.new { |h, id| h[id] = [] }
+
+          payloads = get_diffs(lookup_map)
 
           payloads = payloads.flat_map do |payload|
             p_ary = parse_diffs(payload)
             build_payloads(p_ary)
           end
 
-          payloads.compact.empty? ? nil : payloads
+          results = payloads.compact.empty? ? nil : payloads
+
+          [results, lookup_map]
         end
 
         # The parse_diffs method processes a diff patch to extract and group all added lines
@@ -202,7 +210,8 @@ module Gitlab
               old_mode: path.old_mode.to_i(8),
               new_mode: path.new_mode.to_i(8),
               old_blob_id: path.old_blob_id.to_s,
-              new_blob_id: path.new_blob_id.to_s
+              new_blob_id: path.new_blob_id.to_s,
+              commit_id: path.commit_id.to_s
             }
 
             # old_path should only be set for file renames.
@@ -225,8 +234,9 @@ module Gitlab
           end
         end
 
-        def get_diffs
+        def get_diffs(lookup_map)
           diffs = []
+
           # Get new commits
           commits = project.repository.new_commits(revisions)
 
@@ -246,31 +256,11 @@ module Gitlab
           # -- TODO: pass changed paths with diff blob objects and move this exclusion process into the gem.
           paths.reject! { |changed_path| exclusions_manager.matches_excluded_path?(changed_path.path) }
 
-          begin
-            paths_breakdown = paths.each_with_object(Hash.new(0)) do |changed_path, count|
-              if changed_path.status.nil?
-                count['unknown'] += 1
-              else
-                status = changed_path.status.to_s.downcase
+          # This map is used later in ResponseHandler to correlate a path to a commit and file path
+          populate_lookup_map(paths, lookup_map) if Feature.enabled?(:drop_get_tree_entries_from_spp, project)
 
-                count[status] += 1
-              end
-            end
-
-            secret_detection_logger.info(
-              build_structured_payload(
-                message: 'secret_push_protection_number_of_changed_paths',
-                total_changed_paths: paths.size,
-                paths_breakdown: paths_breakdown
-              )
-            )
-          rescue StandardError => e
-            ::Gitlab::ErrorTracking.track_exception(
-              e,
-              project_id: project.id,
-              extra: { context: 'number_of_changed_paths_calculation' }
-            )
-          end
+          # Log only the scanned paths (so excluded paths are omitted) and break them down by type
+          log_changed_paths_breakdown(paths)
 
           # Make multiple DiffBlobsRequests with smaller batch sizes to prevent timeout when generating diffs
           paths.each_slice(PATHS_BATCH_SIZE) do |paths_slice|
@@ -288,6 +278,54 @@ module Gitlab
             ::Gitlab::ErrorTracking.track_exception(e)
           end
           diffs
+        end
+
+        def populate_lookup_map(paths, lookup_map)
+          paths.each do |changed_path|
+            new_blob_id = changed_path.new_blob_id.to_s
+
+            # We have to be careful here in case new_blob_id is blank (or deletions)
+            next if new_blob_id.blank? || new_blob_id == Gitlab::Git::SHA1_BLANK_SHA
+
+            lookup_map[new_blob_id] << {
+              commit_id: changed_path.commit_id.to_s,
+              path: changed_path.path
+            }
+          end
+
+          secret_detection_logger.info(
+            build_structured_payload(
+              message: LOG_MESSAGES[:populated_lookup_map],
+              total_payloads: lookup_map.size,
+              total_changed_path_entries: lookup_map.values.sum(&:size)
+            )
+          )
+        end
+
+        def log_changed_paths_breakdown(paths)
+          paths_breakdown = paths.each_with_object(Hash.new(0)) do |changed_path, count|
+            if changed_path.status.nil?
+              count['unknown'] += 1
+            else
+              status = changed_path.status.to_s.downcase
+
+              count[status] += 1
+            end
+          end
+
+          secret_detection_logger.info(
+            build_structured_payload(
+              message: LOG_MESSAGES[:paths_sent_to_scan],
+              total_paths: paths.size,
+              paths_breakdown: paths_breakdown
+            )
+          )
+        rescue StandardError => e
+          ::Gitlab::ErrorTracking.track_exception(
+            e,
+            project_id: project.id,
+            extra: { context: 'number_of_changed_paths_calculation' }
+          )
         end
 
         def revisions

@@ -35,28 +35,20 @@ RSpec.shared_context 'secrets check context' do
   end
 
   # Define blob references as follows:
-  #   1. old reference is used as the left blob id in diff_blob objects.
-  #   2. new reference is used as the right blob id in diff_blob objects.
-  let(:existing_blob_reference) { 'f3ac5ae18d057a11d856951f27b9b5b8043cf1ec' }
-  let(:new_blob_reference) { 'da66bef46dbf0ad7fdcbeec97c9eaa24c2846dda' }
-
-  let(:existing_blob) { have_attributes(class: Gitlab::Git::Blob, id: existing_blob_reference, size: 23) }
-  let(:new_blob) { have_attributes(class: Gitlab::Git::Blob, id: new_blob_reference, size: 24) }
-  let(:existing_payload) do
-    Gitlab::SecretDetection::GRPC::ScanRequest::Payload.new(
-      id: existing_blob_reference,
-      data: "Documentation goes here",
-      offset: 1
-    )
-  end
-
-  let(:new_payload) do
-    Gitlab::SecretDetection::GRPC::ScanRequest::Payload.new(
-      id: new_blob_reference,
-      data: "BASE_URL=https://foo.bar",
-      offset: 1
-    )
-  end
+  #   1. blob 1 reference is used as an existing blob in the repository (left_blob_id in `DiffBlob` objects).
+  #   2. blob 2 reference is used as a new blob  in the repository (right_blob_id in `DiffBlob` objects).
+  #   3. blob 3 reference is used in several contexts and corresponds to `to_modify.txt`.
+  #   4. blob 4 reference is used in several contexts and corresponds to `new_config.txt`.
+  #   5. blob 5 reference is used in several contexts and corresponds to `.env`.
+  #   6. blob 6 reference is used in several contexts and corresponds to `.test.env`.
+  #   7. blob 7 reference is used in several contexts and corresponds to `.dev.env`.
+  let(:blob_1_reference) { 'f3ac5ae18d057a11d856951f27b9b5b8043cf1ec' }
+  let(:blob_2_reference) { 'da66bef46dbf0ad7fdcbeec97c9eaa24c2846dda' }
+  let(:blob_3_reference) { 'ed426f4235de33f1e5b539100c53e0002e143e3f' }
+  let(:blob_4_reference) { '5d3962935b09208cd00252b050e632c75f9e7d7d' }
+  let(:blob_5_reference) { 'fe29d93da4843da433e62711ace82db601eb4f8f' }
+  let(:blob_6_reference) { 'eaf3c09526f50b5e35a096ef70cca033f9974653' }
+  let(:blob_7_reference) { '4fbec77313fd240d00fc37e522d0274b8fb54bd1' }
 
   let(:changes) do
     [
@@ -156,7 +148,7 @@ RSpec.shared_context 'secrets check context' do
   let(:tree_entries) do
     [
       Gitlab::Git::Tree.new(
-        id: new_blob_reference,
+        id: blob_2_reference,
         type: :blob,
         mode: '100644',
         name: '.env',
@@ -175,7 +167,7 @@ RSpec.shared_context 'secrets check context' do
   let(:saas_feature_enabled) { true }
   let(:is_dedicated) { false }
 
-  # used for checking logged messages
+  # Used for checking logged messages
   let(:log_levels) { %i[info debug warn error fatal unknown] }
   let(:logged_messages) { Hash.new { |hash, key| hash[key] = [] } }
 
@@ -207,11 +199,11 @@ RSpec.shared_context 'secret detection error and log messages context' do
 
   # Error messsages with formatting
   let(:failed_to_scan_regex_error) do
-    format(error_messages[:failed_to_scan_regex_error], { payload_id: failed_to_scan_blob_reference })
+    format(error_messages[:failed_to_scan_regex_error], { payload_id: blob_7_reference })
   end
 
   let(:blob_timed_out_error) do
-    format(error_messages[:blob_timed_out_error], { payload_id: timed_out_blob_reference })
+    format(error_messages[:blob_timed_out_error], { payload_id: blob_6_reference })
   end
 
   let(:too_many_tree_entries_error) do
@@ -321,7 +313,7 @@ RSpec.shared_context 'secret detection error and log messages context' do
     format(
       log_messages[:finding_message],
       {
-        payload_id: new_blob_reference,
+        payload_id: blob_2_reference,
         line_number: finding_line_number,
         description: finding_description
       }
@@ -338,30 +330,6 @@ RSpec.shared_context 'secret detection error and log messages context' do
         )
       }
     )
-  end
-end
-
-RSpec.shared_context 'quarantine directory exists' do
-  let(:git_env) { { 'GIT_OBJECT_DIRECTORY_RELATIVE' => 'objects' } }
-  let(:gitaly_commit_client) { instance_double(Gitlab::GitalyClient::CommitService) }
-
-  let(:object_existence_map) do
-    {
-      existing_blob_reference.to_s => true,
-      new_blob_reference.to_s => false
-    }
-  end
-
-  before do
-    allow(Gitlab::Git::HookEnv).to receive(:all).with(repository.gl_repository).and_return(git_env)
-
-    # Since all blobs are committed to the repository, we mock the gitaly commit
-    # client and `object_existence_map` in such way only some of them are considered new.
-    allow(repository).to receive(:gitaly_commit_client).and_return(gitaly_commit_client)
-    allow(gitaly_commit_client).to receive(:object_existence_map).and_return(object_existence_map)
-
-    # We also want to have the client return the tree entries.
-    allow(gitaly_commit_client).to receive(:tree_entries).and_return([tree_entries, gitaly_pagination_cursor])
   end
 end
 
@@ -409,7 +377,7 @@ def create_commit_with_actions(actions, message = 'Add a file', initial_commit =
     actions: actions
   )
 
-  # `list_blobs` only returns unreferenced blobs because it is used for hooks, so we have
+  # `list_all_commits` only returns unreferenced blobs because it is used for hooks, so we have
   # to delete the branch since Gitaly does not allow us to create loose objects via the RPC.
   repository.delete_branch('a-new-branch')
 

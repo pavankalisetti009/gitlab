@@ -51,7 +51,7 @@ module Gitlab
           audit_logger.track_spp_scan_executed('dark-launch')
 
           logger.log_timed(LOG_MESSAGES[:secrets_check]) do
-            payloads = payload_processor.standardize_payloads
+            payloads, _ = payload_processor.standardize_payloads
             break unless payloads
 
             extra_headers = {
@@ -84,8 +84,10 @@ module Gitlab
 
           audit_logger.track_spp_scan_executed('regular')
 
+          lookup_map = {}
+
           logger.log_timed(LOG_MESSAGES[:secrets_check]) do
-            payloads = payload_processor.standardize_payloads
+            payloads, lookup_map = payload_processor.standardize_payloads
             break unless payloads
 
             extra_headers = {
@@ -116,7 +118,7 @@ module Gitlab
             # Log audit events for exlusions that were applied.
             audit_logger.log_applied_exclusions_audit_events(response.applied_exclusions)
 
-            response_handler.format_response(response)
+            response_handler.format_response(response, lookup_map)
           # TODO: Perhaps have a separate message for each and better logging?
           rescue ::Gitlab::SecretDetection::Core::Ruleset::RulesetParseError,
             ::Gitlab::SecretDetection::Core::Ruleset::RulesetCompilationError => e

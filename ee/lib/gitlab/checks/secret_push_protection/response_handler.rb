@@ -32,15 +32,20 @@ module Gitlab
           finding_message: "\n\nSecret leaked in blob: %{payload_id}" \
             "\n  -- line:%{line_number} | %{description}",
           found_secrets_footer: "\n--------------------------------------------------\n\n",
-          invalid_log_level: "Unknown log level %{log_level} for message: %{message}"
+          failed_to_map_blob_to_commit_and_path: "Secret Push Protection could not map " \
+            "blob %{payload_id} to commit and path"
         }.freeze
 
-        def format_response(response)
-          # Try to retrieve file path and commit sha for the diffs found.
+        def format_response(response, lookup_map)
+          # Try to retrieve file path and commit SHA for the diffs found.
           if response.status == ::Gitlab::SecretDetection::Core::Status::FOUND ||
               response.status == ::Gitlab::SecretDetection::Core::Status::FOUND_WITH_ERRORS
 
-            results = transform_findings(response)
+            results = if Feature.enabled?(:drop_get_tree_entries_from_spp, project)
+                        transform_findings_without_get_tree_entries(response, lookup_map)
+                      else
+                        transform_findings(response)
+                      end
 
             # If there is no findings in `response.results`, that means all findings
             # were excluded in `transform_findings`, so we set status to no secrets found.
@@ -110,6 +115,85 @@ module Gitlab
 
         def commits
           @commit ||= changes_access.commits.map(&:valid_full_sha)
+        end
+
+        def transform_findings_without_get_tree_entries(response, lookup_map)
+          # Let's group the findings by the blob id.
+          findings_by_blobs = response.results.group_by(&:payload_id)
+
+          # We create an empty hash for the structure we'll create later as we correlate findings to commits/paths.
+          findings_by_commits = {}
+
+          # Let's create a set to store ids of blobs with metadata (commit SHA/file path) found.
+          blobs_with_metadata_found = Set.new
+
+          # Scanning had found secrets, let's try to look up their file path and commit id. This can be done by
+          # using `lookup_map` we populated in `PayloadProcessor`, and cross examining payloads
+          # with ones where secrets where found.
+          findings_by_blobs.each do |payload_id, findings|
+            changed_paths = lookup_map[payload_id]
+
+            # When no payload metadata exist, we move on to the next finding.
+            if changed_paths.blank?
+              secret_detection_logger.warn(
+                build_structured_payload(
+                  message: format(
+                    LOG_MESSAGES[:failed_to_map_blob_to_commit_and_path],
+                    payload_id: payload_id
+                  )
+                )
+              )
+
+              next
+            end
+
+            # We loop through the changed paths associated with the payload where this finding was detected,
+            # get the path and the commit ID. If they're blank, we skip to the next one. We make sure to exclude
+            # paths that match existing exclusions, then add it to the `findings_by_commits` hash.
+            changed_paths.each do |changed_path|
+              path      = changed_path[:path]
+              commit_id = changed_path[:commit_id]
+
+              next if path.blank? || commit_id.blank?
+
+              # To associate each finding to a commit SHA and a path, we use nested hashes, e.g.:
+              #
+              #   {
+              #     commit_id_1: {
+              #       path_1: [finding_1, finding_2]
+              #     },
+              #     commit_id_2: {
+              #       path_1: [finding_3],
+              #       path_2: [finding_4, finding_5]
+              #     }
+              #   }
+              #
+              # And then use them to display the findings ordered by their commit SHAs and their paths.
+              findings_by_commits[commit_id] ||= {}
+              findings_by_commits[commit_id][path] ||= []
+              findings_by_commits[commit_id][path].concat(findings)
+
+              # Mark as found with metadata already.
+              blobs_with_metadata_found << payload_id
+            end
+
+            # If this blob never made it into `findings_by_commits` (i.e. all paths excluded
+            # or invalid), we remove it from `response.results` and `findings_by_blobs`.
+            next if blobs_with_metadata_found.include?(payload_id)
+
+            response.results.delete_if { |finding| finding.payload_id == payload_id }
+
+            findings_by_blobs.delete(payload_id)
+          end
+
+          # Remove blobs that has metadata found.
+          findings_by_blobs.delete_if { |payload_id, _| blobs_with_metadata_found.include?(payload_id) }
+
+          # Return the findings as a hash sorted by commits and blobs (minus ones already found).
+          {
+            commits: findings_by_commits,
+            blobs: findings_by_blobs
+          }
         end
 
         def transform_findings(response)
@@ -186,7 +270,7 @@ module Gitlab
 
           # TODO: Handle pagination in the upcoming iterations
           # We don't raise because we could still provide a hint to the user
-          # about the detected secrets even without a commit sha/file path information.
+          # about the detected secrets even without a commit SHA/file path information.
           unless cursor.next_cursor.empty?
             secret_detection_logger.error(
               build_structured_payload(
