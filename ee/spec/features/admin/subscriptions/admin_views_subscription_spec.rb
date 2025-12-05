@@ -154,7 +154,7 @@ RSpec.describe 'Admin views Subscription', :js, feature_category: :plan_provisio
       end
 
       it 'displays an error when the activation fails' do
-        stub_request(:post, graphql_url).to_return(status: 422, body: '', headers: {})
+        stub_request(:post, graphql_url).to_return(status: 422, body: '{}', headers: {})
 
         within_modal do
           fill_activation_form

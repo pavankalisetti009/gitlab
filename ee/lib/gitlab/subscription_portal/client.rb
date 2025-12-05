@@ -53,10 +53,11 @@ module Gitlab
         def parse_response(http_response)
           parsed_response = http_response.parsed_response
 
-          case http_response.response
-          when Net::HTTPSuccess
+          if http_response.response.is_a?(Net::HTTPSuccess)
             { success: true, data: parsed_response }
-          when Net::HTTPUnprocessableEntity
+          elsif http_response.response.is_a?(Net::HTTPPaymentRequired)
+            { success: false, data: { errors: "HTTP status code: 402" } }
+          elsif http_response.response.is_a?(Net::HTTPUnprocessableEntity) && parsed_response
             errors = parsed_response.slice('errors', 'error_attribute_map')
             log_error(http_response, errors)
             { success: false, data: errors.symbolize_keys }
