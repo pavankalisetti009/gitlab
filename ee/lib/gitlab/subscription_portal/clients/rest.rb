@@ -82,10 +82,15 @@ module Gitlab
               instance_id: unique_instance_id,
               realm: realm
             }.compact
-            http_head(
-              'api/v1/consumers/resolve', json_headers, query,
-              base_url_to_call: usage_quota_base_url
-            )
+
+            return verify_usage_quota_request(query) if use_mock_usage_quota_endpoint?
+
+            query_hash = Digest::SHA256.hexdigest(query.sort.to_s)
+            cache_key = "usage_quota_dot_query:#{query_hash}"
+
+            Rails.cache.fetch(cache_key, expires_in: 1.hour) do
+              verify_usage_quota_request(query)
+            end
           end
 
           private
@@ -149,6 +154,13 @@ module Gitlab
           def use_mock_usage_quota_endpoint?
             Rails.env.development? &&
               Feature.enabled?(:use_mock_dot_api_for_usage_quota, :instance)
+          end
+
+          def verify_usage_quota_request(query)
+            http_head(
+              'api/v1/consumers/resolve', json_headers, query,
+              base_url_to_call: usage_quota_base_url
+            )
           end
         end
       end
