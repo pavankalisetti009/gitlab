@@ -29,6 +29,18 @@ module VirtualRegistries
 
       attr_reader :upstreams, :params, :results
 
+      # Returns the index of the first true value that is preceded only by false values.
+      # Returns nil otherwise.
+      #
+      # Examples:
+      #   [false, false, true, true]  => 2   (first true at index 2, all preceding are false)
+      #   [false, nil, true, false]   => nil (nil before true, not all preceding are false)
+      #   [true, false, nil]          => 0   (first true at index 0, no preceding values)
+      #   [false, false, false]       => nil (no true values)
+      def first_successful_index
+        results.find_index.with_index { |e, i| e && results[0...i].all?(false) }
+      end
+
       def path
         params[:path]
       end

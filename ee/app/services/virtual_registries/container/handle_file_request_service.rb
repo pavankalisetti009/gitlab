@@ -74,8 +74,8 @@ module VirtualRegistries
       end
 
       def check_registry_upstreams
-        service = ::VirtualRegistries::CheckUpstreamsService.new(
-          registry: registry,
+        service = ::VirtualRegistries::Upstreams::CheckService.new(
+          upstreams: registry.upstreams,
           params: { path: path }
         )
 
