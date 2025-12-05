@@ -309,14 +309,27 @@ module EE
         ).allowed?
       end
 
+      condition(:external_trigger_access_allowed) do
+        next false unless @user
+
+        ::Gitlab::Llm::FeatureAuthorizer.can_access_duo_external_trigger?(user: @user, container: @subject)
+      end
+
       condition(:summarize_notes_allowed) do
         next false unless @user
 
-        ::Gitlab::Llm::FeatureAuthorizer.new(
-          container: subject,
-          feature_name: :summarize_comments,
-          user: @user
-        ).allowed?
+        if ::Feature.enabled?(:dap_external_trigger_usage_billing, @user)
+          ::Gitlab::Llm::FeatureAuthorizer.can_access_duo_external_trigger?(
+            user: @user,
+            container: @subject
+          )
+        else
+          ::Gitlab::Llm::FeatureAuthorizer.new(
+            container: subject,
+            feature_name: :summarize_comments,
+            user: @user
+          ).allowed?
+        end
       end
 
       with_scope :subject
@@ -1141,6 +1154,8 @@ module EE
       rule do
         summarize_notes_allowed & can?(:read_issue)
       end.enable :summarize_comments
+
+      rule { external_trigger_access_allowed }.enable :read_dap_external_trigger_usage_rule
 
       rule { target_branch_rules_available & maintainer }.policy do
         enable :admin_target_branch_rule

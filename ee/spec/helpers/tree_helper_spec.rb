@@ -53,22 +53,78 @@ RSpec.describe TreeHelper, feature_category: :source_code_management do
   describe '#vue_file_list_data' do
     before do
       project.add_developer(user)
-      allow(helper).to receive_messages(selected_branch: sha, current_user: user)
+      allow(helper).to receive(:selected_branch).and_return(sha)
+      allow(helper).to receive(:current_user).and_return(user)
       sign_in(user)
     end
 
-    it 'returns a list of attributes related to the project' do
-      expect(helper.vue_file_list_data(project, sha)).to include(
-        project_path: project.full_path,
-        project_short_path: project.path,
-        ref: sha,
-        escaped_ref: sha,
-        full_name: project.name_with_namespace,
-        resource_id: project.to_global_id,
-        user_id: user.to_global_id,
-        explain_code_available: 'false',
-        target_branch: sha
-      )
+    context 'with explain_code_available parameter' do
+      using RSpec::Parameterized::TableSyntax
+
+      context 'when current_user is nil' do
+        before do
+          allow(helper).to receive(:current_user).and_return(nil)
+        end
+
+        it 'returns false for explain_code_available' do
+          expect(helper.vue_file_list_data(project, sha)).to include(
+            explain_code_available: 'false'
+          )
+        end
+      end
+
+      context 'when current_user is present' do
+        before do
+          stub_feature_flags(dap_external_trigger_usage_billing: flag_enabled)
+
+          if flag_enabled
+            allow(user).to receive(:can?)
+              .with(:read_dap_external_trigger_usage_rule, project)
+              .and_return(has_duo_addon)
+          else
+            allow(::Gitlab::Llm::TanukiBot).to receive(:enabled_for?)
+              .with(user: user, container: project)
+              .and_return(tanuki_enabled)
+          end
+        end
+
+        where(:flag_enabled, :has_duo_addon, :tanuki_enabled, :expected_value) do
+          true  | true  | nil   | 'true'
+          true  | false | nil   | 'false'
+          false | nil   | true  | 'true'
+          false | nil   | false | 'false'
+        end
+
+        with_them do
+          it 'returns correct explain_code_available value' do
+            expect(helper.vue_file_list_data(project, sha)).to include(
+              explain_code_available: expected_value
+            )
+          end
+        end
+      end
+    end
+
+    context 'with project attributes' do
+      before do
+        stub_feature_flags(dap_external_trigger_usage_billing: false)
+        allow(::Gitlab::Llm::TanukiBot).to receive(:enabled_for?)
+          .with(user: user, container: project)
+          .and_return(false)
+      end
+
+      it 'returns a list of attributes related to the project' do
+        expect(helper.vue_file_list_data(project, sha)).to include(
+          project_path: project.full_path,
+          project_short_path: project.path,
+          ref: sha,
+          escaped_ref: sha,
+          full_name: project.name_with_namespace,
+          resource_id: project.to_global_id,
+          user_id: user.to_global_id,
+          target_branch: sha
+        )
+      end
     end
   end
 

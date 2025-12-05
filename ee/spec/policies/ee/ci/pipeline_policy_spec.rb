@@ -9,13 +9,29 @@ RSpec.describe Ci::PipelinePolicy, feature_category: :continuous_integration do
 
   subject(:policy) { described_class.new(user, pipeline) }
 
-  shared_context 'with rights' do |licensed: true, user_authorized: true, chat_authorized: true, read_build: true|
+  shared_context 'with rights' do |
+    licensed: true,
+    user_authorized: true,
+    chat_authorized: true,
+    can_access_duo_external_trigger: true,
+    read_build: true,
+    flag_enabled: false
+  |
     before do
       stub_licensed_features(troubleshoot_job: licensed)
+      stub_feature_flags(dap_external_trigger_usage_billing: flag_enabled)
+
       allow(user).to receive(:allowed_to_use?).and_return(user_authorized)
-      allow(::Gitlab::Llm::Chain::Utils::ChatAuthorizer).to receive_message_chain(:resource,
-        :allowed?).and_return(chat_authorized)
       allow(policy).to receive(:can?).with(:read_build, project).and_return(read_build)
+
+      if flag_enabled
+        allow(::Gitlab::Llm::FeatureAuthorizer).to receive(:can_access_duo_external_trigger?)
+          .with(user: user, container: project)
+          .and_return(can_access_duo_external_trigger)
+      else
+        allow(::Gitlab::Llm::Chain::Utils::ChatAuthorizer).to receive_message_chain(:resource,
+          :allowed?).and_return(chat_authorized)
+      end
     end
   end
 
@@ -49,6 +65,30 @@ RSpec.describe Ci::PipelinePolicy, feature_category: :continuous_integration do
     context 'without read build' do
       include_context 'with rights', read_build: false
       it_behaves_like 'troubleshoot access check', false
+    end
+
+    context 'with feature flag enabled and duo external trigger access' do
+      include_context 'with rights', flag_enabled: true, can_access_duo_external_trigger: true
+      it_behaves_like 'troubleshoot access check', true
+    end
+
+    context 'with feature flag enabled but no duo external trigger access' do
+      include_context 'with rights', flag_enabled: true, can_access_duo_external_trigger: false
+      it_behaves_like 'troubleshoot access check', false
+    end
+
+    context 'when user is nil' do
+      let(:user) { nil }
+
+      before do
+        stub_licensed_features(troubleshoot_job: true)
+      end
+
+      it { is_expected.to be_disallowed(:troubleshoot_job_with_ai) }
+
+      it 'returns false for troubleshoot_job_with_ai_authorized condition' do
+        expect(policy.allowed?(:troubleshoot_job_with_ai)).to be false
+      end
     end
   end
 

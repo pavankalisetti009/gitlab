@@ -79,6 +79,10 @@ RSpec.describe 'Duo Chat > User opens Duo Chat', :js, :saas, feature_category: :
     before do
       stub_licensed_features(ai_features: true, troubleshoot_job: true)
 
+      allow(project).to receive(:duo_features_enabled).and_return(true)
+      allow(user).to receive(:assigned_to_duo_add_ons?).with(project).and_return(true)
+      allow(user).to receive(:assigned_to_duo_core?).with(project).and_return(false)
+
       visit project_job_path(project, build)
     end
 

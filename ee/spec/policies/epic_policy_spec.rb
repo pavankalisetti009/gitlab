@@ -501,58 +501,82 @@ RSpec.describe EpicPolicy, feature_category: :portfolio_management do
 
   describe 'summarize_comments' do
     let_it_be(:group) { create(:group, :private) }
-    let(:authorizer) { instance_double(::Gitlab::Llm::FeatureAuthorizer) }
+
+    subject { described_class.new(user, epic) }
+
+    before do
+      stub_licensed_features(epics: true)
+    end
 
     context 'when user is nil' do
-      let_it_be(:group) { create(:group, :public) }
       let(:user) { nil }
-
-      before do
-        allow(::Gitlab::Llm::FeatureAuthorizer).to receive(:new).and_return(authorizer)
-      end
 
       it { is_expected.to be_disallowed(:summarize_comments) }
     end
 
     context 'when user is logged in' do
-      before do
-        stub_licensed_features(epics: true)
-        allow(::Gitlab::Llm::FeatureAuthorizer).to receive(:new).and_return(authorizer)
-      end
+      context 'when dap_external_trigger_usage_billing FF is enabled' do
+        using RSpec::Parameterized::TableSyntax
 
-      context "when feature is authorized" do
-        before do
-          allow(authorizer).to receive(:allowed?).and_return(true)
+        where(:can_access_duo_external_trigger, :can_read_epic, :expected) do
+          true  | true  | :allowed
+          true  | false | :disallowed
+          false | true  | :disallowed
+          false | false | :disallowed
         end
 
-        context "when user can read epic" do
+        with_them do
           before do
+            stub_feature_flags(dap_external_trigger_usage_billing: true)
+            allow(::Gitlab::Llm::FeatureAuthorizer).to receive(:can_access_duo_external_trigger?)
+              .with(user: user, container: group)
+              .and_return(can_access_duo_external_trigger)
+
+            group.add_guest(user) if can_read_epic
+          end
+
+          it { is_expected.to public_send(:"be_#{expected}", :summarize_comments) }
+        end
+
+        context 'when verifying FeatureAuthorizer.can_access_duo_external_trigger? parameters' do
+          before do
+            allow(::Gitlab::Llm::FeatureAuthorizer).to receive(:can_access_duo_external_trigger?).and_return(true)
             group.add_guest(user)
           end
 
-          it { is_expected.to be_allowed(:summarize_comments) }
-        end
+          it 'calls can_access_duo_external_trigger? with correct parameters' do
+            expect(::Gitlab::Llm::FeatureAuthorizer).to receive(:can_access_duo_external_trigger?).with(
+              user: user,
+              container: group
+            ).and_return(true)
 
-        context "when user cannot read epic" do
-          it { is_expected.to be_disallowed(:summarize_comments) }
+            subject.allowed?(:summarize_comments)
+          end
         end
       end
 
-      context "when feature is not authorized" do
-        before do
-          allow(authorizer).to receive(:allowed?).and_return(false)
+      context 'when dap_external_trigger_usage_billing feature flag is disabled' do
+        using RSpec::Parameterized::TableSyntax
+
+        where(:authorizer_allowed, :can_read_epic, :expected) do
+          true  | true  | :allowed
+          true  | false | :disallowed
+          false | true  | :disallowed
+          false | false | :disallowed
         end
 
-        context "when user can read epic" do
+        with_them do
+          let(:authorizer) { instance_double(::Gitlab::Llm::FeatureAuthorizer) }
+
           before do
-            group.add_guest(user)
+            stub_feature_flags(dap_external_trigger_usage_billing: false)
+            allow(::Gitlab::Llm::FeatureAuthorizer).to receive(:new).and_return(authorizer)
+            allow(authorizer).to receive(:allowed?).and_return(authorizer_allowed)
+
+            group.add_guest(user) if can_read_epic
           end
 
-          it { is_expected.to be_disallowed(:summarize_comments) }
-        end
-
-        context "when user cannot read epic" do
-          it { is_expected.to be_disallowed(:summarize_comments) }
+          it { is_expected.to public_send(:"be_#{expected}", :summarize_comments) }
         end
       end
     end

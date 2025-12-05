@@ -5137,6 +5137,83 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     end
   end
 
+  describe 'summarize_comments' do
+    subject(:policy) { described_class.new(current_user, group) }
+
+    before do
+      stub_licensed_features(epics: true)
+    end
+
+    context 'when user is nil' do
+      let(:current_user) { nil }
+
+      it { is_expected.to be_disallowed(:summarize_comments) }
+    end
+
+    context 'when user is logged in' do
+      using RSpec::Parameterized::TableSyntax
+
+      let_it_be(:user) { create(:user) }
+      let(:current_user) { user }
+
+      where(:can_access_duo_external_trigger, :can_read_group, :expected) do
+        true  | true  | true
+        true  | false | false
+        false | true  | false
+        false | false | false
+      end
+
+      with_them do
+        before do
+          allow(::Gitlab::Llm::FeatureAuthorizer).to receive(:can_access_duo_external_trigger?)
+            .with(user: user, container: group)
+            .and_return(can_access_duo_external_trigger)
+
+          group.add_guest(user) if can_read_group
+        end
+
+        it { is_expected.to public_send("be_#{expected ? 'allowed' : 'disallowed'}", :summarize_comments) }
+      end
+
+      context 'FeatureAuthorizer.can_access_duo_external_trigger? parameter verification' do
+        before do
+          allow(::Gitlab::Llm::FeatureAuthorizer).to receive(:can_access_duo_external_trigger?).and_return(true)
+          group.add_guest(user)
+        end
+
+        it 'calls can_access_duo_external_trigger? with correct parameters' do
+          expect(::Gitlab::Llm::FeatureAuthorizer).to receive(:can_access_duo_external_trigger?).with(
+            user: user,
+            container: group
+          ).and_return(true)
+
+          policy.allowed?(:summarize_comments)
+        end
+      end
+
+      context 'FeatureAuthorizer parameter verification' do
+        let(:authorizer) { instance_double(::Gitlab::Llm::FeatureAuthorizer) }
+
+        before do
+          stub_feature_flags(dap_external_trigger_usage_billing: false)
+          allow(::Gitlab::Llm::FeatureAuthorizer).to receive(:new).and_return(authorizer)
+          allow(authorizer).to receive(:allowed?).and_return(true)
+          group.add_guest(user)
+        end
+
+        it 'creates FeatureAuthorizer with correct parameters' do
+          expect(::Gitlab::Llm::FeatureAuthorizer).to receive(:new).with(
+            container: group,
+            feature_name: :summarize_comments,
+            user: user
+          ).and_return(authorizer)
+
+          policy.allowed?(:summarize_comments)
+        end
+      end
+    end
+  end
+
   describe 'security inventory' do
     context 'when security inventory is available' do
       before do

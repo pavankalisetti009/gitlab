@@ -120,4 +120,56 @@ RSpec.describe Gitlab::Llm::FeatureAuthorizer, feature_category: :ai_abstraction
       end
     end
   end
+
+  describe '.can_access_duo_external_trigger?' do
+    using RSpec::Parameterized::TableSyntax
+
+    let_it_be(:user) { create(:user) }
+    let_it_be(:container) { create(:group) }
+
+    subject(:can_access) do
+      described_class.can_access_duo_external_trigger?(user: user, container: container)
+    end
+
+    where(:duo_features_enabled, :assigned_to_add_ons, :assigned_to_core, :expected) do
+      true  | true  | false | true
+      true  | false | true  | true
+      true  | true  | true  | true
+      true  | false | false | false
+      false | true  | false | false
+      false | false | true  | false
+      false | true  | true  | false
+      false | false | false | false
+    end
+
+    with_them do
+      before do
+        container.namespace_settings.update!(duo_features_enabled: duo_features_enabled)
+        allow(user).to receive(:assigned_to_duo_add_ons?).with(container).and_return(assigned_to_add_ons)
+        allow(user).to receive(:assigned_to_duo_core?).with(container).and_return(assigned_to_core)
+      end
+
+      it { is_expected.to eq(expected) }
+    end
+
+    context 'with a project container' do
+      let_it_be(:container) { create(:project) }
+
+      where(:duo_features_enabled, :assigned_to_add_ons, :assigned_to_core, :expected) do
+        true  | true  | false | true
+        true  | false | true  | true
+        false | true  | false | false
+      end
+
+      with_them do
+        before do
+          container.update!(duo_features_enabled: duo_features_enabled)
+          allow(user).to receive(:assigned_to_duo_add_ons?).with(container).and_return(assigned_to_add_ons)
+          allow(user).to receive(:assigned_to_duo_core?).with(container).and_return(assigned_to_core)
+        end
+
+        it { is_expected.to eq(expected) }
+      end
+    end
+  end
 end

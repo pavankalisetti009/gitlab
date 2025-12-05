@@ -13,10 +13,19 @@ module EE
         end
 
         condition(:troubleshoot_job_with_ai_authorized) do
-          ::Gitlab::Llm::Chain::Utils::ChatAuthorizer.resource(
-            resource: subject.project,
-            user: user
-          ).allowed?
+          next false unless user
+
+          if ::Feature.enabled?(:dap_external_trigger_usage_billing, user)
+            ::Gitlab::Llm::FeatureAuthorizer.can_access_duo_external_trigger?(
+              user: user,
+              container: subject.project
+            )
+          else
+            ::Gitlab::Llm::Chain::Utils::ChatAuthorizer.resource(
+              resource: subject.project,
+              user: user
+            ).allowed?
+          end
         end
 
         condition(:troubleshoot_job_licensed, scope: :subject) do

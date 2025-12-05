@@ -3616,6 +3616,107 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       end
     end
 
+    describe 'summarize_comments' do
+      subject { described_class.new(current_user, project) }
+
+      context 'when user is nil' do
+        let(:current_user) { nil }
+
+        it { is_expected.to be_disallowed(:summarize_comments) }
+      end
+
+      context 'when user is present' do
+        let(:current_user) { reporter }
+
+        context 'when dap_external_trigger_usage_billing FF is enabled' do
+          using RSpec::Parameterized::TableSyntax
+
+          where(:can_access_duo_external_trigger, :expected) do
+            true  | true
+            false | false
+          end
+
+          with_them do
+            before do
+              stub_feature_flags(dap_external_trigger_usage_billing: true)
+              allow(::Gitlab::Llm::FeatureAuthorizer).to receive(:can_access_duo_external_trigger?)
+                .with(user: current_user, container: project)
+                .and_return(can_access_duo_external_trigger)
+            end
+
+            it { is_expected.to public_send("be_#{expected ? 'allowed' : 'disallowed'}", :summarize_comments) }
+          end
+
+          context 'when verifying FeatureAuthorizer.can_access_duo_external_trigger? parameters' do
+            before do
+              allow(::Gitlab::Llm::FeatureAuthorizer).to receive(:can_access_duo_external_trigger?).and_return(true)
+            end
+
+            it 'calls can_access_duo_external_trigger? with correct parameters' do
+              expect(::Gitlab::Llm::FeatureAuthorizer).to receive(:can_access_duo_external_trigger?).with(
+                user: current_user,
+                container: project
+              ).and_return(true)
+
+              subject.allowed?(:summarize_comments)
+            end
+          end
+        end
+
+        context 'when dap_external_trigger_usage_billing feature flag is disabled' do
+          using RSpec::Parameterized::TableSyntax
+
+          where(:authorizer_allowed, :expected) do
+            true  | true
+            false | false
+          end
+
+          with_them do
+            let(:authorizer) { instance_double(::Gitlab::Llm::FeatureAuthorizer) }
+
+            before do
+              stub_feature_flags(dap_external_trigger_usage_billing: false)
+              allow(::Gitlab::Llm::FeatureAuthorizer).to receive(:new).and_return(authorizer)
+              allow(authorizer).to receive(:allowed?).and_return(authorizer_allowed)
+            end
+
+            it { is_expected.to public_send("be_#{expected ? 'allowed' : 'disallowed'}", :summarize_comments) }
+          end
+        end
+      end
+    end
+
+    describe 'read_dap_external_trigger_usage_rule' do
+      subject { described_class.new(current_user, project) }
+
+      context 'when user is nil' do
+        let(:current_user) { nil }
+
+        it { is_expected.to be_disallowed(:read_dap_external_trigger_usage_rule) }
+      end
+
+      context 'when user is present' do
+        using RSpec::Parameterized::TableSyntax
+
+        let(:current_user) { reporter }
+
+        where(:can_access_duo_external_trigger, :expected) do
+          true  | true
+          false | false
+        end
+
+        with_them do
+          before do
+            allow(::Gitlab::Llm::FeatureAuthorizer).to receive(:can_access_duo_external_trigger?)
+              .with(user: current_user, container: project)
+              .and_return(can_access_duo_external_trigger)
+          end
+
+          it { is_expected.to public_send("be_#{expected ? 'allowed' : 'disallowed'}", :read_dap_external_trigger_usage_rule) }
+        end
+      end
+    end
+
     describe 'admin_target_branch_rule policy' do
       let(:current_user) { owner }
 

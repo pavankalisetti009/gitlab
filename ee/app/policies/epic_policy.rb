@@ -30,11 +30,18 @@ class EpicPolicy < BasePolicy
   condition(:summarize_notes_allowed) do
     next false unless @user
 
-    ::Gitlab::Llm::FeatureAuthorizer.new(
-      container: subject.group,
-      feature_name: :summarize_comments,
-      user: @user
-    ).allowed?
+    if ::Feature.enabled?(:dap_external_trigger_usage_billing, @user)
+      ::Gitlab::Llm::FeatureAuthorizer.can_access_duo_external_trigger?(
+        user: @user,
+        container: subject.group
+      )
+    else
+      ::Gitlab::Llm::FeatureAuthorizer.new(
+        container: subject.group,
+        feature_name: :summarize_comments,
+        user: @user
+      ).allowed?
+    end
   end
 
   condition(:relations_for_non_members_available, scope: :subject) do

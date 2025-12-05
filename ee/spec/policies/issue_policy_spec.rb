@@ -54,11 +54,19 @@ RSpec.describe IssuePolicy, feature_category: :team_planning do
     context 'when user is logged in' do
       before do
         allow(::Gitlab::Llm::FeatureAuthorizer).to receive(:new).and_return(authorizer)
+        allow(project).to receive(:duo_features_enabled).and_return(true)
       end
 
       context "when feature is authorized" do
         before do
           allow(authorizer).to receive(:allowed?).and_return(true)
+
+          allow(user).to receive(:assigned_to_duo_add_ons?).with(project).and_return(true)
+          allow(user).to receive(:assigned_to_duo_core?).with(project).and_return(false)
+          allow(guest).to receive(:assigned_to_duo_add_ons?).with(project).and_return(true)
+          allow(guest).to receive(:assigned_to_duo_core?).with(project).and_return(false)
+          allow(planner).to receive(:assigned_to_duo_add_ons?).with(project).and_return(true)
+          allow(planner).to receive(:assigned_to_duo_core?).with(project).and_return(false)
         end
 
         context 'when user can read issue' do
@@ -71,6 +79,8 @@ RSpec.describe IssuePolicy, feature_category: :team_planning do
           context 'when feature is not enabled' do
             before do
               allow(authorizer).to receive(:allowed?).and_return(false)
+
+              allow(user).to receive(:assigned_to_duo_add_ons?).with(project).and_return(false)
             end
 
             it { is_expected.to be_disallowed(:summarize_comments) }
@@ -98,6 +108,8 @@ RSpec.describe IssuePolicy, feature_category: :team_planning do
         before do
           project.add_guest(user)
           allow(authorizer).to receive(:allowed?).and_return(false)
+
+          allow(user).to receive(:assigned_to_duo_add_ons?).with(project).and_return(false)
         end
 
         it { is_expected.to be_disallowed(:summarize_comments) }
