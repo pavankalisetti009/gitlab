@@ -88,6 +88,39 @@ RSpec.describe Groups::Settings::WorkItemsController, feature_category: :team_pl
 
         it_behaves_like params[:expected_result]
       end
+
+      context 'with work item feature flags' do
+        before do
+          current_group.add_owner(user)
+          stub_licensed_features(custom_fields: true, work_item_status: true)
+        end
+
+        context 'when work_items_consolidated_list is disabled' do
+          before do
+            stub_feature_flags(work_item_planning_view: false)
+          end
+
+          it 'pushes work_item_planning_view feature flag' do
+            get group_settings_issues_path(current_group)
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(response.body).to have_pushed_frontend_feature_flags(workItemPlanningView: false)
+          end
+        end
+
+        context 'when work_items_consolidated_list is enabled' do
+          before do
+            stub_feature_flags(work_item_planning_view: true)
+          end
+
+          it 'pushes work_item_planning_view feature flag as true' do
+            get group_settings_issues_path(current_group)
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(response.body).to have_pushed_frontend_feature_flags(workItemPlanningView: true)
+          end
+        end
+      end
     end
   end
 end

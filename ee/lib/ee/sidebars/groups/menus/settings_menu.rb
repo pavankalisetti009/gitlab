@@ -241,8 +241,14 @@ module EE
               return ::Sidebars::NilMenuItem.new(item_id: :group_work_items_settings)
             end
 
+            title = if context.group.work_items_consolidated_list_enabled?(context.current_user)
+                      _('Work items')
+                    else
+                      _('Issues')
+                    end
+
             ::Sidebars::MenuItem.new(
-              title: _('Issues'),
+              title: title,
               link: group_settings_issues_path(context.group),
               active_routes: { controller: 'groups/settings/work_items', path: ['groups/settings/work_items#index'] },
               item_id: :group_work_items_settings

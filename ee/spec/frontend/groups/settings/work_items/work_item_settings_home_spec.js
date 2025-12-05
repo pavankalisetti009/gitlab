@@ -9,7 +9,7 @@ describe('WorkItemSettingsHome', () => {
   let wrapper;
   const fullPath = 'group/project';
 
-  const createComponent = (mocks = {}) => {
+  const createComponent = ({ mocks = {}, glFeatures = {} } = {}) => {
     wrapper = shallowMount(WorkItemSettingsHome, {
       propsData: {
         fullPath,
@@ -18,12 +18,16 @@ describe('WorkItemSettingsHome', () => {
         $route: { hash: '' },
         ...mocks,
       },
+      provide: {
+        glFeatures,
+      },
     });
   };
 
   const findCustomFieldsList = () => wrapper.findComponent(CustomFieldsList);
   const findCustomStatusSettings = () => wrapper.findComponent(CustomStatusSettings);
   const findSearchSettings = () => wrapper.findComponent(SearchSettings);
+  const findPageTitle = () => wrapper.find('h1');
 
   it('always renders CustomFieldsList component with correct props', () => {
     createComponent();
@@ -67,7 +71,7 @@ describe('WorkItemSettingsHome', () => {
     });
 
     it('navigates to hash when CustomStatusSettings toggle-expand emits true', async () => {
-      createComponent({ $router: mockRouter });
+      createComponent({ mocks: { $router: mockRouter } });
 
       await findCustomStatusSettings().vm.$emit('toggle-expand', true);
 
@@ -78,7 +82,7 @@ describe('WorkItemSettingsHome', () => {
     });
 
     it('navigates to hash when CustomFieldsList toggle-expand emits true', async () => {
-      createComponent({ $router: mockRouter });
+      createComponent({ mocks: { $router: mockRouter } });
 
       await findCustomFieldsList().vm.$emit('toggle-expand', true);
 
@@ -89,7 +93,7 @@ describe('WorkItemSettingsHome', () => {
     });
 
     it('clears hash when toggling to false without existing hash', async () => {
-      createComponent({ $router: mockRouter, $route: { hash: '' } });
+      createComponent({ mocks: { $router: mockRouter, $route: { hash: '' } } });
 
       await findCustomStatusSettings().vm.$emit('toggle-expand', false);
 
@@ -98,8 +102,10 @@ describe('WorkItemSettingsHome', () => {
 
     it('clears hash when toggling to false with existing hash', async () => {
       createComponent({
-        $router: mockRouter,
-        $route: { hash: '#js-custom-status-settings' },
+        mocks: {
+          $router: mockRouter,
+          $route: { hash: '#js-custom-status-settings' },
+        },
       });
 
       await findCustomStatusSettings().vm.$emit('toggle-expand', false);
@@ -113,22 +119,36 @@ describe('WorkItemSettingsHome', () => {
 
   describe('Expanded State from Route Hash', () => {
     it('expands CustomStatusSettings when route hash matches section id', () => {
-      createComponent({ $route: { hash: '#js-custom-status-settings' } });
+      createComponent({ mocks: { $route: { hash: '#js-custom-status-settings' } } });
 
       expect(findCustomStatusSettings().props('expanded')).toBe(true);
     });
 
     it('expands CustomFieldsList when route hash matches section id', () => {
-      createComponent({ $route: { hash: '#js-custom-fields-settings' } });
+      createComponent({ mocks: { $route: { hash: '#js-custom-fields-settings' } } });
 
       expect(findCustomFieldsList().props('expanded')).toBe(true);
     });
 
     it('does not expand sections when hash does not match', () => {
-      createComponent({ $route: { hash: '#other-section' } });
+      createComponent({ mocks: { $route: { hash: '#other-section' } } });
 
       expect(findCustomStatusSettings().props('expanded')).toBe(false);
       expect(findCustomFieldsList().props('expanded')).toBe(false);
+    });
+  });
+
+  describe('page title', () => {
+    it('shows "Work items" when work_item_planning_view feature flag is enabled', () => {
+      createComponent({ glFeatures: { workItemPlanningView: true } });
+
+      expect(findPageTitle().text()).toBe('Work items');
+    });
+
+    it('shows "Issues" when work_item_planning_view feature flag is disabled', () => {
+      createComponent({ glFeatures: { workItemPlanningView: false } });
+
+      expect(findPageTitle().text()).toBe('Issues');
     });
   });
 });

@@ -15,6 +15,11 @@ module Groups
         push_frontend_feature_flag(:work_item_configurable_types, group)
       end
 
+      before_action only: [:show] do
+        push_force_frontend_feature_flag(:work_item_planning_view,
+          !!group.work_items_consolidated_list_enabled?(current_user))
+      end
+
       def show
         @hide_search_settings = true
       end
