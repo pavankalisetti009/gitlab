@@ -21,8 +21,20 @@ module EE
 
     def vue_blob_app_data(project, blob, ref)
       super.merge({
-        explain_code_available: ::Gitlab::Llm::TanukiBot.enabled_for?(user: current_user, container: project).to_s
+        explain_code_available: blob_explain_code_available?(project).to_s
       }.merge(vue_blob_workspace_data))
+    end
+
+    private
+
+    def blob_explain_code_available?(project)
+      return false unless current_user
+
+      if ::Feature.enabled?(:dap_external_trigger_usage_billing, current_user)
+        current_user.can?(:read_dap_external_trigger_usage_rule, project)
+      else
+        ::Gitlab::Llm::TanukiBot.enabled_for?(user: current_user, container: project)
+      end
     end
   end
 end

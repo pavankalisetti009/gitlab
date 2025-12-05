@@ -29,6 +29,10 @@ RSpec.describe Ci::BuildPolicy, feature_category: :continuous_integration do
       allow(user).to receive(:can?).with(:access_duo_chat).and_return(true)
       allow(user).to receive(:can?).with(:access_duo_features, build.project).and_return(true)
       allow(user).to receive(:allowed_to_use?).and_return(cloud_connector_user_access)
+
+      allow(project).to receive(:duo_features_enabled).and_return(true)
+      allow(user).to receive(:assigned_to_duo_add_ons?).with(project).and_return(true)
+      allow(user).to receive(:assigned_to_duo_core?).with(project).and_return(false)
     end
 
     context 'when feature is chat authorized' do
@@ -78,6 +82,11 @@ RSpec.describe Ci::BuildPolicy, feature_category: :continuous_integration do
 
     context 'when feature is not authorized' do
       let(:authorized) { false }
+
+      before do
+        allow(user).to receive(:assigned_to_duo_add_ons?).with(project).and_return(false)
+        allow(user).to receive(:assigned_to_duo_core?).with(project).and_return(false)
+      end
 
       it { is_expected.to be_disallowed(:troubleshoot_job_with_ai) }
     end

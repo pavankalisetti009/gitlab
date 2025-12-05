@@ -585,6 +585,17 @@ module EE
         .exists?
     end
 
+    def assigned_to_duo_core?(container)
+      namespace = ::Gitlab::Saas.feature_available?(:gitlab_duo_saas_only) ? container.root_ancestor : nil
+
+      GitlabSubscriptions::AddOnPurchase
+        .for_duo_core
+        .active
+        .by_namespace(namespace)
+        .assigned_to_user(self)
+        .exists?
+    end
+
     def group_sso?(group)
       return false unless group
 

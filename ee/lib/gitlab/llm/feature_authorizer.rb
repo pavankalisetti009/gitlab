@@ -3,6 +3,11 @@
 module Gitlab
   module Llm
     class FeatureAuthorizer
+      def self.can_access_duo_external_trigger?(user:, container:)
+        container.duo_features_enabled &&
+          (user.assigned_to_duo_add_ons?(container) || user.assigned_to_duo_core?(container))
+      end
+
       def initialize(container:, feature_name:, user:, licensed_feature: :ai_features)
         @container = container
         @feature_name = feature_name

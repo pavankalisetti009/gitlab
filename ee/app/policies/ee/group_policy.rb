@@ -289,11 +289,18 @@ module EE
       condition(:summarize_notes_allowed) do
         next false unless @user
 
-        ::Gitlab::Llm::FeatureAuthorizer.new(
-          container: subject,
-          feature_name: :summarize_comments,
-          user: @user
-        ).allowed?
+        if ::Feature.enabled?(:dap_external_trigger_usage_billing, @user)
+          ::Gitlab::Llm::FeatureAuthorizer.can_access_duo_external_trigger?(
+            user: @user,
+            container: @subject
+          )
+        else
+          ::Gitlab::Llm::FeatureAuthorizer.new(
+            container: subject,
+            feature_name: :summarize_comments,
+            user: @user
+          ).allowed?
+        end
       end
 
       rule { custom_role_enables_read_code }.policy do

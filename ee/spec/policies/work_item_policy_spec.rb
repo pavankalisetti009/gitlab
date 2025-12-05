@@ -77,6 +77,12 @@ RSpec.describe WorkItemPolicy, feature_category: :team_planning do
         allow_next_instance_of(::Gitlab::Llm::FeatureAuthorizer) do |instance|
           allow(instance).to receive(:allowed?).and_return(true)
         end
+
+        allow(group).to receive(:duo_features_enabled).and_return(true)
+        allow(guest).to receive(:assigned_to_duo_add_ons?).with(group).and_return(true)
+        allow(guest).to receive(:assigned_to_duo_core?).with(group).and_return(false)
+        allow(owner).to receive(:assigned_to_duo_add_ons?).with(group).and_return(true)
+        allow(owner).to receive(:assigned_to_duo_core?).with(group).and_return(false)
       end
 
       it 'checks the ability to summarize_comments' do

@@ -18,7 +18,7 @@ module EE
         path_locks_toggle: toggle_project_path_locks_path(project),
         resource_id: project.to_global_id,
         user_id: current_user.present? ? current_user.to_global_id : '',
-        explain_code_available: ::Gitlab::Llm::TanukiBot.enabled_for?(user: current_user, container: project).to_s
+        explain_code_available: tree_explain_code_available?(project).to_s
       })
     end
 
@@ -27,6 +27,18 @@ module EE
       super.merge({
         project_id: project_to_use.id
       }.merge(vue_tree_workspace_data))
+    end
+
+    private
+
+    def tree_explain_code_available?(project)
+      return false unless current_user
+
+      if ::Feature.enabled?(:dap_external_trigger_usage_billing, current_user)
+        current_user.can?(:read_dap_external_trigger_usage_rule, project)
+      else
+        ::Gitlab::Llm::TanukiBot.enabled_for?(user: current_user, container: project)
+      end
     end
   end
 end

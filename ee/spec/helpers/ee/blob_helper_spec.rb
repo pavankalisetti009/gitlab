@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
+require 'rspec-parameterized'
 
 RSpec.describe BlobHelper, feature_category: :source_code_management do
   include TreeHelper
@@ -83,21 +84,92 @@ RSpec.describe BlobHelper, feature_category: :source_code_management do
   end
 
   describe '#vue_blob_app_data' do
+    using RSpec::Parameterized::TableSyntax
+
+    let_it_be(:user) { create(:user) }
+    let_it_be(:project) { create(:project) }
     let(:blob) { fake_blob(path: 'file.md', size: 2.megabytes) }
-    let(:project) { build_stubbed(:project) }
-    let(:organization) { build_stubbed(:organization) }
     let(:ref) { 'main' }
+    let(:organization) { build_stubbed(:organization) }
 
-    it 'returns data related to blob app' do
-      allow(helper).to receive_messages(selected_branch: ref, current_user: nil)
-      Current.organization = organization
+    before_all do
+      project.add_developer(user)
+    end
 
-      expect(helper.vue_blob_app_data(project, blob, ref)).to include({
-        user_id: '',
-        explain_code_available: 'false',
-        new_workspace_path: new_remote_development_workspace_path,
-        organization_id: organization.id
-      })
+    context 'with explain_code_available parameter' do
+      context 'when current_user is nil' do
+        before do
+          Current.organization = organization
+          allow(helper).to receive_messages(
+            selected_branch: ref,
+            current_user: nil
+          )
+        end
+
+        it 'returns false for explain_code_available' do
+          expect(helper.vue_blob_app_data(project, blob, ref)).to include(
+            explain_code_available: 'false'
+          )
+        end
+      end
+
+      context 'when current_user is present' do
+        before do
+          Current.organization = organization
+          stub_feature_flags(dap_external_trigger_usage_billing: flag_enabled)
+          allow(helper).to receive_messages(
+            selected_branch: ref,
+            current_user: user
+          )
+
+          if flag_enabled
+            allow(user).to receive(:can?)
+              .with(:read_dap_external_trigger_usage_rule, project)
+              .and_return(has_duo_addon)
+          else
+            allow(::Gitlab::Llm::TanukiBot).to receive(:enabled_for?)
+              .with(user: user, container: project)
+              .and_return(tanuki_enabled)
+          end
+        end
+
+        where(:flag_enabled, :has_duo_addon, :tanuki_enabled, :expected_value) do
+          true  | true  | nil   | 'true'
+          true  | false | nil   | 'false'
+          false | nil   | true  | 'true'
+          false | nil   | false | 'false'
+        end
+
+        with_them do
+          it 'returns correct explain_code_available value' do
+            expect(helper.vue_blob_app_data(project, blob, ref)).to include(
+              explain_code_available: expected_value
+            )
+          end
+        end
+      end
+    end
+
+    context 'with workspace data' do
+      before do
+        Current.organization = organization
+        stub_feature_flags(dap_external_trigger_usage_billing: false)
+        allow(helper).to receive_messages(
+          selected_branch: ref,
+          current_user: user
+        )
+        allow(::Gitlab::Llm::TanukiBot).to receive(:enabled_for?)
+          .with(user: user, container: project)
+          .and_return(false)
+      end
+
+      it 'includes workspace-related attributes' do
+        expect(helper.vue_blob_app_data(project, blob, ref)).to include(
+          new_workspace_path: new_remote_development_workspace_path,
+          organization_id: organization.id,
+          explain_code_available: 'false'
+        )
+      end
     end
   end
 

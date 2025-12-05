@@ -2452,6 +2452,81 @@ RSpec.describe User, feature_category: :system_access do
     end
   end
 
+  describe '#assigned_to_duo_core?' do
+    let_it_be(:namespace) { create(:group) }
+    let_it_be(:user) { create(:user) }
+
+    subject { user.assigned_to_duo_core?(namespace) }
+
+    context 'on SaaS', :saas do
+      using RSpec::Parameterized::TableSyntax
+
+      where(:subscription_type, :expected) do
+        nil              | false
+        :duo_core        | true
+        :duo_pro         | false
+        :duo_enterprise  | false
+      end
+
+      with_them do
+        before do
+          allow(::Gitlab::Saas).to receive(:feature_available?).and_call_original
+          allow(::Gitlab::Saas).to receive(:feature_available?).with(:gitlab_duo_saas_only).and_return(true)
+
+          if subscription_type
+            subscription_purchase = create(
+              :gitlab_subscription_add_on_purchase,
+              subscription_type,
+              namespace: namespace
+            )
+
+            create(
+              :gitlab_subscription_user_add_on_assignment,
+              user: user,
+              add_on_purchase: subscription_purchase
+            )
+          end
+        end
+
+        it { is_expected.to eq(expected) }
+      end
+    end
+
+    context 'on self-managed' do
+      using RSpec::Parameterized::TableSyntax
+
+      where(:subscription_type, :expected) do
+        nil              | false
+        :duo_core        | true
+        :duo_pro         | false
+        :duo_enterprise  | false
+      end
+
+      with_them do
+        before do
+          allow(::Gitlab::Saas).to receive(:feature_available?).and_call_original
+          allow(::Gitlab::Saas).to receive(:feature_available?).with(:gitlab_duo_saas_only).and_return(false)
+
+          if subscription_type
+            subscription_purchase = create(
+              :gitlab_subscription_add_on_purchase,
+              subscription_type,
+              :self_managed
+            )
+
+            create(
+              :gitlab_subscription_user_add_on_assignment,
+              user: user,
+              add_on_purchase: subscription_purchase
+            )
+          end
+        end
+
+        it { is_expected.to eq(expected) }
+      end
+    end
+  end
+
   describe '#can_access_admin_area?' do
     let_it_be_with_refind(:user_without_admin_role) { create(:user) }
     let_it_be_with_refind(:user_with_admin_role) { create(:user) }
