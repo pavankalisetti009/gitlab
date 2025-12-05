@@ -27,6 +27,32 @@ export const initializeSecretManagerSettingsResponse = (errors = undefined) => {
   };
 };
 
+export const groupSecretManagerSettingsResponse = (status, errors = undefined) => {
+  return {
+    data: {
+      groupSecretsManager: {
+        status,
+        __typename: 'GroupSecretsManager',
+      },
+    },
+    errors,
+  };
+};
+
+export const initializeGroupSecretManagerSettingsResponse = (errors = undefined) => {
+  return {
+    data: {
+      groupSecretsManagerInitialize: {
+        errors,
+        groupSecretsManager: {
+          status: 'PROVISIONING',
+        },
+        __typename: 'GroupSecretsManagerInitializePayload',
+      },
+    },
+  };
+};
+
 export const MOCK_USERS_API = [
   {
     id: 1,

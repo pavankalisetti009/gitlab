@@ -143,4 +143,50 @@ RSpec.describe 'groups/settings/_permissions.html.haml', :aggregate_failures, :s
       end
     end
   end
+
+  context 'for secret manager section' do
+    before do
+      allow(group).to receive(:licensed_feature_available?).and_return(true)
+    end
+
+    context 'when feature flag is disabled' do
+      before do
+        stub_feature_flags(group_secrets_manager: false)
+      end
+
+      it 'does not render secret manager settings' do
+        render
+
+        expect(rendered).not_to have_css('.js-group-secrets-manager-settings')
+      end
+    end
+
+    context 'when licensed feature is not available' do
+      before do
+        stub_feature_flags(group_secrets_manager: true)
+        allow(group).to receive(:licensed_feature_available?)
+          .with(:native_secrets_management).and_return(false)
+      end
+
+      it 'does not render secret manager settings' do
+        render
+
+        expect(rendered).not_to have_css('.js-group-secrets-manager-settings')
+      end
+    end
+
+    context 'when feature flag is enabled and licensed' do
+      before do
+        stub_feature_flags(group_secrets_manager: true)
+        allow(group).to receive(:licensed_feature_available?)
+          .with(:native_secrets_management).and_return(true)
+      end
+
+      it 'renders secret manager settings' do
+        render
+
+        expect(rendered).to have_css('.js-group-secrets-manager-settings')
+      end
+    end
+  end
 end

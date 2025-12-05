@@ -10,14 +10,18 @@ import {
   SECRET_MANAGER_STATUS_DEPROVISIONING,
 } from 'ee/ci/secrets/constants';
 import enableSecretManagerMutation from 'ee/ci/secrets/graphql/mutations/enable_secret_manager.mutation.graphql';
+import enableGroupSecretManagerMutation from 'ee/ci/secrets/graphql/mutations/enable_group_secret_manager.mutation.graphql';
 import getSecretManagerStatusQuery from 'ee/ci/secrets/graphql/queries/get_secret_manager_status.query.graphql';
+import getGroupSecretManagerStatusQuery from 'ee/ci/secrets/graphql/queries/get_group_secret_manager_status.query.graphql';
 import PermissionsSettings from 'ee/pages/projects/shared/permissions/secrets_manager/components/secrets_manager_permissions_settings.vue';
 import SecretManagerSettings, {
   POLL_INTERVAL,
 } from 'ee/pages/projects/shared/permissions/secrets_manager/secrets_manager_settings.vue';
 import {
   initializeSecretManagerSettingsResponse,
+  initializeGroupSecretManagerSettingsResponse,
   secretManagerSettingsResponse,
+  groupSecretManagerSettingsResponse,
 } from './mock_data';
 
 Vue.use(VueApollo);
@@ -26,6 +30,7 @@ const showToast = jest.fn();
 describe('SecretManagerSettings', () => {
   let wrapper;
   let mockEnableSecretManager;
+  let mockEnableGroupSecretManager;
   let mockSecretManagerStatus;
 
   const activeResponse = secretManagerSettingsResponse(SECRET_MANAGER_STATUS_ACTIVE);
@@ -37,26 +42,35 @@ describe('SecretManagerSettings', () => {
   const inactiveResponse = secretManagerSettingsResponse(null);
   const errorResponse = secretManagerSettingsResponse(null, [{ message: 'Some error occurred' }]);
 
+  const groupActiveResponse = groupSecretManagerSettingsResponse(SECRET_MANAGER_STATUS_ACTIVE);
+  const groupProvisioningResponse = groupSecretManagerSettingsResponse(
+    SECRET_MANAGER_STATUS_PROVISIONING,
+  );
+  const groupInactiveResponse = groupSecretManagerSettingsResponse(null);
+
   const fullPath = 'gitlab-org/gitlab';
 
-  const createComponent = async ({ props } = {}) => {
+  const createComponent = async ({ context = 'project', ...props } = {}) => {
     const handlers = [
       [getSecretManagerStatusQuery, mockSecretManagerStatus],
       [enableSecretManagerMutation, mockEnableSecretManager],
+      [getGroupSecretManagerStatusQuery, mockSecretManagerStatus],
+      [enableGroupSecretManagerMutation, mockEnableGroupSecretManager],
     ];
-    const mockApollo = createMockApollo(handlers);
+
+    const defaultProps =
+      context === 'project'
+        ? { canManageSecretsManager: true, fullPath, context: 'project', projectId: 1 }
+        : { canManageSecretsManager: true, fullPath, context: 'group' };
 
     wrapper = shallowMountExtended(SecretManagerSettings, {
-      apolloProvider: mockApollo,
+      apolloProvider: createMockApollo(handlers),
       propsData: {
-        canManageSecretsManager: true,
-        fullPath,
+        ...defaultProps,
         ...props,
       },
       mocks: {
-        $toast: {
-          show: showToast,
-        },
+        $toast: { show: showToast },
       },
     });
 
@@ -73,14 +87,6 @@ describe('SecretManagerSettings', () => {
     jest.advanceTimersByTime(milliseconds);
   };
 
-  const toggleSetting = async (errors = []) => {
-    const mutationResponse = initializeSecretManagerSettingsResponse(errors);
-    mockEnableSecretManager.mockResolvedValue(mutationResponse);
-
-    findToggle().vm.$emit('change', true);
-    await waitForPromises();
-  };
-
   const pollNextStatus = async (queryResponse) => {
     mockSecretManagerStatus.mockResolvedValue(queryResponse);
     advanceToNextFetch(POLL_INTERVAL);
@@ -91,13 +97,14 @@ describe('SecretManagerSettings', () => {
 
   beforeEach(() => {
     mockEnableSecretManager = jest.fn();
+    mockEnableGroupSecretManager = jest.fn();
     mockSecretManagerStatus = jest.fn();
   });
 
   describe('template', () => {
     beforeEach(async () => {
       mockSecretManagerStatus.mockResolvedValue(inactiveResponse);
-      await createComponent({ props: { canManageSecretsManager: false } });
+      await createComponent({ canManageSecretsManager: false });
     });
 
     it('disables toggle when user does not have permission', () => {
@@ -120,45 +127,18 @@ describe('SecretManagerSettings', () => {
     });
   });
 
-  describe('when query receives ACTIVE status', () => {
+  describe('when query receives an error', () => {
     beforeEach(async () => {
-      mockSecretManagerStatus.mockResolvedValue(activeResponse);
+      mockSecretManagerStatus.mockResolvedValue(errorResponse);
       await createComponent();
     });
 
-    it('shows active state', () => {
-      expect(findToggle().props('value')).toBe(true);
-    });
-
-    it('renders permission settings', () => {
-      expect(findPermissionsSettings().exists()).toBe(true);
-    });
-  });
-
-  describe('when query receives INACTIVE status', () => {
-    beforeEach(async () => {
-      mockSecretManagerStatus.mockResolvedValue(inactiveResponse);
-      await createComponent();
-    });
-
-    it('shows inactive state', () => {
-      expect(findToggle().props('value')).toBe(false);
-    });
-
-    it('renders permission settings', () => {
-      expect(findPermissionsSettings().exists()).toBe(false);
-    });
-  });
-
-  describe('when query receives PROVISIONING status', () => {
-    beforeEach(async () => {
-      mockSecretManagerStatus.mockResolvedValue(provisioningResponse);
-      await createComponent();
-    });
-
-    it('disables toggle and shows loading state', () => {
+    it('disables toggle', () => {
       expect(findToggle().props('disabled')).toBe(true);
-      expect(findToggle().props('isLoading')).toBe(true);
+    });
+
+    it('shows error message', () => {
+      expect(findError().text()).toBe('Some error occurred');
     });
 
     it('does not render permission settings', () => {
@@ -182,89 +162,157 @@ describe('SecretManagerSettings', () => {
     });
   });
 
-  describe('when query receives NULL status', () => {
-    beforeEach(async () => {
-      mockSecretManagerStatus.mockResolvedValue(inactiveResponse);
-      await createComponent();
-    });
+  describe.each([
+    {
+      context: 'project',
+      contextActiveResponse: activeResponse,
+      contextProvisioningResponse: provisioningResponse,
+      contextInactiveResponse: inactiveResponse,
+      mockMutation: () => mockEnableSecretManager,
+      mutationResponse: initializeSecretManagerSettingsResponse,
+      pathKey: 'fullPath',
+      toastMessage: 'Secrets manager has been provisioned for this project.',
+    },
+    {
+      context: 'group',
+      contextActiveResponse: groupActiveResponse,
+      contextProvisioningResponse: groupProvisioningResponse,
+      contextInactiveResponse: groupInactiveResponse,
+      mockMutation: () => mockEnableGroupSecretManager,
+      mutationResponse: initializeGroupSecretManagerSettingsResponse,
+      pathKey: 'fullPath',
+      toastMessage: 'Secrets manager has been provisioned for this group.',
+    },
+  ])(
+    '$context context',
+    ({
+      context,
+      contextActiveResponse,
+      contextProvisioningResponse,
+      contextInactiveResponse,
+      mockMutation,
+      mutationResponse,
+      pathKey,
+      toastMessage,
+    }) => {
+      const toggleSetting = async (errors = []) => {
+        const response = mutationResponse(errors);
+        mockMutation().mockResolvedValue(response);
 
-    it('shows inactive state', () => {
-      expect(findToggle().props('disabled')).toBe(false);
-      expect(findToggle().props('value')).toBe(false);
-    });
+        findToggle().vm.$emit('change', true);
+        await waitForPromises();
+      };
 
-    it('does not render permission settings', () => {
-      expect(findPermissionsSettings().exists()).toBe(false);
-    });
-  });
+      describe('when query receives ACTIVE status', () => {
+        beforeEach(async () => {
+          mockSecretManagerStatus.mockResolvedValue(contextActiveResponse);
+          await createComponent({ context });
+        });
 
-  describe('when query receives an error', () => {
-    beforeEach(async () => {
-      mockSecretManagerStatus.mockResolvedValue(errorResponse);
-      await createComponent();
-    });
+        it('shows active state', () => {
+          expect(findToggle().props('value')).toBe(true);
+        });
 
-    it('disables toggle', () => {
-      expect(findToggle().props('disabled')).toBe(true);
-    });
-
-    it('shows error message', () => {
-      expect(findError().text()).toBe('Some error occurred');
-    });
-
-    it('does not render permission settings', () => {
-      expect(findPermissionsSettings().exists()).toBe(false);
-    });
-  });
-
-  describe('when enabling the secrets manager', () => {
-    beforeEach(async () => {
-      mockSecretManagerStatus.mockResolvedValue(inactiveResponse);
-      await createComponent();
-    });
-
-    it('sends mutation request', async () => {
-      await toggleSetting();
-
-      expect(mockEnableSecretManager).toHaveBeenCalledWith({
-        projectPath: fullPath,
+        it('renders permission settings', () => {
+          expect(findPermissionsSettings().exists()).toBe(true);
+        });
       });
-    });
 
-    it('shows error message on failure and disables toggle', async () => {
-      await toggleSetting(['Error encountered']);
+      describe('when query receives INACTIVE status', () => {
+        beforeEach(async () => {
+          mockSecretManagerStatus.mockResolvedValue(contextInactiveResponse);
+          await createComponent();
+        });
 
-      expect(findError().exists()).toBe(true);
-      expect(findToggle().props('disabled')).toBe(true);
-    });
+        it('shows inactive state', () => {
+          expect(findToggle().props('value')).toBe(false);
+        });
 
-    it('starts polling for a new status while status is PROVISIONING', async () => {
-      expect(mockSecretManagerStatus).toHaveBeenCalledTimes(1);
+        it('renders permission settings', () => {
+          expect(findPermissionsSettings().exists()).toBe(false);
+        });
+      });
 
-      await toggleSetting();
-      await pollNextStatus(provisioningResponse);
-      await pollNextStatus(provisioningResponse);
-      expect(mockSecretManagerStatus).toHaveBeenCalledTimes(3);
-    });
+      describe('when query receives PROVISIONING status', () => {
+        beforeEach(async () => {
+          mockSecretManagerStatus.mockResolvedValue(contextProvisioningResponse);
+          await createComponent({ context });
+        });
 
-    it('stops polling for status when new status is ACTIVE', async () => {
-      expect(mockSecretManagerStatus).toHaveBeenCalledTimes(1);
+        it('disables toggle and shows loading state', () => {
+          expect(findToggle().props('disabled')).toBe(true);
+          expect(findToggle().props('isLoading')).toBe(true);
+        });
 
-      await toggleSetting();
-      await pollNextStatus(activeResponse);
-      await pollNextStatus(activeResponse);
+        it('does not render permission settings', () => {
+          expect(findPermissionsSettings().exists()).toBe(false);
+        });
+      });
 
-      expect(findToggle().props('value')).toBe(true);
-      expect(mockSecretManagerStatus).toHaveBeenCalledTimes(2);
-    });
+      describe('when query receives NULL status', () => {
+        beforeEach(async () => {
+          mockSecretManagerStatus.mockResolvedValue(contextInactiveResponse);
+          await createComponent({ context });
+        });
 
-    it('shows toast message on success', async () => {
-      await toggleSetting();
-      await pollNextStatus(activeResponse);
+        it('shows inactive state', () => {
+          expect(findToggle().props('disabled')).toBe(false);
+          expect(findToggle().props('value')).toBe(false);
+        });
 
-      expect(showToast).toHaveBeenCalledWith(
-        'Secrets manager has been provisioned for this project.',
-      );
-    });
-  });
+        it('does not render permission settings', () => {
+          expect(findPermissionsSettings().exists()).toBe(false);
+        });
+      });
+
+      describe('when enabling the secrets manager', () => {
+        beforeEach(async () => {
+          mockSecretManagerStatus.mockResolvedValue(contextInactiveResponse);
+          await createComponent({ context });
+        });
+
+        it('sends mutation request', async () => {
+          await toggleSetting();
+
+          expect(mockMutation()).toHaveBeenCalledWith({
+            [pathKey]: fullPath,
+          });
+        });
+
+        it('shows error message on failure and disables toggle', async () => {
+          await toggleSetting(['Error encountered']);
+
+          expect(findError().exists()).toBe(true);
+          expect(findToggle().props('disabled')).toBe(true);
+        });
+
+        it('starts polling for a new status while status is PROVISIONING', async () => {
+          expect(mockSecretManagerStatus).toHaveBeenCalledTimes(1);
+
+          await toggleSetting();
+          await pollNextStatus(contextProvisioningResponse);
+          await pollNextStatus(contextProvisioningResponse);
+          expect(mockSecretManagerStatus).toHaveBeenCalledTimes(3);
+        });
+
+        it('stops polling for status when new status is ACTIVE', async () => {
+          expect(mockSecretManagerStatus).toHaveBeenCalledTimes(1);
+
+          await toggleSetting();
+          await pollNextStatus(contextActiveResponse);
+          await pollNextStatus(contextActiveResponse);
+
+          expect(findToggle().props('value')).toBe(true);
+          expect(mockSecretManagerStatus).toHaveBeenCalledTimes(2);
+        });
+
+        it('shows toast message on success', async () => {
+          await toggleSetting();
+          await pollNextStatus(contextActiveResponse);
+
+          expect(showToast).toHaveBeenCalledWith(toastMessage);
+        });
+      });
+    },
+  );
 });

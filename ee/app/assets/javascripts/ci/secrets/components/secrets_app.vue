@@ -40,7 +40,7 @@ export default {
       },
       variables() {
         return {
-          projectPath: this.fullPath,
+          fullPath: this.fullPath,
         };
       },
       update({ projectSecretsManager }) {
