@@ -79161,9 +79161,6 @@ msgstr ""
 msgid "Your username is %{username}."
 msgstr ""
 
-msgid "Your webauthn device did not send a valid JSON response."
-msgstr ""
-
 msgid "Your work"
 msgstr ""
 
