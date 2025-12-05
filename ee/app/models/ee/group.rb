@@ -318,12 +318,7 @@ module EE
     end
 
     def ai_review_merge_request_allowed?(user)
-      Ability.allowed?(user, :access_ai_review_mr, self) &&
-        ::Gitlab::Llm::FeatureAuthorizer.new(
-          container: self,
-          feature_name: :review_merge_request,
-          user: user
-        ).allowed?
+      ::Ai::CodeReviewAuthorization.new(self).allowed?(user)
     end
 
     def project_epics_enabled?

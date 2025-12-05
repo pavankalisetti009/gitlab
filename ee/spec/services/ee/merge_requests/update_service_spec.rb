@@ -708,15 +708,15 @@ RSpec.describe MergeRequests::UpdateService, :mailer, feature_category: :code_re
       end
 
       before do
-        allow(project).to receive(:auto_duo_code_review_enabled).and_return(auto_duo_code_review)
+        stub_feature_flags(duo_code_review_on_agent_platform: false)
+        allow(project).to receive_messages(
+          auto_duo_code_review_enabled: auto_duo_code_review
+        )
         allow(project.project_setting).to receive(:duo_features_enabled?).and_return(duo_enabled_project_setting)
+        allow(project.namespace).to receive(:auto_duo_code_review_settings_available?).and_return(true)
         allow(merge_request).to receive(:ai_review_merge_request_allowed?)
           .with(user)
           .and_return(ai_review_allowed)
-        allow(project.namespace)
-          .to receive(:has_active_add_on_purchase?)
-          .with(:duo_enterprise)
-          .and_return(true)
       end
 
       context 'when it became ready by wip_event the MR title changes' do
@@ -775,6 +775,10 @@ RSpec.describe MergeRequests::UpdateService, :mailer, feature_category: :code_re
       context 'when project setting disable duo' do
         let(:duo_enabled_project_setting) { false }
 
+        before do
+          allow(project.project_setting).to receive(:duo_features_enabled?).and_return(false)
+        end
+
         it 'does not add Duo as a reviewer' do
           update_merge_request({ title: 'Awesome merge_request' })
 
@@ -800,6 +804,27 @@ RSpec.describe MergeRequests::UpdateService, :mailer, feature_category: :code_re
           update_merge_request(opts)
 
           expect(merge_request.reviewers).to be_empty
+        end
+      end
+
+      context 'with DAP flow enabled' do
+        let!(:duo_core_add_on) { create(:gitlab_subscription_add_on, :duo_core) }
+
+        before do
+          stub_feature_flags(duo_code_review_on_agent_platform: true)
+          stub_ee_application_setting(instance_level_ai_beta_features_enabled: true)
+          create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: duo_core_add_on)
+
+          allow(merge_request).to receive(:ai_review_merge_request_allowed?).with(user).and_return(true)
+        end
+
+        context 'when it becomes ready by title change' do
+          let(:opts) { { title: 'Awesome merge_request' } }
+
+          it 'adds Duo as a reviewer' do
+            update_merge_request(opts)
+            expect(merge_request.reviewers).to eq [duo]
+          end
         end
       end
     end
@@ -922,6 +947,24 @@ RSpec.describe MergeRequests::UpdateService, :mailer, feature_category: :code_re
 
           update_merge_request({ reviewer_ids: [service_account.id] })
         end
+      end
+    end
+
+    describe '#use_duo_agent_platform?' do
+      let(:service) { described_class.new(project: project, current_user: user, params: {}) }
+      let(:validator) { instance_double(Ai::DuoWorkflows::CodeReview::AvailabilityValidator) }
+
+      subject(:use_duo_agent_platform) { service.send(:use_duo_agent_platform?, merge_request) }
+
+      before do
+        allow(Ai::DuoWorkflows::CodeReview::AvailabilityValidator).to receive(:new)
+          .with(user: user, resource: merge_request.project)
+          .and_return(validator)
+      end
+
+      it 'delegates to AvailabilityValidator' do
+        expect(validator).to receive(:available?).and_return(true)
+        expect(use_duo_agent_platform).to be true
       end
     end
   end

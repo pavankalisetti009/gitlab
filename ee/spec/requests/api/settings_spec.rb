@@ -660,9 +660,11 @@ RSpec.describe API::Settings, 'EE Settings', :aggregate_failures, feature_catego
     using RSpec::Parameterized::TableSyntax
 
     let!(:duo_enterprise_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
+    let!(:duo_core_add_on) { create(:gitlab_subscription_add_on, :duo_core) }
+    let!(:duo_pro_add_on) { create(:gitlab_subscription_add_on, :duo_pro) }
     let(:application_setting) { create(:application_setting) }
 
-    where(:duo_features_enabled, :has_add_on, :param, :value, :result) do
+    where(:duo_features_enabled, :has_duo_enterprise, :param, :value, :result) do
       false | false | 'auto_duo_code_review_enabled' | false | nil
       false | true  | 'auto_duo_code_review_enabled' | false | nil
       true  | false | 'auto_duo_code_review_enabled' | false | nil
@@ -674,8 +676,9 @@ RSpec.describe API::Settings, 'EE Settings', :aggregate_failures, feature_catego
       let(:params) { { param => value } }
 
       before do
+        stub_feature_flags(duo_code_review_on_agent_platform: false)
         application_setting.update!(duo_features_enabled: duo_features_enabled)
-        create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: duo_enterprise_add_on) if has_add_on
+        create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: duo_enterprise_add_on) if has_duo_enterprise
       end
 
       it 'updates the attribute as expected' do
@@ -683,6 +686,31 @@ RSpec.describe API::Settings, 'EE Settings', :aggregate_failures, feature_catego
 
         expect(response).to have_gitlab_http_status(:ok)
         expect(json_response[param]).to eq(result)
+      end
+    end
+
+    context 'when duo_code_review_on_agent_platform feature flag is enabled' do
+      let(:params) { { auto_duo_code_review_enabled: true } }
+
+      where(:add_on_type, :add_on) do
+        [
+          ['duo_core', ref(:duo_core_add_on)],
+          ['duo_pro',  ref(:duo_pro_add_on)]
+        ]
+      end
+
+      with_them do
+        before do
+          stub_ee_application_setting(duo_features_enabled: true)
+          create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: add_on)
+        end
+
+        it "allows setting auto_duo_code_review_enabled with #{params[:add_on_type]} add-on" do
+          put api('/application/settings', admin, admin_mode: true), params: params
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['auto_duo_code_review_enabled']).to eq(true)
+        end
       end
     end
   end

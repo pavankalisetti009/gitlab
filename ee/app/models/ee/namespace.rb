@@ -259,14 +259,34 @@ module EE
       end
     end
 
-    def has_active_add_on_purchase?(add_on)
+    def has_active_add_on_purchase?(add_ons)
       ::GitlabSubscriptions::AddOnPurchase
-        .for_active_add_ons(add_on, self)
+        .for_active_add_ons(add_ons, self)
         .any?
     end
 
     def auto_duo_code_review_settings_available?
-      namespace_settings&.duo_features_enabled? && has_active_add_on_purchase?(:duo_enterprise)
+      return false unless namespace_settings&.duo_features_enabled?
+
+      # Start with Duo Enterprise (classic flow)
+      # Duo Enterprise is always available when the add-on is active, regardless of feature flags
+      add_ons = [:duo_enterprise]
+
+      # Add Duo Pro/Core (DAP flow) only if both conditions are met:
+      # 1. DAP feature flag is enabled
+      # 2. Experiment/beta features are enabled (compliance requirement until DAP is GA in 18.7)
+      if ::Feature.enabled?(:duo_code_review_on_agent_platform, self)
+        # Add Duo Pro/Core if experiment features (SaaS) or beta features (self-managed) are enabled
+        beta_or_experiment_enabled = if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+                                       experiment_features_enabled
+                                     else
+                                       ::Gitlab::CurrentSettings.instance_level_ai_beta_features_enabled?
+                                     end
+
+        add_ons += [:duo_pro, :duo_core] if beta_or_experiment_enabled
+      end
+
+      has_active_add_on_purchase?(add_ons)
     end
 
     def namespace_limit

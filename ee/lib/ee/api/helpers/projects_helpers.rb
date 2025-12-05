@@ -117,7 +117,17 @@ module EE
             attrs.delete(:ci_restrict_pipeline_cancellation_role)
           end
 
-          attrs.delete(:auto_duo_code_review_enabled) unless ::License.feature_available?(:review_merge_request)
+          if params[:id].present?
+            # Existing project (update) - check both license and availability
+            unless ::License.feature_available?(:review_merge_request) &&
+                user_project.auto_duo_code_review_settings_available?
+              attrs.delete(:auto_duo_code_review_enabled)
+            end
+          else
+            # New project (creation) - only check license
+            attrs.delete(:auto_duo_code_review_enabled) unless ::License.feature_available?(:review_merge_request)
+          end
+
           attrs.delete(:duo_remote_flows_enabled) unless License.feature_available?(:ai_workflows)
 
           unless License.feature_available?(:ai_features) && ::Feature.enabled?(:ai_experiment_sast_fp_detection, current_user)

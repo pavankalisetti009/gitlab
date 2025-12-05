@@ -5253,14 +5253,10 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     let_it_be(:project) { create(:project) }
     let_it_be(:current_user) { create(:user) }
 
-    subject(:ai_review_merge_request_allowed?) { project.ai_review_merge_request_allowed?(current_user) }
+    it 'delegates to Ai::CodeReviewAuthorization' do
+      expect(Ai::CodeReviewAuthorization).to receive(:new).with(project).and_call_original
 
-    it 'calls ::Projects::AiFeatures.review_merge_request_allowed?' do
-      expect_next_instance_of(::Projects::AiFeatures, project) do |ai_features|
-        expect(ai_features).to receive(:review_merge_request_allowed?).with(current_user)
-      end
-
-      ai_review_merge_request_allowed?
+      project.ai_review_merge_request_allowed?(current_user)
     end
   end
 
@@ -5341,67 +5337,36 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     end
   end
 
-  describe '#duo_enterprise_features_available?' do
-    let(:project) { create(:project, group: namespace) }
-    let(:parent) { create(:group) }
-    let(:namespace) { create(:group, parent: parent) }
-    let!(:duo_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
+  describe '#auto_duo_code_review_settings_available?' do
+    let_it_be(:namespace) { create(:group) }
+    let_it_be(:project) { create(:project, group: namespace) }
 
-    context "on saas instance" do
+    subject { project.auto_duo_code_review_settings_available? }
+
+    context 'when duo_features_enabled is false at project level' do
       before do
-        allow(Gitlab).to receive(:com?).and_return(true)
+        allow(project.project_setting).to receive(:duo_features_enabled?).and_return(false)
       end
 
-      context "duo_feature enabled" do
-        before do
-          allow(project.project_setting).to receive(:duo_features_enabled?).and_return(true)
-        end
-
-        context "duo_enterprise purchased" do
-          before do
-            create(:gitlab_subscription_add_on_purchase,
-              namespace: parent,
-              add_on: duo_add_on)
-          end
-
-          it 'enables duo_enterprise_features_available?' do
-            expect(project).to be_duo_enterprise_features_available
-          end
-        end
-
-        context "duo_enterprise not purchased" do
-          it 'disables duo_enterprise_features_available?' do
-            expect(project).not_to be_duo_enterprise_features_available
-          end
-        end
-      end
-
-      context "duo_feature not enabled" do
-        before do
-          allow(project.project_setting).to receive(:duo_features_enabled?).and_return(false)
-        end
-
-        it 'disables duo_enterprise_features_available?' do
-          expect(project).not_to be_duo_enterprise_features_available
-        end
+      it 'returns false without checking namespace' do
+        expect(namespace).not_to receive(:auto_duo_code_review_settings_available?)
+        expect(subject).to be false
       end
     end
 
-    context "on self-managed instance" do
-      context "duo_feature enabled" do
-        before do
-          allow(project.project_setting).to receive(:duo_features_enabled?).and_return(true)
-        end
+    context 'when duo_features_enabled is true at project level' do
+      before do
+        allow(project.project_setting).to receive(:duo_features_enabled?).and_return(true)
+      end
 
-        context "duo_enterprise purchased" do
-          before do
-            create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: duo_add_on)
-          end
+      it 'delegates to namespace.auto_duo_code_review_settings_available?' do
+        expect(namespace).to receive(:auto_duo_code_review_settings_available?).and_return(true)
+        expect(subject).to be true
+      end
 
-          it 'enables duo_enterprise_features_available?' do
-            expect(project).to be_duo_enterprise_features_available
-          end
-        end
+      it 'returns the result from namespace' do
+        allow(namespace).to receive(:auto_duo_code_review_settings_available?).and_return(false)
+        expect(subject).to be false
       end
     end
   end

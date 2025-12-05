@@ -1,4 +1,4 @@
-- return unless @project.duo_enterprise_features_available?
+- return unless @project.auto_duo_code_review_settings_available?
 
 = render ::Layouts::SettingsSectionComponent.new(s_('DuoCodeReview|GitLab Duo Code Review'),
   id: 'merge-request-duo-code-review-settings',

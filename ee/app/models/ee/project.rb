@@ -702,8 +702,10 @@ module EE
       !!import_state&.last_update_succeeded?
     end
 
-    def duo_enterprise_features_available?
-      project_setting.duo_features_enabled? && namespace.has_active_add_on_purchase?(:duo_enterprise)
+    def auto_duo_code_review_settings_available?
+      return false unless project_setting.duo_features_enabled?
+
+      namespace.auto_duo_code_review_settings_available?
     end
 
     def mirror_last_update_failed?
@@ -941,7 +943,7 @@ module EE
     end
 
     def ai_review_merge_request_allowed?(user)
-      ::Projects::AiFeatures.new(self).review_merge_request_allowed?(user)
+      ::Ai::CodeReviewAuthorization.new(self).allowed?(user)
     end
 
     override :add_import_job

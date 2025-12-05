@@ -14,7 +14,8 @@ RSpec.describe "Search results for project settings", :js, feature_category: :gl
       ci_project_subscriptions: true,
       status_page: true,
       observability: true,
-      ai_features: true
+      ai_features: true,
+      review_merge_request: true
     )
   end
 
