@@ -20,7 +20,7 @@ RSpec.describe Gitlab::Usage::Metrics::Instrumentations::CountUsersPolicyAdvance
           INNER JOIN "users" ON "users"."id" = "user_preferences"."user_id"
       WHERE
           "user_preferences"."policy_advanced_editor" = TRUE
-          AND ("users"."state" IN ('active'))
+          AND "users"."state" = 'active'
           AND "users"."user_type" IN (0, 6, 4, 13)
     SQL
   end

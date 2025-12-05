@@ -1473,7 +1473,7 @@ RSpec.describe User, feature_category: :system_access do
 
     context 'with guests' do
       let(:expected_where) do
-        'WHERE \("users"."state" IN \(\'active\'\)\)
+        'WHERE "users"."state" = \'active\'
           AND
           "users"."user_type" IN \(0, 6, 4, 13\)
           AND
@@ -1525,7 +1525,7 @@ RSpec.describe User, feature_category: :system_access do
 
     context 'without guests' do
       let(:expected_where) do
-        'WHERE \("users"."state" IN \(\'active\'\)\)
+        'WHERE "users"."state" = \'active\'
         AND
         "users"."user_type" IN \(0, 6, 4, 13\)
         AND
