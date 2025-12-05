@@ -263,7 +263,13 @@ RSpec.describe AutoMerge::AddToMergeTrainWhenChecksPassService, feature_category
   end
 
   describe '#available_for?' do
+    let(:mr_messages) { {} }
+
     subject(:available_for) { service.available_for?(merge_request) }
+
+    before do
+      allow(merge_request).to receive_messages(**mr_messages) if mr_messages.any?
+    end
 
     it { is_expected.to be(true) }
 
@@ -276,9 +282,7 @@ RSpec.describe AutoMerge::AddToMergeTrainWhenChecksPassService, feature_category
     end
 
     context 'when the MR does not have ci enabled' do
-      before do
-        allow(merge_request).to receive(:has_ci_enabled?).and_return(false)
-      end
+      let(:mr_messages) { { has_ci_enabled?: false } }
 
       it { is_expected.to be(false) }
     end
@@ -292,17 +296,13 @@ RSpec.describe AutoMerge::AddToMergeTrainWhenChecksPassService, feature_category
     end
 
     context 'when the user does not have permission to merge' do
-      before do
-        allow(merge_request).to receive(:can_be_merged_by?).and_return(false)
-      end
+      let(:mr_messages) { { can_be_merged_by?: false } }
 
       it { is_expected.to be(false) }
     end
 
     context 'when pipeline is being created' do
-      before do
-        allow(merge_request).to receive(:pipeline_creating?).and_return(true)
-      end
+      let(:mr_messages) { { pipeline_creating?: true } }
 
       it { is_expected.to be(true) }
     end
@@ -319,11 +319,9 @@ RSpec.describe AutoMerge::AddToMergeTrainWhenChecksPassService, feature_category
   describe '#availability_details' do
     subject(:availability_check) { service.availability_details(merge_request) }
 
-    it 'is available and has no unavailable reason' do
-      aggregate_failures do
-        expect(availability_check.available?).to be true
-        expect(availability_check.unavailable_reason).to be_nil
-      end
+    it 'is available and has no unavailable reason', :aggregate_failures do
+      expect(availability_check.available?).to be true
+      expect(availability_check.unavailable_reason).to be_nil
     end
 
     it 'memoizes the result' do
@@ -337,11 +335,9 @@ RSpec.describe AutoMerge::AddToMergeTrainWhenChecksPassService, feature_category
         allow(merge_request.project).to receive(:merge_trains_enabled?).and_return(false)
       end
 
-      it 'is unavailable and returns the correct reason' do
-        aggregate_failures do
-          expect(availability_check.available?).to be false
-          expect(availability_check.unavailable_reason).to eq :merge_trains_disabled
-        end
+      it 'is unavailable and returns the correct reason', :aggregate_failures do
+        expect(availability_check.available?).to be false
+        expect(availability_check.unavailable_reason).to eq :merge_trains_disabled
       end
     end
 
@@ -350,11 +346,9 @@ RSpec.describe AutoMerge::AddToMergeTrainWhenChecksPassService, feature_category
         stub_licensed_features(merge_trains: false)
       end
 
-      it 'is unavailable and returns the correct reason' do
-        aggregate_failures do
-          expect(availability_check.available?).to be false
-          expect(availability_check.unavailable_reason).to eq :merge_trains_disabled
-        end
+      it 'is unavailable and returns the correct reason', :aggregate_failures do
+        expect(availability_check.available?).to be false
+        expect(availability_check.unavailable_reason).to eq :merge_trains_disabled
       end
     end
 
@@ -363,11 +357,9 @@ RSpec.describe AutoMerge::AddToMergeTrainWhenChecksPassService, feature_category
         allow(merge_request).to receive(:has_ci_enabled?).and_return(false)
       end
 
-      it 'is unavailable and returns the correct reason' do
-        aggregate_failures do
-          expect(availability_check.available?).to be false
-          expect(availability_check.unavailable_reason).to eq :default
-        end
+      it 'is unavailable and returns the correct reason', :aggregate_failures do
+        expect(availability_check.available?).to be false
+        expect(availability_check.unavailable_reason).to eq :default
       end
     end
 
@@ -376,11 +368,9 @@ RSpec.describe AutoMerge::AddToMergeTrainWhenChecksPassService, feature_category
         merge_request.update!(title: merge_request.draft_title)
       end
 
-      it 'is available and has no unavailable reason' do
-        aggregate_failures do
-          expect(availability_check.available?).to be true
-          expect(availability_check.unavailable_reason).to be_nil
-        end
+      it 'is available and has no unavailable reason', :aggregate_failures do
+        expect(availability_check.available?).to be true
+        expect(availability_check.unavailable_reason).to be_nil
       end
     end
 
@@ -389,11 +379,9 @@ RSpec.describe AutoMerge::AddToMergeTrainWhenChecksPassService, feature_category
         allow(merge_request).to receive(:can_be_merged_by?).and_return(false)
       end
 
-      it 'is unavailable and returns the correct reason' do
-        aggregate_failures do
-          expect(availability_check.available?).to be false
-          expect(availability_check.unavailable_reason).to eq :forbidden
-        end
+      it 'is unavailable and returns the correct reason', :aggregate_failures do
+        expect(availability_check.available?).to be false
+        expect(availability_check.unavailable_reason).to eq :forbidden
       end
     end
 
@@ -402,11 +390,9 @@ RSpec.describe AutoMerge::AddToMergeTrainWhenChecksPassService, feature_category
         allow(merge_request).to receive(:pipeline_creating?).and_return(true)
       end
 
-      it 'is available and has no unavailable reason' do
-        aggregate_failures do
-          expect(availability_check.available?).to be true
-          expect(availability_check.unavailable_reason).to be_nil
-        end
+      it 'is available and has no unavailable reason', :aggregate_failures do
+        expect(availability_check.available?).to be true
+        expect(availability_check.unavailable_reason).to be_nil
       end
     end
 
@@ -415,11 +401,9 @@ RSpec.describe AutoMerge::AddToMergeTrainWhenChecksPassService, feature_category
         allow(merge_request).to receive_messages(mergeable?: true, diff_head_pipeline_considered_in_progress?: false)
       end
 
-      it 'is unavailable and returns the correct reason' do
-        aggregate_failures do
-          expect(availability_check.available?).to be false
-          expect(availability_check.unavailable_reason).to eq :default
-        end
+      it 'is unavailable and returns the correct reason', :aggregate_failures do
+        expect(availability_check.available?).to be false
+        expect(availability_check.unavailable_reason).to eq :default
       end
     end
   end
