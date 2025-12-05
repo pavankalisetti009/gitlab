@@ -36,10 +36,7 @@ module Security
       def projects
         return [] unless project_ids.present?
 
-        @projects ||= begin
-          unfiltered_projects = Project.id_in(project_ids).with_security_setting.with_namespaces.with_analyzer_statuses
-          filter_feature_enabled_projects(unfiltered_projects)
-        end
+        @projects ||= Project.id_in(project_ids).with_security_setting.with_namespaces.with_analyzer_statuses
       end
 
       def analyzers_statuses
@@ -79,14 +76,6 @@ module Security
         namespaces_diffs.each do |namespace_diffs|
           Security::AnalyzerNamespaceStatuses::AncestorsUpdateService.execute(namespace_diffs)
         end
-      end
-
-      def filter_feature_enabled_projects(projects)
-        # Validate the feature flag once per root ancestor
-        projects
-          .group_by(&:root_ancestor)
-          .select { |root_ancestor, _| Feature.enabled?(:group_settings_based_update_worker, root_ancestor) }
-          .values.flatten
       end
     end
   end
