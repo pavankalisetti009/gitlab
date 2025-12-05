@@ -759,7 +759,11 @@ module Ci
     end
 
     def triggered_pipelines_with_preloads
-      triggered_pipelines.preload(:source_job)
+      triggered_pipelines.preload(
+        :source_job,
+        :retryable_builds,
+        project: [:route, { namespace: :route }]
+      )
     end
 
     def valid_commit_sha
