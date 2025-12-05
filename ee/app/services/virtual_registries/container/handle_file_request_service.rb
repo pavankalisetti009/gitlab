@@ -7,6 +7,9 @@ module VirtualRegistries
 
       PERMISSIONS_CACHE_TTL = 5.minutes
 
+      MANIFEST_DIGEST_REGEX = %r{.*/manifests/(#{Gitlab::PathRegex::OCI_DIGEST_REGEX})\z}o
+      BLOB_DIGEST_REGEX = %r{.*/blobs/(#{Gitlab::PathRegex::OCI_DIGEST_REGEX})\z}o
+
       ERRORS = BASE_ERRORS.merge(
         unauthorized: ServiceResponse.error(message: 'Unauthorized', reason: :unauthorized),
         no_upstreams: ServiceResponse.error(message: 'No upstreams set', reason: :no_upstreams),
@@ -50,7 +53,7 @@ module VirtualRegistries
       end
 
       def extract_digest_from_path(path)
-        path[%r{.*/manifests/(#{Gitlab::PathRegex::OCI_DIGEST_REGEX})\z}o, 1]
+        path[MANIFEST_DIGEST_REGEX, 1] || path[BLOB_DIGEST_REGEX, 1]
       end
 
       def cache_entry
@@ -61,7 +64,7 @@ module VirtualRegistries
         if upstream_etag
           base_query.find_by_upstream_etag(upstream_etag)
         else
-          base_query.find_by_relative_path(path)
+          base_query.find_by_relative_path(relative_path)
         end
       end
       strong_memoize_attr :cache_entry
@@ -117,6 +120,10 @@ module VirtualRegistries
         params[:path]
       end
 
+      def relative_path
+        "/#{path}"
+      end
+
       def download_cache_entry
         create_event(from_upstream: false)
         cache_entry.bump_downloads_count
@@ -127,7 +134,8 @@ module VirtualRegistries
             action_params: {
               file: cache_entry.file,
               file_sha1: cache_entry.file_sha1,
-              content_type: cache_entry.content_type
+              content_type: cache_entry.content_type,
+              upstream_etag: cache_entry.upstream_etag
             }
           }
         )
