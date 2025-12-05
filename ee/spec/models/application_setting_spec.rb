@@ -98,6 +98,7 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
         elasticsearch_search: false,
         elasticsearch_username: nil,
         elasticsearch_worker_number_of_shards: 2,
+        elasticsearch_code_scope: true,
         email_additional_text: nil,
         enforce_namespace_storage_limit: false,
         fetch_observability_alerts_from_cloud: true,

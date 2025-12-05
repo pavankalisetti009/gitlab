@@ -165,6 +165,12 @@ RSpec.describe SearchService, feature_category: :global_search do
 
         expect(search_service.search_type_errors).to eq('Elasticsearch is not available')
       end
+
+      it 'returns an error if elasticsearch_code_scope is false' do
+        stub_ee_application_setting(elasticsearch_code_scope: false)
+
+        expect(search_service.search_type_errors).to eq("Elasticsearch is disabled for #{scope}")
+      end
     end
 
     context 'when search_type is zoekt' do

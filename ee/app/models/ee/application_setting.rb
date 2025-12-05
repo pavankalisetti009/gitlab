@@ -94,7 +94,8 @@ module EE
         elasticsearch_indexed_field_length_limit: [:integer, { default: 0 }],
         elasticsearch_indexed_file_size_limit_kb: [:integer, { default: 1024 }],
         elasticsearch_max_code_indexing_concurrency: [:integer, { default: 30 }],
-        elasticsearch_prefix: [:string, { default: 'gitlab' }]
+        elasticsearch_prefix: [:string, { default: 'gitlab' }],
+        elasticsearch_code_scope: [:boolean, { default: true }]
 
       validates :search, json_schema: { filename: 'application_setting_ee_search' }
       validates :duo_workflow, json_schema: { filename: "application_setting_duo_workflow" }

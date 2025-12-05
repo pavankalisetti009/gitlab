@@ -49,7 +49,10 @@ module EE
 
         global_enabled = ::Gitlab::CurrentSettings.global_search_code_enabled?
 
-        return group.present? || global_enabled if show_elasticsearch_tabs?
+        if show_elasticsearch_tabs? && ::Gitlab::CurrentSettings.elasticsearch_code_scope
+          return group.present? || global_enabled
+        end
+
         return (group.present? ? ::Search::Zoekt.search?(group) : global_enabled) if zoekt_enabled?
 
         false

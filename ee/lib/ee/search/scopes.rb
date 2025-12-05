@@ -44,24 +44,6 @@ module EE
           super.merge(EE_GLOBAL_SEARCH_SETTING_MAP)
         end
 
-        # Check if a specific search type is available for the container
-        # @param search_type [Symbol] :basic, :advanced, or :zoekt
-        # @param container [Project, Group, nil] The container being searched
-        # @return [Boolean] True if the search type is available
-        def search_type_available?(search_type, container)
-          case search_type
-          when :zoekt
-            # Search::Zoekt.search? already checks if nodes/replicas are available
-            ::Search::Zoekt.search?(container)
-          when :advanced
-            ::Gitlab::CurrentSettings.search_using_elasticsearch?(scope: container)
-          when :basic
-            true
-          else
-            false
-          end
-        end
-
         override :valid_definition?
         def valid_definition?(scope, definition, context, container, requested_search_type = nil)
           availability = definition[:availability]
@@ -74,14 +56,17 @@ module EE
             return validate_ee_scope(scope, definition, context, container, requested_search_type)
           end
 
-          # For scopes with EE search types (zoekt/advanced), validate in EE if applicable
-          # availability[context] is guaranteed to be present due to blank? check on line 77
-          ee_search_type_values = [:zoekt, :advanced].freeze
-          ee_search_types = availability[context].select do |t|
-            ee_search_type_values.include?(t)
-          end
+          # For blobs ee_search_type_values should have zoekt. advanced only when elasticsearch_code_scope is true
+          # For non blobs it should only be advanced
+          ee_search_type_values = if scope == :blobs
+                                    ::Gitlab::CurrentSettings.elasticsearch_code_scope ? %i[zoekt advanced] : [:zoekt]
+                                  else
+                                    [:advanced]
+                                  end.freeze
 
-          if ee_search_types.present?
+          ee_search_types = availability[context].select { |t| ee_search_type_values.include?(t) }
+
+          if ee_search_types.any?
             # If explicitly requesting EE search type
             if requested_search_type.present? && [:zoekt, :advanced].include?(requested_search_type.to_sym)
               return validate_ee_scope(scope, definition, context, container, requested_search_type)
@@ -118,6 +103,24 @@ module EE
 
           # Check if any of the available search types are actually available
           availability[context].any? { |available_type| search_type_available?(available_type, container) }
+        end
+
+        # Check if a specific search type is available for the container
+        # @param search_type [Symbol] :basic, :advanced, or :zoekt
+        # @param container [Project, Group, nil] The container being searched
+        # @return [Boolean] True if the search type is available
+        def search_type_available?(search_type, container)
+          case search_type
+          when :zoekt
+            # Search::Zoekt.search? already checks if nodes/replicas are available
+            ::Search::Zoekt.search?(container)
+          when :advanced
+            ::Gitlab::CurrentSettings.search_using_elasticsearch?(scope: container)
+          when :basic
+            true
+          else
+            false
+          end
         end
       end
     end

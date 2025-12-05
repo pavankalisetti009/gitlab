@@ -63,15 +63,20 @@ module EE
       errors = []
       case params[:search_type]
       when 'advanced'
-        errors << 'Elasticsearch is not available' unless use_elasticsearch?
+        errors << if scope == 'blobs'
+                    if !::Gitlab::CurrentSettings.elasticsearch_code_scope
+                      "Elasticsearch is disabled for #{scope}"
+                    elsif !use_elasticsearch?
+                      'Elasticsearch is not available'
+                    end
+                  end
       when 'zoekt'
         errors << 'Zoekt is not available' unless use_zoekt?
         errors << 'Zoekt can only be used for blobs' unless scope == 'blobs'
       else
         errors << "Search type should be one of these: #{::SearchService.supported_search_types.join(', ')}"
       end
-
-      return if errors.empty?
+      return if errors.compact.empty?
 
       errors.join(', ')
     end
