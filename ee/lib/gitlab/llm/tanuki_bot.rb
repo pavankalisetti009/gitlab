@@ -48,6 +48,13 @@ module Gitlab
         true
       end
 
+      def self.credits_available?(user:, project: nil, group: nil)
+        return false unless user
+        return false unless project || group
+
+        ::Ai::UsageQuotaService.new(user: user, namespace: group || project.group).execute.success?
+      end
+
       def self.namespace
         namespace_path = Gitlab::ApplicationContext.current_context_attribute(:root_namespace).presence
         return unless namespace_path
