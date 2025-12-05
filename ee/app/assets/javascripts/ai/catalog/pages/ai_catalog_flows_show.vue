@@ -13,6 +13,7 @@ import {
   TRACK_EVENT_VIEW_AI_CATALOG_ITEM,
 } from 'ee/ai/catalog/constants';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
+import FoundationalIcon from 'ee/ai/components/foundational_icon.vue';
 import { prerequisitesError } from '../utils';
 import AiCatalogItemActions from '../components/ai_catalog_item_actions.vue';
 import AiCatalogItemView from '../components/ai_catalog_item_view.vue';
@@ -28,6 +29,7 @@ import {
 export default {
   name: 'AiCatalogFlowsShow',
   components: {
+    FoundationalIcon,
     ErrorsAlert,
     PageHeading,
     AiCatalogItemActions,
@@ -226,9 +228,16 @@ export default {
     <errors-alert class="gl-mt-5" :title="errorTitle" :errors="errors" @dismiss="dismissErrors" />
     <page-heading>
       <template #heading>
-        <span class="gl-line-clamp-1 gl-wrap-anywhere">
-          {{ aiCatalogFlow.name }}
-        </span>
+        <div class="gl-flex gl-gap-3">
+          <span class="gl-line-clamp-1 gl-wrap-anywhere">
+            {{ aiCatalogFlow.name }}
+          </span>
+          <foundational-icon
+            v-if="aiCatalogFlow.foundational"
+            :resource-id="aiCatalogFlow.id"
+            :item-type="aiCatalogFlow.itemType"
+          />
+        </div>
       </template>
       <template #actions>
         <ai-catalog-item-actions

@@ -227,11 +227,16 @@ export default {
     <errors-alert class="gl-mt-5" :title="errorTitle" :errors="errors" @dismiss="dismissErrors" />
     <page-heading>
       <template #heading>
-        <span class="gl-line-clamp-1 gl-wrap-anywhere">
-          {{ aiCatalogAgent.name }}
-
-          <foundational-icon v-if="aiCatalogAgent.foundational" :resource-id="aiCatalogAgent.id" />
-        </span>
+        <div class="gl-flex gl-gap-3">
+          <span class="gl-line-clamp-1 gl-wrap-anywhere">
+            {{ aiCatalogAgent.name }}
+          </span>
+          <foundational-icon
+            v-if="aiCatalogAgent.foundational"
+            :resource-id="aiCatalogAgent.id"
+            :item-type="aiCatalogAgent.itemType"
+          />
+        </div>
       </template>
       <template #actions>
         <ai-catalog-item-actions

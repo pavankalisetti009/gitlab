@@ -114,9 +114,10 @@ export default {
 
         <foundational-icon
           v-if="item.foundational"
+          :item-type="item.itemType"
           :resource-id="item.id"
           :size="16"
-          class="gl-ml-1"
+          class="gl-relative gl-ml-1"
         />
       </h2>
       <p

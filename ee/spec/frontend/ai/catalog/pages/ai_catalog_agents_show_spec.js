@@ -141,6 +141,7 @@ describe('AiCatalogAgentsShow', () => {
         const foundationalIcon = findFoundationalIcon();
 
         expect(foundationalIcon.props('resourceId')).toBe(mockAgent.id);
+        expect(foundationalIcon.props('itemType')).toBe(mockAgent.itemType);
       });
     });
 
