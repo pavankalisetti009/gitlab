@@ -144,7 +144,7 @@ RSpec.describe 'Global elastic search', :elastic, :js, :sidekiq_inline, :disable
 
       expect(page).not_to have_content(expected_message)
 
-      click_link 'Next'
+      find_by_testid('kaminari-pagination-next').click
 
       expect(page).to have_content(expected_message)
     end
