@@ -52,6 +52,7 @@ describe('MrWidgetPipelineDuoAction', () => {
         goal: 'http://test.host/gitlab-org/gitlab/pipelines/172',
         projectPath: 'gitlab-org/gitlab',
         hoverMessage: 'Fix pipeline with Duo',
+        workItemId: null,
         sourceBranch: 'feature-branch',
         agentPrivileges: [
           AGENT_PRIVILEGES.READ_WRITE_FILES,

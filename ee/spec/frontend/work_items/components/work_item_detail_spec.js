@@ -135,6 +135,7 @@ describe('EE WorkItemDetail component', () => {
           workflowDefinition: 'issue_to_merge_request',
           agentPrivileges: [1, 2, 3, 4, 5],
           size: 'medium',
+          workItemId: workItem.iid,
         });
         expect(duoWorkflowAction.text()).toBe('Generate MR with Duo');
       });

@@ -304,6 +304,18 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
         end
       end
 
+      context 'when no issue_id is provided' do
+        let(:params) { { project_id: project.id, issue_id: nil } }
+
+        it 'creates a workflow without issue association' do
+          post api(path, user), params: params
+
+          expect(response).to have_gitlab_http_status(:created)
+          created_workflow = Ai::DuoWorkflows::Workflow.last
+          expect(created_workflow.issue).to be_nil
+        end
+      end
+
       context 'when merge_request_id is provided' do
         let(:params) { { project_id: project.id, merge_request_id: merge_request.iid } }
 
@@ -314,6 +326,18 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
           created_workflow = Ai::DuoWorkflows::Workflow.last
           expect(created_workflow.merge_request).to eq(merge_request)
           expect(created_workflow.issue).to be_nil
+        end
+      end
+
+      context 'when no merge_request_id is provided' do
+        let(:params) { { project_id: project.id, merge_request_id: nil } }
+
+        it 'creates a workflow without merge request association' do
+          post api(path, user), params: params
+
+          expect(response).to have_gitlab_http_status(:created)
+          created_workflow = Ai::DuoWorkflows::Workflow.last
+          expect(created_workflow.merge_request).to be_nil
         end
       end
     end

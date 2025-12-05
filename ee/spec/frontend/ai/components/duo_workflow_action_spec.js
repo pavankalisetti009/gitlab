@@ -441,6 +441,39 @@ describe('DuoWorkflowAction component', () => {
       });
     });
 
+    describe('work item type handling', () => {
+      describe('when workItemId is provided', () => {
+        beforeEach(async () => {
+          await createComponent({ props: { workItemId: '1' } });
+
+          findButton().vm.$emit('click');
+          await waitForPromises();
+        });
+
+        it('includes workItemId in the request params', () => {
+          const request = mock.history.post[0];
+          expect(JSON.parse(request.data)).toEqual({
+            ...expectedRequestData,
+            issue_id: '1',
+          });
+        });
+      });
+
+      describe('when workItemId is not provided', () => {
+        beforeEach(async () => {
+          await createComponent();
+
+          findButton().vm.$emit('click');
+          await waitForPromises();
+        });
+
+        it('does not include work_item_id in the request params', () => {
+          const request = mock.history.post[0];
+          expect(JSON.parse(request.data)).toEqual(expectedRequestData);
+        });
+      });
+    });
+
     describe('when request succeeds', () => {
       describe('side effects', () => {
         beforeEach(async () => {

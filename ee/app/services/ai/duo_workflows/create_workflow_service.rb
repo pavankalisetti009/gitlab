@@ -28,17 +28,49 @@ module Ai
 
         track_workflow_event("agent_platform_session_created", workflow)
 
+        create_workflow_system_note(workflow)
+
         success(workflow: workflow)
       end
 
       def workflow_attributes
-        @params.merge(
+        base_params.merge(
           user: @current_user,
-          **container_attributes
+          **container_attributes,
+          **noteable_attributes
         )
       end
 
       private
+
+      def base_params
+        @params.except(:issue_id, :merge_request_id)
+      end
+
+      def create_workflow_system_note(workflow)
+        noteable = workflow.issue
+        return unless noteable
+        return unless noteable.respond_to?(:project) && noteable.project.present?
+
+        # Who/what initiated the workflow
+        # currently the user, but could be another agent
+        # in future iterations
+        trigger_source = @current_user
+
+        SystemNoteService.agent_session_started(
+          noteable,
+          noteable.project,
+          workflow.id,
+          trigger_source
+        )
+      rescue StandardError => err
+        Gitlab::ErrorTracking.track_exception(
+          err,
+          workflow_id: workflow.id,
+          noteable_type: noteable.class.name,
+          noteable_id: noteable.id
+        )
+      end
 
       def check_ai_catalog_item_access
         return unless @params[:ai_catalog_item_version]
@@ -92,6 +124,26 @@ module Ai
         elsif @container.is_a?(::Namespace)
           { namespace: @container }
         end
+      end
+
+      def noteable_attributes
+        attributes = {}
+
+        if @params[:issue_id].present?
+          work_item = find_issue(@params[:issue_id])
+          attributes[:issue_id] = work_item.id if work_item
+        end
+
+        attributes
+      end
+
+      def find_issue(issue_iid)
+        return unless @container.is_a?(::Project)
+
+        IssuesFinder.new(@current_user, project_id: @container.id, iids: [issue_iid]).execute.first
+      rescue StandardError => err
+        Gitlab::ErrorTracking.track_exception(err, issue_iid: issue_iid, container_id: @container.id)
+        nil
       end
     end
   end

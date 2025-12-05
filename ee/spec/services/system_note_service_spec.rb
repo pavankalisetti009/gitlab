@@ -300,41 +300,38 @@ RSpec.describe SystemNoteService, feature_category: :team_planning do
   describe '.agent_session_started' do
     let(:session_id) { '123' }
     let(:trigger_source) { 'User' }
-    let(:agent_name) { 'Duo Developer' }
 
     it 'calls AgentsService' do
       expect_next_instance_of(::SystemNotes::AgentsService) do |service|
-        expect(service).to receive(:agent_session_started).with(session_id, trigger_source, agent_name)
+        expect(service).to receive(:agent_session_started).with(session_id, trigger_source)
       end
 
-      described_class.agent_session_started(noteable, project, author, session_id, trigger_source, agent_name)
+      described_class.agent_session_started(noteable, project, session_id, trigger_source)
     end
   end
 
   describe '.agent_session_completed' do
     let(:session_id) { '123' }
-    let(:agent_name) { 'Duo Developer' }
 
     it 'calls AgentsService' do
       expect_next_instance_of(::SystemNotes::AgentsService) do |service|
-        expect(service).to receive(:agent_session_completed).with(session_id, agent_name)
+        expect(service).to receive(:agent_session_completed).with(session_id)
       end
 
-      described_class.agent_session_completed(noteable, project, author, session_id, agent_name)
+      described_class.agent_session_completed(noteable, project, session_id)
     end
   end
 
   describe '.agent_session_failed' do
     let(:session_id) { '123' }
     let(:reason) { 'dropped' }
-    let(:agent_name) { 'Duo Developer' }
 
     it 'calls AgentsService' do
       expect_next_instance_of(::SystemNotes::AgentsService) do |service|
-        expect(service).to receive(:agent_session_failed).with(session_id, reason, agent_name)
+        expect(service).to receive(:agent_session_failed).with(session_id, reason)
       end
 
-      described_class.agent_session_failed(noteable, project, author, session_id, reason, agent_name)
+      described_class.agent_session_failed(noteable, project, session_id, reason)
     end
   end
 end

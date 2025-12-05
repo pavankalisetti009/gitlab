@@ -51,6 +51,8 @@ module Ai
 
         track_agent_platform_session_event
 
+        update_workflow_system_note(@workflow)
+
         GraphqlTriggers.workflow_events_updated(@workflow.checkpoints.last) if @workflow.checkpoints.any?
 
         ServiceResponse.success(payload: { workflow: @workflow }, message: "Workflow status updated")
@@ -73,6 +75,36 @@ module Ai
         else
           Feature.enabled?(:duo_workflow, @current_user)
         end
+      end
+
+      def update_workflow_system_note(workflow)
+        noteable = workflow.issue
+        return unless noteable
+        return unless noteable.respond_to?(:project) && noteable.project.present?
+
+        case @status_event
+        when 'finish'
+          SystemNoteService.agent_session_completed(
+            noteable,
+            noteable.project,
+            workflow.id
+          )
+        when 'drop', 'stop'
+          reason = @status_event == 'drop' ? 'dropped' : 'stopped'
+          SystemNoteService.agent_session_failed(
+            noteable,
+            noteable.project,
+            workflow.id,
+            reason
+          )
+        end
+      rescue StandardError => e
+        Gitlab::ErrorTracking.track_exception(
+          e,
+          workflow_id: workflow.id,
+          noteable_type: noteable.class.name,
+          noteable_id: noteable.id
+        )
       end
     end
   end
