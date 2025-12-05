@@ -143,6 +143,10 @@ export const invalidVulnerabilityAttributes = (rules) => {
 };
 
 export const invalidWarnModeRules = (rules, enforcementType) => {
+  if (gon?.features?.securityPolicyWarnModeLicenseScanning) {
+    return false;
+  }
+
   return enforcementType === WARN_VALUE && rules.some(({ type }) => type === LICENSE_FINDING);
 };
 

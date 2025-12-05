@@ -12,12 +12,16 @@ describe('EnforcementType', () => {
     isWarnMode: false,
   };
 
-  const factory = (propsData = {}) => {
+  const factory = (
+    propsData = {},
+    provide = { glFeatures: { securityPolicyWarnModeLicenseScanning: true } },
+  ) => {
     wrapper = shallowMountExtended(EnforcementType, {
       propsData: {
         ...defaultProps,
         ...propsData,
       },
+      provide,
       stubs: { GlSprintf },
     });
   };
@@ -73,7 +77,7 @@ describe('EnforcementType', () => {
 
       const allFormRadios = findAllFormRadios();
       expect(allFormRadios.at(0).attributes('value')).toBe('warn');
-      expect(allFormRadios.at(0).attributes().disabled).toBe('true');
+      expect(allFormRadios.at(0).attributes().disabled).toBe(undefined);
       expect(allFormRadios.at(1).attributes('disabled')).toBe(undefined);
     });
   });
@@ -85,7 +89,7 @@ describe('EnforcementType', () => {
       const alert = findAlert();
       expect(findAlert().exists()).toBe(true);
       expect(alert.text()).toBe(
-        'In warn mode, project approval settings are not overridden by policy and violations are reported, but fixes for the violations are not mandatory. License scanning is not supported in warn mode. Learn more',
+        'In warn mode, project approval settings are not overridden by policy and violations are reported, but fixes for the violations are not mandatory. Learn more',
       );
       const link = findLink();
       const expectedPath = helpPagePath(
@@ -148,6 +152,45 @@ describe('EnforcementType', () => {
       await findRadioGroup().vm.$emit('change', 'enforce');
 
       expect(wrapper.emitted('change')).toEqual([['warn'], ['enforce']]);
+    });
+  });
+
+  describe('securityPolicyWarnModeLicenseScanning feature flag off', () => {
+    beforeEach(() => {
+      factory(
+        { disabledEnforcementOptions: ['warn'], isWarnMode: true },
+        { glFeatures: { securityPolicyWarnModeLicenseScanning: false } },
+      );
+    });
+
+    describe('disabled prop', () => {
+      it('disables options', () => {
+        const allFormRadios = findAllFormRadios();
+        expect(allFormRadios.at(0).attributes('value')).toBe('warn');
+        expect(allFormRadios.at(0).attributes().disabled).toBe('true');
+        expect(allFormRadios.at(1).attributes('disabled')).toBe(undefined);
+      });
+    });
+
+    describe('alert display', () => {
+      it('shows alert when isWarnMode is true', () => {
+        const alert = findAlert();
+        expect(findAlert().exists()).toBe(true);
+        expect(alert.text()).toBe(
+          'In warn mode, project approval settings are not overridden by policy and violations are reported, but fixes for the violations are not mandatory. License scanning is not supported in warn mode. Learn more',
+        );
+        const link = findLink();
+        const expectedPath = helpPagePath(
+          'user/application_security/policies/merge_request_approval_policies',
+          {
+            anchor: 'warn-mode',
+          },
+        );
+
+        expect(link.exists()).toBe(true);
+        expect(link.attributes('href')).toBe(expectedPath);
+        expect(link.attributes('target')).toBe('_blank');
+      });
     });
   });
 });

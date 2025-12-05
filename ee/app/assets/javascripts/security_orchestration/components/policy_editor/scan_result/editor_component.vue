@@ -233,9 +233,17 @@ export default {
       return botActions.filter(({ enabled }) => enabled);
     },
     disabledRuleTypes() {
+      if (this.isLicenseScanningAllowedInWarnMode) {
+        return [];
+      }
+
       return this.enforcement === WARN_VALUE ? [LICENSE_FINDING] : [];
     },
     disabledEnforcementOptions() {
+      if (this.isLicenseScanningAllowedInWarnMode) {
+        return [];
+      }
+
       return this.policy.rules.some(({ type }) => type === LICENSE_FINDING) ? [WARN_VALUE] : [];
     },
     explicitBotActions() {
@@ -269,6 +277,9 @@ export default {
     },
     icon() {
       return this.isExpanded ? 'chevron-down' : 'chevron-right';
+    },
+    isLicenseScanningAllowedInWarnMode() {
+      return this.glFeatures?.securityPolicyWarnModeLicenseScanning;
     },
     isProject() {
       return isProject(this.namespaceType);
