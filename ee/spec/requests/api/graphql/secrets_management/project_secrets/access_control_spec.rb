@@ -73,8 +73,12 @@ RSpec.describe 'project secrets', :gitlab_secrets_manager, :freeze_time, feature
     end
 
     it 'returns permission error from Openbao' do
+      expect(response).to have_gitlab_http_status(:success)
+
       expect(graphql_errors).to be_present
-      expect(graphql_errors.first['message']).to include("permission denied")
+      expect(graphql_errors.first['message'])
+        .to include("Resource not available")
+      expect(graphql_data['projectSecret']).to be_nil
     end
   end
 
@@ -88,9 +92,12 @@ RSpec.describe 'project secrets', :gitlab_secrets_manager, :freeze_time, feature
     end
 
     it 'returns permission error from Openbao' do
-      expect(response).to have_gitlab_http_status(:error)
+      expect(response).to have_gitlab_http_status(:success)
+
       expect(graphql_errors).to be_present
-      expect(graphql_errors.first['message']).to include("permission denied")
+      expect(graphql_errors.first['message'])
+        .to include("Resource not available")
+      expect(graphql_data['projectSecret']).to be_nil
     end
   end
 

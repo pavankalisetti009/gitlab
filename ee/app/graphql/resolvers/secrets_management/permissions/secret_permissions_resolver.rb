@@ -6,6 +6,7 @@ module Resolvers
       class SecretPermissionsResolver < BaseResolver
         include Gitlab::Graphql::Authorize::AuthorizeResource
         include ResolvesProject
+        include ::SecretsManagement::ResolverErrorHandling
 
         type [::Types::SecretsManagement::ProjectSecretsPermissionType], null: true
 

@@ -6,6 +6,7 @@ module Mutations
       class Delete < BaseMutation
         graphql_name 'ProjectSecretDelete'
         include ResolvesProject
+        include ::SecretsManagement::MutationErrorHandling
 
         authorize :delete_project_secrets
 

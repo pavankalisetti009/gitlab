@@ -61,9 +61,9 @@ RSpec.describe 'Delete project secret', :gitlab_secrets_manager, feature_categor
     it 'returns permission error from Openbao' do
       post_mutation
 
-      expect(response).to have_gitlab_http_status(:error)
+      expect(response).to have_gitlab_http_status(:success)
       expect(graphql_errors).to be_present
-      expect(graphql_errors.first['message']).to include("permission denied")
+      expect(graphql_errors.first['message']).to include("Resource not available")
     end
   end
 

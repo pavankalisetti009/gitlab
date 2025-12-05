@@ -245,8 +245,11 @@ RSpec.describe SecretsManagement::ProjectSecrets::ListService, :gitlab_secrets_m
 
       it 'returns an error' do
         provision_project_secrets_manager(secrets_manager, user)
-        expect(result).to be_error
-        expect(result.message).to eq("1 error occurred:\n\t* permission denied\n\n")
+
+        expect { service.execute }.to raise_error(
+          SecretsManagement::SecretsManagerClient::ApiError,
+          "1 error occurred:\n\t* permission denied\n\n"
+        )
       end
     end
 
@@ -326,8 +329,10 @@ RSpec.describe SecretsManagement::ProjectSecrets::ListService, :gitlab_secrets_m
       end
 
       it 'returns an error' do
-        expect(result).to be_error
-        expect(result.message).to eq("1 error occurred:\n\t* permission denied\n\n")
+        expect { service.execute }.to raise_error(
+          SecretsManagement::SecretsManagerClient::ApiError,
+          "1 error occurred:\n\t* permission denied\n\n"
+        )
       end
     end
 

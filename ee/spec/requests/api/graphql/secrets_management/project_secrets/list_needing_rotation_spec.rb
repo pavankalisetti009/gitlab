@@ -42,7 +42,7 @@ RSpec.describe 'List project secrets needing rotation', :gitlab_secrets_manager,
 
     it 'returns permission error from Openbao' do
       expect(graphql_errors).to be_present
-      expect(graphql_errors.first['message']).to include("permission denied")
+      expect(graphql_errors.first['message']).to include("Resource not available")
     end
   end
 
@@ -254,7 +254,7 @@ RSpec.describe 'List project secrets needing rotation', :gitlab_secrets_manager,
 
     it 'returns permission error from Openbao' do
       expect(graphql_errors).to be_present
-      expect(graphql_errors.first['message']).to include("permission denied")
+      expect(graphql_errors.first['message']).to include("Resource not available")
     end
   end
 end

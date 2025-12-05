@@ -8,6 +8,7 @@ module Mutations
 
         include Mutations::ResolvesGroup
         include Gitlab::InternalEventsTracking
+        include ::SecretsManagement::MutationErrorHandling
 
         authorize :configure_group_secrets_manager
 
