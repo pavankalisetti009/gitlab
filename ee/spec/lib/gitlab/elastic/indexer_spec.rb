@@ -204,6 +204,41 @@ RSpec.describe Gitlab::Elastic::Indexer, feature_category: :global_search do
       end
     end
 
+    context 'when elasticsearch_code_scope is false' do
+      before do
+        stub_ee_application_setting(elasticsearch_code_scope: false)
+      end
+
+      it 'runs the indexer with skip-blobs flag' do
+        expect_popen.with(
+          [
+            TestEnv.indexer_bin_path,
+            "--timeout=#{described_class::TIMEOUT}s",
+            "--visibility-level=#{project.visibility_level}",
+            "--project-id=#{project.id}",
+            "--from-sha=#{expected_from_sha}",
+            "--to-sha=#{to_sha}",
+            "--full-path=#{project.full_path}",
+            "--repository-access-level=#{project.repository_access_level}",
+            "--hashed-root-namespace-id=#{project.namespace.hashed_root_namespace_id}",
+            "--schema-version-blob=#{described_class::BLOB_SCHEMA_VERSION}",
+            "--schema-version-commit=#{described_class::COMMIT_SCHEMA_VERSION}",
+            "--archived=#{project.self_or_ancestors_archived?}",
+            '--skip-blobs',
+            "--traversal-ids=#{project.namespace_ancestry}",
+            "#{project.repository.disk_path}.git"
+          ],
+          nil,
+          hash_including(
+            'ELASTIC_CONNECTION_INFO' => elasticsearch_config.to_json,
+            'RAILS_ENV' => Rails.env
+          )
+        ).and_return(popen_success)
+
+        indexer.run
+      end
+    end
+
     context 'when indexing a non-HEAD commit', :elastic do
       let(:to_sha) { project.repository.commit('HEAD~1').sha }
 

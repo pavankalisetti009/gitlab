@@ -194,6 +194,7 @@ module Gitlab
           c << "--schema-version-blob=#{BLOB_SCHEMA_VERSION}"
           c << "--schema-version-commit=#{COMMIT_SCHEMA_VERSION}"
           c << "--archived=#{project.self_or_ancestors_archived?}"
+          c << '--skip-blobs' unless Gitlab::CurrentSettings.elasticsearch_code_scope
         end
       end
 
