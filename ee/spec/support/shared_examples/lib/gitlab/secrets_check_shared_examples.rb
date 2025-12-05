@@ -191,20 +191,9 @@ RSpec.shared_examples 'diff scan passed' do
     )
   end
 
-  # Array of hashes returned by `parse_diffs`
-  let(:raw_payloads) do
-    [
-      {
-        id: new_blob_reference,
-        data: "BASE_URL=https://foo.bar",
-        offset: 1
-      }
-    ]
-  end
-
   let(:new_payload) do
     ::Gitlab::SecretDetection::GRPC::ScanRequest::Payload.new(
-      id: new_blob_reference,
+      id: blob_2_reference,
       data: "BASE_URL=https://foo.bar",
       offset: 1
     )
@@ -221,7 +210,7 @@ RSpec.shared_examples 'diff scan passed' do
   let(:diff_blob) do
     ::Gitlab::GitalyClient::DiffBlob.new(
       left_blob_id: ::Gitlab::Git::SHA1_BLANK_SHA,
-      right_blob_id: new_blob_reference,
+      right_blob_id: blob_2_reference,
       patch: "@@ -0,0 +1 @@\n+BASE_URL=https://foo.bar\n\\ No newline at end of file\n",
       status: :STATUS_END_OF_PATCH,
       binary: false,
@@ -247,6 +236,19 @@ RSpec.shared_examples 'diff scan passed' do
       status: :STATUS_END_OF_PATCH,
       binary: false,
       over_patch_bytes_limit: false)
+  end
+
+  let(:changed_path_1) do
+    Gitlab::Git::ChangedPath.new(
+      path: ".env",
+      status: :ADDED,
+      new_blob_id: blob_2_reference,
+      commit_id: new_commit,
+      old_path: ".env",
+      old_blob_id: '0000000000000000000000000000000000000000',
+      old_mode: '0',
+      new_mode: '100644'
+    )
   end
 
   it 'gets and parses diffs' do
@@ -295,7 +297,7 @@ RSpec.shared_examples 'diff scan passed' do
 
     expect_next_instance_of(Gitlab::Checks::SecretPushProtection::ResponseHandler) do |instance|
       expect(instance).to receive(:format_response)
-        .with(passed_scan_response)
+        .with(passed_scan_response, kind_of(Hash))
         .once
         .and_call_original
     end
@@ -339,14 +341,14 @@ RSpec.shared_examples 'processes hunk headers' do
 
         diff_blob = ::Gitlab::GitalyClient::DiffBlob.new(
           left_blob_id: ::Gitlab::Git::SHA1_BLANK_SHA,
-          right_blob_id: new_blob_reference,
+          right_blob_id: blob_2_reference,
           patch: "#{hunk_header}\n+BASE_URL=https://foo.bar\n\\ No newline at end of file\n",
           status: :STATUS_END_OF_PATCH,
           binary: false,
           over_patch_bytes_limit: false
         )
 
-        expected_payload = { id: new_blob_reference, data: 'BASE_URL=https://foo.bar', offset: expected_offset }
+        expected_payload = { id: blob_2_reference, data: 'BASE_URL=https://foo.bar', offset: expected_offset }
 
         expect_next_instance_of(Gitlab::Checks::SecretPushProtection::PayloadProcessor) do |instance|
           expect(instance).to receive(:get_diffs)
@@ -386,11 +388,11 @@ RSpec.shared_examples 'processes hunk headers' do
 
     with_them do
       it 'does not match invalid hunk header and skips parsing the diff' do
-        error_msg = "Could not process hunk header: #{hunk_header.strip}, skipped parsing diff: #{new_blob_reference}"
+        error_msg = "Could not process hunk header: #{hunk_header.strip}, skipped parsing diff: #{blob_2_reference}"
 
         diff_blob = ::Gitlab::GitalyClient::DiffBlob.new(
           left_blob_id: ::Gitlab::Git::SHA1_BLANK_SHA,
-          right_blob_id: new_blob_reference,
+          right_blob_id: blob_2_reference,
           patch: "#{hunk_header}\n+BASE_URL=https://foo.bar\n\\ No newline at end of file\n",
           status: :STATUS_END_OF_PATCH,
           binary: false,
@@ -425,11 +427,11 @@ RSpec.shared_examples 'processes hunk headers' do
 
       patch = "#{valid_header}\n+line 1\n#{invalid_header}\n+line 2\n#{valid_header2}\n+line 3\n"
 
-      error_msg = "Could not process hunk header: #{invalid_header.strip}, skipped parsing diff: #{new_blob_reference}"
+      error_msg = "Could not process hunk header: #{invalid_header.strip}, skipped parsing diff: #{blob_2_reference}"
 
       diff_blob = ::Gitlab::GitalyClient::DiffBlob.new(
         left_blob_id: ::Gitlab::Git::SHA1_BLANK_SHA,
-        right_blob_id: new_blob_reference,
+        right_blob_id: blob_2_reference,
         patch: patch,
         status: :STATUS_END_OF_PATCH,
         binary: false,
@@ -457,11 +459,10 @@ end
 RSpec.shared_examples 'scan detected secrets in diffs' do
   include_context 'secrets check context'
 
-  let(:new_blob_reference) { 'fe29d93da4843da433e62711ace82db601eb4f8f' }
   let(:new_payload) do
     ::Gitlab::SecretDetection::GRPC::ScanRequest::Payload.new(
       data: "SECRET=glpat-JUST20LETTERSANDNUMB", # gitleaks:allow
-      id: new_blob_reference,
+      id: blob_5_reference,
       offset: 1
     )
   end
@@ -475,7 +476,7 @@ RSpec.shared_examples 'scan detected secrets in diffs' do
       results:
       [
         ::Gitlab::SecretDetection::Core::Finding.new(
-          new_blob_reference,
+          blob_5_reference,
           ::Gitlab::SecretDetection::Core::Status::FOUND,
           1,
           "gitlab_personal_access_token",
@@ -488,12 +489,36 @@ RSpec.shared_examples 'scan detected secrets in diffs' do
   let(:diff_blob) do
     ::Gitlab::GitalyClient::DiffBlob.new(
       left_blob_id: ::Gitlab::Git::SHA1_BLANK_SHA,
-      right_blob_id: new_blob_reference,
+      right_blob_id: blob_5_reference,
       patch: "@@ -0,0 +1 @@\n+SECRET=glpat-JUST20LETTERSANDNUMB\n\\ No newline at end of file\n", # gitleaks:allow
       status: :STATUS_END_OF_PATCH,
       binary: false,
       over_patch_bytes_limit: false
     )
+  end
+
+  let(:changed_path_1) do
+    Gitlab::Git::ChangedPath.new(
+      path: ".env",
+      status: :ADDED,
+      new_blob_id: blob_5_reference,
+      commit_id: new_commit,
+      old_path: ".env",
+      old_blob_id: '0000000000000000000000000000000000000000',
+      old_mode: '0',
+      new_mode: '100644'
+    )
+  end
+
+  let(:lookup_map) do
+    {
+      blob_5_reference => [
+        {
+          commit_id: changed_path_1.commit_id,
+          path: changed_path_1.path
+        }
+      ]
+    }
   end
 
   it 'gets and parses diffs' do
@@ -550,12 +575,12 @@ RSpec.shared_examples 'scan detected secrets in diffs' do
       [
         ::Gitlab::SecretDetection::GRPC::ScanRequest::Payload.new(
           data: "SECRET=glpat-JUST20LETTERSANDNUMB", # gitleaks:allow
-          id: new_blob_reference,
+          id: blob_5_reference,
           offset: 1
         ),
         ::Gitlab::SecretDetection::GRPC::ScanRequest::Payload.new(
           data: "TOKEN=glpat-JUST20LETTERSANDNUMB", # gitleaks:allow
-          id: new_blob_reference,
+          id: blob_5_reference,
           offset: 11
         )
       ]
@@ -582,14 +607,14 @@ RSpec.shared_examples 'scan detected secrets in diffs' do
         results:
         [
           ::Gitlab::SecretDetection::Core::Finding.new(
-            new_blob_reference,
+            blob_5_reference,
             ::Gitlab::SecretDetection::Core::Status::FOUND,
             1,
             "gitlab_personal_access_token",
             "GitLab personal access token"
           ),
           ::Gitlab::SecretDetection::Core::Finding.new(
-            new_blob_reference,
+            blob_5_reference,
             ::Gitlab::SecretDetection::Core::Status::FOUND,
             11,
             "gitlab_personal_access_token",
@@ -603,7 +628,7 @@ RSpec.shared_examples 'scan detected secrets in diffs' do
       let(:diff_blob) do
         ::Gitlab::GitalyClient::DiffBlob.new(
           left_blob_id: ::Gitlab::Git::SHA1_BLANK_SHA,
-          right_blob_id: new_blob_reference,
+          right_blob_id: blob_5_reference,
           patch: encounter_hunk_header_patch,
           status: :STATUS_END_OF_PATCH,
           binary: false,
@@ -632,7 +657,17 @@ RSpec.shared_examples 'scan detected secrets in diffs' do
         expect_next_instance_of(Gitlab::Checks::SecretPushProtection::PayloadProcessor) do |instance|
           expect(instance).to receive(:get_diffs)
             .once
-            .and_return([diff_blob])
+            .and_wrap_original do |_, lookup_map_arg|
+              # we pass lookup_map by reference, so need to make sure it's populated
+              lookup_map_arg[blob_5_reference] = [
+                {
+                  commit_id: changed_path_1.commit_id,
+                  path: changed_path_1.path
+                }
+              ]
+
+              [diff_blob]
+            end
         end
 
         expect_next_instance_of(::Gitlab::SecretDetection::Core::Scanner) do |instance|
@@ -670,7 +705,7 @@ RSpec.shared_examples 'scan detected secrets in diffs' do
       let(:diff_blob) do
         ::Gitlab::GitalyClient::DiffBlob.new(
           left_blob_id: ::Gitlab::Git::SHA1_BLANK_SHA,
-          right_blob_id: new_blob_reference,
+          right_blob_id: blob_5_reference,
           patch: encounter_context_line_patch,
           status: :STATUS_END_OF_PATCH,
           binary: false,
@@ -699,7 +734,17 @@ RSpec.shared_examples 'scan detected secrets in diffs' do
         expect_next_instance_of(Gitlab::Checks::SecretPushProtection::PayloadProcessor) do |instance|
           expect(instance).to receive(:get_diffs)
             .once
-            .and_return([diff_blob])
+            .and_wrap_original do |_, lookup_map_arg|
+              # we pass lookup_map by reference, so need to make sure it's populated
+              lookup_map_arg[blob_5_reference] = [
+                {
+                  commit_id: changed_path_1.commit_id,
+                  path: changed_path_1.path
+                }
+              ]
+
+              [diff_blob]
+            end
         end
 
         expect_next_instance_of(::Gitlab::SecretDetection::Core::Scanner) do |instance|
@@ -735,7 +780,8 @@ RSpec.shared_examples 'scan detected secrets in diffs' do
   end
 end
 
-RSpec.shared_examples 'scan detected secrets but some errors occured' do
+# TODO: Remove this block when `drop_get_tree_entries_from_spp` flag is removed.
+RSpec.shared_examples 'scan detected secrets but some errors occured (w/GetTreeEntries)' do
   include_context 'secrets check context'
 
   let(:successful_scan_with_errors_response) do
@@ -744,18 +790,18 @@ RSpec.shared_examples 'scan detected secrets but some errors occured' do
       results:
       [
         ::Gitlab::SecretDetection::Core::Finding.new(
-          new_blob_reference,
+          blob_5_reference,
           ::Gitlab::SecretDetection::Core::Status::FOUND,
           1,
           "gitlab_personal_access_token",
           "GitLab personal access token"
         ),
         ::Gitlab::SecretDetection::Core::Finding.new(
-          timed_out_blob_reference,
+          blob_6_reference,
           ::Gitlab::SecretDetection::Core::Status::PAYLOAD_TIMEOUT
         ),
         ::Gitlab::SecretDetection::Core::Finding.new(
-          failed_to_scan_blob_reference,
+          blob_7_reference,
           ::Gitlab::SecretDetection::Core::Status::SCAN_ERROR
         )
       ]
@@ -773,23 +819,15 @@ RSpec.shared_examples 'scan detected secrets but some errors occured' do
   let(:changes) do
     [
       { oldrev: initial_commit, newrev: new_commit, ref: 'refs/heads/master' },
-      { oldrev: initial_commit, newrev: timed_out_commit, ref: 'refs/heads/master' },
-      { oldrev: initial_commit, newrev: failed_to_scan_commit, ref: 'refs/heads/master' }
+      { oldrev: new_commit, newrev: timed_out_commit, ref: 'refs/heads/master' },
+      { oldrev: timed_out_commit, newrev: failed_to_scan_commit, ref: 'refs/heads/master' }
     ]
   end
-
-  let(:new_blob_reference) { 'fe29d93da4843da433e62711ace82db601eb4f8f' }
-  let(:timed_out_blob_reference) { 'eaf3c09526f50b5e35a096ef70cca033f9974653' }
-  let(:failed_to_scan_blob_reference) { '4fbec77313fd240d00fc37e522d0274b8fb54bd1' }
-
-  let(:new_blob) { have_attributes(class: ::Gitlab::Git::Blob, id: new_blob_reference, size: 33) }
-  let(:timed_out_blob) { have_attributes(class: ::Gitlab::Git::Blob, id: timed_out_blob_reference, size: 32) }
-  let(:failed_to_scan_blob) { have_attributes(class: ::Gitlab::Git::Blob, id: failed_to_scan_blob_reference, size: 32) }
 
   let(:new_payload) do
     ::Gitlab::SecretDetection::GRPC::ScanRequest::Payload.new(
       data: "SECRET=glpat-JUST20LETTERSANDNUMB", # gitleaks:allow
-      id: new_blob_reference,
+      id: blob_5_reference,
       offset: 1
     )
   end
@@ -797,7 +835,7 @@ RSpec.shared_examples 'scan detected secrets but some errors occured' do
   let(:timed_out_payload) do
     ::Gitlab::SecretDetection::GRPC::ScanRequest::Payload.new(
       data: "TOKEN=glpat-JUST20LETTERSANDNUMB", # gitleaks:allow
-      id: timed_out_blob_reference,
+      id: blob_6_reference,
       offset: 1
     )
   end
@@ -805,42 +843,30 @@ RSpec.shared_examples 'scan detected secrets but some errors occured' do
   let(:failed_to_scan_payload) do
     ::Gitlab::SecretDetection::GRPC::ScanRequest::Payload.new(
       data: "GLPAT=glpat-JUST20LETTERSANDNUMB", # gitleaks:allow
-      id: failed_to_scan_blob_reference,
+      id: blob_7_reference,
       offset: 1
     )
   end
 
-  # Used for the quarantine directory context below.
-  let(:object_existence_map) do
-    {
-      existing_blob_reference.to_s => true,
-      new_blob_reference.to_s => false,
-      timed_out_blob_reference.to_s => false,
-      failed_to_scan_blob_reference.to_s => false
-    }
-  end
-
-  context 'with no quarantine directory' do
-    it 'list new blobs' do
-      expect_next_instance_of(::Gitlab::SecretDetection::Core::Scanner) do |instance|
-        expect(instance).to receive(:secrets_scan)
-          .with(
-            array_including(new_payload, timed_out_payload, failed_to_scan_payload),
-            timeout: kind_of(Float),
-            exclusions: kind_of(Hash)
-          )
-          .and_return(successful_scan_with_errors_response)
-      end
-
-      expect { subject.validate! }.to raise_error(::Gitlab::GitAccess::ForbiddenError)
-
-      expect(logged_messages[:info]).to include(
-        hash_including(
-          "message" => log_messages[:found_secrets_with_errors],
-          "class" => "Gitlab::Checks::SecretPushProtection::ResponseHandler"
+  it 'list new blobs' do
+    expect_next_instance_of(::Gitlab::SecretDetection::Core::Scanner) do |instance|
+      expect(instance).to receive(:secrets_scan)
+        .with(
+          array_including(new_payload, timed_out_payload, failed_to_scan_payload),
+          timeout: kind_of(Float),
+          exclusions: kind_of(Hash)
         )
-      )
+        .and_return(successful_scan_with_errors_response)
     end
+
+    expect { subject.validate! }.to raise_error(::Gitlab::GitAccess::ForbiddenError)
+
+    expect(logged_messages[:info]).to include(
+      hash_including(
+        "message" => log_messages[:found_secrets_with_errors],
+        "class" => "Gitlab::Checks::SecretPushProtection::ResponseHandler"
+      )
+    )
   end
 
   it 'scans diffs' do
@@ -857,7 +883,7 @@ RSpec.shared_examples 'scan detected secrets but some errors occured' do
 
     expect_next_instance_of(Gitlab::Checks::SecretPushProtection::ResponseHandler) do |instance|
       expect(instance).to receive(:format_response)
-        .with(successful_scan_with_errors_response)
+        .with(successful_scan_with_errors_response, {})
         .once
         .and_call_original
     end
@@ -938,11 +964,11 @@ RSpec.shared_examples 'scan detected secrets but some errors occured' do
       create_commit('.env' => "SECRET=glpat-JUST20LETTERSANDNUMB\nTOKEN=glpat-JUST20LETTERSANDNUMB") # gitleaks:allow
     end
 
-    let(:new_blob_reference) { '59ef300b246861163ee1e2ab4146e16144e4770f' }
+    let(:blob_5_reference) { '59ef300b246861163ee1e2ab4146e16144e4770f' }
     let(:new_payload) do
       ::Gitlab::SecretDetection::GRPC::ScanRequest::Payload.new(
         data: "SECRET=glpat-JUST20LETTERSANDNUMB\nTOKEN=glpat-JUST20LETTERSANDNUMB", # gitleaks:allow
-        id: new_blob_reference,
+        id: blob_5_reference,
         offset: 1
       )
     end
@@ -953,25 +979,25 @@ RSpec.shared_examples 'scan detected secrets but some errors occured' do
         results:
         [
           ::Gitlab::SecretDetection::Core::Finding.new(
-            new_blob_reference,
+            blob_5_reference,
             ::Gitlab::SecretDetection::Core::Status::FOUND,
             1,
             "gitlab_personal_access_token",
             "GitLab personal access token"
           ),
           ::Gitlab::SecretDetection::Core::Finding.new(
-            new_blob_reference,
+            blob_5_reference,
             ::Gitlab::SecretDetection::Core::Status::FOUND,
             2,
             "gitlab_personal_access_token",
             "GitLab personal access token"
           ),
           ::Gitlab::SecretDetection::Core::Finding.new(
-            timed_out_blob_reference,
+            blob_6_reference,
             ::Gitlab::SecretDetection::Core::Status::PAYLOAD_TIMEOUT
           ),
           ::Gitlab::SecretDetection::Core::Finding.new(
-            failed_to_scan_blob_reference,
+            blob_7_reference,
             ::Gitlab::SecretDetection::Core::Status::SCAN_ERROR
           )
         ]
@@ -992,9 +1018,279 @@ RSpec.shared_examples 'scan detected secrets but some errors occured' do
 
       expect_next_instance_of(Gitlab::Checks::SecretPushProtection::ResponseHandler) do |instance|
         expect(instance).to receive(:format_response)
-          .with(successful_scan_with_multiple_findings_and_errors_response)
+          .with(successful_scan_with_multiple_findings_and_errors_response, kind_of(Hash))
           .once
           .and_call_original
+      end
+
+      expect { subject.validate! }.to raise_error do |error|
+        expect(error).to be_a(::Gitlab::GitAccess::ForbiddenError)
+        expect(error.message).to include(
+          log_messages[:found_secrets_with_errors],
+          finding_message_header,
+          finding_message_multiple_occurrence_lines,
+          blob_timed_out_error,
+          failed_to_scan_regex_error,
+          log_messages[:found_secrets_post_message],
+          found_secrets_docs_link
+        )
+      end
+
+      expect(logged_messages[:info]).to include(
+        hash_including(
+          "message" => log_messages[:found_secrets_with_errors],
+          "class" => "Gitlab::Checks::SecretPushProtection::ResponseHandler"
+        )
+      )
+    end
+  end
+end
+
+# TODO: Make this block the default when `drop_get_tree_entries_from_spp` is removed.
+RSpec.shared_examples 'scan detected secrets but some errors occured (wo/GetTreeEntries)' do
+  include_context 'secrets check context'
+
+  let(:successful_scan_with_errors_response) do
+    ::Gitlab::SecretDetection::Core::Response.new(
+      status: ::Gitlab::SecretDetection::Core::Status::FOUND_WITH_ERRORS,
+      results:
+      [
+        ::Gitlab::SecretDetection::Core::Finding.new(
+          blob_5_reference,
+          ::Gitlab::SecretDetection::Core::Status::FOUND,
+          1,
+          "gitlab_personal_access_token",
+          "GitLab personal access token"
+        ),
+        ::Gitlab::SecretDetection::Core::Finding.new(
+          blob_6_reference,
+          ::Gitlab::SecretDetection::Core::Status::PAYLOAD_TIMEOUT
+        ),
+        ::Gitlab::SecretDetection::Core::Finding.new(
+          blob_7_reference,
+          ::Gitlab::SecretDetection::Core::Status::SCAN_ERROR
+        )
+      ]
+    )
+  end
+
+  let_it_be(:new_commit) { create_commit('.env' => "SECRET=glpat-JUST20LETTERSANDNUMB") } # gitleaks:allow
+  let_it_be(:timed_out_commit) { create_commit('.test.env' => "TOKEN=glpat-JUST20LETTERSANDNUMB") } # gitleaks:allow
+  let_it_be(:failed_to_scan_commit) { create_commit('.dev.env' => "GLPAT=glpat-JUST20LETTERSANDNUMB") } # gitleaks:allow
+
+  let(:changes) do
+    [
+      { oldrev: initial_commit, newrev: new_commit, ref: 'refs/heads/master' },
+      { oldrev: new_commit, newrev: timed_out_commit, ref: 'refs/heads/master' },
+      { oldrev: timed_out_commit, newrev: failed_to_scan_commit, ref: 'refs/heads/master' }
+    ]
+  end
+
+  let(:new_payload) do
+    ::Gitlab::SecretDetection::GRPC::ScanRequest::Payload.new(
+      data: "SECRET=glpat-JUST20LETTERSANDNUMB", # gitleaks:allow
+      id: blob_5_reference,
+      offset: 1
+    )
+  end
+
+  let(:timed_out_payload) do
+    ::Gitlab::SecretDetection::GRPC::ScanRequest::Payload.new(
+      data: "TOKEN=glpat-JUST20LETTERSANDNUMB", # gitleaks:allow
+      id: blob_6_reference,
+      offset: 1
+    )
+  end
+
+  let(:failed_to_scan_payload) do
+    ::Gitlab::SecretDetection::GRPC::ScanRequest::Payload.new(
+      data: "GLPAT=glpat-JUST20LETTERSANDNUMB", # gitleaks:allow
+      id: blob_7_reference,
+      offset: 1
+    )
+  end
+
+  let(:changed_path_1) do
+    Gitlab::Git::ChangedPath.new(
+      path: ".env",
+      status: :ADDED,
+      new_blob_id: blob_5_reference,
+      commit_id: new_commit,
+      old_path: ".env",
+      old_blob_id: '0000000000000000000000000000000000000000',
+      old_mode: '0',
+      new_mode: '100644'
+    )
+  end
+
+  let(:changed_path_2) do
+    Gitlab::Git::ChangedPath.new(
+      path: ".test.env",
+      status: :ADDED,
+      new_blob_id: blob_6_reference,
+      commit_id: timed_out_commit,
+      old_path: ".test.env",
+      old_blob_id: '0000000000000000000000000000000000000000',
+      old_mode: '0',
+      new_mode: '100644'
+    )
+  end
+
+  let(:changed_path_3) do
+    Gitlab::Git::ChangedPath.new(
+      path: ".dev.env",
+      status: :ADDED,
+      new_blob_id: blob_7_reference,
+      commit_id: failed_to_scan_commit,
+      old_path: ".dev.env",
+      old_blob_id: '0000000000000000000000000000000000000000',
+      old_mode: '0',
+      new_mode: '100644'
+    )
+  end
+
+  it 'scans diffs' do
+    expect_next_instance_of(::Gitlab::SecretDetection::Core::Scanner) do |instance|
+      expect(instance).to receive(:secrets_scan)
+        .with(
+          array_including(new_payload, timed_out_payload, failed_to_scan_payload),
+          timeout: kind_of(Float),
+          exclusions: kind_of(Hash)
+        )
+        .once
+        .and_return(successful_scan_with_errors_response)
+    end
+
+    expect_next_instance_of(Gitlab::Checks::SecretPushProtection::ResponseHandler) do |instance|
+      expect(instance).to receive(:format_response).with(
+        successful_scan_with_errors_response,
+        hash_including(
+          blob_5_reference => [
+            {
+              commit_id: changed_path_1.commit_id,
+              path: changed_path_1.path
+            }
+          ],
+          blob_6_reference => [
+            {
+              commit_id: changed_path_2.commit_id,
+              path: changed_path_2.path
+            }
+          ],
+          blob_7_reference => [
+            {
+              commit_id: changed_path_3.commit_id,
+              path: changed_path_3.path
+            }
+          ]
+        )
+      ).once.and_call_original
+    end
+
+    expect { subject.validate! }.to raise_error do |error|
+      expect(error).to be_a(::Gitlab::GitAccess::ForbiddenError)
+      expect(error.message).to include(
+        log_messages[:found_secrets_with_errors],
+        finding_message_header,
+        finding_message_path,
+        finding_message_occurrence_line,
+        blob_timed_out_error,
+        failed_to_scan_regex_error,
+        log_messages[:found_secrets_post_message],
+        found_secrets_docs_link
+      )
+    end
+
+    expect(logged_messages[:info]).to include(
+      hash_including(
+        "message" => log_messages[:found_secrets_with_errors],
+        "class" => "Gitlab::Checks::SecretPushProtection::ResponseHandler"
+      )
+    )
+  end
+
+  context 'when a blob has multiple secrets' do
+    let_it_be(:new_commit) do
+      create_commit('.env' => "SECRET=glpat-JUST20LETTERSANDNUMB\nTOKEN=glpat-JUST20LETTERSANDNUMB") # gitleaks:allow
+    end
+
+    let(:blob_5_reference) { '59ef300b246861163ee1e2ab4146e16144e4770f' }
+
+    let(:new_payload) do
+      ::Gitlab::SecretDetection::GRPC::ScanRequest::Payload.new(
+        data: "SECRET=glpat-JUST20LETTERSANDNUMB\nTOKEN=glpat-JUST20LETTERSANDNUMB", # gitleaks:allow
+        id: blob_5_reference,
+        offset: 1
+      )
+    end
+
+    let(:successful_scan_with_multiple_findings_and_errors_response) do
+      ::Gitlab::SecretDetection::Core::Response.new(
+        status: ::Gitlab::SecretDetection::Core::Status::FOUND_WITH_ERRORS,
+        results:
+        [
+          ::Gitlab::SecretDetection::Core::Finding.new(
+            blob_5_reference,
+            ::Gitlab::SecretDetection::Core::Status::FOUND,
+            1,
+            "gitlab_personal_access_token",
+            "GitLab personal access token"
+          ),
+          ::Gitlab::SecretDetection::Core::Finding.new(
+            blob_5_reference,
+            ::Gitlab::SecretDetection::Core::Status::FOUND,
+            2,
+            "gitlab_personal_access_token",
+            "GitLab personal access token"
+          ),
+          ::Gitlab::SecretDetection::Core::Finding.new(
+            blob_6_reference,
+            ::Gitlab::SecretDetection::Core::Status::PAYLOAD_TIMEOUT
+          ),
+          ::Gitlab::SecretDetection::Core::Finding.new(
+            blob_7_reference,
+            ::Gitlab::SecretDetection::Core::Status::SCAN_ERROR
+          )
+        ]
+      )
+    end
+
+    it 'displays all findings with their corresponding commit sha/filepath' do
+      expect_next_instance_of(::Gitlab::SecretDetection::Core::Scanner) do |instance|
+        expect(instance).to receive(:secrets_scan)
+          .with(
+            array_including(new_payload, timed_out_payload, failed_to_scan_payload),
+            timeout: kind_of(Float),
+            exclusions: kind_of(Hash)
+          )
+          .once
+          .and_return(successful_scan_with_multiple_findings_and_errors_response)
+      end
+
+      expect_next_instance_of(Gitlab::Checks::SecretPushProtection::ResponseHandler) do |instance|
+        expect(instance).to receive(:format_response).with(
+          successful_scan_with_multiple_findings_and_errors_response,
+          hash_including(
+            blob_5_reference => [
+              {
+                commit_id: changed_path_1.commit_id,
+                path: changed_path_1.path
+              }
+            ],
+            blob_6_reference => [
+              {
+                commit_id: changed_path_2.commit_id,
+                path: changed_path_2.path
+              }
+            ],
+            blob_7_reference => [
+              {
+                commit_id: changed_path_3.commit_id,
+                path: changed_path_3.path
+              }
+            ]
+          )
+        ).once.and_call_original
       end
 
       expect { subject.validate! }.to raise_error do |error|
@@ -1506,7 +1802,7 @@ RSpec.shared_examples 'detects secrets with special characters in diffs' do
     let(:diff_blob) do
       ::Gitlab::GitalyClient::DiffBlob.new(
         left_blob_id: ::Gitlab::Git::SHA1_BLANK_SHA,
-        right_blob_id: new_blob_reference,
+        right_blob_id: blob_2_reference,
         patch: "@@ -0,0 +1 @@\n+#{secret_with_special_char}\n\\ No newline at end of file\n",
         status: :STATUS_END_OF_PATCH,
         binary: false,
@@ -1517,16 +1813,50 @@ RSpec.shared_examples 'detects secrets with special characters in diffs' do
     let(:new_payload) do
       ::Gitlab::SecretDetection::GRPC::ScanRequest::Payload.new(
         data: secret_with_special_char.force_encoding("UTF-8"),
-        id: new_blob_reference,
+        id: blob_2_reference,
         offset: 1
       )
+    end
+
+    let(:changed_path_1) do
+      Gitlab::Git::ChangedPath.new(
+        path: ".env",
+        status: :ADDED,
+        new_blob_id: blob_2_reference,
+        commit_id: new_commit,
+        old_path: ".env",
+        old_blob_id: '0000000000000000000000000000000000000000',
+        old_mode: '0',
+        new_mode: '100644'
+      )
+    end
+
+    let(:lookup_map) do
+      {
+        blob_2_reference => [
+          {
+            commit_id: changed_path_1.commit_id,
+            path: changed_path_1.path
+          }
+        ]
+      }
     end
 
     it "detects secret in diff containing #{params[:description]}" do
       expect_next_instance_of(Gitlab::Checks::SecretPushProtection::PayloadProcessor) do |instance|
         expect(instance).to receive(:get_diffs)
           .once
-          .and_return([diff_blob])
+          .and_wrap_original do |_, lookup_map_arg|
+            # we pass lookup_map by reference, so need to make sure it's populated
+            lookup_map_arg[blob_2_reference] = [
+              {
+                commit_id: changed_path_1.commit_id,
+                path: changed_path_1.path
+              }
+            ]
+
+            [diff_blob]
+          end
       end
 
       expect_next_instance_of(::Gitlab::SecretDetection::Core::Scanner) do |instance|

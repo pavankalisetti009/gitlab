@@ -12,7 +12,7 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::SecretDetectionServiceClien
 
   let(:payload) do
     ::Gitlab::SecretDetection::GRPC::ScanRequest::Payload.new(
-      id: new_blob_reference,
+      id: blob_2_reference,
       data: "BASE_URL=https://foo.bar",
       offset: 1
     )

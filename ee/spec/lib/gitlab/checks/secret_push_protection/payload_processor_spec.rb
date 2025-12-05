@@ -24,7 +24,8 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::PayloadProcessor, feature_c
         new_mode: '100644',
         old_blob_id: '0000000000000000000000000000000000000000',
         new_blob_id: 'abc123def456',
-        old_path: 'unknown.txt'
+        old_path: 'unknown.txt',
+        commit_id: ''
       )
 
       # We stub the other two RPC calls in order to make this work properly.
@@ -34,41 +35,47 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::PayloadProcessor, feature_c
         diff_blobs: []
       )
 
-      expect(secret_detection_logger).to receive(:info) do |payload|
-        expect(payload).to include(
-          'class' => 'Gitlab::Checks::SecretPushProtection::PayloadProcessor',
-          'message' => 'secret_push_protection_number_of_changed_paths',
-          'total_changed_paths' => 1,
-          'paths_breakdown' => {
-            'unknown' => 1
+      payload_processor.standardize_payloads
+
+      expect(logged_messages[:info]).to include(
+        hash_including(
+          "class" => "Gitlab::Checks::SecretPushProtection::PayloadProcessor",
+          "message" => "Number of changed paths broken down by their type",
+          "total_paths" => 1,
+          "paths_breakdown" => {
+            "unknown" => 1
           }
         )
-      end
-
-      payload_processor.standardize_payloads
+      )
     end
 
     it 'logs the number and breakdown of changed paths' do
-      expect(secret_detection_logger).to receive(:info) do |payload|
-        expect(payload).to include(
-          'class' => 'Gitlab::Checks::SecretPushProtection::PayloadProcessor',
-          'message' => 'secret_push_protection_number_of_changed_paths',
-          'total_changed_paths' => 3,
-          'paths_breakdown' => {
-            'added' => 1,
-            'modified' => 1,
-            'renamed' => 1
+      payload_processor.standardize_payloads
+
+      expect(logged_messages[:info]).to include(
+        hash_including(
+          "class" => "Gitlab::Checks::SecretPushProtection::PayloadProcessor",
+          "message" => "Number of changed paths broken down by their type",
+          "total_paths" => 3,
+          "paths_breakdown" => {
+            "added" => 1,
+            "modified" => 1,
+            "renamed" => 1
           }
         )
-      end
-
-      payload_processor.standardize_payloads
+      )
     end
 
     it 'tracks any exception raised while logging the breakdown' do
       error = StandardError.new('log failure')
 
-      allow(secret_detection_logger).to receive(:info).and_raise(error)
+      expect(secret_detection_logger).to receive(:info)
+        .with(
+          hash_including(
+            "message" => "Number of changed paths broken down by their type"
+          )
+        )
+        .and_raise(error)
 
       expect(::Gitlab::ErrorTracking).to receive(:track_exception).with(
         error,
@@ -82,9 +89,168 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::PayloadProcessor, feature_c
     end
   end
 
+  shared_examples 'populates the lookup map' do
+    it 'populates the map' do
+      _, lookup_map = payload_processor.standardize_payloads
+
+      expect(lookup_map.size).to eq(3)
+      expect(lookup_map).to include(
+        blob_2_reference => [
+          {
+            path: ".env",
+            commit_id: new_commit
+          }
+        ],
+        blob_3_reference => [
+          {
+            path: "to_modify.txt",
+            commit_id: new_commit
+          }
+        ],
+        blob_4_reference => [
+          {
+            path: "new_config.txt",
+            commit_id: new_commit
+          }
+        ]
+      )
+    end
+
+    it 'logs the map population message' do
+      _, _ = payload_processor.standardize_payloads
+
+      expect(logged_messages[:info]).to include(
+        hash_including(
+          "class" => "Gitlab::Checks::SecretPushProtection::PayloadProcessor",
+          "message" => "Populated the lookup map used to associate a finding to " \
+            "commit sha + file path",
+          "total_payloads" => 3,
+          "total_changed_path_entries" => 3
+        )
+      )
+    end
+
+    it 'handles empty paths array gracefully' do
+      allow(project.repository).to receive(:find_changed_paths).and_return([])
+
+      _, lookup_map = payload_processor.standardize_payloads
+
+      expect(lookup_map).to be_empty
+
+      expect(logged_messages[:info]).to include(
+        hash_including(
+          "message" => "Populated the lookup map used to associate a finding to " \
+            "commit sha + file path",
+          "total_payloads" => 0,
+          "total_changed_path_entries" => 0
+        )
+      )
+    end
+
+    context 'for changed path entries with blank `new_blob_id`' do
+      let(:changed_path_1) do
+        instance_double(
+          Gitlab::Git::ChangedPath,
+          status: :DELETED,
+          path: 'deleted_file_1.txt',
+          old_mode: '100644',
+          new_mode: '000000',
+          old_blob_id: 'blob_id_1',
+          new_blob_id: '',
+          old_path: 'deleted_file_1.txt',
+          commit_id: 'commit_1'
+        )
+      end
+
+      let(:changed_path_2) do
+        instance_double(
+          Gitlab::Git::ChangedPath,
+          status: :DELETED,
+          path: 'deleted_file_2.txt',
+          old_mode: '100644',
+          new_mode: '000000',
+          old_blob_id: 'blob_id_2',
+          new_blob_id: Gitlab::Git::SHA1_BLANK_SHA,
+          old_path: 'deleted_file_2.txt',
+          commit_id: 'commit_2'
+        )
+      end
+
+      before do
+        allow(project.repository).to receive_messages(
+          find_changed_paths: [changed_path_1, changed_path_2],
+          diff_blobs_with_raw_info: [],
+          diff_blobs: []
+        )
+      end
+
+      it 'skips those entries' do
+        _, lookup_map = payload_processor.standardize_payloads
+
+        expect(lookup_map).to be_empty
+      end
+    end
+
+    context 'for the same blob in multiple commits' do
+      let(:same_blob_path_1) do
+        instance_double(
+          Gitlab::Git::ChangedPath,
+          status: :ADDED,
+          path: 'config/secrets.yml',
+          old_mode: '000000',
+          new_mode: '100644',
+          old_blob_id: '0000000000000000000000000000000000000000',
+          new_blob_id: 'blob_id_1',
+          old_path: 'config/secrets.yml',
+          commit_id: 'commit_1'
+        )
+      end
+
+      let(:same_blob_path_2) do
+        instance_double(
+          Gitlab::Git::ChangedPath,
+          status: :MODIFIED,
+          path: 'config/secrets.yml',
+          old_mode: '100644',
+          new_mode: '100644',
+          old_blob_id: 'blob_id_0',
+          new_blob_id: 'blob_id_1',
+          old_path: 'config/secrets.yml',
+          commit_id: 'commit_2'
+        )
+      end
+
+      before do
+        allow(project.repository).to receive_messages(
+          find_changed_paths: [same_blob_path_1, same_blob_path_2],
+          diff_blobs_with_raw_info: [],
+          diff_blobs: []
+        )
+      end
+
+      it 'handles multiple commits touching the same blob' do
+        _, lookup_map = payload_processor.standardize_payloads
+
+        # The map should have ONE key (the blob ID) with TWO entries (one per commit)
+        expect(lookup_map.size).to eq(1)
+        expect(lookup_map['blob_id_1'].size).to eq(2)
+        expect(lookup_map['blob_id_1']).to contain_exactly(
+          hash_including(
+            path: 'config/secrets.yml',
+            commit_id: 'commit_1'
+          ), hash_including(
+            path: 'config/secrets.yml',
+            commit_id: 'commit_2'
+          )
+        )
+      end
+    end
+  end
+
   describe '#standardize_payloads' do
     context 'with a valid diff blob' do
       include_examples 'logs changed paths breakdown'
+      include_examples 'populates the lookup map'
 
       it 'returns a single GRPC payload built from the diff blob' do
         expect(project.repository).to receive(:diff_blobs_with_raw_info)
@@ -101,6 +267,7 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::PayloadProcessor, feature_c
           expect(changed_path.old_blob_id).to eq("0000000000000000000000000000000000000000")
           expect(changed_path.new_blob_id).to eq("da66bef46dbf0ad7fdcbeec97c9eaa24c2846dda")
           expect(changed_path.old_path).to eq("")
+          expect(changed_path.commit_id).to be_present
           expect(changed_path.score).to eq(0)
           method.call(raw_info, **kwargs)
         end
@@ -117,13 +284,13 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::PayloadProcessor, feature_c
           hash_including(diff_filters: expected_diff_filters)
         ).and_call_original
 
-        payloads = payload_processor.standardize_payloads
+        payloads, _ = payload_processor.standardize_payloads
         expect(payloads).to be_an(Array)
         expect(payloads.size).to eq(2)
 
         payload = payloads.first
         expect(payload).to be_a(::Gitlab::SecretDetection::GRPC::ScanRequest::Payload)
-        expect(payload.id).to eq(new_blob_reference)
+        expect(payload.id).to eq(blob_2_reference)
         expect(payload.data).to include("BASE_URL=https://foo.bar")
         expect(payload.offset).to eq(1)
       end
@@ -144,6 +311,24 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::PayloadProcessor, feature_c
       end
     end
 
+    context 'when drop_get_tree_entries_from_spp feature flag is disabled' do
+      before do
+        stub_feature_flags(drop_get_tree_entries_from_spp: false)
+      end
+
+      it 'does not populate the map' do
+        _, lookup_map = payload_processor.standardize_payloads
+
+        expect(lookup_map).to be_empty
+      end
+
+      it 'does not log the map population message' do
+        payload_processor.standardize_payloads
+
+        expect(secret_detection_logger).not_to receive(:info)
+      end
+    end
+
     context 'when secret_detection_transition_to_raw_info_gitaly_endpoint is disabled' do
       before do
         stub_feature_flags(secret_detection_transition_to_raw_info_gitaly_endpoint: false)
@@ -151,6 +336,7 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::PayloadProcessor, feature_c
 
       context 'with a valid diff blob' do
         include_examples 'logs changed paths breakdown'
+        include_examples 'populates the lookup map'
 
         it 'returns a single GRPC payload built from the diff blob' do
           expect(project.repository).to receive(:diff_blobs).and_wrap_original do |method, blob_pairs, **kwargs|
@@ -170,13 +356,13 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::PayloadProcessor, feature_c
             method.call(blob_pairs, **kwargs)
           end
 
-          payloads = payload_processor.standardize_payloads
+          payloads, _ = payload_processor.standardize_payloads
           expect(payloads).to be_an(Array)
           expect(payloads.size).to eq(2)
 
           payload = payloads.first
           expect(payload).to be_a(::Gitlab::SecretDetection::GRPC::ScanRequest::Payload)
-          expect(payload.id).to eq(new_blob_reference)
+          expect(payload.id).to eq(blob_2_reference)
           expect(payload.data).to include("BASE_URL=https://foo.bar")
 
           payload = payloads[1]
@@ -192,7 +378,7 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::PayloadProcessor, feature_c
       let(:bad_diff_blob) do
         ::Gitlab::GitalyClient::DiffBlob.new(
           left_blob_id: ::Gitlab::Git::SHA1_BLANK_SHA,
-          right_blob_id: new_blob_reference,
+          right_blob_id: blob_2_reference,
           patch: "@@ malformed header @@\n+some content\n",
           status: :STATUS_END_OF_PATCH,
           binary: false,
@@ -209,14 +395,15 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::PayloadProcessor, feature_c
           hash_including("message" => a_string_including("Could not process hunk header"))
         )
 
-        expect(payload_processor.standardize_payloads).to be_nil
+        expect(payload_processor.standardize_payloads).to eq([nil, {}])
       end
     end
 
     context 'when get_diffs returns nil or empty' do
       it 'returns nil' do
         allow(payload_processor).to receive(:get_diffs).and_return([])
-        expect(payload_processor.standardize_payloads).to be_nil
+
+        expect(payload_processor.standardize_payloads).to eq([nil, {}])
       end
     end
   end
@@ -225,7 +412,7 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::PayloadProcessor, feature_c
     let(:diff_blob) do
       ::Gitlab::GitalyClient::DiffBlob.new(
         left_blob_id: ::Gitlab::Git::SHA1_BLANK_SHA,
-        right_blob_id: new_blob_reference,
+        right_blob_id: blob_2_reference,
         patch: patch,
         status: :STATUS_END_OF_PATCH,
         binary: false,
@@ -248,7 +435,7 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::PayloadProcessor, feature_c
         parsed = payload_processor.parse_diffs(diff_blob)
         expect(parsed.pluck(:offset)).to match_array([1, 11])
         expect(parsed.pluck(:data)).to eq(%W[one\ntwo three])
-        expect(parsed).to all(include(id: new_blob_reference))
+        expect(parsed).to all(include(id: blob_2_reference))
       end
     end
 
@@ -289,13 +476,14 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::PayloadProcessor, feature_c
     let(:changed_path_no_diff) do
       instance_double(
         Gitlab::Git::ChangedPath,
-        old_blob_id: 'same123',
-        new_blob_id: 'same123',
+        old_blob_id: 'same_123',
+        new_blob_id: 'same_123',
         path: 'renamed.md',
         status: :renamed,
         old_mode: '100644',
         new_mode: '100644',
-        old_path: 'old_name.md'
+        old_path: 'old_name.md',
+        commit_id: 'commit_1'
       )
     end
 
@@ -314,24 +502,10 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::PayloadProcessor, feature_c
         )
       end
 
-      let(:paths) do
-        [
-          instance_double(
-            Gitlab::Git::ChangedPath,
-            old_blob_id: 'abc123',
-            new_blob_id: 'abc123',
-            path: 'README.md',
-            status: :modified,
-            old_mode: '100644',
-            new_mode: '100755'
-          )
-        ]
-      end
-
       it 'returns empty array without calling repository.diff_blobs' do
         expect(project.repository).not_to receive(:diff_blobs)
 
-        result = payload_processor.standardize_payloads
+        result, _ = payload_processor.standardize_payloads
 
         expect(result).to be_nil
       end
@@ -341,20 +515,21 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::PayloadProcessor, feature_c
       let(:changed_path_with_diff) do
         instance_double(
           Gitlab::Git::ChangedPath,
-          old_blob_id: 'old456',
-          new_blob_id: 'new789',
+          old_blob_id: 'old_123',
+          new_blob_id: 'new_123',
           path: 'modified.rb',
           status: :modified,
           old_mode: '100644',
           new_mode: '100644',
-          old_path: 'modified.rb'
+          old_path: 'modified.rb',
+          commit_id: 'commit_1'
         )
       end
 
       let(:diff_blob) do
         ::Gitlab::GitalyClient::DiffBlob.new(
-          left_blob_id: 'old456',
-          right_blob_id: 'new789',
+          left_blob_id: 'old_123',
+          right_blob_id: 'new_123',
           patch: "@@ -1,1 +1,1 @@\n-old content\n+new content\n",
           status: :STATUS_END_OF_PATCH,
           binary: false,
@@ -373,11 +548,11 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::PayloadProcessor, feature_c
         expect(project.repository).to receive(:diff_blobs)
           .and_return([diff_blob])
 
-        payloads = payload_processor.standardize_payloads
+        payloads, _ = payload_processor.standardize_payloads
 
         expect(payloads).to be_an(Array)
         expect(payloads.size).to eq(1)
-        expect(payloads.first.id).to eq('new789')
+        expect(payloads.first.id).to eq('new_123')
       end
     end
   end
