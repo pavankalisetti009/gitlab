@@ -82,6 +82,10 @@ module Ai
         end
       end
 
+      def self.workflow_feature_name
+        :duo_agent_platform
+      end
+
       included do
         enum :feature, FEATURES, validate: true
 
