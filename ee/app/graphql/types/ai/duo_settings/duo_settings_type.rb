@@ -39,21 +39,28 @@ module Types
           experiment: { milestone: '18.0' }
 
         # rubocop: disable GraphQL/ExtractType -- suggestion does not make sense
-        field :minimum_access_level_execute, Integer,
+        field :minimum_access_level_execute, ::Types::AccessLevelEnum,
           null: true,
           description: 'Minimum access level required to execute Duo Agent Platform. ' \
             'Returns `null` if `dap_instance_customizable_permissions` feature flag is disabled.',
           authorize: :read_ai_role_based_permission_settings,
           experiment: { milestone: '18.7' }
 
-        field :minimum_access_level_manage, Integer,
+        field :minimum_access_level_execute_async, ::Types::AccessLevelEnum,
+          null: true,
+          description: 'Minimum access level required to execute Duo Agent Platform features in CI/CD. ' \
+            'Returns `null` if `dap_instance_customizable_permissions` feature flag is disabled.',
+          authorize: :read_ai_role_based_permission_settings,
+          experiment: { milestone: '18.7' }
+
+        field :minimum_access_level_manage, ::Types::AccessLevelEnum,
           null: true,
           description: 'Minimum access level required to manage Duo Agent Platform. ' \
             'Returns `null` if `dap_instance_customizable_permissions` feature flag is disabled.',
           authorize: :read_ai_role_based_permission_settings,
           experiment: { milestone: '18.7' }
 
-        field :minimum_access_level_enable_on_projects, Integer,
+        field :minimum_access_level_enable_on_projects, ::Types::AccessLevelEnum,
           null: true,
           description: 'Minimum access level required to enable Duo Agent Platform. ' \
             'Returns `null` if `dap_instance_customizable_permissions` feature flag is disabled.',

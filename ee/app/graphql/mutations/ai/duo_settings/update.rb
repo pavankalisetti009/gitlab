@@ -24,19 +24,25 @@ module Mutations
           validates: { allow_null: false },
           description: 'Indicates whether GitLab Duo Core features are enabled.'
 
-        argument :minimum_access_level_execute, Integer,
+        argument :minimum_access_level_execute, ::Types::AccessLevelEnum,
           required: false,
           description: 'Minimum access level for execute on Duo Agent Platform. ' \
             'Ignored if dap_instance_customizable_permissions feature flag is disabled.',
           experiment: { milestone: '18.7' }
 
-        argument :minimum_access_level_manage, Integer,
+        argument :minimum_access_level_execute_async, ::Types::AccessLevelEnum,
+          required: false,
+          description: 'Minimum access level to execute Duo Agent Platform features in CI/CD. ' \
+            'Ignored if dap_instance_customizable_permissions feature flag is disabled.',
+          experiment: { milestone: '18.7' }
+
+        argument :minimum_access_level_manage, ::Types::AccessLevelEnum,
           required: false,
           description: 'Minimum access level for manage on Duo Agent Platform. ' \
             'Ignored if dap_instance_customizable_permissions feature flag is disabled.',
           experiment: { milestone: '18.7' }
 
-        argument :minimum_access_level_enable_on_projects, Integer,
+        argument :minimum_access_level_enable_on_projects, ::Types::AccessLevelEnum,
           required: false,
           description: 'Minimum access level for enable on Duo Agent Platform. ' \
             'Ignored if dap_instance_customizable_permissions feature flag is disabled.',
@@ -51,6 +57,7 @@ module Mutations
 
           if Feature.disabled?(:dap_instance_customizable_permissions, :instance)
             args.delete(:minimum_access_level_execute)
+            args.delete(:minimum_access_level_execute_async)
             args.delete(:minimum_access_level_manage)
             args.delete(:minimum_access_level_enable_on_projects)
           end
@@ -90,6 +97,7 @@ module Mutations
             !allowed_to_update?(:manage_duo_core_settings)
 
           [:minimum_access_level_execute,
+            :minimum_access_level_execute_async,
             :minimum_access_level_manage,
             :minimum_access_level_enable_on_projects].each do |setting|
             if args.key?(setting) && !Ability.allowed?(current_user, :update_ai_role_based_permission_settings,

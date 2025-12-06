@@ -107,13 +107,14 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
         where(:permission) do
           %i[
             minimum_access_level_execute
+            minimum_access_level_execute_async
             minimum_access_level_manage
             minimum_access_level_enable_on_projects
           ]
         end
 
         with_them do
-          let(:mutation_params) { { permission => ::Gitlab::Access::DEVELOPER } }
+          let(:mutation_params) { { permission => 'DEVELOPER' } }
 
           it 'returns an error about the missing permission' do
             request
@@ -305,7 +306,7 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
         end
 
         context 'when updating minimum_access_level_execute' do
-          let(:mutation_params) { { minimum_access_level_execute: ::Gitlab::Access::DEVELOPER } }
+          let(:mutation_params) { { minimum_access_level_execute: 'DEVELOPER' } }
 
           it 'updates the field' do
             request
@@ -314,7 +315,7 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
 
             expect(duo_settings.reload.minimum_access_level_execute).to eq(::Gitlab::Access::DEVELOPER)
             expect(result['duoSettings']).to include(
-              'minimumAccessLevelExecute' => ::Gitlab::Access::DEVELOPER
+              'minimumAccessLevelExecute' => 'DEVELOPER'
             )
           end
 
@@ -332,8 +333,36 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
           end
         end
 
+        context 'when updating minimum_access_level_execute_async' do
+          let(:mutation_params) { { minimum_access_level_execute_async: 'DEVELOPER' } }
+
+          it 'updates the field' do
+            request
+
+            result = json_response['data']['duoSettingsUpdate']
+
+            expect(duo_settings.reload.minimum_access_level_execute_async).to eq(::Gitlab::Access::DEVELOPER)
+            expect(result['duoSettings']).to include(
+              'minimumAccessLevelExecuteAsync' => 'DEVELOPER'
+            )
+          end
+
+          it 'does not update the field when the feature flag is disabled' do
+            stub_feature_flags(dap_instance_customizable_permissions: false)
+
+            request
+
+            result = json_response['data']['duoSettingsUpdate']
+
+            expect(duo_settings.reload.minimum_access_level_execute_async).to be_nil
+            expect(result['duoSettings']).to include(
+              'minimumAccessLevelExecuteAsync' => nil
+            )
+          end
+        end
+
         context 'when updating minimum_access_level_manage' do
-          let(:mutation_params) { { minimum_access_level_manage: ::Gitlab::Access::DEVELOPER } }
+          let(:mutation_params) { { minimum_access_level_manage: 'DEVELOPER' } }
 
           it 'updates the field' do
             request
@@ -342,7 +371,7 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
 
             expect(duo_settings.reload.minimum_access_level_manage).to eq(::Gitlab::Access::DEVELOPER)
             expect(result['duoSettings']).to include(
-              'minimumAccessLevelManage' => ::Gitlab::Access::DEVELOPER
+              'minimumAccessLevelManage' => 'DEVELOPER'
             )
           end
 
@@ -361,7 +390,7 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
         end
 
         context 'when updating minimum_access_level_enable_on_projects' do
-          let(:mutation_params) { { minimum_access_level_enable_on_projects: ::Gitlab::Access::MAINTAINER } }
+          let(:mutation_params) { { minimum_access_level_enable_on_projects: 'MAINTAINER' } }
 
           it 'updates the field' do
             request
@@ -370,7 +399,7 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
 
             expect(duo_settings.reload.minimum_access_level_enable_on_projects).to eq(::Gitlab::Access::MAINTAINER)
             expect(result['duoSettings']).to include(
-              'minimumAccessLevelEnableOnProjects' => ::Gitlab::Access::MAINTAINER
+              'minimumAccessLevelEnableOnProjects' => 'MAINTAINER'
             )
           end
 

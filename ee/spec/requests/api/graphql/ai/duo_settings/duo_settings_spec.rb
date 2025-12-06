@@ -64,6 +64,7 @@ RSpec.describe 'GitLab Duo settings.', feature_category: :'self-hosted_models' d
       it 'returns nil for minimum access level settings' do
         duo_settings.update!(
           minimum_access_level_execute: ::Gitlab::Access::DEVELOPER,
+          minimum_access_level_execute_async: ::Gitlab::Access::DEVELOPER,
           minimum_access_level_manage: ::Gitlab::Access::DEVELOPER,
           minimum_access_level_enable_on_projects: ::Gitlab::Access::DEVELOPER
         )
@@ -72,6 +73,7 @@ RSpec.describe 'GitLab Duo settings.', feature_category: :'self-hosted_models' d
           query getDuoSettings {
             duoSettings {
               minimumAccessLevelExecute
+              minimumAccessLevelExecuteAsync
               minimumAccessLevelManage
               minimumAccessLevelEnableOnProjects
             }
@@ -83,6 +85,7 @@ RSpec.describe 'GitLab Duo settings.', feature_category: :'self-hosted_models' d
         expect(duo_settings_data).to eq(
           {
             'minimumAccessLevelExecute' => nil,
+            'minimumAccessLevelExecuteAsync' => nil,
             'minimumAccessLevelManage' => nil,
             'minimumAccessLevelEnableOnProjects' => nil
           }
@@ -109,6 +112,7 @@ RSpec.describe 'GitLab Duo settings.', feature_category: :'self-hosted_models' d
       it 'returns minimum access level settings' do
         duo_settings.update!(
           minimum_access_level_execute: ::Gitlab::Access::DEVELOPER,
+          minimum_access_level_execute_async: ::Gitlab::Access::DEVELOPER,
           minimum_access_level_manage: ::Gitlab::Access::DEVELOPER,
           minimum_access_level_enable_on_projects: ::Gitlab::Access::DEVELOPER
         )
@@ -117,6 +121,7 @@ RSpec.describe 'GitLab Duo settings.', feature_category: :'self-hosted_models' d
           query getDuoSettings {
             duoSettings {
               minimumAccessLevelExecute
+              minimumAccessLevelExecuteAsync
               minimumAccessLevelManage
               minimumAccessLevelEnableOnProjects
             }
@@ -127,9 +132,10 @@ RSpec.describe 'GitLab Duo settings.', feature_category: :'self-hosted_models' d
 
         expect(duo_settings_data).to eq(
           {
-            'minimumAccessLevelExecute' => ::Gitlab::Access::DEVELOPER,
-            'minimumAccessLevelManage' => ::Gitlab::Access::DEVELOPER,
-            'minimumAccessLevelEnableOnProjects' => ::Gitlab::Access::DEVELOPER
+            'minimumAccessLevelExecute' => 'DEVELOPER',
+            'minimumAccessLevelExecuteAsync' => 'DEVELOPER',
+            'minimumAccessLevelManage' => 'DEVELOPER',
+            'minimumAccessLevelEnableOnProjects' => 'DEVELOPER'
           }
         )
       end
