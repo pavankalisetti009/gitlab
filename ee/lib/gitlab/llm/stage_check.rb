@@ -4,15 +4,15 @@ module Gitlab
   module Llm
     class StageCheck
       class << self
-        def available?(container, feature)
+        def available?(container, feature, user: nil)
           root_ancestor = container.root_ancestor
 
           return false if personal_namespace?(root_ancestor)
           return false unless root_ancestor.licensed_feature_available?(license_feature_name(feature))
 
-          available_on_experimental_stage?(root_ancestor, feature) ||
-            available_on_beta_stage?(root_ancestor, feature) ||
-            available_on_ga_stage?(feature)
+          available_on_experimental_stage?(root_ancestor, feature, user: user) ||
+            available_on_beta_stage?(root_ancestor, feature, user: user) ||
+            available_on_ga_stage?(feature, user: user)
         end
 
         private
@@ -21,26 +21,26 @@ module Gitlab
           root_ancestor.user_namespace?
         end
 
-        def available_on_experimental_stage?(root_ancestor, feature)
+        def available_on_experimental_stage?(root_ancestor, feature, user: nil)
           return false unless instance_allows_experiment_and_beta_features
           return false unless gitlab_com_namespace_enables_experiment_and_beta_features(root_ancestor)
-          return false unless available_on_stage?(feature, :experimental)
+          return false unless available_on_stage?(feature, :experimental, user: user)
 
           true
         end
 
         # There is no beta setting yet.
         # https://gitlab.com/gitlab-org/gitlab/-/issues/409929
-        def available_on_beta_stage?(root_ancestor, feature)
+        def available_on_beta_stage?(root_ancestor, feature, user: nil)
           return false unless instance_allows_experiment_and_beta_features
           return false unless gitlab_com_namespace_enables_experiment_and_beta_features(root_ancestor)
-          return false unless available_on_stage?(feature, :beta)
+          return false unless available_on_stage?(feature, :beta, user: user)
 
           true
         end
 
-        def available_on_ga_stage?(feature)
-          return true if available_on_stage?(feature, :ga)
+        def available_on_ga_stage?(feature, user: nil)
+          return true if available_on_stage?(feature, :ga, user: user)
 
           false
         end
@@ -93,12 +93,16 @@ module Gitlab
           end
         end
 
-        def available_on_stage?(feature, maturity)
+        def available_on_stage?(feature, maturity, user: nil)
           if Feature.enabled?(:agentic_chat_ga) && feature == :agentic_chat # rubocop:disable Gitlab/FeatureFlagWithoutActor -- We can't easily tie this to an actor
             return :ga == maturity
           end
 
-          ::Gitlab::Llm::Utils::AiFeaturesCatalogue::LIST.dig(feature, :maturity) == maturity
+          effective_maturity = ::Gitlab::Llm::Utils::AiFeaturesCatalogue.effective_maturity(
+            feature,
+            user: user
+          )
+          effective_maturity == maturity
         end
       end
     end

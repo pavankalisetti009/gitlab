@@ -97,4 +97,173 @@ RSpec.describe Gitlab::Llm::Utils::AiFeaturesCatalogue, feature_category: :ai_ab
       })
     end
   end
+
+  describe '.effective_maturity' do
+    let(:user) { nil }
+
+    subject(:effective_maturity) { described_class.effective_maturity(feature_name, user: user) }
+
+    context 'when feature does not exist' do
+      let(:feature_name) { :non_existent_feature }
+
+      it { is_expected.to be_nil }
+    end
+
+    context 'for features that do not use duo_agent_platform' do
+      using RSpec::Parameterized::TableSyntax
+
+      where(:feature_name, :base_maturity) do
+        :chat                        | :ga
+        :explain_vulnerability       | :ga
+        :resolve_vulnerability       | :ga
+        :generate_commit_message     | :ga
+        :summarize_review            | :experimental
+        :generate_description        | :experimental
+        :summarize_new_merge_request | :beta
+      end
+
+      with_them do
+        context 'on SaaS' do
+          before do
+            stub_saas_features(gitlab_com_subscriptions: true)
+          end
+
+          context 'when feature flag is enabled' do
+            before do
+              stub_feature_flags(ai_duo_agent_platform_ga_rollout: true)
+            end
+
+            it 'returns the base maturity' do
+              expect(effective_maturity).to eq(base_maturity)
+            end
+          end
+
+          context 'when feature flag is disabled' do
+            before do
+              stub_feature_flags(ai_duo_agent_platform_ga_rollout: false)
+            end
+
+            it 'returns the base maturity' do
+              expect(effective_maturity).to eq(base_maturity)
+            end
+          end
+        end
+
+        context 'on Self-Managed' do
+          before do
+            stub_saas_features(gitlab_com_subscriptions: false)
+          end
+
+          context 'when feature flag is enabled' do
+            before do
+              stub_feature_flags(ai_duo_agent_platform_ga_rollout: true)
+            end
+
+            it 'returns the base maturity' do
+              expect(effective_maturity).to eq(base_maturity)
+            end
+          end
+
+          context 'when feature flag is disabled' do
+            before do
+              stub_feature_flags(ai_duo_agent_platform_ga_rollout: false)
+            end
+
+            it 'returns the base maturity' do
+              expect(effective_maturity).to eq(base_maturity)
+            end
+          end
+        end
+      end
+    end
+
+    context 'for features that use duo_agent_platform' do
+      using RSpec::Parameterized::TableSyntax
+
+      where(:feature_name, :base_maturity) do
+        :agentic_chat        | :experimental
+        :duo_workflow        | :beta
+        :duo_agent_platform  | :beta
+        :ai_catalog          | :experimental
+      end
+
+      with_them do
+        context 'on SaaS' do
+          before do
+            stub_saas_features(gitlab_com_subscriptions: true)
+          end
+
+          context 'when feature flag is enabled' do
+            before do
+              stub_feature_flags(ai_duo_agent_platform_ga_rollout: true)
+            end
+
+            it 'returns GA maturity' do
+              expect(effective_maturity).to eq(:ga)
+            end
+
+            context 'with a user' do
+              let(:user) { create(:user) }
+
+              before do
+                stub_feature_flags(ai_duo_agent_platform_ga_rollout: user)
+              end
+
+              it 'returns GA maturity when feature flag is enabled for user' do
+                expect(effective_maturity).to eq(:ga)
+              end
+            end
+          end
+
+          context 'when feature flag is disabled' do
+            before do
+              stub_feature_flags(ai_duo_agent_platform_ga_rollout: false)
+            end
+
+            it 'returns the base maturity' do
+              expect(effective_maturity).to eq(base_maturity)
+            end
+
+            context 'with a user' do
+              let(:user) { create(:user) }
+
+              before do
+                stub_feature_flags(ai_duo_agent_platform_ga_rollout: false)
+              end
+
+              it 'returns the base maturity when feature flag is disabled for user' do
+                expect(effective_maturity).to eq(base_maturity)
+              end
+            end
+          end
+        end
+
+        context 'on Self-Managed' do
+          before do
+            stub_saas_features(gitlab_com_subscriptions: false)
+          end
+
+          context 'when feature flag is enabled' do
+            before do
+              stub_feature_flags(ai_duo_agent_platform_ga_rollout: true)
+            end
+
+            it 'returns GA maturity' do
+              expect(effective_maturity).to eq(:ga)
+            end
+          end
+
+          context 'when feature flag is disabled' do
+            before do
+              stub_feature_flags(ai_duo_agent_platform_ga_rollout: false)
+            end
+
+            it 'returns GA maturity' do
+              expect(effective_maturity).to eq(:ga)
+            end
+          end
+        end
+      end
+    end
+  end
 end
