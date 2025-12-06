@@ -1063,6 +1063,24 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
       end
     end
 
+    context 'minimum_access_level_execute_async' do
+      it 'updates minimum_access_level_execute_async field of namespace AI settings' do
+        put api("/groups/#{group.id}", user), params: { ai_settings_attributes: { minimum_access_level_execute_async: ::Gitlab::Access::DEVELOPER } }
+
+        expect(group.ai_settings.reload.minimum_access_level_execute_async).to eq(::Gitlab::Access::DEVELOPER)
+        expect(response).to have_gitlab_http_status(:ok)
+      end
+
+      it 'does not update the field when the feature flag is disabled' do
+        stub_feature_flags(dap_group_customizable_permissions: false)
+
+        put api("/groups/#{group.id}", user), params: { ai_settings_attributes: { minimum_access_level_execute_async: ::Gitlab::Access::DEVELOPER } }
+
+        expect(group.ai_settings.reload.minimum_access_level_execute_async).to be_nil
+        expect(response).to have_gitlab_http_status(:ok)
+      end
+    end
+
     context 'minimum_access_level_manage' do
       it 'updates minimum_access_level_manage field of namespace AI settings' do
         put api("/groups/#{group.id}", user), params: { ai_settings_attributes: { minimum_access_level_manage: ::Gitlab::Access::MAINTAINER } }

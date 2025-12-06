@@ -25,6 +25,7 @@ module EE
               optional :duo_workflow_mcp_enabled, type: ::Grape::API::Boolean, desc: 'Enable MCP support for Duo Agent Platform'
               optional :foundational_agents_default_enabled, type: ::Grape::API::Boolean, desc: 'Whether new foundational agents are enabled by default'
               optional :minimum_access_level_execute, type: Integer, desc: 'The minimum access level required to execute Duo Agent Platform. This field is behind a feature flag.'
+              optional :minimum_access_level_execute_async, type: Integer, desc: 'The minimum access level required to execute Duo Agent Platform features in CI/CD. This field is behind a feature flag.'
               optional :minimum_access_level_manage, type: Integer, desc: 'The minimum access level required to manage Duo Agent Platform. This field is behind a feature flag.'
               optional :minimum_access_level_enable_on_projects, type: Integer, desc: 'The minimum access level required to enable Duo Agent Platform. This field is behind a feature flag.'
             end

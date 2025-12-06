@@ -112,6 +112,7 @@ RSpec.describe EE::Groups::SettingsHelper, feature_category: :groups_and_project
           show_foundational_agents_per_agent_availability: "true",
           is_saas: 'true',
           ai_settings_minimum_access_level_execute: group.ai_minimum_access_level_execute,
+          ai_settings_minimum_access_level_execute_async: group.ai_minimum_access_level_execute_async,
           ai_settings_minimum_access_level_manage: group.ai_minimum_access_level_manage,
           ai_settings_minimum_access_level_enable_on_projects: group.ai_minimum_access_level_enable_on_projects
         }
@@ -127,6 +128,7 @@ RSpec.describe EE::Groups::SettingsHelper, feature_category: :groups_and_project
           duo_workflow_mcp_enabled: '',
           foundational_agents_default_enabled: '',
           ai_settings_minimum_access_level_execute: nil,
+          ai_settings_minimum_access_level_execute_async: nil,
           ai_settings_minimum_access_level_manage: nil,
           ai_settings_minimum_access_level_enable_on_projects: nil
         )
@@ -137,6 +139,7 @@ RSpec.describe EE::Groups::SettingsHelper, feature_category: :groups_and_project
       let(:ai_settings) do
         build(:namespace_ai_settings,
           minimum_access_level_execute: ::Gitlab::Access::GUEST,
+          minimum_access_level_execute_async: ::Gitlab::Access::GUEST,
           minimum_access_level_manage: ::Gitlab::Access::MAINTAINER,
           minimum_access_level_enable_on_projects: ::Gitlab::Access::OWNER)
       end
@@ -144,6 +147,7 @@ RSpec.describe EE::Groups::SettingsHelper, feature_category: :groups_and_project
       it 'returns the expected data' do
         is_expected.to include(
           ai_settings_minimum_access_level_execute: group.ai_minimum_access_level_execute,
+          ai_settings_minimum_access_level_execute_async: group.ai_minimum_access_level_execute_async,
           ai_settings_minimum_access_level_manage: group.ai_minimum_access_level_manage,
           ai_settings_minimum_access_level_enable_on_projects: group.ai_minimum_access_level_enable_on_projects
         )

@@ -188,7 +188,8 @@ module EE
       delegate :foundational_agents_default_enabled, :foundational_agents_default_enabled=, to: :ai_settings,
         allow_nil: true
 
-      delegate :minimum_access_level_execute, :minimum_access_level_manage, :minimum_access_level_enable_on_projects,
+      delegate :minimum_access_level_execute, :minimum_access_level_execute_async,
+        :minimum_access_level_manage, :minimum_access_level_enable_on_projects,
         to: :ai_settings,
         allow_nil: true,
         prefix: :ai
