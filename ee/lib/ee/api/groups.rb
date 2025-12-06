@@ -66,6 +66,7 @@ module EE
             unless ::Feature.enabled?(:dap_group_customizable_permissions, group.root_ancestor)
               params[:ai_settings_attributes]&.except!(
                 :minimum_access_level_execute,
+                :minimum_access_level_execute_async,
                 :minimum_access_level_manage,
                 :minimum_access_level_enable_on_projects
               )

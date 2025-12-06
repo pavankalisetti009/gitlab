@@ -110,6 +110,7 @@ module EE
           show_foundational_agents_availability: show_foundational_agents_availability?.to_s,
           show_foundational_agents_per_agent_availability: show_foundational_agents_per_agent_availability?.to_s,
           ai_settings_minimum_access_level_execute: @group.ai_minimum_access_level_execute,
+          ai_settings_minimum_access_level_execute_async: @group.ai_minimum_access_level_execute_async,
           ai_settings_minimum_access_level_manage: @group.ai_minimum_access_level_manage,
           ai_settings_minimum_access_level_enable_on_projects: @group.ai_minimum_access_level_enable_on_projects
         }
