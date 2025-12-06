@@ -148,7 +148,8 @@ RSpec.describe Gitlab::Llm::StageCheck, feature_category: :ai_abstraction_layer 
 
         stub_feature_flags(agentic_chat_ga: false)
 
-        expect(described_class.available?(project, :agentic_chat)).to eq(false)
+        # Overridden by FF :ai_duo_agent_platform_ga_rollout
+        expect(described_class.available?(project, :agentic_chat)).to eq(true)
       end
     end
   end

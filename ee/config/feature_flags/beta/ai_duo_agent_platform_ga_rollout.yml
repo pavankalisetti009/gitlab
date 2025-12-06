@@ -1,0 +1,10 @@
+---
+name: ai_duo_agent_platform_ga_rollout
+description: Use a single feature flag for rolling out Duo Agent Platform in GA
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/581005
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/213425
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/581404
+milestone: '18.7'
+group: group::agent foundations
+type: beta
+default_enabled: false

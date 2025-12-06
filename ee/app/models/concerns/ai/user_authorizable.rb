@@ -148,7 +148,7 @@ module Ai
         # and the unit_primitive isn't free, they don't have access
         return denied_response unless unit_primitive_free_access?(unit_primitive)
 
-        check_free_access(feature_data, licensed_feature)
+        check_free_access(ai_feature, licensed_feature)
       end
 
       private
@@ -213,16 +213,21 @@ module Ai
         end
       end
 
-      def check_free_access(feature_data, licensed_feature)
+      def check_free_access(ai_feature, licensed_feature)
         if saas?
-          check_saas_free_access(feature_data)
+          check_saas_free_access(ai_feature)
         else
           check_sm_free_access(licensed_feature)
         end
       end
 
-      def check_saas_free_access(feature_data)
-        seats = namespaces_allowed_in_com(feature_data[:maturity])
+      def check_saas_free_access(ai_feature)
+        # Use effective maturity instead of raw maturity
+        effective_maturity = ::Gitlab::Llm::Utils::AiFeaturesCatalogue.effective_maturity(
+          ai_feature,
+          user: self
+        )
+        seats = namespaces_allowed_in_com(effective_maturity)
 
         if seats.any?
           Response.new(allowed?: true, namespace_ids: seats, enablement_type: 'tier', authorized_by_duo_core: false)

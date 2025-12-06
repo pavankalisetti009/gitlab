@@ -273,6 +273,28 @@ module Gitlab
 
           LIST.select { |_, v| v[:alternate_name] == name }.values.first
         end
+
+        def self.effective_maturity(feature_name, user: nil)
+          feature_data = search_by_name(feature_name)
+          return unless feature_data
+
+          base_maturity = feature_data[:maturity]
+
+          return base_maturity unless uses_duo_agent_platform?(feature_name)
+
+          # For duo_agent_platform features:
+          # - Self-Managed: always GA
+          # - SaaS: GA only when feature flag is enabled
+          return :ga if !::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions) ||
+            ::Feature.enabled?(:ai_duo_agent_platform_ga_rollout, user)
+
+          base_maturity
+        end
+
+        def self.uses_duo_agent_platform?(feature_name)
+          # Features that use duo_agent_platform unit primitive
+          [:agentic_chat, :duo_workflow, :duo_agent_platform, :ai_catalog].include?(feature_name)
+        end
       end
     end
   end
