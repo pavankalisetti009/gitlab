@@ -11,12 +11,18 @@ module ComplianceManagement
 
     def perform(_user_id, project_id, compliance_framework_id)
       project = Project.find(project_id)
+      framework = ::ComplianceManagement::Framework.find(compliance_framework_id)
+
+      return if project.compliance_management_frameworks.include?(framework)
+
       admin_bot = admin_bot_for_organization_id(project.organization_id)
 
       Gitlab::Auth::CurrentUserMode.bypass_session!(admin_bot.id) do
-        ::ComplianceManagement::Frameworks::UpdateProjectService
-          .new(project, admin_bot, [::ComplianceManagement::Framework.find_by_id(compliance_framework_id)])
+        result = ::ComplianceManagement::Frameworks::UpdateProjectService
+          .new(project, admin_bot, [framework])
           .execute
+
+        raise "Failed to assign default compliance framework: #{result.message}" unless result.success?
       end
     rescue ActiveRecord::RecordNotFound => e
       Gitlab::ErrorTracking.log_exception(e)
