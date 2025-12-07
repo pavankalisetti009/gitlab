@@ -18,7 +18,8 @@ module Gitlab
         }.freeze
 
         def validate!
-          run_validation_dark_launch! if should_run_dark_launch?
+          return run_validation_dark_launch! if should_run_dark_launch?
+
           run_validation!
         end
 
