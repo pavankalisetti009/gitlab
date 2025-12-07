@@ -280,15 +280,19 @@ module Gitlab
 
           base_maturity = feature_data[:maturity]
 
-          return base_maturity unless uses_duo_agent_platform?(feature_name)
-
-          # For duo_agent_platform features:
-          # - Self-Managed: always GA
-          # - SaaS: GA only when feature flag is enabled
-          return :ga if !::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions) ||
-            ::Feature.enabled?(:ai_duo_agent_platform_ga_rollout, user)
+          return :ga if instance_should_observe_ga_dap?(feature_name, user: user)
 
           base_maturity
+        end
+
+        # For duo_agent_platform features:
+        # - Self-Managed: always GA
+        # - SaaS: GA only when feature flag is enabled
+        def self.instance_should_observe_ga_dap?(feature_name, user:)
+          return false unless uses_duo_agent_platform?(feature_name)
+
+          !::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions) ||
+            ::Feature.enabled?(:ai_duo_agent_platform_ga_rollout, user)
         end
 
         def self.uses_duo_agent_platform?(feature_name)

@@ -5477,7 +5477,8 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
     end
 
     before do
-      allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :ai_catalog).and_return(stage_check_available)
+      allow(::Gitlab::Llm::StageCheck).to receive(:available?)
+        .with(project, :ai_catalog, user: current_user).and_return(stage_check_available)
       project.duo_features_enabled = duo_features_enabled
     end
 

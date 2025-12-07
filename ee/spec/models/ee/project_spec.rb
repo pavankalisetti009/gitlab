@@ -2269,7 +2269,9 @@ RSpec.describe Project, feature_category: :groups_and_projects do
   end
 
   describe '#ai_catalog_available?' do
-    subject(:ai_catalog_available) { project.ai_catalog_available? }
+    let(:user) { build(:user) }
+
+    subject(:ai_catalog_available) { project.ai_catalog_available?(user) }
 
     where(:stage_check_available, :duo_features_enabled, :expectation) do
       true  | true | true
@@ -2280,7 +2282,8 @@ RSpec.describe Project, feature_category: :groups_and_projects do
 
     with_them do
       before do
-        allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :ai_catalog).and_return(stage_check_available)
+        allow(::Gitlab::Llm::StageCheck).to receive(:available?)
+          .with(project, :ai_catalog, user: user).and_return(stage_check_available)
         project.duo_features_enabled = duo_features_enabled
       end
 

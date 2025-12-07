@@ -629,10 +629,9 @@ module EE
         end
       end
 
-      def ai_catalog_available?
-        duo_features_enabled && ::Gitlab::Llm::StageCheck.available?(self, :ai_catalog)
+      def ai_catalog_available?(user)
+        duo_features_enabled && ::Gitlab::Llm::StageCheck.available?(self, :ai_catalog, user: user)
       end
-      strong_memoize_attr :ai_catalog_available?
 
       def member_usernames_among(users)
         members_among(users).pluck(:username)

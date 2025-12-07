@@ -1368,8 +1368,8 @@ module EE
         ::Feature.enabled?(:global_ai_catalog, @user)
       end
 
-      condition(:ai_catalog_available, scope: :subject) do
-        @subject.ai_catalog_available?
+      condition(:ai_catalog_available) do
+        @subject.ai_catalog_available?(@user)
       end
 
       rule { ~ai_catalog_enabled | ~ai_catalog_available }.policy do

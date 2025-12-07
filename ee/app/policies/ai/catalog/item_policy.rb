@@ -15,8 +15,8 @@ module Ai
         ::Feature.enabled?(:ai_catalog_third_party_flows, @user)
       end
 
-      condition(:project_ai_catalog_available, scope: :subject) do
-        @subject.project && @subject.project.ai_catalog_available?
+      condition(:project_ai_catalog_available) do
+        @subject.project && @subject.project.ai_catalog_available?(@user)
       end
 
       condition(:developer_access) do
