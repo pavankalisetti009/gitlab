@@ -7,6 +7,10 @@ module Resolvers
 
       type Types::MemberRoles::MemberRoleType, null: true
 
+      argument :assignable, GraphQL::Types::Boolean,
+        required: false,
+        description: 'Filter for member roles the current user can assign.'
+
       argument :id, ::Types::GlobalIDType[::MemberRole],
         required: false,
         description: 'Global ID of the member role to look up.',
@@ -25,7 +29,7 @@ module Resolvers
         required: false,
         description: 'Ordering column. Default is ASC.'
 
-      def resolve_with_lookahead(id: nil, ids: [], order_by: nil, sort: nil)
+      def resolve_with_lookahead(id: nil, ids: [], order_by: nil, sort: nil, assignable: nil)
         ids.unshift(id) if id.present?
 
         params = {}
@@ -33,6 +37,7 @@ module Resolvers
         params[:id] = ids if ids.present?
         params[:order_by] = order_by.presence || :name
         params[:sort] = sort.present? ? sort.to_sym : :asc
+        params[:assignable] = assignable
 
         member_roles = roles_finder.new(current_user, params).execute
         member_roles = apply_selected_field_scopes(member_roles)

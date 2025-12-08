@@ -8,11 +8,14 @@ RSpec.describe MemberRoles::RolesFinder, feature_category: :system_access do
   let_it_be(:project) { create(:project, group: subgroup) }
 
   let_it_be(:user) { create(:user) }
+  let_it_be(:guest) { create(:user, guest_of: group) }
+  let_it_be(:developer) { create(:user, developer_of: group) }
+  let_it_be(:owner) { create(:user, owner_of: group) }
   let_it_be(:admin) { create(:admin) }
 
   let_it_be(:member_role_instance) { create(:member_role, :instance, name: 'Instance role') }
 
-  let_it_be(:member_role_1) { create(:member_role, name: 'Tester', namespace: group) }
+  let_it_be_with_reload(:member_role_1) { create(:member_role, name: 'Tester', namespace: group) }
   let_it_be(:member_role_2) { create(:member_role, name: 'Manager', namespace: group) }
 
   let_it_be(:member_role_another_group) { create(:member_role, name: 'Another role') }
@@ -29,7 +32,7 @@ RSpec.describe MemberRoles::RolesFinder, feature_category: :system_access do
   context 'when filtering roles by parent' do
     let(:params) { { parent: group } }
 
-    context 'when on SaaS' do
+    context 'when on SaaS', :saas do
       before do
         stub_saas_features(gitlab_com_subscriptions: true)
       end
@@ -41,9 +44,7 @@ RSpec.describe MemberRoles::RolesFinder, feature_category: :system_access do
       end
 
       context 'when user is a group owner' do
-        before_all do
-          group.add_owner(user)
-        end
+        let(:user) { owner }
 
         it 'returns member roles' do
           expect(find_member_roles).to eq([member_role_2, member_role_1])
@@ -134,9 +135,7 @@ RSpec.describe MemberRoles::RolesFinder, feature_category: :system_access do
         stub_saas_features(gitlab_com_subscriptions: false)
       end
 
-      before_all do
-        group.add_owner(user)
-      end
+      let(:user) { owner }
 
       it 'returns instance-level member roles' do
         expect(find_member_roles).to eq([member_role_instance])
@@ -147,7 +146,7 @@ RSpec.describe MemberRoles::RolesFinder, feature_category: :system_access do
   context 'when filtering group-level roles by ids' do
     let(:params) { { id: member_role_1.id } }
 
-    context 'when on SaaS' do
+    context 'when on SaaS', :saas do
       before do
         stub_saas_features(gitlab_com_subscriptions: true)
       end
@@ -159,9 +158,7 @@ RSpec.describe MemberRoles::RolesFinder, feature_category: :system_access do
       end
 
       context 'when the user is the group owner' do
-        before_all do
-          group.add_owner(user)
-        end
+        let(:user) { owner }
 
         it 'returns the member role' do
           expect(find_member_roles).to eq([member_role_1])
@@ -182,9 +179,7 @@ RSpec.describe MemberRoles::RolesFinder, feature_category: :system_access do
         stub_saas_features(gitlab_com_subscriptions: false)
       end
 
-      before_all do
-        group.add_owner(user)
-      end
+      let(:user) { owner }
 
       it 'returns an empty array' do
         expect(find_member_roles).to be_empty
@@ -210,9 +205,7 @@ RSpec.describe MemberRoles::RolesFinder, feature_category: :system_access do
     end
 
     context 'when the user is the group owner' do
-      before_all do
-        group.add_owner(user)
-      end
+      let(:user) { owner }
 
       context 'when on self-managed' do
         before do
@@ -242,7 +235,7 @@ RSpec.describe MemberRoles::RolesFinder, feature_category: :system_access do
         end
       end
 
-      context 'when on SaaS' do
+      context 'when on SaaS', :saas do
         before do
           stub_saas_features(gitlab_com_subscriptions: true)
         end
@@ -254,9 +247,7 @@ RSpec.describe MemberRoles::RolesFinder, feature_category: :system_access do
     end
 
     context 'when the user is the group owner' do
-      before_all do
-        group.add_owner(user)
-      end
+      let(:user) { owner }
 
       context 'when on self-managed' do
         before do
@@ -268,7 +259,7 @@ RSpec.describe MemberRoles::RolesFinder, feature_category: :system_access do
         end
       end
 
-      context 'when on SaaS' do
+      context 'when on SaaS', :saas do
         before do
           stub_saas_features(gitlab_com_subscriptions: true)
         end
@@ -280,6 +271,85 @@ RSpec.describe MemberRoles::RolesFinder, feature_category: :system_access do
     end
   end
 
+  context 'when filtering assignable roles' do
+    shared_examples 'filters assignable roles' do
+      let(:user) { developer }
+
+      context 'when assignable param is NOT provided' do
+        let(:params) { { parent: group } }
+
+        context 'when user not assign any member roles' do
+          it "doesn't perform assignable filtering" do
+            expect(find_member_roles).to match_array([member_role_1, member_role_2])
+          end
+        end
+      end
+
+      context 'when assignable param is false' do
+        let(:params) { { assignable: false, parent: group } }
+
+        context 'when user can assign member roles' do
+          let(:user) { owner }
+
+          it "doesn't perform assignable filtering" do
+            expect(find_member_roles).to match_array([member_role_1, member_role_2])
+          end
+        end
+      end
+
+      context 'when parent is NOT provided' do
+        let(:params) { { assignable: true, parent: group } }
+
+        it "doesn't perform assignable filtering" do
+          expect(find_member_roles).to match_array([member_role_1, member_role_2])
+        end
+      end
+
+      context 'when parent provided' do
+        let(:params) { { assignable: true, parent: group } }
+
+        context 'when user can assign no member roles' do
+          let(:user) { guest }
+
+          it 'returns empty' do
+            expect(find_member_roles).to be_empty
+          end
+        end
+
+        context 'when user can assign all member roles' do
+          it 'returns member roles' do
+            expect(find_member_roles).to match_array([member_role_1, member_role_2])
+          end
+        end
+
+        context 'when user can assign some member roles' do
+          before do
+            member_role_1.update!(admin_security_attributes: true)
+          end
+
+          it 'returns the roles the user should be able to assign' do
+            expect(find_member_roles).to eq([member_role_2])
+          end
+        end
+      end
+    end
+
+    context 'when on self-managed' do
+      it_behaves_like 'filters assignable roles' do
+        let_it_be(:member_role_2) { create(:member_role, :instance) }
+        let(:member_role_1) { member_role_instance }
+      end
+    end
+
+    context 'when on SaaS', :saas do
+      before do
+        stub_saas_features(gitlab_com_subscriptions: true)
+      end
+
+      it_behaves_like 'filters assignable roles'
+    end
+  end
+
   context 'when sorting member roles' do
     using RSpec::Parameterized::TableSyntax
 
@@ -287,14 +357,11 @@ RSpec.describe MemberRoles::RolesFinder, feature_category: :system_access do
       stub_saas_features(gitlab_com_subscriptions: true)
     end
 
-    before_all do
-      group.add_owner(user)
-    end
-
     let_it_be(:name_asc) { [member_role_2, member_role_1] }
     let_it_be(:name_desc) { [member_role_1, member_role_2] }
     let_it_be(:id_asc) { [member_role_1, member_role_2] }
     let_it_be(:id_desc) { [member_role_2, member_role_1] }
+    let(:user) { owner }
 
     where(:order, :sort, :result) do
       nil         | nil   | :name_asc

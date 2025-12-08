@@ -3,7 +3,7 @@
 query getProjectMemberRoles($fullPath: ID!) {
   namespace: project(fullPath: $fullPath) {
     id
-    memberRoles {
+    memberRoles(assignable: true) {
       ...MemberRoles
     }
   }

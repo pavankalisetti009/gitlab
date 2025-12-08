@@ -5,7 +5,7 @@ module MemberRoles
   class RolesFinder
     include ::GitlabSubscriptions::SubscriptionHelper
 
-    attr_reader :current_user, :params
+    attr_reader :current_user, :params, :parent
 
     VALID_PARAMS = [:parent, :id].freeze
 
@@ -17,6 +17,7 @@ module MemberRoles
 
     def initialize(current_user, params = {})
       @current_user = current_user
+      @parent = params.delete(:parent)
       @params = params
     end
 
@@ -29,6 +30,7 @@ module MemberRoles
       items = by_parent(items)
       items = by_id(items)
       items = by_type(items)
+      items = by_assignable(items)
 
       sort(items)
     end
@@ -41,19 +43,25 @@ module MemberRoles
 
     def validate_arguments!
       return unless gitlab_com_subscription?
-      return if params[:parent].present?
+      return if parent.present?
       return if params[:id].present?
 
       raise ArgumentError, 'at least one filter param, :parent or :id has to be provided'
     end
 
+    def by_assignable(items)
+      return items unless params[:assignable] && parent.present?
+
+      items.id_in(assignable_ids(items))
+    end
+
     def by_parent(items)
       return items unless gitlab_com_subscription?
-      return items if params[:parent].blank?
+      return items if parent.blank?
 
-      return MemberRole.none unless allowed_read_member_role?(params[:parent])
+      return MemberRole.none unless allowed_read_member_role?(parent)
 
-      params[:parent]&.root_ancestor&.member_roles
+      parent.root_ancestor.member_roles
     end
 
     def by_id(items)
@@ -89,6 +97,15 @@ module MemberRoles
 
     def allowed_namespace_ids(items)
       items.select { |item| allowed_read_member_role?(item.namespace, item) }.map(&:namespace_id)
+    end
+
+    def assignable_ids(items)
+      items.filter_map do |item|
+        item.id unless parent.custom_role_abilities_too_high?(
+          current_user: current_user,
+          target_member_role_id: item.id
+        )
+      end
     end
 
     def allowed_read_member_role?(group = nil, member_role = nil)
