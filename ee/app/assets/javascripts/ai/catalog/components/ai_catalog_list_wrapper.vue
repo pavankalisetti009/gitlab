@@ -56,13 +56,13 @@ export default {
       required: false,
       default: null,
     },
+    searchTerm: {
+      type: String,
+      required: false,
+      default: '',
+    },
   },
   emits: ['search', 'clear-search', 'next-page', 'prev-page'],
-  data() {
-    return {
-      searchTerm: '',
-    };
-  },
 
   computed: {
     filteredSearchValue() {
@@ -76,11 +76,9 @@ export default {
   },
   methods: {
     handleSearch(filters) {
-      [this.searchTerm] = filters;
       this.$emit('search', filters);
     },
     handleClearSearch() {
-      this.searchTerm = '';
       this.$emit('clear-search');
     },
   },

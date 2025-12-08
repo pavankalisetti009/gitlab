@@ -349,6 +349,7 @@ export default {
           :empty-state-button-text="emptyStateButtonText"
           :disable-confirm-title="disableConfirmTitle"
           :disable-confirm-message="disableConfirmMessageProject"
+          :search-term="searchTerm"
           data-testid="managed-agents-list"
           @next-page="handleNextPage"
           @prev-page="handlePrevPage"

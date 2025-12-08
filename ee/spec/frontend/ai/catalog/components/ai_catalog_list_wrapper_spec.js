@@ -67,7 +67,10 @@ describe('AiCatalogListWrapper', () => {
 
   describe('search functionality', () => {
     const searchTerm = 'test search';
-    const setSearch = () => findFilteredSearch().vm.$emit('submit', [searchTerm]);
+    const setSearch = () => {
+      findFilteredSearch().vm.$emit('submit', [searchTerm]);
+      wrapper.setProps({ searchTerm });
+    };
 
     beforeEach(() => {
       createComponent();
@@ -93,6 +96,7 @@ describe('AiCatalogListWrapper', () => {
       // Clear the search
       findFilteredSearch().vm.$emit('clear');
       expect(wrapper.emitted('clear-search')).toHaveLength(1);
+      wrapper.setProps({ searchTerm: '' });
       await nextTick();
 
       expect(findAiCatalogList().props('search')).toBe('');
