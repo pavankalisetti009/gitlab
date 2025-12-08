@@ -25,24 +25,32 @@ RSpec.describe 'shared/projects/premium_message_during_trial/_base.html.haml', :
   end
 
   context 'when on trial' do
+    let(:assigned) { true }
+
     before do
       build_stubbed(:gitlab_subscription, :active_trial, namespace: project.namespace)
+      stub_experiments(premium_message_during_trial: { variant: :candidate, assigned: assigned })
     end
 
-    it 'runs the experiment' do
-      expect(view)
-        .to receive(:experiment)
-        .with(:premium_message_during_trial, namespace: project.namespace, only_assigned: true)
+    context 'when user has been previously assigned as part of the experiment' do
+      it 'runs the experiment candidate experience' do
+        expect(rendered).to have_selector('#js-premium-message-during-trial')
+      end
+    end
 
-      rendered
+    context 'when user has not been previously assigned as part of the experiment' do
+      let(:assigned) { false }
+
+      it 'does not render the candidate experience' do
+        expect(rendered).not_to have_selector('#js-premium-message-during-trial')
+      end
     end
 
     context 'when not owner' do
       let(:user_can_read_billing) { false }
 
       it 'does not render premium message' do
-        expect(view).not_to receive(:experiment)
-        expect(rendered).to be_nil
+        expect(rendered).not_to have_selector('#js-premium-message-during-trial')
       end
     end
   end
