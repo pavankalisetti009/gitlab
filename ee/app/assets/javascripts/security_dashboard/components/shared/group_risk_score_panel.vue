@@ -1,6 +1,5 @@
 <script>
 import { GlDashboardPanel, GlBadge, GlTooltipDirective } from '@gitlab/ui';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { sprintf, s__, n__ } from '~/locale';
 import { readFromUrl, writeToUrl } from 'ee/security_dashboard/utils/panel_state_url_sync';
 import groupTotalRiskScore from 'ee/security_dashboard/graphql/queries/group_total_risk_score.query.graphql';
@@ -27,7 +26,6 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
-  mixins: [glFeatureFlagMixin()],
   inject: ['groupFullPath'],
   props: {
     filters: {
@@ -36,14 +34,11 @@ export default {
     },
   },
   data() {
-    // When the feature flag is false, we shouldn't set the `groupedBy` to anything else than default
-    const groupedBy = this.glFeatures.groupVulnerabilityRiskScoresByProject
-      ? readFromUrl({
-          panelId: PANEL_ID,
-          paramName: GROUP_BY_PARAM_NAME,
-          defaultValue: GROUP_BY_DEFAULT,
-        })
-      : GROUP_BY_DEFAULT;
+    const groupedBy = readFromUrl({
+      panelId: PANEL_ID,
+      paramName: GROUP_BY_PARAM_NAME,
+      defaultValue: GROUP_BY_DEFAULT,
+    });
     return {
       riskScore: 0,
       projects: [],
@@ -83,9 +78,6 @@ export default {
     },
   },
   computed: {
-    showGroupBy() {
-      return this.glFeatures.groupVulnerabilityRiskScoresByProject;
-    },
     projectsNotShown() {
       return Math.max(0, this.projectCount - this.$options.projectCountThreshold);
     },
@@ -148,7 +140,7 @@ export default {
       >
         {{ projectsNotShownLabel }}
       </gl-badge>
-      <risk-score-group-by v-if="showGroupBy" v-model="groupedBy" />
+      <risk-score-group-by v-model="groupedBy" />
     </template>
     <template #body>
       <template v-if="!hasFetchError">
