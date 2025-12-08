@@ -219,6 +219,35 @@ RSpec.describe Gitlab::Duo::Chat::Parsers::EscapeNeedsAnalyzer, feature_category
       end
     end
 
+    context 'when URL indices are out of bounds' do
+      let(:text) { "https://example.com" }
+      let(:markdown_blocks) { [[25, 50]] }
+      let(:urls) do
+        [
+          { link: "https://example.com", starting_index: 0, ending_index: 18 },
+          { link: "https://gitlab.com", starting_index: 60, ending_index: 78 }
+        ]
+      end
+
+      it 'handles out of bounds URL indices gracefully' do
+        result = analyzer.analyze
+
+        # First URL should need both escapes
+        expect(result['both']).to include(hash_including(
+          link: 'https://example.com',
+          starting_index: 0,
+          ending_index: 18
+        ))
+
+        # Second URL: text slice is nil
+        expect(result['front']).to include(hash_including(
+          link: 'https://gitlab.com',
+          starting_index: 60,
+          ending_index: 78
+        ))
+      end
+    end
+
     context 'when the URL is already escaped' do
       let(:text) { "Some text `https://gitlab.com` and more text" }
       let(:urls) do

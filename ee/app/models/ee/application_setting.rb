@@ -103,6 +103,7 @@ module EE
       validates :elasticsearch, json_schema: { filename: "application_setting_elasticsearch" }
 
       jsonb_accessor :rate_limits, rate_limits_definition
+      jsonb_accessor :ci_cd_settings, ci_cd_settings_definition
 
       jsonb_accessor :identity_verification_settings,
         soft_phone_verification_transactions_daily_limit: [::Gitlab::Database::Type::JsonbInteger.new,
@@ -388,6 +389,8 @@ module EE
         on: :update,
         if: -> { ::Gitlab::Saas.feature_available?(:gitlab_duo_saas_only) }
 
+      validates :ci_cd_catalog_projects_allowlist, length: { maximum: 1_000 }
+
       after_commit :update_personal_access_tokens_lifetime, if: :saved_change_to_max_personal_access_token_lifetime?
       after_commit :trigger_clickhouse_for_analytics_enabled_event
     end
@@ -406,6 +409,7 @@ module EE
         ).merge(
           allow_group_owners_to_manage_ldap: true,
           automatic_purchased_storage_allocation: false,
+          ci_cd_catalog_projects_allowlist: [],
           custom_project_templates_group_id: nil,
           dashboard_limit_enabled: false,
           dashboard_limit: 0,
@@ -462,6 +466,13 @@ module EE
           dependency_scanning_sbom_scan_api_upload_limit: [:integer, { default: 400 }],
           dependency_scanning_sbom_scan_api_download_limit: [:integer, { default: 6000 }],
           virtual_registries_endpoints_api_limit: [:integer, { default: 1000 }]
+        )
+      end
+
+      override :ci_cd_settings_definition
+      def ci_cd_settings_definition
+        super.merge(
+          ci_cd_catalog_projects_allowlist: [:string, { array: true, default: [] }]
         )
       end
     end
@@ -813,6 +824,14 @@ module EE
       return false unless License.feature_available?(:seat_control) # rubocop:disable Gitlab/LicenseAvailableUsage -- Does not have cyclical dependency as it's not used for Registration features
 
       seat_control == SEAT_CONTROL_BLOCK_OVERAGES
+    end
+
+    def ci_cd_catalog_projects_allowlist_raw
+      array_to_string(ci_cd_catalog_projects_allowlist)
+    end
+
+    def ci_cd_catalog_projects_allowlist_raw=(values)
+      self.ci_cd_catalog_projects_allowlist = strings_to_array(values)
     end
 
     private

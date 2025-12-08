@@ -72,7 +72,7 @@ module Ai
         end
 
         def embedding_fields
-          Ai::ActiveContext::Collections::Code.current_indexing_embedding_versions.map { |v| v[:field].to_s }
+          Ai::ActiveContext::Collections::Code.current_embedding_fields
         end
         strong_memoize_attr :embedding_fields
 

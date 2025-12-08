@@ -76,6 +76,10 @@ module Sbom
           occurrences = Sbom::Occurrence.id_in(batch.map(&:id)).with_version.with_project_namespace
 
           occurrences.each do |occurrence|
+            # Filter out orphaned records that don't have a project.
+            # Tracked in https://gitlab.com/gitlab-org/gitlab/-/issues/541931
+            next unless occurrence.project
+
             data = {
               name: occurrence.component_name,
               packager: occurrence.package_manager,

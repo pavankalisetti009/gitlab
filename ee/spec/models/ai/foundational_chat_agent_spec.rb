@@ -116,6 +116,14 @@ RSpec.describe Ai::FoundationalChatAgent, feature_category: :workflow_catalog do
     end
   end
 
+  describe '#except_duo_chat_agent' do
+    it 'returns all but duo chat' do
+      expect_duo_chat = described_class.except_duo_chat_agent
+      expect(expect_duo_chat.size).to eq(described_class::ITEMS.size - 1)
+      expect(expect_duo_chat.map(&:name)).not_to include('GitLab Duo')
+    end
+  end
+
   describe '#any_agents_with_reference?' do
     it 'is true if reference for foundational agent' do
       expect(described_class.any_agents_with_reference?('duo_planner')).to be true

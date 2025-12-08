@@ -416,11 +416,6 @@ msgid_plural "%d pending comments"
 msgstr[0] ""
 msgstr[1] ""
 
-msgid "%d personal project will be removed and cannot be restored."
-msgid_plural "%d personal projects will be removed and cannot be restored."
-msgstr[0] ""
-msgstr[1] ""
-
 msgid "%d policy violations"
 msgid_plural "%d policy violations"
 msgstr[0] ""
@@ -13554,9 +13549,6 @@ msgid "Category"
 msgstr ""
 
 msgid "Cause identified"
-msgstr ""
-
-msgid "Certain user content will be moved to a system-wide \"Ghost User\" in order to maintain content for posterity. For further information, please refer to the %{link_start}user account deletion documentation.%{link_end}"
 msgstr ""
 
 msgid "Certificate"
@@ -43238,6 +43230,9 @@ msgstr ""
 msgid "Moves this item to %{group_or_project}."
 msgstr ""
 
+msgid "Moves your associated user content to a system-wide \"Ghost User\" to maintain data integrity. %{link_start}Learn more%{link_end}."
+msgstr ""
+
 msgid "Moving issue"
 msgstr ""
 
@@ -51217,10 +51212,10 @@ msgstr ""
 msgid "ProfilesAuthentication|You currently use passkeys for secure and faster sign in. %{link_start}Manage passkeys%{link_end}."
 msgstr ""
 
-msgid "Profiles| You are about to permanently delete %{yourAccount}, and all of the issues, merge requests, and groups linked to your account. Once you confirm %{deleteAccount}, it cannot be undone or recovered."
+msgid "Profiles| You are about to permanently delete %{yourAccount}, and all of the issues, merge requests, and groups linked to your account. Once you confirm %{deleteAccount}, your account cannot be recovered."
 msgstr ""
 
-msgid "Profiles| You are about to permanently delete %{yourAccount}, and all of the issues, merge requests, and groups linked to your account. Once you confirm %{deleteAccount}, it cannot be undone or recovered. You might have to wait seven days before creating a new account with the same username or email."
+msgid "Profiles| You are about to permanently delete %{yourAccount}, and all of the issues, merge requests, and groups linked to your account. Once you confirm %{deleteAccount}, your account cannot be recovered. It might take up to seven days before you can create a new account with the same username or email."
 msgstr ""
 
 msgid "Profiles| You are going to change the username %{currentUsernameBold} to %{newUsernameBold}. Profile and projects will be redirected to the %{newUsername} namespace but this redirect will expire once the %{currentUsername} namespace is registered by another user or group. Please update your Git repository remotes as soon as possible."
@@ -51269,6 +51264,9 @@ msgid "Profiles|Add new email"
 msgstr ""
 
 msgid "Profiles|Add new mirror repository"
+msgstr ""
+
+msgid "Profiles|After resetting a password, if the option to delete your account is still not available, %{link_start}submit a request%{link_end} to begin the account deletion process."
 msgstr ""
 
 msgid "Profiles|An error occurred while updating your username, please try again."
@@ -51355,7 +51353,7 @@ msgstr ""
 msgid "Profiles|Delete account successor?"
 msgstr ""
 
-msgid "Profiles|Deleting an account has the following effects:"
+msgid "Profiles|Deleting your account has the following effects:"
 msgstr ""
 
 msgid "Profiles|Designated account beneficiary already deleted."
@@ -51473,9 +51471,6 @@ msgid "Profiles|GitHub"
 msgstr ""
 
 msgid "Profiles|GitLab is unable to verify your identity automatically. For security purposes, you must set a password by %{openingTag}resetting your password%{closingTag} to delete your account."
-msgstr ""
-
-msgid "Profiles|If after setting a password, the option to delete your account is still not available, please %{link_start}submit a request%{link_end} to begin the account deletion process."
 msgstr ""
 
 msgid "Profiles|Include private contributions on your profile"
@@ -55529,6 +55524,11 @@ msgstr ""
 
 msgid "Removed upload with id %{id}"
 msgstr ""
+
+msgid "Removes %d personal project. This project cannot be restored."
+msgid_plural "Removes %d personal projects. These projects cannot be restored."
+msgstr[0] ""
+msgstr[1] ""
 
 msgid "Removes %{assignee_text} %{assignee_references}."
 msgstr ""
