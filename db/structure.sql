@@ -23352,6 +23352,15 @@ CREATE SEQUENCE packages_protection_rules_id_seq
 
 ALTER SEQUENCE packages_protection_rules_id_seq OWNED BY packages_protection_rules.id;
 
+CREATE TABLE packages_pypi_file_metadata (
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    package_file_id bigint NOT NULL,
+    project_id bigint NOT NULL,
+    required_python text DEFAULT ''::text NOT NULL,
+    CONSTRAINT check_a5d85e7cff CHECK ((char_length(required_python) <= 255))
+);
+
 CREATE TABLE packages_pypi_metadata (
     package_id bigint NOT NULL,
     required_python text DEFAULT ''::text,
@@ -36243,6 +36252,9 @@ ALTER TABLE ONLY packages_packages
 ALTER TABLE ONLY packages_protection_rules
     ADD CONSTRAINT packages_protection_rules_pkey PRIMARY KEY (id);
 
+ALTER TABLE ONLY packages_pypi_file_metadata
+    ADD CONSTRAINT packages_pypi_file_metadata_pkey PRIMARY KEY (package_file_id);
+
 ALTER TABLE ONLY packages_pypi_metadata
     ADD CONSTRAINT packages_pypi_metadata_pkey PRIMARY KEY (package_id);
 
@@ -43242,6 +43254,8 @@ CREATE INDEX index_packages_packages_on_project_id_and_version ON packages_packa
 
 CREATE INDEX index_packages_project_id_name_partial_for_nuget ON packages_packages USING btree (project_id, name) WHERE (((name)::text <> 'NuGet.Temporary.Package'::text) AND (version IS NOT NULL) AND (package_type = 4));
 
+CREATE INDEX index_packages_pypi_file_metadata_on_project_id ON packages_pypi_file_metadata USING btree (project_id);
+
 CREATE INDEX index_packages_pypi_metadata_on_project_id ON packages_pypi_metadata USING btree (project_id);
 
 CREATE INDEX index_packages_rpm_metadata_on_package_id ON packages_rpm_metadata USING btree (package_id);
@@ -50188,6 +50202,9 @@ ALTER TABLE p_ci_pipelines
 ALTER TABLE ONLY scan_result_policy_violations
     ADD CONSTRAINT fk_3d58aa6aee FOREIGN KEY (approval_policy_rule_id) REFERENCES approval_policy_rules(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY packages_pypi_file_metadata
+    ADD CONSTRAINT fk_3d6d18d93f FOREIGN KEY (package_file_id) REFERENCES packages_package_files(id) ON DELETE CASCADE;
+
 ALTER TABLE ONLY wiki_page_slugs
     ADD CONSTRAINT fk_3d71295ac9 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
@@ -50826,6 +50843,9 @@ ALTER TABLE ONLY sprints
 
 ALTER TABLE ONLY alert_management_alert_metric_images
     ADD CONSTRAINT fk_80b75a6094 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY packages_pypi_file_metadata
+    ADD CONSTRAINT fk_8132a1caac FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY work_item_weights_sources
     ADD CONSTRAINT fk_815ba3b395 FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
