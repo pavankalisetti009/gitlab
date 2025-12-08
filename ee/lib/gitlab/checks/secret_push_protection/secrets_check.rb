@@ -77,7 +77,6 @@ module Gitlab
           log_duration(start_time, 'run_validation_dark_launch!')
         end
 
-        # rubocop:disable Metrics/AbcSize -- this method will be refactored as part of https://gitlab.com/gitlab-org/gitlab/-/work_items/582653
         def run_validation!
           start_time = Gitlab::Metrics::System.monotonic_time
 
@@ -91,30 +90,7 @@ module Gitlab
             payloads, lookup_map = payload_processor.standardize_payloads
             break unless payloads
 
-            extra_headers = {
-              'x-correlation-id': correlation_id
-            }
-
-            response = sds_client.send_request_to_sds(payloads,
-              exclusions: exclusions_manager.active_exclusions,
-              extra_headers: extra_headers)
-
-            if response.nil? || response_handler.timed_out?(response)
-              secret_detection_logger.warn(
-                build_structured_payload(
-                  message: ERROR_MESSAGES[:sds_timeout],
-                  class: self.class.name
-                )
-              )
-
-              response = ::Gitlab::SecretDetection::Core::Scanner
-                .new(rules: ruleset, logger: secret_detection_logger)
-                .secrets_scan(
-                  payloads,
-                  timeout: logger.time_left,
-                  exclusions: exclusions_manager.active_exclusions
-                )
-            end
+            response = scan_for_secrets(payloads)
 
             # Log audit events for exlusions that were applied.
             audit_logger.log_applied_exclusions_audit_events(response.applied_exclusions)
@@ -135,10 +111,39 @@ module Gitlab
         ensure
           log_duration(start_time, 'run_validation!')
         end
-        # rubocop:enable Metrics/AbcSize
 
         ##############################
         # Helpers
+
+        # Performs secret detection scan using SDS client with fallback to gem scanner.
+        def scan_for_secrets(payloads)
+          extra_headers = {
+            'x-correlation-id': correlation_id
+          }
+
+          response = sds_client.send_request_to_sds(payloads,
+            exclusions: exclusions_manager.active_exclusions,
+            extra_headers: extra_headers)
+
+          if response.nil? || response_handler.timed_out?(response)
+            secret_detection_logger.warn(
+              build_structured_payload(
+                message: ERROR_MESSAGES[:sds_timeout],
+                class: self.class.name
+              )
+            )
+
+            response = ::Gitlab::SecretDetection::Core::Scanner
+              .new(rules: ruleset, logger: secret_detection_logger)
+              .secrets_scan(
+                payloads,
+                timeout: logger.time_left,
+                exclusions: exclusions_manager.active_exclusions
+              )
+          end
+
+          response
+        end
 
         def log_duration(start_time, method_name)
           duration = Gitlab::Metrics::System.monotonic_time - start_time

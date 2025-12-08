@@ -53,7 +53,7 @@ module Projects
         end
 
         def check_feature_enabled!
-          return render_404 unless ::Integrations::Zentao.issues_license_available?(project) && project.zentao_integration&.active?
+          render_404 unless ::Integrations::Zentao.issues_license_available?(project) && project.zentao_integration&.active?
         end
 
         def render_error(exception)

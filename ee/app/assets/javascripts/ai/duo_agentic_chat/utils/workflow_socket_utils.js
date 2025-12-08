@@ -77,7 +77,7 @@ export function buildStartRequest({
   };
 
   if (additionalContext) {
-    startRequest.startRequest.additionalContext = additionalContext;
+    startRequest.startRequest.additional_context = additionalContext;
   }
 
   if (agentConfig) {

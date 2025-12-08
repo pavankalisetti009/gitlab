@@ -113,7 +113,7 @@ module EE
       private
 
       def authorize_read_security_reports!
-        return render_404 unless can?(current_user, :read_security_resource, merge_request.project)
+        render_404 unless can?(current_user, :read_security_resource, merge_request.project)
       end
     end
   end
