@@ -30,6 +30,8 @@ module Ai
 
     class << self
       def only_duo_chat_agent
+        # The first agent must always Duo Chat Agent, this is covered through tests.
+        # Duo chat has to be the first so it shows first in the UI
         [all[0]]
       end
 
@@ -43,6 +45,10 @@ module Ai
 
       def workflow_definitions
         all.map(&:workflow_definition)
+      end
+
+      def any_agents_with_reference?(definition)
+        !!where(reference: definition).first
       end
     end
   end
