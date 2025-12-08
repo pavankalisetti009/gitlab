@@ -1,0 +1,10 @@
+---
+name: search_advanced_merge_requests_new_auth_filter
+description: Use more performant auth filter in merge request searches
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/491211
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/213049
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/582949
+milestone: '18.7'
+group: group::global search
+type: gitlab_com_derisk
+default_enabled: false

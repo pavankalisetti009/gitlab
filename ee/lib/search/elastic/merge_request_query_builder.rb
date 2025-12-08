@@ -14,7 +14,18 @@ module Search
         options[:related_ids] = related_ids
 
         query_hash = build_query_hash(query: query, options: options)
-        query_hash = ::Search::Elastic::Filters.by_project_authorization(query_hash: query_hash, options: options)
+
+        query_hash =
+          if Feature.enabled?(:search_advanced_merge_requests_new_auth_filter, options[:current_user])
+            ::Search::Elastic::Filters.by_search_level_and_membership(
+              query_hash: query_hash, options: options
+            )
+          else
+            ::Search::Elastic::Filters.by_project_authorization(
+              query_hash: query_hash, options: options
+            )
+          end
+
         query_hash = ::Search::Elastic::Filters.by_state(query_hash: query_hash, options: options)
         query_hash = ::Search::Elastic::Filters.by_archived(query_hash: query_hash, options: options)
         query_hash = ::Search::Elastic::Filters.by_author(query_hash: query_hash, options: options)
