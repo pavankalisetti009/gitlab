@@ -293,7 +293,7 @@ export default {
           {{ s__('AICatalog|Deletion method') }}
         </label>
         <p class="gl-mb-3 gl-text-subtle">
-          {{ s__('AICatalog|You can use the GraphQL API to delete items.') }}
+          {{ s__('AICatalog|You can also use the GraphQL API to delete items.') }}
         </p>
         <gl-form-radio-group id="delete-method" v-model="forceHardDelete">
           <gl-form-radio
