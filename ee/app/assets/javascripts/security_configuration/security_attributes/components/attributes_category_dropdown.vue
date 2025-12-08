@@ -11,7 +11,7 @@ export default {
   },
   inject: {
     canManageAttributes: { default: false },
-    groupManageAttributesPath: { default: false },
+    groupManageAttributesPath: { default: '' },
   },
   props: {
     category: {

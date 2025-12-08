@@ -1,5 +1,5 @@
 <script>
-import { GlTable, GlLabel, GlButton, GlEmptyState } from '@gitlab/ui';
+import { GlTable, GlLabel, GlButton, GlEmptyState, GlLoadingIcon } from '@gitlab/ui';
 import EMPTY_ATTRIBUTE_SVG from '@gitlab/svgs/dist/illustrations/empty-state/empty-labels-md.svg?url';
 import { s__, sprintf } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
@@ -15,6 +15,7 @@ export default {
     GlLabel,
     GlButton,
     GlEmptyState,
+    GlLoadingIcon,
     ProjectAttributesUpdateDrawer,
   },
   mixins: [InternalEvents.mixin()],
@@ -36,6 +37,11 @@ export default {
           fullPath: this.projectFullPath,
         };
       },
+    },
+  },
+  computed: {
+    isLoading() {
+      return this.$apollo.queries.project.loading;
     },
   },
   mounted() {
@@ -123,7 +129,13 @@ export default {
       :items="project.securityAttributes.nodes"
       table-class="gl-table-fixed"
       show-empty
+      :busy="isLoading"
     >
+      <template #table-busy>
+        <div class="gl-py-5 gl-text-center">
+          <gl-loading-icon size="md" />
+        </div>
+      </template>
       <template #empty>
         <gl-empty-state
           :svg-path="$options.EMPTY_ATTRIBUTE_SVG"
@@ -132,7 +144,7 @@ export default {
           :description="__('Attributes you add will appear here.')"
         >
           <template #actions>
-            <gl-button variant="confirm" @click="openEditDrawer">
+            <gl-button v-if="canManageAttributes" variant="confirm" @click="openEditDrawer">
               {{ s__('SecurityAttributes|Add attributes') }}
             </gl-button>
           </template>
@@ -149,7 +161,7 @@ export default {
     </gl-table>
 
     <project-attributes-update-drawer
-      v-if="canManageAttributes"
+      v-if="!isLoading && canManageAttributes"
       ref="updateAttributesDrawer"
       :project-id="project.id"
       :selected-attributes="project.securityAttributes.nodes"

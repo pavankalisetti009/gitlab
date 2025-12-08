@@ -3,6 +3,7 @@ import { nextTick } from 'vue';
 import Api from '~/api';
 import { makeMockUserCalloutDismisser } from 'helpers/mock_user_callout_dismisser';
 import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import createMockApollo from 'helpers/mock_apollo_helper';
 import SecurityConfigurationApp from '~/security_configuration/components/app.vue';
 import UpgradeBanner from 'ee/security_configuration/components/upgrade_banner.vue';
 import VulnerabilityArchives from 'ee/security_configuration/components/vulnerability_archives.vue';
@@ -18,12 +19,34 @@ import ContainerScanningForRegistryFeatureCard from 'ee_component/security_confi
 import ProjectSecurityAttributesList from 'ee/security_configuration/security_attributes/components/project_attributes_list.vue';
 import LicenseInformationSourceFeatureCard from 'ee/security_configuration/components/license_information_source_feature_card.vue';
 import { stubComponent } from 'helpers/stub_component';
+import vulnerabilityArchivesQuery from 'ee/security_configuration/graphql/vulnerability_archives.query.graphql';
+import getProjectSecurityAttributesQuery from 'ee_component/security_configuration/graphql/project_security_attributes.query.graphql';
 
 jest.mock('~/api.js');
 
 describe('~/security_configuration/components/app', () => {
   let wrapper;
   let userCalloutDismissSpy;
+
+  const vulnerabilityArchivesHandler = jest.fn().mockResolvedValue({
+    data: {
+      project: {
+        id: 'gid://gitlab/Project/1',
+        vulnerabilityArchives: [],
+      },
+    },
+  });
+
+  const projectSecurityAttributesHandler = jest.fn().mockResolvedValue({
+    data: {
+      project: {
+        id: 'gid://gitlab/Project/1',
+        securityAttributes: {
+          nodes: [],
+        },
+      },
+    },
+  });
 
   const createComponent = ({
     props: { shouldShowCallout = true, ...propsData } = {},
@@ -52,6 +75,10 @@ describe('~/security_configuration/components/app', () => {
         }),
         ...stubs,
       },
+      apolloProvider: createMockApollo([
+        [vulnerabilityArchivesQuery, vulnerabilityArchivesHandler],
+        [getProjectSecurityAttributesQuery, projectSecurityAttributesHandler],
+      ]),
     });
   };
 

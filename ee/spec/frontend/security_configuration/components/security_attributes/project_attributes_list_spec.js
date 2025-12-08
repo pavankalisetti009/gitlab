@@ -78,6 +78,10 @@ describe('ProjectAttributesList', () => {
   const findTableRows = () => findTable().findAll('tbody tr');
   const findDrawer = () => wrapper.findComponent(ProjectAttributesUpdateDrawer);
   const findEditButton = () => wrapper.findAllComponents(GlButton).at(0);
+  const findAddbutton = () =>
+    wrapper
+      .findAllComponents(GlButton)
+      .filter((button) => button.text().includes('Add attributes'));
 
   const { bindInternalEventDocument } = useMockInternalEventsTracking();
 
@@ -95,6 +99,10 @@ describe('ProjectAttributesList', () => {
       expect(wrapper.text()).toContain(
         'Security attributes help classify and organize your projects',
       );
+    });
+
+    it('renders the add attributes button', () => {
+      expect(findAddbutton()).toHaveLength(1);
     });
   });
 
@@ -193,6 +201,10 @@ describe('ProjectAttributesList', () => {
 
     it('does not show actions', () => {
       expect(findTableRows().at(0).findComponent(GlButton).exists()).toBe(false);
+    });
+
+    it('does not show the add attributes button', () => {
+      expect(findAddbutton()).toHaveLength(0);
     });
   });
 });
