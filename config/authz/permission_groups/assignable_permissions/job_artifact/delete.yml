@@ -4,3 +4,5 @@ description: Grants the ability to delete job artifacts
 feature_category: job_artifacts
 boundaries:
   - project
+permissions:
+  - delete_job_artifact
