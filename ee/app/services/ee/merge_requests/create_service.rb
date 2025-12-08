@@ -8,6 +8,8 @@ module EE
 
       override :set_default_attributes!
       def set_default_attributes!
+        super
+
         return map_and_replace_approval_rules_attributes_to_v2 if create_v2_approval_rules?
 
         return if params[:approval_rules_attributes].present?

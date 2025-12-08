@@ -15,7 +15,8 @@ RSpec.describe MergeRequests::BaseService, feature_category: :code_review_workfl
       title: title,
       description: 'please fix',
       source_branch: 'feature',
-      target_branch: 'master'
+      target_branch: 'master',
+      squash: false
     }
   end
 
