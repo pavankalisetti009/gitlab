@@ -3,7 +3,7 @@ import { GlIcon } from '@gitlab/ui';
 import { __, s__ } from '~/locale';
 import timeagoMixin from '~/vue_shared/mixins/timeago';
 import { formatDate } from '~/lib/utils/datetime/date_format_utility';
-import { getLatestUpdatedAt } from 'ee/ai/catalog/utils';
+import { getLatestUpdatedAt, getByVersionKey } from 'ee/ai/catalog/utils';
 import { AI_CATALOG_TYPE_FLOW } from '../constants';
 
 export default {
@@ -17,8 +17,8 @@ export default {
       type: Object,
       required: true,
     },
-    versionData: {
-      type: Object,
+    versionKey: {
+      type: String,
       required: true,
     },
   },
@@ -59,9 +59,10 @@ export default {
         });
       }
 
+      const version = getByVersionKey(this.item, this.versionKey).humanVersionName;
       items.push({
         icon: 'tag',
-        value: this.versionData.humanVersionName,
+        value: version,
         testId: 'version',
       });
 

@@ -8,6 +8,7 @@ import {
   FLOW_TRIGGERS_EDIT_ROUTE,
 } from 'ee/ai/duo_agents_platform/router/constants';
 import { AI_CATALOG_ITEM_LABELS, FLOW_VISIBILITY_LEVEL_DESCRIPTIONS } from '../constants';
+import { getByVersionKey } from '../utils';
 import AiCatalogItemField from './ai_catalog_item_field.vue';
 import AiCatalogItemVisibilityField from './ai_catalog_item_visibility_field.vue';
 import FormFlowDefinition from './form_flow_definition.vue';
@@ -29,8 +30,8 @@ export default {
       type: Object,
       required: true,
     },
-    versionData: {
-      type: Object,
+    versionKey: {
+      type: String,
       required: true,
     },
   },
@@ -46,6 +47,9 @@ export default {
     },
     itemTypeLabel() {
       return AI_CATALOG_ITEM_LABELS[this.item.itemType];
+    },
+    definition() {
+      return getByVersionKey(this.item, this.versionKey).definition;
     },
   },
   methods: {
@@ -119,7 +123,7 @@ export default {
           </div>
         </ai-catalog-item-field>
         <ai-catalog-item-field :title="s__('AICatalog|Configuration')">
-          <form-flow-definition :value="versionData.definition" read-only class="gl-mt-3" />
+          <form-flow-definition :value="definition" read-only class="gl-mt-3" />
         </ai-catalog-item-field>
       </form-section>
     </dl>

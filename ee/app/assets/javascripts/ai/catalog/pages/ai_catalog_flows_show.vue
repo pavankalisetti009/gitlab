@@ -1,4 +1,5 @@
 <script>
+import { GlAlert, GlButton } from '@gitlab/ui';
 import { s__, sprintf } from '~/locale';
 import { InternalEvents } from '~/tracking';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
@@ -11,6 +12,8 @@ import {
   FLOW_TYPE_APOLLO_CONFIG,
   TRACK_EVENT_TYPE_FLOW,
   TRACK_EVENT_VIEW_AI_CATALOG_ITEM,
+  VERSION_LATEST,
+  VERSION_PINNED,
 } from 'ee/ai/catalog/constants';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import FoundationalIcon from 'ee/ai/components/foundational_icon.vue';
@@ -19,6 +22,7 @@ import AiCatalogItemActions from '../components/ai_catalog_item_actions.vue';
 import AiCatalogItemView from '../components/ai_catalog_item_view.vue';
 import aiCatalogFlowQuery from '../graphql/queries/ai_catalog_flow.query.graphql';
 import createAiCatalogItemConsumer from '../graphql/mutations/create_ai_catalog_item_consumer.mutation.graphql';
+import updateAiCatalogConfiguredItem from '../graphql/mutations/update_ai_catalog_item_consumer.mutation.graphql';
 import reportAiCatalogItem from '../graphql/mutations/report_ai_catalog_item.mutation.graphql';
 import deleteAiCatalogItemConsumer from '../graphql/mutations/delete_ai_catalog_item_consumer.mutation.graphql';
 import {
@@ -35,6 +39,8 @@ export default {
     PageHeading,
     AiCatalogItemActions,
     AiCatalogItemView,
+    GlAlert,
+    GlButton,
   },
   mixins: [glFeatureFlagsMixin(), InternalEvents.mixin()],
   inject: {
@@ -50,7 +56,7 @@ export default {
       type: Object,
       required: true,
     },
-    versionData: {
+    version: {
       type: Object,
       required: true,
     },
@@ -75,6 +81,29 @@ export default {
     },
     showActions() {
       return this.isGlobal || this.isProjectNamespace;
+    },
+    isReadyToUpdate() {
+      return this.version.activeVersionKey === VERSION_LATEST;
+    },
+    primaryButtonText() {
+      return this.isReadyToUpdate
+        ? sprintf(s__('AICatalog|Update to %{version}'), {
+            version: this.aiCatalogFlow.latestVersion.humanVersionName,
+          })
+        : s__('AICatalog|View latest version');
+    },
+    primaryButtonAction() {
+      const target = this.aiCatalogFlow.configurationForProject;
+      const updateToVersion = this.aiCatalogFlow.latestVersion.versionName;
+      return this.isReadyToUpdate
+        ? () => this.updateFlowVersion(target, updateToVersion)
+        : () => this.version.setActiveVersionKey(VERSION_LATEST);
+    },
+    secondaryButtonText() {
+      return this.isReadyToUpdate ? s__('AICatalog|View enabled version') : null;
+    },
+    secondaryButtonAction() {
+      return this.isReadyToUpdate ? () => this.version.setActiveVersionKey(VERSION_PINNED) : null;
     },
   },
   mounted() {
@@ -125,6 +154,51 @@ export default {
               target: targetTypeLabel,
             },
           ),
+        ];
+        Sentry.captureException(error);
+      }
+    },
+    async updateFlowVersion(target /* ItemConsumer */, pinnedVersionPrefix) {
+      if (!this.version.isUpdateAvailable) return;
+
+      const input = {
+        id: target.id,
+        pinnedVersionPrefix,
+      };
+
+      const targetType = target.groupId
+        ? AI_CATALOG_CONSUMER_TYPE_GROUP
+        : AI_CATALOG_CONSUMER_TYPE_PROJECT;
+      const targetTypeLabel = AI_CATALOG_CONSUMER_LABELS[targetType];
+
+      try {
+        const { data } = await this.$apollo.mutate({
+          mutation: updateAiCatalogConfiguredItem,
+          variables: {
+            input,
+          },
+          refetchQueries: [aiCatalogFlowQuery],
+        });
+
+        if (data) {
+          const { errors } = data.aiCatalogItemConsumerUpdate;
+          if (errors.length > 0) {
+            this.errorTitle = s__('AICatalog|Could not update flow.');
+            this.errors = errors;
+            return;
+          }
+
+          const newVersion = data.aiCatalogItemConsumerUpdate.itemConsumer.pinnedVersionPrefix;
+          this.version.setActiveVersionKey(VERSION_PINNED); // reset for the next update
+          this.$toast.show(
+            sprintf(s__('AICatalog|Flow is now at version %{newVersion}.'), { newVersion }),
+          );
+        }
+      } catch (error) {
+        this.errors = [
+          prerequisitesError(s__('AICatalog|Could not update flow in the %{target}.'), {
+            target: targetTypeLabel,
+          }),
         ];
         Sentry.captureException(error);
       }
@@ -242,6 +316,35 @@ export default {
           />
         </div>
       </template>
+      <template v-if="version.isUpdateAvailable" #description>
+        <gl-alert
+          :dismissible="false"
+          :title="s__('AICatalog|A new version is available')"
+          class="gl-mt-4"
+        >
+          <div class="gl-my-3 gl-flex gl-flex-col gl-gap-4">
+            <span>{{
+              s__(
+                'AICatalog|Only this flow in this project will be updated. Other projects using this flow will not be affected.',
+              )
+            }}</span>
+            <div class="gl-flex gl-w-min gl-flex-col gl-gap-4 @sm:gl-flex-row">
+              <gl-button
+                v-if="secondaryButtonText"
+                data-testid="flows-show-secondary-button"
+                @click="secondaryButtonAction"
+                >{{ secondaryButtonText }}</gl-button
+              >
+              <gl-button
+                variant="confirm"
+                data-testid="flows-show-primary-button"
+                @click="primaryButtonAction"
+                >{{ primaryButtonText }}</gl-button
+              >
+            </div>
+          </div>
+        </gl-alert>
+      </template>
       <template #actions>
         <ai-catalog-item-actions
           v-if="showActions"
@@ -262,6 +365,6 @@ export default {
         />
       </template>
     </page-heading>
-    <ai-catalog-item-view :item="aiCatalogFlow" :version-data="versionData" />
+    <ai-catalog-item-view :item="aiCatalogFlow" :version-key="version.activeVersionKey" />
   </div>
 </template>

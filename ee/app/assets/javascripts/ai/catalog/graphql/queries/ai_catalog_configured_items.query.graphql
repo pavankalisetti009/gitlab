@@ -29,6 +29,14 @@ query aiCatalogConfiguredItems(
           id
           nameWithNamespace
         }
+        latestVersion(released: true) {
+          id
+          humanVersionName
+        }
+      }
+      pinnedItemVersion {
+        id
+        humanVersionName
       }
     }
     pageInfo {

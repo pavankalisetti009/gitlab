@@ -36,6 +36,9 @@ query aiCatalogFlow(
         ...BaseAiCatalogFlowVersion
         ...BaseAiCatalogThirdPartyFlowVersion
       }
+      userPermissions {
+        adminAiCatalogItemConsumer
+      }
     }
     configurationForGroup(groupId: $groupId) @include(if: $hasGroup) {
       id

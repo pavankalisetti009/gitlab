@@ -81,7 +81,21 @@ export default {
       },
       // fetchPolicy needed to refresh items after creating an item
       fetchPolicy: fetchPolicies.CACHE_AND_NETWORK,
-      update: (data) => data?.project?.aiCatalogItems?.nodes || [],
+      update: (data) => {
+        return (data?.project?.aiCatalogItems?.nodes || []).map((item) => {
+          if (!item.configurationForProject) {
+            return item;
+          }
+
+          const latest = item.latestVersion.humanVersionName;
+          const pinned = item.configurationForProject?.pinnedItemVersion.humanVersionName;
+
+          return {
+            ...item,
+            isUpdateAvailable: latest !== pinned,
+          };
+        });
+      },
       result({ data }) {
         this.pageInfo = data?.project?.aiCatalogItems?.pageInfo || {};
       },

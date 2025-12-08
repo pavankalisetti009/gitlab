@@ -83,6 +83,9 @@ export const TRACK_EVENT_VIEW_AI_CATALOG_ITEM = 'view_ai_catalog_item';
 export const TRACK_EVENT_TYPE_AGENT = AI_CATALOG_TYPE_AGENT.toLowerCase();
 export const TRACK_EVENT_TYPE_FLOW = AI_CATALOG_TYPE_FLOW.toLowerCase();
 
+export const VERSION_LATEST = 'latestVersion';
+export const VERSION_PINNED = 'configurationForProject.pinnedItemVersion';
+
 // FLOW and THIRD_PARTY_FLOW apollo configuration
 export const FLOW_TYPE_APOLLO_CONFIG = {
   [AI_CATALOG_TYPE_FLOW]: {

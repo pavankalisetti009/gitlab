@@ -17,10 +17,6 @@ export default {
       type: Object,
       required: true,
     },
-    versionData: {
-      type: Object,
-      required: true,
-    },
   },
   data() {
     return {
@@ -29,13 +25,21 @@ export default {
     };
   },
   computed: {
+    // Default to latest version in EDIT mode because editing a pinned version would result in non-linear versions
+    // being produced. Instead, we will enforce that the user update the agent before being allowed to edit.
+    systemPrompt() {
+      return this.aiCatalogAgent.latestVersion.systemPrompt;
+    },
+    toolIds() {
+      return (this.aiCatalogAgent.latestVersion.tools?.nodes ?? []).map((t) => t.id);
+    },
     initialValues() {
       return {
         projectId: this.aiCatalogAgent.project?.id,
         name: this.aiCatalogAgent.name,
         description: this.aiCatalogAgent.description,
-        systemPrompt: this.versionData.systemPrompt,
-        tools: this.versionData.tools?.map((t) => t.id),
+        systemPrompt: this.systemPrompt,
+        tools: this.toolIds,
         public: this.aiCatalogAgent.public,
       };
     },

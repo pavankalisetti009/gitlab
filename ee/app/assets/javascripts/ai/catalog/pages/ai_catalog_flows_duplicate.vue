@@ -3,7 +3,7 @@ import { s__ } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import { prerequisitesError } from '../utils';
+import { prerequisitesError, getByVersionKey } from '../utils';
 import { FLOW_TYPE_APOLLO_CONFIG } from '../constants';
 import { AI_CATALOG_FLOWS_SHOW_ROUTE } from '../router/constants';
 import AiCatalogFlowForm from '../components/ai_catalog_flow_form.vue';
@@ -19,7 +19,7 @@ export default {
       type: Object,
       required: true,
     },
-    versionData: {
+    version: {
       type: Object,
       required: true,
     },
@@ -34,13 +34,16 @@ export default {
     flowName() {
       return this.aiCatalogFlow.name;
     },
+    definition() {
+      return getByVersionKey(this.aiCatalogFlow, this.version.activeVersionKey).definition;
+    },
     initialValues() {
       return {
         type: this.aiCatalogFlow.itemType,
         name: `${s__('AICatalog|Copy of')} ${this.flowName}`,
         public: false,
         description: this.aiCatalogFlow.description,
-        definition: this.versionData.definition,
+        definition: this.definition,
       };
     },
   },

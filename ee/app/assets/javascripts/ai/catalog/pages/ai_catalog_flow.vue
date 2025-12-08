@@ -8,7 +8,13 @@ import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_AI_CATALOG_ITEM } from 'ee/graphql_shared/constants';
 import aiCatalogFlowQuery from '../graphql/queries/ai_catalog_flow.query.graphql';
-import { AI_CATALOG_TYPE_FLOW, AI_CATALOG_TYPE_THIRD_PARTY_FLOW } from '../constants';
+import { getByVersionKey } from '../utils';
+import {
+  AI_CATALOG_TYPE_FLOW,
+  AI_CATALOG_TYPE_THIRD_PARTY_FLOW,
+  VERSION_PINNED,
+  VERSION_LATEST,
+} from '../constants';
 
 export default {
   name: 'AiCatalogFlow',
@@ -31,6 +37,7 @@ export default {
   data() {
     return {
       aiCatalogFlow: {},
+      activeVersionKey: null,
       errors: [],
     };
   },
@@ -75,18 +82,44 @@ export default {
       return !this.isProject && !this.isGlobal;
     },
     hasNoConsumer() {
-      return this.isProject && !this.aiCatalogFlow?.configurationForProject;
-    },
-    shouldShowLatestVersion() {
-      return this.isGlobal || this.isGroup || this.hasNoConsumer;
-    },
-    versionData() {
-      return this.shouldShowLatestVersion
-        ? this.aiCatalogFlow.latestVersion
-        : this.aiCatalogFlow.configurationForProject.pinnedItemVersion;
+      return !this.aiCatalogFlow.configurationForProject;
     },
     hasParentConsumer() {
       return this.aiCatalogFlow?.configurationForGroup?.enabled;
+    },
+    shouldShowLatestVersion() {
+      // Always show latest version in Explore/Group namespaces. Project namespace should show pinned version,
+      // but when navigation to an Item from the Managed tab, we aren't able to flag to the show page (this component)
+      // that it needs to show the latest version once we cross the router boundary.
+      // This is known: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/214607#note_2923544884
+      return this.isGlobal || this.isGroup;
+    },
+    isUpdateAvailable() {
+      if (this.shouldShowLatestVersion || this.hasNoConsumer) {
+        return false;
+      }
+
+      const flow = this.aiCatalogFlow;
+      const hasPermissions = Boolean(
+        flow.configurationForProject.userPermissions?.adminAiCatalogItemConsumer,
+      );
+      const latestVersion = getByVersionKey(flow, VERSION_LATEST).humanVersionName;
+      const pinnedVersion = getByVersionKey(flow, VERSION_PINNED).humanVersionName;
+
+      // The backend always bumps *up*, so we don't need a complex comparison
+      return hasPermissions && latestVersion !== pinnedVersion;
+    },
+    baseVersionKey() {
+      return this.shouldShowLatestVersion || this.hasNoConsumer ? VERSION_LATEST : VERSION_PINNED;
+    },
+    version() {
+      return {
+        isUpdateAvailable: this.isUpdateAvailable,
+        activeVersionKey: this.activeVersionKey ?? this.baseVersionKey,
+        setActiveVersionKey: (selectedKey) => {
+          this.activeVersionKey = selectedKey;
+        },
+      };
     },
   },
   emptySearchSvg,
@@ -108,7 +141,7 @@ export default {
     <router-view
       v-else
       :ai-catalog-flow="aiCatalogFlow"
-      :version-data="versionData"
+      :version="version"
       :has-parent-consumer="hasParentConsumer"
     />
   </div>

@@ -123,7 +123,7 @@ describe('AiAgentsIndex', () => {
 
       await waitForPromises();
 
-      expect(catalogList.props('items')).toEqual(mockAgentsWithConfig);
+      expect(catalogList.props('items')).toMatchObject(mockAgentsWithConfig);
       expect(catalogList.props('isLoading')).toBe(false);
     });
 
@@ -150,6 +150,16 @@ describe('AiAgentsIndex', () => {
         emptyStateButtonHref: '/explore/ai-catalog/agents',
         emptyStateButtonText: 'Explore the AI Catalog',
       });
+    });
+
+    it('determines update status on each item correctly', async () => {
+      const catalogList = findAiCatalogListWrapper();
+      await waitForPromises();
+      const items = catalogList.props('items');
+
+      expect(items[0].isUpdateAvailable).toBe(true);
+      expect(items[1].isUpdateAvailable).toBe(false);
+      expect(items[2].isUpdateAvailable).toBe(false);
     });
 
     describe('pagination', () => {

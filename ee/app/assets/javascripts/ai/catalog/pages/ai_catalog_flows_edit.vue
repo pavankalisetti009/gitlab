@@ -17,10 +17,6 @@ export default {
       type: Object,
       required: true,
     },
-    versionData: {
-      type: Object,
-      required: true,
-    },
   },
   data() {
     return {
@@ -29,6 +25,9 @@ export default {
     };
   },
   computed: {
+    definition() {
+      return this.aiCatalogFlow.latestVersion.definition;
+    },
     initialValues() {
       return {
         projectId: this.aiCatalogFlow.project?.id,
@@ -36,7 +35,7 @@ export default {
         name: this.aiCatalogFlow.name,
         description: this.aiCatalogFlow.description,
         public: this.aiCatalogFlow.public,
-        definition: this.versionData.definition,
+        definition: this.definition,
       };
     },
   },
