@@ -284,7 +284,7 @@ export default {
     >
       <gl-sprintf :message="deleteConfirmMessage">
         <template #name>
-          <strong>{{ item.name }}</strong>
+          <strong class="gl-wrap-anywhere">{{ item.name }}</strong>
         </template>
         <template #itemType>{{ itemTypeLabel }}</template>
       </gl-sprintf>
