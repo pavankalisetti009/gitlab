@@ -3088,6 +3088,12 @@ msgstr ""
 msgid "AICatalog|Update to %{version}"
 msgstr ""
 
+msgid "AICatalog|Updating a flow in this group does not update the flows enabled in this group's projects."
+msgstr ""
+
+msgid "AICatalog|Updating an agent in this group does not update the agents enabled in this group's projects."
+msgstr ""
+
 msgid "AICatalog|Use agents in your %{namespaceType}."
 msgstr ""
 

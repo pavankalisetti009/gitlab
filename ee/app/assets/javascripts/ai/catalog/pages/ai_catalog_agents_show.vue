@@ -15,6 +15,7 @@ import {
   VERSION_LATEST,
   VERSION_PINNED,
   ENABLE_AGENT_MODAL_TEXTS,
+  VERSION_PINNED_GROUP,
 } from 'ee/ai/catalog/constants';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import { prerequisitesError } from '../utils';
@@ -51,6 +52,9 @@ export default {
     projectId: {
       default: null,
     },
+    groupId: {
+      default: null,
+    },
   },
   props: {
     aiCatalogAgent: {
@@ -80,6 +84,9 @@ export default {
     isProjectNamespace() {
       return Boolean(this.projectId);
     },
+    pinnedVersionKey() {
+      return this.isProjectNamespace ? VERSION_PINNED : VERSION_PINNED_GROUP;
+    },
     showActions() {
       return this.isGlobal || this.isProjectNamespace;
     },
@@ -94,7 +101,9 @@ export default {
         : s__('AICatalog|View latest version');
     },
     primaryButtonAction() {
-      const target = this.aiCatalogAgent.configurationForProject;
+      const target = this.isProjectNamespace
+        ? this.aiCatalogAgent.configurationForProject
+        : this.aiCatalogAgent.configurationForGroup;
       const updateToVersion = this.aiCatalogAgent.latestVersion.versionName;
       return this.isReadyToUpdate
         ? () => this.updateAgentVersion(target, updateToVersion)
@@ -104,7 +113,18 @@ export default {
       return this.isReadyToUpdate ? s__('AICatalog|View enabled version') : null;
     },
     secondaryButtonAction() {
-      return this.isReadyToUpdate ? () => this.version.setActiveVersionKey(VERSION_PINNED) : null;
+      return this.isReadyToUpdate
+        ? () => this.version.setActiveVersionKey(this.pinnedVersionKey)
+        : null;
+    },
+    updateMessage() {
+      return this.groupId
+        ? s__(
+            "AICatalog|Updating an agent in this group does not update the agents enabled in this group's projects.",
+          )
+        : s__(
+            'AICatalog|Only this agent in this project will be updated. Other projects using this agent will not be affected.',
+          );
     },
   },
   mounted() {
@@ -191,7 +211,7 @@ export default {
           }
 
           const newVersion = data.aiCatalogItemConsumerUpdate.itemConsumer.pinnedVersionPrefix;
-          this.version.setActiveVersionKey(VERSION_PINNED); // reset for the next update
+          this.version.setActiveVersionKey(this.pinnedVersionKey); // reset for the next update
           this.$toast.show(
             sprintf(s__('AICatalog|Agent is now at version %{newVersion}.'), { newVersion }),
           );
@@ -326,11 +346,7 @@ export default {
           class="gl-mt-4"
         >
           <div class="gl-my-3 gl-flex gl-flex-col gl-gap-4">
-            <span>{{
-              s__(
-                'AICatalog|Only this agent in this project will be updated. Other projects using this agent will not be affected.',
-              )
-            }}</span>
+            <span>{{ updateMessage }}</span>
             <div class="gl-flex gl-w-min gl-flex-col gl-gap-4 @sm:gl-flex-row">
               <gl-button
                 v-if="secondaryButtonText"

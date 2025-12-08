@@ -214,7 +214,6 @@ export const mockBaseAgent = mockAgentFactory();
 export const mockAgent = mockAgentFactory({
   project: mockProjectWithGroup,
   latestVersion: mockAgentVersion,
-  versions: mockAgentVersions,
 });
 
 export const mockAgents = [
@@ -336,6 +335,8 @@ export const mockAgentConfigurationForProject = {
 export const mockItemConfigurationForGroup = {
   id: 'gid://gitlab/Ai::Catalog::ItemConsumer/4',
   enabled: true,
+  pinnedItemVersion: mockAgentPinnedVersion,
+  userPermissions: mockItemConsumerUserPermissions,
   __typename: TYPENAME_AI_CATALOG_ITEM_CONSUMER,
 };
 

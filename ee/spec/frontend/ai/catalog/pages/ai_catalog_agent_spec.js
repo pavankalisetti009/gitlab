@@ -8,7 +8,7 @@ import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import AiCatalogAgent from 'ee/ai/catalog/pages/ai_catalog_agent.vue';
 import aiCatalogAgentQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_agent.query.graphql';
-import { VERSION_PINNED, VERSION_LATEST } from 'ee/ai/catalog/constants';
+import { VERSION_PINNED, VERSION_PINNED_GROUP, VERSION_LATEST } from 'ee/ai/catalog/constants';
 import {
   mockAiCatalogAgentResponse,
   mockAiCatalogAgentNullResponse,
@@ -181,6 +181,19 @@ describe('AiCatalogAgent', () => {
       expect(routerView.props('version')).toMatchObject({
         isUpdateAvailable: false,
         activeVersionKey: VERSION_LATEST,
+      });
+    });
+
+    it('should show pinned version when in the group area', async () => {
+      createComponent({
+        provide: { groupId: 1, projectId: null },
+      });
+      await waitForPromises();
+
+      const routerView = findRouterView();
+      expect(routerView.props('version')).toMatchObject({
+        isUpdateAvailable: true,
+        activeVersionKey: VERSION_PINNED_GROUP,
       });
     });
 

@@ -9,7 +9,12 @@ import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_AI_CATALOG_ITEM } from 'ee/graphql_shared/constants';
 import aiCatalogFlowQuery from '../graphql/queries/ai_catalog_flow.query.graphql';
 import { getByVersionKey } from '../utils';
-import { AI_CATALOG_TYPE_FLOW, VERSION_PINNED, VERSION_LATEST } from '../constants';
+import {
+  AI_CATALOG_TYPE_FLOW,
+  VERSION_PINNED,
+  VERSION_LATEST,
+  VERSION_PINNED_GROUP,
+} from '../constants';
 
 export default {
   name: 'AiCatalogFlow',
@@ -28,6 +33,9 @@ export default {
     rootGroupId: {
       default: null,
     },
+    groupId: {
+      default: null,
+    },
   },
   data() {
     return {
@@ -40,14 +48,17 @@ export default {
     aiCatalogFlow: {
       query: aiCatalogFlowQuery,
       variables() {
+        const hasGroup = Boolean(this.projectId ? this.rootGroupId : this.groupId);
+        const groupId = this.projectId ? this.rootGroupId : this.groupId;
+
         return {
           id: convertToGraphQLId(TYPENAME_AI_CATALOG_ITEM, this.$route.params.id),
           showSoftDeleted: !this.isGlobal,
           hasProject: Boolean(this.projectId),
           // projectId is non-nullable in GraphQL query, so we need a fallback value.
           projectId: convertToGraphQLId(TYPENAME_PROJECT, this.projectId || '0'),
-          hasGroup: Boolean(this.rootGroupId),
-          groupId: convertToGraphQLId(TYPENAME_GROUP, this.rootGroupId || '0'),
+          hasGroup,
+          groupId: convertToGraphQLId(TYPENAME_GROUP, groupId || '0'),
         };
       },
       update(data) {
@@ -73,39 +84,44 @@ export default {
     isProject() {
       return Boolean(this.projectId);
     },
-    isGroup() {
-      return !this.isProject && !this.isGlobal;
+    configuration() {
+      return this.isProject
+        ? this.aiCatalogFlow?.configurationForProject
+        : this.aiCatalogFlow?.configurationForGroup;
     },
     hasNoConsumer() {
-      return !this.aiCatalogFlow.configurationForProject;
+      return !this.configuration;
     },
     hasParentConsumer() {
-      return this.aiCatalogFlow?.configurationForGroup?.enabled;
+      return this.configuration?.enabled;
     },
     shouldShowLatestVersion() {
       // Always show latest version in Explore/Group namespaces. Project namespace should show pinned version,
       // but when navigation to an Item from the Managed tab, we aren't able to flag to the show page (this component)
       // that it needs to show the latest version once we cross the router boundary.
       // This is known: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/214607#note_2923544884
-      return this.isGlobal || this.isGroup;
+      return this.isGlobal || this.hasNoConsumer;
+    },
+    pinnedVersionKey() {
+      return this.isProject ? VERSION_PINNED : VERSION_PINNED_GROUP;
     },
     isUpdateAvailable() {
-      if (this.shouldShowLatestVersion || this.hasNoConsumer) {
+      if (this.shouldShowLatestVersion) {
         return false;
       }
 
       const flow = this.aiCatalogFlow;
       const hasPermissions = Boolean(
-        flow.configurationForProject.userPermissions?.adminAiCatalogItemConsumer,
+        this.configuration.userPermissions?.adminAiCatalogItemConsumer,
       );
       const latestVersion = getByVersionKey(flow, VERSION_LATEST).humanVersionName;
-      const pinnedVersion = getByVersionKey(flow, VERSION_PINNED).humanVersionName;
+      const pinnedVersion = getByVersionKey(flow, this.pinnedVersionKey).humanVersionName;
 
       // The backend always bumps *up*, so we don't need a complex comparison
       return hasPermissions && latestVersion !== pinnedVersion;
     },
     baseVersionKey() {
-      return this.shouldShowLatestVersion || this.hasNoConsumer ? VERSION_LATEST : VERSION_PINNED;
+      return this.shouldShowLatestVersion ? VERSION_LATEST : this.pinnedVersionKey;
     },
     version() {
       return {

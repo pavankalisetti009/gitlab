@@ -25,12 +25,6 @@ query aiCatalogAgent(
       ...BaseAiCatalogAgentVersion
       ...BaseAiCatalogThirdPartyFlowVersion
     }
-    versions {
-      nodes {
-        ...BaseAiCatalogAgentVersion
-        ...BaseAiCatalogThirdPartyFlowVersion
-      }
-    }
     configurationForProject(projectId: $projectId) @include(if: $hasProject) {
       id
       enabled
@@ -49,6 +43,13 @@ query aiCatalogAgent(
     configurationForGroup(groupId: $groupId) @include(if: $hasGroup) {
       id
       enabled
+      pinnedItemVersion {
+        ...BaseAiCatalogAgentVersion
+        ...BaseAiCatalogThirdPartyFlowVersion
+      }
+      userPermissions {
+        adminAiCatalogItemConsumer
+      }
     }
   }
 }
