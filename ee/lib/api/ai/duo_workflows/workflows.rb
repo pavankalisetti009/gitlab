@@ -422,6 +422,11 @@ module API
 
                 forbidden!(result.message) if result.error? && result.http_status == :forbidden
                 not_found!(result.message) if result.error? && result.http_status == :not_found
+                if result.error? && result.http_status == :payment_required
+                  forbidden!("session failed to start due to insufficient GitLab credits. " \
+                    "Purchase more credits to continue.")
+                end
+
                 bad_request!(result[:message]) if result[:status] == :error
 
                 push_ai_gateway_headers

@@ -19,6 +19,11 @@ RSpec.describe ::Ai::DuoWorkflows::CreateWorkflowService, feature_category: :duo
     before do
       allow(Ability).to receive(:allowed?).and_call_original
       allow(Ability).to receive(:allowed?).with(user, :duo_workflow, container).and_return(true)
+      allow_next_instance_of(Ai::UsageQuotaService) do |instance|
+        allow(instance).to receive(:execute).and_return(
+          ServiceResponse.success
+        )
+      end
     end
 
     it 'creates a new workflow' do
@@ -63,6 +68,88 @@ RSpec.describe ::Ai::DuoWorkflows::CreateWorkflowService, feature_category: :duo
         expect(execute[:status]).to eq(:error)
         expect(execute[:http_status]).to eq(:forbidden)
         expect(execute[:message]).to include('forbidden to access duo workflow')
+      end
+    end
+
+    context 'when credit check fails' do
+      context 'with user missing' do
+        before do
+          allow_next_instance_of(Ai::UsageQuotaService) do |instance|
+            allow(instance).to receive(:execute).and_return(
+              ServiceResponse.error(message: "User is required", reason: :user_missing)
+            )
+          end
+        end
+
+        it 'returns bad request error' do
+          expect(execute[:status]).to eq(:error)
+          expect(execute[:http_status]).to eq(:bad_request)
+          expect(execute[:message]).to include('User is required')
+        end
+      end
+
+      context 'with namespace missing' do
+        before do
+          allow_next_instance_of(Ai::UsageQuotaService) do |instance|
+            allow(instance).to receive(:execute).and_return(
+              ServiceResponse.error(message: "Namespace is required", reason: :namespace_missing)
+            )
+          end
+        end
+
+        it 'returns bad request error' do
+          expect(execute[:status]).to eq(:error)
+          expect(execute[:http_status]).to eq(:bad_request)
+          expect(execute[:message]).to include('Namespace is required')
+        end
+      end
+
+      context 'when usage quota is exceeded' do
+        before do
+          allow_next_instance_of(Ai::UsageQuotaService) do |instance|
+            allow(instance).to receive(:execute).and_return(
+              ServiceResponse.error(message: "Usage quota exceeded", reason: :usage_quota_exceeded)
+            )
+          end
+        end
+
+        it 'returns payment required error' do
+          expect(execute[:status]).to eq(:error)
+          expect(execute[:http_status]).to eq(:payment_required)
+          expect(execute[:message]).to include('Usage quota exceeded')
+        end
+      end
+
+      context 'with service error' do
+        before do
+          allow_next_instance_of(Ai::UsageQuotaService) do |instance|
+            allow(instance).to receive(:execute).and_return(
+              ServiceResponse.error(message: "Error while fetching usage quota", reason: :service_error)
+            )
+          end
+        end
+
+        it 'returns internal server error' do
+          expect(execute[:status]).to eq(:error)
+          expect(execute[:http_status]).to eq(:internal_server_error)
+          expect(execute[:message]).to include('Error while fetching usage quota')
+        end
+      end
+
+      context 'with generic error' do
+        before do
+          allow_next_instance_of(Ai::UsageQuotaService) do |instance|
+            allow(instance).to receive(:execute).and_return(
+              ServiceResponse.error(message: "Something went wrong", reason: :some_error)
+            )
+          end
+        end
+
+        it 'returns internal server error' do
+          expect(execute[:status]).to eq(:error)
+          expect(execute[:http_status]).to eq(:internal_server_error)
+          expect(execute[:message]).to include('Something went wrong')
+        end
       end
     end
 
