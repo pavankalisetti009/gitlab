@@ -777,7 +777,7 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
     end
 
     context 'when no feature setting exists' do
-      let(:expected_feature_setting_name) { '' }
+      let(:expected_feature_setting_name) { 'duo_agent_platform' }
 
       it_behaves_like 'sets AGENT_PLATFORM_FEATURE_SETTING_NAME'
     end
