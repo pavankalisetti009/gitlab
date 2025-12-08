@@ -200,6 +200,9 @@ module EE
         allow_nil: true,
         prefix: :ai
 
+      delegate :duo_agent_platform_enabled, :duo_agent_platform_enabled=, to: :ai_settings,
+        allow_nil: true
+
       # `eligible_additional_purchased_storage_size` uses a FF to start checking `additional_purchased_storage_ends_on`
       # if the FF is enabled before returning `additional_purchased_storage_size`
       # To minimize the footprint of the change, aliasing namespace.additional_purchased_storage_size
