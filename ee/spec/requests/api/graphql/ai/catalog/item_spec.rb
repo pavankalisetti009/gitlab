@@ -6,11 +6,11 @@ RSpec.describe 'getting an AI catalog item', :with_current_organization, feature
   include Ai::Catalog::TestHelpers
   include GraphqlHelpers
 
-  let_it_be(:reporter_user) { create(:user) }
+  let_it_be(:guest_user) { create(:user) }
   let_it_be(:developer_user) { create(:user) }
 
   let_it_be(:project) do
-    create(:project, reporters: reporter_user, developers: developer_user, organization: current_organization)
+    create(:project, guests: guest_user, developers: developer_user, organization: current_organization)
   end
 
   let_it_be_with_reload(:catalog_item) { create(:ai_catalog_item, project: project, public: true) }
@@ -159,8 +159,8 @@ RSpec.describe 'getting an AI catalog item', :with_current_organization, feature
       it_behaves_like 'a successful query'
     end
 
-    context 'when reporter' do
-      let(:current_user) { reporter_user }
+    context 'when guest' do
+      let(:current_user) { guest_user }
 
       it_behaves_like 'an unsuccessful query'
     end
@@ -247,13 +247,13 @@ RSpec.describe 'getting an AI catalog item', :with_current_organization, feature
     end
 
     context 'when the user does not have permission' do
-      let(:current_user) { reporter_user }
+      let(:current_user) { create(:user) }
 
       it_behaves_like 'an unsuccessful query'
     end
 
     context 'when the user has permission' do
-      let(:current_user) { developer_user }
+      let(:current_user) { guest_user }
 
       it 'returns the item configuration' do
         post_graphql(query, current_user: current_user)
@@ -265,7 +265,7 @@ RSpec.describe 'getting an AI catalog item', :with_current_organization, feature
   end
 
   describe 'configurationForGroup field' do
-    let_it_be(:group) { create(:group, reporters: reporter_user, developers: developer_user) }
+    let_it_be(:group) { create(:group, guests: guest_user, developers: developer_user) }
     let_it_be(:item_consumer) { create(:ai_catalog_item_consumer, item: catalog_item, group: group) }
 
     let_it_be(:item_consumer_for_other_group) do
@@ -294,7 +294,7 @@ RSpec.describe 'getting an AI catalog item', :with_current_organization, feature
     end
 
     context 'when the user does not have permission' do
-      let(:current_user) { reporter_user }
+      let(:current_user) { guest_user }
 
       it_behaves_like 'an unsuccessful query'
     end
