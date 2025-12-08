@@ -10308,9 +10308,6 @@ msgstr ""
 msgid "Available ID"
 msgstr ""
 
-msgid "Available on demand"
-msgstr ""
-
 msgid "Avatar for %{assigneeName}"
 msgstr ""
 
@@ -46179,9 +46176,6 @@ msgstr ""
 msgid "On-call schedules"
 msgstr ""
 
-msgid "On-demand scans run outside of the DevOps cycle and find vulnerabilities in your projects"
-msgstr ""
-
 msgid "OnCallScheduless|Any escalation rules that are using this schedule will also be deleted."
 msgstr ""
 
@@ -59242,6 +59236,9 @@ msgstr ""
 msgid "SecretDetection|Configure Secret Detection"
 msgstr ""
 
+msgid "SecretDetection|Learn more about validity checks"
+msgstr ""
+
 msgid "SecretDetection|No exclusions yet"
 msgstr ""
 
@@ -59284,9 +59281,6 @@ msgid "SecretDetection|Warning: Potential secret detected"
 msgid_plural "SecretDetection|Warning: Potential secrets detected"
 msgstr[0] ""
 msgstr[1] ""
-
-msgid "SecretDetection|What are validity checks?"
-msgstr ""
 
 msgid "SecretRotation|%d secret has not been rotated after the configured rotation reminder intervals"
 msgid_plural "SecretRotation|%d secrets have not been rotated after the configured rotation reminder intervals"
@@ -59941,13 +59935,13 @@ msgstr ""
 msgid "SecurityConfiguration|Learn more about vulnerability training"
 msgstr ""
 
+msgid "SecurityConfiguration|Manage DAST profiles"
+msgstr ""
+
 msgid "SecurityConfiguration|Manage corpus"
 msgstr ""
 
 msgid "SecurityConfiguration|Manage corpus files used as seed inputs with coverage-guided fuzzing."
-msgstr ""
-
-msgid "SecurityConfiguration|Manage profiles"
 msgstr ""
 
 msgid "SecurityConfiguration|Manage profiles for use by DAST scans."

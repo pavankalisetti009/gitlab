@@ -128,7 +128,6 @@ RSpec.describe 'User sees Security Configuration table', :js, feature_category: 
           expect(page).to have_text('DAST')
           expect(page).to have_text('Not enabled')
           expect(page).to have_link('Enable DAST')
-          expect(page).to have_link('Manage profiles')
         end
       end
     end
@@ -145,7 +144,7 @@ RSpec.describe 'User sees Security Configuration table', :js, feature_category: 
           expect(page).to have_text('DAST')
           expect(page).to have_text('Enabled')
           expect(page).to have_link('Configure DAST')
-          expect(page).to have_link('Manage profiles')
+          expect(page).to have_link('Manage DAST profiles')
         end
       end
     end
@@ -279,63 +278,55 @@ RSpec.describe 'User sees Security Configuration table', :js, feature_category: 
     end
   end
 
-  def within_sast_card
-    within '[data-testid="security-testing-card"]:nth-of-type(1)' do
-      yield
+  def within_security_testing_card(title)
+    within_testid('security-testing-tab') do
+      within_testid('security-testing-features') do
+        card = all("[data-testid='security-testing-card']").find do |node|
+          node.has_selector?('h3', text: title, exact_text: true)
+        end
+
+        within(card) { yield }
+      end
     end
+  end
+
+  def within_sast_card
+    within_security_testing_card('Static Application Security Testing (SAST)') { yield }
   end
 
   def within_sast_advanced_card
-    within '[data-testid="security-testing-card"]:nth-of-type(2)' do
-      yield
-    end
+    within_security_testing_card('GitLab Advanced SAST') { yield }
   end
 
   def within_sast_iac_card
-    within '[data-testid="security-testing-card"]:nth-of-type(3)' do
-      yield
-    end
+    within_security_testing_card('Infrastructure as Code (IaC) Scanning') { yield }
   end
 
   def within_dast_card
-    within '[data-testid="security-testing-card"]:nth-of-type(4)' do
-      yield
-    end
+    within_security_testing_card('Dynamic Application Security Testing (DAST)') { yield }
   end
 
   def within_dependency_scanning_card
-    within '[data-testid="security-testing-card"]:nth-of-type(5)' do
-      yield
-    end
+    within_security_testing_card('Dependency Scanning') { yield }
   end
 
   def within_container_scanning_card
-    within '[data-testid="security-testing-card"]:nth-of-type(6)' do
-      yield
-    end
+    within_security_testing_card('Container Scanning') { yield }
   end
 
   def within_secret_push_protection_card
-    within '[data-testid="security-testing-card"]:nth-of-type(7)' do
-      yield
-    end
+    within_security_testing_card('Secret push protection') { yield }
   end
 
   def within_pipeline_secret_detection_card
-    within '[data-testid="security-testing-card"]:nth-of-type(8)' do
-      yield
-    end
-  end
-
-  def within_api_fuzzing_card
-    within '[data-testid="security-testing-card"]:nth-of-type(10)' do
-      yield
-    end
+    within_security_testing_card('Pipeline Secret Detection') { yield }
   end
 
   def within_coverage_fuzzing_card
-    within '[data-testid="security-testing-card"]:nth-of-type(9)' do
-      yield
-    end
+    within_security_testing_card('Coverage Fuzzing') { yield }
+  end
+
+  def within_api_fuzzing_card
+    within_security_testing_card('API Fuzzing') { yield }
   end
 end
