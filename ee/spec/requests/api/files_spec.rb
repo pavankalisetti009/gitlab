@@ -6,6 +6,8 @@ RSpec.describe API::Files, feature_category: :source_code_management do
   include NamespaceStorageHelpers
   include GitlabSubscriptions::SubscriptionHelpers
 
+  include_context 'for workhorse body uploads'
+
   let(:group) { create(:group) }
   let(:user) { create(:user) }
   let(:project) { create(:project, :repository, group: group) }
@@ -42,7 +44,7 @@ RSpec.describe API::Files, feature_category: :source_code_management do
       end
 
       it 'rejects the request' do
-        post api(route(file_path), user), params: params
+        workhorse_body_upload(api(route(file_path), user), params)
 
         expect(response).to have_gitlab_http_status(:bad_request)
         expect(json_response['message']).to eq(size_checker.error_message.commit_error)
@@ -51,6 +53,7 @@ RSpec.describe API::Files, feature_category: :source_code_management do
   end
 
   describe "PUT /projects/:id/repository/files/:file_path" do
+    let(:method) { :put }
     let(:params) do
       {
         branch: 'master',
@@ -71,7 +74,7 @@ RSpec.describe API::Files, feature_category: :source_code_management do
       end
 
       it 'rejects the request' do
-        put api(route(file_path), user), params: params
+        workhorse_body_upload(api(route(file_path), user), params)
 
         expect(response).to have_gitlab_http_status(:bad_request)
         expect(json_response['message']).to eq(size_checker.error_message.commit_error)
