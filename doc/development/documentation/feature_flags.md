@@ -64,6 +64,16 @@ In that case, you can use a history entry like:
 
 `- [Enabled on GitLab.com](https://issue-link) in GitLab X.X for a subset of users.`
 
+### Add changes to feature flags
+
+When multiple feature flags are consolidated or a feature flag name is
+changed in a later release, mention the change in the history entry:
+
+```markdown
+- [Introduced](https://issue-link) in GitLab X.X [with a feature flag](../../administration/feature_flags/_index.md) named `flag_name`. Disabled by default.
+- Feature flag [changed](https://issue-link) to `new_flag_name` in GitLab X.X. Disabled by default. Feature flag `flag_name` removed.
+```
+
 ## Add a flag note
 
 Add this feature flag note at the start of the topic, just below the history.
