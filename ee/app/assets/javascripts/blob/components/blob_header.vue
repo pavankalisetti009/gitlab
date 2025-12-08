@@ -126,7 +126,7 @@ export default {
   },
   computed: {
     agentPrivileges() {
-      return [1, 2, 5];
+      return [1, 2, 3, 5];
     },
     showDuoWorkflowAction() {
       return this.duoWorkflowData?.showDuoWorkflowAction;
