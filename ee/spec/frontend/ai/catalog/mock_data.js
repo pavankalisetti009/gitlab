@@ -1,5 +1,6 @@
 export const TYPENAME_AI_CATALOG_ITEM_CONNECTION = 'AiCatalogItemConnection';
 const TYPENAME_AI_CATALOG_ITEM_CONSUMER = 'AiCatalogItemConsumer';
+const TYPENAME_AI_CATALOG_ITEM_CONSUMER_UPDATE = 'AiCatalogItemConsumerUpdate';
 const TYPENAME_AI_CATALOG_ITEM_CONSUMER_DELETE = 'AiCatalogItemConsumerDeletePayload';
 const TYPENAME_AI_CATALOG_ITEM_CONSUMER_CONNECTION = 'AiCatalogItemConsumerConnection';
 const TYPENAME_AI_CATALOG_AGENT = 'AiCatalogAgent';
@@ -43,7 +44,13 @@ const mockUserPermissionsFactory = (overrides = {}) => ({
   ...overrides,
 });
 
+const mockItemConsumerUserPermissionsFactory = (overrides = {}) => ({
+  adminAiCatalogItemConsumer: true,
+  ...overrides,
+});
+
 const mockUserPermissions = mockUserPermissionsFactory();
+const mockItemConsumerUserPermissions = mockItemConsumerUserPermissionsFactory();
 
 export const mockProjectWithNamespace = mockProjectFactory({
   nameWithNamespace: 'Group / Project 1',
@@ -112,7 +119,7 @@ export const mockToolsIds = [
 ];
 export const mockToolsTitles = ['Run Git Command', 'Gitlab Blob Search', 'Ci Linter'];
 
-const aiCatalogBuiltInToolsNodes = [
+export const mockAiCatalogBuiltInToolsNodes = [
   {
     id: `gid://gitlab/Ai::Catalog::BuiltInTool/3`,
     title: 'Ci Linter',
@@ -130,7 +137,7 @@ const aiCatalogBuiltInToolsNodes = [
 export const mockToolsQueryResponse = {
   data: {
     aiCatalogBuiltInTools: {
-      nodes: aiCatalogBuiltInToolsNodes,
+      nodes: mockAiCatalogBuiltInToolsNodes,
       __typename: TYPENAME_AI_CATALOG_AGENT_TOOLS_CONNECTION,
     },
   },
@@ -187,7 +194,7 @@ export const mockAgentVersion = {
   },
 };
 
-export const mockToolsNodes = aiCatalogBuiltInToolsNodes;
+export const mockToolsNodes = mockAiCatalogBuiltInToolsNodes;
 export const mockAgentPinnedVersion = {
   ...mockVersionFactory({ id: 'gid://gitlab/Ai::Catalog::ItemVersion/2' }),
   humanVersionName: 'v0.9.0',
@@ -195,7 +202,7 @@ export const mockAgentPinnedVersion = {
   __typename: TYPENAME_AI_CATALOG_AGENT_VERSION,
   systemPrompt: 'The system prompt pinned',
   tools: {
-    nodes: aiCatalogBuiltInToolsNodes,
+    nodes: mockAiCatalogBuiltInToolsNodes,
     __typename: TYPENAME_AI_CATALOG_AGENT_TOOLS_CONNECTION,
   },
 };
@@ -236,9 +243,17 @@ export const mockAgentsWithConfig = [
   mockAgentFactory({
     versions: mockAgentVersions,
     project: mockProjectWithNamespace,
+    latestVersion: mockVersionFactory({
+      id: 'gid://gitlab/Ai::Catalog::ItemVersion/1',
+      humanVersionName: 'v1.1.0',
+    }),
     configurationForProject: {
       id: 'gid://gitlab/Ai::Catalog::ItemConsumer/1',
       enabled: true,
+      pinnedItemVersion: {
+        id: 'gid://gitlab/Ai::Catalog::ItemVersion/2',
+        humanVersionName: 'v1.0.0',
+      },
       __typename: TYPENAME_AI_CATALOG_ITEM_CONSUMER,
     },
   }),
@@ -249,9 +264,17 @@ export const mockAgentsWithConfig = [
     createdAt: '2024-02-10T14:20:00Z',
     versions: mockAgentVersions,
     project: mockProjectWithNamespace,
+    latestVersion: mockVersionFactory({
+      id: 'gid://gitlab/Ai::Catalog::ItemVersion/3',
+      humanVersionName: 'v1.0.0',
+    }),
     configurationForProject: {
       id: 'gid://gitlab/Ai::Catalog::ItemConsumer/2',
       enabled: true,
+      pinnedItemVersion: {
+        id: 'gid://gitlab/Ai::Catalog::ItemVersion/4',
+        humanVersionName: 'v1.0.0',
+      },
       __typename: TYPENAME_AI_CATALOG_ITEM_CONSUMER,
     },
   }),
@@ -262,10 +285,18 @@ export const mockAgentsWithConfig = [
     createdAt: '2024-02-10T14:20:00Z',
     versions: mockAgentVersions,
     project: mockProjectWithNamespace,
+    latestVersion: mockVersionFactory({
+      id: 'gid://gitlab/Ai::Catalog::ItemVersion/5',
+      humanVersionName: 'v1.0.0',
+    }),
     public: false,
     configurationForProject: {
       id: 'gid://gitlab/Ai::Catalog::ItemConsumer/3',
       enabled: true,
+      pinnedItemVersion: {
+        id: 'gid://gitlab/Ai::Catalog::ItemVersion/6',
+        humanVersionName: 'v1.0.0',
+      },
       __typename: TYPENAME_AI_CATALOG_ITEM_CONSUMER,
     },
   }),
@@ -295,6 +326,7 @@ export const mockAgentConfigurationForProject = {
   id: 'gid://gitlab/Ai::Catalog::ItemConsumer/3',
   enabled: true,
   pinnedItemVersion: mockAgentPinnedVersion,
+  userPermissions: mockItemConsumerUserPermissions,
   __typename: TYPENAME_AI_CATALOG_ITEM_CONSUMER,
 };
 
@@ -314,9 +346,9 @@ export const mockAiCatalogAgentResponse = {
   },
 };
 
-export const mockAgentVersionDataProp = {
-  systemPrompt: mockAgentPinnedVersion.systemPrompt,
-  tools: mockAgentPinnedVersion.tools.nodes,
+export const mockVersionProp = {
+  isUpdateAvailable: false,
+  activeVersionKey: 'latestVersion',
 };
 
 export const mockAiCatalogAgentNullResponse = {
@@ -375,6 +407,28 @@ export const mockUpdateAiCatalogAgentSuccessMutation = {
 };
 
 export const mockUpdateAiCatalogAgentErrorMutation = {
+  data: {
+    aiCatalogAgentUpdate: {
+      errors: ['Some error'],
+      item: null,
+    },
+  },
+};
+
+export const mockUpdateAiCatalogItemConsumerSuccess = {
+  data: {
+    aiCatalogItemConsumerUpdate: {
+      errors: [],
+      itemConsumer: {
+        id: 'gid://gitlab/Ai::Catalog::ItemConsumer/3',
+        pinnedVersionPrefix: '1.0.0-draft',
+      },
+      __typename: TYPENAME_AI_CATALOG_ITEM_CONSUMER_UPDATE,
+    },
+  },
+};
+
+export const mockUpdateAiCatalogItemConsumerError = {
   data: {
     aiCatalogAgentUpdate: {
       errors: ['Some error'],
@@ -455,6 +509,7 @@ export const mockFlowConfigurationForProject = {
   enabled: true,
   flowTrigger: mockFlowTrigger,
   pinnedItemVersion: mockFlowPinnedVersion,
+  userPermissions: mockItemConsumerUserPermissions,
   __typename: TYPENAME_AI_CATALOG_ITEM_CONSUMER,
 };
 
@@ -552,10 +607,18 @@ export const mockThirdPartyFlowVersion = {
   __typename: TYPENAME_AI_CATALOG_THIRD_PARTY_FLOW_VERSION,
 };
 
+export const mockThirdPartyFlowPinnedVersion = {
+  ...mockBaseVersion,
+  humanVersionName: 'v0.9.0',
+  versionName: '0.9.0',
+  definition: '---\\nimage: node:22\\ncommands:\\n- ls\\ninjectGatewayToken: true\\npinned',
+  __typename: TYPENAME_AI_CATALOG_THIRD_PARTY_FLOW_VERSION,
+};
+
 export const mockThirdPartyFlowConfigurationForProject = {
   id: 'gid://gitlab/Ai::Catalog::ItemConsumer/12',
   flowTrigger: mockFlowTrigger,
-  pinnedItemVersion: mockThirdPartyFlowVersion,
+  pinnedItemVersion: mockThirdPartyFlowPinnedVersion,
   __typename: TYPENAME_AI_CATALOG_ITEM_CONSUMER,
 };
 

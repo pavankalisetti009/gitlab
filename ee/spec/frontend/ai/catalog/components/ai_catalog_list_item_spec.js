@@ -1,4 +1,10 @@
-import { GlDisclosureDropdown, GlDisclosureDropdownItem, GlTruncate, GlIcon } from '@gitlab/ui';
+import {
+  GlDisclosureDropdown,
+  GlDisclosureDropdownItem,
+  GlTruncate,
+  GlIcon,
+  GlBadge,
+} from '@gitlab/ui';
 import { RouterLinkStub as RouterLink } from '@vue/test-utils';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import AiCatalogListItem from 'ee/ai/catalog/components/ai_catalog_list_item.vue';
@@ -90,6 +96,7 @@ describe('AiCatalogListItem', () => {
   const findDisclosureDropdown = () => wrapper.findAllComponents(GlDisclosureDropdown);
   const findDisclosureDropdownItems = () => wrapper.findAllComponents(GlDisclosureDropdownItem);
   const findFoundationalIcon = () => wrapper.findComponent(FoundationalIcon);
+  const findUpdateAvailableLabel = () => wrapper.findByTestId('ai-catalog-item-update');
 
   beforeEach(() => {
     createComponent();
@@ -294,6 +301,36 @@ describe('AiCatalogListItem', () => {
     describe('when item is not THIRD_PARTY_FLOW', () => {
       it('does not render external indicator', () => {
         expect(findExternalLabel().exists()).toBe(false);
+      });
+    });
+  });
+
+  describe('update available label', () => {
+    describe('when isUpdateAvailable is true', () => {
+      beforeEach(() => {
+        createComponent({
+          item: { ...mockItem, isUpdateAvailable: true },
+        });
+      });
+      it('renders Update available label when isUpdateAvailable is true', () => {
+        expect(findUpdateAvailableLabel().findComponent(GlBadge).text()).toBe('Update available');
+      });
+
+      it('renders tooltip with correct text', () => {
+        expect(findUpdateAvailableLabel().attributes('title')).toBe(
+          'A new version is available. If you have at least the Maintainer role, you can update this item.',
+        );
+      });
+    });
+
+    describe('when isUpdateAvailable is false', () => {
+      beforeEach(() => {
+        createComponent({
+          item: { ...mockItem, isUpdateAvailable: false },
+        });
+      });
+      it('does not render Update available label when isUpdateAvailable is false', () => {
+        expect(findUpdateAvailableLabel().exists()).toBe(false);
       });
     });
   });

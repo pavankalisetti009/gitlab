@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
-import { shallowMount } from '@vue/test-utils';
+import { GlAlert } from '@gitlab/ui';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -10,9 +11,15 @@ import AiCatalogFlowsShow from 'ee/ai/catalog/pages/ai_catalog_flows_show.vue';
 import AiCatalogItemActions from 'ee/ai/catalog/components/ai_catalog_item_actions.vue';
 import AiCatalogItemView from 'ee/ai/catalog/components/ai_catalog_item_view.vue';
 import FoundationalIcon from 'ee/ai/components/foundational_icon.vue';
-import { TRACK_EVENT_TYPE_FLOW, TRACK_EVENT_VIEW_AI_CATALOG_ITEM } from 'ee/ai/catalog/constants';
+import {
+  TRACK_EVENT_TYPE_FLOW,
+  TRACK_EVENT_VIEW_AI_CATALOG_ITEM,
+  VERSION_PINNED,
+  VERSION_LATEST,
+} from 'ee/ai/catalog/constants';
 import aiCatalogFlowQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_flow.query.graphql';
 import createAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/create_ai_catalog_item_consumer.mutation.graphql';
+import updateAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/update_ai_catalog_item_consumer.mutation.graphql';
 import deleteAiCatalogFlowMutation from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_flow.mutation.graphql';
 import deleteAiCatalogThirdPartyFlowMutation from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_third_party_flow.mutation.graphql';
 import reportAiCatalogItemMutation from 'ee/ai/catalog/graphql/mutations/report_ai_catalog_item.mutation.graphql';
@@ -21,6 +28,8 @@ import {
   mockAiCatalogFlowResponse,
   mockAiCatalogItemConsumerCreateSuccessProjectResponse,
   mockAiCatalogItemConsumerCreateErrorResponse,
+  mockUpdateAiCatalogItemConsumerSuccess,
+  mockUpdateAiCatalogItemConsumerError,
   mockItemConfigurationForGroup,
   mockCatalogFlowDeleteErrorResponse,
   mockCatalogFlowDeleteResponse,
@@ -31,7 +40,7 @@ import {
   mockAiCatalogItemConsumerDeleteResponse,
   mockAiCatalogItemConsumerDeleteErrorResponse,
   mockFlowConfigurationForProject,
-  mockFlowVersion,
+  mockVersionProp,
 } from '../mock_data';
 
 jest.mock('~/sentry/sentry_browser_wrapper');
@@ -43,7 +52,7 @@ describe('AiCatalogFlowsShow', () => {
   let mockApollo;
 
   const defaultProps = {
-    versionData: mockFlowVersion,
+    version: mockVersionProp,
     aiCatalogFlow: {
       ...mockFlow,
       configurationForProject: mockFlowConfigurationForProject,
@@ -55,6 +64,9 @@ describe('AiCatalogFlowsShow', () => {
   const createAiCatalogItemConsumerHandler = jest
     .fn()
     .mockResolvedValue(mockAiCatalogItemConsumerCreateSuccessProjectResponse);
+  const updateAiCatalogItemConsumerHandler = jest
+    .fn()
+    .mockResolvedValue(mockUpdateAiCatalogItemConsumerSuccess);
   const reportAiCatalogItemMutationHandler = jest
     .fn()
     .mockResolvedValue(mockReportAiCatalogItemSuccessMutation);
@@ -78,6 +90,7 @@ describe('AiCatalogFlowsShow', () => {
       [deleteAiCatalogThirdPartyFlowMutation, deleteThirdPartyFlowMutationHandler],
       [reportAiCatalogItemMutation, reportAiCatalogItemMutationHandler],
       [deleteAiCatalogItemConsumer, deleteItemConsumerMutationHandler],
+      [updateAiCatalogItemConsumer, updateAiCatalogItemConsumerHandler],
     ]);
     // refetchQueries will only refetch active queries, so simply registering a query handler is not enough.
     // We need to call `subscribe()` to make the query observable and avoid "Unknown query" errors.
@@ -89,7 +102,7 @@ describe('AiCatalogFlowsShow', () => {
       })
       .subscribe();
 
-    wrapper = shallowMount(AiCatalogFlowsShow, {
+    wrapper = shallowMountExtended(AiCatalogFlowsShow, {
       apolloProvider: mockApollo,
       propsData: {
         ...defaultProps,
@@ -112,6 +125,9 @@ describe('AiCatalogFlowsShow', () => {
   const findItemActions = () => wrapper.findComponent(AiCatalogItemActions);
   const findItemView = () => wrapper.findComponent(AiCatalogItemView);
   const findFoundationalIcon = () => wrapper.findComponent(FoundationalIcon);
+  const findUpdateAlert = () => wrapper.findComponent(GlAlert);
+  const findPrimaryUpdateButton = () => wrapper.findByTestId('flows-show-primary-button');
+  const findSecondaryUpdateButton = () => wrapper.findByTestId('flows-show-secondary-button');
 
   beforeEach(() => {
     createComponent();
@@ -396,6 +412,90 @@ describe('AiCatalogFlowsShow', () => {
           'Failed to report flow. Error: custom error',
         ]);
         expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));
+      });
+    });
+  });
+
+  describe('version update behaviour', () => {
+    const mockVersionPropWithFn = {
+      isUpdateAvailable: true,
+      activeVersionKey: VERSION_LATEST,
+      setActiveVersionKey: jest.fn(),
+    };
+
+    it('shows only the "View latest version" button when update is available', () => {
+      createComponent({
+        props: {
+          version: {
+            ...mockVersionPropWithFn,
+            activeVersionKey: VERSION_PINNED,
+          },
+        },
+      });
+
+      expect(findUpdateAlert().exists()).toBe(true);
+      expect(findPrimaryUpdateButton().text()).toEqual('View latest version');
+      expect(findSecondaryUpdateButton().exists()).toEqual(false);
+    });
+
+    it('should show a "View enabled version" and "Update to vXX" buttons when latest version is active', async () => {
+      createComponent({
+        props: {
+          version: mockVersionPropWithFn,
+        },
+      });
+      await waitForPromises();
+
+      expect(findPrimaryUpdateButton().text()).toEqual('Update to v1.0.0-draft');
+      expect(findSecondaryUpdateButton().text()).toEqual('View enabled version');
+    });
+
+    describe('when updating version', () => {
+      const updateVersion = () => findPrimaryUpdateButton().vm.$emit('click');
+
+      const readyForUpdateComponent = () => {
+        createComponent({
+          props: {
+            version: mockVersionPropWithFn,
+          },
+        });
+      };
+
+      beforeEach(async () => {
+        updateAiCatalogItemConsumerHandler.mockResolvedValue(
+          mockUpdateAiCatalogItemConsumerSuccess,
+        );
+
+        readyForUpdateComponent();
+        await waitForPromises();
+      });
+
+      it('calls the update mutation with correct version prefix when button is clicked', async () => {
+        await updateVersion();
+        await waitForPromises();
+
+        expect(updateAiCatalogItemConsumerHandler).toHaveBeenCalledWith({
+          input: {
+            id: mockFlowConfigurationForProject.id,
+            pinnedVersionPrefix: '1.0.0',
+          },
+        });
+      });
+
+      it('shows error alert when it fails', async () => {
+        updateAiCatalogItemConsumerHandler.mockResolvedValue(mockUpdateAiCatalogItemConsumerError);
+        updateVersion();
+        await waitForPromises();
+        expect(findErrorsAlert().props('errors')).toEqual([
+          'Could not update flow in the project.',
+        ]);
+      });
+
+      it('shows success toast when it succeeds', async () => {
+        await updateVersion();
+        await waitForPromises();
+
+        expect(mockToast.show).toHaveBeenCalledWith('Flow is now at version 1.0.0-draft.');
       });
     });
   });

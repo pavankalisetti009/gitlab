@@ -63,6 +63,14 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
       }.merge(container)
     end
 
+    before do
+      allow_next_instance_of(Ai::UsageQuotaService) do |instance|
+        allow(instance).to receive(:execute).and_return(
+          ServiceResponse.success
+        )
+      end
+    end
+
     context 'when workflow is chat' do
       let(:workflow_definition) { 'chat' }
 
@@ -369,6 +377,18 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
         before do
           project.project_setting.update!(duo_features_enabled: false)
           project.reload
+        end
+
+        it_behaves_like 'workflow access is forbidden'
+      end
+
+      context 'when there are not enough credits' do
+        before do
+          allow_next_instance_of(Ai::UsageQuotaService) do |instance|
+            allow(instance).to receive(:execute).and_return(
+              ServiceResponse.error(message: "Usage quota exceeded", reason: :usage_quota_exceeded)
+            )
+          end
         end
 
         it_behaves_like 'workflow access is forbidden'

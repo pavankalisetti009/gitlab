@@ -5,6 +5,7 @@ import AiCatalogItemField from 'ee/ai/catalog/components/ai_catalog_item_field.v
 import AiCatalogItemVisibilityField from 'ee/ai/catalog/components/ai_catalog_item_visibility_field.vue';
 import FormFlowDefinition from 'ee/ai/catalog/components/form_flow_definition.vue';
 import FormSection from 'ee/ai/catalog/components/form_section.vue';
+import { VERSION_LATEST, VERSION_PINNED } from 'ee/ai/catalog/constants';
 import {
   FLOW_TRIGGERS_EDIT_ROUTE,
   FLOW_TRIGGERS_NEW_ROUTE,
@@ -21,7 +22,7 @@ describe('AiCatalogFlowDetails', () => {
 
   const defaultProps = {
     item: mockFlow,
-    versionData: mockFlow.latestVersion,
+    versionKey: VERSION_LATEST,
   };
 
   const createComponent = ({ props = {} } = {}) => {
@@ -137,7 +138,7 @@ describe('AiCatalogFlowDetails', () => {
                 ...mockFlow,
                 configurationForProject: mockFlowConfigurationForProject,
               },
-              versionData: mockFlowConfigurationForProject.pinnedItemVersion,
+              versionKey: VERSION_PINNED,
             },
           });
         });
@@ -178,9 +179,7 @@ describe('AiCatalogFlowDetails', () => {
     beforeEach(() => {
       createComponent({
         props: {
-          versionData: {
-            ...mockThirdPartyFlowConfigurationForProject.pinnedItemVersion,
-          },
+          versionKey: VERSION_PINNED,
           item: {
             ...mockThirdPartyFlow,
             configurationForProject: {

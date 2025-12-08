@@ -7,13 +7,14 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import createAiCatalogAgent from 'ee/ai/catalog/graphql/mutations/create_ai_catalog_agent.mutation.graphql';
 import AiCatalogAgentsDuplicate from 'ee/ai/catalog/pages/ai_catalog_agents_duplicate.vue';
 import AiCatalogAgentForm from 'ee/ai/catalog/components/ai_catalog_agent_form.vue';
+import { VERSION_PINNED } from 'ee/ai/catalog/constants';
 import { AI_CATALOG_AGENTS_SHOW_ROUTE } from 'ee/ai/catalog/router/constants';
 import {
   mockAgent,
   mockCreateAiCatalogAgentSuccessMutation,
   mockCreateAiCatalogAgentErrorMutation,
   mockAgentConfigurationForProject,
-  mockAgentVersionDataProp,
+  mockVersionProp,
 } from '../mock_data';
 
 Vue.use(VueApollo);
@@ -34,17 +35,20 @@ describe('AiCatalogAgentsDuplicate', () => {
   const routeParams = { id: agentId };
   const defaultProps = {
     aiCatalogAgent: mockAgent,
-    versionData: mockAgentVersionDataProp,
+    version: mockVersionProp, // mock defaults to `latestVersion`
   };
 
-  const createComponent = (props = defaultProps) => {
+  const createComponent = (props = {}) => {
     createAiCatalogAgentMock = jest.fn().mockResolvedValue(mockCreateAiCatalogAgentSuccessMutation);
 
     const apolloProvider = createMockApollo([[createAiCatalogAgent, createAiCatalogAgentMock]]);
 
     wrapper = shallowMountExtended(AiCatalogAgentsDuplicate, {
       apolloProvider,
-      propsData: props,
+      propsData: {
+        ...defaultProps,
+        ...props,
+      },
       mocks: {
         $route: {
           params: routeParams,
@@ -62,17 +66,17 @@ describe('AiCatalogAgentsDuplicate', () => {
   });
 
   describe('Form Initial Values', () => {
-    it('sets initial values based on the pinned version agent, but always private and without a project', async () => {
+    it('sets initial values based on the versionKey, but always private and without a project', async () => {
       const expectedInitialValues = {
         name: `Copy of ${mockAgent.name}`,
         description: mockAgent.description,
-        systemPrompt: mockAgentVersionDataProp.systemPrompt,
-        tools: mockAgentVersionDataProp.tools.map((t) => t.id),
+        systemPrompt: mockAgentConfigurationForProject.pinnedItemVersion.systemPrompt,
+        tools: mockAgentConfigurationForProject.pinnedItemVersion.tools.nodes.map((t) => t.id),
         public: false,
       };
 
       createComponent({
-        ...defaultProps,
+        version: { isUpdateAvailable: true, activeVersionKey: VERSION_PINNED },
         aiCatalogAgent: { ...mockAgent, configurationForProject: mockAgentConfigurationForProject },
       });
       await waitForPromises();
@@ -84,13 +88,12 @@ describe('AiCatalogAgentsDuplicate', () => {
       const expectedInitialValues = {
         name: `Copy of ${mockAgent.name}`,
         description: mockAgent.description,
-        systemPrompt: mockAgentVersionDataProp.systemPrompt,
-        tools: mockAgentVersionDataProp.tools.map((t) => t.id),
+        systemPrompt: mockAgent.latestVersion.systemPrompt,
+        tools: [],
         public: false,
       };
 
       createComponent({
-        versionData: mockAgentVersionDataProp,
         aiCatalogAgent: {
           ...mockAgent,
           configurationForProject: mockAgentConfigurationForProject,

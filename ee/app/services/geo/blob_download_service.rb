@@ -44,8 +44,6 @@ module Geo
             error: error
           )
           track_exception(error)
-
-          raise error
         ensure
           # make sure we're not stuck in a started state still
           if registry.started?
@@ -86,13 +84,13 @@ module Geo
         replicable_name: @replicator.replicable_name,
         model_record_id: @replicator.model_record_id,
         mark_as_synced: mark_as_synced,
-        download_success: download_result.success,
-        bytes_downloaded: download_result.bytes_downloaded,
-        primary_missing_file: download_result.primary_missing_file,
+        download_success: download_result&.success || false,
+        bytes_downloaded: download_result&.bytes_downloaded || 0,
+        primary_missing_file: download_result&.primary_missing_file || false,
         download_time_s: (Time.current - start_time).to_f.round(3),
-        reason: download_result.reason
+        reason: download_result&.reason
       }
-      metadata.merge!(download_result.extra_details) if download_result.extra_details
+      metadata.merge!(download_result.extra_details) if download_result&.extra_details
 
       log_warning("Blob download", metadata)
     end

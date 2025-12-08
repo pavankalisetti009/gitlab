@@ -81,6 +81,12 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_agent_platfo
       .to receive(:resource)
       .and_return(authorizer_double)
     allow(authorizer_double).to receive(:allowed?).and_return(true)
+
+    allow_next_instance_of(Ai::UsageQuotaService) do |instance|
+      allow(instance).to receive(:execute).and_return(
+        ServiceResponse.success
+      )
+    end
   end
 
   describe '#initialize' do

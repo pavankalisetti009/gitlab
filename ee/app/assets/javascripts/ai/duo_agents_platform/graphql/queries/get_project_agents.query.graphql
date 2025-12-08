@@ -36,9 +36,17 @@ query projectAiCatalogAgents(
           id
           nameWithNamespace
         }
+        latestVersion {
+          id
+          humanVersionName
+        }
         configurationForProject(projectId: $projectId) {
           id
           enabled
+          pinnedItemVersion {
+            id
+            humanVersionName
+          }
         }
       }
       pageInfo {

@@ -8,7 +8,8 @@ import { TYPENAME_PROJECT, TYPENAME_GROUP } from '~/graphql_shared/constants';
 import { TYPENAME_AI_CATALOG_ITEM } from 'ee/graphql_shared/constants';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import aiCatalogAgentQuery from '../graphql/queries/ai_catalog_agent.query.graphql';
-import { AI_CATALOG_TYPE_AGENT } from '../constants';
+import { AI_CATALOG_TYPE_AGENT, VERSION_PINNED, VERSION_LATEST } from '../constants';
+import { getByVersionKey } from '../utils';
 
 export default {
   name: 'AiCatalogAgent',
@@ -31,6 +32,7 @@ export default {
   data() {
     return {
       aiCatalogAgent: {},
+      activeVersionKey: null,
       errors: [],
     };
   },
@@ -74,25 +76,44 @@ export default {
       return !this.isProject && !this.isGlobal;
     },
     hasNoConsumer() {
-      return this.isProject && !this.aiCatalogAgent?.configurationForProject;
-    },
-    shouldShowLatestVersion() {
-      return this.isGlobal || this.isGroup || this.hasNoConsumer;
-    },
-    versionData() {
-      let version;
-      if (this.shouldShowLatestVersion) {
-        version = this.aiCatalogAgent.latestVersion;
-      } else {
-        version = this.aiCatalogAgent.configurationForProject.pinnedItemVersion;
-      }
-      return {
-        ...version,
-        tools: version.tools?.nodes || [],
-      };
+      return !this.aiCatalogAgent.configurationForProject;
     },
     hasParentConsumer() {
       return this.aiCatalogAgent?.configurationForGroup?.enabled;
+    },
+    shouldShowLatestVersion() {
+      // Always show latest version in Explore/Group namespaces. Project namespace should show pinned version,
+      // but when navigation to an Item from the Managed tab, we aren't able to flag to the show page (this component)
+      // that it needs to show the latest version once we cross the router boundary.
+      // This is known: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/214607#note_2923544884
+      return this.isGlobal || this.isGroup;
+    },
+    isUpdateAvailable() {
+      if (this.shouldShowLatestVersion || this.hasNoConsumer) {
+        return false;
+      }
+
+      const agent = this.aiCatalogAgent;
+      const hasPermissions = Boolean(
+        agent.configurationForProject.userPermissions?.adminAiCatalogItemConsumer,
+      );
+      const latestVersion = getByVersionKey(agent, VERSION_LATEST).humanVersionName;
+      const pinnedVersion = getByVersionKey(agent, VERSION_PINNED).humanVersionName;
+
+      // The backend always bumps *up*, so we don't need a complex comparison
+      return hasPermissions && latestVersion !== pinnedVersion;
+    },
+    baseVersionKey() {
+      return this.shouldShowLatestVersion || this.hasNoConsumer ? VERSION_LATEST : VERSION_PINNED;
+    },
+    version() {
+      return {
+        isUpdateAvailable: this.isUpdateAvailable,
+        activeVersionKey: this.activeVersionKey ?? this.baseVersionKey,
+        setActiveVersionKey: (selectedKey) => {
+          this.activeVersionKey = selectedKey;
+        },
+      };
     },
   },
   emptySearchSvg,
@@ -114,7 +135,7 @@ export default {
     <router-view
       v-else
       :ai-catalog-agent="aiCatalogAgent"
-      :version-data="versionData"
+      :version="version"
       :has-parent-consumer="hasParentConsumer"
     />
   </div>

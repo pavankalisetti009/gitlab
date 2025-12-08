@@ -1,5 +1,6 @@
 <script>
 import { GlLink, GlToken, GlTruncateText } from '@gitlab/ui';
+import { getByVersionKey } from '../utils';
 import { AGENT_VISIBILITY_LEVEL_DESCRIPTIONS } from '../constants';
 import AiCatalogItemField from './ai_catalog_item_field.vue';
 import AiCatalogItemVisibilityField from './ai_catalog_item_visibility_field.vue';
@@ -22,8 +23,8 @@ export default {
       type: Object,
       required: true,
     },
-    versionData: {
-      type: Object,
+    versionKey: {
+      type: String,
       required: true,
     },
   },
@@ -31,8 +32,14 @@ export default {
     projectName() {
       return this.item.project?.nameWithNamespace;
     },
-    tools() {
-      return this.versionData.tools?.map((t) => t.title)?.sort() || [];
+    version() {
+      return getByVersionKey(this.item, this.versionKey);
+    },
+    toolTitles() {
+      return (this.version.tools?.nodes ?? []).map((t) => t.title).sort();
+    },
+    systemPrompt() {
+      return this.version.systemPrompt;
     },
   },
   AGENT_VISIBILITY_LEVEL_DESCRIPTIONS,
@@ -67,15 +74,15 @@ export default {
               :show-less-text="__('Show less')"
               :toggle-button-props="$options.truncateTextToggleButtonProps"
               class="gl-flex gl-flex-col gl-items-start gl-gap-3"
-            >{{ versionData.systemPrompt }}</gl-truncate-text></pre>
+            >{{ systemPrompt }}</gl-truncate-text></pre>
           </div>
         </ai-catalog-item-field>
         <ai-catalog-item-field :title="s__('AICatalog|Tools')">
-          <span v-if="tools.length === 0" class="gl-text-subtle">
+          <span v-if="toolTitles.length === 0" class="gl-text-subtle">
             {{ __('None') }}
           </span>
           <div v-else class="gl-mt-3 gl-flex gl-flex-wrap gl-gap-2 gl-whitespace-nowrap">
-            <gl-token v-for="tool in tools" :key="tool" view-only>
+            <gl-token v-for="tool in toolTitles" :key="tool" view-only>
               {{ tool }}
             </gl-token>
           </div>

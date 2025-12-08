@@ -4,6 +4,7 @@ import {
   GlDisclosureDropdownGroup,
   GlDisclosureDropdownItem,
   GlTruncate,
+  GlBadge,
   GlIcon,
   GlTooltipDirective,
 } from '@gitlab/ui';
@@ -25,6 +26,7 @@ export default {
     GlDisclosureDropdownGroup,
     GlDisclosureDropdownItem,
     GlTruncate,
+    GlBadge,
     GlIcon,
     FoundationalIcon,
   },
@@ -158,6 +160,21 @@ export default {
         >
           <gl-icon name="connected" variant="subtle" :size="14" />
           <span class="gl-pt-px gl-text-subtle">{{ s__('AICatalog|External') }}</span>
+        </div>
+        <div
+          v-if="item.isUpdateAvailable"
+          v-gl-tooltip
+          :title="
+            s__(
+              'AICatalog|A new version is available. If you have at least the Maintainer role, you can update this item.',
+            )
+          "
+          data-testid="ai-catalog-item-update"
+          class="gl-flex gl-items-center gl-gap-2"
+        >
+          <router-link :to="showItemRoute">
+            <gl-badge variant="info">{{ s__('AICatalog|Update available') }}</gl-badge>
+          </router-link>
         </div>
       </div>
     </div>

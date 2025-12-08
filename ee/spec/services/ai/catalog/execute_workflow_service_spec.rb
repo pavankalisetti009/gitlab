@@ -35,6 +35,11 @@ RSpec.describe Ai::Catalog::ExecuteWorkflowService, :aggregate_failures, feature
 
   before do
     enable_ai_catalog
+    allow_next_instance_of(Ai::UsageQuotaService) do |instance|
+      allow(instance).to receive(:execute).and_return(
+        ServiceResponse.success
+      )
+    end
   end
 
   shared_examples "returns error response" do |expected_message|

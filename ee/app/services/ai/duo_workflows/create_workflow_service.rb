@@ -19,6 +19,18 @@ module Ai
           return error('container must be a Project or Namespace', :bad_request)
         end
 
+        namespace = @container.is_a?(::Project) ? @container.namespace : @container
+        credit_check_response = Ai::UsageQuotaService.new(
+          user: @current_user, namespace: namespace
+        ).execute
+
+        if credit_check_response.error?
+          # http status should not be part of Service, but needs significant refactoring in the callers of
+          # CreateWorkflowService.execute
+          http_status = http_status_for_quota_error(credit_check_response.reason)
+          return error(credit_check_response.message, http_status)
+        end
+
         response = check_ai_catalog_item_access || check_access
         return response if response&.error?
 
@@ -144,6 +156,19 @@ module Ai
       rescue StandardError => err
         Gitlab::ErrorTracking.track_exception(err, issue_iid: issue_iid, container_id: @container.id)
         nil
+      end
+
+      def http_status_for_quota_error(reason)
+        case reason
+        when :user_missing, :namespace_missing
+          :bad_request
+        when :usage_quota_exceeded
+          :payment_required
+        when :service_error
+          :internal_server_error
+        else
+          :internal_server_error
+        end
       end
     end
   end

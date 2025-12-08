@@ -1,0 +1,9 @@
+mutation updateAiCatalogItemConsumer($input: AiCatalogItemConsumerUpdateInput!) {
+  aiCatalogItemConsumerUpdate(input: $input) {
+    errors
+    itemConsumer {
+      id
+      pinnedVersionPrefix
+    }
+  }
+}

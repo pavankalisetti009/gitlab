@@ -9,13 +9,13 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import AiCatalogAgentsEdit from 'ee/ai/catalog/pages/ai_catalog_agents_edit.vue';
 import AiCatalogAgentForm from 'ee/ai/catalog/components/ai_catalog_agent_form.vue';
 import updateAiCatalogAgent from 'ee/ai/catalog/graphql/mutations/update_ai_catalog_agent.mutation.graphql';
+import { VERSION_LATEST } from 'ee/ai/catalog/constants';
 import { AI_CATALOG_AGENTS_SHOW_ROUTE } from 'ee/ai/catalog/router/constants';
 import {
   mockAgent,
   mockAgentConfigurationForProject,
   mockUpdateAiCatalogAgentSuccessMutation,
   mockUpdateAiCatalogAgentErrorMutation,
-  mockAgentVersionDataProp,
 } from '../mock_data';
 
 Vue.use(VueApollo);
@@ -36,7 +36,7 @@ describe('AiCatalogAgentsEdit', () => {
   const routeParams = { id: agentId };
   const defaultProps = {
     aiCatalogAgent: mockAgent,
-    versionData: mockAgentVersionDataProp,
+    versionKey: VERSION_LATEST,
   };
 
   const mockUpdateAiCatalogAgentHandler = jest
@@ -78,16 +78,15 @@ describe('AiCatalogAgentsEdit', () => {
         name: mockAgent.name,
         description: mockAgent.description,
         projectId: 'gid://gitlab/Project/1',
-        // we expect the versionData prop values to replace the ones in the aiCatalogAgent prop
-        systemPrompt: mockAgentVersionDataProp.systemPrompt, // uses mock pinned version data
-        tools: mockAgentVersionDataProp.tools.map((t) => t.id),
+        systemPrompt: mockAgent.latestVersion.systemPrompt,
+        tools: [],
         public: true,
       };
 
       createComponent({
         aiCatalogAgent: {
           ...mockAgent,
-          configurationForProject: mockAgentConfigurationForProject, // uses mock pinned version data
+          configurationForProject: mockAgentConfigurationForProject, // this is not expected
         },
       });
       await waitForPromises();
