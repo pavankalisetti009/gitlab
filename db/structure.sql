@@ -10618,6 +10618,7 @@ CREATE TABLE abuse_report_uploads (
     mount_point text,
     secret text,
     CONSTRAINT check_2849dedce7 CHECK ((char_length(path) <= 511)),
+    CONSTRAINT check_2db09e0e37 CHECK ((organization_id IS NOT NULL)),
     CONSTRAINT check_b888b1df14 CHECK ((char_length(checksum) <= 64))
 );
 
@@ -10701,6 +10702,7 @@ CREATE TABLE achievement_uploads (
     mount_point text,
     secret text,
     CONSTRAINT check_2849dedce7 CHECK ((char_length(path) <= 511)),
+    CONSTRAINT check_9dac0178ee CHECK ((namespace_id IS NOT NULL)),
     CONSTRAINT check_b888b1df14 CHECK ((char_length(checksum) <= 64))
 );
 
@@ -11395,6 +11397,7 @@ CREATE TABLE ai_vectorizable_file_uploads (
     mount_point text,
     secret text,
     CONSTRAINT check_2849dedce7 CHECK ((char_length(path) <= 511)),
+    CONSTRAINT check_73db12226b CHECK ((project_id IS NOT NULL)),
     CONSTRAINT check_b888b1df14 CHECK ((char_length(checksum) <= 64))
 );
 
@@ -11453,6 +11456,7 @@ CREATE TABLE alert_management_alert_metric_image_uploads (
     mount_point text,
     secret text,
     CONSTRAINT check_2849dedce7 CHECK ((char_length(path) <= 511)),
+    CONSTRAINT check_49e9003aa6 CHECK ((project_id IS NOT NULL)),
     CONSTRAINT check_b888b1df14 CHECK ((char_length(checksum) <= 64))
 );
 
@@ -14054,7 +14058,8 @@ CREATE TABLE bulk_import_export_upload_uploads (
     mount_point text,
     secret text,
     CONSTRAINT check_2849dedce7 CHECK ((char_length(path) <= 511)),
-    CONSTRAINT check_b888b1df14 CHECK ((char_length(checksum) <= 64))
+    CONSTRAINT check_b888b1df14 CHECK ((char_length(checksum) <= 64)),
+    CONSTRAINT check_fd3aa31edf CHECK ((num_nonnulls(namespace_id, project_id) = 1))
 );
 
 CREATE TABLE bulk_import_export_uploads (
@@ -16749,6 +16754,7 @@ CREATE TABLE dependency_list_export_part_uploads (
     mount_point text,
     secret text,
     CONSTRAINT check_2849dedce7 CHECK ((char_length(path) <= 511)),
+    CONSTRAINT check_86a96d8348 CHECK ((organization_id IS NOT NULL)),
     CONSTRAINT check_b888b1df14 CHECK ((char_length(checksum) <= 64))
 );
 
@@ -16792,6 +16798,7 @@ CREATE TABLE dependency_list_export_uploads (
     mount_point text,
     secret text,
     CONSTRAINT check_2849dedce7 CHECK ((char_length(path) <= 511)),
+    CONSTRAINT check_889220aa2d CHECK ((num_nonnulls(namespace_id, organization_id, project_id) > 0)),
     CONSTRAINT check_b888b1df14 CHECK ((char_length(checksum) <= 64))
 );
 
@@ -17115,6 +17122,7 @@ CREATE TABLE design_management_action_uploads (
     mount_point text,
     secret text,
     CONSTRAINT check_2849dedce7 CHECK ((char_length(path) <= 511)),
+    CONSTRAINT check_63456653da CHECK ((namespace_id IS NOT NULL)),
     CONSTRAINT check_b888b1df14 CHECK ((char_length(checksum) <= 64))
 );
 
@@ -18911,6 +18919,7 @@ CREATE TABLE import_export_upload_uploads (
     mount_point text,
     secret text,
     CONSTRAINT check_2849dedce7 CHECK ((char_length(path) <= 511)),
+    CONSTRAINT check_5c88ee613c CHECK ((num_nonnulls(namespace_id, project_id) = 1)),
     CONSTRAINT check_b888b1df14 CHECK ((char_length(checksum) <= 64))
 );
 
@@ -19572,6 +19581,7 @@ CREATE TABLE issuable_metric_image_uploads (
     mount_point text,
     secret text,
     CONSTRAINT check_2849dedce7 CHECK ((char_length(path) <= 511)),
+    CONSTRAINT check_5bfdc76f5c CHECK ((namespace_id IS NOT NULL)),
     CONSTRAINT check_b888b1df14 CHECK ((char_length(checksum) <= 64))
 );
 
@@ -21681,7 +21691,8 @@ CREATE TABLE namespace_uploads (
     mount_point text,
     secret text,
     CONSTRAINT check_2849dedce7 CHECK ((char_length(path) <= 511)),
-    CONSTRAINT check_b888b1df14 CHECK ((char_length(checksum) <= 64))
+    CONSTRAINT check_b888b1df14 CHECK ((char_length(checksum) <= 64)),
+    CONSTRAINT check_dff00b5115 CHECK ((namespace_id IS NOT NULL))
 );
 
 CREATE SEQUENCE namespaces_id_seq
@@ -22301,6 +22312,7 @@ CREATE TABLE organization_detail_uploads (
     mount_point text,
     secret text,
     CONSTRAINT check_2849dedce7 CHECK ((char_length(path) <= 511)),
+    CONSTRAINT check_8c86d5dff9 CHECK ((organization_id IS NOT NULL)),
     CONSTRAINT check_b888b1df14 CHECK ((char_length(checksum) <= 64))
 );
 
@@ -24954,6 +24966,7 @@ CREATE TABLE project_import_export_relation_export_upload_uploads (
     mount_point text,
     secret text,
     CONSTRAINT check_2849dedce7 CHECK ((char_length(path) <= 511)),
+    CONSTRAINT check_3802d7ee83 CHECK ((project_id IS NOT NULL)),
     CONSTRAINT check_b888b1df14 CHECK ((char_length(checksum) <= 64))
 );
 
@@ -25443,7 +25456,8 @@ CREATE TABLE project_topic_uploads (
     mount_point text,
     secret text,
     CONSTRAINT check_2849dedce7 CHECK ((char_length(path) <= 511)),
-    CONSTRAINT check_b888b1df14 CHECK ((char_length(checksum) <= 64))
+    CONSTRAINT check_b888b1df14 CHECK ((char_length(checksum) <= 64)),
+    CONSTRAINT check_d6cd4bbec3 CHECK ((organization_id IS NOT NULL))
 );
 
 CREATE TABLE project_topics (
@@ -25541,7 +25555,8 @@ CREATE TABLE project_uploads (
     mount_point text,
     secret text,
     CONSTRAINT check_2849dedce7 CHECK ((char_length(path) <= 511)),
-    CONSTRAINT check_b888b1df14 CHECK ((char_length(checksum) <= 64))
+    CONSTRAINT check_b888b1df14 CHECK ((char_length(checksum) <= 64)),
+    CONSTRAINT check_d5b2a170a1 CHECK ((project_id IS NOT NULL))
 );
 
 CREATE TABLE project_wiki_repositories (
@@ -27494,7 +27509,8 @@ CREATE TABLE snippet_uploads (
     mount_point text,
     secret text,
     CONSTRAINT check_2849dedce7 CHECK ((char_length(path) <= 511)),
-    CONSTRAINT check_b888b1df14 CHECK ((char_length(checksum) <= 64))
+    CONSTRAINT check_b888b1df14 CHECK ((char_length(checksum) <= 64)),
+    CONSTRAINT check_f1b1b6e769 CHECK ((organization_id IS NOT NULL))
 );
 
 CREATE TABLE snippet_user_mentions (
@@ -28731,6 +28747,7 @@ CREATE TABLE user_permission_export_upload_uploads (
     mount_point text,
     secret text,
     CONSTRAINT check_2849dedce7 CHECK ((char_length(path) <= 511)),
+    CONSTRAINT check_824c448850 CHECK ((uploaded_by_user_id IS NOT NULL)),
     CONSTRAINT check_b888b1df14 CHECK ((char_length(checksum) <= 64))
 );
 
@@ -28949,7 +28966,8 @@ CREATE TABLE user_uploads (
     mount_point text,
     secret text,
     CONSTRAINT check_2849dedce7 CHECK ((char_length(path) <= 511)),
-    CONSTRAINT check_b888b1df14 CHECK ((char_length(checksum) <= 64))
+    CONSTRAINT check_b888b1df14 CHECK ((char_length(checksum) <= 64)),
+    CONSTRAINT check_fa16e4c6ff CHECK ((organization_id IS NOT NULL))
 );
 
 CREATE SEQUENCE users_id_seq
@@ -29315,6 +29333,7 @@ CREATE TABLE vulnerability_archive_export_uploads (
     mount_point text,
     secret text,
     CONSTRAINT check_2849dedce7 CHECK ((char_length(path) <= 511)),
+    CONSTRAINT check_7bfde94300 CHECK ((project_id IS NOT NULL)),
     CONSTRAINT check_b888b1df14 CHECK ((char_length(checksum) <= 64))
 );
 
@@ -29381,7 +29400,8 @@ CREATE TABLE vulnerability_export_part_uploads (
     mount_point text,
     secret text,
     CONSTRAINT check_2849dedce7 CHECK ((char_length(path) <= 511)),
-    CONSTRAINT check_b888b1df14 CHECK ((char_length(checksum) <= 64))
+    CONSTRAINT check_b888b1df14 CHECK ((char_length(checksum) <= 64)),
+    CONSTRAINT check_fafd5f387b CHECK ((organization_id IS NOT NULL))
 );
 
 CREATE TABLE vulnerability_export_parts (
@@ -29423,6 +29443,7 @@ CREATE TABLE vulnerability_export_uploads (
     uploader text NOT NULL,
     mount_point text,
     secret text,
+    CONSTRAINT check_1bc83211e7 CHECK ((organization_id IS NOT NULL)),
     CONSTRAINT check_2849dedce7 CHECK ((char_length(path) <= 511)),
     CONSTRAINT check_b888b1df14 CHECK ((char_length(checksum) <= 64))
 );
@@ -29922,6 +29943,7 @@ CREATE TABLE vulnerability_remediation_uploads (
     uploader text NOT NULL,
     mount_point text,
     secret text,
+    CONSTRAINT check_23cba26410 CHECK ((project_id IS NOT NULL)),
     CONSTRAINT check_2849dedce7 CHECK ((char_length(path) <= 511)),
     CONSTRAINT check_b888b1df14 CHECK ((char_length(checksum) <= 64))
 );
