@@ -25,9 +25,9 @@ RSpec.describe API::Commits, feature_category: :source_code_management do
   end
 
   describe "POST /projects/:id/repository/commits" do
-    let!(:url) { "/projects/#{project_id}/repository/commits" }
+    include_context 'for workhorse body uploads'
 
-    subject(:request) { post api(url, user), params: params }
+    let!(:url) { api("/projects/#{project_id}/repository/commits", user) }
 
     context "create" do
       let(:message) { "Created a new file with a very very looooooooooooooooooooooooooooooooooooooooooooooong commit message" }
@@ -48,7 +48,7 @@ RSpec.describe API::Commits, feature_category: :source_code_management do
 
       context "a new file that does not match a codeowners entry" do
         before do
-          post api(url, user), params: valid_c_params
+          perform_workhorse_json_body_upload(url, valid_c_params.to_json)
         end
 
         it "creates the commit" do
@@ -74,7 +74,7 @@ RSpec.describe API::Commits, feature_category: :source_code_management do
         before do
           project.add_developer(service_account)
 
-          post api(url, user, oauth_access_token: token), params: valid_c_params
+          perform_workhorse_json_body_upload(url, valid_c_params.to_json)
         end
 
         let(:organization) { create(:organization) }
@@ -94,6 +94,8 @@ RSpec.describe API::Commits, feature_category: :source_code_management do
             scopes: scopes
           })
         end
+
+        let!(:url) { api("/projects/#{project_id}/repository/commits", user, oauth_access_token: token) }
 
         let(:file_path) { "foo/bar/1.txt" }
 
@@ -123,7 +125,7 @@ RSpec.describe API::Commits, feature_category: :source_code_management do
 
       context "a deleted file that does not match a codeowner entry" do
         it "creates the commit" do
-          post api(url, user), params: valid_d_params
+          perform_workhorse_json_body_upload(url, valid_d_params.to_json)
 
           expect(response).to have_gitlab_http_status(:created)
           expect(json_response['title']).to eq(message)
@@ -159,7 +161,7 @@ RSpec.describe API::Commits, feature_category: :source_code_management do
 
       context "a deleted file that does not match a codeowner entry" do
         it "creates the commit" do
-          post api(url, user), params: valid_m_params
+          perform_workhorse_json_body_upload(url, valid_m_params.to_json)
 
           expect(response).to have_gitlab_http_status(:created)
           expect(json_response['title']).to eq(message)
