@@ -91,6 +91,7 @@ describe('AiFlowsIndex', () => {
   const findAddProjectItemConsumerModal = () => wrapper.findComponent(AddProjectItemConsumerModal);
   const findAiCatalogListWrapper = () => wrapper.findByTestId('managed-flows-list');
   const findTabs = () => wrapper.findComponent(GlTabs);
+  const findAllTabs = () => wrapper.findAllComponents(GlTab);
 
   describe('component rendering', () => {
     beforeEach(() => {
@@ -217,6 +218,27 @@ describe('AiFlowsIndex', () => {
           itemTypes: ['FLOW', 'THIRD_PARTY_FLOW'],
           allAvailable: false,
           search: '',
+          after: null,
+          before: null,
+          first: 20,
+          last: null,
+        });
+      });
+
+      it('clears search term when switching tabs', async () => {
+        // First set a search term
+        findAiCatalogListWrapper().vm.$emit('search', ['test flow']);
+        await nextTick();
+
+        // Click on Enabled tab
+        findAllTabs().at(0).vm.$emit('click');
+        await nextTick();
+
+        expect(mockProjectFlowsQueryHandler).toHaveBeenLastCalledWith({
+          projectPath: mockProjectPath,
+          itemTypes: ['FLOW', 'THIRD_PARTY_FLOW'],
+          allAvailable: false,
+          search: 'test flow',
           after: null,
           before: null,
           first: 20,
