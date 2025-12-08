@@ -13,6 +13,8 @@ module EE
         :allow_group_owners_to_manage_ldap,
         :automatic_purchased_storage_allocation,
         :check_namespace_plan,
+        :ci_cd_catalog_projects_allowlist,
+        :ci_cd_catalog_projects_allowlist_raw,
         :duo_chat_expiration_column,
         :duo_chat_expiration_days,
         :elasticsearch_aws_access_key,

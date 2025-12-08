@@ -57,6 +57,7 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
         auto_ban_user_on_excessive_projects_download: false,
         automatic_purchased_storage_allocation: false,
         ci_requires_identity_verification_on_free_plan: true,
+        ci_cd_catalog_projects_allowlist: [],
         credit_card_verification_enabled: true,
         cube_api_base_url: nil,
         cube_api_key: nil,
@@ -1445,6 +1446,14 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
         end
       end
     end
+
+    describe 'ci_cd_catalog_projects_allowlist', feature_category: :pipeline_composition do
+      it { is_expected.to allow_value([]).for(:ci_cd_catalog_projects_allowlist) }
+      it { is_expected.to allow_value(['gitlab-org/project']).for(:ci_cd_catalog_projects_allowlist) }
+      it { is_expected.to allow_value(['gitlab-org/.*']).for(:ci_cd_catalog_projects_allowlist) }
+      it { is_expected.to allow_value(['project'] * 1000).for(:ci_cd_catalog_projects_allowlist) }
+      it { is_expected.not_to allow_value(['project'] * 1001).for(:ci_cd_catalog_projects_allowlist) }
+    end
   end
 
   describe 'search curation settings after .create_from_defaults', feature_category: :global_search do
@@ -2370,6 +2379,40 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
           it { is_expected.to be_truthy }
         end
       end
+    end
+  end
+
+  describe '#ci_cd_catalog_projects_allowlist_raw' do
+    it 'returns the allowlist as a newline-separated string' do
+      setting.ci_cd_catalog_projects_allowlist = ['gitlab-org/project1', 'gitlab-org/.*']
+
+      expect(setting.ci_cd_catalog_projects_allowlist_raw).to eq("gitlab-org/project1\ngitlab-org/.*")
+    end
+
+    it 'returns nil when allowlist is empty' do
+      setting.ci_cd_catalog_projects_allowlist = []
+
+      expect(setting.ci_cd_catalog_projects_allowlist_raw).to eq("")
+    end
+  end
+
+  describe '#ci_cd_catalog_projects_allowlist_raw=' do
+    it 'sets the allowlist from a newline-separated string' do
+      setting.ci_cd_catalog_projects_allowlist_raw = "gitlab-org/project1\ngitlab-org/.*"
+
+      expect(setting.ci_cd_catalog_projects_allowlist).to match_array(['gitlab-org/project1', 'gitlab-org/.*'])
+    end
+
+    it 'handles comma-separated values' do
+      setting.ci_cd_catalog_projects_allowlist_raw = "gitlab-org/project1, gitlab-org/project2"
+
+      expect(setting.ci_cd_catalog_projects_allowlist).to match_array(['gitlab-org/project1', 'gitlab-org/project2'])
+    end
+
+    it 'removes empty entries and duplicates' do
+      setting.ci_cd_catalog_projects_allowlist_raw = "gitlab-org/project1\n\ngitlab-org/project1"
+
+      expect(setting.ci_cd_catalog_projects_allowlist).to eq(['gitlab-org/project1'])
     end
   end
 end
