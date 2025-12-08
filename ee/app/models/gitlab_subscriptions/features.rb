@@ -199,6 +199,7 @@ module GitlabSubscriptions
       project_saved_replies
       default_roles_assignees
       ci_component_usages_in_projects
+      ci_cd_catalog_publish_restriction
       branch_rule_squash_options
       work_item_status
       glab_ask_git_command
