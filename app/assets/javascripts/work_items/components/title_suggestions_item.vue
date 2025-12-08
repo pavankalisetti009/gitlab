@@ -7,6 +7,7 @@ import UserAvatarImage from '~/vue_shared/components/user_avatar/user_avatar_ima
 import timeago from '~/vue_shared/mixins/timeago';
 
 export default {
+  name: 'TitleSuggestionsItem',
   components: {
     GlTooltip,
     GlLink,
