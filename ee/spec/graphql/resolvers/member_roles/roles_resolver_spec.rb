@@ -58,5 +58,13 @@ RSpec.describe Resolvers::MemberRoles::RolesResolver, feature_category: :api do
         expect(result).to contain_exactly(read_runners_role, admin_runners_role)
       end
     end
+
+    context 'with assignable arg' do
+      let(:args) { { assignable: true } }
+
+      it 'returns all assignable custom roles' do
+        expect(result).to contain_exactly(read_code_role)
+      end
+    end
   end
 end

@@ -3,7 +3,7 @@
 query getInviteModalGroupMemberRoles($fullPath: ID!) {
   namespace: group(fullPath: $fullPath) {
     id
-    memberRoles {
+    memberRoles(assignable: true) {
       ...MemberRoles
     }
   }

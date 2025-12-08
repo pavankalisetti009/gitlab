@@ -25,18 +25,23 @@ RSpec.describe SystemNotes::VulnerabilitiesService, feature_category: :vulnerabi
       end
     end
 
-    %w[dismissed resolved confirmed].each do |state|
-      context "state changed to #{state}" do
+    {
+      'dismissed' => 'resolved',
+      'resolved' => 'confirmed',
+      'confirmed' => 'dismissed'
+    }.each do |from_state, to_state|
+      context "state changed from #{from_state} to #{to_state}" do
         let!(:state_transition) do
-          create(:vulnerability_state_transition, vulnerability: vulnerability, to_state: state, comment: nil)
+          create(:vulnerability_state_transition, vulnerability: vulnerability,
+            from_state: from_state, to_state: to_state, comment: nil)
         end
 
         it_behaves_like 'a system note', exclude_project: true do
-          let(:action) { "vulnerability_#{state}" }
+          let(:action) { "vulnerability_#{to_state}" }
         end
 
         it 'creates the note text correctly' do
-          expect(subject.note).to eq("changed vulnerability status to #{state.titleize}")
+          expect(subject.note).to eq("changed vulnerability status from #{from_state.titleize} to #{to_state.titleize}")
         end
       end
     end
@@ -54,7 +59,7 @@ RSpec.describe SystemNotes::VulnerabilitiesService, feature_category: :vulnerabi
       end
 
       it 'creates the note text correctly' do
-        expect(subject.note).to eq("changed vulnerability status to Dismissed: False Positive")
+        expect(subject.note).to eq("changed vulnerability status from Detected to Dismissed: False Positive")
       end
     end
 
@@ -71,7 +76,7 @@ RSpec.describe SystemNotes::VulnerabilitiesService, feature_category: :vulnerabi
       end
 
       it 'creates the note text correctly' do
-        expect(subject.note).to eq("reverted vulnerability status to Detected")
+        expect(subject.note).to eq("reverted vulnerability status from Resolved to Detected")
       end
     end
 
@@ -82,7 +87,9 @@ RSpec.describe SystemNotes::VulnerabilitiesService, feature_category: :vulnerabi
       end
 
       it 'creates the note text correctly' do
-        expect(subject.note).to eq('reverted vulnerability status to Detected with the following comment: "test"')
+        expect(subject.note).to eq(
+          'reverted vulnerability status from Resolved to Detected with the following comment: "test"'
+        )
       end
     end
 
@@ -108,7 +115,10 @@ RSpec.describe SystemNotes::VulnerabilitiesService, feature_category: :vulnerabi
 
   describe '#formatted_note for severity override' do
     subject(:formatted_note) do
-      described_class.formatted_note('changed', to_severity, nil, comment, 'severity', from_severity)
+      described_class.formatted_note(
+        transition: 'changed', to_value: to_severity, reason: nil, comment: comment,
+        attribute: 'severity', from_value: from_severity
+      )
     end
 
     let(:from_severity) { 'low' }

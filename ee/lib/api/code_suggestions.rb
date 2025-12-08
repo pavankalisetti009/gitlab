@@ -47,26 +47,28 @@ module API
         Gitlab::AiGateway.push_feature_flag(:duo_use_billing_endpoint, current_user)
       end
 
-      def ai_gateway_headers(headers, task)
+      def ai_gateway_headers(headers, task, project_path)
         Gitlab::AiGateway.headers(
           user: current_user,
           unit_primitive_name: task.unit_primitive_name,
           ai_feature_name: :code_suggestions,
           agent: headers["User-Agent"],
           lsp_version: headers["X-Gitlab-Language-Server-Version"]
-        ).merge(saas_headers).merge(model_config_headers).transform_values { |v| Array(v) }
+        ).merge(saas_headers(project_path)).merge(model_config_headers(project_path)).transform_values { |v| Array(v) }
       end
 
-      def ai_gateway_public_headers(ai_feature_name, service_name)
+      def ai_gateway_public_headers(ai_feature_name, service_name, project_path)
         Gitlab::AiGateway.public_headers(
           user: current_user, ai_feature_name: ai_feature_name, unit_primitive_name: service_name)
-          .merge(saas_headers)
-          .merge(model_config_headers)
+          .merge(saas_headers(project_path))
+          .merge(model_config_headers(project_path))
           .merge('X-Gitlab-Authentication-Type' => 'oidc')
       end
 
-      def saas_headers
+      def saas_headers(project_path = nil)
         return {} unless Gitlab.com?
+
+        project = project(project_path) if project_path.present?
 
         all_duo_namespace_ids = current_user.duo_available_namespace_ids +
           current_user.duo_core_ids_via_namespace_settings
@@ -79,12 +81,14 @@ module API
           # even though we're now combining duo_pro, duo_enterprise and duo_core namespace IDs.
           # This avoids the need for the data team to combine columns in reporting,
           # allowing the existing reporting pipeline to continue working seamlessly.
-          'X-Gitlab-Saas-Duo-Pro-Namespace-Ids' => all_duo_namespace_ids.join(',')
+          'X-Gitlab-Saas-Duo-Pro-Namespace-Ids' => all_duo_namespace_ids.join(','),
+          'x-gitlab-root-namespace-id' => project&.root_namespace&.id&.to_s,
+          'x-gitlab-namespace-id' => project&.namespace_id&.to_s
         }
       end
 
-      def model_config_headers
-        model_prompt_cache_enabled = model_prompt_cache_enabled?(declared_params.fetch(:project_path))
+      def model_config_headers(project_path = nil)
+        model_prompt_cache_enabled = model_prompt_cache_enabled?(project_path)
 
         {
           # this config will decide if we allow the underlying model to cache the generated completion response
@@ -201,11 +205,13 @@ module API
           # we add expanded_ai_logging to header only if current user is internal user,
           push_feature_flag_headers
 
+          project_path = declared_params[:project_path]
+
           workhorse_headers =
             Gitlab::Workhorse.send_url(
               task.endpoint,
               body: body,
-              headers: ai_gateway_headers(headers, task),
+              headers: ai_gateway_headers(headers, task, project_path),
               method: "POST",
               timeouts: { read: 55 }
             )
@@ -246,6 +252,7 @@ module API
           push_feature_flag_headers
 
           details_hash = completion_model_details.current_model
+          project_path = declared_params[:project_path]
 
           access = {
             base_url: completion_model_details.base_url,
@@ -256,7 +263,8 @@ module API
             expires_at: token[:expires_at],
             headers: ai_gateway_public_headers(
               completion_model_details.feature_name,
-              completion_model_details.unit_primitive_name
+              completion_model_details.unit_primitive_name,
+              project_path
             )
           }.tap do |a|
             a[:model_details] = details_hash unless details_hash.blank?

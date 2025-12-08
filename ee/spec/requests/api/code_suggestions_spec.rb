@@ -20,6 +20,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
 
   let_it_be(:top_level_namespace) { create(:group) }
   let_it_be(:token) { 'generated-jwt' }
+  let_it_be(:test_project) { create(:project, :in_group) }
 
   let(:enabled_by_namespace_ids) { [] }
   let(:current_user) { nil }
@@ -206,7 +207,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
     let(:additional_params) { {} }
     let(:body) do
       {
-        project_path: "gitlab-org/gitlab-shell",
+        project_path: test_project.full_path,
         project_id: 33191677, # not removed given we still might get it but we will not use it
         current_file: {
           file_name: file_name,
@@ -294,6 +295,10 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
 
       context 'when user is logged in' do
         let(:current_user) { authorized_user }
+
+        before_all do
+          test_project.add_developer(authorized_user)
+        end
 
         it_behaves_like 'rate limited and tracked endpoint',
           { rate_limit_key: :code_suggestions_api_endpoint,
@@ -914,6 +919,19 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
               )
             end
 
+            it 'includes x-gitlab-root-namespace-id and x-gitlab-namespace-id headers for SaaS' do
+              test_project.add_developer(authorized_user)
+
+              post_api
+
+              _, params = workhorse_send_data
+
+              expect(params['Header']).to include(
+                'x-gitlab-root-namespace-id' => [test_project.root_namespace.id.to_s],
+                'x-gitlab-namespace-id' => [test_project.namespace_id.to_s]
+              )
+            end
+
             context 'when the user is a duo_core user' do
               it 'includes namespace IDs from Duo Core access via add-on purchase', :freeze_time do
                 addon_access_group = create(:group, name: 'duo-addon-access', path: 'duo-addon-access')
@@ -1319,7 +1337,9 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
         let(:headers) do
           {
             'X-Gitlab-Saas-Namespace-Ids' => '',
-            'X-Gitlab-Saas-Duo-Pro-Namespace-Ids' => add_on_purchase.namespace_id.to_s
+            'X-Gitlab-Saas-Duo-Pro-Namespace-Ids' => add_on_purchase.namespace_id.to_s,
+            'x-gitlab-root-namespace-id' => nil,
+            'x-gitlab-namespace-id' => nil
           }
         end
 
@@ -1333,6 +1353,24 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
         end
 
         it_behaves_like 'user request with code suggestions allowed'
+
+        it 'includes x-gitlab-root-namespace-id and x-gitlab-namespace-id headers for SaaS' do
+          project = create(:project, :in_group)
+          project.add_developer(authorized_user)
+
+          allow_next_instance_of(Gitlab::Llm::AiGateway::CodeSuggestionsClient) do |client|
+            allow(client).to receive(:direct_access_token)
+              .and_return({ status: :success, token: token, expires_at: expected_expiration })
+          end
+
+          post api('/code_suggestions/direct_access', current_user), params: { project_path: project.full_path }
+
+          expect(response).to have_gitlab_http_status(:created)
+          expect(json_response['headers']).to include(
+            'x-gitlab-root-namespace-id' => project.root_namespace.id.to_s,
+            'x-gitlab-namespace-id' => project.namespace_id.to_s
+          )
+        end
 
         it 'includes x-gitlab-enabled-feature-flags header' do
           allow_next_instance_of(Gitlab::Llm::AiGateway::CodeSuggestionsClient) do |client|

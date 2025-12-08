@@ -111,10 +111,10 @@ module Vulnerabilities
           namespace_id: namespace_id,
           system: true,
           note: ::SystemNotes::VulnerabilitiesService.formatted_note(
-            'changed',
-            :dismissed,
-            dismissal_reason.to_s.titleize,
-            comment
+            transition: 'changed',
+            to_value: :dismissed,
+            reason: dismissal_reason.to_s.titleize,
+            comment: comment
           ),
           author_id: user.id,
           created_at: now,

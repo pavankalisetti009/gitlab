@@ -94,10 +94,10 @@ module Vulnerabilities
 
     def formatted_system_note(vulnerability, rules_by_vulnerability_map)
       ::SystemNotes::VulnerabilitiesService.formatted_note(
-        'changed',
-        :dismissed,
-        dismissal_reason.to_s.titleize,
-        comment(vulnerability, rules_by_vulnerability_map)
+        transition: 'changed',
+        to_value: :dismissed,
+        reason: dismissal_reason.to_s.titleize,
+        comment: comment(vulnerability, rules_by_vulnerability_map)
       )
     end
 

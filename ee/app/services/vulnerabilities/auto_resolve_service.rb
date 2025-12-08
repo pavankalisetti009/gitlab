@@ -91,10 +91,10 @@ module Vulnerabilities
 
     def formatted_system_note(vulnerability, rules_by_vulnerability)
       ::SystemNotes::VulnerabilitiesService.formatted_note(
-        'changed',
-        :resolved,
-        nil,
-        comment(vulnerability, rules_by_vulnerability)
+        transition: 'changed',
+        to_value: :resolved,
+        reason: nil,
+        comment: comment(vulnerability, rules_by_vulnerability)
       )
     end
 
