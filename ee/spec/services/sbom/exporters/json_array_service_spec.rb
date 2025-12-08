@@ -127,7 +127,7 @@ RSpec.describe Sbom::Exporters::JsonArrayService, feature_category: :dependency_
         occurrence
       end
 
-      it 'includes each occurrence, with a nil blob_path for orphaned occurrences' do
+      it 'excludes the orphaned occurrence' do
         expect(dependencies).to eq([
           {
             "name" => kept_occurrence.component_name,
@@ -135,18 +135,6 @@ RSpec.describe Sbom::Exporters::JsonArrayService, feature_category: :dependency_
             "packager" => kept_occurrence.package_manager,
             "licenses" => kept_occurrence.licenses,
             "location" => kept_occurrence.location.as_json
-          },
-          {
-            "name" => orphaned_occurrence.component_name,
-            "version" => orphaned_occurrence.version,
-            "packager" => orphaned_occurrence.package_manager,
-            "licenses" => orphaned_occurrence.licenses,
-            "location" => {
-              "ancestors" => orphaned_occurrence.ancestors,
-              "blob_path" => nil,
-              "path" => orphaned_occurrence.input_file_path,
-              "top_level" => orphaned_occurrence.top_level?
-            }
           }
         ])
       end

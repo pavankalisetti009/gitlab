@@ -85,18 +85,38 @@ module Sbom
 
       private
 
-      def preloads
-        [
-          :source,
-          :component_version,
-          { project: [namespace: :route] },
-          :vulnerabilities
-        ]
+      def occurrences
+        Enumerator.new do |enumerator|
+          iterator.each_batch do |batch|
+            occurrences = Sbom::Occurrence
+              .id_in(batch.map(&:id))
+              .with_version
+              .with_source
+              .with_project_namespace
+              .with_vulnerabilities
+
+            occurrences.each do |occurrence|
+              # Filter out orphaned records that don't have a project.
+              # Tracked in https://gitlab.com/gitlab-org/gitlab/-/issues/541931
+              next unless occurrence.project
+
+              enumerator << occurrence
+            end
+          end
+        end
+      end
+
+      def iterator
+        scope = sbom_occurrences.select(:id, :traversal_ids).order_traversal_ids_asc
+
+        Gitlab::Pagination::Keyset::Iterator.new(
+          scope: scope,
+          use_union_optimization: false
+        )
       end
 
       def csv_builder
-        @csv_builder ||= CsvBuilder.new(sbom_occurrences, self.class.mapping, preloads,
-          replace_newlines: true)
+        @csv_builder ||= CsvBuilder.new(occurrences, self.class.mapping, replace_newlines: true)
       end
     end
   end
