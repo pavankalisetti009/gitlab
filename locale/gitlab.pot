@@ -13485,9 +13485,6 @@ msgstr ""
 msgid "Cannot refer to a group milestone by an internal id!"
 msgstr ""
 
-msgid "Cannot set both system defined status and custom status"
-msgstr ""
-
 msgid "Cannot show preview. For previews on sketch files, they must have the file format introduced by Sketch version 43 and above."
 msgstr ""
 
@@ -65472,9 +65469,6 @@ msgid "Status checks"
 msgstr ""
 
 msgid "Status checks must pass."
-msgstr ""
-
-msgid "Status list requires either a system defined status or custom status"
 msgstr ""
 
 msgid "Status lists not available with your current license"

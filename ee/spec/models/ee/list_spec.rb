@@ -219,7 +219,8 @@ RSpec.describe List do
 
       it 'is invalid' do
         expect(subject).to be_invalid
-        expect(subject.errors[:base]).to contain_exactly('Cannot set both system defined status and custom status')
+        expect(subject.errors[:base])
+          .to contain_exactly('Exactly one of system_defined_status, custom_status must be present')
       end
     end
 
@@ -231,7 +232,7 @@ RSpec.describe List do
       it 'is invalid' do
         expect(subject).to be_invalid
         expect(subject.errors[:base])
-          .to contain_exactly('Status list requires either a system defined status or custom status')
+          .to contain_exactly('Exactly one of system_defined_status, custom_status must be present')
       end
     end
   end
