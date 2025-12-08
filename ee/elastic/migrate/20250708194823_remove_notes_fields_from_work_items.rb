@@ -14,3 +14,5 @@ class RemoveNotesFieldsFromWorkItems < Elastic::Migration
     %w[notes notes_internal]
   end
 end
+
+RemoveNotesFieldsFromWorkItems.prepend ::Search::Elastic::MigrationObsolete
