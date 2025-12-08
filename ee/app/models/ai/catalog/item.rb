@@ -156,11 +156,10 @@ module Ai
         end
       end
 
-      def foundational_chat
+      def foundational
         ::Gitlab::Saas.feature_available?(:gitlab_duo_saas_only) &&
           !!::Ai::FoundationalChatAgent.find_by(global_catalog_id: id)
       end
-      alias_method :foundational, :foundational_chat
 
       private
 
