@@ -9,7 +9,7 @@ module ComplianceManagement
         private
 
         def status
-          pipeline = project.ci_pipelines.newest_first(ref: project.default_branch).first
+          pipeline = project.latest_pipeline_for_ci_and_security_orchestration
 
           return :fail if pipeline.nil?
 
