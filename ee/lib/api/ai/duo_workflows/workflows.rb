@@ -121,7 +121,15 @@ module API
 
           def gitlab_oauth_token
             workflow_context_service = workflow_context_generation_service
-            oauth_token_result = workflow_context_service.generate_oauth_token
+
+            # TODO: https://gitlab.com/gitlab-org/gitlab/-/issues/581556
+            # It should be if find_feature_setting_name == FeaturesConfigurable.agentic_chat_feature_name
+            oauth_token_result =
+              if headers['X-Gitlab-Agent-Platform-Feature-Setting-Name'].present?
+                workflow_context_service.generate_oauth_token_with_composite_identity_support
+              else
+                workflow_context_service.generate_oauth_token
+              end
 
             if oauth_token_result.error?
               render_api_error!(oauth_token_result[:message], oauth_token_result[:http_status] || :forbidden)

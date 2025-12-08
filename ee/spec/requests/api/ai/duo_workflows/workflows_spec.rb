@@ -1848,6 +1848,36 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
               'X-Gitlab-Agent-Platform-Feature-Setting-Name' => custom_feature_name
             ), params: { root_namespace_id: group.id }
           end
+
+          it 'uses a composite identity token' do
+            expect_next_instance_of(::Ai::DuoWorkflows::WorkflowContextGenerationService) do |service|
+              expect(service).to receive(:generate_oauth_token_with_composite_identity_support)
+                .and_call_original
+
+              expect(service).not_to receive(:generate_oauth_token)
+            end
+
+            get api(path, user), headers: workhorse_headers.merge(
+              'X-Gitlab-Agent-Platform-Feature-Setting-Name' => custom_feature_name
+            ), params: { root_namespace_id: group.id }
+          end
+        end
+
+        context 'when X-Gitlab-Agent-Platform-Feature-Setting-Name header is missing' do
+          let(:custom_feature_name) { 'duo_agent_platform' }
+
+          it 'uses a regular non-composite identity token' do
+            expect_next_instance_of(::Ai::DuoWorkflows::WorkflowContextGenerationService) do |service|
+              expect(service).to receive(:generate_oauth_token)
+                .and_call_original
+
+              expect(service).not_to receive(:generate_oauth_token_with_composite_identity_support)
+            end
+
+            get api(path, user), headers: workhorse_headers.merge(
+              'X-Gitlab-Agent-Platform-Feature-Setting-Name' => nil
+            ), params: { root_namespace_id: group.id }
+          end
         end
 
         context 'when X-Gitlab-Agent-Platform-Feature-Setting-Name header is not provided' do
@@ -1865,6 +1895,17 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
               ::Ai::ModelSelection::FeaturesConfigurable.agentic_chat_feature_name,
               anything
             ).and_call_original
+
+            get api(path, user), headers: workhorse_headers, params: { root_namespace_id: group.id }
+          end
+
+          it 'uses a regular non-composite identity token' do
+            expect_next_instance_of(::Ai::DuoWorkflows::WorkflowContextGenerationService) do |service|
+              expect(service).to receive(:generate_oauth_token)
+                .and_call_original
+
+              expect(service).not_to receive(:generate_oauth_token_with_composite_identity_support)
+            end
 
             get api(path, user), headers: workhorse_headers, params: { root_namespace_id: group.id }
           end
