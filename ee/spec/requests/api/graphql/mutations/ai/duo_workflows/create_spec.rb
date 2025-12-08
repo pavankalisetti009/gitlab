@@ -73,6 +73,11 @@ RSpec.describe 'AiDuoWorkflowCreate', feature_category: :duo_chat do
   before do
     stub_licensed_features(ai_workflows: true, agentic_chat: true, ai_chat: true)
     project.root_ancestor.update!(experiment_features_enabled: true)
+    allow_next_instance_of(Ai::UsageQuotaService) do |instance|
+      allow(instance).to receive(:execute).and_return(
+        ServiceResponse.success
+      )
+    end
   end
 
   context 'when container is a project', :saas do

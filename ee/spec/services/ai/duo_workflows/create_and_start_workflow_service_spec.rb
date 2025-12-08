@@ -57,6 +57,11 @@ RSpec.describe ::Ai::DuoWorkflows::CreateAndStartWorkflowService, feature_catego
           generate_oauth_token_with_composite_identity_support: workflow_oauth_token_result
         )
     end
+    allow_next_instance_of(Ai::UsageQuotaService) do |instance|
+      allow(instance).to receive(:execute).and_return(
+        ServiceResponse.success
+      )
+    end
   end
 
   context 'when workflow definition is not provided' do

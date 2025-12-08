@@ -154,6 +154,12 @@ RSpec.describe Ai::Catalog::Agents::ExecuteService, :aggregate_failures, feature
             use_service_account?: false
           )
         end
+
+        allow_next_instance_of(Ai::UsageQuotaService) do |instance|
+          allow(instance).to receive(:execute).and_return(
+            ServiceResponse.success
+          )
+        end
       end
 
       it 'provides a success response containing workflow and flow details' do

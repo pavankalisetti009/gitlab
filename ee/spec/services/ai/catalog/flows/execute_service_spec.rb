@@ -158,6 +158,11 @@ RSpec.describe Ai::Catalog::Flows::ExecuteService, :aggregate_failures, feature_
         allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
         allow(current_user).to receive(:allowed_to_use?).and_return(true)
         project.project_setting.update!(duo_features_enabled: true, duo_remote_flows_enabled: true)
+        allow_next_instance_of(Ai::UsageQuotaService) do |instance|
+          allow(instance).to receive(:execute).and_return(
+            ServiceResponse.success
+          )
+        end
 
         allow_next_instance_of(::Ai::DuoWorkflows::WorkflowContextGenerationService) do |service|
           allow(service).to receive_messages(
