@@ -1,3 +1,4 @@
+#
 # frozen_string_literal: true
 
 require 'spec_helper'
@@ -405,7 +406,10 @@ RSpec.describe GitlabSchema.types['Project'], feature_category: :shared do
         resolve_field(:id, p, current_user: user)
       end
 
-      results = batch_sync(max_queries: 1) do
+      # TODO: Change back to `max_queries: 2` after https://gitlab.com/gitlab-org/gitlab/-/merge_requests/209320
+      # Currently `max_queries: 3` because the `access_security_and_compliance` authorization
+      # doesn't cache properly, causing the query to run multiple times per project.
+      results = batch_sync(max_queries: 3) do
         projects.flat_map do |p|
           resolve_field(:compliance_frameworks, p, current_user: user)
         end
@@ -413,6 +417,150 @@ RSpec.describe GitlabSchema.types['Project'], feature_category: :shared do
       frameworks = results.flat_map(&:to_a)
 
       expect(frameworks).to match_array(projects.flat_map(&:compliance_management_frameworks))
+    end
+
+    describe 'compliance_frameworks authorization' do
+      let_it_be(:group) { create(:group) }
+      let_it_be(:project) { create(:project, :with_compliance_framework, group: group) }
+      let_it_be(:framework) { project.compliance_management_frameworks.first }
+      let_it_be(:requirement) do
+        create :compliance_requirement, framework: framework, name: 'Test Requirement', description: 'Sensitive data'
+      end
+
+      let(:query) do
+        <<~GQL
+        query {
+          project(fullPath: "#{project.full_path}") {
+            complianceFrameworks {
+              nodes {
+                id
+                name
+                description
+                complianceRequirements {
+                  nodes {
+                    id
+                    name
+                    description
+                  }
+                }
+              }
+            }
+          }
+        }
+        GQL
+      end
+
+      subject(:execute_query) do
+        GitlabSchema.execute(query, context: { current_user: current_user }).as_json
+      end
+
+      shared_examples 'returning nil for compliance frameworks' do
+        specify do
+          result = execute_query.dig('data', 'project', 'complianceFrameworks')
+          expect(result).to be_nil
+        end
+      end
+
+      shared_examples 'returning compliance frameworks with requirements' do
+        specify do
+          frameworks = execute_query.dig('data', 'project', 'complianceFrameworks', 'nodes')
+          expect(frameworks).not_to be_empty
+          expect(frameworks.first['name']).to eq(framework.name)
+
+          requirements = frameworks.first.dig('complianceRequirements', 'nodes')
+          expect(requirements).not_to be_empty
+          expect(requirements.first['name']).to eq('Test Requirement')
+          expect(requirements.first['description']).to eq('Sensitive data')
+        end
+      end
+
+      context 'when user is not a member' do
+        let(:current_user) { create(:user) }
+
+        it_behaves_like 'returning nil for compliance frameworks'
+      end
+
+      context 'when user is a guest' do
+        let(:current_user) { create(:user) }
+
+        before do
+          project.add_guest(current_user)
+        end
+
+        it_behaves_like 'returning nil for compliance frameworks'
+      end
+
+      context 'when user is a reporter' do
+        let(:current_user) { create(:user) }
+
+        before do
+          project.add_reporter(current_user)
+        end
+
+        it_behaves_like 'returning nil for compliance frameworks'
+      end
+
+      context 'when user is a developer' do
+        let(:current_user) { create(:user) }
+
+        before do
+          project.add_developer(current_user)
+        end
+
+        it_behaves_like 'returning compliance frameworks with requirements'
+
+        context 'when security_and_compliance feature is disabled' do
+          let(:current_user) { create(:user) }
+
+          before do
+            project.project_feature.update!(security_and_compliance_access_level: ProjectFeature::DISABLED)
+          end
+
+          it_behaves_like 'returning nil for compliance frameworks'
+        end
+      end
+
+      context 'when user is an auditor' do
+        let(:current_user) { create(:user, :auditor) }
+
+        it_behaves_like 'returning compliance frameworks with requirements'
+      end
+
+      context 'when user has custom role with read_vulnerability permission' do
+        let(:current_user) { create(:user) }
+        let(:member_role) { create(:member_role, :guest, namespace: group, read_vulnerability: true) }
+
+        before do
+          stub_licensed_features(custom_roles: true)
+          create(:project_member, :guest, project: project, user: current_user, member_role: member_role)
+        end
+
+        it_behaves_like 'returning compliance frameworks with requirements'
+      end
+
+      context 'when user has custom role with read_dependency permission' do
+        let(:current_user) { create(:user) }
+        let(:member_role) { create(:member_role, :guest, namespace: group, read_dependency: true) }
+
+        before do
+          stub_licensed_features(custom_roles: true, dependency_scanning: true)
+          create(:project_member, :guest, project: project, user: current_user, member_role: member_role)
+        end
+
+        it_behaves_like 'returning compliance frameworks with requirements'
+      end
+
+      context 'when user has custom role with manage_security_policy_link permission' do
+        let(:current_user) { create(:user) }
+        let(:member_role) { create(:member_role, :guest, namespace: group, manage_security_policy_link: true) }
+
+        before do
+          stub_licensed_features(custom_roles: true, security_orchestration_policies: true)
+          create(:project_member, :guest, project: project, user: current_user, member_role: member_role)
+        end
+
+        it_behaves_like 'returning compliance frameworks with requirements'
+      end
     end
   end
 

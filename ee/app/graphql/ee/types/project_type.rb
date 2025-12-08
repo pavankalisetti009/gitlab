@@ -68,6 +68,7 @@ module EE
 
         field :compliance_frameworks, ::Types::ComplianceManagement::ComplianceFrameworkType.connection_type,
           description: 'Compliance frameworks associated with the project.',
+          authorize: :access_security_and_compliance,
           null: true do
             argument :sort, ::Types::ComplianceManagement::ComplianceFrameworkSortEnum,
               required: false,
