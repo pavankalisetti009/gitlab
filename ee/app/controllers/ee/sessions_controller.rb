@@ -58,16 +58,7 @@ module EE
 
     override :log_failed_login
     def log_failed_login
-      login = request.filtered_parameters.dig('user', 'login')
-      otp_user_id = session[:otp_user_id]
-
-      user = if otp_user_id
-               ::User.find_by_id(otp_user_id)
-             elsif login
-               ::User.find_by_login(login)
-             end
-
-      ::Authn::UnauthenticatedSecurityEventAuditor.new(user || login.presence || 'unknown').execute
+      ::Authn::UnauthenticatedSecurityEventAuditor.new(find_user || user_params[:login].presence || 'unknown').execute
 
       super
     end
