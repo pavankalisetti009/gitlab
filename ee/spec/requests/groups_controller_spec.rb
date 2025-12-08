@@ -541,12 +541,12 @@ RSpec.describe GroupsController, :aggregate_failures, type: :request, feature_ca
 
       context 'when on self-managed' do
         it 'does not change the setting' do
-          expect(group.disable_personal_access_tokens?).to be_falsey
+          expect(group.namespace_settings.disable_personal_access_tokens).to be_falsey
 
           request
 
           expect(response).to have_gitlab_http_status(:found)
-          expect(group.reload.disable_personal_access_tokens?).to be_falsy
+          expect(group.reload.namespace_settings.disable_personal_access_tokens).to be_falsy
         end
       end
 
@@ -556,12 +556,12 @@ RSpec.describe GroupsController, :aggregate_failures, type: :request, feature_ca
         end
 
         it 'changes the setting' do
-          expect(group.disable_personal_access_tokens?).to be_falsey
+          expect(group.namespace_settings.disable_personal_access_tokens).to be_falsey
 
           request
 
           expect(response).to have_gitlab_http_status(:found)
-          expect(group.reload.disable_personal_access_tokens?).to be_truthy
+          expect(group.reload.namespace_settings.disable_personal_access_tokens).to be_truthy
         end
       end
     end
