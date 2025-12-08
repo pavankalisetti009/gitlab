@@ -144,7 +144,8 @@ RSpec.describe Sbom::Exporters::CsvService, feature_category: :dependency_manage
         occurrence
       end
 
-      it 'includes each occurrence, with a nil blob_path for orphaned occurrences' do
+      it 'excludes the orphaned occurrence' do
+        expect(csv.length).to be 1
         expect(csv[0]['Name']).to eq(kept_occurrence.name)
         expect(csv[0]['Version']).to eq(kept_occurrence.version)
         expect(csv[0]['Packager']).to eq(kept_occurrence.package_manager)
@@ -152,14 +153,6 @@ RSpec.describe Sbom::Exporters::CsvService, feature_category: :dependency_manage
         expect(csv[0]['License Identifiers']).to eq('MIT')
         expect(csv[0]['Project']).to eq(project.full_path)
         expect(csv[0]['Vulnerabilities Detected']).to eq('0')
-
-        expect(csv[1]['Name']).to eq(orphaned_occurrence.name)
-        expect(csv[1]['Version']).to eq(orphaned_occurrence.version)
-        expect(csv[1]['Packager']).to eq(orphaned_occurrence.package_manager)
-        expect(csv[1]['Location']).to be_nil
-        expect(csv[1]['License Identifiers']).to eq('Apache-2.0')
-        expect(csv[1]['Project']).to be_nil
-        expect(csv[1]['Vulnerabilities Detected']).to eq('0')
       end
     end
   end
