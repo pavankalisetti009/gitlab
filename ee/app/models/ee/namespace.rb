@@ -29,6 +29,7 @@ module EE
       include EachBatch
       include Elastic::NamespaceUpdate
       include ::Security::OrganizationPolicySetting
+      include ::Ai::FoundationalAgentsStatusable
 
       has_one :elasticsearch_indexed_namespace
       has_one :gitlab_subscription
@@ -50,6 +51,11 @@ module EE
         inverse_of: :group
       has_one :onboarding_progress, class_name: 'Onboarding::Progress'
       has_one :ai_settings, inverse_of: :namespace, class_name: 'Ai::NamespaceSetting', autosave: true
+
+      has_many :foundational_agents_status_records,
+        class_name: 'Ai::NamespaceFoundationalAgentStatus',
+        inverse_of: :namespace,
+        foreign_key: 'namespace_id'
 
       has_many :gitlab_subscription_histories, class_name: "GitlabSubscriptions::SubscriptionHistory"
       has_many :ci_minutes_additional_packs, class_name: "Ci::Minutes::AdditionalPack"

@@ -21,6 +21,10 @@ module EE
             optional :amazon_q_auto_review_enabled, type: ::Grape::API::Boolean, desc: 'Enable Amazon Q auto review for merge request'
             optional :experiment_features_enabled, type: ::Grape::API::Boolean, desc: 'Enable experiment features for this group'
             optional :model_prompt_cache_enabled, type: ::Grape::API::Boolean, desc: 'Enable model prompt cache for this group'
+            optional :foundational_agents_statuses, type: Array, desc: 'Whether each foundational agent has been enabled or disabled.' do
+              requires :reference, type: String, desc: 'Reference of the foundational agent.'
+              requires :enabled, type: ::Grape::API::Boolean, desc: 'Whether foundational agent has been enabled or disabled.'
+            end
             optional :ai_settings_attributes, type: Hash, desc: 'AI-related settings' do
               optional :duo_workflow_mcp_enabled, type: ::Grape::API::Boolean, desc: 'Enable MCP support for Duo Agent Platform'
               optional :foundational_agents_default_enabled, type: ::Grape::API::Boolean, desc: 'Whether new foundational agents are enabled by default'

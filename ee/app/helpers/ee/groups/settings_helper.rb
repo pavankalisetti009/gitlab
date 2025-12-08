@@ -105,6 +105,7 @@ module EE
           duo_remote_flows_availability: @group.namespace_settings.duo_remote_flows_availability.to_s,
           duo_sast_fp_detection_availability: @group.namespace_settings.duo_sast_fp_detection_availability.to_s,
           foundational_agents_default_enabled: @group.foundational_agents_default_enabled.to_s,
+          foundational_agents_statuses: ::Gitlab::Json.generate(@group.foundational_agents_statuses),
           duo_foundational_flows_availability: @group.namespace_settings.duo_foundational_flows_availability.to_s,
           is_saas: saas?.to_s,
           show_foundational_agents_availability: show_foundational_agents_availability?.to_s,
