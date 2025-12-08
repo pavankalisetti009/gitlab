@@ -1,3 +1,9 @@
+import {
+  CATEGORY_EDITABLE,
+  CATEGORY_PARTIALLY_EDITABLE,
+  CATEGORY_LOCKED,
+} from 'ee/security_configuration/components/security_attributes/constants';
+
 export const mockSecurityAttributesWithCategories = [
   {
     id: 'gid://gitlab/Security::Attribute/14',
@@ -23,6 +29,42 @@ export const mockSecurityAttributesWithCategories = [
     color: '#fff',
     __typename: 'SecurityAttribute',
   },
+  {
+    id: 'gid://gitlab/Security::Attribute/12',
+    securityCategory: {
+      id: 'gid://gitlab/Security::Category/11',
+      name: 'hello 2',
+      __typename: 'SecurityCategory',
+    },
+    name: 'third',
+    description: 'test3',
+    color: '#000',
+    __typename: 'SecurityAttribute',
+  },
+  {
+    id: 'gid://gitlab/Security::Attribute/11',
+    securityCategory: {
+      id: 'gid://gitlab/Security::Category/11',
+      name: 'hello 2',
+      __typename: 'SecurityCategory',
+    },
+    name: 'fourth',
+    description: 'test4',
+    color: '#444',
+    __typename: 'SecurityAttribute',
+  },
+  {
+    id: 'gid://gitlab/Security::Attribute/10',
+    securityCategory: {
+      id: 'gid://gitlab/Security::Category/11',
+      name: 'hello 2',
+      __typename: 'SecurityCategory',
+    },
+    name: 'fifth',
+    description: 'test4',
+    color: '#888',
+    __typename: 'SecurityAttribute',
+  },
 ];
 
 export const mockSecurityAttributeCategories = [
@@ -31,7 +73,7 @@ export const mockSecurityAttributeCategories = [
     name: 'Business Impact',
     description: 'Classify projects by their importance to business operations.',
     multipleSelection: false,
-    editableState: 'LOCKED',
+    editableState: CATEGORY_PARTIALLY_EDITABLE,
     templateType: 'BUSINESS_IMPACT',
     securityAttributes: [
       {
@@ -71,7 +113,7 @@ export const mockSecurityAttributeCategories = [
     name: 'Custom',
     description: 'Custom category for experimental tagging.',
     multipleSelection: true,
-    editableState: 'EDITABLE',
+    editableState: CATEGORY_LOCKED,
     templateType: null,
     securityAttributes: [
       {
@@ -87,7 +129,7 @@ export const mockSecurityAttributeCategories = [
     name: 'Example',
     description: 'Example category used for testing.',
     multipleSelection: true,
-    editableState: 'EDITABLE',
+    editableState: CATEGORY_EDITABLE,
     templateType: null,
     securityAttributes: [
       {

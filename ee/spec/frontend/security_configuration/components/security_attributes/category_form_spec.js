@@ -12,7 +12,6 @@ import {
   GlPopover,
 } from '@gitlab/ui';
 import { nextTick } from 'vue';
-import { mockSecurityAttributeCategories } from 'ee/security_configuration/security_attributes/graphql/resolvers';
 import {
   CATEGORY_EDITABLE,
   CATEGORY_PARTIALLY_EDITABLE,
@@ -20,6 +19,7 @@ import {
 } from 'ee/security_configuration/components/security_attributes/constants';
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
 import CategoryForm from 'ee/security_configuration/components/security_attributes/category_form.vue';
+import { mockSecurityAttributeCategories } from './mock_data';
 
 const category = mockSecurityAttributeCategories[0];
 const expectedAttributes = category.securityAttributes;
@@ -91,7 +91,9 @@ describe('Category form', () => {
 
           await nextTick();
 
-          expect(wrapper.emitted()).toMatchObject({ deleteCategory: [[{ name: 'Application' }]] });
+          expect(wrapper.emitted()).toMatchObject({
+            deleteCategory: [[{ name: 'Business Impact' }]],
+          });
         });
       }
       if (editableState === CATEGORY_EDITABLE) {
@@ -169,7 +171,9 @@ describe('Category form', () => {
 
           await nextTick();
 
-          expect(wrapper.emitted()).toMatchObject({ editAttribute: [[{ name: 'Asset Track' }]] });
+          expect(wrapper.emitted()).toMatchObject({
+            editAttribute: [[{ name: 'Business Administrative' }]],
+          });
         });
 
         it('shows an attribute delete dropdown item that emits deleteAttribute', async () => {
@@ -177,7 +181,9 @@ describe('Category form', () => {
 
           await nextTick();
 
-          expect(wrapper.emitted()).toMatchObject({ deleteAttribute: [[{ name: 'Asset Track' }]] });
+          expect(wrapper.emitted()).toMatchObject({
+            deleteAttribute: [[{ name: 'Business Administrative' }]],
+          });
         });
       }
       if (editableState === CATEGORY_LOCKED) {
