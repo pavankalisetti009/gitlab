@@ -40,8 +40,11 @@ module RuboCop
         def on_send(node)
           return if in_spec?(node)
 
-          FeatureFlags.check_feature_flag_value(node, prefix_match: true) do |feature_flag_value|
-            save_used_feature_flag(feature_flag_value)
+          feature_flag_name = FeatureFlags.feature_flag_name(node)
+          save_used_feature_flag(feature_flag_name) if feature_flag_name
+
+          FeatureFlags.dynamic_feature_flag_names(node).each do |feature_flag_name|
+            save_used_feature_flag(feature_flag_name)
           end
         end
 

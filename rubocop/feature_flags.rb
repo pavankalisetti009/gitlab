@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require_relative './code_reuse_helpers'
-
 module RuboCop
   module FeatureFlags
     FEATURE_CALLERS = %w[Feature FeatureFlags Gitlab::AiGateway].freeze
@@ -22,80 +20,82 @@ module RuboCop
     ].freeze + EXPERIMENT_METHODS + WORKER_METHODS
 
     class << self
-      include RuboCop::CodeReuseHelpers
-
-      def check_feature_flag_value(node, prefix_match: false)
+      def feature_flag_name(node)
         return unless trackable_flag?(node)
 
         flag_arg = flag_arg(node)
         flag_value = flag_value(node)
         return unless flag_value
 
-        if flag_arg_is_str_or_sym?(flag_arg)
-          if caller_is_feature_gitaly?(node)
-            yield "gitaly_#{flag_value}"
-          elsif caller_is_feature_kas?(node)
-            yield "kas_#{flag_value}"
-          else
-            yield flag_value
-          end
-        elsif flag_arg_is_send_type?(flag_arg)
-          puts_if_debug(node, "Feature flag is dynamic: '#{flag_value}.")
-        elsif flag_arg_is_dstr_or_dsym?(flag_arg)
-          return unless prefix_match
+        return unless flag_arg.type?(:str, :sym)
 
-          str_prefix = flag_arg.children[0]
-          rest_children = flag_arg.children[1..]
-
-          if rest_children.none? { |child| child.str_type? }
-            matching_feature_flags = defined_feature_flags.select { |flag| flag.start_with?(str_prefix.value) }
-            matching_feature_flags.each do |matching_feature_flag|
-              puts_if_debug(node, "The '#{matching_feature_flag}' feature flag starts with '#{str_prefix.value}', so we'll optimistically mark it as used.")
-              yield matching_feature_flag
-            end
-          else
-            puts_if_debug(node, "Interpolated feature flag name has multiple static string parts, we won't track it.")
-          end
+        if caller_is_feature_gitaly?(node)
+          "gitaly_#{flag_value}"
+        elsif caller_is_feature_kas?(node)
+          "kas_#{flag_value}"
         else
-          puts_if_debug(node, "Feature flag has an unknown type: #{flag_arg.type}.")
+          flag_value
         end
       end
 
-      def defined_feature_flags
-        @defined_feature_flags ||= begin
-          flags_paths = [
-            'config/feature_flags/**/*.yml'
-          ]
+      def dynamic_feature_flag_names(node)
+        return [] unless trackable_flag?(node)
 
-          # For EE additionally process `ee/` feature flags
-          if ee?
-            flags_paths << 'ee/config/feature_flags/**/*.yml'
+        flag_arg = flag_arg(node)
+        return [] unless flag_arg
+        return [] unless flag_arg.type?(:dstr, :dsym)
+
+        feature_flag_names = []
+        str_prefix = flag_arg.children[0]
+        rest_children = flag_arg.children[1..]
+
+        if !str_prefix.str_type?
+          puts_if_debug(node, "Interpolated feature flag name has non-string first part, we won't track it.")
+        elsif rest_children.none?(&:str_type?)
+          matching_feature_flags = all_feature_flag_names.select { |flag| flag.start_with?(str_prefix.value) }
+          matching_feature_flags.each do |matching_feature_flag|
+            puts_if_debug(node,
+              "Returning '#{matching_feature_flag}', as this feature flag starts with '#{str_prefix.value}'.")
+            feature_flag_names << matching_feature_flag
           end
-
-          # For JH additionally process `jh/` feature flags
-          if jh?
-            flags_paths << 'jh/config/feature_flags/**/*.yml'
-          end
-
-          flags_paths.each_with_object([]) do |flags_path, memo|
-            flags_path = File.expand_path("../../../#{flags_path}", __dir__)
-            Dir.glob(flags_path).each do |path|
-              feature_flag_name = File.basename(path, '.yml')
-
-              memo << feature_flag_name
-            end
-          end
+        else
+          puts_if_debug(node, "Interpolated feature flag name has multiple static string parts, we won't track it.")
         end
+
+        feature_flag_names
+      end
+
+      def all_feature_flag_names
+        @all_feature_flag_names ||= load_feature_flags('config/feature_flags/**/*.yml') +
+          ee_feature_flag_names +
+          jh_feature_flag_names
+      end
+
+      def ee_feature_flag_names
+        @ee_feature_flag_names ||= load_feature_flags('ee/config/feature_flags/**/*.yml')
+      end
+
+      def jh_feature_flag_names
+        @jh_feature_flag_names ||= load_feature_flags('jh/config/feature_flags/**/*.yml')
       end
 
       private
+
+      def load_feature_flags(pattern)
+        flags_path = File.expand_path("../#{pattern}", __dir__)
+        Dir.glob(flags_path).map do |path|
+          File.basename(path, '.yml')
+        end
+      end
 
       def trackable_flag?(node)
         feature_method?(node) || self_method?(node) || worker_method?(node)
       end
 
       def feature_method?(node)
-        FEATURE_METHODS.include?(method_name(node)) && (caller_is_feature?(node) || caller_is_feature_gitaly?(node) || caller_is_feature_kas?(node))
+        return false unless FEATURE_METHODS.include?(method_name(node))
+
+        caller_is_feature?(node) || caller_is_feature_gitaly?(node) || caller_is_feature_kas?(node)
       end
 
       def self_method?(node)
@@ -157,18 +157,6 @@ module RuboCop
         else
           flag_arg
         end.to_s.tr("\n/", ' _')
-      end
-
-      def flag_arg_is_str_or_sym?(flag_arg)
-        flag_arg.str_type? || flag_arg.sym_type?
-      end
-
-      def flag_arg_is_send_type?(flag_arg)
-        flag_arg.send_type?
-      end
-
-      def flag_arg_is_dstr_or_dsym?(flag_arg)
-        (flag_arg.dstr_type? || flag_arg.dsym_type?) && flag_arg.children[0].str_type?
       end
     end
   end
