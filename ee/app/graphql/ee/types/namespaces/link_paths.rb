@@ -41,7 +41,14 @@ module EE
           def issues_settings
             return unless object&.root_ancestor
 
-            url_helpers.group_settings_issues_path(object&.root_ancestor)
+            root_group = object.root_ancestor
+            return unless root_group.is_a?(Group)
+
+            if root_group.work_items_consolidated_list_enabled?(context[:current_user])
+              url_helpers.group_settings_work_items_path(root_group)
+            else
+              url_helpers.group_settings_issues_path(root_group)
+            end
           end
 
           def epics_list_path
