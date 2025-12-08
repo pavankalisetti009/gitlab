@@ -41,7 +41,6 @@ module EE
         allow_nil: false,
         user_id_existence: true,
         if: :unique_project_download_limit_alertlist_changed?
-      validates :experiment_features_enabled, inclusion: { in: [true, false] }
 
       alias_attribute :duo_core_features_enabled, :duo_nano_features_enabled
 
@@ -83,6 +82,18 @@ module EE
         numericality: {
           only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 20, allow_nil: true
         }
+
+      with_options(inclusion: { in: [true, false], message: N_('must be a boolean value') }) do
+        validates(
+          :experiment_features_enabled,
+          :display_gitlab_credits_user_data
+        )
+      end
+
+      jsonb_accessor :usage_billing,
+        display_gitlab_credits_user_data: [:boolean, { default: false }]
+
+      validates :usage_billing, json_schema: { filename: "usage_billing_settings" }
 
       jsonb_accessor :security_policies, pipeline_execution_policies_per_configuration_limit: [:integer, { default: 0 }]
       jsonb_accessor :security_policies, scan_execution_policies_per_configuration_limit: [:integer, { default: 0 }]
