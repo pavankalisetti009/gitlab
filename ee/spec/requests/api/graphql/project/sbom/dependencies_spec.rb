@@ -46,7 +46,7 @@ RSpec.describe 'Query.project(fullPath).dependencies', feature_category: :depend
   end
 
   before do
-    stub_licensed_features(dependency_scanning: true)
+    stub_licensed_features(dependency_scanning: true, security_dashboard: true)
   end
 
   subject { post_graphql(query, current_user: current_user, variables: variables) }
@@ -193,4 +193,237 @@ RSpec.describe 'Query.project(fullPath).dependencies', feature_category: :depend
   it_behaves_like 'when dependencies graphql query sorted by severity'
   it_behaves_like 'when dependencies graphql query filtered by component versions'
   it_behaves_like 'when dependencies graphql query filtered by not component versions'
+
+  describe 'policyViolations field on licenses' do
+    let_it_be(:license_spdx) { 'MIT' }
+    let_it_be(:another_license_spdx) { 'Apache-2.0' }
+    let_it_be(:occurrence_with_dismissal) do
+      create(:sbom_occurrence, project: project, licenses: [
+        { 'name' => 'MIT License', 'spdx_identifier' => license_spdx, 'url' => 'https://opensource.org/licenses/MIT' }
+      ])
+    end
+
+    let_it_be(:occurrence_without_dismissal) do
+      create(:sbom_occurrence, project: project, licenses: [
+        { 'name' => 'Apache License 2.0', 'spdx_identifier' => another_license_spdx, 'url' => 'https://www.apache.org/licenses/LICENSE-2.0' }
+      ])
+    end
+
+    let_it_be(:merge_request) do
+      create(:merge_request, target_project: project, source_project: project, source_branch: 'feature-dismissal')
+    end
+
+    let_it_be(:security_policy) { create(:security_policy, name: 'Test Security Policy') }
+
+    let_it_be(:policy_dismissal) do
+      create(:policy_dismissal,
+        project: project,
+        merge_request: merge_request,
+        security_policy: security_policy,
+        license_occurrence_uuids: [occurrence_with_dismissal.uuid],
+        licenses: { 'MIT License' => [license_spdx] },
+        status: :preserved)
+    end
+
+    let_it_be(:fields) do
+      <<~FIELDS
+        id
+        name
+        licenses {
+          name
+          spdxIdentifier
+          policyViolations {
+            id
+            securityPolicy {
+              id
+              name
+            }
+          }
+        }
+      FIELDS
+    end
+
+    it 'returns policy dismissals for licenses' do
+      subject
+
+      actual = graphql_data_at(:project, :dependencies, :nodes)
+      dependency_with_dismissal = actual.find { |node| node['id'] == occurrence_with_dismissal.to_gid.to_s }
+      dependency_without_dismissal = actual.find { |node| node['id'] == occurrence_without_dismissal.to_gid.to_s }
+
+      expect(dependency_with_dismissal['licenses'].first['policyViolations']).to contain_exactly(
+        {
+          'id' => policy_dismissal.to_gid.to_s,
+          'securityPolicy' => {
+            'id' => security_policy.to_gid.to_s,
+            'name' => 'Test Security Policy'
+          }
+        }
+      )
+
+      expect(dependency_without_dismissal['licenses'].first['policyViolations']).to be_empty
+    end
+
+    context 'when multiple dismissals exist for the same license' do
+      let_it_be(:another_merge_request) do
+        create(:merge_request, target_project: project, source_project: project, source_branch: 'feature-another')
+      end
+
+      let_it_be(:another_security_policy) { create(:security_policy, name: 'Another Policy') }
+      let_it_be(:another_policy_dismissal) do
+        create(:policy_dismissal,
+          project: project,
+          merge_request: another_merge_request,
+          security_policy: another_security_policy,
+          license_occurrence_uuids: [occurrence_with_dismissal.uuid],
+          licenses: { 'MIT License' => [license_spdx] },
+          status: :preserved)
+      end
+
+      it 'returns all policy dismissals for the license' do
+        subject
+
+        actual = graphql_data_at(:project, :dependencies, :nodes)
+        dependency_with_dismissal = actual.find { |node| node['id'] == occurrence_with_dismissal.to_gid.to_s }
+
+        expect(dependency_with_dismissal['licenses'].first['policyViolations']).to contain_exactly(
+          {
+            'id' => policy_dismissal.to_gid.to_s,
+            'securityPolicy' => {
+              'id' => security_policy.to_gid.to_s,
+              'name' => 'Test Security Policy'
+            }
+          },
+          {
+            'id' => another_policy_dismissal.to_gid.to_s,
+            'securityPolicy' => {
+              'id' => another_security_policy.to_gid.to_s,
+              'name' => 'Another Policy'
+            }
+          }
+        )
+      end
+    end
+
+    context 'when dismissal has no security policy' do
+      let_it_be(:mr_without_policy) do
+        create(:merge_request, target_project: project, source_project: project, source_branch: 'feature-no-policy')
+      end
+
+      let_it_be(:dismissal_without_policy) do
+        create(:policy_dismissal,
+          project: project,
+          merge_request: mr_without_policy,
+          security_policy: nil,
+          license_occurrence_uuids: [occurrence_without_dismissal.uuid],
+          licenses: { 'Apache License 2.0' => [another_license_spdx] },
+          status: :preserved)
+      end
+
+      it 'returns null for security policy fields' do
+        subject
+
+        actual = graphql_data_at(:project, :dependencies, :nodes)
+        dependency = actual.find { |node| node['id'] == occurrence_without_dismissal.to_gid.to_s }
+
+        expect(dependency['licenses'].first['policyViolations']).to contain_exactly(
+          {
+            'id' => dismissal_without_policy.to_gid.to_s,
+            'securityPolicy' => nil
+          }
+        )
+      end
+    end
+
+    context 'when dependency has multiple licenses with different dismissals' do
+      let_it_be(:multi_license_occurrence) do
+        create(:sbom_occurrence, project: project, licenses: [
+          { 'name' => 'MIT License', 'spdx_identifier' => 'MIT', 'url' => 'https://opensource.org/licenses/MIT' },
+          { 'name' => 'GPL-3.0', 'spdx_identifier' => 'GPL-3.0', 'url' => 'https://www.gnu.org/licenses/gpl-3.0.html' }
+        ])
+      end
+
+      let_it_be(:mit_dismissal_mr) do
+        create(:merge_request, target_project: project, source_project: project, source_branch: 'feature-mit')
+      end
+
+      let_it_be(:gpl_dismissal_mr) do
+        create(:merge_request, target_project: project, source_project: project, source_branch: 'feature-gpl')
+      end
+
+      let_it_be(:mit_dismissal) do
+        create(:policy_dismissal,
+          project: project,
+          merge_request: mit_dismissal_mr,
+          security_policy: security_policy,
+          license_occurrence_uuids: [multi_license_occurrence.uuid],
+          licenses: { 'MIT License' => ['MIT'] },
+          status: :preserved)
+      end
+
+      let_it_be(:gpl_dismissal) do
+        create(:policy_dismissal,
+          project: project,
+          merge_request: gpl_dismissal_mr,
+          security_policy: security_policy,
+          license_occurrence_uuids: [multi_license_occurrence.uuid],
+          licenses: { 'GPL-3.0' => ['GPL-3.0'] },
+          status: :preserved)
+      end
+
+      it 'returns dismissals only for the matching license' do
+        subject
+
+        actual = graphql_data_at(:project, :dependencies, :nodes)
+        dependency = actual.find { |node| node['id'] == multi_license_occurrence.to_gid.to_s }
+
+        mit_license = dependency['licenses'].find { |l| l['name'] == 'MIT License' }
+        gpl_license = dependency['licenses'].find { |l| l['name'] == 'GPL-3.0' }
+
+        expect(mit_license['policyViolations']).to contain_exactly(
+          {
+            'id' => mit_dismissal.to_gid.to_s,
+            'securityPolicy' => {
+              'id' => security_policy.to_gid.to_s,
+              'name' => 'Test Security Policy'
+            }
+          }
+        )
+
+        expect(gpl_license['policyViolations']).to contain_exactly(
+          {
+            'id' => gpl_dismissal.to_gid.to_s,
+            'securityPolicy' => {
+              'id' => security_policy.to_gid.to_s,
+              'name' => 'Test Security Policy'
+            }
+          }
+        )
+      end
+    end
+
+    it 'avoids N+1 database queries' do
+      2.times do |i|
+        occ = create(:sbom_occurrence, project: project, licenses: [
+          { 'name' => "License-#{i}", 'spdx_identifier' => "LIC-#{i}", 'url' => "https://example.com/license-#{i}" }
+        ])
+        mr = create(:merge_request,
+          target_project: project,
+          source_project: project,
+          source_branch: "feature-n1-#{i}")
+        create(:policy_dismissal,
+          project: project,
+          merge_request: mr,
+          security_policy: security_policy,
+          license_occurrence_uuids: [occ.uuid],
+          licenses: { "License-#{i}" => ["LIC-#{i}"] },
+          status: :preserved)
+      end
+
+      expect do
+        post_graphql(query, current_user: current_user, variables: variables)
+      end.not_to(
+        exceed_query_limit(1).for_query(/SELECT "security_policy_dismissals"\.\* FROM "security_policy_dismissals"/)
+      )
+    end
+  end
 end

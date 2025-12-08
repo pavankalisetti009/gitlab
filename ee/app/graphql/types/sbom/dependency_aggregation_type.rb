@@ -11,6 +11,12 @@ module Types
       field :occurrence_count, GraphQL::Types::Int,
         null: false,
         description: 'Number of occurrences of the dependency across projects.'
+
+      def licenses
+        return [] unless object.licenses.present?
+
+        object.licenses
+      end
     end
   end
 end

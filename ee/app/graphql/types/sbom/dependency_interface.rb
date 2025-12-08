@@ -59,6 +59,14 @@ module Types
         ::Sbom::DependenciesFinder::FILTER_PACKAGE_MANAGERS_VALUES.include?(packager) ? packager : nil
       end
 
+      def licenses
+        return [] unless object.licenses.present?
+
+        object.licenses.map do |license|
+          license.merge('project_id' => object.project_id, 'occurrence_uuid' => object.uuid)
+        end
+      end
+
       def vulnerability_count
         object.vulnerabilities&.size || 0
       end

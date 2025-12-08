@@ -279,6 +279,17 @@ RSpec.describe Security::PolicyDismissal, feature_category: :security_policy_man
         expect(result.first.association(:merge_request)).to be_loaded
       end
     end
+
+    describe '.including_security_policy' do
+      let_it_be(:policy_dismissal) { create(:policy_dismissal) }
+
+      it 'includes security_policy association' do
+        result = described_class.including_security_policy
+
+        expect(result).to include(policy_dismissal)
+        expect(result.first.association(:security_policy)).to be_loaded
+      end
+    end
   end
 
   describe '#applicable_for_all_violations?' do
