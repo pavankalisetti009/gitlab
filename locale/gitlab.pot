@@ -4343,6 +4343,9 @@ msgstr ""
 msgid "Add %{linkStart}assets%{linkEnd} to your Release. GitLab automatically includes read-only assets, like source code and release evidence."
 msgstr ""
 
+msgid "Add %{name} to favorites"
+msgstr ""
+
 msgid "Add %{shrug}"
 msgstr ""
 
@@ -4668,6 +4671,9 @@ msgid "Add time entry"
 msgstr ""
 
 msgid "Add to board"
+msgstr ""
+
+msgid "Add to favorites"
 msgstr ""
 
 msgid "Add to merge train"
@@ -20762,6 +20768,9 @@ msgid "Created at"
 msgstr ""
 
 msgid "Created branch '%{branch_name}' and a merge request to resolve this issue."
+msgstr ""
+
+msgid "Created by"
 msgstr ""
 
 msgid "Created by:"
@@ -39086,6 +39095,9 @@ msgstr ""
 msgid "Last contact"
 msgstr ""
 
+msgid "Last edited"
+msgstr ""
+
 msgid "Last event"
 msgstr ""
 
@@ -40103,6 +40115,9 @@ msgid "MaintenanceMode|By disabling maintenance mode your banner message will be
 msgstr ""
 
 msgid "MaintenanceMode|There was an error updating the Maintenance Mode Settings"
+msgstr ""
+
+msgid "Make a copy"
 msgstr ""
 
 msgid "Make adjustments to how your GitLab instance is set up."
@@ -55269,6 +55284,9 @@ msgstr ""
 msgid "Remove %{namespace}"
 msgstr ""
 
+msgid "Remove %{name} from favorites"
+msgstr ""
+
 msgid "Remove %{parent_ref} as this item's parent item."
 msgstr ""
 
@@ -55369,6 +55387,9 @@ msgid "Remove from batch"
 msgstr ""
 
 msgid "Remove from epic"
+msgstr ""
+
+msgid "Remove from favorites"
 msgstr ""
 
 msgid "Remove header logo"
