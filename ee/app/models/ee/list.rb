@@ -55,20 +55,12 @@ module EE
         exclusion: { in: %w[status], message: ->(_object, _data) { _('Status lists not available with your current license') } },
         unless: -> { board&.resource_parent&.feature_available?(:board_status_lists) }
 
-      base.validate :validate_status_presence, if: :status?
+      base.validates_with ExactlyOnePresentValidator, fields: [:system_defined_status, :custom_status], if: :status?
       base.validate :validate_status_uniqueness, if: :status?
     end
 
     def assignee=(user)
       self.user = user
-    end
-
-    def validate_status_presence
-      if system_defined_status.present? && custom_status.present?
-        errors.add(:base, _('Cannot set both system defined status and custom status'))
-      elsif !system_defined_status.present? && !custom_status.present?
-        errors.add(:base, _('Status list requires either a system defined status or custom status'))
-      end
     end
 
     def validate_status_uniqueness

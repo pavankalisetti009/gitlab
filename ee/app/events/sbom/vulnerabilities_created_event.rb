@@ -17,6 +17,9 @@ module Sbom
                 'project_id' => {
                   'type' => 'integer'
                 },
+                'pipeline_id' => {
+                  'type' => 'integer'
+                },
                 'vulnerability_id' => {
                   'type' => 'integer'
                 },
