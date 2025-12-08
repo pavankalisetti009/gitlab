@@ -1,5 +1,5 @@
 <script>
-import { GlButton, GlTooltipDirective, GlDisclosureDropdown, GlIcon } from '@gitlab/ui';
+import { GlAvatar, GlButton, GlTooltipDirective, GlCollapsibleListbox, GlIcon } from '@gitlab/ui';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { __ } from '~/locale';
 import {
@@ -10,9 +10,10 @@ import {
 export default {
   name: 'NewChatButton',
   components: {
+    GlAvatar,
     GlIcon,
     GlButton,
-    GlDisclosureDropdown,
+    GlCollapsibleListbox,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -95,6 +96,8 @@ export default {
     return {
       catalogAgents: [],
       foundationalAgents: [],
+      selectedAgent: null,
+      searchTerm: '',
     };
   },
   computed: {
@@ -102,7 +105,12 @@ export default {
       return [...this.foundationalAgents, ...this.catalogAgents].map((agent) => ({
         ...agent,
         text: agent.name,
+        value: agent.id,
       }));
+    },
+    selectedAgentValue() {
+      const activeAgent = this.selectedAgent || this.agents[0];
+      return activeAgent.value;
     },
     catalogAgentsVariables() {
       return this.projectId ? { projectId: this.projectId } : { groupId: this.namespaceId };
@@ -116,51 +124,83 @@ export default {
     hasManyAgents() {
       return this.isAgentSelectEnabled && this.agents.length > 1;
     },
+    dropdownItems() {
+      const sanitizedSearchTerm = this.searchTerm.trim();
+
+      return this.agents.filter(
+        (agent) =>
+          agent.text.toLowerCase().includes(sanitizedSearchTerm) ||
+          agent.description.toLowerCase().includes(sanitizedSearchTerm),
+      );
+    },
   },
   methods: {
-    handleStartNewChat(agent) {
-      this.$emit('new-chat', agent);
+    handleStartNewChat(agentId) {
+      this.selectedAgent = this.getSelectedAgent(agentId);
+
+      this.$emit('new-chat', this.selectedAgent);
+    },
+    getSelectedAgent(agentId) {
+      return this.agents?.find((agent) => agent.id === agentId);
+    },
+    onSearch(text) {
+      this.searchTerm = text.toLowerCase();
+    },
+    clearSearchInput() {
+      this.searchTerm = '';
+
+      // FIXME: Expose a way for consumers of GlCollapsibleListbox to
+      // clear its internal search input. https://gitlab.com/gitlab-org/gitlab/-/issues/583205
+      this.$refs.customAgentSelector.$refs.searchBox?.clearInput();
     },
   },
 };
 </script>
 
 <template>
-  <gl-disclosure-dropdown
+  <gl-collapsible-listbox
     v-if="hasManyAgents"
+    ref="customAgentSelector"
     :title="$options.i18n.addNewChat"
     :toggle-text="$options.i18n.addNewChat"
-    :items="agents"
+    :aria-label="$options.i18n.addNewChat"
+    :header-text="__('Choose an agent')"
+    :selected="selectedAgentValue"
+    :items="dropdownItems"
     data-testid="add-new-agent-toggle"
     category="primary"
     variant="default"
     icon="pencil-square"
     class="ai-nav-icon-agents"
+    searchable
+    fluid-width
     text-sr-only
-    :aria-label="$options.i18n.addNewChat"
     no-caret
-    @action="handleStartNewChat"
+    @hidden="clearSearchInput"
+    @search="onSearch"
+    @select="handleStartNewChat"
   >
     <template #list-item="{ item }">
-      <span class="gl-flex gl-flex-col">
-        <span class="gl-mb-1 gl-inline-block gl-break-all gl-font-semibold">
-          {{ item.name }}
-          <gl-icon
-            v-if="item.foundational"
-            v-gl-tooltip
-            name="tanuki-verified"
-            variant="subtle"
-            :title="$options.i18n.chatVerifiedAgent"
-          />
-        </span>
-        <span
-          class="gl-overflow-hidden gl-text-ellipsis gl-whitespace-nowrap gl-text-sm gl-text-subtle"
-        >
-          {{ item.description }}
+      <span class="gl-flex">
+        <gl-avatar :size="24" :entity-name="item.name" shape="circle" />
+        <span class="gl-flex gl-flex-col gl-pl-3">
+          <span class="gl-mb-1 gl-inline-block gl-break-all gl-font-bold">
+            {{ item.name }}
+            <gl-icon
+              v-if="item.foundational"
+              v-gl-tooltip
+              name="tanuki-verified"
+              variant="subtle"
+              :title="$options.i18n.chatVerifiedAgent"
+            />
+          </span>
+          <span class="gl-line-clamp-3 gl-max-w-31 gl-text-sm gl-text-subtle">
+            {{ item.description }}
+          </span>
         </span>
       </span>
     </template>
-  </gl-disclosure-dropdown>
+  </gl-collapsible-listbox>
   <gl-button
     v-else
     v-gl-tooltip.left

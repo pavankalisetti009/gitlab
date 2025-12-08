@@ -1,6 +1,6 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlButton, GlDisclosureDropdown } from '@gitlab/ui';
+import { GlButton, GlCollapsibleListbox } from '@gitlab/ui';
 import { createMockDirective } from 'helpers/vue_mock_directive';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -11,6 +11,7 @@ import getConfiguredAgents from 'ee/ai/graphql/get_configured_agents.query.graph
 import getFoundationalChatAgents from 'ee/ai/graphql/get_foundational_chat_agents.graphql';
 
 import {
+  DUO_FOUNDATIONAL_AGENT_MOCK,
   MOCK_CONFIGURED_AGENTS_RESPONSE,
   MOCK_FOUNDATIONAL_CHAT_AGENTS_RESPONSE,
 } from '../duo_agentic_chat/components/mock_data';
@@ -66,9 +67,15 @@ describe('NewChatButton', () => {
   };
 
   const findNewToggle = () => wrapper.findByTestId('ai-new-toggle');
-  const findAgentDropdown = () => wrapper.findComponent(GlDisclosureDropdown);
+  const findAgentDropdown = () => wrapper.findComponent(GlCollapsibleListbox);
 
   describe('when there are multiple agents', () => {
+    const mockAgent = {
+      ...DUO_FOUNDATIONAL_AGENT_MOCK,
+      text: 'Cool agent',
+      value: 'gid://gitlab/Ai::FoundationalChatAgent/agent-v1',
+    };
+
     beforeEach(async () => {
       await createComponent();
     });
@@ -79,19 +86,26 @@ describe('NewChatButton', () => {
     });
 
     describe('when an agent is selected', () => {
-      const mockAgent = {
-        id: 'gid://gitlab/Ai::FoundationalChatAgent/chat',
-        name: 'GitLab Duo Agent',
-        description: 'Duo is your general development assistant',
-      };
-
       beforeEach(async () => {
-        findAgentDropdown().vm.$emit('action', mockAgent);
+        findAgentDropdown().vm.$emit('select', mockAgent.id);
         await nextTick();
       });
 
       it('emits new-chat event with the agent as payload', () => {
         expect(wrapper.emitted('new-chat')).toEqual([[mockAgent]]);
+      });
+    });
+
+    describe('when searching for agents', () => {
+      const searchTerm = 'Cool agent';
+
+      it('filters dropdown items based on search term', async () => {
+        expect(findAgentDropdown().props('items')).toHaveLength(3);
+
+        findAgentDropdown().vm.$emit('search', searchTerm);
+        await nextTick();
+
+        expect(findAgentDropdown().props('items')).toEqual([mockAgent]);
       });
     });
   });
