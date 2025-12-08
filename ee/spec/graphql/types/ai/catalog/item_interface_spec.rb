@@ -14,7 +14,6 @@ RSpec.describe Types::Ai::Catalog::ItemInterface, feature_category: :workflow_ca
       configuration_for_project
       description
       id
-      foundational_chat
       item_type
       name
       latest_version

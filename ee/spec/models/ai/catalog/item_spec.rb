@@ -557,7 +557,7 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
     end
   end
 
-  describe '#foundational_chat' do
+  describe '#foundational' do
     let(:is_saas) { false }
     let(:item_id) { 100 }
     let(:item) { build(:ai_catalog_item, :flow, id: item_id) }
@@ -566,7 +566,7 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
       stub_saas_features(gitlab_duo_saas_only: is_saas)
     end
 
-    subject(:is_foundational) { item.foundational_chat }
+    subject(:is_foundational) { item.foundational }
 
     context 'when not on GitLab SaaS' do
       let(:is_saas) { false }

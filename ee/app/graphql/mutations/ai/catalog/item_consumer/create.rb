@@ -33,7 +33,7 @@ module Mutations
           authorize :admin_ai_catalog_item_consumer
 
           def resolve(item:, target:, **args)
-            if item.foundational_chat
+            if item.foundational
               return { item_consumer: nil, errors: ["Foundational agents must be configured in admin settings."] }
             end
 
