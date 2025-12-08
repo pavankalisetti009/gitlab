@@ -386,6 +386,7 @@ Dangerfile
 /app/controllers/projects/merge_requests_controller.rb
 /app/controllers/projects/merge_requests/
 /app/models/concerns/diff_positionable_note.rb
+/app/models/concerns/issuable.rb
 /app/models/concerns/note_on_diff.rb
 /app/models/diff_note.rb
 /app/models/draft_note.rb
