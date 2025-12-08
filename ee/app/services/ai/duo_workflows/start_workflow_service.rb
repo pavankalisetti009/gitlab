@@ -239,7 +239,18 @@ module Ai
       end
 
       def feature_setting_name
-        feature_setting&.feature.to_s
+        # If no feature setting is provided, use the default workflow feature name,
+        # which is :duo_agent_platform.
+
+        # All workflows originating from CI should have a feature setting name set.
+        # This is because the value of the feature_setting_name is sent as `AGENT_PLATFORM_FEATURE_SETTING_NAME`
+        # to the Node Executor. Node executor then sends this value to the websockets endpoint as the header
+        # `X-Gitlab-Agent-Platform-Feature-Setting-Name`.
+
+        # We expect all non-chat workflows to have a feature setting name set. Consequently, if this header
+        # does not exist, we treat that request as a chat request, so it is essential to have the fallback to
+        # workflow_feature_name, just in case.
+        (feature_setting&.feature || ::Ai::ModelSelection::FeaturesConfigurable.workflow_feature_name).to_s
       end
 
       def agent_platform_model_metadata_json

@@ -18,4 +18,10 @@ RSpec.describe Ai::ModelSelection::FeaturesConfigurable, feature_category: :"sel
       end
     end
   end
+
+  describe '.workflow_feature_name' do
+    it 'returns :duo_agent_platform' do
+      expect(described_class.workflow_feature_name).to eq(:duo_agent_platform)
+    end
+  end
 end

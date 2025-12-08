@@ -355,6 +355,12 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::SecretsCheck, feature_categ
             project.security_setting.update!(secret_push_protection_enabled: false)
           end
 
+          it 'does not call run_validation!' do
+            expect(secrets_check).not_to receive(:run_validation!)
+
+            secrets_check.validate!
+          end
+
           context 'when payload processor returns nil' do
             before do
               allow_next_instance_of(Gitlab::Checks::SecretPushProtection::PayloadProcessor) do |instance|

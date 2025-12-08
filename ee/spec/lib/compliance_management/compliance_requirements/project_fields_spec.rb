@@ -461,10 +461,8 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
       let_it_be(:build) { create(:ci_build, :secret_detection_report, :success, pipeline: pipeline, project: project) }
 
       before do
-        allow(project.ci_pipelines)
-          .to receive(:newest_first)
-          .with(ref: project.default_branch)
-          .and_return(Ci::Pipeline.where(id: pipeline.id))
+        allow(project).to receive(:latest_pipeline_for_ci_and_security_orchestration)
+          .and_return(pipeline)
       end
 
       it 'returns true if the latest successful pipeline has the scanner job artifact' do
@@ -481,7 +479,7 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
 
       it 'returns false if there is no latest successful pipeline' do
         project = create(:project, namespace: namespace)
-        create(:ci_pipeline, project: project)
+        allow(project).to receive(:latest_pipeline_for_ci_and_security_orchestration).and_return(nil)
 
         expect(described_class.send(:security_scanner_running?, :secret_detection, project)).to be false
       end
@@ -490,6 +488,7 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
         project = create(:project, namespace: namespace)
         pipeline = create(:ci_pipeline, :failed, project: project)
         create(:ci_build, :secret_detection_report, :success, pipeline: pipeline, project: project)
+        allow(project).to receive(:latest_pipeline_for_ci_and_security_orchestration).and_return(pipeline)
 
         expect(described_class.send(:security_scanner_running?, :secret_detection, project)).to be true
       end
@@ -498,6 +497,7 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
         project = create(:project, namespace: namespace)
         pipeline = create(:ci_pipeline, :canceled, project: project)
         create(:ci_build, :secret_detection_report, :success, pipeline: pipeline, project: project)
+        allow(project).to receive(:latest_pipeline_for_ci_and_security_orchestration).and_return(pipeline)
 
         expect(described_class.send(:security_scanner_running?, :secret_detection, project)).to be true
       end
@@ -506,6 +506,37 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
         project = create(:project, :repository, namespace: namespace)
         pipeline = create(:ci_pipeline, :success, project: project, ref: 'non-default')
         create(:ci_build, :secret_detection_report, :success, pipeline: pipeline, project: project)
+        allow(project).to receive(:latest_pipeline_for_ci_and_security_orchestration).and_return(nil)
+
+        expect(described_class.send(:security_scanner_running?, :secret_detection, project)).to be false
+      end
+
+      it 'returns true if the latest pipeline from security_orchestration_policy has the scanner job artifact' do
+        project = create(:project, :repository, namespace: namespace)
+        pipeline = create(:ci_pipeline, :success, project: project, ref: project.default_branch,
+          source: :security_orchestration_policy)
+        create(:ci_build, :secret_detection_report, :success, pipeline: pipeline, project: project)
+        allow(project).to receive(:latest_pipeline_for_ci_and_security_orchestration).and_return(pipeline)
+
+        expect(described_class.send(:security_scanner_running?, :secret_detection, project)).to be true
+      end
+
+      it 'returns false if only parent_pipeline exists with scanner artifacts' do
+        project = create(:project, :repository, namespace: namespace)
+        pipeline = create(:ci_pipeline, :success, project: project, ref: project.default_branch,
+          source: :parent_pipeline)
+        create(:ci_build, :secret_detection_report, :success, pipeline: pipeline, project: project)
+        allow(project).to receive(:latest_pipeline_for_ci_and_security_orchestration).and_return(nil)
+
+        expect(described_class.send(:security_scanner_running?, :secret_detection, project)).to be false
+      end
+
+      it 'returns false if only webide pipeline exists with scanner artifacts' do
+        project = create(:project, :repository, namespace: namespace)
+        pipeline = create(:ci_pipeline, :success, project: project, ref: project.default_branch,
+          source: :webide)
+        create(:ci_build, :secret_detection_report, :success, pipeline: pipeline, project: project)
+        allow(project).to receive(:latest_pipeline_for_ci_and_security_orchestration).and_return(nil)
 
         expect(described_class.send(:security_scanner_running?, :secret_detection, project)).to be false
       end
