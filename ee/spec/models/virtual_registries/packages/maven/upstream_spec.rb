@@ -148,28 +148,62 @@ RSpec.describe VirtualRegistries::Packages::Maven::Upstream, type: :model, featu
       end
 
       context 'for credentials' do
-        where(:username, :password, :valid, :error_message) do
-          'user'      | 'password'   | true  | nil
-          ''          | ''           | true  | nil
-          ''          | nil          | true  | nil
-          nil         | ''           | true  | nil
-          nil         | 'password'   | false | "Username can't be blank"
-          'user'      | nil          | false | "Password can't be blank"
-          ''          | 'password'   | false | "Username can't be blank"
-          'user'      | ''           | false | "Password can't be blank"
-          ('a' * 511) | 'password'   | false | 'Username is too long (maximum is 510 characters)'
-          'user'      | ('a' * 511)  | false | 'Password is too long (maximum is 510 characters)'
-        end
-
-        with_them do
-          before do
-            upstream.assign_attributes(username:, password:)
+        context 'with new records' do
+          where(:username, :password, :valid, :error_message) do
+            'user' | 'password' | true | nil
+            ''          | ''           | true  | nil
+            ''          | nil          | true  | nil
+            nil         | ''           | true  | nil
+            nil         | 'password'   | false | "Username can't be blank"
+            'user'      | nil          | false | "Password can't be blank"
+            ''          | 'password'   | false | "Username can't be blank"
+            'user'      | ''           | false | "Password can't be blank"
+            ('a' * 511) | 'password'   | false | 'Username is too long (maximum is 510 characters)'
+            'user'      | ('a' * 511)  | false | 'Password is too long (maximum is 510 characters)'
           end
 
-          if params[:valid]
-            it { is_expected.to be_valid }
-          else
-            it { is_expected.to be_invalid.and have_attributes(errors: match_array(Array.wrap(error_message))) }
+          with_them do
+            before do
+              upstream.assign_attributes(username:, password:)
+            end
+
+            if params[:valid]
+              it { is_expected.to be_valid }
+            else
+              it { is_expected.to be_invalid.and have_attributes(errors: match_array(Array.wrap(error_message))) }
+            end
+          end
+        end
+
+        context 'with existing records' do
+          where(:username, :password, :update_name, :valid, :error_message) do
+            'new_username'      | 'new_password' | false | true  | nil
+            'new_username'      | nil            | false | false | "Password can't be blank"
+            'new_username'      | ''             | false | false | "Password can't be blank"
+            ''                  | 'new_password' | false | false | "Username can't be blank"
+            nil                 | 'new_password' | false | false | "Username can't be blank"
+            'existing_username' | ''             | false | true  | nil
+            'existing_username' | ''             | true  | true  | nil
+            'existing_username' | nil            | true  | true  | nil
+          end
+
+          with_them do
+            before do
+              upstream.update!(
+                username: 'existing_username',
+                password: 'existing_password'
+              )
+
+              upstream.name = 'new name' if update_name
+
+              upstream.assign_attributes(username:, password:)
+            end
+
+            if params[:valid]
+              it { is_expected.to be_valid }
+            else
+              it { is_expected.to be_invalid.and have_attributes(errors: match_array(Array.wrap(error_message))) }
+            end
           end
         end
 
@@ -393,6 +427,51 @@ RSpec.describe VirtualRegistries::Packages::Maven::Upstream, type: :model, featu
           expect(upstream).not_to receive(:set_cache_validity_hours_for_maven_central)
 
           expect { upstream.save! }.to raise_error(ActiveRecord::RecordInvalid)
+        end
+      end
+    end
+
+    context 'for restore_password!' do
+      let_it_be_with_reload(:upstream) do
+        create(:virtual_registries_packages_maven_upstream,
+          username: 'existing_username',
+          password: 'existing_password'
+        )
+      end
+
+      # rubocop:disable Layout/LineLength -- Avoid formatting to keep one-line table syntax for readability
+      where(:new_username, :new_password, :update_name, :should_save, :expected_username, :expected_password,
+        :description) do
+        'new_username'      | 'new_password' | false | true  | 'new_username'      | 'new_password'      | 'updates both when username and password are changed'
+        ''                  | ''             | false | true  | ''                  | ''                  | 'updates both when username and password are changed to an empty string'
+        'existing_username' | ''             | false | true  | 'existing_username' | 'existing_password' | 'keeps original password when username remains unchanged'
+        'new_username'      | ''             | false | false | nil                 | nil                 | 'allows validation to fail when username changes with blank password'
+        'existing_username' | ''             | true  | true  | 'existing_username' | 'existing_password' | 'keeps original password when password is an empty string and updating non-credential fields'
+        'existing_username' | nil            | true  | true  | 'existing_username' | 'existing_password' | 'keeps original password when password is nil and updating non-credential fields'
+      end
+      # rubocop:enable Layout/LineLength
+
+      with_them do
+        before do
+          upstream.name = 'new name' if update_name
+          upstream.username = new_username
+          upstream.password = new_password
+        end
+
+        if params[:should_save]
+          it params[:description] do
+            upstream.save!
+
+            expect(upstream).to have_attributes(
+              username: expected_username,
+              password: expected_password
+            )
+          end
+        else
+          it params[:description] do
+            expect(upstream).not_to be_valid
+            expect(upstream.errors[:password]).to include("can't be blank")
+          end
         end
       end
     end

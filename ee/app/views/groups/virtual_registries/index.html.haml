@@ -10,7 +10,8 @@
     .gl-flex.gl-gap-2
       %span
         = title
-      = render('shared/beta_badge')
+      %span
+        = render Pajamas::ExperimentBadgeComponent.new(type: :beta)
 
 = render ::Layouts::CrudComponent.new(s_('VirtualRegistry|Registry types'),
   options: { class: 'gl-mt-5' }) do |c|
