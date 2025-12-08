@@ -88,6 +88,42 @@ RSpec.describe Types::Sbom::DependencyInterface, feature_category: :dependency_m
     end
   end
 
+  describe '#licenses' do
+    before do
+      allow(dependency).to receive_messages(project_id: anything, uuid: anything)
+    end
+
+    let(:license_data) do
+      [
+        { 'name' => 'MIT', 'spdx_identifier' => 'MIT', 'url' => 'https://opensource.org/licenses/MIT' },
+        { 'name' => 'Apache-2.0', 'spdx_identifier' => 'Apache-2.0', 'url' => 'https://www.apache.org/licenses/LICENSE-2.0' }
+      ]
+    end
+
+    it 'adds occurrence context to each license' do
+      allow(dependency).to receive(:licenses).and_return(license_data)
+
+      result = interface.licenses
+
+      expect(result).to be_an(Array)
+      expect(result.size).to eq(2)
+      expect(result.first['occurrence_uuid']).to eq(dependency.uuid)
+      expect(result.first['project_id']).to eq(dependency.project_id)
+      expect(result.first['name']).to eq('MIT')
+      expect(result.last['occurrence_uuid']).to eq(dependency.uuid)
+      expect(result.last['project_id']).to eq(dependency.project_id)
+      expect(result.last['name']).to eq('Apache-2.0')
+    end
+
+    context 'when licenses are not present' do
+      it 'returns an empty array' do
+        allow(dependency).to receive(:licenses).and_return(nil)
+
+        expect(interface.licenses).to eq([])
+      end
+    end
+  end
+
   describe '#dependency_paths' do
     let_it_be(:project) { build(:project) }
     let(:resolver) { instance_double(::Resolvers::Sbom::DependencyPathsResolver) }
