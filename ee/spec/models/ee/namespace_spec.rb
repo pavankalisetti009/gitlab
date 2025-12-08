@@ -32,6 +32,7 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
   it { is_expected.to have_many(:audit_events_streaming_instance_namespace_filters).class_name('AuditEvents::Instance::NamespaceFilter') }
   it { is_expected.to have_many(:custom_lifecycles).class_name('WorkItems::Statuses::Custom::Lifecycle') }
   it { is_expected.to have_one(:ai_settings).class_name('Ai::NamespaceSetting') }
+  it { is_expected.to have_many(:foundational_agents_status_records).class_name('Ai::NamespaceFoundationalAgentStatus') }
   it { is_expected.to have_many(:custom_statuses).class_name('WorkItems::Statuses::Custom::Status') }
   it { is_expected.to have_many(:converted_statuses).class_name('WorkItems::Statuses::Custom::Status') }
   it { is_expected.to have_many(:enabled_foundational_flows).class_name('Ai::Catalog::EnabledFoundationalFlow') }
@@ -65,7 +66,7 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
   it { is_expected.to delegate_method(:duo_workflow_mcp_enabled).to(:ai_settings).allow_nil }
   it { is_expected.to delegate_method(:duo_workflow_mcp_enabled=).to(:ai_settings).with_arguments(:args).allow_nil }
   it { is_expected.to delegate_method(:foundational_agents_default_enabled).to(:ai_settings).allow_nil }
-  it { is_expected.to delegate_method(:foundational_agents_default_enabled).to(:ai_settings).with_arguments(:args).allow_nil }
+  it { is_expected.to delegate_method(:foundational_agents_default_enabled=).to(:ai_settings).with_arguments(:args).allow_nil }
   it { is_expected.to accept_nested_attributes_for(:ai_settings).update_only(true) }
   it { is_expected.to delegate_method(:duo_remote_flows_enabled).to(:namespace_settings) }
   it { is_expected.to delegate_method(:lock_duo_remote_flows_enabled).to(:namespace_settings) }
@@ -658,6 +659,12 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
           end
         end
       end
+    end
+  end
+
+  describe "foundational agents settings" do
+    it_behaves_like 'settings with foundational agents statuses' do
+      let_it_be(:instance) { create(:namespace, organization: organization) }
     end
   end
 

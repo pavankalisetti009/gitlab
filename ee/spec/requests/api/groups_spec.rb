@@ -1045,6 +1045,69 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
       end
     end
 
+    context 'foundational_agents_statuses' do
+      include_context 'with mocked Foundational Chat Agents'
+
+      let(:foundational_agents_statuses) { nil }
+      let(:attributes) { { foundational_agents_statuses: foundational_agents_statuses } }
+
+      subject(:update_group) do
+        put api("/groups/#{group.id}", user), params: attributes
+      end
+
+      before do
+        group.foundational_agents_default_enabled = []
+
+        update_group
+      end
+
+      context 'when not passed' do
+        let(:attributes) { {} }
+
+        it 'is optional parameter' do
+          expect(response).to have_gitlab_http_status(:ok)
+        end
+      end
+
+      context 'when is nil' do
+        let(:foundational_agents_statuses) { nil }
+
+        it 'is optional' do
+          expect(response).to have_gitlab_http_status(:ok)
+        end
+      end
+
+      context 'when valid' do
+        let(:foundational_agents_statuses) do
+          [
+            { 'reference' => foundational_chat_agent_1_ref, 'enabled' => false },
+            { 'reference' => foundational_chat_agent_2_ref, 'enabled' => true }
+          ]
+        end
+
+        it 'updates namespace ai settings' do
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(group.reload.foundational_agents_statuses).to match_array([
+            { description: "First agent", enabled: false, name: "Agent 1", reference: "agent_1" },
+            { description: "Second agent", enabled: true, name: "Agent 2", reference: "agent_2" }
+          ])
+        end
+      end
+
+      context 'when invalid' do
+        let(:foundational_agents_statuses) do
+          [
+            { 'reference' => foundational_chat_agent_1_ref, 'enabled' => false },
+            { 'reference' => invalid_agent_reference, 'enabled' => true }
+          ]
+        end
+
+        it 'errors' do
+          expect(response).to have_gitlab_http_status(:bad_request)
+        end
+      end
+    end
+
     context 'minimum_access_level_execute' do
       it 'updates minimum_access_level_execute field of namespace AI settings' do
         put api("/groups/#{group.id}", user), params: { ai_settings_attributes: { minimum_access_level_execute: ::Gitlab::Access::DEVELOPER } }

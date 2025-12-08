@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe EE::Groups::SettingsHelper, feature_category: :groups_and_projects do
+  include_context 'with mocked Foundational Chat Agents'
+
   let(:namespace_settings) do
     build(:namespace_settings, unique_project_download_limit: 1,
       unique_project_download_limit_interval_in_seconds: 2,
@@ -15,7 +17,19 @@ RSpec.describe EE::Groups::SettingsHelper, feature_category: :groups_and_project
     build(:namespace_ai_settings, duo_workflow_mcp_enabled: true)
   end
 
-  let(:group) { build(:group, namespace_settings: namespace_settings, ai_settings: ai_settings, id: 7) }
+  let(:foundational_agents_status_records) do
+    [build(:namespace_foundational_agent_statuses, reference: foundational_chat_agent_1_ref)]
+  end
+
+  let(:group) do
+    build(
+      :group,
+      namespace_settings: namespace_settings,
+      ai_settings: ai_settings, id: 7,
+      foundational_agents_status_records: foundational_agents_status_records
+    )
+  end
+
   let(:current_user) { build(:user) }
 
   before do
@@ -108,6 +122,10 @@ RSpec.describe EE::Groups::SettingsHelper, feature_category: :groups_and_project
           duo_workflow_available: "true",
           duo_workflow_mcp_enabled: "true",
           foundational_agents_default_enabled: "true",
+          foundational_agents_statuses: Gitlab::Json.generate([
+            { reference: 'agent_1', name: 'Agent 1', description: 'First agent', enabled: true },
+            { reference: 'agent_2', name: 'Agent 2', description: 'Second agent', enabled: nil }
+          ]),
           show_foundational_agents_availability: "true",
           show_foundational_agents_per_agent_availability: "true",
           is_saas: 'true',

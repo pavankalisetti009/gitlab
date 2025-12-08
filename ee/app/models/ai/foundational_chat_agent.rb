@@ -35,6 +35,12 @@ module Ai
         [all[0]]
       end
 
+      def except_duo_chat_agent
+        # The first agent must always Duo Chat Agent, this is covered through tests.
+        # Duo chat has to be the first so it shows first in the UI
+        all.drop(1)
+      end
+
       def count
         all.size
       end
