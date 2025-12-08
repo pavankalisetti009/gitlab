@@ -10,3 +10,5 @@ class BackfillMilestoneStateWorkItemsIndex < Elastic::Migration
   DOCUMENT_TYPE = WorkItem
   NEW_SCHEMA_VERSION = 25_29
 end
+
+BackfillMilestoneStateWorkItemsIndex.prepend ::Search::Elastic::MigrationObsolete
