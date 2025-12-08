@@ -5511,7 +5511,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
       it { is_expected.to be_disallowed(:admin_ai_catalog_item) }
       it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
-      it { is_expected.to be_disallowed(:read_ai_catalog_item_consumer) }
+      it { is_expected.to be_allowed(:read_ai_catalog_item_consumer) }
       it { is_expected.to be_disallowed(:execute_ai_catalog_item) }
     end
 
@@ -5520,7 +5520,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
       it { is_expected.to be_disallowed(:admin_ai_catalog_item) }
       it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
-      it { is_expected.to be_disallowed(:read_ai_catalog_item_consumer) }
+      it { is_expected.to be_allowed(:read_ai_catalog_item_consumer) }
       it { is_expected.to be_disallowed(:execute_ai_catalog_item) }
     end
 

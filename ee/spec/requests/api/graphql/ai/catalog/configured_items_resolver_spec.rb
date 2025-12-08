@@ -48,11 +48,34 @@ RSpec.describe 'getting consumed AI catalog items', feature_category: :workflow_
     enable_ai_catalog
   end
 
-  it 'returns configured AI catalog items' do
-    post_graphql(query, current_user: current_user)
+  context 'with Guest access or higher in the project' do
+    using RSpec::Parameterized::TableSyntax
 
-    expect(response).to have_gitlab_http_status(:success)
-    expect(nodes).to match_array(configured_items.map { |configured_item| a_graphql_entity_for(configured_item) })
+    let(:current_user) { create(:user) }
+
+    where(:access_level) do
+      [
+        ::Gitlab::Access::GUEST,
+        ::Gitlab::Access::PLANNER,
+        ::Gitlab::Access::REPORTER,
+        ::Gitlab::Access::DEVELOPER,
+        ::Gitlab::Access::MAINTAINER,
+        ::Gitlab::Access::OWNER
+      ]
+    end
+
+    with_them do
+      before do
+        project.add_member(current_user, access_level)
+      end
+
+      it 'returns configured AI catalog items' do
+        post_graphql(query, current_user: current_user)
+
+        expect(response).to have_gitlab_http_status(:success)
+        expect(nodes).to match_array(configured_items.map { |configured_item| a_graphql_entity_for(configured_item) })
+      end
+    end
   end
 
   context 'when filtering by group and item' do
@@ -85,17 +108,6 @@ RSpec.describe 'getting consumed AI catalog items', feature_category: :workflow_
       create(:ai_catalog_item_consumer, project: project)
 
       expect { post_graphql(query, current_user: current_user) }.not_to exceed_query_limit(control)
-    end
-  end
-
-  context 'with project reporter' do
-    let(:reporter) { create(:user) }
-
-    it 'returns no configured AI catalog items' do
-      post_graphql(query, current_user: reporter)
-
-      expect(response).to have_gitlab_http_status(:success)
-      expect(nodes).to be_empty
     end
   end
 

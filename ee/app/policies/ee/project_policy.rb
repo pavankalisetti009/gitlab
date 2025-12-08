@@ -458,6 +458,8 @@ module EE
         prevent :admin_feature_flags_issue_links
       end
 
+      rule { can?(:guest_access) }.enable :read_ai_catalog_item_consumer
+
       rule { can?(:guest_access) & iterations_available }.enable :read_iteration
 
       rule { can?(:reporter_access) }.policy do
@@ -491,7 +493,6 @@ module EE
         enable :read_security_resource
         enable :read_vulnerability
         enable :update_secret_detection_validity_checks_status
-        enable :read_ai_catalog_item_consumer
         enable :execute_ai_catalog_item
       end
 
