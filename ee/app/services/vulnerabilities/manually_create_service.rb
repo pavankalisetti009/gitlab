@@ -103,13 +103,16 @@ module Vulnerabilities
       when "detected"
         return CONFIRMED_MESSAGE if exists_in_vulnerability_params?(:confirmed_at)
         return RESOLVED_MESSAGE if exists_in_vulnerability_params?(:resolved_at)
-        return DISMISSED_MESSAGE if exists_in_vulnerability_params?(:dismissed_at)
+
+        DISMISSED_MESSAGE if exists_in_vulnerability_params?(:dismissed_at)
       when "confirmed"
         return RESOLVED_MESSAGE if exists_in_vulnerability_params?(:resolved_at)
-        return DISMISSED_MESSAGE if exists_in_vulnerability_params?(:dismissed_at)
+
+        DISMISSED_MESSAGE if exists_in_vulnerability_params?(:dismissed_at)
       when "resolved"
         return CONFIRMED_MESSAGE if exists_in_vulnerability_params?(:confirmed_at)
-        return DISMISSED_MESSAGE if exists_in_vulnerability_params?(:dismissed_at)
+
+        DISMISSED_MESSAGE if exists_in_vulnerability_params?(:dismissed_at)
       end
     end
 

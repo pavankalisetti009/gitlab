@@ -35,7 +35,7 @@ module Vulnerabilities
     # If the latter, it may or may not respond to `current_user` so that's
     # why we need to have the following guard clause.
     def current_user
-      return request.current_user if request.respond_to?(:current_user)
+      request.current_user if request.respond_to?(:current_user)
     end
   end
 end

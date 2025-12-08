@@ -62,6 +62,6 @@ class Vulnerabilities::FeedbackEntity < Grape::Entity
   end
 
   def current_user
-    return request.current_user if request.respond_to?(:current_user)
+    request.current_user if request.respond_to?(:current_user)
   end
 end

@@ -27,7 +27,7 @@ module AuditEvents
 
       return false unless Gitlab::Regex.utc_date_regex.match?(date)
 
-      return true if Date.parse(date)
+      true if Date.parse(date)
     rescue Date::Error
       false
     end

@@ -57,7 +57,7 @@ module Projects
         transform: ->(result) { result.dig('data', 'project', 'dastProfile') }
       )
 
-      return render_404 unless @dast_profile
+      render_404 unless @dast_profile
     end
 
     private
