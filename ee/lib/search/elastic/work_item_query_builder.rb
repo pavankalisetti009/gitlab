@@ -37,9 +37,7 @@ module Search
         query_hash = ::Search::Elastic::Filters.by_assignees(query_hash: query_hash, options: options)
         query_hash = ::Search::Elastic::Filters.by_milestone(query_hash: query_hash, options: options)
 
-        if ::Elastic::DataMigrationService.migration_has_finished?(:backfill_milestone_state_work_items_index)
-          query_hash = ::Search::Elastic::Filters.by_milestone_state(query_hash: query_hash, options: options)
-        end
+        query_hash = ::Search::Elastic::Filters.by_milestone_state(query_hash: query_hash, options: options)
 
         query_hash = ::Search::Elastic::Filters.by_label_names(query_hash: query_hash, options: options)
         query_hash = ::Search::Elastic::Filters.by_weight(query_hash: query_hash, options: options)
