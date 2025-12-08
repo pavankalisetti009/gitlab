@@ -1,7 +1,7 @@
 import { GlLabel } from '@gitlab/ui';
 import AttributesCell from 'ee/security_inventory/components/attributes_cell.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import { mockSecurityAttributes } from 'ee/security_configuration/security_attributes/graphql/resolvers';
+import { mockSecurityAttributesWithCategories } from 'ee_jest/security_configuration/components/security_attributes/mock_data';
 import { VISIBLE_ATTRIBUTE_COUNT } from 'ee/security_inventory/constants';
 import { subgroupsAndProjects } from '../mock_data';
 
@@ -34,7 +34,7 @@ describe('AttributesCell', () => {
           item: {
             ...mockProject,
             securityAttributes: {
-              nodes: mockSecurityAttributes.slice(0, attributeCount),
+              nodes: mockSecurityAttributesWithCategories.slice(0, attributeCount),
             },
           },
           index: 0,
@@ -59,7 +59,7 @@ describe('AttributesCell', () => {
           item: {
             ...mockProject,
             securityAttributes: {
-              nodes: mockSecurityAttributes.slice(0, attributeCount),
+              nodes: mockSecurityAttributesWithCategories.slice(0, attributeCount),
             },
           },
           index: 0,

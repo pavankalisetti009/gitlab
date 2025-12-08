@@ -1,7 +1,6 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { shallowMount } from '@vue/test-utils';
-import { mockSecurityAttributeCategories } from 'ee/security_configuration/security_attributes/graphql/resolvers';
 import { createAlert } from '~/alert';
 import { confirmAction } from '~/lib/utils/confirm_via_gl_modal/confirm_via_gl_modal';
 import ConfigureAttributes from 'ee/security_configuration/components/security_attributes/configure_attributes.vue';
@@ -18,7 +17,7 @@ import updateSecurityAttributeMutation from 'ee/security_configuration/graphql/s
 import deleteSecurityAttributeMutation from 'ee/security_configuration/graphql/security_attribute_delete.mutation.graphql';
 import waitForPromises from 'helpers/wait_for_promises';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
-import { mockFailedCategoryCreateResponse } from './mock_data';
+import { mockSecurityAttributeCategories, mockFailedCategoryCreateResponse } from './mock_data';
 
 jest.mock('~/vue_shared/plugins/global_toast');
 jest.mock('~/lib/utils/confirm_via_gl_modal/confirm_via_gl_modal');
@@ -191,7 +190,7 @@ describe('Configure attributes', () => {
 
     expect(wrapper.vm.$refs.attributeDrawer.open).toHaveBeenCalledWith(
       'edit',
-      expect.objectContaining({ name: 'Asset Track' }),
+      expect.objectContaining({ name: 'Business Administrative' }),
     );
   });
 
