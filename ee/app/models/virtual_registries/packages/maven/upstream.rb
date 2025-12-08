@@ -60,6 +60,9 @@ module VirtualRegistries
 
         before_validation :normalize_url, if: -> { url? && remote? }
         before_validation :set_cache_validity_hours_for_maven_central, if: :url?, on: :create
+        before_validation :restore_password!, if: -> { remote? && username? && !password? && !username_changed? },
+          on: :update
+
         after_validation :reset_credentials, if: -> { persisted? && url_changed? }
 
         prevent_from_serialization(:password) if respond_to?(:prevent_from_serialization)
