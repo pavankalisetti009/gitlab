@@ -234,6 +234,8 @@ module Gitlab
           end
 
           def needs_beginning_backtick?(text, link)
+            return true unless text
+
             regex = Regexp.escape(link)
             backtick_regex = %r{.*(?=#{regex}$)}
             contains_backtick = text.match(backtick_regex)
@@ -252,14 +254,11 @@ module Gitlab
           end
 
           def needs_ending_backtick?(text, link)
+            return false unless text
+
             escaped_regex = Regexp.escape(link)
             ending_backticks_regex = /(#{escaped_regex})(?!`)/
-            matched = text.match(ending_backticks_regex)
-            if matched
-              true
-            else
-              false
-            end
+            text.match?(ending_backticks_regex)
           end
 
           def regex_already_backtick_escaped?(text, regex, starting_index, ending_index)
@@ -271,14 +270,11 @@ module Gitlab
                      text[start_index...ending_index + 1]
                    end
 
+            return false unless text
+
             regex = Regexp.escape(regex)
             already_escaped_regex = /`#{regex}`/
-            matched = text.match?(already_escaped_regex)
-            if matched
-              true
-            else
-              false
-            end
+            text.match?(already_escaped_regex)
           end
 
           def url_already_escaped?(start_index, end_index)
