@@ -53,7 +53,7 @@ module GitlabSubscriptions
         def seat_upgrade_allowed?(user_id)
           return true if gitlab_com_subscriptions?
           return true unless block_seat_overages_for_self_managed?
-          return true if seats_available_for_self_managed?([user_id], Gitlab::Access::OWNER, nil)
+          return true if seats_available_for_self_managed?([user_id.to_s], Gitlab::Access::OWNER, nil)
 
           false
         end
