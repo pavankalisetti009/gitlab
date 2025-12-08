@@ -63,8 +63,6 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
     describe 'experiment features' do
       let(:attr) { :experiment_features_enabled }
 
-      subject(:settings) { group.namespace_settings }
-
       before do
         allow(subject).to receive(:experiment_settings_allowed?).and_return(true)
       end
@@ -293,6 +291,13 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
           .only_integer
           .is_greater_than_or_equal_to(90)
           .is_less_than_or_equal_to(1827)
+      end
+    end
+
+    describe 'display_gitlab_credits_user_data' do
+      it 'validates display_gitlab_credits_user_data' do
+        expect(settings).to validate_inclusion_of(:display_gitlab_credits_user_data)
+          .in_array([true, false])
       end
     end
   end

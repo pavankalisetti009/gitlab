@@ -66,6 +66,11 @@ module EE
         message: "must be one of: #{Ai::Conversation::Thread::EXPIRATION_COLUMNS.join(', ')}"
       }
 
+      jsonb_accessor :usage_billing,
+        display_gitlab_credits_user_data: [:boolean, { default: false }]
+
+      validates :usage_billing, json_schema: { filename: "usage_billing_settings" }
+
       jsonb_accessor :integrations,
         allow_all_integrations: [:boolean, { default: true }],
         allowed_integrations: [:string, { array: true, default: [] }]
@@ -264,8 +269,6 @@ module EE
         :virtual_registries_endpoints_api_limit,
         numericality: { only_integer: true, greater_than_or_equal_to: 0 }
 
-      validates :dashboard_limit_enabled, inclusion: { in: [true, false], message: 'must be a boolean value' }
-
       validates :cube_api_base_url,
         length: { maximum: 512 },
         addressable_url: ::ApplicationSetting::ADDRESSABLE_URL_VALIDATION_OPTIONS.merge({ allow_localhost: true }),
@@ -286,9 +289,6 @@ module EE
         addressable_url: ::ApplicationSetting::ADDRESSABLE_URL_VALIDATION_OPTIONS.merge({ allow_localhost: true }),
         presence: true,
         if: ->(setting) { setting.product_analytics_enabled }
-
-      validates :security_policy_global_group_approvers_enabled,
-        inclusion: { in: [true, false], message: 'must be a boolean value' }
 
       validates :security_approval_policies_limit,
         numericality: {
@@ -325,9 +325,6 @@ module EE
 
       validates :package_metadata_purl_types, inclusion: { in: ::Enums::Sbom.purl_types.values }
 
-      validates :allow_account_deletion,
-        inclusion: { in: [true, false], message: N_('must be a boolean value') }
-
       validates :delete_unconfirmed_users,
         inclusion: { in: [true, false], message: N_('must be a boolean value') },
         unless: :email_confirmation_setting_off?
@@ -347,10 +344,6 @@ module EE
       validates :secret_push_protection_available,
         inclusion: { in: [true, false], message: N_('must be a boolean value') },
         if: :gitlab_dedicated_instance
-
-      validates :instance_level_ai_beta_features_enabled,
-        allow_nil: false,
-        inclusion: { in: [true, false], message: N_('must be a boolean value') }
 
       validates :zoekt_settings, json_schema: { filename: 'application_setting_zoekt_settings' }
       validates :zoekt_cpu_to_tasks_ratio, numericality: { greater_than: 0.0 }
@@ -377,13 +370,20 @@ module EE
 
       validates :code_creation, json_schema: { filename: 'application_setting_code_creation' }
 
-      validates :observability_backend_ssl_verification_enabled,
-        allow_nil: false,
-        inclusion: { in: [true, false], message: N_('must be a boolean value') }
-
-      validates :auto_duo_code_review_enabled, :duo_remote_flows_enabled,
-        :duo_foundational_flows_enabled, :duo_sast_fp_detection_enabled,
-        inclusion: { in: [true, false] }
+      with_options(inclusion: { in: [true, false], message: N_('must be a boolean value') }) do
+        validates(
+          :dashboard_limit_enabled,
+          :security_policy_global_group_approvers_enabled,
+          :allow_account_deletion,
+          :instance_level_ai_beta_features_enabled,
+          :observability_backend_ssl_verification_enabled,
+          :auto_duo_code_review_enabled,
+          :duo_remote_flows_enabled,
+          :duo_foundational_flows_enabled,
+          :duo_sast_fp_detection_enabled,
+          :display_gitlab_credits_user_data
+        )
+      end
 
       validate :duo_settings_immutable_on_saas,
         on: :update,

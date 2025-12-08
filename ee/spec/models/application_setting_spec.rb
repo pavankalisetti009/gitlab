@@ -172,7 +172,8 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
         zoekt_rollout_retry_interval: Search::Zoekt::Settings::DEFAULT_ROLLOUT_RETRY_INTERVAL,
         zoekt_lost_node_threshold: Search::Zoekt::Settings::DEFAULT_LOST_NODE_THRESHOLD,
         zoekt_search_enabled: false,
-        enforce_pipl_compliance: false
+        enforce_pipl_compliance: false,
+        display_gitlab_credits_user_data: false
       )
     end
   end
@@ -1453,6 +1454,13 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       it { is_expected.to allow_value(['gitlab-org/.*']).for(:ci_cd_catalog_projects_allowlist) }
       it { is_expected.to allow_value(['project'] * 1000).for(:ci_cd_catalog_projects_allowlist) }
       it { is_expected.not_to allow_value(['project'] * 1001).for(:ci_cd_catalog_projects_allowlist) }
+    end
+
+    describe 'display_gitlab_credits_user_data' do
+      it 'validates display_gitlab_credits_user_data' do
+        expect(setting).to validate_inclusion_of(:display_gitlab_credits_user_data)
+          .in_array([true, false])
+      end
     end
   end
 
