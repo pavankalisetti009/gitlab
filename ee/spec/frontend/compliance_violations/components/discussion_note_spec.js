@@ -83,7 +83,9 @@ describe('DiscussionNote', () => {
   const findActionsDropdown = () => wrapper.findByTestId('note-actions-dropdown');
   const findCopyLinkAction = () => wrapper.findByTestId('copy-link-action');
   const findDeleteNoteAction = () => wrapper.findByTestId('delete-note-action');
+  const findDeleteNoteModal = () => wrapper.findComponent({ ref: 'deleteNoteModal' });
   const findEditButton = () => wrapper.findByTestId('edit-note-button');
+  const findReplyButton = () => wrapper.findByTestId('reply-note-button');
   const findEditedAt = () => wrapper.findComponent(EditedAt);
   const findEditCommentForm = () => wrapper.findComponent(EditCommentForm);
   const findEmojiPicker = () => wrapper.findByTestId('note-emoji-button');
@@ -192,6 +194,10 @@ describe('DiscussionNote', () => {
       expect(editButton.attributes('aria-label')).toBe('Edit comment');
     });
 
+    it('does not render reply button when isFirstNote is false', () => {
+      expect(findReplyButton().exists()).toBe(false);
+    });
+
     it('does not render edit comment form initially', () => {
       expect(findEditCommentForm().exists()).toBe(false);
     });
@@ -243,20 +249,18 @@ describe('DiscussionNote', () => {
 
   describe('delete note functionality', () => {
     let deleteNoteMutationHandler;
-    let mockClose;
 
     beforeEach(() => {
-      const dropdownStub = createDropdownStub();
-      mockClose = dropdownStub.mockClose;
       deleteNoteMutationHandler = jest.fn().mockResolvedValue(mockDeleteNoteSuccess);
       createComponent({
         deleteNoteMutationHandler,
-        stubs: dropdownStub.stub,
       });
     });
 
-    it('deletes note successfully', async () => {
-      await findDeleteNoteAction().vm.$emit('action');
+    it('deletes note successfully when modal is confirmed', async () => {
+      const modal = findDeleteNoteModal();
+
+      await modal.vm.$emit('primary');
       await waitForPromises();
 
       expect(deleteNoteMutationHandler).toHaveBeenCalledTimes(1);
@@ -265,20 +269,17 @@ describe('DiscussionNote', () => {
           id: mockNote.id,
         },
       });
-      expect(wrapper.emitted('noteDeleted')).toEqual([[mockNote.id]]);
       expect(toast).toHaveBeenCalledWith('Comment deleted successfully.');
-      expect(mockClose).toHaveBeenCalled();
     });
 
     it('handles mutation errors', async () => {
       const errorHandler = jest.fn().mockResolvedValue(mockDeleteNoteError);
-      const dropdownStub = createDropdownStub();
       createComponent({
         deleteNoteMutationHandler: errorHandler,
-        stubs: dropdownStub.stub,
       });
 
-      await findDeleteNoteAction().vm.$emit('action');
+      const modal = findDeleteNoteModal();
+      await modal.vm.$emit('primary');
       await waitForPromises();
 
       expect(errorHandler).toHaveBeenCalledTimes(1);
@@ -287,29 +288,25 @@ describe('DiscussionNote', () => {
           id: mockNote.id,
         },
       });
-      expect(wrapper.emitted('noteDeleted')).toBeUndefined();
       expect(toast).toHaveBeenCalledWith(
         'Something went wrong when deleting the comment. Please try again.',
       );
-      expect(dropdownStub.mockClose).toHaveBeenCalled();
     });
 
     it('handles network errors', async () => {
       const errorHandler = jest.fn().mockRejectedValue(new Error('Network error'));
-      const dropdownStub = createDropdownStub();
       createComponent({
         deleteNoteMutationHandler: errorHandler,
-        stubs: dropdownStub.stub,
       });
 
-      await findDeleteNoteAction().vm.$emit('action');
+      const modal = findDeleteNoteModal();
+      await modal.vm.$emit('primary');
       await waitForPromises();
 
       expect(errorHandler).toHaveBeenCalledTimes(1);
       expect(toast).toHaveBeenCalledWith(
         'Something went wrong when deleting the comment. Please try again.',
       );
-      expect(dropdownStub.mockClose).toHaveBeenCalled();
     });
   });
 
@@ -416,6 +413,35 @@ describe('DiscussionNote', () => {
       const noteText = findNoteText();
       expect(noteText.exists()).toBe(true);
       expect(noteText.text()).toBe('');
+    });
+  });
+
+  describe('reply button', () => {
+    it('renders reply button when isFirstNote is true', () => {
+      createComponent({ props: { isFirstNote: true } });
+
+      const replyButton = findReplyButton();
+      expect(replyButton.exists()).toBe(true);
+    });
+
+    it('emits start-replying when reply button is clicked', async () => {
+      createComponent({ props: { isFirstNote: true } });
+
+      await findReplyButton().vm.$emit('click');
+
+      expect(wrapper.emitted('start-replying')).toBeDefined();
+      expect(wrapper.emitted('start-replying')).toHaveLength(1);
+    });
+
+    it('does not render reply button when in edit mode', async () => {
+      createComponent({ props: { isFirstNote: true } });
+
+      expect(findReplyButton().exists()).toBe(true);
+
+      await findEditButton().vm.$emit('click');
+      await nextTick();
+
+      expect(findReplyButton().exists()).toBe(false);
     });
   });
 
