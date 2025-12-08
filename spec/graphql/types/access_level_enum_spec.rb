@@ -10,8 +10,12 @@ RSpec.describe GitlabSchema.types['AccessLevelEnum'] do
       .to include(*%w[NO_ACCESS MINIMAL_ACCESS GUEST PLANNER REPORTER DEVELOPER MAINTAINER OWNER])
   end
 
-  it 'exposes all user roles with security manager' do
-    with_security_manager_enabled do
+  context 'when security manager role is enabled' do
+    before do
+      allow(Gitlab::Security::SecurityManagerConfig).to receive(:enabled?).and_return(true)
+    end
+
+    it 'exposes all user roles with security manager' do
       expect(described_class.values.keys).to include('SECURITY_MANAGER')
     end
   end
