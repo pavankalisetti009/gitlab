@@ -115,4 +115,14 @@ RSpec.describe Ai::FoundationalChatAgent, feature_category: :workflow_catalog do
       expect(only_chat[0].name).to eq('GitLab Duo')
     end
   end
+
+  describe '#any_agents_with_reference?' do
+    it 'is true if reference for foundational agent' do
+      expect(described_class.any_agents_with_reference?('duo_planner')).to be true
+    end
+
+    it 'is false if reference not for foundational agent' do
+      expect(described_class.any_agents_with_reference?('invalid_agent_1')).to be false
+    end
+  end
 end
