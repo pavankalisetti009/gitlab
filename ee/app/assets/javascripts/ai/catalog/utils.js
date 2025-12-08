@@ -27,6 +27,22 @@ export const getLatestUpdatedAt = (item) => {
     : item.updatedAt;
 };
 
+/**
+ * Helper to retrieve nested version data so we don't have to pass duplicate objects around.
+ *
+ * @param {Object} obj - an Item or ItemConsumer
+ * @param {String} keys - a dot-notated stringh where each item is a key in the obj, leading to the nested value.
+ *
+ * @example
+ * ```
+ * const pinnedVersionKey = 'configurationForProject.pinnedItemVersion';
+ * const latestVersionKey = 'latestVersion';
+ * ```
+ */
+export const getByVersionKey = (obj, keys) => {
+  return (keys || '').split('.').reduce((acc, key) => acc?.[key], obj);
+};
+
 export function createAvailableFlowItemTypes({ isFlowsEnabled, isThirdPartyFlowsEnabled }) {
   const types = [];
 

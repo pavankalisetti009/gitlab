@@ -6,7 +6,7 @@ import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import createAiCatalogAgent from '../graphql/mutations/create_ai_catalog_agent.mutation.graphql';
 import { AI_CATALOG_AGENTS_SHOW_ROUTE } from '../router/constants';
 import AiCatalogAgentForm from '../components/ai_catalog_agent_form.vue';
-import { prerequisitesError } from '../utils';
+import { prerequisitesError, getByVersionKey } from '../utils';
 
 export default {
   name: 'AiCatalogAgentsDuplicate',
@@ -19,7 +19,7 @@ export default {
       type: Object,
       required: true,
     },
-    versionData: {
+    version: {
       type: Object,
       required: true,
     },
@@ -34,12 +34,21 @@ export default {
     agentName() {
       return this.aiCatalogAgent.name;
     },
+    activeVersion() {
+      return getByVersionKey(this.aiCatalogAgent, this.version.activeVersionKey);
+    },
+    systemPrompt() {
+      return this.activeVersion.systemPrompt;
+    },
+    toolIds() {
+      return (this.activeVersion.tools?.nodes ?? []).map((t) => t.id);
+    },
     initialValues() {
       return {
         name: `${s__('AICatalog|Copy of')} ${this.agentName}`,
         description: this.aiCatalogAgent.description,
-        systemPrompt: this.versionData.systemPrompt,
-        tools: this.versionData.tools?.map((t) => t.id),
+        systemPrompt: this.systemPrompt,
+        tools: this.toolIds,
         public: false,
       };
     },

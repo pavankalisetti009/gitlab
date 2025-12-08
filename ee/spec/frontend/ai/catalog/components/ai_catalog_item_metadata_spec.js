@@ -2,6 +2,7 @@ import { GlIcon } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { stubComponent } from 'helpers/stub_component';
 import AiCatalogItemMetadata from 'ee/ai/catalog/components/ai_catalog_item_metadata.vue';
+import { VERSION_PINNED, VERSION_LATEST } from 'ee/ai/catalog/constants';
 import { mockAgent, mockAgentPinnedVersion, mockFlow } from '../mock_data';
 
 describe('AiCatalogItemMetadata', () => {
@@ -13,7 +14,7 @@ describe('AiCatalogItemMetadata', () => {
     wrapper = shallowMountExtended(AiCatalogItemMetadata, {
       propsData: {
         item: mockAgent,
-        versionData: mockAgentPinnedVersion,
+        versionKey: VERSION_LATEST,
         ...props,
       },
       stubs: {
@@ -37,12 +38,15 @@ describe('AiCatalogItemMetadata', () => {
       // Create a component with *all available* tags.
       // This will fail if we add or remove tags but forget to add/update our tests here.
       createComponent({
-        versionData: {
-          ...mockAgentPinnedVersion,
-          humanVersionName: 'v0.9.0', // version
-        },
+        versionKey: VERSION_PINNED,
         item: {
           ...mockAgent,
+          configurationForProject: {
+            pinnedItemVersion: {
+              ...mockAgentPinnedVersion,
+              humanVersionName: 'v0.9.0',
+            },
+          },
           createdAt: '2024-01-15T00:00:00Z',
           updatedAt: '2025-08-21T00:00:00Z',
           foundational: true,
@@ -133,7 +137,7 @@ describe('AiCatalogItemMetadata', () => {
       const version = findVersionItem();
       expect(version.exists()).toBe(true);
       expect(version.findComponent(GlIcon).props('name')).toBe('tag');
-      expect(version.text()).toContain('v0.9.0');
+      expect(version.text()).toContain('v1.0.0-draft');
     });
   });
 });

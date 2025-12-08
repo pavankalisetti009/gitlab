@@ -7,14 +7,15 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import createAiCatalogFlow from 'ee/ai/catalog/graphql/mutations/create_ai_catalog_flow.mutation.graphql';
 import AiCatalogFlowsDuplicate from 'ee/ai/catalog/pages/ai_catalog_flows_duplicate.vue';
 import AiCatalogFlowForm from 'ee/ai/catalog/components/ai_catalog_flow_form.vue';
+import { VERSION_PINNED, VERSION_LATEST } from 'ee/ai/catalog/constants';
 import { AI_CATALOG_FLOWS_SHOW_ROUTE } from 'ee/ai/catalog/router/constants';
 import createAiCatalogThirdPartyFlow from 'ee/ai/catalog/graphql/mutations/create_ai_catalog_third_party_flow.mutation.graphql';
 import {
   mockFlow,
+  mockVersionProp,
   mockCreateAiCatalogFlowSuccessMutation,
   mockCreateAiCatalogFlowErrorMutation,
   mockFlowConfigurationForProject,
-  mockFlowPinnedVersion,
 } from '../mock_data';
 
 Vue.use(VueApollo);
@@ -37,11 +38,11 @@ describe('AiCatalogFlowsDuplicate', () => {
   };
 
   const defaultProps = {
-    versionData: mockFlowPinnedVersion,
+    version: mockVersionProp, // mock defaults to `latestVersion`
     aiCatalogFlow: mockFlow,
   };
 
-  const createComponent = ({ provide = {}, props = defaultProps } = {}) => {
+  const createComponent = ({ provide = {}, props = {} } = {}) => {
     const apolloProvider = createMockApollo([
       [createAiCatalogFlow, createAiCatalogFlowMock],
       [createAiCatalogThirdPartyFlow, createAiCatalogThirdPartyFlowMock],
@@ -74,7 +75,7 @@ describe('AiCatalogFlowsDuplicate', () => {
       await waitForPromises();
     });
 
-    it('sets initial values with correct version data, but always private and without a project', async () => {
+    it('sets initial values based on the versionKey, but always private and without a project', async () => {
       const definition = 'This is the pinned version value';
       const expectedInitialValues = {
         type: 'FLOW',
@@ -86,9 +87,9 @@ describe('AiCatalogFlowsDuplicate', () => {
 
       createComponent({
         props: {
-          versionData: {
-            ...mockFlowConfigurationForProject.pinnedItemVersion,
-            definition,
+          version: {
+            isUpdateAvailable: true,
+            activeVersionKey: VERSION_PINNED,
           },
           aiCatalogFlow: {
             ...mockFlow,
@@ -96,7 +97,44 @@ describe('AiCatalogFlowsDuplicate', () => {
               ...mockFlowConfigurationForProject,
               pinnedItemVersion: {
                 ...mockFlowConfigurationForProject.pinnedItemVersion,
-                definition: 'this is not expected',
+                definition,
+              },
+            },
+          },
+        },
+      });
+      await waitForPromises();
+
+      expect(findForm().props('initialValues')).toEqual(expectedInitialValues);
+    });
+
+    it('sets initial values based on the latestVersion versionKey, but always private and without a project', async () => {
+      const definition = 'This is the latest version value';
+      const expectedInitialValues = {
+        type: 'FLOW',
+        name: `Copy of ${mockFlow.name}`,
+        description: mockFlow.description,
+        definition,
+        public: false,
+      };
+
+      createComponent({
+        props: {
+          version: {
+            isUpdateAvailable: true,
+            activeVersionKey: VERSION_LATEST,
+          },
+          aiCatalogFlow: {
+            ...mockFlow,
+            latestVersion: {
+              ...mockFlow.latestVersion,
+              definition,
+            },
+            configurationForProject: {
+              ...mockFlowConfigurationForProject,
+              pinnedItemVersion: {
+                ...mockFlowConfigurationForProject.pinnedItemVersion,
+                definition: 'not expected',
               },
             },
           },

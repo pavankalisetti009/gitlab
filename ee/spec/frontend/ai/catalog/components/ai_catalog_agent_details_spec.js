@@ -4,17 +4,21 @@ import AiCatalogAgentDetails from 'ee/ai/catalog/components/ai_catalog_agent_det
 import AiCatalogItemField from 'ee/ai/catalog/components/ai_catalog_item_field.vue';
 import AiCatalogItemVisibilityField from 'ee/ai/catalog/components/ai_catalog_item_visibility_field.vue';
 import FormSection from 'ee/ai/catalog/components/form_section.vue';
-import { mockAgent, mockToolsNodes, mockAgentVersion } from '../mock_data';
+import { VERSION_LATEST } from 'ee/ai/catalog/constants';
+import { mockAgent, mockAgentVersion, mockAiCatalogBuiltInToolsNodes } from '../mock_data';
 
 describe('AiCatalogAgentDetails', () => {
   let wrapper;
 
   const defaultProps = {
-    item: mockAgent,
-    versionData: {
-      systemPrompt: mockAgentVersion.systemPrompt,
-      tools: mockToolsNodes,
+    item: {
+      ...mockAgent,
+      latestVersion: {
+        ...mockAgentVersion,
+        tools: { nodes: mockAiCatalogBuiltInToolsNodes },
+      },
     },
+    versionKey: VERSION_LATEST,
   };
 
   const createComponent = ({ props } = {}) => {

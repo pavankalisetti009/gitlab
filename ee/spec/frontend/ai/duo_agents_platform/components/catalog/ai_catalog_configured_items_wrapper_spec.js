@@ -36,14 +36,34 @@ describe('AiCatalogConfiguredItemsWrapper', () => {
 
   const mockFlowWithBasicProject = {
     ...mockBaseFlow,
+    latestVersion: {
+      id: 'gid://gitlab/Ai::Catalog::ItemVersion/1',
+      released: true,
+      updatedAt: '2025-08-21T14:30:00Z',
+      humanVersionName: 'v1.0.0-draft',
+    },
     project: mockProject,
   };
+
+  const mockFlowPinnedVersion = {
+    id: 'gid://gitlab/Ai::Catalog::ItemVersion/25',
+    humanVersionName: 'v0.9.0',
+  };
+
+  const mockConsumerUserPermissions = {
+    userPermissions: {
+      adminAiCatalogItemConsumer: false,
+    },
+  };
+
   const mockConfiguredFlowsQueryHandler = jest.fn().mockResolvedValue({
     data: {
       aiCatalogConfiguredItems: {
         nodes: [
           {
             ...mockBaseItemConsumer,
+            ...mockConsumerUserPermissions,
+            pinnedItemVersion: mockFlowPinnedVersion,
             item: mockFlowWithBasicProject,
           },
         ],
@@ -74,9 +94,12 @@ describe('AiCatalogConfiguredItemsWrapper', () => {
     },
   };
 
-  const createComponent = ({ provide = {}, props = {} } = {}) => {
+  const createComponent = ({ provide = {}, props = {}, configuredItemsQueryHandler } = {}) => {
     mockApollo = createMockApollo([
-      [aiCatalogConfiguredItemsQuery, mockConfiguredFlowsQueryHandler],
+      [
+        aiCatalogConfiguredItemsQuery,
+        configuredItemsQueryHandler ?? mockConfiguredFlowsQueryHandler,
+      ],
       [deleteAiCatalogItemConsumer, deleteItemConsumerMutationHandler],
     ]);
 
@@ -106,7 +129,16 @@ describe('AiCatalogConfiguredItemsWrapper', () => {
     it('renders AiCatalogList component', async () => {
       const expectedItem = {
         ...mockFlowWithBasicProject,
-        itemConsumer: mockBaseItemConsumer,
+        latestVersion: {
+          id: 'gid://gitlab/Ai::Catalog::ItemVersion/1',
+          humanVersionName: 'v1.0.0-draft',
+          updatedAt: '2025-08-21T14:30:00Z',
+        },
+        isUpdateAvailable: true,
+        itemConsumer: {
+          ...mockBaseItemConsumer,
+          pinnedItemVersion: mockFlowPinnedVersion,
+        },
       };
       const catalogList = findAiCatalogList();
 
@@ -306,6 +338,97 @@ describe('AiCatalogConfiguredItemsWrapper', () => {
         before: null,
         first: 20,
         last: null,
+      });
+    });
+  });
+
+  describe('items with different latest and pinned versions', () => {
+    const itemConsumerFactory = ({ latest, pinned, baseId = 0, n = 0 } = {}) => {
+      const { pinnedItemVersion, ...baseWithoutPinned } = mockBaseItemConsumer;
+
+      return {
+        ...baseWithoutPinned,
+        id: `gid://gitlab/Ai::Catalog::ItemConsumer/${baseId + 1}`,
+        item: {
+          ...mockFlowWithBasicProject,
+          latestVersion: {
+            id: `gid://gitlab/Ai::Catalog/ItemVersion/${baseId + 1}`,
+            updatedAt: '2025-08-21T14:30:00Z',
+            humanVersionName: latest,
+          },
+        },
+        pinnedItemVersion: {
+          id: `gid://gitlab/Ai::Catalog::ItemVersion/${n + baseId + 1}`, // `n` allows offset from `i` so it never clashes with latestVersion ID
+          humanVersionName: pinned,
+        },
+      };
+    };
+
+    const mockQueryHandler = jest.fn().mockResolvedValue({
+      data: {
+        aiCatalogConfiguredItems: {
+          pageInfo: mockPageInfo,
+          nodes: [
+            itemConsumerFactory({
+              latest: 'v1.2.3',
+              pinned: 'v1.0.0',
+              baseId: 0,
+              n: 3,
+            }),
+            itemConsumerFactory({
+              latest: 'v1.2.3',
+              pinned: 'v1.2.3',
+              baseId: 1,
+              n: 3,
+            }),
+            itemConsumerFactory({
+              latest: 'v1.2.3',
+              pinned: 'v2.3.4',
+              baseId: 2,
+              n: 3,
+            }),
+          ],
+        },
+      },
+    });
+
+    describe('when in group or explore areas', () => {
+      beforeEach(() => {
+        createComponent({
+          provide: {
+            projectId: null,
+            groupId: 1,
+          },
+          configuredItemsQueryHandler: mockQueryHandler,
+        });
+      });
+
+      it('does not show update available badge when in group or explore area', async () => {
+        const catalogList = findAiCatalogList();
+        await waitForPromises();
+
+        const items = catalogList.props('items');
+
+        expect(items[0].isUpdateAvailable).toBe(false);
+        expect(items[1].isUpdateAvailable).toBe(false);
+        expect(items[2].isUpdateAvailable).toBe(false);
+      });
+    });
+
+    describe('when in project area', () => {
+      beforeEach(() => {
+        createComponent({ configuredItemsQueryHandler: mockQueryHandler });
+      });
+
+      it('isUpdateAvailable should be true for item 1 and 3 and false for item 2', async () => {
+        const catalogList = findAiCatalogList();
+        await waitForPromises();
+
+        const items = catalogList.props('items');
+
+        expect(items[0].isUpdateAvailable).toBe(true);
+        expect(items[1].isUpdateAvailable).toBe(false);
+        expect(items[2].isUpdateAvailable).toBe(true);
       });
     });
   });

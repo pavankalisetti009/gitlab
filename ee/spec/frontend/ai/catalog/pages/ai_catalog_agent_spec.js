@@ -8,6 +8,7 @@ import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import AiCatalogAgent from 'ee/ai/catalog/pages/ai_catalog_agent.vue';
 import aiCatalogAgentQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_agent.query.graphql';
+import { VERSION_PINNED, VERSION_LATEST } from 'ee/ai/catalog/constants';
 import {
   mockAiCatalogAgentResponse,
   mockAiCatalogAgentNullResponse,
@@ -25,7 +26,7 @@ Vue.use(VueApollo);
 const RouterViewStub = Vue.extend({
   name: 'RouterViewStub',
   // eslint-disable-next-line vue/require-prop-types
-  props: ['aiCatalogAgent', 'versionData'],
+  props: ['aiCatalogAgent', 'version'],
   template: '<div />',
 });
 
@@ -177,9 +178,9 @@ describe('AiCatalogAgent', () => {
       await waitForPromises();
 
       const routerView = findRouterView();
-      expect(routerView.props('versionData')).toMatchObject({
-        systemPrompt: mockAgentVersion.systemPrompt, // uses mock latest version data
-        tools: mockAgentVersion.tools.nodes,
+      expect(routerView.props('version')).toMatchObject({
+        isUpdateAvailable: false,
+        activeVersionKey: VERSION_LATEST,
       });
     });
 
@@ -190,9 +191,9 @@ describe('AiCatalogAgent', () => {
       await waitForPromises();
 
       const routerView = findRouterView();
-      expect(routerView.props('versionData')).toMatchObject({
-        systemPrompt: mockAgentPinnedVersion.systemPrompt, // uses mock pinned version data
-        tools: mockAgentPinnedVersion.tools.nodes,
+      expect(routerView.props('version')).toMatchObject({
+        isUpdateAvailable: true,
+        activeVersionKey: VERSION_PINNED,
       });
     });
   });
@@ -210,10 +211,112 @@ describe('AiCatalogAgent', () => {
       createComponent({
         agentQueryHandler: jest.fn().mockResolvedValue(mockFlowResponse),
       });
+
       await waitForPromises();
 
       expect(findGlEmptyState().exists()).toBe(true);
       expect(findRouterView().exists()).toBe(false);
+    });
+  });
+
+  describe('version update behaviour', () => {
+    const mockHandlerFactory = ({ configurationForProject = {}, permission = {} }) => {
+      return jest.fn().mockResolvedValue({
+        data: {
+          aiCatalogItem: {
+            ...mockAgent,
+            configurationForProject: {
+              ...mockAgentConfigurationForProject,
+              ...configurationForProject,
+              userPermissions: {
+                ...(configurationForProject.userPermissions ??
+                  mockAgentConfigurationForProject.userPermissions),
+                ...permission,
+              },
+            },
+          },
+        },
+      });
+    };
+
+    describe('when viewing explore and group areas', () => {
+      const mockHandler = mockHandlerFactory({
+        permission: {
+          adminAiCatalogItemConsumer: true, // negative test to ensure that despite being allowed to, the update is still not shown
+        },
+      });
+
+      it('does not show update alert when in explore area', async () => {
+        createComponent({
+          agentQueryHandler: mockHandler,
+          provide: { isGlobal: true },
+        });
+        await waitForPromises();
+        const routerView = findRouterView();
+        expect(routerView.props('version').isUpdateAvailable).toBe(false);
+        expect(routerView.props('version').activeVersionKey).toBe(VERSION_LATEST);
+      });
+
+      it('does not show update alert when in group area', async () => {
+        createComponent({
+          provide: { isGlobal: false, projectId: null },
+        });
+        await waitForPromises();
+        const routerView = findRouterView();
+        expect(routerView.props('version').isUpdateAvailable).toBe(false);
+        expect(routerView.props('version').activeVersionKey).toBe(VERSION_LATEST);
+      });
+    });
+
+    describe('when viewing project area', () => {
+      it('should show update alert when a new version is available and user has permissions', async () => {
+        const mockHandler = mockHandlerFactory({
+          permission: { adminAiCatalogItemConsumer: true },
+        });
+        createComponent({
+          agentQueryHandler: mockHandler,
+          provide: { projectId: 1 },
+        });
+        await waitForPromises();
+        const routerView = findRouterView();
+        expect(routerView.props('version').isUpdateAvailable).toBe(true);
+        expect(routerView.props('version').activeVersionKey).toBe(VERSION_PINNED);
+      });
+
+      it('should not show update alert when a new version is available but user does not have permissions', async () => {
+        const mockHandler = mockHandlerFactory({
+          permission: { adminAiCatalogItemConsumer: false },
+        });
+        createComponent({
+          agentQueryHandler: mockHandler,
+          provide: { projectId: 1 },
+        });
+        await waitForPromises();
+        const routerView = findRouterView();
+        expect(routerView.props('version').isUpdateAvailable).toBe(false);
+        expect(routerView.props('version').activeVersionKey).toBe(VERSION_PINNED);
+      });
+
+      it('should not show update alert when no new version is available', async () => {
+        const mockHandler = mockHandlerFactory({
+          configurationForProject: {
+            pinnedItemVersion: {
+              ...mockAgentPinnedVersion,
+              id: 'asd',
+              humanVersionName: mockAgentVersion.humanVersionName, // Same as latest
+            },
+          },
+          permission: { adminAiCatalogItemConsumer: true },
+        });
+        createComponent({
+          agentQueryHandler: mockHandler,
+          provide: { projectId: 1 },
+        });
+        await waitForPromises();
+        const routerView = findRouterView();
+        expect(routerView.props('version').isUpdateAvailable).toBe(false);
+        expect(routerView.props('version').activeVersionKey).toBe(VERSION_PINNED);
+      });
     });
   });
 });

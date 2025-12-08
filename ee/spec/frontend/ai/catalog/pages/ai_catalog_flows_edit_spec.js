@@ -8,6 +8,7 @@ import AiCatalogFlowsEdit from 'ee/ai/catalog/pages/ai_catalog_flows_edit.vue';
 import AiCatalogFlowForm from 'ee/ai/catalog/components/ai_catalog_flow_form.vue';
 import updateAiCatalogFlow from 'ee/ai/catalog/graphql/mutations/update_ai_catalog_flow.mutation.graphql';
 import updateAiCatalogThirdPartyFlow from 'ee/ai/catalog/graphql/mutations/update_ai_catalog_third_party_flow.mutation.graphql';
+import { VERSION_LATEST } from 'ee/ai/catalog/constants';
 import { AI_CATALOG_FLOWS_SHOW_ROUTE } from 'ee/ai/catalog/router/constants';
 import {
   mockFlow,
@@ -15,7 +16,7 @@ import {
   mockUpdateAiCatalogFlowErrorMutation,
   mockFlowConfigurationForProject,
   mockThirdPartyFlow,
-  mockFlowPinnedVersion,
+  mockVersionProp,
 } from '../mock_data';
 
 Vue.use(VueApollo);
@@ -35,7 +36,7 @@ describe('AiCatalogFlowsEdit', () => {
   const flowId = 4;
   const routeParams = { id: flowId };
   const defaultProps = {
-    versionData: mockFlowPinnedVersion,
+    version: mockVersionProp,
     aiCatalogFlow: mockFlow,
   };
 
@@ -88,7 +89,7 @@ describe('AiCatalogFlowsEdit', () => {
 
       createComponent({
         props: {
-          versionData: mockFlow.latestVersion,
+          versionKey: VERSION_LATEST,
           aiCatalogFlow: {
             ...mockFlow,
             configurationForProject: {
