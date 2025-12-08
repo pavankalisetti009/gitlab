@@ -6,7 +6,7 @@ RSpec.describe Gitlab::Elastic::SearchResults, 'merge_requests', feature_categor
   let(:query) { 'hello world' }
   let_it_be(:user) { create(:user) }
   let_it_be(:project_1) { create(:project, :public, :repository, :wiki_repo) }
-  let_it_be(:project_2) { create(:project, :public, :repository, :wiki_repo) }
+  let_it_be(:project_2) { create(:project, :private, :repository, :wiki_repo) }
   let_it_be(:limit_project_ids) { [project_1.id] }
 
   before do
@@ -26,7 +26,8 @@ RSpec.describe Gitlab::Elastic::SearchResults, 'merge_requests', feature_categor
     end
 
     let_it_be(:merge_request_3) do
-      create(:merge_request, source_project: project_2, target_project: project_2, title: 'Merge Request Three', iid: 2)
+      create(:merge_request, source_project: project_2, target_project: project_2,
+        title: 'Merge Request Three', iid: 2)
     end
 
     before do

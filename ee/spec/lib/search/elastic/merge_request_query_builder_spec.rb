@@ -87,8 +87,22 @@ RSpec.describe ::Search::Elastic::MergeRequestQueryBuilder, :elastic_helpers, fe
     it_behaves_like 'a query filtered by labels'
 
     describe 'authorization' do
-      it 'applies authorization filters' do
-        assert_names_in_query(build, with: %w[filters:project:membership:id])
+      it 'uses the new authorization filter' do
+        assert_names_in_query(build,
+          with: %w[filters:permissions:global:visibility_level:public_and_internal],
+          without: %w[filters:project:membership:id])
+      end
+
+      context 'when feature flag is disabled' do
+        before do
+          stub_feature_flags(search_advanced_merge_requests_new_auth_filter: false)
+        end
+
+        it 'uses the old authorization filter' do
+          assert_names_in_query(build,
+            with: %w[filters:project:membership:id],
+            without: %w[filters:permissions:global:visibility_level:public_and_internal])
+        end
       end
     end
 

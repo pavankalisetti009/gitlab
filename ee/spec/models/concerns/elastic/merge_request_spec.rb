@@ -13,8 +13,8 @@ RSpec.describe MergeRequest, :elastic, feature_category: :global_search do
     let_it_be(:object) { create :merge_request, source_project: project }
   end
 
-  it 'searches merge requests', :sidekiq_inline do
-    project = create :project, :public, :repository
+  it 'searches merge requests', :sidekiq_inline, :enable_admin_mode do
+    project = create(:project, :public, :repository)
 
     create :merge_request, title: 'bla-bla term1', source_project: project
     create :merge_request, description: 'term2 in description', source_project: project, target_branch: "feature2"
@@ -30,14 +30,15 @@ RSpec.describe MergeRequest, :elastic, feature_category: :global_search do
     expect(described_class.elastic_search('term1 | term2 | term3', options: options).total_count).to eq(2)
     expect(described_class.elastic_search(described_class.last.to_reference, options: options).total_count).to eq(1)
     expect(described_class.elastic_search('term3', options: options).total_count).to eq(0)
-    expect(described_class.elastic_search('term3',
-      options: { search_level: 'global', project_ids: :any, public_and_internal_projects: true }).total_count).to eq(1)
+
+    options = { current_user: admin, search_level: 'global', project_ids: :any, public_and_internal_projects: true }
+    expect(described_class.elastic_search('term3', options: options).total_count).to eq(1)
   end
 
   it 'names elasticsearch queries' do
     described_class.elastic_search('*', options: { search_level: 'global' }).total_count
 
-    assert_named_queries('merge_request:match:search_terms', 'filters:project')
+    assert_named_queries('merge_request:match:search_terms')
   end
 
   describe 'json' do
