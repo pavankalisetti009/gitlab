@@ -132,6 +132,68 @@ RSpec.describe ComplianceManagement::Standards::Gitlab::SastService,
 
         it_behaves_like 'scanner run marked fail when no artifacts present'
       end
+
+      context 'when project has security_orchestration_policy pipeline with sast artifacts' do
+        let(:security_policy_pipeline) do
+          create(:ci_pipeline, :success, project: project, ref: 'master', source: :security_orchestration_policy)
+        end
+
+        before do
+          ci_build = create(:ci_build, pipeline: security_policy_pipeline, project: project)
+          create(:ci_job_artifact, :sast, project: project, job: ci_build)
+        end
+
+        it 'sets scanner run as success' do
+          response = service.execute
+
+          expect(response.status).to eq(:success)
+          expect(project.compliance_standards_adherence.last)
+            .to have_attributes(
+              project_id: project.id,
+              namespace_id: project.namespace_id,
+              status: 'success',
+              check_name: 'sast',
+              standard: 'gitlab'
+            )
+        end
+      end
+
+      context 'when project has parent_pipeline with sast artifacts' do
+        let(:parent_pipeline) do
+          create(:ci_pipeline, :success, project: project, ref: 'master', source: :parent_pipeline)
+        end
+
+        before do
+          ci_build = create(:ci_build, pipeline: parent_pipeline, project: project)
+          create(:ci_job_artifact, :sast, project: project, job: ci_build)
+        end
+
+        it_behaves_like 'scanner run marked fail when no artifacts present'
+      end
+
+      context 'when project has webide pipeline with sast artifacts' do
+        let(:webide_pipeline) { create(:ci_pipeline, :success, project: project, ref: 'master', source: :webide) }
+
+        before do
+          ci_build = create(:ci_build, pipeline: webide_pipeline, project: project)
+          create(:ci_job_artifact, :sast, project: project, job: ci_build)
+        end
+
+        it_behaves_like 'scanner run marked fail when no artifacts present'
+      end
+
+      context 'when project has ondemand_dast_scan pipeline with sast artifacts' do
+        let(:ondemand_pipeline) do
+          create(:ci_pipeline, :success, project: project, ref: 'master', source: :ondemand_dast_scan)
+        end
+
+        before do
+          ci_build = create(:ci_build, pipeline: ondemand_pipeline, project: project)
+          create(:ci_job_artifact, :sast, project: project, job: ci_build)
+        end
+
+        it_behaves_like 'scanner run marked fail when no artifacts present'
+      end
     end
   end
 end

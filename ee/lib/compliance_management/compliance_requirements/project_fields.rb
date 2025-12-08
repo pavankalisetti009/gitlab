@@ -44,7 +44,7 @@ module ComplianceManagement
         def security_scanner_running?(scanner, project, _context = {})
           return false unless SECURITY_SCANNERS.include?(scanner)
 
-          pipeline = project.ci_pipelines.newest_first(ref: project.default_branch).first
+          pipeline = project.latest_pipeline_for_ci_and_security_orchestration
 
           return false if pipeline.nil?
 
