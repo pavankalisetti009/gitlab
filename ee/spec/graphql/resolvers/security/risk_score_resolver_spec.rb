@@ -481,6 +481,57 @@ RSpec.describe Resolvers::Security::RiskScoreResolver, :elastic_delete_by_query,
 
         it_behaves_like 'validates advanced vulnerability management'
       end
+
+      context 'when validating risk score ES migration' do
+        before_all do
+          group.add_developer(user)
+        end
+
+        before do
+          stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
+        end
+
+        context 'when risk score backfill migration is not completed' do
+          before do
+            allow(::Search::Elastic::VulnerabilityIndexHelper).to receive(:backfill_risk_score_completed?)
+              .and_return(false)
+          end
+
+          it 'raises an ArgumentError' do
+            result = resolved_risk_score
+
+            expect(result).to be_a(Gitlab::Graphql::Errors::ArgumentError)
+            expect(result.message).to eq(
+              "Risk score advanced search backfill migration is not completed! Check after migration completion."
+            )
+          end
+        end
+
+        context 'when risk score backfill migration is completed' do
+          before do
+            allow(::Search::Elastic::VulnerabilityIndexHelper).to receive(:backfill_risk_score_completed?)
+              .and_return(true)
+            allow_next_instance_of(::Search::AdvancedFinders::Security::Vulnerability::RiskScoresFinder) do |finder|
+              allow(finder).to receive(:execute).and_return({
+                total_risk_score: 0.5,
+                total_project_count: 1,
+                risk_score_by_project: nil
+              })
+            end
+          end
+
+          it 'does not raise an error' do
+            result = resolved_risk_score
+
+            expect(result).not_to be_a(Gitlab::Graphql::Errors::ArgumentError)
+            expect(result).to include(
+              score: 50,
+              rating: 'medium',
+              project_count: 1
+            )
+          end
+        end
+      end
     end
 
     context 'when operated on a project' do
@@ -518,6 +569,57 @@ RSpec.describe Resolvers::Security::RiskScoreResolver, :elastic_delete_by_query,
         end
 
         it_behaves_like 'validates advanced vulnerability management'
+      end
+
+      context 'when validating risk score ES migration' do
+        before_all do
+          project1.add_developer(user)
+        end
+
+        before do
+          stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
+        end
+
+        context 'when risk score backfill migration is not completed' do
+          before do
+            allow(::Search::Elastic::VulnerabilityIndexHelper).to receive(:backfill_risk_score_completed?)
+              .and_return(false)
+          end
+
+          it 'raises an ArgumentError' do
+            result = resolved_risk_score
+
+            expect(result).to be_a(Gitlab::Graphql::Errors::ArgumentError)
+            expect(result.message).to eq(
+              "Risk score advanced search backfill migration is not completed! Check after migration completion."
+            )
+          end
+        end
+
+        context 'when risk score backfill migration is completed' do
+          before do
+            allow(::Search::Elastic::VulnerabilityIndexHelper).to receive(:backfill_risk_score_completed?)
+              .and_return(true)
+            allow_next_instance_of(::Search::AdvancedFinders::Security::Vulnerability::RiskScoresFinder) do |finder|
+              allow(finder).to receive(:execute).and_return({
+                total_risk_score: 0.5,
+                total_project_count: 1,
+                risk_score_by_project: nil
+              })
+            end
+          end
+
+          it 'does not raise an error', :aggregate_failures do
+            result = resolved_risk_score
+
+            expect(result).not_to be_a(Gitlab::Graphql::Errors::ArgumentError)
+            expect(result).to include(
+              score: 50,
+              rating: 'medium',
+              project_count: 1
+            )
+          end
+        end
       end
     end
   end
