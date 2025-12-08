@@ -107,8 +107,16 @@ RSpec.describe Geo::BlobDownloadService, feature_category: :geo_replication do
         expect(::Gitlab::Geo::Replication::BlobDownloader).to receive(:new).and_return(downloader)
       end
 
+      it 'does not raise error to Sidekiq job' do
+        expect { subject.execute }.not_to raise_error
+      end
+
+      it 'returns false' do
+        expect(subject.execute).to be false
+      end
+
       it 'marks the replicator registry record as failed' do
-        expect { subject.execute }.to raise_error(error)
+        subject.execute
 
         registry = replicator.registry
         expect(registry).to be_failed
@@ -122,7 +130,53 @@ RSpec.describe Geo::BlobDownloadService, feature_category: :geo_replication do
           model_record_id: replicator.model_record_id
         )
 
-        expect { subject.execute }.to raise_error(error)
+        subject.execute
+      end
+
+      it 'logs the download failure' do
+        allow(Gitlab::Geo::Logger).to receive(:warn).with(
+          hash_including(class: "Geo::PackageFileRegistry")
+        )
+
+        expect(Gitlab::Geo::Logger).to receive(:warn).with(
+          hash_including(
+            class: 'Geo::BlobDownloadService',
+            message: 'Blob download',
+            mark_as_synced: false,
+            download_success: false,
+            bytes_downloaded: 0,
+            primary_missing_file: false,
+            replicable_name: replicator.replicable_name,
+            model_record_id: replicator.model_record_id
+          )
+        )
+
+        subject.execute
+      end
+
+      it 'logs with fallback values when download_result is nil' do
+        allow(Gitlab::Geo::Logger).to receive(:warn).with(
+          hash_including(class: "Geo::PackageFileRegistry")
+        )
+
+        expect(Gitlab::Geo::Logger).to receive(:warn).with(
+          {
+            class: 'Geo::BlobDownloadService',
+            message: 'Blob download',
+            replicable_name: 'package_file',
+            model_record_id: model_record.id,
+            mark_as_synced: false,
+            download_success: false,
+            bytes_downloaded: 0,
+            primary_missing_file: false,
+            download_time_s: a_kind_of(Float),
+            reason: nil,
+            gitlab_host: a_kind_of(String),
+            correlation_id: a_kind_of(String)
+          }
+        )
+
+        subject.execute
       end
     end
 
