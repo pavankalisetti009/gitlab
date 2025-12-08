@@ -95,6 +95,7 @@ export const DUO_FOUNDATIONAL_AGENT_MOCK = {
   name: 'Cool agent',
   description: 'An agent that makes things cooler',
   referenceWithVersion: 'agent/v1',
+  foundational: true,
 };
 
 export const MOCK_FOUNDATIONAL_CHAT_AGENTS_RESPONSE = {
