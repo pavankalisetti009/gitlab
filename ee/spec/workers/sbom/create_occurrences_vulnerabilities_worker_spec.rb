@@ -10,6 +10,7 @@ RSpec.describe Sbom::CreateOccurrencesVulnerabilitiesWorker, feature_category: :
         uuid: "uuid",
         project_id: 1,
         vulnerability_id: 1,
+        pipeline_id: 1,
         package_name: "bundler",
         package_version: "1.0",
         purl_type: 'gem'

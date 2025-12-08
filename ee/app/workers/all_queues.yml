@@ -4587,6 +4587,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: vulnerabilities_auto_dismiss
+  :worker_name: Vulnerabilities::AutoDismissWorker
+  :feature_category: :security_policy_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: vulnerabilities_mark_dropped_as_resolved
   :worker_name: Vulnerabilities::MarkDroppedAsResolvedWorker
   :feature_category: :static_application_security_testing
