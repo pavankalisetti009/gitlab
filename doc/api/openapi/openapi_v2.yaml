@@ -119,7 +119,7 @@ tags:
   description: Operations about users
 - name: application
   description: Operations about applications
-- name: import
+- name: imports
   description: Operations about imports
 - name: slack
   description: Operations about slacks
@@ -47096,7 +47096,7 @@ paths:
         '429':
           description: Too Many Requests
       tags:
-      - import
+      - imports
       operationId: postApiV4ImportGithubGists
   "/api/v4/slack/trigger":
     post:
