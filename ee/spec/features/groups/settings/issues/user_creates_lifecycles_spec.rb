@@ -10,10 +10,10 @@ RSpec.describe 'Groups > Settings > Issues - lifecycles', :js, feature_category:
     stub_licensed_features(work_item_status: true)
   end
 
-  context 'for work item lifecycles' do
+  shared_examples 'lifecycle management' do
     it 'creates lifecycles based on previous ones, and deletes lifecycles', :aggregate_failures do
       sign_in(user)
-      visit group_settings_issues_path(group, anchor: 'js-custom-status-settings')
+      visit settings_path
 
       click_button 'Create lifecycle'
       fill_in 'Lifecycle name', with: 'Lifecycle Alpha'
@@ -55,5 +55,25 @@ RSpec.describe 'Groups > Settings > Issues - lifecycles', :js, feature_category:
       expect(page).to have_testid('lifecycle-detail', text: 'Lifecycle Alpha')
       expect(page).not_to have_testid('lifecycle-detail', text: 'Lifecycle Beta')
     end
+  end
+
+  context 'when work_item_planning_view FF is disabled' do
+    let(:settings_path) { group_settings_issues_path(group, anchor: 'js-custom-status-settings') }
+
+    before do
+      stub_feature_flags(work_item_planning_view: false)
+    end
+
+    it_behaves_like 'lifecycle management'
+  end
+
+  context 'when work_item_planning_view FF is enabled' do
+    let(:settings_path) { group_settings_work_items_path(group, anchor: 'js-custom-status-settings') }
+
+    before do
+      stub_feature_flags(work_item_planning_view: true)
+    end
+
+    it_behaves_like 'lifecycle management'
   end
 end

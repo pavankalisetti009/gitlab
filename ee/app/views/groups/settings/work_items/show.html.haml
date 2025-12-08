@@ -1,13 +1,13 @@
 - add_page_specific_style 'page_bundles/work_item_settings'
 - title = @group.work_items_consolidated_list_enabled?(current_user) ? s_("WorkItem|Work items settings") : s_("WorkItem|Issues settings")
+- base_path = @group.work_items_consolidated_list_enabled?(current_user) ? group_settings_work_items_path(@group) : group_settings_issues_path(@group)
 - request_path_params = request.path_parameters.values.last
 
 - if request_path_params === 'lifecycle/issue' || request_path_params === 'lifecycle/task'
-  - add_to_breadcrumbs title, group_settings_issues_path(@group)
+  - add_to_breadcrumbs title, base_path
   - breadcrumb_title sprintf(s_('WorkItem|Change lifecycle: %{workItemType}'), { workItemType: request_path_params.split("/").last.capitalize })
   - page_title s_("WorkItem|Change lifecycle"), @group.name, _("Groups")
 - else
   - breadcrumb_title title
   - page_title title
-
-#js-work-items-settings-form{ data: { full_path: @group.full_path, base_path: group_settings_issues_path(@group) } }
+#js-work-items-settings-form{ data: { full_path: @group.full_path, base_path: base_path } }

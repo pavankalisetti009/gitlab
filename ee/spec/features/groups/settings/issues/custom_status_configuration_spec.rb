@@ -16,19 +16,17 @@ RSpec.describe 'Groups > Settings > Issues', :js, feature_category: :team_planni
   shared_examples 'prevents access' do
     it 'returns 404' do
       sign_in(user)
-      visit group_settings_issues_path(target_group)
+      visit settings_path
 
       expect(page).to have_content('404: Page not found')
     end
   end
 
-  context 'with root group' do
-    let(:target_group) { group }
-
+  shared_examples 'custom status management' do
     context 'when user is authorized' do
       before do
         sign_in(user)
-        visit group_settings_issues_path(target_group, anchor: 'js-custom-status-settings')
+        visit settings_path
       end
 
       it 'can add statuses' do
@@ -141,8 +139,33 @@ RSpec.describe 'Groups > Settings > Issues', :js, feature_category: :team_planni
     end
   end
 
+  context 'with root group' do
+    let(:target_group) { group }
+
+    context 'when work_item_planning_view FF is disabled' do
+      let(:settings_path) { group_settings_issues_path(target_group, anchor: 'js-custom-status-settings') }
+
+      before do
+        stub_feature_flags(work_item_planning_view: false)
+      end
+
+      it_behaves_like 'custom status management'
+    end
+
+    context 'when work_item_planning_view FF is enabled' do
+      let(:settings_path) { group_settings_work_items_path(target_group, anchor: 'js-custom-status-settings') }
+
+      before do
+        stub_feature_flags(work_item_planning_view: true)
+      end
+
+      it_behaves_like 'custom status management'
+    end
+  end
+
   context 'with subgroup' do
     let(:target_group) { subgroup }
+    let(:settings_path) { group_settings_issues_path(target_group) }
 
     it_behaves_like 'prevents access'
 

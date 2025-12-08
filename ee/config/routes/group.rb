@@ -40,6 +40,9 @@ constraints(::Constraints::GroupUrlConstrainer.new) do
         get 'workspaces', action: :show, controller: 'workspaces'
       end
 
+      resource :work_items, param: :work_item_type do
+        get '(/*vueroute)', to: 'work_items#show', as: :work_items, format: false
+      end
       resource :issues, only: [:show], controller: 'work_items'
 
       namespace :packages_and_registries do

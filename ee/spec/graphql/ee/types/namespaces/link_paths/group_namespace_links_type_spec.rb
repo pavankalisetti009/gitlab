@@ -17,13 +17,34 @@ RSpec.describe Types::Namespaces::LinkPaths::GroupNamespaceLinksType, feature_ca
       :labels_fetch | lazy do
         "/groups/#{namespace.full_path}/-/labels.json?include_ancestor_groups=true&only_group_labels=true"
       end
-      :issues_settings | lazy { "/groups/#{namespace.root_ancestor.full_path}/-/settings/issues" }
       :epics_list_path | lazy { "/groups/#{namespace.full_path}/-/epics" }
     end
 
     with_them do
       it "expects to return the right value" do
         expect(resolve_field(field, namespace, current_user: user)).to eq(value)
+      end
+    end
+
+    context 'when work_item_planning_view is enabled' do
+      before do
+        stub_feature_flags(work_item_planning_view: true)
+      end
+
+      it 'returns work_items settings path' do
+        expect(resolve_field(:issues_settings, namespace, current_user: user))
+          .to eq("/groups/#{namespace.root_ancestor.full_path}/-/settings/work_items")
+      end
+    end
+
+    context 'when work_item_planning_view is disabled' do
+      before do
+        stub_feature_flags(work_item_planning_view: false)
+      end
+
+      it 'returns issues settings path' do
+        expect(resolve_field(:issues_settings, namespace, current_user: user))
+          .to eq("/groups/#{namespace.root_ancestor.full_path}/-/settings/issues")
       end
     end
 

@@ -241,16 +241,19 @@ module EE
               return ::Sidebars::NilMenuItem.new(item_id: :group_work_items_settings)
             end
 
-            title = if context.group.work_items_consolidated_list_enabled?(context.current_user)
-                      _('Work items')
-                    else
-                      _('Issues')
-                    end
+            is_planning_view_enabled = context.group.work_items_consolidated_list_enabled?(context.current_user)
+
+            title = is_planning_view_enabled ? _('Work items') : _('Issues')
+            link = if is_planning_view_enabled
+                     group_settings_work_items_path(context.group)
+                   else
+                     group_settings_issues_path(context.group)
+                   end
 
             ::Sidebars::MenuItem.new(
               title: title,
-              link: group_settings_issues_path(context.group),
-              active_routes: { controller: 'groups/settings/work_items', path: ['groups/settings/work_items#index'] },
+              link: link,
+              active_routes: { controller: 'groups/settings/work_items', path: ['groups/settings/work_items#show'] },
               item_id: :group_work_items_settings
             )
           end

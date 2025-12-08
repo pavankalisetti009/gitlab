@@ -433,6 +433,10 @@ RSpec.describe Sidebars::Groups::Menus::SettingsMenu, feature_category: :navigat
           it 'displays "Work items" title' do
             expect(issues_menu.title).to eq('Work items')
           end
+
+          it 'links to work_items path' do
+            expect(issues_menu.link).to  match(%r{/-/settings/work_items$})
+          end
         end
 
         context 'when work_items_consolidated_list is disabled' do
@@ -442,6 +446,10 @@ RSpec.describe Sidebars::Groups::Menus::SettingsMenu, feature_category: :navigat
 
           it 'displays "Issues" title' do
             expect(issues_menu.title).to eq('Issues')
+          end
+
+          it 'links to issues path' do
+            expect(issues_menu.link).to match(%r{/-/settings/issues$})
           end
         end
       end
