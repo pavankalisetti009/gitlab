@@ -90,6 +90,29 @@ RSpec.describe Ai::Catalog::ItemConsumersFinder, feature_category: :workflow_cat
 
       it { is_expected.to be_empty }
     end
+
+    context 'with a guest user' do
+      let_it_be(:guest_user) { create(:user) }
+      let(:params) { { project_id: project.id } }
+
+      before_all do
+        project.add_guest(guest_user)
+      end
+
+      subject(:results) { described_class.new(guest_user, params: params).execute }
+
+      it 'allows guests to read item consumers in the project' do
+        expect(results).to match_array(project_consumers)
+      end
+
+      context 'when include_inherited is true' do
+        let(:params) { super().merge(include_inherited: true) }
+
+        it 'inherits parent consumers' do
+          expect(results).to match_array(project_consumers + parent_group_consumers)
+        end
+      end
+    end
   end
 
   context 'when group_id is provided' do
@@ -121,6 +144,20 @@ RSpec.describe Ai::Catalog::ItemConsumersFinder, feature_category: :workflow_cat
         let(:params) { super().merge(item_types: [:flow]) }
 
         it { is_expected.to contain_exactly(flow_consumer, parent_flow_consumer) }
+      end
+    end
+
+    context 'with a guest user' do
+      let_it_be(:guest_user) { create(:user) }
+      let(:params) { { group_id: group.id } }
+
+      before_all do
+        group.add_guest(guest_user)
+      end
+
+      it 'does not allow guests to read item consumers in the group' do
+        results = described_class.new(guest_user, params: params).execute
+        expect(results).to be_empty
       end
     end
   end

@@ -616,4 +616,50 @@ RSpec.describe Security::PolicyDismissal, feature_category: :security_policy_man
       end
     end
   end
+
+  describe '#applicable_for_licenses?' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:merge_request) { create(:merge_request, target_project: project, source_project: project) }
+    let(:policy_dismissal) do
+      create(:policy_dismissal, project: project, merge_request: merge_request, licenses: dismissed_licenses)
+    end
+
+    subject(:applicable_for_licenses) { policy_dismissal.applicable_for_licenses?(violation_licenses) }
+
+    context 'when dismissal has no licenses' do
+      let(:dismissed_licenses) { {} }
+      let(:violation_licenses) { { 'MIT License' => ['rack'] } }
+
+      it 'returns false' do
+        expect(applicable_for_licenses).to be false
+      end
+    end
+
+    context 'when dismissal covers all violation licenses' do
+      let(:dismissed_licenses) { { 'MIT License' => %w[rack bundler], 'Apache License 2.0' => ['json'] } }
+      let(:violation_licenses) { { 'MIT License' => ['rack'], 'Apache License 2.0' => ['json'] } }
+
+      it 'returns true' do
+        expect(applicable_for_licenses).to be true
+      end
+    end
+
+    context 'when dismissal covers a subset of components for a license' do
+      let(:dismissed_licenses) { { 'MIT License' => ['rack'] } }
+      let(:violation_licenses) { { 'MIT License' => %w[rack bundler] } }
+
+      it 'returns false' do
+        expect(applicable_for_licenses).to be false
+      end
+    end
+
+    context 'when dismissal is missing a license' do
+      let(:dismissed_licenses) { { 'MIT License' => ['rack'] } }
+      let(:violation_licenses) { { 'MIT License' => ['rack'], 'Apache License 2.0' => ['json'] } }
+
+      it 'returns false' do
+        expect(applicable_for_licenses).to be false
+      end
+    end
+  end
 end

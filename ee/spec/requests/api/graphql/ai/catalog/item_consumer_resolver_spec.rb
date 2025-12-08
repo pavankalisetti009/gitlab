@@ -6,16 +6,18 @@ RSpec.describe 'getting a single AI catalog item consumer', feature_category: :w
   include Ai::Catalog::TestHelpers
   include GraphqlHelpers
 
+  let_it_be(:guest) { create(:user) }
   let_it_be(:developer) { create(:user) }
-  let_it_be(:project) { create(:project, :public, developers: developer) }
+  let_it_be(:project) { create(:project, :public, guests: guest, developers: developer) }
   let_it_be(:item) { create(:ai_catalog_agent, project:) }
-  let_it_be(:item_version_v1_5_0) { create(:ai_catalog_agent_version, :released, version: '1.5.0', item: item) }
+  let_it_be(:pinned_version) { '1.5.0' }
+  let_it_be(:item_version_v1_5_0) { create(:ai_catalog_agent_version, :released, version: pinned_version, item: item) }
   let_it_be(:item_version_v1_6_0) { create(:ai_catalog_agent_version, :released, version: '1.6.0', item: item) }
   let_it_be(:item_consumer) do
-    create(:ai_catalog_item_consumer, project: project, item: item, pinned_version_prefix: '1.5.0')
+    create(:ai_catalog_item_consumer, project: project, item: item, pinned_version_prefix: pinned_version)
   end
 
-  let(:current_user) { developer }
+  let(:current_user) { guest }
   let(:item_consumer_gid) { item_consumer.to_global_id }
   let(:item_consumer_data) { graphql_data_at(:ai_catalog_item_consumer) }
 
@@ -47,28 +49,54 @@ RSpec.describe 'getting a single AI catalog item consumer', feature_category: :w
     enable_ai_catalog
   end
 
-  it 'returns the AI catalog item consumer' do
-    post_graphql(query, current_user:, variables:)
+  context 'with guest access' do
+    it 'returns the AI catalog item consumer' do
+      post_graphql(query, current_user:, variables:)
 
-    expect(response).to have_gitlab_http_status(:success)
-    expect(item_consumer_data).to include(
-      'id' => item_consumer.to_global_id.to_s,
-      'project' => {
-        'id' => project.to_global_id.to_s,
-        'name' => project.name
-      },
-      'item' => {
-        'id' => item.to_global_id.to_s,
-        'name' => item.name
-      },
-      'pinnedItemVersion' => a_graphql_entity_for(item_version_v1_5_0),
-      'pinnedVersionPrefix' => item_consumer.pinned_version_prefix
-    )
+      expect(response).to have_gitlab_http_status(:success)
+      expect(item_consumer_data).to include(
+        'id' => item_consumer.to_global_id.to_s,
+        'project' => {
+          'id' => project.to_global_id.to_s,
+          'name' => project.name
+        },
+        'item' => nil,
+        'pinnedItemVersion' => nil,
+        'pinnedVersionPrefix' => item_consumer.pinned_version_prefix
+      )
+    end
+  end
+
+  context 'with developer access' do
+    let(:current_user) { developer }
+
+    it 'returns the AI catalog item consumer' do
+      post_graphql(query, current_user:, variables:)
+
+      expect(response).to have_gitlab_http_status(:success)
+      expect(item_consumer_data).to include(
+        'id' => item_consumer.to_global_id.to_s,
+        'project' => {
+          'id' => project.to_global_id.to_s,
+          'name' => project.name
+        },
+        'item' => {
+          'id' => item.to_global_id.to_s,
+          'name' => item.name
+        },
+        'pinnedItemVersion' => a_graphql_entity_for(item_version_v1_5_0),
+        'pinnedVersionPrefix' => item_consumer.pinned_version_prefix
+      )
+    end
   end
 
   context 'when pinnedItemVersion cannot resolve to a version' do
     before do
       item_consumer.update!(pinned_version_prefix: '2.0.1')
+    end
+
+    after do
+      item_consumer.update!(pinned_version_prefix: pinned_version)
     end
 
     it 'returns null' do
@@ -86,17 +114,6 @@ RSpec.describe 'getting a single AI catalog item consumer', feature_category: :w
     let(:variables) { { id: "gid://gitlab/Ai::Catalog::ItemConsumer/#{non_existing_record_id}" } }
 
     it 'returns null' do
-      post_graphql(query, current_user:, variables:)
-
-      expect(response).to have_gitlab_http_status(:success)
-      expect(item_consumer_data).to be_nil
-    end
-  end
-
-  context 'when user lacks permissions' do
-    let(:current_user) { create(:user) }
-
-    it 'returns null due to authorization' do
       post_graphql(query, current_user:, variables:)
 
       expect(response).to have_gitlab_http_status(:success)

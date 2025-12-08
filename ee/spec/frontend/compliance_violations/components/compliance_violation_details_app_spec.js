@@ -9,7 +9,7 @@ import ComplianceViolationDetailsApp from 'ee/compliance_violations/components/c
 import AuditEvent from 'ee/compliance_violations/components/audit_event.vue';
 import ViolationSection from 'ee/compliance_violations/components/violation_section.vue';
 import SystemNote from '~/work_items/components/notes/system_note.vue';
-import DiscussionNote from 'ee/compliance_violations/components/discussion_note.vue';
+import ComplianceViolationDiscussion from 'ee/compliance_violations/components/compliance_violation_discussion.vue';
 import FixSuggestionSection from 'ee/compliance_violations/components/fix_suggestion_section.vue';
 import RelatedIssues from 'ee/compliance_violations/components/related_issues.vue';
 import CreateCommentForm from 'ee/compliance_violations/components/create_comment_form.vue';
@@ -73,7 +73,7 @@ describe('ComplianceViolationDetailsApp', () => {
   const findRelatedIssues = () => wrapper.findComponent(RelatedIssues);
   const findErrorMessage = () => wrapper.findComponent(GlAlert);
   const findSystemNotes = () => wrapper.findAllComponents(SystemNote);
-  const findDiscussionNotes = () => wrapper.findAllComponents(DiscussionNote);
+  const findDiscussions = () => wrapper.findAllComponents(ComplianceViolationDiscussion);
   const findActivitySection = () => wrapper.find('.issuable-discussion');
   const findActivityHeader = () => wrapper.find('.issuable-discussion h2');
   const findCommentForm = () => wrapper.findComponent(CreateCommentForm);
@@ -219,12 +219,12 @@ describe('ComplianceViolationDetailsApp', () => {
         expect(findActivityHeader().text()).toBe('Activity');
       });
 
-      it('renders both system and discussion notes', () => {
+      it('renders both system notes and discussions', () => {
         const systemNotes = findSystemNotes();
-        const discussionNotes = findDiscussionNotes();
+        const discussions = findDiscussions();
 
         expect(systemNotes).toHaveLength(1);
-        expect(discussionNotes).toHaveLength(1);
+        expect(discussions).toHaveLength(1);
       });
 
       it('renders system notes with correct props', () => {
@@ -238,14 +238,17 @@ describe('ComplianceViolationDetailsApp', () => {
         });
       });
 
-      it('renders discussion notes with correct props', () => {
-        const discussionNotes = findDiscussionNotes();
-        const discussionNotesData = mockComplianceViolation.discussions.nodes
-          .filter((discussion) => !discussion.notes.nodes[0].system)
-          .map((discussion) => discussion.notes.nodes[0]);
+      it('renders discussions with correct props', () => {
+        const discussions = findDiscussions();
+        const discussionData = mockComplianceViolation.discussions.nodes.filter(
+          (discussion) => !discussion.notes.nodes[0].system,
+        );
 
-        discussionNotes.wrappers.forEach((noteWrapper, index) => {
-          expect(noteWrapper.props('note')).toEqual(discussionNotesData[index]);
+        discussions.wrappers.forEach((discussionWrapper, index) => {
+          expect(discussionWrapper.props('discussion')).toEqual(discussionData[index]);
+          expect(discussionWrapper.props('violationId')).toBe(
+            `gid://gitlab/ComplianceManagement::Projects::ComplianceViolation/${violationId}`,
+          );
         });
       });
 
@@ -272,8 +275,8 @@ describe('ComplianceViolationDetailsApp', () => {
         expect(findSystemNotes()).toHaveLength(0);
       });
 
-      it('renders discussion notes', () => {
-        expect(findDiscussionNotes()).toHaveLength(2);
+      it('renders discussions', () => {
+        expect(findDiscussions()).toHaveLength(2);
       });
     });
 
@@ -398,6 +401,21 @@ describe('ComplianceViolationDetailsApp', () => {
       const commentForm = findCommentForm();
 
       commentForm.vm.$emit('error', errorMessage);
+      await nextTick();
+
+      expect(mockToast.show).toHaveBeenCalledWith(errorMessage, {
+        variant: 'danger',
+      });
+    });
+
+    it('shows error toast when discussion emits error event', async () => {
+      const mockToast = { show: jest.fn() };
+      wrapper.vm.$toast = mockToast;
+
+      const errorMessage = 'Failed to perform action';
+      const discussion = findDiscussions().at(0);
+
+      discussion.vm.$emit('error', errorMessage);
       await nextTick();
 
       expect(mockToast.show).toHaveBeenCalledWith(errorMessage, {
