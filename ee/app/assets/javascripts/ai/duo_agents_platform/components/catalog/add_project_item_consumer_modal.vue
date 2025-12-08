@@ -8,6 +8,8 @@ import {
   AI_CATALOG_ITEM_LABELS,
   AI_CATALOG_TYPE_FLOW,
   AI_CATALOG_TYPE_THIRD_PARTY_FLOW,
+  AI_CATALOG_CONSUMER_TYPE_GROUP,
+  AI_CATALOG_CONSUMER_TYPE_PROJECT,
 } from 'ee/ai/catalog/constants';
 import GroupItemConsumerDropdown from './group_item_consumer_dropdown.vue';
 
@@ -35,6 +37,16 @@ export default {
       type: Object,
       required: true,
     },
+    item: {
+      type: Object,
+      required: false,
+      default: () => {},
+    },
+    showAddToGroup: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   data() {
     return {
@@ -42,6 +54,8 @@ export default {
       isDirty: false,
       selectedGroupItemConsumer: {},
       triggerTypes: FLOW_TRIGGER_TYPES.map((type) => type.value),
+      groupId: this.item?.project?.rootGroup?.id || null,
+      projectId: this.item?.project?.id || null,
     };
   },
   computed: {
@@ -64,11 +78,15 @@ export default {
       };
     },
     isGroupItemConsumerValid() {
-      return !this.isDirty || this.selectedGroupItemConsumer.id !== undefined;
+      return (
+        !this.isDirty ||
+        this.selectedGroupItemConsumer?.id !== undefined ||
+        this.item?.id !== undefined
+      );
     },
     showTriggers() {
       return [AI_CATALOG_TYPE_FLOW, AI_CATALOG_TYPE_THIRD_PARTY_FLOW].includes(
-        this.selectedGroupItemConsumer.item?.itemType,
+        this.selectedGroupItemConsumer.item?.itemType || this.item?.itemType,
       );
     },
     triggersLabelDescription() {
@@ -85,6 +103,14 @@ export default {
     isTriggersValid() {
       return !this.showTriggers || !this.isDirty || this.triggerTypes.length > 0;
     },
+    targetType() {
+      return this.showAddToGroup
+        ? AI_CATALOG_CONSUMER_TYPE_GROUP
+        : AI_CATALOG_CONSUMER_TYPE_PROJECT;
+    },
+    isTargetTypeGroup() {
+      return this.targetType === AI_CATALOG_CONSUMER_TYPE_GROUP;
+    },
   },
   methods: {
     resetForm() {
@@ -96,10 +122,15 @@ export default {
       if (!this.isGroupItemConsumerValid || !this.isTriggersValid) {
         return;
       }
+
+      const target = this.isTargetTypeGroup
+        ? { groupId: this.groupId }
+        : { projectId: this.projectId };
       this.$emit('submit', {
         itemId: this.selectedGroupItemConsumer.item?.id,
         itemName: this.selectedGroupItemConsumer.item?.name,
         parentItemConsumerId: this.selectedGroupItemConsumer.id,
+        target,
         ...(this.showTriggers ? { triggerTypes: this.triggerTypes } : {}),
       });
       this.$refs.modal.hide();
@@ -133,7 +164,14 @@ export default {
   >
     <errors-alert class="gl-mt-5" :errors="errors" @dismiss="errors = []" />
     <gl-form :id="formId" @submit.prevent="handleSubmit">
+      <dl v-if="item">
+        <dt class="gl-mb-2 gl-font-bold">
+          {{ modalTexts.label }}
+        </dt>
+        <dd class="gl-break-all">{{ item.name }}</dd>
+      </dl>
       <gl-form-group
+        v-else
         :label="modalTexts.label"
         :label-description="modalTexts.labelDescription"
         label-for="group-item-consumer-dropdown"

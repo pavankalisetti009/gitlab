@@ -6,6 +6,7 @@ import {
   mockAgentItemConsumer,
   mockFlowItemConsumer,
   mockThirdPartyFlowItemConsumer,
+  mockFlow,
 } from 'ee_jest/ai/catalog/mock_data';
 import { stubComponent } from 'helpers/stub_component';
 
@@ -107,6 +108,7 @@ describe('AddProjectItemConsumerModal', () => {
         itemId: mockFlowItemConsumer.item.id,
         itemName: mockFlowItemConsumer.item.name,
         parentItemConsumerId: mockFlowItemConsumer.id,
+        target: { projectId: null },
         triggerTypes: ['mention'],
       });
     });
@@ -140,6 +142,7 @@ describe('AddProjectItemConsumerModal', () => {
         itemId: mockAgentItemConsumer.item.id,
         itemName: mockAgentItemConsumer.item.name,
         parentItemConsumerId: mockAgentItemConsumer.id,
+        target: { projectId: null },
       });
     });
   });
@@ -168,7 +171,50 @@ describe('AddProjectItemConsumerModal', () => {
         itemId: mockThirdPartyFlowItemConsumer.item.id,
         itemName: mockThirdPartyFlowItemConsumer.item.name,
         parentItemConsumerId: mockThirdPartyFlowItemConsumer.id,
+        target: { projectId: null },
         triggerTypes: ['mention', 'assign', 'assign_reviewer'],
+      });
+    });
+  });
+
+  describe('when item is passed', () => {
+    describe('at project level', () => {
+      beforeEach(() => {
+        createComponent({
+          props: { item: mockFlow, showAddToGroup: false },
+        });
+      });
+
+      it('does not display dropdown', () => {
+        expect(findGroupItemConsumerDropdown().exists()).toBe(false);
+
+        findForm().vm.$emit('submit', { preventDefault: jest.fn() });
+
+        expect(wrapper.emitted('submit')).toHaveLength(1);
+        expect(wrapper.emitted('submit')[0][0]).toEqual({
+          target: { projectId: 'gid://gitlab/Project/1' },
+          triggerTypes: ['mention', 'assign', 'assign_reviewer'],
+        });
+      });
+    });
+
+    describe('at group level', () => {
+      beforeEach(() => {
+        createComponent({
+          props: { item: mockFlow, showAddToGroup: true },
+        });
+      });
+
+      it('does not display dropdown', () => {
+        expect(findGroupItemConsumerDropdown().exists()).toBe(false);
+
+        findForm().vm.$emit('submit', { preventDefault: jest.fn() });
+
+        expect(wrapper.emitted('submit')).toHaveLength(1);
+        expect(wrapper.emitted('submit')[0][0]).toEqual({
+          target: { groupId: 'gid://gitlab/Group/1' },
+          triggerTypes: ['mention', 'assign', 'assign_reviewer'],
+        });
       });
     });
   });

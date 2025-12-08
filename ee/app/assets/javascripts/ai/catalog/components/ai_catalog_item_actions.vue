@@ -11,11 +11,18 @@ import {
   GlTooltipDirective,
   GlSprintf,
 } from '@gitlab/ui';
+import AddProjectItemConsumerModal from 'ee/ai/duo_agents_platform/components/catalog/add_project_item_consumer_modal.vue';
 import { s__, sprintf } from '~/locale';
 import { isLoggedIn } from '~/lib/utils/common_utils';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import ConfirmActionModal from '~/vue_shared/components/confirm_action_modal.vue';
-import { AI_CATALOG_ITEM_LABELS, DELETE_OPTIONS } from '../constants';
+import {
+  AI_CATALOG_ITEM_LABELS,
+  DELETE_OPTIONS,
+  AI_CATALOG_TYPE_FLOW,
+  AI_CATALOG_TYPE_THIRD_PARTY_FLOW,
+  ENABLE_FLOW_MODAL_TEXTS,
+} from '../constants';
 import AiCatalogItemConsumerModal from './ai_catalog_item_consumer_modal.vue';
 import AiCatalogItemReportModal from './ai_catalog_item_report_modal.vue';
 
@@ -33,6 +40,7 @@ export default {
     ConfirmActionModal,
     AiCatalogItemConsumerModal,
     AiCatalogItemReportModal,
+    AddProjectItemConsumerModal,
   },
   directives: {
     GlModal: GlModalDirective,
@@ -164,6 +172,25 @@ export default {
           )
         : null;
     },
+    showEnableModalWithTriggers() {
+      return (
+        [AI_CATALOG_TYPE_FLOW, AI_CATALOG_TYPE_THIRD_PARTY_FLOW].includes(this.item.itemType) &&
+        !this.isGlobal
+      );
+    },
+    enableModalComponent() {
+      return this.showEnableModalWithTriggers
+        ? AddProjectItemConsumerModal
+        : AiCatalogItemConsumerModal;
+    },
+    enableModalProps() {
+      return this.showEnableModalWithTriggers
+        ? {
+            itemTypes: [this.item.itemType],
+            modalTexts: ENABLE_FLOW_MODAL_TEXTS,
+          }
+        : { isProjectNamespace: this.showEnable };
+    },
   },
   DELETE_OPTIONS,
   adminModeDocsLink: helpPagePath('/administration/settings/sign_in_restrictions', {
@@ -185,7 +212,7 @@ export default {
     </gl-button>
     <gl-button
       v-if="showAddToGroup"
-      v-gl-modal="'add-item-consumer-modal'"
+      v-gl-modal="'enable-item-modal'"
       variant="confirm"
       category="primary"
       data-testid="add-to-group-button"
@@ -194,7 +221,7 @@ export default {
     </gl-button>
     <gl-button
       v-else-if="showAddToProject"
-      v-gl-modal="'add-item-consumer-modal'"
+      v-gl-modal="'enable-item-modal'"
       variant="confirm"
       category="primary"
       data-testid="add-to-project-button"
@@ -203,7 +230,7 @@ export default {
     </gl-button>
     <span v-else-if="showEnable" v-gl-tooltip="!hasParentConsumer" :title="pendingMessage">
       <gl-button
-        v-gl-modal="'add-item-consumer-modal'"
+        v-gl-modal="'enable-item-modal'"
         :disabled="!hasParentConsumer"
         variant="confirm"
         category="primary"
@@ -328,11 +355,13 @@ export default {
         </template>
       </gl-sprintf>
     </confirm-action-modal>
-    <ai-catalog-item-consumer-modal
+    <component
+      :is="enableModalComponent"
       v-if="canUse"
+      modal-id="enable-item-modal"
       :item="item"
-      :is-project-namespace="showEnable"
       :show-add-to-group="showAddToGroup"
+      v-bind="enableModalProps"
       @submit="$emit('add-to-target', $event)"
     />
     <ai-catalog-item-report-modal

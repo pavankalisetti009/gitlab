@@ -109,11 +109,12 @@ export default {
     });
   },
   methods: {
-    async addFlowToTarget(target) {
+    async addFlowToTarget({ target, triggerTypes }) {
       const input = {
         itemId: this.aiCatalogFlow.id,
         target,
         parentItemConsumerId: this.aiCatalogFlow.configurationForGroup?.id,
+        triggerTypes,
       };
       const targetType = target.groupId
         ? AI_CATALOG_CONSUMER_TYPE_GROUP
