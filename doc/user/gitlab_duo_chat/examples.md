@@ -16,6 +16,7 @@ title: Ask GitLab Duo Chat
 {{< history >}}
 
 - Updated default LLM to Claude Sonnet 4.5 for Chat (Classic) and Chat (Agentic) in GitLab 18.6.
+- [Updated default LLM](https://gitlab.com/groups/gitlab-org/-/epics/19998) for Chat (Agentic) to Claude Haiku 4.5 in GitLab 18.7.
 
 {{< /history >}}
 
@@ -31,7 +32,10 @@ The following examples provide more information on Chat capabilities.
 
 {{< alert type="note" >}}
 
-Unless stated otherwise, the default LLM for Chat is Anthropic [Claude Sonnet 4.5](https://console.cloud.google.com/vertex-ai/publishers/anthropic/model-garden/claude-sonnet-4-5) for both GitLab Duo Chat (Classic) and GitLab Duo Chat (Agentic).
+Unless stated otherwise, the default LLM for:
+
+- Chat (Agentic) is Anthropic [Claude Haiku 4.5](https://console.cloud.google.com/vertex-ai/publishers/anthropic/model-garden/claude-haiku-4-5).
+- Chat (Classic) is Anthropic [Claude Sonnet 4.5](https://console.cloud.google.com/vertex-ai/publishers/anthropic/model-garden/claude-sonnet-4-5).
 
 {{< /alert >}}
 
