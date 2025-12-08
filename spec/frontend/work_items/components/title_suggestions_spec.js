@@ -3,10 +3,10 @@ import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
-import TitleSuggestions from '~/issues/new/components/title_suggestions.vue';
-import TitleSuggestionsItem from '~/issues/new/components/title_suggestions_item.vue';
-import getIssueSuggestionsQuery from '~/issues/new/queries/issues.query.graphql';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
+import TitleSuggestions from '~/work_items/components/title_suggestions.vue';
+import TitleSuggestionsItem from '~/work_items/components/title_suggestions_item.vue';
+import getIssueSuggestionsQuery from '~/work_items/graphql/issues.query.graphql';
 import { mockIssueSuggestionResponse } from '../mock_data';
 
 Vue.use(VueApollo);

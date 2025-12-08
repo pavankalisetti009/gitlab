@@ -28,6 +28,7 @@ module API
             { code: 404, message: 'Not found' }
           ]
           is_array true
+          tags %w[merge_trains]
         end
         params do
           optional :scope, type: String, desc: 'The scope of merge trains', values: %w[active complete],
@@ -56,6 +57,7 @@ module API
               { code: 404, message: 'Not found' }
             ]
             is_array true
+            tags %w[merge_trains]
           end
           params do
             requires :target_branch, type: String, desc: 'The target branch of the merge request',
@@ -86,6 +88,7 @@ module API
               { code: 403, message: 'Forbidden' },
               { code: 404, message: 'Not found' }
             ]
+            tags %w[merge_trains]
           end
           route_setting :authorization, permissions: :read_merge_train_merge_request, boundary_type: :project
           get do
@@ -110,6 +113,7 @@ module API
             { code: 409, message: 'Conflict' },
             { code: 403, message: 'Forbidden' }
           ]
+          tags %w[merge_trains]
         end
         params do
           optional :sha, type: String,

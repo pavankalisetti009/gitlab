@@ -2,10 +2,11 @@
 import { GlTooltipDirective } from '@gitlab/ui';
 import { __ } from '~/locale';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
-import query from '../queries/issues.query.graphql';
+import query from '../graphql/issues.query.graphql';
 import TitleSuggestionsItem from './title_suggestions_item.vue';
 
 export default {
+  name: 'TitleSuggestions',
   components: {
     TitleSuggestionsItem,
     CrudComponent,
