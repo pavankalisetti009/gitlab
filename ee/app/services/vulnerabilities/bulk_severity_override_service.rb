@@ -98,12 +98,12 @@ module Vulnerabilities
         )
       else
         ::SystemNotes::VulnerabilitiesService.formatted_note(
-          'changed',
-          @new_severity,
-          nil,
-          comment,
-          'severity',
-          original_severity
+          transition: 'changed',
+          to_value: @new_severity,
+          reason: nil,
+          comment: comment,
+          attribute: 'severity',
+          from_value: original_severity
         )
       end
     end

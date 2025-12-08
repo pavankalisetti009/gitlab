@@ -94,12 +94,12 @@ RSpec.describe Vulnerabilities::BulkSeverityOverrideService, feature_category: :
         with_them do
           before do
             existing_note_text = ::SystemNotes::VulnerabilitiesService.formatted_note(
-              'changed',
-              existing_note_severity,
-              nil,
-              existing_note_comment,
-              'severity',
-              original_severity
+              transition: 'changed',
+              to_value: existing_note_severity,
+              reason: nil,
+              comment: existing_note_comment,
+              attribute: 'severity',
+              from_value: original_severity
             )
 
             create(

@@ -33,10 +33,10 @@ module Vulnerabilities
           namespace_id: attrs[:namespace_id],
           system: true,
           note: ::SystemNotes::VulnerabilitiesService.formatted_note(
-            'changed',
-            :dismissed,
-            attrs[:dismissal_reason].titleize,
-            attrs[:comment]
+            transition: 'changed',
+            to_value: :dismissed,
+            reason: attrs[:dismissal_reason].titleize,
+            comment: attrs[:comment]
           ),
           author_id: attrs[:user_id],
           created_at: now,

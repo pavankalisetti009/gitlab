@@ -14,12 +14,12 @@ module SystemNotes
     end
 
     class << self
-      def formatted_note(transition, to_value, reason, comment, attribute = "status", from_value = nil)
+      def formatted_note(transition:, to_value:, reason:, comment:, attribute: "status", from_value: nil)
         format(
-          "%{transition} vulnerability %{attribute}%{from} to %{to_value}%{reason}%{comment}",
+          "%{transition} vulnerability %{attribute}%{from_value} to %{to_value}%{reason}%{comment}",
           transition: transition,
           attribute: attribute,
-          from: formatted_from(from_value),
+          from_value: formatted_from(from_value),
           to_value: to_value.to_s.titleize,
           comment: formatted_comment(comment),
           reason: formatted_reason(reason, to_value)
@@ -53,10 +53,11 @@ module SystemNotes
     def state_change_body
       if state_transition.present?
         self.class.formatted_note(
-          transition_name,
-          to_state,
-          state_transition.dismissal_reason,
-          state_transition.comment
+          transition: transition_name,
+          from_value: from_state,
+          to_value: to_state,
+          reason: state_transition.dismissal_reason,
+          comment: state_transition.comment
         )
       else
         "changed vulnerability status to Detected"
@@ -65,6 +66,10 @@ module SystemNotes
 
     def transition_name
       state_transition.to_state_detected? ? 'reverted' : 'changed'
+    end
+
+    def from_state
+      @from_state ||= state_transition.from_state
     end
 
     def to_state
