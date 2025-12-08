@@ -614,4 +614,219 @@ RSpec.describe ::WorkItems::SystemDefined::Type, feature_category: :team_plannin
       end
     end
   end
+
+  describe "for lifecycles" do
+    let_it_be(:namespace) { create(:group) }
+    let_it_be(:other_namespace) { create(:group) }
+    let_it_be(:work_item_type_system_defined) { build(:work_item_system_defined_type, :issue) }
+    # TODO: We can not create `work_item_type_custom_lifecycle` for system defined work item type., as the relation is
+    # not defined yet. we need to create the database `work_item_type` and add them as work_item_type during the
+    # creation of the `work_item_type_custom_lifecycle`.Once we change relation and use the system defined types
+    # we should remove the `work_item_type` and rename and keep only the `work_item_type_system_defined`.
+    let_it_be(:work_item_type) { create(:work_item_type, :issue, id: work_item_type_system_defined.id) }
+
+    before do
+      stub_licensed_features(work_item_status: true)
+    end
+
+    describe '#status_lifecycle_for' do
+      let(:system_defined_lifecycle) { build(:work_item_system_defined_lifecycle) }
+
+      subject(:status_lifecycle_for) { work_item_type_system_defined.status_lifecycle_for(namespace_id) }
+
+      context 'when custom lifecycle exists for the namespace' do
+        let_it_be(:custom_lifecycle) { create(:work_item_custom_lifecycle, namespace: namespace) }
+        let(:namespace_id) { namespace.id }
+
+        before do
+          create(:work_item_type_custom_lifecycle,
+            work_item_type: work_item_type,
+            namespace: namespace,
+            lifecycle: custom_lifecycle)
+        end
+
+        it 'returns the custom lifecycle' do
+          expect(status_lifecycle_for).to eq(custom_lifecycle)
+        end
+      end
+
+      context 'when custom lifecycle does not exist for the namespace' do
+        let(:namespace_id) { namespace.id }
+
+        it 'returns the system-defined lifecycle' do
+          expect(status_lifecycle_for).to eq(system_defined_lifecycle)
+        end
+      end
+
+      context 'when namespace_id is nil' do
+        let(:namespace_id) { nil }
+
+        it 'returns the system-defined lifecycle' do
+          expect(status_lifecycle_for).to eq(system_defined_lifecycle)
+        end
+      end
+
+      context 'when custom lifecycle exists for a different namespace' do
+        let_it_be(:other_custom_lifecycle) { create(:work_item_custom_lifecycle, namespace: other_namespace) }
+        let(:namespace_id) { namespace.id }
+
+        before do
+          create(:work_item_type_custom_lifecycle,
+            work_item_type: work_item_type,
+            namespace: other_namespace,
+            lifecycle: other_custom_lifecycle)
+        end
+
+        it 'returns the system-defined lifecycle for the original namespace' do
+          expect(status_lifecycle_for).to eq(system_defined_lifecycle)
+        end
+      end
+    end
+
+    describe '#custom_status_enabled_for?' do
+      subject(:custom_status_enabled_for) { work_item_type_system_defined.custom_status_enabled_for?(namespace_id) }
+
+      context 'when namespace_id is nil' do
+        let(:namespace_id) { nil }
+
+        it { is_expected.to be false }
+      end
+
+      context 'when namespace_id is provided' do
+        let(:namespace_id) { namespace.id }
+
+        context 'when custom lifecycle exists for the namespace' do
+          let_it_be(:custom_lifecycle) { create(:work_item_custom_lifecycle, namespace: namespace) }
+
+          before do
+            create(:work_item_type_custom_lifecycle,
+              work_item_type: work_item_type,
+              namespace: namespace,
+              lifecycle: custom_lifecycle)
+          end
+
+          it { is_expected.to be true }
+        end
+
+        context 'when custom lifecycle does not exist for the namespace' do
+          it { is_expected.to be false }
+        end
+      end
+    end
+
+    describe '#custom_lifecycle_for' do
+      subject(:custom_lifecycle_for) { work_item_type_system_defined.custom_lifecycle_for(namespace_id) }
+
+      context 'when namespace_id is nil' do
+        let(:namespace_id) { nil }
+
+        it 'returns nil' do
+          expect(custom_lifecycle_for).to be_nil
+        end
+      end
+
+      context 'when namespace_id is provided' do
+        let(:namespace_id) { namespace.id }
+
+        context 'when no custom lifecycle exists' do
+          it 'returns nil' do
+            expect(custom_lifecycle_for).to be_nil
+          end
+        end
+
+        context 'when a custom lifecycle exists for a different namespace' do
+          let_it_be(:custom_lifecycle) { create(:work_item_custom_lifecycle, namespace: other_namespace) }
+
+          before do
+            create(:work_item_type_custom_lifecycle,
+              work_item_type: work_item_type,
+              namespace: other_namespace,
+              lifecycle: custom_lifecycle
+            )
+          end
+
+          it 'returns nil' do
+            expect(custom_lifecycle_for).to be_nil
+          end
+        end
+
+        context 'when a custom lifecycle exists for a different work item type' do
+          let_it_be(:other_work_item_type_system_defined) { create(:work_item_system_defined_type, base_type: :task) }
+
+          # TODO: Remove the `work_item_type` once we switch to system defined work item types.
+          let_it_be(:other_work_item_type) do
+            create(:work_item_type, :task, id: other_work_item_type_system_defined.id)
+          end
+
+          let_it_be(:custom_lifecycle) { create(:work_item_custom_lifecycle, namespace: namespace) }
+
+          before do
+            create(:work_item_type_custom_lifecycle,
+              work_item_type: other_work_item_type,
+              namespace: namespace,
+              lifecycle: custom_lifecycle
+            )
+          end
+
+          it 'returns nil' do
+            expect(custom_lifecycle_for).to be_nil
+          end
+        end
+
+        context 'when a custom lifecycle exists for the namespace and work item type' do
+          let_it_be(:custom_lifecycle) { create(:work_item_custom_lifecycle, namespace: namespace) }
+
+          before do
+            create(:work_item_type_custom_lifecycle,
+              work_item_type: work_item_type,
+              namespace: namespace,
+              lifecycle: custom_lifecycle
+            )
+          end
+
+          it 'returns the custom lifecycle' do
+            expect(custom_lifecycle_for).to eq(custom_lifecycle)
+          end
+        end
+
+        context 'when multiple custom lifecycles exist but only one matches' do
+          let_it_be(:matching_lifecycle) { create(:work_item_custom_lifecycle, namespace: namespace) }
+          let_it_be(:other_lifecycle) { create(:work_item_custom_lifecycle, namespace: other_namespace) }
+
+          before do
+            create(:work_item_type_custom_lifecycle,
+              work_item_type: work_item_type,
+              namespace: namespace,
+              lifecycle: matching_lifecycle
+            )
+
+            create(:work_item_type_custom_lifecycle,
+              work_item_type: work_item_type,
+              namespace: other_namespace,
+              lifecycle: other_lifecycle
+            )
+          end
+
+          it 'returns only the matching lifecycle' do
+            expect(custom_lifecycle_for).to eq(matching_lifecycle)
+          end
+        end
+      end
+    end
+
+    describe '#system_defined_lifecycle' do
+      let_it_be(:work_item_type) { build(:work_item_system_defined_type, :issue) }
+
+      subject(:system_defined_lifecycle) { work_item_type.system_defined_lifecycle }
+
+      it 'delegates to SystemDefined::Lifecycle.of_work_item_base_type' do
+        expect(::WorkItems::Statuses::SystemDefined::Lifecycle)
+          .to receive(:of_work_item_base_type)
+          .with(work_item_type.base_type)
+          .and_call_original
+
+        system_defined_lifecycle
+      end
+    end
+  end
 end

@@ -33,7 +33,7 @@ module EE
         override :licensed?
         def licensed?(resource_parent)
           # Return true if the widget type doesn't have a license requirement.
-          return true if WIDGETS_WITH_LICENSE[widget_type].nil?
+          return super if WIDGETS_WITH_LICENSE[widget_type].nil?
 
           resource_parent.licensed_feature_available?(WIDGETS_WITH_LICENSE[widget_type])
         end

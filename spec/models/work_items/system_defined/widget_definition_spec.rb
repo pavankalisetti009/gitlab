@@ -310,4 +310,28 @@ RSpec.describe WorkItems::SystemDefined::WidgetDefinition, feature_category: :te
       end
     end
   end
+
+  describe '#licensed?' do
+    let(:widget_definition) { build(:work_item_system_defined_widget_definition) }
+
+    subject(:licensed?) { widget_definition.licensed?(resource_parent) }
+
+    context "when resource_parent id nil" do
+      let(:resource_parent) { nil }
+
+      it { is_expected.to be true }
+    end
+
+    context "when resource_parent exists and it is a project" do
+      let(:resource_parent) { build_stubbed(:project) }
+
+      it { is_expected.to be true }
+    end
+
+    context "when resource_parent exists and it is a group" do
+      let(:resource_parent) { build_stubbed(:group) }
+
+      it { is_expected.to be true }
+    end
+  end
 end
