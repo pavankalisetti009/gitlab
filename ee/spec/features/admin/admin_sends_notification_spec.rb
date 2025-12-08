@@ -23,7 +23,7 @@ RSpec.describe "Admin sends notification", :js, :sidekiq_might_not_need_inline, 
     ActionMailer::Base.deliveries.clear
   end
 
-  it "sends notification" do
+  it "sends notification", quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/8165' do
     perform_enqueued_jobs do
       fill_in(:subject, with: "My Subject")
       fill_in(:body, with: NOTIFICATION_TEXT)
