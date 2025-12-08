@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# rubocop:disable Cop/ActiveRecordDependent -- required by https://gitlab.com/groups/gitlab-org/-/epics/19085
 module EE
   # User EE mixin
   #
@@ -75,7 +76,7 @@ module EE
       has_many :epics,                    foreign_key: :author_id
       has_many :test_reports,             foreign_key: :author_id, inverse_of: :author, class_name: 'RequirementsManagement::TestReport'
       has_many :assigned_epics,           foreign_key: :assignee_id, class_name: "Epic"
-      has_many :path_locks,               dependent: :destroy # rubocop:disable Cop/ActiveRecordDependent -- legacy usage
+      has_many :path_locks,               dependent: :destroy
       has_many :vulnerability_feedback, foreign_key: :author_id, class_name: 'Vulnerabilities::Feedback'
       has_many :vulnerability_state_transitions, foreign_key: :author_id, class_name: 'Vulnerabilities::StateTransition', inverse_of: :author
       has_many :vulnerability_severity_overrides, foreign_key: :author_id, class_name: 'Vulnerabilities::SeverityOverride', inverse_of: :author
@@ -84,12 +85,12 @@ module EE
         foreign_key: :violating_user_id,
         class_name: 'MergeRequests::ComplianceViolation',
         inverse_of: :violating_user,
-        dependent: :delete_all # rubocop:disable Cop/ActiveRecordDependent -- database CASCADE already handles deletion
+        dependent: :delete_all
 
       has_many :boards_epic_user_preferences, class_name: 'Boards::EpicUserPreference', inverse_of: :user
       has_many :epic_board_recent_visits, class_name: 'Boards::EpicBoardRecentVisit', inverse_of: :user
 
-      has_many :approvals,                dependent: :destroy # rubocop:disable Cop/ActiveRecordDependent -- legacy usage
+      has_many :approvals, dependent: :destroy
 
       has_many :minimal_access_group_members, -> { where(access_level: [::Gitlab::Access::MINIMAL_ACCESS]) }, class_name: 'GroupMember'
       has_many :minimal_access_groups, through: :minimal_access_group_members, source: :group
@@ -109,25 +110,21 @@ module EE
       has_many :group_saml_providers, through: :group_saml_identities, source: :saml_provider
 
       # Protected Branch Access
-      # rubocop:disable Cop/ActiveRecordDependent -- legacy usage
       has_many :protected_branch_merge_access_levels, dependent: :destroy, class_name: "::ProtectedBranch::MergeAccessLevel"
-      # rubocop:enable Cop/ActiveRecordDependent -- legacy usage
-      # rubocop:disable Cop/ActiveRecordDependent -- legacy usage
+
       has_many :protected_branch_push_access_levels, dependent: :destroy, class_name: "::ProtectedBranch::PushAccessLevel"
-      # rubocop:enable Cop/ActiveRecordDependent -- legacy usage
-      # rubocop:disable Cop/ActiveRecordDependent -- legacy usage
+
       has_many :protected_branch_unprotect_access_levels, dependent: :destroy, class_name: "::ProtectedBranch::UnprotectAccessLevel"
-      # rubocop:enable Cop/ActiveRecordDependent -- legacy usage
 
       has_many :deployment_approvals, class_name: 'Deployments::Approval'
 
       has_many :smartcard_identities
 
       has_many :group_scim_identities, class_name: 'GroupScimIdentity',
-        dependent: :destroy # rubocop:disable Cop/ActiveRecordDependent -- legacy usage
+        dependent: :destroy
 
       has_many :instance_scim_identities, -> { where(group_id: nil) }, class_name: 'ScimIdentity',
-        dependent: :destroy # rubocop:disable Cop/ActiveRecordDependent -- legacy usage
+        dependent: :destroy
       has_many :scim_group_memberships, -> { where(group_id: nil) }, class_name: 'Authn::ScimGroupMembership'
 
       has_many :board_preferences, class_name: 'BoardUserPreference', inverse_of: :user
@@ -148,9 +145,7 @@ module EE
 
       has_many :dependency_list_exports, class_name: 'Dependencies::DependencyListExport', inverse_of: :author
 
-      # rubocop:disable Cop/ActiveRecordDependent -- legacy usage
       has_many :assigned_add_ons, class_name: 'GitlabSubscriptions::UserAddOnAssignment', inverse_of: :user, dependent: :destroy
-      # rubocop:enable Cop/ActiveRecordDependent -- legacy usage
 
       has_many :created_namespace_cluster_agent_mappings,
         class_name: 'RemoteDevelopment::NamespaceClusterAgentMapping',
@@ -164,7 +159,7 @@ module EE
       has_many :country_access_logs,
         class_name: 'Users::CountryAccessLog',
         inverse_of: :user,
-        dependent: :destroy # rubocop:disable Cop/ActiveRecordDependent -- required by https://gitlab.com/groups/gitlab-org/-/epics/19085
+        dependent: :destroy
 
       has_one :pipl_user, class_name: 'ComplianceManagement::PiplUser'
 
@@ -176,9 +171,9 @@ module EE
       has_one :member_role, class_name: 'MemberRole', through: :user_member_role
 
       has_many :user_group_member_roles, inverse_of: :user, class_name: 'Authz::UserGroupMemberRole'
-      has_many :user_project_member_roles, inverse_of: :user, class_name: 'Authz::UserProjectMemberRole', dependent: :destroy # rubocop:disable Cop/ActiveRecordDependent -- required by https://gitlab.com/groups/gitlab-org/-/epics/19085
+      has_many :user_project_member_roles, inverse_of: :user, class_name: 'Authz::UserProjectMemberRole', dependent: :destroy
 
-      has_many :ai_catalog_item_consumers, class_name: 'Ai::Catalog::ItemConsumer', foreign_key: :service_account_id, dependent: :nullify # rubocop:disable Cop/ActiveRecordDependent -- required by https://gitlab.com/groups/gitlab-org/-/epics/19085
+      has_many :ai_catalog_item_consumers, class_name: 'Ai::Catalog::ItemConsumer', foreign_key: :service_account_id, dependent: :nullify
       has_many :ai_conversation_threads, class_name: 'Ai::Conversation::Thread', foreign_key: :user_id
       has_many :ai_conversation_messages, class_name: 'Ai::Conversation::Message', through: :ai_conversation_threads, source: :messages
 
@@ -187,7 +182,7 @@ module EE
       has_many :compromised_password_detections, class_name: 'Users::CompromisedPasswordDetection', inverse_of: :user
 
       has_many :arkose_sessions, class_name: 'Users::ArkoseSession', inverse_of: :user
-      has_many :designated_beneficiaries, class_name: 'Users::DesignatedBeneficiary', dependent: :destroy # rubocop:disable Cop/ActiveRecordDependent -- fk cascade delete is also implemented
+      has_many :designated_beneficiaries, class_name: 'Users::DesignatedBeneficiary', dependent: :destroy
 
       scope :auditors, -> { where('auditor IS true') }
       scope :managed_by, ->(group) { where(managing_group: group) }
@@ -990,3 +985,4 @@ module EE
     end
   end
 end
+# rubocop:enable Cop/ActiveRecordDependent
