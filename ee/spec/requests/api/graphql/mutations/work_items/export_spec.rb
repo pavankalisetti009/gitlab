@@ -23,7 +23,8 @@ RSpec.describe 'Export work items', feature_category: :team_planning do
         'iterationWildcardId' => 'ANY',
         'iterationCadenceId' => iteration.iterations_cadence.to_gid,
         'not' => { 'iterationId' => iteration.to_gid },
-        'weightWildcardId' => 'ANY'
+        'weightWildcardId' => 'ANY',
+        'status' => { 'name' => 'To do' }
       }
     end
 
@@ -34,7 +35,8 @@ RSpec.describe 'Export work items', feature_category: :team_planning do
         iteration_id: 'ANY',
         iteration_cadence_id: [iteration.iterations_cadence_id.to_s],
         not: { iteration_id: [iteration.id.to_s] },
-        weight: 'ANY'
+        weight: 'ANY',
+        status: { name: 'To do' }
       }
 
       expect(IssuableExportCsvWorker)

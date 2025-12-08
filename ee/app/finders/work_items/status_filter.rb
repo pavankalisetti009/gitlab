@@ -2,6 +2,8 @@
 
 module WorkItems
   class StatusFilter < ::Issuables::BaseFilter
+    include Gitlab::Utils::StrongMemoize
+
     def filter(issuables)
       return issuables unless can_filter_by_status?(issuables)
 
@@ -19,7 +21,7 @@ module WorkItems
     end
 
     def status_param_present?
-      params[:status].to_h&.slice(:id, :name).present?
+      status_hash&.slice(:id, :name).present?
     end
 
     def work_item_status_feature_available?
@@ -52,8 +54,8 @@ module WorkItems
     end
 
     def find_requested_status
-      status = params.dig(:status, :id)
-      status = find_status_by_name(params.dig(:status, :name)) unless status.present?
+      status = status_hash[:id]
+      status = find_status_by_name(status_hash[:name]) unless status.present?
       status
     end
 
@@ -212,5 +214,10 @@ module WorkItems
     def root_ancestor
       parent&.root_ancestor
     end
+
+    def status_hash
+      params[:status]&.to_h&.with_indifferent_access
+    end
+    strong_memoize_attr :status_hash
   end
 end
