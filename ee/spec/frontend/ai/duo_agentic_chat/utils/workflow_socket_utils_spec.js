@@ -147,7 +147,7 @@ describe('workflow_socket_utils', () => {
           additionalContext,
         });
 
-        expect(request.startRequest.additionalContext).toEqual(additionalContext);
+        expect(request.startRequest.additional_context).toEqual(additionalContext);
       });
     });
 
