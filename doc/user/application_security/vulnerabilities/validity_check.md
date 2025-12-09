@@ -93,7 +93,6 @@ Validity checks support the following secret types:
 - AWS IAM secret access keys
 - GCP API keys
 - GCP OAuth client secrets
-- Google (GCP) service account keys
 - Postman API tokens
 
 ## Validity check workflow
