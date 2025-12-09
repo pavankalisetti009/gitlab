@@ -1303,7 +1303,7 @@ RSpec.describe API::Files, feature_category: :source_code_management do
     end
 
     context 'with form encoding' do
-      let(:body_encoding) { :form }
+      let(:body_encoding) { :multipart_form }
 
       it_behaves_like 'validates file params'
       it_behaves_like 'when authenticated'
@@ -1457,7 +1457,7 @@ RSpec.describe API::Files, feature_category: :source_code_management do
     end
 
     context 'with form encoding' do
-      let(:body_encoding) { :form }
+      let(:body_encoding) { :multipart_form }
 
       it_behaves_like 'updates to an existing file'
       it_behaves_like 'rate limiting for large commit content'
