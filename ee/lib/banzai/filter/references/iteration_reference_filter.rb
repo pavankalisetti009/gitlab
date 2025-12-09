@@ -107,10 +107,6 @@ module Banzai
             .iteration_url(iteration, only_path: context[:only_path])
         end
 
-        def object_link_text(object, matches)
-          escape_once(super)
-        end
-
         def object_link_title(_object, _matches)
           'Iteration'
         end
