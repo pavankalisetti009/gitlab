@@ -35,6 +35,7 @@ import { convertObjectPropsToSnakeCase } from '~/lib/utils/common_utils';
 import download from '~/lib/utils/downloader';
 import { HTTP_STATUS_INTERNAL_SERVER_ERROR, HTTP_STATUS_OK } from '~/lib/utils/http_status';
 import { visitUrl } from '~/lib/utils/url_utility';
+
 import {
   getVulnerabilityStatusMutationResponse,
   dismissalDescriptions,
@@ -79,6 +80,9 @@ describe('Vulnerability Header', () => {
       url: 'pipeline_url',
       sourceBranch: 'main',
     },
+    latestFlag: {
+      confidenceScore: 0.95,
+    },
     description: 'description',
     identifiers: 'identifiers',
     links: 'links',
@@ -97,6 +101,9 @@ describe('Vulnerability Header', () => {
     canExplainWithAi,
     aiResolutionEnabled,
     canAdmin = true,
+    latestFlag = null,
+    reportType = 'dast',
+    project = { id: 123 },
     ...otherProperties
   } = {}) => ({
     remediations: canCreateMergeRequest || canDownloadPatch ? [{ diff }] : null,
@@ -107,6 +114,9 @@ describe('Vulnerability Header', () => {
     aiExplanationAvailable: canExplainWithAi,
     aiResolutionEnabled,
     canAdmin,
+    latestFlag,
+    reportType,
+    project,
     ...(canDownloadPatch && canCreateMergeRequest === undefined ? { createMrUrl: '' } : {}),
     ...otherProperties,
   });
@@ -148,6 +158,7 @@ describe('Vulnerability Header', () => {
     apolloProvider,
     glAbilities,
     hideVulnerabilitySeverityOverride = false,
+    glFeatures = {},
   }) => {
     wrapper = shallowMount(Header, {
       apolloProvider,
@@ -166,10 +177,12 @@ describe('Vulnerability Header', () => {
         glAbilities: {
           explainVulnerabilityWithAi: true,
           resolveVulnerabilityWithAi: true,
+          aiExperimentSastFpDetection: true,
           ...glAbilities,
         },
         glFeatures: {
           hideVulnerabilitySeverityOverride,
+          ...glFeatures,
         },
       },
       stubs: {
@@ -231,6 +244,7 @@ describe('Vulnerability Header', () => {
 
       await waitForPromises();
       expect(findStatusDescription().exists()).toBe(true);
+
       expect(findStatusDescription().props()).toEqual({
         vulnerability,
         user,
@@ -838,6 +852,105 @@ describe('Vulnerability Header', () => {
           message: 'Something went wrong, could not start Duo agent session.',
         });
       });
+    });
+  });
+
+  describe('AI false positive detection', () => {
+    const vulnerability = getVulnerability({
+      canAdmin: true,
+      reportType: 'sast',
+      latestFlag: null,
+      project: { id: 456 },
+      id: 789,
+    });
+
+    beforeEach(() => {
+      gon.api_version = 'v4';
+      createWrapper({
+        vulnerability,
+        glFeatures: { aiExperimentSastFpDetection: true },
+      });
+    });
+
+    it('calls Api.triggerFalsePositiveDetection with correct parameters', async () => {
+      const apiResponse = { workload: { id: 'workflow-123', status: 'running' } };
+      jest.spyOn(Api, 'triggerFalsePositiveDetection').mockResolvedValue({ data: apiResponse });
+
+      findActionsDropdown().vm.$emit('run-ai-false-positive-detection');
+      await waitForPromises();
+
+      expect(Api.triggerFalsePositiveDetection).toHaveBeenCalledWith(vulnerability.id, 456);
+    });
+
+    it('shows success toast when API call succeeds', async () => {
+      const apiResponse = { workload: { id: 'workflow-123', status: 'running' } };
+      jest.spyOn(Api, 'triggerFalsePositiveDetection').mockResolvedValue({ data: apiResponse });
+
+      findActionsDropdown().vm.$emit('run-ai-false-positive-detection');
+      await waitForPromises();
+
+      expect(toast).toHaveBeenCalledWith(
+        'GitLab Duo False Positive Detection workflow started successfully',
+        { autoHideDelay: 4000 },
+      );
+    });
+
+    it('shows error alert when API call fails', async () => {
+      const errorMessage = 'Something went wrong';
+      const error = new Error('API Error');
+      error.response = { data: { message: errorMessage } };
+      jest.spyOn(Api, 'triggerFalsePositiveDetection').mockRejectedValue(error);
+
+      findActionsDropdown().vm.$emit('run-ai-false-positive-detection');
+      await waitForPromises();
+
+      expect(createAlert).toHaveBeenCalledWith({
+        message: errorMessage,
+        captureError: true,
+        error,
+      });
+    });
+
+    it('shows generic error when no specific error message is available', async () => {
+      const error = new Error('Network Error');
+      jest.spyOn(Api, 'triggerFalsePositiveDetection').mockRejectedValue(error);
+
+      findActionsDropdown().vm.$emit('run-ai-false-positive-detection');
+      await waitForPromises();
+
+      expect(createAlert).toHaveBeenCalledWith({
+        message: 'Error occurred when starting the AI False Positive Detection workflow.',
+        captureError: true,
+        error,
+      });
+    });
+
+    it('handles workload error in response data', async () => {
+      const workloadError = 'Workload processing failed';
+      const apiResponse = { workload: { id: null, message: workloadError } };
+      jest.spyOn(Api, 'triggerFalsePositiveDetection').mockResolvedValue({ data: apiResponse });
+
+      findActionsDropdown().vm.$emit('run-ai-false-positive-detection');
+      await waitForPromises();
+
+      expect(createAlert).toHaveBeenCalledWith({
+        message: workloadError,
+        captureError: true,
+        error: expect.any(Error),
+      });
+    });
+
+    it('sets and clears isProcessingAction state correctly', async () => {
+      expect(findActionsDropdown().props('loading')).toBe(false);
+
+      // Set up a request that will be pending
+      const pendingPromise = new Promise(() => {});
+      jest.spyOn(Api, 'triggerFalsePositiveDetection').mockReturnValue(pendingPromise);
+
+      findActionsDropdown().vm.$emit('run-ai-false-positive-detection');
+      await nextTick();
+
+      expect(findActionsDropdown().props('loading')).toBe(true);
     });
   });
 });
