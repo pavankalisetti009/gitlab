@@ -1,11 +1,12 @@
 <script>
 import { joinPaths } from '~/lib/utils/url_utility';
 import { logError } from '~/lib/logger';
+import { normalizeRender } from '~/lib/utils/vue3compat/normalize_render';
 
 import organizationWorkspacesClusterAgentsQuery from '../graphql/queries/organization_workspaces_cluster_agents.query.graphql';
 import mappedOrganizationClusterAgentsQuery from '../graphql/queries/organization_mapped_agents.query.graphql';
 
-export default {
+export default normalizeRender({
   props: {
     organizationId: {
       type: String,
@@ -129,5 +130,5 @@ export default {
       pagination: this.getPaginationData(),
     });
   },
-};
+});
 </script>

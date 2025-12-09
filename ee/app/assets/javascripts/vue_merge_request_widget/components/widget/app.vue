@@ -4,6 +4,7 @@ import { n__ } from '~/locale';
 import violationsCountQuery from 'ee/merge_requests/reports/queries/violations_count.query.graphql';
 import CEWidgetApp from '~/vue_merge_request_widget/components/widget/app.vue';
 
+// eslint-disable-next-line @gitlab/no-runtime-template-compiler -- We are reusing render from CE component
 export default {
   apollo: {
     violationsCount: {
@@ -119,7 +120,5 @@ export default {
       );
     },
   },
-
-  render: CEWidgetApp.render,
 };
 </script>

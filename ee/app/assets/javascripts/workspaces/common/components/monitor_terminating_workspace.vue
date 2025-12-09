@@ -1,9 +1,10 @@
 <script>
 import { sprintf, s__ } from '~/locale';
+import { normalizeRender } from '~/lib/utils/vue3compat/normalize_render';
 import getWorkspaceStateQuery from '../graphql/queries/get_workspace_state.query.graphql';
 import { WORKSPACE_STATES, GET_WORKSPACE_STATE_INTERVAL } from '../constants';
 
-export default {
+export default normalizeRender({
   props: {
     workspaceId: {
       type: String,
@@ -11,7 +12,6 @@ export default {
     },
   },
   apollo: {
-    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     workspace: {
       query: getWorkspaceStateQuery,
       variables() {
@@ -35,5 +35,5 @@ export default {
   render() {
     return null;
   },
-};
+});
 </script>

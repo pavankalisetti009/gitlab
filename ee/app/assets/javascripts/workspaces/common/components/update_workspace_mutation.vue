@@ -3,13 +3,14 @@ import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { TYPE_WORKSPACE } from '~/graphql_shared/constants';
 import { s__ } from '~/locale';
 import { logError } from '~/lib/logger';
+import { normalizeRender } from '~/lib/utils/vue3compat/normalize_render';
 import workspaceUpdateMutation from '../graphql/mutations/workspace_update.mutation.graphql';
 
 export const i18n = {
   updateWorkspaceFailedMessage: s__('Workspaces|Failed to update workspace'),
 };
 
-export default {
+export default normalizeRender({
   methods: {
     async update(id, state = {}) {
       try {
@@ -42,5 +43,5 @@ export default {
   render() {
     return this.$scopedSlots.default({ update: this.update });
   },
-};
+});
 </script>

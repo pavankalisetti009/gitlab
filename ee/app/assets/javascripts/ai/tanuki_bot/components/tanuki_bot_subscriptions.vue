@@ -1,9 +1,10 @@
 <script>
 import aiResponseSubscription from 'ee/graphql_shared/subscriptions/ai_completion_response.subscription.graphql';
 import aiResponseStreamSubscription from 'ee/graphql_shared/subscriptions/ai_completion_response_stream.subscription.graphql';
+import { normalizeRender } from '~/lib/utils/vue3compat/normalize_render';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 
-export default {
+export default normalizeRender({
   mixins: [glFeatureFlagsMixin()],
   props: {
     userId: {
@@ -41,7 +42,6 @@ export default {
   },
   apollo: {
     $subscribe: {
-      // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
       aiCompletionResponse: {
         query: aiResponseSubscription,
         variables() {
@@ -62,7 +62,6 @@ export default {
           this.$emit('error', err);
         },
       },
-      // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
       aiCompletionResponseStream: {
         query: aiResponseStreamSubscription,
         variables() {
@@ -89,5 +88,5 @@ export default {
       },
     },
   },
-};
+});
 </script>

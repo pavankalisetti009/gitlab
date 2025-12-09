@@ -2,6 +2,7 @@
 import produce from 'immer';
 import { createAlert, VARIANT_WARNING } from '~/alert';
 import { logError } from '~/lib/logger';
+import { normalizeRender } from '~/lib/utils/vue3compat/normalize_render';
 import { s__, __ } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import createClusterAgentMappingMutation from '../graphql/mutations/create_cluster_agent_mapping.mutation.graphql';
@@ -34,7 +35,7 @@ const extractErrorFromMutationResult = (result, mutation) => {
   }
 };
 
-export default {
+export default normalizeRender({
   inject: {
     namespace: {
       default: '',
@@ -127,5 +128,5 @@ export default {
   render() {
     return this.$scopedSlots.default?.({ loading: this.loading, execute: this.execute });
   },
-};
+});
 </script>

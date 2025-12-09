@@ -1,4 +1,5 @@
 <script>
+import { normalizeRender } from '~/lib/utils/vue3compat/normalize_render';
 import getProductAnalyticsState from '../../graphql/queries/get_product_analytics_state.query.graphql';
 import {
   SHORT_POLLING_INTERVAL,
@@ -9,7 +10,7 @@ import {
   STATE_COMPLETE,
 } from '../constants';
 
-export default {
+export default normalizeRender({
   name: 'ProductAnalyticsOnboardingState',
   inject: {
     namespaceFullPath: {
@@ -51,7 +52,6 @@ export default {
     },
   },
   apollo: {
-    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     state: {
       query: getProductAnalyticsState,
       variables() {
@@ -98,5 +98,5 @@ export default {
   render() {
     return this.$scopedSlots.default?.();
   },
-};
+});
 </script>
