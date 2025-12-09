@@ -28,6 +28,7 @@ module Ai
       belongs_to :item, class_name: 'Ai::Catalog::Item',
         foreign_key: :ai_catalog_item_id, inverse_of: :versions, optional: false
       belongs_to :organization, class_name: 'Organizations::Organization'
+      belongs_to :created_by, class_name: 'User'
 
       has_many :dependencies, class_name: 'Ai::Catalog::ItemVersionDependency', inverse_of: :ai_catalog_item_version
 

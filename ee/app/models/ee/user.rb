@@ -176,6 +176,7 @@ module EE
       has_many :ai_catalog_item_consumers, class_name: 'Ai::Catalog::ItemConsumer', foreign_key: :service_account_id, dependent: :nullify
       has_many :ai_conversation_threads, class_name: 'Ai::Conversation::Thread', foreign_key: :user_id
       has_many :ai_conversation_messages, class_name: 'Ai::Conversation::Message', through: :ai_conversation_threads, source: :messages
+      has_many :ai_catalog_item_versions, class_name: 'Ai::Catalog::ItemVersion', foreign_key: :created_by_id, dependent: :nullify # rubocop:disable Cop/ActiveRecordDependent -- matched FK on_delete
 
       has_many :subscription_seat_assignments, class_name: 'GitlabSubscriptions::SeatAssignment'
 
