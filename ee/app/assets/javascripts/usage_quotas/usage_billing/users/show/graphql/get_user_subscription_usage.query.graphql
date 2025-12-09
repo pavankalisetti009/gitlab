@@ -36,6 +36,7 @@ query getUserSubscriptionUsage(
             nodes {
               timestamp
               eventType
+              flowType
               location {
                 __typename
                 ... on Project {

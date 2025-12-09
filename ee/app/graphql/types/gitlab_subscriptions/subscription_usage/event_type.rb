@@ -9,24 +9,19 @@ module Types
 
         authorize :read_user
 
-        field :timestamp,
-          GraphQL::Types::ISO8601DateTime,
-          null: true,
+        field :timestamp, GraphQL::Types::ISO8601DateTime, null: true,
           description: 'Date and time of the event.'
 
-        field :event_type,
-          GraphQL::Types::String,
-          null: true,
+        field :event_type, GraphQL::Types::String, null: true,
           description: 'Event type.'
 
-        field :location,
-          EventLocationType,
-          null: true,
+        field :flow_type, GraphQL::Types::String, null: true,
+          description: 'User-friendly display name for the event flow type.'
+
+        field :location, EventLocationType, null: true,
           description: 'Event location: project or namespace.'
 
-        field :credits_used,
-          GraphQL::Types::Float,
-          null: true,
+        field :credits_used, GraphQL::Types::Float, null: true,
           description: 'GitLab Credits consumed on the date.'
 
         def location
