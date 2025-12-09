@@ -29,6 +29,14 @@ module VirtualRegistries
         .where_not_exists(subquery)
     end
 
+    def purge_cache!
+      ::VirtualRegistries::Cache::MarkEntriesForDestructionWorker.bulk_perform_async_with_contexts(
+        exclusive_upstreams,
+        arguments_proc: ->(upstream) { [upstream.to_global_id.to_s] },
+        context_proc: ->(upstream) { { namespace: upstream.group } }
+      )
+    end
+
     private
 
     def delete_upstreams

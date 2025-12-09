@@ -6,8 +6,6 @@ module VirtualRegistries
       class MarkEntriesForDestructionWorker
         include ApplicationWorker
 
-        BATCH_SIZE = 500
-
         data_consistency :sticky
         queue_namespace :dependency_proxy_blob
         feature_category :virtual_registry
@@ -16,19 +14,9 @@ module VirtualRegistries
         deduplicate :until_executed
         idempotent!
 
-        def perform(upstream_id)
-          upstream = ::VirtualRegistries::Packages::Maven::Upstream.find_by_id(upstream_id)
-
-          return unless upstream
-
-          upstream.default_cache_entries.each_batch(of: BATCH_SIZE, column: :relative_path) do |batch|
-            batch.update_all(
-              status: :pending_destruction,
-              relative_path: Arel.sql("relative_path || '/deleted/' || gen_random_uuid()"),
-              updated_at: Time.current
-            )
-          end
-        end
+        # a no-op worker that should be removed in 18.9 according to
+        # https://docs.gitlab.com/development/sidekiq/compatibility_across_updates/#removing-worker-classes
+        def perform(upstream_id); end
       end
     end
   end

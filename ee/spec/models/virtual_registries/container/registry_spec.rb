@@ -46,7 +46,7 @@ RSpec.describe VirtualRegistries::Container::Registry, feature_category: :virtua
     let_it_be(:upstream2) { create(:virtual_registries_container_upstream, registries: [registry1]) }
 
     it 'bulk enqueues the MarkEntriesForDestructionWorker' do
-      expect(::VirtualRegistries::Container::Cache::MarkEntriesForDestructionWorker)
+      expect(::VirtualRegistries::Cache::MarkEntriesForDestructionWorker)
         .to receive(:bulk_perform_async_with_contexts)
         .with([upstream2], arguments_proc: kind_of(Proc), context_proc: kind_of(Proc))
 

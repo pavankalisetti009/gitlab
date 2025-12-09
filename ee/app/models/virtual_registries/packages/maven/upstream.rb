@@ -126,7 +126,7 @@ module VirtualRegistries
         end
 
         def purge_cache!
-          ::VirtualRegistries::Packages::Cache::MarkEntriesForDestructionWorker.perform_async(id)
+          ::VirtualRegistries::Cache::MarkEntriesForDestructionWorker.perform_async(to_global_id.to_s)
         end
 
         def test
