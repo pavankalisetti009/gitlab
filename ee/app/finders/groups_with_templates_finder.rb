@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 class GroupsWithTemplatesFinder
   def initialize(user, group_id = nil)
     @user = user
