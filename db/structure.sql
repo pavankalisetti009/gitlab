@@ -11060,6 +11060,7 @@ CREATE TABLE ai_catalog_item_versions (
     schema_version smallint NOT NULL,
     version text NOT NULL,
     definition jsonb DEFAULT '{}'::jsonb NOT NULL,
+    created_by_id bigint,
     CONSTRAINT check_8cabb46fa3 CHECK ((char_length(version) <= 50))
 );
 
@@ -40382,6 +40383,8 @@ CREATE INDEX index_ai_catalog_item_version_dependencies_on_dependency_id ON ai_c
 
 CREATE INDEX index_ai_catalog_item_version_dependencies_on_organization_id ON ai_catalog_item_version_dependencies USING btree (organization_id);
 
+CREATE INDEX index_ai_catalog_item_versions_on_created_by_id ON ai_catalog_item_versions USING btree (created_by_id);
+
 CREATE INDEX index_ai_catalog_item_versions_on_organization_id ON ai_catalog_item_versions USING btree (organization_id);
 
 CREATE INDEX index_ai_catalog_items_on_item_type ON ai_catalog_items USING btree (item_type);
@@ -49983,6 +49986,9 @@ ALTER TABLE ONLY bulk_import_configurations
 
 ALTER TABLE ONLY scan_result_policy_violations
     ADD CONSTRAINT fk_17ce579abf FOREIGN KEY (merge_request_id) REFERENCES merge_requests(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY ai_catalog_item_versions
+    ADD CONSTRAINT fk_17de6d0f79 FOREIGN KEY (created_by_id) REFERENCES users(id) ON DELETE SET NULL;
 
 ALTER TABLE ONLY incident_management_timeline_events
     ADD CONSTRAINT fk_1800597ef9 FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE SET NULL;
