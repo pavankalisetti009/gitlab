@@ -4,6 +4,9 @@ query getSubscriptionUsage($namespacePath: ID) {
     isOutdatedClient
     lastEventTransactionAt
 
+    canAcceptOverageTerms
+    subscriptionPortalUsageDashboardUrl
+
     startDate
     endDate
 
