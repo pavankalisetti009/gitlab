@@ -116,7 +116,7 @@ export default {
   <div>
     <page-heading :heading="s__('DuoAgentsPlatform|Edit trigger')">
       <template #description>
-        {{ s__('DuoAgentsPlatform|Edit trigger.') }}
+        {{ s__('DuoAgentsPlatform|Manage trigger settings.') }}
       </template>
     </page-heading>
     <gl-loading-icon v-if="isQueryLoading" size="lg" class="gl-my-5" />

@@ -507,7 +507,8 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
 
       let_it_be(:vuln_read_active)   { create_vuln_with_status(severity: :critical, status: :active) }
       let_it_be(:vuln_read_inactive) { create_vuln_with_status(severity: :high,     status: :inactive) }
-      let_it_be(:vuln_read_without_token) { create_vuln_with_status(severity: :medium) }
+      let_it_be(:vuln_read_unknown)  { create_vuln_with_status(severity: :medium,   status: :unknown) }
+      let_it_be(:vuln_read_without_token) { create_vuln_with_status(severity: :low) }
 
       before do
         stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
@@ -515,6 +516,7 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
         Elastic::ProcessBookkeepingService.track!(
           vuln_read_active,
           vuln_read_inactive,
+          vuln_read_unknown,
           vuln_read_without_token
         )
         ensure_elasticsearch_index!
@@ -542,6 +544,24 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
           severity_counts = severities.tally.transform_keys(&:to_s)
 
           expect(severity_counts).to eq(expected_result)
+        end
+      end
+
+      context 'when filtering vulnerabilities without token status' do
+        let(:params) { { validity_check: [:unknown] } }
+
+        it 'does not include vulnerabilities without token status in the results' do
+          expect(Gitlab::Search::Client).to receive(:execute_search).and_call_original
+
+          results = resolved.to_a
+          severities = results.map(&:severity)
+          severity_counts = severities.tally.transform_keys(&:to_s)
+
+          # Should only match vuln_read_unknown (medium), not vuln_read_without_token (low)
+          expect(severity_counts).to eq({ 'medium' => 1 })
+
+          # Verify that the low severity vulnerability without token is not included
+          expect(severity_counts.keys).not_to include('low')
         end
       end
     end
