@@ -25,7 +25,7 @@ module API
 
     resource :project_aliases do
       desc 'Get a list of all project aliases' do
-        success code: 200, model: EE::API::Entities::ProjectAlias
+        success code: 200, model: ::API::Entities::ProjectAlias
         failure [
           { code: 403, message: 'Forbidden' },
           { code: 404, message: 'Not found' }
@@ -36,11 +36,11 @@ module API
         use :pagination
       end
       get do
-        present paginate(ProjectAlias.all), with: EE::API::Entities::ProjectAlias
+        present paginate(ProjectAlias.all), with: ::API::Entities::ProjectAlias
       end
 
       desc 'Get info of specific project alias by name' do
-        success code: 200, model: EE::API::Entities::ProjectAlias
+        success code: 200, model: ::API::Entities::ProjectAlias
         failure [
           { code: 403, message: 'Forbidden' },
           { code: 404, message: 'Not found' }
@@ -48,11 +48,11 @@ module API
         tags %w[project_alias]
       end
       get ':name' do
-        present project_alias, with: EE::API::Entities::ProjectAlias
+        present project_alias, with: ::API::Entities::ProjectAlias
       end
 
       desc 'Create a project alias' do
-        success code: 201, model: EE::API::Entities::ProjectAlias
+        success code: 201, model: ::API::Entities::ProjectAlias
         failure [
           { code: 400, message: 'Bad request' },
           { code: 403, message: 'Forbidden' },
@@ -74,7 +74,7 @@ module API
         project_alias = project.project_aliases.create(name: params[:name])
 
         if project_alias.valid?
-          present project_alias, with: EE::API::Entities::ProjectAlias
+          present project_alias, with: ::API::Entities::ProjectAlias
         else
           render_validation_error!(project_alias)
         end

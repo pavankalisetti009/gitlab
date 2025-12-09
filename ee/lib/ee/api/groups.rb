@@ -196,7 +196,7 @@ module EE
             end
 
             desc 'Get a list of audit events in this group.' do
-              success EE::API::Entities::AuditEvent
+              success ::API::Entities::AuditEvent
               is_array true
             end
             params do
@@ -234,11 +234,11 @@ module EE
                 ).execute
               end
 
-              present paginate_with_strategies(audit_events), with: EE::API::Entities::AuditEvent
+              present paginate_with_strategies(audit_events), with: ::API::Entities::AuditEvent
             end
 
             desc 'Get a specific audit event in this group.' do
-              success EE::API::Entities::AuditEvent
+              success ::API::Entities::AuditEvent
             end
             params do
               requires :audit_event_id, type: Integer, desc: 'The ID of the audit event'
@@ -257,7 +257,7 @@ module EE
                   .find_by!(id: params[:audit_event_id])
               end
               # rubocop: enable CodeReuse/ActiveRecord, Rails/FindById
-              present audit_event, with: EE::API::Entities::AuditEvent
+              present audit_event, with: ::API::Entities::AuditEvent
             end
           end
 
@@ -317,7 +317,7 @@ module EE
 
           desc 'Get a list of ssh certificates created for a group.' do
             summary 'Get a list of Groups::SshCertificate for a Group.'
-            success code: 200, model: EE::API::Entities::SshCertificate
+            success code: 200, model: ::API::Entities::SshCertificate
             failure [
               { code: 401, message: 'Unauthorized' },
               { code: 403, message: 'Forbidden' },
@@ -335,12 +335,12 @@ module EE
 
             check_ssh_certificate_available_to_group(group)
 
-            present paginate(group.ssh_certificates), with: EE::API::Entities::SshCertificate
+            present paginate(group.ssh_certificates), with: ::API::Entities::SshCertificate
           end
 
           desc 'Create a ssh certificate for a group.' do
             summary 'Add a Groups::SshCertificate.'
-            success code: 201, model: EE::API::Entities::SshCertificate
+            success code: 201, model: ::API::Entities::SshCertificate
             failure [
               { code: 400, message: 'Bad request' },
               { code: 401, message: 'Unauthorized' },
@@ -361,7 +361,7 @@ module EE
 
             response = ::Groups::SshCertificates::CreateService.new(group, params, current_user).execute
             if response.success?
-              present response.payload, with: EE::API::Entities::SshCertificate
+              present response.payload, with: ::API::Entities::SshCertificate
             else
               render_api_error!(response.message, response.reason)
             end

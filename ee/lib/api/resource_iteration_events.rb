@@ -20,7 +20,7 @@ module API
       resource parent_type.pluralize.to_sym, requirements: API::NAMESPACE_OR_PROJECT_REQUIREMENTS do
         desc "Get a list of #{eventable_type.to_s.downcase} resource iteration events" do
           detail 'This feature was introduced in GitLab 13.4'
-          success EE::API::Entities::ResourceIterationEvent
+          success ::API::Entities::ResourceIterationEvent
           is_array true
           tags resource_iteration_events_tags
         end
@@ -33,12 +33,12 @@ module API
           eventable = find_noteable(eventable_type, params[:eventable_id])
           events = eventable.resource_iteration_events.with_api_entity_associations
 
-          present paginate(events), with: EE::API::Entities::ResourceIterationEvent
+          present paginate(events), with: ::API::Entities::ResourceIterationEvent
         end
 
         desc "Get a single #{eventable_type.to_s.downcase} resource iteration event" do
           detail 'This feature was introduced in GitLab 13.4'
-          success EE::API::Entities::ResourceIterationEvent
+          success ::API::Entities::ResourceIterationEvent
           tags resource_iteration_events_tags
         end
         params do
@@ -49,7 +49,7 @@ module API
           eventable = find_noteable(eventable_type, params[:eventable_id])
           event = eventable.resource_iteration_events.find(params[:event_id])
 
-          present event, with: EE::API::Entities::ResourceIterationEvent
+          present event, with: ::API::Entities::ResourceIterationEvent
         end
       end
     end

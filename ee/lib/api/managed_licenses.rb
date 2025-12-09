@@ -35,7 +35,7 @@ module API
 
     resource :projects, requirements: API::NAMESPACE_OR_PROJECT_REQUIREMENTS do
       desc 'Get project software license policies' do
-        success code: 200, model: EE::API::Entities::ManagedLicense
+        success code: 200, model: ::API::Entities::ManagedLicense
         failure [
           { code: 401, message: 'Unauthorized' },
           { code: 403, message: 'Forbidden' },
@@ -54,7 +54,7 @@ module API
       end
 
       desc 'Get a specific software license policy from a project' do
-        success code: 200, model: EE::API::Entities::ManagedLicense
+        success code: 200, model: ::API::Entities::ManagedLicense
         failure [
           { code: 401, message: 'Unauthorized' },
           { code: 403, message: 'Forbidden' },
@@ -68,7 +68,7 @@ module API
       end
 
       desc 'Create a new software license policy in a project' do
-        success code: 201, model: EE::API::Entities::ManagedLicense
+        success code: 201, model: ::API::Entities::ManagedLicense
         failure [
           { code: 400, message: 'Bad Request' },
           { code: 401, message: 'Unauthorized' },
@@ -91,7 +91,7 @@ module API
       end
 
       desc 'Update an existing software license policy from a project' do
-        success code: 200, model: EE::API::Entities::ManagedLicense
+        success code: 200, model: ::API::Entities::ManagedLicense
         failure [
           { code: 400, message: 'Bad Request' },
           { code: 401, message: 'Unauthorized' },

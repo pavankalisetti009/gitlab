@@ -35,7 +35,7 @@ module API
 
       desc 'Lists SAML group links' do
         detail 'Get SAML group links for a group'
-        success EE::API::Entities::SamlGroupLink
+        success ::API::Entities::SamlGroupLink
         is_array true
         tags SAML_GROUP_LINKS
       end
@@ -45,12 +45,12 @@ module API
 
         saml_group_links = group.saml_group_links
 
-        present saml_group_links, with: EE::API::Entities::SamlGroupLink
+        present saml_group_links, with: ::API::Entities::SamlGroupLink
       end
 
       desc 'Add SAML group link' do
         detail 'Add a SAML group link for a group'
-        success EE::API::Entities::SamlGroupLink
+        success ::API::Entities::SamlGroupLink
         failure [
           { code: 400, message: 'Validation error' },
           { code: 404, message: 'Not found' },
@@ -81,7 +81,7 @@ module API
         response = service.execute
 
         if response.success?
-          present service.saml_group_link, with: EE::API::Entities::SamlGroupLink
+          present service.saml_group_link, with: ::API::Entities::SamlGroupLink
         else
           render_api_error!(response[:error], response.http_status)
         end
@@ -89,7 +89,7 @@ module API
 
       desc 'Get SAML group link' do
         detail 'Get a SAML group link for the group'
-        success EE::API::Entities::SamlGroupLink
+        success ::API::Entities::SamlGroupLink
         failure [
           { code: 404, message: 'Not found' },
           { code: 422, message: 'Multiple links found, provider parameter required' }
@@ -108,12 +108,12 @@ module API
 
         saml_group_link = find_saml_group_link_with_provider(group, params[:saml_group_name], params[:provider])
 
-        present saml_group_link, with: EE::API::Entities::SamlGroupLink
+        present saml_group_link, with: ::API::Entities::SamlGroupLink
       end
 
       desc 'Delete SAML group link' do
         detail 'Deletes a SAML group link for the group'
-        success EE::API::Entities::SamlGroupLink
+        success ::API::Entities::SamlGroupLink
         failure [
           { code: 404, message: 'Not found' },
           { code: 422, message: 'Multiple links found, provider parameter required' }

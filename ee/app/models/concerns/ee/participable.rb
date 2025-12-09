@@ -6,14 +6,14 @@ module EE
 
     override :filter_by_ability
     def filter_by_ability(participants)
-      return super unless self.is_a?(Epic)
+      return super unless is_a?(Epic)
 
-      Ability.users_that_can_read_group(participants.to_a, self.group)
+      Ability.users_that_can_read_group(participants.to_a, group)
     end
 
     override :can_read_participable?
     def can_read_participable?(participant)
-      return super unless self.is_a?(Epic)
+      return super unless is_a?(Epic)
 
       participant.can?(:read_group, group)
     end

@@ -70,7 +70,7 @@ module Geo
       elsif selective_sync_by_organizations?
         selected_organization_namespaces_and_descendants
       else
-        raise 'This scope should not be needed without selective sync'
+        raise ::Geo::Errors::UnknownSelectiveSyncType.new(selective_sync_type: selective_sync_type)
       end
     end
 

@@ -36628,6 +36628,9 @@ msgstr ""
 msgid "InviteMembersModal|Select a group to invite"
 msgstr ""
 
+msgid "InviteMembersModal|Select a role"
+msgstr ""
+
 msgid "InviteMembersModal|Select from GitLab usernames or enter email addresses"
 msgstr ""
 
@@ -36895,9 +36898,6 @@ msgid "Issue label"
 msgstr ""
 
 msgid "Issue number %{itemIid}: %{title}"
-msgstr ""
-
-msgid "Issue or merge request ID is required"
 msgstr ""
 
 msgid "Issue published on status page."
@@ -43399,9 +43399,6 @@ msgstr ""
 msgid "Namespace must be provided."
 msgstr ""
 
-msgid "Namespace or project is required"
-msgstr ""
-
 msgid "Namespace reached its allowed limit of %{limit} extra deployments. Learn more: %{docs_link}"
 msgstr ""
 
@@ -46672,9 +46669,6 @@ msgstr ""
 msgid "Only HTTP(S)"
 msgstr ""
 
-msgid "Only Issue ID or merge request ID is required"
-msgstr ""
-
 msgid "Only Merge Requests are allowed as a noteable to resolve discussions of at the moment."
 msgstr ""
 
@@ -46706,9 +46700,6 @@ msgid "Only members of this group can access the wiki."
 msgstr ""
 
 msgid "Only one security policy bot is allowed per project"
-msgstr ""
-
-msgid "Only one source is required but both were provided"
 msgstr ""
 
 msgid "Only policy:"

@@ -21,7 +21,7 @@ module API
 
       def render_vulnerability(vulnerability)
         if vulnerability.valid?
-          present vulnerability, with: EE::API::Entities::Vulnerability
+          present vulnerability, with: ::API::Entities::Vulnerability
         else
           render_validation_error!(vulnerability)
         end
@@ -37,14 +37,14 @@ module API
       end
 
       desc 'Get a vulnerability' do
-        success EE::API::Entities::Vulnerability
+        success ::API::Entities::Vulnerability
       end
       get ':id' do
         render_vulnerability(@vulnerability)
       end
 
       desc 'Resolve a vulnerability' do
-        success EE::API::Entities::Vulnerability
+        success ::API::Entities::Vulnerability
       end
       params do
         optional :comment,
@@ -59,7 +59,7 @@ module API
       end
 
       desc 'Dismiss a vulnerability' do
-        success EE::API::Entities::Vulnerability
+        success ::API::Entities::Vulnerability
       end
       post ':id/dismiss' do
         not_modified! if @vulnerability.dismissed?
@@ -69,7 +69,7 @@ module API
       end
 
       desc 'Confirm a vulnerability' do
-        success EE::API::Entities::Vulnerability
+        success ::API::Entities::Vulnerability
       end
       params do
         optional :comment, type: String, desc: 'Comment related to the vulnerability'
@@ -82,7 +82,7 @@ module API
       end
 
       desc 'Revert a vulnerability to a detected state' do
-        success EE::API::Entities::Vulnerability
+        success ::API::Entities::Vulnerability
       end
       params do
         optional :comment, type: String, desc: 'Comment related to the vulnerability'
@@ -101,7 +101,7 @@ module API
     end
     resource :projects, requirements: API::NAMESPACE_OR_PROJECT_REQUIREMENTS do
       desc 'Get a list of project vulnerabilities' do
-        success EE::API::Entities::Vulnerability
+        success ::API::Entities::Vulnerability
       end
       params do
         use :pagination
@@ -113,11 +113,11 @@ module API
           vulnerabilities_by(user_project)
         )
 
-        present vulnerabilities, with: EE::API::Entities::Vulnerability
+        present vulnerabilities, with: ::API::Entities::Vulnerability
       end
 
       desc 'Create a new Vulnerability (from a confirmed Finding)' do
-        success EE::API::Entities::Vulnerability
+        success ::API::Entities::Vulnerability
       end
       params do
         requires :finding_id, type: Integer, desc: 'The id of confirmed vulnerability finding'
@@ -130,7 +130,7 @@ module API
         ).execute
 
         if vulnerability.persisted?
-          present vulnerability, with: EE::API::Entities::Vulnerability
+          present vulnerability, with: ::API::Entities::Vulnerability
         else
           render_validation_error!(vulnerability)
         end

@@ -252,7 +252,7 @@ module EE
                                .new(agent)
                                .execute
 
-                  present :configurations, policies, with: EE::API::Entities::SecurityPolicyConfiguration
+                  present :configurations, policies, with: ::API::Entities::SecurityPolicyConfiguration
                 end
               end
             end

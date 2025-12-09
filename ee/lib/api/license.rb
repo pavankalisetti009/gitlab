@@ -12,13 +12,13 @@ module API
     resource :license do
       desc 'Retrieve information about the current license' do
         detail 'Get information on the currently active license'
-        success EE::API::Entities::GitlabLicenseWithActiveUsers
+        success ::API::Entities::GitlabLicenseWithActiveUsers
         tags LICENSES_TAGS
       end
       get do
         license = ::License.current
 
-        present license, with: EE::API::Entities::GitlabLicenseWithActiveUsers
+        present license, with: ::API::Entities::GitlabLicenseWithActiveUsers
       end
 
       resource :usage_export do
@@ -40,7 +40,7 @@ module API
 
       desc 'Add a new license' do
         detail 'Adds a new licence'
-        success EE::API::Entities::GitlabLicenseWithActiveUsers
+        success ::API::Entities::GitlabLicenseWithActiveUsers
         failure [
           { code: 400, message: 'Bad request' }
         ]
@@ -52,7 +52,7 @@ module API
       post do
         license = ::License.new(data: params[:license])
         if license.save
-          present license, with: EE::API::Entities::GitlabLicenseWithActiveUsers
+          present license, with: ::API::Entities::GitlabLicenseWithActiveUsers
         else
           render_api_error!(license.errors.full_messages.first, 400)
         end
@@ -60,7 +60,7 @@ module API
 
       desc 'Get a license' do
         detail 'Gets a license'
-        success EE::API::Entities::GitlabLicenseWithActiveUsers
+        success ::API::Entities::GitlabLicenseWithActiveUsers
         failure [
           { code: 404, message: 'Not Found' },
           { code: 403, message: 'Forbidden' },
@@ -76,7 +76,7 @@ module API
 
         not_found! unless license
 
-        present license, with: EE::API::Entities::GitlabLicenseWithActiveUsers
+        present license, with: ::API::Entities::GitlabLicenseWithActiveUsers
       end
 
       desc 'Delete a license' do
@@ -132,7 +132,7 @@ module API
     resource :licenses do
       desc 'Retrieve information about all licenses' do
         detail 'Get a list of licenses'
-        success EE::API::Entities::GitlabLicense
+        success ::API::Entities::GitlabLicense
         failure [
           { code: 403, message: 'Forbidden' }
         ]
@@ -142,7 +142,7 @@ module API
       get do
         licenses = LicensesFinder.new(current_user).execute
 
-        present licenses, with: EE::API::Entities::GitlabLicense, current_active_users_count: ::License.current&.daily_billable_users_count
+        present licenses, with: ::API::Entities::GitlabLicense, current_active_users_count: ::License.current&.daily_billable_users_count
       end
     end
   end

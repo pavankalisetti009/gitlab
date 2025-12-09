@@ -138,6 +138,16 @@ RSpec.describe BulkImports::Groups::Pipelines::EpicsPipeline, feature_category: 
     end
 
     context 'when importer_user_mapping is enabled' do
+      let_it_be(:source_user) do
+        create(:import_source_user,
+          import_type: ::Import::SOURCE_DIRECT_TRANSFER,
+          namespace: group,
+          source_user_identifier: 101,
+          source_hostname: bulk_import.configuration.url,
+          placeholder_user: create(:user, :import_user)
+        )
+      end
+
       let(:importer_user_mapping_enabled) { true }
 
       let(:epic) do
@@ -228,15 +238,15 @@ RSpec.describe BulkImports::Groups::Pipelines::EpicsPipeline, feature_category: 
         source_user = Import::SourceUser.find_by(source_user_identifier: 101)
         expect(source_user.placeholder_user).to eq(epic.author)
 
-        expect(epic.author).to be_placeholder
-        expect(epic.last_edited_by).to be_placeholder
-        expect(epic.updated_by).to be_placeholder
+        expect(epic.author).to be_import_user
+        expect(epic.last_edited_by).to be_import_user
+        expect(epic.updated_by).to be_import_user
         expect(epic.assignee_id).to be_nil
-        expect(work_item.author).to be_placeholder
-        expect(work_item.last_edited_by).to be_placeholder
-        expect(work_item.updated_by).to be_placeholder
-        expect(notes.first.author).to be_placeholder
-        expect(award_emoji.first.user).to be_placeholder
+        expect(work_item.author).to be_import_user
+        expect(work_item.last_edited_by).to be_import_user
+        expect(work_item.updated_by).to be_import_user
+        expect(notes.first.author).to be_import_user
+        expect(award_emoji.first.user).to be_import_user
 
         user_references = placeholder_user_references(::Import::SOURCE_DIRECT_TRANSFER, bulk_import.id)
 
@@ -252,6 +262,18 @@ RSpec.describe BulkImports::Groups::Pipelines::EpicsPipeline, feature_category: 
           ['AwardEmoji', award_emoji.first.id, 'user_id', source_user.id],
           ['AwardEmoji', award_emoji.second.id, 'user_id', source_user.id]
         ])
+      end
+
+      context 'when direct reassignment is supported' do
+        before do
+          allow(Import::DirectReassignService).to receive(:supported?).and_return(true)
+        end
+
+        it 'does not push any placeholder references' do
+          pipeline.run
+
+          expect(Import::PlaceholderReferences::PushService).not_to have_received(:from_record)
+        end
       end
     end
   end

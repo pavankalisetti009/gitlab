@@ -38,7 +38,7 @@ module API
       desc 'Update epic-issue association' do
         detail 'Updates an epic-issue association'
         is_array true
-        success EE::API::Entities::EpicIssue
+        success ::API::Entities::EpicIssue
         failure [
           { code: 400, message: 'Issue could not be moved!' },
           { code: 401, message: 'Unauthorized' },
@@ -66,7 +66,7 @@ module API
 
         if result
           present paginate(related_issues(epic)),
-            with: EE::API::Entities::EpicIssue,
+            with: ::API::Entities::EpicIssue,
             current_user: current_user
         else
           render_api_error!({ error: "Issue could not be moved!" }, 400)
@@ -77,7 +77,7 @@ module API
         desc 'List issues for an epic' do
           detail 'Gets all issues that are assigned to an epic and the authenticated user has access to'
           is_array true
-          success EE::API::Entities::EpicIssue
+          success ::API::Entities::EpicIssue
           failure [
             { code: 401, message: 'Unauthorized' },
             { code: 403, message: 'Forbidden' },
@@ -93,7 +93,7 @@ module API
           authorize_can_read!
 
           present paginate(related_issues(epic)),
-            with: EE::API::Entities::EpicIssue,
+            with: ::API::Entities::EpicIssue,
             current_user: current_user,
             include_subscribed: false
         end
@@ -101,7 +101,7 @@ module API
 
       desc 'Assign an issue to the epic' do
         detail 'Creates an epic-issue association. If the issue in question belongs to another epic it is unassigned from that epic'
-        success EE::API::Entities::EpicIssueLink
+        success ::API::Entities::EpicIssueLink
         failure [
           { code: 401, message: 'Unauthorized' },
           { code: 403, message: 'Forbidden' },
@@ -127,7 +127,7 @@ module API
         if result[:status] == :success
           epic_issue_link = EpicIssue.find_by!(epic: epic, issue: issue)
 
-          present epic_issue_link, with: EE::API::Entities::EpicIssueLink
+          present epic_issue_link, with: ::API::Entities::EpicIssueLink
         else
           render_api_error!(result[:message], result[:http_status])
         end
@@ -136,7 +136,7 @@ module API
 
       desc 'Remove an issue from the epic' do
         detail 'Removes an epic-issue association'
-        success code: 200, model: EE::API::Entities::EpicIssueLink
+        success code: 200, model: ::API::Entities::EpicIssueLink
         failure [
           { code: 401, message: 'Unauthorized' },
           { code: 403, message: 'Forbidden' },
@@ -153,7 +153,7 @@ module API
         result = ::WorkItems::LegacyEpics::EpicIssues::DestroyService.new(link, current_user).execute
 
         if result[:status] == :success
-          present link, with: EE::API::Entities::EpicIssueLink
+          present link, with: ::API::Entities::EpicIssueLink
         else
           render_api_error!(result[:message], result[:http_status])
         end

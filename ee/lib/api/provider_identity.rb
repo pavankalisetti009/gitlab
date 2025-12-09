@@ -16,7 +16,7 @@ module API
       %w[saml scim].each do |provider_type|
         resource ":id/#{provider_type}", requirements: API::NAMESPACE_OR_PROJECT_REQUIREMENTS do
           desc 'Get user identities for the provider' do
-            success EE::API::Entities::IdentityDetail
+            success ::API::Entities::IdentityDetail
           end
 
           get "/identities" do
@@ -25,14 +25,14 @@ module API
             case provider_type
             when 'saml'
               bad_request! unless group.saml_provider
-              present group.saml_provider.identities, with: EE::API::Entities::IdentityDetail
+              present group.saml_provider.identities, with: ::API::Entities::IdentityDetail
             when 'scim'
-              present group.scim_identities, with: EE::API::Entities::IdentityDetail
+              present group.scim_identities, with: ::API::Entities::IdentityDetail
             end
           end
 
           desc 'Get a single identity for a user' do
-            success EE::API::Entities::IdentityDetail
+            success ::API::Entities::IdentityDetail
           end
           params do
             requires :uid, type: String, desc: 'External UID of the user'
@@ -43,11 +43,11 @@ module API
 
             not_found!('Identity') unless identity
 
-            present identity, with: EE::API::Entities::IdentityDetail
+            present identity, with: ::API::Entities::IdentityDetail
           end
 
           desc 'Update extern_uid for the user' do
-            success EE::API::Entities::IdentityDetail
+            success ::API::Entities::IdentityDetail
           end
 
           params do
@@ -62,14 +62,14 @@ module API
             not_found!('Identity') unless identity
 
             if identity.update(extern_uid: params[:extern_uid])
-              present identity, with: EE::API::Entities::IdentityDetail
+              present identity, with: ::API::Entities::IdentityDetail
             else
               render_api_error!(identity.errors.full_messages.join(",").to_s, 400)
             end
           end
 
           desc 'Delete the Provider identity' do
-            success EE::API::Entities::IdentityDetail
+            success ::API::Entities::IdentityDetail
           end
 
           params do

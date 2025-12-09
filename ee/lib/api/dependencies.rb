@@ -25,7 +25,7 @@ module API
 
     resource :projects, requirements: API::NAMESPACE_OR_PROJECT_REQUIREMENTS do
       desc 'Get a list of project dependencies' do
-        success code: 200, model: ::EE::API::Entities::Dependency
+        success code: 200, model: ::API::Entities::Dependency
         failure [{ code: 401, message: 'Unauthorized' }, { code: 404, message: 'Not found' }]
       end
 
@@ -51,7 +51,7 @@ module API
           )
         dependencies = paginate(dependencies_by(dependency_params))
 
-        present dependencies, with: ::EE::API::Entities::Dependency, user: current_user, project: user_project
+        present dependencies, with: ::API::Entities::Dependency, user: current_user, project: user_project
       end
     end
   end

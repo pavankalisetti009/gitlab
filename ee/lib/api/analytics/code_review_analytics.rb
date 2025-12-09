@@ -41,7 +41,7 @@ module API
 
       resource :analytics do
         desc 'List code review information about project' do
-          success code: 200, model: EE::API::Entities::Analytics::CodeReview::MergeRequest
+          success code: 200, model: ::API::Entities::Analytics::CodeReview::MergeRequest
         end
         params do
           requires :project_id, type: Integer, desc: 'Project ID'
@@ -57,7 +57,7 @@ module API
           merge_requests = paginate(finder.execute.with_code_review_api_entity_associations)
 
           present merge_requests,
-            with: EE::API::Entities::Analytics::CodeReview::MergeRequest,
+            with: ::API::Entities::Analytics::CodeReview::MergeRequest,
             current_user: current_user,
             issuable_metadata: Gitlab::IssuableMetadata.new(current_user, merge_requests).data
         end

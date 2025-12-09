@@ -17,7 +17,7 @@ module API
     end
     resource :projects, requirements: API::NAMESPACE_OR_PROJECT_REQUIREMENTS do
       desc 'Get all merge request dependencies' do
-        success EE::API::Entities::MergeRequestDependency
+        success ::API::Entities::MergeRequestDependency
         tags %w[merge_requests]
         is_array true
       end
@@ -29,7 +29,7 @@ module API
       get ":id/merge_requests/:merge_request_iid/blocks" do
         merge_request = find_merge_request_with_access(params[:merge_request_iid])
 
-        present paginate(merge_request.blocks_as_blockee), with: EE::API::Entities::MergeRequestDependency,
+        present paginate(merge_request.blocks_as_blockee), with: ::API::Entities::MergeRequestDependency,
           current_user: current_user
       end
 
@@ -41,7 +41,7 @@ module API
         merge_request = find_merge_request_with_access(params[:merge_request_iid])
 
         present find_block(merge_request),
-          with: EE::API::Entities::MergeRequestDependency, current_user: current_user
+          with: ::API::Entities::MergeRequestDependency, current_user: current_user
       end
 
       params do
@@ -73,7 +73,7 @@ module API
           ).execute
 
         if result.success?
-          present result.payload[:merge_request_block], with: EE::API::Entities::MergeRequestDependency, current_user:
+          present result.payload[:merge_request_block], with: ::API::Entities::MergeRequestDependency, current_user:
             current_user
         else
           render_api_error!(result.message, result.reason)
@@ -81,7 +81,7 @@ module API
       end
 
       desc 'Get all merge requests are blockees for this merge request' do
-        success EE::API::Entities::MergeRequestDependency
+        success ::API::Entities::MergeRequestDependency
         tags %w[merge_requests]
         is_array true
       end
@@ -95,7 +95,7 @@ module API
 
         blockees = merge_request.blocks_as_blocker
 
-        present paginate(blockees), with: EE::API::Entities::MergeRequestDependency, current_user: current_user
+        present paginate(blockees), with: ::API::Entities::MergeRequestDependency, current_user: current_user
       end
     end
   end
