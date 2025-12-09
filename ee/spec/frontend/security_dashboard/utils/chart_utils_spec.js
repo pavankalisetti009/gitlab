@@ -2,7 +2,9 @@ import {
   formatVulnerabilitiesOverTimeData,
   constructVulnerabilitiesReportWithFiltersPath,
   generateGrid,
+  getSeverityColors,
 } from 'ee/security_dashboard/utils/chart_utils';
+import * as CssUtils from '~/lib/utils/css_utils';
 
 describe('Security Dashboard - Chart Utils', () => {
   const severities = ['Critical', 'High', 'Medium', 'Low', 'Info', 'Unknown'];
@@ -335,6 +337,23 @@ describe('Security Dashboard - Chart Utils', () => {
       const result2 = generateGrid(params);
 
       expect(result1).toEqual(result2);
+    });
+  });
+
+  describe('getSeverityColors', () => {
+    it('returns an object with severities as keys and their colors as values', () => {
+      jest
+        .spyOn(CssUtils, 'getCssVariable')
+        .mockImplementation((customProperty) => `#${customProperty}`);
+
+      expect(getSeverityColors()).toEqual({
+        critical: '#--severity-color-critical',
+        high: '#--severity-color-high',
+        medium: '#--severity-color-medium',
+        low: '#--severity-color-low',
+        info: '#--severity-color-info',
+        unknown: '#--severity-color-unknown',
+      });
     });
   });
 });

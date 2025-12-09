@@ -57,8 +57,6 @@ module EE
     def by_duo_eligible(items)
       return items unless ::Gitlab::Utils.to_boolean(params[:with_duo_eligible])
 
-      return items unless ::Feature.enabled?(:with_duo_eligible_projects_filter, current_user)
-
       items.with_duo_features_enabled.joins_namespace.merge(
         ::Namespace.namespace_settings_with_ai_features_enabled.with_ai_supported_plan
       )

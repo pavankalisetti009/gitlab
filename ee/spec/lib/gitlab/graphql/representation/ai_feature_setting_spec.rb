@@ -6,7 +6,7 @@ RSpec.describe Gitlab::Graphql::Representation::AiFeatureSetting, feature_catego
   include_context 'with fetch_model_definitions_example'
 
   let_it_be(:self_hosted_model) do
-    create(:ai_self_hosted_model, name: 'codegemma', model: :codegemma)
+    create(:ai_self_hosted_model, name: 'GPT Model', model: :gpt)
   end
 
   let_it_be(:code_completion_feature_setting) do
@@ -128,6 +128,50 @@ RSpec.describe Gitlab::Graphql::Representation::AiFeatureSetting, feature_catego
               'cost_indicator' => '$'
             }
           )
+        end
+
+        context 'when beta models are not enabled' do
+          let_it_be(:duo_agent_platform_feature_setting) do
+            create(:ai_feature_setting,
+              { feature: :duo_agent_platform, provider: :self_hosted, self_hosted_model: self_hosted_model }
+            )
+          end
+
+          let(:feature_settings) do
+            [
+              duo_agent_platform_feature_setting,
+              code_completion_feature_setting,
+              duo_chat_feature_setting
+            ]
+          end
+
+          before do
+            allow(::Ai::TestingTermsAcceptance).to receive(:has_accepted?).and_return(false)
+          end
+
+          it 'returns empty valid_models for features with a beta restriction' do
+            duo_agent_setting = decorate.find { |s| s.feature == 'duo_agent_platform' }
+
+            expect(duo_agent_setting.valid_models).to be_empty
+          end
+
+          it 'includes valid_models for features without a beta restriction' do
+            code_completions_setting = decorate.find { |s| s.feature == 'code_completions' }
+
+            expect(code_completions_setting.valid_models).to be_present
+          end
+
+          context 'when beta models are enabled' do
+            before do
+              allow(::Ai::TestingTermsAcceptance).to receive(:has_accepted?).and_return(true)
+            end
+
+            it 'includes valid_models for features with a beta restriction' do
+              duo_agent_setting = decorate.find { |s| s.feature == 'duo_agent_platform' }
+
+              expect(duo_agent_setting.valid_models).to be_present
+            end
+          end
         end
       end
 
