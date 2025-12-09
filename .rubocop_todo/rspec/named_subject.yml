@@ -502,7 +502,6 @@ RSpec/NamedSubject:
     - 'ee/spec/models/geo/secondary_usage_data_spec.rb'
     - 'ee/spec/models/geo_node_spec.rb'
     - 'ee/spec/models/gitlab/seat_link_data_spec.rb'
-    - 'ee/spec/models/gitlab_subscription_spec.rb'
     - 'ee/spec/models/gitlab_subscriptions/features_spec.rb'
     - 'ee/spec/models/group_wiki_spec.rb'
     - 'ee/spec/models/identity_spec.rb'

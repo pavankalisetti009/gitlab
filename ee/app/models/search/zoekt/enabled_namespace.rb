@@ -43,7 +43,7 @@ module Search
           )
       end
 
-      validates :metadata, json_schema: { filename: 'zoekt_enabled_namespaces_metadata' }
+      validates :metadata, json_schema: { filename: 'zoekt_enabled_namespaces_metadata', size_limit: 64.kilobytes }
 
       def self.each_batch_with_mismatched_replicas(batch_size: 5000, &block)
         each_batch(of: batch_size) do |batch|
@@ -52,14 +52,11 @@ module Search
       end
 
       def self.destroy_namespaces_with_expired_subscriptions!
-        before_date = Time.zone.today - Search::Zoekt::EXPIRED_SUBSCRIPTION_GRACE_PERIOD
-
-        each_batch(column: :root_namespace_id) do |batch|
+        each_batch(of: 500, column: :root_namespace_id) do |batch|
           namespace_ids = batch.pluck(:root_namespace_id) # rubocop: disable Database/AvoidUsingPluckWithoutLimit -- it is limited by each_batch already
 
-          namespace_with_subscription_ids = GitlabSubscription.where(namespace_id: namespace_ids)
-            .with_a_paid_hosted_plan
-            .not_expired(before_date: before_date)
+          namespace_with_subscription_ids = GitlabSubscription.namespace_id_in(namespace_ids)
+            .with_active_paid_or_trial_hosted_plan(EXPIRED_SUBSCRIPTION_GRACE_PERIOD)
             .pluck(:namespace_id) # rubocop: disable Database/AvoidUsingPluckWithoutLimit -- it is limited by each_batch already
 
           namespace_to_remove_ids = namespace_ids - namespace_with_subscription_ids

@@ -44,7 +44,7 @@ module Search
       private
 
       def each_eligible_namespace
-        GitlabSubscription.with_a_paid_hosted_plan.not_expired.each_batch do |batch|
+        GitlabSubscription.with_active_paid_or_trial_hosted_plan.each_batch(of: 500) do |batch|
           Namespace.top_level.id_in(batch.select(:namespace_id)).each do |namespace|
             yield namespace
           end
