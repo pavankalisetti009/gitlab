@@ -10,12 +10,6 @@ module ProtectedEnvironments
 
     validates :access_level, allow_blank: true, inclusion: { in: ALLOWED_ACCESS_LEVELS }
     validates :group_inheritance_type, inclusion: { in: GROUP_INHERITANCE_TYPE.values }
-    validate :authorizable_attributes_presence
-
-    def authorizable_attributes_presence
-      return if [read_attribute(:access_level), read_attribute(:group_id), read_attribute(:user_id)].compact.count == 1
-
-      errors.add(:base, 'Only one of the Group ID, User ID or Access Level must be specified.')
-    end
+    validates_with ExactlyOnePresentValidator, fields: [:access_level, :group_id, :user_id]
   end
 end

@@ -16,7 +16,7 @@ RSpec.describe ProtectedEnvironments::DeployAccessLevel do
 
       expect(deploy_access_level).not_to be_valid
       expect(deploy_access_level.errors[:base])
-        .to include('Only one of the Group ID, User ID or Access Level must be specified.')
+        .to include('Exactly one of access_level, group_id, user_id must be present')
     end
 
     it 'passes a validation when one of the authorizable attributes is present' do
@@ -36,7 +36,7 @@ RSpec.describe ProtectedEnvironments::DeployAccessLevel do
 
       expect(deploy_access_level).not_to be_valid
       expect(deploy_access_level.errors[:base])
-        .to include('Only one of the Group ID, User ID or Access Level must be specified.')
+        .to include('Exactly one of access_level, group_id, user_id must be present')
     end
 
     it 'passes the validation when a valid group_id is set' do

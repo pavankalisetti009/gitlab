@@ -20,7 +20,7 @@ module IncidentManagement
         less_than_or_equal_to: ::IncidentManagement::Escalatable::MAX_ESCALATION_DELAY
       }
 
-    validate :schedule_or_rule_present
+    validates_with ExactlyOnePresentValidator, fields: [:oncall_schedule, :user]
     validates :oncall_schedule_id,
       uniqueness: {
         scope: [:policy_id, :status, :elapsed_time_seconds],
@@ -40,13 +40,5 @@ module IncidentManagement
     scope :for_project, ->(project) { where(policy: { project: project }).joins(:policy).references(:policy) }
     scope :load_project_with_routes, -> { preload(project: [:route, { namespace: :route }]) }
     scope :load_policy, -> { includes(:policy) }
-
-    private
-
-    def schedule_or_rule_present
-      unless oncall_schedule.present? ^ user.present?
-        errors.add(:base, 'must have either an on-call schedule or user')
-      end
-    end
   end
 end

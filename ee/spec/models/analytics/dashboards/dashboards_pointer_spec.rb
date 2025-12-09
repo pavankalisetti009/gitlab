@@ -19,7 +19,7 @@ RSpec.describe Analytics::Dashboards::DashboardsPointer, feature_category: :devo
 
       pointer.valid?
 
-      expect(pointer.errors.messages[:base]).to include(_('Only one source is required but both were provided'))
+      expect(pointer.errors.messages[:base]).to include('Exactly one of namespace, project must be present')
     end
 
     it 'requires namespace or project' do
@@ -28,7 +28,7 @@ RSpec.describe Analytics::Dashboards::DashboardsPointer, feature_category: :devo
 
       pointer.valid?
 
-      expect(pointer.errors.messages[:base]).to include(_('Namespace or project is required'))
+      expect(pointer.errors.messages[:base]).to include('Exactly one of namespace, project must be present')
     end
 
     it 'check uniqueness of namespace' do

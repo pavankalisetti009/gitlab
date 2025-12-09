@@ -9,7 +9,7 @@ module Analytics
       belongs_to :project
       belongs_to :target_project, optional: false, class_name: 'Project'
 
-      validate :check_namespace_or_project_presence
+      validates_with ExactlyOnePresentValidator, fields: [:namespace, :project]
       # Avoid breaking existing records. The read endpoint also "validates" (returns nil if invalid)
       # the presence of the target_project_id in the group hierarchy.
       validate :check_target_project_presence_in_hierarchy
@@ -34,14 +34,6 @@ module Analytics
 
       def send_deleted_funnels
         ::ProductAnalytics::MoveFunnelsWorker.perform_async(project_id, target_project_id, nil)
-      end
-
-      def check_namespace_or_project_presence
-        if !namespace_id && !project_id
-          errors.add(:base, _('Namespace or project is required'))
-        elsif namespace_id && project_id
-          errors.add(:base, _('Only one source is required but both were provided'))
-        end
       end
 
       def check_target_project_presence_in_hierarchy
