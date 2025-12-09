@@ -49,7 +49,6 @@ RSpec.describe Resolvers::ProjectsResolver, feature_category: :groups_and_projec
         before do
           p_ultimate.project_setting.update!(duo_features_enabled: true)
           ns_ultimate.namespace_settings.update!(experiment_features_enabled: true)
-          stub_feature_flags(with_duo_eligible_projects_filter: true)
           ns_ultimate.add_developer(user)
         end
 

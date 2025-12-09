@@ -14,8 +14,7 @@ module EE
         argument :with_duo_eligible, GraphQL::Types::Boolean,
           required: false,
           experiment: { milestone: '18.6' },
-          description: "Include only projects that are eligible for GitLab Duo and have Duo features enabled." \
-            "Applies only if the feature flag `with_duo_eligible_projects_filter` is enabled."
+          description: "Include only projects that are eligible for GitLab Duo and have Duo features enabled."
 
         before_connection_authorization do |projects, current_user|
           ::Preloaders::UserMaxAccessLevelInProjectsPreloader.new(projects, current_user).execute

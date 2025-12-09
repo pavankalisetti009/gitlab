@@ -151,8 +151,6 @@ RSpec.describe ProjectsFinder, feature_category: :groups_and_projects do
         [ns_gold, ns_ultimate, ns_trial, ns_trial_paid, ns_oss, ns_free].each do |ns|
           ns.add_developer(user)
         end
-
-        stub_feature_flags(with_duo_eligible_projects_filter: true)
       end
 
       it 'returns only projects under eligible plans and with duo toggles enabled' do
@@ -172,16 +170,6 @@ RSpec.describe ProjectsFinder, feature_category: :groups_and_projects do
 
         it 'excludes that project even if the namespace plan is eligible' do
           is_expected.to contain_exactly(p_gold, p_trial, p_trial_paid, p_oss)
-        end
-      end
-
-      context 'when the feature flag is disabled' do
-        before do
-          stub_feature_flags(with_duo_eligible_projects_filter: false)
-        end
-
-        it 'does not apply the filter' do
-          is_expected.to include(p_gold, p_ultimate, p_trial, p_trial_paid, p_oss, p_free)
         end
       end
     end
