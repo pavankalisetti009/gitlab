@@ -135,6 +135,19 @@ RSpec.shared_examples 'Geo Framework selective sync behavior' do
         end
       end
     end
+
+    context 'with unknown selective sync' do
+      before do
+        allow(secondary).to receive_messages(selective_sync?: true,
+          selective_sync_by_namespaces?: false,
+          selective_sync_by_organizations?: false,
+          selective_sync_by_shards?: false)
+      end
+
+      it 'raises an exception' do
+        expect { find_replicables_to_sync }.to raise_error(::Geo::Errors::UnknownSelectiveSyncType)
+      end
+    end
   end
 
   describe '.replicables_for_current_secondary' do
