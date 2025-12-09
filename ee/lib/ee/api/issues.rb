@@ -28,7 +28,7 @@ module EE
             end
 
             desc 'Upload a metric image for an issue' do
-              success Entities::IssuableMetricImage
+              success ::API::Entities::IssuableMetricImage
             end
             params do
               requires :file, type: ::API::Validations::Types::WorkhorseFile, desc: 'The image file to be uploaded', documentation: { type: 'file' }
@@ -48,7 +48,7 @@ module EE
               ).execute
 
               if upload.success?
-                present upload.payload[:metric], with: Entities::IssuableMetricImage, current_user: current_user, project: user_project
+                present upload.payload[:metric], with: ::API::Entities::IssuableMetricImage, current_user: current_user, project: user_project
               else
                 render_api_error!(upload.message, 403)
               end
@@ -65,14 +65,14 @@ module EE
                   iids: [params[:issue_iid]]
                 ).execute.first
 
-                present issue.metric_images.order_created_at_asc, with: Entities::IssuableMetricImage
+                present issue.metric_images.order_created_at_asc, with: ::API::Entities::IssuableMetricImage
               else
                 render_api_error!('Issue not found', 404)
               end
             end
 
             desc 'Update a metric image for an issue' do
-              success Entities::IssuableMetricImage
+              success ::API::Entities::IssuableMetricImage
             end
             params do
               requires :metric_image_id, type: Integer, desc: 'The ID of metric image'
@@ -89,14 +89,14 @@ module EE
               render_api_error!('Metric image not found', 404) unless metric_image
 
               if metric_image&.update(params.slice(:url, :url_text))
-                present metric_image, with: Entities::IssuableMetricImage, current_user: current_user, project: user_project
+                present metric_image, with: ::API::Entities::IssuableMetricImage, current_user: current_user, project: user_project
               else
                 render_api_error!('Metric image could not be updated', 400)
               end
             end
 
             desc 'Remove a metric image for an issue' do
-              success Entities::IssuableMetricImage
+              success ::API::Entities::IssuableMetricImage
             end
             params do
               requires :metric_image_id, type: Integer, desc: 'The ID of metric image'

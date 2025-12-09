@@ -17,7 +17,7 @@ module API
       resource :namespaces, requirements: ::API::API::NAMESPACE_OR_PROJECT_REQUIREMENTS do
         desc '[DEPRECATED] Create an add-on purchase for the namespace' do
           detail 'Creates a subscription add-on record for the given namespaces and add-on'
-          success ::EE::API::Entities::GitlabSubscriptions::AddOnPurchase
+          success ::API::Entities::GitlabSubscriptions::AddOnPurchase
           failure [
             { code: 400, message: 'Bad request' },
             { code: 401, message: 'Unauthorized' },
@@ -39,7 +39,7 @@ module API
           ).execute
 
           if result[:status] == :success
-            present result[:add_on_purchase], with: ::EE::API::Entities::GitlabSubscriptions::AddOnPurchase
+            present result[:add_on_purchase], with: ::API::Entities::GitlabSubscriptions::AddOnPurchase
           elsif result[:add_on_purchase].nil?
             bad_request!(result[:message])
           else
@@ -49,7 +49,7 @@ module API
 
         desc '[DEPRECATED] Returns an add-on purchase for the namespace' do
           detail 'Gets the add-on purchase record for the given namespace and add-on'
-          success ::EE::API::Entities::GitlabSubscriptions::AddOnPurchase
+          success ::API::Entities::GitlabSubscriptions::AddOnPurchase
           failure [
             { code: 400, message: 'Bad request' },
             { code: 401, message: 'Unauthorized' },
@@ -59,12 +59,12 @@ module API
         get ":id/subscription_add_on_purchase/:add_on_name" do
           add_on_purchase = find_subscription_add_on_purchase!(@namespace, @add_on)
 
-          present add_on_purchase, with: ::EE::API::Entities::GitlabSubscriptions::AddOnPurchase
+          present add_on_purchase, with: ::API::Entities::GitlabSubscriptions::AddOnPurchase
         end
 
         desc '[DEPRECATED] Update the add-on purchase for the namespace' do
           detail 'Updates a subscription add-on record for the given namespaces and add-on'
-          success ::EE::API::Entities::GitlabSubscriptions::AddOnPurchase
+          success ::API::Entities::GitlabSubscriptions::AddOnPurchase
           failure [
             { code: 400, message: 'Bad request' },
             { code: 401, message: 'Unauthorized' },
@@ -86,7 +86,7 @@ module API
           ).execute
 
           if result[:status] == :success
-            present result[:add_on_purchase], with: ::EE::API::Entities::GitlabSubscriptions::AddOnPurchase
+            present result[:add_on_purchase], with: ::API::Entities::GitlabSubscriptions::AddOnPurchase
           elsif result[:add_on_purchase].nil?
             bad_request!(result[:message])
           else

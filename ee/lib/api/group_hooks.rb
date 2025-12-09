@@ -62,7 +62,7 @@ module API
     resource :groups, requirements: ::API::API::NAMESPACE_OR_PROJECT_REQUIREMENTS do
       desc 'List group hooks' do
         detail 'Get a list of group hooks'
-        success EE::API::Entities::GroupHook
+        success ::API::Entities::GroupHook
         is_array true
         tags group_hooks_tags
       end
@@ -70,12 +70,12 @@ module API
         use :pagination
       end
       get ":id/hooks" do
-        present paginate(user_group.hooks), with: EE::API::Entities::GroupHook
+        present paginate(user_group.hooks), with: ::API::Entities::GroupHook
       end
 
       desc 'Add group hook' do
         detail 'Adds a hook to a specified group'
-        success EE::API::Entities::GroupHook
+        success ::API::Entities::GroupHook
         failure [
           { code: 400, message: 'Validation error' },
           { code: 404, message: 'Not found' },
@@ -93,7 +93,7 @@ module API
         result = WebHooks::CreateService.new(current_user).execute(hook_params, hook_scope)
 
         if result[:status] == :success
-          present result[:hook], with: EE::API::Entities::GroupHook
+          present result[:hook], with: ::API::Entities::GroupHook
         else
           error!(result.message, result.http_status || 422)
         end
@@ -102,7 +102,7 @@ module API
       namespace ":id/hooks/:hook_id/" do
         desc 'Get group hook' do
           detail 'Get a specific hook for a group'
-          success EE::API::Entities::GroupHook
+          success ::API::Entities::GroupHook
           failure [
             { code: 404, message: 'Not found' }
           ]
@@ -114,12 +114,12 @@ module API
         get do
           hook = find_hook
 
-          present hook, with: EE::API::Entities::GroupHook
+          present hook, with: ::API::Entities::GroupHook
         end
 
         desc 'Edit group hook' do
           detail 'Edits a hook for a specified group'
-          success EE::API::Entities::GroupHook
+          success ::API::Entities::GroupHook
           failure [
             { code: 400, message: 'Validation error' },
             { code: 404, message: 'Not found' },
@@ -133,12 +133,12 @@ module API
           use :group_hook_properties
         end
         put do
-          update_hook(entity: EE::API::Entities::GroupHook)
+          update_hook(entity: ::API::Entities::GroupHook)
         end
 
         desc 'Delete group hook' do
           detail 'Removes a hook from a group. This is an idempotent method and can be called multiple times. Either the hook is available or not.'
-          success EE::API::Entities::GroupHook
+          success ::API::Entities::GroupHook
           failure [
             { code: 404, message: 'Not found' }
           ]

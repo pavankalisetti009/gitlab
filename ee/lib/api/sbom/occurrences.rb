@@ -40,7 +40,7 @@ module API
         get 'vulnerabilities' do
           options = { occurrence_id: params[:id], project: project }
 
-          present EE::API::Entities::DependenciesVulnerabilities.represent(vulnerabilities, options)
+          present ::API::Entities::DependenciesVulnerabilities.represent(vulnerabilities, options)
         end
       end
     end

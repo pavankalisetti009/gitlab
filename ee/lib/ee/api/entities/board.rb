@@ -15,7 +15,7 @@ module EE
               if board.milestone.is_a?(Milestone)
                 ::API::Entities::Milestone.represent(board.milestone)
               else
-                SpecialBoardFilter.represent(board.milestone)
+                ::API::Entities::SpecialBoardFilter.represent(board.milestone)
               end
             end
             expose :assignee, using: ::API::Entities::UserBasic

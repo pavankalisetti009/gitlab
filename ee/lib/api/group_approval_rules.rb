@@ -18,7 +18,7 @@ module API
     resource :groups, requirements: ::API::API::NAMESPACE_OR_PROJECT_REQUIREMENTS do
       segment ':id/approval_rules' do
         desc 'Get all group approval rules' do
-          success EE::API::Entities::GroupApprovalRule
+          success ::API::Entities::GroupApprovalRule
         end
         params do
           use :pagination
@@ -28,11 +28,11 @@ module API
 
           group_approval_rules = paginate(user_group.approval_rules)
 
-          present group_approval_rules, with: EE::API::Entities::GroupApprovalRule
+          present group_approval_rules, with: ::API::Entities::GroupApprovalRule
         end
 
         desc 'Create new group approval rule' do
-          success EE::API::Entities::GroupApprovalRule
+          success ::API::Entities::GroupApprovalRule
         end
         params do
           requires :name, type: String, desc: 'The name of the approval rule'
@@ -40,7 +40,7 @@ module API
           use :group_approval_rule
         end
         post do
-          create_group_approval_rule(present_with: EE::API::Entities::GroupApprovalRule)
+          create_group_approval_rule(present_with: ::API::Entities::GroupApprovalRule)
         end
 
         params do
@@ -50,7 +50,7 @@ module API
         end
 
         put ':approval_rule_id' do
-          update_group_approval_rule(present_with: EE::API::Entities::GroupApprovalRule)
+          update_group_approval_rule(present_with: ::API::Entities::GroupApprovalRule)
         end
       end
     end

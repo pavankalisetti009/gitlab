@@ -102,7 +102,7 @@ module API
         namespace ':id/analytics' do
           desc 'List deployment frequencies for the project' do
             is_array true
-            success EE::API::Entities::Analytics::DeploymentFrequency
+            success ::API::Entities::Analytics::DeploymentFrequency
           end
           params do
             requires :environment, type: String, desc: 'Name of the environment to filter by'
@@ -114,7 +114,7 @@ module API
             bad_request!("Parameter `to` is before the `from` date") if start_date > end_date
             bad_request!("Date range is greater than #{QUARTER_DAYS} days") if days_between > QUARTER_DAYS
             authorize! :read_dora4_analytics, user_project
-            present deployment_frequencies, with: EE::API::Entities::Analytics::DeploymentFrequency
+            present deployment_frequencies, with: ::API::Entities::Analytics::DeploymentFrequency
           end
         end
       end

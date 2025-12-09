@@ -16,7 +16,7 @@ module API
 
       def present_created_export(result)
         if result.success?
-          present result.payload[:dependency_list_export], with: EE::API::Entities::DependencyListExport
+          present result.payload[:dependency_list_export], with: ::API::Entities::DependencyListExport
         else
           render_api_error!(result.message, :unprocessable_entity)
         end
@@ -93,7 +93,7 @@ module API
         status :accepted
       end
 
-      present dependency_list_export, with: EE::API::Entities::DependencyListExport
+      present dependency_list_export, with: ::API::Entities::DependencyListExport
     end
 
     desc 'Download a dependency list export'

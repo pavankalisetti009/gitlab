@@ -87,7 +87,7 @@ module EE
 
           desc 'Returns the list of pipeline refs for the project' do
             summary 'Used by secondary runners to verify the secondary instance has the very latest version'
-            success code: 200, model: ::EE::API::Entities::Geo::PipelineRefs
+            success code: 200, model: EE::API::Entities::Geo::PipelineRefs
             is_array true
             failure [
               { code: 401, message: '401 Unauthorized' },
@@ -106,7 +106,7 @@ module EE
 
             _, project, _ = ::Gitlab::GlRepository.parse(params[:gl_repository])
 
-            present pipeline_refs: project.repository.list_refs(['refs/pipelines/']).collect(&:name), with: ::EE::API::Entities::Geo::PipelineRefs
+            present pipeline_refs: project.repository.list_refs(['refs/pipelines/']).collect(&:name), with: EE::API::Entities::Geo::PipelineRefs
           end
 
           # Post current node information to primary (e.g. health, repos synced, repos failed, etc.)
@@ -115,7 +115,7 @@ module EE
           #   POST /geo/status
           desc 'Posts the current node status to the primary site' do
             summary 'Internal endpoint that posts the current node status'
-            success code: 200, model: EE::API::Entities::GeoNodeStatus
+            success code: 200, model: ::API::Entities::GeoNodeStatus
             failure [
               { code: 400, message: '400 Bad Request' },
               { code: 401, message: '401 Unauthorized' }

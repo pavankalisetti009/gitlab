@@ -10,7 +10,7 @@ module API
       desc 'List all experiments' do
         detail 'Get a list of all experiments. Each experiment has an enabled status that indicates whether'\
           'the experiment is enabled globally, or only in specific contexts.'
-        success EE::API::Entities::Experiment
+        success ::API::Entities::Experiment
         is_array true
         tags %w[experiments]
       end
@@ -24,7 +24,7 @@ module API
           end
         end
 
-        present experiments, with: EE::API::Entities::Experiment, current_user: current_user
+        present experiments, with: ::API::Entities::Experiment, current_user: current_user
       end
     end
 

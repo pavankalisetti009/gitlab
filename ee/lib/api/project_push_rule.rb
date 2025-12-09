@@ -19,7 +19,7 @@ module API
         push_rule = service_response.payload[:push_rule]
 
         if service_response.success?
-          present(push_rule, with: EE::API::Entities::ProjectPushRule, user: current_user)
+          present(push_rule, with: ::API::Entities::ProjectPushRule, user: current_user)
         else
           render_validation_error!(push_rule)
         end
@@ -60,17 +60,17 @@ module API
       end
 
       desc 'Get project push rule' do
-        success code: 200, model: EE::API::Entities::ProjectPushRule
+        success code: 200, model: ::API::Entities::ProjectPushRule
         failure [{ code: 404, message: 'Not found' }]
         tags %w[projects push_rules]
       end
       get ":id/push_rule" do
         push_rule = user_project.push_rule
-        present push_rule, with: EE::API::Entities::ProjectPushRule, user: current_user
+        present push_rule, with: ::API::Entities::ProjectPushRule, user: current_user
       end
 
       desc 'Add a push rule to a project' do
-        success code: 201, model: EE::API::Entities::ProjectPushRule
+        success code: 201, model: ::API::Entities::ProjectPushRule
         failure [
           { code: 400, message: 'Validation error' },
           { code: 404, message: 'Not found' },
@@ -87,7 +87,7 @@ module API
       end
 
       desc 'Update an existing project push rule' do
-        success code: 200, model: EE::API::Entities::ProjectPushRule
+        success code: 200, model: ::API::Entities::ProjectPushRule
         failure [
           { code: 400, message: 'Validation error' },
           { code: 404, message: 'Not found' },

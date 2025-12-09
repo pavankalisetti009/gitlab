@@ -28,7 +28,7 @@ module EE
             end
 
             desc 'Get a list of audit events in this project.' do
-              success EE::API::Entities::AuditEvent
+              success ::API::Entities::AuditEvent
               is_array true
             end
             params do
@@ -66,11 +66,11 @@ module EE
                 ).execute
               end
 
-              present paginate_with_strategies(audit_events), with: EE::API::Entities::AuditEvent
+              present paginate_with_strategies(audit_events), with: ::API::Entities::AuditEvent
             end
 
             desc 'Get a specific audit event in this project.' do
-              success EE::API::Entities::AuditEvent
+              success ::API::Entities::AuditEvent
             end
             params do
               requires :audit_event_id, type: Integer, desc: 'The ID of the audit event'
@@ -89,7 +89,7 @@ module EE
                                               .find_by!(id: params[:audit_event_id])
               end
               # rubocop: enable CodeReuse/ActiveRecord, Rails/FindById
-              present audit_event, with: EE::API::Entities::AuditEvent
+              present audit_event, with: ::API::Entities::AuditEvent
             end
           end
         end

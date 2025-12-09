@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe EE::API::Entities::Analytics::GroupActivity do
+RSpec.describe ::API::Entities::Analytics::GroupActivity, feature_category: :value_stream_management do
   let(:count) { 10 }
 
   shared_examples 'exposes count' do |count_type, entity|
@@ -18,18 +18,18 @@ RSpec.describe EE::API::Entities::Analytics::GroupActivity do
   context 'issues count' do
     it_behaves_like 'exposes count',
       'issues_count',
-      EE::API::Entities::Analytics::GroupActivity::IssuesCount
+      ::API::Entities::Analytics::GroupActivity::IssuesCount
   end
 
   context 'merge requests count' do
     it_behaves_like 'exposes count',
       'merge_requests_count',
-      EE::API::Entities::Analytics::GroupActivity::MergeRequestsCount
+      ::API::Entities::Analytics::GroupActivity::MergeRequestsCount
   end
 
   context 'new members count' do
     it_behaves_like 'exposes count',
       'new_members_count',
-      EE::API::Entities::Analytics::GroupActivity::NewMembersCount
+      ::API::Entities::Analytics::GroupActivity::NewMembersCount
   end
 end

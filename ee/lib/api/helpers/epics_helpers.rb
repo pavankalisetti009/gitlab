@@ -57,7 +57,7 @@ module API
       end
       # rubocop: enable CodeReuse/ActiveRecord
 
-      def epic_options(entity: EE::API::Entities::Epic, issuable_metadata: nil)
+      def epic_options(entity: ::API::Entities::Epic, issuable_metadata: nil)
         {
           with: entity,
           current_user: current_user,

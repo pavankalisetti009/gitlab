@@ -32,7 +32,7 @@ module API
           push_rule = service_response.payload[:push_rule]
 
           if service_response.success?
-            present(push_rule, with: EE::API::Entities::GroupPushRule, user: current_user)
+            present(push_rule, with: ::API::Entities::GroupPushRule, user: current_user)
           else
             render_validation_error!(push_rule)
           end
@@ -63,7 +63,7 @@ module API
 
       desc 'Get group push rule' do
         detail 'This feature was introduced in GitLab 13.4.'
-        success code: 200, model: EE::API::Entities::GroupPushRule
+        success code: 200, model: ::API::Entities::GroupPushRule
         failure [
           { code: 404, message: 'Not found' }
         ]
@@ -72,12 +72,12 @@ module API
       get ":id/push_rule" do
         not_found! unless push_rule
 
-        present push_rule, with: EE::API::Entities::GroupPushRule, user: current_user
+        present push_rule, with: ::API::Entities::GroupPushRule, user: current_user
       end
 
       desc 'Add a push rule to a group' do
         detail 'This feature was introduced in GitLab 13.4.'
-        success code: 201, model: EE::API::Entities::GroupPushRule
+        success code: 201, model: ::API::Entities::GroupPushRule
         failure [
           { code: 400, message: 'Validation error' },
           { code: 404, message: 'Not found' },
@@ -95,7 +95,7 @@ module API
 
       desc 'Edit push rule of a group' do
         detail 'This feature was introduced in GitLab 13.4.'
-        success code: 200, model: EE::API::Entities::GroupPushRule
+        success code: 200, model: ::API::Entities::GroupPushRule
         failure [
           { code: 400, message: 'Validation error' },
           { code: 404, message: 'Not found' },
