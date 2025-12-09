@@ -30,7 +30,8 @@ module Groups::SecurityFeaturesHelper
       can_view_false_positive: group.licensed_feature_available?(:sast_fp_reduction).to_s,
       has_projects: Project.for_group_and_its_subgroups(group).any?.to_s,
       show_retention_alert: ::Gitlab.com?.to_s, # rubocop:disable Gitlab/AvoidGitlabInstanceChecks -- We want to display this banner to all GitLab.com users and hide it for self-hosted and dedicated customers.
-      dismissal_descriptions: dismissal_descriptions.to_json
+      dismissal_descriptions: dismissal_descriptions.to_json,
+      manage_duo_settings_path: edit_group_path(group, anchor: 'js-gitlab-duo-settings')
     }
   end
 

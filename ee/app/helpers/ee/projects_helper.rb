@@ -252,7 +252,8 @@ module EE
           scanners: VulnerabilityScanners::ListService.new(project).execute.to_json,
           can_view_false_positive: can_view_false_positive?,
           vulnerability_quota: vulnerability_quota_information(project),
-          validity_checks_enabled: project&.security_setting&.validity_checks_enabled&.to_s || 'false'
+          validity_checks_enabled: project.security_setting&.validity_checks_enabled&.to_s || 'false',
+          manage_duo_settings_path: edit_project_path(project, anchor: 'js-gitlab-duo-settings')
         }
       )
     end
