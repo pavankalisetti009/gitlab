@@ -234,7 +234,6 @@ create_organization
 create_package
 create_pages
 create_path_lock
-create_project
 create_project_secrets
 create_projects
 create_protected_branch

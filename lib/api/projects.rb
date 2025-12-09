@@ -282,6 +282,7 @@ module API
         use :statistics_params
         use :with_custom_attributes
       end
+      route_setting :authorization, permissions: :read_project, boundary_type: :standalone
       get ":user_id/projects", feature_category: :groups_and_projects, urgency: :low do
         check_rate_limit_by_user_or_ip!(:user_projects_api)
 
@@ -308,6 +309,7 @@ module API
           desc: 'Return only the ID, URL, name, and path of each project'
       end
 
+      route_setting :authorization, permissions: :read_project, boundary_type: :standalone
       get ":user_id/contributed_projects", feature_category: :groups_and_projects, urgency: :low do
         check_rate_limit_by_user_or_ip!(:user_contributed_projects_api)
 
@@ -318,6 +320,7 @@ module API
         present_projects contributed_projects
       end
 
+      route_setting :authorization, permissions: :read_project, boundary_type: :standalone
       desc 'Get projects starred by a user' do
         success code: 200, model: Entities::BasicProjectDetails
         failure [{ code: 404, message: '404 User Not Found' }]
@@ -330,6 +333,7 @@ module API
         use :statistics_params
       end
 
+      route_setting :authorization, permissions: :read_project, boundary_type: :standalone
       get ":user_id/starred_projects", feature_category: :groups_and_projects, urgency: :low do
         check_rate_limit_by_user_or_ip!(:user_starred_projects_api)
 
@@ -373,6 +377,7 @@ module API
         use :with_custom_attributes
       end
       # TODO: Set higher urgency https://gitlab.com/gitlab-org/gitlab/-/issues/211495
+      route_setting :authorization, permissions: :read_project, boundary_type: :standalone
       get feature_category: :groups_and_projects, urgency: :low do
         validate_projects_api_rate_limit!
         validate_updated_at_order_and_filter!
@@ -397,6 +402,7 @@ module API
         use :optional_create_project_params
         use :create_params
       end
+      route_setting :authorization, permissions: :create_project, boundary_type: :standalone
       post urgency: :low do
         Gitlab::QueryLimiting.disable!('https://gitlab.com/gitlab-org/gitlab/issues/21139')
         attrs = declared_params(include_missing: false)
@@ -442,6 +448,7 @@ module API
         use :create_params
       end
       # rubocop: disable CodeReuse/ActiveRecord
+      route_setting :authorization, permissions: :create_user_project, boundary_type: :standalone
       post "user/:user_id", feature_category: :groups_and_projects do
         Gitlab::QueryLimiting.disable!('https://gitlab.com/gitlab-org/gitlab/issues/21139')
         authenticated_as_admin!

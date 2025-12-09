@@ -884,6 +884,13 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
           expect(json_response.map { |project| project['id'] }).to contain_exactly(project2.id, project3.id)
         end
       end
+
+      it_behaves_like 'authorizing granular token permissions', :read_project do
+        let(:boundary_object) { nil }
+        let(:request) do
+          get api(path, personal_access_token: pat)
+        end
+      end
     end
 
     context 'and imported=true' do
@@ -1846,6 +1853,13 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
         end
       end
     end
+
+    it_behaves_like 'authorizing granular token permissions', :create_project do
+      let(:boundary_object) { nil }
+      let(:request) do
+        post api(path, personal_access_token: pat), params: { name: 'Test Project' }
+      end
+    end
   end
 
   describe 'GET /users/:user_id/projects/' do
@@ -2001,6 +2015,13 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
         expect(json_response.map { |p| p['id'] }).to contain_exactly(project.id)
       end
     end
+
+    it_behaves_like 'authorizing granular token permissions', :read_project do
+      let(:boundary_object) { nil }
+      let(:request) do
+        get api("/users/#{user4.id}/projects/", personal_access_token: pat)
+      end
+    end
   end
 
   describe 'GET /users/:user_id/starred_projects/' do
@@ -2046,6 +2067,13 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
 
           expect(response).to have_gitlab_http_status(:ok)
           expect(json_response.map { |project| project['id'] }).to contain_exactly(project2.id, project.id)
+        end
+      end
+
+      it_behaves_like 'authorizing granular token permissions', :read_project do
+        let(:boundary_object) { nil }
+        let(:request) do
+          get api(path, personal_access_token: pat)
         end
       end
     end
@@ -2116,6 +2144,13 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
 
       def request_with_second_scope
         get api(path, user2)
+      end
+    end
+
+    it_behaves_like 'authorizing granular token permissions', :read_project do
+      let(:boundary_object) { nil }
+      let(:request) do
+        get api(path, personal_access_token: pat)
       end
     end
 
@@ -2398,6 +2433,16 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
           expect(json_response['container_registry_enabled']).to eq(container_registry_enabled)
           expect(project.container_registry_access_level).to eq(ProjectFeature.access_level_from_str(container_registry_access_level))
           expect(project.container_registry_enabled).to eq(container_registry_enabled)
+        end
+      end
+    end
+
+    context 'with granular token permissions', :enable_admin_mode do
+      it_behaves_like 'authorizing granular token permissions', :create_user_project do
+        let(:boundary_object) { nil }
+        let(:user) { admin }
+        let(:request) do
+          post api(path, personal_access_token: pat), params: { name: 'Test Project' }
         end
       end
     end
@@ -6238,6 +6283,17 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
         expect(response).to have_gitlab_http_status(:bad_request)
         expect(json_response['error']).to eq('visibility does not have a valid value')
       end
+
+      it_behaves_like 'authorizing granular token permissions', :fork_project do
+        let(:boundary_object) { project }
+        let(:fork_path) { "fork-test-#{SecureRandom.hex(4)}" }
+        let(:request) do
+          post api(path, personal_access_token: pat), params: {
+            path: fork_path,
+            name: fork_path.titleize
+          }
+        end
+      end
     end
 
     context 'when unauthenticated' do
@@ -6632,6 +6688,20 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
       get api("/projects/#{non_existing_record_id}/storage", user3)
 
       expect(response).to have_gitlab_http_status(:forbidden)
+    end
+
+    context 'with granular token permissions', :enable_admin_mode do
+      before do
+        project.add_developer(admin)
+      end
+
+      it_behaves_like 'authorizing granular token permissions', :read_project do
+        let(:boundary_object) { project }
+        let(:user) { admin }
+        let(:request) do
+          get api(path, personal_access_token: pat)
+        end
+      end
     end
   end
 

@@ -2,6 +2,8 @@
 name: read_project
 description: Grants the ability to view projects and their details
 feature_category: groups_and_projects
+permissions:
+  - read_project
 boundaries:
   - user
   - project
