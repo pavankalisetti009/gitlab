@@ -11,7 +11,6 @@ import {
   GlToggle,
   GlTooltipDirective as GlTooltip,
 } from '@gitlab/ui';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { createAlert } from '~/alert';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { __ } from '~/locale';
@@ -25,17 +24,8 @@ import {
 
 import groupAuditEventStreamingDestinationsUpdate from '../../graphql/mutations/update_group_streaming_destination.mutation.graphql';
 import instanceAuditEventStreamingDestinationsUpdate from '../../graphql/mutations/update_instance_streaming_destination.mutation.graphql';
-import externalAuditEventDestinationUpdate from '../../graphql/mutations/update_external_destination.mutation.graphql';
-import instanceExternalAuditEventDestinationUpdate from '../../graphql/mutations/update_instance_external_destination.mutation.graphql';
-import googleCloudLoggingConfigurationUpdate from '../../graphql/mutations/update_gcp_logging_destination.mutation.graphql';
-import instanceGoogleCloudLoggingConfigurationUpdate from '../../graphql/mutations/update_instance_gcp_logging_destination.mutation.graphql';
-import amazonS3ConfigurationUpdate from '../../graphql/mutations/update_amazon_s3_destination.mutation.graphql';
-import instanceAmazonS3ConfigurationUpdate from '../../graphql/mutations/update_instance_amazon_s3_destination.mutation.graphql';
 
 import StreamDestinationEditor from './stream_destination_editor.vue';
-import StreamHttpDestinationEditor from './stream_http_destination_editor.vue';
-import StreamGcpLoggingDestinationEditor from './stream_gcp_logging_destination_editor.vue';
-import StreamAmazonS3DestinationEditor from './stream_amazon_s3_destination_editor.vue';
 
 export default {
   components: {
@@ -49,22 +39,14 @@ export default {
     GlIcon,
     GlToggle,
     StreamDestinationEditor,
-    StreamHttpDestinationEditor,
-    StreamGcpLoggingDestinationEditor,
-    StreamAmazonS3DestinationEditor,
   },
   directives: {
     GlTooltip,
   },
-  mixins: [glFeatureFlagMixin()],
   inject: ['groupPath'],
   props: {
     item: {
       type: Object,
-      required: true,
-    },
-    type: {
-      type: String,
       required: true,
     },
   },
@@ -139,11 +121,7 @@ export default {
       }
     },
     async updateDestinationActive(newActiveState) {
-      if (this.glFeatures.useConsolidatedAuditEventStreamDestApi) {
-        await this.toggleActiveConsolidatedApi(newActiveState);
-      } else {
-        await this.toggleActiveLegacyApi(newActiveState);
-      }
+      await this.toggleActiveConsolidatedApi(newActiveState);
     },
     handleToggleSuccess(newActiveState) {
       this.destinationActive = newActiveState;
@@ -200,85 +178,6 @@ export default {
       };
 
       await this.executeMutation(mutation, variables, resultPath);
-    },
-    async toggleActiveLegacyApi(newActiveState) {
-      const { mutation, variables, resultPath } = this.buildLegacyMutationConfig(newActiveState);
-      await this.executeMutation(mutation, variables, resultPath);
-    },
-    buildTypeSpecificVariables(baseVariables) {
-      const typeVariables = {
-        [DESTINATION_TYPE_HTTP]: {},
-        [DESTINATION_TYPE_AMAZON_S3]: {
-          fullPath: this.groupPath,
-          accessKeyXid: this.item.accessKeyXid || this.item.config?.accessKeyXid,
-          awsRegion: this.item.awsRegion || this.item.config?.awsRegion,
-          bucketName: this.item.bucketName || this.item.config?.bucketName,
-        },
-        [DESTINATION_TYPE_GCP_LOGGING]: {
-          googleProjectIdName:
-            this.item.googleProjectIdName || this.item.config?.googleProjectIdName,
-          clientEmail: this.item.clientEmail || this.item.config?.clientEmail,
-          logIdName: this.item.logIdName || this.item.config?.logIdName || 'audit_events',
-        },
-      };
-
-      return { ...baseVariables, ...typeVariables[this.type] };
-    },
-    getMutationConfig(type, isInstance) {
-      const mutations = {
-        [DESTINATION_TYPE_HTTP]: [
-          externalAuditEventDestinationUpdate,
-          instanceExternalAuditEventDestinationUpdate,
-        ],
-        [DESTINATION_TYPE_AMAZON_S3]: [
-          amazonS3ConfigurationUpdate,
-          instanceAmazonS3ConfigurationUpdate,
-        ],
-        [DESTINATION_TYPE_GCP_LOGGING]: [
-          googleCloudLoggingConfigurationUpdate,
-          instanceGoogleCloudLoggingConfigurationUpdate,
-        ],
-      };
-
-      const resultPaths = {
-        [DESTINATION_TYPE_HTTP]: [
-          'externalAuditEventDestinationUpdate',
-          'instanceExternalAuditEventDestinationUpdate',
-        ],
-        [DESTINATION_TYPE_AMAZON_S3]: [
-          'auditEventsAmazonS3ConfigurationUpdate',
-          'auditEventsInstanceAmazonS3ConfigurationUpdate',
-        ],
-        [DESTINATION_TYPE_GCP_LOGGING]: [
-          'auditEventsGoogleCloudLoggingConfigurationUpdate',
-          'instanceGoogleCloudLoggingConfigurationUpdate',
-        ],
-      };
-
-      const index = isInstance ? 1 : 0;
-      return {
-        mutation: mutations[type][index],
-        resultPath: resultPaths[type][index],
-      };
-    },
-    buildLegacyMutationConfig(newActiveState) {
-      const baseVariables = {
-        id: this.item.id,
-        name: this.item.name,
-        active: newActiveState,
-      };
-
-      const { mutation, resultPath } = this.getMutationConfig(this.type, this.isInstance);
-
-      if (!mutation) {
-        throw new Error(`Unknown destination type: ${this.type}`);
-      }
-
-      return {
-        mutation,
-        variables: this.buildTypeSpecificVariables(baseVariables),
-        resultPath,
-      };
     },
   },
   i18n: { ...STREAM_ITEMS_I18N },
@@ -346,33 +245,6 @@ export default {
         {{ successMessage }}
       </gl-alert>
       <stream-destination-editor
-        v-if="glFeatures.useConsolidatedAuditEventStreamDestApi"
-        :item="item"
-        @updated="onUpdated"
-        @deleted="onDelete"
-        @error="onEditorError"
-        @cancel="toggleEditMode"
-      />
-      <stream-http-destination-editor
-        v-else-if="type == $options.DESTINATION_TYPE_HTTP"
-        :item="item"
-        class="gl-pb-5 gl-pl-6 gl-pr-0"
-        @updated="onUpdated"
-        @deleted="onDelete"
-        @error="onEditorError"
-        @cancel="toggleEditMode"
-      />
-      <stream-gcp-logging-destination-editor
-        v-else-if="type == $options.DESTINATION_TYPE_GCP_LOGGING"
-        :item="item"
-        class="gl-pb-5 gl-pl-6 gl-pr-0"
-        @updated="onUpdated"
-        @deleted="onDelete"
-        @error="onEditorError"
-        @cancel="toggleEditMode"
-      />
-      <stream-amazon-s3-destination-editor
-        v-else-if="type == $options.DESTINATION_TYPE_AMAZON_S3"
         :item="item"
         class="gl-pb-5 gl-pl-6 gl-pr-0"
         @updated="onUpdated"
