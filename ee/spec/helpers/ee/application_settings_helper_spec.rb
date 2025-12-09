@@ -12,7 +12,7 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
     it 'contains duo_features_enabled parameters' do
       expect(visible_attributes)
         .to include(*%i[duo_features_enabled lock_duo_features_enabled duo_availability enabled_expanded_logging
-          foundational_agents_default_enabled])
+          foundational_agents_default_enabled foundational_agents_statuses ])
     end
 
     it 'contains search parameters' do

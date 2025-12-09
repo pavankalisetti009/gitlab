@@ -3,7 +3,12 @@
 require 'spec_helper'
 
 RSpec.describe API::Entities::ApplicationSetting, feature_category: :shared do # rubocop:disable RSpec/FeatureCategory -- Application Settings are shared, describe block provide proper category.
+  let_it_be(:default_organization) { build(:organization) }
   let_it_be(:application_setting, reload: true) { create(:application_setting) }
+
+  before do
+    allow(::Organizations::Organization).to receive(:default_organization).and_return(default_organization)
+  end
 
   subject(:output) { described_class.new(application_setting).as_json }
 

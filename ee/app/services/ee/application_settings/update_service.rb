@@ -27,6 +27,8 @@ module EE
 
         filter_auto_duo_code_review_param
 
+        handle_organization_settings
+
         if result = super
           find_or_create_elasticsearch_index if params.keys.any? { |key| key.to_s.start_with?('elasticsearch') }
           update_elasticsearch_containers(ElasticsearchIndexedNamespace, elasticsearch_namespace_ids)
@@ -42,6 +44,18 @@ module EE
         end
 
         result
+      end
+
+      def handle_organization_settings
+        return unless params.has_key?(:foundational_agents_statuses)
+
+        default_organization = ::Organizations::Organization.default_organization
+
+        default_organization.update(foundational_agents_statuses: params.delete(:foundational_agents_statuses))
+
+        return unless default_organization.errors.any?
+
+        application_setting.errors.add(:foundational_agents_statuses, default_organization.errors.full_messages.join(', '))
       end
 
       def update_elasticsearch_containers(klass, new_container_ids)
