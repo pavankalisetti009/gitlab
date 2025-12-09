@@ -31012,6 +31012,9 @@ msgstr ""
 msgid "GitLab Community Edition"
 msgstr ""
 
+msgid "GitLab Credits"
+msgstr ""
+
 msgid "GitLab Duo"
 msgstr ""
 

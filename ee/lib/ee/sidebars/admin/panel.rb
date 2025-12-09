@@ -32,6 +32,7 @@ module EE
           )
 
           insert_gitlab_duo_menu
+          insert_gitlab_credits_dashboard_menu
 
           insert_menu_after(
             ::Sidebars::Admin::Menus::MessagesMenu,
@@ -47,6 +48,15 @@ module EE
           insert_menu_after(
             ::Sidebars::Admin::Menus::SubscriptionMenu,
             ::Sidebars::Admin::Menus::DuoSettingsMenu.new(context)
+          )
+        end
+
+        def insert_gitlab_credits_dashboard_menu
+          return unless License.feature_available?(:usage_billing)
+
+          insert_menu_after(
+            ::Sidebars::Admin::Menus::DuoSettingsMenu,
+            ::Sidebars::Admin::Menus::GitlabCreditsDashboardMenu.new(context)
           )
         end
       end
