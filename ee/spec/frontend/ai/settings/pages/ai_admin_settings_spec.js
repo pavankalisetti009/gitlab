@@ -183,6 +183,23 @@ describe('AiAdminSettings', () => {
           });
         });
 
+        it('updates aiGatewayTimeoutSeconds', async () => {
+          const newTimeout = 300;
+
+          await findAiGatewayTimeoutInputForm().vm.$emit('change', newTimeout);
+
+          await findAiCommonSettings().vm.$emit('submit', { duoCoreFeaturesEnabled: false });
+
+          expect(updateAiSettingsSuccessHandler).toHaveBeenCalledWith({
+            input: {
+              aiGatewayUrl: 'http://localhost:5052',
+              aiGatewayTimeoutSeconds: newTimeout,
+              duoAgentPlatformServiceUrl: 'localhost:50052',
+              duoCoreFeaturesEnabled: false,
+            },
+          });
+        });
+
         it('updates both aiGatewayUrl and duoAgentPlatformServiceUrl when both change', async () => {
           await createComponent({ provide: { exposeDuoAgentPlatformServiceUrl: true } });
           const newAiGatewayUrl = 'http://new-ai-gateway-url.com';
@@ -212,16 +229,18 @@ describe('AiAdminSettings', () => {
           createComponent({ provide: { canManageSelfHostedModels: false } });
         });
 
-        it('does not update aiGatewayUrl or duoAgentPlatformServiceUrl', async () => {
-          await findAiCommonSettings().vm.$emit('submit', { duoCoreFeaturesEnabled: true });
+        it.each(['aiGatewayUrl', 'duoAgentPlatformServiceUrl', 'aiGatewayTimeoutSeconds'])(
+          'does not update %s',
+          async () => {
+            await findAiCommonSettings().vm.$emit('submit', { duoCoreFeaturesEnabled: true });
 
-          expect(updateAiSettingsSuccessHandler).toHaveBeenCalledWith({
-            input: {
-              aiGatewayTimeoutSeconds: 120,
-              duoCoreFeaturesEnabled: true,
-            },
-          });
-        });
+            expect(updateAiSettingsSuccessHandler).toHaveBeenCalledWith({
+              input: {
+                duoCoreFeaturesEnabled: true,
+              },
+            });
+          },
+        );
       });
 
       it('updates duoCoreFeaturesEnabled', async () => {
@@ -235,23 +254,6 @@ describe('AiAdminSettings', () => {
             aiGatewayTimeoutSeconds: 120,
             duoAgentPlatformServiceUrl: 'localhost:50052',
             duoCoreFeaturesEnabled: true,
-          },
-        });
-      });
-
-      it('updates aiGatewayTimeoutSeconds', async () => {
-        const newTimeout = 300;
-
-        await findAiGatewayTimeoutInputForm().vm.$emit('change', newTimeout);
-
-        await findAiCommonSettings().vm.$emit('submit', { duoCoreFeaturesEnabled: false });
-
-        expect(updateAiSettingsSuccessHandler).toHaveBeenCalledWith({
-          input: {
-            aiGatewayUrl: 'http://localhost:5052',
-            aiGatewayTimeoutSeconds: newTimeout,
-            duoAgentPlatformServiceUrl: 'localhost:50052',
-            duoCoreFeaturesEnabled: false,
           },
         });
       });
@@ -343,6 +345,10 @@ describe('AiAdminSettings', () => {
         expect(findAiGatewayUrlInputForm().exists()).toBe(true);
       });
 
+      it('renders the AI gateway timeout input form', () => {
+        expect(findAiGatewayTimeoutInputForm().exists()).toBe(true);
+      });
+
       describe('when exposeDuoAgentPlatformServiceUrl feature flag is disabled', () => {
         it('does not render Duo Agent Platform Service URL input form', () => {
           expect(findDuoAgentPlatformServiceUrlInputForm().exists()).toBe(false);
@@ -375,6 +381,10 @@ describe('AiAdminSettings', () => {
 
       it('does not render AI gateway URL input form', () => {
         expect(findAiGatewayUrlInputForm().exists()).toBe(false);
+      });
+
+      it('does not render the AI gateway timeout input form', () => {
+        expect(findAiGatewayTimeoutInputForm().exists()).toBe(false);
       });
 
       it('does not render Duo Agent Platform Service URL input form', () => {
@@ -429,11 +439,7 @@ describe('AiAdminSettings', () => {
 
   describe('onAiGatewayTimeoutChange', () => {
     beforeEach(async () => {
-      await createComponent();
-    });
-
-    it('renders the AI gateway timeout input form', () => {
-      expect(findAiGatewayTimeoutInputForm().exists()).toBe(true);
+      await createComponent({ provide: { canManageSelfHostedModels: true } });
     });
 
     it('passes the correct initial value to the timeout form', () => {
