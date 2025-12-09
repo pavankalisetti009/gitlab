@@ -114,26 +114,41 @@ module Ai
         return true unless feature_name == ::Ai::ModelSelection::FeaturesConfigurable.agentic_chat_feature_name
 
         setting.pinned_model? ||
-          invalid_user_selected_model_identifier?(model_selection_scope)
+          invalid_user_selected_model_identifier?(setting, model_selection_scope)
       end
 
-      def invalid_user_selected_model_identifier?(model_selection_scope)
+      def invalid_user_selected_model_identifier?(setting, model_selection_scope)
         return true if user_selected_model_identifier.blank?
 
-        selectable_models(model_selection_scope).exclude?(user_selected_model_identifier)
+        selectable_models(setting, model_selection_scope).exclude?(user_selected_model_identifier)
       end
 
-      def selectable_models(model_selection_scope)
+      def selectable_models(setting, model_selection_scope)
         result = ::Ai::ModelSelection::FetchModelDefinitionsService
                     .new(current_user, model_selection_scope: model_selection_scope)
                     .execute
 
         return [] unless result&.success?
 
-        parsed_response =
-          ::Gitlab::Ai::ModelSelection::ModelDefinitionResponseParser.new(result.payload)
+        return [] unless setting
 
-        parsed_response.selectable_models_for_feature(feature_name)
+        # Use the decorator to get selectable models (includes dev overrides for team members)
+        decorated = ::Gitlab::Graphql::Representation::ModelSelection::FeatureSetting.decorate(
+          [setting],
+          model_definitions: result.payload,
+          current_user: current_user,
+          group_id: model_selection_scope&.id
+        )
+
+        decorator_result = decorated.find do |object|
+          object.feature_setting&.feature&.to_sym == setting.feature.to_sym
+        end
+
+        return [] unless decorator_result.present?
+
+        # rubocop:disable Rails/Pluck -- selectable_models returns an array, not an AR relation
+        decorator_result.selectable_models.map { |model| model[:ref] }
+        # rubocop:enable Rails/Pluck
       end
 
       def user_selected_model_metadata(model_selection_scope)
