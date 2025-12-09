@@ -6,14 +6,14 @@ RSpec.describe GitlabSubscription, :saas, feature_category: :subscription_manage
   using RSpec::Parameterized::TableSyntax
 
   ['free', *Plan::PAID_HOSTED_PLANS].map { |name| "#{name}_plan" }.each do |plan| # rubocop:disable RSpec/UselessDynamicDefinition -- `plan` used in `let_it_be`
-    let_it_be(plan) { create(plan) } # rubocop:disable Rails/SaveBang
+    let_it_be(plan) { create(plan) } # rubocop:disable Rails/SaveBang -- It is creating the factory record
   end
 
   it { is_expected.to delegate_method(:exclude_guests?).to(:namespace) }
 
   describe 'default values', :freeze_time do
     it 'defaults start_date to the current date' do
-      expect(subject.start_date).to eq(Date.today)
+      expect(described_class.new.start_date).to eq(Time.zone.today)
     end
   end
 
@@ -83,8 +83,12 @@ RSpec.describe GitlabSubscription, :saas, feature_category: :subscription_manage
       let_it_be(:trial_subscription) { create(:gitlab_subscription, :active_trial, hosted_plan: ultimate_plan) }
 
       it 'returns subscriptions by their plan ids' do
-        expect(described_class.by_hosted_plan_ids(ultimate_plan.id)).to match_array([ultimate_subscription, trial_subscription])
-        expect(described_class.by_hosted_plan_ids([ultimate_plan.id, premium_plan.id])).to match_array([ultimate_subscription, premium_subscription, trial_subscription])
+        expect(described_class.by_hosted_plan_ids(ultimate_plan.id)).to match_array(
+          [ultimate_subscription, trial_subscription]
+        )
+        expect(described_class.by_hosted_plan_ids([ultimate_plan.id, premium_plan.id])).to match_array(
+          [ultimate_subscription, premium_subscription, trial_subscription]
+        )
         expect(described_class.by_hosted_plan_ids(non_existing_record_id)).to be_empty
       end
     end
@@ -108,18 +112,42 @@ RSpec.describe GitlabSubscription, :saas, feature_category: :subscription_manage
     end
 
     describe '.requiring_seat_refresh', :timecop do
-      let_it_be(:ultimate_subscription) { create(:gitlab_subscription, hosted_plan: ultimate_plan, last_seat_refresh_at: nil) }
-      let_it_be(:ultimate_subscription_12_hours) { create(:gitlab_subscription, hosted_plan: ultimate_plan, last_seat_refresh_at: 12.hours.ago) }
-      let_it_be(:ultimate_subscription_2_days) { create(:gitlab_subscription, hosted_plan: ultimate_plan, last_seat_refresh_at: 2.days.ago) }
-      let_it_be(:ultimate_subscription_24_hours) { create(:gitlab_subscription, hosted_plan: ultimate_plan, last_seat_refresh_at: 24.hours.ago) }
+      let_it_be(:ultimate_subscription) do
+        create(:gitlab_subscription, hosted_plan: ultimate_plan, last_seat_refresh_at: nil)
+      end
 
-      let_it_be(:premium_subscription) { create(:gitlab_subscription, hosted_plan: premium_plan, last_seat_refresh_at: nil) }
-      let_it_be(:premium_subscription_12_hours) { create(:gitlab_subscription, hosted_plan: premium_plan, last_seat_refresh_at: 12.hours.ago) }
-      let_it_be(:premium_subscription_2_days) { create(:gitlab_subscription, hosted_plan: premium_plan, last_seat_refresh_at: 2.days.ago) }
-      let_it_be(:premium_subscription_24_hours) { create(:gitlab_subscription, hosted_plan: premium_plan, last_seat_refresh_at: 24.hours.ago) }
+      let_it_be(:ultimate_subscription_12_hours) do
+        create(:gitlab_subscription, hosted_plan: ultimate_plan, last_seat_refresh_at: 12.hours.ago)
+      end
+
+      let_it_be(:ultimate_subscription_2_days) do
+        create(:gitlab_subscription, hosted_plan: ultimate_plan, last_seat_refresh_at: 2.days.ago)
+      end
+
+      let_it_be(:ultimate_subscription_24_hours) do
+        create(:gitlab_subscription, hosted_plan: ultimate_plan, last_seat_refresh_at: 24.hours.ago)
+      end
+
+      let_it_be(:premium_subscription) do
+        create(:gitlab_subscription, hosted_plan: premium_plan, last_seat_refresh_at: nil)
+      end
+
+      let_it_be(:premium_subscription_12_hours) do
+        create(:gitlab_subscription, hosted_plan: premium_plan, last_seat_refresh_at: 12.hours.ago)
+      end
+
+      let_it_be(:premium_subscription_2_days) do
+        create(:gitlab_subscription, hosted_plan: premium_plan, last_seat_refresh_at: 2.days.ago)
+      end
+
+      let_it_be(:premium_subscription_24_hours) do
+        create(:gitlab_subscription, hosted_plan: premium_plan, last_seat_refresh_at: 24.hours.ago)
+      end
 
       let_it_be(:free_subscription) { create(:gitlab_subscription, :free, last_seat_refresh_at: 2.days.ago) }
-      let_it_be(:trial_subscription) { create(:gitlab_subscription, :active_trial, hosted_plan: ultimate_plan, last_seat_refresh_at: 2.days.ago) }
+      let_it_be(:trial_subscription) do
+        create(:gitlab_subscription, :active_trial, hosted_plan: ultimate_plan, last_seat_refresh_at: 2.days.ago)
+      end
 
       it 'returns relevant subscriptions' do
         matching_subscriptions = [
@@ -141,7 +169,10 @@ RSpec.describe GitlabSubscription, :saas, feature_category: :subscription_manage
     end
 
     describe '.not_expired' do
-      let_it_be(:expired_ultimate_subscription) { create(:gitlab_subscription, hosted_plan: ultimate_plan, end_date: 1.week.ago) }
+      let_it_be(:expired_ultimate_subscription) do
+        create(:gitlab_subscription, hosted_plan: ultimate_plan, end_date: 1.week.ago)
+      end
+
       let_it_be(:ultimate_subscription) { create(:gitlab_subscription, hosted_plan: ultimate_plan) }
       let_it_be(:free_subscription) { create(:gitlab_subscription, :free) }
 
@@ -166,6 +197,52 @@ RSpec.describe GitlabSubscription, :saas, feature_category: :subscription_manage
         ]
 
         expect(described_class.with_a_paid_or_trial_hosted_plan).to match_array(matching_subscriptions)
+      end
+    end
+
+    describe '.with_active_paid_or_trial_hosted_plan' do
+      let_it_be(:gold) { create(:gitlab_subscription, :gold) }
+      let_it_be(:premium) { create(:gitlab_subscription, :premium) }
+      let_it_be(:ultimate) { create(:gitlab_subscription, :ultimate) }
+      let_it_be(:gold_expired) { create(:gitlab_subscription, :gold, :expired) }
+      let_it_be(:premium_expired) { create(:gitlab_subscription, :premium, :expired) }
+      let_it_be(:ultimate_expired) { create(:gitlab_subscription, :ultimate, :expired) }
+      let_it_be(:trial) { create(:gitlab_subscription, :active_trial, :ultimate) }
+      let_it_be(:trial_expired) { create(:gitlab_subscription, :expired_trial, :ultimate) }
+      let_it_be(:_gold_expired_long) do
+        create(:gitlab_subscription, :gold, start_date: 2.years.ago, end_date: 1.year.ago)
+      end
+
+      let_it_be(:_premium_expired_long) do
+        create(:gitlab_subscription, :premium, start_date: 2.years.ago, end_date: 1.year.ago)
+      end
+
+      let_it_be(:_ultimate_expired_long) do
+        create(:gitlab_subscription, :ultimate, start_date: 2.years.ago, end_date: 1.year.ago)
+      end
+
+      let_it_be(:_trial_expired_long) do
+        create(:gitlab_subscription, :ultimate, trial: true, trial_starts_on: 2.years.ago, trial_ends_on: 1.year.ago)
+      end
+
+      let_it_be(:_free) { create(:gitlab_subscription, :free) }
+
+      context 'without grace period' do
+        subject(:result) { described_class.with_active_paid_or_trial_hosted_plan }
+
+        it 'includes active paid or trial hosted plans' do
+          expect(result).to match_array([gold, premium, ultimate, trial])
+        end
+      end
+
+      context 'with grace period' do
+        subject(:result) { described_class.with_active_paid_or_trial_hosted_plan(33.days) }
+
+        it 'includes active paid or trial plans and expired paid or trial plans which are within the grace period' do
+          expect(result).to match_array(
+            [gold, premium, ultimate, gold_expired, premium_expired, ultimate_expired, trial, trial_expired]
+          )
+        end
       end
     end
   end
@@ -351,7 +428,7 @@ RSpec.describe GitlabSubscription, :saas, feature_category: :subscription_manage
     subject(:gitlab_subscription) { create(:gitlab_subscription, seats: 3, max_seats_used: 2, seats_owed: 0) }
 
     before do
-      expect(gitlab_subscription).to receive(:calculate_seats_in_use).and_return(calculate_seats_in_use)
+      allow(gitlab_subscription).to receive(:calculate_seats_in_use).and_return(calculate_seats_in_use)
     end
 
     context 'when current seats in use is lower than recorded max_seats_used' do
@@ -360,7 +437,7 @@ RSpec.describe GitlabSubscription, :saas, feature_category: :subscription_manage
       it 'does not increase max_seats_used' do
         expect do
           gitlab_subscription.refresh_seat_attributes
-        end.to change(gitlab_subscription, :seats_in_use).from(0).to(1)
+        end.to change { gitlab_subscription.seats_in_use }.from(0).to(1)
           .and not_change(gitlab_subscription, :max_seats_used)
           .and not_change(gitlab_subscription, :seats_owed)
       end
@@ -372,9 +449,9 @@ RSpec.describe GitlabSubscription, :saas, feature_category: :subscription_manage
       it 'increases seats and max_seats_used' do
         expect do
           gitlab_subscription.refresh_seat_attributes
-        end.to change(gitlab_subscription, :seats_in_use).from(0).to(4)
-          .and change(gitlab_subscription, :max_seats_used).from(2).to(4)
-          .and change(gitlab_subscription, :seats_owed).from(0).to(1)
+        end.to change { gitlab_subscription.seats_in_use }.from(0).to(4)
+          .and change { gitlab_subscription.max_seats_used }.from(2).to(4)
+          .and change { gitlab_subscription.seats_owed }.from(0).to(1)
       end
     end
 
@@ -384,8 +461,8 @@ RSpec.describe GitlabSubscription, :saas, feature_category: :subscription_manage
       it 'sets max_seats_used to the current seats in use' do
         expect do
           gitlab_subscription.refresh_seat_attributes(reset_max: true)
-        end.to change(gitlab_subscription, :seats_in_use).from(0).to(1)
-          .and change(gitlab_subscription, :max_seats_used).from(2).to(1)
+        end.to change { gitlab_subscription.seats_in_use }.from(0).to(1)
+          .and change { gitlab_subscription.max_seats_used }.from(2).to(1)
           .and not_change(gitlab_subscription, :seats_owed)
       end
     end
@@ -402,21 +479,21 @@ RSpec.describe GitlabSubscription, :saas, feature_category: :subscription_manage
       create(:gitlab_subscription, namespace: group, trial: trial, hosted_plan: hosted_plan, seats_in_use: seats_in_use)
     end
 
-    subject { gitlab_subscription.seats_in_use }
+    subject(:result) { gitlab_subscription.seats_in_use }
 
     context 'with a paid hosted plan' do
       Plan::PAID_HOSTED_PLANS.each do |plan_name| # rubocop:disable RSpec/UselessDynamicDefinition -- `plan_name` used in `let`
-        let(:hosted_plan) { send("#{plan_name}_plan") }
+        let(:hosted_plan) { send(:"#{plan_name}_plan") }
 
         it "returns the previously calculated seats in use when plan is #{plan_name}" do
-          expect(subject).to eq(5)
+          expect(result).to eq(5)
         end
 
         context 'when seats in use is 0' do
           let(:seats_in_use) { 0 }
 
           it "returns 0 too when plan is #{plan_name}" do
-            expect(subject).to eq(0)
+            expect(result).to eq(0)
           end
         end
       end
@@ -434,7 +511,7 @@ RSpec.describe GitlabSubscription, :saas, feature_category: :subscription_manage
       end
 
       it 'returns the current seats in use' do
-        expect(subject).to eq(1)
+        expect(result).to eq(1)
       end
     end
 
@@ -442,7 +519,7 @@ RSpec.describe GitlabSubscription, :saas, feature_category: :subscription_manage
       let(:hosted_plan) { free_plan }
 
       it 'returns the current seats in use' do
-        expect(subject).to eq(1)
+        expect(result).to eq(1)
       end
     end
   end
@@ -538,7 +615,7 @@ RSpec.describe GitlabSubscription, :saas, feature_category: :subscription_manage
         end
 
         it 'returns false' do
-          expect(subscription.upgradable?).to eq(false)
+          expect(subscription.upgradable?).to be(false)
         end
       end
     end
@@ -553,12 +630,12 @@ RSpec.describe GitlabSubscription, :saas, feature_category: :subscription_manage
   end
 
   describe 'callbacks' do
-    context 'after_commit', :saas do
-      context 'index_namespace' do
+    context 'for after_commit', :saas do
+      context 'for index_namespace' do
         let_it_be(:namespace) { create(:namespace) }
 
         let(:gitlab_subscription) { build(:gitlab_subscription, plan, namespace: namespace) }
-        let(:expiration_date) { Date.today + 10 }
+        let(:expiration_date) { Time.zone.today + 10 }
         let(:plan) { :bronze }
 
         before do
@@ -566,7 +643,8 @@ RSpec.describe GitlabSubscription, :saas, feature_category: :subscription_manage
         end
 
         it 'indexes the namespace' do
-          expect(ElasticsearchIndexedNamespace).to receive(:safe_find_or_create_by!).with(namespace_id: gitlab_subscription.namespace_id)
+          expect(ElasticsearchIndexedNamespace).to receive(:safe_find_or_create_by!)
+            .with(namespace_id: gitlab_subscription.namespace_id)
 
           gitlab_subscription.save!
         end
@@ -575,7 +653,8 @@ RSpec.describe GitlabSubscription, :saas, feature_category: :subscription_manage
           let(:gitlab_subscription) { build(:gitlab_subscription, namespace: namespace, seats: 0) }
 
           it 'indexes the namespace' do
-            expect(ElasticsearchIndexedNamespace).to receive(:safe_find_or_create_by!).with(namespace_id: gitlab_subscription.namespace_id)
+            expect(ElasticsearchIndexedNamespace).to receive(:safe_find_or_create_by!)
+              .with(namespace_id: gitlab_subscription.namespace_id)
 
             gitlab_subscription.save!
           end
@@ -586,7 +665,8 @@ RSpec.describe GitlabSubscription, :saas, feature_category: :subscription_manage
           let(:gitlab_subscription) { build(:gitlab_subscription, :active_trial, namespace: namespace, seats: seats) }
 
           it 'indexes the namespace' do
-            expect(ElasticsearchIndexedNamespace).to receive(:safe_find_or_create_by!).with(namespace_id: gitlab_subscription.namespace_id)
+            expect(ElasticsearchIndexedNamespace).to receive(:safe_find_or_create_by!)
+              .with(namespace_id: gitlab_subscription.namespace_id)
 
             gitlab_subscription.save!
           end
@@ -595,14 +675,17 @@ RSpec.describe GitlabSubscription, :saas, feature_category: :subscription_manage
             let(:seats) { 0 }
 
             it 'indexes the namespace' do
-              expect(ElasticsearchIndexedNamespace).to receive(:safe_find_or_create_by!).with(namespace_id: gitlab_subscription.namespace_id)
+              expect(ElasticsearchIndexedNamespace).to receive(:safe_find_or_create_by!)
+                .with(namespace_id: gitlab_subscription.namespace_id)
 
               gitlab_subscription.save!
             end
           end
 
           context 'when in free plan' do
-            let(:gitlab_subscription) { build(:gitlab_subscription, :active_trial, namespace: namespace, seats: seats, hosted_plan_id: nil) }
+            let(:gitlab_subscription) do
+              build(:gitlab_subscription, :active_trial, namespace: namespace, seats: seats, hosted_plan_id: nil)
+            end
 
             it 'does not index the namespace' do
               expect(ElasticsearchIndexedNamespace).not_to receive(:safe_find_or_create_by!)
@@ -625,7 +708,7 @@ RSpec.describe GitlabSubscription, :saas, feature_category: :subscription_manage
         end
 
         context 'when the plan has expired' do
-          let(:expiration_date) { Date.today - 8.days }
+          let(:expiration_date) { Time.zone.today - 8.days }
 
           it 'does not index the namespace' do
             expect(ElasticsearchIndexedNamespace).not_to receive(:safe_find_or_create_by!)
@@ -645,7 +728,7 @@ RSpec.describe GitlabSubscription, :saas, feature_category: :subscription_manage
         end
       end
 
-      describe '#reset_seats_usage_callouts' do
+      context 'for reset_seats_usage_callouts' do
         let_it_be(:namespace) { create(:namespace) }
 
         let(:gitlab_subscription) { create(:gitlab_subscription, plan, namespace: namespace, seats: 10) }
@@ -663,10 +746,10 @@ RSpec.describe GitlabSubscription, :saas, feature_category: :subscription_manage
 
     it 'has all attributes listed in the subscription history table' do
       expect(described_class.attribute_names)
-        .to contain_exactly(
-          *GitlabSubscriptions::SubscriptionHistory::PREFIXED_ATTRIBUTES,
-          *GitlabSubscriptions::SubscriptionHistory::TRACKED_ATTRIBUTES,
-          *GitlabSubscriptions::SubscriptionHistory::OMITTED_ATTRIBUTES
+        .to match_array(
+          GitlabSubscriptions::SubscriptionHistory::PREFIXED_ATTRIBUTES +
+          GitlabSubscriptions::SubscriptionHistory::TRACKED_ATTRIBUTES +
+          GitlabSubscriptions::SubscriptionHistory::OMITTED_ATTRIBUTES
         )
     end
 
@@ -679,7 +762,7 @@ RSpec.describe GitlabSubscription, :saas, feature_category: :subscription_manage
           max_seats_used_changed_at: 1.month.ago,
           seats: 13,
           seats_owed: 29,
-          start_date: Date.today - 1.year
+          start_date: Time.zone.today - 1.year
         )
       end
 
@@ -724,7 +807,7 @@ RSpec.describe GitlabSubscription, :saas, feature_category: :subscription_manage
       context 'when max_seats_used has changed' do
         it 'updates the max_seats_used_changed_at' do
           expect { gitlab_subscription.update!(max_seats_used: 52) }
-            .to change(gitlab_subscription, :max_seats_used_changed_at)
+            .to change { gitlab_subscription.max_seats_used_changed_at }
             .to(be_like_time(Time.current))
         end
       end
@@ -740,16 +823,16 @@ RSpec.describe GitlabSubscription, :saas, feature_category: :subscription_manage
         it 'resets seats attributes' do
           expect do
             gitlab_subscription.update!(start_date: new_start, end_date: new_end)
-          end.to change(gitlab_subscription, :max_seats_used).from(42).to(1)
-            .and change(gitlab_subscription, :seats_owed).from(29).to(0)
-            .and change(gitlab_subscription, :seats_in_use).from(20).to(1)
+          end.to change { gitlab_subscription.max_seats_used }.from(42).to(1)
+            .and change { gitlab_subscription.seats_owed }.from(29).to(0)
+            .and change { gitlab_subscription.seats_in_use }.from(20).to(1)
 
           expect(gitlab_subscription.max_seats_used_changed_at).to be_like_time(Time.current)
         end
       end
 
       context 'when starting a new term' do
-        let(:new_start) { Date.today + 1.year }
+        let(:new_start) { Time.zone.today + 1.year }
         let(:new_end) { new_start + 1.year }
 
         context 'when start_date is after the old end_date' do
@@ -794,7 +877,7 @@ RSpec.describe GitlabSubscription, :saas, feature_category: :subscription_manage
 
           expect do
             gitlab_subscription.update!(start_date: new_start_date)
-          end.to change(gitlab_subscription, :start_date).to(new_start_date)
+          end.to change { gitlab_subscription.start_date }.to(new_start_date)
             .and not_change(gitlab_subscription, :max_seats_used)
             .and not_change(gitlab_subscription, :max_seats_used_changed_at)
             .and not_change(gitlab_subscription, :seats_owed)
@@ -803,7 +886,7 @@ RSpec.describe GitlabSubscription, :saas, feature_category: :subscription_manage
         it 'does not trigger subscription started event' do
           expect(Gitlab::EventStore).not_to receive(:publish)
 
-          gitlab_subscription.update!(start_date: Date.today)
+          gitlab_subscription.update!(start_date: Time.zone.today)
         end
       end
 
@@ -830,7 +913,7 @@ RSpec.describe GitlabSubscription, :saas, feature_category: :subscription_manage
       end
 
       context 'when max_seats_used_changed_at is on the start_date' do
-        let(:new_start) { Date.today }
+        let(:new_start) { Time.zone.today }
         let(:new_end) { new_start + 1.year }
 
         before do
@@ -847,7 +930,7 @@ RSpec.describe GitlabSubscription, :saas, feature_category: :subscription_manage
       end
 
       context 'when max_seats_used_changed_at is before the start_date' do
-        let(:new_start) { Date.today }
+        let(:new_start) { Time.zone.today }
         let(:new_end) { new_start + 1.year }
 
         before do
@@ -872,7 +955,7 @@ RSpec.describe GitlabSubscription, :saas, feature_category: :subscription_manage
         it 'resets seats when upgrading to a paid plan' do
           expect do
             trial_subscription.update!(trial: false)
-          end.to change(trial_subscription, :max_seats_used).from(10).to(1)
+          end.to change { trial_subscription.max_seats_used }.from(10).to(1)
             .and not_change(trial_subscription, :seats_owed)
             .and not_change(trial_subscription, :seats_in_use)
 
@@ -971,15 +1054,15 @@ RSpec.describe GitlabSubscription, :saas, feature_category: :subscription_manage
 
         context 'when the premium_plan was renewed during the ultimate_trial_paid_customer trial' do
           before do
-            gitlab_subscription.update!(start_date: Date.today + 2.years, end_date: Date.today + 3.years)
+            gitlab_subscription.update!(start_date: Time.zone.today + 2.years, end_date: Time.zone.today + 3.years)
           end
 
           it 'resets seat statistics' do
             expect do
               gitlab_subscription.update!(hosted_plan: premium_plan)
-            end.to change(gitlab_subscription, :max_seats_used).from(42).to(1)
-              .and change(gitlab_subscription, :seats_owed).from(29).to(0)
-              .and change(gitlab_subscription, :seats_in_use).from(20).to(1)
+            end.to change { gitlab_subscription.max_seats_used }.from(42).to(1)
+              .and change { gitlab_subscription.seats_owed }.from(29).to(0)
+              .and change { gitlab_subscription.seats_in_use }.from(20).to(1)
           end
         end
       end
@@ -992,24 +1075,26 @@ RSpec.describe GitlabSubscription, :saas, feature_category: :subscription_manage
         it 'does not reset seat statistics' do
           expect do
             gitlab_subscription.update!(hosted_plan: ultimate_plan)
-          end.to change(gitlab_subscription, :max_seats_used).from(42).to(1)
-              .and change(gitlab_subscription, :seats_owed).from(29).to(0)
-              .and change(gitlab_subscription, :seats_in_use).from(20).to(1)
+          end.to change { gitlab_subscription.max_seats_used }.from(42).to(1)
+              .and change { gitlab_subscription.seats_owed }.from(29).to(0)
+              .and change { gitlab_subscription.seats_in_use }.from(20).to(1)
         end
       end
     end
 
-    context 'after_destroy_commit' do
+    context 'for after_destroy_commit' do
+      subject(:instance) { build(:gitlab_subscription) }
+
       it 'logs previous state to gitlab subscription history' do
         group = create(:group)
-        subject.update! max_seats_used: 37, seats: 11, namespace: group, hosted_plan: bronze_plan
+        instance.update! max_seats_used: 37, seats: 11, namespace: group, hosted_plan: bronze_plan
         db_created_at = described_class.last.created_at
 
-        subject.destroy!
+        instance.destroy!
 
         expect(GitlabSubscriptions::SubscriptionHistory.count).to eq(1)
         expect(GitlabSubscriptions::SubscriptionHistory.last.attributes).to include(
-          'gitlab_subscription_id' => subject.id,
+          'gitlab_subscription_id' => instance.id,
           'change_type' => 'gitlab_subscription_destroyed',
           'max_seats_used' => 37,
           'seats' => 11,

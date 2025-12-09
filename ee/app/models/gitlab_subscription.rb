@@ -51,6 +51,11 @@ class GitlabSubscription < ApplicationRecord
     .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/422013')
   end
 
+  scope :with_active_paid_or_trial_hosted_plan, ->(grace_period = 0) do
+    with_a_paid_hosted_plan.not_expired(before_date: Date.current - grace_period).or(
+      with_a_paid_or_trial_hosted_plan.where(trial: true, trial_ends_on: (Date.current - grace_period)..)
+    )
+  end
   scope :preload_for_refresh_seat, -> { preload([{ namespace: :route }, :hosted_plan]) }
   scope :with_namespace_settings, -> { joins(namespace: :namespace_settings).includes(namespace: :namespace_settings) }
 

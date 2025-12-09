@@ -1479,7 +1479,6 @@ Style/InlineDisableAnnotation:
     - 'ee/spec/models/concerns/elastic/note_spec.rb'
     - 'ee/spec/models/ee/groups/feature_setting_spec.rb'
     - 'ee/spec/models/elasticsearch_indexed_namespace_spec.rb'
-    - 'ee/spec/models/gitlab_subscription_spec.rb'
     - 'ee/spec/models/license_spec.rb'
     - 'ee/spec/models/members/member_role_spec.rb'
     - 'ee/spec/models/package_metadata/affected_package_spec.rb'
