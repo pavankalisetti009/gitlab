@@ -25,19 +25,20 @@ RSpec.describe Search::Zoekt::SaasRolloutEventWorker, feature_category: :global_
       let_it_be(:namespace1) { create(:group) }
       let_it_be(:namespace2) { create(:group) }
       let_it_be(:namespace3) { create(:group) }
-      let_it_be(:namespace4) { create(:group) }
 
       let_it_be(:subscription1) { create(:gitlab_subscription, namespace: namespace1) }
       let_it_be(:subscription2) { create(:gitlab_subscription, namespace: namespace2) }
-      let_it_be(:expired_subscription) { create(:gitlab_subscription, namespace: namespace3, end_date: 2.days.ago) }
-      let_it_be(:free_subscription) { create(:gitlab_subscription, :free, namespace: namespace4) }
+      let_it_be(:expired_subscription) { create(:gitlab_subscription, end_date: 2.days.ago) }
+      let_it_be(:free_subscription) { create(:gitlab_subscription, :free) }
+      let_it_be(:active_trial_subscription) { create(:gitlab_subscription, :active_trial, namespace: namespace3) }
+      let_it_be(:expired_trial_subscription) { create(:gitlab_subscription, :expired_trial) }
 
-      it 'creates enabled namespaces for paid subscriptions' do
+      it 'creates enabled namespaces for paid and free trial subscriptions' do
         expect { consume_event(subscriber: described_class, event: event) }
-          .to change { Search::Zoekt::EnabledNamespace.count }.by(2)
+          .to change { Search::Zoekt::EnabledNamespace.count }.by(3)
 
         expect(Search::Zoekt::EnabledNamespace.pluck(:root_namespace_id))
-          .to contain_exactly(namespace1.id, namespace2.id)
+          .to contain_exactly(namespace1.id, namespace2.id, namespace3.id)
       end
 
       context 'when some namespaces are already enabled' do
@@ -47,9 +48,11 @@ RSpec.describe Search::Zoekt::SaasRolloutEventWorker, feature_category: :global_
 
         it 'only creates enabled namespaces for paid subscriptions that are not already enabled' do
           expect { consume_event(subscriber: described_class, event: event) }
-            .to change { Search::Zoekt::EnabledNamespace.count }.by(1)
+            .to change { Search::Zoekt::EnabledNamespace.count }.by(2)
 
-          expect(Search::Zoekt::EnabledNamespace.where(root_namespace_id: namespace2.id)).to exist
+          expect(Search::Zoekt::EnabledNamespace.pluck(:root_namespace_id)).to match_array(
+            [namespace1.id, namespace2.id, namespace3.id]
+          )
         end
       end
 

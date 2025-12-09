@@ -67,7 +67,6 @@ Rails/Date:
     - 'ee/spec/models/dora/performance_score_spec.rb'
     - 'ee/spec/models/ee/group_spec.rb'
     - 'ee/spec/models/epic_spec.rb'
-    - 'ee/spec/models/gitlab_subscription_spec.rb'
     - 'ee/spec/models/iteration_spec.rb'
     - 'ee/spec/requests/api/group_milestones_spec.rb'
     - 'ee/spec/requests/api/issues_spec.rb'

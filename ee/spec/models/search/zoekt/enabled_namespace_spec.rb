@@ -287,6 +287,26 @@ RSpec.describe ::Search::Zoekt::EnabledNamespace, feature_category: :global_sear
       let_it_be(:expired_subscription) { create(:gitlab_subscription, :ultimate, end_date: expired_date - 1.day) }
       let_it_be(:grace_period_subscription) { create(:gitlab_subscription, :ultimate, end_date: expired_date + 1.day) }
       let_it_be(:ultimate_subscription) { create(:gitlab_subscription, :ultimate) }
+      let_it_be(:trial_subscription) { create(:gitlab_subscription, :ultimate, :active_trial) }
+      let_it_be(:expired_trial) do
+        create(
+          :gitlab_subscription,
+          :gold,
+          trial: true,
+          trial_starts_on: 1.year.ago,
+          trial_ends_on: expired_date - 1.day
+        )
+      end
+
+      let_it_be(:grace_period_trial) do
+        create(
+          :gitlab_subscription,
+          :ultimate,
+          trial: true,
+          trial_starts_on: 1.year.ago,
+          trial_ends_on: expired_date + 1.day
+        )
+      end
 
       let_it_be(:zoekt_enabled_namespace_ultimate_expired) do
         create(:zoekt_enabled_namespace, namespace: expired_subscription.namespace)
@@ -300,12 +320,25 @@ RSpec.describe ::Search::Zoekt::EnabledNamespace, feature_category: :global_sear
         create(:zoekt_enabled_namespace, namespace: ultimate_subscription.namespace)
       end
 
-      it 'destroys expired subscriptions' do
-        expect { destroy_namespaces }.to change { ::Search::Zoekt::EnabledNamespace.count }.by(-2)
+      let_it_be(:zoekt_enabled_namespace_trial) do
+        create(:zoekt_enabled_namespace, namespace: trial_subscription.namespace)
+      end
 
+      let_it_be(:_zoekt_enabled_namespace_trial_expired) do
+        create(:zoekt_enabled_namespace, namespace: expired_trial.namespace)
+      end
+
+      let_it_be(:zoekt_enabled_namespace_trial_grace_period) do
+        create(:zoekt_enabled_namespace, namespace: grace_period_trial.namespace)
+      end
+
+      it 'destroys expired subscriptions' do
+        expect { destroy_namespaces }.to change { ::Search::Zoekt::EnabledNamespace.count }.by(-3)
         expect(described_class.all).to contain_exactly(
           zoekt_enabled_namespace_ultimate_grace_period,
-          zoekt_enabled_namespace_ultimate
+          zoekt_enabled_namespace_ultimate,
+          zoekt_enabled_namespace_trial,
+          zoekt_enabled_namespace_trial_grace_period
         )
       end
     end
