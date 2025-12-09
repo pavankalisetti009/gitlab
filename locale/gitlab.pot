@@ -36628,6 +36628,9 @@ msgstr ""
 msgid "InviteMembersModal|Select a group to invite"
 msgstr ""
 
+msgid "InviteMembersModal|Select a role"
+msgstr ""
+
 msgid "InviteMembersModal|Select from GitLab usernames or enter email addresses"
 msgstr ""
 
