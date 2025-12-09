@@ -1,6 +1,6 @@
-import { GlIcon } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import WorkItemIterationAttribute from 'ee/work_items/components/shared/work_item_iteration_attribute.vue';
+import WorkItemAttribute from '~/vue_shared/components/work_item_attribute.vue';
 import { workItemObjectiveMetadataWidgetsEE } from '../../mock_data';
 
 describe('WorkItemIterations', () => {
@@ -8,7 +8,7 @@ describe('WorkItemIterations', () => {
 
   const { ITERATION } = workItemObjectiveMetadataWidgetsEE;
 
-  const findIteration = () => wrapper.findByTestId('iteration-attribute');
+  const findIteration = () => wrapper.findComponent(WorkItemAttribute);
 
   const createComponent = ({ iteration } = {}) => {
     wrapper = shallowMountExtended(WorkItemIterationAttribute, {
@@ -27,7 +27,7 @@ describe('WorkItemIterations', () => {
 
     it('renders item iteration icon and name', () => {
       expect(findIteration().exists()).toBe(true);
-      expect(findIteration().findComponent(GlIcon).props('name')).toBe('iteration');
+      expect(findIteration().props('iconName')).toBe('iteration');
       expect(findIteration().text()).toContain('Dec 19, 2023 – Jan 15, 2024');
     });
 
