@@ -67,13 +67,21 @@ module Ai
           current_user: current_user,
           organization: container.organization,
           container: container,
-          workflow_definition: workflow_definition.name
+          workflow_definition: workflow_definition.name,
+          service_account: service_account
         )
       end
       strong_memoize_attr :workflow_context_generation_service
 
       def create_workflow_params
-        workflow_definition.as_json.merge(goal: goal)
+        {
+          goal: goal,
+          workflow_definition: workflow_definition.name,
+          agent_privileges: workflow_definition.agent_privileges,
+          pre_approved_agent_privileges: workflow_definition.pre_approved_agent_privileges,
+          allow_agent_to_request_user: workflow_definition.allow_agent_to_request_user,
+          environment: workflow_definition.environment
+        }
       end
 
       def start_workflow_params(workflow)
@@ -83,6 +91,7 @@ module Ai
           workflow_oauth_token: workflow_oauth_token,
           workflow_service_token: workflow_service_token,
           use_service_account: workflow_context_generation_service.use_service_account?,
+          service_account: service_account,
           source_branch: source_branch,
           workflow_metadata: Gitlab::DuoWorkflow::Client.metadata(current_user).to_json,
           duo_agent_platform_feature_setting: workflow_context_generation_service.duo_agent_platform_feature_setting
@@ -110,6 +119,20 @@ module Ai
         nil
       end
       strong_memoize_attr :workflow_oauth_token
+
+      def service_account
+        return unless workflow_definition.foundational_flow
+
+        result = ::Ai::Catalog::ItemConsumers::ResolveServiceAccountService.new(
+          container: container,
+          item: workflow_definition.foundational_flow
+        ).execute
+
+        return if result.error?
+
+        result.payload.fetch(:service_account)
+      end
+      strong_memoize_attr :service_account
     end
   end
 end

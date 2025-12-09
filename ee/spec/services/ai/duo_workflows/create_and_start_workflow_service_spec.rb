@@ -8,7 +8,7 @@ RSpec.describe ::Ai::DuoWorkflows::CreateAndStartWorkflowService, feature_catego
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, :repository, group: group) }
   let_it_be(:current_user) { create(:user, developer_of: project) }
-  let_it_be(:service_account) { create(:service_account, maintainer_of: project) }
+  let_it_be(:instance_wide_duo_developer) { create(:service_account, maintainer_of: project) }
   let_it_be(:oauth_token) { create(:oauth_access_token, user: current_user, scopes: [:api]) }
 
   let(:goal) { 'Custom goal' }
@@ -41,11 +41,25 @@ RSpec.describe ::Ai::DuoWorkflows::CreateAndStartWorkflowService, feature_catego
     )
   end
 
-  shared_examples_for 'failure' do |reason, message|
+  shared_examples 'failure' do |reason, message|
     it 'does not create a workload to execute workflow', :aggregate_failures do
       expect(result).to be_error
       expect(result.message).to eq(message)
       expect(result.reason).to eq(reason)
+    end
+  end
+
+  shared_context 'with valid workflow settings' do
+    before do
+      project.project_setting.update!(
+        duo_features_enabled: true,
+        duo_remote_flows_enabled: true
+      )
+
+      allow(Ability).to receive(:allowed?).and_call_original
+      allow(Ability).to receive(:allowed?).with(current_user, :duo_workflow, project).and_return(true)
+      allow(Ability).to receive(:allowed?).with(current_user, :execute_duo_workflow_in_ci, anything).and_return(true)
+      allow(Ability).to receive(:allowed?).with(current_user, :read_ai_catalog_item_consumer, anything).and_return(true)
     end
   end
 
@@ -57,11 +71,16 @@ RSpec.describe ::Ai::DuoWorkflows::CreateAndStartWorkflowService, feature_catego
           generate_oauth_token_with_composite_identity_support: workflow_oauth_token_result
         )
     end
+
     allow_next_instance_of(Ai::UsageQuotaService) do |instance|
       allow(instance).to receive(:execute).and_return(
         ServiceResponse.success
       )
     end
+
+    allow(::Ai::DuoWorkflow).to receive(:available?).and_return(true)
+
+    ::Ai::Setting.instance.update!(duo_workflow_service_account_user: instance_wide_duo_developer)
   end
 
   context 'when workflow definition is not provided' do
@@ -93,18 +112,7 @@ RSpec.describe ::Ai::DuoWorkflows::CreateAndStartWorkflowService, feature_catego
   end
 
   context 'when workflow info is valid' do
-    before do
-      ::Ai::Setting.instance.update!(duo_workflow_service_account_user: service_account)
-
-      project.project_setting.update!(
-        duo_features_enabled: true,
-        duo_remote_flows_enabled: true
-      )
-
-      allow(Ability).to receive(:allowed?).and_call_original
-      allow(Ability).to receive(:allowed?).with(current_user, :duo_workflow, project).and_return(true)
-      allow(Ability).to receive(:allowed?).with(current_user, :execute_duo_workflow_in_ci, anything).and_return(true)
-    end
+    include_context 'with valid workflow settings'
 
     it 'creates the workflow and starts a workload to execute with the correct definition', :aggregate_failures do
       expect(result).to be_success
@@ -120,6 +128,56 @@ RSpec.describe ::Ai::DuoWorkflows::CreateAndStartWorkflowService, feature_catego
 
       workload = Ci::Workloads::Workload.find_by(id: [workload_id])
       expect(workload.branch_name).to start_with('refs/workloads/')
+      expect(workload.pipeline.user).to eq(instance_wide_duo_developer)
+    end
+  end
+
+  context 'with a foundational workflow' do
+    include_context 'with valid workflow settings'
+
+    let_it_be(:flow) { create(:ai_catalog_item, :with_foundational_flow_reference, :public, :flow, project: project) }
+    let_it_be(:foundational_flow_reference) { flow.foundational_flow_reference }
+    let_it_be(:workflow_definition) do
+      ::Ai::DuoWorkflows::WorkflowDefinition.new(
+        name: "#{foundational_flow_reference}/v1",
+        foundational_flow_reference: foundational_flow_reference
+      )
+    end
+
+    let_it_be(:group_level_duo_developer) do
+      create(:user, :service_account) do |user|
+        create(:user_detail, user: user, provisioned_by_group: group)
+      end
+    end
+
+    before do
+      project.add_member(group_level_duo_developer, :developer)
+    end
+
+    context 'when new workflow configuration is enabled' do
+      before do
+        create(:ai_catalog_item_consumer, group: group, item: flow, service_account: group_level_duo_developer)
+      end
+
+      it 'uses the group-level service account' do
+        expect(result).to be_success
+
+        workload_id = result.payload[:workload_id]
+        workload = Ci::Workloads::Workload.find_by(id: [workload_id])
+
+        expect(workload.pipeline.user).to eq(group_level_duo_developer)
+      end
+    end
+
+    context 'when new workflow configuration is not enabled' do
+      it 'uses the instance-wide service account' do
+        expect(result).to be_success
+
+        workload_id = result.payload[:workload_id]
+        workload = Ci::Workloads::Workload.find_by(id: [workload_id])
+
+        expect(workload.pipeline.user).to eq(instance_wide_duo_developer)
+      end
     end
   end
 end
