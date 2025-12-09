@@ -2,6 +2,16 @@
 
 require 'spec_helper'
 
+module Ai
+  module Context
+    TestQueue = Struct.new(:shard) do
+      def redis_key
+        "test_queue:#{shard}"
+      end
+    end
+  end
+end
+
 RSpec.describe Ai::ActiveContext::BulkProcessWorker, type: :worker, feature_category: :global_search do
   let(:worker) { described_class.new }
 
@@ -112,16 +122,6 @@ RSpec.describe Ai::ActiveContext::BulkProcessWorker, type: :worker, feature_cate
     it 'returns false when re-enqueue is disabled' do
       allow(ActiveContext::Config).to receive(:re_enqueue_indexing_workers?).and_return(false)
       expect(worker.should_re_enqueue?(10, 0)).to be false
-    end
-  end
-end
-
-module Ai
-  module Context
-    TestQueue = Struct.new(:shard) do
-      def redis_key
-        "test_queue:#{shard}"
-      end
     end
   end
 end
