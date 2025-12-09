@@ -123,7 +123,7 @@ export default {
 </script>
 <template>
   <div>
-    <gl-form-group :label="$options.i18n.sectionTitle" class="gl-my-4">
+    <gl-form-group :label="$options.i18n.sectionTitle">
       <gl-form-checkbox
         v-model="flowEnabled"
         data-testid="duo-flow-features-checkbox"

@@ -34,6 +34,7 @@ const createComponent = ({ props = {}, provide = {} } = {}) => {
       duoWorkflowAvailable: true,
       duoWorkflowMcpEnabled: false,
       availableFoundationalFlows: [],
+      showDuoAgentPlatformEnabledSetting: true,
       ...provide,
     },
   });
@@ -138,6 +139,7 @@ describe('AiGroupSettings', () => {
         foundationalAgentsEnabled: true,
         foundationalAgentsStatuses: mockAgentStatuses,
         selectedFoundationalFlowIds: [],
+        duoAgentPlatformEnabled: true,
       });
       expect(updateGroupSettings).toHaveBeenCalledTimes(1);
       expect(updateGroupSettings).toHaveBeenCalledWith('100', {
@@ -150,10 +152,41 @@ describe('AiGroupSettings', () => {
         duo_sast_fp_detection_availability: false,
         foundational_agents_statuses: expectedFilteredAgentStatuses,
         enabled_foundational_flows: [],
+        duo_agent_platform_enabled: true,
         ai_settings_attributes: {
           duo_workflow_mcp_enabled: false,
           foundational_agents_default_enabled: true,
         },
+      });
+    });
+
+    describe('when duoAgentPlatformEnabled is undefined', () => {
+      beforeEach(() => {
+        createComponent({ provide: { showDuoAgentPlatformEnabledSetting: false } });
+      });
+
+      it('does not include duo_agent_platform_enabled in the request', async () => {
+        updateGroupSettings.mockResolvedValue({});
+        await findAiCommonSettings().vm.$emit('submit', {
+          duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_OFF,
+          experimentFeaturesEnabled: true,
+          duoCoreFeaturesEnabled: true,
+          promptCacheEnabled: true,
+          duoRemoteFlowsAvailability: false,
+          duoFoundationalFlowsAvailability: false,
+          duoSastFpDetectionAvailability: false,
+          foundationalAgentsEnabled: true,
+          foundationalAgentsStatuses: [],
+          selectedFoundationalFlowIds: [],
+          duoAgentPlatformEnabled: true,
+        });
+
+        expect(updateGroupSettings).toHaveBeenCalledWith(
+          '100',
+          expect.not.objectContaining({
+            duo_agent_platform_enabled: expect.anything(),
+          }),
+        );
       });
     });
 

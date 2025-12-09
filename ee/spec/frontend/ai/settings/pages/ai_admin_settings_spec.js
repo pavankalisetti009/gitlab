@@ -73,6 +73,7 @@ const createComponent = async ({
       duoChatExpirationDays: 30,
       duoChatExpirationColumn: 'last_updated_at',
       duoCoreFeaturesEnabled: false,
+      showDuoAgentPlatformEnabledSetting: true,
       ...provide,
     },
   });
@@ -121,6 +122,7 @@ describe('AiAdminSettings', () => {
         duoFoundationalFlowsAvailability: false,
         foundationalAgentsStatuses: mockAgentStatuses,
         selectedFoundationalFlowIds: [],
+        duoAgentPlatformEnabled: true,
       });
 
       const transformedFilteredAgentStatuses = expectedFilteredAgentStatuses.map((agent) => ({
@@ -140,8 +142,37 @@ describe('AiAdminSettings', () => {
         enabled_expanded_logging: false,
         duo_chat_expiration_days: 30,
         duo_chat_expiration_column: 'last_updated_at',
+        duo_agent_platform_enabled: true,
         foundational_agents_default_enabled: true,
         foundational_agents_statuses: transformedFilteredAgentStatuses,
+      });
+    });
+
+    describe('when showDuoAgentPlatformEnabledSetting is false', () => {
+      beforeEach(async () => {
+        await createComponent({ provide: { showDuoAgentPlatformEnabledSetting: false } });
+      });
+
+      it('does not include duo_agent_platform_enabled in the request', async () => {
+        updateApplicationSettings.mockResolvedValue();
+        await findAiCommonSettings().vm.$emit('submit', {
+          duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_OFF,
+          experimentFeaturesEnabled: false,
+          duoCoreFeaturesEnabled: false,
+          promptCacheEnabled: true,
+          foundationalAgentsEnabled: true,
+          duoRemoteFlowsAvailability: false,
+          duoFoundationalFlowsAvailability: false,
+          foundationalAgentsStatuses: [],
+          selectedFoundationalFlowIds: [],
+          duoAgentPlatformEnabled: true,
+        });
+
+        expect(updateApplicationSettings).toHaveBeenCalledWith(
+          expect.not.objectContaining({
+            duo_agent_platform_enabled: expect.anything(),
+          }),
+        );
       });
     });
 
@@ -152,7 +183,9 @@ describe('AiAdminSettings', () => {
 
           await findAiGatewayUrlInputForm().vm.$emit('change', newAiGatewayUrl);
 
-          await findAiCommonSettings().vm.$emit('submit', { duoCoreFeaturesEnabled: false });
+          await findAiCommonSettings().vm.$emit('submit', {
+            duoCoreFeaturesEnabled: false,
+          });
 
           expect(updateAiSettingsSuccessHandler).toHaveBeenCalledWith({
             input: {

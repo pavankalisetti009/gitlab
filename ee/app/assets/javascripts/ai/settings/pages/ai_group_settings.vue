@@ -27,6 +27,7 @@ export default {
     'duoWorkflowAvailable',
     'duoWorkflowMcpEnabled',
     'availableFoundationalFlows',
+    'showDuoAgentPlatformEnabledSetting',
   ],
   props: {
     redirectPath: {
@@ -61,6 +62,7 @@ export default {
       foundationalAgentsEnabled,
       foundationalAgentsStatuses,
       selectedFoundationalFlowIds,
+      duoAgentPlatformEnabled,
     }) {
       try {
         const transformedFoundationalAgentsStatuses = foundationalAgentsStatuses?.filter(
@@ -77,6 +79,9 @@ export default {
           enabled_foundational_flows: selectedFoundationalFlowIds,
           ...(foundationalAgentsStatuses && {
             foundational_agents_statuses: transformedFoundationalAgentsStatuses,
+          }),
+          ...(this.showDuoAgentPlatformEnabledSetting && {
+            duo_agent_platform_enabled: duoAgentPlatformEnabled,
           }),
           ai_settings_attributes: {
             duo_workflow_mcp_enabled: this.duoWorkflowMcp,

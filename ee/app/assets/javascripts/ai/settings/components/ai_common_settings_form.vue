@@ -10,6 +10,7 @@ import DuoPromptCache from './duo_prompt_cache_form.vue';
 import DuoFlowSettings from './duo_flow_settings.vue';
 import DuoSastFpDetectionSettings from './duo_sast_fp_detection_settings.vue';
 import DuoFoundationalAgentsSettings from './duo_foundational_agents_settings.vue';
+import DuoAgentPlatformSettingsForm from './duo_agent_platform_settings_form.vue';
 
 export default {
   name: 'AiCommonSettingsForm',
@@ -24,6 +25,7 @@ export default {
     DuoFlowSettings,
     DuoSastFpDetectionSettings,
     DuoFoundationalAgentsSettings,
+    DuoAgentPlatformSettingsForm,
   },
   mixins: [glFeatureFlagMixin()],
   i18n: {
@@ -31,11 +33,17 @@ export default {
       'AiPowered|When you save, GitLab Duo will be turned off for all groups, subgroups, and projects.',
     ),
     confirmButtonText: __('Save changes'),
+    enabled: __('Enabled'),
+    disabled: __('Disabled'),
   },
   inject: ['onGeneralSettingsPage', 'showFoundationalAgentsAvailability'],
   props: {
     duoAvailability: {
       type: String,
+      required: true,
+    },
+    duoAgentPlatformEnabled: {
+      type: Boolean,
       required: true,
     },
     duoRemoteFlowsAvailability: {
@@ -93,6 +101,7 @@ export default {
       foundationalFlowsEnabled: this.duoFoundationalFlowsAvailability,
       foundationalAgentsEnabledInput: this.foundationalAgentsEnabled,
       foundationalAgentsStatusesInput: this.foundationalAgentsStatuses,
+      duoAgentPlatformEnabledInput: this.duoAgentPlatformEnabled,
       hasFoundationalAgentsStatusesChanged: false,
       localSelectedFlowIds: this.selectedFoundationalFlowIds,
     };
@@ -125,6 +134,9 @@ export default {
     hasFoundationalAgentsEnabledChanged() {
       return this.foundationalAgentsEnabled !== this.foundationalAgentsEnabledInput;
     },
+    hasDuoAgentPlatformEnabledChanged() {
+      return this.duoAgentPlatformEnabledInput !== this.duoAgentPlatformEnabled;
+    },
     hasFormChanged() {
       return (
         this.hasAvailabilityChanged ||
@@ -137,7 +149,8 @@ export default {
         this.hasSastFpDetectionFormChanged ||
         this.hasFoundationalAgentsEnabledChanged ||
         this.hasFoundationalAgentsStatusesChanged ||
-        this.hasSelectedFlowIdsChanged
+        this.hasSelectedFlowIdsChanged ||
+        this.hasDuoAgentPlatformEnabledChanged
       );
     },
     showWarning() {
@@ -210,6 +223,10 @@ export default {
       this.localSelectedFlowIds = flowIds;
       this.$emit('change-selected-flow-ids', flowIds);
     },
+    onDuoAgentPlatformEnabledChanged(value) {
+      this.duoAgentPlatformEnabledInput = value;
+      this.$emit('duo-agent-platform-enabled-changed', value);
+    },
   },
 };
 </script>
@@ -232,23 +249,27 @@ export default {
       @change="experimentCheckboxChanged"
     />
 
-    <duo-flow-settings
-      :duo-remote-flows-availability="duoRemoteFlowsAvailability"
-      :duo-foundational-flows-availability="duoFoundationalFlowsAvailability"
-      :disabled-checkbox="disableConfigCheckboxes"
-      :selected-foundational-flow-ids="localSelectedFlowIds"
-      @change="onFlowCheckboxChanged"
-      @change-foundational-flows="onFoundationalFlowsCheckboxChanged"
-      @change-selected-flow-ids="onSelectedFlowIdsChanged"
-    />
-
-    <duo-foundational-agents-settings
-      v-if="showFoundationalAgentsAvailability"
-      :enabled="foundationalAgentsEnabledInput"
-      :agent-statuses="foundationalAgentsStatusesInput"
-      @change="onFoundationalAgentsEnabledChanged"
-      @agent-toggle="onFoundationalAgentsToggled"
-    />
+    <duo-agent-platform-settings-form
+      :enabled="duoAgentPlatformEnabledInput"
+      @selected="onDuoAgentPlatformEnabledChanged"
+    >
+      <duo-flow-settings
+        :duo-remote-flows-availability="duoRemoteFlowsAvailability"
+        :duo-foundational-flows-availability="duoFoundationalFlowsAvailability"
+        :disabled-checkbox="disableConfigCheckboxes"
+        :selected-foundational-flow-ids="localSelectedFlowIds"
+        @change="onFlowCheckboxChanged"
+        @change-foundational-flows="onFoundationalFlowsCheckboxChanged"
+        @change-selected-flow-ids="onSelectedFlowIdsChanged"
+      />
+      <duo-foundational-agents-settings
+        v-if="showFoundationalAgentsAvailability"
+        :enabled="foundationalAgentsEnabledInput"
+        :agent-statuses="foundationalAgentsStatusesInput"
+        @change="onFoundationalAgentsEnabledChanged"
+        @agent-toggle="onFoundationalAgentsToggled"
+      />
+    </duo-agent-platform-settings-form>
 
     <duo-sast-fp-detection-settings
       v-if="glFeatures.aiExperimentSastFpDetection"

@@ -59,6 +59,7 @@ export const initAiSettings = (id, component, options = {}) => {
     foundationalAgentsStatuses,
     availableFoundationalFlows,
     selectedFoundationalFlows,
+    duoAgentPlatformEnabled,
   } = el.dataset;
 
   let duoAvailabilityCascadingSettingsParsed;
@@ -136,6 +137,10 @@ export const initAiSettings = (id, component, options = {}) => {
         showFoundationalAgentsPerAgentAvailability,
       ),
       initialFoundationalAgentsStatuses: parsedFoundationalAgentsStatuses,
+
+      showDuoAgentPlatformEnabledSetting: duoAgentPlatformEnabled !== undefined,
+      initialDuoAgentPlatformEnabled:
+        duoAgentPlatformEnabled !== undefined ? parseBoolean(duoAgentPlatformEnabled) : true,
       toggleBetaModelsPath,
       enabledExpandedLogging: parseBoolean(enabledExpandedLogging),
       earlyAccessPath,
