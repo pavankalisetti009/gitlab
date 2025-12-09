@@ -68,7 +68,10 @@ module Ai
         workflow = wf_create_result[:workflow]
 
         if flow_definition['injectGatewayToken'] == true
-          token_response = ::Ai::ThirdPartyAgents::TokenService.new(current_user: current_user).direct_access_token
+          token_response = ::Ai::ThirdPartyAgents::TokenService.new(
+            current_user: current_user, project: project
+          ).direct_access_token
+
           return token_response if token_response.error?
 
           params[:token] = token_response.payload
