@@ -46,7 +46,7 @@ module API
 
     resource :groups, requirements: API::NAMESPACE_OR_PROJECT_REQUIREMENTS do
       desc 'Get related epics' do
-        success EE::API::Entities::Epic
+        success ::API::Entities::Epic
         is_array true
         failure [
           { code: 401, message: 'Unauthorized' },
@@ -58,11 +58,11 @@ module API
         authorize_epics_feature!
         authorize_can_read!
 
-        present child_epics, with: EE::API::Entities::Epic
+        present child_epics, with: ::API::Entities::Epic
       end
 
       desc 'Relate epics' do
-        success EE::API::Entities::Epic
+        success ::API::Entities::Epic
         failure [
           { code: 401, message: 'Unauthorized' },
           { code: 403, message: 'Forbidden' },
@@ -83,14 +83,14 @@ module API
         result = ::WorkItems::LegacyEpics::EpicLinks::CreateService.new(epic, current_user, create_params).execute
 
         if result[:status] == :success
-          present child_epic, with: EE::API::Entities::Epic
+          present child_epic, with: ::API::Entities::Epic
         else
           render_api_error!(result[:message], result[:http_status])
         end
       end
 
       desc 'Create and relate epic to a parent' do
-        success EE::API::Entities::Epic
+        success ::API::Entities::Epic
         failure [
           { code: 401, message: 'Unauthorized' },
           { code: 403, message: 'Forbidden' },
@@ -115,14 +115,14 @@ module API
         child_epic = ::WorkItems::LegacyEpics::CreateService.new(group: user_group, current_user: current_user, params: create_params).execute
 
         if child_epic.errors.empty? && child_epic.valid?
-          present child_epic, with: EE::API::Entities::LinkedEpic, user: current_user
+          present child_epic, with: ::API::Entities::LinkedEpic, user: current_user
         else
           render_validation_error!(child_epic)
         end
       end
 
       desc 'Remove epics relation' do
-        success EE::API::Entities::Epic
+        success ::API::Entities::Epic
         failure [
           { code: 401, message: 'Unauthorized' },
           { code: 404, message: 'Not found' }
@@ -137,14 +137,14 @@ module API
         result = ::WorkItems::LegacyEpics::EpicLinks::DestroyService.new(child_epic, current_user).execute
 
         if result[:status] == :success
-          present child_epic, with: EE::API::Entities::Epic
+          present child_epic, with: ::API::Entities::Epic
         else
           render_api_error!(result[:message], result[:http_status])
         end
       end
 
       desc 'Reorder child epics' do
-        success EE::API::Entities::Epic
+        success ::API::Entities::Epic
         failure [
           { code: 401, message: 'Unauthorized' },
           { code: 404, message: 'Not found' }
@@ -169,7 +169,7 @@ module API
         result = ::Epics::EpicLinks::UpdateService.new(child_epic, current_user, update_params).execute
 
         if result[:status] == :success
-          present child_epics, with: EE::API::Entities::Epic
+          present child_epics, with: ::API::Entities::Epic
         else
           render_api_error!(result[:message], result[:http_status])
         end

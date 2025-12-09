@@ -135,7 +135,7 @@ module EE
             owners = group.member_owners_excluding_project_bots_and_service_accounts
 
             present paginate(users),
-              with: ::EE::API::Entities::BillableMember,
+              with: ::API::Entities::BillableMember,
               current_user: current_user,
               group: group,
               owners: owners,
@@ -174,7 +174,7 @@ module EE
           end
 
           desc 'Get the direct memberships of a billable user of a top-level group.' do
-            success ::EE::API::Entities::BillableMembership
+            success ::API::Entities::BillableMembership
           end
           params do
             requires :user_id, type: Integer, desc: 'The user ID of the member'
@@ -192,11 +192,11 @@ module EE
 
             memberships = user.members.in_hierarchy(group).including_source
 
-            present paginate(memberships), with: ::EE::API::Entities::BillableMembership
+            present paginate(memberships), with: ::API::Entities::BillableMembership
           end
 
           desc 'Get the indirect memberships of a billable user of a top-level group.' do
-            success ::EE::API::Entities::BillableMembership
+            success ::API::Entities::BillableMembership
           end
           params do
             requires :user_id, type: Integer, desc: 'The user ID of the member'
@@ -221,7 +221,7 @@ module EE
               invited_group_to_project_memberships
             ])
 
-            present paginate(invited_memberships), with: ::EE::API::Entities::BillableMembership
+            present paginate(invited_memberships), with: ::API::Entities::BillableMembership
           end
 
           desc 'Removes a billable member from a group or project.'

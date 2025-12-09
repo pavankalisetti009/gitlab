@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe EE::Participable do
+RSpec.describe EE::Participable, feature_category: :team_planning do
   context 'participable is an epic' do
     let(:model) { Epic }
     let(:instance) { model.new }

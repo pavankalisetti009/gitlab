@@ -26,7 +26,7 @@ module API
           desc 'Get count of recently created issues for the group' do
             tags %w[group_analytics]
             detail 'This feature was introduced in GitLab 12.9.'
-            success EE::API::Entities::Analytics::GroupActivity::IssuesCount
+            success ::API::Entities::Analytics::GroupActivity::IssuesCount
           end
           params do
             requires :group_path, type: String, desc: 'Group path'
@@ -36,14 +36,14 @@ module API
 
             present(
               calculator,
-              with: EE::API::Entities::Analytics::GroupActivity::IssuesCount
+              with: ::API::Entities::Analytics::GroupActivity::IssuesCount
             )
           end
 
           desc 'Get count of recently created merge requests for the group' do
             tags %w[group_analytics]
             detail 'This feature was introduced in GitLab 12.9.'
-            success EE::API::Entities::Analytics::GroupActivity::MergeRequestsCount
+            success ::API::Entities::Analytics::GroupActivity::MergeRequestsCount
           end
           params do
             requires :group_path, type: String, desc: 'Group path'
@@ -53,14 +53,14 @@ module API
 
             present(
               calculator,
-              with: EE::API::Entities::Analytics::GroupActivity::MergeRequestsCount
+              with: ::API::Entities::Analytics::GroupActivity::MergeRequestsCount
             )
           end
 
           desc 'Get count of recently created group members' do
             tags %w[group_analytics]
             detail 'This feature was introduced in GitLab 12.9.'
-            success EE::API::Entities::Analytics::GroupActivity::NewMembersCount
+            success ::API::Entities::Analytics::GroupActivity::NewMembersCount
           end
           params do
             requires :group_path, type: String, desc: 'Group path'
@@ -70,7 +70,7 @@ module API
 
             present(
               calculator,
-              with: EE::API::Entities::Analytics::GroupActivity::NewMembersCount
+              with: ::API::Entities::Analytics::GroupActivity::NewMembersCount
             )
           end
         end

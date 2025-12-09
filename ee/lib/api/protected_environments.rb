@@ -101,7 +101,7 @@ module API
 
       desc 'List protected environments' do
         detail 'Gets a list of protected environments from a project. This feature was introduced in GitLab 12.8.'
-        success ::EE::API::Entities::ProtectedEnvironment
+        success ::API::Entities::ProtectedEnvironment
         failure [
           { code: '404', message: 'Not found' }
         ]
@@ -114,12 +114,12 @@ module API
       get ':id/protected_environments' do
         protected_environments = user_project.protected_environments.sorted_by_name
 
-        present paginate(protected_environments), with: ::EE::API::Entities::ProtectedEnvironment, project: user_project
+        present paginate(protected_environments), with: ::API::Entities::ProtectedEnvironment, project: user_project
       end
 
       desc 'Get a single protected environment' do
         detail 'Gets a single protected environment. This feature was introduced in GitLab 12.8.'
-        success ::EE::API::Entities::ProtectedEnvironment
+        success ::API::Entities::ProtectedEnvironment
         failure [
           { code: '404', message: 'Not found' }
         ]
@@ -129,12 +129,12 @@ module API
         requires :name, type: String, desc: 'The name of the protected environment'
       end
       get ':id/protected_environments/:name', requirements: ENVIRONMENT_ENDPOINT_REQUIREMENTS do
-        present protected_environment, with: ::EE::API::Entities::ProtectedEnvironment, project: user_project
+        present protected_environment, with: ::API::Entities::ProtectedEnvironment, project: user_project
       end
 
       desc 'Protect a single environment' do
         detail 'Protects a single environment. This feature was introduced in GitLab 12.8.'
-        success ::EE::API::Entities::ProtectedEnvironment
+        success ::API::Entities::ProtectedEnvironment
         failure [
           { code: '409', message: 'Conflict' },
           { code: '404', message: 'Not found' },
@@ -165,7 +165,7 @@ module API
                                   .new(container: user_project, current_user: current_user, params: declared_params).execute
 
         if protected_environment.persisted?
-          present protected_environment, with: ::EE::API::Entities::ProtectedEnvironment, project: user_project
+          present protected_environment, with: ::API::Entities::ProtectedEnvironment, project: user_project
         else
           render_api_error!(protected_environment.errors.full_messages, 422)
         end
@@ -173,7 +173,7 @@ module API
 
       desc 'Update a protected environment' do
         detail 'Updates a single environment. This feature was introduced in GitLab 15.4'
-        success ::EE::API::Entities::ProtectedEnvironment
+        success ::API::Entities::ProtectedEnvironment
         failure [
           { code: '404', message: 'Not found' },
           { code: '422', message: 'Unprocessable entity' }
@@ -201,7 +201,7 @@ module API
                    .execute(protected_environment)
 
         if result
-          present protected_environment, with: ::EE::API::Entities::ProtectedEnvironment, project: user_project
+          present protected_environment, with: ::API::Entities::ProtectedEnvironment, project: user_project
         else
           render_api_error!(protected_environment.errors.full_messages, 422)
         end
@@ -237,7 +237,7 @@ module API
 
       desc 'List group-level protected environments' do
         detail 'Gets a list of protected environments from a group. This feature was introduced in GitLab 14.0.'
-        success ::EE::API::Entities::ProtectedEnvironment
+        success ::API::Entities::ProtectedEnvironment
         failure [
           { code: '404', message: 'Not found' }
         ]
@@ -250,12 +250,12 @@ module API
       get ':id/protected_environments' do
         protected_environments = user_group.protected_environments.sorted_by_name
 
-        present paginate(protected_environments), with: ::EE::API::Entities::ProtectedEnvironment
+        present paginate(protected_environments), with: ::API::Entities::ProtectedEnvironment
       end
 
       desc 'Get a single protected environment' do
         detail 'Gets a single protected environment. This feature was introduced in GitLab 14.0.'
-        success ::EE::API::Entities::ProtectedEnvironment
+        success ::API::Entities::ProtectedEnvironment
         failure [
           { code: '404', message: 'Not found' }
         ]
@@ -268,12 +268,12 @@ module API
                 'One of `production`, `staging`, `testing`, `development`, or `other`'
       end
       get ':id/protected_environments/:name' do
-        present protected_environment, with: ::EE::API::Entities::ProtectedEnvironment
+        present protected_environment, with: ::API::Entities::ProtectedEnvironment
       end
 
       desc 'Protect a single environment' do
         detail 'Protects a single environment. This feature was introduced in GitLab 14.0.'
-        success ::EE::API::Entities::ProtectedEnvironment
+        success ::API::Entities::ProtectedEnvironment
         failure [
           { code: '409', message: 'Conflict' },
           { code: '404', message: 'Not found' },
@@ -311,7 +311,7 @@ module API
                                   .new(container: user_group, current_user: current_user, params: declared_params).execute
 
         if protected_environment.persisted?
-          present protected_environment, with: ::EE::API::Entities::ProtectedEnvironment
+          present protected_environment, with: ::API::Entities::ProtectedEnvironment
         else
           render_api_error!(protected_environment.errors.full_messages, 422)
         end
@@ -319,7 +319,7 @@ module API
 
       desc 'Update a protected environment' do
         detail 'Updates a single environment. This feature was introduced in GitLab 15.4.'
-        success ::EE::API::Entities::ProtectedEnvironment
+        success ::API::Entities::ProtectedEnvironment
         failure [
           { code: '404', example: 'Not found' },
           { code: '422', example: 'Unprocessable entity' }
@@ -354,7 +354,7 @@ module API
                    .execute(protected_environment)
 
         if result
-          present protected_environment, with: ::EE::API::Entities::ProtectedEnvironment, project: user_group
+          present protected_environment, with: ::API::Entities::ProtectedEnvironment, project: user_group
         else
           render_api_error!(protected_environment.errors.full_messages, 422)
         end

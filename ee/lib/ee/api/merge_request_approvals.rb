@@ -11,7 +11,7 @@ module EE
         helpers do
           # Overrides helper from CE (see https://gitlab.com/gitlab-org/gitlab/-/issues/408183)
           def present_approval(merge_request)
-            present merge_request.approval_state, with: ::EE::API::Entities::ApprovalState, current_user: current_user
+            present merge_request.approval_state, with: ::API::Entities::ApprovalState, current_user: current_user
           end
 
           def present_merge_request_approval_state(presenter:, target_branch: nil)
@@ -33,7 +33,7 @@ module EE
           segment ':id/merge_requests/:merge_request_iid' do
             desc 'List approval rules for merge request', {
               is_array: true,
-              success: ::EE::API::Entities::MergeRequestApprovalSettings,
+              success: ::API::Entities::MergeRequestApprovalSettings,
               hidden: true
             }
             params do
@@ -43,22 +43,22 @@ module EE
             end
             get 'approval_settings' do
               present_merge_request_approval_state(
-                presenter: ::EE::API::Entities::MergeRequestApprovalSettings,
+                presenter: ::API::Entities::MergeRequestApprovalSettings,
                 target_branch: declared_params[:target_branch]
               )
             end
 
             desc 'Get approval state of merge request' do
-              success ::EE::API::Entities::MergeRequestApprovalState
+              success ::API::Entities::MergeRequestApprovalState
             end
             get 'approval_state' do
-              present_merge_request_approval_state(presenter: ::EE::API::Entities::MergeRequestApprovalState)
+              present_merge_request_approval_state(presenter: ::API::Entities::MergeRequestApprovalState)
             end
 
             # Deprecated in favor of approval rules API
             desc 'Deprecated in 16.0: Use the merge request approvals API instead. Change approval-related configuration' do
               detail 'This feature was introduced in 10.6 and deprecated in 16.0'
-              success ::EE::API::Entities::ApprovalState
+              success ::API::Entities::ApprovalState
               deprecated true
             end
             params do

@@ -34,7 +34,7 @@ module API
       #   POST /geo_nodes
       desc 'Create a new Geo node' do
         summary 'Creates a new Geo node'
-        success code: 200, model: EE::API::Entities::GeoNode
+        success code: 200, model: ::API::Entities::GeoNode
         failure [
           { code: 400, message: 'Validation error' },
           { code: 401, message: '401 Unauthorized' },
@@ -87,7 +87,7 @@ module API
         new_geo_node = ::Geo::NodeCreateService.new(create_params).execute
 
         if new_geo_node.persisted?
-          present new_geo_node, with: EE::API::Entities::GeoNode
+          present new_geo_node, with: ::API::Entities::GeoNode
         else
           render_validation_error!(new_geo_node)
         end
@@ -97,7 +97,7 @@ module API
       #   GET /geo_nodes
       desc 'Retrieves the available Geo nodes' do
         summary 'Retrieve configuration about all Geo nodes'
-        success code: 200, model: EE::API::Entities::GeoNode
+        success code: 200, model: ::API::Entities::GeoNode
         failure [
           { code: 400, message: '400 Bad request' },
           { code: 401, message: '401 Unauthorized' },
@@ -113,14 +113,14 @@ module API
       get do
         nodes = GeoNode.all
 
-        present paginate(nodes), with: EE::API::Entities::GeoNode
+        present paginate(nodes), with: ::API::Entities::GeoNode
       end
 
       # Example request:
       #   GET /geo_nodes/status
       desc 'Get status for all Geo nodes' do
         summary 'Get all Geo node statuses'
-        success code: 200, model: EE::API::Entities::GeoNodeStatus
+        success code: 200, model: ::API::Entities::GeoNodeStatus
         failure [
           { code: 400, message: '400 Bad request' },
           { code: 401, message: '401 Unauthorized' },
@@ -135,7 +135,7 @@ module API
       get '/status' do
         status = GeoNodeStatus.all
 
-        present paginate(status), with: EE::API::Entities::GeoNodeStatus
+        present paginate(status), with: ::API::Entities::GeoNodeStatus
       end
 
       route_param :id, type: Integer, desc: 'The ID of the node' do
@@ -158,7 +158,7 @@ module API
         #   GET /geo_nodes/:id
         desc 'Get a single GeoNode' do
           summary 'Retrieve configuration about a specific Geo node'
-          success code: 200, model: EE::API::Entities::GeoNode
+          success code: 200, model: ::API::Entities::GeoNode
           failure [
             { code: 400, message: '400 Bad request' },
             { code: 401, message: '401 Unauthorized' },
@@ -170,14 +170,14 @@ module API
         get do
           not_found!('GeoNode') unless geo_node
 
-          present geo_node, with: EE::API::Entities::GeoNode
+          present geo_node, with: ::API::Entities::GeoNode
         end
 
         # Example request:
         #   GET /geo_nodes/:id/status
         desc 'Get metrics for a single Geo node' do
           summary 'Get Geo metrics for a single node'
-          success code: 200, model: EE::API::Entities::GeoNodeStatus
+          success code: 200, model: ::API::Entities::GeoNodeStatus
           failure [
             { code: 400, message: '400 Bad request' },
             { code: 401, message: '401 Unauthorized' },
@@ -195,14 +195,14 @@ module API
 
           not_found!('Status for Geo node not found') unless geo_node_status
 
-          present geo_node_status, with: EE::API::Entities::GeoNodeStatus
+          present geo_node_status, with: ::API::Entities::GeoNodeStatus
         end
 
         # Example request:
         #   POST /geo_nodes/:id/repair
         desc 'Repair authentication of the Geo node' do
           summary 'Repair authentication of the Geo node'
-          success code: 200, model: EE::API::Entities::GeoNodeStatus
+          success code: 200, model: ::API::Entities::GeoNodeStatus
           failure [
             { code: 400, message: '400 Bad request' },
             { code: 401, message: '401 Unauthorized' },
@@ -216,7 +216,7 @@ module API
 
           if !geo_node.missing_oauth_application? || geo_node.repair
             status 200
-            present geo_node_status, with: EE::API::Entities::GeoNodeStatus
+            present geo_node_status, with: ::API::Entities::GeoNodeStatus
           else
             render_validation_error!(geo_node)
           end
@@ -226,7 +226,7 @@ module API
         #   PUT /geo_nodes/:id
         desc 'Updates an existing Geo node' do
           summary 'Edit a Geo node'
-          success code: 200, model: EE::API::Entities::GeoNode
+          success code: 200, model: ::API::Entities::GeoNode
           failure [
             { code: 400, message: '400 Bad request' },
             { code: 401, message: '401 Unauthorized' },
@@ -282,7 +282,7 @@ module API
           updated_geo_node = ::Geo::NodeUpdateService.new(geo_node, update_params).execute
 
           if updated_geo_node
-            present geo_node, with: EE::API::Entities::GeoNode
+            present geo_node, with: ::API::Entities::GeoNode
           else
             render_validation_error!(geo_node)
           end

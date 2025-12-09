@@ -17,7 +17,7 @@ module API
     resource :projects, requirements: ::API::API::NAMESPACE_OR_PROJECT_REQUIREMENTS do
       segment ':id/approval_rules' do
         desc 'Get all project approval rules' do
-          success EE::API::Entities::ProjectApprovalRule
+          success ::API::Entities::ProjectApprovalRule
           tags %w[project_approval_rules]
         end
         params do
@@ -26,23 +26,23 @@ module API
         get do
           authorize_read_project_approval_rule!
 
-          present paginate(::Kaminari.paginate_array(user_project.visible_approval_rules)), with: EE::API::Entities::ProjectApprovalRule, current_user: current_user
+          present paginate(::Kaminari.paginate_array(user_project.visible_approval_rules)), with: ::API::Entities::ProjectApprovalRule, current_user: current_user
         end
 
         desc 'Create new project approval rule' do
-          success EE::API::Entities::ProjectApprovalRule
+          success ::API::Entities::ProjectApprovalRule
           tags %w[project_approval_rules]
         end
         params do
           use :create_project_approval_rule
         end
         post do
-          create_project_approval_rule(present_with: EE::API::Entities::ProjectApprovalRule)
+          create_project_approval_rule(present_with: ::API::Entities::ProjectApprovalRule)
         end
 
         segment ':approval_rule_id' do
           desc 'Get a single approval rule' do
-            success EE::API::Entities::ProjectApprovalRule
+            success ::API::Entities::ProjectApprovalRule
             tags %w[project_approval_rules]
           end
           get do
@@ -50,18 +50,18 @@ module API
 
             approval_rule = user_project.approval_rules.find(params[:approval_rule_id])
 
-            present approval_rule, with: EE::API::Entities::ProjectApprovalRule, current_user: current_user
+            present approval_rule, with: ::API::Entities::ProjectApprovalRule, current_user: current_user
           end
 
           desc 'Update project approval rule' do
-            success EE::API::Entities::ProjectApprovalRule
+            success ::API::Entities::ProjectApprovalRule
             tags %w[project_approval_rules]
           end
           params do
             use :update_project_approval_rule
           end
           put do
-            update_project_approval_rule(present_with: EE::API::Entities::ProjectApprovalRule)
+            update_project_approval_rule(present_with: ::API::Entities::ProjectApprovalRule)
           end
 
           desc 'Destroy project approval rule' do

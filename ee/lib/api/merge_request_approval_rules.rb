@@ -21,7 +21,7 @@ module API
     resource :projects, requirements: ::API::API::NAMESPACE_OR_PROJECT_REQUIREMENTS do
       segment ':id/merge_requests/:merge_request_iid/approval_rules' do
         desc 'Get all merge request approval rules' do
-          success EE::API::Entities::MergeRequestApprovalRule
+          success ::API::Entities::MergeRequestApprovalRule
           tags %w[merge_request_approval_rules]
         end
         params do
@@ -31,14 +31,14 @@ module API
           merge_request = find_merge_request_with_access(params[:merge_request_iid])
 
           if Feature.enabled?(:v2_approval_rules, merge_request.project)
-            present paginate(merge_request.v2_approval_rules), with: EE::API::Entities::MergeRequestApprovalRule, current_user: current_user
+            present paginate(merge_request.v2_approval_rules), with: ::API::Entities::MergeRequestApprovalRule, current_user: current_user
           else
-            present paginate(merge_request.approval_rules), with: EE::API::Entities::MergeRequestApprovalRule, current_user: current_user
+            present paginate(merge_request.approval_rules), with: ::API::Entities::MergeRequestApprovalRule, current_user: current_user
           end
         end
 
         desc 'Create new merge request approval rules' do
-          success EE::API::Entities::MergeRequestApprovalRule
+          success ::API::Entities::MergeRequestApprovalRule
           tags %w[merge_request_approval_rules]
         end
         params do
@@ -54,7 +54,7 @@ module API
           result = ::ApprovalRules::CreateService.new(merge_request, current_user, declared_params(include_missing: false)).execute
 
           if result.success?
-            present result[:rule], with: EE::API::Entities::MergeRequestApprovalRule, current_user: current_user
+            present result[:rule], with: ::API::Entities::MergeRequestApprovalRule, current_user: current_user
           else
             render_api_error!(result.message, result.cause.access_denied? ? 403 : 400)
           end
@@ -62,7 +62,7 @@ module API
 
         segment ':approval_rule_id' do
           desc 'Get merge request approval rule' do
-            success EE::API::Entities::MergeRequestApprovalRule
+            success ::API::Entities::MergeRequestApprovalRule
             tags %w[merge_request_approval_rules]
           end
           params do
@@ -72,11 +72,11 @@ module API
             merge_request = find_merge_request_with_access(params[:merge_request_iid])
             approval_rule = find_merge_request_approval_rule(merge_request, params[:approval_rule_id])
 
-            present approval_rule, with: EE::API::Entities::MergeRequestApprovalRule, current_user: current_user
+            present approval_rule, with: ::API::Entities::MergeRequestApprovalRule, current_user: current_user
           end
 
           desc 'Update merge request approval rule' do
-            success EE::API::Entities::MergeRequestApprovalRule
+            success ::API::Entities::MergeRequestApprovalRule
             tags %w[merge_request_approval_rules]
           end
           params do
@@ -95,7 +95,7 @@ module API
             result = ::ApprovalRules::UpdateService.new(approval_rule, current_user, params).execute
 
             if result.success?
-              present result[:rule], with: EE::API::Entities::MergeRequestApprovalRule, current_user: current_user
+              present result[:rule], with: ::API::Entities::MergeRequestApprovalRule, current_user: current_user
             else
               render_api_error!(result.message, result.cause.access_denied? ? 403 : 400)
             end

@@ -19,7 +19,7 @@ module API
     resource :projects, requirements: API::NAMESPACE_OR_PROJECT_REQUIREMENTS do
       desc 'List project issue weight events' do
         detail 'Gets a list of all weight events for a single issue'
-        success EE::API::Entities::ResourceWeightEvent
+        success ::API::Entities::ResourceWeightEvent
         is_array true
         tags resource_weight_events_tags
       end
@@ -37,12 +37,12 @@ module API
                    ResourceWeightEvent.none
                  end
 
-        present paginate(events), with: EE::API::Entities::ResourceWeightEvent
+        present paginate(events), with: ::API::Entities::ResourceWeightEvent
       end
 
       desc 'Get single issue weight event' do
         detail 'Returns a single weight event for a specific project issue'
-        success EE::API::Entities::ResourceWeightEvent
+        success ::API::Entities::ResourceWeightEvent
         failure [
           { code: 404, message: 'Not found' }
         ]
@@ -59,7 +59,7 @@ module API
 
         not_found!('ResourceWeightEvent') unless can?(current_user, :read_issue, event.issue)
 
-        present event, with: EE::API::Entities::ResourceWeightEvent
+        present event, with: ::API::Entities::ResourceWeightEvent
       end
     end
   end

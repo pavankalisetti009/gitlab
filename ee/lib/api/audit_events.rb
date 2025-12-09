@@ -29,7 +29,7 @@ module API
 
     resources :audit_events do
       desc 'Get the list of audit events' do
-        success EE::API::Entities::AuditEvent
+        success ::API::Entities::AuditEvent
         is_array true
       end
       params do
@@ -77,17 +77,17 @@ module API
             ).execute(data_without_counts: true)
           end
 
-          present result[:records], with: EE::API::Entities::AuditEvent
+          present result[:records], with: ::API::Entities::AuditEvent
         else
           level = ::Gitlab::Audit::Levels::Instance.new
           params[:optimize_offset] = true
           audit_events = AuditEventFinder.new(level: level, params: params).execute
-          present paginate_with_strategies(audit_events), with: EE::API::Entities::AuditEvent
+          present paginate_with_strategies(audit_events), with: ::API::Entities::AuditEvent
         end
       end
 
       desc 'Get single audit event' do
-        success EE::API::Entities::AuditEvent
+        success ::API::Entities::AuditEvent
       end
       params do
         requires :id, type: Integer, desc: 'The ID of audit event'
@@ -100,7 +100,7 @@ module API
                         AuditEventFinder.new(level: level).find(params[:id])
                       end
 
-        present audit_event, with: EE::API::Entities::AuditEvent
+        present audit_event, with: ::API::Entities::AuditEvent
       end
     end
   end

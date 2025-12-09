@@ -46,7 +46,7 @@ module API
       [':id/epics', ':id/-/epics'].each do |path|
         desc 'Get epics for the group' do
           detail 'Gets all epics of the requested group and its subgroups'
-          success EE::API::Entities::Epic
+          success ::API::Entities::Epic
           failure [
             { code: 403, message: 'Forbidden' },
             { code: 404, message: 'Not found' },
@@ -143,7 +143,7 @@ module API
       [':id/epics/:epic_iid', ':id/-/epics/:epic_iid'].each do |path|
         desc 'Get details of an epic' do
           detail 'Gets a single epic'
-          success EE::API::Entities::Epic
+          success ::API::Entities::Epic
           failure [
             { code: 403, message: 'Forbidden' },
             { code: 404, message: 'Not found' }
@@ -162,7 +162,7 @@ module API
 
       desc 'Create a new epic' do
         detail 'Creates a new epic'
-        success EE::API::Entities::Epic
+        success ::API::Entities::Epic
         failure [
           { code: 400, message: 'Bad request' },
           { code: 403, message: 'Forbidden' },
@@ -253,7 +253,7 @@ module API
 
       desc 'Update an epic' do
         detail 'Updates an epic'
-        success EE::API::Entities::Epic
+        success ::API::Entities::Epic
         failure [
           { code: 400, message: 'Bad request' },
           { code: 403, message: 'Forbidden' },
