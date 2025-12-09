@@ -112,6 +112,15 @@ RSpec.describe ScimOauthAccessToken, feature_category: :system_access do
   end
 
   describe '#token' do
+    shared_examples 'has a prefix' do
+      it 'starts with prefix' do
+        scim_token = build(:scim_oauth_access_token, group: create(:group), token_encrypted: nil)
+        scim_token.save!
+
+        expect(scim_token.token).to start_with expected_prefix
+      end
+    end
+
     it 'generates a prefixed token on creation' do
       scim_token = described_class.create!(group: create(:group), organization: create(:organization))
 
@@ -122,6 +131,32 @@ RSpec.describe ScimOauthAccessToken, feature_category: :system_access do
       scim_token = described_class.create!(group: nil, organization: create(:organization))
 
       expect(scim_token.token).to match(/^glsoat-[\w-]{20}$/)
+    end
+
+    it_behaves_like 'has a prefix' do
+      let(:expected_prefix) { described_class::TOKEN_PREFIX }
+    end
+
+    context 'with instance prefix configured' do
+      let(:instance_prefix) { 'instanceprefix' }
+
+      before do
+        stub_application_setting(instance_token_prefix: instance_prefix)
+      end
+
+      it_behaves_like 'has a prefix' do
+        let(:expected_prefix) { "#{instance_prefix}-#{described_class::TOKEN_PREFIX}" }
+      end
+
+      context 'with feature flag custom_prefix_for_all_token_types disabled' do
+        before do
+          stub_feature_flags(custom_prefix_for_all_token_types: false)
+        end
+
+        it_behaves_like 'has a prefix' do
+          let(:expected_prefix) { described_class::TOKEN_PREFIX }
+        end
+      end
     end
   end
 end
