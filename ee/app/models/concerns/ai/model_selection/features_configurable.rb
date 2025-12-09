@@ -7,7 +7,6 @@ module Ai
       include Ai::FeatureConfigurable
 
       MODEL_PROVIDER = "gitlab"
-      DUO_AGENT_PLATFORM_FEATURE_FLAG = :duo_agent_platform_model_selection
 
       FEATURES = {
         code_generations: 0,
@@ -35,9 +34,7 @@ module Ai
 
       FEATURES_UNDER_FLAGS = {
         summarize_review: :summarize_my_code_review,
-        summarize_new_merge_request: :add_ai_summary_for_new_mr,
-        duo_agent_platform: DUO_AGENT_PLATFORM_FEATURE_FLAG,
-        duo_agent_platform_agentic_chat: :ai_agentic_chat_feature_setting_split
+        summarize_new_merge_request: :add_ai_summary_for_new_mr
       }.freeze
       # Keys are :feature enum values
       # Values are the names of the Feature Flags used to enable the features
