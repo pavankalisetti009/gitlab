@@ -40,7 +40,11 @@ module Vulnerabilities
         finding.update!(vulnerability_id: vulnerability.id)
 
         Vulnerabilities::Reads::UpsertService.new(vulnerability,
-          { traversal_ids: project.namespace.traversal_ids }, projects: @project).execute
+          {
+            traversal_ids: project.namespace.traversal_ids,
+            security_project_tracked_context_id: finding.security_project_tracked_context_id
+          },
+          projects: @project).execute
 
         update_security_statistics!
 

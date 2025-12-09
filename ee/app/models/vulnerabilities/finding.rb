@@ -127,6 +127,11 @@ module Vulnerabilities
       foreign_key: :uuid,
       inverse_of: :vulnerability_finding
 
+    belongs_to :project_tracked_context,
+      class_name: 'Security::ProjectTrackedContext',
+      foreign_key: 'security_project_tracked_context_id',
+      inverse_of: false
+
     attribute :config_options, ::Gitlab::Database::Type::IndifferentJsonb.new
 
     attr_writer :sha

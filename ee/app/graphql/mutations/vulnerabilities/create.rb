@@ -44,6 +44,10 @@ module Mutations
         required: false,
         description: 'Instructions for how to fix the vulnerability.'
 
+      argument :project_tracked_context, Types::Security::ProjectTrackedContextInputType,
+        required: false,
+        description: 'Tracked context to associate with the vulnerability.'
+
       argument :detected_at, Types::TimeType,
         required: false,
         description: 'Timestamp of when the vulnerability was first detected (defaults to creation time).'
@@ -109,6 +113,11 @@ module Mutations
             identifiers
             scanner
           ])
+
+        if params[:project_tracked_context]
+          vulnerability_params[:project_tracked_context_name] = params[:project_tracked_context][:name]
+          vulnerability_params[:project_tracked_context_type] = params[:project_tracked_context][:type]
+        end
 
         {
           vulnerability: vulnerability_params

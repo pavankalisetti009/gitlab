@@ -14378,6 +14378,7 @@ Input type: `VulnerabilityCreateInput`
 | <a id="mutationvulnerabilitycreateidentifiers"></a>`identifiers` | [`[VulnerabilityIdentifierInput!]!`](#vulnerabilityidentifierinput) | Array of CVE or CWE identifiers for the vulnerability. |
 | <a id="mutationvulnerabilitycreatename"></a>`name` | [`String!`](#string) | Name of the vulnerability. |
 | <a id="mutationvulnerabilitycreateproject"></a>`project` | [`ProjectID!`](#projectid) | ID of the project to attach the vulnerability to. |
+| <a id="mutationvulnerabilitycreateprojecttrackedcontext"></a>`projectTrackedContext` | [`ProjectTrackedContextInput`](#projecttrackedcontextinput) | Tracked context to associate with the vulnerability. |
 | <a id="mutationvulnerabilitycreateresolvedat"></a>`resolvedAt` | [`Time`](#time) | Timestamp of when the vulnerability state changed to resolved (defaults to creation time if status is `resolved`). |
 | <a id="mutationvulnerabilitycreatescanner"></a>`scanner` | [`VulnerabilityScannerInput!`](#vulnerabilityscannerinput) | Information about the scanner used to discover the vulnerability. |
 | <a id="mutationvulnerabilitycreateseverity"></a>`severity` | [`VulnerabilitySeverity`](#vulnerabilityseverity) | Severity of the vulnerability (defaults to `unknown`). |
@@ -52980,6 +52981,15 @@ Values for sorting projects.
 | <a id="projectsortupdated_asc"></a>`updated_asc` {{< icon name="warning-solid" >}} | **Deprecated** in GitLab 13.5. This was renamed. Use: `UPDATED_ASC`. |
 | <a id="projectsortupdated_desc"></a>`updated_desc` {{< icon name="warning-solid" >}} | **Deprecated** in GitLab 13.5. This was renamed. Use: `UPDATED_DESC`. |
 
+### `ProjectTrackedContext`
+
+The context type of the tracked context.
+
+| Value | Description |
+| ----- | ----------- |
+| <a id="projecttrackedcontextbranch"></a>`BRANCH` | Branch type. |
+| <a id="projecttrackedcontexttag"></a>`TAG` | Tag type. |
+
 ### `ReachabilityType`
 
 Dependency reachability status.
@@ -58291,6 +58301,17 @@ Filters for project compliance violations.
 | ---- | ---- | ----------- |
 | <a id="projectrequirementcompliancestatusinputframeworkid"></a>`frameworkId` | [`ComplianceManagementFrameworkID`](#compliancemanagementframeworkid) | Filter compliance requirement statuses by compliance framework. |
 | <a id="projectrequirementcompliancestatusinputrequirementid"></a>`requirementId` | [`ComplianceManagementComplianceFrameworkComplianceRequirementID`](#compliancemanagementcomplianceframeworkcompliancerequirementid) | Filter compliance requirement statuses by compliance requirement. |
+
+### `ProjectTrackedContextInput`
+
+Input for specifying a project tracked context.
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="projecttrackedcontextinputname"></a>`name` | [`String!`](#string) | Name of the tracked context. |
+| <a id="projecttrackedcontextinputtype"></a>`type` | [`ProjectTrackedContext!`](#projecttrackedcontext) | Type of the tracked context. |
 
 ### `PushAccessLevelInput`
 
