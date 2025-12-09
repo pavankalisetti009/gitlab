@@ -34,7 +34,7 @@ RSpec.describe IncidentManagement::EscalationRule do
 
         specify do
           expect(subject).to be_invalid
-          expect(subject.errors.messages[:base]).to eq(['must have either an on-call schedule or user'])
+          expect(subject.errors.messages[:base]).to match_array(['Exactly one of oncall_schedule, user must be present'])
         end
       end
 
@@ -43,7 +43,7 @@ RSpec.describe IncidentManagement::EscalationRule do
 
         specify do
           expect(subject).to be_invalid
-          expect(subject.errors.messages[:base]).to eq(['must have either an on-call schedule or user'])
+          expect(subject.errors.messages[:base]).to match_array(['Exactly one of oncall_schedule, user must be present'])
         end
       end
     end
