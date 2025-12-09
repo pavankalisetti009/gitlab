@@ -9,7 +9,7 @@
 - is_agentic_available = Gitlab::Llm::TanukiBot.agentic_mode_available?(user: current_user, project: project, group: group)
 - user_model_selection_enabled = Gitlab::Llm::TanukiBot.user_model_selection_enabled?(user: current_user, scope: project || group)
 
-- if is_agentic_available
+- if is_agentic_available && !project_studio_enabled?
   #js-duo-agentic-chat-app{ data: {
     project_id: project&.to_global_id,
     namespace_id: group&.to_global_id,

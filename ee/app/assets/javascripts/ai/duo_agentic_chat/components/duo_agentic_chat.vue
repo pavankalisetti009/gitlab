@@ -73,7 +73,6 @@ export default {
     chatConfiguration: {
       default: () => ({
         title: s__('DuoAgenticChat|GitLab Duo Agentic Chat'),
-        isAgenticAvailable: false,
       }),
     },
   },
@@ -128,6 +127,11 @@ export default {
       type: Object,
       required: false,
       default: () => ({}),
+    },
+    forceAgenticModeForCoreDuoUsers: {
+      type: Boolean,
+      required: false,
+      default: true,
     },
   },
   apollo: {
@@ -296,9 +300,7 @@ export default {
       isChatAvailable: true,
       isFlowLocked: false,
       isEmbedded: this.chatConfiguration?.defaultProps?.isEmbedded ?? false,
-      // this is required for classic/agentic toggle
-      // eslint-disable-next-line vue/no-unused-properties
-      isAgenticAvailable: this.chatConfiguration?.isAgenticAvailable ?? false,
+      isAgenticAvailable: this.chatConfiguration?.defaultProps?.isAgenticAvailable ?? false,
       // eslint-disable-next-line vue/no-unused-properties
       userId: this.activeTabData?.props?.userId,
       // I believe this is a default chat agent name
@@ -1065,14 +1067,17 @@ export default {
           />
         </div>
       </template>
-      <template v-if="glFeatures.agenticChatGa" #agentic-switch>
+      <template
+        v-if="isAgenticAvailable && !forceAgenticModeForCoreDuoUsers && glFeatures.agenticChatGa"
+        #agentic-switch
+      >
         <gl-toggle v-model="duoClassicModePreference" label-position="left" class="gl-h-5">
           <template #label>
             <span class="gl-font-normal gl-text-subtle">{{ s__('DuoChat|Chat (Classic)') }}</span>
           </template>
         </gl-toggle>
       </template>
-      <template v-else #agentic-switch>
+      <template v-else-if="isAgenticAvailable && !forceAgenticModeForCoreDuoUsers" #agentic-switch>
         <gl-toggle v-model="duoAgenticModePreference" label-position="left" class="gl-h-5">
           <template #label>
             <span class="gl-font-normal gl-text-subtle">{{

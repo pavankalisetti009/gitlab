@@ -2156,14 +2156,34 @@ describe('Duo Agentic Chat', () => {
 
     it('shows toggle as checked when in agentic mode', () => {
       duoChatGlobalState.chatMode = 'agentic';
-      createComponent();
+      createComponent({
+        propsData: { forceAgenticModeForCoreDuoUsers: false },
+        provide: {
+          chatConfiguration: {
+            title: 'GitLab Duo Agentic Chat',
+            defaultProps: {
+              isAgenticAvailable: true,
+            },
+          },
+        },
+      });
 
       expect(findGlToggle().props('value')).toBe(true);
     });
 
     it('shows toggle as unchecked when in classic mode', () => {
       duoChatGlobalState.chatMode = 'classic';
-      createComponent();
+      createComponent({
+        propsData: { forceAgenticModeForCoreDuoUsers: false },
+        provide: {
+          chatConfiguration: {
+            title: 'GitLab Duo Agentic Chat',
+            defaultProps: {
+              isAgenticAvailable: true,
+            },
+          },
+        },
+      });
 
       expect(findGlToggle().props('value')).toBe(false);
     });
@@ -2324,7 +2344,17 @@ describe('Duo Agentic Chat', () => {
     beforeEach(() => {
       duoChatGlobalState.isAgenticChatShown = true;
       duoChatGlobalState.chatMode = 'classic';
-      createComponent();
+      createComponent({
+        propsData: { forceAgenticModeForCoreDuoUsers: false },
+        provide: {
+          chatConfiguration: {
+            title: 'GitLab Duo Agentic Chat',
+            defaultProps: {
+              isAgenticAvailable: true,
+            },
+          },
+        },
+      });
     });
 
     it('renders the GlToggle component with "Agentic mode" label', () => {
@@ -2354,7 +2384,14 @@ describe('Duo Agentic Chat', () => {
       duoChatGlobalState.chatMode = 'classic';
       jest.clearAllMocks();
       createComponent({
+        propsData: { forceAgenticModeForCoreDuoUsers: false },
         provide: {
+          chatConfiguration: {
+            title: 'GitLab Duo Agentic Chat',
+            defaultProps: {
+              isAgenticAvailable: true,
+            },
+          },
           glFeatures: {
             agenticChatGa: true,
           },
@@ -2380,6 +2417,28 @@ describe('Duo Agentic Chat', () => {
         isEmbedded: false,
       });
     });
+
+    it.each([false, true])(
+      'when forceAgenticModeForCoreDuoUsers is %s',
+      (forceAgenticModeForCoreDuoUsers) => {
+        duoChatGlobalState.isAgenticChatShown = true;
+        createComponent({
+          propsData: { forceAgenticModeForCoreDuoUsers },
+          provide: {
+            chatConfiguration: {
+              title: 'GitLab Duo Agentic Chat',
+              defaultProps: {
+                isAgenticAvailable: true,
+              },
+            },
+            glFeatures: {
+              agenticChatGa: true,
+            },
+          },
+        });
+        expect(findGlToggle().exists()).toBe(!forceAgenticModeForCoreDuoUsers);
+      },
+    );
   });
 
   describe('Agentic chat user model selection', () => {
@@ -3137,12 +3196,13 @@ describe('Duo Agentic Chat', () => {
 
         // Recreate component with agenticChatGa FF enabled to show Classic toggle
         createComponent({
+          propsData: { forceAgenticModeForCoreDuoUsers: false },
           provide: {
             chatConfiguration: {
               title: 'GitLab Duo Agentic Chat',
-              isAgenticAvailable: true,
               defaultProps: {
                 isEmbedded: true,
+                isAgenticAvailable: true,
               },
             },
             activeTabData: {
