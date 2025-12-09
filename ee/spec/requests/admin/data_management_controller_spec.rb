@@ -18,7 +18,7 @@ RSpec.describe Admin::DataManagementController, :enable_admin_mode, feature_cate
 
   describe 'before_actions' do
     let_it_be(:model) { create(:project) }
-    let_it_be(:model_name) { Gitlab::Geo::ModelMapper.convert_to_name(model.class) }
+    let_it_be(:model_name) { Gitlab::Geo::ModelMapper.convert_to_name(model.class).pluralize }
     let_it_be(:id) { model.id }
 
     context 'when the data_management licensed feature is available' do
@@ -59,7 +59,7 @@ RSpec.describe Admin::DataManagementController, :enable_admin_mode, feature_cate
 
     where(model_classes: Gitlab::Geo::ModelMapper.available_models)
     with_them do
-      let(:model_name) { Gitlab::Geo::ModelMapper.convert_to_name(model_classes) }
+      let(:model_name) { Gitlab::Geo::ModelMapper.convert_to_name(model_classes).pluralize }
       let(:model) { create(factory_name(model_classes)) } # rubocop:disable Rails/SaveBang -- this is creating a factory, not a record
       let(:id) { model.id }
 
@@ -90,7 +90,7 @@ RSpec.describe Admin::DataManagementController, :enable_admin_mode, feature_cate
   end
 
   context 'when model is not found' do
-    let(:model_name) { 'project' }
+    let(:model_name) { 'projects' }
     let(:id) { 999 }
 
     it 'show renders 404' do
@@ -101,7 +101,24 @@ RSpec.describe Admin::DataManagementController, :enable_admin_mode, feature_cate
   end
 
   context 'when model is invalid' do
-    let(:model_name) { 'invalid' }
+    let(:model_name) { 'invalids' }
+    let(:id) { 1 }
+
+    it 'index renders 404' do
+      get index_path
+
+      expect(response).to have_gitlab_http_status(:not_found)
+    end
+
+    it 'show renders 404' do
+      get show_path
+
+      expect(response).to have_gitlab_http_status(:not_found)
+    end
+  end
+
+  context 'when model is singular' do
+    let(:model_name) { 'upload' }
     let(:id) { 1 }
 
     it 'index renders 404' do

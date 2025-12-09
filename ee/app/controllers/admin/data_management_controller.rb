@@ -20,6 +20,8 @@ module Admin
     private
 
     def model_found?
+      return render_404 if singular_model_name?
+
       render_404 unless model_class
     end
 
@@ -40,6 +42,10 @@ module Admin
 
     def model_name
       @model_name ||= model_params[:model_name]&.singularize
+    end
+
+    def singular_model_name?
+      model_name.present? && model_name == model_params[:model_name]
     end
   end
 end
