@@ -20,8 +20,6 @@ module Authz
           Rails.root.join(BASE_PATH, '**/*.yml')
         end
 
-        private
-
         def definitions
           all.values
         end
