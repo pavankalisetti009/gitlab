@@ -26,7 +26,7 @@ module MergeTrains
           .new(car.target_project, car.user, require_recreate: require_next_recreate)
           .execute(car.merge_request)
 
-        require_next_recreate = (result[:status] == :error || result[:pipeline_created])
+        require_next_recreate = result[:status] == :error || result[:pipeline_created]
       end
     end
   end
