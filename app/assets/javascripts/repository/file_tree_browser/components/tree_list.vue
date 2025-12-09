@@ -432,6 +432,24 @@ export default {
           .forEach((i) => this.toggleDirectory(i.path, { toggleClose: false }));
       }
 
+      // a-z
+      if (/^[a-zA-Z]$/.test(event.key)) {
+        event.preventDefault();
+        const key = event.key.toLowerCase();
+        const idx = items.findIndex((i) => i.id === this.activeItemId);
+
+        // Search after current, then wrap to beginning
+        const match =
+          items.slice(idx + 1).find((i) => i.name?.[0]?.toLowerCase() === key) ||
+          items.slice(0, idx + 1).find((i) => i.name?.[0]?.toLowerCase() === key);
+
+        if (match) {
+          this.activeItemId = match.id;
+          this.$nextTick(() => this.$refs.activeItem?.[0]?.focus());
+        }
+        return;
+      }
+
       // Right Arrow
       if (event.key === 'ArrowRight') {
         event.preventDefault();
