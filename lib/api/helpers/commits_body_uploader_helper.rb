@@ -20,7 +20,9 @@ module API
 
         check_large_request_rate_limit!(params['file.size'])
 
-        if params['Content-Type']&.include?('multipart')
+        media_type = Rack::MediaType.type(params['Content-Type'])
+
+        if media_type == 'multipart/form-data'
           env = {
             'CONTENT_TYPE' => params['Content-Type'],
             'CONTENT_LENGTH' => params['file.size'],
@@ -34,8 +36,20 @@ module API
           }
 
           Rack::Multipart.parse_multipart(env).deep_symbolize_keys!
-        else
+        elsif media_type == 'application/x-www-form-urlencoded'
+          begin
+            Rack::Utils.parse_nested_query(File.read(file_path)).deep_symbolize_keys!
+          rescue Rack::QueryParser::QueryLimitError => e
+            bad_request!("Invalid form data exceeded query limit: #{e.message}")
+          rescue Rack::QueryParser::ParameterTypeError => e
+            bad_request!("Invalid parameter type: #{e.message}")
+          rescue Rack::QueryParser::InvalidParameterError => e
+            bad_request!("Invalid parameter: #{e.message}")
+          end
+        elsif media_type.nil? || media_type == 'application/json'
           Oj.load_file(file_path, symbol_keys: true)
+        else
+          bad_request!("Unsupported Content-Type: #{media_type}")
         end
       end
 

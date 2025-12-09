@@ -11,6 +11,8 @@ RSpec.shared_context 'for workhorse body uploads' do
     case body_encoding
     when :json
       perform_workhorse_json_body_upload(url, params.to_json)
+    when :multipart_form
+      perform_workhorse_multpart_form_encoding_body_upload(url, params)
     when :form
       perform_workhorse_form_encoding_body_upload(url, params)
     end
@@ -37,12 +39,18 @@ RSpec.shared_context 'for workhorse body uploads' do
     )
   end
 
-  def perform_workhorse_form_encoding_body_upload(url, params)
+  def perform_workhorse_multpart_form_encoding_body_upload(url, params)
     boundary = 'XXX'
     content_type = "multipart/form-data; boundary=#{boundary}"
 
     body = form_encoding_body(params, boundary)
     perform_workhorse_json_body_upload(url, body, params: { 'Content-Type': content_type })
+  end
+
+  def perform_workhorse_form_encoding_body_upload(url, params)
+    body = URI.encode_www_form(flatten_params(params))
+
+    perform_workhorse_json_body_upload(url, body, params: { 'Content-Type': 'application/x-www-form-urlencoded' })
   end
 
   def form_encoding_body(params, boundary)

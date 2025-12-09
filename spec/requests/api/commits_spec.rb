@@ -1657,8 +1657,8 @@ RSpec.describe API::Commits, feature_category: :source_code_management do
       end
     end
 
-    context 'with form encoding' do
-      let(:body_encoding) { :form }
+    context 'with multipart form encoding' do
+      let(:body_encoding) { :multipart_form }
 
       it_behaves_like 'param validations'
       it_behaves_like 'update actions'
@@ -1667,7 +1667,7 @@ RSpec.describe API::Commits, feature_category: :source_code_management do
       it_behaves_like 'committing into a fork as a maintainer'
 
       context 'for create actions' do
-        let(:new_branch_name) { 'form-patch' }
+        let(:new_branch_name) { 'multipart-form-patch' }
 
         it_behaves_like 'create actions'
       end
@@ -1701,6 +1701,82 @@ RSpec.describe API::Commits, feature_category: :source_code_management do
           msg = "400 Bad request - This endpoint does not support form encoded file uploads"
           expect(json_response['message']).to eq(msg)
         end
+      end
+    end
+
+    context 'with form encoding' do
+      let(:body_encoding) { :form }
+
+      it_behaves_like 'param validations'
+      it_behaves_like 'update actions'
+      it_behaves_like 'multiple operations'
+      it_behaves_like 'chmod actions'
+      it_behaves_like 'committing into a fork as a maintainer'
+
+      context 'for create actions' do
+        let(:new_branch_name) { 'form-patch' }
+
+        it_behaves_like 'create actions'
+      end
+
+      context 'for delete actions' do
+        let(:file_to_delete) { 'README.md' }
+
+        it_behaves_like 'delete actions'
+      end
+
+      context 'for move actions' do
+        let(:file_path) { 'Gemfile_2.zip' }
+        let(:previous_path) { 'Gemfile.zip' }
+
+        it_behaves_like 'move actions'
+      end
+
+      context 'with an invalid form encoding' do
+        context 'with a query limit error' do
+          it 'returns bad request' do
+            expect(Rack::Utils).to receive(:parse_nested_query).twice.and_call_original
+            expect(Rack::Utils).to receive(:parse_nested_query).with("").and_raise(Rack::QueryParser::QueryLimitError)
+
+            workhorse_body_upload(url, {})
+
+            expect(response).to have_gitlab_http_status(:bad_request)
+            expect(json_response['message']).to include('Invalid form data exceeded query limit')
+          end
+        end
+
+        context 'with a parameter type error' do
+          it 'returns bad request' do
+            expect(Rack::Utils).to receive(:parse_nested_query).twice.and_call_original
+            expect(Rack::Utils).to receive(:parse_nested_query).with("").and_raise(Rack::QueryParser::ParameterTypeError)
+
+            workhorse_body_upload(url, {})
+
+            expect(response).to have_gitlab_http_status(:bad_request)
+            expect(json_response['message']).to include('Invalid parameter type')
+          end
+        end
+
+        context 'with a invalid parameter error' do
+          it 'returns bad request' do
+            expect(Rack::Utils).to receive(:parse_nested_query).twice.and_call_original
+            expect(Rack::Utils).to receive(:parse_nested_query).with("").and_raise(Rack::QueryParser::InvalidParameterError)
+
+            workhorse_body_upload(url, {})
+
+            expect(response).to have_gitlab_http_status(:bad_request)
+            expect(json_response['message']).to include('Invalid parameter')
+          end
+        end
+      end
+    end
+
+    context 'with an invalid encoding' do
+      it 'returns bad request' do
+        perform_workhorse_json_body_upload(url, "", params: { 'Content-Type': 'application/octet-stream' })
+
+        expect(response).to have_gitlab_http_status(:bad_request)
+        expect(json_response['message']).to include('Unsupported Content-Type: application/octet-stream')
       end
     end
   end
