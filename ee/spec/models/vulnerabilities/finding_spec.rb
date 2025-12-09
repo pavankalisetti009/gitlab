@@ -1215,6 +1215,22 @@ RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_manage
 
         it { is_expected.to eq(location) }
       end
+
+      context 'when location is an invalid JSON' do
+        let(:finding) { build(:vulnerabilities_finding, location: 'invalid json{') }
+
+        it 'returns an empty hash' do
+          expect(finding.location).to eq({})
+        end
+      end
+
+      context 'when location_data is not a hash or string' do
+        let(:finding) { build(:vulnerabilities_finding, location: 123) }
+
+        it 'returns an empty hash' do
+          expect(finding.location).to eq({})
+        end
+      end
     end
 
     describe '#image' do

@@ -48,7 +48,7 @@ module Security
                         security_project_tracked_context_id: tracked_context&.id,
                         scanner_id: scanner_id,
                         primary_identifier_id: identifier_ids.first,
-                        location: report_finding.location_data,
+                        location: sanitized_location_data,
                         location_fingerprint: report_finding.location_fingerprint,
                         project_id: project.id,
                         initial_pipeline_id: pipeline.id,
@@ -58,6 +58,19 @@ module Security
 
       def new_or_transitioned_to_detected?
         new_record || transitioned_to_detected
+      end
+
+      private
+
+      def sanitized_location_data
+        location_data = report_finding.location_data
+        return location_data if location_data.is_a?(Hash)
+        return {} unless location_data.is_a?(String)
+
+        parsed_location = Gitlab::Json.parse(location_data)
+        parsed_location.is_a?(Hash) ? parsed_location : {}
+      rescue JSON::ParserError
+        {}
       end
     end
   end
