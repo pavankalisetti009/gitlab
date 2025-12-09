@@ -98,7 +98,8 @@ RSpec.describe Groups::SecurityFeaturesHelper, feature_category: :user_managemen
         can_view_false_positive: 'false',
         has_projects: has_projects,
         dismissal_descriptions: dismissal_descriptions_json,
-        show_retention_alert: 'false'
+        show_retention_alert: 'false',
+        manage_duo_settings_path: "/groups/#{group.full_path}/-/edit#js-gitlab-duo-settings"
       }
     end
 
