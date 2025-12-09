@@ -4,6 +4,8 @@ module Vulnerabilities
   class CreateServiceBase
     include Gitlab::Allowable
 
+    TrackedContextNotFoundError = Class.new(StandardError)
+
     GENERIC_REPORT_TYPE = ::Enums::Vulnerability.report_types[:generic]
 
     def initialize(project, author, params:)
@@ -12,6 +14,9 @@ module Vulnerabilities
       @params = params
       @original_archived_value = project.archived
       @original_traversal_ids_value = project.namespace.traversal_ids
+      @is_default_context = false
+
+      set_tracked_context_params
     end
 
     private
@@ -141,7 +146,8 @@ module Vulnerabilities
         scanner: scanner,
         uuid: uuid,
         description: description,
-        solution: solution
+        solution: solution,
+        security_project_tracked_context_id: tracked_context_id
       )
     end
 
@@ -168,6 +174,38 @@ module Vulnerabilities
 
     def update_security_statistics!
       project.security_statistics.increase_vulnerability_counter!(1)
+    end
+
+    def tracked_context_id
+      @tracked_context_id ||= find_or_create_tracked_context
+    end
+
+    def find_or_create_tracked_context
+      response = Security::ProjectTrackedContexts::FindOrCreateService.new(
+        project: @project,
+        context_name: @context_name || @project.default_branch_or_main,
+        context_type: @context_type || :branch,
+        is_default: @is_default_context
+      ).execute
+
+      raise TrackedContextNotFoundError, "Tracked context error: #{response.message}" if response.error?
+
+      response.payload[:tracked_context].id
+    end
+
+    def set_tracked_context_params
+      @context_name = @params.dig(:vulnerability, :project_tracked_context_name)
+      @context_type = @params.dig(:vulnerability, :project_tracked_context_type)&.downcase&.to_sym
+
+      if @context_name.present? && @context_type.blank?
+        raise ArgumentError,
+          'project_tracked_context_type must be provided when project_tracked_context_name is specified'
+      elsif @context_name.blank? && @context_type.present?
+        raise ArgumentError,
+          'project_tracked_context_name must be provided when project_tracked_context_type is specified'
+      elsif @context_name.blank? && @context_type.blank?
+        @is_default_context = true
+      end
     end
   end
 end

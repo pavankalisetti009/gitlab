@@ -142,7 +142,8 @@ module Vulnerabilities
             cluster_agent_id: vulnerability.location.dig('kubernetes_resource', 'agent_id'),
             traversal_ids: vulnerability.project.namespace.traversal_ids,
             archived: vulnerability.project.archived?,
-            auto_resolved: vulnerability.auto_resolved?
+            auto_resolved: vulnerability.auto_resolved?,
+            security_project_tracked_context_id: vulnerability.finding.security_project_tracked_context_id
           }.merge!(@attributes)
         )
       end
