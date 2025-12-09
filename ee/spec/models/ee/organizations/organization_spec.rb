@@ -13,4 +13,10 @@ RSpec.describe Organizations::Organization, feature_category: :organization do
     it { is_expected.to have_many(:sbom_components).class_name('Sbom::Component') }
     it { is_expected.to have_many(:sbom_component_versions).class_name('Sbom::ComponentVersion') }
   end
+
+  describe 'Foundational agents settings' do
+    it_behaves_like 'settings with foundational agents statuses' do
+      let_it_be(:instance) { organization }
+    end
+  end
 end

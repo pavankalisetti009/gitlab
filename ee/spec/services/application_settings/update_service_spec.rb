@@ -6,6 +6,11 @@ RSpec.describe ApplicationSettings::UpdateService, feature_category: :shared do
   let!(:user) { create(:user) }
   let(:setting) { ApplicationSetting.create_from_defaults }
   let(:service) { described_class.new(setting, user, opts) }
+  let_it_be(:default_organization) { create(:organization) }
+
+  before do
+    allow(::Organizations::Organization).to receive(:default_organization).and_return(default_organization)
+  end
 
   shared_examples 'application_setting_audit_events_from_to' do
     it 'calls auditor' do
@@ -405,6 +410,51 @@ RSpec.describe ApplicationSettings::UpdateService, feature_category: :shared do
         end
 
         it_behaves_like 'when updating duo settings', :auto_duo_code_review_enabled, true
+      end
+    end
+
+    context 'when updating foundational agents statuses' do
+      include_context 'with mocked Foundational Chat Agents'
+
+      let(:foundational_agents_statuses) { [] }
+      let(:params) { { foundational_agents_statuses: foundational_agents_statuses } }
+      let(:service) { described_class.new(setting, user, params) }
+
+      subject(:result) { service.execute }
+
+      before do
+        default_organization.update!(foundational_agents_status_records: [])
+      end
+
+      context 'when there are errors on validation' do
+        let(:foundational_agents_statuses) do
+          [
+            { 'reference' => foundational_chat_agent_1_ref, 'enabled' => false },
+            { 'reference' => invalid_agent_reference, 'enabled' => true }
+          ]
+        end
+
+        it 'adds validation errors to the setting' do
+          expect(result).to be false
+        end
+      end
+
+      context 'when new statuses are valid' do
+        let(:foundational_agents_statuses) do
+          [
+            { 'reference' => foundational_chat_agent_1_ref, 'enabled' => false },
+            { 'reference' => foundational_chat_agent_2_ref, 'enabled' => true }
+          ]
+        end
+
+        it 'updates the setting' do
+          expect(result).to be_truthy
+
+          expect(default_organization.foundational_agents_statuses).to match_array([
+            { description: "First agent", enabled: false, name: "Agent 1", reference: "agent_1" },
+            { description: "Second agent", enabled: true, name: "Agent 2", reference: "agent_2" }
+          ])
+        end
       end
     end
   end

@@ -7,7 +7,7 @@ RSpec.describe 'Admin updates EE-only settings', :with_current_organization, fea
   include ListboxHelpers
 
   let_it_be(:admin) { create(:admin) }
-  let_it_be(:default_organization) { Organizations::Organization.default_organization }
+  let_it_be(:default_organization) { create(:organization) }
 
   before do
     stub_env('IN_MEMORY_APPLICATION_SETTINGS', 'false')
@@ -15,6 +15,7 @@ RSpec.describe 'Admin updates EE-only settings', :with_current_organization, fea
     enable_admin_mode!(admin)
     allow(License).to receive(:feature_available?).and_return(true)
     allow(Gitlab::Elastic::Helper.default).to receive(:index_exists?).and_return(true)
+    allow(Organizations::Organization).to receive(:default_organization).and_return(default_organization)
   end
 
   describe 'Geo settings', feature_category: :geo_replication do

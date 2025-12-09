@@ -3,6 +3,12 @@
 require 'spec_helper'
 
 RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstraction_layer do
+  let_it_be(:default_organization) { build(:organization) }
+
+  before do
+    allow(::Organizations::Organization).to receive(:default_organization).and_return(default_organization)
+  end
+
   describe '#settings' do
     subject(:settings) { described_class.new.settings }
 
@@ -18,8 +24,7 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
         enabled_expanded_logging: true,
         gitlab_dedicated_instance?: false,
         instance_level_ai_beta_features_enabled: true,
-        model_prompt_cache_enabled?: true,
-        foundational_agents_default_enabled: true
+        model_prompt_cache_enabled?: true
       }
     end
 
@@ -28,7 +33,8 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
         ai_gateway_url: 'http://localhost:3000',
         duo_agent_platform_service_url: 'localhost:50052',
         ai_gateway_timeout_seconds: 60,
-        duo_core_features_enabled?: true
+        duo_core_features_enabled?: true,
+        foundational_agents_default_enabled: true
       }
     end
 
@@ -111,7 +117,7 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
     end
 
     context 'with foundational_agents_default_enabled false' do
-      let(:application_setting_attributes) { super().merge(foundational_agents_default_enabled: false) }
+      let(:ai_settings_attributes) { super().merge(foundational_agents_default_enabled: false) }
 
       it { expect(settings).to include(foundational_agents_default_enabled: 'false') }
     end
@@ -199,6 +205,19 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
       let(:application_setting_attributes) { super().merge(model_prompt_cache_enabled?: false) }
 
       it { expect(settings).to include(prompt_cache_enabled: 'false') }
+    end
+
+    describe 'foundational_agent_statuses' do
+      include_context 'with mocked Foundational Chat Agents'
+
+      it 'returns all foundational agents except duo chat with default enabled status' do
+        statuses = Gitlab::Json.parse(settings.fetch(:foundational_agents_statuses))
+
+        expect(statuses).to match_array([
+          { "description" => "First agent", "enabled" => nil, "name" => "Agent 1", "reference" => "agent_1" },
+          { "description" => "Second agent", "enabled" => nil, "name" => "Agent 2", "reference" => "agent_2" }
+        ])
+      end
     end
   end
 end

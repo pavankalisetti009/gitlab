@@ -15,13 +15,13 @@ module Admin
       :gitlab_dedicated_instance?,
       :instance_level_ai_beta_features_enabled,
       :model_prompt_cache_enabled?,
-      :foundational_agents_default_enabled,
       to: :application_settings
 
     delegate :ai_gateway_url,
       :ai_gateway_timeout_seconds,
       :duo_agent_platform_service_url,
       :duo_core_features_enabled?,
+      :foundational_agents_default_enabled,
       to: :ai_settings
 
     def settings
@@ -51,7 +51,8 @@ module Admin
         toggle_beta_models_path: url_helpers.admin_ai_duo_self_hosted_toggle_beta_models_path,
         foundational_agents_default_enabled: foundational_agents_default_enabled,
         show_foundational_agents_availability: show_foundational_agents_availability?,
-        show_foundational_agents_per_agent_availability: show_foundational_agents_per_agent_availability?
+        show_foundational_agents_per_agent_availability: show_foundational_agents_per_agent_availability?,
+        foundational_agents_statuses: Gitlab::Json.dump(foundational_agents_statuses)
       }.transform_values(&:to_s)
     end
 
@@ -91,6 +92,10 @@ module Admin
       Gitlab::CurrentSettings.current_application_settings
     end
     strong_memoize_attr :application_settings
+
+    def foundational_agents_statuses
+      ::Organizations::Organization.default_organization&.foundational_agents_statuses
+    end
 
     def ai_settings
       ::Ai::Setting.instance

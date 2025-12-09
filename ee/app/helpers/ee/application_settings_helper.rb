@@ -93,6 +93,7 @@ module EE
         :duo_sast_fp_detection_availability,
         :enabled_expanded_logging,
         :foundational_agents_default_enabled,
+        :foundational_agents_statuses,
         # Add all Zoekt settings automatically
         *::Search::Zoekt::Settings.all_settings.keys,
         :duo_workflow_oauth_application_id,
