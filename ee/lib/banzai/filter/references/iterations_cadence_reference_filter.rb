@@ -74,10 +74,6 @@ module Banzai
           super
         end
 
-        def object_link_text(object, matches)
-          escape_once(super)
-        end
-
         def requires_unescaping?
           true
         end
