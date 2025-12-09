@@ -749,7 +749,6 @@ export default {
     'app/assets/javascripts/packages_and_registries/shared/components/packages_list_loader.vue',
     'app/assets/javascripts/packages_and_registries/shared/components/persisted_search.vue',
     'app/assets/javascripts/packages_and_registries/shared/components/publish_message.vue',
-    'app/assets/javascripts/packages_and_registries/shared/components/registry_breadcrumb.vue',
     'app/assets/javascripts/packages_and_registries/shared/components/tags_loader.vue',
     'app/assets/javascripts/pages/admin/application_settings/general/components/signup_checkbox.vue',
     'app/assets/javascripts/pages/admin/projects/components/namespace_select.vue',
