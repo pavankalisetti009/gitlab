@@ -303,7 +303,7 @@ RSpec.describe Admin::AiPresenter, feature_category: :ai_abstraction_layer do
 
       context 'for usage billing' do
         where(:feature_enabled, :setting_enabled, :usage_dashboard_path) do
-          true | true | '/admin/gitlab_duo/usage'
+          true | true | '/admin/gitlab_credits_dashboard'
           false | true  | ''
           true  | false | ''
           false | false | ''

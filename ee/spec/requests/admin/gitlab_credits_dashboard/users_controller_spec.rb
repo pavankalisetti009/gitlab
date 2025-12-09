@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Admin::GitlabDuo::Usage::UsersController,
+RSpec.describe Admin::GitlabCreditsDashboard::UsersController,
   :enable_admin_mode, feature_category: :consumables_cost_management do
   let(:admin) { create(:admin) }
   let(:user) { create(:user) }
@@ -13,8 +13,8 @@ RSpec.describe Admin::GitlabDuo::Usage::UsersController,
     stub_feature_flags(usage_billing_dev: usage_billing_dev_enabled)
   end
 
-  describe 'GET /admin/gitlab_duo/usage/users' do
-    subject(:request) { get admin_gitlab_duo_usage_user_path(user) }
+  describe 'GET /admin/gitlab_credits_dashboard/users' do
+    subject(:request) { get admin_gitlab_credits_dashboard_user_path(username: user.username) }
 
     it 'returns 200' do
       request

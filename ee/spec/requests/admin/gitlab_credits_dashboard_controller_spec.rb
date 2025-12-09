@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Admin::GitlabDuo::UsageController, :enable_admin_mode, feature_category: :consumables_cost_management do
+RSpec.describe Admin::GitlabCreditsDashboardController, :enable_admin_mode, feature_category: :consumables_cost_management do
   let(:admin) { create(:admin) }
   let(:usage_billing_dev_enabled) { true }
 
@@ -11,8 +11,8 @@ RSpec.describe Admin::GitlabDuo::UsageController, :enable_admin_mode, feature_ca
     stub_feature_flags(usage_billing_dev: usage_billing_dev_enabled)
   end
 
-  describe 'GET /admin/gitlab_duo/usage' do
-    subject(:request) { get admin_gitlab_duo_usage_path }
+  describe 'GET /admin/gitlab_credits_dashboard' do
+    subject(:request) { get admin_gitlab_credits_dashboard_index_path }
 
     it 'returns 200' do
       request

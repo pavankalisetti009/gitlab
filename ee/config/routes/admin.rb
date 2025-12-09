@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 namespace :admin do
-  resources :users, only: [], constraints: { id: %r{[a-zA-Z./0-9_\-]+} } do
+  resources :users, only: [], constraints: { id: %r{[a-zA-Z./0-9_-]+} } do
     member do
       post :identity_verification_exemption
       delete :destroy_identity_verification_exemption
@@ -53,14 +53,14 @@ namespace :admin do
     resources :configuration, only: [:index]
     resources :self_hosted, only: [:index]
 
-    scope :usage do
-      get '/', action: :index, controller: 'usage', as: :usage
-      resources :users, only: [:show], controller: 'usage/users', param: :username, as: :usage_users
-    end
-
     get 'self_hosted(/*vueroute)', to: 'self_hosted#index'
   end
   get '/code_suggestions', to: redirect('admin/gitlab_duo/seat_utilization')
+  resources :gitlab_credits_dashboard, only: [:index]
+  scope '/gitlab_credits_dashboard' do
+    resources :users, only: [:show], controller: 'gitlab_credits_dashboard/users', param: :username,
+      as: :gitlab_credits_dashboard_users
+  end
 
   namespace :ai do
     ## Support redirection until next major release https://docs.gitlab.com/development/routing/#changing-existing-routes

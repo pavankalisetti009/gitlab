@@ -49,7 +49,7 @@ module Admin
         is_saas: saas?,
         prompt_cache_enabled: model_prompt_cache_enabled?,
         subscription_name: subscription_name,
-        usage_dashboard_path: (url_helpers.admin_gitlab_duo_usage_path if usage_billing_feature_available?)
+        usage_dashboard_path: usage_dashboard_path
       }.merge(duo_amazon_q_add_on_data, duo_paths)
         .transform_values(&:to_s)
         .merge(
@@ -158,6 +158,12 @@ module Admin
       return false if Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
 
       true
+    end
+
+    def usage_dashboard_path
+      return unless usage_billing_feature_available?
+
+      url_helpers.admin_gitlab_credits_dashboard_index_path
     end
   end
 end

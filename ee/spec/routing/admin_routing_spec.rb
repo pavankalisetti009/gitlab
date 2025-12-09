@@ -56,16 +56,16 @@ RSpec.describe 'EE-specific admin routing' do
     end
   end
 
-  describe Admin::GitlabDuo::UsageController, 'routing', feature_category: :consumables_cost_management do
+  describe Admin::GitlabCreditsDashboardController, 'routing', feature_category: :consumables_cost_management do
     it 'routes / to #index' do
-      expect(get('/admin/gitlab_duo/usage')).to route_to('admin/gitlab_duo/usage#index')
+      expect(get('/admin/gitlab_credits_dashboard')).to route_to('admin/gitlab_credits_dashboard#index')
     end
   end
 
-  describe Admin::GitlabDuo::Usage::UsersController, 'routing', feature_category: :consumables_cost_management do
+  describe Admin::GitlabCreditsDashboard::UsersController, 'routing', feature_category: :consumables_cost_management do
     it 'routes / to #show' do
-      expect(get('/admin/gitlab_duo/usage/users/john_doe')).to route_to('admin/gitlab_duo/usage/users#show',
-        username: 'john_doe')
+      expect(get('/admin/gitlab_credits_dashboard/users/john_doe')).to route_to(
+        'admin/gitlab_credits_dashboard/users#show', username: 'john_doe')
     end
   end
 
