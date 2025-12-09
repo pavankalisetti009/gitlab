@@ -58,7 +58,7 @@ module QA
           start_branch: start_branch,
           content: content,
           commit_message: commit_message
-        }.to_json
+        }
       end
 
       private
