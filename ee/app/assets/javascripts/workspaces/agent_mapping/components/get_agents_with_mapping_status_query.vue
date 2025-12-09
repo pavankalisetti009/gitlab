@@ -1,9 +1,10 @@
 <script>
 import { logError } from '~/lib/logger';
+import { normalizeRender } from '~/lib/utils/vue3compat/normalize_render';
 import getAgentsWithAuthorizationStatusQuery from '../graphql/queries/get_agents_with_mapping_status.query.graphql';
 import { AGENT_MAPPING_STATUS_MAPPED, AGENT_MAPPING_STATUS_UNMAPPED } from '../constants';
 
-export default {
+export default normalizeRender({
   props: {
     namespace: {
       type: String,
@@ -12,7 +13,6 @@ export default {
     },
   },
   apollo: {
-    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     getGroupClusterAgents: {
       query: getAgentsWithAuthorizationStatusQuery,
       variables() {
@@ -65,5 +65,5 @@ export default {
   render() {
     return this.$scopedSlots.default?.({ loading: this.$apollo.loading });
   },
-};
+});
 </script>

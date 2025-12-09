@@ -1,10 +1,11 @@
 <script>
 import { WORKSPACE_GROUP, WORKSPACE_PROJECT } from '~/issues/constants';
 import { __ } from '~/locale';
+import { normalizeRender } from '~/lib/utils/vue3compat/normalize_render';
 import { unit } from '../constants';
 import summaryStatsQuery from '../graphql/iteration_issues_summary.query.graphql';
 
-export default {
+export default normalizeRender({
   apollo: {
     issues: {
       query: summaryStatsQuery,
@@ -90,5 +91,5 @@ export default {
       total: this.total,
     });
   },
-};
+});
 </script>

@@ -1,9 +1,10 @@
 <script>
 import CEMembersTableCell from '~/members/components/table/members_table_cell.vue';
 import { MEMBERS_TAB_TYPES } from 'ee_else_ce/members/constants';
+import { normalizeRender } from '~/lib/utils/vue3compat/normalize_render';
 import { canDisableTwoFactor, canOverride, canUnban } from '../../utils';
 
-export default {
+export default normalizeRender({
   name: 'MembersTableCell',
   inject: ['namespace'],
   props: {
@@ -52,5 +53,5 @@ export default {
       },
     });
   },
-};
+});
 </script>
