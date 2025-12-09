@@ -126,4 +126,14 @@ RSpec.describe Gitlab::EventStore, feature_category: :shared do
       end
     end
   end
+
+  describe 'Vulnerabilities::AutoDismissWorker subscription' do
+    let(:subscriptions) { described_class.instance.subscriptions }
+
+    it 'subscribes Vulnerabilities::AutoDismissWorker to Sbom::VulnerabilitiesCreatedEvent' do
+      expect(subscriptions[Sbom::VulnerabilitiesCreatedEvent]).to include(
+        have_attributes(worker: ::Vulnerabilities::AutoDismissWorker)
+      )
+    end
+  end
 end
