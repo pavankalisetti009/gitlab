@@ -21,19 +21,39 @@ RSpec.describe Groups::Settings::GitlabDuo::UsageController, feature_category: :
       end
 
       context 'when in .com', :saas do
-        it 'returns 200' do
-          request
-
-          expect(response).to have_gitlab_http_status(:ok)
+        before do
+          stub_ee_application_setting(should_check_namespace_plan: true)
         end
 
-        context 'when usage_billing_dev FF is disabled' do
-          let(:usage_billing_dev_enabled) { false }
+        it 'renders 404 for free group' do
+          request
 
-          it 'renders 404' do
+          expect(response).to have_gitlab_http_status(:not_found)
+        end
+
+        context 'when group is paid' do
+          subject(:request) { get group_settings_gitlab_duo_usage_path(paid_group) }
+
+          let_it_be(:paid_group) { create(:group_with_plan, plan: :premium_plan) }
+
+          before_all do
+            paid_group.add_owner(user)
+          end
+
+          it 'returns 200' do
             request
 
-            expect(response).to have_gitlab_http_status(:not_found)
+            expect(response).to have_gitlab_http_status(:ok)
+          end
+
+          context 'when usage_billing_dev FF is disabled' do
+            let(:usage_billing_dev_enabled) { false }
+
+            it 'renders 404' do
+              request
+
+              expect(response).to have_gitlab_http_status(:not_found)
+            end
           end
         end
       end
@@ -48,8 +68,16 @@ RSpec.describe Groups::Settings::GitlabDuo::UsageController, feature_category: :
     end
 
     context 'when user is not an owner', :saas do
+      subject(:request) { get group_settings_gitlab_duo_usage_path(paid_group) }
+
+      let_it_be(:paid_group) { create(:group_with_plan, plan: :premium_plan) }
+
       before_all do
-        group.add_maintainer(user)
+        paid_group.add_maintainer(user)
+      end
+
+      before do
+        stub_ee_application_setting(should_check_namespace_plan: true)
       end
 
       it 'returns 404' do

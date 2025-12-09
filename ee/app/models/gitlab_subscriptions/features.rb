@@ -81,6 +81,7 @@ module GitlabSubscriptions
       zoekt_code_search
       seat_control
       usage_billing
+      group_usage_billing
     ].freeze
 
     PREMIUM_FEATURES = %i[
