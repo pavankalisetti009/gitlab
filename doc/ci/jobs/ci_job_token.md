@@ -364,10 +364,10 @@ pipelines can push to the project. Job tokens from other
 [projects or groups in the allowlist](#add-a-group-or-project-to-the-job-token-allowlist) cannot
 push to your project.
 
-When you use a job token to push to the project, no CI pipelines are triggered. The job token has
-the same access permissions as the user who started the job.
+When you use a job token to push to the project, no CI/CD pipelines are triggered.
+The job token has the same access permissions as the user who started the job.
 
-If you use the tool semantic-release, with **Allow Git push requests to the repository** setting enabled, the tool gives precedence to `CI_JOB_TOKEN` embedded over a GitLab personal access token, if one is configured. There is an [open issue](https://github.com/semantic-release/gitlab/issues/891) that tracks resolution for this edge case.
+If you use the `semantic-release` tool, [this setting might prevent pipeline creation](#the-semantic-release-tool-and-job-tokens).
 
 {{< alert type="warning" >}}
 
@@ -520,6 +520,16 @@ While troubleshooting CI/CD job token authentication issues, be aware that:
   - To remove project access.
 - The CI job token becomes invalid if the job is no longer running, has been erased,
   or if the project is in the process of being deleted.
+
+### The `semantic-release` tool and job tokens
+
+There is a known issue if you use the `semantic-release` tool with the [**Allow Git push requests to the repository** setting](#allow-git-push-requests-to-your-project-repository).
+When enabled:
+
+- The tool authenticates with the job token, even if the tool is configured to use a personal access token.
+- The job token does not trigger new pipelines, so release pipelines might not run.
+
+For more information, see the [issue 891](https://github.com/semantic-release/gitlab/issues/891).
 
 ### JWT format job token errors
 
