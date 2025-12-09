@@ -1,0 +1,47 @@
+# frozen_string_literal: true
+
+module VirtualRegistries
+  module Cache
+    class MarkEntriesForDestructionWorker
+      include ApplicationWorker
+
+      BATCH_SIZE = 500
+      ALLOWED_UPSTREAM_CLASSES = [
+        ::VirtualRegistries::Packages::Maven::Upstream,
+        ::VirtualRegistries::Container::Upstream
+      ].freeze
+
+      data_consistency :sticky
+      queue_namespace :dependency_proxy_blob
+      feature_category :virtual_registry
+      urgency :low
+      defer_on_database_health_signal :gitlab_main,
+        %i[virtual_registries_packages_maven_cache_entries virtual_registries_container_cache_entries], 5.minutes
+      deduplicate :until_executed
+      idempotent!
+
+      def perform(upstream_gid)
+        upstream = safe_locate(upstream_gid)
+
+        return unless upstream
+
+        upstream.default_cache_entries.each_batch(of: BATCH_SIZE, column: :relative_path) do |batch|
+          batch.update_all(
+            status: :pending_destruction,
+            relative_path: Arel.sql("relative_path || '/deleted/' || gen_random_uuid()"),
+            updated_at: Time.current
+          )
+        end
+      end
+
+      private
+
+      def safe_locate(gid)
+        GlobalID::Locator.locate(gid, only: ALLOWED_UPSTREAM_CLASSES)
+      rescue StandardError => e
+        Gitlab::ErrorTracking.track_exception(e, gid: gid, worker: self.class.name)
+        nil
+      end
+    end
+  end
+end

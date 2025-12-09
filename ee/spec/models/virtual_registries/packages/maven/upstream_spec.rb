@@ -647,9 +647,11 @@ RSpec.describe VirtualRegistries::Packages::Maven::Upstream, type: :model, featu
   end
 
   describe '#purge_cache!' do
+    let(:upstream) { build_stubbed(:virtual_registries_packages_maven_upstream) }
+
     it 'enqueues the MarkEntriesForDestructionWorker' do
-      expect(::VirtualRegistries::Packages::Cache::MarkEntriesForDestructionWorker)
-        .to receive(:perform_async).with(upstream.id)
+      expect(::VirtualRegistries::Cache::MarkEntriesForDestructionWorker)
+        .to receive(:perform_async).with(upstream.to_global_id.to_s)
 
       upstream.purge_cache!
     end
