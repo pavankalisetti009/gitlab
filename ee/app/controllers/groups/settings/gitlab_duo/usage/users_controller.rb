@@ -18,8 +18,9 @@ module Groups
 
           def ensure_feature_available!
             return render_404 unless Feature.enabled?(:usage_billing_dev, @group)
+            return render_404 unless Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
 
-            render_404 unless Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+            render_404 unless @group.licensed_feature_available?(:group_usage_billing)
           end
         end
       end
