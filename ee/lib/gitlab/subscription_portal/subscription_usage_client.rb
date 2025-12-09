@@ -113,6 +113,7 @@ module Gitlab
                     nodes {
                       timestamp
                       eventType
+                      flowType
                       projectId
                       namespaceId
                       creditsUsed

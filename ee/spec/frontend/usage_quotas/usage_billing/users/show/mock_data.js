@@ -29,7 +29,8 @@ export const mockDataWithPool = {
                 nodes: [
                   {
                     timestamp: '2025-01-21T16:42:38Z',
-                    eventType: 'Duo Workflow - Code Generation',
+                    flowType: 'Software Development Flow',
+                    eventType: 'Software Development Flow',
                     location: {
                       __typename: 'Project',
                       id: '1',
@@ -40,7 +41,8 @@ export const mockDataWithPool = {
                   },
                   {
                     timestamp: '2025-01-21T16:41:15Z',
-                    eventType: 'Duo Chat - Extended Session',
+                    flowType: 'Convert to GitLab CI/CD Flow',
+                    eventType: 'Convert to GitLab CI/CD Flow',
                     location: {
                       __typename: 'Group',
                       id: '2',
@@ -51,7 +53,8 @@ export const mockDataWithPool = {
                   },
                   {
                     timestamp: '2025-01-21T16:40:22Z',
-                    eventType: 'Code Suggestions - Completion',
+                    flowType: 'Agentic Chat',
+                    eventType: 'Agentic Chat',
                     location: {
                       __typename: 'Project',
                       id: '1',
@@ -62,7 +65,8 @@ export const mockDataWithPool = {
                   },
                   {
                     timestamp: '2025-01-21T16:39:45Z',
-                    eventType: 'Duo Workflow - Test Generation',
+                    flowType: 'Code Review Flow',
+                    eventType: 'Code Review Flow',
                     location: {
                       __typename: 'Group',
                       id: '2',
@@ -73,7 +77,8 @@ export const mockDataWithPool = {
                   },
                   {
                     timestamp: '2025-01-21T16:38:12Z',
-                    eventType: 'Code Review Assistant',
+                    flowType: 'Fix Pipeline Flow',
+                    eventType: 'Fix Pipeline Flow',
                     location: {
                       __typename: 'Project',
                       id: '1',
@@ -84,13 +89,15 @@ export const mockDataWithPool = {
                   },
                   {
                     timestamp: '2025-01-21T16:37:33Z',
-                    eventType: 'Duo Chat',
+                    flowType: 'SAST Vulnerability Resolution Flow',
+                    eventType: 'SAST Vulnerability Resolution Flow',
                     location: null,
                     creditsUsed: 55,
                   },
                   {
                     timestamp: '2025-01-21T16:36:58Z',
-                    eventType: 'Code Suggestions - Refactoring',
+                    flowType: 'SAST FP Detection Flow',
+                    eventType: 'SAST FP Detection Flow',
                     location: {
                       __typename: 'Project',
                       id: '1',
@@ -101,7 +108,8 @@ export const mockDataWithPool = {
                   },
                   {
                     timestamp: '2025-01-21T16:35:41Z',
-                    eventType: 'Vulnerability Explanation',
+                    flowType: 'AI Catalog based Agent or Flow',
+                    eventType: 'AI Catalog based Agent or Flow',
                     location: {
                       __typename: 'Group',
                       id: '2',
@@ -112,7 +120,8 @@ export const mockDataWithPool = {
                   },
                   {
                     timestamp: '2025-01-21T16:34:27Z',
-                    eventType: 'Duo Workflow - Code Generation',
+                    flowType: 'Developer Flow',
+                    eventType: 'Developer Flow',
                     location: {
                       __typename: 'Project',
                       id: '1',
@@ -123,7 +132,8 @@ export const mockDataWithPool = {
                   },
                   {
                     timestamp: '2025-01-21T16:33:05Z',
-                    eventType: 'Duo Workflow - Code Generation',
+                    flowType: 'Other AI Usage',
+                    eventType: 'Other AI Usage',
                     location: {
                       __typename: 'Project',
                       id: '1',
@@ -134,7 +144,8 @@ export const mockDataWithPool = {
                   },
                   {
                     timestamp: '2025-01-21T16:31:52Z',
-                    eventType: 'Duo Workflow - Code Generation',
+                    flowType: 'Other AI Usage',
+                    eventType: 'Other AI Usage',
                     location: {
                       __typename: 'Project',
                       id: '1',

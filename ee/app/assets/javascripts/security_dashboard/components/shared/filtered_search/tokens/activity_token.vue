@@ -96,6 +96,7 @@ export default {
       transformedFilters.hasAiResolution = setSelectedStatus(
         'AI_RESOLUTION_AVAILABLE',
         'AI_RESOLUTION_UNAVAILABLE',
+        filters,
       );
     }
 

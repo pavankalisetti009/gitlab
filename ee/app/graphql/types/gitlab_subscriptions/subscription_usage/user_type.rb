@@ -48,6 +48,7 @@ module Types
         UserEvent = Struct.new(
           :timestamp,
           :event_type,
+          :flow_type,
           :project_id,
           :namespace_id,
           :credits_used,
@@ -100,6 +101,7 @@ module Types
             UserEvent.new(
               timestamp: event[:timestamp],
               event_type: event[:eventType],
+              flow_type: event[:flowType],
               project_id: event[:projectId],
               namespace_id: event[:namespaceId],
               credits_used: event[:creditsUsed],

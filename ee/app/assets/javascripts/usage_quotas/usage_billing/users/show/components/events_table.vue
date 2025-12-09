@@ -22,7 +22,7 @@ export default {
     tableFields() {
       return [
         { key: 'timestamp', label: s__('UsageBilling|Date/Time') },
-        { key: 'eventType', label: s__('UsageBilling|Action') },
+        { key: 'action', label: s__('UsageBilling|Action') },
         { key: 'location', label: s__('UsageBilling|Location') },
         { key: 'creditsUsed', label: s__('UsageBilling|Credit amount') },
       ];
@@ -45,6 +45,10 @@ export default {
         <gl-link v-if="item.location" :href="item.location.webUrl">
           {{ item.location.name }}
         </gl-link>
+      </template>
+
+      <template #cell(action)="{ item }">
+        {{ item.flowType || item.eventType }}
       </template>
 
       <template #cell(creditsUsed)="{ item }">

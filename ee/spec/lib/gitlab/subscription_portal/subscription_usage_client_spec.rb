@@ -316,6 +316,7 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
         {
           timestamp: "2025-10-01T16:25:28Z",
           eventType: "ai_token_usage",
+          flowType: "Software Development Flow",
           projectId: nil,
           namespaceId: nil,
           creditsUsed: 100.78
@@ -323,6 +324,7 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
         {
           timestamp: "2025-10-01T16:30:12Z",
           eventType: "workflow_execution",
+          flowType: "Agentic Chat",
           projectId: "19",
           namespaceId: "99",
           creditsUsed: 200.56
