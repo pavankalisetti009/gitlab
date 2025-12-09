@@ -7652,6 +7652,9 @@ msgstr ""
 msgid "Allow job retries for rollback deployments"
 msgstr ""
 
+msgid "Allow more restrictive 2FA enforcement for subgroups"
+msgstr ""
+
 msgid "Allow new users to create top-level groups"
 msgstr ""
 
@@ -65792,9 +65795,6 @@ msgstr ""
 msgid "Subgroups and projects"
 msgstr ""
 
-msgid "Subgroups can set up their own two-factor authentication rules"
-msgstr ""
-
 msgid "Subject Key Identifier:"
 msgstr ""
 
@@ -70861,6 +70861,9 @@ msgid "Turn on confidentiality"
 msgstr ""
 
 msgid "Turn on confidentiality: Limit visibility to project members with at least the Planner role."
+msgstr ""
+
+msgid "Turning this setting off disables all subgroup 2FA settings. This is a destructive change and cannot be reversed. Read %{link_start}more%{link_end}."
 msgstr ""
 
 msgid "Two-Factor Authentication"
