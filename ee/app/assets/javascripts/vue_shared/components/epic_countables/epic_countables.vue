@@ -113,10 +113,7 @@ export default {
       </gl-alert>
     </gl-popover>
 
-    <span
-      ref="countBadge"
-      class="issue-count-badge gl-mr-0 gl-cursor-help gl-pl-3 gl-pr-0 gl-text-subtle"
-    >
+    <span ref="countBadge" class="issue-count-badge gl-mr-0 gl-cursor-help gl-pr-0 gl-text-subtle">
       <span v-if="allowSubEpics" class="gl-mr-3">
         <gl-icon name="epic" />
         {{ totalEpicsCount }}

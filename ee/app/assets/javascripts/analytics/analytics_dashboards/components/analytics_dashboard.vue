@@ -18,6 +18,7 @@ import UrlSync, {
   HISTORY_REPLACE_UPDATE_METHOD,
   URL_SET_PARAMS_STRATEGY,
 } from '~/vue_shared/components/url_sync.vue';
+import { setPageFullWidth, setPageDefaultWidth } from '~/lib/utils/common_utils';
 import {
   AI_IMPACT_DASHBOARD,
   BUILT_IN_VALUE_STREAM_DASHBOARD,
@@ -185,10 +186,10 @@ export default {
     },
   },
   mounted() {
-    this.setPageFullWidth();
+    setPageFullWidth();
   },
   beforeDestroy() {
-    this.setPageDefaultWidth();
+    setPageDefaultWidth();
 
     this.alert?.dismiss();
 
@@ -246,22 +247,6 @@ export default {
     },
   },
   methods: {
-    setPageFullWidth() {
-      const wrappers = document.querySelectorAll('.container-fluid.container-limited');
-
-      wrappers.forEach((el) => {
-        el.classList.add('not-container-limited');
-        el.classList.remove('container-limited');
-      });
-    },
-    setPageDefaultWidth() {
-      const wrappers = document.querySelectorAll('.container-fluid.not-container-limited');
-
-      wrappers.forEach((el) => {
-        el.classList.add('container-limited');
-        el.classList.remove('not-container-limited');
-      });
-    },
     getDashboardPanels(dashboard) {
       const panels = dashboard.panels?.nodes || [];
 
