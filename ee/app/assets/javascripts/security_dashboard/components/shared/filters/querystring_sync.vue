@@ -1,7 +1,8 @@
 <script>
 import { uniq, isEqual, omit } from 'lodash';
+import { normalizeRender } from '~/lib/utils/vue3compat/normalize_render';
 
-export default {
+export default normalizeRender({
   props: {
     querystringKey: {
       type: String,
@@ -94,5 +95,5 @@ export default {
   render() {
     return this.$scopedSlots.default?.();
   },
-};
+});
 </script>

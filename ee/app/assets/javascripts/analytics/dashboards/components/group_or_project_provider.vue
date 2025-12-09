@@ -1,5 +1,6 @@
 <script>
 import { __, sprintf } from '~/locale';
+import { normalizeRender } from '~/lib/utils/vue3compat/normalize_render';
 import GetGroupOrProjectQuery from '../graphql/get_group_or_project.query.graphql';
 
 const NAMESPACE_LOAD_ERROR = __('Failed to fetch Namespace: %{fullPath}');
@@ -8,7 +9,7 @@ const NAMESPACE_LOAD_ERROR = __('Failed to fetch Namespace: %{fullPath}');
  * Renderless component that resolves a namespace as a group or project
  * given its path name as a property
  */
-export default {
+export default normalizeRender({
   name: 'GroupOrProjectProvider',
   props: {
     fullPath: {
@@ -57,5 +58,5 @@ export default {
       isNamespaceLoading: false,
     });
   },
-};
+});
 </script>

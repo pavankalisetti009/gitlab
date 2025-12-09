@@ -23,7 +23,7 @@ import { sprintf, s__ } from '~/locale';
 import Api from 'ee/api';
 import aiResponseSubscription from 'ee/graphql_shared/subscriptions/ai_completion_response.subscription.graphql';
 import aiResolveVulnerability from '../graphql/ai_resolve_vulnerability.mutation.graphql';
-import { VULNERABILITY_STATE_OBJECTS, FEEDBACK_TYPES } from '../constants';
+import { VULNERABILITY_STATE_OBJECTS, FEEDBACK_TYPES, CONFIDENCE_SCORES } from '../constants';
 import { normalizeGraphQLVulnerability, normalizeGraphQLLastStateTransition } from '../helpers';
 import ResolutionAlert from './resolution_alert.vue';
 import StatusDescription from './status_description.vue';
@@ -115,6 +115,17 @@ export default {
     canExplainWithAi() {
       return (
         this.glAbilities.explainVulnerabilityWithAi && this.vulnerability.aiExplanationAvailable
+      );
+    },
+    canRunAiFalsePositiveDetection() {
+      const alreadyDetectedAsFalsePositive =
+        this.vulnerability.latestFlag?.confidenceScore > CONFIDENCE_SCORES.MINIMAL;
+      return (
+        this.canAdminVulnerability &&
+        this.glAbilities.explainVulnerabilityWithAi &&
+        this.glFeatures.aiExperimentSastFpDetection &&
+        this.vulnerability.reportType === 'sast' &&
+        !alreadyDetectedAsFalsePositive
       );
     },
     showResolutionAlert() {
@@ -388,6 +399,39 @@ export default {
           });
         });
     },
+    runAiFalsePositiveDetection() {
+      this.isProcessingAction = true;
+
+      Api.triggerFalsePositiveDetection(this.vulnerability.id, this.vulnerability.project.id)
+        .then(({ data }) => {
+          if (data.workload && !data.workload.id && data.workload.message) {
+            createAlert({
+              message: data.workload.message,
+              captureError: true,
+              error: new Error(data.workload.message),
+            });
+            return;
+          }
+
+          toast(s__('AI|GitLab Duo False Positive Detection workflow started successfully'), {
+            autoHideDelay: 4000,
+          });
+        })
+        .catch((error) => {
+          const errorMessage =
+            error.response?.data?.message ||
+            s__('AI|Error occurred when starting the AI False Positive Detection workflow.');
+
+          createAlert({
+            message: errorMessage,
+            captureError: true,
+            error,
+          });
+        })
+        .finally(() => {
+          this.isProcessingAction = false;
+        });
+    },
     handleError(error) {
       this.stopSubscription();
       this.isProcessingAction = false;
@@ -457,6 +501,7 @@ export default {
           :show-create-merge-request="canCreateMergeRequest"
           :show-resolve-with-ai="canResolveWithAi"
           :show-explain-with-ai="canExplainWithAi"
+          :can-run-ai-false-positive-detection="canRunAiFalsePositiveDetection"
           :ai-resolution-enabled="vulnerability.aiResolutionEnabled"
           :show-public-project-warning="vulnerability.belongsToPublicProject"
           :merge-requests="vulnerability.mergeRequestLinks"
@@ -465,6 +510,7 @@ export default {
           @explain-vulnerability="explainVulnerability"
           @resolve-vulnerability="startSubscription"
           @agentic-resolve-vulnerability="triggerResolution"
+          @run-ai-false-positive-detection="runAiFalsePositiveDetection"
         />
       </div>
     </div>

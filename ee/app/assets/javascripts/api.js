@@ -160,6 +160,20 @@ export default {
     });
   },
 
+  triggerFalsePositiveDetection(vulnerabilityId, projectId) {
+    const url = Api.buildUrl(this.duoWorkflowsPath);
+
+    return axios.post(url, {
+      project_id: projectId,
+      goal: vulnerabilityId.toString(),
+      start_workflow: true,
+      workflow_definition: 'sast_fp_detection/v1',
+      // needed to present this when calling workflow, reserved for future use
+      agent_privileges: [1, 2, 3, 4, 5],
+      environment: 'web',
+    });
+  },
+
   getGeoSites() {
     const url = Api.buildUrl(this.geoSitesPath);
     return axios.get(url);

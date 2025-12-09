@@ -267,6 +267,63 @@ RSpec.describe Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService, feature_c
 
                 it_behaves_like 'uses the gitlab default model'
               end
+
+              context 'when setting is nil' do
+                before do
+                  allow(::Ai::ModelSelection::InstanceModelSelectionFeatureSetting)
+                    .to receive(:find_or_initialize_by_feature)
+                    .and_return(nil)
+                end
+
+                it_behaves_like 'returns empty headers'
+              end
+
+              context 'when decorator returns objects with nil feature_setting' do
+                before do
+                  allow(::Gitlab::Graphql::Representation::ModelSelection::FeatureSetting)
+                    .to receive(:decorate)
+                    .and_return([
+                      instance_double(
+                        Gitlab::Graphql::Representation::ModelSelection::FeatureSetting,
+                        feature_setting: nil,
+                        selectable_models: []
+                      )
+                    ])
+                end
+
+                it_behaves_like 'uses the gitlab default model'
+              end
+
+              context 'when decorator returns objects with feature_setting that has nil feature' do
+                before do
+                  setting_double = instance_double(
+                    Ai::ModelSelection::InstanceModelSelectionFeatureSetting,
+                    feature: nil
+                  )
+
+                  allow(::Gitlab::Graphql::Representation::ModelSelection::FeatureSetting)
+                    .to receive(:decorate)
+                    .and_return([
+                      instance_double(
+                        Gitlab::Graphql::Representation::ModelSelection::FeatureSetting,
+                        feature_setting: setting_double,
+                        selectable_models: []
+                      )
+                    ])
+                end
+
+                it_behaves_like 'uses the gitlab default model'
+              end
+
+              context 'when decorator_result is not present' do
+                before do
+                  allow(::Gitlab::Graphql::Representation::ModelSelection::FeatureSetting)
+                    .to receive(:decorate)
+                    .and_return([])
+                end
+
+                it_behaves_like 'uses the gitlab default model'
+              end
             end
 
             context 'when an invalid user_selected_model_identifier is provided' do
@@ -458,6 +515,24 @@ RSpec.describe Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService, feature_c
                   body: model_definitions_response,
                   headers: { 'Content-Type' => 'application/json' }
                 )
+
+              # Stub FeatureSetting.decorate to handle new parameters
+              allow(::Gitlab::Graphql::Representation::ModelSelection::FeatureSetting)
+                .to receive(:decorate)
+                      .and_wrap_original do |_method, settings, **_kwargs|
+                # Return decorated settings with selectable_models
+                settings.map do |setting|
+                  instance_double(
+                    Gitlab::Graphql::Representation::ModelSelection::FeatureSetting,
+                    feature_setting: setting,
+                    selectable_models: [
+                      { ref: 'claude_sonnet_3_7_20250219' },
+                      { ref: 'claude_sonnet_4_20250514' },
+                      { ref: 'claude_sonnet_4_20250514_vertex' }
+                    ]
+                  )
+                end
+              end
             end
 
             context 'when a valid user_selected_model_identifier is provided' do
@@ -489,6 +564,63 @@ RSpec.describe Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService, feature_c
                   allow_next_instance_of(::Ai::ModelSelection::FetchModelDefinitionsService) do |fetch_service|
                     allow(fetch_service).to receive(:execute).and_return(nil)
                   end
+                end
+
+                it_behaves_like 'uses the gitlab default model'
+              end
+
+              context 'when setting is nil' do
+                before do
+                  allow(::Ai::ModelSelection::NamespaceFeatureSetting)
+                    .to receive(:find_or_initialize_by_feature)
+                    .and_return(nil)
+                end
+
+                it_behaves_like 'returns empty headers'
+              end
+
+              context 'when decorator returns objects with nil feature_setting' do
+                before do
+                  allow(::Gitlab::Graphql::Representation::ModelSelection::FeatureSetting)
+                    .to receive(:decorate)
+                    .and_return([
+                      instance_double(
+                        Gitlab::Graphql::Representation::ModelSelection::FeatureSetting,
+                        feature_setting: nil,
+                        selectable_models: []
+                      )
+                    ])
+                end
+
+                it_behaves_like 'uses the gitlab default model'
+              end
+
+              context 'when decorator returns objects with feature_setting that has nil feature' do
+                before do
+                  setting_double = instance_double(
+                    Ai::ModelSelection::NamespaceFeatureSetting,
+                    feature: nil
+                  )
+
+                  allow(::Gitlab::Graphql::Representation::ModelSelection::FeatureSetting)
+                    .to receive(:decorate)
+                    .and_return([
+                      instance_double(
+                        Gitlab::Graphql::Representation::ModelSelection::FeatureSetting,
+                        feature_setting: setting_double,
+                        selectable_models: []
+                      )
+                    ])
+                end
+
+                it_behaves_like 'uses the gitlab default model'
+              end
+
+              context 'when decorator_result is not present' do
+                before do
+                  allow(::Gitlab::Graphql::Representation::ModelSelection::FeatureSetting)
+                    .to receive(:decorate)
+                    .and_return([])
                 end
 
                 it_behaves_like 'uses the gitlab default model'
@@ -592,6 +724,60 @@ RSpec.describe Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService, feature_c
             end
           end
         end
+      end
+    end
+  end
+
+  describe '#selectable_models' do
+    include_context 'with model selections fetch definition service side-effect context'
+
+    let(:root_namespace) { group }
+
+    before do
+      stub_feature_flags(duo_agent_platform_model_selection: group)
+      stub_feature_flags(self_hosted_agent_platform: false)
+
+      stub_request(:get, fetch_service_endpoint_url)
+        .to_return(
+          status: 200,
+          body: model_definitions_response,
+          headers: { 'Content-Type' => 'application/json' }
+        )
+    end
+
+    context 'when setting is nil' do
+      it 'returns empty array' do
+        result = service.send(:selectable_models, nil, group)
+        expect(result).to eq([])
+      end
+    end
+
+    context 'when setting is present' do
+      let!(:namespace_setting) do
+        create(:ai_namespace_feature_setting,
+          namespace: group,
+          feature: :duo_agent_platform,
+          offered_model_ref: nil)
+      end
+
+      it 'returns selectable models from decorator' do
+        allow(::Gitlab::Graphql::Representation::ModelSelection::FeatureSetting)
+          .to receive(:decorate)
+          .and_wrap_original do |_method, settings, **_kwargs|
+            settings.map do |setting|
+              instance_double(
+                Gitlab::Graphql::Representation::ModelSelection::FeatureSetting,
+                feature_setting: setting,
+                selectable_models: [
+                  { ref: 'claude_sonnet_3_7_20250219' },
+                  { ref: 'claude_sonnet_4_20250514' }
+                ]
+              )
+            end
+          end
+
+        result = service.send(:selectable_models, namespace_setting, group)
+        expect(result).to eq(%w[claude_sonnet_3_7_20250219 claude_sonnet_4_20250514])
       end
     end
   end

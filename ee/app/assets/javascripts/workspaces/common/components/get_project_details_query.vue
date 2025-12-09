@@ -2,11 +2,12 @@
 import { logError } from '~/lib/logger';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { TYPE_ORGANIZATION } from '~/graphql_shared/constants';
+import { normalizeRender } from '~/lib/utils/vue3compat/normalize_render';
 import getProjectDetailsQuery from '../graphql/queries/get_project_details.query.graphql';
 import getWorkspacesNamespaceClusterAgents from '../graphql/queries/get_workspaces_namespace_cluster_agents.query.graphql';
 import getWorkspacesOrganizationClusterAgents from '../graphql/queries/get_workspaces_organization_cluster_agents.query.graphql';
 
-export default {
+export default normalizeRender({
   inject: ['organizationId'],
   props: {
     projectFullPath: {
@@ -16,7 +17,6 @@ export default {
     },
   },
   apollo: {
-    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     projectDetails: {
       query: getProjectDetailsQuery,
       variables() {
@@ -132,5 +132,5 @@ export default {
   render() {
     return this.$scopedSlots.default?.();
   },
-};
+});
 </script>

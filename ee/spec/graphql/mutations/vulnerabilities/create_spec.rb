@@ -60,6 +60,7 @@ RSpec.describe Mutations::Vulnerabilities::Create, feature_category: :vulnerabil
         expect(mutated_vulnerability.description).to eq(attributes[:description])
         expect(mutated_vulnerability.finding_description).to eq(attributes[:description])
         expect(mutated_vulnerability.solution).to eq(attributes[:solution])
+
         expect(subject[:errors]).to be_empty
       end
     end
@@ -155,6 +156,28 @@ RSpec.describe Mutations::Vulnerabilities::Create, feature_category: :vulnerabil
             expect { resolve(described_class, args: attributes, ctx: query_context) }.to not_trigger_internal_events('manually_create_vulnerability')
           end
         end
+      end
+    end
+
+    context 'with tracked context params' do
+      before do
+        create(:security_project_tracked_context,
+          project: project,
+          context_name: "Test Context",
+          context_type: :tag,
+          state: ::Security::ProjectTrackedContext::STATES[:tracked]
+        )
+
+        attributes[:project_tracked_context] = {
+          name: "Test Context",
+          type: "TAG"
+        }
+      end
+
+      it 'creates with a correct tracked context' do
+        tracked_context = mutated_vulnerability.vulnerability_finding.project_tracked_context
+        expect(tracked_context.context_name).to eq("Test Context")
+        expect(tracked_context).to be_tag
       end
     end
   end

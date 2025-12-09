@@ -1,8 +1,9 @@
 <script>
 import { parseGraphQLIssueLinksToRelatedIssues } from '~/observability/utils';
+import { normalizeRender } from '~/lib/utils/vue3compat/normalize_render';
 import getLogsRelatedIssues from './graphql/get_logs_related_issues.query.graphql';
 
-export default {
+export default normalizeRender({
   props: {
     projectFullPath: {
       type: String,
@@ -61,5 +62,5 @@ export default {
       error: this.error,
     });
   },
-};
+});
 </script>

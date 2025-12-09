@@ -1,9 +1,10 @@
 <script>
 import { parseGraphQLIssueLinksToRelatedIssues } from '~/observability/utils';
+import { normalizeRender } from '~/lib/utils/vue3compat/normalize_render';
 import { GRAPHQL_METRIC_TYPE } from '../../constants';
 import getMetricsRelatedIssues from './graphql/get_metrics_related_issues.query.graphql';
 
-export default {
+export default normalizeRender({
   props: {
     projectFullPath: {
       type: String,
@@ -52,5 +53,5 @@ export default {
       error: this.error,
     });
   },
-};
+});
 </script>
