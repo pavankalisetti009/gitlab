@@ -43,8 +43,6 @@ class Admin::AuditLogsController < Admin::ApplicationController
                 Namespace.find_by_id(audit_events_params[:entity_id])
               end
 
-    push_frontend_feature_flag(:use_consolidated_audit_event_stream_dest_api)
-
     Gitlab::Tracking.event(self.class.name, 'search_audit_event', user: current_user)
   end
 

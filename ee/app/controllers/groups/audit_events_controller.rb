@@ -30,8 +30,6 @@ class Groups::AuditEventsController < Groups::ApplicationController
     @events = AuditEventSerializer.new.represent(events)
     @audit_event_definitions = Gitlab::Audit::Type::Definition.names_with_category
 
-    push_frontend_feature_flag(:use_consolidated_audit_event_stream_dest_api, group)
-
     Gitlab::Tracking.event(self.class.name, 'search_audit_event', user: current_user, namespace: group)
   end
 

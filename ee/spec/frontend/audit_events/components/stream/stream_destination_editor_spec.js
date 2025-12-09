@@ -317,7 +317,6 @@ describe('StreamDestinationEditor', () => {
         it('passes correct props to delete modal', () => {
           expect(findStreamDeleteModal().props()).toMatchObject({
             item: propsDefinition.httpItem,
-            type: 'http',
           });
         });
       });
@@ -344,7 +343,6 @@ describe('StreamDestinationEditor', () => {
         it('passes correct props to delete modal', () => {
           expect(findStreamDeleteModal().props()).toMatchObject({
             item: propsDefinition.awsItem,
-            type: DESTINATION_TYPE_AMAZON_S3,
           });
         });
       });
@@ -371,7 +369,6 @@ describe('StreamDestinationEditor', () => {
         it('passes correct props to delete modal', () => {
           expect(findStreamDeleteModal().props()).toMatchObject({
             item: propsDefinition.gcpItem,
-            type: DESTINATION_TYPE_GCP_LOGGING,
           });
         });
       });
