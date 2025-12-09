@@ -190,12 +190,15 @@ module Vulnerabilities
       preload(:scanner, :identifiers, :feedbacks, project: [:namespace, :project_feature])
     end
 
-    scope :with_false_positive, ->(false_positive) do
+    scope :with_false_positive, ->(false_positive, min_confidence: nil) do
       flags = ::Vulnerabilities::Flag.arel_table
+
+      subquery = ::Vulnerabilities::Flag.select(1).false_positive
+      subquery = subquery.where(flags[:confidence_score].gt(min_confidence)) if min_confidence
 
       where(
         false_positive ? 'EXISTS (?)' : 'NOT EXISTS (?)',
-        ::Vulnerabilities::Flag.select(1).false_positive.where(flags[:vulnerability_occurrence_id].eq(arel_table[:id]))
+        subquery.where(flags[:vulnerability_occurrence_id].eq(arel_table[:id]))
       )
     end
 

@@ -91,6 +91,45 @@ RSpec.describe Vulnerabilities::Flags::DismissFalsePositiveService, feature_cate
           expect(flag.project_id).to eq(project.id)
           expect(flag.finding).to eq(finding)
         end
+
+        context 'when flag saves successfully' do
+          it 'calls Vulnerabilities::EsHelper.sync_elasticsearch with vulnerability id' do
+            expect(::Vulnerabilities::EsHelper)
+              .to receive(:sync_elasticsearch)
+                    .with([vulnerability.id])
+
+            result = service.execute
+
+            expect(result).to be_success
+          end
+        end
+
+        context 'when vulnerability has no findings' do
+          let(:vulnerability_without_findings) { create(:vulnerability, project: project) }
+
+          subject(:service) { described_class.new(user, vulnerability_without_findings) }
+
+          it 'does not call sync_elasticsearch' do
+            expect(::Vulnerabilities::EsHelper).not_to receive(:sync_elasticsearch)
+            service.execute
+          end
+        end
+
+        context 'when flag fails to save' do
+          before do
+            allow_next_instance_of(Vulnerabilities::Flag) do |flag|
+              allow(flag).to receive_messages(
+                save: false,
+                errors: instance_double(ActiveModel::Errors, full_messages: ['Validation failed'])
+              )
+            end
+          end
+
+          it 'does not call sync_elasticsearch' do
+            expect(::Vulnerabilities::EsHelper).not_to receive(:sync_elasticsearch)
+            service.execute
+          end
+        end
       end
 
       context 'when manual flag already exists' do
