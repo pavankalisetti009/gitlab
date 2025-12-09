@@ -777,17 +777,38 @@ RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_manage
 
     describe '.with_false_positive' do
       let_it_be(:finding) { create(:vulnerabilities_finding) }
-      let_it_be(:finding_with_fp) { create(:vulnerabilities_finding, vulnerability_flags: [create(:vulnerabilities_flag)]) }
+
+      let_it_be(:finding_with_fp) do
+        create(
+          :vulnerabilities_finding,
+          vulnerability_flags: [create(:vulnerabilities_flag, confidence_score: 0.5)]
+        )
+      end
+
+      let_it_be(:finding_with_zero_confidence_fp) do
+        create(
+          :vulnerabilities_finding,
+          vulnerability_flags: [create(:vulnerabilities_flag, confidence_score: 0.0)]
+        )
+      end
 
       context 'when false_positive is true' do
         it 'returns findings with false positive' do
-          expect(described_class.with_false_positive(true)).to contain_exactly(finding_with_fp)
+          expect(described_class.with_false_positive(true)).to contain_exactly(finding_with_fp, finding_with_zero_confidence_fp)
         end
       end
 
       context 'when false_positive is false' do
         it 'returns findings without false positive' do
           expect(described_class.with_false_positive(false)).to include(finding)
+        end
+      end
+
+      context 'when min_confidence is provided' do
+        it 'filters out false positives below the confidence threshold' do
+          expect(
+            described_class.with_false_positive(true, min_confidence: 0)
+          ).to contain_exactly(finding_with_fp)
         end
       end
     end

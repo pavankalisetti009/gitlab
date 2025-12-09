@@ -46,6 +46,8 @@ module Vulnerabilities
 
         if flag.save
           send_audit_event
+          ::Vulnerabilities::EsHelper.sync_elasticsearch([vulnerability.id])
+
           ServiceResponse.success(payload: { flag: flag, is_new_flag: true })
         else
           ServiceResponse.error(message: flag.errors.full_messages.join(', '))

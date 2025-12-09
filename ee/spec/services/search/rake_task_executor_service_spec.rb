@@ -954,7 +954,7 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
   describe '#index_vulnerabilities' do
     let_it_be(:vulnerability_read) { create(:vulnerability_read) }
 
-    context 'when vulnerability indexing is not allowed' do
+    context 'when elasticsearch indexing is not allowed' do
       before do
         allow(::Search::Elastic::VulnerabilityIndexHelper)
           .to receive(:indexing_allowed?).and_return(false)
@@ -988,15 +988,7 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
       end
     end
 
-    context 'when rails env is dev' do
-      before do
-        stub_rails_env('development')
-      end
-
-      it_behaves_like 'it performs indexing'
-    end
-
-    context 'when vulnerability indexing is allowed' do
+    context 'when elasticsearch indexing is allowed' do
       before do
         allow(::Search::Elastic::VulnerabilityIndexHelper)
           .to receive(:indexing_allowed?).and_return(true)

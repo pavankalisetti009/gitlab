@@ -11,7 +11,7 @@ export function initUsageBillingDashboard(el) {
     return null;
   }
 
-  const { userUsagePath, namespacePath } = el.dataset;
+  const { userUsagePath, namespacePath, customersUsageDashboardPath } = el.dataset;
 
   Vue.use(VueApollo);
   const apolloProvider = new VueApollo({ defaultClient: createApolloClient() });
@@ -20,7 +20,11 @@ export function initUsageBillingDashboard(el) {
     el,
     name: 'UsageBillingDashboardRoot',
     apolloProvider,
-    provide: { userUsagePath, namespacePath },
+    provide: {
+      userUsagePath,
+      namespacePath,
+      customersUsageDashboardPath,
+    },
     render(createElement) {
       return createElement(UsageBillingDashboardPage);
     },

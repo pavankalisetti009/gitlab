@@ -5,6 +5,7 @@ import CurrentUsageCard from 'ee/usage_quotas/usage_billing/components/current_u
 import CurrentOverageUsageCard from 'ee/usage_quotas/usage_billing/components/current_overage_usage_card.vue';
 import MonthlyWaiverCard from 'ee/usage_quotas/usage_billing/components/monthly_waiver_card.vue';
 import PurchaseCommitmentCard from 'ee/usage_quotas/usage_billing/components/purchase_commitment_card.vue';
+import OverageOptInCard from 'ee/usage_quotas/usage_billing/components/overage_opt_in_card.vue';
 import getSubscriptionUsageQuery from 'ee/usage_quotas/usage_billing/graphql/get_subscription_usage.query.graphql';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import UsageBillingApp from 'ee/usage_quotas/usage_billing/components/app.vue';
@@ -40,11 +41,16 @@ describe('UsageBillingApp', () => {
 
   const createComponent = ({
     mockQueryHandler = jest.fn().mockResolvedValue(usageDataWithCommitment),
+    provide = {},
   } = {}) => {
     wrapper = shallowMountExtended(UsageBillingApp, {
       apolloProvider: createMockApollo([[getSubscriptionUsageQuery, mockQueryHandler]]),
       stubs: {
         GlSprintf,
+      },
+      provide: {
+        customersUsageDashboardPath: 'https://gitlab.com/dummy-usage-dashboard-path',
+        ...provide,
       },
     });
   };
@@ -159,6 +165,32 @@ describe('UsageBillingApp', () => {
 
       expect(purchaseCommitmentCard.exists()).toBe(true);
       expect(purchaseCommitmentCard.props('hasCommitment')).toBe(true);
+    });
+
+    describe.each`
+      scenario                                                                | canAcceptOverageTerms | cardVisible
+      ${'renders overage opt-in card if canAcceptOverageTerms=true'}          | ${true}               | ${true}
+      ${'does not render overage opt-in card if canAcceptOverageTerms=false'} | ${false}              | ${false}
+    `('$scenario', ({ canAcceptOverageTerms, cardVisible }) => {
+      beforeEach(async () => {
+        createComponent({
+          mockQueryHandler: jest.fn().mockResolvedValue({
+            ...usageDataNoCommitmentNoMonthlyWaiverNoOverage,
+            data: {
+              subscriptionUsage: {
+                ...usageDataNoCommitmentNoMonthlyWaiverNoOverage.data.subscriptionUsage,
+                canAcceptOverageTerms,
+              },
+            },
+          }),
+        });
+        await waitForPromises();
+      });
+
+      it(`will set overageOptInCard visibility to: ${cardVisible}`, () => {
+        const overageOptInCard = wrapper.findComponent(OverageOptInCard);
+        expect(overageOptInCard.exists()).toBe(cardVisible);
+      });
     });
 
     it('renders usage by user tab', () => {
