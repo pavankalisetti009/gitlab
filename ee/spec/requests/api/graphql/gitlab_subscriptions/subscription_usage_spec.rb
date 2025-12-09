@@ -25,24 +25,28 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
         {
           timestamp: "2025-10-01T16:25:28Z",
           eventType: "ai_token_usage",
+          flowType: "Software Development Flow",
           location: nil,
           creditsUsed: 12.5
         },
         {
           timestamp: "2025-10-01T16:30:12Z",
           eventType: "workflow_execution",
+          flowType: "Convert to GitLab CI/CD Flow",
           location: { fullPath: project.full_path },
           creditsUsed: 25.32
         },
         {
           timestamp: "2025-10-01T16:52:28Z",
           eventType: "ai_token_usage",
+          flowType: "Agentic Chat",
           location: { fullPath: root_group.full_path },
           creditsUsed: 13.33
         },
         {
           timestamp: "2025-10-01T22:30:12Z",
           eventType: "workflow_execution",
+          flowType: "Code Review Flow",
           location: { fullPath: project.full_path },
           creditsUsed: 1
         }
@@ -105,6 +109,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
               [
                 :timestamp,
                 :event_type,
+                :flow_type,
                 query_graphql_field(:location, {}, [
                   '... on Group { fullPath }',
                   '... on Project { fullPath }'
@@ -166,6 +171,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
         {
           timestamp: "2025-10-01T16:25:28Z",
           eventType: "ai_token_usage",
+          flowType: "Software Development Flow",
           projectId: nil,
           namespaceId: nil,
           creditsUsed: 12.5
@@ -173,6 +179,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
         {
           timestamp: "2025-10-01T16:30:12Z",
           eventType: "workflow_execution",
+          flowType: "Convert to GitLab CI/CD Flow",
           projectId: project.id,
           namespaceId: nil,
           creditsUsed: 25.32
@@ -180,6 +187,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
         {
           timestamp: "2025-10-01T16:52:28Z",
           eventType: "ai_token_usage",
+          flowType: "Agentic Chat",
           projectId: nil,
           namespaceId: root_group.id,
           creditsUsed: 13.33
@@ -187,6 +195,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
         {
           timestamp: "2025-10-01T22:30:12Z",
           eventType: "workflow_execution",
+          flowType: "Code Review Flow",
           projectId: project.id,
           namespaceId: root_group.id,
           creditsUsed: 1

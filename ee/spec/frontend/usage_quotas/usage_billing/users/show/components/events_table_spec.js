@@ -10,7 +10,7 @@ describe('EventsTable', () => {
   const mockEvents = [
     {
       timestamp: '2023-12-01T10:30:00Z',
-      eventType: 'Code Completion',
+      flowType: 'Code Completion',
       location: {
         name: 'gitlab-org/gitlab',
         webUrl: 'https://gitlab.com/gitlab-org/gitlab',
@@ -19,7 +19,7 @@ describe('EventsTable', () => {
     },
     {
       timestamp: '2023-12-01T09:15:00Z',
-      eventType: 'Code Generation',
+      flowType: 'Code Generation',
       location: {
         name: 'gitlab-org/gitlabhq',
         webUrl: 'https://gitlab.com/gitlab-org/gitlabhq',
@@ -61,7 +61,7 @@ describe('EventsTable', () => {
 
       expect(tableFields).toEqual([
         { key: 'timestamp', label: 'Date/Time' },
-        { key: 'eventType', label: 'Action' },
+        { key: 'action', label: 'Action' },
         { key: 'location', label: 'Location' },
         { key: 'creditsUsed', label: 'Credit amount' },
       ]);
@@ -82,8 +82,12 @@ describe('EventsTable', () => {
         );
       });
 
-      it('renders event type', () => {
-        expect(firstRowCells.at(1).text()).toBe(mockEvents[0].eventType);
+      it('renders action from flowType', () => {
+        expect(firstRowCells.at(1).text()).toBe(mockEvents[0].flowType);
+      });
+
+      it('renders action from eventType if flowType is not present', () => {
+        expect(findTableRows().at(2).findAll('td').at(1).text()).toBe(mockEvents[2].eventType);
       });
 
       describe('location cell', () => {
