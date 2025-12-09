@@ -402,7 +402,8 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
             exceeded: 'false',
             full: 'false'
           },
-          validity_checks_enabled: 'false'
+          validity_checks_enabled: 'false',
+          manage_duo_settings_path: "/#{project.full_path}/edit#js-gitlab-duo-settings"
         }
       end
 

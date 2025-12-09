@@ -1,4 +1,5 @@
 import SecurityDashboard from 'ee/security_dashboard/components/shared/security_dashboard.vue';
+import NewSecurityDashboardBanner from 'ee/security_dashboard/components/shared/new_security_dashboard_banner.vue';
 import gradesQuery from 'ee/security_dashboard/graphql/queries/instance_vulnerability_grades.query.graphql';
 import historyQuery from 'ee/security_dashboard/graphql/queries/instance_vulnerability_history.query.graphql';
 import VulnerabilitiesOverTimeChart from 'ee/security_dashboard/components/shared/vulnerabilities_over_time_chart.vue';
@@ -16,8 +17,9 @@ describe('Security Dashboard Layout component', () => {
     wrapper.findComponent(VulnerabilitiesOverTimeChart);
   const findVulnerabilitySeverities = () => wrapper.findComponent(VulnerabilitySeverities);
   const findExportButton = () => wrapper.findComponent(PdfExportButton);
+  const findBanner = () => wrapper.findComponent(NewSecurityDashboardBanner);
 
-  const createWrapper = ({ showExport = false, stubs = {} } = {}) => {
+  const createWrapper = ({ showExport = false, stubs = {}, provide = {} } = {}) => {
     wrapper = shallowMountExtended(SecurityDashboard, {
       propsData: { historyQuery, gradesQuery, showExport },
       stubs: {
@@ -26,6 +28,7 @@ describe('Security Dashboard Layout component', () => {
       },
       provide: {
         groupFullPath,
+        ...provide,
       },
     });
   };
@@ -34,6 +37,20 @@ describe('Security Dashboard Layout component', () => {
     createWrapper();
 
     expect(wrapper.findByTestId('page-heading').text()).toBe('Security dashboard');
+  });
+
+  it('displays upgrade banner', () => {
+    createWrapper();
+
+    expect(findBanner().exists()).toBe(true);
+  });
+
+  describe('instance security dashboard', () => {
+    it('does not display upgrade banner', () => {
+      createWrapper({ provide: { groupFullPath: undefined } });
+
+      expect(findBanner().exists()).toBe(false);
+    });
   });
 
   it('displays charts', () => {

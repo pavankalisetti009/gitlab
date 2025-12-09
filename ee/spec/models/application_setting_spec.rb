@@ -784,6 +784,48 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       end
     end
 
+    describe '#foundational_agents_statuses, #foundational_agents_statuses=' do
+      include_context 'with mocked Foundational Chat Agents'
+
+      let_it_be(:default_organization) { create(:organization) }
+      let(:organization) { default_organization }
+
+      before do
+        allow(::Organizations::Organization).to receive(:default_organization).and_return(organization)
+      end
+
+      it "fetches values from ::Ai::Settings.instance" do
+        default_organization.foundational_agents_statuses = [{ reference: foundational_chat_agent_1_ref,
+                                                               enabled: false }]
+
+        expect(setting.reload.foundational_agents_statuses).to include(
+          hash_including(
+            reference: foundational_chat_agent_1_ref, enabled: false),
+          hash_including(
+            reference: foundational_chat_agent_2_ref, enabled: nil)
+        )
+
+        expect(setting.reload.foundational_agents_statuses).to include(
+          hash_including(reference: foundational_chat_agent_1_ref, enabled: false),
+          hash_including(reference: foundational_chat_agent_2_ref, enabled: nil)
+        )
+      end
+
+      context 'when default organization is nil' do
+        let(:organization) { nil }
+
+        it 'is an error' do
+          expect do
+            setting.foundational_agents_statuses
+          end.to raise_error(RuntimeError, "Default organization not found")
+
+          expect do
+            setting.foundational_agents_statuses = []
+          end.to raise_error(RuntimeError, "Default organization not found")
+        end
+      end
+    end
+
     context 'when validating geo_node_allowed_ips', feature_category: :geo_replication do
       where(:allowed_ips, :is_valid) do
         "192.1.1.1"                   | true

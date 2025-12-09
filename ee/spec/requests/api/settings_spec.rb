@@ -11,8 +11,11 @@ RSpec.describe API::Settings, 'EE Settings', :aggregate_failures, feature_catego
   let(:project) { create(:project) }
   let(:path) { "/application/settings" }
 
+  let_it_be(:default_organization) { create(:organization) }
+
   before do
     stub_env('IN_MEMORY_APPLICATION_SETTINGS', 'false')
+    allow(::Organizations::Organization).to receive(:default_organization).and_return(default_organization)
   end
 
   it_behaves_like 'GET request permissions for admin mode'
@@ -711,6 +714,62 @@ RSpec.describe API::Settings, 'EE Settings', :aggregate_failures, feature_catego
           expect(response).to have_gitlab_http_status(:ok)
           expect(json_response['auto_duo_code_review_enabled']).to eq(true)
         end
+      end
+    end
+  end
+
+  context 'foundational_agents_statuses' do
+    include_context 'with mocked Foundational Chat Agents'
+
+    let(:foundational_agents_statuses) { nil }
+    let(:params) { { foundational_agents_statuses: foundational_agents_statuses } }
+
+    subject(:update_settings) do
+      put api('/application/settings', admin, admin_mode: true), params: params
+    end
+
+    before do
+      default_organization.foundational_agents_statuses = []
+
+      update_settings
+    end
+
+    context 'when is nil' do
+      let(:foundational_agents_statuses) { nil }
+
+      it 'is optional' do
+        expect(response).to have_gitlab_http_status(:ok)
+      end
+    end
+
+    context 'when valid' do
+      let(:foundational_agents_statuses) do
+        [
+          { 'reference' => foundational_chat_agent_1_ref, 'enabled' => false },
+          { 'reference' => foundational_chat_agent_2_ref, 'enabled' => true }
+        ]
+      end
+
+      it 'updates namespace ai settings' do
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(default_organization.reload.foundational_agents_statuses).to match_array([
+          { description: "First agent", enabled: false, name: "Agent 1", reference: "agent_1" },
+          { description: "Second agent", enabled: true, name: "Agent 2", reference: "agent_2" }
+        ])
+      end
+    end
+
+    context 'when record is invalid' do
+      let(:foundational_agents_statuses) do
+        [
+          { 'reference' => foundational_chat_agent_1_ref, 'enabled' => false },
+          { 'reference' => invalid_agent_reference, 'enabled' => true }
+        ]
+      end
+
+      it 'is bad request' do
+        expect(response).to have_gitlab_http_status(:bad_request)
+        expect(json_response['message']['foundational_agents_statuses']).to include('Foundational agents status records is invalid')
       end
     end
   end

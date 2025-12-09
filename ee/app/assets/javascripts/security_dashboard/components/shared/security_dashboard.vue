@@ -1,6 +1,7 @@
 <script>
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import PdfExportButton from 'ee/security_dashboard/components/shared/pdf_export_button.vue';
+import NewSecurityDashboardBanner from './new_security_dashboard_banner.vue';
 import VulnerabilitySeverities from './project_security_status_chart.vue';
 import VulnerabilitiesOverTimeChart from './vulnerabilities_over_time_chart.vue';
 
@@ -10,6 +11,7 @@ export default {
     VulnerabilitySeverities,
     PageHeading,
     PdfExportButton,
+    NewSecurityDashboardBanner,
   },
   inject: ['groupFullPath'],
   props: {
@@ -57,6 +59,8 @@ export default {
         <pdf-export-button v-if="showExportButton" :get-report-data="getReportData" />
       </template>
     </page-heading>
+
+    <new-security-dashboard-banner v-if="groupFullPath" class="gl-mb-7" />
 
     <div class="security-charts gl-grid">
       <vulnerabilities-over-time-chart

@@ -99,6 +99,8 @@ tags:
   description: Operations about runner_controllers
 - name: events
   description: Operations about events
+- name: glql
+  description: Operations about glqls
 - name: keys
   description: Operations about keys
 - name: markdown
@@ -44052,6 +44054,36 @@ paths:
       tags:
       - geo
       operationId: postApiV4GeoNodeProxyIdGraphql
+  "/api/v4/glql":
+    post:
+      summary: Execute GLQL query
+      description: Execute a GLQL (GitLab Query Language) query
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      parameters:
+      - name: postApiV4Glql
+        in: body
+        required: true
+        schema:
+          "$ref": "#/definitions/postApiV4Glql"
+      responses:
+        '200':
+          description: Execute GLQL query
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '429':
+          description: Too Many Requests
+        '500':
+          description: Internal server error
+      tags:
+      - glql
+      operationId: postApiV4Glql
   "/api/v4/integrations/slack/events":
     post:
       description: Receive Slack events
@@ -69839,6 +69871,15 @@ definitions:
     description: |-
       Responsible for making HTTP POST /repo.git/info/refs?service=git-receive-pack
                         request from secondary gitlab-shell to primary
+  postApiV4Glql:
+    type: object
+    properties:
+      glql_yaml:
+        type: string
+        description: The full GLQL code block containing YAML configuration and query
+    required:
+    - glql_yaml
+    description: Execute GLQL query
   postApiV4IntegrationsSlackEvents:
     type: object
     properties:

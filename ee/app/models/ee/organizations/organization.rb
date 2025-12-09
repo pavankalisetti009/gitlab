@@ -6,6 +6,8 @@ module EE
       extend ActiveSupport::Concern
 
       prepended do
+        include ::Ai::FoundationalAgentsStatusable
+
         has_many :active_projects,
           -> { non_archived },
           class_name: 'Project',
@@ -19,6 +21,10 @@ module EE
           class_name: 'RemoteDevelopment::OrganizationClusterAgentMapping',
           inverse_of: :organization
         has_many :mapped_agents, through: :organization_cluster_agent_mappings, source: :agent
+
+        has_many :foundational_agents_status_records,
+          class_name: 'Ai::OrganizationFoundationalAgentStatus',
+          inverse_of: :organization
       end
     end
   end

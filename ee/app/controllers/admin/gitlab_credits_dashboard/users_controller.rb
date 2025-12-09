@@ -1,12 +1,16 @@
 # frozen_string_literal: true
 
 module Admin
-  module GitlabDuo
-    class UsageController < Admin::ApplicationController
+  module GitlabCreditsDashboard
+    class UsersController < Admin::ApplicationController
       feature_category :consumables_cost_management
       urgency :low
 
       before_action :ensure_feature_available!
+
+      def show
+        @username = params.permit(:username)[:username]
+      end
 
       private
 

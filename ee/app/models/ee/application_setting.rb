@@ -814,6 +814,18 @@ module EE
       ::Ai::Setting.instance.update!(foundational_agents_default_enabled: value)
     end
 
+    def foundational_agents_statuses
+      raise 'Default organization not found' unless ::Organizations::Organization.default_organization
+
+      ::Organizations::Organization.default_organization.foundational_agents_statuses
+    end
+
+    def foundational_agents_statuses=(value)
+      raise 'Default organization not found' unless ::Organizations::Organization.default_organization
+
+      ::Organizations::Organization.default_organization.update!(foundational_agents_statuses: value)
+    end
+
     def seat_control_user_cap?
       return false unless License.feature_available?(:seat_control) # rubocop:disable Gitlab/LicenseAvailableUsage -- Does not have cyclical dependency as it's not used for Registration features
 
