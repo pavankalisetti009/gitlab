@@ -7,6 +7,11 @@ module Gitlab
         class << self
           include Gitlab::Utils::StrongMemoize
 
+          FEATURES_WITH_SELF_HOSTED_BETA_RESTRICTION = [
+            :duo_agent_platform,
+            :duo_agent_platform_agentic_chat
+          ].freeze
+
           def decorate(
             feature_settings, with_self_hosted_models: false, with_gitlab_models: false,
             model_definitions: nil)
@@ -25,6 +30,13 @@ module Gitlab
 
           def valid_model_params(feature_setting, with_valid_models)
             return {} unless with_valid_models
+
+            # DAP self-hosted models are beta in 18.7 and require acceptance of GitLab's testing terms before use.
+            if !beta_models_enabled? &&
+                FEATURES_WITH_SELF_HOSTED_BETA_RESTRICTION.include?(feature_setting.feature.to_sym)
+
+              return { valid_models: [] }
+            end
 
             compatible_llms = feature_setting.compatible_llms || []
 
