@@ -6,7 +6,6 @@ module EE
     extend ::Gitlab::Utils::Override
     include SafeFormatHelper
 
-    # rubocop: disable CodeReuse/ActiveRecord -- this module requires queries in many places
     prepended do
       include Elastic::ApplicationVersionedSearch
       include MemberRoles::MemberRoleRelation
@@ -126,16 +125,6 @@ module EE
           .non_request
           .order(access_level: :desc)
           .first
-      end
-
-      override :shared_members
-      def shared_members(group)
-        shared_members = super
-
-        return shared_members unless ::Gitlab::Saas.feature_available?(:service_accounts_invite_restrictions)
-        return shared_members unless ::Feature.enabled?(:restrict_invites_for_comp_id_service_accounts, :instance)
-
-        ::Members::ServiceAccounts::CompositeIdMembersFinder.new(group).execute(shared_members)
       end
     end
 
@@ -385,5 +374,4 @@ module EE
       update_user_group_member_roles
     end
   end
-  # rubocop: enable CodeReuse/ActiveRecord
 end
