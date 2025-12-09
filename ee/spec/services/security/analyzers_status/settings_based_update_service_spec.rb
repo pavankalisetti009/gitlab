@@ -40,44 +40,6 @@ RSpec.describe Security::AnalyzersStatus::SettingsBasedUpdateService, feature_ca
   describe '#execute' do
     subject(:execute) { service.execute }
 
-    context 'when group_settings_based_update_worker feature flag is disabled for some root ancestors' do
-      let_it_be(:another_root_group) { create(:group) }
-      let_it_be(:another_group) { create(:group, parent: another_root_group) }
-      let_it_be_with_reload(:project_with_disabled_ff) { create(:project, group: another_group) }
-
-      let(:project_ids) { [project1.id, project2.id, project_with_disabled_ff.id] }
-
-      before do
-        stub_feature_flags(group_settings_based_update_worker: root_group)
-
-        project1.security_setting.update!(secret_push_protection_enabled: true)
-        project2.security_setting.update!(secret_push_protection_enabled: true)
-        project_with_disabled_ff.security_setting.update!(secret_push_protection_enabled: true)
-      end
-
-      it 'only processes projects whose root ancestor has the feature flag enabled' do
-        expect { execute }.to change { Security::AnalyzerProjectStatus.count }.by(4) # 2 setting + 2 aggregated
-
-        expect(Security::AnalyzerProjectStatus
-          .find_by(project: project1, analyzer_type: :secret_detection_secret_push_protection)).to be_present
-        expect(Security::AnalyzerProjectStatus
-          .find_by(project: project2, analyzer_type: :secret_detection_secret_push_protection)).to be_present
-
-        expect(Security::AnalyzerProjectStatus
-          .find_by(project: project_with_disabled_ff, analyzer_type: :secret_detection)).to be_nil
-        expect(Security::AnalyzerProjectStatus
-          .find_by(project: project_with_disabled_ff, analyzer_type: :secret_detection_secret_push_protection))
-          .to be_nil
-      end
-
-      it 'calls InventoryFilters service only with projects that have the feature flag enabled' do
-        expect(inventory_filters_update_service).to receive(:execute).once.with(
-          match_array([project1, project2]), anything)
-
-        execute
-      end
-    end
-
     context 'when analyzer_type is not supported' do
       let(:analyzer_type) { :unsupported_analyzer }
 

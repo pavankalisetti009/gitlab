@@ -46,9 +46,7 @@ RSpec.describe Search::GroupService, '#visibility', feature_category: :global_se
           ensure_elasticsearch_index!
         end
 
-        # merge_requests do not use traversal_ids in queries
-        # https://gitlab.com/gitlab-org/gitlab/-/issues/491211
-        it_behaves_like 'search respects visibility', group_access: false
+        it_behaves_like 'search respects visibility'
       end
     end
   end
