@@ -356,7 +356,11 @@ module Vulnerabilities
     end
 
     def location
-      super.presence || metadata.fetch('location', {})
+      loc = super.presence || metadata.fetch('location', {})
+      loc = Gitlab::Json.parse(loc) if loc.is_a?(String)
+      loc.is_a?(Hash) ? loc : {}
+    rescue JSON::ParserError
+      {}
     end
 
     def file

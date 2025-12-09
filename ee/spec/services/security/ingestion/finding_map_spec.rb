@@ -85,5 +85,56 @@ RSpec.describe Security::Ingestion::FindingMap, feature_category: :vulnerability
         expect(hash[:security_project_tracked_context_id]).to be_nil
       end
     end
+
+    context 'when location_data is a valid JSON string' do
+      let(:location_hash) { { "file" => "test.rb", "line" => 10 } }
+      let(:report_finding) do
+        build(
+          :ci_reports_security_finding,
+          identifiers: [identifier],
+          original_data: { 'location' => location_hash.to_json }
+        )
+      end
+
+      it 'parses the JSON string to a hash' do
+        expect(finding_map.to_hash[:location]).to eq(location_hash)
+      end
+    end
+
+    context 'when location_data is an invalid JSON string' do
+      let(:report_finding) do
+        build(:ci_reports_security_finding,
+          identifiers: [identifier],
+          original_data: { 'location' => 'invalid json{' })
+      end
+
+      it 'returns an empty hash' do
+        expect(finding_map.to_hash[:location]).to eq({})
+      end
+    end
+
+    context 'when location_data is not a hash or string' do
+      let(:report_finding) do
+        build(:ci_reports_security_finding,
+          identifiers: [identifier],
+          original_data: { 'location' => 123 })
+      end
+
+      it 'returns an empty hash' do
+        expect(finding_map.to_hash[:location]).to eq({})
+      end
+    end
+
+    context 'when location_data is a string that parses to a non-Hash value' do
+      let(:report_finding) do
+        build(:ci_reports_security_finding,
+          identifiers: [identifier],
+          original_data: { 'location' => '123' })
+      end
+
+      it 'returns an empty hash' do
+        expect(finding_map.to_hash[:location]).to eq({})
+      end
+    end
   end
 end
