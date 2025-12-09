@@ -62,6 +62,7 @@ const createTemplate = (config = {}) => {
     },
     provide: {
       userUsagePath: '/gitlab_duo/users/:id',
+      customersUsageDashboardPath: 'http://localhost:5000/subscriptions/A-123456/usage',
     },
     props: Object.keys(argTypes),
     template: `<usage-billing-app />`,

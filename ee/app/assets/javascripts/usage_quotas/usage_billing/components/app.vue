@@ -13,6 +13,7 @@ import CurrentUsageCard from './current_usage_card.vue';
 import CurrentOverageUsageCard from './current_overage_usage_card.vue';
 import MonthlyWaiverCard from './monthly_waiver_card.vue';
 import UsageTrendsChart from './usage_trends_chart.vue';
+import OverageOptInCard from './overage_opt_in_card.vue';
 
 export default {
   name: 'UsageBillingApp',
@@ -31,6 +32,7 @@ export default {
     UserDate,
     HumanTimeframe,
     UsageTrendsChart,
+    OverageOptInCard,
   },
   apollo: {
     subscriptionUsage: {
@@ -224,6 +226,11 @@ export default {
           :overage-credits-used="overageCreditsUsed"
           :monthly-waiver-credits-used="monthlyWaiverCreditsUsed"
           :month-end-date="subscriptionUsage.endDate"
+        />
+
+        <overage-opt-in-card
+          v-if="subscriptionUsage.canAcceptOverageTerms"
+          :customers-usage-dashboard-path="subscriptionUsage.subscriptionPortalUsageDashboardUrl"
         />
 
         <purchase-commitment-card
