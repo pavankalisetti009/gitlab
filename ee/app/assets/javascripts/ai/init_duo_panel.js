@@ -7,6 +7,7 @@ import { createRouter } from 'ee/ai/duo_agents_platform/router/ai_panel_router';
 import DuoAgenticChat from 'ee/ai/duo_agentic_chat/components/duo_agentic_chat.vue';
 import DuoChat from 'ee/ai/tanuki_bot/components/duo_chat.vue';
 import { activeWorkItemIds } from '~/work_items/utils';
+import { setAgenticMode } from 'ee/ai/utils';
 import store from './tanuki_bot/store';
 import AIPanel from './components/ai_panel.vue';
 
@@ -26,10 +27,15 @@ export function initDuoPanel() {
     metadata,
     userModelSelectionEnabled,
     agenticAvailable,
+    forceAgenticModeForCoreDuoUsers,
     agenticUnavailableMessage,
     chatTitle,
     chatDisabledReason,
   } = el.dataset;
+
+  if (parseBoolean(forceAgenticModeForCoreDuoUsers)) {
+    setAgenticMode({ agenticMode: true, saveCookie: true });
+  }
 
   const router = createRouter('/', 'user');
   Vue.use(VueApollo);
@@ -55,7 +61,8 @@ export function initDuoPanel() {
       resourceId,
       metadata,
       userModelSelectionEnabled: parseBoolean(userModelSelectionEnabled),
-      agenticAvailable: parseBoolean(agenticAvailable),
+      isAgenticAvailable: parseBoolean(agenticAvailable),
+      forceAgenticModeForCoreDuoUsers: parseBoolean(forceAgenticModeForCoreDuoUsers),
       chatTitle,
     },
   };

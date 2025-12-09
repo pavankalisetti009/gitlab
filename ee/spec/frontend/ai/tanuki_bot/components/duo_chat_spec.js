@@ -1228,7 +1228,7 @@ describe('toggle position based on chatMode', () => {
       propsData: {
         userId: MOCK_USER_ID,
         resourceId: MOCK_RESOURCE_ID,
-        agenticAvailable: true,
+        isAgenticAvailable: true,
       },
     });
 
@@ -1241,7 +1241,7 @@ describe('toggle position based on chatMode', () => {
       propsData: {
         userId: MOCK_USER_ID,
         resourceId: MOCK_RESOURCE_ID,
-        agenticAvailable: true,
+        isAgenticAvailable: true,
       },
     });
 
@@ -1259,7 +1259,7 @@ describe('Agentic Mode Toggle (when agenticChatGa FF is disabled)', () => {
       propsData: {
         userId: MOCK_USER_ID,
         resourceId: MOCK_RESOURCE_ID,
-        agenticAvailable: true,
+        isAgenticAvailable: true,
       },
     });
   });
@@ -1305,7 +1305,7 @@ describe('Chat (Classic) Toggle (when agenticChatGa FF is enabled)', () => {
       propsData: {
         userId: MOCK_USER_ID,
         resourceId: MOCK_RESOURCE_ID,
-        agenticAvailable: true,
+        isAgenticAvailable: true,
       },
       glFeatures: {
         agenticChatGa: true,

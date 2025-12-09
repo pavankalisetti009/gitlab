@@ -268,4 +268,73 @@ RSpec.describe EE::PageLayoutHelper, feature_category: :shared do
       end
     end
   end
+
+  describe '#force_agentic_mode_for_core_duo_users?' do
+    let(:user) { build(:user) }
+    let(:allowed) { true }
+    let(:enablement_type) { 'duo_pro' }
+    let(:duo_response) do
+      instance_double(Ai::UserAuthorizable::Response, enablement_type: enablement_type, allowed?: allowed)
+    end
+
+    before do
+      allow(user).to receive(:allowed_to_use).with(:duo_chat).and_return(duo_response)
+    end
+
+    context 'when feature flag is disabled' do
+      before do
+        stub_feature_flags(no_duo_classic_for_duo_core_users: false)
+      end
+
+      it 'returns false regardless of enablement type' do
+        expect(helper.force_agentic_mode_for_core_duo_users?(user)).to be(false)
+      end
+
+      context 'with duo_core enablement' do
+        let(:enablement_type) { 'duo_core' }
+
+        it 'returns false' do
+          expect(helper.force_agentic_mode_for_core_duo_users?(user)).to be(false)
+        end
+      end
+    end
+
+    context 'when feature flag is enabled' do
+      before do
+        stub_feature_flags(no_duo_classic_for_duo_core_users: true)
+      end
+
+      context 'when user has duo_pro enablement' do
+        let(:enablement_type) { 'duo_pro' }
+
+        it 'returns false' do
+          expect(helper.force_agentic_mode_for_core_duo_users?(user)).to be(false)
+        end
+      end
+
+      context 'when user has duo_enterprise enablement' do
+        let(:enablement_type) { 'duo_enterprise' }
+
+        it 'returns false' do
+          expect(helper.force_agentic_mode_for_core_duo_users?(user)).to be(false)
+        end
+      end
+
+      context 'when user has duo_core enablement' do
+        let(:enablement_type) { 'duo_core' }
+
+        it 'returns true' do
+          expect(helper.force_agentic_mode_for_core_duo_users?(user)).to be(true)
+        end
+      end
+
+      context 'when user is not allowed to use duo_chat' do
+        let(:allowed) { false }
+
+        it 'returns false' do
+          expect(helper.force_agentic_mode_for_core_duo_users?(user)).to be(false)
+        end
+      end
+    end
+  end
 end

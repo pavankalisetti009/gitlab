@@ -53,7 +53,10 @@ RSpec.describe 'Duo Chat > User opens Duo Chat', :js, :saas, feature_category: :
 
     it 'closes Duo Chat drawer when close button is clicked' do
       if Users::ProjectStudio.enabled_for_user?(user) # rubocop:disable RSpec/AvoidConditionalStatements -- temporary Project Studio rollout
-        within_testid('duo-chat-promo-callout-popover') { find_by_testid('close-icon').click }
+        if has_testid?('duo-chat-promo-callout-popover', wait: 1) # rubocop:disable RSpec/AvoidConditionalStatements -- temporary Project Studio rollout
+          within_testid('duo-chat-promo-callout-popover') { find_by_testid('close-icon').click }
+        end
+
         find_by_testid('content-container-collapse-button').click
 
         expect(page).not_to have_css('.ai-panel')

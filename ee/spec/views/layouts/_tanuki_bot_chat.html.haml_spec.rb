@@ -8,7 +8,7 @@ RSpec.describe 'layouts/_tanuki_bot_chat', feature_category: :duo_chat do
   let(:duo_scope_hash) { { project: project } }
 
   before do
-    allow(view).to receive(:current_user).and_return(current_user)
+    allow(view).to receive_messages(current_user: current_user, project_studio_enabled?: false)
     allow(current_user).to receive(:can?).and_return(true)
     allow(::Gitlab::Llm::TanukiBot).to receive_messages(
       duo_scope_hash: duo_scope_hash,

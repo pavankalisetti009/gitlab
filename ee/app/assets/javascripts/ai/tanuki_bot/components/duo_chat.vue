@@ -88,7 +88,7 @@ export default {
       required: false,
       default: null,
     },
-    agenticAvailable: {
+    isAgenticAvailable: {
       type: Boolean,
       required: false,
       default: false,
@@ -620,14 +620,14 @@ export default {
         @track-feedback="onTrackFeedback"
         @chat-resize="onChatResize"
       >
-        <template v-if="agenticAvailable && glFeatures.agenticChatGa" #agentic-switch>
+        <template v-if="isAgenticAvailable && glFeatures.agenticChatGa" #agentic-switch>
           <gl-toggle v-model="duoClassicModePreference" label-position="left">
             <template #label>
               <span class="gl-font-normal gl-text-subtle">{{ s__('DuoChat|Chat (Classic)') }}</span>
             </template>
           </gl-toggle>
         </template>
-        <template v-else-if="agenticAvailable" #agentic-switch>
+        <template v-else-if="isAgenticAvailable" #agentic-switch>
           <gl-toggle v-model="duoAgenticModePreference" label-position="left">
             <template #label>
               <span class="gl-font-normal gl-text-subtle">{{

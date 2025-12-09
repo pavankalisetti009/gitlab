@@ -302,6 +302,47 @@ RSpec.describe Security::PolicyDismissal, feature_category: :security_policy_man
 
     let_it_be(:approval_policy_rule) { create(:approval_policy_rule, security_policy: security_policy) }
 
+    context 'when dismissal covers all violation finding UUIDs and licenses' do
+      let_it_be(:violation_1) do
+        create(:scan_result_policy_violation,
+          project: project,
+          merge_request: merge_request,
+          approval_policy_rule: approval_policy_rule,
+          violation_data: {
+            "violations" => {
+              "scan_finding" => { "uuids" => { "newly_detected" => %w[uuid-1 uuid-2] } },
+              "license_scanning" => { 'MIT License' => ['rack'] }
+            }
+          })
+      end
+
+      let_it_be(:violation_2) do
+        create(:scan_result_policy_violation,
+          project: project,
+          merge_request: merge_request,
+          approval_policy_rule: approval_policy_rule,
+          violation_data: {
+            "violations" => {
+              "scan_finding" => { "uuids" => { "previously_existing" => ['uuid-3'] } },
+              "license_scanning" => { 'Apache License 2.0' => ['bundler'] }
+            }
+          })
+      end
+
+      let_it_be(:policy_dismissal) do
+        create(:policy_dismissal,
+          project: project,
+          merge_request: merge_request,
+          security_policy: security_policy,
+          security_findings_uuids: %w[uuid-1 uuid-2 uuid-3 uuid-4],
+          licenses: { 'MIT License' => ['rack'], 'Apache License 2.0' => ['bundler'] })
+      end
+
+      it 'returns true when all violation finding UUIDs and licenses are covered' do
+        expect(policy_dismissal.applicable_for_all_violations?).to be true
+      end
+    end
+
     context 'when dismissal covers all violation finding UUIDs' do
       let_it_be(:violation_1) do
         create(:scan_result_policy_violation, :new_scan_finding,
@@ -467,6 +508,62 @@ RSpec.describe Security::PolicyDismissal, feature_category: :security_policy_man
         expect(empty_dismissal.applicable_for_all_violations?).to be false
       end
     end
+
+    context 'when dismissal does not cover all violation licenses' do
+      let_it_be(:violation_1) do
+        create(:scan_result_policy_violation,
+          project: project,
+          merge_request: merge_request,
+          approval_policy_rule: approval_policy_rule,
+          violation_data: {
+            "violations" => {
+              "scan_finding" => { "uuids" => { "newly_detected" => ['uuid-1'] } },
+              "license_scanning" => { 'MIT License' => %w[rack bundler] }
+            }
+          })
+      end
+
+      let_it_be(:policy_dismissal) do
+        create(:policy_dismissal,
+          project: project,
+          merge_request: merge_request,
+          security_policy: security_policy,
+          security_findings_uuids: ['uuid-1'],
+          licenses: { 'MIT License' => ['rack'] })
+      end
+
+      it 'returns false when some violation license components are missing' do
+        expect(policy_dismissal.applicable_for_all_violations?).to be false
+      end
+    end
+
+    context 'when dismissal does not cover all violation license names' do
+      let_it_be(:violation_1) do
+        create(:scan_result_policy_violation,
+          project: project,
+          merge_request: merge_request,
+          approval_policy_rule: approval_policy_rule,
+          violation_data: {
+            "violations" => {
+              "scan_finding" => { "uuids" => { "newly_detected" => ['uuid-1'] } },
+              "license_scanning" => { 'MIT License' => ['rack'], 'Apache License 2.0' => ['bundler'] }
+            }
+          })
+      end
+
+      let_it_be(:policy_dismissal) do
+        create(:policy_dismissal,
+          project: project,
+          merge_request: merge_request,
+          security_policy: security_policy,
+          security_findings_uuids: ['uuid-1'],
+          licenses: { 'MIT License' => ['rack'] })
+      end
+
+      it 'returns false when some violation licenses are missing' do
+        expect(policy_dismissal.applicable_for_all_violations?).to be false
+      end
+    end
   end
 
   describe '#applicable_for_findings?' do
@@ -506,7 +603,12 @@ RSpec.describe Security::PolicyDismissal, feature_category: :security_policy_man
   describe '#preserve!' do
     let_it_be(:project) { create(:project) }
     let_it_be(:merge_request) { create(:merge_request, target_project: project, source_project: project) }
-    let(:policy_dismissal) { create(:policy_dismissal, project: project, merge_request: merge_request) }
+    let_it_be(:policy_configuration) { create(:security_orchestration_policy_configuration, project: project) }
+    let_it_be(:security_policy) do
+      create(:security_policy, security_orchestration_policy_configuration: policy_configuration)
+    end
+
+    let_it_be(:approval_policy_rule) { create(:approval_policy_rule, security_policy: security_policy) }
 
     subject(:preserve) { policy_dismissal.preserve! }
 
@@ -515,8 +617,40 @@ RSpec.describe Security::PolicyDismissal, feature_category: :security_policy_man
     end
 
     context 'when dismissal is applicable for all violations' do
-      before do
-        allow(policy_dismissal).to receive(:applicable_for_all_violations?).and_return(true)
+      let_it_be(:violation) do
+        create(:scan_result_policy_violation, :new_scan_finding,
+          project: project,
+          merge_request: merge_request,
+          approval_policy_rule: approval_policy_rule,
+          uuids: %w[uuid-1 uuid-2])
+      end
+
+      let(:policy_dismissal) do
+        create(:policy_dismissal,
+          project: project,
+          merge_request: merge_request,
+          security_policy: security_policy,
+          security_findings_uuids: %w[uuid-1 uuid-2 uuid-3])
+      end
+
+      it 'changes status to preserved and publishes event', :aggregate_failures do
+        expect { preserve }.to change { policy_dismissal.reload.status }.from('open').to('preserved')
+
+        expect(Gitlab::EventStore).to have_received(:publish) do |event|
+          expect(event).to be_a(Security::PolicyDismissalPreservedEvent)
+          expect(event.data[:security_policy_dismissal_id]).to eq(policy_dismissal.id)
+        end
+      end
+    end
+
+    context 'when dismissal is for any_merge_request policy' do
+      let(:policy_dismissal) do
+        create(:policy_dismissal,
+          project: project,
+          merge_request: merge_request,
+          security_policy: security_policy,
+          security_findings_uuids: [],
+          licenses: {})
       end
 
       it 'changes status to preserved and publishes event', :aggregate_failures do
@@ -530,8 +664,20 @@ RSpec.describe Security::PolicyDismissal, feature_category: :security_policy_man
     end
 
     context 'when dismissal is not applicable for all violations' do
-      before do
-        allow(policy_dismissal).to receive(:applicable_for_all_violations?).and_return(false)
+      let_it_be(:violation) do
+        create(:scan_result_policy_violation, :new_scan_finding,
+          project: project,
+          merge_request: merge_request,
+          approval_policy_rule: approval_policy_rule,
+          uuids: %w[uuid-1 uuid-2 uuid-3])
+      end
+
+      let(:policy_dismissal) do
+        create(:policy_dismissal,
+          project: project,
+          merge_request: merge_request,
+          security_policy: security_policy,
+          security_findings_uuids: %w[uuid-1 uuid-2])
       end
 
       it 'destroys the dismissal instead of preserving it' do
