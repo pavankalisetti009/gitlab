@@ -47,7 +47,7 @@ module QA
             branch: branch || project.default_branch,
             commit_message: commit_message,
             actions: actions
-          }.merge(new_branch).to_json
+          }.merge(new_branch)
         end
 
         # Add files
