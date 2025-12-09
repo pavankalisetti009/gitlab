@@ -881,8 +881,7 @@ RSpec.describe GeoNode, :request_store, :geo, type: :model, feature_category: :g
 
     context 'when selective sync is disabled' do
       it 'raises an error' do
-        expect { namespace_ids_for_group_owned_replicables }
-          .to raise_error('This scope should not be needed without selective sync')
+        expect { namespace_ids_for_group_owned_replicables }.to raise_error(::Geo::Errors::UnknownSelectiveSyncType)
       end
     end
 

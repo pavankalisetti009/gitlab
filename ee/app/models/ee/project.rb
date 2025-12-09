@@ -763,6 +763,8 @@ module EE
             where(arel_table.name => { namespace_id: node.namespaces_for_group_owned_replicables.select(:id) })
           elsif node.selective_sync_by_shards?
             within_shards(node.selective_sync_shards)
+          else
+            raise ::Geo::Errors::UnknownSelectiveSyncType.new(selective_sync_type: node.selective_sync_type)
           end
 
         if params.key?(:primary_key_in) && params[:primary_key_in].present?

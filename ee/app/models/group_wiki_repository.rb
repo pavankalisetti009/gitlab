@@ -67,6 +67,8 @@ class GroupWikiRepository < ApplicationRecord
         group_wiki_repositories_for_selected_namespaces(node)
       elsif node.selective_sync_by_shards?
         group_wiki_repositories_for_selected_shards(node)
+      else
+        raise ::Geo::Errors::UnknownSelectiveSyncType.new(selective_sync_type: node.selective_sync_type)
       end
 
     if params.key?(:primary_key_in) && params[:primary_key_in].present?
