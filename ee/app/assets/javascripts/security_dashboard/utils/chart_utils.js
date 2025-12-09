@@ -1,13 +1,6 @@
 import { s__ } from '~/locale';
-
-export const SEVERITY_LEVELS = {
-  CRITICAL: s__('severity|Critical'),
-  HIGH: s__('severity|High'),
-  MEDIUM: s__('severity|Medium'),
-  LOW: s__('severity|Low'),
-  INFO: s__('severity|Info'),
-  UNKNOWN: s__('severity|Unknown'),
-};
+import { getCssVariable } from '~/lib/utils/css_utils';
+import { SEVERITY_LEVELS } from '../constants';
 
 // Constants for vulnerability report URL parameters
 export const ACTIVITY_FILTERS = {
@@ -37,12 +30,12 @@ export const TAB_FILTERS = {
  */
 const formatVulnerabilitiesBySeverity = (vulnerabilitiesOverTime) => {
   const chartSeriesDataBySeverity = {
-    CRITICAL: { name: SEVERITY_LEVELS.CRITICAL, id: 'CRITICAL', data: [] },
-    HIGH: { name: SEVERITY_LEVELS.HIGH, id: 'HIGH', data: [] },
-    MEDIUM: { name: SEVERITY_LEVELS.MEDIUM, id: 'MEDIUM', data: [] },
-    LOW: { name: SEVERITY_LEVELS.LOW, id: 'LOW', data: [] },
-    INFO: { name: SEVERITY_LEVELS.INFO, id: 'INFO', data: [] },
-    UNKNOWN: { name: SEVERITY_LEVELS.UNKNOWN, id: 'UNKNOWN', data: [] },
+    CRITICAL: { name: SEVERITY_LEVELS.critical, id: 'CRITICAL', data: [] },
+    HIGH: { name: SEVERITY_LEVELS.high, id: 'HIGH', data: [] },
+    MEDIUM: { name: SEVERITY_LEVELS.medium, id: 'MEDIUM', data: [] },
+    LOW: { name: SEVERITY_LEVELS.low, id: 'LOW', data: [] },
+    INFO: { name: SEVERITY_LEVELS.info, id: 'INFO', data: [] },
+    UNKNOWN: { name: SEVERITY_LEVELS.unknown, id: 'UNKNOWN', data: [] },
   };
 
   vulnerabilitiesOverTime.forEach((node) => {
@@ -267,4 +260,17 @@ export const generateGrid = ({ totalItems, width, height }) => {
   }
 
   return bestGrid;
+};
+
+/**
+ * Gets the computed hex color for each severity level from their CSS custom property
+ * @returns {Object} keys are severities and values are their hex colors
+ */
+export const getSeverityColors = () => {
+  return Object.fromEntries(
+    Object.keys(SEVERITY_LEVELS).map((severity) => [
+      severity,
+      getCssVariable(`--severity-color-${severity}`),
+    ]),
+  );
 };

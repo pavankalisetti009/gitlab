@@ -4,7 +4,22 @@ import { GlLineChart, GlChartSeriesLabel } from '@gitlab/ui/src/charts';
 import { shallowMount } from '@vue/test-utils';
 import { stubComponent } from 'helpers/stub_component';
 import OpenVulnerabilitiesOverTimeChart from 'ee/security_dashboard/components/shared/charts/open_vulnerabilities_over_time.vue';
-import { COLORS } from 'ee/security_dashboard/components/shared/vulnerability_report/constants';
+import * as ChartUtils from 'ee/security_dashboard/utils/chart_utils';
+import {
+  listenSystemColorSchemeChange,
+  removeListenerSystemColorSchemeChange,
+} from '~/lib/utils/css_utils';
+import { REPORT_TYPE_COLORS } from 'ee/security_dashboard/components/shared/vulnerability_report/constants';
+
+const mockSeverityColors = {
+  critical: '#000000',
+  high: '#111111',
+  medium: '#222222',
+  low: '#333333',
+  info: '#444444',
+  unknown: '#555555',
+};
+jest.mock('~/lib/utils/css_utils');
 
 describe('OpenVulnerabilitiesOverTimeChart', () => {
   let wrapper;
@@ -41,6 +56,10 @@ describe('OpenVulnerabilitiesOverTimeChart', () => {
   const defaultProvide = {
     securityVulnerabilitiesPath: 'namespace/security/vulnerabilities',
   };
+
+  beforeEach(() => {
+    jest.spyOn(ChartUtils, 'getSeverityColors').mockImplementation(() => mockSeverityColors);
+  });
 
   const createComponent = ({ props = {}, provide = {}, stubs = {} } = {}) => {
     wrapper = shallowMount(OpenVulnerabilitiesOverTimeChart, {
@@ -225,23 +244,25 @@ describe('OpenVulnerabilitiesOverTimeChart', () => {
 
   describe('custom chart line- and label colors', () => {
     it.each([
-      ['Critical', 'CRITICAL', COLORS.critical],
-      ['High', 'HIGH', COLORS.high],
-      ['Medium', 'MEDIUM', COLORS.medium],
-      ['Low', 'LOW', COLORS.low],
-      ['Info', 'INFO', COLORS.info],
-      ['Unknown', 'UNKNOWN', COLORS.unknown],
-      ['ApiFuzzing', 'API_FUZZING', COLORS.apiFuzzing],
-      ['ContainerScanning', 'CONTAINER_SCANNING', COLORS.containerScanning],
-      ['CoverageFuzzing', 'COVERAGE_FUZZING', COLORS.coverageFuzzing],
-      ['Dast', 'DAST', COLORS.dast],
-      ['DependencyScanning', 'DEPENDENCY_SCANNING', COLORS.dependencyScanning],
-      ['Sast', 'SAST', COLORS.sast],
-      ['SecretDetection', 'SECRET_DETECTION', COLORS.secretDetection],
-    ])('applies the correct color for "%s" series', (seriesName, seriesId, expectedColor) => {
+      ['Critical', 'CRITICAL', mockSeverityColors.critical],
+      ['High', 'HIGH', mockSeverityColors.high],
+      ['Medium', 'MEDIUM', mockSeverityColors.medium],
+      ['Low', 'LOW', mockSeverityColors.low],
+      ['Info', 'INFO', mockSeverityColors.info],
+      ['Unknown', 'UNKNOWN', mockSeverityColors.unknown],
+      ['ApiFuzzing', 'API_FUZZING', REPORT_TYPE_COLORS.apiFuzzing],
+      ['ContainerScanning', 'CONTAINER_SCANNING', REPORT_TYPE_COLORS.containerScanning],
+      ['CoverageFuzzing', 'COVERAGE_FUZZING', REPORT_TYPE_COLORS.coverageFuzzing],
+      ['Dast', 'DAST', REPORT_TYPE_COLORS.dast],
+      ['DependencyScanning', 'DEPENDENCY_SCANNING', REPORT_TYPE_COLORS.dependencyScanning],
+      ['Sast', 'SAST', REPORT_TYPE_COLORS.sast],
+      ['SecretDetection', 'SECRET_DETECTION', REPORT_TYPE_COLORS.secretDetection],
+    ])('applies the correct color for "%s" series', async (seriesName, seriesId, expectedColor) => {
       const series = [{ name: seriesName, id: seriesId, data: [] }];
 
       createComponent({ props: { chartSeries: series } });
+      await nextTick();
+
       const [coloredSeries] = findLineChart().props('data');
 
       expect(coloredSeries.itemStyle.color).toBe(expectedColor);
@@ -255,6 +276,18 @@ describe('OpenVulnerabilitiesOverTimeChart', () => {
       const [coloredSeries] = findLineChart().props('data');
 
       expect(coloredSeries).toEqual(customSeries[0]);
+    });
+
+    it('calls "listenSystemColorSchemeChange" when mounted', () => {
+      createComponent();
+      expect(listenSystemColorSchemeChange).toHaveBeenCalled();
+    });
+
+    it('calls "removeListenerSystemColorSchemeChange" when component is destroyed', () => {
+      createComponent();
+      wrapper.destroy();
+
+      expect(removeListenerSystemColorSchemeChange).toHaveBeenCalled();
     });
   });
 });
