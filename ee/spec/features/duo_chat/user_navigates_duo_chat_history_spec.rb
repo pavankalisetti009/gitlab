@@ -21,6 +21,8 @@ RSpec.describe 'Duo Chat > User navigates Duo Chat history', :js, :saas, :with_c
   end
 
   def close_popover
+    return unless has_testid?('close-button', wait: 1) # rubocop:disable RSpec/AvoidConditionalStatements -- popover only shown in classic mode
+
     find_by_testid('close-button').click
   end
 
@@ -29,6 +31,7 @@ RSpec.describe 'Duo Chat > User navigates Duo Chat history', :js, :saas, :with_c
   end
 
   before do
+    stub_feature_flags(no_duo_classic_for_duo_core_users: false)
     allow(user).to receive(:allowed_to_use?).and_return(true)
     allow(user).to receive(:can?).and_call_original
 

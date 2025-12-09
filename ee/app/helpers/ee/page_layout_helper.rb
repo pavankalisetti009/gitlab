@@ -3,6 +3,7 @@
 module EE
   module PageLayoutHelper
     VALID_DUO_ADD_ONS = %w[duo_enterprise duo_pro duo_core].freeze
+    VALID_DUO_CORE = %w[duo_core].freeze
 
     def duo_chat_panel_data(user, project, group)
       user_model_selection_enabled = ::Gitlab::Llm::TanukiBot.user_model_selection_enabled?(
@@ -26,6 +27,7 @@ module EE
         metadata: ::Gitlab::DuoWorkflow::Client.metadata(user).to_json,
         user_model_selection_enabled: user_model_selection_enabled.to_s,
         agentic_available: is_agentic_available.to_s,
+        force_agentic_mode_for_core_duo_users: force_agentic_mode_for_core_duo_users?(user).to_s,
         agentic_unavailable_message: agentic_unavailable_message(user, project || group, is_agentic_available),
         chat_title: chat_title,
         chat_disabled_reason: chat_disabled_reason.to_s,
@@ -53,5 +55,12 @@ module EE
       s_("DuoChat|You don't currently have access to Duo Chat, please contact your GitLab administrator.")
     end
     # rubocop:enable Layout/LineLength
+
+    def force_agentic_mode_for_core_duo_users?(user)
+      return false unless ::Feature.enabled?(:no_duo_classic_for_duo_core_users, user)
+
+      response = user.allowed_to_use(:duo_chat)
+      response.allowed? && response.enablement_type == "duo_core"
+    end
   end
 end
