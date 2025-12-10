@@ -62645,6 +62645,9 @@ msgstr ""
 msgid "SecurityReports|Risk score formula"
 msgstr ""
 
+msgid "SecurityReports|Risk scores are being calculated. Please try again later."
+msgstr ""
+
 msgid "SecurityReports|Scan details"
 msgstr ""
 

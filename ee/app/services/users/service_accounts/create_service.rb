@@ -105,7 +105,7 @@ module Users
       def seats_available?
         return true if ultimate?
 
-        User.service_account.count < License.current.seats.to_i
+        User.service_accounts_without_composite_identity.count < License.current.seats.to_i
       end
     end
   end

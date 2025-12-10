@@ -14,6 +14,8 @@ const GROUP_BY_PARAM_NAME = 'groupBy';
 const GROUP_BY_DEFAULT = 'default';
 const GROUP_BY_PROJECT = 'project';
 
+const BACKFILL_MIGRATION_ERROR_MESSAGE = 'backfill migration is not completed';
+
 export default {
   name: 'GroupRiskScorePanel',
   components: {
@@ -48,6 +50,7 @@ export default {
       riskScore: 0,
       projects: [],
       hasFetchError: false,
+      backfillMigrationOngoing: false,
       groupedBy,
       projectCount: 0,
     };
@@ -77,8 +80,13 @@ export default {
 
         this.projectCount = riskScore?.projectCount;
       },
-      error() {
-        this.hasFetchError = true;
+      error(error) {
+        // Remove check for backfill migration error message in 18.8.
+        if (error?.message?.includes(BACKFILL_MIGRATION_ERROR_MESSAGE)) {
+          this.backfillMigrationOngoing = true;
+        } else {
+          this.hasFetchError = true;
+        }
       },
     },
   },
@@ -151,14 +159,19 @@ export default {
       <risk-score-group-by v-if="showGroupBy" v-model="groupedBy" />
     </template>
     <template #body>
-      <template v-if="!hasFetchError">
-        <total-risk-score v-if="groupedBy === 'default'" :score="riskScore" />
-        <risk-score-by-project v-else :risk-scores="projects" class="gl-pt-3" />
+      <template v-if="backfillMigrationOngoing">
+        <p class="gl-m-0 gl-flex gl-h-full gl-w-full gl-items-center gl-justify-center gl-p-0">
+          {{ s__('SecurityReports|Risk scores are being calculated. Please try again later.') }}
+        </p>
       </template>
-      <template v-else>
+      <template v-else-if="hasFetchError">
         <p class="gl-m-0 gl-flex gl-h-full gl-w-full gl-items-center gl-justify-center gl-p-0">
           {{ __('Something went wrong. Please try again.') }}
         </p>
+      </template>
+      <template v-else>
+        <total-risk-score v-if="groupedBy === 'default'" :score="riskScore" />
+        <risk-score-by-project v-else :risk-scores="projects" class="gl-pt-3" />
       </template>
     </template>
   </gl-dashboard-panel>

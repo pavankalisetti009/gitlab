@@ -70,8 +70,17 @@ RSpec.describe Namespaces::ServiceAccounts::CreateService, feature_category: :us
 
       context 'when subscription is of premium tier' do
         let(:license) { create(:license, plan: License::PREMIUM_PLAN) }
-        let_it_be(:service_account1) { create(:user, :service_account, provisioned_by_group_id: group.id) }
-        let_it_be(:service_account2) { create(:user, :service_account, provisioned_by_group_id: group.id) }
+        let_it_be(:service_account_without_composite) do
+          create(:user, :service_account, provisioned_by_group_id: group.id, composite_identity_enforced: false)
+        end
+
+        let_it_be(:service_account_without_composite2) do
+          create(:user, :service_account, provisioned_by_group_id: group.id, composite_identity_enforced: false)
+        end
+
+        let_it_be(:service_account_with_composite) do
+          create(:user, :service_account, provisioned_by_group_id: group.id, composite_identity_enforced: true)
+        end
 
         context 'when premium seats are not available' do
           before do
@@ -86,7 +95,7 @@ RSpec.describe Namespaces::ServiceAccounts::CreateService, feature_category: :us
 
         context 'when premium seats are available' do
           before do
-            allow(license).to receive(:seats).and_return(User.service_account.count + 2)
+            allow(license).to receive(:seats).and_return(User.service_accounts_without_composite_identity.count + 2)
           end
 
           it_behaves_like 'service account creation success' do
@@ -98,6 +107,19 @@ RSpec.describe Namespaces::ServiceAccounts::CreateService, feature_category: :us
           end
 
           it_behaves_like 'invalid namespace scenarios'
+        end
+
+        context 'when service accounts with composite_identity_enforced exist' do
+          it 'does not count them toward the seat limit' do
+            # We have 2 service accounts with composite_identity_enforced: false
+            # and 1 service account with composite_identity_enforced: true (AI Agent)
+            # If we set seats to 3, we should be able to create 1 more (since only 2 without composite count)
+            allow(license).to receive(:seats).and_return(3)
+
+            result = service.execute
+
+            expect(result.status).to eq(:success)
+          end
         end
       end
     end
@@ -235,7 +257,10 @@ RSpec.describe Namespaces::ServiceAccounts::CreateService, feature_category: :us
 
         context 'when trial service account limit is not reached' do
           before do
-            create_list(:user, 10, :service_account, provisioned_by_group_id: group_with_trial.id)
+            create_list(:user, 5, :service_account, provisioned_by_group_id: group_with_trial.id,
+              composite_identity_enforced: false)
+            create_list(:user, 5, :service_account, provisioned_by_group_id: group_with_trial.id,
+              composite_identity_enforced: true)
           end
 
           it_behaves_like 'service account creation success' do
@@ -245,6 +270,12 @@ RSpec.describe Namespaces::ServiceAccounts::CreateService, feature_category: :us
           it 'sets provisioned by group' do
             expect(result.payload[:user].provisioned_by_group_id).to eq(group_with_trial.id)
           end
+
+          it 'does not count service accounts with composite_identity_enforced toward limit' do
+            # We have 5 service accounts without composite and 5 with composite
+            # Only the 5 without composite should count toward the limit of 100
+            expect(group_with_trial.provisioned_users.service_accounts_without_composite_identity.count).to eq(5)
+          end
         end
 
         context 'when trial service account limit is reached' do
@@ -252,12 +283,20 @@ RSpec.describe Namespaces::ServiceAccounts::CreateService, feature_category: :us
             stub_const('GitlabSubscription::SERVICE_ACCOUNT_LIMIT_FOR_TRIAL', 3)
 
             create_list(:user, GitlabSubscription::SERVICE_ACCOUNT_LIMIT_FOR_TRIAL, :service_account,
-              provisioned_by_group_id: group_with_trial.id)
+              provisioned_by_group_id: group_with_trial.id, composite_identity_enforced: false)
+            create_list(:user, 5, :service_account,
+              provisioned_by_group_id: group_with_trial.id, composite_identity_enforced: true)
           end
 
           it 'produces an error' do
             expect(result.status).to eq(:error)
             expect(result.message).to include('No more seats are available to create Service Account User')
+          end
+
+          it 'does not count service accounts with composite_identity_enforced toward limit' do
+            # We have 3 service accounts without composite (at limit) and 5 with composite
+            # Only the 3 without composite should count toward the limit
+            expect(group_with_trial.provisioned_users.service_accounts_without_composite_identity.count).to eq(3)
           end
         end
 
@@ -274,12 +313,23 @@ RSpec.describe Namespaces::ServiceAccounts::CreateService, feature_category: :us
               trial_ends_on: 1.day.ago,
               seats: 5)
 
-            create_list(:user, 3, :service_account, provisioned_by_group_id: group_with_expired_trial.id)
+            create_list(:user, 2, :service_account, provisioned_by_group_id: group_with_expired_trial.id,
+              composite_identity_enforced: false)
+            create_list(:user, 1, :service_account, provisioned_by_group_id: group_with_expired_trial.id,
+              composite_identity_enforced: true)
           end
 
           context 'when regular subscription seats are available' do
             it_behaves_like 'service account creation success' do
               let(:username_prefix) { "service_account_group_#{group_with_expired_trial.id}" }
+            end
+
+            it 'does not count service accounts with composite_identity_enforced toward limit' do
+              # We have 2 service accounts without composite and 1 with composite
+              # Only the 2 without composite should count toward the limit
+              expect(
+                group_with_expired_trial.provisioned_users.service_accounts_without_composite_identity.count
+              ).to eq(2)
             end
           end
 
