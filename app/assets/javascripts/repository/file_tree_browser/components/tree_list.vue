@@ -549,7 +549,6 @@ export default {
           :key="`${item.path}-${item.type}`"
           :ref="item.id === activeItemId ? 'activeItem' : undefined"
           :data-item-id="item.id"
-          :aria-current="isCurrentPath(item.path)"
           role="treeitem"
           :aria-expanded="item.opened"
           :aria-selected="isCurrentPath(item.path)"
