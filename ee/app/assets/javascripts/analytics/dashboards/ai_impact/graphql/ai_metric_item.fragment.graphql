@@ -11,12 +11,13 @@ fragment AiMetricItem on AiMetrics {
     requestReviewDuoCodeReviewOnMrByNonAuthorEventCount
     postCommentDuoCodeReviewOnDiffEventCount
   }
-  codeSuggestions(languages: $languages) {
+  codeSuggestions(languages: $languages, ideNames: $ideNames) {
     contributorsCount
     shownCount
     acceptedCount
     languages
     acceptedLinesOfCode
     shownLinesOfCode
+    ideNames
   }
 }
