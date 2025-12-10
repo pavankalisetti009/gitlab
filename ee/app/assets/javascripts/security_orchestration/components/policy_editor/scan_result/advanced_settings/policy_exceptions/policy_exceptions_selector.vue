@@ -20,6 +20,7 @@ export default {
       default: () => ({}),
     },
   },
+  emits: ['select'],
   computed: {
     availableOptions() {
       return mapOptions(EXCEPTIONS_FULL_OPTIONS_MAP);

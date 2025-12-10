@@ -59,6 +59,7 @@ export default {
       required: true,
     },
   },
+  emits: ['changed', 'error', 'set-scan-type'],
   i18n: {
     licenseStatuses: s__('ScanResultPolicy|license status'),
     licenseScanResultRuleCopy: s__(

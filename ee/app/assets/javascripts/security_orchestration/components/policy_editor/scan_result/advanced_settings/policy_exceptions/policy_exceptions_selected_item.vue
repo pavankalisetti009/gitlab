@@ -23,6 +23,7 @@ export default {
       required: true,
     },
   },
+  emits: ['remove', 'select-item'],
   computed: {
     buttonText() {
       const exceptions = n__('Exception', 'Exceptions', this.count);

@@ -63,6 +63,7 @@ export default {
       default: true,
     },
   },
+  emits: ['update'],
   computed: {
     isProject() {
       return isProject(this.namespaceType);

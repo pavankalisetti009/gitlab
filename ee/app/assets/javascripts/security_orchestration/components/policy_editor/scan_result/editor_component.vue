@@ -174,6 +174,7 @@ export default {
       required: true,
     },
   },
+  emits: ['error', 'save'],
   data() {
     const newPolicyYaml = getPolicyYaml({
       isGroup: isGroup(this.namespaceType),

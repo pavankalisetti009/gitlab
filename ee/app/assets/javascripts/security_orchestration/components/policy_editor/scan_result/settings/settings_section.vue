@@ -40,6 +40,7 @@ export default {
       default: () => ({}),
     },
   },
+  emits: ['changed'],
   computed: {
     protectedBranchSettings() {
       const basicSettings = this.groupSettingsBy([

@@ -43,6 +43,7 @@ export default {
       default: false,
     },
   },
+  emits: ['changed', 'remove'],
   data() {
     return {
       searchTerm: '',

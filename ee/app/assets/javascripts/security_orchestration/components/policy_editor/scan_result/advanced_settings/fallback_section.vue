@@ -42,6 +42,7 @@ export default {
       validation: (value) => [CLOSED, OPEN].includes(value),
     },
   },
+  emits: ['changed'],
   computed: {
     fallbackOptions() {
       return [

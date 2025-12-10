@@ -41,6 +41,7 @@ export default {
       default: false,
     },
   },
+  emits: ['attribute-change', 'input', 'remove'],
   computed: {
     operatorSelectedValue() {
       return this.operatorValue ? 'true' : 'false';

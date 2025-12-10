@@ -33,6 +33,7 @@ export default {
       default: null,
     },
   },
+  emits: ['input', 'operator-change'],
   data() {
     return {
       operator: this.selected || this.operators[0]?.value,

@@ -27,6 +27,7 @@ export default {
       default: () => [],
     },
   },
+  emits: ['set-accounts'],
   data() {
     return {
       loading: false,

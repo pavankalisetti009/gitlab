@@ -24,6 +24,7 @@ export default {
       default: () => ({}),
     },
   },
+  emits: ['changed'],
   data() {
     return {
       selectedTab: null,

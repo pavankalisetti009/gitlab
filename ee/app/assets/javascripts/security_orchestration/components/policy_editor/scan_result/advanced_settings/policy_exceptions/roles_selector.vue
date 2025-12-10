@@ -20,6 +20,7 @@ export default {
       default: () => [],
     },
   },
+  emits: ['error', 'set-roles'],
   methods: {
     isCustomRole(id) {
       return !Number.isNaN(parseInt(id, 10));

@@ -31,6 +31,7 @@ export default {
       default: () => [],
     },
   },
+  emits: ['set-access-tokens'],
   data() {
     return {
       searchTerm: '',

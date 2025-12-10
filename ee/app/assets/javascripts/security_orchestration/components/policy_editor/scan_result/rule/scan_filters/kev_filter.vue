@@ -30,6 +30,7 @@ export default {
       default: false,
     },
   },
+  emits: ['select'],
   methods: {
     select(value) {
       this.$emit('select', value);

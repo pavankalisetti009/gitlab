@@ -40,6 +40,7 @@ export default {
       default: () => ({}),
     },
   },
+  emits: ['remove', 'set-account', 'token-loading-error'],
   data() {
     return {
       searchTerm: '',

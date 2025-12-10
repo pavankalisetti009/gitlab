@@ -40,6 +40,7 @@ export default {
       default: 0,
     },
   },
+  emits: ['select'],
   data() {
     return {
       showCustomValueInput: isCustomEpssValue(this.selectedValue),

@@ -43,6 +43,7 @@ export default {
       }),
     },
   },
+  emits: ['changed'],
   data() {
     return {
       timeWindowValueEnabled: this.policyTuning[TIME_WINDOW_KEY] !== undefined,

@@ -52,6 +52,7 @@ export default {
       required: true,
     },
   },
+  emits: ['changed', 'set-scan-type'],
   computed: {
     branchTypes() {
       return SCAN_RESULT_BRANCH_TYPE_OPTIONS(this.namespaceType);

@@ -50,6 +50,7 @@ export default {
       required: true,
     },
   },
+  emits: ['change'],
   computed: {
     alertText() {
       if (this.isWarnMode) {
