@@ -36,7 +36,7 @@ const getDuoCodeReviewReactedFields = (codeReview) => {
   };
 };
 
-const prepareAdditionalMetrics = ({ nodes = [], ...rest }) => {
+const prepareAdditionalMetrics = ({ nodes = [], pageInfo = {}, ...rest }, pagination) => {
   // Since we are using `gl_introduced`, we need to check that the fields actually exist in the response
   if (!hasAnyNonNullFields(nodes, ['codeSuggestions', 'codeReview', 'troubleshootJob'])) {
     return {};
@@ -52,6 +52,10 @@ const prepareAdditionalMetrics = ({ nodes = [], ...rest }) => {
       ...getDuoCodeReviewReactedFields(codeReview),
       ...nodeRest,
     })),
+    pageInfo: {
+      ...pagination,
+      ...pageInfo,
+    },
     ...rest,
   };
 };
@@ -59,7 +63,7 @@ const prepareAdditionalMetrics = ({ nodes = [], ...rest }) => {
 export default async function fetch({
   namespace: fullPath,
   query: { dateRange = DATE_RANGE_OPTION_LAST_30_DAYS },
-  queryOverrides: { pagination = {} } = {},
+  queryOverrides: { pagination = { first: PAGINATION_PAGE_SIZE } } = {},
 }) {
   const startDate = getStartDate(dateRange);
 
@@ -69,19 +73,18 @@ export default async function fetch({
       fullPath,
       startDate,
       endDate: startOfTomorrow,
-      first: PAGINATION_PAGE_SIZE,
+      first: pagination.first,
       last: pagination.last,
       before: pagination.startCursor,
       after: pagination.endCursor,
     },
   });
 
-  const parsed = prepareAdditionalMetrics(
+  return prepareAdditionalMetrics(
     extractQueryResponseFromNamespace({
       result: response,
       resultKey: 'aiUserMetrics',
     }),
+    pagination,
   );
-
-  return parsed;
 }

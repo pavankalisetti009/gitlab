@@ -80,6 +80,7 @@ exports[`User ai usage data source with data available returns data and paginati
   "pageInfo": {
     "__typename": "PageInfo",
     "endCursor": "this-is-an-end-cursor",
+    "first": 10,
     "hasNextPage": false,
     "hasPreviousPage": false,
     "startCursor": "this-is-a-start-cursor",
