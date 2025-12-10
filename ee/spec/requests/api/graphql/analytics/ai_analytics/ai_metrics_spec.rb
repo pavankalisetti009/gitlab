@@ -46,7 +46,14 @@ RSpec.describe 'aiMetrics', :freeze_time, feature_category: :value_stream_manage
           requestReviewDuoCodeReviewOnMrByNonAuthorEventCount
           excludedFilesFromDuoCodeReviewEventCount
         }
-        agentPlatform {
+        agentPlatform(flowTypes: ["chat"], not: { flowTypes: ["pipeline"]}) {
+          createdSessionEventCount
+          startedSessionEventCount
+          finishedSessionEventCount
+          droppedSessionEventCount
+          stoppedSessionEventCount
+          resumedSessionEventCount
+
           flowMetrics {
             flowType
             sessionsCount
@@ -124,6 +131,17 @@ RSpec.describe 'aiMetrics', :freeze_time, feature_category: :value_stream_manage
       ]
     end
 
+    let(:agent_platform_event_count_service_payload) do
+      {
+        created_session_event_count: 10,
+        started_session_event_count: 20,
+        finished_session_event_count: 30,
+        dropped_session_event_count: 40,
+        stopped_session_event_count: 50,
+        resumed_session_event_count: 60
+      }
+    end
+
     before do
       allow_next_instance_of(::Analytics::AiAnalytics::AiMetricsService,
         current_user, hash_including(expected_filters)) do |instance|
@@ -149,6 +167,12 @@ RSpec.describe 'aiMetrics', :freeze_time, feature_category: :value_stream_manage
           .and_return(ServiceResponse.success(payload: agent_platform_flow_metrics_service_payload))
       end
 
+      allow_next_instance_of(::Analytics::AiAnalytics::AgentPlatform::EventCountService,
+        current_user, hash_including(expected_filters)) do |instance|
+        allow(instance).to receive(:execute)
+          .and_return(ServiceResponse.success(payload: agent_platform_event_count_service_payload))
+      end
+
       allow(Ability).to receive(:allowed?).and_call_original
       allow(Ability).to receive(:allowed?)
         .with(current_user, :read_pro_ai_analytics, anything)
@@ -160,6 +184,12 @@ RSpec.describe 'aiMetrics', :freeze_time, feature_category: :value_stream_manage
     it 'returns all metrics' do
       expected_results = {
         'agentPlatform' => {
+          'createdSessionEventCount' => 10,
+          'startedSessionEventCount' => 20,
+          'finishedSessionEventCount' => 30,
+          'droppedSessionEventCount' => 40,
+          'stoppedSessionEventCount' => 50,
+          'resumedSessionEventCount' => 60,
           'flowMetrics' => [
             {
               'medianExecutionTime' => 10.0,
@@ -237,6 +267,12 @@ RSpec.describe 'aiMetrics', :freeze_time, feature_category: :value_stream_manage
         {}
       end
 
+      let(:agent_platform_event_count_service_payload) do
+        {
+          created_session_event_count: 999
+        }
+      end
+
       let(:usage_event_count_service_payload) do
         {
           post_comment_duo_code_review_on_diff_event_count: 99
@@ -245,7 +281,15 @@ RSpec.describe 'aiMetrics', :freeze_time, feature_category: :value_stream_manage
 
       it 'returns all metrics filled by default' do
         expected_results = {
-          'agentPlatform' => { 'flowMetrics' => [] },
+          'agentPlatform' => {
+            'createdSessionEventCount' => 999,
+            'droppedSessionEventCount' => nil,
+            'finishedSessionEventCount' => nil,
+            'resumedSessionEventCount' => nil,
+            'startedSessionEventCount' => nil,
+            'stoppedSessionEventCount' => nil,
+            'flowMetrics' => []
+          },
           'codeSuggestionsContributorsCount' => 3,
           'codeContributorsCount' => 10,
           'codeSuggestionsShownCount' => 5,

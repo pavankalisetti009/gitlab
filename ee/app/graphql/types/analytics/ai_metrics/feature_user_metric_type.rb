@@ -15,7 +15,7 @@ module Types
             description "#{feature.to_s.titleize} user metrics for a user. " \
               "Requires ClickHouse. Premium and Ultimate with GitLab Duo Enterprise only."
 
-            extend ::Analytics::AiEventFields
+            include ::Analytics::AiEventFields
 
             field :total_event_count, GraphQL::Types::Int,
               description: "Total count of all #{feature.to_s.titleize} events for the user.",

@@ -28,10 +28,10 @@ RSpec.describe Types::Analytics::AiMetrics::FeatureUserMetricType, feature_categ
       expect(chat_type.graphql_name).to eq('chatUserMetrics')
     end
 
-    it 'extends Analytics::AiEventFields' do
+    it 'includes Analytics::AiEventFields' do
       type = described_class[:code_review]
 
-      expect(type.singleton_class.included_modules).to include(Analytics::AiEventFields)
+      expect(type.included_modules).to include(Analytics::AiEventFields)
     end
 
     it 'includes totalEventCount field' do
