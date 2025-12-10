@@ -5,4 +5,4 @@
 
 = render ::Layouts::PageHeadingComponent.new(s_("TargetedMessages|Edit targeted message"))
 
-= render 'form', url: admin_targeted_message_path(@targeted_message), submit_text: _('Update')
+= render 'form', url: admin_targeted_message_path(@targeted_message), is_add_form: false

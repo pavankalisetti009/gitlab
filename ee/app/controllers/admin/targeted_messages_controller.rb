@@ -19,15 +19,17 @@ module Admin
       result = Notifications::TargetedMessages::CreateService.new(targeted_message_params).execute
 
       if result.success?
-        redirect_to admin_targeted_messages_path,
-          notice: s_('TargetedMessages|Targeted message was successfully created.')
+        flash[:notice] = s_('TargetedMessages|Targeted message was successfully created.')
+        head :ok
       elsif result.reason == Notifications::TargetedMessages::CreateService::FOUND_INVALID_NAMESPACES
-        @targeted_message = result.payload
+        targeted_message = result.payload
         flash[:alert] = result.message
-        render :edit
+        render json: {
+          redirect_to: edit_admin_targeted_message_path(targeted_message)
+        }, status: :ok
       else
-        @targeted_message = result.payload
-        render :new
+        targeted_message = result.payload
+        render json: { message: targeted_message.errors.messages }, status: :unprocessable_entity
       end
     end
 
@@ -37,15 +39,17 @@ module Admin
       result = Notifications::TargetedMessages::UpdateService.new(@targeted_message, targeted_message_params).execute
 
       if result.success?
-        redirect_to admin_targeted_messages_path,
-          notice: s_('TargetedMessages|Targeted message was successfully updated.')
+        flash[:notice] = s_('TargetedMessages|Targeted message was successfully updated.')
+        head :ok
       elsif result.reason == Notifications::TargetedMessages::UpdateService::FOUND_INVALID_NAMESPACES
-        @targeted_message = result.payload
+        targeted_message = result.payload
         flash[:alert] = result.message
-        render :edit
+        render json: {
+          redirect_to: edit_admin_targeted_message_path(targeted_message)
+        }, status: :ok
       else
-        @targeted_message = result.payload
-        render :edit
+        targeted_message = result.payload
+        render json: { message: targeted_message.errors.messages }, status: :unprocessable_entity
       end
     end
 
