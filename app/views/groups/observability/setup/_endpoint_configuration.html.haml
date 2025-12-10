@@ -10,7 +10,7 @@
         - else
           = s_('Observability|Your OpenTelemetry (OTel) telemetry data collection endpoints have been provisioned and are ready to receive data. Please configure your instrumentation with the following endpoints:')
 
-      %h3.gl-text-size-h3.gl-font-bold.gl-mb-4
+      %h3.gl-heading-3
         = s_('Observability|Endpoint details')
 
       .gl-flex.gl-flex-col.gl-gap-4.gl-mb-6
@@ -28,7 +28,7 @@
               = configuration_settings.otel_grpc_endpoint
             = clipboard_button(text: configuration_settings.otel_grpc_endpoint, title: s_('Observability|Copy gRPC endpoint'))
 
-      %h3.gl-text-size-h3.gl-font-bold.gl-mb-4
+      %h3.gl-heading-3
         = s_('Observability|Configuration notes')
 
       %ul.gl-mb-6
@@ -45,14 +45,14 @@
         %li.gl-mb-2
           = s_('Observability|VPN and proxy: If operating within a VPN or behind a proxy, ensure routing rules permit traffic to these external endpoints. Configure proxy settings in your OpenTelemetry SDK if required')
 
-      %h3.gl-text-size-h3.gl-font-bold.gl-mb-4
+      %h3.gl-heading-3
         = s_('Observability|Next steps')
 
       %p.gl-mb-4
         - otel_docs_link = link_to('', 'https://opentelemetry.io/docs/languages/', target: '_blank', rel: 'noopener noreferrer')
         = safe_format(s_('Observability|Configure your OpenTelemetry SDK or collector with the appropriate endpoint based on your chosen transport protocol. For detailed integration instructions specific to your language or framework, please refer to the %{otel_docs_link_start}OpenTelemetry documentation for your SDK%{otel_docs_link_end}.'), tag_pair(otel_docs_link, :otel_docs_link_start, :otel_docs_link_end))
 
-      %h4.gl-text-size-h4.gl-font-bold.gl-mb-3
+      %h4.gl-heading-4
         = s_('Observability|CI/CD Observability settings')
 
       - gitlab_observability_export_variable = configuration_settings.group.variables.by_key('GITLAB_OBSERVABILITY_EXPORT').first
@@ -69,7 +69,7 @@
       %p
         = s_('Observability|If you encounter any connectivity issues or require additional configuration assistance, please contact your system administrator with the endpoint details provided above.')
 
-      %h3.gl-text-size-h3.gl-font-bold.gl-mb-4
+      %h3.gl-heading-3
         = s_('Observability|Testing your endpoints')
 
       %p.gl-mb-4
