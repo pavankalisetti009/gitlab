@@ -183,7 +183,7 @@ export default {
     <template #list-item="{ item }">
       <span class="gl-flex">
         <gl-avatar :size="24" :entity-name="item.name" shape="circle" />
-        <span class="gl-flex gl-flex-col gl-pl-3">
+        <span class="gl-flex gl-w-31 gl-flex-col gl-pl-3">
           <span class="gl-mb-1 gl-inline-block gl-break-all gl-font-bold">
             {{ item.name }}
             <gl-icon
@@ -194,7 +194,7 @@ export default {
               :title="$options.i18n.chatVerifiedAgent"
             />
           </span>
-          <span class="gl-line-clamp-3 gl-max-w-31 gl-text-sm gl-text-subtle">
+          <span class="gl-line-clamp-3 gl-text-sm gl-text-subtle">
             {{ item.description }}
           </span>
         </span>
