@@ -11,7 +11,7 @@ module API
       resource :namespaces, requirements: ::API::API::NAMESPACE_OR_PROJECT_REQUIREMENTS do
         desc '[DEPRECATED] Create a compute minutes purchase record for the namespace' do
           detail 'Creates an additional pack'
-          success ::EE::API::Entities::Ci::Minutes::AdditionalPack
+          success ::API::Entities::Ci::Minutes::AdditionalPack
           failure [
             { code: 400, message: 'Bad request' },
             { code: 401, message: 'Unauthorized' },
@@ -35,7 +35,7 @@ module API
           result = ::Ci::Minutes::AdditionalPacks::CreateService.new(namespace, params[:packs]).execute
 
           if result[:status] == :success
-            present result[:additional_packs], with: ::EE::API::Entities::Ci::Minutes::AdditionalPack
+            present result[:additional_packs], with: ::API::Entities::Ci::Minutes::AdditionalPack
           else
             bad_request!(result[:message])
           end
