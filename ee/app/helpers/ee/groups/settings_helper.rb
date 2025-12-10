@@ -102,11 +102,8 @@ module EE
           update_id: @group.id,
           duo_workflow_available: (@group.root? && current_user.can?(:admin_duo_workflow, @group)).to_s,
           duo_workflow_mcp_enabled: @group.duo_workflow_mcp_enabled.to_s,
-          duo_remote_flows_availability: @group.namespace_settings.duo_remote_flows_availability.to_s,
-          duo_sast_fp_detection_availability: @group.namespace_settings.duo_sast_fp_detection_availability.to_s,
           foundational_agents_default_enabled: @group.foundational_agents_default_enabled.to_s,
           foundational_agents_statuses: ::Gitlab::Json.generate(@group.foundational_agents_statuses),
-          duo_foundational_flows_availability: @group.namespace_settings.duo_foundational_flows_availability.to_s,
           is_saas: saas?.to_s,
           show_foundational_agents_availability: show_foundational_agents_availability?.to_s,
           show_foundational_agents_per_agent_availability: show_foundational_agents_per_agent_availability?.to_s,
@@ -114,6 +111,16 @@ module EE
           ai_settings_minimum_access_level_execute_async: @group.ai_minimum_access_level_execute_async,
           ai_settings_minimum_access_level_manage: @group.ai_minimum_access_level_manage,
           ai_settings_minimum_access_level_enable_on_projects: @group.ai_minimum_access_level_enable_on_projects
+        }.merge(foundational_flows_settings_data)
+      end
+
+      def foundational_flows_settings_data
+        {
+          duo_remote_flows_availability: @group.namespace_settings.duo_remote_flows_availability.to_s,
+          duo_foundational_flows_availability: @group.namespace_settings.duo_foundational_flows_availability.to_s,
+          duo_sast_fp_detection_availability: @group.namespace_settings.duo_sast_fp_detection_availability.to_s,
+          available_foundational_flows: ::Ai::Catalog::Item.foundational_flows.select(:id, :name, :description, :foundational_flow_reference).map { |item| { catalog_item_id: item.id, name: item.name, description: item.description, reference: item.foundational_flow_reference } }.to_json,
+          selected_foundational_flows: @group.selected_foundational_flow_ids.to_json
         }
       end
 

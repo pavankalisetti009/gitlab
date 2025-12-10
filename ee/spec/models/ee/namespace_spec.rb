@@ -35,7 +35,7 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
   it { is_expected.to have_many(:foundational_agents_status_records).class_name('Ai::NamespaceFoundationalAgentStatus') }
   it { is_expected.to have_many(:custom_statuses).class_name('WorkItems::Statuses::Custom::Status') }
   it { is_expected.to have_many(:converted_statuses).class_name('WorkItems::Statuses::Custom::Status') }
-  it { is_expected.to have_many(:enabled_foundational_flows).class_name('Ai::Catalog::EnabledFoundationalFlow') }
+  it { is_expected.to have_many(:enabled_foundational_flow_records).class_name('Ai::Catalog::EnabledFoundationalFlow') }
 
   it { is_expected.to delegate_method(:trial?).to(:gitlab_subscription) }
   it { is_expected.to delegate_method(:trial_ends_on).to(:gitlab_subscription) }
@@ -3251,8 +3251,8 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
 
     context 'when namespace has more than 100 enabled foundational flows' do
       before do
-        allow(namespace.enabled_foundational_flows).to receive(:limit).with(100).and_return(
-          namespace.enabled_foundational_flows.limit(3)
+        allow(namespace.enabled_foundational_flow_records).to receive(:limit).with(100).and_return(
+          namespace.enabled_foundational_flow_records.limit(3)
         )
 
         4.times do
@@ -3264,6 +3264,96 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
       it 'returns only the limit of catalog item ids' do
         expect(subject.size).to eq(3)
       end
+    end
+  end
+
+  describe '#sync_enabled_foundational_flows!' do
+    let_it_be(:namespace) { create(:group) }
+    let_it_be(:flow1) { create(:ai_catalog_item, :with_foundational_flow_reference, public: true) }
+    let_it_be(:flow2) { create(:ai_catalog_item, :with_foundational_flow_reference, public: true) }
+    let_it_be(:flow3) { create(:ai_catalog_item, :with_foundational_flow_reference, public: true) }
+
+    before do
+      namespace.enabled_foundational_flow_records.delete_all
+    end
+
+    it 'creates enabled foundational flow records for given IDs' do
+      namespace.sync_enabled_foundational_flows!([flow1.id, flow2.id])
+
+      expect(namespace.enabled_foundational_flow_records.reload.pluck(:catalog_item_id)).to match_array([flow1.id, flow2.id])
+    end
+
+    it 'removes enabled foundational flow records not in target IDs' do
+      create(:ai_catalog_enabled_foundational_flow, :for_namespace, namespace: namespace, catalog_item: flow1)
+      create(:ai_catalog_enabled_foundational_flow, :for_namespace, namespace: namespace, catalog_item: flow2)
+
+      namespace.sync_enabled_foundational_flows!([flow1.id])
+
+      expect(namespace.enabled_foundational_flow_records.reload.pluck(:catalog_item_id)).to eq([flow1.id])
+    end
+
+    it 'deletes all records when target_ids is empty' do
+      create(:ai_catalog_enabled_foundational_flow, :for_namespace, namespace: namespace, catalog_item: flow1)
+
+      namespace.sync_enabled_foundational_flows!([])
+
+      expect(namespace.enabled_foundational_flow_records.reload).to be_empty
+    end
+
+    it 'handles duplicates idempotently' do
+      namespace.sync_enabled_foundational_flows!([flow1.id, flow2.id])
+
+      expect { namespace.sync_enabled_foundational_flows!([flow1.id, flow2.id]) }
+        .not_to change { namespace.enabled_foundational_flow_records.reload.count }
+    end
+
+    it 'tracks exceptions when record is invalid' do
+      allow(Ai::Catalog::EnabledFoundationalFlow).to receive(:bulk_insert!)
+                                                       .and_raise(ActiveRecord::RecordInvalid.new)
+
+      expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
+        instance_of(ActiveRecord::RecordInvalid),
+        hash_including(namespace_id: namespace.id, target_ids: [flow1.id])
+      )
+
+      namespace.sync_enabled_foundational_flows!([flow1.id])
+    end
+  end
+
+  describe '#remove_foundational_flow_consumers' do
+    let_it_be(:namespace) { create(:group) }
+    let_it_be(:flow) { create(:ai_catalog_item, :with_foundational_flow_reference, public: true, organization: namespace.organization) }
+    let_it_be(:consumer) { create(:ai_catalog_item_consumer, group: namespace, item: flow) }
+
+    it 'removes consumers for the given catalog item IDs' do
+      expect { namespace.remove_foundational_flow_consumers([flow.id]) }
+        .to change { namespace.configured_ai_catalog_items.count }.by(-1)
+    end
+
+    it 'does nothing when catalog_item_ids is empty' do
+      expect { namespace.remove_foundational_flow_consumers([]) }
+        .not_to change { namespace.configured_ai_catalog_items.count }
+    end
+  end
+
+  describe '#selected_foundational_flow_ids' do
+    let_it_be(:namespace) { create(:group) }
+    let_it_be(:flow1) { create(:ai_catalog_item, :with_foundational_flow_reference, public: true) }
+    let_it_be(:flow2) { create(:ai_catalog_item, :with_foundational_flow_reference, public: true) }
+
+    it 'returns selected flow IDs' do
+      create(:ai_catalog_enabled_foundational_flow, :for_namespace, namespace: namespace, catalog_item: flow1)
+      create(:ai_catalog_enabled_foundational_flow, :for_namespace, namespace: namespace, catalog_item: flow2)
+
+      expect(namespace.selected_foundational_flow_ids).to match_array([flow1.id, flow2.id])
+    end
+
+    it 'limits to 100 records' do
+      allow(namespace.enabled_foundational_flow_records).to receive(:limit).with(100).and_call_original
+
+      namespace.selected_foundational_flow_ids
+
+      expect(namespace.enabled_foundational_flow_records).to have_received(:limit).with(100)
     end
   end
 

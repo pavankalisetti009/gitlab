@@ -461,5 +461,26 @@ RSpec.describe Ai::Catalog::ItemConsumer, feature_category: :workflow_catalog do
         expect(described_class.with_item_type(:agent)).to contain_exactly(agent_consumer)
       end
     end
+
+    describe '.for_catalog_items' do
+      it 'filters records by the given item ids' do
+        project = create(:project)
+        item1 = create(:ai_catalog_item)
+        item2 = create(:ai_catalog_item)
+        item3 = create(:ai_catalog_item)
+
+        consumer1 = create(:ai_catalog_item_consumer, project: project, item: item1)
+        consumer2 = create(:ai_catalog_item_consumer, project: project, item: item2)
+        create(:ai_catalog_item_consumer, project: project, item: item3) # not included
+
+        expect(described_class.for_catalog_items([item1.id, item2.id])).to contain_exactly(consumer1, consumer2)
+      end
+
+      it 'returns empty when given empty array' do
+        create(:ai_catalog_item_consumer, project: create(:project))
+
+        expect(described_class.for_catalog_items([])).to be_empty
+      end
+    end
   end
 end

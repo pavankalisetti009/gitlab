@@ -15,10 +15,10 @@ module Namespaces
     worker_resource_boundary :memory
     defer_on_database_health_signal :gitlab_main, [:namespace_settings, :project_settings], 1.minute
 
-    def perform(group_id, setting_attributes)
+    def perform(group_id, setting_attributes, user_id = nil)
       group = Group.find_by_id(group_id)
-
-      ::Ai::CascadeDuoSettingsService.new(setting_attributes).cascade_for_group(group)
+      user = user_id ? User.find_by_id(user_id) : nil
+      ::Ai::CascadeDuoSettingsService.new(setting_attributes, current_user: user).cascade_for_group(group)
     end
   end
 end

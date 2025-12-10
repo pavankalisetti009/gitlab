@@ -955,4 +955,32 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
     it_behaves_like 'a cascading namespace setting boolean attribute',
       settings_attribute_name: :duo_remote_flows_enabled
   end
+
+  describe 'attributes' do
+    describe '#enabled_foundational_flows' do
+      it 'accepts an array of integers' do
+        setting.enabled_foundational_flows = [1, 2, 3]
+
+        expect(setting.enabled_foundational_flows).to match_array([1, 2, 3])
+      end
+
+      it 'defaults to nil' do
+        new_setting = described_class.new
+
+        expect(new_setting.enabled_foundational_flows).to be_nil
+      end
+
+      it 'accepts nil' do
+        setting.enabled_foundational_flows = nil
+
+        expect(setting.enabled_foundational_flows).to be_nil
+      end
+
+      it 'accepts an empty array' do
+        setting.enabled_foundational_flows = []
+
+        expect(setting.enabled_foundational_flows).to eq([])
+      end
+    end
+  end
 end

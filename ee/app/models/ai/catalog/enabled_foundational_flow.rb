@@ -3,6 +3,8 @@
 module Ai
   module Catalog
     class EnabledFoundationalFlow < ApplicationRecord
+      include BulkInsertSafe
+
       self.table_name = 'enabled_foundational_flows'
 
       belongs_to :namespace, optional: true

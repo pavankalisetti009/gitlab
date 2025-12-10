@@ -279,6 +279,29 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
       end
     end
 
+    describe '.foundational_flow_ids' do
+      let_it_be(:flow1) { create(:ai_catalog_item, :with_foundational_flow_reference, public: true) }
+      let_it_be(:flow2) { create(:ai_catalog_item, :with_foundational_flow_reference, public: true) }
+      let_it_be(:non_foundational) { create(:ai_catalog_item, public: true) }
+
+      it 'returns IDs of foundational flows' do
+        ids = described_class.foundational_flow_ids
+
+        expect(ids).to match_array([flow1.id, flow2.id])
+      end
+
+      it 'limits results to FOUNDATIONAL_FLOWS_LIMIT' do
+        create(:ai_catalog_item, :with_foundational_flow_reference, public: true) # 3rd flow
+
+        stub_const("#{described_class}::FOUNDATIONAL_FLOWS_LIMIT", 2)
+
+        ids = described_class.foundational_flow_ids
+
+        expect(ids.count).to eq(2)
+        expect(ids).to all(be_in([flow1.id, flow2.id]))
+      end
+    end
+
     describe '.order_by_id_desc' do
       subject { described_class.order_by_id_desc }
 

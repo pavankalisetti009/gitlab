@@ -64,7 +64,7 @@ module EE
       # rubocop:disable Cop/ActiveRecordDependent -- legacy usage
       has_many :subscription_add_on_purchases, class_name: 'GitlabSubscriptions::AddOnPurchase', dependent: :destroy
       # rubocop:enable Cop/ActiveRecordDependent -- legacy usage
-      has_many :enabled_foundational_flows, class_name: 'Ai::Catalog::EnabledFoundationalFlow',
+      has_many :enabled_foundational_flow_records, class_name: 'Ai::Catalog::EnabledFoundationalFlow',
         foreign_key: :namespace_id, inverse_of: :namespace
 
       accepts_nested_attributes_for :gitlab_subscription, update_only: true
@@ -729,7 +729,55 @@ module EE
     end
 
     def enabled_flow_catalog_item_ids
-      enabled_foundational_flows.limit(100).pluck(:catalog_item_id)
+      enabled_foundational_flow_records.limit(100).pluck(:catalog_item_id)
+    end
+
+    def sync_enabled_foundational_flows!(target_ids)
+      if target_ids.empty?
+        enabled_foundational_flow_records
+          .for_namespace(id)
+          .delete_all
+      else
+        enabled_foundational_flow_records
+          .for_namespace(id)
+          .where.not(catalog_item_id: target_ids)
+          .delete_all
+
+        current_time = Time.current
+        records = target_ids.map do |catalog_item_id|
+          Ai::Catalog::EnabledFoundationalFlow.new(
+            namespace_id: id,
+            project_id: nil,
+            catalog_item_id: catalog_item_id,
+            created_at: current_time,
+            updated_at: current_time
+          )
+        end
+
+        Ai::Catalog::EnabledFoundationalFlow.bulk_insert!(
+          records,
+          unique_by: [:namespace_id, :catalog_item_id]
+        )
+      end
+    rescue ActiveRecord::RecordInvalid => e
+      ::Gitlab::ErrorTracking.track_exception(
+        e,
+        namespace_id: id,
+        target_ids: target_ids,
+        validation_errors: e.record&.errors&.full_messages&.join(', ')
+      )
+    end
+
+    def remove_foundational_flow_consumers(catalog_item_ids)
+      return if catalog_item_ids.empty?
+
+      configured_ai_catalog_items
+        .for_catalog_items(catalog_item_ids)
+        .delete_all
+    end
+
+    def selected_foundational_flow_ids
+      enabled_foundational_flow_records.limit(100).pluck(:catalog_item_id)
     end
 
     def can_assign_custom_roles_to_group_links?

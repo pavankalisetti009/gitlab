@@ -37,6 +37,8 @@ module EE
 
       validate :all_or_none_product_analytics_attributes_set
 
+      attribute :enabled_foundational_flows, :integer, array: true, default: nil
+
       def all_or_none_product_analytics_attributes_set
         attrs = [
           :encrypted_product_analytics_configurator_connection_string,
