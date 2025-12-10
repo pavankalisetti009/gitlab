@@ -29,7 +29,7 @@ RSpec.describe DependencyProxy::Packages::VerifyPackageFileEtagService, :aggrega
         if message.start_with?('Received')
           expect(Gitlab::AppLogger).to receive(:error).with(
             service_class: described_class.to_s,
-            project_id: package_file.package.project_id,
+            project_id: package_file.project_id,
             message: message
           )
         end
