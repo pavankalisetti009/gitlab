@@ -9,6 +9,7 @@ RSpec.describe EE::Projects::RemovePaidFeaturesService, feature_category: :plan_
 
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group, :public) }
+  let_it_be(:params) { { expires_at: nil } }
   let_it_be(:free_group) { create(:group) }
   let_it_be_with_refind(:project) do
     create(:project, :repository, :public, :legacy_storage, namespace: user.namespace)
@@ -20,12 +21,14 @@ RSpec.describe EE::Projects::RemovePaidFeaturesService, feature_category: :plan_
   describe '#execute' do
     before do
       stub_const("#{described_class.name}::BATCH_SIZE", 2)
+      stub_feature_flags(allow_resource_access_token_creation_without_expiry_date: true)
+      stub_application_setting(require_personal_access_token_expiry: false)
     end
 
     context 'with project access tokens' do
       before do
         3.times do
-          ResourceAccessTokens::CreateService.new(user, project).execute
+          ResourceAccessTokens::CreateService.new(user, project, params).execute
         end
       end
 

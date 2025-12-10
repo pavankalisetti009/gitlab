@@ -5,12 +5,14 @@ require 'spec_helper'
 RSpec.describe ResourceAccessTokens::CreateService, feature_category: :system_access do
   subject(:service_execute) { described_class.new(user, resource, params).execute }
 
-  let(:params) { {} }
   let_it_be(:user) { create(:user) }
+  let_it_be(:params) { { expires_at: nil } }
 
   before do
     stub_licensed_features(audit_events: true)
     stub_licensed_features(external_audit_events: true)
+    stub_feature_flags(allow_resource_access_token_creation_without_expiry_date: true)
+    stub_application_setting(require_personal_access_token_expiry: false)
   end
 
   shared_examples 'token creation succeeds' do
