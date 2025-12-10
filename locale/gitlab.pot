@@ -22896,6 +22896,9 @@ msgstr ""
 msgid "Default role"
 msgstr ""
 
+msgid "Default search scope"
+msgstr ""
+
 msgid "Default timeout"
 msgstr ""
 
@@ -62993,6 +62996,9 @@ msgstr ""
 msgid "Select a day"
 msgstr ""
 
+msgid "Select a default search scope. For the system default, a scope is selected automatically based on context and availability."
+msgstr ""
+
 msgid "Select a group"
 msgstr ""
 
@@ -66615,6 +66621,9 @@ msgid "SynthaxHighlightingTheme|Solarized Light"
 msgstr ""
 
 msgid "System default (%{default})"
+msgstr ""
+
+msgid "System default (automatic)"
 msgstr ""
 
 msgid "System exchange"
