@@ -45,6 +45,9 @@ describe('FlowTriggerForm', () => {
       apolloProvider: createMockApollo(handlers),
       propsData: { ...defaultProps, ...props },
       provide: {
+        glAbilities: {
+          readAiCatalogFlow: true,
+        },
         glFeatures: {
           aiCatalogFlows: true,
           aiCatalogThirdPartyFlows: true,
@@ -170,11 +173,14 @@ describe('FlowTriggerForm', () => {
         });
       });
 
-      describe('when both AI Catalog flow feature flags are false', () => {
+      describe('when both readAiCatalogFlow and aiCatalogThirdPartyFlows are false', () => {
         beforeEach(async () => {
           await createWrapper(
             {},
-            { glFeatures: { aiCatalogFlows: false, aiCatalogThirdPartyFlows: false } },
+            {
+              glAbilities: { readAiCatalogFlow: false },
+              glFeatures: { aiCatalogThirdPartyFlows: false },
+            },
           );
         });
 

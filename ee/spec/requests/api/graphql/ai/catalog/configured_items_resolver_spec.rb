@@ -72,8 +72,13 @@ RSpec.describe 'getting consumed AI catalog items', feature_category: :workflow_
       it 'returns configured AI catalog items' do
         post_graphql(query, current_user: current_user)
 
+        expected_items = configured_items.dup
+        # ItemConsumersFinder filters out results for flow items if the user does not have
+        # `read_ai_catalog_flow` permission, which requires developer+ of the project.
+        expected_items.reject! { |i| i.item.flow? } if access_level < Gitlab::Access::DEVELOPER
+
         expect(response).to have_gitlab_http_status(:success)
-        expect(nodes).to match_array(configured_items.map { |configured_item| a_graphql_entity_for(configured_item) })
+        expect(nodes).to match_array(expected_items.map { |configured_item| a_graphql_entity_for(configured_item) })
       end
     end
   end

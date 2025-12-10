@@ -95,10 +95,6 @@ RSpec.describe 'Projects::DuoAgentsPlatform', type: :request, feature_category: 
 
     context 'when vueroute is agents' do
       context 'when global_ai_catalog feature is enabled' do
-        before do
-          stub_feature_flags(global_ai_catalog: true)
-        end
-
         it 'returns successfully' do
           get project_automate_agents_path(project)
 
@@ -169,11 +165,7 @@ RSpec.describe 'Projects::DuoAgentsPlatform', type: :request, feature_category: 
     end
 
     context 'when vueroute is flows' do
-      context 'when ai_catalog_flows feature is enabled' do
-        before do
-          stub_feature_flags(global_ai_catalog: true, ai_catalog_flows: true)
-        end
-
+      context 'when global_ai_catalog is enabled and user can read flows' do
         it 'returns successfully' do
           get project_automate_flows_path(project)
 
@@ -181,9 +173,9 @@ RSpec.describe 'Projects::DuoAgentsPlatform', type: :request, feature_category: 
         end
       end
 
-      context 'when ai_catalog_flows is disabled' do
+      context 'when global_ai_catalog is disabled' do
         before do
-          stub_feature_flags(global_ai_catalog: true, ai_catalog_flows: false)
+          stub_feature_flags(global_ai_catalog: false)
         end
 
         it 'returns 404' do
@@ -193,9 +185,9 @@ RSpec.describe 'Projects::DuoAgentsPlatform', type: :request, feature_category: 
         end
       end
 
-      context 'when global_ai_catalog is disabled' do
+      context 'when user cannot read flows' do
         before do
-          stub_feature_flags(global_ai_catalog: false, ai_catalog_flows: true)
+          allow(Ability).to receive(:allowed?).with(user, :read_ai_catalog_flow, project).and_return(false)
         end
 
         it 'returns 404' do

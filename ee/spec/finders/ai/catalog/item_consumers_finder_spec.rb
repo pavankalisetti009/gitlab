@@ -50,6 +50,27 @@ RSpec.describe Ai::Catalog::ItemConsumersFinder, feature_category: :workflow_cat
       let(:params) { super().merge(item_types: %i[flow third_party_flow]) }
 
       it { is_expected.to contain_exactly(flow_consumer, third_party_flow_consumer) }
+
+      context 'when user cannot read ai catalog flows' do
+        before do
+          allow(Ability).to receive(:allowed?).and_call_original
+          allow(Ability).to receive(:allowed?).with(user, :read_ai_catalog_flow, project).and_return(false)
+        end
+
+        it { is_expected.to contain_exactly(third_party_flow_consumer) }
+
+        context 'when item_types is [:flow]' do
+          let(:params) { super().merge(item_types: [:flow]) }
+
+          it { is_expected.to be_empty }
+        end
+      end
+
+      context 'when item_types is empty' do
+        let(:params) { super().merge(item_types: []) }
+
+        it { is_expected.to contain_exactly(*project_consumers, flow_consumer, third_party_flow_consumer) }
+      end
     end
 
     context 'when item_types and item_type are provided' do
@@ -62,6 +83,21 @@ RSpec.describe Ai::Catalog::ItemConsumersFinder, feature_category: :workflow_cat
       let(:params) { super().merge(item_type: :flow, item_types: [:third_party_flow]) }
 
       it { is_expected.to contain_exactly(flow_consumer, third_party_flow_consumer) }
+    end
+
+    context 'when user cannot read ai catalog flows' do
+      let!(:flow) { create(:ai_catalog_flow) }
+      let!(:flow_consumer) { create(:ai_catalog_item_consumer, project: project, item: flow) }
+
+      let!(:third_party_flow) { create(:ai_catalog_third_party_flow) }
+      let!(:third_party_flow_consumer) { create(:ai_catalog_item_consumer, project: project, item: third_party_flow) }
+
+      before do
+        allow(Ability).to receive(:allowed?).and_call_original
+        allow(Ability).to receive(:allowed?).with(user, :read_ai_catalog_flow, project).and_return(false)
+      end
+
+      it { is_expected.to contain_exactly(*project_consumers, third_party_flow_consumer) }
     end
 
     context 'when include_inherited is true' do

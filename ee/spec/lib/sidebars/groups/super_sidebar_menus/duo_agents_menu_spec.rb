@@ -12,7 +12,7 @@ RSpec.describe Sidebars::Groups::SuperSidebarMenus::DuoAgentsMenu, feature_categ
   describe '#configure_menu_items' do
     using RSpec::Parameterized::TableSyntax
 
-    where(:ai_catalog, :ai_catalog_agents_ff, :ai_catalog_flows_ff, :duo_workflow_permission, :configure_result,
+    where(:ai_catalog, :ai_catalog_agents_ff, :read_flow_permission, :duo_workflow_permission, :configure_result,
       :expected_items) do
       true  | true  | true  | true  | true  | [:ai_agents, :ai_flows]
       true  | true  | false | true  | true  | [:ai_agents]
@@ -25,8 +25,9 @@ RSpec.describe Sidebars::Groups::SuperSidebarMenus::DuoAgentsMenu, feature_categ
     with_them do
       before do
         stub_feature_flags(global_ai_catalog: ai_catalog)
-        stub_feature_flags(ai_catalog_agents: ai_catalog_agents_ff, ai_catalog_flows: ai_catalog_flows_ff)
+        stub_feature_flags(ai_catalog_agents: ai_catalog_agents_ff)
         allow(Ability).to receive(:allowed?).with(user, :duo_workflow, group).and_return(duo_workflow_permission)
+        allow(Ability).to receive(:allowed?).with(user, :read_ai_catalog_flow, group).and_return(read_flow_permission)
       end
 
       it "returns correct configure result" do
@@ -55,6 +56,7 @@ RSpec.describe Sidebars::Groups::SuperSidebarMenus::DuoAgentsMenu, feature_categ
   describe 'flows menu item' do
     before do
       allow(Ability).to receive(:allowed?).with(user, :duo_workflow, group).and_return(true)
+      allow(Ability).to receive(:allowed?).with(user, :read_ai_catalog_flow, group).and_return(true)
 
       menu.configure_menu_items
     end

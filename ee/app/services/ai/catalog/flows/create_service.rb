@@ -51,7 +51,7 @@ module Ai
         private
 
         def allowed?
-          super && Feature.enabled?(:ai_catalog_flows, current_user)
+          super && Ability.allowed?(current_user, :create_ai_catalog_flow, project)
         end
 
         def save_item(item)

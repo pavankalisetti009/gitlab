@@ -96,6 +96,18 @@ RSpec.describe Gitlab::Llm::Utils::AiFeaturesCatalogue, feature_category: :ai_ab
         internal: true
       })
     end
+
+    it 'has correct definition for :ai_catalog_flows' do
+      expect(list[:ai_catalog_flows]).to eq({
+        service_class: nil,
+        prompt_class: nil,
+        feature_category: :workflow_catalog,
+        execute_method: nil,
+        maturity: :beta,
+        self_managed: true,
+        internal: true
+      })
+    end
   end
 
   describe '.effective_maturity' do

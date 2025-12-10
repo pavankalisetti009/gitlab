@@ -10,6 +10,7 @@ import {
   GlFormRadioGroup,
 } from '@gitlab/ui';
 import { s__ } from '~/locale';
+import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { scrollTo } from '~/lib/utils/scroll_utils';
@@ -42,7 +43,7 @@ export default {
     ErrorsAlert,
     AiLegalDisclaimer,
   },
-  mixins: [glFeatureFlagsMixin()],
+  mixins: [glAbilitiesMixin(), glFeatureFlagsMixin()],
   props: {
     mode: {
       type: String,
@@ -139,7 +140,7 @@ export default {
     catalogItemTypes() {
       const types = [];
 
-      if (this.glFeatures.aiCatalogFlows) {
+      if (this.glAbilities.readAiCatalogFlow) {
         types.push(AI_CATALOG_TYPE_FLOW);
       }
 

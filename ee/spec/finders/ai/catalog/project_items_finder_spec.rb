@@ -54,9 +54,41 @@ RSpec.describe Ai::Catalog::ProjectItemsFinder, feature_category: :workflow_cata
   end
 
   context 'when filtering by `item_types`' do
-    let(:params) { { item_types: ['agent'] } }
+    let_it_be(:private_third_party_flow) { create(:ai_catalog_third_party_flow, project: project) }
+
+    let(:params) { { item_types: %w[flow third_party_flow] } }
 
     it 'returns the matching items' do
+      is_expected.to contain_exactly(public_flow, private_third_party_flow)
+    end
+
+    context 'when user cannot read ai catalog flows' do
+      before do
+        allow(Ability).to receive(:allowed?).and_call_original
+        allow(Ability).to receive(:allowed?).with(user, :read_ai_catalog_flow, project).and_return(false)
+      end
+
+      it 'returns non-flow items only' do
+        is_expected.to contain_exactly(private_third_party_flow)
+      end
+    end
+
+    context 'when item_types is empty' do
+      let(:params) { { item_types: [] } }
+
+      it 'returns all items' do
+        is_expected.to contain_exactly(public_flow, private_agent, private_third_party_flow)
+      end
+    end
+  end
+
+  context 'when user cannot read ai catalog flows' do
+    before do
+      allow(Ability).to receive(:allowed?).and_call_original
+      allow(Ability).to receive(:allowed?).with(user, :read_ai_catalog_flow, project).and_return(false)
+    end
+
+    it 'returns non-flow items only' do
       is_expected.to contain_exactly(private_agent)
     end
   end
