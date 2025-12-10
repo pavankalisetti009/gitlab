@@ -118,7 +118,7 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     it { is_expected.to have_many(:configured_ai_catalog_items).class_name('Ai::Catalog::ItemConsumer') }
     it { is_expected.to have_many(:ai_flow_triggers).class_name('Ai::FlowTrigger') }
     it { is_expected.to have_many(:policy_dismissals).class_name('Security::PolicyDismissal') }
-    it { is_expected.to have_many(:enabled_foundational_flows).class_name('Ai::Catalog::EnabledFoundationalFlow') }
+    it { is_expected.to have_many(:enabled_foundational_flow_records).class_name('Ai::Catalog::EnabledFoundationalFlow') }
 
     include_examples 'ci_cd_settings delegation' do
       let(:attributes_with_prefix) do
@@ -5645,8 +5645,8 @@ RSpec.describe Project, feature_category: :groups_and_projects do
 
     context 'when project has more than 100 enabled foundational flows' do
       before do
-        allow(project.enabled_foundational_flows).to receive(:limit).with(100).and_return(
-          project.enabled_foundational_flows.limit(3)
+        allow(project.enabled_foundational_flow_records).to receive(:limit).with(100).and_return(
+          project.enabled_foundational_flow_records.limit(3)
         )
 
         4.times do
@@ -5658,6 +5658,74 @@ RSpec.describe Project, feature_category: :groups_and_projects do
       it 'returns only the limit of catalog item ids' do
         expect(subject.size).to eq(3)
       end
+    end
+  end
+
+  describe '#sync_enabled_foundational_flows!' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:flow1) { create(:ai_catalog_item, :with_foundational_flow_reference, public: true, organization: project.organization) }
+    let_it_be(:flow2) { create(:ai_catalog_item, :with_foundational_flow_reference, public: true, organization: project.organization) }
+
+    before do
+      project.enabled_foundational_flow_records.delete_all
+    end
+
+    it 'creates enabled foundational flow records for given IDs' do
+      project.sync_enabled_foundational_flows!([flow1.id, flow2.id])
+
+      expect(project.enabled_foundational_flow_records.reload.pluck(:catalog_item_id)).to match_array([flow1.id, flow2.id])
+    end
+
+    it 'removes enabled foundational flow records not in target IDs' do
+      create(:ai_catalog_enabled_foundational_flow, :for_project, project: project, catalog_item: flow1)
+      create(:ai_catalog_enabled_foundational_flow, :for_project, project: project, catalog_item: flow2)
+
+      project.sync_enabled_foundational_flows!([flow1.id])
+
+      expect(project.enabled_foundational_flow_records.reload.pluck(:catalog_item_id)).to eq([flow1.id])
+    end
+
+    it 'deletes all records when target_ids is empty' do
+      create(:ai_catalog_enabled_foundational_flow, :for_project, project: project, catalog_item: flow1)
+
+      project.sync_enabled_foundational_flows!([])
+
+      expect(project.enabled_foundational_flow_records.reload).to be_empty
+    end
+
+    it 'handles duplicates idempotently' do
+      project.sync_enabled_foundational_flows!([flow1.id, flow2.id])
+
+      expect { project.sync_enabled_foundational_flows!([flow1.id, flow2.id]) }
+        .not_to change { project.enabled_foundational_flow_records.reload.count }
+    end
+
+    it 'tracks exceptions when record is invalid' do
+      allow(Ai::Catalog::EnabledFoundationalFlow).to receive(:bulk_insert!)
+                                                       .and_raise(ActiveRecord::RecordInvalid)
+
+      expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
+        instance_of(ActiveRecord::RecordInvalid),
+        hash_including(project_id: project.id, target_ids: [flow1.id])
+      )
+
+      project.sync_enabled_foundational_flows!([flow1.id])
+    end
+  end
+
+  describe '#remove_foundational_flow_consumers' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:flow) { create(:ai_catalog_item, :with_foundational_flow_reference, public: true, organization: project.organization) }
+    let_it_be(:consumer) { create(:ai_catalog_item_consumer, project: project, item: flow) }
+
+    it 'removes consumers for the given catalog item IDs' do
+      expect { project.remove_foundational_flow_consumers([flow.id]) }
+        .to change { project.configured_ai_catalog_items.count }.by(-1)
+    end
+
+    it 'does nothing when catalog_item_ids is empty' do
+      expect { project.remove_foundational_flow_consumers([]) }
+        .not_to change { project.configured_ai_catalog_items.count }
     end
   end
 

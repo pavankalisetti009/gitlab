@@ -2,20 +2,30 @@
 
 module Ai
   class CascadeDuoSettingsService
-    DUO_SETTINGS = %w[duo_features_enabled duo_remote_flows_enabled auto_duo_code_review_enabled
-      duo_foundational_flows_enabled duo_sast_fp_detection_enabled].freeze
+    DUO_SETTINGS = %w[
+      duo_features_enabled
+      duo_remote_flows_enabled
+      auto_duo_code_review_enabled
+      duo_foundational_flows_enabled
+      duo_sast_fp_detection_enabled
+      enabled_foundational_flows
+    ].freeze
 
-    def initialize(setting_attributes)
+    def initialize(setting_attributes, current_user: nil)
       @setting_attributes = setting_attributes.stringify_keys
+      @flow_ids = @setting_attributes.delete('enabled_foundational_flows')
+      @current_user = current_user
 
       check_setting_attributes!
     end
 
     def cascade_for_group(group)
-      return if @setting_attributes.empty?
+      return if @setting_attributes.empty? && @flow_ids.nil?
 
-      update_subgroups(group)
-      update_projects(group)
+      update_subgroups(group) if @setting_attributes.any?
+      update_projects(group) if @setting_attributes.any?
+      cascade_flow_selection(group) unless @flow_ids.nil?
+      schedule_foundational_flows_sync(group) if foundational_flows_changed?
     end
 
     def cascade_for_instance
@@ -31,6 +41,8 @@ module Ai
     end
 
     private
+
+    attr_reader :setting_attributes, :flow_ids, :current_user
 
     def check_setting_attributes!
       return if @setting_attributes.keys.all? { |key| DUO_SETTINGS.include?(key) }
@@ -53,6 +65,35 @@ module Ai
         ProjectSetting.for_projects(project_ids_to_update)
                       .update_all(@setting_attributes)
       end
+    end
+
+    def cascade_flow_selection(group)
+      target_ids = @flow_ids || []
+
+      group.sync_enabled_foundational_flows!(target_ids)
+
+      group.descendants.each_batch do |batch|
+        batch.each do |descendant_group|
+          descendant_group.sync_enabled_foundational_flows!(target_ids)
+        end
+      end
+
+      group.all_projects.each_batch do |batch|
+        batch.each do |project|
+          project.sync_enabled_foundational_flows!(target_ids)
+        end
+      end
+    end
+
+    def foundational_flows_changed?
+      @setting_attributes.key?('duo_foundational_flows_enabled') || !@flow_ids.nil?
+    end
+
+    def schedule_foundational_flows_sync(group)
+      ::Ai::Catalog::Flows::CascadeSyncFoundationalFlowsWorker.perform_async(
+        group.id,
+        @current_user&.id
+      )
     end
   end
 end

@@ -9,7 +9,8 @@ module EE
         :remove_dormant_members,
         :remove_dormant_members_period,
         :allow_enterprise_bypass_placeholder_confirmation,
-        :enterprise_bypass_expires_at
+        :enterprise_bypass_expires_at,
+        :enabled_foundational_flows
       ].freeze
 
       override :execute
@@ -166,17 +167,31 @@ module EE
       def update_cascading_settings
         previous_changes = group.namespace_settings.previous_changes
 
+        return unless previous_changes.present?
+
         cascading_ai_settings = [:duo_features_enabled, :duo_remote_flows_enabled, :auto_duo_code_review_enabled,
           :duo_foundational_flows_enabled, :duo_sast_fp_detection_enabled]
         # Collect all changed AI settings and their values
         changed_ai_settings = cascading_ai_settings.filter_map do |setting|
           if previous_changes.include?(setting)
-            [setting, group.namespace_settings.attributes[setting.to_s]]
+            [setting, group.namespace_settings[setting]]
           end
         end.to_h
 
+        submitted_flow_ids = group.namespace_settings.enabled_foundational_flows
+        old_flow_ids = group.selected_foundational_flow_ids
+
+        if !submitted_flow_ids.nil? && old_flow_ids.sort != submitted_flow_ids.sort
+          group.sync_enabled_foundational_flows!(submitted_flow_ids)
+          changed_ai_settings[:enabled_foundational_flows] = submitted_flow_ids
+        end
+
         if changed_ai_settings.any?
-          ::Namespaces::CascadeDuoSettingsWorker.perform_async(group.id, changed_ai_settings)
+          ::Namespaces::CascadeDuoSettingsWorker.perform_async(
+            group.id,
+            changed_ai_settings,
+            current_user&.id
+          )
         end
 
         if previous_changes.include?(:web_based_commit_signing_enabled)
