@@ -72,6 +72,8 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
     end
 
     context 'when workflow is chat' do
+      let_it_be(:default_organization) { create(:organization) }
+
       let(:workflow_definition) { 'chat' }
 
       before do
@@ -80,6 +82,8 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
           .and_return({ 'x-gitlab-enabled-feature-flags' => 'test-feature' })
         allow(Ability).to receive(:allowed?).and_call_original
         allow(Ability).to receive(:allowed?).with(user, :access_duo_agentic_chat, project).and_return(true)
+
+        allow(::Organizations::Organization).to receive(:default_organization).and_return(default_organization)
       end
 
       it 'creates the Ai::DuoWorkflows::Workflow' do

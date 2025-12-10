@@ -36,6 +36,10 @@ RSpec.shared_context 'with mocked Foundational Chat Agents' do
     foundational_chat_agent_1[:reference]
   end
 
+  let(:foundational_chat_agent_1_workflow_definition) do
+    "#{foundational_chat_agent_1[:reference]}/#{foundational_chat_agent_1[:version]}"
+  end
+
   let(:foundational_chat_agent_2_ref) do
     foundational_chat_agent_2[:reference]
   end

@@ -55,6 +55,10 @@ module Ai
         all.any? { |agent| agent.workflow_definition == definition }
       end
 
+      def reference_from_workflow_definition(definition)
+        definition.split("/")[0]
+      end
+
       def workflow_definitions
         all.map(&:workflow_definition)
       end

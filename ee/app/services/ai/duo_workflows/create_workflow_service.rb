@@ -111,9 +111,14 @@ module Ai
       end
 
       def check_agentic_chat_access
-        return if Ability.allowed?(@current_user, :access_duo_agentic_chat, @container)
+        unless Ability.allowed?(@current_user, :access_duo_agentic_chat, @container)
+          return error('forbidden to access agentic chat', :forbidden)
+        end
 
-        error('forbidden to access agentic chat', :forbidden)
+        reference = FoundationalChatAgent.reference_from_workflow_definition(workflow_definition)
+        return if foundational_agents_settings_container.foundational_agent_enabled?(reference)
+
+        error('foundation agent disabled for namespace', :forbidden)
       end
 
       def check_duo_workflow_access
@@ -169,6 +174,18 @@ module Ai
         else
           :internal_server_error
         end
+      end
+
+      def foundational_agents_settings_container
+        unless ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+          return ::Organizations::Organization.default_organization
+        end
+
+        # use_billable_namespace
+        # once https://gitlab.com/gitlab-org/gitlab/-/issues/580901 is implemented,
+        # this should be moved to the source of truth
+        @current_user.user_preference.duo_default_namespace_with_fallback ||
+          (@container.is_a?(::Project) ? @container.parent : @container).root_ancestor
       end
     end
   end

@@ -40,12 +40,31 @@ module Ai
         statuses = foundational_agents_status_records.index_by(&:reference)
 
         ::Ai::FoundationalChatAgent.all.select do |agent|
-          if statuses.has_key?(agent.reference)
-            statuses[agent.reference].enabled
-          else
-            agent.duo_chat? || foundational_agents_default_enabled
-          end
+          agent_enabled?(agent, statuses)
         end
+      end
+
+      def foundational_agent_enabled?(reference)
+        return true if reference == 'chat'
+
+        record = foundational_agents_status_records.find_by(reference: reference)
+
+        return foundational_agents_default_enabled unless record
+
+        record.enabled
+      end
+
+      private
+
+      def agent_enabled?(agent, statuses)
+        # Duo Chat is always enabled
+        return true if agent.duo_chat?
+
+        # If there's an explicit status record, use it
+        return statuses[agent.reference].enabled if statuses.key?(agent.reference)
+
+        # Otherwise, use the default setting
+        foundational_agents_default_enabled
       end
     end
   end
