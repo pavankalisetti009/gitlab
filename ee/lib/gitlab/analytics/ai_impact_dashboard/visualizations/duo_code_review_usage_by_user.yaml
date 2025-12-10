@@ -8,8 +8,6 @@ options:
   fields:
     - key: 'user'
       component: 'UserLink'
-    - key: 'user.lastDuoActivityOn'
-      label: 'Last activity'
     - key: 'requestReviewDuoCodeReviewOnMrByAuthorEventCount'
       label: 'Reviews requested'
       thClass: "gl-text-right"
