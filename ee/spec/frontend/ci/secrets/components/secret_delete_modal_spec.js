@@ -190,6 +190,8 @@ describe('SecretDetailsWrapper component', () => {
     it('shows error in alert', () => {
       expect(createAlert).toHaveBeenCalledWith({
         message: 'This is an API error.',
+        captureError: true,
+        error: new Error('This is an API error.'),
       });
     });
 

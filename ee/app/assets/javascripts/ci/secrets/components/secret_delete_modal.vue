@@ -57,7 +57,11 @@ export default {
   methods: {
     handleDeleteError(message) {
       this.hideModal();
-      createAlert({ message });
+      createAlert({
+        message,
+        captureError: true,
+        error: new Error(message),
+      });
     },
     hideModal() {
       this.typedSecretName = '';

@@ -56,8 +56,12 @@ export default {
       update(data) {
         return data.projectSecret || null;
       },
-      error() {
-        createAlert({ message: FAILED_TO_LOAD_ERROR_MESSAGE });
+      error(e) {
+        createAlert({
+          message: FAILED_TO_LOAD_ERROR_MESSAGE,
+          captureError: true,
+          error: e,
+        });
       },
       fetchPolicy: fetchPolicies.NETWORK_ONLY,
     },
