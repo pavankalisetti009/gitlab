@@ -32,6 +32,10 @@ import {
 } from 'ee/ai/duo_agentic_chat/utils/model_selection_utils';
 import * as WorkflowSocketUtils from 'ee/ai/duo_agentic_chat/utils/workflow_socket_utils';
 import * as ResizeUtils from 'ee/ai/duo_agentic_chat/utils/resize_utils';
+import {
+  loadThreadSnapshot,
+  clearThreadSnapshot,
+} from 'ee/ai/duo_agentic_chat/utils/chat_thread_snapshot';
 import ModelSelectDropdown from 'ee/ai/shared/feature_settings/model_select_dropdown.vue';
 import {
   GENIE_CHAT_RESET_MESSAGE,
@@ -106,6 +110,12 @@ jest.mock('ee/ai/duo_agentic_chat/utils/model_selection_utils', () => ({
   getModel: jest.fn(),
   saveModel: jest.fn(),
   isModelSelectionDisabled: jest.fn(),
+}));
+
+jest.mock('ee/ai/duo_agentic_chat/utils/chat_thread_snapshot', () => ({
+  saveThreadSnapshot: jest.fn(),
+  loadThreadSnapshot: jest.fn(),
+  clearThreadSnapshot: jest.fn(),
 }));
 
 const MOCK_PROJECT_ID = 'gid://gitlab/Project/123';
@@ -317,6 +327,17 @@ describe('Duo Agentic Chat', () => {
     const [, socketCallbacks] = calls[calls.length - 1];
     return socketCallbacks;
   };
+  const snapshotMessages = [
+    { role: 'user', content: 'Cached user message', ts: 1000 },
+    { role: 'assistant', content: 'Cached assistant reply', ts: 2000 },
+  ];
+  const threadSnapshotWithMessages = {
+    v: 1,
+    convoId: '456',
+    lastTs: 2000,
+    messages: snapshotMessages,
+  };
+  const threadSnapshotEmpty = null;
 
   const createComponent = ({
     initialState = {},
@@ -393,6 +414,8 @@ describe('Duo Agentic Chat', () => {
 
   beforeEach(() => {
     mockRefetch.mockClear();
+    loadThreadSnapshot.mockClear();
+    loadThreadSnapshot.mockReturnValue(threadSnapshotEmpty);
     MOCK_UTILS_SETUP();
   });
 
@@ -440,8 +463,8 @@ describe('Duo Agentic Chat', () => {
   describe('rendering', () => {
     describe('when Duo Chat is shown', () => {
       beforeEach(() => {
-        createComponent();
         duoChatGlobalState.isAgenticChatShown = true;
+        createComponent();
       });
 
       it('renders the AgenticDuoChat component', () => {
@@ -461,6 +484,24 @@ describe('Duo Agentic Chat', () => {
         await waitForPromises();
 
         expect(findChatLoadingState().exists()).toBe(true);
+        resolvePromise('');
+      });
+
+      it('does not render the loading state if we have an active thread with a snapshot', async () => {
+        loadThreadSnapshot.mockReturnValue(threadSnapshotWithMessages);
+
+        let resolvePromise = null;
+        const pendingPromise = new Promise((resolve) => {
+          resolvePromise = resolve;
+        });
+        ApolloUtils.fetchWorkflowEvents
+          .mockResolvedValueOnce(MOCK_WORKFLOW_EVENTS_RESPONSE)
+          .mockReturnValueOnce(pendingPromise);
+
+        findDuoChat().vm.$emit('thread-selected', { id: MOCK_WORKFLOW_ID });
+        await waitForPromises();
+
+        expect(findChatLoadingState().exists()).toBe(false);
         resolvePromise('');
       });
 
@@ -665,6 +706,24 @@ describe('Duo Agentic Chat', () => {
           errors: [`Error: ${errorText}`],
         }),
       );
+    });
+
+    it('clears the workflow thread snapshot when workflow is deleted', async () => {
+      getStorageValue.mockReturnValueOnce({
+        exists: true,
+        value: { workflowId: '456', activeThread: MOCK_WORKFLOW_ID },
+      });
+
+      ApolloUtils.fetchWorkflowEvents.mockRejectedValue({
+        graphQLErrors: [
+          { message: 'Workflow not found', extensions: { code: 'WORKFLOW_NOT_FOUND' } },
+        ],
+      });
+
+      createComponent();
+      await waitForPromises();
+
+      expect(clearThreadSnapshot).toHaveBeenCalledWith('456');
     });
   });
 
@@ -2335,6 +2394,14 @@ describe('Duo Agentic Chat', () => {
         expect(ApolloUtils.deleteWorkflow).toHaveBeenCalledWith(expect.anything(), mockThreadId);
         expect(mockRefetch).toHaveBeenCalled();
       });
+
+      it(`clears the thread's snapshot`, async () => {
+        const mockThreadId = MOCK_WORKFLOW_ID;
+        findDuoChat().vm.$emit('delete-thread', mockThreadId);
+        await waitForPromises();
+
+        expect(clearThreadSnapshot).toHaveBeenCalledWith('456');
+      });
     });
   });
 
@@ -3305,6 +3372,126 @@ describe('Duo Agentic Chat', () => {
 
           expect(wrapper.emitted('switch-to-active-tab')?.length > 0).toBe(true);
         });
+      });
+    });
+  });
+
+  describe('Chat snapshot caching', () => {
+    beforeEach(() => {
+      MOCK_UTILS_SETUP();
+      jest.clearAllMocks();
+    });
+
+    describe('hydrateActiveThread', () => {
+      describe('when cached messages exist', () => {
+        beforeEach(() => {
+          loadThreadSnapshot.mockReturnValue(threadSnapshotWithMessages);
+
+          getStorageValue.mockReturnValue({
+            exists: true,
+            value: { workflowId: '456', activeThread: MOCK_WORKFLOW_ID },
+          });
+          duoChatGlobalState.isAgenticChatShown = true;
+          createComponent();
+        });
+
+        it('loads cached messages immediately before API fetch', () => {
+          expect(loadThreadSnapshot).toHaveBeenCalledWith('456');
+          expect(actionSpies.setMessages).toHaveBeenCalledWith(expect.anything(), snapshotMessages);
+        });
+
+        it('updates with fresh messages from API after cache is loaded', async () => {
+          await waitForPromises();
+
+          // First call: cached messages
+          expect(actionSpies.setMessages).toHaveBeenNthCalledWith(
+            1,
+            expect.anything(),
+            snapshotMessages,
+          );
+
+          // Second call: fresh messages from API
+          expect(actionSpies.setMessages).toHaveBeenNthCalledWith(
+            2,
+            expect.anything(),
+            MOCK_TRANSFORMED_MESSAGES,
+          );
+        });
+      });
+
+      describe('when no cached messages exist', () => {
+        beforeEach(() => {
+          loadThreadSnapshot.mockReturnValue(threadSnapshotEmpty);
+
+          getStorageValue.mockReturnValue({
+            exists: true,
+            value: { workflowId: '456', activeThread: MOCK_WORKFLOW_ID },
+          });
+
+          duoChatGlobalState.isAgenticChatShown = true;
+
+          createComponent();
+        });
+
+        it('does not set messages from cache', async () => {
+          expect(loadThreadSnapshot).toHaveBeenCalledWith('456');
+
+          // Only called once with API data, not with cache
+          await waitForPromises();
+          expect(actionSpies.setMessages).toHaveBeenCalledTimes(1);
+          expect(actionSpies.setMessages).toHaveBeenCalledWith(
+            expect.anything(),
+            MOCK_TRANSFORMED_MESSAGES,
+          );
+        });
+
+        it('still fetches messages from API', async () => {
+          await waitForPromises();
+          expect(ApolloUtils.fetchWorkflowEvents).toHaveBeenCalled();
+        });
+      });
+    });
+
+    describe('messages watcher', () => {
+      it('has debounced watcher for messages', () => {
+        createComponent();
+
+        // Verify the watcher exists by checking component options
+        const watchers = wrapper.vm.$options.watch;
+        expect(watchers.messages).toBeDefined();
+        expect(watchers.messages.deep).toBe(true);
+      });
+    });
+
+    describe('integration scenarios', () => {
+      it('loads cached messages on mount when available', async () => {
+        loadThreadSnapshot.mockReturnValue(threadSnapshotWithMessages);
+
+        getStorageValue.mockReturnValue({
+          exists: true,
+          value: { workflowId: '456', activeThread: MOCK_WORKFLOW_ID },
+        });
+
+        createComponent();
+        duoChatGlobalState.isAgenticChatShown = true;
+        await nextTick();
+
+        // Cache was loaded
+        expect(loadThreadSnapshot).toHaveBeenCalledWith('456');
+        // Messages were set from cache
+        expect(actionSpies.setMessages).toHaveBeenCalledWith(expect.anything(), snapshotMessages);
+      });
+
+      it('does not clear cache when starting new conversation', () => {
+        createComponent();
+        wrapper.vm.workflowId = '456';
+
+        findDuoChat().vm.$emit('new-chat');
+
+        // Cache was cleared for the workflow
+        expect(clearThreadSnapshot).not.toHaveBeenCalled();
+        // Messages were reset
+        expect(actionSpies.setMessages).toHaveBeenCalledWith(expect.anything(), []);
       });
     });
   });
