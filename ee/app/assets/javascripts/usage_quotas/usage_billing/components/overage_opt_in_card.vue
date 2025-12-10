@@ -45,7 +45,7 @@ export default {
       </gl-sprintf>
     </p>
     <gl-button :href="customersUsageDashboardUrl" variant="confirm">
-      {{ s__('UsageBilling|Enable on-demand billing') }}
+      {{ s__('UsageBilling|Accept on-demand billing') }}
     </gl-button>
   </gl-card>
 </template>

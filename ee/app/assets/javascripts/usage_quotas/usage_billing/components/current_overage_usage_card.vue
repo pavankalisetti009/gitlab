@@ -15,6 +15,10 @@ export default {
       type: Number,
       required: true,
     },
+    overageIsAllowed: {
+      type: Boolean,
+      required: true,
+    },
     monthlyWaiverCreditsUsed: {
       type: Number,
       required: false,
@@ -45,9 +49,16 @@ export default {
     <p class="gl-border-t gl-mb-0 gl-mt-auto gl-pt-3 gl-text-sm gl-text-subtle">
       {{
         s__(
-          'UsageBilling|These are credits consumed beyond your users included credits, charged at standard on-demand rates.',
+          'UsageBilling|Credits consumed beyond your users included credits, charged at standard on-demand rates.',
         )
       }}
+      <template v-if="!overageIsAllowed">
+        {{
+          s__(
+            "UsageBilling|You won't be billed for this usage until you accept the on-demand billing terms.",
+          )
+        }}
+      </template>
       <gl-sprintf
         :message="
           s__('UsageBilling|Learn more about %{helpLinkStart}GitLab Credit pricing%{helpLinkEnd}.')

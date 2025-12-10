@@ -8,6 +8,7 @@ describe('CurrentOverageUsageCard', () => {
 
   const defaultProps = {
     overageCreditsUsed: 1,
+    overageIsAllowed: true,
     monthlyWaiverCreditsUsed: 42,
   };
 
@@ -38,11 +39,31 @@ describe('CurrentOverageUsageCard', () => {
       expect(wrapper.findByTestId('overage-credits-used').text()).toBe('1');
     });
 
+    it('renders description', () => {
+      expect(wrapper.find('p').text()).toMatchInterpolatedText(
+        'Credits consumed beyond your users included credits, charged at standard on-demand rates. Learn more about GitLab Credit pricing.',
+      );
+    });
+
     it('renders monthly waiver usage value', () => {
       const monthlyWaiverCreditsUsed = findMonthlyWaiverCreditsUsed();
 
       expect(monthlyWaiverCreditsUsed.exists()).toBe(true);
       expect(monthlyWaiverCreditsUsed.text()).toBe('42');
+    });
+  });
+
+  describe('with overage terms not accepted', () => {
+    beforeEach(() => {
+      createComponent({
+        overageIsAllowed: false,
+      });
+    });
+
+    it('renders description with a disclaimer', () => {
+      expect(wrapper.find('p').text()).toMatchInterpolatedText(
+        "Credits consumed beyond your users included credits, charged at standard on-demand rates. You won't be billed for this usage until you accept the on-demand billing terms. Learn more about GitLab Credit pricing.",
+      );
     });
   });
 
@@ -53,7 +74,7 @@ describe('CurrentOverageUsageCard', () => {
       });
     });
 
-    it('renders monthly waiver usage value', () => {
+    it("doesn't render monthly waiver usage value", () => {
       const monthlyWaiverCreditsUsed = findMonthlyWaiverCreditsUsed();
 
       expect(monthlyWaiverCreditsUsed.exists()).toBe(false);

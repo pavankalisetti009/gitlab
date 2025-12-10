@@ -75,7 +75,7 @@ describe('OverageOptInCard', () => {
     describe('call to action button', () => {
       it('renders the correct button text', () => {
         const button = wrapper.findComponent(GlButton);
-        expect(button.text()).toBe('Enable on-demand billing');
+        expect(button.text()).toBe('Accept on-demand billing');
       });
 
       it('renders the button with the correct href', () => {
