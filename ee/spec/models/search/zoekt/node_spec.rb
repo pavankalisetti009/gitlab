@@ -527,6 +527,131 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
     end
   end
 
+  describe '.replica_map_for_enabled_namespace' do
+    let_it_be(:namespace) { create(:group) }
+    let_it_be(:enabled_namespace) { create(:zoekt_enabled_namespace, namespace: namespace) }
+    let_it_be(:node1) { create(:zoekt_node) }
+    let_it_be(:node2) { create(:zoekt_node) }
+    let_it_be(:node3) { create(:zoekt_node) }
+
+    subject(:replica_map) { described_class.replica_map_for_enabled_namespace(enabled_namespace) }
+
+    context 'when there are no replicas' do
+      it 'returns an empty hash' do
+        expect(replica_map).to eq({})
+      end
+    end
+
+    context 'when there is one replica with one node' do
+      let_it_be(:replica1) { create(:zoekt_replica, :ready, zoekt_enabled_namespace: enabled_namespace) }
+      let_it_be(:_index1) do
+        create(:zoekt_index, zoekt_enabled_namespace: enabled_namespace, replica: replica1, node: node1)
+      end
+
+      it 'returns a hash with the replica_id mapping to an array with one node' do
+        expect(replica_map).to eq({ replica1.id => [node1] })
+      end
+    end
+
+    context 'when there is one replica with multiple nodes' do
+      let_it_be(:replica1) { create(:zoekt_replica, :ready, zoekt_enabled_namespace: enabled_namespace) }
+      let_it_be(:_index1) do
+        create(:zoekt_index, zoekt_enabled_namespace: enabled_namespace, replica: replica1, node: node1)
+      end
+
+      let_it_be(:_index2) do
+        create(:zoekt_index, zoekt_enabled_namespace: enabled_namespace, replica: replica1, node: node2)
+      end
+
+      it 'returns a hash with the replica_id mapping to an array with multiple nodes' do
+        expect(replica_map[replica1.id]).to contain_exactly(node1, node2)
+      end
+    end
+
+    context 'when there are multiple replicas with different nodes' do
+      let_it_be(:replica1) { create(:zoekt_replica, :ready, zoekt_enabled_namespace: enabled_namespace) }
+      let_it_be(:replica2) { create(:zoekt_replica, :ready, zoekt_enabled_namespace: enabled_namespace) }
+      let_it_be(:_index1) do
+        create(:zoekt_index, zoekt_enabled_namespace: enabled_namespace, replica: replica1, node: node1)
+      end
+
+      let_it_be(:_index2) do
+        create(:zoekt_index, zoekt_enabled_namespace: enabled_namespace, replica: replica1, node: node2)
+      end
+
+      let_it_be(:_index3) do
+        create(:zoekt_index, zoekt_enabled_namespace: enabled_namespace, replica: replica2, node: node3)
+      end
+
+      it 'returns a hash mapping each replica_id to its nodes' do
+        expect(replica_map.keys).to contain_exactly(replica1.id, replica2.id)
+        expect(replica_map[replica1.id]).to contain_exactly(node1, node2)
+        expect(replica_map[replica2.id]).to contain_exactly(node3)
+      end
+    end
+
+    context 'when there are non-ready replicas' do
+      let_it_be(:replica_ready) { create(:zoekt_replica, :ready, zoekt_enabled_namespace: enabled_namespace) }
+      let_it_be(:replica_pending) { create(:zoekt_replica, :pending, zoekt_enabled_namespace: enabled_namespace) }
+      let_it_be(:index_ready) do
+        create(:zoekt_index, zoekt_enabled_namespace: enabled_namespace, replica: replica_ready, node: node1)
+      end
+
+      let_it_be(:index_pending) do
+        create(:zoekt_index, zoekt_enabled_namespace: enabled_namespace, replica: replica_pending, node: node2)
+      end
+
+      it 'returns only ready replicas' do
+        expect(replica_map.keys).to contain_exactly(replica_ready.id)
+        expect(replica_map[replica_ready.id]).to contain_exactly(node1)
+        expect(replica_map).not_to have_key(replica_pending.id)
+      end
+    end
+
+    context 'when a node serves multiple replicas' do
+      let_it_be(:another_enabled_namespace) { create(:zoekt_enabled_namespace) }
+      let_it_be(:replica1) { create(:zoekt_replica, :ready, zoekt_enabled_namespace: enabled_namespace) }
+      let_it_be(:replica2) { create(:zoekt_replica, :ready, zoekt_enabled_namespace: another_enabled_namespace) }
+      let_it_be(:index1) do
+        create(:zoekt_index, zoekt_enabled_namespace: enabled_namespace, replica: replica1, node: node1)
+      end
+
+      let_it_be(:index2) do
+        create(:zoekt_index, zoekt_enabled_namespace: another_enabled_namespace, replica: replica2, node: node1)
+      end
+
+      it 'returns nodes for only the specified enabled namespace' do
+        expect(replica_map[replica1.id]).to contain_exactly(node1)
+        expect(replica_map).not_to have_key(replica2.id)
+      end
+    end
+
+    context 'when the method is called on a scoped relation' do
+      let_it_be(:replica1) { create(:zoekt_replica, :ready, zoekt_enabled_namespace: enabled_namespace) }
+      let_it_be(:_index1) do
+        create(:zoekt_index, zoekt_enabled_namespace: enabled_namespace, replica: replica1, node: node1)
+      end
+
+      it 'respects the caller scope' do
+        # Call on a scope that filters to a specific node
+        scoped_map = described_class.id_in(node1.id).replica_map_for_enabled_namespace(enabled_namespace)
+
+        expect(scoped_map[replica1.id]).to contain_exactly(node1)
+      end
+
+      it 'excludes nodes not in the caller scope' do
+        # Create another index with a different node
+        create(:zoekt_index, zoekt_enabled_namespace: enabled_namespace, replica: replica1, node: node2)
+
+        # Call on a scope that only includes node1
+        scoped_map = described_class.id_in(node1.id).replica_map_for_enabled_namespace(enabled_namespace)
+
+        expect(scoped_map[replica1.id]).to contain_exactly(node1)
+        expect(scoped_map[replica1.id]).not_to include(node2)
+      end
+    end
+  end
+
   describe '.marking_lost_enabled?', :zoekt_settings_enabled do
     before do
       allow(::Search::Zoekt::Settings).to receive(:lost_node_threshold).and_return(12.hours)

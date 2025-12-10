@@ -159,6 +159,26 @@ module Search
         nodes
       end
 
+      # Returns a hash mapping replica IDs to their associated nodes for an enabled namespace
+      # The caller is responsible for scoping nodes appropriately (e.g., .for_search.online)
+      #
+      # @param enabled_namespace [Search::Zoekt::EnabledNamespace] The enabled namespace to fetch replica nodes for
+      # @return [Hash<Integer, Array<Node>>] Hash of replica_id => [nodes]
+      def self.replica_map_for_enabled_namespace(enabled_namespace)
+        replicas = enabled_namespace.replicas.ready.preload_nodes
+
+        # Fetch all nodes for the given replicas in a single query
+        nodes_with_replica_ids = joins(:indices)
+            .where(zoekt_indices: { zoekt_replica_id: replicas.select(:id) })
+            .select('zoekt_nodes.*, zoekt_indices.zoekt_replica_id')
+            .distinct
+
+        # Group nodes by replica_id
+        nodes_with_replica_ids.each_with_object(Hash.new { |h, k| h[k] = [] }) do |node, hash|
+          hash[node.zoekt_replica_id] << node
+        end
+      end
+
       def concurrency_limit
         override = metadata['concurrency_override'].to_i
         return override if override > 0

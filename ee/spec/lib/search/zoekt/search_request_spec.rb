@@ -52,32 +52,54 @@ RSpec.describe Search::Zoekt::SearchRequest, feature_category: :global_search do
     context 'for project search' do
       let_it_be(:project) { create(:project) }
       let_it_be(:en) { create(:zoekt_enabled_namespace, namespace: project.root_ancestor) }
+      let_it_be(:replica) { create(:zoekt_replica, zoekt_enabled_namespace: en, state: :ready) }
+      let_it_be(:index) { create(:zoekt_index, zoekt_enabled_namespace: en, replica: replica, node: node2) }
 
       subject(:json_representation) do
         described_class.new(current_user: user, project_id: project.id, query: 'test', **options).as_json
       end
 
-      before do
-        allow(::Search::Zoekt::Node).to receive_message_chain(:for_search, :online,
-          :searchable_for_project).and_return([node2])
-      end
-
-      it 'returns only one node endpoint in forward_to' do
+      it 'returns only node endpoints from the selected replica in forward_to' do
         expect(json_representation[:forward_to].size).to eq(1)
         endpoint = json_representation[:forward_to].first[:endpoint]
         expect(endpoint).to eq(node2.search_base_url)
+      end
+
+      context 'with multiple replicas' do
+        let_it_be(:replica2) { create(:zoekt_replica, zoekt_enabled_namespace: en, state: :ready) }
+        let_it_be(:index2) { create(:zoekt_index, zoekt_enabled_namespace: en, replica: replica2, node: node1) }
+
+        before do
+          # Mock ReplicaSelector to return the first replica with its nodes
+          selector_result = Search::Zoekt::ReplicaSelector::Result.new(
+            replica: replica,
+            nodes: [node2]
+          )
+          allow_next_instance_of(Search::Zoekt::ReplicaSelector) do |instance|
+            allow(instance).to receive(:select).and_return(selector_result)
+          end
+        end
+
+        it 'returns only nodes from the selected replica' do
+          expect(json_representation[:forward_to].size).to eq(1)
+          endpoint = json_representation[:forward_to].first[:endpoint]
+          expect(endpoint).to eq(node2.search_base_url)
+        end
       end
     end
 
     context 'for group search' do
       let_it_be(:group) { create(:group) }
       let_it_be(:en) { create(:zoekt_enabled_namespace, namespace: group.root_ancestor) }
+      let_it_be(:replica) { create(:zoekt_replica, zoekt_enabled_namespace: en, state: :ready) }
+      let_it_be(:index1) { create(:zoekt_index, zoekt_enabled_namespace: en, replica: replica, node: node1) }
+      let_it_be(:index2) { create(:zoekt_index, zoekt_enabled_namespace: en, replica: replica, node: node2) }
 
       subject(:json_representation) do
         described_class.new(current_user: user, group_id: group.id, query: 'test', **options).as_json
       end
 
-      it 'returns all node endpoints in forward_to' do
+      it 'returns node endpoints from the selected replica in forward_to' do
         endpoints = json_representation[:forward_to].pluck(:endpoint)
         expect(endpoints).to match_array([node1.search_base_url, node2.search_base_url])
       end
@@ -169,22 +191,37 @@ RSpec.describe Search::Zoekt::SearchRequest, feature_category: :global_search do
       it 'raises an ArgumentError' do
         expect do
           described_class.new(current_user: user, group_id: group.id, query: 'test', **options).as_json
-        end.to raise_error(ArgumentError, %r{No enabled namespace found for root ancestor})
+        end.to raise_error(ArgumentError, %r{No enabled namespace found})
+      end
+    end
+
+    context 'when there are no ready replicas' do
+      let_it_be(:group) { create(:group) }
+      let_it_be(:_) { create(:zoekt_enabled_namespace, namespace: group) }
+
+      it 'raises an ArgumentError' do
+        expect do
+          described_class.new(current_user: user, group_id: group.id, query: 'test', **options).as_json
+        end.to raise_error(ArgumentError, %r{No ready replica found})
       end
     end
 
     context 'when there is no online nodes' do
       let_it_be(:group) { create(:group) }
       let_it_be(:en) { create(:zoekt_enabled_namespace, namespace: group) }
+      let_it_be(:replica) { create(:zoekt_replica, zoekt_enabled_namespace: en, state: :ready) }
 
       before do
-        allow(Search::Zoekt::Node).to receive(:online).and_return(Search::Zoekt::Node.none)
+        selector_result = Search::Zoekt::ReplicaSelector::Result.new(replica: replica, nodes: [])
+        allow_next_instance_of(Search::Zoekt::ReplicaSelector) do |instance|
+          allow(instance).to receive(:select).and_return(selector_result)
+        end
       end
 
       it 'raises an ArgumentError' do
         expect do
           described_class.new(current_user: user, group_id: group.id, query: 'test', **options).as_json
-        end.to raise_error(ArgumentError, %r{No online nodes found for namespace})
+        end.to raise_error(ArgumentError, %r{No online nodes found for replica})
       end
     end
   end
