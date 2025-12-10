@@ -61,29 +61,27 @@ RSpec.describe Admin::TargetedMessagesController, :enable_admin_mode, :saas, fea
     end
 
     context 'when successful' do
-      it 'redirects to index on success' do
+      it 'returns ok status' do
         expect do
           post admin_targeted_messages_path, params: targeted_message_params
         end.to change { Notifications::TargetedMessage.count }.by(1)
 
-        expect(response).to redirect_to(admin_targeted_messages_path)
-        expect(flash[:notice]).to eq('Targeted message was successfully created.')
+        expect(response).to have_gitlab_http_status(:ok)
       end
     end
 
     context 'when there are invalid namespace ids' do
       let(:invalid_namespace_ids) { [non_existing_record_id] }
 
-      it 'renders the edit page' do
+      it 'returns ok status with redirect_to' do
         expect do
           post admin_targeted_messages_path, params: targeted_message_params
         end.to change { Notifications::TargetedMessage.count }.by(1)
 
-        expect(flash[:alert]).to eq(
-          "Targeted message was successfully created. But the following namespace ids " \
-            "were invalid and have been ignored: #{non_existing_record_id}"
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(json_response['redirect_to']).to eq(
+          edit_admin_targeted_message_path(Notifications::TargetedMessage.last)
         )
-        expect(response).to render_template(:edit)
       end
     end
 
@@ -92,12 +90,14 @@ RSpec.describe Admin::TargetedMessagesController, :enable_admin_mode, :saas, fea
         { targeted_message: { target_type: '', namespace_ids_csv: csv_file } }
       end
 
-      it 'renders the new page' do
+      it 'returns unprocessable entity status with error messages' do
         expect { post admin_targeted_messages_path, params: targeted_message_params }.not_to change {
           Notifications::TargetedMessage.count
         }
 
-        expect(response).to render_template(:new)
+        expect(response).to have_gitlab_http_status(:unprocessable_entity)
+        expect(json_response['message']).to be_a(Hash)
+        expect(json_response['message']['target_type']).to be_present
       end
     end
   end
@@ -129,25 +129,23 @@ RSpec.describe Admin::TargetedMessagesController, :enable_admin_mode, :saas, fea
     end
 
     context 'when successful' do
-      it 'redirects to index on success' do
+      it 'returns ok status' do
         patch admin_targeted_message_path(targeted_message), params: targeted_message_params
 
-        expect(response).to redirect_to(admin_targeted_messages_path)
-        expect(flash[:notice]).to eq('Targeted message was successfully updated.')
+        expect(response).to have_gitlab_http_status(:ok)
       end
     end
 
     context 'when there are invalid namespace ids' do
       let(:invalid_namespace_ids) { [non_existing_record_id] }
 
-      it 'renders the edit page' do
+      it 'returns ok status with redirect_to' do
         patch admin_targeted_message_path(targeted_message), params: targeted_message_params
 
-        expect(flash[:alert]).to eq(
-          "Targeted message was successfully updated. But the following namespace ids " \
-            "were invalid and have been ignored: #{non_existing_record_id}"
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(json_response['redirect_to']).to eq(
+          edit_admin_targeted_message_path(targeted_message)
         )
-        expect(response).to render_template(:edit)
       end
     end
 
@@ -156,10 +154,12 @@ RSpec.describe Admin::TargetedMessagesController, :enable_admin_mode, :saas, fea
         { targeted_message: { target_type: '', namespace_ids_csv: csv_file } }
       end
 
-      it 'renders the new page on failure' do
+      it 'returns unprocessable entity status with error messages' do
         patch admin_targeted_message_path(targeted_message), params: targeted_message_params
 
-        expect(response).to render_template(:edit)
+        expect(response).to have_gitlab_http_status(:unprocessable_entity)
+        expect(json_response['message']).to be_a(Hash)
+        expect(json_response['message']['target_type']).to be_present
       end
     end
   end
