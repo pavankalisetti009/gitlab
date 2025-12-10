@@ -85,6 +85,24 @@ RSpec.describe Vulnerabilities::Flags::UpdateAiDetectionService, feature_categor
           expect(flag.finding).to eq(finding)
         end
 
+        context 'when origin is provided' do
+          let(:params) do
+            {
+              confidence_score: 85,
+              description: 'AI detected this as a false positive with high confidence',
+              origin: 'custom_ai_model'
+            }
+          end
+
+          it 'creates a flag with the specified origin' do
+            result = service.execute
+
+            expect(result).to be_success
+            flag = result.payload[:flag]
+            expect(flag.origin).to eq('custom_ai_model')
+          end
+        end
+
         it 'normalizes confidence score from 0-100 to 0.0-1.0' do
           result = service.execute
 
@@ -149,6 +167,29 @@ RSpec.describe Vulnerabilities::Flags::UpdateAiDetectionService, feature_categor
             expect(flag.description).to eq('Old description')
             expect(flag.confidence_score).to eq(0.95)
             expect(flag.status).to eq('not_started')
+          end
+        end
+
+        context 'when origin is provided and different from existing flag' do
+          let(:params) do
+            {
+              confidence_score: 90,
+              description: 'Updated description',
+              origin: 'different_origin'
+            }
+          end
+
+          it 'creates a new flag with the new origin' do
+            result = nil
+            expect { result = service.execute }.to change { Vulnerabilities::Flag.count }.by(1)
+
+            expect(result).to be_success
+            expect(result.payload[:is_new_flag]).to be true
+
+            flag = result.payload[:flag]
+            expect(flag.origin).to eq('different_origin')
+            expect(flag.confidence_score).to eq(0.9)
+            expect(flag.description).to eq('Updated description')
           end
         end
       end
