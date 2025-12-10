@@ -54,6 +54,7 @@ export default {
       default: () => [],
     },
   },
+  emits: ['select-licenses'],
   data() {
     return {
       items: this.mapLicenses(this.licenses),
@@ -165,7 +166,7 @@ export default {
     },
     hideModalWindow() {
       this.$refs.modal.hide();
-      this.$emit('select-license', []);
+      this.$emit('select-licenses', []);
     },
     selectExceptionType(value, item) {
       const index = this.items.findIndex(({ id }) => id === item.id);

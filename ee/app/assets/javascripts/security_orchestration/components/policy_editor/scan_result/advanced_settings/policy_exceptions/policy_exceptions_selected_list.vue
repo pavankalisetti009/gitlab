@@ -18,6 +18,7 @@ export default {
       default: () => ({}),
     },
   },
+  emits: ['edit-item', 'remove'],
   computed: {
     hasExceptions() {
       return this.formattedSelectedExceptions.length > 0;

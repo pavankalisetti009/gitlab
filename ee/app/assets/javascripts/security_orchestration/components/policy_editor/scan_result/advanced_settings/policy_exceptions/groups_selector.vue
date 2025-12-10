@@ -24,6 +24,7 @@ export default {
       default: () => [],
     },
   },
+  emits: ['set-groups'],
   data() {
     return {
       groups: this.selectedGroups,

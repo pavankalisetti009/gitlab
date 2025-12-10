@@ -24,6 +24,7 @@ export default {
       default: () => ({}),
     },
   },
+  emits: ['input', 'remove'],
   computed: {
     selectedItems() {
       return Object.entries(this.selected).map(([attribute, value]) => ({ attribute, value }));

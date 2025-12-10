@@ -74,6 +74,7 @@ export default {
       default: () => [],
     },
   },
+  emits: ['error', 'remove', 'select-items', 'select-type'],
   computed: {
     approverComponent() {
       switch (this.selectedType) {

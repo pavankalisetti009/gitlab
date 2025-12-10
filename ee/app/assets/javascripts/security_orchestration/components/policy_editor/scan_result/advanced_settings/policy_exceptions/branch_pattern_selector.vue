@@ -31,6 +31,7 @@ export default {
       default: () => [],
     },
   },
+  emits: ['set-branches'],
   data() {
     return {
       items: this.mapSelectedBranches(this.branches),

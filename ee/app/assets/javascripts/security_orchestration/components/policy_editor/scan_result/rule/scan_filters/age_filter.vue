@@ -33,6 +33,7 @@ export default {
       default: true,
     },
   },
+  emits: ['input', 'remove'],
   computed: {
     showInterval() {
       return this.selected.operator !== ANY_OPERATOR;

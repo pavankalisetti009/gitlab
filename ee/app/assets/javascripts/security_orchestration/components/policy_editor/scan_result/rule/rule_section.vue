@@ -39,6 +39,7 @@ export default {
       required: true,
     },
   },
+  emits: ['changed', 'remove'],
   data() {
     const previousRules = {
       [ANY_MERGE_REQUEST]: null,

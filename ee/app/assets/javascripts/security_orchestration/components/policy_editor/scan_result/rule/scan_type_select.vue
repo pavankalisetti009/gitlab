@@ -48,6 +48,7 @@ export default {
       default: '',
     },
   },
+  emits: ['select'],
   computed: {
     items() {
       return this.$options.scanTypeOptions.filter(

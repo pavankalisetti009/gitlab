@@ -33,6 +33,7 @@ export default {
       default: () => {},
     },
   },
+  emits: ['changed'],
   computed: {
     fallbackBehaviorSetting() {
       return this.policy.fallback_behavior?.fail || CLOSED;

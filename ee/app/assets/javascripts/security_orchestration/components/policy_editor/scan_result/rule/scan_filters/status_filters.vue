@@ -28,6 +28,7 @@ export default {
       default: () => ({}),
     },
   },
+  emits: ['change-status-group', 'input', 'remove'],
   computed: {
     allFiltersSelected() {
       return this.filters[PREVIOUSLY_EXISTING] && this.filters[NEWLY_DETECTED];

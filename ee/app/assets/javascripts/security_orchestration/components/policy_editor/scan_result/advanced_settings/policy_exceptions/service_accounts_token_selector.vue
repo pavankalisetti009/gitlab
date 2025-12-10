@@ -34,6 +34,7 @@ export default {
       default: () => [],
     },
   },
+  emits: ['loading-error', 'set-tokens'],
   data() {
     return {
       tokens: [],

@@ -84,6 +84,7 @@ export default {
       default: true,
     },
   },
+  emits: ['error', 'select-items'],
   data() {
     return {
       groups: [],

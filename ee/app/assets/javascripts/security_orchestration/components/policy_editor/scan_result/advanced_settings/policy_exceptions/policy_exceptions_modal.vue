@@ -56,6 +56,7 @@ export default {
       default: null,
     },
   },
+  emits: ['changed', 'select-tab'],
   data() {
     return {
       selectedExceptions: this.exceptions,

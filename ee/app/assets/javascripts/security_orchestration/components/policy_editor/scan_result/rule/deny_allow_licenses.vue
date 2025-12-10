@@ -32,6 +32,7 @@ export default {
       default: () => [],
     },
   },
+  emits: ['select'],
   data() {
     return {
       searchTerm: '',

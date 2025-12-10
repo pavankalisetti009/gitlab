@@ -22,6 +22,10 @@ RSpec.describe 'Bulk edit status', :js, feature_category: :team_planning do
     create(:work_item_current_status, work_item_id: to_do_task.id, system_defined_status_id: to_do_status_id)
   end
 
+  before do
+    stub_feature_flags(work_items_saved_views: false)
+  end
+
   shared_examples 'bulk editing status' do
     context 'when bulk editing' do
       before do
