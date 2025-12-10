@@ -9,20 +9,6 @@ describe('TotalRiskScore chart', () => {
 
   const DEFAULT_SCORE = 72;
 
-  const EXPECTED_CHART_BAR_COLORS = {
-    LOW: '#91D4A8',
-    MEDIUM: '#E9BE74',
-    HIGH: '#c55631',
-    CRITICAL: '#9d2915',
-  };
-
-  const EXPECTED_LABEL_TEXT_COLORS = {
-    LOW: '#2DA160',
-    MEDIUM: '#C17D10',
-    HIGH: '#c55631',
-    CRITICAL: '#9d2915',
-  };
-
   const createComponent = (props = {}) => {
     wrapper = shallowMountExtended(TotalRiskScore, {
       propsData: {
@@ -68,19 +54,19 @@ describe('TotalRiskScore chart', () => {
       createComponent();
 
       expect(getOuterMeterSeries().axisLine.lineStyle.color).toEqual([
-        [0.25, EXPECTED_CHART_BAR_COLORS.LOW],
-        [0.5, EXPECTED_CHART_BAR_COLORS.MEDIUM],
-        [0.75, EXPECTED_CHART_BAR_COLORS.HIGH],
-        [1, EXPECTED_CHART_BAR_COLORS.CRITICAL],
+        [0.25, 'var(--risk-score-color-low)'],
+        [0.5, 'var(--risk-score-color-medium)'],
+        [0.75, 'var(--risk-score-color-high)'],
+        [1, 'var(--risk-score-color-critical)'],
       ]);
     });
 
     it.each`
       givenScore | expectedLabel      | expectedColor
-      ${1}       | ${'Low risk'}      | ${EXPECTED_LABEL_TEXT_COLORS.LOW}
-      ${26}      | ${'Medium risk'}   | ${EXPECTED_LABEL_TEXT_COLORS.MEDIUM}
-      ${51}      | ${'High risk'}     | ${EXPECTED_LABEL_TEXT_COLORS.HIGH}
-      ${76}      | ${'Critical risk'} | ${EXPECTED_LABEL_TEXT_COLORS.CRITICAL}
+      ${1}       | ${'Low risk'}      | ${'var(--risk-score-gauge-text-low)'}
+      ${26}      | ${'Medium risk'}   | ${'var(--risk-score-gauge-text-medium)'}
+      ${51}      | ${'High risk'}     | ${'var(--risk-score-gauge-text-high)'}
+      ${76}      | ${'Critical risk'} | ${'var(--risk-score-gauge-text-critical)'}
     `(
       'when the score is "$givenScore", the outer meter ring has the correct title and detail colors',
       ({ givenScore, expectedLabel, expectedColor }) => {
@@ -116,10 +102,10 @@ describe('TotalRiskScore chart', () => {
 
     it.each`
       givenScore | expectedColor
-      ${1}       | ${EXPECTED_CHART_BAR_COLORS.LOW}
-      ${26}      | ${EXPECTED_CHART_BAR_COLORS.MEDIUM}
-      ${51}      | ${EXPECTED_CHART_BAR_COLORS.HIGH}
-      ${76}      | ${EXPECTED_CHART_BAR_COLORS.CRITICAL}
+      ${1}       | ${'var(--risk-score-color-low)'}
+      ${26}      | ${'var(--risk-score-color-medium)'}
+      ${51}      | ${'var(--risk-score-color-high)'}
+      ${76}      | ${'var(--risk-score-color-critical)'}
     `(
       'when the score is "$givenScore", the progress meter ring has the correct color',
       ({ givenScore, expectedColor }) => {
