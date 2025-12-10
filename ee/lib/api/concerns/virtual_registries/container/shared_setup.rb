@@ -18,6 +18,9 @@ module API
               not_found! unless ::VirtualRegistries::Setting.find_for_group(target_group).enabled
 
               authenticate!
+
+              # return not found response to authenticated users but non member of target group
+              not_found! unless can?(current_user, :read_group, target_group)
             end
           end
         end
