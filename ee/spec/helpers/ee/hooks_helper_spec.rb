@@ -4,7 +4,9 @@ require 'spec_helper'
 
 RSpec.describe HooksHelper do
   let(:group) { create(:group) }
+  let_it_be(:project) { create(:project) }
   let(:group_hook) { create(:group_hook, group: group) }
+  let(:project_hook) { create(:project_hook, project: project) }
   let(:trigger) { 'push_events' }
 
   describe '#test_hook_path' do
@@ -22,6 +24,27 @@ RSpec.describe HooksHelper do
         expect(helper.hook_log_path(group_hook, web_hook_log))
           .to eq(web_hook_log.present.details_path)
       end
+    end
+  end
+
+  describe '#webhook_form_data' do
+    it 'includes vulnerability_events in triggers' do
+      result = helper.webhook_form_data(group_hook)
+      expected_triggers = ::Gitlab::Json.parse(result[:triggers])
+      expect(expected_triggers).to include('vulnerability_events' => group_hook.vulnerability_events)
+    end
+
+    it 'includes group event triggers for group hooks' do
+      result = helper.webhook_form_data(group_hook)
+      triggers = ::Gitlab::Json.parse(result[:triggers])
+
+      expect(triggers).to include('member_events', 'project_events', 'subgroup_events')
+    end
+
+    it 'excludes group event triggers for project hooks' do
+      result = helper.webhook_form_data(project_hook)
+      triggers = ::Gitlab::Json.parse(result[:triggers])
+      expect(triggers).not_to include('member_events', 'project_events', 'subgroup_events')
     end
   end
 end
