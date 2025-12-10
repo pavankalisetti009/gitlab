@@ -9,8 +9,9 @@ module Ai
 
       DirectAccessError = Class.new(StandardError)
 
-      def initialize(current_user:)
+      def initialize(current_user:, project: nil)
         @current_user = current_user
+        @project = project
       end
 
       def direct_access_token
@@ -43,14 +44,14 @@ module Ai
 
       private
 
-      attr_reader :current_user
+      attr_reader :current_user, :project
 
       def ai_gateway_headers
         Gitlab::AiGateway.headers(
           user: current_user,
           unit_primitive_name: :ai_gateway_model_provider_proxy,
           ai_feature_name: :duo_workflow
-        )
+        ).merge(project_headers)
       end
 
       def public_headers
@@ -60,8 +61,19 @@ module Ai
           unit_primitive_name: :ai_gateway_model_provider_proxy
         ).merge(
           'x-gitlab-unit-primitive' => 'ai_gateway_model_provider_proxy',
-          'x-gitlab-authentication-type' => 'oidc'
+          'x-gitlab-authentication-type' => 'oidc',
+          **project_headers
         )
+      end
+
+      def project_headers
+        return {} unless project
+
+        {
+          'x-gitlab-project-id' => project.id.to_s,
+          'x-gitlab-namespace-id' => project.namespace_id.to_s,
+          'x-gitlab-root-namespace-id' => project.root_namespace.id.to_s
+        }
       end
 
       def error_response(message, response)
