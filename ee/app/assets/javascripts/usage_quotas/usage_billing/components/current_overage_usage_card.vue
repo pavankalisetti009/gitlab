@@ -46,7 +46,7 @@ export default {
       </span>
     </div>
 
-    <p class="gl-border-t gl-mb-0 gl-mt-auto gl-pt-3 gl-text-sm gl-text-subtle">
+    <p class="gl-border-t gl-mb-3 gl-mt-auto gl-pt-3 gl-text-sm gl-text-subtle">
       {{
         s__(
           'UsageBilling|Credits consumed beyond your users included credits, charged at standard on-demand rates.',
@@ -72,7 +72,7 @@ export default {
 
     <div
       v-if="monthlyWaiverCreditsUsed"
-      class="gl-border-t gl-flex gl-flex-row gl-justify-between gl-pt-3 gl-text-subtle"
+      class="gl-border-t gl-flex gl-flex-row gl-justify-between gl-pt-3 gl-text-sm gl-text-subtle"
     >
       <span>{{ s__('UsageBilling|Monthly Waiver credits used this period') }}</span>
       <span data-testid="monthly-waiver-credits-used">
