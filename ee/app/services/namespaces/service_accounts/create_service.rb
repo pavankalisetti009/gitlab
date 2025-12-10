@@ -5,6 +5,14 @@ module Namespaces
     class CreateService < ::Users::ServiceAccounts::CreateService
       extend ::Gitlab::Utils::Override
 
+      attr_accessor :uniquify_provided_username
+
+      def initialize(current_user, params = {}, uniquify_provided_username: false)
+        super(current_user, params)
+
+        @uniquify_provided_username = uniquify_provided_username
+      end
+
       private
 
       override :create_user
@@ -23,6 +31,22 @@ module Namespaces
       override :username_prefix
       def username_prefix
         "#{User::SERVICE_ACCOUNT_PREFIX}_#{namespace.type.downcase}_#{namespace.id}"
+      end
+
+      override :username
+      def username
+        if uniquify_provided_username && username_unavailable?(params[:username])
+          return uniquify_username(params[:username] || username_prefix)
+        end
+
+        super
+      end
+
+      def uniquify_username(prefix)
+        Gitlab::Utils::UsernameAndEmailGenerator.new(
+          username_prefix: prefix,
+          random_segment: SecureRandom.hex(3)
+        ).username
       end
 
       override :default_user_params
@@ -69,6 +93,11 @@ module Namespaces
                 end
 
         limit > namespace.provisioned_users.service_account.count
+      end
+
+      def username_unavailable?(username)
+        ::Namespace.by_path(username) ||
+          ::User.username_exists?(username)
       end
 
       def saas?
