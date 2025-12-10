@@ -1116,6 +1116,14 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
         expect(response).to have_gitlab_http_status(:ok)
       end
 
+      it 'does not accept an invalid access level' do
+        put api("/groups/#{group.id}", user), params: { ai_settings_attributes: { minimum_access_level_execute: 995 } }
+
+        expect(response).to have_gitlab_http_status(:bad_request)
+        expect(json_response).to eq({ 'error' => 'ai_settings_attributes[minimum_access_level_execute] does not have a valid value' })
+        expect(group.ai_settings&.reload&.minimum_access_level_execute).to be_nil
+      end
+
       it 'does not update the field when the feature flag is disabled' do
         stub_feature_flags(dap_group_customizable_permissions: false)
 
@@ -1132,6 +1140,14 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
 
         expect(group.ai_settings.reload.minimum_access_level_execute_async).to eq(::Gitlab::Access::DEVELOPER)
         expect(response).to have_gitlab_http_status(:ok)
+      end
+
+      it 'does not accept an invalid access level' do
+        put api("/groups/#{group.id}", user), params: { ai_settings_attributes: { minimum_access_level_execute_async: 995 } }
+
+        expect(response).to have_gitlab_http_status(:bad_request)
+        expect(json_response).to eq({ 'error' => 'ai_settings_attributes[minimum_access_level_execute_async] does not have a valid value' })
+        expect(group.ai_settings&.reload&.minimum_access_level_execute_async).to be_nil
       end
 
       it 'does not update the field when the feature flag is disabled' do
@@ -1152,6 +1168,14 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
         expect(response).to have_gitlab_http_status(:ok)
       end
 
+      it 'does not accept an invalid access level' do
+        put api("/groups/#{group.id}", user), params: { ai_settings_attributes: { minimum_access_level_manage: 995 } }
+
+        expect(response).to have_gitlab_http_status(:bad_request)
+        expect(json_response).to eq({ 'error' => 'ai_settings_attributes[minimum_access_level_manage] does not have a valid value' })
+        expect(group.ai_settings&.reload&.minimum_access_level_manage).to be_nil
+      end
+
       it 'does not update the field when the feature flag is disabled' do
         stub_feature_flags(dap_group_customizable_permissions: false)
 
@@ -1168,6 +1192,14 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
 
         expect(group.ai_settings.reload.minimum_access_level_enable_on_projects).to eq(::Gitlab::Access::MAINTAINER)
         expect(response).to have_gitlab_http_status(:ok)
+      end
+
+      it 'does not accept an invalid access level' do
+        put api("/groups/#{group.id}", user), params: { ai_settings_attributes: { minimum_access_level_enable_on_projects: 995 } }
+
+        expect(response).to have_gitlab_http_status(:bad_request)
+        expect(json_response).to eq({ 'error' => 'ai_settings_attributes[minimum_access_level_enable_on_projects] does not have a valid value' })
+        expect(group.ai_settings&.reload&.minimum_access_level_enable_on_projects).to be_nil
       end
 
       it 'does not update the field when the feature flag is disabled' do
