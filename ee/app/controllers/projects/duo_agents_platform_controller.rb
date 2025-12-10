@@ -39,8 +39,7 @@ module Projects
         current_user.can?(:manage_ai_flow_triggers, project)
       when 'flows'
         Feature.enabled?(:global_ai_catalog, current_user) &&
-          (Feature.enabled?(:ai_catalog_flows, current_user) ||
-                Feature.enabled?(:ai_catalog_third_party_flows, current_user))
+          Feature.enabled?(:ai_catalog_flows, current_user)
       end
     end
 

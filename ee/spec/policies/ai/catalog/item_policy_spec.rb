@@ -31,7 +31,8 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
 
   before do
     Current.organization = current_organization
-    allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(private_project, :ai_catalog).and_return(stage_check)
+    allow(::Gitlab::Llm::StageCheck).to receive(:available?)
+      .with(private_project, :ai_catalog, user: current_user).and_return(stage_check)
     private_project.update!(duo_features_enabled: duo_features_enabled)
   end
 

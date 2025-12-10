@@ -3,7 +3,7 @@ import { s__ } from '~/locale';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { AI_CATALOG_FLOWS_SHOW_ROUTE } from '../router/constants';
-import { FLOW_TYPE_APOLLO_CONFIG } from '../constants';
+import { AI_CATALOG_ITEM_TYPE_APOLLO_CONFIG, AI_CATALOG_TYPE_FLOW } from '../constants';
 import AiCatalogFlowForm from '../components/ai_catalog_flow_form.vue';
 
 export default {
@@ -31,7 +31,6 @@ export default {
     initialValues() {
       return {
         projectId: this.aiCatalogFlow.project?.id,
-        type: this.aiCatalogFlow.itemType,
         name: this.aiCatalogFlow.name,
         description: this.aiCatalogFlow.description,
         public: this.aiCatalogFlow.public,
@@ -40,10 +39,10 @@ export default {
     },
   },
   methods: {
-    async handleSubmit({ itemType, ...input }) {
+    async handleSubmit(input) {
       this.isSubmitting = true;
       this.resetErrorMessages();
-      const config = FLOW_TYPE_APOLLO_CONFIG[this.aiCatalogFlow.itemType].update;
+      const config = AI_CATALOG_ITEM_TYPE_APOLLO_CONFIG[AI_CATALOG_TYPE_FLOW].update;
 
       try {
         const { data } = await this.$apollo.mutate({

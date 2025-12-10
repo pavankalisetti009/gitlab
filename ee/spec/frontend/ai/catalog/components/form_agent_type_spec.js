@@ -1,17 +1,17 @@
 import { shallowMount } from '@vue/test-utils';
 import { GlFormRadioGroup } from '@gitlab/ui';
-import FormFlowType from 'ee/ai/catalog/components/form_flow_type.vue';
+import FormAgentType from 'ee/ai/catalog/components/form_agent_type.vue';
 
-describe('FormFlowType', () => {
+describe('FormAgentType', () => {
   let wrapper;
 
   const defaultProps = {
-    id: 'field-flow-type',
-    value: 'FLOW',
+    id: 'field-agent-type',
+    value: 'AGENT',
   };
 
   const createComponent = ({ props = {} } = {}) => {
-    wrapper = shallowMount(FormFlowType, {
+    wrapper = shallowMount(FormAgentType, {
       propsData: {
         ...defaultProps,
         ...props,
@@ -32,7 +32,7 @@ describe('FormFlowType', () => {
     });
     expect(findRadioGroup().attributes('disabled')).toBeUndefined();
     expect(findRadioGroup().props('options')).toEqual([
-      { value: 'FLOW', text: 'Flow' },
+      { value: 'AGENT', text: 'Custom' },
       { value: 'THIRD_PARTY_FLOW', text: 'External' },
     ]);
   });

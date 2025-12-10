@@ -3,7 +3,7 @@ import { s__ } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import createAiCatalogAgent from '../graphql/mutations/create_ai_catalog_agent.mutation.graphql';
+import { AI_CATALOG_ITEM_TYPE_APOLLO_CONFIG } from '../constants';
 import { AI_CATALOG_AGENTS_SHOW_ROUTE } from '../router/constants';
 import AiCatalogAgentForm from '../components/ai_catalog_agent_form.vue';
 import { prerequisitesError, getByVersionKey } from '../utils';
@@ -43,36 +43,43 @@ export default {
     toolIds() {
       return (this.activeVersion.tools?.nodes ?? []).map((t) => t.id);
     },
+    definition() {
+      return this.activeVersion.definition;
+    },
     initialValues() {
       return {
         name: `${s__('AICatalog|Copy of')} ${this.agentName}`,
         description: this.aiCatalogAgent.description,
         systemPrompt: this.systemPrompt,
         tools: this.toolIds,
+        definition: this.definition,
         public: false,
+        type: this.aiCatalogAgent.itemType,
       };
     },
   },
   methods: {
-    async handleSubmit(input) {
+    async handleSubmit({ type, ...input }) {
       this.isSubmitting = true;
       this.resetErrorMessages();
+      const config = AI_CATALOG_ITEM_TYPE_APOLLO_CONFIG[type].create;
+
       try {
         const { data } = await this.$apollo.mutate({
-          mutation: createAiCatalogAgent,
+          mutation: config.mutation,
           variables: {
             input,
           },
         });
 
         if (data) {
-          const { errors } = data.aiCatalogAgentCreate;
+          const { item, errors } = data[config.responseKey];
           if (errors.length > 0) {
             this.errorMessages = errors;
             return;
           }
 
-          const newAgentId = getIdFromGraphQLId(data.aiCatalogAgentCreate.item.id);
+          const newAgentId = getIdFromGraphQLId(item.id);
           this.$toast.show(s__('AICatalog|Agent created.'));
           this.$router.push({
             name: AI_CATALOG_AGENTS_SHOW_ROUTE,

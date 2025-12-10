@@ -2,9 +2,16 @@
 #import "~/graphql_shared/fragments/page_info.fragment.graphql"
 #import "../fragments/ai_catalog_agent_version.fragment.graphql"
 
-query aiCatalogAgents($before: String, $after: String, $first: Int, $last: Int, $search: String) {
+query aiCatalogAgents(
+  $itemTypes: [AiCatalogItemType!]
+  $before: String
+  $after: String
+  $first: Int
+  $last: Int
+  $search: String
+) {
   aiCatalogItems(
-    itemTypes: [AGENT]
+    itemTypes: $itemTypes
     before: $before
     after: $after
     first: $first

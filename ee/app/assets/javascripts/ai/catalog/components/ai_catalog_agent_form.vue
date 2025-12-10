@@ -13,17 +13,21 @@ import {
   VISIBILITY_LEVEL_PUBLIC,
   AGENT_VISIBILITY_LEVEL_DESCRIPTIONS,
   AI_CATALOG_TYPE_AGENT,
+  DEFAULT_THIRD_PARTY_FLOW_YML_STRING,
+  AI_CATALOG_TYPE_THIRD_PARTY_FLOW,
 } from 'ee/ai/catalog/constants';
 import { TYPENAME_PROJECT } from '~/graphql_shared/constants';
-
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { __, s__ } from '~/locale';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import { AI_CATALOG_AGENTS_ROUTE, AI_CATALOG_AGENTS_SHOW_ROUTE } from '../router/constants';
 import aiCatalogBuiltInToolsQuery from '../graphql/queries/ai_catalog_built_in_tools.query.graphql';
 import AiCatalogFormButtons from './ai_catalog_form_buttons.vue';
 import FormGroup from './form_group.vue';
 import FormSection from './form_section.vue';
+import FormAgentType from './form_agent_type.vue';
+import FormFlowDefinition from './form_flow_definition.vue';
 import FormProjectDropdown from './form_project_dropdown.vue';
 import VisibilityLevelRadioGroup from './visibility_level_radio_group.vue';
 
@@ -31,6 +35,8 @@ export default {
   components: {
     ErrorsAlert,
     AiCatalogFormButtons,
+    FormAgentType,
+    FormFlowDefinition,
     FormGroup,
     FormSection,
     FormProjectDropdown,
@@ -41,6 +47,7 @@ export default {
     GlTokenSelector,
     VisibilityLevelRadioGroup,
   },
+  mixins: [glFeatureFlagsMixin()],
   inject: {
     projectId: {
       default: null,
@@ -77,9 +84,11 @@ export default {
           projectId: null,
           name: '',
           description: '',
-          systemPrompt: '',
+          systemPrompt: '', // agent specific
+          tools: [], // agent specific
+          definition: DEFAULT_THIRD_PARTY_FLOW_YML_STRING, // third_party_flow specific
           public: false,
-          tools: [],
+          type: AI_CATALOG_TYPE_AGENT,
         };
       },
     },
@@ -104,6 +113,14 @@ export default {
   computed: {
     formId() {
       return uniqueId('ai-catalog-agent-form-');
+    },
+    isThirdPartyFlowsAvailable() {
+      return this.glFeatures.aiCatalogThirdPartyFlows;
+    },
+    isThirdPartyFlow() {
+      return (
+        this.isThirdPartyFlowsAvailable && this.formValues.type === AI_CATALOG_TYPE_THIRD_PARTY_FLOW
+      );
     },
     isEditMode() {
       return this.mode === 'edit';
@@ -148,10 +165,17 @@ export default {
         projectId: this.isEditMode ? undefined : this.formValues.projectId,
         name: this.formValues.name.trim(),
         description: this.formValues.description.trim(),
-        systemPrompt: this.formValues.systemPrompt.trim(),
         public: this.formValues.visibilityLevel === VISIBILITY_LEVEL_PUBLIC,
-        tools: this.formValues.tools,
+        type: this.formValues.type,
       };
+
+      if (this.isThirdPartyFlow) {
+        transformedValues.definition = this.formValues.definition.trim();
+      } else {
+        transformedValues.systemPrompt = this.formValues.systemPrompt.trim();
+        transformedValues.tools = this.formValues.tools;
+      }
+
       this.$emit('submit', transformedValues);
     },
     handleToolsInput(input) {
@@ -171,6 +195,8 @@ export default {
       return Object.keys(this.$refs)
         .filter((key) => key.startsWith('field'))
         .reduce((allValid, key) => {
+          const field = this.$refs[key];
+          if (!field) return allValid;
           const isFieldValid = this.$refs[key].validate();
           return allValid && isFieldValid;
         }, true);
@@ -219,6 +245,15 @@ export default {
         labelDescription: s__('AICatalog|Provide a brief description.'),
       },
     },
+    type: {
+      id: 'agent-form-type',
+      label: __('Type'),
+      groupAttrs: {
+        labelDescription: s__(
+          'AICatalog|Build a custom agent in GitLab or connect to an AI model provider you already use.',
+        ),
+      },
+    },
     systemPrompt: {
       id: 'agent-form-system-prompt',
       label: s__('AICatalog|System prompt'),
@@ -245,6 +280,18 @@ export default {
       groupAttrs: {
         optional: true,
         labelDescription: s__('AICatalog|Select which tools this agent can use.'),
+      },
+    },
+    definition: {
+      id: 'agent-form-configuration',
+      label: s__('AICatalog|Configuration'),
+      validations: {
+        requiredLabel: s__('AICatalog|Configuration is required.'),
+      },
+      groupAttrs: {
+        labelDescription: s__(
+          'AICatalog|This YAML configuration file determines the prompts, tools, and capabilities of your flow. Required properties: injectGatewayToken, image, commands',
+        ),
       },
     },
   },
@@ -321,39 +368,60 @@ export default {
       </form-section>
       <form-section :title="s__('AICatalog|Configuration')">
         <form-group
-          #default="{ state, blur }"
-          ref="fieldSystemPrompt"
-          :field="$options.fields.systemPrompt"
-          :field-value="formValues.systemPrompt"
+          v-if="isThirdPartyFlowsAvailable"
+          :field="$options.fields.type"
+          :field-value="formValues.type"
         >
-          <gl-form-textarea
-            :id="$options.fields.systemPrompt.id"
-            v-model="formValues.systemPrompt"
-            :no-resize="false"
-            :placeholder="
-              s__(
-                'AICatalog|You are an expert in [domain]. Your communication style is [style]. When helping users, you should always... Your key strengths include... You approach problems by...',
-              )
-            "
-            :rows="20"
-            data-testid="agent-form-textarea-system-prompt"
-            :state="state"
-            @blur="blur"
+          <form-agent-type v-model="formValues.type" :disabled="isEditMode" />
+        </form-group>
+        <form-group
+          v-if="isThirdPartyFlow"
+          ref="fieldDefinitionThirdPartyFlow"
+          :key="$options.fields.definition.id"
+          :field="$options.fields.definition"
+          :field-value="formValues.definition"
+        >
+          <form-flow-definition
+            v-model="formValues.definition"
+            data-testid="flow-form-definition-third-party-flow"
           />
         </form-group>
-        <form-group :field="$options.fields.tools" :field-value="formValues.tools">
-          <gl-token-selector
-            :id="$options.fields.tools.id"
-            :selected-tokens="selectedTools"
-            :dropdown-items="filteredAvailableTools"
-            :placeholder="s__('AICatalog|Search tools.')"
-            allow-clear-all
-            data-testid="agent-form-token-selector-tools"
-            @input="handleToolsInput"
-            @text-input="handleToolSearch"
-            @keydown.enter.prevent
-          />
-        </form-group>
+        <template v-else>
+          <form-group
+            #default="{ state, blur }"
+            ref="fieldSystemPrompt"
+            :field="$options.fields.systemPrompt"
+            :field-value="formValues.systemPrompt"
+          >
+            <gl-form-textarea
+              :id="$options.fields.systemPrompt.id"
+              v-model="formValues.systemPrompt"
+              :no-resize="false"
+              :placeholder="
+                s__(
+                  'AICatalog|You are an expert in [domain]. Your communication style is [style]. When helping users, you should always... Your key strengths include... You approach problems by...',
+                )
+              "
+              :rows="20"
+              data-testid="agent-form-textarea-system-prompt"
+              :state="state"
+              @blur="blur"
+            />
+          </form-group>
+          <form-group :field="$options.fields.tools" :field-value="formValues.tools">
+            <gl-token-selector
+              :id="$options.fields.tools.id"
+              :selected-tokens="selectedTools"
+              :dropdown-items="filteredAvailableTools"
+              :placeholder="s__('AICatalog|Search tools.')"
+              allow-clear-all
+              data-testid="agent-form-token-selector-tools"
+              @input="handleToolsInput"
+              @text-input="handleToolSearch"
+              @keydown.enter.prevent
+            />
+          </form-group>
+        </template>
       </form-section>
       <ai-catalog-form-buttons :is-disabled="isLoading" :cancel-route="cancelRoute">
         <gl-button

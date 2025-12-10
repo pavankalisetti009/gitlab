@@ -3,13 +3,13 @@ import { GlAlert, GlButton } from '@gitlab/ui';
 import { s__, sprintf } from '~/locale';
 import { InternalEvents } from '~/tracking';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import {
   AI_CATALOG_CONSUMER_TYPE_GROUP,
   AI_CATALOG_CONSUMER_TYPE_PROJECT,
   AI_CATALOG_CONSUMER_LABELS,
-  FLOW_TYPE_APOLLO_CONFIG,
+  AI_CATALOG_ITEM_TYPE_APOLLO_CONFIG,
+  AI_CATALOG_TYPE_FLOW,
   TRACK_EVENT_TYPE_FLOW,
   TRACK_EVENT_VIEW_AI_CATALOG_ITEM,
   VERSION_LATEST,
@@ -42,7 +42,7 @@ export default {
     GlAlert,
     GlButton,
   },
-  mixins: [glFeatureFlagsMixin(), InternalEvents.mixin()],
+  mixins: [InternalEvents.mixin()],
   inject: {
     isGlobal: {
       default: false,
@@ -73,9 +73,6 @@ export default {
     };
   },
   computed: {
-    isFlowsAvailable() {
-      return this.glFeatures.aiCatalogFlows;
-    },
     isProjectNamespace() {
       return Boolean(this.projectId);
     },
@@ -204,8 +201,8 @@ export default {
       }
     },
     async deleteFlow(forceHardDelete) {
-      const { id, itemType } = this.aiCatalogFlow;
-      const config = FLOW_TYPE_APOLLO_CONFIG[itemType].delete;
+      const { id } = this.aiCatalogFlow;
+      const config = AI_CATALOG_ITEM_TYPE_APOLLO_CONFIG[AI_CATALOG_TYPE_FLOW].delete;
 
       try {
         const { data } = await this.$apollo.mutate({
@@ -350,7 +347,7 @@ export default {
           v-if="showActions"
           :item="aiCatalogFlow"
           :item-routes="$options.itemRoutes"
-          :is-flows-available="isFlowsAvailable"
+          :is-flows-available="true"
           :has-parent-consumer="hasParentConsumer"
           :disable-fn="disableFlow"
           :delete-fn="deleteFlow"

@@ -3,9 +3,18 @@ import { GlBadge, GlLink, GlToken, GlTruncateText } from '@gitlab/ui';
 import AiCatalogAgentDetails from 'ee/ai/catalog/components/ai_catalog_agent_details.vue';
 import AiCatalogItemField from 'ee/ai/catalog/components/ai_catalog_item_field.vue';
 import AiCatalogItemVisibilityField from 'ee/ai/catalog/components/ai_catalog_item_visibility_field.vue';
+import FormFlowDefinition from 'ee/ai/catalog/components/form_flow_definition.vue';
 import FormSection from 'ee/ai/catalog/components/form_section.vue';
+import TriggerField from 'ee/ai/catalog/components/trigger_field.vue';
 import { VERSION_LATEST } from 'ee/ai/catalog/constants';
-import { mockAgent, mockAgentVersion, mockAiCatalogBuiltInToolsNodes } from '../mock_data';
+import {
+  mockAgent,
+  mockAgentVersion,
+  mockThirdPartyFlow,
+  mockThirdPartyFlowVersion,
+  mockThirdPartyFlowConfigurationForProject,
+  mockAiCatalogBuiltInToolsNodes,
+} from '../mock_data';
 
 describe('AiCatalogAgentDetails', () => {
   let wrapper;
@@ -40,6 +49,7 @@ describe('AiCatalogAgentDetails', () => {
   const findVisibilityBadge = () => wrapper.findComponent(GlBadge);
   const findSystemPromptTruncateText = () => wrapper.findComponent(GlTruncateText);
   const findSourceProjectLink = () => wrapper.findComponent(GlLink);
+  const findTriggerField = () => wrapper.findComponent(TriggerField);
 
   beforeEach(() => {
     createComponent();
@@ -114,8 +124,14 @@ describe('AiCatalogAgentDetails', () => {
       configurationDetails = findAllFieldsForSection(2);
     });
 
+    it('renders "Type" field with "Custom" value', () => {
+      const configurationField = configurationDetails.at(0);
+      expect(configurationField.props('title')).toBe('Type');
+      expect(configurationField.props('value')).toBe('Custom');
+    });
+
     it('renders "System prompt"', () => {
-      expect(configurationDetails.at(0).props()).toMatchObject({
+      expect(configurationDetails.at(1).props()).toMatchObject({
         title: 'System prompt',
       });
 
@@ -127,11 +143,11 @@ describe('AiCatalogAgentDetails', () => {
         toggleButtonProps: { class: 'gl-font-regular' },
       });
 
-      expect(configurationDetails.at(0).find('pre').text()).toBe(mockAgentVersion.systemPrompt);
+      expect(configurationDetails.at(1).find('pre').text()).toBe(mockAgentVersion.systemPrompt);
     });
 
     it('renders "Tools" with sorted values', () => {
-      const toolsField = configurationDetails.at(1);
+      const toolsField = configurationDetails.at(2);
       expect(toolsField.props('title')).toBe('Tools');
 
       const tokens = toolsField.findAllComponents(GlToken);
@@ -139,6 +155,46 @@ describe('AiCatalogAgentDetails', () => {
       expect(tokens.at(0).text()).toBe('Ci Linter');
       expect(tokens.at(1).text()).toBe('Gitlab Blob Search');
       expect(tokens.at(2).text()).toBe('Run Git Command');
+    });
+  });
+
+  describe('when the item is a third-party flow', () => {
+    let configurationDetails;
+
+    beforeEach(() => {
+      createComponent({
+        props: {
+          item: {
+            ...mockThirdPartyFlow,
+            latestVersion: {
+              ...mockThirdPartyFlowVersion,
+            },
+            configurationForProject: {
+              ...mockThirdPartyFlowConfigurationForProject,
+            },
+          },
+        },
+      });
+
+      configurationDetails = findAllFieldsForSection(2);
+    });
+
+    it('renders the trigger field', () => {
+      expect(findTriggerField().exists()).toBe(true);
+    });
+
+    it('renders "Type" field with "External" value', () => {
+      const configurationField = configurationDetails.at(0);
+      expect(configurationField.props('title')).toBe('Type');
+      expect(configurationField.props('value')).toBe('External');
+    });
+
+    it('renders "Configuration" details', () => {
+      const configurationField = configurationDetails.at(1);
+      expect(configurationField.props('title')).toBe('Configuration');
+      expect(configurationField.findComponent(FormFlowDefinition).props('value')).toBe(
+        mockThirdPartyFlowVersion.definition,
+      );
     });
   });
 });

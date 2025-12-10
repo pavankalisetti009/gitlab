@@ -5477,7 +5477,8 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
     end
 
     before do
-      allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :ai_catalog).and_return(stage_check_available)
+      allow(::Gitlab::Llm::StageCheck).to receive(:available?)
+        .with(project, :ai_catalog, user: current_user).and_return(stage_check_available)
       project.duo_features_enabled = duo_features_enabled
     end
 
@@ -5695,6 +5696,125 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             end
 
             it { is_expected.to(allowed ? be_allowed(:trigger_ai_flow) : be_disallowed(:trigger_ai_flow)) }
+          end
+        end
+
+        context 'with customizable permissions' do
+          let(:project) { public_project_in_group }
+
+          before_all do
+            public_project_in_group.root_ancestor.update!(organization: organization)
+            public_project_in_group.update!(organization: organization)
+          end
+
+          context 'when the minimum role has been set in a saas environment', :saas do
+            before do
+              project.root_ancestor.create_ai_settings(minimum_access_level_execute: ::Gitlab::Access::MAINTAINER)
+
+              enable_admin_mode!(current_user) if role == :admin
+            end
+
+            where(:role, :allowed) do
+              :guest                    | false
+              :planner                  | false
+              :reporter                 | false
+              :developer                | false
+              :maintainer               | true
+              :owner                    | true
+              :organization_owner       | true
+              :admin                    | true
+            end
+
+            with_them do
+              let(:current_user) { public_send(role) }
+
+              it { is_expected.to(allowed ? be_allowed(:trigger_ai_flow) : be_disallowed(:trigger_ai_flow)) }
+            end
+
+            context 'when the feature flag is disabled' do
+              let(:role) { :developer }
+              let(:current_user) { public_send(role) }
+
+              before do
+                stub_feature_flags(dap_group_customizable_permissions: false)
+              end
+
+              it 'does not use the setting' do
+                expect(subject).to be_allowed(:trigger_ai_flow)
+              end
+            end
+          end
+
+          context 'when the minimum role has been set on self-managed' do
+            before do
+              Ai::Setting.instance.update!(minimum_access_level_execute: ::Gitlab::Access::MAINTAINER)
+
+              enable_admin_mode!(current_user) if role == :admin
+            end
+
+            where(:role, :allowed) do
+              :guest                    | false
+              :planner                  | false
+              :reporter                 | false
+              :developer                | false
+              :maintainer               | true
+              :owner                    | true
+              :organization_owner       | true
+              :admin                    | true
+            end
+
+            with_them do
+              let(:current_user) { public_send(role) }
+
+              it { is_expected.to(allowed ? be_allowed(:trigger_ai_flow) : be_disallowed(:trigger_ai_flow)) }
+            end
+
+            context 'when the feature flag is disabled' do
+              let(:role) { :developer }
+              let(:current_user) { public_send(role) }
+
+              before do
+                stub_feature_flags(dap_instance_customizable_permissions: false)
+              end
+
+              it 'does not use the setting' do
+                expect(subject).to be_allowed(:trigger_ai_flow)
+              end
+            end
+          end
+
+          context 'when the minimum role has been set to admin in a self-managed environment' do
+            before do
+              Ai::Setting.instance.update!(minimum_access_level_execute: ::Gitlab::Access::ADMIN)
+            end
+
+            where(:role, :allowed) do
+              :guest                    | false
+              :planner                  | false
+              :reporter                 | false
+              :developer                | false
+              :maintainer               | false
+              :owner                    | false
+              :organization_owner       | true
+            end
+
+            with_them do
+              let(:current_user) { public_send(role) }
+
+              it { is_expected.to(allowed ? be_allowed(:trigger_ai_flow) : be_disallowed(:trigger_ai_flow)) }
+            end
+
+            context 'when admin mode is on', :enable_admin_mode do
+              let(:current_user) { admin }
+
+              it { is_expected.to be_allowed(:trigger_ai_flow) }
+            end
+
+            context 'when admin mode is off' do
+              let(:current_user) { admin }
+
+              it { is_expected.to be_disallowed(:trigger_ai_flow) }
+            end
           end
         end
       end

@@ -69,6 +69,9 @@ describe('AiAgentsIndex', () => {
         projectId: mockProjectId,
         projectPath: mockProjectPath,
         exploreAiCatalogPath: '/explore/ai-catalog',
+        glFeatures: {
+          aiCatalogThirdPartyFlows: true,
+        },
         ...provide,
       },
       mocks: {
@@ -104,7 +107,7 @@ describe('AiAgentsIndex', () => {
         emptyStateDescription: 'Use agents to automate tasks and answer questions.',
         emptyStateButtonHref: '/explore/ai-catalog/agents',
         emptyStateButtonText: 'Explore the AI Catalog',
-        itemTypes: ['AGENT'],
+        itemTypes: ['AGENT', 'THIRD_PARTY_FLOW'],
       });
     });
   });
@@ -130,6 +133,7 @@ describe('AiAgentsIndex', () => {
     it('fetches list data', () => {
       expect(mockProjectAgentsQueryHandler).toHaveBeenCalledWith({
         projectId: `gid://gitlab/Project/${mockProjectId}`,
+        itemTypes: ['AGENT', 'THIRD_PARTY_FLOW'],
         projectPath: mockProjectPath,
         search: '',
         allAvailable: false,
@@ -176,6 +180,7 @@ describe('AiAgentsIndex', () => {
         await nextTick();
         expect(mockProjectAgentsQueryHandler).toHaveBeenCalledWith({
           projectId: `gid://gitlab/Project/${mockProjectId}`,
+          itemTypes: ['AGENT', 'THIRD_PARTY_FLOW'],
           projectPath: mockProjectPath,
           allAvailable: false,
           search: '',
@@ -191,6 +196,7 @@ describe('AiAgentsIndex', () => {
         await nextTick();
         expect(mockProjectAgentsQueryHandler).toHaveBeenCalledWith({
           projectId: `gid://gitlab/Project/${mockProjectId}`,
+          itemTypes: ['AGENT', 'THIRD_PARTY_FLOW'],
           projectPath: mockProjectPath,
           allAvailable: false,
           search: '',
@@ -213,6 +219,7 @@ describe('AiAgentsIndex', () => {
 
         expect(mockProjectAgentsQueryHandler).toHaveBeenCalledWith({
           projectId: `gid://gitlab/Project/${mockProjectId}`,
+          itemTypes: ['AGENT', 'THIRD_PARTY_FLOW'],
           projectPath: mockProjectPath,
           allAvailable: false,
           search: 'test agent',
@@ -235,6 +242,7 @@ describe('AiAgentsIndex', () => {
         expect(mockProjectAgentsQueryHandler).toHaveBeenLastCalledWith({
           projectId: `gid://gitlab/Project/${mockProjectId}`,
           projectPath: mockProjectPath,
+          itemTypes: ['AGENT', 'THIRD_PARTY_FLOW'],
           allAvailable: false,
           search: '',
           after: null,
@@ -256,6 +264,7 @@ describe('AiAgentsIndex', () => {
         expect(mockProjectAgentsQueryHandler).toHaveBeenLastCalledWith({
           projectId: `gid://gitlab/Project/${mockProjectId}`,
           projectPath: mockProjectPath,
+          itemTypes: ['AGENT', 'THIRD_PARTY_FLOW'],
           allAvailable: false,
           search: 'test flow',
           after: null,
@@ -263,6 +272,34 @@ describe('AiAgentsIndex', () => {
           first: 20,
           last: null,
         });
+      });
+    });
+  });
+
+  describe('when "Managed" tab is selected and the Feature Flag for third party flows tab is disabled', () => {
+    beforeEach(() => {
+      mockProjectAgentsQueryHandler.mockResolvedValue(mockProjectAgentsResponse);
+      createComponent({
+        provide: {
+          glFeatures: {
+            aiCatalogThirdPartyFlows: false,
+          },
+        },
+      });
+      findTabs().vm.$emit('input', 1);
+    });
+
+    it('does not fetch third party flows when fetching list data', () => {
+      expect(mockProjectAgentsQueryHandler).toHaveBeenCalledWith({
+        projectId: `gid://gitlab/Project/${mockProjectId}`,
+        itemTypes: ['AGENT'],
+        projectPath: mockProjectPath,
+        allAvailable: false,
+        after: null,
+        before: null,
+        first: 20,
+        last: null,
+        search: '',
       });
     });
   });

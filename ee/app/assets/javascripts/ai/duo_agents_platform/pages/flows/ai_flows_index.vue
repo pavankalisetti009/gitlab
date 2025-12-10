@@ -5,7 +5,6 @@ import { fetchPolicies } from '~/lib/graphql';
 import { __, s__, sprintf } from '~/locale';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import AiCatalogListHeader from 'ee/ai/catalog/components/ai_catalog_list_header.vue';
 import AiCatalogListWrapper from 'ee/ai/catalog/components/ai_catalog_list_wrapper.vue';
@@ -17,10 +16,11 @@ import {
   AI_CATALOG_CONSUMER_TYPE_GROUP,
   AI_CATALOG_CONSUMER_TYPE_PROJECT,
   AI_CATALOG_CONSUMER_LABELS,
+  AI_CATALOG_TYPE_FLOW,
   FLOW_VISIBILITY_LEVEL_DESCRIPTIONS,
   PAGE_SIZE,
 } from 'ee/ai/catalog/constants';
-import { createAvailableFlowItemTypes, prerequisitesError } from 'ee/ai/catalog/utils';
+import { prerequisitesError } from 'ee/ai/catalog/utils';
 import { TYPENAME_PROJECT } from '~/graphql_shared/constants';
 import {
   VISIBILITY_LEVEL_PUBLIC_STRING,
@@ -49,7 +49,6 @@ export default {
   directives: {
     GlModal: GlModalDirective,
   },
-  mixins: [glFeatureFlagsMixin()],
   inject: {
     groupPath: {
       default: null,
@@ -73,7 +72,6 @@ export default {
       variables() {
         return {
           projectPath: this.projectPath,
-          itemTypes: this.itemTypes,
           search: this.searchTerm,
           ...this.paginationVariables,
         };
@@ -134,15 +132,6 @@ export default {
   computed: {
     isLoading() {
       return this.$apollo.queries.aiFlows.loading;
-    },
-    isFlowsAvailable() {
-      return this.glFeatures.aiCatalogFlows;
-    },
-    itemTypes() {
-      return createAvailableFlowItemTypes({
-        isFlowsEnabled: this.isFlowsAvailable,
-        isThirdPartyFlowsEnabled: this.glFeatures.aiCatalogThirdPartyFlows,
-      });
     },
     isProjectNamespace() {
       return Boolean(this.projectId);
@@ -307,6 +296,7 @@ export default {
       itemSublabel: s__('AICatalog|Flow ID: %{id}'),
     },
   },
+  itemTypes: [AI_CATALOG_TYPE_FLOW],
   EMPTY_SVG_URL,
 };
 </script>
@@ -318,7 +308,7 @@ export default {
       :can-admin="userPermissions.adminAiCatalogItem"
       new-button-variant="default"
     >
-      <template v-if="isFlowsAvailable" #nav-actions>
+      <template #nav-actions>
         <gl-button v-if="showAddFlow" v-gl-modal="$options.addFlowModalId" variant="confirm">
           {{ s__('AICatalog|Enable flow from group') }}
         </gl-button>
@@ -335,7 +325,7 @@ export default {
           :empty-state-description="emptyStateDescription"
           :empty-state-button-href="exploreHref"
           :empty-state-button-text="emptyStateButtonText"
-          :item-types="itemTypes"
+          :item-types="$options.itemTypes"
           :item-type-config="itemTypeConfigEnabled"
           @error="handleError"
         />
@@ -369,16 +359,15 @@ export default {
       :empty-state-description="emptyStateDescription"
       :empty-state-button-href="exploreHref"
       :empty-state-button-text="emptyStateButtonText"
-      :item-types="itemTypes"
+      :item-types="$options.itemTypes"
       :item-type-config="itemTypeConfigEnabled"
       @error="handleError"
     />
     <add-project-item-consumer-modal
       v-if="showAddFlow"
-      :item-types="itemTypes"
+      :item-types="$options.itemTypes"
       :modal-id="$options.addFlowModalId"
       :modal-texts="$options.modalTexts"
-      show-triggers
       @submit="addFlowToProject"
     />
   </div>

@@ -1,29 +1,22 @@
 <script>
-import { GlIcon, GlLink, GlSprintf, GlToken } from '@gitlab/ui';
-import { __ } from '~/locale';
-import { getIdFromGraphQLId } from '~/graphql_shared/utils';
-import { FLOW_TRIGGER_TYPES } from 'ee/ai/duo_agents_platform/constants';
-import {
-  FLOW_TRIGGERS_NEW_ROUTE,
-  FLOW_TRIGGERS_EDIT_ROUTE,
-} from 'ee/ai/duo_agents_platform/router/constants';
-import { AI_CATALOG_ITEM_LABELS, FLOW_VISIBILITY_LEVEL_DESCRIPTIONS } from '../constants';
+import { GlLink } from '@gitlab/ui';
+import { FLOW_VISIBILITY_LEVEL_DESCRIPTIONS } from '../constants';
 import { getByVersionKey } from '../utils';
 import AiCatalogItemField from './ai_catalog_item_field.vue';
 import AiCatalogItemVisibilityField from './ai_catalog_item_visibility_field.vue';
+import TriggerField from './trigger_field.vue';
 import FormFlowDefinition from './form_flow_definition.vue';
 import FormSection from './form_section.vue';
 
 export default {
+  name: 'AiCatalogFlowDetails',
   components: {
-    GlIcon,
     GlLink,
-    GlSprintf,
-    GlToken,
     AiCatalogItemField,
     AiCatalogItemVisibilityField,
     FormFlowDefinition,
     FormSection,
+    TriggerField,
   },
   props: {
     item: {
@@ -42,28 +35,10 @@ export default {
     hasProjectConfiguration() {
       return Boolean(this.item.configurationForProject);
     },
-    flowTrigger() {
-      return this.item.configurationForProject?.flowTrigger;
-    },
-    itemTypeLabel() {
-      return AI_CATALOG_ITEM_LABELS[this.item.itemType];
-    },
     definition() {
       return getByVersionKey(this.item, this.versionKey).definition;
     },
   },
-  methods: {
-    triggerName(eventType) {
-      return FLOW_TRIGGER_TYPES.find((type) => type.valueInt === eventType)?.text || __('Unknown');
-    },
-    triggerEditPath(triggerId) {
-      return {
-        name: FLOW_TRIGGERS_EDIT_ROUTE,
-        params: { id: getIdFromGraphQLId(triggerId) },
-      };
-    },
-  },
-  FLOW_TRIGGERS_NEW_ROUTE,
   FLOW_VISIBILITY_LEVEL_DESCRIPTIONS,
 };
 </script>
@@ -88,40 +63,7 @@ export default {
         />
       </form-section>
       <form-section :title="s__('AICatalog|Configuration')">
-        <ai-catalog-item-field
-          v-if="hasProjectConfiguration"
-          :title="s__('DuoAgentsPlatform|Triggers')"
-        >
-          <div v-if="flowTrigger" class="gl-mt-3 gl-flex gl-justify-between">
-            <div class="gl-flex gl-flex-wrap gl-gap-2 gl-whitespace-nowrap">
-              <gl-token v-for="eventType in flowTrigger.eventTypes" :key="eventType" view-only>
-                {{ triggerName(eventType) }}
-              </gl-token>
-            </div>
-            <gl-link
-              v-if="flowTrigger.id"
-              :to="triggerEditPath(flowTrigger.id)"
-              class="gl-flex gl-items-center gl-gap-2 gl-whitespace-nowrap"
-            >
-              <gl-icon name="pencil" />
-              {{ __('Edit') }}
-            </gl-link>
-          </div>
-          <div v-else class="gl-text-subtle">
-            <gl-sprintf
-              :message="
-                s__(
-                  'AICatalog|No triggers configured. %{linkStart}Add a trigger%{linkEnd} to make this %{itemType} available.',
-                )
-              "
-            >
-              <template #link="{ content }">
-                <gl-link :to="{ name: $options.FLOW_TRIGGERS_NEW_ROUTE }">{{ content }}</gl-link>
-              </template>
-              <template #itemType>{{ itemTypeLabel }}</template>
-            </gl-sprintf>
-          </div>
-        </ai-catalog-item-field>
+        <trigger-field v-if="hasProjectConfiguration" :item="item" />
         <ai-catalog-item-field :title="s__('AICatalog|Configuration')">
           <form-flow-definition :value="definition" read-only class="gl-mt-3" />
         </ai-catalog-item-field>

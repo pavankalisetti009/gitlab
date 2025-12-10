@@ -1,9 +1,14 @@
 <script>
 import { uniqueId } from 'lodash';
 import { GlForm, GlFormCheckbox, GlFormCheckboxGroup, GlFormGroup, GlModal } from '@gitlab/ui';
-import { __ } from '~/locale';
+import { __, s__, sprintf } from '~/locale';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import { FLOW_TRIGGER_TYPES } from 'ee/ai/duo_agents_platform/constants';
+import {
+  AI_CATALOG_ITEM_LABELS,
+  AI_CATALOG_TYPE_FLOW,
+  AI_CATALOG_TYPE_THIRD_PARTY_FLOW,
+} from 'ee/ai/catalog/constants';
 import GroupItemConsumerDropdown from './group_item_consumer_dropdown.vue';
 
 export default {
@@ -30,18 +35,13 @@ export default {
       type: Object,
       required: true,
     },
-    showTriggers: {
-      type: Boolean,
-      required: false,
-      default: false,
-    },
   },
   data() {
     return {
       errors: [],
       isDirty: false,
       selectedGroupItemConsumer: {},
-      triggerTypes: this.showTriggers ? FLOW_TRIGGER_TYPES.map((type) => type.value) : [],
+      triggerTypes: FLOW_TRIGGER_TYPES.map((type) => type.value),
     };
   },
   computed: {
@@ -66,6 +66,22 @@ export default {
     isGroupItemConsumerValid() {
       return !this.isDirty || this.selectedGroupItemConsumer.id !== undefined;
     },
+    showTriggers() {
+      return [AI_CATALOG_TYPE_FLOW, AI_CATALOG_TYPE_THIRD_PARTY_FLOW].includes(
+        this.selectedGroupItemConsumer.item?.itemType,
+      );
+    },
+    triggersLabelDescription() {
+      return sprintf(
+        s__(
+          'AICatalog|Choose what events in this project trigger the %{itemType}. You can change this later.',
+        ),
+        { itemType: this.itemTypeLabel },
+      );
+    },
+    itemTypeLabel() {
+      return AI_CATALOG_ITEM_LABELS[this.selectedGroupItemConsumer.item?.itemType] || '';
+    },
     isTriggersValid() {
       return !this.showTriggers || !this.isDirty || this.triggerTypes.length > 0;
     },
@@ -73,7 +89,7 @@ export default {
   methods: {
     resetForm() {
       this.selectedGroupItemConsumer = {};
-      this.triggerTypes = this.showTriggers ? FLOW_TRIGGER_TYPES.map((type) => type.value) : [];
+      this.triggerTypes = FLOW_TRIGGER_TYPES.map((type) => type.value);
     },
     handleSubmit() {
       this.isDirty = true;
@@ -92,6 +108,7 @@ export default {
     onHidden() {
       this.errors = [];
       this.isDirty = false;
+      this.resetForm();
     },
     onGroupItemConsumerSelect(itemConsumer) {
       this.selectedGroupItemConsumer = itemConsumer;
@@ -136,11 +153,7 @@ export default {
       <gl-form-group
         v-if="showTriggers"
         :label="s__('AICatalog|Add triggers')"
-        :label-description="
-          s__(
-            'AICatalog|Choose what events in this project trigger the flow. You can change this later.',
-          )
-        "
+        :label-description="triggersLabelDescription"
         label-for="flow-triggers"
         :state="isTriggersValid"
         :invalid-feedback="s__('AICatalog|Select at least one trigger.')"
@@ -152,7 +165,7 @@ export default {
             :value="triggerType.value"
           >
             {{ triggerType.text }}
-            <template #help>{{ triggerType.help }}</template>
+            <template #help>{{ triggerType.createHelp(itemTypeLabel) }}</template>
           </gl-form-checkbox>
         </gl-form-checkbox-group>
       </gl-form-group>

@@ -5,12 +5,15 @@ import {
   VISIBILITY_LEVEL_PUBLIC_STRING,
   VISIBILITY_LEVEL_PRIVATE_STRING,
 } from '~/visibility_level/constants';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import aiCatalogAgentsQuery from '../graphql/queries/ai_catalog_agents.query.graphql';
 import AiCatalogListHeader from '../components/ai_catalog_list_header.vue';
 import AiCatalogListWrapper from '../components/ai_catalog_list_wrapper.vue';
 import { AI_CATALOG_AGENTS_SHOW_ROUTE } from '../router/constants';
 import {
   AGENT_VISIBILITY_LEVEL_DESCRIPTIONS,
+  AI_CATALOG_TYPE_AGENT,
+  AI_CATALOG_TYPE_THIRD_PARTY_FLOW,
   PAGE_SIZE,
   TRACK_EVENT_VIEW_AI_CATALOG_ITEM_INDEX,
   TRACK_EVENT_TYPE_AGENT,
@@ -22,7 +25,7 @@ export default {
     AiCatalogListHeader,
     AiCatalogListWrapper,
   },
-  mixins: [InternalEvents.mixin()],
+  mixins: [glFeatureFlagsMixin(), InternalEvents.mixin()],
   data() {
     return {
       aiCatalogAgents: [],
@@ -35,6 +38,7 @@ export default {
       query: aiCatalogAgentsQuery,
       variables() {
         return {
+          itemTypes: this.itemTypes,
           before: null,
           after: null,
           first: PAGE_SIZE,
@@ -50,6 +54,14 @@ export default {
     },
   },
   computed: {
+    itemTypes() {
+      const types = [AI_CATALOG_TYPE_AGENT];
+
+      if (this.glFeatures.aiCatalogThirdPartyFlows) {
+        types.push(AI_CATALOG_TYPE_THIRD_PARTY_FLOW);
+      }
+      return types;
+    },
     isLoading() {
       return this.$apollo.queries.aiCatalogAgents.loading;
     },

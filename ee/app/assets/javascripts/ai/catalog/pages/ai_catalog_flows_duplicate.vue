@@ -4,7 +4,7 @@ import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { prerequisitesError, getByVersionKey } from '../utils';
-import { FLOW_TYPE_APOLLO_CONFIG } from '../constants';
+import { AI_CATALOG_ITEM_TYPE_APOLLO_CONFIG, AI_CATALOG_TYPE_FLOW } from '../constants';
 import { AI_CATALOG_FLOWS_SHOW_ROUTE } from '../router/constants';
 import AiCatalogFlowForm from '../components/ai_catalog_flow_form.vue';
 
@@ -39,7 +39,6 @@ export default {
     },
     initialValues() {
       return {
-        type: this.aiCatalogFlow.itemType,
         name: `${s__('AICatalog|Copy of')} ${this.flowName}`,
         public: false,
         description: this.aiCatalogFlow.description,
@@ -48,10 +47,10 @@ export default {
     },
   },
   methods: {
-    async handleSubmit({ itemType, ...input }) {
+    async handleSubmit(input) {
       this.isSubmitting = true;
       this.resetErrorMessages();
-      const config = FLOW_TYPE_APOLLO_CONFIG[itemType].create;
+      const config = AI_CATALOG_ITEM_TYPE_APOLLO_CONFIG[AI_CATALOG_TYPE_FLOW].create;
 
       try {
         const { data } = await this.$apollo.mutate({

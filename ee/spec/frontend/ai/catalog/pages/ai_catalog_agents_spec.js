@@ -36,7 +36,7 @@ describe('AiCatalogAgents', () => {
 
   const { bindInternalEventDocument } = useMockInternalEventsTracking();
 
-  const createComponent = () => {
+  const createComponent = ({ provide } = {}) => {
     isLoggedIn.mockReturnValue(true);
 
     mockApollo = createMockApollo([[aiCatalogAgentsQuery, mockCatalogItemsQueryHandler]]);
@@ -47,14 +47,16 @@ describe('AiCatalogAgents', () => {
         $toast: mockToast,
         $router: mockRouter,
       },
+      provide: {
+        glFeatures: {
+          aiCatalogThirdPartyFlows: true,
+        },
+        ...provide,
+      },
     });
   };
 
   const findAiCatalogListWrapper = () => wrapper.findComponent(AiCatalogListWrapper);
-
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
 
   describe('component rendering', () => {
     beforeEach(async () => {
@@ -112,6 +114,27 @@ describe('AiCatalogAgents', () => {
     });
   });
 
+  describe('when the feature flag for third party flows is off', () => {
+    beforeEach(() => {
+      createComponent({
+        provide: {
+          glFeatures: { aiCatalogThirdPartyFlows: false },
+        },
+      });
+    });
+
+    it('fetches list data without third party flows', () => {
+      expect(mockCatalogItemsQueryHandler).toHaveBeenCalledWith({
+        itemTypes: ['AGENT'],
+        after: null,
+        before: null,
+        first: 20,
+        last: null,
+        search: '',
+      });
+    });
+  });
+
   describe('pagination', () => {
     it('passes pageInfo to list component', async () => {
       createComponent();
@@ -126,6 +149,7 @@ describe('AiCatalogAgents', () => {
 
       findAiCatalogListWrapper().vm.$emit('prev-page');
       expect(mockCatalogItemsQueryHandler).toHaveBeenCalledWith({
+        itemTypes: ['AGENT', 'THIRD_PARTY_FLOW'],
         after: null,
         before: 'eyJpZCI6IjUxIn0',
         first: null,
@@ -140,6 +164,7 @@ describe('AiCatalogAgents', () => {
 
       findAiCatalogListWrapper().vm.$emit('next-page');
       expect(mockCatalogItemsQueryHandler).toHaveBeenCalledWith({
+        itemTypes: ['AGENT', 'THIRD_PARTY_FLOW'],
         after: 'eyJpZCI6IjM1In0',
         before: null,
         first: 20,
@@ -159,6 +184,7 @@ describe('AiCatalogAgents', () => {
       await waitForPromises();
 
       expect(mockCatalogItemsQueryHandler).toHaveBeenCalledWith({
+        itemTypes: ['AGENT', 'THIRD_PARTY_FLOW'],
         after: null,
         before: null,
         first: 20,
@@ -177,6 +203,7 @@ describe('AiCatalogAgents', () => {
       await waitForPromises();
 
       expect(mockCatalogItemsQueryHandler).toHaveBeenCalledWith({
+        itemTypes: ['AGENT', 'THIRD_PARTY_FLOW'],
         after: null,
         before: null,
         first: 20,
