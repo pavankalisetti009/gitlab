@@ -152,6 +152,18 @@ export const DELETE_OPTIONS = [
   },
 ];
 
+export const ENABLE_FLOW_MODAL_TEXTS = {
+  title: s__('AICatalog|Enable flow from group'),
+  label: s__('AICatalog|Flow'),
+  labelDescription: s__('AICatalog|Only flows enabled in your top-level group are shown.'),
+  invalidFeedback: s__('AICatalog|Flow is required.'),
+  error: s__('AICatalog|Failed to load group flows'),
+  dropdownTexts: {
+    placeholder: s__('AICatalog|Select a flow'),
+    itemSublabel: s__('AICatalog|Flow ID: %{id}'),
+  },
+};
+
 export const DEFAULT_FLOW_YML_STRING = `\
 # Schema version
 version: "v1"

@@ -210,7 +210,12 @@ describe('AiCatalogFlowsShow', () => {
   });
 
   describe('on adding flow to project', () => {
-    const addFlowToProject = () => findItemActions().vm.$emit('add-to-target', { projectId: '1' });
+    const addFlowToProject = () =>
+      findItemActions().vm.$emit('add-to-target', {
+        parentItemConsumerId: mockItemConfigurationForGroup.id,
+        target: { projectId: '1' },
+        triggerTypes: ['mention', 'assign', 'assign_reviewer'],
+      });
 
     it('calls create consumer mutation for flow', () => {
       addFlowToProject();
@@ -220,6 +225,7 @@ describe('AiCatalogFlowsShow', () => {
           itemId: mockFlow.id,
           target: { projectId: '1' },
           parentItemConsumerId: mockItemConfigurationForGroup.id,
+          triggerTypes: ['mention', 'assign', 'assign_reviewer'],
         },
       });
     });
