@@ -14,12 +14,16 @@ query workItemMetadataEE($fullPath: ID!) {
       groupIssues
       labelsFetch
       issuesSettings
+      epicsListPath
     }
     userPermissions {
       createWorkItem
       adminLabel
       createProjects
       bulkAdminEpic
+      adminIssue
+      adminProject
+      importWorkItems
     }
   }
 }

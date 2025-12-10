@@ -115,7 +115,6 @@ RSpec.describe EE::WorkItemsHelper, feature_category: :team_planning do
         expect(work_item_views_only_data).to include(
           {
             duo_remote_flows_availability: "true",
-            can_bulk_edit_epics: "true",
             epics_list_path: group_epics_path(project)
           }
         )
@@ -124,7 +123,6 @@ RSpec.describe EE::WorkItemsHelper, feature_category: :team_planning do
       it 'inherits CE minimal data' do
         expect(work_item_views_only_data).to include(
           {
-            autocomplete_award_emojis_path: autocomplete_award_emojis_path,
             full_path: project.full_path,
             default_branch: project.default_branch_or_main,
             is_issue_repositioning_disabled: 'false',
