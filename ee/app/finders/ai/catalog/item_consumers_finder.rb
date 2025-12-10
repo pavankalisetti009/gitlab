@@ -18,9 +18,7 @@ module Ai
         consumers = by_container
         consumers = with_parents(consumers) if container && include_inherited?
         consumers = by_item(consumers) if item_id
-        consumers = with_item_type(consumers) if item_types.any?
-
-        consumers
+        by_item_type(consumers)
       end
 
       private
@@ -61,8 +59,12 @@ module Ai
         consumers.for_item(item_id)
       end
 
-      def with_item_type(consumers)
-        consumers.with_item_type(item_types)
+      def by_item_type(consumers)
+        filtered_types = get_filtered_item_types
+
+        return consumers if filtered_types == all_types
+
+        consumers.with_item_type(filtered_types)
       end
 
       def none
@@ -89,6 +91,20 @@ module Ai
 
           consumers = consumers.or(current_container.configured_ai_catalog_items)
         end
+      end
+
+      def get_filtered_item_types
+        types = (item_types.presence || all_types).map(&:to_sym)
+
+        if Ability.allowed?(current_user, :read_ai_catalog_flow, container)
+          types
+        else
+          types - [Ai::Catalog::Item::FLOW_TYPE]
+        end
+      end
+
+      def all_types
+        Ai::Catalog::Item.item_types.keys
       end
     end
   end

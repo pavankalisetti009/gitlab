@@ -181,6 +181,10 @@ module Ai
         def allowed?
           return false if group_container? && !Ability.allowed?(current_user, :create_service_account, group)
 
+          if item.flow? && !Ability.allowed?(current_user, :create_ai_catalog_flow_item_consumer, container)
+            return false
+          end
+
           Ability.allowed?(current_user, :admin_ai_catalog_item_consumer, container) &&
             Ability.allowed?(current_user, :read_ai_catalog_item, item)
         end

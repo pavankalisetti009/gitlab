@@ -13,7 +13,7 @@ RSpec.describe Sidebars::Projects::SuperSidebarMenus::DuoAgentsMenu, feature_cat
     using RSpec::Parameterized::TableSyntax
 
     where(:duo_features_enabled, :duo_workflow_in_ci_ff, :duo_remote_flows_enabled, :can_manage_ai_flow_triggers,
-      :ai_catalog, :ai_catalog_flows_ff, :configure_result, :expected_items) do
+      :ai_catalog, :read_flow_permission, :configure_result, :expected_items) do
       true  | true  | true  | false | false | false | true  | [:agents_runs]
       true  | true  | true  | true  | false | false | true  | [:agents_runs, :ai_flow_triggers]
       true  | true  | true  | true  | true  | true  | true  | [:agents_runs, :ai_catalog_agents, :ai_flow_triggers,
@@ -44,12 +44,12 @@ RSpec.describe Sidebars::Projects::SuperSidebarMenus::DuoAgentsMenu, feature_cat
       before do
         stub_feature_flags(duo_workflow_in_ci: duo_workflow_in_ci_ff)
         stub_feature_flags(global_ai_catalog: ai_catalog)
-        stub_feature_flags(ai_catalog_flows: ai_catalog_flows_ff)
         project.project_setting.update!(
           duo_remote_flows_enabled: duo_remote_flows_enabled,
           duo_features_enabled: duo_features_enabled
         )
         allow(user).to receive(:can?).with(:manage_ai_flow_triggers, project).and_return(can_manage_ai_flow_triggers)
+        allow(user).to receive(:can?).with(:read_ai_catalog_flow, project).and_return(read_flow_permission)
         allow(user).to receive(:can?).with(:duo_workflow, project).and_return(true)
       end
 
@@ -96,6 +96,7 @@ RSpec.describe Sidebars::Projects::SuperSidebarMenus::DuoAgentsMenu, feature_cat
     before do
       allow(user).to receive(:can?).with(:manage_ai_flow_triggers, project).and_return(false)
       allow(user).to receive(:can?).with(:duo_workflow, project).and_return(true)
+      allow(user).to receive(:can?).with(:read_ai_catalog_flow, project).and_call_original
 
       project.project_setting.update!(duo_remote_flows_enabled: true, duo_features_enabled: true)
       menu.configure_menu_items
@@ -126,6 +127,7 @@ RSpec.describe Sidebars::Projects::SuperSidebarMenus::DuoAgentsMenu, feature_cat
         project.project_setting.update!(duo_features_enabled: true)
         allow(user).to receive(:can?).with(:manage_ai_flow_triggers, project).and_return(true)
         allow(user).to receive(:can?).with(:duo_workflow, project).and_return(true)
+        allow(user).to receive(:can?).with(:read_ai_catalog_flow, project).and_call_original
         menu.configure_menu_items
       end
 
@@ -153,6 +155,7 @@ RSpec.describe Sidebars::Projects::SuperSidebarMenus::DuoAgentsMenu, feature_cat
         project.project_setting.update!(duo_features_enabled: true)
         allow(user).to receive(:can?).with(:manage_ai_flow_triggers, project).and_return(false)
         allow(user).to receive(:can?).with(:duo_workflow, project).and_return(true)
+        allow(user).to receive(:can?).with(:read_ai_catalog_flow, project).and_call_original
         menu.configure_menu_items
       end
 
@@ -168,6 +171,8 @@ RSpec.describe Sidebars::Projects::SuperSidebarMenus::DuoAgentsMenu, feature_cat
       project.project_setting.update!(duo_features_enabled: true)
       allow(user).to receive(:can?).with(:manage_ai_flow_triggers, project).and_return(false)
       allow(user).to receive(:can?).with(:duo_workflow, project).and_return(true)
+      allow(user).to receive(:can?).with(:read_ai_catalog_flow, project).and_return(true)
+      stub_feature_flags(ai_catalog_third_party_flows: false)
 
       menu.configure_menu_items
     end
