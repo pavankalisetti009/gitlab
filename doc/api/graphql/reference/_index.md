@@ -27884,7 +27884,7 @@ Input for pipeline creation.
 | <a id="ciinputsspecoptions"></a>`options` | [`CiInputsValue`](#ciinputsvalue) | Possible values that the input can take, if provided. |
 | <a id="ciinputsspecregex"></a>`regex` | [`String`](#string) | Regular expression pattern that the input value must match if provided. |
 | <a id="ciinputsspecrequired"></a>`required` | [`Boolean!`](#boolean) | Indicates whether the input is required. |
-| <a id="ciinputsspecrules"></a>`rules` {{< icon name="warning-solid" >}} | [`[CiInputsRule!]`](#ciinputsrule) | **Introduced** in GitLab 18.6. **Status**: Experiment. Conditional rules for dynamic input options. |
+| <a id="ciinputsspecrules"></a>`rules` | [`[CiInputsRule!]`](#ciinputsrule) | Conditional rules for dynamic input options. |
 | <a id="ciinputsspectype"></a>`type` | [`CiInputsType!`](#ciinputstype) | Input data type. |
 
 ### `CiInstanceVariable`
