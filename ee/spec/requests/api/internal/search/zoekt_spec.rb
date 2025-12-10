@@ -178,7 +178,6 @@ RSpec.describe API::Internal::Search::Zoekt, feature_category: :global_search do
           let(:valid_params) do
             base_params.merge(
               'node.schema_version' => 2531,
-              'node.knowledge_graph_schema_version' => 2542,
               'disk.indexed' => 2416879,
               'node.services' => ['zoekt']
             )

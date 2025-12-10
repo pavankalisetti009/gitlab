@@ -1593,16 +1593,6 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
-- :name: ai_knowledge_graph_indexing_task
-  :worker_name: Ai::KnowledgeGraph::IndexingTaskWorker
-  :feature_category: :knowledge_graph
-  :has_external_dependencies: false
-  :urgency: :low
-  :resource_boundary: :unknown
-  :weight: 1
-  :idempotent: true
-  :tags: []
-  :queue_namespace:
 - :name: ai_repository_xray_scan_dependencies
   :worker_name: Ai::RepositoryXray::ScanDependenciesWorker
   :feature_category: :code_suggestions

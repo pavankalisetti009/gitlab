@@ -53,8 +53,6 @@
   - 1
 - - ai_duo_workflows_update_workflow_status_event
   - 1
-- - ai_knowledge_graph_indexing_task
-  - 1
 - - ai_repository_xray_scan_dependencies
   - 1
 - - analytics_ai_usage_events_backfill
