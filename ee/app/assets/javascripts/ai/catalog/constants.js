@@ -43,7 +43,7 @@ export const AI_CATALOG_GROUP_CONSUMER_LABEL_DESCRIPTION = {
     'AICatalog|You must have the Owner role to add a flow to a group. Only top-level groups are shown.',
   ),
   [AI_CATALOG_TYPE_THIRD_PARTY_FLOW]: s__(
-    'AICatalog|You must have the Owner role to add a flow to a group. Only top-level groups are shown.',
+    'AICatalog|You must have the Owner role to add an agent to a group. Only top-level groups are shown.',
   ),
 };
 export const AI_CATALOG_PROJECT_CONSUMER_LABEL_DESCRIPTION = {
@@ -54,7 +54,7 @@ export const AI_CATALOG_PROJECT_CONSUMER_LABEL_DESCRIPTION = {
     'AICatalog|Project members can use this flow. You must have at least the Maintainer role to add a flow to a project.',
   ),
   [AI_CATALOG_TYPE_THIRD_PARTY_FLOW]: s__(
-    'AICatalog|Project members can use this flow. You must have at least the Maintainer role to add a flow to a project.',
+    'AICatalog|Project members can use this agent. You must have at least the Maintainer role to add an agent to a project.',
   ),
 };
 
