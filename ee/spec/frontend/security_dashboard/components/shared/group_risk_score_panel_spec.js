@@ -99,6 +99,7 @@ describe('GroupRiskScorePanel', () => {
   const findRiskScoreGroupBy = () => wrapper.findComponent(RiskScoreGroupBy);
   const findRiskScoreTooltip = () => wrapper.findComponent(RiskScoreTooltip);
   const findProjectsNotShownBadge = () => wrapper.findComponent(GlBadge);
+  const findBodyMessage = () => wrapper.find('p');
 
   beforeEach(() => {
     createComponent();
@@ -354,7 +355,45 @@ describe('GroupRiskScorePanel', () => {
       });
 
       it('shows the correct error message', () => {
-        expect(wrapper.find('p').text()).toBe('Something went wrong. Please try again.');
+        expect(findBodyMessage().text()).toBe('Something went wrong. Please try again.');
+      });
+    });
+
+    describe('backfill migration ongoing', () => {
+      beforeEach(async () => {
+        createComponent({
+          mockRiskScoreHandler: jest
+            .fn()
+            .mockRejectedValue(
+              new Error(
+                'Risk score advanced search backfill migration is not completed! Check after migration completion.',
+              ),
+            ),
+        });
+
+        await waitForPromises();
+      });
+
+      it('does not set the dashboard panel to alert state', () => {
+        expect(findDashboardPanel().props()).toMatchObject({
+          borderColorClass: '',
+          titleIcon: '',
+          titleIconClass: '',
+        });
+      });
+
+      it('shows the backfill migration message', () => {
+        expect(findBodyMessage().text()).toBe(
+          'Risk scores are being calculated. Please try again later.',
+        );
+      });
+
+      it('does not render the TotalRiskScore component', () => {
+        expect(findTotalRiskScore().exists()).toBe(false);
+      });
+
+      it('does not render the RiskScoreByProject component', () => {
+        expect(findRiskScoreByProject().exists()).toBe(false);
       });
     });
   });
