@@ -65,7 +65,14 @@ required upgrade stops occur at versions:
   Rails.cache.delete_matched("pipeline:*:create_persistent_ref_service")
   ```
 
-<<<<<<< HEAD
+## Geo installations 18.7.0
+
+- Added a new `action_cable_allowed_origins` setting to configure allowed origins for ActionCable websocket requests.
+  Specify the allowed URLs when configuring the primary site to ensure proper cross-site WebSocket connectivity:
+
+  - [Geo documentation for the Linux package](../../administration/geo/replication/configuration.md#add-primary-and-secondary-urls-as-allowed-actioncable-origins)
+  - [Geo documentation for the Helm chart](https://docs.gitlab.com/charts/advanced/geo/#configure-primary-database)
+
 ## 18.6.2
 
 GitLab 18.6.2, 18.5.4, and 18.4.6 introduced size and rate limits on requests made to the following endpoints:
@@ -75,15 +82,6 @@ GitLab 18.6.2, 18.5.4, and 18.4.6 introduced size and rate limits on requests ma
 - `PUT /projects/:id/repository/files/:file_path` - [Update existing file in repository](../../api/repository_files.md#update-existing-file-in-repository)
 
 GitLab responds to requests that exceed the size limit with a `413 Entity Too large` status, and requests that exceed the rate limit with a `429 Too Many Requests` status. For more information, see [Commits and Files API limits](../../administration/instance_limits.md#commits-and-files-api-limits)
-=======
-## Geo installations 18.7.0
-
-- Added a new `action_cable_allowed_origins` setting to configure allowed origins for ActionCable websocket requests.
-  Specify the allowed URLs when configuring the primary site to ensure proper cross-site WebSocket connectivity:
-
-  - [Geo documentation for the Linux package](../../administration/geo/replication/configuration.md#add-primary-and-secondary-urls-as-allowed-actioncable-origins)
-  - [Geo documentation for the Helm chart](https://docs.gitlab.com/charts/advanced/geo/#configure-primary-database)
->>>>>>> source-project/master
 
 ## Geo installations 18.5.2
 
