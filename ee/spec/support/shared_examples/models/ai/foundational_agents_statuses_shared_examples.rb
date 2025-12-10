@@ -4,6 +4,7 @@ RSpec.shared_examples 'settings with foundational agents statuses' do
   include_context 'with mocked Foundational Chat Agents'
 
   it { is_expected.to include_module(Ai::FoundationalAgentsStatusable) }
+  it { is_expected.to respond_to(:foundational_agents_default_enabled) }
 
   describe 'associations' do
     it { expect(instance).to have_many(:foundational_agents_status_records) }
@@ -85,6 +86,109 @@ RSpec.shared_examples 'settings with foundational agents statuses' do
       expect(agent_2_status[:name]).to eq(foundational_chat_agent_2[:name])
       expect(agent_2_status[:description]).to eq(foundational_chat_agent_2[:description])
       expect(agent_2_status[:enabled]).to be_nil
+    end
+  end
+
+  describe '#enabled_foundational_agents' do
+    subject(:enabled_agents_references) { instance.enabled_foundational_agents.map(&:reference) }
+
+    let(:foundational_agents_statuses) { [] }
+    let(:default_enabled) { true }
+
+    before do
+      allow(instance).to receive(:foundational_agents_default_enabled).and_return(default_enabled)
+      instance.foundational_agents_statuses = foundational_agents_statuses
+    end
+
+    context 'when no status records exist' do
+      context 'when default_enabled is true' do
+        it 'returns all agents' do
+          is_expected.to contain_exactly('chat', foundational_chat_agent_1_ref, foundational_chat_agent_2_ref)
+        end
+      end
+
+      context 'when default_enabled is false' do
+        let(:default_enabled) { false }
+
+        it 'returns empty array' do
+          is_expected.to contain_exactly('chat')
+        end
+      end
+    end
+
+    context 'when status records exist' do
+      let(:foundational_agents_statuses) do
+        [
+          { reference: foundational_chat_agent_1_ref, enabled: true },
+          { reference: foundational_chat_agent_2_ref, enabled: false }
+        ]
+      end
+
+      context 'when default_enabled is false' do
+        let(:default_enabled) { false }
+
+        it 'returns only enabled agents regardless of default_enabled' do
+          is_expected.to contain_exactly('chat', foundational_chat_agent_1_ref)
+        end
+      end
+
+      context 'when default_enabled is true' do
+        let(:default_enabled) { true }
+
+        it 'respects explicit enabled status over default_enabled' do
+          is_expected.to contain_exactly('chat', foundational_chat_agent_1_ref)
+        end
+      end
+    end
+
+    context 'when some agents have status records and others do not' do
+      let(:foundational_agents_statuses) do
+        [{ reference: foundational_chat_agent_1_ref, enabled: false }]
+      end
+
+      context 'when default_enabled is true' do
+        let(:default_enabled) { true }
+
+        it 'uses default_enabled for agents without status records' do
+          is_expected.to contain_exactly('chat', foundational_chat_agent_2_ref)
+        end
+      end
+
+      context 'when default_enabled is false' do
+        let(:default_enabled) { false }
+
+        it 'respects explicit status for agents with records' do
+          is_expected.to contain_exactly('chat')
+        end
+      end
+    end
+
+    context 'when all agents are explicitly disabled' do
+      let(:default_enabled) { true }
+      let(:foundational_agents_statuses) do
+        [
+          { reference: foundational_chat_agent_1_ref, enabled: false },
+          { reference: foundational_chat_agent_2_ref, enabled: false }
+        ]
+      end
+
+      it 'returns empty array even when default_enabled is true' do
+        is_expected.to contain_exactly('chat')
+      end
+    end
+
+    context 'when all agents are explicitly enabled' do
+      let(:default_enabled) { false }
+      let(:foundational_agents_statuses) do
+        [
+          { reference: foundational_chat_agent_1_ref, enabled: true },
+          { reference: foundational_chat_agent_2_ref, enabled: true }
+        ]
+      end
+
+      it 'returns all agents even when default_enabled is false' do
+        is_expected.to contain_exactly('chat', foundational_chat_agent_1_ref, foundational_chat_agent_2_ref)
+      end
     end
   end
 end

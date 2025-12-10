@@ -35,6 +35,18 @@ module Ai
           }
         end
       end
+
+      def enabled_foundational_agents
+        statuses = foundational_agents_status_records.index_by(&:reference)
+
+        ::Ai::FoundationalChatAgent.all.select do |agent|
+          if statuses.has_key?(agent.reference)
+            statuses[agent.reference].enabled
+          else
+            agent.duo_chat? || foundational_agents_default_enabled
+          end
+        end
+      end
     end
   end
 end

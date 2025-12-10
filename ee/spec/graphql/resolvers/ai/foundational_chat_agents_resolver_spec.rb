@@ -19,6 +19,14 @@ RSpec.describe Resolvers::Ai::FoundationalChatAgentsResolver, feature_category: 
   let_it_be(:subgroup2) { create(:group, parent: root_namespace_foundational_agents_disabled) }
   let_it_be(:project2) { create(:project, namespace: subgroup2) }
 
+  let_it_be(:default_organization) { create(:organization) }
+  let_it_be_with_reload(:setting) { create(:ai_settings, foundational_agents_default_enabled: true) }
+
+  before do
+    allow(::Organizations::Organization).to receive(:default_organization).and_return(default_organization)
+    allow(::Ai::Setting).to receive(:instance).and_return(setting)
+  end
+
   shared_examples 'returns only duo chat' do
     it 'returns only duo chat' do
       expect(resolved).to match_array(::Ai::FoundationalChatAgent.only_duo_chat_agent)
@@ -78,6 +86,8 @@ RSpec.describe Resolvers::Ai::FoundationalChatAgentsResolver, feature_category: 
     end
 
     describe 'access to foundational chat agents' do
+      include_context 'with mocked Foundational Chat Agents'
+
       context 'when is saas' do
         let(:default_namespace) { root_namespace_foundational_agents_enabled }
         let(:project) { nil }
@@ -137,7 +147,8 @@ RSpec.describe Resolvers::Ai::FoundationalChatAgentsResolver, feature_category: 
 
             context 'and user cannot read project' do
               before do
-                allow(::Ability).to receive(:allowed?).with(current_user, :read_project, project1).and_return(false)
+                allow(::Ability).to receive(:allowed?).with(current_user, :read_namespace,
+                  root_namespace_foundational_agents_enabled).and_return(false)
               end
 
               it_behaves_like 'returns only duo chat'
@@ -169,19 +180,43 @@ RSpec.describe Resolvers::Ai::FoundationalChatAgentsResolver, feature_category: 
 
       context 'when is self-managed' do
         let(:foundational_agents_default_enabled) { true }
+        let(:foundational_agents_statuses) { [] }
 
         before do
           ::Ai::Setting.instance.update!(foundational_agents_default_enabled: foundational_agents_default_enabled)
+          default_organization.foundational_agents_statuses = foundational_agents_statuses
         end
 
         context 'when application settings have foundational chat agents set to enabled by default' do
-          it_behaves_like 'returns all foundational agents'
+          context 'when statuses have not been set to any agent' do
+            it_behaves_like 'returns all foundational agents'
+          end
+
+          context 'when an agent is set to disabled' do
+            let(:foundational_agents_statuses) { [{ reference: foundational_chat_agent_2_ref, enabled: false }] }
+
+            it 'returns duo chat and the enabled agent' do
+              expect(resolved.size).to eq 2
+
+              expect(resolved[1].reference).to eq foundational_chat_agent_1_ref
+            end
+          end
         end
 
         context 'when application settings have foundational chat agents set to disabled by default' do
           let(:foundational_agents_default_enabled) { false }
 
           it_behaves_like 'returns only duo chat'
+
+          context 'when an agent is set to enabled' do
+            let(:foundational_agents_statuses) { [{ reference: foundational_chat_agent_2_ref, enabled: true }] }
+
+            it 'returns duo chat and the disabled agent' do
+              expect(resolved.size).to eq 2
+
+              expect(resolved[1].reference).to eq foundational_chat_agent_2_ref
+            end
+          end
         end
 
         context 'when duo_foundational_agents_availability is off' do
@@ -194,51 +229,53 @@ RSpec.describe Resolvers::Ai::FoundationalChatAgentsResolver, feature_category: 
       end
     end
 
-    context 'when foundational_duo_planner feature flag is disabled' do
-      before do
-        stub_feature_flags(foundational_duo_planner: false)
+    describe 'agents behind feature flags' do
+      context 'when foundational_duo_planner feature flag is disabled' do
+        before do
+          stub_feature_flags(foundational_duo_planner: false)
+        end
+
+        it 'filters out duo_planner agent' do
+          agent_references = resolved.map(&:reference)
+
+          expect(agent_references).not_to include('duo_planner')
+        end
       end
 
-      it 'filters out duo_planner agent' do
-        agent_references = resolved.map(&:reference)
+      context 'when foundational_duo_planner feature flag is enabled' do
+        before do
+          stub_feature_flags(foundational_duo_planner: true)
+        end
 
-        expect(agent_references).not_to include('duo_planner')
-      end
-    end
+        it 'includes duo_planner agent' do
+          agent_references = resolved.map(&:reference)
 
-    context 'when foundational_duo_planner feature flag is enabled' do
-      before do
-        stub_feature_flags(foundational_duo_planner: true)
-      end
-
-      it 'includes duo_planner agent' do
-        agent_references = resolved.map(&:reference)
-
-        expect(agent_references).to include('duo_planner')
-      end
-    end
-
-    context 'when foundational_analytics_agent feature flag is disabled' do
-      before do
-        stub_feature_flags(foundational_analytics_agent: false)
+          expect(agent_references).to include('duo_planner')
+        end
       end
 
-      it 'filters out analytics_agent' do
-        agent_references = resolved.map(&:reference)
+      context 'when foundational_analytics_agent feature flag is disabled' do
+        before do
+          stub_feature_flags(foundational_analytics_agent: false)
+        end
 
-        expect(agent_references).not_to include('analytics_agent')
+        it 'filters out analytics_agent' do
+          agent_references = resolved.map(&:reference)
+
+          expect(agent_references).not_to include('analytics_agent')
+        end
       end
-    end
 
-    context 'when foundational_analytics_agent feature flag is enabled' do
-      before do
-        stub_feature_flags(foundational_analytics_agent: true)
-      end
+      context 'when foundational_analytics_agent feature flag is enabled' do
+        before do
+          stub_feature_flags(foundational_analytics_agent: true)
+        end
 
-      it 'includes analytics_agent' do
-        agent_references = resolved.map(&:reference)
+        it 'includes analytics_agent' do
+          agent_references = resolved.map(&:reference)
 
-        expect(agent_references).to include('analytics_agent')
+          expect(agent_references).to include('analytics_agent')
+        end
       end
     end
   end
