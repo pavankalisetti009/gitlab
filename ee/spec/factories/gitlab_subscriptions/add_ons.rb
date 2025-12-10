@@ -30,9 +30,9 @@ FactoryBot.define do
       description { GitlabSubscriptions::AddOn.descriptions[:duo_amazon_q] }
     end
 
-    trait :duo_self_hosted do
-      name { GitlabSubscriptions::AddOn.names[:duo_self_hosted] }
-      description { GitlabSubscriptions::AddOn.descriptions[:duo_self_hosted] }
+    trait :self_hosted_dap do
+      name { GitlabSubscriptions::AddOn.names[:self_hosted_dap] }
+      description { GitlabSubscriptions::AddOn.descriptions[:self_hosted_dap] }
     end
   end
 end

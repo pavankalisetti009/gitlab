@@ -2,7 +2,7 @@
 import { GlCard, GlButton, GlIcon } from '@gitlab/ui';
 import { s__, __ } from '~/locale';
 import UsageStatistics from 'ee/usage_quotas/components/usage_statistics.vue';
-import { DUO_PRO, DUO_SELF_HOSTED, DUO_IDENTIFIERS, DUO_TITLES } from 'ee/constants/duo';
+import { DUO_PRO, SELF_HOSTED_DAP, DUO_IDENTIFIERS, DUO_TITLES } from 'ee/constants/duo';
 import { InternalEvents } from '~/tracking';
 import { formatDate } from '~/lib/utils/datetime_utility';
 
@@ -54,10 +54,10 @@ export default {
       return DUO_TITLES[this.activeDuoTier];
     },
     showPurchaseSeatsButton() {
-      // Hide the button for instances with the Duo Self-Hosted add-on,
+      // Hide the button for instances with the Self-Hosted Duo Agent Platform add-on,
       // since self-service purchase of it is currently not supported. See:
       // https://gitlab.com/gitlab-org/gitlab/-/issues/548390
-      return this.activeDuoTier === DUO_PRO && !this.hasDuoSelfHostedAddOn;
+      return this.activeDuoTier === DUO_PRO && !this.hasSelfHostedDapAddOn;
     },
     duoSeatUtilizationDescription() {
       return this.sprintf(this.$options.i18n.duoSeatUtilizationDescriptionText, {
@@ -76,8 +76,8 @@ export default {
         this.formatSubscriptionDate(this.duoAddOnEndDate),
       );
     },
-    hasDuoSelfHostedAddOn() {
-      return this.addOnPurchases.some(({ name }) => name === DUO_SELF_HOSTED);
+    hasSelfHostedDapAddOn() {
+      return this.addOnPurchases.some(({ name }) => name === SELF_HOSTED_DAP);
     },
   },
   methods: {

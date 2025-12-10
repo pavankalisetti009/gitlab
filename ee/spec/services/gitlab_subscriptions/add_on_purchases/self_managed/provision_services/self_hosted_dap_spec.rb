@@ -2,12 +2,12 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServices::DuoSelfHosted,
+RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServices::SelfHostedDap,
   :freeze_time, feature_category: :'add-on_provisioning' do
   describe '#execute' do
     include_context 'with provision services common setup'
 
-    let_it_be(:add_on_duo_self_hosted) { create(:gitlab_subscription_add_on, :duo_self_hosted) }
+    let_it_be(:add_on_self_hosted_dap) { create(:gitlab_subscription_add_on, :self_hosted_dap) }
     let_it_be(:add_on_duo_core) { create(:gitlab_subscription_add_on, :duo_core) }
     let_it_be(:add_on_duo_pro) { create(:gitlab_subscription_add_on, :duo_pro) }
 
@@ -17,24 +17,24 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServic
       it_behaves_like 'delegates add_on params to license_add_on'
     end
 
-    context 'without Duo Self-Hosted' do
+    context 'without Self-Hosted DAP' do
       let(:add_ons) { [] }
 
-      it 'does not create a Duo Self-Hosted add-on purchase' do
+      it 'does not create a Self-Hosted DAP add-on purchase' do
         expect { provision_service.execute }.not_to change { GitlabSubscriptions::AddOnPurchase.count }
       end
     end
 
-    context 'with Duo Self-Hosted' do
-      let(:add_ons) { %i[duo_self_hosted] }
+    context 'with Self-Hosted DAP' do
+      let(:add_ons) { %i[self_hosted_dap] }
 
-      it 'creates a new Duo Self-Hosted add-on purchase' do
+      it 'creates a new Self-Hosted DAP add-on purchase' do
         expect do
           provision_service.execute
         end.to change { GitlabSubscriptions::AddOnPurchase.count }.from(0).to(1)
 
         expect(GitlabSubscriptions::AddOnPurchase.first).to have_attributes(
-          subscription_add_on_id: add_on_duo_self_hosted.id,
+          subscription_add_on_id: add_on_self_hosted_dap.id,
           quantity: quantity,
           started_at: started_at,
           expires_on: started_at + 1.year,
@@ -44,16 +44,16 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServic
       end
     end
 
-    context 'with existing Duo Self-Hosted' do
-      let(:add_ons) { %i[duo_self_hosted] }
+    context 'with existing Self-Hosted DAP' do
+      let(:add_ons) { %i[self_hosted_dap] }
 
       context 'with seat count increase' do
         let(:quantity) { 2 }
 
-        let!(:existing_duo_self_hosted) do
+        let!(:existing_self_hosted_dap) do
           create(
             :gitlab_subscription_add_on_purchase,
-            add_on: add_on_duo_self_hosted,
+            add_on: add_on_self_hosted_dap,
             quantity: 1,
             namespace: namespace
           )
@@ -63,7 +63,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServic
           expect { provision_service.execute }.not_to change { GitlabSubscriptions::AddOnPurchase.count }
 
           expect(GitlabSubscriptions::AddOnPurchase.first).to have_attributes(
-            subscription_add_on_id: add_on_duo_self_hosted.id,
+            subscription_add_on_id: add_on_self_hosted_dap.id,
             quantity: quantity,
             started_at: started_at,
             expires_on: started_at + 1.year,
@@ -74,10 +74,10 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServic
       end
 
       context 'when expired' do
-        let!(:existing_duo_self_hosted) do
+        let!(:existing_self_hosted_dap) do
           create(
             :gitlab_subscription_add_on_purchase,
-            add_on: add_on_duo_self_hosted,
+            add_on: add_on_self_hosted_dap,
             quantity: quantity,
             started_at: 2.years.ago,
             expires_on: 1.year.ago,
@@ -90,28 +90,28 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServic
             provision_service.execute
           end.not_to change { GitlabSubscriptions::AddOnPurchase.count }
 
-          expect(existing_duo_self_hosted.reload.started_at).to eq(started_at)
-          expect(existing_duo_self_hosted.expires_on).to eq(started_at + 1.year)
+          expect(existing_self_hosted_dap.reload.started_at).to eq(started_at)
+          expect(existing_self_hosted_dap.expires_on).to eq(started_at + 1.year)
         end
       end
 
       context 'with an additional add-on purchase' do
-        let(:add_ons) { %i[duo_self_hosted duo_amazon_q] }
+        let(:add_ons) { %i[self_hosted_dap duo_amazon_q] }
 
-        let!(:existing_duo_self_hosted) do
+        let!(:existing_self_hosted_dap) do
           create(
             :gitlab_subscription_add_on_purchase,
-            add_on: add_on_duo_self_hosted,
+            add_on: add_on_self_hosted_dap,
             quantity: quantity,
             namespace: nil
           )
         end
 
-        it 'does not affect the Duo Self-Hosted purchase' do
+        it 'does not affect the Self-Hosted DAP purchase' do
           expect { provision_service.execute }.not_to change { GitlabSubscriptions::AddOnPurchase.count }
 
           expect(GitlabSubscriptions::AddOnPurchase.first).to have_attributes(
-            subscription_add_on_id: add_on_duo_self_hosted.id,
+            subscription_add_on_id: add_on_self_hosted_dap.id,
             quantity: quantity,
             started_at: started_at,
             expires_on: started_at + 1.year,
@@ -151,8 +151,8 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServic
         )
       end
 
-      context 'with additional purchase of Duo Self-Hosted' do
-        let(:add_ons) { %i[duo_core duo_pro duo_self_hosted] }
+      context 'with additional purchase of Self-Hosted DAP' do
+        let(:add_ons) { %i[duo_core duo_pro self_hosted_dap] }
 
         it 'does not affect the existing add-on purchases' do
           expect do

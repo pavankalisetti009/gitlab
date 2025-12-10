@@ -1092,7 +1092,7 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
       before do
         create(:gitlab_subscription_add_on_purchase, :duo_pro, :active, namespace: group)
         create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :active, namespace: group)
-        create(:gitlab_subscription_add_on_purchase, :duo_self_hosted, :active, namespace: group)
+        create(:gitlab_subscription_add_on_purchase, :self_hosted_dap, :active, namespace: group)
       end
 
       it 'returns true' do

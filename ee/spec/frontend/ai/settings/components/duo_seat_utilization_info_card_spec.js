@@ -2,7 +2,7 @@ import { shallowMount } from '@vue/test-utils';
 import { GlCard, GlIcon, GlButton } from '@gitlab/ui';
 import UsageStatistics from 'ee/usage_quotas/components/usage_statistics.vue';
 import DuoSeatUtilizationInfoCard from 'ee/ai/settings/components/duo_seat_utilization_info_card.vue';
-import { DUO_PRO, DUO_ENTERPRISE, DUO_SELF_HOSTED, DUO_AMAZON_Q } from 'ee/constants/duo';
+import { DUO_PRO, DUO_ENTERPRISE, SELF_HOSTED_DAP, DUO_AMAZON_Q } from 'ee/constants/duo';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 
 jest.mock('~/lib/utils/url_utility');
@@ -123,9 +123,9 @@ describe('DuoSeatUtilizationInfoCard', () => {
       });
     });
 
-    describe('Duo Pro add-on with Duo Self-Hosted add-on', () => {
+    describe('Duo Pro add-on with Self-Hosted Duo Agent Platform add-on', () => {
       beforeEach(() => {
-        wrapper = createComponent({ addOnPurchases: [{ name: DUO_SELF_HOSTED }] });
+        wrapper = createComponent({ addOnPurchases: [{ name: SELF_HOSTED_DAP }] });
       });
 
       it('renders only assign seats button', () => {

@@ -4,7 +4,7 @@ module GitlabSubscriptions
   module AddOnPurchases
     module SelfManaged
       module ProvisionServices
-        class DuoSelfHosted < Base
+        class SelfHostedDap < Base
           private
 
           def add_on_purchase
@@ -13,7 +13,7 @@ module GitlabSubscriptions
           strong_memoize_attr :add_on_purchase
 
           def license_add_on
-            LicenseAddOns::DuoSelfHosted.new(license_restrictions)
+            LicenseAddOns::SelfHostedDap.new(license_restrictions)
           end
           strong_memoize_attr :license_add_on
         end

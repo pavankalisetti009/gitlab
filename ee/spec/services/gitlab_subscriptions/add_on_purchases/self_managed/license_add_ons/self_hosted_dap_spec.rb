@@ -2,17 +2,17 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::LicenseAddOns::DuoSelfHosted,
+RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::LicenseAddOns::SelfHostedDap,
   :aggregate_failures, feature_category: :"add-on_provisioning" do
   subject(:add_on_license) { described_class.new(restrictions) }
 
-  let_it_be(:add_on) { create(:gitlab_subscription_add_on, :duo_self_hosted) }
+  let_it_be(:add_on) { create(:gitlab_subscription_add_on, :self_hosted_dap) }
   let(:restrictions) do
     start_date = Date.current
 
     {
       add_on_products: {
-        "duo_self_hosted" => [
+        "self_hosted_dap" => [
           {
             "quantity" => 1,
             "started_on" => start_date.to_s,
@@ -25,7 +25,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::LicenseAddOns::
     }
   end
 
-  include_examples "license add-on attributes", add_on_name: "duo_self_hosted"
+  include_examples "license add-on attributes", add_on_name: "self_hosted_dap"
 
   describe "#add_on" do
     it { expect(add_on_license.add_on).to eq add_on }
