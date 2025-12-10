@@ -39,6 +39,7 @@ export const initDuoAgenticChat = () => {
     resourceId,
     metadata,
     userModelSelectionEnabled,
+    creditsAvailable,
   } = el.dataset;
 
   return new Vue({
@@ -60,6 +61,7 @@ export const initDuoAgenticChat = () => {
           resourceId: latestActiveWorkItemId ?? resourceId,
           metadata,
           userModelSelectionEnabled: parseBoolean(userModelSelectionEnabled),
+          creditsAvailable: parseBoolean(creditsAvailable),
         },
       });
     },

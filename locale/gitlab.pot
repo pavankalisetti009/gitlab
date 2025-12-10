@@ -25283,10 +25283,25 @@ msgstr ""
 msgid "DuoAgenticChat|Invalid chat state provided"
 msgstr ""
 
+msgid "DuoAgenticChat|Need more credits? Contact your administrator."
+msgstr ""
+
+msgid "DuoAgenticChat|No GitLab Credits remain"
+msgstr ""
+
+msgid "DuoAgenticChat|No GitLab Credits remain for this billing period. Turn off the %{agenticModeStart}Agentic mode%{agenticModeEnd} toggle or ask your administrator for more credits. %{linkStart}Learn more%{linkEnd}."
+msgstr ""
+
+msgid "DuoAgenticChat|No credits remain for this billing period. To continue collaborating with GitLab Duo, turn off the Agentic mode toggle. You can still get AI assistance, just without the advanced agentic features. %{linkStart}Learn more%{linkEnd}."
+msgstr ""
+
 msgid "DuoAgenticChat|The agent associated with this conversation is no longer available. You can view the conversation history but cannot send new messages."
 msgstr ""
 
 msgid "DuoAgenticChat|This chat was deleted."
+msgstr ""
+
+msgid "DuoAgenticChat|Turn off Agentic mode"
 msgstr ""
 
 msgid "DuoAgenticChat|Unable to connect to workflow service. Please try again."
