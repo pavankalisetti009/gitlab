@@ -12,6 +12,7 @@ RSpec.describe Gitlab::EventStore, feature_category: :shared do
         Ai::ActiveContext::Code::MarkRepositoryAsReadyEvent,
         Ai::ActiveContext::Code::MarkRepositoryAsPendingDeletionEvent,
         Ai::ActiveContext::Code::ProcessPendingEnabledNamespaceEvent,
+        Ai::ActiveContext::Code::ProcessInvalidEnabledNamespaceEvent,
         Ai::ActiveContext::Code::SaasInitialIndexingEvent,
         ::Ci::JobArtifactsDeletedEvent,
         ::Ci::JobSecurityScanCompletedEvent,

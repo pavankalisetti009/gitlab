@@ -40,6 +40,17 @@ module Ai
         scope :with_active_connection, -> {
           joins(:active_context_connection).where(active_context_connection: { active: true })
         }
+        scope :ordered_by_id, -> { order(:id) }
+        scope :id_greater_than, ->(id) { where('id > ?', id) }
+
+        def self.valid_saas_namespaces
+          Namespace
+            .group_namespaces
+            .top_level
+            .namespace_settings_with_ai_features_enabled
+            .with_ai_supported_plan
+            .merge(GitlabSubscription.not_expired)
+        end
 
         def self.find_enabled_namespace(connection, namespace)
           connection.enabled_namespaces.find_by(namespace: namespace)

@@ -237,6 +237,10 @@ module EE
           store.subscribe ::Ai::ActiveContext::Code::ProcessPendingEnabledNamespaceEventWorker,
             to: ::Ai::ActiveContext::Code::ProcessPendingEnabledNamespaceEvent
 
+          store.subscribe ::Ai::ActiveContext::Code::ProcessInvalidEnabledNamespaceEventWorker,
+            to: ::Ai::ActiveContext::Code::ProcessInvalidEnabledNamespaceEvent,
+            if: ->(_) { ::Feature.enabled?(:active_context_code_event_invalid_enabled_namespaces, :instance) }
+
           store.subscribe ::Ai::ActiveContext::Code::SaasInitialIndexingEventWorker,
             to: ::Ai::ActiveContext::Code::SaasInitialIndexingEvent
         end
