@@ -7,7 +7,7 @@ RSpec.describe 'getting AI catalog agent flow configuration', :with_current_orga
   include GraphqlHelpers
 
   let_it_be(:user) { create(:user) }
-  let_it_be(:project) { create(:project, developers: user) }
+  let_it_be(:project) { create(:project, guests: user) }
   let_it_be(:agent) { create(:ai_catalog_agent, project: project) }
   let_it_be(:agent_version) { create(:ai_catalog_agent_version, item: agent) }
 
@@ -99,12 +99,6 @@ RSpec.describe 'getting AI catalog agent flow configuration', :with_current_orga
         .and_return(wrapped_agent_flow_builder)
       allow(wrapped_agent_flow_builder).to receive(:execute).and_return(error_response)
     end
-
-    it_behaves_like 'when request fails'
-  end
-
-  context 'when user is a guest' do
-    let(:current_user) { create(:user).tap { |user| project.add_guest(user) } }
 
     it_behaves_like 'when request fails'
   end

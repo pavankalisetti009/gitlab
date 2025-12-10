@@ -153,16 +153,12 @@ RSpec.describe 'getting an AI catalog item', :with_current_organization, feature
   context 'with a private catalog item' do
     let_it_be(:catalog_item) { create(:ai_catalog_item, project: project) }
 
-    context 'when developer' do
-      let(:current_user) { developer_user }
+    it_behaves_like 'an unsuccessful query'
 
-      it_behaves_like 'a successful query'
-    end
-
-    context 'when guest' do
+    context 'when the user has permission' do
       let(:current_user) { guest_user }
 
-      it_behaves_like 'an unsuccessful query'
+      it_behaves_like 'a successful query'
     end
   end
 
