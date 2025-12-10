@@ -709,9 +709,11 @@ To change the scope Pages uses:
 
 #### Disable public access to all Pages sites
 
-You can enforce Access Control for all GitLab Pages websites hosted
-on your GitLab instance. By doing so, only authenticated users have access to them.
-This setting overrides Access Control set by users in individual projects.
+You can enforce access control for all GitLab Pages websites hosted
+on your GitLab instance. When you enable this setting, only authenticated users
+can access Pages websites. All projects lose the **Everyone** visibility level option
+and are restricted to project members or everyone with access, depending on the
+project's visibility setting.
 
 This can be helpful to restrict information published with Pages websites to the users
 of your instance only.
