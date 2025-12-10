@@ -16,50 +16,54 @@ module Resolvers
         description: 'Global ID of the namespace where the chat is present.'
 
       def resolve(*, project_id: nil, namespace_id: nil)
-        unless can_use_foundational_chat_agents?(project_id, namespace_id)
-          return ::Ai::FoundationalChatAgent.only_duo_chat_agent
-        end
+        enabled_agents = if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+                           enabled_foundational_agents_in_namespace(
+                             resolve_namespace(current_user, namespace_id, project_id),
+                             current_user
+                           )
+                         else
+                           enabled_foundational_agents_in_organization(
+                             ::Organizations::Organization.default_organization
+                           )
+                         end
 
         filtered_agents = []
         filtered_agents << 'duo_planner' if Feature.disabled?(:foundational_duo_planner, current_user)
         filtered_agents << 'analytics_agent' if Feature.disabled?(:foundational_analytics_agent, current_user)
 
-        ::Ai::FoundationalChatAgent.all
+        enabled_agents
           .select { |agent| filtered_agents.exclude?(agent.reference) }
           .sort_by(&:id)
       end
 
       private
 
-      def can_use_foundational_chat_agents?(project_id, namespace_id)
-        if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
-          return false unless current_user
+      def resolve_namespace(current_user, namespace_id, project_id)
+        return unless current_user
 
-          namespace = current_user.user_preference.duo_default_namespace_with_fallback
+        # use_billable_namespace
+        # once https://gitlab.com/gitlab-org/gitlab/-/issues/580901 is implemented,
+        # this should be moved to the source of truth
+        current_user.user_preference.duo_default_namespace_with_fallback ||
+          find_object(project_id || namespace_id)&.root_ancestor
+      end
 
-          return can_namespace_use_foundational_chat_agents?(namespace, current_user) if namespace
-
-          return can_project_use_foundational_chat_agents?(find_object(project_id), current_user) if project_id
-
-          can_namespace_use_foundational_chat_agents?(find_object(namespace_id), current_user)
-        else
-          ::Feature.enabled?(:duo_foundational_agents_availability, :instance) &&
-            ::Ai::Setting.instance&.foundational_agents_default_enabled
+      def enabled_foundational_agents_in_namespace(namespace, current_user)
+        unless namespace &&
+            ::Feature.enabled?(:duo_foundational_agents_availability, namespace) &&
+            Ability.allowed?(current_user, :read_namespace, namespace)
+          return ::Ai::FoundationalChatAgent.only_duo_chat_agent
         end
+
+        namespace.enabled_foundational_agents
       end
 
-      def can_namespace_use_foundational_chat_agents?(namespace, current_user)
-        root_namespace = namespace&.root_ancestor
+      def enabled_foundational_agents_in_organization(organization)
+        unless ::Feature.enabled?(:duo_foundational_agents_availability, :instance)
+          return ::Ai::FoundationalChatAgent.only_duo_chat_agent
+        end
 
-        return false unless root_namespace && Ability.allowed?(current_user, :read_namespace, root_namespace)
-
-        ::Feature.enabled?(:duo_foundational_agents_availability, root_namespace) &&
-          root_namespace.foundational_agents_default_enabled
-      end
-
-      def can_project_use_foundational_chat_agents?(project, current_user)
-        ::Ability.allowed?(current_user, :read_project, project) &&
-          can_namespace_use_foundational_chat_agents?(project.parent, current_user)
+        organization.enabled_foundational_agents
       end
 
       def find_object(id)

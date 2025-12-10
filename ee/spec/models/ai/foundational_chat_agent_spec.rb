@@ -17,7 +17,21 @@ RSpec.describe Ai::FoundationalChatAgent, feature_category: :workflow_catalog do
     it { is_expected.to validate_presence_of(:description) }
   end
 
-  describe '.count' do
+  describe 'duo_chat?' do
+    context 'when duo chat' do
+      it 'is true' do
+        expect(described_class.all[0]).to be_duo_chat
+      end
+    end
+
+    context 'when not duo chat' do
+      it 'is true' do
+        expect(described_class.all[1]).not_to be_duo_chat
+      end
+    end
+  end
+
+  describe '#count' do
     it 'returns the correct count of agents' do
       expect(described_class.count).to eq(described_class::ITEMS.size)
     end
@@ -64,7 +78,7 @@ RSpec.describe Ai::FoundationalChatAgent, feature_category: :workflow_catalog do
     end
   end
 
-  describe '.foundational_workflow_definition?' do
+  describe '#foundational_workflow_definition?' do
     it 'returns true for chat' do
       expect(described_class.foundational_workflow_definition?('chat')).to be(true)
     end
