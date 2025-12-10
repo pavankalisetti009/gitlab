@@ -36,7 +36,6 @@ RSpec.describe Groups::EpicsController, feature_category: :portfolio_management 
     it 'with feature flag disabled it still sets the epic flags to true' do
       get_new
 
-      expect(response.body).to have_pushed_frontend_feature_flags(workItemEpics: true)
       expect(response).to have_gitlab_http_status(:success)
     end
 
@@ -65,7 +64,6 @@ RSpec.describe Groups::EpicsController, feature_category: :portfolio_management 
 
           expect(response).to render_template('groups/epics/work_items_index')
           expect(assigns(:work_item)).to eq(epic.work_item)
-          expect(response.body).to have_pushed_frontend_feature_flags(workItemEpics: true)
         end
       end
 

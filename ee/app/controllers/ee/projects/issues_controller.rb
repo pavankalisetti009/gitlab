@@ -53,10 +53,6 @@ module EE
           push_frontend_feature_flag(:duo_developer_button, current_user)
         end
 
-        before_action do
-          push_force_frontend_feature_flag(:work_item_epics, !!project&.group&.allowed_work_item_type?(:epic))
-        end
-
         before_action only: %i[show index] do
           @seat_count_data = generate_seat_count_alert_data(@project)
         end

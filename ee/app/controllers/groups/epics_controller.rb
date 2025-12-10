@@ -14,7 +14,6 @@ class Groups::EpicsController < Groups::ApplicationController
   before_action :authorize_create_epic!, only: [:new]
   before_action :verify_group_bulk_edit_enabled!, only: [:bulk_update]
   before_action :set_summarize_notes_feature_flag, only: :show
-  before_action :enforce_work_item_epics_feature_flags, only: [:new, :show]
   after_action :log_epic_show, only: :show
 
   before_action do
@@ -138,11 +137,6 @@ class Groups::EpicsController < Groups::ApplicationController
 
   def verify_group_bulk_edit_enabled!
     render_404 unless group.licensed_feature_available?(:group_bulk_edit)
-  end
-
-  def enforce_work_item_epics_feature_flags
-    # We enforce the feature flag, in case that the frontend still relies on it.
-    push_force_frontend_feature_flag(:work_item_epics, !!@group.licensed_feature_available?(:epics))
   end
 
   def set_summarize_notes_feature_flag
