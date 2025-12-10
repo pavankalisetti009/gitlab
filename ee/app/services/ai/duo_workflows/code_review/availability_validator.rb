@@ -19,9 +19,11 @@ module Ai
 
           # For Duo Pro/Core: use agent platform if:
           # - user has duo_agent_platform access (checks user's add-on assignments)
-          # - experimental features are enabled
+          # - GA rollout is enabled OR experimental features are enabled
           # - DWS is configured (for self-managed)
-          user.allowed_to_use?(:duo_agent_platform) && experimental_features_enabled? && duo_agent_platform_configured?
+          user.allowed_to_use?(:duo_agent_platform) &&
+            (ga_rollout_enabled? || experimental_features_enabled?) &&
+            duo_agent_platform_configured?
         end
 
         private
@@ -30,6 +32,10 @@ module Ai
 
         def user_has_duo_enterprise_add_on?
           ::GitlabSubscriptions::AddOnPurchase.for_active_add_ons([:duo_enterprise], user).exists?
+        end
+
+        def ga_rollout_enabled?
+          ::Feature.enabled?(:ai_duo_agent_platform_ga_rollout, resource)
         end
 
         def experimental_features_enabled?
