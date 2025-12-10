@@ -31,6 +31,7 @@ export function initDuoPanel() {
     agenticUnavailableMessage,
     chatTitle,
     chatDisabledReason,
+    creditsAvailable,
   } = el.dataset;
 
   if (parseBoolean(forceAgenticModeForCoreDuoUsers)) {
@@ -64,6 +65,7 @@ export function initDuoPanel() {
       isAgenticAvailable: parseBoolean(agenticAvailable),
       forceAgenticModeForCoreDuoUsers: parseBoolean(forceAgenticModeForCoreDuoUsers),
       chatTitle,
+      creditsAvailable: parseBoolean(creditsAvailable ?? 'true'),
     },
   };
 

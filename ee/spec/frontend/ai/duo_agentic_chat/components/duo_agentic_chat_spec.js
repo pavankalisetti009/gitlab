@@ -341,7 +341,7 @@ describe('Duo Agentic Chat', () => {
 
   const createComponent = ({
     initialState = {},
-    propsData = { projectId: MOCK_PROJECT_ID, resourceId: MOCK_RESOURCE_ID },
+    propsData = {},
     data = {},
     apolloHandlers = [[getAiChatAvailableModels, availableModelsQueryHandlerMock]],
     provide = {},
@@ -396,7 +396,10 @@ describe('Duo Agentic Chat', () => {
     wrapper = shallowMountExtended(DuoAgenticChatApp, {
       store,
       apolloProvider,
-      propsData,
+      propsData: {
+        creditsAvailable: true,
+        ...propsData,
+      },
       provide: defaultProvide,
       mocks: {
         $router: mockRouter,
@@ -463,6 +466,9 @@ describe('Duo Agentic Chat', () => {
   describe('rendering', () => {
     describe('when Duo Chat is shown', () => {
       beforeEach(() => {
+        createComponent({
+          propsData: { projectId: MOCK_PROJECT_ID, resourceId: MOCK_RESOURCE_ID },
+        });
         duoChatGlobalState.isAgenticChatShown = true;
         createComponent();
       });
@@ -729,7 +735,9 @@ describe('Duo Agentic Chat', () => {
 
   describe('events handling', () => {
     beforeEach(() => {
-      createComponent();
+      createComponent({
+        propsData: { projectId: MOCK_PROJECT_ID, resourceId: MOCK_RESOURCE_ID },
+      });
       duoChatGlobalState.isAgenticChatShown = true;
     });
 
@@ -1973,7 +1981,9 @@ describe('Duo Agentic Chat', () => {
 
     describe('duoChatGlobalState.commands', () => {
       beforeEach(() => {
-        createComponent();
+        createComponent({
+          propsData: { projectId: MOCK_PROJECT_ID, resourceId: MOCK_RESOURCE_ID },
+        });
         duoChatGlobalState.isAgenticChatShown = true;
       });
 
@@ -3518,6 +3528,106 @@ describe('Duo Agentic Chat', () => {
       it('renders the DuoNext component if the flag is enabled', () => {
         expect(findDuoNext().exists()).toBe(true);
         expect(findDuoChat().exists()).toBe(false);
+      });
+    });
+  });
+
+  describe('Credit limitation', () => {
+    describe('when credits are unavailable on load', () => {
+      beforeEach(() => {
+        createComponent({ propsData: { creditsAvailable: false } });
+      });
+
+      it('passes disabled chatState to duo chat component', () => {
+        const duoChat = findDuoChat();
+
+        expect(duoChat.props('chatState')).toMatchObject({
+          isEnabled: false,
+          reason: expect.stringContaining('No GitLab Credits remain'),
+        });
+      });
+
+      it('hides model selector when userModelSelectionEnabled is true', () => {
+        createComponent({
+          propsData: {
+            creditsAvailable: false,
+            userModelSelectionEnabled: true,
+          },
+        });
+
+        const modelSelector = wrapper.findComponent(ModelSelectDropdown);
+        expect(modelSelector.exists()).toBe(false);
+      });
+
+      it('renders custom empty state in duo chat', () => {
+        const duoChat = findDuoChat();
+        const customEmptyState = duoChat.vm.$scopedSlots['custom-empty-state']({});
+
+        expect(customEmptyState).toBeDefined();
+      });
+    });
+
+    describe('when credits are available on load', () => {
+      beforeEach(() => {
+        createComponent({ propsData: { creditsAvailable: true } });
+      });
+
+      it('passes enabled chatState to duo chat component', () => {
+        const duoChat = findDuoChat();
+
+        expect(duoChat.props('chatState')).toMatchObject({
+          isEnabled: true,
+        });
+      });
+
+      it('shows model selector when userModelSelectionEnabled is true', () => {
+        createComponent({
+          propsData: {
+            creditsAvailable: true,
+            userModelSelectionEnabled: true,
+          },
+        });
+
+        const modelSelector = wrapper.findComponent(ModelSelectDropdown);
+        expect(modelSelector.exists()).toBe(true);
+      });
+    });
+
+    describe('runtime credit exhaustion', () => {
+      describe('and the code is 1008 (insufficient credits)', () => {
+        beforeEach(async () => {
+          createComponent({
+            propsData: {
+              creditsAvailable: true,
+              userModelSelectionEnabled: true,
+            },
+          });
+          findDuoChat().vm.$emit('send-chat-prompt', 'test message');
+          await waitForPromises();
+
+          const socketCall = getLastSocketCall();
+          const mockError = {
+            code: 1008,
+            reason: 'Insufficient credits: quota exceeded',
+          };
+          socketCall.onClose(mockError);
+          await waitForPromises();
+          await nextTick();
+        });
+
+        it('disables chat and passes reason text', () => {
+          const duoChat = findDuoChat();
+
+          expect(duoChat.props('chatState')).toMatchObject({
+            isEnabled: false,
+            reason: expect.stringContaining('No GitLab Credits remain'),
+          });
+        });
+
+        it('hides model selector', () => {
+          const modelSelector = wrapper.findComponent(ModelSelectDropdown);
+          expect(modelSelector.exists()).toBe(false);
+        });
       });
     });
   });

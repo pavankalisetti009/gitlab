@@ -3,7 +3,9 @@
 import { mapActions, mapState } from 'vuex';
 import { debounce } from 'lodash';
 import { WebAgenticDuoChat } from '@gitlab/duo-ui';
-import { GlToggle, GlTooltipDirective } from '@gitlab/ui';
+import { GlButton, GlToggle, GlTooltipDirective } from '@gitlab/ui';
+import tanukiAiSvgUrl from '@gitlab/svgs/dist/illustrations/tanuki-ai-sm.svg?url';
+import SafeHtml from '~/vue_shared/directives/safe_html';
 import getFlowStatus from 'ee/ai/graphql/get_flow_status.query.graphql';
 import ChatLoadingState from 'ee/ai/components/chat_loading_state.vue';
 import getUserWorkflows from 'ee/ai/graphql/get_user_workflow.query.graphql';
@@ -12,6 +14,7 @@ import getFoundationalChatAgents from 'ee/ai/graphql/get_foundational_chat_agent
 import getAgentFlowConfig from 'ee/ai/graphql/get_agent_flow_config.query.graphql';
 import { renderGFM } from '~/behaviors/markdown/render_gfm';
 import { getStorageValue, saveStorageValue } from '~/lib/utils/local_storage';
+import { helpPagePath } from '~/helpers/help_page_helper';
 import { duoChatGlobalState } from '~/super_sidebar/constants';
 import { clearDuoChatCommands, setAgenticMode } from 'ee/ai/utils';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
@@ -37,7 +40,7 @@ import { createWebSocket, closeSocket } from '~/lib/utils/websocket_utils';
 import { fetchPolicies } from '~/lib/graphql';
 import { logError } from '~/lib/logger';
 import { GITLAB_DEFAULT_MODEL } from 'ee/ai/model_selection/constants';
-import { s__ } from '~/locale';
+import { s__, sprintf } from '~/locale';
 import { formatDefaultModelText } from 'ee/ai/shared/model_selection/utils';
 import { WorkflowUtils } from '../utils/workflow_utils';
 import { ApolloUtils } from '../utils/apollo_utils';
@@ -71,12 +74,14 @@ export default {
   name: 'DuoAgenticChatApp',
   components: {
     WebAgenticDuoChat,
+    GlButton,
     GlToggle,
     ModelSelectDropdown,
     ChatLoadingState,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
+    SafeHtml,
   },
   mixins: [glFeatureFlagsMixin()],
   inject: {
@@ -142,6 +147,10 @@ export default {
       type: Boolean,
       required: false,
       default: true,
+    },
+    creditsAvailable: {
+      type: Boolean,
+      required: true,
     },
   },
   apollo: {
@@ -291,6 +300,7 @@ export default {
       duoChatGlobalState,
       ...getInitialDimensions(),
       chatState: { isEnabled: true, reason: '' },
+      hasCredits: this.creditsAvailable,
       contextPresets: [],
       availableModels: [],
       pinnedModel: null,
@@ -310,6 +320,8 @@ export default {
       isChatAvailable: true,
       isFlowLocked: false,
       isEmbedded: this.chatConfiguration?.defaultProps?.isEmbedded ?? false,
+      tanukiAiSvgUrl,
+      // this is required for classic/agentic toggle
       isAgenticAvailable: this.chatConfiguration?.defaultProps?.isAgenticAvailable ?? false,
       // eslint-disable-next-line vue/no-unused-properties
       userId: this.activeTabData?.props?.userId,
@@ -454,6 +466,19 @@ export default {
     hasActiveThread() {
       return this.workflowId && this.activeThread;
     },
+    creditsExhaustedEmptyStateDescription() {
+      const docsUrl = helpPagePath('user/gitlab_duo_chat/_index');
+      const linkStart = `<a href="${docsUrl}" class="gl-link" target="_blank" rel="noopener noreferrer">`;
+      const linkEnd = '</a>';
+
+      return sprintf(
+        s__(
+          'DuoAgenticChat|No credits remain for this billing period. To continue collaborating with GitLab Duo, turn off the Agentic mode toggle. You can still get AI assistance, just without the advanced agentic features. %{linkStart}Learn more%{linkEnd}.',
+        ),
+        { linkStart, linkEnd },
+        false,
+      );
+    },
   },
   watch: {
     messages: {
@@ -525,6 +550,8 @@ export default {
     },
   },
   mounted() {
+    this.checkCreditsAvailability();
+
     // Only manage dimensions and resize when not isEmbedded
     if (!this.isEmbedded) {
       this.setDimensions();
@@ -573,6 +600,25 @@ export default {
         this.chatState = state;
       } else {
         throw new Error(s__('DuoAgenticChat|Invalid chat state provided'));
+      }
+    },
+    checkCreditsAvailability() {
+      if (!this.hasCredits) {
+        this.setChatState({
+          isEnabled: false,
+          reason: sprintf(
+            s__(
+              'DuoAgenticChat|No GitLab Credits remain for this billing period. Turn off the %{agenticModeStart}Agentic mode%{agenticModeEnd} toggle or ask your administrator for more credits. %{linkStart}Learn more%{linkEnd}.',
+            ),
+            {
+              linkStart: `<a href="${helpPagePath('user/gitlab_duo_chat/_index')}" target="_blank" rel="noopener noreferrer">`,
+              linkEnd: '</a>',
+              agenticModeStart: '<strong>',
+              agenticModeEnd: '</strong>',
+            },
+            false,
+          ),
+        });
       }
     },
     switchMode(mode) {
@@ -682,6 +728,11 @@ export default {
                 'DuoAgenticChat|GitLab Duo is already responding to this chat in another tab or location. Start a new chat, or wait for GitLab Duo to finish before sending a new message.',
               ),
             });
+          }
+          // Handle credit exhaustion - websocket close 1008 with insufficient credits
+          if (event?.code === 1008) {
+            this.hasCredits = false;
+            this.checkCreditsAvailability();
           }
           // Only set waiting on prompt to false if we're not waiting for tool approval
           // and we don't have a pending workflow that will create a new connection
@@ -1085,7 +1136,7 @@ export default {
     >
       <template #agentic-model>
         <div
-          v-if="userModelSelectionEnabled"
+          v-if="userModelSelectionEnabled && hasCredits"
           v-gl-tooltip
           :title="modelSelectionDisabledTooltipText"
           data-testid="model-dropdown-container"
@@ -1120,6 +1171,24 @@ export default {
             }}</span>
           </template>
         </gl-toggle>
+      </template>
+      <template v-if="!hasCredits" #custom-empty-state>
+        <div
+          key="no-credits-empty-state"
+          class="gl-flex gl-w-full gl-flex-col gl-items-start gl-gap-4 gl-py-8"
+        >
+          <img :src="tanukiAiSvgUrl" class="gl-h-10 gl-w-10" />
+          <h2 class="gl-my-0 gl-text-size-h2">
+            {{ s__('DuoAgenticChat|No GitLab Credits remain') }}
+          </h2>
+          <p v-safe-html="creditsExhaustedEmptyStateDescription" class="gl-text-subtle"></p>
+          <p class="gl-mb-0 gl-text-sm gl-text-subtle">
+            {{ s__('DuoAgenticChat|Need more credits? Contact your administrator.') }}
+          </p>
+          <gl-button variant="confirm" category="primary" @click="duoAgenticModePreference = false">
+            {{ s__('DuoAgenticChat|Turn off Agentic mode') }}
+          </gl-button>
+        </div>
       </template>
     </web-agentic-duo-chat>
   </div>
