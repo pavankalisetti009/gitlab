@@ -80257,6 +80257,9 @@ msgstr ""
 msgid "expires on %{timebox_due_date}"
 msgstr ""
 
+msgid "expires_at is missing"
+msgstr ""
+
 msgid "external diffs"
 msgstr ""
 
