@@ -61,6 +61,18 @@ module API
             forbidden!
           end
 
+          def find_item_consumer!(consumer_id, project)
+            consumer = ::Ai::Catalog::ItemConsumer.find(consumer_id)
+
+            unless consumer.project_id == project.id
+              forbidden!('AI Catalog Item Consumer does not belong to this project')
+            end
+
+            consumer
+          rescue ActiveRecord::RecordNotFound
+            not_found!('AI Catalog Item Consumer not found or does not belong to this project')
+          end
+
           def authorize_feature_flag!
             disabled =
               case params[:workflow_definition]
@@ -188,6 +200,9 @@ module API
               documentation: { example: '1' }
             optional :namespace_id, type: String, desc: 'The ID or path of the workflow namespace',
               documentation: { example: '1' }
+            optional :ai_catalog_item_consumer_id, type: Integer,
+              desc: 'The ID of AI Catalog ItemConsumer that configures which catalog item to execute.',
+              documentation: { example: 1 }
             optional :start_workflow, type: Boolean,
               desc: 'Optional parameter to start workflow in a CI pipeline.' \
                 'This feature is currently in an experimental state.',
@@ -244,6 +259,7 @@ module API
               desc: 'IID of the MergeRequest noteable that the workflow is associated with.',
               documentation: { example: 123 }
             at_least_one_of :project_id, :namespace_id
+            mutually_exclusive :workflow_definition, :ai_catalog_item_version_id, :ai_catalog_item_consumer_id
           end
         end
 
@@ -415,48 +431,84 @@ module API
                               find_namespace!(params[:namespace_id])
                             end
 
-                service = ::Ai::DuoWorkflows::CreateWorkflowService.new(
-                  container: container, current_user: current_user, params: create_workflow_params)
+                if params[:ai_catalog_item_consumer_id]
+                  unless container.is_a?(Project)
+                    bad_request!('AI Catalog flows can only be executed in project context')
+                  end
 
-                result = service.execute
+                  consumer = find_item_consumer!(params[:ai_catalog_item_consumer_id], container)
 
-                forbidden!(result.message) if result.error? && result.http_status == :forbidden
-                not_found!(result.message) if result.error? && result.http_status == :not_found
-                if result.error? && result.http_status == :payment_required
-                  forbidden!("session failed to start due to insufficient GitLab credits. " \
-                    "Purchase more credits to continue.")
-                end
+                  service_account = if consumer.project.present?
+                                      consumer.parent_item_consumer&.service_account
+                                    else
+                                      consumer.service_account
+                                    end
 
-                bad_request!(result[:message]) if result[:status] == :error
+                  flow_params = {
+                    item_consumer: consumer,
+                    service_account: service_account,
+                    execute_workflow: params[:start_workflow].present?,
+                    event_type: 'api_execution',
+                    user_prompt: params[:goal]
+                  }
 
-                push_ai_gateway_headers
-
-                if params[:start_workflow].present?
-                  response = ::Ai::DuoWorkflows::StartWorkflowService.new(
-                    workflow: result[:workflow],
-                    params: start_workflow_params(result[:workflow].id, container: container)
+                  result = ::Ai::Catalog::Flows::ExecuteService.new(
+                    project: container,
+                    current_user: current_user,
+                    params: flow_params
                   ).execute
 
-                  if response.error?
-                    status_code = case response.reason
-                                  when :unprocessable_entity
-                                    :unprocessable_entity
-                                  when :feature_unavailable, :service_account_error
-                                    :forbidden
-                                  when :workload_failure
-                                    :unprocessable_entity
-                                  else
-                                    :internal_server_error
-                                  end
-                    render_api_error!(response.message, status_code)
-                  else
-                    workload_id = response.payload && response.payload[:workload_id]
-                    message = response.message
-                  end
-                end
+                  bad_request!(result.message) if result.error?
 
-                present result[:workflow], with: ::API::Entities::Ai::DuoWorkflows::Workflow,
-                  workload: { id: workload_id, message: message }
+                  workflow = result.payload[:workflow]
+                  workload_id = result.payload[:workload_id]
+
+                  present workflow, with: ::API::Entities::Ai::DuoWorkflows::Workflow,
+                    workload: { id: workload_id, message: result.message }
+                else
+                  service = ::Ai::DuoWorkflows::CreateWorkflowService.new(
+                    container: container, current_user: current_user, params: create_workflow_params)
+
+                  result = service.execute
+
+                  forbidden!(result.message) if result.error? && result.http_status == :forbidden
+                  not_found!(result.message) if result.error? && result.http_status == :not_found
+                  if result.error? && result.http_status == :payment_required
+                    forbidden!("session failed to start due to insufficient GitLab credits. " \
+                      "Purchase more credits to continue.")
+                  end
+
+                  bad_request!(result[:message]) if result[:status] == :error
+
+                  push_ai_gateway_headers
+
+                  if params[:start_workflow].present?
+                    response = ::Ai::DuoWorkflows::StartWorkflowService.new(
+                      workflow: result[:workflow],
+                      params: start_workflow_params(result[:workflow].id, container: container)
+                    ).execute
+
+                    if response.error?
+                      status_code = case response.reason
+                                    when :unprocessable_entity
+                                      :unprocessable_entity
+                                    when :feature_unavailable, :service_account_error
+                                      :forbidden
+                                    when :workload_failure
+                                      :unprocessable_entity
+                                    else
+                                      :internal_server_error
+                                    end
+                      render_api_error!(response.message, status_code)
+                    else
+                      workload_id = response.payload && response.payload[:workload_id]
+                      message = response.message
+                    end
+                  end
+
+                  present result[:workflow], with: ::API::Entities::Ai::DuoWorkflows::Workflow,
+                    workload: { id: workload_id, message: message }
+                end
               end
 
               desc 'Get all possible agent privileges and descriptions' do
