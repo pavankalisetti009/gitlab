@@ -150,7 +150,7 @@ describe('AiCatalogItemConsumerModal', () => {
       findForm().vm.$emit('submit', { preventDefault: noop });
 
       expect(wrapper.emitted('submit')[0][0]).toStrictEqual({
-        projectId,
+        target: { projectId },
       });
     });
 
@@ -218,7 +218,7 @@ describe('AiCatalogItemConsumerModal', () => {
           findForm().vm.$emit('submit', { preventDefault: noop });
 
           expect(wrapper.emitted('submit')[0][0]).toStrictEqual({
-            groupId,
+            target: { groupId },
           });
         });
 

@@ -138,7 +138,7 @@ export default {
       const target = this.isTargetTypeGroup
         ? { groupId: this.groupId }
         : { projectId: this.projectId };
-      this.$emit('submit', target);
+      this.$emit('submit', { target });
     },
   },
 };

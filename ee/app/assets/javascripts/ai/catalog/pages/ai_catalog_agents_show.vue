@@ -14,6 +14,7 @@ import {
   TRACK_EVENT_VIEW_AI_CATALOG_ITEM,
   VERSION_LATEST,
   VERSION_PINNED,
+  ENABLE_AGENT_MODAL_TEXTS,
 } from 'ee/ai/catalog/constants';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import { prerequisitesError } from '../utils';
@@ -112,11 +113,12 @@ export default {
     });
   },
   methods: {
-    async addAgentToTarget(target) {
+    async addAgentToTarget({ target, triggerTypes }) {
       const input = {
         itemId: this.aiCatalogAgent.id,
         target,
         parentItemConsumerId: this.aiCatalogAgent.configurationForGroup?.id,
+        triggerTypes,
       };
       const targetType = target.groupId
         ? AI_CATALOG_CONSUMER_TYPE_GROUP
@@ -297,6 +299,7 @@ export default {
     duplicate: AI_CATALOG_AGENTS_DUPLICATE_ROUTE,
     edit: AI_CATALOG_AGENTS_EDIT_ROUTE,
   },
+  modalTexts: ENABLE_AGENT_MODAL_TEXTS,
 };
 </script>
 
@@ -359,6 +362,7 @@ export default {
               'AICatalog|Are you sure you want to disable agent %{name}? The agent will no longer work in this project.',
             )
           "
+          :enable-modal-texts="$options.modalTexts"
           @add-to-target="addAgentToTarget"
           @report-item="reportAgent"
         />

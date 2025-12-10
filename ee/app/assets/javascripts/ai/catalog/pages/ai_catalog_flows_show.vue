@@ -14,6 +14,7 @@ import {
   TRACK_EVENT_VIEW_AI_CATALOG_ITEM,
   VERSION_LATEST,
   VERSION_PINNED,
+  ENABLE_FLOW_MODAL_TEXTS,
 } from 'ee/ai/catalog/constants';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import FoundationalIcon from 'ee/ai/components/foundational_icon.vue';
@@ -296,6 +297,7 @@ export default {
     duplicate: AI_CATALOG_FLOWS_DUPLICATE_ROUTE,
     edit: AI_CATALOG_FLOWS_EDIT_ROUTE,
   },
+  modalTexts: ENABLE_FLOW_MODAL_TEXTS,
 };
 </script>
 
@@ -360,6 +362,7 @@ export default {
               'AICatalog|Are you sure you want to disable flow %{name}? The flow, its service account, and any associated triggers will no longer work in this project.',
             )
           "
+          :enable-modal-texts="$options.modalTexts"
           @add-to-target="addFlowToTarget"
           @report-item="reportFlow"
         />
