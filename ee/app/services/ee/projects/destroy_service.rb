@@ -7,12 +7,14 @@ module EE
 
       override :execute
       def execute
+        stale_secrets_manager = project.secrets_manager
         super.tap do
           # It's possible that some error occurred, but at the end of the day
           # if the project is destroyed from the database, we should log events
           # and clean up where we can.
           if project&.destroyed?
             mirror_cleanup(project)
+            deprovision_secrets_manager(stale_secrets_manager)
           end
         end
       end
@@ -75,6 +77,14 @@ module EE
         return unless project.mirror?
 
         ::Gitlab::Mirror.decrement_capacity(project.id)
+      end
+
+      def deprovision_secrets_manager(stale_secrets_manager)
+        return unless stale_secrets_manager
+
+        ::SecretsManagement::ProjectSecretsManagers::InitiateDeprovisionByPathService.new(project, current_user,
+          namespace_path: stale_secrets_manager.namespace_path,
+          project_path: stale_secrets_manager.project_path).execute
       end
 
       def log_geo_event(project)

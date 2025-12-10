@@ -514,4 +514,30 @@ RSpec.describe Projects::DestroyService, feature_category: :groups_and_projects 
       end
     end
   end
+
+  context 'when project has a secret manager' do
+    let!(:secrets_manager) { create(:project_secrets_manager, project: project) }
+
+    it 'calls the deprovision service' do
+      expect_next_instance_of(
+        SecretsManagement::ProjectSecretsManagers::InitiateDeprovisionByPathService,
+        project,
+        user,
+        namespace_path: secrets_manager.namespace_path,
+        project_path: secrets_manager.project_path
+      ) do |service|
+        expect(service).to receive(:execute)
+      end
+
+      project_destroy_service.execute
+    end
+  end
+
+  context 'when project does not have a secret manager' do
+    it 'does not call the deprovision service' do
+      expect(SecretsManagement::ProjectSecretsManagers::InitiateDeprovisionService).not_to receive(:new)
+
+      project_destroy_service.execute
+    end
+  end
 end

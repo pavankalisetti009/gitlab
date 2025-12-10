@@ -2,14 +2,16 @@
 
 module SecretsManagement
   module ProjectSecretsManagers
-    class InitiateDeprovisionService < BaseInitiateDeprovisionService
+    class InitiateDeprovisionByPathService < BaseInitiateDeprovisionService
       def execute
         result = find_and_validate_secrets_manager!
         return result if result.is_a?(ServiceResponse)
 
-        SecretsManagement::DeprovisionProjectSecretsManagerWorker.perform_async(
+        SecretsManagement::DeprovisionProjectSecretsManagerByPathWorker.perform_async(
           current_user.id,
-          result.id
+          result.id,
+          params[:namespace_path],
+          params[:project_path]
         )
 
         success_response(result)

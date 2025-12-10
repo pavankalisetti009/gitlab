@@ -22,6 +22,40 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::DeprovisionService, :g
 
   subject(:result) { service.execute }
 
+  describe '#initialize' do
+    let(:custom_namespace_path) { 'custom/namespace/path' }
+    let(:custom_project_path) { 'custom-project-path' }
+
+    it 'prefers explicitly passed namespace and project paths over secrets_manager paths' do
+      allow(secrets_manager).to receive_messages(
+        namespace_path: 'manager/namespace/path',
+        project_path: 'manager-project-path'
+      )
+
+      service = described_class.new(
+        secrets_manager,
+        user,
+        namespace_path: custom_namespace_path,
+        project_path: custom_project_path
+      )
+
+      expect(service.send(:namespace_path)).to eq(custom_namespace_path)
+      expect(service.send(:project_path)).to eq(custom_project_path)
+    end
+
+    it 'falls back to secrets_manager paths when explicit paths are not provided' do
+      allow(secrets_manager).to receive_messages(
+        namespace_path: 'manager/namespace/path',
+        project_path: 'manager-project-path'
+      )
+
+      service = described_class.new(secrets_manager, user)
+
+      expect(service.send(:namespace_path)).to eq('manager/namespace/path')
+      expect(service.send(:project_path)).to eq('manager-project-path')
+    end
+  end
+
   describe '#execute', :aggregate_failures do
     before do
       provision_project_secrets_manager(secrets_manager, user)

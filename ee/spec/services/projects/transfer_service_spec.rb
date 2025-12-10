@@ -273,6 +273,39 @@ RSpec.describe Projects::TransferService, feature_category: :groups_and_projects
 
         subject.execute(other_group)
       end
+
+      context 'and project has a secret manager' do
+        let_it_be(:deprovision_project) { create(:project, group: subgroup1) }
+        let_it_be(:secrets_manager) { create(:project_secrets_manager, project: deprovision_project) }
+
+        subject(:deprovision_transfer_service) { described_class.new(deprovision_project, user) }
+
+        it 'calls the deprovision service' do
+          expect_next_instance_of(
+            SecretsManagement::ProjectSecretsManagers::InitiateDeprovisionByPathService,
+            deprovision_project,
+            user,
+            namespace_path: secrets_manager.namespace_path,
+            project_path: secrets_manager.project_path
+          ) do |service|
+            expect(service).to receive(:execute)
+          end
+
+          deprovision_transfer_service.execute(other_group)
+        end
+      end
+
+      context 'and project does not have a secret manager' do
+        let_it_be(:deprovision_project) { create(:project, group: subgroup1) }
+
+        subject(:deprovision_transfer_service) { described_class.new(deprovision_project, user) }
+
+        it 'does not call the deprovision service' do
+          expect(SecretsManagement::ProjectSecretsManagers::InitiateDeprovisionService).not_to receive(:new)
+
+          deprovision_transfer_service.execute(other_group)
+        end
+      end
     end
   end
 end
