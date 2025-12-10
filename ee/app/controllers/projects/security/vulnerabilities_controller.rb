@@ -16,6 +16,7 @@ module Projects
         push_frontend_feature_flag(:validity_checks, project)
         push_frontend_feature_flag(:secret_detection_validity_checks_refresh_token, project)
         push_frontend_feature_flag(:security_policy_approval_warn_mode, project)
+        push_frontend_feature_flag(:auto_dismiss_vulnerability_policies, project)
         push_frontend_feature_flag(:ai_experiment_sast_fp_detection, project)
         push_frontend_feature_flag(:agentic_sast_vr_ui, project, type: :wip)
       end
