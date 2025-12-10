@@ -23,8 +23,8 @@ RSpec.describe Ai::CustomizablePermission, feature_category: :duo_agent_platform
       end
 
       context 'when root_namespace does not have ai settings' do
-        it 'returns default developer access level' do
-          expect(minimum_access_level).to eq(::Gitlab::Access::DEVELOPER)
+        it 'returns default guest access level' do
+          expect(minimum_access_level).to eq(::Gitlab::Access::GUEST)
         end
       end
 
@@ -32,8 +32,8 @@ RSpec.describe Ai::CustomizablePermission, feature_category: :duo_agent_platform
         let(:ai_settings) { create(:namespace_ai_settings) }
 
         context 'when minimum_access_level_execute is not configured' do
-          it 'returns default developer access level' do
-            expect(minimum_access_level).to eq(::Gitlab::Access::DEVELOPER)
+          it 'returns default guest access level' do
+            expect(minimum_access_level).to eq(::Gitlab::Access::GUEST)
           end
         end
 
@@ -51,8 +51,8 @@ RSpec.describe Ai::CustomizablePermission, feature_category: :duo_agent_platform
       let(:instance_ai_settings) { Ai::Setting.instance }
 
       context 'when minimum_access_level_execute is not configured' do
-        it 'returns default developer access level' do
-          expect(minimum_access_level).to eq(::Gitlab::Access::DEVELOPER)
+        it 'returns default guest access level' do
+          expect(minimum_access_level).to eq(::Gitlab::Access::GUEST)
         end
       end
 
