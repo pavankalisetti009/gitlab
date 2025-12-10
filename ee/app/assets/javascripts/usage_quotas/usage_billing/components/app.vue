@@ -224,8 +224,8 @@ export default {
         <current-overage-usage-card
           v-else-if="overageIsAllowed || overageCreditsUsed"
           :overage-credits-used="overageCreditsUsed"
+          :overage-is-allowed="overageIsAllowed"
           :monthly-waiver-credits-used="monthlyWaiverCreditsUsed"
-          :month-end-date="subscriptionUsage.endDate"
         />
 
         <overage-opt-in-card

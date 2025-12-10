@@ -1,3 +1,5 @@
+import produce from 'immer';
+
 export const mockUsersUsageDataWithoutPool = {
   data: {
     subscriptionUsage: {
@@ -844,6 +846,16 @@ export const usageDataNoCommitmentWithOverage = {
     },
   },
 };
+
+export const usageDataNoCommitmentWithOverageWithOverageNotAllowed = produce(
+  usageDataNoCommitmentWithOverage,
+  (clone) => {
+    /* eslint-disable no-param-reassign */
+    clone.data.subscriptionUsage.canAcceptOverageTerms = true;
+    clone.data.subscriptionUsage.overage.isAllowed = false;
+    /* eslint-enable no-param-reassign */
+  },
+);
 
 export const usageDataCommitmentWithMonthlyWaiver = {
   data: {
