@@ -1,3 +1,4 @@
+import truncate from 'lodash/truncate';
 import AiMetricsQuery from 'ee/analytics/dashboards/ai_impact/graphql/ai_metrics.query.graphql';
 import { extractQueryResponseFromNamespace } from '~/analytics/shared/utils';
 import { s__, __, sprintf } from '~/locale';
@@ -6,7 +7,6 @@ import {
   DORA_METRIC_QUERY_RANGES,
   startOfTomorrow,
 } from 'ee/analytics/analytics_dashboards/components/filters/constants';
-import { truncate } from '~/lib/utils/text_utility';
 import { GENERIC_DASHBOARD_ERROR } from 'ee/analytics/dashboards/constants';
 import { defaultClient } from '../graphql/client';
 
@@ -129,7 +129,7 @@ export default async function fetch({
     visualizationOptionOverrides: {
       yAxis: {
         axisLabel: {
-          formatter: (str) => truncate(str, 10),
+          formatter: (str) => truncate(str, { length: 9 }),
         },
       },
     },
