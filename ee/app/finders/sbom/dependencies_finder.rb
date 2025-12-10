@@ -43,6 +43,7 @@ module Sbom
       filter_by_component_ids
       filter_by_licences
       filter_by_component_versions
+      filter_by_dismissed_policies
       sort
     end
 
@@ -92,6 +93,30 @@ module Sbom
       elsif negated_filter && negated_filter[:component_versions]
         @collection = @collection.filter_by_non_component_versions(negated_filter[:component_versions])
       end
+    end
+
+    def filter_by_dismissed_policies
+      return if params[:policy_violations].blank?
+
+      @collection = Sbom::Occurrence.none unless Feature.enabled?(:security_policy_warn_mode_license_scanning, group)
+
+      # Using map here as `pluck` would not work due to usage of `DISTINCT` ON pluck_license_occurrence_uuid
+      dismissed_uuids = ::Security::PolicyDismissal
+                          .for_license_occurrence_uuids(@collection.map(&:uuid))
+                          .pluck_license_occurrence_uuid
+
+      @collection = Sbom::Occurrence.none if dismissed_uuids.blank?
+
+      @collection = @collection.by_uuids(dismissed_uuids)
+    end
+
+    # Remove with the `security_policy_warn_mode_license_scanning` feature flag
+    def group
+      return dependable.group if project?
+
+      return dependable if group?
+
+      dependable.project.group
     end
 
     def sort_direction
@@ -144,6 +169,11 @@ module Sbom
 
     def vulnerability?
       dependable.is_a?(::Vulnerability)
+    end
+
+    # Remove with the `security_policy_warn_mode_license_scanning` feature flag
+    def group?
+      dependable.is_a?(::Group)
     end
   end
 end

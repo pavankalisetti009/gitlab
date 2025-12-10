@@ -214,6 +214,40 @@ RSpec.describe Sbom::DependenciesFinder, feature_category: :dependency_managemen
         end
       end
 
+      context 'when filtering by policy violations' do
+        let(:params) { { policy_violations: ['DISMISSED_IN_MR'] } }
+
+        let(:dismissed_uuid) { occurrence_1.uuid }
+
+        shared_examples_for 'returns an empty list' do
+          it 'returns an empty list' do
+            expect(dependencies).to be_empty
+          end
+        end
+
+        context 'when there are dependencies dismissed by policies' do
+          before do
+            create(:policy_dismissal, :preserved, project: project, license_occurrence_uuids: [dismissed_uuid])
+          end
+
+          it 'returns only records dismissed by security policies' do
+            expect(dependencies.map(&:id)).to match_array([occurrence_1.id])
+          end
+
+          context 'when feature flag `security_policy_warn_mode_license_scanning` is disabled' do
+            before do
+              stub_feature_flags(security_policy_warn_mode_license_scanning: false)
+            end
+
+            it_behaves_like 'returns an empty list'
+          end
+        end
+
+        context 'when there are no dependencies dismissed by policies' do
+          it_behaves_like 'returns an empty list'
+        end
+      end
+
       context 'when params is invalid' do
         let_it_be(:params) do
           {
