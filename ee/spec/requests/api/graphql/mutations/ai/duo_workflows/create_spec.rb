@@ -5,9 +5,10 @@ require 'spec_helper'
 RSpec.describe 'AiDuoWorkflowCreate', feature_category: :duo_chat do
   include GraphqlHelpers
 
+  let_it_be(:licensed_guest) { create(:user) }
+  let_it_be(:unlicensed_guest) { create(:user) }
   let_it_be(:licensed_developer) { create(:user) }
-  let_it_be(:unlicensed_developer) { create(:user) }
-  let_it_be(:group) { create(:group, developers: [licensed_developer, unlicensed_developer]) }
+  let_it_be(:group) { create(:group, guests: [licensed_guest, unlicensed_guest], developers: [licensed_developer]) }
   let_it_be_with_reload(:project) { create(:project, group: group) }
   let_it_be(:other_project) { create(:project) }
 
@@ -16,6 +17,7 @@ RSpec.describe 'AiDuoWorkflowCreate', feature_category: :duo_chat do
   end
 
   let_it_be(:add_on_assignment) do
+    create(:gitlab_subscription_user_add_on_assignment, user: licensed_guest, add_on_purchase: add_on_purchase)
     create(:gitlab_subscription_user_add_on_assignment, user: licensed_developer, add_on_purchase: add_on_purchase)
   end
 
@@ -35,9 +37,9 @@ RSpec.describe 'AiDuoWorkflowCreate', feature_category: :duo_chat do
 
   let_it_be(:merge_request) { create(:merge_request, source_project: project) }
 
-  let(:current_user) { licensed_developer }
+  let(:current_user) { licensed_guest }
   let(:container) { project }
-  let(:workflow_type) { "default" }
+  let(:workflow_type) { "chat" }
   let(:input) do
     {
       goal: "Automate PR reviews",
@@ -81,41 +83,80 @@ RSpec.describe 'AiDuoWorkflowCreate', feature_category: :duo_chat do
   end
 
   context 'when container is a project', :saas do
-    where(:workflow_type) do
-      %w[default chat]
+    it 'creates a new workflow' do
+      expect(::Ai::DuoWorkflows::CreateWorkflowService).to receive(:new).with(
+        container: container,
+        current_user: current_user,
+        params: {
+          goal: "Automate PR reviews",
+          agent_privileges: [1, 2, 3],
+          pre_approved_agent_privileges: [1],
+          workflow_definition: workflow_type,
+          allow_agent_to_request_user: true,
+          environment: 'web',
+          ai_catalog_item_version_id: agent_version.id
+        }
+      ).and_call_original
+
+      post_graphql_mutation(mutation, current_user: current_user)
+
+      expect(response).to have_gitlab_http_status(:success)
+
+      workflow = ::Ai::DuoWorkflows::Workflow.last
+      expect(mutation_response['workflow']['id']).to eq("gid://gitlab/Ai::DuoWorkflows::Workflow/#{workflow.id}")
+      expect(mutation_response['workflow']['projectId']).to eq("gid://gitlab/Project/#{project.id}")
+      expect(mutation_response['workflow']['namespaceId']).to be_nil
+      expect(mutation_response['errors']).to be_empty
     end
 
-    with_them do
-      it 'creates a new workflow' do
-        expect(::Ai::DuoWorkflows::CreateWorkflowService).to receive(:new).with(
-          container: container,
-          current_user: current_user,
-          params: {
-            goal: "Automate PR reviews",
-            agent_privileges: [1, 2, 3],
-            pre_approved_agent_privileges: [1],
-            workflow_definition: workflow_type,
-            allow_agent_to_request_user: true,
-            environment: 'web',
-            ai_catalog_item_version_id: agent_version.id
-          }
-        ).and_call_original
+    context 'with default workflow type' do
+      let(:workflow_type) { 'default' }
 
-        post_graphql_mutation(mutation, current_user: current_user)
+      context 'when the user has guest access' do
+        before do
+          post_graphql_mutation(mutation, current_user: current_user)
+        end
 
-        expect(response).to have_gitlab_http_status(:success)
+        include_examples 'a mutation that returns top-level errors',
+          errors: ['forbidden to access duo workflow']
+      end
 
-        workflow = ::Ai::DuoWorkflows::Workflow.last
-        expect(mutation_response['workflow']['id']).to eq("gid://gitlab/Ai::DuoWorkflows::Workflow/#{workflow.id}")
-        expect(mutation_response['workflow']['projectId']).to eq("gid://gitlab/Project/#{project.id}")
-        expect(mutation_response['workflow']['namespaceId']).to be_nil
-        expect(mutation_response['errors']).to be_empty
+      context 'when the user has at least developer access' do
+        let(:current_user) { licensed_developer }
+
+        it 'creates a new workflow' do
+          expect(::Ai::DuoWorkflows::CreateWorkflowService).to receive(:new).with(
+            container: container,
+            current_user: current_user,
+            params: {
+              goal: "Automate PR reviews",
+              agent_privileges: [1, 2, 3],
+              pre_approved_agent_privileges: [1],
+              workflow_definition: workflow_type,
+              allow_agent_to_request_user: true,
+              environment: 'web',
+              ai_catalog_item_version_id: agent_version.id
+            }
+          ).and_call_original
+
+          post_graphql_mutation(mutation, current_user: current_user)
+
+          expect(response).to have_gitlab_http_status(:success)
+
+          workflow = ::Ai::DuoWorkflows::Workflow.last
+          expect(mutation_response['workflow']['id']).to eq("gid://gitlab/Ai::DuoWorkflows::Workflow/#{workflow.id}")
+          expect(mutation_response['workflow']['projectId']).to eq("gid://gitlab/Project/#{project.id}")
+          expect(mutation_response['workflow']['namespaceId']).to be_nil
+          expect(mutation_response['errors']).to be_empty
+        end
       end
     end
   end
 
   context 'when container is a namespace' do
     let(:container) { group }
+    let(:current_user) { licensed_developer }
+    let(:workflow_type) { 'default' }
     let(:container_input) { { namespace_id: group.to_global_id } }
 
     it 'creates a new workflow' do
@@ -158,7 +199,6 @@ RSpec.describe 'AiDuoWorkflowCreate', feature_category: :duo_chat do
       create(:project, :public, group: public_group)
     end
 
-    let(:workflow_type) { 'chat' }
     let(:container_input) { { project_id: container.to_global_id } }
 
     context 'when the user is licensed to use agentic chat' do
@@ -197,19 +237,34 @@ RSpec.describe 'AiDuoWorkflowCreate', feature_category: :duo_chat do
       context 'when neither project_id nor namespace_id are specified' do
         let(:container_input) { {} }
 
-        it 'uses the default duo namespace from user preferences' do
-          post_graphql_mutation(mutation, current_user: current_user)
+        context 'when the user has guest access' do
+          it 'does not create a workflow' do
+            post_graphql_mutation(mutation, current_user: current_user)
 
-          expect(response).to have_gitlab_http_status(:success)
-          workflow = ::Ai::DuoWorkflows::Workflow.last
-          expect(mutation_response['workflow']['id']).to eq("gid://gitlab/Ai::DuoWorkflows::Workflow/#{workflow.id}")
-          expect(mutation_response['errors']).to be_empty
+            expect(response).to have_gitlab_http_status(:success)
+            expect(graphql_errors.pluck('message')).to include(
+              a_string_including("does not exist or you don't have permission to perform this action")
+            )
+          end
+        end
+
+        context 'when the user access level is above guest' do
+          let(:current_user) { licensed_developer }
+
+          it 'uses the default duo namespace from user preferences' do
+            post_graphql_mutation(mutation, current_user: current_user)
+
+            expect(response).to have_gitlab_http_status(:success)
+            workflow = ::Ai::DuoWorkflows::Workflow.last
+            expect(mutation_response['workflow']['id']).to eq("gid://gitlab/Ai::DuoWorkflows::Workflow/#{workflow.id}")
+            expect(mutation_response['errors']).to be_empty
+          end
         end
       end
     end
 
     context 'when the user is not licensed to use the feature' do
-      let(:current_user) { unlicensed_developer }
+      let(:current_user) { unlicensed_guest }
 
       before do
         post_graphql_mutation(mutation, current_user: current_user)
@@ -239,7 +294,7 @@ RSpec.describe 'AiDuoWorkflowCreate', feature_category: :duo_chat do
   end
 
   context 'when the user is not authorized to use the feature', :saas do
-    let(:current_user) { unlicensed_developer }
+    let(:current_user) { unlicensed_guest }
 
     where(:workflow_type) do
       %w[default unknown]
@@ -256,8 +311,7 @@ RSpec.describe 'AiDuoWorkflowCreate', feature_category: :duo_chat do
   end
 
   context 'when a user is not authorized to use the agentic chat' do
-    let(:current_user) { unlicensed_developer }
-    let(:workflow_type) { 'chat' }
+    let(:current_user) { unlicensed_guest }
 
     before do
       post_graphql_mutation(mutation, current_user: current_user)

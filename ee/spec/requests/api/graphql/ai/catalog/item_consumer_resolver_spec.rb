@@ -7,8 +7,7 @@ RSpec.describe 'getting a single AI catalog item consumer', feature_category: :w
   include GraphqlHelpers
 
   let_it_be(:guest) { create(:user) }
-  let_it_be(:developer) { create(:user) }
-  let_it_be(:project) { create(:project, :public, guests: guest, developers: developer) }
+  let_it_be(:project) { create(:project, :public, guests: guest) }
   let_it_be(:item) { create(:ai_catalog_agent, project:) }
   let_it_be(:pinned_version) { '1.5.0' }
   let_it_be(:item_version_v1_5_0) { create(:ai_catalog_agent_version, :released, version: pinned_version, item: item) }
@@ -49,45 +48,23 @@ RSpec.describe 'getting a single AI catalog item consumer', feature_category: :w
     enable_ai_catalog
   end
 
-  context 'with guest access' do
-    it 'returns the AI catalog item consumer' do
-      post_graphql(query, current_user:, variables:)
+  it 'returns the AI catalog item consumer' do
+    post_graphql(query, current_user:, variables:)
 
-      expect(response).to have_gitlab_http_status(:success)
-      expect(item_consumer_data).to include(
-        'id' => item_consumer.to_global_id.to_s,
-        'project' => {
-          'id' => project.to_global_id.to_s,
-          'name' => project.name
-        },
-        'item' => nil,
-        'pinnedItemVersion' => nil,
-        'pinnedVersionPrefix' => item_consumer.pinned_version_prefix
-      )
-    end
-  end
-
-  context 'with developer access' do
-    let(:current_user) { developer }
-
-    it 'returns the AI catalog item consumer' do
-      post_graphql(query, current_user:, variables:)
-
-      expect(response).to have_gitlab_http_status(:success)
-      expect(item_consumer_data).to include(
-        'id' => item_consumer.to_global_id.to_s,
-        'project' => {
-          'id' => project.to_global_id.to_s,
-          'name' => project.name
-        },
-        'item' => {
-          'id' => item.to_global_id.to_s,
-          'name' => item.name
-        },
-        'pinnedItemVersion' => a_graphql_entity_for(item_version_v1_5_0),
-        'pinnedVersionPrefix' => item_consumer.pinned_version_prefix
-      )
-    end
+    expect(response).to have_gitlab_http_status(:success)
+    expect(item_consumer_data).to include(
+      'id' => item_consumer.to_global_id.to_s,
+      'project' => {
+        'id' => project.to_global_id.to_s,
+        'name' => project.name
+      },
+      'item' => {
+        'id' => item.to_global_id.to_s,
+        'name' => item.name
+      },
+      'pinnedItemVersion' => a_graphql_entity_for(item_version_v1_5_0),
+      'pinnedVersionPrefix' => item_consumer.pinned_version_prefix
+    )
   end
 
   context 'when pinnedItemVersion cannot resolve to a version' do

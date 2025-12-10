@@ -10,20 +10,20 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
   let_it_be(:reporter) { create(:user) }
   let_it_be(:guest) { create(:user) }
   let_it_be(:admin) { create(:admin) }
-  let_it_be_with_reload(:private_project) do
+  let_it_be_with_reload(:project) do
     create(:project, :private, guests: guest, reporters: reporter, developers: developer, maintainers: maintainer)
   end
 
   let_it_be(:other_organization) { create(:organization) }
-  let_it_be_with_reload(:private_item) { create(:ai_catalog_item, project: private_project, public: false) }
-  let_it_be_with_reload(:public_item) { create(:ai_catalog_item, project: private_project, public: true) }
+  let_it_be_with_reload(:private_item) { create(:ai_catalog_item, project: project, public: false) }
+  let_it_be_with_reload(:public_item) { create(:ai_catalog_item, project: project, public: true) }
 
   let_it_be_with_reload(:flow_item) do
-    create(:ai_catalog_flow, project: private_project, public: true)
+    create(:ai_catalog_flow, project: project, public: true)
   end
 
   let_it_be_with_reload(:third_party_flow_item) do
-    create(:ai_catalog_third_party_flow, project: private_project, public: true)
+    create(:ai_catalog_third_party_flow, project: project, public: true)
   end
 
   let(:stage_check) { true }
@@ -32,8 +32,8 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
   before do
     Current.organization = current_organization
     allow(::Gitlab::Llm::StageCheck).to receive(:available?)
-      .with(private_project, :ai_catalog, user: current_user).and_return(stage_check)
-    private_project.update!(duo_features_enabled: duo_features_enabled)
+      .with(project, :ai_catalog, user: current_user).and_return(stage_check)
+    project.update!(duo_features_enabled: duo_features_enabled)
   end
 
   shared_examples 'report_ai_catalog_item permission' do |allowed:|
@@ -157,6 +157,20 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
     include_examples 'all permissions when admin'
   end
 
+  context 'when user is not a member' do
+    let(:current_user) { create(:user) }
+
+    context 'when project is public' do
+      let(:project) { create(:project, :public) }
+
+      context 'with private item' do
+        let(:item) { create(:ai_catalog_item, project: project, public: false) }
+
+        it_behaves_like 'no permissions'
+      end
+    end
+  end
+
   context 'when maintainer' do
     let(:current_user) { maintainer }
 
@@ -259,30 +273,14 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
     end
   end
 
-  context 'when reporter' do
-    let(:current_user) { reporter }
-
-    context 'with private item' do
-      let(:item) { private_item }
-
-      it_behaves_like 'no permissions'
-    end
-
-    context 'with public item' do
-      let(:item) { public_item }
-
-      it_behaves_like 'read-only permissions'
-      it_behaves_like 'report_ai_catalog_item permission', allowed: true
-    end
-  end
-
   context 'when guest' do
     let(:current_user) { guest }
 
     context 'with private item' do
       let(:item) { private_item }
 
-      it_behaves_like 'no permissions'
+      it_behaves_like 'read-only permissions'
+      it_behaves_like 'report_ai_catalog_item permission', allowed: true
     end
 
     context 'with public item' do

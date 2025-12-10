@@ -457,7 +457,7 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
     let(:user) do
       create(:user).tap do |user|
         consumer_project.add_maintainer(user)
-        item_project.add_reporter(user)
+        # User is not a member of item_project
       end
     end
 

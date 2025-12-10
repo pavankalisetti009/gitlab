@@ -19,8 +19,8 @@ module Ai
         @subject.project && @subject.project.ai_catalog_available?(@user)
       end
 
-      condition(:developer_access) do
-        can?(:developer_access, @subject.project)
+      condition(:member_access) do
+        can?(:member_access, @subject.project)
       end
 
       condition(:maintainer_access) do
@@ -47,17 +47,23 @@ module Ai
         ::Gitlab::CurrentSettings.current_application_settings.abuse_notification_email.present?
       end
 
-      rule { public_item | developer_access }.policy do
+      rule { public_item | member_access }.policy do
         enable :read_ai_catalog_item
         enable :report_ai_catalog_item
       end
 
       rule { maintainer_access }.policy do
+        enable :read_ai_catalog_item
+        enable :report_ai_catalog_item
         enable :admin_ai_catalog_item # (Create and update)
         enable :delete_ai_catalog_item
       end
 
       rule { admin }.policy do
+        enable :read_ai_catalog_item
+        enable :report_ai_catalog_item
+        enable :admin_ai_catalog_item # (Create and update)
+        enable :delete_ai_catalog_item
         enable :force_hard_delete_ai_catalog_item
       end
 
