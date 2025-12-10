@@ -162,6 +162,7 @@ export const mockAiMetricsResponse = (values = []) =>
         languages,
         acceptedLinesOfCode,
         shownLinesOfCode,
+        ideNames,
       },
     ) =>
       acc.mockResolvedValueOnce({
@@ -177,6 +178,7 @@ export const mockAiMetricsResponse = (values = []) =>
                 languages,
                 acceptedLinesOfCode,
                 shownLinesOfCode,
+                ideNames,
               },
               codeContributorsCount,
               duoChatContributorsCount,

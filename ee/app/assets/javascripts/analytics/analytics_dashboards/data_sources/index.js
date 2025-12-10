@@ -48,6 +48,7 @@ export default {
   mean_time_to_merge: () => import('./mean_time_to_merge'),
   code_suggestions_acceptance_by_language: () =>
     import('./code_suggestions_acceptance_by_language'),
+  code_suggestions_acceptance_by_ide: () => import('./code_suggestions_acceptance_by_ide'),
   code_generation_volume_over_time: () => import('./code_generation_volume_over_time'),
   user_ai_usage_data: () => import('./user_ai_usage_data'),
   code_review_requests_by_role_over_time: () => import('./code_review_requests_by_role_over_time'),

@@ -126,6 +126,7 @@ export const mockTimePeriods = [
 ];
 
 const mockCodeSuggestionsLanguages = ['js', 'ruby', 'go'];
+const mockCodeSuggestionsIdeNames = ['VSCode', 'Neovim', 'RubyMine'];
 
 export const mockTableValues = [
   {
@@ -146,6 +147,7 @@ export const mockTableValues = [
     acceptedCount: 3,
     shownCount: 15,
     languages: mockCodeSuggestionsLanguages,
+    ideNames: mockCodeSuggestionsIdeNames,
     duoChatContributorsCount: 3,
     rootCauseAnalysisUsersCount: 5,
     duoAssignedUsersCount: 15,
@@ -178,6 +180,7 @@ export const mockTableValues = [
     acceptedCount: 3,
     shownCount: 7,
     languages: mockCodeSuggestionsLanguages,
+    ideNames: mockCodeSuggestionsIdeNames,
     duoChatContributorsCount: 3,
     rootCauseAnalysisUsersCount: 6,
     duoAssignedUsersCount: 7,
@@ -210,6 +213,7 @@ export const mockTableValues = [
     acceptedCount: 10,
     shownCount: 15,
     languages: mockCodeSuggestionsLanguages,
+    ideNames: mockCodeSuggestionsIdeNames,
     duoChatContributorsCount: 10,
     rootCauseAnalysisUsersCount: 11,
     duoAssignedUsersCount: 15,
@@ -242,6 +246,7 @@ export const mockTableValues = [
     acceptedCount: 9,
     shownCount: 18,
     languages: mockCodeSuggestionsLanguages,
+    ideNames: mockCodeSuggestionsIdeNames,
     duoChatContributorsCount: 9,
     rootCauseAnalysisUsersCount: 12,
     duoAssignedUsersCount: 18,
@@ -274,6 +279,7 @@ export const mockTableValues = [
     acceptedCount: 3,
     shownCount: 17,
     languages: mockCodeSuggestionsLanguages,
+    ideNames: mockCodeSuggestionsIdeNames,
     duoChatContributorsCount: 3,
     rootCauseAnalysisUsersCount: 7,
     duoAssignedUsersCount: 17,
@@ -306,6 +312,7 @@ export const mockTableValues = [
     acceptedCount: 4,
     shownCount: 12,
     languages: mockCodeSuggestionsLanguages,
+    ideNames: mockCodeSuggestionsIdeNames,
     duoChatContributorsCount: 4,
     rootCauseAnalysisUsersCount: 6,
     duoAssignedUsersCount: 12,
@@ -562,6 +569,7 @@ export const mockAiMetricsResponseData = {
       acceptedCount: 2,
       shownCount: 5,
       languages: mockCodeSuggestionsLanguages,
+      ideNames: mockCodeSuggestionsIdeNames,
       acceptedLinesOfCode: 30,
       shownLinesOfCode: 70,
     },
