@@ -191,4 +191,33 @@ RSpec.shared_examples 'settings with foundational agents statuses' do
       end
     end
   end
+
+  describe '#foundational_agent_enabled?' do
+    using RSpec::Parameterized::TableSyntax
+
+    subject(:agent_enabled) { instance.foundational_agent_enabled?(agent_reference) }
+
+    let(:agent_reference) { foundational_chat_agent_1_ref }
+
+    before do
+      allow(instance).to receive(:foundational_agents_default_enabled).and_return(default_enabled)
+
+      instance.foundational_agents_statuses = if status_exists
+                                                [{ reference: foundational_chat_agent_1_ref, enabled: status_enabled }]
+                                              else
+                                                []
+                                              end
+    end
+
+    where(:status_exists, :status_enabled, :default_enabled, :expected_result) do
+      false  | nil    | true  | true
+      false  |  nil   | false |  false
+      true   |  true  | false |  true
+      true   |  false | true  |  false
+    end
+
+    with_them do
+      it { is_expected.to be expected_result }
+    end
+  end
 end
