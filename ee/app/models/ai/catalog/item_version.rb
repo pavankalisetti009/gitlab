@@ -21,6 +21,9 @@ module Ai
       validates :version, length: { maximum: 50 }
       validates :version, uniqueness: { scope: :item }
       validates :version, format: { with: /\A\d+\.\d+\.\d+\z/ }
+      validates :definition,
+        format: { without: Gitlab::Unicode::DANGEROUS_CHARS, message: 'contains disallowed characters' },
+        if: :definition_changed?
 
       validate :validate_json_schema
       validate :validate_readonly

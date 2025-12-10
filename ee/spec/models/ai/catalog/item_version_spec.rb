@@ -21,6 +21,24 @@ RSpec.describe Ai::Catalog::ItemVersion, feature_category: :workflow_catalog do
     it { is_expected.to allow_value('1.1.1', '999.999.999').for(:version) }
     it { is_expected.not_to allow_value('1.1.1.', '1.1', '1', "hello\n1.0.0\nworld").for(:version) }
 
+    describe 'dangerous characters validation' do
+      subject(:version) { build_stubbed(:ai_catalog_agent_version) }
+
+      let(:user_prompt) { 'prompt' }
+
+      before do
+        version.definition['user_prompt'] = user_prompt
+      end
+
+      it { is_expected.to be_valid }
+
+      context 'when definition contains dangerous characters' do
+        let(:user_prompt) { 'prompt󠁈󠁩󠁤󠁤󠁥󠁮󠀠󠁣󠁨󠁡󠁲󠁳' } # Contains invisible characters.
+
+        it { is_expected.not_to be_valid }
+      end
+    end
+
     describe 'definition json_schema' do
       context 'when item is an agent' do
         subject(:version) { build_stubbed(:ai_catalog_agent_version) }
