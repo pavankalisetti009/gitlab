@@ -384,13 +384,6 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Rest, feature_category: :sub
 
       let(:http_method) { :head }
       let(:route_path) { 'api/v1/consumers/resolve' }
-      let(:headers) do
-        {
-          'Accept' => 'application/json',
-          'Content-Type' => 'application/json',
-          'User-Agent' => "GitLab/#{Gitlab::VERSION}"
-        }
-      end
 
       it_behaves_like 'when response is successful'
       it_behaves_like 'when response code is 422'

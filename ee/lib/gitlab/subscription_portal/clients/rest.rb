@@ -158,7 +158,7 @@ module Gitlab
 
           def verify_usage_quota_request(query)
             http_head(
-              'api/v1/consumers/resolve', json_headers, query,
+              'api/v1/consumers/resolve', admin_headers, query,
               base_url_to_call: usage_quota_base_url
             )
           end
