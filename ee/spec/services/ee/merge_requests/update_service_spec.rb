@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe MergeRequests::UpdateService, :mailer, feature_category: :code_review_workflow do
+RSpec.describe MergeRequests::UpdateService, :mailer, :request_store, feature_category: :code_review_workflow do
   include ProjectForksHelper
 
   let(:project) { create(:project, :repository) }
@@ -901,7 +901,7 @@ RSpec.describe MergeRequests::UpdateService, :mailer, feature_category: :code_re
     end
 
     context 'when a service account linked to a flow trigger' do
-      let(:service_account) { create(:service_account, username: 'flow-trigger-1') }
+      let(:service_account) { create(:service_account, username: 'flow-trigger-1', composite_identity_enforced: true) }
 
       let(:review_flow_trigger) do
         create(:ai_flow_trigger, project: project, event_types: [2], user: service_account)
@@ -923,7 +923,7 @@ RSpec.describe MergeRequests::UpdateService, :mailer, feature_category: :code_re
         ::Ai::Setting.instance.update!(duo_core_features_enabled: true)
       end
 
-      context 'when requesting review from this account', :sidekiq_inline do
+      context 'when this account is assigned', :sidekiq_inline do
         it 'triggers the AI flow' do
           expect(run_service).to receive(:execute).with({ input: merge_request.iid.to_s, event: :assign })
           expect(::Ai::FlowTriggers::RunService).to receive(:new)
@@ -936,7 +936,7 @@ RSpec.describe MergeRequests::UpdateService, :mailer, feature_category: :code_re
         end
       end
 
-      context 'when this account is assigned' do
+      context 'when requesting review from this account' do
         it 'triggers the AI flow' do
           expect(run_service).to receive(:execute).with({ input: merge_request.iid.to_s, event: :assign_reviewer })
           expect(::Ai::FlowTriggers::RunService).to receive(:new)
