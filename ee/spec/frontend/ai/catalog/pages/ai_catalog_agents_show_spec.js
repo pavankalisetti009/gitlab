@@ -192,7 +192,8 @@ describe('AiCatalogAgentsShow', () => {
   });
 
   describe('on adding agent to project', () => {
-    const addAgentToProject = () => findItemActions().vm.$emit('add-to-target', { projectId: '1' });
+    const addAgentToProject = () =>
+      findItemActions().vm.$emit('add-to-target', { target: { projectId: '1' } });
 
     it('calls create consumer mutation for agent', () => {
       addAgentToProject();

@@ -21,7 +21,6 @@ import {
   DELETE_OPTIONS,
   AI_CATALOG_TYPE_FLOW,
   AI_CATALOG_TYPE_THIRD_PARTY_FLOW,
-  ENABLE_FLOW_MODAL_TEXTS,
 } from '../constants';
 import AiCatalogItemConsumerModal from './ai_catalog_item_consumer_modal.vue';
 import AiCatalogItemReportModal from './ai_catalog_item_report_modal.vue';
@@ -87,6 +86,11 @@ export default {
     },
     disableConfirmMessage: {
       type: String,
+      required: false,
+      default: null,
+    },
+    enableModalTexts: {
+      type: Object,
       required: false,
       default: null,
     },
@@ -187,7 +191,7 @@ export default {
       return this.showEnableModalWithTriggers
         ? {
             itemTypes: [this.item.itemType],
-            modalTexts: ENABLE_FLOW_MODAL_TEXTS,
+            modalTexts: this.enableModalTexts,
           }
         : { isProjectNamespace: this.showEnable };
     },

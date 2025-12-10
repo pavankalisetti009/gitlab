@@ -19,6 +19,7 @@ import {
   AI_CATALOG_CONSUMER_LABELS,
   AI_CATALOG_CONSUMER_TYPE_PROJECT,
   AI_CATALOG_CONSUMER_TYPE_GROUP,
+  ENABLE_AGENT_MODAL_TEXTS,
 } from 'ee/ai/catalog/constants';
 import { TYPENAME_PROJECT } from '~/graphql_shared/constants';
 import {
@@ -314,17 +315,7 @@ export default {
     },
   },
   addAgentModalId: 'add-agent-to-project-modal',
-  modalTexts: {
-    title: s__('AICatalog|Enable agent from group'),
-    label: s__('AICatalog|Agent'),
-    labelDescription: s__('AICatalog|Only agents enabled in your top-level group are shown.'),
-    invalidFeedback: s__('AICatalog|Agent is required.'),
-    error: s__('AICatalog|Failed to load group agents'),
-    dropdownTexts: {
-      placeholder: s__('AICatalog|Select an agent'),
-      itemSublabel: s__('AICatalog|Agent ID: %{id}'),
-    },
-  },
+  modalTexts: ENABLE_AGENT_MODAL_TEXTS,
   EMPTY_SVG_URL,
 };
 </script>

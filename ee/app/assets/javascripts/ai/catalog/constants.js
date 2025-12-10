@@ -152,6 +152,17 @@ export const DELETE_OPTIONS = [
   },
 ];
 
+export const ENABLE_AGENT_MODAL_TEXTS = {
+  title: s__('AICatalog|Enable agent from group'),
+  label: s__('AICatalog|Agent'),
+  labelDescription: s__('AICatalog|Only agents enabled in your top-level group are shown.'),
+  invalidFeedback: s__('AICatalog|Agent is required.'),
+  error: s__('AICatalog|Failed to load group agents'),
+  dropdownTexts: {
+    placeholder: s__('AICatalog|Select an agent'),
+    itemSublabel: s__('AICatalog|Agent ID: %{id}'),
+  },
+};
 export const ENABLE_FLOW_MODAL_TEXTS = {
   title: s__('AICatalog|Enable flow from group'),
   label: s__('AICatalog|Flow'),
