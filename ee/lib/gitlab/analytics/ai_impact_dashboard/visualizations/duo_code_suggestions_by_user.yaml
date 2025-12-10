@@ -8,8 +8,6 @@ options:
   fields:
     - key: 'user'
       component: 'UserLink'
-    - key: 'user.lastDuoActivityOn'
-      label: 'Last activity'
     - key: 'codeSuggestionShownInIdeEventCount'
       label: 'Suggestions shown'
       thClass: "gl-text-right"
