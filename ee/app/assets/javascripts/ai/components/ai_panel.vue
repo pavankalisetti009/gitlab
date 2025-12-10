@@ -73,6 +73,7 @@ export default {
       selectedAgent: null,
       selectedAgentError: null,
       isMaximized: false,
+      panelVisible: true,
     };
   },
   computed: {
@@ -185,6 +186,7 @@ export default {
     },
     async handleNewChat(agent) {
       this.handleChangeTab('new');
+      this.showPanel();
       // Make sure the tab has changed before setting the agent for the UI to update
       await this.$nextTick();
       this.selectedAgent = agent;
@@ -192,10 +194,11 @@ export default {
     async handleTabToggle(tab) {
       // Clicking on the icon of active tab acts as a toggle
       if (this.activeTab === tab) {
-        this.closePanel();
+        this.toggleVisibility();
         return;
       }
 
+      this.showPanel();
       this.handleChangeTab(tab);
     },
     handleChangeTab(tab) {
@@ -208,8 +211,14 @@ export default {
 
       this.$router.push(targetRoute).catch(() => {});
     },
-    closePanel() {
-      this.setActiveTab(undefined);
+    toggleVisibility() {
+      this.panelVisible = !this.panelVisible;
+    },
+    showPanel() {
+      this.panelVisible = true;
+    },
+    hidePanel() {
+      this.panelVisible = false;
       this.isMaximized = false;
     },
     handleWindowResize() {
@@ -218,7 +227,7 @@ export default {
       // This check ensures that the panel is collapsed only when resizing
       // from desktop to mobile/tablet, not the other way around
       if (this.isDesktop && !currentIsDesktop) {
-        this.closePanel();
+        this.hidePanel();
       }
 
       this.isDesktop = currentIsDesktop;
@@ -241,6 +250,7 @@ export default {
   <div class="gl-flex gl-h-full gl-gap-[var(--ai-panels-gap)]">
     <ai-content-container
       v-if="currentTabComponent"
+      v-show="panelVisible"
       ref="content-container"
       :user-id="userId"
       :active-tab="currentTabComponent"
@@ -254,13 +264,13 @@ export default {
       :selected-agent="selectedAgent"
       :agent-select-error="selectedAgentError"
       :is-maximized="isMaximized"
-      @closePanel="closePanel"
+      @closePanel="hidePanel"
       @go-back="handleGoBack"
       @switch-to-active-tab="setActiveTab"
       @toggleMaximize="isMaximized = !isMaximized"
     />
     <navigation-rail
-      :is-expanded="Boolean(currentTabComponent)"
+      :is-expanded="panelVisible"
       :active-tab="activeTab"
       :show-suggestions-tab="false"
       :chat-disabled-reason="chatDisabledReason"

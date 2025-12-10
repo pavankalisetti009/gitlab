@@ -126,19 +126,19 @@ describe('AiPanel', () => {
       expect(Cookies.get(aiPanelStateCookie)).toBe('suggestions');
     });
 
-    it('closes a panel', async () => {
+    it('hides a panel', async () => {
       createComponent();
       findNavigationRail().vm.$emit('handleTabToggle', 'suggestions');
       await nextTick();
       findContentContainer().vm.$emit('closePanel');
       await nextTick();
-      expect(findContentContainer().exists()).toBe(false);
-      expect(Cookies.get(aiPanelStateCookie)).toBe(undefined);
+      expect(findContentContainer().isVisible()).toBe(false);
+      expect(duoChatGlobalState.activeTab).toBe('suggestions');
     });
 
     describe('when tabs are toggled twice', () => {
       it.each(['chat', 'suggestions', 'sessions', 'history'])(
-        'closes the panel for %s tab',
+        'toggles visibility for %s tab',
         async (tabName) => {
           createComponent();
           findNavigationRail().vm.$emit('handleTabToggle', tabName);
@@ -146,8 +146,8 @@ describe('AiPanel', () => {
           findNavigationRail().vm.$emit('handleTabToggle', tabName);
           await nextTick();
 
-          expect(findContentContainer().exists()).toBe(false);
-          expect(Cookies.get(aiPanelStateCookie)).toBe(undefined);
+          expect(findContentContainer().isVisible()).toBe(false);
+          expect(duoChatGlobalState.activeTab).toBe(tabName);
         },
       );
 
@@ -417,7 +417,7 @@ describe('AiPanel', () => {
       window.dispatchEvent(new Event('resize'));
     };
 
-    it('collapses panel and clears the tab when resizing from desktop to non-desktop', async () => {
+    it('hides panel but preserves tab when resizing from desktop to non-desktop', async () => {
       jest.spyOn(GlBreakpointInstance, 'isDesktop').mockReturnValue(true);
       createComponent();
       findNavigationRail().vm.$emit('handleTabToggle', 'chat');
@@ -428,8 +428,8 @@ describe('AiPanel', () => {
       await nextTick();
 
       expect(findNavigationRail().props('isExpanded')).toBe(false);
-      expect(findContentContainer().exists()).toBe(false);
-      expect(duoChatGlobalState.activeTab).toBeUndefined();
+      expect(findContentContainer().isVisible()).toBe(false);
+      expect(duoChatGlobalState.activeTab).toBe('chat');
     });
 
     it('does not change panel state when resizing from non-desktop to desktop', async () => {
@@ -814,7 +814,7 @@ describe('AiPanel', () => {
         expect(findContentContainer().props('activeTab').component).toBe(DuoAgenticChat);
       });
 
-      it('clears global state and cookie when panel is closed', async () => {
+      it('hides panel but preserves state when closePanel is emitted', async () => {
         createComponent();
 
         findNavigationRail().vm.$emit('handleTabToggle', 'chat');
@@ -824,9 +824,9 @@ describe('AiPanel', () => {
         findContentContainer().vm.$emit('closePanel');
         await nextTick();
 
-        expect(duoChatGlobalState.activeTab).toBeUndefined();
-        expect(Cookies.get(aiPanelStateCookie)).toBeUndefined();
-        expect(findContentContainer().exists()).toBe(false);
+        expect(duoChatGlobalState.activeTab).toBe('chat');
+        expect(Cookies.get(aiPanelStateCookie)).toBe('chat');
+        expect(findContentContainer().isVisible()).toBe(false);
       });
     });
   });
@@ -856,6 +856,34 @@ describe('AiPanel', () => {
         expect(findContentContainer().exists()).toBe(false);
         expect(duoChatGlobalState.activeTab).toBeUndefined();
       });
+    });
+  });
+
+  describe('panel visibility management', () => {
+    it('shows hidden panel when switching to different tab', async () => {
+      createComponent();
+      findNavigationRail().vm.$emit('handleTabToggle', 'chat');
+      await nextTick();
+      findNavigationRail().vm.$emit('handleTabToggle', 'chat');
+      await nextTick();
+      expect(findContentContainer().isVisible()).toBe(false);
+
+      findNavigationRail().vm.$emit('handleTabToggle', 'history');
+      await nextTick();
+      expect(findContentContainer().isVisible()).toBe(true);
+    });
+
+    it('shows hidden panel when starting new chat', async () => {
+      createComponent();
+      findNavigationRail().vm.$emit('handleTabToggle', 'chat');
+      await nextTick();
+      findNavigationRail().vm.$emit('handleTabToggle', 'chat');
+      await nextTick();
+      expect(findContentContainer().isVisible()).toBe(false);
+
+      findNavigationRail().vm.$emit('new-chat');
+      await nextTick();
+      expect(findContentContainer().isVisible()).toBe(true);
     });
   });
 });
