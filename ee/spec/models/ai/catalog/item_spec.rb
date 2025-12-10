@@ -351,6 +351,38 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
         expect(described_class.foundational_flows).not_to include(item_without_reference)
       end
     end
+
+    describe '.with_foundational_flow_reference' do
+      let_it_be(:code_review_flow) do
+        create(:ai_catalog_item, :with_foundational_flow_reference,
+          foundational_flow_reference: 'code_review/v1')
+      end
+
+      let_it_be(:sast_flow) do
+        create(:ai_catalog_item, :with_foundational_flow_reference,
+          foundational_flow_reference: 'sast_fp_detection/v1')
+      end
+
+      let_it_be(:item_without_reference) { create(:ai_catalog_item) }
+
+      it 'returns item with matching foundational_flow_reference' do
+        result = described_class.with_foundational_flow_reference('code_review/v1')
+
+        expect(result).to contain_exactly(code_review_flow)
+      end
+
+      it 'returns empty relation when no match found' do
+        result = described_class.with_foundational_flow_reference('nonexistent/v1')
+
+        expect(result).to be_empty
+      end
+
+      it 'does not return items without foundational_flow_reference' do
+        result = described_class.with_foundational_flow_reference('code_review/v1')
+
+        expect(result).not_to include(item_without_reference)
+      end
+    end
   end
 
   describe 'callbacks' do
