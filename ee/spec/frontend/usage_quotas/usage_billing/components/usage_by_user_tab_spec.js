@@ -75,6 +75,8 @@ describe('UsageByUserTab', () => {
           {
             key: 'totalCreditsUsed',
             label: 'Total credits used',
+            tdClass: 'gl-text-right',
+            thAlignRight: true,
           },
         ]);
       });
