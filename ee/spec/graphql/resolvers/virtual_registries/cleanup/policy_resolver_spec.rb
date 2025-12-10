@@ -9,8 +9,9 @@ RSpec.describe Resolvers::VirtualRegistries::Cleanup::PolicyResolver, feature_ca
   let_it_be(:current_user) { create(:user) }
   let_it_be(:policy) { create(:virtual_registries_cleanup_policy, group: group) }
   let_it_be(:policy2) { create(:virtual_registries_cleanup_policy) }
-  let(:virtual_registry_available) { true }
 
+  let(:feature_enabled) { true }
+  let(:user_has_access) { true }
   let(:args) { {} }
 
   subject(:resolve_policy) do
@@ -18,8 +19,10 @@ RSpec.describe Resolvers::VirtualRegistries::Cleanup::PolicyResolver, feature_ca
   end
 
   before do
-    allow(::VirtualRegistries::Packages::Maven).to receive(:virtual_registry_available?)
-      .and_return(virtual_registry_available)
+    allow(::VirtualRegistries::Packages::Maven).to receive_messages(
+      feature_enabled?: feature_enabled,
+      user_has_access?: user_has_access
+    )
   end
 
   specify do
@@ -29,24 +32,18 @@ RSpec.describe Resolvers::VirtualRegistries::Cleanup::PolicyResolver, feature_ca
   end
 
   context 'when unauthorized' do
-    before_all do
-      group.add_guest(current_user)
-    end
+    let(:user_has_access) { false }
 
     it { is_expected.to be_nil }
   end
 
   context 'when authorized' do
-    before_all do
-      group.add_owner(current_user)
-    end
-
     context 'when maven virtual registry is available' do
       it { is_expected.to eq(policy) }
     end
 
     context 'when maven virtual registry is unavailable' do
-      let(:virtual_registry_available) { false }
+      let(:feature_enabled) { false }
 
       it { is_expected.to be_nil }
     end

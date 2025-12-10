@@ -16,7 +16,8 @@ RSpec.describe Resolvers::VirtualRegistries::Packages::Maven::UpstreamsResolver,
     create(:virtual_registries_packages_maven_upstream, registries: [registry], name: 'upstream2')
   end
 
-  let(:virtual_registry_available) { true }
+  let(:feature_enabled) { true }
+  let(:user_has_access) { true }
 
   let(:args) { {} }
 
@@ -25,8 +26,10 @@ RSpec.describe Resolvers::VirtualRegistries::Packages::Maven::UpstreamsResolver,
   end
 
   before do
-    allow(::VirtualRegistries::Packages::Maven).to receive(:virtual_registry_available?)
-      .and_return(virtual_registry_available)
+    allow(::VirtualRegistries::Packages::Maven).to receive_messages(
+      feature_enabled?: feature_enabled,
+      user_has_access?: user_has_access
+    )
   end
 
   specify do
@@ -55,7 +58,13 @@ RSpec.describe Resolvers::VirtualRegistries::Packages::Maven::UpstreamsResolver,
   end
 
   context 'when maven virtual registry is unavailable' do
-    let(:virtual_registry_available) { false }
+    let(:feature_enabled) { false }
+
+    it { is_expected.to be_nil }
+  end
+
+  context 'when user has no permission to maven virtual registry' do
+    let(:user_has_access) { false }
 
     it { is_expected.to be_nil }
   end

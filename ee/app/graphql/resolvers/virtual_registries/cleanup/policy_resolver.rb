@@ -18,13 +18,11 @@ module Resolvers
         private
 
         def authorized?(**_args)
-          current_user&.can?(:admin_virtual_registry, group.virtual_registry_policy_subject)
+          ::VirtualRegistries::Packages::Maven.user_has_access?(group, current_user, :admin_virtual_registry)
         end
 
         def virtual_registry_available?
-          ::VirtualRegistries::Packages::Maven.virtual_registry_available?(
-            group, current_user, :admin_virtual_registry
-          )
+          ::VirtualRegistries::Packages::Maven.feature_enabled?(group)
         end
 
         def virtual_registry_cleanup_policies_available?
