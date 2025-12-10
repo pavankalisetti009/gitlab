@@ -11,11 +11,7 @@ describe('AiCatalogNavTabs', () => {
     push: jest.fn(),
   };
 
-  const createComponent = ({
-    routePath = '/ai/catalog',
-    aiCatalogFlows = true,
-    aiCatalogThirdPartyFlows = false,
-  } = {}) => {
+  const createComponent = ({ routePath = '/ai/catalog', aiCatalogFlows = true } = {}) => {
     wrapper = shallowMountExtended(AiCatalogNavTabs, {
       mocks: {
         $route: {
@@ -26,7 +22,6 @@ describe('AiCatalogNavTabs', () => {
       provide: {
         glFeatures: {
           aiCatalogFlows,
-          aiCatalogThirdPartyFlows,
         },
       },
     });
@@ -71,45 +66,16 @@ describe('AiCatalogNavTabs', () => {
     });
   });
 
-  describe('when aiCatalogThirdPartyFlows FF is on', () => {
-    beforeEach(() => {
-      createComponent({
-        aiCatalogFlows: false,
-        aiCatalogThirdPartyFlows: true,
-      });
-    });
-
-    it('renders the Flows tab', () => {
-      expect(findAllTabs()).toHaveLength(2);
-      expect(findAllTabs().at(1).attributes('title')).toBe('Flows');
-    });
-  });
-
-  describe('when both aiCatalogFlows and aiCatalogThirdPartyFlows FFs are on', () => {
+  describe('when aiCatalogFlows FF is on', () => {
     beforeEach(() => {
       createComponent({
         aiCatalogFlows: true,
-        aiCatalogThirdPartyFlows: true,
       });
     });
 
     it('renders the Flows tab', () => {
       expect(findAllTabs()).toHaveLength(2);
       expect(findAllTabs().at(1).attributes('title')).toBe('Flows');
-    });
-  });
-
-  describe('when both aiCatalogFlows and aiCatalogThirdPartyFlows FFs are off', () => {
-    beforeEach(() => {
-      createComponent({
-        aiCatalogFlows: false,
-        aiCatalogThirdPartyFlows: false,
-      });
-    });
-
-    it('does not render the Flows tab', () => {
-      expect(findAllTabs()).toHaveLength(1);
-      expect(findAllTabs().at(0).attributes('title')).toBe('Agents');
     });
   });
 

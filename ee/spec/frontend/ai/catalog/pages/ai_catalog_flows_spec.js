@@ -35,20 +35,13 @@ describe('AiCatalogFlows', () => {
 
   const { bindInternalEventDocument } = useMockInternalEventsTracking();
 
-  const createComponent = ({ provide = {} } = {}) => {
+  const createComponent = () => {
     isLoggedIn.mockReturnValue(true);
 
     mockApollo = createMockApollo([[aiCatalogFlowsQuery, mockCatalogItemsQueryHandler]]);
 
     wrapper = shallowMountExtended(AiCatalogFlows, {
       apolloProvider: mockApollo,
-      provide: {
-        glFeatures: {
-          aiCatalogFlows: true,
-          aiCatalogThirdPartyFlows: true,
-        },
-        ...provide,
-      },
       mocks: {
         $toast: mockToast,
         $router: mockRouter,
@@ -86,7 +79,6 @@ describe('AiCatalogFlows', () => {
 
     it('fetches list data with itemTypes', () => {
       expect(mockCatalogItemsQueryHandler).toHaveBeenCalledWith({
-        itemTypes: ['FLOW', 'THIRD_PARTY_FLOW'],
         after: null,
         before: null,
         first: 20,
@@ -109,7 +101,6 @@ describe('AiCatalogFlows', () => {
     it('refetches query with correct variables when paging backward', () => {
       findAiCatalogListWrapper().vm.$emit('prev-page');
       expect(mockCatalogItemsQueryHandler).toHaveBeenCalledWith({
-        itemTypes: ['FLOW', 'THIRD_PARTY_FLOW'],
         after: null,
         before: 'eyJpZCI6IjUxIn0',
         first: null,
@@ -121,7 +112,6 @@ describe('AiCatalogFlows', () => {
     it('refetches query with correct variables when paging forward', () => {
       findAiCatalogListWrapper().vm.$emit('next-page');
       expect(mockCatalogItemsQueryHandler).toHaveBeenCalledWith({
-        itemTypes: ['FLOW', 'THIRD_PARTY_FLOW'],
         after: 'eyJpZCI6IjM1In0',
         before: null,
         first: 20,
@@ -141,7 +131,6 @@ describe('AiCatalogFlows', () => {
       await waitForPromises();
 
       expect(mockCatalogItemsQueryHandler).toHaveBeenCalledWith({
-        itemTypes: ['FLOW', 'THIRD_PARTY_FLOW'],
         after: null,
         before: null,
         first: 20,
@@ -160,7 +149,6 @@ describe('AiCatalogFlows', () => {
       await waitForPromises();
 
       expect(mockCatalogItemsQueryHandler).toHaveBeenCalledWith({
-        itemTypes: ['FLOW', 'THIRD_PARTY_FLOW'],
         after: null,
         before: null,
         first: 20,

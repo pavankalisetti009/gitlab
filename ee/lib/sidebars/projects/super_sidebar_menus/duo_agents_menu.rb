@@ -8,7 +8,12 @@ module Sidebars
         def configure_menu_items
           return false unless current_user&.can?(:duo_workflow, context.project) &&
             context.project.duo_features_enabled &&
-            (show_agents_runs_menu_items? || show_flow_triggers_menu_items? || show_flows_menu_item?)
+            (
+              show_agents_runs_menu_items? ||
+              show_flow_triggers_menu_items? ||
+              show_flows_menu_item? ||
+              show_agents_menu_item?
+            )
 
           add_item(ai_catalog_agents_menu_item) if show_agents_menu_item?
           add_item(ai_catalog_flows_menu_item) if show_flows_menu_item?
@@ -49,8 +54,7 @@ module Sidebars
 
         def show_flows_menu_item?
           Feature.enabled?(:global_ai_catalog, context.current_user) &&
-            (Feature.enabled?(:ai_catalog_flows,
-              context.current_user) || Feature.enabled?(:ai_catalog_third_party_flows, context.current_user))
+            Feature.enabled?(:ai_catalog_flows, context.current_user)
         end
 
         def duo_agents_runs_menu_item

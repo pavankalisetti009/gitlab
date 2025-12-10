@@ -107,7 +107,7 @@ RSpec.describe Ai::CatalogItemAbuseReportMailer, feature_category: :workflow_cat
       it { is_expected.to have_body_text 'aiCatalogThirdPartyFlowDelete' }
 
       it 'includes third party flow URL in email body' do
-        expected_url = "#{Settings.gitlab['url']}/explore/ai-catalog/flows/#{third_party_flow_item.id}"
+        expected_url = "#{Settings.gitlab['url']}/explore/ai-catalog/agents/#{third_party_flow_item.id}"
         expect(email.body.encoded).to include(expected_url)
       end
     end

@@ -22,9 +22,11 @@ import aiCatalogAgentQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_agent.
 import updateAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/update_ai_catalog_item_consumer.mutation.graphql';
 import createAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/create_ai_catalog_item_consumer.mutation.graphql';
 import deleteAiCatalogAgentMutation from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_agent.mutation.graphql';
+import deleteAiCatalogThirdPartyFlowMutation from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_third_party_flow.mutation.graphql';
 import deleteAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_item_consumer.mutation.graphql';
 import {
   mockAgent,
+  mockThirdPartyFlow,
   mockAgentConfigurationForProject,
   mockItemConfigurationForGroup,
   mockAiCatalogAgentResponse,
@@ -73,6 +75,7 @@ describe('AiCatalogAgentsShow', () => {
     .fn()
     .mockResolvedValue(mockAiCatalogItemConsumerCreateSuccessProjectResponse);
   const deleteAgentMutationHandler = jest.fn().mockResolvedValue(mockCatalogAgentDeleteResponse);
+  const deleteThirdPartyFlowMutationHandler = jest.fn();
 
   const updateAiCatalogItemConsumerHandler = jest
     .fn()
@@ -86,6 +89,7 @@ describe('AiCatalogAgentsShow', () => {
       [reportAiCatalogItem, reportAiCatalogItemMock],
       [aiCatalogAgentQuery, mockAgentQueryHandler],
       [createAiCatalogItemConsumer, createAiCatalogItemConsumerHandler],
+      [deleteAiCatalogThirdPartyFlowMutation, deleteThirdPartyFlowMutationHandler],
       [deleteAiCatalogAgentMutation, deleteAgentMutationHandler],
       [deleteAiCatalogItemConsumer, deleteItemConsumerMutationHandler],
       [updateAiCatalogItemConsumer, updateAiCatalogItemConsumerHandler],
@@ -250,9 +254,30 @@ describe('AiCatalogAgentsShow', () => {
     it('calls delete mutation for agent', () => {
       deleteAgent();
 
+      expect(deleteThirdPartyFlowMutationHandler).not.toHaveBeenCalled();
       expect(deleteAgentMutationHandler).toHaveBeenCalledWith({
         id: mockAgent.id,
         forceHardDelete,
+      });
+    });
+
+    describe('when item type is third-party flow', () => {
+      beforeEach(() => {
+        createComponent({
+          props: {
+            aiCatalogAgent: mockThirdPartyFlow,
+          },
+        });
+      });
+
+      it('calls delete mutation for third-party flow', () => {
+        deleteAgent();
+
+        expect(deleteAgentMutationHandler).not.toHaveBeenCalled();
+        expect(deleteThirdPartyFlowMutationHandler).toHaveBeenCalledWith({
+          id: mockThirdPartyFlow.id,
+          forceHardDelete,
+        });
       });
     });
 

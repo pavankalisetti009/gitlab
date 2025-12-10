@@ -9,12 +9,7 @@ import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_AI_CATALOG_ITEM } from 'ee/graphql_shared/constants';
 import aiCatalogFlowQuery from '../graphql/queries/ai_catalog_flow.query.graphql';
 import { getByVersionKey } from '../utils';
-import {
-  AI_CATALOG_TYPE_FLOW,
-  AI_CATALOG_TYPE_THIRD_PARTY_FLOW,
-  VERSION_PINNED,
-  VERSION_LATEST,
-} from '../constants';
+import { AI_CATALOG_TYPE_FLOW, VERSION_PINNED, VERSION_LATEST } from '../constants';
 
 export default {
   name: 'AiCatalogFlow',
@@ -57,7 +52,7 @@ export default {
       },
       update(data) {
         const item = data?.aiCatalogItem || {};
-        if (![AI_CATALOG_TYPE_FLOW, AI_CATALOG_TYPE_THIRD_PARTY_FLOW].includes(item.itemType)) {
+        if (item.itemType !== AI_CATALOG_TYPE_FLOW) {
           return {};
         }
         return item;

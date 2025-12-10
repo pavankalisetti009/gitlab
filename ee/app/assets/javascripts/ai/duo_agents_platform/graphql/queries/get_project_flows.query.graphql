@@ -3,7 +3,6 @@
 
 query projectAiCatalogFlows(
   $projectPath: ID!
-  $itemTypes: [AiCatalogItemType!]
   $enabled: Boolean
   $allAvailable: Boolean = false
   $before: String
@@ -15,7 +14,7 @@ query projectAiCatalogFlows(
   project(fullPath: $projectPath) {
     id
     aiCatalogItems(
-      itemTypes: $itemTypes
+      itemTypes: [FLOW]
       enabled: $enabled
       allAvailable: $allAvailable
       before: $before

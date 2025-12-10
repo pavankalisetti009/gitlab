@@ -14,6 +14,8 @@ const TYPENAME_AI_CATALOG_FLOW_VERSION = 'AiCatalogFlowVersion';
 const TYPENAME_AI_CATALOG_FLOW_CREATE = 'AiCatalogFlowCreatePayload';
 const TYPENAME_AI_CATALOG_FLOW_UPDATE = 'AiCatalogFlowUpdatePayload';
 const TYPENAME_AI_CATALOG_FLOW_DELETE = 'AiCatalogFlowDeletePayload';
+const TYPENAME_AI_CATALOG_THIRD_PARTY_FLOW_CREATE = 'AiCatalogThirdPartyFlowCreatePayload';
+const TYPENAME_AI_CATALOG_THIRD_PARTY_FLOW_UPDATE = 'AiCatalogThirdPartyFlowCreatePayload';
 const TYPENAME_AI_CATALOG_THIRD_PARTY_FLOW_VERSION = 'AiCatalogThirdPartyFlowVersion';
 const TYPENAME_AI_FLOW_TRIGGER = 'AiFlowTriggerType';
 const TYPENAME_GROUP = 'Group';
@@ -326,6 +328,7 @@ export const mockAgentConfigurationForProject = {
   id: 'gid://gitlab/Ai::Catalog::ItemConsumer/3',
   enabled: true,
   pinnedItemVersion: mockAgentPinnedVersion,
+  flowTrigger: null,
   userPermissions: mockItemConsumerUserPermissions,
   __typename: TYPENAME_AI_CATALOG_ITEM_CONSUMER,
 };
@@ -632,6 +635,26 @@ export const mockThirdPartyFlow = mockThirdPartyFlowFactory({
   latestVersion: mockThirdPartyFlowVersion,
 });
 
+export const mockCreateAiCatalogThirdPartyFlowSuccessMutation = {
+  data: {
+    aiCatalogThirdPartyFlowCreate: {
+      errors: [],
+      item: mockThirdPartyFlow,
+      __typename: TYPENAME_AI_CATALOG_THIRD_PARTY_FLOW_CREATE,
+    },
+  },
+};
+
+export const mockUpdateAiCatalogThirdPartyFlowSuccessMutation = {
+  data: {
+    aiCatalogThirdPartyFlowUpdate: {
+      errors: [],
+      item: mockThirdPartyFlow,
+      __typename: TYPENAME_AI_CATALOG_THIRD_PARTY_FLOW_UPDATE,
+    },
+  },
+};
+
 /* ITEM CONSUMERS */
 
 export const mockBaseItemConsumer = {
@@ -654,9 +677,19 @@ export const mockConfiguredAgentsResponse = {
   },
 };
 
+export const mockAgentItemConsumer = {
+  ...mockBaseItemConsumer,
+  item: mockBaseAgent,
+};
+
 export const mockFlowItemConsumer = {
   ...mockBaseItemConsumer,
   item: mockBaseFlow,
+};
+
+export const mockThirdPartyFlowItemConsumer = {
+  ...mockBaseItemConsumer,
+  item: mockThirdPartyFlow,
 };
 
 export const mockConfiguredFlowsResponse = {

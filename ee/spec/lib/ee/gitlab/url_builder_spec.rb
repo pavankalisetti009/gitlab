@@ -29,9 +29,9 @@ RSpec.describe Gitlab::UrlBuilder do
 
       [:issue, :key_result, :group_level] | ->(issue) { "/groups/#{issue.namespace.full_path}/-/work_items/#{issue.iid}" }
 
-      :ai_catalog_agent           | ->(item) { "/explore/ai-catalog/agents/#{item.id}" }
-      :ai_catalog_flow            | ->(item) { "/explore/ai-catalog/flows/#{item.id}" }
-      :ai_catalog_third_party_flow | ->(item) { "/explore/ai-catalog/flows/#{item.id}" }
+      :ai_catalog_agent            | ->(item) { "/explore/ai-catalog/agents/#{item.id}" }
+      :ai_catalog_flow             | ->(item) { "/explore/ai-catalog/flows/#{item.id}" }
+      :ai_catalog_third_party_flow | ->(item) { "/explore/ai-catalog/agents/#{item.id}" }
     end
 
     with_them do

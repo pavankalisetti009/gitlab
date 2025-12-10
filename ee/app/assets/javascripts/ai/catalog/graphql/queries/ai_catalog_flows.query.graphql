@@ -1,16 +1,9 @@
 #import "../fragments/ai_catalog_item.fragment.graphql"
 #import "~/graphql_shared/fragments/page_info.fragment.graphql"
 
-query aiCatalogFlows(
-  $itemTypes: [AiCatalogItemType!]
-  $before: String
-  $after: String
-  $first: Int
-  $last: Int
-  $search: String
-) {
+query aiCatalogFlows($before: String, $after: String, $first: Int, $last: Int, $search: String) {
   aiCatalogItems(
-    itemTypes: $itemTypes
+    itemTypes: [FLOW]
     before: $before
     after: $after
     first: $first

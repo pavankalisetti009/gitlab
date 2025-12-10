@@ -1,4 +1,4 @@
-import { __, s__ } from '~/locale';
+import { __, s__, sprintf } from '~/locale';
 
 export const AGENTFLOW_TYPE_JENKINS_TO_CI = 'convert_to_gitlab_ci';
 export const DUO_AGENTS_PLATFORM_POLLING_INTERVAL = 10000;
@@ -82,25 +82,37 @@ export const AGENT_PLATFORM_STATUS_BADGE = {
 export const FLOW_TRIGGER_TYPES = [
   {
     text: __('Mention'),
-    help: s__(
-      'AICatalog|Trigger this flow when the service account user is mentioned in an issue or merge request.',
-    ),
+    createHelp: (itemType) =>
+      sprintf(
+        s__(
+          'AICatalog|Trigger this %{itemType} when the service account user is mentioned in an issue or merge request.',
+        ),
+        { itemType },
+      ),
     value: 'mention',
     valueInt: 0,
   },
   {
     text: __('Assign'),
-    help: s__(
-      'AICatalog|Trigger this flow when the service account user is assigned to issue or merge request.',
-    ),
+    createHelp: (itemType) =>
+      sprintf(
+        s__(
+          'AICatalog|Trigger this %{itemType} when the service account user is assigned to issue or merge request.',
+        ),
+        { itemType },
+      ),
     value: 'assign',
     valueInt: 1,
   },
   {
     text: __('Assign reviewer'),
-    help: s__(
-      'AICatalog|Trigger this flow when the service account user is assigned as a reviewer to a merge request.',
-    ),
+    createHelp: (itemType) =>
+      sprintf(
+        s__(
+          'AICatalog|Trigger this %{itemType} when the service account user is assigned as a reviewer to a merge request.',
+        ),
+        { itemType },
+      ),
     value: 'assign_reviewer',
     valueInt: 2,
   },

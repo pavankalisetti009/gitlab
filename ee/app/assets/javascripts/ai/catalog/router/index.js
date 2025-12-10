@@ -108,7 +108,7 @@ export const createRouter = (base) => {
         ],
       },
       // FLOWS
-      ...(gon.features?.aiCatalogFlows || gon.features?.aiCatalogThirdPartyFlows
+      ...(gon.features?.aiCatalogFlows
         ? [
             {
               component: NestedRouteApp,

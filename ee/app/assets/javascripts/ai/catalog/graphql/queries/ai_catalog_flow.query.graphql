@@ -1,6 +1,5 @@
 #import "../fragments/ai_catalog_item.fragment.graphql"
 #import "../fragments/ai_catalog_flow_version.fragment.graphql"
-#import "../fragments/ai_catalog_third_party_flow_version.fragment.graphql"
 
 query aiCatalogFlow(
   $id: AiCatalogItemID!
@@ -23,7 +22,6 @@ query aiCatalogFlow(
     }
     latestVersion {
       ...BaseAiCatalogFlowVersion
-      ...BaseAiCatalogThirdPartyFlowVersion
     }
     configurationForProject(projectId: $projectId) @include(if: $hasProject) {
       id
@@ -34,7 +32,6 @@ query aiCatalogFlow(
       }
       pinnedItemVersion {
         ...BaseAiCatalogFlowVersion
-        ...BaseAiCatalogThirdPartyFlowVersion
       }
       userPermissions {
         adminAiCatalogItemConsumer

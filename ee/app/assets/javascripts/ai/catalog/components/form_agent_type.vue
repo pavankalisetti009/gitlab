@@ -1,10 +1,10 @@
 <script>
 import { GlFormRadioGroup } from '@gitlab/ui';
 import { s__ } from '~/locale';
-import { AI_CATALOG_TYPE_FLOW, AI_CATALOG_TYPE_THIRD_PARTY_FLOW } from 'ee/ai/catalog/constants';
+import { AI_CATALOG_TYPE_AGENT, AI_CATALOG_TYPE_THIRD_PARTY_FLOW } from 'ee/ai/catalog/constants';
 
 export default {
-  name: 'FormFlowType',
+  name: 'FormAgentType',
   components: {
     GlFormRadioGroup,
   },
@@ -24,10 +24,11 @@ export default {
       default: false,
     },
   },
-  flowTypes: [
+  emits: ['input'],
+  agentTypes: [
     {
-      value: AI_CATALOG_TYPE_FLOW,
-      text: s__('AICatalog|Flow'),
+      value: AI_CATALOG_TYPE_AGENT,
+      text: s__('AICatalog|Custom'),
     },
     {
       value: AI_CATALOG_TYPE_THIRD_PARTY_FLOW,
@@ -41,7 +42,7 @@ export default {
   <gl-form-radio-group
     :id="id"
     :checked="value"
-    :options="$options.flowTypes"
+    :options="$options.agentTypes"
     :disabled="disabled"
     @input="$emit('input', $event)"
   />

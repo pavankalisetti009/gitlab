@@ -5,10 +5,13 @@ import {
   VISIBILITY_LEVEL_PRIVATE_STRING,
 } from '~/visibility_level/constants';
 
+import createAiCatalogAgent from './graphql/mutations/create_ai_catalog_agent.mutation.graphql';
 import createAiCatalogFlow from './graphql/mutations/create_ai_catalog_flow.mutation.graphql';
 import createAiCatalogThirdPartyFlow from './graphql/mutations/create_ai_catalog_third_party_flow.mutation.graphql';
+import deleteAiCatalogAgentMutation from './graphql/mutations/delete_ai_catalog_agent.mutation.graphql';
 import deleteAiCatalogFlowMutation from './graphql/mutations/delete_ai_catalog_flow.mutation.graphql';
 import deleteAiCatalogThirdPartyFlowMutation from './graphql/mutations/delete_ai_catalog_third_party_flow.mutation.graphql';
+import updateAiCatalogAgent from './graphql/mutations/update_ai_catalog_agent.mutation.graphql';
 import updateAiCatalogFlow from './graphql/mutations/update_ai_catalog_flow.mutation.graphql';
 import updateAiCatalogThirdPartyFlow from './graphql/mutations/update_ai_catalog_third_party_flow.mutation.graphql';
 
@@ -18,12 +21,12 @@ export const AI_CATALOG_TYPE_THIRD_PARTY_FLOW = 'THIRD_PARTY_FLOW';
 export const AI_CATALOG_ITEM_LABELS = {
   [AI_CATALOG_TYPE_AGENT]: s__('AICatalog|agent'),
   [AI_CATALOG_TYPE_FLOW]: s__('AICatalog|flow'),
-  [AI_CATALOG_TYPE_THIRD_PARTY_FLOW]: s__('AICatalog|flow'),
+  [AI_CATALOG_TYPE_THIRD_PARTY_FLOW]: s__('AICatalog|agent'),
 };
 export const AI_CATALOG_ITEM_PLURAL_LABELS = {
   [AI_CATALOG_TYPE_AGENT]: s__('AICatalog|agents'),
   [AI_CATALOG_TYPE_FLOW]: s__('AICatalog|flows'),
-  [AI_CATALOG_TYPE_THIRD_PARTY_FLOW]: s__('AICatalog|flows'),
+  [AI_CATALOG_TYPE_THIRD_PARTY_FLOW]: s__('AICatalog|agents'),
 };
 
 export const AI_CATALOG_CONSUMER_TYPE_GROUP = 'group';
@@ -87,7 +90,21 @@ export const VERSION_LATEST = 'latestVersion';
 export const VERSION_PINNED = 'configurationForProject.pinnedItemVersion';
 
 // FLOW and THIRD_PARTY_FLOW apollo configuration
-export const FLOW_TYPE_APOLLO_CONFIG = {
+export const AI_CATALOG_ITEM_TYPE_APOLLO_CONFIG = {
+  [AI_CATALOG_TYPE_AGENT]: {
+    create: {
+      mutation: createAiCatalogAgent,
+      responseKey: 'aiCatalogAgentCreate',
+    },
+    delete: {
+      mutation: deleteAiCatalogAgentMutation,
+      responseKey: 'aiCatalogAgentDelete',
+    },
+    update: {
+      mutation: updateAiCatalogAgent,
+      responseKey: 'aiCatalogAgentUpdate',
+    },
+  },
   [AI_CATALOG_TYPE_FLOW]: {
     create: {
       mutation: createAiCatalogFlow,
