@@ -18,6 +18,9 @@ RSpec.describe Geo::VerificationStateDefinition, feature_category: :geo_replicat
   let_it_be(:dummy_model_class) do
     Class.new(ActiveRecord::Base) do
       self.table_name = '_test_dummy_models'
+      def self.name
+        'TestDummyModel'
+      end
       include Geo::VerificationStateDefinition
     end
   end
