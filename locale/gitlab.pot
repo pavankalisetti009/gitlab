@@ -41247,6 +41247,9 @@ msgstr ""
 msgid "MemberRole|The Reporter role is suitable for team members who need to stay informed about a project or group but do not actively contribute code."
 msgstr ""
 
+msgid "MemberRole|The Security Manager role provides comprehensive visibility and management over security aspects of the group or project."
+msgstr ""
+
 msgid "MemberRole|This member is an LDAP user. Changing their role will override the settings from the LDAP group sync."
 msgstr ""
 
