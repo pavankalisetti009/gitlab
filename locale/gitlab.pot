@@ -62244,10 +62244,16 @@ msgstr ""
 msgid "SecurityReports|All tools"
 msgstr ""
 
+msgid "SecurityReports|All tracked refs"
+msgstr ""
+
 msgid "SecurityReports|Attach to existing issue"
 msgstr ""
 
 msgid "SecurityReports|Attach to new issue"
+msgstr ""
+
+msgid "SecurityReports|Branches"
 msgstr ""
 
 msgid "SecurityReports|CVSS v%{version}:"
@@ -62692,6 +62698,9 @@ msgstr ""
 msgid "SecurityReports|Submit vulnerability"
 msgstr ""
 
+msgid "SecurityReports|Tags"
+msgstr ""
+
 msgid "SecurityReports|The Activity filter now defaults to showing only vulnerabilities that are \"still detected\". To see vulnerabilities regardless of their detection status, remove this filter."
 msgstr ""
 
@@ -62768,6 +62777,9 @@ msgid "SecurityReports|Total number of %{boldStart}open%{boldEnd} %{severity} vu
 msgstr ""
 
 msgid "SecurityReports|Total number of %{boldStart}open%{boldEnd} %{severity} vulnerabilities. Select the number to see the open vulnerabilities in the vulnerability report."
+msgstr ""
+
+msgid "SecurityReports|Tracked ref"
 msgstr ""
 
 msgid "SecurityReports|Unable to add %{invalidProjectsMessage}: %{errorMessage}"

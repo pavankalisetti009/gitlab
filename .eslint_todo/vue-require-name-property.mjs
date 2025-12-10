@@ -1954,7 +1954,6 @@ export default {
     'ee/app/assets/javascripts/security_dashboard/components/shared/vulnerability_report/vulnerability_list_status.vue',
     'ee/app/assets/javascripts/security_dashboard/components/shared/vulnerability_report/vulnerability_report_header.vue',
     'ee/app/assets/javascripts/security_dashboard/components/shared/vulnerability_report/vulnerability_report_tab.vue',
-    'ee/app/assets/javascripts/security_dashboard/components/shared/vulnerability_report/vulnerability_report_tabs.vue',
     'ee/app/assets/javascripts/security_dashboard/components/shared/vulnerability_retention_alert.vue',
     'ee/app/assets/javascripts/security_inventory/components/action_cell.vue',
     'ee/app/assets/javascripts/security_inventory/components/app.vue',

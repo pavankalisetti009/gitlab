@@ -10,6 +10,7 @@ import IdentifierToken from './identifier_token.vue';
 import ReportTypeToken from './report_type_token.vue';
 import ReachabilityToken from './reachability_token.vue';
 import ValidityCheckToken from './validity_check_token.vue';
+import TrackedRefToken from './tracked_ref_token.vue';
 
 export const STATUS_TOKEN_DEFINITION = {
   type: 'state',
@@ -108,4 +109,13 @@ export const VALIDITY_CHECK_TOKEN_DEFINITION = {
   unique: true,
   token: ValidityCheckToken,
   operators: OPERATORS_IS,
+};
+
+export const TRACKED_REF_TOKEN_DEFINITION = {
+  type: 'trackedRefIds',
+  title: TrackedRefToken.i18n.label,
+  multiSelect: true,
+  unique: true,
+  token: TrackedRefToken,
+  operators: OPERATORS_OR,
 };
