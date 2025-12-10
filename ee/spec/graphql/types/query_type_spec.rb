@@ -82,6 +82,7 @@ RSpec.describe GitlabSchema.types['Query'], feature_category: :shared do
       :ai_model_selection_namespace_settings,
       :dependency,
       :project_compliance_violation,
+      :virtual_registries_container_registry,
       :virtual_registries_packages_maven_registry,
       :namespace_security_projects,
       :virtual_registries_packages_maven_upstream,
@@ -127,6 +128,15 @@ RSpec.describe GitlabSchema.types['Query'], feature_category: :shared do
       it "includes the correct scopes for #{field}" do
         expect(described_class.fields[field].instance_variable_get(:@scopes)).to include(*scopes)
       end
+    end
+  end
+
+  describe 'virtualRegistriesContainerRegistry field' do
+    subject { described_class.fields['virtualRegistriesContainerRegistry'] }
+
+    it 'finds a container virtual registry by its gid' do
+      is_expected.to have_graphql_arguments(:id)
+      is_expected.to have_graphql_type(::Types::VirtualRegistries::Container::RegistryDetailsType)
     end
   end
 

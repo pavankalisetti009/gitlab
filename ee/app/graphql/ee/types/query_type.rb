@@ -413,6 +413,18 @@ module EE
             description: 'Global ID of the project compliance violation.'
         end
 
+        field :virtual_registries_container_registry,
+          ::Types::VirtualRegistries::Container::RegistryDetailsType,
+          null: true,
+          description: 'Find a container virtual registry. ' \
+            'Returns null if the `container_virtual_registries` feature flag is disabled.',
+          experiment: { milestone: '18.7' } do
+          argument :id,
+            type: ::Types::GlobalIDType[::VirtualRegistries::Container::Registry],
+            required: true,
+            description: 'Global ID of the container virtual registry.'
+        end
+
         field :virtual_registries_packages_maven_registry,
           ::Types::VirtualRegistries::Packages::Maven::RegistryDetailsType,
           null: true,
@@ -521,6 +533,10 @@ module EE
         ::Ai::Catalog::BuiltInTool.all.sort_by(&:name)
       end
 
+      def virtual_registries_container_registry(id:)
+        find_container_registry_by_id(id)
+      end
+
       def virtual_registries_packages_maven_registry(id:)
         find_maven_registry_by_id(id)
       end
@@ -549,6 +565,15 @@ module EE
           next unless registry_object&.group
 
           registry_object if ::VirtualRegistries::Packages::Maven
+            .virtual_registry_available?(registry_object.group, current_user)
+        end
+      end
+
+      def find_container_registry_by_id(id)
+        ::Gitlab::Graphql::Lazy.with_value(::GitlabSchema.find_by_gid(id)) do |registry_object|
+          next unless registry_object&.group
+
+          registry_object if ::VirtualRegistries::Container
             .virtual_registry_available?(registry_object.group, current_user)
         end
       end
