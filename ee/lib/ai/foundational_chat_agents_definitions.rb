@@ -47,7 +47,7 @@ module Ai
         reference: 'analytics_agent',
         global_catalog_id: nil,
         version: 'v1',
-        name: 'Analytics Agent',
+        name: 'Data Analyst',
         description: <<~DESCRIPTION
           Beta AI assistant for analyzing data in GitLab, powered by GLQL
         DESCRIPTION
