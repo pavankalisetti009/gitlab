@@ -73,6 +73,7 @@ module Ai
       end
 
       scope :foundational_flows, -> { where.not(foundational_flow_reference: nil) }
+      scope :with_foundational_flow_reference, ->(reference) { where(foundational_flow_reference: reference) }
 
       before_destroy :prevent_deletion_if_consumers_exist
 
