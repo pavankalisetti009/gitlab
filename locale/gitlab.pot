@@ -9878,6 +9878,18 @@ msgstr ""
 msgid "Attempted to update the pipeline trigger token but failed"
 msgstr ""
 
+msgid "Attestations|Attestations"
+msgstr ""
+
+msgid "Attestations|No attestations found for this project"
+msgstr ""
+
+msgid "Attestations|Sign and verify SLSA provenance with a CI/CD Component."
+msgstr ""
+
+msgid "Attestations|View SLSA Component documentation"
+msgstr ""
+
 msgid "Attribute 'container-overrides' is not yet supported"
 msgstr ""
 
@@ -65898,6 +65910,9 @@ msgid "Subgroups"
 msgstr ""
 
 msgid "Subgroups and projects"
+msgstr ""
+
+msgid "Subject"
 msgstr ""
 
 msgid "Subject Key Identifier:"
