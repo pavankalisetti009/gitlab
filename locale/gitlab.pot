@@ -10714,12 +10714,6 @@ msgstr ""
 msgid "BetaBadge|A %{link_start}beta%{link_end} feature is not yet production-ready, but is ready for testing and unlikely to change significantly before it's released."
 msgstr ""
 
-msgid "BetaBadge|A beta feature is not yet production-ready, but is ready for testing and unlikely to change significantly before it's released."
-msgstr ""
-
-msgid "BetaBadge|Are subject to the GitLab Testing Agreement."
-msgstr ""
-
 msgid "BetaBadge|Are supported on a commercially-reasonable effort basis."
 msgstr ""
 
