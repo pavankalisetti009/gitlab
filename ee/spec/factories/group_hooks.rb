@@ -36,6 +36,8 @@ FactoryBot.define do
       resource_access_token_events { true }
       member_events { true }
       vulnerability_events { true }
+      feature_flag_events { true }
+      deployment_events { true }
     end
   end
 end
