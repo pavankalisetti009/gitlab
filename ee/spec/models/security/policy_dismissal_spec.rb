@@ -292,6 +292,52 @@ RSpec.describe Security::PolicyDismissal, feature_category: :security_policy_man
     end
   end
 
+  describe '.pluck_license_occurrence_uuid' do
+    let_it_be(:dismissed_license_occurrence_uuid) { SecureRandom.uuid }
+    let_it_be(:dismissed_license_occurrence_uuids) { [dismissed_license_occurrence_uuid] }
+
+    subject(:license_occurrence_uuids) { described_class.pluck_license_occurrence_uuid }
+
+    context 'when there is no policy dismissal with license_occurrence_uuids' do
+      it 'returns none' do
+        expect(license_occurrence_uuids).to be_empty
+      end
+    end
+
+    context 'when there are policy dismissals with license_occurrence_uuids' do
+      let_it_be(:security_policy_dismissal) do
+        create(:policy_dismissal, license_occurrence_uuids: dismissed_license_occurrence_uuids)
+      end
+
+      it 'returns the license_occurrence_uuids' do
+        expect(license_occurrence_uuids).to contain_exactly(dismissed_license_occurrence_uuid)
+      end
+
+      context 'when there are duplicated license_occurrence_uuids' do
+        let_it_be(:other_security_policy_dismissal) do
+          create(:policy_dismissal, license_occurrence_uuids: dismissed_license_occurrence_uuids)
+        end
+
+        it 'returns distinct license_occurrence_uuids' do
+          expect(license_occurrence_uuids).to contain_exactly(dismissed_license_occurrence_uuid)
+        end
+      end
+
+      context 'with multiple distinct license_occurrence_uuids' do
+        let_it_be(:other_dismissed_license_occurrence_uuid) { SecureRandom.uuid }
+
+        let_it_be(:other_security_policy_dismissal) do
+          create(:policy_dismissal, license_occurrence_uuids: [other_dismissed_license_occurrence_uuid])
+        end
+
+        it 'returns all license_occurrence_uuids' do
+          expect(license_occurrence_uuids).to contain_exactly(dismissed_license_occurrence_uuid,
+            other_dismissed_license_occurrence_uuid)
+        end
+      end
+    end
+  end
+
   describe '#applicable_for_all_violations?' do
     let_it_be(:project) { create(:project) }
     let_it_be(:merge_request) { create(:merge_request, target_project: project, source_project: project) }
