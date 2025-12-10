@@ -115,7 +115,7 @@ describe('AiCommonSettings', () => {
     it('passes props to settings-block component', () => {
       expect(findSettingsBlock().props()).toEqual({
         expanded: false,
-        id: null,
+        id: 'js-gitlab-duo-settings',
         title: 'GitLab Duo features',
       });
     });
