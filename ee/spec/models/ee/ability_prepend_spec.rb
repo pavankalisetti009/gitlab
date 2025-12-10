@@ -46,19 +46,6 @@ RSpec.describe Ability, feature_category: :system_access do
         stub_saas_features(service_accounts_invite_restrictions: true)
       end
 
-      context 'when feature flag is disabled' do
-        let(:user) { service_account }
-        let(:subject_group) { other_group }
-
-        before do
-          stub_feature_flags(restrict_invites_for_comp_id_service_accounts: false)
-        end
-
-        it 'returns false' do
-          expect(result).to be false
-        end
-      end
-
       context 'when user does not have composite_identity_enforced' do
         let(:user) { non_composite_service_account }
         let(:subject_group) { other_group }

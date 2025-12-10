@@ -26,7 +26,6 @@ module EE
           scoped_users = super
 
           return scoped_users unless ::Gitlab::Saas.feature_available?(:service_accounts_invite_restrictions)
-          return scoped_users unless ::Feature.enabled?(:restrict_invites_for_comp_id_service_accounts, :instance)
           return scoped_users unless resource.is_a?(Group)
 
           ::Members::ServiceAccounts::CompositeIdUsersFinder.new(resource).execute(scoped_users)
