@@ -381,7 +381,11 @@ describe('SecretForm component', () => {
         await waitForPromises();
 
         expect(findSubmitButton().props('loading')).toBe(false);
-        expect(createAlert).toHaveBeenCalledWith({ message: 'This secret is invalid.' });
+        expect(createAlert).toHaveBeenCalledWith({
+          message: 'This secret is invalid.',
+          captureError: true,
+          error: new Error('This secret is invalid.'),
+        });
       });
     });
 
@@ -610,7 +614,11 @@ describe('SecretForm component', () => {
         await editSecret();
 
         expect(findSubmitButton().props('loading')).toBe(false);
-        expect(createAlert).toHaveBeenCalledWith({ message: 'Cannot update secret.' });
+        expect(createAlert).toHaveBeenCalledWith({
+          message: 'Cannot update secret.',
+          captureError: true,
+          error: new Error('Cannot update secret.'),
+        });
       });
     });
 

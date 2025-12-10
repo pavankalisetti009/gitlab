@@ -146,7 +146,11 @@ export default {
 
         const error = data.projectSecretCreate.errors[0];
         if (error) {
-          createAlert({ message: error });
+          createAlert({
+            message: error,
+            captureError: true,
+            error: new Error(error),
+          });
           return;
         }
 
@@ -176,7 +180,11 @@ export default {
 
         const error = data.projectSecretUpdate.errors[0];
         if (error) {
-          createAlert({ message: error });
+          createAlert({
+            message: error,
+            captureError: true,
+            error: new Error(error),
+          });
           return;
         }
 

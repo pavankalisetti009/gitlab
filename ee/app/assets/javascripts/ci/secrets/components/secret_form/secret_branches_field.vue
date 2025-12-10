@@ -42,8 +42,12 @@ export default {
       update({ project: { repository = {} } } = {}) {
         return repository.branchNames || [];
       },
-      error() {
-        createAlert({ message: __('An error occurred while fetching branches.') });
+      error(e) {
+        createAlert({
+          message: __('An error occurred while fetching branches.'),
+          captureError: true,
+          error: e,
+        });
       },
     },
   },

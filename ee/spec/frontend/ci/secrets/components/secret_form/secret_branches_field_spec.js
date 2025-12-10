@@ -92,14 +92,18 @@ describe('SecretFormWrapper component', () => {
   });
 
   describe('when query is unsuccessful', () => {
+    const error = new Error('Network error');
+
     beforeEach(async () => {
-      mockProjectBranchesResponse = jest.fn().mockRejectedValue();
+      mockProjectBranchesResponse = jest.fn().mockRejectedValue(error);
       await createComponent();
     });
 
     it('renders alert', () => {
       expect(createAlert).toHaveBeenCalledWith({
         message: 'An error occurred while fetching branches.',
+        captureError: true,
+        error,
       });
     });
   });

@@ -131,6 +131,23 @@ describe('SecretFormWrapper component', () => {
         },
       });
     });
+
+    describe('when secret query fails', () => {
+      const error = new Error('Failed to fetch secret');
+
+      beforeEach(async () => {
+        mockSecretQuery.mockRejectedValue(error);
+        await createComponent({ props: { isEditing: true, secretName: 'SECRET_KEY' } });
+      });
+
+      it('calls createAlert with error details', () => {
+        expect(createAlert).toHaveBeenCalledWith({
+          message: 'Failed to load secret. Please try again later.',
+          captureError: true,
+          error,
+        });
+      });
+    });
   });
 
   describe('environments dropdown', () => {
@@ -197,13 +214,19 @@ describe('SecretFormWrapper component', () => {
     });
 
     describe('when query is unsuccessful', () => {
+      const error = new Error('GraphQL error');
+
       beforeEach(async () => {
-        mockGroupEnvQuery.mockRejectedValue();
+        mockGroupEnvQuery.mockRejectedValue(error);
         await createComponent({ isLoading: false });
       });
 
       it('calls createAlert with the expected error message', () => {
-        expect(createAlert).toHaveBeenCalledWith({ message: ENVIRONMENT_FETCH_ERROR });
+        expect(createAlert).toHaveBeenCalledWith({
+          message: ENVIRONMENT_FETCH_ERROR,
+          captureError: true,
+          error,
+        });
       });
     });
 
