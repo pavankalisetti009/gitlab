@@ -68,7 +68,7 @@ module Namespaces
                   namespace.gitlab_subscription.seats
                 end
 
-        limit > namespace.provisioned_users.service_account.count
+        limit > namespace.provisioned_users.service_accounts_without_composite_identity.count
       end
 
       def saas?

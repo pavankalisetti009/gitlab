@@ -61,8 +61,12 @@ RSpec.describe Users::ServiceAccounts::CreateService, feature_category: :user_ma
 
       context 'when subscription is of premium tier' do
         let(:license) { create(:license, plan: License::PREMIUM_PLAN) }
-        let!(:service_account3) { create(:user, :service_account) }
-        let!(:service_account4) { create(:user, :service_account) }
+        let!(:service_account_without_composite) { create(:user, :service_account, composite_identity_enforced: false) }
+        let!(:service_account_without_composite2) do
+          create(:user, :service_account, composite_identity_enforced: false)
+        end
+
+        let!(:service_account_with_composite) { create(:user, :service_account, composite_identity_enforced: true) }
 
         context 'when premium seats are not available' do
           before do
@@ -79,7 +83,7 @@ RSpec.describe Users::ServiceAccounts::CreateService, feature_category: :user_ma
 
         context 'when premium seats are available' do
           before do
-            allow(license).to receive(:seats).and_return(User.service_account.count + 2)
+            allow(license).to receive(:seats).and_return(User.service_accounts_without_composite_identity.count + 2)
           end
 
           it_behaves_like 'service account creation success' do
@@ -95,6 +99,19 @@ RSpec.describe Users::ServiceAccounts::CreateService, feature_category: :user_ma
 
             expect(result.status).to eq(:error)
             expect(result.message).to eq('Email has already been taken and Username has already been taken')
+          end
+        end
+
+        context 'when service accounts with composite_identity_enforced exist' do
+          it 'does not count them toward the seat limit' do
+            # We have 2 service accounts with composite_identity_enforced: false
+            # and 1 service account with composite_identity_enforced: true (AI Agent)
+            # If we set seats to 3, we should be able to create 1 more (since only 2 without composite count)
+            allow(license).to receive(:seats).and_return(3)
+
+            result = service.execute
+
+            expect(result.status).to eq(:success)
           end
         end
       end
