@@ -1219,6 +1219,15 @@ module EE
         enable :trigger_ai_flow
       end
 
+      condition(:ai_settings_prevent_execute) do
+        customizable_permissions_enabled? &&
+          @subject.root_ancestor.is_a?(Group) &&
+          !can?(:admin_organization, @subject.organization) &&
+          team_access_level < @subject.root_ancestor.minimum_access_level_to_execute
+      end
+
+      rule { ai_settings_prevent_execute }.prevent :trigger_ai_flow
+
       rule { can?(:read_project) & duo_features_enabled }.enable :access_duo_features
 
       desc "Project has saved replies support"
@@ -1418,6 +1427,14 @@ module EE
     def custom_role_ability(user, subject)
       strong_memoize_with(:custom_role_ability, user, subject) do
         ::Authz::CustomAbility.new(user, subject)
+      end
+    end
+
+    def customizable_permissions_enabled?
+      if is_gitlab_com?
+        ::Feature.enabled?(:dap_group_customizable_permissions, project.root_ancestor)
+      else
+        ::Feature.enabled?(:dap_instance_customizable_permissions, :instance)
       end
     end
   end
