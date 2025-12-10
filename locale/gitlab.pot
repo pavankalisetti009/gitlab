@@ -48529,6 +48529,9 @@ msgstr ""
 msgid "Passkey has been deleted!"
 msgstr ""
 
+msgid "Passkey is now your default 2FA method. If you lose access to your 2FA method, use your %{doc_start}recovery codes%{doc_end}."
+msgstr ""
+
 msgid "Passkey may have been cloned. Contact your administrator."
 msgstr ""
 
