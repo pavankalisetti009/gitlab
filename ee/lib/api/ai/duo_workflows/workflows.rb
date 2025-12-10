@@ -93,7 +93,7 @@ module API
             end
 
             workflow_token_result = workflow_context_service.generate_workflow_token
-            bad_request!(workflow_token_result[:message]) if workflow_token_result.error?
+            handle_workflow_token_error(workflow_token_result) if workflow_token_result.error?
 
             {
               goal: params[:goal],
@@ -155,6 +155,18 @@ module API
             bad_request!(duo_workflow_list_tools_result[:message]) if duo_workflow_list_tools_result[:status] == :error
 
             duo_workflow_list_tools_result
+          end
+
+          def handle_workflow_token_error(result)
+            message = result[:message]
+
+            if message.include?("USAGE_QUOTA_EXCEEDED")
+              message = "You don't have enough GitLab Credits to run this flow. " \
+                "Contact your administrator for more credits."
+              render_api_error!(message, :forbidden)
+            else
+              render_api_error!(message, :bad_request)
+            end
           end
 
           def create_workflow_params
