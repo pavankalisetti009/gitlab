@@ -45990,6 +45990,9 @@ msgstr ""
 msgid "Observability|Observability Service Configuration"
 msgstr ""
 
+msgid "Observability|Observability configuration"
+msgstr ""
+
 msgid "Observability|Observability is already enabled for this group"
 msgstr ""
 
