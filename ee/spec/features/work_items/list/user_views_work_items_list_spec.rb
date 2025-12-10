@@ -17,6 +17,7 @@ RSpec.describe 'Work Items List', :js, feature_category: :team_planning do
     before do
       stub_licensed_features(epics: true, issuable_health_status: true, iterations: true)
       sign_in(user)
+      stub_feature_flags(work_items_saved_views: false)
       visit group_work_items_path(group)
 
       wait_for_all_requests
