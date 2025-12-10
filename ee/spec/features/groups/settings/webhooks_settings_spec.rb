@@ -93,6 +93,8 @@ RSpec.describe 'Groups > Settings > Group hooks', feature_category: :webhooks do
 
         expect(page).to have_content('Enable SSL verification')
         expect(page).to have_content('Recent events')
+        click_link 'Close'
+        expect(page).not_to have_content('Save changes')
       end
 
       it 'tests an existing group hook', :js do
