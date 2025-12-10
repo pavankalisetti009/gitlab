@@ -74,6 +74,9 @@ export default {
     project() {
       return this.agentFlow?.project || {};
     },
+    userId() {
+      return this.agentFlow?.userId || '';
+    },
   },
   beforeDestroy() {
     agentSessionStatusVar(null);
@@ -92,5 +95,6 @@ export default {
     :created-at="createdAt"
     :project="project"
     :updated-at="updatedAt"
+    :user-id="userId"
   />
 </template>

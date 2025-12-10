@@ -1,6 +1,7 @@
 import { makeVar } from '@apollo/client/core';
 import { s__ } from '~/locale';
 import { humanize } from '~/lib/utils/text_utility';
+import { localeDateFormat } from '~/lib/utils/datetime/locale_dateformat';
 import { AGENT_PLATFORM_STATUS_ICON, AGENT_PLATFORM_STATUS_BADGE } from './constants';
 
 export const formatAgentDefinition = (agentDefinition) => {
@@ -115,3 +116,13 @@ export const getMessageData = (message) => {
 };
 
 export const agentSessionStatusVar = makeVar(null);
+
+export const formatDate = (isoString) => {
+  if (!isoString) return '';
+
+  try {
+    return localeDateFormat.asDate.format(new Date(isoString));
+  } catch {
+    return '';
+  }
+};

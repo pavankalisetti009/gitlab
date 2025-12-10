@@ -25208,6 +25208,9 @@ msgstr ""
 msgid "Duo Agent Platform|Something went wrong saving Duo Agent Platform settings"
 msgstr ""
 
+msgid "DuoAgentPlatform|%{agentName} %{date}"
+msgstr ""
+
 msgid "DuoAgentPlatform|%{formattedName} created"
 msgstr ""
 
@@ -25266,6 +25269,9 @@ msgid "DuoAgentPlatform|Session information"
 msgstr ""
 
 msgid "DuoAgentPlatform|Session triggered"
+msgstr ""
+
+msgid "DuoAgentPlatform|Triggered"
 msgstr ""
 
 msgid "DuoAgentPlatform|User messaged agent"
