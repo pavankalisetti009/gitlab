@@ -227,6 +227,10 @@ module Ai
         project || namespace
       end
 
+      def associated_pipelines
+        workloads.includes(:pipeline).filter_map(&:pipeline).uniq
+      end
+
       def mcp_enabled?
         return true if resource_parent.root_ancestor.duo_workflow_mcp_enabled
 

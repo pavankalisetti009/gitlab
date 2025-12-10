@@ -137,23 +137,144 @@ RSpec.describe ::Ai::DuoWorkflows::UpdateWorkflowStatusService, feature_category
         expect(workflow.reload.human_status_name).to eq("paused")
       end
 
-      it "can stop a workflow", :aggregate_failures do
-        expect do
-          result = described_class.new(workflow: workflow, current_user: user, status_event: "stop").execute
+      context "when stopping workflow" do
+        it "can stop a workflow without associated pipelines", :aggregate_failures do
+          allow(workflow).to receive(:associated_pipelines).and_return([])
 
-          expect(result[:status]).to eq(:success)
-          expect(result[:message]).to eq("Workflow status updated")
-        end.to trigger_internal_events("agent_platform_session_stopped")
-                             .with(category: "Ai::DuoWorkflows::UpdateWorkflowStatusService",
-                               user: workflow.user,
-                               project: workflow.project,
-                               additional_properties: {
-                                 label: workflow.workflow_definition,
-                                 value: workflow.id,
-                                 property: "ide"
-                               })
+          expect do
+            result = described_class.new(workflow: workflow, current_user: user, status_event: "stop").execute
 
-        expect(workflow.reload.human_status_name).to eq("stopped")
+            expect(result[:status]).to eq(:success)
+            expect(result[:message]).to eq("Workflow status updated")
+          end.to trigger_internal_events("agent_platform_session_stopped")
+                                 .with(category: "Ai::DuoWorkflows::UpdateWorkflowStatusService",
+                                   user: workflow.user,
+                                   project: workflow.project,
+                                   additional_properties: {
+                                     label: workflow.workflow_definition,
+                                     value: workflow.id,
+                                     property: "ide"
+                                   })
+
+          expect(workflow.reload.human_status_name).to eq("stopped")
+        end
+
+        context "with associated pipelines" do
+          let(:pipeline1) { create(:ci_pipeline, project: project) }
+          let(:pipeline2) { create(:ci_pipeline, project: project) }
+
+          before do
+            allow(workflow).to receive(:associated_pipelines).and_return([pipeline1, pipeline2])
+          end
+
+          it "cancels all cancelable pipelines successfully" do
+            allow(pipeline1).to receive(:cancelable?).and_return(true)
+            allow(pipeline2).to receive(:cancelable?).and_return(true)
+
+            allow(::Ci::CancelPipelineService).to receive(:new).and_wrap_original do |method, **kwargs|
+              service = method.call(**kwargs)
+              allow(service).to receive(:execute).and_return(ServiceResponse.success)
+              service
+            end
+
+            result = described_class.new(workflow: workflow, current_user: user, status_event: "stop").execute
+
+            expect(result[:status]).to eq(:success)
+            expect(result[:message]).to eq("Workflow status updated")
+            expect(workflow.reload.human_status_name).to eq("stopped")
+          end
+
+          it "skips non-cancelable pipelines" do
+            allow(pipeline1).to receive(:cancelable?).and_return(false)
+            allow(pipeline2).to receive(:cancelable?).and_return(true)
+
+            service_double = instance_double(::Ci::CancelPipelineService)
+            allow(service_double).to receive(:execute).and_return(ServiceResponse.success)
+            allow(::Ci::CancelPipelineService).to receive(:new).and_return(service_double)
+
+            result = described_class.new(workflow: workflow, current_user: user, status_event: "stop").execute
+
+            expect(result[:status]).to eq(:success)
+            expect(workflow.reload.human_status_name).to eq("stopped")
+            expect(::Ci::CancelPipelineService).to have_received(:new).once
+          end
+
+          it "returns error when single pipeline cancellation fails" do
+            allow(pipeline1).to receive(:cancelable?).and_return(true)
+            allow(pipeline2).to receive(:cancelable?).and_return(true)
+
+            service_double = instance_double(::Ci::CancelPipelineService)
+            allow(service_double).to receive(:execute).and_return(
+              ServiceResponse.error(message: "Failed to cancel pipeline")
+            )
+            allow(::Ci::CancelPipelineService).to receive(:new).and_return(service_double)
+
+            result = described_class.new(workflow: workflow, current_user: user, status_event: "stop").execute
+
+            expect(result[:status]).to eq(:error)
+            expect(result[:message]).to include("Failed to cancel some pipelines")
+            expect(result[:message]).to include("Pipeline #{pipeline1.id}")
+            expect(workflow.reload.human_status_name).to eq("running")
+          end
+
+          it "includes all failed pipeline details in error message" do
+            allow(pipeline1).to receive(:cancelable?).and_return(true)
+            allow(pipeline2).to receive(:cancelable?).and_return(true)
+
+            call_count = 0
+            service_double = instance_double(::Ci::CancelPipelineService)
+            allow(service_double).to receive(:execute) do
+              call_count += 1
+              ServiceResponse.error(message: "Error #{call_count}")
+            end
+            allow(::Ci::CancelPipelineService).to receive(:new).and_return(service_double)
+
+            result = described_class.new(workflow: workflow, current_user: user, status_event: "stop").execute
+
+            expect(result[:status]).to eq(:error)
+            expect(result[:message]).to include("Failed to cancel some pipelines")
+            expect(result[:message]).to include("Pipeline #{pipeline1.id}: Error 1")
+            expect(result[:message]).to include("Pipeline #{pipeline2.id}: Error 2")
+          end
+
+          it "handles mixed cancelable and non-cancelable pipelines" do
+            allow(pipeline1).to receive(:cancelable?).and_return(true)
+            allow(pipeline2).to receive(:cancelable?).and_return(false)
+
+            service_double = instance_double(::Ci::CancelPipelineService)
+            allow(service_double).to receive(:execute).and_return(ServiceResponse.success)
+            allow(::Ci::CancelPipelineService).to receive(:new).and_return(service_double)
+
+            result = described_class.new(workflow: workflow, current_user: user, status_event: "stop").execute
+
+            expect(result[:status]).to eq(:success)
+            expect(workflow.reload.human_status_name).to eq("stopped")
+            expect(::Ci::CancelPipelineService).to have_received(:new).once
+          end
+
+          it "stops workflow even if some pipelines fail to cancel" do
+            allow(pipeline1).to receive(:cancelable?).and_return(true)
+            allow(pipeline2).to receive(:cancelable?).and_return(true)
+
+            call_count = 0
+            service_double = instance_double(::Ci::CancelPipelineService)
+            allow(service_double).to receive(:execute) do
+              call_count += 1
+              if call_count == 1
+                ServiceResponse.error(message: "First pipeline failed")
+              else
+                ServiceResponse.success
+              end
+            end
+            allow(::Ci::CancelPipelineService).to receive(:new).and_return(service_double)
+
+            result = described_class.new(workflow: workflow, current_user: user, status_event: "stop").execute
+
+            expect(result[:status]).to eq(:error)
+            expect(result[:message]).to include("Failed to cancel some pipelines")
+            expect(workflow.reload.human_status_name).to eq("running")
+          end
+        end
       end
 
       it "can retry a running workflow", :aggregate_failures do
@@ -312,6 +433,59 @@ RSpec.describe ::Ai::DuoWorkflows::UpdateWorkflowStatusService, feature_category
         expect(result[:message]).to eq("Can not update workflow")
         expect(result[:reason]).to eq(:unauthorized)
         expect(workflow.reload.human_status_name).to eq("running")
+      end
+
+      context "when user lacks permission to update workflow during status event handling" do
+        it "returns unauthorized error with specific message for stop event" do
+          test_user = create(:user)
+          call_count = 0
+
+          allow(test_user).to receive(:can?) do
+            call_count += 1
+            call_count == 1
+          end
+
+          result = described_class.new(workflow: workflow, current_user: test_user, status_event: "stop").execute
+
+          expect(result[:status]).to eq(:error)
+          expect(result[:message]).to eq("You do not have permission to cancel this session.")
+          expect(result[:reason]).to eq(:unauthorized)
+          expect(workflow.reload.human_status_name).to eq("running")
+        end
+
+        it "returns unauthorized error with specific message for finish event" do
+          test_user = create(:user)
+          call_count = 0
+
+          allow(test_user).to receive(:can?) do
+            call_count += 1
+            call_count == 1
+          end
+
+          result = described_class.new(workflow: workflow, current_user: test_user, status_event: "finish").execute
+
+          expect(result[:status]).to eq(:error)
+          expect(result[:message]).to eq("You do not have permission to cancel this session.")
+          expect(result[:reason]).to eq(:unauthorized)
+          expect(workflow.reload.human_status_name).to eq("running")
+        end
+
+        it "returns unauthorized error with specific message for drop event" do
+          test_user = create(:user)
+          call_count = 0
+
+          allow(test_user).to receive(:can?) do
+            call_count += 1
+            call_count == 1
+          end
+
+          result = described_class.new(workflow: workflow, current_user: test_user, status_event: "drop").execute
+
+          expect(result[:status]).to eq(:error)
+          expect(result[:message]).to eq("You do not have permission to cancel this session.")
+          expect(result[:reason]).to eq(:unauthorized)
+          expect(workflow.reload.human_status_name).to eq("running")
+        end
       end
 
       it "allows updating to current status", :aggregate_failures do

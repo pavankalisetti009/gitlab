@@ -31,11 +31,38 @@ module Ai
 
       private
 
+      def cancel_associated_pipelines
+        pipelines = @workflow.associated_pipelines
+        failed_cancellations = []
+
+        pipelines.each do |pipeline|
+          next unless pipeline.cancelable?
+
+          result = ::Ci::CancelPipelineService.new(
+            pipeline: pipeline,
+            current_user: @current_user
+          ).execute
+
+          failed_cancellations << "Pipeline #{pipeline.id}: #{result.message}" if result.error?
+        end
+
+        if failed_cancellations.any?
+          error_msg = "Failed to cancel some pipelines: #{failed_cancellations.join(', ')}"
+          return error_response(error_msg)
+        end
+
+        ServiceResponse.success
+      end
+
       def handle_status_event
         workflow_events = ::Ai::DuoWorkflows::Workflow.state_machines[:status].events.map { |event| event.name.to_s }
 
         unless workflow_events.include?(@status_event)
           return error_response("Can not update workflow status, unsupported event: #{@status_event}")
+        end
+
+        unless @current_user.can?(:update_duo_workflow, @workflow)
+          return error_response("You do not have permission to cancel this session.", :unauthorized)
         end
 
         if ::Ai::DuoWorkflows::Workflow.target_status_for_event(@status_event.to_sym) == @workflow.status_name
@@ -45,6 +72,11 @@ module Ai
 
         unless @workflow.status_events.include?(@status_event.to_sym)
           return error_response("Can not #{@status_event} workflow that has status #{@workflow.human_status_name}")
+        end
+
+        if @status_event == 'stop'
+          pipeline_cancellation_result = cancel_associated_pipelines
+          return pipeline_cancellation_result if pipeline_cancellation_result.error?
         end
 
         @workflow.fire_status_event(@status_event)
