@@ -6,6 +6,7 @@ module API
       class RunnerController < Grape::Entity
         expose :id, documentation: { type: 'Integer', example: 1 }
         expose :description, documentation: { type: 'String', example: 'Controller for managing runner' }
+        expose :enabled, documentation: { type: 'Boolean', example: true }
         expose :created_at, documentation: { type: 'DateTime' }
         expose :updated_at, documentation: { type: 'DateTime' }
       end
