@@ -6,16 +6,15 @@ RSpec.describe 'AiCatalogItemReport', feature_category: :workflow_catalog do
   include Ai::Catalog::TestHelpers
   include GraphqlHelpers
 
-  let_it_be(:developer) { create(:user) }
-  let_it_be(:reporter) { create(:user) }
-  let_it_be(:project) { create(:project, :private, developers: developer, reporters: reporter) }
+  let_it_be(:guest) { create(:user) }
+  let_it_be(:project) { create(:project, :private, guests: guest) }
   let_it_be(:public_catalog_item) { create(:ai_catalog_agent, project: project, public: true) }
   let_it_be(:private_catalog_item) { create(:ai_catalog_agent, project: project, public: false) }
   let_it_be(:flow_item) { create(:ai_catalog_flow, project: project, public: true) }
   let_it_be(:third_party_flow_item) { create(:ai_catalog_third_party_flow, project: project, public: true) }
 
   let(:catalog_item) { public_catalog_item }
-  let(:current_user) { developer }
+  let(:current_user) { guest }
   let(:reason) { 'SPAM_OR_LOW_QUALITY' }
   let(:body) { 'This item contains offensive material' }
   let(:input) do
@@ -57,8 +56,8 @@ RSpec.describe 'AiCatalogItemReport', feature_category: :workflow_catalog do
   end
 
   context 'when user has report_ai_catalog_item permission' do
-    context 'when user is a developer with public item' do
-      let(:current_user) { developer }
+    context 'when user is a guest with public item' do
+      let(:current_user) { guest }
       let(:catalog_item) { public_catalog_item }
 
       context 'with all required parameters' do
@@ -121,7 +120,7 @@ RSpec.describe 'AiCatalogItemReport', feature_category: :workflow_catalog do
       end
 
       context 'when ai_catalog is not available for the project' do
-        let(:current_user) { developer }
+        let(:current_user) { guest }
         let(:catalog_item) { public_catalog_item }
 
         before do
@@ -132,22 +131,15 @@ RSpec.describe 'AiCatalogItemReport', feature_category: :workflow_catalog do
       end
     end
 
-    context 'when user is a reporter with public item' do
-      let(:current_user) { reporter }
-      let(:catalog_item) { public_catalog_item }
-
-      it_behaves_like 'schedules email delivery'
-    end
-
-    context 'when user is a developer with private item' do
-      let(:current_user) { developer }
+    context 'when user is a guest with private item' do
+      let(:current_user) { guest }
       let(:catalog_item) { private_catalog_item }
 
       it_behaves_like 'schedules email delivery'
     end
 
     context 'with different catalog item types' do
-      let(:current_user) { developer }
+      let(:current_user) { guest }
 
       context 'when item is a flow' do
         let(:catalog_item) { flow_item }
@@ -171,15 +163,8 @@ RSpec.describe 'AiCatalogItemReport', feature_category: :workflow_catalog do
       it_behaves_like 'denies access and does not schedule email'
     end
 
-    context 'when user is a reporter with private item' do
-      let(:current_user) { reporter }
-      let(:catalog_item) { private_catalog_item }
-
-      it_behaves_like 'denies access and does not schedule email'
-    end
-
     context 'when abuse_notification_email is not configured' do
-      let(:current_user) { developer }
+      let(:current_user) { guest }
       let(:catalog_item) { public_catalog_item }
 
       before do
@@ -190,7 +175,7 @@ RSpec.describe 'AiCatalogItemReport', feature_category: :workflow_catalog do
     end
 
     context 'when catalog item does not exist' do
-      let(:current_user) { developer }
+      let(:current_user) { guest }
       let(:input) do
         {
           id: "gid://gitlab/Ai::Catalog::Item/#{non_existing_record_id}",
@@ -204,7 +189,7 @@ RSpec.describe 'AiCatalogItemReport', feature_category: :workflow_catalog do
   end
 
   describe 'rate limiting', :clean_gitlab_redis_rate_limiting do
-    let(:current_user) { developer }
+    let(:current_user) { guest }
     let(:catalog_item) { public_catalog_item }
 
     context 'when rate limit is not exceeded' do
@@ -234,7 +219,7 @@ RSpec.describe 'AiCatalogItemReport', feature_category: :workflow_catalog do
     end
 
     context 'when different users report' do
-      let_it_be(:another_user) { create(:user, developer_of: project) }
+      let_it_be(:another_user) { create(:user, guest_of: project) }
 
       it 'allows different users to report independently', :aggregate_failures do
         10.times do

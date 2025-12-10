@@ -5,9 +5,9 @@ require 'spec_helper'
 RSpec.describe Ai::Catalog::Agents::BuildFlowConfigService, :aggregate_failures, feature_category: :workflow_catalog do
   include Ai::Catalog::TestHelpers
 
-  let_it_be(:developer) { create(:user) }
+  let_it_be(:guest) { create(:user) }
   let_it_be(:organization) { create(:organization) }
-  let_it_be(:project) { create(:project, :repository, organization: organization, developers: developer) }
+  let_it_be(:project) { create(:project, :repository, organization: organization, guests: guest) }
   let_it_be(:agent) { create(:ai_catalog_agent, organization: organization, project: project) }
   let_it_be(:agent_version) { agent.versions.last }
 
@@ -18,7 +18,7 @@ RSpec.describe Ai::Catalog::Agents::BuildFlowConfigService, :aggregate_failures,
     }
   end
 
-  let(:current_user) { developer }
+  let(:current_user) { guest }
 
   let(:service) do
     described_class.new(
@@ -63,7 +63,7 @@ RSpec.describe Ai::Catalog::Agents::BuildFlowConfigService, :aggregate_failures,
     end
 
     context 'when user lack permission' do
-      let(:current_user) { create(:user).tap { |user| project.add_guest(user) } }
+      let(:current_user) { create(:user) }
 
       it_behaves_like 'returns error response', 'You have insufficient permissions'
 

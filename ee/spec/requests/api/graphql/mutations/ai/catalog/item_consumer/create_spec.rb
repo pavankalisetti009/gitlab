@@ -10,7 +10,7 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Create, feature_category: :
   let_it_be(:project_maintainer) { create(:user) }
   let_it_be(:project_maintainer_not_in_group) { create(:user) }
 
-  let_it_be(:consumer_group) { create(:group, owners: user, developers: project_maintainer) }
+  let_it_be(:consumer_group) { create(:group, owners: user, guests: project_maintainer) }
   let_it_be(:consumer_project) do
     create(:project, group: consumer_group, maintainers: [project_maintainer, project_maintainer_not_in_group])
   end
@@ -20,7 +20,7 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Create, feature_category: :
     create(:user_detail, user: service_account, provisioned_by_group: consumer_group)
   end
 
-  let_it_be(:item_project) { create(:project, developers: user) }
+  let_it_be(:item_project) { create(:project, guests: user) }
   let_it_be(:item) { create(:ai_catalog_flow, public: true, project: item_project) }
 
   let_it_be(:item_latest_released_version) do
@@ -75,15 +75,15 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Create, feature_category: :
   context 'when user is not authorized to create a consumer item in the consumer project' do
     let(:current_user) do
       create(:user).tap do |user|
-        consumer_project.add_developer(user)
-        item_project.add_developer(user)
+        consumer_project.add_guest(user)
+        item_project.add_guest(user)
       end
     end
 
     it_behaves_like 'an authorization failure'
   end
 
-  context 'when the user is a project maintainer and group developer' do
+  context 'when the user is a project maintainer and group guest' do
     let(:current_user) { project_maintainer }
 
     it_behaves_like 'a successful request', pinned_version_prefix: '1.2.3'
@@ -133,7 +133,7 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Create, feature_category: :
     let(:current_user) do
       create(:user).tap do |user|
         consumer_project.add_maintainer(user)
-        item_project.add_reporter(user)
+        # User is not a member of item_project
       end
     end
 
