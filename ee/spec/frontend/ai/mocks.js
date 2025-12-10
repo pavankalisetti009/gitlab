@@ -7,6 +7,7 @@ export const mockAgentFlowEdges = [
       humanStatus: 'completed',
       updatedAt: '2024-01-01T00:00:00Z',
       workflowDefinition: 'software_development',
+      userId: 'gid://gitlab/User/1',
       project: {
         id: 'gid://gitlab/Project/1',
         name: 'Test Project',
@@ -27,6 +28,7 @@ export const mockAgentFlowEdges = [
       humanStatus: 'running',
       updatedAt: '2024-01-02T00:00:00Z',
       workflowDefinition: 'convert_to_gitlab_ci',
+      userId: 'gid://gitlab/User/1',
       project: {
         id: 'gid://gitlab/Project/2',
         name: 'Another Project',
@@ -47,6 +49,7 @@ export const mockAgentFlowEdges = [
       humanStatus: 'created',
       updatedAt: '2024-01-03T00:00:00Z',
       workflowDefinition: 'chat',
+      userId: 'gid://gitlab/User/2',
       project: {
         id: 'gid://gitlab/Project/3',
         name: 'Chat Project',
@@ -124,6 +127,7 @@ export const mockGetAgentFlowResponse = {
             errors: null,
             humanStatus: 'running',
             workflowDefinition: 'software_development',
+            userId: 'gid://gitlab/User/1',
             project: {
               id: 'gid://gitlab/Project/1',
               name: 'Test Project',

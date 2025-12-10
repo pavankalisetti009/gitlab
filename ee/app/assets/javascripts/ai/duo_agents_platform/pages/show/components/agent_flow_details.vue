@@ -3,6 +3,7 @@ import { GlTabs, GlTab } from '@gitlab/ui';
 import { AGENTS_PLATFORM_INDEX_ROUTE } from '../../../router/constants';
 import AgentFlowHeader from './agent_flow_header.vue';
 import AgentFlowInfo from './agent_flow_info.vue';
+import AgentFlowSubHeader from './agent_flow_sub_header.vue';
 import AgentActivityLogs from './agent_activity_logs.vue';
 
 export default {
@@ -10,6 +11,7 @@ export default {
   components: {
     AgentFlowHeader,
     AgentFlowInfo,
+    AgentFlowSubHeader,
     AgentActivityLogs,
     GlTabs,
     GlTab,
@@ -53,6 +55,10 @@ export default {
       type: Object,
       required: true,
     },
+    userId: {
+      type: String,
+      required: true,
+    },
   },
   AGENTS_PLATFORM_INDEX_ROUTE,
 };
@@ -63,6 +69,13 @@ export default {
       v-if="!isSidePanelView"
       :is-loading="isLoading"
       :agent-flow-definition="agentFlowDefinition"
+    />
+    <agent-flow-sub-header
+      :class="{ 'gl-border-t': !isSidePanelView }"
+      :is-loading="isLoading"
+      :agent-flow-definition="agentFlowDefinition"
+      :created-at="createdAt"
+      :user-id="userId"
     />
     <div class="gl-flex" :class="{ 'gl-mt-6': !isSidePanelView }">
       <gl-tabs class="gl-w-full" content-class="gl-py-0">

@@ -2,6 +2,7 @@ import { shallowMount } from '@vue/test-utils';
 import AgentFlowDetails from 'ee/ai/duo_agents_platform/pages/show/components/agent_flow_details.vue';
 import AgentFlowHeader from 'ee/ai/duo_agents_platform/pages/show/components/agent_flow_header.vue';
 import AgentFlowInfo from 'ee/ai/duo_agents_platform/pages/show/components/agent_flow_info.vue';
+import AgentFlowSubHeader from 'ee/ai/duo_agents_platform/pages/show/components/agent_flow_sub_header.vue';
 import AgentActivityLogs from 'ee/ai/duo_agents_platform/pages/show/components/agent_activity_logs.vue';
 
 import { mockDuoMessages } from '../../../../mocks';
@@ -17,6 +18,7 @@ describe('AgentFlowDetails', () => {
     executorUrl: 'https://gitlab.com/gitlab-org/gitlab/-/jobs/123',
     createdAt: '2023-01-01T00:54:00Z',
     updatedAt: '2024-01-02T00:34:00Z',
+    userId: 'gid://gitlab/User/1',
     project: {
       id: 'gid://gitlab/Project/1',
       name: 'Test Project',
@@ -42,6 +44,7 @@ describe('AgentFlowDetails', () => {
   };
 
   const findAgentFlowHeader = () => wrapper.findComponent(AgentFlowHeader);
+  const findAgentFlowSubHeader = () => wrapper.findComponent(AgentFlowSubHeader);
   const findAgentFlowInfo = () => wrapper.findComponent(AgentFlowInfo);
   const findAgentActivityLogs = () => wrapper.findComponent(AgentActivityLogs);
   const findTabsContainer = () => wrapper.find('.gl-flex');
@@ -108,6 +111,15 @@ describe('AgentFlowDetails', () => {
       expect(findAgentFlowHeader().props()).toEqual({
         isLoading: false,
         agentFlowDefinition: defaultProps.agentFlowDefinition,
+      });
+    });
+
+    it('passes correct props to AgentFlowSubHeader when not in side panel', () => {
+      expect(findAgentFlowSubHeader().props()).toEqual({
+        isLoading: false,
+        agentFlowDefinition: defaultProps.agentFlowDefinition,
+        createdAt: defaultProps.createdAt,
+        userId: defaultProps.userId,
       });
     });
   });

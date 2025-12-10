@@ -9,11 +9,22 @@ import {
   getNamespaceDatasetProperties,
   getToolData,
   getMessageData,
+  formatDate,
 } from 'ee/ai/duo_agents_platform/utils';
 
 // Mock the dependencies
 jest.mock('~/locale');
 jest.mock('~/lib/utils/text_utility');
+jest.mock('~/lib/utils/datetime/locale_dateformat', () => ({
+  localeDateFormat: {
+    asDate: {
+      format: jest.fn((date) => {
+        const options = { year: 'numeric', month: 'short', day: 'numeric' };
+        return date.toLocaleDateString('en-US', options);
+      }),
+    },
+  },
+}));
 
 describe('duo_agents_platform utils', () => {
   describe('formatAgentDefinition', () => {
@@ -296,6 +307,18 @@ describe('duo_agents_platform utils', () => {
       ],
     ])('throws error when messageType is invalid: %p', (message, expectedError) => {
       expect(() => getMessageData(message)).toThrow(expectedError);
+    });
+  });
+
+  describe('formatDate', () => {
+    it('formats a valid ISO date string', () => {
+      const result = formatDate('2024-01-01T00:00:00Z');
+
+      expect(result).toBe('Jan 1, 2024');
+    });
+
+    it.each([null, undefined, ''])('returns empty string for %p', (input) => {
+      expect(formatDate(input)).toBe('');
     });
   });
 });

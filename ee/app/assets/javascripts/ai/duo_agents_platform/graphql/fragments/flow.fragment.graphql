@@ -4,6 +4,7 @@ fragment FlowFragment on DuoWorkflow {
   humanStatus
   updatedAt
   workflowDefinition
+  userId
   project {
     id
     name
