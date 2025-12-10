@@ -12,7 +12,7 @@ RSpec.describe Security::PipelineExecutionPolicy::UsageTracking, feature_categor
   let(:instance) { described_class.new(project: project, policy_pipelines: policy_pipelines) }
 
   describe '#track_enforcement' do
-    subject { instance.track_enforcement }
+    subject(:track_enforcement) { instance.track_enforcement }
 
     where(:config_strategy, :variables_strategy, :expected_properties) do
       :inject_ci | nil | { label: 'inject_ci', property: 'highest_precedence', value: 1 }
@@ -39,26 +39,21 @@ value: 1 }
 
       let(:policy_pipelines) { [build(:pipeline_execution_policy_pipeline, policy_config: config)] }
 
-      it_behaves_like 'internal event tracking' do
-        let(:event) { 'enforce_pipeline_execution_policy_in_project' }
-        let(:category) { described_class.name }
-        let_it_be(:project) { project }
-        let_it_be(:user) { nil }
-        let_it_be(:namespace) { group }
-        let(:additional_properties) { expected_properties }
+      it 'tracks the event' do
+        expect { track_enforcement }
+          .to trigger_internal_events('enforce_pipeline_execution_policy_in_project')
+          .with(project: project, category: described_class.name, user: nil, namespace: group, **expected_properties)
       end
     end
 
     context 'with multiple policy_pipelines' do
       let(:policy_pipelines) { build_list(:pipeline_execution_policy_pipeline, 2) }
+      let(:additional_properties) { { label: 'inject_ci', property: 'highest_precedence', value: 2 } }
 
-      it_behaves_like 'internal event tracking' do
-        let(:event) { 'enforce_pipeline_execution_policy_in_project' }
-        let(:category) { described_class.name }
-        let_it_be(:project) { project }
-        let_it_be(:user) { nil }
-        let_it_be(:namespace) { group }
-        let(:additional_properties) { { label: 'inject_ci', property: 'highest_precedence', value: 2 } }
+      it 'tracks the event' do
+        expect { track_enforcement }
+          .to trigger_internal_events('enforce_pipeline_execution_policy_in_project')
+          .with(project: project, category: described_class.name, user: nil, namespace: group, **additional_properties)
       end
 
       context 'with mixed settings' do
@@ -88,27 +83,29 @@ value: 1 }
           ]
         end
 
-        it_behaves_like 'internal event tracking' do
-          let(:event) { 'enforce_pipeline_execution_policy_in_project' }
-          let(:category) { described_class.name }
-          let_it_be(:project) { project }
-          let_it_be(:user) { nil }
-          let_it_be(:namespace) { group }
-          let(:additional_properties) { { label: 'mixed', property: 'mixed', value: 3 } }
+        let(:additional_properties) { { label: 'mixed', property: 'mixed', value: 3 } }
+
+        it 'tracks the event' do
+          expect { track_enforcement }
+            .to trigger_internal_events('enforce_pipeline_execution_policy_in_project')
+            .with(
+              project: project,
+              category: described_class.name,
+              user: nil,
+              namespace: group,
+              **additional_properties)
         end
       end
     end
   end
 
   describe '#track_job_execution' do
-    subject { instance.track_job_execution }
+    subject(:track_job_execution) { instance.track_job_execution }
 
-    it_behaves_like 'internal event tracking' do
-      let(:event) { 'execute_job_pipeline_execution_policy' }
-      let(:category) { described_class.name }
-      let_it_be(:project) { project }
-      let_it_be(:user) { nil }
-      let_it_be(:namespace) { group }
+    it 'tracks the event' do
+      expect { track_job_execution }
+        .to trigger_internal_events('execute_job_pipeline_execution_policy')
+        .with(project: project, category: described_class.name, user: nil, namespace: group)
     end
   end
 end
