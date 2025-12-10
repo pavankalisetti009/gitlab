@@ -369,6 +369,19 @@ RSpec.describe Vulnerabilities::AutoDismissService, feature_category: :security_
               vulnerability_read.reload
               expect(vulnerability_read.dismissal_reason).to eq(reason)
             end
+
+            context 'when feature flag "turn_off_vulnerability_read_create_db_trigger_function" is disabled' do
+              before do
+                stub_feature_flags(turn_off_vulnerability_read_create_db_trigger_function: false)
+              end
+
+              it "updates vulnerability reads with #{reason} reason" do
+                service.execute
+
+                vulnerability_read.reload
+                expect(vulnerability_read.dismissal_reason).to eq(reason)
+              end
+            end
           end
         end
 

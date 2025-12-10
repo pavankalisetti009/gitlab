@@ -77,10 +77,21 @@ module Vulnerabilities
           trigger_webhook_events(vulnerabilities_to_update)
         end
 
-        Vulnerabilities::Reads::UpsertService.new(vulnerabilities_to_update,
-          { state: :dismissed, dismissal_reason: dismissal_reason_enum_value },
-          projects: project
-        ).execute
+        # Following the same branching code pattern as in BulkDismissService to ensure dismissal_reason updated.
+        if Feature.enabled?(:turn_off_vulnerability_read_create_db_trigger_function, project)
+          Vulnerabilities::Reads::UpsertService.new(vulnerabilities_to_update,
+            { state: :dismissed, dismissal_reason: dismissal_reason_enum_value },
+            projects: project
+          ).execute
+        else
+          # When the trigger is active, it handles state updates but not dismissal_reason
+          # The `insert_or_update_vulnerability_reads` database trigger does not
+          # update the dismissal_reason and we are moving away from using
+          # database triggers to keep tables up to date.
+          Vulnerabilities::Read
+            .by_vulnerabilities(vulnerabilities_to_update)
+            .update_all(state: :dismissed, dismissal_reason: dismissal_reason_enum_value)
+        end
       end
     end
 
