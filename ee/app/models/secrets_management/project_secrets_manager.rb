@@ -11,12 +11,20 @@ module SecretsManagement
 
     validates :project, presence: true
 
+    def self.build_namespace_path(namespace)
+      [namespace.type.downcase, namespace.id.to_s].join('_')
+    end
+
+    def self.build_project_path(project)
+      "project_#{project.id}"
+    end
+
     def namespace_path
-      [project.namespace.type.downcase, project.namespace.id.to_s].join('_')
+      self.class.build_namespace_path(project.namespace)
     end
 
     def project_path
-      "project_#{project.id}"
+      self.class.build_project_path(project)
     end
 
     def full_project_namespace_path

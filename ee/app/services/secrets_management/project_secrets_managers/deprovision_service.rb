@@ -3,16 +3,30 @@
 module SecretsManagement
   module ProjectSecretsManagers
     class DeprovisionService < ProjectBaseService
-      def initialize(secrets_manager, current_user)
-        super(secrets_manager.project, current_user)
+      # secrets_manager may be nil because the project deletion removes it via DB CASCADE.
+      # Deprovisioning must still finish, so we fallback to namespace_path/project_path.
+      def initialize(secrets_manager, current_user, namespace_path: nil, project_path: nil)
+        super(secrets_manager&.project, current_user)
 
         @secrets_manager = secrets_manager
+        # Namespace and project paths may be passed explicitly instead of deriving them from secrets_manager.
+        # This is needed to handle cases where secrets already exist without an associated secrets_manager.
+        @namespace_path = namespace_path || secrets_manager&.namespace_path
+        @project_path   = project_path || secrets_manager&.project_path
       end
 
       def execute
-        with_exclusive_lease_for(project, lease_timeout: 120.seconds.to_i) do
+        acquire_lease_if_needed do
           execute_deprovision
         end
+      end
+
+      def namespace_secrets_manager_client
+        global_secrets_manager_client.with_namespace(namespace_path)
+      end
+
+      def project_secrets_manager_client
+        global_secrets_manager_client.with_namespace([namespace_path, project_path].compact.join('/'))
       end
 
       def legacy_cleanup
@@ -32,7 +46,13 @@ module SecretsManagement
 
       private
 
-      attr_reader :secrets_manager
+      attr_reader :secrets_manager, :namespace_path, :project_path
+
+      def acquire_lease_if_needed(&block)
+        return yield if secrets_manager.nil?
+
+        with_exclusive_lease_for(project, lease_timeout: 120.seconds.to_i, &block)
+      end
 
       def execute_deprovision
         # Namespaces can only be disabled if the namespace is empty of child
@@ -44,7 +64,7 @@ module SecretsManagement
         # Deleting a namespace takes time.
         begin
           20.times do |n|
-            result = namespace_secrets_manager_client.disable_namespace(secrets_manager.project_path)
+            result = namespace_secrets_manager_client.disable_namespace(project_path)
             if result.key?("data") && !result["data"].nil? &&
                 result["data"].key?("status") && !result["data"]["status"].nil? &&
                 result["data"]["status"] == "in-progress"
@@ -66,7 +86,7 @@ module SecretsManagement
         # worker, this will be asynchronous from the API handler with no way
         # to exclude these two from executing at the same time anyways.
         begin
-          global_secrets_manager_client.disable_namespace(secrets_manager.namespace_path)
+          global_secrets_manager_client.disable_namespace(namespace_path)
         rescue SecretsManagement::SecretsManagerClient::ApiError => e
           raise e unless e.message.include? 'containing child namespaces'
         end
@@ -78,7 +98,7 @@ module SecretsManagement
       end
 
       def delete_secrets_manager
-        secrets_manager.destroy!
+        secrets_manager&.destroy!
       end
     end
   end

@@ -34,6 +34,7 @@ module EE
         update_compliance_standards_adherence
         delete_compliance_statuses
         sync_security_policies
+        deprovision_secrets_manager(old_namespace)
       end
 
       override :remove_paid_features
@@ -81,6 +82,16 @@ module EE
           new_root_namespace: new_namespace.root_ancestor,
           project_namespace_ids: [project.project_namespace_id]
         ).execute
+      end
+
+      def deprovision_secrets_manager(old_namespace)
+        return unless project.secrets_manager
+
+        old_namespace_path = ::SecretsManagement::ProjectSecretsManager.build_namespace_path(old_namespace)
+        project_path = ::SecretsManagement::ProjectSecretsManager.build_project_path(project)
+
+        ::SecretsManagement::ProjectSecretsManagers::InitiateDeprovisionByPathService.new(project, current_user,
+          namespace_path: old_namespace_path, project_path: project_path).execute
       end
     end
   end
