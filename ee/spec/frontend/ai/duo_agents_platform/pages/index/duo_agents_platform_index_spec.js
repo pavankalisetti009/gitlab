@@ -27,6 +27,9 @@ describe('AgentsPlatformIndex', () => {
       propsData: { ...defaultProps, ...props },
       provide: {
         isSidePanelView: false,
+        glFeatures: {
+          aiDuoAgentPlatformGaRollout: false,
+        },
         ...provide,
       },
     });
@@ -54,6 +57,18 @@ describe('AgentsPlatformIndex', () => {
 
       expect(findExperimentBadge().exists()).toBe(true);
       expect(findExperimentBadge().props('type')).toBe('beta');
+    });
+
+    describe('when ai_duo_agent_platform_ga_rollout feature flag is enabled', () => {
+      beforeEach(() => {
+        createWrapper({
+          provide: { isSidePanelView: false, glFeatures: { aiDuoAgentPlatformGaRollout: true } },
+        });
+      });
+
+      it('hides the experiment badge', () => {
+        expect(findExperimentBadge().exists()).toBe(false);
+      });
     });
   });
 

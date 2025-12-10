@@ -1,5 +1,6 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
+import { GlExperimentBadge } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -7,6 +8,7 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import AiCatalogFlowsEdit from 'ee/ai/catalog/pages/ai_catalog_flows_edit.vue';
 import AiCatalogFlowForm from 'ee/ai/catalog/components/ai_catalog_flow_form.vue';
 import updateAiCatalogFlow from 'ee/ai/catalog/graphql/mutations/update_ai_catalog_flow.mutation.graphql';
+import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { VERSION_LATEST } from 'ee/ai/catalog/constants';
 import { AI_CATALOG_FLOWS_SHOW_ROUTE } from 'ee/ai/catalog/router/constants';
 import {
@@ -59,9 +61,24 @@ describe('AiCatalogFlowsEdit', () => {
   };
 
   const findForm = () => wrapper.findComponent(AiCatalogFlowForm);
+  const findPageHeading = () => wrapper.findComponent(PageHeading);
+  const findExperimentBadge = () => wrapper.findComponent(GlExperimentBadge);
 
   beforeEach(() => {
     createComponent();
+  });
+
+  describe('Page Heading', () => {
+    it('renders page heading with correct title and description', () => {
+      expect(findPageHeading().exists()).toBe(true);
+      expect(findPageHeading().text()).toContain('Edit flow');
+      expect(findPageHeading().text()).toContain('Manage flow settings.');
+    });
+
+    it('renders experiment badge', () => {
+      expect(findExperimentBadge().exists()).toBe(true);
+      expect(findExperimentBadge().props('type')).toBe('beta');
+    });
   });
 
   describe('Initial Rendering', () => {

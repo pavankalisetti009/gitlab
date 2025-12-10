@@ -8,6 +8,7 @@ import {
   OPERATORS_IS,
 } from '~/vue_shared/components/filtered_search_bar/constants';
 import { __, s__ } from '~/locale';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import AgentFlowList from '../../components/common/agent_flow_list.vue';
 import {
   AGENT_PLATFORM_INDEX_COMPONENT_NAME,
@@ -23,6 +24,7 @@ export default {
     GlSkeletonLoader,
     PageHeading,
   },
+  mixins: [glFeatureFlagsMixin()],
   inject: {
     isSidePanelView: {
       default: false,
@@ -59,6 +61,9 @@ export default {
     };
   },
   computed: {
+    showBetaBadge() {
+      return !this.glFeatures.aiDuoAgentPlatformGaRollout;
+    },
     showEmptyState() {
       return !this.hasInitialWorkflows;
     },
@@ -187,7 +192,7 @@ export default {
       <template #heading>
         <div class="gl-flex">
           <span>{{ s__('DuoAgentsPlatform|Sessions') }}</span>
-          <gl-experiment-badge type="beta" class="gl-self-center" />
+          <gl-experiment-badge v-if="showBetaBadge" type="beta" class="gl-self-center" />
         </div>
       </template>
     </page-heading>
