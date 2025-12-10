@@ -1321,6 +1321,7 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
 
     before do
       stub_feature_flags(duo_code_review_on_agent_platform: false)
+      stub_feature_flags(ai_duo_agent_platform_ga_rollout: false)
     end
 
     context 'when duo_features_enabled is false' do
@@ -1415,6 +1416,16 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
             end
 
             it { is_expected.to be_falsey }
+
+            context 'when GA rollout flag is enabled' do
+              before do
+                stub_feature_flags(ai_duo_agent_platform_ga_rollout: namespace)
+              end
+
+              it 'returns true despite experiment_features_enabled being false' do
+                expect(subject).to be_truthy
+              end
+            end
           end
         end
 
@@ -1478,6 +1489,27 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
             end
           end
         end
+
+        context 'when GA rollout flag is enabled' do
+          where(:add_on_type, :add_on_factory) do
+            [
+              ['duo_pro',  :duo_pro],
+              ['duo_core', :duo_core]
+            ]
+          end
+
+          with_them do
+            before do
+              stub_feature_flags(ai_duo_agent_platform_ga_rollout: namespace)
+              allow(namespace.namespace_settings).to receive(:experiment_features_enabled).and_return(false)
+              create(:gitlab_subscription_add_on_purchase, add_on_factory, namespace: namespace)
+            end
+
+            it "returns true for #{params[:add_on_type]} even when experiment_features_enabled is false" do
+              expect(subject).to be_truthy
+            end
+          end
+        end
       end
 
       context 'when DAP feature flag is enabled on self-managed' do
@@ -1499,6 +1531,25 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
           end
 
           it { is_expected.to be_falsey }
+        end
+
+        context 'when GA rollout flag is enabled' do
+          where(:add_on_factory) do
+            [[:duo_pro], [:duo_core]]
+          end
+
+          with_them do
+            before do
+              stub_feature_flags(ai_duo_agent_platform_ga_rollout: namespace)
+              allow(namespace.namespace_settings).to receive(:duo_features_enabled?).and_return(true)
+              stub_application_setting(instance_level_ai_beta_features_enabled: false)
+              create(:gitlab_subscription_add_on_purchase, :self_managed, add_on_factory)
+            end
+
+            it "returns true for #{params[:add_on_factory]} even when beta features are disabled" do
+              expect(subject).to be_truthy
+            end
+          end
         end
       end
     end

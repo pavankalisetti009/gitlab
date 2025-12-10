@@ -81,6 +81,7 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::AvailabilityValidator, feature_cate
           before do
             stub_saas_features(gitlab_com_subscriptions: false)
             stub_ee_application_setting(instance_level_ai_beta_features_enabled: beta_enabled)
+            stub_feature_flags(ai_duo_agent_platform_ga_rollout: false)
           end
 
           context 'when instance beta features are disabled' do
@@ -88,6 +89,25 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::AvailabilityValidator, feature_cate
 
             it 'returns false' do
               expect(available).to be_falsey
+            end
+
+            context 'when GA rollout flag is enabled' do
+              let(:feature_setting) { instance_double(::Ai::FeatureSetting, self_hosted?: true) }
+              let(:service_result) { ServiceResponse.success(payload: feature_setting) }
+              let(:self_hosted_model) { create(:ai_self_hosted_model, model: :claude_3) }
+
+              before do
+                stub_feature_flags(ai_duo_agent_platform_ga_rollout: resource)
+                allow(::Ai::FeatureSettingSelectionService).to receive(:new)
+                  .with(user, :duo_agent_platform, resource.root_ancestor)
+                  .and_return(instance_double(::Ai::FeatureSettingSelectionService, execute: service_result))
+                allow(feature_setting).to receive(:self_hosted_model).and_return(self_hosted_model)
+                allow(::Gitlab::DuoWorkflow::Client).to receive(:self_hosted_url).and_return('https://dws.example.com')
+              end
+
+              it 'returns true despite beta features being disabled' do
+                expect(available).to be true
+              end
             end
           end
 
@@ -159,6 +179,7 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::AvailabilityValidator, feature_cate
         context 'on SaaS', :saas do
           before do
             stub_saas_features(gitlab_com_subscriptions: true)
+            stub_feature_flags(ai_duo_agent_platform_ga_rollout: false)
           end
 
           context 'when experiment features are disabled' do
@@ -169,6 +190,16 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::AvailabilityValidator, feature_cate
             it 'returns false' do
               expect(available).to be_falsey
             end
+
+            context 'when GA rollout flag is enabled' do
+              before do
+                stub_feature_flags(ai_duo_agent_platform_ga_rollout: resource)
+              end
+
+              it 'returns true despite experiment features being disabled' do
+                expect(available).to be true
+              end
+            end
           end
 
           context 'when experiment features are enabled' do
@@ -177,6 +208,17 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::AvailabilityValidator, feature_cate
             end
 
             it 'returns true' do
+              expect(available).to be true
+            end
+          end
+
+          context 'when GA rollout flag is enabled' do
+            before do
+              stub_feature_flags(ai_duo_agent_platform_ga_rollout: resource)
+              allow(resource.root_ancestor).to receive(:experiment_features_enabled).and_return(false)
+            end
+
+            it 'returns true even when experiment features are disabled' do
               expect(available).to be true
             end
           end

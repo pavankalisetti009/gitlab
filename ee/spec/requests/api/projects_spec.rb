@@ -2163,18 +2163,13 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
     context 'when setting auto_duo_code_review_enabled' do
       let(:project_params) { { auto_duo_code_review_enabled: true } }
 
-      before do
-        stub_feature_flags(duo_code_review_on_agent_platform: false)
-      end
-
-      context 'when licence is available' do
+      context 'when namespace has auto_duo_code_review_settings available' do
         before do
           stub_licensed_features(review_merge_request: true)
           project.project_setting.update!(duo_features_enabled: true)
-          allow_next_found_instance_of(Namespace) do |ns|
-            allow(ns).to receive(:has_active_add_on_purchase?)
-              .with([:duo_enterprise])
-              .and_return(true)
+
+          allow_next_found_instance_of(Namespace) do |namespace|
+            allow(namespace).to receive(:auto_duo_code_review_settings_available?).and_return(true)
           end
         end
 
@@ -2186,54 +2181,17 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
         end
       end
 
-      context 'when licence is not available' do
+      context 'when namespace does not have auto_duo_code_review_settings available' do
+        before do
+          allow_next_found_instance_of(Namespace) do |namespace|
+            allow(namespace).to receive(:auto_duo_code_review_settings_available?).and_return(false)
+          end
+        end
+
         it 'does not update the value' do
           expect { subject }.not_to change { project.reload.auto_duo_code_review_enabled }
           expect(response).to have_gitlab_http_status(:ok)
           expect(json_response['auto_duo_code_review_enabled']).to be_nil
-        end
-      end
-
-      context 'when duo_code_review_on_agent_platform feature flag is enabled' do
-        before do
-          stub_feature_flags(duo_code_review_on_agent_platform: true)
-          stub_licensed_features(review_merge_request: true)
-          stub_saas_features(gitlab_com_subscriptions: true)
-          project.project_setting.update!(duo_features_enabled: true)
-        end
-
-        context 'when experiment_features_enabled is false' do
-          before do
-            allow_next_found_instance_of(Namespace) do |ns|
-              allow(ns).to receive(:experiment_features_enabled).and_return(false)
-              allow(ns).to receive(:has_active_add_on_purchase?)
-                .with([:duo_enterprise])
-                .and_return(false)
-            end
-          end
-
-          it 'does not update the value' do
-            expect { subject }.not_to change { project.reload.auto_duo_code_review_enabled }
-            expect(response).to have_gitlab_http_status(:ok)
-            expect(json_response['auto_duo_code_review_enabled']).to be_nil
-          end
-        end
-
-        context 'when experiment_features_enabled is true' do
-          before do
-            allow_next_found_instance_of(Namespace) do |ns|
-              allow(ns).to receive(:experiment_features_enabled).and_return(true)
-              allow(ns).to receive(:has_active_add_on_purchase?)
-                .with([:duo_enterprise, :duo_pro, :duo_core])
-                .and_return(true)
-            end
-          end
-
-          it 'updates the value' do
-            expect { subject }.to change { project.reload.auto_duo_code_review_enabled }
-            expect(response).to have_gitlab_http_status(:ok)
-            expect(json_response['auto_duo_code_review_enabled']).to eq true
-          end
         end
       end
     end
