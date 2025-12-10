@@ -135,6 +135,7 @@ describe('User ai usage data source', () => {
       fullPath: namespace,
       startDate: new Date('2020-05-08'),
       endDate: new Date('2020-07-07'),
+      first: 10,
     });
 
     expect(defaultClient.query).toHaveBeenCalledTimes(1);
@@ -149,7 +150,7 @@ describe('User ai usage data source', () => {
         ...defaultQueryParams,
       },
       queryOverrides: {
-        pagination: { startCursor: 'start' },
+        pagination: { startCursor: 'start', last: 10 },
       },
     });
 
@@ -158,6 +159,7 @@ describe('User ai usage data source', () => {
       startDate: new Date('2020-06-07'),
       endDate: new Date('2020-07-07'),
       before: 'start',
+      last: 10,
     });
 
     expect(defaultClient.query).toHaveBeenCalledTimes(1);
