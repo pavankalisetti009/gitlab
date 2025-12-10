@@ -135,14 +135,13 @@ RSpec.describe SessionsController, :geo, feature_category: :system_access do
 
         before do
           # We create an initial request to authenticate the user, creating a session, to test the 2FA failure
-          post(:create, params: { user: { login: user.username, password: user.password } })
-          session[:otp_user_id] = user.id
+          post(:create, params: { user: { otp_attempt: 'invalid' } }, session: { otp_user_id: user.id })
         end
 
         it 'creates failed authentication audit event for invalid OTP' do
           expect(::Authn::UnauthenticatedSecurityEventAuditor).to receive(:new).with(user).and_call_original
 
-          get(:new, params: { user: { login: user.login, otp_attempt: 'invalid' } })
+          get(:new, params: { user: { otp_attempt: 'invalid' } })
         end
       end
     end
