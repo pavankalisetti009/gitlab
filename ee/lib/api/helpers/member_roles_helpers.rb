@@ -15,7 +15,7 @@ module API
       def get_roles
         authorize_access_roles!
 
-        present member_roles, with: EE::API::Entities::MemberRole
+        present member_roles, with: ::API::Entities::MemberRole
       end
 
       def group
@@ -32,7 +32,7 @@ module API
         response = service.execute
 
         if response.success?
-          present response.payload, with: EE::API::Entities::MemberRole
+          present response.payload, with: ::API::Entities::MemberRole
         else
           render_api_error!(response.message, 400)
         end

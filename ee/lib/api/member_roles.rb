@@ -67,7 +67,7 @@ module API
       end
 
       desc 'Get Member Roles for a group' do
-        success EE::API::Entities::MemberRole
+        success ::API::Entities::MemberRole
         is_array true
         tags %w[group_member_roles]
       end
@@ -78,7 +78,7 @@ module API
       end
 
       desc 'Create Member Role for a group' do
-        success EE::API::Entities::MemberRole
+        success ::API::Entities::MemberRole
         failure [[400, 'Bad Request'], [401, 'Unauthorized']]
         tags %w[group_member_roles]
       end
@@ -114,7 +114,7 @@ module API
       end
 
       desc 'Get Member Roles for this GitLab instance' do
-        success EE::API::Entities::MemberRole
+        success ::API::Entities::MemberRole
         failure [[401, 'Unauthorized']]
         is_array true
         tags %w[member_roles]
@@ -126,7 +126,7 @@ module API
       end
 
       desc 'Create Member Role on the GitLab instance' do
-        success EE::API::Entities::MemberRole
+        success ::API::Entities::MemberRole
         failure [[400, 'Bad Request'], [401, 'Unauthorized']]
         tags %w[member_roles]
       end

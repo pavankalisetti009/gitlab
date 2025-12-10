@@ -30,7 +30,7 @@ module EE
           expose :override, if: ->(member, _) { member.source_type == 'Namespace' && member.ldap? }
 
           expose :human_state_name, as: :membership_state
-          expose :member_role, with: EE::API::Entities::MemberRole, expose_nil: false
+          expose :member_role, with: ::API::Entities::MemberRole, expose_nil: false
         end
       end
     end

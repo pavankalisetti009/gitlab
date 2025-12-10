@@ -53081,9 +53081,9 @@ definitions:
       membership_state:
         type: string
       member_role:
-        "$ref": "#/definitions/EE_API_Entities_MemberRole"
+        "$ref": "#/definitions/API_Entities_MemberRole"
     description: API_Entities_Member model
-  EE_API_Entities_MemberRole:
+  API_Entities_MemberRole:
     type: object
     properties:
       id:
