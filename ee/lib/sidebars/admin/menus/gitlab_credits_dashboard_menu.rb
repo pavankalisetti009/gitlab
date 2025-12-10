@@ -16,7 +16,7 @@ module Sidebars # rubocop:disable Gitlab/BoundedContexts -- Existing module
 
         override :sprite_icon
         def sprite_icon
-          'dashboard'
+          'gitlab-credits'
         end
 
         override :active_routes
