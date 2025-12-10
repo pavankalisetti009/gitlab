@@ -132,6 +132,8 @@ export default {
     {
       key: 'totalCreditsUsed',
       label: s__('UsageBilling|Total credits used'),
+      thAlignRight: true,
+      tdClass: 'gl-text-right',
     },
   ],
 };
@@ -171,7 +173,7 @@ export default {
       :busy="false"
       show-empty
       stacked="md"
-      class="gl-mt-5 gl-w-full"
+      class="gl-w-full [&_th]:!gl-border-none"
     >
       <template #cell(user)="{ item: user }">
         <div class="gl-flex gl-items-center">
@@ -188,8 +190,8 @@ export default {
       </template>
 
       <template #cell(includedCredits)="{ item: user }">
-        <div class="gl-flex gl-min-h-7 gl-items-center gl-justify-between gl-gap-3">
-          <span class="gl-font-weight-semibold gl-text-gray-900">
+        <div class="gl-flex gl-min-h-7 gl-items-center gl-gap-6">
+          <span class="gl-font-weight-semibold gl-min-w-11 gl-text-gray-900">
             {{ formatIncludedCredits(user.usage.creditsUsed, user.usage.totalCredits) }}
           </span>
           <gl-progress-bar
@@ -200,7 +202,9 @@ export default {
       </template>
 
       <template #cell(totalCreditsUsed)="{ item: user }">
-        <div class="gl-font-weight-semibold gl-flex gl-min-h-7 gl-items-center gl-text-gray-900">
+        <div
+          class="gl-font-weight-semibold gl-flex gl-min-h-7 gl-items-center gl-justify-end gl-text-gray-900"
+        >
           {{ formatNumber(getTotalCreditsUsed(user.usage)) }}
         </div>
       </template>
