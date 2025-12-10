@@ -63,7 +63,7 @@ module API
                     desc: 'The array of services served by the node'
                   optional 'node.schema_version', type: Integer, desc: 'Schema version of the node'
                   optional 'node.knowledge_graph_schema_version', type: Integer,
-                    desc: 'Knowledge graph schema version of the node'
+                    desc: 'Knowledge graph schema version of the node (not used)'
                   optional 'disk.indexed', type: Integer, desc: 'Total indexed space'
                 end
                 post 'heartbeat' do

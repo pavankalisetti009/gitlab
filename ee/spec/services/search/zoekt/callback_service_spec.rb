@@ -128,53 +128,6 @@ RSpec.describe Search::Zoekt::CallbackService, feature_category: :global_search 
           end
         end
       end
-
-      context 'with knowledge_graph task' do
-        let(:service_type) { 'knowledge_graph' }
-
-        context 'when the task type is graph_index' do
-          let_it_be_with_reload(:task) { create(:knowledge_graph_task, task_type: 'index_graph_repo', node: node) }
-
-          let(:task_id) { task.id }
-          let(:task_type) { 'index_graph_repo' }
-          let(:additional_payload) { { schema_version: 2 } }
-
-          before do
-            task.knowledge_graph_replica.update!(retries_left: 2)
-          end
-
-          it 'updates the task state and knowledge_graph_replica data' do
-            freeze_time do
-              expect { execute }.to change { task.reload.state }.to('done')
-                .and change { task.knowledge_graph_replica.state }.to('ready')
-                  .and change { task.knowledge_graph_replica.retries_left }.from(2).to(5)
-                    .and change { task.knowledge_graph_replica.schema_version }.from(0).to(2)
-                      .and change { task.knowledge_graph_replica.indexed_at }.from(nil).to(Time.current)
-            end
-          end
-        end
-
-        context 'when the task type is delete_graph_repo' do
-          let_it_be_with_reload(:task) { create(:knowledge_graph_task, task_type: 'delete_graph_repo', node: node) }
-          let(:task_type) { 'delete_graph_repo' }
-          let(:task_id) { task.id }
-
-          it 'deletes the replica' do
-            expect { execute }.to change { task.reload.state }.to('done')
-            expect(task.knowledge_graph_replica).to be_nil
-          end
-
-          context 'when repository is already deleted' do
-            before do
-              task.knowledge_graph_replica.destroy!
-            end
-
-            it 'moves the task to done' do
-              expect { execute }.to change { task.reload.state }.to('done')
-            end
-          end
-        end
-      end
     end
 
     context 'for non-successful operation' do

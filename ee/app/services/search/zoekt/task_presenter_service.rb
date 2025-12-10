@@ -25,14 +25,7 @@ module Search
           ))
         end
 
-        # Return both knowledge graph and zoekt tasks in the batch, knowledge graph tasks take half of the batch at max.
-        # When there are only knowledge graph tasks, then currently only half of the capacity is used. This is fine for
-        # now but we could refactor `each_task_for_processing` iterator to use full capacity of the batch.
         [].tap do |payload|
-          knowledge_graph_tasks(delete_only).each_task_for_processing(limit: concurrency_limit / 2) do |task|
-            payload << TaskSerializerService.execute(task, node)
-          end
-
           zoekt_tasks(delete_only).each_task_for_processing(limit: concurrency_limit - payload.size) do |task|
             payload << TaskSerializerService.execute(task, node)
           end
@@ -43,13 +36,6 @@ module Search
         rel = node.tasks.preload_namespace_settings
         return rel.none if ::Gitlab::CurrentSettings.zoekt_indexing_paused?
         return rel.delete_repo if delete_only
-
-        rel
-      end
-
-      def knowledge_graph_tasks(delete_only)
-        rel = node.knowledge_graph_tasks.preload_namespace_settings
-        return rel.delete_graph_repo if delete_only
 
         rel
       end

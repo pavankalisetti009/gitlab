@@ -9,7 +9,6 @@ module EE
       def execute
         enqueue_elasticsearch_indexing
         enqueue_zoekt_indexing
-        enqueue_knowledge_graph_indexing
         enqueue_code_embedding_indexing
         enqueue_update_external_pull_requests
         enqueue_product_analytics_event_metrics
@@ -57,16 +56,6 @@ module EE
         return false unless repository&.ready?
 
         ::Ai::ActiveContext::Code::RepositoryIndexWorker.perform_async(repository.id)
-      end
-
-      def enqueue_knowledge_graph_indexing
-        return false unless ::Feature.enabled?(:knowledge_graph_indexing, project)
-        return false unless default_branch?
-
-        return false unless ::GitlabSubscriptions::AddOnPurchase
-          .for_active_add_ons(['duo_core'], resource: project.project_namespace).present?
-
-        ::Ai::KnowledgeGraph::IndexingTaskWorker.perform_async(project.project_namespace.id, 'index_graph_repo')
       end
 
       def enqueue_update_external_pull_requests

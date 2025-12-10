@@ -28,7 +28,6 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
     it { is_expected.to validate_presence_of(:total_bytes) }
     it { is_expected.to validate_presence_of(:usable_storage_bytes) }
     it { is_expected.to validate_presence_of(:schema_version) }
-    it { is_expected.to validate_presence_of(:knowledge_graph_schema_version) }
     it { is_expected.to validate_uniqueness_of(:uuid).case_insensitive }
 
     describe 'node URLs' do
@@ -58,7 +57,6 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
         [0, :foo] | false
         [0, 10]   | false
         [0]       | true
-        [0, 1]    | true
       end
 
       with_them do
@@ -76,7 +74,6 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
     it { is_expected.to have_many(:tasks).inverse_of(:node) }
     it { is_expected.to have_many(:enabled_namespaces).through(:indices) }
     it { is_expected.to have_many(:zoekt_repositories).through(:indices) }
-    it { is_expected.to have_many(:knowledge_graph_replicas) }
   end
 
   describe 'scopes' do
@@ -197,32 +194,19 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
           end
         end
       end
-
-      describe '.available_for_knowledge_graph_namespace' do
-        let_it_be(:node_no_kg) { create(:zoekt_node) }
-        let_it_be(:node_kg1) { create(:zoekt_node, :knowledge_graph) }
-        let_it_be(:node_kg2) { create(:zoekt_node, :knowledge_graph) }
-        let_it_be(:replica) { create(:knowledge_graph_replica, zoekt_node: node_kg1) }
-
-        it 'returns only nodes with knowledge graph service which are not used for the namespace' do
-          expect(described_class.available_for_knowledge_graph_namespace(replica.knowledge_graph_enabled_namespace))
-            .to contain_exactly(node_kg2)
-        end
-      end
     end
 
     describe '.with_reserved_bytes' do
       let_it_be(:node1) { create(:zoekt_node) }
       let_it_be(:node2) { create(:zoekt_node) }
       let_it_be(:node3) { create(:zoekt_node) }
-      let_it_be(:replica1) { create(:knowledge_graph_replica, zoekt_node: node1, reserved_storage_bytes: 1000) }
       let_it_be(:index1) { create(:zoekt_index, node: node1, reserved_storage_bytes: 2000) }
       let_it_be(:index2) { create(:zoekt_index, node: node2, reserved_storage_bytes: 500) }
 
       subject(:with_reserved_bytes) { described_class.where(id: [node1, node2, node3]).with_reserved_bytes }
 
       it 'returns sum of reserved bytes or nil for each node' do
-        expect(with_reserved_bytes.pluck(:reserved_storage_bytes_total)).to match_array([3000, 500, nil])
+        expect(with_reserved_bytes.pluck(:reserved_storage_bytes_total)).to match_array([2000, 500, nil])
       end
     end
 
@@ -260,25 +244,11 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
         )
       end
 
-      let_it_be(:replica1) do
-        create(:knowledge_graph_replica,
-          zoekt_node: node_with_positive_storage,
-          reserved_storage_bytes: node_with_positive_storage.total_bytes / 3
-        )
-      end
-
       # Scenario with negative unclaimed storage
       let_it_be(:index2) do
         create(:zoekt_index,
           node: node_with_negative_storage,
-          reserved_storage_bytes: (node_with_negative_storage.total_bytes / 2) + 10
-        )
-      end
-
-      let_it_be(:replica2) do
-        create(:knowledge_graph_replica,
-          zoekt_node: node_with_negative_storage,
-          reserved_storage_bytes: (node_with_negative_storage.total_bytes / 2) + 10
+          reserved_storage_bytes: node_with_negative_storage.total_bytes + 10
         )
       end
 
@@ -334,20 +304,6 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
         )
       end
 
-      let_it_be(:replica1) do
-        create(:knowledge_graph_replica,
-          zoekt_node: node3,
-          reserved_storage_bytes: 100_000
-        )
-      end
-
-      let_it_be(:replica2) do
-        create(:knowledge_graph_replica,
-          zoekt_node: node4,
-          reserved_storage_bytes: 150_000
-        )
-      end
-
       it 'returns nodes with positive unclaimed storage_bytes in descending order' do
         expect(described_class.order_by_unclaimed_space_desc.to_a).to eq([node4, node3, node2])
       end
@@ -355,14 +311,9 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
 
     describe '.with_service' do
       let_it_be(:node1) { create(:zoekt_node, services: [described_class::SERVICES[:zoekt]]) }
-      let_it_be(:node2) { create(:zoekt_node, services: [described_class::SERVICES[:knowledge_graph]]) }
-      let_it_be(:node3) do
-        create(:zoekt_node, services: [described_class::SERVICES[:zoekt], described_class::SERVICES[:knowledge_graph]])
-      end
 
       it "returns nodes which contain the service in the list of services" do
-        expect(described_class.with_service(:zoekt).to_a).to match_array([node, node1, node3])
-        expect(described_class.with_service(:knowledge_graph).to_a).to match_array([node2, node3])
+        expect(described_class.with_service(:zoekt).to_a).to match_array([node, node1])
       end
     end
 
@@ -401,7 +352,6 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
         expect(tasked_node.total_bytes).to eq(params['disk.all'])
         expect(tasked_node.indexed_bytes).to eq(0)
         expect(tasked_node.schema_version).to eq(0)
-        expect(tasked_node.knowledge_graph_schema_version).to eq(0)
         expect(tasked_node.services).to match_array([described_class::SERVICES[:zoekt]])
         expect(tasked_node.metadata['name']).to eq(params['node.name'])
         expect(tasked_node.metadata['task_count']).to eq(params['node.task_count'])
@@ -463,21 +413,12 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
     end
 
     context 'when node.services is present' do
-      let(:params) { base_params.merge('node.services' => %w[zoekt knowledge_graph]) }
+      let(:params) { base_params.merge('node.services' => %w[zoekt]) }
 
       it 'sets services' do
         expect(tasked_node.services).to eq([
-          described_class::SERVICES[:zoekt],
-          described_class::SERVICES[:knowledge_graph]
+          described_class::SERVICES[:zoekt]
         ])
-      end
-    end
-
-    context 'when node.knowledge_graph_schema_version is present' do
-      let(:params) { base_params.merge('node.knowledge_graph_schema_version' => 2542) }
-
-      it 'sets schema_version' do
-        expect(tasked_node.knowledge_graph_schema_version).to eq(2542)
       end
     end
   end
