@@ -32,5 +32,9 @@ module SecretsManagement
     def member_role_has_access_to_resource?(member_role)
       resource.namespace.self_and_ancestors.where(id: member_role.namespace_id).exists?
     end
+
+    def find_group_link(principal_group)
+      resource.project_group_links.find_by(group_id: principal_group.id)
+    end
   end
 end

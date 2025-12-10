@@ -27,6 +27,10 @@ RSpec.describe SecretsManagement::GroupSecretsPermission, :gitlab_secrets_manage
     provision_group_secrets_manager(secrets_manager, user)
   end
 
+  def link_group_to_resource(resource, group, access_level)
+    create(:group_group_link, shared_group: resource, shared_with_group: group, group_access: access_level)
+  end
+
   it_behaves_like 'a secrets permission'
 
   describe 'group-specific validations' do
@@ -68,13 +72,45 @@ RSpec.describe SecretsManagement::GroupSecretsPermission, :gitlab_secrets_manage
 
       context 'when principal is a shared group' do
         let(:shared_group) { create(:group) }
-        let(:principal_id) { shared_group.id }
-
-        before do
-          create(:group_group_link, shared_group: group, shared_with_group: shared_group)
+        let!(:group_group_link) do
+          create(:group_group_link, shared_group: group, shared_with_group: shared_group, group_access: access_level)
         end
 
-        it { is_expected.to be_valid }
+        let(:principal_type) { 'Group' }
+        let(:principal_id) { shared_group.id }
+
+        context 'without specific role validation' do
+          let(:access_level) { Gitlab::Access::DEVELOPER }
+
+          it { is_expected.to be_valid }
+        end
+
+        context 'with role validation' do
+          context 'when shared group has Guest access level' do
+            let(:access_level) { Gitlab::Access::GUEST }
+
+            it 'is invalid' do
+              expect(permission).not_to be_valid
+              expect(permission.errors[:principal_id]).to include('group must have at least Reporter role')
+            end
+          end
+
+          context 'when shared group has Reporter access level' do
+            let(:access_level) { Gitlab::Access::REPORTER }
+
+            it 'is valid' do
+              expect(permission).to be_valid
+            end
+          end
+
+          context 'when shared group has Developer access level' do
+            let(:access_level) { Gitlab::Access::DEVELOPER }
+
+            it 'is valid' do
+              expect(permission).to be_valid
+            end
+          end
+        end
       end
 
       context 'when principal group has no relationship' do
