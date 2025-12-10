@@ -16,6 +16,7 @@ RSpec.describe 'Learn Gitlab concerns', :feature, :js, :saas, feature_category: 
       # we won't need the tests for the issues listing page, since we'll be using
       # the work items listing page.
       stub_feature_flags(work_item_planning_view: false)
+      allow(::Gitlab::Llm::TanukiBot).to receive(:credits_available?).and_return(true)
     end
 
     before_all do

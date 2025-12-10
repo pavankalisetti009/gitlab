@@ -29,7 +29,7 @@ RSpec.describe 'AI Sidepanel', :js, feature_category: :duo_agent_platform do
 
     allow(::Ai::AmazonQ).to receive(:enabled?).and_return(false)
     allow(::Gitlab::Llm::TanukiBot).to receive_messages(show_breadcrumbs_entry_point?: true, enabled_for?: true)
-    allow(::Gitlab::Llm::TanukiBot).to receive(:chat_disabled_reason).and_return(nil)
+    allow(::Gitlab::Llm::TanukiBot).to receive_messages(chat_disabled_reason: nil, credits_available?: true)
   end
 
   context 'when Project Studio IS NOT enabled' do

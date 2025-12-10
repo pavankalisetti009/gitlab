@@ -5,6 +5,10 @@ require 'spec_helper'
 RSpec.describe 'GitLab Duo Chat', :js, feature_category: :global_search do
   let_it_be(:user) { create(:user) }
 
+  before do
+    allow(::Gitlab::Llm::TanukiBot).to receive(:credits_available?).and_return(true)
+  end
+
   context 'for saas', :saas do
     let_it_be_with_reload(:group) { create(:group_with_plan, plan: :ultimate_plan) }
 

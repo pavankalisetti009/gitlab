@@ -11,6 +11,7 @@ RSpec.describe 'Edit group settings', :js, feature_category: :groups_and_project
   let_it_be(:subproject, refind: true) { create(:project, group: group) }
 
   before do
+    allow(::Gitlab::Llm::TanukiBot).to receive(:credits_available?).and_return(true)
     sign_in(user)
   end
 

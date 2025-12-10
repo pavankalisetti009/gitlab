@@ -5,6 +5,7 @@ require 'spec_helper'
 RSpec.describe "Search results for settings", :js, feature_category: :global_search, type: :feature do
   before do
     allow(::Ai::AmazonQ).to receive(:connected?).and_return(true)
+    allow(Gitlab::Llm::TanukiBot).to receive(:credits_available?).and_return(true)
 
     stub_licensed_features(
       group_level_merge_checks_setting: true,

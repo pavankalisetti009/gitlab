@@ -13,6 +13,7 @@ RSpec.describe 'Projects::DuoAgentsPlatform', type: :request, feature_category: 
     sign_in(user)
     allow(Ability).to receive(:allowed?).and_call_original
     allow(Ability).to receive(:allowed?).with(user, anything, anything).and_return(true)
+    allow(Gitlab::Llm::TanukiBot).to receive(:credits_available?).and_return(true)
   end
 
   describe 'GET /:namespace/:project/-/automate' do

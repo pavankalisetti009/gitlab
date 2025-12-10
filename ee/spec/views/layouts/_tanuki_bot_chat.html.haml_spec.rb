@@ -15,7 +15,8 @@ RSpec.describe 'layouts/_tanuki_bot_chat', feature_category: :duo_chat do
       enabled_for?: true,
       resource_id: 'test_resource_id',
       project_id: project.to_global_id,
-      root_namespace_id: 'test_root_namespace_id'
+      root_namespace_id: 'test_root_namespace_id',
+      credits_available?: true
     )
     assign(:project, project)
   end
@@ -30,6 +31,22 @@ RSpec.describe 'layouts/_tanuki_bot_chat', feature_category: :duo_chat do
     expect(rendered).to have_css("#js-duo-agentic-chat-app[data-metadata='#{expected_metadata}']")
     expect(rendered).to have_css("#js-duo-agentic-chat-app[data-root-namespace-id='test_root_namespace_id']")
     expect(rendered).not_to have_css("#js-duo-agentic-chat-app[data-namespace-id]")
+  end
+
+  it 'renders credits_available attribute as true when credits are available' do
+    allow(::Gitlab::Llm::TanukiBot).to receive(:credits_available?).and_return(true)
+
+    render
+
+    expect(rendered).to have_css("#js-duo-agentic-chat-app[data-credits-available='true']")
+  end
+
+  it 'renders credits_available attribute as false when credits are unavailable' do
+    allow(::Gitlab::Llm::TanukiBot).to receive(:credits_available?).and_return(false)
+
+    render
+
+    expect(rendered).to have_css("#js-duo-agentic-chat-app[data-credits-available='false']")
   end
 
   context 'when the page is in group scope' do
