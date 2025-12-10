@@ -44,6 +44,11 @@ export default {
       required: false,
       default: false,
     },
+    modalId: {
+      type: String,
+      required: false,
+      default: 'add-item-consumer-modal',
+    },
   },
   data() {
     return {
@@ -142,7 +147,7 @@ export default {
 <template>
   <gl-modal
     v-model="isOpen"
-    modal-id="add-item-consumer-modal"
+    :modal-id="modalId"
     :title="title"
     :action-primary="modal.actionPrimary"
     :action-cancel="modal.actionCancel"

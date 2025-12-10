@@ -193,6 +193,7 @@ RSpec.describe 'Query.project(fullPath).dependencies', feature_category: :depend
   it_behaves_like 'when dependencies graphql query sorted by severity'
   it_behaves_like 'when dependencies graphql query filtered by component versions'
   it_behaves_like 'when dependencies graphql query filtered by not component versions'
+  it_behaves_like 'when dependencies graphql query filtered by policy violations'
 
   describe 'policyViolations field on licenses' do
     let_it_be(:license_spdx) { 'MIT' }

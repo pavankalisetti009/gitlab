@@ -35,6 +35,7 @@ FactoryBot.define do
     end
 
     trait :with_foundational_flow_reference do
+      flow
       foundational_flow_reference { "fix_pipeline/v1" }
     end
 

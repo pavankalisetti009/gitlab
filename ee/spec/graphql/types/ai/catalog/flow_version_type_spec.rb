@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Types::Ai::Catalog::FlowVersionType, feature_category: :workflow_catalog do
+  include Ai::Catalog::TestHelpers
+
   let_it_be(:current_user) { create(:user) }
   let_it_be(:project) { create(:project, maintainers: [current_user]) }
   let_it_be(:item) { create(:ai_catalog_item, :flow, project: project, public: true) }
@@ -22,6 +24,10 @@ RSpec.describe Types::Ai::Catalog::FlowVersionType, feature_category: :workflow_
   end
 
   let(:returned_definition) { subject.dig('data', 'aiCatalogItem', 'latestVersion', 'definition') }
+
+  before do
+    enable_ai_catalog
+  end
 
   subject { GitlabSchema.execute(query, context: { current_user: }).as_json }
 

@@ -46,7 +46,7 @@ module Mutations
             required: false,
             description: 'Whether to add to the project upon creation.'
 
-          authorize :admin_ai_catalog_item
+          authorize :create_ai_catalog_flow
 
           def resolve(args)
             project = authorized_find!(id: args[:project_id])

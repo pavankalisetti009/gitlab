@@ -1,5 +1,5 @@
 import { nextTick } from 'vue';
-import { GlDashboardLayout, GlExperimentBadge } from '@gitlab/ui';
+import { GlDashboardLayout } from '@gitlab/ui';
 import { markRaw } from '~/lib/utils/vue3compat/mark_raw';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { OPERATORS_OR } from '~/vue_shared/components/filtered_search_bar/constants';
@@ -49,7 +49,6 @@ describe('Group Security Dashboard (new version) - Component', () => {
   const getVulnerabilitiesOverTimePanel = () => findPanelWithId('vulnerabilities-over-time');
   const getRiskScorePanel = () => findPanelWithId('risk-score');
   const getTitle = () => wrapper.find('h1');
-  const getBetaBadge = () => wrapper.findComponent(GlExperimentBadge);
 
   beforeEach(() => {
     createComponent();
@@ -60,9 +59,8 @@ describe('Group Security Dashboard (new version) - Component', () => {
       expect(findDashboardLayout().exists()).toBe(true);
     });
 
-    it('renders the correct title with beta badge', () => {
+    it('renders the correct title', () => {
       expect(getTitle().text()).toBe('Security dashboard');
-      expect(getBetaBadge().exists()).toBe(true);
     });
 
     it('renders the description', () => {

@@ -25,6 +25,7 @@ describe('AiCommonSettings', () => {
         foundationalAgentsDefaultEnabled: true,
         initialFoundationalAgentsStatuses: mockAgentStatuses,
         initialDuoFoundationalFlowsAvailability: false,
+        initialSelectedFoundationalFlowIds: [],
         onGeneralSettingsPage: false,
         glFeatures: {
           aiExperimentSastFpDetection: true,
@@ -79,6 +80,7 @@ describe('AiCommonSettings', () => {
     await findForm().vm.$emit('duo-flow-checkbox-changed', true);
     await findForm().vm.$emit('duo-foundational-agents-changed', true);
     await findForm().vm.$emit('duo-foundational-flows-checkbox-changed', true);
+    await findForm().vm.$emit('change-selected-flow-ids', [1, 2]);
     findForm().vm.$emit('submit', {
       preventDefault: jest.fn(),
     });
@@ -92,6 +94,7 @@ describe('AiCommonSettings', () => {
       duoFoundationalFlowsAvailability: true,
       duoSastFpDetectionAvailability: false,
       foundationalAgentsEnabled: true,
+      selectedFoundationalFlowIds: [1, 2],
       foundationalAgentsStatuses: mockAgentStatuses,
     });
   });

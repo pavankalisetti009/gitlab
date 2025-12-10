@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlAlert } from '@gitlab/ui';
+import { GlAlert, GlExperimentBadge } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -23,6 +23,7 @@ import updateAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/update_
 import deleteAiCatalogFlowMutation from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_flow.mutation.graphql';
 import reportAiCatalogItemMutation from 'ee/ai/catalog/graphql/mutations/report_ai_catalog_item.mutation.graphql';
 import deleteAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_item_consumer.mutation.graphql';
+import PageHeading from '~/vue_shared/components/page_heading.vue';
 import {
   mockAiCatalogFlowResponse,
   mockAiCatalogItemConsumerCreateSuccessProjectResponse,
@@ -121,6 +122,8 @@ describe('AiCatalogFlowsShow', () => {
   const findItemActions = () => wrapper.findComponent(AiCatalogItemActions);
   const findItemView = () => wrapper.findComponent(AiCatalogItemView);
   const findFoundationalIcon = () => wrapper.findComponent(FoundationalIcon);
+  const findPageHeading = () => wrapper.findComponent(PageHeading);
+  const findExperimentBadge = () => wrapper.findComponent(GlExperimentBadge);
   const findUpdateAlert = () => wrapper.findComponent(GlAlert);
   const findPrimaryUpdateButton = () => wrapper.findByTestId('flows-show-primary-button');
   const findSecondaryUpdateButton = () => wrapper.findByTestId('flows-show-secondary-button');
@@ -145,6 +148,18 @@ describe('AiCatalogFlowsShow', () => {
     });
   });
 
+  describe('Page Heading', () => {
+    it('renders page heading with correct title and description', () => {
+      expect(findPageHeading().exists()).toBe(true);
+      expect(findPageHeading().text()).toContain(mockFlow.name);
+    });
+
+    it('renders experiment badge', () => {
+      expect(findExperimentBadge().exists()).toBe(true);
+      expect(findExperimentBadge().props('type')).toBe('beta');
+    });
+  });
+
   describe('foundational flow', () => {
     describe('when flow is foundational', () => {
       beforeEach(() => {
@@ -164,6 +179,15 @@ describe('AiCatalogFlowsShow', () => {
 
         expect(foundationalIcon.props('resourceId')).toBe(mockFlow.id);
         expect(foundationalIcon.props('itemType')).toBe(mockFlow.itemType);
+      });
+
+      it('displays foundational icon badge next to flow name', () => {
+        expect(findFoundationalIcon().exists()).toBe(true);
+      });
+
+      it('renders foundational icon in the same container as flow name', () => {
+        const headingContainer = wrapper.find('[class*="gl-flex"]');
+        expect(headingContainer.findComponent(FoundationalIcon).exists()).toBe(true);
       });
     });
 
@@ -186,7 +210,12 @@ describe('AiCatalogFlowsShow', () => {
   });
 
   describe('on adding flow to project', () => {
-    const addFlowToProject = () => findItemActions().vm.$emit('add-to-target', { projectId: '1' });
+    const addFlowToProject = () =>
+      findItemActions().vm.$emit('add-to-target', {
+        parentItemConsumerId: mockItemConfigurationForGroup.id,
+        target: { projectId: '1' },
+        triggerTypes: ['mention', 'assign', 'assign_reviewer'],
+      });
 
     it('calls create consumer mutation for flow', () => {
       addFlowToProject();
@@ -196,6 +225,7 @@ describe('AiCatalogFlowsShow', () => {
           itemId: mockFlow.id,
           target: { projectId: '1' },
           parentItemConsumerId: mockItemConfigurationForGroup.id,
+          triggerTypes: ['mention', 'assign', 'assign_reviewer'],
         },
       });
     });

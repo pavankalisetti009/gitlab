@@ -74,9 +74,11 @@ RSpec.describe 'Groups > Settings > Group hooks', feature_category: :webhooks do
         check 'Enable SSL verification'
         check 'Job events'
 
-        expect { click_button 'Add webhook' }.to change { GroupHook.count }.by(1)
+        expect do
+          click_button 'Add webhook'
+          expect(page).to have_content(url)
+        end.to change { GroupHook.count }.by(1)
 
-        expect(page).to have_content(url)
         expect(page).to have_content('SSL Verification: enabled')
         expect(page).to have_content('Tag push events')
         expect(page).to have_content('Job events')

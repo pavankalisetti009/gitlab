@@ -112,6 +112,7 @@ export default {
       foundationalAgentsEnabled,
       duoFoundationalFlowsAvailability,
       foundationalAgentsStatuses,
+      selectedFoundationalFlowIds,
     }) {
       try {
         this.isLoading = true;
@@ -134,6 +135,7 @@ export default {
           model_prompt_cache_enabled: promptCacheEnabled,
           duo_remote_flows_availability: duoRemoteFlowsAvailability,
           duo_foundational_flows_availability: duoFoundationalFlowsAvailability,
+          enabled_foundational_flows: selectedFoundationalFlowIds,
           duo_sast_fp_detection_availability: duoSastFpDetectionAvailability,
           disabled_direct_code_suggestions: this.disabledConnection,
           enabled_expanded_logging: this.expandedLogging,

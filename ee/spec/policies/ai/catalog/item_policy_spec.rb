@@ -26,13 +26,18 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
     create(:ai_catalog_third_party_flow, project: project, public: true)
   end
 
-  let(:stage_check) { true }
+  let(:ai_catalog_available) { true }
+  let(:flows_available) { true }
   let(:duo_features_enabled) { true }
 
   before do
     Current.organization = current_organization
-    allow(::Gitlab::Llm::StageCheck).to receive(:available?)
-      .with(project, :ai_catalog, user: current_user).and_return(stage_check)
+    allow(::Gitlab::Llm::StageCheck)
+      .to receive(:available?)
+      .with(project, :ai_catalog, user: current_user).and_return(ai_catalog_available)
+    allow(::Gitlab::Llm::StageCheck)
+      .to receive(:available?)
+      .with(project, :ai_catalog_flows).and_return(flows_available)
     project.update!(duo_features_enabled: duo_features_enabled)
   end
 
@@ -74,7 +79,7 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
     include_examples 'all permissions when admin'
 
     it_behaves_like 'no permissions with global_ai_catalog feature flag disabled'
-    it_behaves_like 'no permissions with project stage check false, unless item is public'
+    it_behaves_like 'no permissions when StageCheck :ai_catalog is false, unless item is public'
     it_behaves_like 'no permissions when project Duo features disabled, unless item is public'
     it_behaves_like 'read-only permissions with deleted item'
   end
@@ -88,7 +93,7 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
     include_examples 'all permissions when admin'
 
     it_behaves_like 'no permissions with global_ai_catalog feature flag disabled'
-    it_behaves_like 'no permissions with project stage check false, unless item is public'
+    it_behaves_like 'no permissions when StageCheck :ai_catalog is false, unless item is public'
     it_behaves_like 'no permissions when project Duo features disabled, unless item is public'
     it_behaves_like 'read-only permissions with deleted item'
   end
@@ -125,8 +130,8 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
     include_examples 'all permissions when admin'
   end
 
-  shared_examples 'no permissions with project stage check false, unless item is public' do
-    let(:stage_check) { false }
+  shared_examples 'no permissions when StageCheck :ai_catalog is false, unless item is public' do
+    let(:ai_catalog_available) { false }
 
     it { is_expected.to be_disallowed(:admin_ai_catalog_item) }
     it { is_expected.to be_disallowed(:delete_ai_catalog_item) }
@@ -202,6 +207,13 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
       end
 
       it_behaves_like 'no permissions'
+    end
+
+    context 'with ai_catalog_flows is not available' do
+      let(:flows_available) { false }
+
+      it_behaves_like 'read-only permissions'
+      it_behaves_like 'report_ai_catalog_item permission', allowed: true
     end
   end
 

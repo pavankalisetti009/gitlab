@@ -54,7 +54,7 @@ module Sidebars
 
         def show_flows_menu_item?
           Feature.enabled?(:global_ai_catalog, context.current_user) &&
-            Feature.enabled?(:ai_catalog_flows, context.current_user)
+            context.current_user&.can?(:read_ai_catalog_flow, context.project)
         end
 
         def duo_agents_runs_menu_item

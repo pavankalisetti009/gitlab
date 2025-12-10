@@ -50,19 +50,6 @@ describe('RiskScoreByProject chart', () => {
     },
   ];
 
-  const EXPECTED_RISK_SCORE_BG = {
-    LOW: 'gl-bg-green-200',
-    MEDIUM: 'gl-bg-orange-200',
-    HIGH: 'gl-bg-red-500',
-    CRITICAL: 'gl-bg-red-700',
-  };
-  const EXPECTED_RISK_SCORE_COLOR = {
-    LOW: 'gl-text-green-800',
-    MEDIUM: 'gl-text-orange-800',
-    HIGH: 'gl-text-white',
-    CRITICAL: 'gl-text-white',
-  };
-
   const createComponent = (props = {}) => {
     wrapper = shallowMountExtended(RiskScoreByProject, {
       propsData: {
@@ -129,10 +116,10 @@ describe('RiskScoreByProject chart', () => {
           `Project ${riskScore.project.name}, risk score: ${riskScore.score}`,
         );
         expect(findRiskScoreTile(index).classes()).toContain(
-          EXPECTED_RISK_SCORE_BG[riskScore.rating],
+          `risk-score-bg-${riskScore.rating.toLowerCase()}`,
         );
         expect(findRiskScoreButton(index).classes()).toContain(
-          EXPECTED_RISK_SCORE_COLOR[riskScore.rating],
+          `risk-score-tile-text-${riskScore.rating.toLowerCase()}`,
         );
       },
     );

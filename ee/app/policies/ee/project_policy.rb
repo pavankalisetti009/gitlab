@@ -493,6 +493,7 @@ module EE
         enable :read_security_resource
         enable :read_vulnerability
         enable :update_secret_detection_validity_checks_status
+        enable :read_ai_catalog_flow
         enable :execute_ai_catalog_item
       end
 
@@ -756,8 +757,10 @@ module EE
         enable :manage_security_settings
         enable :configure_secret_detection_validity_checks
         enable :admin_vulnerability
+        enable :create_ai_catalog_flow
         enable :admin_ai_catalog_item
         enable :admin_ai_catalog_item_consumer
+        enable :create_ai_catalog_flow_item_consumer
         enable :manage_ai_flow_triggers
       end
 
@@ -1382,11 +1385,28 @@ module EE
         @subject.ai_catalog_available?(@user)
       end
 
+      condition(:flows_enabled, scope: :user) do
+        ::Feature.enabled?(:ai_catalog_flows, @user)
+      end
+
+      condition(:flows_available, scope: :subject) do
+        ::Gitlab::Llm::StageCheck.available?(@subject, :ai_catalog_flows)
+      end
+
       rule { ~ai_catalog_enabled | ~ai_catalog_available }.policy do
+        prevent :create_ai_catalog_flow
+        prevent :read_ai_catalog_flow
+        prevent :execute_ai_catalog_item
         prevent :admin_ai_catalog_item
         prevent :admin_ai_catalog_item_consumer
+        prevent :create_ai_catalog_flow_item_consumer
         prevent :read_ai_catalog_item_consumer
-        prevent :execute_ai_catalog_item
+      end
+
+      rule { ~flows_enabled | ~flows_available }.policy do
+        prevent :create_ai_catalog_flow
+        prevent :read_ai_catalog_flow
+        prevent :create_ai_catalog_flow_item_consumer
       end
 
       rule { container_registry_disabled }.policy do

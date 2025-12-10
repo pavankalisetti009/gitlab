@@ -1,5 +1,5 @@
 <script>
-import { GlAlert, GlButton } from '@gitlab/ui';
+import { GlAlert, GlButton, GlExperimentBadge } from '@gitlab/ui';
 import { s__, sprintf } from '~/locale';
 import { InternalEvents } from '~/tracking';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
@@ -34,6 +34,7 @@ import {
 export default {
   name: 'AiCatalogFlowsShow',
   components: {
+    GlExperimentBadge,
     FoundationalIcon,
     ErrorsAlert,
     PageHeading,
@@ -109,11 +110,12 @@ export default {
     });
   },
   methods: {
-    async addFlowToTarget(target) {
+    async addFlowToTarget({ target, triggerTypes }) {
       const input = {
         itemId: this.aiCatalogFlow.id,
         target,
         parentItemConsumerId: this.aiCatalogFlow.configurationForGroup?.id,
+        triggerTypes,
       };
       const targetType = target.groupId
         ? AI_CATALOG_CONSUMER_TYPE_GROUP
@@ -306,6 +308,7 @@ export default {
           <span class="gl-line-clamp-1 gl-wrap-anywhere">
             {{ aiCatalogFlow.name }}
           </span>
+          <gl-experiment-badge type="beta" class="gl-self-center" />
           <foundational-icon
             v-if="aiCatalogFlow.foundational"
             :resource-id="aiCatalogFlow.id"

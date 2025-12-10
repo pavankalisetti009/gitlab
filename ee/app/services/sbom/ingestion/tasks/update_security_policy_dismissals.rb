@@ -5,7 +5,7 @@ module Sbom
     module Tasks
       class UpdateSecurityPolicyDismissals < Base
         def execute
-          return unless Feature.enabled?(:security_policy_warn_mode_license_scanning, project)
+          return unless Feature.enabled?(:security_policy_warn_mode_license_scanning, project.group)
 
           policy_dismissals = project.policy_dismissals.for_merge_requests(
             project.merge_requests.by_merged_or_merge_or_squash_commit_sha(@pipeline.sha).select(:id)

@@ -71,8 +71,8 @@ module Vulnerabilities
         vulnerability.update!(update_params)
 
         if params[:dismissal_reason]
-          Vulnerabilities::Reads::UpsertService.new(vulnerability,
-            { dismissal_reason: dismissal_reason, state: @state }, projects: @project).execute
+          update_vulnerability_read_dismissal_reason(vulnerability,
+            { dismissal_reason: dismissal_reason, state: @state })
         end
 
         create_system_note(vulnerability, @current_user)
@@ -92,10 +92,22 @@ module Vulnerabilities
       Vulnerability.transaction do
         state_transition.update!(params.slice(:comment, :dismissal_reason).compact)
 
-        if @present_on_default_branch && params[:dismissal_reason]
-          Vulnerabilities::Reads::UpsertService.new(vulnerability,
-            { dismissal_reason: params[:dismissal_reason] }, projects: @project).execute
+        if params[:dismissal_reason]
+          update_vulnerability_read_dismissal_reason(vulnerability,
+            { dismissal_reason: params[:dismissal_reason] })
         end
+      end
+    end
+
+    def update_vulnerability_read_dismissal_reason(vulnerability, params)
+      if Feature.enabled?(:turn_off_vulnerability_read_create_db_trigger_function, @project)
+        if @present_on_default_branch
+          Vulnerabilities::Reads::UpsertService.new(vulnerability,
+            params, projects: @project).execute
+        end
+      else
+        # When the trigger is active, it handles state updates but not dismissal_reason
+        vulnerability.vulnerability_read&.update!(params.slice(:dismissal_reason))
       end
     end
 

@@ -259,7 +259,7 @@ module EE
 
       has_many :policy_dismissals, class_name: '::Security::PolicyDismissal', inverse_of: :project
 
-      has_many :enabled_foundational_flows,
+      has_many :enabled_foundational_flow_records,
         class_name: 'Ai::Catalog::EnabledFoundationalFlow',
         foreign_key: :project_id
 
@@ -817,8 +817,59 @@ module EE
     end
 
     def enabled_flow_catalog_item_ids
-      project_flows = enabled_foundational_flows.limit(100).pluck(:catalog_item_id)
+      project_flows = enabled_foundational_flow_records.limit(100).pluck(:catalog_item_id)
       project_flows.presence || namespace.enabled_flow_catalog_item_ids
+    end
+
+    def remove_foundational_flow_consumers(catalog_item_ids)
+      return if catalog_item_ids.empty?
+
+      # Get all foundational flow IDs
+      foundational_flow_ids = ::Ai::Catalog::Item.foundational_flow_ids
+
+      # Only remove consumers that are foundational flows
+      ids_to_remove = catalog_item_ids & foundational_flow_ids
+      return if ids_to_remove.empty?
+
+      configured_ai_catalog_items
+        .for_catalog_items(ids_to_remove)
+        .delete_all
+    end
+
+    def sync_enabled_foundational_flows!(target_ids)
+      if target_ids.empty?
+        enabled_foundational_flow_records
+          .for_project(id)
+          .delete_all
+      else
+        enabled_foundational_flow_records
+          .for_project(id)
+          .where.not(catalog_item_id: target_ids)
+          .delete_all
+
+        current_time = Time.current
+        records = target_ids.map do |catalog_item_id|
+          Ai::Catalog::EnabledFoundationalFlow.new(
+            project_id: id,
+            namespace_id: nil,
+            catalog_item_id: catalog_item_id,
+            created_at: current_time,
+            updated_at: current_time
+          )
+        end
+
+        Ai::Catalog::EnabledFoundationalFlow.bulk_insert!(
+          records,
+          unique_by: [:project_id, :catalog_item_id]
+        )
+      end
+    rescue ActiveRecord::RecordInvalid => e
+      ::Gitlab::ErrorTracking.track_exception(
+        e,
+        project_id: id,
+        target_ids: target_ids,
+        validation_errors: e.record&.errors&.full_messages&.join(', ')
+      )
     end
 
     def project_state

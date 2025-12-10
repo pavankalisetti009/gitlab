@@ -11,7 +11,11 @@ describe('AiCatalogNavTabs', () => {
     push: jest.fn(),
   };
 
-  const createComponent = ({ routePath = '/ai/catalog', aiCatalogFlows = true } = {}) => {
+  const createComponent = ({
+    routePath = '/ai/catalog',
+    aiCatalogFlows = true,
+    readAiCatalogFlow = true,
+  } = {}) => {
     wrapper = shallowMountExtended(AiCatalogNavTabs, {
       mocks: {
         $route: {
@@ -20,6 +24,9 @@ describe('AiCatalogNavTabs', () => {
         $router: mockRouter,
       },
       provide: {
+        glAbilities: {
+          readAiCatalogFlow,
+        },
         glFeatures: {
           aiCatalogFlows,
         },
@@ -55,9 +62,9 @@ describe('AiCatalogNavTabs', () => {
     expect(flowsTab.attributes('title')).toBe('Flows');
   });
 
-  describe('when aiCatalogFlows FF is off', () => {
+  describe('when readAiCatalogFlow is null and aiCatalogFlows FF is false', () => {
     beforeEach(() => {
-      createComponent({ aiCatalogFlows: false });
+      createComponent({ readAiCatalogFlow: null, aiCatalogFlows: false });
     });
 
     it('does not render the Flows tab', () => {
@@ -66,11 +73,53 @@ describe('AiCatalogNavTabs', () => {
     });
   });
 
-  describe('when aiCatalogFlows FF is on', () => {
+  describe('when readAiCatalogFlow is null and aiCatalogFlows FF is true', () => {
     beforeEach(() => {
-      createComponent({
-        aiCatalogFlows: true,
-      });
+      createComponent({ readAiCatalogFlow: null, aiCatalogFlows: true });
+    });
+
+    it('renders the Flows tab', () => {
+      expect(findAllTabs()).toHaveLength(2);
+      expect(findAllTabs().at(1).attributes('title')).toBe('Flows');
+    });
+  });
+
+  describe('when readAiCatalogFlow is false and aiCatalogFlows FF is true', () => {
+    beforeEach(() => {
+      createComponent({ readAiCatalogFlow: false, aiCatalogFlows: true });
+    });
+
+    it('does not render the Flows tab', () => {
+      expect(findAllTabs()).toHaveLength(1);
+      expect(findAllTabs().at(0).attributes('title')).toBe('Agents');
+    });
+  });
+
+  describe('when readAiCatalogFlow is true and aiCatalogFlows FF is false', () => {
+    beforeEach(() => {
+      createComponent({ readAiCatalogFlow: true, aiCatalogFlows: false });
+    });
+
+    it('renders the Flows tab', () => {
+      expect(findAllTabs()).toHaveLength(2);
+      expect(findAllTabs().at(1).attributes('title')).toBe('Flows');
+    });
+  });
+
+  describe('when readAiCatalogFlow is false and aiCatalogFlows FF is false', () => {
+    beforeEach(() => {
+      createComponent({ readAiCatalogFlow: false, aiCatalogFlows: false });
+    });
+
+    it('does not render the Flows tab', () => {
+      expect(findAllTabs()).toHaveLength(1);
+      expect(findAllTabs().at(0).attributes('title')).toBe('Agents');
+    });
+  });
+
+  describe('when readAiCatalogFlow is true and aiCatalogFlows FF is true', () => {
+    beforeEach(() => {
+      createComponent({ readAiCatalogFlow: true, aiCatalogFlows: true });
     });
 
     it('renders the Flows tab', () => {

@@ -9,6 +9,8 @@ module Groups
       push_frontend_feature_flag(:ai_catalog_agents, current_user)
       push_frontend_feature_flag(:ai_catalog_flows, current_user)
       push_frontend_feature_flag(:ai_catalog_third_party_flows, current_user)
+      push_frontend_feature_flag(:ai_duo_agent_platform_ga_rollout, current_user)
+      push_frontend_ability(ability: :read_ai_catalog_flow, resource: group, user: current_user)
     end
 
     def show; end
@@ -37,8 +39,7 @@ module Groups
         Feature.enabled?(:global_ai_catalog, current_user) &&
           Feature.enabled?(:ai_catalog_agents, current_user)
       when 'flows'
-        Feature.enabled?(:global_ai_catalog, current_user) &&
-          Feature.enabled?(:ai_catalog_flows, current_user)
+        current_user.can?(:read_ai_catalog_flow, group)
       end
     end
 

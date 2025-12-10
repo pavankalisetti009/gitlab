@@ -5276,14 +5276,24 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
   end
 
   describe 'AI catalog abilities' do
-    let(:stage_check_available) { true }
+    let(:ai_catalog_available) { true }
+    let(:flows_available) { true }
     let(:duo_features_enabled) { true }
 
-    shared_examples 'no permissions when StageCheck is not available' do
-      let(:stage_check_available) { false }
+    shared_examples 'no permissions when StageCheck :ai_catalog is false' do
+      let(:ai_catalog_available) { false }
 
-      it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
+      it { is_expected.to be_disallowed(:create_ai_catalog_flow_item_consumer) }
       it { is_expected.to be_disallowed(:read_ai_catalog_item_consumer) }
+      it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
+      it { is_expected.to be_disallowed(:read_ai_catalog_flow) }
+    end
+
+    shared_examples 'no flow permissions when StageCheck :ai_catalog_flows is false' do
+      let(:flows_available) { false }
+
+      it { is_expected.to be_disallowed(:create_ai_catalog_flow_item_consumer) }
+      it { is_expected.to be_disallowed(:read_ai_catalog_flow) }
     end
 
     shared_examples 'no permissions when Duo features are not available' do
@@ -5291,6 +5301,8 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
 
       it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
       it { is_expected.to be_disallowed(:read_ai_catalog_item_consumer) }
+      it { is_expected.to be_disallowed(:create_ai_catalog_flow_item_consumer) }
+      it { is_expected.to be_disallowed(:read_ai_catalog_flow) }
     end
 
     shared_examples 'no permissions when global_ai_catalog feature flag is disabled' do
@@ -5300,11 +5312,14 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
 
       it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
       it { is_expected.to be_disallowed(:read_ai_catalog_item_consumer) }
+      it { is_expected.to be_disallowed(:create_ai_catalog_flow_item_consumer) }
+      it { is_expected.to be_disallowed(:read_ai_catalog_flow) }
     end
 
     before do
       allow(::Gitlab::Llm::StageCheck).to receive(:available?)
-        .with(group, :ai_catalog, user: current_user).and_return(stage_check_available)
+        .with(group, :ai_catalog, user: current_user).and_return(ai_catalog_available)
+      allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(group, :ai_catalog_flows).and_return(flows_available)
       group.namespace_settings.duo_features_enabled = duo_features_enabled
     end
 
@@ -5313,8 +5328,11 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
 
       it { is_expected.to be_allowed(:admin_ai_catalog_item_consumer) }
       it { is_expected.to be_allowed(:read_ai_catalog_item_consumer) }
+      it { is_expected.to be_allowed(:create_ai_catalog_flow_item_consumer) }
+      it { is_expected.to be_allowed(:read_ai_catalog_flow) }
 
-      it_behaves_like 'no permissions when StageCheck is not available'
+      it_behaves_like 'no permissions when StageCheck :ai_catalog is false'
+      it_behaves_like 'no flow permissions when StageCheck :ai_catalog_flows is false'
       it_behaves_like 'no permissions when Duo features are not available'
       it_behaves_like 'no permissions when global_ai_catalog feature flag is disabled'
     end
@@ -5324,8 +5342,11 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
 
       it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
       it { is_expected.to be_allowed(:read_ai_catalog_item_consumer) }
+      it { is_expected.to be_disallowed(:create_ai_catalog_flow_item_consumer) }
+      it { is_expected.to be_allowed(:read_ai_catalog_flow) }
 
-      it_behaves_like 'no permissions when StageCheck is not available'
+      it_behaves_like 'no permissions when StageCheck :ai_catalog is false'
+      it_behaves_like 'no flow permissions when StageCheck :ai_catalog_flows is false'
       it_behaves_like 'no permissions when Duo features are not available'
       it_behaves_like 'no permissions when global_ai_catalog feature flag is disabled'
     end
@@ -5335,6 +5356,8 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
 
       it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
       it { is_expected.to be_disallowed(:read_ai_catalog_item_consumer) }
+      it { is_expected.to be_disallowed(:create_ai_catalog_flow_item_consumer) }
+      it { is_expected.to be_disallowed(:read_ai_catalog_flow) }
     end
 
     context 'when guest' do
@@ -5342,6 +5365,8 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
 
       it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
       it { is_expected.to be_disallowed(:read_ai_catalog_item_consumer) }
+      it { is_expected.to be_disallowed(:create_ai_catalog_flow_item_consumer) }
+      it { is_expected.to be_disallowed(:read_ai_catalog_flow) }
     end
 
     context 'when anonymous' do
@@ -5349,6 +5374,8 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
 
       it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
       it { is_expected.to be_disallowed(:read_ai_catalog_item_consumer) }
+      it { is_expected.to be_disallowed(:create_ai_catalog_flow_item_consumer) }
+      it { is_expected.to be_disallowed(:read_ai_catalog_flow) }
     end
 
     context 'when non_group_member' do
@@ -5356,12 +5383,16 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
 
       it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
       it { is_expected.to be_disallowed(:read_ai_catalog_item_consumer) }
+      it { is_expected.to be_disallowed(:create_ai_catalog_flow_item_consumer) }
+      it { is_expected.to be_disallowed(:read_ai_catalog_flow) }
 
       context 'when maintainer of a project in the group' do
         let_it_be(:project) { create(:project, maintainers: current_user, group: group) }
 
         it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
         it { is_expected.to be_allowed(:read_ai_catalog_item_consumer) }
+        it { is_expected.to be_disallowed(:create_ai_catalog_flow_item_consumer) }
+        it { is_expected.to be_disallowed(:read_ai_catalog_flow) }
       end
 
       context 'when developer of a project in the group' do
@@ -5369,6 +5400,8 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
 
         it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
         it { is_expected.to be_disallowed(:read_ai_catalog_item_consumer) }
+        it { is_expected.to be_disallowed(:create_ai_catalog_flow_item_consumer) }
+        it { is_expected.to be_disallowed(:read_ai_catalog_flow) }
       end
 
       context 'when maintainer of a project not in the group' do
@@ -5376,6 +5409,8 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
 
         it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
         it { is_expected.to be_disallowed(:read_ai_catalog_item_consumer) }
+        it { is_expected.to be_disallowed(:create_ai_catalog_flow_item_consumer) }
+        it { is_expected.to be_disallowed(:read_ai_catalog_flow) }
       end
     end
   end

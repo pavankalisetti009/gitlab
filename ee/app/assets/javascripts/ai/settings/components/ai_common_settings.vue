@@ -34,6 +34,7 @@ export default {
     'initialDuoSastFpDetectionAvailability',
     'foundationalAgentsDefaultEnabled',
     'initialFoundationalAgentsStatuses',
+    'initialSelectedFoundationalFlowIds',
   ],
   props: {
     hasParentFormChanged: {
@@ -52,6 +53,7 @@ export default {
       duoFoundationalFlowsAvailability: this.initialDuoFoundationalFlowsAvailability,
       duoSastFpDetectionAvailability: this.initialDuoSastFpDetectionAvailability,
       foundationalAgentsEnabled: this.foundationalAgentsDefaultEnabled,
+      selectedFlowIds: this.initialSelectedFoundationalFlowIds || [],
       foundationalAgentsStatuses: this.initialFoundationalAgentsStatuses,
     };
   },
@@ -67,6 +69,7 @@ export default {
         duoSastFpDetectionAvailability: this.duoSastFpDetectionAvailability,
         foundationalAgentsEnabled: this.foundationalAgentsEnabled,
         foundationalAgentsStatuses: this.foundationalAgentsStatuses,
+        selectedFoundationalFlowIds: this.selectedFlowIds,
       });
     },
     onRadioChanged(value) {
@@ -96,6 +99,9 @@ export default {
     onFoundationalAgentsStatusesChanged(agentStatuses) {
       this.foundationalAgentsStatuses = agentStatuses;
     },
+    onSelectedFlowIdsChanged(flowIds) {
+      this.selectedFlowIds = flowIds;
+    },
   },
   aiFeaturesHelpPath: helpPagePath('user/gitlab_duo/_index'),
 };
@@ -124,6 +130,7 @@ export default {
             :duo-remote-flows-availability="initialDuoRemoteFlowsAvailability"
             :duo-foundational-flows-availability="initialDuoFoundationalFlowsAvailability"
             :duo-sast-fp-detection-availability="initialDuoSastFpDetectionAvailability"
+            :selected-foundational-flow-ids="initialSelectedFoundationalFlowIds"
             :experiment-features-enabled="experimentFeaturesEnabled"
             :duo-core-features-enabled="duoCoreFeaturesEnabled"
             :prompt-cache-enabled="promptCacheEnabled"
@@ -140,6 +147,7 @@ export default {
             @duo-foundational-agents-changed="onFoundationalAgentsEnabledChanged"
             @duo-foundational-agents-statuses-change="onFoundationalAgentsStatusesChanged"
             @duo-foundational-flows-checkbox-changed="onDuoFoundationalFlowsChanged"
+            @change-selected-flow-ids="onSelectedFlowIdsChanged"
           >
             <template #ai-common-settings-top>
               <slot name="ai-common-settings-top"></slot>
@@ -168,6 +176,7 @@ export default {
         :duo-remote-flows-availability="initialDuoRemoteFlowsAvailability"
         :duo-foundational-flows-availability="initialDuoFoundationalFlowsAvailability"
         :duo-sast-fp-detection-availability="initialDuoSastFpDetectionAvailability"
+        :selected-foundational-flow-ids="initialSelectedFoundationalFlowIds"
         :experiment-features-enabled="experimentFeaturesEnabled"
         :duo-core-features-enabled="duoCoreFeaturesEnabled"
         :prompt-cache-enabled="promptCacheEnabled"
@@ -184,6 +193,7 @@ export default {
         @duo-sast-fp-detection-changed="onDuoSastFpDetectionChanged"
         @duo-foundational-agents-changed="onFoundationalAgentsEnabledChanged"
         @duo-foundational-agents-statuses-change="onFoundationalAgentsStatusesChanged"
+        @change-selected-flow-ids="onSelectedFlowIdsChanged"
       >
         <template #ai-common-settings-top>
           <slot name="ai-common-settings-top"></slot>

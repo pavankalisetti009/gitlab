@@ -3,20 +3,6 @@ import { GlResizeObserverDirective } from '@gitlab/ui';
 import { GlChart } from '@gitlab/ui/src/charts';
 import { s__ } from '~/locale';
 
-const CHART_BAR_COLORS = {
-  LOW: '#91D4A8',
-  MEDIUM: '#E9BE74',
-  HIGH: '#c55631',
-  CRITICAL: '#9d2915',
-};
-
-const LABEL_TEXT_COLORS = {
-  LOW: '#2DA160',
-  MEDIUM: '#C17D10',
-  HIGH: '#c55631',
-  CRITICAL: '#9d2915',
-};
-
 const RATING_LABELS = {
   LOW: s__('SecurityReports|Low risk'),
   MEDIUM: s__('SecurityReports|Medium risk'),
@@ -48,11 +34,8 @@ export default {
     label() {
       return RATING_LABELS[this.rating];
     },
-    chartBarColor() {
-      return CHART_BAR_COLORS[this.rating];
-    },
     labelTextColor() {
-      return LABEL_TEXT_COLORS[this.rating];
+      return `var(--risk-score-gauge-text-${this.rating.toLowerCase()})`;
     },
     rating() {
       if (this.score <= 25) {
@@ -128,10 +111,10 @@ export default {
           lineStyle: {
             width: this.gaugeDimensions.outerMeter.ringWidth,
             color: [
-              [0.25, CHART_BAR_COLORS.LOW],
-              [0.5, CHART_BAR_COLORS.MEDIUM],
-              [0.75, CHART_BAR_COLORS.HIGH],
-              [1, CHART_BAR_COLORS.CRITICAL],
+              [0.25, this.getRiskScoreColor('LOW')],
+              [0.5, this.getRiskScoreColor('MEDIUM')],
+              [0.75, this.getRiskScoreColor('HIGH')],
+              [1, this.getRiskScoreColor('CRITICAL')],
             ],
           },
         },
@@ -196,7 +179,7 @@ export default {
             width: this.gaugeDimensions.progressMeter.ringWidth,
             color: [
               // the actual data representation
-              [this.score / 100, this.chartBarColor],
+              [this.score / 100, this.getRiskScoreColor(this.rating)],
               // transparent to support dark and light mode
               [1, 'transparent'],
             ],
@@ -232,6 +215,9 @@ export default {
     onResize({ contentRect: { width, height } }) {
       this.chartWidth = width;
       this.chartHeight = height;
+    },
+    getRiskScoreColor(rating) {
+      return `var(--risk-score-color-${rating.toLowerCase()})`;
     },
   },
 };

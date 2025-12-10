@@ -40,6 +40,7 @@ describe('FlowTriggersIndex', () => {
   const createWrapper = ({
     queryHandler = mockFlowTriggerQueryHandler,
     mutationHandler = mockFlowDeleteMutationHandler,
+    glFeatures = {},
   } = {}) => {
     mockApollo = createMockApollo([
       [getProjectAiFlowTriggers, queryHandler],
@@ -51,6 +52,10 @@ describe('FlowTriggersIndex', () => {
       provide: {
         projectPath: 'myProject',
         flowTriggersEventTypeOptions: eventTypeOptions,
+        glFeatures: {
+          aiDuoAgentPlatformGaRollout: false,
+          ...glFeatures,
+        },
       },
     });
   };
@@ -67,6 +72,19 @@ describe('FlowTriggersIndex', () => {
 
       expect(findExperimentBadge().exists()).toBe(true);
       expect(findExperimentBadge().props('type')).toBe('beta');
+    });
+
+    describe('when ai_duo_agent_platform_ga_rollout feature flag is enabled', () => {
+      beforeEach(() => {
+        createWrapper({
+          provide: { isSidePanelView: false },
+          glFeatures: { aiDuoAgentPlatformGaRollout: true },
+        });
+      });
+
+      it('hides the experiment badge', () => {
+        expect(findExperimentBadge().exists()).toBe(false);
+      });
     });
 
     describe('while fetching data', () => {

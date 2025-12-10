@@ -19,6 +19,7 @@ import {
   AI_CATALOG_TYPE_FLOW,
   FLOW_VISIBILITY_LEVEL_DESCRIPTIONS,
   PAGE_SIZE,
+  ENABLE_FLOW_MODAL_TEXTS,
 } from 'ee/ai/catalog/constants';
 import { prerequisitesError } from 'ee/ai/catalog/utils';
 import { TYPENAME_PROJECT } from '~/graphql_shared/constants';
@@ -285,18 +286,8 @@ export default {
     },
   },
   addFlowModalId: 'add-flow-to-project-modal',
-  modalTexts: {
-    title: s__('AICatalog|Enable flow from group'),
-    label: s__('AICatalog|Flow'),
-    labelDescription: s__('AICatalog|Only flows enabled in your top-level group are shown.'),
-    invalidFeedback: s__('AICatalog|Flow is required.'),
-    error: s__('AICatalog|Failed to load group flows'),
-    dropdownTexts: {
-      placeholder: s__('AICatalog|Select a flow'),
-      itemSublabel: s__('AICatalog|Flow ID: %{id}'),
-    },
-  },
   itemTypes: [AI_CATALOG_TYPE_FLOW],
+  modalTexts: ENABLE_FLOW_MODAL_TEXTS,
   EMPTY_SVG_URL,
 };
 </script>
@@ -306,6 +297,7 @@ export default {
     <ai-catalog-list-header
       :heading="s__('AICatalog|Flows')"
       :can-admin="userPermissions.adminAiCatalogItem"
+      :is-beta="true"
       new-button-variant="default"
     >
       <template #nav-actions>

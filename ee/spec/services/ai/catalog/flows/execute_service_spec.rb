@@ -156,6 +156,7 @@ RSpec.describe Ai::Catalog::Flows::ExecuteService, :aggregate_failures, feature_
 
       before do
         allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
+        allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :ai_catalog_flows).and_return(true)
         allow(current_user).to receive(:allowed_to_use?).and_return(true)
         project.project_setting.update!(duo_features_enabled: true, duo_remote_flows_enabled: true)
         allow_next_instance_of(Ai::UsageQuotaService) do |instance|
@@ -211,6 +212,16 @@ RSpec.describe Ai::Catalog::Flows::ExecuteService, :aggregate_failures, feature_
             'counts.count_total_trigger_ai_catalog_item_monthly',
             'counts.count_total_trigger_ai_catalog_item'
           )
+      end
+
+      context 'when StageCheck :ai_catalog_flows is false' do
+        before do
+          allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :ai_catalog_flows).and_return(false)
+        end
+
+        it 'does not trigger the flow' do
+          expect(execute).to be_error
+        end
       end
 
       context 'when catalog item flow is triggered by a different event' do

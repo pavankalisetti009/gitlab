@@ -11,6 +11,7 @@ module Ai
       # feature such as:
       # https://gitlab.com/groups/gitlab-org/-/epics/19577
       GITLAB_ITEM_IDS = [104, 105, 356].freeze
+      FOUNDATIONAL_FLOWS_LIMIT = 100
 
       self.table_name = "ai_catalog_items"
 
@@ -97,6 +98,10 @@ module Ai
               Gitlab::Access::DEVELOPER
             ])
           ).where('ai_catalog_items.public = ? OR pa.project_id IS NOT NULL', true)
+        end
+
+        def foundational_flow_ids
+          foundational_flows.order(:id).limit(FOUNDATIONAL_FLOWS_LIMIT).pluck_primary_key
         end
       end
 

@@ -6,6 +6,8 @@ module Ai
     include GlobalID::Identification
     include Ai::FoundationalChatAgentsDefinitions
 
+    CHAT_REFERENCE = 'chat'
+
     attribute :reference, :string
     attribute :name, :string
     attribute :description, :string
@@ -26,6 +28,10 @@ module Ai
 
     def to_global_id
       reference_with_version.sub('/', '-')
+    end
+
+    def duo_chat?
+      reference == CHAT_REFERENCE
     end
 
     class << self

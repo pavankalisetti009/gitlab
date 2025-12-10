@@ -55,6 +55,11 @@ module Resolvers
 
       validates mutually_exclusive: [:component_names, :component_ids]
 
+      argument :policy_violations, [::Types::SecurityOrchestration::PolicyViolationsEnum],
+        required: false,
+        experiment: { milestone: '18.7' },
+        description: 'Filter by security policy violations.'
+
       alias_method :project_or_namespace, :object
 
       def resolve_with_lookahead(**args)

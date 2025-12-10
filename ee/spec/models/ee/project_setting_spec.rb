@@ -179,4 +179,32 @@ RSpec.describe ProjectSetting, feature_category: :groups_and_projects do
     it_behaves_like 'a cascading project setting boolean attribute',
       settings_attribute_name: :duo_sast_fp_detection_enabled
   end
+
+  describe '#enabled_foundational_flows' do
+    let(:setting) { build(:project_setting) }
+
+    it 'accepts an array of integers' do
+      setting.enabled_foundational_flows = [1, 2, 3]
+
+      expect(setting.enabled_foundational_flows).to match_array([1, 2, 3])
+    end
+
+    it 'defaults to nil' do
+      new_setting = described_class.new
+
+      expect(new_setting.enabled_foundational_flows).to be_nil
+    end
+
+    it 'accepts nil' do
+      setting.enabled_foundational_flows = nil
+
+      expect(setting.enabled_foundational_flows).to be_nil
+    end
+
+    it 'accepts an empty array' do
+      setting.enabled_foundational_flows = []
+
+      expect(setting.enabled_foundational_flows).to eq([])
+    end
+  end
 end

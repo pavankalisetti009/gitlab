@@ -4559,54 +4559,6 @@ Input type: `CiJobTokenScopeAddProjectInput`
 | <a id="mutationcijobtokenscopeaddprojectclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
 | <a id="mutationcijobtokenscopeaddprojecterrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
 
-### `Mutation.ciJobTokenScopeAutopopulateAllowlist`
-
-{{< details >}}
-**Introduced** in GitLab 17.9.
-**Status**: Experiment.
-{{< /details >}}
-
-Input type: `CiJobTokenScopeAutopopulateAllowlistInput`
-
-#### Arguments
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| <a id="mutationcijobtokenscopeautopopulateallowlistclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
-| <a id="mutationcijobtokenscopeautopopulateallowlistprojectpath"></a>`projectPath` | [`ID!`](#id) | Project in which to autopopulate the allowlist. |
-
-#### Fields
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| <a id="mutationcijobtokenscopeautopopulateallowlistclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
-| <a id="mutationcijobtokenscopeautopopulateallowlisterrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
-| <a id="mutationcijobtokenscopeautopopulateallowliststatus"></a>`status` | [`String!`](#string) | Status of the autopopulation process. |
-
-### `Mutation.ciJobTokenScopeClearAllowlistAutopopulations`
-
-{{< details >}}
-**Introduced** in GitLab 17.9.
-**Status**: Experiment.
-{{< /details >}}
-
-Input type: `CiJobTokenScopeClearAllowlistAutopopulationsInput`
-
-#### Arguments
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| <a id="mutationcijobtokenscopeclearallowlistautopopulationsclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
-| <a id="mutationcijobtokenscopeclearallowlistautopopulationsprojectpath"></a>`projectPath` | [`ID!`](#id) | Project in which to autopopulate the allowlist. |
-
-#### Fields
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| <a id="mutationcijobtokenscopeclearallowlistautopopulationsclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
-| <a id="mutationcijobtokenscopeclearallowlistautopopulationserrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
-| <a id="mutationcijobtokenscopeclearallowlistautopopulationsstatus"></a>`status` | [`String!`](#string) | Status of the autopopulation process. |
-
 ### `Mutation.ciJobTokenScopeRemoveGroup`
 
 Input type: `CiJobTokenScopeRemoveGroupInput`
@@ -29412,6 +29364,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="countablevulnerabilitydependenciescomponentversions"></a>`componentVersions` | [`[String!]`](#string) | Filter dependencies by component versions. |
 | <a id="countablevulnerabilitydependenciesnotcomponentversions"></a>`notComponentVersions` {{< icon name="warning-solid" >}} | [`[String!]`](#string) | **Introduced** in GitLab 18.1. **Status**: Experiment. Filter dependencies to exclude the specified component versions. |
 | <a id="countablevulnerabilitydependenciespackagemanagers"></a>`packageManagers` | [`[PackageManager!]`](#packagemanager) | Filter dependencies by package managers. |
+| <a id="countablevulnerabilitydependenciespolicyviolations"></a>`policyViolations` {{< icon name="warning-solid" >}} | [`[PolicyViolations!]`](#policyviolations) | **Introduced** in GitLab 18.7. **Status**: Experiment. Filter by security policy violations. |
 | <a id="countablevulnerabilitydependenciessort"></a>`sort` | [`DependencySort`](#dependencysort) | Sort dependencies by given criteria. |
 | <a id="countablevulnerabilitydependenciessourcetypes"></a>`sourceTypes` | [`[SbomSourceType!]`](#sbomsourcetype) | Filter dependencies by source type. |
 
@@ -33612,6 +33565,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="groupdependenciescomponentversions"></a>`componentVersions` | [`[String!]`](#string) | Filter dependencies by component versions. |
 | <a id="groupdependenciesnotcomponentversions"></a>`notComponentVersions` {{< icon name="warning-solid" >}} | [`[String!]`](#string) | **Introduced** in GitLab 18.1. **Status**: Experiment. Filter dependencies to exclude the specified component versions. |
 | <a id="groupdependenciespackagemanagers"></a>`packageManagers` | [`[PackageManager!]`](#packagemanager) | Filter dependencies by package managers. |
+| <a id="groupdependenciespolicyviolations"></a>`policyViolations` {{< icon name="warning-solid" >}} | [`[PolicyViolations!]`](#policyviolations) | **Introduced** in GitLab 18.7. **Status**: Experiment. Filter by security policy violations. |
 | <a id="groupdependenciessort"></a>`sort` | [`DependencySort`](#dependencysort) | Sort dependencies by given criteria. |
 | <a id="groupdependenciessourcetypes"></a>`sourceTypes` | [`[SbomSourceType!]`](#sbomsourcetype) | Filter dependencies by source type. |
 
@@ -33639,6 +33593,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="groupdependencyaggregationscomponentversions"></a>`componentVersions` | [`[String!]`](#string) | Filter dependencies by component versions. |
 | <a id="groupdependencyaggregationsnotcomponentversions"></a>`notComponentVersions` {{< icon name="warning-solid" >}} | [`[String!]`](#string) | **Introduced** in GitLab 18.1. **Status**: Experiment. Filter dependencies to exclude the specified component versions. |
 | <a id="groupdependencyaggregationspackagemanagers"></a>`packageManagers` | [`[PackageManager!]`](#packagemanager) | Filter dependencies by package managers. |
+| <a id="groupdependencyaggregationspolicyviolations"></a>`policyViolations` {{< icon name="warning-solid" >}} | [`[PolicyViolations!]`](#policyviolations) | **Introduced** in GitLab 18.7. **Status**: Experiment. Filter by security policy violations. |
 | <a id="groupdependencyaggregationsprojectcountmax"></a>`projectCountMax` | [`Int`](#int) | Filter dependencies by maximum project count. |
 | <a id="groupdependencyaggregationsprojectcountmin"></a>`projectCountMin` | [`Int`](#int) | Filter dependencies by minimum project count. |
 | <a id="groupdependencyaggregationssort"></a>`sort` | [`DependencySort`](#dependencysort) | Sort dependencies by given criteria. |
@@ -39950,8 +39905,8 @@ Represents a namespace-cluster-agent mapping.
 | <a id="namespacepermissionsgeneratedescription"></a>`generateDescription` | [`Boolean!`](#boolean) | If `true`, the user can perform `generate_description` on this resource. |
 | <a id="namespacepermissionsimportissues"></a>`importIssues` | [`Boolean!`](#boolean) | If `true`, the user can perform `import_issues` on this resource. |
 | <a id="namespacepermissionsimportworkitems"></a>`importWorkItems` | [`Boolean!`](#boolean) | If `true`, the user can perform `import_work_items` on this resource. |
-| <a id="namespacepermissionsreadcrmcontact"></a>`readCrmContact` | [`Boolean!`](#boolean) | If `true`, the user can perform `read_crm_contact` on this resource. |
-| <a id="namespacepermissionsreadcrmorganization"></a>`readCrmOrganization` | [`Boolean!`](#boolean) | If `true`, the user can perform `read_crm_organization` on this resource. |
+| <a id="namespacepermissionsreadcrmcontact"></a>`readCrmContact` | [`Boolean!`](#boolean) | If `true`, the user can read CRM contacts. |
+| <a id="namespacepermissionsreadcrmorganization"></a>`readCrmOrganization` | [`Boolean!`](#boolean) | If `true`, the user can read CRM organizations. |
 | <a id="namespacepermissionsreadnamespace"></a>`readNamespace` | [`Boolean!`](#boolean) | If `true`, the user can perform `read_namespace` on this resource. |
 | <a id="namespacepermissionssetnewworkitemmetadata"></a>`setNewWorkItemMetadata` | [`Boolean!`](#boolean) | If `true`, the user can set work item metadata for new work items. |
 
@@ -42465,6 +42420,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="projectdependenciescomponentversions"></a>`componentVersions` | [`[String!]`](#string) | Filter dependencies by component versions. |
 | <a id="projectdependenciesnotcomponentversions"></a>`notComponentVersions` {{< icon name="warning-solid" >}} | [`[String!]`](#string) | **Introduced** in GitLab 18.1. **Status**: Experiment. Filter dependencies to exclude the specified component versions. |
 | <a id="projectdependenciespackagemanagers"></a>`packageManagers` | [`[PackageManager!]`](#packagemanager) | Filter dependencies by package managers. |
+| <a id="projectdependenciespolicyviolations"></a>`policyViolations` {{< icon name="warning-solid" >}} | [`[PolicyViolations!]`](#policyviolations) | **Introduced** in GitLab 18.7. **Status**: Experiment. Filter by security policy violations. |
 | <a id="projectdependenciessort"></a>`sort` | [`DependencySort`](#dependencysort) | Sort dependencies by given criteria. |
 | <a id="projectdependenciessourcetypes"></a>`sourceTypes` | [`[SbomSourceType!]`](#sbomsourcetype) | Filter dependencies by source type. |
 
@@ -48087,6 +48043,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="vulnerabilitydependenciescomponentversions"></a>`componentVersions` | [`[String!]`](#string) | Filter dependencies by component versions. |
 | <a id="vulnerabilitydependenciesnotcomponentversions"></a>`notComponentVersions` {{< icon name="warning-solid" >}} | [`[String!]`](#string) | **Introduced** in GitLab 18.1. **Status**: Experiment. Filter dependencies to exclude the specified component versions. |
 | <a id="vulnerabilitydependenciespackagemanagers"></a>`packageManagers` | [`[PackageManager!]`](#packagemanager) | Filter dependencies by package managers. |
+| <a id="vulnerabilitydependenciespolicyviolations"></a>`policyViolations` {{< icon name="warning-solid" >}} | [`[PolicyViolations!]`](#policyviolations) | **Introduced** in GitLab 18.7. **Status**: Experiment. Filter by security policy violations. |
 | <a id="vulnerabilitydependenciessort"></a>`sort` | [`DependencySort`](#dependencysort) | Sort dependencies by given criteria. |
 | <a id="vulnerabilitydependenciessourcetypes"></a>`sourceTypes` | [`[SbomSourceType!]`](#sbomsourcetype) | Filter dependencies by source type. |
 
@@ -50860,7 +50817,6 @@ Values for sorting CI/CD job analytics.
 | <a id="cijobfailurereasonreached_downstream_pipeline_trigger_rate_limit"></a>`REACHED_DOWNSTREAM_PIPELINE_TRIGGER_RATE_LIMIT` | A job that failed due to reached downstream pipeline trigger rate limit. |
 | <a id="cijobfailurereasonreached_max_descendant_pipelines_depth"></a>`REACHED_MAX_DESCENDANT_PIPELINES_DEPTH` | A job that failed due to reached max descendant pipelines depth. |
 | <a id="cijobfailurereasonreached_max_pipeline_hierarchy_size"></a>`REACHED_MAX_PIPELINE_HIERARCHY_SIZE` | A job that failed due to reached max pipeline hierarchy size. |
-| <a id="cijobfailurereasonrunner_provisioning_timeout"></a>`RUNNER_PROVISIONING_TIMEOUT` | A job that failed due to runner provisioning timeout. |
 | <a id="cijobfailurereasonrunner_system_failure"></a>`RUNNER_SYSTEM_FAILURE` | A job that failed due to runner system failure. |
 | <a id="cijobfailurereasonrunner_unsupported"></a>`RUNNER_UNSUPPORTED` | A job that failed due to runner unsupported. |
 | <a id="cijobfailurereasonscheduler_failure"></a>`SCHEDULER_FAILURE` | A job that failed due to scheduler failure. |

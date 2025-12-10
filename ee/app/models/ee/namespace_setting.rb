@@ -23,6 +23,8 @@ module EE
         order("last_dormant_member_review_at ASC NULLS FIRST")
       end
 
+      attribute :enabled_foundational_flows, :integer, array: true, default: nil
+
       belongs_to :default_compliance_framework, optional: true, class_name: "ComplianceManagement::Framework"
 
       validates :unique_project_download_limit,

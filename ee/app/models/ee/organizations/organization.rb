@@ -25,6 +25,10 @@ module EE
         has_many :foundational_agents_status_records,
           class_name: 'Ai::OrganizationFoundationalAgentStatus',
           inverse_of: :organization
+
+        def foundational_agents_default_enabled
+          ::Ai::Setting.instance&.foundational_agents_default_enabled
+        end
       end
     end
   end

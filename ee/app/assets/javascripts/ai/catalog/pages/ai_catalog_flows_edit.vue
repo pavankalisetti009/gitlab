@@ -1,4 +1,5 @@
 <script>
+import { GlExperimentBadge } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
@@ -10,6 +11,7 @@ export default {
   name: 'AiCatalogFlowsEdit',
   components: {
     AiCatalogFlowForm,
+    GlExperimentBadge,
     PageHeading,
   },
   props: {
@@ -84,7 +86,13 @@ export default {
 
 <template>
   <div>
-    <page-heading :heading="s__('AICatalog|Edit flow')">
+    <page-heading>
+      <template #heading>
+        <span class="gl-flex">
+          {{ s__('AICatalog|Edit flow') }}
+          <gl-experiment-badge type="beta" class="gl-self-center" />
+        </span>
+      </template>
       <template #description>
         <div class="gl-border-b gl-pb-3">
           {{ s__('AICatalog|Manage flow settings.') }}

@@ -36,6 +36,10 @@ module Security
 
     enum :status, { open: 0, preserved: 1 }
 
+    def self.pluck_license_occurrence_uuid(limit = MAX_PLUCK)
+      limit(limit).pluck(Arel.sql('DISTINCT unnest(license_occurrence_uuids)'))
+    end
+
     def preserve!
       return destroy! unless applicable_for_all_violations? || for_any_merge_request_violation?
 

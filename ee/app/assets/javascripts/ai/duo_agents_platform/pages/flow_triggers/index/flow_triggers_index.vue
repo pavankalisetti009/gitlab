@@ -10,6 +10,7 @@ import ConfirmActionModal from '~/vue_shared/components/confirm_action_modal.vue
 import ResourceListsLoadingStateList from '~/vue_shared/components/resource_lists/loading_state_list.vue';
 import getProjectAiFlowTriggers from 'ee/ai/duo_agents_platform/graphql/queries/get_ai_flow_triggers.query.graphql';
 import deleteAiFlowTrigger from 'ee/ai/duo_agents_platform/graphql/mutations/delete_ai_flow_trigger.mutation.graphql';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import FlowTriggersCta from './components/flow_triggers_cta.vue';
 import FlowTriggersTable from './components/flow_triggers_table.vue';
 
@@ -24,6 +25,7 @@ export default {
     ResourceListsEmptyState,
     ResourceListsLoadingStateList,
   },
+  mixins: [glFeatureFlagsMixin()],
   inject: ['projectPath', 'flowTriggersEventTypeOptions'],
   data() {
     return {
@@ -55,6 +57,9 @@ export default {
     },
     showEmptyState() {
       return !this.isLoading && this.aiFlowTriggers.length === 0;
+    },
+    showBetaBadge() {
+      return !this.glFeatures.aiDuoAgentPlatformGaRollout;
     },
   },
   methods: {
@@ -91,7 +96,7 @@ export default {
       <template #heading>
         <div class="gl-flex">
           <span>{{ s__('DuoAgentsPlatform|Triggers') }}</span>
-          <gl-experiment-badge type="beta" class="gl-self-center" />
+          <gl-experiment-badge v-if="showBetaBadge" type="beta" class="gl-self-center" />
         </div>
       </template>
       <template #description>

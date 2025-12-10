@@ -43,7 +43,7 @@ export const AI_CATALOG_GROUP_CONSUMER_LABEL_DESCRIPTION = {
     'AICatalog|You must have the Owner role to add a flow to a group. Only top-level groups are shown.',
   ),
   [AI_CATALOG_TYPE_THIRD_PARTY_FLOW]: s__(
-    'AICatalog|You must have the Owner role to add a flow to a group. Only top-level groups are shown.',
+    'AICatalog|You must have the Owner role to add an agent to a group. Only top-level groups are shown.',
   ),
 };
 export const AI_CATALOG_PROJECT_CONSUMER_LABEL_DESCRIPTION = {
@@ -54,7 +54,7 @@ export const AI_CATALOG_PROJECT_CONSUMER_LABEL_DESCRIPTION = {
     'AICatalog|Project members can use this flow. You must have at least the Maintainer role to add a flow to a project.',
   ),
   [AI_CATALOG_TYPE_THIRD_PARTY_FLOW]: s__(
-    'AICatalog|Project members can use this flow. You must have at least the Maintainer role to add a flow to a project.',
+    'AICatalog|Project members can use this agent. You must have at least the Maintainer role to add an agent to a project.',
   ),
 };
 
@@ -151,6 +151,18 @@ export const DELETE_OPTIONS = [
     ),
   },
 ];
+
+export const ENABLE_FLOW_MODAL_TEXTS = {
+  title: s__('AICatalog|Enable flow from group'),
+  label: s__('AICatalog|Flow'),
+  labelDescription: s__('AICatalog|Only flows enabled in your top-level group are shown.'),
+  invalidFeedback: s__('AICatalog|Flow is required.'),
+  error: s__('AICatalog|Failed to load group flows'),
+  dropdownTexts: {
+    placeholder: s__('AICatalog|Select a flow'),
+    itemSublabel: s__('AICatalog|Flow ID: %{id}'),
+  },
+};
 
 export const DEFAULT_FLOW_YML_STRING = `\
 # Schema version

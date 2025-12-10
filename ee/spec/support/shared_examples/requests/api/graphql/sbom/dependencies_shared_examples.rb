@@ -270,3 +270,24 @@ RSpec.shared_examples 'when dependencies graphql query filtered by not component
     expect(versions_in_result).not_to include(*excluded_component_versions)
   end
 end
+
+RSpec.shared_examples 'when dependencies graphql query filtered by policy violations' do
+  let(:policy_violations_query) { pagination_query({ policy_violations: [:DISMISSED_IN_MR] }) }
+
+  let_it_be(:non_dismissed_occurrence) { create(:sbom_occurrence, project: project) }
+  let_it_be(:dismissed_occurrence) { create(:sbom_occurrence, project: project) }
+
+  before do
+    create(:policy_dismissal, :preserved, project: project, license_occurrence_uuids: [dismissed_occurrence.uuid])
+  end
+
+  it 'filters records based on the policy violations' do
+    post_graphql(policy_violations_query, current_user: current_user)
+
+    result_nodes = graphql_data_at(*nodes_path)
+    id_in_result = result_nodes.pluck('id')
+
+    expect(result_nodes.size).to eq(1)
+    expect(id_in_result).to include("gid://gitlab/Sbom::Occurrence/#{dismissed_occurrence.id}")
+  end
+end

@@ -1,4 +1,5 @@
 <script>
+import { GlExperimentBadge } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
@@ -12,6 +13,7 @@ export default {
   name: 'AiCatalogFlowsNew',
   components: {
     AiCatalogFlowForm,
+    GlExperimentBadge,
     PageHeading,
   },
   data() {
@@ -71,7 +73,13 @@ export default {
 
 <template>
   <div>
-    <page-heading :heading="s__('AICatalog|New flow')">
+    <page-heading>
+      <template #heading>
+        <span class="gl-flex">
+          {{ s__('AICatalog|New flow') }}
+          <gl-experiment-badge type="beta" class="gl-self-center" />
+        </span>
+      </template>
       <template #description>
         <div class="gl-border-b gl-pb-3">
           {{ s__('AICatalog|Connect an agent to automate complex tasks') }}

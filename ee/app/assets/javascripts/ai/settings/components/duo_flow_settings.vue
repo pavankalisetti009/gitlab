@@ -11,6 +11,7 @@ import { s__, __ } from '~/locale';
 import { duoFlowHelpPath } from '~/pages/projects/shared/permissions/constants';
 import CascadingLockIcon from '~/namespaces/cascading_settings/components/cascading_lock_icon.vue';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import FoundationalFlowSelector from './foundational_flow_selector.vue';
 
 export default {
   name: 'DuoFlowSettings',
@@ -38,6 +39,7 @@ export default {
     GlIcon,
     GlLink,
     GlSprintf,
+    FoundationalFlowSelector,
   },
 
   directives: {
@@ -62,11 +64,17 @@ export default {
       type: Boolean,
       required: true,
     },
+    selectedFoundationalFlowIds: {
+      type: Array,
+      required: false,
+      default: () => [],
+    },
   },
   data() {
     return {
       flowEnabled: this.duoRemoteFlowsAvailability,
       foundationalFlowsEnabled: this.duoFoundationalFlowsAvailability,
+      localSelectedFlowIds: this.selectedFoundationalFlowIds,
     };
   },
   computed: {
@@ -99,6 +107,15 @@ export default {
     },
     checkboxFoundationalFlowChanged() {
       this.$emit('change-foundational-flows', this.foundationalFlowsEnabled);
+
+      if (!this.foundationalFlowsEnabled) {
+        this.localSelectedFlowIds = [];
+        this.$emit('change-selected-flow-ids', []);
+      }
+    },
+    onFlowSelectionChanged(flowIds) {
+      this.localSelectedFlowIds = flowIds;
+      this.$emit('change-selected-flow-ids', flowIds);
     },
   },
   duoFlowHelpPath,
@@ -147,10 +164,9 @@ export default {
         </template>
       </gl-form-checkbox>
       <gl-form-checkbox
-        v-if="glFeatures.duoFoundationalFlows"
         v-model="foundationalFlowsEnabled"
         data-testid="duo-foundational-flows-features-checkbox"
-        :disabled="disabledCheckbox || !flowEnabled"
+        :disabled="disabledCheckbox || !flowEnabled || showCascadingButtonFoundationalFlows"
         @change="checkboxFoundationalFlowChanged"
       >
         <div class="gl-flex">
@@ -180,6 +196,13 @@ export default {
           {{ foundationalFlowsDescription }}
         </template>
       </gl-form-checkbox>
+
+      <foundational-flow-selector
+        v-if="foundationalFlowsEnabled"
+        v-model="localSelectedFlowIds"
+        :disabled="disabledCheckbox || !flowEnabled || showCascadingButtonFoundationalFlows"
+        @input="onFlowSelectionChanged"
+      />
     </gl-form-group>
   </div>
 </template>

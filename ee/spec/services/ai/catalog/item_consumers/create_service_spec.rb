@@ -156,6 +156,29 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
     expect(member.access_level).to eq(Member::DEVELOPER)
   end
 
+  context 'when just the ai_catalog StageCheck passes for the container' do
+    let(:flows_available) { false }
+
+    before do
+      allow(Gitlab::Llm::StageCheck).to receive(:available?).and_call_original
+      allow(Gitlab::Llm::StageCheck).to receive(:available?).with(container, :ai_catalog, user: user).and_return(true)
+      allow(Gitlab::Llm::StageCheck).to receive(:available?)
+        .with(flow_item.project, :ai_catalog_flows).and_return(true)
+      allow(Gitlab::Llm::StageCheck).to receive(:available?)
+        .with(container, :ai_catalog_flows).and_return(flows_available)
+    end
+
+    it_behaves_like 'a failure', 'Item does not exist, or you have insufficient permissions'
+
+    context 'and the ai_catalog_flows StageCheck also passes' do
+      let(:flows_available) { true }
+
+      it 'is successful' do
+        expect(execute).to be_success
+      end
+    end
+  end
+
   context 'when creating the member returns a member with errors' do
     before do
       allow(Members::Projects::CreatorService).to receive(:add_member) do
@@ -313,6 +336,29 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
           property: 'true'
         }
       )
+    end
+
+    context 'when just the ai_catalog StageCheck passes for the container' do
+      let(:flows_available) { false }
+
+      before do
+        allow(Gitlab::Llm::StageCheck).to receive(:available?).and_call_original
+        allow(Gitlab::Llm::StageCheck).to receive(:available?).with(group, :ai_catalog).and_return(true)
+        allow(Gitlab::Llm::StageCheck).to receive(:available?)
+          .with(flow_item.project, :ai_catalog_flows).and_return(true)
+        allow(Gitlab::Llm::StageCheck).to receive(:available?)
+          .with(group, :ai_catalog_flows).and_return(flows_available)
+      end
+
+      it_behaves_like 'a failure', 'Item does not exist, or you have insufficient permissions'
+
+      context 'and the ai_catalog_flows StageCheck also passes' do
+        let(:flows_available) { true }
+
+        it 'is successful' do
+          expect(execute).to be_success
+        end
+      end
     end
 
     it_behaves_like 'creates an audit event', entity_type: 'Group'

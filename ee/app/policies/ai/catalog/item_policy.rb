@@ -19,8 +19,16 @@ module Ai
         @subject.project && @subject.project.ai_catalog_available?(@user)
       end
 
+      condition(:flows_available, scope: :subject) do
+        @subject.project && ::Gitlab::Llm::StageCheck.available?(@subject.project, :ai_catalog_flows)
+      end
+
       condition(:member_access) do
         can?(:member_access, @subject.project)
+      end
+
+      condition(:developer_access) do
+        can?(:developer_access, @subject.project)
       end
 
       condition(:maintainer_access) do
@@ -97,6 +105,16 @@ module Ai
         prevent :read_ai_catalog_item
         prevent :admin_ai_catalog_item
         prevent :delete_ai_catalog_item
+        prevent :report_ai_catalog_item
+      end
+
+      rule { flow & ~flows_available & ~admin }.policy do
+        prevent :admin_ai_catalog_item
+        prevent :delete_ai_catalog_item
+      end
+
+      rule { flow & ~public_item & ~flows_available & ~admin }.policy do
+        prevent :read_ai_catalog_item
         prevent :report_ai_catalog_item
       end
 

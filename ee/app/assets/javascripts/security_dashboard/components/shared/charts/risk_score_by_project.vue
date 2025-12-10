@@ -23,18 +23,6 @@ export default {
       nrRows: 0,
     };
   },
-  riskScoreBg: {
-    LOW: 'gl-bg-green-200',
-    MEDIUM: 'gl-bg-orange-200',
-    HIGH: 'gl-bg-red-500',
-    CRITICAL: 'gl-bg-red-700',
-  },
-  riskScoreColor: {
-    LOW: 'gl-text-green-800',
-    MEDIUM: 'gl-text-orange-800',
-    HIGH: 'gl-text-white',
-    CRITICAL: 'gl-text-white',
-  },
   computed: {
     gridStyle() {
       return `grid-template-columns: repeat(${this.nrCols}, 1fr); grid-template-rows: repeat(${this.nrRows}, 1fr);`;
@@ -66,6 +54,12 @@ export default {
     getVulnerabilityReportUrl(project) {
       return `${project.webUrl}/-/security/vulnerability_report`;
     },
+    getTileBgClass(rating) {
+      return `risk-score-bg-${rating.toLowerCase()}`;
+    },
+    getTileTextClass(rating) {
+      return `risk-score-tile-text-${rating.toLowerCase()}`;
+    },
   },
   i18n: {
     ratings: {
@@ -87,15 +81,15 @@ export default {
     <div
       v-for="riskScore in riskScores"
       :key="riskScore.project.id"
-      class="gl-flex gl-items-center gl-justify-center gl-bg-gray-200"
-      :class="$options.riskScoreBg[riskScore.rating]"
+      class="gl-flex gl-items-center gl-justify-center"
+      :class="getTileBgClass(riskScore.rating)"
       data-testid="risk-score-tile"
     >
       <button
         :id="`risk-score-by-project-${riskScore.project.id}`"
         :aria-label="getAriaLabel(riskScore)"
         class="gl-m-0 gl-cursor-default gl-border-none gl-bg-transparent gl-p-0"
-        :class="$options.riskScoreColor[riskScore.rating]"
+        :class="getTileTextClass(riskScore.rating)"
         type="button"
       >
         {{ riskScore.score }}

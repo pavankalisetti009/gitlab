@@ -19,6 +19,7 @@ import {
 } from 'ee/analytics/analytics_dashboards/link_to_dashboards/tracking';
 import { AI_IMPACT_DASHBOARD } from 'ee/analytics/analytics_dashboards/constants';
 import { DOCS_URL } from 'jh_else_ce/lib/utils/url_utility';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import AiCatalogNavTabs from './ai_catalog_nav_tabs.vue';
 import AiCatalogNavActions from './ai_catalog_nav_actions.vue';
 
@@ -38,6 +39,7 @@ export default {
   directives: {
     GlModal: GlModalDirective,
   },
+  mixins: [glFeatureFlagsMixin()],
   inject: {
     isGlobal: {
       default: false,
@@ -47,6 +49,11 @@ export default {
     },
   },
   props: {
+    isBeta: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
     heading: {
       type: String,
       required: false,
@@ -70,6 +77,9 @@ export default {
     aiImpactDashboardDocsLink() {
       return `${DOCS_URL}/user/analytics/duo_and_sdlc_trends/`;
     },
+    showBadge() {
+      return this.isBeta || !this.glFeatures.aiDuoAgentPlatformGaRollout;
+    },
   },
   LINK_TO_DASHBOARD_MODAL_ID,
   TRACKING_ACTION_CLICK_DASHBOARD_LINK,
@@ -83,10 +93,10 @@ export default {
   <div>
     <page-heading>
       <template #heading>
-        <div class="gl-flex">
+        <span class="gl-flex">
           <span>{{ title }}</span>
-          <gl-experiment-badge class="gl-self-center" />
-        </div>
+          <gl-experiment-badge v-if="showBadge" type="beta" class="gl-self-center" />
+        </span>
       </template>
       <template #actions>
         <div class="gl-flex gl-items-center gl-gap-3">

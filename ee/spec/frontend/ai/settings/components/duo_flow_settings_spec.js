@@ -19,6 +19,7 @@ describe('DuoFlowSettings', () => {
       lockedByAncestor: false,
       lockedByApplicationSettings: false,
     },
+    availableFoundationalFlows: [],
   };
 
   const findFormGroup = () => wrapper.findComponent(GlFormGroup);
@@ -29,7 +30,8 @@ describe('DuoFlowSettings', () => {
   const findAllLockButtons = () =>
     wrapper.findAll('[data-testid="duo-flow-feature-checkbox-locked"]');
   const findAllCascadingLocks = () => wrapper.findAllComponents(CascadingLockIcon);
-  const findAllCheckBoxes = () => wrapper.findAllComponents(GlFormCheckbox);
+  const findFoundationalFlowSelector = () =>
+    wrapper.findComponent({ name: 'FoundationalFlowSelector' });
 
   const createWrapper = (props = {}, provide = {}) => {
     return shallowMount(DuoFlowSettings, {
@@ -37,6 +39,7 @@ describe('DuoFlowSettings', () => {
         disabledCheckbox: false,
         duoRemoteFlowsAvailability: false,
         duoFoundationalFlowsAvailability: false,
+        selectedFoundationalFlowIds: [],
         ...props,
       },
       provide: {
@@ -344,22 +347,113 @@ describe('DuoFlowSettings', () => {
     });
   });
 
-  describe('when duoFoundationalFlows feature flag is disabled', () => {
-    beforeEach(() => {
-      wrapper = createWrapper(
-        { duoRemoteFlowsAvailability: true },
-        {
-          glFeatures: { duoFoundationalFlows: false },
-        },
-      );
+  describe('foundational flow selector', () => {
+    describe('when foundational flows are disabled', () => {
+      beforeEach(() => {
+        wrapper = createWrapper({
+          duoRemoteFlowsAvailability: true,
+          duoFoundationalFlowsAvailability: false,
+        });
+      });
+
+      it('does not render the flow selector', () => {
+        expect(findFoundationalFlowSelector().exists()).toBe(false);
+      });
     });
 
-    it('only renders the remote flows checkbox', () => {
-      expect(findAllCheckBoxes()).toHaveLength(1);
+    describe('when foundational flows are enabled', () => {
+      beforeEach(() => {
+        wrapper = createWrapper({
+          duoRemoteFlowsAvailability: true,
+          duoFoundationalFlowsAvailability: true,
+          selectedFoundationalFlowIds: [1, 2],
+        });
+      });
+
+      it('renders the flow selector', () => {
+        expect(findFoundationalFlowSelector().exists()).toBe(true);
+      });
+
+      it('passes the selected flow ids to the selector', () => {
+        expect(findFoundationalFlowSelector().props('value')).toEqual([1, 2]);
+      });
+
+      it('passes disabled state to the selector', () => {
+        expect(findFoundationalFlowSelector().props('disabled')).toBe(false);
+      });
+
+      it('emits change-selected-flow-ids when selector value changes', async () => {
+        await findFoundationalFlowSelector().vm.$emit('input', [3, 4, 5]);
+
+        expect(wrapper.emitted('change-selected-flow-ids')).toHaveLength(1);
+        expect(wrapper.emitted('change-selected-flow-ids')[0]).toEqual([[3, 4, 5]]);
+      });
     });
 
-    it('does not render the foundational flows checkbox', () => {
-      expect(wrapper.find('[data-testid="duo-foundational-flows-checkbox"]').exists()).toBe(false);
+    describe('when foundational flows checkbox is disabled', () => {
+      beforeEach(() => {
+        wrapper = createWrapper({
+          duoRemoteFlowsAvailability: true,
+          duoFoundationalFlowsAvailability: true,
+          disabledCheckbox: true,
+        });
+      });
+
+      it('passes disabled state to the selector', () => {
+        expect(findFoundationalFlowSelector().props('disabled')).toBe(true);
+      });
+    });
+
+    describe('when foundational flows checkbox is unchecked', () => {
+      beforeEach(() => {
+        wrapper = createWrapper({
+          duoRemoteFlowsAvailability: true,
+          duoFoundationalFlowsAvailability: true,
+          selectedFoundationalFlowIds: [1, 2],
+        });
+      });
+
+      it('clears selected flow ids when checkbox is unchecked', async () => {
+        await findFoundationalFlowsCheckbox().vm.$emit('input', false);
+        await findFoundationalFlowsCheckbox().vm.$emit('change');
+
+        expect(wrapper.emitted('change-selected-flow-ids')).toHaveLength(1);
+        expect(wrapper.emitted('change-selected-flow-ids')[0]).toEqual([[]]);
+      });
+    });
+
+    describe('when remote flows are disabled', () => {
+      beforeEach(() => {
+        wrapper = createWrapper({
+          duoRemoteFlowsAvailability: false,
+          duoFoundationalFlowsAvailability: true,
+        });
+      });
+
+      it('passes disabled state to the selector', () => {
+        expect(findFoundationalFlowSelector().props('disabled')).toBe(true);
+      });
+    });
+
+    describe('when locked by cascading settings', () => {
+      beforeEach(() => {
+        wrapper = createWrapper(
+          {
+            duoRemoteFlowsAvailability: true,
+            duoFoundationalFlowsAvailability: true,
+          },
+          {
+            duoFoundationalFlowsCascadingSettings: {
+              lockedByAncestor: true,
+              lockedByApplicationSetting: false,
+            },
+          },
+        );
+      });
+
+      it('passes disabled state to the selector', () => {
+        expect(findFoundationalFlowSelector().props('disabled')).toBe(true);
+      });
     });
   });
 });

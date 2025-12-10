@@ -48750,6 +48750,12 @@ definitions:
       only_allow_merge_if_all_discussions_are_resolved:
         type: boolean
         description: Only allow to merge if all threads are resolved
+      enabled_foundational_flows:
+        type: array
+        description: IDs of enabled foundational flows
+        items:
+          type: integer
+          format: int32
     description: Update a group. Available only for users who can administrate groups.
   API_Entities_GroupDetail:
     type: object
@@ -68455,7 +68461,7 @@ definitions:
         description: Job's authentication token
       state:
         type: string
-        description: 'Job''s status: pending, running, success, failed'
+        description: 'Job''s status: running, success, failed'
       checksum:
         type: string
         description: Job's trace CRC32 checksum

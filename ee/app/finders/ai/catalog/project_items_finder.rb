@@ -45,9 +45,12 @@ module Ai
       end
 
       def by_item_type(items)
-        return items if params[:item_types].blank?
+        filtered_types = get_filtered_item_types
 
-        items.with_item_type(params[:item_types])
+        return Ai::Catalog::Item.none if filtered_types.empty?
+        return items if filtered_types == all_types
+
+        items.with_item_type(filtered_types)
       end
 
       def by_enabled_state(items)
@@ -66,6 +69,21 @@ module Ai
         return items if params[:search].blank?
 
         items.search(params[:search])
+      end
+
+      def get_filtered_item_types
+        types = params[:item_types].presence || all_types
+        types.map!(&:to_sym)
+
+        if Ability.allowed?(current_user, :read_ai_catalog_flow, project)
+          types
+        else
+          types - [Ai::Catalog::Item::FLOW_TYPE]
+        end
+      end
+
+      def all_types
+        Ai::Catalog::Item.item_types.keys
       end
     end
   end
