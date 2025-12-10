@@ -53,6 +53,7 @@ RSpec.describe Gitlab::Llm::Chain::Tools::TroubleshootJob::Executor, feature_cat
 
   before do
     stub_application_setting(ci_job_live_trace_enabled: true)
+    stub_feature_flags(dap_external_trigger_usage_billing: false)
     allow(user).to receive(:can?).and_call_original
     allow(user).to receive(:can?).with(:troubleshoot_job_with_ai, build).and_return(true)
   end
@@ -85,6 +86,7 @@ RSpec.describe Gitlab::Llm::Chain::Tools::TroubleshootJob::Executor, feature_cat
 
       before do
         allow(tool).to receive(:provider_prompt_class).and_return(prompt_class)
+        allow(user).to receive(:allowed_to_use?).with(:troubleshoot_job).and_return(true)
       end
 
       context 'when user input is blank' do
@@ -220,10 +222,35 @@ RSpec.describe Gitlab::Llm::Chain::Tools::TroubleshootJob::Executor, feature_cat
         allow(user).to receive(:can?).with(:troubleshoot_job_with_ai, build).and_return(false)
       end
 
-      it 'returns an error message' do
-        expect(tool.execute.content).to include(
-          "you don't have access to them, or your session has expired."
-        )
+      context 'when dap_external_trigger_usage_billing flag is disabled' do
+        before do
+          stub_feature_flags(dap_external_trigger_usage_billing: false)
+        end
+
+        it 'returns not found error message' do
+          expect(tool.execute.content).to include(
+            "you don't have access to them, or your session has expired."
+          )
+        end
+      end
+
+      context 'when dap_external_trigger_usage_billing flag is enabled' do
+        before do
+          stub_feature_flags(dap_external_trigger_usage_billing: true)
+          allow(user).to receive(:allowed_to_use?).with(:troubleshoot_job).and_return(false)
+        end
+
+        it 'returns not in current plan error message' do
+          answer = tool.execute
+          subscription_url = ::Gitlab::Routing.url_helpers.help_page_url('subscriptions/subscription-add-ons.md')
+          agent_platform_url = ::Gitlab::Routing.url_helpers.help_page_url('user/duo_agent_platform/_index.md')
+
+          response = "This feature is not available with your current configuration. You might need a different " \
+            "[GitLab Duo add-on](#{subscription_url}), or access to the " \
+            "[GitLab Duo Agent Platform](#{agent_platform_url}). " \
+            "Alternatively, I can help with other questions."
+          expect(answer.content).to eq(response)
+        end
       end
     end
 
@@ -275,6 +302,7 @@ RSpec.describe Gitlab::Llm::Chain::Tools::TroubleshootJob::Executor, feature_cat
       include_context 'with stubbed LLM authorizer', allowed: true
 
       before do
+        allow(user).to receive(:allowed_to_use?).with(:troubleshoot_job).and_return(true)
         allow(tool).to receive(:provider_prompt_class).and_return(prompt_class)
 
         allow(Gitlab::Llm::Chain::Requests::AiGateway).to receive(:new).with(

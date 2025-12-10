@@ -9,10 +9,6 @@ module EE
         attr_reader :user
 
         condition(:troubleshoot_job_cloud_connector_authorized) do
-          user&.allowed_to_use?(:troubleshoot_job)
-        end
-
-        condition(:troubleshoot_job_with_ai_authorized) do
           next false unless user
 
           if ::Feature.enabled?(:dap_external_trigger_usage_billing, user)
@@ -21,11 +17,15 @@ module EE
               container: subject.project
             )
           else
-            ::Gitlab::Llm::Chain::Utils::ChatAuthorizer.resource(
-              resource: subject.project,
-              user: user
-            ).allowed?
+            user.allowed_to_use?(:troubleshoot_job)
           end
+        end
+
+        condition(:troubleshoot_job_with_ai_authorized) do
+          ::Gitlab::Llm::Chain::Utils::ChatAuthorizer.resource(
+            resource: subject.project,
+            user: user
+          ).allowed?
         end
 
         condition(:troubleshoot_job_licensed, scope: :subject) do

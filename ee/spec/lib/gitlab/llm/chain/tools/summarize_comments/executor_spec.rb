@@ -49,6 +49,15 @@ RSpec.describe Gitlab::Llm::Chain::Tools::SummarizeComments::Executor, feature_c
       include_context 'with stubbed LLM authorizer', allowed: true
 
       before do
+        feature_authorizer = instance_double(Gitlab::Llm::FeatureAuthorizer, allowed?: true)
+        allow(Gitlab::Llm::FeatureAuthorizer).to receive(:new)
+          .with(
+            container: resource.resource_parent,
+            feature_name: :summarize_comments,
+            user: user
+          )
+          .and_return(feature_authorizer)
+
         allow(Ability).to receive(:allowed?).and_call_original
         allow(Ability).to receive(:allowed?).with(user, :summarize_comments, resource).and_return(true)
         allow(tool).to receive(:provider_prompt_class).and_return(prompt_class)
@@ -174,14 +183,39 @@ RSpec.describe Gitlab::Llm::Chain::Tools::SummarizeComments::Executor, feature_c
         allow(Ability).to receive(:allowed?).with(user, :summarize_comments, resource).and_return(false)
       end
 
-      it 'returns error answer' do
-        answer = tool.execute
+      context 'when dap_external_trigger_usage_billing flag is disabled' do
+        before do
+          stub_feature_flags(dap_external_trigger_usage_billing: false)
+        end
 
-        response = "I'm sorry, I can't generate a response. You might want to try again. " \
-          "You could also be getting this error because the items you're asking about " \
-          "either don't exist, you don't have access to them, or your session has expired."
-        expect(answer.content).to eq(response)
-        expect(answer.error_code).to eq("M3003")
+        it 'returns not found error answer' do
+          answer = tool.execute
+
+          response = "I'm sorry, I can't generate a response. You might want to try again. " \
+            "You could also be getting this error because the items you're asking about " \
+            "either don't exist, you don't have access to them, or your session has expired."
+          expect(answer.content).to eq(response)
+          expect(answer.error_code).to eq("M3003")
+        end
+      end
+
+      context 'when dap_external_trigger_usage_billing flag is enabled' do
+        before do
+          stub_feature_flags(dap_external_trigger_usage_billing: true)
+        end
+
+        it 'returns not in current plan error answer' do
+          answer = tool.execute
+          subscription_url = ::Gitlab::Routing.url_helpers.help_page_url('subscriptions/subscription-add-ons.md')
+          agent_platform_url = ::Gitlab::Routing.url_helpers.help_page_url('user/duo_agent_platform/_index.md')
+
+          response = "This feature is not available with your current configuration. You might need a different " \
+            "[GitLab Duo add-on](#{subscription_url}), or access to the " \
+            "[GitLab Duo Agent Platform](#{agent_platform_url}). " \
+            "Alternatively, I can help with other questions."
+          expect(answer.content).to eq(response)
+          expect(answer.error_code).to eq("G3001")
+        end
       end
     end
   end

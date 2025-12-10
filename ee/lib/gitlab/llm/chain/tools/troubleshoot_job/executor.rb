@@ -170,7 +170,11 @@ module Gitlab
             strong_memoize_attr :job
 
             def authorize
-              context.current_user.can?(:troubleshoot_job_with_ai, job)
+              if ::Feature.enabled?(:dap_external_trigger_usage_billing, context.current_user)
+                context.current_user.allowed_to_use?(:troubleshoot_job)
+              else
+                context.current_user.can?(:troubleshoot_job_with_ai, job)
+              end
             end
 
             def resource_name
