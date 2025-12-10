@@ -19,6 +19,8 @@ module Search
 
       validate :project_can_not_assigned_to_same_replica_unless_index_is_reallocating
 
+      scope :preload_nodes, -> { includes(indices: :node) }
+
       scope :with_all_ready_indices, -> do
         raw_sql = 'sum(case when zoekt_indices.state != :state then 0 else 1 end) = count(*)'
         joins(:indices).group(:id).having(raw_sql, state: Search::Zoekt::Index.states[:ready])
