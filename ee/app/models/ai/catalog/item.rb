@@ -157,8 +157,22 @@ module Ai
       end
 
       def foundational
+        if agent?
+          foundational_chat_agent
+        elsif flow?
+          foundational_flow
+        else
+          false
+        end
+      end
+
+      def foundational_chat_agent
         ::Gitlab::Saas.feature_available?(:gitlab_duo_saas_only) &&
           !!::Ai::FoundationalChatAgent.find_by(global_catalog_id: id)
+      end
+
+      def foundational_flow
+        persisted? && foundational_flow_reference.present?
       end
 
       private

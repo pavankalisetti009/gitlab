@@ -47,7 +47,7 @@ describe('EE IssueCardTimeInfo component', () => {
     ],
   };
 
-  const findWeightCount = () => wrapper.findByTestId('weight-attribute');
+  const findWeightCount = () => wrapper.findByTestId('issuable-weight-content');
   const findIssueHealthStatus = () => wrapper.findComponent(IssueHealthStatus);
   const findIteration = () => wrapper.findComponent(WorkItemIterationAttribute);
 

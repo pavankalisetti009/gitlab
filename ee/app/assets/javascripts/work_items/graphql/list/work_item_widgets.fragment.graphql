@@ -19,6 +19,7 @@ fragment WorkItemWidgets on WorkItemWidget {
       title
       startDate
       dueDate
+      webUrl
       iterationCadence {
         id
         title

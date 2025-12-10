@@ -31,7 +31,6 @@ export default {
     :title="`${weight}`"
     title-component-class="board-card-info-text"
     icon-name="weight"
-    icon-class="gl-mr-2"
     :aria-label="createAriaLabel()"
   >
     <template #tooltip-text>

@@ -29,19 +29,19 @@ RSpec.describe 'User views issues page', :js, feature_category: :team_planning d
       within '.issue:nth-of-type(1)' do
         expect(page).to have_testid('status-text', text: 'At risk')
         expect(page).not_to have_testid('relationship-blocks-icon')
-        expect(page).not_to have_testid('weight-attribute')
+        expect(page).not_to have_testid('issuable-weight-content')
       end
 
       within '.issue:nth-of-type(2)' do
         expect(page).to have_testid('status-text', text: 'Needs attention')
         expect(page).not_to have_testid('relationship-blocks-icon')
-        expect(page).not_to have_testid('weight-attribute')
+        expect(page).not_to have_testid('issuable-weight-content')
       end
 
       within '.issue:nth-of-type(3)' do
         expect(page).to have_testid('status-text', text: 'On track')
         expect(page).to have_testid('relationship-blocks-icon', text: '1')
-        expect(page).to have_testid('weight-attribute', text: '2')
+        expect(page).to have_testid('issuable-weight-content', text: '2')
       end
     end
   end

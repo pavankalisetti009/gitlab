@@ -97,6 +97,7 @@ export const workItemObjectiveMetadataWidgetsEE = {
       title: 'Iteration title',
       startDate: '2023-12-19',
       dueDate: '2024-01-15',
+      webUrl: '/groups/gitlab-org/-/iterations/1',
       updatedAt: new Date(),
       iterationCadence: {
         title: 'Iteration 101',

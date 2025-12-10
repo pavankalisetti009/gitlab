@@ -68,5 +68,9 @@ module VirtualRegistries
     def remote?
       true
     end
+
+    def purge_cache!
+      ::VirtualRegistries::Cache::MarkEntriesForDestructionWorker.perform_async(to_global_id.to_s)
+    end
   end
 end

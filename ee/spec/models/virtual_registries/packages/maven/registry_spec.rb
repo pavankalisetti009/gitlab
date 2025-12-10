@@ -64,7 +64,7 @@ RSpec.describe VirtualRegistries::Packages::Maven::Registry, type: :model, featu
     let_it_be(:upstream2) { create(:virtual_registries_packages_maven_upstream, registries: [registry1]) }
 
     it 'bulk enqueues the MarkEntriesForDestructionWorker' do
-      expect(::VirtualRegistries::Packages::Cache::MarkEntriesForDestructionWorker)
+      expect(::VirtualRegistries::Cache::MarkEntriesForDestructionWorker)
         .to receive(:bulk_perform_async_with_contexts)
         .with([upstream2], arguments_proc: kind_of(Proc), context_proc: kind_of(Proc))
 

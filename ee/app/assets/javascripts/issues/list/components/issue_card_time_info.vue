@@ -1,5 +1,4 @@
 <script>
-import { GlIcon } from '@gitlab/ui';
 import IssueCardTimeInfo from '~/issues/list/components/issue_card_time_info.vue';
 import IssueHealthStatus from 'ee/issues/components/issue_health_status.vue';
 import WorkItemIterationAttribute from 'ee/work_items/components/shared/work_item_iteration_attribute.vue';
@@ -12,7 +11,6 @@ export default {
     IssueCardTimeInfo,
     IssueHealthStatus,
     WorkItemAttribute,
-    GlIcon,
     WorkItemIterationAttribute,
   },
   inject: ['hasIssuableHealthStatusFeature', 'hasIssueWeightsFeature', 'hasIterationsFeature'],
@@ -74,17 +72,15 @@ export default {
       <work-item-attribute
         v-if="showWeight"
         anchor-id="issuable-weight-content"
-        data-testid="weight-attribute"
+        data-testid="issuable-weight-content"
         wrapper-component="button"
         wrapper-component-class="issuable-weight gl-text-subtle gl-bg-transparent gl-border-0 gl-p-0 focus-visible:gl-focus-inset"
+        icon-name="weight"
+        icon-size="12"
         :title="`${weight}`"
         :tooltip-text="__('Weight')"
         tooltip-placement="top"
-      >
-        <template #icon>
-          <gl-icon name="weight" :size="12" />
-        </template>
-      </work-item-attribute>
+      />
     </template>
     <issue-health-status v-if="showHealthStatus" :health-status="healthStatus" />
     <template #iteration>

@@ -1,11 +1,9 @@
 <script>
-import { GlIcon } from '@gitlab/ui';
 import WorkItemAttribute from '~/vue_shared/components/work_item_attribute.vue';
 import { getIterationPeriod } from 'ee/iterations/utils';
 
 export default {
   components: {
-    GlIcon,
     WorkItemAttribute,
   },
   props: {
@@ -32,12 +30,13 @@ export default {
   <work-item-attribute
     data-testid="iteration-attribute"
     :title="iterationPeriod"
-    title-component-class="gl-mr-3 gl-cursor-help"
     tooltip-placement="top"
+    is-link
+    icon-name="iteration"
+    icon-size="12"
+    :href="iteration.webUrl"
+    wrapper-component-class="!gl-text-subtle gl-bg-transparent gl-border-0 gl-p-0 focus-visible:gl-focus-inset"
   >
-    <template #icon>
-      <gl-icon name="iteration" :size="12" />
-    </template>
     <template #tooltip-text>
       <div data-testid="iteration-title" class="gl-font-bold">
         {{ __('Iteration') }}

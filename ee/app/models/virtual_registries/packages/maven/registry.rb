@@ -13,14 +13,6 @@ module VirtualRegistries
         has_many :upstreams,
           class_name: 'VirtualRegistries::Packages::Maven::Upstream',
           through: :registry_upstreams
-
-        def purge_cache!
-          ::VirtualRegistries::Packages::Cache::MarkEntriesForDestructionWorker.bulk_perform_async_with_contexts(
-            exclusive_upstreams,
-            arguments_proc: ->(upstream) { [upstream.id] },
-            context_proc: ->(upstream) { { namespace: upstream.group } }
-          )
-        end
       end
     end
   end

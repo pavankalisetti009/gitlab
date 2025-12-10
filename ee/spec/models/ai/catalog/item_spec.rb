@@ -560,7 +560,7 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
   describe '#foundational' do
     let(:is_saas) { false }
     let(:item_id) { 100 }
-    let(:item) { build(:ai_catalog_item, :flow, id: item_id) }
+    let(:item) { build(:ai_catalog_item, :agent, id: item_id) }
 
     before do
       stub_saas_features(gitlab_duo_saas_only: is_saas)
@@ -568,24 +568,47 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
 
     subject(:is_foundational) { item.foundational }
 
-    context 'when not on GitLab SaaS' do
-      let(:is_saas) { false }
+    context 'when item is agent' do
+      context 'when not on GitLab SaaS' do
+        let(:is_saas) { false }
 
-      it { is_expected.to be_falsey }
+        it { is_expected.to be_falsey }
+      end
+
+      context 'when on GitLab SaaS' do
+        let(:is_saas) { true }
+
+        context 'when item is a foundational agent' do
+          let(:item_id) { 348 }
+
+          it { is_expected.to be_truthy }
+        end
+
+        context 'when item is not a foundational agent' do
+          it { is_expected.to be(false) }
+        end
+      end
     end
 
-    context 'when on GitLab SaaS' do
-      let(:is_saas) { true }
+    context 'when item is flow' do
+      let(:item) { create(:ai_catalog_item, :flow, foundational_flow_reference: foundational_flow_reference) }
+      let(:foundational_flow_reference) { nil }
 
-      context 'when item is a foundational agent' do
-        let(:item_id) { 348 }
+      context 'when item is a foundational flow' do
+        let(:foundational_flow_reference) { 723 }
 
         it { is_expected.to be_truthy }
       end
 
-      context 'when item is not a foundational agent' do
-        it { is_expected.to be_falsey }
+      context 'when item is not a foundational flow' do
+        it { is_expected.to be(false) }
       end
+    end
+
+    context 'when item is third-party flow' do
+      let(:item) { build(:ai_catalog_third_party_flow) }
+
+      it { is_expected.to be(false) }
     end
   end
 end
