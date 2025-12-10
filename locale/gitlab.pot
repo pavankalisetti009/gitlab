@@ -32935,6 +32935,9 @@ msgstr ""
 msgid "GroupSAML|Generate a SCIM token to set up your System for Cross-Domain Identity Management."
 msgstr ""
 
+msgid "GroupSAML|Group SAML single sign-on session expired"
+msgstr ""
+
 msgid "GroupSAML|Identity Provider"
 msgstr ""
 
@@ -32963,6 +32966,12 @@ msgid "GroupSAML|New SAML group link saved."
 msgstr ""
 
 msgid "GroupSAML|No active SAML group links"
+msgstr ""
+
+msgid "GroupSAML|Re-authenticate %{group}"
+msgstr ""
+
+msgid "GroupSAML|Re-authenticate to view your work items and avoid disruptions."
 msgstr ""
 
 msgid "GroupSAML|Reset SCIM token"
@@ -33011,9 +33020,6 @@ msgid "GroupSAML|SHA1 or SHA256 fingerprint of the SAML token signing certificat
 msgstr ""
 
 msgid "GroupSAML|Some branches are inaccessible because your SAML session has expired. To access the branches, select the group’s path to reauthenticate."
-msgstr ""
-
-msgid "GroupSAML|Some items may be hidden because your SAML session has expired. Select the group’s path to reauthenticate and view any hidden items."
 msgstr ""
 
 msgid "GroupSAML|The SCIM token is now hidden. To see the value of the token again, you need to %{linkStart}reset it%{linkEnd}."

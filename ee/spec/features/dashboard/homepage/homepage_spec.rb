@@ -11,6 +11,11 @@ RSpec.describe 'Dashboard - Home', :js, feature_category: :notifications do
   end
 
   describe 'visiting the root route' do
+    it_behaves_like 'dashboard SAML reauthentication banner' do
+      let_it_be(:page_path) { home_dashboard_path }
+      let_it_be(:match_filter_params) { false }
+    end
+
     context 'when testing self-managed admin onboarding behavior' do
       let_it_be(:admin_user) { create(:user, admin: true) }
 
