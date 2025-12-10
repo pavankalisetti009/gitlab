@@ -56,13 +56,13 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::ApplyPoli
     end
 
     describe 'tracking' do
-      it_behaves_like 'internal event tracking' do
-        let(:event) { 'enforce_pipeline_execution_policy_in_project' }
-        let(:category) { Security::PipelineExecutionPolicy::UsageTracking.name }
-        let_it_be(:project) { project }
-        let_it_be(:user) { nil }
-        let_it_be(:namespace) { group }
-        let(:additional_properties) { { label: 'inject_ci', property: 'highest_precedence', value: 2 } }
+      let(:additional_properties) { { label: 'inject_ci', property: 'highest_precedence', value: 2 } }
+      let(:category) { Security::PipelineExecutionPolicy::UsageTracking.name }
+
+      it 'tracks the event' do
+        expect { run_chain }
+          .to trigger_internal_events('enforce_pipeline_execution_policy_in_project')
+          .with(project: project, category: category, user: nil, namespace: group, **additional_properties)
       end
     end
 
@@ -332,6 +332,9 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::ApplyPoli
     context 'when there is no project CI configuration' do
       let(:config) { nil }
 
+      let(:category) { Security::PipelineExecutionPolicy::UsageTracking.name }
+      let(:additional_properties) { { label: 'inject_ci', property: 'highest_precedence', value: 2 } }
+
       it 'removes the dummy job that forced the pipeline creation and only keeps policy jobs in default stages' do
         run_chain
 
@@ -344,13 +347,10 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::ApplyPoli
         expect(test_stage.statuses.map(&:name)).to contain_exactly('rspec')
       end
 
-      it_behaves_like 'internal event tracking' do
-        let(:event) { 'enforce_pipeline_execution_policy_in_project' }
-        let(:category) { Security::PipelineExecutionPolicy::UsageTracking.name }
-        let_it_be(:project) { project }
-        let_it_be(:user) { nil }
-        let_it_be(:namespace) { group }
-        let(:additional_properties) { { label: 'inject_ci', property: 'highest_precedence', value: 2 } }
+      it 'tracks the event' do
+        expect { run_chain }
+          .to trigger_internal_events('enforce_pipeline_execution_policy_in_project')
+          .with(project: project, category: category, user: nil, namespace: group, **additional_properties)
       end
     end
 
@@ -367,6 +367,9 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::ApplyPoli
           )
         ]
       end
+
+      let(:additional_properties) { { label: 'override_project_ci', property: 'highest_precedence', value: 1 } }
+      let(:category_name) { Security::PipelineExecutionPolicy::UsageTracking.name }
 
       it 'clears the project CI and injects the policy jobs' do
         run_chain
@@ -401,13 +404,10 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::ApplyPoli
         end
       end
 
-      it_behaves_like 'internal event tracking' do
-        let(:event) { 'enforce_pipeline_execution_policy_in_project' }
-        let(:category) { Security::PipelineExecutionPolicy::UsageTracking.name }
-        let_it_be(:project) { project }
-        let_it_be(:user) { nil }
-        let_it_be(:namespace) { group }
-        let(:additional_properties) { { label: 'override_project_ci', property: 'highest_precedence', value: 1 } }
+      it 'tracks the event' do
+        expect { run_chain }
+          .to trigger_internal_events('enforce_pipeline_execution_policy_in_project')
+          .with(project: project, category: category_name, user: nil, namespace: group, **additional_properties)
       end
     end
 
@@ -418,8 +418,9 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::ApplyPoli
         expect { run_chain }.not_to change { pipeline.stages }
       end
 
-      it_behaves_like 'internal event not tracked' do
-        let(:event) { 'enforce_pipeline_execution_policy_in_project' }
+      it 'does not tracks the event' do
+        expect { run_chain }
+          .not_to trigger_internal_events('enforce_pipeline_execution_policy_in_project')
       end
     end
 
@@ -478,8 +479,9 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::ApplyPoli
         end
       end
 
-      it_behaves_like 'internal event not tracked' do
-        let(:event) { 'enforce_pipeline_execution_policy_in_project' }
+      it 'does not tracks the event' do
+        expect { run_chain }
+          .not_to trigger_internal_events('enforce_pipeline_execution_policy_in_project')
       end
     end
 

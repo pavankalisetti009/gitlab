@@ -9,7 +9,7 @@ module Types
         description "Pre-aggregated per-user metrics for GitLab Code Suggestions and GitLab Duo Chat. " \
           "Requires ClickHouse to be enabled. Premium or Ultimate only."
 
-        extend ::Analytics::AiEventFields
+        include ::Analytics::AiEventFields
 
         field :user, Types::GitlabSubscriptions::AddOnUserType,
           description: 'User associated with metrics.',
