@@ -12,6 +12,7 @@ module Explore
       push_frontend_feature_flag(:ai_catalog_agents, current_user)
       push_frontend_feature_flag(:ai_catalog_third_party_flows, current_user)
       push_frontend_feature_flag(:ai_catalog_flows, current_user)
+      push_frontend_feature_flag(:ai_duo_agent_platform_ga_rollout, current_user)
     end
 
     private

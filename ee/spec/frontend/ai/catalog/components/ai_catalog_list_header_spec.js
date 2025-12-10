@@ -36,6 +36,9 @@ describe('AiCatalogListHeader', () => {
         isGlobal: true,
         canAdmin: false,
         aiImpactDashboardEnabled: true,
+        glFeatures: {
+          aiDuoAgentPlatformGaRollout: false,
+        },
         ...provide,
       },
       directives: {
@@ -54,8 +57,23 @@ describe('AiCatalogListHeader', () => {
       expect(findPageHeading().text()).toContain('AI Catalog');
     });
 
-    it('renders experiment badge', () => {
-      expect(findExperimentBadge().exists()).toBe(true);
+    describe('experiment badge visibility based on isBeta and feature flag', () => {
+      it.each`
+        isBeta   | gaRolloutEnabled | shouldRender | description
+        ${false} | ${false}         | ${true}      | ${'display badge when GA rollout is not enabled and isBeta override is not set'}
+        ${true}  | ${false}         | ${true}      | ${'display badge when isBeta override is true'}
+        ${false} | ${true}          | ${false}     | ${'display no badge when GA rollout is enabled'}
+        ${true}  | ${true}          | ${true}      | ${'display badge when isBeta is true, even when GA rollout is enabled'}
+      `('should $description', ({ isBeta, gaRolloutEnabled, shouldRender }) => {
+        createComponent({
+          props: { isBeta },
+          provide: {
+            glFeatures: { aiDuoAgentPlatformGaRollout: gaRolloutEnabled },
+          },
+        });
+
+        expect(findExperimentBadge().exists()).toBe(shouldRender);
+      });
     });
 
     it('renders AiCatalogNavTabs component', () => {

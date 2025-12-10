@@ -31,6 +31,15 @@ RSpec.describe 'Projects::DuoAgentsPlatform', type: :request, feature_category: 
 
           expect(response).to have_gitlab_http_status(:ok)
         end
+
+        it 'pushes feature flags to frontend' do
+          get project_automate_agent_sessions_path(project)
+
+          expect(response.body).to include('aiCatalogAgents')
+          expect(response.body).to include('aiCatalogFlows')
+          expect(response.body).to include('aiCatalogThirdPartyFlows')
+          expect(response.body).to include('aiDuoAgentPlatformGaRollout')
+        end
       end
 
       context 'and the user does not have access to duo_workflow' do
