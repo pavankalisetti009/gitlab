@@ -8,6 +8,7 @@
 - root_namespace_id = Gitlab::Llm::TanukiBot.root_namespace_id(project || group)
 - is_agentic_available = Gitlab::Llm::TanukiBot.agentic_mode_available?(user: current_user, project: project, group: group)
 - user_model_selection_enabled = Gitlab::Llm::TanukiBot.user_model_selection_enabled?(user: current_user, scope: project || group)
+- credits_available = Gitlab::Llm::TanukiBot.credits_available?(user: current_user, project: project, group: group)
 
 - if is_agentic_available && !project_studio_enabled?
   #js-duo-agentic-chat-app{ data: {
@@ -16,7 +17,8 @@
     root_namespace_id: root_namespace_id,
     resource_id: resource_id,
     metadata: Gitlab::DuoWorkflow::Client.metadata(current_user).to_json,
-    user_model_selection_enabled: user_model_selection_enabled.to_s } }
+    user_model_selection_enabled: user_model_selection_enabled.to_s,
+    credits_available: credits_available.to_s } }
 
 - if !project_studio_enabled?
   #js-tanuki-bot-chat-app{ data: {

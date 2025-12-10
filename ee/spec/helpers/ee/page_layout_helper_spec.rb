@@ -11,7 +11,7 @@ RSpec.describe EE::PageLayoutHelper, feature_category: :shared do
     before do
       allow(::Gitlab::Llm::TanukiBot).to receive_messages(user_model_selection_enabled?: false,
         agentic_mode_available?: false, root_namespace_id: 'root-123', resource_id: 'resource-456',
-        chat_disabled_reason: nil)
+        chat_disabled_reason: nil, credits_available?: true)
       allow(::Gitlab::DuoWorkflow::Client).to receive(:metadata).and_return({ key: 'value' })
       allow(::Ai::AmazonQ).to receive(:enabled?).and_return(false)
     end
@@ -100,6 +100,22 @@ RSpec.describe EE::PageLayoutHelper, feature_category: :shared do
       expect(result[:agentic_available]).to eq('true')
     end
 
+    it 'returns credits available as string when true' do
+      allow(Gitlab::Llm::TanukiBot).to receive(:credits_available?).and_return(true)
+
+      result = helper.duo_chat_panel_data(user, project, group)
+
+      expect(result[:credits_available]).to eq('true')
+    end
+
+    it 'returns credits available as string when false' do
+      allow(Gitlab::Llm::TanukiBot).to receive(:credits_available?).and_return(false)
+
+      result = helper.duo_chat_panel_data(user, project, group)
+
+      expect(result[:credits_available]).to eq('false')
+    end
+
     it 'returns default chat title when AmazonQ is disabled' do
       result = helper.duo_chat_panel_data(user, project, group)
 
@@ -119,6 +135,9 @@ RSpec.describe EE::PageLayoutHelper, feature_category: :shared do
       expect(Gitlab::Llm::TanukiBot).to receive(:agentic_mode_available?).with(
         user: user, project: project, group: group
       )
+      expect(Gitlab::Llm::TanukiBot).to receive(:credits_available?).with(
+        user: user, project: project, group: group
+      )
 
       helper.duo_chat_panel_data(user, project, group)
     end
@@ -126,6 +145,9 @@ RSpec.describe EE::PageLayoutHelper, feature_category: :shared do
     it 'calls TanukiBot methods with group when project is absent' do
       expect(Gitlab::Llm::TanukiBot).to receive(:user_model_selection_enabled?).with(user: user, scope: group)
       expect(Gitlab::Llm::TanukiBot).to receive(:agentic_mode_available?).with(
+        user: user, project: nil, group: group
+      )
+      expect(Gitlab::Llm::TanukiBot).to receive(:credits_available?).with(
         user: user, project: nil, group: group
       )
 

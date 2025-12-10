@@ -17,6 +17,9 @@ module EE
       chat_disabled_reason = ::Gitlab::Llm::TanukiBot.chat_disabled_reason(
         user: user, container: project || group
       )
+      credits_available = ::Gitlab::Llm::TanukiBot.credits_available?(
+        user: user, project: project, group: group
+      )
 
       {
         user_id: user.to_global_id,
@@ -31,6 +34,7 @@ module EE
         agentic_unavailable_message: agentic_unavailable_message(user, project || group, is_agentic_available),
         chat_title: chat_title,
         chat_disabled_reason: chat_disabled_reason.to_s,
+        credits_available: credits_available.to_s,
         expanded: ('true' if ai_panel_expanded?)
       }
     end

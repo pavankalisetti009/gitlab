@@ -16,6 +16,7 @@ RSpec.describe "User creates issue", :js, :saas, feature_category: :team_plannin
   let(:issue_title) { '500 error on profile' }
 
   before do
+    allow(::Gitlab::Llm::TanukiBot).to receive(:credits_available?).and_return(true)
     stub_licensed_features(issue_weights: true, epics: true)
   end
 

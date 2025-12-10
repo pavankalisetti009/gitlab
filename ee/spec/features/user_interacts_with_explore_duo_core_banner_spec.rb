@@ -54,6 +54,10 @@ RSpec.describe "User interacts with explore duo core banner", :js, feature_categ
     project.add_developer(user)
   end
 
+  before do
+    allow(::Gitlab::Llm::TanukiBot).to receive(:credits_available?).and_return(true)
+  end
+
   # Banner not showing for self-managed
   context 'for self-managed', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/577871' do
     before do

@@ -10,6 +10,7 @@ RSpec.describe 'Root cause analysis job page', :saas, :js, feature_category: :co
   let(:failed_job) { create(:ci_build, :failed, :trace_live, project: project) }
 
   before do
+    allow(::Gitlab::Llm::TanukiBot).to receive(:credits_available?).and_return(true)
     stub_licensed_features(troubleshoot_job: true)
 
     project.add_developer(user)

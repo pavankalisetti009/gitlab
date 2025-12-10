@@ -34,6 +34,7 @@ RSpec.describe 'Duo Chat > User navigates Duo Chat history', :js, :saas, :with_c
     stub_feature_flags(no_duo_classic_for_duo_core_users: false)
     allow(user).to receive(:allowed_to_use?).and_return(true)
     allow(user).to receive(:can?).and_call_original
+    allow(::Gitlab::Llm::TanukiBot).to receive(:credits_available?).and_return(true)
 
     sign_in(user)
     skip 'Test not applicable in classic UI' unless Users::ProjectStudio.enabled_for_user?(user) # rubocop:disable RSpec/AvoidConditionalStatements -- temporary Project Studio rollout
