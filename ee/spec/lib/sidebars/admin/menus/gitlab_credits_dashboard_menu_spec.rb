@@ -6,7 +6,7 @@ RSpec.describe Sidebars::Admin::Menus::GitlabCreditsDashboardMenu, feature_categ
   it_behaves_like 'Admin menu',
     link: '/admin/gitlab_credits_dashboard',
     title: _('GitLab Credits'),
-    icon: 'dashboard'
+    icon: 'gitlab-credits'
 
   it_behaves_like 'Admin menu without sub menus', active_routes: {
     controller: ["admin/gitlab_credits_dashboard", "admin/gitlab_credits_dashboard/users"]
