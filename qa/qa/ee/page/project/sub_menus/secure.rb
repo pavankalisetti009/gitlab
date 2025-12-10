@@ -23,6 +23,10 @@ module QA
             def go_to_on_demand_scans
               open_secure_submenu('On-demand scans')
             end
+
+            def go_to_secrets_manager
+              open_secure_submenu('Secrets manager')
+            end
           end
         end
       end
