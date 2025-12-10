@@ -116,6 +116,40 @@ RSpec.shared_examples 'a secrets permission' do
         expect(permission).not_to be_valid
         expect(permission.errors[:principal_id]).to include('user does not exist')
       end
+
+      context 'with user role validation' do
+        let(:test_user) { create(:user) }
+        let(:principal_id) { test_user.id }
+
+        before do
+          permission.resource.public_send(:"add_#{access_level_name}", test_user)
+        end
+
+        context 'when user has Guest role' do
+          let(:access_level_name) { :guest }
+
+          it 'is invalid' do
+            expect(permission).not_to be_valid
+            expect(permission.errors[:principal_id]).to include('user must have at least Reporter role')
+          end
+        end
+
+        context 'when user has Reporter role' do
+          let(:access_level_name) { :reporter }
+
+          it 'is valid' do
+            expect(permission).to be_valid
+          end
+        end
+
+        context 'when user has Developer role' do
+          let(:access_level_name) { :developer }
+
+          it 'is valid' do
+            expect(permission).to be_valid
+          end
+        end
+      end
     end
   end
 
@@ -126,6 +160,61 @@ RSpec.shared_examples 'a secrets permission' do
         permission.principal_id = Group.count + 1
         expect(permission).not_to be_valid
         expect(permission.errors[:principal_id]).to include('group does not exist')
+      end
+
+      context 'with group role validation' do
+        let(:shared_group) { create(:group) }
+        let(:principal_type) { 'Group' }
+        let(:principal_id) { shared_group.id }
+
+        context 'when group has Guest access level' do
+          let(:access_level) { Gitlab::Access::GUEST }
+
+          before do
+            link_group_to_resource(permission.resource, shared_group, access_level)
+          end
+
+          it 'is invalid' do
+            expect(permission).not_to be_valid
+            expect(permission.errors[:principal_id]).to include('group must have at least Reporter role')
+          end
+        end
+
+        context 'when group has Reporter access level' do
+          let(:access_level) { Gitlab::Access::REPORTER }
+
+          before do
+            link_group_to_resource(permission.resource, shared_group, access_level)
+          end
+
+          it 'is valid' do
+            expect(permission).to be_valid
+          end
+        end
+
+        context 'when group has Developer access level' do
+          let(:access_level) { Gitlab::Access::DEVELOPER }
+
+          before do
+            link_group_to_resource(permission.resource, shared_group, access_level)
+          end
+
+          it 'is valid' do
+            expect(permission).to be_valid
+          end
+        end
+
+        context 'when group has Maintainer access level' do
+          let(:access_level) { Gitlab::Access::MAINTAINER }
+
+          before do
+            link_group_to_resource(permission.resource, shared_group, access_level)
+          end
+
+          it 'is valid' do
+            expect(permission).to be_valid
+          end
+        end
       end
     end
   end

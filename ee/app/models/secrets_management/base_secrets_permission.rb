@@ -45,6 +45,7 @@ module SecretsManagement
     VALID_PRINCIPAL_TYPES = PRINCIPAL_TYPES.values.freeze
     VALID_PERMISSIONS = PERMISSIONS.values.freeze
     VALID_ROLES = Gitlab::Access.sym_options.except(:guest, :planner).freeze
+    MINIMUM_ACCESS_LEVEL = Gitlab::Access::REPORTER
 
     delegate :secrets_manager, to: :resource, allow_nil: true
 
@@ -124,17 +125,28 @@ module SecretsManagement
     def valid_user
       user = User.find_by_id(principal_id)
       return errors.add(:principal_id, "user does not exist") if user.nil?
-      return if resource&.member?(user)
 
-      errors.add(:principal_id, "user is not a member of the #{resource_type.downcase}")
+      member = resource&.members&.find_by(user_id: user.id)
+      return errors.add(:principal_id, "user is not a member of the #{resource_type.downcase}") if member.nil?
+
+      return unless member.access_level < MINIMUM_ACCESS_LEVEL
+
+      errors.add(:principal_id, "user must have at least Reporter role")
     end
 
     def valid_group
       principal_group = Group.find_by_id(principal_id)
       return errors.add(:principal_id, "group does not exist") if principal_group.nil?
-      return if principal_group_has_access_to_resource?(principal_group)
 
-      errors.add(:principal_id, "group does not have access to this #{resource_type.downcase}")
+      unless principal_group_has_access_to_resource?(principal_group)
+        return errors.add(:principal_id,
+          "group does not have access to this #{resource_type.downcase}")
+      end
+
+      group_link = find_group_link(principal_group)
+      return unless group_link && group_link.group_access < MINIMUM_ACCESS_LEVEL
+
+      errors.add(:principal_id, "group must have at least Reporter role")
     end
 
     def valid_member_role
@@ -158,6 +170,10 @@ module SecretsManagement
     end
 
     def member_role_has_access_to_resource?(member_role)
+      raise NotImplementedError
+    end
+
+    def find_group_link(principal_group)
       raise NotImplementedError
     end
   end
