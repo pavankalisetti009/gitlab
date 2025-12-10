@@ -42,7 +42,9 @@ module Ai
 
           Namespace.group_namespaces.top_level.each_batch(of: BATCH_SIZE) do |batch|
             namespace_ids = if gitlab_com
-                              filter_eligible_namespace_ids(batch).pluck_primary_key
+                              Ai::ActiveContext::Code::EnabledNamespace.valid_saas_namespaces
+                                .id_in(batch.pluck_primary_key)
+                                .pluck_primary_key
                             else
                               batch.pluck_primary_key
                             end
@@ -73,14 +75,6 @@ module Ai
 
         def reemit_event
           Gitlab::EventStore.publish(CreateEnabledNamespaceEvent.new(data: {}))
-        end
-
-        def filter_eligible_namespace_ids(namespace_batch)
-          Namespace
-            .id_in(namespace_batch.pluck_primary_key)
-            .namespace_settings_with_ai_features_enabled
-            .with_ai_supported_plan
-            .merge(GitlabSubscription.not_expired)
         end
 
         def existing_namespace_ids(namespace_ids)
