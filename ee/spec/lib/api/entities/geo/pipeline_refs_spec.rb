@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe EE::API::Entities::Geo::PipelineRefs, feature_category: :geo_replication do
+RSpec.describe ::API::Entities::Geo::PipelineRefs, feature_category: :geo_replication do
   let(:pipeline_refs) { ['foo'] }
 
   subject(:entity) { described_class.new(pipeline_refs: pipeline_refs).as_json }
