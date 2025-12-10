@@ -70,14 +70,15 @@ RSpec.describe 'Query.project(id).dashboards.panels(id).visualization', feature_
         2 | 'SingleStat' | 'GitLab Duo Code Suggestions acceptance rate'
         3 | 'SingleStat' | 'GitLab Duo Chat usage'
         4 | 'BarChart' | 'GitLab Duo Code Suggestions acceptance rate by language (Last 30 days)'
-        5 | 'AreaChart' | 'Code generation volume trends (Last 180 days)'
-        6 | 'StackedColumnChart' | 'GitLab Duo Code Review requests by role (Last 180 days)'
-        7 | 'AiImpactTable' | 'GitLab Duo usage metrics for the %{namespaceName} %{namespaceType}'
-        8 | 'AiImpactTable' | 'Development metrics for the %{namespaceName} %{namespaceType}'
-        9 | 'AiImpactTable' | 'Pipeline metrics for the %{namespaceName} %{namespaceType}'
-        10 | 'DataTable' | 'GitLab Duo Code Suggestions usage by user (Last 30 days)'
-        11 | 'DataTable' | 'GitLab Duo Code Review usage by user (Last 30 days)'
-        12 | 'DataTable' | 'GitLab Duo Root Cause Analysis usage by user (Last 30 days)'
+        5 | 'BarChart' | 'GitLab Duo Code Suggestions acceptance by IDE (Last 30 days)'
+        6 | 'AreaChart' | 'Code generation volume trends (Last 180 days)'
+        7 | 'StackedColumnChart' | 'GitLab Duo Code Review requests by role (Last 180 days)'
+        8 | 'AiImpactTable' | 'GitLab Duo usage metrics for the %{namespaceName} %{namespaceType}'
+        9 | 'AiImpactTable' | 'Development metrics for the %{namespaceName} %{namespaceType}'
+        10 | 'AiImpactTable' | 'Pipeline metrics for the %{namespaceName} %{namespaceType}'
+        11 | 'DataTable' | 'GitLab Duo Code Suggestions usage by user (Last 30 days)'
+        12 | 'DataTable' | 'GitLab Duo Code Review usage by user (Last 30 days)'
+        13 | 'DataTable' | 'GitLab Duo Root Cause Analysis usage by user (Last 30 days)'
       end
 
       with_them do

@@ -5,6 +5,7 @@ query aiMetricsQuery(
   $startDate: Date!
   $endDate: Date!
   $languages: [String!] = null
+  $ideNames: [String!] = null
 ) {
   project(fullPath: $fullPath) {
     id
