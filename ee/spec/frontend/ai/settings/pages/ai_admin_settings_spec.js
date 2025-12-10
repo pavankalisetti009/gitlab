@@ -120,6 +120,7 @@ describe('AiAdminSettings', () => {
         duoRemoteFlowsAvailability: false,
         duoFoundationalFlowsAvailability: false,
         foundationalAgentsStatuses: mockAgentStatuses,
+        selectedFoundationalFlowIds: [],
       });
 
       const transformedFilteredAgentStatuses = expectedFilteredAgentStatuses.map((agent) => ({
@@ -134,6 +135,7 @@ describe('AiAdminSettings', () => {
         model_prompt_cache_enabled: true,
         duo_remote_flows_availability: false,
         duo_foundational_flows_availability: false,
+        enabled_foundational_flows: [],
         disabled_direct_code_suggestions: false,
         enabled_expanded_logging: false,
         duo_chat_expiration_days: 30,

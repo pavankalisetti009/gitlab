@@ -76,6 +76,11 @@ export default {
       required: false,
       default: false,
     },
+    selectedFoundationalFlowIds: {
+      type: Array,
+      required: false,
+      default: () => [],
+    },
   },
   data() {
     return {
@@ -89,6 +94,7 @@ export default {
       foundationalAgentsEnabledInput: this.foundationalAgentsEnabled,
       foundationalAgentsStatusesInput: this.foundationalAgentsStatuses,
       hasFoundationalAgentsStatusesChanged: false,
+      localSelectedFlowIds: this.selectedFoundationalFlowIds,
     };
   },
   computed: {
@@ -130,7 +136,8 @@ export default {
         this.hasFoundationalFlowsFormChanged ||
         this.hasSastFpDetectionFormChanged ||
         this.hasFoundationalAgentsEnabledChanged ||
-        this.hasFoundationalAgentsStatusesChanged
+        this.hasFoundationalAgentsStatusesChanged ||
+        this.hasSelectedFlowIdsChanged
       );
     },
     showWarning() {
@@ -150,6 +157,12 @@ export default {
     },
     disableConfigCheckboxes() {
       return this.availability === AVAILABILITY_OPTIONS.NEVER_ON;
+    },
+    hasSelectedFlowIdsChanged() {
+      const current = (this.localSelectedFlowIds || []).slice().sort((a, b) => a - b);
+      const initial = (this.selectedFoundationalFlowIds || []).slice().sort((a, b) => a - b);
+
+      return JSON.stringify(current) !== JSON.stringify(initial);
     },
   },
   methods: {
@@ -193,6 +206,10 @@ export default {
       this.hasFoundationalAgentsStatusesChanged = true;
       this.$emit('duo-foundational-agents-statuses-change', agentStatuses);
     },
+    onSelectedFlowIdsChanged(flowIds) {
+      this.localSelectedFlowIds = flowIds;
+      this.$emit('change-selected-flow-ids', flowIds);
+    },
   },
 };
 </script>
@@ -219,8 +236,10 @@ export default {
       :duo-remote-flows-availability="duoRemoteFlowsAvailability"
       :duo-foundational-flows-availability="duoFoundationalFlowsAvailability"
       :disabled-checkbox="disableConfigCheckboxes"
+      :selected-foundational-flow-ids="localSelectedFlowIds"
       @change="onFlowCheckboxChanged"
       @change-foundational-flows="onFoundationalFlowsCheckboxChanged"
+      @change-selected-flow-ids="onSelectedFlowIdsChanged"
     />
 
     <duo-foundational-agents-settings

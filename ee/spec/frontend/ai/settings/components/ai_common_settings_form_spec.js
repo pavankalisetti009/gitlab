@@ -27,6 +27,7 @@ describe('AiCommonSettingsForm', () => {
         promptCacheEnabled: false,
         hasParentFormChanged: false,
         foundationalAgentsEnabled: false,
+        selectedFoundationalFlowIds: [],
         foundationalAgentsStatuses: mockAgentStatuses,
         ...props,
       },
@@ -364,6 +365,52 @@ describe('AiCommonSettingsForm', () => {
       await findDuoFlowSettings().vm.$emit('change-foundational-flows', false);
 
       expect(findSaveButton().props('disabled')).toBe(true);
+    });
+  });
+
+  describe('foundational flow selection integration', () => {
+    it('emits change-selected-flow-ids event when DuoFlowSettings emits it', async () => {
+      await findDuoFlowSettings().vm.$emit('change-selected-flow-ids', [1, 2, 3]);
+
+      expect(wrapper.emitted('change-selected-flow-ids')[0]).toEqual([[1, 2, 3]]);
+    });
+
+    it('updates internal localSelectedFlowIds data when change-selected-flow-ids event is received', async () => {
+      createComponent({ props: { selectedFoundationalFlowIds: [1] } });
+
+      expect(findSaveButton().props('disabled')).toBe(true);
+
+      await findDuoFlowSettings().vm.$emit('change-selected-flow-ids', [1, 2]);
+
+      expect(findSaveButton().props('disabled')).toBe(false);
+
+      await findDuoFlowSettings().vm.$emit('change-selected-flow-ids', [1]);
+
+      expect(findSaveButton().props('disabled')).toBe(true);
+    });
+
+    it('enables save button when flow IDs change from empty to non-empty', async () => {
+      expect(findSaveButton().props('disabled')).toBe(true);
+
+      await findDuoFlowSettings().vm.$emit('change-selected-flow-ids', [5, 6]);
+
+      expect(findSaveButton().props('disabled')).toBe(false);
+    });
+
+    it('enables save button when flow IDs order changes', async () => {
+      createComponent({ props: { selectedFoundationalFlowIds: [1, 2, 3] } });
+
+      expect(findSaveButton().props('disabled')).toBe(true);
+
+      await findDuoFlowSettings().vm.$emit('change-selected-flow-ids', [3, 2, 1]);
+
+      expect(findSaveButton().props('disabled')).toBe(true);
+    });
+
+    it('passes selectedFoundationalFlowIds prop to DuoFlowSettings', () => {
+      createComponent({ props: { selectedFoundationalFlowIds: [10, 20] } });
+
+      expect(findDuoFlowSettings().props('selectedFoundationalFlowIds')).toEqual([10, 20]);
     });
   });
 

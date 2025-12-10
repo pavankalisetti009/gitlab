@@ -26,6 +26,7 @@ export default {
     'onGeneralSettingsPage',
     'duoWorkflowAvailable',
     'duoWorkflowMcpEnabled',
+    'availableFoundationalFlows',
   ],
   props: {
     redirectPath: {
@@ -59,6 +60,7 @@ export default {
       duoFoundationalFlowsAvailability,
       foundationalAgentsEnabled,
       foundationalAgentsStatuses,
+      selectedFoundationalFlowIds,
     }) {
       try {
         const transformedFoundationalAgentsStatuses = foundationalAgentsStatuses?.filter(
@@ -72,6 +74,7 @@ export default {
           duo_remote_flows_availability: duoRemoteFlowsAvailability,
           duo_foundational_flows_availability: duoFoundationalFlowsAvailability,
           duo_sast_fp_detection_availability: duoSastFpDetectionAvailability,
+          enabled_foundational_flows: selectedFoundationalFlowIds,
           ...(foundationalAgentsStatuses && {
             foundational_agents_statuses: transformedFoundationalAgentsStatuses,
           }),
