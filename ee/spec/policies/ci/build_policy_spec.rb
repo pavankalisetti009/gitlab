@@ -28,7 +28,7 @@ RSpec.describe Ci::BuildPolicy, feature_category: :continuous_integration do
       allow(::Gitlab::Llm::StageCheck).to receive(:available?).and_return(true)
       allow(user).to receive(:can?).with(:access_duo_chat).and_return(true)
       allow(user).to receive(:can?).with(:access_duo_features, build.project).and_return(true)
-      allow(user).to receive(:allowed_to_use?).and_return(cloud_connector_user_access)
+      allow(user).to receive(:allowed_to_use?).with(:troubleshoot_job).and_return(cloud_connector_user_access)
 
       allow(project).to receive(:duo_features_enabled).and_return(true)
       allow(user).to receive(:assigned_to_duo_add_ons?).with(project).and_return(true)
@@ -114,6 +114,8 @@ RSpec.describe Ci::BuildPolicy, feature_category: :continuous_integration do
       with_them do
         before do
           allow(project).to receive(:licensed_feature_available?).with(:troubleshoot_job).and_return(licensed)
+          allow(user).to receive(:assigned_to_duo_add_ons?).with(project).and_return(user_access)
+          allow(user).to receive(:assigned_to_duo_core?).with(project).and_return(false)
         end
 
         let(:cloud_connector_user_access) { user_access }

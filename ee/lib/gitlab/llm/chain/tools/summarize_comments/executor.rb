@@ -146,7 +146,16 @@ module Gitlab
             end
 
             def authorize
-              can_summarize? && Utils::ChatAuthorizer.context(context: context).allowed?
+              if ::Feature.enabled?(:dap_external_trigger_usage_billing, context.current_user)
+                can_summarize? &&
+                  ::Gitlab::Llm::FeatureAuthorizer.new(
+                    container: resource.resource_parent,
+                    feature_name: :summarize_comments,
+                    user: context.current_user
+                  ).allowed?
+              else
+                can_summarize? && Utils::ChatAuthorizer.context(context: context).allowed?
+              end
             end
 
             def resource

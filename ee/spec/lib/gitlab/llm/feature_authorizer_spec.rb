@@ -131,15 +131,20 @@ RSpec.describe Gitlab::Llm::FeatureAuthorizer, feature_category: :ai_abstraction
       described_class.can_access_duo_external_trigger?(user: user, container: container)
     end
 
-    where(:duo_features_enabled, :assigned_to_add_ons, :assigned_to_core, :expected) do
-      true  | true  | false | true
-      true  | false | true  | true
-      true  | true  | true  | true
-      true  | false | false | false
-      false | true  | false | false
-      false | false | true  | false
-      false | true  | true  | false
-      false | false | false | false
+    where(:duo_features_enabled, :assigned_to_add_ons, :assigned_to_core, :has_namespace_access,
+      :has_self_managed_addon, :expected) do
+      true  | true  | false | false | false | true
+      true  | false | true  | false | false | true
+      true  | true  | true  | false | false | true
+      true  | false | false | true  | false | true
+      true  | false | false | false | true  | true
+      true  | false | false | false | false | false
+      false | true  | false | false | false | false
+      false | false | true  | false | false | false
+      false | true  | true  | false | false | false
+      false | false | false | true  | false | false
+      false | false | false | false | true  | false
+      false | false | false | false | false | false
     end
 
     with_them do
@@ -147,6 +152,17 @@ RSpec.describe Gitlab::Llm::FeatureAuthorizer, feature_category: :ai_abstraction
         container.namespace_settings.update!(duo_features_enabled: duo_features_enabled)
         allow(user).to receive(:assigned_to_duo_add_ons?).with(container).and_return(assigned_to_add_ons)
         allow(user).to receive(:assigned_to_duo_core?).with(container).and_return(assigned_to_core)
+        allow(user).to receive(:duo_core_ids_via_namespace_settings).and_return(
+          has_namespace_access ? [container.id] : []
+        )
+
+        if has_self_managed_addon
+          create(:gitlab_subscription_add_on_purchase, :self_managed, :duo_core, :active)
+        else
+          allow(GitlabSubscriptions::AddOnPurchase).to receive_message_chain(
+            :for_self_managed, :for_duo_core, :active, :exists?
+          ).and_return(false)
+        end
       end
 
       it { is_expected.to eq(expected) }
@@ -155,10 +171,15 @@ RSpec.describe Gitlab::Llm::FeatureAuthorizer, feature_category: :ai_abstraction
     context 'with a project container' do
       let_it_be(:container) { create(:project) }
 
-      where(:duo_features_enabled, :assigned_to_add_ons, :assigned_to_core, :expected) do
-        true  | true  | false | true
-        true  | false | true  | true
-        false | true  | false | false
+      where(:duo_features_enabled, :assigned_to_add_ons, :assigned_to_core, :has_namespace_access,
+        :has_self_managed_addon, :expected) do
+        true  | true  | false | false | false | true
+        true  | false | true  | false | false | true
+        true  | false | false | true  | false | true
+        true  | false | false | false | true  | true
+        false | true  | false | false | false | false
+        false | false | false | true  | false | false
+        false | false | false | false | true  | false
       end
 
       with_them do
@@ -166,10 +187,34 @@ RSpec.describe Gitlab::Llm::FeatureAuthorizer, feature_category: :ai_abstraction
           container.update!(duo_features_enabled: duo_features_enabled)
           allow(user).to receive(:assigned_to_duo_add_ons?).with(container).and_return(assigned_to_add_ons)
           allow(user).to receive(:assigned_to_duo_core?).with(container).and_return(assigned_to_core)
+          allow(user).to receive(:duo_core_ids_via_namespace_settings).and_return(
+            has_namespace_access ? [container.root_ancestor.id] : []
+          )
+
+          if has_self_managed_addon
+            create(:gitlab_subscription_add_on_purchase, :self_managed, :duo_core, :active)
+          else
+            allow(GitlabSubscriptions::AddOnPurchase).to receive_message_chain(
+              :for_self_managed, :for_duo_core, :active, :exists?
+            ).and_return(false)
+          end
         end
 
         it { is_expected.to eq(expected) }
       end
+    end
+
+    context 'when container does not respond to root_ancestor' do
+      let_it_be(:container) { create(:group) }
+
+      before do
+        container.namespace_settings.update!(duo_features_enabled: true)
+        allow(user).to receive(:assigned_to_duo_add_ons?).with(container).and_return(false)
+        allow(user).to receive(:assigned_to_duo_core?).with(container).and_return(false)
+        allow(container).to receive(:respond_to?).with(:root_ancestor).and_return(false)
+      end
+
+      it { is_expected.to be(false) }
     end
   end
 end

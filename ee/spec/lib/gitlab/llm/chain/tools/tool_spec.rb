@@ -41,14 +41,54 @@ RSpec.describe Gitlab::Llm::Chain::Tools::Tool, feature_category: :duo_chat do
     end
 
     context 'when authorize returns false' do
-      before do
-        allow(subject).to receive(:authorize).and_return(false)
-        allow(subject).to receive(:not_found)
+      using RSpec::Parameterized::TableSyntax
+
+      where(:flag_enabled, :unit_primitive, :expected_method) do
+        false | 'troubleshoot_job' | :not_found
+        false | 'explain_vulnerability' | :not_found
+        false | 'other_tool'            | :not_found
+        true  | 'other_tool'            | :not_found
+        true  | 'troubleshoot_job'      | :not_in_current_plan
+        true  | 'explain_vulnerability' | :not_in_current_plan
+        true  | 'summarize_comments'    | :not_in_current_plan
+        true  | 'explain_code'          | :not_in_current_plan
       end
 
-      it 'calls not_found' do
-        expect(subject).to receive(:not_found)
-        subject.execute
+      with_them do
+        let(:logger) { instance_double(Gitlab::Llm::Logger) }
+
+        before do
+          stub_feature_flags(dap_external_trigger_usage_billing: flag_enabled)
+          allow(subject).to receive_messages(authorize: false, unit_primitive: unit_primitive)
+          allow(Gitlab::Llm::Logger).to receive(:build).and_return(logger)
+          allow(logger).to receive(:error)
+          allow(logger).to receive(:info)
+        end
+
+        it "calls #{params[:expected_method]}" do
+          expect(subject).to receive(expected_method).and_call_original
+          subject.execute
+        end
+
+        it 'logs the appropriate message' do
+          if expected_method == :not_in_current_plan
+            expect(logger).to receive(:info).with(hash_including(
+              message: 'No access to external trigger',
+              event_name: 'permission_denied',
+              ai_component: 'abstraction_layer',
+              ai_error_code: 'G3001'
+            ))
+          else
+            expect(logger).to receive(:info).with(hash_including(
+              message: 'No access to Duo Chat',
+              event_name: 'permission_denied',
+              ai_component: 'abstraction_layer',
+              ai_error_code: 'M3004'
+            ))
+          end
+
+          subject.execute
+        end
       end
     end
 

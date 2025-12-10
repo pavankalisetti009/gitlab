@@ -89,6 +89,10 @@ module Gitlab
                 source: "gitlab_documentation"
               )
             end
+
+            def unit_primitive
+              nil
+            end
           end
         end
       end

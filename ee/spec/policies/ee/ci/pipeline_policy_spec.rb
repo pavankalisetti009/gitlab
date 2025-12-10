@@ -21,7 +21,6 @@ RSpec.describe Ci::PipelinePolicy, feature_category: :continuous_integration do
       stub_licensed_features(troubleshoot_job: licensed)
       stub_feature_flags(dap_external_trigger_usage_billing: flag_enabled)
 
-      allow(user).to receive(:allowed_to_use?).and_return(user_authorized)
       allow(policy).to receive(:can?).with(:read_build, project).and_return(read_build)
 
       if flag_enabled
@@ -29,9 +28,11 @@ RSpec.describe Ci::PipelinePolicy, feature_category: :continuous_integration do
           .with(user: user, container: project)
           .and_return(can_access_duo_external_trigger)
       else
-        allow(::Gitlab::Llm::Chain::Utils::ChatAuthorizer).to receive_message_chain(:resource,
-          :allowed?).and_return(chat_authorized)
+        allow(user).to receive(:allowed_to_use?).and_return(user_authorized)
       end
+
+      allow(::Gitlab::Llm::Chain::Utils::ChatAuthorizer).to receive_message_chain(:resource,
+        :allowed?).and_return(chat_authorized)
     end
   end
 

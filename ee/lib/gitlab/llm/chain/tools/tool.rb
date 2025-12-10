@@ -91,6 +91,27 @@ module Gitlab
             self::DESCRIPTION
           end
 
+          def external_trigger_tool?
+            %w[
+              troubleshoot_job
+              explain_vulnerability
+              summarize_comments
+              explain_code
+            ].include?(unit_primitive)
+          end
+
+          def not_in_current_plan
+            subscription_url = ::Gitlab::Routing.url_helpers.help_page_url('subscriptions/subscription-add-ons.md')
+            agent_platform_url = ::Gitlab::Routing.url_helpers.help_page_url('user/duo_agent_platform/_index.md')
+            content = "This feature is not available with your current configuration. You might need a different " \
+              "[GitLab Duo add-on](#{subscription_url}), or access to the " \
+              "[GitLab Duo Agent Platform](#{agent_platform_url}). " \
+              "Alternatively, I can help with other questions."
+
+            Answer.new(status: :error, context: context, content: content,
+              is_final: false, tool: nil, error_code: "G3001")
+          end
+
           def not_found
             content = "I'm sorry, I can't generate a response. You might want to try again. " \
               "You could also be getting this error because the items you're asking about " \
@@ -100,12 +121,21 @@ module Gitlab
           end
 
           def not_authorized
-            log_info(message: 'No access to Duo Chat',
-              event_name: 'permission_denied',
-              ai_component: 'abstraction_layer',
-              ai_error_code: 'M3004')
+            if Feature.enabled?(:dap_external_trigger_usage_billing, context.current_user) && external_trigger_tool?
+              log_info(message: 'No access to external trigger',
+                event_name: 'permission_denied',
+                ai_component: 'abstraction_layer',
+                ai_error_code: 'G3001')
 
-            not_found
+              not_in_current_plan
+            else
+              log_info(message: 'No access to Duo Chat',
+                event_name: 'permission_denied',
+                ai_component: 'abstraction_layer',
+                ai_error_code: 'M3004')
+
+              not_found
+            end
           end
 
           def error_with_message(content, error_code:, source: "tool")

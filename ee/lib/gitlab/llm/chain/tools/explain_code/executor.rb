@@ -75,7 +75,11 @@ module Gitlab
             end
 
             def authorize
-              Utils::ChatAuthorizer.context(context: context).allowed?
+              if ::Feature.enabled?(:dap_external_trigger_usage_billing, context.current_user)
+                context.current_user.can?(:read_dap_external_trigger_usage_rule, context.project)
+              else
+                Utils::ChatAuthorizer.context(context: context).allowed?
+              end
             end
 
             def resource_name
