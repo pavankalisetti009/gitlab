@@ -2,14 +2,15 @@
 
 require 'spec_helper'
 
-RSpec.describe Analytics::AiAnalytics::AgentPlatform::FlowMetricsService, feature_category: :value_stream_management do
+RSpec.describe Analytics::AiAnalytics::AgentPlatform::EventCountService, feature_category: :value_stream_management do
   subject(:service_response) do
     described_class.new(
       current_user,
       namespace: container,
       from: from,
       to: to,
-      fields: fields
+      fields: fields,
+      **extra_params
     ).execute
   end
 
@@ -24,6 +25,7 @@ RSpec.describe Analytics::AiAnalytics::AgentPlatform::FlowMetricsService, featur
   let(:from) { Time.current }
   let(:to) { Time.current }
   let(:fields) { [] }
+  let(:extra_params) { {} }
 
   before do
     allow(Gitlab::ClickHouse).to receive(:enabled_for_analytics?).and_return(true)
@@ -52,11 +54,11 @@ RSpec.describe Analytics::AiAnalytics::AgentPlatform::FlowMetricsService, featur
       let(:to) { 1.day.ago }
 
       context 'with only few fields selected' do
-        let(:fields) { %i[sessions_count foo] }
+        let(:fields) { %i[created_session_event_count foo] }
+        let(:extra_params) { {} }
 
         before do
           clickhouse_fixture(:ai_usage_events, [
-            # Session 1 - chat flow - created event
             {
               user_id: user1.id,
               namespace_path: project_namespace.traversal_path,
@@ -76,7 +78,7 @@ RSpec.describe Analytics::AiAnalytics::AgentPlatform::FlowMetricsService, featur
         it 'calculates only valid fields' do
           service_response.payload
 
-          expect(service_response.payload).to match([{ "sessions_count" => 1 }])
+          expect(service_response.payload).to match({ created_session_event_count: 1 })
         end
       end
 
@@ -85,7 +87,7 @@ RSpec.describe Analytics::AiAnalytics::AgentPlatform::FlowMetricsService, featur
 
         it 'returns empty stats hash' do
           expect(service_response).to be_success
-          expect(service_response.payload).to eq([])
+          expect(service_response.payload).to eq({})
         end
       end
 
@@ -97,7 +99,7 @@ RSpec.describe Analytics::AiAnalytics::AgentPlatform::FlowMetricsService, featur
         it 'returns AI usage events counts' do
           expect(service_response).to be_success
 
-          expect(service_response.payload).to match_array(expected_results)
+          expect(service_response.payload).to eq(expected_results)
         end
       end
     end
@@ -107,54 +109,67 @@ RSpec.describe Analytics::AiAnalytics::AgentPlatform::FlowMetricsService, featur
     let_it_be(:container) { group }
 
     let(:expected_results) do
-      [
-        {
-          'flow_type' => 'chat',
-          'sessions_count' => 3,
-          'median_execution_time' => 20,
-          'users_count' => 1,
-          'completion_rate' => 100
-        },
-        {
-          'flow_type' => 'fix_pipeline',
-          'sessions_count' => 2,
-          'median_execution_time' => 86390,
-          'users_count' => 2,
-          'completion_rate' => 50
-        },
-        {
-          'flow_type' => 'code_review',
-          'sessions_count' => 1,
-          'median_execution_time' => 117,
-          'users_count' => 1,
-          'completion_rate' => 100
-        }
-      ]
+      {
+        created_session_event_count: 6,
+        started_session_event_count: 6,
+        finished_session_event_count: 5,
+        dropped_session_event_count: 1,
+        resumed_session_event_count: 0,
+        stopped_session_event_count: 0
+      }
     end
 
     it_behaves_like 'common ai usage rate service'
+
+    context 'with optional filters' do
+      context 'for flow type' do
+        let(:extra_params) { { flow_types: ['chat'] } }
+
+        let(:expected_results) do
+          {
+            created_session_event_count: 3,
+            started_session_event_count: 3,
+            finished_session_event_count: 3,
+            dropped_session_event_count: 0,
+            resumed_session_event_count: 0,
+            stopped_session_event_count: 0
+          }
+        end
+
+        it_behaves_like 'common ai usage rate service'
+      end
+
+      context 'for negated flow type' do
+        let(:extra_params) { { not: { flow_types: ['chat'] } } }
+
+        let(:expected_results) do
+          {
+            created_session_event_count: 3,
+            started_session_event_count: 3,
+            finished_session_event_count: 2,
+            dropped_session_event_count: 1,
+            resumed_session_event_count: 0,
+            stopped_session_event_count: 0
+          }
+        end
+
+        it_behaves_like 'common ai usage rate service'
+      end
+    end
   end
 
   context 'for project' do
     let_it_be(:container) { project.project_namespace.reload }
 
     let(:expected_results) do
-      [
-        {
-          'flow_type' => 'fix_pipeline',
-          'sessions_count' => 1,
-          'median_execution_time' => 86390,
-          'users_count' => 1,
-          'completion_rate' => 100
-        },
-        {
-          'flow_type' => 'code_review',
-          'sessions_count' => 1,
-          'median_execution_time' => 117,
-          'users_count' => 1,
-          'completion_rate' => 100
-        }
-      ]
+      {
+        created_session_event_count: 2,
+        started_session_event_count: 2,
+        finished_session_event_count: 2,
+        dropped_session_event_count: 0,
+        resumed_session_event_count: 0,
+        stopped_session_event_count: 0
+      }
     end
 
     it_behaves_like 'common ai usage rate service'
