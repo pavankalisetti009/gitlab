@@ -6,6 +6,21 @@ module EE
       module GroupsHelpers
         extend ActiveSupport::Concern
 
+        AI_MINIMUM_ACCESS_LEVEL_EXECUTE_ALLOWED_VALUES = [
+          ::Gitlab::Access::GUEST,
+          ::Gitlab::Access::PLANNER,
+          ::Gitlab::Access::REPORTER,
+          ::Gitlab::Access::DEVELOPER,
+          ::Gitlab::Access::MAINTAINER,
+          ::Gitlab::Access::OWNER
+        ].freeze
+
+        AI_MINIMUM_ACCESS_LEVEL_ALLOWED_VALUES = [
+          ::Gitlab::Access::DEVELOPER,
+          ::Gitlab::Access::MAINTAINER,
+          ::Gitlab::Access::OWNER
+        ].freeze
+
         prepended do
           params :optional_params_ee do
             optional :membership_lock, type: ::Grape::API::Boolean, desc: 'Prevent adding new members to projects within this group'
@@ -28,10 +43,10 @@ module EE
             optional :ai_settings_attributes, type: Hash, desc: 'AI-related settings' do
               optional :duo_workflow_mcp_enabled, type: ::Grape::API::Boolean, desc: 'Enable MCP support for Duo Agent Platform'
               optional :foundational_agents_default_enabled, type: ::Grape::API::Boolean, desc: 'Whether new foundational agents are enabled by default'
-              optional :minimum_access_level_execute, type: Integer, desc: 'The minimum access level required to execute Duo Agent Platform. This field is behind a feature flag.'
-              optional :minimum_access_level_execute_async, type: Integer, desc: 'The minimum access level required to execute Duo Agent Platform features in CI/CD. This field is behind a feature flag.'
-              optional :minimum_access_level_manage, type: Integer, desc: 'The minimum access level required to manage Duo Agent Platform. This field is behind a feature flag.'
-              optional :minimum_access_level_enable_on_projects, type: Integer, desc: 'The minimum access level required to enable Duo Agent Platform. This field is behind a feature flag.'
+              optional :minimum_access_level_execute, type: Integer, values: AI_MINIMUM_ACCESS_LEVEL_EXECUTE_ALLOWED_VALUES, desc: 'The minimum access level required to execute Duo Agent Platform. This field is behind a feature flag.'
+              optional :minimum_access_level_execute_async, type: Integer, values: AI_MINIMUM_ACCESS_LEVEL_ALLOWED_VALUES, desc: 'The minimum access level required to execute Duo Agent Platform features in CI/CD. This field is behind a feature flag.'
+              optional :minimum_access_level_manage, type: Integer, values: AI_MINIMUM_ACCESS_LEVEL_ALLOWED_VALUES, desc: 'The minimum access level required to manage Duo Agent Platform. This field is behind a feature flag.'
+              optional :minimum_access_level_enable_on_projects, type: Integer, values: AI_MINIMUM_ACCESS_LEVEL_ALLOWED_VALUES, desc: 'The minimum access level required to enable Duo Agent Platform. This field is behind a feature flag.'
             end
             all_or_none_of :ldap_cn, :ldap_access
           end
