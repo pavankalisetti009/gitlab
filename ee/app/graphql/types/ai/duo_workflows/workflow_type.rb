@@ -113,6 +113,12 @@ module Types
           scopes: [:api, :read_api, :ai_features, :ai_workflows],
           null: true, description: 'ID of the AI catalog item version that triggered the workflow.',
           experiment: { milestone: '18.4' }
+
+        field :user_permissions, Types::PermissionTypes::Ai::DuoWorkflows::Workflow, # rubocop: disable GraphQL/ExtractType -- user_id is intentionally separate as per comment above
+          scopes: [:api, :read_api, :ai_features, :ai_workflows],
+          null: true,
+          description: 'Permissions of the current user for the workflow.',
+          method: :itself
       end
     end
   end

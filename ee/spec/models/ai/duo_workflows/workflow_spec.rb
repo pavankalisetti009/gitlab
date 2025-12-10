@@ -606,4 +606,30 @@ RSpec.describe Ai::DuoWorkflows::Workflow, feature_category: :duo_agent_platform
       it { is_expected.to be(true) }
     end
   end
+
+  describe '#associated_pipelines' do
+    let(:project) { create(:project) }
+    let(:workflow) { create(:duo_workflows_workflow, project: project) }
+    let(:pipeline1) { create(:ci_pipeline, project: project) }
+    let(:pipeline2) { create(:ci_pipeline, project: project) }
+    let(:pipeline3) { create(:ci_pipeline, project: project) }
+    let(:workload1) { create(:ci_workload, pipeline: pipeline1, project: project) }
+    let(:workload2) { create(:ci_workload, pipeline: pipeline2, project: project) }
+    let(:workload3) { create(:ci_workload, pipeline: pipeline3, project: project) }
+
+    it 'returns unique pipelines from workloads' do
+      workflow.workflows_workloads.create!(workload: workload1, project: project)
+      workflow.workflows_workloads.create!(workload: workload2, project: project)
+      workflow.workflows_workloads.create!(workload: workload3, project: project)
+
+      # Test duplicate
+      workflow.workflows_workloads.create!(workload: workload1, project: project)
+
+      expect(workflow.associated_pipelines).to contain_exactly(pipeline1, pipeline2, pipeline3)
+    end
+
+    it 'returns empty array when no workloads' do
+      expect(workflow.associated_pipelines).to be_empty
+    end
+  end
 end
