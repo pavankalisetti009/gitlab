@@ -84,6 +84,7 @@ export default {
       required: true,
     },
   },
+  emits: ['changed', 'error', 'set-scan-type'],
   data() {
     return {
       filters: buildFiltersFromRule(this.initRule),

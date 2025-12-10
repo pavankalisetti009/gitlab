@@ -43,6 +43,7 @@ export default {
       default: 0,
     },
   },
+  emits: ['changed', 'error', 'set-scan-type'],
   data() {
     return {
       selectedBranches: [],

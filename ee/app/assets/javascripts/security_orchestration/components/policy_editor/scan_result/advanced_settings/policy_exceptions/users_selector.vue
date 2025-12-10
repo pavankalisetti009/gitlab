@@ -20,6 +20,7 @@ export default {
       default: () => [],
     },
   },
+  emits: ['set-users'],
   computed: {
     selectedUsersIds() {
       return this.selectedUsers.map(({ id }) => id).filter(Boolean);

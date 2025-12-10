@@ -43,6 +43,7 @@ export default {
       default: false,
     },
   },
+  emits: ['remove', 'select-licenses', 'select-type'],
   computed: {
     buttonText() {
       const { denyListText, allowListText } = this.$options.i18n;

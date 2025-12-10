@@ -46,6 +46,7 @@ export default {
       default: () => [],
     },
   },
+  emits: ['changed', 'error'],
   data() {
     return {
       selectedApproverTypes: mapYamlApproversActionsToSelectedApproverTypes(this.initAction),

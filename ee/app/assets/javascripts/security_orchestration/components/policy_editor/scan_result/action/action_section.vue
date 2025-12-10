@@ -31,6 +31,7 @@ export default {
       default: false,
     },
   },
+  emits: ['changed', 'error', 'remove'],
   computed: {
     isFirstAction() {
       return this.actionIndex === 0;

@@ -26,6 +26,7 @@ export default {
     GlSprintf,
     SectionLayout,
   },
+  emits: ['changed'],
   methods: {
     remove() {
       this.$emit('changed', this.$options.DISABLED_BOT_MESSAGE_ACTION);

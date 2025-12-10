@@ -65,6 +65,7 @@ export default {
       default: false,
     },
   },
+  emits: ['input', 'select-exception-type'],
   data() {
     const { parsedExceptions = [] } = parseExceptionsStringToItems(this.exceptions);
 

@@ -156,6 +156,27 @@ describe('DenyAllowListModal', () => {
       expect(findTableRows()).toHaveLength(1);
       expect(findLicenses().at(0).props('selected')).toEqual(undefined);
     });
+
+    it('emits on cancel', async () => {
+      createComponent({
+        provide: {
+          parsedSoftwareLicenses: LICENSES,
+        },
+      });
+
+      await findAddLicenseButton().vm.$emit('click');
+
+      const licenses = findLicenses();
+
+      expect(licenses.at(0).props('allLicenses')).toEqual([UNKNOWN_LICENSE, ...LICENSES]);
+
+      await licenses.at(0).vm.$emit('select', LICENSES[0], LICENSES[0]);
+      await licenses.at(1).vm.$emit('select', LICENSES[1], LICENSES[1]);
+
+      await findModal().vm.$emit('canceled');
+
+      expect(wrapper.emitted('select-licenses')).toEqual([[[]]]);
+    });
   });
 
   describe('selecting exceptions', () => {

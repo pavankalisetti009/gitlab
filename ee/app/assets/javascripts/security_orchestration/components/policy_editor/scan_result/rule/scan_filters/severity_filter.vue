@@ -22,6 +22,7 @@ export default {
       default: () => [],
     },
   },
+  emits: ['input'],
   methods: {
     selectSeverities(states) {
       this.$emit('input', states.length > 0 ? states : null);

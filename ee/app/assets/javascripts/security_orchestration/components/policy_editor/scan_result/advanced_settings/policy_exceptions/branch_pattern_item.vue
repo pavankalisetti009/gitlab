@@ -35,6 +35,7 @@ export default {
       default: s__('SecurityOrchestration|Please remove duplicates.'),
     },
   },
+  emits: ['remove', 'set-branch'],
   computed: {
     sourcePattern() {
       return this.branch?.source?.pattern ?? '';

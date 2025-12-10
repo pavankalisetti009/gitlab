@@ -56,6 +56,7 @@ export default {
       default: '',
     },
   },
+  emits: ['change-group', 'input', 'remove'],
   data() {
     return {
       filters: groupSelectedVulnerabilityStates(this.selected)[this.filter],
