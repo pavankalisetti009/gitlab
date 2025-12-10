@@ -5303,7 +5303,8 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     end
 
     before do
-      allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(group, :ai_catalog).and_return(stage_check_available)
+      allow(::Gitlab::Llm::StageCheck).to receive(:available?)
+        .with(group, :ai_catalog, user: current_user).and_return(stage_check_available)
       group.namespace_settings.duo_features_enabled = duo_features_enabled
     end
 

@@ -266,4 +266,45 @@ RSpec.describe Gitlab::Llm::Utils::AiFeaturesCatalogue, feature_category: :ai_ab
       end
     end
   end
+
+  describe '.instance_should_observe_ga_dap?' do
+    let(:user) { nil }
+
+    let(:all_features) { described_class::LIST.keys }
+
+    shared_examples 'is true for all DAP features only', :aggregate_failures do
+      specify do
+        all_features.each do |feature|
+          result = described_class.instance_should_observe_ga_dap?(feature, user: user)
+          is_dap_feature = described_class.uses_duo_agent_platform?(feature)
+
+          expect(result).to eq(is_dap_feature)
+        end
+      end
+    end
+
+    context 'when SaaS', :saas do
+      context 'when the flag is enabled' do
+        it_behaves_like 'is true for all DAP features only'
+      end
+
+      context 'when the flag is disabled' do
+        before do
+          stub_feature_flags(ai_duo_agent_platform_ga_rollout: false)
+        end
+
+        it 'is false for all features', :aggregate_failures do
+          all_features.each do |feature|
+            result = described_class.instance_should_observe_ga_dap?(feature, user: user)
+
+            expect(result).to be(false)
+          end
+        end
+      end
+    end
+
+    context 'when Self-Managed' do
+      it_behaves_like 'is true for all DAP features only'
+    end
+  end
 end
