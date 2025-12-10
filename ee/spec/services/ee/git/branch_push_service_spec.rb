@@ -144,56 +144,6 @@ RSpec.describe Git::BranchPushService, feature_category: :source_code_management
       end
     end
 
-    context 'with knowledge graph indexing', feature_category: :knowledge_graph do
-      let(:use_duo) { [:addon] }
-
-      before do
-        allow(GitlabSubscriptions::AddOnPurchase).to receive(:for_active_add_ons).and_return(use_duo)
-      end
-
-      it 'schedules IndexingTaskWorker' do
-        expect(::Ai::KnowledgeGraph::IndexingTaskWorker)
-          .to receive(:perform_async).with(project.project_namespace.id, 'index_graph_repo')
-
-        branch_push_service.execute
-      end
-
-      context 'when pushing to a non-default branch' do
-        let(:ref) { 'refs/heads/other' }
-
-        it 'does not schedule IndexingTaskWorker' do
-          expect(::Ai::KnowledgeGraph::IndexingTaskWorker)
-            .not_to receive(:perform_async).with(project.project_namespace.id, :index_graph_repo)
-
-          branch_push_service.execute
-        end
-      end
-
-      context 'when zoekt_indexing_enabled flag is disabled' do
-        before do
-          stub_feature_flags(knowledge_graph_indexing: false)
-        end
-
-        it 'does not schedule IndexingTaskWorker' do
-          expect(::Ai::KnowledgeGraph::IndexingTaskWorker)
-            .not_to receive(:perform_async).with(project.project_namespace.id, :index_graph_repo)
-
-          branch_push_service.execute
-        end
-      end
-
-      context 'when duo features are not enabled for the project' do
-        let(:use_duo) { [] }
-
-        it 'does not schedule IndexingTaskWorker' do
-          expect(::Ai::KnowledgeGraph::IndexingTaskWorker)
-            .not_to receive(:perform_async).with(project.project_namespace.id, :index_graph_repo)
-
-          branch_push_service.execute
-        end
-      end
-    end
-
     context 'with external pull requests' do
       it 'runs UpdateExternalPullRequestsWorker' do
         expect(UpdateExternalPullRequestsWorker).to receive(:perform_async).with(project.id, user.id, ref)

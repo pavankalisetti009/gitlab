@@ -103,12 +103,10 @@ module Ai
             skip_ai_prefix_validation: true
           }
 
-          # TODO: Handle duplicate username (possible with my-flow a-group-name and my-flow-a group-name)
-          # We can handle this in the future, when we add an optional service_account_name param
-          # https://gitlab.com/gitlab-org/gitlab/-/issues/579435
           response = ::Namespaces::ServiceAccounts::CreateService.new(
             current_user,
-            service_account_params
+            service_account_params,
+            uniquify_provided_username: true
           ).execute
 
           if response.error?

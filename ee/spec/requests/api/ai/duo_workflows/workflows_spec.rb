@@ -72,6 +72,8 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
     end
 
     context 'when workflow is chat' do
+      let_it_be(:default_organization) { create(:organization) }
+
       let(:workflow_definition) { 'chat' }
 
       before do
@@ -80,6 +82,8 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
           .and_return({ 'x-gitlab-enabled-feature-flags' => 'test-feature' })
         allow(Ability).to receive(:allowed?).and_call_original
         allow(Ability).to receive(:allowed?).with(user, :access_duo_agentic_chat, project).and_return(true)
+
+        allow(::Organizations::Organization).to receive(:default_organization).and_return(default_organization)
       end
 
       it 'creates the Ai::DuoWorkflows::Workflow' do
@@ -711,6 +715,150 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
             expect(response).to have_gitlab_http_status(:not_found)
           end
+        end
+      end
+
+      context 'when ai_catalog_item_consumer_id is provided' do
+        let_it_be(:consumer_group) { create(:group) }
+        let_it_be(:flow_project) { create(:project, group: consumer_group) }
+        let_it_be(:flow) { create(:ai_catalog_flow, :public, project: flow_project) }
+
+        let_it_be(:consumer_service_account) do
+          create(:user, :service_account,
+            composite_identity_enforced: true,
+            provisioned_by_group: consumer_group
+          )
+        end
+
+        let_it_be(:group_consumer) do
+          create(:ai_catalog_item_consumer,
+            item: flow,
+            group: consumer_group,
+            service_account: consumer_service_account
+          )
+        end
+
+        let_it_be(:execution_project) do
+          create(:project, :repository, group: consumer_group, developers: user)
+        end
+
+        let_it_be(:project_consumer) do
+          create(:ai_catalog_item_consumer,
+            item: flow,
+            project: execution_project,
+            parent_item_consumer: group_consumer
+          )
+        end
+
+        before_all do
+          consumer_group.add_developer(user)
+          execution_project.update!(duo_features_enabled: true, duo_remote_flows_enabled: true)
+          flow_project.update!(duo_features_enabled: true)
+        end
+
+        before do
+          allow(::Gitlab::Llm::StageCheck).to receive(:available?).and_call_original
+          allow(::Gitlab::Llm::StageCheck).to receive(:available?)
+                                                .with(flow_project, :ai_catalog).and_return(true)
+          allow(::Gitlab::Llm::StageCheck).to receive(:available?)
+                                                .with(execution_project, :ai_catalog).and_return(true)
+          allow(::Gitlab::Llm::StageCheck).to receive(:available?)
+                                                .with(execution_project, :duo_workflow).and_return(true)
+
+          allow(Ability).to receive(:allowed?).and_call_original
+          allow(Ability).to receive(:allowed?)
+                              .with(user, :execute_ai_catalog_item_version, anything)
+                              .and_return(true)
+        end
+
+        it 'executes the AI catalog flow with correct service account' do
+          fake_workflow = build(:duo_workflows_workflow, id: 180, user: user, project: execution_project)
+
+          expect(::Ai::Catalog::Flows::ExecuteService).to receive(:new).with(
+            project: execution_project,
+            current_user: user,
+            params: hash_including(
+              item_consumer: project_consumer,
+              service_account: consumer_service_account,
+              execute_workflow: true,
+              event_type: 'api_execution',
+              user_prompt: 'Execute catalog flow'
+            )
+          ).and_return(
+            instance_double(
+              Ai::Catalog::Flows::ExecuteService,
+              execute: ServiceResponse.success(
+                payload: { workflow: fake_workflow, workload_id: 123 }
+              )
+            )
+          )
+
+          post api("/ai/duo_workflows/workflows", user), params: {
+            project_id: execution_project.id,
+            ai_catalog_item_consumer_id: project_consumer.id,
+            start_workflow: true,
+            goal: 'Execute catalog flow'
+          }
+
+          expect(response).to have_gitlab_http_status(:created)
+          expect(json_response['workload']['id']).to eq(123)
+        end
+
+        it 'returns forbidden when consumer does not belong to project' do
+          # Create consumer for a different project entirely
+          other_project = create(:project)
+          other_flow = create(:ai_catalog_flow, :public, project: other_project)
+          other_consumer = create(:ai_catalog_item_consumer,
+            item: other_flow,
+            project: other_project
+          )
+
+          post api("/ai/duo_workflows/workflows", user), params: {
+            project_id: execution_project.id,
+            ai_catalog_item_consumer_id: other_consumer.id,
+            start_workflow: true,
+            goal: 'test'
+          }
+
+          expect(response).to have_gitlab_http_status(:forbidden)
+          expect(json_response['message']).to include('AI Catalog Item Consumer does not belong to this project')
+        end
+
+        it 'returns not found when consumer does not exist' do
+          post api("/ai/duo_workflows/workflows", user), params: {
+            project_id: execution_project.id,
+            ai_catalog_item_consumer_id: non_existing_record_id,
+            start_workflow: true,
+            goal: 'test'
+          }
+
+          expect(response).to have_gitlab_http_status(:not_found)
+          expect(json_response['message']).to include('AI Catalog Item Consumer not found')
+        end
+
+        it 'returns bad request when used in namespace context' do
+          post api("/ai/duo_workflows/workflows", user), params: {
+            namespace_id: consumer_group.id,
+            ai_catalog_item_consumer_id: project_consumer.id,
+            start_workflow: true,
+            goal: 'test'
+          }
+
+          expect(response).to have_gitlab_http_status(:bad_request)
+          expect(response.body).to include('AI Catalog flows can only be executed in project context')
+        end
+
+        it 'returns bad request when workflow_definition is also provided' do
+          post api("/ai/duo_workflows/workflows", user), params: {
+            project_id: execution_project.id,
+            ai_catalog_item_consumer_id: project_consumer.id,
+            workflow_definition: 'software_development',
+            start_workflow: true,
+            goal: 'test'
+          }
+
+          expect(response).to have_gitlab_http_status(:bad_request)
+          expect(json_response['error']).to include('mutually exclusive')
         end
       end
 

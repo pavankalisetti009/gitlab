@@ -7,6 +7,7 @@ import {
   usageDataWithCommitment,
   usageDataNoCommitmentNoMonthlyWaiverNoOverage,
   usageDataNoCommitmentWithOverage,
+  usageDataNoCommitmentWithOverageWithOverageNotAllowed,
   usageDataWithCommitmentWithOverage,
   usageDataCommitmentWithMonthlyWaiver,
   usageDataWithOutdatedClient,
@@ -113,6 +114,21 @@ export const NoCommitmentWithOverage = {
 
     const getSubscriptionUsageQueryHandler = () =>
       Promise.resolve(usageDataNoCommitmentWithOverage);
+
+    return createTemplate({
+      getSubscriptionUsersUsageQueryHandler,
+      getSubscriptionUsageQueryHandler,
+    })(...args);
+  },
+};
+
+export const NoCommitmentWithOverageWithOverageNotAllowed = {
+  render: (...args) => {
+    const getSubscriptionUsersUsageQueryHandler = () =>
+      Promise.resolve(mockUsersUsageDataWithoutPool);
+
+    const getSubscriptionUsageQueryHandler = () =>
+      Promise.resolve(usageDataNoCommitmentWithOverageWithOverageNotAllowed);
 
     return createTemplate({
       getSubscriptionUsersUsageQueryHandler,

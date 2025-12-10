@@ -1,6 +1,7 @@
 <script>
 // eslint-disable-next-line no-restricted-imports
 import { mapActions, mapState } from 'vuex';
+import { debounce } from 'lodash';
 import { WebAgenticDuoChat } from '@gitlab/duo-ui';
 import { GlToggle, GlTooltipDirective } from '@gitlab/ui';
 import getFlowStatus from 'ee/ai/graphql/get_flow_status.query.graphql';
@@ -54,8 +55,17 @@ import {
 } from '../utils/workflow_socket_utils';
 import { getInitialDimensions, calculateDimensions } from '../utils/resize_utils';
 import { validateAgentExists as validateAgent, prepareAgentSelection } from '../utils/agent_utils';
-import { parseThreadForSelection, resetThreadContent } from '../utils/thread_utils';
+import {
+  getWorkflowIdFromThreadId,
+  parseThreadForSelection,
+  resetThreadContent,
+} from '../utils/thread_utils';
 import { WORKFLOW_NOT_FOUND_CODE } from '../constants';
+import {
+  saveThreadSnapshot,
+  loadThreadSnapshot,
+  clearThreadSnapshot,
+} from '../utils/chat_thread_snapshot';
 
 export default {
   name: 'DuoAgenticChatApp',
@@ -446,6 +456,14 @@ export default {
     },
   },
   watch: {
+    messages: {
+      handler: debounce(function handler(newMessages) {
+        if (this.workflowId && newMessages?.length) {
+          saveThreadSnapshot(this.workflowId, newMessages);
+        }
+      }, 500),
+      deep: true,
+    },
     'duoChatGlobalState.isAgenticChatShown': {
       handler(newVal) {
         if (newVal) {
@@ -832,16 +850,32 @@ export default {
       }
     },
     async hydrateActiveThread() {
-      this.isLoading = true;
       this.multithreadedView = DUO_CHAT_VIEWS.CHAT;
+      if (this.workflowId && this.activeThread) {
+        // Load cached messages immediately to prevent flickering
+        const snapshot = loadThreadSnapshot(this.workflowId);
+        if (snapshot?.messages?.length) {
+          this.setMessages(snapshot.messages);
+        } else {
+          this.isLoading = true;
+        }
+      } else {
+        this.isLoading = true;
+      }
+
+      // We need the snapshot copy of the workflowId to avoid race conditions
+      // with `cleanupState` in `onThreadSelected()` when/if we reach `clearThreadSnapshot`
+      // below
+      const id = this.workflowId;
 
       try {
         const workflowExists = await this.validateWorkflowExists();
-
-        if (!this.isChatAvailable || !workflowExists) {
+        if (!workflowExists) {
+          clearThreadSnapshot(id);
           return;
         }
 
+        // Fetch fresh data from API
         await this.loadActiveThread();
         this.validateAgentExists();
 
@@ -897,6 +931,7 @@ export default {
         const success = await ApolloUtils.deleteWorkflow(this.$apollo, threadId);
         if (success) {
           this.$apollo.queries.agenticWorkflows?.refetch();
+          clearThreadSnapshot(getWorkflowIdFromThreadId(threadId));
         }
       } catch (err) {
         this.onError(err);

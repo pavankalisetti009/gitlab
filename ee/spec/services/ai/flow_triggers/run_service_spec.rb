@@ -192,7 +192,7 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_agent_platfo
 
       token_service_double = instance_double(::Ai::ThirdPartyAgents::TokenService)
       allow(::Ai::ThirdPartyAgents::TokenService).to receive(:new)
-        .with(current_user: current_user)
+        .with(current_user: current_user, project: project)
         .and_return(token_service_double)
       allow(token_service_double).to receive(:direct_access_token).and_return(mock_token_response)
     end
@@ -263,7 +263,7 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_agent_platfo
       it 'calls token service to get direct access token' do
         token_service_double = instance_double(::Ai::ThirdPartyAgents::TokenService)
         expect(::Ai::ThirdPartyAgents::TokenService).to receive(:new)
-          .with(current_user: current_user)
+          .with(current_user: current_user, project: project)
           .and_return(token_service_double)
         expect(token_service_double).to receive(:direct_access_token).and_return(mock_token_response)
 
@@ -279,7 +279,7 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_agent_platfo
         before do
           token_service_double = instance_double(::Ai::ThirdPartyAgents::TokenService)
           allow(::Ai::ThirdPartyAgents::TokenService).to receive(:new)
-            .with(current_user: current_user)
+            .with(current_user: current_user, project: project)
             .and_return(token_service_double)
           allow(token_service_double).to receive(:direct_access_token).and_return(error_token_response)
         end
@@ -315,7 +315,7 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_agent_platfo
         before do
           token_service_double = instance_double(::Ai::ThirdPartyAgents::TokenService)
           allow(::Ai::ThirdPartyAgents::TokenService).to receive(:new)
-            .with(current_user: current_user)
+            .with(current_user: current_user, project: project)
             .and_return(token_service_double)
           allow(token_service_double).to receive(:direct_access_token).and_return(mock_token_response_empty_headers)
         end
@@ -344,7 +344,7 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_agent_platfo
         before do
           token_service_double = instance_double(::Ai::ThirdPartyAgents::TokenService)
           allow(::Ai::ThirdPartyAgents::TokenService).to receive(:new)
-                                                           .with(current_user: current_user)
+                                                           .with(current_user: current_user, project: project)
                                                            .and_return(token_service_double)
           allow(token_service_double).to receive(:direct_access_token).and_return(mock_token_response_nil_headers)
         end

@@ -96,6 +96,26 @@ RSpec.describe Ai::FoundationalChatAgent, feature_category: :workflow_catalog do
     end
   end
 
+  describe '#reference_from_workflow_definition' do
+    let(:workflow_definition) { 'security_analyst_agent/v1' }
+
+    subject(:reference_from_workflow_definition) do
+      described_class.reference_from_workflow_definition(workflow_definition)
+    end
+
+    it 'returns reference from workflow definition' do
+      is_expected.to eq('security_analyst_agent')
+    end
+
+    context 'when version is blank' do
+      let(:workflow_definition) { 'security_analyst_agent' }
+
+      it 'returns reference from workflow definition' do
+        is_expected.to eq('security_analyst_agent')
+      end
+    end
+  end
+
   describe '#to_global_id' do
     context 'when version is present' do
       it 'returns reference with version' do

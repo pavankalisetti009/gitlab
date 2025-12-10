@@ -30,23 +30,14 @@ module Search
         id = params.dig(:payload, :task_id)
         return unless id
 
-        service_type = params.dig(:payload, :service_type)
-        if service_type == "knowledge_graph"
-          node.knowledge_graph_tasks.find_by_id(id)
-        else
-          node.tasks.find_by_id(id)
-        end
+        node.tasks.find_by_id(id)
       end
       strong_memoize_attr :task
 
       def process_success
         return if task.done?
 
-        if task.is_a?(Ai::KnowledgeGraph::Task)
-          process_knowledge_graph_success
-        else
-          process_zoekt_success
-        end
+        process_zoekt_success
       end
 
       def process_zoekt_success
@@ -76,24 +67,6 @@ module Search
         end
       end
 
-      def process_knowledge_graph_success
-        replica = task.knowledge_graph_replica
-        Ai::KnowledgeGraph::Task.transaction do
-          if task.delete_graph_repo?
-            replica&.destroy!
-          else
-            replica.state = :ready if replica.pending? || replica.initializing?
-            replica.retries_left = Ai::KnowledgeGraph::Replica::RETRIES
-            schema_version = params.dig(:additional_payload, :schema_version)
-            replica.schema_version = schema_version if schema_version
-            replica.indexed_at = Time.current
-            replica.save!
-          end
-
-          task.done!
-        end
-      end
-
       def process_failure
         return if task.failed?
 
@@ -114,8 +87,6 @@ module Search
       end
 
       def publish_task_failed_event_for(task)
-        return if task.is_a?(Ai::KnowledgeGraph::Task)
-
         publish_event(TaskFailedEvent, data: { zoekt_repository_id: task.zoekt_repository_id, task_id: task.id })
       end
 

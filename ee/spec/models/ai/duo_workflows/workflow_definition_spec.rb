@@ -73,4 +73,68 @@ RSpec.describe Ai::DuoWorkflows::WorkflowDefinition, feature_category: :duo_agen
 
     it { is_expected.to eq(expected_hash) }
   end
+
+  describe '#description' do
+    subject(:description) { definition.description }
+
+    context 'when description is set' do
+      let(:definition) { described_class.find_by(name: 'code_review/v1') }
+
+      it 'returns the description' do
+        expect(description).to eq('GitLab Code Review')
+      end
+    end
+
+    context 'when description is not set' do
+      let(:definition) { described_class.new(name: 'test/v1', ai_feature: 'test') }
+
+      it 'returns nil' do
+        expect(description).to be_nil
+      end
+    end
+  end
+
+  describe '#foundational_flow_reference' do
+    subject(:foundational_flow_reference) { definition.foundational_flow_reference }
+
+    context 'when foundational_flow_reference is set' do
+      let(:definition) { described_class.find_by(name: 'code_review/v1') }
+
+      it 'returns the foundational_flow_reference' do
+        expect(foundational_flow_reference).to eq('code_review/v1')
+      end
+    end
+
+    context 'when foundational_flow_reference is not set' do
+      let(:definition) { described_class.new(name: 'test/v1', ai_feature: 'test') }
+
+      it 'returns nil' do
+        expect(foundational_flow_reference).to be_nil
+      end
+    end
+  end
+
+  describe 'ITEMS' do
+    it 'includes foundational workflows with required attributes' do
+      foundational_workflows = described_class::ITEMS.select do |item|
+        item[:foundational_flow_reference].present?
+      end
+
+      expect(foundational_workflows.size).to be >= 3
+
+      foundational_workflows.each do |workflow|
+        expect(workflow[:foundational_flow_reference]).to be_present
+        expect(workflow[:description]).to be_present
+        expect(workflow[:name]).to be_present
+      end
+    end
+
+    it 'allows workflows without foundational_flow_reference' do
+      all_items = described_class::ITEMS
+      foundational_items = all_items.select { |item| item[:foundational_flow_reference].present? }
+
+      # It's ok if there are more items than foundational ones
+      expect(all_items.size).to be >= foundational_items.size
+    end
+  end
 end

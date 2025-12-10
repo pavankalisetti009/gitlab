@@ -61,6 +61,89 @@ RSpec.describe Namespaces::ServiceAccounts::CreateService, feature_category: :us
           let(:username_prefix) { "service_account_group_#{group.id}" }
         end
 
+        describe 'uniquifying the username' do
+          let_it_be(:username_param) { 'a-users-username' }
+
+          let(:params) { { organization_id: organization.id, namespace_id: namespace_id, username: username_param } }
+
+          subject(:service) { described_class.new(current_user, params, uniquify_provided_username:) }
+
+          context 'when uniquify_provided_username is true' do
+            let(:uniquify_provided_username) { true }
+
+            context 'when a user with the username already exists' do
+              let_it_be(:existing_user) { create(:user, username: username_param) }
+
+              it 'uniquifies the username by appending a short random string to the end' do
+                username = result.payload[:user].username
+
+                expect(username).to start_with(username_param)
+                expect(username.length).to eq(username_param.length + 7)
+              end
+
+              it 'does not change the email' do
+                email = result.payload[:user].email
+                expect(email).to start_with("service_account_group_#{namespace_id}")
+              end
+            end
+
+            context 'when a namespace with the username already exists' do
+              let_it_be(:existing_namespace) { create(:group, path: username_param) }
+
+              it 'uniquifies the username by appending a short random string to the end' do
+                username = result.payload[:user].username
+
+                expect(username).to start_with(username_param)
+                expect(username.length).to eq(username_param.length + 7)
+              end
+            end
+
+            context 'when neither a user nor namespace with the username exists' do
+              it 'does not uniquify the username' do
+                username = result.payload[:user].username
+
+                expect(username).to eq(username_param)
+              end
+            end
+          end
+
+          context 'when uniquify_provided_username is false' do
+            let(:uniquify_provided_username) { false }
+
+            context 'when the username already exists' do
+              let_it_be(:service_account) do
+                create(:user, :service_account, username: username_param, provisioned_by_group_id: group.id)
+              end
+
+              it 'fails to create the user' do
+                expect(result.status).to eq(:error)
+                expect(result.message).to eq('Username has already been taken')
+              end
+            end
+
+            context 'when the username does not exist' do
+              it 'creates the username without uniquifying it' do
+                expect(result.status).to eq(:success)
+                expect(result.payload[:user].username).to eq(username_param)
+              end
+            end
+
+            context 'when not providing a username parameter' do
+              before do
+                params.delete(:username)
+              end
+
+              it 'appends a long random string to the end' do
+                username = result.payload[:user].username
+                username_prefix = "service_account_group_#{namespace_id}_"
+
+                expect(username).to start_with(username_prefix)
+                expect(username.length).to eq(username_prefix.length + 32)
+              end
+            end
+          end
+        end
+
         it 'sets provisioned by group' do
           expect(result.payload[:user].provisioned_by_group_id).to eq(group.id)
         end

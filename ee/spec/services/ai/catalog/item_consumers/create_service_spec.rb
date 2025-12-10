@@ -419,11 +419,17 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
       it_behaves_like 'a failure', 'Item does not exist, or you have insufficient permissions'
     end
 
-    context 'when the service account username already exists' do
-      let!(:existing_service_account_with_same_name) do
-        build(:user, :with_namespace, :service_account, username: "ai-item_name-group-name").tap do |user|
+    context 'when the service account creation returns an error' do
+      let_it_be(:existing_user_with_same_name) do
+        build(:user, :with_namespace, username: "ai-item_name-group-name").tap do |user|
           user.skip_ai_prefix_validation = true
           user.save!
+        end
+      end
+
+      before do
+        allow_next_instance_of(Gitlab::Utils::UsernameAndEmailGenerator) do |username_generator|
+          allow(username_generator).to receive(:username).and_return(existing_user_with_same_name.username)
         end
       end
 
@@ -436,6 +442,22 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
       end
 
       it_behaves_like 'a failure', 'Username has already been taken'
+    end
+
+    context 'when the service account username already exists' do
+      let_it_be(:existing_user_with_same_name) do
+        build(:user, :with_namespace, username: "ai-item_name-group-name").tap do |user|
+          user.skip_ai_prefix_validation = true
+          user.save!
+        end
+      end
+
+      it 'creates the service account with a different name' do
+        expect { execute }.to change { User.count }.by(1)
+        service_account = User.last
+        expect(service_account).to be_service_account
+        expect(service_account.username).to start_with("ai-item_name-group-name_")
+      end
     end
 
     context 'when creating the service account fails' do

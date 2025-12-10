@@ -84,3 +84,25 @@ RSpec.shared_examples 'virtual registry not available' do |registry_type|
   it_behaves_like "#{registry_type} virtual registry feature not licensed"
   it_behaves_like 'disabled virtual_registry feature flag', registry_type
 end
+
+RSpec.shared_examples 'virtual registry non member user access' do |status_overrides = {}|
+  using RSpec::Parameterized::TableSyntax
+
+  context 'with a non member user' do
+    let_it_be(:user) { create(:user) }
+
+    where(:group_access_level, :status) do
+      'PUBLIC'   | (status_overrides[:public] || :forbidden)
+      'INTERNAL' | (status_overrides[:internal] || :forbidden)
+      'PRIVATE'  | (status_overrides[:private] || :not_found)
+    end
+
+    with_them do
+      before do
+        group.update!(visibility_level: Gitlab::VisibilityLevel.const_get(group_access_level, false))
+      end
+
+      it_behaves_like 'returning response status', params[:status]
+    end
+  end
+end

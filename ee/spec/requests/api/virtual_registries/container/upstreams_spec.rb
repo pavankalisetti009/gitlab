@@ -23,8 +23,6 @@ RSpec.describe API::VirtualRegistries::Container::Upstreams, :aggregate_failures
 
     it { is_expected.to have_request_urgency(:low) }
 
-    it_behaves_like 'virtual registry not available', :container
-
     context 'with valid group_id' do
       it_behaves_like 'successful response'
 
@@ -77,24 +75,8 @@ RSpec.describe API::VirtualRegistries::Container::Upstreams, :aggregate_failures
       it_behaves_like 'returning response status', :bad_request
     end
 
-    context 'with a non member user' do
-      let_it_be(:user) { create(:user) }
-
-      where(:group_access_level, :status) do
-        'PUBLIC'   | :forbidden
-        'INTERNAL' | :forbidden
-        'PRIVATE'  | :not_found
-      end
-
-      with_them do
-        before do
-          group.update!(visibility_level: Gitlab::VisibilityLevel.const_get(group_access_level, false))
-        end
-
-        it_behaves_like 'returning response status', params[:status]
-      end
-    end
-
+    it_behaves_like 'virtual registry not available', :container
+    it_behaves_like 'virtual registry non member user access'
     it_behaves_like 'an authenticated virtual registry REST API'
   end
 
@@ -120,8 +102,6 @@ RSpec.describe API::VirtualRegistries::Container::Upstreams, :aggregate_failures
 
     it { is_expected.to have_request_urgency(:low) }
 
-    it_behaves_like 'virtual registry not available', :container
-
     context 'with valid registry' do
       it_behaves_like 'successful response'
     end
@@ -138,24 +118,8 @@ RSpec.describe API::VirtualRegistries::Container::Upstreams, :aggregate_failures
       end
     end
 
-    context 'with a non member user' do
-      let_it_be(:user) { create(:user) }
-
-      where(:group_access_level, :status) do
-        'PUBLIC'   | :forbidden
-        'INTERNAL' | :forbidden
-        'PRIVATE'  | :forbidden
-      end
-
-      with_them do
-        before do
-          group.update!(visibility_level: Gitlab::VisibilityLevel.const_get(group_access_level, false))
-        end
-
-        it_behaves_like 'returning response status', params[:status]
-      end
-    end
-
+    it_behaves_like 'virtual registry not available', :container
+    it_behaves_like 'virtual registry non member user access'
     it_behaves_like 'an authenticated virtual registry REST API'
   end
 
@@ -324,30 +288,12 @@ RSpec.describe API::VirtualRegistries::Container::Upstreams, :aggregate_failures
 
     it { is_expected.to have_request_urgency(:low) }
 
-    it_behaves_like 'virtual registry not available', :container
-
     context 'with valid params' do
       it_behaves_like 'successful response'
     end
 
-    context 'with a non member user' do
-      let_it_be(:user) { create(:user) }
-
-      where(:group_access_level, :status) do
-        'PUBLIC'   | :forbidden
-        'INTERNAL' | :forbidden
-        'PRIVATE'  | :forbidden
-      end
-
-      with_them do
-        before do
-          group.update!(visibility_level: Gitlab::VisibilityLevel.const_get(group_access_level, false))
-        end
-
-        it_behaves_like 'returning response status', params[:status]
-      end
-    end
-
+    it_behaves_like 'virtual registry not available', :container
+    it_behaves_like 'virtual registry non member user access'
     it_behaves_like 'an authenticated virtual registry REST API'
   end
 

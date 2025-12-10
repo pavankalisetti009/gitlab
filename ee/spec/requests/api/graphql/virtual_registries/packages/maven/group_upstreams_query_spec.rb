@@ -36,7 +36,8 @@ RSpec.describe 'Querying maven upstream registries for top-level group', feature
     graphql_data['group']['virtualRegistriesPackagesMavenUpstreams']
   end
 
-  let(:virtual_registry_available) { false }
+  let(:user_has_access) { false }
+  let(:feature_enabled) { false }
 
   shared_examples 'returns null for virtualRegistriesPackagesMavenUpstreams' do
     it 'returns null for the virtualRegistriesPackagesMavenUpstreams field' do
@@ -45,8 +46,10 @@ RSpec.describe 'Querying maven upstream registries for top-level group', feature
   end
 
   before do
-    allow(::VirtualRegistries::Packages::Maven).to receive(:virtual_registry_available?)
-      .and_return(virtual_registry_available)
+    allow(::VirtualRegistries::Packages::Maven).to receive_messages(
+      user_has_access?: user_has_access,
+      feature_enabled?: feature_enabled
+    )
   end
 
   context 'when user does not have access' do
@@ -54,6 +57,8 @@ RSpec.describe 'Querying maven upstream registries for top-level group', feature
   end
 
   context 'when user has access' do
+    let(:user_has_access) { true }
+
     before_all do
       group.add_guest(current_user)
     end
@@ -63,7 +68,7 @@ RSpec.describe 'Querying maven upstream registries for top-level group', feature
     end
 
     context 'when virtual registry is available' do
-      let(:virtual_registry_available) { true }
+      let(:feature_enabled) { true }
 
       it 'returns upstream for the virtualRegistriesPackagesMavenUpstreams field' do
         expect(maven_upstreams_response['nodes'][0]['name']).to eq('test upstream')

@@ -28,7 +28,6 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
     it { is_expected.to validate_presence_of(:total_bytes) }
     it { is_expected.to validate_presence_of(:usable_storage_bytes) }
     it { is_expected.to validate_presence_of(:schema_version) }
-    it { is_expected.to validate_presence_of(:knowledge_graph_schema_version) }
     it { is_expected.to validate_uniqueness_of(:uuid).case_insensitive }
 
     describe 'node URLs' do
@@ -58,7 +57,6 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
         [0, :foo] | false
         [0, 10]   | false
         [0]       | true
-        [0, 1]    | true
       end
 
       with_them do
@@ -76,7 +74,6 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
     it { is_expected.to have_many(:tasks).inverse_of(:node) }
     it { is_expected.to have_many(:enabled_namespaces).through(:indices) }
     it { is_expected.to have_many(:zoekt_repositories).through(:indices) }
-    it { is_expected.to have_many(:knowledge_graph_replicas) }
   end
 
   describe 'scopes' do
@@ -197,32 +194,19 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
           end
         end
       end
-
-      describe '.available_for_knowledge_graph_namespace' do
-        let_it_be(:node_no_kg) { create(:zoekt_node) }
-        let_it_be(:node_kg1) { create(:zoekt_node, :knowledge_graph) }
-        let_it_be(:node_kg2) { create(:zoekt_node, :knowledge_graph) }
-        let_it_be(:replica) { create(:knowledge_graph_replica, zoekt_node: node_kg1) }
-
-        it 'returns only nodes with knowledge graph service which are not used for the namespace' do
-          expect(described_class.available_for_knowledge_graph_namespace(replica.knowledge_graph_enabled_namespace))
-            .to contain_exactly(node_kg2)
-        end
-      end
     end
 
     describe '.with_reserved_bytes' do
       let_it_be(:node1) { create(:zoekt_node) }
       let_it_be(:node2) { create(:zoekt_node) }
       let_it_be(:node3) { create(:zoekt_node) }
-      let_it_be(:replica1) { create(:knowledge_graph_replica, zoekt_node: node1, reserved_storage_bytes: 1000) }
       let_it_be(:index1) { create(:zoekt_index, node: node1, reserved_storage_bytes: 2000) }
       let_it_be(:index2) { create(:zoekt_index, node: node2, reserved_storage_bytes: 500) }
 
       subject(:with_reserved_bytes) { described_class.where(id: [node1, node2, node3]).with_reserved_bytes }
 
       it 'returns sum of reserved bytes or nil for each node' do
-        expect(with_reserved_bytes.pluck(:reserved_storage_bytes_total)).to match_array([3000, 500, nil])
+        expect(with_reserved_bytes.pluck(:reserved_storage_bytes_total)).to match_array([2000, 500, nil])
       end
     end
 
@@ -260,25 +244,11 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
         )
       end
 
-      let_it_be(:replica1) do
-        create(:knowledge_graph_replica,
-          zoekt_node: node_with_positive_storage,
-          reserved_storage_bytes: node_with_positive_storage.total_bytes / 3
-        )
-      end
-
       # Scenario with negative unclaimed storage
       let_it_be(:index2) do
         create(:zoekt_index,
           node: node_with_negative_storage,
-          reserved_storage_bytes: (node_with_negative_storage.total_bytes / 2) + 10
-        )
-      end
-
-      let_it_be(:replica2) do
-        create(:knowledge_graph_replica,
-          zoekt_node: node_with_negative_storage,
-          reserved_storage_bytes: (node_with_negative_storage.total_bytes / 2) + 10
+          reserved_storage_bytes: node_with_negative_storage.total_bytes + 10
         )
       end
 
@@ -334,20 +304,6 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
         )
       end
 
-      let_it_be(:replica1) do
-        create(:knowledge_graph_replica,
-          zoekt_node: node3,
-          reserved_storage_bytes: 100_000
-        )
-      end
-
-      let_it_be(:replica2) do
-        create(:knowledge_graph_replica,
-          zoekt_node: node4,
-          reserved_storage_bytes: 150_000
-        )
-      end
-
       it 'returns nodes with positive unclaimed storage_bytes in descending order' do
         expect(described_class.order_by_unclaimed_space_desc.to_a).to eq([node4, node3, node2])
       end
@@ -355,14 +311,9 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
 
     describe '.with_service' do
       let_it_be(:node1) { create(:zoekt_node, services: [described_class::SERVICES[:zoekt]]) }
-      let_it_be(:node2) { create(:zoekt_node, services: [described_class::SERVICES[:knowledge_graph]]) }
-      let_it_be(:node3) do
-        create(:zoekt_node, services: [described_class::SERVICES[:zoekt], described_class::SERVICES[:knowledge_graph]])
-      end
 
       it "returns nodes which contain the service in the list of services" do
-        expect(described_class.with_service(:zoekt).to_a).to match_array([node, node1, node3])
-        expect(described_class.with_service(:knowledge_graph).to_a).to match_array([node2, node3])
+        expect(described_class.with_service(:zoekt).to_a).to match_array([node, node1])
       end
     end
 
@@ -401,7 +352,6 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
         expect(tasked_node.total_bytes).to eq(params['disk.all'])
         expect(tasked_node.indexed_bytes).to eq(0)
         expect(tasked_node.schema_version).to eq(0)
-        expect(tasked_node.knowledge_graph_schema_version).to eq(0)
         expect(tasked_node.services).to match_array([described_class::SERVICES[:zoekt]])
         expect(tasked_node.metadata['name']).to eq(params['node.name'])
         expect(tasked_node.metadata['task_count']).to eq(params['node.task_count'])
@@ -463,21 +413,12 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
     end
 
     context 'when node.services is present' do
-      let(:params) { base_params.merge('node.services' => %w[zoekt knowledge_graph]) }
+      let(:params) { base_params.merge('node.services' => %w[zoekt]) }
 
       it 'sets services' do
         expect(tasked_node.services).to eq([
-          described_class::SERVICES[:zoekt],
-          described_class::SERVICES[:knowledge_graph]
+          described_class::SERVICES[:zoekt]
         ])
-      end
-    end
-
-    context 'when node.knowledge_graph_schema_version is present' do
-      let(:params) { base_params.merge('node.knowledge_graph_schema_version' => 2542) }
-
-      it 'sets schema_version' do
-        expect(tasked_node.knowledge_graph_schema_version).to eq(2542)
       end
     end
   end
@@ -523,6 +464,131 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
     context 'when limit is nil' do
       it 'returns all nodes that needs reindex' do
         expect(described_class.needs_reindex).to match_array([node4, node5])
+      end
+    end
+  end
+
+  describe '.replica_map_for_enabled_namespace' do
+    let_it_be(:namespace) { create(:group) }
+    let_it_be(:enabled_namespace) { create(:zoekt_enabled_namespace, namespace: namespace) }
+    let_it_be(:node1) { create(:zoekt_node) }
+    let_it_be(:node2) { create(:zoekt_node) }
+    let_it_be(:node3) { create(:zoekt_node) }
+
+    subject(:replica_map) { described_class.replica_map_for_enabled_namespace(enabled_namespace) }
+
+    context 'when there are no replicas' do
+      it 'returns an empty hash' do
+        expect(replica_map).to eq({})
+      end
+    end
+
+    context 'when there is one replica with one node' do
+      let_it_be(:replica1) { create(:zoekt_replica, :ready, zoekt_enabled_namespace: enabled_namespace) }
+      let_it_be(:_index1) do
+        create(:zoekt_index, zoekt_enabled_namespace: enabled_namespace, replica: replica1, node: node1)
+      end
+
+      it 'returns a hash with the replica_id mapping to an array with one node' do
+        expect(replica_map).to eq({ replica1.id => [node1] })
+      end
+    end
+
+    context 'when there is one replica with multiple nodes' do
+      let_it_be(:replica1) { create(:zoekt_replica, :ready, zoekt_enabled_namespace: enabled_namespace) }
+      let_it_be(:_index1) do
+        create(:zoekt_index, zoekt_enabled_namespace: enabled_namespace, replica: replica1, node: node1)
+      end
+
+      let_it_be(:_index2) do
+        create(:zoekt_index, zoekt_enabled_namespace: enabled_namespace, replica: replica1, node: node2)
+      end
+
+      it 'returns a hash with the replica_id mapping to an array with multiple nodes' do
+        expect(replica_map[replica1.id]).to contain_exactly(node1, node2)
+      end
+    end
+
+    context 'when there are multiple replicas with different nodes' do
+      let_it_be(:replica1) { create(:zoekt_replica, :ready, zoekt_enabled_namespace: enabled_namespace) }
+      let_it_be(:replica2) { create(:zoekt_replica, :ready, zoekt_enabled_namespace: enabled_namespace) }
+      let_it_be(:_index1) do
+        create(:zoekt_index, zoekt_enabled_namespace: enabled_namespace, replica: replica1, node: node1)
+      end
+
+      let_it_be(:_index2) do
+        create(:zoekt_index, zoekt_enabled_namespace: enabled_namespace, replica: replica1, node: node2)
+      end
+
+      let_it_be(:_index3) do
+        create(:zoekt_index, zoekt_enabled_namespace: enabled_namespace, replica: replica2, node: node3)
+      end
+
+      it 'returns a hash mapping each replica_id to its nodes' do
+        expect(replica_map.keys).to contain_exactly(replica1.id, replica2.id)
+        expect(replica_map[replica1.id]).to contain_exactly(node1, node2)
+        expect(replica_map[replica2.id]).to contain_exactly(node3)
+      end
+    end
+
+    context 'when there are non-ready replicas' do
+      let_it_be(:replica_ready) { create(:zoekt_replica, :ready, zoekt_enabled_namespace: enabled_namespace) }
+      let_it_be(:replica_pending) { create(:zoekt_replica, :pending, zoekt_enabled_namespace: enabled_namespace) }
+      let_it_be(:index_ready) do
+        create(:zoekt_index, zoekt_enabled_namespace: enabled_namespace, replica: replica_ready, node: node1)
+      end
+
+      let_it_be(:index_pending) do
+        create(:zoekt_index, zoekt_enabled_namespace: enabled_namespace, replica: replica_pending, node: node2)
+      end
+
+      it 'returns only ready replicas' do
+        expect(replica_map.keys).to contain_exactly(replica_ready.id)
+        expect(replica_map[replica_ready.id]).to contain_exactly(node1)
+        expect(replica_map).not_to have_key(replica_pending.id)
+      end
+    end
+
+    context 'when a node serves multiple replicas' do
+      let_it_be(:another_enabled_namespace) { create(:zoekt_enabled_namespace) }
+      let_it_be(:replica1) { create(:zoekt_replica, :ready, zoekt_enabled_namespace: enabled_namespace) }
+      let_it_be(:replica2) { create(:zoekt_replica, :ready, zoekt_enabled_namespace: another_enabled_namespace) }
+      let_it_be(:index1) do
+        create(:zoekt_index, zoekt_enabled_namespace: enabled_namespace, replica: replica1, node: node1)
+      end
+
+      let_it_be(:index2) do
+        create(:zoekt_index, zoekt_enabled_namespace: another_enabled_namespace, replica: replica2, node: node1)
+      end
+
+      it 'returns nodes for only the specified enabled namespace' do
+        expect(replica_map[replica1.id]).to contain_exactly(node1)
+        expect(replica_map).not_to have_key(replica2.id)
+      end
+    end
+
+    context 'when the method is called on a scoped relation' do
+      let_it_be(:replica1) { create(:zoekt_replica, :ready, zoekt_enabled_namespace: enabled_namespace) }
+      let_it_be(:_index1) do
+        create(:zoekt_index, zoekt_enabled_namespace: enabled_namespace, replica: replica1, node: node1)
+      end
+
+      it 'respects the caller scope' do
+        # Call on a scope that filters to a specific node
+        scoped_map = described_class.id_in(node1.id).replica_map_for_enabled_namespace(enabled_namespace)
+
+        expect(scoped_map[replica1.id]).to contain_exactly(node1)
+      end
+
+      it 'excludes nodes not in the caller scope' do
+        # Create another index with a different node
+        create(:zoekt_index, zoekt_enabled_namespace: enabled_namespace, replica: replica1, node: node2)
+
+        # Call on a scope that only includes node1
+        scoped_map = described_class.id_in(node1.id).replica_map_for_enabled_namespace(enabled_namespace)
+
+        expect(scoped_map[replica1.id]).to contain_exactly(node1)
+        expect(scoped_map[replica1.id]).not_to include(node2)
       end
     end
   end

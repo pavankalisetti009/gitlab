@@ -78,7 +78,7 @@ export default {
       </span>
     </div>
     <gl-progress-bar :value="usagePercentage" variant="primary" class="gl-mb-3 gl-mt-1 gl-h-3" />
-    <div class="gl-font-sm gl-flex gl-flex-col gl-gap-3">
+    <div class="gl-flex gl-flex-col gl-gap-3 gl-text-sm">
       <div class="gl-flex gl-flex-row gl-justify-between">
         <span data-testid="percentage-utilized" class="gl-text-subtle">
           <gl-sprintf :message="s__('UsageBilling|%{percentage}%{percentSymbol} of credits used')">

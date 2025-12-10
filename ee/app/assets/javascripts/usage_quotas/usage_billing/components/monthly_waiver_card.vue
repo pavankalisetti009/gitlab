@@ -42,7 +42,7 @@ export default {
     <div class="gl-heading-scale-600 gl-mb-3" data-testid="monthly-waiver-credits-used">
       {{ formatNumber(monthlyWaiverCreditsUsed) }}
     </div>
-    <div class="gl-border-t gl-mb-3 gl-pt-3 gl-text-sm gl-text-subtle">
+    <p class="gl-border-t gl-mb-3 gl-pt-3 gl-text-sm gl-text-subtle">
       <gl-sprintf
         :message="
           s__(
@@ -54,8 +54,10 @@ export default {
           <gl-link :href="$options.pricingLink" target="_blank">{{ content }}</gl-link>
         </template>
       </gl-sprintf>
-    </div>
-    <div class="gl-border-t gl-flex gl-flex-row gl-justify-between gl-pt-3 gl-text-subtle">
+    </p>
+    <div
+      class="gl-border-t gl-flex gl-flex-row gl-justify-between gl-pt-3 gl-text-sm gl-text-subtle"
+    >
       <span>{{ s__('UsageBilling|Monthly Waiver credits remaining') }}</span>
       <span data-testid="monthly-waiver-remaining-credits">
         {{ formatNumber(creditsRemaining) }}

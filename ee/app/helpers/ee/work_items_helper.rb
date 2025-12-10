@@ -30,7 +30,6 @@ module EE
     def work_item_views_only_data(resource_parent, current_user)
       super.merge(
         duo_remote_flows_availability: resource_parent.duo_remote_flows_enabled.to_s,
-        can_bulk_edit_epics: can?(current_user, :bulk_admin_epic, resource_parent).to_s,
         epics_list_path: group_epics_path(resource_parent)
       )
     end

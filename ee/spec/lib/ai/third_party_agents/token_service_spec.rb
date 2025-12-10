@@ -4,8 +4,18 @@ require 'spec_helper'
 
 RSpec.describe Ai::ThirdPartyAgents::TokenService, feature_category: :duo_agent_platform do
   let_it_be(:user) { create(:user) }
+  let_it_be(:project) { create(:project) }
+
+  let(:project_headers) do
+    {
+      'x-gitlab-project-id' => project.id.to_s,
+      'x-gitlab-namespace-id' => project.namespace_id.to_s,
+      'x-gitlab-root-namespace-id' => project.root_namespace.id.to_s
+    }
+  end
 
   let(:ai_gateway_headers) { { 'header' => 'value' } }
+
   let(:public_headers) do
     {
       'x-gitlab-unit-primitive' => 'ai_gateway_model_provider_proxy',
@@ -19,7 +29,7 @@ RSpec.describe Ai::ThirdPartyAgents::TokenService, feature_category: :duo_agent_
   let(:http_status) { 200 }
   let(:auth_url) { "#{Gitlab::AiGateway.url}#{Gitlab::AiGateway::ACCESS_TOKEN_PATH}" }
 
-  subject(:token_service) { described_class.new(current_user: user) }
+  subject(:token_service) { described_class.new(current_user: user, project: project) }
 
   before do
     allow(Gitlab::AiGateway).to receive(:headers)
@@ -52,7 +62,7 @@ RSpec.describe Ai::ThirdPartyAgents::TokenService, feature_category: :duo_agent_
     it 'returns a successful service response with the token information' do
       expect(result).to be_success
       expect(result.payload).to include(
-        headers: public_headers,
+        headers: public_headers.merge(project_headers),
         token: expected_token,
         expires_at: expires_at
       )
@@ -164,8 +174,19 @@ RSpec.describe Ai::ThirdPartyAgents::TokenService, feature_category: :duo_agent_
     it 'includes the required headers' do
       expect(token_service.direct_access_token.payload[:headers]).to include(
         'x-gitlab-unit-primitive' => 'ai_gateway_model_provider_proxy',
-        'x-gitlab-authentication-type' => 'oidc'
+        'x-gitlab-authentication-type' => 'oidc',
+        **project_headers
       )
+    end
+
+    context 'without a project' do
+      subject(:token_service) { described_class.new(current_user: user) }
+
+      it 'does not include the required headers' do
+        expect(token_service.direct_access_token.payload[:headers].keys).not_to include(
+          'x-gitlab-project-id', 'x-gitlab-namespace-id', 'x-gitlab-root-namespace-id'
+        )
+      end
     end
   end
 end

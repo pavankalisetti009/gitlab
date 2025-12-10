@@ -24,8 +24,7 @@ module Search
       SQL
 
       SERVICES = {
-        zoekt: 0,
-        knowledge_graph: 1
+        zoekt: 0
       }.freeze
 
       has_many :indices,
@@ -34,13 +33,8 @@ module Search
         through: :indices, source: :zoekt_enabled_namespace, class_name: '::Search::Zoekt::EnabledNamespace'
       has_many :tasks,
         foreign_key: :zoekt_node_id, inverse_of: :node, class_name: '::Search::Zoekt::Task'
-      has_many :knowledge_graph_tasks,
-        foreign_key: :zoekt_node_id, inverse_of: :node, class_name: '::Ai::KnowledgeGraph::Task'
       has_many :zoekt_repositories,
         through: :indices, source: :zoekt_repositories, class_name: '::Search::Zoekt::Repository'
-
-      has_many :knowledge_graph_replicas,
-        foreign_key: :zoekt_node_id, inverse_of: :zoekt_node, class_name: '::Ai::KnowledgeGraph::Replica'
 
       validates :index_base_url, presence: true
       validates :search_base_url, presence: true
@@ -51,8 +45,10 @@ module Search
       validates :total_bytes, presence: true
       validates :metadata, json_schema: { filename: 'zoekt_node_metadata' }
       validates :usable_storage_bytes, presence: true, numericality: { only_integer: true }
-      validates :schema_version, :knowledge_graph_schema_version, presence: true
+      validates :schema_version, presence: true
       validate :valid_services
+
+      ignore_column :knowledge_graph_schema_version, remove_with: '18.8', remove_after: '2025-12-15'
 
       attribute :metadata, ::Gitlab::Database::Type::IndifferentJsonb.new # for indifferent access
 
@@ -80,8 +76,6 @@ module Search
       scope :with_reserved_bytes, -> do
         node_ids_with_bytes = ::Search::Zoekt::Node.from_union([
           ::Search::Zoekt::Index.select(0, :zoekt_node_id, 'sum(reserved_storage_bytes) as reserved_bytes')
-            .group(:zoekt_node_id),
-          ::Ai::KnowledgeGraph::Replica.select(1, :zoekt_node_id, 'sum(reserved_storage_bytes) as reserved_bytes')
             .group(:zoekt_node_id)
         ]).select(:zoekt_node_id, 'sum(reserved_bytes) as reserved_storage_bytes_total').group(:zoekt_node_id)
 
@@ -103,9 +97,6 @@ module Search
       scope :with_service, ->(service) { where("? = ANY(services)", SERVICES.fetch(service)) }
       scope :for_search, -> { with_service(:zoekt) }
 
-      scope :available_for_knowledge_graph_namespace, ->(namespace) do
-        with_service(:knowledge_graph).where.not(id: namespace.replicas.select(:zoekt_node_id))
-      end
       scope :available_for_search_indexing, -> do
         for_search.online.order_by_unclaimed_space_desc
       end
@@ -128,10 +119,6 @@ module Search
 
           if params['node.services'].present?
             node.services = params['node.services'].filter_map { |service| SERVICES[service.to_sym] }
-          end
-
-          if params['node.knowledge_graph_schema_version'].present?
-            node.knowledge_graph_schema_version = params['node.knowledge_graph_schema_version']
           end
         end
       end
@@ -157,6 +144,26 @@ module Search
           return nodes if limit.present? && nodes.count >= limit
         end
         nodes
+      end
+
+      # Returns a hash mapping replica IDs to their associated nodes for an enabled namespace
+      # The caller is responsible for scoping nodes appropriately (e.g., .for_search.online)
+      #
+      # @param enabled_namespace [Search::Zoekt::EnabledNamespace] The enabled namespace to fetch replica nodes for
+      # @return [Hash<Integer, Array<Node>>] Hash of replica_id => [nodes]
+      def self.replica_map_for_enabled_namespace(enabled_namespace)
+        replicas = enabled_namespace.replicas.ready.preload_nodes
+
+        # Fetch all nodes for the given replicas in a single query
+        nodes_with_replica_ids = joins(:indices)
+            .where(zoekt_indices: { zoekt_replica_id: replicas.select(:id) })
+            .select('zoekt_nodes.*, zoekt_indices.zoekt_replica_id')
+            .distinct
+
+        # Group nodes by replica_id
+        nodes_with_replica_ids.each_with_object(Hash.new { |h, k| h[k] = [] }) do |node, hash|
+          hash[node.zoekt_replica_id] << node
+        end
       end
 
       def concurrency_limit
@@ -239,7 +246,7 @@ module Search
       private
 
       def reserved_storage_bytes
-        indices.sum(:reserved_storage_bytes) + knowledge_graph_replicas.sum(:reserved_storage_bytes)
+        indices.sum(:reserved_storage_bytes)
       end
 
       def set_usable_storage_bytes

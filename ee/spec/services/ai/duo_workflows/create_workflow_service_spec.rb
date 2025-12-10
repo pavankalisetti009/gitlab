@@ -3,6 +3,12 @@
 require 'spec_helper'
 
 RSpec.describe ::Ai::DuoWorkflows::CreateWorkflowService, feature_category: :duo_agent_platform do
+  let_it_be(:default_organization) { create(:organization) }
+
+  before do
+    allow(::Organizations::Organization).to receive(:default_organization).and_return(default_organization)
+  end
+
   describe '#execute' do
     let_it_be(:group) { create(:group) }
     let_it_be(:project) { create(:project, group: group) }
@@ -188,20 +194,150 @@ RSpec.describe ::Ai::DuoWorkflows::CreateWorkflowService, feature_category: :duo
           expect(execute[:message]).to include('forbidden to access agentic chat')
         end
       end
-    end
 
-    context 'when workflow definition is foundational agent and workflow for namespace' do
-      let(:params) { { workflow_definition: 'duo_planner/experimental' } }
-      let(:container) { group }
+      describe 'validates foundational agent' do
+        include_context 'with mocked Foundational Chat Agents'
 
-      before do
-        allow(Ability).to receive(:allowed?).with(user, :access_duo_agentic_chat, container).and_return(true)
-      end
+        let_it_be(:default_group_namespace) { create(:group) }
+        let(:params) { { workflow_definition: foundational_chat_agent_1_workflow_definition } }
+        let(:default_namespace) { default_group_namespace }
+        let(:is_saas) { true }
 
-      it 'creates a new workflow' do
-        expect { execute }.to change { Ai::DuoWorkflows::Workflow.count }.by(1)
-        expect(execute[:workflow]).to be_a(Ai::DuoWorkflows::Workflow)
-        expect(execute[:workflow].user).to eq(user)
+        before do
+          allow(Ability).to receive(:allowed?).with(user, :access_duo_agentic_chat, container).and_return(true)
+          stub_saas_features(gitlab_com_subscriptions: is_saas)
+          allow(user.user_preference).to receive(:duo_default_namespace_with_fallback).and_return(default_namespace)
+        end
+
+        shared_examples 'the agent is disabled' do
+          it 'returns error with agent disabled' do
+            expect(execute[:status]).to eq(:error)
+            expect(execute[:http_status]).to eq(:forbidden)
+            expect(execute[:message]).to include('foundation agent disabled for namespace')
+          end
+        end
+
+        shared_examples 'the workflow is created' do
+          it 'creates the workflow' do
+            expect { execute }.to change { Ai::DuoWorkflows::Workflow.count }.by(1)
+            expect(execute[:workflow]).to be_a(Ai::DuoWorkflows::Workflow)
+          end
+        end
+
+        context 'when is SaaS' do
+          context 'when has default namespace' do
+            context 'when disabled on default namespace' do
+              before do
+                allow(default_namespace).to receive(:foundational_agent_enabled?)
+                                              .with(foundational_chat_agent_1_ref)
+                                              .and_return(false)
+              end
+
+              it_behaves_like 'the agent is disabled'
+            end
+
+            context 'when enabled on default namespace' do
+              before do
+                allow(default_namespace).to receive(:foundational_agent_enabled?)
+                                              .with(foundational_chat_agent_1_ref)
+                                              .and_return(true)
+              end
+
+              it_behaves_like 'the workflow is created'
+            end
+
+            context 'when namespace is not nil' do
+              let(:container) { group }
+
+              context 'when enabled on default namespace' do
+                before do
+                  allow(default_namespace).to receive(:foundational_agent_enabled?)
+                                                .with(foundational_chat_agent_1_ref)
+                                                .and_return(true)
+                end
+
+                it_behaves_like 'the workflow is created'
+              end
+
+              context 'when disabled on default namespace' do
+                before do
+                  allow(default_namespace).to receive(:foundational_agent_enabled?)
+                                                .with(foundational_chat_agent_1_ref)
+                                                .and_return(false)
+                end
+
+                it_behaves_like 'the agent is disabled'
+              end
+            end
+          end
+
+          context 'when does not have default namespace' do
+            let(:default_namespace) { nil }
+
+            context 'when namespace is not nil' do
+              let(:subgroup) { create(:group, parent: group) }
+              let(:container) { subgroup }
+
+              context 'when enabled on namespace' do
+                before do
+                  allow(group).to receive(:foundational_agent_enabled?)
+                                    .with(foundational_chat_agent_1_ref)
+                                    .and_return(true)
+                end
+
+                it_behaves_like 'the workflow is created'
+              end
+            end
+
+            context 'when project is not nil' do
+              let(:container) { project }
+
+              context 'when enabled on project parent' do
+                before do
+                  allow(group).to receive(:foundational_agent_enabled?)
+                                    .with(foundational_chat_agent_1_ref)
+                                    .and_return(true)
+                end
+
+                it_behaves_like 'the workflow is created'
+              end
+
+              context 'when disabled on project parent' do
+                before do
+                  allow(group).to receive(:foundational_agent_enabled?)
+                                    .with(foundational_chat_agent_1_ref)
+                                    .and_return(false)
+                end
+
+                it_behaves_like 'the agent is disabled'
+              end
+            end
+          end
+        end
+
+        context 'when is not SaaS' do
+          let(:is_saas) { false }
+
+          context 'when disabled on organization' do
+            before do
+              allow(default_organization).to receive(:foundational_agent_enabled?)
+                                               .with(foundational_chat_agent_1_ref)
+                                               .and_return(false)
+            end
+
+            it_behaves_like 'the agent is disabled'
+          end
+
+          context 'when enabled on organization' do
+            before do
+              allow(default_organization).to receive(:foundational_agent_enabled?)
+                                               .with(foundational_chat_agent_1_ref)
+                                               .and_return(true)
+            end
+
+            it_behaves_like 'the workflow is created'
+          end
+        end
       end
     end
 

@@ -10,6 +10,8 @@ module Ai
         {
           id: 1,
           name: "code_review/v1",
+          description: "GitLab Code Review",
+          foundational_flow_reference: "code_review/v1",
           ai_feature: "review_merge_request",
           pre_approved_agent_privileges: [
             ::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_GITLAB,
@@ -20,6 +22,8 @@ module Ai
         {
           id: 2,
           name: "sast_fp_detection/v1",
+          description: "GitLab SAST False Positive detection",
+          foundational_flow_reference: "sast_fp_detection/v1",
           pre_approved_agent_privileges: [
             ::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_FILES,
             ::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_ONLY_GITLAB,
@@ -32,6 +36,8 @@ module Ai
         {
           id: 3,
           name: "resolve_sast_vulnerability/v1",
+          description: "GitLab resolve SAST vulnerability",
+          foundational_flow_reference: "resolve_sast_vulnerability/v1",
           pre_approved_agent_privileges: [
             ::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_FILES,
             ::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_ONLY_GITLAB,
@@ -49,6 +55,8 @@ module Ai
       attribute :pre_approved_agent_privileges, default: []
       attribute :allow_agent_to_request_user, :boolean, default: false
       attribute :environment, :string, default: "ambient"
+      attribute :foundational_flow_reference, :string
+      attribute :description, :string
 
       validates :name, :ai_feature, presence: true
 

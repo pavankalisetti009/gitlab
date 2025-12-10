@@ -2,21 +2,17 @@
 
 module SecretsManagement
   module ProjectSecretsManagers
-    class InitiateDeprovisionService < ProjectBaseService
+    class InitiateDeprovisionService < BaseInitiateDeprovisionService
       def execute
-        secrets_manager = project.secrets_manager
-
-        return ServiceResponse.error(message: 'Secrets manager not found for the project.') unless secrets_manager
-        return secrets_manager_inactive_response unless secrets_manager.active?
-
-        secrets_manager.initiate_deprovision!
+        result = find_and_validate_secrets_manager!
+        return result if result.is_a?(ServiceResponse)
 
         SecretsManagement::DeprovisionProjectSecretsManagerWorker.perform_async(
           current_user.id,
-          secrets_manager.id
+          result.id
         )
 
-        ServiceResponse.success(payload: { project_secrets_manager: secrets_manager })
+        success_response(result)
       end
     end
   end

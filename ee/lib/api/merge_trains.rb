@@ -21,7 +21,7 @@ module API
         # Consider deprecating: https://gitlab.com/gitlab-org/gitlab/-/issues/406356
         desc 'Get all merge trains of a project' do
           detail 'This feature was introduced in GitLab 12.9'
-          success code: 200, model: EE::API::Entities::MergeTrains::Car
+          success code: 200, model: ::API::Entities::MergeTrains::Car
           failure [
             { code: 401, message: 'Unauthorized' },
             { code: 403, message: 'Forbidden' },
@@ -44,13 +44,13 @@ module API
             .execute
             .preload_api_entities
 
-          present paginate(all_project_cars), with: EE::API::Entities::MergeTrains::Car
+          present paginate(all_project_cars), with: ::API::Entities::MergeTrains::Car
         end
 
         resource ':target_branch' do
           desc 'Get the merge train for a project target branch' do
             detail 'This feature was introduced in Gitlab 15.6'
-            success code: 200, model: EE::API::Entities::MergeTrains::Car
+            success code: 200, model: ::API::Entities::MergeTrains::Car
             failure [
               { code: 401, message: 'Unauthorized' },
               { code: 403, message: 'Forbidden' },
@@ -75,14 +75,14 @@ module API
               .execute
               .preload_api_entities
 
-            present paginate(merge_train), with: EE::API::Entities::MergeTrains::Car
+            present paginate(merge_train), with: ::API::Entities::MergeTrains::Car
           end
         end
 
         resource 'merge_requests/:merge_request_iid', requirements: API::NAMESPACE_OR_PROJECT_REQUIREMENTS do
           desc 'Get the status of a merge request on a merge train' do
             detail 'This feature was introduced in Gitlab 15.6'
-            success code: 200, model: EE::API::Entities::MergeTrains::Car
+            success code: 200, model: ::API::Entities::MergeTrains::Car
             failure [
               { code: 401, message: 'Unauthorized' },
               { code: 403, message: 'Forbidden' },
@@ -96,15 +96,15 @@ module API
 
             not_found!('Merge Train Merge Request') unless train_car
 
-            present train_car, with: EE::API::Entities::MergeTrains::Car
+            present train_car, with: ::API::Entities::MergeTrains::Car
           end
         end
 
         desc 'Add a merge request to a merge train' do
           detail 'This feature was introduced in GitLab 15.6'
           success [
-            { code: 201, model: EE::API::Entities::MergeTrains::Car },
-            { code: 202, model: EE::API::Entities::MergeTrains::Car }
+            { code: 201, model: ::API::Entities::MergeTrains::Car },
+            { code: 202, model: ::API::Entities::MergeTrains::Car }
           ]
           failure [
             { code: 400, message: 'Failed to merge' },
@@ -155,7 +155,7 @@ module API
               status 202
             end
 
-            present paginate(whole_merge_train), with: EE::API::Entities::MergeTrains::Car
+            present paginate(whole_merge_train), with: ::API::Entities::MergeTrains::Car
           elsif response.reason == :forbidden
             unauthorized!
           elsif response.reason == :conflict

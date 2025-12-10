@@ -38,8 +38,6 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Cache::Entries, :aggrega
 
     it { is_expected.to have_request_urgency(:low) }
 
-    it_behaves_like 'virtual registry not available', :maven
-
     context 'with invalid upstream' do
       where(:upstream_id, :status) do
         non_existing_record_id | :not_found
@@ -52,24 +50,8 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Cache::Entries, :aggrega
       end
     end
 
-    context 'with a non-member user' do
-      let_it_be(:user) { create(:user) }
-
-      where(:group_access_level, :status) do
-        'PUBLIC'   | :forbidden
-        'INTERNAL' | :forbidden
-        'PRIVATE'  | :forbidden
-      end
-
-      with_them do
-        before do
-          group.update!(visibility_level: Gitlab::VisibilityLevel.const_get(group_access_level, false))
-        end
-
-        it_behaves_like 'returning response status', params[:status]
-      end
-    end
-
+    it_behaves_like 'virtual registry not available', :maven
+    it_behaves_like 'virtual registry non member user access'
     it_behaves_like 'an authenticated virtual registry REST API'
 
     context 'for search param' do
