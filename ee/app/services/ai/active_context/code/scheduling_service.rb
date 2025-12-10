@@ -16,6 +16,10 @@ module Ai
             if: -> { ::Ai::ActiveContext::Code::EnabledNamespace.pending.with_active_connection.exists? },
             dispatch: { event: ProcessPendingEnabledNamespaceEvent }
           },
+          process_invalid_enabled_namespace: {
+            period: 2.days,
+            dispatch: { event: ProcessInvalidEnabledNamespaceEvent }
+          },
           index_repository: {
             period: 10.minutes,
             if: -> { ::Ai::ActiveContext::Code::Repository.pending.with_active_connection.exists? },

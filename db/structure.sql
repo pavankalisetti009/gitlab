@@ -29089,7 +29089,8 @@ CREATE TABLE users_statistics (
     blocked integer DEFAULT 0 NOT NULL,
     with_highest_role_minimal_access integer DEFAULT 0 NOT NULL,
     with_highest_role_guest_with_custom_role integer DEFAULT 0 NOT NULL,
-    with_highest_role_planner integer DEFAULT 0 NOT NULL
+    with_highest_role_planner integer DEFAULT 0 NOT NULL,
+    with_highest_role_security_manager integer DEFAULT 0 NOT NULL
 );
 
 CREATE SEQUENCE users_statistics_id_seq

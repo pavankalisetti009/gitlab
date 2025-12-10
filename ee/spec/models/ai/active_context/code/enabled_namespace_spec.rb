@@ -41,6 +41,99 @@ RSpec.describe ::Ai::ActiveContext::Code::EnabledNamespace, feature_category: :g
         expect(result).to contain_exactly(namespace_with_active_connection)
       end
     end
+
+    describe '.ordered_by_id' do
+      let_it_be(:enabled_namespace1) { create(:ai_active_context_code_enabled_namespace) }
+      let_it_be(:enabled_namespace2) { create(:ai_active_context_code_enabled_namespace) }
+      let_it_be(:enabled_namespace3) { create(:ai_active_context_code_enabled_namespace) }
+
+      it 'returns enabled namespaces ordered by id ascending' do
+        result = described_class.ordered_by_id
+
+        expect(result.pluck(:id))
+          .to match_array([enabled_namespace1.id, enabled_namespace2.id, enabled_namespace3.id].sort)
+      end
+    end
+
+    describe '.id_greater_than' do
+      let_it_be(:enabled_namespace1) { create(:ai_active_context_code_enabled_namespace) }
+      let_it_be(:enabled_namespace2) { create(:ai_active_context_code_enabled_namespace) }
+      let_it_be(:enabled_namespace3) { create(:ai_active_context_code_enabled_namespace) }
+
+      it 'returns enabled namespaces with id greater than the specified value' do
+        result = described_class.id_greater_than(enabled_namespace1.id)
+
+        expect(result).to contain_exactly(enabled_namespace2, enabled_namespace3)
+      end
+
+      it 'returns empty when no records have greater id' do
+        result = described_class.id_greater_than(enabled_namespace3.id)
+
+        expect(result).to be_empty
+      end
+    end
+
+    describe '.valid_saas_namespaces', :saas do
+      let_it_be(:valid_group) do
+        group = create(:group)
+        group.namespace_settings.update!(experiment_features_enabled: true)
+        create(:gitlab_subscription, namespace: group, hosted_plan: create(:ultimate_plan))
+        group
+      end
+
+      let_it_be(:subgroup) do
+        create(:group, parent: valid_group)
+      end
+
+      let_it_be(:group_without_ai_features) do
+        group = create(:group)
+        create(:gitlab_subscription, namespace: group, hosted_plan: create(:ultimate_plan))
+        group
+      end
+
+      let_it_be(:group_without_plan) do
+        group = create(:group)
+        group.namespace_settings.update!(experiment_features_enabled: true)
+        group
+      end
+
+      let_it_be(:group_with_expired_subscription) do
+        group = create(:group)
+        group.namespace_settings.update!(experiment_features_enabled: true)
+        create(:gitlab_subscription, :expired, namespace: group, hosted_plan: create(:ultimate_plan))
+        group
+      end
+
+      it 'returns only top-level groups with AI features enabled and valid subscriptions' do
+        result = described_class.valid_saas_namespaces
+
+        expect(result).to contain_exactly(valid_group)
+      end
+
+      it 'excludes subgroups' do
+        result = described_class.valid_saas_namespaces
+
+        expect(result).not_to include(subgroup)
+      end
+
+      it 'excludes groups without AI features enabled' do
+        result = described_class.valid_saas_namespaces
+
+        expect(result).not_to include(group_without_ai_features)
+      end
+
+      it 'excludes groups without AI supported plan' do
+        result = described_class.valid_saas_namespaces
+
+        expect(result).not_to include(group_without_plan)
+      end
+
+      it 'excludes groups with expired subscriptions' do
+        result = described_class.valid_saas_namespaces
+
+        expect(result).not_to include(group_with_expired_subscription)
+      end
+    end
   end
 
   describe 'validations' do
