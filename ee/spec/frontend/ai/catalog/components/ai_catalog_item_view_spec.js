@@ -28,7 +28,7 @@ describe('AiCatalogItemView', () => {
     itemType              | item                  | shouldRenderAgent | shouldRenderFlow
     ${'agent'}            | ${mockAgent}          | ${true}           | ${false}
     ${'flow'}             | ${mockFlow}           | ${false}          | ${true}
-    ${'third-party flow'} | ${mockThirdPartyFlow} | ${false}          | ${true}
+    ${'third-party flow'} | ${mockThirdPartyFlow} | ${true}           | ${false}
   `('when item is a $itemType', ({ item, shouldRenderAgent, shouldRenderFlow }) => {
     beforeEach(() => {
       createComponent({

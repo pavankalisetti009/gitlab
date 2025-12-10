@@ -1,5 +1,6 @@
 #import "../fragments/ai_catalog_item.fragment.graphql"
 #import "../fragments/ai_catalog_agent_version.fragment.graphql"
+#import "../fragments/ai_catalog_third_party_flow_version.fragment.graphql"
 
 query aiCatalogAgent(
   $id: AiCatalogItemID!
@@ -22,17 +23,24 @@ query aiCatalogAgent(
     }
     latestVersion {
       ...BaseAiCatalogAgentVersion
+      ...BaseAiCatalogThirdPartyFlowVersion
     }
     versions {
       nodes {
         ...BaseAiCatalogAgentVersion
+        ...BaseAiCatalogThirdPartyFlowVersion
       }
     }
     configurationForProject(projectId: $projectId) @include(if: $hasProject) {
       id
       enabled
+      flowTrigger {
+        id
+        eventTypes
+      }
       pinnedItemVersion {
         ...BaseAiCatalogAgentVersion
+        ...BaseAiCatalogThirdPartyFlowVersion
       }
       userPermissions {
         adminAiCatalogItemConsumer

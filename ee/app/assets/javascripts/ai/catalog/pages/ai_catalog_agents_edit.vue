@@ -2,7 +2,7 @@
 import { s__ } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
-import updateAiCatalogAgent from '../graphql/mutations/update_ai_catalog_agent.mutation.graphql';
+import { AI_CATALOG_ITEM_TYPE_APOLLO_CONFIG } from '../constants';
 import { AI_CATALOG_AGENTS_SHOW_ROUTE } from '../router/constants';
 import AiCatalogAgentForm from '../components/ai_catalog_agent_form.vue';
 
@@ -33,6 +33,9 @@ export default {
     toolIds() {
       return (this.aiCatalogAgent.latestVersion.tools?.nodes ?? []).map((t) => t.id);
     },
+    definition() {
+      return this.aiCatalogAgent.latestVersion.definition;
+    },
     initialValues() {
       return {
         projectId: this.aiCatalogAgent.project?.id,
@@ -40,27 +43,31 @@ export default {
         description: this.aiCatalogAgent.description,
         systemPrompt: this.systemPrompt,
         tools: this.toolIds,
+        definition: this.definition,
         public: this.aiCatalogAgent.public,
+        type: this.aiCatalogAgent.itemType,
       };
     },
   },
   methods: {
-    async handleSubmit(formValues) {
+    async handleSubmit({ type, ...input }) {
       this.isSubmitting = true;
       this.resetErrorMessages();
+      const config = AI_CATALOG_ITEM_TYPE_APOLLO_CONFIG[type].update;
+
       try {
         const { data } = await this.$apollo.mutate({
-          mutation: updateAiCatalogAgent,
+          mutation: config.mutation,
           variables: {
             input: {
-              ...formValues,
+              ...input,
               id: this.aiCatalogAgent.id,
             },
           },
         });
 
         if (data) {
-          const { errors } = data.aiCatalogAgentUpdate;
+          const { errors } = data[config.responseKey];
           if (errors.length > 0) {
             this.errors = errors;
             return;

@@ -9,6 +9,7 @@ import {
   AI_CATALOG_CONSUMER_TYPE_GROUP,
   AI_CATALOG_CONSUMER_TYPE_PROJECT,
   AI_CATALOG_CONSUMER_LABELS,
+  AI_CATALOG_ITEM_TYPE_APOLLO_CONFIG,
   TRACK_EVENT_TYPE_AGENT,
   TRACK_EVENT_VIEW_AI_CATALOG_ITEM,
   VERSION_LATEST,
@@ -22,7 +23,6 @@ import aiCatalogAgentQuery from '../graphql/queries/ai_catalog_agent.query.graph
 import createAiCatalogItemConsumer from '../graphql/mutations/create_ai_catalog_item_consumer.mutation.graphql';
 import updateAiCatalogConfiguredItem from '../graphql/mutations/update_ai_catalog_item_consumer.mutation.graphql';
 import reportAiCatalogItem from '../graphql/mutations/report_ai_catalog_item.mutation.graphql';
-import deleteAiCatalogAgentMutation from '../graphql/mutations/delete_ai_catalog_agent.mutation.graphql';
 import deleteAiCatalogItemConsumer from '../graphql/mutations/delete_ai_catalog_item_consumer.mutation.graphql';
 import {
   AI_CATALOG_AGENTS_ROUTE,
@@ -204,20 +204,23 @@ export default {
       }
     },
     async deleteAgent(forceHardDelete) {
-      const { id } = this.aiCatalogAgent;
+      const { id, itemType } = this.aiCatalogAgent;
+      const config = AI_CATALOG_ITEM_TYPE_APOLLO_CONFIG[itemType].delete;
+
       try {
         const { data } = await this.$apollo.mutate({
-          mutation: deleteAiCatalogAgentMutation,
+          mutation: config.mutation,
           variables: {
             id,
             forceHardDelete,
           },
         });
 
-        if (!data.aiCatalogAgentDelete.success) {
+        const deleteResponse = data[config.responseKey];
+        if (!deleteResponse.success) {
           this.errors = [
             sprintf(s__('AICatalog|Failed to delete agent. %{error}'), {
-              error: data.aiCatalogAgentDelete.errors?.[0],
+              error: deleteResponse.errors?.[0],
             }),
           ];
           return;

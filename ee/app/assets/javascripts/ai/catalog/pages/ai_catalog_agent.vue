@@ -8,7 +8,12 @@ import { TYPENAME_PROJECT, TYPENAME_GROUP } from '~/graphql_shared/constants';
 import { TYPENAME_AI_CATALOG_ITEM } from 'ee/graphql_shared/constants';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import aiCatalogAgentQuery from '../graphql/queries/ai_catalog_agent.query.graphql';
-import { AI_CATALOG_TYPE_AGENT, VERSION_PINNED, VERSION_LATEST } from '../constants';
+import {
+  AI_CATALOG_TYPE_AGENT,
+  AI_CATALOG_TYPE_THIRD_PARTY_FLOW,
+  VERSION_PINNED,
+  VERSION_LATEST,
+} from '../constants';
 import { getByVersionKey } from '../utils';
 
 export default {
@@ -51,7 +56,7 @@ export default {
       },
       update(data) {
         const item = data?.aiCatalogItem || {};
-        if (item.itemType !== AI_CATALOG_TYPE_AGENT) {
+        if (![AI_CATALOG_TYPE_AGENT, AI_CATALOG_TYPE_THIRD_PARTY_FLOW].includes(item.itemType)) {
           return {};
         }
         return item;

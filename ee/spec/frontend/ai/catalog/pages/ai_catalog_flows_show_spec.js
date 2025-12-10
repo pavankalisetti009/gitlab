@@ -21,7 +21,6 @@ import aiCatalogFlowQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_flow.qu
 import createAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/create_ai_catalog_item_consumer.mutation.graphql';
 import updateAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/update_ai_catalog_item_consumer.mutation.graphql';
 import deleteAiCatalogFlowMutation from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_flow.mutation.graphql';
-import deleteAiCatalogThirdPartyFlowMutation from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_third_party_flow.mutation.graphql';
 import reportAiCatalogItemMutation from 'ee/ai/catalog/graphql/mutations/report_ai_catalog_item.mutation.graphql';
 import deleteAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_item_consumer.mutation.graphql';
 import {
@@ -36,7 +35,6 @@ import {
   mockReportAiCatalogItemSuccessMutation,
   mockReportAiCatalogItemErrorMutation,
   mockFlow,
-  mockThirdPartyFlow,
   mockAiCatalogItemConsumerDeleteResponse,
   mockAiCatalogItemConsumerDeleteErrorResponse,
   mockFlowConfigurationForProject,
@@ -71,7 +69,6 @@ describe('AiCatalogFlowsShow', () => {
     .fn()
     .mockResolvedValue(mockReportAiCatalogItemSuccessMutation);
   const deleteFlowMutationHandler = jest.fn().mockResolvedValue(mockCatalogFlowDeleteResponse);
-  const deleteThirdPartyFlowMutationHandler = jest.fn();
   const deleteItemConsumerMutationHandler = jest
     .fn()
     .mockResolvedValue(mockAiCatalogItemConsumerDeleteResponse);
@@ -87,7 +84,6 @@ describe('AiCatalogFlowsShow', () => {
       [aiCatalogFlowQuery, mockFlowQueryHandler],
       [createAiCatalogItemConsumer, createAiCatalogItemConsumerHandler],
       [deleteAiCatalogFlowMutation, deleteFlowMutationHandler],
-      [deleteAiCatalogThirdPartyFlowMutation, deleteThirdPartyFlowMutationHandler],
       [reportAiCatalogItemMutation, reportAiCatalogItemMutationHandler],
       [deleteAiCatalogItemConsumer, deleteItemConsumerMutationHandler],
       [updateAiCatalogItemConsumer, updateAiCatalogItemConsumerHandler],
@@ -252,28 +248,7 @@ describe('AiCatalogFlowsShow', () => {
     it('calls delete mutation for flow', () => {
       deleteFlow();
 
-      expect(deleteThirdPartyFlowMutationHandler).not.toHaveBeenCalled();
       expect(deleteFlowMutationHandler).toHaveBeenCalledWith({ id: mockFlow.id, forceHardDelete });
-    });
-
-    describe('when flow type is third-party flow', () => {
-      beforeEach(() => {
-        createComponent({
-          props: {
-            aiCatalogFlow: mockThirdPartyFlow,
-          },
-        });
-      });
-
-      it('calls delete mutation for third-party flow', () => {
-        deleteFlow();
-
-        expect(deleteFlowMutationHandler).not.toHaveBeenCalled();
-        expect(deleteThirdPartyFlowMutationHandler).toHaveBeenCalledWith({
-          id: mockThirdPartyFlow.id,
-          forceHardDelete,
-        });
-      });
     });
 
     describe('when request succeeds', () => {

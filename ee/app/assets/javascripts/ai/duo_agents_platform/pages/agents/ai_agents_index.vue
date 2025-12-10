@@ -13,6 +13,7 @@ import aiCatalogProjectUserPermissionsQuery from 'ee/ai/catalog/graphql/queries/
 import aiCatalogGroupUserPermissionsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_group_user_permissions.query.graphql';
 import {
   AI_CATALOG_TYPE_AGENT,
+  AI_CATALOG_TYPE_THIRD_PARTY_FLOW,
   AGENT_VISIBILITY_LEVEL_DESCRIPTIONS,
   PAGE_SIZE,
   AI_CATALOG_CONSUMER_LABELS,
@@ -74,6 +75,7 @@ export default {
       variables() {
         return {
           projectPath: this.projectPath,
+          itemTypes: this.itemTypes,
           projectId: convertToGraphQLId(TYPENAME_PROJECT, this.projectId),
           search: this.searchTerm,
           ...this.paginationVariables,
@@ -157,7 +159,12 @@ export default {
       return this.glFeatures.aiCatalogAgents;
     },
     itemTypes() {
-      return [AI_CATALOG_TYPE_AGENT];
+      const types = [AI_CATALOG_TYPE_AGENT];
+
+      if (this.glFeatures.aiCatalogThirdPartyFlows) {
+        types.push(AI_CATALOG_TYPE_THIRD_PARTY_FLOW);
+      }
+      return types;
     },
     itemTypeConfig() {
       return {

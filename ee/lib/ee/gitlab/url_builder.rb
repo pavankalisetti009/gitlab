@@ -40,9 +40,9 @@ module EE
           return unless item.id
 
           item_type_path = case item.item_type.to_sym
-                           when ::Ai::Catalog::Item::AGENT_TYPE
+                           when ::Ai::Catalog::Item::AGENT_TYPE, ::Ai::Catalog::Item::THIRD_PARTY_FLOW_TYPE
                              'agents'
-                           when ::Ai::Catalog::Item::FLOW_TYPE, ::Ai::Catalog::Item::THIRD_PARTY_FLOW_TYPE
+                           when ::Ai::Catalog::Item::FLOW_TYPE
                              'flows'
                            end
 

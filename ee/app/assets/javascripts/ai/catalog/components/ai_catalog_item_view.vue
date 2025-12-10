@@ -11,7 +11,7 @@ import AiCatalogFlowDetails from './ai_catalog_flow_details.vue';
 const DETAILS_COMPONENT_MAP = {
   [AI_CATALOG_TYPE_AGENT]: AiCatalogAgentDetails,
   [AI_CATALOG_TYPE_FLOW]: AiCatalogFlowDetails,
-  [AI_CATALOG_TYPE_THIRD_PARTY_FLOW]: AiCatalogFlowDetails,
+  [AI_CATALOG_TYPE_THIRD_PARTY_FLOW]: AiCatalogAgentDetails,
 };
 
 export default {

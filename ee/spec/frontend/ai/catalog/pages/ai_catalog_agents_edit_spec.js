@@ -9,6 +9,7 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import AiCatalogAgentsEdit from 'ee/ai/catalog/pages/ai_catalog_agents_edit.vue';
 import AiCatalogAgentForm from 'ee/ai/catalog/components/ai_catalog_agent_form.vue';
 import updateAiCatalogAgent from 'ee/ai/catalog/graphql/mutations/update_ai_catalog_agent.mutation.graphql';
+import updateAiCatalogThirdPartyFlow from 'ee/ai/catalog/graphql/mutations/update_ai_catalog_third_party_flow.mutation.graphql';
 import { VERSION_LATEST } from 'ee/ai/catalog/constants';
 import { AI_CATALOG_AGENTS_SHOW_ROUTE } from 'ee/ai/catalog/router/constants';
 import {
@@ -16,6 +17,7 @@ import {
   mockAgentConfigurationForProject,
   mockUpdateAiCatalogAgentSuccessMutation,
   mockUpdateAiCatalogAgentErrorMutation,
+  mockUpdateAiCatalogThirdPartyFlowSuccessMutation,
 } from '../mock_data';
 
 Vue.use(VueApollo);
@@ -43,8 +45,15 @@ describe('AiCatalogAgentsEdit', () => {
     .fn()
     .mockResolvedValue(mockUpdateAiCatalogAgentSuccessMutation);
 
+  const mockUpdateAiCatalogThirdPartyFlowHandler = jest
+    .fn()
+    .mockResolvedValue(mockUpdateAiCatalogThirdPartyFlowSuccessMutation);
+
   const createComponent = (props) => {
-    mockApollo = createMockApollo([[updateAiCatalogAgent, mockUpdateAiCatalogAgentHandler]]);
+    mockApollo = createMockApollo([
+      [updateAiCatalogAgent, mockUpdateAiCatalogAgentHandler],
+      [updateAiCatalogThirdPartyFlow, mockUpdateAiCatalogThirdPartyFlowHandler],
+    ]);
 
     wrapper = shallowMount(AiCatalogAgentsEdit, {
       apolloProvider: mockApollo,
@@ -80,6 +89,7 @@ describe('AiCatalogAgentsEdit', () => {
         projectId: 'gid://gitlab/Project/1',
         systemPrompt: mockAgent.latestVersion.systemPrompt,
         tools: [],
+        type: 'AGENT',
         public: true,
       };
 
@@ -96,14 +106,24 @@ describe('AiCatalogAgentsEdit', () => {
   });
 
   describe('Form Submit', () => {
-    const { name, description, systemPrompt, userPrompt, public: publicAgent } = mockAgent;
-    const formValues = {
+    const {
       name,
       description,
       systemPrompt,
       userPrompt,
       public: publicAgent,
+      itemType: type,
+    } = mockAgent;
+    const formValues = {
+      name,
+      description,
+      systemPrompt,
+      userPrompt,
+      type,
+      public: publicAgent,
     };
+
+    const { type: itemType, ...input } = formValues;
 
     const submitForm = () => findForm().vm.$emit('submit', formValues);
 
@@ -113,14 +133,14 @@ describe('AiCatalogAgentsEdit', () => {
 
       expect(mockUpdateAiCatalogAgentHandler).toHaveBeenCalledTimes(1);
       expect(mockUpdateAiCatalogAgentHandler).toHaveBeenCalledWith({
-        input: { ...formValues, id: convertToGraphQLId(TYPENAME_AI_CATALOG_ITEM, agentId) },
+        input: { ...input, id: convertToGraphQLId(TYPENAME_AI_CATALOG_ITEM, agentId) },
       });
     });
 
     it('sets a loading state on the form while submitting', async () => {
       expect(findForm().props('isLoading')).toBe(false);
 
-      await findForm().vm.$emit('submit', {});
+      await submitForm();
       expect(findForm().props('isLoading')).toBe(true);
     });
 

@@ -5,6 +5,7 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import createAiCatalogAgent from 'ee/ai/catalog/graphql/mutations/create_ai_catalog_agent.mutation.graphql';
+import createAiCatalogThirdPartyFlow from 'ee/ai/catalog/graphql/mutations/create_ai_catalog_third_party_flow.mutation.graphql';
 import AiCatalogAgentsDuplicate from 'ee/ai/catalog/pages/ai_catalog_agents_duplicate.vue';
 import AiCatalogAgentForm from 'ee/ai/catalog/components/ai_catalog_agent_form.vue';
 import { VERSION_PINNED } from 'ee/ai/catalog/constants';
@@ -13,6 +14,7 @@ import {
   mockAgent,
   mockCreateAiCatalogAgentSuccessMutation,
   mockCreateAiCatalogAgentErrorMutation,
+  mockCreateAiCatalogThirdPartyFlowSuccessMutation,
   mockAgentConfigurationForProject,
   mockVersionProp,
 } from '../mock_data';
@@ -23,6 +25,7 @@ jest.mock('~/sentry/sentry_browser_wrapper');
 describe('AiCatalogAgentsDuplicate', () => {
   let wrapper;
   let createAiCatalogAgentMock;
+  let createAiCatalogThirdPartyFlowMock;
 
   const mockToast = {
     show: jest.fn(),
@@ -40,8 +43,14 @@ describe('AiCatalogAgentsDuplicate', () => {
 
   const createComponent = (props = {}) => {
     createAiCatalogAgentMock = jest.fn().mockResolvedValue(mockCreateAiCatalogAgentSuccessMutation);
+    createAiCatalogThirdPartyFlowMock = jest
+      .fn()
+      .mockResolvedValue(mockCreateAiCatalogThirdPartyFlowSuccessMutation);
 
-    const apolloProvider = createMockApollo([[createAiCatalogAgent, createAiCatalogAgentMock]]);
+    const apolloProvider = createMockApollo([
+      [createAiCatalogAgent, createAiCatalogAgentMock],
+      [createAiCatalogThirdPartyFlow, createAiCatalogThirdPartyFlowMock],
+    ]);
 
     wrapper = shallowMountExtended(AiCatalogAgentsDuplicate, {
       apolloProvider,
@@ -72,6 +81,7 @@ describe('AiCatalogAgentsDuplicate', () => {
         description: mockAgent.description,
         systemPrompt: mockAgentConfigurationForProject.pinnedItemVersion.systemPrompt,
         tools: mockAgentConfigurationForProject.pinnedItemVersion.tools.nodes.map((t) => t.id),
+        type: 'AGENT',
         public: false,
       };
 
@@ -90,6 +100,7 @@ describe('AiCatalogAgentsDuplicate', () => {
         description: mockAgent.description,
         systemPrompt: mockAgent.latestVersion.systemPrompt,
         tools: [],
+        type: 'AGENT',
         public: false,
       };
 
@@ -113,9 +124,12 @@ describe('AiCatalogAgentsDuplicate', () => {
       projectId: project.id,
       systemPrompt: 'A new system prompt',
       public: true,
+      type: 'AGENT',
     };
 
     const submitForm = () => findForm().vm.$emit('submit', formValues);
+
+    const { type, ...input } = formValues;
 
     beforeEach(async () => {
       await waitForPromises();
@@ -126,7 +140,7 @@ describe('AiCatalogAgentsDuplicate', () => {
 
       expect(createAiCatalogAgentMock).toHaveBeenCalledTimes(1);
       expect(createAiCatalogAgentMock).toHaveBeenCalledWith({
-        input: formValues,
+        input,
       });
     });
 

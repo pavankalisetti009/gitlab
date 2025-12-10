@@ -4,8 +4,8 @@ import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
-import PageHeading from '~/vue_shared/components/page_heading.vue';
 import createAiCatalogAgent from 'ee/ai/catalog/graphql/mutations/create_ai_catalog_agent.mutation.graphql';
+import createAiCatalogThirdPartyFlow from 'ee/ai/catalog/graphql/mutations/create_ai_catalog_third_party_flow.mutation.graphql';
 import AiCatalogAgentsNew from 'ee/ai/catalog/pages/ai_catalog_agents_new.vue';
 import AiCatalogAgentForm from 'ee/ai/catalog/components/ai_catalog_agent_form.vue';
 import { AI_CATALOG_AGENTS_SHOW_ROUTE } from 'ee/ai/catalog/router/constants';
@@ -13,6 +13,7 @@ import {
   mockAgent,
   mockCreateAiCatalogAgentSuccessMutation,
   mockCreateAiCatalogAgentErrorMutation,
+  mockCreateAiCatalogThirdPartyFlowSuccessMutation,
 } from '../mock_data';
 
 Vue.use(VueApollo);
@@ -21,6 +22,7 @@ jest.mock('~/sentry/sentry_browser_wrapper');
 describe('AiCatalogAgentsNew', () => {
   let wrapper;
   let createAiCatalogAgentMock;
+  let createAiCatalogThirdPartyFlowMock;
 
   const mockToast = {
     show: jest.fn(),
@@ -29,9 +31,15 @@ describe('AiCatalogAgentsNew', () => {
     push: jest.fn(),
   };
 
-  const createComponent = ({ aiCatalogFlows = false } = {}) => {
+  const createComponent = () => {
     createAiCatalogAgentMock = jest.fn().mockResolvedValue(mockCreateAiCatalogAgentSuccessMutation);
-    const apolloProvider = createMockApollo([[createAiCatalogAgent, createAiCatalogAgentMock]]);
+    createAiCatalogThirdPartyFlowMock = jest
+      .fn()
+      .mockResolvedValue(mockCreateAiCatalogThirdPartyFlowSuccessMutation);
+    const apolloProvider = createMockApollo([
+      [createAiCatalogAgent, createAiCatalogAgentMock],
+      [createAiCatalogThirdPartyFlow, createAiCatalogThirdPartyFlowMock],
+    ]);
 
     wrapper = shallowMountExtended(AiCatalogAgentsNew, {
       apolloProvider,
@@ -39,37 +47,13 @@ describe('AiCatalogAgentsNew', () => {
         $router: mockRouter,
         $toast: mockToast,
       },
-      provide: {
-        glFeatures: {
-          aiCatalogFlows,
-        },
-      },
     });
   };
 
   const findForm = () => wrapper.findComponent(AiCatalogAgentForm);
-  const findPageHeading = () => wrapper.findComponent(PageHeading);
 
   beforeEach(() => {
     createComponent();
-  });
-
-  describe('Rendering', () => {
-    it('renders the correct description text when aiCatalogFlows feature flag is enabled', () => {
-      createComponent({ aiCatalogFlows: true });
-
-      expect(findPageHeading().text()).toContain(
-        'Use agents with GitLab Duo Chat to complete tasks and answer complex questions.',
-      );
-    });
-
-    it('renders the correct description text when aiCatalogFlows feature flag is disabled', () => {
-      createComponent({ aiCatalogFlows: false });
-
-      expect(findPageHeading().text()).toContain(
-        'Use agents with GitLab Duo Chat to complete tasks and answer complex questions.',
-      );
-    });
   });
 
   describe('Form Submit', () => {
@@ -80,8 +64,11 @@ describe('AiCatalogAgentsNew', () => {
       projectId: project.id,
       systemPrompt: 'A new system prompt',
       userPrompt: 'A new user prompt',
+      type: 'AGENT',
       public: false,
     };
+
+    const { type, ...input } = formValues;
 
     const submitForm = () => findForm().vm.$emit('submit', formValues);
 
@@ -90,7 +77,7 @@ describe('AiCatalogAgentsNew', () => {
 
       expect(createAiCatalogAgentMock).toHaveBeenCalledTimes(1);
       expect(createAiCatalogAgentMock).toHaveBeenCalledWith({
-        input: formValues,
+        input,
       });
     });
 
@@ -154,6 +141,32 @@ describe('AiCatalogAgentsNew', () => {
         expect(mockRouter.push).toHaveBeenCalledWith({
           name: AI_CATALOG_AGENTS_SHOW_ROUTE,
           params: { id: 1 },
+        });
+      });
+    });
+
+    describe('when item type is third-party flow', () => {
+      const thirdPartyFlowFormValues = {
+        name,
+        description,
+        projectId: project.id,
+        public: true,
+        definition: 'image:node@22',
+        type: 'THIRD_PARTY_FLOW',
+      };
+
+      const submitThirdPartyFlowForm = () =>
+        findForm().vm.$emit('submit', thirdPartyFlowFormValues);
+
+      it('sends a create request for third-party flow', () => {
+        submitThirdPartyFlowForm();
+
+        const { type: itemType, ...inputThirdPartyFlow } = thirdPartyFlowFormValues;
+
+        expect(createAiCatalogAgentMock).not.toHaveBeenCalled();
+        expect(createAiCatalogThirdPartyFlowMock).toHaveBeenCalledTimes(1);
+        expect(createAiCatalogThirdPartyFlowMock).toHaveBeenCalledWith({
+          input: inputThirdPartyFlow,
         });
       });
     });

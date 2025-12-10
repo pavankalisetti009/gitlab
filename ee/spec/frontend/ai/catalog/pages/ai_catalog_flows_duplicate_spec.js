@@ -9,7 +9,6 @@ import AiCatalogFlowsDuplicate from 'ee/ai/catalog/pages/ai_catalog_flows_duplic
 import AiCatalogFlowForm from 'ee/ai/catalog/components/ai_catalog_flow_form.vue';
 import { VERSION_PINNED, VERSION_LATEST } from 'ee/ai/catalog/constants';
 import { AI_CATALOG_FLOWS_SHOW_ROUTE } from 'ee/ai/catalog/router/constants';
-import createAiCatalogThirdPartyFlow from 'ee/ai/catalog/graphql/mutations/create_ai_catalog_third_party_flow.mutation.graphql';
 import {
   mockFlow,
   mockVersionProp,
@@ -27,9 +26,6 @@ describe('AiCatalogFlowsDuplicate', () => {
   const createAiCatalogFlowMock = jest
     .fn()
     .mockResolvedValue(mockCreateAiCatalogFlowSuccessMutation);
-  const createAiCatalogThirdPartyFlowMock = jest
-    .fn()
-    .mockResolvedValue(mockCreateAiCatalogFlowSuccessMutation);
   const mockToast = {
     show: jest.fn(),
   };
@@ -43,10 +39,7 @@ describe('AiCatalogFlowsDuplicate', () => {
   };
 
   const createComponent = ({ provide = {}, props = {} } = {}) => {
-    const apolloProvider = createMockApollo([
-      [createAiCatalogFlow, createAiCatalogFlowMock],
-      [createAiCatalogThirdPartyFlow, createAiCatalogThirdPartyFlowMock],
-    ]);
+    const apolloProvider = createMockApollo([[createAiCatalogFlow, createAiCatalogFlowMock]]);
 
     wrapper = shallowMountExtended(AiCatalogFlowsDuplicate, {
       apolloProvider,
@@ -78,7 +71,6 @@ describe('AiCatalogFlowsDuplicate', () => {
     it('sets initial values based on the versionKey, but always private and without a project', async () => {
       const definition = 'This is the pinned version value';
       const expectedInitialValues = {
-        type: 'FLOW',
         name: `Copy of ${mockFlow.name}`,
         description: mockFlow.description,
         definition,
@@ -111,7 +103,6 @@ describe('AiCatalogFlowsDuplicate', () => {
     it('sets initial values based on the latestVersion versionKey, but always private and without a project', async () => {
       const definition = 'This is the latest version value';
       const expectedInitialValues = {
-        type: 'FLOW',
         name: `Copy of ${mockFlow.name}`,
         description: mockFlow.description,
         definition,
@@ -154,7 +145,6 @@ describe('AiCatalogFlowsDuplicate', () => {
       projectId: project.id,
       definition: mockFlow.definition,
       public: true,
-      itemType: 'FLOW',
     };
 
     const submitForm = () => findForm().vm.$emit('submit', formValues);
@@ -166,11 +156,9 @@ describe('AiCatalogFlowsDuplicate', () => {
     it('sends a create request', () => {
       submitForm();
 
-      const { itemType, ...input } = formValues;
-
       expect(createAiCatalogFlowMock).toHaveBeenCalledTimes(1);
       expect(createAiCatalogFlowMock).toHaveBeenCalledWith({
-        input,
+        input: formValues,
       });
     });
 
@@ -180,41 +168,6 @@ describe('AiCatalogFlowsDuplicate', () => {
       await submitForm();
 
       expect(findForm().props('isLoading')).toBe(true);
-    });
-
-    describe('when flow type is third-party flow', () => {
-      beforeEach(() => {
-        createComponent({
-          provide: {
-            glFeatures: {
-              aiCatalogThirdPartyFlows: true,
-            },
-          },
-        });
-      });
-
-      const thirdPartyFlowFormValues = {
-        name,
-        description,
-        projectId: project.id,
-        public: true,
-        itemType: 'THIRD_PARTY_FLOW',
-        definition: 'image:node@22',
-      };
-
-      const submitThirdPartyForm = () => findForm().vm.$emit('submit', thirdPartyFlowFormValues);
-
-      it('sends a create request for third-party flow', () => {
-        submitThirdPartyForm();
-
-        const { itemType, ...input } = thirdPartyFlowFormValues;
-
-        expect(createAiCatalogFlowMock).not.toHaveBeenCalled();
-        expect(createAiCatalogThirdPartyFlowMock).toHaveBeenCalledTimes(1);
-        expect(createAiCatalogThirdPartyFlowMock).toHaveBeenCalledWith({
-          input,
-        });
-      });
     });
 
     describe('when request succeeds', () => {

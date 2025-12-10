@@ -10,6 +10,7 @@ import aiCatalogBuiltInToolsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog
 import FormProjectDropdown from 'ee/ai/catalog/components/form_project_dropdown.vue';
 import FormGroup from 'ee/ai/catalog/components/form_group.vue';
 import VisibilityLevelRadioGroup from 'ee/ai/catalog/components//visibility_level_radio_group.vue';
+import FormAgentType from 'ee/ai/catalog/components/form_agent_type.vue';
 import { VISIBILITY_LEVEL_PRIVATE, VISIBILITY_LEVEL_PUBLIC } from 'ee/ai/catalog/constants';
 import { mockToolsIds, mockToolsQueryResponse } from '../mock_data';
 
@@ -23,6 +24,7 @@ describe('AiCatalogAgentForm', () => {
   const findForm = () => wrapper.findComponent(GlForm);
   const findProjectDropdown = () => wrapper.findComponent(FormProjectDropdown);
   const findVisibilityLevelRadioGroup = () => wrapper.findComponent(VisibilityLevelRadioGroup);
+  const findAgentType = () => wrapper.findComponent(FormAgentType);
   const findNameField = () => wrapper.findByTestId('agent-form-input-name');
   const findDescriptionField = () => wrapper.findByTestId('agent-form-textarea-description');
   const findSystemPromptField = () => wrapper.findByTestId('agent-form-textarea-system-prompt');
@@ -46,11 +48,17 @@ describe('AiCatalogAgentForm', () => {
     systemPrompt: 'You are a helpful assistant',
     public: true,
     tools: [],
+    type: 'AGENT',
   };
 
   const mockToolsQueryHandler = jest.fn().mockResolvedValue(mockToolsQueryResponse);
 
-  const createWrapper = ({ props = {}, projectId = '1000000', isGlobal = false } = {}) => {
+  const createWrapper = ({
+    props = {},
+    projectId = '1000000',
+    isGlobal = false,
+    provide = {},
+  } = {}) => {
     mockApollo = createMockApollo([[aiCatalogBuiltInToolsQuery, mockToolsQueryHandler]]);
 
     wrapper = shallowMountExtended(AiCatalogAgentForm, {
@@ -62,6 +70,10 @@ describe('AiCatalogAgentForm', () => {
       provide: {
         projectId,
         isGlobal,
+        glFeatures: {
+          aiCatalogThirdPartyFlows: true,
+        },
+        ...provide,
       },
       mocks: {
         $route: {
@@ -84,6 +96,7 @@ describe('AiCatalogAgentForm', () => {
       expect(findDescriptionField().props('value')).toBe(initialValues.description);
       expect(findSystemPromptField().props('value')).toBe(initialValues.systemPrompt);
       expect(findVisibilityLevelRadioGroup().props('value')).toBe(VISIBILITY_LEVEL_PUBLIC);
+      expect(findAgentType().props('value')).toBe(initialValues.type);
     });
 
     it('renders the form with default values when no props are provided and form is global', () => {
@@ -94,6 +107,7 @@ describe('AiCatalogAgentForm', () => {
       expect(findDescriptionField().props('value')).toBe('');
       expect(findSystemPromptField().props('value')).toBe('');
       expect(findVisibilityLevelRadioGroup().props('value')).toBe(VISIBILITY_LEVEL_PRIVATE);
+      expect(findAgentType().props('value')).toBe('AGENT');
     });
 
     it('renders the form with default values and provided project when no props are provided and form is not global', () => {
@@ -104,12 +118,21 @@ describe('AiCatalogAgentForm', () => {
       expect(findDescriptionField().props('value')).toBe('');
       expect(findSystemPromptField().props('value')).toBe('');
       expect(findVisibilityLevelRadioGroup().props('value')).toBe(VISIBILITY_LEVEL_PRIVATE);
+      expect(findAgentType().props('value')).toBe('AGENT');
     });
 
-    it('does not render project dropdown when in edit mode', () => {
-      createWrapper({ props: { mode: 'edit' } });
+    describe('when in edit mode', () => {
+      beforeEach(() => {
+        createWrapper({ props: { mode: 'edit' } });
+      });
 
-      expect(findProjectDropdown().exists()).toBe(false);
+      it('does not render project dropdown', () => {
+        expect(findProjectDropdown().exists()).toBe(false);
+      });
+
+      it('renders agent type as disabled', () => {
+        expect(findAgentType().props('disabled')).toBe(true);
+      });
     });
   });
 
@@ -157,6 +180,22 @@ describe('AiCatalogAgentForm', () => {
           .props('selectedTokens')
           .map((t) => t.name);
         expect(selectedTools).toStrictEqual(['Ci Linter', 'Gitlab Blob Search', 'Run Git Command']);
+      });
+    });
+  });
+
+  describe('Agent Type Field', () => {
+    describe('when aiCatalogThirdPartyFlows is disabled', () => {
+      it('does not render the agent type field', () => {
+        createWrapper({
+          provide: {
+            glFeatures: {
+              aiCatalogThirdPartyFlows: false,
+            },
+          },
+        });
+
+        expect(findAgentType().exists()).toBe(false);
       });
     });
   });

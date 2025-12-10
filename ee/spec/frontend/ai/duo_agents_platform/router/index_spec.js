@@ -21,7 +21,6 @@ describe('Agents Platform Router', () => {
   beforeEach(() => {
     gon.features = {
       aiCatalogFlows: false,
-      aiCatalogThirdPartyFlows: false,
     };
   });
 
@@ -108,55 +107,6 @@ describe('Agents Platform Router', () => {
       beforeEach(() => {
         gon.features = {
           aiCatalogFlows: true,
-          aiCatalogThirdPartyFlows: false,
-        };
-      });
-
-      it('includes flows routes', () => {
-        router = createRouter(baseRoute, 'project');
-        const { routes } = router.options;
-        const flowsRoute = routes.find((route) => route.path === '/flows');
-
-        expect(flowsRoute).toBeDefined();
-      });
-
-      it('redirect to flows base route when path does not exist', async () => {
-        router = createRouter(baseRoute, 'project');
-        await router.push('/flows/invalid');
-
-        expect(router.currentRoute.path).toBe('/flows');
-      });
-    });
-
-    describe('when aiCatalogThirdPartyFlows is enabled', () => {
-      beforeEach(() => {
-        gon.features = {
-          aiCatalogFlows: false,
-          aiCatalogThirdPartyFlows: true,
-        };
-      });
-
-      it('includes flows routes', () => {
-        router = createRouter(baseRoute, 'project');
-        const { routes } = router.options;
-        const flowsRoute = routes.find((route) => route.path === '/flows');
-
-        expect(flowsRoute).toBeDefined();
-      });
-
-      it('redirect to flows base route when path does not exist', async () => {
-        router = createRouter(baseRoute, 'project');
-        await router.push('/flows/invalid');
-
-        expect(router.currentRoute.path).toBe('/flows');
-      });
-    });
-
-    describe('when both aiCatalogFlows and aiCatalogThirdPartyFlows are enabled', () => {
-      beforeEach(() => {
-        gon.features = {
-          aiCatalogFlows: true,
-          aiCatalogThirdPartyFlows: true,
         };
       });
 
@@ -199,11 +149,10 @@ describe('Agents Platform Router', () => {
       });
     });
 
-    describe('when both feature flags are disabled', () => {
+    describe('when aiCatalogFlows is disabled', () => {
       beforeEach(() => {
         gon.features = {
           aiCatalogFlows: false,
-          aiCatalogThirdPartyFlows: false,
         };
       });
 

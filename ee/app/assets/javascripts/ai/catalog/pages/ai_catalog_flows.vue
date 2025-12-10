@@ -4,7 +4,6 @@ import {
   VISIBILITY_LEVEL_PUBLIC_STRING,
   VISIBILITY_LEVEL_PRIVATE_STRING,
 } from '~/visibility_level/constants';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { InternalEvents } from '~/tracking';
 import aiCatalogFlowsQuery from '../graphql/queries/ai_catalog_flows.query.graphql';
 import AiCatalogListHeader from '../components/ai_catalog_list_header.vue';
@@ -16,7 +15,6 @@ import {
   TRACK_EVENT_VIEW_AI_CATALOG_ITEM_INDEX,
   TRACK_EVENT_TYPE_FLOW,
 } from '../constants';
-import { createAvailableFlowItemTypes } from '../utils';
 
 export default {
   name: 'AiCatalogFlows',
@@ -24,13 +22,12 @@ export default {
     AiCatalogListWrapper,
     AiCatalogListHeader,
   },
-  mixins: [glFeatureFlagsMixin(), InternalEvents.mixin()],
+  mixins: [InternalEvents.mixin()],
   apollo: {
     aiCatalogFlows: {
       query: aiCatalogFlowsQuery,
       variables() {
         return {
-          itemTypes: this.itemTypes,
           before: null,
           after: null,
           first: PAGE_SIZE,
@@ -53,15 +50,6 @@ export default {
     };
   },
   computed: {
-    isFlowsAvailable() {
-      return this.glFeatures.aiCatalogFlows;
-    },
-    itemTypes() {
-      return createAvailableFlowItemTypes({
-        isFlowsEnabled: this.isFlowsAvailable,
-        isThirdPartyFlowsEnabled: this.glFeatures.aiCatalogThirdPartyFlows,
-      });
-    },
     isLoading() {
       return this.$apollo.queries.aiCatalogFlows.loading;
     },

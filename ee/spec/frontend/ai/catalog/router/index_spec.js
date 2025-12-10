@@ -49,7 +49,6 @@ describe('AI Catalog Router', () => {
     beforeEach(() => {
       gon.features = {
         aiCatalogFlows: true,
-        aiCatalogThirdPartyFlows: false,
       };
       router = createRouter();
     });
@@ -68,57 +67,10 @@ describe('AI Catalog Router', () => {
     });
   });
 
-  describe('When aiCatalogThirdPartyFlows feature flag is on', () => {
+  describe('When aiCatalogFlows feature flag is off', () => {
     beforeEach(() => {
       gon.features = {
         aiCatalogFlows: false,
-        aiCatalogThirdPartyFlows: true,
-      };
-      router = createRouter();
-    });
-
-    it.each`
-      testName             | path                            | expectedRouteName
-      ${'flows index'}     | ${'/flows'}                     | ${AI_CATALOG_FLOWS_ROUTE}
-      ${'flows show'}      | ${`/flows/${agentId}`}          | ${AI_CATALOG_FLOWS_SHOW_ROUTE}
-      ${'flows new'}       | ${'/flows/new'}                 | ${AI_CATALOG_FLOWS_NEW_ROUTE}
-      ${'flows edit'}      | ${`/flows/${flowId}/edit`}      | ${AI_CATALOG_FLOWS_EDIT_ROUTE}
-      ${'flows duplicate'} | ${`/flows/${flowId}/duplicate`} | ${AI_CATALOG_FLOWS_DUPLICATE_ROUTE}
-    `('renders $testName child route', async ({ path, expectedRouteName }) => {
-      await router.push(path);
-
-      expect(router.currentRoute.name).toBe(expectedRouteName);
-    });
-  });
-
-  describe('When both flow feature flags are on', () => {
-    beforeEach(() => {
-      gon.features = {
-        aiCatalogFlows: true,
-        aiCatalogThirdPartyFlows: true,
-      };
-      router = createRouter();
-    });
-
-    it.each`
-      testName             | path                            | expectedRouteName
-      ${'flows index'}     | ${'/flows'}                     | ${AI_CATALOG_FLOWS_ROUTE}
-      ${'flows show'}      | ${`/flows/${agentId}`}          | ${AI_CATALOG_FLOWS_SHOW_ROUTE}
-      ${'flows new'}       | ${'/flows/new'}                 | ${AI_CATALOG_FLOWS_NEW_ROUTE}
-      ${'flows edit'}      | ${`/flows/${flowId}/edit`}      | ${AI_CATALOG_FLOWS_EDIT_ROUTE}
-      ${'flows duplicate'} | ${`/flows/${flowId}/duplicate`} | ${AI_CATALOG_FLOWS_DUPLICATE_ROUTE}
-    `('renders $testName child route', async ({ path, expectedRouteName }) => {
-      await router.push(path);
-
-      expect(router.currentRoute.name).toBe(expectedRouteName);
-    });
-  });
-
-  describe('When both flow feature flags are off', () => {
-    beforeEach(() => {
-      gon.features = {
-        aiCatalogFlows: false,
-        aiCatalogThirdPartyFlows: false,
       };
       router = createRouter();
     });

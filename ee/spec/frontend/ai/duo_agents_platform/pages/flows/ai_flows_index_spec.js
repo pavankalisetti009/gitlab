@@ -55,10 +55,6 @@ describe('AiFlowsIndex', () => {
     projectId: mockProjectId,
     projectPath: mockProjectPath,
     exploreAiCatalogPath: '/explore/ai-catalog',
-    glFeatures: {
-      aiCatalogFlows: true,
-      aiCatalogThirdPartyFlows: true,
-    },
   };
 
   const createComponent = ({ provide = {} } = {}) => {
@@ -108,7 +104,7 @@ describe('AiFlowsIndex', () => {
         emptyStateDescription: 'Flows use multiple agents to complete tasks automatically.',
         emptyStateButtonHref: '/explore/ai-catalog/flows',
         emptyStateButtonText: 'Explore the AI Catalog',
-        itemTypes: ['FLOW', 'THIRD_PARTY_FLOW'],
+        itemTypes: ['FLOW'],
       });
     });
   });
@@ -133,7 +129,6 @@ describe('AiFlowsIndex', () => {
     it('fetches list data', () => {
       expect(mockProjectFlowsQueryHandler).toHaveBeenCalledWith({
         projectPath: mockProjectPath,
-        itemTypes: ['FLOW', 'THIRD_PARTY_FLOW'],
         allAvailable: false,
         search: '',
         after: null,
@@ -157,7 +152,6 @@ describe('AiFlowsIndex', () => {
         await nextTick();
         expect(mockProjectFlowsQueryHandler).toHaveBeenCalledWith({
           projectPath: mockProjectPath,
-          itemTypes: ['FLOW', 'THIRD_PARTY_FLOW'],
           search: '',
           allAvailable: false,
           after: null,
@@ -172,10 +166,9 @@ describe('AiFlowsIndex', () => {
         await nextTick();
         expect(mockProjectFlowsQueryHandler).toHaveBeenCalledWith({
           projectPath: mockProjectPath,
-          itemTypes: ['FLOW', 'THIRD_PARTY_FLOW'],
           search: '',
-          allAvailable: false,
           after: 'eyJpZCI6IjM1In0',
+          allAvailable: false,
           before: null,
           first: 20,
           last: null,
@@ -194,7 +187,6 @@ describe('AiFlowsIndex', () => {
 
         expect(mockProjectFlowsQueryHandler).toHaveBeenCalledWith({
           projectPath: mockProjectPath,
-          itemTypes: ['FLOW', 'THIRD_PARTY_FLOW'],
           allAvailable: false,
           search: 'test flow',
           after: null,
@@ -215,7 +207,6 @@ describe('AiFlowsIndex', () => {
 
         expect(mockProjectFlowsQueryHandler).toHaveBeenLastCalledWith({
           projectPath: mockProjectPath,
-          itemTypes: ['FLOW', 'THIRD_PARTY_FLOW'],
           allAvailable: false,
           search: '',
           after: null,
@@ -236,7 +227,6 @@ describe('AiFlowsIndex', () => {
 
         expect(mockProjectFlowsQueryHandler).toHaveBeenLastCalledWith({
           projectPath: mockProjectPath,
-          itemTypes: ['FLOW', 'THIRD_PARTY_FLOW'],
           allAvailable: false,
           search: 'test flow',
           after: null,

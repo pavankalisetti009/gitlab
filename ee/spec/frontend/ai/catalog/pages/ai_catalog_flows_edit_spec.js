@@ -7,7 +7,6 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import AiCatalogFlowsEdit from 'ee/ai/catalog/pages/ai_catalog_flows_edit.vue';
 import AiCatalogFlowForm from 'ee/ai/catalog/components/ai_catalog_flow_form.vue';
 import updateAiCatalogFlow from 'ee/ai/catalog/graphql/mutations/update_ai_catalog_flow.mutation.graphql';
-import updateAiCatalogThirdPartyFlow from 'ee/ai/catalog/graphql/mutations/update_ai_catalog_third_party_flow.mutation.graphql';
 import { VERSION_LATEST } from 'ee/ai/catalog/constants';
 import { AI_CATALOG_FLOWS_SHOW_ROUTE } from 'ee/ai/catalog/router/constants';
 import {
@@ -15,7 +14,6 @@ import {
   mockUpdateAiCatalogFlowSuccessMutation,
   mockUpdateAiCatalogFlowErrorMutation,
   mockFlowConfigurationForProject,
-  mockThirdPartyFlow,
   mockVersionProp,
 } from '../mock_data';
 
@@ -43,15 +41,9 @@ describe('AiCatalogFlowsEdit', () => {
   const mockUpdateAiCatalogFlowHandler = jest
     .fn()
     .mockResolvedValue(mockUpdateAiCatalogFlowSuccessMutation);
-  const mockUpdateAiCatalogThirdPartyFlowHandler = jest
-    .fn()
-    .mockResolvedValue(mockUpdateAiCatalogFlowSuccessMutation);
 
   const createComponent = ({ props } = {}) => {
-    mockApollo = createMockApollo([
-      [updateAiCatalogFlow, mockUpdateAiCatalogFlowHandler],
-      [updateAiCatalogThirdPartyFlow, mockUpdateAiCatalogThirdPartyFlowHandler],
-    ]);
+    mockApollo = createMockApollo([[updateAiCatalogFlow, mockUpdateAiCatalogFlowHandler]]);
 
     wrapper = shallowMount(AiCatalogFlowsEdit, {
       apolloProvider: mockApollo,
@@ -79,7 +71,6 @@ describe('AiCatalogFlowsEdit', () => {
 
     it('renders initial values with expected version data', async () => {
       const expectedInitialValues = {
-        type: 'FLOW',
         name: mockFlow.name,
         description: mockFlow.description,
         projectId: 'gid://gitlab/Project/1',
@@ -115,7 +106,6 @@ describe('AiCatalogFlowsEdit', () => {
       description,
       public: true,
       definition: latestVersion.definition,
-      itemType: 'FLOW',
     };
 
     const submitForm = () => findForm().vm.$emit('submit', formValues);
@@ -124,12 +114,9 @@ describe('AiCatalogFlowsEdit', () => {
       await findForm().vm.$emit('submit', formValues);
       await waitForPromises();
 
-      const { itemType, ...input } = formValues;
-
-      expect(mockUpdateAiCatalogThirdPartyFlowHandler).not.toHaveBeenCalled();
       expect(mockUpdateAiCatalogFlowHandler).toHaveBeenCalledTimes(1);
       expect(mockUpdateAiCatalogFlowHandler).toHaveBeenCalledWith({
-        input: { ...input, id: mockFlow.id },
+        input: { ...formValues, id: mockFlow.id },
       });
     });
 
@@ -138,37 +125,6 @@ describe('AiCatalogFlowsEdit', () => {
 
       await findForm().vm.$emit('submit', {});
       expect(findForm().props('isLoading')).toBe(true);
-    });
-
-    describe('when flow type is third-party flow', () => {
-      beforeEach(() => {
-        createComponent({
-          props: {
-            aiCatalogFlow: mockThirdPartyFlow,
-          },
-        });
-      });
-      const thirdPartyFlowFormValues = {
-        name,
-        description,
-        public: true,
-        definition: 'image:node@22',
-        itemType: 'THIRD_PARTY_FLOW',
-      };
-
-      const submitThirdPartyForm = () => findForm().vm.$emit('submit', thirdPartyFlowFormValues);
-
-      it('sends a create request for third-party flow', () => {
-        submitThirdPartyForm();
-
-        const { itemType, ...input } = thirdPartyFlowFormValues;
-
-        expect(mockUpdateAiCatalogFlowHandler).not.toHaveBeenCalled();
-        expect(mockUpdateAiCatalogThirdPartyFlowHandler).toHaveBeenCalledTimes(1);
-        expect(mockUpdateAiCatalogThirdPartyFlowHandler).toHaveBeenCalledWith({
-          input: { ...input, id: mockThirdPartyFlow.id },
-        });
-      });
     });
 
     describe('when request succeeds', () => {
