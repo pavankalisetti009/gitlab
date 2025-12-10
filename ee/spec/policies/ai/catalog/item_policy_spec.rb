@@ -5,6 +5,7 @@ require 'spec_helper'
 RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_category: :workflow_catalog do
   subject(:policy) { described_class.new(current_user, item) }
 
+  let_it_be(:organization_owner) { create(:organization_user, :owner, organization: current_organization).user }
   let_it_be(:developer) { create(:user) }
   let_it_be(:maintainer) { create(:user) }
   let_it_be(:reporter) { create(:user) }
@@ -14,7 +15,6 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
     create(:project, :private, guests: guest, reporters: reporter, developers: developer, maintainers: maintainer)
   end
 
-  let_it_be(:other_organization) { create(:organization) }
   let_it_be_with_reload(:private_item) { create(:ai_catalog_item, project: project, public: false) }
   let_it_be_with_reload(:public_item) { create(:ai_catalog_item, project: project, public: true) }
 
@@ -67,7 +67,7 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
 
     it_behaves_like 'report_ai_catalog_item permission', allowed: false
 
-    include_examples 'all permissions when admin'
+    include_examples 'admin permissions when can admin organization'
   end
 
   shared_examples 'read-only permissions' do
@@ -76,7 +76,7 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
     it { is_expected.to be_disallowed(:force_hard_delete_ai_catalog_item) }
     it { is_expected.to be_allowed(:read_ai_catalog_item) }
 
-    include_examples 'all permissions when admin'
+    include_examples 'admin permissions when can admin organization'
 
     it_behaves_like 'no permissions with global_ai_catalog feature flag disabled'
     it_behaves_like 'no permissions when StageCheck :ai_catalog is false, unless item is public'
@@ -90,7 +90,7 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
     it { is_expected.to be_allowed(:read_ai_catalog_item) }
     it { is_expected.to be_disallowed(:force_hard_delete_ai_catalog_item) }
 
-    include_examples 'all permissions when admin'
+    include_examples 'admin permissions when can admin organization'
 
     it_behaves_like 'no permissions with global_ai_catalog feature flag disabled'
     it_behaves_like 'no permissions when StageCheck :ai_catalog is false, unless item is public'
@@ -98,14 +98,23 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
     it_behaves_like 'read-only permissions with deleted item'
   end
 
-  shared_examples 'all permissions when admin' do
+  shared_examples 'admin permissions when can admin organization' do
     context 'when admin', :enable_admin_mode do
       let(:current_user) { admin }
 
       it { is_expected.to be_allowed(:admin_ai_catalog_item) }
       it { is_expected.to be_allowed(:delete_ai_catalog_item) }
-      it { is_expected.to be_allowed(:force_hard_delete_ai_catalog_item) }
       it { is_expected.to be_allowed(:read_ai_catalog_item) }
+      it { is_expected.to be_allowed(:force_hard_delete_ai_catalog_item) }
+    end
+
+    context 'when organization owner' do
+      let(:current_user) { organization_owner }
+
+      it { is_expected.to be_allowed(:admin_ai_catalog_item) }
+      it { is_expected.to be_allowed(:delete_ai_catalog_item) }
+      it { is_expected.to be_allowed(:read_ai_catalog_item) }
+      it { is_expected.to be_disallowed(:force_hard_delete_ai_catalog_item) }
     end
   end
 
@@ -127,7 +136,7 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
     it { is_expected.to be_disallowed(:force_hard_delete_ai_catalog_item) }
     it { is_expected.to be_allowed(:read_ai_catalog_item) }
 
-    include_examples 'all permissions when admin'
+    include_examples 'admin permissions when can admin organization'
   end
 
   shared_examples 'no permissions when StageCheck :ai_catalog is false, unless item is public' do
@@ -143,7 +152,7 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
       expect(policy.allowed?(:read_ai_catalog_item)).to eq(allowed)
     end
 
-    include_examples 'all permissions when admin'
+    include_examples 'admin permissions when can admin organization'
   end
 
   shared_examples 'no permissions when project Duo features disabled, unless item is public' do
@@ -159,7 +168,7 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
       expect(policy.allowed?(:read_ai_catalog_item)).to eq(allowed)
     end
 
-    include_examples 'all permissions when admin'
+    include_examples 'admin permissions when can admin organization'
   end
 
   context 'when user is not a member' do

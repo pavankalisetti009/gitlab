@@ -23,12 +23,8 @@ module Ai
         @subject.project && ::Gitlab::Llm::StageCheck.available?(@subject.project, :ai_catalog_flows)
       end
 
-      condition(:member_access) do
-        can?(:member_access, @subject.project)
-      end
-
-      condition(:developer_access) do
-        can?(:developer_access, @subject.project)
+      condition(:is_project_member) do
+        @user && @subject.project&.member?(@user)
       end
 
       condition(:maintainer_access) do
@@ -55,23 +51,21 @@ module Ai
         ::Gitlab::CurrentSettings.current_application_settings.abuse_notification_email.present?
       end
 
-      rule { public_item | member_access }.policy do
+      condition(:can_admin_organization) do
+        can?(:admin_organization, @subject.organization)
+      end
+
+      rule { public_item | is_project_member | can_admin_organization }.policy do
         enable :read_ai_catalog_item
         enable :report_ai_catalog_item
       end
 
       rule { maintainer_access }.policy do
-        enable :read_ai_catalog_item
-        enable :report_ai_catalog_item
         enable :admin_ai_catalog_item # (Create and update)
         enable :delete_ai_catalog_item
       end
 
       rule { admin }.policy do
-        enable :read_ai_catalog_item
-        enable :report_ai_catalog_item
-        enable :admin_ai_catalog_item # (Create and update)
-        enable :delete_ai_catalog_item
         enable :force_hard_delete_ai_catalog_item
       end
 
@@ -79,46 +73,46 @@ module Ai
         prevent :report_ai_catalog_item
       end
 
-      rule { ~ai_catalog_enabled & ~admin }.policy do
+      rule { ~ai_catalog_enabled & ~can_admin_organization }.policy do
         prevent :read_ai_catalog_item
         prevent :admin_ai_catalog_item
         prevent :delete_ai_catalog_item
         prevent :report_ai_catalog_item
       end
 
-      rule { deleted_item & ~admin }.policy do
+      rule { deleted_item & ~can_admin_organization }.policy do
         prevent :admin_ai_catalog_item
         prevent :delete_ai_catalog_item
       end
 
-      rule { ~public_item & ~project_ai_catalog_available & ~admin }.policy do
+      rule { ~public_item & ~project_ai_catalog_available & ~can_admin_organization }.policy do
         prevent :read_ai_catalog_item
         prevent :report_ai_catalog_item
       end
 
-      rule { ~project_ai_catalog_available & ~admin }.policy do
+      rule { ~project_ai_catalog_available & ~can_admin_organization }.policy do
         prevent :admin_ai_catalog_item
         prevent :delete_ai_catalog_item
       end
 
-      rule { flow & ~flows_enabled & ~admin }.policy do
+      rule { flow & ~flows_enabled & ~can_admin_organization }.policy do
         prevent :read_ai_catalog_item
         prevent :admin_ai_catalog_item
         prevent :delete_ai_catalog_item
         prevent :report_ai_catalog_item
       end
 
-      rule { flow & ~flows_available & ~admin }.policy do
+      rule { flow & ~flows_available & ~can_admin_organization }.policy do
         prevent :admin_ai_catalog_item
         prevent :delete_ai_catalog_item
       end
 
-      rule { flow & ~public_item & ~flows_available & ~admin }.policy do
+      rule { flow & ~public_item & ~flows_available & ~can_admin_organization }.policy do
         prevent :read_ai_catalog_item
         prevent :report_ai_catalog_item
       end
 
-      rule { third_party_flow & ~third_party_flows_enabled & ~admin }.policy do
+      rule { third_party_flow & ~third_party_flows_enabled & ~can_admin_organization }.policy do
         prevent :read_ai_catalog_item
         prevent :admin_ai_catalog_item
         prevent :delete_ai_catalog_item
