@@ -60,6 +60,11 @@ can access the website.
 When [SAML SSO](../../group/saml_sso/_index.md) is configured for the associated group
 and the access control is enabled, users must authenticate using SSO before accessing the website.
 
+When public access is disabled at the [instance](../../../administration/pages/_index.md#disable-public-access-to-all-pages-sites)
+or [group](#remove-public-access-for-group-pages) level, projects lose the **Everyone**
+visibility level option and are restricted to project members or everyone with access,
+depending on the project's visibility setting.
+
 ## Remove public access for group Pages
 
 {{< history >}}
