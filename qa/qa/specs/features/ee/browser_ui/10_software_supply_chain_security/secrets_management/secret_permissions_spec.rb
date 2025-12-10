@@ -7,7 +7,7 @@ module QA
     only: { job: 'gdk-instance-secrets-manager' },
     feature_category: :secrets_management
   ) do
-    include_context 'secrets manager setup'
+    include_context 'secrets manager with all users'
     describe 'Update and Delete on secret permissions' do
       context 'when owner enables secrets manager' do
         it 'automatically creates owner permissions and displays them in roles tab',
