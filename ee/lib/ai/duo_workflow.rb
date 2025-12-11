@@ -59,7 +59,7 @@ module Ai
         return true if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
 
         # For self-managed/dedicated instances, use instance-level settings
-        ::Ai::Setting.instance.duo_agent_platform_enabled
+        ai_settings.duo_agent_platform_enabled
       end
 
       private

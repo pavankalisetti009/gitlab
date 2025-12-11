@@ -678,6 +678,8 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
         let(:params) { super().merge(ai_catalog_item_version_id: ai_catalog_item_version.id) }
 
         before do
+          # TODO: use factory instead https://gitlab.com/gitlab-org/gitlab/-/issues/583818
+          allow(::Ai::DuoWorkflow).to receive(:duo_agent_platform_available?).and_return(true)
           allow_next_instance_of(Ai::Catalog::ItemConsumersFinder) do |finder|
             allow(finder).to receive(:execute).and_return(class_double(::Ai::Catalog::ItemConsumer, exists?: true))
           end
