@@ -1,10 +1,22 @@
 import { GITLAB_DEFAULT_MODEL } from 'ee/ai/model_selection/constants';
-import { formatDefaultModelText } from 'ee/ai/shared/model_selection/utils';
+import { formatDefaultModelData } from 'ee/ai/shared/model_selection/utils';
 
-describe('formatDefaultModelText', () => {
-  it('returns formatted default model name', () => {
-    const defaultModel = { name: 'Claude Sonnet 4.5', ref: GITLAB_DEFAULT_MODEL };
+describe('formatDefaultModelData', () => {
+  it('returns formatted default model data', () => {
+    const defaultModelData = {
+      name: 'Claude Sonnet 4.5',
+      ref: GITLAB_DEFAULT_MODEL,
+      modelProvider: 'Anthropic',
+      modelDescription: 'Fast, cost-effective responses.',
+      costIndicator: '$$$',
+    };
 
-    expect(formatDefaultModelText(defaultModel)).toBe('Claude Sonnet 4.5 - Default');
+    expect(formatDefaultModelData(defaultModelData)).toEqual({
+      text: 'Claude Sonnet 4.5 - Default',
+      value: GITLAB_DEFAULT_MODEL,
+      provider: 'Anthropic',
+      description: 'Fast, cost-effective responses.',
+      costIndicator: '$$$',
+    });
   });
 });

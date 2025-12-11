@@ -39,9 +39,8 @@ import ModelSelectDropdown from 'ee/ai/shared/feature_settings/model_select_drop
 import { createWebSocket, closeSocket } from '~/lib/utils/websocket_utils';
 import { fetchPolicies } from '~/lib/graphql';
 import { logError } from '~/lib/logger';
-import { GITLAB_DEFAULT_MODEL } from 'ee/ai/model_selection/constants';
 import { s__, sprintf } from '~/locale';
-import { formatDefaultModelText } from 'ee/ai/shared/model_selection/utils';
+import { formatDefaultModelData } from 'ee/ai/shared/model_selection/utils';
 import { WorkflowUtils } from '../utils/workflow_utils';
 import { ApolloUtils } from '../utils/apollo_utils';
 import {
@@ -217,14 +216,23 @@ export default {
       update(data) {
         const { selectableModels = [], defaultModel, pinnedModel } = data.aiChatAvailableModels;
 
-        const defaultModelName = formatDefaultModelText(defaultModel);
+        const formattedDefaultModel = defaultModel
+          ? formatDefaultModelData(defaultModel)
+          : undefined;
 
-        const models = selectableModels.map(({ ref, name, modelProvider, modelDescription }) => ({
-          text: ref === defaultModel?.ref ? defaultModelName : name,
-          value: ref === defaultModel?.ref ? GITLAB_DEFAULT_MODEL : ref,
-          provider: modelProvider,
-          description: modelDescription,
-        }));
+        const models = selectableModels.map(
+          ({ ref, name, modelProvider, modelDescription, costIndicator }) => {
+            const isDefaultModel = ref === defaultModel?.ref;
+
+            return {
+              text: isDefaultModel ? formattedDefaultModel?.text : name,
+              value: isDefaultModel ? formattedDefaultModel?.value : ref,
+              provider: modelProvider,
+              description: modelDescription,
+              costIndicator,
+            };
+          },
+        );
 
         this.pinnedModel = pinnedModel?.ref
           ? {
