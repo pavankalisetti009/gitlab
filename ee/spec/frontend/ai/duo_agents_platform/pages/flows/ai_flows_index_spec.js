@@ -5,6 +5,7 @@ import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 import AiFlowsIndex from 'ee/ai/duo_agents_platform/pages/flows/ai_flows_index.vue';
 import AddProjectItemConsumerModal from 'ee/ai/duo_agents_platform/components/catalog/add_project_item_consumer_modal.vue';
 import AiCatalogListHeader from 'ee/ai/catalog/components/ai_catalog_list_header.vue';
@@ -24,6 +25,10 @@ import {
   mockFlows,
   mockPageInfo,
 } from 'ee_jest/ai/catalog/mock_data';
+import {
+  TRACK_EVENT_VIEW_AI_CATALOG_PROJECT_MANAGED,
+  TRACK_EVENT_TYPE_FLOW,
+} from 'ee/ai/catalog/constants';
 import { mockProjectFlowsResponse } from '../../mock_data';
 
 jest.mock('~/sentry/sentry_browser_wrapper');
@@ -50,6 +55,8 @@ describe('AiFlowsIndex', () => {
     .mockResolvedValue(mockProjectUserPermissionsResponse);
   const createAiCatalogItemConsumerHandler = jest.fn();
   const mockProjectFlowsQueryHandler = jest.fn().mockResolvedValue(mockProjectFlowsResponse);
+
+  const { bindInternalEventDocument } = useMockInternalEventsTracking();
 
   const defaultProvide = {
     projectId: mockProjectId,
@@ -374,6 +381,42 @@ describe('AiFlowsIndex', () => {
 
       expect(findErrorsAlert().props('title')).toBe('Failed to disable flow');
       expect(findErrorsAlert().props('errors')).toEqual(['Some error message']);
+    });
+  });
+
+  describe('tracking events', () => {
+    describe('when "Managed" tab is clicked', () => {
+      it(`tracks ${TRACK_EVENT_VIEW_AI_CATALOG_PROJECT_MANAGED} event`, () => {
+        const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+        createComponent();
+        findAllTabs().at(1).vm.$emit('click');
+
+        expect(trackEventSpy).toHaveBeenCalledWith(
+          TRACK_EVENT_VIEW_AI_CATALOG_PROJECT_MANAGED,
+          { label: TRACK_EVENT_TYPE_FLOW },
+          undefined,
+        );
+      });
+    });
+
+    describe('when "Managed" tab is clicked but was already active', () => {
+      beforeEach(() => {
+        createComponent();
+        findTabs().vm.$emit('input', 1);
+      });
+
+      it(`does not ${TRACK_EVENT_VIEW_AI_CATALOG_PROJECT_MANAGED} event again`, () => {
+        const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+        findAllTabs().at(1).vm.$emit('click');
+
+        expect(trackEventSpy).not.toHaveBeenCalledWith(
+          TRACK_EVENT_VIEW_AI_CATALOG_PROJECT_MANAGED,
+          { label: TRACK_EVENT_TYPE_FLOW },
+          undefined,
+        );
+      });
     });
   });
 });
