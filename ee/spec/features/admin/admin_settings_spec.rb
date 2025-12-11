@@ -320,6 +320,23 @@ RSpec.describe 'Admin updates EE-only settings', :with_current_organization, fea
     end
   end
 
+  describe 'CI/CD Catalog settings', feature_category: :pipeline_composition do
+    before do
+      visit ci_cd_admin_application_settings_path
+    end
+
+    it 'changes CI/CD Catalog projects allowlist' do
+      within_testid('catalog-settings') do
+        fill_in 'application_setting_ci_cd_catalog_projects_allowlist_raw',
+          with: "gitlab-org/project1\ngitlab-org/.*"
+        click_button 'Save changes'
+      end
+
+      expect(page).to have_content 'Application settings saved successfully'
+      expect(current_settings.ci_cd_catalog_projects_allowlist).to match_array(['gitlab-org/project1', 'gitlab-org/.*'])
+    end
+  end
+
   describe 'package registry settings', feature_category: :package_registry do
     before do
       visit ci_cd_admin_application_settings_path

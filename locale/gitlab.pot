@@ -5527,6 +5527,9 @@ msgstr ""
 msgid "AdminSettings|By default, set a limit to 0 to have no limit."
 msgstr ""
 
+msgid "AdminSettings|CI/CD Catalog publishing allowlist"
+msgstr ""
+
 msgid "AdminSettings|CI/CD limits"
 msgstr ""
 
@@ -5549,6 +5552,9 @@ msgid "AdminSettings|Configure the Web IDE extension host domain."
 msgstr ""
 
 msgid "AdminSettings|Configure when dormant projects should be automatically deleted. %{linkStart}What are dormant projects?%{linkEnd}"
+msgstr ""
+
+msgid "AdminSettings|Control which projects can publish components to the CI/CD Catalog. Enter one project path or regular expression pattern per line.  For example: %{code_start}gitlab-org/my-project%{code_end}, %{code_start}gitlab-org/.*%{code_end}, or %{code_start}gitlab-org/security-.*%{code_end}. If empty, any project can publish."
 msgstr ""
 
 msgid "AdminSettings|Could not update extension host domain"
@@ -18663,6 +18669,9 @@ msgid "Configure %{snowplow_link_start}Snowplow%{snowplow_link_end} to track eve
 msgstr ""
 
 msgid "Configure CAPTCHAs, IP address limits, and other anti-spam measures."
+msgstr ""
+
+msgid "Configure CI/CD Catalog settings, including publishing restrictions."
 msgstr ""
 
 msgid "Configure Container Scanning in `.gitlab-ci.yml` using the GitLab managed template. You can [add variable overrides](https://docs.gitlab.com/ee/user/application_security/container_scanning/#customizing-the-container-scanning-settings) to customize Container Scanning settings."
