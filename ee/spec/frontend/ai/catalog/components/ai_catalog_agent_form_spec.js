@@ -23,6 +23,7 @@ describe('AiCatalogAgentForm', () => {
   const findErrorAlert = () => wrapper.findComponent(ErrorsAlert);
   const findForm = () => wrapper.findComponent(GlForm);
   const findProjectDropdown = () => wrapper.findComponent(FormProjectDropdown);
+  const findProjectFormGroup = () => wrapper.findComponent({ ref: 'fieldProject' });
   const findVisibilityLevelRadioGroup = () => wrapper.findComponent(VisibilityLevelRadioGroup);
   const findAgentType = () => wrapper.findComponent(FormAgentType);
   const findNameField = () => wrapper.findByTestId('agent-form-input-name');
@@ -268,6 +269,34 @@ describe('AiCatalogAgentForm', () => {
       findErrorAlert().vm.$emit('dismiss');
 
       expect(wrapper.emitted('dismiss-errors')).toHaveLength(1);
+    });
+  });
+
+  describe('Project field validation', () => {
+    beforeEach(() => {
+      createWrapper({ isGlobal: true });
+    });
+
+    it('shows validation error when form is submitted and project is not selected', async () => {
+      await findForm().vm.$emit('submit', {
+        preventDefault: jest.fn(),
+      });
+
+      expect(findProjectFormGroup().attributes('state')).toBeUndefined();
+    });
+
+    it('clears validation error when project is selected', async () => {
+      await findForm().vm.$emit('submit', {
+        preventDefault: jest.fn(),
+      });
+
+      findProjectDropdown().vm.$emit('input', 'gid://gitlab/Project/123');
+
+      await nextTick(); // formValues.projectId value updates, triggering watcher
+      await nextTick(); // formValues.projectId watcher executes
+      await nextTick(); // $nextTick callback executes, revalidating project field
+
+      expect(findProjectFormGroup().attributes('state')).toBe('true');
     });
   });
 });

@@ -126,6 +126,13 @@ export default {
       };
     },
   },
+  watch: {
+    'formValues.projectId': function validateProjectField() {
+      this.$nextTick(() => {
+        this.$refs.fieldProject?.validate();
+      });
+    },
+  },
   methods: {
     handleSubmit() {
       const isFormValid = this.validate();

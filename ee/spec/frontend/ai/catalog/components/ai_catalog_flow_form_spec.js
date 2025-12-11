@@ -1,3 +1,4 @@
+import { nextTick } from 'vue';
 import { GlForm } from '@gitlab/ui';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
@@ -17,6 +18,7 @@ describe('AiCatalogFlowForm', () => {
   const findErrorAlert = () => wrapper.findComponent(ErrorsAlert);
   const findForm = () => wrapper.findComponent(GlForm);
   const findProjectDropdown = () => wrapper.findComponent(FormProjectDropdown);
+  const findProjectFormGroup = () => wrapper.findComponent({ ref: 'fieldProject' });
   const findVisibilityLevelRadioGroup = () => wrapper.findComponent(VisibilityLevelRadioGroup);
   const findNameField = () => wrapper.findByTestId('flow-form-input-name');
   const findDescriptionField = () => wrapper.findByTestId('flow-form-textarea-description');
@@ -181,6 +183,34 @@ describe('AiCatalogFlowForm', () => {
       findErrorAlert().vm.$emit('dismiss');
 
       expect(wrapper.emitted('dismiss-errors')).toHaveLength(1);
+    });
+  });
+
+  describe('Project field validation', () => {
+    beforeEach(() => {
+      createWrapper({ isGlobal: true });
+    });
+
+    it('shows validation error when form is submitted and project is not selected', async () => {
+      await findForm().vm.$emit('submit', {
+        preventDefault: jest.fn(),
+      });
+
+      expect(findProjectFormGroup().attributes('state')).toBeUndefined();
+    });
+
+    it('clears validation error when project is selected', async () => {
+      await findForm().vm.$emit('submit', {
+        preventDefault: jest.fn(),
+      });
+
+      findProjectDropdown().vm.$emit('input', 'gid://gitlab/Project/123');
+
+      await nextTick(); // formValues.projectId value updates, triggering watcher
+      await nextTick(); // formValues.projectId watcher executes
+      await nextTick(); // $nextTick callback executes, revalidating project field
+
+      expect(findProjectFormGroup().attributes('state')).toBe('true');
     });
   });
 });

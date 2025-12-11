@@ -154,6 +154,13 @@ export default {
       return this.availableTools.filter((tool) => this.formValues.tools.includes(tool.id));
     },
   },
+  watch: {
+    'formValues.projectId': function validateProjectField() {
+      this.$nextTick(() => {
+        this.$refs.fieldProject?.validate();
+      });
+    },
+  },
   methods: {
     handleSubmit() {
       const isFormValid = this.validate();
