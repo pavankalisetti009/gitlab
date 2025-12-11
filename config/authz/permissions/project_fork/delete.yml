@@ -1,0 +1,6 @@
+---
+name: delete_project_fork
+description: Grants the ability to delete project forks
+feature_category: source_code_management
+boundaries:
+  - project

@@ -1,0 +1,8 @@
+---
+name: read_project_contributed
+description: Grants the ability to view projects user has contributed to
+feature_category: groups_and_projects
+permissions:
+  - read_project_contributed
+boundaries:
+  - user

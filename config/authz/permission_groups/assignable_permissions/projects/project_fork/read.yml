@@ -1,0 +1,8 @@
+---
+name: read_project_fork
+description: Grants the ability to view project forks
+feature_category: source_code_management
+permissions:
+  - read_project_fork
+boundaries:
+  - project

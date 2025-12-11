@@ -1,0 +1,6 @@
+---
+name: read_project_user
+description: Grants the ability to read project users
+feature_category: system_access
+boundaries:
+  - project

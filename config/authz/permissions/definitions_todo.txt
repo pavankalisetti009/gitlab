@@ -357,6 +357,7 @@ export_group_memberships
 export_requirements
 export_user_permissions
 export_work_items
+fork_project
 generate_description
 get_user_associations_count
 guest_access

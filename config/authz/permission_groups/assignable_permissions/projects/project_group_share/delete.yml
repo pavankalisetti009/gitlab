@@ -1,0 +1,8 @@
+---
+name: delete_project_group_share
+description: Grants the ability to delete project group links
+feature_category: groups_and_projects
+permissions:
+  - delete_project_group_share
+boundaries:
+  - project

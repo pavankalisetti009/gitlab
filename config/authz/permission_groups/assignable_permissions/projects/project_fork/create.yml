@@ -1,8 +1,8 @@
 ---
-name: fork_project
+name: create_project_fork
 description: Grants the ability to fork projects
 feature_category: source_code_management
 permissions:
-  - fork_project
+  - create_project_fork
 boundaries:
   - project

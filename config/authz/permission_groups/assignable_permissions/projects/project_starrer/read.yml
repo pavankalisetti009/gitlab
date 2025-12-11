@@ -1,0 +1,8 @@
+---
+name: read_project_starrer
+description: Grants the ability to view project starrers
+feature_category: groups_and_projects
+permissions:
+  - read_project_starrer
+boundaries:
+  - project
