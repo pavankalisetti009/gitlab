@@ -152,8 +152,8 @@ describe('AiGroupSettings', () => {
         duo_sast_fp_detection_availability: false,
         foundational_agents_statuses: expectedFilteredAgentStatuses,
         enabled_foundational_flows: [],
-        duo_agent_platform_enabled: true,
         ai_settings_attributes: {
+          duo_agent_platform_enabled: true,
           duo_workflow_mcp_enabled: false,
           foundational_agents_default_enabled: true,
         },
@@ -184,7 +184,9 @@ describe('AiGroupSettings', () => {
         expect(updateGroupSettings).toHaveBeenCalledWith(
           '100',
           expect.not.objectContaining({
-            duo_agent_platform_enabled: expect.anything(),
+            ai_settings_attributes: {
+              duo_agent_platform_enabled: expect.anything(),
+            },
           }),
         );
       });
