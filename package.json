@@ -261,8 +261,8 @@
     "yaml": "^2.0.0-10"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3.2.0",
-    "@eslint/js": "^9.15.0",
+    "@eslint/eslintrc": "^3.3.1",
+    "@eslint/js": "^9.39.1",
     "@gitlab/eslint-plugin": "21.2.1",
     "@gitlab/noop": "^1.0.1",
     "@gitlab/stylelint-config": "6.2.2",
