@@ -16,12 +16,7 @@ import { s__, sprintf } from '~/locale';
 import { isLoggedIn } from '~/lib/utils/common_utils';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import ConfirmActionModal from '~/vue_shared/components/confirm_action_modal.vue';
-import {
-  AI_CATALOG_ITEM_LABELS,
-  DELETE_OPTIONS,
-  AI_CATALOG_TYPE_FLOW,
-  AI_CATALOG_TYPE_THIRD_PARTY_FLOW,
-} from '../constants';
+import { AI_CATALOG_ITEM_LABELS, DELETE_OPTIONS } from '../constants';
 import AiCatalogItemConsumerModal from './ai_catalog_item_consumer_modal.vue';
 import AiCatalogItemReportModal from './ai_catalog_item_report_modal.vue';
 
@@ -176,19 +171,14 @@ export default {
           )
         : null;
     },
-    showEnableModalWithTriggers() {
-      return (
-        [AI_CATALOG_TYPE_FLOW, AI_CATALOG_TYPE_THIRD_PARTY_FLOW].includes(this.item.itemType) &&
-        !this.isGlobal
-      );
+    useAddProjectModal() {
+      return !this.isGlobal;
     },
     enableModalComponent() {
-      return this.showEnableModalWithTriggers
-        ? AddProjectItemConsumerModal
-        : AiCatalogItemConsumerModal;
+      return this.useAddProjectModal ? AddProjectItemConsumerModal : AiCatalogItemConsumerModal;
     },
     enableModalProps() {
-      return this.showEnableModalWithTriggers
+      return this.useAddProjectModal
         ? {
             itemTypes: [this.item.itemType],
             modalTexts: this.enableModalTexts,

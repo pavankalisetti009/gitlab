@@ -6,6 +6,14 @@ import { stubComponent } from 'helpers/stub_component';
 import AiCatalogItemConsumerModal from 'ee/ai/catalog/components/ai_catalog_item_consumer_modal.vue';
 import FormProjectDropdown from 'ee/ai/catalog/components/form_project_dropdown.vue';
 import FormGroupDropdown from 'ee/ai/catalog/components/form_group_dropdown.vue';
+import AddGroupFlowWarning from 'ee/ai/catalog/components/add_group_flow_warning.vue';
+import AddGroupAgentWarning from 'ee/ai/catalog/components/add_group_agent_warning.vue';
+import AddGroupThirdPartyFlowWarning from 'ee/ai/catalog/components/add_group_third_party_flow_warning.vue';
+import {
+  AI_CATALOG_TYPE_AGENT,
+  AI_CATALOG_TYPE_FLOW,
+  AI_CATALOG_TYPE_THIRD_PARTY_FLOW,
+} from 'ee/ai/catalog/constants';
 import { mockFlow, mockProjectWithGroup } from '../mock_data';
 
 describe('AiCatalogItemConsumerModal', () => {
@@ -252,6 +260,22 @@ describe('AiCatalogItemConsumerModal', () => {
 
       it('renders private alert', () => {
         expect(findPrivateAlert().exists()).toBe(true);
+      });
+    });
+    describe.each`
+      itemType                            | warningComponent
+      ${AI_CATALOG_TYPE_AGENT}            | ${AddGroupAgentWarning}
+      ${AI_CATALOG_TYPE_FLOW}             | ${AddGroupFlowWarning}
+      ${AI_CATALOG_TYPE_THIRD_PARTY_FLOW} | ${AddGroupThirdPartyFlowWarning}
+    `('when the selected item type is $selectedItemType', ({ itemType, warningComponent }) => {
+      it('renders the correct warning component', () => {
+        const item = {
+          ...mockFlow,
+          itemType,
+        };
+        createWrapper({ props: { item, showAddToGroup: true } });
+
+        expect(wrapper.findComponent(warningComponent).exists()).toBe(true);
       });
     });
   });
