@@ -2,8 +2,8 @@
 name: duo_foundational_agents_per_agent_availability
 feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/579738
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/214147
-rollout_issue_url:
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/582998
 milestone: '18.7'
 group: group::agent foundations
-type: wip
-default_enabled: false
+type: beta
+default_enabled: true
