@@ -3,8 +3,8 @@ name: group_security_dashboard_new
 description:
 feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/542373
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/191974
-rollout_issue_url:
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/571978
 milestone: '18.1'
 group: group::security insights
-type: wip
-default_enabled: false
+type: beta
+default_enabled: true
