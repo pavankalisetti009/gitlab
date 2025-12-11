@@ -277,6 +277,17 @@ RSpec.describe Ai::ModelSelection::NamespaceFeatureSetting, feature_category: :"
           expect(enabled_features.keys).to include(:duo_agent_platform)
         end
       end
+
+      context 'when duo_agent_platform_model_selection feature flag is disabled' do
+        before do
+          stub_feature_flags(duo_agent_platform_model_selection: false)
+        end
+
+        it 'excludes duo_agent_platform from enabled features' do
+          enabled_features = described_class.enabled_features_for(namespace)
+          expect(enabled_features.keys).not_to include(:duo_agent_platform)
+        end
+      end
     end
 
     context 'when a namespace has the default model selected' do
