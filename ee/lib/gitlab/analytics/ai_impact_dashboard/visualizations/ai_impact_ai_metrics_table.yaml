@@ -13,4 +13,6 @@ data:
         - duo_rca_usage_rate
         - duo_review_requests_count
         - duo_review_comment_count
+        - duo_agent_platform_flows
+        - duo_agent_platform_chats
 options: {}

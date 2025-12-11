@@ -70,6 +70,48 @@ exports[`AI impact dashboard api extractGraphqlAiData returns code_suggestions_u
 }
 `;
 
+exports[`AI impact dashboard api extractGraphqlAiData returns duo_agent_platform_chats given { agentPlatformChats: { startedSessionEventCount: 0 } } 1`] = `
+{
+  "identifier": "duo_agent_platform_chats",
+  "value": 0,
+}
+`;
+
+exports[`AI impact dashboard api extractGraphqlAiData returns duo_agent_platform_chats given { agentPlatformChats: { startedSessionEventCount: 70 } } 1`] = `
+{
+  "identifier": "duo_agent_platform_chats",
+  "value": 70,
+}
+`;
+
+exports[`AI impact dashboard api extractGraphqlAiData returns duo_agent_platform_chats given {} 1`] = `
+{
+  "identifier": "duo_agent_platform_chats",
+  "value": "-",
+}
+`;
+
+exports[`AI impact dashboard api extractGraphqlAiData returns duo_agent_platform_flows given { agentPlatformFlows: { startedSessionEventCount: 0 } } 1`] = `
+{
+  "identifier": "duo_agent_platform_flows",
+  "value": 0,
+}
+`;
+
+exports[`AI impact dashboard api extractGraphqlAiData returns duo_agent_platform_flows given { agentPlatformFlows: { startedSessionEventCount: 100 } } 1`] = `
+{
+  "identifier": "duo_agent_platform_flows",
+  "value": 100,
+}
+`;
+
+exports[`AI impact dashboard api extractGraphqlAiData returns duo_agent_platform_flows given {} 1`] = `
+{
+  "identifier": "duo_agent_platform_flows",
+  "value": "-",
+}
+`;
+
 exports[`AI impact dashboard api extractGraphqlAiData returns duo_chat_usage_rate given { duoAssignedUsersCount: 3 } 1`] = `
 {
   "identifier": "duo_chat_usage_rate",

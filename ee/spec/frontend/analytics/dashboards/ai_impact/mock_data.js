@@ -161,6 +161,8 @@ export const mockTableValues = [
     pipelineDurationMedian: 150,
     acceptedLinesOfCode: 100,
     shownLinesOfCode: 200,
+    agentPlatformChatsStartedSessionEventCount: 25,
+    agentPlatformFlowsStartedSessionEventCount: 45,
   },
   {
     deploymentFrequency: 20,
@@ -194,6 +196,8 @@ export const mockTableValues = [
     pipelineDurationMedian: 120,
     acceptedLinesOfCode: 300,
     shownLinesOfCode: 500,
+    agentPlatformChatsStartedSessionEventCount: 15,
+    agentPlatformFlowsStartedSessionEventCount: 30,
   },
   {
     deploymentFrequency: 40,
@@ -227,6 +231,8 @@ export const mockTableValues = [
     pipelineDurationMedian: 165,
     acceptedLinesOfCode: 50,
     shownLinesOfCode: 70,
+    agentPlatformChatsStartedSessionEventCount: 35,
+    agentPlatformFlowsStartedSessionEventCount: 60,
   },
   {
     deploymentFrequency: 10,
@@ -260,6 +266,8 @@ export const mockTableValues = [
     pipelineDurationMedian: 90,
     acceptedLinesOfCode: 250,
     shownLinesOfCode: 400,
+    agentPlatformChatsStartedSessionEventCount: 32,
+    agentPlatformFlowsStartedSessionEventCount: 55,
   },
   {
     deploymentFrequency: 20,
@@ -293,6 +301,8 @@ export const mockTableValues = [
     pipelineDurationMedian: 250,
     acceptedLinesOfCode: 100,
     shownLinesOfCode: 600,
+    agentPlatformChatsStartedSessionEventCount: 18,
+    agentPlatformFlowsStartedSessionEventCount: 35,
   },
   {
     deploymentFrequency: 40,
@@ -326,6 +336,8 @@ export const mockTableValues = [
     pipelineDurationMedian: 100,
     acceptedLinesOfCode: 300,
     shownLinesOfCode: 700,
+    agentPlatformChatsStartedSessionEventCount: 38,
+    agentPlatformFlowsStartedSessionEventCount: 65,
   },
 ];
 
@@ -358,6 +370,8 @@ export const mockTableLargeValues = [
     pipelineSuccessCount: 49000,
     pipelineFailedCount: 15000,
     pipelineDurationMedian: 120000,
+    agentPlatformChatsStartedSessionEventCount: 800,
+    agentPlatformFlowsStartedSessionEventCount: 1200,
   },
   {
     deploymentFrequency: 20000,
@@ -387,6 +401,8 @@ export const mockTableLargeValues = [
     pipelineSuccessCount: 29000,
     pipelineFailedCount: 1500,
     pipelineDurationMedian: 1200,
+    agentPlatformChatsStartedSessionEventCount: 600,
+    agentPlatformFlowsStartedSessionEventCount: 900,
   },
   {
     deploymentFrequency: 40000,
@@ -416,6 +432,8 @@ export const mockTableLargeValues = [
     pipelineSuccessCount: 1000,
     pipelineFailedCount: 100,
     pipelineDurationMedian: 12000,
+    agentPlatformChatsStartedSessionEventCount: 1000,
+    agentPlatformFlowsStartedSessionEventCount: 1500,
   },
   {
     deploymentFrequency: 10000,
@@ -445,6 +463,8 @@ export const mockTableLargeValues = [
     pipelineSuccessCount: 129000,
     pipelineFailedCount: 15400,
     pipelineDurationMedian: 5500,
+    agentPlatformChatsStartedSessionEventCount: 900,
+    agentPlatformFlowsStartedSessionEventCount: 1400,
   },
   {
     deploymentFrequency: 20000,
@@ -474,6 +494,8 @@ export const mockTableLargeValues = [
     pipelineSuccessCount: 41000,
     pipelineFailedCount: 1400,
     pipelineDurationMedian: 9300,
+    agentPlatformChatsStartedSessionEventCount: 700,
+    agentPlatformFlowsStartedSessionEventCount: 1100,
   },
   {
     deploymentFrequency: 40,
@@ -503,6 +525,8 @@ export const mockTableLargeValues = [
     pipelineSuccessCount: 240,
     pipelineFailedCount: 70,
     pipelineDurationMedian: 155,
+    agentPlatformChatsStartedSessionEventCount: 1100,
+    agentPlatformFlowsStartedSessionEventCount: 1700,
   },
 ];
 
@@ -531,6 +555,8 @@ const mockUniformTableRow = (value) => ({
   pipelineSuccessCount: value,
   pipelineFailedCount: value,
   pipelineDurationMedian: value,
+  agentPlatformChatsStartedSessionEventCount: value,
+  agentPlatformFlowsStartedSessionEventCount: value,
 });
 
 export const mockTableBlankValues = [
@@ -580,6 +606,12 @@ export const mockAiMetricsResponseData = {
     requestReviewDuoCodeReviewOnMrByAuthorEventCount: 100,
     requestReviewDuoCodeReviewOnMrByNonAuthorEventCount: 100,
     postCommentDuoCodeReviewOnDiffEventCount: 100,
+    agentPlatformChats: {
+      startedSessionEventCount: 25,
+    },
+    agentPlatformFlows: {
+      startedSessionEventCount: 45,
+    },
     __typename: 'AiMetrics',
   },
   __typename: 'Group',
@@ -601,6 +633,12 @@ export const mockAiMetricsZeroResponseData = {
     requestReviewDuoCodeReviewOnMrByAuthorEventCount: 0,
     requestReviewDuoCodeReviewOnMrByNonAuthorEventCount: 0,
     postCommentDuoCodeReviewOnDiffEventCount: 0,
+    agentPlatformChats: {
+      startedSessionEventCount: 0,
+    },
+    agentPlatformFlows: {
+      startedSessionEventCount: 0,
+    },
     __typename: 'AiMetrics',
   },
   __typename: 'Group',
@@ -620,6 +658,12 @@ export const mockAiMetricsNullResponseData = {
     requestReviewDuoCodeReviewOnMrByAuthorEventCount: null,
     requestReviewDuoCodeReviewOnMrByNonAuthorEventCount: null,
     postCommentDuoCodeReviewOnDiffEventCount: null,
+    agentPlatformChats: {
+      startedSessionEventCount: null,
+    },
+    agentPlatformFlows: {
+      startedSessionEventCount: null,
+    },
     __typename: 'AiMetrics',
   },
   __typename: 'Group',

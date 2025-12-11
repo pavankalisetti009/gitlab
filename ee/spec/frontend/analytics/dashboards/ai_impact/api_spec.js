@@ -64,6 +64,12 @@ describe('AI impact dashboard api', () => {
         { codeReview: { postCommentDuoCodeReviewOnDiffEventCount: 25 } },
       ],
       ['duo_review_comment_count', { codeReview: { postCommentDuoCodeReviewOnDiffEventCount: 0 } }],
+      ['duo_agent_platform_flows', {}],
+      ['duo_agent_platform_flows', { agentPlatformFlows: { startedSessionEventCount: 100 } }],
+      ['duo_agent_platform_flows', { agentPlatformFlows: { startedSessionEventCount: 0 } }],
+      ['duo_agent_platform_chats', {}],
+      ['duo_agent_platform_chats', { agentPlatformChats: { startedSessionEventCount: 70 } }],
+      ['duo_agent_platform_chats', { agentPlatformChats: { startedSessionEventCount: 0 } }],
     ])('returns %s given %o', (identifier, data) => {
       expect(extractGraphqlAiData(data)[identifier]).toMatchSnapshot();
     });
