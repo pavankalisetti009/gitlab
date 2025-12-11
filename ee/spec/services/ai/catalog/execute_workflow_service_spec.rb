@@ -13,8 +13,8 @@ RSpec.describe Ai::Catalog::ExecuteWorkflowService, :aggregate_failures, feature
 
   let(:json_config) do
     {
-      'version' => 'experimental',
-      'environment' => 'remote',
+      'version' => 'v1',
+      'environment' => 'ambient',
       'components' => [],
       'routers' => [],
       'flow' => []

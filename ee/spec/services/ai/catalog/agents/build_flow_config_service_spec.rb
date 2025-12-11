@@ -30,13 +30,12 @@ RSpec.describe Ai::Catalog::Agents::BuildFlowConfigService, :aggregate_failures,
 
   let(:json_config) do
     {
-      'version' => 'experimental',
+      'version' => 'v1',
       'environment' => 'chat-partial',
       'components' => be_an(Array),
       'routers' => be_an(Array),
       'flow' => be_a(Hash),
-      'prompts' => be_an(Array),
-      'params' => be_a(Hash)
+      'prompts' => be_an(Array)
     }
   end
 

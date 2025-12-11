@@ -24,8 +24,8 @@ RSpec.describe Ai::Catalog::Agents::ExecuteService, :aggregate_failures, feature
 
   let(:json_config) do
     {
-      'version' => 'experimental',
-      'environment' => 'remote',
+      'version' => 'v1',
+      'environment' => 'ambient',
       'components' => be_an(Array),
       'routers' => be_an(Array),
       'flow' => be_a(Hash),
@@ -217,6 +217,8 @@ RSpec.describe Ai::Catalog::Agents::ExecuteService, :aggregate_failures, feature
           expect(parsed_yaml['prompts']).to match([
             {
               'prompt_id' => be_a(String),
+              "name" => be_a(String),
+              "unit_primitives" => [],
               'prompt_template' => {
                 'system' => agent_version.def_system_prompt,
                 'user' => custom_user_prompt,
