@@ -413,18 +413,6 @@ export default {
         });
       },
     },
-    duoClassicModePreference: {
-      get() {
-        return this.duoChatGlobalState.chatMode === 'classic';
-      },
-      set(value) {
-        setAgenticMode({
-          agenticMode: !value,
-          saveCookie: true,
-          isEmbedded: this.isEmbedded,
-        });
-      },
-    },
     agents() {
       return [...this.foundationalAgents, ...this.catalogAgents].map((agent) => ({
         ...agent,
@@ -1157,9 +1145,9 @@ export default {
         v-if="isAgenticAvailable && !forceAgenticModeForCoreDuoUsers && glFeatures.agenticChatGa"
         #agentic-switch
       >
-        <gl-toggle v-model="duoClassicModePreference" label-position="left" class="gl-h-5">
+        <gl-toggle v-model="duoAgenticModePreference" label-position="left" class="gl-h-5">
           <template #label>
-            <span class="gl-font-normal gl-text-subtle">{{ s__('DuoChat|Chat (Classic)') }}</span>
+            <span class="gl-font-normal gl-text-subtle">{{ s__('DuoChat|Agentic') }}</span>
           </template>
         </gl-toggle>
       </template>

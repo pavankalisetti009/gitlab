@@ -15,8 +15,8 @@ RSpec.describe 'Learn Gitlab concerns', :feature, :js, :saas, feature_category: 
       # TODO: When removing the feature flag,
       # we won't need the tests for the issues listing page, since we'll be using
       # the work items listing page.
-      stub_feature_flags(work_item_planning_view: false)
       allow(::Gitlab::Llm::TanukiBot).to receive(:credits_available?).and_return(true)
+      stub_feature_flags(work_item_planning_view: false, agentic_chat_ga: false)
     end
 
     before_all do

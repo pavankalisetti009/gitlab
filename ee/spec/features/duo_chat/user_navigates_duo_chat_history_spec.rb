@@ -15,6 +15,15 @@ RSpec.describe 'Duo Chat > User navigates Duo Chat history', :js, :saas, :with_c
     end
   end
 
+  # Create Duo Enterprise add-on and assign the user to it
+  let_it_be(:add_on_purchase) do
+    create(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: group)
+  end
+
+  let_it_be(:user_add_on_assignment) do
+    create(:gitlab_subscription_user_add_on_assignment, add_on_purchase: add_on_purchase, user: user)
+  end
+
   def open_duo_chat
     find('button.js-tanuki-bot-chat-toggle').click
     wait_for_requests
@@ -31,7 +40,7 @@ RSpec.describe 'Duo Chat > User navigates Duo Chat history', :js, :saas, :with_c
   end
 
   before do
-    stub_feature_flags(no_duo_classic_for_duo_core_users: false)
+    stub_feature_flags(no_duo_classic_for_duo_core_users: false, agentic_chat_ga: false)
     allow(user).to receive(:allowed_to_use?).and_return(true)
     allow(user).to receive(:can?).and_call_original
     allow(::Gitlab::Llm::TanukiBot).to receive(:credits_available?).and_return(true)

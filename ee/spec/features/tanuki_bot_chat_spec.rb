@@ -17,6 +17,7 @@ RSpec.describe 'GitLab Duo Chat', :js, feature_category: :global_search do
     end
 
     before do
+      stub_feature_flags(agentic_chat_ga: false)
       sign_in(user)
     end
 
@@ -57,6 +58,7 @@ RSpec.describe 'GitLab Duo Chat', :js, feature_category: :global_search do
     let_it_be_with_reload(:group) { create(:group) }
 
     before do
+      stub_feature_flags(agentic_chat_ga: false)
       sign_in(user)
     end
 
