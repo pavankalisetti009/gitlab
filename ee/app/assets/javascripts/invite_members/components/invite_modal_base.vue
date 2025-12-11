@@ -114,6 +114,11 @@ export default {
       required: false,
       default: false,
     },
+    hasIncompleteMemberInput: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   apollo: {
     memberRoles: {
@@ -213,7 +218,10 @@ export default {
       return {};
     },
     hasInput() {
-      return Boolean(this.newGroupToInvite || this.newUsersToInvite.length !== 0);
+      return (
+        Boolean(this.newGroupToInvite || this.newUsersToInvite.length !== 0) &&
+        !this.hasIncompleteMemberInput
+      );
     },
     upgradedRoles() {
       return {
