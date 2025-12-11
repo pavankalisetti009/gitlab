@@ -430,8 +430,7 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
           scan_execution_policy: 'Run DAST in every pipeline',
           pipeline_execution_policy: 'Run custom pipeline configuration',
           pipeline_execution_schedule_policy: 'Run custom pipeline schedule configuration',
-          vulnerability_management_policy: 'Resolve no longer detected vulnerabilities',
-          ci_component_publishing_policy: 'Allow publishing from auth sources'
+          vulnerability_management_policy: 'Resolve no longer detected vulnerabilities'
         }
       end
 
@@ -460,14 +459,6 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
               expect(policies.first[:name]).to eq(policy_names[policy_type])
             end
           end
-        end
-      end
-
-      context 'when type is a symbol for ci_component_publishing_policy' do
-        let(:type) { :ci_component_publishing_policy }
-
-        it 'retrieves policy by type' do
-          expect(policies.first[:name]).to eq('Allow publishing from auth sources')
         end
       end
 
@@ -798,7 +789,6 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
         expect(errors).to contain_exactly("root is missing required keys: scan_execution_policy",
           "root is missing required keys: approval_policy",
           "root is missing required keys: pipeline_execution_policy",
-          "root is missing required keys: ci_component_publishing_policy",
           "root is missing required keys: vulnerability_management_policy",
           "root is missing required keys: pipeline_execution_schedule_policy")
       end
@@ -4224,45 +4214,6 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
     end
   end
 
-  describe '#active_ci_component_publishing_policies' do
-    let(:ci_component_publishing_yaml) do
-      build(:orchestration_policy_yaml, ci_component_publishing_policy: [build(:ci_component_publishing_policy)])
-    end
-
-    let(:policy_yaml) { fixture_file('security_orchestration.yml', dir: 'ee') }
-
-    subject(:active_ci_component_publishing_policies) do
-      security_orchestration_policy_configuration.active_ci_component_publishing_policies
-    end
-
-    before do
-      allow(security_policy_management_project).to receive(:repository).and_return(repository)
-      allow(repository).to receive(:blob_data_at).with(default_branch, Security::OrchestrationPolicyConfiguration::POLICY_PATH).and_return(policy_yaml)
-    end
-
-    it 'returns only enabled policies' do
-      expect(active_ci_component_publishing_policies.pluck(:enabled).uniq).to contain_exactly(true)
-    end
-
-    it 'returns only the limit (5) from all active policies' do
-      expect(active_ci_component_publishing_policies.count).to be(5)
-    end
-
-    context 'when policy configuration is configured for namespace' do
-      let(:security_orchestration_policy_configuration) do
-        create(:security_orchestration_policy_configuration, :namespace, security_policy_management_project: security_policy_management_project)
-      end
-
-      it 'returns only enabled policies' do
-        expect(active_ci_component_publishing_policies.pluck(:enabled).uniq).to contain_exactly(true)
-      end
-
-      it 'returns only 5 from all active policies' do
-        expect(active_ci_component_publishing_policies.count).to be(5)
-      end
-    end
-  end
-
   describe '#active_vulnerability_management_policies' do
     let(:vulnerability_management_yaml) do
       build(:orchestration_policy_yaml, vulnerability_management_policy: [build(:vulnerability_management_policy)])
@@ -4883,8 +4834,7 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
       end
 
       where(:policy_type, :expected_policy_limit) do
-        :pipeline_execution_schedule_policy   | lazy { Security::PipelineExecutionSchedulePolicy::POLICY_LIMIT }
-        :ci_component_publishing_policy       | lazy { Security::CiComponentPublishingPolicy::POLICY_LIMIT }
+        :pipeline_execution_schedule_policy | lazy { Security::PipelineExecutionSchedulePolicy::POLICY_LIMIT }
       end
 
       with_them do
@@ -4912,7 +4862,6 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
       :pipeline_execution_policy            | 'Pipeline execution policy'
       :pipeline_execution_schedule_policy   | 'Pipeline execution schedule policy'
       :vulnerability_management_policy      | 'Vulnerability management policy'
-      :ci_component_publishing_policy       | 'CI component publishing policy'
     end
 
     with_them do

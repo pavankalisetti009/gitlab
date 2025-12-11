@@ -64,9 +64,6 @@ module EE::SecurityOrchestrationHelper
       max_active_scan_result_policies_reached: max_active_scan_result_policies_reached?(container).to_s,
       max_scan_result_policies_allowed: scan_result_policies_limit,
       max_scan_execution_policies_allowed: scan_execution_policies_per_configuration_limit(container),
-      max_ci_component_publishing_policies_allowed: Security::CiComponentPublishingPolicy::POLICY_LIMIT,
-      max_ci_component_publishing_policies_reached: max_active_ci_component_publishing_policies_reached?(container)
-                                                      .to_s,
       max_active_pipeline_execution_policies_reached: max_active_pipeline_execution_policies_reached?(container).to_s,
       max_pipeline_execution_policies_allowed: pipeline_execution_policies_per_configuration_limit(container),
       max_active_vulnerability_management_policies_reached:
@@ -131,17 +128,6 @@ module EE::SecurityOrchestrationHelper
     container
       &.security_orchestration_policy_configuration
       &.active_scan_execution_policies
-      &.length || 0
-  end
-
-  def max_active_ci_component_publishing_policies_reached?(container)
-    active_ci_component_publishing_policy_count(container) >= Security::CiComponentPublishingPolicy::POLICY_LIMIT
-  end
-
-  def active_ci_component_publishing_policy_count(container)
-    container
-      &.security_orchestration_policy_configuration
-      &.active_ci_component_publishing_policies
       &.length || 0
   end
 
