@@ -60611,6 +60611,9 @@ msgstr ""
 msgid "SecurityOrchestration|%{strongStart}Run customized GitLab security templates%{strongEnd} across my projects."
 msgstr ""
 
+msgid "SecurityOrchestration|%{type}: %{boldStart}%{value}%{boldEnd}"
+msgstr ""
+
 msgid "SecurityOrchestration|(%{groups})"
 msgstr ""
 
@@ -60803,6 +60806,12 @@ msgstr ""
 msgid "SecurityOrchestration|Automate %{strongStart}vulnerability management%{strongEnd} workflows."
 msgstr ""
 
+msgid "SecurityOrchestration|Automatically dismiss vulnerabilities when they match all of the following criteria:"
+msgstr ""
+
+msgid "SecurityOrchestration|Automatically dismiss vulnerabilities with a risk level of %{risk} when they match all of the following criteria:"
+msgstr ""
+
 msgid "SecurityOrchestration|Automatically selected runners"
 msgstr ""
 
@@ -60909,6 +60918,9 @@ msgid "SecurityOrchestration|Create new project with the new policy"
 msgstr ""
 
 msgid "SecurityOrchestration|Create security policy"
+msgstr ""
+
+msgid "SecurityOrchestration|Criteria were not saved in correct format."
 msgstr ""
 
 msgid "SecurityOrchestration|Critical business deadline"
@@ -61158,6 +61170,9 @@ msgid "SecurityOrchestration|Invalid Compliance Framework ID(s)"
 msgstr ""
 
 msgid "SecurityOrchestration|Invalid branch type detected - rule will not be applied."
+msgstr ""
+
+msgid "SecurityOrchestration|Invalid criteria format"
 msgstr ""
 
 msgid "SecurityOrchestration|Invalid policy"
@@ -61451,6 +61466,9 @@ msgid "SecurityOrchestration|Roles"
 msgstr ""
 
 msgid "SecurityOrchestration|Roles (%{count})"
+msgstr ""
+
+msgid "SecurityOrchestration|Rule %{number}"
 msgstr ""
 
 msgid "SecurityOrchestration|Rule mode"
