@@ -78,10 +78,6 @@ RSpec.describe 'Admin Dashboard', feature_category: :shared do
 
   describe 'qrtly reconciliation alert', :js do
     context 'on self-managed' do
-      before do
-        stub_ee_application_setting(should_check_namespace_plan: false)
-      end
-
       context 'when qrtly reconciliation is available' do
         let_it_be(:reconciliation) { create(:upcoming_reconciliation, :self_managed) }
 

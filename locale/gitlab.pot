@@ -4980,6 +4980,9 @@ msgstr ""
 msgid "AdminArea|%{billable_users_link_start}Learn more%{billable_users_link_end} about what defines a billable user"
 msgstr ""
 
+msgid "AdminArea|Active subscription"
+msgstr ""
+
 msgid "AdminArea|Active users"
 msgstr ""
 
@@ -4987,6 +4990,9 @@ msgid "AdminArea|Add new message"
 msgstr ""
 
 msgid "AdminArea|Are you sure?"
+msgstr ""
+
+msgid "AdminArea|Basic CI/CD features for individual developers. Bring your own runners and storage."
 msgstr ""
 
 msgid "AdminArea|Blocked users"
@@ -5022,13 +5028,22 @@ msgstr ""
 msgid "AdminArea|Edit OAuth configuration"
 msgstr ""
 
+msgid "AdminArea|Explore plans"
+msgstr ""
+
 msgid "AdminArea|Failed to fetch version from KAS"
 msgstr ""
 
 msgid "AdminArea|Features"
 msgstr ""
 
+msgid "AdminArea|For teams who need advanced CI/CD and productivity features."
+msgstr ""
+
 msgid "AdminArea|Get security updates from GitLab and stay up to date"
+msgstr ""
+
+msgid "AdminArea|GitLab Free"
 msgstr ""
 
 msgid "AdminArea|Groups"
@@ -5088,6 +5103,9 @@ msgstr ""
 msgid "AdminArea|Sign up for the GitLab newsletter"
 msgstr ""
 
+msgid "AdminArea|Start free trial"
+msgstr ""
+
 msgid "AdminArea|The Web IDE OAuth application doesn't have a redirect URL with the domain that you are using to visit GitLab. This issue will prevent Web IDE users from authenticating and often occurs when using a reverse proxy."
 msgstr ""
 
@@ -5104,6 +5122,9 @@ msgid "AdminArea|Total users"
 msgstr ""
 
 msgid "AdminArea|Totals"
+msgstr ""
+
+msgid "AdminArea|Try a 30 day free trial of Ultimate"
 msgstr ""
 
 msgid "AdminArea|Unknown"

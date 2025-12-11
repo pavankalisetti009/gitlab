@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe 'admin/dashboard/index.html.haml', :enable_admin_mode, feature_category: :shared do
   include Devise::Test::ControllerHelpers
+  include LicenseHelper
 
   let(:reflections) do
     Gitlab::Database.database_base_models.transform_values do |base_model|
@@ -59,6 +60,13 @@ RSpec.describe 'admin/dashboard/index.html.haml', :enable_admin_mode, feature_ca
       expect(rendered).to have_content _('Maximum Users')
       expect(rendered).to have_content _('Users over License')
     end
+
+    it 'does not show subscription summary', :with_license do
+      render
+
+      expect(rendered).not_to have_content "Active subscription"
+      expect(rendered).not_to have_content "GitLab Free"
+    end
   end
 
   context 'when license is not present' do
@@ -66,6 +74,29 @@ RSpec.describe 'admin/dashboard/index.html.haml', :enable_admin_mode, feature_ca
       render
 
       expect(rendered).not_to have_content "Users in subscription"
+    end
+
+    it 'shows subscription summary with tracking on ctas', :without_license do
+      render
+
+      expect(rendered).to have_content "GitLab Free"
+      expect(rendered).to have_content "Active subscription"
+
+      expect(rendered).to have_css(
+        "a[data-event-tracking='click_start_trial_cta_sm_admin_dashboard'][href='#{self_managed_new_trial_url}']",
+        text: 'Start free trial'
+      )
+      expect(rendered).to have_css(
+        "a[data-event-tracking='click_explore_plans_cta_sm_admin_dashboard'][href='#{promo_pricing_url(query: { deployment: 'self-managed' })}']",
+        text: 'Explore plans'
+      )
+    end
+
+    it 'does not show subscription summary if on saas', :without_license, :saas_gitlab_com_subscriptions do
+      render
+
+      expect(rendered).not_to have_content "Active subscription"
+      expect(rendered).not_to have_content "GitLab Free"
     end
   end
 
