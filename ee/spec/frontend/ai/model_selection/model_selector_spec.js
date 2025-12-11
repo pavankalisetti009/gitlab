@@ -236,6 +236,7 @@ describe('ModelSelector', () => {
           text: 'Claude Sonnet 3.7 - Default',
           provider: 'Anthropic',
           description: 'Fast, cost-effective responses.',
+          costIndicator: '$$$',
         });
 
         modelSelectionDropdown.vm.$emit('select', mockSelectedModelId);
@@ -253,6 +254,7 @@ describe('ModelSelector', () => {
           text: 'Claude Sonnet 3.5',
           provider: 'Anthropic',
           description: 'Fast, cost-effective responses.',
+          costIndicator: '$$$',
         });
       });
 
@@ -299,6 +301,7 @@ describe('ModelSelector', () => {
           text: 'Claude Sonnet 3.7 - Default',
           provider: 'Anthropic',
           description: 'Fast, cost-effective responses.',
+          costIndicator: '$$$',
         });
       });
 

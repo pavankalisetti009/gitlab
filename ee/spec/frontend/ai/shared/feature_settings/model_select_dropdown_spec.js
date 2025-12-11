@@ -12,9 +12,15 @@ describe('ModelSelectDropdown', () => {
   const placeholderDropdownText = 'Select model';
   const selectedOption = mockSelfHostedModelsItems[0];
 
-  const createComponent = ({ props = {} } = {}) => {
+  const createComponent = ({ props = {}, features = {} } = {}) => {
     wrapper = extendedWrapper(
       mount(ModelSelectDropdown, {
+        provide: {
+          glFeatures: {
+            agenticChatGa: true,
+            ...features,
+          },
+        },
         propsData: {
           items: mockSelfHostedModelsItems,
           placeholderDropdownText,
@@ -31,6 +37,7 @@ describe('ModelSelectDropdown', () => {
   const findModelNames = () => wrapper.findAllByTestId('model-name');
   const findModelProviders = () => wrapper.findAllByTestId('model-provider');
   const findModelDescriptions = () => wrapper.findAllByTestId('model-description');
+  const findModelCostIndicators = () => wrapper.findAllByTestId('model-cost-indicator');
   const findBetaModelSelectedBadge = () => wrapper.findByTestId('beta-model-selected-badge');
   const findBetaModelDropdownBadges = () => wrapper.findAllByTestId('beta-model-dropdown-badge');
   const findToggleButton = () => wrapper.findByTestId('toggle-button');
@@ -125,6 +132,27 @@ describe('ModelSelectDropdown', () => {
       it('renders model descriptions', () => {
         mockModelSelectionItems.forEach((item, index) => {
           expect(findModelDescriptions().at(index).text()).toEqual(item.description);
+        });
+      });
+
+      describe('cost indicators', () => {
+        describe('when `agenticChatGa` feature flag is enabled', () => {
+          it('renders model cost indicators', () => {
+            mockModelSelectionItems.forEach((item, index) => {
+              expect(findModelCostIndicators().at(index).text()).toEqual(item.costIndicator);
+            });
+          });
+        });
+
+        describe('when `agenticChatGa` feature flag is disabled', () => {
+          it('does not render model cost indicators', () => {
+            createComponent({
+              features: { agenticChatGa: false },
+              props: { items: mockModelSelectionItems },
+            });
+
+            expect(findModelCostIndicators().exists()).toBe(false);
+          });
         });
       });
     });

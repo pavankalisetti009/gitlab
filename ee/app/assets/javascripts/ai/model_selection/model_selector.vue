@@ -1,7 +1,7 @@
 <script>
 import { s__, sprintf } from '~/locale';
 import { createAlert } from '~/alert';
-import { formatDefaultModelText } from 'ee/ai/shared/model_selection/utils';
+import { formatDefaultModelData } from 'ee/ai/shared/model_selection/utils';
 import GitlabDefaultModelModal from 'ee/ai/model_selection/gitlab_default_model_modal.vue';
 import ModelSelectDropdown from '../shared/feature_settings/model_select_dropdown.vue';
 import updateAiNamespaceFeatureSettingsMutation from './graphql/update_ai_namespace_feature_settings.mutation.graphql';
@@ -34,28 +34,26 @@ export default {
     selectedModel() {
       return this.aiFeatureSetting.selectedModel?.ref || GITLAB_DEFAULT_MODEL;
     },
-    defaultModelOption() {
-      const { defaultModel } = this.aiFeatureSetting;
-      const text = formatDefaultModelText(defaultModel);
-
-      return {
-        text,
-        value: GITLAB_DEFAULT_MODEL,
-        provider: defaultModel?.modelProvider || '',
-        description: defaultModel?.modelDescription || '',
-      };
-    },
     listItems() {
-      const modelOptions = this.aiFeatureSetting.selectableModels
-        .map(({ ref, name, modelProvider, modelDescription }) => ({
+      const { selectableModels, defaultModel } = this.aiFeatureSetting;
+
+      const modelOptions = selectableModels
+        .map(({ ref, name, modelProvider, modelDescription, costIndicator }) => ({
           value: ref,
           text: name,
           provider: modelProvider,
           description: modelDescription,
+          costIndicator,
         }))
         .sort((a, b) => a.text.localeCompare(b.text));
 
-      return [...modelOptions, this.defaultModelOption];
+      if (defaultModel) {
+        const formattedDefaultModel = formatDefaultModelData(defaultModel);
+
+        modelOptions.push(formattedDefaultModel);
+      }
+
+      return modelOptions;
     },
     selectedOption() {
       return this.listItems.find(({ value }) => value === this.selectedModel);

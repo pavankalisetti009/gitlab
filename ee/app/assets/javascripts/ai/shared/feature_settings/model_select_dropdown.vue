@@ -8,6 +8,7 @@ import {
   GlTooltipDirective,
 } from '@gitlab/ui';
 import { GITLAB_DEFAULT_MODEL } from 'ee/ai/model_selection/constants';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { RELEASE_STATES } from './constants';
 
 export default {
@@ -22,6 +23,7 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
+  mixins: [glFeatureFlagsMixin()],
   props: {
     selectedOption: {
       type: Object,
@@ -138,6 +140,19 @@ export default {
           </span>
           <span v-if="item.description" data-testid="model-description" class="gl-text-secondary">
             {{ item.description }}
+          </span>
+          <span class="gl-mt-2">
+            <gl-badge
+              v-if="item.costIndicator && glFeatures.agenticChatGa"
+              :class="{
+                /* Make badge darker when item is selected so it's visible */
+                '!gl-bg-gray-200': selected === item.value,
+              }"
+              data-testid="model-cost-indicator"
+              variant="neutral"
+            >
+              {{ item.costIndicator }}
+            </gl-badge>
           </span>
         </span>
         <gl-badge

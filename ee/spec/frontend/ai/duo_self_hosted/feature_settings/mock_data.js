@@ -42,12 +42,14 @@ export const mockGitlabManagedModels = [
     ref: 'claude_sonnet_4_20250514',
     modelProvider: 'Anthropic',
     modelDescription: 'Fast, cost-effective responses',
+    costIndicator: '$$$',
   },
   {
     name: 'Claude Sonnet 3.7',
     ref: 'claude_sonnet_3_7_20250219_vertex',
     modelProvider: 'Anthropic',
     modelDescription: 'Fast, cost-effective responses',
+    costIndicator: '$$$',
   },
 ];
 
@@ -56,6 +58,7 @@ export const mockDefaultGitlabModel = {
   ref: 'claude_sonnet_4_20250514',
   modelProvider: 'Anthropic',
   modelDescription: 'Fast, cost-effective responses',
+  costIndicator: '$$$',
 };
 
 export const mockCodeSuggestionsFeatureSettings = [

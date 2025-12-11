@@ -8,6 +8,7 @@ export const MOCK_AI_CHAT_AVAILABLE_MODELS_RESPONSE = {
         ref: 'claude_sonnet_4_20250514',
         modelProvider: 'Anthropic',
         modelDescription: 'Fast, cost-effective responses.',
+        costIndicator: '$$$',
       },
       selectableModels: [
         {
@@ -15,12 +16,14 @@ export const MOCK_AI_CHAT_AVAILABLE_MODELS_RESPONSE = {
           ref: 'claude_sonnet_4_20250514',
           modelProvider: 'Anthropic',
           modelDescription: 'Fast, cost-effective responses.',
+          costIndicator: '$$$',
         },
         {
           name: 'Claude Sonnet 3.5',
           ref: 'claude_3_5_sonnet_20240620',
           modelProvider: 'Anthropic',
           modelDescription: 'Fast, cost-effective responses.',
+          costIndicator: '$$',
         },
       ],
       pinnedModel: null,
@@ -45,6 +48,7 @@ export const MOCK_GITLAB_DEFAULT_MODEL_ITEM = {
   text: 'Claude Sonnet 4.0 - Default',
   modelProvider: 'Anthropic',
   modelDescription: 'Fast, cost-effective responses.',
+  costIndicator: '$$$',
 };
 
 export const MOCK_MODEL_LIST_ITEMS = [
@@ -53,12 +57,14 @@ export const MOCK_MODEL_LIST_ITEMS = [
     value: GITLAB_DEFAULT_MODEL,
     provider: 'Anthropic',
     description: 'Fast, cost-effective responses.',
+    costIndicator: '$$$',
   },
   {
     text: 'Claude Sonnet 3.5',
     value: 'claude_3_5_sonnet_20240620',
     provider: 'Anthropic',
     description: 'Fast, cost-effective responses.',
+    costIndicator: '$$',
   },
 ];
 

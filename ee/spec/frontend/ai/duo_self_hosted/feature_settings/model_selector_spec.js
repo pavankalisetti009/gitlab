@@ -62,12 +62,14 @@ const EXPECTED_GITLAB_MANAGED_MODELS_OPTIONS = [
     value: 'claude_sonnet_4_20250514',
     provider: 'Anthropic',
     description: 'Fast, cost-effective responses',
+    costIndicator: '$$$',
   },
   {
     text: 'Claude Sonnet 3.7',
     value: 'claude_sonnet_3_7_20250219_vertex',
     provider: 'Anthropic',
     description: 'Fast, cost-effective responses',
+    costIndicator: '$$$',
   },
 ];
 
@@ -111,6 +113,7 @@ const EXPECTED_GITLAB_MANAGED_MODELS_GROUPED_OPTIONS_WITH_DEFAULT_MODEL_OPTION =
       value: GITLAB_DEFAULT_MODEL,
       provider: 'Anthropic',
       description: 'Fast, cost-effective responses',
+      costIndicator: '$$$',
     },
   ],
 };
@@ -476,6 +479,7 @@ describe('ModelSelector', () => {
           value: GITLAB_DEFAULT_MODEL,
           provider: 'Anthropic',
           description: 'Fast, cost-effective responses',
+          costIndicator: '$$$',
         });
       });
 
@@ -586,6 +590,7 @@ describe('ModelSelector', () => {
           text: selectedModel.name,
           provider: selectedModel.modelProvider,
           description: selectedModel.modelDescription,
+          costIndicator: selectedModel.costIndicator,
         });
       });
     });
