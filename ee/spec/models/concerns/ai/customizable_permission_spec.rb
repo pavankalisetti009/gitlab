@@ -7,8 +7,8 @@ RSpec.describe Ai::CustomizablePermission, feature_category: :duo_agent_platform
   let(:root_namespace) { create(:group, ai_settings: ai_settings) }
   let(:configured_access_level) { ::Gitlab::Access::MAINTAINER }
 
-  describe '#minimum_access_level_to_execute' do
-    subject(:minimum_access_level) { root_namespace.minimum_access_level_to_execute }
+  describe '#ai_minimum_access_level_to_execute' do
+    subject(:minimum_access_level) { root_namespace.ai_minimum_access_level_to_execute }
 
     context 'when on saas', :saas do
       context 'with a sub group' do
@@ -16,7 +16,7 @@ RSpec.describe Ai::CustomizablePermission, feature_category: :duo_agent_platform
         let(:sub_group) { create(:group, parent: root_namespace) }
 
         it 'uses root_namespace ai settings' do
-          result = sub_group.minimum_access_level_to_execute
+          result = sub_group.ai_minimum_access_level_to_execute
 
           expect(result).to eq configured_access_level
         end
@@ -59,6 +59,72 @@ RSpec.describe Ai::CustomizablePermission, feature_category: :duo_agent_platform
       context 'when minimum_access_level_execute is configured' do
         before do
           instance_ai_settings.update!(minimum_access_level_execute: configured_access_level)
+        end
+
+        it 'returns the configured access level' do
+          expect(minimum_access_level).to eq configured_access_level
+        end
+      end
+    end
+  end
+
+  describe '#ai_minimum_access_level_to_execute_async' do
+    subject(:minimum_access_level) { root_namespace.ai_minimum_access_level_to_execute_async }
+
+    context 'when on saas', :saas do
+      context 'with a sub group' do
+        let(:ai_settings) do
+          create(:namespace_ai_settings, minimum_access_level_execute_async: configured_access_level)
+        end
+
+        let(:sub_group) { create(:group, parent: root_namespace) }
+
+        it 'uses root_namespace ai settings' do
+          result = sub_group.ai_minimum_access_level_to_execute_async
+
+          expect(result).to eq configured_access_level
+        end
+      end
+
+      context 'when root_namespace does not have ai settings' do
+        it 'returns default developer access level' do
+          expect(minimum_access_level).to eq(::Gitlab::Access::DEVELOPER)
+        end
+      end
+
+      context 'when root_namespace has ai settings' do
+        let(:ai_settings) { create(:namespace_ai_settings) }
+
+        context 'when minimum_access_level_execute_async is not configured' do
+          it 'returns default developer access level' do
+            expect(minimum_access_level).to eq(::Gitlab::Access::DEVELOPER)
+          end
+        end
+
+        context 'when minimum_access_level_execute_async is configured' do
+          let(:ai_settings) do
+            create(:namespace_ai_settings, minimum_access_level_execute_async: configured_access_level)
+          end
+
+          it 'returns the configured access level' do
+            expect(minimum_access_level).to eq configured_access_level
+          end
+        end
+      end
+    end
+
+    context 'when on self-managed' do
+      let(:instance_ai_settings) { Ai::Setting.instance }
+
+      context 'when minimum_access_level_execute_async is not configured' do
+        it 'returns default developer access level' do
+          expect(minimum_access_level).to eq(::Gitlab::Access::DEVELOPER)
+        end
+      end
+
+      context 'when minimum_access_level_execute_async is configured' do
+        before do
+          instance_ai_settings.update!(minimum_access_level_execute_async: configured_access_level)
         end
 
         it 'returns the configured access level' do

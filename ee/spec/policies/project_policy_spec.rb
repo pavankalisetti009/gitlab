@@ -5737,7 +5737,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
           context 'when the minimum role has been set in a saas environment', :saas do
             before do
-              project.root_ancestor.create_ai_settings(minimum_access_level_execute: ::Gitlab::Access::MAINTAINER)
+              project.root_ancestor.create_ai_settings(minimum_access_level_execute_async: ::Gitlab::Access::MAINTAINER)
 
               enable_admin_mode!(current_user) if role == :admin
             end
@@ -5775,7 +5775,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
           context 'when the minimum role has been set on self-managed' do
             before do
-              Ai::Setting.instance.update!(minimum_access_level_execute: ::Gitlab::Access::MAINTAINER)
+              Ai::Setting.instance.update!(minimum_access_level_execute_async: ::Gitlab::Access::MAINTAINER)
 
               enable_admin_mode!(current_user) if role == :admin
             end
@@ -5813,7 +5813,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
           context 'when the minimum role has been set to admin in a self-managed environment' do
             before do
-              Ai::Setting.instance.update!(minimum_access_level_execute: ::Gitlab::Access::ADMIN)
+              Ai::Setting.instance.update!(minimum_access_level_execute_async: ::Gitlab::Access::ADMIN)
             end
 
             where(:role, :allowed) do
