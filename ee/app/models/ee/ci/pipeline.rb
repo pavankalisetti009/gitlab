@@ -378,7 +378,7 @@ module EE
       end
 
       def pipeline_with_security_policy_jobs?
-        builds.joins(:build_source).where(p_ci_build_sources: { source: PIPELINE_EXECUTION_POLICIES_BUILD_SOURCES }).exists?
+        builds.joins(:job_source).where(p_ci_build_sources: { source: PIPELINE_EXECUTION_POLICIES_BUILD_SOURCES }).exists?
       end
 
       def pipeline_with_security_policy_errors?(pipeline)

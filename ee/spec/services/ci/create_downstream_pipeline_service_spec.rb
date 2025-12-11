@@ -173,7 +173,7 @@ RSpec.describe Ci::CreateDownstreamPipelineService, feature_category: :continuou
           user: user,
           options: trigger,
           pipeline: upstream_pipeline,
-          build_source: build(:ci_build_source, source: 'pipeline_execution_policy')
+          job_source: build(:ci_build_source, source: 'pipeline_execution_policy')
         )
       end
 
