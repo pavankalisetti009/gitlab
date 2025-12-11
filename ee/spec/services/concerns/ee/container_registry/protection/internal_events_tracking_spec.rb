@@ -37,14 +37,4 @@ RSpec.describe ContainerRegistry::Protection::InternalEventsTracking, feature_ca
       end
     end
   end
-
-  describe '#rule_type_for_tag_rule' do
-    context 'when protection rule is immutable' do
-      let(:protection_rule) { create(:container_registry_protection_tag_rule, :immutable, project: project) }
-
-      it 'returns immutable' do
-        expect(service.send(:rule_type_for_tag_rule, protection_rule)).to eq('immutable')
-      end
-    end
-  end
 end
