@@ -932,6 +932,27 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
               )
             end
 
+            context 'when no project_path is provided' do
+              let(:additional_params) { { project_path: nil } }
+
+              before do
+                # Mock the user preference to return add_on_purchase.namespace as the default duo namespace
+                allow(authorized_user).to receive_message_chain(:user_preference, :duo_default_namespace)
+                  .and_return(add_on_purchase.namespace)
+              end
+
+              it 'falls back to default duo namespace' do
+                post_api
+
+                _, params = workhorse_send_data
+
+                expect(params['Header']).to include(
+                  'x-gitlab-root-namespace-id' => [add_on_purchase.namespace.id.to_s],
+                  'x-gitlab-namespace-id' => [add_on_purchase.namespace.id.to_s]
+                )
+              end
+            end
+
             context 'when the user is a duo_core user' do
               it 'includes namespace IDs from Duo Core access via add-on purchase', :freeze_time do
                 addon_access_group = create(:group, name: 'duo-addon-access', path: 'duo-addon-access')
@@ -1338,8 +1359,8 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
           {
             'X-Gitlab-Saas-Namespace-Ids' => '',
             'X-Gitlab-Saas-Duo-Pro-Namespace-Ids' => add_on_purchase.namespace_id.to_s,
-            'x-gitlab-root-namespace-id' => nil,
-            'x-gitlab-namespace-id' => nil
+            'x-gitlab-root-namespace-id' => add_on_purchase.namespace.root_ancestor.id.to_s,
+            'x-gitlab-namespace-id' => add_on_purchase.namespace_id.to_s
           }
         end
 
@@ -1559,6 +1580,34 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
           let(:response_body) do
             { 'message' => '403 Forbidden - Direct connections are disabled' }
           end
+        end
+      end
+
+      context 'when duo_context_not_found? is true' do
+        before do
+          allow_next_instance_of(Gitlab::Llm::AiGateway::CodeSuggestionsClient) do |client|
+            allow(client).to receive(:direct_access_token)
+              .and_return({ status: :success, token: token, expires_at: expected_expiration })
+          end
+
+          # rubocop:disable RSpec/AnyInstanceOf -- It's a parent and all the children are tested here...
+          allow_any_instance_of(CodeSuggestions::ModelDetails::Base)
+            .to receive(:duo_context_not_found?).and_return(true)
+          # rubocop:enable RSpec/AnyInstanceOf
+        end
+
+        it 'returns 422 with missing_default_duo_group error' do
+          post_api
+
+          msg = "I'm sorry, you have not selected a default GitLab Duo namespace. " \
+            "Please go to GitLab and in user Preferences - Behavior, select a default namespace for GitLab Duo."
+
+          expect(response).to have_gitlab_http_status(:unprocessable_entity)
+          expect(json_response).to eq({
+            'error' => 'missing_default_duo_group',
+            'error_description' => msg,
+            'message' => { 'error' => msg }
+          })
         end
       end
     end
