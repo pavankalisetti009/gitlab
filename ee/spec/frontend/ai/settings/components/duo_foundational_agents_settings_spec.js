@@ -43,8 +43,8 @@ describe('DuoFoundationalAgentsSettings', () => {
       });
 
       it('shows "Enabled" and "Disabled" labels', () => {
-        expect(findEnabledRadio().text()).toContain('Enabled');
-        expect(findDisabledRadio().text()).toContain('Disabled');
+        expect(findEnabledRadio().text()).toContain('On by default');
+        expect(findDisabledRadio().text()).toContain('Off by default');
       });
 
       it('does not show help text', () => {
@@ -133,8 +133,8 @@ describe('DuoFoundationalAgentsSettings', () => {
 
         it.each`
           defaultEnabledValue | expectedToggleText
-          ${true}             | ${'Enabled (using default)'}
-          ${false}            | ${'Disabled (using default)'}
+          ${true}             | ${'On (default)'}
+          ${false}            | ${'Off (default)'}
         `(
           'sets dropdown toggle text based on agent enabled status and default value',
           ({ defaultEnabledValue, expectedToggleText }) => {
@@ -146,8 +146,8 @@ describe('DuoFoundationalAgentsSettings', () => {
               mountFn: mountExtended,
             });
 
-            expect(findAgentDropdowns().at(0).props('toggleText')).toBe('Enabled');
-            expect(findAgentDropdowns().at(1).props('toggleText')).toBe('Disabled');
+            expect(findAgentDropdowns().at(0).props('toggleText')).toBe('On');
+            expect(findAgentDropdowns().at(1).props('toggleText')).toBe('Off');
             expect(findAgentDropdowns().at(2).props('toggleText')).toBe(expectedToggleText);
           },
         );
