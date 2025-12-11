@@ -64,16 +64,14 @@ export default {
     },
     sectionTitle() {
       if (this.showFoundationalAgentsPerAgentAvailability) {
-        return s__('FoundationalAgents|Default Availability');
+        return s__('FoundationalAgents|Default availability');
       }
 
       return s__('FoundationalAgents|Foundational agents');
     },
     description() {
       if (this.showFoundationalAgentsPerAgentAvailability) {
-        return s__(
-          'FoundationalAgents|Applied to all foundational agents unless explicitly configured.',
-        );
+        return s__('FoundationalAgents|Control whether foundational agents are available.');
       }
 
       return s__(
@@ -81,13 +79,14 @@ export default {
       );
     },
     enabledLabel() {
-      if (this.showFoundationalAgentsPerAgentAvailability) return s__('FoundationalAgents|Enabled');
+      if (this.showFoundationalAgentsPerAgentAvailability)
+        return s__('FoundationalAgents|On by default');
 
       return s__('FoundationalAgents|On by default');
     },
     disabledLabel() {
       if (this.showFoundationalAgentsPerAgentAvailability)
-        return s__('FoundationalAgents|Disabled');
+        return s__('FoundationalAgents|Off by default');
 
       return s__('FoundationalAgents|Off by default');
     },
@@ -107,17 +106,17 @@ export default {
     },
     availabilityOptions() {
       const defaultText = this.enabled
-        ? s__('FoundationalAgents|Enabled (using default)')
-        : s__('FoundationalAgents|Disabled (using default)');
+        ? s__('FoundationalAgents|On (default)')
+        : s__('FoundationalAgents|Off (default)');
 
       return [
         {
           value: FOUNDATIONAL_AGENTS_AVAILABILITY_VALUES.enabled,
-          text: s__('FoundationalAgents|Enabled'),
+          text: s__('FoundationalAgents|On'),
         },
         {
           value: FOUNDATIONAL_AGENTS_AVAILABILITY_VALUES.disabled,
-          text: s__('FoundationalAgents|Disabled'),
+          text: s__('FoundationalAgents|Off'),
         },
         {
           value: FOUNDATIONAL_AGENTS_AVAILABILITY_VALUES.default,
@@ -168,11 +167,11 @@ export default {
 <template>
   <div>
     <template v-if="showFoundationalAgentsPerAgentAvailability">
-      <h3 class="gl-heading-3 gl-mb-2">{{ s__('FoundationalAgents|Foundational Agents') }}</h3>
+      <h3 class="gl-heading-3 gl-mb-2">{{ s__('FoundationalAgents|Foundational agents') }}</h3>
       <gl-sprintf
         :message="
           s__(
-            'FoundationalAgents| Managed by GitLab. When enabled here, these items will be enabled for every project. %{linkStart}Learn more%{linkEnd}.',
+            'FoundationalAgents|When turned on, foundational agents are available for projects in this group. %{linkStart}What are foundational agents%{linkEnd}?',
           )
         "
       >
@@ -210,7 +209,7 @@ export default {
     </gl-form-group>
     <gl-form-group
       v-if="showAgentsTable"
-      :label="s__('FoundationalAgents|Availability Configuration')"
+      :label="s__('FoundationalAgents|Availability settings')"
       class="gl-mt-4"
     >
       <gl-table-lite
