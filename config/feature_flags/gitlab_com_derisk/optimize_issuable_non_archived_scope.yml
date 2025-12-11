@@ -7,4 +7,5 @@ milestone: '18.7'
 observed: true
 group: group::organizations
 type: gitlab_com_derisk
+log_state_changes: true
 default_enabled: false
