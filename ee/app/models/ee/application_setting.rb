@@ -816,15 +816,11 @@ module EE
     end
 
     def foundational_agents_statuses
-      raise 'Default organization not found' unless ::Organizations::Organization.default_organization
-
-      ::Organizations::Organization.default_organization.foundational_agents_statuses
+      default_organization.foundational_agents_statuses
     end
 
     def foundational_agents_statuses=(value)
-      raise 'Default organization not found' unless ::Organizations::Organization.default_organization
-
-      ::Organizations::Organization.default_organization.update!(foundational_agents_statuses: value)
+      default_organization.update!(foundational_agents_statuses: value)
     end
 
     def duo_agent_platform_enabled
@@ -856,6 +852,13 @@ module EE
     end
 
     private
+
+    def default_organization
+      # rubocop:disable Gitlab/AvoidDefaultOrganization -- needs to use default organization
+      @default_organization ||= ::Organizations::Organization.default_organization ||
+        raise('Default organization not found')
+      # rubocop:enable Gitlab/AvoidDefaultOrganization
+    end
 
     def elasticsearch_limited_project_exists?(project)
       project_namespaces = ::Namespace.where(id: project.namespace_id)
