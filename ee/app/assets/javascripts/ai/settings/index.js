@@ -137,10 +137,7 @@ export const initAiSettings = (id, component, options = {}) => {
         showFoundationalAgentsPerAgentAvailability,
       ),
       initialFoundationalAgentsStatuses: parsedFoundationalAgentsStatuses,
-
-      showDuoAgentPlatformEnabledSetting: duoAgentPlatformEnabled !== undefined,
-      initialDuoAgentPlatformEnabled:
-        duoAgentPlatformEnabled !== undefined ? parseBoolean(duoAgentPlatformEnabled) : true,
+      initialDuoAgentPlatformEnabled: parseBoolean(duoAgentPlatformEnabled),
       toggleBetaModelsPath,
       enabledExpandedLogging: parseBoolean(enabledExpandedLogging),
       earlyAccessPath,

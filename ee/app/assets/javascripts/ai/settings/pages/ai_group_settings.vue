@@ -27,7 +27,6 @@ export default {
     'duoWorkflowAvailable',
     'duoWorkflowMcpEnabled',
     'availableFoundationalFlows',
-    'showDuoAgentPlatformEnabledSetting',
   ],
   props: {
     redirectPath: {
@@ -81,9 +80,7 @@ export default {
             foundational_agents_statuses: transformedFoundationalAgentsStatuses,
           }),
           ai_settings_attributes: {
-            ...(this.showDuoAgentPlatformEnabledSetting && {
-              duo_agent_platform_enabled: duoAgentPlatformEnabled,
-            }),
+            duo_agent_platform_enabled: duoAgentPlatformEnabled,
             duo_workflow_mcp_enabled: this.duoWorkflowMcp,
             foundational_agents_default_enabled: foundationalAgentsEnabled,
           },
