@@ -55,9 +55,6 @@ query pipelineFindings(
           findingTokenStatus {
             id
             status
-            createdAt
-            updatedAt
-            lastVerifiedAt
           }
           solution
           location {

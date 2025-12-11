@@ -186,8 +186,6 @@ query getSecurityReportFinding($projectFullPath: ID!, $pipelineIid: ID!, $findin
         findingTokenStatus {
           id
           status
-          createdAt
-          updatedAt
           lastVerifiedAt
         }
         userPermissions {
