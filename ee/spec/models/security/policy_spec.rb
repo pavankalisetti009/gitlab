@@ -573,6 +573,28 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
     end
   end
 
+  describe '#pipeline_execution_policy' do
+    context 'when policy is a pipeline execution policy' do
+      let_it_be(:pipeline_execution_policy) do
+        create(:security_policy, :pipeline_execution_policy, name: 'Test Pipeline Execution Policy')
+      end
+
+      it 'returns a PipelineExecutionPolicy instance' do
+        expect(pipeline_execution_policy.pipeline_execution_policy).to be_a(
+          Security::PipelineExecutionPolicies::PipelineExecutionPolicy
+        )
+      end
+    end
+
+    context 'when policy is not a pipeline execution policy' do
+      let_it_be(:approval_policy) { create(:security_policy, :approval_policy) }
+
+      it 'returns nil' do
+        expect(approval_policy.pipeline_execution_policy).to be_nil
+      end
+    end
+  end
+
   describe '#max_rule_index' do
     let_it_be(:policy) { create(:security_policy) }
     let_it_be(:rule1) { create(:approval_policy_rule, security_policy: policy, rule_index: 0) }

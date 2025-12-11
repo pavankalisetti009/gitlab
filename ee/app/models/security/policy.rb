@@ -357,6 +357,13 @@ module Security
     end
     strong_memoize_attr :scan_execution_policy
 
+    def pipeline_execution_policy
+      return unless type_pipeline_execution_policy?
+
+      Security::PipelineExecutionPolicies::PipelineExecutionPolicy.new(self)
+    end
+    strong_memoize_attr :pipeline_execution_policy
+
     def supports_policy_rules?
       Security::PolicyRule::SUPPORTED_POLICY_TYPES.include?(type.to_sym)
     end
