@@ -721,6 +721,15 @@ export const securityFindingCreateExternalIssueMutationResponse = {
   },
 };
 
+export const securityFindingCreateJiraIssueFormUrlMutationResponse = {
+  data: {
+    securityFindingJiraIssueFormUrlCreate: {
+      errors: [],
+      jiraIssueFormUrl: 'https://test.atlassian.net/create',
+    },
+  },
+};
+
 export const getVulnerabilityExternalIssuesQueryResponse = ({
   externalIssues = [
     { id: '1', externalIssue: { webUrl: 'https://jira.com/1', relativeReference: 'GTL#1' } },

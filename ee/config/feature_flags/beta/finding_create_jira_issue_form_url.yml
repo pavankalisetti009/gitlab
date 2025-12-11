@@ -1,0 +1,10 @@
+---
+name: finding_create_jira_issue_form_url
+description:
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/578512
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/215380
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/work_items/581690
+milestone: '18.7'
+group: group::security insights
+type: beta
+default_enabled: false
