@@ -28,7 +28,6 @@ module Mutations
           authorize!(project)
 
           raise_resource_not_available_error! unless Feature.enabled?(:validity_checks, project)
-          raise_resource_not_available_error! unless Feature.enabled?(:validity_checks_security_finding_status, project)
           raise_resource_not_available_error! unless project&.security_setting&.validity_checks_enabled?
 
           ::Security::SecretDetection::UpdateTokenStatusService

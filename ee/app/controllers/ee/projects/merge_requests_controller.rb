@@ -21,7 +21,6 @@ module EE
 
         before_action do
           push_frontend_feature_flag(:mr_reports_tab, @project)
-          push_frontend_feature_flag(:validity_checks_security_finding_status, @project)
           push_frontend_feature_flag(:mr_security_widget_graphql, @project)
           push_frontend_feature_flag(:secret_detection_validity_checks_refresh_token, @project)
         end

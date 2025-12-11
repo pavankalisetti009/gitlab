@@ -290,14 +290,6 @@ RSpec.describe Security::StoreScansService, feature_category: :vulnerability_man
           it_behaves_like 'does not schedule token verification'
         end
 
-        context 'when validity_checks_security_finding_status ff is disabled' do
-          before do
-            stub_feature_flags(validity_checks_security_finding_status: false)
-          end
-
-          it_behaves_like 'does not schedule token verification'
-        end
-
         context 'when validity_checks ff is disabled' do
           before do
             stub_feature_flags(validity_checks: false)

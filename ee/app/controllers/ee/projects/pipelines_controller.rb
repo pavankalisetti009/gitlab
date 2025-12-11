@@ -10,9 +10,6 @@ module EE
         include GovernUsageProjectTracking
 
         before_action :authorize_read_licenses!, only: [:licenses, :license_count]
-        before_action do
-          push_frontend_feature_flag(:validity_checks_security_finding_status, project)
-        end
 
         before_action only: [:show, :security] do
           if ::Feature.enabled?(:pipeline_security_ai_vr, project)
