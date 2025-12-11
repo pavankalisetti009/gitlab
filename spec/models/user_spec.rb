@@ -293,6 +293,9 @@ RSpec.describe User, :with_current_organization, feature_category: :user_profile
     it { is_expected.to have_many(:early_access_program_tracking_events).class_name('EarlyAccessProgram::TrackingEvent') }
     it { is_expected.to have_many(:protected_tag_create_access_levels).class_name('ProtectedTag::CreateAccessLevel').dependent(:delete_all) }
     it { is_expected.to have_many(:lfs_file_locks).dependent(:delete_all) }
+    it { is_expected.to have_many(:ml_candidates).class_name('Ml::Candidate').with_foreign_key(:user_id).inverse_of(:user).dependent(:nullify) }
+    it { is_expected.to have_many(:ml_experiments).class_name('Ml::Experiment').with_foreign_key(:user_id).inverse_of(:user).dependent(:nullify) }
+    it { is_expected.to have_many(:ml_models).class_name('Ml::Model').with_foreign_key(:user_id).inverse_of(:user).dependent(:nullify) }
 
     describe '#triggers' do
       let_it_be_with_refind(:user) { create(:user) }
