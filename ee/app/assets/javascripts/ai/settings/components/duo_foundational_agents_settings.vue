@@ -77,7 +77,7 @@ export default {
       }
 
       return s__(
-        'FoundationalAgents|Control availability of %{linkStart}GitLab Duo Foundational agents%{linkEnd}',
+        'FoundationalAgents|Control whether %{linkStart}GitLab Duo foundational agents%{linkEnd} are available.',
       );
     },
     enabledLabel() {
@@ -94,14 +94,14 @@ export default {
     onByDefaultHelpText() {
       if (!this.showFoundationalAgentsPerAgentAvailability)
         return s__(
-          'FoundationalAgents|New foundational agents are automatically enabled for projects in this group.',
+          'FoundationalAgents|Foundational agents are available for projects in this group.',
         );
 
       return '';
     },
     offByDefaultHelpText() {
       if (!this.showFoundationalAgentsPerAgentAvailability) {
-        return s__('FoundationalAgents|Foundational agents are disabled by default.');
+        return s__('FoundationalAgents|Foundational agents are not available.');
       }
       return '';
     },

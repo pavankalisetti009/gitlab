@@ -8,12 +8,12 @@ export default {
   name: 'DuoSastFpDetectionSettings',
   i18n: {
     sectionTitle: s__('DuoSAST|SAST False Positive Detection'),
-    checkboxLabel: s__('DuoSAST|Use Duo SAST False Positive Detection'),
+    checkboxLabel: s__('DuoSAST|Turn on GitLab Duo SAST False Positive Detection'),
     checkboxHelpTextGroup: s__(
-      'DuoSAST|Turn on False Positive Detection for Vulnerabilities on default branch in this group and its subgroups and projects.',
+      'DuoSAST|Use false positive detection for vulnerabilities on the default branch in this group, its subgroups, and its projects.',
     ),
     checkboxHelpTextInstance: s__(
-      'DuoSAST|Turn on False Positive Detection for Vulnerabilities on default branch for the instance.',
+      'DuoSAST|Use false positive detection for vulnerabilities on the default branch for the instance.',
     ),
   },
   components: {

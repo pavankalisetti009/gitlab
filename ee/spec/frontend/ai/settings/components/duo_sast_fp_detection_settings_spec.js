@@ -83,7 +83,7 @@ describe('DuoSastFpDetectionSettings', () => {
     it('renders the checkbox with correct label', () => {
       expect(findAvailabilityCheckbox().exists()).toBe(true);
       expect(wrapper.find('#duo-sast-fp-detection-checkbox-label').text()).toBe(
-        'Use Duo SAST False Positive Detection',
+        'Turn on GitLab Duo SAST False Positive Detection',
       );
     });
 
@@ -187,7 +187,7 @@ describe('DuoSastFpDetectionSettings', () => {
 
     it('renders the group description', () => {
       expect(wrapper.text()).toContain(
-        'Turn on False Positive Detection for Vulnerabilities on default branch in this group and its subgroups and projects',
+        'Use false positive detection for vulnerabilities on the default branch in this group, its subgroups, and its projects',
       );
     });
   });
@@ -199,7 +199,7 @@ describe('DuoSastFpDetectionSettings', () => {
 
     it('renders the instance description', () => {
       expect(wrapper.text()).toContain(
-        'Turn on False Positive Detection for Vulnerabilities on default branch for the instance',
+        'Use false positive detection for vulnerabilities on the default branch for the instance',
       );
     });
   });

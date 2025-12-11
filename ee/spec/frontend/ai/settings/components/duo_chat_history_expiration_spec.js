@@ -26,10 +26,8 @@ describe('DuoChatHistoryExpirationForm', () => {
     });
 
     it('renders the form group with correct title and description', () => {
-      expect(findFormGroup().attributes('label')).toBe('GitLab Duo Chat conversation expiration');
-      expect(findFormGroup().props('labelDescription')).toBe(
-        'Configure how long GitLab Duo Chat conversations persist before they expire:',
-      );
+      expect(findFormGroup().attributes('label')).toBe('GitLab Duo Chat conversations');
+      expect(findFormGroup().props('labelDescription')).toBe('Chat conversations expire:');
     });
 
     it('renders the days input with correct attributes', () => {
@@ -51,11 +49,11 @@ describe('DuoChatHistoryExpirationForm', () => {
       expect(radioGroup.exists()).toBe(true);
       expect(radioGroup.props('options')).toEqual({
         updated: {
-          text: 'Expire conversation based on time conversation was last updated.',
+          text: 'After the conversation was last updated',
           value: 'last_updated_at',
         },
         created: {
-          text: 'Expire conversation based on time conversation was created.',
+          text: 'After the conversation was created',
           value: 'created_at',
         },
       });

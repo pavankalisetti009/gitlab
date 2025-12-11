@@ -6877,6 +6877,12 @@ msgstr ""
 msgid "AiPowered|AI logs"
 msgstr ""
 
+msgid "AiPowered|After the conversation was created"
+msgstr ""
+
+msgid "AiPowered|After the conversation was last updated"
+msgstr ""
+
 msgid "AiPowered|Agent & Flow Permissions"
 msgstr ""
 
@@ -6931,6 +6937,9 @@ msgstr ""
 msgid "AiPowered|Change configuration"
 msgstr ""
 
+msgid "AiPowered|Chat conversations expire:"
+msgstr ""
+
 msgid "AiPowered|Composite identity for GitLab Duo Agent Platform has successfully been turned off."
 msgstr ""
 
@@ -6953,9 +6962,6 @@ msgid "AiPowered|Configure GitLab Duo Self-Hosted"
 msgstr ""
 
 msgid "AiPowered|Configure features"
-msgstr ""
-
-msgid "AiPowered|Configure how long GitLab Duo Chat conversations persist before they expire:"
 msgstr ""
 
 msgid "AiPowered|Configure models for GitLab Duo"
@@ -7012,12 +7018,6 @@ msgstr ""
 msgid "AiPowered|Experiment and beta features"
 msgstr ""
 
-msgid "AiPowered|Expire conversation based on time conversation was created."
-msgstr ""
-
-msgid "AiPowered|Expire conversation based on time conversation was last updated."
-msgstr ""
-
 msgid "AiPowered|Explore GitLab Duo Core"
 msgstr ""
 
@@ -7048,7 +7048,7 @@ msgstr ""
 msgid "AiPowered|GitLab Duo Agent Platform is an AI-native coding agent."
 msgstr ""
 
-msgid "AiPowered|GitLab Duo Chat conversation expiration"
+msgid "AiPowered|GitLab Duo Chat conversations"
 msgstr ""
 
 msgid "AiPowered|GitLab Duo Core available to all users"
@@ -7072,10 +7072,7 @@ msgstr ""
 msgid "AiPowered|Help make the next releases of GitLab better. As a member of the GitLab Early Access Program, you can take part in shaping GitLab by letting us know what you think of GitLab Duo experimental and beta features. How does this program work?"
 msgstr ""
 
-msgid "AiPowered|Ideal for lowest latency. An IDE must be able to connect to https://gitlab.com:443."
-msgstr ""
-
-msgid "AiPowered|Indirect connections through GitLab self-managed instance"
+msgid "AiPowered|Indirect connections through GitLab Self-Managed"
 msgstr ""
 
 msgid "AiPowered|Local AI Gateway URL"
@@ -7094,9 +7091,6 @@ msgid "AiPowered|Manage"
 msgstr ""
 
 msgid "AiPowered|Maximum time in seconds to wait for responses from the AI Gateway (up to 600 seconds).%{br}Increasing this value might result in degraded user experience."
-msgstr ""
-
-msgid "AiPowered|Might result in requests having higher latency."
 msgstr ""
 
 msgid "AiPowered|Minimum role required to create, duplicate, edit, delete, and show agents and flows."
@@ -7180,9 +7174,6 @@ msgstr ""
 msgid "AiPowered|Turn on prompt caching"
 msgstr ""
 
-msgid "AiPowered|Turn on prompt caching to improve Duo performance. %{linkStart}Learn more%{linkEnd}."
-msgstr ""
-
 msgid "AiPowered|Unlock advanced AI-native capabilities with the Premium or Ultimate tier designed for your development needs."
 msgstr ""
 
@@ -7190,6 +7181,15 @@ msgid "AiPowered|Upgrade to"
 msgstr ""
 
 msgid "AiPowered|Use beta models and features in GitLab Duo Self-Hosted"
+msgstr ""
+
+msgid "AiPowered|Use prompt caching to improve GitLab Duo performance. %{linkStart}What is prompt caching%{linkEnd}?"
+msgstr ""
+
+msgid "AiPowered|Use this setting to disable direct connections for all users. This setting might result in higher latency."
+msgstr ""
+
+msgid "AiPowered|Use this setting to minimize latency. An IDE must connect to https://gitlab.com:443."
 msgstr ""
 
 msgid "AiPowered|View configuration"
@@ -26063,16 +26063,16 @@ msgstr ""
 msgid "DuoSAST|SAST False Positive Detection"
 msgstr ""
 
-msgid "DuoSAST|Turn on False Positive Detection for Vulnerabilities on default branch"
+msgid "DuoSAST|Turn on GitLab Duo SAST False Positive Detection"
 msgstr ""
 
-msgid "DuoSAST|Turn on False Positive Detection for Vulnerabilities on default branch for the instance."
+msgid "DuoSAST|Use false positive detection for vulnerabilities on the default branch"
 msgstr ""
 
-msgid "DuoSAST|Turn on False Positive Detection for Vulnerabilities on default branch in this group and its subgroups and projects."
+msgid "DuoSAST|Use false positive detection for vulnerabilities on the default branch for the instance."
 msgstr ""
 
-msgid "DuoSAST|Use Duo SAST False Positive Detection"
+msgid "DuoSAST|Use false positive detection for vulnerabilities on the default branch in this group, its subgroups, and its projects."
 msgstr ""
 
 msgid "DuoTrialDiscover|Ask questions, explore concepts, test ideas, and receive instant feedback directly in your workflow."
@@ -29727,7 +29727,7 @@ msgstr ""
 msgid "FoundationalAgents|Availability Configuration"
 msgstr ""
 
-msgid "FoundationalAgents|Control availability of %{linkStart}GitLab Duo Foundational agents%{linkEnd}"
+msgid "FoundationalAgents|Control whether %{linkStart}GitLab Duo foundational agents%{linkEnd} are available."
 msgstr ""
 
 msgid "FoundationalAgents|Default Availability"
@@ -29751,10 +29751,10 @@ msgstr ""
 msgid "FoundationalAgents|Foundational agents"
 msgstr ""
 
-msgid "FoundationalAgents|Foundational agents are disabled by default."
+msgid "FoundationalAgents|Foundational agents are available for projects in this group."
 msgstr ""
 
-msgid "FoundationalAgents|New foundational agents are automatically enabled for projects in this group."
+msgid "FoundationalAgents|Foundational agents are not available."
 msgstr ""
 
 msgid "FoundationalAgents|Off by default"
@@ -53930,7 +53930,7 @@ msgstr ""
 msgid "Promotions|You can restrict access to protected branches by choosing a role (Maintainers, Developers) as well as certain users."
 msgstr ""
 
-msgid "Prompt Cache"
+msgid "Prompt cache"
 msgstr ""
 
 msgid "Prompt users to upload SSH keys"
