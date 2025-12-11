@@ -47,21 +47,26 @@ RSpec.describe Ai::Catalog, feature_category: :workflow_catalog do
     end
 
     context 'when not SaaS' do
-      where(:flag_enabled, :instance_duo_features_enabled) do
-        false | false
-        true  | false
-        false | true
-        true  | true
+      where(:flag_enabled, :instance_duo_features_enabled, :instance_duo_agent_platform_enabled) do
+        false | false | true
+        true  | false | true
+        false | true  | true
+        true  | true  | true
+        true  | true  | false
       end
 
       with_them do
         let(:true_when_all_enabled) do
-          flag_enabled && instance_duo_features_enabled
+          flag_enabled && instance_duo_features_enabled && instance_duo_agent_platform_enabled
         end
 
         before do
           stub_feature_flags(global_ai_catalog: flag_enabled)
           stub_application_setting(duo_features_enabled: instance_duo_features_enabled)
+
+          # Create or update the AI setting with the desired duo_agent_platform_enabled value
+          ai_setting = ::Ai::Setting.instance
+          ai_setting.update!(feature_settings: { duo_agent_platform_enabled: instance_duo_agent_platform_enabled })
         end
 
         it { is_expected.to eq(true_when_all_enabled) }

@@ -34,6 +34,7 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
         duo_agent_platform_service_url: 'localhost:50052',
         ai_gateway_timeout_seconds: 60,
         duo_core_features_enabled?: true,
+        duo_agent_platform_enabled: true,
         foundational_agents_default_enabled: true
       }
     end
@@ -74,6 +75,7 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
         ai_gateway_url: 'http://localhost:3000',
         ai_gateway_timeout_seconds: '60',
         duo_agent_platform_service_url: 'localhost:50052',
+        duo_agent_platform_enabled: 'true',
         expose_duo_agent_platform_service_url: 'true',
         are_experiment_settings_allowed: 'true',
         are_prompt_cache_settings_allowed: 'true',

@@ -427,6 +427,8 @@ module EE
 
       condition(:duo_features_enabled, scope: :subject) { @subject.duo_features_enabled }
 
+      condition(:duo_agent_platform_enabled, scope: :subject) { Ai::DuoWorkflow.duo_agent_platform_available?(@subject) }
+
       rule { visual_review_bot }.policy do
         prevent_all
       end
@@ -1205,9 +1207,13 @@ module EE
         enable :access_duo_chat
       end
 
-      rule { can?(:read_project) & duo_features_enabled & agentic_chat_available_for_user & agentic_chat_allowed_for_parent_group }.policy do
-        enable :access_duo_agentic_chat
-      end
+      rule do
+        can?(:read_project) &
+          duo_features_enabled &
+          duo_agent_platform_enabled &
+          agentic_chat_available_for_user &
+          agentic_chat_allowed_for_parent_group
+      end.enable :access_duo_agentic_chat
 
       rule { amazon_q_enabled }.policy { prevent :access_duo_agentic_chat }
 
@@ -1297,7 +1303,7 @@ module EE
           @user&.allowed_to_use?(:duo_agent_platform)
       end
 
-      rule { duo_workflow_enabled & duo_workflow_available & can?(:developer_access) }.policy do
+      rule { duo_workflow_enabled & duo_agent_platform_enabled & duo_workflow_available & can?(:developer_access) }.policy do
         enable :duo_workflow
       end
 

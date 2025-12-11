@@ -54,7 +54,8 @@ module EE
 
       validates :code_creation, json_schema: { filename: "application_setting_code_creation" }
 
-      jsonb_accessor :duo_workflow, duo_workflow_oauth_application_id: [:integer]
+      jsonb_accessor :duo_workflow,
+        duo_workflow_oauth_application_id: [:integer]
 
       jsonb_accessor :duo_chat,
         duo_chat_expiration_days: [:integer, { default: 30 }],
@@ -824,6 +825,14 @@ module EE
       raise 'Default organization not found' unless ::Organizations::Organization.default_organization
 
       ::Organizations::Organization.default_organization.update!(foundational_agents_statuses: value)
+    end
+
+    def duo_agent_platform_enabled
+      ::Ai::Setting.instance.duo_agent_platform_enabled
+    end
+
+    def duo_agent_platform_enabled=(value)
+      ::Ai::Setting.instance.update!(duo_agent_platform_enabled: value)
     end
 
     def seat_control_user_cap?

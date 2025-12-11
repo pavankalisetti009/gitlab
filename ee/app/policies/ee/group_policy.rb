@@ -340,6 +340,8 @@ module EE
 
       condition(:duo_features_enabled, scope: :subject) { @subject.namespace_settings&.duo_features_enabled }
 
+      condition(:duo_agent_platform_enabled, scope: :subject) { Ai::DuoWorkflow.duo_agent_platform_available?(@subject) }
+
       condition(:runner_performance_insights_available, scope: :subject) do
         @subject.licensed_feature_available?(:runner_performance_insights_for_namespace)
       end
@@ -1041,7 +1043,15 @@ module EE
       rule { guest }.enable :read_limit_alert
 
       rule { can?(:read_group) & chat_allowed_for_group & chat_available_for_user & duo_features_enabled }.enable :access_duo_chat
-      rule { can?(:read_group) & agentic_chat_allowed_for_group & agentic_chat_available_for_user & duo_features_enabled & ~amazon_q_enabled }.enable :access_duo_agentic_chat
+
+      rule do
+        can?(:read_group) &
+          agentic_chat_allowed_for_group &
+          agentic_chat_available_for_user &
+          duo_features_enabled &
+          duo_agent_platform_enabled &
+          ~amazon_q_enabled
+      end.enable :access_duo_agentic_chat
 
       rule { can?(:read_group) & duo_features_enabled }.enable :access_duo_features
 
@@ -1119,7 +1129,7 @@ module EE
           @user&.allowed_to_use?(:duo_agent_platform)
       end
 
-      rule { duo_workflow_enabled & duo_workflow_available & can?(:developer_access) }.policy do
+      rule { duo_workflow_enabled & duo_agent_platform_enabled & duo_workflow_available & can?(:developer_access) }.policy do
         enable :duo_workflow
       end
 

@@ -3909,17 +3909,17 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       let(:policy) { :access_duo_agentic_chat }
 
       context 'when not on .org or .com' do
-        where(:stage_check_passed, :enabled_for_user, :duo_features_enabled, :amazon_q_enabled, :cs_matcher) do
-          true  | true  | false | false | be_disallowed(policy)
-          true  | true  | true  | false | be_allowed(policy)
-          true  | false | false | false | be_disallowed(policy)
-          true  | false | true  | false | be_disallowed(policy)
-          true  | true  | true  | true  | be_disallowed(policy)
-          false | true  | false | false | be_disallowed(policy)
-          false | true  | true  | false | be_disallowed(policy)
-          false | false | false | false | be_disallowed(policy)
-          false | false | true  | false | be_disallowed(policy)
-          false | true  | true  | true  | be_disallowed(policy)
+        where(:stage_check_passed, :enabled_for_user, :duo_agent_platform_enabled, :duo_features_enabled, :amazon_q_enabled, :cs_matcher) do
+          true  | true  | true  | false | false | be_disallowed(policy)
+          true  | true  | true  | true  | false | be_allowed(policy)
+          true  | false | true  | false | false | be_disallowed(policy)
+          true  | false | true  | true  | false | be_disallowed(policy)
+          true  | true  | true  | true  | true  | be_disallowed(policy)
+          false | true  | true  | false | false | be_disallowed(policy)
+          false | true  | true  | true  | false | be_disallowed(policy)
+          false | false | true  | false | false | be_disallowed(policy)
+          false | false | true  | true  | false | be_disallowed(policy)
+          false | true  | false | true  | true  | be_disallowed(policy)
         end
 
         with_them do
@@ -3930,6 +3930,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
             allow(Ability).to receive(:allowed?).with(current_user, :access_duo_agentic_chat).and_return(enabled_for_user)
             allow(::Ai::AmazonQ).to receive(:enabled?).and_return(amazon_q_enabled)
             allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(group, :agentic_chat).and_return(stage_check_passed)
+            allow(::Ai::DuoWorkflow).to receive(:duo_agent_platform_available?).and_return(duo_agent_platform_enabled)
           end
 
           it { is_expected.to cs_matcher }

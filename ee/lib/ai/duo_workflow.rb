@@ -54,6 +54,14 @@ module Ai
         ServiceResponse.from_legacy_hash(result)
       end
 
+      def duo_agent_platform_available?(_container = nil)
+        # For GitLab.com, return true until logic has been implemented
+        return true if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+
+        # For self-managed/dedicated instances, use instance-level settings
+        ::Ai::Setting.instance.duo_agent_platform_enabled
+      end
+
       private
 
       def ai_settings
