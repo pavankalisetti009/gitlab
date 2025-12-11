@@ -25430,10 +25430,19 @@ msgstr ""
 msgid "DuoAgentsPlatform|An error occurred while fetching users."
 msgstr ""
 
+msgid "DuoAgentsPlatform|Are you sure you want to cancel this session? This action cannot be undone."
+msgstr ""
+
 msgid "DuoAgentsPlatform|Are you sure you want to delete this trigger? This action cannot be undone."
 msgstr ""
 
 msgid "DuoAgentsPlatform|Automate"
+msgstr ""
+
+msgid "DuoAgentsPlatform|Cancel session"
+msgstr ""
+
+msgid "DuoAgentsPlatform|Cancel session?"
 msgstr ""
 
 msgid "DuoAgentsPlatform|Concise view"
@@ -25500,6 +25509,9 @@ msgid "DuoAgentsPlatform|Event Type"
 msgstr ""
 
 msgid "DuoAgentsPlatform|Event types"
+msgstr ""
+
+msgid "DuoAgentsPlatform|Failed to cancel session. Please try again."
 msgstr ""
 
 msgid "DuoAgentsPlatform|Failed to delete trigger."
@@ -25607,6 +25619,9 @@ msgstr ""
 msgid "DuoAgentsPlatform|Service account user"
 msgstr ""
 
+msgid "DuoAgentsPlatform|Session has been cancelled successfully."
+msgstr ""
+
 msgid "DuoAgentsPlatform|Sessions"
 msgstr ""
 
@@ -25650,6 +25665,9 @@ msgid "DuoAgentsPlatform|Unknown"
 msgstr ""
 
 msgid "DuoAgentsPlatform|Write file"
+msgstr ""
+
+msgid "DuoAgentsPlatform|You do not have permission to cancel this session."
 msgstr ""
 
 msgid "DuoAgentsPlatform|⚠️ Create a unique service account for each project."

@@ -59,7 +59,16 @@ export default {
       type: String,
       required: true,
     },
+    workflowId: {
+      type: String,
+      required: true,
+    },
+    canUpdateWorkflow: {
+      type: Boolean,
+      required: true,
+    },
   },
+  emits: ['cancel-session'],
   AGENTS_PLATFORM_INDEX_ROUTE,
 };
 </script>
@@ -97,6 +106,9 @@ export default {
             :project="project"
             :updated-at="updatedAt"
             :executor-url="executorUrl"
+            :workflow-id="workflowId"
+            :can-update-workflow="canUpdateWorkflow"
+            @cancel-session="$emit('cancel-session')"
           />
         </gl-tab>
       </gl-tabs>

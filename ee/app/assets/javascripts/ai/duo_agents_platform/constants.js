@@ -124,3 +124,13 @@ export const DEFAULT_AGENT_PLATFORM_PAGINATION_VARIABLES = {
   after: null,
   last: null,
 };
+
+// Can cancel only if session is in an active state (not already finished, failed, or stopped)
+export const AGENT_PLATFORM_CANCELABLE_STATUSES = [
+  'CREATED',
+  'RUNNING',
+  'PAUSED',
+  'INPUT_REQUIRED',
+  'PLAN_APPROVAL_REQUIRED',
+  'TOOL_CALL_APPROVAL_REQUIRED',
+];

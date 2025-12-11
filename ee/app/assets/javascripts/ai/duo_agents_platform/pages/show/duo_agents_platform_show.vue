@@ -1,4 +1,5 @@
 <script>
+import axios from '~/lib/utils/axios_utils';
 import { createAlert } from '~/alert';
 import { s__ } from '~/locale';
 import { TYPENAME_AI_DUO_WORKFLOW } from '~/graphql_shared/constants';
@@ -7,10 +8,14 @@ import { getAgentFlow } from '../../graphql/queries/get_agent_flow.query.graphql
 import { DUO_AGENTS_PLATFORM_POLLING_INTERVAL } from '../../constants';
 import { formatAgentDefinition, formatAgentStatus, agentSessionStatusVar } from '../../utils';
 import AgentFlowDetails from './components/agent_flow_details.vue';
+import AgentFlowCancelationModal from './components/agent_flow_cancelation_modal.vue';
 
 export default {
   name: 'DuoAgentsPlatformShow',
-  components: { AgentFlowDetails },
+  components: {
+    AgentFlowDetails,
+    AgentFlowCancelationModal,
+  },
   inject: {
     isFlyout: { default: false },
     isSidePanelView: { default: false },
@@ -18,6 +23,8 @@ export default {
   data() {
     return {
       agentFlow: null,
+      showCancelConfirmation: false,
+      isCancelling: false,
     };
   },
   apollo: {
@@ -42,6 +49,7 @@ export default {
           message:
             err?.message ||
             s__('DuoAgentsPlatform|Something went wrong while fetching Agent Flows'),
+          captureError: true,
         });
       },
     },
@@ -77,24 +85,77 @@ export default {
     userId() {
       return this.agentFlow?.userId || '';
     },
+    workflowId() {
+      return this.$route.params.id?.toString() || '';
+    },
+    canUpdateWorkflow() {
+      return this.agentFlow?.userPermissions?.updateDuoWorkflow || false;
+    },
   },
   beforeDestroy() {
     agentSessionStatusVar(null);
   },
+  methods: {
+    async confirmCancelSession() {
+      this.isCancelling = true;
+      this.showCancelConfirmation = false;
+
+      try {
+        await this.cancelSessionAPI();
+
+        createAlert({
+          message: s__('DuoAgentsPlatform|Session has been cancelled successfully.'),
+          variant: 'success',
+        });
+      } catch (error) {
+        const errorMessage =
+          error.response?.data?.message ||
+          s__('DuoAgentsPlatform|Failed to cancel session. Please try again.');
+
+        createAlert({
+          message: errorMessage,
+          captureError: true,
+          variant: 'danger',
+        });
+      } finally {
+        this.isCancelling = false;
+      }
+    },
+    async cancelSessionAPI() {
+      const { workflowId } = this;
+      const url = `/api/v4/ai/duo_workflows/workflows/${workflowId}`;
+
+      await axios.patch(url, {
+        status_event: 'stop',
+      });
+    },
+  },
 };
 </script>
 <template>
-  <agent-flow-details
-    :class="isFlyout ? 'gl-mx-3' : ''"
-    :is-loading="isLoading"
-    :status="status"
-    :human-status="humanStatus"
-    :agent-flow-definition="agentFlowDefinition"
-    :duo-messages="duoMessages"
-    :executor-url="executorUrl"
-    :created-at="createdAt"
-    :project="project"
-    :updated-at="updatedAt"
-    :user-id="userId"
-  />
+  <div>
+    <agent-flow-details
+      :class="isFlyout ? 'gl-mx-3' : ''"
+      :is-loading="isLoading"
+      :status="status"
+      :human-status="humanStatus"
+      :agent-flow-definition="agentFlowDefinition"
+      :duo-messages="duoMessages"
+      :executor-url="executorUrl"
+      :created-at="createdAt"
+      :project="project"
+      :updated-at="updatedAt"
+      :user-id="userId"
+      :workflow-id="workflowId"
+      :can-update-workflow="canUpdateWorkflow"
+      @cancel-session="showCancelConfirmation = true"
+    />
+
+    <agent-flow-cancelation-modal
+      :visible="showCancelConfirmation"
+      :loading="isCancelling"
+      @hide="showCancelConfirmation = false"
+      @confirm="confirmCancelSession"
+    />
+  </div>
 </template>
