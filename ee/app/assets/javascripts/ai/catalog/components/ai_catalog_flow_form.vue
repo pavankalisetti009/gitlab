@@ -186,10 +186,7 @@ export default {
       },
       inputAttrs: {
         'data-testid': 'flow-form-input-name',
-        placeholder: s__('AICatalog|Research Assistant, Creative Writer, Code Helper'),
-      },
-      groupAttrs: {
-        labelDescription: s__('AICatalog|Name your flow.'),
+        placeholder: s__('AICatalog|Triage Issue, Generate Release Notes, Update Docs'),
       },
     },
     description: {
@@ -198,9 +195,6 @@ export default {
       validations: {
         requiredLabel: s__('AICatalog|Description is required.'),
         maxLength: MAX_LENGTH_DESCRIPTION,
-      },
-      groupAttrs: {
-        labelDescription: s__('AICatalog|Provide a brief description.'),
       },
     },
     visibilityLevel: {

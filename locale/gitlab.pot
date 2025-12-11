@@ -2902,12 +2902,6 @@ msgstr ""
 msgid "AICatalog|Name is required."
 msgstr ""
 
-msgid "AICatalog|Name your agent."
-msgstr ""
-
-msgid "AICatalog|Name your flow."
-msgstr ""
-
 msgid "AICatalog|New agent"
 msgstr ""
 
@@ -2969,9 +2963,6 @@ msgid "AICatalog|Project members can use this flow. You must have at least the M
 msgstr ""
 
 msgid "AICatalog|Project-specific automation."
-msgstr ""
-
-msgid "AICatalog|Provide a brief description."
 msgstr ""
 
 msgid "AICatalog|Public %{itemTypePlural} are best for:"
@@ -3068,6 +3059,9 @@ msgid "AICatalog|This key dashboard provides visibility into SDLC metrics in the
 msgstr ""
 
 msgid "AICatalog|Tools"
+msgstr ""
+
+msgid "AICatalog|Triage Issue, Generate Release Notes, Update Docs"
 msgstr ""
 
 msgid "AICatalog|Trigger this %{itemType} when the service account user is assigned as a reviewer to a merge request."
