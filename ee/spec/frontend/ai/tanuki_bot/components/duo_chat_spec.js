@@ -1294,7 +1294,7 @@ describe('Agentic Mode Toggle (when agenticChatGa FF is disabled)', () => {
   });
 });
 
-describe('Chat (Classic) Toggle (when agenticChatGa FF is enabled)', () => {
+describe('Agentic Toggle (when agenticChatGa FF is enabled)', () => {
   const findGlToggle = () => wrapper.findComponent(GlToggle);
 
   beforeEach(() => {
@@ -1313,20 +1313,20 @@ describe('Chat (Classic) Toggle (when agenticChatGa FF is enabled)', () => {
     });
   });
 
-  it('renders the GlToggle component with "Chat (Classic)" label', () => {
+  it('renders the GlToggle component with "Agentic" label', () => {
     expect(findGlToggle().exists()).toBe(true);
-    expect(findGlToggle().text()).toContain('Chat (Classic)');
+    expect(findGlToggle().text()).toContain('Agentic');
   });
 
-  it('calls setAgenticMode with inverted value when toggle changes', async () => {
+  it('calls setAgenticMode with the toggle value when toggle changes', async () => {
     const toggle = findGlToggle();
 
-    // Turning OFF classic mode (value = false) should enable agentic mode (agenticMode = true)
+    // Toggle directly controls agentic mode - false means agentic mode is disabled
     toggle.vm.$emit('change', false);
     await nextTick();
 
     expect(setAgenticMode).toHaveBeenCalledWith({
-      agenticMode: true,
+      agenticMode: false,
       saveCookie: true,
       isEmbedded: false,
     });

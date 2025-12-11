@@ -8,7 +8,13 @@ import {
 
 // Initialize chatMode from cookie on module load
 const savedMode = getCookie(DUO_AGENTIC_MODE_COOKIE);
-if (savedMode === 'true') {
+
+// When agenticChatGa FF is enabled, default to agentic unless explicitly disabled
+// When FF is disabled, default to classic unless explicitly enabled
+if (
+  (window.gon?.features?.agenticChatGa && savedMode !== 'false') ||
+  (!window.gon?.features?.agenticChatGa && savedMode === 'true')
+) {
   duoChatGlobalState.chatMode = CHAT_MODES.AGENTIC;
 } else {
   duoChatGlobalState.chatMode = CHAT_MODES.CLASSIC;

@@ -13,6 +13,7 @@ RSpec.describe 'Duo Chat > User opens Duo Chat', :js, :saas, feature_category: :
 
   before do
     allow(::Gitlab::Llm::TanukiBot).to receive(:credits_available?).and_return(true)
+    stub_feature_flags(agentic_chat_ga: false)
     allow(user).to receive(:allowed_to_use?).and_return(true)
     allow(user).to receive(:can?).and_call_original
 
