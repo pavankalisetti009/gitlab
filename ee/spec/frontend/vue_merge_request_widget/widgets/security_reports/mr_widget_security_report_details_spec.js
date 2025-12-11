@@ -110,6 +110,9 @@ describe('MR Widget Security Reports - Finding', () => {
   const findSummaryText = () => wrapper.findComponent(SummaryText);
   const findSummaryHighlights = () => wrapper.findComponent(SummaryHighlights);
   const findDismissedBadge = () => wrapper.findByTestId('dismissed-badge');
+  const findAutoDismissPolicyBadge = () => wrapper.findByTestId('auto-dismiss-policy-badge');
+  const findAutoDismissPolicyBadgePopover = (uuid) =>
+    wrapper.findByTestId(`auto-dismiss-policy-badge-popover-${uuid}`);
   const findDynamicScroller = () => wrapper.findByTestId('dynamic-content-scroller');
 
   beforeEach(() => {
@@ -355,6 +358,259 @@ describe('MR Widget Security Reports - Finding', () => {
         severity: 'critical',
         state: 'dismissed',
         uuid: '1',
+      });
+    });
+  });
+
+  describe('auto dismiss policy badge', () => {
+    const findingUuid = '1';
+
+    describe.each`
+      matchesAutoDismissPolicy
+      ${false}
+      ${undefined}
+      ${null}
+    `(
+      'when "matches_auto_dismiss_policy" is set to "$matchesAutoDismissPolicy"',
+      ({ matchesAutoDismissPolicy }) => {
+        beforeEach(async () => {
+          createComponent({
+            propsData: {
+              report: mockReport({
+                full: mockReportData({
+                  numberOfNewFindings: 1,
+                  findings: [
+                    {
+                      uuid: findingUuid,
+                      severity: 'critical',
+                      name: 'Password leak',
+                      state: 'new',
+                      matches_auto_dismiss_policy: matchesAutoDismissPolicy,
+                    },
+                  ],
+                }),
+              }),
+            },
+          });
+
+          await nextTick();
+        });
+
+        it('should not show the auto-dismiss-policy badge', () => {
+          expect(findAutoDismissPolicyBadge().exists()).toBe(false);
+        });
+
+        it('should not show the auto-dismiss-policy badge popover', () => {
+          expect(findAutoDismissPolicyBadgePopover(findingUuid).exists()).toBe(false);
+        });
+      },
+    );
+
+    describe('when "matches_auto_dismiss_policy" is set to "true"', () => {
+      beforeEach(async () => {
+        createComponent({
+          propsData: {
+            report: mockReport({
+              full: {
+                numberOfNewFindings: 1,
+                findings: [
+                  {
+                    uuid: findingUuid,
+                    severity: 'critical',
+                    name: 'Password leak',
+                    state: 'new',
+                    matches_auto_dismiss_policy: true,
+                  },
+                ],
+              },
+            }),
+          },
+        });
+
+        await nextTick();
+      });
+
+      it('should show the auto-dismiss-policy badge', () => {
+        expect(findAutoDismissPolicyBadge().exists()).toBe(true);
+      });
+
+      it('should add the correct id-attribute to the auto-dismiss-policy badge', () => {
+        expect(findAutoDismissPolicyBadge().attributes('id')).toBe(
+          `auto-dismiss-policy-badge-${findingUuid}`,
+        );
+      });
+
+      it('should have the correct data-testid attribute', () => {
+        expect(findAutoDismissPolicyBadge().attributes('data-testid')).toBe(
+          'auto-dismiss-policy-badge',
+        );
+      });
+
+      it('should have the correct variant', () => {
+        expect(findAutoDismissPolicyBadge().props('variant')).toBe('info');
+      });
+
+      it('should show a popover for the auto-dismiss-policy badge', () => {
+        expect(findAutoDismissPolicyBadgePopover(findingUuid).exists()).toBe(true);
+      });
+
+      it('should pass the correct props to the auto-dismiss-policy badge popover', () => {
+        expect(findAutoDismissPolicyBadgePopover(findingUuid).props()).toMatchObject({
+          target: `auto-dismiss-policy-badge-${findingUuid}`,
+          boundary: 'viewport',
+          placement: 'top',
+        });
+      });
+
+      it('should display the correct popover text', () => {
+        expect(findAutoDismissPolicyBadgePopover(findingUuid).text()).toContain(
+          'Vulnerability was matched by a policy and will be auto-dismissed.',
+        );
+      });
+
+      it('should have a learn more link in the popover', () => {
+        const learnMoreLink = findAutoDismissPolicyBadgePopover(findingUuid).findComponent({
+          name: 'GlLink',
+        });
+
+        expect(learnMoreLink.exists()).toBe(true);
+        expect(learnMoreLink.text()).toBe('Learn more');
+        expect(learnMoreLink.attributes('href')).toContain(
+          'user/application_security/policies/vulnerability_management_policy',
+        );
+      });
+    });
+
+    describe('when multiple vulnerabilities have different auto-dismiss-policy values', () => {
+      beforeEach(async () => {
+        createComponent({
+          propsData: {
+            report: mockReport({
+              full: {
+                numberOfNewFindings: 3,
+                findings: [
+                  {
+                    uuid: '1',
+                    severity: 'critical',
+                    name: 'Password leak',
+                    state: 'new',
+                    matches_auto_dismiss_policy: true,
+                  },
+                  {
+                    uuid: '2',
+                    severity: 'high',
+                    name: 'XSS vulnerability',
+                    state: 'new',
+                    matches_auto_dismiss_policy: false,
+                  },
+                  {
+                    uuid: '3',
+                    severity: 'medium',
+                    name: 'SQL vulnerability',
+                    state: 'new',
+                    matches_auto_dismiss_policy: true,
+                  },
+                  {
+                    uuid: '4',
+                    severity: 'medium',
+                    name: 'SQL vulnerability',
+                    state: 'dismissed',
+                    matches_auto_dismiss_policy: true,
+                  },
+                ],
+              },
+            }),
+          },
+        });
+
+        await nextTick();
+      });
+
+      it('should show the badge only for not dismissed vulnerabilities with matches_auto_dismiss_policy set to true', () => {
+        const badges = wrapper.findAllByTestId('auto-dismiss-policy-badge');
+
+        expect(badges).toHaveLength(2);
+        expect(badges.at(0).attributes('id')).toBe('auto-dismiss-policy-badge-1');
+        expect(badges.at(1).attributes('id')).toBe('auto-dismiss-policy-badge-3');
+      });
+
+      it('should show popovers only for not dismisssed vulnerabilities with matches_auto_dismiss_policy set to true', () => {
+        expect(findAutoDismissPolicyBadgePopover('1').exists()).toBe(true);
+        expect(findAutoDismissPolicyBadgePopover('2').exists()).toBe(false);
+        expect(findAutoDismissPolicyBadgePopover('3').exists()).toBe(true);
+        expect(findAutoDismissPolicyBadgePopover('4').exists()).toBe(false);
+      });
+    });
+
+    describe('when auto-dismiss-policy badge is shown alongside aiResolvableBadge', () => {
+      beforeEach(async () => {
+        createComponent({
+          provide: {
+            glAbilities: {
+              resolveVulnerabilityWithAi: true,
+            },
+          },
+          propsData: {
+            report: mockReport({
+              full: {
+                numberOfNewFindings: 1,
+                findings: [
+                  {
+                    uuid: findingUuid,
+                    severity: 'critical',
+                    name: 'Password leak',
+                    state: 'new',
+                    matches_auto_dismiss_policy: true,
+                    ai_resolution_enabled: true,
+                  },
+                ],
+              },
+            }),
+          },
+        });
+
+        await nextTick();
+      });
+
+      it('should display both badges', () => {
+        const aiResolvableBadge = wrapper.findByTestId('ai-resolvable-badge');
+        const autoDismissBadge = findAutoDismissPolicyBadge();
+
+        expect(aiResolvableBadge.exists()).toBe(true);
+        expect(autoDismissBadge.exists()).toBe(true);
+      });
+    });
+
+    describe('when auto-dismiss-policy badge is shown in partial scan', () => {
+      beforeEach(async () => {
+        createComponent({
+          propsData: {
+            report: mockReport({
+              partial: {
+                numberOfNewFindings: 1,
+                findings: [
+                  {
+                    uuid: findingUuid,
+                    severity: 'high',
+                    name: 'SQL Injection',
+                    state: 'new',
+                    matches_auto_dismiss_policy: true,
+                  },
+                ],
+              },
+            }),
+          },
+        });
+
+        await nextTick();
+      });
+
+      it('should show the auto-dismiss-policy badge in partial scan', () => {
+        expect(findAutoDismissPolicyBadge().exists()).toBe(true);
+      });
+
+      it('should show the popover for the auto-dismiss-policy badge in partial scan', () => {
+        expect(findAutoDismissPolicyBadgePopover(findingUuid).exists()).toBe(true);
       });
     });
   });
