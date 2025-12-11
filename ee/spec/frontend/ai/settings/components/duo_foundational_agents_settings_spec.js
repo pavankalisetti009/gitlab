@@ -68,11 +68,9 @@ describe('DuoFoundationalAgentsSettings', () => {
 
       it('shows help text', () => {
         expect(findEnabledRadio().text()).toContain(
-          'New foundational agents are automatically enabled for projects in this group.',
+          'Foundational agents are available for projects in this group.',
         );
-        expect(findDisabledRadio().text()).toContain(
-          'Foundational agents are disabled by default.',
-        );
+        expect(findDisabledRadio().text()).toContain('Foundational agents are not available.');
       });
     });
   });

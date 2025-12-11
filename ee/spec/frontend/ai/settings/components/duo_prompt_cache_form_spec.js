@@ -51,7 +51,7 @@ describe('DuoPromptCacheForm', () => {
     });
 
     it('renders the section title', () => {
-      expect(wrapper.find('h5').text()).toBe('Prompt Cache');
+      expect(wrapper.find('h5').text()).toBe('Prompt cache');
     });
 
     it('renders the checkbox with correct label', () => {

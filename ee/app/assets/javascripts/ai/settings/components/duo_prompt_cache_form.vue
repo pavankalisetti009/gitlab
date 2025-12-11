@@ -6,10 +6,10 @@ import { s__, __ } from '~/locale';
 export default {
   name: 'DuoPromptCacheForm',
   i18n: {
-    sectionTitle: __('Prompt Cache'),
+    sectionTitle: __('Prompt cache'),
     checkboxLabel: s__('AiPowered|Turn on prompt caching'),
     checkboxHelpText: s__(
-      'AiPowered|Turn on prompt caching to improve Duo performance. %{linkStart}Learn more%{linkEnd}.',
+      'AiPowered|Use prompt caching to improve GitLab Duo performance. %{linkStart}What is prompt caching%{linkEnd}?',
     ),
     popoverTitle: s__('AiPowered|Setting unavailable'),
     popoverContent: s__(

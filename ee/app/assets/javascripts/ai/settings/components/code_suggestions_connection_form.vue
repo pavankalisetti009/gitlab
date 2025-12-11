@@ -9,12 +9,12 @@ export default {
     subtitleText: s__('AiPowered|Specify how code completion requests are sent to the AI gateway.'),
     directConnectionText: s__('AiPowered|Direct connections'),
     directConnectionHelpText: s__(
-      'AiPowered|Ideal for lowest latency. An IDE must be able to connect to https://gitlab.com:443.',
+      'AiPowered|Use this setting to minimize latency. An IDE must connect to https://gitlab.com:443.',
     ),
-    indirectConnectionText: s__(
-      'AiPowered|Indirect connections through GitLab self-managed instance',
+    indirectConnectionText: s__('AiPowered|Indirect connections through GitLab Self-Managed'),
+    indirectConnectionHelpText: s__(
+      'AiPowered|Use this setting to disable direct connections for all users. This setting might result in higher latency.',
     ),
-    indirectConnectionHelpText: s__('AiPowered|Might result in requests having higher latency.'),
   },
   components: {
     GlSprintf,

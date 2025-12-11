@@ -4,11 +4,11 @@ import { s__, n__ } from '~/locale';
 
 const EXPIRATION_COLUMNS = {
   updated: {
-    text: s__('AiPowered|Expire conversation based on time conversation was last updated.'),
+    text: s__('AiPowered|After the conversation was last updated'),
     value: 'last_updated_at',
   },
   created: {
-    text: s__('AiPowered|Expire conversation based on time conversation was created.'),
+    text: s__('AiPowered|After the conversation was created'),
     value: 'created_at',
   },
 };
@@ -16,10 +16,8 @@ const EXPIRATION_COLUMNS = {
 export default {
   name: 'DuoChatHistoryExpirationForm',
   i18n: {
-    sectionTitle: s__('AiPowered|GitLab Duo Chat conversation expiration'),
-    subtitleText: s__(
-      'AiPowered|Configure how long GitLab Duo Chat conversations persist before they expire:',
-    ),
+    sectionTitle: s__('AiPowered|GitLab Duo Chat conversations'),
+    subtitleText: s__('AiPowered|Chat conversations expire:'),
   },
   components: {
     GlFormRadioGroup,
