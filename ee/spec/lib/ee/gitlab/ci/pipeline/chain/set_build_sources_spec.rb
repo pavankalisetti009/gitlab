@@ -75,7 +75,7 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::SetBuildSources, feature_category: :
             .with(build)
             .and_return(expected_sources[build.name] == "scan_execution_policy")
 
-          expect(build).to receive(:build_build_source).with(
+          expect(build).to receive(:build_job_source).with(
             source: expected_sources[build.name],
             project_id: project.id
           )
@@ -89,8 +89,6 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::SetBuildSources, feature_category: :
   private
 
   def build_double(**args)
-    double = instance_double(::Ci::Build, args[:name], **args)
-    allow(double).to receive(:instance_of?).with(::Ci::Build).and_return(true)
-    double
+    instance_double(::Ci::Build, args[:name], **args)
   end
 end

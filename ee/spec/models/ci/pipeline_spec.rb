@@ -742,7 +742,7 @@ RSpec.describe Ci::Pipeline, feature_category: :continuous_integration do
 
           context 'when the pipeline has builds created by security policies' do
             let!(:build) { create(:ci_build, pipeline: pipeline, project: project) }
-            let!(:build_source) { create(:ci_build_source, build: build, source: 'scan_execution_policy') }
+            let!(:build_source) { create(:ci_build_source, job: build, source: 'scan_execution_policy') }
 
             it_behaves_like 'enqueues FailedPipelinesAuditWorker'
           end

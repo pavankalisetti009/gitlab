@@ -257,7 +257,7 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
             :ci_bridge,
             status: :pending,
             user: user,
-            build_source: build_stubbed(:ci_build_source, source: bridge_source),
+            job_source: build_stubbed(:ci_build_source, source: bridge_source),
             options: { trigger: { include: { local: 'child.yml' } } },
             pipeline: pipeline
           )
