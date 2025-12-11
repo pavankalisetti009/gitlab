@@ -60491,6 +60491,9 @@ msgstr ""
 msgid "SecurityOrchestration|%{strongStart}Run customized GitLab security templates%{strongEnd} across my projects."
 msgstr ""
 
+msgid "SecurityOrchestration|%{type}: %{boldStart}%{value}%{boldEnd}"
+msgstr ""
+
 msgid "SecurityOrchestration|(%{groups})"
 msgstr ""
 
@@ -60530,7 +60533,7 @@ msgstr ""
 msgid "SecurityOrchestration|API request"
 msgstr ""
 
-msgid "SecurityOrchestration|Acceptable Risk"
+msgid "SecurityOrchestration|Acceptable risk"
 msgstr ""
 
 msgid "SecurityOrchestration|Access tokens (%{count})"
@@ -60683,6 +60686,12 @@ msgstr ""
 msgid "SecurityOrchestration|Automate %{strongStart}vulnerability management%{strongEnd} workflows."
 msgstr ""
 
+msgid "SecurityOrchestration|Automatically dismiss vulnerabilities when they match all of the following criteria:"
+msgstr ""
+
+msgid "SecurityOrchestration|Automatically dismiss vulnerabilities with a risk level of %{risk} when they match all of the following criteria:"
+msgstr ""
+
 msgid "SecurityOrchestration|Automatically selected runners"
 msgstr ""
 
@@ -60789,6 +60798,9 @@ msgid "SecurityOrchestration|Create new project with the new policy"
 msgstr ""
 
 msgid "SecurityOrchestration|Create security policy"
+msgstr ""
+
+msgid "SecurityOrchestration|Criteria were not saved in correct format."
 msgstr ""
 
 msgid "SecurityOrchestration|Critical business deadline"
@@ -61040,6 +61052,9 @@ msgstr ""
 msgid "SecurityOrchestration|Invalid branch type detected - rule will not be applied."
 msgstr ""
 
+msgid "SecurityOrchestration|Invalid criteria format"
+msgstr ""
+
 msgid "SecurityOrchestration|Invalid policy"
 msgstr ""
 
@@ -61109,7 +61124,7 @@ msgstr ""
 msgid "SecurityOrchestration|Merge request pipeline"
 msgstr ""
 
-msgid "SecurityOrchestration|Mitigating Control"
+msgid "SecurityOrchestration|Mitigating control"
 msgstr ""
 
 msgid "SecurityOrchestration|Never"
@@ -61331,6 +61346,9 @@ msgid "SecurityOrchestration|Roles"
 msgstr ""
 
 msgid "SecurityOrchestration|Roles (%{count})"
+msgstr ""
+
+msgid "SecurityOrchestration|Rule %{number}"
 msgstr ""
 
 msgid "SecurityOrchestration|Rule mode"
