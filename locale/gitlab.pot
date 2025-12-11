@@ -5449,6 +5449,15 @@ msgstr ""
 msgid "AdminSelfHostedModels|Your self-hosted model was successfully deleted."
 msgstr ""
 
+msgid "AdminSettingsUsageBilling|Display user data"
+msgstr ""
+
+msgid "AdminSettingsUsageBilling|GitLab Credits dashboard"
+msgstr ""
+
+msgid "AdminSettingsUsageBilling|If selected, individual usernames and their credit usage are visible on the GitLab Credits dashboard. If your organization needs to restrict access to individual user activity for compliance or privacy reasons, clear this checkbox."
+msgstr ""
+
 msgid "AdminSettings|%{generate_manually_link_start}Generate%{generate_manually_link_end} Service Ping to preview and download service usage data payload."
 msgstr ""
 
