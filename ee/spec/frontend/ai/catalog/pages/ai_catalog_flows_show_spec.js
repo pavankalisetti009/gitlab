@@ -336,6 +336,10 @@ describe('AiCatalogFlowsShow', () => {
 
         expect(mockToast.show).toHaveBeenCalledWith('Flow disabled in this project.');
       });
+
+      it('refetches flow data', () => {
+        expect(mockFlowQueryHandler).toHaveBeenCalled();
+      });
     });
 
     describe('when request succeeds but returns errors', () => {
