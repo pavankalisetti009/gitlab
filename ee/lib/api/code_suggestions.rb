@@ -69,6 +69,7 @@ module API
         return {} unless Gitlab.com?
 
         project = project(project_path) if project_path.present?
+        default_namespace_id = current_user.user_preference.duo_default_namespace_with_fallback&.id
 
         all_duo_namespace_ids = current_user.duo_available_namespace_ids +
           current_user.duo_core_ids_via_namespace_settings
@@ -82,8 +83,8 @@ module API
           # This avoids the need for the data team to combine columns in reporting,
           # allowing the existing reporting pipeline to continue working seamlessly.
           'X-Gitlab-Saas-Duo-Pro-Namespace-Ids' => all_duo_namespace_ids.join(','),
-          'x-gitlab-root-namespace-id' => project&.root_namespace&.id&.to_s,
-          'x-gitlab-namespace-id' => project&.namespace_id&.to_s
+          'x-gitlab-root-namespace-id' => (project&.root_namespace&.id || default_namespace_id)&.to_s,
+          'x-gitlab-namespace-id' => (project&.namespace_id || default_namespace_id)&.to_s
         }
       end
 
@@ -248,6 +249,17 @@ module API
           service_unavailable!(token[:message]) if token[:status] == :error
 
           unauthorized! if completion_model_details.feature_disabled?
+
+          if completion_model_details.duo_context_not_found?
+            msg = _("I'm sorry, you have not selected a default GitLab Duo namespace. " \
+              "Please go to GitLab and in user Preferences - Behavior, select a default namespace for GitLab Duo.")
+
+            render_structured_api_error!({
+              'error' => 'missing_default_duo_group',
+              'error_description' => msg,
+              'message' => { error: msg }
+            }, 422)
+          end
 
           push_feature_flag_headers
 
