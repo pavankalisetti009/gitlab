@@ -13,13 +13,17 @@ module Resolvers
         required: false,
         description: 'Filter scan profiles by type.'
 
+      argument :gitlab_recommended, GraphQL::Types::Boolean,
+        required: false,
+        description: 'Filter scan profiles by GitLab Recommended.'
+
       alias_method :group, :object
 
-      def resolve(type: nil)
+      def resolve(type: nil, gitlab_recommended: nil)
         authorize!(object)
 
-        existing_profiles = fetch_existing_profiles(type)
-        applicable_defaults = fetch_applicable_defaults(type, existing_profiles)
+        existing_profiles = fetch_existing_profiles(type, gitlab_recommended)
+        applicable_defaults = fetch_applicable_defaults(type, existing_profiles, gitlab_recommended)
 
         existing_profiles + applicable_defaults
       end
@@ -30,9 +34,10 @@ module Resolvers
         @root_ancestor ||= group.root_ancestor
       end
 
-      def fetch_existing_profiles(type)
+      def fetch_existing_profiles(type, gitlab_recommended)
         profiles = ::Security::ScanProfile.by_namespace(root_ancestor)
-        filter_by_type(profiles, type)
+        profiles = filter_by_type(profiles, type)
+        filter_by_gitlab_recommended(profiles, gitlab_recommended)
       end
 
       def filter_by_type(profiles, type)
@@ -41,7 +46,15 @@ module Resolvers
         profiles.by_type(type)
       end
 
-      def fetch_applicable_defaults(type, existing_profiles)
+      def filter_by_gitlab_recommended(profiles, gitlab_recommended)
+        return profiles if gitlab_recommended.nil?
+
+        profiles.by_gitlab_recommended(gitlab_recommended)
+      end
+
+      def fetch_applicable_defaults(type, existing_profiles, gitlab_recommended)
+        return [] if gitlab_recommended == false
+
         persisted_recommended_types = existing_profiles.select(&:gitlab_recommended).map(&:scan_type).uniq
 
         default_scan_profiles

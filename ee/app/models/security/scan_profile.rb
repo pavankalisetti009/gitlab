@@ -25,6 +25,7 @@ module Security
 
     scope :by_namespace, ->(namespace) { where(namespace: namespace) }
     scope :by_type, ->(type) { where(scan_type: type) }
+    scope :by_gitlab_recommended, ->(gitlab_recommended = true) { where(gitlab_recommended: gitlab_recommended) }
 
     private
 
