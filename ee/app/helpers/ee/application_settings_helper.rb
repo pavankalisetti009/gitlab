@@ -112,7 +112,8 @@ module EE
         :global_search_epics_enabled,
         :global_search_limited_indexing_enabled,
         :elastic_migration_worker_enabled,
-        :enforce_pipl_compliance
+        :enforce_pipl_compliance,
+        :display_gitlab_credits_user_data
       ].tap do |settings|
         settings.concat(identity_verification_attributes)
         settings.concat(enable_promotion_management_attributes)
