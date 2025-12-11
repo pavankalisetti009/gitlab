@@ -150,7 +150,7 @@ module Ai
           GITLAB_TOKEN: @params[:workflow_oauth_token],
           DUO_WORKFLOW_GIT_HTTP_USER: "oauth",
           DUO_WORKFLOW_GIT_USER_EMAIL: git_user_email(@workload_user),
-          DUO_WORKFLOW_GIT_USER_NAME: "GitLab Duo",
+          DUO_WORKFLOW_GIT_USER_NAME: git_user_name(@workload_user),
           DUO_WORKFLOW_METADATA: workflow_metadata,
           DUO_WORKFLOW_PROJECT_ID: project.id,
           DUO_WORKFLOW_NAMESPACE_ID: project.root_namespace.id,
@@ -307,6 +307,12 @@ module Ai
         return "" unless user.respond_to?(:commit_email_or_default)
 
         user.commit_email_or_default
+      end
+
+      def git_user_name(user)
+        return "" unless user.respond_to?(:name)
+
+        user.name
       end
 
       def create_workload_branch

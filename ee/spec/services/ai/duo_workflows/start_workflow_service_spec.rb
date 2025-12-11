@@ -1476,6 +1476,54 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, :request_store, feature
     end
   end
 
+  describe 'DUO_WORKFLOW_GIT_USER_NAME variable' do
+    before do
+      allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
+      project.project_setting.update!(duo_features_enabled: true, duo_remote_flows_enabled: true)
+      allow(maintainer).to receive(:allowed_to_use?).and_return(true)
+      workflow.update!(user: maintainer)
+    end
+
+    context 'when workload user has name' do
+      before do
+        allow(maintainer).to receive_messages(name: 'Some User')
+      end
+
+      it 'uses that name in environment variables' do
+        expect(Ci::Workloads::RunWorkloadService)
+          .to receive(:new).and_wrap_original do |method, **kwargs|
+          workload_definition = kwargs[:workload_definition]
+          variables = workload_definition.variables
+
+          expect(variables[:DUO_WORKFLOW_GIT_USER_NAME]).to eq('Some User')
+          method.call(**kwargs)
+        end
+
+        expect(execute).to be_success
+      end
+    end
+
+    context 'when workload user does not respond to name' do
+      before do
+        allow(maintainer).to receive(:respond_to?).and_call_original
+        allow(maintainer).to receive(:respond_to?).with(:name).and_return(false)
+      end
+
+      it 'sets DUO_WORKFLOW_GIT_USER_NAME to empty string' do
+        expect(Ci::Workloads::RunWorkloadService)
+          .to receive(:new).and_wrap_original do |method, **kwargs|
+          workload_definition = kwargs[:workload_definition]
+          variables = workload_definition.variables
+
+          expect(variables[:DUO_WORKFLOW_GIT_USER_NAME]).to eq("")
+          method.call(**kwargs)
+        end
+
+        expect(execute).to be_success
+      end
+    end
+  end
+
   context 'when shallow_clone is empty', :aggregate_failures do
     include_context 'with Duo enabled'
 
