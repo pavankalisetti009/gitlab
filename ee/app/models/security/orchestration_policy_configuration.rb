@@ -7,7 +7,6 @@ module Security
     include Security::ScanResultPolicy
     include Security::PipelineExecutionPolicy
     include Security::PipelineExecutionSchedulePolicy
-    include Security::CiComponentPublishingPolicy
     include Security::VulnerabilityManagementPolicy
     include EachBatch
     include Gitlab::Utils::StrongMemoize
@@ -30,7 +29,6 @@ module Security
       pipeline_execution_policy
       pipeline_execution_schedule_policy
       vulnerability_management_policy
-      ci_component_publishing_policy
     ].freeze
     JSON_SCHEMA_VALIDATION_TIMEOUT = 5.seconds
     ALL_PROJECT_IDS_BATCH_SIZE = 1000
@@ -166,8 +164,6 @@ module Security
         PipelineExecutionSchedulePolicy::POLICY_LIMIT
       when :vulnerability_management_policy
         limit_service.vulnerability_management_policies_per_configuration_limit
-      when :ci_component_publishing_policy
-        CiComponentPublishingPolicy::POLICY_LIMIT
       end
     end
 
@@ -185,8 +181,6 @@ module Security
         PipelineExecutionSchedulePolicy::POLICY_TYPE_NAME
       when :vulnerability_management_policy
         VulnerabilityManagementPolicy::POLICY_TYPE_NAME
-      when :ci_component_publishing_policy
-        CiComponentPublishingPolicy::POLICY_TYPE_NAME
       end
     end
 

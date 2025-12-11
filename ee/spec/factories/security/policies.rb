@@ -292,44 +292,6 @@ FactoryBot.define do
     end
   end
 
-  factory :ci_component_publishing_policy,
-    class: Struct.new(:name, :description, :enabled, :allowed_sources, :policy_scope, :metadata) do
-    skip_create
-
-    initialize_with do
-      name = attributes[:name]
-      description = attributes[:description]
-      enabled = attributes[:enabled]
-      allowed_sources = attributes[:allowed_sources]
-      policy_scope = attributes[:policy_scope]
-      metadata = attributes[:metadata]
-
-      new(name, description, enabled, allowed_sources, policy_scope, metadata).to_h
-    end
-
-    sequence(:name) { |n| "ci-component-sources-policy-#{n}" }
-    description { 'This policy enforces an allowlist of groups and projects that can publish CI/CD components' }
-    enabled { true }
-    metadata { {} }
-    allowed_sources { {} }
-    policy_scope { {} }
-
-    trait :with_policy_scope do
-      policy_scope do
-        {
-          compliance_frameworks: [
-            { id: 1 },
-            { id: 2 }
-          ],
-          projects: {
-            including: [],
-            excluding: []
-          }
-        }
-      end
-    end
-  end
-
   factory :pipeline_execution_policy,
     class: Struct.new(:name, :description, :enabled, :pipeline_config_strategy, :content, :policy_scope, :metadata,
       :suffix, :skip_ci, :variables_override) do
@@ -600,7 +562,6 @@ FactoryBot.define do
       :scan_execution_policy,
       :approval_policy,
       :pipeline_execution_policy,
-      :ci_component_publishing_policy,
       :vulnerability_management_policy,
       :pipeline_execution_schedule_policy,
       :experiments
