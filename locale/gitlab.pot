@@ -23276,6 +23276,9 @@ msgstr ""
 msgid "Dependencies|Packager"
 msgstr ""
 
+msgid "Dependencies|Policy violation"
+msgstr ""
+
 msgid "Dependencies|Projects"
 msgstr ""
 

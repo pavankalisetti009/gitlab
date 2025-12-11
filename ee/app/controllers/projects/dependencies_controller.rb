@@ -8,6 +8,7 @@ module Projects
 
     before_action only: :index do
       push_frontend_feature_flag(:dependency_paths, project)
+      push_frontend_feature_flag(:security_policy_warn_mode_license_scanning, project)
     end
 
     before_action :authorize_read_dependency_list!
