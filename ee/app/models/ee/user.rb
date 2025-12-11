@@ -200,17 +200,6 @@ module EE
           .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/422405')
       end
 
-      scope :with_billable_memberships, -> do
-        subquery = ::Member
-          .select(1)
-          .where(::Member.arel_table[:user_id].eq(::User.arel_table[:id]))
-          .where('members.access_level > ?', ::Gitlab::Access::MINIMAL_ACCESS)
-          .non_request
-
-        where('EXISTS (?)', subquery)
-          .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/422405')
-      end
-
       scope :guests_with_elevating_role, -> do
         joins(:user_highest_role).joins(:elevated_members)
           .where(user_highest_role: { highest_access_level: ::Gitlab::Access::GUEST })
@@ -297,10 +286,10 @@ module EE
         scope = active.without_bots
 
         if License.current&.exclude_guests_from_active_count?
-          scope.excluding_guests_and_requests
-        else
-          scope.with_billable_memberships
+          scope = scope.excluding_guests_and_requests
         end
+
+        scope
       end
 
       def non_billable_users_for_billable_management(user_ids)
@@ -898,11 +887,9 @@ module EE
     end
 
     def paid_in_current_license?
-      if License.current.exclude_guests_from_active_count?
-        highest_role > ::Gitlab::Access::GUEST || elevated_members.any?
-      else
-        highest_role > ::Gitlab::Access::MINIMAL_ACCESS
-      end
+      return true unless License.current.exclude_guests_from_active_count?
+
+      highest_role > ::Gitlab::Access::GUEST || elevated_members.any?
     end
 
     def available_minimal_access_groups

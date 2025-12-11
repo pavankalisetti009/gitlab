@@ -1631,7 +1631,6 @@ RSpec.describe API::Members, feature_category: :groups_and_projects do
 
     before do
       group.add_owner(owner)
-      Users::UpdateHighestMemberRoleService.new(owner).execute
     end
 
     describe 'POST /projects/:id/members' do

@@ -130,12 +130,6 @@ RSpec.describe Users::BuildService, feature_category: :user_management do
       end
 
       context 'user signup cap' do
-        let_it_be(:group) { create(:group) }
-
-        before_all do
-          group.add_owner(admin_user)
-        end
-
         context 'when user signup cap is set' do
           before do
             allow(Gitlab::CurrentSettings).to receive(:new_user_signups_cap).and_return(3)
@@ -143,11 +137,7 @@ RSpec.describe Users::BuildService, feature_category: :user_management do
           end
 
           context 'when new user signup exceeds user cap' do
-            let_it_be(:users) { create_list(:user, 2) }
-
-            before_all do
-              users.each { |u| group.add_guest(u) }
-            end
+            let!(:users) { create_list(:user, 2) }
 
             it 'sets the user state to blocked_pending_approval' do
               user = service.execute

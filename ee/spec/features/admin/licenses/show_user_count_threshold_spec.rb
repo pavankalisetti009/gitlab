@@ -8,8 +8,6 @@ RSpec.describe 'Display approaching user count limit banner', :js, feature_categ
   let_it_be(:license_seats_limit) { 10 }
   let_it_be(:visit_path) { root_dashboard_path }
 
-  let(:group) { create(:group) }
-
   let_it_be(:license) do
     create(:license, data: build(:gitlab_license, restrictions: { active_user_count: license_seats_limit }).export)
   end
@@ -46,9 +44,7 @@ RSpec.describe 'Display approaching user count limit banner', :js, feature_categ
   end
 
   before do
-    users = create_list(:user, active_user_count)
-    users.each { |u| group.add_guest(u) }
-    create(:usage_trends_measurement, identifier: :billable_users, count: active_user_count)
+    create_list(:user, active_user_count)
 
     stub_licensed_features(seat_control: true)
 
@@ -56,7 +52,7 @@ RSpec.describe 'Display approaching user count limit banner', :js, feature_categ
   end
 
   context 'with reached user count threshold' do
-    let(:active_user_count) { license_seats_limit - 1 }
+    let(:active_user_count) { license_seats_limit - 3 }
 
     context 'when admin is logged in' do
       before do
@@ -89,7 +85,7 @@ RSpec.describe 'Display approaching user count limit banner', :js, feature_categ
         end
 
         context 'when remaining users are 0' do
-          let(:active_user_count) { license_seats_limit }
+          let(:active_user_count) { license_seats_limit - 2 }
 
           it_behaves_like 'a visible banner'
 
