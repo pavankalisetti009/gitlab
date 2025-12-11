@@ -229,7 +229,7 @@ RSpec.describe ::WorkItems::SystemDefined::Type, feature_category: :team_plannin
       it 'returns only CE types' do
         result = issue_type.supported_conversion_types(project, user)
 
-        expect(result.map(&:base_type)).to match_array(%w[task incident ticket test_case])
+        expect(result.map(&:base_type)).to match_array(%w[task incident ticket])
       end
     end
   end
@@ -274,104 +274,558 @@ RSpec.describe ::WorkItems::SystemDefined::Type, feature_category: :team_plannin
     end
   end
 
-  describe '#authorized_types' do
+  describe '#allowed_child_types' do
     let(:issue_type) { build(:work_item_system_defined_type, :issue) }
     let(:epic_type) { build(:work_item_system_defined_type, :epic) }
-    let(:resource_parent) { project }
+    let(:task_type) { build(:work_item_system_defined_type, :task) }
 
-    context 'for issue parent types' do
-      let(:parent_types) { [epic_type] }
+    context 'without authorization' do
+      it 'returns all allowed child types without license checks' do
+        # Assuming issue can have tasks as children
+        expect(issue_type.allowed_child_types(authorize: false)).to include(task_type)
+      end
 
-      context 'when epics license is available' do
-        before do
-          stub_licensed_features(epics: true)
+      it 'returns child types ordered by name' do
+        child_types = issue_type.allowed_child_types(authorize: false)
+        expect(child_types).to eq(child_types.sort_by { |t| t.name.downcase })
+      end
+    end
+
+    context 'with authorization' do
+      context 'when resource_parent is a project' do
+        context 'with epics license' do
+          before do
+            stub_licensed_features(epics: true)
+          end
+
+          it 'includes epic as child type when licensed' do
+            # Assuming epic can have issues as children
+            child_types = epic_type.allowed_child_types(
+              authorize: true,
+              resource_parent: project
+            )
+
+            expect(child_types).to include(issue_type)
+          end
         end
 
-        it 'includes epic as authorized parent' do
-          result = issue_type.send(:authorized_types, parent_types, resource_parent, :parent)
+        context 'without epics license' do
+          before do
+            stub_licensed_features(epics: false)
+          end
 
-          expect(result).to include(epic_type)
+          it 'excludes epic from child types when not licensed' do
+            # If issue type has epic as a potential child
+            child_types = issue_type.allowed_child_types(
+              authorize: true,
+              resource_parent: project
+            )
+
+            expect(child_types).not_to include(epic_type)
+          end
         end
       end
 
-      context 'when epics license is not available' do
-        before do
-          stub_licensed_features(epics: false)
+      context 'when resource_parent is a group' do
+        context 'with subepics license' do
+          before do
+            stub_licensed_features(subepics: true)
+          end
+
+          it 'includes epic as child type for epic when licensed' do
+            # Epic can have sub-epics
+            child_types = epic_type.allowed_child_types(
+              authorize: true,
+              resource_parent: group
+            )
+
+            expect(child_types).to include(epic_type)
+          end
         end
 
-        it 'excludes epic as authorized parent' do
-          result = issue_type.send(:authorized_types, parent_types, resource_parent, :parent)
+        context 'without subepics license' do
+          before do
+            stub_licensed_features(subepics: false)
+          end
 
-          expect(result).not_to include(epic_type)
+          it 'excludes epic as child type for epic when not licensed' do
+            child_types = epic_type.allowed_child_types(
+              authorize: true,
+              resource_parent: group
+            )
+
+            expect(child_types).not_to include(epic_type)
+          end
+        end
+      end
+
+      context 'when resource_parent is nil' do
+        it 'returns types without license validation' do
+          child_types = issue_type.allowed_child_types(
+            authorize: true,
+            resource_parent: nil
+          )
+
+          # Should behave like authorize: false
+          expect(child_types).to eq(issue_type.allowed_child_types(authorize: false))
+        end
+      end
+
+      context 'with multiple licensed types' do
+        let(:objective_type) { build(:work_item_system_defined_type, :objective) }
+        let(:key_result_type) { build(:work_item_system_defined_type, :key_result) }
+
+        before do
+          stub_licensed_features(okrs: true)
+        end
+
+        it 'includes all licensed child types' do
+          # Assuming objective can have key_results as children
+          child_types = objective_type.allowed_child_types(
+            authorize: true,
+            resource_parent: project
+          )
+
+          expect(child_types).to include(key_result_type)
+        end
+      end
+    end
+  end
+
+  describe '#allowed_parent_types' do
+    let(:issue_type) { build(:work_item_system_defined_type, :issue) }
+    let(:epic_type) { build(:work_item_system_defined_type, :epic) }
+    let(:task_type) { build(:work_item_system_defined_type, :task) }
+
+    context 'without authorization' do
+      it 'returns all allowed parent types without license checks' do
+        # Assuming task can have issue as parent
+        expect(task_type.allowed_parent_types(authorize: false))
+          .to include(issue_type)
+      end
+
+      it 'returns parent types ordered by name' do
+        parent_types = task_type.allowed_parent_types(authorize: false)
+        expect(parent_types).to eq(parent_types.sort_by { |t| t.name.downcase })
+      end
+    end
+
+    context 'with authorization' do
+      context 'when resource_parent is a project' do
+        context 'with epics license' do
+          before do
+            stub_licensed_features(epics: true)
+          end
+
+          it 'includes epic as parent type when licensed' do
+            # Assuming issue can have epic as parent
+            parent_types = issue_type.allowed_parent_types(
+              authorize: true,
+              resource_parent: project
+            )
+
+            expect(parent_types).to include(epic_type)
+          end
+        end
+
+        context 'without epics license' do
+          before do
+            stub_licensed_features(epics: false)
+          end
+
+          it 'excludes epic from parent types when not licensed' do
+            parent_types = issue_type.allowed_parent_types(
+              authorize: true,
+              resource_parent: project
+            )
+
+            expect(parent_types).not_to include(epic_type)
+          end
+        end
+
+        context 'with type without license' do
+          it 'includes types regardless of license' do
+            # Task should always be allowed as parent for subtasks if configured
+            parent_types = task_type.allowed_parent_types(
+              authorize: true,
+              resource_parent: project
+            )
+
+            expect(parent_types.map(&:base_type)).to include('issue')
+          end
+        end
+      end
+
+      context 'when resource_parent is a group' do
+        context 'with subepics license' do
+          before do
+            stub_licensed_features(subepics: true)
+          end
+
+          it 'includes epic as parent type for epic when licensed' do
+            # Epic can have parent epics
+            parent_types = epic_type.allowed_parent_types(
+              authorize: true,
+              resource_parent: group
+            )
+
+            expect(parent_types).to include(epic_type)
+          end
+        end
+
+        context 'without subepics license' do
+          before do
+            stub_licensed_features(subepics: false)
+          end
+
+          it 'excludes epic as parent type for epic when not licensed' do
+            parent_types = epic_type.allowed_parent_types(
+              authorize: true,
+              resource_parent: group
+            )
+
+            expect(parent_types).not_to include(epic_type)
+          end
+        end
+      end
+
+      context 'when resource_parent is nil' do
+        it 'returns types without license validation' do
+          parent_types = task_type.allowed_parent_types(
+            authorize: true,
+            resource_parent: nil
+          )
+
+          # Should behave like authorize: false
+          expect(parent_types).to eq(task_type.allowed_parent_types(authorize: false))
+        end
+      end
+    end
+  end
+
+  describe '#widgets' do
+    let(:issue_type) { build(:work_item_system_defined_type, :issue) }
+    let(:epic_type) { build(:work_item_system_defined_type, :epic) }
+
+    context 'with project as resource_parent' do
+      context 'when all licensed features are available' do
+        before do
+          stub_licensed_features(
+            iterations: true,
+            issue_weights: true,
+            issuable_health_status: true,
+            okrs: true,
+            epic_colors: true,
+            custom_fields: true,
+            security_dashboard: true,
+            work_item_status: true,
+            requirements: true
+          )
+        end
+
+        it 'includes widgets from the super method' do
+          widgets = issue_type.widgets(project)
+          widget_types = widgets.map(&:widget_type)
+
+          # Should include both CE and EE widgets
+          expect(widget_types).to include('assignees', 'description', 'labels')
+        end
+
+        it 'includes licensed widgets when licenses are available' do
+          widgets = issue_type.widgets(project)
+          widget_types = widgets.map(&:widget_type)
+
+          expect(widget_types).to include('vulnerabilities', 'weight', 'health_status')
+        end
+      end
+
+      context 'when some licensed features are not available' do
+        before do
+          stub_licensed_features(
+            issue_weights: true,
+            issuable_health_status: false,
+            custom_fields: false,
+            work_item_status: false
+          )
+        end
+
+        it 'excludes widgets that require unavailable licenses' do
+          widgets = issue_type.widgets(project)
+          widget_types = widgets.map(&:widget_type)
+
+          expect(widget_types).not_to include('status', 'health_status', 'custom_fields')
+        end
+
+        it 'includes widgets with available licenses' do
+          widgets = issue_type.widgets(project)
+          widget_types = widgets.map(&:widget_type)
+
+          expect(widget_types).to include('weight')
+        end
+
+        it 'includes CE widgets that do not require licenses' do
+          widgets = issue_type.widgets(project)
+          widget_types = widgets.map(&:widget_type)
+
+          expect(widget_types).to include('assignees', 'description', 'labels', 'milestone')
         end
       end
     end
 
-    context 'for epic child types' do
-      let(:child_types) { [issue_type, epic_type] }
-
-      context 'when both epics and subepics licenses are available' do
+    context 'with group as resource_parent' do
+      context 'when licensed features are available' do
         before do
-          stub_licensed_features(epics: true, subepics: true)
+          stub_licensed_features(
+            issuable_health_status: true,
+            issue_weights: true,
+            epics: true
+          )
         end
 
-        it 'includes both issue and epic as authorized children' do
-          result = epic_type.send(:authorized_types, child_types, resource_parent, :child)
+        it 'includes licensed widgets for group' do
+          widgets = epic_type.widgets(group)
+          widget_types = widgets.map(&:widget_type)
 
-          expect(result).to include(issue_type, epic_type)
+          expect(widget_types).to include('health_status', 'weight')
+        end
+
+        it 'includes CE widgets' do
+          widgets = epic_type.widgets(group)
+          widget_types = widgets.map(&:widget_type)
+
+          expect(widget_types).to include('description', 'labels')
         end
       end
 
-      context 'when epics license is available but subepics is not' do
+      context 'when licensed features are not available' do
         before do
-          stub_licensed_features(epics: true, subepics: false)
+          stub_licensed_features(
+            iterations: false,
+            issue_weights: false
+          )
         end
 
-        it 'includes issue but excludes epic as authorized child' do
-          result = epic_type.send(:authorized_types, child_types, resource_parent, :child)
+        it 'excludes unlicensed widgets' do
+          widgets = epic_type.widgets(group)
+          widget_types = widgets.map(&:widget_type)
 
-          expect(result).to include(issue_type)
-          expect(result).not_to include(epic_type)
+          expect(widget_types).not_to include('iteration', 'weight')
+        end
+      end
+    end
+  end
+
+  describe "for lifecycles" do
+    let_it_be(:namespace) { create(:group) }
+    let_it_be(:other_namespace) { create(:group) }
+    let_it_be(:work_item_type_system_defined) { build(:work_item_system_defined_type, :issue) }
+    # TODO: We can not create `work_item_type_custom_lifecycle` for system defined work item type., as the relation is
+    # not defined yet. we need to create the database `work_item_type` and add them as work_item_type during the
+    # creation of the `work_item_type_custom_lifecycle`.Once we change relation and use the system defined types
+    # we should remove the `work_item_type` and rename and keep only the `work_item_type_system_defined`.
+    let_it_be(:work_item_type) { create(:work_item_type, :issue, id: work_item_type_system_defined.id) }
+
+    before do
+      stub_licensed_features(work_item_status: true)
+    end
+
+    describe '#status_lifecycle_for' do
+      let(:system_defined_lifecycle) { build(:work_item_system_defined_lifecycle) }
+
+      subject(:status_lifecycle_for) { work_item_type_system_defined.status_lifecycle_for(namespace_id) }
+
+      context 'when custom lifecycle exists for the namespace' do
+        let_it_be(:custom_lifecycle) { create(:work_item_custom_lifecycle, namespace: namespace) }
+        let(:namespace_id) { namespace.id }
+
+        before do
+          create(:work_item_type_custom_lifecycle,
+            work_item_type: work_item_type,
+            namespace: namespace,
+            lifecycle: custom_lifecycle)
+        end
+
+        it 'returns the custom lifecycle' do
+          expect(status_lifecycle_for).to eq(custom_lifecycle)
+        end
+      end
+
+      context 'when custom lifecycle does not exist for the namespace' do
+        let(:namespace_id) { namespace.id }
+
+        it 'returns the system-defined lifecycle' do
+          expect(status_lifecycle_for).to eq(system_defined_lifecycle)
+        end
+      end
+
+      context 'when namespace_id is nil' do
+        let(:namespace_id) { nil }
+
+        it 'returns the system-defined lifecycle' do
+          expect(status_lifecycle_for).to eq(system_defined_lifecycle)
+        end
+      end
+
+      context 'when custom lifecycle exists for a different namespace' do
+        let_it_be(:other_custom_lifecycle) { create(:work_item_custom_lifecycle, namespace: other_namespace) }
+        let(:namespace_id) { namespace.id }
+
+        before do
+          create(:work_item_type_custom_lifecycle,
+            work_item_type: work_item_type,
+            namespace: other_namespace,
+            lifecycle: other_custom_lifecycle)
+        end
+
+        it 'returns the system-defined lifecycle for the original namespace' do
+          expect(status_lifecycle_for).to eq(system_defined_lifecycle)
         end
       end
     end
 
-    context 'for types without licensed hierarchy restrictions' do
-      let(:task_type) { build(:work_item_system_defined_type, :task) }
-      let(:ticket_type) { build(:work_item_system_defined_type, :ticket) }
-      let(:child_types) { [issue_type, task_type, ticket_type] }
+    describe '#custom_status_enabled_for?' do
+      subject(:custom_status_enabled_for) { work_item_type_system_defined.custom_status_enabled_for?(namespace_id) }
 
-      before do
-        stub_licensed_features(epics: true)
+      context 'when namespace_id is nil' do
+        let(:namespace_id) { nil }
+
+        it { is_expected.to be false }
       end
 
-      it 'includes types without license restrictions' do
-        result = epic_type.send(:authorized_types, child_types, resource_parent, :child)
+      context 'when namespace_id is provided' do
+        let(:namespace_id) { namespace.id }
 
-        # Task and Ticket don't have license restrictions in LICENSED_HIERARCHY_TYPES
-        # so they should be included (the `next type unless license_name` branch)
-        expect(result).to include(task_type, ticket_type)
-      end
+        context 'when custom lifecycle exists for the namespace' do
+          let_it_be(:custom_lifecycle) { create(:work_item_custom_lifecycle, namespace: namespace) }
 
-      it 'filters licensed types correctly while keeping unlicensed types' do
-        stub_licensed_features(epics: false) # Disable epics license
+          before do
+            create(:work_item_type_custom_lifecycle,
+              work_item_type: work_item_type,
+              namespace: namespace,
+              lifecycle: custom_lifecycle)
+          end
 
-        result = epic_type.send(:authorized_types, child_types, resource_parent, :child)
+          it { is_expected.to be true }
+        end
 
-        # Issue requires epics license, so it should be excluded
-        expect(result).not_to include(issue_type)
-        # Task and Ticket have no license requirements, so they should be included
-        expect(result).to include(task_type, ticket_type)
+        context 'when custom lifecycle does not exist for the namespace' do
+          it { is_expected.to be false }
+        end
       end
     end
 
-    context 'when resource_parent is nil' do
-      let(:parent_types) { [epic_type] }
+    describe '#custom_lifecycle_for' do
+      subject(:custom_lifecycle_for) { work_item_type_system_defined.custom_lifecycle_for(namespace_id) }
 
-      it 'excludes licensed types when resource_parent is nil' do
-        result = issue_type.send(:authorized_types, parent_types, nil, :parent)
+      context 'when namespace_id is nil' do
+        let(:namespace_id) { nil }
 
-        expect(result).not_to include(epic_type)
+        it 'returns nil' do
+          expect(custom_lifecycle_for).to be_nil
+        end
+      end
+
+      context 'when namespace_id is provided' do
+        let(:namespace_id) { namespace.id }
+
+        context 'when no custom lifecycle exists' do
+          it 'returns nil' do
+            expect(custom_lifecycle_for).to be_nil
+          end
+        end
+
+        context 'when a custom lifecycle exists for a different namespace' do
+          let_it_be(:custom_lifecycle) { create(:work_item_custom_lifecycle, namespace: other_namespace) }
+
+          before do
+            create(:work_item_type_custom_lifecycle,
+              work_item_type: work_item_type,
+              namespace: other_namespace,
+              lifecycle: custom_lifecycle
+            )
+          end
+
+          it 'returns nil' do
+            expect(custom_lifecycle_for).to be_nil
+          end
+        end
+
+        context 'when a custom lifecycle exists for a different work item type' do
+          let_it_be(:other_work_item_type_system_defined) { create(:work_item_system_defined_type, base_type: :task) }
+
+          # TODO: Remove the `work_item_type` once we switch to system defined work item types.
+          let_it_be(:other_work_item_type) do
+            create(:work_item_type, :task, id: other_work_item_type_system_defined.id)
+          end
+
+          let_it_be(:custom_lifecycle) { create(:work_item_custom_lifecycle, namespace: namespace) }
+
+          before do
+            create(:work_item_type_custom_lifecycle,
+              work_item_type: other_work_item_type,
+              namespace: namespace,
+              lifecycle: custom_lifecycle
+            )
+          end
+
+          it 'returns nil' do
+            expect(custom_lifecycle_for).to be_nil
+          end
+        end
+
+        context 'when a custom lifecycle exists for the namespace and work item type' do
+          let_it_be(:custom_lifecycle) { create(:work_item_custom_lifecycle, namespace: namespace) }
+
+          before do
+            create(:work_item_type_custom_lifecycle,
+              work_item_type: work_item_type,
+              namespace: namespace,
+              lifecycle: custom_lifecycle
+            )
+          end
+
+          it 'returns the custom lifecycle' do
+            expect(custom_lifecycle_for).to eq(custom_lifecycle)
+          end
+        end
+
+        context 'when multiple custom lifecycles exist but only one matches' do
+          let_it_be(:matching_lifecycle) { create(:work_item_custom_lifecycle, namespace: namespace) }
+          let_it_be(:other_lifecycle) { create(:work_item_custom_lifecycle, namespace: other_namespace) }
+
+          before do
+            create(:work_item_type_custom_lifecycle,
+              work_item_type: work_item_type,
+              namespace: namespace,
+              lifecycle: matching_lifecycle
+            )
+
+            create(:work_item_type_custom_lifecycle,
+              work_item_type: work_item_type,
+              namespace: other_namespace,
+              lifecycle: other_lifecycle
+            )
+          end
+
+          it 'returns only the matching lifecycle' do
+            expect(custom_lifecycle_for).to eq(matching_lifecycle)
+          end
+        end
+      end
+    end
+
+    describe '#system_defined_lifecycle' do
+      let_it_be(:work_item_type) { build(:work_item_system_defined_type, :issue) }
+
+      subject(:system_defined_lifecycle) { work_item_type.system_defined_lifecycle }
+
+      it 'delegates to SystemDefined::Lifecycle.of_work_item_base_type' do
+        expect(::WorkItems::Statuses::SystemDefined::Lifecycle)
+          .to receive(:of_work_item_base_type)
+          .with(work_item_type.base_type)
+          .and_call_original
+
+        system_defined_lifecycle
       end
     end
   end
