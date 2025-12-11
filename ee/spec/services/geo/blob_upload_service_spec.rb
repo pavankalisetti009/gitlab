@@ -3,9 +3,22 @@
 require 'spec_helper'
 
 RSpec.describe Geo::BlobUploadService, feature_category: :geo_replication do
-  let(:package_file) { create(:package_file, :npm) }
+  include EE::GeoHelpers
+
+  let_it_be(:primary) { create(:geo_node, :primary) }
+
+  let(:package_file) do
+    file = create(:package_file, :npm)
+    checksum = file.class.sha256_hexdigest(file.file.path)
+    file.update_column(:verification_checksum, checksum)
+    file
+  end
 
   subject { described_class.new(replicable_name: 'package_file', replicable_id: package_file.id, decoded_params: {}) }
+
+  before do
+    stub_current_geo_node(primary)
+  end
 
   describe '#initialize' do
     it 'initializes with valid attributes' do

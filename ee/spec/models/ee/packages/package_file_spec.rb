@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Packages::PackageFile, feature_category: :package_registry do
+  include ::EE::GeoHelpers
+
   describe '.search' do
     let_it_be(:package_file1) { create(:package_file) }
     let_it_be(:package_file2) { create(:package_file) }
@@ -61,8 +63,19 @@ RSpec.describe Packages::PackageFile, feature_category: :package_registry do
     end
 
     include_examples 'a verifiable model for verification state' do
+      before do
+        stub_package_file_object_storage
+      end
+
       let(:verifiable_model_record) do
         build(:package_file)
+      end
+
+      let(:unverifiable_model_record) do
+        build(:package_file,
+          file_store: ObjectStorage::Store::REMOTE,
+          package: create(:maven_package)
+        )
       end
     end
 

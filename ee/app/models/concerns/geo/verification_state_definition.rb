@@ -137,5 +137,20 @@ module Geo
     def verification_state_name_no_prefix
       verification_state_name.to_s.gsub('verification_', '')
     end
+
+    # Returns true if all verification fields are in their default state.
+    # Used during migration from replicable table to state table to determine
+    # if we should copy the checksum from the replicable table.
+    # https://gitlab.com/gitlab-org/gitlab/-/merge_requests/208182
+    # TODO: Remove after verification data migration is complete (https://gitlab.com/gitlab-org/gitlab/-/issues/515874)
+    def verification_fields_default?
+      verification_pending? &&
+        verified_at.nil? &&
+        verification_started_at.nil? &&
+        verification_retry_at.nil? &&
+        verification_checksum.nil? &&
+        verification_failure.blank? &&
+        verification_retry_count.to_i == 0
+    end
   end
 end

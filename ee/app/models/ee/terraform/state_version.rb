@@ -36,6 +36,28 @@ module EE
             primary_key_in ? replicables.primary_key_in(primary_key_in) : replicables
           end
         end
+
+        delegate(*::Geo::VerificationState::VERIFICATION_METHODS, to: :terraform_state_version_state)
+
+        scope :available_verifiables, -> { joins(:terraform_state_version_state) }
+        scope :with_verification_state, ->(state) {
+          joins(:terraform_state_version_state).where(
+            terraform_state_version_states: {
+              verification_state: verification_state_value(state)
+            }
+          )
+        }
+
+        def verification_state_object
+          terraform_state_version_state
+        end
+
+        def terraform_state_version_state
+          state = super || build_terraform_state_version_state
+          state.terraform_state_version_id ||= id if id.present?
+          state.terraform_state_version ||= self
+          state
+        end
       end
 
       class_methods do
@@ -81,6 +103,16 @@ module EE
 
           replicables
             .project_id_in(::Project.selective_sync_scope(node))
+        end
+
+        override :verification_state_table_class
+        def verification_state_table_class
+          Geo::TerraformStateVersionState
+        end
+
+        override :verification_state_model_key
+        def verification_state_model_key
+          :terraform_state_version_id
         end
       end
     end

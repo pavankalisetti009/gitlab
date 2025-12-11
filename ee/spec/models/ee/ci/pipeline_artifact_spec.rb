@@ -3,6 +3,13 @@
 require 'spec_helper'
 
 RSpec.describe Ci::PipelineArtifact, feature_category: :job_artifacts do
+  include EE::GeoHelpers
+  include Ci::PartitioningHelpers
+
+  before do
+    stub_current_partition_id(ci_testing_partition_id)
+  end
+
   describe '.search' do
     let_it_be(:project1) do
       create(:project, name: 'project_1_name', path: 'project_1_path', description: 'project_desc_1')
@@ -74,15 +81,30 @@ RSpec.describe Ci::PipelineArtifact, feature_category: :job_artifacts do
       it 'has one verification state table class' do
         is_expected
           .to have_one(:pipeline_artifact_state)
-          .class_name('Geo::PipelineArtifactState')
-          .inverse_of(:pipeline_artifact)
-          .autosave(false)
+                .class_name('Geo::PipelineArtifactState')
+                .inverse_of(:pipeline_artifact)
+                .autosave(false)
       end
     end
 
     include_examples 'a verifiable model for verification state' do
       let(:verifiable_model_record) do
-        build(:ci_pipeline_artifact, pipeline: create(:ci_pipeline, project: create(:project)))
+        build(
+          :ci_pipeline_artifact,
+          pipeline: create(
+            :ci_pipeline,
+            project: create(:project),
+            partition_id: ci_testing_partition_id
+          ),
+          partition_id: ci_testing_partition_id
+        )
+      end
+
+      let(:unverifiable_model_record) do
+        build(:ci_pipeline_artifact, :remote_store, # means it won't be in the verifiables scope
+          pipeline: create(:ci_pipeline, partition_id: ci_testing_partition_id),
+          partition_id: ci_testing_partition_id
+        )
       end
     end
 
@@ -119,6 +141,67 @@ RSpec.describe Ci::PipelineArtifact, feature_category: :job_artifacts do
       end
 
       include_examples 'Geo Framework selective sync behavior'
+    end
+  end
+
+  describe '.create_verification_details_for' do
+    let_it_be(:pipeline_with_partition) { create(:ci_pipeline, partition_id: ci_testing_partition_id) }
+    let_it_be(:artifact1) do
+      create(:ci_pipeline_artifact, pipeline: pipeline_with_partition,
+        partition_id: ci_testing_partition_id, file_type: :code_coverage)
+    end
+
+    let_it_be(:artifact2) do
+      create(:ci_pipeline_artifact, pipeline: pipeline_with_partition,
+        partition_id: ci_testing_partition_id, file_type: :code_quality_mr_diff)
+    end
+
+    context 'when creating verification details for multiple artifacts' do
+      it 'creates verification state records without duplicates' do
+        primary_keys = [artifact1.id, artifact2.id]
+
+        expect { described_class.create_verification_details_for(primary_keys) }
+          .to change { Geo::PipelineArtifactState.count }.by(2)
+
+        # Verify the records were created with correct attributes
+        state1 = Geo::PipelineArtifactState.find_by(pipeline_artifact_id: artifact1.id,
+          partition_id: ci_testing_partition_id)
+        state2 = Geo::PipelineArtifactState.find_by(pipeline_artifact_id: artifact2.id,
+          partition_id: ci_testing_partition_id)
+
+        expect(state1).to be_present
+        expect(state2).to be_present
+        expect(state1.partition_id).to eq(ci_testing_partition_id)
+        expect(state2.partition_id).to eq(ci_testing_partition_id)
+      end
+
+      it 'handles duplicate creation attempts gracefully' do
+        primary_keys = [artifact1.id, artifact2.id]
+
+        # First call should create records
+        expect { described_class.create_verification_details_for(primary_keys) }
+          .to change { Geo::PipelineArtifactState.count }.by(2)
+
+        # Second call with same keys should not raise error or create duplicates
+        expect { described_class.create_verification_details_for(primary_keys) }
+          .not_to change { Geo::PipelineArtifactState.count }
+
+        # Verify no constraint violations occurred
+        expect(Geo::PipelineArtifactState.where(pipeline_artifact_id: [artifact1.id, artifact2.id]).count).to eq(2)
+      end
+
+      it 'handles mixed scenarios with existing and new records' do
+        # Create verification state for first artifact only
+        described_class.create_verification_details_for([artifact1.id])
+        expect(Geo::PipelineArtifactState.count).to eq(1)
+
+        # Now try to create for both (one existing, one new)
+        primary_keys = [artifact1.id, artifact2.id]
+        expect { described_class.create_verification_details_for(primary_keys) }
+          .to change { Geo::PipelineArtifactState.count }.by(1)
+
+        expect(Geo::PipelineArtifactState.count).to eq(2)
+      end
     end
   end
 end

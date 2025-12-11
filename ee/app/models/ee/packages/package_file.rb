@@ -21,12 +21,13 @@ module EE
           foreign_key: :package_file_id,
           class_name: '::Geo::PackageFileState'
 
+        delegate(*::Geo::VerificationState::VERIFICATION_METHODS, to: :package_file_state)
+
         # On primary, `verifiables` are records that can be checksummed and/or are replicable.
         # On secondary, `verifiables` are records that have already been replicated
         # and (ideally) have been checksummed on the primary
         scope :verifiables, ->(primary_key_in = nil) do
           node = ::GeoNode.current_node
-
           replicables =
             available_replicables
               .merge(object_storage_scope(node))
@@ -37,6 +38,24 @@ module EE
             replicables = replicables.primary_key_in(primary_key_in) if primary_key_in
             replicables
           end
+        end
+        scope :available_verifiables, -> { joins(:package_file_state) }
+        scope :with_verification_state, ->(state) {
+          joins(:package_file_state).where(
+            packages_package_file_states: {
+              verification_state: verification_state_value(state)
+            }
+          )
+        }
+        def verification_state_object
+          package_file_state
+        end
+
+        def package_file_state
+          state = super || build_package_file_state
+          state.package_file_id ||= id if id.present?
+          state.package_file ||= self
+          state
         end
       end
 
@@ -82,6 +101,16 @@ module EE
           replicables
             .joins(:package)
             .where(packages_packages: { project_id: ::Project.selective_sync_scope(node).select(:id) })
+        end
+
+        override :verification_state_table_class
+        def verification_state_table_class
+          Geo::PackageFileState
+        end
+
+        override :verification_state_model_key
+        def verification_state_model_key
+          :package_file_id
         end
       end
     end
