@@ -24,9 +24,9 @@ RSpec.describe Ai::HasRolePermissions, feature_category: :duo_agent_platform do
           .in_array(Gitlab::Access.sym_options_with_admin.values).allow_nil
       end
 
-      it 'validates numericality greater than or equal to DEVELOPER' do
+      it 'validates numericality greater than or equal to GUEST' do
         expect(instance).to validate_numericality_of(:minimum_access_level_execute)
-          .is_greater_than_or_equal_to(Gitlab::Access::DEVELOPER)
+          .is_greater_than_or_equal_to(Gitlab::Access::GUEST)
       end
     end
 

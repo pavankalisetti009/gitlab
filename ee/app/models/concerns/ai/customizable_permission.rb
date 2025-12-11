@@ -5,7 +5,7 @@ module Ai
     extend ActiveSupport::Concern
 
     def minimum_access_level_to_execute
-      resolve_ai_settings&.minimum_access_level_execute || ::Gitlab::Access::DEVELOPER
+      resolve_ai_settings&.minimum_access_level_execute || ::Gitlab::Access::GUEST
     end
 
     private
