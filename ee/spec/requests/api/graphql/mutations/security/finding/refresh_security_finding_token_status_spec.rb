@@ -95,14 +95,6 @@ RSpec.describe Mutations::Security::Finding::RefreshSecurityFindingTokenStatus, 
         it_behaves_like 'raises ResourceNotAvailable error'
       end
 
-      context 'when the validity_checks_security_finding_status FF is disabled' do
-        before do
-          stub_feature_flags(validity_checks_security_finding_status: false)
-        end
-
-        it_behaves_like 'raises ResourceNotAvailable error'
-      end
-
       context 'when all flags and features are enabled and licensed' do
         before do
           stub_feature_flags(validity_checks: true)

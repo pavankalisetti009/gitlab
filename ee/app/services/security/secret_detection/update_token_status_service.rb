@@ -42,7 +42,6 @@ module Security
       # For ::Security::Finding (MR pipelines)
       def execute_for_security_pipeline(pipeline_id)
         return unless setup_and_validate_pipeline(pipeline_id)
-        return unless Feature.enabled?(:validity_checks_security_finding_status, @project)
 
         relation = @pipeline.security_findings.by_report_types(['secret_detection'])
 
@@ -89,7 +88,6 @@ module Security
       def execute_for_gitlab_security_finding(security_finding)
         @project = security_finding.project
         return unless can_run?(@project)
-        return unless Feature.enabled?(:validity_checks_security_finding_status, @project)
 
         @pipeline = security_finding.pipeline
 

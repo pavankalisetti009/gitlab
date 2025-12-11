@@ -30,15 +30,6 @@ RSpec.describe Projects::PipelinesController do
         request
       end
 
-      it 'pushes validity_checks_security_finding_status feature flag to the frontend' do
-        allow(controller).to receive(:push_frontend_feature_flag).and_call_original
-
-        request
-
-        expect(Gon.features).to include('validityChecksSecurityFindingStatus')
-        expect(controller).to have_received(:push_frontend_feature_flag).with(:validity_checks_security_finding_status, project)
-      end
-
       it 'pushes finding_create_jira_issue_form_url feature flag to the frontend' do
         allow(controller).to receive(:push_frontend_feature_flag).and_call_original
 

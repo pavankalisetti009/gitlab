@@ -20,28 +20,11 @@ RSpec.describe Security::FindingTokenStatusPolicy, feature_category: :secret_det
       project.add_developer(user)
     end
 
-    context 'when both FFs are enabled' do
-      before do
-        stub_feature_flags(validity_checks: true)
-        stub_feature_flags(validity_checks_security_finding_status: true)
-      end
-
-      it { is_expected.to be_allowed(:read_finding_token_status) }
-    end
+    it { is_expected.to be_allowed(:read_finding_token_status) }
 
     context 'when validity_checks ff is disabled' do
       before do
         stub_feature_flags(validity_checks: false)
-        stub_feature_flags(validity_checks_security_finding_status: true)
-      end
-
-      it { is_expected.to be_disallowed(:read_finding_token_status) }
-    end
-
-    context 'when validity_checks_security_finding_status ff is disabled' do
-      before do
-        stub_feature_flags(validity_checks: true)
-        stub_feature_flags(validity_checks_security_finding_status: false)
       end
 
       it { is_expected.to be_disallowed(:read_finding_token_status) }
@@ -49,11 +32,6 @@ RSpec.describe Security::FindingTokenStatusPolicy, feature_category: :secret_det
   end
 
   context 'when user does not have project access' do
-    before do
-      stub_feature_flags(validity_checks: true)
-      stub_feature_flags(validity_checks_security_finding_status: true)
-    end
-
     it { is_expected.to be_disallowed(:read_finding_token_status) }
   end
 end
