@@ -21,6 +21,8 @@ module SecretsManagement
     ApiError = Class.new(StandardError)
     ConnectionError = Class.new(StandardError)
     AuthenticationError = Class.new(StandardError)
+    ServiceUnavailableError = Class.new(StandardError)
+
     Configuration = Struct.new(:host, :base_path)
 
     def self.configuration
@@ -89,7 +91,7 @@ module SecretsManagement
     end
 
     def list_secrets(mount_path, secret_path)
-      result = make_request(:list, "#{mount_path}/detailed-metadata/#{secret_path}", {}, optional: true)
+      result = make_request(:list, "#{mount_path}/detailed-metadata/#{secret_path}", {}, allow_not_found_response: true)
       return [] unless result
 
       result["data"]["keys"].filter_map do |key|
@@ -108,7 +110,7 @@ module SecretsManagement
 
     def list_policies(type: nil)
       subdir = "/#{type}" if type
-      result = make_request(:list, "sys/policies/acl#{subdir}", {}, optional: true)
+      result = make_request(:list, "sys/policies/acl#{subdir}", {}, allow_not_found_response: true)
       return [] unless result
 
       result["data"]["keys"].filter_map do |key|
@@ -135,7 +137,7 @@ module SecretsManagement
     end
 
     def read_secret_metadata(mount_path, secret_path)
-      result = make_request(:get, "#{mount_path}/metadata/#{secret_path}", {}, optional: true)
+      result = make_request(:get, "#{mount_path}/metadata/#{secret_path}", {}, allow_not_found_response: true)
       return unless result
 
       result["data"]
@@ -256,7 +258,7 @@ module SecretsManagement
         :delete,
         "sys/policies/acl/#{name}",
         {},
-        optional: true
+        allow_not_found_response: true
       )
     end
 
@@ -294,7 +296,7 @@ module SecretsManagement
       response = make_request(:get, "sys/health")
       response.fetch('initialized',
         false) && !response.fetch('sealed', true) && (response['standby'].nil? || response['standby'] == false)
-    rescue ConnectionError, ApiError
+    rescue ConnectionError, ApiError, ServiceUnavailableError
       false
     end
 
@@ -318,7 +320,7 @@ module SecretsManagement
     end
 
     def read_raw_policy(name)
-      body = make_request(:get, "sys/policies/acl/#{name}", {}, optional: true)
+      body = make_request(:get, "sys/policies/acl/#{name}", {}, allow_not_found_response: true)
       body["data"] if body
     end
 
@@ -326,6 +328,7 @@ module SecretsManagement
       Faraday.new(url: URI.join(configuration.host, configuration.base_path)) do |f|
         f.request :json
         f.response :json
+        f.response :raise_error, allowed_statuses: [404]
 
         f.headers['X-Vault-Inline-Auth-Path'] = inline_auth_path
 
@@ -348,7 +351,7 @@ module SecretsManagement
       end
     end
 
-    def make_request(method, url, params = {}, optional: false)
+    def make_request(method, url, params = {}, allow_not_found_response: false)
       path = namespaced_url(url)
       response = case method
                  when :get
@@ -365,33 +368,53 @@ module SecretsManagement
 
       body = response.body
 
-      handle_authentication_error!(body, response)
-      handle_api_error!(body)
+      # to handle the case when inline auth error with HTTP 404 error code and error is NOT raised
+      handle_authentication_error!(response)
+
+      raise ApiError, parsed_error_message(response) if body && body["errors"]&.any?
 
       handle_openbao_warnings!(body, endpoint: path, namespace: namespace, method: method)
 
       if response.status == 404
-        raise ApiError, 'not found' unless optional
+        raise ApiError, 'not found' unless allow_not_found_response
 
         return
       end
 
       body
+    rescue ::Faraday::ClientError => error
+      handle_authentication_error!(error.response)
+
+      raise ApiError, parsed_error_message(error.response)
+    rescue ::Faraday::ServerError => error
+      raise ServiceUnavailableError,
+        parsed_error_message(error.response, default_error_message: "OpenBao service unavailable")
     rescue ::Faraday::Error => e
       raise ConnectionError, e.message
     end
 
-    def handle_authentication_error!(body, response)
-      return unless response.headers.key?(OPENBAO_INLINE_AUTH_FAILED_HEADER)
-      return unless response.headers[OPENBAO_INLINE_AUTH_FAILED_HEADER] == OPENBAO_INLINE_AUTH_FAILED_VALUE
+    def authentication_error?(response)
+      # for ::Faraday::Error responses from raise_error middleware
+      headers = response[:headers] if response.is_a?(Hash)
 
-      raise AuthenticationError, body["errors"].to_sentence if body && body["errors"]&.any?
+      # for Faraday::Response object when NO errors are raised
+      headers = response.headers if response.respond_to?(:headers)
 
-      raise AuthenticationError, "Failed to authenticate with OpenBao"
+      headers && headers.key?(OPENBAO_INLINE_AUTH_FAILED_HEADER) &&
+        headers[OPENBAO_INLINE_AUTH_FAILED_HEADER] == OPENBAO_INLINE_AUTH_FAILED_VALUE
     end
 
-    def handle_api_error!(body)
-      raise ApiError, body["errors"].to_sentence if body && body["errors"]&.any?
+    def handle_authentication_error!(response)
+      return unless authentication_error?(response)
+
+      raise AuthenticationError,
+        parsed_error_message(response, default_error_message: "Failed to authenticate with OpenBao")
+    end
+
+    def get_response_body_from_response(response)
+      return response[:body] if response.is_a?(Hash) # for ::Faraday::Error responses from raise_error middleware
+
+      response.body # for Faraday::Response object when NO errors are raised
     end
 
     def configuration
@@ -400,6 +423,21 @@ module SecretsManagement
 
     def rotate_recovery_url
       "sys/rotate/recovery/init"
+    end
+
+    def parsed_error_message(response, default_error_message: "OpenBao API request failed")
+      response_body = get_response_body_from_response(response)
+      return default_error_message unless response_body.present?
+
+      errors = if response_body.is_a?(Hash) # for body of a Faraday::Response object when NO errors are raised
+                 response_body["errors"]
+               else                         # for a JSON String response_body of ::Faraday::Error from raise_error
+                 Gitlab::Json.parse(response_body)["errors"]
+               end
+
+      errors.any? ? errors.to_sentence : default_error_message
+    rescue Gitlab::Json.parser_error
+      default_error_message
     end
   end
 end
