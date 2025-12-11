@@ -392,7 +392,7 @@ describe('AiCatalogConfiguredItemsWrapper', () => {
       },
     });
 
-    describe('when in group or explore areas', () => {
+    describe('when in group area', () => {
       beforeEach(() => {
         createComponent({
           provide: {
@@ -403,21 +403,27 @@ describe('AiCatalogConfiguredItemsWrapper', () => {
         });
       });
 
-      it('does not show update available badge when in group or explore area', async () => {
+      it('isUpdateAvailable should be true for item 1 and 3 and false for item 2', async () => {
         const catalogList = findAiCatalogList();
         await waitForPromises();
 
         const items = catalogList.props('items');
 
-        expect(items[0].isUpdateAvailable).toBe(false);
+        expect(items[0].isUpdateAvailable).toBe(true);
         expect(items[1].isUpdateAvailable).toBe(false);
-        expect(items[2].isUpdateAvailable).toBe(false);
+        expect(items[2].isUpdateAvailable).toBe(true);
       });
     });
 
     describe('when in project area', () => {
       beforeEach(() => {
-        createComponent({ configuredItemsQueryHandler: mockQueryHandler });
+        createComponent({
+          provide: {
+            projectId: 1,
+            groupId: null,
+          },
+          configuredItemsQueryHandler: mockQueryHandler,
+        });
       });
 
       it('isUpdateAvailable should be true for item 1 and 3 and false for item 2', async () => {

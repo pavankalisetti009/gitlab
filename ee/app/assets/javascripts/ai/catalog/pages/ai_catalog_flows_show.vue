@@ -15,6 +15,7 @@ import {
   VERSION_LATEST,
   VERSION_PINNED,
   ENABLE_FLOW_MODAL_TEXTS,
+  VERSION_PINNED_GROUP,
 } from 'ee/ai/catalog/constants';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import FoundationalIcon from 'ee/ai/components/foundational_icon.vue';
@@ -52,6 +53,9 @@ export default {
     projectId: {
       default: null,
     },
+    groupId: {
+      default: null,
+    },
   },
   props: {
     aiCatalogFlow: {
@@ -78,6 +82,9 @@ export default {
     isProjectNamespace() {
       return Boolean(this.projectId);
     },
+    pinnedVersionKey() {
+      return this.isProjectNamespace ? VERSION_PINNED : VERSION_PINNED_GROUP;
+    },
     showActions() {
       return this.isGlobal || this.isProjectNamespace;
     },
@@ -92,7 +99,9 @@ export default {
         : s__('AICatalog|View latest version');
     },
     primaryButtonAction() {
-      const target = this.aiCatalogFlow.configurationForProject;
+      const target = this.isProjectNamespace
+        ? this.aiCatalogFlow.configurationForProject
+        : this.aiCatalogFlow.configurationForGroup;
       const updateToVersion = this.aiCatalogFlow.latestVersion.versionName;
       return this.isReadyToUpdate
         ? () => this.updateFlowVersion(target, updateToVersion)
@@ -102,7 +111,18 @@ export default {
       return this.isReadyToUpdate ? s__('AICatalog|View enabled version') : null;
     },
     secondaryButtonAction() {
-      return this.isReadyToUpdate ? () => this.version.setActiveVersionKey(VERSION_PINNED) : null;
+      return this.isReadyToUpdate
+        ? () => this.version.setActiveVersionKey(this.pinnedVersionKey)
+        : null;
+    },
+    updateMessage() {
+      return this.groupId
+        ? s__(
+            "AICatalog|Updating a flow in this group does not update the flows enabled in this group's projects.",
+          )
+        : s__(
+            'AICatalog|Only this flow in this project will be updated. Other projects using this flow will not be affected.',
+          );
     },
   },
   mounted() {
@@ -325,11 +345,7 @@ export default {
           class="gl-mt-4"
         >
           <div class="gl-my-3 gl-flex gl-flex-col gl-gap-4">
-            <span>{{
-              s__(
-                'AICatalog|Only this flow in this project will be updated. Other projects using this flow will not be affected.',
-              )
-            }}</span>
+            <span>{{ updateMessage }}</span>
             <div class="gl-flex gl-w-min gl-flex-col gl-gap-4 @sm:gl-flex-row">
               <gl-button
                 v-if="secondaryButtonText"

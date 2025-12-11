@@ -88,6 +88,7 @@ export const TRACK_EVENT_TYPE_FLOW = AI_CATALOG_TYPE_FLOW.toLowerCase();
 
 export const VERSION_LATEST = 'latestVersion';
 export const VERSION_PINNED = 'configurationForProject.pinnedItemVersion';
+export const VERSION_PINNED_GROUP = 'configurationForGroup.pinnedItemVersion';
 
 // FLOW and THIRD_PARTY_FLOW apollo configuration
 export const AI_CATALOG_ITEM_TYPE_APOLLO_CONFIG = {

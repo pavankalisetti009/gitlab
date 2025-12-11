@@ -40,6 +40,12 @@ query aiCatalogFlow(
     configurationForGroup(groupId: $groupId) @include(if: $hasGroup) {
       id
       enabled
+      pinnedItemVersion {
+        ...BaseAiCatalogFlowVersion
+      }
+      userPermissions {
+        adminAiCatalogItemConsumer
+      }
     }
   }
 }

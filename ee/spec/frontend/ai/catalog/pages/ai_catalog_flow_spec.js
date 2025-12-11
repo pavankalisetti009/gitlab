@@ -8,7 +8,7 @@ import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import AiCatalogFlow from 'ee/ai/catalog/pages/ai_catalog_flow.vue';
 import aiCatalogFlowQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_flow.query.graphql';
-import { VERSION_PINNED, VERSION_LATEST } from 'ee/ai/catalog/constants';
+import { VERSION_PINNED, VERSION_PINNED_GROUP, VERSION_LATEST } from 'ee/ai/catalog/constants';
 import {
   mockAiCatalogFlowResponse,
   mockAiCatalogFlowNullResponse,
@@ -166,37 +166,28 @@ describe('AiCatalogFlow', () => {
       await waitForPromises();
 
       const routerView = findRouterView();
-      expect(routerView.props('version')).toMatchObject({});
-    });
-
-    it('should show pinned version when in project area', async () => {
-      createComponent({
-        provide: { projectId: 1, rootGroupId: 1 },
-      });
-      await waitForPromises();
-
-      const routerView = findRouterView();
-      expect(routerView.props('version')).toMatchObject({});
-    });
-  });
-
-  describe('when displaying different agent versions', () => {
-    it('should show latest version when in the explore area', async () => {
-      createComponent({
-        provide: { isGlobal: true },
-      });
-      await waitForPromises();
-
-      const routerView = findRouterView();
       expect(routerView.props('version')).toMatchObject({
         isUpdateAvailable: false,
         activeVersionKey: VERSION_LATEST,
       });
     });
 
+    it('should show pinned version when in the group area', async () => {
+      createComponent({
+        provide: { groupId: 1, projectId: null },
+      });
+      await waitForPromises();
+
+      const routerView = findRouterView();
+      expect(routerView.props('version')).toMatchObject({
+        isUpdateAvailable: true,
+        activeVersionKey: VERSION_PINNED_GROUP,
+      });
+    });
+
     it('should show pinned version when in project area', async () => {
       createComponent({
-        provide: { projectId: 1 },
+        provide: { projectId: 1, rootGroupId: '1' },
       });
       await waitForPromises();
 

@@ -131,9 +131,8 @@ export default {
       return this.configuredItems.map((configuredItem) => {
         const { item, ...itemConsumerData } = configuredItem;
         const isUpdateAvailable =
-          this.isProjectNamespace &&
           item.latestVersion.humanVersionName !==
-            itemConsumerData.pinnedItemVersion.humanVersionName;
+          itemConsumerData.pinnedItemVersion.humanVersionName;
 
         return {
           ...item,
