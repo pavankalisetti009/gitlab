@@ -9,7 +9,7 @@ import {
   GlIntersperse,
 } from '@gitlab/ui';
 import { uniqueId } from 'lodash';
-
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { sprintf, s__, n__ } from '~/locale';
 
 // If there are more licenses than this count, a counter will be displayed for the remaining licenses
@@ -34,6 +34,7 @@ export default {
     GlModalDirective,
     GlTooltipDirective,
   },
+  mixins: [glFeatureFlagsMixin()],
   props: {
     title: {
       type: String,
@@ -53,6 +54,12 @@ export default {
         .sort((a, b) => a.name.localeCompare(b.name));
 
       return this.unknownLicense ? [...knownLicenses, this.unknownLicense] : knownLicenses;
+    },
+    hasPolicyViolations() {
+      return (
+        this.glFeatures.securityPolicyWarnModeLicenseScanning &&
+        this.allLicenses.some((lic) => Boolean(lic?.policyViolations?.length))
+      );
     },
     unknownLicense() {
       return this.licenses.find((license) => license.spdxIdentifier === UNKNOWN_SPDX_IDENTIFIER);
@@ -117,7 +124,7 @@ export default {
 </script>
 
 <template>
-  <div>
+  <div class="gl-flex gl-items-center">
     <gl-intersperse :last-separator="lastSeparator" data-testid="license-list">
       <span
         v-for="license in visibleLicenses"
@@ -137,10 +144,19 @@ export default {
       :title="unidentifiedLicensesText"
       href="#"
       variant="neutral"
-      class="!gl-align-baseline"
+      class="gl-ml-3 !gl-align-baseline"
       data-testid="license-badge"
     >
       {{ modalBadgeText }}
+    </gl-badge>
+    <gl-badge
+      v-if="hasPolicyViolations"
+      class="gl-ml-3"
+      data-testid="policy-violation-badge"
+      icon="cancel"
+      variant="warning"
+    >
+      {{ s__('Dependencies|Policy violation') }}
     </gl-badge>
     <div data-testid="modal">
       <gl-modal

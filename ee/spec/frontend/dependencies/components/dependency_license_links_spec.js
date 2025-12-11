@@ -9,18 +9,31 @@ describe('DependencyLicenseLinks component', () => {
   // data helpers
   const createLicenses = (n) => [...Array(n).keys()].map((i) => ({ name: `license ${i + 1}` }));
   const addUrls = (licenses, numLicensesWithUrls = Infinity) =>
-    licenses.map((ls, i) => ({
-      ...ls,
-      ...(i < numLicensesWithUrls ? { url: `license ${i + 1}` } : {}),
-    }));
+    licenses.map((ls, i) => {
+      if (i >= numLicensesWithUrls) return ls;
+      return {
+        ...ls,
+        url: `license ${i + 1}`,
+      };
+    });
+  const addPolicyViolations = (licenses, numLicensesWithViolations = 0) =>
+    licenses.map((ls, i) => {
+      if (i >= numLicensesWithViolations) return ls;
+      return {
+        ...ls,
+        policyViolations: [{ id: i + 1 }],
+      };
+    });
 
   // wrapper / factory
   let wrapper;
   const factory = ({
     numLicenses = 0,
     numLicensesWithUrl = 0,
+    numLicensesWithPolicyViolations = 0,
     unknownLicenseName = null,
     title = 'test-dependency',
+    provide = {},
   } = {}) => {
     const licenses = [];
 
@@ -32,15 +45,23 @@ describe('DependencyLicenseLinks component', () => {
     }
 
     if (numLicenses > 0) {
-      licenses.push(...addUrls(createLicenses(numLicenses), numLicensesWithUrl));
+      const baseLicenses = createLicenses(numLicenses);
+      const licensesWithUrls = addUrls(baseLicenses, numLicensesWithUrl);
+      const licensesWithViolations = addPolicyViolations(
+        licensesWithUrls,
+        numLicensesWithPolicyViolations,
+      );
+      licenses.push(...licensesWithViolations);
     }
 
     wrapper = shallowMountExtended(DependenciesLicenseLinks, {
-      propsData: {
-        licenses,
-        title,
-      },
+      propsData: { licenses, title },
+      provide,
     });
+  };
+
+  const factoryWithSpecificLicenses = (propsData = {}) => {
+    wrapper = shallowMountExtended(DependenciesLicenseLinks, { propsData });
   };
 
   // query helpers
@@ -53,6 +74,7 @@ describe('DependencyLicenseLinks component', () => {
     findLicenseBadge().exists() ? findLicenseBadge().attributes('title') : null;
   const findModalItemTexts = () =>
     wrapper.findAllByTestId('modal-item').wrappers.map((item) => item.text());
+  const findPolicyViolationBadge = () => wrapper.findByTestId('policy-violation-badge');
 
   it('intersperses the list of licenses correctly', () => {
     factory();
@@ -103,7 +125,7 @@ describe('DependencyLicenseLinks component', () => {
     ${2}        | ${1}
     ${3}        | ${2}
   `(
-    'shows the number of licenses that are included in the modal',
+    'shows $expectedNumExceedingLicenses licenses that are included in the modal when there are $numLicenses licenses',
     async ({ numLicenses, expectedNumExceedingLicenses }) => {
       factory({ numLicenses });
 
@@ -183,12 +205,8 @@ describe('DependencyLicenseLinks component', () => {
       { name: 'Apache' },
     ];
 
-    wrapper = shallowMountExtended(DependenciesLicenseLinks, {
-      propsData: { licenses, title: 'test-dependency' },
-    });
-
+    factoryWithSpecificLicenses({ licenses, title: 'test-dependency' });
     await nextTick();
-
     const licenseTexts = findModalItemTexts();
 
     expect(licenseTexts).toEqual(['Apache', 'GPL', 'MIT', '3 unknown']);
@@ -236,9 +254,49 @@ describe('DependencyLicenseLinks component', () => {
     ${1}        | ${0}
     ${2}        | ${2}
     ${3}        | ${3}
-  `('contains the correct modal content', ({ numLicenses, expectedLicensesInModal }) => {
-    factory({ numLicenses });
+  `(
+    'contains the correct modal content for $numLicenses licenses',
+    ({ numLicenses, expectedLicensesInModal }) => {
+      factory({ numLicenses });
 
-    expect(findModalItem()).toHaveLength(expectedLicensesInModal);
+      expect(findModalItem()).toHaveLength(expectedLicensesInModal);
+    },
+  );
+
+  describe('security policy dismissal badge', () => {
+    describe('with securityPolicyWarnModeLicenseScanning feature flag on', () => {
+      it('does not show the badge if none of the licenses have violated a security policy', () => {
+        factory({
+          numLicenses: 1,
+          provide: { glFeatures: { securityPolicyWarnModeLicenseScanning: true } },
+        });
+
+        expect(findPolicyViolationBadge().exists()).toBe(false);
+      });
+
+      it('shows the badge if licenses have violated a security policy', () => {
+        factory({
+          numLicenses: 1,
+          numLicensesWithPolicyViolations: 1,
+          provide: { glFeatures: { securityPolicyWarnModeLicenseScanning: true } },
+        });
+
+        expect(findPolicyViolationBadge().exists()).toBe(true);
+      });
+    });
+
+    describe('with securityPolicyWarnModeLicenseScanning feature flag off', () => {
+      it('does not show the badge if none of the licenses have violated a security policy', () => {
+        factory({ numLicenses: 1 });
+
+        expect(findPolicyViolationBadge().exists()).toBe(false);
+      });
+
+      it('shows the badge if licenses have violated a security policy', () => {
+        factory({ numLicenses: 1, numLicensesWithPolicyViolations: 1 });
+
+        expect(findPolicyViolationBadge().exists()).toBe(false);
+      });
+    });
   });
 });

@@ -45,6 +45,13 @@ query getProjectDependencies(
           name
           url
           spdxIdentifier
+          policyViolations @gl_introduced(version: "18.7.0") {
+            id
+            securityPolicy {
+              id
+              name
+            }
+          }
         }
         vulnerabilityCount
         hasDependencyPaths @gl_introduced(version: "18.4.0")
