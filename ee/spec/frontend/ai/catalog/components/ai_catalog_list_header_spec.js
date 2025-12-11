@@ -26,6 +26,7 @@ describe('AiCatalogListHeader', () => {
   const findLinkToDashboardModal = () => wrapper.findComponent(LinkToDashboardModal);
   const findNavTabs = () => wrapper.findComponent(AiCatalogNavTabs);
   const findNavActions = () => wrapper.findComponent(AiCatalogNavActions);
+  const findLegalDisclaimer = () => wrapper.findByTestId('legal-disclaimer');
 
   const createComponent = ({ props = {}, provide = {}, stubs = {} } = {}) => {
     wrapper = shallowMountExtended(AiCatalogListHeader, {
@@ -239,6 +240,21 @@ describe('AiCatalogListHeader', () => {
 
     it('renders provided title', () => {
       expect(findPageHeading().text()).toContain('Custom title');
+    });
+  });
+
+  describe('legal disclaimer', () => {
+    it('is rendered when showLegalDisclaimer is true', () => {
+      createComponent({ provide: { showLegalDisclaimer: true } });
+
+      expect(findLegalDisclaimer().exists()).toBe(true);
+      expect(findLegalDisclaimer().text()).toContain('This catalog contains third-party content');
+    });
+
+    it('is not rendered when showLegalDisclaimer is false', () => {
+      createComponent({ provide: { showLegalDisclaimer: false } });
+
+      expect(findLegalDisclaimer().exists()).toBe(false);
     });
   });
 });
