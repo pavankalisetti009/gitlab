@@ -62,6 +62,8 @@ RSpec.describe SnippetRepository, type: :model, feature_category: :source_code_m
       let(:verifiable_model_record) do
         build(:snippet_repository, snippet: project_snippet)
       end
+
+      let(:unverifiable_model_record) { nil }
     end
 
     describe 'replication/verification' do

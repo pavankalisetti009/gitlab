@@ -6,6 +6,7 @@ module Geo
     include ::Ci::Partitionable
 
     self.table_name = 'p_ci_pipeline_artifact_states'
+    self.primary_key = :pipeline_artifact_id
 
     belongs_to :pipeline_artifact,
       ->(artifact_state) { in_partition(artifact_state) },

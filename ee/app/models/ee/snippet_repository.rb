@@ -34,6 +34,28 @@ module EE
           primary_key_in ? replicables.primary_key_in(primary_key_in) : replicables
         end
       end
+
+      delegate(*::Geo::VerificationState::VERIFICATION_METHODS, to: :snippet_repository_state)
+
+      scope :available_verifiables, -> { joins(:snippet_repository_state) }
+      scope :with_verification_state, ->(state) {
+        joins(:snippet_repository_state).where(
+          snippet_repository_states: {
+            verification_state: verification_state_value(state)
+          }
+        )
+      }
+
+      def verification_state_object
+        snippet_repository_state
+      end
+
+      def snippet_repository_state
+        state = super || build_snippet_repository_state
+        state.snippet_repository_id ||= id if id.present?
+        state.snippet_repository ||= self
+        state
+      end
     end
 
     class_methods do
@@ -129,6 +151,16 @@ module EE
 
       def snippet_repositories_for_selected_shards(node, replicables)
         replicables.for_repository_storage(node.selective_sync_shards)
+      end
+
+      override :verification_state_table_class
+      def verification_state_table_class
+        Geo::SnippetRepositoryState
+      end
+
+      override :verification_state_model_key
+      def verification_state_model_key
+        :snippet_repository_id
       end
     end
   end

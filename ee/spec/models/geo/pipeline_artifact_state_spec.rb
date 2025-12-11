@@ -36,6 +36,12 @@ RSpec.describe Geo::PipelineArtifactState, :geo, feature_category: :geo_replicat
     end
 
     it 'includes partition scope when accessing pipeline_artifact_state association' do
+      create(:geo_pipeline_artifact_state,
+        pipeline_artifact: pipeline_artifact,
+        partition_id: ci_testing_partition_id)
+
+      pipeline_artifact.reload
+
       # Verify the association query includes the partition scope
       association_scope = pipeline_artifact.association(:pipeline_artifact_state).scope
 
