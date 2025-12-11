@@ -46,23 +46,37 @@ RSpec.describe Ai::Catalog, feature_category: :workflow_catalog do
       end
     end
 
+    # rubocop:disable Layout/LineLength -- More readable on single lines
     context 'when not SaaS' do
-      where(:flag_enabled, :instance_duo_features_enabled, :instance_duo_agent_platform_enabled) do
-        false | false | true
-        true  | false | true
-        false | true  | true
-        true  | true  | true
-        true  | true  | false
+      where(:flag_enabled, :instance_duo_features_enabled, :instance_duo_agent_platform_enabled, :instance_experiment_setting_enabled) do
+        false | false | false | false
+        false | false | false | true
+        false | false | true  | false
+        false | false | true  | true
+        false | true  | false | false
+        false | true  | false | true
+        false | true  | true  | false
+        false | true  | true  | true
+        true  | false | false | false
+        true  | false | false | true
+        true  | false | true  | false
+        true  | false | true  | true
+        true  | true  | false | false
+        true  | true  | false | true
+        true  | true  | true  | true
       end
+      # rubocop:enable Layout/LineLength -- More readable on single lines
 
       with_them do
         let(:true_when_all_enabled) do
-          flag_enabled && instance_duo_features_enabled && instance_duo_agent_platform_enabled
+          flag_enabled && instance_duo_features_enabled && instance_duo_agent_platform_enabled &&
+            instance_experiment_setting_enabled
         end
 
         before do
           stub_feature_flags(global_ai_catalog: flag_enabled)
           stub_application_setting(duo_features_enabled: instance_duo_features_enabled)
+          stub_application_setting(instance_level_ai_beta_features_enabled: instance_experiment_setting_enabled)
 
           # Create or update the AI setting with the desired duo_agent_platform_enabled value
           ai_setting = ::Ai::Setting.instance
