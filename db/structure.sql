@@ -27464,9 +27464,12 @@ CREATE TABLE slsa_attestations (
     file text,
     file_store smallint DEFAULT 1,
     iid integer,
+    predicate_file text,
+    predicate_file_store smallint DEFAULT 1 NOT NULL,
     CONSTRAINT check_3575e9121e CHECK ((char_length(file) <= 255)),
     CONSTRAINT check_dec11b603a CHECK ((char_length(subject_digest) <= 255)),
-    CONSTRAINT check_ea0d61030d CHECK ((char_length(predicate_type) <= 255))
+    CONSTRAINT check_ea0d61030d CHECK ((char_length(predicate_type) <= 255)),
+    CONSTRAINT check_ed09edea1d CHECK ((char_length(predicate_file) <= 1024))
 );
 
 CREATE SEQUENCE slsa_attestations_id_seq
