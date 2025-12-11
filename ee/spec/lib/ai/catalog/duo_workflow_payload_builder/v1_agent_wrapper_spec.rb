@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::ExperimentalAgentWrapper, :aggregate_failures, feature_category: :workflow_catalog do
+RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::V1AgentWrapper, :aggregate_failures, feature_category: :workflow_catalog do
   let_it_be(:project) { create(:project) }
   let_it_be(:agent) { create(:ai_catalog_agent, project: project) }
   let_it_be(:agent_version) { agent.versions.last }
@@ -11,21 +11,22 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::ExperimentalAgentWrapper,
   let_it_be(:flow_version) { flow.versions.last }
   let(:user_prompt_input) { 'List all issues from project {{project}}' }
 
+  let(:flow_environment) { 'chat-partial' }
   let(:params) { { user_prompt_input: user_prompt_input } }
 
-  subject(:builder) { described_class.new(flow, flow_version, params) }
+  subject(:builder) { described_class.new(flow, flow_version, flow_environment:, params:) }
 
   describe 'inheritance' do
-    it 'inherits from Experimental' do
-      expect(described_class.superclass).to eq(Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental)
+    it 'inherits from V1' do
+      expect(described_class.superclass).to eq(Ai::Catalog::DuoWorkflowPayloadBuilder::V1)
     end
   end
 
   describe '#build' do
     it_behaves_like 'builds valid flow configuration' do
       let(:result) { builder.build }
-      let(:environment) { 'remote' }
-      let(:version) { 'experimental' }
+      let(:environment) { 'chat-partial' }
+      let(:version) { 'v1' }
     end
 
     it 'builds workflow config correctly' do
@@ -48,6 +49,8 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::ExperimentalAgentWrapper,
       expect(result['prompts']).to eq([
         {
           'prompt_id' => "#{agent_flow_id}_prompt",
+          'name' => agent_flow_id,
+          'unit_primitives' => [],
           'prompt_template' => {
             'system' => agent_version.def_system_prompt,
             'user' => user_prompt_input,

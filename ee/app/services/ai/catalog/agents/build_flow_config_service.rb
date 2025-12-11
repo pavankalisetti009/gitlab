@@ -47,9 +47,11 @@ module Ai
           return wrapped_agent_response if wrapped_agent_response.error?
 
           flow = wrapped_agent_response.payload[:flow]
-          payload_builder = ::Ai::Catalog::DuoWorkflowPayloadBuilder::ChatFlow.new(
+          payload_builder = ::Ai::Catalog::DuoWorkflowPayloadBuilder::V1AgentWrapper.new(
             flow,
-            flow.latest_version
+            flow.latest_version,
+            flow_environment: 'chat-partial',
+            params: { user_prompt_input: 'Here is my task - {{goal}}' }
           )
 
           flow_config = payload_builder.build

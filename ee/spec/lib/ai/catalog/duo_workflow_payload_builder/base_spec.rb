@@ -9,9 +9,10 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Base, feature_category: :
   let_it_be(:agent_item_2) { create(:ai_catalog_agent, project: project) }
 
   let(:flow) { flow_item }
+  let(:params) { { my_param: 1 } }
   let(:pinned_version_prefix) { '1.1' }
 
-  subject(:builder) { described_class.new(flow, pinned_version_prefix) }
+  subject(:builder) { described_class.new(flow, pinned_version_prefix:, params:) }
 
   describe 'includes' do
     it 'includes Gitlab::Utils::StrongMemoize' do
@@ -24,9 +25,10 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Base, feature_category: :
   end
 
   describe '#initialize' do
-    it 'sets flow and pinned_version_prefix' do
+    it 'sets instance variables' do
       expect(builder.instance_variable_get(:@flow)).to eq(flow)
       expect(builder.instance_variable_get(:@pinned_version_prefix)).to eq(pinned_version_prefix)
+      expect(builder.instance_variable_get(:@params)).to eq(params)
     end
   end
 
@@ -38,19 +40,19 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Base, feature_category: :
     end
 
     context 'when flow is nil' do
-      let(:builder) { described_class.new(nil, '1.0.0') }
+      let(:flow) { nil }
 
       it_behaves_like 'raises validation error', 'Flow is required'
     end
 
     context 'when flow is not a flow type' do
-      let(:builder) { described_class.new(build(:ai_catalog_agent), '1.0.0') }
+      let(:flow) { build(:ai_catalog_agent) }
 
       it_behaves_like 'raises validation error', 'Flow must have item_type of flow'
     end
 
     context 'when flow is other records than Ai::Catalog::Item' do
-      let(:builder) { described_class.new(project, '1.0.0') }
+      let(:flow) { project }
 
       it_behaves_like 'raises validation error', 'Flow must be an Ai::Catalog::Item'
     end

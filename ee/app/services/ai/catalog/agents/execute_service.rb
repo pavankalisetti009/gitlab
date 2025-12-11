@@ -77,10 +77,11 @@ module Ai
         end
 
         def generate_flow_config
-          payload_builder = ::Ai::Catalog::DuoWorkflowPayloadBuilder::ExperimentalAgentWrapper.new(
+          payload_builder = ::Ai::Catalog::DuoWorkflowPayloadBuilder::V1AgentWrapper.new(
             flow,
             flow.latest_version,
-            { user_prompt_input: user_prompt }
+            flow_environment: 'ambient',
+            params: { user_prompt_input: user_prompt }
           )
           payload_builder.build
         end

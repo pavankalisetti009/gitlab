@@ -3,31 +3,30 @@
 module Ai
   module Catalog
     module DuoWorkflowPayloadBuilder
-      class ExperimentalAgentWrapper < Experimental
+      class V1AgentWrapper < V1
         include Gitlab::Utils::StrongMemoize
         extend ::Gitlab::Utils::Override
 
-        override :initialize
-        def initialize(flow, flow_version, params = {})
+        def initialize(flow, flow_version, flow_environment:, params: {})
           @flow_version = flow_version
-          @user_prompt_input = params[:user_prompt_input]
-          super(flow, params[:pinned_version_prefix])
+
+          super(
+            flow,
+            pinned_version_prefix: flow_version.version,
+            flow_environment: flow_environment,
+            params: params
+          )
         end
 
         private
 
-        attr_reader :flow_version, :user_prompt_input
+        attr_reader :flow_version
 
         override :flow_definition
         def flow_definition
           ::Ai::Catalog::FlowDefinition.new(flow, flow_version)
         end
         strong_memoize_attr :flow_definition
-
-        override :user_prompt
-        def user_prompt(_definition)
-          user_prompt_input
-        end
       end
     end
   end

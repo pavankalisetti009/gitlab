@@ -3,9 +3,10 @@
 module Ai
   module Catalog
     module DuoWorkflowPayloadBuilder
-      class Experimental < Base
-        FLOW_VERSION = 'experimental'
-        FLOW_ENVIRONMENT = 'remote'
+      class V1 < Base
+        extend ::Gitlab::Utils::Override
+
+        FLOW_VERSION = 'v1'
         AGENT_COMPONENT_TYPE = 'AgentComponent'
         DEFAULT_INPUTS = [
           { 'from' => 'context:goal', 'as' => 'goal' },
@@ -14,12 +15,21 @@ module Ai
         DUO_FLOW_TIMEOUT = 30
         PLACEHOLDER_VALUE = 'history'
 
+        override :initialize
+        def initialize(flow, pinned_version_prefix:, flow_environment:, params: {})
+          @flow_environment = flow_environment
+
+          super(flow, pinned_version_prefix:, params:)
+        end
+
         private
+
+        attr_reader :flow_environment
 
         def build_flow_config
           {
             'version' => FLOW_VERSION,
-            'environment' => FLOW_ENVIRONMENT,
+            'environment' => flow_environment,
             'components' => build_components,
             'routers' => build_routers,
             'flow' => flow_configuration,
@@ -95,6 +105,8 @@ module Ai
 
           {
             'prompt_id' => step_prompt_id(step),
+            'name' => step_unique_identifier(step),
+            'unit_primitives' => [],
             'prompt_template' => {
               'system' => system_prompt(definition),
               'user' => user_prompt(definition),

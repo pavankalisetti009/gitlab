@@ -7,7 +7,7 @@ module Ai
         include Gitlab::Utils::StrongMemoize
         include ActiveModel::Model
 
-        def initialize(flow, pinned_version_prefix = nil, params = {})
+        def initialize(flow, pinned_version_prefix:, params: {})
           @flow = flow
           @pinned_version_prefix = pinned_version_prefix
           @params = params
