@@ -6,13 +6,7 @@ RSpec.describe Ai::ThirdPartyAgents::TokenService, feature_category: :duo_agent_
   let_it_be(:user) { create(:user) }
   let_it_be(:project) { create(:project) }
 
-  let(:project_headers) do
-    {
-      'x-gitlab-project-id' => project.id.to_s,
-      'x-gitlab-namespace-id' => project.namespace_id.to_s,
-      'x-gitlab-root-namespace-id' => project.root_namespace.id.to_s
-    }
-  end
+  let(:project_headers) { { 'x-gitlab-project-id' => project.id.to_s } }
 
   let(:ai_gateway_headers) { { 'header' => 'value' } }
 
@@ -33,11 +27,13 @@ RSpec.describe Ai::ThirdPartyAgents::TokenService, feature_category: :duo_agent_
 
   before do
     allow(Gitlab::AiGateway).to receive(:headers)
-      .with(user: user, unit_primitive_name: :ai_gateway_model_provider_proxy, ai_feature_name: :duo_workflow)
+      .with(user: user, unit_primitive_name: :ai_gateway_model_provider_proxy, namespace_id: project&.namespace_id,
+        root_namespace_id: project&.root_namespace&.id, ai_feature_name: :duo_workflow)
       .and_return(ai_gateway_headers)
 
     allow(Gitlab::AiGateway).to receive(:public_headers)
-      .with(user: user, ai_feature_name: :duo_workflow, unit_primitive_name: :ai_gateway_model_provider_proxy)
+      .with(user: user, ai_feature_name: :duo_workflow, unit_primitive_name: :ai_gateway_model_provider_proxy,
+        namespace_id: project&.namespace_id, root_namespace_id: project&.root_namespace&.id)
       .and_return(public_headers)
 
     allow(Gitlab::AiGateway).to receive(:access_token_url)
@@ -165,7 +161,8 @@ RSpec.describe Ai::ThirdPartyAgents::TokenService, feature_category: :duo_agent_
   describe 'creating AI gateway headers' do
     it 'uses the current user for public headers' do
       expect(Gitlab::AiGateway).to receive(:public_headers)
-        .with(user: user, ai_feature_name: :duo_workflow, unit_primitive_name: :ai_gateway_model_provider_proxy)
+        .with(user: user, ai_feature_name: :duo_workflow, unit_primitive_name: :ai_gateway_model_provider_proxy,
+          namespace_id: project.namespace_id, root_namespace_id: project.root_namespace.id)
         .and_return(public_headers)
 
       token_service.direct_access_token
@@ -180,7 +177,7 @@ RSpec.describe Ai::ThirdPartyAgents::TokenService, feature_category: :duo_agent_
     end
 
     context 'without a project' do
-      subject(:token_service) { described_class.new(current_user: user) }
+      let(:project) { nil }
 
       it 'does not include the required headers' do
         expect(token_service.direct_access_token.payload[:headers].keys).not_to include(

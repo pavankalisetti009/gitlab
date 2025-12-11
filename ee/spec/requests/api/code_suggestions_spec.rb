@@ -335,7 +335,6 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
             'x-gitlab-realm' => [gitlab_realm],
             'x-gitlab-deployment-type' => [gitlab_deployment_type],
             'Authorization' => ["Bearer #{token}"],
-            'x-gitlab-feature-enabled-by-namespace-ids' => [""],
             'Content-Type' => ['application/json'],
             'User-Agent' => ['Super Awesome Browser 43.144.12'],
             "x-gitlab-enabled-feature-flags" => gitlab_enabled_feature_flags
@@ -414,7 +413,6 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
               'x-gitlab-realm' => [gitlab_realm],
               'x-gitlab-deployment-type' => [gitlab_deployment_type],
               'Authorization' => ["Bearer #{token}"],
-              'x-gitlab-feature-enabled-by-namespace-ids' => [""],
               'Content-Type' => ['application/json'],
               'User-Agent' => ['Super Awesome Browser 43.144.12'],
               "x-gitlab-enabled-feature-flags" => gitlab_enabled_feature_flags
@@ -458,7 +456,6 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
             expect(params['Header']).to include({
               'X-Gitlab-Authentication-Type' => ['oidc'],
               'Authorization' => ["Bearer #{token}"],
-              'x-gitlab-feature-enabled-by-namespace-ids' => [""],
               'Content-Type' => ['application/json'],
               'x-gitlab-instance-id' => [global_instance_id],
               'x-gitlab-global-user-id' => [global_user_id],
@@ -744,7 +741,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
       end
 
       context 'when user belongs to a namespace with an active code suggestions purchase' do
-        let(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase) }
+        let(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, namespace: test_project.namespace) }
         let_it_be(:duo_core_add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_core) }
         let_it_be(:duo_enterprise_add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise) }
 
@@ -755,6 +752,8 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
         end
 
         context 'when the user is assigned to the add-on' do
+          let(:enabled_by_namespace_ids) { [add_on_purchase.namespace_id] }
+
           before do
             create(
               :gitlab_subscription_user_add_on_assignment,
@@ -1388,8 +1387,8 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
 
           expect(response).to have_gitlab_http_status(:created)
           expect(json_response['headers']).to include(
-            'x-gitlab-root-namespace-id' => project.root_namespace.id.to_s,
-            'x-gitlab-namespace-id' => project.namespace_id.to_s
+            'x-gitlab-root-namespace-id' => add_on_purchase.namespace.root_ancestor.id.to_s,
+            'x-gitlab-namespace-id' => add_on_purchase.namespace_id.to_s
           )
         end
 

@@ -407,7 +407,12 @@ RSpec.describe Gitlab::AiGateway, feature_category: :system_access do
       let(:namespace_ids) { [] }
       let(:enablement_type) { '' }
 
-      it { is_expected.to match(expected_headers.merge('x-gitlab-feature-enabled-by-namespace-ids' => '')) }
+      it 'excludes the namespace headers and has an empty x-gitlab-feature-enabled-by-namespace-ids' do
+        is_expected.to match(
+          expected_headers.except('x-gitlab-namespace-id', 'x-gitlab-root-namespace-id')
+          .merge('x-gitlab-feature-enabled-by-namespace-ids' => '')
+        )
+      end
     end
 
     context 'when user is a GitLab team member' do
@@ -421,6 +426,8 @@ RSpec.describe Gitlab::AiGateway, feature_category: :system_access do
     let(:user) { build(:user, id: 1) }
     let(:ai_feature) { :test_feature }
     let(:unit_primitive_name) { :test_feature_up }
+    let(:namespace_id) { nil }
+    let(:root_namespace_id) { nil }
     let(:enabled_feature_flags) { %w[feature_a feature_b] }
     let(:ai_headers) { { 'x-gitlab-feature-enabled-by-namespace-ids' => '' } }
     let(:standard_context) { instance_double(::Gitlab::Tracking::StandardContext) }
@@ -429,7 +436,7 @@ RSpec.describe Gitlab::AiGateway, feature_category: :system_access do
 
     subject(:public_headers) do
       described_class.public_headers(user: user, ai_feature_name: ai_feature, unit_primitive_name: unit_primitive_name,
-        feature_setting: feature_setting)
+        namespace_id: namespace_id, root_namespace_id: root_namespace_id, feature_setting: feature_setting)
     end
 
     before do
@@ -602,6 +609,47 @@ RSpec.describe Gitlab::AiGateway, feature_category: :system_access do
           .and_return(auth_response)
 
         public_headers
+      end
+    end
+
+    context 'when building namespace headers' do
+      context 'when the root_namespace_id is part of x-gitlab-feature-enabled-by-namespace-ids' do
+        let(:namespace_id) { 2 }
+        let(:root_namespace_id) { 3 }
+
+        it 'includes the namespace ids in the headers' do
+          expect(public_headers).to include('x-gitlab-namespace-id' => '2', 'x-gitlab-root-namespace-id' => '3')
+        end
+
+        context 'when no namespace_id is provided' do
+          let(:namespace_id) { nil }
+
+          it "uses the root_namespace_id as the namespace_id" do
+            expect(public_headers).to include('x-gitlab-namespace-id' => '3', 'x-gitlab-root-namespace-id' => '3')
+          end
+        end
+      end
+
+      context 'when the root_namespace_id is NOT part of x-gitlab-feature-enabled-by-namespace-ids' do
+        let(:namespace_id) { 4 }
+
+        context 'and there is a Duo default namespace id' do
+          before do
+            allow(user.user_preference).to receive_message_chain(:duo_default_namespace_with_fallback, :id)
+              .and_return(5)
+          end
+
+          it 'uses the Duo default namespace id as the namespace ids' do
+            expect(public_headers).to include('x-gitlab-namespace-id' => '5', 'x-gitlab-root-namespace-id' => '5')
+          end
+        end
+
+        context 'and there is no Duo default namespace id' do
+          it 'does not include the namespace headers' do
+            expect(public_headers).not_to have_key('x-gitlab-namespace-id')
+            expect(public_headers).not_to have_key('x-gitlab-root-namespace-id')
+          end
+        end
       end
     end
   end

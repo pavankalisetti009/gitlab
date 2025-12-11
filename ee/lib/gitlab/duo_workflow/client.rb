@@ -48,10 +48,10 @@ module Gitlab
         !!Gitlab.config.duo_workflow.debug
       end
 
-      def self.cloud_connector_headers(user:, feature_setting: nil)
+      def self.cloud_connector_headers(user:, namespace_id: nil, root_namespace_id: nil, feature_setting: nil)
         headers = Gitlab::AiGateway
-          .public_headers(user: user, ai_feature_name: :duo_workflow,
-            unit_primitive_name: :duo_workflow_execute_workflow,
+          .public_headers(user: user, namespace_id: namespace_id, root_namespace_id: root_namespace_id,
+            ai_feature_name: :duo_workflow, unit_primitive_name: :duo_workflow_execute_workflow,
             feature_setting: feature_setting)
           .transform_keys(&:downcase)
           .merge(

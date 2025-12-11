@@ -13,6 +13,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
   let_it_be(:merge_request) { create(:merge_request, source_project: project) }
   let_it_be(:duo_workflow_service_url) { 'duo-workflow-service.example.com:50052' }
   let_it_be(:ai_workflows_oauth_token) { create(:oauth_access_token, user: user, scopes: [:ai_workflows]) }
+  let_it_be(:auth_response) { Ai::UserAuthorizable::Response.new(allowed?: true, namespace_ids: [group.id]) }
   let(:agent_privileges) { [::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_FILES] }
   let(:pre_approved_agent_privileges) { [::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_FILES] }
   let(:workflow_definition) { 'software_development' }
@@ -28,7 +29,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
     allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(group, :duo_workflow).and_return(true)
     allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
 
-    allow_any_instance_of(User).to receive(:allowed_to_use?).and_return(true) # rubocop:disable RSpec/AnyInstanceOf -- not the next instance
+    allow_any_instance_of(User).to receive(:allowed_to_use).and_return(auth_response) # rubocop:disable RSpec/AnyInstanceOf -- not the next instance
 
     allow(::Ai::DuoWorkflow).to receive(:available?).and_return(true)
 
@@ -1443,11 +1444,14 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
           )
         end
 
-        it 'sets root_namespace_id header to nil when namespace is not found' do
+        it 'uses default value when namespace is not found' do
           get api(path, user), headers: workhorse_headers, params: { root_namespace_id: 99999 }
 
           expect(response).to have_gitlab_http_status(:ok)
-          expect(json_response['DuoWorkflow']['Headers']['x-gitlab-root-namespace-id']).to be_nil
+          expect(json_response['DuoWorkflow']['Headers']).to include(
+            'x-gitlab-root-namespace-id' => group.id.to_s,
+            'x-gitlab-namespace-id' => group.id.to_s
+          )
         end
       end
 
@@ -1479,6 +1483,9 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
       context 'when precedence of namespace parameters is tested' do
         let_it_be(:child_group) { create(:group, parent: group) }
+        let_it_be(:auth_response) do
+          Ai::UserAuthorizable::Response.new(allowed?: true, namespace_ids: [group.id, child_group.id])
+        end
 
         it 'sets both root and namespace headers, with namespace_id taking precedence for x-gitlab-namespace-id' do
           get api(path, user), headers: workhorse_headers.merge('X-Gitlab-Namespace-Id' => child_group.id), params: {
