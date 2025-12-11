@@ -230,9 +230,6 @@ export default {
         'data-testid': 'agent-form-input-name',
         placeholder: s__('AICatalog|Research Assistant, Creative Writer, Code Helper'),
       },
-      groupAttrs: {
-        labelDescription: s__('AICatalog|Name your agent.'),
-      },
     },
     description: {
       id: 'agent-form-description',
@@ -240,9 +237,6 @@ export default {
       validations: {
         requiredLabel: s__('AICatalog|Description is required.'),
         maxLength: MAX_LENGTH_DESCRIPTION,
-      },
-      groupAttrs: {
-        labelDescription: s__('AICatalog|Provide a brief description.'),
       },
     },
     type: {
