@@ -335,6 +335,10 @@ describe('AiCatalogAgentsShow', () => {
 
         expect(mockToast.show).toHaveBeenCalledWith('Agent disabled in this project.');
       });
+
+      it('refetches agent data', () => {
+        expect(mockAgentQueryHandler).toHaveBeenCalled();
+      });
     });
 
     describe('when request succeeds but returns errors', () => {

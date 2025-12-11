@@ -264,6 +264,7 @@ export default {
           variables: {
             id,
           },
+          refetchQueries: [aiCatalogFlowQuery],
         });
 
         if (!data.aiCatalogItemConsumerDelete.success) {
@@ -276,9 +277,6 @@ export default {
         }
 
         this.$toast.show(s__('AICatalog|Flow disabled in this project.'));
-        this.$router.push({
-          name: AI_CATALOG_FLOWS_ROUTE,
-        });
       } catch (error) {
         this.errors = [sprintf(s__('AICatalog|Failed to disable flow. %{error}'), { error })];
         Sentry.captureException(error);
