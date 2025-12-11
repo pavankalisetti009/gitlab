@@ -111,8 +111,7 @@ RSpec.describe Resolvers::Security::ScanProfilesResolver, feature_category: :sec
                 profiles = resolve_scan_profiles
                 default_secret_detection = default_profile_by_type(:secret_detection)
 
-                expect(profiles.size).to eq(1)
-                expect(profiles).to include(recommended_secret_detection)
+                expect(profiles).to contain_exactly(recommended_secret_detection)
                 expect(profiles.map(&:name)).not_to include(default_secret_detection.name)
               end
             end
@@ -172,12 +171,179 @@ RSpec.describe Resolvers::Security::ScanProfilesResolver, feature_category: :sec
 
                 it 'returns only the recommended profile without the default' do
                   profiles = resolve_scan_profiles
-                  default_secret_detection = default_profile_by_type(:secret_detection)
 
-                  expect(profiles.size).to eq(1)
-                  expect(profiles).to include(recommended_secret_detection)
-                  expect(profiles.map(&:name)).not_to include(default_secret_detection.name)
+                  expect(profiles).to contain_exactly(recommended_secret_detection)
                 end
+              end
+
+              context 'when there is a persisted custom profile of that type' do
+                let_it_be(:custom_secret_detection) do
+                  create(:security_scan_profile,
+                    namespace: root_group,
+                    scan_type: :secret_detection,
+                    name: 'Custom Secret Detection',
+                    gitlab_recommended: false)
+                end
+
+                it 'returns both the default profile and custom profiles' do
+                  default_secret_detection = default_profile_by_type(:secret_detection)
+                  profiles = resolve_scan_profiles
+
+                  expect(profiles.size).to eq(2)
+                  expect(profiles).to include(custom_secret_detection)
+                  expect(profiles.map(&:name)).to match_array([
+                    custom_secret_detection.name, default_secret_detection.name
+                  ])
+                end
+              end
+            end
+          end
+
+          context 'with gitlab_recommended argument' do
+            context 'when filtering for gitlab_recommended: true' do
+              let(:args) { { gitlab_recommended: true } }
+
+              context 'when there are no persisted profiles' do
+                it 'returns only default profiles' do
+                  profiles = resolve_scan_profiles
+                  default_profiles = ::Security::DefaultScanProfilesHelper.default_scan_profiles
+
+                  expect(profiles.size).to eq(default_profiles.size)
+                  expect(profiles).to all(have_attributes(gitlab_recommended: true))
+                end
+              end
+
+              context 'when there are mixed persisted profiles' do
+                let_it_be(:recommended_sast) do
+                  create(:security_scan_profile,
+                    namespace: root_group,
+                    scan_type: :sast,
+                    name: 'Recommended SAST',
+                    gitlab_recommended: true)
+                end
+
+                let_it_be(:custom_sast) do
+                  create(:security_scan_profile,
+                    namespace: root_group,
+                    scan_type: :sast,
+                    name: 'Custom SAST',
+                    gitlab_recommended: false)
+                end
+
+                it 'returns only gitlab_recommended profiles' do
+                  profiles = resolve_scan_profiles
+
+                  expect(profiles).to include(recommended_sast)
+                  expect(profiles).not_to include(custom_sast)
+                  expect(profiles).to all(have_attributes(gitlab_recommended: true))
+                end
+              end
+            end
+
+            context 'when filtering for gitlab_recommended: false' do
+              let(:args) { { gitlab_recommended: false } }
+
+              context 'when there are no persisted profiles' do
+                it 'returns empty array' do
+                  profiles = resolve_scan_profiles
+
+                  expect(profiles).to be_empty
+                end
+              end
+
+              context 'when there are mixed persisted profiles' do
+                let_it_be(:recommended_sast) do
+                  create(:security_scan_profile,
+                    namespace: root_group,
+                    scan_type: :sast,
+                    name: 'Recommended SAST',
+                    gitlab_recommended: true)
+                end
+
+                let_it_be(:custom_sast) do
+                  create(:security_scan_profile,
+                    namespace: root_group,
+                    scan_type: :sast,
+                    name: 'Custom SAST',
+                    gitlab_recommended: false)
+                end
+
+                let_it_be(:custom_secret_detection) do
+                  create(:security_scan_profile,
+                    namespace: root_group,
+                    scan_type: :secret_detection,
+                    name: 'Custom Secret Detection',
+                    gitlab_recommended: false)
+                end
+
+                it 'returns only non-recommended profiles without defaults' do
+                  profiles = resolve_scan_profiles
+
+                  expect(profiles).to contain_exactly(custom_sast, custom_secret_detection)
+                  expect(profiles).to all(have_attributes(gitlab_recommended: false))
+                end
+              end
+            end
+          end
+
+          context 'with both type and gitlab_recommended arguments' do
+            let_it_be(:recommended_sast) do
+              create(:security_scan_profile,
+                namespace: root_group,
+                scan_type: :sast,
+                name: 'Recommended SAST',
+                gitlab_recommended: true)
+            end
+
+            let_it_be(:custom_sast) do
+              create(:security_scan_profile,
+                namespace: root_group,
+                scan_type: :sast,
+                name: 'Custom SAST',
+                gitlab_recommended: false)
+            end
+
+            let_it_be(:recommended_secret_detection) do
+              create(:security_scan_profile,
+                namespace: root_group,
+                scan_type: :secret_detection,
+                name: 'Recommended Secret Detection',
+                gitlab_recommended: true)
+            end
+
+            let_it_be(:custom_secret_detection) do
+              create(:security_scan_profile,
+                namespace: root_group,
+                scan_type: :secret_detection,
+                name: 'Custom Secret Detection',
+                gitlab_recommended: false)
+            end
+
+            context 'when filtering for type: sast and gitlab_recommended: true' do
+              let(:args) { { type: 'sast', gitlab_recommended: true } }
+
+              it 'returns only gitlab_recommended profiles of the specified type' do
+                profiles = resolve_scan_profiles
+
+                expect(profiles).to contain_exactly(recommended_sast)
+                expect(profiles).to all(have_attributes(
+                  scan_type: 'sast',
+                  gitlab_recommended: true
+                ))
+              end
+            end
+
+            context 'when filtering for type: secret_detection and gitlab_recommended: false' do
+              let(:args) { { type: 'secret_detection', gitlab_recommended: false } }
+
+              it 'returns only custom profiles of the specified type without defaults' do
+                profiles = resolve_scan_profiles
+
+                expect(profiles).to contain_exactly(custom_secret_detection)
+                expect(profiles).to all(have_attributes(
+                  scan_type: 'secret_detection',
+                  gitlab_recommended: false
+                ))
               end
             end
           end

@@ -33217,6 +33217,7 @@ Returns [`[ScanProfileType!]`](#scanprofiletype).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="groupavailablesecurityscanprofilesgitlabrecommended"></a>`gitlabRecommended` | [`Boolean`](#boolean) | Filter scan profiles by GitLab Recommended. |
 | <a id="groupavailablesecurityscanprofilestype"></a>`type` | [`SecurityScanProfileType`](#securityscanprofiletype) | Filter scan profiles by type. |
 
 ##### `Group.billableMembersCount`
