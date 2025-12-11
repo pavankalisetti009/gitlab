@@ -136,19 +136,29 @@ RSpec.describe Gitlab::Llm::StageCheck, feature_category: :ai_abstraction_layer 
       end
     end
 
-    context 'with agentic_chat_ga feature flag' do
+    context 'with ai_duo_agent_platform_ga_rollout feature flag' do
       let_it_be(:root_group) { create(:group, :private) }
       let_it_be(:project) { create(:project, group: root_group) }
 
-      it 'considers agentic_chat as GA based on the flag' do
+      it 'considers agentic_chat as GA based on the flag under SaaS', :saas do
         stub_licensed_features(agentic_chat: true)
-        stub_feature_flags(agentic_chat_ga: true)
+        stub_feature_flags(ai_duo_agent_platform_ga_rollout: true)
 
         expect(described_class.available?(project, :agentic_chat)).to eq(true)
 
-        stub_feature_flags(agentic_chat_ga: false)
+        stub_feature_flags(ai_duo_agent_platform_ga_rollout: false)
 
-        # Overridden by FF :ai_duo_agent_platform_ga_rollout
+        expect(described_class.available?(project, :agentic_chat)).to eq(false)
+      end
+
+      it 'considers agentic_chat as GA always under Self-Managed' do
+        stub_licensed_features(agentic_chat: true)
+        stub_feature_flags(ai_duo_agent_platform_ga_rollout: true)
+
+        expect(described_class.available?(project, :agentic_chat)).to eq(true)
+
+        stub_feature_flags(ai_duo_agent_platform_ga_rollout: false)
+
         expect(described_class.available?(project, :agentic_chat)).to eq(true)
       end
     end
