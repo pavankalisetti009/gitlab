@@ -76,6 +76,13 @@ RSpec.describe Llm::ChatService, feature_category: :duo_chat do
           it_behaves_like 'track internal event for Duo Chat' do
             let(:feature_enabled_by_namespace_ids) { [] }
           end
+
+          it_behaves_like 'track internal event for Duo Chat' do
+            let(:feature_enabled_by_namespace_ids) { [] }
+            before do
+              stub_feature_flags(no_duo_classic_for_duo_core_users: false)
+            end
+          end
         end
 
         context 'when resource is a user' do
@@ -152,6 +159,13 @@ RSpec.describe Llm::ChatService, feature_category: :duo_chat do
             it_behaves_like 'service emitting message for user prompt'
             it_behaves_like 'track internal event for Duo Chat' do
               let(:feature_enabled_by_namespace_ids) { [group.id] }
+            end
+
+            it_behaves_like 'track internal event for Duo Chat' do
+              let(:feature_enabled_by_namespace_ids) { [group.id] }
+              before do
+                stub_feature_flags(no_duo_classic_for_duo_core_users: false)
+              end
             end
           end
 
