@@ -82,7 +82,7 @@ RSpec.describe API::Commits, feature_category: :source_code_management do
         let(:scopes) { ::Gitlab::Auth::AI_WORKFLOW_SCOPES + ['api'] + ["user:#{user.id}"] }
 
         let(:service_account) do
-          create(:user, :service_account, composite_identity_enforced: true, organization: organization)
+          create(:user, :service_account, composite_identity_enforced: true, organization: organization, organizations: [organization, project.organization])
         end
 
         let(:token) do

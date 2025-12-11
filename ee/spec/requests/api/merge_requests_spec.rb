@@ -357,7 +357,7 @@ RSpec.describe API::MergeRequests, feature_category: :code_review_workflow do
 
     context 'with composite identity' do
       let(:service_account) do
-        create(:user, :service_account, composite_identity_enforced: true, organization: organization)
+        create(:user, :service_account, composite_identity_enforced: true, organization: organization, organizations: [organization, project.organization])
       end
 
       let(:organization) { create(:organization) }

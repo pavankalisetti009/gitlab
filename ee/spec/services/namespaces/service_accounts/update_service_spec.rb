@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Namespaces::ServiceAccounts::UpdateService, feature_category: :user_management do
-  let_it_be(:organization) { create(:organization) }
+  let_it_be(:organization) { create(:common_organization) }
   let_it_be(:other_group) { create(:group, organization: organization) }
   let(:group) { create(:group, organization: organization) }
   let(:admin) { create(:admin) }

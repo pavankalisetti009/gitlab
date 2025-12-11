@@ -6,7 +6,7 @@ RSpec.describe Security::Orchestration::CreateBotService, feature_category: :sec
   let_it_be(:organization) { create(:organization) }
   let_it_be(:group) { create(:group, organization: organization) }
   let_it_be(:project) { create(:project, group: group, organization: organization) }
-  let_it_be(:user) { create(:user) }
+  let_it_be(:user) { create(:user, organization: project.organization) }
   let!(:security_orchestration_policy_configuration) do
     create(:security_orchestration_policy_configuration, project: project)
   end
@@ -262,7 +262,7 @@ RSpec.describe Security::Orchestration::CreateBotService, feature_category: :sec
     end
 
     context 'when a bot user is already assigned' do
-      let_it_be(:bot_user) { create(:user, :security_policy_bot) }
+      let_it_be(:bot_user) { create(:user, :security_policy_bot, organization: project.organization) }
 
       before do
         project.add_guest(bot_user)

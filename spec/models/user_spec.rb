@@ -2228,6 +2228,24 @@ RSpec.describe User, :with_current_organization, feature_category: :user_profile
         expect(described_class.with_feed_token('nonexistent')).to be_empty
       end
     end
+
+    describe '.member_of_organization' do
+      let_it_be(:other_organization) { create(:organization) }
+      let_it_be(:user) { create(:user, organization: other_organization) }
+
+      it 'includes the user' do
+        expect(described_class.member_of_organization(other_organization)).to contain_exactly(user)
+      end
+    end
+  end
+
+  describe '.member_of_organization?' do
+    let_it_be(:other_organization) { create(:organization) }
+    let_it_be(:user) { create(:user, organization: other_organization) }
+
+    it 'includes the user' do
+      expect(user.member_of_organization?(other_organization)).to eq(true)
+    end
   end
 
   context 'strip attributes' do

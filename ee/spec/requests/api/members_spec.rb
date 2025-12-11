@@ -2331,7 +2331,7 @@ RSpec.describe API::Members, feature_category: :groups_and_projects do
 
     RSpec.shared_examples 'creates multiple memberships' do
       before do
-        allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(111)
+        allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(114)
       end
 
       it do

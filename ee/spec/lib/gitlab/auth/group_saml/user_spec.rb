@@ -2,7 +2,7 @@
 require 'spec_helper'
 
 RSpec.describe Gitlab::Auth::GroupSaml::User, :aggregate_failures, feature_category: :system_access do
-  let_it_be(:organization) { create(:organization) }
+  let_it_be(:organization) { create(:common_organization) }
   let(:uid) { '1234' }
   let_it_be(:saml_provider) { create(:saml_provider) }
   let(:group) { saml_provider.group }
