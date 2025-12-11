@@ -60521,7 +60521,7 @@ msgstr ""
 msgid "SecurityOrchestration|API request"
 msgstr ""
 
-msgid "SecurityOrchestration|Acceptable Risk"
+msgid "SecurityOrchestration|Acceptable risk"
 msgstr ""
 
 msgid "SecurityOrchestration|Access tokens (%{count})"
@@ -61100,7 +61100,7 @@ msgstr ""
 msgid "SecurityOrchestration|Merge request pipeline"
 msgstr ""
 
-msgid "SecurityOrchestration|Mitigating Control"
+msgid "SecurityOrchestration|Mitigating control"
 msgstr ""
 
 msgid "SecurityOrchestration|Never"
