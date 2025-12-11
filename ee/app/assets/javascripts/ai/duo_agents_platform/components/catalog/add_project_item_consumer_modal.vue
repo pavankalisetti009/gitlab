@@ -6,12 +6,16 @@ import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import { FLOW_TRIGGER_TYPES } from 'ee/ai/duo_agents_platform/constants';
 import {
   AI_CATALOG_ITEM_LABELS,
+  AI_CATALOG_TYPE_AGENT,
   AI_CATALOG_TYPE_FLOW,
   AI_CATALOG_TYPE_THIRD_PARTY_FLOW,
   AI_CATALOG_CONSUMER_TYPE_GROUP,
   AI_CATALOG_CONSUMER_TYPE_PROJECT,
 } from 'ee/ai/catalog/constants';
 import GroupItemConsumerDropdown from './group_item_consumer_dropdown.vue';
+import AddAgentWarning from './add_agent_warning.vue';
+import AddFlowWarning from './add_flow_warning.vue';
+import AddThirdPartyFlowWarning from './add_third_party_flow_warning.vue';
 
 export default {
   name: 'AddProjectItemConsumerModal',
@@ -23,6 +27,9 @@ export default {
     GlModal,
     ErrorsAlert,
     GroupItemConsumerDropdown,
+    AddAgentWarning,
+    AddFlowWarning,
+    AddThirdPartyFlowWarning,
   },
   props: {
     itemTypes: {
@@ -77,6 +84,15 @@ export default {
         },
       };
     },
+    modalTitle() {
+      if (this.itemTypeLabel) {
+        return sprintf(s__('AICatalog|Enable %{itemType} in your project'), {
+          itemType: this.itemTypeLabel,
+        });
+      }
+
+      return this.modalTexts.title;
+    },
     isGroupItemConsumerValid() {
       return (
         !this.isDirty ||
@@ -86,7 +102,7 @@ export default {
     },
     showTriggers() {
       return [AI_CATALOG_TYPE_FLOW, AI_CATALOG_TYPE_THIRD_PARTY_FLOW].includes(
-        this.selectedGroupItemConsumer.item?.itemType || this.item?.itemType,
+        this.selectedItemType,
       );
     },
     triggersLabelDescription() {
@@ -97,8 +113,11 @@ export default {
         { itemType: this.itemTypeLabel },
       );
     },
+    selectedItemType() {
+      return this.selectedGroupItemConsumer.item?.itemType || this.item?.itemType;
+    },
     itemTypeLabel() {
-      return AI_CATALOG_ITEM_LABELS[this.selectedGroupItemConsumer.item?.itemType] || '';
+      return AI_CATALOG_ITEM_LABELS[this.selectedItemType] || '';
     },
     isTriggersValid() {
       return !this.showTriggers || !this.isDirty || this.triggerTypes.length > 0;
@@ -110,6 +129,14 @@ export default {
     },
     isTargetTypeGroup() {
       return this.targetType === AI_CATALOG_CONSUMER_TYPE_GROUP;
+    },
+    warningComponent() {
+      const warningComponentMap = {
+        [AI_CATALOG_TYPE_AGENT]: AddAgentWarning,
+        [AI_CATALOG_TYPE_FLOW]: AddFlowWarning,
+        [AI_CATALOG_TYPE_THIRD_PARTY_FLOW]: AddThirdPartyFlowWarning,
+      };
+      return warningComponentMap[this.selectedItemType];
     },
   },
   methods: {
@@ -156,7 +183,7 @@ export default {
   <gl-modal
     ref="modal"
     :modal-id="modalId"
-    :title="modalTexts.title"
+    :title="modalTitle"
     :action-primary="modal.actionPrimary"
     :action-cancel="modal.actionCancel"
     @primary.prevent
@@ -208,5 +235,6 @@ export default {
         </gl-form-checkbox-group>
       </gl-form-group>
     </gl-form>
+    <component :is="warningComponent" v-if="warningComponent" />
   </gl-modal>
 </template>

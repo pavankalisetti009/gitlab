@@ -2,12 +2,20 @@ import { GlForm, GlFormCheckbox, GlFormCheckboxGroup, GlModal } from '@gitlab/ui
 import { shallowMount } from '@vue/test-utils';
 import AddProjectItemConsumerModal from 'ee/ai/duo_agents_platform/components/catalog/add_project_item_consumer_modal.vue';
 import GroupItemConsumerDropdown from 'ee/ai/duo_agents_platform/components/catalog/group_item_consumer_dropdown.vue';
+import AddAgentWarning from 'ee/ai/duo_agents_platform/components/catalog/add_agent_warning.vue';
+import AddFlowWarning from 'ee/ai/duo_agents_platform/components/catalog/add_flow_warning.vue';
+import AddThirdPartyFlowWarning from 'ee/ai/duo_agents_platform/components/catalog/add_third_party_flow_warning.vue';
 import {
   mockAgentItemConsumer,
   mockFlowItemConsumer,
   mockThirdPartyFlowItemConsumer,
   mockFlow,
 } from 'ee_jest/ai/catalog/mock_data';
+import {
+  AI_CATALOG_TYPE_AGENT,
+  AI_CATALOG_TYPE_FLOW,
+  AI_CATALOG_TYPE_THIRD_PARTY_FLOW,
+} from 'ee/ai/catalog/constants';
 import { stubComponent } from 'helpers/stub_component';
 
 describe('AddProjectItemConsumerModal', () => {
@@ -51,7 +59,7 @@ describe('AddProjectItemConsumerModal', () => {
   describe('component rendering', () => {
     it('renders modal', () => {
       expect(findModal().props()).toMatchObject({
-        title: 'Enable flow from group',
+        title: 'Enable flow in your project',
         actionPrimary: {
           text: 'Enable',
           attributes: {
@@ -218,4 +226,24 @@ describe('AddProjectItemConsumerModal', () => {
       });
     });
   });
+
+  describe.each`
+    selectedItemType                    | warningComponent
+    ${AI_CATALOG_TYPE_AGENT}            | ${AddAgentWarning}
+    ${AI_CATALOG_TYPE_FLOW}             | ${AddFlowWarning}
+    ${AI_CATALOG_TYPE_THIRD_PARTY_FLOW} | ${AddThirdPartyFlowWarning}
+  `(
+    'when the selected item type is $selectedItemType',
+    ({ selectedItemType, warningComponent }) => {
+      it('renders the correct warning component', async () => {
+        const itemConsumer = {
+          item: {
+            itemType: selectedItemType,
+          },
+        };
+        await findGroupItemConsumerDropdown().vm.$emit('input', itemConsumer);
+        expect(wrapper.findComponent(warningComponent).exists()).toBe(true);
+      });
+    },
+  );
 });

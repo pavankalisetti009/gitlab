@@ -155,7 +155,7 @@ export const DELETE_OPTIONS = [
 ];
 
 export const ENABLE_AGENT_MODAL_TEXTS = {
-  title: s__('AICatalog|Enable agent from group'),
+  title: s__('AICatalog|Enable agent in your project'),
   label: s__('AICatalog|Agent'),
   labelDescription: s__('AICatalog|Only agents enabled in your top-level group are shown.'),
   invalidFeedback: s__('AICatalog|Agent is required.'),
@@ -166,7 +166,7 @@ export const ENABLE_AGENT_MODAL_TEXTS = {
   },
 };
 export const ENABLE_FLOW_MODAL_TEXTS = {
-  title: s__('AICatalog|Enable flow from group'),
+  title: s__('AICatalog|Enable flow in your project'),
   label: s__('AICatalog|Flow'),
   labelDescription: s__('AICatalog|Only flows enabled in your top-level group are shown.'),
   invalidFeedback: s__('AICatalog|Flow is required.'),

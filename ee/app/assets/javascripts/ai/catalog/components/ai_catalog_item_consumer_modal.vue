@@ -3,6 +3,9 @@ import { uniqueId } from 'lodash';
 import { GlAlert, GlForm, GlFormGroup, GlModal, GlSprintf } from '@gitlab/ui';
 import { __, s__, sprintf } from '~/locale';
 import {
+  AI_CATALOG_TYPE_AGENT,
+  AI_CATALOG_TYPE_FLOW,
+  AI_CATALOG_TYPE_THIRD_PARTY_FLOW,
   AI_CATALOG_ITEM_LABELS,
   AI_CATALOG_CONSUMER_TYPE_GROUP,
   AI_CATALOG_CONSUMER_TYPE_PROJECT,
@@ -12,6 +15,9 @@ import {
 } from '../constants';
 import FormGroupDropdown from './form_group_dropdown.vue';
 import FormProjectDropdown from './form_project_dropdown.vue';
+import AddGroupFlowWarning from './add_group_flow_warning.vue';
+import AddGroupAgentWarning from './add_group_agent_warning.vue';
+import AddGroupThirdPartyFlowWarning from './add_group_third_party_flow_warning.vue';
 
 export default {
   name: 'AiCatalogItemConsumerModal',
@@ -23,6 +29,9 @@ export default {
     GlFormGroup,
     GlModal,
     GlSprintf,
+    AddGroupFlowWarning,
+    AddGroupAgentWarning,
+    AddGroupThirdPartyFlowWarning,
   },
   props: {
     item: {
@@ -122,6 +131,14 @@ export default {
     },
     isTargetTypeGroup() {
       return this.targetType === AI_CATALOG_CONSUMER_TYPE_GROUP;
+    },
+    warningComponent() {
+      const warningComponentMap = {
+        [AI_CATALOG_TYPE_FLOW]: AddGroupFlowWarning,
+        [AI_CATALOG_TYPE_AGENT]: AddGroupAgentWarning,
+        [AI_CATALOG_TYPE_THIRD_PARTY_FLOW]: AddGroupThirdPartyFlowWarning,
+      };
+      return warningComponentMap[this.item.itemType];
     },
   },
   methods: {
@@ -243,5 +260,6 @@ export default {
         </gl-form-group>
       </div>
     </gl-form>
+    <component :is="warningComponent" v-if="warningComponent" />
   </gl-modal>
 </template>
