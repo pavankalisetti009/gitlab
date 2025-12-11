@@ -22,6 +22,7 @@ describe('getPipelineReportOptions', () => {
       hasJiraVulnerabilitiesIntegrationEnabled: false,
       hasVulnerabilities: true,
       noVulnerabilitiesSvgPath: '/noVulnerabilitiesSvgPath',
+      customizeJiraIssueEnabled: true,
     });
   });
 

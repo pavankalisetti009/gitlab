@@ -9,4 +9,5 @@ export const dataset = {
   canViewFalsePositive: 'true',
   hasVulnerabilities: 'true',
   noVulnerabilitiesSvgPath: '/noVulnerabilitiesSvgPath',
+  customizeJiraIssueEnabled: 'true',
 };

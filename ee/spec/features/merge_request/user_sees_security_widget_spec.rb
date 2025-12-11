@@ -185,4 +185,24 @@ RSpec.describe "Merge request > User sees security widget",
       "/#{project.path_with_namespace}/-/commit/$COMMIT_SHA"
     )
   end
+
+  context 'when there is a jira integration' do
+    let(:jira_integration) do
+      create(:jira_integration,
+        project: project,
+        issues_enabled: true,
+        project_key: 'FE',
+        project_keys: %w[FE BE],
+        vulnerabilities_enabled: true,
+        vulnerabilities_issuetype: '10001',
+        customize_jira_issue_enabled: false)
+    end
+
+    it 'sets customize_jira_issue_enabled' do
+      allow(project).to receive(:jira_integration).and_return(jira_integration)
+
+      visit(merge_request_path)
+      expect(page.evaluate_script('window.gl.mrWidgetData.customize_jira_issue_enabled')).to match('false')
+    end
+  end
 end

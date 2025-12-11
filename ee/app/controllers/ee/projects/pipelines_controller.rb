@@ -22,6 +22,8 @@ module EE
               user: current_user
             )
           end
+
+          push_frontend_feature_flag(:finding_create_jira_issue_form_url, project)
         end
 
         feature_category :software_composition_analysis, [:licenses, :license_count]
