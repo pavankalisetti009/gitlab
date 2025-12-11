@@ -307,10 +307,9 @@ RSpec.describe AutoMerge::AddToMergeTrainWhenChecksPassService, feature_category
       it { is_expected.to be(true) }
     end
 
-    context 'when merge request is mergeable and pipeline is not in progress and not being created' do
+    context 'when merge request is mergeable and pipeline is not in progress' do
       before do
-        allow(merge_request).to receive_messages(mergeable?: true, diff_head_pipeline_considered_in_progress?: false,
-          pipeline_creating?: false)
+        allow(merge_request).to receive_messages(mergeable?: true, diff_head_pipeline_considered_in_progress?: false)
       end
 
       it { is_expected.to be(false) }
@@ -411,10 +410,9 @@ RSpec.describe AutoMerge::AddToMergeTrainWhenChecksPassService, feature_category
       end
     end
 
-    context 'when merge request is mergeable and pipeline is not in progress and not being created' do
+    context 'when merge request is mergeable and pipeline is not in progress' do
       before do
-        allow(merge_request).to receive_messages(mergeable?: true, diff_head_pipeline_considered_in_progress?: false,
-          pipeline_creating?: false)
+        allow(merge_request).to receive_messages(mergeable?: true, diff_head_pipeline_considered_in_progress?: false)
       end
 
       it 'is unavailable and returns the correct reason' do

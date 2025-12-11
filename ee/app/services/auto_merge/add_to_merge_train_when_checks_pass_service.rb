@@ -63,8 +63,7 @@ module AutoMerge
         default_error = AutoMerge::AvailabilityCheck.error
         next default_error unless merge_request.has_ci_enabled?
 
-        next default_error if merge_request.mergeable? && !merge_request.diff_head_pipeline_considered_in_progress? &&
-          !merge_request.pipeline_creating?
+        next default_error if merge_request.mergeable? && !merge_request.diff_head_pipeline_considered_in_progress?
 
         unless merge_request.project.merge_trains_enabled?
           next AutoMerge::AvailabilityCheck.error(unavailable_reason: :merge_trains_disabled)
