@@ -36,6 +36,8 @@ describe('AgentFlowInfo', () => {
         executorUrl: 'https://gitlab.com/gitlab-org/gitlab/-/jobs/123',
         createdAt: '2023-01-01T00:00:00Z',
         updatedAt: '2024-01-01T00:00:00Z',
+        workflowId: '4545',
+        canUpdateWorkflow: true,
         project: {
           id: 'gid://gitlab/Project/1',
           name: 'Test Project',
@@ -65,6 +67,7 @@ describe('AgentFlowInfo', () => {
   const findListItemTitles = () => wrapper.findAll('[data-testid="info-title"]');
   const findListItemValues = () => wrapper.findAll('[data-testid="info-value"]');
   const findSkeletonLoaders = () => wrapper.findAllComponents(GlSkeletonLoader);
+  const findCancelButton = () => wrapper.find('[data-testid="cancel-session-button"]');
   const findLinks = () => wrapper.findAllComponents(GlLink);
   const findBadge = () => wrapper.findComponent(GlBadge);
 
@@ -256,6 +259,58 @@ describe('AgentFlowInfo', () => {
 
       it('does not call the date formatter for invalid dates', () => {
         expect(mockDateTimeFormatter.format).not.toHaveBeenCalled();
+      });
+    });
+  });
+
+  describe('Cancel session button', () => {
+    describe('when session can be cancelled', () => {
+      it.each`
+        status                           | description
+        ${'CREATED'}                     | ${'created status'}
+        ${'RUNNING'}                     | ${'running status'}
+        ${'PAUSED'}                      | ${'paused status'}
+        ${'INPUT_REQUIRED'}              | ${'input_required status'}
+        ${'PLAN_APPROVAL_REQUIRED'}      | ${'plan_approval_required status'}
+        ${'TOOL_CALL_APPROVAL_REQUIRED'} | ${'tool_call_approval_required status'}
+      `('shows cancel button for $description', ({ status }) => {
+        createComponent({ status });
+
+        expect(findCancelButton().exists()).toBe(true);
+        expect(findCancelButton().text()).toBe('Cancel session');
+        expect(findCancelButton().attributes('variant')).toBe('danger');
+        expect(findCancelButton().props().disabled).toBe(false);
+      });
+
+      it('emits cancel-session event when clicked', async () => {
+        createComponent({ status: 'RUNNING' });
+
+        await findCancelButton().vm.$emit('click');
+
+        expect(wrapper.emitted('cancel-session')).toHaveLength(1);
+      });
+    });
+
+    describe('when session cannot be cancelled', () => {
+      it.each`
+        status        | description
+        ${'FINISHED'} | ${'finished status'}
+        ${'FAILED'}   | ${'failed status'}
+      `('does not show cancel button for $description', ({ status }) => {
+        createComponent({ status });
+
+        expect(findCancelButton().exists()).toBe(false);
+      });
+    });
+
+    describe('when user lacks permission to cancel', () => {
+      beforeEach(() => {
+        createComponent({ status: 'RUNNING', canUpdateWorkflow: false });
+      });
+
+      it('shows cancel button disabled', () => {
+        expect(findCancelButton().exists()).toBe(true);
+        expect(findCancelButton().props('disabled')).toBe(true);
       });
     });
   });

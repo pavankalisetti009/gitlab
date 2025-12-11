@@ -1,17 +1,22 @@
 <script>
-import { GlBadge, GlLink, GlSkeletonLoader } from '@gitlab/ui';
+import { GlBadge, GlButton, GlLink, GlSkeletonLoader, GlTooltipDirective } from '@gitlab/ui';
 import { __, s__ } from '~/locale';
 import { localeDateFormat } from '~/lib/utils/datetime/locale_dateformat';
 import { joinPaths } from '~/lib/utils/url_utility';
 import { getAgentStatusBadge } from '../../../utils';
+import { AGENT_PLATFORM_CANCELABLE_STATUSES } from '../../../constants';
 
 const AGENT_SESSIONS_PATH = '/-/automate/agent-sessions';
 
 export default {
   components: {
     GlBadge,
+    GlButton,
     GlLink,
     GlSkeletonLoader,
+  },
+  directives: {
+    GlTooltip: GlTooltipDirective,
   },
   props: {
     isLoading: {
@@ -49,7 +54,12 @@ export default {
       type: Object,
       required: true,
     },
+    canUpdateWorkflow: {
+      type: Boolean,
+      required: true,
+    },
   },
+  emits: ['cancel-session'],
   computed: {
     itemStatus() {
       return getAgentStatusBadge(this.status);
@@ -68,6 +78,14 @@ export default {
       return sessionId && projectUrl
         ? joinPaths(projectUrl, `${AGENT_SESSIONS_PATH}/${sessionId}`)
         : '';
+    },
+    canCancelSession() {
+      return AGENT_PLATFORM_CANCELABLE_STATUSES.includes(this.status);
+    },
+    buttonTooltip() {
+      return this.canUpdateWorkflow
+        ? ''
+        : s__('DuoAgentsPlatform|You do not have permission to cancel this session.');
     },
     payload() {
       return [
@@ -162,6 +180,22 @@ export default {
           </template>
         </li>
       </ul>
+    </div>
+
+    <div v-if="canCancelSession" class="gl-border-t gl-pl-4 gl-pt-4">
+      <div class="gl-flex gl-gap-3">
+        <span v-gl-tooltip="buttonTooltip">
+          <gl-button
+            category="secondary"
+            variant="danger"
+            :disabled="!canUpdateWorkflow"
+            data-testid="cancel-session-button"
+            @click="$emit('cancel-session')"
+          >
+            {{ s__('DuoAgentsPlatform|Cancel session') }}
+          </gl-button>
+        </span>
+      </div>
     </div>
   </div>
 </template>

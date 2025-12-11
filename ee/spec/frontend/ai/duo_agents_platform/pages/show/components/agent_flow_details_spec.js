@@ -13,12 +13,15 @@ describe('AgentFlowDetails', () => {
   const defaultProps = {
     isLoading: false,
     status: 'RUNNING',
+    humanStatus: 'Running',
     agentFlowDefinition: 'software_development',
     duoMessages: mockDuoMessages,
     executorUrl: 'https://gitlab.com/gitlab-org/gitlab/-/jobs/123',
     createdAt: '2023-01-01T00:54:00Z',
     updatedAt: '2024-01-02T00:34:00Z',
     userId: 'gid://gitlab/User/1',
+    workflowId: '123',
+    canUpdateWorkflow: true,
     project: {
       id: 'gid://gitlab/Project/1',
       name: 'Test Project',
@@ -39,6 +42,10 @@ describe('AgentFlowDetails', () => {
       provide: {
         isSidePanelView: false,
         ...provide,
+      },
+      stubs: {
+        GlTabs: true,
+        GlTab: true,
       },
     });
   };
@@ -99,11 +106,13 @@ describe('AgentFlowDetails', () => {
       expect(findAgentFlowInfo().props()).toEqual({
         isLoading: false,
         status: defaultProps.status,
+        humanStatus: defaultProps.humanStatus,
         agentFlowDefinition: defaultProps.agentFlowDefinition,
         executorUrl: defaultProps.executorUrl,
         createdAt: '2023-01-01T00:54:00Z',
         updatedAt: '2024-01-02T00:34:00Z',
         project: defaultProps.project,
+        canUpdateWorkflow: true,
       });
     });
 

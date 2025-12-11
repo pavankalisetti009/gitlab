@@ -5,6 +5,9 @@ fragment FlowFragment on DuoWorkflow {
   updatedAt
   workflowDefinition
   userId
+  userPermissions {
+    updateDuoWorkflow
+  }
   project {
     id
     name

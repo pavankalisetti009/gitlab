@@ -1,9 +1,11 @@
 import { shallowMount } from '@vue/test-utils';
-import Vue from 'vue';
+import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
+import axios from '~/lib/utils/axios_utils';
 
 import DuoAgentsPlatformShow from 'ee/ai/duo_agents_platform/pages/show/duo_agents_platform_show.vue';
 import AgentFlowDetails from 'ee/ai/duo_agents_platform/pages/show/components/agent_flow_details.vue';
+import AgentFlowCancelationModal from 'ee/ai/duo_agents_platform/pages/show/components/agent_flow_cancelation_modal.vue';
 import { DUO_AGENTS_PLATFORM_POLLING_INTERVAL } from 'ee/ai/duo_agents_platform/constants';
 import { getAgentFlow } from 'ee/ai/duo_agents_platform/graphql/queries/get_agent_flow.query.graphql';
 
@@ -18,6 +20,7 @@ import { mockGetAgentFlowResponse, mockDuoMessages } from '../../../mocks';
 
 Vue.use(VueApollo);
 jest.mock('~/alert');
+jest.mock('~/lib/utils/axios_utils');
 
 describe('DuoAgentsPlatformShow', () => {
   let wrapper;
@@ -49,6 +52,7 @@ describe('DuoAgentsPlatformShow', () => {
   };
 
   const findAgentFlowDetails = () => wrapper.findComponent(AgentFlowDetails);
+  const findCancelConfirmationModal = () => wrapper.findComponent(AgentFlowCancelationModal);
 
   beforeEach(() => {
     getAgentFlowHandler = jest.fn().mockResolvedValue(mockGetAgentFlowResponse);
@@ -78,6 +82,7 @@ describe('DuoAgentsPlatformShow', () => {
         agentFlowDefinition: 'Software development',
         duoMessages: mockDuoMessages,
         project: mockGetAgentFlowResponse.data.duoWorkflowWorkflows.edges[0].node.project,
+        canUpdateWorkflow: true,
       });
     });
   });
@@ -126,7 +131,7 @@ describe('DuoAgentsPlatformShow', () => {
         });
 
         it('calls createAlert with the error message', () => {
-          expect(createAlert).toHaveBeenCalledWith({ message: errorMessage });
+          expect(createAlert).toHaveBeenCalledWith({ message: errorMessage, captureError: true });
         });
       });
 
@@ -139,6 +144,7 @@ describe('DuoAgentsPlatformShow', () => {
         it('calls createAlert with default error message', () => {
           expect(createAlert).toHaveBeenCalledWith({
             message: 'Something went wrong while fetching Agent Flows',
+            captureError: true,
           });
         });
       });
@@ -188,6 +194,124 @@ describe('DuoAgentsPlatformShow', () => {
 
       expect(getAgentFlowHandler).toHaveBeenCalledWith({
         workflowId: convertToGraphQLId(TYPENAME_AI_DUO_WORKFLOW, customWorkflowId),
+      });
+    });
+  });
+
+  describe('Cancel session functionality', () => {
+    beforeEach(async () => {
+      await createWrapper();
+    });
+
+    describe('confirmation modal', () => {
+      it('renders the cancel session confirmation modal', () => {
+        expect(findCancelConfirmationModal().exists()).toBe(true);
+        expect(findCancelConfirmationModal().props('visible')).toBe(false);
+        expect(findCancelConfirmationModal().props('loading')).toBe(false);
+      });
+
+      it('shows modal when cancel-session event is emitted from AgentFlowDetails', async () => {
+        findAgentFlowDetails().vm.$emit('cancel-session');
+        await nextTick();
+
+        expect(findCancelConfirmationModal().props('visible')).toBe(true);
+      });
+
+      it('hides modal when hide event is emitted', async () => {
+        findAgentFlowDetails().vm.$emit('cancel-session');
+        await nextTick();
+
+        expect(findCancelConfirmationModal().props('visible')).toBe(true);
+
+        findCancelConfirmationModal().vm.$emit('hide');
+        await nextTick();
+
+        expect(findCancelConfirmationModal().props('visible')).toBe(false);
+      });
+    });
+
+    describe('session cancellation', () => {
+      beforeEach(async () => {
+        axios.patch = jest.fn();
+        getAgentFlowHandler.mockClear();
+        await createWrapper();
+      });
+
+      it('calls API to cancel session when confirmed', async () => {
+        axios.patch.mockResolvedValue({ data: { status: 'STOPPED' } });
+
+        findAgentFlowDetails().vm.$emit('cancel-session');
+        await nextTick();
+
+        expect(findCancelConfirmationModal().props('visible')).toBe(true);
+
+        findCancelConfirmationModal().vm.$emit('confirm');
+        await waitForPromises();
+
+        expect(axios.patch).toHaveBeenCalledWith('/api/v4/ai/duo_workflows/workflows/1', {
+          status_event: 'stop',
+        });
+        expect(findCancelConfirmationModal().props('visible')).toBe(false);
+      });
+
+      it('shows success alert and refetches data on successful cancellation', async () => {
+        axios.patch.mockResolvedValue({ data: { status: 'STOPPED' } });
+
+        findAgentFlowDetails().vm.$emit('cancel-session');
+        await nextTick();
+
+        findCancelConfirmationModal().vm.$emit('confirm');
+        await waitForPromises();
+
+        expect(createAlert).toHaveBeenCalledWith({
+          message: 'Session has been cancelled successfully.',
+          variant: 'success',
+        });
+        expect(getAgentFlowHandler).toHaveBeenCalledTimes(1);
+      });
+
+      it('shows error alert on API failure', async () => {
+        const errorMessage = 'Failed to cancel';
+        axios.patch.mockRejectedValue({
+          response: {
+            status: 422,
+            data: { message: errorMessage },
+          },
+        });
+
+        findAgentFlowDetails().vm.$emit('cancel-session');
+        await nextTick();
+
+        findCancelConfirmationModal().vm.$emit('confirm');
+        await waitForPromises();
+
+        expect(createAlert).toHaveBeenCalledWith({
+          message: errorMessage,
+          captureError: true,
+          variant: 'danger',
+        });
+      });
+
+      it('shows loading state during cancellation', async () => {
+        let resolveRequest;
+        axios.patch.mockImplementation(
+          () =>
+            new Promise((resolve) => {
+              resolveRequest = resolve;
+            }),
+        );
+
+        findAgentFlowDetails().vm.$emit('cancel-session');
+        await nextTick();
+
+        const cancelPromise = findCancelConfirmationModal().vm.$emit('confirm');
+        await nextTick();
+
+        expect(findCancelConfirmationModal().props('loading')).toBe(true);
+
+        // Resolve the promise to clean up
+        resolveRequest({ data: { status: 'STOPPED' } });
+        await cancelPromise;
       });
     });
   });
