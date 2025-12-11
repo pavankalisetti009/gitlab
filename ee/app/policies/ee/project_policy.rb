@@ -1228,14 +1228,14 @@ module EE
         enable :trigger_ai_flow
       end
 
-      condition(:ai_settings_prevent_execute) do
+      condition(:ai_settings_prevent_execute_async) do
         customizable_permissions_enabled? &&
           @subject.root_ancestor.is_a?(Group) &&
           !can?(:admin_organization, @subject.organization) &&
-          team_access_level < @subject.root_ancestor.minimum_access_level_to_execute
+          team_access_level < @subject.root_ancestor.ai_minimum_access_level_to_execute_async
       end
 
-      rule { ai_settings_prevent_execute }.prevent :trigger_ai_flow
+      rule { ai_settings_prevent_execute_async }.prevent :trigger_ai_flow
 
       rule { can?(:read_project) & duo_features_enabled }.enable :access_duo_features
 
