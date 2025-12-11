@@ -47,6 +47,9 @@ export default {
     aiImpactDashboardEnabled: {
       default: false,
     },
+    showLegalDisclaimer: {
+      default: false,
+    },
   },
   props: {
     isBeta: {
@@ -86,6 +89,11 @@ export default {
   TRACKING_LABEL_AI_CATALOG_HEADER,
   AI_IMPACT_DASHBOARD,
   AI_IMPACT_DASHBOARD_POPOVER_TARGET_ID: uniqueId('dashboard-link'),
+  i18n: {
+    legalDisclaimer: s__(
+      'AICatalog|This catalog contains third-party content that may be subject to additional terms. GitLab does not control or assume liability for third-party content.',
+    ),
+  },
 };
 </script>
 
@@ -137,6 +145,10 @@ export default {
         </div>
       </template>
     </page-heading>
+    <p v-if="showLegalDisclaimer" data-testid="legal-disclaimer" class="gl-text-sm gl-text-subtle">
+      {{ $options.i18n.legalDisclaimer }}
+    </p>
+
     <div v-if="isGlobal" class="gl-border-b gl-flex">
       <ai-catalog-nav-tabs />
       <ai-catalog-nav-actions can-admin />

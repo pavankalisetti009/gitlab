@@ -17,7 +17,7 @@ export const initAiCatalog = (selector = '#js-ai-catalog') => {
   }
 
   const { dataset } = el;
-  const { aiCatalogIndexPath, aiImpactDashboardEnabled } = dataset;
+  const { aiCatalogIndexPath, aiImpactDashboardEnabled, showLegalDisclaimer } = dataset;
 
   Vue.use(VueApollo);
   Vue.use(GlToast);
@@ -38,6 +38,7 @@ export const initAiCatalog = (selector = '#js-ai-catalog') => {
     provide: {
       isGlobal: true,
       aiImpactDashboardEnabled: parseBoolean(aiImpactDashboardEnabled),
+      showLegalDisclaimer: parseBoolean(showLegalDisclaimer),
     },
     render(h) {
       return h(AiCatalogApp);

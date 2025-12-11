@@ -62,4 +62,23 @@ RSpec.describe 'AI Catalog', :js, :with_current_organization, feature_category: 
       end
     end
   end
+
+  describe 'legal disclaimer' do
+    before do
+      sign_in(user)
+      visit explore_ai_catalog_path
+    end
+
+    context 'when on Gitlab.com', :saas do
+      it 'shows legal disclaimer on GitLab.com' do
+        expect(page).to have_content('This catalog contains third-party content')
+      end
+    end
+
+    context 'when not on Gitlab.com' do
+      it 'does not show legal disclaimer' do
+        expect(page).not_to have_content('This catalog contains third-party content')
+      end
+    end
+  end
 end
