@@ -9,6 +9,23 @@ RSpec.describe Geo::Scheduler::SchedulerWorker, :geo, feature_category: :geo_rep
     expect(described_class).to include_module(::Gitlab::Geo::LogHelpers)
   end
 
+  describe '#perform' do
+    context 'when backoff delay is in effect' do
+      it 'logs reason as backoff_in_effect' do
+        allow(subject).to receive(:try_obtain_lease).and_yield
+        allow(subject).to receive_messages(node_enabled?: true, should_be_skipped?: true)
+
+        expect(subject).to receive(:log_info).with('Started scheduler')
+        expect(subject).to receive(:log_info).with(
+          'Finished scheduler',
+          hash_including(reason: :backoff_in_effect)
+        )
+
+        subject.perform
+      end
+    end
+  end
+
   it 'needs many other specs'
 
   describe '#take_batch' do

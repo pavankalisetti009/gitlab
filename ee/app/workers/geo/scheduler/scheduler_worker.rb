@@ -53,7 +53,7 @@ module Geo
           begin
             reason = loop do
               break :node_disabled unless node_enabled?
-              break :skipped       if should_be_skipped?
+              break :backoff_in_effect if should_be_skipped?
 
               update_jobs_in_progress
               update_pending_resources
