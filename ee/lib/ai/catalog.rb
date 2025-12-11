@@ -5,10 +5,21 @@ module Ai
     class << self
       def available?(user)
         feature_available?(user) && # rubocop:disable Gitlab/FeatureAvailableUsage -- Not a license check
+          duo_agent_platform_available_for_user?(user) &&
           user_can_access_experimental_ai_catalog_features?(user)
       end
 
       private
+
+      def duo_agent_platform_available_for_user?(user)
+        return false unless user
+
+        # For GitLab.com, return true until logic has been implemented
+        return true if saas?
+
+        # On self-managed/dedicated, check instance-level setting
+        ::Ai::Setting.instance.duo_agent_platform_enabled
+      end
 
       def feature_available?(user)
         return false unless ::Feature.enabled?(:global_ai_catalog, user)

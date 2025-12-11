@@ -182,6 +182,49 @@ RSpec.describe Ai::DuoWorkflow, feature_category: :ai_abstraction_layer do
     end
   end
 
+  describe '#duo_agent_platform_available?' do
+    let(:application_setting) { instance_double(Ai::Setting) }
+    let(:duo_agent_platform_enabled) { nil }
+    let(:ai_setting) { ::Ai::Setting.instance }
+
+    context 'when on GitLab.com (SaaS)', :saas do
+      subject(:duo_agent_platform_available) { described_class.duo_agent_platform_available? }
+
+      it { is_expected.to be true }
+    end
+
+    context 'when on a self-managed or dedicated instance' do
+      before do
+        ai_setting.update!(feature_settings: { duo_agent_platform_enabled: duo_agent_platform_enabled })
+      end
+
+      context 'when application setting is true' do
+        let(:duo_agent_platform_enabled) { true }
+
+        subject(:duo_agent_platform_available) { described_class.duo_agent_platform_available? }
+
+        it { is_expected.to be true }
+      end
+
+      context 'when application setting is false' do
+        let(:duo_agent_platform_enabled) { false }
+
+        subject(:duo_agent_platform_available) { described_class.duo_agent_platform_available? }
+
+        it { is_expected.to be false }
+      end
+
+      context 'with container parameter (ignored on self-managed)' do
+        let(:group) { create(:group) }
+        let(:duo_agent_platform_enabled) { true }
+
+        subject(:duo_agent_platform_available) { described_class.duo_agent_platform_available?(group) }
+
+        it { is_expected.to be true }
+      end
+    end
+  end
+
   describe '#ensure_service_account_unblocked!' do
     let_it_be(:current_user) { create(:user, :admin) }
     let_it_be_with_reload(:blocked_service_account) { create(:user, :service_account, :blocked) }

@@ -46,6 +46,9 @@ module EE
             ::License.feature_available?(:disable_private_profiles)
           end
           expose :duo_features_enabled, if: ->(_instance, _opts) { ::License.ai_features_available? }
+          expose :duo_agent_platform_enabled, if: ->(_instance, _opts) { ::License.ai_features_available? } do |_instance|
+            ::Ai::Setting.instance.duo_agent_platform_enabled
+          end
           expose :lock_duo_features_enabled, if: ->(_instance, _opts) { ::License.ai_features_available? }
           expose :enabled_expanded_logging, if: ->(_instance, _opts) { ::License.ai_features_available? }
           expose :foundational_agents_default_enabled, if: ->(_instance, _opts) { ::License.ai_features_available? }

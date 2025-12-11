@@ -388,6 +388,20 @@ RSpec.describe ApplicationSettings::UpdateService, feature_category: :shared do
       it_behaves_like 'when updating duo settings', :duo_sast_fp_detection_enabled, false
     end
 
+    context 'when updating duo_agent_platform_enabled' do
+      let(:opts) { { duo_agent_platform_enabled: false } }
+
+      before do
+        setting.update!(duo_agent_platform_enabled: true)
+      end
+
+      it 'updates the setting' do
+        service.execute
+
+        expect(setting.reload.duo_agent_platform_enabled).to be false
+      end
+    end
+
     context 'when updating auto_duo_code_review_enabled' do
       let(:params) { { auto_duo_code_review_enabled: true } }
       let(:service) { described_class.new(setting, user, params) }

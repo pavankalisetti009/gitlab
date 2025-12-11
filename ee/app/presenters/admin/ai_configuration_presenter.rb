@@ -20,6 +20,7 @@ module Admin
     delegate :ai_gateway_url,
       :ai_gateway_timeout_seconds,
       :duo_agent_platform_service_url,
+      :duo_agent_platform_enabled,
       :duo_core_features_enabled?,
       :foundational_agents_default_enabled,
       to: :ai_settings
@@ -36,6 +37,7 @@ module Admin
         can_manage_self_hosted_models: can_manage_self_hosted_models?,
         disabled_direct_connection_method: disabled_direct_code_suggestions?,
         duo_availability: duo_availability,
+        duo_agent_platform_enabled: duo_agent_platform_enabled,
         duo_remote_flows_availability: duo_remote_flows_availability,
         duo_foundational_flows_availability: duo_foundational_flows_availability,
         duo_chat_expiration_column: duo_chat_expiration_column,

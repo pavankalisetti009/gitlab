@@ -72,6 +72,7 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
         disabled_direct_code_suggestions: false,
         duo_chat_expiration_column: 'last_updated_at',
         duo_chat_expiration_days: 30,
+        duo_agent_platform_enabled: true,
         duo_workflow_oauth_application_id: nil,
         elastic_migration_worker_enabled: true,
         elasticsearch_analyzers_kuromoji_enabled: false,
