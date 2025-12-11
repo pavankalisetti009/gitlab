@@ -35,6 +35,7 @@ export default {
     'foundationalAgentsDefaultEnabled',
     'initialFoundationalAgentsStatuses',
     'initialSelectedFoundationalFlowIds',
+    'initialDuoAgentPlatformEnabled',
   ],
   props: {
     hasParentFormChanged: {
@@ -55,6 +56,7 @@ export default {
       foundationalAgentsEnabled: this.foundationalAgentsDefaultEnabled,
       selectedFlowIds: this.initialSelectedFoundationalFlowIds || [],
       foundationalAgentsStatuses: this.initialFoundationalAgentsStatuses,
+      duoAgentPlatformEnabled: this.initialDuoAgentPlatformEnabled,
     };
   },
   methods: {
@@ -70,6 +72,7 @@ export default {
         foundationalAgentsEnabled: this.foundationalAgentsEnabled,
         foundationalAgentsStatuses: this.foundationalAgentsStatuses,
         selectedFoundationalFlowIds: this.selectedFlowIds,
+        duoAgentPlatformEnabled: this.duoAgentPlatformEnabled,
       });
     },
     onRadioChanged(value) {
@@ -92,6 +95,9 @@ export default {
     },
     onFoundationalAgentsEnabledChanged(value) {
       this.foundationalAgentsEnabled = value;
+    },
+    onDuoAgentPlatformEnabledChanged(value) {
+      this.duoAgentPlatformEnabled = value;
     },
     onDuoSastFpDetectionChanged(value) {
       this.duoSastFpDetectionAvailability = value;
@@ -135,6 +141,7 @@ export default {
             :duo-core-features-enabled="duoCoreFeaturesEnabled"
             :prompt-cache-enabled="promptCacheEnabled"
             :has-parent-form-changed="hasParentFormChanged"
+            :duo-agent-platform-enabled="initialDuoAgentPlatformEnabled"
             :foundational-agents-enabled="foundationalAgentsDefaultEnabled"
             :foundational-agents-statuses="foundationalAgentsStatuses"
             @submit="submitForm"
@@ -144,6 +151,7 @@ export default {
             @cache-checkbox-changed="onCacheCheckboxChanged"
             @duo-flow-checkbox-changed="onDuoFlowChanged"
             @duo-sast-fp-detection-changed="onDuoSastFpDetectionChanged"
+            @duo-agent-platform-enabled-changed="onDuoAgentPlatformEnabledChanged"
             @duo-foundational-agents-changed="onFoundationalAgentsEnabledChanged"
             @duo-foundational-agents-statuses-change="onFoundationalAgentsStatusesChanged"
             @duo-foundational-flows-checkbox-changed="onDuoFoundationalFlowsChanged"
@@ -181,6 +189,7 @@ export default {
         :duo-core-features-enabled="duoCoreFeaturesEnabled"
         :prompt-cache-enabled="promptCacheEnabled"
         :has-parent-form-changed="hasParentFormChanged"
+        :duo-agent-platform-enabled="initialDuoAgentPlatformEnabled"
         :foundational-agents-enabled="foundationalAgentsDefaultEnabled"
         :foundational-agents-statuses="foundationalAgentsStatuses"
         @submit="submitForm"
@@ -191,6 +200,7 @@ export default {
         @duo-flow-checkbox-changed="onDuoFlowChanged"
         @duo-foundational-flows-checkbox-changed="onDuoFoundationalFlowsChanged"
         @duo-sast-fp-detection-changed="onDuoSastFpDetectionChanged"
+        @duo-agent-platform-enabled-changed="onDuoAgentPlatformEnabledChanged"
         @duo-foundational-agents-changed="onFoundationalAgentsEnabledChanged"
         @duo-foundational-agents-statuses-change="onFoundationalAgentsStatusesChanged"
         @change-selected-flow-ids="onSelectedFlowIdsChanged"

@@ -45,6 +45,7 @@ export default {
     'duoChatExpirationDays',
     'duoChatExpirationColumn',
     'duoCoreFeaturesEnabled',
+    'showDuoAgentPlatformEnabledSetting',
   ],
   provide: {
     isSaaS: false,
@@ -113,6 +114,7 @@ export default {
       duoFoundationalFlowsAvailability,
       foundationalAgentsStatuses,
       selectedFoundationalFlowIds,
+      duoAgentPlatformEnabled,
     }) {
       try {
         this.isLoading = true;
@@ -141,6 +143,9 @@ export default {
           enabled_expanded_logging: this.expandedLogging,
           duo_chat_expiration_days: this.chatExpirationDays,
           duo_chat_expiration_column: this.chatExpirationColumn,
+          ...(this.showDuoAgentPlatformEnabledSetting && {
+            duo_agent_platform_enabled: duoAgentPlatformEnabled,
+          }),
           foundational_agents_default_enabled: foundationalAgentsEnabled,
           ...(foundationalAgentsStatuses && {
             foundational_agents_statuses: transformedFoundationalAgentsStatuses,

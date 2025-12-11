@@ -9,6 +9,7 @@ import DuoPromptCacheForm from 'ee/ai/settings/components/duo_prompt_cache_form.
 import DuoFlowSettings from 'ee/ai/settings/components/duo_flow_settings.vue';
 import DuoSastFpDetectionSettings from 'ee/ai/settings/components/duo_sast_fp_detection_settings.vue';
 import DuoFoundationalAgentsSettings from 'ee/ai/settings/components/duo_foundational_agents_settings.vue';
+import DuoAgentPlatformSettingsForm from 'ee/ai/settings/components/duo_agent_platform_settings_form.vue';
 import { AVAILABILITY_OPTIONS } from 'ee/ai/settings/constants';
 import { mockAgentStatuses } from '../../mocks';
 
@@ -29,6 +30,7 @@ describe('AiCommonSettingsForm', () => {
         foundationalAgentsEnabled: false,
         selectedFoundationalFlowIds: [],
         foundationalAgentsStatuses: mockAgentStatuses,
+        duoAgentPlatformEnabled: true,
         ...props,
       },
       provide: {
@@ -52,6 +54,8 @@ describe('AiCommonSettingsForm', () => {
   const findDuoSastFpDetectionSettings = () => wrapper.findComponent(DuoSastFpDetectionSettings);
   const findDuoFoundationalAgentsSettings = () =>
     wrapper.findComponent(DuoFoundationalAgentsSettings);
+  const findDuoAgentPlatformSettingsForm = () =>
+    wrapper.findComponent(DuoAgentPlatformSettingsForm);
   const findDuoSettingsWarningAlert = () => wrapper.findByTestId('duo-settings-show-warning-alert');
   const findSaveButton = () => wrapper.findComponent(GlButton);
 
@@ -270,6 +274,7 @@ describe('AiCommonSettingsForm', () => {
           hasParentFormChanged: false,
           foundationalAgentsEnabled: false,
           foundationalAgentsStatuses: mockAgentStatuses,
+          duoAgentPlatformEnabled: true,
         },
         provide: {
           onGeneralSettingsPage: false,
@@ -496,6 +501,39 @@ describe('AiCommonSettingsForm', () => {
           expect(findSaveButton().props('disabled')).toBe(false);
         });
       });
+    });
+  });
+
+  describe('duo agent platform settings', () => {
+    it.each([true, false])('renders form with correct enabled prop', (value) => {
+      createComponent({ props: { duoAgentPlatformEnabled: value } });
+      expect(findDuoAgentPlatformSettingsForm().props('enabled')).toBe(value);
+    });
+
+    it('emits duo-agent-platform-enabled-changed event when DuoAgentPlatformSettingsForm emits selected', async () => {
+      findDuoAgentPlatformSettingsForm().vm.$emit('selected', false);
+      await nextTick();
+
+      expect(wrapper.emitted('duo-agent-platform-enabled-changed')).toHaveLength(1);
+      expect(wrapper.emitted('duo-agent-platform-enabled-changed')[0]).toEqual([false]);
+    });
+
+    it('enables save button when duo agent platform enabled value changes', async () => {
+      expect(findSaveButton().props('disabled')).toBe(true);
+
+      findDuoAgentPlatformSettingsForm().vm.$emit('selected', false);
+      await nextTick();
+
+      expect(findSaveButton().props('disabled')).toBe(false);
+    });
+
+    it('keeps save button disabled when duo agent platform enabled value is unchanged', async () => {
+      expect(findSaveButton().props('disabled')).toBe(true);
+
+      findDuoAgentPlatformSettingsForm().vm.$emit('selected', true);
+      await nextTick();
+
+      expect(findSaveButton().props('disabled')).toBe(true);
     });
   });
 });
