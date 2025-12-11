@@ -878,17 +878,39 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
       end
 
       context 'when workflow token creation fails' do
-        before do
-          allow_next_instance_of(::Ai::DuoWorkflows::WorkflowContextGenerationService) do |service|
-            allow(service).to receive(:generate_workflow_token)
-              .and_return(ServiceResponse.error(message: 'workflow token creation failed'))
+        context 'with usage quota exceeded error code' do
+          before do
+            allow_next_instance_of(::Ai::DuoWorkflows::WorkflowContextGenerationService) do |service|
+              allow(service).to receive(:generate_workflow_token)
+                .and_return(ServiceResponse.error(message: 'Consumer does not have sufficient ' \
+                                                    'credits for this request. Error code: USAGE_QUOTA_EXCEEDED'))
+            end
+          end
+
+          it 'returns forbidden with specific message' do
+            post api(path, user), params: params
+
+            expect(response).to have_gitlab_http_status(:forbidden)
+            expect(json_response['message']).to eq(
+              "You don't have enough GitLab Credits to run this flow. Contact your " \
+                "administrator for more credits."
+            )
           end
         end
 
-        it 'returns api error' do
-          post api(path, user), params: params
+        context 'with any other error' do
+          before do
+            allow_next_instance_of(::Ai::DuoWorkflows::WorkflowContextGenerationService) do |service|
+              allow(service).to receive(:generate_workflow_token)
+                                  .and_return(ServiceResponse.error(message: 'workflow token creation failed'))
+            end
+          end
 
-          expect(response).to have_gitlab_http_status(:bad_request)
+          it 'returns api error' do
+            post api(path, user), params: params
+
+            expect(response).to have_gitlab_http_status(:bad_request)
+          end
         end
       end
 
