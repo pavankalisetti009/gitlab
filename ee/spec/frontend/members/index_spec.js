@@ -23,6 +23,7 @@ describe('initMembersApp', () => {
   beforeEach(() => {
     el = document.createElement('div');
     el.dataset.membersData = dataAttribute;
+    document.body.appendChild(el);
   });
 
   afterEach(() => {
