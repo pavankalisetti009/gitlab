@@ -223,6 +223,8 @@ describe('Metric table', () => {
     ${AI_METRICS.DUO_RCA_USAGE_RATE}               | ${''}        | ${''}
     ${AI_METRICS.DUO_REVIEW_REQUESTS_COUNT}        | ${''}        | ${''}
     ${AI_METRICS.DUO_REVIEW_COMMENT_COUNT}         | ${''}        | ${''}
+    ${AI_METRICS.DUO_AGENT_PLATFORM_FLOWS}         | ${''}        | ${''}
+    ${AI_METRICS.DUO_AGENT_PLATFORM_CHATS}         | ${''}        | ${''}
     ${PIPELINE_ANALYTICS_METRICS.COUNT}            | ${namespace} | ${AI_IMPACT_TABLE_TRACKING_PROPERTY}
     ${PIPELINE_ANALYTICS_METRICS.MEDIAN}           | ${namespace} | ${AI_IMPACT_TABLE_TRACKING_PROPERTY}
     ${PIPELINE_ANALYTICS_METRICS.SUCCESS_RATE}     | ${namespace} | ${AI_IMPACT_TABLE_TRACKING_PROPERTY}
@@ -261,6 +263,8 @@ describe('Metric table', () => {
     ${AI_METRICS.DUO_RCA_USAGE_RATE}               | ${'Duo RCA usage'}
     ${AI_METRICS.DUO_REVIEW_REQUESTS_COUNT}        | ${'Duo Code Review requests'}
     ${AI_METRICS.DUO_REVIEW_COMMENT_COUNT}         | ${'Duo Code Review comments'}
+    ${AI_METRICS.DUO_AGENT_PLATFORM_FLOWS}         | ${'Duo Agent Platform flows'}
+    ${AI_METRICS.DUO_AGENT_PLATFORM_CHATS}         | ${'Duo Agent Platform chats'}
     ${PIPELINE_ANALYTICS_METRICS.COUNT}            | ${'Total pipeline runs'}
     ${PIPELINE_ANALYTICS_METRICS.MEDIAN}           | ${'Median duration'}
     ${PIPELINE_ANALYTICS_METRICS.SUCCESS_RATE}     | ${'Success rate'}
@@ -338,6 +342,8 @@ describe('Metric table', () => {
     identifier                                | startDate
     ${AI_METRICS.CODE_SUGGESTIONS_USAGE_RATE} | ${'2024-07-15'}
     ${AI_METRICS.DUO_RCA_USAGE_RATE}          | ${'2025-07-15'}
+    ${AI_METRICS.DUO_AGENT_PLATFORM_FLOWS}    | ${'2025-09-01'}
+    ${AI_METRICS.DUO_AGENT_PLATFORM_CHATS}    | ${'2025-09-01'}
   `('for the $identifier table row', ({ identifier, startDate }) => {
     useFakeDate(startDate);
 

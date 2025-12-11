@@ -318,6 +318,20 @@ exports[`AI impact Dashboard utils generateSkeletonTableData returns the skeleto
     },
     "trendStyle": "ASC",
   },
+  {
+    "metric": {
+      "identifier": "duo_agent_platform_flows",
+      "value": "Duo Agent Platform flows",
+    },
+    "trendStyle": "ASC",
+  },
+  {
+    "metric": {
+      "identifier": "duo_agent_platform_chats",
+      "value": "Duo Agent Platform chats",
+    },
+    "trendStyle": "ASC",
+  },
 ]
 `;
 

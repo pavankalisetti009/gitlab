@@ -50,6 +50,8 @@ export const extractGraphqlAiData = ({
     requestReviewDuoCodeReviewOnMrByNonAuthorEventCount = null,
     postCommentDuoCodeReviewOnDiffEventCount = null,
   } = {},
+  agentPlatformFlows = {},
+  agentPlatformChats = {},
 } = {}) => {
   const codeSuggestionsUsageRate = calculateRate({
     numerator: codeSuggestionsContributorsCount,
@@ -122,6 +124,14 @@ export const extractGraphqlAiData = ({
     [AI_METRICS.DUO_REVIEW_COMMENT_COUNT]: {
       identifier: AI_METRICS.DUO_REVIEW_COMMENT_COUNT,
       value: postCommentDuoCodeReviewOnDiffEventCount ?? '-',
+    },
+    [AI_METRICS.DUO_AGENT_PLATFORM_FLOWS]: {
+      identifier: AI_METRICS.DUO_AGENT_PLATFORM_FLOWS,
+      value: agentPlatformFlows?.startedSessionEventCount ?? '-',
+    },
+    [AI_METRICS.DUO_AGENT_PLATFORM_CHATS]: {
+      identifier: AI_METRICS.DUO_AGENT_PLATFORM_CHATS,
+      value: agentPlatformChats?.startedSessionEventCount ?? '-',
     },
   };
 };

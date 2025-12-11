@@ -13,6 +13,8 @@ export const SUPPORTED_AI_METRICS = [
   AI_METRICS.DUO_RCA_USAGE_RATE,
   AI_METRICS.DUO_REVIEW_REQUESTS_COUNT,
   AI_METRICS.DUO_REVIEW_COMMENT_COUNT,
+  AI_METRICS.DUO_AGENT_PLATFORM_FLOWS,
+  AI_METRICS.DUO_AGENT_PLATFORM_CHATS,
 ];
 export const HIDE_METRIC_DRILL_DOWN = [
   AI_METRICS.CODE_SUGGESTIONS_USAGE_RATE,
@@ -22,6 +24,8 @@ export const HIDE_METRIC_DRILL_DOWN = [
   AI_METRICS.DUO_USED_COUNT,
   AI_METRICS.DUO_REVIEW_REQUESTS_COUNT,
   AI_METRICS.DUO_REVIEW_COMMENT_COUNT,
+  AI_METRICS.DUO_AGENT_PLATFORM_CHATS,
+  AI_METRICS.DUO_AGENT_PLATFORM_FLOWS,
 ];
 
 // The AI impact metrics supported for over time tiles
@@ -60,6 +64,14 @@ export const AI_IMPACT_USAGE_METRICS = {
   },
   [AI_METRICS.DUO_USED_COUNT]: {
     label: s__('AiImpactAnalytics|Duo features usage'),
+    units: UNITS.COUNT,
+  },
+  [AI_METRICS.DUO_AGENT_PLATFORM_FLOWS]: {
+    label: s__('AiImpactAnalytics|Duo Agent Platform flows'),
+    units: UNITS.COUNT,
+  },
+  [AI_METRICS.DUO_AGENT_PLATFORM_CHATS]: {
+    label: s__('AiImpactAnalytics|Duo Agent Platform chats'),
     units: UNITS.COUNT,
   },
 };
@@ -113,6 +125,16 @@ const duoReviewDataNotAvailableTooltip = {
   }),
 };
 
+const agentPlatformDataNotAvailableTooltip = {
+  startDate: new Date('2025-09-01'),
+  message: s__(
+    'AiImpactAnalytics|Data available after upgrade to GitLab 18.7. %{linkStart}Learn more%{linkEnd}.',
+  ),
+  link: helpPagePath('user/analytics/duo_and_sdlc_trends', {
+    anchor: 'gitlab-duo-usage-metrics',
+  }),
+};
+
 export const AI_IMPACT_DATA_NOT_AVAILABLE_TOOLTIPS = {
   // Code suggestions usage only started being tracked April 4, 2024
   // https://gitlab.com/gitlab-org/gitlab/-/issues/456108
@@ -136,4 +158,6 @@ export const AI_IMPACT_DATA_NOT_AVAILABLE_TOOLTIPS = {
   },
   [AI_METRICS.DUO_REVIEW_REQUESTS_COUNT]: duoReviewDataNotAvailableTooltip,
   [AI_METRICS.DUO_REVIEW_COMMENT_COUNT]: duoReviewDataNotAvailableTooltip,
+  [AI_METRICS.DUO_AGENT_PLATFORM_FLOWS]: agentPlatformDataNotAvailableTooltip,
+  [AI_METRICS.DUO_AGENT_PLATFORM_CHATS]: agentPlatformDataNotAvailableTooltip,
 };

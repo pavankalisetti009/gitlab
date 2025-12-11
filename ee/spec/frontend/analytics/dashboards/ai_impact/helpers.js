@@ -163,6 +163,8 @@ export const mockAiMetricsResponse = (values = []) =>
         acceptedLinesOfCode,
         shownLinesOfCode,
         ideNames,
+        agentPlatformFlowsStartedSessionEventCount,
+        agentPlatformChatsStartedSessionEventCount,
       },
     ) =>
       acc.mockResolvedValueOnce({
@@ -189,6 +191,12 @@ export const mockAiMetricsResponse = (values = []) =>
                 requestReviewDuoCodeReviewOnMrByAuthorEventCount,
                 requestReviewDuoCodeReviewOnMrByNonAuthorEventCount,
                 postCommentDuoCodeReviewOnDiffEventCount,
+              },
+              agentPlatformFlows: {
+                startedSessionEventCount: agentPlatformFlowsStartedSessionEventCount,
+              },
+              agentPlatformChats: {
+                startedSessionEventCount: agentPlatformChatsStartedSessionEventCount,
               },
               __typename: 'AiMetrics',
             },
