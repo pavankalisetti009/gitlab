@@ -23,7 +23,7 @@ module SecretsManagement
     end
 
     def each_secrets_engine
-      body = make_request(:get, "sys/mounts", {}, optional: true)
+      body = make_request(:get, "sys/mounts", {}, allow_not_found_response: true)
       return unless body
 
       body["data"].each do |path, info|
@@ -32,7 +32,7 @@ module SecretsManagement
     end
 
     def each_auth_engine
-      body = make_request(:get, "sys/auth", {}, optional: true)
+      body = make_request(:get, "sys/auth", {}, allow_not_found_response: true)
       return unless body
 
       body["data"].each do |path, info|
@@ -41,7 +41,7 @@ module SecretsManagement
     end
 
     def each_acl_policy
-      body = make_request(:list, "sys/policies/acl", {}, optional: true)
+      body = make_request(:list, "sys/policies/acl", {}, allow_not_found_response: true)
       return unless body
 
       body["data"]["keys"].each do |policy|
@@ -50,7 +50,7 @@ module SecretsManagement
     end
 
     def each_namespace
-      body = make_request(:scan, "sys/namespaces", {}, optional: true)
+      body = make_request(:scan, "sys/namespaces", {}, allow_not_found_response: true)
       return unless body
       return unless body["data"].key?("keys")
       return if body["data"]["keys"].nil?
@@ -78,7 +78,7 @@ module SecretsManagement
         {
           version: version
         },
-        optional: true
+        allow_not_found_response: true
       )
 
       return unless body

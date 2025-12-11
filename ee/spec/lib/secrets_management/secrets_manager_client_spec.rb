@@ -89,6 +89,96 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
 
       expect_kv_secret_engine_to_be_mounted("", mount_path)
     end
+
+    context 'when OpenBao responds with a 5XX status code' do
+      before do
+        webmock_enable!(allow_localhost: false)
+
+        stub_request(:post, "#{described_class.configuration.host}/v1/sys/mounts/#{mount_path}")
+          .with(body: { type: engine })
+          .to_return(status: 503, body: response_body, headers: {})
+      end
+
+      after do
+        webmock_enable!(allow_localhost: true)
+        WebMock.reset!
+      end
+
+      let(:response_body) { '' }
+
+      it 'raises ServiceUnavailableError with Serivce unavailable message' do
+        expect { client.enable_secrets_engine(mount_path, engine) }
+          .to raise_error(described_class::ServiceUnavailableError, /OpenBao service unavailable/)
+      end
+    end
+
+    context 'when OpenBao responds with a 4XX status code' do
+      let(:headers) { {} }
+      let(:status) { 400 }
+      let(:response_headers) { {} }
+
+      before do
+        webmock_enable!(allow_localhost: false)
+
+        stub_request(:post, "#{described_class.configuration.host}/v1/sys/mounts/#{mount_path}")
+          .with(body: { type: engine })
+          .to_return(status: status, body: response_body, headers: response_headers)
+      end
+
+      after do
+        webmock_enable!(allow_localhost: true)
+        WebMock.reset!
+      end
+
+      context 'when OpenBao response body does NOT have error message' do
+        let(:response_body) { '' }
+
+        it 'raises ApiError with default message' do
+          expect { client.enable_secrets_engine(mount_path, engine) }
+            .to raise_error(described_class::ApiError, /OpenBao API request failed/)
+        end
+      end
+
+      context 'when OpenBao response body has error message' do
+        let(:response_body) { { errors: ["Bad Request"] }.to_json }
+
+        it 'raises ApiError wrapping the original Openbao error message' do
+          expect { client.enable_secrets_engine(mount_path, engine) }
+            .to raise_error(described_class::ApiError, /Bad Request/)
+        end
+      end
+
+      context 'when OpenBao response body has empty error message' do
+        let(:response_body) { { errors: [] }.to_json }
+
+        it 'raises ApiError wrapping default error message' do
+          expect { client.enable_secrets_engine(mount_path, engine) }
+            .to raise_error(described_class::ApiError, /OpenBao API request failed/)
+        end
+      end
+
+      context 'when OpenBao response body is an invalid JSON' do
+        let(:response_body) { 'invalid JSON' }
+
+        it 'raises ApiError with default message' do
+          expect { client.enable_secrets_engine(mount_path, engine) }
+            .to raise_error(described_class::ApiError, /OpenBao API request failed/)
+        end
+      end
+
+      context 'when OpenBao responds with a 404 status code and authentication failure headers' do
+        let(:response_body) { '' }
+        let(:status) { 404 }
+        let(:response_headers) do
+          { 'X-Vault-Inline-Auth-Failed' => 'true' }
+        end
+
+        it 'raises AuthenticationError wrapping the connection error' do
+          expect { client.enable_secrets_engine(mount_path, engine) }
+            .to raise_error(described_class::AuthenticationError, /Failed to authenticate with OpenBao/)
+        end
+      end
+    end
   end
 
   describe '#enable_auth_engine' do
