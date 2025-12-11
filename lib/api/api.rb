@@ -308,6 +308,7 @@ module API
         mount ::API::NpmProjectPackages
         mount ::API::NugetGroupPackages
         mount ::API::NugetProjectPackages
+        mount ::API::OfflineTransfers
         mount ::API::Organizations
         mount ::API::PackageFiles
         mount ::API::Pages
