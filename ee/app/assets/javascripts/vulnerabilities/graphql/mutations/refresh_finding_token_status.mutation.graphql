@@ -4,8 +4,6 @@ mutation refreshFindingTokenStatus($vulnerabilityId: VulnerabilityID!) {
     findingTokenStatus {
       id
       status
-      createdAt
-      updatedAt
       lastVerifiedAt
     }
   }
