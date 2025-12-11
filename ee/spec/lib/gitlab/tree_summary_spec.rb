@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::TreeSummary do
+RSpec.describe Gitlab::TreeSummary, feature_category: :source_code_management do
   let_it_be_with_refind(:project) { create(:project, :custom_repo, files: { 'a.txt' => '' }) }
   let_it_be(:path_lock) { create(:path_lock, project: project, path: 'a.txt') }
   let_it_be(:user) { create(:user) }
