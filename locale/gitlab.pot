@@ -23429,6 +23429,9 @@ msgstr ""
 msgid "Dependencies|There was an error fetching the versions for the selected component. Please try again later."
 msgstr ""
 
+msgid "Dependencies|This dependency contains vulnerabilities that violate a security policy. See the vulnerability list for more details."
+msgstr ""
+
 msgid "Dependencies|This link will expire in %{number} days."
 msgstr ""
 

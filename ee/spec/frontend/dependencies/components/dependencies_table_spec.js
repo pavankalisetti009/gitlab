@@ -330,6 +330,81 @@ describe('DependenciesTable component', () => {
     });
   });
 
+  describe('given some dependencies have vulnerabilities with policy violations', () => {
+    describe('with feature flag on', () => {
+      let dependencies;
+
+      beforeEach(() => {
+        dependencies = [
+          makeDependency({
+            name: 'qux',
+            vulnerabilities: { nodes: [{ id: 1, policyViolations: true }] },
+            vulnerabilityCount: 1,
+            occurrenceId: 1,
+          }),
+          makeDependency({
+            name: 'qux',
+            vulnerabilities: { nodes: [] },
+            vulnerabilityCount: 0,
+            occurrenceId: 1,
+          }),
+          // Guarantee that the component doesn't mutate these, but still
+          // maintains its row-toggling behaviour (i.e., via _showDetails)
+        ].map(Object.freeze);
+
+        createComponent({
+          propsData: {
+            dependencies,
+            isLoading: false,
+            vulnerabilityInfo,
+          },
+          provide: { glFeatures: { securityPolicyWarnModeLicenseScanning: true } },
+        });
+      });
+
+      it('displays the policy violation badge for dependencies that violate a security policy', () => {
+        const badges = findTableRows().at(0).findAllComponents(GlBadge);
+        expect(badges).toHaveLength(2);
+        expect(badges.at(1).text()).toBe('Policy violation');
+      });
+
+      it('does not display the policy violation badge for dependencies that do not violate a security policy', () => {
+        expect(findTableRows().at(1).findAllComponents(GlBadge)).toHaveLength(0);
+      });
+    });
+
+    describe('with feature flag off', () => {
+      let dependencies;
+
+      beforeEach(() => {
+        dependencies = [
+          makeDependency({
+            name: 'qux',
+            vulnerabilities: { nodes: [{ id: 1, policyViolations: true }] },
+            vulnerabilityCount: 1,
+            occurrenceId: 1,
+          }),
+          // Guarantee that the component doesn't mutate these, but still
+          // maintains its row-toggling behaviour (i.e., via _showDetails)
+        ].map(Object.freeze);
+
+        createComponent({
+          propsData: {
+            dependencies,
+            isLoading: false,
+            vulnerabilityInfo,
+          },
+        });
+      });
+
+      it('displays the policy violation badge for dependencies that violate one', () => {
+        const badges = findTableRows().at(0).findAllComponents(GlBadge);
+        expect(badges).toHaveLength(1);
+        expect(badges.at(0).text()).toBe('1 vulnerability detected');
+      });
+    });
+  });
+
   describe('with multiple dependencies sharing the same componentId', () => {
     let dependencies;
     beforeEach(() => {
