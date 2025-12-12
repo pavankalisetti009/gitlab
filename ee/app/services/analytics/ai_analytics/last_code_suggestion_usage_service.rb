@@ -3,17 +3,6 @@
 module Analytics
   module AiAnalytics
     class LastCodeSuggestionUsageService
-      QUERY = <<~SQL
-        SELECT
-          max(date) AS last_used_at, user_id
-        FROM code_suggestion_events_daily
-          WHERE user_id IN ({user_ids:Array(UInt64)})
-          AND date >= {from:Date}
-          AND date <= {to:Date}
-        GROUP BY user_id
-      SQL
-      private_constant :QUERY
-
       MAX_USER_IDS_SIZE = 10_000
       private_constant :MAX_USER_IDS_SIZE
 
@@ -45,21 +34,24 @@ module Analytics
         data = []
 
         user_ids.each_slice(MAX_USER_IDS_SIZE).map do |user_ids_slice|
-          query = ClickHouse::Client::Query.new(
-            raw_query: QUERY,
-            placeholders: {
-              user_ids: user_ids_slice.to_json,
-              from: from.to_date.iso8601,
-              to: to.to_date.iso8601
-            })
-
-          data += ClickHouse::Client.select(query, :main)
+          data += ClickHouse::Client.select(last_usages_query(user_ids_slice), :main)
         end
 
         data.to_h do |row|
           [row['user_id'], DateTime.parse(row['last_used_at'])]
         end
       end
+
+      # rubocop:disable CodeReuse/ActiveRecord -- Not ActiveRecord but Clickhouse query builder
+      def last_usages_query(user_ids)
+        builder = ClickHouse::Client::QueryBuilder.new('code_suggestion_events_daily')
+
+        builder.select(builder[:date].maximum.as('last_used_at'), builder[:user_id])
+          .where(builder[:user_id].in(user_ids))
+          .where(builder[:date].between(from.to_date..to.to_date))
+          .group(:user_id)
+      end
+      # rubocop:enable CodeReuse/ActiveRecord
     end
   end
 end
