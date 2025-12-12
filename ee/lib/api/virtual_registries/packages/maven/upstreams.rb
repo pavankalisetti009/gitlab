@@ -301,6 +301,59 @@ module API
 
                   upstream.test
                 end
+
+                desc 'Test connection to an existing Maven virtual registry upstream with optional override params' do
+                  detail 'This feature was introduced in GitLab 18.7. \
+                        This feature is an experiment. \
+                        This feature is behind the `maven_virtual_registry` feature flag.'
+                  success code: 200
+                  failure [
+                    { code: 400, message: 'Bad Request' },
+                    { code: 401, message: 'Unauthorized' },
+                    { code: 403, message: 'Forbidden' },
+                    { code: 404, message: 'Not found' }
+                  ]
+                  tags %w[maven_virtual_registries]
+                  hidden true
+                end
+                params do
+                  optional :url, type: String, desc: 'The URL of the Maven virtual registry upstream',
+                    allow_blank: false
+                  optional :username, type: String, desc: 'The username of the Maven virtual registry upstream'
+                  optional :password, type: String, desc: 'The password of the Maven virtual registry upstream'
+                end
+                post :test do
+                  authorize! :read_virtual_registry, upstream
+
+                  url_override = declared_params[:url].presence
+                  username_param = declared_params[:username].presence
+                  password_param = declared_params[:password].presence
+
+                  url_changed = url_override && url_override != upstream.url
+                  username_changed = username_param && username_param != upstream.username
+                  password_changed = password_param && password_param != upstream.password
+
+                  credentials_changed = username_changed || password_changed
+
+                  upstream_params = {
+                    url: url_changed ? url_override : upstream.url,
+                    username: username_param,
+                    password: password_param,
+                    group: upstream.group,
+                    name: 'test'
+                  }
+
+                  test_upstream = if url_changed || credentials_changed
+                                    ::VirtualRegistries::Packages::Maven::Upstream.new(**upstream_params)
+                                  else
+                                    upstream
+                                  end
+
+                  render_validation_error!(test_upstream) if test_upstream != upstream && test_upstream.invalid?
+
+                  status :ok
+                  test_upstream.test
+                end
               end
             end
           end
