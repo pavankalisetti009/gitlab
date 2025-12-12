@@ -425,8 +425,6 @@ find_by_private_commit_email:
   file: app/models/user.rb
 will_save_change_to_login?:
   file: app/models/user.rb
-can_leave_project?:
-  file: app/models/user.rb
 render_items_list:
   file: ee/app/helpers/ee/merge_requests_helper.rb
 trial_submit_text:
