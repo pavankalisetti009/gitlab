@@ -23,10 +23,16 @@ module Gitlab
             http_post("trials/create_addon", admin_headers, trial_user_params)
           end
 
-          def generate_lead(params)
+          def generate_lead(params, user: nil)
             return request_disabled_error unless requests_enabled?
 
-            http_post("trials/create_hand_raise_lead", admin_headers, params)
+            endpoint = if Feature.enabled?(:new_hand_raise_lead_endpoint, user)
+                         "leads/gitlab_com/hand_raises"
+                       else
+                         "trials/create_hand_raise_lead"
+                       end
+
+            http_post(endpoint, admin_headers, params)
           end
 
           def generate_iterable(params)

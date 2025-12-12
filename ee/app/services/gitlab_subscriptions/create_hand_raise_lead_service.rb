@@ -2,8 +2,14 @@
 
 module GitlabSubscriptions
   class CreateHandRaiseLeadService
+    attr_reader :user
+
+    def initialize(user: nil)
+      @user = user
+    end
+
     def execute(params)
-      response = client.generate_lead(params)
+      response = client.generate_lead(params, user: user)
 
       if response[:success]
         ServiceResponse.success

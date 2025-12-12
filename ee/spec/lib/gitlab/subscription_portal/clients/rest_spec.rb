@@ -160,9 +160,10 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Rest, feature_category: :sub
 
     describe '#generate_lead' do
       subject do
-        client.generate_lead({})
+        client.generate_lead({}, user: user)
       end
 
+      let(:user) { build(:user) }
       let(:route_path) { 'trials/create_hand_raise_lead' }
 
       it_behaves_like 'when request is disabled'
@@ -244,16 +245,47 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Rest, feature_category: :sub
 
     describe '#generate_lead' do
       subject do
-        client.generate_lead({})
+        client.generate_lead({}, user: user)
       end
 
+      let(:user) { build(:user) }
       let(:route_path) { 'trials/create_hand_raise_lead' }
+
+      before do
+        stub_feature_flags(new_hand_raise_lead_endpoint: false)
+      end
 
       it_behaves_like 'when response is successful'
       it_behaves_like 'when response code is 422'
       it_behaves_like 'when response code is 500'
       it_behaves_like 'when http call raises an exception'
       it_behaves_like 'a request that sends the GITLAB_QA_USER_AGENT value in the "User-Agent" header'
+
+      context 'when feature flag is disabled' do
+        before do
+          stub_feature_flags(new_hand_raise_lead_endpoint: false)
+        end
+
+        it 'uses the legacy endpoint' do
+          expect(client).to receive(:http_post).with('trials/create_hand_raise_lead', anything, {})
+
+          client.generate_lead({}, user: user)
+        end
+      end
+
+      context 'when feature flag is enabled for user' do
+        before do
+          stub_feature_flags(new_hand_raise_lead_endpoint: user)
+        end
+
+        let(:route_path) { 'leads/gitlab_com/hand_raises' }
+
+        it 'uses the new endpoint' do
+          expect(client).to receive(:http_post).with('leads/gitlab_com/hand_raises', anything, {})
+
+          client.generate_lead({}, user: user)
+        end
+      end
     end
 
     describe '#generate_iterable' do

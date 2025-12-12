@@ -1,0 +1,10 @@
+---
+name: new_hand_raise_lead_endpoint
+description: Route hand raise leads to the new dedicated endpoint on CustomersDot
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/582231
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/216109
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/583589
+milestone: '18.7'
+group: group::acquisition
+type: gitlab_com_derisk
+default_enabled: false
