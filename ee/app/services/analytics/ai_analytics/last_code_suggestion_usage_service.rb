@@ -38,7 +38,7 @@ module Analytics
         end
 
         data.to_h do |row|
-          [row['user_id'], DateTime.parse(row['last_used_at'])]
+          [row['user_id'], row['last_used_at']]
         end
       end
 
