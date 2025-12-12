@@ -38,8 +38,8 @@ module Ai
               user.authorized_groups.top_level.namespace_settings_with_ai_features_enabled.any?
         end
 
-        # Self-managed/Dedicated
-        true
+        # Self-managed/Dedicated, check the instance level setting
+        ::Gitlab::CurrentSettings.instance_level_ai_beta_features_enabled?
       end
 
       def saas?
