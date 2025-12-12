@@ -41084,6 +41084,7 @@ Personal access token.
 | <a id="personalaccesstokengranular"></a>`granular` | [`Boolean!`](#boolean) | Whether the personal access token is granular. |
 | <a id="personalaccesstokenid"></a>`id` | [`ID!`](#id) | ID of the personal access token. |
 | <a id="personalaccesstokenlastusedat"></a>`lastUsedAt` | [`Time`](#time) | Timestamp of when the personal access token was last used. |
+| <a id="personalaccesstokenlastusedips"></a>`lastUsedIps` | [`[String!]!`](#string) | IP addresses where the personal access token was recently used. |
 | <a id="personalaccesstokenname"></a>`name` | [`String!`](#string) | Name of the personal access token. |
 | <a id="personalaccesstokenrevoked"></a>`revoked` | [`Boolean!`](#boolean) | Whether the personal access token has been revoked. |
 | <a id="personalaccesstokenscopes"></a>`scopes` | [`[PersonalAccessTokenScope!]!`](#personalaccesstokenscope) | List of scopes applied to a personal access token. |
