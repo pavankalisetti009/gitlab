@@ -12,6 +12,7 @@ module EE
         mount ::API::Admin::Ai::ActiveContext
         mount ::API::Admin::Search::Zoekt
         mount ::API::Admin::Search::Migrations
+        mount ::API::Admin::KnowledgeGraph
         mount ::API::Admin::Security::CompliancePolicySettings
         mount ::API::Admin::DataManagement
         mount ::API::AuditEvents
