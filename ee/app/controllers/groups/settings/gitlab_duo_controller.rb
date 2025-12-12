@@ -11,7 +11,7 @@ module Groups
       include ::Nav::GitlabDuoSettingsPage
 
       before_action do
-        push_frontend_feature_flag(:ai_experiment_sast_fp_detection, @group, type: :wip)
+        push_frontend_feature_flag(:ai_experiment_sast_fp_detection, @group, type: :beta)
       end
 
       def show
