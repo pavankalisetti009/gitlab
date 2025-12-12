@@ -3,8 +3,8 @@
 module QA
   RSpec.describe 'Create', feature_category: :source_code_management do
     describe 'Restricted protected branch push and merge', :requires_admin do
-      let(:user_developer) { create(:user) }
-      let(:user_maintainer) { create(:user) }
+      let(:user_developer) { create(:user, :with_personal_access_token) }
+      let(:user_maintainer) { create(:user, :with_personal_access_token) }
       let(:branch_name) { 'protected-branch' }
       let(:commit_message) { 'Protected push commit message' }
 

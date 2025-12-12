@@ -6,8 +6,8 @@ module QA
       'File Locking',
       :requires_admin
     ) do
-      let(:user_one) { create(:user) }
-      let(:user_two) { create(:user) }
+      let(:user_one) { create(:user, :with_personal_access_token) }
+      let(:user_two) { create(:user, :with_personal_access_token) }
       let(:project) { create(:project, :with_readme, name: 'file_locking') }
 
       before do
