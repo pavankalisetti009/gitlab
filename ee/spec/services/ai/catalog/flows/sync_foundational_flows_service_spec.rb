@@ -238,6 +238,46 @@ RSpec.describe Ai::Catalog::Flows::SyncFoundationalFlowsService, feature_categor
       end
     end
 
+    context 'when project is in a subgroup' do
+      let_it_be(:subgroup) { create(:group, parent: group) }
+      let_it_be(:subgroup_project) { create(:project, group: subgroup) }
+      let(:container) { subgroup_project }
+
+      before do
+        container.project_setting.update!(duo_foundational_flows_enabled: true)
+        allow(Ability).to receive(:allowed?).and_return(true)
+      end
+
+      it 'looks up parent consumer from root ancestor, not immediate parent' do
+        # Parent consumer is on the root group, not the subgroup
+        parent_consumer = create(:ai_catalog_item_consumer, group: group, item: flow1)
+        allow(container).to receive(:enabled_flow_catalog_item_ids).and_return([flow1.id])
+
+        create_service = instance_double(Ai::Catalog::ItemConsumers::CreateService)
+        allow(create_service).to receive(:execute).and_return(ServiceResponse.success)
+
+        expect(Ai::Catalog::ItemConsumers::CreateService).to receive(:new)
+           .with(
+             container: container,
+             current_user: user,
+             params: hash_including(item: flow1, parent_item_consumer: parent_consumer)
+           ).and_return(create_service)
+
+        service.execute
+
+        expect(create_service).to have_received(:execute)
+      end
+
+      it 'skips flows when parent consumer does not exist on root ancestor' do
+        # No parent consumer on root ancestor
+        allow(container).to receive(:enabled_flow_catalog_item_ids).and_return([flow1.id])
+
+        expect(Ai::Catalog::ItemConsumers::CreateService).not_to receive(:new)
+
+        service.execute
+      end
+    end
+
     context 'when container is a Namespace' do
       let(:container) { create(:namespace) }
 
