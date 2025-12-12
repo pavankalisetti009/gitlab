@@ -420,7 +420,7 @@ RSpec.describe 'Edit group settings', :js, feature_category: :groups_and_project
           end
         end
 
-        context 'Dormant members', :saas, :aggregate_failures, feature_category: :user_management do
+        context 'Dormant members', :aggregate_failures, feature_category: :user_management do
           before do
             visit edit_group_path(group)
           end
@@ -496,6 +496,88 @@ RSpec.describe 'Edit group settings', :js, feature_category: :groups_and_project
 
       def service_access_token_expiration_enforced_selector
         '[data-testid="service_access_tokens_expiration_enforced_checkbox"]'
+      end
+    end
+
+    context 'for gitlab credits dashboard' do
+      context 'when in saas', :saas_gitlab_com_subscriptions do
+        it 'hides checkbox when usage_billing_dev is disabled' do
+          stub_feature_flags(usage_billing_dev: false)
+          stub_licensed_features(group_usage_billing: true)
+
+          visit edit_group_path(group)
+
+          within_testid('permissions-settings') do
+            expect(page).not_to have_content('GitLab Credits dashboard')
+            expect(page).not_to have_content('Display user data')
+          end
+        end
+
+        it 'hides checkbox when group does not have usage billing feature' do
+          stub_feature_flags(usage_billing_dev: true)
+          stub_licensed_features(group_usage_billing: false)
+
+          visit edit_group_path(group)
+
+          within_testid('permissions-settings') do
+            expect(page).not_to have_content('GitLab Credits dashboard')
+            expect(page).not_to have_content('Display user data')
+          end
+        end
+
+        it 'shows the checkbox when both feature flag and group feature are enabled' do
+          stub_feature_flags(usage_billing_dev: true)
+          stub_licensed_features(group_usage_billing: true)
+
+          visit edit_group_path(group)
+
+          within_testid('permissions-settings') do
+            expect(page).to have_content('GitLab Credits dashboard')
+            expect(page).to have_content('Display user data')
+          end
+        end
+
+        it 'changes display user data', :js do
+          stub_feature_flags(usage_billing_dev: true)
+          stub_licensed_features(group_usage_billing: true)
+
+          visit edit_group_path(group)
+
+          expect(group.namespace_settings.display_gitlab_credits_user_data).to be_falsey
+          within_testid('permissions-settings') do
+            expect(page).to have_unchecked_field(_('Display user data'))
+          end
+
+          within_testid('permissions-settings') do
+            check _('Display user data')
+            click_button _('Save changes')
+          end
+
+          expect(page).to have_content(
+            format(
+              _("Group '%{group_name}' was successfully updated."),
+              group_name: group.name
+            )
+          )
+
+          page.refresh
+
+          expect(page).to have_checked_field(_('Display user data'))
+        end
+      end
+
+      context 'when not in saas' do
+        it 'does not show the checkbox' do
+          stub_feature_flags(usage_billing_dev: true)
+          stub_licensed_features(group_usage_billing: true)
+
+          visit edit_group_path(group)
+
+          within_testid('permissions-settings') do
+            expect(page).not_to have_content('GitLab Credits dashboard')
+            expect(page).not_to have_content('Display user data')
+          end
+        end
       end
     end
 

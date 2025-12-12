@@ -56,6 +56,7 @@ module EE
         params.delete(:repository_size_limit) unless current_user&.can_admin_all_resources?
         params.delete(:remove_dormant_members)
         params.delete(:remove_dormant_members_period)
+        params.delete(:display_gitlab_credits_user_data)
 
         super
       end

@@ -33061,6 +33061,15 @@ msgstr ""
 msgid "GroupSelect|Select a group"
 msgstr ""
 
+msgid "GroupSettingsUsageBilling|Display user data"
+msgstr ""
+
+msgid "GroupSettingsUsageBilling|GitLab Credits dashboard"
+msgstr ""
+
+msgid "GroupSettingsUsageBilling|If selected, individual usernames and their credit usage are visible on the GitLab Credits dashboard. If your organization needs to restrict access to individual user activity for compliance or privacy reasons, clear this checkbox."
+msgstr ""
+
 msgid "GroupSettings|Add additional webhook triggers for group access token expiration"
 msgstr ""
 

@@ -105,6 +105,8 @@ module EE
             params_ee << :allow_enterprise_bypass_placeholder_confirmation
             params_ee << :enterprise_bypass_expires_at
           end
+
+          params_ee << :display_gitlab_credits_user_data if current_group&.feature_available?(:group_usage_billing)
         end
       end
       # rubocop:enable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/AbcSize
