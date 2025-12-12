@@ -71,7 +71,8 @@ module Gitlab
           filesystem: {
             denyRead: ["~/.ssh"],
             allowWrite: ["./", "/tmp/"],
-            denyWrite: []
+            denyWrite: [],
+            allowGitConfig: true
           }
         }
       end
