@@ -9,11 +9,6 @@ RSpec.describe API::License, :aggregate_failures, :api, feature_category: :plan_
   let(:license)     { build(:license, data: gl_license.export) }
   let(:admin) { create(:admin) }
   let(:user) { create(:user) }
-  let(:group) { create(:group) }
-
-  before do
-    group.add_owner(admin)
-  end
 
   def license_json(license)
     {

@@ -127,8 +127,6 @@ RSpec.describe EE::Users::CalloutsHelper, feature_category: :user_management do
     end
 
     context 'when feature flag is enabled', :do_not_mock_admin_mode_setting do
-      let(:group) { create(:group) }
-
       where(:seat_control_user_cap, :new_user_signups_cap, :active_user_count, :result) do
         false | nil | 10 | false
         true  | 10  | 9  | false
@@ -139,14 +137,7 @@ RSpec.describe EE::Users::CalloutsHelper, feature_category: :user_management do
       with_them do
         before do
           allow(helper).to receive(:current_user).and_return(admin)
-
-          group.add_owner(admin)
-
-          (active_user_count - 1).times do
-            user = create(:user)
-            group.add_guest(user)
-          end
-
+          allow(User.billable).to receive(:count).and_return(active_user_count)
           allow(Gitlab::CurrentSettings.current_application_settings)
             .to receive(:new_user_signups_cap).and_return(new_user_signups_cap)
           allow(Gitlab::CurrentSettings.current_application_settings)
