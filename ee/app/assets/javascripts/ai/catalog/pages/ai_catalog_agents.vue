@@ -113,7 +113,7 @@ export default {
 
 <template>
   <div>
-    <ai-catalog-list-header />
+    <ai-catalog-list-header :is-beta="true" />
 
     <ai-catalog-list-wrapper
       :is-loading="isLoading"

@@ -1,9 +1,10 @@
 <script>
+import { GlExperimentBadge } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import { AI_CATALOG_ITEM_TYPE_APOLLO_CONFIG } from '../constants';
+import { AI_CATALOG_ITEM_TYPE_APOLLO_CONFIG, AI_CATALOG_TYPE_THIRD_PARTY_FLOW } from '../constants';
 import { AI_CATALOG_AGENTS_SHOW_ROUTE } from '../router/constants';
 import AiCatalogAgentForm from '../components/ai_catalog_agent_form.vue';
 import { prerequisitesError, getByVersionKey } from '../utils';
@@ -13,6 +14,7 @@ export default {
   components: {
     AiCatalogAgentForm,
     PageHeading,
+    GlExperimentBadge,
   },
   props: {
     aiCatalogAgent: {
@@ -45,6 +47,9 @@ export default {
     },
     definition() {
       return this.activeVersion.definition;
+    },
+    isThirdPartyFlow() {
+      return this.aiCatalogAgent.itemType === AI_CATALOG_TYPE_THIRD_PARTY_FLOW;
     },
     initialValues() {
       return {
@@ -108,7 +113,16 @@ export default {
 
 <template>
   <div>
-    <page-heading :heading="s__('AICatalog|Duplicate agent')">
+    <page-heading>
+      <template #heading>
+        <span class="gl-flex">
+          {{ s__('AICatalog|Duplicate agent') }}
+          <gl-experiment-badge
+            :type="isThirdPartyFlow ? 'experiment' : 'beta'"
+            class="gl-self-center"
+          />
+        </span>
+      </template>
       <template #description>
         <div class="gl-border-b gl-pb-3">
           {{ s__('AICatalog|Create a copy of this agent with the same configuration.') }}

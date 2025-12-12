@@ -336,6 +336,7 @@ export default {
     <ai-catalog-list-header
       :heading="s__('AICatalog|Agents')"
       :can-admin="userPermissions.adminAiCatalogItem"
+      :is-beta="true"
       new-button-variant="default"
     >
       <template v-if="isAgentsAvailable" #nav-actions>
