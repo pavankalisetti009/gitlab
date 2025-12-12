@@ -18,6 +18,7 @@ import { getDefaultRule } from '../lib';
 import ScanTypeSelect from './scan_type_select.vue';
 import NumberRangeSelect from './number_range_select.vue';
 import DependencyScanner from './scanners/dependency_scanner.vue';
+import SastScanner from './scanners/sast_scanner.vue';
 import GlobalSettings from './scanners/global_settings.vue';
 import { selectEmptyArrayWhenAllSelected } from './scanners/utils';
 
@@ -37,6 +38,7 @@ export default {
     BranchExceptionSelector,
     BranchSelection,
     DependencyScanner,
+    SastScanner,
     GlobalSettings,
     GlSprintf,
     RuleMultiSelect,
@@ -113,7 +115,11 @@ export default {
 </script>
 
 <template>
-  <section-layout class="gl-pr-0" :show-remove-button="false" @changed="$emit('changed', $event)">
+  <section-layout
+    class="gl-pr-0 gl-pt-0"
+    :show-remove-button="false"
+    @changed="$emit('changed', $event)"
+  >
     <template #content>
       <section-layout :show-remove-button="false">
         <template #content>
@@ -171,7 +177,13 @@ export default {
         <global-settings :init-rule="initRule" @changed="updateGlobalSettings" />
       </div>
 
-      <dependency-scanner :init-rule="initRule" @changed="triggerChanged" />
+      <div class="gl-w-full gl-rounded-base gl-p-4">
+        <dependency-scanner :init-rule="initRule" @changed="triggerChanged" />
+      </div>
+
+      <div class="gl-w-full gl-rounded-base gl-p-4">
+        <sast-scanner :init-rule="initRule" @changed="triggerChanged" />
+      </div>
     </template>
   </section-layout>
 </template>
