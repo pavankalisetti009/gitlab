@@ -478,6 +478,12 @@ module EE
           description: 'Check if OpenBao instance is healthy and reachable.',
           resolver: ::Resolvers::SecretsManagement::OpenbaoHealthResolver,
           experiment: { milestone: '18.7' }
+
+        field :security_scan_profile, ::Types::Security::ScanProfileType,
+          null: false,
+          resolver: ::Resolvers::Security::ScanProfileResolver,
+          description: 'Get security scan profile by ID.',
+          experiment: { milestone: '18.7' }
       end
 
       def vulnerability(id:)
