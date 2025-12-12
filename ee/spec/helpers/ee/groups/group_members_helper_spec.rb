@@ -149,18 +149,6 @@ RSpec.describe Groups::GroupMembersHelper, feature_category: :groups_and_project
     end
 
     describe 'allow enterprise user confirmation bypass', :saas do
-      context 'when feature flag is disabled' do
-        before do
-          stub_feature_flags(group_owner_placeholder_confirmation_bypass: false)
-          stub_licensed_features(domain_verification: true)
-          group.namespace_settings.allow_enterprise_bypass_placeholder_confirmation = true
-        end
-
-        it 'returns false' do
-          expect(helper.allow_group_owner_enterprise_bypass?(group)).to be_falsey
-        end
-      end
-
       context 'when domain verification is unavailable' do
         before do
           stub_licensed_features(domain_verification: false)
@@ -174,7 +162,6 @@ RSpec.describe Groups::GroupMembersHelper, feature_category: :groups_and_project
 
       context 'when group owner bypass setting is false' do
         before do
-          stub_feature_flags(group_owner_placeholder_confirmation_bypass: true)
           group.namespace_settings.allow_enterprise_bypass_placeholder_confirmation = false
         end
 
@@ -185,7 +172,6 @@ RSpec.describe Groups::GroupMembersHelper, feature_category: :groups_and_project
 
       context 'when all conditions are met' do
         before do
-          stub_feature_flags(group_owner_placeholder_confirmation_bypass: true)
           stub_licensed_features(domain_verification: true)
           group.namespace_settings.allow_enterprise_bypass_placeholder_confirmation = true
         end

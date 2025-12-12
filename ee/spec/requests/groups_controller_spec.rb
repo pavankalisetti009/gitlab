@@ -621,20 +621,6 @@ RSpec.describe GroupsController, :aggregate_failures, type: :request, feature_ca
         end
       end
 
-      context 'when the group_owner_placeholder_confirmation_bypass feature flag is disabled' do
-        before do
-          stub_feature_flags(group_owner_placeholder_confirmation_bypass: false)
-        end
-
-        it 'does not change the setting' do
-          expect { request }.not_to change {
-            group.reload.namespace_settings.allow_enterprise_bypass_placeholder_confirmation?
-          }.from(false)
-
-          expect(response).to have_gitlab_http_status(:found)
-        end
-      end
-
       context 'when enabling bypass with invalid expiry date' do
         let(:expiry_date) { 1.day.ago }
 

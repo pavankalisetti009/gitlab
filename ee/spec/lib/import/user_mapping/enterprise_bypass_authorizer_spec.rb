@@ -16,7 +16,6 @@ RSpec.describe Import::UserMapping::EnterpriseBypassAuthorizer, feature_category
 
   describe '#allowed?', :saas do
     before do
-      stub_feature_flags(group_owner_placeholder_confirmation_bypass: feature_flag_status)
       stub_licensed_features(domain_verification: domain_verification_status)
 
       group.namespace_settings.allow_enterprise_bypass_placeholder_confirmation =
@@ -29,7 +28,6 @@ RSpec.describe Import::UserMapping::EnterpriseBypassAuthorizer, feature_category
     context 'when all conditions met' do
       let(:assignee_user) { enterprise_user }
       let(:reassigned_by_user) { owner }
-      let(:feature_flag_status) { true }
       let(:domain_verification_status) { true }
       let(:allow_enterprise_bypass_placeholder_confirmation) { true }
       let(:enterprise_bypass_expires_at) { 30.days.from_now }
@@ -37,21 +35,9 @@ RSpec.describe Import::UserMapping::EnterpriseBypassAuthorizer, feature_category
       it { is_expected.to be true }
     end
 
-    context 'when feature flag is disabled' do
-      let(:assignee_user) { enterprise_user }
-      let(:reassigned_by_user) { owner }
-      let(:feature_flag_status) { false }
-      let(:domain_verification_status) { true }
-      let(:allow_enterprise_bypass_placeholder_confirmation) { true }
-      let(:enterprise_bypass_expires_at) { 30.days.from_now }
-
-      it { is_expected.to be false }
-    end
-
     context 'when domain_verification is not available' do
       let(:assignee_user) { enterprise_user }
       let(:reassigned_by_user) { owner }
-      let(:feature_flag_status) { true }
       let(:domain_verification_status) { false }
       let(:allow_enterprise_bypass_placeholder_confirmation) { true }
       let(:enterprise_bypass_expires_at) { 30.days.from_now }
@@ -63,7 +49,6 @@ RSpec.describe Import::UserMapping::EnterpriseBypassAuthorizer, feature_category
       let(:assignee_user) { user }
       let(:reassigned_by_user) { owner }
       let(:domain_verification_status) { true }
-      let(:feature_flag_status) { true }
       let(:allow_enterprise_bypass_placeholder_confirmation) { true }
       let(:enterprise_bypass_expires_at) { 30.days.from_now }
 
@@ -73,7 +58,6 @@ RSpec.describe Import::UserMapping::EnterpriseBypassAuthorizer, feature_category
     context 'when reassigned_by_user is not the group owner' do
       let(:assignee_user) { enterprise_user }
       let(:reassigned_by_user) { maintainer }
-      let(:feature_flag_status) { true }
       let(:domain_verification_status) { true }
       let(:allow_enterprise_bypass_placeholder_confirmation) { true }
       let(:enterprise_bypass_expires_at) { 30.days.from_now }
@@ -85,7 +69,6 @@ RSpec.describe Import::UserMapping::EnterpriseBypassAuthorizer, feature_category
       let(:assignee_user) { enterprise_user }
       let(:reassigned_by_user) { owner }
       let(:domain_verification_status) { true }
-      let(:feature_flag_status) { true }
       let(:allow_enterprise_bypass_placeholder_confirmation) { false }
       let(:enterprise_bypass_expires_at) { nil }
 
@@ -96,7 +79,6 @@ RSpec.describe Import::UserMapping::EnterpriseBypassAuthorizer, feature_category
       let(:assignee_user) { user }
       let(:reassigned_by_user) { maintainer }
       let(:domain_verification_status) { false }
-      let(:feature_flag_status) { false }
       let(:allow_enterprise_bypass_placeholder_confirmation) { false }
       let(:enterprise_bypass_expires_at) { nil }
 
@@ -107,7 +89,6 @@ RSpec.describe Import::UserMapping::EnterpriseBypassAuthorizer, feature_category
       let(:assignee_user) { user }
       let(:reassigned_by_user) { maintainer }
       let(:domain_verification_status) { false }
-      let(:feature_flag_status) { false }
       let(:allow_enterprise_bypass_placeholder_confirmation) { true }
       let(:enterprise_bypass_expires_at) { 1.day.ago }
 
@@ -118,7 +99,6 @@ RSpec.describe Import::UserMapping::EnterpriseBypassAuthorizer, feature_category
       let(:assignee_user) { user }
       let(:reassigned_by_user) { maintainer }
       let(:domain_verification_status) { false }
-      let(:feature_flag_status) { false }
       let(:allow_enterprise_bypass_placeholder_confirmation) { true }
       let(:enterprise_bypass_expires_at) { Time.current }
 
@@ -129,7 +109,6 @@ RSpec.describe Import::UserMapping::EnterpriseBypassAuthorizer, feature_category
       let(:assignee_user) { user }
       let(:reassigned_by_user) { maintainer }
       let(:domain_verification_status) { false }
-      let(:feature_flag_status) { false }
       let(:allow_enterprise_bypass_placeholder_confirmation) { true }
       let(:enterprise_bypass_expires_at) { nil }
 
