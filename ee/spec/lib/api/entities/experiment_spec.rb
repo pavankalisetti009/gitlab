@@ -21,8 +21,7 @@ RSpec.describe ::API::Entities::Experiment, feature_category: :feature_flag do
         type: 'experiment',
         group: 'group::acquisition',
         default_enabled: false,
-        log_state_changes: nil,
-        observed: nil
+        log_state_changes: nil
       },
       current_status: {
         state: :off,
