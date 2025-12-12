@@ -75,7 +75,8 @@ module Security
             'create_approval_rule_from_merge_request_approval_policy',
             project: project,
             additional_properties: {
-              label: rule_type # Type of the Merge Request Approval Policy
+              label: rule_type, # Type of the Merge Request Approval Policy
+              enforcement_type: security_policy.enforcement_type
             }
           )
         end

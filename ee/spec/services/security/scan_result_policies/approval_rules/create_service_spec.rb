@@ -82,10 +82,40 @@ RSpec.describe Security::ScanResultPolicies::ApprovalRules::CreateService, featu
           .and change { project.approval_rules.count }.by(1)
       end
 
-      it 'tracks approval rule creation event' do
+      it 'tracks approval rule creation event', :clean_gitlab_redis_shared_state do
         expect { execute_service }
           .to trigger_internal_events('create_approval_rule_from_merge_request_approval_policy')
-          .with(project: project, additional_properties: { label: approval_policy_rule.type })
+          .with(project: project, additional_properties: {
+            label: approval_policy_rule.type,
+            enforcement_type: 'enforce'
+          })
+          .and increment_usage_metrics(
+            'redis_hll_counters.count_distinct_namespace_id_from_applied_enforce_merge_request_approval_policies_monthly' # rubocop disable Layout/LineLength
+          )
+          .and increment_usage_metrics(
+            'redis_hll_counters.count_distinct_project_id_from_applied_enforce_merge_request_approval_policies_monthly'
+          )
+      end
+
+      context 'when policy is in warn mode', :clean_gitlab_redis_shared_state do
+        before do
+          allow(security_policy).to receive(:enforcement_type).and_return('warn')
+        end
+
+        it 'tracks approval rule creation with warn enforcement_type' do
+          expect { execute_service }
+            .to trigger_internal_events('create_approval_rule_from_merge_request_approval_policy')
+            .with(project: project, additional_properties: {
+              label: approval_policy_rule.type,
+              enforcement_type: 'warn'
+            })
+            .and increment_usage_metrics(
+              'redis_hll_counters.count_distinct_namespace_id_from_applied_warn_merge_request_approval_policies_monthly'
+            )
+            .and increment_usage_metrics(
+              'redis_hll_counters.count_distinct_project_id_from_applied_warn_merge_request_approval_policies_monthly'
+            )
+        end
       end
 
       context 'with multiple approval actions' do
