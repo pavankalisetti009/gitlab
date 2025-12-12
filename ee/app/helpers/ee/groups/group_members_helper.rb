@@ -67,7 +67,7 @@ module EE::Groups::GroupMembersHelper
   end
 
   def qualified_for_user_confirmation_bypass(group)
-    Feature.enabled?(:group_owner_placeholder_confirmation_bypass, group) && group.domain_verification_available?
+    group.domain_verification_available?
   end
 
   override :allow_group_owner_enterprise_bypass?
