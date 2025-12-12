@@ -44,6 +44,7 @@ module Ai
 
       scope :not_for_projects, ->(project) { where.not(project: project) }
       scope :for_projects, ->(projects) { where(project: projects) }
+      scope :for_groups, ->(groups) { where(group: groups) }
       scope :for_container_item_pairs, ->(container_type, container_item_pairs) do
         raise ArgumentError, "Unknown container_type: #{container_type}" unless container_type.in?([:project, :group])
 

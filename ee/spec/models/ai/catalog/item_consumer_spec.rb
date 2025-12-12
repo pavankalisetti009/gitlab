@@ -380,6 +380,21 @@ RSpec.describe Ai::Catalog::ItemConsumer, feature_category: :workflow_catalog do
       end
     end
 
+    describe '.for_groups' do
+      it 'includes records that belong to the given groups' do
+        included_groups = create_list(:group, 2)
+        included_item_consumers = included_groups.map do |group|
+          create(:ai_catalog_item_consumer, group: group)
+        end
+
+        create(:ai_catalog_item_consumer, group: create(:group))
+
+        expect(described_class.for_groups(included_groups)).to match_array(
+          included_item_consumers
+        )
+      end
+    end
+
     describe '.for_container_item_pairs' do
       let_it_be(:group) { create(:group) }
       let_it_be(:project1) { create(:project) }

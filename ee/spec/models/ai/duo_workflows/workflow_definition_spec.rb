@@ -74,6 +74,35 @@ RSpec.describe Ai::DuoWorkflows::WorkflowDefinition, feature_category: :duo_agen
     it { is_expected.to eq(expected_hash) }
   end
 
+  describe '#foundational_flow' do
+    subject(:foundational_flow) { definition.foundational_flow }
+
+    context 'with foundational_flow_reference' do
+      let_it_be(:definition) { described_class.new(foundational_flow_reference: 'code_review') }
+      let_it_be(:duo_code_review) { create(:ai_catalog_item, foundational_flow_reference: 'code_review') }
+
+      it 'returns the corresponding foundational workflow catalog item' do
+        expect(foundational_flow).to eq(duo_code_review)
+      end
+    end
+
+    context 'without foundational_flow_reference' do
+      let_it_be(:definition) { described_class.new(foundational_flow_reference: nil) }
+
+      it 'returns nil' do
+        expect(foundational_flow).to be_nil
+      end
+    end
+
+    context 'when the corresponding foundational workflow does not exist' do
+      let_it_be(:definition) { described_class.new(foundational_flow_reference: 'code_review') }
+
+      it 'returns nil' do
+        expect(foundational_flow).to be_nil
+      end
+    end
+  end
+
   describe '#description' do
     subject(:description) { definition.description }
 

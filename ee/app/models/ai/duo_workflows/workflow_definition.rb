@@ -5,6 +5,7 @@ module Ai
     class WorkflowDefinition
       include ActiveRecord::FixedItemsModel::Model
       include GlobalID::Identification
+      include Gitlab::Utils::StrongMemoize
 
       ITEMS = [
         {
@@ -81,6 +82,13 @@ module Ai
       def pre_approved_agent_privileges=(value)
         super(Array(value).map { |v| Integer(v) })
       end
+
+      def foundational_flow
+        return if foundational_flow_reference.nil?
+
+        Ai::Catalog::Item.with_foundational_flow_reference(foundational_flow_reference).first
+      end
+      strong_memoize_attr :foundational_flow
 
       def as_json(_options = {})
         {
