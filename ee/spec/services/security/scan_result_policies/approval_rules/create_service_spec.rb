@@ -90,9 +90,7 @@ RSpec.describe Security::ScanResultPolicies::ApprovalRules::CreateService, featu
             enforcement_type: 'enforce'
           })
           .and increment_usage_metrics(
-            'redis_hll_counters.count_distinct_namespace_id_from_applied_enforce_merge_request_approval_policies_monthly' # rubocop disable Layout/LineLength
-          )
-          .and increment_usage_metrics(
+            'redis_hll_counters.count_distinct_namespace_id_from_applied_enforce_merge_request_approval_policies_monthly', # rubocop disable Layout/LineLength
             'redis_hll_counters.count_distinct_project_id_from_applied_enforce_merge_request_approval_policies_monthly'
           )
       end
@@ -110,9 +108,7 @@ RSpec.describe Security::ScanResultPolicies::ApprovalRules::CreateService, featu
               enforcement_type: 'warn'
             })
             .and increment_usage_metrics(
-              'redis_hll_counters.count_distinct_namespace_id_from_applied_warn_merge_request_approval_policies_monthly'
-            )
-            .and increment_usage_metrics(
+              'redis_hll_counters.count_distinct_namespace_id_from_applied_warn_merge_request_approval_policies_monthly', # rubocop disable Layout/LineLength
               'redis_hll_counters.count_distinct_project_id_from_applied_warn_merge_request_approval_policies_monthly'
             )
         end
