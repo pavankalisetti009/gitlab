@@ -207,6 +207,14 @@ module API
             wrkf_params
           end
 
+          def container_access_allowed?(container)
+            if container.is_a?(Project)
+              current_user.can?(:read_project, container)
+            else
+              current_user.can?(:read_group, container)
+            end
+          end
+
           params :workflow_params do
             optional :project_id, type: String, desc: 'The ID or path of the workflow project',
               documentation: { example: '1' }
@@ -270,7 +278,6 @@ module API
             optional :merge_request_id, type: Integer,
               desc: 'IID of the MergeRequest noteable that the workflow is associated with.',
               documentation: { example: 123 }
-            at_least_one_of :project_id, :namespace_id
             mutually_exclusive :workflow_definition, :ai_catalog_item_version_id, :ai_catalog_item_consumer_id
           end
         end
@@ -441,7 +448,16 @@ module API
                               find_project!(params[:project_id])
                             elsif params[:namespace_id]
                               find_namespace!(params[:namespace_id])
+                            else
+                              current_user.user_preference.duo_default_namespace_with_fallback
                             end
+
+                if container.nil?
+                  bad_request!('No default namespace found. Please provide project_id or namespace_id, ' \
+                    'or configure a default Duo namespace.')
+                end
+
+                forbidden!('Access to the container is not allowed') unless container_access_allowed?(container)
 
                 if params[:ai_catalog_item_consumer_id]
                   unless container.is_a?(Project)

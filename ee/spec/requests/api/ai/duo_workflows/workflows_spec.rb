@@ -118,12 +118,57 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
       context 'when neither project_id nor namespace_id are specified' do
         let(:container) { {} }
 
-        it 'returns error' do
-          post api(path, user), params: params
+        context 'when user has a default duo namespace' do
+          let(:default_namespace) { create(:group) }
 
-          expect(response).to have_gitlab_http_status(:bad_request)
-          expect(response.body).to include(
-            'project_id, namespace_id are missing, at least one parameter must be provided')
+          before do
+            default_namespace.add_developer(user)
+            allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(default_namespace,
+              :agentic_chat).and_return(true)
+            user.user_preference.update!(duo_default_namespace_id: default_namespace.id)
+            allow(Ability).to receive(:allowed?).and_call_original
+            allow(Ability).to receive(:allowed?).with(user, :access_duo_agentic_chat,
+              default_namespace).and_return(true)
+          end
+
+          it 'creates a workflow using the default namespace' do
+            post api(path, user), params: params
+
+            expect(response).to have_gitlab_http_status(:created)
+            created_workflow = Ai::DuoWorkflows::Workflow.last
+            expect(json_response['id']).to eq(created_workflow.id)
+            expect(json_response['namespace_id']).to eq(default_namespace.id)
+            expect(json_response['project_id']).to be_nil
+          end
+        end
+
+        context 'when user has no default duo namespace' do
+          before do
+            allow_any_instance_of(UserPreference).to receive(:duo_default_namespace_with_fallback).and_return(nil) # rubocop:disable RSpec/AnyInstanceOf -- user is reloaded during request
+          end
+
+          it 'returns error' do
+            post api(path, user), params: params
+
+            expect(response).to have_gitlab_http_status(:bad_request)
+            expect(response.body).to include('No default namespace found')
+          end
+        end
+
+        context 'when user cannot access their default duo namespace' do
+          let(:inaccessible_namespace) { create(:group, :private) }
+
+          before do
+            # User is NOT a member of this private namespace
+            allow_any_instance_of(UserPreference).to receive(:duo_default_namespace_with_fallback).and_return(inaccessible_namespace) # rubocop:disable RSpec/AnyInstanceOf -- user is reloaded during request
+          end
+
+          it 'returns forbidden error' do
+            post api(path, user), params: params
+
+            expect(response).to have_gitlab_http_status(:forbidden)
+            expect(response.body).to include('Access to the container is not allowed')
+          end
         end
       end
 
@@ -140,6 +185,26 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
           expect(json_response['project_id']).to eq(created_workflow.project.id)
           expect(json_response['project_id']).to eq(project.id)
           expect(json_response['namespace_id']).to be_nil
+        end
+      end
+
+      context 'when project_id does not exist' do
+        let(:container) { { project_id: non_existing_record_id } }
+
+        it 'returns not found error' do
+          post api(path, user), params: params
+
+          expect(response).to have_gitlab_http_status(:not_found)
+        end
+      end
+
+      context 'when namespace_id does not exist' do
+        let(:container) { { namespace_id: non_existing_record_id } }
+
+        it 'returns not found error' do
+          post api(path, user), params: params
+
+          expect(response).to have_gitlab_http_status(:not_found)
         end
       end
     end
