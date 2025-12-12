@@ -16,7 +16,8 @@ RSpec.describe <%= migration_class_name %>, migration: :gitlab_?, feature_catego
         expect(batched_migration).to have_scheduled_batched_migration(
           gitlab_schema: # :gitlab_main_org / :gitlab_ci / ...
           table_name: :<%= table_name %>,
-          column_name: :<%= column_name %>
+          column_name: :<%= column_name %>,
+          sub_batch_size: described_class::SUB_BATCH_SIZE
         )
       }
     end
