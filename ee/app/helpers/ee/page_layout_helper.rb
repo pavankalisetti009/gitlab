@@ -14,6 +14,7 @@ module EE
       is_agentic_available = ::Gitlab::Llm::TanukiBot.agentic_mode_available?(
         user: user, project: project, group: group
       )
+      is_classic_chat_available = ::Gitlab::Llm::TanukiBot.classic_chat_available?(user: user)
       chat_disabled_reason = ::Gitlab::Llm::TanukiBot.chat_disabled_reason(
         user: user, container: project || group
       )
@@ -30,6 +31,7 @@ module EE
         metadata: ::Gitlab::DuoWorkflow::Client.metadata(user).to_json,
         user_model_selection_enabled: user_model_selection_enabled.to_s,
         agentic_available: is_agentic_available.to_s,
+        classic_available: is_classic_chat_available.to_s,
         force_agentic_mode_for_core_duo_users: force_agentic_mode_for_core_duo_users?(user).to_s,
         agentic_unavailable_message: agentic_unavailable_message(user, project || group, is_agentic_available),
         chat_title: chat_title,
@@ -45,18 +47,16 @@ module EE
 
       response = user.allowed_to_use(:duo_chat)
 
-      if response.allowed? && container.nil? && VALID_DUO_ADD_ONS.include?(response.enablement_type)
-        preferences_url = '/-/profile/preferences#user_duo_default_namespace_id'
-        preferences_link = link_to('', preferences_url)
-        return safe_format(
-          s_('DuoChat|Duo Agentic Chat is not available at the moment in this page. To work with Duo Agentic Chat in pages outside the scope of a project please select a %{strong_start}Default GitLab Duo namespace%{strong_end} in your %{preferences_link_start}User Profile Preferences%{preferences_link_end}.'),
-          tag_pair(content_tag(:strong, ''), :strong_start, :strong_end).merge(
-            tag_pair(preferences_link, :preferences_link_start, :preferences_link_end)
-          )
-        )
-      end
+      return unless response.allowed? && container.nil? && VALID_DUO_ADD_ONS.include?(response.enablement_type)
 
-      s_("DuoChat|You don't currently have access to Duo Chat, please contact your GitLab administrator.")
+      preferences_url = '/-/profile/preferences#user_duo_default_namespace_id'
+      preferences_link = link_to('', preferences_url)
+      safe_format(
+        s_('DuoChat|Duo Agentic Chat is not available at the moment in this page. To work with Duo Agentic Chat in pages outside the scope of a project please select a %{strong_start}Default GitLab Duo namespace%{strong_end} in your %{preferences_link_start}User Profile Preferences%{preferences_link_end}.'),
+        tag_pair(content_tag(:strong, ''), :strong_start, :strong_end).merge(
+          tag_pair(preferences_link, :preferences_link_start, :preferences_link_end)
+        )
+      )
     end
     # rubocop:enable Layout/LineLength
 
