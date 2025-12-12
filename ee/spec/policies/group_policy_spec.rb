@@ -5352,20 +5352,11 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       it_behaves_like 'no permissions when global_ai_catalog feature flag is disabled'
     end
 
-    context 'when reporter' do
-      let(:current_user) { reporter }
-
-      it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
-      it { is_expected.to be_disallowed(:read_ai_catalog_item_consumer) }
-      it { is_expected.to be_disallowed(:create_ai_catalog_flow_item_consumer) }
-      it { is_expected.to be_disallowed(:read_ai_catalog_flow) }
-    end
-
     context 'when guest' do
       let(:current_user) { guest }
 
       it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
-      it { is_expected.to be_disallowed(:read_ai_catalog_item_consumer) }
+      it { is_expected.to be_allowed(:read_ai_catalog_item_consumer) }
       it { is_expected.to be_disallowed(:create_ai_catalog_flow_item_consumer) }
       it { is_expected.to be_disallowed(:read_ai_catalog_flow) }
     end

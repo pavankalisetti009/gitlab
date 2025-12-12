@@ -658,7 +658,6 @@ module EE
         enable :read_group_audit_events
         enable :read_vulnerability_statistics
         enable :read_security_inventory
-        enable :read_ai_catalog_item_consumer
         enable :read_ai_catalog_flow
       end
 
@@ -1040,7 +1039,10 @@ module EE
         enable :read_epic_iid
       end
 
-      rule { guest }.enable :read_limit_alert
+      rule { guest }.policy do
+        enable :read_limit_alert
+        enable :read_ai_catalog_item_consumer
+      end
 
       rule { can?(:read_group) & chat_allowed_for_group & chat_available_for_user & duo_features_enabled }.enable :access_duo_chat
 
