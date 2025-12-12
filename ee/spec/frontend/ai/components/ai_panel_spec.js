@@ -94,6 +94,82 @@ describe('AiPanel', () => {
     expect(findNavigationRail().exists()).toBe(true);
   });
 
+  describe('agent selection flow', () => {
+    describe('when panel is closed', () => {
+      beforeEach(() => {
+        createComponent();
+      });
+
+      it('opens panel when new-chat event is emitted', async () => {
+        expect(findContentContainer().exists()).toBe(false);
+        findNavigationRail().vm.$emit('new-chat');
+        await nextTick();
+
+        expect(findContentContainer().exists()).toBe(true);
+        expect(findContentContainer().isVisible()).toBe(true);
+        expect(findContentContainer().props('activeTab')).toEqual({
+          title: 'New Chat',
+          component: DuoAgenticChat,
+          props: {
+            mode: 'new',
+            isAgenticAvailable: true,
+            isEmbedded: true,
+            showStudioHeader: true,
+          },
+        });
+      });
+
+      it('switches to new tab when new-chat is emitted', async () => {
+        expect(findContentContainer().exists()).toBe(false);
+        findNavigationRail().vm.$emit('new-chat');
+        await nextTick();
+
+        expect(duoChatGlobalState.activeTab).toBe('new');
+        expect(Cookies.get(aiPanelStateCookie)).toBe('new');
+      });
+    });
+
+    describe('when panel is open', () => {
+      beforeEach(async () => {
+        createComponent();
+        findNavigationRail().vm.$emit('handleTabToggle', 'history');
+        await nextTick();
+      });
+
+      it('switches from history to new chat when new-chat is emitted', async () => {
+        expect(findContentContainer().props('activeTab').title).toBe('History');
+
+        findNavigationRail().vm.$emit('new-chat');
+        await nextTick();
+
+        expect(findContentContainer().props('activeTab')).toEqual({
+          title: 'New Chat',
+          component: DuoAgenticChat,
+          props: {
+            mode: 'new',
+            isAgenticAvailable: true,
+            isEmbedded: true,
+            showStudioHeader: true,
+          },
+        });
+        expect(duoChatGlobalState.activeTab).toBe('new');
+      });
+
+      it('ensures panel visibility when new-chat is emitted', async () => {
+        // Hide panel first
+        findNavigationRail().vm.$emit('handleTabToggle', 'history');
+        await nextTick();
+        expect(findContentContainer().isVisible()).toBe(false);
+
+        // Emit new-chat should make it visible
+        findNavigationRail().vm.$emit('new-chat');
+        await nextTick();
+
+        expect(findContentContainer().isVisible()).toBe(true);
+      });
+    });
+  });
+
   describe('panel opened state', () => {
     it('restores the state from a cookie', () => {
       Cookies.set(aiPanelStateCookie, 'chat');

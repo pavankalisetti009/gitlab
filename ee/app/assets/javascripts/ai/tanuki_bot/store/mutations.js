@@ -102,4 +102,7 @@ export default {
   [types.CLEAN_MESSAGES](state) {
     state.messages = [];
   },
+  [types.STORE_CURRENT_AGENT](state, agent) {
+    state.currentAgent = agent;
+  },
 };

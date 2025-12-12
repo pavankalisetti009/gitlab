@@ -132,11 +132,6 @@ export default {
       required: false,
       default: 'active',
     },
-    selectedAgent: {
-      type: Object,
-      required: false,
-      default: () => ({}),
-    },
     selectedAgentError: {
       type: Object,
       required: false,
@@ -333,8 +328,7 @@ export default {
       isAgenticAvailable: this.chatConfiguration?.defaultProps?.isAgenticAvailable ?? false,
       // eslint-disable-next-line vue/no-unused-properties
       userId: this.activeTabData?.props?.userId,
-      // I believe this is a default chat agent name
-      duoChatTitle: s__('DuoAgenticChat|Duo Agent'),
+      duoChatTitle: s__('DuoAgenticChat|GitLab Duo'),
       isLoading: false,
       isWaitingOnPrompt: false,
       lastProcessedMessageId: null,
@@ -344,7 +338,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(['messages']),
+    ...mapState(['messages', 'currentAgent']),
     dimensions() {
       if (!this.isEmbedded) {
         return {};
@@ -437,25 +431,6 @@ export default {
         defaultModel: this.defaultModel,
       });
     },
-    dynamicTitle() {
-      if (!this.aiCatalogItemVersionId && !this.selectedFoundationalAgent) {
-        return this.duoChatTitle;
-      }
-
-      let activeAgent = null;
-
-      if (this.aiCatalogItemVersionId) {
-        activeAgent = this.catalogAgents.find(
-          (agent) => agent.pinnedItemVersionId === this.aiCatalogItemVersionId,
-        );
-      } else {
-        activeAgent = this.foundationalAgents.find(
-          (agent) => agent.id === this.selectedFoundationalAgent.id,
-        );
-      }
-
-      return activeAgent ? activeAgent.name : this.duoChatTitle;
-    },
     window() {
       return window;
     },
@@ -538,9 +513,6 @@ export default {
     mode(newMode) {
       this.switchMode(newMode);
     },
-    selectedAgent(newAgent) {
-      if (newAgent) this.onNewChat(newAgent);
-    },
     selectedAgentError(newError) {
       if (newError) this.onError(newError);
     },
@@ -574,7 +546,7 @@ export default {
     this.$emit('change-title');
   },
   methods: {
-    ...mapActions(['addDuoChatMessage', 'setMessages']),
+    ...mapActions(['addDuoChatMessage', 'setMessages', 'setCurrentAgent']),
     clearActiveThread() {
       this.setMessages([]);
       this.lastProcessedMessageId = null;
@@ -807,7 +779,7 @@ export default {
 
     async onSendChatPrompt(question) {
       if (this.shouldStartNewChat(question)) {
-        this.onNewChat(null, true);
+        this.onNewChat(true);
         return;
       }
 
@@ -931,6 +903,14 @@ export default {
         }
       } finally {
         this.isLoading = false;
+        if (this.aiCatalogItemVersionId) {
+          const activeAgent = this.catalogAgents.find(
+            (agent) => agent.pinnedItemVersionId === this.aiCatalogItemVersionId,
+          );
+          this.setCurrentAgent(activeAgent);
+        } else if (this.selectedFoundationalAgent) {
+          this.setCurrentAgent(this.selectedFoundationalAgent);
+        }
       }
     },
     async loadActiveThread() {
@@ -984,7 +964,7 @@ export default {
         this.onError(err);
       }
     },
-    async onNewChat(agent, reuseAgent) {
+    async onNewChat(reuseAgent) {
       clearDuoChatCommands();
       this.clearActiveThread();
 
@@ -996,7 +976,7 @@ export default {
       this.agentOrWorkflowDeletedError = '';
       this.$emit('change-title');
 
-      const agentState = prepareAgentSelection(agent, reuseAgent);
+      const agentState = prepareAgentSelection(this.currentAgent, reuseAgent);
       if (agentState) {
         Object.assign(this, agentState);
       }
@@ -1017,7 +997,7 @@ export default {
       if (model) {
         this.currentModel = model;
         saveModel(model);
-        this.onNewChat(null, true);
+        this.onNewChat(true);
       }
     },
     validateAgentExists() {
@@ -1097,7 +1077,7 @@ export default {
       id="duo-chat"
       ref="chat"
       :chat-state="chatState"
-      :title="dynamicTitle"
+      :title="currentAgent ? currentAgent.name : duoChatTitle"
       :messages="messages"
       :is-loading="isWaitingOnPrompt"
       :predefined-prompts="predefinedPrompts"
