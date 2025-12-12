@@ -1,13 +1,20 @@
 import { xor, omit } from 'lodash';
 import {
+  ANY_OPERATOR,
+  GREATER_THAN_OPERATOR,
+  BRANCH_EXCEPTIONS_KEY,
+} from 'ee/security_orchestration/components/policy_editor/constants';
+import {
   AGE,
   AGE_TOOLTIP_NO_PREVIOUSLY_EXISTING_VULNERABILITY,
   AGE_TOOLTIP_MAXIMUM_REACHED,
+  ATTRIBUTE,
   DEFAULT_VULNERABILITY_STATES,
   NEWLY_DETECTED,
   PREVIOUSLY_EXISTING,
   FIX_AVAILABLE,
   FALSE_POSITIVE,
+  STATUS,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_filters/constants';
 
 /**
@@ -58,6 +65,31 @@ export function enableAttributeFilter(attributes) {
 }
 
 /**
+ * Select/deselect filters
+ * @param filter needs to be toggled
+ * @param filters source object with all filters
+ * @param onAttribute custom logic for attributes if required
+ * @param vulnerabilityAttributes has more complex logic, requires whole object
+ * @returns {*}
+ */
+export function selectFilter(filter, filters, { onAttribute, vulnerabilityAttributes } = {}) {
+  switch (filter) {
+    case STATUS:
+      return enableStatusFilter(filters);
+    case ATTRIBUTE:
+      if (onAttribute) {
+        onAttribute(enableAttributeFilter(vulnerabilityAttributes));
+      }
+      return filters;
+    default:
+      return {
+        ...filters,
+        [filter]: [],
+      };
+  }
+}
+
+/**
  * Remove property from payload
  * @param payload
  * @param key to be removed
@@ -98,4 +130,51 @@ export const selectEmptyArrayWhenAllSelected = (values = [], allCount) => {
   }
 
   return values.length === allCount ? [] : values;
+};
+
+/**
+ * Get collapse icon based on visibility state
+ * @param isVisible
+ * @returns {string}
+ */
+export const getCollapseIcon = (isVisible) => {
+  return isVisible ? 'chevron-up' : 'chevron-down';
+};
+
+/**
+ * Get vulnerabilities operator based on allowed count
+ * @param vulnerabilitiesAllowed
+ * @returns {string}
+ */
+export const getSelectedVulnerabilitiesOperator = (vulnerabilitiesAllowed) => {
+  return vulnerabilitiesAllowed === 0 ? ANY_OPERATOR : GREATER_THAN_OPERATOR;
+};
+
+/**
+ * Remove branch exceptions from scanner object
+ * @param scanner
+ * @returns {Object}
+ */
+export const removeExceptionsFromScanner = (scanner) => {
+  const updatedScanner = { ...scanner };
+  if (BRANCH_EXCEPTIONS_KEY in updatedScanner) {
+    delete updatedScanner[BRANCH_EXCEPTIONS_KEY];
+  }
+  return updatedScanner;
+};
+
+/**
+ * Update severity levels on scanner object
+ * @param scanner
+ * @param value
+ * @returns {Object}
+ */
+export const updateSeverityLevels = (scanner, value) => {
+  const updatedScanner = { ...scanner };
+  if (value && value.length > 0) {
+    updatedScanner.severity_levels = value;
+  } else {
+    delete updatedScanner.severity_levels;
+  }
+  return updatedScanner;
 };

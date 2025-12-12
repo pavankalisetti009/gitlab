@@ -1,36 +1,36 @@
-import { nextTick } from 'vue';
 import { GlCollapse } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import SastScanner from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scanners/sast_scanner.vue';
+import BaseSeverityStatusScanner from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scanners/base_severity_status_scanner.vue';
 import BranchRuleSection from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scanners/branch_rule_section.vue';
 import ScannerHeader from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scanners/scanner_header.vue';
 import SeverityFilter from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_filters/severity_filter.vue';
 import StatusFilters from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_filters/status_filters.vue';
-import AttributeFilter from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_filters/attribute_filter.vue';
 import ScanFilterSelector from 'ee/security_orchestration/components/policy_editor/scan_filter_selector.vue';
 import {
-  FALSE_POSITIVE,
   STATUS,
   NEWLY_DETECTED,
   PREVIOUSLY_EXISTING,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_filters/constants';
 
-describe('SastScanner', () => {
+describe('BaseSeverityStatusScanner', () => {
   let wrapper;
 
   const defaultRule = {
     type: 'scan_finding',
     branches: [],
-    scanners: ['sast'],
+    scanners: ['dast'],
     vulnerabilities_allowed: 0,
     severity_levels: [],
     vulnerability_states: [],
   };
 
+  const defaultTitle = 'Test Scanner Title';
+
   const createComponent = (scanner = defaultRule, options = {}) => {
-    wrapper = shallowMountExtended(SastScanner, {
+    wrapper = shallowMountExtended(BaseSeverityStatusScanner, {
       propsData: {
         scanner,
+        title: defaultTitle,
         ...options,
       },
       provide: {
@@ -44,7 +44,6 @@ describe('SastScanner', () => {
   const findBranchRuleSection = () => wrapper.findComponent(BranchRuleSection);
   const findSeverityFilter = () => wrapper.findComponent(SeverityFilter);
   const findStatusFilters = () => wrapper.findComponent(StatusFilters);
-  const findAttributeFilter = () => wrapper.findComponent(AttributeFilter);
   const findFilterSelector = () => wrapper.findComponent(ScanFilterSelector);
 
   describe('rendering', () => {
@@ -55,12 +54,13 @@ describe('SastScanner', () => {
       expect(findScannerHeader().exists()).toBe(true);
       expect(findBranchRuleSection().exists()).toBe(true);
       expect(findSeverityFilter().exists()).toBe(true);
-      expect(findAttributeFilter().exists()).toBe(true);
-      expect(findAttributeFilter().props('attribute')).toBe(FALSE_POSITIVE);
-      expect(findAttributeFilter().props('operatorValue')).toBe(false);
-      expect(findAttributeFilter().props('disabled')).toBe(true);
-      expect(findAttributeFilter().props('showRemoveButton')).toBe(false);
       expect(findFilterSelector().exists()).toBe(true);
+    });
+
+    it('passes title prop to ScannerHeader', () => {
+      createComponent();
+
+      expect(findScannerHeader().props('title')).toBe(defaultTitle);
     });
 
     it('passes scanner prop to BranchRuleSection', () => {
@@ -77,9 +77,6 @@ describe('SastScanner', () => {
       severity_levels: ['high', 'critical'],
       branch_exceptions: ['main'],
       vulnerability_states: ['detected', 'confirmed'],
-      vulnerability_attributes: {
-        [FALSE_POSITIVE]: true,
-      },
     };
 
     beforeEach(() => {
@@ -100,12 +97,6 @@ describe('SastScanner', () => {
 
     it('renders status filters when vulnerability states are present', () => {
       expect(findStatusFilters().exists()).toBe(true);
-    });
-
-    it('renders attribute filter with false_positive attribute', () => {
-      expect(findAttributeFilter().exists()).toBe(true);
-      expect(findAttributeFilter().props('attribute')).toBe(FALSE_POSITIVE);
-      expect(findAttributeFilter().props('operatorValue')).toBe(true);
     });
   });
 
@@ -190,28 +181,6 @@ describe('SastScanner', () => {
         expect(wrapper.emitted('changed')).toHaveLength(1);
       });
     });
-
-    describe('attribute filter', () => {
-      beforeEach(() => {
-        createComponent({
-          ...defaultRule,
-          vulnerability_attributes: {
-            [FALSE_POSITIVE]: true,
-          },
-        });
-      });
-
-      it('emits changed event when attribute filter value changes', () => {
-        findAttributeFilter().vm.$emit('input', false);
-
-        expect(wrapper.emitted('changed')).toHaveLength(1);
-        expect(wrapper.emitted('changed')[0][0]).toMatchObject({
-          vulnerability_attributes: {
-            [FALSE_POSITIVE]: false,
-          },
-        });
-      });
-    });
   });
 
   describe('selecting filter', () => {
@@ -222,8 +191,7 @@ describe('SastScanner', () => {
     it('adds new status filter when selected', async () => {
       expect(findFilterSelector().props('selected')[NEWLY_DETECTED]).toBe(true);
 
-      findFilterSelector().vm.$emit('select', STATUS);
-      await nextTick();
+      await findFilterSelector().vm.$emit('select', STATUS);
 
       expect(findFilterSelector().props('selected')[PREVIOUSLY_EXISTING]).toBe(true);
     });
@@ -284,8 +252,7 @@ describe('SastScanner', () => {
 
       expect(findCollapse().props('visible')).toBe(true);
 
-      findScannerHeader().vm.$emit('toggle');
-      await nextTick();
+      await findScannerHeader().vm.$emit('toggle');
 
       expect(findCollapse().props('visible')).toBe(false);
     });

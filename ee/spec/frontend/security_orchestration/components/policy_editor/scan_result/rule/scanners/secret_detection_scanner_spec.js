@@ -1,10 +1,10 @@
-import { GlCollapse, GlSprintf } from '@gitlab/ui';
+import { nextTick } from 'vue';
+import { GlCollapse } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { CRITICAL, HIGH } from 'ee/vulnerabilities/constants';
 import SecretDetectionScanner from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scanners/secret_detection_scanner.vue';
-import BranchSelection from 'ee/security_orchestration/components/policy_editor/branch_selection.vue';
-import BranchExceptionSelector from 'ee/security_orchestration/components/policy_editor/branch_exception_selector.vue';
-import NumberRangeSelect from 'ee/security_orchestration/components/policy_editor/scan_result/rule/number_range_select.vue';
+import BranchRuleSection from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scanners/branch_rule_section.vue';
+import ScannerHeader from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scanners/scanner_header.vue';
 import SeverityFilter from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_filters/severity_filter.vue';
 import StatusFilter from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_filters/status_filter.vue';
 import AttributeFilter from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_filters/attribute_filter.vue';
@@ -32,16 +32,12 @@ describe('SecretDetectionScanner', () => {
       provide: {
         namespaceType: 'project',
       },
-      stubs: {
-        GlSprintf,
-      },
     });
   };
 
   const findCollapse = () => wrapper.findComponent(GlCollapse);
-  const findBranchSelection = () => wrapper.findComponent(BranchSelection);
-  const findBranchExceptionSelector = () => wrapper.findComponent(BranchExceptionSelector);
-  const findNumberRangeSelect = () => wrapper.findComponent(NumberRangeSelect);
+  const findScannerHeader = () => wrapper.findComponent(ScannerHeader);
+  const findBranchRuleSection = () => wrapper.findComponent(BranchRuleSection);
   const findSeverityFilter = () => wrapper.findComponent(SeverityFilter);
   const findStatusFilter = () => wrapper.findComponent(StatusFilter);
   const findAttributeFilter = () => wrapper.findComponent(AttributeFilter);
@@ -52,9 +48,8 @@ describe('SecretDetectionScanner', () => {
       createComponent();
 
       expect(findCollapse().exists()).toBe(true);
-      expect(findBranchSelection().exists()).toBe(true);
-      expect(findBranchExceptionSelector().exists()).toBe(true);
-      expect(findNumberRangeSelect().exists()).toBe(true);
+      expect(findScannerHeader().exists()).toBe(true);
+      expect(findBranchRuleSection().exists()).toBe(true);
       expect(findSeverityFilter().exists()).toBe(true);
       expect(findStatusFilter().exists()).toBe(true);
     });
@@ -70,6 +65,12 @@ describe('SecretDetectionScanner', () => {
 
       expect(findFilterSelector().exists()).toBe(false);
     });
+
+    it('passes scanner prop to BranchRuleSection', () => {
+      createComponent();
+
+      expect(findBranchRuleSection().props('scanner')).toEqual(defaultRule);
+    });
   });
 
   describe('default severity levels', () => {
@@ -81,26 +82,28 @@ describe('SecretDetectionScanner', () => {
   });
 
   describe('existing rule', () => {
+    const ruleWithValues = {
+      ...defaultRule,
+      vulnerabilities_allowed: 5,
+      severity_levels: ['high', 'critical', 'medium'],
+      branch_exceptions: ['main'],
+      vulnerability_states: ['new_needs_triage'],
+    };
+
     beforeEach(() => {
-      createComponent({
-        ...defaultRule,
-        vulnerabilities_allowed: 5,
-        severity_levels: ['high', 'critical', 'medium'],
-        branch_exceptions: ['main'],
-        vulnerability_states: ['new_needs_triage'],
-      });
+      createComponent(ruleWithValues);
     });
 
-    it('passes vulnerabilities allowed value to number range select', () => {
-      expect(findNumberRangeSelect().props('value')).toBe(5);
+    it('passes vulnerabilities allowed value to branch rule section', () => {
+      expect(findBranchRuleSection().props('vulnerabilitiesAllowed')).toBe(5);
     });
 
     it('passes severity levels to severity filter', () => {
       expect(findSeverityFilter().props('selected')).toEqual(['high', 'critical', 'medium']);
     });
 
-    it('passes branch exceptions to branch exception selector', () => {
-      expect(findBranchExceptionSelector().props('selectedExceptions')).toEqual(['main']);
+    it('passes branch exceptions to branch rule section', () => {
+      expect(findBranchRuleSection().props('branchExceptions')).toEqual(['main']);
     });
 
     it('renders status filter when vulnerability states are present', () => {
@@ -113,10 +116,10 @@ describe('SecretDetectionScanner', () => {
       createComponent();
     });
 
-    it('emits changed event when branch selection changes', () => {
+    it('emits changed event when branch rule section emits changed', () => {
       const payload = { branches: ['main'] };
 
-      findBranchSelection().vm.$emit('changed', payload);
+      findBranchRuleSection().vm.$emit('changed', payload);
 
       expect(wrapper.emitted('changed')).toHaveLength(1);
       expect(wrapper.emitted('changed')[0][0]).toMatchObject(payload);
@@ -128,14 +131,14 @@ describe('SecretDetectionScanner', () => {
         branch_exceptions: ['main'],
       });
 
-      findBranchExceptionSelector().vm.$emit('remove');
+      findBranchRuleSection().vm.$emit('remove-exceptions');
 
       expect(wrapper.emitted('changed')).toHaveLength(1);
       expect(wrapper.emitted('changed')[0][0]).not.toHaveProperty('branch_exceptions');
     });
 
     it('emits changed event when vulnerabilities allowed changes', () => {
-      findNumberRangeSelect().vm.$emit('input', 10);
+      findBranchRuleSection().vm.$emit('range-input', 10);
 
       expect(wrapper.emitted('changed')).toHaveLength(1);
       expect(wrapper.emitted('changed')[0][0]).toMatchObject({
@@ -184,6 +187,17 @@ describe('SecretDetectionScanner', () => {
 
     it('can be collapsed', () => {
       createComponent(defaultRule, { visible: false });
+
+      expect(findCollapse().props('visible')).toBe(false);
+    });
+
+    it('toggles collapse when header emits toggle', async () => {
+      createComponent();
+
+      expect(findCollapse().props('visible')).toBe(true);
+
+      findScannerHeader().vm.$emit('toggle');
+      await nextTick();
 
       expect(findCollapse().props('visible')).toBe(false);
     });

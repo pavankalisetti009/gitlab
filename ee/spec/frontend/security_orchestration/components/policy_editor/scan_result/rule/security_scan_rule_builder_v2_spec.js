@@ -141,18 +141,6 @@ describe('SecurityScanRuleBuilder', () => {
         vulnerabilities_allowed: 0,
       });
     });
-
-    it('renders dast scanner', () => {
-      expect(findDastScanner().exists()).toBe(true);
-    });
-
-    it('renders api fuzzing scanner', () => {
-      expect(findApiFuzzingScanner().exists()).toBe(true);
-    });
-
-    it('renders coverage fuzzing scanner', () => {
-      expect(findCoverageFuzzingScanner().exists()).toBe(true);
-    });
   });
 
   describe('selected values', () => {

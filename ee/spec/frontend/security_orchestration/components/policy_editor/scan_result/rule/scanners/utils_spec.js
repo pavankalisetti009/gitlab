@@ -2,6 +2,7 @@ import {
   normalizeVulnerabilityStates,
   enableStatusFilter,
   enableAttributeFilter,
+  selectFilter,
   removePropertyFromPayload,
   getAgeTooltip,
   selectEmptyArrayWhenAllSelected,
@@ -71,6 +72,32 @@ describe('scan filter utils', () => {
       ${{ [FALSE_POSITIVE]: true }} | ${{ [FIX_AVAILABLE]: true, [FALSE_POSITIVE]: true }}
     `('enables attribute filters when attribute filter is selected', ({ attributes, output }) => {
       expect(enableAttributeFilter(attributes)).toEqual(output);
+    });
+  });
+
+  describe('selectFilter', () => {
+    it('enables status filter when filter is status', () => {
+      const filters = {};
+      expect(selectFilter('status', filters)).toEqual({ [NEWLY_DETECTED]: true });
+    });
+
+    it('calls onAttribute callback when filter is attribute', () => {
+      const filters = { existing: true };
+      const vulnerabilityAttributes = { [FIX_AVAILABLE]: true };
+      const onAttribute = jest.fn();
+
+      const result = selectFilter('attribute', filters, { onAttribute, vulnerabilityAttributes });
+
+      expect(onAttribute).toHaveBeenCalledWith({
+        [FIX_AVAILABLE]: true,
+        [FALSE_POSITIVE]: true,
+      });
+      expect(result).toEqual(filters);
+    });
+
+    it('adds filter with empty array for other filters', () => {
+      const filters = { existing: true };
+      expect(selectFilter('severity', filters)).toEqual({ existing: true, severity: [] });
     });
   });
 

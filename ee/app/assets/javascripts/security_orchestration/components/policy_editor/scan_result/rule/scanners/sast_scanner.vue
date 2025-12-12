@@ -1,21 +1,15 @@
 <script>
 import { isEmpty } from 'lodash';
-import { GlButton, GlSprintf, GlCollapse } from '@gitlab/ui';
+import { GlCollapse } from '@gitlab/ui';
 import { s__ } from '~/locale';
-import BranchSelection from 'ee/security_orchestration/components/policy_editor/branch_selection.vue';
-import BranchExceptionSelector from 'ee/security_orchestration/components/policy_editor/branch_exception_selector.vue';
 import SectionLayout from 'ee/security_orchestration/components/policy_editor/section_layout.vue';
 import { CRITICAL, HIGH } from 'ee/vulnerabilities/constants';
 import {
   ANY_OPERATOR,
-  BRANCH_EXCEPTIONS_KEY,
-  GREATER_THAN_OPERATOR,
   SCAN_RESULT_BRANCH_TYPE_OPTIONS,
-  VULNERABILITIES_ALLOWED_OPERATORS,
 } from 'ee/security_orchestration/components/policy_editor/constants';
 import { enforceIntValue } from 'ee/security_orchestration/components/policy_editor/utils';
 import ScanFilterSelector from 'ee/security_orchestration/components/policy_editor/scan_filter_selector.vue';
-import NumberRangeSelect from 'ee/security_orchestration/components/policy_editor/scan_result/rule/number_range_select.vue';
 import SeverityFilter from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_filters/severity_filter.vue';
 import StatusFilters from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_filters/status_filters.vue';
 import AttributeFilter from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_filters/attribute_filter.vue';
@@ -29,10 +23,17 @@ import {
   buildFiltersFromRule,
   groupVulnerabilityStatesWithDefaults,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/lib';
-import { normalizeVulnerabilityStates, enableStatusFilter } from './utils';
+import {
+  normalizeVulnerabilityStates,
+  selectFilter,
+  getSelectedVulnerabilitiesOperator,
+  removeExceptionsFromScanner,
+  updateSeverityLevels,
+} from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scanners/utils';
+import ScannerHeader from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scanners/scanner_header.vue';
+import BranchRuleSection from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scanners/branch_rule_section.vue';
 
 export default {
-  VULNERABILITIES_ALLOWED_OPERATORS,
   NEWLY_DETECTED,
   PREVIOUSLY_EXISTING,
   FALSE_POSITIVE,
@@ -45,24 +46,17 @@ export default {
   ],
   i18n: {
     title: s__('SecurityOrchestration|SAST Scanning Rule'),
-    scanResultRuleCopy: s__(
-      'SecurityOrchestration|Runs against %{branches} %{branchExceptions} and finds %{vulnerabilitiesNumber} vulnerability type that matches all the following criteria:',
-    ),
-    vulnerabilitiesAllowed: s__('SecurityOrchestration|vulnerabilities allowed'),
   },
   name: 'SastScanner',
   components: {
-    NumberRangeSelect,
-    BranchSelection,
-    BranchExceptionSelector,
-    GlButton,
     GlCollapse,
-    GlSprintf,
     SectionLayout,
     SeverityFilter,
     StatusFilters,
     AttributeFilter,
     ScanFilterSelector,
+    ScannerHeader,
+    BranchRuleSection,
   },
   inject: ['namespaceType'],
   props: {
@@ -98,11 +92,8 @@ export default {
     branchTypes() {
       return SCAN_RESULT_BRANCH_TYPE_OPTIONS(this.namespaceType);
     },
-    collapseIcon() {
-      return this.localVisible ? 'chevron-up' : 'chevron-down';
-    },
     selectedVulnerabilitiesOperator() {
-      return this.vulnerabilitiesAllowed === 0 ? ANY_OPERATOR : GREATER_THAN_OPERATOR;
+      return getSelectedVulnerabilitiesOperator(this.vulnerabilitiesAllowed);
     },
     vulnerabilitiesAllowed() {
       return enforceIntValue(this.scanner.vulnerabilities_allowed);
@@ -159,24 +150,13 @@ export default {
       this.localVisible = !this.localVisible;
     },
     removeExceptions() {
-      const updatedScanner = { ...this.scanner };
-      if (BRANCH_EXCEPTIONS_KEY in updatedScanner) {
-        delete updatedScanner[BRANCH_EXCEPTIONS_KEY];
-      }
-
-      this.$emit('changed', updatedScanner);
+      this.$emit('changed', removeExceptionsFromScanner(this.scanner));
     },
     setRange(value) {
       this.triggerChanged({ vulnerabilities_allowed: value });
     },
     setSeverityLevels(value) {
-      const updatedScanner = { ...this.scanner };
-      if (value && value.length > 0) {
-        updatedScanner.severity_levels = value;
-      } else {
-        delete updatedScanner.severity_levels;
-      }
-      this.$emit('changed', updatedScanner);
+      this.$emit('changed', updateSeverityLevels(this.scanner, value));
     },
     setVulnerabilityStates(vulnerabilityStates) {
       this.triggerChanged({
@@ -198,16 +178,7 @@ export default {
       });
     },
     selectFilter(filter) {
-      switch (filter) {
-        case STATUS:
-          this.filters = enableStatusFilter(this.filters);
-          break;
-        default:
-          this.filters = {
-            ...this.filters,
-            [filter]: [],
-          };
-      }
+      this.filters = selectFilter(filter, this.filters);
     },
     shouldDisableFilter(filter) {
       if (filter === STATUS) {
@@ -221,51 +192,21 @@ export default {
 
 <template>
   <div>
-    <div class="gl-flex" :class="{ 'gl-mb-3': localVisible }">
-      <gl-button
-        category="tertiary"
-        :area-label="collapseIcon"
-        :icon="collapseIcon"
-        @click="toggleCollapse"
-      />
-      <h5>{{ $options.i18n.title }}</h5>
-    </div>
+    <scanner-header :title="$options.i18n.title" :visible="localVisible" @toggle="toggleCollapse" />
 
     <gl-collapse v-model="localVisible">
-      <section-layout class="gl-bg-white" :show-remove-button="false">
-        <template #content>
-          <gl-sprintf :message="$options.i18n.scanResultRuleCopy">
-            <template #branches>
-              <branch-selection
-                :init-rule="scanner"
-                :branch-types="branchTypes"
-                @changed="triggerChanged($event)"
-                @set-branch-type="setBranchType"
-              />
-            </template>
-
-            <template #branchExceptions>
-              <branch-exception-selector
-                :selected-exceptions="branchExceptions"
-                @remove="removeExceptions"
-                @select="triggerChanged"
-              />
-            </template>
-
-            <template #vulnerabilitiesNumber>
-              <number-range-select
-                id="vulnerabilities-allowed"
-                :value="vulnerabilitiesAllowed"
-                :label="$options.i18n.vulnerabilitiesAllowed"
-                :selected="selectedVulnerabilitiesOperator"
-                :operators="$options.VULNERABILITIES_ALLOWED_OPERATORS"
-                @operator-change="handleVulnerabilitiesOperatorChange"
-                @input="setRange"
-              />
-            </template>
-          </gl-sprintf>
-        </template>
-      </section-layout>
+      <branch-rule-section
+        :scanner="scanner"
+        :branch-types="branchTypes"
+        :branch-exceptions="branchExceptions"
+        :vulnerabilities-allowed="vulnerabilitiesAllowed"
+        :selected-operator="selectedVulnerabilitiesOperator"
+        @changed="triggerChanged($event)"
+        @set-branch-type="setBranchType"
+        @remove-exceptions="removeExceptions"
+        @operator-change="handleVulnerabilitiesOperatorChange"
+        @range-input="setRange"
+      />
 
       <section-layout
         class="gl-mt-4 gl-bg-white gl-px-0 gl-py-0"

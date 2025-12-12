@@ -10,13 +10,11 @@ import StatusFilters from 'ee/security_orchestration/components/policy_editor/sc
 import { SEVERITY_LEVELS } from 'ee/security_dashboard/constants';
 import {
   AGE,
-  ATTRIBUTE,
   FILTERS,
   NEWLY_DETECTED,
   PREVIOUSLY_EXISTING,
   FIX_AVAILABLE,
   FALSE_POSITIVE,
-  STATUS,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_filters/constants';
 import {
   buildFiltersFromRule,
@@ -25,8 +23,7 @@ import {
 import {
   normalizeVulnerabilityStates,
   getAgeTooltip,
-  enableStatusFilter,
-  enableAttributeFilter,
+  selectFilter,
   removePropertyFromPayload,
   selectEmptyArrayWhenAllSelected,
 } from './utils';
@@ -172,19 +169,10 @@ export default {
       this.$emit('changed', { ...this.scanner, ...value });
     },
     selectFilter(filter) {
-      switch (filter) {
-        case STATUS:
-          this.filters = enableStatusFilter(this.filters);
-          break;
-        case ATTRIBUTE:
-          this.setVulnerabilityAttributes(enableAttributeFilter(this.vulnerabilityAttributes));
-          break;
-        default:
-          this.filters = {
-            ...this.filters,
-            [filter]: [],
-          };
-      }
+      this.filters = selectFilter(filter, this.filters, {
+        onAttribute: this.setVulnerabilityAttributes,
+        vulnerabilityAttributes: this.vulnerabilityAttributes,
+      });
     },
   },
 };

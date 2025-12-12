@@ -1,39 +1,45 @@
 <script>
 import { GlCollapse } from '@gitlab/ui';
-import { s__ } from '~/locale';
-import { CRITICAL, HIGH } from 'ee/vulnerabilities/constants';
 import SectionLayout from 'ee/security_orchestration/components/policy_editor/section_layout.vue';
 import {
   ANY_OPERATOR,
   SCAN_RESULT_BRANCH_TYPE_OPTIONS,
 } from 'ee/security_orchestration/components/policy_editor/constants';
 import { enforceIntValue } from 'ee/security_orchestration/components/policy_editor/utils';
+import ScanFilterSelector from 'ee/security_orchestration/components/policy_editor/scan_filter_selector.vue';
 import SeverityFilter from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_filters/severity_filter.vue';
-import StatusFilter from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_filters/status_filter.vue';
-import { NEWLY_DETECTED } from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_filters/constants';
+import StatusFilters from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_filters/status_filters.vue';
+import {
+  STATUS,
+  NEWLY_DETECTED,
+  PREVIOUSLY_EXISTING,
+} from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_filters/constants';
 import {
   buildFiltersFromRule,
   groupVulnerabilityStatesWithDefaults,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/lib';
 import {
+  normalizeVulnerabilityStates,
+  selectFilter,
   getSelectedVulnerabilitiesOperator,
   removeExceptionsFromScanner,
   updateSeverityLevels,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scanners/utils';
 import ScannerHeader from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scanners/scanner_header.vue';
 import BranchRuleSection from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scanners/branch_rule_section.vue';
+import { STATUS_FILTER_OPTIONS } from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scanners/constants';
 
 export default {
   NEWLY_DETECTED,
-  i18n: {
-    title: s__('SecurityOrchestration|Secret Detection Scanning Rule'),
-  },
-  name: 'SecretDetectionScanner',
+  PREVIOUSLY_EXISTING,
+  FILTER_OPTIONS: STATUS_FILTER_OPTIONS,
+  name: 'BaseSeverityStatusScanner',
   components: {
     GlCollapse,
     SectionLayout,
     SeverityFilter,
-    StatusFilter,
+    StatusFilters,
+    ScanFilterSelector,
     ScannerHeader,
     BranchRuleSection,
   },
@@ -47,6 +53,10 @@ export default {
       type: Boolean,
       required: false,
       default: true,
+    },
+    title: {
+      type: String,
+      required: true,
     },
   },
   emits: ['changed'],
@@ -72,13 +82,24 @@ export default {
       return enforceIntValue(this.scanner.vulnerabilities_allowed);
     },
     severityLevels() {
-      return this.scanner.severity_levels?.length ? this.scanner.severity_levels : [CRITICAL, HIGH];
+      return this.scanner.severity_levels || [];
     },
     vulnerabilityStates() {
       const vulnerabilityStateGroups = groupVulnerabilityStatesWithDefaults(
         this.scanner.vulnerability_states,
       );
-      return vulnerabilityStateGroups[NEWLY_DETECTED] || [];
+      return {
+        [PREVIOUSLY_EXISTING]: vulnerabilityStateGroups[PREVIOUSLY_EXISTING],
+        [NEWLY_DETECTED]: vulnerabilityStateGroups[NEWLY_DETECTED],
+      };
+    },
+    isStatusFilterSelected() {
+      return this.isFilterSelected(NEWLY_DETECTED) || this.isFilterSelected(PREVIOUSLY_EXISTING);
+    },
+    isStatusSelectorDisabled() {
+      return Boolean(
+        this.vulnerabilityStates[NEWLY_DETECTED] && this.vulnerabilityStates[PREVIOUSLY_EXISTING],
+      );
     },
   },
   watch: {
@@ -87,6 +108,9 @@ export default {
     },
   },
   methods: {
+    isFilterSelected(filter) {
+      return Boolean(this.filters[filter]);
+    },
     handleVulnerabilitiesOperatorChange(value) {
       if (value === ANY_OPERATOR) {
         this.setVulnerabilitiesAllowed(0);
@@ -115,8 +139,26 @@ export default {
     },
     setVulnerabilityStates(vulnerabilityStates) {
       this.triggerChanged({
-        vulnerability_states: vulnerabilityStates,
+        vulnerability_states: normalizeVulnerabilityStates(vulnerabilityStates),
       });
+    },
+    changeStatusGroup(value) {
+      this.setVulnerabilityStates(value);
+    },
+    removeStatusFilter(filter) {
+      this.setVulnerabilityStates({
+        ...this.vulnerabilityStates,
+        [filter]: null,
+      });
+    },
+    selectFilter(filter) {
+      this.filters = selectFilter(filter, this.filters);
+    },
+    shouldDisableFilter(filter) {
+      if (filter === STATUS) {
+        return this.isStatusSelectorDisabled;
+      }
+      return false;
     },
   },
 };
@@ -124,7 +166,7 @@ export default {
 
 <template>
   <div>
-    <scanner-header :title="$options.i18n.title" :visible="localVisible" @toggle="toggleCollapse" />
+    <scanner-header :title="title" :visible="localVisible" @toggle="toggleCollapse" />
 
     <gl-collapse v-model="localVisible">
       <branch-rule-section
@@ -155,19 +197,37 @@ export default {
       </section-layout>
 
       <section-layout
+        v-if="isStatusFilterSelected"
         class="gl-mt-4 gl-bg-white gl-px-0 gl-py-0"
         content-classes="!gl-gap-0"
         :show-remove-button="false"
       >
         <template #content>
-          <status-filter
-            :filter="$options.NEWLY_DETECTED"
+          <status-filters
+            :filters="filters"
             :selected="vulnerabilityStates"
-            :disabled="true"
-            label-classes="!gl-text-base !gl-w-12 !gl-pl-0 !gl-font-bold !gl-mt-2"
-            :show-remove-button="false"
+            @change-status-group="changeStatusGroup"
             @input="setVulnerabilityStates"
+            @remove="removeStatusFilter"
           />
+        </template>
+      </section-layout>
+
+      <section-layout
+        class="gl-mt-4 gl-bg-white gl-px-0 gl-py-0"
+        content-classes="!gl-gap-0"
+        :show-remove-button="false"
+      >
+        <template #content>
+          <div class="gl-w-full">
+            <scan-filter-selector
+              class="gl-w-full !gl-bg-default"
+              :filters="$options.FILTER_OPTIONS"
+              :selected="filters"
+              :should-disable-filter="shouldDisableFilter"
+              @select="selectFilter"
+            />
+          </div>
         </template>
       </section-layout>
     </gl-collapse>
