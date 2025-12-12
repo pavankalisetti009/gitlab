@@ -259,7 +259,7 @@ RSpec.describe Members::UpdateService, feature_category: :groups_and_projects do
       result = described_class.new(owner, params).execute(member)
 
       expect(result[:status]).to eq(:error)
-      expect(result[:message]).to eq("No seat available")
+      expect(result[:message]).to eq("Could not update role because there are no available seats in this group")
       expect(member.reload.access_level).to eq(Gitlab::Access::GUEST)
     end
 
@@ -271,7 +271,7 @@ RSpec.describe Members::UpdateService, feature_category: :groups_and_projects do
         result = described_class.new(owner, params).execute(member)
 
         expect(result[:status]).to eq(:error)
-        expect(result[:message]).to eq("No seat available")
+        expect(result[:message]).to eq("Could not update role because there are no available seats in this group")
         expect(member.reload.member_role).to be_nil
       end
     end

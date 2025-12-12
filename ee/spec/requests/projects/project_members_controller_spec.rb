@@ -93,7 +93,9 @@ RSpec.describe Projects::ProjectMembersController, feature_category: :groups_and
           params: params
 
         expect(response).to have_gitlab_http_status(:unprocessable_entity)
-        expect(json_response['message']).to eq('No seat available')
+        expect(json_response['message']).to eq(
+          'Could not update role because there are no available seats in this group'
+        )
         expect(member.reload.access_level).to eq(::Gitlab::Access::GUEST)
       end
 

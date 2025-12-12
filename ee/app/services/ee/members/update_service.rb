@@ -14,7 +14,9 @@ module EE
         return super unless members.present?
 
         unless seats_available_for?(members)
-          members.each { |m| m.errors.add(:base, 'No seat available') }
+          members.each do |m|
+            m.errors.add(:base, 'Could not update role because there are no available seats in this group')
+          end
           return prepare_response(members)
         end
 
