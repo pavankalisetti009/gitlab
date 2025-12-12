@@ -173,6 +173,7 @@ describe('AiCatalogItemActions', () => {
   describe.each`
     scenario                              | canAdmin | canUse   | editBtn  | disableBtn | enableBtn | moreActions | duplicateBtn | deleteBtn | itemType                 | isGlobal | isEnabled
     ${'not logged in'}                    | ${false} | ${false} | ${false} | ${false}   | ${false}  | ${false}    | ${false}     | ${false}  | ${AI_CATALOG_TYPE_AGENT} | ${false} | ${false}
+    ${'logged in, not admin of item'}     | ${false} | ${true}  | ${false} | ${false}   | ${false}  | ${false}    | ${false}     | ${false}  | ${AI_CATALOG_TYPE_AGENT} | ${false} | ${true}
     ${'logged in, admin of item'}         | ${true}  | ${true}  | ${true}  | ${false}   | ${true}   | ${true}     | ${true}      | ${true}   | ${AI_CATALOG_TYPE_AGENT} | ${false} | ${false}
     ${'logged in, admin of enabled item'} | ${true}  | ${true}  | ${true}  | ${true}    | ${false}  | ${true}     | ${true}      | ${true}   | ${AI_CATALOG_TYPE_AGENT} | ${false} | ${true}
     ${'logged in, admin of flow item'}    | ${true}  | ${true}  | ${true}  | ${true}    | ${false}  | ${true}     | ${true}      | ${true}   | ${AI_CATALOG_TYPE_FLOW}  | ${false} | ${true}

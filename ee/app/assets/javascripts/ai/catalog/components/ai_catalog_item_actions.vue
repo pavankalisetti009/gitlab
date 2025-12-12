@@ -120,8 +120,11 @@ export default {
     showEnable() {
       return this.canAdmin && !this.isGlobal && !this.isEnabled;
     },
+    showDuplicate() {
+      return this.canUse && (this.isGlobal || this.canAdmin);
+    },
     showDropdown() {
-      return this.canAdmin || this.canUse || this.canReport;
+      return this.canAdmin || this.showDuplicate || this.canReport;
     },
     showAddToProject() {
       return this.canUse && this.isGlobal && !this.item.foundational;
@@ -243,7 +246,7 @@ export default {
       data-testid="more-actions-dropdown"
     >
       <gl-disclosure-dropdown-item
-        v-if="canUse"
+        v-if="showDuplicate"
         :item="duplicateItemProps"
         data-testid="duplicate-button"
       >
