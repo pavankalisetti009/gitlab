@@ -38,7 +38,14 @@ const getDuoCodeReviewReactedFields = (codeReview) => {
 
 const prepareAdditionalMetrics = ({ nodes = [], pageInfo = {}, ...rest }, pagination) => {
   // Since we are using `gl_introduced`, we need to check that the fields actually exist in the response
-  if (!hasAnyNonNullFields(nodes, ['codeSuggestions', 'codeReview', 'troubleshootJob'])) {
+  if (
+    !hasAnyNonNullFields(nodes, [
+      'codeSuggestions',
+      'codeReview',
+      'troubleshootJob',
+      'totalEventCount',
+    ])
+  ) {
     return {};
   }
 

@@ -8,6 +8,7 @@ exports[`User ai usage data source when fields are not available is not empty if
     "codeSuggestionShownInIdeEventCount": 0,
     "duoCodeReviewCommentsReactedTo": 0,
     "requestReviewDuoCodeReviewOnMrByAuthorEventCount": 0,
+    "totalEventCount": null,
     "troubleshootJobEventCount": 0,
     "user": {
       "__typename": "AddOnUser",
@@ -25,6 +26,7 @@ exports[`User ai usage data source when fields are not available is not empty if
     "codeSuggestionShownInIdeEventCount": 0,
     "duoCodeReviewCommentsReactedTo": 0,
     "requestReviewDuoCodeReviewOnMrByAuthorEventCount": 0,
+    "totalEventCount": 0,
     "troubleshootJobEventCount": 0,
     "user": {
       "__typename": "AddOnUser",
@@ -48,6 +50,7 @@ exports[`User ai usage data source with data available returns data and paginati
       "codeSuggestionShownInIdeEventCount": 0,
       "duoCodeReviewCommentsReactedTo": 0,
       "requestReviewDuoCodeReviewOnMrByAuthorEventCount": 0,
+      "totalEventCount": 0,
       "troubleshootJobEventCount": 0,
       "user": {
         "__typename": "AddOnUser",
@@ -65,6 +68,7 @@ exports[`User ai usage data source with data available returns data and paginati
       "codeSuggestionShownInIdeEventCount": 3,
       "duoCodeReviewCommentsReactedTo": 8,
       "requestReviewDuoCodeReviewOnMrByAuthorEventCount": 10,
+      "totalEventCount": 40,
       "troubleshootJobEventCount": 3,
       "user": {
         "__typename": "AddOnUser",

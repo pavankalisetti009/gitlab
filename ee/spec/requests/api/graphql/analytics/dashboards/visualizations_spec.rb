@@ -80,6 +80,7 @@ RSpec.describe 'Query.project(id).dashboards.panels(id).visualization', feature_
         12 | 'DataTable' | 'GitLab Duo Code Suggestions usage by user (Last 30 days)'
         13 | 'DataTable' | 'GitLab Duo Code Review usage by user (Last 30 days)'
         14 | 'DataTable' | 'GitLab Duo Root Cause Analysis usage by user (Last 30 days)'
+        15 | 'DataTable' | 'GitLab Duo usage by user (Last 30 days)'
       end
 
       with_them do

@@ -21,4 +21,5 @@ fragment AiUserMetricItem on AiUserMetrics {
   }
   codeSuggestionsAcceptedCount
   duoChatInteractionsCount
+  totalEventCount @gl_introduced(version: "18.7.0-pre")
 }
