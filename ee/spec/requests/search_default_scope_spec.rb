@@ -208,6 +208,54 @@ RSpec.describe 'Search with default scope setting', :elastic, :clean_gitlab_redi
 
     include_examples 'respects configured default scope', 'group'
 
+    context 'when searching at group level with global_search settings disabled' do
+      before do
+        stub_ee_application_setting(
+          elasticsearch_search: true,
+          elasticsearch_indexing: true,
+          elasticsearch_code_scope: true
+        )
+        ensure_elasticsearch_index!
+      end
+
+      it 'does not redirect to projects scope when global_search_code_enabled is false' do
+        stub_ee_application_setting(global_search_code_enabled: false)
+
+        make_search_request(search: 'Test', scope: 'blobs')
+        expect(response).to have_gitlab_http_status(:ok)
+        # Group search for code should work even when global code search is disabled
+        expect(response.body).to include('any code results matching')
+      end
+
+      it 'does not redirect to projects scope when global_search_wiki_enabled is false' do
+        stub_ee_application_setting(global_search_wiki_enabled: false)
+
+        make_search_request(search: 'Test', scope: 'wiki_blobs')
+        expect(response).to have_gitlab_http_status(:ok)
+        # Group search for wiki should work even when global wiki search is disabled
+        expect(response.body).to include('any wiki results matching')
+      end
+
+      it 'does not redirect to projects scope when global_search_commits_enabled is false' do
+        stub_ee_application_setting(global_search_commits_enabled: false)
+
+        make_search_request(search: 'Test', scope: 'commits')
+        expect(response).to have_gitlab_http_status(:ok)
+        # Group search for commits should work even when global commits search is disabled
+        expect(response.body).to include('any commits matching')
+      end
+
+      it 'allows epics scope in group search regardless of global_search_epics_enabled' do
+        stub_ee_application_setting(global_search_epics_enabled: false)
+        stub_licensed_features(epics: true)
+
+        make_search_request(search: 'Test', scope: 'epics')
+        expect(response).to have_gitlab_http_status(:ok)
+        # Group search for epics should work even when global epics search is disabled
+        expect(response.body).to include('any epics matching')
+      end
+    end
+
     it 'uses projects scope in group context' do
       stub_application_setting(default_search_scope: 'projects')
 
