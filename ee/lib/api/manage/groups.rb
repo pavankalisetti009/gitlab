@@ -8,7 +8,6 @@ module API
       include PaginationParams
 
       before do
-        not_found! unless Feature.enabled?(:manage_pat_by_group_owners_ready, user_group)
         not_found! unless ::Gitlab::Saas.feature_available?(:group_credentials_inventory)
 
         authenticate!

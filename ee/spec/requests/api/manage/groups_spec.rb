@@ -23,18 +23,6 @@ RSpec.describe API::Manage::Groups, :aggregate_failures, feature_category: :syst
   end
 
   shared_examples 'a manage groups GET endpoint' do
-    context "when feature flag is disabled" do
-      before do
-        stub_feature_flags(manage_pat_by_group_owners_ready: false)
-      end
-
-      it 'returns 404 not found' do
-        get_request
-
-        expect(response).to have_gitlab_http_status(:not_found)
-      end
-    end
-
     context 'when unauthorized user' do
       let_it_be(:unauthorized_user) { create(:user) }
       let_it_be(:personal_access_token) { create(:personal_access_token, user: unauthorized_user, scopes: [:api]) }
@@ -945,7 +933,13 @@ RSpec.describe API::Manage::Groups, :aggregate_failures, feature_category: :syst
 
     context 'when saas', :saas do
       it 'throws not found error for a non existent group' do
-        get(api("/groups/#{non_existing_record_id}/manage/ssh_keys"), headers: dpop_headers_for(current_user))
+        get(
+          api(
+            "/groups/#{non_existing_record_id}/manage/ssh_keys",
+            personal_access_token: personal_access_token
+          ),
+          headers: dpop_headers_for(current_user)
+        )
 
         expect(response).to have_gitlab_http_status(:not_found)
       end

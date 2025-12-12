@@ -89,37 +89,21 @@ RSpec.describe API::API, feature_category: :system_access do
         stub_feature_flags(dpop_authentication: false)
       end
 
-      context "when the :manage_pat_by_group_owners_ready FF is disabled", :saas do
-        before do
-          stub_feature_flags(manage_pat_by_group_owners_ready: false)
-        end
-
-        context "when its a request to a `/manage` endpoint" do
-          it_behaves_like "invalid `/manage` endpoint request"
-        end
-      end
-
-      context "when the :manage_pat_by_group_owners_ready FF is enabled", :saas do
-        before do
-          stub_feature_flags(manage_pat_by_group_owners_ready: true)
-        end
-
-        context "when its a request to a `/manage` endpoint" do
-          context "when the Group-level DPoP setting is disabled (default)" do
-            before do
-              group.update!(require_dpop_for_manage_api_endpoints: false)
-            end
-
-            it_behaves_like "valid manage endpoint request"
+      context "when its a request to a `/manage` endpoint" do
+        context "when the Group-level DPoP setting is disabled (default)" do
+          before do
+            group.update!(require_dpop_for_manage_api_endpoints: false)
           end
 
-          context "when the Group-level DPoP setting is enabled" do
-            before do
-              group.update!(require_dpop_for_manage_api_endpoints: true)
-            end
+          it_behaves_like "valid manage endpoint request"
+        end
 
-            it_behaves_like "valid manage endpoint request"
+        context "when the Group-level DPoP setting is enabled" do
+          before do
+            group.update!(require_dpop_for_manage_api_endpoints: true)
           end
+
+          it_behaves_like "valid manage endpoint request"
         end
       end
     end
@@ -137,37 +121,21 @@ RSpec.describe API::API, feature_category: :system_access do
       end
 
       context 'when user-level DPoP is disabled' do
-        context "when the :manage_pat_by_group_owners_ready FF is disabled" do
-          before do
-            stub_feature_flags(manage_pat_by_group_owners_ready: false)
-          end
-
-          context "when its a request to a `/manage` endpoint" do
-            it_behaves_like "invalid `/manage` endpoint request"
-          end
-        end
-
-        context "when the :manage_pat_by_group_owners_ready FF is enabled", :saas do
-          before do
-            stub_feature_flags(manage_pat_by_group_owners_ready: true)
-          end
-
-          context "when its a request to a `/manage` endpoint" do
-            context "when the Group-level DPoP setting is disabled (default)" do
-              before do
-                group.update!(require_dpop_for_manage_api_endpoints: false)
-              end
-
-              it_behaves_like "valid manage endpoint request"
+        context "when its a request to a `/manage` endpoint" do
+          context "when the Group-level DPoP setting is disabled (default)" do
+            before do
+              group.update!(require_dpop_for_manage_api_endpoints: false)
             end
 
-            context "when the Group-level DPoP setting is enabled" do
-              before do
-                group.update!(require_dpop_for_manage_api_endpoints: true)
-              end
+            it_behaves_like "valid manage endpoint request"
+          end
 
-              it_behaves_like "checks for dpop token"
+          context "when the Group-level DPoP setting is enabled" do
+            before do
+              group.update!(require_dpop_for_manage_api_endpoints: true)
             end
+
+            it_behaves_like "checks for dpop token"
           end
         end
       end
