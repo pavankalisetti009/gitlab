@@ -81,7 +81,11 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, feature_category: 
     end
 
     include_examples 'search results filtered by state'
-    include_examples 'search results filtered by archived'
+
+    context 'archived filter', quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/19278' do
+      include_examples 'search results filtered by archived'
+    end
+
     context 'on self hosted' do
       include_examples 'searching notable entries in merge requests'
     end
