@@ -80,7 +80,8 @@ RSpec.describe Ai::Catalog::Flows::CreateService, feature_category: :workflow_ca
       expect(item.latest_version).to have_attributes(
         schema_version: ::Ai::Catalog::ItemVersion::FLOW_SCHEMA_VERSION,
         version: '1.0.0',
-        definition: YAML.safe_load(definition).merge('yaml_definition' => definition)
+        definition: YAML.safe_load(definition).merge('yaml_definition' => definition),
+        created_by: user
       )
       expect(item.latest_released_version).to eq(item.latest_version)
     end
