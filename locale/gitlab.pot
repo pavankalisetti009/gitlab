@@ -59650,6 +59650,9 @@ msgstr ""
 msgid "SecretsManagerPermissions|Secrets manager"
 msgstr ""
 
+msgid "SecretsManagerPermissions|Secrets manager has been deprovisioned for this group."
+msgstr ""
+
 msgid "SecretsManagerPermissions|Secrets manager has been deprovisioned for this project."
 msgstr ""
 

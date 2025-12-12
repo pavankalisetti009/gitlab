@@ -53,6 +53,34 @@ export const initializeGroupSecretManagerSettingsResponse = (errors = undefined)
   };
 };
 
+export const deprovisionSecretManagerSettingsResponse = (errors = undefined) => {
+  return {
+    data: {
+      projectSecretsManagerDeprovision: {
+        errors,
+        projectSecretsManager: {
+          status: 'DEPROVISIONING',
+        },
+        __typename: 'ProjectSecretsManagerDeprovisionPayload',
+      },
+    },
+  };
+};
+
+export const deprovisionGroupSecretManagerSettingsResponse = (errors = undefined) => {
+  return {
+    data: {
+      groupSecretsManagerDeprovision: {
+        errors,
+        groupSecretsManager: {
+          status: 'DEPROVISIONING',
+        },
+        __typename: 'GroupSecretsManagerDeprovisionPayload',
+      },
+    },
+  };
+};
+
 export const MOCK_USERS_API = [
   {
     id: 1,

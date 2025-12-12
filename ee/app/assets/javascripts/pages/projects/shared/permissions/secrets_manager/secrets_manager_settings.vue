@@ -3,23 +3,46 @@ import { GlLink, GlToggle } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import {
-  ACCEPTED_CONTEXTS,
   ACTION_ENABLE_SECRET_MANAGER,
-  ENTITY_PROJECT,
   ACTION_DISABLE_SECRET_MANAGER,
   SECRET_MANAGER_STATUS_ACTIVE,
   SECRET_MANAGER_STATUS_INACTIVE,
   SECRET_MANAGER_STATUS_PROVISIONING,
   SECRET_MANAGER_STATUS_DEPROVISIONING,
+  ENTITY_PROJECT,
+  ENTITY_GROUP,
 } from 'ee/ci/secrets/constants';
-import enableSecretManagerMutation from 'ee/ci/secrets/graphql/mutations/enable_secret_manager.mutation.graphql';
-import enableGroupSecretManagerMutation from 'ee/ci/secrets/graphql/mutations/enable_group_secret_manager.mutation.graphql';
-import disableSecretManagerMutation from 'ee/ci/secrets/graphql/mutations/disable_secret_manager.mutation.graphql';
-import getSecretManagerStatusQuery from 'ee/ci/secrets/graphql/queries/get_secret_manager_status.query.graphql';
-import getGroupSecretManagerStatusQuery from 'ee/ci/secrets/graphql/queries/get_group_secret_manager_status.query.graphql';
+import { SECRETS_MANAGER_CONTEXT_CONFIG } from './context_config';
 import PermissionsSettings from './components/secrets_manager_permissions_settings.vue';
 
 export const POLL_INTERVAL = 2000;
+
+const PROVISIONED_MESSAGES = {
+  [ENTITY_PROJECT]: s__(
+    'SecretsManagerPermissions|Secrets manager has been provisioned for this project.',
+  ),
+  [ENTITY_GROUP]: s__(
+    'SecretsManagerPermissions|Secrets manager has been provisioned for this group.',
+  ),
+};
+
+const DEPROVISIONED_MESSAGES = {
+  [ENTITY_PROJECT]: s__(
+    'SecretsManagerPermissions|Secrets manager has been deprovisioned for this project.',
+  ),
+  [ENTITY_GROUP]: s__(
+    'SecretsManagerPermissions|Secrets manager has been deprovisioned for this group.',
+  ),
+};
+
+const DESCRIPTION_MESSAGES = {
+  [ENTITY_PROJECT]: s__(
+    'SecretsManagerPermissions|Enable the secrets manager to securely store and manage sensitive information for this project.',
+  ),
+  [ENTITY_GROUP]: s__(
+    'SecretsManagerPermissions|Enable the secrets manager to securely store and manage sensitive information for this group.',
+  ),
+};
 
 export default {
   name: 'SecretsManagerSettings',
@@ -28,18 +51,13 @@ export default {
     GlToggle,
     PermissionsSettings,
   },
-  provide() {
-    const { fullPath, projectId } = this;
-    return { fullPath, projectId };
-  },
   props: {
-    context: {
-      type: String,
-      required: true,
-      validator: (value) => ACCEPTED_CONTEXTS.includes(value),
-    },
     canManageSecretsManager: {
       type: Boolean,
+      required: true,
+    },
+    context: {
+      type: String,
       required: true,
     },
     fullPath: {
@@ -59,56 +77,10 @@ export default {
       secretManagerStatus: SECRET_MANAGER_STATUS_INACTIVE,
     };
   },
-  apollo: {
-    secretManagerStatus: {
-      query() {
-        return this.context === ENTITY_PROJECT
-          ? getSecretManagerStatusQuery
-          : getGroupSecretManagerStatusQuery;
-      },
-      variables() {
-        return {
-          fullPath: this.fullPath,
-        };
-      },
-      update(data) {
-        const manager =
-          this.context === ENTITY_PROJECT ? data.projectSecretsManager : data.groupSecretsManager;
-
-        const newStatus = manager?.status || SECRET_MANAGER_STATUS_INACTIVE;
-
-        if (this.isEnablingSecretsManager && newStatus === SECRET_MANAGER_STATUS_ACTIVE) {
-          this.$apollo.queries.secretManagerStatus.stopPolling();
-          this.$toast.show(this.provisionedMessage);
-        }
-
-        if (this.isDisablingSecretsManager && newStatus === SECRET_MANAGER_STATUS_INACTIVE) {
-          this.$apollo.queries.secretManagerStatus.stopPolling();
-          this.$toast.show(
-            s__(
-              'SecretsManagerPermissions|Secrets manager has been deprovisioned for this project.',
-            ),
-          );
-        }
-
-        return newStatus;
-      },
-      error(e) {
-        this.$apollo.queries.secretManagerStatus.stopPolling(POLL_INTERVAL);
-        this.errorMessage =
-          e.graphQLErrors?.[0]?.message ||
-          s__(
-            'SecretsManagerPermissions|An error occurred while fetching the secrets manager status.',
-          );
-
-        if (this.isEnablingSecretsManager) {
-          this.secretManagerStatus = SECRET_MANAGER_STATUS_INACTIVE;
-        }
-      },
-      pollInterval: POLL_INTERVAL,
-    },
-  },
   computed: {
+    contextConfig() {
+      return SECRETS_MANAGER_CONTEXT_CONFIG[this.context];
+    },
     isActive() {
       return this.secretManagerStatus === SECRET_MANAGER_STATUS_ACTIVE;
     },
@@ -146,40 +118,75 @@ export default {
       return this.errorMessage.length > 0;
     },
     provisionedMessage() {
-      return this.context === ENTITY_PROJECT
-        ? s__('SecretsManagerPermissions|Secrets manager has been provisioned for this project.')
-        : s__('SecretsManagerPermissions|Secrets manager has been provisioned for this group.');
+      return PROVISIONED_MESSAGES[this.context];
     },
-    descriptionText() {
-      return this.context === ENTITY_PROJECT
-        ? s__(
-            'SecretsManagerPermissions|Enable the secrets manager to securely store and manage sensitive information for this project.',
-          )
-        : s__(
-            'SecretsManagerPermissions|Enable the secrets manager to securely store and manage sensitive information for this group.',
+    deprovisionedMessage() {
+      return DEPROVISIONED_MESSAGES[this.context];
+    },
+    descriptionMessage() {
+      return DESCRIPTION_MESSAGES[this.context];
+    },
+  },
+  apollo: {
+    secretManagerStatus: {
+      query() {
+        return this.contextConfig.queries.status;
+      },
+      variables() {
+        return {
+          fullPath: this.fullPath,
+        };
+      },
+      update(data) {
+        const manager = data[this.contextConfig.resultPaths.status];
+        const newStatus = manager?.status || SECRET_MANAGER_STATUS_INACTIVE;
+
+        if (this.isEnablingSecretsManager && newStatus === SECRET_MANAGER_STATUS_ACTIVE) {
+          this.$apollo.queries.secretManagerStatus.stopPolling();
+          this.$toast.show(this.provisionedMessage);
+        }
+
+        if (this.isDisablingSecretsManager && newStatus === SECRET_MANAGER_STATUS_INACTIVE) {
+          this.$apollo.queries.secretManagerStatus.stopPolling();
+          this.$toast.show(this.deprovisionedMessage);
+        }
+
+        if (
+          newStatus === SECRET_MANAGER_STATUS_ACTIVE ||
+          newStatus === SECRET_MANAGER_STATUS_INACTIVE
+        ) {
+          this.$apollo.queries.secretManagerStatus.stopPolling();
+        }
+
+        return newStatus;
+      },
+      error(e) {
+        this.$apollo.queries.secretManagerStatus.stopPolling(POLL_INTERVAL);
+        this.errorMessage =
+          e.graphQLErrors?.[0]?.message ||
+          s__(
+            'SecretsManagerPermissions|An error occurred while fetching the secrets manager status.',
           );
+
+        if (this.isEnablingSecretsManager) {
+          this.secretManagerStatus = SECRET_MANAGER_STATUS_INACTIVE;
+        }
+      },
+      pollInterval: POLL_INTERVAL,
     },
   },
   methods: {
     async enableSecretsManager() {
       this.errorMessage = '';
       try {
-        const isProject = this.context === ENTITY_PROJECT;
-        const mutation = isProject ? enableSecretManagerMutation : enableGroupSecretManagerMutation;
-        const variables = { fullPath: this.fullPath };
-
         const { data } = await this.$apollo.mutate({
-          mutation,
-          variables,
+          mutation: this.contextConfig.mutations.enable,
+          variables: { fullPath: this.fullPath },
         });
 
-        const result = isProject
-          ? data.projectSecretsManagerInitialize
-          : data.groupSecretsManagerInitialize;
+        const result = data[this.contextConfig.resultPaths.enable];
         const { errors } = result;
-        const secretsManager = isProject
-          ? result.projectSecretsManager
-          : result.groupSecretsManager;
+        const secretsManager = result[this.contextConfig.resultPaths.status];
 
         if (errors.length > 0) {
           throw new Error(errors[0]);
@@ -193,25 +200,23 @@ export default {
           s__('SecretsManagerPermissions|An error occurred while enabling the secrets manager.');
       }
     },
-    async disableProjectSecretsManager() {
+    async disableSecretsManager() {
       this.errorMessage = '';
       try {
-        const {
-          data: {
-            projectSecretsManagerDeprovision: { errors, projectSecretsManager },
-          },
-        } = await this.$apollo.mutate({
-          mutation: disableSecretManagerMutation,
-          variables: {
-            projectPath: this.fullPath,
-          },
+        const { data } = await this.$apollo.mutate({
+          mutation: this.contextConfig.mutations.disable,
+          variables: { fullPath: this.fullPath },
         });
+
+        const result = data[this.contextConfig.resultPaths.disable];
+        const { errors } = result;
+        const secretsManager = result[this.contextConfig.resultPaths.status];
 
         if (errors.length > 0) {
           throw new Error(errors[0]);
         }
 
-        this.secretManagerStatus = projectSecretsManager?.status || SECRET_MANAGER_STATUS_INACTIVE;
+        this.secretManagerStatus = secretsManager?.status || SECRET_MANAGER_STATUS_INACTIVE;
         this.$apollo.queries.secretManagerStatus.startPolling(POLL_INTERVAL);
       } catch (error) {
         this.errorMessage =
@@ -223,9 +228,9 @@ export default {
       if (this.isInactive) {
         this.action = ACTION_ENABLE_SECRET_MANAGER;
         this.enableSecretsManager();
-      } else if (this.isActive && this.context === ENTITY_PROJECT) {
+      } else if (this.isActive) {
         this.action = ACTION_DISABLE_SECRET_MANAGER;
-        this.disableProjectSecretsManager();
+        this.disableSecretsManager();
       }
     },
   },
@@ -239,7 +244,7 @@ export default {
       {{ s__('SecretsManagerPermissions|Secrets manager') }}
     </label>
     <p class="gl-mb-2">
-      {{ descriptionText }}
+      {{ descriptionMessage }}
       <gl-link :href="$options.LEARN_MORE_LINK">
         {{ __('Learn more.') }}
       </gl-link>
@@ -257,6 +262,12 @@ export default {
     <p v-if="hasError" class="gl-mt-2 gl-text-danger" data-testid="secret-manager-error">
       {{ errorMessage }}
     </p>
-    <permissions-settings v-if="isActive" :can-manage-secrets-manager="canManageSecretsManager" />
+    <permissions-settings
+      v-if="isActive"
+      :can-manage-secrets-manager="canManageSecretsManager"
+      :full-path="fullPath"
+      :project-id="projectId"
+      :context="context"
+    />
   </div>
 </template>

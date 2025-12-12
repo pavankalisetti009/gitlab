@@ -37,11 +37,11 @@ describe('SecretsManagerPermissionsSettings', () => {
 
     wrapper = shallowMountExtended(PermissionsSettings, {
       apolloProvider: mockApollo,
-      provide: {
-        fullPath: '/path/to/project',
-      },
       propsData: {
         canManageSecretsManager,
+        fullPath: '/path/to/project',
+        projectId: 123,
+        context: 'project',
       },
       mocks: {
         $toast: { show: mockToastShow },
