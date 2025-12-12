@@ -28,6 +28,7 @@ module Ai
 
       after_destroy :reload_adapter
       after_save :reload_adapter
+      after_commit :process_deactivation_async, on: :update, if: :saved_change_to_active?
 
       def self.active
         where(active: true).first
@@ -42,6 +43,8 @@ module Ai
         end
       end
 
+      # Activates this connection and deactivates the previously active connection.
+      # Note: deactivate! is destructive - it drops all associated and indexed data
       def activate!
         return if active?
 
@@ -51,6 +54,11 @@ module Ai
         end
       end
 
+      # Deactivates the connection by marking as inactive.
+      # This enqueues an async worker that will:
+      # 1. Drop collections from the external service (Elasticsearch/OpenSearch)
+      # 2. Delete the connection record (which triggers loose FK async cleanup of repositories)
+      # Associated repositories are cleaned up asynchronously via loose foreign key.
       def deactivate!
         return unless active?
 
@@ -84,6 +92,14 @@ module Ai
 
       def reload_adapter
         ::ActiveContext::Adapter.reset
+      end
+
+      private
+
+      def process_deactivation_async
+        return if active?
+
+        ::Ai::ActiveContext::ConnectionCleanupWorker.perform_async(id)
       end
     end
   end

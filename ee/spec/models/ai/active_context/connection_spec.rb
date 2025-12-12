@@ -218,6 +218,21 @@ RSpec.describe Ai::ActiveContext::Connection, feature_category: :global_search d
       it 'deactivates the connection' do
         expect { connection.deactivate! }.to change { connection.reload.active }.from(true).to(false)
       end
+
+      it 'enqueues ConnectionCleanupWorker after commit' do
+        expect(Ai::ActiveContext::ConnectionCleanupWorker).to receive(:perform_async).with(connection.id)
+        connection.deactivate!
+      end
+    end
+
+    context 'when deactivating and activating another connection' do
+      let!(:active_connection) { create(:ai_active_context_connection) }
+      let!(:inactive_connection) { create(:ai_active_context_connection, :inactive) }
+
+      it 'enqueues ConnectionCleanupWorker for the old connection' do
+        expect(Ai::ActiveContext::ConnectionCleanupWorker).to receive(:perform_async).with(active_connection.id)
+        inactive_connection.activate!
+      end
     end
   end
 

@@ -1584,6 +1584,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: ai_active_context_connection_cleanup
+  :worker_name: Ai::ActiveContext::ConnectionCleanupWorker
+  :feature_category: :global_search
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :cpu
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: ai_catalog_flows_cascade_sync_foundational_flows
   :worker_name: Ai::Catalog::Flows::CascadeSyncFoundationalFlowsWorker
   :feature_category: :ai_abstraction_layer

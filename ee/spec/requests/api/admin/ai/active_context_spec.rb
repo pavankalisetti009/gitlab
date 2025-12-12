@@ -5,8 +5,16 @@ require 'spec_helper'
 RSpec.describe API::Admin::Ai::ActiveContext, feature_category: :global_search do
   let_it_be(:admin) { create(:admin) }
   let_it_be(:user) { create(:user) }
-  let_it_be_with_reload(:connection1) { create(:ai_active_context_connection, name: 'elastic', active: true) }
-  let_it_be_with_reload(:connection2) { create(:ai_active_context_connection, name: 'postgres', active: false) }
+  let_it_be_with_reload(:connection1) do
+    create(:ai_active_context_connection, name: 'elastic', active: true,
+      adapter_class: '::ActiveContext::Databases::Elasticsearch::Adapter')
+  end
+
+  let_it_be_with_reload(:connection2) do
+    create(:ai_active_context_connection, name: 'postgres', active: false,
+      adapter_class: '::ActiveContext::Databases::Postgresql::Adapter')
+  end
+
   let_it_be(:collection) do
     create(:ai_active_context_collection, connection: connection1, name: 'gitlab_active_context_code')
   end
