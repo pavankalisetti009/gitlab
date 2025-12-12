@@ -242,10 +242,10 @@ RSpec.describe EE::PageLayoutHelper, feature_category: :shared do
       context 'when container is present' do
         let(:allowed) { false }
 
-        it 'returns access denied message' do
+        it 'returns nil' do
           result = helper.agentic_unavailable_message(user, container, false)
 
-          expect_generic_message(result)
+          expect(result).to be_nil
         end
       end
 
@@ -284,7 +284,7 @@ RSpec.describe EE::PageLayoutHelper, feature_category: :shared do
           it 'returns generic message' do
             result = helper.agentic_unavailable_message(user, nil, false)
 
-            expect_generic_message(result)
+            expect(result).to be_nil
           end
         end
       end

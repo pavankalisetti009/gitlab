@@ -27,6 +27,10 @@ module Gitlab
         end
       end
 
+      def self.classic_chat_available?(user:)
+        show_breadcrumbs_entry_point?(user: user)
+      end
+
       def self.show_breadcrumbs_entry_point?(user:)
         return false unless chat_enabled?(user)
 

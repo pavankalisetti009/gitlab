@@ -27,6 +27,7 @@ export function initDuoPanel() {
     metadata,
     userModelSelectionEnabled,
     agenticAvailable,
+    classicAvailable,
     forceAgenticModeForCoreDuoUsers,
     agenticUnavailableMessage,
     chatTitle,
@@ -46,10 +47,21 @@ export function initDuoPanel() {
   });
 
   // Configure chat-specific values in a single configuration object
+  const getAgenticComponent = () => {
+    if (parseBoolean(agenticAvailable)) {
+      return DuoAgenticChat;
+    }
+    if (agenticUnavailableMessage) {
+      return agenticUnavailableMessage;
+    }
+    if (parseBoolean(classicAvailable)) {
+      return DuoChat;
+    }
+    return __('Chat is not available.');
+  };
+
   const chatConfiguration = {
-    agenticComponent: parseBoolean(agenticAvailable)
-      ? DuoAgenticChat
-      : agenticUnavailableMessage || __('Chat is not available.'),
+    agenticComponent: getAgenticComponent(),
     classicComponent: DuoChat,
     agenticTitle: chatTitle || __('GitLab Duo Agentic Chat'),
     classicTitle: __('GitLab Duo Chat'),

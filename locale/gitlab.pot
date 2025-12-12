@@ -25745,9 +25745,6 @@ msgstr ""
 msgid "DuoChat|What is a fork?"
 msgstr ""
 
-msgid "DuoChat|You don't currently have access to Duo Chat, please contact your GitLab administrator."
-msgstr ""
-
 msgid "DuoChat|group"
 msgstr ""
 
