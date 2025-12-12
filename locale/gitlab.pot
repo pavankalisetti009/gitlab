@@ -2551,6 +2551,9 @@ msgstr ""
 msgid "AICatalog|Agent not found."
 msgstr ""
 
+msgid "AICatalog|Agent or flow"
+msgstr ""
+
 msgid "AICatalog|Agent updated."
 msgstr ""
 
@@ -2869,6 +2872,15 @@ msgstr ""
 msgid "AICatalog|Frequently failing or nuisance activity."
 msgstr ""
 
+msgid "AICatalog|From the agents and flows configured for this project, select the one that this trigger will execute."
+msgstr ""
+
+msgid "AICatalog|From the agents configured for this project, select the agent that this trigger will execute."
+msgstr ""
+
+msgid "AICatalog|From the flows configured for this project, select the flow that this trigger will execute."
+msgstr ""
+
 msgid "AICatalog|Get started with the AI Catalog"
 msgstr ""
 
@@ -3013,7 +3025,16 @@ msgstr ""
 msgid "AICatalog|Select a flow"
 msgstr ""
 
+msgid "AICatalog|Select a flow from the AI Catalog"
+msgstr ""
+
 msgid "AICatalog|Select an agent"
+msgstr ""
+
+msgid "AICatalog|Select an agent from the AI Catalog"
+msgstr ""
+
+msgid "AICatalog|Select an agent or flow from the AI Catalog"
 msgstr ""
 
 msgid "AICatalog|Select at least one trigger."
@@ -25544,9 +25565,6 @@ msgstr ""
 msgid "DuoAgentsPlatform|Flow"
 msgstr ""
 
-msgid "DuoAgentsPlatform|From the flows configured for this project, select the flow that this trigger will execute."
-msgstr ""
-
 msgid "DuoAgentsPlatform|Full view"
 msgstr ""
 
@@ -25617,9 +25635,6 @@ msgid "DuoAgentsPlatform|Search issues"
 msgstr ""
 
 msgid "DuoAgentsPlatform|Select a flow"
-msgstr ""
-
-msgid "DuoAgentsPlatform|Select a flow from the AI Catalog"
 msgstr ""
 
 msgid "DuoAgentsPlatform|Select a service account user"

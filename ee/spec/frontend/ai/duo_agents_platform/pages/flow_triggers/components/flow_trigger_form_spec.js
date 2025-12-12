@@ -22,6 +22,7 @@ describe('FlowTriggerForm', () => {
   const findForm = () => wrapper.findComponent(GlForm);
   const findDescription = () => wrapper.findComponent(GlFormTextarea);
   const findEventTypes = () => wrapper.find('[data-testid="trigger-event-type-listbox"]');
+  const findFlowGroup = () => wrapper.find('[data-testid="trigger-agent-group"]');
   const findFlowSelect = () => wrapper.find('[data-testid="trigger-agent-listbox"]');
   const findUserSelect = () => wrapper.findComponent(UserSelect);
   const findConfigModeRadio = () => wrapper.findComponent(GlFormRadioGroup);
@@ -97,7 +98,13 @@ describe('FlowTriggerForm', () => {
     it('defaults to catalog mode', () => {
       expect(findFlowSelect().exists()).toBe(true);
       expect(findConfigPathInput().exists()).toBe(false);
-      expect(findFlowSelect().props('headerText')).toBe('Select a flow from the AI Catalog');
+      expect(findFlowGroup().attributes('label')).toBe('Agent or flow');
+      expect(findFlowGroup().attributes('labeldescription')).toBe(
+        'From the agents and flows configured for this project, select the one that this trigger will execute.',
+      );
+      expect(findFlowSelect().props('headerText')).toBe(
+        'Select an agent or flow from the AI Catalog',
+      );
     });
 
     describe('when switching to manual mode', () => {
@@ -221,7 +228,9 @@ describe('FlowTriggerForm', () => {
       });
 
       it('shows default text', () => {
-        expect(findFlowSelect().props('toggleText')).toBe('Select a flow from the AI Catalog');
+        expect(findFlowSelect().props('toggleText')).toBe(
+          'Select an agent or flow from the AI Catalog',
+        );
         expect(findFlowSelect().props().items).toHaveLength(2);
         expect(findFlowSelect().props().selected).toEqual([]);
       });
@@ -467,6 +476,62 @@ describe('FlowTriggerForm', () => {
         expect(findErrorsAlert().props('errors')).toEqual([
           'An error occurred while fetching flows configured for this project.',
         ]);
+      });
+    });
+  });
+
+  describe('catalogConfigModeTexts', () => {
+    describe('when only readAiCatalogFlow is enabled', () => {
+      beforeEach(async () => {
+        await createWrapper(
+          {},
+          {
+            glAbilities: { readAiCatalogFlow: true },
+            glFeatures: { aiCatalogThirdPartyFlows: false },
+          },
+        );
+      });
+
+      it('renders the form group label with only "agent"', () => {
+        expect(findFlowGroup().attributes('label')).toBe('Flow');
+        expect(findFlowGroup().attributes('labeldescription')).toBe(
+          'From the flows configured for this project, select the flow that this trigger will execute.',
+        );
+      });
+
+      it('shows default text with only "flow"', () => {
+        expect(findFlowSelect().props('toggleText')).toBe('Select a flow from the AI Catalog');
+      });
+
+      it('shows header text with only "flow"', () => {
+        expect(findFlowSelect().props('headerText')).toBe('Select a flow from the AI Catalog');
+      });
+    });
+
+    describe('when only aiCatalogThirdPartyFlows is enabled', () => {
+      beforeEach(async () => {
+        await createWrapper(
+          {},
+          {
+            glAbilities: { readAiCatalogFlow: false },
+            glFeatures: { aiCatalogThirdPartyFlows: true },
+          },
+        );
+      });
+
+      it('renders the form group label with only "agent"', () => {
+        expect(findFlowGroup().attributes('label')).toBe('Agent');
+        expect(findFlowGroup().attributes('labeldescription')).toBe(
+          'From the agents configured for this project, select the agent that this trigger will execute.',
+        );
+      });
+
+      it('renders the placeholder text with only "agent"', () => {
+        expect(findFlowSelect().props('toggleText')).toBe('Select an agent from the AI Catalog');
+      });
+
+      it('renders the header text with only "agent"', () => {
+        expect(findFlowSelect().props('headerText')).toBe('Select an agent from the AI Catalog');
       });
     });
   });
