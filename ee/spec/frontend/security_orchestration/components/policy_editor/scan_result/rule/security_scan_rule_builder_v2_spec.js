@@ -9,6 +9,8 @@ import BranchExceptionSelector from 'ee/security_orchestration/components/policy
 import NumberRangeSelect from 'ee/security_orchestration/components/policy_editor/scan_result/rule/number_range_select.vue';
 import GlobalSettings from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scanners/global_settings.vue';
 import DependencyScanner from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scanners/dependency_scanner.vue';
+import SastScanner from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scanners/sast_scanner.vue';
+import SecretDetectionScanner from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scanners/secret_detection_scanner.vue';
 
 import { REPORT_TYPES_DEFAULT_KEYS } from 'ee/security_dashboard/constants';
 
@@ -43,6 +45,8 @@ describe('SecurityScanRuleBuilder', () => {
   const findNumberRangeSelect = () => wrapper.findComponent(NumberRangeSelect);
   const findGlobalSettings = () => wrapper.findComponent(GlobalSettings);
   const findDependencyScanner = () => wrapper.findComponent(DependencyScanner);
+  const findSastScanner = () => wrapper.findComponent(SastScanner);
+  const findSecretDetectionScanner = () => wrapper.findComponent(SecretDetectionScanner);
 
   describe('rendering', () => {
     beforeEach(() => {
@@ -76,6 +80,14 @@ describe('SecurityScanRuleBuilder', () => {
     it('renders dependency scanner', () => {
       expect(findDependencyScanner().exists()).toBe(true);
       expect(findDependencyScanner().props('initRule')).toEqual(defaultRule);
+    });
+
+    it('renders sast scanner', () => {
+      expect(findSastScanner().exists()).toBe(true);
+    });
+
+    it('renders secret detection scanner', () => {
+      expect(findSecretDetectionScanner().exists()).toBe(true);
     });
   });
 
@@ -183,6 +195,29 @@ describe('SecurityScanRuleBuilder', () => {
       };
 
       findDependencyScanner().vm.$emit('changed', updatedRule);
+
+      expect(wrapper.emitted('changed')).toEqual([[updatedRule]]);
+    });
+
+    it('updates rule when sast scanner changes', () => {
+      const updatedRule = {
+        ...defaultRule,
+        severity_levels: ['critical', 'high'],
+      };
+
+      findSastScanner().vm.$emit('changed', updatedRule);
+
+      expect(wrapper.emitted('changed')).toEqual([[updatedRule]]);
+    });
+
+    it('updates rule when secret detection scanner changes', () => {
+      const updatedRule = {
+        ...defaultRule,
+        severity_levels: ['critical', 'high'],
+        vulnerability_states: ['new_needs_triage'],
+      };
+
+      findSecretDetectionScanner().vm.$emit('changed', updatedRule);
 
       expect(wrapper.emitted('changed')).toEqual([[updatedRule]]);
     });

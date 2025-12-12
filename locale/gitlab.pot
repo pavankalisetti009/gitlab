@@ -62373,6 +62373,9 @@ msgstr ""
 msgid "SecurityOrchestration|Scope"
 msgstr ""
 
+msgid "SecurityOrchestration|Secret Detection Scanning Rule"
+msgstr ""
+
 msgid "SecurityOrchestration|Security Approvals"
 msgstr ""
 
