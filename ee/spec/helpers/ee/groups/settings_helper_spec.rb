@@ -190,7 +190,9 @@ RSpec.describe EE::Groups::SettingsHelper, feature_category: :groups_and_project
         is_expected.to include(
           {
             duo_workflow_available: "false",
-            duo_workflow_mcp_enabled: "false"
+            duo_workflow_mcp_enabled: "false",
+            available_foundational_flows: '[]',
+            selected_foundational_flows: '[]'
           }
         )
       end

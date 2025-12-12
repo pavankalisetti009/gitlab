@@ -31,15 +31,6 @@ module Ai
             group,
             current_user: user
           ).execute
-
-          group.descendants.each_batch do |batch|
-            batch.each do |descendant_group|
-              ::Ai::Catalog::Flows::SyncFoundationalFlowsService.new(
-                descendant_group,
-                current_user: user
-              ).execute
-            end
-          end
         end
 
         def sync_projects(group, user)

@@ -55,7 +55,7 @@ module Ai
           params = { item: item }
 
           if container.is_a?(Project) && item.flow?
-            parent_consumer = container.namespace.configured_ai_catalog_items.for_item(item.id).first
+            parent_consumer = container.root_ancestor.configured_ai_catalog_items.for_item(item.id).first
 
             return if parent_consumer.nil?
 
