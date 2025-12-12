@@ -119,3 +119,10 @@ panels:
       xPos: 0
       width: 6
       height: 4
+  - title: 'GitLab Duo usage by user (Last 30 days)'
+    visualization: duo_total_event_count_by_user
+    gridAttributes:
+      yPos: 27
+      xPos: 6
+      width: 6
+      height: 4

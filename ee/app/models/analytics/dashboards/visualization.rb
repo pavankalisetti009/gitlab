@@ -74,6 +74,7 @@ module Analytics
         duo_code_review_usage_by_user
         duo_code_suggestions_by_user
         duo_rca_usage_by_user
+        duo_total_event_count_by_user
         code_review_requests_by_role_chart
         code_suggestions_acceptance_by_ide_chart
       ].freeze

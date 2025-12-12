@@ -41,11 +41,13 @@ const nullValueUser = {
   codeReview: null,
   codeSuggestions: null,
   troubleshootJob: null,
+  totalEventCount: null,
   __typename: 'AiUserMetrics',
 };
 
 const zeroValueUser = {
   user: mockUserTwo,
+  totalEventCount: 0,
   codeSuggestions: {
     codeSuggestionAcceptedInIdeEventCount: 0,
     codeSuggestionShownInIdeEventCount: 0,
@@ -83,6 +85,7 @@ const mockUserAiMetrics = [
       troubleshootJobEventCount: 3,
       __typename: 'troubleshootJobUserMetrics',
     },
+    totalEventCount: 40,
     __typename: 'AiUserMetrics',
   },
 ];
@@ -187,6 +190,24 @@ describe('User ai usage data source', () => {
 
     it('returns data and pagination information', () => {
       expect(res).toMatchSnapshot();
+    });
+
+    it('returns all the transformed fields', () => {
+      const expectedFields = [
+        'totalEventCount',
+        'requestReviewDuoCodeReviewOnMrByAuthorEventCount',
+        'duoCodeReviewCommentsReactedTo',
+        'codeSuggestionAcceptedInIdeEventCount',
+        'codeSuggestionShownInIdeEventCount',
+        'troubleshootJobEventCount',
+        'user',
+      ];
+
+      res.nodes.forEach((node) => {
+        expectedFields.forEach((field) => {
+          expect(node).toHaveProperty(field);
+        });
+      });
     });
   });
 
