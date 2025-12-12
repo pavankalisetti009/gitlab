@@ -33,3 +33,7 @@ export const setMessages = ({ dispatch, commit }, messages = []) => {
     });
   }
 };
+
+export const setCurrentAgent = ({ commit }, agent = null) => {
+  commit(types.STORE_CURRENT_AGENT, agent);
+};

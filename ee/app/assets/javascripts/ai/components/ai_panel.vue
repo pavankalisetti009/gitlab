@@ -70,7 +70,6 @@ export default {
     return {
       isDesktop: GlBreakpointInstance.isDesktop(),
       duoChatGlobalState,
-      selectedAgent: null,
       selectedAgentError: null,
       isMaximized: false,
       panelVisible: true,
@@ -184,12 +183,9 @@ export default {
         Cookies.remove(ACTIVE_TAB_KEY);
       }
     },
-    async handleNewChat(agent) {
+    async handleNewChat() {
       this.handleChangeTab('new');
       this.showPanel();
-      // Make sure the tab has changed before setting the agent for the UI to update
-      await this.$nextTick();
-      this.selectedAgent = agent;
     },
     async handleTabToggle(tab) {
       // Clicking on the icon of active tab acts as a toggle
@@ -261,7 +257,6 @@ export default {
       :resource-id="resourceId"
       :metadata="metadata"
       :user-model-selection-enabled="userModelSelectionEnabled"
-      :selected-agent="selectedAgent"
       :agent-select-error="selectedAgentError"
       :is-maximized="isMaximized"
       @closePanel="hidePanel"

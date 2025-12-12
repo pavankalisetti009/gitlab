@@ -1,6 +1,8 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlButton, GlCollapsibleListbox } from '@gitlab/ui';
+// eslint-disable-next-line no-restricted-imports
+import Vuex from 'vuex';
+import { GlButton, GlCollapsibleListbox, GlListboxItem } from '@gitlab/ui';
 import { createMockDirective } from 'helpers/vue_mock_directive';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -11,6 +13,7 @@ import getConfiguredAgents from 'ee/ai/graphql/get_configured_agents.query.graph
 import getFoundationalChatAgents from 'ee/ai/graphql/get_foundational_chat_agents.graphql';
 
 import {
+  DUO_CHAT_AGENT_MOCK,
   DUO_FOUNDATIONAL_AGENT_MOCK,
   MOCK_CONFIGURED_AGENTS_RESPONSE,
   MOCK_FOUNDATIONAL_CHAT_AGENTS_RESPONSE,
@@ -19,9 +22,11 @@ import {
 const disabledTooltipText = 'An administrator has turned off GitLab Duo for this project.';
 
 Vue.use(VueApollo);
+Vue.use(Vuex);
 
 describe('NewChatButton', () => {
   let wrapper;
+  let store;
 
   const configuredAgentsQueryMock = jest.fn().mockResolvedValue(MOCK_CONFIGURED_AGENTS_RESPONSE);
   const aiFoundationalChatAgentsQueryMock = jest
@@ -36,14 +41,36 @@ describe('NewChatButton', () => {
     isChatDisabled = false,
     chatDisabledTooltip = '',
     isAgentSelectEnabled = true,
+    currentAgent = null,
   } = {}) => {
     const apolloProvider = createMockApollo([
       [getConfiguredAgents, configuredAgentsQueryMock],
       [getFoundationalChatAgents, aiFoundationalChatAgentsQueryMock],
     ]);
 
+    store = new Vuex.Store({
+      state: {
+        messages: [],
+        toolMessage: '',
+        currentAgent,
+      },
+      mutations: {
+        STORE_CURRENT_AGENT(state, agent) {
+          state.currentAgent = agent;
+        },
+      },
+      actions: {
+        setCurrentAgent({ commit }, agent) {
+          commit('STORE_CURRENT_AGENT', agent);
+        },
+        addDuoChatMessage: jest.fn(),
+        setMessages: jest.fn(),
+      },
+    });
+
     wrapper = shallowMountExtended(NewChatButton, {
       apolloProvider,
+      store,
       directives: {
         GlTooltip: createMockDirective('gl-tooltip'),
       },
@@ -60,6 +87,7 @@ describe('NewChatButton', () => {
       },
       stubs: {
         GlButton,
+        GlCollapsibleListbox,
       },
     });
 
@@ -68,31 +96,73 @@ describe('NewChatButton', () => {
 
   const findNewToggle = () => wrapper.findByTestId('ai-new-toggle');
   const findAgentDropdown = () => wrapper.findComponent(GlCollapsibleListbox);
+  const findAgentSelectors = () => wrapper.findAllComponents(GlListboxItem);
 
   describe('when there are multiple agents', () => {
-    const mockAgent = {
-      ...DUO_FOUNDATIONAL_AGENT_MOCK,
-      text: 'Cool agent',
-      value: 'gid://gitlab/Ai::FoundationalChatAgent/agent-v1',
-    };
-
     beforeEach(async () => {
       await createComponent();
     });
 
     it('renders dropdown instead of button', () => {
       expect(findAgentDropdown().exists()).toBe(true);
+      expect(findAgentSelectors()).toHaveLength(3);
       expect(findNewToggle().exists()).toBe(false);
     });
 
-    describe('when an agent is selected', () => {
+    describe('when an agent is clicked', () => {
       beforeEach(async () => {
-        findAgentDropdown().vm.$emit('select', mockAgent.id);
+        const item = findAgentSelectors().at(0); // should return DUO_CHAT_AGENT_MOCK
+        item.vm.$emit('select', true);
         await nextTick();
       });
 
-      it('emits new-chat event with the agent as payload', () => {
-        expect(wrapper.emitted('new-chat')).toEqual([[mockAgent]]);
+      it('emits new-chat event without payload', () => {
+        expect(wrapper.emitted('new-chat')).toHaveLength(1);
+        expect(wrapper.emitted('new-chat')[0]).toEqual([]);
+      });
+
+      it('updates dropdown to show selected agent', () => {
+        expect(findAgentDropdown().props('selected')).toBe(DUO_CHAT_AGENT_MOCK.id);
+      });
+
+      it('correctly updates when another agent is selected', async () => {
+        const item1 = findAgentSelectors().at(1); // should return DUO_FOUNDATIONAL_AGENT_MOCK
+        item1.vm.$emit('select', true);
+        await nextTick();
+        expect(findAgentDropdown().props('selected')).toBe(DUO_FOUNDATIONAL_AGENT_MOCK.id);
+      });
+    });
+
+    describe('when the same agent is clicked multiple times', () => {
+      let item;
+      beforeEach(async () => {
+        item = findAgentSelectors().at(0); // should return DUO_CHAT_AGENT_MOCK
+        item.vm.$emit('select', true);
+        await nextTick();
+
+        // Second click on the same agent which, technically,
+        // unselectes the agent in GlCollapsibleListbox with `multiple`
+        // (hence the `false`). But we still register the click
+        item.vm.$emit('select', false);
+        await nextTick();
+      });
+
+      it('allows reselecting the same agent', () => {
+        // Should emit for every click, allowing reselection
+        expect(wrapper.emitted('new-chat')).toHaveLength(2);
+        // But there's only one **correct** agent still selected
+        expect(findAgentDropdown().props('selected')).toBe(DUO_CHAT_AGENT_MOCK.id);
+      });
+
+      it('correctly handles selection of a new agent after the same agent was selected', async () => {
+        const item1 = findAgentSelectors().at(1); // should return DUO_FOUNDATIONAL_AGENT_MOCK
+        item1.vm.$emit('select', true);
+        await nextTick();
+
+        // Should emit for every click, allowing reselection
+        expect(wrapper.emitted('new-chat')).toHaveLength(3);
+        // But there's only one **correct** agent still selected
+        expect(findAgentDropdown().props('selected')).toBe(DUO_FOUNDATIONAL_AGENT_MOCK.id);
       });
     });
 
@@ -105,7 +175,13 @@ describe('NewChatButton', () => {
         findAgentDropdown().vm.$emit('search', searchTerm);
         await nextTick();
 
-        expect(findAgentDropdown().props('items')).toEqual([mockAgent]);
+        expect(findAgentDropdown().props('items')).toEqual([
+          {
+            ...DUO_FOUNDATIONAL_AGENT_MOCK,
+            text: DUO_FOUNDATIONAL_AGENT_MOCK.name,
+            value: DUO_FOUNDATIONAL_AGENT_MOCK.id,
+          },
+        ]);
       });
     });
   });
@@ -213,6 +289,89 @@ describe('NewChatButton', () => {
       it('emits new-chat event', () => {
         expect(wrapper.emitted('new-chat')).toHaveLength(1);
       });
+    });
+  });
+
+  describe('selected agent value in dropdown', () => {
+    describe('when currentAgent is set in store', () => {
+      beforeEach(async () => {
+        // Reset mocks to return multiple agents (needed if previous tests changed them)
+        configuredAgentsQueryMock.mockResolvedValue(MOCK_CONFIGURED_AGENTS_RESPONSE);
+        aiFoundationalChatAgentsQueryMock.mockResolvedValue(MOCK_FOUNDATIONAL_CHAT_AGENTS_RESPONSE);
+
+        await createComponent({ currentAgent: DUO_FOUNDATIONAL_AGENT_MOCK });
+      });
+
+      it('displays the currentAgent as selected in dropdown', () => {
+        expect(findAgentDropdown().props('selected')).toBe(DUO_FOUNDATIONAL_AGENT_MOCK.id);
+      });
+    });
+
+    describe('when currentAgent is null and agents are loaded', () => {
+      beforeEach(async () => {
+        // Reset mocks to return multiple agents
+        configuredAgentsQueryMock.mockResolvedValue(MOCK_CONFIGURED_AGENTS_RESPONSE);
+        aiFoundationalChatAgentsQueryMock.mockResolvedValue(MOCK_FOUNDATIONAL_CHAT_AGENTS_RESPONSE);
+
+        await createComponent({ currentAgent: null });
+      });
+
+      it('displays the first agent as selected in dropdown', () => {
+        // Observable: dropdown should select the first available agent
+        const dropdownItems = findAgentDropdown().props('items');
+        const expectedValue = dropdownItems[0]?.id || null;
+        expect(findAgentDropdown().props('selected')).toBe(expectedValue);
+      });
+    });
+
+    describe('race condition: when both currentAgent and agents are null/empty', () => {
+      beforeEach(async () => {
+        aiFoundationalChatAgentsQueryMock.mockResolvedValue({
+          data: { aiFoundationalChatAgents: { nodes: [] } },
+        });
+        configuredAgentsQueryMock.mockResolvedValue({
+          data: { aiCatalogConfiguredItems: { nodes: [] } },
+        });
+
+        await createComponent({ currentAgent: null });
+      });
+
+      it('renders button instead of dropdown when no agents available', () => {
+        // Observable: when no agents, should show button not dropdown
+        expect(findNewToggle().exists()).toBe(true);
+        expect(findAgentDropdown().exists()).toBe(false);
+      });
+    });
+  });
+
+  describe('agent selection with currentAgent from store', () => {
+    const customAgent = DUO_FOUNDATIONAL_AGENT_MOCK;
+
+    beforeEach(async () => {
+      // Reset mocks to return multiple agents
+      configuredAgentsQueryMock.mockResolvedValue(MOCK_CONFIGURED_AGENTS_RESPONSE);
+      aiFoundationalChatAgentsQueryMock.mockResolvedValue(MOCK_FOUNDATIONAL_CHAT_AGENTS_RESPONSE);
+
+      await createComponent({
+        currentAgent: customAgent,
+        isAgentSelectEnabled: true,
+      });
+    });
+
+    it('displays currentAgent from store as selected in dropdown', () => {
+      // Observable: dropdown should show the agent from store as selected
+      expect(findAgentDropdown().props('selected')).toBe(customAgent.id);
+    });
+
+    it('uses currentAgent from store for dropdown selection', () => {
+      // Observable: verify the dropdown has the correct selected value
+      expect(findAgentDropdown().props('selected')).toBe(customAgent.id);
+    });
+
+    it('renders dropdown with agent from store selected', () => {
+      // Observable: verify dropdown exists and displays correct selection
+      expect(findAgentDropdown().exists()).toBe(true);
+      expect(findAgentDropdown().props('selected')).toBe(customAgent.id);
     });
   });
 });

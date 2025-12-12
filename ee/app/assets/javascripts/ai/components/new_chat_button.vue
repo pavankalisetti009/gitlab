@@ -1,4 +1,6 @@
 <script>
+// eslint-disable-next-line no-restricted-imports
+import { mapActions, mapState } from 'vuex';
 import { GlAvatar, GlButton, GlTooltipDirective, GlCollapsibleListbox, GlIcon } from '@gitlab/ui';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { __ } from '~/locale';
@@ -96,11 +98,11 @@ export default {
     return {
       catalogAgents: [],
       foundationalAgents: [],
-      selectedAgent: null,
       searchTerm: '',
     };
   },
   computed: {
+    ...mapState(['currentAgent']),
     agents() {
       return [...this.foundationalAgents, ...this.catalogAgents].map((agent) => ({
         ...agent,
@@ -109,8 +111,8 @@ export default {
       }));
     },
     selectedAgentValue() {
-      const activeAgent = this.selectedAgent || this.agents[0];
-      return activeAgent.value;
+      const activeAgent = this.currentAgent || this.agents[0];
+      return activeAgent?.id || null;
     },
     catalogAgentsVariables() {
       return this.projectId ? { projectId: this.projectId } : { groupId: this.namespaceId };
@@ -135,10 +137,11 @@ export default {
     },
   },
   methods: {
+    ...mapActions(['setCurrentAgent']),
     handleStartNewChat(agentId) {
-      this.selectedAgent = this.getSelectedAgent(agentId);
+      this.setCurrentAgent(this.getSelectedAgent(agentId));
 
-      this.$emit('new-chat', this.selectedAgent);
+      this.$emit('new-chat');
     },
     getSelectedAgent(agentId) {
       return this.agents?.find((agent) => agent.id === agentId);
@@ -152,6 +155,14 @@ export default {
       // FIXME: Expose a way for consumers of GlCollapsibleListbox to
       // clear its internal search input. https://gitlab.com/gitlab-org/gitlab/-/issues/583205
       this.$refs.customAgentSelector.$refs.searchBox?.clearInput();
+    },
+    onSelect(selectedArr) {
+      let selected = this.selectedAgentValue;
+      if (selectedArr.length) {
+        // considering we're in the multiselect mode, we need only the new agent
+        [selected] = selectedArr.filter((id) => id !== this.selectedAgentValue);
+      }
+      this.handleStartNewChat(selected);
     },
   },
 };
@@ -176,9 +187,10 @@ export default {
     fluid-width
     text-sr-only
     no-caret
+    multiple
+    @select="onSelect"
     @hidden="clearSearchInput"
     @search="onSearch"
-    @select="handleStartNewChat"
   >
     <template #list-item="{ item }">
       <span class="gl-flex">
