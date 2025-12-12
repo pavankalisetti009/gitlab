@@ -270,8 +270,8 @@ RSpec.describe Gitlab::Llm::Utils::AiFeaturesCatalogue, feature_category: :ai_ab
               stub_feature_flags(ai_duo_agent_platform_ga_rollout: false)
             end
 
-            it 'returns GA maturity' do
-              expect(effective_maturity).to eq(:ga)
+            it 'returns base maturity' do
+              expect(effective_maturity).to eq(base_maturity)
             end
           end
         end

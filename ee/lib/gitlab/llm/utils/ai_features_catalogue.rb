@@ -300,8 +300,7 @@ module Gitlab
         def self.instance_should_observe_ga_dap?(feature_name, user:)
           return false unless uses_duo_agent_platform?(feature_name)
 
-          !::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions) ||
-            ::Feature.enabled?(:ai_duo_agent_platform_ga_rollout, user)
+          ::Feature.enabled?(:ai_duo_agent_platform_ga_rollout, user)
         end
 
         def self.uses_duo_agent_platform?(feature_name)
