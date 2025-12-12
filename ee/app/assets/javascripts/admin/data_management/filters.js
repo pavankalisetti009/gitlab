@@ -3,7 +3,7 @@ import { CHECKSUM_STATES_ARRAY, TOKEN_TYPES } from 'ee/admin/data_management/con
 export const formatListboxItems = (items) => {
   return items.map((type) => ({
     text: type.titlePlural,
-    value: type.name,
+    value: type.namePlural,
   }));
 };
 

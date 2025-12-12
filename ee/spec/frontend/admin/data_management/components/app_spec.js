@@ -35,7 +35,7 @@ describe('AdminDataManagementApp', () => {
       router,
       propsData: {
         modelTypes: MOCK_MODEL_TYPES,
-        initialModelName: defaultModel.name,
+        initialModelName: defaultModel.namePlural,
       },
     });
   };
@@ -58,7 +58,7 @@ describe('AdminDataManagementApp', () => {
       pageHeadingTitle: 'Data management',
       pageHeadingDescription: 'Review stored data and data health within your instance.',
       filteredSearchOptionLabel: 'Search by ID',
-      activeListboxItem: defaultModel.name,
+      activeListboxItem: defaultModel.namePlural,
       activeSort: { value: 'id', direction: 'asc' },
       bulkActions: BULK_ACTIONS,
       showActions: false,
@@ -85,7 +85,7 @@ describe('AdminDataManagementApp', () => {
     it('calls getModels with correct parameters', () => {
       createComponent();
 
-      expect(getModels).toHaveBeenCalledWith(defaultModel.name, {
+      expect(getModels).toHaveBeenCalledWith(defaultModel.namePlural, {
         order_by: 'id',
         sort: 'asc',
         pagination: 'keyset',
@@ -117,7 +117,7 @@ describe('AdminDataManagementApp', () => {
         expect(findGeoList().props('hasItems')).toBe(true);
         expect(findDataManagementItem().props()).toMatchObject({
           initialItem: item,
-          modelName: defaultModel.name,
+          modelName: defaultModel.namePlural,
         });
       });
 
@@ -193,7 +193,7 @@ describe('AdminDataManagementApp', () => {
     beforeEach(async () => {
       await router.push({
         name: 'root',
-        params: { modelName: otherModel.name },
+        params: { modelName: otherModel.namePlural },
         query: {
           identifiers: ['123', '456'],
           checksum_state: 'failed',
@@ -207,7 +207,7 @@ describe('AdminDataManagementApp', () => {
     });
 
     it('updates route modelName', () => {
-      expect(router.currentRoute.params.modelName).toBe(otherModel.name);
+      expect(router.currentRoute.params.modelName).toBe(otherModel.namePlural);
     });
 
     it('updates route query', () => {
@@ -221,7 +221,7 @@ describe('AdminDataManagementApp', () => {
     });
 
     it('calls getModels with correct parameters', () => {
-      expect(getModels).toHaveBeenCalledWith(otherModel.name, {
+      expect(getModels).toHaveBeenCalledWith(otherModel.namePlural, {
         identifiers: ['123', '456'],
         checksum_state: 'failed',
         order_by: 'name',
@@ -254,12 +254,12 @@ describe('AdminDataManagementApp', () => {
 
       createComponent();
 
-      findGeoListTopBar().vm.$emit('listboxChange', otherModel.name);
+      findGeoListTopBar().vm.$emit('listboxChange', otherModel.namePlural);
       await waitForPromises();
     });
 
     it('updates route modelName', () => {
-      expect(router.currentRoute.params.modelName).toBe(otherModel.name);
+      expect(router.currentRoute.params.modelName).toBe(otherModel.namePlural);
     });
 
     it('retains route query except cursor', () => {
@@ -271,7 +271,7 @@ describe('AdminDataManagementApp', () => {
     });
 
     it('calls getModels with correct params', () => {
-      expect(getModels).toHaveBeenCalledWith(otherModel.name, {
+      expect(getModels).toHaveBeenCalledWith(otherModel.namePlural, {
         identifiers: ['1'],
         order_by: 'name',
         sort: 'asc',
@@ -284,7 +284,7 @@ describe('AdminDataManagementApp', () => {
     beforeEach(async () => {
       await router.push({
         name: 'root',
-        params: { modelName: otherModel.name },
+        params: { modelName: otherModel.namePlural },
         query: { order_by: 'name', sort: 'asc', cursor: 'cursor' },
       });
 
@@ -298,7 +298,7 @@ describe('AdminDataManagementApp', () => {
     });
 
     it('does not change route params', () => {
-      expect(router.currentRoute.params).toStrictEqual({ modelName: otherModel.name });
+      expect(router.currentRoute.params).toStrictEqual({ modelName: otherModel.namePlural });
     });
 
     it('updates route filter query and drops cursor', () => {
@@ -311,7 +311,7 @@ describe('AdminDataManagementApp', () => {
     });
 
     it('calls getModels with updated filter params', () => {
-      expect(getModels).toHaveBeenCalledWith(otherModel.name, {
+      expect(getModels).toHaveBeenCalledWith(otherModel.namePlural, {
         identifiers: ['123', '456'],
         checksum_state: 'failed',
         order_by: 'name',
@@ -325,7 +325,7 @@ describe('AdminDataManagementApp', () => {
     beforeEach(async () => {
       await router.push({
         name: 'root',
-        params: { modelName: otherModel.name },
+        params: { modelName: otherModel.namePlural },
         query: { identifiers: ['123', '456'], order_by: 'updated-at', sort: 'asc' },
         cursor: 'cursor',
       });
@@ -337,7 +337,7 @@ describe('AdminDataManagementApp', () => {
     });
 
     it('does not change route params', () => {
-      expect(router.currentRoute.params).toStrictEqual({ modelName: otherModel.name });
+      expect(router.currentRoute.params).toStrictEqual({ modelName: otherModel.namePlural });
     });
 
     it('updates route sort query and drops cursor', () => {
@@ -349,7 +349,7 @@ describe('AdminDataManagementApp', () => {
     });
 
     it('calls getModels with new sort params', () => {
-      expect(getModels).toHaveBeenCalledWith(otherModel.name, {
+      expect(getModels).toHaveBeenCalledWith(otherModel.namePlural, {
         identifiers: ['123', '456'],
         order_by: 'name',
         sort: 'desc',
@@ -372,7 +372,7 @@ describe('AdminDataManagementApp', () => {
     it('calls putBulkModelAction', () => {
       fireBulkAction(action);
 
-      expect(putBulkModelAction).toHaveBeenCalledWith(defaultModel.name, action.action);
+      expect(putBulkModelAction).toHaveBeenCalledWith(defaultModel.namePlural, action.action);
     });
 
     describe('when action succeeds', () => {
@@ -459,7 +459,7 @@ describe('AdminDataManagementApp', () => {
 
       await router.push({
         name: 'root',
-        params: { modelName: defaultModel.name },
+        params: { modelName: defaultModel.namePlural },
         query: { identifiers: ['123'], order_by: 'name', sort: 'asc' },
       });
 
@@ -480,7 +480,7 @@ describe('AdminDataManagementApp', () => {
     });
 
     it('calls getModels with cursor param', () => {
-      expect(getModels).toHaveBeenCalledWith(defaultModel.name, {
+      expect(getModels).toHaveBeenCalledWith(defaultModel.namePlural, {
         identifiers: ['123'],
         order_by: 'name',
         sort: 'asc',
@@ -499,7 +499,7 @@ describe('AdminDataManagementApp', () => {
 
       await router.push({
         name: 'root',
-        params: { modelName: defaultModel.name },
+        params: { modelName: defaultModel.namePlural },
         query: { identifiers: ['456'], order_by: 'id', sort: 'desc' },
       });
 
@@ -520,7 +520,7 @@ describe('AdminDataManagementApp', () => {
     });
 
     it('calls getModels with cursor param', () => {
-      expect(getModels).toHaveBeenCalledWith(defaultModel.name, {
+      expect(getModels).toHaveBeenCalledWith(defaultModel.namePlural, {
         identifiers: ['456'],
         order_by: 'id',
         sort: 'desc',

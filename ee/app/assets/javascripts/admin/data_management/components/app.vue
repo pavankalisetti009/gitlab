@@ -50,7 +50,7 @@ export default {
   },
   computed: {
     activeModel() {
-      return this.modelTypes.find(({ name }) => name === this.activeModelName);
+      return this.modelTypes.find(({ namePlural }) => namePlural === this.activeModelName);
     },
     modelTitle() {
       return this.activeModel.titlePlural.toLowerCase();
@@ -145,7 +145,7 @@ export default {
     },
     async handleBulkAction({ action, successMessage, errorMessage }) {
       try {
-        await putBulkModelAction(this.activeModel.name, action);
+        await putBulkModelAction(this.activeModel.namePlural, action);
 
         showToast(sprintf(successMessage, { type: this.modelTitle }));
         this.fetchModelList();
