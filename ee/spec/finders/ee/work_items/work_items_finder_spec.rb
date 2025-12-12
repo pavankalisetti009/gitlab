@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe WorkItems::WorkItemsFinder, feature_category: :team_planning do
   context 'when filtering work items' do
     let_it_be(:user) { create(:user) }
-    let_it_be(:group) { create(:group) }
+    let_it_be_with_refind(:group) { create(:group) }
     let_it_be(:project) { create(:project, group: group) }
 
     before do
@@ -212,7 +212,7 @@ RSpec.describe WorkItems::WorkItemsFinder, feature_category: :team_planning do
 
     describe 'filtering by issue_types' do
       let_it_be(:current_user) { create(:user) }
-      let_it_be(:group) { create(:group, developers: [current_user]) }
+      let_it_be_with_refind(:group) { create(:group, developers: [current_user]) }
       let_it_be(:subgroup) { create(:group, developers: [current_user], parent: group) }
       let_it_be(:project) { create(:project, group: group) }
       let_it_be(:subgroup_project) { create(:project, group: subgroup) }
