@@ -633,4 +633,243 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
     it_behaves_like 'virtual registry non member user access'
     it_behaves_like 'an authenticated virtual registry REST API'
   end
+
+  describe 'POST /api/v4/virtual_registries/packages/maven/upstreams/:id/test' do
+    let(:url) { "/virtual_registries/packages/maven/upstreams/#{upstream.id}/test" }
+    let(:params) { {} }
+
+    subject(:api_request) { post api(url), params: params, headers: headers }
+
+    it_behaves_like 'virtual registry not available', :maven
+
+    it_behaves_like 'virtual registry non member user access'
+
+    context 'with no override params' do
+      before do
+        group.add_guest(user)
+
+        allow_next_found_instance_of(::VirtualRegistries::Packages::Maven::Upstream) do |instance|
+          allow(instance).to receive(:test).and_return({ success: true })
+        end
+      end
+
+      it 'tests the existing upstream without creating a new instance' do
+        expect(::VirtualRegistries::Packages::Maven::Upstream).not_to receive(:new)
+
+        api_request
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(json_response).to eq({ 'success' => true })
+      end
+
+      it { is_expected.to have_request_urgency(:low) }
+
+      it_behaves_like 'an authenticated virtual registry REST API'
+    end
+
+    context 'with override params' do
+      before_all do
+        group.add_guest(user)
+      end
+
+      context 'when a new url is provided' do
+        let(:new_url) { 'http://new-example.com' }
+
+        before do
+          allow_next_instance_of(::VirtualRegistries::Packages::Maven::Upstream) do |upstream_instance|
+            allow(upstream_instance).to receive(:test).and_return({ success: true })
+          end
+        end
+
+        context 'with no username and password' do
+          let(:params) { { url: new_url } }
+
+          it 'creates a new upstream instance with the new url and no credentials' do
+            expect(::VirtualRegistries::Packages::Maven::Upstream).to receive(:new).with(
+              url: new_url,
+              username: nil,
+              password: nil,
+              group: upstream.group,
+              name: 'test'
+            )
+
+            api_request
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(json_response).to eq({ 'success' => true })
+          end
+        end
+
+        context 'with new username and password' do
+          let(:params) { { url: new_url, username: 'new-username', password: 'new-password' } }
+
+          it 'creates a new upstream instance with new url and new credentials' do
+            expect(::VirtualRegistries::Packages::Maven::Upstream).to receive(:new).with(
+              url: new_url,
+              username: 'new-username',
+              password: 'new-password',
+              group: upstream.group,
+              name: 'test'
+            )
+
+            api_request
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(json_response).to eq({ 'success' => true })
+          end
+        end
+
+        context 'with existing username and no password' do
+          let(:params) { { url: new_url, username: upstream.username, password: '' } }
+
+          it 'returns a bad request and a validation error' do
+            expect(::VirtualRegistries::Packages::Maven::Upstream).to receive(:new).with(
+              url: new_url,
+              username: upstream.username,
+              password: nil,
+              group: upstream.group,
+              name: 'test'
+            )
+
+            api_request
+
+            expect(response).to have_gitlab_http_status(:bad_request)
+            expect(json_response['message']['password']).to include("can't be blank")
+          end
+        end
+
+        context 'with new username and no password' do
+          let(:params) { { url: new_url, username: 'new-username', password: '' } }
+
+          it 'returns a bad request and a validation error' do
+            expect(::VirtualRegistries::Packages::Maven::Upstream).to receive(:new).with(
+              url: new_url,
+              username: 'new-username',
+              password: nil,
+              group: upstream.group,
+              name: 'test'
+            )
+
+            api_request
+
+            expect(response).to have_gitlab_http_status(:bad_request)
+            expect(json_response['message']['password']).to include("can't be blank")
+          end
+        end
+
+        context 'with new password and no username' do
+          let(:params) { { url: new_url, username: '', password: 'new-password' } }
+
+          it 'returns a bad request and a validation error' do
+            expect(::VirtualRegistries::Packages::Maven::Upstream).to receive(:new).with(
+              url: new_url,
+              username: nil,
+              password: 'new-password',
+              group: upstream.group,
+              name: 'test'
+            )
+
+            api_request
+
+            expect(response).to have_gitlab_http_status(:bad_request)
+            expect(json_response['message']['username']).to include("can't be blank")
+          end
+        end
+      end
+
+      context 'when credentials are provided' do
+        context 'with new username and no password' do
+          let(:params) { { username: 'new-username', password: '' } }
+
+          it 'returns a bad request and a validation error' do
+            allow_next_instance_of(::VirtualRegistries::Packages::Maven::Upstream) do |upstream_instance|
+              allow(upstream_instance).to receive(:test).and_return({ success: true })
+            end
+
+            expect(::VirtualRegistries::Packages::Maven::Upstream).to receive(:new).with(
+              url: upstream.url,
+              username: 'new-username',
+              password: nil,
+              group: upstream.group,
+              name: 'test'
+            )
+
+            api_request
+
+            expect(response).to have_gitlab_http_status(:bad_request)
+            expect(json_response['message']['password']).to include("can't be blank")
+          end
+        end
+
+        context 'with no username and new password' do
+          let(:params) { { username: '', password: 'new-password' } }
+
+          it 'returns a bad request and a validation error' do
+            allow_next_instance_of(::VirtualRegistries::Packages::Maven::Upstream) do |upstream_instance|
+              allow(upstream_instance).to receive(:test).and_return({ success: true })
+            end
+
+            expect(::VirtualRegistries::Packages::Maven::Upstream).to receive(:new).with(
+              url: upstream.url,
+              username: nil,
+              password: 'new-password',
+              group: upstream.group,
+              name: 'test'
+            )
+
+            api_request
+
+            expect(response).to have_gitlab_http_status(:bad_request)
+            expect(json_response['message']['username']).to include("can't be blank")
+          end
+        end
+
+        context 'with existing username and no password' do
+          let(:params) { { username: upstream.username, password: '' } }
+
+          it 'tests the existing upstream without creating a new instance' do
+            allow_next_found_instance_of(::VirtualRegistries::Packages::Maven::Upstream) do |upstream_instance|
+              allow(upstream_instance).to receive(:test).and_return({ success: true })
+            end
+
+            expect(::VirtualRegistries::Packages::Maven::Upstream).not_to receive(:new)
+
+            api_request
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(json_response).to eq({ 'success' => true })
+          end
+        end
+
+        context 'with existing username and existing password' do
+          let(:params) { { username: upstream.username, password: upstream.password } }
+
+          it 'tests the existing upstream without creating a new instance' do
+            allow_next_found_instance_of(::VirtualRegistries::Packages::Maven::Upstream) do |upstream_instance|
+              allow(upstream_instance).to receive(:test).and_return({ success: true })
+            end
+
+            expect(::VirtualRegistries::Packages::Maven::Upstream).not_to receive(:new)
+
+            api_request
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(json_response).to eq({ 'success' => true })
+          end
+        end
+      end
+
+      context 'with invalid override params' do
+        let(:params) { { url: '' } }
+
+        it 'returns validation errors' do
+          api_request
+
+          expect(response).to have_gitlab_http_status(:bad_request)
+          expect(json_response).to have_key('error')
+          expect(json_response['error']).to eq('url is empty')
+        end
+      end
+    end
+  end
 end
