@@ -21,7 +21,7 @@ module Groups
         push_frontend_feature_flag(:security_policy_approval_warn_mode, @group, type: :beta)
         push_frontend_feature_flag(:auto_dismiss_vulnerability_policies, @group, type: :wip)
         push_frontend_feature_flag(:policy_violations_es_filter, @group, type: :beta)
-        push_frontend_feature_flag(:ai_experiment_sast_fp_detection, @group, type: :wip)
+        push_frontend_feature_flag(:ai_experiment_sast_fp_detection, @group, type: :beta)
         push_frontend_ability(ability: :access_advanced_vulnerability_management, resource: @group, user: current_user)
       end
 

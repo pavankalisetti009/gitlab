@@ -13,7 +13,7 @@ module Admin
     before_action :ensure_feature_available!
 
     before_action do
-      push_frontend_feature_flag(:ai_experiment_sast_fp_detection, current_user, type: :wip)
+      push_frontend_feature_flag(:ai_experiment_sast_fp_detection, current_user, type: :beta)
     end
 
     def show; end
