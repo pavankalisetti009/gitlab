@@ -7,6 +7,7 @@ import {
 } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';
+// eslint-disable-next-line no-restricted-imports
 import { ALL_ID } from '../../filters/constants';
 import SearchSuggestion from '../components/search_suggestion.vue';
 

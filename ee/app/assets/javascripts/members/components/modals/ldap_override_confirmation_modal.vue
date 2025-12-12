@@ -3,6 +3,7 @@ import { GlModal, GlSprintf } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
 import { mapState, mapActions } from 'vuex';
 import { __, s__ } from '~/locale';
+// eslint-disable-next-line no-restricted-imports
 import { LDAP_OVERRIDE_CONFIRMATION_MODAL_ID } from '../../constants';
 
 export default {

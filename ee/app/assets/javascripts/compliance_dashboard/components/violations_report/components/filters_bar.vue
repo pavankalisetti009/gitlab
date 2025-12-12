@@ -1,6 +1,7 @@
 <script>
 import { GlFilteredSearch } from '@gitlab/ui';
 import { __, s__ } from '~/locale';
+// eslint-disable-next-line no-restricted-imports
 import ProjectToken from '../../standards_adherence_report/components/filters_bar/tokens/project_token.vue';
 import StatusToken from './tokens/status_token.vue';
 import ControlToken from './tokens/control_token.vue';

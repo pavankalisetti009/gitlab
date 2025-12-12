@@ -2,9 +2,12 @@
 import { GlDisclosureDropdown, GlFilteredSearch } from '@gitlab/ui';
 import { __, s__ } from '~/locale';
 
+// eslint-disable-next-line no-restricted-imports
 import complianceFrameworksInGroupQuery from '../../graphql/queries/compliance_frameworks_in_group.query.graphql';
+// eslint-disable-next-line no-restricted-imports
 import { GROUP_BY } from '../../constants';
 
+// eslint-disable-next-line no-restricted-imports
 import FrameworkToken from '../../../shared/filter_tokens/compliance_framework_token.vue';
 import ProjectToken from './tokens/project_token.vue';
 import RequirementToken from './tokens/requirement_token.vue';

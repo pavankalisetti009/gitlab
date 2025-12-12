@@ -6,6 +6,7 @@ import { s__ } from '~/locale';
 import BaseToken from '~/vue_shared/components/filtered_search_bar/tokens/base_token.vue';
 import { humanize } from '~/lib/utils/text_utility';
 import complianceRequirementControlsQuery from 'ee/compliance_dashboard/graphql/compliance_requirement_controls.query.graphql';
+// eslint-disable-next-line no-restricted-imports
 import complianceFrameworksWithControlsQuery from '../../graphql/queries/compliance_frameworks_with_controls.query.graphql';
 
 export default {

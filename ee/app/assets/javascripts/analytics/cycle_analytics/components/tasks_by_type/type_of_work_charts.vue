@@ -3,8 +3,11 @@
 import { mapGetters, mapState } from 'vuex';
 import { GlAlert, GlIcon, GlTooltip } from '@gitlab/ui';
 import SafeHtml from '~/vue_shared/directives/safe_html';
+// eslint-disable-next-line no-restricted-imports
 import { generateFilterTextDescription } from '../../utils';
+// eslint-disable-next-line no-restricted-imports
 import { formattedDate } from '../../../shared/utils';
+// eslint-disable-next-line no-restricted-imports
 import { TASKS_BY_TYPE_SUBJECT_FILTER_OPTIONS, TASKS_BY_TYPE_SUBJECT_ISSUE } from '../../constants';
 import NoDataAvailableState from '../no_data_available_state.vue';
 import TasksByTypeChart from './chart.vue';
