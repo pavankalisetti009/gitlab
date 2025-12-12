@@ -30,6 +30,7 @@ export default {
     return {
       errorMessages: [],
       isSubmitting: false,
+      selectedItemType: this.aiCatalogAgent.itemType,
     };
   },
   computed: {
@@ -49,7 +50,7 @@ export default {
       return this.activeVersion.definition;
     },
     isThirdPartyFlow() {
-      return this.aiCatalogAgent.itemType === AI_CATALOG_TYPE_THIRD_PARTY_FLOW;
+      return this.selectedItemType === AI_CATALOG_TYPE_THIRD_PARTY_FLOW;
     },
     initialValues() {
       return {
@@ -136,6 +137,7 @@ export default {
       :errors="errorMessages"
       :initial-values="initialValues"
       @dismiss-errors="resetErrorMessages"
+      @select-item-type="selectedItemType = $event"
       @submit="handleSubmit"
     />
   </div>
