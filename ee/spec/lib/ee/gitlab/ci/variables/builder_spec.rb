@@ -7,13 +7,14 @@ RSpec.describe Gitlab::Ci::Variables::Builder, feature_category: :pipeline_compo
   let_it_be(:project) { create(:project, :repository, namespace: group) }
   let_it_be_with_reload(:pipeline) { create(:ci_pipeline, project: project) }
   let_it_be(:user) { create(:user) }
+  let_it_be(:yaml_variables) { [{ key: 'YAML_VARIABLE', value: 'value' }] }
   let_it_be_with_reload(:job) do
     create(:ci_build,
       :with_deployment,
       name: 'rspec:test 1',
       pipeline: pipeline,
       user: user,
-      yaml_variables: [{ key: 'YAML_VARIABLE', value: 'value' }],
+      yaml_variables: yaml_variables,
       environment: 'review/$CI_COMMIT_REF_NAME',
       options: {
         environment: {
@@ -180,7 +181,7 @@ RSpec.describe Gitlab::Ci::Variables::Builder, feature_category: :pipeline_compo
       it 'calls policies builder' do
         expect_next_instance_of(EE::Gitlab::Ci::Variables::Builder::ScanExecutionPolicies) do |policies_builder|
           expect(policies_builder).to receive(:variables)
-                                        .with(job.name)
+                                        .with(job.name, yaml_variables)
                                         .and_return(policies_variables)
         end
         expect(scoped_variables.to_hash).to include('SECRET_DETECTION_HISTORIC_SCAN' => 'true', 'OTHER' => 'some value')
@@ -310,7 +311,7 @@ RSpec.describe Gitlab::Ci::Variables::Builder, feature_category: :pipeline_compo
       it 'calls policies builder' do
         expect_next_instance_of(EE::Gitlab::Ci::Variables::Builder::ScanExecutionPolicies) do |policies_builder|
           expect(policies_builder).to receive(:variables)
-                                        .with(job.name)
+                                        .with(job.name, yaml_variables)
                                         .and_return(policies_variables)
         end
         expect(scoped_variables_for_pipeline_seed.to_hash).to include(
