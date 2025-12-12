@@ -9,7 +9,6 @@ title: Validity checks
 
 - Tier: Ultimate
 - Offering: GitLab.com, GitLab Self-Managed
-- Status: Beta
 
 {{< /details >}}
 
@@ -39,8 +38,6 @@ A secret is active when:
 Because active secrets can be used to impersonate a legitimate user, they pose a
 greater security risk than inactive secrets. If several secrets are leaked at once,
 knowing which secrets are active is an important part of triage and remediation.
-
-This feature is in [beta](../../../policy/development_stages_support.md).
 
 ## Enable validity checks
 
