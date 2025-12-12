@@ -11,6 +11,7 @@ import GlobalSettings from 'ee/security_orchestration/components/policy_editor/s
 import DependencyScanner from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scanners/dependency_scanner.vue';
 import SastScanner from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scanners/sast_scanner.vue';
 import SecretDetectionScanner from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scanners/secret_detection_scanner.vue';
+import ContainerScanningScanner from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scanners/container_scanning_scanner.vue';
 
 import { REPORT_TYPES_DEFAULT_KEYS } from 'ee/security_dashboard/constants';
 
@@ -47,6 +48,7 @@ describe('SecurityScanRuleBuilder', () => {
   const findDependencyScanner = () => wrapper.findComponent(DependencyScanner);
   const findSastScanner = () => wrapper.findComponent(SastScanner);
   const findSecretDetectionScanner = () => wrapper.findComponent(SecretDetectionScanner);
+  const findContainerScanningScanner = () => wrapper.findComponent(ContainerScanningScanner);
 
   describe('rendering', () => {
     beforeEach(() => {
@@ -88,6 +90,10 @@ describe('SecurityScanRuleBuilder', () => {
 
     it('renders secret detection scanner', () => {
       expect(findSecretDetectionScanner().exists()).toBe(true);
+    });
+
+    it('renders container scanning scanner', () => {
+      expect(findContainerScanningScanner().exists()).toBe(true);
     });
   });
 
@@ -218,6 +224,20 @@ describe('SecurityScanRuleBuilder', () => {
       };
 
       findSecretDetectionScanner().vm.$emit('changed', updatedRule);
+
+      expect(wrapper.emitted('changed')).toEqual([[updatedRule]]);
+    });
+
+    it('updates rule when container scanning scanner changes', () => {
+      const updatedRule = {
+        ...defaultRule,
+        vulnerability_attributes: {
+          fix_available: true,
+          false_positive: false,
+        },
+      };
+
+      findContainerScanningScanner().vm.$emit('changed', updatedRule);
 
       expect(wrapper.emitted('changed')).toEqual([[updatedRule]]);
     });
