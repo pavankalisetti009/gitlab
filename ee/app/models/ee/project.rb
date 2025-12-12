@@ -788,7 +788,13 @@ module EE
         super.preload(:invited_groups, group: [:ip_restrictions, :saml_provider])
       end
 
+      override :with_api_commit_entity_associations
       def with_api_commit_entity_associations
+        super.with_invited_groups
+      end
+
+      override :with_api_blob_entity_associations
+      def with_api_blob_entity_associations
         super.with_invited_groups
       end
 

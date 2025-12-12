@@ -843,6 +843,17 @@ RSpec.describe Project, feature_category: :groups_and_projects do
         expect(described_class.without_security_setting).to match_array([project_without_security_setting])
       end
     end
+
+    describe '.with_api_blob_entity_associations' do
+      it 'preloads the expected associations' do
+        expect(described_class.with_api_blob_entity_associations.preload_values).to contain_exactly(
+          :project_feature,
+          :route,
+          :invited_groups,
+          { namespace: [:route, :owner] }
+        )
+      end
+    end
   end
 
   describe 'validations' do
