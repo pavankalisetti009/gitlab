@@ -126,15 +126,9 @@ flowchart TD
 {{< history >}}
 
 - [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/537133) in GitLab 18.2 [with a flag](../../../api/feature_flags.md) named `secret_detection_validity_checks_refresh_token`. Disabled by default.
+- [Generally available](https://gitlab.com/gitlab-org/gitlab/-/work_items/552306) in GitLab 18.7 Feature flag `secret_detection_validity_checks_refresh_token` removed.
 
 {{< /history >}}
-
-{{< alert type="flag" >}}
-
-The availability of this feature is controlled by a feature flag.
-For more information, see the history.
-
-{{< /alert >}}
 
 After validity checks runs, the status of a token is not automatically updated, even if the token is revoked or expires.
 To update a token, you can manually refresh the status:

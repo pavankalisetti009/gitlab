@@ -22,7 +22,6 @@ module EE
         before_action do
           push_frontend_feature_flag(:mr_reports_tab, @project)
           push_frontend_feature_flag(:mr_security_widget_graphql, @project)
-          push_frontend_feature_flag(:secret_detection_validity_checks_refresh_token, @project)
         end
 
         before_action :authorize_read_pipeline!, only: [:metrics_reports]

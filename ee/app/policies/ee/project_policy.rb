@@ -1270,8 +1270,7 @@ module EE
 
       condition(:refresh_validity_checks_available, scope: :subject) do
         ::Feature.enabled?(:validity_checks, @subject) &&
-          @subject.licensed_feature_available?(:secret_detection_validity_checks) &&
-          ::Feature.enabled?(:secret_detection_validity_checks_refresh_token, @subject)
+          @subject.licensed_feature_available?(:secret_detection_validity_checks)
       end
 
       condition(:container_scanning_for_registry_available) do

@@ -98,7 +98,6 @@ RSpec.describe Mutations::Security::Finding::RefreshSecurityFindingTokenStatus, 
       context 'when all flags and features are enabled and licensed' do
         before do
           stub_feature_flags(validity_checks: true)
-          stub_feature_flags(secret_detection_validity_checks_refresh_token: true)
           stub_licensed_features(secret_detection_validity_checks: true)
           project.security_setting.reload.update!(validity_checks_enabled: true)
         end
