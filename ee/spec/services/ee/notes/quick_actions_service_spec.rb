@@ -881,12 +881,12 @@ RSpec.describe Notes::QuickActionsService, feature_category: :team_planning do
         before do
           epic_type = WorkItems::Type.default_by_type(:epic)
 
-          allow(WorkItems::SystemDefined::HierarchyRestriction).to receive(:find_by).with(
+          allow(WorkItems::TypesFramework::SystemDefined::HierarchyRestriction).to receive(:find_by).with(
             parent_type_id: epic_type.id,
             child_type_id: epic_type.id
           ).and_return(
             instance_double(
-              WorkItems::SystemDefined::HierarchyRestriction,
+              WorkItems::TypesFramework::SystemDefined::HierarchyRestriction,
               maximum_depth: 0,
               parent_type_id: epic_type.id,
               child_type_id: epic_type.id
