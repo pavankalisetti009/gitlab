@@ -13,6 +13,7 @@ import { isEmpty } from 'lodash';
 import { mapActions, mapGetters, mapState } from 'vuex';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { sprintf } from '~/locale';
+// eslint-disable-next-line no-restricted-imports
 import { APPROVAL_SETTINGS_I18N, TYPE_GROUP } from '../../constants';
 import ApprovalSettingsCheckbox from './approval_settings_checkbox.vue';
 import ApprovalSettingsRadio from './approval_settings_radio.vue';

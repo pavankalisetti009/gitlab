@@ -5,6 +5,7 @@ import { debounce } from 'lodash';
 import { mapState, mapActions } from 'vuex';
 import { n__ } from '~/locale';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+// eslint-disable-next-line no-restricted-imports
 import { RULE_TYPE_ANY_APPROVER } from '../../constants';
 
 const ANY_RULE_NAME = 'All Members';

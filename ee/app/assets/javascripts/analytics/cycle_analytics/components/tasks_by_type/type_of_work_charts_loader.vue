@@ -5,6 +5,7 @@ import { __ } from '~/locale';
 import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
 import ChartSkeletonLoader from '~/vue_shared/components/resizable_chart/skeleton_loader.vue';
 import { getTypeOfWorkTopLabels, getTypeOfWorkTasksByType } from 'ee/api/analytics_api';
+// eslint-disable-next-line no-restricted-imports
 import {
   getTasksByTypeData,
   checkForDataError,
@@ -13,6 +14,7 @@ import {
   transformRawTasksByTypeData,
   toggleSelectedLabel,
 } from '../../utils';
+// eslint-disable-next-line no-restricted-imports
 import { TASKS_BY_TYPE_SUBJECT_ISSUE } from '../../constants';
 import TypeOfWorkCharts from './type_of_work_charts.vue';
 

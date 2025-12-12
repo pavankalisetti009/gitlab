@@ -4,6 +4,7 @@ import { GlButton, GlTooltipDirective } from '@gitlab/ui';
 import { mapActions } from 'vuex';
 import { __ } from '~/locale';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+// eslint-disable-next-line no-restricted-imports
 import { TABLE_HEADERS } from '../../constants';
 import RuleInput from './rule_input.vue';
 import EmptyRuleApprovers from './empty_rule_approvers.vue';

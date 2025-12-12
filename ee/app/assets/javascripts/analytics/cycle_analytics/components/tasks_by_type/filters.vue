@@ -6,7 +6,9 @@ import { difference } from 'lodash';
 import { createAlert, VARIANT_INFO } from '~/alert';
 import { __, s__, n__, sprintf } from '~/locale';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
+// eslint-disable-next-line no-restricted-imports
 import { TASKS_BY_TYPE_SUBJECT_FILTER_OPTIONS, TASKS_BY_TYPE_MAX_LABELS } from '../../constants';
+// eslint-disable-next-line no-restricted-imports
 import getTasksByTypeLabels from '../../graphql/queries/get_tasks_by_type_labels.query.graphql';
 
 export default {

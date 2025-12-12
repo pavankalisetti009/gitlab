@@ -17,6 +17,7 @@ import dateFormat from '~/lib/dateformat';
 import { beginOfDayTime, endOfDayTime } from '~/lib/utils/datetime_utility';
 import UrlSync from '~/vue_shared/components/url_sync.vue';
 import featureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+// eslint-disable-next-line no-restricted-imports
 import Scatterplot from '../../shared/components/scatterplot.vue';
 import {
   chartKeys,
