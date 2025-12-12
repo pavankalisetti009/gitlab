@@ -158,6 +158,53 @@ RSpec.describe Sbom::Ingestion::Tasks::UpdateSecurityPolicyDismissals, feature_c
         end
       end
 
+      context 'when a license is an instance of Hash' do
+        let(:policy_dismissal) do
+          create(:policy_dismissal,
+            project: project,
+            merge_request: merge_request,
+            licenses: { mit_license => [component_1] })
+        end
+
+        let(:occurrence_map_1) do
+          create(:sbom_occurrence_map, report_component: create(:ci_reports_sbom_component, name: component_1))
+        end
+
+        before do
+          allow(licenses_fetcher).to receive(:fetch).with(occurrence_map_1.report_component).and_return(
+            [license]
+          )
+        end
+
+        shared_examples_for 'does not update the policy dismissal' do
+          it 'does not update the policy dismissal' do
+            expect do
+              update_security_policy_dismissals
+
+              policy_dismissal.reload
+            end.not_to change { policy_dismissal.license_occurrence_uuids }
+          end
+        end
+
+        context 'with unknown name' do
+          let(:license) { { name: '1 unknown' } }
+
+          it_behaves_like 'does not update the policy dismissal'
+        end
+
+        context 'without name' do
+          let(:license) { {} }
+
+          it_behaves_like 'does not update the policy dismissal'
+        end
+
+        context 'with nil license' do
+          let(:license) { nil }
+
+          it_behaves_like 'does not update the policy dismissal'
+        end
+      end
+
       context 'when the feature flag `security_policy_warn_mode_license_scanning` is disabled' do
         before do
           stub_feature_flags(security_policy_warn_mode_license_scanning: false)
