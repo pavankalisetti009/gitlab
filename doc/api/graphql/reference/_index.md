@@ -1777,6 +1777,23 @@ Returns [`PoliciesSyncUpdated`](#policiessyncupdated).
 | ---- | ---- | ----------- |
 | <a id="querysecuritypoliciessyncstatuspolicyconfigurationid"></a>`policyConfigurationId` | [`SecurityOrchestrationPolicyConfigurationID!`](#securityorchestrationpolicyconfigurationid) | ID of the security orchestration policy configuration. |
 
+### `Query.securityScanProfile`
+
+{{< details >}}
+**Introduced** in GitLab 18.7.
+**Status**: Experiment.
+{{< /details >}}
+
+Get security scan profile by ID.
+
+Returns [`ScanProfileType!`](#scanprofiletype).
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="querysecurityscanprofileid"></a>`id` | [`SecurityScanProfileID!`](#securityscanprofileid) | Global ID of the security scan profile. |
+
 ### `Query.selfManagedAddOnEligibleUsers`
 
 {{< details >}}
