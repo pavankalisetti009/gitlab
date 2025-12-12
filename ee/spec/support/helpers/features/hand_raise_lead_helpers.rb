@@ -35,7 +35,7 @@ module Features
 
       lead_params = ActionController::Parameters.new(hand_raise_lead_params).permit!
 
-      expect_next_instance_of(GitlabSubscriptions::CreateHandRaiseLeadService) do |service|
+      expect_next_instance_of(GitlabSubscriptions::CreateHandRaiseLeadService, user: user) do |service|
         expect(service).to receive(:execute).with(lead_params).and_return(ServiceResponse.success)
       end
 

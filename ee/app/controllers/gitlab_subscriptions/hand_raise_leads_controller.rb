@@ -10,7 +10,7 @@ module GitlabSubscriptions
     urgency :low
 
     def create
-      result = GitlabSubscriptions::CreateHandRaiseLeadService.new.execute(hand_raise_lead_params)
+      result = GitlabSubscriptions::CreateHandRaiseLeadService.new(user: current_user).execute(hand_raise_lead_params)
 
       if result.success?
         head :ok

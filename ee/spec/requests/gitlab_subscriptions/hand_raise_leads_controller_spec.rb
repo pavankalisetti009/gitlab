@@ -54,7 +54,7 @@ RSpec.describe GitlabSubscriptions::HandRaiseLeadsController, feature_category: 
             existing_plan: namespace.actual_plan_name,
             glm_source: 'gitlab.com'
           }
-        expect_next_instance_of(GitlabSubscriptions::CreateHandRaiseLeadService) do |service|
+        expect_next_instance_of(GitlabSubscriptions::CreateHandRaiseLeadService, user: user) do |service|
           expected_params = ActionController::Parameters.new(post_params)
                                                         .permit!
                                                         .merge(hand_raise_lead_extra_params)

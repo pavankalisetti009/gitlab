@@ -42,7 +42,7 @@ module GitlabSubscriptions
     def send_cart_abandonment_lead(user, namespace, product_interaction)
       params = build_lead_params(user, namespace, product_interaction)
 
-      GitlabSubscriptions::CreateHandRaiseLeadService.new.execute(params)
+      GitlabSubscriptions::CreateHandRaiseLeadService.new(user: user).execute(params)
     end
 
     def build_lead_params(user, namespace, product_interaction)

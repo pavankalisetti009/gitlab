@@ -58,7 +58,7 @@ RSpec.describe GitlabSubscriptions::CartAbandonmentWorker, feature_category: :su
       end
 
       it 'sends lead because plan name is nil' do
-        expect_next_instance_of(GitlabSubscriptions::CreateHandRaiseLeadService) do |service|
+        expect_next_instance_of(GitlabSubscriptions::CreateHandRaiseLeadService, user: user) do |service|
           expect(service).to receive(:execute)
         end
 
@@ -84,7 +84,7 @@ RSpec.describe GitlabSubscriptions::CartAbandonmentWorker, feature_category: :su
       end
 
       it 'sends lead because user never upgraded' do
-        expect_next_instance_of(GitlabSubscriptions::CreateHandRaiseLeadService) do |service|
+        expect_next_instance_of(GitlabSubscriptions::CreateHandRaiseLeadService, user: user) do |service|
           expect(service).to receive(:execute)
         end
 
@@ -107,7 +107,7 @@ RSpec.describe GitlabSubscriptions::CartAbandonmentWorker, feature_category: :su
       end
 
       it 'sends lead with correct params' do
-        expect_next_instance_of(GitlabSubscriptions::CreateHandRaiseLeadService) do |service|
+        expect_next_instance_of(GitlabSubscriptions::CreateHandRaiseLeadService, user: user) do |service|
           expect(service).to receive(:execute).with(
             hash_including(
               product_interaction: product_interaction,
@@ -145,7 +145,7 @@ RSpec.describe GitlabSubscriptions::CartAbandonmentWorker, feature_category: :su
         end
 
         it 'includes role and preferred_language when present' do
-          expect_next_instance_of(GitlabSubscriptions::CreateHandRaiseLeadService) do |service|
+          expect_next_instance_of(GitlabSubscriptions::CreateHandRaiseLeadService, user: user_with_attrs) do |service|
             expect(service).to receive(:execute).with(
               hash_including(
                 role: role_name,
@@ -173,7 +173,8 @@ RSpec.describe GitlabSubscriptions::CartAbandonmentWorker, feature_category: :su
         end
 
         it 'excludes role and preferred_language when absent' do
-          expect_next_instance_of(GitlabSubscriptions::CreateHandRaiseLeadService) do |service|
+          expect_next_instance_of(GitlabSubscriptions::CreateHandRaiseLeadService,
+            user: user_without_attrs) do |service|
             expect(service).to receive(:execute).with(
               hash_not_including(:role, :preferred_language)
             )
@@ -187,7 +188,7 @@ RSpec.describe GitlabSubscriptions::CartAbandonmentWorker, feature_category: :su
         let(:product_interaction) { 'cart abandonment - SaaS Ultimate' }
 
         it 'sends lead with ultimate plan_id' do
-          expect_next_instance_of(GitlabSubscriptions::CreateHandRaiseLeadService) do |service|
+          expect_next_instance_of(GitlabSubscriptions::CreateHandRaiseLeadService, user: user) do |service|
             expect(service).to receive(:execute).with(
               hash_including(plan_id: 'ultimate-plan-id')
             )
@@ -205,7 +206,7 @@ RSpec.describe GitlabSubscriptions::CartAbandonmentWorker, feature_category: :su
         end
 
         it 'sends lead with nil plan_id' do
-          expect_next_instance_of(GitlabSubscriptions::CreateHandRaiseLeadService) do |service|
+          expect_next_instance_of(GitlabSubscriptions::CreateHandRaiseLeadService, user: user) do |service|
             expect(service).to receive(:execute).with(
               hash_including(plan_id: nil)
             )
@@ -227,7 +228,7 @@ RSpec.describe GitlabSubscriptions::CartAbandonmentWorker, feature_category: :su
         end
 
         it 'sends lead with nil plan_id' do
-          expect_next_instance_of(GitlabSubscriptions::CreateHandRaiseLeadService) do |service|
+          expect_next_instance_of(GitlabSubscriptions::CreateHandRaiseLeadService, user: user) do |service|
             expect(service).to receive(:execute).with(
               hash_including(plan_id: nil)
             )
