@@ -89,9 +89,7 @@ RSpec.describe Ai::ActiveContext::Code::ProcessInvalidEnabledNamespaceEventWorke
 
     context 'when on saas', :saas do
       let_it_be(:namespace_with_subscription) do
-        create(:group_with_plan, plan: :ultimate_plan).tap do |group|
-          group.namespace_settings.update!(experiment_features_enabled: true, duo_features_enabled: true)
-        end
+        create(:group_with_plan, plan: :ultimate_plan)
       end
 
       let_it_be(:namespace_without_subscription) { create(:group) }
@@ -179,6 +177,35 @@ RSpec.describe Ai::ActiveContext::Code::ProcessInvalidEnabledNamespaceEventWorke
             consume_event(subscriber: described_class, event: second_event)
 
             expect(Ai::ActiveContext::Code::EnabledNamespace.count).to eq(0)
+          end
+        end
+      end
+
+      context 'when :semantic_code_search_saas_ga FF is disabled' do
+        before do
+          stub_feature_flags(semantic_code_search_saas_ga: false)
+        end
+
+        it 'deletes enabled namespace records for namespaces with valid subscriptions' do
+          create(:ai_active_context_code_enabled_namespace,
+            namespace: namespace_with_subscription,
+            active_context_connection: connection)
+
+          expect { execute }.to change { Ai::ActiveContext::Code::EnabledNamespace.count }.by(-1)
+        end
+
+        context 'when namespace has experiment settings enabled' do
+          before do
+            namespace_with_subscription.namespace_settings.update!(
+              experiment_features_enabled: true, duo_features_enabled: true)
+          end
+
+          it 'does not delete enabled namespace records for namespaces with valid subscriptions' do
+            create(:ai_active_context_code_enabled_namespace,
+              namespace: namespace_with_subscription,
+              active_context_connection: connection)
+
+            expect { execute }.not_to change { Ai::ActiveContext::Code::EnabledNamespace.count }
           end
         end
       end
