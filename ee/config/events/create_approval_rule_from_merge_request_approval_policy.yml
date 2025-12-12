@@ -8,6 +8,8 @@ identifiers:
 additional_properties:
   label:
     description: Type of the Merge Request Approval Policy (scan_finding, license_finding, any_merge_request)
+  enforcement_type:
+    description: Enforcement type of the policy (enforce or warn)
 product_group: security_policies
 product_categories:
 - security_policy_management
