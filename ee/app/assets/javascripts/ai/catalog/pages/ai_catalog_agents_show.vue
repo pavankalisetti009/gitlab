@@ -1,5 +1,5 @@
 <script>
-import { GlAlert, GlButton } from '@gitlab/ui';
+import { GlAlert, GlButton, GlExperimentBadge } from '@gitlab/ui';
 import { s__, sprintf } from '~/locale';
 import { InternalEvents } from '~/tracking';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
@@ -13,6 +13,7 @@ import {
   TRACK_EVENT_TYPE_AGENT,
   TRACK_EVENT_VIEW_AI_CATALOG_ITEM,
   VERSION_LATEST,
+  AI_CATALOG_TYPE_THIRD_PARTY_FLOW,
   VERSION_PINNED,
   ENABLE_AGENT_MODAL_TEXTS,
   VERSION_PINNED_GROUP,
@@ -43,6 +44,7 @@ export default {
     AiCatalogItemView,
     GlAlert,
     GlButton,
+    GlExperimentBadge,
   },
   mixins: [glFeatureFlagsMixin(), InternalEvents.mixin()],
   inject: {
@@ -89,6 +91,9 @@ export default {
     },
     showActions() {
       return this.isGlobal || this.isProjectNamespace;
+    },
+    isThirdPartyFlow() {
+      return this.aiCatalogAgent.itemType === AI_CATALOG_TYPE_THIRD_PARTY_FLOW;
     },
     isReadyToUpdate() {
       return this.version.activeVersionKey === VERSION_LATEST;
@@ -332,6 +337,10 @@ export default {
           <span class="gl-line-clamp-1 gl-wrap-anywhere">
             {{ aiCatalogAgent.name }}
           </span>
+          <gl-experiment-badge
+            :type="isThirdPartyFlow ? 'experiment' : 'beta'"
+            class="gl-self-center"
+          />
           <foundational-icon
             v-if="aiCatalogAgent.foundational"
             :resource-id="aiCatalogAgent.id"

@@ -160,6 +160,11 @@ export default {
         this.$refs.fieldProject?.validate();
       });
     },
+    'formValues.type': {
+      handler(newType) {
+        this.$emit('select-item-type', newType);
+      },
+    },
   },
   methods: {
     handleSubmit() {
