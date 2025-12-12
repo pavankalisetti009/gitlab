@@ -27,7 +27,6 @@ RSpec.describe Mutations::Security::Finding::RefreshFindingTokenStatus, feature_
 
     before do
       stub_feature_flags(validity_checks: true)
-      stub_feature_flags(secret_detection_validity_checks_refresh_token: true)
       stub_licensed_features(secret_detection_validity_checks: true)
       project.security_setting.update!(validity_checks_enabled: true)
     end
@@ -49,14 +48,6 @@ RSpec.describe Mutations::Security::Finding::RefreshFindingTokenStatus, feature_
 
       before_all do
         project.add_developer(current_user)
-      end
-
-      context 'when the secret_detection_validity_checks FF is disabled' do
-        before do
-          stub_feature_flags(secret_detection_validity_checks_refresh_token: false)
-        end
-
-        include_examples 'authorization failure that does not track events'
       end
 
       context 'when the vulnerability does not exist' do

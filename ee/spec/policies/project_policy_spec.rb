@@ -4412,7 +4412,6 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
     describe 'secret_detection_validity_checks' do
       before do
         stub_feature_flags(validity_checks: true)
-        stub_feature_flags(secret_detection_validity_checks_refresh_token: true)
         stub_licensed_features(secret_detection_validity_checks: true)
       end
 
@@ -4443,7 +4442,6 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       context 'when secret_detection_validity_checks licensed feature is not available' do
         before do
           stub_feature_flags(validity_checks: true)
-          stub_feature_flags(secret_detection_validity_checks_refresh_token: true)
           stub_licensed_features(secret_detection_validity_checks: false)
         end
 
@@ -4460,7 +4458,6 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       context 'when validity_checks feature flag is disabled' do
         before do
           stub_feature_flags(validity_checks: false)
-          stub_feature_flags(secret_detection_validity_checks_refresh_token: true)
           stub_licensed_features(secret_detection_validity_checks: true)
         end
 
@@ -4471,30 +4468,6 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             it { is_expected.to be_disallowed(:configure_secret_detection_validity_checks) }
             it { is_expected.to be_disallowed(:update_secret_detection_validity_checks_status) }
           end
-        end
-      end
-
-      context 'when secret_detection_validity_checks_refresh_token feature flag is disabled' do
-        before do
-          stub_feature_flags(validity_checks: true)
-          stub_feature_flags(secret_detection_validity_checks_refresh_token: false)
-          stub_licensed_features(secret_detection_validity_checks: true)
-        end
-
-        %w[owner maintainer].each do |role|
-          context "with #{role}" do
-            let(:current_user) { send(role) }
-
-            it { is_expected.to be_allowed(:configure_secret_detection_validity_checks) }
-            it { is_expected.to be_disallowed(:update_secret_detection_validity_checks_status) }
-          end
-        end
-
-        context "with developer" do
-          let(:current_user) { developer }
-
-          it { is_expected.to be_disallowed(:configure_secret_detection_validity_checks) }
-          it { is_expected.to be_disallowed(:update_secret_detection_validity_checks_status) }
         end
       end
     end
