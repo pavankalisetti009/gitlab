@@ -80,6 +80,15 @@ RSpec.describe API::MergeRequestDependencies, 'MergeRequestDependencies', featur
         let(:url) { "/projects/#{project.id}/merge_requests/#{merge_request.iid}/blocks" }
       end
     end
+
+    it_behaves_like 'authorizing granular token permissions', :read_merge_request_dependency do
+      let(:boundary_object) { project }
+      let(:user) { maintainer }
+      let(:request) do
+        get api("/projects/#{project.id}/merge_requests/#{merge_request.iid}/blocks",
+          personal_access_token: pat)
+      end
+    end
   end
 
   describe 'GET /projects/:id/merge_requests/:merge_request_iid/blocks/:block_id' do
@@ -122,6 +131,15 @@ RSpec.describe API::MergeRequestDependencies, 'MergeRequestDependencies', featur
       it_behaves_like 'rejects user from accessing merge request info' do
         let(:user) { guest }
         let(:url) { "/projects/#{project.id}/merge_requests/#{merge_request.iid}/blocks/#{block_1.id}" }
+      end
+    end
+
+    it_behaves_like 'authorizing granular token permissions', :read_merge_request_dependency do
+      let(:user) { maintainer }
+      let(:boundary_object) { project }
+      let(:request) do
+        get api("/projects/#{project.id}/merge_requests/#{merge_request.iid}/blocks/#{block_1.id}",
+          personal_access_token: pat)
       end
     end
   end
@@ -184,6 +202,15 @@ RSpec.describe API::MergeRequestDependencies, 'MergeRequestDependencies', featur
 
         expect(response).to have_gitlab_http_status(:forbidden)
         expect(json_response['message']).to eq('403 Forbidden')
+      end
+    end
+
+    it_behaves_like 'authorizing granular token permissions', :delete_merge_request_dependency do
+      let(:user) { maintainer }
+      let(:boundary_object) { project }
+      let(:request) do
+        delete api("/projects/#{project.id}/merge_requests/#{merge_request.iid}/blocks/#{block_1.id}",
+          personal_access_token: pat)
       end
     end
   end
@@ -266,6 +293,16 @@ RSpec.describe API::MergeRequestDependencies, 'MergeRequestDependencies', featur
         expect(json_response['message']).to eq('404 Not found')
       end
     end
+
+    it_behaves_like 'authorizing granular token permissions', :create_merge_request_dependency do
+      let(:user) { maintainer }
+      let(:boundary_object) { project }
+      let(:request) do
+        post api("/projects/#{project.id}/merge_requests/#{merge_request.iid}/blocks",
+          personal_access_token: pat),
+          params: { blocking_merge_request_id: extra_merge_request.id }
+      end
+    end
   end
 
   describe 'GET /projects/:id/merge_requests/:merge_request_iid/blockees' do
@@ -300,6 +337,15 @@ RSpec.describe API::MergeRequestDependencies, 'MergeRequestDependencies', featur
       it_behaves_like 'rejects user from accessing merge request info' do
         let(:user) { guest }
         let(:url) { "/projects/#{project.id}/merge_requests/#{merge_request.iid}/blockees" }
+      end
+    end
+
+    it_behaves_like 'authorizing granular token permissions', :read_merge_request_dependency do
+      let(:user) { maintainer }
+      let(:boundary_object) { project }
+      let(:request) do
+        get api("/projects/#{project.id}/merge_requests/#{other_merge_request.iid}/blockees",
+          personal_access_token: pat)
       end
     end
   end

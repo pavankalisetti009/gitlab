@@ -26,6 +26,7 @@ module API
         requires :merge_request_iid, type: Integer, desc: 'The internal ID of the merge request'
         use :pagination
       end
+      route_setting :authorization, permissions: :read_merge_request_dependency, boundary_type: :project
       get ":id/merge_requests/:merge_request_iid/blocks" do
         merge_request = find_merge_request_with_access(params[:merge_request_iid])
 
@@ -37,6 +38,7 @@ module API
         requires :merge_request_iid, type: Integer, desc: 'The internal ID of the merge request'
         requires :block_id, type: Integer, desc: 'The ID of the merge request dependency'
       end
+      route_setting :authorization, permissions: :read_merge_request_dependency, boundary_type: :project
       get ":id/merge_requests/:merge_request_iid/blocks/:block_id", urgency: :low do
         merge_request = find_merge_request_with_access(params[:merge_request_iid])
 
@@ -48,6 +50,7 @@ module API
         requires :merge_request_iid, type: Integer, desc: 'The internal ID of the merge request'
         requires :block_id, type: Integer, desc: 'The ID of the merge request dependency'
       end
+      route_setting :authorization, permissions: :delete_merge_request_dependency, boundary_type: :project
       delete ":id/merge_requests/:merge_request_iid/blocks/:block_id", urgency: :low do
         merge_request = find_merge_request_with_access(params[:merge_request_iid], :update_merge_request)
         block = find_block(merge_request)
@@ -61,6 +64,7 @@ module API
         requires :merge_request_iid, type: Integer, desc: 'The internal IID of the blocked merge request'
         requires :blocking_merge_request_id, type: Integer, desc: 'The internal ID of the blocking merge request'
       end
+      route_setting :authorization, permissions: :create_merge_request_dependency, boundary_type: :project
       post ":id/merge_requests/:merge_request_iid/blocks", urgency: :low do
         merge_request = find_project_merge_request(params[:merge_request_iid])
 
@@ -90,6 +94,7 @@ module API
         requires :merge_request_iid, type: Integer, desc: 'The internal ID of the merge request'
         use :pagination
       end
+      route_setting :authorization, permissions: :read_merge_request_dependency, boundary_type: :project
       get ":id/merge_requests/:merge_request_iid/blockees" do
         merge_request = find_merge_request_with_access(params[:merge_request_iid])
 
