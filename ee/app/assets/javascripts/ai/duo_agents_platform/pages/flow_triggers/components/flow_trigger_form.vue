@@ -120,7 +120,7 @@ export default {
   },
   data() {
     const isCatalogAvailable =
-      this.glFeatures.aiCatalogFlows || this.glFeatures.aiCatalogThirdPartyFlows;
+      this.glAbilities.readAiCatalogFlow || this.glFeatures.aiCatalogThirdPartyFlows;
     const hasConsumerId = Boolean(this.initialValues.aiCatalogItemConsumer.id);
     const hasConfigPath = Boolean(this.initialValues.configPath);
     const useCatalogMode = isCatalogAvailable && (hasConsumerId || !hasConfigPath);
