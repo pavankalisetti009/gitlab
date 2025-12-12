@@ -18,6 +18,27 @@ module Geo
       s_('Geo|CI Job Artifacts')
     end
 
+    override :checksummed_count
+    def self.checksummed_count
+      return unless verification_enabled?
+
+      batch_count(model.verification_state_table_class.with_verification_state(:verification_succeeded))
+    end
+
+    override :checksum_failed_count
+    def self.checksum_failed_count
+      return unless verification_enabled?
+
+      batch_count(model.verification_state_table_class.with_verification_state(:verification_failed))
+    end
+
+    override :checksum_total_count
+    def self.checksum_total_count
+      return unless verification_enabled?
+
+      batch_count(model.verification_state_table_class.all)
+    end
+
     def carrierwave_uploader
       model_record.file
     end
