@@ -436,47 +436,30 @@ RSpec.describe GroupsController, :aggregate_failures, type: :request, feature_ca
     context 'when setting the require_dpop_for_manage_api_endpoints param (default disabled)' do
       let(:params) { { group: { require_dpop_for_manage_api_endpoints: true } } }
 
-      context 'when feature flag is enabled' do
+      context 'when not group owner' do
+        let(:user) { create(:user) }
+
         before do
-          stub_feature_flags(manage_pat_by_group_owners_ready: true)
+          group.add_developer(user)
+          login_as(user)
         end
 
-        context 'when not group owner' do
-          let(:user) { create(:user) }
+        it 'does not change the column and returns not_found' do
+          expect(group.require_dpop_for_manage_api_endpoints?).to be(false)
 
-          before do
-            group.add_developer(user)
-            login_as(user)
-          end
+          request
 
-          it 'does not change the column and returns not_found' do
-            expect(group.require_dpop_for_manage_api_endpoints?).to be(false)
-
-            request
-
-            expect(response).to have_gitlab_http_status(:not_found)
-            expect(group.reload.require_dpop_for_manage_api_endpoints?).to be(false)
-          end
-        end
-
-        context 'when a group owner' do
-          it 'successfully changes the column`s value' do
-            expect { request }
-              .to change { group.reload.require_dpop_for_manage_api_endpoints? }
-              .from(false).to(true)
-
-            expect(response).to have_gitlab_http_status(:found)
-          end
+          expect(response).to have_gitlab_http_status(:not_found)
+          expect(group.reload.require_dpop_for_manage_api_endpoints?).to be(false)
         end
       end
 
-      context 'when feature flag is disabled' do
-        before do
-          stub_feature_flags(manage_pat_by_group_owners_ready: false)
-        end
+      context 'when a group owner' do
+        it 'successfully changes the column`s value' do
+          expect { request }
+            .to change { group.reload.require_dpop_for_manage_api_endpoints? }
+            .from(false).to(true)
 
-        it 'does not change the column' do
-          expect { request }.not_to change { group.reload.require_dpop_for_manage_api_endpoints? }
           expect(response).to have_gitlab_http_status(:found)
         end
       end
