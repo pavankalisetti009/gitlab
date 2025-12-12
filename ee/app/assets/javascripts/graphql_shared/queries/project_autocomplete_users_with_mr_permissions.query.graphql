@@ -1,0 +1,24 @@
+#import "~/graphql_shared/fragments/user.fragment.graphql"
+#import "~/graphql_shared/fragments/user_availability.fragment.graphql"
+
+query projectAutocompleteUsersSearchWithMRPermissionsEE(
+  $search: String!
+  $fullPath: ID!
+  $mergeRequestId: MergeRequestID!
+) {
+  workspace: project(fullPath: $fullPath) {
+    id
+    users: autocompleteUsers(search: $search) {
+      ...User
+      ...UserAvailability
+      mergeRequestInteraction(id: $mergeRequestId) {
+        canMerge
+        applicableApprovalRules {
+          id
+          name
+          type
+        }
+      }
+    }
+  }
+}
