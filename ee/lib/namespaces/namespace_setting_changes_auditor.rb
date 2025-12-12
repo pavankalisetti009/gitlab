@@ -23,7 +23,8 @@ module Namespaces
       remove_dormant_members_period: 'remove_dormant_members_period_updated',
       prevent_sharing_groups_outside_hierarchy: 'prevent_sharing_groups_outside_hierarchy_updated',
       seat_control: 'seat_control_updated',
-      step_up_auth_required_oauth_provider: 'step_up_auth_required_oauth_provider_updated'
+      step_up_auth_required_oauth_provider: 'step_up_auth_required_oauth_provider_updated',
+      usage_billing: 'usage_billing_updated'
     }.freeze
 
     def initialize(current_user, namespace_setting, group)

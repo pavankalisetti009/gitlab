@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe Namespaces::GroupChangesAuditor, feature_category: :groups_and_projects do
   describe '.audit_changes' do
     let!(:user) { create(:user) }
-    let!(:group) { create(:group, visibility_level: 0) }
+    let!(:group) { create(:group, visibility_level: 0).reload } # reload clears previous_changes on group settings
     let(:foo_instance) { described_class.new(user, group) }
     let_it_be(:audited_group_column_keys) { described_class::EVENT_NAME_PER_COLUMN.keys }
 

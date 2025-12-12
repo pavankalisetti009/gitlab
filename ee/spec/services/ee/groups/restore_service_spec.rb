@@ -8,7 +8,7 @@ RSpec.describe Groups::RestoreService, feature_category: :groups_and_projects do
     create(:group_with_deletion_schedule,
       marked_for_deletion_on: 1.day.ago,
       deleting_user: user,
-      owners: user)
+      owners: user).reload # reload clears previous_changes on group settings from the create
   end
 
   subject(:execute) { described_class.new(group, user, {}).execute }
