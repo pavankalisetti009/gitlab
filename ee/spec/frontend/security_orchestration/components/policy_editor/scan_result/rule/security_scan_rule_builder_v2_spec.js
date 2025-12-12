@@ -12,6 +12,9 @@ import DependencyScanner from 'ee/security_orchestration/components/policy_edito
 import SastScanner from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scanners/sast_scanner.vue';
 import SecretDetectionScanner from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scanners/secret_detection_scanner.vue';
 import ContainerScanningScanner from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scanners/container_scanning_scanner.vue';
+import DastScanner from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scanners/dast_scanner.vue';
+import ApiFuzzingScanner from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scanners/api_fuzzing_scanner.vue';
+import CoverageFuzzingScanner from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scanners/coverage_fuzzing_scanner.vue';
 
 import { REPORT_TYPES_DEFAULT_KEYS } from 'ee/security_dashboard/constants';
 
@@ -49,6 +52,9 @@ describe('SecurityScanRuleBuilder', () => {
   const findSastScanner = () => wrapper.findComponent(SastScanner);
   const findSecretDetectionScanner = () => wrapper.findComponent(SecretDetectionScanner);
   const findContainerScanningScanner = () => wrapper.findComponent(ContainerScanningScanner);
+  const findDastScanner = () => wrapper.findComponent(DastScanner);
+  const findApiFuzzingScanner = () => wrapper.findComponent(ApiFuzzingScanner);
+  const findCoverageFuzzingScanner = () => wrapper.findComponent(CoverageFuzzingScanner);
 
   describe('rendering', () => {
     beforeEach(() => {
@@ -94,6 +100,18 @@ describe('SecurityScanRuleBuilder', () => {
 
     it('renders container scanning scanner', () => {
       expect(findContainerScanningScanner().exists()).toBe(true);
+    });
+
+    it('renders dast scanner', () => {
+      expect(findDastScanner().exists()).toBe(true);
+    });
+
+    it('renders api fuzzing scanner', () => {
+      expect(findApiFuzzingScanner().exists()).toBe(true);
+    });
+
+    it('renders coverage fuzzing scanner', () => {
+      expect(findCoverageFuzzingScanner().exists()).toBe(true);
     });
   });
 
@@ -238,6 +256,39 @@ describe('SecurityScanRuleBuilder', () => {
       };
 
       findContainerScanningScanner().vm.$emit('changed', updatedRule);
+
+      expect(wrapper.emitted('changed')).toEqual([[updatedRule]]);
+    });
+
+    it('updates rule when dast scanner changes', () => {
+      const updatedRule = {
+        ...defaultRule,
+        severity_levels: ['critical', 'high'],
+      };
+
+      findDastScanner().vm.$emit('changed', updatedRule);
+
+      expect(wrapper.emitted('changed')).toEqual([[updatedRule]]);
+    });
+
+    it('updates rule when api fuzzing scanner changes', () => {
+      const updatedRule = {
+        ...defaultRule,
+        severity_levels: ['critical', 'high'],
+      };
+
+      findApiFuzzingScanner().vm.$emit('changed', updatedRule);
+
+      expect(wrapper.emitted('changed')).toEqual([[updatedRule]]);
+    });
+
+    it('updates rule when coverage fuzzing scanner changes', () => {
+      const updatedRule = {
+        ...defaultRule,
+        severity_levels: ['critical', 'high'],
+      };
+
+      findCoverageFuzzingScanner().vm.$emit('changed', updatedRule);
 
       expect(wrapper.emitted('changed')).toEqual([[updatedRule]]);
     });
