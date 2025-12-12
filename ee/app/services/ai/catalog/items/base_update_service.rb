@@ -66,7 +66,7 @@ module Ai
 
           return latest_version unless should_create_new_version?(latest_version)
 
-          build_new_version(version_params.merge(created_by: current_user))
+          build_new_version(version_params)
         end
 
         def should_create_new_version?(version)
@@ -74,7 +74,7 @@ module Ai
         end
 
         def build_new_version(version_params)
-          item.build_new_version(version_params)
+          item.build_new_version(version_params.merge(created_by: current_user))
         end
 
         def should_calculate_version?(version)
