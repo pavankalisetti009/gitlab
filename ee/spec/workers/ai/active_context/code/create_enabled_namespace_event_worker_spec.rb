@@ -18,7 +18,7 @@ RSpec.describe Ai::ActiveContext::Code::CreateEnabledNamespaceEventWorker, featu
     context 'when on saas', :saas do
       let_it_be(:namespace_with_subscription) do
         create(:group_with_plan, plan: :ultimate_plan).tap do |group|
-          group.namespace_settings.update!(experiment_features_enabled: true, duo_features_enabled: true)
+          group.namespace_settings.update!(duo_features_enabled: true)
         end
       end
 
@@ -58,6 +58,32 @@ RSpec.describe Ai::ActiveContext::Code::CreateEnabledNamespaceEventWorker, featu
 
         it 'does not create duplicate records' do
           expect { execute }.not_to change { Ai::ActiveContext::Code::EnabledNamespace.count }
+        end
+      end
+
+      context 'when `semantic_code_search_saas_ga` FF is disabled' do
+        before do
+          stub_feature_flags(semantic_code_search_saas_ga: false)
+        end
+
+        it 'does not process namespaces without experiment_features_enabled' do
+          execute
+
+          expect(Ai::ActiveContext::Code::EnabledNamespace.pluck(:namespace_id))
+            .not_to include(namespace_with_subscription.id)
+        end
+
+        context 'when namespace settings have experiment_features_enabled=true' do
+          before do
+            namespace_with_subscription.namespace_settings.update!(experiment_features_enabled: true)
+          end
+
+          it 'processes the relevant namespaces' do
+            execute
+
+            expect(Ai::ActiveContext::Code::EnabledNamespace.pluck(:namespace_id))
+              .to include(namespace_with_subscription.id)
+          end
         end
       end
     end

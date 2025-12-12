@@ -74,21 +74,21 @@ RSpec.describe ::Ai::ActiveContext::Code::EnabledNamespace, feature_category: :g
     end
 
     describe '.valid_saas_namespaces', :saas do
-      let_it_be(:valid_group) do
+      let_it_be(:group_with_valid_subscription_and_experiment_features) do
         group = create(:group)
         group.namespace_settings.update!(experiment_features_enabled: true)
         create(:gitlab_subscription, namespace: group, hosted_plan: create(:ultimate_plan))
         group
       end
 
-      let_it_be(:subgroup) do
-        create(:group, parent: valid_group)
-      end
-
-      let_it_be(:group_without_ai_features) do
+      let_it_be(:group_with_valid_subscription) do
         group = create(:group)
         create(:gitlab_subscription, namespace: group, hosted_plan: create(:ultimate_plan))
         group
+      end
+
+      let_it_be(:subgroup) do
+        create(:group, parent: group_with_valid_subscription)
       end
 
       let_it_be(:group_without_plan) do
@@ -104,22 +104,19 @@ RSpec.describe ::Ai::ActiveContext::Code::EnabledNamespace, feature_category: :g
         group
       end
 
-      it 'returns only top-level groups with AI features enabled and valid subscriptions' do
+      it 'returns only top-level groups with valid subscriptions' do
         result = described_class.valid_saas_namespaces
 
-        expect(result).to contain_exactly(valid_group)
+        expect(result).to contain_exactly(
+          group_with_valid_subscription,
+          group_with_valid_subscription_and_experiment_features
+        )
       end
 
       it 'excludes subgroups' do
         result = described_class.valid_saas_namespaces
 
         expect(result).not_to include(subgroup)
-      end
-
-      it 'excludes groups without AI features enabled' do
-        result = described_class.valid_saas_namespaces
-
-        expect(result).not_to include(group_without_ai_features)
       end
 
       it 'excludes groups without AI supported plan' do
@@ -132,6 +129,18 @@ RSpec.describe ::Ai::ActiveContext::Code::EnabledNamespace, feature_category: :g
         result = described_class.valid_saas_namespaces
 
         expect(result).not_to include(group_with_expired_subscription)
+      end
+
+      context 'when :semantic_code_search_saas_ga FF is disabled' do
+        before do
+          stub_feature_flags(semantic_code_search_saas_ga: false)
+        end
+
+        it 'excludes groups with valid subscriptions but with experiment settings disabled' do
+          result = described_class.valid_saas_namespaces
+
+          expect(result).not_to include(group_with_valid_subscription)
+        end
       end
     end
   end

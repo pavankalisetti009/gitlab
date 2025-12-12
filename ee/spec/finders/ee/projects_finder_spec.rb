@@ -130,10 +130,6 @@ RSpec.describe ProjectsFinder, feature_category: :groups_and_projects do
           p.project_setting.update!(duo_features_enabled: true)
         end
 
-        [ns_gold, ns_ultimate, ns_trial, ns_trial_paid, ns_oss, ns_free].each do |ns|
-          ns.namespace_settings.update!(experiment_features_enabled: true)
-        end
-
         gold_plan = create(:gold_plan)
         ultimate_plan = create(:ultimate_plan)
         trial_plan = create(:ultimate_trial_plan)
@@ -170,6 +166,34 @@ RSpec.describe ProjectsFinder, feature_category: :groups_and_projects do
 
         it 'excludes that project even if the namespace plan is eligible' do
           is_expected.to contain_exactly(p_gold, p_trial, p_trial_paid, p_oss)
+        end
+      end
+
+      context 'when `semantic_code_search_saas_ga` FF is disabled' do
+        before do
+          stub_feature_flags(semantic_code_search_saas_ga: false)
+        end
+
+        it 'does not return any projects' do
+          is_expected.to be_empty
+        end
+
+        context 'when namespace settings have experiment_features_enabled=true' do
+          before do
+            [ns_gold, ns_ultimate, ns_trial, ns_trial_paid, ns_oss, ns_free].each do |ns|
+              ns.namespace_settings.update!(experiment_features_enabled: true)
+            end
+          end
+
+          it 'returns projects under eligible plans and with duo toggles enabled' do
+            is_expected.to contain_exactly(
+              p_gold,
+              p_ultimate,
+              p_trial,
+              p_trial_paid,
+              p_oss
+            )
+          end
         end
       end
     end

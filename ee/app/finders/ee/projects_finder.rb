@@ -57,9 +57,12 @@ module EE
     def by_duo_eligible(items)
       return items unless ::Gitlab::Utils.to_boolean(params[:with_duo_eligible])
 
-      items.with_duo_features_enabled.joins_namespace.merge(
-        ::Namespace.namespace_settings_with_ai_features_enabled.with_ai_supported_plan
-      )
+      namespaces_filter = ::Namespace.with_ai_supported_plan
+      if ::Feature.disabled?(:semantic_code_search_saas_ga, :instance)
+        namespaces_filter = namespaces_filter.namespace_settings_with_ai_features_enabled
+      end
+
+      items.with_duo_features_enabled.joins_namespace.merge(namespaces_filter)
     end
   end
 end
