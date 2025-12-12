@@ -1,17 +1,9 @@
 <script>
-import {
-  GlAlert,
-  GlBadge,
-  GlFormGroup,
-  GlFormRadio,
-  GlFormRadioGroup,
-  GlLink,
-  GlSprintf,
-} from '@gitlab/ui';
+import { GlAlert, GlFormGroup, GlFormRadioGroup, GlLink, GlSprintf } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
-import { ENFORCEMENT_OPTIONS, WARN_VALUE } from '../lib';
+import { ENFORCEMENT_OPTIONS } from '../lib';
 
 export default {
   WARN_MODE_HELP_PATH: helpPagePath(
@@ -22,9 +14,7 @@ export default {
   ),
   components: {
     GlAlert,
-    GlBadge,
     GlFormGroup,
-    GlFormRadio,
     GlFormRadioGroup,
     GlLink,
     GlSprintf,
@@ -86,9 +76,6 @@ export default {
     handleEnforcementChange(value) {
       this.$emit('change', value);
     },
-    isWarnOption(value) {
-      return value === WARN_VALUE;
-    },
   },
 };
 </script>
@@ -97,20 +84,10 @@ export default {
   <gl-form-group :label="s__('SecurityOrchestration|Policy enforcement')" class="gl-mt-5">
     <gl-form-radio-group
       class="gl-inline-block"
+      :options="options"
       :checked="enforcement"
       @change="handleEnforcementChange"
-    >
-      <gl-form-radio
-        v-for="option in options"
-        :key="option.value"
-        :disabled="option.disabled"
-        :value="option.value"
-      >
-        {{ option.text }}
-        <gl-badge v-if="isWarnOption(option.value)" variant="info">{{ __('Beta') }}</gl-badge>
-      </gl-form-radio>
-    </gl-form-radio-group>
-
+    />
     <gl-alert v-if="showAlert" variant="info" class="gl-mt-3" :dismissible="false">
       <gl-sprintf :message="alertText">
         <template #link="{ content }">
