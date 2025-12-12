@@ -70932,6 +70932,9 @@ msgstr ""
 msgid "TransferGroup|You don't have enough permissions."
 msgstr ""
 
+msgid "TransferOrganization|Cannot transfer users because the existing organization could not be found."
+msgstr ""
+
 msgid "TransferOrganization|Cannot transfer users to a different organization if all users do not belong to the same organization as the top-level group."
 msgstr ""
 
