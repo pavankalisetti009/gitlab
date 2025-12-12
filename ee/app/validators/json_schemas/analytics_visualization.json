@@ -73,6 +73,7 @@
             "usage_count",
             "dora_metrics",
             "dora_metrics_by_project",
+            "ai_agent_platform_flow_metrics",
             "ai_impact_over_time",
             "contributions",
             "namespace_metadata",

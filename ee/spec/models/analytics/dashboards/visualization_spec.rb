@@ -49,6 +49,7 @@ RSpec.describe Analytics::Dashboards::Visualization, feature_category: :product_
       duo_chat_usage_rate_over_time
       duo_usage_rate_over_time
       pipeline_metrics_table
+      duo_flow_metrics_table
       code_suggestions_acceptance_rate_by_language_chart
       code_generation_volume_trends_chart
       duo_code_review_usage_by_user

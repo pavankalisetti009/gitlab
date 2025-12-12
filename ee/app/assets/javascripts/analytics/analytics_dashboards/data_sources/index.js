@@ -40,6 +40,7 @@ export default {
   usage_count: () => import('./usage_count'),
   dora_metrics: () => import('./dora_metrics'),
   dora_metrics_by_project: () => import('./dora_metrics_by_project'),
+  ai_agent_platform_flow_metrics: () => import('./ai_agent_platform_flow_metrics'),
   ai_impact_over_time: () => import('./ai_impact_over_time'),
   contributions: () => import('./contributions'),
   namespace_metadata: () => import('./namespace_metadata'),
