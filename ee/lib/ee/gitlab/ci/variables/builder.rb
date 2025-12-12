@@ -17,9 +17,9 @@ module EE
 
           override :scoped_variables_for_pipeline_seed
           def scoped_variables_for_pipeline_seed(job_attr, environment:, kubernetes_namespace:, user:, trigger:)
-            variables = super.tap do |variables|
-              variables.concat(scan_execution_policies_variables_builder.variables(job_attr[:name]))
-            end
+            variables = super.concat(
+              scan_execution_policies_variables_builder.variables(job_attr[:name], job_attr[:yaml_variables])
+            )
 
             ::Security::PipelineExecutionPolicy::VariablesOverride
               .new(project: project, job_options: job_attr[:options])
@@ -31,9 +31,9 @@ module EE
           # - scoped_variables_for_pipeline_seed
           override :scoped_variables
           def scoped_variables(job, environment:, dependencies:)
-            variables = super.tap do |variables|
-              variables.concat(scan_execution_policies_variables_builder.variables(job.name))
-            end
+            variables = super.concat(
+              scan_execution_policies_variables_builder.variables(job.name, job.yaml_variables)
+            )
 
             ::Security::PipelineExecutionPolicy::VariablesOverride
               .new(project: project, job_options: job.options)

@@ -19,7 +19,9 @@ RSpec.describe Gitlab::Ci::Variables::Builder::ScanExecutionPolicies, feature_ca
   end
 
   describe '#variables' do
-    subject(:variables) { builder.variables(job.name) }
+    let(:args) { [job.name, []] }
+
+    subject(:variables) { builder.variables(*args) }
 
     context 'with security policies' do
       let_it_be(:namespace_policies_project) { create(:project, :repository) }
@@ -96,10 +98,10 @@ RSpec.describe Gitlab::Ci::Variables::Builder::ScanExecutionPolicies, feature_ca
           end
 
           2.times do
-            expect(builder.variables(job.name)).to match_array([
+            expect(builder.variables(job.name)).to contain_exactly(
               item(key: 'SECRET_DETECTION_HISTORIC_SCAN', value: 'true'),
               item(key: 'SECRET_DETECTION_EXCLUDED_PATHS', value: '')
-            ])
+            )
           end
         end
       end
@@ -162,6 +164,83 @@ RSpec.describe Gitlab::Ci::Variables::Builder::ScanExecutionPolicies, feature_ca
         let(:job_name) { nil }
 
         it { is_expected.to match_array([]) }
+      end
+
+      context 'when handling variable conflicts' do
+        let_it_be(:project_policy) do
+          build(:scan_execution_policy, actions: [
+            { scan: 'secret_detection', variables: { SECRET_DETECTION_HISTORIC_SCAN: 'true' } }
+          ])
+        end
+
+        let_it_be(:scheduled_project_policy) do
+          build(:scan_execution_policy, :with_schedule, actions: [
+            { scan: 'secret_detection', variables: { SECRET_DETECTION_HISTORIC_SCAN: 'true' } }
+          ])
+        end
+
+        let(:job_name) { 'secret-detection-1' }
+
+        context 'when has conflicting variables' do
+          let(:yaml_variables) { [{ key: 'SECRET_DETECTION_HISTORIC_SCAN', value: 'false' }] }
+          let(:args) { [job.name, yaml_variables] }
+
+          context 'when pipeline source is push' do
+            let_it_be(:policy_yaml) { build(:orchestration_policy_yaml, scan_execution_policy: [project_policy]) }
+
+            it 'enforces policy variables and overrides YAML variables' do
+              is_expected.to contain_exactly(
+                item(key: 'SECRET_DETECTION_HISTORIC_SCAN', value: 'true'),
+                item(key: 'SECRET_DETECTION_EXCLUDED_PATHS', value: '')
+              )
+            end
+          end
+
+          context 'when pipeline source is scheduled sep' do
+            let_it_be(:policy_yaml) do
+              build(:orchestration_policy_yaml, scan_execution_policy: [scheduled_project_policy])
+            end
+
+            let(:pipeline) { create(:ci_pipeline, project: project, source: :security_orchestration_policy) }
+
+            it 'skips conflicting policy variables and preserves YAML variables' do
+              is_expected.to contain_exactly(
+                item(key: 'SECRET_DETECTION_EXCLUDED_PATHS', value: '')
+              )
+            end
+          end
+        end
+
+        context 'when does not have conflicting variables' do
+          let(:yaml_variables) { [{ key: 'OTHER_VARIABLE', value: 'some_value' }] }
+          let(:args) { [job.name, yaml_variables] }
+
+          context 'when pipeline source is push' do
+            let_it_be(:policy_yaml) { build(:orchestration_policy_yaml, scan_execution_policy: [project_policy]) }
+
+            it 'enforces all policy variables' do
+              is_expected.to contain_exactly(
+                item(key: 'SECRET_DETECTION_HISTORIC_SCAN', value: 'true'),
+                item(key: 'SECRET_DETECTION_EXCLUDED_PATHS', value: '')
+              )
+            end
+          end
+
+          context 'when pipeline source is scheduled sep' do
+            let_it_be(:policy_yaml) do
+              build(:orchestration_policy_yaml, scan_execution_policy: [scheduled_project_policy])
+            end
+
+            let(:pipeline) { create(:ci_pipeline, project: project, source: :security_orchestration_policy) }
+
+            it 'enforces all policy variables' do
+              is_expected.to contain_exactly(
+                item(key: 'SECRET_DETECTION_HISTORIC_SCAN', value: 'true'),
+                item(key: 'SECRET_DETECTION_EXCLUDED_PATHS', value: '')
+              )
+            end
+          end
+        end
       end
     end
 
