@@ -9,7 +9,7 @@ module Jira
         PER_PAGE = 100
         DEFAULT_FIELDS = %w[assignee created creator id issuetype key
           labels priority project reporter resolutiondate
-          status statuscategorychangeddate summary updated].join(',').freeze
+          status statuscategorychangeddate summary updated description].join(',').freeze
 
         def initialize(jira_integration, params = {})
           super(jira_integration, params)
