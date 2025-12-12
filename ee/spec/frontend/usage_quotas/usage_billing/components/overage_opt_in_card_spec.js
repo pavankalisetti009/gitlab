@@ -67,7 +67,7 @@ describe('OverageOptInCard', () => {
     describe('card body', () => {
       it('renders the correct body text', () => {
         expect(wrapper.find('p').text()).toMatchInterpolatedText(
-          'Enable on-demand billing to keep GitLab Duo features active when monthly GitLab Credits run out. Without these terms, users lose GitLab Duo access after exhausting their included GitLab Credits. Learn about overage billing.',
+          'Accept on-demand billing to keep GitLab Duo features active when monthly GitLab Credits run out. Without these terms, users lose GitLab Duo access after exhausting their included GitLab Credits. Learn about overage billing.',
         );
       });
     });
