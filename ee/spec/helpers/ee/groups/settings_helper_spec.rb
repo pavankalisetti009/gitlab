@@ -121,6 +121,7 @@ RSpec.describe EE::Groups::SettingsHelper, feature_category: :groups_and_project
           early_access_path: group_early_access_opt_in_path(group),
           update_id: group.id,
           duo_workflow_available: "true",
+          duo_agent_platform_enabled: "true",
           duo_workflow_mcp_enabled: "true",
           foundational_agents_default_enabled: "true",
           foundational_agents_statuses: Gitlab::Json.generate([
