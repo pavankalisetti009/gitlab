@@ -18,11 +18,12 @@ module Sbom
             component_name = occurrence_map.name
 
             component_licenses.each do |license|
-              next unless license.name && component_name
+              license_name = license&.fetch(:name, nil)
+              next unless license_name && component_name
 
               policy_dismissals.each do |policy_dismissal|
-                next unless policy_dismissal.license_names.include?(license.name) &&
-                  policy_dismissal.components(license.name).include?(component_name)
+                next unless policy_dismissal.license_names.include?(license_name) &&
+                  policy_dismissal.components(license_name).include?(component_name)
 
                 policy_dismissal.license_occurrence_uuids << occurrence_map.uuid
                 policy_dismissal.save!
