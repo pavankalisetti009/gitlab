@@ -57,8 +57,12 @@ module EE
       def allowed_scopes
         return super unless ::Feature.enabled?(:search_scope_registry, :instance)
 
-        # Filter out epics based on licensing when using the registry
-        scopes = super
+        scopes = ::Search::Scopes.available_for_context(
+          context: :group,
+          container: group,
+          requested_search_type: params[:search_type]
+        )
+
         if group.respond_to?(:licensed_feature_available?) && group.licensed_feature_available?(:epics)
           scopes + %w[epics]
         else
