@@ -17,7 +17,8 @@ RSpec.describe Groups::ParticipantsService, feature_category: :groups_and_projec
       username: user.username,
       name: user.name,
       avatar_url: user.avatar_url,
-      availability: user&.status&.availability
+      availability: user&.status&.availability,
+      composite_identity_enforced: user.composite_identity_enforced
     }
   end
 

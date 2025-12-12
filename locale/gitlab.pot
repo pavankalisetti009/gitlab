@@ -6832,6 +6832,9 @@ msgstr ""
 msgid "After you've reviewed these contribution guidelines, you'll be all set to"
 msgstr ""
 
+msgid "Agent"
+msgstr ""
+
 msgid "Agent Information"
 msgstr ""
 
@@ -73261,6 +73264,9 @@ msgid "UserProfile|About"
 msgstr ""
 
 msgid "UserProfile|Activity"
+msgstr ""
+
+msgid "UserProfile|Agent"
 msgstr ""
 
 msgid "UserProfile|An error occurred loading the activity. Please refresh the page to try again."
