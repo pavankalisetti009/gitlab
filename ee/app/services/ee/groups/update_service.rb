@@ -10,7 +10,8 @@ module EE
         :remove_dormant_members_period,
         :allow_enterprise_bypass_placeholder_confirmation,
         :enterprise_bypass_expires_at,
-        :enabled_foundational_flows
+        :enabled_foundational_flows,
+        :display_gitlab_credits_user_data
       ].freeze
 
       override :execute
