@@ -20,13 +20,13 @@ export default {
   },
   emits: ['input'],
   methods: {
-    isFlowSelected(catalogItemId) {
-      return this.value.includes(catalogItemId);
+    isFlowSelected(reference) {
+      return this.value.includes(reference);
     },
-    toggleFlow(catalogItemId, checked) {
+    toggleFlow(reference, checked) {
       const newSelection = checked
-        ? [...this.value, catalogItemId]
-        : this.value.filter((id) => id !== catalogItemId);
+        ? [...this.value, reference]
+        : this.value.filter((ref) => ref !== reference);
 
       this.$emit('input', newSelection);
     },
@@ -38,11 +38,11 @@ export default {
   <div class="gl-ml-6 gl-mt-3">
     <gl-form-checkbox
       v-for="flow in availableFoundationalFlows"
-      :key="flow.catalog_item_id"
-      :checked="isFlowSelected(flow.catalog_item_id)"
+      :key="flow.reference"
+      :checked="isFlowSelected(flow.reference)"
       :disabled="disabled"
       data-testid="foundational-flow-checkbox"
-      @input="toggleFlow(flow.catalog_item_id, $event)"
+      @input="toggleFlow(flow.reference, $event)"
     >
       <div>
         {{ flow.name }}

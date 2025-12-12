@@ -90,12 +90,19 @@ RSpec.describe EE::Groups::SettingsHelper, feature_category: :groups_and_project
 
     let(:add_on_purchase) { nil }
     let(:root_ancestor) { group }
-    let!(:foundational_flow) { create(:ai_catalog_item, :with_foundational_flow_reference, public: true) } # rubocop:disable RSpec/FactoryBot/AvoidCreate -- Needs to be loaded from DB
+    let(:test_workflows) do
+      [{
+        foundational_flow_reference: 'test_flow/v1',
+        name: 'Test Flow',
+        description: 'Test Description'
+      }]
+    end
 
     before do
       allow(helper).to receive(:show_early_access_program_banner?).and_return(true)
       allow(current_user).to receive(:can?).with(:admin_duo_workflow, group).and_return(true)
       stub_saas_features(gitlab_com_subscriptions: true)
+      stub_const('::Ai::DuoWorkflows::WorkflowDefinition::ITEMS', test_workflows)
     end
 
     it 'returns the expected data' do
@@ -136,12 +143,11 @@ RSpec.describe EE::Groups::SettingsHelper, feature_category: :groups_and_project
           ai_settings_minimum_access_level_manage: group.ai_minimum_access_level_manage,
           ai_settings_minimum_access_level_enable_on_projects: group.ai_minimum_access_level_enable_on_projects,
           available_foundational_flows: Gitlab::Json.generate([{
-            catalog_item_id: foundational_flow.id,
-            name: foundational_flow.name,
-            description: foundational_flow.description,
-            reference: foundational_flow.foundational_flow_reference
+            name: 'Test Flow',
+            description: 'Test Description',
+            reference: 'test_flow/v1'
           }]),
-          selected_foundational_flows: '[]'
+          selected_foundational_flow_references: '[]'
         }
       )
     end
@@ -193,7 +199,7 @@ RSpec.describe EE::Groups::SettingsHelper, feature_category: :groups_and_project
             duo_workflow_available: "false",
             duo_workflow_mcp_enabled: "false",
             available_foundational_flows: '[]',
-            selected_foundational_flows: '[]'
+            selected_foundational_flow_references: '[]'
           }
         )
       end

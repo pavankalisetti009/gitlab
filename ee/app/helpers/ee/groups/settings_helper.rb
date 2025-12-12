@@ -121,29 +121,28 @@ module EE
           duo_foundational_flows_availability: @group.namespace_settings.duo_foundational_flows_availability.to_s,
           duo_sast_fp_detection_availability: @group.namespace_settings.duo_sast_fp_detection_availability.to_s,
           available_foundational_flows: available_foundational_flows_json,
-          selected_foundational_flows: selected_foundational_flows_json
+          selected_foundational_flow_references: selected_foundational_flows_json
         }
       end
 
       def available_foundational_flows_json
         return [].to_json unless @group.root?
 
-        ::Ai::Catalog::Item.foundational_flows
-         .select(:id, :name, :description, :foundational_flow_reference)
-         .map do |item|
-           {
-             catalog_item_id: item.id,
-             name: item.name,
-             description: item.description,
-             reference: item.foundational_flow_reference
-           }
-         end.to_json
+        ::Ai::DuoWorkflows::WorkflowDefinition::ITEMS
+          .select { |item| item[:foundational_flow_reference].present? }
+          .map do |item|
+          {
+            name: item[:name],
+            description: item[:description],
+            reference: item[:foundational_flow_reference]
+          }
+        end.to_json
       end
 
       def selected_foundational_flows_json
         return [].to_json unless @group.root?
 
-        @group.selected_foundational_flow_ids.to_json
+        @group.selected_foundational_flow_references.to_json
       end
 
       def cascading_tooltip_data(setting_key)

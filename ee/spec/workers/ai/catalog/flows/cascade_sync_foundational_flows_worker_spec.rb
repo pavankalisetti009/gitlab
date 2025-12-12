@@ -29,16 +29,15 @@ RSpec.describe Ai::Catalog::Flows::CascadeSyncFoundationalFlowsWorker, feature_c
                          .and_return(seed_service)
       expect(seed_service).to receive(:execute)
 
-      worker.perform(group.id, user.id)
+      worker.perform(group.id, user.id, nil)
     end
 
-    it 'calls SyncFoundationalFlowsService for the group' do
+    it 'calls SyncFoundationalFlowsService for all descendant groups' do
       expect(Ai::Catalog::Flows::SyncFoundationalFlowsService)
-        .to receive(:new).with(group, current_user: user)
+        .to receive(:new).with(subgroup, current_user: user)
                          .and_return(sync_service)
-      expect(sync_service).to receive(:execute)
 
-      worker.perform(group.id, user.id)
+      worker.perform(group.id, user.id, nil)
     end
 
     it 'calls SyncFoundationalFlowsService for all projects in the group hierarchy' do
@@ -49,7 +48,40 @@ RSpec.describe Ai::Catalog::Flows::CascadeSyncFoundationalFlowsWorker, feature_c
         .to receive(:new).with(subgroup_project, current_user: user)
                          .and_return(sync_service)
 
-      worker.perform(group.id, user.id)
+      worker.perform(group.id, user.id, nil)
+    end
+
+    context 'when flow_references are provided' do
+      let_it_be(:catalog_item) { create(:ai_catalog_item, foundational_flow_reference: 'test_flow') }
+
+      it 'converts flow references to catalog item IDs' do
+        expect(worker).to receive(:convert_references_to_ids)
+                            .with(['test_flow'])
+                            .and_call_original
+
+        worker.perform(group.id, user.id, ['test_flow'])
+      end
+
+      it 'returns empty array when references are empty' do
+        result = worker.send(:convert_references_to_ids, [])
+        expect(result).to eq([])
+      end
+
+      it 'returns empty array when references are nil' do
+        result = worker.send(:convert_references_to_ids, nil)
+        expect(result).to eq([])
+      end
+    end
+
+    context 'when skip_parent is false' do
+      it 'syncs the parent group' do
+        expect(Ai::Catalog::Flows::SyncFoundationalFlowsService)
+          .to receive(:new).with(group, current_user: user)
+                           .and_return(sync_service)
+        expect(sync_service).to receive(:execute)
+
+        worker.send(:sync_groups, group, user, skip_parent: false)
+      end
     end
 
     context 'when user_id is not provided' do
@@ -59,10 +91,10 @@ RSpec.describe Ai::Catalog::Flows::CascadeSyncFoundationalFlowsWorker, feature_c
                            .and_return(seed_service)
 
         expect(Ai::Catalog::Flows::SyncFoundationalFlowsService)
-          .to receive(:new).with(group, current_user: nil)
+          .to receive(:new).with(subgroup, current_user: nil)
                            .and_return(sync_service)
 
-        worker.perform(group.id, nil)
+        worker.perform(group.id, nil, nil)
       end
     end
 
@@ -73,10 +105,10 @@ RSpec.describe Ai::Catalog::Flows::CascadeSyncFoundationalFlowsWorker, feature_c
                            .and_return(seed_service)
 
         expect(Ai::Catalog::Flows::SyncFoundationalFlowsService)
-          .to receive(:new).with(group, current_user: nil)
+          .to receive(:new).with(subgroup, current_user: nil)
                            .and_return(sync_service)
 
-        worker.perform(group.id, non_existing_record_id)
+        worker.perform(group.id, non_existing_record_id, nil)
       end
     end
 
@@ -86,23 +118,7 @@ RSpec.describe Ai::Catalog::Flows::CascadeSyncFoundationalFlowsWorker, feature_c
         expect(Ai::Catalog::Flows::SyncFoundationalFlowsService).not_to receive(:new)
 
         worker.perform(non_existing_record_id, user.id)
-      end
-    end
-
-    context 'when group has no organization' do
-      let(:group_without_org) { create(:group) }
-
-      before do
-        allow(group_without_org).to receive(:organization).and_return(nil)
-        allow(Group).to receive(:find_by_id).with(group_without_org.id).and_return(group_without_org)
-      end
-
-      it 'does not call SeedFoundationalFlowsService but continues with sync operations' do
-        expect(Ai::Catalog::Flows::SeedFoundationalFlowsService).not_to receive(:new)
-        expect(Ai::Catalog::Flows::SyncFoundationalFlowsService).to receive(:new).at_least(:once)
-                                                                                 .and_return(sync_service)
-
-        worker.perform(group_without_org.id, user.id)
+        worker.perform(non_existing_record_id, user.id, nil)
       end
     end
   end

@@ -958,10 +958,10 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
 
   describe 'attributes' do
     describe '#enabled_foundational_flows' do
-      it 'accepts an array of integers' do
-        setting.enabled_foundational_flows = [1, 2, 3]
+      it 'accepts an array of strings' do
+        setting.enabled_foundational_flows = ['code_review/v1', 'bug_triage/v1', 'documentation/v1']
 
-        expect(setting.enabled_foundational_flows).to match_array([1, 2, 3])
+        expect(setting.enabled_foundational_flows).to match_array(['code_review/v1', 'bug_triage/v1', 'documentation/v1'])
       end
 
       it 'defaults to nil' do

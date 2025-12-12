@@ -23,7 +23,7 @@ module EE
         order("last_dormant_member_review_at ASC NULLS FIRST")
       end
 
-      attribute :enabled_foundational_flows, :integer, array: true, default: nil
+      attribute :enabled_foundational_flows, :string, array: true, default: nil
 
       belongs_to :default_compliance_framework, optional: true, class_name: "ComplianceManagement::Framework"
 
@@ -316,6 +316,7 @@ module EE
         lock_web_based_commit_signing_enabled
         duo_foundational_flows_enabled
         lock_duo_foundational_flows_enabled
+        enabled_foundational_flows
       ].freeze
 
       override :allowed_namespace_settings_params

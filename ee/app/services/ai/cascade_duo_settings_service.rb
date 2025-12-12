@@ -68,20 +68,17 @@ module Ai
     end
 
     def cascade_flow_selection(group)
-      target_ids = @flow_ids || []
+      target_references = @flow_ids || []
+      target_ids = convert_flow_references_to_ids(target_references)
 
       group.sync_enabled_foundational_flows!(target_ids)
 
-      group.descendants.each_batch do |batch|
-        batch.each do |descendant_group|
-          descendant_group.sync_enabled_foundational_flows!(target_ids)
-        end
+      group.descendants.each do |descendant_group|
+        descendant_group.sync_enabled_foundational_flows!(target_ids)
       end
 
-      group.all_projects.each_batch do |batch|
-        batch.each do |project|
-          project.sync_enabled_foundational_flows!(target_ids)
-        end
+      group.all_projects.each do |project|
+        project.sync_enabled_foundational_flows!(target_ids)
       end
     end
 
@@ -92,8 +89,16 @@ module Ai
     def schedule_foundational_flows_sync(group)
       ::Ai::Catalog::Flows::CascadeSyncFoundationalFlowsWorker.perform_async(
         group.id,
-        @current_user&.id
+        @current_user&.id,
+        @flow_ids
       )
+    end
+
+    def convert_flow_references_to_ids(flow_references)
+      return [] if flow_references.blank?
+
+      reference_to_id_map = ::Ai::Catalog::Item.foundational_flow_ids_for_references(flow_references)
+      flow_references.filter_map { |ref| reference_to_id_map[ref] }
     end
   end
 end

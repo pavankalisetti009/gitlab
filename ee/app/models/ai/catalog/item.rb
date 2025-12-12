@@ -104,6 +104,16 @@ module Ai
         def foundational_flow_ids
           foundational_flows.order(:id).limit(FOUNDATIONAL_FLOWS_LIMIT).pluck_primary_key
         end
+
+        def foundational_flow_ids_for_references(references)
+          return {} if references.blank?
+
+          foundational_flows
+            .where(foundational_flow_reference: references)
+            .limit(FOUNDATIONAL_FLOWS_LIMIT)
+            .pluck(:foundational_flow_reference, :id)
+            .to_h
+        end
       end
 
       def deleted?

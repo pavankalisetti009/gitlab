@@ -7,17 +7,17 @@ describe('FoundationalFlowSelector', () => {
 
   const mockFlows = [
     {
-      catalog_item_id: 1,
+      reference: 'code_review/v1',
       name: 'Code Review Flow',
       description: 'Automated code review assistant',
     },
     {
-      catalog_item_id: 2,
+      reference: 'bug_triage/v1',
       name: 'Bug Triage Flow',
       description: 'Automatically triages and categorizes bugs',
     },
     {
-      catalog_item_id: 3,
+      reference: 'documentation/v1',
       name: 'Documentation Flow',
       description: 'Generates documentation from code',
     },
@@ -94,7 +94,7 @@ describe('FoundationalFlowSelector', () => {
     });
 
     it('shows selected flows as checked', () => {
-      wrapper = createWrapper({ value: [1, 3] });
+      wrapper = createWrapper({ value: ['code_review/v1', 'documentation/v1'] });
 
       expect(findCheckboxAt(0).props('checked')).toBe(true);
       expect(findCheckboxAt(1).props('checked')).toBe(false);
@@ -102,7 +102,7 @@ describe('FoundationalFlowSelector', () => {
     });
 
     it('shows all checkboxes as checked when all flows are selected', () => {
-      wrapper = createWrapper({ value: [1, 2, 3] });
+      wrapper = createWrapper({ value: ['code_review/v1', 'bug_triage/v1', 'documentation/v1'] });
 
       findAllCheckboxes().wrappers.forEach((checkbox) => {
         expect(checkbox.props('checked')).toBe(true);
@@ -145,96 +145,96 @@ describe('FoundationalFlowSelector', () => {
       await findCheckboxAt(0).vm.$emit('input', true);
 
       expect(wrapper.emitted('input')).toHaveLength(1);
-      expect(wrapper.emitted('input')[0]).toEqual([[1]]);
+      expect(wrapper.emitted('input')[0]).toEqual([['code_review/v1']]);
     });
 
     it('emits input event with multiple flow ids when multiple checkboxes are checked', async () => {
       await findCheckboxAt(0).vm.$emit('input', true);
 
-      wrapper = createWrapper({ value: [1] });
+      wrapper = createWrapper({ value: ['code_review/v1'] });
 
       await findCheckboxAt(2).vm.$emit('input', true);
 
       expect(wrapper.emitted('input')).toHaveLength(1);
-      expect(wrapper.emitted('input')[0]).toEqual([[1, 3]]);
+      expect(wrapper.emitted('input')[0]).toEqual([['code_review/v1', 'documentation/v1']]);
     });
 
     it('emits input event with removed flow id when checkbox is unchecked', async () => {
-      wrapper = createWrapper({ value: [1, 2, 3] });
+      wrapper = createWrapper({ value: ['code_review/v1', 'bug_triage/v1', 'documentation/v1'] });
 
       await findCheckboxAt(1).vm.$emit('input', false);
 
       expect(wrapper.emitted('input')).toHaveLength(1);
-      expect(wrapper.emitted('input')[0]).toEqual([[1, 3]]);
+      expect(wrapper.emitted('input')[0]).toEqual([['code_review/v1', 'documentation/v1']]);
     });
 
     it('preserves existing selections when adding new flow', async () => {
-      wrapper = createWrapper({ value: [1] });
+      wrapper = createWrapper({ value: ['code_review/v1'] });
 
       await findCheckboxAt(1).vm.$emit('input', true);
 
-      expect(wrapper.emitted('input')[0]).toEqual([[1, 2]]);
+      expect(wrapper.emitted('input')[0]).toEqual([['code_review/v1', 'bug_triage/v1']]);
     });
 
     it('preserves existing selections when removing a flow', async () => {
-      wrapper = createWrapper({ value: [1, 2, 3] });
+      wrapper = createWrapper({ value: ['code_review/v1', 'bug_triage/v1', 'documentation/v1'] });
 
       await findCheckboxAt(1).vm.$emit('input', false);
 
-      expect(wrapper.emitted('input')[0]).toEqual([[1, 3]]);
+      expect(wrapper.emitted('input')[0]).toEqual([['code_review/v1', 'documentation/v1']]);
     });
   });
 
   describe('isFlowSelected method', () => {
     it('returns true for selected flow ids', () => {
-      wrapper = createWrapper({ value: [1, 3] });
+      wrapper = createWrapper({ value: ['code_review/v1', 'documentation/v1'] });
 
-      expect(wrapper.vm.isFlowSelected(1)).toBe(true);
-      expect(wrapper.vm.isFlowSelected(3)).toBe(true);
+      expect(wrapper.vm.isFlowSelected('code_review/v1')).toBe(true);
+      expect(wrapper.vm.isFlowSelected('documentation/v1')).toBe(true);
     });
 
     it('returns false for unselected flow ids', () => {
-      wrapper = createWrapper({ value: [1, 3] });
+      wrapper = createWrapper({ value: ['code_review/v1', 'documentation/v1'] });
 
-      expect(wrapper.vm.isFlowSelected(2)).toBe(false);
+      expect(wrapper.vm.isFlowSelected('bug_triage/v1')).toBe(false);
     });
 
     it('returns false when value is empty', () => {
       wrapper = createWrapper({ value: [] });
 
-      expect(wrapper.vm.isFlowSelected(1)).toBe(false);
-      expect(wrapper.vm.isFlowSelected(2)).toBe(false);
+      expect(wrapper.vm.isFlowSelected('code_review/v1')).toBe(false);
+      expect(wrapper.vm.isFlowSelected('bug_triage/v1')).toBe(false);
     });
   });
 
   describe('toggleFlow method', () => {
     beforeEach(() => {
-      wrapper = createWrapper({ value: [1] });
+      wrapper = createWrapper({ value: ['code_review/v1'] });
     });
 
     it('adds flow id when checked is true', () => {
-      wrapper.vm.toggleFlow(2, true);
+      wrapper.vm.toggleFlow('bug_triage/v1', true);
 
-      expect(wrapper.emitted('input')[0]).toEqual([[1, 2]]);
+      expect(wrapper.emitted('input')[0]).toEqual([['code_review/v1', 'bug_triage/v1']]);
     });
 
     it('removes flow id when checked is false', () => {
-      wrapper.vm.toggleFlow(1, false);
+      wrapper.vm.toggleFlow('code_review/v1', false);
 
       expect(wrapper.emitted('input')[0]).toEqual([[]]);
     });
 
     it('adds flow id even if already in the array', () => {
-      wrapper.vm.toggleFlow(1, true);
+      wrapper.vm.toggleFlow('code_review/v1', true);
 
       // The component doesn't prevent duplicates
-      expect(wrapper.emitted('input')[0]).toEqual([[1, 1]]);
+      expect(wrapper.emitted('input')[0]).toEqual([['code_review/v1', 'code_review/v1']]);
     });
 
     it('handles removing non-existent flow id gracefully', () => {
-      wrapper.vm.toggleFlow(99, false);
+      wrapper.vm.toggleFlow('non_existent/v1', false);
 
-      expect(wrapper.emitted('input')[0]).toEqual([[1]]);
+      expect(wrapper.emitted('input')[0]).toEqual([['code_review/v1']]);
     });
   });
 
@@ -242,7 +242,7 @@ describe('FoundationalFlowSelector', () => {
     it('handles flow with missing description', () => {
       const flowsWithoutDescription = [
         {
-          catalog_item_id: 1,
+          reference: 'flow_without_desc/v1',
           name: 'Flow Without Description',
           description: undefined,
         },
@@ -256,7 +256,7 @@ describe('FoundationalFlowSelector', () => {
     it('handles flow with empty description', () => {
       const flowsWithEmptyDescription = [
         {
-          catalog_item_id: 1,
+          reference: 'flow_with_empty_desc/v1',
           name: 'Flow With Empty Description',
           description: '',
         },
@@ -275,7 +275,7 @@ describe('FoundationalFlowSelector', () => {
       await findCheckboxAt(0).vm.$emit('input', true);
 
       expect(wrapper.emitted('input')).toHaveLength(3);
-      expect(wrapper.emitted('input')[2]).toEqual([[1]]);
+      expect(wrapper.emitted('input')[2]).toEqual([['code_review/v1']]);
     });
   });
 });

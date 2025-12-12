@@ -10,7 +10,6 @@ module EE
         :remove_dormant_members_period,
         :allow_enterprise_bypass_placeholder_confirmation,
         :enterprise_bypass_expires_at,
-        :enabled_foundational_flows,
         :display_gitlab_credits_user_data
       ].freeze
 
@@ -167,8 +166,9 @@ module EE
 
       def update_cascading_settings
         previous_changes = group.namespace_settings.previous_changes
+        submitted_flow_refs = group.namespace_settings.enabled_foundational_flows
 
-        return unless previous_changes.present?
+        return unless previous_changes.present? || submitted_flow_refs
 
         cascading_ai_settings = [:duo_features_enabled, :duo_remote_flows_enabled, :auto_duo_code_review_enabled,
           :duo_foundational_flows_enabled, :duo_sast_fp_detection_enabled]
@@ -179,12 +179,9 @@ module EE
           end
         end.to_h
 
-        submitted_flow_ids = group.namespace_settings.enabled_foundational_flows
-        old_flow_ids = group.selected_foundational_flow_ids
-
-        if !submitted_flow_ids.nil? && old_flow_ids.sort != submitted_flow_ids.sort
-          group.sync_enabled_foundational_flows!(submitted_flow_ids)
-          changed_ai_settings[:enabled_foundational_flows] = submitted_flow_ids
+        if submitted_flow_refs
+          sync_parent_group_flows(submitted_flow_refs)
+          changed_ai_settings[:enabled_foundational_flows] = submitted_flow_refs
         end
 
         if changed_ai_settings.any?
@@ -198,6 +195,35 @@ module EE
         if previous_changes.include?(:web_based_commit_signing_enabled)
           ::Namespaces::CascadeWebBasedCommitSigningEnabledWorker.perform_async(group.id)
         end
+      end
+
+      def sync_parent_group_flows(flow_references)
+        ::Ai::Catalog::Flows::SeedFoundationalFlowsService.new(
+          current_user: current_user,
+          organization: group.organization
+        ).execute
+
+        catalog_item_ids = convert_flow_references_to_ids(flow_references)
+
+        group.sync_enabled_foundational_flows!(catalog_item_ids)
+
+        ::Ai::Catalog::Flows::SyncFoundationalFlowsService.new(
+          group,
+          current_user: current_user
+        ).execute
+      rescue StandardError => e
+        ::Gitlab::ErrorTracking.track_exception(
+          e,
+          group_id: group.id,
+          flow_references: flow_references
+        )
+      end
+
+      def convert_flow_references_to_ids(flow_references)
+        return [] if flow_references.blank?
+
+        reference_to_id_map = ::Ai::Catalog::Item.foundational_flow_ids_for_references(flow_references)
+        flow_references.filter_map { |ref| reference_to_id_map[ref] }
       end
 
       def handle_pending_members

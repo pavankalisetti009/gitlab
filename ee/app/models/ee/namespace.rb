@@ -733,6 +733,8 @@ module EE
     end
 
     def sync_enabled_foundational_flows!(target_ids)
+      target_ids = target_ids.uniq
+
       if target_ids.empty?
         enabled_foundational_flow_records
           .for_namespace(id)
@@ -743,21 +745,30 @@ module EE
           .where.not(catalog_item_id: target_ids)
           .delete_all
 
-        current_time = Time.current
-        records = target_ids.map do |catalog_item_id|
-          Ai::Catalog::EnabledFoundationalFlow.new(
-            namespace_id: id,
-            project_id: nil,
-            catalog_item_id: catalog_item_id,
-            created_at: current_time,
-            updated_at: current_time
+        existing_catalog_item_ids = enabled_foundational_flow_records
+          .for_namespace(id)
+          .limit(::Ai::Catalog::Item::FOUNDATIONAL_FLOWS_LIMIT)
+          .pluck(:catalog_item_id)
+
+        new_catalog_item_ids = target_ids - existing_catalog_item_ids
+
+        if new_catalog_item_ids.any?
+          current_time = Time.current
+          records = new_catalog_item_ids.map do |catalog_item_id|
+            Ai::Catalog::EnabledFoundationalFlow.new(
+              namespace_id: id,
+              project_id: nil,
+              catalog_item_id: catalog_item_id,
+              created_at: current_time,
+              updated_at: current_time
+            )
+          end
+
+          Ai::Catalog::EnabledFoundationalFlow.bulk_insert!(
+            records,
+            unique_by: [:namespace_id, :catalog_item_id]
           )
         end
-
-        Ai::Catalog::EnabledFoundationalFlow.bulk_insert!(
-          records,
-          unique_by: [:namespace_id, :catalog_item_id]
-        )
       end
     rescue ActiveRecord::RecordInvalid => e
       ::Gitlab::ErrorTracking.track_exception(
@@ -776,8 +787,11 @@ module EE
         .delete_all
     end
 
-    def selected_foundational_flow_ids
-      enabled_foundational_flow_records.limit(100).pluck(:catalog_item_id)
+    def selected_foundational_flow_references
+      enabled_foundational_flow_records
+        .for_namespace(id)
+        .includes(:catalog_item)
+        .filter_map { |record| record.catalog_item.foundational_flow_reference }
     end
 
     def can_assign_custom_roles_to_group_links?

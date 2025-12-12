@@ -108,7 +108,7 @@ module EE
               type: ::Grape::API::Boolean,
               desc: 'Only allow to merge if all threads are resolved'
             optional :enabled_foundational_flows,
-              type: Array[Integer], desc: 'IDs of enabled foundational flows'
+              type: Array[String], desc: 'References of enabled foundational flows'
           end
 
           params :optional_projects_params_ee do

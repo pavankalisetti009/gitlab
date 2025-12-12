@@ -380,22 +380,20 @@ RSpec.describe Groups::UpdateService, '#execute', feature_category: :groups_and_
       create(:ai_catalog_item, :with_foundational_flow_reference, public: true, organization: group.organization)
     end
 
-    let(:params) { { enabled_foundational_flows: [flow1.id, flow2.id] } }
+    let(:params) do
+      { enabled_foundational_flows: [flow1.foundational_flow_reference, flow2.foundational_flow_reference] }
+    end
 
     before_all do
       group.add_owner(user)
     end
 
-    it 'syncs enabled foundational flows' do
-      update_group(group, user, params)
-
-      expect(group.selected_foundational_flow_ids).to match_array([flow1.id, flow2.id])
-    end
-
     it 'schedules cascade worker with user_id', :sidekiq_inline do
       expect(Namespaces::CascadeDuoSettingsWorker).to receive(:perform_async).with(
         group.id,
-        hash_including(enabled_foundational_flows: [flow1.id, flow2.id]), # Use symbol key
+        hash_including(enabled_foundational_flows: [
+          flow1.foundational_flow_reference, flow2.foundational_flow_reference
+        ]),
         user.id
       )
 
@@ -406,14 +404,33 @@ RSpec.describe Groups::UpdateService, '#execute', feature_category: :groups_and_
       let(:params) { { enabled_foundational_flows: [] } }
 
       before do
-        group.namespace_settings.update!(enabled_foundational_flows: [flow1.id])
+        group.namespace_settings.update!(enabled_foundational_flows: [flow1.foundational_flow_reference])
         group.sync_enabled_foundational_flows!([flow1.id])
       end
 
       it 'removes all enabled flows' do
         update_group(group, user, params)
 
-        expect(group.selected_foundational_flow_ids).to be_empty
+        expect(group.selected_foundational_flow_references).to be_empty
+      end
+    end
+
+    context 'when sync fails' do
+      let(:params) do
+        { enabled_foundational_flows: [flow1.foundational_flow_reference] }
+      end
+
+      it 'tracks the exception and continues' do
+        allow_next_instance_of(Ai::Catalog::Flows::SyncFoundationalFlowsService) do |service|
+          allow(service).to receive(:execute).and_raise(StandardError, 'sync failed')
+        end
+
+        expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
+          instance_of(StandardError),
+          hash_including(group_id: group.id, flow_references: [flow1.foundational_flow_reference])
+        )
+
+        update_group(group, user, params)
       end
     end
   end

@@ -172,8 +172,8 @@ export default {
       return this.availability === AVAILABILITY_OPTIONS.NEVER_ON;
     },
     hasSelectedFlowIdsChanged() {
-      const current = (this.localSelectedFlowIds || []).slice().sort((a, b) => a - b);
-      const initial = (this.selectedFoundationalFlowIds || []).slice().sort((a, b) => a - b);
+      const current = (this.localSelectedFlowIds || []).slice().sort();
+      const initial = (this.selectedFoundationalFlowIds || []).slice().sort();
 
       return JSON.stringify(current) !== JSON.stringify(initial);
     },
