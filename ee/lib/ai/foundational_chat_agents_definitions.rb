@@ -21,12 +21,7 @@ module Ai
         name: 'Planner',
         global_catalog_id: 348,
         description: <<~DESCRIPTION
-          Get help with planning and workflow management. Organize, prioritize, and track work
-          more effectively in GitLab. The Planner Agent can analyze your work items to surface patterns,
-          summarize context, and support planning conversations. This beta version is read-only and
-          focused on learning from how you engage with it. Your feedback will help shape future capabilities
-          like creating or editing work items, prioritization assistance, and roadmap generation.
-          Learn more: https://docs.gitlab.com/user/duo_agent_platform/agents/foundational_agents/planner/
+          Get help with planning and workflow management. Organize, edit, create, and track work more effectively in GitLab.
         DESCRIPTION
       },
       {
