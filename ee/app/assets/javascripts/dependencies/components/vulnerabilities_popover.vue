@@ -30,7 +30,7 @@ export default {
           <p class="gl-mb-0">
             {{
               s__(
-                'Dependencies|The dependency list shows only active, currently detected issues. Vulnerabilities that are no longer detected are filtered out.',
+                'Dependencies|The dependency list excludes vulnerabilities that are no longer detected in the project. Removing these vulnerabilities gives you a more accurate risk assessment of each component.',
               )
             }}
           </p>

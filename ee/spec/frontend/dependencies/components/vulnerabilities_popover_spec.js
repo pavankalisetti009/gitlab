@@ -34,7 +34,7 @@ describe('VulnerabilitiesPopover component', () => {
       show: true,
     });
     expect(findVulnerabilityInfoPopover().text()).toBe(
-      'The dependency list shows only active, currently detected issues. Vulnerabilities that are no longer detected are filtered out.',
+      'The dependency list excludes vulnerabilities that are no longer detected in the project. Removing these vulnerabilities gives you a more accurate risk assessment of each component.',
     );
   });
 
