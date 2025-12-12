@@ -8,8 +8,10 @@ import {
   GlPopover,
   GlLink,
   GlLoadingIcon,
+  GlTooltipDirective,
 } from '@gitlab/ui';
 import { cloneDeep } from 'lodash';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { DOCS_URL_IN_EE_DIR } from 'jh_else_ce/lib/utils/url_utility';
 import { NAMESPACE_PROJECT, DEPENDENCIES_TABLE_I18N } from '../constants';
 import DependencyLicenseLinks from './dependency_license_links.vue';
@@ -66,6 +68,10 @@ export default {
     GlLink,
     GlLoadingIcon,
   },
+  directives: {
+    GlTooltip: GlTooltipDirective,
+  },
+  mixins: [glFeatureFlagsMixin()],
   inject: ['namespaceType'],
   props: {
     dependencies: {
@@ -110,6 +116,12 @@ export default {
     },
   },
   methods: {
+    hasPolicyViolation(dependency) {
+      return (
+        this.glFeatures.securityPolicyWarnModeLicenseScanning &&
+        dependency.vulnerabilities?.nodes?.some((vuln) => vuln.policyViolations)
+      );
+    },
     // The GlTable component mutates the `_showDetails` property on items
     // passed to it in order to track the visibility of each row's `row-details`
     // slot. So, create a deep clone of them here to avoid mutating the
@@ -285,6 +297,18 @@ export default {
               item.vulnerabilityCount,
             )
           }}
+        </gl-badge>
+        <gl-badge
+          v-if="hasPolicyViolation(item)"
+          v-gl-tooltip
+          :title="$options.i18n.dependencyVulnerabilityTooltipText"
+          :aria-label="$options.i18n.dependencyVulnerabilityTooltipText"
+          href="#"
+          icon="cancel"
+          variant="warning"
+          @click="rowExpanded(toggleDetails, item)"
+        >
+          {{ s__('Dependencies|Policy violation') }}
         </gl-badge>
       </template>
 

@@ -53,6 +53,12 @@ query getProjectDependencies(
             }
           }
         }
+        vulnerabilities {
+          nodes {
+            id
+            policyViolations
+          }
+        }
         vulnerabilityCount
         hasDependencyPaths @gl_introduced(version: "18.4.0")
       }

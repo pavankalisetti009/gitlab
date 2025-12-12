@@ -23,4 +23,7 @@ export const DEPENDENCIES_TABLE_I18N = {
   locationDependencyTitle: s__('Dependencies|List of direct dependents'),
   toggleVulnerabilityList: s__('Dependencies|Toggle vulnerability list'),
   dependencyPathButtonText: s__('Dependencies|View dependency paths'),
+  dependencyVulnerabilityTooltipText: s__(
+    'Dependencies|This dependency contains vulnerabilities that violate a security policy. See the vulnerability list for more details.',
+  ),
 };
