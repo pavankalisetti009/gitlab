@@ -136,7 +136,8 @@ module QA
             username: creator.username,
             password: creator.password,
             name: 'non_member_user',
-            email: 'non_member_user@non_member_user.com')
+            email: 'non_member_user@non_member_user.com',
+            api_client: creator.api_client)
 
           Page::Project::Settings::Repository.perform do |repository|
             repository.expand_push_rules do |push_rules|
