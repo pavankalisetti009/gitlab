@@ -7,4 +7,4 @@ rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/578074
 milestone: '18.5'
 group: group::workflow catalog
 type: beta
-default_enabled: true
+default_enabled: false
