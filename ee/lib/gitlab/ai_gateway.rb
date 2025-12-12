@@ -138,6 +138,10 @@ module Gitlab
       enablement_type = auth_response&.enablement_type || ''
       namespace_ids = auth_response&.namespace_ids || []
 
+      if Feature.enabled?(:root_namespaces_extraction_for_ai_gateway, user)
+        namespace_ids = Namespace.root_ids_for(namespace_ids)
+      end
+
       {
         'x-gitlab-feature-enablement-type' => enablement_type,
         'x-gitlab-enabled-feature-flags' => enabled_feature_flags.uniq.join(','),

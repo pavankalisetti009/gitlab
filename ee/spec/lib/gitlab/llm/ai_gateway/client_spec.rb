@@ -64,6 +64,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Client, feature_category: :ai_abstraction
       )
 
     allow(user).to receive(:allowed_to_use).and_return(auth_response)
+    allow(Namespace).to receive(:root_ids_for).with(enabled_by_namespace_ids).and_return(enabled_by_namespace_ids)
   end
 
   subject(:ai_client) { described_class.new(user, unit_primitive_name: :test, tracking_context: tracking_context) }
