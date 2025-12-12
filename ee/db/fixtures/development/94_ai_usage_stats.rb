@@ -32,11 +32,9 @@ class Gitlab::Seeder::AiUsageStats # rubocop:disable Style/ClassAndModuleChildre
   end
 
   def self.sync_to_postgres
-    Sidekiq::Testing.inline! do
-      ::UsageEvents::DumpWriteBufferCronWorker.new.perform
-      ::Analytics::AiAnalytics::EventsCountAggregationWorker.new.perform
-      ::Analytics::DumpAiUserMetricsWriteBufferCronWorker.new.perform
-    end
+    ::UsageEvents::DumpWriteBufferCronWorker.new.perform
+    ::Analytics::AiAnalytics::EventsCountAggregationWorker.new.perform
+    ::Analytics::DumpAiUserMetricsWriteBufferCronWorker.new.perform
   end
 
   def initialize(project)
@@ -184,10 +182,12 @@ Gitlab::Seeder.quiet do
   project = Project.includes(:builds, :users).find_by(id: ENV['PROJECT_ID'])
   project ||= Project.first
 
-  Gitlab::Seeder::AiUsageStats.new(project).seed!
+  Sidekiq::Testing.inline! do
+    Gitlab::Seeder::AiUsageStats.new(project).seed!
 
-  Gitlab::Seeder::AiUsageStats.sync_to_postgres
-  Gitlab::Seeder::AiUsageStats.sync_to_click_house
+    Gitlab::Seeder::AiUsageStats.sync_to_postgres
+    Gitlab::Seeder::AiUsageStats.sync_to_click_house
+  end
 
   puts "Successfully seeded '#{project.full_path}' for Ai Analytics!"
   puts "URL: #{Rails.application.routes.url_helpers.project_url(project)}"
