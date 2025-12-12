@@ -7,7 +7,7 @@ RSpec.describe 'Delete Project Secrets Permission', :gitlab_secrets_manager, fea
 
   let_it_be_with_reload(:project) { create(:project) }
   let_it_be(:current_user) { create(:user) }
-  let_it_be(:mutation_name) { :secret_permission_delete }
+  let_it_be(:mutation_name) { :project_secrets_permission_delete }
 
   let(:resource) { project }
   let(:secrets_manager) { create(:project_secrets_manager, project: project) }

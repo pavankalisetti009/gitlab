@@ -8,16 +8,16 @@ module SecretsManagement
       def execute
         return secrets_manager_inactive_response unless resource.secrets_manager&.active?
 
-        secret_permissions = list_secret_permissions(resource)
+        secrets_permissions = list_secrets_permissions(resource)
 
-        ServiceResponse.success(payload: { secret_permissions: secret_permissions })
+        ServiceResponse.success(payload: { secrets_permissions: secrets_permissions })
       end
 
       private
 
       delegate :secrets_manager, to: :resource
 
-      def list_secret_permissions(resource)
+      def list_secrets_permissions(resource)
         permissions = []
 
         client.list_policies(type: :users) do |policy_data|
@@ -32,28 +32,30 @@ module SecretsManagement
 
           granted_by = nil
           expired_at = nil
-          # Extract permissions from the capabilities
-          permissions_set = Set.new
+          # Extract capabilities from the policy
+          capabilities_set = Set.new
 
           policy.paths.each_value do |path_obj|
             granted_by = path_obj.granted_by
             expired_at = path_obj.expired_at
             path_obj.capabilities.each do |capability|
-              if SecretsManagement::BaseSecretsPermission::VALID_PERMISSIONS.include?(capability)
-                permissions_set.add(capability)
+              if SecretsManagement::BaseSecretsPermission::VALID_CAPABILITIES.include?(capability)
+                capabilities_set.add(capability)
               end
             end
           end
 
-          # Create the permission object
-          permissions << permission_class.new(
+          # Create the permission object and set actions from capabilities
+          permission = permission_class.new(
             resource: resource,
             principal_type: principal_type,
             principal_id: principal_id,
             granted_by: granted_by,
-            expired_at: expired_at,
-            permissions: permissions_set.to_a
+            expired_at: expired_at
           )
+          permission.set_actions_from_capabilities(capabilities_set)
+
+          permissions << permission
         end
 
         permissions

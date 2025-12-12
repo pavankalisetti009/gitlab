@@ -2,9 +2,9 @@
 
 module Mutations
   module SecretsManagement
-    module Permissions
+    module ProjectSecretsPermissions
       class Delete < BaseMutation
-        graphql_name 'SecretPermissionDelete'
+        graphql_name 'ProjectSecretsPermissionDelete'
 
         include ResolvesProject
         include ::SecretsManagement::MutationErrorHandling
@@ -13,15 +13,15 @@ module Mutations
 
         argument :project_path, GraphQL::Types::ID,
           required: true,
-          description: 'Project permissions for the secret.'
+          description: 'Project from which the permissions are removed.'
 
         argument :principal, Types::SecretsManagement::Permissions::PrincipalInputType,
           required: true,
-          description: 'Whose permission to be deleted.'
+          description: 'User/MemberRole/Role/Group whose access is being removed.'
 
-        field :secret_permission, Types::SecretsManagement::Permissions::SecretPermissionType,
+        field :secrets_permission, Types::SecretsManagement::ProjectSecretsPermissionType,
           null: true,
-          description: 'Deleted Secret Permission.'
+          description: 'Secrets Permission that was deleted.'
 
         def resolve(project_path:, principal:)
           project = authorized_find!(project_path: project_path)
@@ -39,12 +39,12 @@ module Mutations
 
           if result.success?
             {
-              secret_permission: result.payload[:secrets_permission],
+              secrets_permission: result.payload[:secrets_permission],
               errors: []
             }
           else
             {
-              secret_permission: nil,
+              secrets_permission: nil,
               errors: [result.message]
             }
           end

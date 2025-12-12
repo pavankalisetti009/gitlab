@@ -9,6 +9,7 @@ module Mutations
         include ResolvesGroup
         include Helpers::ErrorMessagesHelpers
         include ::SecretsManagement::MutationErrorHandling
+        include Helpers::PermissionPrincipalHelpers
 
         authorize :configure_group_secrets_permission
 
@@ -20,9 +21,9 @@ module Mutations
           required: true,
           description: 'User/MemberRole/Role/Group that is provided access.'
 
-        argument :permissions, [::GraphQL::Types::String],
+        argument :actions, [Types::SecretsManagement::Permissions::ActionEnum],
           required: true,
-          description: "Permissions to be provided. ['create', 'update', 'read', 'delete']."
+          description: 'Actions that can be performed on secrets.'
 
         argument :expired_at, GraphQL::Types::ISO8601Date, required: false,
           description: "Expiration date for Secret Permission (optional)."
@@ -31,7 +32,7 @@ module Mutations
           null: true,
           description: 'Secrets Permission that was created.'
 
-        def resolve(group_path:, principal:, permissions:, expired_at: nil)
+        def resolve(group_path:, principal:, actions:, expired_at: nil)
           group = authorized_find!(group_path: group_path)
 
           if Feature.disabled?(:group_secrets_manager, group)
@@ -45,7 +46,7 @@ module Mutations
             .execute(
               principal_id: principal_id,
               principal_type: principal.type,
-              permissions: permissions,
+              actions: actions,
               expired_at: expired_at
             )
 
@@ -63,22 +64,6 @@ module Mutations
         end
 
         private
-
-        def resolve_principal_id(principal)
-          unless principal.type == ::SecretsManagement::BaseSecretsPermission::PRINCIPAL_TYPES[:group]
-            return principal.id
-          end
-
-          # NOTE: Accepting id here is only temporary for backwards compatibility. Will remove it as soon as project
-          # secrets permissions have been migrated to accept group_path.
-          return principal.id unless principal.id.blank?
-
-          resolved_group = find_group_by_path(principal.group_path)
-          return resolved_group.id if resolved_group
-
-          raise Gitlab::Graphql::Errors::ArgumentError,
-            "Group '#{principal.group_path}' not found"
-        end
 
         def find_object(group_path:)
           resolve_group(full_path: group_path)

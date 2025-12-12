@@ -18,19 +18,19 @@ RSpec.shared_examples 'a GraphQL query for listing secrets permissions' do |reso
       provision_secrets_manager(secrets_manager, current_user)
 
       update_permission(
-        user: current_user, permissions: %w[create update read delete],
+        user: current_user, actions: %w[write read delete],
         principal: { id: other_user.id, type: 'User' }, expired_at: expired_at
       )
       update_permission(
-        user: current_user, permissions: %w[create update read delete],
+        user: current_user, actions: %w[write read delete],
         principal: { id: Gitlab::Access::REPORTER, type: 'Role' }
       )
       update_permission(
-        user: current_user, permissions: %w[create update read delete],
+        user: current_user, actions: %w[write read delete],
         principal: { id: member_role.id, type: 'MemberRole' }
       )
       update_permission(
-        user: current_user, permissions: %w[create update read delete],
+        user: current_user, actions: %w[write read delete],
         principal: { id: shared_resource.id, type: 'Group' }
       )
     end
@@ -41,7 +41,7 @@ RSpec.shared_examples 'a GraphQL query for listing secrets permissions' do |reso
 
         expect(response).to have_gitlab_http_status(:success)
 
-        expected_permissions = %q(["create", "update", "delete", "read"])
+        expected_actions = a_collection_containing_exactly("WRITE", "DELETE", "READ")
         expect(graphql_data_at(query_name, :nodes))
           .to include(
             a_graphql_entity_for(
@@ -49,14 +49,14 @@ RSpec.shared_examples 'a GraphQL query for listing secrets permissions' do |reso
                 type: "ROLE",
                 id: Gitlab::Access::OWNER.to_s
               ),
-              permissions: expected_permissions
+              actions: expected_actions
             ),
             a_graphql_entity_for(
               principal: a_graphql_entity_for(
                 type: "USER",
                 id: other_user.id.to_s
               ),
-              permissions: expected_permissions,
+              actions: expected_actions,
               granted_by: a_graphql_entity_for(current_user),
               expired_at: expired_at.to_date.iso8601
             ),
@@ -65,7 +65,7 @@ RSpec.shared_examples 'a GraphQL query for listing secrets permissions' do |reso
                 type: "ROLE",
                 id: Gitlab::Access::REPORTER.to_s
               ),
-              permissions: expected_permissions,
+              actions: expected_actions,
               granted_by: a_graphql_entity_for(current_user)
             ),
             a_graphql_entity_for(
@@ -73,7 +73,7 @@ RSpec.shared_examples 'a GraphQL query for listing secrets permissions' do |reso
                 type: "MEMBER_ROLE",
                 id: member_role.id.to_s
               ),
-              permissions: expected_permissions,
+              actions: expected_actions,
               granted_by: a_graphql_entity_for(current_user)
             ),
             a_graphql_entity_for(
@@ -81,7 +81,7 @@ RSpec.shared_examples 'a GraphQL query for listing secrets permissions' do |reso
                 type: "GROUP",
                 id: shared_resource.id.to_s
               ),
-              permissions: expected_permissions,
+              actions: expected_actions,
               granted_by: a_graphql_entity_for(current_user)
             )
           )

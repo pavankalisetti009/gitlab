@@ -106,6 +106,8 @@ module EE
         mount_mutation ::Mutations::SecretsManagement::ProjectSecrets::Update
         mount_mutation ::Mutations::SecretsManagement::Permissions::Update
         mount_mutation ::Mutations::SecretsManagement::Permissions::Delete
+        mount_mutation ::Mutations::SecretsManagement::ProjectSecretsPermissions::Update
+        mount_mutation ::Mutations::SecretsManagement::ProjectSecretsPermissions::Delete
         mount_mutation ::Mutations::Security::Finding::CreateIssue
         mount_mutation ::Mutations::Security::Finding::CreateExternalIssueLink
         mount_mutation ::Mutations::Security::Finding::CreateJiraIssueFormUrl, experiment: { milestone: '18.7' }

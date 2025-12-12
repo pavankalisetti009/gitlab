@@ -11,10 +11,10 @@ module Types
           null: false,
           description: 'Who is provided access to. For eg: User/Role/MemberRole/Group.'
 
-        field :permissions,
-          type: GraphQL::Types::String,
+        field :actions,
+          [Types::SecretsManagement::Permissions::ActionEnum],
           null: false,
-          description: "Permissions to be provided. ['create', 'update', 'read', 'delete']."
+          description: 'Actions that can be performed on secrets.'
 
         field :granted_by,
           Types::UserType,

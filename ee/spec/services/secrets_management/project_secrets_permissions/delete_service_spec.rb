@@ -20,11 +20,11 @@ RSpec.describe SecretsManagement::ProjectSecretsPermissions::DeleteService, :git
     provision_project_secrets_manager(secrets_manager, user)
   end
 
-  def update_permission(user:, permissions:, principal:, expired_at: nil)
-    update_secret_permission(
+  def update_permission(user:, actions:, principal:, expired_at: nil)
+    update_project_secrets_permission(
       user: user,
       project: project,
-      permissions: permissions,
+      actions: actions,
       principal: principal,
       expired_at: expired_at
     )

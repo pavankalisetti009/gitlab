@@ -69,10 +69,10 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::DeprovisionService, :g
         value: 'test'
       )
 
-      update_secret_permission(
+      update_project_secrets_permission(
         user: user,
         project: project,
-        permissions: %w[read],
+        actions: %w[read],
         principal: { id: member_role.id, type: 'MemberRole' }
       )
 
@@ -118,7 +118,7 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::DeprovisionService, :g
           principal_id: Gitlab::Access.sym_options_with_owner[:owner]
         ))
 
-      # Member role policy (created by update_secret_permission)
+      # Member role policy (created by update_project_secrets_permission)
       expect_policy_to_exist(
         secrets_manager.full_project_namespace_path,
         secrets_manager.policy_name_for_principal(

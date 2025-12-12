@@ -24,11 +24,11 @@ RSpec.describe SecretsManagement::GroupSecretsPermissions::ListService, :gitlab_
     provision_group_secrets_manager(secrets_manager, user)
   end
 
-  def update_permission(user:, permissions:, principal:, expired_at: nil)
+  def update_permission(user:, actions:, principal:, expired_at: nil)
     update_group_secrets_permission(
       user: user,
       group: group,
-      permissions: permissions,
+      actions: actions,
       principal: principal,
       expired_at: expired_at
     )

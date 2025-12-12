@@ -24,7 +24,7 @@ module Resolvers
         ).execute
 
         if result.success?
-          result.payload[:secret_permissions]
+          result.payload[:secrets_permissions]
         else
           raise_resource_not_available_error!(result.message)
         end

@@ -5,9 +5,9 @@ module SecretsManagement
     module DeleteServiceHelpers
       extend ActiveSupport::Concern
 
-      def execute(principal:)
+      def execute(principal_id:, principal_type:)
         with_exclusive_lease_for(resource) do
-          execute_delete_permission(principal: principal)
+          execute_delete_permission(principal_id: principal_id, principal_type: principal_type)
         end
       end
 
@@ -15,13 +15,13 @@ module SecretsManagement
 
       delegate :secrets_manager, to: :resource
 
-      def execute_delete_permission(principal:)
+      def execute_delete_permission(principal_id:, principal_type:)
         return secrets_manager_inactive_response unless secrets_manager&.active?
-        return invalid_principal_response unless valid_principal?(principal)
+        return invalid_principal_response unless valid_principal?(principal_id, principal_type)
 
         secrets_permission = secrets_manager.policy_name_for_principal(
-          principal_type: principal[:type],
-          principal_id: principal[:id])
+          principal_type: principal_type,
+          principal_id: principal_id)
 
         delete_permission(secrets_permission)
       end
@@ -31,11 +31,11 @@ module SecretsManagement
         ServiceResponse.success(payload: { secrets_permission: nil })
       end
 
-      def valid_principal?(principal)
-        return false if principal.blank? || principal[:type].blank? || principal[:id].blank?
+      def valid_principal?(principal_id, principal_type)
+        return false if principal_id.blank? || principal_type.blank?
 
-        valid_type = SecretsManagement::BaseSecretsPermission::VALID_PRINCIPAL_TYPES.include?(principal[:type])
-        valid_id = principal[:id].to_s.match?(/\A\d+\z/)
+        valid_type = SecretsManagement::BaseSecretsPermission::VALID_PRINCIPAL_TYPES.include?(principal_type)
+        valid_id = principal_id.to_s.match?(/\A\d+\z/)
         valid_type && valid_id
       end
 

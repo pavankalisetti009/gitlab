@@ -9,14 +9,14 @@ RSpec.shared_examples 'a service for updating secrets permissions' do |resource_
   describe '#execute' do
     let(:principal_id) { user.id }
     let(:principal_type) { 'User' }
-    let(:permissions) { %w[create update read] }
+    let(:actions) { %w[write read] }
     let(:expired_at) { 1.week.from_now.to_date.to_s }
 
     subject(:result) do
       service.execute(
         principal_id: principal_id,
         principal_type: principal_type,
-        permissions: permissions,
+        actions: actions,
         expired_at: expired_at
       )
     end
@@ -34,7 +34,7 @@ RSpec.shared_examples 'a service for updating secrets permissions' do |resource_
           expect(secrets_permission).to be_present
           expect(secrets_permission.principal_id).to eq(user.id)
           expect(secrets_permission.principal_type).to eq('User')
-          expect(secrets_permission.permissions).to eq(permissions)
+          expect(secrets_permission.actions).to eq(actions)
           expect(secrets_permission.expired_at).to eq(expired_at)
         end
 
@@ -131,7 +131,7 @@ RSpec.shared_examples 'a service for updating secrets permissions' do |resource_
             result = service.execute(
               principal_id: principal_id,
               principal_type: principal_type,
-              permissions: permissions,
+              actions: actions,
               expired_at: expired_at
             )
 

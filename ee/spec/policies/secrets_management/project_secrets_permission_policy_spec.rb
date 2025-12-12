@@ -12,7 +12,7 @@ RSpec.describe SecretsManagement::ProjectSecretsPermissionPolicy, feature_catego
       resource: project,
       principal_type: 'User',
       principal_id: 1,
-      permissions: %w[read]
+      actions: %w[read]
     )
   end
 

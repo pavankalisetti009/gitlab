@@ -106,7 +106,7 @@ module QA
             def has_owner_permissions_in_roles_tab?
               click_on('Roles')
               within('tbody') do
-                has_css?('tr', text: 'Owner') && has_text?('Create, Update, Delete, Read')
+                has_css?('tr', text: 'Owner') && has_text?('Create, Delete, Read, Update')
               end
             end
 

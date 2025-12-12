@@ -118,7 +118,7 @@ module QA
             settings.expand_visibility_project_features_permissions do |permissions_page|
               scopes = %w[update delete]
               permissions_page.add_role_permission(role_name: 'Developer', scopes: scopes)
-              expect(permissions_page.alert_text).to eq('Permissions must include read')
+              expect(permissions_page.alert_text).to eq('Actions must include read')
             end
           end
         end

@@ -12,7 +12,7 @@ RSpec.shared_examples 'a service for listing secrets permissions' do |_resource_
       context 'when only the default owner permission exists' do
         it 'returns the owner permission in the list of permissions' do
           expect(result).to be_success
-          expect(result.payload[:secret_permissions])
+          expect(result.payload[:secrets_permissions])
             .to match_array(
               have_attributes(
                 principal_type: "Role",
@@ -31,19 +31,19 @@ RSpec.shared_examples 'a service for listing secrets permissions' do |_resource_
           resource.add_maintainer(other_user)
 
           update_permission(
-            user: user, permissions: %w[create update read],
+            user: user, actions: %w[write read delete],
             principal: { id: other_user.id, type: 'User' }, expired_at: expired_at
           )
           update_permission(
-            user: user, permissions: %w[create update read],
+            user: user, actions: %w[write read delete],
             principal: { id: Gitlab::Access::REPORTER, type: 'Role' }
           )
           update_permission(
-            user: user, permissions: %w[create update read],
+            user: user, actions: %w[write read delete],
             principal: { id: member_role.id, type: 'MemberRole' }
           )
           update_permission(
-            user: user, permissions: %w[create update read],
+            user: user, actions: %w[write read delete],
             principal: { id: shared_resource.id, type: 'Group' }
           )
         end
@@ -51,34 +51,40 @@ RSpec.shared_examples 'a service for listing secrets permissions' do |_resource_
         it 'returns all secrets permissions' do
           expect(result).to be_success
 
-          expect(result.payload[:secret_permissions])
+          expected_actions = a_collection_containing_exactly("write", "read", "delete")
+          expect(result.payload[:secrets_permissions])
             .to match_array([
               have_attributes(
                 principal_type: "Role",
-                principal_id: Gitlab::Access::OWNER
+                principal_id: Gitlab::Access::OWNER,
+                actions: expected_actions
               ),
               have_attributes(
                 principal_type: "User",
                 principal_id: other_user.id,
                 granted_by: user.id,
+                actions: expected_actions,
                 expired_at: expired_at
               ),
               have_attributes(
                 principal_type: "Role",
                 principal_id: Gitlab::Access::REPORTER,
                 granted_by: user.id,
+                actions: expected_actions,
                 expired_at: nil
               ),
               have_attributes(
                 principal_type: "MemberRole",
                 principal_id: member_role.id,
                 granted_by: user.id,
+                actions: expected_actions,
                 expired_at: nil
               ),
               have_attributes(
                 principal_type: "Group",
                 principal_id: shared_resource.id,
                 granted_by: user.id,
+                actions: expected_actions,
                 expired_at: nil
               )
             ])
