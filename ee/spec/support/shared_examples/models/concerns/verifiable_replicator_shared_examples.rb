@@ -366,9 +366,11 @@ RSpec.shared_examples 'a verifiable replicator' do
       end
 
       context 'when there are no records' do
-        it 'returns 0' do
-          allow(described_class).to receive(:model_max_primary_key).and_return(nil)
+        before do
+          model_record.delete
+        end
 
+        it 'returns 0' do
           expect(described_class.checksum_total_count).to eq(0)
         end
       end

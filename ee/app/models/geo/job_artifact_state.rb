@@ -14,5 +14,9 @@ module Geo
       class_name: 'Ci::JobArtifact'
 
     partitionable scope: :job_artifact
+
+    scope :with_verification_state, ->(state_symbol) {
+      where(verification_state: VerificationState::VERIFICATION_STATE_VALUES[state_symbol])
+    }
   end
 end
