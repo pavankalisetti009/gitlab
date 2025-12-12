@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Groups::UpdateService, '#execute', feature_category: :groups_and_projects do
   let!(:user) { create(:user) }
-  let!(:group) { create(:group, :public) }
+  let!(:group) { create(:group, :public).reload } # reload clears previous_changes on the group settings from the create
 
   context 'audit events' do
     let(:audit_event_params) do
@@ -105,7 +105,7 @@ RSpec.describe Groups::UpdateService, '#execute', feature_category: :groups_and_
 
   context 'sub group' do
     let(:parent_group) { create :group }
-    let(:group) { create :group, parent: parent_group }
+    let(:group) { create(:group, parent: parent_group).reload } # reload clears previous_changes on the group settings
 
     subject { update_group(group, user, { name: 'new_sub_group_name' }) }
 
