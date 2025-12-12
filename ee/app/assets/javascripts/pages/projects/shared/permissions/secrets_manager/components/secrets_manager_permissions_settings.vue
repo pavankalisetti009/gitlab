@@ -26,11 +26,19 @@ export default {
     PermissionsModal,
     PermissionsTable,
   },
-  inject: ['fullPath'],
   props: {
     canManageSecretsManager: {
       type: Boolean,
       required: true,
+    },
+    fullPath: {
+      type: String,
+      required: true,
+    },
+    projectId: {
+      type: Number,
+      required: false,
+      default: null,
     },
   },
   data() {
@@ -205,6 +213,8 @@ export default {
   <div>
     <permissions-modal
       :permission-category="selectedPermissionCategory"
+      :full-path="fullPath"
+      :project-id="projectId"
       @hide="resetSelectedPermissionCategory"
       @refetch="refetchPermissions"
     />

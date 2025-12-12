@@ -44,10 +44,18 @@ export default {
     GlFormGroup,
     GlModal,
   },
-  inject: ['fullPath', 'projectId'],
   props: {
     permissionCategory: {
       type: String,
+      required: false,
+      default: null,
+    },
+    fullPath: {
+      type: String,
+      required: true,
+    },
+    projectId: {
+      type: Number,
       required: false,
       default: null,
     },
