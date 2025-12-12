@@ -7,4 +7,4 @@ rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/579076
 milestone: '18.6'
 group: group::agent foundations
 type: beta
-default_enabled: false
+default_enabled: true
