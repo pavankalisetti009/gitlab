@@ -117,7 +117,7 @@ module EE
     def admin_data_management_app_data(model_class)
       {
         model_types: model_types.to_json,
-        initial_model_name: ::Gitlab::Geo::ModelMapper.convert_to_name(model_class),
+        initial_model_name: ::Gitlab::Geo::ModelMapper.convert_to_name(model_class).pluralize,
         base_path: admin_data_management_path
       }
     end
@@ -126,7 +126,7 @@ module EE
       {
         model_class: model.class.name,
         model_id: model.id.to_s,
-        model_name: ::Gitlab::Geo::ModelMapper.convert_to_name(model.class)
+        model_name: ::Gitlab::Geo::ModelMapper.convert_to_name(model.class).pluralize
       }
     end
   end

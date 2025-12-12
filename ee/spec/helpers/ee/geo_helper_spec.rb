@@ -158,7 +158,7 @@ RSpec.describe EE::GeoHelper, feature_category: :geo_replication do
       expect(helper.admin_data_management_app_data(model)).to eq(
         {
           model_types: helper.model_types.to_json,
-          initial_model_name: 'project',
+          initial_model_name: 'projects',
           base_path: '/admin/data_management'
         }
       )
@@ -173,7 +173,7 @@ RSpec.describe EE::GeoHelper, feature_category: :geo_replication do
         {
           model_class: 'Project',
           model_id: model.id.to_s,
-          model_name: 'project'
+          model_name: 'projects'
         }
       )
     end
