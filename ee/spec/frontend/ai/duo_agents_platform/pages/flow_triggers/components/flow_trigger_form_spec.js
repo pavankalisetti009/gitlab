@@ -49,7 +49,6 @@ describe('FlowTriggerForm', () => {
           readAiCatalogFlow: true,
         },
         glFeatures: {
-          aiCatalogFlows: true,
           aiCatalogThirdPartyFlows: true,
         },
         ...provide,
