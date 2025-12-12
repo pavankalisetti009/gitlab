@@ -73,7 +73,8 @@ RSpec.describe 'Update Secret Permission', :gitlab_secrets_manager, feature_cate
         expect(mutation_response['secretPermission']).not_to be_nil
         expect(mutation_response['secretPermission']['principal']['id']).to eq(principal[:id].to_s)
         expect(mutation_response['secretPermission']['principal']['type']).to eq('USER')
-        expect(mutation_response['secretPermission']['permissions']).to eq(permissions.to_s)
+        expect(mutation_response['secretPermission']['permissions']).to eq(permissions.sort.to_s)
+        expect(mutation_response['secretPermission']['actions']).to contain_exactly('WRITE', 'READ')
         expect(mutation_response['secretPermission']['expiredAt']).to eq(expired_at)
       end
 
@@ -98,10 +99,10 @@ RSpec.describe 'Update Secret Permission', :gitlab_secrets_manager, feature_cate
 
       it 'returns the service error' do
         expect_next_instance_of(SecretsManagement::ProjectSecretsPermissions::UpdateService) do |service|
-          secret_permission = SecretsManagement::ProjectSecretsPermission.new
-          secret_permission.errors.add(:base, 'some error')
+          secrets_permission = SecretsManagement::ProjectSecretsPermission.new
+          secrets_permission.errors.add(:base, 'some error')
 
-          result = ServiceResponse.error(message: 'some error', payload: { secret_permission: secret_permission })
+          result = ServiceResponse.error(message: 'some error', payload: { secrets_permission: secrets_permission })
           expect(service).to receive(:execute).and_return(result)
         end
 

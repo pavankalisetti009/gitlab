@@ -12,7 +12,7 @@ RSpec.describe SecretsManagement::GroupSecretsPermissionPolicy, feature_category
       resource: group,
       principal_type: 'User',
       principal_id: 1,
-      permissions: %w[read]
+      actions: %w[read]
     )
   end
 

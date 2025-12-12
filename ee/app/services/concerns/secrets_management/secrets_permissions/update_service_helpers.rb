@@ -5,14 +5,14 @@ module SecretsManagement
     module UpdateServiceHelpers
       extend ActiveSupport::Concern
 
-      INTERNAL_PERMISSIONS = %w[list scan].freeze
+      INTERNAL_CAPABILITIES = %w[list scan].freeze
 
-      def execute(principal_id:, principal_type:, permissions:, expired_at:)
+      def execute(principal_id:, principal_type:, actions:, expired_at:)
         with_exclusive_lease_for(resource) do
           execute_update_permission(
             principal_id: principal_id,
             principal_type: principal_type,
-            permissions: permissions,
+            actions: actions,
             expired_at: expired_at
           )
         end
@@ -22,11 +22,11 @@ module SecretsManagement
 
       delegate :secrets_manager, to: :resource
 
-      def execute_update_permission(principal_id:, principal_type:, permissions:, expired_at:)
+      def execute_update_permission(principal_id:, principal_type:, actions:, expired_at:)
         secrets_permission = permission_class.new(
           principal_id: principal_id,
           principal_type: principal_type,
-          permissions: permissions,
+          actions: actions,
           granted_by: current_user.id,
           expired_at: expired_at,
           resource: resource
@@ -38,7 +38,8 @@ module SecretsManagement
       def store_permission(secrets_permission)
         return error_response(secrets_permission) unless secrets_permission.valid?
 
-        secrets_permission.permissions = secrets_permission.permissions + INTERNAL_PERMISSIONS
+        # Convert actions to capabilities and add internal capabilities
+        capabilities = secrets_permission.to_capabilities + INTERNAL_CAPABILITIES
 
         # Get or create policy
         policy_name = secrets_permission.secrets_manager.policy_name_for_principal(
@@ -51,19 +52,16 @@ module SecretsManagement
         # If policy doesn't exist, create a new one
         policy ||= AclPolicy.new(policy_name)
 
-        # Add or update paths with permissions
+        # Add or update paths with capabilities
         update_policy_paths(
           policy,
           secrets_permission.secrets_manager,
-          secrets_permission.permissions,
+          capabilities,
           secrets_permission.normalized_expired_at
         )
 
         # Save the policy to OpenBao
         client.set_policy(policy)
-
-        # the list permission is only used internally and should not be returned to the user
-        secrets_permission.permissions = secrets_permission.permissions - INTERNAL_PERMISSIONS
 
         ServiceResponse.success(payload: { secrets_permission: secrets_permission })
       rescue SecretsManagement::SecretsManagerClient::ApiError => e
@@ -73,7 +71,7 @@ module SecretsManagement
         error_response(secrets_permission)
       end
 
-      def update_policy_paths(policy, secrets_manager, permissions, expired_at)
+      def update_policy_paths(policy, secrets_manager, capabilities, expired_at)
         data_path = secrets_manager.ci_full_path('*')
         metadata_path = secrets_manager.ci_metadata_full_path('*')
         detailed_metadata_path = secrets_manager.detailed_metadata_path('*')
@@ -84,9 +82,9 @@ module SecretsManagement
         policy.paths[detailed_metadata_path].capabilities.clear if policy.paths[detailed_metadata_path]
 
         # Add new capabilities
-        permissions.each do |permission|
-          policy.add_capability(data_path, permission, user: current_user) if permission != 'read'
-          policy.add_capability(metadata_path, permission, user: current_user)
+        capabilities.each do |capability|
+          policy.add_capability(data_path, capability, user: current_user) if capability != 'read'
+          policy.add_capability(metadata_path, capability, user: current_user)
         end
         policy.add_capability(detailed_metadata_path, 'list', user: current_user)
 

@@ -300,9 +300,9 @@ RSpec.describe SecretsManagement::ProjectSecrets::DeleteService, :gitlab_secrets
 
       before do
         provision_project_secrets_manager(secrets_manager, user)
-        update_secret_permission(
-          user: user, project: project, permissions: %w[
-            create update delete read
+        update_project_secrets_permission(
+          user: user, project: project, actions: %w[
+            write delete read
           ], principal: { id: group.id, type: 'Group' }
         )
 

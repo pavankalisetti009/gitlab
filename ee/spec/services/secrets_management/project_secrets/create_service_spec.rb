@@ -513,8 +513,8 @@ RSpec.describe SecretsManagement::ProjectSecrets::CreateService, :gitlab_secrets
 
       before do
         provision_project_secrets_manager(secrets_manager, user)
-        update_secret_permission(
-          user: user, project: project, permissions: %w[create read update], principal: {
+        update_project_secrets_permission(
+          user: user, project: project, actions: %w[read write], principal: {
             id: Gitlab::Access.sym_options[:developer], type: 'Role'
           }
         )
@@ -536,10 +536,10 @@ RSpec.describe SecretsManagement::ProjectSecrets::CreateService, :gitlab_secrets
           environment: environment)
       end
 
-      def provision_and_update_secret_permission
+      def provision_and_update_secrets_permission
         provision_project_secrets_manager(secrets_manager, user)
-        update_secret_permission(
-          user: user, project: project, permissions: %w[create read update], principal: {
+        update_project_secrets_permission(
+          user: user, project: project, actions: %w[read write], principal: {
             id: user.id, type: 'User'
           }, expired_at: expired_at
         )
@@ -547,7 +547,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::CreateService, :gitlab_secrets
 
       context 'when expired_at is nil' do
         it 'returns success' do
-          permission = provision_and_update_secret_permission
+          permission = provision_and_update_secrets_permission
 
           expect(result).to be_success
           expect(result.payload[:project_secret]).to be_present
@@ -559,7 +559,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::CreateService, :gitlab_secrets
         let(:expired_at) { 2.days.from_now }
 
         it 'returns success' do
-          permission = provision_and_update_secret_permission
+          permission = provision_and_update_secrets_permission
 
           expect(result).to be_success
           expect(result.payload[:project_secret]).to be_present
@@ -577,8 +577,8 @@ RSpec.describe SecretsManagement::ProjectSecrets::CreateService, :gitlab_secrets
         provision_project_secrets_manager(secrets_manager, user)
 
         expect do
-          update_secret_permission(
-            user: user, project: project, permissions: %w[create read update], principal: {
+          update_project_secrets_permission(
+            user: user, project: project, actions: %w[read write], principal: {
               id: user.id, type: 'User'
             }, expired_at: expired_at
           )

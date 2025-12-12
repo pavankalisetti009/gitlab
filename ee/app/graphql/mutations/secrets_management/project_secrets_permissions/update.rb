@@ -2,13 +2,14 @@
 
 module Mutations
   module SecretsManagement
-    module Permissions
+    module ProjectSecretsPermissions
       class Update < BaseMutation
-        graphql_name 'SecretPermissionUpdate'
+        graphql_name 'ProjectSecretsPermissionUpdate'
 
         include ResolvesProject
         include Helpers::ErrorMessagesHelpers
         include ::SecretsManagement::MutationErrorHandling
+        include Helpers::PermissionPrincipalHelpers
 
         authorize :admin_project_secrets_manager
 
@@ -20,31 +21,30 @@ module Mutations
           required: true,
           description: 'User/MemberRole/Role/Group that is provided access.'
 
-        argument :permissions, [::GraphQL::Types::String],
+        argument :actions, [Types::SecretsManagement::Permissions::ActionEnum],
           required: true,
-          description: "Permissions to be provided. ['create', 'update', 'read', 'delete']."
+          description: 'Actions that can be performed on secrets.'
 
         argument :expired_at, GraphQL::Types::ISO8601Date, required: false,
           description: "Expiration date for Secret Permission (optional)."
 
-        field :secret_permission, Types::SecretsManagement::Permissions::SecretPermissionType,
+        field :secrets_permission, Types::SecretsManagement::ProjectSecretsPermissionType,
           null: true,
-          description: 'Secret Permission that was created.'
+          description: 'Secrets Permission that was created.'
 
-        def resolve(project_path:, principal:, permissions:, expired_at: nil)
+        def resolve(project_path:, principal:, actions:, expired_at: nil)
           project = authorized_find!(project_path: project_path)
 
           if Feature.disabled?(:secrets_manager, project)
             raise_resource_not_available_error!("`secrets_manager` feature flag is disabled.")
           end
 
-          # Transform old permissions format to new actions format
-          actions = permissions_to_actions(permissions)
+          principal_id = resolve_principal_id(principal)
 
           result = ::SecretsManagement::ProjectSecretsPermissions::UpdateService
             .new(project, current_user)
             .execute(
-              principal_id: principal.id,
+              principal_id: principal_id,
               principal_type: principal.type,
               actions: actions,
               expired_at: expired_at
@@ -52,12 +52,12 @@ module Mutations
 
           if result.success?
             {
-              secret_permission: result.payload[:secrets_permission],
+              secrets_permission: result.payload[:secrets_permission],
               errors: []
             }
           else
             {
-              secret_permission: nil,
+              secrets_permission: nil,
               errors: error_messages(result, [:secrets_permission])
             }
           end
@@ -69,17 +69,8 @@ module Mutations
           resolve_project(full_path: project_path)
         end
 
-        # Convert old permissions format to new actions format
-        # Merge 'create' and 'update' into 'write' action
-        def permissions_to_actions(permissions)
-          actions = []
-          perms_set = permissions.to_set
-
-          actions << 'read' if perms_set.include?('read')
-          actions << 'write' if perms_set.include?('create') || perms_set.include?('update')
-          actions << 'delete' if perms_set.include?('delete')
-
-          actions
+        def find_group_by_path(full_path)
+          ::Group.find_by_full_path(full_path)
         end
       end
     end

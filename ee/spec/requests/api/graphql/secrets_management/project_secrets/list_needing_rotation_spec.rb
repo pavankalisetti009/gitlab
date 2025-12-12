@@ -230,8 +230,8 @@ RSpec.describe 'List project secrets needing rotation', :gitlab_secrets_manager,
 
     before do
       provision_project_secrets_manager(secrets_manager, current_user)
-      update_secret_permission(
-        user: current_user, project: project, permissions: %w[read], principal: {
+      update_project_secrets_permission(
+        user: current_user, project: project, actions: %w[read], principal: {
           id: Gitlab::Access.sym_options[:developer], type: 'Role'
         }
       )

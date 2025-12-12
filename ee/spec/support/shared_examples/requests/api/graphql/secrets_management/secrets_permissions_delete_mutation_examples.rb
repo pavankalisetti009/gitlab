@@ -44,7 +44,7 @@ RSpec.shared_examples 'a GraphQL mutation for deleting secrets permissions' do |
       # Create a permission to delete
       update_permission(
         user: current_user,
-        permissions: %w[create update read],
+        actions: %w[write read],
         principal: { id: principal[:id], type: principal[:type] }
       )
     end

@@ -28,10 +28,10 @@ RSpec.describe SecretsManagement::DeprovisionProjectSecretsManagerByPathWorker, 
         value: 'test'
       )
 
-      update_secret_permission(
+      update_project_secrets_permission(
         user: user,
         project: project,
-        permissions: %w[read],
+        actions: %w[read],
         principal: { id: member_role.id, type: 'MemberRole' }
       )
     end

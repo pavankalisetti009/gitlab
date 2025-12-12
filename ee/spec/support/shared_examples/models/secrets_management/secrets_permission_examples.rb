@@ -1,12 +1,14 @@
 # frozen_string_literal: true
 
 RSpec.shared_examples 'a secrets permission' do
-  # Note: The including spec must define a `permission` subject that creates the base permission object
+  # Note: The including spec must define:
+  # - `permission` subject that creates the base permission object
+  # - `link_group_to_resource(resource, group, access_level)` method to create group links
 
   it { is_expected.to validate_presence_of(:resource) }
   it { is_expected.to validate_presence_of(:principal_id) }
   it { is_expected.to validate_presence_of(:principal_type) }
-  it { is_expected.to validate_presence_of(:permissions) }
+  it { is_expected.to validate_presence_of(:actions) }
 
   describe 'normalized_expired_at' do
     context 'when expired_at is present' do
@@ -78,10 +80,10 @@ RSpec.shared_examples 'a secrets permission' do
       expect(permission).to be_valid
     end
 
-    it 'validates non-empty permissions includes read' do
-      permission.permissions = ['create']
+    it 'validates non-empty actions includes read' do
+      permission.actions = ['write']
       expect(permission).not_to be_valid
-      expect(permission.errors[:permissions]).to include("must include read")
+      expect(permission.errors[:actions]).to include("must include read")
     end
 
     it 'validates principal_type is valid' do
@@ -90,10 +92,10 @@ RSpec.shared_examples 'a secrets permission' do
       expect(permission.errors[:principal_type]).to include('must be one of: User, Role, Group, MemberRole')
     end
 
-    it 'validates permissions are valid' do
-      permission.permissions = ['foo']
+    it 'validates actions are valid' do
+      permission.actions = ['foo']
       expect(permission).not_to be_valid
-      expect(permission.errors[:permissions]).to include('contains invalid permission: foo')
+      expect(permission.errors[:actions]).to include('contains invalid action: foo')
     end
 
     it 'validates role_id when principal_type is Role' do
@@ -115,6 +117,13 @@ RSpec.shared_examples 'a secrets permission' do
         permission.principal_id = User.count + 1
         expect(permission).not_to be_valid
         expect(permission.errors[:principal_id]).to include('user does not exist')
+      end
+
+      it 'is invalid when user is not a member of the resource' do
+        non_member_user = create(:user)
+        permission.principal_id = non_member_user.id
+        expect(permission).not_to be_valid
+        expect(permission.errors[:principal_id].first).to include('user is not a member of the')
       end
 
       context 'with user role validation' do
@@ -160,6 +169,14 @@ RSpec.shared_examples 'a secrets permission' do
         permission.principal_id = Group.count + 1
         expect(permission).not_to be_valid
         expect(permission.errors[:principal_id]).to include('group does not exist')
+      end
+
+      it 'is invalid when group does not have access to the resource' do
+        unrelated_group = create(:group)
+        permission.principal_type = 'Group'
+        permission.principal_id = unrelated_group.id
+        expect(permission).not_to be_valid
+        expect(permission.errors[:principal_id].first).to include('group does not have access to this')
       end
 
       context 'with group role validation' do

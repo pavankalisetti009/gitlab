@@ -13,7 +13,7 @@ RSpec.shared_examples 'a service for deleting secrets permissions' do |resource_
   let(:principal_id) { user.id }
   let(:principal_type) { 'User' }
 
-  subject(:result) { service.execute(principal: { id: principal_id, type: principal_type }) }
+  subject(:result) { service.execute(principal_id: principal_id, principal_type: principal_type) }
 
   describe '#execute' do
     context "when the #{resource_type} secrets manager is active" do
@@ -26,12 +26,12 @@ RSpec.shared_examples 'a service for deleting secrets permissions' do |resource_
           # Create a permission to delete
           update_permission(
             user: user,
-            permissions: %w[create update read],
+            actions: %w[write read],
             principal: { id: principal_id, type: principal_type }
           )
         end
 
-        it 'deletes a secret permission successfully' do
+        it 'deletes a secrets permission successfully' do
           # Verify permission exists before deletion
           policy_name = secrets_manager.policy_name_for_principal(
             principal_type: principal_type,
@@ -44,7 +44,7 @@ RSpec.shared_examples 'a service for deleting secrets permissions' do |resource_
 
           # Delete the permission
           expect(result).to be_success
-          expect(result.payload[:secret_permission]).to be_nil
+          expect(result.payload[:secrets_permission]).to be_nil
 
           # Verify permission is deleted from OpenBao
           expect_policy_not_to_exist(namespace_path, policy_name)

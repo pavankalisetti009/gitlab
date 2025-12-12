@@ -16,14 +16,14 @@ module SecretsManagement
     attribute :principal_type, :string
 
     # Additional metadata
-    attribute :permissions
+    attribute :actions
     attribute :granted_by, :integer
     attribute :expired_at, :string
 
     validates :resource, presence: true
     validates :principal_id, :principal_type, presence: true
-    validates :permissions, presence: true
-    validate :validate_principal_types, :validate_permissions, :validate_role_id
+    validates :actions, presence: true
+    validate :validate_principal_types, :validate_actions, :validate_role_id
     validate :valid_principal
     validate :validate_expired_at
     validate :ensure_active_secrets_manager
@@ -35,15 +35,25 @@ module SecretsManagement
       member_role: 'MemberRole'
     }.freeze
 
-    PERMISSIONS = {
+    ACTIONS = {
       read: 'read',
+      write: 'write',
+      delete: 'delete'
+    }.freeze
+
+    # Internal capabilities used in OpenBao
+    CAPABILITIES = {
+      read: 'read',
+      create: 'create',
       update: 'update',
       delete: 'delete',
-      create: 'create'
+      list: 'list',
+      scan: 'scan'
     }.freeze
 
     VALID_PRINCIPAL_TYPES = PRINCIPAL_TYPES.values.freeze
-    VALID_PERMISSIONS = PERMISSIONS.values.freeze
+    VALID_ACTIONS = ACTIONS.values.freeze
+    VALID_CAPABILITIES = CAPABILITIES.values.freeze
     VALID_ROLES = Gitlab::Access.sym_options.except(:guest, :planner).freeze
     MINIMUM_ACCESS_LEVEL = Gitlab::Access::REPORTER
 
@@ -59,6 +69,36 @@ module SecretsManagement
       resource.id
     end
 
+    # Convert actions to OpenBao capabilities
+    # WRITE action maps to both 'create' and 'update' capabilities
+    def to_capabilities
+      return [] if actions.blank?
+
+      caps = []
+      actions.each do |action|
+        if action == 'write'
+          caps << 'create'
+          caps << 'update'
+        else
+          caps << action
+        end
+      end
+      caps.uniq
+    end
+
+    # Convert OpenBao capabilities back to actions
+    # If both 'create' and 'update' are present, merge into WRITE action
+    def set_actions_from_capabilities(capabilities)
+      self.actions = []
+      actions << ACTIONS[:read] if capabilities.include?(CAPABILITIES[:read])
+
+      if capabilities.include?(CAPABILITIES[:create]) && capabilities.include?(CAPABILITIES[:update])
+        actions << ACTIONS[:write]
+      end
+
+      actions << ACTIONS[:delete] if capabilities.include?(CAPABILITIES[:delete])
+    end
+
     private
 
     def validate_principal_types
@@ -67,13 +107,13 @@ module SecretsManagement
       errors.add(:principal_type, "must be one of: #{VALID_PRINCIPAL_TYPES.join(', ')}")
     end
 
-    def validate_permissions
-      permissions&.include?('read') || errors.add(:permissions, 'must include read')
+    def validate_actions
+      actions&.include?('read') || errors.add(:actions, 'must include read')
 
-      permissions&.each do |permission|
-        next if VALID_PERMISSIONS.include?(permission)
+      actions&.each do |action|
+        next if VALID_ACTIONS.include?(action)
 
-        errors.add(:permissions, "contains invalid permission: #{permission}")
+        errors.add(:actions, "contains invalid action: #{action}")
       end
     end
 

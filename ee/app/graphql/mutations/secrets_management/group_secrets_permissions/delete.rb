@@ -32,11 +32,14 @@ module Mutations
 
           result = ::SecretsManagement::GroupSecretsPermissions::DeleteService
             .new(group, current_user)
-            .execute(principal: { type: principal.type, id: principal.id })
+            .execute(
+              principal_id: principal.id,
+              principal_type: principal.type
+            )
 
           if result.success?
             {
-              secrets_permission: result.payload[:secret_permission],
+              secrets_permission: result.payload[:secrets_permission],
               errors: []
             }
           else

@@ -340,6 +340,12 @@ module EE
           description: 'List secret permissions.',
           resolver: ::Resolvers::SecretsManagement::Permissions::SecretPermissionsResolver
 
+        field :project_secrets_permissions, ::Types::SecretsManagement::ProjectSecretsPermissionType.connection_type,
+          null: true,
+          experiment: { milestone: '18.7' },
+          description: 'List project secrets permissions.',
+          resolver: ::Resolvers::SecretsManagement::ProjectSecretsPermissionsResolver
+
         field :group_secrets_manager, ::Types::SecretsManagement::GroupSecretsManagerType,
           null: true,
           experiment: { milestone: '18.6' },
