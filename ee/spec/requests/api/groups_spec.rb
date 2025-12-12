@@ -260,6 +260,21 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
   end
 
   describe 'PUT /groups/:id' do
+    shared_examples_for 'updates a group setting correctly' do
+      let(:params) { nil }
+      let(:from) { nil }
+      let(:to) { nil }
+      let(:changed_property) { nil }
+
+      it 'updates the setting' do
+        expect do
+          put api("/groups/#{group.id}", user), params: params
+        end.to change { group.reload.send(changed_property) }.from(from).to(to)
+
+        expect(response).to have_gitlab_http_status(:ok)
+      end
+    end
+
     let_it_be(:admin_mode) { false }
 
     subject(:update_group_request) { put api("/groups/#{group.id}", user, admin_mode: admin_mode), params: params }
@@ -1061,22 +1076,29 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
     end
 
     context 'duo_workflow_mcp_enabled' do
-      it 'updates duo_workflow_mcp_enabled field of namespace AI settings' do
-        expect do
-          put api("/groups/#{group.id}", user), params: { ai_settings_attributes: { duo_workflow_mcp_enabled: true } }
-        end.to change { group.reload.duo_workflow_mcp_enabled }.from(nil).to(true)
-
-        expect(response).to have_gitlab_http_status(:ok)
+      it_behaves_like 'updates a group setting correctly' do
+        let(:params) { { ai_settings_attributes: { duo_workflow_mcp_enabled: true } } }
+        let(:from) { nil }
+        let(:to) { true }
+        let(:changed_property) { :duo_workflow_mcp_enabled }
       end
     end
 
     context 'foundational_agents_default_enabled' do
-      it 'updates foundational_agents_default_enabled field of namespace AI settings' do
-        expect do
-          put api("/groups/#{group.id}", user), params: { ai_settings_attributes: { foundational_agents_default_enabled: true } }
-        end.to change { group.reload.foundational_agents_default_enabled }.from(nil).to(true)
+      it_behaves_like 'updates a group setting correctly' do
+        let(:params) { { ai_settings_attributes: { foundational_agents_default_enabled: true } } }
+        let(:from) { nil }
+        let(:to) { true }
+        let(:changed_property) { :foundational_agents_default_enabled }
+      end
+    end
 
-        expect(response).to have_gitlab_http_status(:ok)
+    context 'duo_agent_platform_enabled' do
+      it_behaves_like 'updates a group setting correctly' do
+        let(:params) { { ai_settings_attributes: { duo_agent_platform_enabled: true } } }
+        let(:from) { nil }
+        let(:to) { true }
+        let(:changed_property) { :duo_agent_platform_enabled }
       end
     end
 

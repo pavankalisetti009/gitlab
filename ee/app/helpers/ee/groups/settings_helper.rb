@@ -100,6 +100,7 @@ module EE
           show_early_access_banner: show_early_access_program_banner?.to_s,
           early_access_path: group_early_access_opt_in_path(@group),
           update_id: @group.id,
+          duo_agent_platform_enabled: @group.duo_agent_platform_enabled.to_s,
           duo_workflow_available: (@group.root? && current_user.can?(:admin_duo_workflow, @group)).to_s,
           duo_workflow_mcp_enabled: @group.duo_workflow_mcp_enabled.to_s,
           foundational_agents_default_enabled: @group.foundational_agents_default_enabled.to_s,
