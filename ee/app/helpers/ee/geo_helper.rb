@@ -68,6 +68,7 @@ module EE
         graphql_field_name: replicator_class.graphql_field_name,
         graphql_registry_class: replicator_class.registry_class,
         graphql_mutation_registry_class: replicator_class.graphql_mutation_registry_class,
+        model_class_name: replicator_class.model.name,
         replication_enabled: replicator_class.replication_enabled?,
         verification_enabled: replicator_class.verification_enabled?,
         graphql_registry_id_type: replicator_class.graphql_registry_id_type.to_s
