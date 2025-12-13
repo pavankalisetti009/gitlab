@@ -1,4 +1,4 @@
-import codeSuggestionsAcceptanceRateByLanguage from 'ee/analytics/analytics_dashboards/data_sources/code_suggestions_acceptance_by_language';
+import codeSuggestionsAcceptanceByLanguage from 'ee/analytics/analytics_dashboards/data_sources/code_suggestions_acceptance_by_language';
 import { defaultClient } from 'ee/analytics/analytics_dashboards/graphql/client';
 import {
   LAST_180_DAYS,
@@ -22,14 +22,14 @@ const defaultParams = {
   query: { dateRange: LAST_90_DAYS },
 };
 
-describe('`Code suggestion acceptance rate by language` Data Source', () => {
+describe('`Code suggestion acceptance by language` Data Source', () => {
   let res;
 
   const setAlerts = jest.fn();
   const setVisualizationOverrides = jest.fn();
 
   const fetch = async (args) => {
-    res = await codeSuggestionsAcceptanceRateByLanguage({
+    res = await codeSuggestionsAcceptanceByLanguage({
       setAlerts,
       setVisualizationOverrides,
       ...defaultParams,
@@ -84,13 +84,13 @@ describe('`Code suggestion acceptance rate by language` Data Source', () => {
 
       it('returns code suggestion acceptance metrics by language in ascending order', () => {
         expect(res).toEqual({
-          'Acceptance rate': [
-            [0.5, 'Ruby'],
-            [0.75, 'JavaScript'],
+          'Suggestions accepted': [
+            [3, 'JavaScript'],
+            [5, 'Ruby'],
           ],
           contextualData: {
-            JavaScript: { acceptedCount: 3, shownCount: 4 },
-            Ruby: { acceptedCount: 5, shownCount: 10 },
+            JavaScript: { acceptanceRate: 0.75, shownCount: 4 },
+            Ruby: { acceptanceRate: 0.5, shownCount: 10 },
           },
         });
       });
@@ -99,11 +99,6 @@ describe('`Code suggestion acceptance rate by language` Data Source', () => {
         expect(setVisualizationOverrides).toHaveBeenCalledWith({
           visualizationOptionOverrides: expect.objectContaining({
             yAxis: {
-              axisLabel: {
-                formatter: expect.any(Function),
-              },
-            },
-            xAxis: {
               axisLabel: {
                 formatter: expect.any(Function),
               },
@@ -166,9 +161,9 @@ describe('`Code suggestion acceptance rate by language` Data Source', () => {
         await fetch();
 
         expect(res).toEqual({
-          'Acceptance rate': [[0.5, 'C++']],
+          'Suggestions accepted': [[50, 'C++']],
           contextualData: {
-            'C++': { acceptedCount: 50, shownCount: 100 },
+            'C++': { acceptanceRate: 0.5, shownCount: 100 },
           },
         });
       });
@@ -240,15 +235,15 @@ describe('`Code suggestion acceptance rate by language` Data Source', () => {
           return fetch();
         });
 
-        it('returns partial code suggestion acceptance rates by language', () => {
+        it('returns partial code suggestion acceptance metrics by language', () => {
           expect(res).toEqual({
-            'Acceptance rate': [
-              [0.2, 'Rust'],
-              [0.3, 'Python'],
+            'Suggestions accepted': [
+              [1, 'Rust'],
+              [3, 'Python'],
             ],
             contextualData: {
-              Rust: { acceptedCount: 1, shownCount: 5 },
-              Python: { acceptedCount: 3, shownCount: 10 },
+              Rust: { acceptanceRate: 0.2, shownCount: 5 },
+              Python: { acceptanceRate: 0.3, shownCount: 10 },
             },
           });
         });

@@ -1,6 +1,6 @@
 import AiMetricsQuery from 'ee/analytics/dashboards/ai_impact/graphql/ai_metrics.query.graphql';
 import { extractQueryResponseFromNamespace } from '~/analytics/shared/utils';
-import { s__, sprintf } from '~/locale';
+import { __, s__, sprintf } from '~/locale';
 import {
   LAST_30_DAYS,
   DORA_METRIC_QUERY_RANGES,
@@ -9,7 +9,6 @@ import {
 import { getLanguageDisplayName } from 'ee/analytics/analytics_dashboards/code_suggestions_languages';
 import { truncate } from '~/lib/utils/text_utility';
 import { defaultClient } from '../graphql/client';
-import { formatAsPercentage } from '../components/visualizations/utils';
 
 const extractAiMetricsResponse = (result) =>
   extractQueryResponseFromNamespace({
@@ -68,12 +67,12 @@ const extractAcceptanceMetricsByLanguage = (results = []) => {
       return { acceptanceRate, language, acceptedCount, shownCount };
     })
     .filter(({ acceptanceRate }) => acceptanceRate !== null)
-    .sort((a, b) => a.acceptanceRate - b.acceptanceRate);
+    .sort((a, b) => a.acceptedCount - b.acceptedCount);
 
   return extractedResults.reduce(
     (acc, { acceptanceRate, language, acceptedCount, shownCount }) => {
-      acc.chartData.push([acceptanceRate, language]);
-      acc.contextualData[language] = { acceptedCount, shownCount };
+      acc.chartData.push([acceptedCount, language]);
+      acc.contextualData[language] = { acceptanceRate, shownCount };
 
       return acc;
     },
@@ -128,18 +127,11 @@ export default async function fetch({
           formatter: (str) => truncate(str, 10),
         },
       },
-      xAxis: {
-        axisLabel: {
-          formatter(value) {
-            return formatAsPercentage(value, 0);
-          },
-        },
-      },
     },
   });
 
   return {
-    [s__('CodeSuggestionsAcceptanceByLanguageChart|Acceptance rate')]: chartData,
+    [__('Suggestions accepted')]: chartData,
     contextualData,
   };
 }
