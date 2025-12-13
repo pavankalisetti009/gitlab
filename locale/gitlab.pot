@@ -16082,9 +16082,6 @@ msgstr ""
 msgid "CodeSuggestionsAcceptanceByIdeChart|Failed to load metrics for: %{ideNames}"
 msgstr ""
 
-msgid "CodeSuggestionsAcceptanceByLanguageChart|Acceptance rate"
-msgstr ""
-
 msgid "CodeSuggestionsAcceptanceByLanguageChart|Failed to load metrics for: %{languages}"
 msgstr ""
 

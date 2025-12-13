@@ -69,7 +69,7 @@ RSpec.describe 'Query.project(id).dashboards.panels(id).visualization', feature_
         1 | 'SingleStat' | 'GitLab Duo Code Suggestions usage'
         2 | 'SingleStat' | 'GitLab Duo Code Suggestions acceptance rate'
         3 | 'SingleStat' | 'GitLab Duo Chat usage'
-        4 | 'BarChart' | 'GitLab Duo Code Suggestions acceptance rate by language (Last 30 days)'
+        4 | 'BarChart' | 'GitLab Duo Code Suggestions acceptance by language (Last 30 days)'
         5 | 'BarChart' | 'GitLab Duo Code Suggestions acceptance by IDE (Last 30 days)'
         6 | 'AreaChart' | 'Code generation volume trends (Last 180 days)'
         7 | 'StackedColumnChart' | 'GitLab Duo Code Review requests by role (Last 180 days)'

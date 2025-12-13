@@ -7,19 +7,18 @@ data:
     dateRange: last_30_days
 options:
   xAxis:
-    name: "Acceptance rate"
+    name: "Suggestions accepted"
     type: value
   yAxis:
     name: ""
     type: category
   chartTooltip:
     titleFormatter: VALUE_ONLY
-    valueUnit: PERCENT
+    valueUnit: COUNT
     contextualData:
-      - key: acceptedCount
-        label: "Suggestions accepted"
-        unit: COUNT
       - key: shownCount
         label: "Suggestions shown"
         unit: COUNT
-
+      - key: acceptanceRate
+        label: "Acceptance rate"
+        unit: PERCENT
