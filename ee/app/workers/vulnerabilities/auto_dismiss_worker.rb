@@ -33,7 +33,7 @@ module Vulnerabilities
     def handle_pipeline_findings(pipeline, findings)
       project = pipeline.project
       return unless project.licensed_feature_available?(:security_orchestration_policies)
-      return if ::Feature.disabled?(:auto_dismiss_vulnerability_policies, project)
+      return if ::Feature.disabled?(:auto_dismiss_vulnerability_policies, project.group)
 
       vulnerability_ids = extract_vulnerability_ids(findings)
       result = Vulnerabilities::AutoDismissService.new(pipeline, vulnerability_ids).execute
