@@ -86,6 +86,9 @@ export default {
     },
   },
   securityDashboardHelpLink: helpPagePath('user/application_security/security_dashboard/_index'),
+  vulnerabilitiesOverTimeLink: helpPagePath('user/application_security/security_dashboard/_index', {
+    anchor: 'vulnerabilities-over-time',
+  }),
 };
 </script>
 
@@ -109,33 +112,40 @@ export default {
         </template>
       </gl-sprintf>
     </span>
-    <template v-if="hasNoPolicies">
-      <gl-alert
-        v-if="!autoResolveAlertDismissed"
-        :title="s__('SecurityReports|Recommendation: Auto-resolve when no longer detected')"
-        :primary-button-text="s__('SecurityReports|Go to policies')"
-        :primary-button-link="securityPoliciesPath"
-        data-testid="auto-resolve-alert"
-        @dismiss="closeAutoResolveAlert"
-      >
-        {{
+    <gl-alert
+      v-if="!autoResolveAlertDismissed && hasNoPolicies"
+      :title="s__('SecurityReports|Recommendation: Auto-resolve when no longer detected')"
+      :primary-button-text="s__('SecurityReports|Go to policies')"
+      :primary-button-link="securityPoliciesPath"
+      data-testid="auto-resolve-alert"
+      @dismiss="closeAutoResolveAlert"
+    >
+      {{
+        s__(
+          'SecurityReports|To ensure that open vulnerabilities include only vulnerabilities that are still detected, use a vulnerability management policy to automatically resolve vulnerabilities that are no longer detected.',
+        )
+      }}
+    </gl-alert>
+
+    <gl-alert
+      v-if="!noLongerDetectedAlertDismissed"
+      variant="warning"
+      data-testid="no-longer-detected-alert"
+      @dismiss="closeNoLongerDetectedAlert"
+    >
+      <gl-sprintf
+        :message="
           s__(
-            'SecurityReports|To ensure that open vulnerabilities include only vulnerabilities that are still detected, use a vulnerability management policy to automatically resolve vulnerabilities that are no longer detected.',
+            'SecurityReports|Starting in GitLab 18.8, the Vulnerabilities over time chart excludes no longer detected vulnerabilities, which might result in a drop in the total number of vulnerabilities shown in the chart. %{linkStart}Learn more%{linkEnd}',
           )
-        }}
-      </gl-alert>
-      <gl-alert
-        v-if="!noLongerDetectedAlertDismissed"
-        variant="warning"
-        data-testid="no-longer-detected-alert"
-        @dismiss="closeNoLongerDetectedAlert"
+        "
       >
-        {{
-          s__(
-            'SecurityReports|The vulnerabilities over time chart includes vulnerabilities that are no longer detected and might include more vulnerabilities than the totals shown in the counts per severity or in the vulnerability report.',
-          )
-        }}
-      </gl-alert>
-    </template>
+        <template #link="{ content }">
+          <gl-link :href="$options.vulnerabilitiesOverTimeLink" target="_blank">{{
+            content
+          }}</gl-link>
+        </template>
+      </gl-sprintf>
+    </gl-alert>
   </div>
 </template>
