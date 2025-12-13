@@ -25,7 +25,7 @@ RSpec.describe Groups::ParticipantsService, feature_category: :groups_and_projec
   describe '#execute' do
     it 'adds the owner to the list' do
       result = described_class.new(group, user).execute(epic).first
-      filtered_values = result.slice(:type, :name, :username, :avatar_url, :availability)
+      filtered_values = result.slice(:type, :name, :username, :avatar_url, :availability, :composite_identity_enforced)
 
       expect(filtered_values).to eq(user_to_autocompletable(user))
     end
@@ -50,7 +50,7 @@ RSpec.describe Groups::ParticipantsService, feature_category: :groups_and_projec
 
       expected_users = (@users + [user]).map { |user| user_to_autocompletable(user) }
       got = result.map do |r|
-        r.slice(:type, :name, :username, :avatar_url, :availability)
+        r.slice(:type, :name, :username, :avatar_url, :availability, :composite_identity_enforced)
       end
 
       expect(got).to include(*expected_users)
@@ -78,7 +78,7 @@ RSpec.describe Groups::ParticipantsService, feature_category: :groups_and_projec
         .map { |user| user_to_autocompletable(user) }
 
       got = result.map do |r|
-        r.slice(:type, :name, :username, :avatar_url, :availability)
+        r.slice(:type, :name, :username, :avatar_url, :availability, :composite_identity_enforced)
       end
 
       expect(expected_users.count).to eq(5)
