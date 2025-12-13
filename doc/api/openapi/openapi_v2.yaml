@@ -48044,6 +48044,8 @@ definitions:
         type: string
       web_based_commit_signing_enabled:
         type: string
+      allow_personal_snippets:
+        type: string
     description: API_Entities_Group model
   API_Entities_Namespace_RootStorageStatistics:
     type: object
@@ -48778,6 +48780,10 @@ definitions:
         description: References of enabled foundational flows
         items:
           type: string
+      allow_personal_snippets:
+        type: boolean
+        description: Allow creation of personal snippets for enterprise users of this
+          group
     description: Update a group. Available only for users who can administrate groups.
   API_Entities_GroupDetail:
     type: object
@@ -48899,6 +48905,8 @@ definitions:
       auto_duo_code_review_enabled:
         type: string
       web_based_commit_signing_enabled:
+        type: string
+      allow_personal_snippets:
         type: string
       shared_with_groups:
         type: string

@@ -317,6 +317,7 @@ module EE
         duo_foundational_flows_enabled
         lock_duo_foundational_flows_enabled
         enabled_foundational_flows
+        allow_personal_snippets
       ].freeze
 
       override :allowed_namespace_settings_params
