@@ -136,5 +136,38 @@ RSpec.describe 'Dependency-Scanning.v2.gitlab-ci.yml', feature_category: :softwa
         end
       end
     end
+
+    describe "Backward compatibility for existing CI/CD variables" do
+      include_context 'when project has files', ["any.file"]
+      include_context 'with default branch pipeline setup'
+
+      variable_inputs_map = {
+        'ADDITIONAL_CA_CERT_BUNDLE' => { input_name: :additional_ca_cert_bundle, input_value: 'SOME PEM CERTIFICATE' },
+        'DS_PIPCOMPILE_REQUIREMENTS_FILE_NAME_PATTERN' => { input_name: :pipcompile_requirements_file_name_pattern,
+                                                            input_value: '**/*.txt' },
+        'DS_MAX_DEPTH' => { input_name: :max_scan_depth, input_value: 5 },
+        'DS_EXCLUDED_PATHS' => { input_name: :excluded_paths, input_value: '**/custom' },
+        'DS_INCLUDE_DEV_DEPENDENCIES' => { input_name: :include_dev_dependencies, input_value: false },
+        'DS_STATIC_REACHABILITY_ENABLED' => { input_name: :enable_static_reachability, input_value: true },
+        'SECURE_LOG_LEVEL' => { input_name: :analyzer_log_level, input_value: 'debug' },
+        'DS_ENABLE_VULNERABILITY_SCAN' => { input_name: :enable_vulnerability_scan, input_value: false },
+        'DS_API_TIMEOUT' => { input_name: :vulnerability_scan_api_timeout, input_value: 20 },
+        'DS_API_SCAN_DOWNLOAD_DELAY' => { input_name: :vulnerability_scan_api_download_delay, input_value: 5 }
+      }
+
+      where(:variable_name, :input_name, :input_value) do
+        variable_inputs_map.map { |var, data| [var, data[:input_name], data[:input_value]] }
+      end
+
+      let(:inputs) { variable_inputs_map.values.to_h { |data| [data[:input_name], data[:input_value]] } }
+      let(:ds_job) { pipeline.builds.find_by(name: 'dependency-scanning') }
+
+      with_them do
+        it 'sets the variable in the script with the input value' do
+          script = ds_job.options[:script].join("\n")
+          expect(script).to include("export #{variable_name}=\"${#{variable_name}:-#{input_value}}\"")
+        end
+      end
+    end
   end
 end
