@@ -88,7 +88,7 @@ describe('SecurityDashboardDescription', () => {
     });
   };
 
-  const findGlLink = () => wrapper.findComponent(GlLink);
+  const findDescriptionLink = () => wrapper.findComponent(GlLink);
   const findAutoResolveAlert = () => wrapper.findByTestId('auto-resolve-alert');
   const findNoLongerDetectedAlert = () => wrapper.findByTestId('no-longer-detected-alert');
 
@@ -110,8 +110,8 @@ describe('SecurityDashboardDescription', () => {
     it('renders the policy link with correct href', () => {
       const expectedHref = helpPagePath('user/application_security/security_dashboard/_index');
 
-      expect(findGlLink().attributes('href')).toBe(expectedHref);
-      expect(findGlLink().text()).toBe('Learn more');
+      expect(findDescriptionLink().attributes('href')).toBe(expectedHref);
+      expect(findDescriptionLink().text()).toBe('Learn more');
     });
   });
 
@@ -120,26 +120,11 @@ describe('SecurityDashboardDescription', () => {
     ${'auto resolve alert'}       | ${'security_dashboard_auto_resolve_alert'}       | ${findAutoResolveAlert}
     ${'no longer detected alert'} | ${'security_dashboard_no_longer_detected_alert'} | ${findNoLongerDetectedAlert}
   `(`${alert}`, ({ key, findFn }) => {
-    it('does not show the alert while loading', () => {
-      createComponent();
-
-      expect(findFn().exists()).toBe(false);
-    });
-
     it('does not show when dismissed before', () => {
       localStorage.setItem(`project_${key}`, true);
       createComponent();
 
       expect(findFn().exists()).toBe(false);
-    });
-
-    it('shows the alert when no policies exist', async () => {
-      createComponent({
-        mockVulnerabilitiesHandler: jest.fn().mockResolvedValue(mockEmptyPoliciesData),
-      });
-      await waitForPromises();
-
-      expect(findFn().exists()).toBe(true);
     });
 
     it('hides the alert when dismissed', async () => {
@@ -167,16 +152,6 @@ describe('SecurityDashboardDescription', () => {
 
       expect(findFn().exists()).toBe(false);
       expect(localStorage.getItem(`group_${key}`)).toBe('true');
-    });
-
-    it('does not show the alert when policies exist', async () => {
-      createComponent({
-        mockVulnerabilitiesHandler: jest.fn().mockResolvedValue(mockPoliciesData),
-      });
-
-      await waitForPromises();
-
-      expect(findFn().exists()).toBe(false);
     });
   });
 
@@ -210,18 +185,50 @@ describe('SecurityDashboardDescription', () => {
     });
   });
 
-  describe('no longer detected alert properties', () => {
-    beforeEach(async () => {
+  describe('policies results', () => {
+    it('does not show the auto-resolve alert while loading', () => {
+      createComponent();
+
+      expect(findAutoResolveAlert().exists()).toBe(false);
+    });
+
+    it('shows auto-resolve alert when no policies exist', async () => {
       createComponent({
         mockVulnerabilitiesHandler: jest.fn().mockResolvedValue(mockEmptyPoliciesData),
       });
+      await waitForPromises();
+
+      expect(findAutoResolveAlert().exists()).toBe(true);
+    });
+    it('does not show auto-resolve alert when policies exist', async () => {
+      createComponent({
+        mockVulnerabilitiesHandler: jest.fn().mockResolvedValue(mockPoliciesData),
+      });
 
       await waitForPromises();
+
+      expect(findAutoResolveAlert().exists()).toBe(false);
+    });
+  });
+
+  describe('no longer detected alert properties', () => {
+    beforeEach(() => {
+      createComponent();
     });
 
     it('displays the correct alert message', () => {
       expect(findNoLongerDetectedAlert().text()).toBe(
-        'The vulnerabilities over time chart includes vulnerabilities that are no longer detected and might include more vulnerabilities than the totals shown in the counts per severity or in the vulnerability report.',
+        'Starting in GitLab 18.8, the Vulnerabilities over time chart excludes no longer detected vulnerabilities, which might result in a drop in the total number of vulnerabilities shown in the chart. Learn more',
+      );
+    });
+
+    it('has learn more link to vulnerabilities over time chart', () => {
+      const link = findNoLongerDetectedAlert().findComponent(GlLink);
+      expect(link.text()).toBe('Learn more');
+      expect(link.props('href')).toBe(
+        helpPagePath('user/application_security/security_dashboard/_index', {
+          anchor: 'vulnerabilities-over-time',
+        }),
       );
     });
   });
