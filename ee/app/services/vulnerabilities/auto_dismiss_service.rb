@@ -11,7 +11,7 @@ module Vulnerabilities
     end
 
     def execute
-      return success unless Feature.enabled?(:auto_dismiss_vulnerability_policies, project)
+      return success unless Feature.enabled?(:auto_dismiss_vulnerability_policies, project.group)
       return success unless project.licensed_feature_available?(:security_orchestration_policies)
       return success if policies.blank?
 

@@ -157,7 +157,7 @@ module Resolvers
         primary_identifier: { findings: :primary_identifier },
         initial_detected_pipeline: { findings: :initial_finding_pipeline },
         latest_detected_pipeline: { findings: :latest_finding_pipeline },
-        policy_auto_dismissed: [:dismissed_by, :project]
+        policy_auto_dismissed: [:dismissed_by, :group]
       }
 
       return base_associations if using_elasticsearch # With ES we directly return Vulnerability records
