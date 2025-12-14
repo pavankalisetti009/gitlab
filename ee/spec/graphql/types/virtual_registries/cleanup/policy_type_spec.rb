@@ -16,6 +16,8 @@ RSpec.describe GitlabSchema.types['VirtualRegistryCleanupPolicy'], feature_categ
       keep_n_days_after_download
       status
       cadence
+      notify_on_success
+      notify_on_failure
       failure_message
       last_run_detailed_metrics
       created_at

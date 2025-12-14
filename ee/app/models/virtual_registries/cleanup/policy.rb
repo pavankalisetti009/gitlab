@@ -32,6 +32,10 @@ module VirtualRegistries
         runnable_schedules.lock('FOR UPDATE SKIP LOCKED').take
       end
 
+      def self.find_for_group(group)
+        find_or_initialize_by(group: group)
+      end
+
       private
 
       def set_next_run_at
