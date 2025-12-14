@@ -77,10 +77,6 @@ module ComplianceManagement
       update(initial_email_sent_at: nil)
     end
 
-    def notification_sent!
-      update!(initial_email_sent_at: Time.current)
-    end
-
     def remaining_pipl_access_days
       return if initial_email_sent_at.blank?
 
