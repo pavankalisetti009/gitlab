@@ -237,6 +237,8 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_agent_platfo
           workload_definition = kwargs[:workload_definition]
           expect(workload_definition.image).to eq('ruby:3.0')
           expect(workload_definition.commands).to eq(['echo "Hello World"', 'ruby script.rb'])
+          expect(workload_definition.tags).to eq([::Ai::DuoWorkflows::Workflow::WORKLOAD_TAG])
+
           variables = workload_definition.variables
 
           expect(variables[:AI_FLOW_CONTEXT]).to match(/id..#{resource.id}/)
