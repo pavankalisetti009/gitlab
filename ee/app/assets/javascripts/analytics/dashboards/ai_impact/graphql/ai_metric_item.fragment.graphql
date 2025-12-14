@@ -20,10 +20,10 @@ fragment AiMetricItem on AiMetrics {
     shownLinesOfCode
     ideNames
   }
-  agentPlatformChats: agentPlatform(flowTypes: ["duo_chat"]) @gl_introduced(version: "18.7.0-pre") {
+  agentPlatformChats: agentPlatform(flowTypes: ["chat"]) @gl_introduced(version: "18.7.0-pre") {
     startedSessionEventCount
   }
-  agentPlatformFlows: agentPlatform(not: { flowTypes: ["duo_chat"] })
+  agentPlatformFlows: agentPlatform(not: { flowTypes: ["chat"] })
     @gl_introduced(version: "18.7.0-pre") {
     startedSessionEventCount
   }
