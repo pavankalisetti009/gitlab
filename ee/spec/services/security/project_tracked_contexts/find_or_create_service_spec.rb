@@ -54,6 +54,17 @@ RSpec.describe Security::ProjectTrackedContexts::FindOrCreateService, feature_ca
     end
   end
 
+  describe '.project_default_branch' do
+    subject(:service) { described_class.project_default_branch(project) }
+
+    it 'initializes service for the default branch' do
+      expect(service.project).to eq(project)
+      expect(service.context_name).to eq(project.default_branch)
+      expect(service.context_type).to eq(:branch)
+      expect(service.is_default).to be(true)
+    end
+  end
+
   describe '#execute' do
     subject(:result) { service.execute }
 
