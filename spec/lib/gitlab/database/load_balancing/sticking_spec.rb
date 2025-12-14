@@ -64,7 +64,7 @@ RSpec.describe Gitlab::Database::LoadBalancing::Sticking, :redis, feature_catego
         expect(redis)
           .to receive(:eval)
           .with(
-            described_class::UNSTICK_IF_CAUGHT_UP_SCRIPT,
+            described_class::ATOMIC_UNSTICK_SCRIPT,
             keys: ["database-load-balancing/write-location/#{load_balancer.name}/user/42"],
             argv: [last_write_location]
           )
@@ -81,7 +81,7 @@ RSpec.describe Gitlab::Database::LoadBalancing::Sticking, :redis, feature_catego
           expect(redis)
             .to receive(:eval)
             .with(
-              described_class::UNSTICK_IF_CAUGHT_UP_SCRIPT,
+              described_class::ATOMIC_UNSTICK_SCRIPT,
               keys: ["database-load-balancing/write-location/#{load_balancer.name}/user/42"],
               argv: [last_write_location]
             )
