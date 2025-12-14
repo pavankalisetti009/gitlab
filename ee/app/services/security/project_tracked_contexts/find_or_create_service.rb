@@ -17,6 +17,15 @@ module Security
         )
       end
 
+      def self.project_default_branch(project)
+        new(
+          project: project,
+          context_name: project.default_branch,
+          context_type: :branch,
+          is_default: true
+        )
+      end
+
       def initialize(**params)
         @project = params[:project]
         @context_name = params[:context_name]

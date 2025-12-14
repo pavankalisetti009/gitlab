@@ -140,4 +140,55 @@ RSpec.describe Security::Ingestion::TrackedContextFinder, feature_category: :vul
       end
     end
   end
+
+  describe '#find_or_create_from_project' do
+    subject(:find_or_create) { finder.find_or_create_from_project(project) }
+
+    context 'when tracked context does not exist' do
+      it 'creates a new tracked context' do
+        expect { find_or_create }.to change { Security::ProjectTrackedContext.count }.by(1)
+      end
+
+      it 'creates a tracked context with correct attributes' do
+        result = find_or_create
+
+        expect(result).to have_attributes(
+          project_id: project.id,
+          context_name: project.default_branch,
+          context_type: 'branch',
+          state: Security::ProjectTrackedContext::STATES[:tracked],
+          is_default: true
+        )
+      end
+    end
+
+    context 'when tracked context already exists' do
+      let_it_be(:existing_context) do
+        create(:security_project_tracked_context, :tracked,
+          project: project,
+          context_name: project.default_branch,
+          context_type: :branch)
+      end
+
+      it 'does not create a new tracked context' do
+        expect { find_or_create }.not_to change { Security::ProjectTrackedContext.count }
+      end
+
+      it 'returns the existing tracked context' do
+        expect(find_or_create).to eq(existing_context)
+      end
+    end
+
+    context 'when called multiple times with the same project' do
+      it 'uses the cache and does not query the database again' do
+        first_result = find_or_create
+
+        expect(Security::ProjectTrackedContexts::FindOrCreateService).not_to receive(:new)
+
+        second_result = finder.find_or_create_from_project(project)
+
+        expect(second_result).to eq(first_result)
+      end
+    end
+  end
 end
