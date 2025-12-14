@@ -84,6 +84,24 @@ RSpec.describe VirtualRegistries::Cleanup::Policy, feature_category: :virtual_re
     it { is_expected.to eq(policy) }
   end
 
+  describe '.find_for_group' do
+    let_it_be(:group) { create(:group) }
+
+    subject(:find_for_group) { described_class.find_for_group(group) }
+
+    context 'when a policy exists for the group' do
+      let_it_be(:expected_policy) { create(:virtual_registries_cleanup_policy, group: group) }
+      let_it_be(:other_policy) { create(:virtual_registries_cleanup_policy) }
+
+      it { is_expected.to eq(expected_policy) }
+    end
+
+    context 'when a policy does not exist for the group' do
+      it { is_expected.to be_a_new(described_class) }
+      it { is_expected.to have_attributes(group: group, enabled: false) }
+    end
+  end
+
   describe 'scopes' do
     describe '.for_group' do
       let_it_be(:group) { create(:group) }

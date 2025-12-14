@@ -377,6 +377,7 @@ module EE
         mount_mutation ::Mutations::ComplianceManagement::Projects::ComplianceViolations::UnlinkIssue,
           experiment: { milestone: '18.3' }
         mount_mutation ::Mutations::VirtualRegistries::Setting::Update, experiment: { milestone: '18.5' }
+        mount_mutation ::Mutations::VirtualRegistries::Cleanup::Policy::Upsert, experiment: { milestone: '18.7' }
 
         prepend(Types::DeprecatedMutations)
       end

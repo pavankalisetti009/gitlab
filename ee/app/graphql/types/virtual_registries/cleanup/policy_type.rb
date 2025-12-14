@@ -43,8 +43,16 @@ module Types
           description: 'Timestamp when the cleanup policy was last updated.',
           experiment: { milestone: '18.7' }
 
-        # rubocop:disable GraphQL/ExtractType -- Not worth extracting last_run_* fields into a separate type
+        # rubocop:disable GraphQL/ExtractType -- Not worth extracting last_run_* and notify_on_* fields into a separate type
         # These attributes are stored directly on the VirtualRegistries::Cleanup::Policy model
+        field :notify_on_success, GraphQL::Types::Boolean, null: false,
+          description: 'Boolean to notify group owners on successful cleanup runs.',
+          experiment: { milestone: '18.7' }
+
+        field :notify_on_failure, GraphQL::Types::Boolean, null: false,
+          description: 'Boolean to notify group owners on failed cleanup runs.',
+          experiment: { milestone: '18.7' }
+
         field :last_run_at, ::Types::TimeType, null: true,
           description: 'Last time that the virtual registry cleanup policy executed.',
           experiment: { milestone: '18.7' }
