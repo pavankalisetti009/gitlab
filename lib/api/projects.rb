@@ -282,7 +282,7 @@ module API
         use :statistics_params
         use :with_custom_attributes
       end
-      route_setting :authorization, permissions: :read_user_project, boundary_type: :standalone
+      route_setting :authorization, permissions: :read_project, boundary_type: :standalone
       get ":user_id/projects", feature_category: :groups_and_projects, urgency: :low do
         check_rate_limit_by_user_or_ip!(:user_projects_api)
 
@@ -309,7 +309,7 @@ module API
           desc: 'Return only the ID, URL, name, and path of each project'
       end
 
-      route_setting :authorization, permissions: :read_project_contributed, boundary_type: :standalone
+      route_setting :authorization, permissions: :read_contributed_project, boundary_type: :standalone
       get ":user_id/contributed_projects", feature_category: :groups_and_projects, urgency: :low do
         check_rate_limit_by_user_or_ip!(:user_contributed_projects_api)
 
@@ -332,7 +332,7 @@ module API
         use :statistics_params
       end
 
-      route_setting :authorization, permissions: :read_project_starred, boundary_type: :standalone
+      route_setting :authorization, permissions: :read_starred_project, boundary_type: :standalone
       get ":user_id/starred_projects", feature_category: :groups_and_projects, urgency: :low do
         check_rate_limit_by_user_or_ip!(:user_starred_projects_api)
 
@@ -447,7 +447,7 @@ module API
         use :create_params
       end
       # rubocop: disable CodeReuse/ActiveRecord
-      route_setting :authorization, permissions: :create_user_project, boundary_type: :standalone
+      route_setting :authorization, permissions: :create_project, boundary_type: :standalone
       post "user/:user_id", feature_category: :groups_and_projects do
         Gitlab::QueryLimiting.disable!('https://gitlab.com/gitlab-org/gitlab/issues/21139')
         authenticated_as_admin!
@@ -480,7 +480,7 @@ module API
         requires :id, type: Integer, desc: 'The id of the project'
         optional :search, type: String, desc: 'Return list of groups matching the search criteria'
       end
-      route_setting :authorization, permissions: :read_project_share_location, boundary_type: :project
+      route_setting :authorization, permissions: :read_share_location_project, boundary_type: :project
       get ':id/share_locations' do
         groups = ::Groups::AcceptingProjectSharesFinder.new(current_user, user_project, declared_params(include_missing: false)).execute
 
@@ -543,7 +543,7 @@ module API
         optional :mr_default_target_self, type: Boolean, desc: 'Merge requests of this forked project targets itself by default'
         optional :branches, type: String, desc: 'Branches to fork'
       end
-      route_setting :authorization, permissions: :create_project_fork, boundary_type: :project
+      route_setting :authorization, permissions: :create_fork_project, boundary_type: :project
       post ':id/fork', feature_category: :source_code_management do
         Gitlab::QueryLimiting.disable!('https://gitlab.com/gitlab-org/gitlab/-/issues/20759')
 
@@ -587,7 +587,7 @@ module API
         use :collection_params
         use :with_custom_attributes
       end
-      route_setting :authorization, permissions: :read_project_fork, boundary_type: :project
+      route_setting :authorization, permissions: :read_fork_project, boundary_type: :project
       get ':id/forks', feature_category: :source_code_management, urgency: :low do
         forks = ForkProjectsFinder.new(user_project, params: project_finder_params, current_user: current_user).execute
 
@@ -601,7 +601,7 @@ module API
         ]
         tags %w[projects]
       end
-      route_setting :authorization, permissions: :read_project_page_access, boundary_type: :project
+      route_setting :authorization, permissions: :read_page_access_project, boundary_type: :project
       get ':id/pages_access', urgency: :low, feature_category: :pages do
         authorize! :read_pages_content, user_project unless user_project.public_pages?
         status 200
@@ -746,7 +746,7 @@ module API
         optional :search, type: String, desc: 'Return list of users matching the search criteria', documentation: { example: 'user' }
         use :pagination
       end
-      route_setting :authorization, permissions: :read_project_starrer, boundary_type: :project
+      route_setting :authorization, permissions: :read_starrer_project, boundary_type: :project
       get ':id/starrers', feature_category: :groups_and_projects do
         starrers = UsersStarProjectsFinder.new(user_project, params, current_user: current_user).execute
 
@@ -761,7 +761,7 @@ module API
         is_array true
         tags %w[projects]
       end
-      route_setting :authorization, permissions: :read_project_language, boundary_type: :project
+      route_setting :authorization, permissions: :read_language_project, boundary_type: :project
       get ':id/languages', feature_category: :source_code_management, urgency: :medium do
         ::Projects::RepositoryLanguagesService
           .new(user_project, current_user)
@@ -829,7 +829,7 @@ module API
         ]
         tags %w[projects]
       end
-      route_setting :authorization, permissions: :delete_project_fork, boundary_type: :project
+      route_setting :authorization, permissions: :delete_fork_project, boundary_type: :project
       delete ":id/fork", feature_category: :source_code_management do
         authorize! :remove_fork_project, user_project
 
@@ -886,7 +886,7 @@ module API
         requires :group_id, type: Integer, desc: 'The ID of the group'
       end
       # rubocop: disable CodeReuse/ActiveRecord
-      route_setting :authorization, permissions: :delete_project_group_share, boundary_type: :project
+      route_setting :authorization, permissions: :delete_group_share_project, boundary_type: :project
       delete ":id/share/:group_id", feature_category: :groups_and_projects do
         authorize! :admin_project, user_project
 
@@ -951,7 +951,7 @@ module API
         optional :skip_users, type: Array[Integer], coerce_with: ::API::Validations::Types::CommaSeparatedToIntegerArray.coerce, desc: 'Filter out users with the specified IDs'
         use :pagination
       end
-      route_setting :authorization, permissions: :read_project_user, boundary_type: :project
+      route_setting :authorization, permissions: :read_user_project, boundary_type: :project
       get ':id/users', urgency: :low, feature_category: :system_access do
         users = DeclarativePolicy.subject_scope { user_project.team.users }
         users = users.search(params[:search]) if params[:search].present?
@@ -981,7 +981,7 @@ module API
           desc: 'Limit returned shared groups by minimum access level to the project'
         use :pagination
       end
-      route_setting :authorization, permissions: :read_project_group, boundary_type: :project
+      route_setting :authorization, permissions: :read_group_project, boundary_type: :project
       get ':id/groups', feature_category: :source_code_management do
         groups = ::Projects::GroupsFinder.new(project: user_project, current_user: current_user, params: declared_params(include_missing: false)).execute
         groups = groups.search(params[:search]) if params[:search].present?
@@ -1002,7 +1002,7 @@ module API
         use :pagination
         use :with_custom_attributes
       end
-      route_setting :authorization, permissions: :read_project_invited_group, boundary_type: :project
+      route_setting :authorization, permissions: :read_invited_group_project, boundary_type: :project
       get ':id/invited_groups', feature_category: :groups_and_projects do
         check_rate_limit_by_user_or_ip!(:project_invited_groups_api)
 
@@ -1053,7 +1053,7 @@ module API
         ]
         tags %w[projects]
       end
-      route_setting :authorization, permissions: :recalculate_project_storage, boundary_type: :project
+      route_setting :authorization, permissions: :recalculate_storage_project, boundary_type: :project
       post ':id/repository_size', feature_category: :source_code_management do
         authorize_admin_project
 
@@ -1101,7 +1101,7 @@ module API
         optional :search, type: String, desc: 'Return list of namespaces matching the search criteria', documentation: { example: 'search' }
         use :pagination
       end
-      route_setting :authorization, permissions: :read_project_transfer_location, boundary_type: :project
+      route_setting :authorization, permissions: :read_transfer_location_project, boundary_type: :project
       get ":id/transfer_locations", feature_category: :groups_and_projects do
         authorize! :change_namespace, user_project
         args = declared_params(include_missing: false)
@@ -1125,7 +1125,7 @@ module API
       params do
         requires :id, type: String, desc: 'ID of a project'
       end
-      route_setting :authorization, permissions: :read_project_storage, boundary_type: :project
+      route_setting :authorization, permissions: :read_storage_project, boundary_type: :project
       get ':id/storage', feature_category: :source_code_management do
         authenticated_as_admin!
 

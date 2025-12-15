@@ -1,8 +1,8 @@
 ---
-name: read_project_transfer_location
+name: read_transfer_location_project
 description: Grants the ability to view projects transfer locations
 feature_category: groups_and_projects
 permissions:
-  - read_project_transfer_location
+  - read_transfer_location_project
 boundaries:
   - project

@@ -1,8 +1,8 @@
 ---
-name: read_project_page_access
+name: read_page_access_project
 description: Grants the ability to view project pages access
 feature_category: pages
 permissions:
-  - read_project_page_access
+  - read_page_access_project
 boundaries:
   - project

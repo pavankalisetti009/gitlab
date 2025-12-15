@@ -1,8 +1,8 @@
 ---
-name: read_project_storage
+name: read_storage_project
 description: Grants the ability to view projects storage
 feature_category: groups_and_projects
 permissions:
-  - read_project_storage
+  - read_storage_project
 boundaries:
   - project
