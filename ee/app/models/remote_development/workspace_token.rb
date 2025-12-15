@@ -27,7 +27,7 @@ module RemoteDevelopment
 
     # @return [String]
     def self.token_prefix
-      TOKEN_PREFIX
+      ::Authn::TokenField::PrefixHelper.prepend_instance_prefix(TOKEN_PREFIX)
     end
 
     private

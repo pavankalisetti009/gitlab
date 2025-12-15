@@ -31,17 +31,46 @@ RSpec.describe RemoteDevelopment::WorkspaceToken, feature_category: :workspaces 
     end
   end
 
-  describe "#token_prefix" do
-    it "is set" do
-      expect(workspace_token.token).to start_with described_class::TOKEN_PREFIX
-    end
-  end
-
   describe "#token" do
     let(:token_owner_record) { workspace_token }
     let(:expected_token_prefix) { described_class::TOKEN_PREFIX }
 
     subject(:token) { token_owner_record.token }
+
+    shared_examples 'has a prefix' do
+      it 'starts with prefix' do
+        workspace_token = build(:workspace_token, workspace: workspace, token_encrypted: nil)
+        workspace_token.save!
+
+        expect(workspace_token.token).to start_with expected_prefix
+      end
+    end
+
+    it_behaves_like 'has a prefix' do
+      let(:expected_prefix) { described_class::TOKEN_PREFIX }
+    end
+
+    context 'with instance prefix configured' do
+      let(:instance_prefix) { 'instanceprefix' }
+
+      before do
+        stub_application_setting(instance_token_prefix: instance_prefix)
+      end
+
+      it_behaves_like 'has a prefix' do
+        let(:expected_prefix) { "#{instance_prefix}-#{described_class::TOKEN_PREFIX}" }
+      end
+
+      context 'with feature flag custom_prefix_for_all_token_types disabled' do
+        before do
+          stub_feature_flags(custom_prefix_for_all_token_types: false)
+        end
+
+        it_behaves_like 'has a prefix' do
+          let(:expected_prefix) { described_class::TOKEN_PREFIX }
+        end
+      end
+    end
 
     include_context "with token authenticatable routable token context"
 
