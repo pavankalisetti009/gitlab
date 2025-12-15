@@ -19,7 +19,8 @@ module Types
 
       value 'DESCENDANT',
         description: 'Policies defined for the group\'s descendant projects/groups only. ' \
-                     'Only valid for group-level policies.',
+                     'Only valid for group policies. ' \
+                     'Policies apply only to the 50 most recently created descendant policy projects.',
         value: :descendant
     end
   end

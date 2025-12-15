@@ -222,6 +222,38 @@ RSpec.shared_examples 'security policies finder' do
                     })
                 ])
             end
+
+            context 'when there are more than the limit of descendant configurations' do
+              it 'returns only up to the limit of configurations' do
+                stub_const('Security::SecurityPolicyBaseFinder::DESCENDANT_POLICY_CONFIGURATIONS_LIMIT', 2)
+
+                result = described_class.new(actor, object, { relationship: :descendant }).execute
+                expect(result.count).to eq(2)
+              end
+
+              it 'limits results when there are more configurations than the stubbed limit' do
+                3.times do
+                  additional_group = create(:group, parent: group)
+                  create(
+                    :security_orchestration_policy_configuration,
+                    :namespace,
+                    security_policy_management_project: policy_management_project,
+                    namespace: additional_group,
+                    experiments: { pipeline_execution_schedule_policy: { enabled: true } }
+                  )
+
+                  allow_next_instance_of(Repository) do |repository|
+                    allow(repository).to receive(:blob_data_at).and_return(policy_yaml)
+                  end
+                end
+
+                stub_const('Security::SecurityPolicyBaseFinder::DESCENDANT_POLICY_CONFIGURATIONS_LIMIT', 2)
+
+                result = described_class.new(actor, object, { relationship: :descendant }).execute
+                expect(result.count).to eq(2)
+                expect(result.pluck(:name)).to all(eq(policy[:name]))
+              end
+            end
           end
         end
       end

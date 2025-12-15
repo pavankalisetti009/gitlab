@@ -2,6 +2,8 @@
 
 module Security
   class SecurityPolicyBaseFinder
+    DESCENDANT_POLICY_CONFIGURATIONS_LIMIT = 50
+
     def initialize(actor, object, policy_type, params)
       @actor = actor
       @object = object
@@ -57,7 +59,8 @@ module Security
     def descendant_policy_configurations
       return default_policy_configurations if object.is_a?(Project)
 
-      object.all_descendant_security_orchestration_policy_configurations
+      configurations = object.all_descendant_security_orchestration_policy_configurations(include_invalid: true)
+      configurations.limit(DESCENDANT_POLICY_CONFIGURATIONS_LIMIT).order_id_desc
     end
 
     def default_policy_configurations

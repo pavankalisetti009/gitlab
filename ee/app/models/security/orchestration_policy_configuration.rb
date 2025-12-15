@@ -51,6 +51,7 @@ module Security
     validates :security_policy_management_project, presence: true
     validates :experiments, json_schema: { filename: 'security_policy_experiments' }, allow_blank: true
 
+    scope :order_id_desc, -> { order(id: :desc) }
     scope :for_project, ->(project_id) { where(project_id: project_id) }
     scope :for_namespace, ->(namespace_id) { where(namespace_id: namespace_id) }
     scope :with_project_and_namespace, -> { includes(:project, :namespace) }
