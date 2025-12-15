@@ -9,6 +9,8 @@ module API
 
       before do
         authenticated_as_admin!
+
+        not_found! unless ::License.feature_available?(:ci_runner_controllers)
       end
 
       resource :runner_controllers do

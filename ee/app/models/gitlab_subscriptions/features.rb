@@ -227,6 +227,7 @@ module GitlabSubscriptions
       cluster_receptive_agents
       cluster_image_scanning
       external_status_checks
+      ci_runner_controllers
       compliance_pipeline_configuration
       container_registry_immutable_tag_rules
       container_scanning

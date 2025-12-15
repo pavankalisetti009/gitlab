@@ -25,6 +25,10 @@ RSpec.describe API::Ci::RunnerControllerTokens, feature_category: :continuous_in
     end
   end
 
+  before do
+    stub_licensed_features(ci_runner_controllers: true)
+  end
+
   describe 'GET /runner_controllers/:runner_controller_id/tokens' do
     context 'when user is admin' do
       it 'returns a list of runner controller tokens' do
@@ -49,6 +53,16 @@ RSpec.describe API::Ci::RunnerControllerTokens, feature_category: :continuous_in
       subject(:call_endpoint) { get api(path, non_admin_user) }
 
       it_behaves_like 'returns status 403 (forbidden)'
+    end
+
+    context 'when feature is not available' do
+      before do
+        stub_licensed_features(ci_runner_controllers: false)
+      end
+
+      subject(:call_endpoint) { get api(path, admin, admin_mode: true) }
+
+      it_behaves_like 'returns status 404 (not found)'
     end
   end
 
@@ -81,6 +95,16 @@ RSpec.describe API::Ci::RunnerControllerTokens, feature_category: :continuous_in
       subject(:call_endpoint) do
         get api("/runner_controllers/#{non_existing_record_id}/tokens/1", admin, admin_mode: true)
       end
+
+      it_behaves_like 'returns status 404 (not found)'
+    end
+
+    context 'when feature is not available' do
+      before do
+        stub_licensed_features(ci_runner_controllers: false)
+      end
+
+      subject(:call_endpoint) { get api("#{path}/#{token.id}", admin, admin_mode: true) }
 
       it_behaves_like 'returns status 404 (not found)'
     end
@@ -131,6 +155,16 @@ RSpec.describe API::Ci::RunnerControllerTokens, feature_category: :continuous_in
 
         expect(response).to have_gitlab_http_status(:forbidden)
       end
+    end
+
+    context 'when feature is not available' do
+      before do
+        stub_licensed_features(ci_runner_controllers: false)
+      end
+
+      subject(:call_endpoint) { post api(path, admin, admin_mode: true) }
+
+      it_behaves_like 'returns status 404 (not found)'
     end
   end
 end

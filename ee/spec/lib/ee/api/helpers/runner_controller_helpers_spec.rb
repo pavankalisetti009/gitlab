@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe API::Helpers::RunnerControllerHelpers, feature_category: :continuous_integration do
+RSpec.describe EE::API::Helpers::RunnerControllerHelpers, feature_category: :continuous_integration do
   include Rack::Test::Methods
 
   let_it_be(:runner_controller) { create(:ci_runner_controller) }

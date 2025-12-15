@@ -202,7 +202,6 @@ API/EntityFieldType:
     - 'lib/api/entities/ci/reset_token_result.rb'
     - 'lib/api/entities/ci/resource_group.rb'
     - 'lib/api/entities/ci/runner.rb'
-    - 'lib/api/entities/ci/runner_controller.rb'
     - 'lib/api/entities/ci/runner_details.rb'
     - 'lib/api/entities/ci/runner_manager.rb'
     - 'lib/api/entities/ci/runner_registration_details.rb'
