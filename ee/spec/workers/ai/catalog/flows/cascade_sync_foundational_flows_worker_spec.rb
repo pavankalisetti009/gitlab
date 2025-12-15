@@ -12,11 +12,24 @@ RSpec.describe Ai::Catalog::Flows::CascadeSyncFoundationalFlowsWorker, feature_c
   subject(:worker) { described_class.new }
 
   describe '#perform' do
+    let(:seed_service) { instance_double(Ai::Catalog::Flows::SeedFoundationalFlowsService) }
     let(:sync_service) { instance_double(Ai::Catalog::Flows::SyncFoundationalFlowsService) }
 
     before do
+      allow(Ai::Catalog::Flows::SeedFoundationalFlowsService).to receive(:new).and_return(seed_service)
+      allow(seed_service).to receive(:execute)
+
       allow(Ai::Catalog::Flows::SyncFoundationalFlowsService).to receive(:new).and_return(sync_service)
       allow(sync_service).to receive(:execute)
+    end
+
+    it 'calls SeedFoundationalFlowsService for the organization' do
+      expect(Ai::Catalog::Flows::SeedFoundationalFlowsService)
+        .to receive(:new).with(current_user: user, organization: group.organization)
+                         .and_return(seed_service)
+      expect(seed_service).to receive(:execute)
+
+      worker.perform(group.id, user.id)
     end
 
     it 'calls SyncFoundationalFlowsService for the group' do
@@ -40,7 +53,11 @@ RSpec.describe Ai::Catalog::Flows::CascadeSyncFoundationalFlowsWorker, feature_c
     end
 
     context 'when user_id is not provided' do
-      it 'passes nil as current_user to the service' do
+      it 'passes nil as current_user to the services' do
+        expect(Ai::Catalog::Flows::SeedFoundationalFlowsService)
+          .to receive(:new).with(current_user: nil, organization: group.organization)
+                           .and_return(seed_service)
+
         expect(Ai::Catalog::Flows::SyncFoundationalFlowsService)
           .to receive(:new).with(group, current_user: nil)
                            .and_return(sync_service)
@@ -50,7 +67,11 @@ RSpec.describe Ai::Catalog::Flows::CascadeSyncFoundationalFlowsWorker, feature_c
     end
 
     context 'when user does not exist' do
-      it 'passes nil as current_user to the service' do
+      it 'passes nil as current_user to the services' do
+        expect(Ai::Catalog::Flows::SeedFoundationalFlowsService)
+          .to receive(:new).with(current_user: nil, organization: group.organization)
+                           .and_return(seed_service)
+
         expect(Ai::Catalog::Flows::SyncFoundationalFlowsService)
           .to receive(:new).with(group, current_user: nil)
                            .and_return(sync_service)
@@ -60,10 +81,28 @@ RSpec.describe Ai::Catalog::Flows::CascadeSyncFoundationalFlowsWorker, feature_c
     end
 
     context 'when group does not exist' do
-      it 'does not call the service' do
+      it 'does not call any service' do
+        expect(Ai::Catalog::Flows::SeedFoundationalFlowsService).not_to receive(:new)
         expect(Ai::Catalog::Flows::SyncFoundationalFlowsService).not_to receive(:new)
 
         worker.perform(non_existing_record_id, user.id)
+      end
+    end
+
+    context 'when group has no organization' do
+      let(:group_without_org) { create(:group) }
+
+      before do
+        allow(group_without_org).to receive(:organization).and_return(nil)
+        allow(Group).to receive(:find_by_id).with(group_without_org.id).and_return(group_without_org)
+      end
+
+      it 'does not call SeedFoundationalFlowsService but continues with sync operations' do
+        expect(Ai::Catalog::Flows::SeedFoundationalFlowsService).not_to receive(:new)
+        expect(Ai::Catalog::Flows::SyncFoundationalFlowsService).to receive(:new).at_least(:once)
+                                                                                 .and_return(sync_service)
+
+        worker.perform(group_without_org.id, user.id)
       end
     end
   end
