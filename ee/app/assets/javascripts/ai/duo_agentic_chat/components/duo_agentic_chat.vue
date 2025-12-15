@@ -62,6 +62,7 @@ import {
   parseThreadForSelection,
   resetThreadContent,
 } from '../utils/thread_utils';
+import { formatErrorMessage } from '../utils/error_handler';
 import { WORKFLOW_NOT_FOUND_CODE } from '../constants';
 import {
   saveThreadSnapshot,
@@ -855,7 +856,7 @@ export default {
       }
     },
     onError(err) {
-      this.addDuoChatMessage({ errors: [err.toString()] });
+      this.addDuoChatMessage({ errors: [formatErrorMessage(err)] });
     },
     handleApproveToolCall() {
       this.isProcessingToolApproval = true;
