@@ -49,7 +49,6 @@ RSpec.describe 'Duo Chat > User navigates Duo Chat history', :js, :saas, :with_c
     skip 'Test not applicable in classic UI' unless Users::ProjectStudio.enabled_for_user?(user) # rubocop:disable RSpec/AvoidConditionalStatements -- temporary Project Studio rollout
 
     visit project_path(project)
-    dismiss_welcome_banner_if_present(page)
     open_duo_chat
     close_popover
   end

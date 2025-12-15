@@ -12,7 +12,6 @@ module QA
           group_or_project.add_member(approver, Resource::Members::AccessLevel::MAINTAINER)
 
           Flow::Login.sign_in
-          Page::Main::Menu.perform(&:dismiss_welcome_modal_if_present)
 
           project.visit!
         end
