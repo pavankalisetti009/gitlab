@@ -59,6 +59,16 @@ module EE
           user
         end
 
+        def runner_controller_token_from_authorization_token
+          return unless route_authentication_setting[:runner_controller_token_allowed]
+
+          self.current_token = current_request.headers[::Gitlab::Kas::INTERNAL_API_AGENT_REQUEST_HEADER]
+
+          return unless current_token.present?
+
+          ::Ci::RunnerControllerToken.find_by_token(current_token.to_s)
+        end
+
         private
 
         def audit_job_token_authentication(user)

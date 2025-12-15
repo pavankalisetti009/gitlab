@@ -16,6 +16,8 @@ module EE
         mount ::API::Admin::Security::CompliancePolicySettings
         mount ::API::Admin::DataManagement
         mount ::API::AuditEvents
+        mount ::API::Ci::RunnerControllers
+        mount ::API::Ci::RunnerControllerTokens
         mount ::API::Clusters::AgentUrlConfigurations
         mount ::API::ProjectApprovalRules
         mount ::API::ProjectSecuritySettings
