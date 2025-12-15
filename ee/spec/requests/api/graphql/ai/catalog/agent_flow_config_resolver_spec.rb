@@ -102,6 +102,12 @@ RSpec.describe 'getting AI catalog agent flow configuration', :with_current_orga
     it_behaves_like 'when request fails'
   end
 
+  context 'with an anonymous user' do
+    let(:current_user) { nil }
+
+    it_behaves_like 'when request fails'
+  end
+
   context 'when agent belongs to different organization' do
     let_it_be(:different_organization) { create(:organization) }
     let_it_be(:different_agent) { create(:ai_catalog_agent, organization: different_organization) }
