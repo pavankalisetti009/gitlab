@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe ScimOauthAccessToken, feature_category: :system_access do
   describe "Associations" do
-    it { is_expected.to belong_to(:organization).optional }
+    it { is_expected.to belong_to(:organization) }
     it { is_expected.to belong_to :group }
   end
 
@@ -42,7 +42,7 @@ RSpec.describe ScimOauthAccessToken, feature_category: :system_access do
       context 'when token associated with group passed in' do
         it 'returns true' do
           group = create(:group)
-          scim_token = create(:scim_oauth_access_token, group: group)
+          scim_token = create(:scim_oauth_access_token, group: group, organization: create(:organization))
           token_value = scim_token.token
 
           expect(
@@ -54,7 +54,7 @@ RSpec.describe ScimOauthAccessToken, feature_category: :system_access do
       context 'when token not associated with group passed in' do
         it 'returns false' do
           other_group = create(:group)
-          scim_token = create(:scim_oauth_access_token, group: create(:group))
+          scim_token = create(:scim_oauth_access_token, group: create(:group), organization: create(:organization))
           token_value = scim_token.token
 
           expect(
@@ -88,7 +88,7 @@ RSpec.describe ScimOauthAccessToken, feature_category: :system_access do
 
       context 'when token associated with a group' do
         it 'returns false' do
-          scim_token = create(:scim_oauth_access_token, group: create(:group))
+          scim_token = create(:scim_oauth_access_token, group: create(:group), organization: create(:organization))
           token_value = scim_token.token
 
           expect(described_class.token_matches_for_instance?(token_value)).to eq false
@@ -113,7 +113,7 @@ RSpec.describe ScimOauthAccessToken, feature_category: :system_access do
 
   describe '#token' do
     it 'generates a prefixed token on creation' do
-      scim_token = described_class.create!(group: create(:group))
+      scim_token = described_class.create!(group: create(:group), organization: create(:organization))
 
       expect(scim_token.token).to match(/^glsoat-[\w-]{20}$/)
     end
