@@ -77,9 +77,11 @@ RSpec.describe Ai::Catalog::Flows::SyncFoundationalFlowsService, feature_categor
         it 'creates consumers with parent consumer for flows' do
           parent_consumer = create(:ai_catalog_item_consumer, group: group, item: flow1)
           allow(container).to receive(:enabled_flow_catalog_item_ids).and_return([flow1.id])
+          allow(group).to receive(:configured_ai_catalog_items).and_return([parent_consumer])
 
           create_service = instance_double(Ai::Catalog::ItemConsumers::CreateService)
-          allow(create_service).to receive(:execute).and_return(ServiceResponse.success)
+          allow(create_service).to receive(:execute).and_return(
+            ServiceResponse.success(payload: { item_consumer: parent_consumer }))
 
           expect(Ai::Catalog::ItemConsumers::CreateService).to receive(:new)
             .with(
@@ -99,6 +101,106 @@ RSpec.describe Ai::Catalog::Flows::SyncFoundationalFlowsService, feature_categor
           expect(Ai::Catalog::ItemConsumers::CreateService).not_to receive(:new)
 
           service.execute
+        end
+      end
+
+      context 'when trigger creation' do
+        let(:container) { project }
+        let(:create_service) { instance_double(Ai::Catalog::ItemConsumers::CreateService) }
+        let(:flow) do
+          create(:ai_catalog_item, foundational_flow_reference: 'developer/v1', public: true,
+            organization: group.organization)
+        end
+
+        before do
+          container.project_setting.update!(duo_foundational_flows_enabled: true)
+          allow(container).to receive(:enabled_flow_catalog_item_ids).and_return([flow.id])
+          allow(Ability).to receive(:allowed?).with(user, :admin_ai_catalog_item_consumer, container).and_return(true)
+          allow(Ability).to receive(:allowed?).with(user, :read_ai_catalog_item, flow).and_return(true)
+          allow(Ai::Catalog::ItemConsumers::CreateService).to receive(:new).and_return(create_service)
+        end
+
+        context 'when consumer is group-level' do
+          before do
+            group_consumer = build(:ai_catalog_item_consumer, group: group, item: flow)
+            allow(create_service).to receive(:execute).and_return(
+              ServiceResponse.success(payload: { item_consumer: group_consumer })
+            )
+          end
+
+          it 'does not create triggers' do
+            expect(Ai::FlowTriggers::CreateService).not_to receive(:new)
+
+            described_class.new(container, current_user: user).execute
+          end
+        end
+
+        context 'when parent consumer has no service account' do
+          before do
+            parent_consumer = create(:ai_catalog_item_consumer, group: group, item: flow)
+            allow(parent_consumer).to receive(:service_account).and_return(nil)
+
+            project_consumer = build(:ai_catalog_item_consumer,
+              project: container,
+              item: flow1,
+              parent_item_consumer: parent_consumer
+            )
+
+            allow(create_service).to receive(:execute).and_return(
+              ServiceResponse.success(payload: { item_consumer: project_consumer })
+            )
+          end
+
+          it 'does not create triggers' do
+            expect(Ai::FlowTriggers::CreateService).not_to receive(:new)
+
+            described_class.new(container, current_user: user).execute
+          end
+        end
+
+        context 'when parent consumer has service account' do
+          let(:service_account) do
+            create(:user, :service_account, composite_identity_enforced: true, provisioned_by_group: group)
+          end
+
+          let(:parent_consumer) { create(:ai_catalog_item_consumer, group: group, item: flow) }
+          let(:project_consumer) do
+            create(:ai_catalog_item_consumer, project: container, item: flow1, parent_item_consumer: parent_consumer)
+          end
+
+          before do
+            allow(parent_consumer).to receive(:service_account).and_return(service_account)
+            allow(create_service).to receive(:execute).and_return(
+              ServiceResponse.success(payload: { item_consumer: project_consumer })
+            )
+            allow(Ability).to receive(:allowed?).with(user, :admin_service_accounts, group).and_return(true)
+            allow(group).to receive(:configured_ai_catalog_items).and_return([parent_consumer])
+          end
+
+          it 'creates triggers' do
+            expect_next_instance_of(::Ai::FlowTriggers::CreateService) do |instance|
+              expect(instance).to receive(:execute).with(
+                hash_including(user_id: service_account.id, ai_catalog_item_consumer_id: project_consumer.id)
+              ).and_call_original
+            end
+            described_class.new(container, current_user: user).execute
+          end
+
+          context 'when trigger already exists' do
+            before do
+              create(:ai_flow_trigger,
+                project: container,
+                user: service_account,
+                event_types: [::Ai::FlowTrigger::EVENT_TYPES[:assign]]
+              )
+            end
+
+            it 'does not create a duplicate trigger' do
+              expect(Ai::FlowTriggers::CreateService).not_to receive(:new)
+
+              described_class.new(container, current_user: user).execute
+            end
+          end
         end
       end
 
@@ -126,16 +228,28 @@ RSpec.describe Ai::Catalog::Flows::SyncFoundationalFlowsService, feature_categor
 
         let(:current_user) { nil }
 
-        it 'creates consumers without permission checks' do
+        it 'does not create consumers' do
           allow(container).to receive(:enabled_flow_catalog_item_ids).and_return([flow1.id])
+          expect(Ai::Catalog::ItemConsumers::CreateService).not_to receive(:new)
+          service.execute
+        end
+      end
 
+      context 'when item is already configured' do
+        before do
+          container.namespace_settings.update!(duo_foundational_flows_enabled: true)
+          allow(container).to receive(:enabled_flow_catalog_item_ids).and_return([flow1.id])
+          allow(Ability).to receive(:allowed?).with(user, :admin_ai_catalog_item_consumer, container).and_return(true)
+          allow(Ability).to receive(:allowed?).with(user, :read_ai_catalog_item, flow1).and_return(true)
+        end
+
+        it 'handles the error gracefully and continues' do
           create_service = instance_double(Ai::Catalog::ItemConsumers::CreateService)
-          allow(create_service).to receive(:execute).and_return(ServiceResponse.success)
+          error_result = ServiceResponse.error(message: "Item already configured for container")
+          allow(create_service).to receive(:execute).and_return(error_result)
           allow(Ai::Catalog::ItemConsumers::CreateService).to receive(:new).and_return(create_service)
 
-          service.execute
-
-          expect(Ai::Catalog::ItemConsumers::CreateService).to have_received(:new)
+          expect { service.execute }.not_to raise_error
         end
       end
 
@@ -255,6 +369,7 @@ RSpec.describe Ai::Catalog::Flows::SyncFoundationalFlowsService, feature_categor
 
         create_service = instance_double(Ai::Catalog::ItemConsumers::CreateService)
         allow(create_service).to receive(:execute).and_return(ServiceResponse.success)
+        allow(group).to receive(:configured_ai_catalog_items).and_return([parent_consumer])
 
         expect(Ai::Catalog::ItemConsumers::CreateService).to receive(:new)
            .with(
