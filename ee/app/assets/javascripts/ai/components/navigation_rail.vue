@@ -116,7 +116,7 @@ export default {
 <!-- eslint-disable @gitlab/vue-tailwind-no-max-width-media-queries -->
 <template>
   <div
-    class="gl-ml-3 gl-flex gl-items-center gl-gap-3 gl-bg-transparent max-lg:gl-h-[var(--ai-navigation-rail-size)] max-lg:gl-flex-1 max-lg:gl-px-3 max-sm:gl-px-0 lg:gl-ml-0 lg:gl-w-[var(--ai-navigation-rail-size)] lg:gl-flex-col lg:gl-py-3"
+    class="gl-ml-3 gl-flex gl-items-center gl-gap-5 gl-bg-transparent max-lg:gl-h-[var(--ai-navigation-rail-size)] max-lg:gl-flex-1 max-lg:gl-px-3 max-sm:gl-px-0 sm:gl-ml-0 lg:gl-mt-2 lg:gl-w-[var(--ai-navigation-rail-size)] lg:gl-flex-col lg:gl-gap-4 lg:gl-py-3"
     role="tablist"
     aria-orientation="vertical"
   >
@@ -134,7 +134,7 @@ export default {
       @newChatError="handleNewChatError"
     />
     <div
-      class="gl-mx-2 gl-my-3 gl-h-5 gl-w-1 gl-border-0 gl-border-r-1 gl-border-solid gl-border-strong lg:gl-mx-auto lg:gl-h-1 lg:gl-w-5 lg:gl-border-r-0 lg:gl-border-t-1"
+      class="gl-h-5 gl-w-1 gl-border-0 gl-border-r-1 gl-border-solid gl-border-strong lg:gl-mx-auto lg:gl-h-1 lg:gl-w-5 lg:gl-border-r-0 lg:gl-border-t-1"
       name="divider"
     ></div>
     <gl-button
@@ -143,6 +143,7 @@ export default {
         html: true,
       }"
       icon="duo-chat"
+      size="small"
       class="js-tanuki-bot-chat-toggle !gl-rounded-lg"
       :class="[
         'ai-nav-icon',
@@ -162,6 +163,7 @@ export default {
     <gl-button
       v-gl-tooltip.left
       icon="history"
+      size="small"
       class="!gl-rounded-lg"
       :class="[
         'ai-nav-icon',
@@ -182,6 +184,7 @@ export default {
       <gl-button
         v-gl-tooltip.left
         icon="session-ai"
+        size="small"
         class="!gl-rounded-lg"
         :class="[
           'ai-nav-icon',
@@ -203,6 +206,7 @@ export default {
       v-if="showSuggestionsTab"
       v-gl-tooltip.left
       icon="suggestion-ai"
+      size="small"
       class="!gl-rounded-lg max-lg:gl-ml-auto lg:gl-mt-auto"
       :class="[
         'ai-nav-icon',
