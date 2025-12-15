@@ -71,8 +71,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::OnDemandScanPipelineConf
             variables: {
               DAST_VERSION: 6,
               SECURE_ANALYZERS_PREFIX: '$CI_TEMPLATE_REGISTRY_HOST/security-products',
-              DAST_IMAGE_SUFFIX: '',
-              GIT_STRATEGY: 'none'
+              DAST_IMAGE_SUFFIX: ''
             },
             allow_failure: true,
             script: ['/analyze'],
