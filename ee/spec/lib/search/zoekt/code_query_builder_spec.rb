@@ -262,5 +262,87 @@ RSpec.describe Search::Zoekt::CodeQueryBuilder, feature_category: :global_search
         )
       end
     end
+
+    context 'when project IDs exceed uint32' do
+      let(:large_project_id) { described_class::MAX_32BIT_INTEGER + 1 }
+      let(:extracted_result_path) { 'search_project_meta_project_id.json' }
+
+      let(:options) do
+        {
+          features: 'repository',
+          group_ids: [],
+          project_id: large_project_id,
+          search_level: :project,
+          use_traversal_id_queries: true
+        }
+      end
+
+      it 'uses meta project_id filter' do
+        result_query = result[:query]
+        project_filter = result_query[:and][:children].find do |child|
+          child.dig(:_context, :name) == 'project_id_search'
+        end
+
+        expect(project_filter).to have_key(:meta)
+        expect(project_filter[:meta][:key]).to eq('project_id')
+      end
+
+      context 'when feature flag is disabled' do
+        before do
+          stub_feature_flags(zoekt_search_meta_project_ids: false)
+        end
+
+        it 'uses meta project_id filter even when feature flag is disabled' do
+          result_query = result[:query]
+          project_filter = result_query[:and][:children].find do |child|
+            child.dig(:_context, :name) == 'project_id_search'
+          end
+
+          expect(project_filter).to have_key(:meta)
+          expect(project_filter[:meta][:key]).to eq('project_id')
+        end
+      end
+    end
+
+    context 'when project ID is within uint32 range' do
+      let(:extracted_result_path) { 'search_project_meta_project_id.json' }
+      let(:options) do
+        {
+          features: 'repository',
+          group_ids: [],
+          project_id: 1,
+          search_level: :project,
+          use_traversal_id_queries: true
+        }
+      end
+
+      it 'uses meta project_id filter' do
+        result_query = result[:query]
+        project_filter = result_query[:and][:children].find do |child|
+          child.dig(:_context, :name) == 'project_id_search'
+        end
+
+        expect(project_filter).to have_key(:meta)
+        expect(project_filter[:meta][:key]).to eq('project_id')
+      end
+
+      context 'when feature flag is disabled' do
+        let(:extracted_result_path) { 'search_project.json' }
+
+        before do
+          stub_feature_flags(zoekt_search_meta_project_ids: false)
+        end
+
+        it 'uses repo_ids filter' do
+          result_query = result[:query]
+          project_filter = result_query[:and][:children].find do |child|
+            child.dig(:_context, :name) == 'project_id_search'
+          end
+
+          expect(project_filter).to have_key(:repo_ids)
+          expect(project_filter[:repo_ids]).to eq([1])
+        end
+      end
+    end
   end
 end
