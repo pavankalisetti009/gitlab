@@ -273,6 +273,33 @@ RSpec.describe Security::ProjectTrackedContext, feature_category: :vulnerability
       end
     end
 
+    describe '.default_branch' do
+      it 'returns only default branch refs' do
+        expect(described_class.default_branch).to contain_exactly(default_ref)
+      end
+
+      it 'excludes tag refs' do
+        tag_ref = create(:security_project_tracked_context, :tracked, :tag, context_name: default_ref.context_name,
+          project: project)
+
+        expect(described_class.default_branch).to contain_exactly(default_ref)
+        expect(described_class.default_branch).not_to include(tag_ref)
+      end
+
+      it 'excludes non-default branch refs' do
+        non_default_branch = create(:security_project_tracked_context, context_type: :branch, project: project)
+
+        expect(described_class.default_branch).to contain_exactly(default_ref)
+        expect(described_class.default_branch).not_to include(non_default_branch)
+      end
+
+      it 'returns empty when no default branch refs exist' do
+        new_project = create(:project)
+
+        expect(described_class.for_project(new_project.id).default_branch).to be_empty
+      end
+    end
+
     describe '.for_ref' do
       it 'returns refs with matching context_name that are branches or tags' do
         expect(described_class.for_ref(tracked_ref.context_name)).to contain_exactly(tracked_ref)
