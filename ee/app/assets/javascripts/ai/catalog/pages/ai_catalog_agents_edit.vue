@@ -1,10 +1,13 @@
 <script>
-import { GlExperimentBadge } from '@gitlab/ui';
+import { GlExperimentBadge, GlAlert, GlSprintf, GlLink } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { AI_CATALOG_ITEM_TYPE_APOLLO_CONFIG, AI_CATALOG_TYPE_THIRD_PARTY_FLOW } from '../constants';
-import { AI_CATALOG_AGENTS_SHOW_ROUTE } from '../router/constants';
+import {
+  AI_CATALOG_AGENTS_SHOW_ROUTE,
+  AI_CATALOG_AGENTS_DUPLICATE_ROUTE,
+} from '../router/constants';
 import AiCatalogAgentForm from '../components/ai_catalog_agent_form.vue';
 
 export default {
@@ -13,9 +16,16 @@ export default {
     AiCatalogAgentForm,
     PageHeading,
     GlExperimentBadge,
+    GlAlert,
+    GlSprintf,
+    GlLink,
   },
   props: {
     aiCatalogAgent: {
+      type: Object,
+      required: true,
+    },
+    version: {
       type: Object,
       required: true,
     },
@@ -27,8 +37,11 @@ export default {
     };
   },
   computed: {
-    // Default to latest version in EDIT mode because editing a pinned version would result in non-linear versions
-    // being produced. Instead, we will enforce that the user update the agent before being allowed to edit.
+    // We compute whether to show the "editing latest version" warning because editing a pinned version would result in version content
+    // becoming mis-aligned with the version numbers.
+    shouldShowEditingLatestAlert() {
+      return this.version.isUpdateAvailable;
+    },
     systemPrompt() {
       return this.aiCatalogAgent.latestVersion.systemPrompt;
     },
@@ -40,6 +53,12 @@ export default {
     },
     isThirdPartyFlow() {
       return this.aiCatalogAgent.itemType === AI_CATALOG_TYPE_THIRD_PARTY_FLOW;
+    },
+    duplicateLink() {
+      return {
+        name: AI_CATALOG_AGENTS_DUPLICATE_ROUTE,
+        params: { id: this.$route.params.id },
+      };
     },
     initialValues() {
       return {
@@ -116,6 +135,24 @@ export default {
         </div>
       </template>
     </page-heading>
+    <gl-alert
+      v-if="shouldShowEditingLatestAlert"
+      :dismissible="false"
+      variant="warning"
+      class="gl-my-6"
+    >
+      <gl-sprintf
+        :message="
+          s__(
+            'AICatalog|To prevent versioning issues, you can edit only the latest version of this agent. To edit an earlier version, %{linkStart}duplicate the agent%{linkEnd}.',
+          )
+        "
+      >
+        <template #link="{ content }">
+          <gl-link :to="duplicateLink">{{ content }}</gl-link>
+        </template>
+      </gl-sprintf>
+    </gl-alert>
     <ai-catalog-agent-form
       mode="edit"
       :errors="errors"

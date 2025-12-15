@@ -1,9 +1,9 @@
 <script>
-import { GlExperimentBadge } from '@gitlab/ui';
+import { GlExperimentBadge, GlAlert, GlLink, GlSprintf } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import { AI_CATALOG_FLOWS_SHOW_ROUTE } from '../router/constants';
+import { AI_CATALOG_FLOWS_SHOW_ROUTE, AI_CATALOG_FLOWS_DUPLICATE_ROUTE } from '../router/constants';
 import { AI_CATALOG_ITEM_TYPE_APOLLO_CONFIG, AI_CATALOG_TYPE_FLOW } from '../constants';
 import AiCatalogFlowForm from '../components/ai_catalog_flow_form.vue';
 
@@ -13,9 +13,16 @@ export default {
     AiCatalogFlowForm,
     GlExperimentBadge,
     PageHeading,
+    GlAlert,
+    GlLink,
+    GlSprintf,
   },
   props: {
     aiCatalogFlow: {
+      type: Object,
+      required: true,
+    },
+    version: {
       type: Object,
       required: true,
     },
@@ -27,8 +34,17 @@ export default {
     };
   },
   computed: {
+    shouldShowEditingLatestAlert() {
+      return this.version.isUpdateAvailable;
+    },
     definition() {
       return this.aiCatalogFlow.latestVersion.definition;
+    },
+    duplicateLink() {
+      return {
+        name: AI_CATALOG_FLOWS_DUPLICATE_ROUTE,
+        params: { id: this.$route.params.id },
+      };
     },
     initialValues() {
       return {
@@ -99,6 +115,24 @@ export default {
         </div>
       </template>
     </page-heading>
+    <gl-alert
+      v-if="shouldShowEditingLatestAlert"
+      :dismissible="false"
+      variant="warning"
+      class="gl-my-6"
+    >
+      <gl-sprintf
+        :message="
+          s__(
+            'AICatalog|To prevent versioning issues, you can edit only the latest version of this flow. To edit an earlier version, %{linkStart}duplicate the flow%{linkEnd}.',
+          )
+        "
+      >
+        <template #link="{ content }">
+          <gl-link :to="duplicateLink">{{ content }}</gl-link>
+        </template>
+      </gl-sprintf>
+    </gl-alert>
     <ai-catalog-flow-form
       mode="edit"
       :initial-values="initialValues"

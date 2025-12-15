@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
-import { shallowMount } from '@vue/test-utils';
+import { GlAlert, GlLink, GlSprintf } from '@gitlab/ui';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_AI_CATALOG_ITEM } from 'ee/graphql_shared/constants';
@@ -10,10 +11,10 @@ import AiCatalogAgentsEdit from 'ee/ai/catalog/pages/ai_catalog_agents_edit.vue'
 import AiCatalogAgentForm from 'ee/ai/catalog/components/ai_catalog_agent_form.vue';
 import updateAiCatalogAgent from 'ee/ai/catalog/graphql/mutations/update_ai_catalog_agent.mutation.graphql';
 import updateAiCatalogThirdPartyFlow from 'ee/ai/catalog/graphql/mutations/update_ai_catalog_third_party_flow.mutation.graphql';
-import { VERSION_LATEST } from 'ee/ai/catalog/constants';
 import { AI_CATALOG_AGENTS_SHOW_ROUTE } from 'ee/ai/catalog/router/constants';
 import {
   mockAgent,
+  mockVersionProp,
   mockAgentConfigurationForProject,
   mockUpdateAiCatalogAgentSuccessMutation,
   mockUpdateAiCatalogAgentErrorMutation,
@@ -38,7 +39,7 @@ describe('AiCatalogAgentsEdit', () => {
   const routeParams = { id: agentId };
   const defaultProps = {
     aiCatalogAgent: mockAgent,
-    versionKey: VERSION_LATEST,
+    version: mockVersionProp, // mock defaults to `latestVersion`,
   };
 
   const mockUpdateAiCatalogAgentHandler = jest
@@ -55,11 +56,14 @@ describe('AiCatalogAgentsEdit', () => {
       [updateAiCatalogThirdPartyFlow, mockUpdateAiCatalogThirdPartyFlowHandler],
     ]);
 
-    wrapper = shallowMount(AiCatalogAgentsEdit, {
+    wrapper = shallowMountExtended(AiCatalogAgentsEdit, {
       apolloProvider: mockApollo,
       propsData: {
         ...defaultProps,
         ...props,
+      },
+      stubs: {
+        GlLink,
       },
       mocks: {
         $route: {
@@ -72,6 +76,9 @@ describe('AiCatalogAgentsEdit', () => {
   };
 
   const findForm = () => wrapper.findComponent(AiCatalogAgentForm);
+  const findEditingLatestVersionWarning = () => wrapper.findComponent(GlAlert);
+  const findEditVersionWarningText = () =>
+    findEditingLatestVersionWarning().findComponent(GlSprintf).attributes('message');
 
   beforeEach(() => {
     createComponent();
@@ -102,6 +109,34 @@ describe('AiCatalogAgentsEdit', () => {
       await waitForPromises();
 
       expect(findForm().props('initialValues')).toEqual(expectedInitialValues);
+    });
+  });
+
+  describe('version update availability behaviour', () => {
+    it('shows warning when version update is available', async () => {
+      createComponent({
+        version: {
+          isUpdateAvailable: true,
+        },
+      });
+      await waitForPromises();
+
+      expect(findEditingLatestVersionWarning().exists()).toBe(true);
+      expect(findEditVersionWarningText()).toContain(
+        'To prevent versioning issues, you can edit only the latest version of this agent. To edit an earlier version,',
+      );
+      expect(findEditVersionWarningText()).toContain('duplicate the agent');
+    });
+
+    it('does not show warning when item is at the latest version already', async () => {
+      createComponent({
+        version: {
+          isUpdateAvailable: false,
+        },
+      });
+      await waitForPromises();
+
+      expect(findEditingLatestVersionWarning().exists()).toBe(false);
     });
   });
 
