@@ -3073,6 +3073,9 @@ msgstr ""
 msgid "AICatalog|This %{itemType} requires approval from your parent group owner before it can be used"
 msgstr ""
 
+msgid "AICatalog|This %{itemType} was removed from the AI Catalog. You can still use it in this %{targetType}."
+msgstr ""
+
 msgid "AICatalog|This YAML configuration file determines the prompts, tools, and capabilities of your flow. Required properties: injectGatewayToken, image, commands"
 msgstr ""
 
@@ -3113,6 +3116,9 @@ msgid "AICatalog|Trigger this %{itemType} when the service account user is menti
 msgstr ""
 
 msgid "AICatalog|Type"
+msgstr ""
+
+msgid "AICatalog|Unlisted"
 msgstr ""
 
 msgid "AICatalog|Update available"

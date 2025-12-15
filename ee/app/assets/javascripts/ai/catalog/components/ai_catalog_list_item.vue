@@ -8,7 +8,7 @@ import {
   GlIcon,
   GlTooltipDirective,
 } from '@gitlab/ui';
-import { __, s__ } from '~/locale';
+import { __, s__, sprintf } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import {
   VISIBILITY_TYPE_ICON,
@@ -17,7 +17,13 @@ import {
   VISIBILITY_LEVEL_PRIVATE_STRING,
 } from '~/visibility_level/constants';
 import FoundationalIcon from 'ee/ai/components/foundational_icon.vue';
-import { AI_CATALOG_TYPE_THIRD_PARTY_FLOW } from '../constants';
+import {
+  AI_CATALOG_TYPE_THIRD_PARTY_FLOW,
+  AI_CATALOG_ITEM_LABELS,
+  AI_CATALOG_CONSUMER_TYPE_PROJECT,
+  AI_CATALOG_CONSUMER_TYPE_GROUP,
+  AI_CATALOG_CONSUMER_LABELS,
+} from '../constants';
 
 export default {
   name: 'AiCatalogListItem',
@@ -33,6 +39,11 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
+  inject: {
+    projectId: {
+      default: null,
+    },
+  },
   props: {
     item: {
       type: Object,
@@ -44,6 +55,20 @@ export default {
     },
   },
   computed: {
+    isProjectNamespace() {
+      return Boolean(this.projectId);
+    },
+    itemTypeLabel() {
+      return AI_CATALOG_ITEM_LABELS[this.item.itemType];
+    },
+    targetType() {
+      return this.isProjectNamespace
+        ? AI_CATALOG_CONSUMER_TYPE_PROJECT
+        : AI_CATALOG_CONSUMER_TYPE_GROUP;
+    },
+    targetTypeLabel() {
+      return AI_CATALOG_CONSUMER_LABELS[this.targetType];
+    },
     actionItems() {
       return this.itemTypeConfig.actionItems?.(this.item) || [];
     },
@@ -95,6 +120,17 @@ export default {
     },
     isThirdPartyFlow() {
       return this.item.itemType === AI_CATALOG_TYPE_THIRD_PARTY_FLOW;
+    },
+    softDeletedTooltipText() {
+      return sprintf(
+        s__(
+          'AICatalog|This %{itemType} was removed from the AI Catalog. You can still use it in this %{targetType}.',
+        ),
+        {
+          itemType: this.itemTypeLabel,
+          targetType: this.targetTypeLabel,
+        },
+      );
     },
   },
 };
@@ -175,6 +211,15 @@ export default {
           <router-link :to="showItemRoute">
             <gl-badge variant="info">{{ s__('AICatalog|Update available') }}</gl-badge>
           </router-link>
+        </div>
+        <div
+          v-if="item.softDeleted"
+          v-gl-tooltip
+          :title="softDeletedTooltipText"
+          data-testid="ai-catalog-item-unlisted"
+          class="gl-flex gl-items-center gl-gap-2"
+        >
+          <gl-badge variant="warning">{{ s__('AICatalog|Unlisted') }}</gl-badge>
         </div>
       </div>
     </div>

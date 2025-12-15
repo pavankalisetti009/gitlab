@@ -97,6 +97,7 @@ describe('AiCatalogListItem', () => {
   const findDisclosureDropdownItems = () => wrapper.findAllComponents(GlDisclosureDropdownItem);
   const findFoundationalIcon = () => wrapper.findComponent(FoundationalIcon);
   const findUpdateAvailableLabel = () => wrapper.findByTestId('ai-catalog-item-update');
+  const findUpdateUnlistedBadge = () => wrapper.findByTestId('ai-catalog-item-unlisted');
 
   beforeEach(() => {
     createComponent();
@@ -331,6 +332,36 @@ describe('AiCatalogListItem', () => {
       });
       it('does not render Update available label when isUpdateAvailable is false', () => {
         expect(findUpdateAvailableLabel().exists()).toBe(false);
+      });
+    });
+  });
+
+  describe('unlisted badge', () => {
+    describe('when item is soft deleted', () => {
+      beforeEach(() => {
+        createComponent({
+          item: { ...mockItem, softDeleted: true },
+        });
+      });
+      it('renders Unlisted badge when softDeleted is true', () => {
+        expect(findUpdateUnlistedBadge().findComponent(GlBadge).text()).toBe('Unlisted');
+      });
+
+      it('renders tooltip with correct text', () => {
+        expect(findUpdateUnlistedBadge().attributes('title')).toBe(
+          'This agent was removed from the AI Catalog. You can still use it in this group.',
+        );
+      });
+    });
+
+    describe('when item is not soft deleted', () => {
+      beforeEach(() => {
+        createComponent({
+          item: { ...mockItem, isUpdateAvailable: false },
+        });
+      });
+      it('does not render Unlisted badge when softDeleted is false', () => {
+        expect(findUpdateUnlistedBadge().exists()).toBe(false);
       });
     });
   });
