@@ -95,6 +95,7 @@ module API
         detail 'This feature was introduced in GitLab 13.5'
         success Entities::Iteration
         is_array true
+        tags ['iterations']
       end
       params do
         use :list_params
@@ -114,6 +115,7 @@ module API
         detail 'This feature was introduced in GitLab 13.5'
         success Entities::Iteration
         is_array true
+        tags ['iterations']
       end
       params do
         use :list_params
