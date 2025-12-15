@@ -7,9 +7,10 @@ import {
   getDatesInRange,
   nDaysBefore,
 } from '~/lib/utils/datetime/date_calculation_utility';
-import { toISODateFormat } from '~/lib/utils/datetime/date_format_utility';
+import { toISODateFormat, formatDate } from '~/lib/utils/datetime/date_format_utility';
 import { s__ } from '~/locale';
 import HumanTimeframe from '~/vue_shared/components/datetime/human_timeframe.vue';
+import { formatNumber } from '../utils';
 
 export default {
   name: 'UsageTrendsChart',
@@ -80,19 +81,72 @@ export default {
         this.monthlyCommitmentIsAvailable && {
           name: s__('UsageBilling|Monthly commitment'),
           stack: 'daily',
+          symbolSize: 6,
+          showSymbol: true,
+          itemStyle: {
+            color: '#63a6e9',
+          },
+          areaStyle: {
+            color: '#7992f5',
+            opacity: 0.2,
+          },
+          lineStyle: {
+            color: '#63a6e9',
+          },
           data: this.monthlyCommitmentData,
         },
         this.monthlyWaiverIsAvailable && {
           name: s__('UsageBilling|Monthly waiver'),
           stack: 'daily',
+          symbolSize: 6,
+          showSymbol: true,
+          itemStyle: {
+            color: '#7992f5',
+          },
+          areaStyle: {
+            color: '#7992f5',
+            opacity: 0.4,
+          },
+          lineStyle: {
+            color: '#7992f5',
+          },
           data: this.monthlyWaiverData,
         },
         this.overageIsAllowed && {
           name: s__('UsageBilling|On-demand'),
           stack: 'daily',
+          symbolSize: 6,
+          showSymbol: true,
+          itemStyle: {
+            color: '#ab6100',
+          },
+          areaStyle: {
+            color: '#e9be74',
+            opacity: 0.2,
+          },
+          lineStyle: {
+            color: '#e9be74',
+          },
           data: this.overageData,
         },
       ].filter(Boolean);
+    },
+    chartOptions() {
+      return {
+        xAxis: {
+          name: s__('UsageBilling|Date'),
+          type: 'category',
+          axisTick: {
+            show: false,
+          },
+          axisLabel: {
+            formatter: this.toShortDateFormat,
+          },
+        },
+        yAxis: {
+          name: s__('UsageBilling|Credits'),
+        },
+      };
     },
   },
   methods: {
@@ -131,10 +185,13 @@ export default {
 
       return accumulatedData;
     },
-  },
-  chartOptions: {
-    xAxis: { name: s__('UsageBilling|Date'), type: 'category' },
-    yAxis: { name: s__('UsageBilling|Credits') },
+    toShortDateFormat(dateString) {
+      return formatDate(dateString, 'd mmm', true);
+    },
+    toLongDateFormat(dateString) {
+      return formatDate(dateString, 'd mmmm', true);
+    },
+    formatNumber,
   },
 };
 </script>
@@ -154,11 +211,22 @@ export default {
       </header>
 
       <gl-area-chart
+        class="[&_.gl-legend]:!gl-hidden"
         :data="chartData"
-        :option="$options.chartOptions"
+        :option="chartOptions"
         width="auto"
         :include-legend-avg-max="false"
-      />
+      >
+        <template #tooltip-title="{ params }">{{
+          params && params.value && toLongDateFormat(params.value)
+        }}</template>
+        <template #tooltip-value="{ value }">
+          <template v-if="value">
+            {{ formatNumber(value) }}
+          </template>
+          <template v-else>—</template>
+        </template>
+      </gl-area-chart>
     </gl-card>
   </section>
 </template>
