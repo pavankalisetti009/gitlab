@@ -3,6 +3,8 @@
 module Search
   module Zoekt
     class CodeQueryBuilder < QueryBuilder
+      MAX_32BIT_INTEGER = (2**32) - 1
+
       def build
         { query: build_payload }
       end
@@ -53,7 +55,7 @@ module Search
       end
 
       def by_repo_ids(ids, context: nil)
-        return Filters.by_project_ids(ids, context: context) if use_meta_project_ids?
+        return Filters.by_project_ids(ids, context: context) if use_meta_project_ids?(ids)
 
         Filters.by_repo_ids(ids, context: context)
       end
@@ -62,8 +64,10 @@ module Search
         options.fetch(:use_traversal_id_queries)
       end
 
-      def use_meta_project_ids?
-        Feature.enabled?(:zoekt_search_meta_project_ids, current_user)
+      def use_meta_project_ids?(ids)
+        return true if Feature.enabled?(:zoekt_search_meta_project_ids, current_user)
+
+        ids.any? { |id| id > MAX_32BIT_INTEGER }
       end
     end
   end
