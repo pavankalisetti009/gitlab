@@ -18,7 +18,8 @@ module Ai
             ::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_GITLAB,
             ::Ai::DuoWorkflows::Workflow::AgentPrivileges::RUN_COMMANDS,
             ::Ai::DuoWorkflows::Workflow::AgentPrivileges::USE_GIT
-          ]
+          ],
+          triggers: []
         },
         {
           id: 2,
@@ -32,7 +33,8 @@ module Ai
             ::Ai::DuoWorkflows::Workflow::AgentPrivileges::RUN_COMMANDS,
             ::Ai::DuoWorkflows::Workflow::AgentPrivileges::USE_GIT
           ],
-          environment: "web"
+          environment: "web",
+          triggers: []
         },
         {
           id: 3,
@@ -46,7 +48,39 @@ module Ai
             ::Ai::DuoWorkflows::Workflow::AgentPrivileges::RUN_COMMANDS,
             ::Ai::DuoWorkflows::Workflow::AgentPrivileges::USE_GIT
           ],
-          environment: "web"
+          environment: "web",
+          triggers: []
+        },
+        {
+          id: 4,
+          name: "developer/v1",
+          foundational_flow_reference: "developer/v1",
+          description: "GitLab Duo developer",
+          pre_approved_agent_privileges: [
+            ::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_FILES,
+            ::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_ONLY_GITLAB,
+            ::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_GITLAB,
+            ::Ai::DuoWorkflows::Workflow::AgentPrivileges::USE_GIT
+          ],
+          environment: "web",
+          triggers: [::Ai::FlowTrigger::EVENT_TYPES[:assign]],
+          avatar: "gitlab-duo-flow.png"
+        },
+        {
+          id: 5,
+          name: "fix_pipeline/v1",
+          foundational_flow_reference: "fix_pipeline/v1",
+          description: "GitLab pipeline troubleshooter",
+          pre_approved_agent_privileges: [
+            ::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_FILES,
+            ::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_ONLY_GITLAB,
+            ::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_GITLAB,
+            ::Ai::DuoWorkflows::Workflow::AgentPrivileges::RUN_COMMANDS,
+            ::Ai::DuoWorkflows::Workflow::AgentPrivileges::USE_GIT
+          ],
+          environment: "web",
+          triggers: [],
+          avatar: "fix-pipeline-flow.png"
         }
       ].freeze
 
@@ -58,6 +92,8 @@ module Ai
       attribute :environment, :string, default: "ambient"
       attribute :foundational_flow_reference, :string
       attribute :description, :string
+      attribute :triggers, default: []
+      attribute :avatar, :string
 
       validates :name, :ai_feature, presence: true
 
