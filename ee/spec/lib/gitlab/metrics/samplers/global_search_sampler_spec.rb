@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Gitlab::Metrics::Samplers::GlobalSearchSampler, feature_category: :global_search do
-  subject { described_class.new }
+  subject(:sampler) { described_class.new }
 
   it_behaves_like 'metrics sampler', 'GLOBAL_SEARCH_SAMPLER'
 
@@ -13,7 +13,7 @@ RSpec.describe Gitlab::Metrics::Samplers::GlobalSearchSampler, feature_category:
         expect(service).to receive(:execute)
       end
 
-      subject.sample
+      sampler.sample
     end
 
     it 'invokes the ::Ai::ActiveContext::MetricsUpdateService' do
@@ -21,7 +21,7 @@ RSpec.describe Gitlab::Metrics::Samplers::GlobalSearchSampler, feature_category:
         expect(service).to receive(:execute)
       end
 
-      subject.sample
+      sampler.sample
     end
   end
 end
