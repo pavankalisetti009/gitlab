@@ -9,7 +9,7 @@ module EE
         prepended do
           expose :ldap_cn, :ldap_access
           expose :ldap_group_links,
-            using: EE::API::Entities::LdapGroupLink,
+            using: ::API::Entities::LdapGroupLink,
             if: ->(group, options) { group.ldap_group_links.any? }
 
           expose :saml_group_links,

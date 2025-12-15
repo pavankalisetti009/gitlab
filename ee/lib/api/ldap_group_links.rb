@@ -14,7 +14,7 @@ module API
     resource :groups do
       desc 'List LDAP group links' do
         detail 'Get LDAP group links for a group'
-        success EE::API::Entities::LdapGroupLink
+        success ::API::Entities::LdapGroupLink
         is_array true
         tags ldap_group_links_tags
       end
@@ -25,7 +25,7 @@ module API
         ldap_group_links = group.ldap_group_links
 
         if ldap_group_links.present?
-          present ldap_group_links, with: EE::API::Entities::LdapGroupLink
+          present ldap_group_links, with: ::API::Entities::LdapGroupLink
         else
           render_api_error!('No linked LDAP groups found', 404)
         end
@@ -34,7 +34,7 @@ module API
       desc 'Add LDAP group link with CN or filter' do
         detail 'Adds an LDAP group link using a CN or filter.'\
           'Adding a group link by filter is only supported in the Premium tier and above.'
-        success EE::API::Entities::LdapGroupLink
+        success ::API::Entities::LdapGroupLink
         failure [
           { code: 400, message: 'Validation error' },
           { code: 404, message: 'Not found' },
@@ -61,7 +61,7 @@ module API
         ldap_group_link = group.ldap_group_links.new(declared_params(include_missing: false))
 
         if ldap_group_link.save
-          present ldap_group_link, with: EE::API::Entities::LdapGroupLink
+          present ldap_group_link, with: ::API::Entities::LdapGroupLink
         else
           render_api_error!(ldap_group_link.errors.full_messages.first, 409)
         end
