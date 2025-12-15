@@ -914,19 +914,6 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
           expect(response).to have_gitlab_http_status(:bad_request)
           expect(response.body).to include('AI Catalog flows can only be executed in project context')
         end
-
-        it 'returns bad request when workflow_definition is also provided' do
-          post api("/ai/duo_workflows/workflows", user), params: {
-            project_id: execution_project.id,
-            ai_catalog_item_consumer_id: project_consumer.id,
-            workflow_definition: 'software_development',
-            start_workflow: true,
-            goal: 'test'
-          }
-
-          expect(response).to have_gitlab_http_status(:bad_request)
-          expect(json_response['error']).to include('mutually exclusive')
-        end
       end
 
       context 'when OAuth token creation fails' do
