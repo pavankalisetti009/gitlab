@@ -167,11 +167,6 @@ RSpec.describe AppSec::Dast::Scans::RunService, feature_category: :dynamic_appli
             public: true,
             masked: false
           }, {
-            key: 'GIT_STRATEGY',
-            value: 'none',
-            public: true,
-            masked: false
-          }, {
             key: 'SECURE_ANALYZERS_PREFIX',
             value: '$CI_TEMPLATE_REGISTRY_HOST/security-products',
             public: true,
