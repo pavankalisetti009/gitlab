@@ -42,7 +42,6 @@ RSpec.describe 'AI Sidepanel', :js, feature_category: :duo_agent_platform do
 
     it 'does not show AI sidepanel' do
       visit project_path(project)
-      dismiss_welcome_banner_if_present(page)
 
       expect(page).not_to have_css(ai_sidepanel_selector)
     end
@@ -59,7 +58,6 @@ RSpec.describe 'AI Sidepanel', :js, feature_category: :duo_agent_platform do
         set_cookie('duo_agentic_mode_on', 'true')
 
         visit project_path(project)
-        dismiss_welcome_banner_if_present(page)
 
         expect(page).to have_css(ai_sidepanel_selector)
 
@@ -98,7 +96,6 @@ RSpec.describe 'AI Sidepanel', :js, feature_category: :duo_agent_platform do
         set_cookie('duo_agentic_mode_on', 'true')
 
         visit project_path(project)
-        dismiss_welcome_banner_if_present(page)
 
         within(ai_sidepanel_selector) do
           find_by_testid(sessions_toggle_selector).click
@@ -143,7 +140,6 @@ RSpec.describe 'AI Sidepanel', :js, feature_category: :duo_agent_platform do
         set_cookie('duo_agentic_mode_on', 'true')
 
         visit project_path(project)
-        dismiss_welcome_banner_if_present(page)
       end
 
       it 'shows empty state when no sessions exist' do
@@ -159,7 +155,6 @@ RSpec.describe 'AI Sidepanel', :js, feature_category: :duo_agent_platform do
           project.project_setting.update!(duo_features_enabled: false)
           allow(::Gitlab::Llm::TanukiBot).to receive(:chat_disabled_reason).and_return(:project)
           visit project_path(project)
-          dismiss_welcome_banner_if_present(page)
         end
 
         it 'prevents access to sessions tab' do

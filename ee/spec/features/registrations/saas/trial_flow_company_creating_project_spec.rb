@@ -37,7 +37,6 @@ RSpec.describe 'Trial flow for user picking company and creating a project', :js
       fills_in_group_and_project_creation_form_with_trial
       click_on 'Create project'
 
-      dismiss_welcome_banner_if_present(page)
       expect_to_be_in_get_started
       expect(tracking_events_key).to have_all_expected_events
     end
@@ -48,7 +47,6 @@ RSpec.describe 'Trial flow for user picking company and creating a project', :js
       stub_feature_flags(premium_message_during_trial: true)
       setup_trial_for_experiment
 
-      dismiss_welcome_banner_if_present(page)
       within_testid('super-sidebar') do
         click_link_or_button 'Merge requests'
       end
@@ -83,7 +81,6 @@ RSpec.describe 'Trial flow for user picking company and creating a project', :js
       stub_feature_flags(premium_message_during_trial: false)
       setup_trial_for_experiment
 
-      dismiss_welcome_banner_if_present(page)
       within_testid('super-sidebar') do
         click_link_or_button 'Merge requests'
       end
@@ -126,7 +123,6 @@ RSpec.describe 'Trial flow for user picking company and creating a project', :js
       fills_in_group_and_project_creation_form_with_trial
       click_on 'Create project'
 
-      dismiss_welcome_banner_if_present(page)
       expect_to_be_in_get_started
 
       update_with_applied_trials(with_duo: false)
@@ -161,7 +157,6 @@ RSpec.describe 'Trial flow for user picking company and creating a project', :js
       fills_in_group_and_project_creation_form_with_trial
       click_on 'Create project'
 
-      dismiss_welcome_banner_if_present(page)
       expect_to_be_in_learn_gitlab
     end
   end

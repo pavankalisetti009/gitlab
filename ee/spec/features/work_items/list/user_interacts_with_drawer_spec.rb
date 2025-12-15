@@ -167,7 +167,6 @@ RSpec.describe 'Work Items List Drawer', :js, feature_category: :team_planning d
 
           visit project_work_items_path(project)
           close_work_item_feedback_popover_if_present
-          dismiss_welcome_banner_if_present(page)
 
           first_card.click
 
@@ -187,7 +186,6 @@ RSpec.describe 'Work Items List Drawer', :js, feature_category: :team_planning d
 
           visit group_work_items_path(group)
           close_work_item_feedback_popover_if_present
-          dismiss_welcome_banner_if_present(page)
 
           first_card.click
 
@@ -213,7 +211,6 @@ RSpec.describe 'Work Items List Drawer', :js, feature_category: :team_planning d
 
           visit group_epics_path(group)
           close_work_item_feedback_popover_if_present
-          dismiss_welcome_banner_if_present(page)
 
           first_card.click
 

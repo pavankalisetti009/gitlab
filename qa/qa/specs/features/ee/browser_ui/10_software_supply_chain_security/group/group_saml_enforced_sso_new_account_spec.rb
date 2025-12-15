@@ -27,7 +27,6 @@ module QA
           EE::Page::Group::SamlSSOSignIn.perform(&:click_sign_in)
 
           Flow::Saml.login_to_idp_if_required(idp_user.username, idp_user.password)
-          Page::Main::Menu.perform(&:dismiss_welcome_modal_if_present)
 
           expect(page).to have_text("Signed in with SAML")
 
@@ -46,7 +45,6 @@ module QA
           EE::Page::Group::SamlSSOSignIn.perform(&:click_sign_in)
 
           Flow::Saml.login_to_idp_if_required(idp_user.username, idp_user.password)
-          Page::Main::Menu.perform(&:dismiss_welcome_modal_if_present)
 
           expect(page).to have_text(
             "Sign in with your existing credentials to connect your organization's account"
@@ -63,7 +61,6 @@ module QA
           EE::Page::Group::SamlSSOSignIn.perform(&:click_sign_in)
 
           Flow::Saml.login_to_idp_if_required(idp_user.username, idp_user.password)
-          Page::Main::Menu.perform(&:dismiss_welcome_modal_if_present)
 
           expect(page).to have_text("Signed in with SAML")
         end
