@@ -9,7 +9,6 @@ module EE
       ACTIVE_USER_COUNT_THRESHOLD = 'active_user_count_threshold'
       GEO_ENABLE_HASHED_STORAGE = 'geo_enable_hashed_storage'
       GEO_MIGRATE_HASHED_STORAGE = 'geo_migrate_hashed_storage'
-      ULTIMATE_TRIAL = 'ultimate_trial'
       NEW_USER_SIGNUPS_CAP_REACHED = 'new_user_signups_cap_reached'
       PERSONAL_ACCESS_TOKEN_EXPIRY = 'personal_access_token_expiry'
       PROFILE_PERSONAL_ACCESS_TOKEN_EXPIRY = 'profile_personal_access_token_expiry'
@@ -28,10 +27,10 @@ module EE
 
       override :render_dashboard_ultimate_trial
       def render_dashboard_ultimate_trial(user)
-        return unless show_ultimate_trial?(user, ULTIMATE_TRIAL) &&
-          user_default_dashboard?(user) &&
-          !user.owns_paid_namespace? &&
-          user.owns_group_without_trial?
+        return unless user
+        return unless ::Gitlab::Saas.feature_available?(:subscriptions_trials)
+        return unless user_default_dashboard?(user)
+        return unless !user.owns_paid_namespace? && user.owns_group_without_trial?
 
         render 'shared/ultimate_with_enterprise_trial_callout_content'
       end
@@ -111,18 +110,6 @@ module EE
 
       def hashed_storage_enabled?
         ::Gitlab::CurrentSettings.current_application_settings.hashed_storage_enabled
-      end
-
-      def show_ultimate_trial?(user, callout = ULTIMATE_TRIAL)
-        return false unless user
-        return false unless show_ultimate_trial_suitable_env?
-        return false if user_dismissed?(callout)
-
-        true
-      end
-
-      def show_ultimate_trial_suitable_env?
-        ::Gitlab.com? && !::Gitlab::Database.read_only?
       end
     end
   end
