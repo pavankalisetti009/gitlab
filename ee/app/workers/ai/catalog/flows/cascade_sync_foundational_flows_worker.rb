@@ -19,12 +19,24 @@ module Ai
 
           user = user_id ? User.find_by_id(user_id) : nil
 
+          seed_foundational_flows(group, user)
+
           sync_groups(group, user)
 
           sync_projects(group, user)
         end
 
         private
+
+        def seed_foundational_flows(group, user)
+          organization = group.organization
+          return unless organization
+
+          ::Ai::Catalog::Flows::SeedFoundationalFlowsService.new(
+            current_user: user,
+            organization: organization
+          ).execute
+        end
 
         def sync_groups(group, user)
           ::Ai::Catalog::Flows::SyncFoundationalFlowsService.new(
