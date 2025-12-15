@@ -12,5 +12,13 @@ FactoryBot.define do
     transient do
       start_sequence { 1000000000 }
     end
+
+    trait :v2 do
+      version_format { 'v2' }
+    end
+
+    trait :advisories do
+      data_type { 'advisories' }
+    end
   end
 end

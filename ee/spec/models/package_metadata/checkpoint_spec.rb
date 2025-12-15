@@ -56,6 +56,24 @@ RSpec.describe PackageMetadata::Checkpoint, type: :model, feature_category: :sof
     end
   end
 
+  describe '.with_advisories_by_purl_type' do
+    let_it_be(:checkpoints) do
+      [
+        create(:pm_checkpoint, :v2, :advisories, sequence: 123, purl_type: :npm),
+        create(:pm_checkpoint, :v2, :advisories, sequence: 456, purl_type: :maven)
+      ]
+    end
+
+    subject(:result) { described_class.advisory_purl_type_sequences }
+
+    it do
+      is_expected.to eq({
+        'maven' => 456,
+        'npm' => 123
+      })
+    end
+  end
+
   describe '#update' do
     let(:data_type) { 'licenses' }
     let(:version_format) { 'v1' }
