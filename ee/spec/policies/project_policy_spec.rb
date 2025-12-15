@@ -88,6 +88,87 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         stub_licensed_features(security_dashboard: true, license_scanning: true)
       end
 
+      context 'for read_* permissions' do
+        let(:excluded_permissions) do
+          [
+            :read_ai_agents,
+            :read_ai_catalog_flow,
+            :read_ai_catalog_item_consumer,
+            :read_all_organization_resources,
+            :read_ci_pipeline_schedules_plan_limit,
+            :read_cluster_agent,
+            :read_commit_committer_check,
+            :read_commit_committer_name_check,
+            :read_compliance_adherence_report,
+            :read_compliance_dashboard,
+            :read_compliance_violations_report,
+            :read_coverage_fuzzing,
+            :read_customizable_dashboards,
+            :read_dap_external_trigger_usage_rule,
+            :read_dedicated_hosted_runner_usage,
+            :read_deploy_board,
+            :read_deploy_token,
+            :read_design,
+            :read_design_activity,
+            :read_dora4_analytics,
+            :read_duo_usage_analytics,
+            :read_enterprise_ai_analytics,
+            :read_external_emails,
+            :read_freeze_period,
+            :read_google_cloud_artifact_registry,
+            :read_grafana,
+            :read_harbor_registry,
+            :read_import_error,
+            :read_internal_note,
+            :read_iteration,
+            :read_limit_alert,
+            :read_member_access_request,
+            :read_member_role,
+            :read_observability,
+            :read_pod_logs,
+            :read_pro_ai_analytics,
+            :read_project_secrets,
+            :read_project_secrets_manager,
+            :read_project_secrets_manager_status,
+            :read_prometheus,
+            :read_protected_branch,
+            :read_protected_tags,
+            :read_reject_non_dco_commits,
+            :read_reject_unsigned_commits,
+            :read_resource_group,
+            :read_runner_cloud_provisioning_info,
+            :read_runner_gke_provisioning_info,
+            :read_runner_usage,
+            :read_runners_registration_token,
+            :read_saved_replies,
+            :read_secret_push_protection_info,
+            :read_secure_files,
+            :read_security_configuration,
+            :read_security_orchestration_policy_project,
+            :read_security_scan_profiles,
+            :read_sentry_issue,
+            :read_statistics,
+            :read_storage_disk_path,
+            :read_subscription_usage,
+            :read_usage_quotas,
+            :read_web_hook,
+            :read_work_item_lifecycle,
+            :read_work_item_status
+          ]
+        end
+
+        let(:read_permissions) { described_class.ability_map.map.keys.select { |key| key.to_s.start_with?('read_') } }
+        let(:expected_permissions) { read_permissions - excluded_permissions }
+
+        before do
+          create_current_license_without_expiration(plan: License::ULTIMATE_PLAN)
+        end
+
+        it 'allows the permission', :aggregate_failures do
+          expect_allowed(*expected_permissions)
+        end
+      end
+
       context 'who is not a team member' do
         it do
           is_expected.to be_disallowed(*(developer_permissions - auditor_permissions))

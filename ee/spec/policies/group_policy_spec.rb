@@ -5526,4 +5526,84 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       it { is_expected.to match_expected_result }
     end
   end
+
+  describe 'auditors' do
+    let_it_be(:group) { create(:group, :private) }
+    let(:user) { auditor }
+
+    subject { described_class.new(user, group) }
+
+    before do
+      create_current_license_without_expiration(plan: License::ULTIMATE_PLAN)
+    end
+
+    context 'for read_* permissions' do
+      let(:excluded_permissions) do
+        [
+          :read_ai_catalog_flow,
+          :read_ai_catalog_item_consumer,
+          :read_ci_cd_analytics,
+          :read_code,
+          :read_confidential_epic,
+          :read_counts,
+          :read_crm_contact,
+          :read_crm_organization,
+          :read_customizable_dashboards,
+          :read_dedicated_hosted_runner_usage,
+          :read_deploy_token,
+          :read_design_activity,
+          :read_duo_usage_analytics,
+          :read_enterprise_ai_analytics,
+          :read_epic_iid,
+          :read_group_activity_analytics,
+          :read_group_analytics_dashboards,
+          :read_group_coverage_reports,
+          :read_group_credentials_inventory,
+          :read_group_saml_identity,
+          :read_group_scim_identity,
+          :read_group_secrets_manager,
+          :read_group_secrets_permission,
+          :read_harbor_registry,
+          :read_internal_note,
+          :read_jobs_statistics,
+          :read_limit_alert,
+          :read_member_access_request,
+          :read_member_role,
+          :read_namespace_cluster_agent_mapping,
+          :read_namespace_via_membership,
+          :read_note,
+          :read_observability_portal,
+          :read_package,
+          :read_pro_ai_analytics,
+          :read_prometheus,
+          :read_release,
+          :read_resource_access_tokens,
+          :read_runner_cloud_provisioning_info,
+          :read_runner_gke_provisioning_info,
+          :read_runner_usage,
+          :read_runners_registration_token,
+          :read_saved_replies,
+          :read_security_attribute,
+          :read_security_configuration,
+          :read_security_inventory,
+          :read_security_orchestration_policy_project,
+          :read_security_scan_profiles,
+          :read_service_account,
+          :read_statistics,
+          :read_subgroup_epic,
+          :read_subscription_usage,
+          :read_timelog_category,
+          :read_usage_quotas,
+          :read_web_hook
+        ]
+      end
+
+      let(:read_permissions) { described_class.ability_map.map.keys.select { |k| k.to_s.start_with?('read_') } }
+      let(:expected_permissions) { read_permissions - excluded_permissions }
+
+      it 'allows the permission', :aggregate_failures do
+        expect_allowed(*expected_permissions)
+      end
+    end
+  end
 end
