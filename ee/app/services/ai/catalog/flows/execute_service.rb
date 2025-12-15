@@ -67,18 +67,31 @@ module Ai
             container: item_consumer.project,
             goal: flow_goal,
             item_version: flow_version,
-            service_account: service_account
+            service_account: service_account,
+            flow_definition: fetch_flow_definition
           }
 
           ::Ai::Catalog::ExecuteWorkflowService.new(current_user, params).execute
         end
 
+        def foundational_flow?
+          @item_consumer.item&.foundational
+        end
+
         def generate_flow_config
+          return if foundational_flow?
+
           flow_version.definition.except('yaml_definition')
         end
 
         def flow_goal
           user_prompt || flow.description
+        end
+
+        def fetch_flow_definition
+          return unless foundational_flow?
+
+          @item_consumer.item&.foundational_flow_reference
         end
       end
     end

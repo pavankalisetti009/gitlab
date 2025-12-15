@@ -10,6 +10,13 @@ RSpec.describe Ai::Catalog::ExecuteWorkflowService, :aggregate_failures, feature
   let_it_be(:project) { create(:project, :repository, organization: organization, developers: user) }
   let_it_be(:item) { create(:ai_catalog_item, project:) }
   let_it_be(:item_enabled_project) { create(:project, :repository, developers: user) }
+  let(:oauth_token) do
+    { oauth_access_token: instance_double(Doorkeeper::AccessToken, plaintext_token: 'token-12345') }
+  end
+
+  let_it_be(:workflow_service_token) do
+    { token: 'workflow_token', expires_at: 1.hour.from_now }
+  end
 
   let(:json_config) do
     {
@@ -40,6 +47,18 @@ RSpec.describe Ai::Catalog::ExecuteWorkflowService, :aggregate_failures, feature
         ServiceResponse.success
       )
     end
+    allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
+    project.project_setting.update!(duo_features_enabled: true, duo_remote_flows_enabled: true)
+
+    allow_next_instance_of(::Ai::DuoWorkflows::WorkflowContextGenerationService) do |service|
+      allow(service).to receive_messages(
+        generate_oauth_token_with_composite_identity_support:
+          ServiceResponse.success(payload: oauth_token),
+        generate_workflow_token:
+          ServiceResponse.success(payload: workflow_service_token),
+        use_service_account?: false
+      )
+    end
   end
 
   shared_examples "returns error response" do |expected_message|
@@ -51,10 +70,45 @@ RSpec.describe Ai::Catalog::ExecuteWorkflowService, :aggregate_failures, feature
     end
   end
 
+  shared_examples 'starts workflow execution' do
+    it_behaves_like 'creates CI pipeline for Duo Workflow execution' do
+      subject { service.execute }
+    end
+
+    it 'returns a success response' do
+      response = service.execute
+
+      expect(response).to be_success
+      expect(response[:workflow]).to eq(Ai::DuoWorkflows::Workflow.last)
+      expect(response[:workload_id]).to eq(Ci::Workloads::Workload.last.id)
+      expect(response[:flow_config]).to eq(json_config.to_yaml)
+    end
+  end
+
   context 'when json_config is missing' do
     let(:json_config) { nil }
 
-    it_behaves_like 'returns error response', 'JSON config is required'
+    context 'when flow_definition is provided' do
+      let(:params) do
+        {
+          json_config: json_config,
+          container: container,
+          goal: goal,
+          flow_definition: 'fix_pipeline/v1'
+        }
+      end
+
+      before do
+        allow(user).to receive(:allowed_to_use?).and_return(true)
+        allow(::Ai::Catalog::Item).to receive(:with_foundational_flow_reference).and_return([item])
+      end
+
+      it_behaves_like 'starts workflow execution'
+    end
+
+    context 'when flow_definition is not provided' do
+      it_behaves_like 'returns error response', 'JSON config is required'
+    end
   end
 
   context 'when current_user is missing' do
@@ -107,28 +161,9 @@ RSpec.describe Ai::Catalog::ExecuteWorkflowService, :aggregate_failures, feature
     let(:start_workflow_service) { instance_double(::Ai::DuoWorkflows::StartWorkflowService) }
     let(:oauth_service) { instance_double(::Ai::DuoWorkflows::CreateOauthAccessTokenService) }
     let(:workflow_client) { instance_double(::Ai::DuoWorkflow::DuoWorkflowService::Client) }
-    let(:oauth_token) do
-      { oauth_access_token: instance_double(Doorkeeper::AccessToken, plaintext_token: 'token-12345') }
-    end
-
-    let(:workflow_service_token) do
-      { token: 'workflow_token', expires_at: 1.hour.from_now }
-    end
 
     before do
-      allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
       allow(user).to receive(:allowed_to_use?).and_return(true)
-      project.project_setting.update!(duo_features_enabled: true, duo_remote_flows_enabled: true)
-
-      allow_next_instance_of(::Ai::DuoWorkflows::WorkflowContextGenerationService) do |service|
-        allow(service).to receive_messages(
-          generate_oauth_token_with_composite_identity_support:
-            ServiceResponse.success(payload: oauth_token),
-          generate_workflow_token:
-            ServiceResponse.success(payload: workflow_service_token),
-          use_service_account?: false
-        )
-      end
     end
 
     shared_examples 'skips workflow execution' do
@@ -142,21 +177,6 @@ RSpec.describe Ai::Catalog::ExecuteWorkflowService, :aggregate_failures, feature
         expect(response).to be_error
         expect(response[:workflow]).to be_nil
         expect(response[:workload_id]).to be_nil
-      end
-    end
-
-    shared_examples 'starts workflow execution' do
-      it_behaves_like 'creates CI pipeline for Duo Workflow execution' do
-        subject { service.execute }
-      end
-
-      it 'returns a success response' do
-        response = service.execute
-
-        expect(response).to be_success
-        expect(response[:workflow]).to eq(Ai::DuoWorkflows::Workflow.last)
-        expect(response[:workload_id]).to eq(Ci::Workloads::Workload.last.id)
-        expect(response[:flow_config]).to eq(json_config.to_yaml)
       end
     end
 

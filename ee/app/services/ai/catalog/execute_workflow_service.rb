@@ -22,6 +22,7 @@ module Ai
         @goal = params[:goal]
         @item_version = params[:item_version]
         @service_account = params[:service_account]
+        @flow_definition = params[:flow_definition] || determine_workflow_definition
       end
 
       def execute
@@ -54,7 +55,7 @@ module Ai
 
       def validate
         return error('You have insufficient permissions') unless allowed?
-        return error('JSON config is required') unless json_config.present?
+        return error('JSON config is required') unless json_config.present? || foundational_flow?
         return error('Goal is required') unless goal.present?
 
         ServiceResponse.success
@@ -64,7 +65,7 @@ module Ai
       def create_workflow
         workflow_params = {
           goal: goal,
-          workflow_definition: determine_workflow_definition,
+          workflow_definition: @flow_definition,
           environment: WORKFLOW_ENVIRONMENT,
           agent_privileges: AGENT_PRIVILEGES,
           pre_approved_agent_privileges: AGENT_PRIVILEGES
@@ -117,7 +118,7 @@ module Ai
           organization: container.organization,
           container: container,
           service_account: service_account,
-          workflow_definition: determine_workflow_definition
+          workflow_definition: @flow_definition
         )
       end
 
@@ -131,6 +132,10 @@ module Ai
 
       def flow_config_schema_version
         'v1'
+      end
+
+      def foundational_flow?
+        ::Ai::Catalog::Item.with_foundational_flow_reference(@flow_definition).present?
       end
     end
   end

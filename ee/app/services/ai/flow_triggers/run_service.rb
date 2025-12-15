@@ -234,9 +234,22 @@ module Ai
           context_line = "Context: {#{resource.class.name} #{id_type}: #{id_value}}"
 
           "#{input_line}\n#{context_line}"
+        elsif foundational_flow?
+          fetch_goal_input
         else
           user_input
         end
+      end
+
+      # this can be extended to support other foundational flows with specific goals
+      def fetch_goal_input
+        return unless foundational_flow?
+
+        Gitlab::UrlBuilder.build(@resource)
+      end
+
+      def foundational_flow?
+        @catalog_item&.foundational_flow_reference.present?
       end
     end
   end
