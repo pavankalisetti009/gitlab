@@ -4,9 +4,6 @@ module Vulnerabilities
   class Export
     class Part < ::SecApplicationRecord
       include FileStoreMounter
-      include SafelyChangeColumnDefault
-
-      columns_changing_default :organization_id
 
       self.table_name = "vulnerability_export_parts"
 

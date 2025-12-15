@@ -8,7 +8,6 @@ module Vulnerabilities
     include EachBatch
     include UnnestedInFilters::Dsl
     include FromUnion
-    include SafelyChangeColumnDefault
     include ::Gitlab::SQL::Pattern
     include ::Elastic::ApplicationVersionedSearch
 
@@ -25,8 +24,6 @@ module Vulnerabilities
 
     self.table_name = "vulnerability_reads"
     self.primary_key = :vulnerability_id
-
-    columns_changing_default :owasp_top_10
 
     delegate :group_name, :title, :created_at, :project_name, :finding_scanner_name, :finding_description, :cve_value, :cwe_value, :location, :notes_summary, :full_path, to: :vulnerability, allow_nil: true
     delegate :other_identifier_values, :cvss_vectors_with_vendor, to: :vulnerability, allow_nil: true

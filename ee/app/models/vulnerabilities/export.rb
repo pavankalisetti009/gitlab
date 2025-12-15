@@ -4,10 +4,7 @@ module Vulnerabilities
   class Export < ::SecApplicationRecord
     include Gitlab::Utils::StrongMemoize
     include FileStoreMounter
-    include SafelyChangeColumnDefault
     include EachBatch
-
-    columns_changing_default :organization_id
 
     EXPORTER_CLASS = {
       csv: VulnerabilityExports::ExportService,
