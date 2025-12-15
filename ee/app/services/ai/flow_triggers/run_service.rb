@@ -81,6 +81,7 @@ module Ai
           d.image = flow_definition['image']
           d.commands = flow_definition['commands']
           d.variables = build_variables(params)
+          d.tags = [::Ai::DuoWorkflows::Workflow::WORKLOAD_TAG]
         end
 
         branch_result = branch_args
