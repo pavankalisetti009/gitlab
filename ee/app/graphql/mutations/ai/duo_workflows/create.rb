@@ -76,7 +76,9 @@ module Mutations
 
           item_version = GitlabSchema.find_by_gid(args[:ai_catalog_item_version_id])&.sync
 
-          raise_resource_not_available_error! unless allowed?(container)
+          unless allowed?(container)
+            raise_resource_not_available_error!(RESOURCE_ACCESS_ERROR, { code: 'NO_RESOURCE_PERMISSIONS' })
+          end
 
           raise_resource_not_available_error! 'User is not authorized to use agent catalog item.' unless
             item_version.nil? || Ability.allowed?(current_user, :read_ai_catalog_item, item_version)
