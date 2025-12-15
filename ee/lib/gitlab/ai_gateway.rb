@@ -92,7 +92,10 @@ module Gitlab
       name.to_sym == :expanded_ai_logging && self_managed_instance
     end
 
-    def self.headers(user:, unit_primitive_name:, ai_feature_name: unit_primitive_name, agent: nil, lsp_version: nil)
+    def self.headers(
+      user:, unit_primitive_name:, ai_feature_name: unit_primitive_name, namespace_id: nil, root_namespace_id: nil,
+      agent: nil, lsp_version: nil
+    )
       # Make interface flexible for the caller allowing both Symbol and String for `unit_primitive_name`.
       # At the same time, operate with the deterministic type (Symbol) within the implementation.
       unit_primitive_name = unit_primitive_name.to_sym
@@ -105,7 +108,8 @@ module Gitlab
         'X-Request-ID' => Labkit::Correlation::CorrelationId.current_or_new_id,
         # Forward the request time to the model gateway to calculate latency
         'X-Gitlab-Rails-Send-Start' => Time.now.to_f.to_s
-      }.merge(public_headers(user: user, ai_feature_name: ai_feature_name, unit_primitive_name: unit_primitive_name))
+      }.merge(public_headers(user: user, ai_feature_name: ai_feature_name, unit_primitive_name: unit_primitive_name,
+        namespace_id: namespace_id, root_namespace_id: root_namespace_id))
         .tap do |result|
           result['User-Agent'] = agent if agent # Forward the User-Agent on to the model gateway
           if current_context[:x_gitlab_client_type]
@@ -132,7 +136,19 @@ module Gitlab
         end
     end
 
-    def self.public_headers(user:, ai_feature_name:, unit_primitive_name:, feature_setting: nil)
+    def self.add_namespace_headers!(headers, namespace_ids, namespace_id, root_namespace_id, fallback_namespace)
+      if namespace_ids.include?(root_namespace_id)
+        headers['x-gitlab-namespace-id'] = (namespace_id || root_namespace_id).to_s
+        headers['x-gitlab-root-namespace-id'] = root_namespace_id.to_s
+      else
+        billable_namespace_id = fallback_namespace&.id&.to_s
+        headers['x-gitlab-namespace-id'] = billable_namespace_id
+        headers['x-gitlab-root-namespace-id'] = billable_namespace_id
+      end
+    end
+
+    def self.public_headers(
+      user:, ai_feature_name:, unit_primitive_name:, namespace_id: nil, root_namespace_id: nil, feature_setting: nil)
       auth_response = user&.allowed_to_use(ai_feature_name, unit_primitive_name: unit_primitive_name,
         feature_setting: feature_setting)
       enablement_type = auth_response&.enablement_type || ''
@@ -142,13 +158,18 @@ module Gitlab
         namespace_ids = Namespace.root_ids_for(namespace_ids)
       end
 
-      {
+      ::CloudConnector.ai_headers(user, namespace_ids: namespace_ids).merge(
         'x-gitlab-feature-enablement-type' => enablement_type,
         'x-gitlab-enabled-feature-flags' => enabled_feature_flags.uniq.join(','),
         'x-gitlab-enabled-instance-verbose-ai-logs' => enabled_instance_verbose_ai_logs,
         'X-Gitlab-Is-Team-Member' =>
           (::Gitlab::Tracking::StandardContext.new.gitlab_team_member?(user&.id) || false).to_s
-      }.merge(::CloudConnector.ai_headers(user, namespace_ids: namespace_ids))
+      ).tap do |result|
+        fallback_namespace = user&.user_preference&.duo_default_namespace_with_fallback
+        next unless root_namespace_id || fallback_namespace
+
+        add_namespace_headers!(result, namespace_ids, namespace_id, root_namespace_id, fallback_namespace)
+      end
     end
 
     def self.cloud_connector_token(unit_primitive_name, user)

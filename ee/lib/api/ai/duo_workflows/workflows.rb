@@ -398,6 +398,8 @@ module API
               mcp_config_service = ::Ai::DuoWorkflows::McpConfigService.new(current_user, gitlab_token)
               grpc_headers = Gitlab::DuoWorkflow::Client.cloud_connector_headers(
                 user: current_user,
+                namespace_id: params[:namespace_id].presence&.to_i,
+                root_namespace_id: root_namespace&.id,
                 feature_setting: feature_setting
               ).merge(
                 'x-gitlab-oauth-token' => gitlab_token,
@@ -407,10 +409,6 @@ module API
               ).merge(model_metadata_headers)
 
               grpc_headers['x-gitlab-project-id'] ||= params[:project_id].presence
-              grpc_headers['x-gitlab-root-namespace-id'] = root_namespace&.id&.to_s
-              grpc_headers['x-gitlab-namespace-id'] ||= params[:namespace_id].presence ||
-                grpc_headers['X-Gitlab-Namespace-Id'].presence ||
-                grpc_headers['x-gitlab-root-namespace-id']
               # client type from browser is sent as a query param in websocket request
               grpc_headers['x-gitlab-client-type'] ||= params[:client_type].presence
 
@@ -447,7 +445,7 @@ module API
               end
               post do
                 ::Gitlab::QueryLimiting.disable!(
-                  'https://gitlab.com/gitlab-org/gitlab/-/issues/566195', new_threshold: 116
+                  'https://gitlab.com/gitlab-org/gitlab/-/issues/566195', new_threshold: 117
                 )
 
                 container = if params[:project_id]

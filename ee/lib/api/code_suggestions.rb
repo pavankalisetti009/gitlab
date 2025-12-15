@@ -48,28 +48,30 @@ module API
       end
 
       def ai_gateway_headers(headers, task, project_path)
+        project = project(project_path) if project_path.present?
         Gitlab::AiGateway.headers(
           user: current_user,
           unit_primitive_name: task.unit_primitive_name,
+          namespace_id: project&.namespace_id,
+          root_namespace_id: project&.root_namespace&.id,
           ai_feature_name: :code_suggestions,
           agent: headers["User-Agent"],
           lsp_version: headers["X-Gitlab-Language-Server-Version"]
-        ).merge(saas_headers(project_path)).merge(model_config_headers(project_path)).transform_values { |v| Array(v) }
+        ).merge(saas_headers).merge(model_config_headers(project)).transform_values { |v| Array(v) }
       end
 
       def ai_gateway_public_headers(ai_feature_name, service_name, project_path)
+        project = project(project_path) if project_path.present?
         Gitlab::AiGateway.public_headers(
-          user: current_user, ai_feature_name: ai_feature_name, unit_primitive_name: service_name)
-          .merge(saas_headers(project_path))
-          .merge(model_config_headers(project_path))
+          user: current_user, ai_feature_name: ai_feature_name, unit_primitive_name: service_name,
+          namespace_id: project&.namespace_id, root_namespace_id: project&.root_namespace&.id)
+          .merge(saas_headers)
+          .merge(model_config_headers(project))
           .merge('X-Gitlab-Authentication-Type' => 'oidc')
       end
 
-      def saas_headers(project_path = nil)
+      def saas_headers
         return {} unless Gitlab.com?
-
-        project = project(project_path) if project_path.present?
-        default_namespace_id = current_user.user_preference.duo_default_namespace_with_fallback&.id
 
         all_duo_namespace_ids = current_user.duo_available_namespace_ids +
           current_user.duo_core_ids_via_namespace_settings
@@ -82,14 +84,12 @@ module API
           # even though we're now combining duo_pro, duo_enterprise and duo_core namespace IDs.
           # This avoids the need for the data team to combine columns in reporting,
           # allowing the existing reporting pipeline to continue working seamlessly.
-          'X-Gitlab-Saas-Duo-Pro-Namespace-Ids' => all_duo_namespace_ids.join(','),
-          'x-gitlab-root-namespace-id' => (project&.root_namespace&.id || default_namespace_id)&.to_s,
-          'x-gitlab-namespace-id' => (project&.namespace_id || default_namespace_id)&.to_s
+          'X-Gitlab-Saas-Duo-Pro-Namespace-Ids' => all_duo_namespace_ids.join(',')
         }
       end
 
-      def model_config_headers(project_path = nil)
-        model_prompt_cache_enabled = model_prompt_cache_enabled?(project_path)
+      def model_config_headers(project)
+        model_prompt_cache_enabled = model_prompt_cache_enabled?(project)
 
         {
           # this config will decide if we allow the underlying model to cache the generated completion response
@@ -124,9 +124,7 @@ module API
         false
       end
 
-      def model_prompt_cache_enabled?(project_path)
-        current_project = project(project_path) if project_path.present?
-
+      def model_prompt_cache_enabled?(current_project)
         if current_project.present?
           current_project.model_prompt_cache_enabled
         else

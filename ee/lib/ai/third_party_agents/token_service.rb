@@ -50,6 +50,8 @@ module Ai
         Gitlab::AiGateway.headers(
           user: current_user,
           unit_primitive_name: :ai_gateway_model_provider_proxy,
+          namespace_id: project&.namespace_id,
+          root_namespace_id: project&.root_namespace&.id,
           ai_feature_name: :duo_workflow
         ).merge(project_headers)
       end
@@ -58,7 +60,9 @@ module Ai
         Gitlab::AiGateway.public_headers(
           user: current_user,
           ai_feature_name: :duo_workflow,
-          unit_primitive_name: :ai_gateway_model_provider_proxy
+          unit_primitive_name: :ai_gateway_model_provider_proxy,
+          namespace_id: project&.namespace_id,
+          root_namespace_id: project&.root_namespace&.id
         ).merge(
           'x-gitlab-unit-primitive' => 'ai_gateway_model_provider_proxy',
           'x-gitlab-authentication-type' => 'oidc',
@@ -69,11 +73,7 @@ module Ai
       def project_headers
         return {} unless project
 
-        {
-          'x-gitlab-project-id' => project.id.to_s,
-          'x-gitlab-namespace-id' => project.namespace_id.to_s,
-          'x-gitlab-root-namespace-id' => project.root_namespace.id.to_s
-        }
+        { 'x-gitlab-project-id' => project.id.to_s }
       end
 
       def error_response(message, response)
