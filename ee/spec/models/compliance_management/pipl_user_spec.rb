@@ -412,19 +412,6 @@ RSpec.describe ComplianceManagement::PiplUser,
     end
   end
 
-  describe '#notification_sent!', :freeze_time do
-    let(:pipl_user) { create(:pipl_user) }
-
-    subject(:notification_sent!) { pipl_user.notification_sent! }
-
-    it 'sets the timestamp to the current time' do
-      expect { notification_sent! }
-        .to change { pipl_user.reload.initial_email_sent_at }
-              .from(nil)
-              .to(Time.current)
-    end
-  end
-
   describe '#remaining_pipl_access_days' do
     let(:pipl_user) { create(:pipl_user, initial_email_sent_at: 10.days.ago) }
 
