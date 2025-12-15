@@ -38,6 +38,18 @@ RSpec.describe Sidebars::Admin::Panel, :enable_admin_mode, feature_category: :na
     end
   end
 
+  shared_examples 'hides credits dashboard menu' do
+    it 'does not render credits dashboard menu' do
+      expect(menus).not_to include(instance_of(::Sidebars::Admin::Menus::GitlabCreditsDashboardMenu))
+    end
+  end
+
+  shared_examples 'shows credits dashboard menu' do
+    it 'renders credits dashboard menu' do
+      expect(menus).to include(instance_of(::Sidebars::Admin::Menus::GitlabCreditsDashboardMenu))
+    end
+  end
+
   describe '#configure_menus' do
     let(:menus) { subject.instance_variable_get(:@menus) }
     let(:license) { build(:license, plan: License::PREMIUM_PLAN) }
@@ -53,12 +65,31 @@ RSpec.describe Sidebars::Admin::Panel, :enable_admin_mode, feature_category: :na
 
       context 'when instance has a paid license' do
         it_behaves_like 'shows duo settings menu'
+
+        it_behaves_like 'shows credits dashboard menu'
+
+        context 'when usage_billing_dev feature flag is disabled' do
+          before do
+            stub_feature_flags(usage_billing_dev: false)
+          end
+
+          it_behaves_like 'hides credits dashboard menu'
+        end
+
+        context 'when usage_billing feature is not available' do
+          before do
+            stub_licensed_features(usage_billing: false)
+          end
+
+          it_behaves_like 'hides credits dashboard menu'
+        end
       end
 
       context 'when instance has no paid license' do
         let(:license) { nil }
 
         it_behaves_like 'hides duo settings menu'
+        it_behaves_like 'hides credits dashboard menu'
       end
     end
 
@@ -69,12 +100,33 @@ RSpec.describe Sidebars::Admin::Panel, :enable_admin_mode, feature_category: :na
 
       context 'when instance has a paid license' do
         it_behaves_like 'shows duo settings menu'
+
+        context 'when usage_billing feature is available' do
+          it_behaves_like 'shows credits dashboard menu'
+
+          context 'when usage_billing_dev feature flag is disabled' do
+            before do
+              stub_feature_flags(usage_billing_dev: false)
+            end
+
+            it_behaves_like 'hides credits dashboard menu'
+          end
+        end
+
+        context 'when usage_billing feature is not available' do
+          before do
+            stub_licensed_features(usage_billing: false)
+          end
+
+          it_behaves_like 'hides credits dashboard menu'
+        end
       end
 
       context 'when instance has no paid license' do
         let(:license) { nil }
 
         it_behaves_like 'hides duo settings menu'
+        it_behaves_like 'hides credits dashboard menu'
       end
     end
   end
