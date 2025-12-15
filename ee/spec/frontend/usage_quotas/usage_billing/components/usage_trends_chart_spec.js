@@ -5,6 +5,17 @@ import { useFakeDate } from 'helpers/fake_date';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import HumanTimeframe from '~/vue_shared/components/datetime/human_timeframe.vue';
 
+// Vue 2 / 3 test helper to extract text from a Vue slot's content
+const getSlotText = (slotContent) => {
+  const node = slotContent[0];
+  // Vue 3: text is nested in children
+  if (node.children && Array.isArray(node.children)) {
+    return node.children[0]?.text || '';
+  }
+  // Vue 2: text is directly on the node
+  return node.text || '';
+};
+
 describe('UsageTrendsChart', () => {
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
   let wrapper;
@@ -77,9 +88,60 @@ describe('UsageTrendsChart', () => {
           describe('GlAreaChart props', () => {
             it('passes correct `option` prop to GlAreaChart', () => {
               expect(findGlAreaChart().props('option')).toMatchObject({
-                xAxis: { name: 'Date', type: 'category' },
-                yAxis: { name: 'Credits' },
+                xAxis: {
+                  name: 'Date',
+                  type: 'category',
+                  axisTick: {
+                    show: false,
+                  },
+                  axisLabel: {
+                    formatter: expect.any(Function),
+                  },
+                },
+                yAxis: {
+                  name: 'Credits',
+                },
               });
+            });
+
+            it('passes x-axis label formatter that parses dates', () => {
+              const xAxisLabelFormatter =
+                findGlAreaChart().props('option').xAxis.axisLabel.formatter;
+
+              expect(xAxisLabelFormatter('2025-10-01')).toBe('1 Oct');
+            });
+
+            describe('tooltip-value slot', () => {
+              let slotFn;
+
+              beforeEach(() => {
+                slotFn = wrapper.findComponent(GlAreaChart).vm.$scopedSlots['tooltip-value'];
+              });
+
+              it('formats big number', () => {
+                const slotContent = slotFn({ value: 1000 });
+
+                expect(getSlotText(slotContent)).toContain('1k');
+              });
+
+              it('formats fractal number', () => {
+                const slotContent = slotFn({ value: 1.33333 });
+
+                expect(getSlotText(slotContent)).toContain('1.3');
+              });
+
+              it('formats null value', () => {
+                const slotContent = slotFn({ value: null });
+
+                expect(getSlotText(slotContent)).toContain('—');
+              });
+            });
+
+            it('renders tooltip-title slot with formatted date', () => {
+              const slotFn = wrapper.findComponent(GlAreaChart).vm.$scopedSlots['tooltip-title'];
+              const slotContent = slotFn({ params: { value: '2025-10-31' } });
+
+              expect(getSlotText(slotContent)).toContain('31 October');
             });
 
             it('passes correct monthly commitment data', () => {
@@ -88,129 +150,135 @@ describe('UsageTrendsChart', () => {
                 (series) => series.name === 'Monthly commitment',
               );
 
-              expect(monthlyCommitment).toEqual({
-                name: 'Monthly commitment',
-                stack: 'daily',
-                data: [
-                  ['2025-10-01', null],
-                  ['2025-10-02', null],
-                  ['2025-10-03', null],
-                  ['2025-10-04', null],
-                  ['2025-10-05', 0],
-                  ['2025-10-06', 1],
-                  ['2025-10-07', 2.5],
-                  ['2025-10-08', 2.5],
-                  ['2025-10-09', 2.5],
-                  ['2025-10-10', 4.5],
-                  ['2025-10-11', 4.5],
-                  ['2025-10-12', 4.5],
-                  ['2025-10-13', 4.5],
-                  ['2025-10-14', 4.5],
-                  ['2025-10-15', 4.5],
-                  ['2025-10-16', 4.5],
-                  ['2025-10-17', 4.5],
-                  ['2025-10-18', 4.5],
-                  ['2025-10-19', 4.5],
-                  ['2025-10-20', 4.5],
-                  ['2025-10-21', null],
-                  ['2025-10-22', null],
-                  ['2025-10-23', null],
-                  ['2025-10-24', null],
-                  ['2025-10-25', null],
-                  ['2025-10-26', null],
-                  ['2025-10-27', null],
-                  ['2025-10-28', null],
-                  ['2025-10-29', null],
-                  ['2025-10-30', null],
-                  ['2025-10-31', null],
-                ],
-              });
+              expect(monthlyCommitment).toEqual(
+                expect.objectContaining({
+                  name: 'Monthly commitment',
+                  stack: 'daily',
+                  data: [
+                    ['2025-10-01', null],
+                    ['2025-10-02', null],
+                    ['2025-10-03', null],
+                    ['2025-10-04', null],
+                    ['2025-10-05', 0],
+                    ['2025-10-06', 1],
+                    ['2025-10-07', 2.5],
+                    ['2025-10-08', 2.5],
+                    ['2025-10-09', 2.5],
+                    ['2025-10-10', 4.5],
+                    ['2025-10-11', 4.5],
+                    ['2025-10-12', 4.5],
+                    ['2025-10-13', 4.5],
+                    ['2025-10-14', 4.5],
+                    ['2025-10-15', 4.5],
+                    ['2025-10-16', 4.5],
+                    ['2025-10-17', 4.5],
+                    ['2025-10-18', 4.5],
+                    ['2025-10-19', 4.5],
+                    ['2025-10-20', 4.5],
+                    ['2025-10-21', null],
+                    ['2025-10-22', null],
+                    ['2025-10-23', null],
+                    ['2025-10-24', null],
+                    ['2025-10-25', null],
+                    ['2025-10-26', null],
+                    ['2025-10-27', null],
+                    ['2025-10-28', null],
+                    ['2025-10-29', null],
+                    ['2025-10-30', null],
+                    ['2025-10-31', null],
+                  ],
+                }),
+              );
             });
 
             it('passes correct monthly waiver data', () => {
               const chartData = findGlAreaChart().props('data');
               const monthlyWaiver = chartData.find((series) => series.name === 'Monthly waiver');
 
-              expect(monthlyWaiver).toEqual({
-                name: 'Monthly waiver',
-                stack: 'daily',
-                data: [
-                  ['2025-10-01', null],
-                  ['2025-10-02', null],
-                  ['2025-10-03', null],
-                  ['2025-10-04', null],
-                  ['2025-10-05', null],
-                  ['2025-10-06', null],
-                  ['2025-10-07', null],
-                  ['2025-10-08', null],
-                  ['2025-10-09', null],
-                  ['2025-10-10', null],
-                  ['2025-10-11', 0],
-                  ['2025-10-12', 5],
-                  ['2025-10-13', 5],
-                  ['2025-10-14', 12.5],
-                  ['2025-10-15', 22.5],
-                  ['2025-10-16', 22.5],
-                  ['2025-10-17', 22.5],
-                  ['2025-10-18', 22.5],
-                  ['2025-10-19', 22.5],
-                  ['2025-10-20', 22.5],
-                  ['2025-10-21', null],
-                  ['2025-10-22', null],
-                  ['2025-10-23', null],
-                  ['2025-10-24', null],
-                  ['2025-10-25', null],
-                  ['2025-10-26', null],
-                  ['2025-10-27', null],
-                  ['2025-10-28', null],
-                  ['2025-10-29', null],
-                  ['2025-10-30', null],
-                  ['2025-10-31', null],
-                ],
-              });
+              expect(monthlyWaiver).toEqual(
+                expect.objectContaining({
+                  name: 'Monthly waiver',
+                  stack: 'daily',
+                  data: [
+                    ['2025-10-01', null],
+                    ['2025-10-02', null],
+                    ['2025-10-03', null],
+                    ['2025-10-04', null],
+                    ['2025-10-05', null],
+                    ['2025-10-06', null],
+                    ['2025-10-07', null],
+                    ['2025-10-08', null],
+                    ['2025-10-09', null],
+                    ['2025-10-10', null],
+                    ['2025-10-11', 0],
+                    ['2025-10-12', 5],
+                    ['2025-10-13', 5],
+                    ['2025-10-14', 12.5],
+                    ['2025-10-15', 22.5],
+                    ['2025-10-16', 22.5],
+                    ['2025-10-17', 22.5],
+                    ['2025-10-18', 22.5],
+                    ['2025-10-19', 22.5],
+                    ['2025-10-20', 22.5],
+                    ['2025-10-21', null],
+                    ['2025-10-22', null],
+                    ['2025-10-23', null],
+                    ['2025-10-24', null],
+                    ['2025-10-25', null],
+                    ['2025-10-26', null],
+                    ['2025-10-27', null],
+                    ['2025-10-28', null],
+                    ['2025-10-29', null],
+                    ['2025-10-30', null],
+                    ['2025-10-31', null],
+                  ],
+                }),
+              );
             });
 
             it('passes correct on-demand usage data', () => {
               const chartData = findGlAreaChart().props('data');
               const onDemand = chartData.find((series) => series.name === 'On-demand');
 
-              expect(onDemand).toEqual({
-                name: 'On-demand',
-                stack: 'daily',
-                data: [
-                  ['2025-10-01', null],
-                  ['2025-10-02', null],
-                  ['2025-10-03', null],
-                  ['2025-10-04', null],
-                  ['2025-10-05', null],
-                  ['2025-10-06', null],
-                  ['2025-10-07', null],
-                  ['2025-10-08', null],
-                  ['2025-10-09', null],
-                  ['2025-10-10', null],
-                  ['2025-10-11', null],
-                  ['2025-10-12', null],
-                  ['2025-10-13', null],
-                  ['2025-10-14', 0],
-                  ['2025-10-15', 12.5],
-                  ['2025-10-16', 25.5],
-                  ['2025-10-17', 25.5],
-                  ['2025-10-18', 41],
-                  ['2025-10-19', 41],
-                  ['2025-10-20', 41],
-                  ['2025-10-21', null],
-                  ['2025-10-22', null],
-                  ['2025-10-23', null],
-                  ['2025-10-24', null],
-                  ['2025-10-25', null],
-                  ['2025-10-26', null],
-                  ['2025-10-27', null],
-                  ['2025-10-28', null],
-                  ['2025-10-29', null],
-                  ['2025-10-30', null],
-                  ['2025-10-31', null],
-                ],
-              });
+              expect(onDemand).toEqual(
+                expect.objectContaining({
+                  name: 'On-demand',
+                  stack: 'daily',
+                  data: [
+                    ['2025-10-01', null],
+                    ['2025-10-02', null],
+                    ['2025-10-03', null],
+                    ['2025-10-04', null],
+                    ['2025-10-05', null],
+                    ['2025-10-06', null],
+                    ['2025-10-07', null],
+                    ['2025-10-08', null],
+                    ['2025-10-09', null],
+                    ['2025-10-10', null],
+                    ['2025-10-11', null],
+                    ['2025-10-12', null],
+                    ['2025-10-13', null],
+                    ['2025-10-14', 0],
+                    ['2025-10-15', 12.5],
+                    ['2025-10-16', 25.5],
+                    ['2025-10-17', 25.5],
+                    ['2025-10-18', 41],
+                    ['2025-10-19', 41],
+                    ['2025-10-20', 41],
+                    ['2025-10-21', null],
+                    ['2025-10-22', null],
+                    ['2025-10-23', null],
+                    ['2025-10-24', null],
+                    ['2025-10-25', null],
+                    ['2025-10-26', null],
+                    ['2025-10-27', null],
+                    ['2025-10-28', null],
+                    ['2025-10-29', null],
+                    ['2025-10-30', null],
+                    ['2025-10-31', null],
+                  ],
+                }),
+              );
             });
           });
         });
@@ -232,7 +300,7 @@ describe('UsageTrendsChart', () => {
             const chartData = findGlAreaChart().props('data');
 
             expect(chartData).toEqual([
-              {
+              expect.objectContaining({
                 name: 'Monthly commitment',
                 stack: 'daily',
                 data: expect.arrayContaining([
@@ -243,7 +311,7 @@ describe('UsageTrendsChart', () => {
                   ['2025-10-20', 2],
                   ['2025-10-21', null],
                 ]),
-              },
+              }),
             ]);
           });
         });
@@ -265,7 +333,7 @@ describe('UsageTrendsChart', () => {
             const chartData = findGlAreaChart().props('data');
 
             expect(chartData).toEqual([
-              {
+              expect.objectContaining({
                 name: 'Monthly commitment',
                 stack: 'daily',
                 data: expect.arrayContaining([
@@ -276,8 +344,8 @@ describe('UsageTrendsChart', () => {
                   ['2025-10-20', 2],
                   ['2025-10-21', null],
                 ]),
-              },
-              {
+              }),
+              expect.objectContaining({
                 name: 'On-demand',
                 stack: 'daily',
                 data: expect.arrayContaining([
@@ -287,7 +355,7 @@ describe('UsageTrendsChart', () => {
                   ['2025-10-20', 3],
                   ['2025-10-21', null],
                 ]),
-              },
+              }),
             ]);
           });
         });
@@ -313,7 +381,7 @@ describe('UsageTrendsChart', () => {
             const chartData = findGlAreaChart().props('data');
 
             expect(chartData).toEqual([
-              {
+              expect.objectContaining({
                 name: 'Monthly commitment',
                 stack: 'daily',
                 data: expect.arrayContaining([
@@ -327,7 +395,7 @@ describe('UsageTrendsChart', () => {
                   ['2025-10-20', 8],
                   ['2025-10-21', null],
                 ]),
-              },
+              }),
             ]);
           });
         });
