@@ -156,6 +156,39 @@ export default {
     isCatalogConfigMode() {
       return this.configMode === CONFIG_MODE_CATALOG;
     },
+    catalogConfigModeTexts() {
+      if (this.glAbilities.readAiCatalogFlow && this.glFeatures.aiCatalogThirdPartyFlows) {
+        return {
+          label: s__('AICatalog|Agent or flow'),
+          labelDescription: s__(
+            'AICatalog|From the agents and flows configured for this project, select the one that this trigger will execute.',
+          ),
+          placeholder: s__('AICatalog|Select an agent or flow from the AI Catalog'),
+        };
+      }
+
+      if (this.glAbilities.readAiCatalogFlow) {
+        return {
+          label: s__('AICatalog|Flow'),
+          labelDescription: s__(
+            'AICatalog|From the flows configured for this project, select the flow that this trigger will execute.',
+          ),
+          placeholder: s__('AICatalog|Select a flow from the AI Catalog'),
+        };
+      }
+
+      if (this.glFeatures.aiCatalogThirdPartyFlows) {
+        return {
+          label: s__('AICatalog|Agent'),
+          labelDescription: s__(
+            'AICatalog|From the agents configured for this project, select the agent that this trigger will execute.',
+          ),
+          placeholder: s__('AICatalog|Select an agent from the AI Catalog'),
+        };
+      }
+
+      return {};
+    },
     isEditMode() {
       return this.mode === MODE_EDIT;
     },
@@ -189,9 +222,7 @@ export default {
       }));
     },
     selectedFlowText() {
-      return (
-        this.selectedCatalogItem?.name ?? s__('DuoAgentsPlatform|Select a flow from the AI Catalog')
-      );
+      return this.selectedCatalogItem?.name ?? this.catalogConfigModeTexts.placeholder;
     },
   },
   watch: {
@@ -338,20 +369,18 @@ export default {
       </gl-form-group>
 
       <template v-if="isCatalogConfigMode">
-        <gl-form-group :label="s__('DuoAgentsPlatform|Flow')" label-for="trigger-agent">
-          <template #label-description>
-            {{
-              s__(
-                'DuoAgentsPlatform|From the flows configured for this project, select the flow that this trigger will execute.',
-              )
-            }}
-          </template>
+        <gl-form-group
+          :label="catalogConfigModeTexts.label"
+          :label-description="catalogConfigModeTexts.labelDescription"
+          data-testid="trigger-agent-group"
+          label-for="trigger-agent"
+        >
           <gl-collapsible-listbox
             id="trigger-agent"
             :items="catalogItemOptions"
             :selected="selectedFlow"
             :toggle-text="selectedFlowText"
-            :header-text="s__('DuoAgentsPlatform|Select a flow from the AI Catalog')"
+            :header-text="catalogConfigModeTexts.placeholder"
             :loading="$apollo.queries.catalogItems.loading"
             block
             searchable
@@ -363,11 +392,9 @@ export default {
       <gl-form-group
         v-else
         :label="s__('DuoAgentsPlatform|Configuration path')"
+        :label-description="s__('DuoAgentsPlatform|Enter the path to your configuration file.')"
         label-for="trigger-config-path"
       >
-        <template #label-description>
-          {{ s__('DuoAgentsPlatform|Enter the path to your configuration file.') }}
-        </template>
         <gl-form-input
           id="trigger-config-path"
           v-model="configPath"
