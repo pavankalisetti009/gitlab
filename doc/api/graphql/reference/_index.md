@@ -10372,7 +10372,7 @@ Input type: `PersonalAccessTokenCreateInput`
 | ---- | ---- | ----------- |
 | <a id="mutationpersonalaccesstokencreateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
 | <a id="mutationpersonalaccesstokencreateerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
-| <a id="mutationpersonalaccesstokencreatetoken"></a>`token` | [`PersonalAccessToken`](#personalaccesstoken) | Created personal access token. |
+| <a id="mutationpersonalaccesstokencreatetoken"></a>`token` | [`String`](#string) | Created personal access token. |
 
 ### `Mutation.personalAccessTokenRotate`
 
