@@ -93,7 +93,7 @@ export default {
       return !this.configuration;
     },
     hasParentConsumer() {
-      return this.configuration?.enabled;
+      return this.aiCatalogFlow?.configurationForGroup?.enabled;
     },
     shouldShowLatestVersion() {
       // Always show latest version in Explore/Group namespaces. Project namespace should show pinned version,
