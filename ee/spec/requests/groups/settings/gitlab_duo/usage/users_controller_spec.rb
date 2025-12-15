@@ -4,8 +4,10 @@ require 'spec_helper'
 
 RSpec.describe Groups::Settings::GitlabDuo::Usage::UsersController, feature_category: :consumables_cost_management do
   let_it_be(:user) { create(:user) }
-  let_it_be(:group) { create(:group) }
+  let_it_be_with_reload(:group) { create(:group) }
+
   let(:usage_billing_dev_enabled) { true }
+  let(:display_gitlab_credits_user_data) { true }
 
   before do
     sign_in(user)
@@ -40,6 +42,10 @@ RSpec.describe Groups::Settings::GitlabDuo::Usage::UsersController, feature_cate
             paid_group.add_owner(user)
           end
 
+          before do
+            paid_group.namespace_settings.update!(display_gitlab_credits_user_data: display_gitlab_credits_user_data)
+          end
+
           it 'returns 200' do
             request
 
@@ -48,6 +54,16 @@ RSpec.describe Groups::Settings::GitlabDuo::Usage::UsersController, feature_cate
 
           context 'when usage_billing_dev FF is disabled' do
             let(:usage_billing_dev_enabled) { false }
+
+            it 'renders 404' do
+              request
+
+              expect(response).to have_gitlab_http_status(:not_found)
+            end
+          end
+
+          context 'when display_gitlab_credits_user_data is false' do
+            let(:display_gitlab_credits_user_data) { false }
 
             it 'renders 404' do
               request
@@ -77,6 +93,7 @@ RSpec.describe Groups::Settings::GitlabDuo::Usage::UsersController, feature_cate
       end
 
       before do
+        paid_group.namespace_settings.update!(display_gitlab_credits_user_data: display_gitlab_credits_user_data)
         stub_ee_application_setting(should_check_namespace_plan: true)
       end
 

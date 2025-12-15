@@ -65,6 +65,9 @@ export default {
     isUsageBillingDisabled() {
       return this.subscriptionUsage?.enabled === false;
     },
+    shouldDisplayUserData() {
+      return gon.display_gitlab_credits_user_data;
+    },
     subscriptionsUrl() {
       return gon.subscriptions_url;
     },
@@ -247,7 +250,10 @@ export default {
           />
         </gl-tab>
         <gl-tab :title="s__('UsageBilling|Usage by user')">
-          <usage-by-user-tab />
+          <usage-by-user-tab v-if="shouldDisplayUserData" />
+          <gl-alert v-else>
+            {{ s__('UsageBilling|Displaying user data is disabled.') }}
+          </gl-alert>
         </gl-tab>
       </gl-tabs>
     </template>

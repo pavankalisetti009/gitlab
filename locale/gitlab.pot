@@ -72094,6 +72094,9 @@ msgstr ""
 msgid "UsageBilling|Date/Time"
 msgstr ""
 
+msgid "UsageBilling|Displaying user data is disabled."
+msgstr ""
+
 msgid "UsageBilling|Enable on-demand billing to keep GitLab Duo features active when monthly GitLab Credits run out. Without these terms, users lose GitLab Duo access after exhausting their included GitLab Credits. Learn about %{linkStart}overage billing%{linkEnd}."
 msgstr ""
 
