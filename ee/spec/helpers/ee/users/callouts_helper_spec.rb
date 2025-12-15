@@ -10,7 +10,7 @@ RSpec.describe EE::Users::CalloutsHelper, feature_category: :user_management do
     let_it_be(:namespace) { build_stubbed(:namespace) }
     let_it_be(:user) { namespace.owner }
 
-    let(:show_ultimate_trial?) { true }
+    let(:subscriptions_trials_enabled) { true }
     let(:user_default_dashboard?) { true }
     let(:owns_paid_namespace?) { false }
     let(:owns_group_without_trial?) { true }
@@ -18,7 +18,7 @@ RSpec.describe EE::Users::CalloutsHelper, feature_category: :user_management do
     let(:render) { helper.render_dashboard_ultimate_trial(user) }
 
     before do
-      allow(helper).to receive(:show_ultimate_trial?).with(user, described_class::ULTIMATE_TRIAL).and_return(show_ultimate_trial?)
+      stub_saas_features(subscriptions_trials: subscriptions_trials_enabled)
       allow(helper).to receive(:user_default_dashboard?).with(user).and_return(user_default_dashboard?)
       allow(user).to receive(:owns_paid_namespace?).and_return(owns_paid_namespace?)
       allow(user).to receive(:owns_group_without_trial?).and_return(owns_group_without_trial?)
@@ -31,8 +31,8 @@ RSpec.describe EE::Users::CalloutsHelper, feature_category: :user_management do
       end
     end
 
-    context 'when show_ultimate_trial? is false' do
-      let(:show_ultimate_trial?) { false }
+    context 'when subscriptions_trials_enabled is false' do
+      let(:subscriptions_trials_enabled) { false }
 
       it 'does not render any content' do
         expect(helper).not_to receive(:render)
@@ -397,8 +397,6 @@ RSpec.describe EE::Users::CalloutsHelper, feature_category: :user_management do
     before do
       allow(License).to receive(:current).and_return(license)
       allow(admin).to receive(:can_admin_all_resources?).and_return(true)
-      allow(helper).to receive(:user_dismissed?)
-        .with(::Users::CalloutsHelper::PRODUCT_USAGE_DATA_COLLECTION_CHANGES).and_return(false)
     end
 
     context 'when license is an offline cloud license' do
