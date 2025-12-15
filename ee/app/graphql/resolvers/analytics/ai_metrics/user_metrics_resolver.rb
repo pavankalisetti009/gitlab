@@ -21,6 +21,10 @@ module Resolvers
           description: 'Date range to end at. Default is the end of current month.
            ClickHouse needs to be enabled when passing this param.'
 
+        argument :sort, Types::Analytics::AiMetrics::UserMetricsSortEnum,
+          required: false,
+          description: 'Sort AI user metrics.'
+
         def ready?(**args)
           validate_params!(args)
 
@@ -30,12 +34,56 @@ module Resolvers
         def resolve(**args)
           context[:ai_metrics_params] = params_with_defaults(args).merge(namespace: namespace)
 
-          ::GitlabSubscriptions::AddOnAssignedUsersFinder.new(
-            current_user, namespace, add_on_name: :duo_enterprise,
-            after: args[:start_date], before: args[:end_date]).execute
+          assigned_users = fetch_assigned_users(args)
+
+          return assigned_users if context[:ai_metrics_params][:sort].nil?
+
+          sorted_user_ids = fetch_sorted_user_ids(assigned_users, context[:ai_metrics_params])
+
+          sort_users_by_ids(assigned_users, sorted_user_ids)
         end
 
         private
+
+        def fetch_assigned_users(args)
+          ::GitlabSubscriptions::AddOnAssignedUsersFinder.new(
+            current_user,
+            namespace,
+            add_on_name: :duo_enterprise,
+            after: args[:start_date],
+            before: args[:end_date]
+          ).execute
+        end
+
+        def fetch_sorted_user_ids(users, params)
+          # We need to perform an external query to sort users because the metrics are aggregated
+          # The ai_metrics_service returns pre-sorted user IDs based on the requested metric,
+          # which we then use to order the user records while preserving the sort order.
+
+          result = ai_metrics_service(users.map(&:id), params).execute
+          result.payload.keys
+        end
+
+        def ai_metrics_service(user_ids, params)
+          ::Analytics::AiAnalytics::AiUserMetricsService.new(
+            current_user: current_user,
+            user_ids: user_ids,
+            namespace: namespace,
+            from: params[:start_date],
+            to: params[:end_date],
+            feature: first_registered_feature, # feature type doesn't matter for sorting
+            sort: params[:sort]
+          )
+        end
+
+        def first_registered_feature
+          Gitlab::Tracking::AiTracking.registered_features.first
+        end
+
+        def sort_users_by_ids(users, sorted_ids)
+          user_lookup = users.index_by(&:id)
+          sorted_ids.filter_map { |user_id| user_lookup[user_id] }
+        end
 
         def validate_params!(args)
           params = params_with_defaults(args)
