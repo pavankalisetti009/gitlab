@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlExperimentBadge } from '@gitlab/ui';
-import { shallowMount } from '@vue/test-utils';
+import { GlExperimentBadge, GlAlert, GlSprintf } from '@gitlab/ui';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -9,7 +9,6 @@ import AiCatalogFlowsEdit from 'ee/ai/catalog/pages/ai_catalog_flows_edit.vue';
 import AiCatalogFlowForm from 'ee/ai/catalog/components/ai_catalog_flow_form.vue';
 import updateAiCatalogFlow from 'ee/ai/catalog/graphql/mutations/update_ai_catalog_flow.mutation.graphql';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
-import { VERSION_LATEST } from 'ee/ai/catalog/constants';
 import { AI_CATALOG_FLOWS_SHOW_ROUTE } from 'ee/ai/catalog/router/constants';
 import {
   mockFlow,
@@ -47,7 +46,7 @@ describe('AiCatalogFlowsEdit', () => {
   const createComponent = ({ props } = {}) => {
     mockApollo = createMockApollo([[updateAiCatalogFlow, mockUpdateAiCatalogFlowHandler]]);
 
-    wrapper = shallowMount(AiCatalogFlowsEdit, {
+    wrapper = shallowMountExtended(AiCatalogFlowsEdit, {
       apolloProvider: mockApollo,
       propsData: { ...defaultProps, ...props },
       mocks: {
@@ -63,6 +62,9 @@ describe('AiCatalogFlowsEdit', () => {
   const findForm = () => wrapper.findComponent(AiCatalogFlowForm);
   const findPageHeading = () => wrapper.findComponent(PageHeading);
   const findExperimentBadge = () => wrapper.findComponent(GlExperimentBadge);
+  const findEditingLatestVersionWarning = () => wrapper.findComponent(GlAlert);
+  const findEditVersionWarningText = () =>
+    findEditingLatestVersionWarning().findComponent(GlSprintf).attributes('message');
 
   beforeEach(() => {
     createComponent();
@@ -97,7 +99,7 @@ describe('AiCatalogFlowsEdit', () => {
 
       createComponent({
         props: {
-          versionKey: VERSION_LATEST,
+          version: mockVersionProp,
           aiCatalogFlow: {
             ...mockFlow,
             configurationForProject: {
@@ -113,6 +115,38 @@ describe('AiCatalogFlowsEdit', () => {
       await waitForPromises();
 
       expect(findForm().props('initialValues')).toEqual(expectedInitialValues);
+    });
+  });
+
+  describe('version update availability behaviour', () => {
+    it('shows warning when version update is available', async () => {
+      createComponent({
+        props: {
+          version: {
+            isUpdateAvailable: true,
+          },
+        },
+      });
+      await waitForPromises();
+
+      expect(findEditingLatestVersionWarning().exists()).toBe(true);
+      expect(findEditVersionWarningText()).toContain(
+        'To prevent versioning issues, you can edit only the latest version of this flow. To edit an earlier version,',
+      );
+      expect(findEditVersionWarningText()).toContain('duplicate the flow');
+    });
+
+    it('does not show warning when item is at the latest version already', async () => {
+      createComponent({
+        props: {
+          version: {
+            isUpdateAvailable: false,
+          },
+        },
+      });
+      await waitForPromises();
+
+      expect(findEditingLatestVersionWarning().exists()).toBe(false);
     });
   });
 
