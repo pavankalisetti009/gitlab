@@ -6,8 +6,9 @@ RSpec.describe 'getting consumed AI catalog items', feature_category: :workflow_
   include Ai::Catalog::TestHelpers
   include GraphqlHelpers
 
+  let_it_be(:guest) { create(:user) }
   let_it_be(:developer) { create(:user) }
-  let_it_be(:project) { create(:project, :public, developers: developer) }
+  let_it_be(:project) { create(:project, :public, guests: guest, developers: developer) }
   let_it_be(:catalog_agents) { create_list(:ai_catalog_agent, 2) }
   let_it_be(:catalog_flows) { create_list(:ai_catalog_flow, 2) }
   let_it_be(:catalog_third_party_flows) { create_list(:ai_catalog_third_party_flow, 2) }
@@ -48,38 +49,28 @@ RSpec.describe 'getting consumed AI catalog items', feature_category: :workflow_
     enable_ai_catalog
   end
 
-  context 'with Guest access or higher in the project' do
-    using RSpec::Parameterized::TableSyntax
+  context 'with at least guest access in the project' do
+    # ItemConsumersFinder filters out results for flow items if the user does not have
+    # `read_ai_catalog_flow` permission, which requires developer+ of the project.
+    let(:expected_items) { configured_items.reject { |i| i.item.flow? } }
+    let(:current_user) { guest }
 
-    let(:current_user) { create(:user) }
+    it 'returns configured AI catalog items excluding flows' do
+      post_graphql(query, current_user: current_user)
 
-    where(:access_level) do
-      [
-        ::Gitlab::Access::GUEST,
-        ::Gitlab::Access::PLANNER,
-        ::Gitlab::Access::REPORTER,
-        ::Gitlab::Access::DEVELOPER,
-        ::Gitlab::Access::MAINTAINER,
-        ::Gitlab::Access::OWNER
-      ]
+      expect(response).to have_gitlab_http_status(:success)
+      expect(nodes).to match_array(expected_items.map { |configured_item| a_graphql_entity_for(configured_item) })
     end
+  end
 
-    with_them do
-      before do
-        project.add_member(current_user, access_level)
-      end
+  context 'with at least developer access in the project' do
+    let(:current_user) { developer }
 
-      it 'returns configured AI catalog items' do
-        post_graphql(query, current_user: current_user)
+    it 'returns all configured AI catalog items' do
+      post_graphql(query, current_user: current_user)
 
-        expected_items = configured_items.dup
-        # ItemConsumersFinder filters out results for flow items if the user does not have
-        # `read_ai_catalog_flow` permission, which requires developer+ of the project.
-        expected_items.reject! { |i| i.item.flow? } if access_level < Gitlab::Access::DEVELOPER
-
-        expect(response).to have_gitlab_http_status(:success)
-        expect(nodes).to match_array(expected_items.map { |configured_item| a_graphql_entity_for(configured_item) })
-      end
+      expect(response).to have_gitlab_http_status(:success)
+      expect(nodes).to match_array(configured_items.map { |configured_item| a_graphql_entity_for(configured_item) })
     end
   end
 
@@ -96,6 +87,19 @@ RSpec.describe 'getting consumed AI catalog items', feature_category: :workflow_
 
       expect(response).to have_gitlab_http_status(:success)
       expect(nodes).to contain_exactly(a_graphql_entity_for(configured_items[0]))
+    end
+
+    context 'with guest access' do
+      let(:current_user) do
+        create(:user).tap { |user| group.add_guest(user) }
+      end
+
+      it 'returns no configured AI catalog items' do
+        post_graphql(query, current_user: current_user)
+
+        expect(response).to have_gitlab_http_status(:success)
+        expect(nodes).to be_empty
+      end
     end
   end
 
