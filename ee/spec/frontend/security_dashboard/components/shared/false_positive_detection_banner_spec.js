@@ -1,13 +1,18 @@
-import { GlBanner } from '@gitlab/ui';
+import { GlBanner, GlSprintf, GlLink } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import FalsePositiveDetectionBanner from 'ee/security_dashboard/components/shared/false_positive_detection_banner.vue';
 import { makeMockUserCalloutDismisser } from 'helpers/mock_user_callout_dismisser';
+import {
+  DOC_PATH_SAST_FALSE_POSITIVE_DETECTION,
+  DOC_PATH_DISMISSING_FALSE_POSITIVES,
+} from 'ee/security_dashboard/constants';
 
 describe('False positive detection banner component', () => {
   let wrapper;
   let userCalloutDismissSpy;
 
   const findFpDetectionBanner = () => wrapper.findComponent(GlBanner);
+  const findAllLinks = () => wrapper.findAllComponents(GlLink);
 
   const createWrapper = ({
     glFeatures,
@@ -28,6 +33,8 @@ describe('False positive detection banner component', () => {
           dismiss: userCalloutDismissSpy,
           shouldShowCallout,
         }),
+        GlSprintf,
+        GlLink,
       },
     });
   };
@@ -48,11 +55,39 @@ describe('False positive detection banner component', () => {
         'GitLab Duo SAST false positive detection - available for a limited time in free Beta',
       );
       expect(findFpDetectionBanner().text()).toContain(
-        'GitLab Duo automatically reviews critical and high severity SAST vulnerabilities to identify potential false positives. GitLab Duo assigns each false positive a confidence score and you can bulk dismiss the identified false positives in the vulnerability report. The service is enabled by default for free during the beta. You can adjust or turn off this feature in the GitLab Duo settings.',
+        'GitLab Duo will automatically review new critical and high severity',
+      );
+      expect(findFpDetectionBanner().text()).toContain(
+        'SAST vulnerabilities on the default branch to identify potential false positives',
+      );
+      expect(findFpDetectionBanner().text()).toContain(
+        'you can bulk dismiss the identified false positives',
       );
       expect(findFpDetectionBanner().props('buttonText')).toBe('Manage settings');
       expect(findFpDetectionBanner().props('buttonLink')).toBe('/edit#js-gitlab-duo-settings');
       expect(findFpDetectionBanner().props('variant')).toBe('introduction');
+    });
+
+    it('renders documentation links correctly', () => {
+      createWrapper({
+        shouldShowCallout: true,
+        glFeatures: {
+          aiExperimentSastFpDetection: true,
+        },
+      });
+
+      const links = findAllLinks();
+      expect(links).toHaveLength(2);
+
+      expect(links.at(0).props('href')).toBe(DOC_PATH_SAST_FALSE_POSITIVE_DETECTION);
+      expect(links.at(0).props('target')).toBe('_blank');
+      expect(links.at(0).text()).toBe(
+        'SAST vulnerabilities on the default branch to identify potential false positives',
+      );
+
+      expect(links.at(1).props('href')).toBe(DOC_PATH_DISMISSING_FALSE_POSITIVES);
+      expect(links.at(1).props('target')).toBe('_blank');
+      expect(links.at(1).text()).toBe('you can bulk dismiss the identified false positives');
     });
 
     it('displays learn more link when user cannot manage vulnerabilities', () => {
