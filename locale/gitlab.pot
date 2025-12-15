@@ -72377,10 +72377,19 @@ msgstr ""
 msgid "UsageQuota|Excess storage usage"
 msgstr ""
 
+msgid "UsageQuota|Failed to fetch repository health, try again later."
+msgstr ""
+
+msgid "UsageQuota|Failed to parse Project ID from Repository."
+msgstr ""
+
 msgid "UsageQuota|Filter charts by year"
 msgstr ""
 
 msgid "UsageQuota|Filter projects data by month"
+msgstr ""
+
+msgid "UsageQuota|Generate Report"
 msgstr ""
 
 msgid "UsageQuota|Git repository."
@@ -72480,6 +72489,9 @@ msgid "UsageQuota|Recalculate repository usage"
 msgstr ""
 
 msgid "UsageQuota|Registry"
+msgstr ""
+
+msgid "UsageQuota|Repository Health report was not found"
 msgstr ""
 
 msgid "UsageQuota|Seat utilization"
@@ -72594,6 +72606,9 @@ msgid "UsageQuota|User settings %{gt} Usage quotas"
 msgstr ""
 
 msgid "UsageQuota|Wiki content."
+msgstr ""
+
+msgid "UsageQuota|You can generate a new report at any time by clicking the button below."
 msgstr ""
 
 msgid "UsageQuota|You have used %{percentageUsed}%% of your total storage."
