@@ -1,14 +1,20 @@
 <script>
-import { GlBanner } from '@gitlab/ui';
+import { GlBanner, GlSprintf, GlLink } from '@gitlab/ui';
 import UserCalloutDismisser from '~/vue_shared/components/user_callout_dismisser.vue';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { s__ } from '~/locale';
-import { DOC_PATH_VULNERABILITY_REPORT } from 'ee/security_dashboard/constants';
+import {
+  DOC_PATH_VULNERABILITY_REPORT,
+  DOC_PATH_SAST_FALSE_POSITIVE_DETECTION,
+  DOC_PATH_DISMISSING_FALSE_POSITIVES,
+} from 'ee/security_dashboard/constants';
 
 export default {
   name: 'FalsePositiveDetectionBanner',
   components: {
     GlBanner,
+    GlSprintf,
+    GlLink,
     UserCalloutDismisser,
   },
   mixins: [glFeatureFlagMixin()],
@@ -46,10 +52,12 @@ export default {
       buttonText: s__('SecurityReports|Manage settings'),
       buttonTextAlt: s__('SecurityReports|Learn more'),
       content: s__(
-        'SecurityReports|GitLab Duo automatically reviews critical and high severity SAST vulnerabilities to identify potential false positives. GitLab Duo assigns each false positive a confidence score and you can bulk dismiss the identified false positives in the vulnerability report. The service is enabled by default for free during the beta. You can adjust or turn off this feature in the GitLab Duo settings.',
+        'SecurityReports|GitLab Duo will automatically review new critical and high severity %{linkStart}SAST vulnerabilities on the default branch to identify potential false positives%{linkEnd}. GitLab Duo assigns each false positive a confidence score and %{dismissLinkStart}you can bulk dismiss the identified false positives%{dismissLinkEnd} in the vulnerability report. The service is enabled by default for free during the beta. You can adjust or turn off this feature in the GitLab Duo settings.',
       ),
     },
   },
+  DOC_PATH_SAST_FALSE_POSITIVE_DETECTION,
+  DOC_PATH_DISMISSING_FALSE_POSITIVES,
 };
 </script>
 <template>
@@ -67,7 +75,20 @@ export default {
         variant="introduction"
         @close="dismiss"
       >
-        <p>{{ $options.i18n.fpDetectionBanner.content }}</p>
+        <p>
+          <gl-sprintf :message="$options.i18n.fpDetectionBanner.content">
+            <template #link="{ content }">
+              <gl-link :href="$options.DOC_PATH_SAST_FALSE_POSITIVE_DETECTION" target="_blank">{{
+                content
+              }}</gl-link>
+            </template>
+            <template #dismissLink="{ content }">
+              <gl-link :href="$options.DOC_PATH_DISMISSING_FALSE_POSITIVES" target="_blank">{{
+                content
+              }}</gl-link>
+            </template>
+          </gl-sprintf>
+        </p>
       </gl-banner>
     </template>
   </user-callout-dismisser>
