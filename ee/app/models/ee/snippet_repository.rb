@@ -113,7 +113,7 @@ module EE
       end
 
       def snippet_repositories_for_selected_namespaces(node, replicables)
-        personal_snippet_repositories = personal_snippets_repositories_for_organizations(replicables)
+        personal_snippet_repositories = snippet_repositories_for_personal_snippets(replicables)
 
         selected_project_ids = ::Project.selective_sync_scope(node).select(:id)
         project_snippet_repositories =
@@ -126,7 +126,7 @@ module EE
         selected_organization_ids = node.organizations.pluck_primary_key.presence
 
         personal_snippet_repositories =
-          personal_snippets_repositories_for_organizations(replicables, selected_organization_ids)
+          snippet_repositories_for_personal_snippets(replicables, selected_organization_ids)
 
         selected_project_ids = ::Project.selective_sync_scope(node).select(:id)
 
@@ -136,11 +136,11 @@ module EE
         self.from_union([project_snippet_repositories, personal_snippet_repositories])
       end
 
-      def personal_snippets_repositories_for_organizations(replicables, organization_ids = nil)
-        snippets = ::Snippet.only_personal_snippets
-        snippets = snippets.where(organization_id: organization_ids) if organization_ids
+      def snippet_repositories_for_personal_snippets(replicables, organization_ids = nil)
+        personal_snippets = ::Snippet.only_personal_snippets
+        personal_snippets = personal_snippets.where(organization_id: organization_ids) if organization_ids
 
-        replicables.joins(:snippet).where(snippet: snippets)
+        replicables.joins(:snippet).where(snippet: personal_snippets)
       end
 
       def project_snippets_repositories_for_projects(replicables, project_ids)
