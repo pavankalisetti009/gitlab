@@ -312,6 +312,10 @@ module Security
         ::Vulnerabilities::Finding::HIGH_CONFIDENCE_AI_RESOLUTION_CWES.include?(cwe_name&.upcase)
     end
 
+    def file
+      location&.dig(:file)
+    end
+
     def requires_manual_resolution?
       ::Vulnerability::REPORT_TYPES_REQUIRING_MANUAL_RESOLUTION.include?(report_type)
     end
