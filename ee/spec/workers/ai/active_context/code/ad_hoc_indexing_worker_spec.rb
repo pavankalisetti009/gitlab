@@ -6,7 +6,7 @@ RSpec.describe Ai::ActiveContext::Code::AdHocIndexingWorker, feature_category: :
   let_it_be(:namespace) { create(:group) }
   let_it_be(:project) { create(:project, namespace: namespace) }
   let_it_be(:connection) do
-    create(:ai_active_context_connection, adapter_class: ActiveContext::Databases::Elasticsearch::Adapter)
+    create(:ai_active_context_connection, :elasticsearch)
   end
 
   let_it_be(:enabled_namespace) do

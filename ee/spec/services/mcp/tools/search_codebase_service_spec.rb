@@ -458,7 +458,6 @@ RSpec.describe Mcp::Tools::SearchCodebaseService, feature_category: :mcp_server 
 
         create(
           :ai_active_context_collection,
-          name: Ai::ActiveContext::Collections::Code.collection_name,
           search_embedding_version: 1,
           include_ref_fields: false
         )

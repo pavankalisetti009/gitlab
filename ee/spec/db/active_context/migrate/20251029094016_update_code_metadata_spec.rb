@@ -6,7 +6,7 @@ require File.expand_path('ee/db/active_context/migrate/20251029094016_update_cod
 RSpec.describe UpdateCodeMetadata, feature_category: :code_suggestions do
   let(:version) { 20251029094016 }
   let(:migration) { ::ActiveContext::Migration::Dictionary.instance.find_by_version(version) }
-  let_it_be(:collection) { create(:ai_active_context_collection, name: 'gitlab_active_context_code') }
+  let_it_be(:collection) { create(:ai_active_context_collection) }
 
   subject(:migrate) { migration.new.migrate! }
 

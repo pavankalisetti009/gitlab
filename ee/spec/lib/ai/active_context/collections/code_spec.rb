@@ -3,7 +3,13 @@
 require 'spec_helper'
 
 RSpec.describe Ai::ActiveContext::Collections::Code, feature_category: :code_suggestions do
-  let_it_be(:collection) { create(:ai_active_context_collection, name: described_class.collection_name) }
+  let_it_be(:connection) do
+    create(:ai_active_context_connection, :elasticsearch)
+  end
+
+  let_it_be(:collection) do
+    create(:ai_active_context_collection, name: described_class.collection_name, connection: connection)
+  end
 
   before do
     allow(described_class).to receive(:collection_record).and_return(collection)

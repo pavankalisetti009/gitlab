@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Ai::ActiveContext::Code::MarkRepositoryAsReadyEventWorker, feature_category: :global_search do
   let(:event) { Ai::ActiveContext::Code::MarkRepositoryAsReadyEvent.new(data: {}) }
-  let_it_be(:connection) { create(:ai_active_context_connection) }
+  let_it_be(:connection) { create(:ai_active_context_connection, :elasticsearch) }
   let_it_be(:collection) do
     create(:ai_active_context_collection, :code_embeddings_with_versions, connection_id: connection.id)
   end

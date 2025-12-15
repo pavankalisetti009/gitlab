@@ -2,21 +2,17 @@
 
 require 'spec_helper'
 
-module Ai
-  module Context
-    TestQueue = Struct.new(:shard) do
-      def redis_key
-        "test_queue:#{shard}"
-      end
-    end
-  end
-end
-
-RSpec.describe Ai::ActiveContext::BulkProcessWorker, type: :worker, feature_category: :global_search do
+RSpec.describe Ai::ActiveContext::BulkProcessWorker, feature_category: :global_search do
   let(:worker) { described_class.new }
+  let(:queue_class_name) { 'Ai::Context::TestQueue' }
+  let(:shard) { 1 }
+
+  before do
+    allow(Ai::Context::TestQueue).to receive(:number_of_shards).and_return(shard)
+  end
 
   it_behaves_like 'an idempotent worker' do
-    let(:job_args) { ['Ai::Context::TestQueue', 1] }
+    let(:job_args) { [queue_class_name, 1] }
   end
 
   it { is_expected.to be_a(ApplicationWorker) }
@@ -28,13 +24,9 @@ RSpec.describe Ai::ActiveContext::BulkProcessWorker, type: :worker, feature_cate
   end
 
   describe '#perform' do
-    let(:queue_class_name) { 'Ai::Context::TestQueue' }
-    let(:shard) { 1 }
-
     before do
-      stub_const(queue_class_name, Ai::Context::TestQueue)
-      allow(ActiveContext).to receive(:indexing?).and_return(true)
-      allow(worker).to receive(:in_lock).and_yield
+      allow(::ActiveContext).to receive_message_chain(:adapter, :full_collection_name)
+        .and_return(ActiveContextHelpers.code_collection_name)
     end
 
     context 'when indexing is disabled' do
@@ -68,11 +60,9 @@ RSpec.describe Ai::ActiveContext::BulkProcessWorker, type: :worker, feature_cate
   end
 
   describe '#process_shard' do
-    let(:queue) { instance_double(Ai::Context::TestQueue, shard: 1, redis_key: 'test_queue:1') }
-    let(:shard) { 1 }
+    let(:queue) { instance_double(Ai::Context::TestQueue, redis_key: 'test_queue:1') }
 
     before do
-      allow(worker).to receive(:in_lock).and_yield
       allow(ActiveContext::BulkProcessQueue).to receive(:process!).and_return([10, 0])
     end
 
@@ -122,6 +112,14 @@ RSpec.describe Ai::ActiveContext::BulkProcessWorker, type: :worker, feature_cate
     it 'returns false when re-enqueue is disabled' do
       allow(ActiveContext::Config).to receive(:re_enqueue_indexing_workers?).and_return(false)
       expect(worker.should_re_enqueue?(10, 0)).to be false
+    end
+  end
+end
+
+module Ai
+  module Context
+    class TestQueue
+      include ::ActiveContext::Concerns::Queue
     end
   end
 end

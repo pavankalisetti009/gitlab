@@ -60,9 +60,9 @@ RSpec.describe Ai::ActiveContext::References::Code, feature_category: :code_sugg
     let(:embedding_versions) { [{ model: 'text-embedding-005', field: 'embeddings_v1' }] }
 
     before do
-      # mock the call to the vector store
       allow(::ActiveContext).to receive_message_chain(:adapter, :client, :search).and_return(search_response)
-      # mock the call to embeddings generation which calls AIGW
+      allow(::ActiveContext).to receive_message_chain(:adapter, :full_collection_name)
+        .and_return(ActiveContextHelpers.code_collection_name)
       allow(Ai::ActiveContext::Embeddings::Code::VertexText).to receive(:generate_embeddings)
         .with(
           %w[content_1 content_2],

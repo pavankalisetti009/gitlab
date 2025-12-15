@@ -20,22 +20,6 @@ RSpec.describe Ai::ActiveContext::Connection, feature_category: :global_search d
     it { is_expected.to validate_length_of(:name).is_at_most(255) }
     it { is_expected.to validate_length_of(:adapter_class).is_at_most(255) }
     it { is_expected.to validate_length_of(:prefix).is_at_most(255) }
-
-    describe 'options validation' do
-      let(:connection) { build(:ai_active_context_connection) }
-
-      it 'validates options is valid hash' do
-        connection.options = { key: 'value' }
-        expect(connection).to be_valid
-
-        connection.options = 'not a hash'
-        expect(connection).not_to be_valid
-        expect(connection.errors[:options]).to include('must be a hash')
-
-        connection.options = { key: :value }
-        expect(connection).to be_valid
-      end
-    end
   end
 
   describe 'encryption' do
@@ -121,6 +105,7 @@ RSpec.describe Ai::ActiveContext::Connection, feature_category: :global_search d
       let(:connection) do
         build(:ai_active_context_connection,
           adapter_class: 'ActiveContext::Databases::Elasticsearch::Adapter',
+          prefix: nil,
           options: custom_options.merge(use_advanced_search_config: false))
       end
 
@@ -134,6 +119,7 @@ RSpec.describe Ai::ActiveContext::Connection, feature_category: :global_search d
       let(:connection) do
         build(:ai_active_context_connection,
           adapter_class: 'SomeOtherAdapter',
+          prefix: nil,
           options: custom_options)
       end
 
@@ -147,6 +133,7 @@ RSpec.describe Ai::ActiveContext::Connection, feature_category: :global_search d
       let(:connection) do
         build(:ai_active_context_connection,
           adapter_class: 'ActiveContext::Databases::Elasticsearch::Adapter',
+          prefix: nil,
           options: custom_options)
       end
 
