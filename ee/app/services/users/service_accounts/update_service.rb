@@ -10,7 +10,7 @@ module Users
       def initialize(current_user, user, params = {})
         @current_user = current_user
         @user = user
-        @params = params.slice(*ALLOWED_PARAMS)
+        @params = params.slice(*ALLOWED_PARAMS).compact_blank
       end
 
       def execute

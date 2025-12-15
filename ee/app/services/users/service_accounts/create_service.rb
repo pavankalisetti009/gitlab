@@ -66,15 +66,15 @@ module Users
       end
 
       def email
-        params[:email] || username_and_email_generator.email
+        params[:email].presence || username_and_email_generator.email
       end
 
       def username
-        params[:username] || username_and_email_generator.username
+        params[:username].presence || username_and_email_generator.username
       end
 
       def name
-        params[:name] || 'Service account user'
+        params[:name].presence || 'Service account user'
       end
 
       def private_profile
