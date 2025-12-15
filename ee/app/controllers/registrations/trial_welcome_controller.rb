@@ -9,7 +9,6 @@ module Registrations
     include BizibleCSP
 
     before_action :verify_onboarding_enabled!
-    before_action :enable_dark_mode
 
     feature_category :onboarding
     urgency :low
@@ -20,7 +19,8 @@ module Registrations
       experiment(:lightweight_trial_registration_redesign,
         actor: current_user).track(:render_welcome)
 
-      render GitlabSubscriptions::Trials::Welcome::TrialFormComponent.new(user: current_user,
+      render GitlabSubscriptions::Trials::Welcome::TrialFormComponent.new(
+        user: current_user,
         params: params.permit(*::Onboarding::StatusPresenter::GLM_PARAMS))
     end
 
@@ -49,10 +49,6 @@ module Registrations
     end
 
     private
-
-    def enable_dark_mode
-      @html_class = 'gl-dark'
-    end
 
     def resubmit_params(result)
       { namespace_id: result.payload[:namespace_id],

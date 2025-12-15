@@ -32,12 +32,6 @@ RSpec.describe Registrations::TrialWelcomeController, :with_current_organization
 
       it { is_expected.to have_gitlab_http_status(:ok) }
 
-      it 'enables dark mode' do
-        get_new
-
-        expect(assigns(:html_class)).to eq('gl-dark')
-      end
-
       context 'with experiment lightweight_trial_registration_redesign' do
         let(:experiment) { instance_double(ApplicationExperiment) }
 

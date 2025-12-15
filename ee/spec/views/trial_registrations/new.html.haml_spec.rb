@@ -64,8 +64,8 @@ RSpec.describe 'trial_registrations/new', feature_category: :acquisition do
 
     it { is_expected.to have_content(s_('InProductMarketing|Get Started with GitLab')) }
 
-    it { is_expected.not_to have_content(_('First name')) }
-    it { is_expected.not_to have_content(_('Last name')) }
+    it { is_expected.to have_content(_('First name')) }
+    it { is_expected.to have_content(_('Last name')) }
 
     it { is_expected.to have_content(_('Company email')) }
     it { is_expected.not_to have_content(_('We recommend a work email address.')) }

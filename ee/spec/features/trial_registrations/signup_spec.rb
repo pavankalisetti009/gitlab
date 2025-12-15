@@ -116,9 +116,11 @@ RSpec.describe 'Trial Sign Up', :with_trial_types, :with_current_organization, :
 
         # Step 1
         expect(page).to have_content('Get Started with GitLab')
-        expect(page).not_to have_content('First name')
-        expect(page).not_to have_content('Last name')
+        expect(page).to have_content('First name')
+        expect(page).to have_content('Last name')
 
+        fill_in 'new_user_first_name', with: new_user.first_name
+        fill_in 'new_user_last_name', with: new_user.last_name
         fill_in 'new_user_username', with: new_user.username
         fill_in 'new_user_email', with: new_user.email
         fill_in 'new_user_password', with: new_user.password
@@ -145,13 +147,14 @@ RSpec.describe 'Trial Sign Up', :with_trial_types, :with_current_organization, :
 
         wait_for_all_requests
 
-        fill_in 'first_name', with: 'John'
-        fill_in 'last_name', with: 'Doe'
-        fill_in 'company_name', with: 'My Company'
+        select_from_listbox 'Software Developer', from: 'Select a role'
+        select_from_listbox 'My team', from: 'Please select'
+        select_from_listbox 'I want to move my repository to GitLab from somewhere else', from: 'Select a reason'
 
         select_from_listbox 'United States of America', from: 'Select a country or region'
         select_from_listbox 'California', from: 'Select state or province'
 
+        fill_in 'company_name', with: 'My Company'
         fill_in 'group_name', with: 'My Group'
         fill_in 'project_name', with: 'My Project'
 
@@ -167,13 +170,14 @@ RSpec.describe 'Trial Sign Up', :with_trial_types, :with_current_organization, :
 
         visit new_users_sign_up_trial_welcome_path
 
-        fill_in 'first_name', with: 'John'
-        fill_in 'last_name', with: 'Doe'
-        fill_in 'company_name', with: 'My Company'
+        select_from_listbox 'Software Developer', from: 'Select a role'
+        select_from_listbox 'My team', from: 'Please select'
+        select_from_listbox 'I want to move my repository to GitLab from somewhere else', from: 'Select a reason'
 
         select_from_listbox 'United States of America', from: 'Select a country or region'
         select_from_listbox 'California', from: 'Select state or province'
 
+        fill_in 'company_name', with: 'My Company'
         fill_in 'group_name', with: 'My Group'
         fill_in 'project_name', with: 'My Project*'
 
@@ -206,13 +210,14 @@ RSpec.describe 'Trial Sign Up', :with_trial_types, :with_current_organization, :
 
           visit new_users_sign_up_trial_welcome_path
 
-          fill_in 'first_name', with: 'John'
-          fill_in 'last_name', with: 'Doe'
-          fill_in 'company_name', with: 'My Company'
+          select_from_listbox 'Software Developer', from: 'Select a role'
+          select_from_listbox 'My team', from: 'Please select'
+          select_from_listbox 'I want to move my repository to GitLab from somewhere else', from: 'Select a reason'
 
           select_from_listbox 'United States of America', from: 'Select a country or region'
           select_from_listbox 'California', from: 'Select state or province'
 
+          fill_in 'company_name', with: 'My Company'
           fill_in 'group_name', with: 'My Group'
           fill_in 'project_name', with: 'My Project'
 

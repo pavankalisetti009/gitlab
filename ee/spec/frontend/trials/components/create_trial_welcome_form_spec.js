@@ -25,8 +25,6 @@ describe('CreateTrialWelcomeForm', () => {
   const gtmSubmitEventLabel = 'trial_welcome_form_submit';
 
   const defaultUserData = {
-    firstName: 'Alice',
-    lastName: 'Johnson',
     companyName: 'Example Corp',
     country: 'US',
     state: 'NY',
@@ -34,7 +32,31 @@ describe('CreateTrialWelcomeForm', () => {
     namespaceId: null,
     groupName: '',
     projectName: '',
+    role: '',
+    setupForCompany: '',
+    registrationObjective: '',
   };
+
+  const defaultRoleOptions = [
+    { value: '0', text: 'Software Developer' },
+    { value: '1', text: 'Development Team Lead' },
+    { value: '2', text: 'Devops Engineer' },
+    { value: '3', text: 'Systems Administrator' },
+    { value: '4', text: 'Security Analyst' },
+    { value: '5', text: 'Data Analyst' },
+    { value: '6', text: 'Product Manager' },
+    { value: '7', text: 'Product Designer' },
+    { value: '8', text: 'Other' },
+  ];
+
+  const defaultRegistrationObjectiveOptions = [
+    { value: '0', text: 'I want to learn the basics of Git' },
+    { value: '1', text: 'I want to move my repository to GitLab from somewhere else' },
+    { value: '2', text: 'I want to store my code' },
+    { value: '3', text: "I want to explore GitLab to see if it's worth switching to" },
+    { value: '4', text: 'I want to use GitLab CI with my existing repository' },
+    { value: '5', text: 'A different reason' },
+  ];
 
   const createComponent = async ({
     userData = defaultUserData,
@@ -43,6 +65,8 @@ describe('CreateTrialWelcomeForm', () => {
     statesLoading = false,
     serverValidations = {},
     namespaceId,
+    roleOptions = defaultRoleOptions,
+    registrationObjectiveOptions = defaultRegistrationObjectiveOptions,
     data,
   } = {}) => {
     const mockResolvers = {
@@ -70,6 +94,8 @@ describe('CreateTrialWelcomeForm', () => {
         gtmSubmitEventLabel,
         serverValidations,
         namespaceId,
+        roleOptions,
+        registrationObjectiveOptions,
         ...propsData,
       },
       stubs: {
@@ -98,14 +124,15 @@ describe('CreateTrialWelcomeForm', () => {
         wrapper = await createComponent();
 
         expect(formValues()).toEqual({
-          first_name: defaultUserData.firstName,
-          last_name: defaultUserData.lastName,
           company_name: defaultUserData.companyName,
           country: defaultUserData.country,
           state: defaultUserData.state,
           group_name: defaultUserData.groupName,
           project_name: defaultUserData.projectName,
           namespace_id: defaultUserData.namespaceId,
+          role: defaultUserData.role,
+          setup_for_company: defaultUserData.setupForCompany,
+          registration_objective: defaultUserData.registrationObjective,
         });
       });
 
@@ -117,14 +144,15 @@ describe('CreateTrialWelcomeForm', () => {
         });
 
         expect(formValues()).toEqual({
-          first_name: undefined, // userData.firstName is undefined
-          last_name: undefined, // userData.lastName is undefined
           company_name: undefined, // userData.companyName is undefined
           country: undefined, // userData.country is undefined
           state: undefined, // userData.state is undefined
           namespace_id: null,
           group_name: '',
           project_name: '',
+          role: '',
+          setup_for_company: '',
+          registration_objective: '',
         });
       });
 
@@ -157,11 +185,12 @@ describe('CreateTrialWelcomeForm', () => {
         expect(findFormFields().exists()).toBe(true);
 
         const expectedFields = [
-          { key: 'first_name', name: 'first_name' },
-          { key: 'last_name', name: 'last_name' },
           { key: 'company_name', name: 'company_name' },
           { key: 'country', name: undefined },
           { key: 'state', name: undefined },
+          { key: 'role', name: undefined },
+          { key: 'setup_for_company', name: undefined },
+          { key: 'registration_objective', name: undefined },
         ];
 
         expectedFields.forEach(({ key, name }) => {
@@ -175,13 +204,14 @@ describe('CreateTrialWelcomeForm', () => {
 
       it('correctly updates GlFormFields values on input update', async () => {
         const initialValues = {
-          first_name: defaultUserData.firstName,
-          last_name: defaultUserData.lastName,
           company_name: defaultUserData.companyName,
           country: defaultUserData.country,
           state: defaultUserData.state,
           group_name: defaultUserData.groupName,
           project_name: defaultUserData.projectName,
+          role: defaultUserData.role,
+          setup_for_company: defaultUserData.setupForCompany,
+          registration_objective: defaultUserData.registrationObjective,
           namespace_id: null,
         };
         expect(formValues()).toEqual(initialValues);
@@ -240,6 +270,15 @@ describe('CreateTrialWelcomeForm', () => {
 
         expect(fieldsProps()).not.toHaveProperty('state');
       });
+
+      it('does not show state field by default when no country is selected', async () => {
+        wrapper = await createComponent({
+          userData: { ...defaultUserData, country: '', state: '' },
+        });
+        await nextTick();
+
+        expect(fieldsProps()).not.toHaveProperty('state');
+      });
     });
 
     describe('group and project name fields', () => {
@@ -269,32 +308,6 @@ describe('CreateTrialWelcomeForm', () => {
   describe('field validations', () => {
     beforeEach(async () => {
       wrapper = await createComponent();
-    });
-
-    describe('name field validations', () => {
-      it.each`
-        value     | result
-        ${null}   | ${'First name is required.'}
-        ${''}     | ${'First name is required.'}
-        ${'John'} | ${''}
-      `('validates the first_name with value of `$value`', ({ value, result }) => {
-        if (fieldsProps().first_name) {
-          const firstNameValidator = fieldsProps().first_name.validators[0];
-          expect(firstNameValidator(value)).toBe(result);
-        }
-      });
-
-      it.each`
-        value    | result
-        ${null}  | ${'Last name is required.'}
-        ${''}    | ${'Last name is required.'}
-        ${'Doe'} | ${''}
-      `('validates the last_name with value of `$value`', ({ value, result }) => {
-        if (fieldsProps().last_name) {
-          const lastNameValidator = fieldsProps().last_name.validators[0];
-          expect(lastNameValidator(value)).toBe(result);
-        }
-      });
     });
 
     describe('company_name field validations', () => {
@@ -398,6 +411,133 @@ describe('CreateTrialWelcomeForm', () => {
 
       const countryValidator = fieldsProps().country.validators[0];
       expect(countryValidator(countryValue)).toBe(result);
+    });
+  });
+
+  describe('personalization fields', () => {
+    describe('role field', () => {
+      beforeEach(async () => {
+        wrapper = await createComponent();
+      });
+
+      it('includes role field with correct options', () => {
+        expect(fieldsProps()).toHaveProperty('role');
+        expect(fieldsProps().role.label).toBe('Role');
+        expect(fieldsProps().role.options).toHaveLength(9);
+        expect(fieldsProps().role.options[0]).toEqual({
+          value: '0',
+          text: 'Software Developer',
+        });
+        expect(fieldsProps().role.options[8]).toEqual({
+          value: '8',
+          text: 'Other',
+        });
+      });
+
+      it('has side-by-side layout class', () => {
+        expect(fieldsProps().role.groupAttrs.class).toContain('@md/panel:gl-col-span-6');
+      });
+
+      it.each`
+        value   | result
+        ${null} | ${'Role is required.'}
+        ${''}   | ${'Role is required.'}
+        ${'0'}  | ${''}
+        ${'5'}  | ${''}
+      `('validates the role with value of `$value`', ({ value, result }) => {
+        const roleValidator = fieldsProps().role.validators[0];
+        expect(roleValidator(value)).toBe(result);
+      });
+    });
+
+    describe('setup_for_company field', () => {
+      beforeEach(async () => {
+        wrapper = await createComponent();
+      });
+
+      it('includes setup_for_company field with correct options', () => {
+        expect(fieldsProps()).toHaveProperty('setup_for_company');
+        expect(fieldsProps().setup_for_company.label).toBe('Who will be using GitLab?');
+        expect(fieldsProps().setup_for_company.options).toHaveLength(2);
+        expect(fieldsProps().setup_for_company.options[0]).toEqual({
+          value: 'true',
+          text: 'My team',
+        });
+        expect(fieldsProps().setup_for_company.options[1]).toEqual({
+          value: 'false',
+          text: 'Just me',
+        });
+      });
+
+      it('has side-by-side layout class', () => {
+        expect(fieldsProps().setup_for_company.groupAttrs.class).toContain(
+          '@md/panel:gl-col-span-6',
+        );
+      });
+
+      it.each`
+        value      | result
+        ${null}    | ${'This field is required.'}
+        ${''}      | ${'This field is required.'}
+        ${'true'}  | ${''}
+        ${'false'} | ${''}
+      `('validates the setup_for_company with value of `$value`', ({ value, result }) => {
+        const setupValidator = fieldsProps().setup_for_company.validators[0];
+        expect(setupValidator(value)).toBe(result);
+      });
+    });
+
+    describe('registration_objective field', () => {
+      beforeEach(async () => {
+        wrapper = await createComponent();
+      });
+
+      it('includes registration_objective field with correct options', () => {
+        expect(fieldsProps()).toHaveProperty('registration_objective');
+        expect(fieldsProps().registration_objective.label).toBe(
+          "What's your reason for joining GitLab?",
+        );
+        expect(fieldsProps().registration_objective.options).toHaveLength(6);
+        expect(fieldsProps().registration_objective.options[0]).toEqual({
+          value: '0',
+          text: 'I want to learn the basics of Git',
+        });
+        expect(fieldsProps().registration_objective.options[5]).toEqual({
+          value: '5',
+          text: 'A different reason',
+        });
+      });
+
+      it('has full-width layout class', () => {
+        expect(fieldsProps().registration_objective.groupAttrs.class).toBe('gl-col-span-12');
+      });
+
+      it.each`
+        value   | result
+        ${null} | ${'This field is required.'}
+        ${''}   | ${'This field is required.'}
+        ${'0'}  | ${''}
+        ${'1'}  | ${''}
+        ${'4'}  | ${''}
+      `('validates the registration_objective with value of `$value`', ({ value, result }) => {
+        const objectiveValidator = fieldsProps().registration_objective.validators[0];
+        expect(objectiveValidator(value)).toBe(result);
+      });
+    });
+
+    it('initializes personalization fields from userData', async () => {
+      wrapper = await createComponent({
+        userData: {
+          ...defaultUserData,
+          role: '2',
+          setupForCompany: 'true',
+          registrationObjective: '4',
+        },
+      });
+
+      expect(formValues().role).toBe('2');
+      expect(formValues().setup_for_company).toBe('true');
+      expect(formValues().registration_objective).toBe('4');
     });
   });
 
