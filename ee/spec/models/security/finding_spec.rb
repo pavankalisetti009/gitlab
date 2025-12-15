@@ -835,4 +835,40 @@ RSpec.describe Security::Finding, feature_category: :vulnerability_management do
       end
     end
   end
+
+  describe '#file' do
+    subject(:file) { finding.file }
+
+    context 'when location has file key' do
+      let(:finding) do
+        create(:security_finding, :with_finding_data, location: { file: 'src/main.rb' })
+      end
+
+      it { is_expected.to eq('src/main.rb') }
+    end
+
+    context 'when location does not have file key' do
+      let(:finding) do
+        create(:security_finding, :with_finding_data, location: { report_type: 'coverage_fuzzing' })
+      end
+
+      it { is_expected.to be_nil }
+    end
+
+    context 'when location is empty' do
+      let(:finding) do
+        create(:security_finding, :with_finding_data, location: {})
+      end
+
+      it { is_expected.to be_nil }
+    end
+
+    context 'when location is nil' do
+      let(:finding) do
+        create(:security_finding, location: nil)
+      end
+
+      it { is_expected.to be_nil }
+    end
+  end
 end
