@@ -53,6 +53,7 @@ module EE
 
         def insert_gitlab_credits_dashboard_menu
           return unless License.feature_available?(:usage_billing)
+          return unless ::Feature.enabled?(:usage_billing_dev, :instance)
 
           insert_menu_after(
             ::Sidebars::Admin::Menus::DuoSettingsMenu,
