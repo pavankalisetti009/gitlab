@@ -1344,6 +1344,20 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
       it_behaves_like 'ServiceURI has the right value', false
 
+      context 'when current_user is a composite identity user' do
+        let_it_be(:service_account) { create(:service_account, composite_identity_enforced: true) }
+        let_it_be(:scopes) { ::Gitlab::Auth::AI_WORKFLOW_SCOPES + ['api'] + ["user:#{user.id}"] }
+        let_it_be(:oauth_access_token) { create(:oauth_access_token, resource_owner: service_account, scopes: scopes) }
+
+        it 'generates a token using the correct service account' do
+          expect(::Ai::DuoWorkflows::WorkflowContextGenerationService).to receive(:new).with(
+            a_hash_including(service_account: have_attributes(id: service_account.id))
+          ).and_call_original
+
+          get api(path, oauth_access_token:), headers: workhorse_headers, params: { project_id: project.id }
+        end
+      end
+
       context 'when project_id parameter is provided' do
         it 'includes x-gitlab-project-id header' do
           get api(path, user), headers: workhorse_headers, params: { project_id: project.id }

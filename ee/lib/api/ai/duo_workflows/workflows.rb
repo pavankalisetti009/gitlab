@@ -127,8 +127,15 @@ module API
               current_user: current_user,
               organization: container&.organization || ::Current.organization,
               workflow_definition: params[:workflow_definition],
+              service_account: service_account_from_composite_identity,
               container: container
             )
+          end
+
+          def service_account_from_composite_identity
+            service_account = ::Gitlab::Auth::Identity.invert_composite_identity(current_user)
+
+            service_account if service_account.service_account?
           end
 
           def gitlab_oauth_token
