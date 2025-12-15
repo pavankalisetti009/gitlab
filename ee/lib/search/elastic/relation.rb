@@ -3,6 +3,10 @@
 module Search
   module Elastic
     class Relation
+      # Elasticsearch uses these sentinel values to represent null/missing fields in sort operations
+      ELASTICSEARCH_LONG_MAX_VALUE = 9223372036854775807  # Used for ASC sort
+      ELASTICSEARCH_LONG_MIN_VALUE = -9223372036854775808 # Used for DESC sort
+
       def initialize(klass, query, options)
         @klass = klass
         @query = query
@@ -36,8 +40,20 @@ module Search
 
       def cursor_for(record)
         hit = hit_for(record)
+        sort_values = hit['sort']
+        return sort_values unless Feature.enabled?(:search_glql_fix_null_field_pagination, Feature.current_request)
 
-        hit['sort']
+        # Elasticsearch uses sentinel values for null fields in sorting:
+        # - ASC order: LONG_MAX_VALUE - nulls sort last
+        # - DESC order: LONG_MIN_VALUE - nulls still sort last
+        # Convert these back to nil so pagination can handle them correctly.
+        sort_values.map do |v|
+          if v == ELASTICSEARCH_LONG_MAX_VALUE || v == ELASTICSEARCH_LONG_MIN_VALUE
+            nil
+          else
+            v
+          end
+        end
       end
 
       def preload(*preloads)

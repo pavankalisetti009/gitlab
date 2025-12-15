@@ -149,6 +149,79 @@ RSpec.describe ::Search::Elastic::Relation, :elastic_helpers, :sidekiq_inline, :
     it 'returns the cursor values for the given record' do
       expect(cursor).to match([an_instance_of(Integer), record.id])
     end
+
+    context 'when feature flag is disabled' do
+      before do
+        stub_feature_flags(search_glql_fix_null_field_pagination: false)
+      end
+
+      it 'returns the raw sort values without sentinel conversion' do
+        expect(cursor).to match([an_instance_of(Integer), record.id])
+      end
+    end
+
+    context 'when sort values contain Elasticsearch sentinel values' do
+      let(:sentinel_max) { described_class::ELASTICSEARCH_LONG_MAX_VALUE }
+      let(:sentinel_min) { described_class::ELASTICSEARCH_LONG_MIN_VALUE }
+
+      # Create a fresh relation for each test where we control the response_mapper
+      let(:mocked_relation) { described_class.new(klass, query_hash, options) }
+      let(:mock_response_mapper) { instance_double(Search::Elastic::ResponseMapper, records: [record]) }
+
+      before do
+        # Set the instance variable directly since hit_for accesses @response_mapper
+        mocked_relation.instance_variable_set(:@response_mapper, mock_response_mapper)
+      end
+
+      context 'with LONG_MAX_VALUE sentinel (ASC null sort)' do
+        before do
+          allow(mock_response_mapper).to receive(:results).and_return([
+            { '_id' => record.id.to_s, 'sort' => [sentinel_max, record.id] }
+          ])
+        end
+
+        it 'converts sentinel value to nil' do
+          expect(mocked_relation.cursor_for(record)).to eq([nil, record.id])
+        end
+      end
+
+      context 'with LONG_MIN_VALUE sentinel (DESC null sort)' do
+        before do
+          allow(mock_response_mapper).to receive(:results).and_return([
+            { '_id' => record.id.to_s, 'sort' => [sentinel_min, record.id] }
+          ])
+        end
+
+        it 'converts sentinel value to nil' do
+          expect(mocked_relation.cursor_for(record)).to eq([nil, record.id])
+        end
+      end
+
+      context 'with both values as sentinel values' do
+        before do
+          allow(mock_response_mapper).to receive(:results).and_return([
+            { '_id' => record.id.to_s, 'sort' => [sentinel_max, sentinel_min] }
+          ])
+        end
+
+        it 'converts both sentinel values to nil' do
+          expect(mocked_relation.cursor_for(record)).to eq([nil, nil])
+        end
+      end
+
+      context 'when feature flag is disabled' do
+        before do
+          stub_feature_flags(search_glql_fix_null_field_pagination: false)
+          allow(mock_response_mapper).to receive(:results).and_return([
+            { '_id' => record.id.to_s, 'sort' => [sentinel_max, record.id] }
+          ])
+        end
+
+        it 'returns sentinel values unchanged' do
+          expect(mocked_relation.cursor_for(record)).to eq([sentinel_max, record.id])
+        end
+      end
+    end
   end
 
   describe "#to_a" do

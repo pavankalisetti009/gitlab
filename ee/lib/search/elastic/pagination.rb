@@ -49,40 +49,15 @@ module Search
       end
 
       def paginate
-        return query_hash unless sort_property_value && tie_breaker_property_value
+        if Feature.enabled?(:search_glql_fix_null_field_pagination, Feature.current_request)
+          # Allow nil sort_property_value (for null values in ES), but require tie_breaker to be set
+          return query_hash if tie_breaker_property_value.nil?
+        else
+          return query_hash unless sort_property_value && tie_breaker_property_value
+        end
 
         add_filter(query_hash, :query, :bool, :filter) do
-          {
-            bool: {
-              should: [
-                {
-                  range: {
-                    sort_property => {
-                      document_matching_operator(sort_direction) => sort_property_value
-                    }
-                  }
-                },
-                {
-                  bool: {
-                    must: [
-                      {
-                        term: {
-                          sort_property => sort_property_value
-                        }
-                      },
-                      {
-                        range: {
-                          tie_breaker_property => {
-                            document_matching_operator(tie_breaker_sort_direction) => tie_breaker_property_value
-                          }
-                        }
-                      }
-                    ]
-                  }
-                }
-              ]
-            }
-          }
+          pagination_filter
         end
       end
 
@@ -93,6 +68,115 @@ module Search
         :tie_breaker_property_value,
         :original_sort,
         :is_after
+
+      def pagination_filter
+        return legacy_pagination_filter unless Feature.enabled?(:search_glql_fix_null_field_pagination,
+          Feature.current_request)
+
+        # When the sort property value is nil, we're paginating past records with null values.
+        # Elasticsearch sorts nulls last (using Long.MAX_VALUE internally), so we need special handling.
+        return pagination_filter_for_null_cursor if sort_property_value.nil?
+
+        pagination_filter_for_non_null_cursor
+      end
+
+      def pagination_filter_for_null_cursor
+        # Cursor is [nil, tie_breaker_value], meaning we've reached null values in the sort field.
+        # We only need to filter by the tie breaker (ID) since all remaining records have null sort values.
+        {
+          bool: {
+            must: [
+              { bool: { must_not: { exists: { field: sort_property } } } },
+              {
+                range: {
+                  tie_breaker_property => {
+                    document_matching_operator(tie_breaker_sort_direction) => tie_breaker_property_value
+                  }
+                }
+              }
+            ]
+          }
+        }
+      end
+
+      def pagination_filter_for_non_null_cursor
+        # Standard cursor: [sort_value, tie_breaker_value]
+        # Match records where:
+        # 1. sort_property > cursor_value, OR
+        # 2. sort_property = cursor_value AND tie_breaker > cursor_tie_breaker
+        # 3. PLUS: If sorting ascending, include null values (they sort after non-nulls)
+        should_clauses = [
+          {
+            range: {
+              sort_property => {
+                document_matching_operator(sort_direction) => sort_property_value
+              }
+            }
+          },
+          {
+            bool: {
+              must: [
+                {
+                  term: {
+                    sort_property => sort_property_value
+                  }
+                },
+                {
+                  range: {
+                    tie_breaker_property => {
+                      document_matching_operator(tie_breaker_sort_direction) => tie_breaker_property_value
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        ]
+
+        # When paginating forward (after), include records with null sort values.
+        # Elasticsearch always sorts nulls last, regardless of ASC/DESC order:
+        # - ASC: 1, 2, 3, null, null (nulls after max value)
+        # - DESC: 3, 2, 1, null, null (nulls still after in iteration order)
+        # So forward pagination from any non-null value should capture nulls.
+        should_clauses << { bool: { must_not: { exists: { field: sort_property } } } } if is_after
+
+        { bool: { should: should_clauses } }
+      end
+
+      def legacy_pagination_filter
+        # Original pagination logic without null handling
+        {
+          bool: {
+            should: [
+              {
+                range: {
+                  sort_property => {
+                    document_matching_operator(sort_direction) => sort_property_value
+                  }
+                }
+              },
+              {
+                bool: {
+                  must: [
+                    {
+                      term: {
+                        sort_property => sort_property_value
+                      }
+                    },
+                    {
+                      range: {
+                        tie_breaker_property => {
+                          document_matching_operator(tie_breaker_sort_direction) => tie_breaker_property_value
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      end
 
       def sort_property
         @sort_property ||= original_sort.each_key.first
