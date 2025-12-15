@@ -19,6 +19,6 @@ additional_properties:
   value:
     description: "count of potential attack surface discovered"
   label:
-    description: "total scan time in minutes"
+    description: "total crawl time in milliseconds"
   max_crawl_depth:
     description: "maximum depth reached in the crawl path hierarchy"
