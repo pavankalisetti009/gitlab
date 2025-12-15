@@ -39,7 +39,7 @@ module API
 
     resource :admin_member_roles do
       desc 'Get Admin Roles for this GitLab instance' do
-        success EE::API::Entities::MemberRole
+        success ::API::Entities::MemberRole
         failure [[401, 'Unauthorized']]
         is_array true
         tags %w[member_roles]
@@ -51,7 +51,7 @@ module API
       end
 
       desc 'Create Admin Role on the GitLab instance' do
-        success EE::API::Entities::MemberRole
+        success ::API::Entities::MemberRole
         failure [[400, 'Bad Request'], [401, 'Unauthorized']]
         tags %w[member_roles]
       end
