@@ -154,7 +154,6 @@ RSpec.describe Gitlab::Llm::Chain::Tools::CodebaseSearch::Executor, feature_cate
           before do
             create(
               :ai_active_context_collection,
-              name: Ai::ActiveContext::Collections::Code.collection_name,
               search_embedding_version: 1, # see Ai::ActiveContext::Collections::Code::MODELS for details
               include_ref_fields: false
             )

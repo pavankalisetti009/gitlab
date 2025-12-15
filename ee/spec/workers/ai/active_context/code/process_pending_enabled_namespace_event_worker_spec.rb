@@ -6,7 +6,7 @@ RSpec.describe Ai::ActiveContext::Code::ProcessPendingEnabledNamespaceEventWorke
   let(:event_class) { Ai::ActiveContext::Code::ProcessPendingEnabledNamespaceEvent }
   let(:event) { event_class.new(data: {}) }
   let_it_be(:connection) do
-    create(:ai_active_context_connection, adapter_class: ActiveContext::Databases::Elasticsearch::Adapter)
+    create(:ai_active_context_connection, :elasticsearch)
   end
 
   let_it_be(:namespace) { create(:group) }

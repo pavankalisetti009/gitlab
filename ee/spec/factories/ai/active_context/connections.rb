@@ -11,5 +11,11 @@ FactoryBot.define do
     trait :inactive do
       active { false }
     end
+
+    trait :elasticsearch do
+      adapter_class { 'ActiveContext::Databases::Elasticsearch::Adapter' }
+      options { { url: ENV['ELASTIC_URL'] || 'http://localhost:9200' } }
+      prefix { ActiveContextHelpers::TEST_INDEX_PREFIX }
+    end
   end
 end

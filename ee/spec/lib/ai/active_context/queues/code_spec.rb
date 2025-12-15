@@ -3,6 +3,11 @@
 require 'spec_helper'
 
 RSpec.describe Ai::ActiveContext::Queues::Code, feature_category: :code_suggestions do
+  before do
+    allow(::ActiveContext).to receive_message_chain(:adapter, :full_collection_name)
+      .and_return(ActiveContextHelpers.code_collection_name)
+  end
+
   describe 'queue processing properties' do
     it 'returns default values' do
       expect(described_class.number_of_shards).to eq(1)

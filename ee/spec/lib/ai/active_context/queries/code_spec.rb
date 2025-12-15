@@ -8,6 +8,11 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
 
   subject(:codebase_query) { described_class.new(search_term: search_term, user: user) }
 
+  before do
+    allow(::ActiveContext).to receive_message_chain(:adapter, :full_collection_name)
+      .and_return(ActiveContextHelpers.code_collection_name)
+  end
+
   describe '.available?' do
     subject(:available) { described_class.available? }
 
@@ -32,7 +37,6 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
         before do
           create(
             :ai_active_context_collection,
-            name: Ai::ActiveContext::Collections::Code.collection_name,
             search_embedding_version: 1,
             include_ref_fields: false
           )
@@ -82,7 +86,6 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
       let_it_be(:collection) do
         create(
           :ai_active_context_collection,
-          name: Ai::ActiveContext::Collections::Code.collection_name,
           search_embedding_version: embeddings_version,
           include_ref_fields: false
         )
@@ -182,7 +185,7 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
       end
 
       describe 'setting last_queried_at', :freeze_time do
-        let(:ac_repository) { project.ready_active_context_code_repository }
+        let(:ac_repository) { project.reload.ready_active_context_code_repository }
 
         before do
           ac_repository.update!(last_queried_at: nil)

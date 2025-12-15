@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe Ai::ActiveContext::Code::CreateEnabledNamespaceEventWorker, feature_category: :global_search do
   let(:event) { Ai::ActiveContext::Code::CreateEnabledNamespaceEvent.new(data: {}) }
   let_it_be(:connection) do
-    create(:ai_active_context_connection, adapter_class: ActiveContext::Databases::Elasticsearch::Adapter, active: true)
+    create(:ai_active_context_connection, :elasticsearch)
   end
 
   subject(:execute) { consume_event(subscriber: described_class, event: event) }

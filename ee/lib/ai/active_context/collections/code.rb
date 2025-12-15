@@ -27,7 +27,7 @@ module Ai
         end
 
         def self.collection_name
-          'gitlab_active_context_code'
+          ::ActiveContext.adapter.full_collection_name('code')
         end
 
         def self.queue

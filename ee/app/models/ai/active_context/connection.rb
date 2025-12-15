@@ -24,7 +24,6 @@ module Ai
       validates :prefix, length: { maximum: 255 }, allow_nil: true
       validates :active, inclusion: { in: [true, false] }
       validates :options, presence: true
-      validate :validate_options
       validates_uniqueness_of :active, conditions: -> { where(active: true) }, if: :active
 
       def self.active
@@ -56,11 +55,15 @@ module Ai
       end
 
       def options
-        if use_advanced_search_config?
-          ::Gitlab::CurrentSettings.elasticsearch_config
-        else
-          super
-        end
+        opts = if use_advanced_search_config?
+                 ::Gitlab::CurrentSettings.elasticsearch_config
+               else
+                 super
+               end
+
+        # The prefix enables connection-specific index isolation for different environments
+        opts[:prefix] = prefix if prefix.present?
+        opts
       end
 
       def use_advanced_search_config?
@@ -70,14 +73,6 @@ module Ai
 
       def use_advanced_search_config_option
         read_attribute(:options)['use_advanced_search_config']
-      end
-
-      private
-
-      def validate_options
-        return if options.is_a?(Hash)
-
-        errors.add(:options, 'must be a hash')
       end
     end
   end

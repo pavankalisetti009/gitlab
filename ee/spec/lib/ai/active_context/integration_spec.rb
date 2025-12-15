@@ -34,6 +34,8 @@ RSpec.describe 'Ai::ActiveContext integration', :clean_gitlab_redis_shared_state
   end
 
   before do
+    allow(::ActiveContext).to receive_message_chain(:adapter, :full_collection_name)
+      .and_return(ActiveContextHelpers.code_collection_name)
     allow(ActiveContext).to receive(:indexing?).and_return(true)
     allow(ActiveContext::Config).to receive(:re_enqueue_indexing_workers?).and_return(false)
     allow(::Ai::ActiveContext).to receive(:paused?).and_return(false)

@@ -5,6 +5,11 @@ require 'spec_helper'
 RSpec.describe Gitlab::Metrics::Samplers::GlobalSearchSampler, feature_category: :global_search do
   subject(:sampler) { described_class.new }
 
+  before do
+    allow(::ActiveContext).to receive_message_chain(:adapter, :full_collection_name)
+      .and_return(ActiveContextHelpers.code_collection_name)
+  end
+
   it_behaves_like 'metrics sampler', 'GLOBAL_SEARCH_SAMPLER'
 
   describe '#sample' do

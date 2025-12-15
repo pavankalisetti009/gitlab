@@ -6,7 +6,7 @@ require_relative 'shared_contexts'
 RSpec.describe Ai::ActiveContext::Code::Deleter, feature_category: :global_search do
   let_it_be(:connection) { create(:ai_active_context_connection) }
   let_it_be(:collection) do
-    create(:ai_active_context_collection, name: 'gitlab_active_context_code', connection: connection)
+    create(:ai_active_context_collection, connection: connection)
   end
 
   let_it_be(:project) { create(:project, :repository) }
@@ -21,6 +21,7 @@ RSpec.describe Ai::ActiveContext::Code::Deleter, feature_category: :global_searc
     instance_double(
       ::ActiveContext::Databases::Elasticsearch::Adapter,
       name: adapter_name,
+      full_collection_name: ActiveContextHelpers.code_collection_name,
       indexer_connection_options: double
     )
   end
@@ -34,6 +35,8 @@ RSpec.describe Ai::ActiveContext::Code::Deleter, feature_category: :global_searc
   before do
     allow(::ActiveContext).to receive(:adapter).and_return(adapter)
     allow(::ActiveContext::Config).to receive(:logger).and_return(logger)
+    allow(::ActiveContext).to receive_message_chain(:adapter, :full_collection_name)
+      .and_return(ActiveContextHelpers.code_collection_name)
   end
 
   def build_log_payload(message, extra_params = {})
