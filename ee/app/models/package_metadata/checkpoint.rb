@@ -12,6 +12,10 @@ module PackageMetadata
     validates :chunk, presence: true, numericality: { only_integer: true }
     validates :purl_type, presence: true, uniqueness: { scope: [:data_type, :version_format] }
 
+    scope :advisory_purl_type_sequences, -> {
+      where(data_type: 'advisories', version_format: 'v2').to_h { |c| [c.purl_type, c.sequence] }
+    }
+
     # These components uniquely identify the last sync position for a
     # path determined by data_type_bucket_or_dir/version_format/purl_type.
     def self.with_path_components(data_type, version_format, purl_type)
