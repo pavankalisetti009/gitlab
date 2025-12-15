@@ -86,6 +86,7 @@ RSpec.describe Vulnerabilities::AutoDismissService, feature_category: :security_
       let(:ability_allowed) { true }
 
       before do
+        allow(Ability).to receive(:allowed?).and_return(true)
         allow(Ability).to receive(:allowed?).with(bot_user, :create_vulnerability_state_transition,
           project).and_return(ability_allowed)
       end
