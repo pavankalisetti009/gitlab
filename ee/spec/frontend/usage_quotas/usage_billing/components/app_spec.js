@@ -63,6 +63,10 @@ describe('UsageBillingApp', () => {
   const findOutdatedClientAlert = () => wrapper.findByTestId('outdated-client-alert');
   const findDisabledStateAlert = () => wrapper.findByTestId('usage-billing-disabled-alert');
 
+  beforeEach(() => {
+    window.gon = { display_gitlab_credits_user_data: true };
+  });
+
   describe('loading state', () => {
     beforeEach(() => {
       const loadingQueryHandler = jest.fn().mockImplementation(() => new Promise(() => {}));
@@ -427,6 +431,14 @@ describe('UsageBillingApp', () => {
     describe('UsageByUserTab', () => {
       it('renders UsageByUserTab component', () => {
         expect(findUsageByUserTab().exists()).toBe(true);
+      });
+
+      it('does not render UsageByUserTab component if display_gitlab_credits_user_data is false', async () => {
+        window.gon = { display_gitlab_credits_user_data: false };
+        createComponent();
+        await waitForPromises();
+
+        expect(findUsageByUserTab().exists()).toBe(false);
       });
     });
   });

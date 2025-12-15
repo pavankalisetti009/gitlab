@@ -6,6 +6,9 @@ module Groups
       class UsageController < Groups::ApplicationController
         before_action :authorize_read_usage_quotas!
         before_action :ensure_feature_available!
+        before_action do
+          push_namespace_setting(:display_gitlab_credits_user_data, @group)
+        end
 
         feature_category :consumables_cost_management
 

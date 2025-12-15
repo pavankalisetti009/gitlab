@@ -6,6 +6,9 @@ module Admin
     urgency :low
 
     before_action :ensure_feature_available!
+    before_action do
+      push_application_setting(:display_gitlab_credits_user_data)
+    end
 
     private
 

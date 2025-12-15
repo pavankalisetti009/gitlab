@@ -42,5 +42,17 @@ RSpec.describe Admin::GitlabCreditsDashboardController, :enable_admin_mode, feat
         expect(response).to have_gitlab_http_status(:not_found)
       end
     end
+
+    context 'for display_gitlab_credits_user_data' do
+      before do
+        stub_application_setting(display_gitlab_credits_user_data: true)
+      end
+
+      it 'pushes the setting to the frontend' do
+        request
+
+        expect(response.body).to include('gon.display_gitlab_credits_user_data=true')
+      end
+    end
   end
 end

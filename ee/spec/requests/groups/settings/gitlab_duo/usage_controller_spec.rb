@@ -55,6 +55,18 @@ RSpec.describe Groups::Settings::GitlabDuo::UsageController, feature_category: :
               expect(response).to have_gitlab_http_status(:not_found)
             end
           end
+
+          context 'for display_gitlab_credits_user_data' do
+            before do
+              paid_group.namespace_settings.update!(display_gitlab_credits_user_data: true)
+            end
+
+            it 'pushes the setting to the frontend' do
+              request
+
+              expect(response.body).to include('gon.display_gitlab_credits_user_data=true')
+            end
+          end
         end
       end
 
