@@ -60,6 +60,59 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_agent_platfo
     [80, 443].include?(port) ? host : "#{host}:#{port}"
   end
 
+  def build_token_response(token:, headers: :default)
+    headers_value = if headers == :default
+                      {
+                        'Authorization' => 'test-token-123',
+                        'Content-Type' => 'application/json'
+                      }
+                    else
+                      headers
+                    end
+
+    ServiceResponse.success(payload: {
+      token: token,
+      headers: headers_value
+    })
+  end
+
+  def build_service(flow_trigger:, resource: self.resource, current_user: self.current_user)
+    described_class.new(
+      project: project,
+      current_user: current_user,
+      resource: resource,
+      flow_trigger: flow_trigger
+    )
+  end
+
+  def build_catalog_item_setup(ai_catalog_item)
+    ai_catalog_item_consumer = create(:ai_catalog_item_consumer,
+      item: ai_catalog_item, project: project, pinned_version_prefix: nil)
+    flow_trigger_with_catalog = create(:ai_flow_trigger,
+      project: project,
+      user: service_account,
+      config_path: nil,
+      ai_catalog_item_consumer: ai_catalog_item_consumer)
+    { item: ai_catalog_item, consumer: ai_catalog_item_consumer, trigger: flow_trigger_with_catalog }
+  end
+
+  def assert_ai_flow_variables(variables)
+    expect(variables[:AI_FLOW_CONTEXT]).to match(/id..#{resource.id}/)
+    expect(variables[:AI_FLOW_INPUT]).to eq('test input')
+    expect(variables[:AI_FLOW_EVENT]).to eq('mention')
+    expect(variables[:AI_FLOW_DISCUSSION_ID]).to eq(existing_note.discussion_id)
+    expect(variables[:AI_FLOW_PROJECT_PATH]).to eq(project.full_path)
+    expect(variables[:AI_FLOW_GITLAB_HOSTNAME]).to eq(expected_gitlab_hostname)
+  end
+
+  def stub_token_service(response)
+    token_service_double = instance_double(::Ai::ThirdPartyAgents::TokenService)
+    allow(::Ai::ThirdPartyAgents::TokenService).to receive(:new)
+     .with(current_user: current_user, project: project)
+     .and_return(token_service_double)
+    allow(token_service_double).to receive(:direct_access_token).and_return(response)
+  end
+
   before do
     # Enable necessary feature flags and settings
     stub_feature_flags(duo_workflow: true, duo_workflow_in_ci: true)
@@ -268,6 +321,7 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_agent_platfo
           .with(current_user: current_user, project: project)
           .and_return(token_service_double)
         expect(token_service_double).to receive(:direct_access_token).and_return(mock_token_response)
+        stub_token_service(mock_token_response)
 
         response = service.execute(params)
         expect(response).to be_success
@@ -279,11 +333,7 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_agent_platfo
         end
 
         before do
-          token_service_double = instance_double(::Ai::ThirdPartyAgents::TokenService)
-          allow(::Ai::ThirdPartyAgents::TokenService).to receive(:new)
-            .with(current_user: current_user, project: project)
-            .and_return(token_service_double)
-          allow(token_service_double).to receive(:direct_access_token).and_return(error_token_response)
+          stub_token_service(error_token_response)
         end
 
         it 'returns error without creating workload' do
@@ -307,19 +357,8 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_agent_platfo
       end
 
       context 'when token response has empty headers' do
-        let(:mock_token_response_empty_headers) do
-          ServiceResponse.success(payload: {
-            token: 'test-token-123',
-            headers: {}
-          })
-        end
-
         before do
-          token_service_double = instance_double(::Ai::ThirdPartyAgents::TokenService)
-          allow(::Ai::ThirdPartyAgents::TokenService).to receive(:new)
-            .with(current_user: current_user, project: project)
-            .and_return(token_service_double)
-          allow(token_service_double).to receive(:direct_access_token).and_return(mock_token_response_empty_headers)
+          stub_token_service(build_token_response(token: 'test-token-123', headers: {}))
         end
 
         it 'builds variables with empty headers string' do
@@ -336,19 +375,8 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_agent_platfo
       end
 
       context 'when token response has nil headers' do
-        let(:mock_token_response_nil_headers) do
-          ServiceResponse.success(payload: {
-            token: 'test-token-123',
-            headers: nil
-          })
-        end
-
         before do
-          token_service_double = instance_double(::Ai::ThirdPartyAgents::TokenService)
-          allow(::Ai::ThirdPartyAgents::TokenService).to receive(:new)
-                                                           .with(current_user: current_user, project: project)
-                                                           .and_return(token_service_double)
-          allow(token_service_double).to receive(:direct_access_token).and_return(mock_token_response_nil_headers)
+          stub_token_service(build_token_response(token: 'test-token-123', headers: nil))
         end
 
         it 'builds variables with empty headers string' do
@@ -388,17 +416,9 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_agent_platfo
 
       it 'builds workload definition without gateway token variables' do
         expect(::Ci::Workloads::RunWorkloadService).to receive(:new).and_wrap_original do |original_method, kwargs|
-          workload_definition = kwargs[:workload_definition]
-          variables = workload_definition.variables
+          variables = kwargs[:workload_definition].variables
+          assert_ai_flow_variables(variables)
 
-          expect(variables[:AI_FLOW_CONTEXT]).to match(/id..#{resource.id}/)
-          expect(variables[:AI_FLOW_INPUT]).to eq('test input')
-          expect(variables[:AI_FLOW_EVENT]).to eq('mention')
-          expect(variables[:AI_FLOW_DISCUSSION_ID]).to eq(existing_note.discussion_id)
-          expect(variables[:AI_FLOW_PROJECT_PATH]).to eq(project.full_path)
-          expect(variables[:AI_FLOW_GITLAB_HOSTNAME]).to eq(expected_gitlab_hostname)
-
-          # These should not be present
           expect(variables).not_to have_key(:AI_FLOW_AI_GATEWAY_TOKEN)
           expect(variables).not_to have_key(:AI_FLOW_AI_GATEWAY_HEADERS)
 
@@ -433,17 +453,9 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_agent_platfo
 
       it 'builds workload definition without gateway token variables' do
         expect(::Ci::Workloads::RunWorkloadService).to receive(:new).and_wrap_original do |original_method, kwargs|
-          workload_definition = kwargs[:workload_definition]
-          variables = workload_definition.variables
+          variables = kwargs[:workload_definition].variables
+          assert_ai_flow_variables(variables)
 
-          expect(variables[:AI_FLOW_CONTEXT]).to match(/id..#{resource.id}/)
-          expect(variables[:AI_FLOW_INPUT]).to eq('test input')
-          expect(variables[:AI_FLOW_EVENT]).to eq('mention')
-          expect(variables[:AI_FLOW_DISCUSSION_ID]).to eq(existing_note.discussion_id)
-          expect(variables[:AI_FLOW_PROJECT_PATH]).to eq(project.full_path)
-          expect(variables[:AI_FLOW_GITLAB_HOSTNAME]).to eq(expected_gitlab_hostname)
-
-          # These should not be present
           expect(variables).not_to have_key(:AI_FLOW_AI_GATEWAY_TOKEN)
           expect(variables).not_to have_key(:AI_FLOW_AI_GATEWAY_HEADERS)
 
@@ -735,18 +747,9 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_agent_platfo
 
     context 'when flow trigger has ai_catalog_item_consumer' do
       let(:ai_catalog_item) { create(:ai_catalog_flow) }
-      let(:ai_catalog_item_consumer) do
-        create(:ai_catalog_item_consumer,
-          item: ai_catalog_item, project: project, pinned_version_prefix: nil)
-      end
-
-      let(:flow_trigger_with_catalog) do
-        create(:ai_flow_trigger,
-          project: project,
-          user: service_account,
-          config_path: nil,
-          ai_catalog_item_consumer: ai_catalog_item_consumer)
-      end
+      let(:catalog_setup) { build_catalog_item_setup(ai_catalog_item) }
+      let(:ai_catalog_item_consumer) { catalog_setup[:consumer] }
+      let(:flow_trigger_with_catalog) { catalog_setup[:trigger] }
 
       let(:catalog_workflow) { create(:duo_workflows_workflow, project: project, user: current_user) }
       let(:catalog_execute_response) do
@@ -754,12 +757,7 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_agent_platfo
       end
 
       subject(:service) do
-        described_class.new(
-          project: project,
-          current_user: current_user,
-          resource: resource,
-          flow_trigger: flow_trigger_with_catalog
-        )
+        build_service(flow_trigger: flow_trigger_with_catalog)
       end
 
       before do
@@ -940,6 +938,40 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_agent_platfo
         end
       end
     end
+
+    context 'for foundational flows' do
+      let_it_be(:input) { 'test input' }
+      let(:ai_catalog_item) { create(:ai_catalog_flow, :with_foundational_flow_reference) }
+      let(:catalog_setup) { build_catalog_item_setup(ai_catalog_item) }
+      let(:ai_catalog_item_consumer) { catalog_setup[:consumer] }
+      let(:flow_trigger_with_catalog) { catalog_setup[:trigger] }
+
+      let(:catalog_execute_response) do
+        ServiceResponse.success(payload: { workflow: create(:duo_workflows_workflow, project: project,
+          user: current_user) })
+      end
+
+      subject(:service) do
+        build_service(flow_trigger: flow_trigger_with_catalog)
+      end
+
+      before do
+        allow_next_instance_of(::Ai::Catalog::Flows::ExecuteService) do |instance|
+          allow(instance).to receive(:execute).and_return(catalog_execute_response)
+        end
+      end
+
+      context 'when event type is assign' do
+        let(:params) { { input: 'test input', event: :assign } }
+
+        context 'when resource is an Issue' do
+          it 'returns success response' do
+            response = service.execute(params)
+            expect(response).to be_success
+          end
+        end
+      end
+    end
   end
 
   describe '#catalog_item_user_prompt' do
@@ -983,6 +1015,44 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_agent_platfo
       it 'returns only user input' do
         result = service.send(:catalog_item_user_prompt, input, :assign_reviewer)
         expect(result).to eq(input)
+      end
+    end
+
+    context 'when flow is foundational' do
+      let(:input) { 'test input' }
+      let(:ai_catalog_item) { create(:ai_catalog_flow, :with_foundational_flow_reference) }
+      let(:catalog_setup) { build_catalog_item_setup(ai_catalog_item) }
+      let(:ai_catalog_item_consumer) { catalog_setup[:consumer] }
+      let(:flow_trigger_with_catalog) { catalog_setup[:trigger] }
+
+      subject(:service) do
+        build_service(flow_trigger: flow_trigger_with_catalog)
+      end
+
+      it 'calls fetch_goal_input for foundational flows' do
+        expect(service).to receive(:fetch_goal_input).and_call_original
+        service.send(:catalog_item_user_prompt, input, :assign)
+      end
+
+      context 'when resource is an Issue' do
+        it 'returns the issue URL' do
+          result = service.send(:catalog_item_user_prompt, input, :assign)
+          expect(result).to include("/#{project.full_path}/-/issues/#{resource.iid}")
+        end
+      end
+    end
+
+    context 'when not a foundational flow' do
+      let(:input) { '@duo Please help me with this task' }
+
+      before do
+        allow(service).to receive(:foundational_flow_reference).and_return(nil)
+      end
+
+      it 'returns input with context using IID' do
+        result = service.send(:catalog_item_user_prompt, input, :mention)
+        expect(service.send(:fetch_goal_input)).to be_nil
+        expect(result).not_to be_nil
       end
     end
   end

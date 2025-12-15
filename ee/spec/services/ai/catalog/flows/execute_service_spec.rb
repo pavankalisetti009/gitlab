@@ -293,6 +293,66 @@ RSpec.describe Ai::Catalog::Flows::ExecuteService, :aggregate_failures, feature_
           expect(parsed_yaml).to eq(expected_flow_config)
         end
       end
+
+      context 'when flow is a foundational flow' do
+        let(:flow) { create(:ai_catalog_item, :with_foundational_flow_reference, public: true) }
+
+        before do
+          flow.latest_version.update!(release_date: 1.hour.ago)
+        end
+
+        it 'returns the foundational_flow_reference' do
+          expect(service.send(:fetch_flow_definition)).to eq('fix_pipeline/v1')
+        end
+
+        it 'returns successful response' do
+          result = execute
+
+          expect(result).to be_success
+        end
+
+        it 'passes flow_definition to ExecuteWorkflowService' do
+          expect(::Ai::Catalog::ExecuteWorkflowService).to receive(:new).with(
+            current_user,
+            hash_including(
+              flow_definition: "fix_pipeline/v1"
+            )
+          ).and_call_original
+
+          execute
+        end
+      end
+
+      context 'when flow is not a foundational flow' do
+        before do
+          allow(ai_catalog_item_consumer.item).to receive(:foundational_flow_reference).and_return(nil)
+        end
+
+        it 'returns full flow_config for regular flows' do
+          result = execute
+          expect(service.send(:foundational_flow?)).to be false
+
+          parsed_yaml = YAML.safe_load(result.payload[:flow_config], aliases: true)
+          expect(result).to be_success
+          expect(parsed_yaml).to eq(expected_flow_config)
+        end
+
+        it 'does not pass flow_definition to ExecuteWorkflowService' do
+          expect(::Ai::Catalog::ExecuteWorkflowService).to receive(:new).with(
+            current_user,
+            hash_including(
+              flow_definition: nil,
+              json_config: be_a(Hash)
+            )
+          ).and_call_original
+
+          execute
+        end
+
+        it 'returns nil for fetch_flow_definition' do
+          expect(service.send(:fetch_flow_definition)).to be_nil
+        end
+      end
     end
   end
 end
