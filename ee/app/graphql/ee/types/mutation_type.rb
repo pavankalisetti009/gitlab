@@ -180,6 +180,7 @@ module EE
         mount_mutation ::Mutations::Analytics::DevopsAdoption::EnabledNamespaces::Enable
         mount_mutation ::Mutations::Analytics::DevopsAdoption::EnabledNamespaces::BulkEnable
         mount_mutation ::Mutations::Analytics::DevopsAdoption::EnabledNamespaces::Disable
+        mount_mutation ::Mutations::Analytics::CustomDashboards::Create, experiment: { milestone: '18.7' }
         mount_mutation ::Mutations::IncidentManagement::OncallSchedule::Create
         mount_mutation ::Mutations::IncidentManagement::OncallSchedule::Update
         mount_mutation ::Mutations::IncidentManagement::OncallSchedule::Destroy

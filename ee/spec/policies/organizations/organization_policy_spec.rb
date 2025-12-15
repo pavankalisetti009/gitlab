@@ -84,4 +84,60 @@ RSpec.describe Organizations::OrganizationPolicy, feature_category: :system_acce
     it { is_expected.to be_disallowed(:read_dependency) }
     it { is_expected.to be_disallowed(:read_licenses) }
   end
+
+  describe 'custom dashboard permissions' do
+    let(:owner) { create(:user) }
+    let(:guest) { create(:user) }
+    let(:non_member) { create(:user) }
+
+    before do
+      create(:organization_user, :owner, organization: organization, user: owner)
+      create(:organization_user, organization: organization, user: guest, access_level: :default)
+      stub_licensed_features(product_analytics: true)
+      stub_feature_flags(custom_dashboard_storage: true)
+    end
+
+    context 'when user is organization owner' do
+      subject(:policy) { described_class.new(owner, organization) }
+
+      it { is_expected.to be_allowed(:read_custom_dashboard) }
+      it { is_expected.to be_allowed(:create_custom_dashboard) }
+    end
+
+    context 'when user is organization member' do
+      subject(:policy) { described_class.new(guest, organization) }
+
+      it { is_expected.to be_allowed(:read_custom_dashboard) }
+      it { is_expected.to be_disallowed(:create_custom_dashboard) }
+    end
+
+    context 'when user is not organization member' do
+      subject(:policy) { described_class.new(non_member, organization) }
+
+      it { is_expected.to be_disallowed(:read_custom_dashboard) }
+      it { is_expected.to be_disallowed(:create_custom_dashboard) }
+    end
+
+    context 'when product analytics is not licensed' do
+      subject(:policy) { described_class.new(owner, organization) }
+
+      before do
+        stub_licensed_features(product_analytics: false)
+      end
+
+      it { is_expected.to be_disallowed(:read_custom_dashboard) }
+      it { is_expected.to be_disallowed(:create_custom_dashboard) }
+    end
+
+    context 'when feature flag is disabled' do
+      subject(:policy) { described_class.new(owner, organization) }
+
+      before do
+        stub_feature_flags(custom_dashboard_storage: false)
+      end
+
+      it { is_expected.to be_disallowed(:read_custom_dashboard) }
+      it { is_expected.to be_disallowed(:create_custom_dashboard) }
+    end
+  end
 end
