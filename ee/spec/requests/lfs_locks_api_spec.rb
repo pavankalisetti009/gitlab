@@ -102,6 +102,6 @@ RSpec.describe 'Git LFS File Locking API', :saas, feature_category: :source_code
   end
 
   def do_get(url, params = nil, headers = nil)
-    get(url, params: (params || {}), headers: (headers || {}).merge('Content-Type' => LfsRequest::CONTENT_TYPE))
+    get(url, params: params || {}, headers: (headers || {}).merge('Content-Type' => LfsRequest::CONTENT_TYPE))
   end
 end
