@@ -278,7 +278,6 @@ module API
             optional :merge_request_id, type: Integer,
               desc: 'IID of the MergeRequest noteable that the workflow is associated with.',
               documentation: { example: 123 }
-            mutually_exclusive :workflow_definition, :ai_catalog_item_version_id, :ai_catalog_item_consumer_id
           end
         end
 
