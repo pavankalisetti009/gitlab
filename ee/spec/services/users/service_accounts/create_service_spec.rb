@@ -57,6 +57,33 @@ RSpec.describe Users::ServiceAccounts::CreateService, feature_category: :user_ma
         end
 
         it_behaves_like 'service account creation with customized params'
+
+        context 'when username is blank' do
+          let(:params) { { username: '   ', organization_id: organization.id } }
+
+          it 'uses auto-generated username' do
+            user = service.execute.payload[:user]
+            expect(user.username).to start_with('service_account')
+          end
+        end
+
+        context 'when email is blank' do
+          let(:params) { { email: '', organization_id: organization.id } }
+
+          it 'uses auto-generated email' do
+            user = service.execute.payload[:user]
+            expect(user.email).to start_with('service_account')
+          end
+        end
+
+        context 'when name is blank' do
+          let(:params) { { name: '   ', organization_id: organization.id } }
+
+          it 'uses default name' do
+            user = service.execute.payload[:user]
+            expect(user.name).to eq('Service account user')
+          end
+        end
       end
 
       context 'when subscription is of premium tier' do

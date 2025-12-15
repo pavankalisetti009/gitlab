@@ -70,6 +70,39 @@ RSpec.describe Users::ServiceAccounts::UpdateService, feature_category: :user_ma
       end
     end
 
+    context 'when username is blank' do
+      let(:params) { { username: '   ' } }
+
+      it 'filters out blank param and leaves original value unchanged' do
+        original_username = service_account_user.username
+
+        expect(result.status).to eq(:success)
+        expect(result.payload[:user].username).to eq(original_username)
+      end
+    end
+
+    context 'when email is blank' do
+      let(:params) { { email: '' } }
+
+      it 'filters out blank param and leaves original value unchanged' do
+        original_email = service_account_user.email
+
+        expect(result.status).to eq(:success)
+        expect(result.payload[:user].email).to eq(original_email)
+      end
+    end
+
+    context 'when name is blank' do
+      let(:params) { { name: '   ' } }
+
+      it 'filters out blank param and leaves original value unchanged' do
+        original_name = service_account_user.name
+
+        expect(result.status).to eq(:success)
+        expect(result.payload[:user].name).to eq(original_name)
+      end
+    end
+
     context 'when username is already taken' do
       let(:existing_user) { create(:user, username: 'existing_username') }
       let(:params) { { username: existing_user.username } }
