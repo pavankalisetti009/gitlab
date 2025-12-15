@@ -10,6 +10,11 @@ module EE
           push_licensed_feature(:remote_development)
           push_frontend_feature_flag(:repository_lock_information, @project)
         end
+
+        before_action only: [:show] do
+          push_frontend_feature_flag(:convert_to_gl_ci_flow_registry, current_user)
+        end
+
         prepend_around_action :repair_blobs_index, only: [:show]
       end
 

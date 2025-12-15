@@ -4,12 +4,14 @@ import DuoWorkflowAction from 'ee/ai/components/duo_workflow_action.vue';
 import CeBlobHeader from '~/blob/components/blob_header.vue';
 import duoWorkflowActionQuery from 'ee/repository/queries/duo_workflow_action.query.graphql';
 import { captureException } from '~/sentry/sentry_browser_wrapper';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 
 export default {
   components: {
     DuoWorkflowAction,
     CeBlobHeader,
   },
+  mixins: [glFeatureFlagMixin()],
   props: {
     blob: {
       type: Object,
@@ -142,6 +144,11 @@ export default {
         },
       ];
     },
+    duoWorkflowDefinition() {
+      return this.glFeatures.convertToGlCiFlowRegistry
+        ? 'convert_to_gl_ci/v1'
+        : 'convert_to_gitlab_ci';
+    },
   },
 };
 </script>
@@ -154,7 +161,7 @@ export default {
         :hover-message="__('Convert Jenkins to GitLab CI/CD using Duo')"
         :goal="blob.path"
         :source-branch="currentRef"
-        workflow-definition="convert_to_gitlab_ci"
+        :workflow-definition="duoWorkflowDefinition"
         :agent-privileges="agentPrivileges"
         :additional-context="getAdditionalContext"
         >{{ __('Convert to GitLab CI/CD') }}</duo-workflow-action
