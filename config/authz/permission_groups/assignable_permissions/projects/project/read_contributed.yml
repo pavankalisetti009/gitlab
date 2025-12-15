@@ -6,3 +6,4 @@ permissions:
   - read_project_contributed
 boundaries:
   - user
+

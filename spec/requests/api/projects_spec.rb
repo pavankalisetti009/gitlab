@@ -3524,10 +3524,6 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
         let(:request) do
           get api("/projects/#{project.id}/users", personal_access_token: pat)
         end
-
-        before do
-          project4.add_developer(user)
-        end
       end
 
       it 'returns a 404 error if not found' do
