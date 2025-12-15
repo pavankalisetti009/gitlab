@@ -35,34 +35,12 @@ RSpec.describe ::Ai::ModelSelection::FetchModelDefinitionsService, feature_categ
       .with(user: user, unit_primitive_name: unit_primitive, ai_feature_name: unit_primitive)
   end
 
-  describe '#duo_features_enabled?' do
-    let(:duo_available) { true }
-
-    subject(:method_call) { initialized_class.send(:duo_features_enabled?) }
-
-    before do
-      stub_application_setting(duo_features_enabled: duo_available)
-    end
-
-    context 'when duo_features_enabled is true' do
-      it 'returns true' do
-        expect(method_call).to be(true)
-      end
-    end
-
-    context 'when application setting duo_features_enabled is disabled' do
-      let(:duo_available) { false }
-
-      it 'returns false' do
-        expect(method_call).to be(false)
-      end
-    end
-  end
-
   describe '#execute' do
-    context 'when duo features is disabled (duo_features_enabled = false)' do
+    context 'when license is offline' do
       before do
-        stub_application_setting(duo_features_enabled: false)
+        license = create(:license)
+        allow(::License).to receive(:current).and_return(license)
+        allow(license).to receive(:offline_cloud_license?).and_return(true)
       end
 
       it 'returns success ServiceResponse with nil payload' do
@@ -71,120 +49,101 @@ RSpec.describe ::Ai::ModelSelection::FetchModelDefinitionsService, feature_categ
       end
     end
 
-    context 'when duo features is enabled' do
+    context 'when response is cached' do
+      let(:cached_data) { model_definitions }
+
       before do
-        stub_application_setting(duo_features_enabled: true)
+        allow(Rails.cache).to receive(:exist?).with(cache_key).and_return(true)
+        allow(Rails.cache).to receive(:fetch).with(cache_key).and_return(cached_data)
       end
 
-      context 'and license is offline' do
-        before do
-          license = create(:license)
-          allow(::License).to receive(:current).and_return(license)
-          allow(license).to receive(:offline_cloud_license?).and_return(true)
-        end
-
-        it 'returns success ServiceResponse with nil payload' do
-          expect(service).to be_success
-          expect(service.payload).to be_nil
-        end
+      it 'returns cached response' do
+        expect(service).to be_success
+        expect(service.payload).to eq(cached_data)
       end
 
-      context 'when response is cached' do
-        let(:cached_data) { model_definitions }
+      it 'does not make an HTTP request' do
+        expect(Gitlab::HTTP).not_to receive(:get)
+        service
+      end
+    end
 
-        before do
-          allow(Rails.cache).to receive(:exist?).with(cache_key).and_return(true)
-          allow(Rails.cache).to receive(:fetch).with(cache_key).and_return(cached_data)
-        end
-
-        it 'returns cached response' do
-          expect(service).to be_success
-          expect(service.payload).to eq(cached_data)
-        end
-
-        it 'does not make an HTTP request' do
-          expect(Gitlab::HTTP).not_to receive(:get)
-          service
-        end
+    context 'when response is not cached' do
+      before do
+        allow(Rails.cache).to receive(:exist?).with(cache_key).and_return(false)
       end
 
-      context 'when response is not cached' do
+      context 'when API call is successful' do
         before do
-          allow(Rails.cache).to receive(:exist?).with(cache_key).and_return(false)
-        end
-
-        context 'when API call is successful' do
-          before do
-            stub_request(:get, endpoint_url)
-              .to_return(
-                status: 200,
-                body: model_definitions_response,
-                headers: { 'Content-Type' => 'application/json' }
-              )
-          end
-
-          it 'caches and returns the response' do
-            expect(Rails.cache).to receive(:fetch).with(
-              cache_key,
-              expires_in: described_class::RESPONSE_CACHE_EXPIRATION
+          stub_request(:get, endpoint_url)
+            .to_return(
+              status: 200,
+              body: model_definitions_response,
+              headers: { 'Content-Type' => 'application/json' }
             )
-
-            expect(service).to be_success
-            expect(service.payload).to include(model_definitions)
-          end
         end
 
-        context 'when API call returns error' do
-          let(:error_message) { "Received error 401 from AI gateway when fetching model definitions" }
+        it 'caches and returns the response' do
+          expect(Rails.cache).to receive(:fetch).with(
+            cache_key,
+            expires_in: described_class::RESPONSE_CACHE_EXPIRATION
+          )
 
-          before do
-            stub_request(:get, endpoint_url)
-              .to_return(
-                status: 401,
-                body: "{\"error\":\"No authorization header presented\"}",
-                headers: { 'Content-Type' => 'application/json' }
-              )
-          end
+          expect(service).to be_success
+          expect(service.payload).to include(model_definitions)
+        end
+      end
 
-          it 'logs the error and returns error ServiceResponse' do
-            expect(initialized_class).to receive(:log_error)
+      context 'when API call returns error' do
+        let(:error_message) { "Received error 401 from AI gateway when fetching model definitions" }
 
-            expect(service).to be_error
-            expect(service.message).to eq(error_message)
-          end
+        before do
+          stub_request(:get, endpoint_url)
+            .to_return(
+              status: 401,
+              body: "{\"error\":\"No authorization header presented\"}",
+              headers: { 'Content-Type' => 'application/json' }
+            )
         end
 
-        context 'when API call raises network error (SocketError)' do
-          before do
-            allow(Gitlab::HTTP).to receive(:get).and_raise(SocketError.new('Connection failed'))
-          end
+        it 'logs the error and returns error ServiceResponse' do
+          expect(initialized_class).to receive(:log_error)
 
-          it 'handles error gracefully and returns error ServiceResponse' do
-            expect(service).to be_error
-            expect(service.message).to eq('Failed to fetch model definitions')
-          end
+          expect(service).to be_error
+          expect(service.message).to eq(error_message)
+        end
+      end
+
+      context 'when API call raises network error (SocketError)' do
+        before do
+          allow(Gitlab::HTTP).to receive(:get).and_raise(SocketError.new('Connection failed'))
         end
 
-        context 'when API call raises timeout error (Net::OpenTimeout)' do
-          before do
-            allow(Gitlab::HTTP).to receive(:get).and_raise(Net::OpenTimeout.new('Request timeout'))
-          end
+        it 'handles error gracefully and returns error ServiceResponse' do
+          expect(service).to be_error
+          expect(service.message).to eq('Failed to fetch model definitions')
+        end
+      end
 
-          it 'handles timeout gracefully and returns error ServiceResponse' do
-            expect(service).to be_error
-            expect(service.message).to eq('Failed to fetch model definitions')
-          end
+      context 'when API call raises timeout error (Net::OpenTimeout)' do
+        before do
+          allow(Gitlab::HTTP).to receive(:get).and_raise(Net::OpenTimeout.new('Request timeout'))
         end
 
-        context 'when API call raises unexpected StandardError' do
-          before do
-            allow(Gitlab::HTTP).to receive(:get).and_raise(StandardError.new('Unexpected error'))
-          end
+        it 'handles timeout gracefully and returns error ServiceResponse' do
+          expect(service).to be_error
+          expect(service.message).to eq('Failed to fetch model definitions')
+        end
+      end
 
-          it 'handles unexpected error gracefully and returns error ServiceResponse' do
-            expect(service).to be_error
-            expect(service.message).to eq('Failed to fetch model definitions')
-          end
+      context 'when API call raises unexpected StandardError' do
+        before do
+          allow(Gitlab::HTTP).to receive(:get).and_raise(StandardError.new('Unexpected error'))
+        end
+
+        it 'handles unexpected error gracefully and returns error ServiceResponse' do
+          expect(service).to be_error
+          expect(service.message).to eq('Failed to fetch model definitions')
         end
       end
     end
@@ -195,7 +154,6 @@ RSpec.describe ::Ai::ModelSelection::FetchModelDefinitionsService, feature_categ
       let(:local_endpoint_url) { 'http://local-gateway.com/v1/models%2Fdefinitions' }
 
       before do
-        stub_application_setting(duo_features_enabled: true)
         allow(::Gitlab::AiGateway).to receive(:url).and_return('http://local-gateway.com')
       end
 
@@ -250,10 +208,6 @@ RSpec.describe ::Ai::ModelSelection::FetchModelDefinitionsService, feature_categ
   end
 
   describe 'endpoint behavior' do
-    before do
-      stub_application_setting(duo_features_enabled: true)
-    end
-
     context 'when not in local development' do
       before do
         stub_env('FETCH_MODEL_SELECTION_DATA_FROM_LOCAL', nil)

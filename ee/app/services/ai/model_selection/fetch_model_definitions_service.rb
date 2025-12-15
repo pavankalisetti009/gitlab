@@ -15,7 +15,6 @@ module Ai
       end
 
       def execute
-        return ServiceResponse.success(payload: nil) unless duo_features_enabled?
         return ServiceResponse.success(payload: nil) if ::License.current&.offline_cloud_license?
 
         return cached_response if use_cached_response?
@@ -33,12 +32,6 @@ module Ai
       private
 
       attr_reader :user, :model_selection_scope
-
-      def duo_features_enabled?
-        return false unless ::Gitlab::CurrentSettings.current_application_settings.duo_features_enabled
-
-        true
-      end
 
       def fetch_model_definitions
         response = call_endpoint
