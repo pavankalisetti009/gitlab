@@ -767,6 +767,11 @@ msgid_plural "%{count} issues"
 msgstr[0] ""
 msgstr[1] ""
 
+msgid "%{count} issue selected"
+msgid_plural "%{count} issues selected"
+msgstr[0] ""
+msgstr[1] ""
+
 msgid "%{count} item"
 msgid_plural "%{count} items"
 msgstr[0] ""
@@ -843,6 +848,11 @@ msgstr ""
 
 msgid "%{count} vulnerability set to %{severity} severity"
 msgid_plural "%{count} vulnerabilities set to %{severity} severity"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "%{count} work item selected"
+msgid_plural "%{count} work items selected"
 msgstr[0] ""
 msgstr[1] ""
 
@@ -2085,11 +2095,6 @@ msgstr[1] ""
 
 msgid "1 week remaining"
 msgid_plural "%d weeks remaining"
-msgstr[0] ""
-msgstr[1] ""
-
-msgid "1 work item selected"
-msgid_plural "%d work items selected"
 msgstr[0] ""
 msgstr[1] ""
 
