@@ -23,6 +23,22 @@ RSpec.describe Projects::BlobController, feature_category: :source_code_manageme
     let(:id) { 'master/invalid-path.rb' }
     let(:params) { { namespace_id: project.namespace, project_id: project, id: id } }
 
+    context 'when a blob is requested' do
+      let(:user) { create(:user) }
+      let(:id) { 'master/README.md' }
+
+      before do
+        sign_in(user)
+      end
+
+      it 'pushes convert_to_gl_ci_flow_registry feature flag' do
+        expect(controller).to receive(:push_frontend_feature_flag).with(:convert_to_gl_ci_flow_registry,
+          user).at_least(:once)
+        allow(controller).to receive(:push_frontend_feature_flag).and_call_original
+        get(:show, params: params)
+      end
+    end
+
     context 'when an exception is raised while parsing URI' do
       before do
         @request.env['HTTP_REFERER'] = "invalid url" # rubocop:disable RSpec/InstanceVariable -- We need to test referer

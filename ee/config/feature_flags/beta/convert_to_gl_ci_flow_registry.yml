@@ -1,0 +1,10 @@
+---
+name: convert_to_gl_ci_flow_registry
+description: Control switch between the convert_to_gl_ci_flow_registry workflow and flow registry flow
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/583645
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/215964
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/583675
+milestone: '18.7'
+group: group::agent foundations
+type: beta
+default_enabled: false
