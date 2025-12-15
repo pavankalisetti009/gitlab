@@ -731,10 +731,10 @@ export const usageDataWithCommitmentWithMonthlyWaiver = {
         creditsUsed: 50.125,
         totalCredits: 100,
         dailyUsage: [
-          { creditsUsed: 8.5, date: '2025-10-12' },
-          { creditsUsed: 12.25, date: '2025-10-13' },
-          { creditsUsed: 15.375, date: '2025-10-14' },
-          { creditsUsed: 14, date: '2025-10-15' },
+          { creditsUsed: 8.5, date: '2025-10-11' },
+          { creditsUsed: 12.25, date: '2025-10-12' },
+          { creditsUsed: 15.375, date: '2025-10-13' },
+          { creditsUsed: 14, date: '2025-10-14' },
         ],
       },
       overage: {
@@ -771,10 +771,10 @@ export const usageDataWithCommitmentWithOverage = {
         isAllowed: true,
         creditsUsed: 50,
         dailyUsage: [
-          { creditsUsed: 8.5, date: '2025-10-15' },
-          { creditsUsed: 12.25, date: '2025-10-16' },
-          { creditsUsed: 15.75, date: '2025-10-17' },
-          { creditsUsed: 13.5, date: '2025-10-18' },
+          { creditsUsed: 8.5, date: '2025-10-11' },
+          { creditsUsed: 12.25, date: '2025-10-12' },
+          { creditsUsed: 15.75, date: '2025-10-13' },
+          { creditsUsed: 13.5, date: '2025-10-14' },
         ],
       },
 
@@ -819,7 +819,7 @@ export const usageDataNoCommitmentWithOverage = {
     subscriptionUsage: {
       enabled: true,
       isOutdatedClient: false,
-      lastEventTransactionAt: '2024-01-15T10:30:00Z',
+      lastEventTransactionAt: '2025-10-14T07:41:59Z',
       canAcceptOverageTerms: false,
       subscriptionPortalUsageDashboardUrl: 'https://customers.gitlab.com',
       startDate: '2025-10-01',
