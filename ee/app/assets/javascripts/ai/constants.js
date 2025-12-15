@@ -75,7 +75,7 @@ export const DUO_WORKFLOW_WEBSOCKET_PARAM_USER_SELECTED_MODEL = 'user_selected_m
 // way through. Whenever you add to this list you must also update the constant in
 // workhorse/internal/ai_assist/duoworkflow/runner.go and gitlab-lsp/browser before
 // the feature becomes available.
-export const DUO_AGENTIC_CHAT_CLIENT_CAPABILITIES = [];
+export const DUO_AGENTIC_CHAT_CLIENT_CAPABILITIES = ['incremental_streaming'];
 
 export const DUO_AGENTIC_CHAT_SELECTED_MODEL_KEY = 'agentic-chat-user-selected-model';
 
