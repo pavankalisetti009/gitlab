@@ -10,13 +10,29 @@ RSpec.describe EE::RegistrationsHelper, feature_category: :user_management do
     subject(:shuffled_options) { helper.shuffled_registration_objective_options }
 
     it 'has values that match the UserDetail registration objective values' do
-      shuffled_option_values = shuffled_options.map { |item| item.last }
+      shuffled_option_values = shuffled_options.map(&:last)
 
       expect(shuffled_option_values).to contain_exactly(*expected_values)
     end
 
     it '"other" is always the last option' do
       expect(shuffled_options.last).to eq(['A different reason', 5])
+    end
+  end
+
+  describe '#role_options' do
+    subject(:role_opts) { helper.role_options }
+
+    it 'has values that match the UserDetail role values' do
+      role_values = role_opts.map(&:last)
+      expected_values = UserDetail.onboarding_status_roles.values
+
+      expect(role_values).to contain_exactly(*expected_values)
+    end
+
+    it 'returns translated labels' do
+      expect(role_opts).to include(['Software Developer', 0])
+      expect(role_opts).to include(['Other', 8])
     end
   end
 

@@ -73,8 +73,8 @@ RSpec.describe TrialRegistrationsController, :with_trial_types, :with_current_or
             stub_experiments(lightweight_trial_registration_redesign: :candidate)
           end
 
-          it 'allows user creation with empty first and last names' do
-            expect { post_create_with_empty_names }.to change { User.count }.by(1)
+          it 'prevents user creation with empty first and last names' do
+            expect { post_create_with_empty_names }.not_to change { User.count }
           end
         end
       end
@@ -257,11 +257,11 @@ RSpec.describe TrialRegistrationsController, :with_trial_types, :with_current_or
         stub_experiments(lightweight_trial_registration_redesign: :candidate)
       end
 
-      it 'sets name to username when in candidate group' do
+      it 'sets name from first and last name' do
         expect_successful_post_create
 
         created_user = User.find_by_email(user_params[:email])
-        expect(created_user.name).to eq(username)
+        expect(created_user.name).to eq(full_name(user_params[:first_name], user_params[:last_name]))
       end
 
       context 'when in control group' do

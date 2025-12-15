@@ -50,6 +50,13 @@ RSpec.describe 'registrations/welcome/show', feature_category: :onboarding do
       is_expected.to have_selector('select[name="user[onboarding_status_registration_objective]"]')
       is_expected.to have_selector('input[name="jobs_to_be_done_other"]', visible: false)
     end
+
+    it 'renders role dropdown with translated options' do
+      expect(rendered).to have_selector('select[name="user[onboarding_status_role]"]')
+      expect(rendered).to have_selector('option', text: 'Software Developer')
+      expect(rendered).to have_selector('option', text: 'Development Team Lead')
+      expect(rendered).to have_selector('option', text: 'Other')
+    end
   end
 
   context 'when setup for company field should be hidden' do

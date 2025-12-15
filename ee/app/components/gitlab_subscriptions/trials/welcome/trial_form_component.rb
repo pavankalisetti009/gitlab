@@ -13,6 +13,18 @@ module GitlabSubscriptions
 
         attr_reader :user, :params
 
+        def role_options
+          helpers.role_options.map do |label, value|
+            { value: value.to_s, text: label }
+          end
+        end
+
+        def registration_objective_options
+          helpers.shuffled_registration_objective_options.map do |label, value|
+            { value: value.to_s, text: label }
+          end
+        end
+
         def form_data
           ::Gitlab::Json.generate(
             {
@@ -20,7 +32,9 @@ module GitlabSubscriptions
               submitPath: submit_path,
               gtmSubmitEventLabel: 'saasTrialSubmit',
               namespaceId: params[:namespace_id],
-              serverValidations: params[:errors] || {}
+              serverValidations: params[:errors] || {},
+              roleOptions: role_options,
+              registrationObjectiveOptions: registration_objective_options
             }
           )
         end

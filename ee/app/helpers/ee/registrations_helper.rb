@@ -15,6 +15,13 @@ module EE
       end
     end
 
+    def role_options
+      localized_role_choices.map do |key, label|
+        value = ::UserDetail.onboarding_status_roles[key]
+        [label, value]
+      end
+    end
+
     def arkose_labs_data
       path = data_exchange_payload_path
 
@@ -48,6 +55,20 @@ module EE
 
     def registration_objective_options
       localized_jobs_to_be_done_choices.dup
+    end
+
+    def localized_role_choices
+      {
+        software_developer: _('Software Developer'),
+        development_team_lead: _('Development Team Lead'),
+        devops_engineer: _('DevOps Engineer'),
+        systems_administrator: _('Systems Administrator'),
+        security_analyst: _('Security Analyst'),
+        data_analyst: _('Data Analyst'),
+        product_manager: _('Product Manager'),
+        product_designer: _('Product Designer'),
+        other: _('Other')
+      }.with_indifferent_access.freeze
     end
   end
 end

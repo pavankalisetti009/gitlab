@@ -16,8 +16,6 @@ import {
   LEADS_COMPANY_NAME_LABEL,
   LEADS_COUNTRY_LABEL,
   LEADS_COUNTRY_PROMPT,
-  LEADS_FIRST_NAME_LABEL,
-  LEADS_LAST_NAME_LABEL,
 } from 'ee/vue_shared/leads/constants';
 import ListboxInput from '~/vue_shared/components/listbox_input/listbox_input.vue';
 import countryStateMixin from 'ee/vue_shared/mixins/country_state_mixin';
@@ -29,6 +27,11 @@ import {
   TRIAL_STATE_LABEL,
   TRIAL_STATE_PROMPT,
 } from '../constants';
+
+const SETUP_FOR_COMPANY_OPTIONS = [
+  { value: 'true', text: __('My team') },
+  { value: 'false', text: __('Just me') },
+];
 
 export default {
   name: 'CreateTrialWelcomeForm',
@@ -67,6 +70,14 @@ export default {
       required: false,
       default: () => ({}),
     },
+    roleOptions: {
+      type: Array,
+      required: true,
+    },
+    registrationObjectiveOptions: {
+      type: Array,
+      required: true,
+    },
   },
   data() {
     return {
@@ -79,35 +90,38 @@ export default {
     fields() {
       const result = {};
 
-      result.first_name = {
-        label: LEADS_FIRST_NAME_LABEL,
+      result.role = {
+        label: __('Role'),
         groupAttrs: {
           class: 'gl-col-span-12 @md/panel:gl-col-span-6',
         },
-        inputAttrs: {
-          name: 'first_name',
-          'data-testid': 'first-name-field',
-        },
-        validators: [formValidators.required(__('First name is required.'))],
+        validators: [formValidators.required(__('Role is required.'))],
+        options: this.roleOptions,
       };
 
-      result.last_name = {
-        label: LEADS_LAST_NAME_LABEL,
+      result.setup_for_company = {
+        label: __('Who will be using GitLab?'),
         groupAttrs: {
           class: 'gl-col-span-12 @md/panel:gl-col-span-6',
         },
-        inputAttrs: {
-          name: 'last_name',
-          'data-testid': 'last-name-field',
+        validators: [formValidators.required(__('This field is required.'))],
+        options: SETUP_FOR_COMPANY_OPTIONS,
+      };
+
+      result.registration_objective = {
+        label: s__("Trial|What's your reason for joining GitLab?"),
+        groupAttrs: {
+          class: 'gl-col-span-12',
         },
-        validators: [formValidators.required(__('Last name is required.'))],
+        validators: [formValidators.required(__('This field is required.'))],
+        options: this.registrationObjectiveOptions,
       };
 
       if (this.showCountry) {
         result.country = {
           label: LEADS_COUNTRY_LABEL,
           groupAttrs: {
-            class: 'gl-col-span-12',
+            class: this.showState ? 'gl-col-span-12 @md/panel:gl-col-span-6' : 'gl-col-span-12',
           },
           validators: [formValidators.required(__('Country or region is required.'))],
         };
@@ -116,7 +130,7 @@ export default {
           result.state = {
             label: TRIAL_STATE_LABEL,
             groupAttrs: {
-              class: 'gl-col-span-12',
+              class: 'gl-col-span-12 @md/panel:gl-col-span-6',
             },
             validators: [formValidators.required(__('State or province is required.'))],
           };
@@ -168,14 +182,15 @@ export default {
   },
   mounted() {
     this.formValues = {
-      first_name: this.userData.firstName,
-      last_name: this.userData.lastName,
       company_name: this.userData.companyName,
       country: this.userData.country,
       state: this.userData.state,
       group_name: this.userData.groupName || '',
       project_name: this.userData.projectName || '',
       namespace_id: this.namespaceId,
+      role: this.userData.role || '',
+      setup_for_company: this.userData.setupForCompany || '',
+      registration_objective: this.userData.registrationObjective || '',
     };
   },
   methods: {
@@ -190,8 +205,6 @@ export default {
     },
   },
   i18n: {
-    firstNameLabel: LEADS_FIRST_NAME_LABEL,
-    lastNameLabel: LEADS_LAST_NAME_LABEL,
     companyNameLabel: LEADS_COMPANY_NAME_LABEL,
     countryPrompt: LEADS_COUNTRY_PROMPT,
     statePrompt: TRIAL_STATE_PROMPT,
@@ -202,6 +215,9 @@ export default {
     cookiePolicy: TRIAL_COOKIE_POLICY,
     group: __('group'),
     project: __('project'),
+    rolePrompt: s__('MemberRole|Select a role'),
+    setupForCompanyPrompt: __('Please select'),
+    registrationObjectivePrompt: __('Select a reason'),
   },
   formId: 'create-trial-form',
 };
@@ -220,7 +236,7 @@ export default {
       v-model="formValues"
       :form-id="$options.formId"
       :fields="fields"
-      class="gl-grid @md/panel:gl-gap-x-4"
+      class="gl-grid gl-grid-cols-12 @md/panel:gl-gap-x-6"
       :server-validations="serverValidations"
       @submit="onSubmit"
     >
@@ -231,6 +247,42 @@ export default {
           :value="value"
           @input="onCompanyNameChange(input, $event)"
           @blur="blur"
+        />
+      </template>
+      <template #input(role)="{ value, input }">
+        <listbox-input
+          :selected="value"
+          name="onboarding_status[role]"
+          :items="fields.role.options"
+          :default-toggle-text="$options.i18n.rolePrompt"
+          :block="true"
+          :aria-label="$options.i18n.rolePrompt"
+          data-testid="role-dropdown"
+          @select="(val) => input && input(val)"
+        />
+      </template>
+      <template #input(setup_for_company)="{ value, input }">
+        <listbox-input
+          :selected="value"
+          name="onboarding_status[setup_for_company]"
+          :items="fields.setup_for_company.options"
+          :default-toggle-text="$options.i18n.setupForCompanyPrompt"
+          :block="true"
+          :aria-label="$options.i18n.setupForCompanyPrompt"
+          data-testid="setup-for-company-dropdown"
+          @select="(val) => input && input(val)"
+        />
+      </template>
+      <template #input(registration_objective)="{ value, input }">
+        <listbox-input
+          :selected="value"
+          name="onboarding_status[registration_objective]"
+          :items="fields.registration_objective.options"
+          :default-toggle-text="$options.i18n.registrationObjectivePrompt"
+          :block="true"
+          :aria-label="$options.i18n.registrationObjectivePrompt"
+          data-testid="registration-objective-dropdown"
+          @select="(val) => input && input(val)"
         />
       </template>
       <template #input(country)="{ value, input }">
@@ -276,7 +328,7 @@ export default {
             />
           </gl-form-group>
           <div
-            class="gl-z-1 gl-ml-6 gl-mt-2 gl-flex gl-w-11 gl-items-center gl-justify-center gl-rounded-lg gl-bg-neutral-800 gl-px-8 gl-text-size-h1-xl gl-font-semibold"
+            class="gl-z-1 gl-ml-6 gl-mt-2 gl-flex gl-w-11 gl-items-center gl-justify-center gl-rounded-lg gl-bg-strong gl-px-8 gl-text-size-h1-xl gl-font-semibold"
             data-testid="group-name-letter"
           >
             {{ (value.length > 0 ? value : __('Group'))[0].toUpperCase() }}
@@ -301,7 +353,7 @@ export default {
           </gl-form-group>
           <div class="gl-relative gl-ml-8 gl-w-11">
             <div
-              class="gl-absolute gl-bottom-5 gl-right-8 gl-z-0 gl-h-20 gl-w-6 gl-border-b-2 gl-border-r-2 gl-border-gray-600 gl-border-b-solid gl-border-r-solid"
+              class="gl-absolute gl-bottom-5 gl-right-8 gl-z-0 gl-h-18 gl-w-6 gl-border-b-2 gl-border-r-2 gl-border-gray-600 gl-border-b-solid gl-border-r-solid"
             ></div>
           </div>
         </div>

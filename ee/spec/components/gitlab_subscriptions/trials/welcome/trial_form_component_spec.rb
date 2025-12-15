@@ -11,8 +11,22 @@ RSpec.describe GitlabSubscriptions::Trials::Welcome::TrialFormComponent, :aggreg
     }.with_indifferent_access
   end
 
+  let(:registration_objective_options) do
+    [
+      { value: "0", text: "I want to learn the basics of Git" },
+      { value: "1", text: "I want to move my repository to GitLab from somewhere else" },
+      { value: "2", text: "I want to store my code" },
+      { value: "3", text: "I want to explore GitLab to see if it's worth switching to" },
+      { value: "4", text: "I want to use GitLab CI with my existing repository" },
+      { value: "5", text: "A different reason" }
+    ]
+  end
+
   let(:kwargs) do
-    { user: user, params: form_params }
+    {
+      user: user,
+      params: form_params
+    }
   end
 
   subject(:component) { render_inline(described_class.new(**kwargs)) && page }
@@ -44,6 +58,20 @@ RSpec.describe GitlabSubscriptions::Trials::Welcome::TrialFormComponent, :aggreg
 
     it 'renders form with correct attributes' do
       expect_form_data_attribute(expected_form_data_attributes)
+    end
+
+    it 'includes role options' do
+      view_model = parsed_view_model
+      expect(view_model['roleOptions']).to include(hash_including('value' => '0', 'text' => 'Software Developer'))
+      expect(view_model['roleOptions']).to include(hash_including('value' => '8', 'text' => 'Other'))
+    end
+
+    it 'includes registration objective options' do
+      view_model = parsed_view_model
+      expect(view_model['registrationObjectiveOptions']).to include(hash_including('value' => '0',
+        'text' => 'I want to learn the basics of Git'))
+      expect(view_model['registrationObjectiveOptions']).to include(hash_including('value' => '5',
+        'text' => 'A different reason'))
     end
 
     it 'includes all user data fields' do
@@ -103,6 +131,22 @@ RSpec.describe GitlabSubscriptions::Trials::Welcome::TrialFormComponent, :aggreg
       expect(submit_path).not_to include('glm_source')
       expect(submit_path).not_to include('glm_content')
     end
+
+    it 'includes role options' do
+      view_model = parsed_view_model
+      expect(view_model['roleOptions']).to include(hash_including('value' => '0', 'text' => 'Software Developer'))
+      expect(view_model['roleOptions']).to include(hash_including('value' => '8', 'text' => 'Other'))
+    end
+
+    it 'includes registration objective options' do
+      view_model = parsed_view_model
+      expect(view_model['registrationObjectiveOptions']).to include(
+        hash_including('value' => '0', 'text' => 'I want to learn the basics of Git')
+      )
+      expect(view_model['registrationObjectiveOptions']).to include(
+        hash_including('value' => '5', 'text' => 'A different reason')
+      )
+    end
   end
 
   describe 'user data variations' do
@@ -160,6 +204,17 @@ RSpec.describe GitlabSubscriptions::Trials::Welcome::TrialFormComponent, :aggreg
 
       expected_keys = %w[firstName lastName emailDomain companyName groupName projectName country state]
       expect(user_data.keys).to match_array(expected_keys)
+    end
+
+    it 'includes role and registration objective options' do
+      view_model = parsed_view_model
+
+      expect(view_model).to have_key('roleOptions')
+      expect(view_model).to have_key('registrationObjectiveOptions')
+      expect(view_model['roleOptions']).to be_an(Array)
+      expect(view_model['registrationObjectiveOptions']).to be_an(Array)
+      expect(view_model['roleOptions'].length).to eq(9)
+      expect(view_model['registrationObjectiveOptions'].length).to eq(6)
     end
   end
 
