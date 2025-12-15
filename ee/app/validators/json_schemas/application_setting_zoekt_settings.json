@@ -60,10 +60,6 @@
       "type": "string",
       "description": "Lost node threshold"
     },
-    "zoekt_minimum_projects_for_traversal_id_search": {
-      "type": "number",
-      "description": "Activate large-scale search optimizations after this many projects (experimental)"
-    },
     "zoekt_default_number_of_replicas": {
       "type": "number",
       "description": "Specify default number of replicas per namespace. Currently in development."
