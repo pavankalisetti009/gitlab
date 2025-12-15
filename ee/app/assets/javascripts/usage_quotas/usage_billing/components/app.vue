@@ -105,12 +105,7 @@ export default {
       return Boolean(this.monthlyWaiverTotalCredits);
     },
     usageTrendsTabIsAvailable() {
-      return (
-        this.poolIsAvailable ||
-        this.isMonthlyWaiverAvailable ||
-        this.overageIsAllowed ||
-        this.overageCreditsUsed
-      );
+      return this.poolIsAvailable || this.isMonthlyWaiverAvailable || this.overageIsAllowed;
     },
   },
   LONG_DATE_FORMAT_WITH_TZ,
@@ -244,8 +239,11 @@ export default {
             :month-start-date="subscriptionUsage.startDate"
             :month-end-date="subscriptionUsage.endDate"
             :monthly-commitment-daily-usage="poolDailyUsage"
+            :monthly-commitment-is-available="poolIsAvailable"
             :monthly-waiver-daily-usage="monthlyWaiverDailyUsage"
+            :monthly-waiver-is-available="isMonthlyWaiverAvailable"
             :overage-daily-usage="overageDailyUsage"
+            :overage-is-allowed="overageIsAllowed"
           />
         </gl-tab>
         <gl-tab :title="s__('UsageBilling|Usage by user')">

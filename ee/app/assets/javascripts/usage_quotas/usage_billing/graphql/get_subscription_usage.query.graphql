@@ -22,10 +22,10 @@ query getSubscriptionUsage($namespacePath: ID) {
     monthlyWaiver {
       totalCredits
       creditsUsed
-      # dailyUsage {
-      #   creditsUsed
-      #   date
-      # }
+      dailyUsage {
+        creditsUsed
+        date
+      }
     }
     overage {
       isAllowed
