@@ -17,7 +17,6 @@ import {
 import { TYPENAME_PROJECT } from '~/graphql_shared/constants';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { __, s__ } from '~/locale';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import { AI_CATALOG_FLOWS_ROUTE, AI_CATALOG_FLOWS_SHOW_ROUTE } from '../router/constants';
 import AiCatalogFormButtons from './ai_catalog_form_buttons.vue';
@@ -42,7 +41,6 @@ export default {
     FormGroup,
     VisibilityLevelRadioGroup,
   },
-  mixins: [glFeatureFlagsMixin()],
   inject: {
     projectId: {
       default: null,
