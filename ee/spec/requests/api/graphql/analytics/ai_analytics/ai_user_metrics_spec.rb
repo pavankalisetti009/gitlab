@@ -148,7 +148,6 @@ RSpec.describe 'aiUserMetrics', :freeze_time, feature_category: :value_stream_ma
     context 'with date filtering' do
       context 'when no filter is provided' do
         let(:fields) { ['user { id }', 'totalEventCount'] }
-        let(:expected_filters) { { from: Time.current.beginning_of_month, to: Time.current.end_of_month } }
 
         it 'uses current month as default' do
           expect(ai_user_metrics['nodes'].first['totalEventCount']).to be_a(Integer)
@@ -239,6 +238,123 @@ RSpec.describe 'aiUserMetrics', :freeze_time, feature_category: :value_stream_ma
     it_behaves_like 'ai user metrics query' do
       let(:query) { graphql_query_for(:project, { fullPath: project.full_path }, ai_user_metrics_fields) }
       let(:ai_user_metrics) { graphql_data['project']['aiUserMetrics'] }
+    end
+  end
+
+  context 'with sorting', :click_house do
+    include ClickHouseHelpers
+
+    let_it_be(:user1) { create(:user, reporter_of: group) }
+    let_it_be(:user2) { create(:user, reporter_of: group) }
+    let_it_be(:user3) { create(:user, reporter_of: group) }
+
+    let(:fields) { ['user { id }', 'totalEventCount'] }
+    let(:query) { graphql_query_for(:group, { fullPath: group.full_path }, ai_user_metrics_fields) }
+    let(:ai_user_metrics) { graphql_data['group']['aiUserMetrics'] }
+
+    before_all do
+      [user1, user2, user3].each do |user|
+        create(:gitlab_subscription_user_add_on_assignment, user: user, add_on_purchase: add_on_purchase)
+      end
+
+      group.add_reporter(current_user)
+    end
+
+    before do
+      # user3: 100 code suggestions, 10 chat events
+      # user1: 50 code suggestions, 75 chat events
+      # user2: 10 code suggestions, 200 chat events
+      clickhouse_fixture(:ai_usage_events_daily, [
+        {
+          user_id: user3.id,
+          namespace_path: group.traversal_path,
+          event: ::Ai::UsageEvent.events[:code_suggestion_accepted_in_ide],
+          date: Date.new(2025, 12, 15).to_s,
+          occurrences: 100
+        },
+        {
+          user_id: user1.id,
+          namespace_path: group.traversal_path,
+          event: ::Ai::UsageEvent.events[:code_suggestion_accepted_in_ide],
+          date: Date.new(2025, 12, 15).to_s,
+          occurrences: 50
+        },
+        {
+          user_id: user2.id,
+          namespace_path: group.traversal_path,
+          event: ::Ai::UsageEvent.events[:code_suggestion_accepted_in_ide],
+          date: Date.new(2025, 12, 15).to_s,
+          occurrences: 10
+        },
+        {
+          user_id: user2.id,
+          namespace_path: group.traversal_path,
+          event: ::Ai::UsageEvent.events[:request_duo_chat_response],
+          date: Date.new(2025, 12, 15).to_s,
+          occurrences: 200
+        },
+        {
+          user_id: user1.id,
+          namespace_path: group.traversal_path,
+          event: ::Ai::UsageEvent.events[:request_duo_chat_response],
+          date: Date.new(2025, 12, 15).to_s,
+          occurrences: 75
+        },
+        {
+          user_id: user3.id,
+          namespace_path: group.traversal_path,
+          event: ::Ai::UsageEvent.events[:request_duo_chat_response],
+          date: Date.new(2025, 12, 15).to_s,
+          occurrences: 10
+        }
+      ])
+
+      stub_feature_flags(historical_add_on_assigned_users_enabled: true)
+      allow(Gitlab::ClickHouse).to receive(:enabled_for_analytics?).and_return(true)
+      allow(Ability).to receive(:allowed?).and_call_original
+      allow(Ability).to receive(:allowed?)
+        .with(current_user, :read_enterprise_ai_analytics, anything)
+        .and_return(true)
+    end
+
+    it 'sorts by code suggestions descending' do
+      filter_params[:sort] = :CODE_SUGGESTIONS_TOTAL_COUNT_DESC
+
+      post_graphql(query, current_user: current_user)
+
+      user_ids = ai_user_metrics['nodes'].map { |node| node['user']['id'] }
+
+      expect(user_ids).to eq([user3, user1, user2].map { |u| u.to_global_id.to_s })
+    end
+
+    it 'sorts by chat descending' do
+      filter_params[:sort] = :CHAT_TOTAL_COUNT_DESC
+
+      post_graphql(query, current_user: current_user)
+
+      user_ids = ai_user_metrics['nodes'].map { |node| node['user']['id'] }
+
+      expect(user_ids).to eq([user2, user1, user3].map { |u| u.to_global_id.to_s })
+    end
+
+    context 'when AiUserMetricsService returns an error' do
+      let(:fields) { ['user { id }', 'totalEventCount'] }
+      let(:filter_params) { { sort: :CODE_SUGGESTIONS_TOTAL_COUNT_DESC } }
+      let(:error_message) { 'ClickHouse query failed' }
+
+      before do
+        allow_next_instance_of(Analytics::AiAnalytics::AiUserMetricsService) do |instance|
+          allow(instance).to receive(:execute).and_return(
+            ServiceResponse.error(message: error_message)
+          )
+        end
+
+        post_graphql(query, current_user: current_user)
+      end
+
+      it 'does not return user metrics data' do
+        expect(ai_user_metrics).to eq({ "nodes" => [] })
+      end
     end
   end
 
