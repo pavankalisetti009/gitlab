@@ -1,0 +1,10 @@
+---
+name: search_glql_fix_null_field_pagination
+description: Fix Elasticsearch pagination for queries sorting by nullable fields by converting sentinel values to nil and including must_not exists clauses
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/583599
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/215945
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/583611
+milestone: '18.7'
+group: group::global search
+type: gitlab_com_derisk
+default_enabled: false
