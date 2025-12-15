@@ -43,6 +43,17 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Rest, feature_category: :sub
 
       expect(subject[:success]).to eq(true)
     end
+
+    context 'when response body is not available' do
+      let(:parsed_response) { nil }
+
+      it 'has a successful status' do
+        allow(Gitlab::HTTP).to receive(http_method).and_return(gitlab_http_response)
+
+        expect(subject[:success]).to eq(true)
+        expect(subject[:data]).to be_nil
+      end
+    end
   end
 
   shared_examples 'when http call raises an exception' do
@@ -82,6 +93,23 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Rest, feature_category: :sub
       expect(subject[:success]).to eq(false)
       expect(subject[:data][:errors]).to eq(message)
       expect(subject[:data][:error_attribute_map]).to eq(error_attribute_map)
+    end
+
+    context "when response body is not available" do
+      let(:parsed_response) { nil }
+
+      it 'returns the unprocessable entity status' do
+        allow(Gitlab::ErrorTracking).to receive(:log_exception)
+        allow(Gitlab::HTTP).to receive(http_method).and_return(gitlab_http_response)
+
+        expect(subject[:success]).to eq(false)
+        expect(subject[:data][:errors]).to eq("HTTP status code: 422")
+
+        expect(Gitlab::ErrorTracking).to have_received(:log_exception).with(
+          instance_of(::Gitlab::SubscriptionPortal::Client::ResponseError),
+          { status: response.code, message: "HTTP status code: 422", body: {} }
+        )
+      end
     end
   end
 
@@ -423,10 +451,22 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Rest, feature_category: :sub
       it_behaves_like 'when http call raises an exception'
       it_behaves_like 'a request that sends the GITLAB_QA_USER_AGENT value in the "User-Agent" header'
 
+      shared_examples 'when response code is 402' do
+        let(:response) { Net::HTTPPaymentRequired.new(1.0, '402', 'Payment Required') }
+
+        it 'returns the "Payment required" error' do
+          allow(Gitlab::HTTP).to receive(http_method).and_return(gitlab_http_response)
+
+          expect(subject[:success]).to eq(false)
+          expect(subject[:data][:errors]).to eq("HTTP status code: 402")
+        end
+      end
+
       context "when checking quota for a namespace" do
         let(:method_params) { { user_id: 1, root_namespace_id: 1 } }
 
         it_behaves_like 'when response is successful'
+        it_behaves_like 'when response code is 402'
       end
 
       context "when checking quota for an instance" do
