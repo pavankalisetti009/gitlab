@@ -75032,6 +75032,9 @@ msgstr ""
 msgid "Vulnerability|AI detected false positive"
 msgstr ""
 
+msgid "Vulnerability|AI false positive Confidence Score"
+msgstr ""
+
 msgid "Vulnerability|AI has created a merge request to resolve this vulnerability"
 msgstr ""
 
