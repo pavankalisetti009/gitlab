@@ -292,101 +292,159 @@ RSpec.describe WorkItems::TypesFramework::SystemDefined::Type, feature_category:
     end
 
     context 'with authorization' do
-      context 'when resource_parent is a project' do
-        context 'with epics license' do
-          before do
-            stub_licensed_features(epics: true)
-          end
-
-          it 'includes epic as child type when licensed' do
-            # Assuming epic can have issues as children
-            child_types = epic_type.allowed_child_types(
-              authorize: true,
-              resource_parent: project
-            )
-
-            expect(child_types).to include(issue_type)
-          end
-        end
-
-        context 'without epics license' do
-          before do
-            stub_licensed_features(epics: false)
-          end
-
-          it 'excludes epic from child types when not licensed' do
-            # If issue type has epic as a potential child
-            child_types = issue_type.allowed_child_types(
-              authorize: true,
-              resource_parent: project
-            )
-
-            expect(child_types).not_to include(epic_type)
-          end
-        end
-      end
-
-      context 'when resource_parent is a group' do
-        context 'with subepics license' do
-          before do
-            stub_licensed_features(subepics: true)
-          end
-
-          it 'includes epic as child type for epic when licensed' do
-            # Epic can have sub-epics
-            child_types = epic_type.allowed_child_types(
-              authorize: true,
-              resource_parent: group
-            )
-
-            expect(child_types).to include(epic_type)
-          end
-        end
-
-        context 'without subepics license' do
-          before do
-            stub_licensed_features(subepics: false)
-          end
-
-          it 'excludes epic as child type for epic when not licensed' do
-            child_types = epic_type.allowed_child_types(
-              authorize: true,
-              resource_parent: group
-            )
-
-            expect(child_types).not_to include(epic_type)
-          end
-        end
-      end
-
-      context 'when resource_parent is nil' do
-        it 'returns types without license validation' do
-          child_types = issue_type.allowed_child_types(
+      shared_examples "includes expected child types" do
+        it 'returns the child in the child types array' do
+          child_types = type.allowed_child_types(
             authorize: true,
-            resource_parent: nil
+            resource_parent: resource_parent
           )
 
-          # Should behave like authorize: false
-          expect(child_types).to eq(issue_type.allowed_child_types(authorize: false))
+          expect(child_types).to include(*expected_child_types)
         end
       end
 
-      context 'with multiple licensed types' do
+      shared_examples "does not include expected child types" do
+        it 'returns the child in the child types array' do
+          child_types = type.allowed_child_types(
+            authorize: true,
+            resource_parent: resource_parent
+          )
+
+          expect(child_types).not_to include(*expected_child_types)
+        end
+      end
+
+      context 'when resource_parent is present' do
+        let(:resource_parent) { project }
+
+        context 'with epics and subepic lisense' do
+          before do
+            stub_licensed_features(epics: true, subepics: true)
+          end
+
+          context "for epic type" do
+            let(:type) { epic_type }
+            let(:expected_child_types) { [issue_type, epic_type] }
+
+            it_behaves_like 'includes expected child types'
+          end
+
+          context "for issue_type" do
+            let(:type) { issue_type }
+            let(:expected_child_types) { [task_type] }
+
+            it_behaves_like 'includes expected child types'
+          end
+        end
+
+        context 'without epics and subepic license' do
+          before do
+            stub_licensed_features(epics: false, subepics: false)
+          end
+
+          context "for epic type" do
+            let(:type) { epic_type }
+            let(:expected_child_types) { [epic_type, issue_type] }
+
+            it_behaves_like 'does not include expected child types'
+          end
+
+          context "for issue type" do
+            let(:type) { issue_type }
+            let(:expected_child_types) { [task_type] }
+
+            it_behaves_like 'includes expected child types'
+          end
+        end
+
+        context 'with epics and without subepic license' do
+          before do
+            stub_licensed_features(epics: true, subepics: false)
+          end
+
+          context "for epic type" do
+            let(:type) { epic_type }
+            let(:expected_child_types) { [epic_type] }
+
+            it_behaves_like 'does not include expected child types'
+          end
+
+          context "for issue type" do
+            let(:type) { issue_type }
+            let(:expected_child_types) { [task_type] }
+
+            it_behaves_like 'includes expected child types'
+          end
+        end
+
+        context 'without epics and with subepic license' do
+          before do
+            stub_licensed_features(epics: false, subepics: true)
+          end
+
+          context "for epic type" do
+            let(:type) { epic_type }
+            let(:expected_child_types) { [epic_type] }
+
+            it_behaves_like 'includes expected child types'
+          end
+
+          context "for issue type" do
+            let(:type) { issue_type }
+            let(:expected_child_types) { [task_type] }
+
+            it_behaves_like 'includes expected child types'
+          end
+        end
+
+        # This context is to test when the licenses_for_relation exists, but there is no license for a type.
+        # In the currect hierarchy this example does not exists, but adding the spec to cover it
+        context "for licensed types, where there is no license check on the child" do
+          before do
+            epic_task_hierarchy = WorkItems::TypesFramework::SystemDefined::HierarchyRestriction
+              .new(id: 10, parent_type_id: epic_type.id, child_type_id: task_type.id)
+            allow(WorkItems::TypesFramework::SystemDefined::HierarchyRestriction).to receive(:where)
+              .with(parent_type_id: epic_type.id)
+              .and_return([epic_task_hierarchy])
+          end
+
+          context "for epic type" do
+            let(:type) { epic_type }
+            let(:expected_child_types) { [task_type] }
+
+            it_behaves_like 'includes expected child types'
+          end
+        end
+      end
+
+      context "when resource_parent is nil" do
+        let(:resource_parent) { nil }
+
+        context "for epic_type" do
+          let(:type) { epic_type }
+          let(:expected_child_types) { [issue_type, epic_type] }
+
+          it_behaves_like 'does not include expected child types'
+        end
+
+        context "for issue_type" do
+          let(:type) { issue_type }
+          let(:expected_child_types) { [task_type] }
+
+          it_behaves_like 'includes expected child types'
+        end
+      end
+
+      context 'when there are types with no licence for child' do
+        let(:resource_parent) { project }
         let(:objective_type) { build(:work_item_system_defined_type, :objective) }
         let(:key_result_type) { build(:work_item_system_defined_type, :key_result) }
 
-        before do
-          stub_licensed_features(okrs: true)
-        end
+        context "for objective type" do
+          let(:type) { objective_type }
+          let(:expected_child_types) { [key_result_type] }
 
-        it 'includes all licensed child types' do
-          # Assuming objective can have key_results as children
-          child_types = objective_type.allowed_child_types(
-            authorize: true,
-            resource_parent: project
-          )
-
-          expect(child_types).to include(key_result_type)
+          it_behaves_like 'includes expected child types'
         end
       end
     end
@@ -411,93 +469,212 @@ RSpec.describe WorkItems::TypesFramework::SystemDefined::Type, feature_category:
     end
 
     context 'with authorization' do
-      context 'when resource_parent is a project' do
-        context 'with epics license' do
-          before do
-            stub_licensed_features(epics: true)
-          end
-
-          it 'includes epic as parent type when licensed' do
-            # Assuming issue can have epic as parent
-            parent_types = issue_type.allowed_parent_types(
-              authorize: true,
-              resource_parent: project
-            )
-
-            expect(parent_types).to include(epic_type)
-          end
-        end
-
-        context 'without epics license' do
-          before do
-            stub_licensed_features(epics: false)
-          end
-
-          it 'excludes epic from parent types when not licensed' do
-            parent_types = issue_type.allowed_parent_types(
-              authorize: true,
-              resource_parent: project
-            )
-
-            expect(parent_types).not_to include(epic_type)
-          end
-        end
-
-        context 'with type without license' do
-          it 'includes types regardless of license' do
-            # Task should always be allowed as parent for subtasks if configured
-            parent_types = task_type.allowed_parent_types(
-              authorize: true,
-              resource_parent: project
-            )
-
-            expect(parent_types.map(&:base_type)).to include('issue')
-          end
-        end
-      end
-
-      context 'when resource_parent is a group' do
-        context 'with subepics license' do
-          before do
-            stub_licensed_features(subepics: true)
-          end
-
-          it 'includes epic as parent type for epic when licensed' do
-            # Epic can have parent epics
-            parent_types = epic_type.allowed_parent_types(
-              authorize: true,
-              resource_parent: group
-            )
-
-            expect(parent_types).to include(epic_type)
-          end
-        end
-
-        context 'without subepics license' do
-          before do
-            stub_licensed_features(subepics: false)
-          end
-
-          it 'excludes epic as parent type for epic when not licensed' do
-            parent_types = epic_type.allowed_parent_types(
-              authorize: true,
-              resource_parent: group
-            )
-
-            expect(parent_types).not_to include(epic_type)
-          end
-        end
-      end
-
-      context 'when resource_parent is nil' do
-        it 'returns types without license validation' do
-          parent_types = task_type.allowed_parent_types(
+      shared_examples "includes expected parent types" do
+        it 'returns the parent in the parents types array' do
+          types = type.allowed_parent_types(
             authorize: true,
-            resource_parent: nil
+            resource_parent: resource_parent
           )
 
-          # Should behave like authorize: false
-          expect(parent_types).to eq(task_type.allowed_parent_types(authorize: false))
+          expect(types).to include(*expected_types)
+        end
+      end
+
+      shared_examples "does not include expected parent types" do
+        it 'does not return the parent in the parent types array' do
+          types = type.allowed_parent_types(
+            authorize: true,
+            resource_parent: resource_parent
+          )
+
+          expect(types).not_to include(*expected_types)
+        end
+      end
+
+      context 'when resource_parent is present' do
+        let(:resource_parent) { project }
+
+        context 'with epics and subepics license' do
+          before do
+            stub_licensed_features(epics: true, subepics: true)
+          end
+
+          context "for epic_type" do
+            let(:type) { epic_type }
+            let(:expected_types) { [epic_type] }
+
+            it_behaves_like 'includes expected parent types'
+          end
+
+          context "for issue_type" do
+            let(:type) { issue_type }
+            let(:expected_types) { [epic_type] }
+
+            it_behaves_like 'includes expected parent types'
+          end
+
+          context "for task_type" do
+            let(:type) { task_type }
+            let(:expected_types) { [issue_type] }
+
+            it_behaves_like 'includes expected parent types'
+          end
+        end
+
+        context 'without epics and subepics license' do
+          before do
+            stub_licensed_features(epics: false, subepics: false)
+          end
+
+          context "for epic_type" do
+            let(:type) { epic_type }
+            let(:expected_types) { [epic_type] }
+
+            it_behaves_like 'does not include expected parent types'
+          end
+
+          context "for issue_type" do
+            let(:type) { issue_type }
+            let(:expected_types) { [epic_type] }
+
+            it_behaves_like 'does not include expected parent types'
+          end
+
+          context "for task_type" do
+            let(:type) { task_type }
+            let(:expected_types) { [issue_type] }
+
+            it_behaves_like 'includes expected parent types'
+          end
+        end
+
+        context 'with epics and without subepics license' do
+          before do
+            stub_licensed_features(epics: true, subepics: false)
+          end
+
+          context "for epic_type" do
+            let(:type) { epic_type }
+            let(:expected_types) { [epic_type] }
+
+            it_behaves_like 'does not include expected parent types'
+          end
+
+          context "for issue_type" do
+            let(:type) { issue_type }
+            let(:expected_types) { [epic_type] }
+
+            it_behaves_like 'includes expected parent types'
+          end
+
+          context "for task_type" do
+            let(:type) { task_type }
+            let(:expected_types) { [issue_type] }
+
+            it_behaves_like 'includes expected parent types'
+          end
+        end
+
+        context 'without epics and with subepics license' do
+          before do
+            stub_licensed_features(epics: false, subepics: true)
+          end
+
+          context "for epic_type" do
+            let(:type) { epic_type }
+            let(:expected_types) { [epic_type] }
+
+            it_behaves_like 'includes expected parent types'
+          end
+
+          context "for issue_type" do
+            let(:type) { issue_type }
+            let(:expected_types) { [epic_type] }
+
+            it_behaves_like 'does not include expected parent types'
+          end
+
+          context "for task_type" do
+            let(:type) { task_type }
+            let(:expected_types) { [issue_type] }
+
+            it_behaves_like 'includes expected parent types'
+          end
+        end
+
+        # This context is to test when the licenses_for_relation exists, but there is no license for a type.
+        # In the currect hierarchy this example does not exists, but adding the spec to cover it
+        context "for licensed types, where there is no license check on the parent" do
+          before do
+            epic_task_hierarchy = WorkItems::TypesFramework::SystemDefined::HierarchyRestriction
+              .new(id: 10, parent_type_id: task_type.id, child_type_id: epic_type.id)
+            allow(WorkItems::TypesFramework::SystemDefined::HierarchyRestriction).to receive(:where)
+              .with(child_type_id: epic_type.id)
+              .and_return([epic_task_hierarchy])
+          end
+
+          context "for epic type" do
+            let(:type) { epic_type }
+            let(:expected_types) { [task_type] }
+
+            it_behaves_like 'includes expected parent types'
+          end
+        end
+
+        context "when resource parent is a group" do
+          let(:resource_parent) { group }
+
+          context 'with epics and without subepics license' do
+            before do
+              stub_licensed_features(epics: true, subepics: false)
+            end
+
+            context "for epic_type" do
+              let(:type) { epic_type }
+              let(:expected_types) { [epic_type] }
+
+              it_behaves_like 'does not include expected parent types'
+            end
+
+            context "for issue_type" do
+              let(:type) { issue_type }
+              let(:expected_types) { [epic_type] }
+
+              it_behaves_like 'includes expected parent types'
+            end
+
+            context "for task_type" do
+              let(:type) { task_type }
+              let(:expected_types) { [issue_type] }
+
+              it_behaves_like 'includes expected parent types'
+            end
+          end
+        end
+      end
+
+      context "when resource_parent is nil" do
+        let(:resource_parent) { nil }
+
+        context "for epic_type" do
+          let(:type) { epic_type }
+          let(:expected_types) { [epic_type] }
+
+          it_behaves_like 'does not include expected parent types'
+        end
+
+        context "for issue_type" do
+          let(:type) { issue_type }
+          let(:expected_types) { [epic_type] }
+
+          it_behaves_like 'does not include expected parent types'
+        end
+
+        context "for task_type" do
+          let(:type) { task_type }
+          let(:expected_types) { [issue_type] }
+
+          it_behaves_like 'includes expected parent types'
         end
       end
     end
