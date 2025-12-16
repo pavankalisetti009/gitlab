@@ -74,15 +74,16 @@ RSpec.describe 'Trial Sign Up', :with_trial_types, :with_current_organization, :
       end
     end
 
-    context 'when experiment `lightweight_trial_registration_redesign` is candidate', :js do
+    context 'when experiment `lightweight_trial_registration_redesign` is candidate', :js, experiment_tracking: 2 do
       include IdentityVerificationHelpers
 
       let_it_be(:user) { create(:user) }
       let(:user_email) { new_user.email }
 
       before do
+        stub_feature_flags(lightweight_trial_registration_redesign: true)
+
         stub_application_setting_enum('email_confirmation_setting', 'hard')
-        stub_experiments(lightweight_trial_registration_redesign: :candidate)
 
         # The groups_and_projects_controller (on `click_on 'Create project'`) is over
         # the query limit threshold, so we have to adjust it.
@@ -163,6 +164,15 @@ RSpec.describe 'Trial Sign Up', :with_trial_types, :with_current_organization, :
         wait_for_all_requests
 
         expect(page).to have_content('Get started')
+
+        is_expected.to have_tracked_experiment(:lightweight_trial_registration_redesign, [
+          :assignment,
+          :completed_trial_registration_form,
+          :completed_identity_verification,
+          :render_welcome,
+          { action: :completed_group_project_creation, namespace: Group.last },
+          :render_get_started
+        ])
       end
 
       it 'when model errors occur form can be resubmitted' do
