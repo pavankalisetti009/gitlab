@@ -30,14 +30,14 @@ module Projects
     end
 
     def specific_vueroute?
-      %w[agents flows flow-triggers].include?(duo_agents_platform_params[:vueroute])
+      %w[agents flows triggers].include?(duo_agents_platform_params[:vueroute])
     end
 
     def authorized_for_route?
       case duo_agents_platform_params[:vueroute]
       when 'agents'
         Feature.enabled?(:global_ai_catalog, current_user)
-      when 'flow-triggers'
+      when 'triggers'
         current_user.can?(:manage_ai_flow_triggers, project)
       when 'flows'
         Feature.enabled?(:global_ai_catalog, current_user) &&
