@@ -153,21 +153,45 @@ RSpec.describe Gitlab::Auth::Smartcard::Certificate, :with_current_organization 
         end
       end
 
-      context 'san email defined' do
-        let(:san_defined_email) { 'san@domain.email' }
+      context 'email extraction' do
+        context 'when emailAddress contains embedded emailAddress= substring' do
+          let(:forged_email) { 'malformemailaddress=ed@example.com' }
+          let(:subject_dn) { "/CN=GitLabUser/emailAddress=#{forged_email}" }
 
-        before do
-          allow(Gitlab.config.smartcard).to receive(:san_extensions).and_return(true)
-
-          expect_next_instance_of(Gitlab::Auth::Smartcard::SANExtension) do |san_extension|
-            expect(san_extension).to receive(:email_identity).and_return(san_defined_email)
+          it 'extracts email correctly' do
+            expect(subject.email).to eql(forged_email)
           end
         end
 
-        it 'creates user' do
-          expect { subject }.to change { User.count }.from(0).to(1)
+        context 'when email extraction fails' do
+          let(:subject_dn) { '/CN=Gitlab User' }
+          let(:certificate) { described_class.new(certificate_header, current_organization) }
 
-          expect(User.first.email).to eql(san_defined_email)
+          before do
+            allow(OpenSSL::X509::Name).to receive(:parse).and_raise(OpenSSL::X509::NameError)
+          end
+
+          it 'returns nil for email' do
+            expect(certificate.send(:email)).to be_nil
+          end
+        end
+
+        context 'san email defined' do
+          let(:san_defined_email) { 'san@domain.email' }
+
+          before do
+            allow(Gitlab.config.smartcard).to receive(:san_extensions).and_return(true)
+
+            expect_next_instance_of(Gitlab::Auth::Smartcard::SANExtension) do |san_extension|
+              expect(san_extension).to receive(:email_identity).and_return(san_defined_email)
+            end
+          end
+
+          it 'creates user' do
+            expect { subject }.to change { User.count }.from(0).to(1)
+
+            expect(User.first.email).to eql(san_defined_email)
+          end
         end
       end
     end
