@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Auth::GroupSamlIdentityFinder do
+RSpec.describe Auth::GroupSamlIdentityFinder, feature_category: :system_access do
   let(:uid) { 1234 }
   let!(:identity) { create(:group_saml_identity, extern_uid: uid) }
   let(:saml_provider) { identity.saml_provider }

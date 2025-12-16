@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Auth::ProvisionedUsersFinder do
+RSpec.describe Auth::ProvisionedUsersFinder, feature_category: :system_access do
   describe '#execute' do
     let_it_be(:group) { create(:group) }
     let_it_be(:regular_user) { create(:user) }
