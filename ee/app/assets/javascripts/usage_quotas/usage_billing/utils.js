@@ -29,7 +29,7 @@ export const formatNumber = (value) => {
   if (!value) return `${value}`;
   if (value < 1000) {
     if (Number.isInteger(value)) return `${value}`;
-    return value.toFixed(1);
+    return (Math.round(value * 10) / 10).toFixed(1);
   }
   return numberToMetricPrefix(value);
 };
