@@ -18,6 +18,14 @@ RSpec.describe API::GroupProtectedBranches, feature_category: :source_code_manag
     let(:params) { {} }
     let(:route) { "/groups/#{group.id}/protected_branches" }
 
+    it_behaves_like 'authorizing granular token permissions', :read_protected_branch do
+      let(:boundary_object) { group }
+      let(:user) { owner }
+      let(:request) do
+        get api(route, personal_access_token: pat)
+      end
+    end
+
     shared_examples_for 'protected branches' do
       it 'returns the protected branches' do
         get api(route, user), params: params.merge(per_page: 100)
@@ -73,6 +81,14 @@ RSpec.describe API::GroupProtectedBranches, feature_category: :source_code_manag
   end
 
   describe "GET /groups/:id/protected_branches/:branch" do
+    it_behaves_like 'authorizing granular token permissions', :read_protected_branch do
+      let(:boundary_object) { group }
+      let(:user) { owner }
+      let(:request) do
+        get api("/groups/#{group.id}/protected_branches/#{branch_name}", personal_access_token: pat)
+      end
+    end
+
     let(:route) { "/groups/#{group.id}/protected_branches/#{branch_name}" }
 
     shared_examples_for 'protected branch' do
@@ -125,6 +141,14 @@ RSpec.describe API::GroupProtectedBranches, feature_category: :source_code_manag
   end
 
   describe 'POST /groups/:id/protected_branches' do
+    it_behaves_like 'authorizing granular token permissions', :create_protected_branch do
+      let(:boundary_object) { group }
+      let(:user) { owner }
+      let(:request) do
+        post api("/groups/#{group.id}/protected_branches", personal_access_token: pat), params: { name: 'new_branch' }
+      end
+    end
+
     let(:branch_name) { 'new_branch' }
     let(:post_endpoint) { api("/groups/#{group.id}/protected_branches", user) }
 
@@ -253,6 +277,15 @@ RSpec.describe API::GroupProtectedBranches, feature_category: :source_code_manag
   describe 'PATCH /groups/:id/protected_branches/:name' do
     let(:route) { "/groups/#{group.id}/protected_branches/#{branch_name}" }
 
+    it_behaves_like 'authorizing granular token permissions', :update_protected_branch do
+      let(:boundary_object) { group }
+      let(:user) { owner }
+      let(:request) do
+        patch api(route, personal_access_token: pat),
+          params: { allow_force_push: true }
+      end
+    end
+
     context 'when authenticated as a owner' do
       let(:user) { owner }
 
@@ -294,6 +327,14 @@ RSpec.describe API::GroupProtectedBranches, feature_category: :source_code_manag
   end
 
   describe "DELETE /groups/:id/protected_branches/unprotect/:branch" do
+    it_behaves_like 'authorizing granular token permissions', :delete_protected_branch do
+      let(:boundary_object) { group }
+      let(:user) { owner }
+      let(:request) do
+        delete api("/groups/#{group.id}/protected_branches/#{branch_name}", personal_access_token: pat)
+      end
+    end
+
     let(:user) { owner }
     let(:delete_endpoint) { api("/groups/#{group.id}/protected_branches/#{branch_name}", user) }
 
