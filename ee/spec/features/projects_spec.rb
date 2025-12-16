@@ -25,9 +25,7 @@ RSpec.describe 'Project', :js, :with_current_organization, feature_category: :gr
     end
 
     it 'deletes project delayed and is restorable', :freeze_time do
-      deletion_adjourned_period = ::Gitlab::CurrentSettings.deletion_adjourned_period
-
-      expect(page).to have_content("This action will place this project, including all its resources, in a pending deletion state for #{deletion_adjourned_period} days, and delete it permanently on #{deletion_date}.")
+      expect(page).to have_content("This action will permanently delete this project, including all its resources, on #{deletion_date}. Scheduled pipelines will not run during deletion.")
 
       click_button "Delete"
 
