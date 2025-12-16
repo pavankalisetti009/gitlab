@@ -53,7 +53,7 @@ module Ai
           message =
             if draft_notes.empty?
               track_review_merge_request_event('find_no_issues_duo_code_review_after_review')
-              exclusion_message_for_excluded_files + ::Ai::CodeReviewMessages.nothing_to_comment
+              build_no_comments_message
             else
               build_summary(draft_notes)
             end
@@ -70,6 +70,17 @@ module Ai
         private
 
         attr_reader :user, :merge_request, :review_bot, :review_output, :metrics
+
+        def parsed_body
+          @parsed_body ||=
+            ::Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::ResponseBodyParser.new(review_output)
+        end
+
+        def build_no_comments_message
+          summary = parsed_body.summary
+          summary_message = summary.presence || ::Ai::CodeReviewMessages.nothing_to_comment
+          exclusion_message_for_excluded_files + summary_message
+        end
 
         def ai_reviewable_diff_files
           merge_request.ai_reviewable_diff_files.filter_map do |diff_file|
@@ -94,7 +105,6 @@ module Ai
         def build_draft_notes
           mr_diff_refs = merge_request.diff_refs
 
-          parsed_body = ::Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::ResponseBodyParser.new(review_output)
           raw_comments = parsed_body.comments
           comments = raw_comments.group_by(&:file)
 

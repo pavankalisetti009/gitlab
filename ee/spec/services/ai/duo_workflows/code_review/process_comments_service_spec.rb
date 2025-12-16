@@ -118,7 +118,8 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::ProcessCommentsService, feature_cat
 
         parsed_body = instance_double(
           Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::ResponseBodyParser,
-          comments: [comment]
+          comments: [comment],
+          summary: nil
         )
 
         allow(::Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::ResponseBodyParser)
@@ -169,7 +170,8 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::ProcessCommentsService, feature_cat
 
           parsed_body = instance_double(
             Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::ResponseBodyParser,
-            comments: [comment]
+            comments: [comment],
+            summary: nil
           )
 
           allow(::Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::ResponseBodyParser)
@@ -214,7 +216,8 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::ProcessCommentsService, feature_cat
 
         parsed_body = instance_double(
           Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::ResponseBodyParser,
-          comments: [comment]
+          comments: [comment],
+          summary: nil
         )
 
         allow(::Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::ResponseBodyParser)
@@ -313,7 +316,8 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::ProcessCommentsService, feature_cat
         end
         parsed_body = instance_double(
           Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::ResponseBodyParser,
-          comments: parsed_comments
+          comments: parsed_comments,
+          summary: nil
         )
         allow(::Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::ResponseBodyParser)
           .to receive(:new).and_return(parsed_body)
@@ -528,6 +532,123 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::ProcessCommentsService, feature_cat
     end
   end
 
+  describe '#build_no_comments_message' do
+    let(:diff_file) { instance_double(Gitlab::Diff::File, new_path: 'test.rb', file_path: 'test.rb') }
+
+    before do
+      allow(merge_request).to receive(:ai_reviewable_diff_files).and_return([diff_file])
+    end
+
+    context 'when review output contains summary' do
+      let(:review_output) do
+        <<~RESPONSE
+          <review></review>
+          <summary>
+          The code changes look good. All tests are passing and best practices are followed.
+          </summary>
+        RESPONSE
+      end
+
+      before do
+        parsed_body = instance_double(
+          Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::ResponseBodyParser,
+          comments: [],
+          summary: 'The code changes look good. All tests are passing and best practices are followed.'
+        )
+        allow(::Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::ResponseBodyParser)
+          .to receive(:new).and_return(parsed_body)
+      end
+
+      it 'uses the summary from parsed_body' do
+        result = service.execute
+
+        expect(result).to be_success
+        expect(result.message).to include('The code changes look good')
+        expect(result.message).not_to include('I finished my review and found nothing to comment on')
+      end
+
+      it 'tracks the no issues event' do
+        expect(service).to receive(:track_review_merge_request_event)
+          .with('find_no_issues_duo_code_review_after_review')
+
+        service.execute
+      end
+    end
+
+    context 'when review output has no summary' do
+      let(:review_output) { '<review></review>' }
+
+      before do
+        parsed_body = instance_double(
+          Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::ResponseBodyParser,
+          comments: [],
+          summary: nil
+        )
+        allow(::Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::ResponseBodyParser)
+          .to receive(:new).and_return(parsed_body)
+      end
+
+      it 'falls back to default nothing_to_comment message' do
+        result = service.execute
+
+        expect(result).to be_success
+        expect(result.message).to include('I finished my review and found nothing to comment on')
+      end
+    end
+
+    context 'when summary is empty string' do
+      let(:review_output) { '<review></review><summary></summary>' }
+
+      before do
+        parsed_body = instance_double(
+          Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::ResponseBodyParser,
+          comments: [],
+          summary: nil
+        )
+        allow(::Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::ResponseBodyParser)
+          .to receive(:new).and_return(parsed_body)
+      end
+
+      it 'falls back to default nothing_to_comment message' do
+        result = service.execute
+
+        expect(result).to be_success
+        expect(result.message).to include('I finished my review and found nothing to comment on')
+      end
+    end
+
+    context 'when there are excluded files and summary exists' do
+      let(:review_output) do
+        <<~RESPONSE
+          <review></review>
+          <summary>
+          Reviewed the accessible files. Code quality is good.
+          </summary>
+        RESPONSE
+      end
+
+      before do
+        allow(service).to receive(:excluded_files).and_return(['excluded.rb'])
+        parsed_body = instance_double(
+          Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::ResponseBodyParser,
+          comments: [],
+          summary: 'Reviewed the accessible files. Code quality is good.'
+        )
+        allow(::Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::ResponseBodyParser)
+          .to receive(:new).and_return(parsed_body)
+      end
+
+      it 'includes both exclusion message and summary' do
+        result = service.execute
+
+        expect(result).to be_success
+        expect(result.message).to include('I do not have access to the following files')
+        expect(result.message).to include('excluded.rb')
+        expect(result.message).to include('Reviewed the accessible files')
+      end
+    end
+  end
+
   describe 'sequence matching edge cases' do
     subject(:execute) { service.execute }
 
@@ -592,7 +713,8 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::ProcessCommentsService, feature_cat
         )
         parsed_body = instance_double(
           Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::ResponseBodyParser,
-          comments: [comment]
+          comments: [comment],
+          summary: nil
         )
         allow(::Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::ResponseBodyParser)
           .to receive(:new).and_return(parsed_body)
@@ -671,7 +793,8 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::ProcessCommentsService, feature_cat
       before do
         parsed_body = instance_double(
           Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::ResponseBodyParser,
-          comments: []
+          comments: [],
+          summary: nil
         )
         allow(::Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::ResponseBodyParser)
           .to receive(:new).and_return(parsed_body)
@@ -724,7 +847,8 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::ProcessCommentsService, feature_cat
 
         parsed_body = instance_double(
           Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::ResponseBodyParser,
-          comments: comments
+          comments: comments,
+          summary: nil
         )
         allow(::Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::ResponseBodyParser)
           .to receive(:new).and_return(parsed_body)
@@ -783,7 +907,8 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::ProcessCommentsService, feature_cat
 
         parsed_body = instance_double(
           Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::ResponseBodyParser,
-          comments: comments
+          comments: comments,
+          summary: nil
         )
         allow(::Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::ResponseBodyParser)
           .to receive(:new).and_return(parsed_body)
@@ -840,7 +965,8 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::ProcessCommentsService, feature_cat
 
         parsed_body = instance_double(
           Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::ResponseBodyParser,
-          comments: comments
+          comments: comments,
+          summary: nil
         )
         allow(::Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::ResponseBodyParser)
           .to receive(:new).and_return(parsed_body)
@@ -896,7 +1022,8 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::ProcessCommentsService, feature_cat
 
         parsed_body = instance_double(
           Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::ResponseBodyParser,
-          comments: [comment]
+          comments: [comment],
+          summary: nil
         )
         allow(::Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::ResponseBodyParser)
           .to receive(:new).and_return(parsed_body)
@@ -1037,7 +1164,8 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::ProcessCommentsService, feature_cat
 
         parsed_body = instance_double(
           Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::ResponseBodyParser,
-          comments: comments
+          comments: comments,
+          summary: nil
         )
         allow(::Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::ResponseBodyParser)
           .to receive(:new).and_return(parsed_body)
@@ -1110,7 +1238,8 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::ProcessCommentsService, feature_cat
 
       parsed_body = instance_double(
         Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::ResponseBodyParser,
-        comments: [comment]
+        comments: [comment],
+        summary: nil
       )
       allow(::Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::ResponseBodyParser)
         .to receive(:new).and_return(parsed_body)
