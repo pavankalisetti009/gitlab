@@ -26706,6 +26706,12 @@ msgstr ""
 msgid "Empty file"
 msgstr ""
 
+msgid "Empty file added."
+msgstr ""
+
+msgid "Empty file deleted."
+msgstr ""
+
 msgid "Enable"
 msgstr ""
 
