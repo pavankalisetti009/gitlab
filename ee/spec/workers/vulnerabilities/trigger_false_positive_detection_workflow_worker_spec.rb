@@ -43,7 +43,7 @@ RSpec.describe Vulnerabilities::TriggerFalsePositiveDetectionWorkflowWorker, fea
         it 'creates and executes the workflow service with correct parameters' do
           expect(::Ai::DuoWorkflows::CreateAndStartWorkflowService).to receive(:new).with(
             container: project,
-            current_user: user,
+            current_user: project.first_owner,
             workflow_definition: workflow_definition,
             goal: vulnerability_id.to_s,
             source_branch: project.default_branch
