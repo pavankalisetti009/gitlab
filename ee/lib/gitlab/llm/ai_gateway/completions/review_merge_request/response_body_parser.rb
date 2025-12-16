@@ -57,6 +57,19 @@ module Gitlab
             end
             strong_memoize_attr :comments
 
+            def summary
+              return if response.blank?
+
+              match = response.match(summary_regex)
+              return if match.blank?
+
+              summary_content = match[1]&.strip
+              return if summary_content.blank?
+
+              summary_content
+            end
+            strong_memoize_attr :summary
+
             private
 
             def extract_review_block
@@ -72,6 +85,10 @@ module Gitlab
 
             def comment_attr_regex
               %r{([^\s]*?)="(.*?)"}
+            end
+
+            def summary_regex
+              %r{<summary>(.*?)</summary>}m
             end
 
             def parsed_attrs(attrs)

@@ -682,4 +682,46 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::Response
       end
     end
   end
+
+  describe '#summary' do
+    context 'when response contains summary' do
+      let(:body) do
+        <<~RESPONSE
+        <review></review>
+        <summary>
+        The code changes look good. All tests are passing and best practices are followed.
+        </summary>
+        RESPONSE
+      end
+
+      it 'extracts the summary content' do
+        expect(parser.summary).to include('The code changes look good')
+        expect(parser.summary).not_to include('<summary>')
+      end
+    end
+
+    context 'when summary is empty or has only whitespace' do
+      let(:body) { '<review></review><summary>   </summary>' }
+
+      it 'returns nil' do
+        expect(parser.summary).to be_nil
+      end
+    end
+
+    context 'when response has no summary tags' do
+      let(:body) { '<review></review>' }
+
+      it 'returns nil' do
+        expect(parser.summary).to be_nil
+      end
+    end
+
+    context 'when response is blank' do
+      let(:body) { nil }
+
+      it 'returns nil' do
+        expect(parser.summary).to be_nil
+      end
+    end
+  end
 end
