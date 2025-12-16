@@ -21,6 +21,7 @@ module Ai
       if result && result.persisted?
         ServiceResponse.success(payload: result)
       else
+        log_member_addition_failure(result)
         ServiceResponse.error(message: "Failed to add service account as developer")
       end
     end
@@ -28,5 +29,45 @@ module Ai
     private
 
     attr_reader :project, :service_account_user
+
+    def log_member_addition_failure(result)
+      error_message = extract_error_details(result)
+
+      log_data = {
+        message: 'Failed to add service account as developer',
+        project_id: project.id,
+        service_account_user_id: service_account_user.id,
+        error_details: error_message,
+        group_membership_lock: project.group&.membership_lock,
+        root_ancestor_membership_lock: project.root_ancestor&.membership_lock
+      }
+
+      Gitlab::AppLogger.error(log_data)
+    rescue StandardError => e
+      Gitlab::AppLogger.error(
+        message: 'Failed to add service account as developer (logging error)',
+        project_id: project&.id,
+        service_account_user_id: service_account_user&.id,
+        logging_error: "#{e.class.name}: #{e.message}"
+      )
+    end
+
+    def extract_error_details(result)
+      case result
+      when false
+        "add_member returned false (group_member_lock is enabled and user is not a bot)"
+      when nil
+        "add_member returned nil (empty result array or transaction failure)"
+      when ActiveRecord::Base
+        if result.errors.any?
+          error_messages = result.errors.full_messages.join(', ')
+          "Member validation/authorization errors: #{error_messages}"
+        else
+          "Member object returned but not persisted (possible save failure or approval failure)"
+        end
+      else
+        "Unexpected return type from add_member: #{result.class.name}"
+      end
+    end
   end
 end
