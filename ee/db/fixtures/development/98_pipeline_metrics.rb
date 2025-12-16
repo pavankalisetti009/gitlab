@@ -29,10 +29,11 @@ require 'active_support/testing/time_helpers'
 class Gitlab::Seeder::PipelineMetrics # rubocop:disable Style/ClassAndModuleChildren -- this is a seed script
   include ActiveSupport::Testing::TimeHelpers
 
-  attr_reader :project, :group, :user, :pipeline_count, :days_count, :start_day_offset
+  attr_reader :project, :group, :user, :pipeline_count, :days_count, :start_day_offset, :organization
 
   def initialize(project: nil, pipeline_count: nil, days_count: nil, start_day_offset: nil)
     @user = User.admins.first
+    @organization = @user.organization
     @project = project || create_project_with_group
     @pipeline_count = pipeline_count || 25
     @days_count = days_count || 30
@@ -61,7 +62,7 @@ class Gitlab::Seeder::PipelineMetrics # rubocop:disable Style/ClassAndModuleChil
         name: "Pipeline metrics Group #{suffix}",
         path: "p-metrics-group-#{suffix}",
         description: FFaker::Lorem.sentence,
-        organization: Organizations::Organization.default_organization
+        organization: organization
       )
 
       group.save!
