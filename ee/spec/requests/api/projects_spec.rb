@@ -2223,7 +2223,7 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
     end
 
     context 'when setting duo_sast_fp_detection_enabled' do
-      let(:project_params) { { duo_sast_fp_detection_enabled: false } }
+      let(:project_params) { { duo_sast_fp_detection_enabled: true } }
 
       context 'when licence is available and feature flag is enabled' do
         before do
@@ -2235,7 +2235,7 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
           expect { subject }.to change { project.reload.duo_sast_fp_detection_enabled }
 
           expect(response).to have_gitlab_http_status(:ok)
-          expect(json_response['duo_sast_fp_detection_enabled']).to eq false
+          expect(json_response['duo_sast_fp_detection_enabled']).to eq true
         end
       end
 
