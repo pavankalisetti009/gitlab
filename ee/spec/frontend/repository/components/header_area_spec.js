@@ -158,27 +158,33 @@ describe('HeaderArea', () => {
   });
 
   describe('when rendered for blob view', () => {
-    beforeEach(() => {
-      wrapper = createComponent({
-        route: { name: 'blobPathDecoded' },
-      });
-    });
-
-    describe('HeaderLockIcon', () => {
-      it('renders HeaderLockIcon component with correct props', () => {
-        expect(findHeaderLockIcon().exists()).toBe(true);
-        expect(findHeaderLockIcon().props('isTreeView')).toBe(false);
-        expect(findHeaderLockIcon().props('isLocked')).toBe(false);
+    describe.each`
+      routeName
+      ${'blobPathDecoded'}
+      ${'blobPathEncoded'}
+    `('with route name $routeName', ({ routeName }) => {
+      beforeEach(() => {
+        wrapper = createComponent({
+          route: { name: routeName },
+        });
       });
 
-      it('receives lock information from BlobControls', async () => {
-        expect(findHeaderLockIcon().props('isLocked')).toBe(false);
+      describe('HeaderLockIcon', () => {
+        it('renders HeaderLockIcon component with correct props', () => {
+          expect(findHeaderLockIcon().exists()).toBe(true);
+          expect(findHeaderLockIcon().props('isTreeView')).toBe(false);
+          expect(findHeaderLockIcon().props('isLocked')).toBe(false);
+        });
 
-        findBlobControls().vm.$emit('lockedFile', { isLocked: true, lockAuthor: 'Admin' });
-        await nextTick();
+        it('receives lock information from BlobControls', async () => {
+          expect(findHeaderLockIcon().props('isLocked')).toBe(false);
 
-        expect(findHeaderLockIcon().props('isLocked')).toBe(true);
-        expect(findHeaderLockIcon().props('lockAuthor')).toBe('Admin');
+          findBlobControls().vm.$emit('lockedFile', { isLocked: true, lockAuthor: 'Admin' });
+          await nextTick();
+
+          expect(findHeaderLockIcon().props('isLocked')).toBe(true);
+          expect(findHeaderLockIcon().props('lockAuthor')).toBe('Admin');
+        });
       });
     });
   });
