@@ -43536,7 +43536,7 @@ msgstr ""
 msgid "Must be in the following format: `5B`, `5b`, `1KB`, `1kb`, `2MB`, `2mb`, `1GB`, or `1gb`"
 msgstr ""
 
-msgid "Must start with letter, digit, emoji, or underscore. Can also contain periods, dashes, spaces, and parentheses."
+msgid "Must start with a lowercase or uppercase letter, digit, emoji, or underscore. Can also contain dots, pluses, dashes, or spaces."
 msgstr ""
 
 msgid "My company or team"
