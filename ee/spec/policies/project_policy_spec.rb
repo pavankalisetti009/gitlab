@@ -2446,7 +2446,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         let_it_be(:project) { create(:project, :private, public_builds: false) }
 
         where(:role) do
-          Gitlab::Access.sym_options.keys.map(&:to_sym)
+          RolesHelpers.testable_roles
         end
 
         with_them do
@@ -2466,7 +2466,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         end
 
         where(:role) do
-          Gitlab::Access.sym_options_with_owner.keys.map(&:to_sym)
+          RolesHelpers.testable_roles(include_owner: true)
         end
 
         with_them do
@@ -2487,7 +2487,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         end
 
         where(:role) do
-          Gitlab::Access.sym_options_with_owner.keys.map(&:to_sym)
+          RolesHelpers.testable_roles(include_owner: true)
         end
 
         with_them do
@@ -2504,7 +2504,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         let_it_be(:project) { create(:project, :private, public_builds: false, namespace: subgroup) }
 
         where(:role) do
-          Gitlab::Access.sym_options_with_owner.keys.map(&:to_sym)
+          RolesHelpers.testable_roles(include_owner: true)
         end
 
         with_them do

@@ -546,7 +546,8 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
   describe '.levels_sentence' do
     it 'returns the list of access levels with names' do
       expect(described_class.levels_sentence).to eq(
-        "10 (Guest), 15 (Planner), 20 (Reporter), 30 (Developer), 40 (Maintainer), and 50 (Owner)"
+        "10 (Guest), 15 (Planner), 20 (Reporter), 25 (Security Manager), 30 (Developer), " \
+        "40 (Maintainer), and 50 (Owner)"
       )
     end
   end
