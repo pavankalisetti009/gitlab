@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Groups::Analytics::ApplicationController', feature_category: :team_planning do
+RSpec.describe 'Groups::Analytics::ApplicationController', feature_category: :value_stream_management do
   let_it_be(:group) { create(:group, :private) }
 
   # This is an abstract class so we'll test it using an inheritor

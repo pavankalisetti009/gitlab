@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Groups::Analytics::DataExplorerController, feature_category: :team_planning do
+RSpec.describe Groups::Analytics::DataExplorerController, feature_category: :value_stream_management do
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group, :public) }
 
