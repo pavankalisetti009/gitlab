@@ -17,7 +17,8 @@ RSpec.describe 'Signup on EE', :with_current_organization, :js, feature_category
       visit new_user_registration_path
     end
 
-    it 'allows visiting of a page after initial registration' do
+    it 'allows visiting of a page after initial registration',
+      quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/7295' do
       fill_in_sign_up_form(new_user)
 
       visit new_project_path
