@@ -98,6 +98,7 @@ module Ai
             namespace_id: group.id,
             name: item.name,
             username: service_account_username,
+            avatar: service_account_avatar,
             organization_id: group.organization_id,
             composite_identity_enforced: true,
             skip_ai_prefix_validation: true
@@ -146,6 +147,10 @@ module Ai
 
         def service_account_username
           "ai-#{item.name}-#{group.name}".parameterize
+        end
+
+        def service_account_avatar
+          Ai::Avatars::LoadService.new(item).execute
         end
 
         def for_project_or_top_level_group?
