@@ -82,7 +82,7 @@ export default {
       </template>
       <template #description>
         <div class="gl-border-b gl-pb-3">
-          {{ s__('AICatalog|Connect an agent to automate complex tasks') }}
+          {{ s__('AICatalog|Use flows to automate complex, multi-step tasks.') }}
         </div>
       </template>
     </page-heading>

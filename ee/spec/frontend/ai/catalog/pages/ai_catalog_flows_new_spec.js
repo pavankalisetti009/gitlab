@@ -59,7 +59,9 @@ describe('AiCatalogFlowsNew', () => {
     it('renders page heading with correct title and description', () => {
       expect(findPageHeading().exists()).toBe(true);
       expect(findPageHeading().text()).toContain('New flow');
-      expect(findPageHeading().text()).toContain('Connect an agent to automate complex tasks');
+      expect(findPageHeading().text()).toContain(
+        'Use flows to automate complex, multi-step tasks.',
+      );
     });
 
     it('renders experiment badge', () => {
