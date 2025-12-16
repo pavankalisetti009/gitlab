@@ -203,6 +203,12 @@ module EE
           authorize: :admin_namespace,
           experiment: { milestone: '18.2' }
 
+        field :ai_settings,
+          ::Types::Ai::NamespaceSettingsType,
+          null: true,
+          experiment: { milestone: '18.8' },
+          description: 'AI settings for the namespace.'
+
         def product_analytics_stored_events_limit
           object.root_ancestor.product_analytics_stored_events_limit
         end
