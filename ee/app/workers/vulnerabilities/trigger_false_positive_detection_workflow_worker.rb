@@ -36,12 +36,14 @@ module Vulnerabilities
     end
 
     def trigger_workflow(vulnerability)
+      project = vulnerability.project
+
       ::Ai::DuoWorkflows::CreateAndStartWorkflowService.new(
-        container: vulnerability.project,
-        current_user: vulnerability.author,
+        container: project,
+        current_user: project.first_owner || vulnerability.author,
         workflow_definition: ::Ai::DuoWorkflows::WorkflowDefinition['sast_fp_detection/v1'],
         goal: vulnerability.id.to_s,
-        source_branch: vulnerability.project.default_branch
+        source_branch: project.default_branch
       ).execute
     end
 
