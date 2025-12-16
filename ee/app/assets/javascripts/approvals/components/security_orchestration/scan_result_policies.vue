@@ -10,6 +10,7 @@ import ScanResultPolicy from './scan_result_policy.vue';
 import PolicyDetails from './policy_details.vue';
 
 export default {
+  name: 'ScanResultPolicies',
   i18n: {
     securityApprovals: s__('SecurityOrchestration|Security Approvals'),
     description: s__(

@@ -3,6 +3,7 @@ import { GlButton, GlIcon } from '@gitlab/ui';
 import { __ } from '~/locale';
 
 export default {
+  name: 'ScanResultPolicy',
   i18n: {
     details: __('View details'),
     allProtectedBranches: __('All protected branches'),

@@ -10,6 +10,7 @@ import PolicyApprovals from 'ee/security_orchestration/components/policy_drawer/
 import { REQUIRE_APPROVAL_TYPE } from 'ee/security_orchestration/components/policy_editor/scan_result/lib';
 
 export default {
+  name: 'PolicyDetails',
   i18n: {
     policyDetails: s__('SecurityOrchestration|Edit policy'),
   },
