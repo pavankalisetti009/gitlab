@@ -376,6 +376,9 @@ export default {
     isModelSelectionDisabled() {
       return checkModelSelectionDisabled(this.pinnedModel);
     },
+    isLoadingThreadList() {
+      return this.$apollo.queries?.agenticWorkflows?.loading;
+    },
     modelSelectionDisabledTooltipText() {
       return this.isModelSelectionDisabled
         ? s__('ModelSelection|Model has been pinned by an administrator.')
@@ -1077,6 +1080,7 @@ export default {
       :title="currentAgent ? currentAgent.name : duoChatTitle"
       :messages="messages"
       :is-loading="isWaitingOnPrompt"
+      :loading-thread-list="isLoadingThreadList"
       :predefined-prompts="predefinedPrompts"
       :thread-list="agenticWorkflows"
       :multi-threaded-view="multithreadedView"

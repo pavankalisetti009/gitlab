@@ -520,6 +520,12 @@ describe('Duo Agentic Chat', () => {
         expect(findDuoChat().props('isToolApprovalProcessing')).toBe(false);
       });
 
+      it('passes loading-thread-list prop to AgenticDuoChat component', async () => {
+        expect(findDuoChat().props('loadingThreadList')).toBe(true);
+        await waitForPromises();
+        expect(findDuoChat().props('loadingThreadList')).toBe(false);
+      });
+
       it('passes multithreading props to AgenticDuoChat component', async () => {
         await waitForPromises();
 
