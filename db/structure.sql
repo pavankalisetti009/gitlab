@@ -40197,6 +40197,8 @@ CREATE INDEX index_ai_catalog_item_versions_on_created_by_id ON ai_catalog_item_
 
 CREATE INDEX index_ai_catalog_item_versions_on_organization_id ON ai_catalog_item_versions USING btree (organization_id);
 
+CREATE INDEX index_ai_catalog_items_on_foundational_flow_reference ON ai_catalog_items USING btree (foundational_flow_reference);
+
 CREATE INDEX index_ai_catalog_items_on_item_type ON ai_catalog_items USING btree (item_type);
 
 CREATE INDEX index_ai_catalog_items_on_latest_released_version_id ON ai_catalog_items USING btree (latest_released_version_id);
