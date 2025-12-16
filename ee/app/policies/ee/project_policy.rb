@@ -1277,6 +1277,8 @@ module EE
         ::Feature.enabled?(:duo_workflow, @user)
       end
 
+      # This incorrect scope may not be removed for the interim due to the fact that functionality is relying on it.
+      # see: https://gitlab.com/gitlab-org/gitlab/-/issues/578561#note_2868029408
       with_scope :subject
       condition(:duo_workflow_available) do
         @subject.duo_features_enabled &&
