@@ -8,6 +8,11 @@ module Gitlab
           class ResponseBodyParser
             include ::Gitlab::Utils::StrongMemoize
 
+            REVIEW_BLOCK_REGEX = %r{<review>.*?</review>}m
+            COMMENT_WRAPPER_REGEX = %r{^<comment (.+?)>(?:\n?)(.+?)</comment>$}m
+            COMMENT_ATTR_REGEX = %r{([^\s]*?)="(.*?)"}
+            SUMMARY_REGEX = %r{<summary>(.*?)</summary>}m
+
             class Comment
               ATTRIBUTES = %w[old_line new_line file].freeze
 
@@ -28,9 +33,6 @@ module Gitlab
               def valid?
                 return false if content.blank?
                 return false if old_line.blank? && new_line.blank?
-
-                # Always require the file attribute since we now include it in all cases,
-                # even for single-file reviews
                 return false if file.blank?
 
                 true
@@ -49,7 +51,7 @@ module Gitlab
               review_block = extract_review_block
               return [] if review_block.blank?
 
-              review_block.scan(comment_wrapper_regex).filter_map do |attrs, body|
+              review_block.scan(COMMENT_WRAPPER_REGEX).filter_map do |attrs, body|
                 parsed_body = parsed_content(body)
                 comment = Comment.new(parsed_attrs(attrs), parsed_body[:body], parsed_body[:from])
                 comment if comment.valid?
@@ -60,7 +62,7 @@ module Gitlab
             def summary
               return if response.blank?
 
-              match = response.match(summary_regex)
+              match = response.match(SUMMARY_REGEX)
               return if match.blank?
 
               summary_content = match[1]&.strip
@@ -75,24 +77,12 @@ module Gitlab
             def extract_review_block
               # Find the last occurrence of <review>...</review> in the response
               # This ensures we get the actual review output, not any examples in thinking steps
-              matches = response.scan(%r{<review>.*?</review>}m)
+              matches = response.scan(REVIEW_BLOCK_REGEX)
               matches.last
             end
 
-            def comment_wrapper_regex
-              %r{^<comment (.+?)>(?:\n?)(.+?)</comment>$}m
-            end
-
-            def comment_attr_regex
-              %r{([^\s]*?)="(.*?)"}
-            end
-
-            def summary_regex
-              %r{<summary>(.*?)</summary>}m
-            end
-
             def parsed_attrs(attrs)
-              Hash[attrs.scan(comment_attr_regex)]
+              Hash[attrs.scan(COMMENT_ATTR_REGEX)]
             end
 
             def parsed_content(body)
