@@ -65,8 +65,6 @@ module Ai
       self.class.write_buffer.add(attrs)
     end
 
-    private
-
     def to_clickhouse_csv_row
       {
         event: self.class.events[event],
@@ -79,6 +77,8 @@ module Ai
         extras: extras.to_json
       }
     end
+
+    private
 
     def floor_timestamp
       # we floor to 3 digits here to match current JSON rounding used in Write Buffers.

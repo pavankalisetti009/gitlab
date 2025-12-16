@@ -4,7 +4,6 @@ module Ai
   class ClickHouseUsageEventsFinder < BaseUsageEventsFinder
     # rubocop:disable CodeReuse/ActiveRecord -- Not ActiveRecord but Clickhouse query builder
 
-    SELECTED_COLUMNS = %i[user_id event timestamp namespace_path extras].freeze
     GROUPING_COLUMNS = %i[namespace_path event timestamp user_id].freeze
 
     def execute
@@ -24,20 +23,15 @@ module Ai
     end
 
     def build_projections(builder)
-      SELECTED_COLUMNS.map do |column|
-        if GROUPING_COLUMNS.include?(column)
-          builder.table[column]
-        else
-          aggregate_by_latest_timestamp(builder, column)
-        end
-      end
+      projections = GROUPING_COLUMNS.map { |column| builder.table[column] }
+      projections << extras_projection(builder)
+      projections
     end
 
-    def aggregate_by_latest_timestamp(builder, column)
-      Arel::Nodes::NamedFunction.new('argMax', [
-        builder.table[column],
-        builder.table[:timestamp]
-      ]).as(column.to_s)
+    def extras_projection(builder)
+      node = Arel::Nodes::NamedFunction.new('argMax', [builder[:extras], builder[:timestamp]])
+      node = builder.table.cast(node, 'JSON')
+      node.as('extras')
     end
 
     def apply_filters(query)

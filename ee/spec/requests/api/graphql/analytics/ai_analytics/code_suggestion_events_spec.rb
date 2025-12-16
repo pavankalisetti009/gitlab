@@ -21,7 +21,6 @@ RSpec.describe '(Group|Project).aiUsageData.codeSuggestionEvents', :click_house,
         user {
           id
         }
-        id
         event
         language
         suggestionSize
@@ -39,32 +38,39 @@ RSpec.describe '(Group|Project).aiUsageData.codeSuggestionEvents', :click_house,
 
   let_it_be(:code_suggestion_event_1) do
     create(:ai_usage_event, event: :code_suggestion_shown_in_ide, user: user_1,
-      namespace: group_project.reload.project_namespace)
+      namespace: group_project.reload.project_namespace,
+      extras: { unique_tracking_id: '1' })
   end
 
   let_it_be(:code_suggestion_event_2) do
     create(:ai_usage_event, event: :code_suggestion_accepted_in_ide, user: user_1,
       namespace: subgroup_project.reload.project_namespace,
-      extras: { language: 'ruby', suggestion_size: 5, unique_tracking_id: 'abc' })
+      extras: { language: 'ruby', suggestion_size: 5, unique_tracking_id: '2' })
   end
 
   let_it_be(:code_suggestion_event_3) do
     create(:ai_usage_event, event: :code_suggestion_accepted_in_ide, user: user_2,
-      namespace: other_group_project.reload.project_namespace)
+      namespace: other_group_project.reload.project_namespace,
+      extras: { unique_tracking_id: '3' })
   end
 
   let_it_be(:code_suggestion_event_4) do
     create(:ai_usage_event, event: :code_suggestion_accepted_in_ide, user: user_3,
-      namespace: subgroup_project.reload.project_namespace)
+      namespace: subgroup_project.reload.project_namespace,
+      extras: { unique_tracking_id: '4' })
   end
 
   let_it_be(:out_of_timeframe_event) do
     create(:ai_usage_event, event: :code_suggestion_accepted_in_ide, user: user_3,
-      namespace: subgroup_project.reload.project_namespace, timestamp: 10.days.ago)
+      namespace: subgroup_project.reload.project_namespace, timestamp: 10.days.ago,
+      extras: { unique_tracking_id: '5' })
   end
 
   before do
     allow(Gitlab::ClickHouse).to receive(:enabled_for_analytics?).and_return(true)
+    stub_licensed_features(ai_analytics: true)
+
+    clickhouse_fixture(Ai::UsageEvent.all)
 
     insert_events_into_click_house([
       build_stubbed(:event, :pushed, project: group_project, author: user_1),
@@ -95,7 +101,7 @@ RSpec.describe '(Group|Project).aiUsageData.codeSuggestionEvents', :click_house,
       it 'returns code suggestion events' do
         post_graphql(query, current_user: current_user)
 
-        event_ids = code_suggestion_events.pluck('id')
+        event_ids = code_suggestion_events.pluck('uniqueTrackingId')
 
         expect(event_ids).to match_array(expected_event_ids)
       end
@@ -103,9 +109,9 @@ RSpec.describe '(Group|Project).aiUsageData.codeSuggestionEvents', :click_house,
       it 'returns expanded extras data' do
         post_graphql(query, current_user: current_user)
 
-        event2 = code_suggestion_events.detect { |e| e['id'] == code_suggestion_event_2.to_global_id.to_s }
+        event2 = code_suggestion_events.detect { |e| e['uniqueTrackingId'] == '2' }
 
-        expect(event2).to include('language' => 'ruby', 'suggestionSize' => '5', 'uniqueTrackingId' => 'abc')
+        expect(event2).to include('language' => 'ruby', 'suggestionSize' => '5', 'uniqueTrackingId' => '2')
       end
     end
   end
@@ -115,11 +121,7 @@ RSpec.describe '(Group|Project).aiUsageData.codeSuggestionEvents', :click_house,
       let(:query) { graphql_query_for(:group, { fullPath: group.full_path }, ai_usage_data_fields) }
       let(:code_suggestion_events) { graphql_data.dig('group', 'aiUsageData', 'codeSuggestionEvents', 'nodes') }
       let(:expected_event_ids) do
-        [
-          code_suggestion_event_1,
-          code_suggestion_event_2,
-          code_suggestion_event_4
-        ].map(&:to_global_id).map(&:to_s)
+        [1, 2, 4].map(&:to_s)
       end
     end
 
@@ -132,11 +134,7 @@ RSpec.describe '(Group|Project).aiUsageData.codeSuggestionEvents', :click_house,
         let(:query) { graphql_query_for(:group, { fullPath: group.full_path }, ai_usage_data_fields) }
         let(:code_suggestion_events) { graphql_data.dig('group', 'aiUsageData', 'codeSuggestionEvents', 'nodes') }
         let(:expected_event_ids) do
-          [
-            code_suggestion_event_1,
-            code_suggestion_event_2,
-            code_suggestion_event_3
-          ].map(&:to_global_id).map(&:to_s)
+          [1, 2, 3].map(&:to_s)
         end
       end
 
@@ -162,10 +160,7 @@ RSpec.describe '(Group|Project).aiUsageData.codeSuggestionEvents', :click_house,
       let(:code_suggestion_events) { graphql_data.dig('project', 'aiUsageData', 'codeSuggestionEvents', 'nodes') }
 
       let(:expected_event_ids) do
-        [
-          code_suggestion_event_2,
-          code_suggestion_event_4
-        ].map(&:to_global_id).map(&:to_s)
+        [2, 4].map(&:to_s)
       end
     end
 
