@@ -24725,6 +24725,8 @@ Permission that belongs to a granular scope.
 | <a id="accesstokenpermissiondescription"></a>`description` | [`String!`](#string) | Description of the permission. |
 | <a id="accesstokenpermissionname"></a>`name` | [`String!`](#string) | Name of the permission. |
 | <a id="accesstokenpermissionresource"></a>`resource` | [`String!`](#string) | Resource of the permission. |
+| <a id="accesstokenpermissionresourcedescription"></a>`resourceDescription` | [`String`](#string) | Description of the resource. |
+| <a id="accesstokenpermissionresourcename"></a>`resourceName` | [`String`](#string) | Display name of the resource. |
 
 ### `Achievement`
 
