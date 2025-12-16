@@ -1,9 +1,18 @@
 import { nextTick } from 'vue';
 import { GlModal, GlFormRadioGroup } from '@gitlab/ui';
 import { isLoggedIn } from '~/lib/utils/common_utils';
+import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import AiCatalogItemActions from 'ee/ai/catalog/components/ai_catalog_item_actions.vue';
-import { AI_CATALOG_TYPE_FLOW, AI_CATALOG_TYPE_AGENT } from 'ee/ai/catalog/constants';
+import {
+  AI_CATALOG_TYPE_FLOW,
+  AI_CATALOG_TYPE_AGENT,
+  TRACK_EVENT_ENABLE_AI_CATALOG_ITEM,
+  TRACK_EVENT_ITEM_TYPES,
+  TRACK_EVENT_ORIGIN_EXPLORE,
+  TRACK_EVENT_ORIGIN_PROJECT,
+  TRACK_EVENT_PAGE_SHOW,
+} from 'ee/ai/catalog/constants';
 import { mockAgent } from '../mock_data';
 
 jest.mock('~/lib/utils/common_utils');
@@ -21,8 +30,14 @@ describe('AiCatalogItemActions', () => {
     isAgentsAvailable: true,
     isFlowsAvailable: true,
     deleteFn: jest.fn(),
+    enableModalTexts: {
+      title: 'Enable flow from group',
+      dropdownTexts: {},
+    },
   };
   const routeParams = { id: '4' };
+
+  const { bindInternalEventDocument } = useMockInternalEventsTracking();
 
   const createComponent = ({ props = {}, provide = {} } = {}) => {
     wrapper = shallowMountExtended(AiCatalogItemActions, {
@@ -379,5 +394,58 @@ describe('AiCatalogItemActions', () => {
         expect(findDeleteModal().findComponent(GlFormRadioGroup).exists()).toBe(false);
       });
     });
+  });
+
+  describe('tracking', () => {
+    describe.each`
+      scenario                                       | itemType                 | isGlobal | isEnabled | hasParentConsumer | buttonFinder            | expectedOrigin
+      ${'Enable agent at Explore level'}             | ${AI_CATALOG_TYPE_AGENT} | ${true}  | ${false}  | ${false}          | ${findAddToGroupButton} | ${TRACK_EVENT_ORIGIN_EXPLORE}
+      ${'Enable flow at Project level'}              | ${AI_CATALOG_TYPE_FLOW}  | ${false} | ${false}  | ${false}          | ${findEnableButton}     | ${TRACK_EVENT_ORIGIN_PROJECT}
+      ${'Enable agent at Project level with parent'} | ${AI_CATALOG_TYPE_AGENT} | ${false} | ${false}  | ${true}           | ${findEnableButton}     | ${TRACK_EVENT_ORIGIN_PROJECT}
+    `(
+      'when clicking $scenario',
+      ({ itemType, isGlobal, isEnabled, hasParentConsumer, buttonFinder, expectedOrigin }) => {
+        beforeEach(() => {
+          isLoggedIn.mockReturnValue(true);
+          createComponent({
+            props: {
+              item: {
+                ...mockAgent,
+                itemType,
+                userPermissions: {
+                  adminAiCatalogItem: true,
+                },
+                configurationForProject: {
+                  id: 'gid://gitlab/Ai::Catalog::ItemConsumer/1',
+                  enabled: isEnabled,
+                },
+              },
+              hasParentConsumer,
+            },
+            provide: {
+              isGlobal,
+            },
+          });
+        });
+
+        it(`tracks event  ${TRACK_EVENT_ENABLE_AI_CATALOG_ITEM} with correct properties`, async () => {
+          const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+          await buttonFinder().vm.$emit('click');
+
+          await nextTick();
+
+          expect(trackEventSpy).toHaveBeenCalledWith(
+            TRACK_EVENT_ENABLE_AI_CATALOG_ITEM,
+            {
+              label: TRACK_EVENT_ITEM_TYPES[itemType],
+              origin: expectedOrigin,
+              page: TRACK_EVENT_PAGE_SHOW,
+            },
+            undefined,
+          );
+        });
+      },
+    );
   });
 });

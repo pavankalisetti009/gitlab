@@ -19,10 +19,13 @@ import {
   AI_CATALOG_CONSUMER_LABELS,
   AI_CATALOG_TYPE_FLOW,
   FLOW_VISIBILITY_LEVEL_DESCRIPTIONS,
-  TRACK_EVENT_VIEW_AI_CATALOG_PROJECT_MANAGED,
-  TRACK_EVENT_TYPE_FLOW,
   PAGE_SIZE,
   ENABLE_FLOW_MODAL_TEXTS,
+  TRACK_EVENT_TYPE_FLOW,
+  TRACK_EVENT_VIEW_AI_CATALOG_PROJECT_MANAGED,
+  TRACK_EVENT_ENABLE_AI_CATALOG_ITEM,
+  TRACK_EVENT_ORIGIN_PROJECT,
+  TRACK_EVENT_PAGE_LIST,
 } from 'ee/ai/catalog/constants';
 import { prerequisitesError } from 'ee/ai/catalog/utils';
 import { TYPENAME_PROJECT } from '~/graphql_shared/constants';
@@ -296,6 +299,13 @@ export default {
         });
       }
     },
+    onClickEnable() {
+      this.trackEvent(TRACK_EVENT_ENABLE_AI_CATALOG_ITEM, {
+        label: TRACK_EVENT_TYPE_FLOW,
+        origin: TRACK_EVENT_ORIGIN_PROJECT,
+        page: TRACK_EVENT_PAGE_LIST,
+      });
+    },
   },
   addFlowModalId: 'add-flow-to-project-modal',
   itemTypes: [AI_CATALOG_TYPE_FLOW],
@@ -313,7 +323,13 @@ export default {
       new-button-variant="default"
     >
       <template #nav-actions>
-        <gl-button v-if="showAddFlow" v-gl-modal="$options.addFlowModalId" variant="confirm">
+        <gl-button
+          v-if="showAddFlow"
+          v-gl-modal="$options.addFlowModalId"
+          variant="confirm"
+          data-testid="enable-flow-button"
+          @click="onClickEnable"
+        >
           {{ s__('AICatalog|Enable flow from group') }}
         </gl-button>
       </template>

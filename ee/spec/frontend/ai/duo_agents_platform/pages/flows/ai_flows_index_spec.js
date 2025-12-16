@@ -28,6 +28,9 @@ import {
 import {
   TRACK_EVENT_VIEW_AI_CATALOG_PROJECT_MANAGED,
   TRACK_EVENT_TYPE_FLOW,
+  TRACK_EVENT_ENABLE_AI_CATALOG_ITEM,
+  TRACK_EVENT_ORIGIN_PROJECT,
+  TRACK_EVENT_PAGE_LIST,
 } from 'ee/ai/catalog/constants';
 import { mockProjectFlowsResponse } from '../../mock_data';
 
@@ -414,6 +417,26 @@ describe('AiFlowsIndex', () => {
         expect(trackEventSpy).not.toHaveBeenCalledWith(
           TRACK_EVENT_VIEW_AI_CATALOG_PROJECT_MANAGED,
           { label: TRACK_EVENT_TYPE_FLOW },
+          undefined,
+        );
+      });
+    });
+
+    describe('when "Enable from group" button is clicked', () => {
+      it(`tracks ${TRACK_EVENT_ENABLE_AI_CATALOG_ITEM} event`, async () => {
+        const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+        createComponent();
+        await waitForPromises();
+        wrapper.findByTestId('enable-flow-button').vm.$emit('click');
+
+        expect(trackEventSpy).toHaveBeenCalledWith(
+          TRACK_EVENT_ENABLE_AI_CATALOG_ITEM,
+          {
+            label: TRACK_EVENT_TYPE_FLOW,
+            origin: TRACK_EVENT_ORIGIN_PROJECT,
+            page: TRACK_EVENT_PAGE_LIST,
+          },
           undefined,
         );
       });

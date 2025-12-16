@@ -15,8 +15,17 @@ import AddProjectItemConsumerModal from 'ee/ai/duo_agents_platform/components/ca
 import { s__, sprintf } from '~/locale';
 import { isLoggedIn } from '~/lib/utils/common_utils';
 import { helpPagePath } from '~/helpers/help_page_helper';
+import { InternalEvents } from '~/tracking';
 import ConfirmActionModal from '~/vue_shared/components/confirm_action_modal.vue';
-import { AI_CATALOG_ITEM_LABELS, DELETE_OPTIONS } from '../constants';
+import {
+  AI_CATALOG_ITEM_LABELS,
+  DELETE_OPTIONS,
+  TRACK_EVENT_ENABLE_AI_CATALOG_ITEM,
+  TRACK_EVENT_ITEM_TYPES,
+  TRACK_EVENT_ORIGIN_EXPLORE,
+  TRACK_EVENT_ORIGIN_PROJECT,
+  TRACK_EVENT_PAGE_SHOW,
+} from '../constants';
 import AiCatalogItemConsumerModal from './ai_catalog_item_consumer_modal.vue';
 import AiCatalogItemReportModal from './ai_catalog_item_report_modal.vue';
 
@@ -40,6 +49,7 @@ export default {
     GlModal: GlModalDirective,
     GlTooltip: GlTooltipDirective,
   },
+  mixins: [InternalEvents.mixin()],
   inject: {
     isGlobal: {
       default: false,
@@ -189,6 +199,15 @@ export default {
         : { isProjectNamespace: this.showEnable };
     },
   },
+  methods: {
+    onClickEnable() {
+      this.trackEvent(TRACK_EVENT_ENABLE_AI_CATALOG_ITEM, {
+        label: TRACK_EVENT_ITEM_TYPES[this.item.itemType],
+        origin: this.isGlobal ? TRACK_EVENT_ORIGIN_EXPLORE : TRACK_EVENT_ORIGIN_PROJECT,
+        page: TRACK_EVENT_PAGE_SHOW,
+      });
+    },
+  },
   DELETE_OPTIONS,
   adminModeDocsLink: helpPagePath('/administration/settings/sign_in_restrictions', {
     anchor: 'admin-mode',
@@ -213,6 +232,7 @@ export default {
       variant="confirm"
       category="primary"
       data-testid="add-to-group-button"
+      @click="onClickEnable"
     >
       {{ s__('AICatalog|Enable in group') }}
     </gl-button>
@@ -222,6 +242,7 @@ export default {
       variant="confirm"
       category="primary"
       data-testid="add-to-project-button"
+      @click="onClickEnable"
     >
       {{ s__('AICatalog|Enable in project') }}
     </gl-button>
@@ -232,6 +253,7 @@ export default {
         variant="confirm"
         category="primary"
         data-testid="enable-button"
+        @click="onClickEnable"
       >
         {{ __('Enable') }}
       </gl-button>

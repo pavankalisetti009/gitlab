@@ -21,8 +21,11 @@ import {
   AI_CATALOG_CONSUMER_TYPE_PROJECT,
   AI_CATALOG_CONSUMER_TYPE_GROUP,
   ENABLE_AGENT_MODAL_TEXTS,
-  TRACK_EVENT_VIEW_AI_CATALOG_PROJECT_MANAGED,
   TRACK_EVENT_TYPE_AGENT,
+  TRACK_EVENT_VIEW_AI_CATALOG_PROJECT_MANAGED,
+  TRACK_EVENT_ENABLE_AI_CATALOG_ITEM,
+  TRACK_EVENT_ORIGIN_PROJECT,
+  TRACK_EVENT_PAGE_LIST,
 } from 'ee/ai/catalog/constants';
 import { TYPENAME_PROJECT } from '~/graphql_shared/constants';
 import {
@@ -324,6 +327,13 @@ export default {
         });
       }
     },
+    onClickEnable() {
+      this.trackEvent(TRACK_EVENT_ENABLE_AI_CATALOG_ITEM, {
+        label: TRACK_EVENT_TYPE_AGENT,
+        origin: TRACK_EVENT_ORIGIN_PROJECT,
+        page: TRACK_EVENT_PAGE_LIST,
+      });
+    },
   },
   addAgentModalId: 'add-agent-to-project-modal',
   modalTexts: ENABLE_AGENT_MODAL_TEXTS,
@@ -340,7 +350,13 @@ export default {
       new-button-variant="default"
     >
       <template v-if="isAgentsAvailable" #nav-actions>
-        <gl-button v-if="showAddAgent" v-gl-modal="$options.addAgentModalId" variant="confirm">
+        <gl-button
+          v-if="showAddAgent"
+          v-gl-modal="$options.addAgentModalId"
+          variant="confirm"
+          data-testid="enable-agent-button"
+          @click="onClickEnable"
+        >
           {{ s__('AICatalog|Enable agent from group') }}
         </gl-button>
       </template>
