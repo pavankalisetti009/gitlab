@@ -119,6 +119,8 @@ RSpec.describe EE::Groups::SettingsHelper, feature_category: :groups_and_project
             "\"locked_by_ancestor\":false}",
           duo_sast_fp_detection_availability: group.namespace_settings.duo_sast_fp_detection_availability.to_s,
           duo_core_features_enabled: group.namespace_settings.duo_core_features_enabled.to_s,
+          prompt_injection_protection_available: "true",
+          prompt_injection_protection_level: "no_checks",
           are_duo_settings_locked: group.namespace_settings.duo_features_enabled_locked?.to_s,
           experiment_features_enabled: group.namespace_settings.experiment_features_enabled.to_s,
           prompt_cache_enabled: group.namespace_settings.model_prompt_cache_enabled.to_s,
