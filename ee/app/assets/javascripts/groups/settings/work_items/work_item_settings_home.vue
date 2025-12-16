@@ -8,6 +8,7 @@ import ConfigurableTypesSettings from './configurable_types/configurable_types_s
 
 const STATUS_SECTION_ID = 'js-custom-status-settings';
 const CUSTOM_FIELD_SECTION_ID = 'js-custom-fields-settings';
+const WORK_ITEM_TYPES_SECTION_ID = 'js-work-item-types-settings';
 
 export default {
   components: {
@@ -25,11 +26,13 @@ export default {
   },
   STATUS_SECTION_ID,
   CUSTOM_FIELD_SECTION_ID,
+  WORK_ITEM_TYPES_SECTION_ID,
   data() {
     return {
       sectionsExpandedState: {
         [STATUS_SECTION_ID]: false,
         [CUSTOM_FIELD_SECTION_ID]: false,
+        [WORK_ITEM_TYPES_SECTION_ID]: false,
       },
       searchRoot: null,
     };
@@ -107,7 +110,13 @@ export default {
     </p>
 
     <div ref="searchRoot">
-      <configurable-types-settings v-if="workItemConfigurableTypesEnabled" />
+      <configurable-types-settings
+        v-if="workItemConfigurableTypesEnabled"
+        :id="$options.WORK_ITEM_TYPES_SECTION_ID"
+        :full-path="fullPath"
+        :expanded="expandedProp($options.WORK_ITEM_TYPES_SECTION_ID)"
+        @toggle-expand="onToggleExpand($options.WORK_ITEM_TYPES_SECTION_ID, $event)"
+      />
       <custom-status-settings
         :id="$options.STATUS_SECTION_ID"
         :full-path="fullPath"

@@ -2,6 +2,7 @@ import { nextTick } from 'vue';
 import { shallowMount } from '@vue/test-utils';
 import CustomFieldsList from 'ee/groups/settings/work_items/custom_fields/custom_fields_list.vue';
 import CustomStatusSettings from 'ee/groups/settings/work_items/custom_status/custom_status_settings.vue';
+import ConfigurableTypesSettings from 'ee/groups/settings/work_items/configurable_types/configurable_types_settings.vue';
 import SearchSettings from '~/search_settings/components/search_settings.vue';
 import WorkItemSettingsHome from 'ee/groups/settings/work_items/work_item_settings_home.vue';
 
@@ -9,7 +10,10 @@ describe('WorkItemSettingsHome', () => {
   let wrapper;
   const fullPath = 'group/project';
 
-  const createComponent = ({ mocks = {}, glFeatures = {} } = {}) => {
+  const createComponent = ({
+    mocks = {},
+    glFeatures = { workItemConfigurableTypes: true },
+  } = {}) => {
     wrapper = shallowMount(WorkItemSettingsHome, {
       propsData: {
         fullPath,
@@ -26,8 +30,24 @@ describe('WorkItemSettingsHome', () => {
 
   const findCustomFieldsList = () => wrapper.findComponent(CustomFieldsList);
   const findCustomStatusSettings = () => wrapper.findComponent(CustomStatusSettings);
+  const findConfigurableTypesSettings = () => wrapper.findComponent(ConfigurableTypesSettings);
   const findSearchSettings = () => wrapper.findComponent(SearchSettings);
   const findPageTitle = () => wrapper.find('h1');
+
+  it('renders ConfigurableTypesSettings component with correct props when FF is switched on', () => {
+    createComponent();
+
+    expect(findConfigurableTypesSettings().exists()).toBe(true);
+    expect(findConfigurableTypesSettings().props('fullPath')).toBe(fullPath);
+  });
+
+  it('does not render ConfigurableTypesSettings when `workItemTypesConfigurableTypes` FF is off', () => {
+    createComponent({
+      glFeatures: { workItemConfigurableTypes: false },
+    });
+
+    expect(findConfigurableTypesSettings().exists()).toBe(false);
+  });
 
   it('always renders CustomFieldsList component with correct props', () => {
     createComponent();
@@ -89,6 +109,17 @@ describe('WorkItemSettingsHome', () => {
       expect(mockRouter.push).toHaveBeenCalledWith({
         name: 'workItemSettingsHome',
         hash: '#js-custom-fields-settings',
+      });
+    });
+
+    it('navigates to hash when ConfigurableTypesSettings toggle-expand emits true', async () => {
+      createComponent({ mocks: { $router: mockRouter } });
+
+      await findConfigurableTypesSettings().vm.$emit('toggle-expand', true);
+
+      expect(mockRouter.push).toHaveBeenCalledWith({
+        name: 'workItemSettingsHome',
+        hash: '#js-work-item-types-settings',
       });
     });
 
