@@ -51315,8 +51315,16 @@ Values for sorting CI/CD job analytics.
 | <a id="cijobanalyticssortmean_duration_desc"></a>`MEAN_DURATION_DESC` | Sort by mean duration in descending order. |
 | <a id="cijobanalyticssortname_asc"></a>`NAME_ASC` | Sort by name in ascending order. |
 | <a id="cijobanalyticssortname_desc"></a>`NAME_DESC` | Sort by name in descending order. |
+| <a id="cijobanalyticssortp50_duration_asc"></a>`P50_DURATION_ASC` | Sort by 50th percentile duration in ascending order. |
+| <a id="cijobanalyticssortp50_duration_desc"></a>`P50_DURATION_DESC` | Sort by 50th percentile duration in descending order. |
+| <a id="cijobanalyticssortp75_duration_asc"></a>`P75_DURATION_ASC` | Sort by 75th percentile duration in ascending order. |
+| <a id="cijobanalyticssortp75_duration_desc"></a>`P75_DURATION_DESC` | Sort by 75th percentile duration in descending order. |
+| <a id="cijobanalyticssortp90_duration_asc"></a>`P90_DURATION_ASC` | Sort by 90th percentile duration in ascending order. |
+| <a id="cijobanalyticssortp90_duration_desc"></a>`P90_DURATION_DESC` | Sort by 90th percentile duration in descending order. |
 | <a id="cijobanalyticssortp95_duration_asc"></a>`P95_DURATION_ASC` | Sort by 95th percentile duration in ascending order. |
 | <a id="cijobanalyticssortp95_duration_desc"></a>`P95_DURATION_DESC` | Sort by 95th percentile duration in descending order. |
+| <a id="cijobanalyticssortp99_duration_asc"></a>`P99_DURATION_ASC` | Sort by 99th percentile duration in ascending order. |
+| <a id="cijobanalyticssortp99_duration_desc"></a>`P99_DURATION_DESC` | Sort by 99th percentile duration in descending order. |
 | <a id="cijobanalyticssortsuccess_rate_asc"></a>`SUCCESS_RATE_ASC` | Sort by success rate in ascending order. |
 | <a id="cijobanalyticssortsuccess_rate_desc"></a>`SUCCESS_RATE_DESC` | Sort by success rate in descending order. |
 
