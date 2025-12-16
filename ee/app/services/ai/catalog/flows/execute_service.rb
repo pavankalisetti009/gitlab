@@ -5,6 +5,7 @@ module Ai
     module Flows
       class ExecuteService < Ai::Catalog::BaseService
         include Gitlab::Utils::StrongMemoize
+        include Loggable
 
         def initialize(project:, current_user:, params:)
           @item_consumer = params[:item_consumer]
@@ -16,6 +17,12 @@ module Ai
           if @item_consumer
             @flow = @item_consumer.item
             @flow_version = @flow&.resolve_version(@item_consumer.pinned_version_prefix)
+
+            ai_catalog_logger.context(
+              consumer: @item_consumer,
+              item: @flow,
+              version: @flow_version
+            )
           end
 
           super
@@ -36,6 +43,7 @@ module Ai
               'trigger_ai_catalog_item',
               { label: flow.item_type, property: event_type, value: flow.id }
             )
+            ai_catalog_logger.info(message: 'Flow executed')
           end
 
           execution_result

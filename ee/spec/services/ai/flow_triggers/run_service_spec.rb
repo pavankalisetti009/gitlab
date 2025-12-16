@@ -284,6 +284,10 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_agent_platfo
       expect(workload.variable_inclusions.map(&:variable_name)).to eq(%w[API_KEY DATABASE_URL])
     end
 
+    it_behaves_like 'initializes Ai::Catalog::Logger but does not log to it' do
+      subject { service.execute(params) }
+    end
+
     context 'when injectGatewayToken is true' do
       it 'builds workload definition with gateway token variables' do
         expect(::Ci::Workloads::RunWorkloadService).to receive(:new).and_wrap_original do |original_method, kwargs|
@@ -784,6 +788,10 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_agent_platfo
         service.execute(params)
       end
 
+      it_behaves_like 'initializes Ai::Catalog::Logger but does not log to it' do
+        subject { service.execute(params) }
+      end
+
       context 'when ai_catalog_third_party_flows feature flag is disabled' do
         before do
           stub_feature_flags(ai_catalog_third_party_flows: false)
@@ -883,6 +891,19 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_agent_platfo
 
           response = service.execute(params)
           expect(response).to be_success
+        end
+
+        it 'logs to Ai::Catalog::Logger' do
+          mock_logger = Ai::Catalog::Logger.build
+
+          expect(Ai::Catalog::Logger).to receive(:build).and_return(mock_logger)
+          expect(mock_logger).to receive(:context).with(klass: described_class.name).and_call_original
+          expect(mock_logger).to receive(:context).with(
+            consumer: ai_catalog_item_consumer, item: ai_catalog_item_consumer.item
+          ).and_call_original
+          expect(mock_logger).to receive(:info).with(message: 'External agent executed')
+
+          service.execute(params)
         end
       end
     end
