@@ -84,8 +84,19 @@ export const FLOW_VISIBILITY_LEVEL_DESCRIPTIONS = {
 export const TRACK_EVENT_VIEW_AI_CATALOG_ITEM_INDEX = 'view_ai_catalog_item_index';
 export const TRACK_EVENT_VIEW_AI_CATALOG_ITEM = 'view_ai_catalog_item';
 export const TRACK_EVENT_VIEW_AI_CATALOG_PROJECT_MANAGED = 'view_ai_catalog_project_managed';
+export const TRACK_EVENT_ENABLE_AI_CATALOG_ITEM = 'click_enable_ai_catalog_item_button';
 export const TRACK_EVENT_TYPE_AGENT = AI_CATALOG_TYPE_AGENT.toLowerCase();
 export const TRACK_EVENT_TYPE_FLOW = AI_CATALOG_TYPE_FLOW.toLowerCase();
+export const TRACK_EVENT_TYPE_THIRD_PARTY_FLOW = AI_CATALOG_TYPE_THIRD_PARTY_FLOW.toLowerCase();
+export const TRACK_EVENT_ITEM_TYPES = {
+  [AI_CATALOG_TYPE_AGENT]: TRACK_EVENT_TYPE_AGENT,
+  [AI_CATALOG_TYPE_FLOW]: TRACK_EVENT_TYPE_FLOW,
+  [AI_CATALOG_TYPE_THIRD_PARTY_FLOW]: TRACK_EVENT_TYPE_THIRD_PARTY_FLOW,
+};
+export const TRACK_EVENT_ORIGIN_EXPLORE = 'explore';
+export const TRACK_EVENT_ORIGIN_PROJECT = 'project';
+export const TRACK_EVENT_PAGE_LIST = 'list';
+export const TRACK_EVENT_PAGE_SHOW = 'show';
 
 export const VERSION_LATEST = 'latestVersion';
 export const VERSION_PINNED = 'configurationForProject.pinnedItemVersion';

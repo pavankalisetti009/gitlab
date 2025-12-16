@@ -28,6 +28,9 @@ import aiCatalogConfiguredItemsQuery from 'ee/ai/catalog/graphql/queries/ai_cata
 import {
   TRACK_EVENT_VIEW_AI_CATALOG_PROJECT_MANAGED,
   TRACK_EVENT_TYPE_AGENT,
+  TRACK_EVENT_ENABLE_AI_CATALOG_ITEM,
+  TRACK_EVENT_ORIGIN_PROJECT,
+  TRACK_EVENT_PAGE_LIST,
 } from 'ee/ai/catalog/constants';
 import { mockProjectAgentsResponse } from '../../mock_data';
 
@@ -78,6 +81,7 @@ describe('AiAgentsIndex', () => {
         exploreAiCatalogPath: '/explore/ai-catalog',
         glFeatures: {
           aiCatalogThirdPartyFlows: true,
+          aiCatalogAgents: true,
         },
         ...provide,
       },
@@ -460,6 +464,26 @@ describe('AiAgentsIndex', () => {
         expect(trackEventSpy).not.toHaveBeenCalledWith(
           TRACK_EVENT_VIEW_AI_CATALOG_PROJECT_MANAGED,
           { label: TRACK_EVENT_TYPE_AGENT },
+          undefined,
+        );
+      });
+    });
+
+    describe('when "Enable from group" button is clicked', () => {
+      it(`tracks ${TRACK_EVENT_ENABLE_AI_CATALOG_ITEM} event`, async () => {
+        const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+        createComponent();
+        await waitForPromises();
+        wrapper.findByTestId('enable-agent-button').vm.$emit('click');
+
+        expect(trackEventSpy).toHaveBeenCalledWith(
+          TRACK_EVENT_ENABLE_AI_CATALOG_ITEM,
+          {
+            label: TRACK_EVENT_TYPE_AGENT,
+            origin: TRACK_EVENT_ORIGIN_PROJECT,
+            page: TRACK_EVENT_PAGE_LIST,
+          },
           undefined,
         );
       });
