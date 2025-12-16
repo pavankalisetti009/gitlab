@@ -23,7 +23,6 @@ RSpec.describe 'new tables missing sharding_key', feature_category: :organizatio
       'design_management_versions.issue_id', # https://gitlab.com/gitlab-org/gitlab/-/issues/461330
       'requirements_management_test_reports.issue_id', # https://gitlab.com/gitlab-org/gitlab/-/issues/383031
       # We nullify the FK once the parent is deleted and remove entries using a cleanup worker.
-      'spam_logs.user_id',
       'packages_nuget_symbols.package_id'
     ]
   end
