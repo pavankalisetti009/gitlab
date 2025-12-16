@@ -9,6 +9,9 @@ module EE
 
         prepended do
           abilities :generate_description, :admin_work_item_lifecycle, :admin_ai_catalog_item_consumer
+
+          ability_field :read_runner_cloud_provisioning_info,
+            experiment: { milestone: '18.8' }
         end
       end
     end

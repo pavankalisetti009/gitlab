@@ -24,6 +24,9 @@ module EE
 
           ability_field :admin_ai_catalog_item_consumer,
             experiment: { milestone: '18.3' }
+
+          ability_field :read_runner_cloud_provisioning_info,
+            experiment: { milestone: '18.8' }
         end
       end
     end

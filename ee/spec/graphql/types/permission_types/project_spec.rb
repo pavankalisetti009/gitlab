@@ -15,6 +15,7 @@ RSpec.describe Types::PermissionTypes::Project do
       read_ai_catalog_item_consumer
       admin_ai_catalog_item
       admin_ai_catalog_item_consumer
+      read_runner_cloud_provisioning_info
     ]
 
     expected_permissions.each do |permission|
