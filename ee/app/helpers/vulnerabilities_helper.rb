@@ -143,13 +143,11 @@ module VulnerabilitiesHelper
     data[:belongs_to_public_project] = vulnerability.project.public?
     data[:cve_enrichment] = cve_enrichment(finding)
     data[:cvss] = cvss(vulnerability)
-    if Feature.enabled?(:validity_checks, finding.project) && finding.project.security_setting&.validity_checks_enabled
+    if finding.project.security_setting&.validity_checks_enabled
       data[:finding_token_status] = finding.finding_token_status
     end
 
-    if Feature.enabled?(:validity_checks, finding.project)
-      data[:validity_checks_enabled] = finding.project&.security_setting&.validity_checks_enabled || false
-    end
+    data[:validity_checks_enabled] = finding.project&.security_setting&.validity_checks_enabled || false
 
     data[:latest_flag] = finding.vulnerability_flags&.last
 

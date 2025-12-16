@@ -15,30 +15,15 @@ RSpec.describe Vulnerabilities::FindingTokenStatusPolicy, feature_category: :sec
     stub_licensed_features(security_dashboard: true)
   end
 
-  context 'when the validity_checks feature is enabled' do
-    before do
-      stub_feature_flags(validity_checks: true)
-    end
-
-    context "when the current user has developer access to the vulnerability's project" do
-      before_all do
-        project.add_developer(user)
-      end
-
-      it { is_expected.to be_allowed(:read_finding_token_status) }
-    end
-
-    context "when the current user does not have developer access to the vulnerability's project" do
-      it { is_expected.to be_disallowed(:read_finding_token_status) }
-    end
-  end
-
-  context 'when the validity_checks feature is disabled' do
+  context "when the current user has developer access to the vulnerability's project" do
     before_all do
-      stub_feature_flags(validity_checks: false)
       project.add_developer(user)
     end
 
+    it { is_expected.to be_allowed(:read_finding_token_status) }
+  end
+
+  context "when the current user does not have developer access to the vulnerability's project" do
     it { is_expected.to be_disallowed(:read_finding_token_status) }
   end
 end

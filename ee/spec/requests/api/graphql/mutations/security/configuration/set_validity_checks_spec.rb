@@ -24,7 +24,6 @@ RSpec.describe 'Setting Validity Checks', feature_category: :secret_detection do
     end
 
     before do
-      stub_feature_flags(validity_checks: true)
       stub_licensed_features(secret_detection_validity_checks: true)
     end
 
@@ -58,19 +57,6 @@ RSpec.describe 'Setting Validity Checks', feature_category: :secret_detection do
 
           expect(security_setting.reload.validity_checks_enabled).to eq(value_after)
         end
-      end
-    end
-
-    context 'when Validity Checks is not available for the project' do
-      before do
-        stub_feature_flags(validity_checks: false)
-      end
-
-      it_behaves_like 'a mutation that returns a top-level access error'
-
-      it 'does not enable validity checks' do
-        expect { post_graphql_mutation(mutation, current_user: current_user) }
-          .not_to change { security_setting.reload.validity_checks_enabled }
       end
     end
   end

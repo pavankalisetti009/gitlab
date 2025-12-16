@@ -26,7 +26,6 @@ RSpec.describe Mutations::Security::Finding::RefreshFindingTokenStatus, feature_
     subject(:execute) { mutation.resolve(vulnerability_id: vulnerability.to_global_id) }
 
     before do
-      stub_feature_flags(validity_checks: true)
       stub_licensed_features(secret_detection_validity_checks: true)
       project.security_setting.update!(validity_checks_enabled: true)
     end
@@ -72,14 +71,6 @@ RSpec.describe Mutations::Security::Finding::RefreshFindingTokenStatus, feature_
         let_it_be(:vulnerability_without_finding) { create(:vulnerability, project: project) }
 
         subject(:execute) { mutation.resolve(vulnerability_id: vulnerability_without_finding.to_global_id) }
-
-        include_examples 'authorization failure that does not track events'
-      end
-
-      context 'when the feature flag is disabled' do
-        before do
-          stub_feature_flags(validity_checks: false)
-        end
 
         include_examples 'authorization failure that does not track events'
       end

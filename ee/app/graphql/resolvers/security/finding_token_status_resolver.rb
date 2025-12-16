@@ -24,7 +24,6 @@ module Resolvers
       def should_display_finding_token_status?
         return false unless security_finding
         return false unless security_finding.report_type == 'secret_detection'
-        return false unless Feature.enabled?(:validity_checks, project)
         return false unless project.licensed_feature_available?(:secret_detection_validity_checks)
         return false unless project.security_setting&.validity_checks_enabled
         return false unless current_user.can?(:read_vulnerability, project)

@@ -34,7 +34,6 @@ RSpec.describe Resolvers::Security::FindingTokenStatusResolver, feature_category
 
   describe '#resolve' do
     before do
-      stub_feature_flags(validity_checks: true)
       stub_licensed_features(security_dashboard: true, secret_detection_validity_checks: true)
       project.security_setting.update!(validity_checks_enabled: true)
     end
@@ -56,14 +55,6 @@ RSpec.describe Resolvers::Security::FindingTokenStatusResolver, feature_category
       let_it_be(:sast_finding) { create(:security_finding, scan: sast_scan) }
 
       subject(:result) { resolve_status(sast_finding) }
-
-      it_behaves_like 'does not expose token status'
-    end
-
-    context 'when validity_checks feature flag is disabled' do
-      before do
-        stub_feature_flags(validity_checks: false)
-      end
 
       it_behaves_like 'does not expose token status'
     end
