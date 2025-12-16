@@ -29,6 +29,7 @@ module EE
 
             desc 'Upload a metric image for an issue' do
               success ::API::Entities::IssuableMetricImage
+              tags ['metric_images']
             end
             params do
               requires :file, type: ::API::Validations::Types::WorkhorseFile, desc: 'The image file to be uploaded', documentation: { type: 'file' }
@@ -54,7 +55,10 @@ module EE
               end
             end
 
-            desc 'Metric Images for issue'
+            desc 'Metric Images for issue' do
+              tags ['metric_images']
+              success ::API::Entities::IssuableMetricImage
+            end
             get do
               issue = find_project_issue(params[:issue_iid])
 
@@ -73,6 +77,7 @@ module EE
 
             desc 'Update a metric image for an issue' do
               success ::API::Entities::IssuableMetricImage
+              tags ['metric_images']
             end
             params do
               requires :metric_image_id, type: Integer, desc: 'The ID of metric image'
@@ -97,6 +102,7 @@ module EE
 
             desc 'Remove a metric image for an issue' do
               success ::API::Entities::IssuableMetricImage
+              tags ['metric_images']
             end
             params do
               requires :metric_image_id, type: Integer, desc: 'The ID of metric image'
