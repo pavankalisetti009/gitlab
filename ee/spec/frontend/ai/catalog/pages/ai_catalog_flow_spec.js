@@ -23,12 +23,11 @@ jest.mock('~/sentry/sentry_browser_wrapper');
 
 Vue.use(VueApollo);
 
-const RouterViewStub = Vue.extend({
+const RouterViewStub = {
   name: 'RouterViewStub',
-  // eslint-disable-next-line vue/require-prop-types
   props: ['aiCatalogFlow', 'version', 'hasParentConsumer'],
   template: '<div />',
-});
+};
 
 describe('AiCatalogFlow', () => {
   let wrapper;
@@ -51,7 +50,7 @@ describe('AiCatalogFlow', () => {
         },
       },
       stubs: {
-        'router-view': RouterViewStub,
+        RouterView: RouterViewStub,
       },
     });
   };

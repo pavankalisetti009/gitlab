@@ -1,5 +1,5 @@
 import { DuoLayout, SideRail } from '@gitlab/duo-ui';
-import Vue, { nextTick } from 'vue';
+import { nextTick } from 'vue';
 import waitForPromises from 'helpers/wait_for_promises';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { duoChatGlobalState } from '~/super_sidebar/constants';
@@ -9,10 +9,10 @@ import { WIDTH_OFFSET } from 'ee/ai/tanuki_bot/constants';
 describe('DuoAgenticLayoutApp', () => {
   let wrapper;
 
-  const RouterViewStub = Vue.extend({
+  const RouterViewStub = {
     name: 'RouterViewStub',
     template: '<div />',
-  });
+  };
 
   const findDuoLayout = () => wrapper.findComponent(DuoLayout);
   const findSideRail = () => wrapper.findComponent(SideRail);
@@ -47,7 +47,7 @@ describe('DuoAgenticLayoutApp', () => {
       },
       stubs: {
         DuoLayout,
-        'router-view': RouterViewStub,
+        RouterView: RouterViewStub,
       },
     });
   };
