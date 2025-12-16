@@ -35813,6 +35813,7 @@ Returns [`String`](#string).
 | <a id="grouppermissionsreadcrmcontact"></a>`readCrmContact` | [`Boolean!`](#boolean) | If `true`, the user can perform `read_crm_contact` on this resource. |
 | <a id="grouppermissionsreadcrmorganization"></a>`readCrmOrganization` | [`Boolean!`](#boolean) | If `true`, the user can perform `read_crm_organization` on this resource. |
 | <a id="grouppermissionsreadgroup"></a>`readGroup` | [`Boolean!`](#boolean) | If `true`, the user can perform `read_group` on this resource. |
+| <a id="grouppermissionsreadrunnercloudprovisioninginfo"></a>`readRunnerCloudProvisioningInfo` {{< icon name="warning-solid" >}} | [`Boolean!`](#boolean) | **Introduced** in GitLab 18.8. **Status**: Experiment. If `true`, the user can perform `read_runner_cloud_provisioning_info` on this resource. |
 | <a id="grouppermissionsremovegroup"></a>`removeGroup` | [`Boolean!`](#boolean) | If `true`, the user can perform `remove_group` on this resource. |
 | <a id="grouppermissionsvieweditpage"></a>`viewEditPage` | [`Boolean!`](#boolean) | If `true`, the user can perform `view_edit_page` on this resource. |
 
@@ -44999,6 +45000,7 @@ Returns [`String`](#string).
 | <a id="projectpermissionsreadpathlocks"></a>`readPathLocks` | [`Boolean!`](#boolean) | If `true`, the user can perform `read_path_locks` on this resource. |
 | <a id="projectpermissionsreadproject"></a>`readProject` | [`Boolean!`](#boolean) | If `true`, the user can perform `read_project` on this resource. |
 | <a id="projectpermissionsreadprojectmember"></a>`readProjectMember` | [`Boolean!`](#boolean) | If `true`, the user can perform `read_project_member` on this resource. |
+| <a id="projectpermissionsreadrunnercloudprovisioninginfo"></a>`readRunnerCloudProvisioningInfo` {{< icon name="warning-solid" >}} | [`Boolean!`](#boolean) | **Introduced** in GitLab 18.8. **Status**: Experiment. If `true`, the user can perform `read_runner_cloud_provisioning_info` on this resource. |
 | <a id="projectpermissionsreadwiki"></a>`readWiki` | [`Boolean!`](#boolean) | If `true`, the user can perform `read_wiki` on this resource. |
 | <a id="projectpermissionsremoveforkproject"></a>`removeForkProject` | [`Boolean!`](#boolean) | If `true`, the user can perform `remove_fork_project` on this resource. |
 | <a id="projectpermissionsremovepages"></a>`removePages` | [`Boolean!`](#boolean) | If `true`, the user can perform `remove_pages` on this resource. |
