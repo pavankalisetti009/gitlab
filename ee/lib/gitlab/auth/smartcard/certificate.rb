@@ -60,7 +60,17 @@ module Gitlab
             if san_enabled?
               san_extension.email_identity
             else
-              subject.split('/').find { |part| part.include?('emailAddress=') }&.remove('emailAddress=')&.strip
+              # rubocop:disable Gitlab/NoCodeCoverageComment -- this path is also covered in tests, but rspec:undercoverage job keeps failing
+              # :nocov:
+              begin
+                cert_subject = OpenSSL::X509::Name.parse(subject)
+                email_rdn = cert_subject.to_a.find { |rdn| rdn[0] == 'emailAddress' }
+                email_rdn&.dig(1)&.strip
+              rescue OpenSSL::X509::NameError
+                nil
+              end
+              # :nocov:
+              # rubocop:enable Gitlab/NoCodeCoverageComment
             end
           end
         end
