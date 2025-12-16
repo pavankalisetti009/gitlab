@@ -77064,6 +77064,9 @@ msgstr ""
 msgid "WorkItem|Edit custom field %{fieldName}"
 msgstr ""
 
+msgid "WorkItem|Edit name and icon"
+msgstr ""
+
 msgid "WorkItem|Edit status"
 msgstr ""
 
@@ -77124,6 +77127,9 @@ msgstr ""
 msgid "WorkItem|Failed to fetch namespace metadata."
 msgstr ""
 
+msgid "WorkItem|Failed to fetch work item types."
+msgstr ""
+
 msgid "WorkItem|Failed to load custom fields."
 msgstr ""
 
@@ -77164,6 +77170,9 @@ msgid "WorkItem|Hide sidebar"
 msgstr ""
 
 msgid "WorkItem|History only"
+msgstr ""
+
+msgid "WorkItem|How do I use configure work item types?"
 msgstr ""
 
 msgid "WorkItem|How do I use custom fields?"
@@ -77345,6 +77354,9 @@ msgid "WorkItem|New status"
 msgstr ""
 
 msgid "WorkItem|New task"
+msgstr ""
+
+msgid "WorkItem|New type"
 msgstr ""
 
 msgid "WorkItem|No assignees"
@@ -77860,6 +77872,9 @@ msgstr ""
 msgid "WorkItem|Type lifecycle updated."
 msgstr ""
 
+msgid "WorkItem|Types"
+msgstr ""
+
 msgid "WorkItem|Unable to fetch destination projects."
 msgstr ""
 
@@ -77915,6 +77930,12 @@ msgid "WorkItem|Work item"
 msgstr ""
 
 msgid "WorkItem|Work item not found"
+msgstr ""
+
+msgid "WorkItem|Work item types"
+msgstr ""
+
+msgid "WorkItem|Work item types are used to track different kinds of work. Each work item type can have different lifecycles and fields."
 msgstr ""
 
 msgid "WorkItem|Work items"
