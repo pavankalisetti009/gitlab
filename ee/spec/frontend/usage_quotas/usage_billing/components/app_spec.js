@@ -417,13 +417,18 @@ describe('UsageBillingApp', () => {
         expect(findUsageTrendsChart().props()).toMatchObject({
           monthStartDate: '2025-10-01',
           monthEndDate: '2025-10-31',
+          monthlyCommitmentIsAvailable: true,
+          monthlyCommitmentTotalCredits: 100,
           monthlyCommitmentDailyUsage: [
             { creditsUsed: 5, date: '2025-10-06' },
             { creditsUsed: 12, date: '2025-10-07' },
             { creditsUsed: 18, date: '2025-10-10' },
             { creditsUsed: 15.333, date: '2025-10-11' },
           ],
+          monthlyWaiverIsAvailable: false,
+          monthlyWaiverTotalCredits: 0,
           monthlyWaiverDailyUsage: [],
+          overageIsAllowed: true,
           overageDailyUsage: [],
         });
       });

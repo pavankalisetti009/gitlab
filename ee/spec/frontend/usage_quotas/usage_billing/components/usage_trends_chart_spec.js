@@ -40,12 +40,14 @@ describe('UsageTrendsChart', () => {
           monthStartDate: '2025-10-01',
           monthEndDate: '2025-10-31',
           monthlyCommitmentIsAvailable: true,
+          monthlyCommitmentTotalCredits: 50,
           monthlyCommitmentDailyUsage: [
             { date: '2025-10-06', creditsUsed: 1 },
             { date: '2025-10-07', creditsUsed: 1.5 },
             { date: '2025-10-10', creditsUsed: 2 },
           ],
           monthlyWaiverIsAvailable: true,
+          monthlyWaiverTotalCredits: 100,
           monthlyWaiverDailyUsage: [
             { date: '2025-10-12', creditsUsed: 5 },
             { date: '2025-10-14', creditsUsed: 7.5 },
@@ -144,6 +146,27 @@ describe('UsageTrendsChart', () => {
               expect(getSlotText(slotContent)).toContain('31 October');
             });
 
+            describe('chart options', () => {
+              let chartOptions;
+
+              beforeEach(() => {
+                chartOptions = findGlAreaChart().props('option');
+              });
+
+              describe.each`
+                maxCreditsUsed | expected | description
+                ${100}         | ${160}   | ${'with usage below limits'}
+                ${200}         | ${210}   | ${'with usage above limits'}
+                ${203}         | ${210}   | ${'with usage above limits and doesnt divide by 10 cleanly'}
+              `('$description', ({ maxCreditsUsed, expected }) => {
+                it('calculates max value properly', () => {
+                  const maxValue = chartOptions.yAxis.max({ max: maxCreditsUsed });
+
+                  expect(maxValue).toBe(expected);
+                });
+              });
+            });
+
             it('passes correct monthly commitment data', () => {
               const chartData = findGlAreaChart().props('data');
               const monthlyCommitment = chartData.find(
@@ -154,6 +177,9 @@ describe('UsageTrendsChart', () => {
                 expect.objectContaining({
                   name: 'Monthly commitment',
                   stack: 'daily',
+                  markLine: expect.objectContaining({
+                    data: [{ name: 'Monthly commitment limit', yAxis: 50 }],
+                  }),
                   data: [
                     ['2025-10-01', null],
                     ['2025-10-02', null],
@@ -199,6 +225,9 @@ describe('UsageTrendsChart', () => {
                 expect.objectContaining({
                   name: 'Monthly waiver',
                   stack: 'daily',
+                  markLine: expect.objectContaining({
+                    data: [{ name: 'Monthly waiver limit', yAxis: 150 }],
+                  }),
                   data: [
                     ['2025-10-01', null],
                     ['2025-10-02', null],
@@ -303,6 +332,9 @@ describe('UsageTrendsChart', () => {
               expect.objectContaining({
                 name: 'Monthly commitment',
                 stack: 'daily',
+                markLine: expect.objectContaining({
+                  data: [{ name: 'Monthly commitment limit', yAxis: 50 }],
+                }),
                 data: expect.arrayContaining([
                   ['2025-10-16', null],
                   ['2025-10-17', 0],
@@ -336,6 +368,9 @@ describe('UsageTrendsChart', () => {
               expect.objectContaining({
                 name: 'Monthly commitment',
                 stack: 'daily',
+                markLine: expect.objectContaining({
+                  data: [{ name: 'Monthly commitment limit', yAxis: 50 }],
+                }),
                 data: expect.arrayContaining([
                   ['2025-10-16', null],
                   ['2025-10-17', 0],
@@ -384,6 +419,9 @@ describe('UsageTrendsChart', () => {
               expect.objectContaining({
                 name: 'Monthly commitment',
                 stack: 'daily',
+                markLine: expect.objectContaining({
+                  data: [{ name: 'Monthly commitment limit', yAxis: 50 }],
+                }),
                 data: expect.arrayContaining([
                   ['2025-10-13', null],
                   ['2025-10-14', 0],

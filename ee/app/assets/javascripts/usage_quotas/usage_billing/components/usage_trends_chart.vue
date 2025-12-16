@@ -36,12 +36,20 @@ export default {
       type: Array,
       required: true,
     },
+    monthlyCommitmentTotalCredits: {
+      type: Number,
+      required: true,
+    },
     monthlyWaiverIsAvailable: {
       type: Boolean,
       required: true,
     },
     monthlyWaiverDailyUsage: {
       type: Array,
+      required: true,
+    },
+    monthlyWaiverTotalCredits: {
+      type: Number,
       required: true,
     },
     overageIsAllowed: {
@@ -70,8 +78,14 @@ export default {
     monthlyCommitmentData() {
       return this.accumulateValues(this.monthlyCommitmentDailyUsage);
     },
+    monthlyCommitmentLimit() {
+      return this.monthlyCommitmentTotalCredits;
+    },
     monthlyWaiverData() {
       return this.accumulateValues(this.monthlyWaiverDailyUsage);
+    },
+    monthlyWaiverLimit() {
+      return this.monthlyCommitmentLimit + this.monthlyWaiverTotalCredits;
     },
     overageData() {
       return this.accumulateValues(this.overageDailyUsage);
@@ -94,6 +108,19 @@ export default {
             color: '#63a6e9',
           },
           data: this.monthlyCommitmentData,
+          markLine: {
+            lineStyle: {
+              type: 'dashed',
+              color: '#63a6e9',
+              width: 2,
+            },
+            data: [
+              {
+                yAxis: this.monthlyCommitmentLimit,
+                name: s__('UsageBilling|Monthly commitment limit'),
+              },
+            ],
+          },
         },
         this.monthlyWaiverIsAvailable && {
           name: s__('UsageBilling|Monthly waiver'),
@@ -111,6 +138,16 @@ export default {
             color: '#7992f5',
           },
           data: this.monthlyWaiverData,
+          markLine: {
+            lineStyle: {
+              type: 'dashed',
+              color: '#7992f5',
+              width: 2,
+            },
+            data: [
+              { yAxis: this.monthlyWaiverLimit, name: s__('UsageBilling|Monthly waiver limit') },
+            ],
+          },
         },
         this.overageIsAllowed && {
           name: s__('UsageBilling|On-demand'),
@@ -145,6 +182,13 @@ export default {
         },
         yAxis: {
           name: s__('UsageBilling|Credits'),
+          type: 'value',
+          // Ensure that y axis cuts off above limits,
+          max: (value) => {
+            const max = Math.max(this.monthlyCommitmentLimit, this.monthlyWaiverLimit, value.max);
+            // adds at least +10 for padding
+            return Math.ceil((max + 1) / 10) * 10;
+          },
         },
       };
     },
