@@ -26305,6 +26305,7 @@ CREATE TABLE saved_views (
     sort smallint,
     filter_data jsonb,
     display_settings jsonb,
+    lock_version integer DEFAULT 0 NOT NULL,
     CONSTRAINT check_61a6c07bf6 CHECK ((char_length(name) <= 140)),
     CONSTRAINT check_d27167623c CHECK ((char_length(description) <= 140))
 );
