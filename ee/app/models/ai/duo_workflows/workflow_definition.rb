@@ -12,6 +12,7 @@ module Ai
           id: 1,
           name: "code_review/v1",
           description: "GitLab Code Review",
+          avatar: "code-review-flow.png",
           foundational_flow_reference: "code_review/v1",
           ai_feature: "review_merge_request",
           pre_approved_agent_privileges: [
@@ -25,6 +26,7 @@ module Ai
           id: 2,
           name: "sast_fp_detection/v1",
           description: "GitLab SAST False Positive detection",
+          avatar: "security-flow.png",
           foundational_flow_reference: "sast_fp_detection/v1",
           pre_approved_agent_privileges: [
             ::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_FILES,
@@ -40,6 +42,7 @@ module Ai
           id: 3,
           name: "resolve_sast_vulnerability/v1",
           description: "GitLab resolve SAST vulnerability",
+          avatar: "security-flow.png",
           foundational_flow_reference: "resolve_sast_vulnerability/v1",
           pre_approved_agent_privileges: [
             ::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_FILES,
@@ -56,6 +59,7 @@ module Ai
           name: "developer/v1",
           foundational_flow_reference: "developer/v1",
           description: "GitLab Duo developer",
+          avatar: "gitlab-duo-flow.png",
           pre_approved_agent_privileges: [
             ::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_FILES,
             ::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_ONLY_GITLAB,
@@ -63,14 +67,14 @@ module Ai
             ::Ai::DuoWorkflows::Workflow::AgentPrivileges::USE_GIT
           ],
           environment: "web",
-          triggers: [::Ai::FlowTrigger::EVENT_TYPES[:assign]],
-          avatar: "gitlab-duo-flow.png"
+          triggers: [::Ai::FlowTrigger::EVENT_TYPES[:assign]]
         },
         {
           id: 5,
           name: "fix_pipeline/v1",
           foundational_flow_reference: "fix_pipeline/v1",
           description: "GitLab pipeline troubleshooter",
+          avatar: "fix-pipeline-flow.png",
           pre_approved_agent_privileges: [
             ::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_FILES,
             ::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_ONLY_GITLAB,
@@ -79,8 +83,7 @@ module Ai
             ::Ai::DuoWorkflows::Workflow::AgentPrivileges::USE_GIT
           ],
           environment: "web",
-          triggers: [],
-          avatar: "fix-pipeline-flow.png"
+          triggers: []
         }
       ].freeze
 

@@ -385,6 +385,7 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
 
     it 'creates a service account and attaches it to the item consumer' do
       expect(::Namespaces::ServiceAccounts::CreateService).to receive(:new).and_call_original
+      expect(Ai::Avatars::LoadService).to receive(:new).with(item).and_call_original
 
       expect { execute }.to change { User.count }.by(1)
       service_account = User.last
