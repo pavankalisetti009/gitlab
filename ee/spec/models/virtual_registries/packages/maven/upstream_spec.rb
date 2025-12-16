@@ -23,12 +23,6 @@ RSpec.describe VirtualRegistries::Packages::Maven::Upstream, type: :model, featu
         .inverse_of(:upstream)
     end
 
-    it 'has many cache local entries' do
-      is_expected.to have_many(:cache_local_entries)
-        .class_name('VirtualRegistries::Packages::Maven::Cache::Local::Entry')
-        .inverse_of(:upstream)
-    end
-
     it 'has many registry upstreams' do
       is_expected.to have_many(:registry_upstreams)
         .class_name('VirtualRegistries::Packages::Maven::RegistryUpstream')
@@ -52,19 +46,6 @@ RSpec.describe VirtualRegistries::Packages::Maven::Upstream, type: :model, featu
 
       it 'has no cache local entries' do
         expect(upstream.cache_local_entries).to eq([])
-      end
-    end
-
-    context 'with an upstream with cache local entries' do
-      let_it_be(:cache_entry) { create(:virtual_registries_packages_maven_cache_local_entry) }
-      let_it_be(:upstream) { cache_entry.upstream }
-
-      it 'has no remote cache entries' do
-        expect(upstream.cache_entries).to eq([])
-      end
-
-      it 'has the cache local entries' do
-        expect(upstream.cache_local_entries).to contain_exactly(cache_entry)
       end
     end
   end

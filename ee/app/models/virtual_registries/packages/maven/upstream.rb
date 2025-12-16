@@ -26,10 +26,6 @@ module VirtualRegistries
           class_name: 'VirtualRegistries::Packages::Maven::Cache::Entry',
           inverse_of: :upstream
 
-        has_many :cache_local_entries,
-          class_name: 'VirtualRegistries::Packages::Maven::Cache::Local::Entry',
-          inverse_of: :upstream
-
         encrypts :username, :password
 
         validates :group, top_level_group: true, presence: true
@@ -83,7 +79,8 @@ module VirtualRegistries
         end
 
         def cache_local_entries
-          local? ? super : super.none
+          # TODO use the association when the related table is restored -- https://gitlab.com/gitlab-org/gitlab/-/work_items/583722
+          []
         end
 
         def url_for(path)
