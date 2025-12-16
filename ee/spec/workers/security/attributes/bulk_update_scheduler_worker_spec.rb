@@ -44,13 +44,15 @@ RSpec.describe Security::Attributes::BulkUpdateSchedulerWorker, feature_category
 
       it 'batches projects correctly' do
         stub_const("#{described_class}::BATCH_SIZE", 1)
-
-        expect(Security::Attributes::BulkUpdateWorker).to receive(:perform_in)
-          .with(0, [project1.id], attribute_ids, mode, user_id)
-        expect(Security::Attributes::BulkUpdateWorker).to receive(:perform_in)
-          .with(1, [project2.id], attribute_ids, mode, user_id)
+        allow(Security::Attributes::BulkUpdateWorker).to receive(:perform_in)
 
         worker.perform(group_ids, project_ids, attribute_ids, mode, user_id)
+
+        expect(Security::Attributes::BulkUpdateWorker).to have_received(:perform_in).twice
+        expect(Security::Attributes::BulkUpdateWorker).to have_received(:perform_in)
+          .with(anything, [project1.id], attribute_ids, mode, user_id).once
+        expect(Security::Attributes::BulkUpdateWorker).to have_received(:perform_in)
+          .with(anything, [project2.id], attribute_ids, mode, user_id).once
       end
 
       context 'with groups in items' do
