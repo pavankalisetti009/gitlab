@@ -6279,7 +6279,7 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
         expect(json_response['error']).to eq('visibility does not have a valid value')
       end
 
-      it_behaves_like 'authorizing granular token permissions', :create_project_fork do
+      it_behaves_like 'authorizing granular token permissions', :create_fork_project do
         let(:boundary_object) { project }
         let(:fork_path) { "fork-test-#{SecureRandom.hex(4)}" }
         let(:request) do
