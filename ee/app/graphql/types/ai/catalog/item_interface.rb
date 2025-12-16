@@ -60,6 +60,9 @@ module Types
           argument :group_id, ::Types::GlobalIDType[::Group], required: true,
             description: 'Global ID of the group to return the item configuration of.'
         end
+        field :foundational_flow_reference, GraphQL::Types::String,
+          null: true,
+          description: 'Foundational flow reference.'
 
         orphan_types ::Types::Ai::Catalog::AgentType
         orphan_types ::Types::Ai::Catalog::FlowType

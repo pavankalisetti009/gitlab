@@ -18,7 +18,8 @@ RSpec.describe Resolvers::Ai::Catalog::ConfiguredItemsResolver, feature_category
       :item_id,
       :project_id,
       :item_type,
-      :item_types
+      :item_types,
+      :foundational_flow_reference
     )
   end
 

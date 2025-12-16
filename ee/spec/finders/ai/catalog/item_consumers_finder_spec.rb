@@ -213,4 +213,24 @@ RSpec.describe Ai::Catalog::ItemConsumersFinder, feature_category: :workflow_cat
       expect { results }.to raise_error(ArgumentError, 'Must provide either project_id or group_id param')
     end
   end
+
+  context 'when foundational_flow_reference is provided' do
+    let(:flow_with_ref) { create(:ai_catalog_flow, foundational_flow_reference: 'gitlab/foo_maker') }
+    let!(:flow_consumer) { create(:ai_catalog_item_consumer, project: project, item: flow_with_ref) }
+    let(:params) { { project_id: project.id, foundational_flow_reference: 'gitlab/foo_maker' } }
+
+    it { is_expected.to contain_exactly(flow_consumer) }
+
+    context 'when no items match the reference' do
+      let(:params) { { project_id: project.id, foundational_flow_reference: 'nonexistent/reference' } }
+
+      it { is_expected.to be_empty }
+    end
+
+    context 'when other project is provided' do
+      let(:params) { { project_id: another_project.id, foundational_flow_reference: 'gitlab/foo_maker' } }
+
+      it { is_expected.to be_empty }
+    end
+  end
 end
