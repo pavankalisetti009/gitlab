@@ -113,8 +113,7 @@ module Security
       private
 
       def can_run?(project)
-        Feature.enabled?(:validity_checks, project) &&
-          project.security_setting&.validity_checks_enabled
+        project.security_setting&.validity_checks_enabled
       end
 
       def setup_and_validate_pipeline(pipeline_id)

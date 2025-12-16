@@ -13,7 +13,6 @@ module Projects
 
       before_action do
         push_frontend_feature_flag(:hide_vulnerability_severity_override, project)
-        push_frontend_feature_flag(:validity_checks, project)
         push_frontend_feature_flag(:security_policy_approval_warn_mode, project)
         push_frontend_feature_flag(:auto_dismiss_vulnerability_policies, project.group)
         push_frontend_feature_flag(:ai_experiment_sast_fp_detection, project)

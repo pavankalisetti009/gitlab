@@ -623,41 +623,37 @@ RSpec.describe VulnerabilitiesHelper, feature_category: :vulnerability_managemen
       end
     end
 
-    context 'when validity_checks feature flag is disabled' do
+    context 'when validity checks is disabled for the project' do
       before do
-        stub_feature_flags(validity_checks: false)
+        project.security_setting.update!(validity_checks_enabled: false)
       end
 
-      it 'does not include finding_token_status or validity_checks_enabled in the result' do
+      it 'does not include finding_token_status in the result' do
         expect(subject).not_to include(:finding_token_status)
-        expect(subject).not_to include(:validity_checks_enabled)
       end
     end
 
-    context 'when validity_checks feature flag is enabled' do
+    context 'when validity checks is enabled for the project' do
       before do
-        stub_feature_flags(validity_checks: true)
+        project.security_setting.update!(validity_checks_enabled: true)
       end
 
-      context 'when validity checks is disabled for the project' do
-        before do
-          project.security_setting.update!(validity_checks_enabled: false)
-        end
+      it 'returns finding token status and validity_checks_enabled' do
+        expect(subject[:finding_token_status]).to eq(finding.finding_token_status)
+        expect(subject[:validity_checks_enabled]).to eq(finding.project.security_setting&.validity_checks_enabled)
+      end
+    end
 
-        it 'does not include finding_token_status in the result' do
-          expect(subject).not_to include(:finding_token_status)
-        end
+    context 'when finding has no project' do
+      before do
+        finding_project = finding.project
+        allow(finding).to receive(:project).and_return(finding_project)
+        allow(finding_project).to receive(:security_setting).and_return(nil)
       end
 
-      context 'when validity checks is enabled for the project' do
-        before do
-          project.security_setting.update!(validity_checks_enabled: true)
-        end
-
-        it 'returns finding token status and validity_checks_enabled' do
-          expect(subject[:finding_token_status]).to eq(finding.finding_token_status)
-          expect(subject[:validity_checks_enabled]).to eq(finding.project.security_setting&.validity_checks_enabled)
-        end
+      it 'sets validity_checks_enabled to false and excludes finding_token_status' do
+        expect(subject[:validity_checks_enabled]).to be(false)
+        expect(subject).not_to include(:finding_token_status)
       end
     end
   end

@@ -61,84 +61,69 @@ RSpec.describe 'Query.vulnerability.findingTokenStatus', feature_category: :secr
       vulnerability.update!(report_type: 'secret_detection')
     end
 
-    context 'when validity_checks feature flag is disabled' do
+    context 'when secret_detection_validity_checks is not licensed' do
       before do
-        stub_feature_flags(validity_checks: false)
+        stub_licensed_features(security_dashboard: true, secret_detection_validity_checks: false)
         post_query
       end
 
       it_behaves_like 'returns no token status'
     end
 
-    context 'when validity_checks feature flag is enabled' do
+    context 'when secret_detection_validity_checks is licensed' do
       before do
-        stub_feature_flags(validity_checks: true)
+        stub_licensed_features(security_dashboard: true, secret_detection_validity_checks: true)
       end
 
-      context 'when secret_detection_validity_checks is not licensed' do
+      context 'when validity_checks_enabled is false' do
         before do
-          stub_licensed_features(security_dashboard: true, secret_detection_validity_checks: false)
+          project.security_setting.update!(validity_checks_enabled: false)
           post_query
         end
 
         it_behaves_like 'returns no token status'
       end
 
-      context 'when secret_detection_validity_checks is licensed' do
+      context 'when validity_checks_enabled is true' do
         before do
-          stub_licensed_features(security_dashboard: true, secret_detection_validity_checks: true)
+          project.security_setting.update!(validity_checks_enabled: true)
         end
 
-        context 'when validity_checks_enabled is false' do
+        context 'when the vulnerability has no finding' do
           before do
-            project.security_setting.update!(validity_checks_enabled: false)
             post_query
           end
 
           it_behaves_like 'returns no token status'
         end
 
-        context 'when validity_checks_enabled is true' do
+        context 'when there is a finding but no token status record' do
           before do
-            project.security_setting.update!(validity_checks_enabled: true)
+            create(:vulnerabilities_finding, vulnerability: vulnerability)
+            post_query
           end
 
-          context 'when the vulnerability has no finding' do
-            before do
-              post_query
-            end
+          it_behaves_like 'returns no token status'
+        end
 
-            it_behaves_like 'returns no token status'
+        context 'and there is a token status record' do
+          let!(:finding) do
+            create(
+              :vulnerabilities_finding,
+              :with_token_status,
+              token_status: :active,
+              vulnerability: vulnerability
+            )
           end
 
-          context 'when there is a finding but no token status record' do
-            before do
-              create(:vulnerabilities_finding, vulnerability: vulnerability)
-              post_query
-            end
-
-            it_behaves_like 'returns no token status'
+          before do
+            post_query
           end
 
-          context 'and there is a token status record' do
-            let!(:finding) do
-              create(
-                :vulnerabilities_finding,
-                :with_token_status,
-                token_status: :active,
-                vulnerability: vulnerability
-              )
-            end
+          it_behaves_like 'a working graphql query that returns data'
 
-            before do
-              post_query
-            end
-
-            it_behaves_like 'a working graphql query that returns data'
-
-            it 'returns the correct token status object' do
-              expect(graphql_data.dig('vulnerability', 'findingTokenStatus', 'status')).to eq('ACTIVE')
-            end
+          it 'returns the correct token status object' do
+            expect(graphql_data.dig('vulnerability', 'findingTokenStatus', 'status')).to eq('ACTIVE')
           end
         end
       end

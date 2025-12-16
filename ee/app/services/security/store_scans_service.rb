@@ -135,7 +135,6 @@ module Security
 
     def should_update_token_status?
       !pipeline.default_branch? &&
-        Feature.enabled?(:validity_checks, project) &&
         project.security_setting&.validity_checks_enabled &&
         secret_detection_scans_found?
     end

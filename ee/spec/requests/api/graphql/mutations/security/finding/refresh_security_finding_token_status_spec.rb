@@ -71,14 +71,6 @@ RSpec.describe Mutations::Security::Finding::RefreshSecurityFindingTokenStatus, 
         project.add_developer(current_user)
       end
 
-      context 'when the validity_checks FF is disabled' do
-        before do
-          stub_feature_flags(validity_checks: false)
-        end
-
-        it_behaves_like 'raises ResourceNotAvailable error'
-      end
-
       context 'when the project is not licensed to use validity checks' do
         before do
           stub_licensed_features(secret_detection_validity_checks: false)
@@ -95,9 +87,8 @@ RSpec.describe Mutations::Security::Finding::RefreshSecurityFindingTokenStatus, 
         it_behaves_like 'raises ResourceNotAvailable error'
       end
 
-      context 'when all flags and features are enabled and licensed' do
+      context 'when license is available' do
         before do
-          stub_feature_flags(validity_checks: true)
           stub_licensed_features(secret_detection_validity_checks: true)
           project.security_setting.reload.update!(validity_checks_enabled: true)
         end

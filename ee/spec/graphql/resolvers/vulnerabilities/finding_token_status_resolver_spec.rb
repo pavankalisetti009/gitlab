@@ -20,7 +20,6 @@ RSpec.describe Resolvers::Vulnerabilities::FindingTokenStatusResolver, feature_c
     end
 
     before do
-      stub_feature_flags(validity_checks: true)
       stub_licensed_features(secret_detection_validity_checks: true)
       project.security_setting.update!(validity_checks_enabled: true)
     end
@@ -33,14 +32,6 @@ RSpec.describe Resolvers::Vulnerabilities::FindingTokenStatusResolver, feature_c
 
     context 'when report_type is not secret_detection' do
       let(:vulnerability) { create(:vulnerability, project: project, report_type: 'sast') }
-
-      it_behaves_like 'does not expose token status'
-    end
-
-    context 'when validity_checks feature flag is disabled' do
-      before do
-        stub_feature_flags(validity_checks: false)
-      end
 
       it_behaves_like 'does not expose token status'
     end

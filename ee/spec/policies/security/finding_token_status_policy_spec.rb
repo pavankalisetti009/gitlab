@@ -21,14 +21,6 @@ RSpec.describe Security::FindingTokenStatusPolicy, feature_category: :secret_det
     end
 
     it { is_expected.to be_allowed(:read_finding_token_status) }
-
-    context 'when validity_checks ff is disabled' do
-      before do
-        stub_feature_flags(validity_checks: false)
-      end
-
-      it { is_expected.to be_disallowed(:read_finding_token_status) }
-    end
   end
 
   context 'when user does not have project access' do
