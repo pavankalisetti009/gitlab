@@ -97,4 +97,69 @@ RSpec.describe VirtualRegistries::Packages::Maven, feature_category: :virtual_re
       end
     end
   end
+
+  describe '.log_access_through_project_membership', :request_store do
+    let_it_be(:group) { create(:group) }
+    let_it_be(:project) { create(:project, group:) }
+    let_it_be(:user) { create(:user) }
+
+    let(:permission) { :read_virtual_registry }
+
+    subject(:log_access) { described_class.log_access_through_project_membership(group, user) }
+
+    before do
+      allow(Gitlab::AppLogger).to receive(:info).and_call_original
+      user&.can?(permission, group.virtual_registry_policy_subject)
+    end
+
+    context 'when user has project membership' do
+      before_all do
+        project.add_guest(user)
+      end
+
+      it 'logs access' do
+        log_access
+
+        expect(Gitlab::AppLogger).to have_received(:info).with(
+          hash_including(
+            message: 'User granted read_virtual_registry access through project membership',
+            user_id: user.id,
+            group_id: group.id
+          )
+        )
+      end
+
+      context 'when permission is not :read_virtual_registry' do
+        let(:permission) { :create_virtual_registry }
+
+        it 'does not log' do
+          log_access
+
+          expect(Gitlab::AppLogger).not_to have_received(:info)
+        end
+      end
+    end
+
+    context 'when user has group membership' do
+      before_all do
+        group.add_guest(user)
+      end
+
+      it 'does not log' do
+        log_access
+
+        expect(Gitlab::AppLogger).not_to have_received(:info)
+      end
+    end
+
+    context 'when user is nil' do
+      let(:user) { nil }
+
+      it 'does not log', :aggregate_failures do
+        is_expected.to be_nil
+
+        expect(Gitlab::AppLogger).not_to have_received(:info)
+      end
+    end
+  end
 end

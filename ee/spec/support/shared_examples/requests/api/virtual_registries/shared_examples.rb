@@ -106,3 +106,23 @@ RSpec.shared_examples 'virtual registry non member user access' do |status_overr
     end
   end
 end
+
+RSpec.shared_examples 'logging access through project membership' do
+  let(:user) { create(:user, guest_of: project) }
+
+  before do
+    allow(Gitlab::AppLogger).to receive(:info).and_call_original
+  end
+
+  it 'logs access', :request_store do
+    subject
+
+    expect(Gitlab::AppLogger).to have_received(:info).with(
+      hash_including(
+        message: 'User granted read_virtual_registry access through project membership',
+        user_id: user.id,
+        group_id: group.id
+      )
+    )
+  end
+end

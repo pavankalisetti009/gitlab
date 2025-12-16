@@ -19,7 +19,11 @@ module VirtualRegistries
         prevent :destroy_virtual_registry
       end
 
-      rule { group.guest | admin | group.has_projects }.policy do
+      rule { group.guest | admin }.policy do
+        enable :read_virtual_registry
+      end
+
+      rule { group.has_projects }.policy do
         enable :read_virtual_registry
       end
 

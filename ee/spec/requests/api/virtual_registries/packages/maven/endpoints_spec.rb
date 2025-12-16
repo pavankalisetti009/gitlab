@@ -219,6 +219,8 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Endpoints, :aggregate_fa
             it_behaves_like 'returning the workhorse send_url response'
           end
         end
+
+        it_behaves_like 'logging access through project membership'
       end
 
       context 'with service response errors' do
@@ -396,6 +398,8 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Endpoints, :aggregate_fa
 
         it_behaves_like 'returning response status', :bad_request
       end
+
+      it_behaves_like 'logging access through project membership'
     end
 
     it_behaves_like 'virtual registry not available', :maven

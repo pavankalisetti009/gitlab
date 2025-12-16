@@ -42,6 +42,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Registries, :aggregate_f
     it_behaves_like 'virtual registry not available', :maven
     it_behaves_like 'virtual registry non member user access'
     it_behaves_like 'an authenticated virtual registry REST API'
+    it_behaves_like 'logging access through project membership'
   end
 
   describe 'POST /api/v4/groups/:id/-/virtual_registries/packages/maven/registries' do
@@ -199,6 +200,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Registries, :aggregate_f
     it_behaves_like 'virtual registry not available', :maven
     it_behaves_like 'virtual registry non member user access'
     it_behaves_like 'an authenticated virtual registry REST API'
+    it_behaves_like 'logging access through project membership'
   end
 
   describe 'PATCH /api/v4/virtual_registries/packages/maven/registries/:id' do

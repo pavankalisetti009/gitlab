@@ -78,6 +78,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
     it_behaves_like 'virtual registry not available', :maven
     it_behaves_like 'virtual registry non member user access'
     it_behaves_like 'an authenticated virtual registry REST API'
+    it_behaves_like 'logging access through project membership'
   end
 
   describe 'POST /api/v4/groups/:id/-/virtual_registries/packages/maven/upstreams/test' do
@@ -203,6 +204,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
     it_behaves_like 'virtual registry not available', :maven
     it_behaves_like 'virtual registry non member user access'
     it_behaves_like 'an authenticated virtual registry REST API'
+    it_behaves_like 'logging access through project membership'
   end
 
   describe 'POST /api/v4/virtual_registries/packages/maven/registries/:id/upstreams' do
@@ -379,6 +381,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
     it_behaves_like 'virtual registry not available', :maven
     it_behaves_like 'virtual registry non member user access'
     it_behaves_like 'an authenticated virtual registry REST API'
+    it_behaves_like 'logging access through project membership'
   end
 
   describe 'PATCH /api/v4/virtual_registries/packages/maven/upstreams/:id' do
@@ -602,6 +605,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
     it { is_expected.to have_request_urgency(:low) }
 
     it_behaves_like 'virtual registry not available', :maven
+    it_behaves_like 'logging access through project membership'
 
     context 'with valid upstream' do
       before_all do

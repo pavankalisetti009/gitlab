@@ -15,11 +15,29 @@ module VirtualRegistries
       end
 
       def self.user_has_access?(group, current_user, permission = :read_virtual_registry)
-        Ability.allowed?(current_user, permission, group.virtual_registry_policy_subject)
+        has_access = Ability.allowed?(current_user, permission, group.virtual_registry_policy_subject)
+
+        log_access_through_project_membership(group, current_user) if has_access && permission == :read_virtual_registry
+
+        has_access
       end
 
       def self.virtual_registry_available?(group, current_user, permission = :read_virtual_registry)
         feature_enabled?(group) && user_has_access?(group, current_user, permission)
+      end
+
+      def self.log_access_through_project_membership(group, current_user)
+        return unless current_user
+
+        policy = ::Ability.policy_for(current_user, group.virtual_registry_policy_subject)
+
+        return unless policy.runners[:read_virtual_registry]&.steps&.detect(&:pass?)&.rule&.repr == 'group.has_projects'
+
+        Gitlab::AppLogger.info(
+          message: 'User granted read_virtual_registry access through project membership',
+          user_id: current_user.id,
+          group_id: group.id
+        )
       end
     end
   end

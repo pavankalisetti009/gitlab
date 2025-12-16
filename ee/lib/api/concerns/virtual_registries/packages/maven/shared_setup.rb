@@ -23,6 +23,10 @@ module API
                 # return not found response to authenticated users but non member of target group
                 not_found! unless can?(current_user, :read_group, target_group)
               end
+
+              after do
+                ::VirtualRegistries::Packages::Maven.log_access_through_project_membership(target_group, current_user)
+              end
             end
           end
         end
