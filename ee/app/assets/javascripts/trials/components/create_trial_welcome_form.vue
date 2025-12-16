@@ -252,7 +252,7 @@ export default {
       <template #input(role)="{ value, input }">
         <listbox-input
           :selected="value"
-          name="onboarding_status[role]"
+          name="onboarding_status_role"
           :items="fields.role.options"
           :default-toggle-text="$options.i18n.rolePrompt"
           :block="true"
@@ -264,7 +264,7 @@ export default {
       <template #input(setup_for_company)="{ value, input }">
         <listbox-input
           :selected="value"
-          name="onboarding_status[setup_for_company]"
+          name="onboarding_status_setup_for_company"
           :items="fields.setup_for_company.options"
           :default-toggle-text="$options.i18n.setupForCompanyPrompt"
           :block="true"
@@ -276,7 +276,7 @@ export default {
       <template #input(registration_objective)="{ value, input }">
         <listbox-input
           :selected="value"
-          name="onboarding_status[registration_objective]"
+          name="onboarding_status_registration_objective"
           :items="fields.registration_objective.options"
           :default-toggle-text="$options.i18n.registrationObjectivePrompt"
           :block="true"

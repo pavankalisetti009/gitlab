@@ -18,28 +18,41 @@ RSpec.describe GitlabSubscriptions::Trials::WelcomeCreateService, :saas, feature
 
   let(:params) do
     {
-      first_name: 'John',
-      last_name: 'Doe',
       company_name: 'Test Company',
       country: 'US',
       state: 'CA',
       project_name: 'Test Project',
       group_name: 'gitlab',
-      organization_id: organization.id
+      organization_id: organization.id,
+      onboarding_status_role: '0',
+      onboarding_status_setup_for_company: 'true',
+      onboarding_status_registration_objective: '1'
     }.merge(glm_params)
   end
 
   let(:lead_params) do
     {
-      trial_user: params.except(:namespace_id, :group_name, :project_name, :organization_id).merge(
+      trial_user: params.except(
+        :namespace_id,
+        :group_name,
+        :project_name,
+        :organization_id,
+        :onboarding_status_role,
+        :onboarding_status_setup_for_company,
+        :onboarding_status_registration_objective
+      ).merge(
         {
           work_email: user.email,
           uid: user.id,
-          setup_for_company: false,
+          setup_for_company: true,
           skip_email_confirmation: true,
           gitlab_com_trial: true,
           provider: 'gitlab',
-          product_interaction: 'Experiment - SaaS Trial'
+          product_interaction: 'Experiment - SaaS Trial',
+          first_name: user.first_name,
+          last_name: user.last_name,
+          role: 'software_developer',
+          jtbd: 'move_repository'
         }
       )
     }
@@ -81,6 +94,15 @@ RSpec.describe GitlabSubscriptions::Trials::WelcomeCreateService, :saas, feature
         expect(execute).to be_success
         expect(execute.message).to eq('Trial applied')
         expect(execute.payload).to eq({ namespace: Group.last, project: Project.last })
+      end
+
+      it 'saves onboarding_status fields to user', :aggregate_failures do
+        expect_create_lead_success(lead_params)
+        expect_apply_trial_async(user, namespace: nil, extra_params: glm_params)
+
+        expect { execute }.to change { user.reload.onboarding_status_role }.from(nil).to(0)
+          .and change { user.onboarding_status_setup_for_company }.from(nil).to(true)
+          .and change { user.onboarding_status_registration_objective }.from(nil).to(1)
       end
 
       it 'adds experiment contexts and tracks namespace', :experiment do
@@ -260,6 +282,83 @@ RSpec.describe GitlabSubscriptions::Trials::WelcomeCreateService, :saas, feature
         expect(execute.message).to eq("Trial creation failed in lead stage")
         expect(execute.payload).to eq({ namespace_id: Group.last.id, project_id: Project.last.id, lead_created: false,
           model_errors: {} })
+      end
+    end
+
+    context 'when user validation fails' do
+      let(:params) do
+        super().merge(
+          onboarding_status_role: nil,
+          onboarding_status_setup_for_company: nil,
+          onboarding_status_registration_objective: nil
+        )
+      end
+
+      it 'returns model error and does not attempt to create lead or submit trial' do
+        expect(lead_service_class).not_to receive(:new)
+        expect(apply_trial_worker_class).not_to receive(:perform_async)
+
+        expect(execute).to be_error
+        expect(execute.message).to eq("Trial creation failed in user stage")
+        expect(execute.payload).to include({
+          namespace_id: Group.last.id,
+          project_id: Project.last.id,
+          lead_created: false
+        })
+        expect(execute.payload.dig(:model_errors, :role)).to be_present
+      end
+
+      context 'when user fails, group succeeds, project fails' do
+        let(:params) do
+          super().merge(
+            project_name: '  ',
+            onboarding_status_role: nil,
+            onboarding_status_setup_for_company: nil,
+            onboarding_status_registration_objective: nil
+          )
+        end
+
+        it 'returns user stage error and does not create project' do
+          expect(lead_service_class).not_to receive(:new)
+          expect(apply_trial_worker_class).not_to receive(:perform_async)
+
+          expect { execute }.to change { Group.count }.by(1).and not_change { Project.count }
+          expect(execute).to be_error
+          expect(execute.message).to eq("Trial creation failed in user stage")
+          expect(execute.payload).to include({
+            namespace_id: Group.last.id,
+            project_id: nil,
+            lead_created: false
+          })
+          expect(execute.payload.dig(:model_errors, :role)).to be_present
+        end
+      end
+
+      context 'when user fails, group fails' do
+        let(:params) do
+          super().merge(
+            group_name: '  ',
+            onboarding_status_role: nil,
+            onboarding_status_setup_for_company: nil,
+            onboarding_status_registration_objective: nil
+          )
+        end
+
+        it 'returns user stage error does not create project' do
+          expect(lead_service_class).not_to receive(:new)
+          expect(apply_trial_worker_class).not_to receive(:perform_async)
+          expect(Projects::CreateService).not_to receive(:new)
+
+          expect { execute }.to not_change { Project.count }
+          expect(execute).to be_error
+          expect(execute.message).to eq("Trial creation failed in user stage")
+          expect(execute.payload).to include({
+            namespace_id: nil,
+            project_id: nil,
+            lead_created: false
+          })
+          expect(execute.payload.dig(:model_errors, :role)).to be_present
+        end
       end
     end
   end

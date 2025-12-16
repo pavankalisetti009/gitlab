@@ -112,6 +112,16 @@ RSpec.describe 'Trial Sign Up', :with_trial_types, :with_current_organization, :
       end
 
       it 'goes through the experiment trial registration flow' do
+        expect_next_instance_of(GitlabSubscriptions::CreateLeadService) do |service|
+          expect(service).to receive(:execute) do |params|
+            trial_user = params[:trial_user]
+            expect(trial_user[:first_name]).to be_present, "Expected first_name to be present in trial_user params"
+            expect(trial_user[:last_name]).to be_present, "Expected last_name to be present in trial_user params"
+
+            ServiceResponse.success
+          end
+        end
+
         visit new_trial_registration_path
 
         # Step 1

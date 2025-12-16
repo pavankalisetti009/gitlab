@@ -19,6 +19,8 @@ module GitlabSubscriptions
       end
 
       def execute
+        save_onboarding_status
+
         if namespace_id.blank?
           return not_found unless user.can_create_group?
 
@@ -92,6 +94,8 @@ module GitlabSubscriptions
       end
 
       def setup_trial
+        return error if user.errors.any?
+
         experiment(:lightweight_trial_registration_redesign, actor: user).track(:assignment, namespace: namespace)
 
         @lead_created = submit_lead.success? unless lead_created
@@ -118,23 +122,52 @@ module GitlabSubscriptions
         attrs = {
           work_email: user.email,
           uid: user.id,
-          setup_for_company: false,
+          setup_for_company: user.onboarding_status_setup_for_company,
           skip_email_confirmation: true,
           gitlab_com_trial: true,
           provider: 'gitlab',
-          product_interaction: EXPERIMENT_SAAS_TRIAL_PRODUCT_INTERACTION
+          product_interaction: EXPERIMENT_SAAS_TRIAL_PRODUCT_INTERACTION,
+          first_name: user.first_name,
+          last_name: user.last_name,
+          role: user.onboarding_status_role_name,
+          jtbd: user.onboarding_status_registration_objective_name
         }
 
         params.slice(
           *::Onboarding::StatusPresenter::GLM_PARAMS,
-          :company_name, :first_name, :last_name, :country, :state
+          :company_name, :country, :state
         ).merge(attrs)
+      end
+
+      def save_onboarding_status
+        inject_validators
+
+        user.assign_attributes(onboarding_params)
+
+        user.save
+      end
+
+      def onboarding_params
+        params.slice(
+          :onboarding_status_role,
+          :onboarding_status_setup_for_company,
+          :onboarding_status_registration_objective
+        )
+      end
+
+      def inject_validators
+        class << user.user_detail
+          validates :onboarding_status_role, presence: true
+          validates :onboarding_status_setup_for_company, inclusion: { in: [true, false], message: :blank }
+        end
       end
 
       def model_errors
         {
           group_name: namespace.try(:errors).try(:full_messages).try(:to_sentence),
-          project_name: project.try(:errors).try(:full_messages).try(:to_sentence)
+          project_name: project.try(:errors).try(:full_messages).try(:to_sentence),
+          role: user.user_detail.errors[:onboarding_status_role].first,
+          setup_for_company: user.user_detail.errors[:onboarding_status_setup_for_company].first
         }.select { |_m, e| e.present? }
       end
 
@@ -151,8 +184,14 @@ module GitlabSubscriptions
       end
 
       def failure_stage
-        stages = %w[namespace project lead application]
-        index = [!!namespace.try(:persisted?), !!project.try(:persisted?), lead_created, false].find_index(false)
+        stages = %w[user namespace project lead application]
+
+        index = [
+          !user.errors.any?,
+          !!namespace.try(:persisted?),
+          !!project.try(:persisted?),
+          lead_created, false
+        ].find_index(false)
 
         stages[index]
       end
