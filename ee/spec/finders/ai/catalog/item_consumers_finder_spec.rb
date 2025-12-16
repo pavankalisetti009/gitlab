@@ -191,9 +191,18 @@ RSpec.describe Ai::Catalog::ItemConsumersFinder, feature_category: :workflow_cat
         group.add_guest(guest_user)
       end
 
-      it 'does not allow guests to read item consumers in the group' do
-        results = described_class.new(guest_user, params: params).execute
-        expect(results).to be_empty
+      subject(:results) { described_class.new(guest_user, params: params).execute }
+
+      it 'allows guests to read item consumers in the group' do
+        expect(results).to match_array(group_consumers)
+      end
+
+      context 'when include_inherited is true' do
+        let(:params) { super().merge(include_inherited: true) }
+
+        it 'includes parent consumers' do
+          expect(results).to match_array(group_consumers + parent_group_consumers)
+        end
       end
     end
   end

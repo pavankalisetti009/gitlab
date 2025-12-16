@@ -290,13 +290,13 @@ RSpec.describe 'getting an AI catalog item', :with_current_organization, feature
     end
 
     context 'when the user does not have permission' do
-      let(:current_user) { guest_user }
+      let(:current_user) { create(:user) }
 
       it_behaves_like 'an unsuccessful query'
     end
 
     context 'when the user has permission' do
-      let(:current_user) { developer_user }
+      let(:current_user) { guest_user }
 
       it 'returns the item configuration' do
         post_graphql(query, current_user: current_user)

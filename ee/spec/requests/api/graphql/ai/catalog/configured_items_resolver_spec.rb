@@ -64,8 +64,6 @@ RSpec.describe 'getting consumed AI catalog items', feature_category: :workflow_
   end
 
   context 'with at least developer access in the project' do
-    let(:current_user) { developer }
-
     it 'returns all configured AI catalog items' do
       post_graphql(query, current_user: current_user)
 
@@ -75,7 +73,7 @@ RSpec.describe 'getting consumed AI catalog items', feature_category: :workflow_
   end
 
   context 'when filtering by group and item' do
-    let_it_be(:group) { create(:group, developers: developer) }
+    let_it_be(:group) { create(:group, guests: guest, developers: developer) }
     let_it_be(:configured_items) do
       catalog_items.map { |item| create(:ai_catalog_item_consumer, group: group, item: item) }
     end
@@ -90,11 +88,12 @@ RSpec.describe 'getting consumed AI catalog items', feature_category: :workflow_
     end
 
     context 'with guest access' do
-      let(:current_user) do
-        create(:user).tap { |user| group.add_guest(user) }
-      end
+      let(:current_user) { guest }
+      let(:flow) { configured_items.find { |i| i.item.flow? }.item }
 
-      it 'returns no configured AI catalog items' do
+      let(:args) { { groupId: group.to_global_id, itemId: flow.to_global_id } }
+
+      it 'does not return flow items' do
         post_graphql(query, current_user: current_user)
 
         expect(response).to have_gitlab_http_status(:success)
