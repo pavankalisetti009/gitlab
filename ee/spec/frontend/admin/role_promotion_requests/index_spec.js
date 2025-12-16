@@ -18,6 +18,8 @@ describe('initRolePromotionRequestsApp', () => {
   beforeEach(() => {
     el = document.createElement('div');
     el.dataset.paths = JSON.stringify({ admin_user: '///' });
+
+    document.body.appendChild(el);
   });
 
   afterEach(() => {
