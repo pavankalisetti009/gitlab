@@ -86,9 +86,9 @@ module AntiAbuse
           Gitlab::AppLogger.info(
             message: 'Arkose token verification rate',
             bucket: prev_id,
-            success: success,
-            failure: failure,
-            total: total,
+            success_count: success,
+            failure_count: failure,
+            total_count: total,
             rate: rate_percentage
           )
         end

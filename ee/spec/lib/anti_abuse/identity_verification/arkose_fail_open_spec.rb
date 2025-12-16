@@ -332,9 +332,9 @@ RSpec.describe AntiAbuse::IdentityVerification::ArkoseFailOpen,
                 hash_including(
                   message: 'Arkose token verification rate',
                   bucket: bucket_id(t0),
-                  success: 3,
-                  failure: 2,
-                  total: 5,
+                  success_count: 3,
+                  failure_count: 2,
+                  total_count: 5,
                   rate: 60.0
                 )
               )
