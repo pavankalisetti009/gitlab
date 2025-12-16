@@ -26043,6 +26043,7 @@ Model offered for Model Selection.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="ainamespacesettingsduoworkflowmcpenabled"></a>`duoWorkflowMcpEnabled` | [`Boolean!`](#boolean) | Indicates whether the namespace has MCP enabled. |
+| <a id="ainamespacesettingspromptinjectionprotectionlevel"></a>`promptInjectionProtectionLevel` | [`PromptInjectionProtectionLevel!`](#promptinjectionprotectionlevel) | Level of prompt injection protection for the namespace. |
 
 ### `AiSelfHostedModel`
 
@@ -54001,6 +54002,16 @@ The context type of the tracked context.
 | ----- | ----------- |
 | <a id="projecttrackedcontextbranch"></a>`BRANCH` | Branch type. |
 | <a id="projecttrackedcontexttag"></a>`TAG` | Tag type. |
+
+### `PromptInjectionProtectionLevel`
+
+Values for prompt injection protection for a namespace.
+
+| Value | Description |
+| ----- | ----------- |
+| <a id="promptinjectionprotectionlevelinterrupt"></a>`INTERRUPT` | Scan and block detected prompt injection attempts. |
+| <a id="promptinjectionprotectionlevellog_only"></a>`LOG_ONLY` | Scan and log results, but do not block requests. |
+| <a id="promptinjectionprotectionlevelno_checks"></a>`NO_CHECKS` | Turn off scanning entirely. No prompt data is sent to third-party services. |
 
 ### `ReachabilityType`
 
