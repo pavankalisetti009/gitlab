@@ -103,7 +103,7 @@ RSpec.shared_examples 'a secrets permission' do
       permission.principal_id = 999 # Invalid role ID
       expect(permission).not_to be_valid
       expect(permission.errors[:principal_id][0])
-        .to match(/must be one of: reporter \(20\), developer \(30\), maintainer \(40\)/)
+        .to match(/must be one of: reporter \(20\), security_manager \(25\), developer \(30\), maintainer \(40\)/)
     end
   end
 

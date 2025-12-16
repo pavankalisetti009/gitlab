@@ -3157,7 +3157,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       subject { described_class.new(user, private_group) }
 
       where(:role) do
-        Gitlab::Access.sym_options_with_owner.keys.map(&:to_sym)
+        RolesHelpers.testable_roles(include_owner: true)
       end
 
       with_them do
@@ -3172,7 +3172,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
         let_it_be(:project) { create(:project, :private, namespace: private_group) }
 
         where(:role) do
-          Gitlab::Access.sym_options_with_owner.keys.map(&:to_sym)
+          RolesHelpers.testable_roles(include_owner: true)
         end
 
         with_them do
@@ -3191,7 +3191,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       subject { described_class.new(user, public_group) }
 
       where(:role) do
-        Gitlab::Access.sym_options_with_owner.keys.map(&:to_sym)
+        RolesHelpers.testable_roles(include_owner: true)
       end
 
       with_them do
@@ -3220,7 +3220,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       end
 
       where(:role) do
-        Gitlab::Access.sym_options_with_owner.keys.map(&:to_sym)
+        RolesHelpers.testable_roles(include_owner: true)
       end
 
       with_them do

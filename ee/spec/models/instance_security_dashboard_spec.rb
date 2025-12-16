@@ -98,7 +98,7 @@ RSpec.describe InstanceSecurityDashboard, feature_category: :vulnerability_manag
           it_behaves_like 'project permissions'
         end
 
-        all_roles = Gitlab::Access.sym_options.keys
+        all_roles = RolesHelpers.testable_roles
         permitted_roles = %i[developer maintainer].freeze
         unpermitted_roles = all_roles - permitted_roles
 

@@ -63,6 +63,7 @@ RSpec.describe 'Query.group(fullPath).standardRoles', feature_category: :system_
           [::Gitlab::Access::GUEST, 0],
           [::Gitlab::Access::PLANNER, 0],
           [::Gitlab::Access::REPORTER, 0],
+          [::Gitlab::Access::SECURITY_MANAGER, 0],
           [::Gitlab::Access::DEVELOPER, 2],
           [::Gitlab::Access::MAINTAINER, 2],
           [::Gitlab::Access::OWNER, 1 + 2]
@@ -93,6 +94,7 @@ RSpec.describe 'Query.group(fullPath).standardRoles', feature_category: :system_
           [::Gitlab::Access::GUEST, 0],
           [::Gitlab::Access::PLANNER, 0],
           [::Gitlab::Access::REPORTER, 0],
+          [::Gitlab::Access::SECURITY_MANAGER, 0],
           [::Gitlab::Access::DEVELOPER, 2],
           [::Gitlab::Access::MAINTAINER, 2],
           [::Gitlab::Access::OWNER, 1 + 2]
@@ -126,6 +128,7 @@ RSpec.describe 'Query.group(fullPath).standardRoles', feature_category: :system_
           [::Gitlab::Access::GUEST, 0],
           [::Gitlab::Access::PLANNER, 0],
           [::Gitlab::Access::REPORTER, 0],
+          [::Gitlab::Access::SECURITY_MANAGER, 0],
           [::Gitlab::Access::DEVELOPER, 2 + 3],
           [::Gitlab::Access::MAINTAINER, 2 + 3],
           [::Gitlab::Access::OWNER, 1 + 2 + 3]

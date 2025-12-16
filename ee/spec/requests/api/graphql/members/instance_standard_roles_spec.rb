@@ -75,6 +75,13 @@ RSpec.describe 'Query.instance_standard_role', feature_category: :system_access 
           'detailsPath' => '/admin/application_settings/roles_and_permissions/REPORTER'
         },
         {
+          'accessLevel' => 25,
+          'name' => 'Security Manager',
+          'membersCount' => 0,
+          'usersCount' => 0,
+          'detailsPath' => '/admin/application_settings/roles_and_permissions/SECURITY_MANAGER'
+        },
+        {
           'accessLevel' => 30,
           'name' => 'Developer',
           'membersCount' => 0,
