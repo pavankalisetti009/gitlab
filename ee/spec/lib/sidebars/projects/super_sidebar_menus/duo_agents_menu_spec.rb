@@ -138,7 +138,7 @@ RSpec.describe Sidebars::Projects::SuperSidebarMenus::DuoAgentsMenu, feature_cat
       end
 
       it 'has correct link' do
-        expect(flow_triggers_menu_item.link).to eq("/#{project.full_path}/-/automate/flow-triggers")
+        expect(flow_triggers_menu_item.link).to eq("/#{project.full_path}/-/automate/triggers")
       end
 
       it 'has correct active routes' do
