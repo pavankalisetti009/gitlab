@@ -38,6 +38,7 @@ module API
         use :pagination
         optional :search, type: String, desc: 'Search for a protected branch by name', documentation: { example: 'mai' }
       end
+      route_setting :authorization, permissions: :read_protected_branch, boundary_type: :group
       get ':id/protected_branches' do
         protected_branches =
           ProtectedBranchesFinder
@@ -59,6 +60,7 @@ module API
       params do
         requires :name, type: String, desc: 'The name of the branch or wildcard', documentation: { example: 'main' }
       end
+      route_setting :authorization, permissions: :read_protected_branch, boundary_type: :group
       get ':id/protected_branches/:name', requirements: BRANCH_ENDPOINT_REQUIREMENTS do
         not_found!("ProtectedBranch") unless protected_branch
 
@@ -88,6 +90,7 @@ module API
 
         use :optional_params_ee
       end
+      route_setting :authorization, permissions: :create_protected_branch, boundary_type: :group
       post ':id/protected_branches' do
         conflict!("Protected branch '#{params[:name]}' already exists") if protected_branch
 
@@ -117,6 +120,7 @@ module API
 
         use :optional_params_ee
       end
+      route_setting :authorization, permissions: :update_protected_branch, boundary_type: :group
       patch ':id/protected_branches/:name', requirements: BRANCH_ENDPOINT_REQUIREMENTS do
         not_found!("ProtectedBranch") unless protected_branch
 
@@ -141,6 +145,7 @@ module API
       params do
         requires :name, type: String, desc: 'The name of the protected branch', documentation: { example: 'main' }
       end
+      route_setting :authorization, permissions: :delete_protected_branch, boundary_type: :group
       delete ':id/protected_branches/:name', requirements: BRANCH_ENDPOINT_REQUIREMENTS, urgency: :low do
         not_found!("ProtectedBranch") unless protected_branch
 
