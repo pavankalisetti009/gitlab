@@ -31,6 +31,7 @@ module API
       desc 'Get the list of audit events' do
         success ::API::Entities::AuditEvent
         is_array true
+        tags %w[audit_events]
       end
       params do
         optional :entity_type, type: String, desc: 'Return audit events for the specified entity type', values: AuditEventFinder::VALID_ENTITY_TYPES
@@ -88,6 +89,7 @@ module API
 
       desc 'Get single audit event' do
         success ::API::Entities::AuditEvent
+        tags %w[audit_events]
       end
       params do
         requires :id, type: Integer, desc: 'The ID of audit event'
