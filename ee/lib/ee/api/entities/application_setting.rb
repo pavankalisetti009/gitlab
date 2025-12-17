@@ -59,6 +59,10 @@ module EE
             if: ->(instance, _opts) {
               instance.auto_duo_code_review_settings_available?
             }
+          expose :elasticsearch_index_settings,
+            using: ::API::Entities::Elastic::IndexSetting,
+            documentation: { is_array: true, desc: 'Elasticsearch index settings.' },
+            if: ->(_instance, _opts) { ::License.feature_available?(:elastic_search) }
         end
       end
     end
