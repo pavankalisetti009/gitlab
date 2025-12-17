@@ -424,6 +424,69 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::ApplyPoli
       end
     end
 
+    context 'when pipeline creation was forced to continue (empty pipeline scenario)' do
+      let(:config) { nil }
+
+      let(:always_policy_pipeline) do
+        build(:pipeline_execution_policy_pipeline, :apply_on_empty_pipeline_always,
+          pipeline: build_mock_policy_pipeline({ 'build' => ['always_job'] }))
+      end
+
+      let(:never_policy_pipeline) do
+        build(:pipeline_execution_policy_pipeline, :apply_on_empty_pipeline_never,
+          pipeline: build_mock_policy_pipeline({ 'test' => ['never_job'] }))
+      end
+
+      let(:execution_policy_pipelines) { [always_policy_pipeline, never_policy_pipeline] }
+
+      before do
+        command.pipeline_creation_forced_to_continue = true
+        allow(command.pipeline_policy_context.pipeline_execution_context)
+          .to receive(:empty_pipeline_applicable_policy_pipelines)
+          .with(pipeline)
+          .and_return([always_policy_pipeline])
+      end
+
+      it 'only applies policy pipelines that should apply based on their apply_on_empty_pipeline setting',
+        :aggregate_failures do
+        run_chain
+
+        expect(pipeline.stages.map(&:name)).to contain_exactly('build')
+
+        build_stage = pipeline.stages.find { |stage| stage.name == 'build' }
+        expect(build_stage.statuses.map(&:name)).to contain_exactly('always_job')
+      end
+
+      it 'tracks only the applicable policy pipelines' do
+        expect(Security::PipelineExecutionPolicy::UsageTracking)
+          .to receive(:new)
+          .with(project: project, policy_pipelines: [always_policy_pipeline])
+          .and_call_original
+
+        run_chain
+      end
+    end
+
+    context 'when pipeline creation was not forced (non-empty pipeline scenario)' do
+      let(:execution_policy_pipelines) do
+        [
+          build(:pipeline_execution_policy_pipeline, :apply_on_empty_pipeline_never,
+            pipeline: build_mock_policy_pipeline({ 'build' => ['policy_job'] }))
+        ]
+      end
+
+      before do
+        command.pipeline_creation_forced_to_continue = false
+      end
+
+      it 'applies all policy pipelines regardless of apply_on_empty_pipeline setting', :aggregate_failures do
+        run_chain
+
+        build_stage = pipeline.stages.find { |stage| stage.name == 'build' }
+        expect(build_stage.statuses.map(&:name)).to include('policy_job')
+      end
+    end
+
     context 'when creating_policy_pipeline? is true' do
       let(:config) do
         { stages: %w[test policy-test],

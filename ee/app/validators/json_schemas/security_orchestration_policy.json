@@ -279,12 +279,44 @@
             "$ref": "#/$defs/pipeline_execution_content"
           },
           "pipeline_config_strategy": {
-            "description": "Defines the method for merging the policy configuration with the project pipeline. `inject_ci` preserves the project CI configuration and injects additional jobs from the policy. Having multiple policies enabled injects all jobs additively. `inject_policy` behaves like `inject_ci`, but allows custom policy stages to be injected too. `override_project_ci` replaces the project CI configuration and keeps only the policy jobs in the pipeline.",
-            "type": "string",
-            "enum": [
-              "inject_ci",
-              "inject_policy",
-              "override_project_ci"
+            "description": "Defines the method for merging the policy configuration with the project pipeline. Can be a string or an object with type and apply_on_empty_pipeline options.",
+            "oneOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "inject_ci",
+                  "inject_policy",
+                  "override_project_ci"
+                ],
+                "description": "Simple string format for backward compatibility. `inject_ci` preserves the project CI configuration and injects additional jobs from the policy. Having multiple policies enabled injects all jobs additively. `inject_policy` behaves like `inject_ci`, but allows custom policy stages to be injected too. `override_project_ci` replaces the project CI configuration and keeps only the policy jobs in the pipeline."
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "inject_ci",
+                      "inject_policy",
+                      "override_project_ci"
+                    ],
+                    "description": "The strategy type for merging policy configuration."
+                  },
+                  "apply_on_empty_pipeline": {
+                    "type": "string",
+                    "enum": [
+                      "always",
+                      "if_no_config",
+                      "never"
+                    ],
+                    "description": "Controls when policies apply to empty pipelines. `always`: Always applies (current default). `if_no_config`: Only applies when project has no CI config. `never`: Never applies a fallback pipeline."
+                  }
+                },
+                "required": [
+                  "type"
+                ],
+                "additionalProperties": false
+              }
             ]
           },
           "suffix": {

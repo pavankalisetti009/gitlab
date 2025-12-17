@@ -1479,6 +1479,302 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_man
     end
   end
 
+  # rubocop:disable RSpec/MultipleMemoizedHelpers -- table-driven tests require multiple helpers
+  describe 'apply_on_empty_pipeline configuration' do
+    before do
+      namespace_configuration.update!(experiments: { apply_on_empty_pipeline_option: { enabled: true } })
+      project_configuration.update!(experiments: { apply_on_empty_pipeline_option: { enabled: true } })
+    end
+
+    def policy_include(file)
+      {
+        include: [{
+          project: compliance_project.full_path,
+          file: file,
+          ref: compliance_project.default_branch_or_main
+        }]
+      }
+    end
+
+    let(:no_ci_config) { nil }
+
+    let(:ci_yml) do
+      <<~YAML
+        build:
+          stage: build
+          script:
+            - echo 'build'
+      YAML
+    end
+
+    let(:ci_yml_workflow_rules) do
+      <<~YAML
+        workflow:
+          rules:
+            - if: '$CI_COMMIT_BRANCH == "non-existent-branch"'
+        build:
+          stage: build
+          script:
+            - echo 'build'
+      YAML
+    end
+
+    let(:ci_yml_job_rules) do
+      <<~YAML
+        build:
+          stage: build
+          rules:
+            - if: '$CI_COMMIT_BRANCH == "non-existent-branch"'
+          script:
+            - echo 'build'
+      YAML
+    end
+
+    where(:project_ci_yaml, :strategy, :apply_on_empty_pipeline, :expected_outcome, :expected_builds,
+      :expected_failure_reason, :expected_config_source) do
+      forced = 'pipeline_execution_policy_forced'
+      repo = 'repository_source'
+      [
+        # No CI config - inject_policy strategy (default)
+        [ref(:no_ci_config), :inject_policy, 'always', :success, 2, nil, forced],
+        [ref(:no_ci_config), :inject_policy, 'if_no_config', :success, 2, nil, forced],
+        [ref(:no_ci_config), :inject_policy, 'never', :error, 0, :filtered_by_rules, nil],
+        # Has CI config - inject_policy strategy (default)
+        [ref(:ci_yml), :inject_policy, 'always', :success, 3, nil, repo],
+        [ref(:ci_yml), :inject_policy, 'if_no_config', :success, 3, nil, repo],
+        [ref(:ci_yml), :inject_policy, 'never', :success, 3, nil, repo],
+        # Workflow rules filter out pipeline - inject_policy strategy (default)
+        [ref(:ci_yml_workflow_rules), :inject_policy, 'always', :success, 2, nil, repo],
+        [ref(:ci_yml_workflow_rules), :inject_policy, 'if_no_config', :error, 0, :filtered_by_workflow_rules,
+          nil],
+        [ref(:ci_yml_workflow_rules), :inject_policy, 'never', :error, 0, :filtered_by_workflow_rules, nil],
+        # Job rules filter out all jobs - inject_policy strategy (default)
+        [ref(:ci_yml_job_rules), :inject_policy, 'always', :success, 2, nil, repo],
+        [ref(:ci_yml_job_rules), :inject_policy, 'if_no_config', :error, 0, :filtered_by_rules, nil],
+        [ref(:ci_yml_job_rules), :inject_policy, 'never', :error, 0, :filtered_by_rules, nil],
+        # No CI config - override_project_ci strategy
+        [ref(:no_ci_config), :override_project_ci, 'always', :success, 2, nil, forced],
+        [ref(:no_ci_config), :override_project_ci, 'if_no_config', :success, 2, nil, forced],
+        [ref(:no_ci_config), :override_project_ci, 'never', :error, 0, :filtered_by_rules, nil],
+        # Has CI config - override_project_ci strategy
+        [ref(:ci_yml), :override_project_ci, 'always', :success, 2, nil, forced],
+        [ref(:ci_yml), :override_project_ci, 'if_no_config', :success, 2, nil, forced],
+        [ref(:ci_yml), :override_project_ci, 'never', :error, 0, :filtered_by_rules, nil]
+      ]
+    end
+
+    with_them do
+      let(:behaviour_trait) { behaviour }
+
+      let(:namespace_policy) do
+        build(:pipeline_execution_policy, strategy, apply_on_empty_pipeline: apply_on_empty_pipeline,
+          content: policy_include(namespace_policy_file))
+      end
+
+      let(:project_policy) do
+        build(:pipeline_execution_policy, strategy, apply_on_empty_pipeline: apply_on_empty_pipeline,
+          content: policy_include(project_policy_file))
+      end
+
+      if params[:expected_outcome] == :success
+        it 'creates pipeline', :aggregate_failures do
+          expect { execute }.to change { Ci::Build.count }.from(0).to(expected_builds)
+          expect(execute).to be_success
+          expect(execute.payload).to be_persisted
+          expect(execute.payload.config_source).to eq(expected_config_source)
+        end
+      else
+        it 'does not create pipeline', :aggregate_failures do
+          expect { execute }.not_to change { Ci::Build.count }
+          expect(execute).to be_error
+          expect(execute.payload).not_to be_persisted
+          expect(execute.payload.failure_reason).to eq(expected_failure_reason.to_s)
+        end
+      end
+    end
+
+    describe 'if_no_config by pipeline source' do
+      let(:project_ci_yaml) { nil }
+
+      let(:namespace_policy) do
+        build(:pipeline_execution_policy, :apply_on_empty_pipeline_if_no_config,
+          content: policy_include(namespace_policy_file))
+      end
+
+      let(:project_policy) do
+        build(:pipeline_execution_policy, :apply_on_empty_pipeline_if_no_config,
+          content: policy_include(project_policy_file))
+      end
+
+      let(:namespace_policy_content) do
+        {
+          workflow: { rules: [{ when: 'always' }] },
+          namespace_policy_job: { stage: 'build', script: 'namespace script' }
+        }
+      end
+
+      let(:project_policy_content) do
+        {
+          workflow: { rules: [{ when: 'always' }] },
+          project_policy_job: { stage: 'build', script: 'project script' }
+        }
+      end
+
+      context 'when branch pipeline' do
+        context 'with an open MR' do
+          let(:params) { { ref: 'feature' } }
+
+          before do
+            create(:merge_request, source_project: project, source_branch: 'feature', target_branch: 'master')
+          end
+
+          it 'does not create branch pipeline to avoid duplicate with MR pipeline', :aggregate_failures do
+            expect { execute }.not_to change { Ci::Build.count }
+
+            expect(execute).to be_error
+            expect(execute.payload).not_to be_persisted
+          end
+        end
+
+        context 'without open MR' do
+          let(:params) { { ref: 'feature' } }
+
+          it 'creates branch pipeline when no open MR exists', :aggregate_failures do
+            expect { execute }.to change { Ci::Build.count }.from(0).to(2)
+
+            expect(execute).to be_success
+            expect(execute.payload).to be_persisted
+            expect(execute.payload.config_source).to eq('pipeline_execution_policy_forced')
+          end
+        end
+      end
+
+      context 'when merge request pipeline' do
+        let(:source) { :merge_request_event }
+
+        let(:merge_request) do
+          create(:merge_request, source_project: project, target_project: project,
+            source_branch: 'feature', target_branch: 'master')
+        end
+
+        let(:opts) { { merge_request: merge_request } }
+        let(:params) do
+          { ref: merge_request.ref_path,
+            source_sha: merge_request.source_branch_sha,
+            target_sha: merge_request.target_branch_sha,
+            checkout_sha: merge_request.diff_head_sha }
+        end
+
+        before do
+          stub_licensed_features(security_orchestration_policies: true)
+        end
+
+        it 'creates MR pipeline for project without CI config', :aggregate_failures do
+          expect { execute }.to change { Ci::Build.count }.from(0).to(2)
+
+          expect(execute).to be_success
+          expect(execute.payload).to be_persisted
+          expect(execute.payload.merge_request).to eq(merge_request)
+          expect(execute.payload.config_source).to eq('pipeline_execution_policy_forced')
+        end
+      end
+    end
+
+    context 'with mixed behaviours across policies' do
+      let(:project_ci_yaml) { nil }
+
+      let(:namespace_policy) do
+        build(:pipeline_execution_policy, :apply_on_empty_pipeline_always,
+          content: policy_include(namespace_policy_file))
+      end
+
+      let(:project_policy) do
+        build(:pipeline_execution_policy, :apply_on_empty_pipeline_never,
+          content: policy_include(project_policy_file))
+      end
+
+      it 'applies only policies that should apply to empty pipeline (always policy only)', :aggregate_failures do
+        expect { execute }.to change { Ci::Build.count }.from(0).to(1)
+
+        expect(execute).to be_success
+        expect(execute.payload).to be_persisted
+
+        stages = execute.payload.stages
+        expect(stages.find_by(name: 'build').builds.map(&:name)).to contain_exactly('namespace_policy_job')
+      end
+    end
+
+    context 'when feature flag is disabled' do
+      before do
+        stub_feature_flags(pipeline_execution_policy_empty_pipeline_behavior: false)
+      end
+
+      let(:project_ci_yaml) { nil }
+
+      let(:namespace_policy) do
+        build(:pipeline_execution_policy, :apply_on_empty_pipeline_never,
+          content: { include: [{
+            project: compliance_project.full_path,
+            file: namespace_policy_file,
+            ref: compliance_project.default_branch_or_main
+          }] })
+      end
+
+      let(:project_policy) do
+        build(:pipeline_execution_policy, :apply_on_empty_pipeline_never,
+          content: { include: [{
+            project: compliance_project.full_path,
+            file: project_policy_file,
+            ref: compliance_project.default_branch_or_main
+          }] })
+      end
+
+      it 'ignores apply_on_empty_pipeline and uses default always behaviour', :aggregate_failures do
+        expect { execute }.to change { Ci::Build.count }.from(0).to(2)
+
+        expect(execute).to be_success
+        expect(execute.payload).to be_persisted
+        expect(execute.payload.config_source).to eq('pipeline_execution_policy_forced')
+      end
+    end
+
+    context 'when experiment is disabled' do
+      before do
+        namespace_configuration.update!(experiments: {})
+        project_configuration.update!(experiments: {})
+      end
+
+      let(:project_ci_yaml) { nil }
+
+      let(:namespace_policy) do
+        build(:pipeline_execution_policy, :apply_on_empty_pipeline_never,
+          content: { include: [{
+            project: compliance_project.full_path,
+            file: namespace_policy_file,
+            ref: compliance_project.default_branch_or_main
+          }] })
+      end
+
+      let(:project_policy) do
+        build(:pipeline_execution_policy, :apply_on_empty_pipeline_never,
+          content: { include: [{
+            project: compliance_project.full_path,
+            file: project_policy_file,
+            ref: compliance_project.default_branch_or_main
+          }] })
+      end
+
+      it 'ignores apply_on_empty_pipeline and uses default always behaviour', :aggregate_failures do
+        expect { execute }.to change { Ci::Build.count }.from(0).to(2)
+
+        expect(execute).to be_success
+        expect(execute.payload).to be_persisted
+        expect(execute.payload.config_source).to eq('pipeline_execution_policy_forced')
+      end
+    end
+  end
+  # rubocop:enable RSpec/MultipleMemoizedHelpers
+
   private
 
   def get_job_variable(job, key)

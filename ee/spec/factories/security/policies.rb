@@ -326,12 +326,42 @@ FactoryBot.define do
     skip_ci { { allowed: false } }
     variables_override { nil }
 
+    transient do
+      apply_on_empty_pipeline { nil }
+    end
+
     trait :override_project_ci do
       pipeline_config_strategy { 'override_project_ci' }
     end
 
     trait :inject_policy do
       pipeline_config_strategy { 'inject_policy' }
+    end
+
+    trait :inject_ci do
+      pipeline_config_strategy { 'inject_ci' }
+    end
+
+    trait :apply_on_empty_pipeline_always do
+      apply_on_empty_pipeline { 'always' }
+    end
+
+    trait :apply_on_empty_pipeline_if_no_config do
+      apply_on_empty_pipeline { 'if_no_config' }
+    end
+
+    trait :apply_on_empty_pipeline_never do
+      apply_on_empty_pipeline { 'never' }
+    end
+
+    after(:build) do |policy, evaluator|
+      if evaluator.apply_on_empty_pipeline
+        strategy_type = policy[:pipeline_config_strategy]
+        policy[:pipeline_config_strategy] = {
+          type: strategy_type,
+          apply_on_empty_pipeline: evaluator.apply_on_empty_pipeline
+        }
+      end
     end
 
     trait :suffix_on_conflict do
