@@ -123,7 +123,7 @@ RSpec.describe Gitlab::Ci::Config::SecurityOrchestrationPolicies::Processor, fea
           perform_service
           pipeline_context = pipeline_policy_context.scan_execution_context(ref)
           expect(pipeline_context.job_injected?(extended_job)).to be(true)
-          expect(pipeline_context.job_options(extended_job)).to match a_hash_including(:project_id, :sha)
+          expect(pipeline_context.job_options(extended_job)).to match a_hash_including(:name, :project_id, :sha)
         end
 
         context 'when config already have jobs with names provided by policies' do

@@ -170,6 +170,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::OnDemandScanPipelineConf
     context 'when metadata is added to action' do
       let(:action_metadata) do
         {
+          name: 'My policy',
           sha: '8dc6668b57dbeec74feb7c68119cf0c28cbe2a29',
           project_id: 123
         }
