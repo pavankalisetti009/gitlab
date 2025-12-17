@@ -24,6 +24,7 @@ module Ai
             break false unless project
             break false unless project.project_setting.duo_features_enabled
             break false unless enabled_namespace_for_project(project)&.ready?
+            break false unless generally_available_or_experiment_allowed?(project)
 
             true
           end
@@ -38,6 +39,17 @@ module Ai
           return project_obj_or_id if project_obj_or_id.is_a?(Project)
 
           Project.find_by_id(project_obj_or_id)
+        end
+
+        def generally_available_or_experiment_allowed?(project)
+          # Self-Managed check: if SM instance with ai_features_available,
+          # return true since the experiment check for SM instances
+          # is done in the CreateEnabledNamespaceEventWorker
+          return true if ::License.ai_features_available?
+
+          return true if ::Feature.enabled?(:semantic_code_search_saas_ga, :instance)
+
+          project.root_namespace.namespace_settings.experiment_features_enabled
         end
 
         def enabled_namespace_for_project(project)

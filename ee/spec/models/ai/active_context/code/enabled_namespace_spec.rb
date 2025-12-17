@@ -91,15 +91,10 @@ RSpec.describe ::Ai::ActiveContext::Code::EnabledNamespace, feature_category: :g
         create(:group, parent: group_with_valid_subscription)
       end
 
-      let_it_be(:group_without_plan) do
-        group = create(:group)
-        group.namespace_settings.update!(experiment_features_enabled: true)
-        group
-      end
+      let_it_be(:group_without_plan) { create(:group) }
 
       let_it_be(:group_with_expired_subscription) do
         group = create(:group)
-        group.namespace_settings.update!(experiment_features_enabled: true)
         create(:gitlab_subscription, :expired, namespace: group, hosted_plan: create(:ultimate_plan))
         group
       end
@@ -129,18 +124,6 @@ RSpec.describe ::Ai::ActiveContext::Code::EnabledNamespace, feature_category: :g
         result = described_class.valid_saas_namespaces
 
         expect(result).not_to include(group_with_expired_subscription)
-      end
-
-      context 'when :semantic_code_search_saas_ga FF is disabled' do
-        before do
-          stub_feature_flags(semantic_code_search_saas_ga: false)
-        end
-
-        it 'excludes groups with valid subscriptions but with experiment settings disabled' do
-          result = described_class.valid_saas_namespaces
-
-          expect(result).not_to include(group_with_valid_subscription)
-        end
       end
     end
   end

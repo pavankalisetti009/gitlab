@@ -180,35 +180,6 @@ RSpec.describe Ai::ActiveContext::Code::ProcessInvalidEnabledNamespaceEventWorke
           end
         end
       end
-
-      context 'when :semantic_code_search_saas_ga FF is disabled' do
-        before do
-          stub_feature_flags(semantic_code_search_saas_ga: false)
-        end
-
-        it 'deletes enabled namespace records for namespaces with valid subscriptions' do
-          create(:ai_active_context_code_enabled_namespace,
-            namespace: namespace_with_subscription,
-            active_context_connection: connection)
-
-          expect { execute }.to change { Ai::ActiveContext::Code::EnabledNamespace.count }.by(-1)
-        end
-
-        context 'when namespace has experiment settings enabled' do
-          before do
-            namespace_with_subscription.namespace_settings.update!(
-              experiment_features_enabled: true, duo_features_enabled: true)
-          end
-
-          it 'does not delete enabled namespace records for namespaces with valid subscriptions' do
-            create(:ai_active_context_code_enabled_namespace,
-              namespace: namespace_with_subscription,
-              active_context_connection: connection)
-
-            expect { execute }.not_to change { Ai::ActiveContext::Code::EnabledNamespace.count }
-          end
-        end
-      end
     end
 
     context 'when not on saas' do
