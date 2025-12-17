@@ -8,6 +8,7 @@ module Vulnerabilities
     include ::VulnerabilityFindingHelpers
     include EachBatch
     include SafelyChangeColumnDefault
+    include PolicyAutoDismissable
 
     columns_changing_default :detected_at
 

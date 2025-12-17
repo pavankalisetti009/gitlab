@@ -871,4 +871,17 @@ RSpec.describe Security::Finding, feature_category: :vulnerability_management do
       it { is_expected.to be_nil }
     end
   end
+
+  it_behaves_like 'policy auto-dismissable' do
+    let_it_be(:policy_rule_attributes) { { file_path: 'test/**/*' } }
+    let_it_be(:scan) { create(:security_scan, project: project) }
+
+    let!(:matching_finding) do
+      create(:security_finding, :with_finding_data, scan: scan, location: { file: 'test/spec/example_spec.rb' })
+    end
+
+    let!(:non_matching_finding) do
+      create(:security_finding, :with_finding_data, scan: scan, location: { file: 'src/main.c' })
+    end
+  end
 end
