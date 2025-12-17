@@ -6,7 +6,7 @@ class Groups::Analytics::ApplicationController < Groups::ApplicationController
   skip_cross_project_access_check :show
   before_action :authenticate_user!
 
-  feature_category :team_planning
+  feature_category :value_stream_management
   urgency :low
 
   private
