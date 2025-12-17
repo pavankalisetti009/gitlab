@@ -33,11 +33,6 @@ module EE
 
           insert_gitlab_duo_menu
           insert_gitlab_credits_dashboard_menu
-
-          insert_menu_after(
-            ::Sidebars::Admin::Menus::MessagesMenu,
-            ::Sidebars::Admin::Menus::TargetedMessagesMenu.new(context)
-          )
         end
 
         private
