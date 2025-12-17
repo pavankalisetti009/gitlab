@@ -20608,9 +20608,6 @@ msgstr ""
 msgid "Create custom type"
 msgstr ""
 
-msgid "Create dynamic tables and lists powered by GitLab Query Language (GLQL) to track issues, epics, and merge requests in real time."
-msgstr ""
-
 msgid "Create empty repository"
 msgstr ""
 
@@ -31035,9 +31032,6 @@ msgstr ""
 msgid "Get started with GitLab"
 msgstr ""
 
-msgid "Get started with embedded views"
-msgstr ""
-
 msgid "Get started with error tracking"
 msgstr ""
 
@@ -36589,9 +36583,6 @@ msgid "Internal users cannot be deactivated"
 msgstr ""
 
 msgid "Interval"
-msgstr ""
-
-msgid "Introducing embedded views"
 msgstr ""
 
 msgid "Introducing your DevOps adoption analytics"
