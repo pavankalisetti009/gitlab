@@ -170,4 +170,30 @@ RSpec.describe Gitlab::Ci::Pipeline::ExecutionPolicies::PipelineContext, feature
       end
     end
   end
+
+  describe '#job_options' do
+    subject { context.job_options(ref: pipeline.ref, job_name: 'test-job') }
+
+    it { is_expected.to be_nil }
+
+    context 'when there are pipeline execution policies' do
+      before do
+        allow(context.pipeline_execution_context).to receive(:job_options)
+          .and_return({ name: 'Policy', project_id: 123, sha: 'sha' })
+      end
+
+      it { is_expected.to eq(name: 'Policy', project_id: 123, sha: 'sha') }
+    end
+
+    context 'when there are scan execution policies' do
+      before do
+        scan_execution_context_double =
+          instance_double(::Gitlab::Ci::Pipeline::ScanExecutionPolicies::PipelineContext,
+            job_options: { project_id: 123, sha: 'sha' })
+        allow(context).to receive(:scan_execution_context).with(pipeline.ref).and_return(scan_execution_context_double)
+      end
+
+      it { is_expected.to eq(project_id: 123, sha: 'sha') }
+    end
+  end
 end

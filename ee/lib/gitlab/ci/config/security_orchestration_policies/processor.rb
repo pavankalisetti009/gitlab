@@ -92,36 +92,41 @@ module Gitlab
           end
 
           def merge_on_demand_scan_template(merged_config, defined_stages)
-            on_demand_scan_template = prepare_on_demand_scans_template
-            on_demand_scan_job_names = job_names(on_demand_scan_template.keys)
+            template = prepare_on_demand_scans_template
+            return if template.blank?
 
-            if on_demand_scan_template.present?
-              insert_stage_before_or_append(defined_stages, DEFAULT_ON_DEMAND_STAGE, ['.post'])
-              merged_config.except!(*on_demand_scan_job_names).deep_merge!(on_demand_scan_template)
-              scan_execution_policy_context.collect_injected_job_names(on_demand_scan_job_names)
-            end
+            job_names = extract_job_names(template.keys)
+            jobs_without_metadata = template_without_metadata(template)
+
+            insert_stage_before_or_append(defined_stages, DEFAULT_ON_DEMAND_STAGE, ['.post'])
+            merged_config.except!(*job_names).deep_merge!(jobs_without_metadata)
+            scan_execution_policy_context.collect_injected_job_names_with_metadata(template)
           end
 
           def merge_pipeline_scan_template(merged_config, defined_stages)
-            pipeline_scan_template = prepare_pipeline_scans_template
-            pipeline_scan_job_names = job_names(prepare_pipeline_scans_template.keys)
+            template = prepare_pipeline_scans_template
+            return if template.blank?
 
-            if pipeline_scan_template.present?
-              unless defined_stages.include?(DEFAULT_SECURITY_JOB_STAGE)
-                insert_stage_after_or_prepend(defined_stages, DEFAULT_SCAN_POLICY_STAGE, ['.pre', DEFAULT_BUILD_STAGE])
-                pipeline_scan_template = pipeline_scan_template.transform_values do |job_config|
-                  job_config.merge(stage: DEFAULT_SCAN_POLICY_STAGE)
-                end
+            job_names = extract_job_names(template.keys)
+            jobs_without_metadata = template_without_metadata(template)
+
+            unless defined_stages.include?(DEFAULT_SECURITY_JOB_STAGE)
+              insert_stage_after_or_prepend(defined_stages, DEFAULT_SCAN_POLICY_STAGE, ['.pre', DEFAULT_BUILD_STAGE])
+              jobs_without_metadata = jobs_without_metadata.transform_values do |job_config|
+                job_config.merge(stage: DEFAULT_SCAN_POLICY_STAGE)
               end
-
-              merged_config.except!(*pipeline_scan_job_names).deep_merge!(pipeline_scan_template)
-
-              scan_execution_policy_context.collect_injected_job_names(pipeline_scan_job_names)
             end
+
+            merged_config.except!(*job_names).deep_merge!(jobs_without_metadata)
+            scan_execution_policy_context.collect_injected_job_names_with_metadata(template)
           end
 
-          def job_names(keys)
+          def extract_job_names(keys)
             keys - %i[variables]
+          end
+
+          def template_without_metadata(template)
+            template.transform_values { |job_config| job_config.except(:_metadata) }
           end
 
           def insert_stage_after_or_prepend(stages, insert_stage_name, after_stages)

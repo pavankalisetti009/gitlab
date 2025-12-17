@@ -50,6 +50,10 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::SetBuildSources, feature_category: :
     end
 
     context 'with security policy' do
+      let(:pipeline_execution_context) do
+        instance_double(::Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext)
+      end
+
       let(:scan_execution_context) do
         instance_double(::Gitlab::Ci::Pipeline::ScanExecutionPolicies::PipelineContext)
       end
@@ -70,9 +74,17 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::SetBuildSources, feature_category: :
           .at_least(:once)
           .and_return(scan_execution_context)
 
+        expect(command.pipeline_policy_context).to receive(:pipeline_execution_context)
+          .at_least(:once)
+          .and_return(pipeline_execution_context)
+
+        allow(pipeline_execution_context).to receive(:creating_policy_pipeline?)
+          .exactly(7).times
+          .and_return(false, true, false, false, true, true, false)
+
         pipeline_seed.stages.flat_map(&:statuses).each do |build|
           allow(scan_execution_context).to receive(:job_injected?)
-            .with(build)
+            .with(build.name)
             .and_return(expected_sources[build.name] == "scan_execution_policy")
 
           expect(build).to receive(:build_job_source).with(

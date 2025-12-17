@@ -57,6 +57,17 @@ RSpec.describe Gitlab::Ci::YamlProcessor::Result, feature_category: :pipeline_co
           it 'does not mark the build as `policy` via :options' do
             expect(build.dig(:options, :policy)).to be_nil
           end
+
+          context 'when job was injected by scan execution policies' do
+            before do
+              pipeline_policy_context.scan_execution_context('refs/heads/master')
+                .collect_injected_job_names_with_metadata(test: { _metadata: { sha: 'SEP SHA', project_id: 123 } })
+            end
+
+            it 'saves the policy data in :options' do
+              expect(build.dig(:options, :policy)).to eq(sha: 'SEP SHA', project_id: 123)
+            end
+          end
         end
       end
 

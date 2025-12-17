@@ -167,6 +167,37 @@ RSpec.describe Security::SecurityOrchestrationPolicies::OnDemandScanPipelineConf
       end
     end
 
+    context 'when metadata is added to action' do
+      let(:action_metadata) do
+        {
+          sha: '8dc6668b57dbeec74feb7c68119cf0c28cbe2a29',
+          project_id: 123
+        }
+      end
+
+      let(:actions) do
+        [
+          {
+            scan: 'dast',
+            site_profile: site_profile.name,
+            scanner_profile: scanner_profile.name,
+            tags: ['runner-tag'],
+            metadata: action_metadata
+          },
+          {
+            scan: 'dast',
+            site_profile: 'Site Profile B',
+            metadata: action_metadata
+          }
+        ]
+      end
+
+      it 'adds _metadata section to job configuration' do
+        expect(pipeline_configuration[:'dast-on-demand-0']).to include(_metadata: action_metadata)
+        expect(pipeline_configuration[:'dast-on-demand-1']).to include(_metadata: action_metadata)
+      end
+    end
+
     describe "variable injection and precedence" do
       let(:actions) do
         [

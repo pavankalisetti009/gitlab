@@ -4,6 +4,7 @@ module Security
   module SecurityOrchestrationPolicies
     class OnDemandScanPipelineConfigurationService
       include Gitlab::Utils::StrongMemoize
+      include CiConfigurationMetadata
 
       def initialize(project)
         @project = project
@@ -33,7 +34,7 @@ module Security
         scanner_profile = dast_scanner_profile(action[:scanner_profile])
 
         result = prepare_base_configuration(site_profile, scanner_profile)
-        return error_script(result.message) unless result.success?
+        return error_script(result.message, action) unless result.success?
 
         action_variables = action[:variables].to_h.stringify_keys
         ci_configuration = YAML.safe_load(result.payload[:ci_configuration])
@@ -43,10 +44,12 @@ module Security
           .merge(action[:tags] ? { tags: action[:tags] } : {})
           .merge(ignore_default_before_after_script?(action) ? { before_script: [], after_script: [] } : {})
           .deep_merge(
-            'stage' => 'dast',
-            'variables' => dast_on_demand_variables(template, action_variables),
-            'dast_configuration' => ci_configuration['dast']['dast_configuration']
-          )
+            {
+              'stage' => 'dast',
+              'variables' => dast_on_demand_variables(template, action_variables),
+              'dast_configuration' => ci_configuration['dast']['dast_configuration']
+            }.compact
+          ).tap { |config| merge_configuration_metadata!(config, action[:metadata]) }
       end
 
       def dast_site_profile(site_profile_name)
@@ -92,11 +95,11 @@ module Security
           .merge(action_variables)
       end
 
-      def error_script(error_message)
+      def error_script(error_message, action)
         {
           'script' => "echo \"Error during On-Demand Scan execution: #{error_message}\" && false",
           'allow_failure' => true
-        }
+        }.tap { |config| merge_configuration_metadata!(config, action[:metadata]) }
       end
     end
   end

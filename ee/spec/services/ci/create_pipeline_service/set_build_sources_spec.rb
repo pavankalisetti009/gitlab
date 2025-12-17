@@ -143,7 +143,9 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_man
 
         pipeline.builds.each do |build|
           source = Ci::BuildSource.find_by(build_id: build.id, project_id: project.id)
-          expect(source.source).to eq(expected_sources[build.name] || pipeline.source)
+          expected = expected_sources[build.name] || pipeline.source
+          expect(source.source).to eq(expected),
+            "expected source for build #{build.name} to match #{expected}, but it was #{source.source}"
         end
       end
     end
