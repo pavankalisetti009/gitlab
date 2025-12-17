@@ -22024,9 +22024,6 @@ msgstr ""
 msgid "DastProfiles|Edit site profile"
 msgstr ""
 
-msgid "DastProfiles|Element search timeout"
-msgstr ""
-
 msgid "DastProfiles|Enable Authentication"
 msgstr ""
 
@@ -22061,9 +22058,6 @@ msgid "DastProfiles|Excluded paths"
 msgstr ""
 
 msgid "DastProfiles|Excluded paths (optional)"
-msgstr ""
-
-msgid "DastProfiles|Extract element timeout"
 msgstr ""
 
 msgid "DastProfiles|Field must not be blank"
@@ -22403,12 +22397,6 @@ msgid "DastProfiles|The URLs to skip during the authenticated scan; comma-separa
 msgstr ""
 
 msgid "DastProfiles|The authentication type to use."
-msgstr ""
-
-msgid "DastProfiles|The maximum amount of time to allow the browser to extract newly found elements or navigations. Defaults to `5s`."
-msgstr ""
-
-msgid "DastProfiles|The maximum amount of time to allow the browser to search for new elements or user actions. Defaults to `3s`."
 msgstr ""
 
 msgid "DastProfiles|The maximum amount of time to wait for a browser to consider a page loaded and ready for analysis after a navigation completes. Defaults to `6s`."
