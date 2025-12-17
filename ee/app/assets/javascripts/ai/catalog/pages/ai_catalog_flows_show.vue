@@ -1,7 +1,8 @@
 <script>
 import { GlAlert, GlButton, GlExperimentBadge } from '@gitlab/ui';
-import { s__, sprintf } from '~/locale';
+import { __, s__, sprintf } from '~/locale';
 import { InternalEvents } from '~/tracking';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import {
@@ -79,6 +80,9 @@ export default {
     };
   },
   computed: {
+    formattedItemId() {
+      return getIdFromGraphQLId(this.aiCatalogFlow.id);
+    },
     isProjectNamespace() {
       return Boolean(this.projectId);
     },
@@ -160,9 +164,28 @@ export default {
             return;
           }
 
-          const name = data.aiCatalogItemConsumerCreate.itemConsumer[targetType]?.name || '';
+          const targetData = data.aiCatalogItemConsumerCreate.itemConsumer[targetType];
+          if (targetType === AI_CATALOG_CONSUMER_TYPE_GROUP) {
+            const href = `${targetData.webUrl}/-/automate/flows/${this.formattedItemId}`;
 
-          this.$toast.show(sprintf(s__('AICatalog|Flow enabled in %{name}.'), { name }));
+            this.$toast.show(
+              sprintf(s__('AICatalog|Flow enabled in %{targetType}.'), {
+                targetType: targetTypeLabel,
+              }),
+              {
+                action: {
+                  text: __('View'),
+                  href,
+                },
+              },
+            );
+          } else {
+            this.$toast.show(
+              sprintf(s__('AICatalog|Flow enabled in %{name}.'), {
+                name: targetData.name,
+              }),
+            );
+          }
         }
       } catch (error) {
         this.errors = [

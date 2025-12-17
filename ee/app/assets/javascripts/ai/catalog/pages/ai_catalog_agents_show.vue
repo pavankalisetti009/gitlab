@@ -1,7 +1,8 @@
 <script>
 import { GlAlert, GlButton, GlExperimentBadge } from '@gitlab/ui';
-import { s__, sprintf } from '~/locale';
+import { __, s__, sprintf } from '~/locale';
 import { InternalEvents } from '~/tracking';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
@@ -80,6 +81,9 @@ export default {
     };
   },
   computed: {
+    formattedItemId() {
+      return getIdFromGraphQLId(this.aiCatalogAgent.id);
+    },
     isAgentsAvailable() {
       return this.glFeatures.aiCatalogAgents;
     },
@@ -166,10 +170,28 @@ export default {
             this.errors = errors;
             return;
           }
+          const targetData = data.aiCatalogItemConsumerCreate.itemConsumer[targetType];
+          if (targetType === AI_CATALOG_CONSUMER_TYPE_GROUP) {
+            const href = `${targetData.webUrl}/-/automate/agents/${this.formattedItemId}`;
 
-          const name = data.aiCatalogItemConsumerCreate.itemConsumer[targetType]?.name || '';
-
-          this.$toast.show(sprintf(s__('AICatalog|Agent enabled in %{name}.'), { name }));
+            this.$toast.show(
+              sprintf(s__('AICatalog|Agent enabled in %{targetType}.'), {
+                targetType: targetTypeLabel,
+              }),
+              {
+                action: {
+                  text: __('View'),
+                  href,
+                },
+              },
+            );
+          } else {
+            this.$toast.show(
+              sprintf(s__('AICatalog|Agent enabled in %{name}.'), {
+                name: targetData.name,
+              }),
+            );
+          }
         }
       } catch (error) {
         this.errors = [

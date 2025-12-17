@@ -31,6 +31,7 @@ import {
   mockItemConfigurationForGroup,
   mockAiCatalogAgentResponse,
   mockAiCatalogItemConsumerCreateSuccessProjectResponse,
+  mockAiCatalogItemConsumerCreateSuccessGroupResponse,
   mockAiCatalogItemConsumerCreateErrorResponse,
   mockUpdateAiCatalogItemConsumerSuccess,
   mockUpdateAiCatalogItemConsumerError,
@@ -244,6 +245,44 @@ describe('AiCatalogAgentsShow', () => {
           'Could not enable agent in the project. Check that the project meets the <a href="/help/user/duo_agent_platform/ai_catalog#view-the-ai-catalog" target="_blank">prerequisites</a> and try again.',
         ]);
         expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));
+      });
+    });
+  });
+
+  describe('on adding agent to group', () => {
+    const addAgentToGroup = () =>
+      findItemActions().vm.$emit('add-to-target', {
+        target: { groupId: '1' },
+      });
+
+    beforeEach(() => {
+      createAiCatalogItemConsumerHandler.mockResolvedValue(
+        mockAiCatalogItemConsumerCreateSuccessGroupResponse,
+      );
+      createComponent({ props: { aiCatalogAgent: mockAgent } });
+    });
+
+    it('calls create consumer mutation for agent', () => {
+      addAgentToGroup();
+
+      expect(createAiCatalogItemConsumerHandler).toHaveBeenCalledWith({
+        input: {
+          itemId: mockAgent.id,
+          target: { groupId: '1' },
+        },
+      });
+    });
+
+    describe('when request succeeds', () => {
+      beforeEach(async () => {
+        addAgentToGroup();
+        await waitForPromises();
+      });
+
+      it('shows toast with a link to the group', () => {
+        expect(mockToast.show).toHaveBeenCalledWith('Agent enabled in group.', {
+          action: { href: 'https://gitlab.com/groups/group-1/-/automate/agents/1', text: 'View' },
+        });
       });
     });
   });

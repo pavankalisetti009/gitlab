@@ -738,6 +738,24 @@ export const mockAiCatalogItemConsumerCreateSuccessProjectResponse = {
         group: {
           id: 'gid://gitlab/Group/1',
           name: 'Test',
+          webUrl: 'https://gitlab.com/groups/group-1',
+        },
+      },
+    },
+  },
+};
+
+export const mockAiCatalogItemConsumerCreateSuccessGroupResponse = {
+  data: {
+    aiCatalogItemConsumerCreate: {
+      errors: [],
+      itemConsumer: {
+        id: 'gid://gitlab/Ai::Catalog::ItemConsumer/1',
+        project: null,
+        group: {
+          id: 'gid://gitlab/Group/1',
+          name: 'Test',
+          webUrl: 'https://gitlab.com/groups/group-1',
         },
       },
     },

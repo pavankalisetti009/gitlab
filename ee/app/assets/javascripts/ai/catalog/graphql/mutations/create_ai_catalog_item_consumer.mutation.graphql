@@ -10,6 +10,7 @@ mutation createAiCatalogItemConsumer($input: AiCatalogItemConsumerCreateInput!) 
       group {
         id
         name
+        webUrl
       }
     }
   }

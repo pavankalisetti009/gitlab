@@ -27,6 +27,7 @@ import PageHeading from '~/vue_shared/components/page_heading.vue';
 import {
   mockAiCatalogFlowResponse,
   mockAiCatalogItemConsumerCreateSuccessProjectResponse,
+  mockAiCatalogItemConsumerCreateSuccessGroupResponse,
   mockAiCatalogItemConsumerCreateErrorResponse,
   mockUpdateAiCatalogItemConsumerSuccess,
   mockUpdateAiCatalogItemConsumerError,
@@ -267,6 +268,44 @@ describe('AiCatalogFlowsShow', () => {
           'Could not enable flow in the project. Check that the project meets the <a href="/help/user/duo_agent_platform/ai_catalog#view-the-ai-catalog" target="_blank">prerequisites</a> and try again.',
         ]);
         expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));
+      });
+    });
+  });
+
+  describe('on adding flow to group', () => {
+    const addFlowToGroup = () =>
+      findItemActions().vm.$emit('add-to-target', {
+        target: { groupId: '1' },
+      });
+
+    beforeEach(() => {
+      createAiCatalogItemConsumerHandler.mockResolvedValue(
+        mockAiCatalogItemConsumerCreateSuccessGroupResponse,
+      );
+      createComponent({ props: { aiCatalogFlow: mockFlow } });
+    });
+
+    it('calls create consumer mutation for flow', () => {
+      addFlowToGroup();
+
+      expect(createAiCatalogItemConsumerHandler).toHaveBeenCalledWith({
+        input: {
+          itemId: mockFlow.id,
+          target: { groupId: '1' },
+        },
+      });
+    });
+
+    describe('when request succeeds', () => {
+      beforeEach(async () => {
+        addFlowToGroup();
+        await waitForPromises();
+      });
+
+      it('shows toast with a link to the group', () => {
+        expect(mockToast.show).toHaveBeenCalledWith('Flow enabled in group.', {
+          action: { href: 'https://gitlab.com/groups/group-1/-/automate/flows/4', text: 'View' },
+        });
       });
     });
   });
