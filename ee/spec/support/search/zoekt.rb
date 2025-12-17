@@ -146,7 +146,7 @@ module Search
 
   RSpec.configure do |config|
     config.before do
-      # The Default threshold is 1 minute; This is to ensure nodes are always online in tests.
+      # The Default threshold is 30 seconds; This is to ensure nodes are always online in tests.
       stub_const('Search::Zoekt::Node::ONLINE_DURATION_THRESHOLD', 1.day)
       # This feature flag is by default disabled and should be used to disable Zoekt search for SaaS customers on demand
       stub_feature_flags(disable_zoekt_search_for_saas: false)
