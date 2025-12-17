@@ -656,16 +656,16 @@ Use lists to present information in a format that is easier to scan.
 - Start all items with a capital letter.
 - Give all items the same punctuation.
 - Do not use a period if the item is not a complete sentence.
-- Use a period after every complete sentence.
+- Use a period after every complete sentence, or where the list item forms a complete sentence when combined with the introductory phrase.
   Do not use semicolons or commas.
 - Add a colon (`:`) after the introductory phrase.
   For example:
 
   ```markdown
-  To complete a task:
+  The basket contains these fruits:
 
-  - Do this thing.
-  - Do this other thing.
+  - Bananas
+  - Apples
   ```
 
 - Do not use [bold](#bold) formatting to define keywords or concepts in a list. Use bold for UI element labels only. For example:
@@ -675,6 +675,26 @@ Use lists to present information in a format that is easier to scan.
 
   For keywords and concepts, consider a [reference topic](../topic_types/reference.md) or
   [description list](#description-lists-in-markdown) for alternative formatting.
+
+- Avoid using list items to complete an introductory phrase. This format can be difficult to localize
+  into languages that use different sentence structures.
+  For example, use:
+
+  ```markdown
+  You can get the license key in the following ways:
+
+  - Copy the license key from the email.
+  - Download the file.
+  ```
+
+  Instead of:
+
+  ```markdown
+  You can get the license key by:
+
+  - Copying it from the email.
+  - Downloading the file.
+  ```
 
 ### Choose between an ordered or unordered list
 
