@@ -4,7 +4,7 @@
       "children": [
         {
           "query_string": {
-            "query": "test"
+            "query": "case:no test"
           }
         },
         {
