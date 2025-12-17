@@ -5,13 +5,13 @@ import { fetchPolicies } from '~/lib/graphql';
 import { localeDateFormat } from '~/lib/utils/datetime_utility';
 import { createAlert } from '~/alert';
 import { InternalEvents } from '~/tracking';
+import { formatGraphQLError } from 'ee/ci/secrets/utils';
 import {
   EDIT_ROUTE_NAME,
-  FAILED_TO_LOAD_ERROR_MESSAGE,
   PAGE_VISIT_SECRET_DETAILS,
   SECRET_ROTATION_STATUS,
-} from '../../constants';
-import getSecretDetailsQuery from '../../graphql/queries/get_secret_details.query.graphql';
+} from 'ee/ci/secrets/constants';
+import getSecretDetailsQuery from 'ee/ci/secrets/graphql/queries/get_secret_details.query.graphql';
 import SecretDeleteModal from '../secret_delete_modal.vue';
 import SecretDetails from './secret_details.vue';
 
@@ -58,7 +58,7 @@ export default {
       },
       error(e) {
         createAlert({
-          message: FAILED_TO_LOAD_ERROR_MESSAGE,
+          message: formatGraphQLError(e.message),
           captureError: true,
           error: e,
         });

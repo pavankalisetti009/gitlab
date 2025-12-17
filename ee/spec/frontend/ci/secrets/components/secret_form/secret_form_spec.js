@@ -390,8 +390,10 @@ describe('SecretForm component', () => {
     });
 
     describe('when submission fails', () => {
+      const error = new Error('GraphQL error: API error');
+
       beforeEach(() => {
-        mockCreateSecretResponse.mockRejectedValue(new Error());
+        mockCreateSecretResponse.mockRejectedValue(error);
         createComponent({ mountFn: mountExtended });
       });
 
@@ -401,7 +403,9 @@ describe('SecretForm component', () => {
 
         expect(findSubmitButton().props('loading')).toBe(false);
         expect(createAlert).toHaveBeenCalledWith({
-          message: 'Something went wrong on our end. Please try again.',
+          message: 'API error',
+          captureError: true,
+          error,
         });
       });
     });
@@ -623,8 +627,10 @@ describe('SecretForm component', () => {
     });
 
     describe('when update fails', () => {
+      const error = new Error('GraphQL error: API error');
+
       beforeEach(() => {
-        mockUpdateSecretResponse.mockRejectedValue(new Error());
+        mockUpdateSecretResponse.mockRejectedValue(error);
       });
 
       it('renders error message', async () => {
@@ -632,7 +638,9 @@ describe('SecretForm component', () => {
 
         expect(findSubmitButton().props('loading')).toBe(false);
         expect(createAlert).toHaveBeenCalledWith({
-          message: 'Something went wrong on our end. Please try again.',
+          message: 'API error',
+          captureError: true,
+          error,
         });
       });
     });

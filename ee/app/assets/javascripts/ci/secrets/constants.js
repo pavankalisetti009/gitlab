@@ -24,6 +24,7 @@ export const SECRET_MANAGER_STATUS_ACTIVE = 'ACTIVE';
 export const SECRET_MANAGER_STATUS_INACTIVE = 'INACTIVE';
 export const SECRET_MANAGER_STATUS_PROVISIONING = 'PROVISIONING';
 export const SECRET_MANAGER_STATUS_DEPROVISIONING = 'DEPROVISIONING';
+export const SECRET_MANAGER_STATUS_ERROR = 'ERROR'; // when we fail to fetch the status
 
 export const SECRET_STATUS_ICONS_OPTICALLY_ALIGNED = [
   'COMPLETED',
@@ -75,10 +76,6 @@ export const SECRET_ROTATION_STATUS = {
 };
 
 export const POLL_INTERVAL = 2000;
-
-export const FAILED_TO_LOAD_ERROR_MESSAGE = s__(
-  'SecretsManager|Failed to load secret. Please try again later.',
-);
 
 // event tracking
 export const GROUP_EVENTS = {

@@ -203,4 +203,22 @@ describe('SecretDetailsWrapper component', () => {
       expect(mockRouter.push).toHaveBeenCalledTimes(0);
     });
   });
+
+  describe('when delete action receives an error', () => {
+    const error = new Error('GraphQL error: API error');
+
+    beforeEach(async () => {
+      mockDeleteSecretMutationResponse.mockRejectedValue(error);
+      await createComponent();
+      await deleteSecret();
+    });
+
+    it('renders an error message', () => {
+      expect(createAlert).toHaveBeenCalledWith({
+        message: 'API error',
+        captureError: true,
+        error: new Error('API error'),
+      });
+    });
+  });
 });

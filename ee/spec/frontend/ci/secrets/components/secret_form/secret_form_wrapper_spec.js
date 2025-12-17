@@ -133,7 +133,7 @@ describe('SecretFormWrapper component', () => {
     });
 
     describe('when secret query fails', () => {
-      const error = new Error('Failed to fetch secret');
+      const error = new Error('GraphQL error: Failed to fetch secret');
 
       beforeEach(async () => {
         mockSecretQuery.mockRejectedValue(error);
@@ -142,7 +142,7 @@ describe('SecretFormWrapper component', () => {
 
       it('calls createAlert with error details', () => {
         expect(createAlert).toHaveBeenCalledWith({
-          message: 'Failed to load secret. Please try again later.',
+          message: 'Failed to fetch secret',
           captureError: true,
           error,
         });

@@ -2,6 +2,7 @@
 import { GlFormInput, GlModal, GlSprintf } from '@gitlab/ui';
 import { __, s__, sprintf } from '~/locale';
 import { createAlert } from '~/alert';
+import { formatGraphQLError } from 'ee/ci/secrets/utils';
 import { INDEX_ROUTE_NAME } from '../constants';
 import deleteSecretMutation from '../graphql/mutations/delete_secret.mutation.graphql';
 
@@ -99,7 +100,7 @@ export default {
           this.$router.push({ name: INDEX_ROUTE_NAME });
         }
       } catch (e) {
-        this.handleDeleteError(__('Something went wrong on our end. Please try again.'));
+        this.handleDeleteError(formatGraphQLError(e.message));
       }
     },
   },

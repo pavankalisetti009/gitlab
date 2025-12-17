@@ -247,7 +247,7 @@ describe('SecretsTable component', () => {
   });
 
   describe('when secrets query fails', () => {
-    const error = new Error('Permission denied.');
+    const error = new Error('GraphQL error: Permission denied.');
 
     beforeEach(async () => {
       mockProjectSecretsResponse = jest.fn().mockRejectedValue(error);
@@ -256,8 +256,7 @@ describe('SecretsTable component', () => {
 
     it('renders error message', () => {
       expect(createAlert).toHaveBeenCalledWith({
-        message:
-          'An error occurred while fetching secrets. Please make sure you have the proper permissions, or try again.',
+        message: 'Permission denied.',
         captureError: true,
         error,
       });
@@ -463,13 +462,13 @@ describe('SecretsTable component', () => {
     });
 
     it('handles errors when fetching secrets needing rotation', async () => {
-      const error = new Error('Network error occurred');
+      const error = new Error('GraphQL error: API Error');
       mockSecretsNeedingRotationResponse = jest.fn().mockRejectedValue(error);
 
       await createComponent();
 
       expect(createAlert).toHaveBeenCalledWith({
-        message: 'An error occurred while fetching secrets needing rotation. Please try again.',
+        message: 'API Error',
         captureError: true,
         error,
       });

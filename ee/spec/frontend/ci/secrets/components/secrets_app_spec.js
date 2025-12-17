@@ -2,7 +2,6 @@ import VueApollo from 'vue-apollo';
 import VueRouter from 'vue-router';
 import Vue, { nextTick } from 'vue';
 import { createAlert } from '~/alert';
-import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import createRouter from 'ee/ci/secrets/router';
@@ -24,7 +23,6 @@ describe('SecretsApp', () => {
   let wrapper;
   let apolloProvider;
   let mockSecretManagerStatus;
-  let sentryCaptureExceptionSpy;
 
   Vue.use(VueRouter);
   Vue.use(VueApollo);
@@ -75,7 +73,6 @@ describe('SecretsApp', () => {
   beforeEach(() => {
     mockSecretManagerStatus = jest.fn();
 
-    sentryCaptureExceptionSpy = jest.spyOn(Sentry, 'captureException');
     mockSecretManagerStatus.mockResolvedValue(
       secretManagerStatusResponse(SECRET_MANAGER_STATUS_ACTIVE),
     );
@@ -104,7 +101,7 @@ describe('SecretsApp', () => {
       await createComponent({ stubs: { RouterView: true } });
     });
 
-    it('renders the provisioning state or the router view', () => {
+    it('renders the provisioning state', () => {
       expect(findProvisioningText().exists()).toBe(true);
     });
 
@@ -160,22 +157,36 @@ describe('SecretsApp', () => {
     });
   });
 
-  describe('when there is an error with etching the secrets manager status', () => {
-    const sentryError = new Error('Network error');
+  describe('when there is an error with fetching the secrets manager status', () => {
+    const error = new Error('GraphQL error: API error');
 
     beforeEach(async () => {
-      mockSecretManagerStatus.mockResolvedValue(sentryError);
+      mockSecretManagerStatus.mockRejectedValue(error);
       await createComponent({ stubs: { RouterView: true } });
     });
 
     it('renders an error message', () => {
       expect(createAlert).toHaveBeenCalledWith({
-        message: 'An error occurred while fetching the secrets manager status. Please try again.',
+        message: 'API error',
+        captureError: true,
+        error,
       });
     });
 
-    it('logs the error to Sentry', () => {
-      expect(sentryCaptureExceptionSpy).toHaveBeenCalledWith(sentryError);
+    it('stops polling', async () => {
+      expect(mockSecretManagerStatus).toHaveBeenCalledTimes(1);
+
+      advanceToNextFetch(POLL_INTERVAL);
+
+      await waitForPromises();
+      await nextTick();
+
+      expect(mockSecretManagerStatus).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not render the loading state or router view', () => {
+      expect(findLoadingIcon().exists()).toBe(false);
+      expect(findRouterView().exists()).toBe(false);
     });
   });
 

@@ -89,10 +89,8 @@ describe('SecretDetailsWrapper component', () => {
     });
   });
 
-  // We also get a GraphQL error when secret doesn't exist
-  // so this also covers that use case
   describe('when query fails', () => {
-    const error = new Error('GraphQL error');
+    const error = new Error('GraphQL error: API error');
 
     beforeEach(async () => {
       mockSecretQuery.mockRejectedValue(error);
@@ -102,7 +100,7 @@ describe('SecretDetailsWrapper component', () => {
     it('renders alert message', () => {
       expect(findLoadingIcon().exists()).toBe(false);
       expect(createAlert).toHaveBeenCalledWith({
-        message: 'Failed to load secret. Please try again later.',
+        message: 'API error',
         captureError: true,
         error,
       });
