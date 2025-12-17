@@ -1992,19 +1992,17 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
     context 'when auto_merge_strategy is STRATEGY_MERGE_WHEN_CHECKS_PASS' do
       let(:auto_merge_strategy) { AutoMergeService::STRATEGY_MERGE_WHEN_CHECKS_PASS }
 
-      it 'skips all the checks except skip_rebase_check' do
+      it 'skips all the checks, including the EE ones' do
         expect(subject.keys).to include(*ee_checks)
-        expect(subject.except(:skip_rebase_check).values).to all(be_truthy)
-        expect(subject[:skip_rebase_check]).to be_falsy
+        expect(subject.values).to all(be_truthy)
       end
     end
 
     context 'when auto_merge_strategy is STRATEGY_MERGE_TRAIN' do
       let(:auto_merge_strategy) { AutoMergeService::STRATEGY_MERGE_TRAIN }
 
-      it 'skips only the rebase check by default' do
-        expect(subject.except(:skip_rebase_check).values).to all(be_falsy)
-        expect(subject[:skip_rebase_check]).to be_truthy
+      it 'does not skip any checks by default' do
+        expect(subject.values).to all(be_falsy)
       end
 
       context 'when the diff head pipeline is a merge train pipeline' do
@@ -2018,9 +2016,8 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
             allow(merge_request).to receive(:on_train?).and_return(true)
           end
 
-          it 'skips only the rebase check' do
-            expect(subject.except(:skip_rebase_check).values).to all(be_falsy)
-            expect(subject[:skip_rebase_check]).to be_truthy
+          it 'does not skip any checks' do
+            expect(subject.values).to all(be_falsy)
           end
         end
 
@@ -2034,10 +2031,9 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
               allow(merge_request).to receive(:pipeline_creating?).and_return(false)
             end
 
-            it 'skips the CI check and rebase check' do
+            it 'skips the CI check' do
               expect(subject).to include(skip_ci_check: true)
-              expect(subject.except(:skip_ci_check, :skip_rebase_check).values).to all(be_falsy)
-              expect(subject[:skip_rebase_check]).to be_truthy
+              expect(subject.except(:skip_ci_check).values).to all(be_falsy)
             end
           end
 
@@ -2046,9 +2042,8 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
               allow(merge_request).to receive(:pipeline_creating?).and_return(true)
             end
 
-            it 'skips only the rebase check' do
-              expect(subject.except(:skip_rebase_check).values).to all(be_falsy)
-              expect(subject[:skip_rebase_check]).to be_truthy
+            it 'does not skip the CI check' do
+              expect(subject.values).to all(be_falsy)
             end
           end
         end
@@ -2059,9 +2054,8 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
           stub_feature_flags(allow_merge_train_retry_merge: false)
         end
 
-        it 'skips only the rebase check' do
-          expect(subject.except(:skip_rebase_check).values).to all(be_falsy)
-          expect(subject[:skip_rebase_check]).to be_truthy
+        it 'does not skip any checks' do
+          expect(subject.values).to all(be_falsy)
         end
 
         context 'when the diff head pipeline is a merge train pipeline' do
@@ -2071,9 +2065,8 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
             allow(merge_request).to receive(:on_train?).and_return(false)
           end
 
-          it 'skips only the rebase check when feature flag is disabled' do
-            expect(subject.except(:skip_rebase_check).values).to all(be_falsy)
-            expect(subject[:skip_rebase_check]).to be_truthy
+          it 'does not skip the CI check when feature flag is disabled' do
+            expect(subject.values).to all(be_falsy)
           end
         end
       end
@@ -2805,46 +2798,24 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
         stub_foss_conditions_met
       end
 
-      context 'when auto merge strategy is STRATEGY_MERGE_TRAIN' do
+      context 'when the project is using ff trains' do
         before do
-          merge_request.update!(auto_merge_enabled: true, merge_user: merge_request.author)
-          merge_request.merge_params['auto_merge_strategy'] = AutoMergeService::STRATEGY_MERGE_TRAIN
+          allow(MergeTrains::Train).to receive(:project_using_ff?).and_return(true)
         end
 
-        it 'returns false because merge train handles rebasing' do
-          is_expected.to eq false
-        end
-      end
-
-      context 'when auto merge strategy is STRATEGY_ADD_TO_MERGE_TRAIN_WHEN_CHECKS_PASS' do
-        before do
-          merge_request.update!(auto_merge_enabled: true, merge_user: merge_request.author)
-          merge_request.merge_params['auto_merge_strategy'] =
-            AutoMergeService::STRATEGY_ADD_TO_MERGE_TRAIN_WHEN_CHECKS_PASS
-        end
-
-        it 'returns false because merge train handles rebasing' do
-          is_expected.to eq false
-        end
-      end
-
-      context 'when auto merge is not enabled' do
-        it 'returns true when rebase is needed' do
-          is_expected.to eq true
-        end
+        it { is_expected.to eq false }
 
         it_behaves_like 'ff car on train'
       end
 
-      context 'when auto merge strategy is not a merge train strategy' do
+      context 'when project not using ff trains' do
         before do
-          merge_request.update!(auto_merge_enabled: true, merge_user: merge_request.author)
-          merge_request.merge_params['auto_merge_strategy'] = AutoMergeService::STRATEGY_MERGE_WHEN_CHECKS_PASS
+          allow(MergeTrains::Train).to receive(:project_using_ff?).and_return(false)
         end
 
-        it 'returns true when rebase is needed' do
-          is_expected.to eq true
-        end
+        it { is_expected.to eq true }
+
+        it_behaves_like 'ff car on train'
       end
     end
 

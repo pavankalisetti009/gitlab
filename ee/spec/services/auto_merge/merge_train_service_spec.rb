@@ -500,39 +500,6 @@ RSpec.describe AutoMerge::MergeTrainService, feature_category: :merge_trains do
     end
   end
 
-  describe '#skippable_available_for_checks' do
-    subject(:skippable_checks) { service.send(:skippable_available_for_checks, merge_request) }
-
-    context 'when auto merge strategy is STRATEGY_MERGE_TRAIN' do
-      it 'includes skip_rebase_check' do
-        expect(skippable_checks).to include(skip_rebase_check: true)
-      end
-
-      it 'does not skip conflict check' do
-        expect(skippable_checks).to include(skip_conflict_check: false)
-      end
-    end
-
-    context 'when auto merge strategy is STRATEGY_ADD_TO_MERGE_TRAIN_WHEN_CHECKS_PASS' do
-      let(:params) { { auto_merge_strategy: AutoMergeService::STRATEGY_ADD_TO_MERGE_TRAIN_WHEN_CHECKS_PASS } }
-      let(:service) { described_class.new(project, user, params) }
-
-      before do
-        merge_request.update!(auto_merge_enabled: true, merge_user: user)
-        merge_request.merge_params['auto_merge_strategy'] =
-          AutoMergeService::STRATEGY_ADD_TO_MERGE_TRAIN_WHEN_CHECKS_PASS
-      end
-
-      it 'includes skip_rebase_check' do
-        expect(skippable_checks).to include(skip_rebase_check: true)
-      end
-
-      it 'skips conflict check' do
-        expect(skippable_checks).to include(skip_conflict_check: true)
-      end
-    end
-  end
-
   describe '#availability_details' do
     subject(:availability_check) { service.availability_details(merge_request) }
 
