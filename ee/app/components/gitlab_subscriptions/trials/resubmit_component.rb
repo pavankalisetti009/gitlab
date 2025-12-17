@@ -12,6 +12,10 @@ module GitlabSubscriptions
 
       attr_reader :hidden_fields, :submit_path
 
+      def before_render
+        content_for :body_class, '!gl-bg-default'
+      end
+
       def top_page_component
         raise NoMethodError, 'This method must be implemented in a subclass'
       end

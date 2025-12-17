@@ -16,6 +16,10 @@ module GitlabSubscriptions
 
         attr_reader :user, :eligible_namespaces, :params
 
+        def before_render
+          content_for :body_class, '!gl-bg-default'
+        end
+
         def form_data
           ::Gitlab::Json.generate(
             {
