@@ -145,6 +145,7 @@ module GitlabSubscriptions
       group_scoped_ci_variables
       ide_schema_config
       incident_metric_upload
+      increased_saved_views_limit
       instance_level_scim
       jira_issues_integration
       ldap_group_sync_filter
