@@ -18,6 +18,7 @@ module Ai
         consumers = by_container
         consumers = with_parents(consumers) if container && include_inherited?
         consumers = by_item(consumers) if item_id
+        consumers = by_foundational_flow_reference(consumers) if foundational_flow_reference
         by_item_type(consumers)
       end
 
@@ -55,6 +56,10 @@ module Ai
       end
       strong_memoize_attr :include_inherited?
 
+      def foundational_flow_reference
+        params[:foundational_flow_reference]
+      end
+
       def by_item(consumers)
         consumers.for_item(item_id)
       end
@@ -65,6 +70,13 @@ module Ai
         return consumers if filtered_types == all_types
 
         consumers.with_item_type(filtered_types)
+      end
+
+      def by_foundational_flow_reference(consumers)
+        matching_item_ids = ::Ai::Catalog::Item
+                              .with_foundational_flow_reference(foundational_flow_reference)
+                              .select(:id)
+        consumers.for_item(matching_item_ids)
       end
 
       def none

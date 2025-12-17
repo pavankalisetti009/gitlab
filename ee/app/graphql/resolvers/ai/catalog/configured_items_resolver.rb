@@ -32,6 +32,11 @@ module Resolvers
           required: false,
           description: 'Project ID to retrieve configured AI Catalog items for.'
 
+        argument :foundational_flow_reference,
+          GraphQL::Types::String,
+          required: false,
+          description: 'Filter by foundational flow reference.'
+
         argument :item_type, ::Types::Ai::Catalog::ItemTypeEnum,
           required: false,
           description: 'Type of items to retrieve.'
