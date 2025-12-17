@@ -4,7 +4,7 @@ module API
   module Entities
     module EpicBoards
       class ListDetails < Entities::EpicBoards::List
-        expose :collapsed, documentation: { type: 'boolean', example: false }
+        expose :collapsed, documentation: { type: 'Boolean', example: false }
 
         def collapsed
           object.collapsed?(options[:current_user])

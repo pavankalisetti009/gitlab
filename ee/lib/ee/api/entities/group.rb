@@ -41,7 +41,7 @@ module EE
                 Ability.allowed?(options[:current_user], :admin_group, group)
             }, documentation: {
               desc: '[Experimental] Indicates whether GitLab Duo Core features are enabled for the group',
-              type: 'boolean'
+              type: 'Boolean'
             }
 
           expose :duo_features_enabled,

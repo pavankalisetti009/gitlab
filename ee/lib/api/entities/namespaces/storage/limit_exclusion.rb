@@ -5,10 +5,10 @@ module API
     module Namespaces
       module Storage
         class LimitExclusion < Grape::Entity
-          expose :id, documentation: { type: 'integer', example: 1 }
-          expose :namespace_id, documentation: { type: 'integer', example: 123 }
-          expose :namespace_name, documentation: { type: 'string', example: 'GitLab' }
-          expose :reason, documentation: { type: 'string', example: 'a reason' }
+          expose :id, documentation: { type: 'Integer', example: 1 }
+          expose :namespace_id, documentation: { type: 'Integer', example: 123 }
+          expose :namespace_name, documentation: { type: 'String', example: 'GitLab' }
+          expose :reason, documentation: { type: 'String', example: 'a reason' }
 
           private
 
