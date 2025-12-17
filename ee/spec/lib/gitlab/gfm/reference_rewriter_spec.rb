@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::Gfm::ReferenceRewriter, feature_category: :team_planning do
+RSpec.describe Gitlab::Gfm::ReferenceRewriter, feature_category: :markdown do
   describe '#rewrite with table syntax' do
     using RSpec::Parameterized::TableSyntax
 
