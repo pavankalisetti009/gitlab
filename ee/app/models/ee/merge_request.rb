@@ -710,13 +710,7 @@ module EE
 
     override :should_be_rebased?
     def should_be_rebased?
-      # Skip rebase check for merge train strategies since the train handles rebasing
-      merge_train_strategy = [
-        ::AutoMergeService::STRATEGY_MERGE_TRAIN,
-        ::AutoMergeService::STRATEGY_ADD_TO_MERGE_TRAIN_WHEN_CHECKS_PASS
-      ].include?(auto_merge_strategy)
-
-      return false if merge_train_strategy
+      return false if MergeTrains::Train.project_using_ff?(target_project)
       return false if merge_train_car&.on_ff_train?
 
       super
