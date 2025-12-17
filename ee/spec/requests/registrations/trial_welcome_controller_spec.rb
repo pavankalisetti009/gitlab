@@ -57,14 +57,15 @@ RSpec.describe Registrations::TrialWelcomeController, :with_current_organization
 
     let(:default_params) do
       {
-        first_name: '_first_name_',
-        last_name: '_last_name_',
         company_name: '_company_name_',
         country: '_country_',
         state: '_state_',
         group_name: "group name",
         project_name: "project name",
-        organization_id: current_organization.id
+        organization_id: current_organization.id,
+        onboarding_status_role: '0',
+        onboarding_status_setup_for_company: 'true',
+        onboarding_status_registration_objective: '1'
       }.merge(glm_params).with_indifferent_access
     end
 

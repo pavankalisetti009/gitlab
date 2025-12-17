@@ -58,7 +58,8 @@ module Registrations
     def create_params
       params.permit(
         *::Onboarding::StatusPresenter::GLM_PARAMS,
-        :group_name, :project_name, :company_name, :first_name, :last_name, :country, :state
+        :group_name, :project_name, :company_name, :country, :state,
+        :onboarding_status_role, :onboarding_status_setup_for_company, :onboarding_status_registration_objective
       ).with_defaults(organization_id: Current.organization.id)
     end
 
