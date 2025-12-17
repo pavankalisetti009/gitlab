@@ -101,7 +101,7 @@ describe('False positive detection banner component', () => {
       });
       expect(findFpDetectionBanner().props('buttonText')).toBe('Learn more');
       expect(findFpDetectionBanner().props('buttonLink')).toBe(
-        '/help/user/application_security/vulnerability_report/_index',
+        '/help/user/application_security/vulnerabilities/false_positive_detection',
       );
     });
 
