@@ -74,6 +74,11 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillAnalyzerProjectStatuses,
   let(:partition_id) { 100 }
 
   before do
+    Ci::ApplicationRecord.connection.execute(<<~SQL)
+      CREATE TABLE IF NOT EXISTS "gitlab_partitions_dynamic"."ci_builds_metadata_100"
+        PARTITION OF "p_ci_builds_metadata" FOR VALUES IN (100);
+    SQL
+
     root_group.update!(traversal_ids: [root_group.id])
     group.update!(traversal_ids: [root_group.id, group.id])
 
