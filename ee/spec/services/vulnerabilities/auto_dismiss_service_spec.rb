@@ -26,7 +26,9 @@ RSpec.describe Vulnerabilities::AutoDismissService, feature_category: :security_
   let(:vulnerability_read) { vulnerability.vulnerability_read }
   let(:vulnerability_ids) { [vulnerability.id] }
 
-  subject(:service) { described_class.new(pipeline, vulnerability_ids) }
+  let(:service) { described_class.new(pipeline, vulnerability_ids) }
+
+  subject(:execute) { service.execute }
 
   before do
     stub_licensed_features(security_orchestration_policies: true)
@@ -35,7 +37,7 @@ RSpec.describe Vulnerabilities::AutoDismissService, feature_category: :security_
   describe '#execute' do
     context 'when there are no policies' do
       it 'returns success with count 0' do
-        result = service.execute
+        result = execute
 
         expect(result).to be_success
         expect(result.payload[:count]).to eq(0)
@@ -93,11 +95,11 @@ RSpec.describe Vulnerabilities::AutoDismissService, feature_category: :security_
 
       shared_examples_for 'vulnerability gets dismissed' do
         it 'dismisses matching vulnerabilities' do
-          expect { service.execute }.to change { vulnerability.reload.state }.from('detected').to('dismissed')
+          expect { execute }.to change { vulnerability.reload.state }.from('detected').to('dismissed')
         end
 
         it 'creates state transition with correct dismissal reason' do
-          service.execute
+          execute
 
           state_transition = vulnerability.state_transitions.last
           expect(state_transition.dismissal_reason).to eq('used_in_tests')
@@ -105,7 +107,7 @@ RSpec.describe Vulnerabilities::AutoDismissService, feature_category: :security_
         end
 
         it 'updates vulnerability read with dismissal reason' do
-          service.execute
+          execute
 
           vulnerability_read.reload
           expect(vulnerability_read.state).to eq('dismissed')
@@ -113,23 +115,40 @@ RSpec.describe Vulnerabilities::AutoDismissService, feature_category: :security_
         end
 
         it 'creates system note' do
-          expect { service.execute }.to change { vulnerability.notes.system.count }.by(1)
+          expect { execute }.to change { vulnerability.notes.system.count }.by(1)
 
           note = vulnerability.notes.system.last
           expect(note.note).to include('changed vulnerability status to Dismissed: Used In Tests')
         end
 
         it 'returns success with correct count' do
-          result = service.execute
+          result = execute
 
           expect(result).to be_success
           expect(result.payload[:count]).to eq(1)
         end
 
+        it_behaves_like 'policy metrics histogram', described_class::HISTOGRAM
+
+        it 'logs instrumentation with correct information' do
+          expect(Gitlab::AppJsonLogger).to receive(:info).with(
+            hash_including(
+              class: 'Vulnerabilities::AutoDismissService',
+              project_id: project.id,
+              pipeline_id: pipeline.id,
+              policy_auto_dismiss_vulnerabilities_processed: 1,
+              policy_auto_dismiss_vulnerabilities_dismissed: 1,
+              policy_auto_dismiss_duration_s: be_a(Float)
+            )
+          )
+
+          execute
+        end
+
         it_behaves_like 'sync vulnerabilities changes to ES' do
           let(:expected_vulnerabilities) { vulnerability }
 
-          subject { service.execute }
+          subject { execute }
         end
 
         context 'when webhook events are enabled for project' do
@@ -142,7 +161,7 @@ RSpec.describe Vulnerabilities::AutoDismissService, feature_category: :security_
               expect(instance).to receive(:trigger_webhook_event)
             end
 
-            service.execute
+            execute
           end
         end
 
@@ -175,7 +194,7 @@ RSpec.describe Vulnerabilities::AutoDismissService, feature_category: :security_
           end
 
           it 'tracks internal events', :clean_gitlab_redis_shared_state, :aggregate_failures do
-            expect { service.execute }
+            expect { execute }
               .to trigger_internal_events(event)
               .with(
                 project: project,
@@ -195,7 +214,7 @@ RSpec.describe Vulnerabilities::AutoDismissService, feature_category: :security_
           end
 
           it 'returns success with count 0 without processing' do
-            result = service.execute
+            result = execute
 
             expect(result).to be_success
             expect(result.payload[:count]).to eq(0)
@@ -209,7 +228,7 @@ RSpec.describe Vulnerabilities::AutoDismissService, feature_category: :security_
           end
 
           it 'returns success with count 0 without processing' do
-            result = service.execute
+            result = execute
 
             expect(result).to be_success
             expect(result.payload[:count]).to eq(0)
@@ -222,7 +241,7 @@ RSpec.describe Vulnerabilities::AutoDismissService, feature_category: :security_
             let(:ability_allowed) { false }
 
             it 'returns error' do
-              result = service.execute
+              result = execute
 
               expect(result).to be_error
               expect(result.reason).to eq('Bot user does not have permission to create state transitions')
@@ -236,7 +255,7 @@ RSpec.describe Vulnerabilities::AutoDismissService, feature_category: :security_
             end
 
             it 'returns error response' do
-              result = service.execute
+              result = execute
 
               expect(result).to be_error
               expect(result.reason).to eq('ActiveRecord error')
@@ -248,11 +267,11 @@ RSpec.describe Vulnerabilities::AutoDismissService, feature_category: :security_
 
       shared_examples_for 'vulnerability stays detected' do
         it 'does not dismiss the vulnerability' do
-          expect { service.execute }.not_to change { vulnerability.reload.state }.from('detected')
+          expect { execute }.not_to change { vulnerability.reload.state }.from('detected')
         end
 
         it 'returns success with zero results' do
-          result = service.execute
+          result = execute
 
           expect(result).to be_success
           expect(result.payload[:count]).to eq(0)
@@ -362,7 +381,7 @@ RSpec.describe Vulnerabilities::AutoDismissService, feature_category: :security_
             end
 
             it "dismisses with #{reason} reason" do
-              service.execute
+              execute
 
               state_transition = vulnerability.state_transitions.last
               expect(state_transition.dismissal_reason).to eq(reason)
@@ -377,7 +396,7 @@ RSpec.describe Vulnerabilities::AutoDismissService, feature_category: :security_
               end
 
               it "updates vulnerability reads with #{reason} reason" do
-                service.execute
+                execute
 
                 vulnerability_read.reload
                 expect(vulnerability_read.dismissal_reason).to eq(reason)
@@ -400,10 +419,16 @@ RSpec.describe Vulnerabilities::AutoDismissService, feature_category: :security_
           end
 
           it 'does not process already dismissed vulnerabilities' do
-            result = service.execute
+            result = execute
 
             expect(result).to be_success
             expect(result.payload[:count]).to eq(0)
+          end
+
+          it 'does not log instrumentation' do
+            expect(Gitlab::AppJsonLogger).not_to receive(:info)
+
+            execute
           end
         end
       end
@@ -420,7 +445,7 @@ RSpec.describe Vulnerabilities::AutoDismissService, feature_category: :security_
         end
 
         it 'respects the budget limit' do
-          result = service.execute
+          result = execute
 
           expect(result).to be_success
           expect(result.payload[:count]).to eq(1)
@@ -444,17 +469,19 @@ RSpec.describe Vulnerabilities::AutoDismissService, feature_category: :security_
             })
         end
 
+        let_it_be(:non_matching_findings) { create_list(:vulnerabilities_finding, 3, :detected, project: project) }
+
         let!(:vulnerabilities) { findings.map(&:vulnerability) }
-        let(:vulnerability_ids) { vulnerabilities.map(&:id) }
+        let(:vulnerability_ids) { vulnerabilities.map(&:id) + non_matching_findings.map(&:vulnerability_id) }
 
         before do
           stub_const("#{described_class}::BATCH_SIZE", 2)
         end
 
         it 'processes vulnerabilities in batches' do
-          expect(service).to receive(:process_batch).exactly(3).times.and_call_original
+          expect(service).to receive(:process_batch).exactly(4).times.and_call_original
 
-          result = service.execute
+          result = execute
 
           expect(result).to be_success
           expect(result.payload[:count]).to eq(5)
@@ -467,7 +494,7 @@ RSpec.describe Vulnerabilities::AutoDismissService, feature_category: :security_
         it 'respects budget across batches' do
           stub_const("#{described_class}::AUTO_DISMISS_LIMIT", 3)
 
-          result = service.execute
+          result = execute
 
           expect(result).to be_success
           expect(result.payload[:count]).to eq(3)
@@ -479,13 +506,30 @@ RSpec.describe Vulnerabilities::AutoDismissService, feature_category: :security_
         it 'stops processing when budget is exhausted' do
           stub_const("#{described_class}::AUTO_DISMISS_LIMIT", 2)
 
-          result = service.execute
+          result = execute
 
           expect(result).to be_success
           expect(result.payload[:count]).to eq(2)
 
           dismissed_count = vulnerabilities.map(&:reload).count { |v| v.state == 'dismissed' }
           expect(dismissed_count).to eq(2)
+        end
+
+        it_behaves_like 'policy metrics histogram', described_class::HISTOGRAM
+
+        it 'logs instrumentation with correct counts for multiple vulnerabilities' do
+          expect(Gitlab::AppJsonLogger).to receive(:info).with(
+            hash_including(
+              class: described_class.name,
+              project_id: project.id,
+              pipeline_id: pipeline.id,
+              policy_auto_dismiss_vulnerabilities_processed: 8,
+              policy_auto_dismiss_vulnerabilities_dismissed: 5,
+              policy_auto_dismiss_duration_s: be_a(Float) & be_positive
+            )
+          )
+
+          execute
         end
       end
     end

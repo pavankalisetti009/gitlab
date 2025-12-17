@@ -43,6 +43,10 @@ module Security
         gitlab_security_policies_pipeline_execution_policy_build_policy_pipelines: {
           description: 'The amount of time to build all pipeline execution policy pipelines',
           buckets: [10, 30, 60, 120, 180, 300, 600].freeze
+        },
+        gitlab_security_policies_vulnerability_management_auto_dismiss: {
+          description: 'The amount of time to evaluate auto-dismiss policies',
+          buckets: [1, 3, 5, 10, 20, 50].freeze
         }
       }.freeze
 

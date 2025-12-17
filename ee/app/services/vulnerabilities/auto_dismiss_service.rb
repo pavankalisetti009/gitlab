@@ -4,9 +4,11 @@ module Vulnerabilities
   class AutoDismissService < BaseAutoStateTransitionService
     BATCH_SIZE = 1000
     AUTO_DISMISS_LIMIT = 1000
+    HISTOGRAM = :gitlab_security_policies_vulnerability_management_auto_dismiss
 
     def initialize(pipeline, vulnerability_ids)
       super
+      @processed_count = 0
       @dismissed_count = 0
     end
 
@@ -15,28 +17,52 @@ module Vulnerabilities
       return success unless project.licensed_feature_available?(:security_orchestration_policies)
       return success if policies.blank?
 
-      super do
-        vulnerability_reads.each_batch(of: BATCH_SIZE) { |batch| process_batch(batch) }
-        dismissed_count
+      measure(HISTOGRAM, callback: method(:log_duration)) do
+        super do
+          vulnerability_reads.each_batch(of: BATCH_SIZE) do |batch|
+            break if remaining_budget <= 0
+
+            process_batch(batch)
+          end
+
+          dismissed_count
+        end
       end
     end
 
     private
 
-    attr_accessor :dismissed_count
+    attr_accessor :processed_count, :dismissed_count
+
+    delegate :measure, to: ::Security::SecurityOrchestrationPolicies::ObserveHistogramsService
+
+    def log_duration(duration)
+      return if processed_count == 0
+
+      Gitlab::AppJsonLogger.info(
+        class: self.class.name,
+        project_id: project.id,
+        pipeline_id: pipeline.id,
+        policy_auto_dismiss_vulnerabilities_processed: processed_count,
+        policy_auto_dismiss_vulnerabilities_dismissed: dismissed_count,
+        policy_auto_dismiss_duration_s: duration
+      )
+    end
 
     def process_batch(batch)
-      budget = AUTO_DISMISS_LIMIT - dismissed_count
-      return if budget <= 0
-
+      @processed_count += batch.size
       rules_by_vulnerability = batch.index_with do |read|
         rules.find { |rule| rule.match?(read.vulnerability) }
       end.compact
 
-      vulnerabilities_to_dismiss = rules_by_vulnerability.keys.first(budget)
+      vulnerabilities_to_dismiss = rules_by_vulnerability.keys.first(remaining_budget)
 
       perform_state_transition(vulnerabilities_to_dismiss, rules_by_vulnerability)
       @dismissed_count += vulnerabilities_to_dismiss.size
+    end
+
+    def remaining_budget
+      AUTO_DISMISS_LIMIT - dismissed_count
     end
 
     def vulnerability_reads
