@@ -2556,6 +2556,9 @@ msgstr ""
 msgid "AICatalog|Agent enabled in %{name}."
 msgstr ""
 
+msgid "AICatalog|Agent enabled in %{targetType}."
+msgstr ""
+
 msgid "AICatalog|Agent is now at version %{newVersion}."
 msgstr ""
 
@@ -2857,6 +2860,9 @@ msgid "AICatalog|Flow does not exist"
 msgstr ""
 
 msgid "AICatalog|Flow enabled in %{name}."
+msgstr ""
+
+msgid "AICatalog|Flow enabled in %{targetType}."
 msgstr ""
 
 msgid "AICatalog|Flow is now at version %{newVersion}."
