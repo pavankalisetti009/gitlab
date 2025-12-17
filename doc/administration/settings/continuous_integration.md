@@ -616,7 +616,7 @@ To turn on incremental logging for all projects:
 
 {{< history >}}
 
-- [Introduced](https://gitlab.com/gitlab-org/gitlab/-/work_items/582044) in GitLab 17.8.
+- [Introduced](https://gitlab.com/gitlab-org/gitlab/-/work_items/582044) in GitLab 18.7.
 
 {{< /history >}}
 
