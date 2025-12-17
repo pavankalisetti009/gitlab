@@ -5,19 +5,50 @@ require 'spec_helper'
 RSpec.describe API::Ai::DuoWorkflows::CodeReview, :with_current_organization, feature_category: :code_suggestions do
   include HttpBasicAuthHelpers
 
+  shared_context 'with DAP Duo Code Review enabled' do
+    before do
+      allow_next_instance_of(::Ai::DuoWorkflows::CodeReview::AvailabilityValidator) do |validator|
+        allow(validator).to receive(:available?).and_return(true)
+      end
+    end
+  end
+
+  shared_context 'with DAP Duo Code Review disabled' do
+    before do
+      allow_next_instance_of(::Ai::DuoWorkflows::CodeReview::AvailabilityValidator) do |validator|
+        allow(validator).to receive(:available?).and_return(false)
+      end
+    end
+  end
+
   let_it_be(:organization) { create(:common_organization) }
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, :repository, group: group) }
   let_it_be(:user) { create(:user, maintainer_of: project) }
   let_it_be(:oauth_app) { create(:doorkeeper_application) }
-
+  let_it_be(:instance_wide_duo_developer) { create(:user, :service_account, organization: organization) }
+  let_it_be(:scopes) { ::Gitlab::Auth::AI_WORKFLOW_SCOPES + ['api'] + ["user:#{user.id}"] }
   let_it_be(:service_account) do
-    create(:user, :service_account, composite_identity_enforced: true, organization: organization)
+    create(:user, :service_account,
+      composite_identity_enforced: true,
+      organization: organization,
+      provisioned_by_group: group
+    )
   end
 
-  let(:scopes) { ::Gitlab::Auth::AI_WORKFLOW_SCOPES + ['api'] + ["user:#{user.id}"] }
+  let_it_be(:catalog_item) do
+    create(:ai_catalog_item, :flow, foundational_flow_reference: 'code_review/v1')
+  end
 
-  let(:token) do
+  let_it_be(:parent_item_consumer) do
+    create(:ai_catalog_item_consumer, item: catalog_item, group: group, service_account: service_account)
+  end
+
+  let_it_be(:child_item_consumer) do
+    create(:ai_catalog_item_consumer, item: catalog_item, project: project, parent_item_consumer: parent_item_consumer)
+  end
+
+  let_it_be(:token) do
     create(:oauth_access_token,
       organization: organization,
       application: oauth_app,
@@ -30,6 +61,8 @@ RSpec.describe API::Ai::DuoWorkflows::CodeReview, :with_current_organization, fe
   before_all do
     group.add_developer(user)
     project.add_developer(service_account)
+
+    ::Ai::Setting.instance.update!(duo_workflow_service_account_user: instance_wide_duo_developer)
   end
 
   describe 'POST /ai/duo_workflows/code_review/add_comments' do
@@ -58,6 +91,8 @@ RSpec.describe API::Ai::DuoWorkflows::CodeReview, :with_current_organization, fe
     end
 
     context 'when successful' do
+      include_context 'with DAP Duo Code Review enabled'
+
       let(:service_response) { ServiceResponse.success }
 
       before do
@@ -85,6 +120,8 @@ RSpec.describe API::Ai::DuoWorkflows::CodeReview, :with_current_organization, fe
     end
 
     context 'when service returns error' do
+      include_context 'with DAP Duo Code Review enabled'
+
       let(:service_response) { ServiceResponse.error(message: 'Validation failed') }
 
       before do
@@ -102,14 +139,15 @@ RSpec.describe API::Ai::DuoWorkflows::CodeReview, :with_current_organization, fe
     end
 
     context 'with invalid parameters' do
+      include_context 'with DAP Duo Code Review enabled'
+
       context 'when project_id is missing' do
         let(:params) { { merge_request_iid: merge_request.iid, review_output: review_output } }
 
-        it 'returns bad request' do
+        it 'returns not found' do
           post api(path, user, oauth_access_token: token), params: params
 
-          expect(response).to have_gitlab_http_status(:bad_request)
-          expect(json_response['error']).to include('project_id is missing')
+          expect(response).to have_gitlab_http_status(:not_found)
         end
       end
 
@@ -137,6 +175,8 @@ RSpec.describe API::Ai::DuoWorkflows::CodeReview, :with_current_organization, fe
     end
 
     context 'when project is not found' do
+      include_context 'with DAP Duo Code Review enabled'
+
       let(:params) do
         {
           project_id: 'non-existent',
@@ -153,6 +193,8 @@ RSpec.describe API::Ai::DuoWorkflows::CodeReview, :with_current_organization, fe
     end
 
     context 'when merge request is not found' do
+      include_context 'with DAP Duo Code Review enabled'
+
       let(:params) do
         {
           project_id: project.id,
@@ -169,6 +211,8 @@ RSpec.describe API::Ai::DuoWorkflows::CodeReview, :with_current_organization, fe
     end
 
     context 'when user is not authenticated' do
+      include_context 'with DAP Duo Code Review enabled'
+
       it 'returns unauthorized' do
         post api(path), params: params
 
@@ -177,9 +221,15 @@ RSpec.describe API::Ai::DuoWorkflows::CodeReview, :with_current_organization, fe
     end
 
     context 'when user does not have access to project' do
+      include_context 'with DAP Duo Code Review enabled'
+
       let_it_be(:unauthorized_user) { create(:user) }
       let_it_be(:unauthorized_service_account) do
-        create(:user, :service_account, composite_identity_enforced: true, organization: organization)
+        create(:user, :service_account,
+          composite_identity_enforced: true,
+          organization: organization,
+          provisioned_by_group: group
+        )
       end
 
       let(:unauthorized_token) do
@@ -201,6 +251,8 @@ RSpec.describe API::Ai::DuoWorkflows::CodeReview, :with_current_organization, fe
     end
 
     context 'when called without composite identity' do
+      include_context 'with DAP Duo Code Review enabled'
+
       it 'returns forbidden' do
         post api(path, user), params: params
 
@@ -212,6 +264,8 @@ RSpec.describe API::Ai::DuoWorkflows::CodeReview, :with_current_organization, fe
     end
 
     context 'with project path instead of ID' do
+      include_context 'with DAP Duo Code Review enabled'
+
       let(:params) do
         {
           project_id: project.full_path,
@@ -231,6 +285,55 @@ RSpec.describe API::Ai::DuoWorkflows::CodeReview, :with_current_organization, fe
 
         expect(response).to have_gitlab_http_status(:created)
         expect(json_response['message']).to eq('Comments added successfully')
+      end
+    end
+
+    describe '#verify_composite_identity!' do
+      include_context 'with DAP Duo Code Review enabled'
+
+      context 'when service account does not match the toplevel group service account' do
+        let_it_be(:mismatched_service_account) { create(:user, :service_account, organization: organization) }
+
+        let_it_be(:mismatched_token) do
+          create(:oauth_access_token,
+            organization: organization,
+            application: oauth_app,
+            resource_owner: mismatched_service_account,
+            expires_in: 1.hour,
+            scopes: ::Gitlab::Auth::AI_WORKFLOW_SCOPES + ['api'] + ["user:#{user.id}"]
+          )
+        end
+
+        before_all do
+          project.add_developer(mismatched_service_account)
+        end
+
+        it 'returns forbidden' do
+          post api(path, user, oauth_access_token: mismatched_token), params: params
+
+          expect(response).to have_gitlab_http_status(:forbidden)
+          expect(json_response['message']).to eq(
+            '403 Forbidden - This endpoint can only be accessed by Duo Workflow Service'
+          )
+        end
+      end
+
+      context 'when service account matches the instance-wide Duo developer' do
+        let(:service_account) { instance_wide_duo_developer }
+
+        it 'processes the request' do
+          post api(path, user, oauth_access_token: token), params: params
+
+          expect(response).to have_gitlab_http_status(:created)
+        end
+      end
+
+      context 'when service account matches the toplevel group service account' do
+        it 'processes the request' do
+          post api(path, user, oauth_access_token: token), params: params
+
+          expect(response).to have_gitlab_http_status(:created)
+        end
       end
     end
   end
