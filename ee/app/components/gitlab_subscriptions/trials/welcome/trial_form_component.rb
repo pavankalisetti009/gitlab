@@ -13,6 +13,10 @@ module GitlabSubscriptions
 
         attr_reader :user, :params
 
+        def before_render
+          content_for :body_class, '!gl-bg-default'
+        end
+
         def role_options
           helpers.role_options.map do |label, value|
             { value: value.to_s, text: label }

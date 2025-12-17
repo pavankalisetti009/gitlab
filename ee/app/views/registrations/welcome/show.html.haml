@@ -1,5 +1,6 @@
 - page_title _('Your profile')
 - add_page_specific_style 'page_bundles/signup'
+- content_for :body_class, '!gl-bg-default'
 - content_for :page_specific_javascripts do
   = render "layouts/google_tag_manager_head"
   = render "layouts/one_trust"
