@@ -9,7 +9,7 @@ module Mutations
         include FindsNamespace
 
         description <<~DESC
-          Enable/disable Container Scanning for Registry for the given project.
+          Enable/disable container scanning for registry for the given project.
         DESC
 
         argument :namespace_path, GraphQL::Types::ID,
@@ -18,7 +18,7 @@ module Mutations
 
         argument :enable, GraphQL::Types::Boolean,
           required: true,
-          description: 'Desired status for Container Scanning for Registry feature.'
+          description: 'Desired status for container scanning for registry feature.'
 
         field :container_scanning_for_registry_enabled, GraphQL::Types::Boolean,
           null: true,

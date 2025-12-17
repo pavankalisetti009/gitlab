@@ -513,7 +513,7 @@ module EE
 
         field :container_scanning_for_registry_enabled, GraphQL::Types::Boolean,
           null: true,
-          description: 'Indicates whether Container Scanning for Registry is enabled or not for the project. ' \
+          description: 'Indicates whether container scanning for registry is enabled or not for the project. ' \
             'Returns `null` if unauthorized.',
           authorize: :read_security_configuration
 
