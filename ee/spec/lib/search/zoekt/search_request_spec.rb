@@ -44,7 +44,7 @@ RSpec.describe Search::Zoekt::SearchRequest, feature_category: :global_search do
 
       # Verify the query structure contains our search term
       json_representation[:forward_to].each do |forward|
-        expect(forward[:query][:and][:children]).to include({ query_string: { query: 'test' } })
+        expect(forward[:query][:and][:children]).to include({ query_string: { query: 'case:no test' } })
         # Note: more testing is done in code query builder specs
       end
     end
@@ -128,7 +128,7 @@ RSpec.describe Search::Zoekt::SearchRequest, feature_category: :global_search do
           forward_to: [
             {
               query: {
-                and: { children: [{ query_string: { query: 'test' } }, { or: { children: [
+                and: { children: [{ query_string: { query: 'case:no test' } }, { or: { children: [
                   { meta: { key: 'project_id', value: '^1$' } },
                   { meta: { key: 'project_id', value: '^2$' } },
                   { meta: { key: 'project_id', value: '^3$' } }
@@ -138,7 +138,7 @@ RSpec.describe Search::Zoekt::SearchRequest, feature_category: :global_search do
             },
             {
               query: {
-                and: { children: [{ query_string: { query: 'test' } }, { or: { children: [
+                and: { children: [{ query_string: { query: 'case:no test' } }, { or: { children: [
 
                   { meta: { key: 'project_id', value: '^4$' } },
                   { meta: { key: 'project_id', value: '^5$' } },
@@ -169,13 +169,13 @@ RSpec.describe Search::Zoekt::SearchRequest, feature_category: :global_search do
             forward_to: [
               {
                 query: {
-                  and: { children: [{ query_string: { query: 'test' } }, { repo_ids: [1, 2, 3] }] }
+                  and: { children: [{ query_string: { query: 'case:no test' } }, { repo_ids: [1, 2, 3] }] }
                 },
                 endpoint: node1.search_base_url
               },
               {
                 query: {
-                  and: { children: [{ query_string: { query: 'test' } }, { repo_ids: [4, 5, 6] }] }
+                  and: { children: [{ query_string: { query: 'case:no test' } }, { repo_ids: [4, 5, 6] }] }
                 },
                 endpoint: node2.search_base_url
               }

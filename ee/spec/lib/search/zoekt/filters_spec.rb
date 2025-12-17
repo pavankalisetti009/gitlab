@@ -76,8 +76,25 @@ RSpec.describe Search::Zoekt::Filters, feature_category: :global_search do
   end
 
   describe '.by_query_string' do
-    it 'returns a query_string filter' do
-      expect(described_class.by_query_string('foo')).to eq({ query_string: { query: 'foo' } })
+    using RSpec::Parameterized::TableSyntax
+
+    where(:input_query, :expected_query) do
+      'foo'                | 'case:no foo'
+      'foo bar'            | 'case:no foo bar'
+      'case:no foo'        | 'case:no foo'
+      'case:yes foo'       | 'case:yes foo'
+      'case:auto foo'      | 'case:auto foo'
+      'case:auto foo'      | 'case:auto foo'
+      'case: no foo'       | 'case:no case: no foo'
+      'case: yes foo'      | 'case:no case: yes foo'
+      'case: auto foo'     | 'case:no case: auto foo'
+      'foo case:yes bar'   | 'foo case:yes bar'
+    end
+
+    with_them do
+      it 'handles case modifier injection correctly' do
+        expect(described_class.by_query_string(input_query)).to eq({ query_string: { query: expected_query } })
+      end
     end
   end
 

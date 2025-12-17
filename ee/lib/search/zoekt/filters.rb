@@ -96,6 +96,8 @@ module Search
         def by_query_string(query, context: nil)
           raise ArgumentError, 'Query string cannot be empty' if query.blank?
 
+          query = "case:no #{query}" unless query.match?(/\bcase:(no|yes|auto)\b/)
+
           with_context(context) do
             { query_string: { query: query } }
           end
