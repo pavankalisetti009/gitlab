@@ -524,25 +524,21 @@ module Search
     end
 
     def display_search_application_settings
-      setting = ::ApplicationSetting.current
+      setting = Gitlab::CurrentSettings
       current_index_version = helper.get_meta&.dig('created_by')
-
       logger.info("Indexing enabled:\t\t#{setting.elasticsearch_indexing? ? Rainbow('yes').green : 'no'}")
       logger.info("Search enabled:\t\t\t#{setting.elasticsearch_search? ? Rainbow('yes').green : 'no'}")
-      logger.info("Requeue Indexing workers:\t" \
-        "#{setting.elasticsearch_requeue_workers? ? Rainbow('yes').green : 'no'}")
-      logger.info("Pause indexing:\t\t\t" \
-        "#{setting.elasticsearch_pause_indexing? ? Rainbow('yes').green : 'no'}")
+      logger.info("Code search enabled:\t\t#{setting.elasticsearch_code_scope? ? Rainbow('yes').green : 'no'}")
+      logger.info("Requeue Indexing workers:\t#{setting.elasticsearch_requeue_workers? ? Rainbow('yes').green : 'no'}")
+      logger.info("Pause indexing:\t\t\t#{setting.elasticsearch_pause_indexing? ? Rainbow('yes').green : 'no'}")
       logger.info("Indexing restrictions enabled:\t" \
         "#{setting.elasticsearch_limit_indexing? ? Rainbow('yes').yellow : 'no'}")
       logger.info("File size limit:\t\t#{setting.elasticsearch_indexed_file_size_limit_kb} KiB")
       logger.info("Index version:\t\t\t#{current_index_version}")
-      logger.info("Indexing number of shards:\t" \
-        "#{::Elastic::ProcessBookkeepingService.active_number_of_shards}")
-      logger.info("Max code indexing concurrency:\t" \
-        "#{setting.elasticsearch_max_code_indexing_concurrency}")
+      logger.info("Indexing number of shards:\t#{::Elastic::ProcessBookkeepingService.active_number_of_shards}")
+      logger.info("Max code indexing concurrency:\t#{setting.elasticsearch_max_code_indexing_concurrency}")
       logger.info("Prefix:\t\t\t\t#{setting.elasticsearch_prefix}")
-      logger.info("Client adapter:\t\t\t\t#{setting.elasticsearch_client_adapter}")
+      logger.info("Client adapter:\t\t\t#{setting.elasticsearch_client_adapter}")
     end
 
     def display_search_server_info

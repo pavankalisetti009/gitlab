@@ -1507,6 +1507,75 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
     end
   end
 
+  describe 'callbacks' do
+    describe '#remove_code_data_from_elasticsearch', feature_category: :global_search do
+      context 'when elasticsearch_code_scope is opted out(true -> false)' do
+        before do
+          setting.elasticsearch_code_scope = true
+          setting.save!(validate: false)
+        end
+
+        it 'calls Search::Elastic::DeleteWorker' do
+          expect(Search::Elastic::DeleteWorker).to receive(:perform_async).with('task' => 'delete_all_blobs')
+
+          setting.update!(elasticsearch_code_scope: false) # opted out
+          expect(setting.reload.elasticsearch_code_scope).to be false
+        end
+
+        context 'when some other setting is also changed' do
+          it 'calls Search::Elastic::DeleteWorker' do
+            expect(Search::Elastic::DeleteWorker).to receive(:perform_async).with('task' => 'delete_all_blobs')
+
+            setting.update!(elasticsearch_code_scope: false, elasticsearch_retry_on_failure: 3)
+            expect(setting.reload.elasticsearch_code_scope).to be false
+          end
+        end
+      end
+
+      context 'when elasticsearch_code_scope is opted in(false -> true)' do
+        before do
+          setting.elasticsearch_code_scope = false
+          setting.save!(validate: false)
+        end
+
+        it 'does not call Search::Elastic::DeleteWorker' do
+          expect(Search::Elastic::DeleteWorker).not_to receive(:perform_async)
+
+          setting.update!(elasticsearch_code_scope: true) # opted in
+          expect(setting.reload.elasticsearch_code_scope).to be true
+        end
+      end
+
+      context 'when elasticsearch_code_scope setting is untouched' do
+        context 'when current elasticsearch_code_scope is true' do
+          before do
+            setting.elasticsearch_code_scope = true
+            setting.save!(validate: false)
+          end
+
+          it 'does not call Search::Elastic::DeleteWorker' do
+            expect(Search::Elastic::DeleteWorker).not_to receive(:perform_async)
+
+            setting.update!(elasticsearch_retry_on_failure: 5)
+          end
+        end
+
+        context 'when current elasticsearch_code_scope is false' do
+          before do
+            setting.elasticsearch_code_scope = false
+            setting.save!(validate: false)
+          end
+
+          it 'does not call Search::Elastic::DeleteWorker' do
+            expect(Search::Elastic::DeleteWorker).not_to receive(:perform_async)
+
+            setting.update!(elasticsearch_retry_on_failure: 5)
+          end
+        end
+      end
+    end
+  end
+
   describe 'search curation settings after .create_from_defaults', feature_category: :global_search do
     it { expect(setting.search_max_shard_size_gb).to eq(1) }
     it { expect(setting.search_max_docs_denominator).to eq(100) }

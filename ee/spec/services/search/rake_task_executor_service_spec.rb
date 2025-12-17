@@ -1040,13 +1040,111 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
       info
     end
 
+    context 'for yes/no settings' do
+      it 'outputs Indexing enabled as yes when indexing is enabled' do
+        allow(settings).to receive(:elasticsearch_indexing?).and_return(true)
+
+        expect(logger).to receive(:info).with(/Indexing enabled:\s+yes/)
+
+        info
+      end
+
+      it 'outputs Indexing enabled as no when indexing is disabled' do
+        expect(logger).to receive(:info).with(/Indexing enabled:\s+no/)
+        allow(settings).to receive(:elasticsearch_indexing?).and_return(false)
+
+        info
+      end
+
+      it 'outputs Search enabled as yes when search is enabled' do
+        allow(settings).to receive(:elasticsearch_search?).and_return(true)
+
+        expect(logger).to receive(:info).with(/Search enabled:\s+yes/)
+
+        info
+      end
+
+      it 'outputs Search enabled as no when search is disabled' do
+        allow(settings).to receive(:elasticsearch_search?).and_return(false)
+
+        expect(logger).to receive(:info).with(/Search enabled:\s+no/)
+
+        info
+      end
+
+      it 'outputs Code search enabled as yes when code search is enabled' do
+        allow(settings).to receive(:elasticsearch_code_scope?).and_return(true)
+
+        expect(logger).to receive(:info).with(/Code search enabled:\s+yes/)
+
+        info
+      end
+
+      it 'outputs Code search enabled as no when code search is disabled' do
+        allow(settings).to receive(:elasticsearch_code_scope?).and_return(false)
+
+        expect(logger).to receive(:info).with(/Code search enabled:\s+no/)
+
+        info
+      end
+
+      it 'outputs Requeue Indexing workers as yes when requeue workers is enabled' do
+        allow(settings).to receive(:elasticsearch_requeue_workers?).and_return(true)
+
+        expect(logger).to receive(:info).with(/Requeue Indexing workers:\s+yes/)
+
+        info
+      end
+
+      it 'outputs Requeue Indexing workers as no when requeue workers is disabled' do
+        allow(settings).to receive(:elasticsearch_requeue_workers?).and_return(false)
+
+        expect(logger).to receive(:info).with(/Requeue Indexing workers:\s+no/)
+
+        info
+      end
+
+      it 'outputs Pause indexing as yes when pause indexing is enabled' do
+        allow(settings).to receive(:elasticsearch_pause_indexing?).and_return(true)
+
+        expect(logger).to receive(:info).with(/Pause indexing:\s+yes/)
+
+        info
+      end
+
+      it 'outputs Pause indexing as no when pause indexing is disabled' do
+        allow(settings).to receive(:elasticsearch_pause_indexing?).and_return(false)
+
+        expect(logger).to receive(:info).with(/Pause indexing:\s+no/)
+
+        info
+      end
+
+      it 'outputs Indexing restrictions enabled as yes when limit indexing is enabled' do
+        allow(settings).to receive(:elasticsearch_limit_indexing?).and_return(true)
+
+        expect(logger).to receive(:info).with(/Indexing restrictions enabled:\s+yes/)
+
+        info
+      end
+
+      it 'outputs Indexing restrictions enabled as no when limit indexing is disabled' do
+        allow(settings).to receive(:elasticsearch_limit_indexing?).and_return(false)
+
+        expect(logger).to receive(:info).with(/Indexing restrictions enabled:\s+no/)
+
+        info
+      end
+    end
+
     it 'outputs indexing and search settings' do
       expected_regex = [
-        /Indexing enabled:\s+yes/,
-        /Search enabled:\s+yes/,
-        /Requeue Indexing workers:\s+no/,
-        /Pause indexing:\s+no/,
-        /Indexing restrictions enabled:\s+no/
+        /File size limit:\s+#{settings.elasticsearch_indexed_file_size_limit_kb} KiB/,
+        /Index version:\s+\d+/,
+        /Indexing number of shards:\s+\d+/,
+        /Max code indexing concurrency:\s+#{settings.elasticsearch_max_code_indexing_concurrency}/,
+        /Prefix:\s+#{settings.elasticsearch_prefix}/,
+        /Client adapter:\s+#{settings.elasticsearch_client_adapter}/
       ]
 
       expected_regex.each do |expected|

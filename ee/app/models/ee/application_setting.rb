@@ -394,6 +394,7 @@ module EE
 
       after_commit :update_personal_access_tokens_lifetime, if: :saved_change_to_max_personal_access_token_lifetime?
       after_commit :trigger_clickhouse_for_analytics_enabled_event
+      after_commit :remove_code_data_from_elasticsearch, if: :elasticsearch_code_scope_opted_out?
     end
 
     class_methods do
@@ -946,6 +947,14 @@ module EE
       return unless duo_features_enabled_changed? || duo_remote_flows_enabled_changed?
 
       errors.add(:base, 'Duo settings cannot be modified on GitLab.com')
+    end
+
+    def remove_code_data_from_elasticsearch
+      ::Search::Elastic::DeleteWorker.perform_async('task' => 'delete_all_blobs')
+    end
+
+    def elasticsearch_code_scope_opted_out?
+      elasticsearch_code_scope_previously_changed?(from: true, to: false)
     end
   end
 end
