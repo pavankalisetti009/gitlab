@@ -14,6 +14,7 @@ import { useLegacyDiffs } from '~/diffs/stores/legacy_diffs';
 import { useNotes } from '~/notes/store/legacy_notes';
 import { useBatchComments } from '~/batch_comments/store';
 import { useFindingsDrawer } from '~/mr_notes/store/findings_drawer';
+import { useCodeReview } from '~/diffs/stores/code_review';
 import {
   codeQualityNewErrorsHandler,
   SASTParsedHandler,
@@ -56,6 +57,7 @@ describe('diffs/components/app', () => {
   beforeEach(() => {
     pinia = createTestingPinia({ plugins: [globalAccessorPlugin] });
 
+    useCodeReview();
     store = useLegacyDiffs();
 
     store.isLoading = false;
