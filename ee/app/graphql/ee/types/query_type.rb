@@ -379,6 +379,12 @@ module EE
           calls_gitaly: true,
           description: 'Get available GitLab Duo Chat context presets for the current user for a specific URL'
 
+        field :ai_chat_included_projects,
+          null: true,
+          resolver: ::Resolvers::Ai::Chat::IncludedProjectsResolver,
+          description: "Get projects that can be included by the current user in a GitLab Duo Chat context",
+          experiment: { milestone: '18.7' }
+
         field :compliance_requirement_controls, ::Types::ComplianceManagement::ComplianceRequirementControlType,
           null: true,
           fallback_value: [],
