@@ -1797,6 +1797,34 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
     end
   end
 
+  describe '#elasticsearch_index_settings', feature_category: :global_search do
+    subject(:elasticsearch_index_settings) { setting.elasticsearch_index_settings }
+
+    context 'when no index settings exist' do
+      it { is_expected.to be_empty }
+    end
+
+    context 'when one index setting exists' do
+      let_it_be(:_index_setting) do
+        create(:elastic_index_setting, alias_name: 'test-index', number_of_shards: 3, number_of_replicas: 2)
+      end
+
+      it 'returns the index setting with correct attributes' do
+        expect(elasticsearch_index_settings).to contain_exactly(
+          have_attributes(alias_name: 'test-index', number_of_shards: 3, number_of_replicas: 2)
+        )
+      end
+    end
+
+    context 'when multiple index settings exist' do
+      let_it_be(:index_alpha) { create(:elastic_index_setting, alias_name: 'index-alpha') }
+      let_it_be(:index_beta) { create(:elastic_index_setting, alias_name: 'index-beta') }
+      let_it_be(:index_gamma) { create(:elastic_index_setting, alias_name: 'index-gamma') }
+
+      it { is_expected.to eq [index_alpha, index_beta, index_gamma] }
+    end
+  end
+
   describe '#elasticsearch_url_with_credentials', feature_category: :global_search do
     let(:elasticsearch_url) { "#{host1},#{host2}" }
     let(:host1) { 'http://example.com' }

@@ -292,6 +292,42 @@ RSpec.describe API::Settings, 'EE Settings', :aggregate_failures, feature_catego
         expect(ElasticsearchIndexedNamespace.count).to eq(0)
         expect(ElasticsearchIndexedProject.count).to eq(1)
       end
+
+      context 'with elasticsearch_index_settings' do
+        let_it_be(:_index_setting) do
+          create(:elastic_index_setting, alias_name: 'api-test-index', number_of_shards: 5, number_of_replicas: 1)
+        end
+
+        subject(:get_application_setting_response) { get api('/application/settings', admin, admin_mode: true) }
+
+        before do
+          stub_licensed_features(elastic_search: true)
+        end
+
+        it 'returns elasticsearch_index_settings in response' do
+          get_application_setting_response
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['elasticsearch_index_settings']).to include(
+            'alias_name' => 'api-test-index',
+            'number_of_shards' => 5,
+            'number_of_replicas' => 1
+          )
+        end
+
+        context 'when license feature :elastic_search is not available' do
+          before do
+            stub_licensed_features(elastic_search: false)
+          end
+
+          it 'does not return elasticsearch_index_settings in response' do
+            get_application_setting_response
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(json_response).not_to have_key('elasticsearch_index_settings')
+          end
+        end
+      end
     end
 
     context 'secret_detection_token_revocation_enabled is true' do

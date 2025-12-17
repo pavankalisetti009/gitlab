@@ -520,6 +520,10 @@ module EE
       Elastic::IndexSetting.number_of_replicas
     end
 
+    def elasticsearch_index_settings
+      Elastic::IndexSetting.order_by_name
+    end
+
     def elasticsearch_indexes_project?(project)
       return false unless elasticsearch_indexing?
       return true unless elasticsearch_limit_indexing?
