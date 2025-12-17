@@ -91,24 +91,26 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
         )
       end
 
-      let_it_be(:group) { create(:group) }
+      let_it_be(:root_namespace) { create(:group) }
       let_it_be(:enabled_namespace) do
         create(
           :ai_active_context_code_enabled_namespace,
           :ready,
-          namespace: group,
+          namespace: root_namespace,
           active_context_connection: collection.connection
         )
       end
 
+      let_it_be(:sub_group) { create(:group, parent: root_namespace) }
+
       let_it_be(:project) do
-        create(:project, group: group, owners: [user]).tap do |p|
+        create(:project, group: sub_group, owners: [user]).tap do |p|
           attach_active_context_repository(project: p, collection: collection, enabled_namespace: enabled_namespace)
         end
       end
 
       let_it_be(:project_2) do
-        create(:project, group: group, developers: [user]).tap do |p|
+        create(:project, group: sub_group, developers: [user]).tap do |p|
           attach_active_context_repository(project: p, collection: collection, enabled_namespace: enabled_namespace)
         end
       end
@@ -409,6 +411,41 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
             end
           end
 
+          context "when on saas, not GA, and project's root namespace has experiment features enabled" do
+            before do
+              stub_feature_flags(semantic_code_search_saas_ga: false)
+              root_namespace.reload.namespace_settings.update!(experiment_features_enabled: true)
+            end
+
+            it 'triggers ad-hoc indexing' do
+              expect(Ai::ActiveContext::Code::AdHocIndexingWorker).to receive(:perform_async).with(project.id)
+
+              result
+            end
+
+            it_behaves_like 'returns no code embeddings error result' do
+              let(:expected_error_detail) { described_class::MESSAGE_INITIAL_INDEXING_STARTED }
+            end
+          end
+
+          context "when not on saas, not GA, and project's root namespace has experiment features disabled" do
+            before do
+              allow(::License).to receive(:ai_features_available?).and_return(true)
+              stub_feature_flags(semantic_code_search_saas_ga: false)
+              root_namespace.reload.namespace_settings.update!(experiment_features_enabled: false)
+            end
+
+            it 'triggers ad-hoc indexing' do
+              expect(Ai::ActiveContext::Code::AdHocIndexingWorker).to receive(:perform_async).with(project.id)
+
+              result
+            end
+
+            it_behaves_like 'returns no code embeddings error result' do
+              let(:expected_error_detail) { described_class::MESSAGE_INITIAL_INDEXING_STARTED }
+            end
+          end
+
           context 'when not eligible for code embeddings' do
             shared_examples 'returns an error result with "use another source" message' do
               it_behaves_like 'returns no code embeddings error result' do
@@ -433,6 +470,15 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
             context 'when project has no enabled namespace' do
               before do
                 enabled_namespace.reload.update!(state: :pending)
+              end
+
+              it_behaves_like 'returns an error result with "use another source" message'
+            end
+
+            context "when not in GA and project's root namespace has experiment features disabled" do
+              before do
+                stub_feature_flags(semantic_code_search_saas_ga: false)
+                root_namespace.reload.namespace_settings.update!(experiment_features_enabled: false)
               end
 
               it_behaves_like 'returns an error result with "use another source" message'

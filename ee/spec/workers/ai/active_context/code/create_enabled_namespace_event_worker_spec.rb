@@ -60,32 +60,6 @@ RSpec.describe Ai::ActiveContext::Code::CreateEnabledNamespaceEventWorker, featu
           expect { execute }.not_to change { Ai::ActiveContext::Code::EnabledNamespace.count }
         end
       end
-
-      context 'when `semantic_code_search_saas_ga` FF is disabled' do
-        before do
-          stub_feature_flags(semantic_code_search_saas_ga: false)
-        end
-
-        it 'does not process namespaces without experiment_features_enabled' do
-          execute
-
-          expect(Ai::ActiveContext::Code::EnabledNamespace.pluck(:namespace_id))
-            .not_to include(namespace_with_subscription.id)
-        end
-
-        context 'when namespace settings have experiment_features_enabled=true' do
-          before do
-            namespace_with_subscription.namespace_settings.update!(experiment_features_enabled: true)
-          end
-
-          it 'processes the relevant namespaces' do
-            execute
-
-            expect(Ai::ActiveContext::Code::EnabledNamespace.pluck(:namespace_id))
-              .to include(namespace_with_subscription.id)
-          end
-        end
-      end
     end
 
     context 'when not on saas' do
