@@ -2028,4 +2028,16 @@ RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_manage
       end
     end
   end
+
+  it_behaves_like 'policy auto-dismissable' do
+    let_it_be(:policy_rule_attributes) { { file_path: 'test/**/*' } }
+
+    let!(:matching_finding) do
+      create(:vulnerabilities_finding, :with_dependency_scanning_metadata, project: project, file: 'test/spec/example_spec.rb')
+    end
+
+    let!(:non_matching_finding) do
+      create(:vulnerabilities_finding, :with_dependency_scanning_metadata, project: project, file: 'src/main.c')
+    end
+  end
 end
