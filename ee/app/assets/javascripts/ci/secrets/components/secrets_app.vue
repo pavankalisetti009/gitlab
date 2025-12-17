@@ -1,13 +1,13 @@
 <script>
 import { GlLoadingIcon } from '@gitlab/ui';
-import { s__ } from '~/locale';
 import { createAlert } from '~/alert';
-import { captureException } from '~/sentry/sentry_browser_wrapper';
+import { formatGraphQLError } from 'ee/ci/secrets/utils';
 import getProjectSecretsManagerStatusQuery from '../graphql/queries/get_secret_manager_status.query.graphql';
 import {
   ACCEPTED_CONTEXTS,
   ENTITY_PROJECT,
   POLL_INTERVAL,
+  SECRET_MANAGER_STATUS_ERROR,
   SECRET_MANAGER_STATUS_PROVISIONING,
 } from '../constants';
 
@@ -52,13 +52,14 @@ export default {
 
         return newStatus;
       },
-      error(error) {
+      error(e) {
+        this.$apollo.queries.secretManagerStatus.stopPolling();
+        this.secretManagerStatus = SECRET_MANAGER_STATUS_ERROR;
         createAlert({
-          message: s__(
-            'SecretsManager|An error occurred while fetching the secrets manager status. Please try again.',
-          ),
+          message: formatGraphQLError(e.message),
+          captureError: true,
+          error: e,
         });
-        captureException(error);
       },
       pollInterval: POLL_INTERVAL,
     },
@@ -69,6 +70,9 @@ export default {
     },
     isProvisioning() {
       return this.secretManagerStatus === SECRET_MANAGER_STATUS_PROVISIONING;
+    },
+    hasStatusError() {
+      return this.secretManagerStatus && this.secretManagerStatus === SECRET_MANAGER_STATUS_ERROR;
     },
   },
   methods: {
@@ -103,5 +107,9 @@ export default {
       }}
     </p>
   </div>
-  <router-view v-else ref="router-view" @show-secrets-toast="showSecretsToast" />
+  <router-view
+    v-else-if="!hasStatusError"
+    ref="router-view"
+    @show-secrets-toast="showSecretsToast"
+  />
 </template>

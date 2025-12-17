@@ -14,14 +14,15 @@ import {
 import EmptySecretsSvg from '@gitlab/svgs/dist/illustrations/chat-sm.svg?url';
 import { InternalEvents } from '~/tracking';
 import { helpPagePath } from '~/helpers/help_page_helper';
-import { __, s__ } from '~/locale';
+import { __ } from '~/locale';
 import { fetchPolicies } from '~/lib/graphql';
 import { createAlert } from '~/alert';
+import { formatGraphQLError } from 'ee/ci/secrets/utils';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import UserDate from '~/vue_shared/components/user_date.vue';
 import { convertEnvironmentScope } from '~/ci/common/private/ci_environments_dropdown';
-import getProjectSecretsQuery from '../../graphql/queries/get_project_secrets.query.graphql';
-import getProjectSecretsNeedingRotation from '../../graphql/queries/get_project_secrets_needing_rotation.query.graphql';
+import getProjectSecretsQuery from 'ee/ci/secrets/graphql/queries/get_project_secrets.query.graphql';
+import getProjectSecretsNeedingRotation from 'ee/ci/secrets/graphql/queries/get_project_secrets_needing_rotation.query.graphql';
 import {
   ACCEPTED_CONTEXTS,
   DETAILS_ROUTE_NAME,
@@ -34,7 +35,7 @@ import {
   SECRET_ROTATION_STATUS,
   SECRET_STATUS,
   SECRET_STATUS_ICONS_OPTICALLY_ALIGNED,
-} from '../../constants';
+} from 'ee/ci/secrets/constants';
 import SecretDeleteModal from '../secret_delete_modal.vue';
 import ActionsCell from './secret_actions_cell.vue';
 import SecretsAlertBanner from './secrets_alert_banner.vue';
@@ -112,9 +113,7 @@ export default {
       },
       error(e) {
         createAlert({
-          message: s__(
-            'SecretsManager|An error occurred while fetching secrets. Please make sure you have the proper permissions, or try again.',
-          ),
+          message: formatGraphQLError(e.message),
           captureError: true,
           error: e,
         });
@@ -136,9 +135,7 @@ export default {
       },
       error(e) {
         createAlert({
-          message: s__(
-            'SecretRotation|An error occurred while fetching secrets needing rotation. Please try again.',
-          ),
+          message: formatGraphQLError(e.message),
           captureError: true,
           error: e,
         });

@@ -13,14 +13,15 @@ import { createAlert } from '~/alert';
 import { __, s__, sprintf } from '~/locale';
 import { getDateInFuture } from '~/lib/utils/datetime_utility';
 import { isEmptyValue } from '~/lib/utils/forms';
+import { formatGraphQLError } from 'ee/ci/secrets/utils';
 import CiEnvironmentsDropdown from '~/ci/common/private/ci_environments_dropdown';
 import {
   DETAILS_ROUTE_NAME,
   INDEX_ROUTE_NAME,
   SECRET_DESCRIPTION_MAX_LENGTH,
-} from '../../constants';
-import createSecretMutation from '../../graphql/mutations/create_secret.mutation.graphql';
-import updateSecretMutation from '../../graphql/mutations/update_secret.mutation.graphql';
+} from 'ee/ci/secrets/constants';
+import createSecretMutation from 'ee/ci/secrets/graphql/mutations/create_secret.mutation.graphql';
+import updateSecretMutation from 'ee/ci/secrets/graphql/mutations/update_secret.mutation.graphql';
 import SecretBranchesField from './secret_branches_field.vue';
 
 export default {
@@ -159,7 +160,11 @@ export default {
           params: { secretName: this.secret.name },
         });
       } catch (e) {
-        createAlert({ message: __('Something went wrong on our end. Please try again.') });
+        createAlert({
+          message: formatGraphQLError(e.message),
+          captureError: true,
+          error: e,
+        });
       } finally {
         this.isSubmitting = false;
       }
@@ -194,7 +199,11 @@ export default {
           params: { secretName: this.secret.name },
         });
       } catch (e) {
-        createAlert({ message: __('Something went wrong on our end. Please try again.') });
+        createAlert({
+          message: formatGraphQLError(e.message),
+          captureError: true,
+          error: e,
+        });
       } finally {
         this.isSubmitting = false;
       }

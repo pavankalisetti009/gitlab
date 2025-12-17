@@ -10,15 +10,15 @@ import {
   mapEnvironmentNames,
 } from '~/ci/common/private/ci_environments_dropdown';
 import { InternalEvents } from '~/tracking';
+import { formatGraphQLError } from 'ee/ci/secrets/utils';
 import {
   ACCEPTED_CONTEXTS,
   ENTITY_GROUP,
   ENTITY_PROJECT,
-  FAILED_TO_LOAD_ERROR_MESSAGE,
   PAGE_VISIT_EDIT,
   PAGE_VISIT_NEW,
-} from '../../constants';
-import getSecretDetailsQuery from '../../graphql/queries/get_secret_details.query.graphql';
+} from 'ee/ci/secrets/constants';
+import getSecretDetailsQuery from 'ee/ci/secrets/graphql/queries/get_secret_details.query.graphql';
 import SecretForm from './secret_form.vue';
 
 const i18n = {
@@ -116,7 +116,7 @@ export default {
       },
       error(e) {
         createAlert({
-          message: FAILED_TO_LOAD_ERROR_MESSAGE,
+          message: formatGraphQLError(e.message),
           captureError: true,
           error: e,
         });
