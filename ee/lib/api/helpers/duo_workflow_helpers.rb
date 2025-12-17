@@ -25,6 +25,7 @@ module API
         Gitlab::AiGateway.push_feature_flag(:ai_per_model_context_window, current_user)
         Gitlab::AiGateway.push_feature_flag(:use_generic_gitlab_api_tools, current_user)
         Gitlab::AiGateway.push_feature_flag(:use_duo_chat_ui_for_flow, current_user)
+        Gitlab::AiGateway.push_feature_flag(:ai_prompt_scanning, current_user)
       end
     end
   end
