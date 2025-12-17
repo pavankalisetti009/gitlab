@@ -3,15 +3,29 @@
 require 'spec_helper'
 
 RSpec.describe Security::ScanExecutionPolicy::Config, feature_category: :security_policy_management do
+  let_it_be(:policy_files) { { Security::OrchestrationPolicyConfiguration::POLICY_PATH => '' } }
+  let_it_be(:security_policy_project) { create(:project, :custom_repo, files: policy_files) }
+  let_it_be(:security_orchestration_policy_configuration) do
+    create(:security_orchestration_policy_configuration, security_policy_management_project: security_policy_project)
+  end
+
   let(:config) { described_class.new(**params) }
-  let(:params) { { policy: policy } }
+  let(:params) { { policy: policy, configuration: security_orchestration_policy_configuration } }
 
   describe '#actions' do
-    subject { config.actions }
+    subject(:actions) { config.actions }
 
     let(:policy) { build(:scan_execution_policy, actions: [{ scan: 'secret_detection' }]) }
 
-    it { is_expected.to eq([{ scan: 'secret_detection' }]) }
+    it 'returns actions with configuration metadata' do
+      expect(actions).to eq([{
+        scan: 'secret_detection',
+        metadata: {
+          project_id: security_policy_project.id,
+          sha: security_orchestration_policy_configuration.configuration_sha
+        }
+      }])
+    end
   end
 
   describe '#skip_ci_allowed?' do

@@ -57,6 +57,10 @@ module Gitlab
             pipeline_execution_context.skip_ci_allowed? && scan_execution_context(ref).skip_ci_allowed?
           end
 
+          def job_options(ref:, job_name:)
+            pipeline_execution_context.job_options || scan_execution_context(ref).job_options(job_name)
+          end
+
           private
 
           attr_reader :project, :source, :current_user, :ref, :sha_context, :variables_attributes, :chat_data,

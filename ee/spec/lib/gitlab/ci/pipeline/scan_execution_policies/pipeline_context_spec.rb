@@ -13,7 +13,8 @@ RSpec.describe Gitlab::Ci::Pipeline::ScanExecutionPolicies::PipelineContext, fea
   let(:source) { 'push' }
   let(:pipeline) { build(:ci_pipeline, source: source, project: project, ref: ref, user: user) }
 
-  let_it_be(:policies_repository) { create(:project, :repository) }
+  let_it_be(:policy_files) { { Security::OrchestrationPolicyConfiguration::POLICY_PATH => '' } }
+  let_it_be(:policies_repository) { create(:project, :custom_repo, files: policy_files) }
   let(:feature_licensed) { true }
   let_it_be(:security_orchestration_policy_configuration) do
     create(
@@ -21,6 +22,13 @@ RSpec.describe Gitlab::Ci::Pipeline::ScanExecutionPolicies::PipelineContext, fea
       project: project,
       security_policy_management_project: policies_repository
     )
+  end
+
+  let(:expected_metadata) do
+    {
+      sha: security_orchestration_policy_configuration.configuration_sha,
+      project_id: policies_repository.id
+    }
   end
 
   let(:policy) do
@@ -107,7 +115,14 @@ RSpec.describe Gitlab::Ci::Pipeline::ScanExecutionPolicies::PipelineContext, fea
   describe '#active_scan_execution_actions' do
     subject(:actions) { context.active_scan_execution_actions }
 
-    it { is_expected.to match_array(policy[:actions]) }
+    it 'contains active actions with metadata' do
+      expect(actions).to match_array([
+        { scan: 'dast', site_profile: 'Site Profile', scanner_profile: 'Scanner Profile',
+          metadata: expected_metadata },
+        { scan: 'secret_detection', metadata: expected_metadata },
+        { scan: 'dependency_scanning', metadata: expected_metadata }
+      ])
+    end
 
     describe 'action limits' do
       let(:policies) { [policy, other_policy] }
@@ -120,19 +135,35 @@ RSpec.describe Gitlab::Ci::Pipeline::ScanExecutionPolicies::PipelineContext, fea
       end
 
       let(:action_limit) { 2 }
-      let(:all_actions) { policy[:actions] + other_policy[:actions] }
-      let(:limited_actions) { policy[:actions].first(action_limit) + other_policy[:actions].first(action_limit) }
 
       before do
         allow(Gitlab::CurrentSettings).to receive(:scan_execution_policies_action_limit).and_return(action_limit)
       end
 
-      it { is_expected.to match_array(limited_actions) }
+      it 'contains active actions with metadata' do
+        expect(actions).to match_array([
+          { scan: 'dast', site_profile: 'Site Profile', scanner_profile: 'Scanner Profile',
+            metadata: expected_metadata },
+          { scan: 'secret_detection', metadata: expected_metadata },
+          { scan: 'sast', metadata: expected_metadata },
+          { scan: 'sast_iac', metadata: expected_metadata }
+        ])
+      end
 
       context 'when value is zero' do
         let(:action_limit) { 0 }
 
-        it { is_expected.to match_array(all_actions) }
+        it 'contains active actions with metadata' do
+          expect(actions).to match_array([
+            { scan: 'dast', site_profile: 'Site Profile', scanner_profile: 'Scanner Profile',
+              metadata: expected_metadata },
+            { scan: 'secret_detection', metadata: expected_metadata },
+            { scan: 'dependency_scanning', metadata: expected_metadata },
+            { scan: 'sast', metadata: expected_metadata },
+            { scan: 'sast_iac', metadata: expected_metadata },
+            { scan: 'container_scanning', metadata: expected_metadata }
+          ])
+        end
       end
     end
 
@@ -154,7 +185,12 @@ RSpec.describe Gitlab::Ci::Pipeline::ScanExecutionPolicies::PipelineContext, fea
         let(:policy_pipeline_source) { source }
 
         it 'returns the active scan execution actions' do
-          expect(context.active_scan_execution_actions).to match_array(policy[:actions])
+          expect(context.active_scan_execution_actions).to match_array([
+            { scan: 'dast', site_profile: 'Site Profile', scanner_profile: 'Scanner Profile',
+              metadata: expected_metadata },
+            { scan: 'secret_detection', metadata: expected_metadata },
+            { scan: 'dependency_scanning', metadata: expected_metadata }
+          ])
         end
       end
 
@@ -218,12 +254,28 @@ RSpec.describe Gitlab::Ci::Pipeline::ScanExecutionPolicies::PipelineContext, fea
   end
 
   describe '#job_injected?' do
-    it 'stores array of job names' do
-      context.collect_injected_job_names([:job1, "job-2"])
+    it 'returns the collected job names' do
+      context.collect_injected_job_names_with_metadata({
+        job1: { some_key: 'value' },
+        'job-2': { some_other_key: 'other value ' }
+      })
 
-      expect(context.job_injected?(instance_double(::Ci::Build, name: 'job1'))).to be(true)
-      expect(context.job_injected?(instance_double(::Ci::Build, name: 'job-2'))).to be(true)
-      expect(context.job_injected?(instance_double(::Ci::Build, name: 'job3'))).to be(false)
+      expect(context.job_injected?('job1')).to be(true)
+      expect(context.job_injected?('job-2')).to be(true)
+      expect(context.job_injected?('job3')).to be(false)
+    end
+  end
+
+  describe '#job_options' do
+    it 'returns the metadata corresponding to the collected jobs, ignoring other attributes' do
+      context.collect_injected_job_names_with_metadata({
+        job1: { _metadata: { some_key: 'value' }, some_other_key: 'value2' },
+        'job-2': { some_other_key: 'other value' }
+      })
+
+      expect(context.job_options('job1')).to eq(some_key: 'value')
+      expect(context.job_options('job-2')).to be_nil
+      expect(context.job_options('job3')).to be_nil
     end
   end
 end

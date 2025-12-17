@@ -8,15 +8,28 @@ module Security
 
       DEFAULT_SKIP_CI_STRATEGY = { allowed: true }.freeze
 
-      attr_reader :actions, :skip_ci_strategy
+      attr_reader :actions, :configuration, :skip_ci_strategy
 
-      def initialize(policy:)
-        @actions = policy.fetch(:actions)
+      def initialize(policy:, configuration: nil)
+        @configuration = configuration
         @skip_ci_strategy = policy[:skip_ci].presence || DEFAULT_SKIP_CI_STRATEGY
+        @actions = policy.fetch(:actions, []).map { |action| action.merge(metadata: action_metadata) }
       end
 
       def skip_ci_allowed?(user_id)
         skip_ci_allowed_for_strategy?(skip_ci_strategy, user_id)
+      end
+
+      private
+
+      delegate :security_policy_management_project_id, :configuration_sha, to: :configuration, allow_nil: true
+
+      def action_metadata
+        # Metadata used for id_tokens. It matches the attributes in `pipeline_execution_context.job_options`.
+        {
+          project_id: security_policy_management_project_id,
+          sha: configuration_sha
+        }.compact
       end
     end
   end

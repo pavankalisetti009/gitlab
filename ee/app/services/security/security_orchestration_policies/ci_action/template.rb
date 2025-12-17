@@ -4,6 +4,8 @@ module Security
   module SecurityOrchestrationPolicies
     module CiAction
       class Template < Base
+        include CiConfigurationMetadata
+
         SCAN_TEMPLATES = {
           'secret_detection' => 'Jobs/Secret-Detection',
           'container_scanning' => 'Jobs/Container-Scanning',
@@ -46,6 +48,7 @@ module Security
             apply_defaults!(job_configuration, @action[:scan_settings])
             remove_extends!(job_configuration)
             remove_rule_to_disable_job!(job_configuration)
+            merge_configuration_metadata!(job_configuration, @action[:metadata])
           end
 
           ci_configuration

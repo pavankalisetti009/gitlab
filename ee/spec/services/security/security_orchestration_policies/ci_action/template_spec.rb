@@ -75,6 +75,23 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CiAction::Template,
       end
     end
 
+    shared_examples 'with metadata added to action' do
+      let(:action_metadata) do
+        {
+          sha: '8dc6668b57dbeec74feb7c68119cf0c28cbe2a29',
+          project_id: 123
+        }
+      end
+
+      before do
+        action.merge!(metadata: action_metadata)
+      end
+
+      it 'adds _metadata section to each job' do
+        expect(config.values).to all(include(_metadata: action_metadata))
+      end
+    end
+
     describe '.scan_template_path' do
       let(:scan_type) { 'dependency_scanning' }
       let(:template) { 'default' }
@@ -138,6 +155,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CiAction::Template,
         it_behaves_like 'with template name for scan type'
         it_behaves_like 'removes rules which disable jobs'
         it_behaves_like 'with scan_settings.ignore_default_before_after_script set to true'
+        it_behaves_like 'with metadata added to action'
 
         it 'merges template variables with ci variables and returns them as string' do
           expect(config[:'secret-detection-0']).to include(
@@ -190,6 +208,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CiAction::Template,
         it_behaves_like 'with template name for scan type'
         it_behaves_like 'removes rules which disable jobs'
         it_behaves_like 'with scan_settings.ignore_default_before_after_script set to true'
+        it_behaves_like 'with metadata added to action'
 
         it 'merges template variables with ci variables and returns them as string' do
           expect(config[:'container-scanning-0']).to include(

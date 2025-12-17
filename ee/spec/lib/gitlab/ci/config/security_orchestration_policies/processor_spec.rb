@@ -45,7 +45,8 @@ RSpec.describe Gitlab::Ci::Config::SecurityOrchestrationPolicies::Processor, fea
   let(:policies) { {} }
 
   let_it_be(:namespace) { create(:group) }
-  let_it_be(:namespace_policies_repository) { create(:project, :repository) }
+  let_it_be(:policy_files) { { Security::OrchestrationPolicyConfiguration::POLICY_PATH => '' } }
+  let_it_be(:namespace_policies_repository) { create(:project, :custom_repo, files: policy_files) }
   let_it_be(:namespace_security_orchestration_policy_configuration) do
     create(
       :security_orchestration_policy_configuration,
@@ -63,8 +64,7 @@ RSpec.describe Gitlab::Ci::Config::SecurityOrchestrationPolicies::Processor, fea
   end
 
   let_it_be_with_refind(:project) { create(:project, :repository, group: namespace) }
-
-  let_it_be(:policies_repository) { create(:project, :repository, group: namespace) }
+  let_it_be(:policies_repository) { create(:project, :custom_repo, files: policy_files, group: namespace) }
   let_it_be(:security_orchestration_policy_configuration) do
     create(
       :security_orchestration_policy_configuration,
@@ -118,6 +118,13 @@ RSpec.describe Gitlab::Ci::Config::SecurityOrchestrationPolicies::Processor, fea
     %w[api pipeline merge_request_event schedule].each do |ci_source|
       context "when #{ci_source} pipeline is created and affects CI status of the ref" do
         let(:source) { ci_source }
+
+        it 'collects the injected jobs and metadata in the pipeline context' do
+          perform_service
+          pipeline_context = pipeline_policy_context.scan_execution_context(ref)
+          expect(pipeline_context.job_injected?(extended_job)).to be(true)
+          expect(pipeline_context.job_options(extended_job)).to match a_hash_including(:project_id, :sha)
+        end
 
         context 'when config already have jobs with names provided by policies' do
           let(:config) do
