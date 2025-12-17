@@ -7,6 +7,9 @@ module GitlabSubscriptions
     DUO_ENTERPRISE_TRIAL_TYPE = 'gitlab_duo_enterprise'
     TRIAL_TYPES = [FREE_TRIAL_TYPE, PREMIUM_TRIAL_TYPE].freeze
 
+    TIME_FRAME_AFTER_EXPIRATION = 10.days
+    private_constant :TIME_FRAME_AFTER_EXPIRATION
+
     def self.single_eligible_namespace?(eligible_namespaces)
       return false unless eligible_namespaces.any? # executes query and now relation is loaded
 
@@ -55,6 +58,12 @@ module GitlabSubscriptions
         ::Plan.by_name(::Plan::PREMIUM),
         trial_starts_on
       ).exists?
+    end
+
+    def self.recently_expired?(namespace)
+      namespace.free_plan? &&
+        namespace.trial_expired? &&
+        namespace.trial_ends_on > TIME_FRAME_AFTER_EXPIRATION.ago
     end
 
     def self.self_managed_non_dedicated_ultimate_trial?(license)

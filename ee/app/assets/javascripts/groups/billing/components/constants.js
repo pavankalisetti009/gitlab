@@ -11,7 +11,7 @@ export const TRIAL_ACTIVE_FEATURE_HIGHLIGHTS = {
       variant: 'default',
       title: 'GitLab Duo',
       description: s__(
-        'BillingPlans|AI-powered features that help you write code, understand your work, and automate tasks across your workflow. %{learnMoreLinkStart}Learn more.%{learnMoreLinkEnd}',
+        'BillingPlans|AI-powered features that help you write code, understand your work, and automate tasks across your workflow.',
       ),
       docsLink: helpPagePath('/user/gitlab_duo_chat/_index.md'),
     },
@@ -21,7 +21,7 @@ export const TRIAL_ACTIVE_FEATURE_HIGHLIGHTS = {
       variant: 'default',
       title: s__('BillingPlans|Epics'),
       description: s__(
-        'BillingPlans|Track groups of related issues to manage large initiatives and monitor progress toward long-term goals. %{learnMoreLinkStart}Learn more.%{learnMoreLinkEnd}',
+        'BillingPlans|Track groups of related issues to manage large initiatives and monitor progress toward long-term goals.',
       ),
       docsLink: helpPagePath('/user/group/epics/_index.md'),
     },
@@ -31,7 +31,7 @@ export const TRIAL_ACTIVE_FEATURE_HIGHLIGHTS = {
       variant: 'default',
       title: s__('BillingPlans|Repository pull mirroring'),
       description: s__(
-        'BillingPlans|Automatically sync branches, tags, and commits from an external repository with GitLab. %{learnMoreLinkStart}Learn more.%{learnMoreLinkEnd}',
+        'BillingPlans|Automatically sync branches, tags, and commits from an external repository with GitLab.',
       ),
       docsLink: helpPagePath('/user/project/repository/mirror/pull'),
     },
@@ -41,7 +41,7 @@ export const TRIAL_ACTIVE_FEATURE_HIGHLIGHTS = {
       variant: 'default',
       title: s__('BillingPlans|Merge trains'),
       description: s__(
-        'BillingPlans|Automatically merge changes in sequence to prevent conflicts and keep your branch stable. %{learnMoreLinkStart}Learn more.%{learnMoreLinkEnd}',
+        'BillingPlans|Automatically merge changes in sequence to prevent conflicts and keep your branch stable.',
       ),
       docsLink: helpPagePath('/ci/pipelines/merge_trains'),
     },
@@ -51,7 +51,7 @@ export const TRIAL_ACTIVE_FEATURE_HIGHLIGHTS = {
       variant: 'default',
       title: s__('BillingPlans|Escalation policies'),
       description: s__(
-        'BillingPlans|Automatically notify the next responder when critical alerts are unacknowledged and ensure no incident is missed. %{learnMoreLinkStart}Learn more.%{learnMoreLinkEnd}',
+        'BillingPlans|Automatically notify the next responder when critical alerts are unacknowledged and ensure no incident is missed.',
       ),
       docsLink: helpPagePath('/operations/incident_management/escalation_policies'),
     },
@@ -61,7 +61,7 @@ export const TRIAL_ACTIVE_FEATURE_HIGHLIGHTS = {
       variant: 'default',
       title: s__('BillingPlans|Merge request approvals'),
       description: s__(
-        'BillingPlans|Control who can approve merge requests to ensure code quality and compliance. %{learnMoreLinkStart}Learn more.%{learnMoreLinkEnd}',
+        'BillingPlans|Control who can approve merge requests to ensure code quality and compliance.',
       ),
       docsLink: helpPagePath('/user/project/merge_requests/approvals/settings'),
     },
