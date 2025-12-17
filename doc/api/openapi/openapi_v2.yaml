@@ -49,6 +49,10 @@ tags:
   description: Operations about alert_managements
 - name: branches
   description: Operations about branches
+- name: job_artifacts
+  description: Operations about job_artifacts
+- name: ci_jobs
+  description: Operations about ci_jobs
 - name: secure_files
   description: Operations about secure_files
 - name: pipeline_schedules
@@ -95,8 +99,8 @@ tags:
   description: Operations about avatars
 - name: bulk_imports
   description: Operations about bulk_imports
-- name: job
-  description: Operations about jobs
+- name: agents
+  description: Operations about agents
 - name: jobs
   description: Operations about jobs
 - name: events
@@ -11073,7 +11077,7 @@ paths:
         '404':
           description: Not found
       tags:
-      - projects
+      - job_artifacts
       operationId: getApiV4ProjectsIdJobsArtifactsRefNameDownload
   "/api/v4/projects/{id}/jobs/artifacts/{ref_name}/raw/*artifact_path":
     get:
@@ -11121,7 +11125,7 @@ paths:
         '404':
           description: Not found
       tags:
-      - projects
+      - job_artifacts
       operationId: getApiV4ProjectsIdJobsArtifactsRefNameRaw*artifactPath
   "/api/v4/projects/{id}/jobs/{job_id}/artifacts":
     get:
@@ -11157,7 +11161,7 @@ paths:
         '404':
           description: Not found
       tags:
-      - projects
+      - job_artifacts
       operationId: getApiV4ProjectsIdJobsJobIdArtifacts
     delete:
       summary: Delete the artifacts files from a job
@@ -11186,7 +11190,7 @@ paths:
         '409':
           description: Conflict
       tags:
-      - projects
+      - job_artifacts
       operationId: deleteApiV4ProjectsIdJobsJobIdArtifacts
   "/api/v4/projects/{id}/jobs/{job_id}/artifacts/*artifact_path":
     get:
@@ -11229,7 +11233,7 @@ paths:
         '404':
           description: Not found
       tags:
-      - projects
+      - job_artifacts
       operationId: getApiV4ProjectsIdJobsJobIdArtifacts*artifactPath
   "/api/v4/projects/{id}/jobs/{job_id}/artifacts/keep":
     post:
@@ -11262,7 +11266,7 @@ paths:
         '404':
           description: Not found
       tags:
-      - projects
+      - job_artifacts
       operationId: postApiV4ProjectsIdJobsJobIdArtifactsKeep
   "/api/v4/projects/{id}/artifacts":
     delete:
@@ -11285,7 +11289,7 @@ paths:
         '409':
           description: Conflict
       tags:
-      - projects
+      - job_artifacts
       operationId: deleteApiV4ProjectsIdArtifacts
   "/api/v4/projects/{id}/jobs":
     get:
@@ -11352,7 +11356,7 @@ paths:
         '404':
           description: Not found
       tags:
-      - projects
+      - ci_jobs
       operationId: getApiV4ProjectsIdJobs
   "/api/v4/projects/{id}/jobs/{job_id}":
     get:
@@ -11384,7 +11388,7 @@ paths:
         '404':
           description: Not found
       tags:
-      - projects
+      - ci_jobs
       operationId: getApiV4ProjectsIdJobsJobId
   "/api/v4/projects/{id}/jobs/{job_id}/trace":
     get:
@@ -11416,7 +11420,7 @@ paths:
         '404':
           description: Not found
       tags:
-      - projects
+      - ci_jobs
       operationId: getApiV4ProjectsIdJobsJobIdTrace
   "/api/v4/projects/{id}/jobs/{job_id}/cancel":
     post:
@@ -11455,7 +11459,7 @@ paths:
         '404':
           description: Not found
       tags:
-      - projects
+      - ci_jobs
       operationId: postApiV4ProjectsIdJobsJobIdCancel
   "/api/v4/projects/{id}/jobs/{job_id}/retry":
     post:
@@ -11494,7 +11498,7 @@ paths:
         '404':
           description: Not found
       tags:
-      - projects
+      - ci_jobs
       operationId: postApiV4ProjectsIdJobsJobIdRetry
   "/api/v4/projects/{id}/jobs/{job_id}/erase":
     post:
@@ -11530,7 +11534,7 @@ paths:
         '409':
           description: Conflict
       tags:
-      - projects
+      - ci_jobs
       operationId: postApiV4ProjectsIdJobsJobIdErase
   "/api/v4/projects/{id}/jobs/{job_id}/play":
     post:
@@ -11572,7 +11576,7 @@ paths:
         '404':
           description: Not found
       tags:
-      - projects
+      - ci_jobs
       operationId: postApiV4ProjectsIdJobsJobIdPlay
   "/api/v4/projects/{id}/resource_groups":
     get:
@@ -40476,7 +40480,7 @@ paths:
         '404':
           description: Not found
       tags:
-      - job
+      - ci_jobs
       operationId: getApiV4Job
   "/api/v4/job/allowed_agents":
     get:
@@ -40496,7 +40500,7 @@ paths:
         '404':
           description: Not found
       tags:
-      - job
+      - agents
       operationId: getApiV4JobAllowedAgents
   "/api/v4/runners":
     post:
