@@ -2,7 +2,7 @@
 
 module QA
   RSpec.describe 'Create', feature_category: :source_code_management do
-    describe 'Pull mirror a repository over SSH with a private key' do
+    describe 'Pull mirror a repository over SSH with a private key', feature_flag: { name: :validate_pull_mirror_url } do
       let(:source) do
         Resource::Repository::ProjectPush.fabricate! do |project_push|
           project_push.project_name = 'pull-mirror-source-project'
@@ -16,13 +16,21 @@ module QA
       let(:target_project) { create(:project, name: 'pull-mirror-target-project') }
 
       before do
+        # Disable the validate_pull_mirror_url feature flag to avoid validation delays during project creation
+        Runtime::Feature.disable(:validate_pull_mirror_url)
+
         Flow::Login.sign_in
 
         target_project.visit!
       end
 
+      after do
+        Runtime::Feature.enable(:validate_pull_mirror_url)
+      end
+
       it 'configures and syncs a (pull) mirrored repository', :aggregate_failures,
-        testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347736' do
+        testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347736',
+        feature_flag: { name: :validate_pull_mirror_url } do
         # Configure the target project to pull from the source project
         # And get the public key to be used as a deploy key
         Page::Project::Menu.perform(&:go_to_repository_settings)

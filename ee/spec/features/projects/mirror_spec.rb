@@ -10,6 +10,12 @@ RSpec.describe 'Project mirror', :js, feature_category: :source_code_management 
   let(:import_state) { create(:import_state, :mirror, :finished, project: project) }
   let(:user) { create(:user) }
 
+  before do
+    allow_next_instance_of(Import::ValidateRemoteGitEndpointService) do |service|
+      allow(service).to receive(:execute).and_return(ServiceResponse.success)
+    end
+  end
+
   describe 'On a project' do
     before do
       project.add_maintainer(user)

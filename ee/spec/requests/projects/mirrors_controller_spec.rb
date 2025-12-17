@@ -18,6 +18,9 @@ RSpec.describe Projects::MirrorsController, feature_category: :source_code_manag
     before do
       project.add_maintainer(user)
       login_as(user)
+      allow_next_instance_of(Import::ValidateRemoteGitEndpointService) do |service|
+        allow(service).to receive(:execute).and_return(ServiceResponse.success)
+      end
     end
 
     it 'updates a pull mirror configuration' do
