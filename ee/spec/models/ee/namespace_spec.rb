@@ -3386,24 +3386,23 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
     end
   end
 
-  describe '#selected_foundational_flow_ids' do
+  describe '#selected_foundational_flow_references' do
     let_it_be(:namespace) { create(:group) }
     let_it_be(:flow1) { create(:ai_catalog_item, :with_foundational_flow_reference, public: true) }
     let_it_be(:flow2) { create(:ai_catalog_item, :with_foundational_flow_reference, public: true) }
 
-    it 'returns selected flow IDs' do
+    it 'returns selected flow references' do
       create(:ai_catalog_enabled_foundational_flow, :for_namespace, namespace: namespace, catalog_item: flow1)
       create(:ai_catalog_enabled_foundational_flow, :for_namespace, namespace: namespace, catalog_item: flow2)
 
-      expect(namespace.selected_foundational_flow_ids).to match_array([flow1.id, flow2.id])
+      expect(namespace.selected_foundational_flow_references).to match_array([
+        flow1.foundational_flow_reference,
+        flow2.foundational_flow_reference
+      ])
     end
 
-    it 'limits to 100 records' do
-      allow(namespace.enabled_foundational_flow_records).to receive(:limit).with(100).and_call_original
-
-      namespace.selected_foundational_flow_ids
-
-      expect(namespace.enabled_foundational_flow_records).to have_received(:limit).with(100)
+    it 'returns empty array when no flows are enabled' do
+      expect(namespace.selected_foundational_flow_references).to eq([])
     end
   end
 

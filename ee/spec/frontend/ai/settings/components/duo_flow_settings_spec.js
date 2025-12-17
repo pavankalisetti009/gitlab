@@ -366,7 +366,7 @@ describe('DuoFlowSettings', () => {
         wrapper = createWrapper({
           duoRemoteFlowsAvailability: true,
           duoFoundationalFlowsAvailability: true,
-          selectedFoundationalFlowIds: [1, 2],
+          selectedFoundationalFlowIds: ['code_review/v1', 'bug_triage/v1'],
         });
       });
 
@@ -375,7 +375,10 @@ describe('DuoFlowSettings', () => {
       });
 
       it('passes the selected flow ids to the selector', () => {
-        expect(findFoundationalFlowSelector().props('value')).toEqual([1, 2]);
+        expect(findFoundationalFlowSelector().props('value')).toEqual([
+          'code_review/v1',
+          'bug_triage/v1',
+        ]);
       });
 
       it('passes disabled state to the selector', () => {
@@ -383,10 +386,16 @@ describe('DuoFlowSettings', () => {
       });
 
       it('emits change-selected-flow-ids when selector value changes', async () => {
-        await findFoundationalFlowSelector().vm.$emit('input', [3, 4, 5]);
+        await findFoundationalFlowSelector().vm.$emit('input', [
+          'documentation/v1',
+          'sast_fp_detection/v1',
+          'resolve_sast_vulnerability/v1',
+        ]);
 
         expect(wrapper.emitted('change-selected-flow-ids')).toHaveLength(1);
-        expect(wrapper.emitted('change-selected-flow-ids')[0]).toEqual([[3, 4, 5]]);
+        expect(wrapper.emitted('change-selected-flow-ids')[0]).toEqual([
+          ['documentation/v1', 'sast_fp_detection/v1', 'resolve_sast_vulnerability/v1'],
+        ]);
       });
     });
 
@@ -409,7 +418,7 @@ describe('DuoFlowSettings', () => {
         wrapper = createWrapper({
           duoRemoteFlowsAvailability: true,
           duoFoundationalFlowsAvailability: true,
-          selectedFoundationalFlowIds: [1, 2],
+          selectedFoundationalFlowIds: ['code_review/v1', 'bug_triage/v1'],
         });
       });
 

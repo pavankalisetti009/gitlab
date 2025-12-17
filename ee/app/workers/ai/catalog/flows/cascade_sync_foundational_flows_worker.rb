@@ -13,7 +13,7 @@ module Ai
         idempotent!
         defer_on_database_health_signal :gitlab_main, [:namespace_settings, :project_settings], 1.minute
 
-        def perform(group_id, user_id = nil)
+        def perform(group_id, user_id = nil, flow_references = nil)
           group = Group.find_by_id(group_id)
           return unless group
 
@@ -21,7 +21,9 @@ module Ai
 
           seed_foundational_flows(group, user)
 
-          sync_groups(group, user)
+          convert_references_to_ids(flow_references) if flow_references
+
+          sync_groups(group, user, skip_parent: true)
 
           sync_projects(group, user)
         end
@@ -29,20 +31,36 @@ module Ai
         private
 
         def seed_foundational_flows(group, user)
-          organization = group.organization
-          return unless organization
-
           ::Ai::Catalog::Flows::SeedFoundationalFlowsService.new(
             current_user: user,
-            organization: organization
+            organization: group.organization
           ).execute
         end
 
-        def sync_groups(group, user)
-          ::Ai::Catalog::Flows::SyncFoundationalFlowsService.new(
-            group,
-            current_user: user
-          ).execute
+        def convert_references_to_ids(flow_references)
+          references = flow_references || []
+          return [] if references.empty?
+
+          reference_to_id = ::Ai::Catalog::Item.foundational_flow_ids_for_references(references)
+          references.filter_map { |ref| reference_to_id[ref] }
+        end
+
+        def sync_groups(group, user, skip_parent: false)
+          unless skip_parent
+            ::Ai::Catalog::Flows::SyncFoundationalFlowsService.new(
+              group,
+              current_user: user
+            ).execute
+          end
+
+          group.descendants.each_batch do |batch|
+            batch.each do |descendant_group|
+              ::Ai::Catalog::Flows::SyncFoundationalFlowsService.new(
+                descendant_group,
+                current_user: user
+              ).execute
+            end
+          end
         end
 
         def sync_projects(group, user)

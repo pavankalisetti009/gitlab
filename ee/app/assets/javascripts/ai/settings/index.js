@@ -58,7 +58,7 @@ export const initAiSettings = (id, component, options = {}) => {
     showFoundationalAgentsPerAgentAvailability,
     foundationalAgentsStatuses,
     availableFoundationalFlows,
-    selectedFoundationalFlows,
+    selectedFoundationalFlowReferences,
     duoAgentPlatformEnabled,
   } = el.dataset;
 
@@ -161,7 +161,9 @@ export const initAiSettings = (id, component, options = {}) => {
         return flows;
       })(),
       initialSelectedFoundationalFlowIds: (() => {
-        const selected = selectedFoundationalFlows ? JSON.parse(selectedFoundationalFlows) : [];
+        const selected = selectedFoundationalFlowReferences
+          ? JSON.parse(selectedFoundationalFlowReferences)
+          : [];
         return selected;
       })(),
     },

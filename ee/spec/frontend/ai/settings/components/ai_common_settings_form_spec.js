@@ -375,21 +375,30 @@ describe('AiCommonSettingsForm', () => {
 
   describe('foundational flow selection integration', () => {
     it('emits change-selected-flow-ids event when DuoFlowSettings emits it', async () => {
-      await findDuoFlowSettings().vm.$emit('change-selected-flow-ids', [1, 2, 3]);
+      await findDuoFlowSettings().vm.$emit('change-selected-flow-ids', [
+        'code_review/v1',
+        'bug_triage/v1',
+        'documentation/v1',
+      ]);
 
-      expect(wrapper.emitted('change-selected-flow-ids')[0]).toEqual([[1, 2, 3]]);
+      expect(wrapper.emitted('change-selected-flow-ids')[0]).toEqual([
+        ['code_review/v1', 'bug_triage/v1', 'documentation/v1'],
+      ]);
     });
 
     it('updates internal localSelectedFlowIds data when change-selected-flow-ids event is received', async () => {
-      createComponent({ props: { selectedFoundationalFlowIds: [1] } });
+      createComponent({ props: { selectedFoundationalFlowIds: ['code_review/v1'] } });
 
       expect(findSaveButton().props('disabled')).toBe(true);
 
-      await findDuoFlowSettings().vm.$emit('change-selected-flow-ids', [1, 2]);
+      await findDuoFlowSettings().vm.$emit('change-selected-flow-ids', [
+        'code_review/v1',
+        'bug_triage/v1',
+      ]);
 
       expect(findSaveButton().props('disabled')).toBe(false);
 
-      await findDuoFlowSettings().vm.$emit('change-selected-flow-ids', [1]);
+      await findDuoFlowSettings().vm.$emit('change-selected-flow-ids', ['code_review/v1']);
 
       expect(findSaveButton().props('disabled')).toBe(true);
     });
@@ -397,25 +406,41 @@ describe('AiCommonSettingsForm', () => {
     it('enables save button when flow IDs change from empty to non-empty', async () => {
       expect(findSaveButton().props('disabled')).toBe(true);
 
-      await findDuoFlowSettings().vm.$emit('change-selected-flow-ids', [5, 6]);
+      await findDuoFlowSettings().vm.$emit('change-selected-flow-ids', [
+        'sast_fp_detection/v1',
+        'resolve_sast_vulnerability/v1',
+      ]);
 
       expect(findSaveButton().props('disabled')).toBe(false);
     });
 
     it('enables save button when flow IDs order changes', async () => {
-      createComponent({ props: { selectedFoundationalFlowIds: [1, 2, 3] } });
+      createComponent({
+        props: {
+          selectedFoundationalFlowIds: ['code_review/v1', 'bug_triage/v1', 'documentation/v1'],
+        },
+      });
 
       expect(findSaveButton().props('disabled')).toBe(true);
 
-      await findDuoFlowSettings().vm.$emit('change-selected-flow-ids', [3, 2, 1]);
+      await findDuoFlowSettings().vm.$emit('change-selected-flow-ids', [
+        'documentation/v1',
+        'bug_triage/v1',
+        'code_review/v1',
+      ]);
 
       expect(findSaveButton().props('disabled')).toBe(true);
     });
 
     it('passes selectedFoundationalFlowIds prop to DuoFlowSettings', () => {
-      createComponent({ props: { selectedFoundationalFlowIds: [10, 20] } });
+      createComponent({
+        props: { selectedFoundationalFlowIds: ['code_review/v1', 'bug_triage/v1'] },
+      });
 
-      expect(findDuoFlowSettings().props('selectedFoundationalFlowIds')).toEqual([10, 20]);
+      expect(findDuoFlowSettings().props('selectedFoundationalFlowIds')).toEqual([
+        'code_review/v1',
+        'bug_triage/v1',
+      ]);
     });
   });
 

@@ -98,7 +98,7 @@ RSpec.describe Ai::CascadeDuoSettingsService, feature_category: :ai_abstraction_
 
       it 'schedules worker to sync flows' do
         expect(Ai::Catalog::Flows::CascadeSyncFoundationalFlowsWorker)
-          .to receive(:perform_async).with(group.id, user.id)
+          .to receive(:perform_async).with(group.id, user.id, nil)
 
         service.cascade_for_group(group)
       end
@@ -108,7 +108,7 @@ RSpec.describe Ai::CascadeDuoSettingsService, feature_category: :ai_abstraction_
 
         it 'schedules worker to sync flows' do
           expect(Ai::Catalog::Flows::CascadeSyncFoundationalFlowsWorker)
-            .to receive(:perform_async).with(group.id, nil)
+            .to receive(:perform_async).with(group.id, nil, nil)
 
           service.cascade_for_group(group)
         end
@@ -142,7 +142,7 @@ RSpec.describe Ai::CascadeDuoSettingsService, feature_category: :ai_abstraction_
 
       it 'schedules worker to sync flows' do
         expect(Ai::Catalog::Flows::CascadeSyncFoundationalFlowsWorker)
-          .to receive(:perform_async).with(group.id, user.id)
+          .to receive(:perform_async).with(group.id, user.id, nil)
 
         service.cascade_for_group(group)
       end
@@ -151,16 +151,17 @@ RSpec.describe Ai::CascadeDuoSettingsService, feature_category: :ai_abstraction_
     context 'when enabled_foundational_flows is provided' do
       let_it_be(:flow1) do
         create(:ai_catalog_item, :with_foundational_flow_reference, public: true,
-          organization: group.organization)
+          organization: group.organization, foundational_flow_reference: 'code_review/v1')
       end
 
       let_it_be(:flow2) do
         create(:ai_catalog_item, :with_foundational_flow_reference, public: true,
-          organization: group.organization)
+          organization: group.organization, foundational_flow_reference: 'sast_fp_detection/v1')
       end
 
       let(:flow_ids) { [flow1.id, flow2.id] }
-      let(:setting_attributes) { { 'enabled_foundational_flows' => flow_ids } }
+      let(:flow_references) { [flow1.foundational_flow_reference, flow2.foundational_flow_reference] }
+      let(:setting_attributes) { { 'enabled_foundational_flows' => flow_references } }
 
       subject(:service) { described_class.new(setting_attributes, current_user: user) }
 
@@ -174,7 +175,7 @@ RSpec.describe Ai::CascadeDuoSettingsService, feature_category: :ai_abstraction_
 
       it 'schedules worker to sync flows' do
         expect(Ai::Catalog::Flows::CascadeSyncFoundationalFlowsWorker)
-          .to receive(:perform_async).with(group.id, user.id)
+          .to receive(:perform_async).with(group.id, user.id, flow_references)
 
         service.cascade_for_group(group)
       end

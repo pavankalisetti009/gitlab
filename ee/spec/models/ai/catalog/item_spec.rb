@@ -302,6 +302,48 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
       end
     end
 
+    describe '.foundational_flow_ids_for_references' do
+      let_it_be(:code_review_flow) do
+        create(:ai_catalog_item, :with_foundational_flow_reference,
+          foundational_flow_reference: 'code_review/v1')
+      end
+
+      let_it_be(:sast_flow) do
+        create(:ai_catalog_item, :with_foundational_flow_reference,
+          foundational_flow_reference: 'sast_fp_detection/v1')
+      end
+
+      let_it_be(:item_without_reference) { create(:ai_catalog_item) }
+
+      it 'returns a hash mapping references to IDs' do
+        result = described_class.foundational_flow_ids_for_references(['code_review/v1', 'sast_fp_detection/v1'])
+
+        expect(result).to eq({
+          'code_review/v1' => code_review_flow.id,
+          'sast_fp_detection/v1' => sast_flow.id
+        })
+      end
+
+      it 'returns empty hash for blank references' do
+        expect(described_class.foundational_flow_ids_for_references([])).to eq({})
+        expect(described_class.foundational_flow_ids_for_references(nil)).to eq({})
+      end
+
+      it 'only returns matching references' do
+        result = described_class.foundational_flow_ids_for_references(['code_review/v1', 'nonexistent/v1'])
+
+        expect(result).to eq({ 'code_review/v1' => code_review_flow.id })
+      end
+
+      it 'respects FOUNDATIONAL_FLOWS_LIMIT' do
+        stub_const("#{described_class}::FOUNDATIONAL_FLOWS_LIMIT", 1)
+
+        result = described_class.foundational_flow_ids_for_references(['code_review/v1', 'sast_fp_detection/v1'])
+
+        expect(result.size).to eq(1)
+      end
+    end
+
     describe '.order_by_id_desc' do
       subject { described_class.order_by_id_desc }
 
