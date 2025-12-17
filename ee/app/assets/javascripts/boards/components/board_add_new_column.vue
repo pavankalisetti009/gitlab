@@ -32,7 +32,7 @@ import namespaceWorkItemTypesQuery from '~/work_items/graphql/namespace_work_ite
 import { setError } from '~/boards/graphql/cache_updates';
 import { getListByTypeId } from '~/boards/boards_util';
 import usersAutocompleteQuery from '~/graphql_shared/queries/users_autocomplete.query.graphql';
-import searchIterationQuery from 'ee/issues/list/queries/search_iterations.query.graphql';
+import searchIterationQuery from 'ee/work_items/list/graphql/search_iterations.query.graphql';
 import { getStatuses } from 'ee/work_items/utils';
 
 export const listTypeInfo = {

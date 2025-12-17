@@ -6,8 +6,8 @@ import {
   convertToApiParams as convertToApiParamsCE,
   convertToUrlParams as convertToUrlParamsCE,
   convertMultipleIsTypeTokensToOr,
-} from '~/issues/list/utils';
-import { filtersMap, URL_PARAM } from '~/issues/list/constants';
+} from '~/work_items/list/utils';
+import { filtersMap, URL_PARAM } from '~/work_items/list/constants';
 import { __, s__ } from '~/locale';
 
 import {
@@ -26,7 +26,7 @@ import {
   TYPENAME_CUSTOM_FIELD_SELECT_OPTION,
 } from '~/graphql_shared/constants';
 
-export * from '~/issues/list/utils';
+export * from '~/work_items/list/utils';
 
 const customFieldApiFieldName = 'customField';
 

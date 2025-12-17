@@ -13,6 +13,7 @@ import IssuableMilestone from '~/vue_shared/issuable/list/components/issuable_mi
 import WorkItemAttribute from '~/vue_shared/components/work_item_attribute.vue';
 
 export default {
+  name: 'IssueCardTimeInfo',
   components: {
     IssuableMilestone,
     WorkItemAttribute,

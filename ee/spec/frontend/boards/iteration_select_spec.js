@@ -11,7 +11,7 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
 import { boardObj } from 'jest/boards/mock_data';
 
-import searchIterationQuery from 'ee/issues/list/queries/search_iterations.query.graphql';
+import searchIterationQuery from 'ee/work_items/list/graphql/search_iterations.query.graphql';
 import { ANY_ITERATION, CURRENT_ITERATION, IterationFilterType } from 'ee/boards/constants';
 import * as cacheUpdates from '~/boards/graphql/cache_updates';
 import { WORKSPACE_GROUP } from '~/issues/constants';

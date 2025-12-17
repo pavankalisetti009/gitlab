@@ -4,7 +4,7 @@ import { apolloProvider } from '~/graphql_shared/issuable_client';
 import { parseBoolean } from '~/lib/utils/common_utils';
 import JiraIssuesImportStatusApp from './components/jira_issues_import_status_app.vue';
 
-export function mountJiraIssuesListApp() {
+export function initJiraIssuesImportStatusRoot() {
   const el = document.querySelector('.js-jira-issues-import-status-root');
 
   if (!el) {

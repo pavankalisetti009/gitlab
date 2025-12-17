@@ -1,7 +1,7 @@
 import { GlAlert, GlLabel } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
 import { nextTick } from 'vue';
-import JiraIssuesImportStatus from '~/issues/list/components/jira_issues_import_status_app.vue';
+import JiraIssuesImportStatus from '~/work_items/list/components/jira_issues_import_status_app.vue';
 
 describe('JiraIssuesImportStatus', () => {
   const issuesPath = 'gitlab-org/gitlab-test/-/issues';

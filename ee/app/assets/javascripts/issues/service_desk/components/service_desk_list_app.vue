@@ -1,5 +1,5 @@
 <script>
-import searchIterationsQuery from 'ee/issues/list/queries/search_iterations.query.graphql';
+import searchIterationsQuery from 'ee/work_items/list/graphql/search_iterations.query.graphql';
 import {
   OPERATORS_IS_NOT,
   TOKEN_TYPE_EPIC,

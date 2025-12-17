@@ -6,7 +6,7 @@ import { s__ } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { findStatusWidget } from '~/work_items/utils';
 import { TYPENAME_ISSUE, TYPENAME_TASK } from '~/graphql_shared/constants';
-import EmptyStateWithAnyIssues from '~/issues/list/components/empty_state_with_any_issues.vue';
+import EmptyStateWithAnyIssues from '~/work_items/list/components/empty_state_with_any_issues.vue';
 import {
   WORK_ITEM_TYPE_NAME_EPIC,
   WORK_ITEM_TYPE_NAME_ISSUE,
@@ -34,7 +34,7 @@ import WorkItemStatusBadge from 'ee/work_items/components/shared/work_item_statu
 import WorkItemStatusToken from 'ee/vue_shared/components/filtered_search_bar/tokens/work_item_status_token.vue';
 import { WORKSPACE_GROUP, WORKSPACE_PROJECT } from '~/issues/constants';
 import namespaceCustomFieldsQuery from 'ee/vue_shared/components/filtered_search_bar/queries/custom_field_names.query.graphql';
-import searchIterationsQuery from 'ee/issues/list/queries/search_iterations.query.graphql';
+import searchIterationsQuery from 'ee/work_items/list/graphql/search_iterations.query.graphql';
 
 const CustomFieldToken = () =>
   import('ee/vue_shared/components/filtered_search_bar/tokens/custom_field_token.vue');

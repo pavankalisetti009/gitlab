@@ -10,9 +10,9 @@ import {
   locationSearchWithWildcardValues,
   urlParams,
   urlParamsWithWildcardValues,
-} from 'jest/issues/list/mock_data';
+} from 'jest/work_items/list/mock_data';
 import { STATUS_CLOSED } from '~/issues/constants';
-import { CREATED_DESC, UPDATED_DESC, urlSortParams } from '~/issues/list/constants';
+import { CREATED_DESC, UPDATED_DESC, urlSortParams } from '~/work_items/list/constants';
 import {
   convertToApiParams,
   convertToSearchQuery,
@@ -24,7 +24,7 @@ import {
   getSortOptions,
   getTypeTokenOptions,
   groupMultiSelectFilterTokens,
-} from 'ee_else_ce/issues/list/utils';
+} from 'ee_else_ce/work_items/list/utils';
 import { DEFAULT_PAGE_SIZE } from '~/vue_shared/issuable/list/constants';
 import {
   WORK_ITEM_TYPE_ENUM_INCIDENT,

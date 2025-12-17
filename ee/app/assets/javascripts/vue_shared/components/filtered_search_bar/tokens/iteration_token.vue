@@ -9,8 +9,8 @@ import { __ } from '~/locale';
 import { OPERATOR_IS } from '~/vue_shared/components/filtered_search_bar/constants';
 import BaseToken from '~/vue_shared/components/filtered_search_bar/tokens/base_token.vue';
 import IterationTitle from 'ee/iterations/components/iteration_title.vue';
-import searchIterationCadencesQuery from 'ee/issues/list/queries/search_iteration_cadences.query.graphql';
 import { DEFAULT_CADENCES, DEFAULT_ITERATIONS } from '../constants';
+import searchIterationCadencesQuery from '../queries/search_iteration_cadences.query.graphql';
 
 export default {
   components: {

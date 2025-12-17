@@ -1,6 +1,6 @@
 import { GlIcon } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import IssueCardStatistics from '~/issues/list/components/issue_card_statistics.vue';
+import IssueCardStatistics from '~/work_items/list/components/issue_card_statistics.vue';
 import { WIDGET_TYPE_AWARD_EMOJI, WIDGET_TYPE_DEVELOPMENT } from '~/work_items/constants';
 
 describe('IssueCardStatistics CE component', () => {
