@@ -1,5 +1,5 @@
 <script>
-import { GlIcon, GlButton, GlLink, GlPopover, GlSprintf } from '@gitlab/ui';
+import { GlIcon, GlButton, GlLink, GlPopover } from '@gitlab/ui';
 import { s__, sprintf } from '~/locale';
 import { InternalEvents } from '~/tracking';
 import { focusDuoChatInput } from 'ee/ai/utils';
@@ -14,7 +14,6 @@ export default {
     GlButton,
     GlLink,
     GlPopover,
-    GlSprintf,
   },
   mixins: [trackingMixin],
   props: {
@@ -136,13 +135,11 @@ export default {
             show-close-button
             @shown="handlePopoverHover(feature.id)"
           >
-            <gl-sprintf :message="feature.description">
-              <template #learnMoreLink="{ content }">
-                <gl-link :href="feature.docsLink" target="_blank">
-                  {{ content }}
-                </gl-link>
-              </template>
-            </gl-sprintf>
+            {{ feature.description }}
+
+            <gl-link :href="feature.docsLink" target="_blank">
+              {{ s__('BillingPlans|Learn more.') }}
+            </gl-link>
 
             <gl-button
               v-if="exploreLinks[feature.id] || feature.id === 'duoChat'"

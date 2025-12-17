@@ -1,4 +1,4 @@
-import { GlButton, GlPopover, GlSprintf } from '@gitlab/ui';
+import { GlButton, GlPopover } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { stubComponent } from 'helpers/stub_component';
 import TrialUpgradeSection from 'ee/billings/pricing_information/components/trial_upgrade_section.vue';
@@ -46,7 +46,6 @@ describe('TrialUpgradeSection', () => {
             </div>
           `,
         }),
-        GlSprintf,
       },
     });
     trackingSpy = bindInternalEventDocument(wrapper.element).trackEventSpy;

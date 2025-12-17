@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Groups::DiscoversController, :saas, feature_category: :activation do
+  include SubscriptionPortalHelpers
+
   let_it_be(:owner) { create(:user) }
   let_it_be(:maintainer) { create(:user) }
   let_it_be(:developer) { create(:user) }
@@ -68,6 +70,10 @@ RSpec.describe Groups::DiscoversController, :saas, feature_category: :activation
       let_it_be(:group) { create(:group) }
       let_it_be(:expired_subscription) do
         create(:gitlab_subscription, :expired_trial, :free, namespace: group, trial_ends_on: 1.day.ago)
+      end
+
+      before do
+        stub_billing_plans(group.id)
       end
 
       it 'renders page when group has an expired trial' do

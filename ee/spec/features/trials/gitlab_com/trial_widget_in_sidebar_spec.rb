@@ -75,6 +75,10 @@ RSpec.describe 'Trial Widget in Sidebar', :saas, :js, feature_category: :acquisi
         )
       end
 
+      before do
+        stub_billing_plans(group_with_expired_trial.id, 'free', [])
+      end
+
       it 'shows upgrade after trial expiration' do
         travel_to(60.days.from_now) do
           visit group_path(group_with_expired_trial)

@@ -272,4 +272,39 @@ RSpec.describe GitlabSubscriptions::Trials, feature_category: :subscription_mana
       it { is_expected.to be(false) }
     end
   end
+
+  describe '#recently_expired?', :saas_gitlab_com_subscriptions do
+    let(:group) { build(:group, id: non_existing_record_id, gitlab_subscription: gitlab_subscription) }
+    let(:trial_ends_on) { 9.days.ago }
+
+    let(:gitlab_subscription) do
+      build(:gitlab_subscription, :expired_trial, :free, trial_ends_on: trial_ends_on)
+    end
+
+    subject { described_class.recently_expired?(group) }
+
+    context 'when free group' do
+      context 'when on 10th day of expiration' do
+        it { is_expected.to be(true) }
+      end
+
+      context 'when on 11th day of expiration' do
+        let(:trial_ends_on) { 10.days.ago }
+
+        it { is_expected.to be(false) }
+      end
+
+      context 'when without trial' do
+        let(:gitlab_subscription) { build(:gitlab_subscription, :free) }
+
+        it { is_expected.to be(false) }
+      end
+    end
+
+    context 'when paid group' do
+      let(:gitlab_subscription) { build(:gitlab_subscription, :expired_trial, :ultimate) }
+
+      it { is_expected.to be(false) }
+    end
+  end
 end
