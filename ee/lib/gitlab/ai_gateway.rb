@@ -162,8 +162,7 @@ module Gitlab
         'x-gitlab-feature-enablement-type' => enablement_type,
         'x-gitlab-enabled-feature-flags' => enabled_feature_flags.uniq.join(','),
         'x-gitlab-enabled-instance-verbose-ai-logs' => enabled_instance_verbose_ai_logs,
-        'X-Gitlab-Is-Team-Member' =>
-          (::Gitlab::Tracking::StandardContext.new.gitlab_team_member?(user&.id) || false).to_s
+        'X-Gitlab-Is-Team-Member' => gitlab_team_member?(user).to_s
       ).tap do |result|
         fallback_namespace = user&.user_preference&.duo_default_namespace_with_fallback
         next unless root_namespace_id || fallback_namespace
@@ -176,7 +175,17 @@ module Gitlab
       # Until https://gitlab.com/groups/gitlab-org/-/epics/15639 is complete, we generate service
       # definitions for each UP, so passing the service name here should be safe, even if `service`
       # is not defined explicitly.
-      ::CloudConnector::Tokens.get(unit_primitive: unit_primitive_name, resource: user)
+      ::CloudConnector::Tokens.get(
+        unit_primitive: unit_primitive_name,
+        resource: user,
+        extra_claims: {
+          skip_usage_cutoff: gitlab_team_member?(user)
+        }
+      )
+    end
+
+    private_class_method def self.gitlab_team_member?(user)
+      !!::Gitlab::Tracking::StandardContext.new.gitlab_team_member?(user&.id)
     end
   end
 end

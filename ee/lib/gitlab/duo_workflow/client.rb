@@ -75,7 +75,10 @@ module Gitlab
         ::CloudConnector::Tokens.get(
           unit_primitive: :duo_agent_platform,
           resource: user,
-          feature_setting: feature_setting
+          feature_setting: feature_setting,
+          extra_claims: {
+            skip_usage_cutoff: !!::Gitlab::Tracking::StandardContext.new.gitlab_team_member?(user&.id)
+          }
         )
       end
 
