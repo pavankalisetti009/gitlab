@@ -14,8 +14,9 @@ module Search
       pause_control :advanced_search
 
       TASKS = {
-        delete_project_work_items: ::Search::Elastic::Delete::ProjectWorkItemsService,
-        delete_project_vulnerabilities: ::Search::Elastic::Delete::VulnerabilityService
+        delete_all_blobs: ::Search::Elastic::Delete::AllBlobsService,
+        delete_project_vulnerabilities: ::Search::Elastic::Delete::VulnerabilityService,
+        delete_project_work_items: ::Search::Elastic::Delete::ProjectWorkItemsService
       }.freeze
 
       def perform(options = {})

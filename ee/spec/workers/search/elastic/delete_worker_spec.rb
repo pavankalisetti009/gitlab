@@ -39,10 +39,10 @@ RSpec.describe Search::Elastic::DeleteWorker, :elastic_helpers, feature_category
       end
 
       context 'when we pass valid task' do
+        subject(:perform) { described_class.new.perform({ task: task }) }
+
         context 'with delete_project_work_items task' do
-          subject(:perform) do
-            described_class.new.perform({ task: :delete_project_work_items })
-          end
+          let(:task) { :delete_project_work_items }
 
           it 'calls the corresponding service' do
             expect(::Search::Elastic::Delete::ProjectWorkItemsService).to receive(:execute)
@@ -51,20 +51,29 @@ RSpec.describe Search::Elastic::DeleteWorker, :elastic_helpers, feature_category
         end
 
         context 'with delete_project_vulnerabilities task' do
-          subject(:perform) do
-            described_class.new.perform({ task: :delete_project_vulnerabilities })
-          end
+          let(:task) { :delete_project_vulnerabilities }
 
           it 'calls the corresponding service' do
             expect(::Search::Elastic::Delete::VulnerabilityService).to receive(:execute)
             perform
           end
         end
+
+        context 'with delete_all_blobs task' do
+          let(:task) { :delete_all_blobs }
+
+          it 'calls the corresponding service' do
+            expect(::Search::Elastic::Delete::AllBlobsService).to receive(:execute)
+            perform
+          end
+        end
       end
 
       context 'when we pass invalid task' do
+        let(:task) { :unknown_task }
+
         it 'raises ArgumentError' do
-          expect { described_class.new.perform({ task: :unknown_task }) }.to raise_error(ArgumentError)
+          expect { perform }.to raise_error(ArgumentError)
         end
       end
     end

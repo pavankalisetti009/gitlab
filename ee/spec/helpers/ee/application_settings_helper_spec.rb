@@ -17,6 +17,7 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
 
     it 'contains search parameters' do
       expected_fields = %i[
+        elasticsearch_code_scope
         global_search_code_enabled
         global_search_commits_enabled
         global_search_wiki_enabled

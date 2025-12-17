@@ -49,6 +49,9 @@
             = f.gitlab_ui_checkbox_component :elasticsearch_search, s_('AdminSettings|Search with advanced search'), checkbox_options: { data: { testid: 'search-checkbox' } }, help_text: s_('AdminSettings|Turn off advanced search until indexing is complete.')
 
           .form-group
+            = f.gitlab_ui_checkbox_component :elasticsearch_code_scope, s_('AdminSettings|Code search with advanced search'), checkbox_options: { data: { testid: 'code-search-checkbox' } }, help_text: s_('AdminSettings|If exact code search is enabled, you should turn off this setting to save resources.')
+
+          .form-group
             = f.gitlab_ui_checkbox_component :elasticsearch_requeue_workers, s_('AdminSettings|Requeue indexing workers'), help_text: s_('AdminSettings|Improve non-code indexing throughput by enqueuing Sidekiq jobs until all documents are processed.')
 
           .form-group
