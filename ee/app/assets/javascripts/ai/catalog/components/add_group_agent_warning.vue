@@ -18,26 +18,24 @@ export default {
 
 <template>
   <gl-alert variant="warning" :dismissible="false">
-    <div>
-      <p>{{ s__('AICatalog|When you enable this agent:') }}</p>
-      <ul class="gl-pl-5">
-        <li>{{ s__('AICatalog|All project members will be able to use it.') }}</li>
-      </ul>
-    </div>
-    <div>
-      <p>
-        {{ s__('AICatalog|When this agent runs, it will have access to the projects:') }}
-      </p>
-      <ul class="gl-pl-5">
-        <li>{{ s__('AICatalog|That the user who runs it has access to.') }}</li>
-      </ul>
-    </div>
-
-    <p>{{ s__('AICatalog|Use caution when enabling.') }}</p>
-
-    <p>
-      <gl-link :href="docsUrl">{{ s__('AICatalog|Learn more') }}</gl-link
-      >.
-    </p>
+    <ul class="gl-pl-5">
+      <li>
+        {{
+          s__('AICatalog|When you enable this agent, all project members will be able to use it.')
+        }}
+      </li>
+      <li>
+        {{
+          s__(
+            'AICatalog|When this agent runs, it will have access to the projects the user who runs it has access to.',
+          )
+        }}
+      </li>
+      <li>
+        {{ s__('AICatalog|Use caution when enabling.') }}
+        <gl-link :href="docsUrl">{{ __('Learn more') }}</gl-link
+        >.
+      </li>
+    </ul>
   </gl-alert>
 </template>
