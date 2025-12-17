@@ -430,26 +430,6 @@ RSpec.describe Members::Groups::CreatorService, feature_category: :groups_and_pr
               expect(member).to be_persisted
             end
           end
-
-          context 'when feature flag is disabled' do
-            let_it_be(:user) do
-              create(:user, :service_account, composite_identity_enforced: true, provisioned_by_group: other_group)
-            end
-
-            before do
-              stub_saas_features(service_accounts_invite_restrictions: true)
-              stub_feature_flags(restrict_invites_for_comp_id_service_accounts: false)
-              allow(group_owner).to receive(:can?).and_return(false)
-              allow(group_owner).to receive(:can?).with(:admin_service_account_member, anything).and_return(true)
-            end
-
-            it 'allows adding the service account from outside hierarchy' do
-              member = described_class.add_member(source, user, :maintainer, current_user: group_owner)
-
-              expect(member).to be_a GroupMember
-              expect(member).to be_persisted
-            end
-          end
         end
 
         context 'when feature is not available' do

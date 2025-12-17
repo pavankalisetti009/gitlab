@@ -190,18 +190,6 @@ RSpec.describe Members::InviteUsersFinder, feature_category: :groups_and_project
         end
       end
 
-      context 'when feature flag is disabled' do
-        before do
-          stub_feature_flags(restrict_invites_for_comp_id_service_accounts: false)
-        end
-
-        it 'does not filter service accounts' do
-          result = finder.execute
-
-          expect(result).to include(subgroup_sa, other_group_sa)
-        end
-      end
-
       context 'when feature is not available' do
         before do
           stub_saas_features(service_accounts_invite_restrictions: false)
