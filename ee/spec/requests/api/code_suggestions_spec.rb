@@ -59,7 +59,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
     allow(Gitlab::GlobalAnonymousId).to receive(:instance_id).and_return(global_instance_id)
 
     allow(::CloudConnector::Tokens).to receive(:get)
-      .with(unit_primitive: unit_primitive_name, resource: authorized_user)
+      .with(unit_primitive: unit_primitive_name, resource: authorized_user, extra_claims: { skip_usage_cutoff: false })
       .and_return(token)
 
     purchases = class_double(GitlabSubscriptions::AddOnPurchase)

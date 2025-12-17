@@ -225,7 +225,10 @@ RSpec.describe Gitlab::DuoWorkflow::Client, feature_category: :duo_agent_platfor
       expect(::CloudConnector::Tokens).to receive(:get).with(
         unit_primitive: :duo_agent_platform,
         feature_setting: nil,
-        resource: user
+        resource: user,
+        extra_claims: {
+          skip_usage_cutoff: false
+        }
       )
 
       expect(described_class.cloud_connector_token(user: user)).to eq(token)
@@ -244,10 +247,60 @@ RSpec.describe Gitlab::DuoWorkflow::Client, feature_category: :duo_agent_platfor
         expect(::CloudConnector::Tokens).to receive(:get).with(
           unit_primitive: :duo_agent_platform,
           feature_setting: feature_setting,
-          resource: user
+          resource: user,
+          extra_claims: {
+            skip_usage_cutoff: false
+          }
         ).and_return(token)
 
         expect(described_class.cloud_connector_token(user: user, feature_setting: feature_setting)).to eq(token)
+      end
+    end
+
+    context 'when the user is a GitLab team member' do
+      before do
+        allow_next_instance_of(::Gitlab::Tracking::StandardContext) do |instance|
+          allow(instance).to receive(:gitlab_team_member?).and_return(true)
+        end
+      end
+
+      it 'adds extra claims into the CloudConnector token' do
+        expect(::CloudConnector::Tokens)
+          .to receive(:get)
+          .with(hash_including(extra_claims: { skip_usage_cutoff: true }))
+          .and_return('instance jwt')
+
+        described_class.cloud_connector_token(user: user)
+      end
+    end
+
+    context 'when the user is not a GitLab team member' do
+      before do
+        allow_next_instance_of(::Gitlab::Tracking::StandardContext) do |instance|
+          allow(instance).to receive(:gitlab_team_member?).and_return(false)
+        end
+      end
+
+      it 'adds extra claims into the CloudConnector token' do
+        expect(::CloudConnector::Tokens)
+          .to receive(:get)
+          .with(hash_including(extra_claims: { skip_usage_cutoff: false }))
+          .and_return('instance jwt')
+
+        described_class.cloud_connector_token(user: user)
+      end
+    end
+
+    context 'when the user is nil' do
+      let(:user) { nil }
+
+      it 'handles the extra claims in the CloudConnector token' do
+        expect(::CloudConnector::Tokens)
+          .to receive(:get)
+          .with(hash_including(extra_claims: { skip_usage_cutoff: false }))
+          .and_return('instance jwt')
+
+        described_class.cloud_connector_token(user: user)
       end
     end
   end

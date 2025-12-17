@@ -324,7 +324,10 @@ RSpec.describe Gitlab::AiGateway, feature_category: :system_access do
       end
 
       allow(::CloudConnector::Tokens).to receive(:get)
-        .with(unit_primitive: unit_primitive_name, resource: user)
+        .with(
+          unit_primitive: unit_primitive_name,
+          resource: user,
+          extra_claims: { skip_usage_cutoff: is_team_member })
         .and_return(token)
       allow(user).to receive(:allowed_to_use)
         .with(ai_feature, unit_primitive_name: unit_primitive_name, feature_setting: nil)
@@ -413,12 +416,26 @@ RSpec.describe Gitlab::AiGateway, feature_category: :system_access do
           .merge('x-gitlab-feature-enabled-by-namespace-ids' => '')
         )
       end
+
+      it 'sets the correct extra claims' do
+        expect(::CloudConnector::Tokens).to receive(:get)
+          .with(unit_primitive: unit_primitive_name, resource: user, extra_claims: { skip_usage_cutoff: false })
+
+        headers
+      end
     end
 
     context 'when user is a GitLab team member' do
       let(:is_team_member) { true }
 
       it { is_expected.to match(expected_headers) }
+
+      it 'adds extra claims to the cloud connector token' do
+        expect(::CloudConnector::Tokens).to receive(:get)
+          .with(unit_primitive: unit_primitive_name, resource: user, extra_claims: { skip_usage_cutoff: true })
+
+        headers
+      end
     end
   end
 

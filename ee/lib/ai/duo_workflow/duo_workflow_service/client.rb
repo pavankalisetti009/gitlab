@@ -73,7 +73,10 @@ module Ai
         def cloud_connector_token
           CloudConnector::Tokens.get(
             unit_primitive: :duo_agent_platform,
-            resource: current_user
+            resource: current_user,
+            extra_claims: {
+              skip_usage_cutoff: !!::Gitlab::Tracking::StandardContext.new.gitlab_team_member?(current_user&.id)
+            }
           )
         end
 

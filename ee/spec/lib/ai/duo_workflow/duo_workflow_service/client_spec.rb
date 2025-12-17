@@ -77,6 +77,53 @@ RSpec.describe Ai::DuoWorkflow::DuoWorkflowService::Client, feature_category: :d
         expect(result.message).to eq('Test error')
       end
     end
+
+    context 'when the user is a GitLab team member' do
+      before do
+        allow_next_instance_of(::Gitlab::Tracking::StandardContext) do |instance|
+          allow(instance).to receive(:gitlab_team_member?).and_return(true)
+        end
+      end
+
+      it 'adds extra claims into the CloudConnector token' do
+        expect(::CloudConnector::Tokens)
+          .to receive(:get)
+          .with(hash_including(extra_claims: { skip_usage_cutoff: true }))
+          .and_return('instance jwt')
+
+        client.generate_token
+      end
+    end
+
+    context 'when the user is not a GitLab team member' do
+      before do
+        allow_next_instance_of(::Gitlab::Tracking::StandardContext) do |instance|
+          allow(instance).to receive(:gitlab_team_member?).and_return(false)
+        end
+      end
+
+      it 'adds extra claims into the CloudConnector token' do
+        expect(::CloudConnector::Tokens)
+          .to receive(:get)
+          .with(hash_including(extra_claims: { skip_usage_cutoff: false }))
+          .and_return('instance jwt')
+
+        client.generate_token
+      end
+    end
+
+    context 'when the current_user is nil' do
+      let(:current_user) { nil }
+
+      it 'handles the extra claims in the CloudConnector token' do
+        expect(::CloudConnector::Tokens)
+          .to receive(:get)
+          .with(hash_including(extra_claims: { skip_usage_cutoff: false }))
+          .and_return('instance jwt')
+
+        client.generate_token
+      end
+    end
   end
 
   describe '#list_tools' do
