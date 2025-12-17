@@ -28,11 +28,10 @@ module Elastic
       end
 
       def fuzzy_query_hash(fields, query, options)
-        shoulds = []
         clause = options[:count_only] ? :filter : :must
 
-        fields.each do |field|
-          shoulds << {
+        shoulds = fields.map do |field|
+          {
             match: {
               "#{field}": {
                 query: query,

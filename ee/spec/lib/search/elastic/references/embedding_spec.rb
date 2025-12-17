@@ -54,16 +54,14 @@ RSpec.describe ::Search::Elastic::References::Embedding, :elastic_helpers, featu
     let(:embedding_ref4) { described_class.new(WorkItem, issue.id, "project_#{project.id}") }
 
     it 'preloads database records to avoid N+1 queries' do
-      refs = []
-      [embedding_ref, embedding_ref2].each do |ref|
-        refs << Search::Elastic::Reference.deserialize(ref.serialize)
+      refs = [embedding_ref, embedding_ref2].map do |ref|
+        Search::Elastic::Reference.deserialize(ref.serialize)
       end
 
       control = ActiveRecord::QueryRecorder.new { described_class.preload_indexing_data(refs).map(&:database_record) }
 
-      refs = []
-      [embedding_ref, embedding_ref2, embedding_ref3, embedding_ref4].each do |ref|
-        refs << Search::Elastic::Reference.deserialize(ref.serialize)
+      refs = [embedding_ref, embedding_ref2, embedding_ref3, embedding_ref4].map do |ref|
+        Search::Elastic::Reference.deserialize(ref.serialize)
       end
 
       database_records = nil
