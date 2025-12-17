@@ -6,7 +6,7 @@ import {
   convertToUrlParams,
   getCustomFieldTokenId,
   mergeDuplicatedCustomFieldTokens,
-} from 'ee/issues/list/utils';
+} from 'ee/work_items/list/utils';
 import {
   TOKEN_TYPE_STATE,
   OPERATOR_IS,

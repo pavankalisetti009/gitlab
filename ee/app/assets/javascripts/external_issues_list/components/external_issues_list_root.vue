@@ -10,7 +10,7 @@ import {
   DEFAULT_PAGE_SIZE,
 } from '~/vue_shared/issuable/list/constants';
 import { STATUS_ALL, STATUS_CLOSED, STATUS_OPEN } from '~/issues/constants';
-import { i18n } from '~/issues/list/constants';
+import { i18n } from '~/work_items/list/constants';
 import {
   FILTERED_SEARCH_TERM,
   OPERATORS_IS,

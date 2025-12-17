@@ -12,7 +12,7 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import BoardAddNewColumn, { listTypeInfo } from 'ee/boards/components/board_add_new_column.vue';
 import projectBoardMilestonesQuery from '~/boards/graphql/project_board_milestones.query.graphql';
-import searchIterationQuery from 'ee/issues/list/queries/search_iterations.query.graphql';
+import searchIterationQuery from 'ee/work_items/list/graphql/search_iterations.query.graphql';
 import createBoardListMutation from 'ee_else_ce/boards/graphql/board_list_create.mutation.graphql';
 import boardLabelsQuery from '~/boards/graphql/board_labels.query.graphql';
 import usersAutocompleteQuery from '~/graphql_shared/queries/users_autocomplete.query.graphql';

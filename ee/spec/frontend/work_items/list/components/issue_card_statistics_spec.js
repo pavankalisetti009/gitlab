@@ -1,5 +1,5 @@
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import IssueCardStatistics from 'ee/issues/list/components/issue_card_statistics.vue';
+import IssueCardStatistics from 'ee/work_items/list/components/issue_card_statistics.vue';
 import BlockingIssuesCount from 'ee/issues/components/blocking_issues_count.vue';
 
 describe('IssueCardStatistics EE component', () => {

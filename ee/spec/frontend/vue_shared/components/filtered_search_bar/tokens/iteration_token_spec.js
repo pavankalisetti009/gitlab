@@ -5,8 +5,8 @@ import VueApollo from 'vue-apollo';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { createAlert } from '~/alert';
+import searchIterationCadencesQuery from 'ee/vue_shared/components/filtered_search_bar/queries/search_iteration_cadences.query.graphql';
 import IterationToken from 'ee/vue_shared/components/filtered_search_bar/tokens/iteration_token.vue';
-import searchIterationCadencesQuery from 'ee/issues/list/queries/search_iteration_cadences.query.graphql';
 import { mockIterationToken, groupCadencesResponse } from '../mock_data';
 
 Vue.use(VueApollo);

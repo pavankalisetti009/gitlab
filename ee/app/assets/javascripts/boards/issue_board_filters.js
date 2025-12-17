@@ -1,6 +1,6 @@
 import issueBoardFiltersCE from '~/boards/issue_board_filters';
 import { WORKSPACE_GROUP, WORKSPACE_PROJECT } from '~/issues/constants';
-import searchIterationQuery from '../issues/list/queries/search_iterations.query.graphql';
+import searchIterationQuery from '../work_items/list/graphql/search_iterations.query.graphql';
 
 export default function issueBoardFilters(apollo, fullPath, isGroupBoard) {
   const boardType = isGroupBoard ? WORKSPACE_GROUP : WORKSPACE_PROJECT;

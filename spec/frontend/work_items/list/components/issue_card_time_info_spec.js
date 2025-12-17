@@ -1,7 +1,7 @@
 import { GlIcon } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { STATUS_CLOSED } from '~/issues/constants';
-import IssueCardTimeInfo from '~/issues/list/components/issue_card_time_info.vue';
+import IssueCardTimeInfo from '~/work_items/list/components/issue_card_time_info.vue';
 import IssuableMilestone from '~/vue_shared/issuable/list/components/issuable_milestone.vue';
 import {
   WIDGET_TYPE_MILESTONE,

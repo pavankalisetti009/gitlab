@@ -1,7 +1,7 @@
 <script>
 import { GlEmptyState } from '@gitlab/ui';
 import { s__ } from '~/locale';
-import EmptyStateWithoutAnyIssues from '~/issues/list/components/empty_state_without_any_issues.vue';
+import EmptyStateWithoutAnyIssues from '~/work_items/list/components/empty_state_without_any_issues.vue';
 import { NO_DATA_EMPTY_STATE_TYPE, NO_DATA_WITH_FILTERS_EMPTY_STATE_TYPE } from '../constants';
 
 export default {

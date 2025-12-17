@@ -3,6 +3,7 @@ import { GlIcon, GlTooltipDirective } from '@gitlab/ui';
 import { findAwardEmojiWidget, findDevelopmentWidget } from '~/work_items/utils';
 
 export default {
+  name: 'IssueCardStatistics',
   components: {
     GlIcon,
   },

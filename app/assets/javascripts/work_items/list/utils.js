@@ -41,7 +41,7 @@ import {
 } from '~/work_items/constants';
 import { EMOJI_THUMBS_UP, EMOJI_THUMBS_DOWN } from '~/emoji/constants';
 import { BoardType } from '~/boards/constants';
-import { STATUS_CLOSED, STATUS_OPEN, TYPE_EPIC } from '../constants';
+import { STATUS_CLOSED, STATUS_OPEN, TYPE_EPIC } from '~/issues/constants';
 import {
   ALTERNATIVE_FILTER,
   API_PARAM,
@@ -83,7 +83,7 @@ import {
   MERGED_AT_DESC,
   START_DATE_ASC,
   START_DATE_DESC,
-} from './constants';
+} from '~/work_items/list/constants';
 
 /**
  * Get the types of work items that should be displayed on issues lists.

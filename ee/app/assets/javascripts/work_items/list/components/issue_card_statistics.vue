@@ -1,8 +1,9 @@
 <script>
-import IssueCardStatistics from '~/issues/list/components/issue_card_statistics.vue';
-import BlockingIssuesCount from '../../components/blocking_issues_count.vue';
+import IssueCardStatistics from '~/work_items/list/components/issue_card_statistics.vue';
+import BlockingIssuesCount from 'ee/issues/components/blocking_issues_count.vue';
 
 export default {
+  name: 'IssueCardStatisticsEE',
   components: {
     BlockingIssuesCount,
     IssueCardStatistics,

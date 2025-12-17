@@ -1,7 +1,7 @@
 import { GlEmptyState } from '@gitlab/ui';
 import IssuesAnalyticsEmptyState from 'ee/issues_analytics/components/issues_analytics_empty_state.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import EmptyStateWithoutAnyIssues from '~/issues/list/components/empty_state_without_any_issues.vue';
+import EmptyStateWithoutAnyIssues from '~/work_items/list/components/empty_state_without_any_issues.vue';
 
 describe('IssuesAnalyticsEmptyState', () => {
   let wrapper;

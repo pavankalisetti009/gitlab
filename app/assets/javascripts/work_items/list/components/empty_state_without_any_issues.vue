@@ -6,9 +6,10 @@ import { helpPagePath } from '~/helpers/help_page_helper';
 import NewResourceDropdown from '~/vue_shared/components/new_resource_dropdown/new_resource_dropdown.vue';
 import SafeHtml from '~/vue_shared/directives/safe_html';
 import { s__ } from '~/locale';
-import { hasNewIssueDropdown } from '../has_new_issue_dropdown_mixin';
+import searchProjectsQuery from '../graphql/search_projects.query.graphql';
 
 export default {
+  name: 'EmptyStateWithoutAnyIssues',
   emptyStateSvg,
   issuesHelpPagePath: helpPagePath('user/project/issues/_index'),
   jiraIntegrationPath: helpPagePath('integration/jira/_index'),
@@ -21,9 +22,9 @@ export default {
   directives: {
     SafeHtml,
   },
-  mixins: [hasNewIssueDropdown()],
   inject: [
     'canCreateProjects',
+    'fullPath',
     'isSignedIn',
     'newIssuePath',
     'newProjectPath',
@@ -47,6 +48,11 @@ export default {
     },
   },
   computed: {
+    newIssueDropdownQueryVariables() {
+      return {
+        fullPath: this.fullPath,
+      };
+    },
     showNewProjectButton() {
       const canCreateGroupLevelWorkItems = this.workItemPlanningViewEnabled && this.hasEpicsFeature;
       return (
@@ -71,7 +77,13 @@ export default {
           );
     },
   },
+  methods: {
+    extractProjects(data) {
+      return data?.group?.projects?.nodes;
+    },
+  },
   jiraCloudAppLogo,
+  searchProjectsQuery,
 };
 </script>
 

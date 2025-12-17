@@ -8,7 +8,7 @@ import {
 } from '@gitlab/ui';
 import { isEmpty } from 'lodash';
 
-import searchIterationQuery from 'ee/issues/list/queries/search_iterations.query.graphql';
+import searchIterationQuery from 'ee/work_items/list/graphql/search_iterations.query.graphql';
 import { getIterationPeriod } from 'ee/iterations/utils';
 import { n__, s__, __, sprintf } from '~/locale';
 import { TYPENAME_ITERATION } from '~/graphql_shared/constants';
