@@ -22,13 +22,10 @@ The API can be explored using the [interactive GraphQL explorer](../_index.md#in
 Each table below documents a GraphQL type. Types match loosely to models, but not all
 fields and methods on a model are available via GraphQL.
 
-{{< alert type="warning" >}}
-
-Fields that are deprecated are marked with {{< icon name="warning-solid" >}}.
-Items (fields, enums, etc) that have been removed according to our [deprecation process](../_index.md#deprecation-and-removal-process) can be found
-in [Removed Items](../removed_items.md).
-
-{{< /alert >}}
+> [!warning]
+> Fields that are deprecated are marked with {{< icon name="warning-solid" >}}.
+> Items (fields, enums, etc) that have been removed according to our [deprecation process](../_index.md#deprecation-and-removal-process)
+> can be found in [Removed Items](../removed_items.md).
 
 <!-- vale off -->
 <!-- Vale linting disabled after this line. -->
