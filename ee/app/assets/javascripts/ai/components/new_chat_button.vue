@@ -181,6 +181,7 @@ export default {
     data-testid="add-new-agent-toggle"
     category="primary"
     variant="default"
+    size="small"
     icon="pencil-square"
     class="ai-nav-icon-agents"
     searchable
