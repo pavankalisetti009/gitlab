@@ -59,12 +59,21 @@ module Security
             )
 
             SecApplicationRecord.current_transaction.after_commit do
-              ::Vulnerabilities::BulkEsOperationService.new(vulnerabilities_relation).execute(&:itself)
+              ::Vulnerabilities::BulkEsOperationService.new(vulnerabilities_relation).execute do
+                create_detection_transitions(redetected_vulnerability_ids)
+              end
             end
           end
 
           def create_state_transitions
             ::Vulnerabilities::StateTransition.bulk_insert!(state_transitions)
+          end
+
+          def create_detection_transitions(vulnerability_ids)
+            return unless Feature.enabled?(:new_security_dashboard_exclude_no_longer_detected, pipeline.project)
+
+            findings = Vulnerabilities::Finding.by_vulnerability(vulnerability_ids)
+            ::Vulnerabilities::DetectionTransitions::InsertService.new(findings, detected: true).execute
           end
 
           def state_transitions

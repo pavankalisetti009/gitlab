@@ -53,6 +53,27 @@ RSpec.describe Security::Ingestion::MarkAsResolvedService, feature_category: :vu
           expect(vulnerability.vulnerability_read.resolved_on_default_branch).to be_truthy
         end
 
+        it 'creates a detection transition with detected: false', :aggregate_failures do
+          finding_ids = vulnerability.findings.pluck(:id)
+
+          expect { command.execute }.to change {
+            Vulnerabilities::DetectionTransition.where(vulnerability_occurrence_id: finding_ids).count
+          }.by(1)
+
+          transition = Vulnerabilities::DetectionTransition.find_by(vulnerability_occurrence_id: finding_ids)
+          expect(transition.detected).to be(false)
+        end
+
+        context 'when new_security_dashboard_exclude_no_longer_detected is disabled' do
+          before do
+            stub_feature_flags(new_security_dashboard_exclude_no_longer_detected: false)
+          end
+
+          it 'does not create detection transitions' do
+            expect { command.execute }.not_to change { Vulnerabilities::DetectionTransition.count }
+          end
+        end
+
         context 'when there is a no longer detected vulnerability' do
           let_it_be_with_reload(:no_longer_detected) do
             create(:vulnerability, :sast,

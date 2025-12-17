@@ -89,6 +89,7 @@ module Security
 
         ::Vulnerabilities::BulkEsOperationService.new(vulnerabilities_relation).execute do |relation|
           relation.update_all(resolved_on_default_branch: true)
+          create_detection_transitions(no_longer_detected_vulnerability_ids)
         end
 
         Vulnerabilities::Reads::UpsertService.new(vulnerabilities_relation,
@@ -99,6 +100,13 @@ module Security
         CreateVulnerabilityRepresentationInformation.execute(pipeline, vulnerabilities_relation)
 
         track_no_longer_detected_vulnerabilities(no_longer_detected_vulnerability_ids.count)
+      end
+
+      def create_detection_transitions(vulnerability_ids)
+        return unless Feature.enabled?(:new_security_dashboard_exclude_no_longer_detected, project)
+
+        findings = Vulnerabilities::Finding.by_vulnerability(vulnerability_ids)
+        ::Vulnerabilities::DetectionTransitions::InsertService.new(findings, detected: false).execute
       end
 
       def auto_resolve(no_longer_detected_vulnerability_ids)

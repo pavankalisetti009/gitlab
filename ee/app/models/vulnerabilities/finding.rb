@@ -208,6 +208,11 @@ module Vulnerabilities
       )
     end
 
+    scope :with_latest_detection_transition, -> do
+      last_detection_transition = Vulnerabilities::DetectionTransition.where(arel_table[:id].eq(Vulnerabilities::DetectionTransition.arel_table[:vulnerability_occurrence_id])).order(id: :desc).limit(1)
+      includes(:detection_transitions).where(detection_transitions: { id: last_detection_transition })
+    end
+
     scope :with_fix_available, ->(fix_available) do
       remediation = ::Vulnerabilities::FindingRemediation.arel_table
       solution_query = where(fix_available ? 'vulnerability_occurrences.solution IS NOT NULL' : 'vulnerability_occurrences.solution IS NULL')
@@ -623,6 +628,10 @@ module Vulnerabilities
       else
         HIGH_CONFIDENCE_AI_RESOLUTION_CWES.include?(cwe_value&.upcase)
       end
+    end
+
+    def latest_detection_transition
+      detection_transitions.last
     end
 
     protected
