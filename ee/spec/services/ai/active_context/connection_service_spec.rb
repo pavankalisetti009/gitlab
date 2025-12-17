@@ -85,4 +85,12 @@ RSpec.describe Ai::ActiveContext::ConnectionService, feature_category: :global_s
       end
     end
   end
+
+  describe '.disable_connection' do
+    it 'schedules a DisableWorker job' do
+      expect(Ai::ActiveContext::DisableWorker).to receive(:perform_in).with(1.minute)
+
+      described_class.disable_connection
+    end
+  end
 end

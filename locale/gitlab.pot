@@ -19263,6 +19263,9 @@ msgstr ""
 msgid "Configure settings for exact code search."
 msgstr ""
 
+msgid "Configure settings for semantic search."
+msgstr ""
+
 msgid "Configure specific limits for Files API requests that supersede the general user and IP rate limits."
 msgstr ""
 
@@ -25286,6 +25289,9 @@ msgid "Disable inviting new members to group or project by group/project owners 
 msgstr ""
 
 msgid "Disable password authentication for users with an SSO identity"
+msgstr ""
+
+msgid "Disable semantic search"
 msgstr ""
 
 msgid "Disabled"
@@ -64040,6 +64046,9 @@ msgstr ""
 msgid "Semantic search"
 msgstr ""
 
+msgid "Semantic search will be disabled soon."
+msgstr ""
+
 msgid "Send"
 msgstr ""
 
@@ -67034,7 +67043,7 @@ msgstr ""
 msgid "Successfully confirmed"
 msgstr ""
 
-msgid "Successfully created connection for semantic search."
+msgid "Successfully created connection for semantic search. Indexing will start soon."
 msgstr ""
 
 msgid "Successfully deactivated"
@@ -69346,6 +69355,9 @@ msgid "This action cannot be undone, and will permanently delete the %{key} SSH 
 msgstr ""
 
 msgid "This action cannot be undone, and will permanently delete the %{key} SSH key. All commits signed using this SSH key will be marked as unverified."
+msgstr ""
+
+msgid "This action is destructive. Disabling semantic search will remove all indexed data. If you reconnect in the future, a full index will be performed."
 msgstr ""
 
 msgid "This action will permanently delete this group, including its subgroups and projects, on %{date}. Scheduled pipelines will not run during deletion."
@@ -73285,9 +73297,6 @@ msgid "Use template"
 msgstr ""
 
 msgid "Use the %{strongStart}Test%{strongEnd} option above to create an event."
-msgstr ""
-
-msgid "Use the advanced search cluster for semantic search."
 msgstr ""
 
 msgid "Use the link below to confirm your email address (%{email})"

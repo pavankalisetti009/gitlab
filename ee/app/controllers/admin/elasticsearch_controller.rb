@@ -50,11 +50,21 @@ class Admin::ElasticsearchController < Admin::ApplicationController
   def use_advanced_search_cluster_for_semantic_search
     Ai::ActiveContext::ConnectionService.connect_to_advanced_search_cluster
 
-    flash[:notice] = _('Successfully created connection for semantic search.')
+    flash[:notice] = _('Successfully created connection for semantic search. Indexing will start soon.')
 
     redirect_to redirect_path(anchor: 'js-semantic-search-settings')
   rescue Ai::ActiveContext::ConnectionService::ConnectionError => e
     flash[:alert] = format(_('Failed to connect to Advanced Search cluster: %{error}'), error: e.message)
+
+    redirect_to redirect_path(anchor: 'js-semantic-search-settings')
+  end
+
+  # POST
+  # Disable semantic search
+  def disable_semantic_search
+    Ai::ActiveContext::ConnectionService.disable_connection
+
+    flash[:notice] = _('Semantic search will be disabled soon.')
 
     redirect_to redirect_path(anchor: 'js-semantic-search-settings')
   end
