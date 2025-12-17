@@ -65,11 +65,47 @@ module API
         params do
           optional :description, type: String, desc: 'Description of the runner controller',
             documentation: { example: 'Controller for managing runner' }
+          optional :enabled, type: Boolean, default: false, desc: 'Enable or disable the runner controller',
+            documentation: { example: true }
         end
         post do
-          controller = ::Ci::RunnerController.new(description: params[:description])
+          controller = ::Ci::RunnerController.new(
+            description: params[:description],
+            enabled: params[:enabled]
+          )
 
           if controller.save
+            present controller, with: Entities::Ci::RunnerController
+          else
+            bad_request!(controller.errors.full_messages.to_sentence)
+          end
+        end
+
+        desc 'Update a runner controller' do
+          detail 'Update a runner controller by using the ID of the controller.'
+          success Entities::Ci::RunnerController
+          failure [
+            { code: 403, message: 'Forbidden' },
+            { code: 404, message: 'Not found' },
+            { code: 400, message: 'Bad Request' }
+          ]
+          tags %w[runner_controllers]
+        end
+        params do
+          requires :id, type: Integer, desc: 'ID of the runner controller'
+          optional :description, type: String, desc: 'Description of the runner controller',
+            documentation: { example: 'Controller for managing runner' }
+          optional :enabled, type: Boolean, desc: 'Enable or disable the runner controller',
+            documentation: { example: true }
+        end
+        put ':id' do
+          controller = ::Ci::RunnerController.find_by_id(params[:id])
+
+          not_found! unless controller
+
+          update_params = params.slice(:description, :enabled)
+
+          if controller.update(update_params)
             present controller, with: Entities::Ci::RunnerController
           else
             bad_request!(controller.errors.full_messages.to_sentence)
@@ -98,7 +134,7 @@ module API
 
             unless result
               error_message = controller.errors.full_messages.to_sentence
-              render_api_error!("Failed to delete runner controller. #{error_message}", 400)
+              bad_request!("Failed to delete runner controller. #{error_message}")
             end
           end
         end
