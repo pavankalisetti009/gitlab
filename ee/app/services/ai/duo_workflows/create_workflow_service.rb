@@ -21,7 +21,7 @@ module Ai
 
         namespace = @container.is_a?(::Project) ? @container.namespace : @container
         credit_check_response = Ai::UsageQuotaService.new(
-          user: @current_user, namespace: namespace
+          ai_feature: chat? ? :duo_chat : :duo_agent_platform, user: @current_user, namespace: namespace
         ).execute
 
         if credit_check_response.error?

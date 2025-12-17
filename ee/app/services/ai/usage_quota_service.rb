@@ -4,7 +4,8 @@ module Ai
   class UsageQuotaService < BaseService
     include Gitlab::Utils::StrongMemoize
 
-    def initialize(user:, namespace: nil)
+    def initialize(ai_feature:, user:, namespace: nil)
+      @ai_feature = ai_feature
       @user = user
       @namespace = namespace
     end
@@ -36,10 +37,11 @@ module Ai
 
     private
 
-    attr_reader :user, :namespace
+    attr_reader :user, :namespace, :ai_feature
 
     def root_namespace
-      return namespace if namespace
+      # If the user can invoke the feature in the current context, check quota on `namespace`, else use fallback
+      return namespace if namespace && user.allowed_by_namespace_ids(ai_feature).include?(namespace.id)
 
       user.user_preference.duo_default_namespace_with_fallback
     end

@@ -56,7 +56,8 @@ module Gitlab
         return false unless user
         return false unless project || group
 
-        ::Ai::UsageQuotaService.new(user: user, namespace: group || project.group).execute.success?
+        ::Ai::UsageQuotaService.new(ai_feature: :duo_chat, user: user, namespace: group || project.group).execute
+          .success?
       end
 
       def self.namespace

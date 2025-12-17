@@ -36,7 +36,7 @@ module EE
       def user_disabled?(user)
         return false unless user.service_account? && user.composite_identity_enforced?
 
-        ::Ai::UsageQuotaService.new(user: user).execute.error?
+        ::Ai::UsageQuotaService.new(ai_feature: :duo_agent_platform, user: user).execute.error?
       end
     end
   end
