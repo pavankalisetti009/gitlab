@@ -6,11 +6,20 @@ import {
   GlBadge,
 } from '@gitlab/ui';
 import { RouterLinkStub as RouterLink } from '@vue/test-utils';
+import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import AiCatalogListItem from 'ee/ai/catalog/components/ai_catalog_list_item.vue';
 import FoundationalIcon from 'ee/ai/components/foundational_icon.vue';
 import { AI_CATALOG_AGENTS_EDIT_ROUTE } from 'ee/ai/catalog/router/constants';
-import { AI_CATALOG_TYPE_THIRD_PARTY_FLOW } from 'ee/ai/catalog/constants';
+import {
+  AI_CATALOG_TYPE_THIRD_PARTY_FLOW,
+  AI_CATALOG_TYPE_AGENT,
+  AI_CATALOG_TYPE_FLOW,
+  TRACK_EVENT_DISABLE_AI_CATALOG_ITEM,
+  TRACK_EVENT_ITEM_TYPES,
+  TRACK_EVENT_ORIGIN_PROJECT,
+  TRACK_EVENT_PAGE_LIST,
+} from 'ee/ai/catalog/constants';
 import {
   VISIBILITY_TYPE_ICON,
   VISIBILITY_LEVEL_PUBLIC_STRING,
@@ -69,12 +78,19 @@ describe('AiCatalogListItem', () => {
     showStatusBadge: true,
   };
 
-  const createComponent = ({ item = mockItem, itemTypeConfig = defaultItemTypeConfig } = {}) => {
+  const { bindInternalEventDocument } = useMockInternalEventsTracking();
+
+  const createComponent = ({
+    item = mockItem,
+    itemTypeConfig = defaultItemTypeConfig,
+    provide = {},
+  } = {}) => {
     wrapper = shallowMountExtended(AiCatalogListItem, {
       propsData: {
         item,
         itemTypeConfig,
       },
+      provide,
       mocks: {
         $route: {
           path: '/agents/:id',
@@ -396,41 +412,83 @@ describe('AiCatalogListItem', () => {
         );
       });
     });
+
+    describe('when item has group configuration but no project configuration', () => {
+      beforeEach(() => {
+        createComponent({
+          item: {
+            ...mockItem,
+            configurationForGroup: { enabled: true },
+            configurationForProject: { enabled: false },
+          },
+        });
+      });
+
+      it('displays ready to enable badge', () => {
+        expect(findStatusBadge().findComponent(GlBadge).text()).toBe('Ready to enable');
+        expect(findStatusBadge().findComponent(GlBadge).props('variant')).toBe('success');
+        expect(findStatusBadge().attributes('title')).toBe(
+          'To use this agent, a user with at least the Maintainer role must enable it in this project.',
+        );
+      });
+    });
+
+    describe('when item has group and project configurations', () => {
+      beforeEach(() => {
+        createComponent({
+          item: {
+            ...mockItem,
+            configurationForGroup: { enabled: true },
+            configurationForProject: { enabled: true },
+          },
+        });
+      });
+
+      it('does not display status badge', () => {
+        expect(findStatusBadge().exists()).toBe(false);
+      });
+    });
   });
 
-  describe('when item has group configuration but no project configuration', () => {
+  describe.each`
+    scenario                      | itemType                            | isEnabled | expectedOrigin
+    ${'Disable agent'}            | ${AI_CATALOG_TYPE_AGENT}            | ${true}   | ${TRACK_EVENT_ORIGIN_PROJECT}
+    ${'Disable flow'}             | ${AI_CATALOG_TYPE_FLOW}             | ${true}   | ${TRACK_EVENT_ORIGIN_PROJECT}
+    ${'Disable third party flow'} | ${AI_CATALOG_TYPE_THIRD_PARTY_FLOW} | ${true}   | ${TRACK_EVENT_ORIGIN_PROJECT}
+  `('when clicking $scenario', ({ itemType, isEnabled, expectedOrigin }) => {
     beforeEach(() => {
       createComponent({
         item: {
           ...mockItem,
-          configurationForGroup: { enabled: true },
-          configurationForProject: { enabled: false },
+          itemType,
+          userPermissions: {
+            adminAiCatalogItem: true,
+          },
+          configurationForProject: {
+            id: 'gid://gitlab/Ai::Catalog::ItemConsumer/1',
+            enabled: isEnabled,
+          },
+        },
+        provide: {
+          projectId: '2000000',
         },
       });
     });
 
-    it('displays ready to enable badge', () => {
-      expect(findStatusBadge().findComponent(GlBadge).text()).toBe('Ready to enable');
-      expect(findStatusBadge().findComponent(GlBadge).props('variant')).toBe('success');
-      expect(findStatusBadge().attributes('title')).toBe(
-        'To use this agent, a user with at least the Maintainer role must enable it in this project.',
+    it(`tracks event  ${TRACK_EVENT_DISABLE_AI_CATALOG_ITEM} with correct properties`, async () => {
+      const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+      await wrapper.findByTestId('disable-button').vm.$emit('action');
+
+      expect(trackEventSpy).toHaveBeenCalledWith(
+        TRACK_EVENT_DISABLE_AI_CATALOG_ITEM,
+        {
+          label: TRACK_EVENT_ITEM_TYPES[itemType],
+          origin: expectedOrigin,
+          page: TRACK_EVENT_PAGE_LIST,
+        },
+        undefined,
       );
-    });
-  });
-
-  describe('when item has group and project configurations', () => {
-    beforeEach(() => {
-      createComponent({
-        item: {
-          ...mockItem,
-          configurationForGroup: { enabled: true },
-          configurationForProject: { enabled: true },
-        },
-      });
-    });
-
-    it('does not display status badge', () => {
-      expect(findStatusBadge().exists()).toBe(false);
     });
   });
 });

@@ -10,6 +10,7 @@ import {
 } from '@gitlab/ui';
 import { __, s__, sprintf } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
+import { InternalEvents } from '~/tracking';
 import {
   VISIBILITY_TYPE_ICON,
   VISIBILITY_LEVEL_LABELS,
@@ -23,6 +24,11 @@ import {
   AI_CATALOG_CONSUMER_TYPE_PROJECT,
   AI_CATALOG_CONSUMER_TYPE_GROUP,
   AI_CATALOG_CONSUMER_LABELS,
+  TRACK_EVENT_DISABLE_AI_CATALOG_ITEM,
+  TRACK_EVENT_ITEM_TYPES,
+  TRACK_EVENT_ORIGIN_PROJECT,
+  TRACK_EVENT_ORIGIN_GROUP,
+  TRACK_EVENT_PAGE_LIST,
 } from '../constants';
 
 export default {
@@ -39,6 +45,7 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
+  mixins: [InternalEvents.mixin()],
   inject: {
     projectId: {
       default: null,
@@ -171,6 +178,16 @@ export default {
       );
     },
   },
+  methods: {
+    onClickDisable() {
+      this.$emit('disable');
+      this.trackEvent(TRACK_EVENT_DISABLE_AI_CATALOG_ITEM, {
+        label: TRACK_EVENT_ITEM_TYPES[this.item.itemType],
+        origin: this.isProjectNamespace ? TRACK_EVENT_ORIGIN_PROJECT : TRACK_EVENT_ORIGIN_GROUP,
+        page: TRACK_EVENT_PAGE_LIST,
+      });
+    },
+  },
 };
 </script>
 
@@ -298,7 +315,7 @@ export default {
         </gl-disclosure-dropdown-item>
       </gl-disclosure-dropdown-group>
       <gl-disclosure-dropdown-group v-if="showDisableAction" :bordered="hasActionItems">
-        <gl-disclosure-dropdown-item @action="$emit('disable')">
+        <gl-disclosure-dropdown-item data-testid="disable-button" @action="onClickDisable">
           <template #list-item>
             <span>
               <gl-icon name="cancel" class="gl-mr-2" variant="current" aria-hidden="true" />
