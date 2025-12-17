@@ -6,13 +6,13 @@ module API
       expose :id,
         documentation: {
           desc: 'ID of the epic-issue relation',
-          type: 'integer',
+          type: 'Integer',
           example: 123
         }
       expose :relative_position,
         documentation: {
           desc: 'Relative position of the issue in the epic tree',
-          type: 'integer',
+          type: 'Integer',
           example: 0
         }
       expose :epic do |epic_issue_link, _options|

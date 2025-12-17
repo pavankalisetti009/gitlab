@@ -9,7 +9,7 @@ module EE
         prepended do
           include ProjectLinksHelper
 
-          expose :member_role_id, documentation: { type: 'integer', example: 12 }, if: ->(link, _) do
+          expose :member_role_id, documentation: { type: 'Integer', example: 12 }, if: ->(link, _) do
             custom_role_for_project_link_enabled?(link.project)
           end
         end

@@ -34,12 +34,12 @@ module EE
           expose :security_and_compliance_enabled do |project, options|
             project.feature_available?(:security_and_compliance, options[:current_user])
           end
-          expose :secret_push_protection_enabled, documentation: { type: 'boolean' }, if: ->(project, options) { Ability.allowed?(options[:current_user], :read_secret_push_protection_info, project) } do |project|
+          expose :secret_push_protection_enabled, documentation: { type: 'Boolean' }, if: ->(project, options) { Ability.allowed?(options[:current_user], :read_secret_push_protection_info, project) } do |project|
             project.security_setting&.secret_push_protection_enabled
           end
           expose :secret_push_protection_enabled,
             as: :pre_receive_secret_detection_enabled,
-            documentation: { type: 'boolean' },
+            documentation: { type: 'Boolean' },
             if: ->(project, options) { Ability.allowed?(options[:current_user], :read_secret_push_protection_info, project) } do |project|
             project.security_setting&.secret_push_protection_enabled
           end
@@ -62,7 +62,7 @@ module EE
           expose :merge_trains_enabled?, as: :merge_trains_enabled, if: ->(project, _) { project.feature_available?(:merge_pipelines) }
           expose :merge_trains_skip_train_allowed?, as: :merge_trains_skip_train_allowed, if: ->(project, _) { project.feature_available?(:merge_pipelines) }
           expose :only_allow_merge_if_all_status_checks_passed, if: ->(project, _) { project.feature_available?(:external_status_checks) }
-          expose :allow_pipeline_trigger_approve_deployment, documentation: { type: 'boolean' }, if: ->(project, _) { project.feature_available?(:protected_environments) }
+          expose :allow_pipeline_trigger_approve_deployment, documentation: { type: 'Boolean' }, if: ->(project, _) { project.feature_available?(:protected_environments) }
           expose :prevent_merge_without_jira_issue, if: ->(project, _) { project.feature_available?(:jira_issue_association_enforcement) }
           expose :auto_duo_code_review_enabled, if: ->(project, _) { project.namespace.auto_duo_code_review_settings_available? }
           expose :duo_remote_flows_enabled, if: ->(_, _) { ::Ai::DuoWorkflow.enabled? }
@@ -73,7 +73,7 @@ module EE
               Ability.allowed?(options[:current_user], :admin_project, project)
           end
           expose :spp_repository_pipeline_access,
-            documentation: { type: 'boolean', desc: 'The spp_repository_pipeline_access setting is only visible if the security_orchestration_policies feature is available.' },
+            documentation: { type: 'Boolean', desc: 'The spp_repository_pipeline_access setting is only visible if the security_orchestration_policies feature is available.' },
             if: ->(project, _) { project.feature_available?(:security_orchestration_policies) }
         end
       end

@@ -3,9 +3,9 @@
 module API
   module Entities
     class ProjectAlias < Grape::Entity
-      expose :id, documentation: { type: 'integer', example: 1 }
-      expose :project_id, documentation: { type: 'integer', example: 1 }
-      expose :name, documentation: { type: 'string', example: 'gitlab' }
+      expose :id, documentation: { type: 'Integer', example: 1 }
+      expose :project_id, documentation: { type: 'Integer', example: 1 }
+      expose :name, documentation: { type: 'String', example: 'gitlab' }
     end
   end
 end
