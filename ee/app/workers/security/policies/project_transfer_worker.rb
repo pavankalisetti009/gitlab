@@ -69,8 +69,6 @@ module Security
       end
 
       def sync_new_namespace_policies(project)
-        ::Security::ScanResultPolicies::SyncProjectWorker.perform_async(project.id)
-
         all_policy_configurations(project).each do |configuration|
           ::Security::SyncProjectPoliciesWorker.perform_async(project.id, configuration.id)
         end

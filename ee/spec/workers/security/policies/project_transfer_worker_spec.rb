@@ -147,7 +147,6 @@ RSpec.describe Security::Policies::ProjectTransferWorker, :sidekiq_inline, featu
       end
 
       it 'triggers sync workers' do
-        expect(Security::ScanResultPolicies::SyncProjectWorker).to receive(:perform_async).with(project.id)
         expect(Security::SyncProjectPoliciesWorker).to receive(:perform_async).once.with(project.id,
           group_configuration.id)
         expect(Security::SyncProjectPoliciesWorker).to receive(:perform_async).once.with(project.id,
@@ -185,7 +184,6 @@ RSpec.describe Security::Policies::ProjectTransferWorker, :sidekiq_inline, featu
       end
 
       it 'does not trigger any sync workers or unassign service' do
-        expect(Security::ScanResultPolicies::SyncProjectWorker).not_to receive(:perform_async)
         expect(Security::SyncProjectPoliciesWorker).not_to receive(:perform_async)
         expect(::Security::Orchestration::UnassignService).not_to receive(:new)
 
