@@ -2,6 +2,8 @@
 
 module Groups
   class DuoAgentsPlatformController < Groups::ApplicationController
+    include AiDuoAgentPlatformFeatureFlags
+
     feature_category :duo_agent_platform
     before_action :ensure_root_group
     before_action :check_access
@@ -9,7 +11,6 @@ module Groups
       push_frontend_feature_flag(:ai_catalog_agents, current_user)
       push_frontend_feature_flag(:ai_catalog_flows, current_user)
       push_frontend_feature_flag(:ai_catalog_third_party_flows, current_user)
-      push_frontend_feature_flag(:ai_duo_agent_platform_ga_rollout, current_user)
       push_frontend_ability(ability: :read_ai_catalog_flow, resource: group, user: current_user)
     end
 

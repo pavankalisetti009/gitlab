@@ -1,0 +1,10 @@
+---
+name: ai_duo_agent_platform_ga_rollout_self_managed
+description: Use a separate feature flag for rolling out Duo Agent Platform in GA for self-managed instances
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/583821
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/216213
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/583825
+milestone: '18.7'
+group: group::agent foundations
+type: beta
+default_enabled: false

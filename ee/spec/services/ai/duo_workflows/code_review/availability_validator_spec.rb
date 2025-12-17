@@ -81,7 +81,7 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::AvailabilityValidator, feature_cate
           before do
             stub_saas_features(gitlab_com_subscriptions: false)
             stub_ee_application_setting(instance_level_ai_beta_features_enabled: beta_enabled)
-            stub_feature_flags(ai_duo_agent_platform_ga_rollout: false)
+            stub_feature_flags(ai_duo_agent_platform_ga_rollout_self_managed: false)
           end
 
           context 'when instance beta features are disabled' do
@@ -97,7 +97,7 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::AvailabilityValidator, feature_cate
               let(:self_hosted_model) { create(:ai_self_hosted_model, model: :claude_3) }
 
               before do
-                stub_feature_flags(ai_duo_agent_platform_ga_rollout: resource)
+                stub_feature_flags(ai_duo_agent_platform_ga_rollout_self_managed: true)
                 allow(::Ai::FeatureSettingSelectionService).to receive(:new)
                   .with(user, :duo_agent_platform, resource.root_ancestor)
                   .and_return(instance_double(::Ai::FeatureSettingSelectionService, execute: service_result))
@@ -193,7 +193,7 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::AvailabilityValidator, feature_cate
 
             context 'when GA rollout flag is enabled' do
               before do
-                stub_feature_flags(ai_duo_agent_platform_ga_rollout: resource)
+                stub_feature_flags(ai_duo_agent_platform_ga_rollout: true)
               end
 
               it 'returns true despite experiment features being disabled' do
@@ -214,7 +214,7 @@ RSpec.describe Ai::DuoWorkflows::CodeReview::AvailabilityValidator, feature_cate
 
           context 'when GA rollout flag is enabled' do
             before do
-              stub_feature_flags(ai_duo_agent_platform_ga_rollout: resource)
+              stub_feature_flags(ai_duo_agent_platform_ga_rollout: true)
               allow(resource.root_ancestor).to receive(:experiment_features_enabled).and_return(false)
             end
 

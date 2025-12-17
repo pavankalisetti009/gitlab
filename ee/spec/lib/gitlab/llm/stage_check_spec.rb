@@ -153,11 +153,11 @@ RSpec.describe Gitlab::Llm::StageCheck, feature_category: :ai_abstraction_layer 
 
       it 'considers agentic_chat as GA based on the flag under Self-Managed' do
         stub_licensed_features(agentic_chat: true)
-        stub_feature_flags(ai_duo_agent_platform_ga_rollout: true)
+        stub_feature_flags(ai_duo_agent_platform_ga_rollout_self_managed: true)
 
         expect(described_class.available?(project, :agentic_chat)).to eq(true)
 
-        stub_feature_flags(ai_duo_agent_platform_ga_rollout: false)
+        stub_feature_flags(ai_duo_agent_platform_ga_rollout_self_managed: false)
 
         expect(described_class.available?(project, :agentic_chat)).to eq(false)
       end

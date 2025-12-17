@@ -28,7 +28,7 @@ RSpec.describe Ai::Catalog::ItemVersionPolicy, :with_current_organization, featu
   before do
     Current.organization = current_organization
     allow(::Gitlab::Llm::StageCheck).to receive(:available?)
-      .with(project, :ai_catalog, user: current_user).and_return(stage_check)
+      .with(project, :ai_catalog).and_return(stage_check)
   end
 
   describe 'execute_ai_catalog_item_version permission' do

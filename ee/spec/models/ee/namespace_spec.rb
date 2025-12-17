@@ -1419,7 +1419,7 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
 
             context 'when GA rollout flag is enabled' do
               before do
-                stub_feature_flags(ai_duo_agent_platform_ga_rollout: namespace)
+                stub_feature_flags(ai_duo_agent_platform_ga_rollout: true)
               end
 
               it 'returns true despite experiment_features_enabled being false' do
@@ -1500,7 +1500,7 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
 
           with_them do
             before do
-              stub_feature_flags(ai_duo_agent_platform_ga_rollout: namespace)
+              stub_feature_flags(ai_duo_agent_platform_ga_rollout: true)
               allow(namespace.namespace_settings).to receive(:experiment_features_enabled).and_return(false)
               create(:gitlab_subscription_add_on_purchase, add_on_factory, namespace: namespace)
             end
@@ -1540,7 +1540,7 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
 
           with_them do
             before do
-              stub_feature_flags(ai_duo_agent_platform_ga_rollout: namespace)
+              stub_feature_flags(ai_duo_agent_platform_ga_rollout_self_managed: true)
               allow(namespace.namespace_settings).to receive(:duo_features_enabled?).and_return(true)
               stub_application_setting(instance_level_ai_beta_features_enabled: false)
               create(:gitlab_subscription_add_on_purchase, :self_managed, add_on_factory)

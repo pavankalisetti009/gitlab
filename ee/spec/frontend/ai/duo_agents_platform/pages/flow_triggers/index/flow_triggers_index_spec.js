@@ -53,7 +53,6 @@ describe('FlowTriggersIndex', () => {
         projectPath: 'myProject',
         flowTriggersEventTypeOptions: eventTypeOptions,
         glFeatures: {
-          aiDuoAgentPlatformGaRollout: false,
           ...glFeatures,
         },
       },
@@ -74,11 +73,12 @@ describe('FlowTriggersIndex', () => {
       expect(findExperimentBadge().props('type')).toBe('beta');
     });
 
-    describe('when ai_duo_agent_platform_ga_rollout feature flag is enabled', () => {
+    describe('when gon.ai_duo_agent_platform_ga_rollout is enabled', () => {
       beforeEach(() => {
+        window.gon = { ai_duo_agent_platform_ga_rollout: true };
+
         createWrapper({
           provide: { isSidePanelView: false },
-          glFeatures: { aiDuoAgentPlatformGaRollout: true },
         });
       });
 

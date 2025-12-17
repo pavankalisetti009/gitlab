@@ -35,7 +35,7 @@ module Ai
         end
 
         def ga_rollout_enabled?
-          ::Feature.enabled?(:ai_duo_agent_platform_ga_rollout, resource)
+          ::Gitlab::Llm::Utils::AiFeaturesCatalogue.effective_maturity(:duo_agent_platform) == :ga
         end
 
         def experimental_features_enabled?

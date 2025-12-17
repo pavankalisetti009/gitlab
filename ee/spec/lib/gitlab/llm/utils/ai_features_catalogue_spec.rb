@@ -113,7 +113,7 @@ RSpec.describe Gitlab::Llm::Utils::AiFeaturesCatalogue, feature_category: :ai_ab
   describe '.effective_maturity' do
     let(:user) { nil }
 
-    subject(:effective_maturity) { described_class.effective_maturity(feature_name, user: user) }
+    subject(:effective_maturity) { described_class.effective_maturity(feature_name) }
 
     context 'when feature does not exist' do
       let(:feature_name) { :non_existent_feature }
@@ -217,10 +217,6 @@ RSpec.describe Gitlab::Llm::Utils::AiFeaturesCatalogue, feature_category: :ai_ab
             context 'with a user' do
               let(:user) { create(:user) }
 
-              before do
-                stub_feature_flags(ai_duo_agent_platform_ga_rollout: user)
-              end
-
               it 'returns GA maturity when feature flag is enabled for user' do
                 expect(effective_maturity).to eq(:ga)
               end
@@ -239,10 +235,6 @@ RSpec.describe Gitlab::Llm::Utils::AiFeaturesCatalogue, feature_category: :ai_ab
             context 'with a user' do
               let(:user) { create(:user) }
 
-              before do
-                stub_feature_flags(ai_duo_agent_platform_ga_rollout: false)
-              end
-
               it 'returns the base maturity when feature flag is disabled for user' do
                 expect(effective_maturity).to eq(base_maturity)
               end
@@ -255,9 +247,9 @@ RSpec.describe Gitlab::Llm::Utils::AiFeaturesCatalogue, feature_category: :ai_ab
             stub_saas_features(gitlab_com_subscriptions: false)
           end
 
-          context 'when feature flag is enabled' do
+          context 'when ai_duo_agent_platform_ga_rollout_self_managed flag is enabled' do
             before do
-              stub_feature_flags(ai_duo_agent_platform_ga_rollout: true)
+              stub_feature_flags(ai_duo_agent_platform_ga_rollout_self_managed: true)
             end
 
             it 'returns GA maturity' do
@@ -265,12 +257,12 @@ RSpec.describe Gitlab::Llm::Utils::AiFeaturesCatalogue, feature_category: :ai_ab
             end
           end
 
-          context 'when feature flag is disabled' do
+          context 'when ai_duo_agent_platform_ga_rollout_self_managed flag is disabled' do
             before do
-              stub_feature_flags(ai_duo_agent_platform_ga_rollout: false)
+              stub_feature_flags(ai_duo_agent_platform_ga_rollout_self_managed: false)
             end
 
-            it 'returns base maturity' do
+            it 'returns the base maturity' do
               expect(effective_maturity).to eq(base_maturity)
             end
           end
@@ -280,14 +272,12 @@ RSpec.describe Gitlab::Llm::Utils::AiFeaturesCatalogue, feature_category: :ai_ab
   end
 
   describe '.instance_should_observe_ga_dap?' do
-    let(:user) { nil }
-
     let(:all_features) { described_class::LIST.keys }
 
     shared_examples 'is true for all DAP features only', :aggregate_failures do
       specify do
         all_features.each do |feature|
-          result = described_class.instance_should_observe_ga_dap?(feature, user: user)
+          result = described_class.instance_should_observe_ga_dap?(feature)
           is_dap_feature = described_class.uses_duo_agent_platform?(feature)
 
           expect(result).to eq(is_dap_feature)
@@ -296,18 +286,22 @@ RSpec.describe Gitlab::Llm::Utils::AiFeaturesCatalogue, feature_category: :ai_ab
     end
 
     context 'when SaaS', :saas do
-      context 'when the flag is enabled' do
+      context 'when ai_duo_agent_platform_ga_rollout flag is enabled' do
+        before do
+          stub_feature_flags(ai_duo_agent_platform_ga_rollout: true)
+        end
+
         it_behaves_like 'is true for all DAP features only'
       end
 
-      context 'when the flag is disabled' do
+      context 'when ai_duo_agent_platform_ga_rollout flag is disabled' do
         before do
           stub_feature_flags(ai_duo_agent_platform_ga_rollout: false)
         end
 
         it 'is false for all features', :aggregate_failures do
           all_features.each do |feature|
-            result = described_class.instance_should_observe_ga_dap?(feature, user: user)
+            result = described_class.instance_should_observe_ga_dap?(feature)
 
             expect(result).to be(false)
           end
@@ -316,7 +310,31 @@ RSpec.describe Gitlab::Llm::Utils::AiFeaturesCatalogue, feature_category: :ai_ab
     end
 
     context 'when Self-Managed' do
-      it_behaves_like 'is true for all DAP features only'
+      before do
+        stub_saas_features(gitlab_com_subscriptions: false)
+      end
+
+      context 'when ai_duo_agent_platform_ga_rollout_self_managed flag is enabled' do
+        before do
+          stub_feature_flags(ai_duo_agent_platform_ga_rollout_self_managed: true)
+        end
+
+        it_behaves_like 'is true for all DAP features only'
+      end
+
+      context 'when ai_duo_agent_platform_ga_rollout_self_managed flag is disabled' do
+        before do
+          stub_feature_flags(ai_duo_agent_platform_ga_rollout_self_managed: false)
+        end
+
+        it 'is false for all features', :aggregate_failures do
+          all_features.each do |feature|
+            result = described_class.instance_should_observe_ga_dap?(feature)
+
+            expect(result).to be(false)
+          end
+        end
+      end
     end
   end
 end

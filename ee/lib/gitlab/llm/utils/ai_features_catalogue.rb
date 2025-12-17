@@ -283,24 +283,30 @@ module Gitlab
           LIST.select { |_, v| v[:alternate_name] == name }.values.first
         end
 
-        def self.effective_maturity(feature_name, user: nil)
+        def self.effective_maturity(feature_name)
           feature_data = search_by_name(feature_name)
           return unless feature_data
 
           base_maturity = feature_data[:maturity]
 
-          return :ga if instance_should_observe_ga_dap?(feature_name, user: user)
+          return :ga if instance_should_observe_ga_dap?(feature_name)
 
           base_maturity
         end
 
         # For duo_agent_platform features:
-        # - Self-Managed: always GA
-        # - SaaS: GA only when feature flag is enabled
-        def self.instance_should_observe_ga_dap?(feature_name, user:)
+        # - SaaS: GA only when ai_duo_agent_platform_ga_rollout flag is enabled
+        # - Self-Managed: GA only when ai_duo_agent_platform_ga_rollout_self_managed flag is enabled
+        def self.instance_should_observe_ga_dap?(feature_name)
           return false unless uses_duo_agent_platform?(feature_name)
 
-          ::Feature.enabled?(:ai_duo_agent_platform_ga_rollout, user)
+          if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+            # SaaS: check the SaaS-specific flag
+            ::Feature.enabled?(:ai_duo_agent_platform_ga_rollout, :instance)
+          else
+            # Self-managed: check the self-managed-specific flag
+            ::Feature.enabled?(:ai_duo_agent_platform_ga_rollout_self_managed, :instance)
+          end
         end
 
         def self.uses_duo_agent_platform?(feature_name)

@@ -16,7 +16,7 @@ module Ai
       end
 
       condition(:project_ai_catalog_available) do
-        @subject.project && @subject.project.ai_catalog_available?(@user)
+        @subject.project && @subject.project.ai_catalog_available?
       end
 
       condition(:flows_available, scope: :subject) do

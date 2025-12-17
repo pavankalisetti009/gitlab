@@ -1,4 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
+import { ref } from 'vue';
 import { GlExperimentBadge } from '@gitlab/ui';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 
@@ -8,6 +9,14 @@ import FilteredSearchBar from '~/vue_shared/components/filtered_search_bar/filte
 
 import waitForPromises from 'helpers/wait_for_promises';
 import { mockAgentFlowsResponse } from '../../../mocks';
+
+const mockShowBetaBadge = ref(false);
+
+jest.mock('ee/ai/duo_agents_platform/composables/use_ai_beta_badge', () => ({
+  useAiBetaBadge: jest.fn(() => ({
+    showBetaBadge: mockShowBetaBadge,
+  })),
+}));
 
 describe('AgentsPlatformIndex', () => {
   let wrapper;
@@ -27,9 +36,6 @@ describe('AgentsPlatformIndex', () => {
       propsData: { ...defaultProps, ...props },
       provide: {
         isSidePanelView: false,
-        glFeatures: {
-          aiDuoAgentPlatformGaRollout: false,
-        },
         ...provide,
       },
     });
@@ -44,10 +50,12 @@ describe('AgentsPlatformIndex', () => {
 
   afterEach(() => {
     jest.clearAllMocks();
+    mockShowBetaBadge.value = false;
   });
 
   describe('when not in side panel view', () => {
     beforeEach(() => {
+      mockShowBetaBadge.value = true;
       createWrapper({ provide: { isSidePanelView: false } });
     });
 
@@ -61,9 +69,16 @@ describe('AgentsPlatformIndex', () => {
 
     describe('when ai_duo_agent_platform_ga_rollout feature flag is enabled', () => {
       beforeEach(() => {
+        mockShowBetaBadge.value = false;
+        window.gon = { ai_duo_agent_platform_ga_rollout: true };
+
         createWrapper({
-          provide: { isSidePanelView: false, glFeatures: { aiDuoAgentPlatformGaRollout: true } },
+          provide: { isSidePanelView: false, gon: { ai_duo_agent_platform_ga_rollout: true } },
         });
+      });
+
+      afterEach(() => {
+        delete window.gon;
       });
 
       it('hides the experiment badge', () => {

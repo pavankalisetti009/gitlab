@@ -289,8 +289,11 @@ module EE
 
     def duo_code_review_dap_available?
       return false unless ::Feature.enabled?(:duo_code_review_on_agent_platform, self)
-      return true if ::Feature.enabled?(:ai_duo_agent_platform_ga_rollout, self)
 
+      maturity = ::Gitlab::Llm::Utils::AiFeaturesCatalogue.effective_maturity(:duo_agent_platform)
+      return true if maturity == :ga
+
+      # For beta maturity, check namespace experiment setting (SaaS) or instance beta setting (Self-Managed)
       if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
         experiment_features_enabled
       else
