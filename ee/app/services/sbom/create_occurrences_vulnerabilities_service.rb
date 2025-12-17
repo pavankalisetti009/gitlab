@@ -29,15 +29,18 @@ module Sbom
 
     # rubocop:disable CodeReuse/ActiveRecord -- Custom query
     def fetch_occurrence_data
-      cte_sql = "WITH cte (uuid, package_manager, component_name, version, project_id) AS (#{cte_values})"
+      cte_sql = "WITH cte (uuid, purl_type, component_name, version, project_id, vulnerability_id) AS (#{cte_values})"
       select_sql = Sbom::Occurrence
         .joins('INNER JOIN cte
-          ON cte.package_manager = sbom_occurrences.package_manager
-          AND cte.component_name = sbom_occurrences.component_name
+          ON cte.component_name = sbom_occurrences.component_name
           AND cte.project_id = sbom_occurrences.project_id')
         .joins('INNER JOIN sbom_component_versions
           ON sbom_component_versions.id = sbom_occurrences.component_version_id
           AND cte.version = sbom_component_versions.version')
+        .joins('INNER JOIN sbom_components
+          ON sbom_components.id = sbom_occurrences.component_id
+          AND cte.purl_type = sbom_components.purl_type')
+        .joins('INNER JOIN vulnerabilities ON cte.vulnerability_id = vulnerabilities.id')
         .select('cte.uuid', 'cte.project_id', 'sbom_occurrences.id').to_sql
 
       full_query = [cte_sql, select_sql].join("\n")
@@ -51,8 +54,9 @@ module Sbom
     end
 
     def filtered_data
-      @filtered_data ||= finding_data.filter_map do |data|
-        [data[:uuid], data[:purl_type], data[:package_name], data[:package_version], data[:project_id]]
+      @filtered_data ||= finding_data.map do |data|
+        data[:purl_type] = ::Enums::Sbom.purl_types[data[:purl_type]]
+        data.values_at(:uuid, :purl_type, :package_name, :package_version, :project_id, :vulnerability_id)
       end
     end
 

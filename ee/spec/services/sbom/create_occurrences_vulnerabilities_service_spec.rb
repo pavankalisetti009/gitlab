@@ -63,6 +63,25 @@ RSpec.describe Sbom::CreateOccurrencesVulnerabilitiesService, feature_category: 
       end
     end
 
+    context 'with different purl_type' do
+      let(:findings) do
+        [
+          {
+            uuid: vulnerability.finding.uuid,
+            project_id: project.id,
+            vulnerability_id: vulnerability.id,
+            package_name: occurrence.component_name,
+            package_version: occurrence.version,
+            purl_type: 'pypi'
+          }
+        ]
+      end
+
+      it 'does not create DB entries based on vulnerability and occurrence data' do
+        expect { service_execute }.not_to change { Sbom::OccurrencesVulnerability.count }
+      end
+    end
+
     context 'with multiple vulnerabilities related to a single occurrence' do
       let(:findings) do
         [
