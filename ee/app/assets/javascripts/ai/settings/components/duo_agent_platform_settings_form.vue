@@ -8,7 +8,6 @@ export default {
     GlFormGroup,
     GlFormCheckbox,
   },
-  inject: ['showDuoAgentPlatformEnabledSetting'],
   props: {
     enabled: {
       type: Boolean,
@@ -25,10 +24,7 @@ export default {
 </script>
 <template>
   <div class="gl-my-4">
-    <gl-form-group
-      v-if="showDuoAgentPlatformEnabledSetting"
-      :label="s__('AiPowered|GitLab Duo Agent Platform')"
-    >
+    <gl-form-group :label="s__('AiPowered|GitLab Duo Agent Platform')">
       <gl-form-checkbox :checked="enabled" @input="onDuoAgentPlatformEnabledChanged">
         {{ s__('AiPowered|Turn on GitLab Duo Chat (Agentic), agents, and flows') }}
       </gl-form-checkbox>

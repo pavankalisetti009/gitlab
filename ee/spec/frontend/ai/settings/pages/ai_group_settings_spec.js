@@ -34,7 +34,6 @@ const createComponent = ({ props = {}, provide = {} } = {}) => {
       duoWorkflowAvailable: true,
       duoWorkflowMcpEnabled: false,
       availableFoundationalFlows: [],
-      showDuoAgentPlatformEnabledSetting: true,
       ...provide,
     },
   });
@@ -157,38 +156,6 @@ describe('AiGroupSettings', () => {
           duo_workflow_mcp_enabled: false,
           foundational_agents_default_enabled: true,
         },
-      });
-    });
-
-    describe('when duoAgentPlatformEnabled is undefined', () => {
-      beforeEach(() => {
-        createComponent({ provide: { showDuoAgentPlatformEnabledSetting: false } });
-      });
-
-      it('does not include duo_agent_platform_enabled in the request', async () => {
-        updateGroupSettings.mockResolvedValue({});
-        await findAiCommonSettings().vm.$emit('submit', {
-          duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_OFF,
-          experimentFeaturesEnabled: true,
-          duoCoreFeaturesEnabled: true,
-          promptCacheEnabled: true,
-          duoRemoteFlowsAvailability: false,
-          duoFoundationalFlowsAvailability: false,
-          duoSastFpDetectionAvailability: false,
-          foundationalAgentsEnabled: true,
-          foundationalAgentsStatuses: [],
-          selectedFoundationalFlowIds: [],
-          duoAgentPlatformEnabled: true,
-        });
-
-        expect(updateGroupSettings).toHaveBeenCalledWith(
-          '100',
-          expect.not.objectContaining({
-            ai_settings_attributes: {
-              duo_agent_platform_enabled: expect.anything(),
-            },
-          }),
-        );
       });
     });
 
