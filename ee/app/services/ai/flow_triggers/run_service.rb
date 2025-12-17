@@ -4,6 +4,7 @@ module Ai
   module FlowTriggers
     class RunService
       include ::Gitlab::Utils::StrongMemoize
+      include ::Ai::Catalog::Loggable
 
       def initialize(project:, current_user:, resource:, flow_trigger:)
         @project = project
@@ -11,8 +12,11 @@ module Ai
         @resource = resource
         @flow_trigger = flow_trigger
         @flow_trigger_user = flow_trigger.user
-        @catalog_item = flow_trigger.ai_catalog_item_consumer&.item
-        @catalog_item_pinned_version = flow_trigger.ai_catalog_item_consumer&.pinned_version_prefix
+        catalog_consumer = flow_trigger.ai_catalog_item_consumer
+        @catalog_item = catalog_consumer&.item
+        @catalog_item_pinned_version = catalog_consumer&.pinned_version_prefix
+
+        ai_catalog_logger.context(consumer: catalog_consumer, item: catalog_item)
 
         link_composite_identity! if can_use_composite_identity?
       end
@@ -99,6 +103,8 @@ module Ai
         if response.success?
           workflow.workflows_workloads.create(project_id: project.id,
             workload_id: response.payload.id)
+
+          log_external_agent_execution
         end
 
         status_event = response.success? ? "start" : "drop"
@@ -251,6 +257,10 @@ module Ai
 
       def foundational_flow?
         @catalog_item&.foundational_flow_reference.present?
+      end
+
+      def log_external_agent_execution
+        ai_catalog_logger.info(message: 'External agent executed') if catalog_item
       end
     end
   end

@@ -143,6 +143,10 @@ RSpec.describe Ai::Catalog::Flows::ExecuteService, :aggregate_failures, feature_
         expect(result).to be_success
         expect(parsed_yaml).to eq(expected_flow_config)
       end
+
+      it_behaves_like 'initializes Ai::Catalog::Logger but does not log to it' do
+        subject { execute }
+      end
     end
 
     context 'when flow is properly executed' do
@@ -212,6 +216,21 @@ RSpec.describe Ai::Catalog::Flows::ExecuteService, :aggregate_failures, feature_
             'counts.count_total_trigger_ai_catalog_item_monthly',
             'counts.count_total_trigger_ai_catalog_item'
           )
+      end
+
+      it 'logs to Ai::Catalog::Logger' do
+        mock_logger = Ai::Catalog::Logger.build
+
+        expect(Ai::Catalog::Logger).to receive(:build).and_return(mock_logger)
+        expect(mock_logger).to receive(:context).with(klass: described_class.name).and_call_original
+        expect(mock_logger).to receive(:context).with(
+          consumer: ai_catalog_item_consumer,
+          item: ai_catalog_item_consumer.item,
+          version: flow_version
+        ).and_call_original
+        expect(mock_logger).to receive(:info).with(message: 'Flow executed')
+
+        execute
       end
 
       context 'when StageCheck :ai_catalog_flows is false' do
