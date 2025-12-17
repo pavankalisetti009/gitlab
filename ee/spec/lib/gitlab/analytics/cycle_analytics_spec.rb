@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::Analytics::CycleAnalytics, feature_category: :team_planning do
+RSpec.describe Gitlab::Analytics::CycleAnalytics, feature_category: :value_stream_management do
   using RSpec::Parameterized::TableSyntax
 
   let_it_be(:developer) { create(:user) }
