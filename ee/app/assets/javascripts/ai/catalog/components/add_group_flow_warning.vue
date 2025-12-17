@@ -19,13 +19,19 @@ export default {
 <template>
   <gl-alert variant="warning" :dismissible="false">
     <div>
-      <p>{{ s__('AICatalog|When you enable this flow:') }}</p>
+      <p class="gl-mb-0">{{ s__('AICatalog|When you enable this flow:') }}</p>
       <ul class="gl-pl-5">
-        <li>{{ s__('AICatalog|All project members will be able to use it.') }}</li>
         <li>
           {{
             s__(
-              'AICatalog|A service account will be added to the project and assigned the Developer role.',
+              'AICatalog|All project members will be able to use it, after a Maintainer enables it in a project.',
+            )
+          }}
+        </li>
+        <li>
+          {{
+            s__(
+              'AICatalog|A service account is automatically created. This account is used in combination with the user to run the flow.',
             )
           }}
         </li>
@@ -39,7 +45,7 @@ export default {
       }}
     </p>
     <div>
-      <p>
+      <p class="gl-mb-0">
         {{ s__('AICatalog|When this flow runs, it will have access to the projects:') }}
       </p>
       <ul class="gl-pl-5">
@@ -54,10 +60,9 @@ export default {
       </ul>
     </div>
 
-    <p>{{ s__('AICatalog|Use caution when enabling.') }}</p>
-
-    <p>
-      <gl-link :href="docsUrl">{{ s__('AICatalog|Learn more') }}</gl-link
+    <p class="gl-mb-0">
+      {{ s__('AICatalog|Use caution when enabling.') }}
+      <gl-link :href="docsUrl">{{ __('Learn more') }}</gl-link
       >.
     </p>
   </gl-alert>
