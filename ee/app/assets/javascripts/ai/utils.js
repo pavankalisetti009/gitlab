@@ -85,7 +85,7 @@ const openChatAndGetState = () => {
 
   if (isEmbedded) {
     // Embedded mode: Open the AI panel to chat tab
-    duoChatGlobalState.activeTab = 'new';
+    duoChatGlobalState.activeTab = 'chat';
   } else {
     // Drawer mode: Open the appropriate chat based on current mode
     duoChatGlobalState.isShown = !isAgenticMode;

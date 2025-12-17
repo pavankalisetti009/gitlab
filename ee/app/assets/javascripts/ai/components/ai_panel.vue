@@ -149,11 +149,25 @@ export default {
     },
   },
   watch: {
+    'duoChatGlobalState.focusChatInput': {
+      handler(newVal) {
+        if (newVal) {
+          duoChatGlobalState.focusChatInput = false; // reset global state
+          this.focusInput();
+        }
+      },
+    },
     isMaximized: {
       handler(maximized) {
         document.querySelector('.js-page-layout').classList.toggle('ai-panel-maximized', maximized);
       },
       immediate: true,
+    },
+    async activeTab(newTab) {
+      if (['chat', 'new'].includes(newTab)) {
+        await this.$nextTick();
+        this.focusInput();
+      }
     },
   },
   mounted() {
@@ -207,6 +221,9 @@ export default {
     closePanel() {
       this.setActiveTab(undefined);
       this.isMaximized = false;
+    },
+    focusInput() {
+      this.$refs['content-container']?.getContentComponent()?.focusInput?.();
     },
     handleWindowResize() {
       const currentIsDesktop = GlBreakpointInstance.isDesktop();

@@ -20,6 +20,8 @@ describe('AiPanel', () => {
   let wrapper;
   let mockRouter;
 
+  const getContentComponentMock = jest.fn();
+
   const createComponent = ({
     routeName = 'some_route',
     routePath = '/some-path',
@@ -68,7 +70,11 @@ describe('AiPanel', () => {
         },
       },
       stubs: {
-        AiContentContainer: stubComponent(AiContentContainer),
+        AiContentContainer: stubComponent(AiContentContainer, {
+          methods: {
+            getContentComponent: getContentComponentMock,
+          },
+        }),
         NavigationRail,
         DuoAgenticChat,
       },
@@ -283,6 +289,23 @@ describe('AiPanel', () => {
     });
   });
 
+  describe('Global state watchers', () => {
+    describe('duoChatGlobalState.focusChatInput', () => {
+      it('focuses the chat input and reset global state', async () => {
+        duoChatGlobalState.focusChatInput = false;
+        createComponent();
+
+        const focusInputSpy = jest.spyOn(wrapper.vm, 'focusInput');
+
+        duoChatGlobalState.focusChatInput = true;
+        await nextTick();
+
+        expect(focusInputSpy).toHaveBeenCalled();
+        expect(duoChatGlobalState.focusChatInput).toBe(false);
+      });
+    });
+  });
+
   describe('panels', () => {
     it.each(['chat', 'suggestions', 'sessions'])(
       'stores %s tab in cookie when toggled',
@@ -354,6 +377,10 @@ describe('AiPanel', () => {
         await nextTick();
       });
 
+      it('calls getContentComponent', () => {
+        expect(getContentComponentMock).toHaveBeenCalled();
+      });
+
       it('shows chat panel with correct configuration', () => {
         expect(findContentContainer().props('activeTab')).toEqual({
           title: 'GitLab Duo Agentic Chat',
@@ -373,6 +400,10 @@ describe('AiPanel', () => {
         createComponent();
         findNavigationRail().vm.$emit('handleTabToggle', 'suggestions');
         await nextTick();
+      });
+
+      it('does not call getContentComponent', () => {
+        expect(getContentComponentMock).not.toHaveBeenCalled();
       });
 
       it('shows suggestions panel', () => {
@@ -744,6 +775,10 @@ describe('AiPanel', () => {
         createComponent();
         findNavigationRail().vm.$emit('new-chat');
         await nextTick();
+      });
+
+      it('calls getContentComponent', () => {
+        expect(getContentComponentMock).toHaveBeenCalled();
       });
 
       it('returns new chat tab with mode "new"', () => {

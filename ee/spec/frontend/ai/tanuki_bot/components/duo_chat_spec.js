@@ -942,19 +942,6 @@ describe('multi-threaded chat functionality', () => {
         );
       });
 
-      it('focuses the input after loading a thread', async () => {
-        threadQueryHandlerMock.mockResolvedValue(mockMessagesData);
-        createComponent();
-        await waitForPromises();
-
-        const focusInputSpy = jest.spyOn(wrapper.vm, 'focusInput');
-
-        findDuoChat().vm.$emit('thread-selected', { id: mockThreadId });
-        await waitForPromises();
-
-        expect(focusInputSpy).toHaveBeenCalled();
-      });
-
       it('handles errors when loading thread messages', async () => {
         const error = new Error('Failed to load thread');
         threadQueryHandlerMock.mockRejectedValue(error);
@@ -993,15 +980,6 @@ describe('multi-threaded chat functionality', () => {
         await nextTick();
 
         expect(duoChatGlobalState.commands).toHaveLength(0);
-      });
-
-      it('focuses the input after starting a new chat', async () => {
-        const focusInputSpy = jest.spyOn(wrapper.vm, 'focusInput');
-
-        findDuoChat().vm.$emit('new-chat');
-        await waitForPromises();
-
-        expect(focusInputSpy).toHaveBeenCalled();
       });
     });
 
@@ -1357,5 +1335,30 @@ describe('subheader template', () => {
   it('renders subheader template with correct component', () => {
     const toggle = findDuoChat();
     expect(toggle.exists()).toBe(true);
+  });
+});
+
+describe('`focusInput` method', () => {
+  it("calls `WebAgenticDuoChat`'s `focusChatInput` method", async () => {
+    const focusChatInput = jest.fn();
+
+    createComponent({
+      stubs: {
+        WebDuoChat: {
+          template: '<div />',
+          methods: {
+            focusChatInput,
+          },
+        },
+      },
+    });
+    duoChatGlobalState.isShown = true;
+    await nextTick();
+
+    expect(focusChatInput).not.toHaveBeenCalled();
+
+    wrapper.vm.focusInput();
+
+    expect(focusChatInput).toHaveBeenCalled();
   });
 });

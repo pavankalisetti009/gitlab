@@ -628,15 +628,6 @@ describe('Duo Agentic Chat', () => {
           MOCK_TRANSFORMED_MESSAGES[MOCK_TRANSFORMED_MESSAGES.length - 1].message_id,
         );
       });
-
-      it('focuses the input after hydrating the thread', async () => {
-        const focusInputSpy = jest.spyOn(wrapper.vm, 'focusInput');
-
-        await wrapper.vm.loadActiveThread();
-        await waitForPromises();
-
-        expect(focusInputSpy).toHaveBeenCalled();
-      });
     });
   });
 
@@ -1305,15 +1296,6 @@ describe('Duo Agentic Chat', () => {
         await nextTick();
 
         expect(clearActiveThreadSpy).toHaveBeenCalled();
-      });
-
-      it('focuses the input after starting a new chat', async () => {
-        const focusInputSpy = jest.spyOn(wrapper.vm, 'focusInput');
-
-        findDuoChat().vm.$emit('new-chat');
-        await waitForPromises();
-
-        expect(focusInputSpy).toHaveBeenCalled();
       });
     });
 
