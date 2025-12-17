@@ -43,16 +43,37 @@ module Sbom
         end
 
         def branch_context
-          project.security_project_tracked_contexts
+          # First try to find a context with the current ref name
+          context = project.security_project_tracked_contexts
             .for_ref(ref_name)
             .branch
             .first
+
+          return context if context.present?
+
+          # If not found and we're on the default branch,
+          # check if any default branch context exists with a different name
+          return unless default_branch?
+
+          existing_default = default_branch_context
+
+          return unless existing_default.present?
+
+          # Update the existing default context's name to the current ref name,
+          # since there should only be one default context for a project
+          existing_default.update(context_name: ref_name)
+          existing_default
+        end
+
+        def default_branch_context
+          project.security_project_tracked_contexts
+            .default_branch
+            .last
         end
 
         def branch_ref?
           project.repository.branch_exists?(ref_name)
         end
-        strong_memoize_attr :branch_ref?
 
         def commit_sha
           pipeline.sha
@@ -76,6 +97,7 @@ module Sbom
         def default_branch?
           branch_ref? && project.default_branch == ref_name
         end
+        strong_memoize_attr :default_branch?
       end
     end
   end

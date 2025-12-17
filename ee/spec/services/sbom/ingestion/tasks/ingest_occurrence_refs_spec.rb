@@ -222,5 +222,31 @@ RSpec.describe Sbom::Ingestion::Tasks::IngestOccurrenceRefs, feature_category: :
         expect(occurrence_ref.tracked_context).to eq(tracked_context)
       end
     end
+
+    context 'when ingesting for a default branch' do
+      context 'when default context exists but the context_name differs' do
+        let!(:tracked_context) do
+          create(:security_project_tracked_context,
+            :tracked,
+            project: project,
+            context_name: 'old_default',
+            context_type: :branch,
+            is_default: true
+          )
+        end
+
+        it 'updates the existing context', :aggregate_failures do
+          expect { task.execute }
+          .to not_change { Security::ProjectTrackedContext.count }
+          .and change { Sbom::OccurrenceRef.count }.by(1)
+
+          created_context = Security::ProjectTrackedContext.last
+          expect(created_context.context_name).to eq('main')
+          expect(created_context.context_type).to eq('branch')
+          expect(created_context.is_default).to be(true)
+          expect(created_context.project).to eq(project)
+        end
+      end
+    end
   end
 end
