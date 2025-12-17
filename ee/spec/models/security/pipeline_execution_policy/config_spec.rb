@@ -46,6 +46,39 @@ RSpec.describe Security::PipelineExecutionPolicy::Config, feature_category: :sec
     end
   end
 
+  describe '#apply_on_empty_pipeline' do
+    subject(:apply_on_empty_pipeline_value) { config.apply_on_empty_pipeline }
+
+    context 'with string strategy' do
+      let(:policy) { build(:pipeline_execution_policy, pipeline_config_strategy: 'inject_ci') }
+
+      it 'defaults to always' do
+        expect(apply_on_empty_pipeline_value).to eq('always')
+      end
+    end
+
+    context 'with object strategy and apply_on_empty_pipeline specified' do
+      let(:policy) do
+        build(:pipeline_execution_policy,
+          pipeline_config_strategy: { type: 'inject_policy', apply_on_empty_pipeline: 'if_no_config' })
+      end
+
+      it 'returns the specified apply_on_empty_pipeline value' do
+        expect(apply_on_empty_pipeline_value).to eq('if_no_config')
+      end
+    end
+
+    context 'with object strategy and no apply_on_empty_pipeline specified' do
+      let(:policy) do
+        build(:pipeline_execution_policy, pipeline_config_strategy: { type: 'inject_policy' })
+      end
+
+      it 'defaults to always' do
+        expect(apply_on_empty_pipeline_value).to eq('always')
+      end
+    end
+  end
+
   describe '#suffix' do
     subject { config.suffix }
 

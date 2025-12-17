@@ -15,6 +15,10 @@ module Gitlab
             all_pipelines: :gitlab_security_policies_pipeline_execution_policy_build_policy_pipelines
           }.freeze
 
+          APPLY_ON_EMPTY_PIPELINE_ALWAYS = 'always'
+          APPLY_ON_EMPTY_PIPELINE_IF_NO_CONFIG = 'if_no_config'
+          APPLY_ON_EMPTY_PIPELINE_NEVER = 'never'
+
           attr_reader :policy_pipelines, :override_policy_stages, :injected_policy_stages
 
           # rubocop:disable Metrics/ParameterLists -- Explicit parameters needed to replace command object delegation
@@ -77,6 +81,30 @@ module Gitlab
 
           def scheduled_execution_policy_pipeline?
             source == ::Security::PipelineExecutionPolicies::RunScheduleWorker::PIPELINE_SOURCE
+          end
+
+          def force_pipeline_creation?(pipeline)
+            return false unless has_execution_policy_pipelines?
+
+            strong_memoize_with(:force_pipeline_creation, pipeline) do
+              break true unless Feature.enabled?(:pipeline_execution_policy_empty_pipeline_behavior,
+                pipeline.project)
+
+              !empty_pipeline_applicable_policy_pipelines(pipeline).empty?
+            end
+          end
+
+          # Returns the policy pipelines that should apply based on their apply_on_empty_pipeline setting.
+          # This method assumes the pipeline is already determined to be "empty" (no jobs from project CI).
+          def empty_pipeline_applicable_policy_pipelines(pipeline)
+            strong_memoize_with(:empty_pipeline_applicable_policy_pipelines, pipeline) do
+              break policy_pipelines if Feature.disabled?(:pipeline_execution_policy_empty_pipeline_behavior,
+                pipeline.project)
+
+              policy_pipelines.select do |policy_pipeline|
+                should_apply_to_empty_pipeline?(policy_pipeline, pipeline)
+              end
+            end
           end
 
           def skip_ci_allowed?
@@ -255,6 +283,32 @@ module Gitlab
           #   `target_stages`: [build, test, deploy]
           def stages_compatible?(stages, target_stages)
             stages == target_stages & stages
+          end
+
+          def should_apply_to_empty_pipeline?(policy_pipeline, pipeline)
+            apply_on_empty_pipeline = policy_apply_on_empty_pipeline(policy_pipeline)
+
+            case apply_on_empty_pipeline
+            when APPLY_ON_EMPTY_PIPELINE_ALWAYS
+              true
+            when APPLY_ON_EMPTY_PIPELINE_NEVER
+              false
+            when APPLY_ON_EMPTY_PIPELINE_IF_NO_CONFIG
+              # Only apply if we're using the fallback config source (no CI config found)
+              pipeline.pipeline_execution_policy_forced? && (
+                # For projects with no CI config we prefer MR pipelines over branch to avoid duplicates
+                pipeline.merge_request? || (pipeline.branch? && pipeline.open_merge_requests_refs.empty?)
+              )
+            else
+              # Unknown behavior or experiment not enabled defaults to always apply
+              true
+            end
+          end
+
+          def policy_apply_on_empty_pipeline(policy_pipeline)
+            return unless policy_pipeline.policy_config.experiment_enabled?(:apply_on_empty_pipeline_option)
+
+            policy_pipeline.policy_config.apply_on_empty_pipeline
           end
 
           delegate :measure, to: ::Security::SecurityOrchestrationPolicies::ObserveHistogramsService

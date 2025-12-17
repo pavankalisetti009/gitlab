@@ -19,6 +19,7 @@ module EE
           module PipelineExecutionPolicies
             module ApplyPolicies
               include ::Gitlab::Ci::Pipeline::Chain::Helpers
+              include ::Gitlab::Utils::StrongMemoize
 
               def perform!
                 policy_context = command.pipeline_policy_context.pipeline_execution_context
@@ -59,7 +60,7 @@ module EE
               end
 
               def merge_policy_jobs
-                command.pipeline_policy_context.pipeline_execution_context.policy_pipelines.each do |policy|
+                applicable_policy_pipelines.each do |policy|
                   # Return `nil` is equivalent to "never" otherwise provide the new name.
                   on_conflict = ->(job_name) { job_name + policy.suffix if policy.suffix_on_conflict? }
 
@@ -79,16 +80,28 @@ module EE
                 end
               end
 
+              def applicable_policy_pipelines
+                policy_context = command.pipeline_policy_context.pipeline_execution_context
+
+                # If the pipeline has jobs from project CI config, all policies apply.
+                # Otherwise, filter policies based on their apply_on_empty_pipeline setting.
+                return policy_context.policy_pipelines unless command.pipeline_creation_forced_to_continue
+
+                policy_context.empty_pipeline_applicable_policy_pipelines(pipeline)
+              end
+              strong_memoize_attr :applicable_policy_pipelines
+
               def declared_stages
                 command.yaml_processor_result.stages
               end
 
               def usage_tracking
-                @usage_tracking ||= ::Security::PipelineExecutionPolicy::UsageTracking.new(
+                ::Security::PipelineExecutionPolicy::UsageTracking.new(
                   project: project,
-                  policy_pipelines: command.pipeline_policy_context.pipeline_execution_context.policy_pipelines
+                  policy_pipelines: applicable_policy_pipelines
                 )
               end
+              strong_memoize_attr :usage_tracking
             end
           end
         end

@@ -103,19 +103,70 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::EvaluateWorkflowRules, feature_categ
       end
 
       context 'with execution_policy_pipelines' do
-        before do
-          allow(command)
-            .to receive_message_chain(:pipeline_policy_context, :pipeline_execution_context,
-              :has_execution_policy_pipelines?).and_return(true)
-          step.perform!
+        let(:pipeline_execution_context) do
+          instance_double(Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext)
         end
 
-        it_behaves_like 'pipeline not skipped'
+        before do
+          allow(command)
+            .to receive_message_chain(:pipeline_policy_context, :pipeline_execution_context)
+            .and_return(pipeline_execution_context)
+        end
 
-        it 'clears the jobs from the main pipeline in the yaml_processor_result' do
-          expect(yaml_processor_result).to receive(:clear_jobs!)
+        context 'when force_pipeline_creation? returns true' do
+          before do
+            allow(pipeline_execution_context).to receive(:force_pipeline_creation?).with(pipeline).and_return(true)
+          end
 
-          step.perform!
+          it_behaves_like 'pipeline not skipped' do
+            before do
+              step.perform!
+            end
+          end
+
+          it 'clears the jobs from the main pipeline in the yaml_processor_result' do
+            expect(yaml_processor_result).to receive(:clear_jobs!)
+
+            step.perform!
+          end
+
+          it 'sets pipeline_creation_forced_to_continue flag on command' do
+            step.perform!
+
+            expect(command.pipeline_creation_forced_to_continue).to be(true)
+          end
+        end
+
+        context 'when force_pipeline_creation? returns false' do
+          before do
+            allow(pipeline_execution_context).to receive(:force_pipeline_creation?).with(pipeline).and_return(false)
+            step.perform!
+          end
+
+          it 'does not save the pipeline' do
+            expect(pipeline).not_to be_persisted
+          end
+
+          it 'breaks the chain' do
+            expect(step.break?).to be true
+          end
+
+          it 'attaches an error to the pipeline' do
+            expect(pipeline.errors[:base]).to include(sanitize_message(Ci::Pipeline.workflow_rules_failure_message))
+          end
+
+          it 'saves workflow_rules_result' do
+            expect(command.workflow_rules_result.variables).to eq(workflow_rules_variables)
+          end
+
+          it 'sets the failure reason', :aggregate_failures do
+            expect(pipeline).to be_failed
+            expect(pipeline).to be_filtered_by_workflow_rules
+          end
+
+          it 'does not set pipeline_creation_forced_to_continue flag on command' do
+            expect(command.pipeline_creation_forced_to_continue).to be_nil
+          end
         end
       end
     end

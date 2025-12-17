@@ -671,6 +671,282 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
     end
   end
 
+  describe '#force_pipeline_creation?' do
+    subject(:force_creation) { context.force_pipeline_creation?(pipeline) }
+
+    include_context 'with mocked policy_pipelines'
+
+    it { is_expected.to eq(false) }
+
+    context 'with policy_pipelines' do
+      context 'when feature flag is disabled' do
+        let(:policy_pipelines) { build_list(:pipeline_execution_policy_pipeline, 1, :apply_on_empty_pipeline_never) }
+
+        before do
+          stub_feature_flags(pipeline_execution_policy_empty_pipeline_behavior: false)
+        end
+
+        it 'always forces pipeline creation (default behavior)' do
+          expect(force_creation).to eq(true)
+        end
+      end
+
+      context 'when feature flag is enabled' do
+        context 'when apply_on_empty_pipeline is an unexpected value' do
+          let(:policy_pipelines) do
+            build_list(:pipeline_execution_policy_pipeline, 1, apply_on_empty_pipeline: :something_invalid)
+          end
+
+          it { is_expected.to eq(true) }
+        end
+
+        context 'when apply_on_empty_pipeline is "always"' do
+          let(:policy_pipelines) { build_list(:pipeline_execution_policy_pipeline, 1, :apply_on_empty_pipeline_always) }
+
+          it { is_expected.to eq(true) }
+        end
+
+        context 'when apply_on_empty_pipeline is "never"' do
+          let(:policy_pipelines) { build_list(:pipeline_execution_policy_pipeline, 1, :apply_on_empty_pipeline_never) }
+
+          it { is_expected.to eq(false) }
+        end
+
+        context 'when apply_on_empty_pipeline is "if_no_config"' do
+          let(:policy_pipelines) do
+            build_list(:pipeline_execution_policy_pipeline, 1, :apply_on_empty_pipeline_if_no_config)
+          end
+
+          context 'when project has no CI config (pipeline has no stages)' do
+            before do
+              allow(pipeline).to receive_messages(stages: [], pipeline_execution_policy_forced?: true)
+            end
+
+            context 'when pipeline is a merge request pipeline' do
+              before do
+                allow(pipeline).to receive_messages(merge_request?: true, branch?: false)
+              end
+
+              it 'forces pipeline creation' do
+                expect(force_creation).to eq(true)
+              end
+            end
+
+            context 'when pipeline is a branch pipeline' do
+              before do
+                allow(pipeline).to receive_messages(merge_request?: false, branch?: true)
+              end
+
+              context 'when there are no open merge requests for the branch' do
+                before do
+                  allow(pipeline).to receive(:open_merge_requests_refs).and_return([])
+                end
+
+                it 'forces pipeline creation' do
+                  expect(force_creation).to eq(true)
+                end
+              end
+
+              context 'when there are open merge requests for the branch' do
+                before do
+                  allow(pipeline).to receive(:open_merge_requests_refs).and_return(['refs/merge-requests/1/head'])
+                end
+
+                it 'does not force pipeline creation to avoid duplicates' do
+                  expect(force_creation).to eq(false)
+                end
+              end
+            end
+          end
+
+          context 'when pipeline is not using fallback config source' do
+            before do
+              allow(pipeline).to receive_messages(
+                stages: [],
+                pipeline_execution_policy_forced?: false
+              )
+            end
+
+            it 'does not force pipeline creation' do
+              expect(force_creation).to eq(false)
+            end
+          end
+        end
+
+        context 'when multiple policies have different apply_on_empty_pipeline settings' do
+          let(:policy_pipelines) do
+            [
+              build(:pipeline_execution_policy_pipeline, :apply_on_empty_pipeline_always),
+              build(:pipeline_execution_policy_pipeline, :apply_on_empty_pipeline_never)
+            ]
+          end
+
+          it 'forces creation if any policy applies (always policy applies)' do
+            expect(force_creation).to eq(true)
+          end
+        end
+
+        context 'when policies have if_no_config and always' do
+          let(:policy_pipelines) do
+            [
+              build(:pipeline_execution_policy_pipeline, :apply_on_empty_pipeline_always),
+              build(:pipeline_execution_policy_pipeline, :apply_on_empty_pipeline_if_no_config)
+            ]
+          end
+
+          it 'forces creation because always policy applies' do
+            expect(force_creation).to eq(true)
+          end
+        end
+
+        context 'when policies have if_no_config and never' do
+          let(:policy_pipelines) do
+            [
+              build(:pipeline_execution_policy_pipeline, :apply_on_empty_pipeline_if_no_config),
+              build(:pipeline_execution_policy_pipeline, :apply_on_empty_pipeline_never)
+            ]
+          end
+
+          context 'when pipeline has no CI config' do
+            before do
+              allow(pipeline).to receive_messages(
+                stages: [],
+                pipeline_execution_policy_forced?: true,
+                merge_request?: true,
+                branch?: false
+              )
+            end
+
+            it 'forces creation because if_no_config policy applies' do
+              expect(force_creation).to eq(true)
+            end
+          end
+
+          context 'when pipeline has CI config' do
+            before do
+              allow(pipeline).to receive_messages(
+                stages: [],
+                pipeline_execution_policy_forced?: false
+              )
+            end
+
+            it 'does not force creation because neither policy applies' do
+              expect(force_creation).to eq(false)
+            end
+          end
+        end
+
+        context 'when all policies have never' do
+          let(:policy_pipelines) do
+            [
+              build(:pipeline_execution_policy_pipeline, :apply_on_empty_pipeline_never),
+              build(:pipeline_execution_policy_pipeline, :apply_on_empty_pipeline_never)
+            ]
+          end
+
+          it 'does not force pipeline creation' do
+            expect(force_creation).to eq(false)
+          end
+        end
+
+        context 'when experiment is disabled' do
+          let(:policy_config_without_experiment) do
+            build(:security_orchestration_policy_configuration)
+          end
+
+          let(:policy_pipelines) do
+            [
+              build(:pipeline_execution_policy_pipeline,
+                policy_config: build(:pipeline_execution_policy_config, :apply_on_empty_pipeline_never,
+                  policy_config: policy_config_without_experiment))
+            ]
+          end
+
+          it 'ignores apply_on_empty_pipeline and forces creation (default behavior)' do
+            expect(force_creation).to eq(true)
+          end
+        end
+      end
+    end
+  end
+
+  describe '#empty_pipeline_applicable_policy_pipelines' do
+    subject(:applicable_pipelines) { context.empty_pipeline_applicable_policy_pipelines(pipeline) }
+
+    include_context 'with mocked policy_pipelines'
+
+    context 'when feature flag is disabled' do
+      let(:policy_pipelines) { build_list(:pipeline_execution_policy_pipeline, 2, :apply_on_empty_pipeline_never) }
+
+      before do
+        stub_feature_flags(pipeline_execution_policy_empty_pipeline_behavior: false)
+      end
+
+      it 'returns all policies (default behavior)' do
+        expect(applicable_pipelines).to eq(policy_pipelines)
+      end
+    end
+
+    context 'when all policies have apply_on_empty_pipeline "always"' do
+      let(:policy_pipelines) { build_list(:pipeline_execution_policy_pipeline, 2, :apply_on_empty_pipeline_always) }
+
+      it 'returns all policies' do
+        expect(applicable_pipelines).to eq(policy_pipelines)
+      end
+    end
+
+    context 'when policies have mixed apply_on_empty_pipeline settings' do
+      let(:always_policy) { build(:pipeline_execution_policy_pipeline, :apply_on_empty_pipeline_always) }
+      let(:never_policy) { build(:pipeline_execution_policy_pipeline, :apply_on_empty_pipeline_never) }
+      let(:policy_pipelines) { [always_policy, never_policy] }
+
+      it 'returns only the always policy' do
+        expect(applicable_pipelines).to contain_exactly(always_policy)
+      end
+    end
+
+    context 'when all policies have apply_on_empty_pipeline "never"' do
+      let(:policy_pipelines) { build_list(:pipeline_execution_policy_pipeline, 2, :apply_on_empty_pipeline_never) }
+
+      it 'returns no policies' do
+        expect(applicable_pipelines).to be_empty
+      end
+    end
+
+    context 'when policies have if_no_config and never' do
+      let(:if_no_config_policy) do
+        build(:pipeline_execution_policy_pipeline, :apply_on_empty_pipeline_if_no_config)
+      end
+
+      let(:never_policy) { build(:pipeline_execution_policy_pipeline, :apply_on_empty_pipeline_never) }
+      let(:policy_pipelines) { [if_no_config_policy, never_policy] }
+
+      context 'when pipeline has no CI config' do
+        before do
+          allow(pipeline).to receive_messages(
+            pipeline_execution_policy_forced?: true,
+            merge_request?: true,
+            branch?: false
+          )
+        end
+
+        it 'returns only the if_no_config policy' do
+          expect(applicable_pipelines).to contain_exactly(if_no_config_policy)
+        end
+      end
+
+      context 'when pipeline has CI config' do
+        before do
+          allow(pipeline).to receive_messages(pipeline_execution_policy_forced?: false)
+        end
+
+        it 'returns no policies' do
+          expect(applicable_pipelines).to be_empty
+        end
+      end
+    end
+  end
+
   describe '#skip_ci_allowed?' do
     subject { context.skip_ci_allowed? }
 

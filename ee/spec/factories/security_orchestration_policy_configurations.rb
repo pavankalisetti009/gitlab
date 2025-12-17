@@ -10,5 +10,9 @@ FactoryBot.define do
       project { nil }
       namespace
     end
+
+    trait :with_apply_on_empty_pipeline_experiment do
+      experiments { { apply_on_empty_pipeline_option: { enabled: true } } }
+    end
   end
 end

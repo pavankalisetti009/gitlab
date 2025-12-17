@@ -10,10 +10,11 @@ module Security
       DEFAULT_SUFFIX_STRATEGY = 'on_conflict'
       SUFFIX_STRATEGIES = { on_conflict: 'on_conflict', never: 'never' }.freeze
       DEFAULT_SKIP_CI_STRATEGY = { allowed: false }.freeze
+      DEFAULT_APPLY_ON_EMPTY_PIPELINE = 'always'
       POLICY_JOB_SUFFIX = ':policy'
 
       attr_reader :content, :config_strategy, :suffix_strategy, :policy_project_id, :policy_index, :name,
-        :skip_ci_strategy, :variables_override_strategy, :policy_config, :policy_sha
+        :skip_ci_strategy, :variables_override_strategy, :policy_config, :policy_sha, :apply_on_empty_pipeline
 
       delegate :experiment_enabled?, to: :policy_config
 
@@ -22,7 +23,7 @@ module Security
         @policy_config = policy_config
         @policy_project_id = policy_config.security_policy_management_project_id
         @policy_index = policy_index
-        @config_strategy = policy.fetch(:pipeline_config_strategy).to_sym
+        parse_pipeline_config_strategy(policy.fetch(:pipeline_config_strategy))
         @suffix_strategy = policy[:suffix] || DEFAULT_SUFFIX_STRATEGY
         @name = policy.fetch(:name)
         @skip_ci_strategy = policy[:skip_ci].presence || DEFAULT_SKIP_CI_STRATEGY
@@ -54,6 +55,20 @@ module Security
 
       def skip_ci_allowed?(user_id)
         skip_ci_allowed_for_strategy?(skip_ci_strategy, user_id)
+      end
+
+      private
+
+      def parse_pipeline_config_strategy(strategy_config)
+        if strategy_config.is_a?(Hash)
+          @config_strategy = strategy_config.fetch(:type).to_sym
+          @apply_on_empty_pipeline = strategy_config.fetch(
+            :apply_on_empty_pipeline, DEFAULT_APPLY_ON_EMPTY_PIPELINE
+          ).to_s
+        else
+          @config_strategy = strategy_config.to_sym
+          @apply_on_empty_pipeline = DEFAULT_APPLY_ON_EMPTY_PIPELINE
+        end
       end
     end
   end
