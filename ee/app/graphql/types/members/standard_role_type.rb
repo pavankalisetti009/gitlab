@@ -26,10 +26,6 @@ module Types
         Types::MemberAccessLevelEnum.values[access_level_enum].description
       end
 
-      def name
-        object[:name].tr('_', ' ')
-      end
-
       def details_path
         enum = access_level_enum
         group = object[:group]
