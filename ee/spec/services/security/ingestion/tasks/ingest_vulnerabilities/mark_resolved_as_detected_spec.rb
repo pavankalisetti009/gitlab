@@ -72,6 +72,27 @@ RSpec.describe Security::Ingestion::Tasks::IngestVulnerabilities::MarkResolvedAs
     expect(state_transition.vulnerability_id).to eq(resolved_vulnerability.id)
   end
 
+  it 'creates a detection transition with detected: true', :aggregate_failures do
+    finding_ids = resolved_vulnerability.findings.pluck(:id)
+
+    expect { mark_resolved_as_detected }.to change {
+      Vulnerabilities::DetectionTransition.where(vulnerability_occurrence_id: finding_ids).count
+    }.by(1)
+
+    transition = Vulnerabilities::DetectionTransition.find_by(vulnerability_occurrence_id: finding_ids)
+    expect(transition.detected).to be(true)
+  end
+
+  context 'when new_security_dashboard_exclude_no_longer_detected is disabled' do
+    before do
+      stub_feature_flags(new_security_dashboard_exclude_no_longer_detected: false)
+    end
+
+    it 'does not create detection transitions' do
+      expect { mark_resolved_as_detected }.not_to change { Vulnerabilities::DetectionTransition.count }
+    end
+  end
+
   it 'marks the findings as transitioned_to_detected' do
     expect { mark_resolved_as_detected }.to change { existing_resolved_finding_map.transitioned_to_detected }.to(true)
                                         .and not_change { existing_detected_finding_map.transitioned_to_detected }

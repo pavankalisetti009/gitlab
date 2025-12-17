@@ -2029,6 +2029,62 @@ RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_manage
     end
   end
 
+  describe '.with_latest_detection_transition' do
+    let_it_be(:finding1) { create(:vulnerabilities_finding) }
+    let_it_be(:finding2) { create(:vulnerabilities_finding) }
+    let_it_be(:finding3) { create(:vulnerabilities_finding) }
+
+    let_it_be(:_transition1_old) do
+      create(:vulnerability_detection_transition, finding: finding1, detected: true, created_at: 2.days.ago)
+    end
+
+    let_it_be(:transition1_latest) do
+      create(:vulnerability_detection_transition, finding: finding1, detected: false, created_at: 1.day.ago)
+    end
+
+    let_it_be(:transition2_latest) do
+      create(:vulnerability_detection_transition, finding: finding2, detected: true, created_at: 1.day.ago)
+    end
+
+    subject { described_class.with_latest_detection_transition }
+
+    it 'includes only the latest detection transition for each finding', :aggregate_failures do
+      findings = subject.to_a
+
+      expect(findings).to contain_exactly(finding1, finding2)
+      expect(findings.find { |f| f.id == finding1.id }.detection_transitions).to contain_exactly(transition1_latest)
+      expect(findings.find { |f| f.id == finding2.id }.detection_transitions).to contain_exactly(transition2_latest)
+    end
+
+    it 'does not include findings without detection transitions' do
+      expect(subject).not_to include(finding3)
+    end
+
+    it 'orders by detection transition id descending' do
+      finding_with_transitions = subject.find_by(id: finding1.id)
+
+      expect(finding_with_transitions.detection_transitions.first).to eq(transition1_latest)
+    end
+  end
+
+  describe '#latest_detection_transition' do
+    let_it_be(:finding) { create(:vulnerabilities_finding) }
+
+    context 'when finding has multiple detection transitions' do
+      let_it_be(:_old_transition) do
+        create(:vulnerability_detection_transition, :detected, finding: finding, created_at: 2.days.ago)
+      end
+
+      let_it_be(:latest_transition) do
+        create(:vulnerability_detection_transition, :not_detected, finding: finding, created_at: 1.day.ago)
+      end
+
+      it 'returns the last detection transition' do
+        expect(finding.latest_detection_transition).to eq(latest_transition)
+      end
+    end
+  end
+
   it_behaves_like 'policy auto-dismissable' do
     let_it_be(:policy_rule_attributes) { { file_path: 'test/**/*' } }
 
