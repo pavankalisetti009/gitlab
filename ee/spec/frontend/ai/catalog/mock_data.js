@@ -519,6 +519,19 @@ export const mockFlowConfigurationForProject = {
   __typename: TYPENAME_AI_CATALOG_ITEM_CONSUMER,
 };
 
+export const mockServiceAccount = {
+  id: 'gid://gitlab/User/100',
+  name: 'Fix pipeline/v1',
+  username: 'ai-fix-pipeline-v1-group-1',
+  webPath: '/ai-fix-pipeline-v1-group-1',
+  avatarUrl: 'https://example.com/avatar.png',
+};
+
+export const mockFlowConfigurationForGroup = {
+  ...mockItemConfigurationForGroup,
+  serviceAccount: mockServiceAccount,
+};
+
 export const mockCatalogFlowsResponse = {
   data: {
     aiCatalogItems: {
@@ -572,7 +585,7 @@ export const mockAiCatalogFlowResponse = {
     aiCatalogItem: {
       ...mockFlow,
       configurationForProject: mockFlowConfigurationForProject,
-      configurationForGroup: mockItemConfigurationForGroup,
+      configurationForGroup: mockFlowConfigurationForGroup,
     },
   },
 };

@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
-import { GlLink } from '@gitlab/ui';
+import { GlAvatarLabeled, GlAvatarLink, GlLink } from '@gitlab/ui';
 import AiCatalogFlowDetails from 'ee/ai/catalog/components/ai_catalog_flow_details.vue';
 import AiCatalogItemField from 'ee/ai/catalog/components/ai_catalog_item_field.vue';
 import AiCatalogItemVisibilityField from 'ee/ai/catalog/components/ai_catalog_item_visibility_field.vue';
@@ -7,7 +7,7 @@ import FormFlowDefinition from 'ee/ai/catalog/components/form_flow_definition.vu
 import FormSection from 'ee/ai/catalog/components/form_section.vue';
 import TriggerField from 'ee/ai/catalog/components/trigger_field.vue';
 import { VERSION_LATEST, VERSION_PINNED } from 'ee/ai/catalog/constants';
-import { mockFlow, mockFlowConfigurationForProject } from '../mock_data';
+import { mockFlow, mockFlowConfigurationForProject, mockServiceAccount } from '../mock_data';
 
 describe('AiCatalogFlowDetails', () => {
   let wrapper;
@@ -35,6 +35,8 @@ describe('AiCatalogFlowDetails', () => {
     findSection(index).findAllComponents(AiCatalogItemField);
   const findSourceProjectLink = () => wrapper.findComponent(GlLink);
   const findTriggerField = () => wrapper.findComponent(TriggerField);
+  const findServiceAccountAvatar = () => wrapper.findComponent(GlAvatarLabeled);
+  const findServiceAccountLink = () => wrapper.findComponent(GlAvatarLink);
 
   beforeEach(() => {
     createComponent();
@@ -119,6 +121,37 @@ describe('AiCatalogFlowDetails', () => {
         expect(configurationField.findComponent(FormFlowDefinition).props('value')).toBe(
           mockFlowConfigurationForProject.pinnedItemVersion.definition,
         );
+      });
+    });
+
+    describe('when configurationForGroup.serviceAccount exists', () => {
+      beforeEach(() => {
+        createComponent({
+          props: {
+            item: {
+              ...mockFlow,
+              configurationForGroup: {
+                serviceAccount: mockServiceAccount,
+              },
+            },
+          },
+        });
+      });
+
+      it('renders service account avatar', () => {
+        expect(findServiceAccountAvatar().props()).toMatchObject({
+          size: 32,
+          src: mockServiceAccount.avatarUrl,
+          label: mockServiceAccount.name,
+          subLabel: `@${mockServiceAccount.username}`,
+        });
+      });
+
+      it('renders service account link', () => {
+        expect(findServiceAccountLink().attributes()).toMatchObject({
+          href: mockServiceAccount.webPath,
+          title: mockServiceAccount.name,
+        });
       });
     });
   });

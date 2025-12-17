@@ -1,5 +1,5 @@
 <script>
-import { GlLink } from '@gitlab/ui';
+import { GlAvatarLabeled, GlAvatarLink, GlLink } from '@gitlab/ui';
 import { FLOW_VISIBILITY_LEVEL_DESCRIPTIONS } from '../constants';
 import { getByVersionKey } from '../utils';
 import AiCatalogItemField from './ai_catalog_item_field.vue';
@@ -11,6 +11,8 @@ import FormSection from './form_section.vue';
 export default {
   name: 'AiCatalogFlowDetails',
   components: {
+    GlAvatarLabeled,
+    GlAvatarLink,
     GlLink,
     AiCatalogItemField,
     AiCatalogItemVisibilityField,
@@ -38,6 +40,9 @@ export default {
     definition() {
       return getByVersionKey(this.item, this.versionKey).definition;
     },
+    serviceAccount() {
+      return this.item.configurationForGroup?.serviceAccount;
+    },
   },
   FLOW_VISIBILITY_LEVEL_DESCRIPTIONS,
 };
@@ -63,6 +68,20 @@ export default {
         />
       </form-section>
       <form-section :title="s__('AICatalog|Configuration')">
+        <ai-catalog-item-field v-if="serviceAccount" :title="s__('AICatalog|Service account')">
+          <gl-avatar-link
+            :href="serviceAccount.webPath"
+            :title="serviceAccount.name"
+            class="gl-mt-3"
+          >
+            <gl-avatar-labeled
+              :size="32"
+              :src="serviceAccount.avatarUrl"
+              :label="serviceAccount.name"
+              :sub-label="`@${serviceAccount.username}`"
+            />
+          </gl-avatar-link>
+        </ai-catalog-item-field>
         <trigger-field v-if="hasProjectConfiguration" :item="item" />
         <ai-catalog-item-field :title="s__('AICatalog|Configuration')">
           <form-flow-definition :value="definition" read-only class="gl-mt-3" />
