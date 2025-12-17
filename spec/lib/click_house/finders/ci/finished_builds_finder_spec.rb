@@ -255,7 +255,7 @@ RSpec.describe ClickHouse::Finders::Ci::FinishedBuildsFinder, :click_house, :fre
 
         it "calculates rate correctly" do
           is_expected.not_to be_empty
-          expect(result.first.fetch("rate_of_#{status}")).to be_a(Integer)
+          expect(result.first.fetch("rate_of_#{status}")).to be_a(Float)
         end
       end
 
