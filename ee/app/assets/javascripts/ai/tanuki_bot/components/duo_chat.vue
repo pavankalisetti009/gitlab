@@ -273,6 +273,14 @@ export default {
         }
       },
     },
+    'duoChatGlobalState.focusChatInput': {
+      handler(newVal) {
+        if (newVal) {
+          this.duoChatGlobalState.focusChatInput = false; // reset global state
+          this.focusInput();
+        }
+      },
+    },
     mode(newMode) {
       this.switchMode(newMode);
     },
@@ -362,8 +370,6 @@ export default {
         }
       } catch (err) {
         this.onError(err);
-      } finally {
-        await this.focusInput();
       }
       this.navigateToChat();
     },
@@ -377,11 +383,10 @@ export default {
       this.cancelledRequestIds = [];
       this.activeThread = undefined;
     },
-    async onNewChat() {
+    onNewChat() {
       clearDuoChatCommands();
       this.cleanState();
       this.multithreadedView = DUO_CHAT_VIEWS.CHAT;
-      await this.focusInput();
     },
     onChatCancel() {
       // pushing last requestId of messages to canceled Request Id's
@@ -553,9 +558,12 @@ export default {
         })
         .catch(this.onError);
     },
-    async focusInput() {
-      await this.$nextTick();
-      this.$refs.duoChat?.focusChatInput?.();
+    // `focusInput` can be called by the parent component. Ideally, we would mark this as a public
+    // method via Vue's `expose` option. However, doing so would cause several tests to fail in Vue 3
+    // because we wrote some assertions directly against the `vm`, which becomes private when `expose`
+    // is defined. So we need to _not_ use `expose` and disable vue/no-unused-properties for now.
+    focusInput() {
+      this.$refs.duoChat?.focusChatInput();
     },
   },
 };
