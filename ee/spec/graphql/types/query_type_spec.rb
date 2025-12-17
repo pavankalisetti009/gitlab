@@ -19,6 +19,7 @@ RSpec.describe GitlabSchema.types['Query'], feature_category: :shared do
       :ai_conversation_threads,
       :ai_chat_available_models,
       :ai_chat_context_presets,
+      :ai_chat_included_projects,
       :ai_usage_data,
       :blob_search,
       :ci_catalog_resources,
