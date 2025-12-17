@@ -49,12 +49,8 @@ module Search
       end
 
       def paginate
-        if Feature.enabled?(:search_glql_fix_null_field_pagination, Feature.current_request)
-          # Allow nil sort_property_value (for null values in ES), but require tie_breaker to be set
-          return query_hash if tie_breaker_property_value.nil?
-        else
-          return query_hash unless sort_property_value && tie_breaker_property_value
-        end
+        # Allow nil sort_property_value (for null values in ES), but require tie_breaker to be set
+        return query_hash if tie_breaker_property_value.nil?
 
         add_filter(query_hash, :query, :bool, :filter) do
           pagination_filter
@@ -70,9 +66,6 @@ module Search
         :is_after
 
       def pagination_filter
-        return legacy_pagination_filter unless Feature.enabled?(:search_glql_fix_null_field_pagination,
-          Feature.current_request)
-
         # When the sort property value is nil, we're paginating past records with null values.
         # Elasticsearch sorts nulls last (using Long.MAX_VALUE internally), so we need special handling.
         return pagination_filter_for_null_cursor if sort_property_value.nil?
@@ -141,41 +134,6 @@ module Search
         should_clauses << { bool: { must_not: { exists: { field: sort_property } } } } if is_after
 
         { bool: { should: should_clauses } }
-      end
-
-      def legacy_pagination_filter
-        # Original pagination logic without null handling
-        {
-          bool: {
-            should: [
-              {
-                range: {
-                  sort_property => {
-                    document_matching_operator(sort_direction) => sort_property_value
-                  }
-                }
-              },
-              {
-                bool: {
-                  must: [
-                    {
-                      term: {
-                        sort_property => sort_property_value
-                      }
-                    },
-                    {
-                      range: {
-                        tie_breaker_property => {
-                          document_matching_operator(tie_breaker_sort_direction) => tie_breaker_property_value
-                        }
-                      }
-                    }
-                  ]
-                }
-              }
-            ]
-          }
-        }
       end
 
       def sort_property
