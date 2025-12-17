@@ -33,7 +33,7 @@ RSpec.describe Ai::Catalog::ItemConsumerPolicy, feature_category: :workflow_cata
     end
 
     before do
-      allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :ai_catalog, user: user).and_return(true)
+      allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :ai_catalog).and_return(true)
       allow(::Gitlab::Llm::StageCheck).to receive(:available?)
         .with(project, :ai_catalog_flows).and_return(flows_available)
     end

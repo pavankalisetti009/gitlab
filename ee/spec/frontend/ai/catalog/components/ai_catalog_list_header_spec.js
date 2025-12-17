@@ -1,4 +1,5 @@
 import { GlExperimentBadge, GlLink, GlIcon, GlPopover, GlSprintf } from '@gitlab/ui';
+import { ref } from 'vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import AiCatalogListHeader from 'ee/ai/catalog/components/ai_catalog_list_header.vue';
@@ -13,6 +14,14 @@ import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
 import { DOCS_URL } from 'jh_else_ce/lib/utils/url_utility';
 
 jest.mock('lodash/uniqueId', () => (x) => x);
+
+const mockShowBetaBadge = ref(false);
+
+jest.mock('ee/ai/duo_agents_platform/composables/use_ai_beta_badge', () => ({
+  useAiBetaBadge: jest.fn(() => ({
+    showBetaBadge: mockShowBetaBadge,
+  })),
+}));
 
 describe('AiCatalogListHeader', () => {
   let wrapper;
@@ -37,9 +46,6 @@ describe('AiCatalogListHeader', () => {
         isGlobal: true,
         canAdmin: false,
         aiImpactDashboardEnabled: true,
-        glFeatures: {
-          aiDuoAgentPlatformGaRollout: false,
-        },
         ...provide,
       },
       directives: {
@@ -50,38 +56,31 @@ describe('AiCatalogListHeader', () => {
   };
 
   describe('default rendering', () => {
-    beforeEach(() => {
-      createComponent();
-    });
-
     it('renders default title', () => {
+      createComponent();
       expect(findPageHeading().text()).toContain('AI Catalog');
     });
 
-    describe('experiment badge visibility based on isBeta and feature flag', () => {
+    describe('experiment badge visibility based on feature flag', () => {
       it.each`
-        isBeta   | gaRolloutEnabled | shouldRender | description
-        ${false} | ${false}         | ${true}      | ${'display badge when GA rollout is not enabled and isBeta override is not set'}
-        ${true}  | ${false}         | ${true}      | ${'display badge when isBeta override is true'}
-        ${false} | ${true}          | ${false}     | ${'display no badge when GA rollout is enabled'}
-        ${true}  | ${true}          | ${true}      | ${'display badge when isBeta is true, even when GA rollout is enabled'}
-      `('should $description', ({ isBeta, gaRolloutEnabled, shouldRender }) => {
-        createComponent({
-          props: { isBeta },
-          provide: {
-            glFeatures: { aiDuoAgentPlatformGaRollout: gaRolloutEnabled },
-          },
-        });
+        shouldShowBadge | shouldRender | description
+        ${true}         | ${true}      | ${'display badge when GA rollout is not enabled'}
+        ${false}        | ${false}     | ${'display no badge when GA rollout is enabled'}
+      `('should $description', ({ shouldShowBadge, shouldRender }) => {
+        mockShowBetaBadge.value = shouldShowBadge;
+        createComponent();
 
         expect(findExperimentBadge().exists()).toBe(shouldRender);
       });
     });
 
     it('renders AiCatalogNavTabs component', () => {
+      createComponent();
       expect(findNavTabs().exists()).toBe(true);
     });
 
     it('renders AiCatalogNavActions component', () => {
+      createComponent();
       expect(findNavActions().exists()).toBe(true);
     });
   });

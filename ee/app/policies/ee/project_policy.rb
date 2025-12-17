@@ -1387,7 +1387,7 @@ module EE
       end
 
       condition(:ai_catalog_available) do
-        @subject.ai_catalog_available?(@user)
+        @subject.ai_catalog_available?
       end
 
       condition(:flows_enabled, scope: :user) do

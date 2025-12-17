@@ -2655,7 +2655,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       end
     end
 
-    context 'on GitLab.com paid' do
+    context 'on GitLab.com paid', :saas do
       let_it_be(:group) { create(:group_with_plan, plan: :bronze_plan) }
 
       context 'with owner' do
@@ -5319,7 +5319,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
 
     before do
       allow(::Gitlab::Llm::StageCheck).to receive(:available?)
-        .with(group, :ai_catalog, user: current_user).and_return(ai_catalog_available)
+        .with(group, :ai_catalog).and_return(ai_catalog_available)
       allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(group, :ai_catalog_flows).and_return(flows_available)
       group.namespace_settings.duo_features_enabled = duo_features_enabled
     end

@@ -629,8 +629,8 @@ module EE
         end
       end
 
-      def ai_catalog_available?(user)
-        duo_features_enabled && ::Gitlab::Llm::StageCheck.available?(self, :ai_catalog, user: user)
+      def ai_catalog_available?
+        duo_features_enabled && ::Gitlab::Llm::StageCheck.available?(self, :ai_catalog)
       end
 
       def member_usernames_among(users)

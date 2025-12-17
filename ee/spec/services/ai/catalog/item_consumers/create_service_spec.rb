@@ -161,7 +161,7 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
 
     before do
       allow(Gitlab::Llm::StageCheck).to receive(:available?).and_call_original
-      allow(Gitlab::Llm::StageCheck).to receive(:available?).with(container, :ai_catalog, user: user).and_return(true)
+      allow(Gitlab::Llm::StageCheck).to receive(:available?).with(container, :ai_catalog).and_return(true)
       allow(Gitlab::Llm::StageCheck).to receive(:available?)
         .with(flow_item.project, :ai_catalog_flows).and_return(true)
       allow(Gitlab::Llm::StageCheck).to receive(:available?)

@@ -223,10 +223,7 @@ module Ai
 
       def check_saas_free_access(ai_feature)
         # Use effective maturity instead of raw maturity
-        effective_maturity = ::Gitlab::Llm::Utils::AiFeaturesCatalogue.effective_maturity(
-          ai_feature,
-          user: self
-        )
+        effective_maturity = ::Gitlab::Llm::Utils::AiFeaturesCatalogue.effective_maturity(ai_feature)
         seats = namespaces_allowed_in_com(effective_maturity)
 
         if seats.any?

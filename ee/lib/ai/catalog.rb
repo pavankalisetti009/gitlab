@@ -30,7 +30,7 @@ module Ai
       # TODO remove this when AI Catalog goes GA
       # https://gitlab.com/gitlab-org/gitlab/-/issues/570161
       def user_can_access_experimental_ai_catalog_features?(user)
-        return true if Gitlab::Llm::Utils::AiFeaturesCatalogue.instance_should_observe_ga_dap?(:ai_catalog, user: user)
+        return true if Gitlab::Llm::Utils::AiFeaturesCatalogue.instance_should_observe_ga_dap?(:ai_catalog)
 
         # SaaS, check if the user belongs to any (root) namespace with `experiment_features_enabled`
         if saas?

@@ -39,7 +39,7 @@ RSpec.describe 'Groups::DuoAgentsPlatform', feature_category: :duo_agent_platfor
         expect(response.body).to include('aiCatalogAgents')
         expect(response.body).to include('aiCatalogFlows')
         expect(response.body).to include('aiCatalogThirdPartyFlows')
-        expect(response.body).to include('aiDuoAgentPlatformGaRollout')
+        expect(response.body).to include('gon.ai_duo_agent_platform_ga_rollout')
       end
     end
 

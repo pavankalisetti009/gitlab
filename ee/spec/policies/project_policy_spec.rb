@@ -5549,7 +5549,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
     before do
       allow(::Gitlab::Llm::StageCheck).to receive(:available?)
-        .with(project, :ai_catalog, user: current_user).and_return(ai_catalog_available)
+        .with(project, :ai_catalog).and_return(ai_catalog_available)
       allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :ai_catalog_flows).and_return(flows_available)
       project.duo_features_enabled = duo_features_enabled
     end
