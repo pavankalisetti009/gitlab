@@ -21,6 +21,7 @@ module API
       segment ':id/external_status_checks' do
         desc 'Create external status check' do
           success code: 201, model: ::API::Entities::ExternalStatusCheck
+          tags ['external_status_checks']
         end
         params do
           requires :name, type: String, desc: 'Display name of external status check', documentation: { example: 'QA' }
@@ -49,6 +50,7 @@ module API
         end
         desc 'Get project external status checks' do
           success ::API::Entities::ExternalStatusCheck
+          tags ['external_status_checks']
           is_array true
         end
         params do
@@ -63,6 +65,7 @@ module API
         segment ':check_id' do
           desc 'Update external status check' do
             success ::API::Entities::ExternalStatusCheck
+            tags ['external_status_checks']
           end
           params do
             requires :check_id,
@@ -96,6 +99,7 @@ module API
 
           desc 'Delete external status check' do
             success code: 204
+            tags ['external_status_checks']
           end
           params do
             requires :check_id, type: Integer, desc: 'ID of an external status check'
@@ -116,6 +120,7 @@ module API
       segment ':id/merge_requests/:merge_request_iid' do
         desc 'Set status of an external status check' do
           success Entities::MergeRequests::StatusCheckResponse
+          tags ['external_status_checks']
         end
         params do
           requires :id, type: String, desc: 'ID of a project', documentation: { example: '1' }
@@ -164,6 +169,7 @@ module API
         segment 'status_checks' do
           desc 'List status checks for a merge request' do
             success Entities::MergeRequests::StatusCheck
+            tags ['external_status_checks']
             is_array true
           end
           get '/', urgency: :low do
@@ -175,6 +181,7 @@ module API
 
           desc 'Retry failed external status check' do
             success code: 202
+            tags ['external_status_checks']
           end
           params do
             requires :id, type: String, desc: 'ID of a project', documentation: { example: '1' }

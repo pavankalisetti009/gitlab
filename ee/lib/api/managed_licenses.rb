@@ -36,6 +36,7 @@ module API
     resource :projects, requirements: API::NAMESPACE_OR_PROJECT_REQUIREMENTS do
       desc 'Get project software license policies' do
         success code: 200, model: ::API::Entities::ManagedLicense
+        tags ['managed_licenses']
         failure [
           { code: 401, message: 'Unauthorized' },
           { code: 403, message: 'Forbidden' },
@@ -55,6 +56,7 @@ module API
 
       desc 'Get a specific software license policy from a project' do
         success code: 200, model: ::API::Entities::ManagedLicense
+        tags ['managed_licenses']
         failure [
           { code: 401, message: 'Unauthorized' },
           { code: 403, message: 'Forbidden' },
@@ -69,6 +71,7 @@ module API
 
       desc 'Create a new software license policy in a project' do
         success code: 201, model: ::API::Entities::ManagedLicense
+        tags ['managed_licenses']
         failure [
           { code: 400, message: 'Bad Request' },
           { code: 401, message: 'Unauthorized' },
@@ -92,6 +95,7 @@ module API
 
       desc 'Update an existing software license policy from a project' do
         success code: 200, model: ::API::Entities::ManagedLicense
+        tags ['managed_licenses']
         failure [
           { code: 400, message: 'Bad Request' },
           { code: 401, message: 'Unauthorized' },
@@ -115,6 +119,7 @@ module API
 
       desc 'Delete an existing software license policy from a project' do
         success code: 204
+        tags ['managed_licenses']
         failure [
           { code: 401, message: 'Unauthorized' },
           { code: 403, message: 'Forbidden' },
