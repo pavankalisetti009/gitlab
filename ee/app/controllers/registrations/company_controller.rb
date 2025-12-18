@@ -20,14 +20,6 @@ module Registrations
     helper_method :onboarding_status_presenter
 
     def new
-      # TODO: Remove this workaround after validation period confirms no users trigger this path
-      # Tracking via https://gitlab.com/gitlab-org/gitlab/-/issues/560305
-      # Validation period ends: 2025-11-28
-      if invalid_registration_type?
-        log_invalid_registration_type
-        skip_company_step
-      end
-
       track_event('render', onboarding_status_presenter.tracking_label)
     end
 
@@ -52,14 +44,6 @@ module Registrations
 
     private
 
-    def skip_company_step
-      redirect_to Onboarding::StatusStepUpdateService.new(current_user, new_users_sign_up_group_path).execute[:step_url]
-    end
-
-    def invalid_registration_type?
-      current_user.onboarding_status_registration_type.blank?
-    end
-
     def permitted_params
       params.permit(
         *::Onboarding::StatusPresenter::PASSED_THROUGH_PARAMS,
@@ -74,21 +58,6 @@ module Registrations
 
     def track_event(action, label)
       ::Gitlab::Tracking.event(self.class.name, action, user: current_user, label: label)
-    end
-
-    def log_invalid_registration_type
-      Gitlab::AppLogger.warn(
-        message: 'Company step skip triggered after backfill - unexpected state',
-        username: current_user.username,
-        user_id: current_user.id,
-        user_created_at: current_user.created_at.iso8601,
-        onboarding_in_progress: current_user.onboarding_in_progress,
-        onboarding_status: current_user.onboarding_status.to_json,
-        registration_type: current_user.onboarding_status_registration_type,
-        request_path: request.path,
-        request_referer: request.referer,
-        request_user_agent: request.user_agent
-      )
     end
 
     def onboarding_status_presenter
