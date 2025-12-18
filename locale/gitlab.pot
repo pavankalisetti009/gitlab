@@ -14057,12 +14057,6 @@ msgstr ""
 msgid "Checking if merge request can be merged…"
 msgstr ""
 
-msgid "Checking source validity"
-msgstr ""
-
-msgid "Checking source validity…"
-msgstr ""
-
 msgid "Checking username availability…"
 msgstr ""
 
@@ -65567,6 +65561,9 @@ msgstr ""
 msgid "Source branch is protected from force push"
 msgstr ""
 
+msgid "Source branch name"
+msgstr ""
+
 msgid "Source branch will be deleted."
 msgstr ""
 
@@ -65576,16 +65573,10 @@ msgstr ""
 msgid "Source code (%{fileExtension})"
 msgstr ""
 
-msgid "Source is available"
-msgstr ""
-
 msgid "Source is not available"
 msgstr ""
 
 msgid "Source name"
-msgstr ""
-
-msgid "Source name is required"
 msgstr ""
 
 msgid "Source project"
