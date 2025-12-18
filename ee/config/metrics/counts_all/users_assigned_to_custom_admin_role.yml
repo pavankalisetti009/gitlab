@@ -1,6 +1,8 @@
 key_path: counts.users_assigned_to_custom_admin_role
 description: Count of users who have been assigned custom admin roles
 product_group: authorization
+product_categories:
+- permissions
 value_type: number
 status: active
 milestone: '18.2'
