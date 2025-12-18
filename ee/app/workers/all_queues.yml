@@ -4799,7 +4799,7 @@
   :queue_namespace:
 - :name: vulnerabilities_trigger_false_positive_detection_workflow
   :worker_name: Vulnerabilities::TriggerFalsePositiveDetectionWorkflowWorker
-  :feature_category: :vulnerability_management
+  :feature_category: :static_application_security_testing
   :has_external_dependencies: false
   :urgency: :throttled
   :resource_boundary: :unknown

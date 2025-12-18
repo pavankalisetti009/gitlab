@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Vulnerabilities::TriggerFalsePositiveDetectionWorkflowWorker, feature_category: :vulnerability_management do
+RSpec.describe Vulnerabilities::TriggerFalsePositiveDetectionWorkflowWorker, feature_category: :static_application_security_testing do
   let_it_be(:project) { create(:project, :repository) }
   let_it_be(:user) { create(:user, developer_of: project) }
   let_it_be(:vulnerability) { create(:vulnerability, :with_finding, project: project, author: user) }
