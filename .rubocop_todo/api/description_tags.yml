@@ -70,7 +70,6 @@ API/DescriptionTags:
     - 'lib/api/ci/triggers.rb'
     - 'lib/api/commit_statuses.rb'
     - 'lib/api/custom_attributes_endpoints.rb'
-    - 'lib/api/discussions.rb'
     - 'lib/api/draft_notes.rb'
     - 'lib/api/events.rb'
     - 'lib/api/files.rb'
