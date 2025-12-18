@@ -63,10 +63,6 @@ module Ai
     class << self
       include Gitlab::Utils::StrongMemoize
 
-      def code_suggestions_self_hosted?
-        exists?(feature: [:code_generations, :code_completions], provider: :self_hosted)
-      end
-
       def provider_titles
         {
           disabled: s_('AdminAiPoweredFeatures|Disabled'),
