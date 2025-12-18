@@ -116,11 +116,15 @@ RSpec.describe 'Elastic Ingestion Pipeline', :sidekiq_inline, feature_category: 
         expect { ensure_elasticsearch_index! }.not_to raise_error
 
         expect(docs_in_index('gitlab-test-merge_requests')).to be_empty
-        expect(bookkeeping_service.queued_items.values.flatten).to match_array([serialized_merge_request, Float])
+        # After the first failure, items are routed to the retry queue
+        expect(Search::Elastic::RetryQueue.queued_items.values.flatten).to match_array([serialized_merge_request,
+          Float])
 
-        ensure_elasticsearch_index!
+        # Process the retry queue - items will fail again and move to dead queue
+        expect { Search::Elastic::RetryQueue.new.execute }.not_to raise_error
 
-        expect(bookkeeping_service.queued_items.values.flatten).to match_array([serialized_merge_request, Float])
+        # After the second failure from retry queue, items are routed to the dead queue
+        expect(Search::Elastic::DeadQueue.queued_items.values.flatten).to match_array([serialized_merge_request, Float])
       end
     end
   end

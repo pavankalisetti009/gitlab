@@ -277,17 +277,20 @@ RSpec.describe Elastic::ProcessBookkeepingService,
       expect(described_class.new.execute).to eq([0, 0])
     end
 
-    it 'retries failed documents' do
+    it 'routes failed documents to retry queue' do
       described_class.track!(*fake_refs)
       failed = fake_refs[0]
 
       expect(described_class.queue_size).to eq(10)
+      expect(Search::Elastic::RetryQueue.queue_size).to eq(0)
       expect_processing(*fake_refs, failures: [failed])
 
-      expect { described_class.new.execute }.to change { described_class.queue_size }.by(-fake_refs.count + 1)
+      expect { described_class.new.execute }.to change { described_class.queue_size }.by(-fake_refs.count)
 
-      shard = described_class.shard_number(failed.serialize)
-      serialized = described_class.queued_items[shard].first[0]
+      expect(Search::Elastic::RetryQueue.queue_size).to eq(1)
+
+      shard = Search::Elastic::RetryQueue.shard_number(failed.serialize)
+      serialized = Search::Elastic::RetryQueue.queued_items[shard].first[0]
 
       expect(ref_class.deserialize(serialized)).to eq(failed)
     end

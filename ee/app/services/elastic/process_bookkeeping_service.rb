@@ -9,7 +9,7 @@ module Elastic
 
     class << self
       def active_number_of_shards
-        Gitlab::CurrentSettings.elasticsearch_worker_number_of_shards.clamp(SHARDS_MIN, SHARDS_MAX)
+        Gitlab::CurrentSettings.elasticsearch_worker_number_of_shards.clamp(self::SHARDS_MIN, self::SHARDS_MAX)
       end
 
       def shard_number(data)
@@ -211,8 +211,8 @@ module Elastic
         target: indexing_bytes_per_second_target
       )
 
-      # Re-enqueue any failures so they are retried
-      self.class.track!(*@failures) if @failures.present?
+      # Route failures to retry queue or dead queue
+      track_failures!(@failures)
 
       # Remove all the successes
       scores.each do |set_key, (first_score, last_score, count)|
@@ -281,6 +281,19 @@ module Elastic
 
     def indexing_bytes_per_second_target
       Gitlab::Metrics::GlobalSearchIndexingSlis::INCREMENTAL_INDEXED_BYTES_PER_SECOND_TARGET
+    end
+
+    def track_failures!(failures)
+      return if failures.empty?
+
+      target_queue =
+        if instance_of?(Search::Elastic::RetryQueue)
+          Search::Elastic::DeadQueue
+        else
+          Search::Elastic::RetryQueue
+        end
+
+      target_queue.track!(*failures)
     end
   end
 end
