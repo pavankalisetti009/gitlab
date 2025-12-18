@@ -97,8 +97,9 @@ module GitlabSubscriptions
       blocking_merge_requests
       board_assignee_lists
       board_milestone_lists
-      ci_secrets_management
+      ci_job_analytics_for_projects
       ci_pipeline_cancellation_restrictions
+      ci_secrets_management
       cluster_agents_ci_impersonation
       cluster_agents_user_impersonation
       cluster_deployments
